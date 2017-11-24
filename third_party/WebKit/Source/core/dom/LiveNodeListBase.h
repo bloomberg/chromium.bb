@@ -70,7 +70,7 @@ class CORE_EXPORT LiveNodeListBase : public GarbageCollectedMixin {
   }
   ContainerNode& ownerNode() const { return *owner_node_; }
 
-  virtual void InvalidateCache(Document* old_document = 0) const = 0;
+  virtual void InvalidateCache(Document* old_document = nullptr) const = 0;
   void InvalidateCacheForAttribute(const QualifiedName*) const;
 
   static bool ShouldInvalidateTypeOnAttributeChange(NodeListInvalidationType,

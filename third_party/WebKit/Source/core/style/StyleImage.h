@@ -76,7 +76,7 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   virtual WrappedImagePtr Data() const = 0;
   virtual float ImageScaleFactor() const { return 1; }
   virtual bool KnownToBeOpaque(const Document&, const ComputedStyle&) const = 0;
-  virtual ImageResourceContent* CachedImage() const { return 0; }
+  virtual ImageResourceContent* CachedImage() const { return nullptr; }
 
   ALWAYS_INLINE bool IsImageResource() const { return is_image_resource_; }
   ALWAYS_INLINE bool IsPendingImage() const { return is_pending_image_; }

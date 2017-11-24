@@ -135,7 +135,7 @@ inline const CSSSelector* CSSSelectorList::Next(const CSSSelector& current) {
   const CSSSelector* last = &current;
   while (!last->IsLastInTagHistory())
     last++;
-  return last->IsLastInSelectorList() ? 0 : last + 1;
+  return last->IsLastInSelectorList() ? nullptr : last + 1;
 }
 
 }  // namespace blink

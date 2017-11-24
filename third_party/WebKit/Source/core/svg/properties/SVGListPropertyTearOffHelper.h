@@ -211,7 +211,7 @@ class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
                                        ToDerived()->PropertyIsAnimVal(),
                                        ToDerived()->AttributeName());
 
-    return ItemTraits::CreateTearOff(value, 0, kPropertyIsNotAnimVal,
+    return ItemTraits::CreateTearOff(value, nullptr, kPropertyIsNotAnimVal,
                                      QualifiedName::Null());
   }
 

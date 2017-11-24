@@ -65,10 +65,10 @@ class CORE_EXPORT V0InsertionPoint : public HTMLElement {
     return distributed_nodes_.at(index);
   }
   Node* FirstDistributedNode() const {
-    return distributed_nodes_.IsEmpty() ? 0 : distributed_nodes_.First();
+    return distributed_nodes_.IsEmpty() ? nullptr : distributed_nodes_.First();
   }
   Node* LastDistributedNode() const {
-    return distributed_nodes_.IsEmpty() ? 0 : distributed_nodes_.Last();
+    return distributed_nodes_.IsEmpty() ? nullptr : distributed_nodes_.Last();
   }
   Node* DistributedNodeNextTo(const Node* node) const {
     return distributed_nodes_.NextTo(node);

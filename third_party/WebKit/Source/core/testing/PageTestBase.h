@@ -24,7 +24,7 @@ class PageTestBase : public ::testing::Test {
   void TearDown() override;
 
   void SetUp(IntSize);
-  void SetupPageWithClients(Page::PageClients* = 0,
+  void SetupPageWithClients(Page::PageClients* = nullptr,
                             LocalFrameClient* = nullptr,
                             FrameSettingOverrideFunction = nullptr);
   Document& GetDocument() const;

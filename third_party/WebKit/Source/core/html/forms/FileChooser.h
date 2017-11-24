@@ -78,7 +78,7 @@ class FileChooser : public RefCounted<FileChooser> {
                                            const WebFileChooserParams&);
   ~FileChooser();
 
-  void DisconnectClient() { client_ = 0; }
+  void DisconnectClient() { client_ = nullptr; }
 
   // FIXME: We should probably just pass file paths that could be virtual paths
   // with proper display names rather than passing structs.

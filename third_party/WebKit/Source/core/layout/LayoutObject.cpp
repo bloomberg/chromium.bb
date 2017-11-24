@@ -1341,7 +1341,7 @@ void LayoutObject::ShowTreeForThis() const {
 }
 
 void LayoutObject::ShowLayoutTreeForThis() const {
-  showLayoutTree(this, 0);
+  showLayoutTree(this, nullptr);
 }
 
 void LayoutObject::ShowLineTreeForThis() const {
@@ -3745,7 +3745,7 @@ void showLineTree(const blink::LayoutObject* object) {
 }
 
 void showLayoutTree(const blink::LayoutObject* object1) {
-  showLayoutTree(object1, 0);
+  showLayoutTree(object1, nullptr);
 }
 
 void showLayoutTree(const blink::LayoutObject* object1,

@@ -51,7 +51,7 @@ class EmptyNodeList final : public NodeList {
   explicit EmptyNodeList(Node& root_node) : owner_(root_node) {}
 
   unsigned length() const override { return 0; }
-  Node* item(unsigned) const override { return 0; }
+  Node* item(unsigned) const override { return nullptr; }
 
   bool IsEmptyNodeList() const override { return true; }
   Node* VirtualOwnerNode() const override;

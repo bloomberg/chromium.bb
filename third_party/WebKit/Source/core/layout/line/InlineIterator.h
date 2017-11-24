@@ -78,7 +78,7 @@ class InlineIterator {
         next_breakable_position_(-1),
         pos_(p) {}
 
-  void Clear() { MoveTo(0, 0); }
+  void Clear() { MoveTo(nullptr, 0); }
 
   void MoveToStartOf(LineLayoutItem object) { MoveTo(object, 0); }
 
@@ -261,7 +261,7 @@ static inline LineLayoutItem BidiNextShared(
   bool end_of_inline = false;
 
   while (current) {
-    next = 0;
+    next = nullptr;
     if (!old_end_of_inline && !IsIteratorTarget(current)) {
       next = current.SlowFirstChild();
       NotifyObserverEnteredObject(observer, next);

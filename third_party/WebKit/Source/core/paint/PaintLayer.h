@@ -230,7 +230,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   LayoutBoxModelObject& GetLayoutObject() const { return layout_object_; }
   LayoutBox* GetLayoutBox() const {
-    return layout_object_.IsBox() ? &ToLayoutBox(layout_object_) : 0;
+    return layout_object_.IsBox() ? &ToLayoutBox(layout_object_) : nullptr;
   }
   PaintLayer* Parent() const { return parent_; }
   PaintLayer* PreviousSibling() const { return previous_; }
@@ -243,7 +243,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // PaintInfo::paintContainer.
   PaintLayer* CompositingContainer() const;
 
-  void AddChild(PaintLayer* new_child, PaintLayer* before_child = 0);
+  void AddChild(PaintLayer* new_child, PaintLayer* before_child = nullptr);
   PaintLayer* RemoveChild(PaintLayer*);
 
   void ClearClipRects(ClipRectsCacheSlot = kNumberOfClipRectsCacheSlots);
@@ -891,7 +891,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       GeometryMapperOption,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
-      const LayoutPoint* offset_from_root = 0,
+      const LayoutPoint* offset_from_root = nullptr,
       const LayoutSize& sub_pixel_accumulation = LayoutSize()) const;
 
   // Use this method for callsites within paint, and |CollectFragments|
@@ -905,7 +905,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       GeometryMapperOption,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
-      const LayoutPoint* offset_from_root = 0,
+      const LayoutPoint* offset_from_root = nullptr,
       const LayoutSize& sub_pixel_accumulation = LayoutSize()) const;
 
   void CollectFragments(
@@ -916,9 +916,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       GeometryMapperOption,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
-      const LayoutPoint* offset_from_root = 0,
+      const LayoutPoint* offset_from_root = nullptr,
       const LayoutSize& sub_pixel_accumulation = LayoutSize(),
-      const LayoutRect* layer_bounding_box = 0) const;
+      const LayoutRect* layer_bounding_box = nullptr) const;
 
   LayoutPoint LayoutBoxLocation() const {
     return GetLayoutObject().IsBox() ? ToLayoutBox(GetLayoutObject()).Location()
@@ -1084,16 +1084,16 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                            const LayoutRect& hit_test_rect,
                            const HitTestLocation&,
                            bool applied_transform,
-                           const HitTestingTransformState* = 0,
-                           double* z_offset = 0);
+                           const HitTestingTransformState* = nullptr,
+                           double* z_offset = nullptr);
   PaintLayer* HitTestLayerByApplyingTransform(
       PaintLayer* root_layer,
       PaintLayer* container_layer,
       HitTestResult&,
       const LayoutRect& hit_test_rect,
       const HitTestLocation&,
-      const HitTestingTransformState* = 0,
-      double* z_offset = 0,
+      const HitTestingTransformState* = nullptr,
+      double* z_offset = nullptr,
       const LayoutPoint& translation_offset = LayoutPoint());
   PaintLayer* HitTestChildren(
       ChildrenIteration,

@@ -56,7 +56,7 @@ class CORE_EXPORT FilterOperations {
   bool IsEmpty() const { return !operations_.size(); }
   size_t size() const { return operations_.size(); }
   const FilterOperation* at(size_t index) const {
-    return index < operations_.size() ? operations_.at(index).Get() : 0;
+    return index < operations_.size() ? operations_.at(index).Get() : nullptr;
   }
 
   bool CanInterpolateWith(const FilterOperations&) const;

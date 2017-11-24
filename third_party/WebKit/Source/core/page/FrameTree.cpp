@@ -301,7 +301,7 @@ static void printFrames(const blink::Frame* frame,
   }
 
   blink::LocalFrameView* view =
-      frame->IsLocalFrame() ? ToLocalFrame(frame)->View() : 0;
+      frame->IsLocalFrame() ? ToLocalFrame(frame)->View() : nullptr;
   printf("Frame %p %dx%d\n", frame, view ? view->Width() : 0,
          view ? view->Height() : 0);
   printIndent(indent);
@@ -310,13 +310,13 @@ static void printFrames(const blink::Frame* frame,
   printf("  frameView=%p\n", view);
   printIndent(indent);
   printf("  document=%p\n",
-         frame->IsLocalFrame() ? ToLocalFrame(frame)->GetDocument() : 0);
+         frame->IsLocalFrame() ? ToLocalFrame(frame)->GetDocument() : nullptr);
   printIndent(indent);
   printf(
       "  uri=%s\n\n",
       frame->IsLocalFrame()
           ? ToLocalFrame(frame)->GetDocument()->Url().GetString().Utf8().data()
-          : 0);
+          : nullptr);
 
   for (blink::Frame* child = frame->Tree().FirstChild(); child;
        child = child->Tree().NextSibling())

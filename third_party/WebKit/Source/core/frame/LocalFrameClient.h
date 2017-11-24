@@ -307,7 +307,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual ContentSettingsClient& GetContentSettingsClient() = 0;
 
   virtual SharedWorkerRepositoryClient* GetSharedWorkerRepositoryClient() {
-    return 0;
+    return nullptr;
   }
 
   virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(

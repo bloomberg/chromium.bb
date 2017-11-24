@@ -171,7 +171,7 @@ class CORE_EXPORT HTMLElement : public Element {
   void AdjustDirectionalityIfNeededAfterChildAttributeChanged(Element* child);
   void AdjustDirectionalityIfNeededAfterChildrenChanged(const ChildrenChange&);
   TextDirection Directionality(
-      Node** strong_directionality_text_node = 0) const;
+      Node** strong_directionality_text_node = nullptr) const;
 
   TranslateAttributeMode GetTranslateAttributeMode() const;
 

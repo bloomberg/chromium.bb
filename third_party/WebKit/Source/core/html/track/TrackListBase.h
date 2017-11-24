@@ -59,7 +59,7 @@ class TrackListBase : public EventTargetWithInlineData {
       if (tracks_[i]->id() != track_id)
         continue;
 
-      tracks_[i]->SetMediaElement(0);
+      tracks_[i]->SetMediaElement(nullptr);
       ScheduleEvent(
           TrackEvent::Create(EventTypeNames::removetrack, tracks_[i].Get()));
       tracks_.EraseAt(i);
@@ -70,7 +70,7 @@ class TrackListBase : public EventTargetWithInlineData {
 
   void RemoveAll() {
     for (const auto& track : tracks_)
-      track->SetMediaElement(0);
+      track->SetMediaElement(nullptr);
 
     tracks_.clear();
   }

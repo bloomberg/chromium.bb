@@ -151,7 +151,7 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   Node* AnchorNode() const { return anchor_node_.Get(); }
 
   Document* GetDocument() const {
-    return anchor_node_ ? &anchor_node_->GetDocument() : 0;
+    return anchor_node_ ? &anchor_node_->GetDocument() : nullptr;
   }
 
   // For PositionInFlatTree, it requires an ancestor traversal to compute the

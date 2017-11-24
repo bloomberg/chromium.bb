@@ -234,7 +234,7 @@ class WebViewHelper {
   WebViewImpl* Initialize(TestWebFrameClient* = nullptr,
                           TestWebViewClient* = nullptr,
                           TestWebWidgetClient* = nullptr,
-                          void (*update_settings_func)(WebSettings*) = 0);
+                          void (*update_settings_func)(WebSettings*) = nullptr);
 
   // Same as Initialize() but also performs the initial load of the url. Only
   // returns once the load is complete.

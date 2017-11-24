@@ -88,7 +88,7 @@ class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
   String GetData(const String& type) const;
   void SetData(const String& type, const String& data);
 
-  void UrlAndTitle(String& url, String* title = 0) const;
+  void UrlAndTitle(String& url, String* title = nullptr) const;
   void SetURLAndTitle(const String& url, const String& title);
   void HtmlAndBaseURL(String& html, KURL& base_url) const;
   void SetHTMLAndBaseURL(const String& html, const KURL& base_url);

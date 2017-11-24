@@ -802,7 +802,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void SetSpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder&);
   void ClearSpannerPlaceholder();
   LayoutMultiColumnSpannerPlaceholder* SpannerPlaceholder() const final {
-    return rare_data_ ? rare_data_->spanner_placeholder_ : 0;
+    return rare_data_ ? rare_data_->spanner_placeholder_ : nullptr;
   }
 
   // A pagination strut is the amount of space needed to push an in-flow block-

@@ -64,7 +64,7 @@ class HTMLFormControlsCollection final : public HTMLCollection {
   const ListedElement::List& ListedElements() const;
   const HeapVector<Member<HTMLImageElement>>& FormImageElements() const;
   HTMLElement* VirtualItemAfter(Element*) const override;
-  void InvalidateCache(Document* old_document = 0) const override;
+  void InvalidateCache(Document* old_document = nullptr) const override;
 
   mutable Member<HTMLElement> cached_element_;
   mutable unsigned cached_element_offset_in_array_;

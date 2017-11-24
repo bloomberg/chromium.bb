@@ -50,7 +50,7 @@ class CORE_EXPORT HTMLMediaSource : public URLRegistrable,
   static void SetRegistry(URLRegistry*);
   static HTMLMediaSource* Lookup(const String& url) {
     return registry_ ? static_cast<HTMLMediaSource*>(registry_->Lookup(url))
-                     : 0;
+                     : nullptr;
   }
 
   // Called when an HTMLMediaElement is attempting to attach to this object,

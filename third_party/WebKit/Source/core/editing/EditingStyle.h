@@ -119,7 +119,7 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
   EditingTriState TriStateOfStyle(const VisibleSelection&,
                                   SecureContextMode) const;
   bool ConflictsWithInlineStyleOfElement(HTMLElement* element) const {
-    return ConflictsWithInlineStyleOfElement(element, 0, 0);
+    return ConflictsWithInlineStyleOfElement(element, nullptr, nullptr);
   }
   bool ConflictsWithInlineStyleOfElement(
       HTMLElement* element,

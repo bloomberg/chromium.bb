@@ -74,7 +74,7 @@ class CORE_EXPORT V0CustomElementProcessingStack
     // CallbackDeliveryScope active. Also, if the processing stack
     // is popped when empty, this sentinel will cause a null deref
     // crash.
-    V0CustomElementCallbackQueue* sentinel = 0;
+    V0CustomElementCallbackQueue* sentinel = nullptr;
     for (size_t i = 0; i < kNumSentinels; i++)
       flattened_processing_stack_.push_back(sentinel);
     DCHECK_EQ(element_queue_end_, flattened_processing_stack_.size());

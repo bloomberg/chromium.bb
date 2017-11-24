@@ -63,7 +63,7 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
     return image_resource_.Get();
   }
   ImageResourceContent* CachedImage() const {
-    return image_resource_ ? image_resource_->CachedImage() : 0;
+    return image_resource_ ? image_resource_->CachedImage() : nullptr;
   }
 
   HTMLMapElement* ImageMap() const;

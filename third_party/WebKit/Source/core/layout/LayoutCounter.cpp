@@ -722,7 +722,7 @@ void showCounterLayoutObjectTree(const blink::LayoutObject* layoutObject,
         current->HasCounterNodeMap()
             ? counterName ? blink::GetCounterMaps().at(current)->at(identifier)
                           : (blink::CounterNode*)1
-            : (blink::CounterNode*)0);
+            : (blink::CounterNode*)nullptr);
   }
   fflush(stderr);
 }

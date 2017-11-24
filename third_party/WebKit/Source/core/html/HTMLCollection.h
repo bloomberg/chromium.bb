@@ -78,7 +78,7 @@ class CORE_EXPORT HTMLCollection : public ScriptWrappable,
 
   static HTMLCollection* Create(ContainerNode& base, CollectionType);
   virtual ~HTMLCollection();
-  void InvalidateCache(Document* old_document = 0) const override;
+  void InvalidateCache(Document* old_document = nullptr) const override;
   void InvalidateCacheForAttribute(const QualifiedName*) const;
 
   // DOM API
@@ -187,7 +187,7 @@ class CORE_EXPORT HTMLCollection : public ScriptWrappable,
   }
 
  private:
-  void InvalidateIdNameCacheMaps(Document* old_document = 0) const {
+  void InvalidateIdNameCacheMaps(Document* old_document = nullptr) const {
     if (!HasValidIdNameCache())
       return;
 

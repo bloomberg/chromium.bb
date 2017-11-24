@@ -69,7 +69,7 @@ class DummyPageHolder {
  public:
   static std::unique_ptr<DummyPageHolder> Create(
       const IntSize& initial_view_size = IntSize(),
-      Page::PageClients* = 0,
+      Page::PageClients* = nullptr,
       LocalFrameClient* = nullptr,
       FrameSettingOverrideFunction = nullptr);
   ~DummyPageHolder();

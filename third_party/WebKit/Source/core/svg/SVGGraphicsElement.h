@@ -60,8 +60,9 @@ class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
   SVGAnimatedTransformList* transform() { return transform_.Get(); }
   const SVGAnimatedTransformList* transform() const { return transform_.Get(); }
 
-  AffineTransform ComputeCTM(CTMScope mode,
-                             const SVGGraphicsElement* ancestor = 0) const;
+  AffineTransform ComputeCTM(
+      CTMScope mode,
+      const SVGGraphicsElement* ancestor = nullptr) const;
 
   virtual void Trace(blink::Visitor*);
 

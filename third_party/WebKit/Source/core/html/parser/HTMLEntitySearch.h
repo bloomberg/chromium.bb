@@ -60,8 +60,8 @@ class HTMLEntitySearch {
   const HTMLEntityTableEntry* FindLast(UChar) const;
 
   void Fail() {
-    first_ = 0;
-    last_ = 0;
+    first_ = nullptr;
+    last_ = nullptr;
   }
 
   int current_length_;

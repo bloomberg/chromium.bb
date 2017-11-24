@@ -282,7 +282,7 @@ class CORE_EXPORT FillLayer {
   static Length InitialFillYPosition(EFillLayerType) {
     return Length(0.0, kPercent);
   }
-  static StyleImage* InitialFillImage(EFillLayerType) { return 0; }
+  static StyleImage* InitialFillImage(EFillLayerType) { return nullptr; }
   static EMaskSourceType InitialFillMaskSourceType(EFillLayerType) {
     return kMaskAlpha;
   }

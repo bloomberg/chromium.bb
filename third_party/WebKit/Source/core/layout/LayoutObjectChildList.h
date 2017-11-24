@@ -54,7 +54,7 @@ class LayoutObjectChildList {
   void AppendChildNode(LayoutObject* owner,
                        LayoutObject* new_child,
                        bool notify_layout_object = true) {
-    InsertChildNode(owner, new_child, 0, notify_layout_object);
+    InsertChildNode(owner, new_child, nullptr, notify_layout_object);
   }
 
  private:
