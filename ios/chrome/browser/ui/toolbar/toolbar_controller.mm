@@ -788,12 +788,6 @@ using ios::material::TimingFunction;
 
 #pragma mark - ActivityServicePositioner
 
-- (CGRect)shareButtonAnchorRect {
-  // Shrink the padding around the shareButton so the popovers are anchored
-  // correctly.
-  return CGRectInset([shareButton_ bounds], kPopoverAnchorHorizontalPadding, 0);
-}
-
 - (UIView*)shareButtonView {
   return shareButton_;
 }

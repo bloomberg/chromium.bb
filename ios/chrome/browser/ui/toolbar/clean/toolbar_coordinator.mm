@@ -167,6 +167,10 @@
 
 #pragma mark - Public
 
+- (id<ActivityServicePositioner>)activityServicePositioner {
+  return self.toolbarViewController;
+}
+
 - (void)updateOmniboxState {
   _locationBar->SetShouldShowHintText(
       [self.delegate toolbarModelIOS]->ShouldDisplayHintText());

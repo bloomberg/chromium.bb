@@ -56,6 +56,7 @@ source_set("toolbar_ui") {
     ":toolbar_components_ui",
     "//base",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/history_popup/requirements",
     "//ios/chrome/browser/ui/toolbar/public",

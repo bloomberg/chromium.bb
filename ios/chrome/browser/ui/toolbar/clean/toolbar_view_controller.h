@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_consumer.h"
 
 @protocol ApplicationCommands;
@@ -16,7 +17,8 @@
 
 // View controller for a toolbar, which will show a horizontal row of
 // controls and/or labels.
-@interface ToolbarViewController : UIViewController<ToolbarConsumer>
+@interface ToolbarViewController
+    : UIViewController<ActivityServicePositioner, ToolbarConsumer>
 
 - (instancetype)initWithDispatcher:
                     (id<ApplicationCommands, BrowserCommands>)dispatcher

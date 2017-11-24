@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 
+@protocol ActivityServicePositioner;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class ToolbarButtonUpdater;
@@ -43,6 +44,9 @@ class WebState;
 @property(nonatomic, strong, readonly) UIViewController* viewController;
 // Button updater for the toolbar.
 @property(nonatomic, strong) ToolbarButtonUpdater* buttonUpdater;
+
+// Returns the ActivityServicePositioner for this toolbar.
+- (id<ActivityServicePositioner>)activityServicePositioner;
 
 // Start this coordinator.
 - (void)start;
