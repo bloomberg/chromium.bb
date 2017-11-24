@@ -1,7 +1,7 @@
 # liblouis: Unified French 6 dots Braille table
 
 # Copyright (C) 1995-2004 by The BRLTTY Team
-# Copyright (C) 2012,1017 Michel Such <michel.such@free.fr>
+# Copyright (C) 2012 Michel Such <michel.such@free.fr>
 # Copyright (C) 2017 André-Abush CLAUSE <dev@andreabc.net>
 # Copyright (C) 2017 Ludovic Oger <oger.ludovic@gmail.com>
 
@@ -48,7 +48,9 @@ space \x000A 0    # lf
 space \x000c 0    #
 space \x000D 0    # cr
 space \x00A0 a    # no-break space
+space \x007f 0
 
+include text_nabcc.dis
 include latinLetterDef6Dots.uti
 
 
@@ -67,6 +69,7 @@ uplow Ûû 156			# u accent circonflexe
 uplow Ëë 1246			# e tréma
 uplow Ïï 12456		# i tréma
 uplow Üü 1256			# u tréma
+uplow Œœ 246
 
 uplow \X008C\X009C 246          # oe liés
 uplow \X0152\X0153 246          # oe liés
@@ -85,42 +88,44 @@ uplow \X0152\X0153 246          # oe liés
 # uplow \X00D1\x00F1 1345,12456   # n tilde
 # uplow \x00D5\x00F5 13,46        # o tilde
 
-# Define digits and litdigits
-# Don't include digits6DotsPlusDot6.uti and litdigits6DotsPlusDot6.uti
-# because of problems with french 0 (3456) and NVDA
-
-digit        0      3456
-digit        1      16
-digit        2      126
-digit        3      146
-digit        4      1456
-digit        5      156
-digit        6      1246
-digit        7      12456
-digit        8      1256
-digit        9      246
-
+digit 0 3456
 litdigit        0      3456
-litdigit        1      16
-litdigit        2      126
-litdigit        3      146
-litdigit        4      1456
-litdigit        5      156
-litdigit        6      1246
-litdigit        7      12456
-litdigit        8      1256
-litdigit        9      246
+comp6 0 3456
+
+include digits6DotsPlusDot6.uti
+include litdigits6DotsPlusDot6.uti
+
+math + 235				  # plus
+math = 2356				  # égal
+math / 34					  # barre oblique
+math \x0060 6       #
+math * 35
+math \x00F7 25		  # divisé par
+math < 5-126	 		  # inférieur à
+math > 5-345			  # supérieur à
 
 punctuation , 2			    # virgule
+postpunc , 2
 punctuation ; 23		    # point-virgule
+postpunc ; 23
 punctuation : 25		    # deux-points
+postpunc : 25
 punctuation . 256		    # point
+postpunc . 256
 punctuation ? 26		    # point d'interrogation
+postpunc ? 26
 punctuation ! 235		    # point d'exclamation
+postpunc ! 235
 punctuation " 2356 	    # guillemet
 punctuation ( 236		    # parenthèse ouvrante
 punctuation ) 356		    # parenthèse fermante
+prepunc ( 236		    # parenthèse ouvrante
+postpunc ) 356		    # parenthèse fermante
 punctuation ' 3			    # apostrophe
+punctuation « 2356	  #	guillemet français ouvrant
+punctuation » 2356	  #	guillemet français fermant
+prepunc « 2356	  #	guillemet français ouvrant
+postpunc » 2356	  #	guillemet français fermant
 
 # guillemets
 punctuation \X00AB 2356     # right-pointing double angle quotation mark
@@ -166,17 +171,19 @@ sign \Xf0b7 1245        # (bullet MS symbol font?)
 sign \\ 5-34 				#	barre oblique inverse
 sign @ 345					# arobase
 sign \X0023 5-3456	# croisillon
+comp6 \X0023 5-3456	# croisillon
 sign \XFE5F 5-3456	# croisillon minuscule
 sign \XFF03 5-3456	# croisillon pleine chasse
 sign ^ 4					  # accent circonflexe
+noback sign ~ 5
 sign % 5-346				#	pourcent
 sign ‰ 5-346-346		#	pour mille
 sign * 5-35				  # astérisque
 sign _ 5-36					# souligné
 sign ¸ 456          # cédille
-sign ´ 5            # accent aigu
+noback sign ´ 5            # accent aigu
 sign \X007C 456     # barre verticale
-sign \X0082 6       # [single low-9 quotation mark (break permitted here)
+#sign \X0082 6       # [single low-9 quotation mark (break permitted here)
 sign \X0083 124     # [latin small letter f with hook (no break here)
 sign \X0084 56      # [double low-9 quotation mark (<control>)
 sign \X0085 36      # [horizontal ellipsis (next line)
@@ -184,24 +191,24 @@ sign \X0086 356     # [dagger (start of selected area)
 sign \X0087 3567    # [double dagger (end of selected area)
 sign \X0088 4       # [modifier letter circumflex accent (character tabulation set)
 sign \X0089 346     # [per mille sign (character tabulation with justification)
-sign \X008B 5       # [single left-pointing angle quotation mark] (partial line down)
+noback sign \X008B 5       # [single left-pointing angle quotation mark] (partial line down)
 sign \X0095 1245    # [bullet] (message waiting)
 sign \X0096 4       # [en dash] (start of guarded area)
-sign \X0097 45      # [em dash] (end of guarded area)
+noback sign \X0097 45      # [em dash] (end of guarded area)
 sign \X0098 46	    # [small tilde] (start of string)
 sign \X0099 2345	  # [trade mark sign] (<control>)
 sign \x2122 5-2345	#	TRADE MARK SIGN
-sign \X009B 5       # [single right-pointing angle quotation mark] (control sequence introducer)
+noback sign \X009B 5       # [single right-pointing angle quotation mark] (control sequence introducer)
 sign \X00A1 235     # inverted exclamation mark
 # (doublon) sign \X00A2 14      # cent sign
-sign \X00A6 45      # broken bar
+noback sign \X00A6 45      # broken bar
 sign \X00A8 46      # diaeresis
-sign \X00AA 16      # feminine ordinal indicator
+noback sign \X00AA 16      # feminine ordinal indicator
 sign \X00AC 256     # not sign
 noback sign \X00AD 0       # soft hyphen
 sign \X00AE 5-1235  # registered sign
 sign \X00B1 235-36  # plus-minus sign
-sign \X00B2 45      # superscript two
+noback sign \X00B2 45      # superscript two
 sign \X00B3 456     # superscript three
 sign \X00B5 45-134  # micro sign
 sign \X00B6 456     # pilcrow sign
@@ -222,35 +229,26 @@ sign \X00E6 345     #*latin small letter ae
 sign \X00F0 12      # latin small letter eth
 sign \X00F8 56      # latin small letter o with stroke
 sign \X00FE 245     # latin small letter thorn
-math + 235				  # plus
-math = 2356				  # égal
-math / 34					  # barre oblique
-math \x0060 6       #
-math \x00F7 25		  # divisé par
-math < 5-126	 		  # inférieur à
-math > 5-345			  # supérieur à
-
 sign © 5-14				  # copyright
 sign ° 5-135			  # degré
 sign & 5-123456		  # perluète (et commercial)
 sign ¢ 45-14  		  # cent
-sign ¤ 45					  # symbole monétaire
 sign € 45-15			  # euro
 sign £ 45-123			  # livre
-sign § 5-1234			  # paragraphe
 sign $ 45-234			  # dollar
+comp6 $ 45-234
 sign ¥ 45-13456		  # yen
+sign ¤ 6-45					  # symbole monétaire
+sign § 5-1234			  # paragraphe
 
 
-# (doublon) punctuation « 2356	  #	guillemet français ouvrant
-# (doublon) punctuation » 2356	  #	guillemet français fermant
 punctuation [ 45-236  # crochet droit ouvrant
 punctuation ] 356-12	#	crochet droit fermant
 punctuation { 6-6-236	#	accolade de gauche
 punctuation } 356-3-3	#	accolade de droite
 
 sign ¹ 4						  # exposant 1
-sign ² 45					    # exposant 2
+noback sign ² 45					    # exposant 2
 sign ³ 456					  # exposant 3
 sign ¼ 16-34-1456			# un quart
 sign ½ 16-34-126			# un demi
@@ -264,6 +262,9 @@ include fr-bfu-comp68.cti
 
 # Braille indicators
 numsign 6             # number sign, just a dots operand
+numericmodechars ,:.+-*/()=
+#nocontractsign 56
+numericnocontchars âêîôûëïüœ#
 capsletter 46
 begcapsword 46-46
 emphclass italic
@@ -278,8 +279,8 @@ endemphphrase bold before 456
 
 midword \X2019 3     # right single quotation mark
 midnum \s 0						# espace entre les chiffres
-midnum , 2
-decpoint . 256
+decpoint , 2
+midnum . 256
 midnum - 36
 hyphen - 36
 midnum + 235					# plus
@@ -289,7 +290,10 @@ midnum * 35   				# astérisque
 midnum : 25
 midnum < 23		        # inférieur à
 midnum > 56				    # supérieur à
-endnum # 3456
+endnum # 5-3456
+endnum € 45-15
+#begnum ( 236		    # parenthèse ouvrante
+#endnum ) 356		    # parenthèse fermante
 
 repeated ... 256-256-256		#	points de suspension
 repeated --- 36-36-36
