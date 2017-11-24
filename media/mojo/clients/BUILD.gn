@@ -83,8 +83,8 @@ source_set("jpeg_decode_accelerator") {
   visibility = [ "//content/browser" ]
 
   sources = [
-    "gpu_jpeg_decode_accelerator_host.cc",
-    "gpu_jpeg_decode_accelerator_host.h",
+    "mojo_jpeg_decode_accelerator.cc",
+    "mojo_jpeg_decode_accelerator.h",
   ]
 
   deps = [

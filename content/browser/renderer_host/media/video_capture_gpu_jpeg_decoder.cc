@@ -284,7 +284,7 @@ void VideoCaptureGpuJpegDecoder::FinishInitialization(
 
   base::AutoLock lock(lock_);
   if (unbound_remote_decoder.is_valid()) {
-    decoder_ = base::MakeUnique<media::GpuJpegDecodeAcceleratorHost>(
+    decoder_ = base::MakeUnique<media::MojoJpegDecodeAccelerator>(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
         std::move(unbound_remote_decoder));
 

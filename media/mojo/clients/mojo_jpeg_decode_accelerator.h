@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_CLIENTS_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_
-#define MEDIA_MOJO_CLIENTS_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_
+#ifndef MEDIA_MOJO_CLIENTS_MOJO_JPEG_DECODE_ACCELERATOR_H_
+#define MEDIA_MOJO_CLIENTS_MOJO_JPEG_DECODE_ACCELERATOR_H_
 
 #include <stdint.h>
 
@@ -19,21 +19,19 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-// TODO(c.padhi): Rename to MojoJpegDecodeAccelerator, see
-// http://crbug.com/699255.
 // A JpegDecodeAccelerator, for use in the browser process, that proxies to a
 // mojom::JpegDecodeAccelerator. Created on the owner's thread, otherwise
 // operating and deleted on the IO thread.
-class GpuJpegDecodeAcceleratorHost : public JpegDecodeAccelerator {
+class MojoJpegDecodeAccelerator : public JpegDecodeAccelerator {
  public:
-  GpuJpegDecodeAcceleratorHost(
+  MojoJpegDecodeAccelerator(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       mojom::JpegDecodeAcceleratorPtrInfo jpeg_decoder);
-  ~GpuJpegDecodeAcceleratorHost() override;
+  ~MojoJpegDecodeAccelerator() override;
 
   // JpegDecodeAccelerator implementation.
   // |client| is called on the IO thread, but is never called into after the
-  // GpuJpegDecodeAcceleratorHost is destroyed.
+  // MojoJpegDecodeAccelerator is destroyed.
   bool Initialize(Client* client) override;
   void InitializeAsync(Client* client, InitCB init_cb) override;
   void Decode(const BitstreamBuffer& bitstream_buffer,
@@ -60,9 +58,9 @@ class GpuJpegDecodeAcceleratorHost : public JpegDecodeAccelerator {
 
   mojom::JpegDecodeAcceleratorPtr jpeg_decoder_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuJpegDecodeAcceleratorHost);
+  DISALLOW_COPY_AND_ASSIGN(MojoJpegDecodeAccelerator);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_CLIENTS_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_
+#endif  // MEDIA_MOJO_CLIENTS_MOJO_JPEG_DECODE_ACCELERATOR_H_

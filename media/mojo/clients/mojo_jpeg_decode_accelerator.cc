@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/clients/gpu_jpeg_decode_accelerator_host.h"
+#include "media/mojo/clients/mojo_jpeg_decode_accelerator.h"
 
 #include <stddef.h>
 
@@ -15,38 +15,38 @@
 
 namespace media {
 
-GpuJpegDecodeAcceleratorHost::GpuJpegDecodeAcceleratorHost(
+MojoJpegDecodeAccelerator::MojoJpegDecodeAccelerator(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     mojom::JpegDecodeAcceleratorPtrInfo jpeg_decoder)
     : io_task_runner_(std::move(io_task_runner)),
       jpeg_decoder_info_(std::move(jpeg_decoder)) {}
 
-GpuJpegDecodeAcceleratorHost::~GpuJpegDecodeAcceleratorHost() {
+MojoJpegDecodeAccelerator::~MojoJpegDecodeAccelerator() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 }
 
-bool GpuJpegDecodeAcceleratorHost::Initialize(
+bool MojoJpegDecodeAccelerator::Initialize(
     JpegDecodeAccelerator::Client* /*client*/) {
   NOTIMPLEMENTED();
   return false;
 }
 
-void GpuJpegDecodeAcceleratorHost::InitializeAsync(Client* client,
-                                                   InitCB init_cb) {
+void MojoJpegDecodeAccelerator::InitializeAsync(Client* client,
+                                                InitCB init_cb) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   jpeg_decoder_.Bind(std::move(jpeg_decoder_info_));
 
   // base::Unretained is safe because |this| owns |jpeg_decoder_|.
   jpeg_decoder_.set_connection_error_handler(
-      base::Bind(&GpuJpegDecodeAcceleratorHost::OnLostConnectionToJpegDecoder,
+      base::Bind(&MojoJpegDecodeAccelerator::OnLostConnectionToJpegDecoder,
                  base::Unretained(this)));
   jpeg_decoder_->Initialize(
-      base::Bind(&GpuJpegDecodeAcceleratorHost::OnInitializeDone,
+      base::Bind(&MojoJpegDecodeAccelerator::OnInitializeDone,
                  base::Unretained(this), std::move(init_cb), client));
 }
 
-void GpuJpegDecodeAcceleratorHost::Decode(
+void MojoJpegDecodeAccelerator::Decode(
     const BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<VideoFrame>& video_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -72,15 +72,15 @@ void GpuJpegDecodeAcceleratorHost::Decode(
   jpeg_decoder_->Decode(bitstream_buffer, video_frame->coded_size(),
                         std::move(output_frame_handle),
                         base::checked_cast<uint32_t>(output_buffer_size),
-                        base::Bind(&GpuJpegDecodeAcceleratorHost::OnDecodeAck,
+                        base::Bind(&MojoJpegDecodeAccelerator::OnDecodeAck,
                                    base::Unretained(this)));
 }
 
-bool GpuJpegDecodeAcceleratorHost::IsSupported() {
+bool MojoJpegDecodeAccelerator::IsSupported() {
   return true;
 }
 
-void GpuJpegDecodeAcceleratorHost::OnInitializeDone(
+void MojoJpegDecodeAccelerator::OnInitializeDone(
     InitCB init_cb,
     JpegDecodeAccelerator::Client* client,
     bool success) {
@@ -92,7 +92,7 @@ void GpuJpegDecodeAcceleratorHost::OnInitializeDone(
   std::move(init_cb).Run(success);
 }
 
-void GpuJpegDecodeAcceleratorHost::OnDecodeAck(
+void MojoJpegDecodeAccelerator::OnDecodeAck(
     int32_t bitstream_buffer_id,
     ::media::JpegDecodeAccelerator::Error error) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -113,7 +113,7 @@ void GpuJpegDecodeAcceleratorHost::OnDecodeAck(
   client->NotifyError(bitstream_buffer_id, error);
 }
 
-void GpuJpegDecodeAcceleratorHost::OnLostConnectionToJpegDecoder() {
+void MojoJpegDecodeAccelerator::OnLostConnectionToJpegDecoder() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   OnDecodeAck(kInvalidBitstreamBufferId,
               ::media::JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
