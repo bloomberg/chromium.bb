@@ -1092,7 +1092,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PageLoadMetricsSimple) {
 
 // Checks that the correct page load metrics observers are produced with a
 // prerender.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PageLoadMetricsPrerender) {
+// Flaky failures on Linux; see https://crbug.com/788100.
+#if defined(OS_LINUX)
+#define MAYBE_PageLoadMetricsPrerender DISABLED_PageLoadMetricsPrerender
+#else
+#define MAYBE_PageLoadMetricsPrerender PageLoadMetricsPrerender
+#endif
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PageLoadMetricsPrerender) {
   test_utils::FirstContentfulPaintManagerWaiter* prerender_fcp_waiter =
       test_utils::FirstContentfulPaintManagerWaiter::Create(
           GetPrerenderManager());
