@@ -70,6 +70,7 @@ blink_core_sources("frame") {
     "LocalFrameView.h",
     "Location.cpp",
     "Location.h",
+    "MessageReport.h",
     "Navigator.cpp",
     "Navigator.h",
     "NavigatorClipboard.cpp",
