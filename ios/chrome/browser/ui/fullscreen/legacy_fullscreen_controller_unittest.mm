@@ -69,6 +69,9 @@ CGFloat kHeaderHeight = 42.0;
   return kHeaderHeight;
 }
 
+- (void)redrawHeader {
+}
+
 @end
 
 namespace {

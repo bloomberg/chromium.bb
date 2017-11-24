@@ -366,10 +366,12 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
   // The desired final position of the header.
   CGFloat headerPosition = visible ? 0.0 : self.headerHeight;
 
-  // Check if there is anything to do.
   CGFloat delta = self.delegate.currentHeaderOffset - headerPosition;
-  if (CGFloatEquals(delta, 0.0))
+  if (CGFloatEquals(delta, 0.0) && !selfTriggered_) {
+    // The header is already in the right place, and just needs to be redrawn.
+    [self.delegate redrawHeader];
     return;
+  }
 
   // Do not further act on scrollview changes.
   ScopedIncrementer stack(&(self->selfTriggered_));

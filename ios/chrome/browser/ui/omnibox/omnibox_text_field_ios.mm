@@ -110,14 +110,19 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
                                                   textColor:textColor
                                                   tintColor:tintColor];
     [self addSubview:_textField];
+
+    [NSLayoutConstraint activateConstraints:@[
+      [_textField.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+      [_textField.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+      [_textField.topAnchor constraintEqualToAnchor:self.topAnchor],
+      [_textField.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+    ]];
+
+    _textField.translatesAutoresizingMaskIntoConstraints = NO;
   }
   return self;
 }
 
-- (void)layoutSubviews {
-  [super layoutSubviews];
-  self.textField.frame = self.bounds;
-}
 
 @end
 
