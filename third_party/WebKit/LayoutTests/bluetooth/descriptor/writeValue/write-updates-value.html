@@ -18,8 +18,10 @@ bluetooth_test(() => {
       assert_equals(descriptor.value, null);
       let textEncoder = new TextEncoder();
       let newValue = textEncoder.encode('foo');
+      assert_true(newValue instanceof Uint8Array, 'newValue is Uint8Array');
       return descriptor.writeValue(newValue).then(() => {
-        assert_array_equals(descriptor.value.buffer, newValue.buffer);
+        assert_true(descriptor.value instanceof DataView, 'descriptor.value is DataView');
+        assert_array_equals(Array.from(descriptor.value.getUint8()), Array.from(newValue.buffer));
       })
     })
 }, 'Succesful read should update descriptor\'s value.');
