@@ -6,11 +6,11 @@
 #define DeprecationReport_h
 
 #include "bindings/core/v8/SourceLocation.h"
-#include "core/frame/ReportBody.h"
+#include "core/frame/MessageReport.h"
 
 namespace blink {
 
-class CORE_EXPORT DeprecationReport : public ReportBody {
+class CORE_EXPORT DeprecationReport : public MessageReport {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -18,10 +18,9 @@ class CORE_EXPORT DeprecationReport : public ReportBody {
                     double anticipatedRemoval,
                     const String& message,
                     std::unique_ptr<SourceLocation> location)
-      : id_(id),
-        anticipatedRemoval_(anticipatedRemoval),
-        message_(message),
-        location_(std::move(location)) {}
+      : MessageReport(message, std::move(location)),
+        id_(id),
+        anticipatedRemoval_(anticipatedRemoval) {}
 
   ~DeprecationReport() override {}
 
@@ -30,19 +29,10 @@ class CORE_EXPORT DeprecationReport : public ReportBody {
     is_null = !anticipatedRemoval_;
     return anticipatedRemoval_;
   }
-  String message() const { return message_; }
-  long lineNumber() const { return location_->LineNumber(); }
-  String sourceFile() const {
-    return location_->Url().IsNull() ? "" : location_->Url();
-  }
-
-  virtual void Trace(blink::Visitor* visitor) { ReportBody::Trace(visitor); }
 
  private:
   const String id_;
   const double anticipatedRemoval_;
-  const String message_;
-  std::unique_ptr<SourceLocation> location_;
 };
 
 }  // namespace blink
