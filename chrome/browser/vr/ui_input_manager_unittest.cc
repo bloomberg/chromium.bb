@@ -91,7 +91,6 @@ class UiInputManagerContentTest : public UiTest {
     UiTest::SetUp();
     CreateScene(kNotInCct, kNotInWebVr);
     input_manager_ = ui_->input_manager();
-    EXPECT_TRUE(scene_->OnBeginFrame(MicrosecondsToTicks(1), kForwardVector));
   }
 
  protected:
@@ -233,7 +232,7 @@ TEST_F(UiInputManagerTest, ElementDeletion) {
 }
 
 TEST_F(UiInputManagerContentTest, NoMouseMovesDuringClick) {
-  EXPECT_TRUE(AnimateBy(MsToDelta(500)));
+  EXPECT_TRUE(RunFor(MsToDelta(500)));
   // It would be nice if the controller weren't platform specific and we could
   // mock out the underlying sensor data. For now, we will hallucinate
   // parameters to HandleInput.
@@ -267,7 +266,7 @@ TEST_F(UiInputManagerContentTest, NoMouseMovesDuringClick) {
 
 TEST_F(UiInputManagerContentTest, ExitPromptHitTesting) {
   model_->active_modal_prompt_type = kModalPromptTypeExitVRForSiteInfo;
-  EXPECT_TRUE(AnimateBy(MsToDelta(500)));
+  EXPECT_TRUE(RunFor(MsToDelta(500)));
 
   UiElement* exit_prompt =
       scene_->GetUiElementByName(UiElementName::kExitPrompt);
@@ -291,7 +290,7 @@ TEST_F(UiInputManagerContentTest, ExitPromptHitTesting) {
 
 TEST_F(UiInputManagerContentTest, AudioPermissionPromptHitTesting) {
   model_->active_modal_prompt_type = kModalPromptTypeExitVRForAudioPermission;
-  EXPECT_TRUE(AnimateBy(MsToDelta(500)));
+  EXPECT_TRUE(RunFor(MsToDelta(500)));
 
   UiElement* url_bar = scene_->GetUiElementByName(UiElementName::kUrlBar);
   gfx::Point3F url_bar_center;
@@ -339,7 +338,8 @@ TEST_F(UiInputManagerContentTest, TreeVsZOrder) {
 
   // We will now move the content quad behind the backplane.
   content_quad->SetTranslate(0, 0, -1.0);
-  EXPECT_TRUE(AnimateBy(MsToDelta(500)));
+  OnBeginFrame();
+
   input_manager_->HandleInput(MsToTicks(1), controller_model, &reticle_model,
                               &gesture_list);
 

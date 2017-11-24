@@ -253,6 +253,14 @@ float UiElement::GetTargetOpacity() const {
                                                opacity_);
 }
 
+float UiElement::ComputeTargetOpacity() const {
+  float opacity = 1.0;
+  for (const UiElement* current = this; current; current = current->parent()) {
+    opacity *= current->GetTargetOpacity();
+  }
+  return opacity;
+}
+
 float UiElement::computed_opacity() const {
   DCHECK_LE(kUpdatedComputedOpacity, phase_);
   return computed_opacity_;

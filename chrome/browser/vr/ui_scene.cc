@@ -235,6 +235,15 @@ UiScene::Elements UiScene::GetVisibleControllerElements() const {
       });
 }
 
+UiScene::Elements UiScene::GetPotentiallyVisibleElements() const {
+  UiScene::Elements elements;
+  for (auto& element : *root_element_) {
+    if (element.draw_phase() != kPhaseNone)
+      elements.push_back(&element);
+  }
+  return elements;
+}
+
 UiScene::UiScene() {
   root_element_ = base::MakeUnique<UiElement>();
   root_element_->set_name(kRoot);

@@ -30,10 +30,6 @@ class UiRendererTest : public UiTest,
   void SetUp() override {
     UiTest::SetUp();
     CreateScene(kNotInCct, kNotInWebVr);
-    for (auto& e : scene_->root_element()) {
-      e.SetTransitionedProperties({});
-      e.SetVisible(true);
-    }
   }
 };
 
@@ -106,94 +102,5 @@ TEST_F(UiRendererTest, ReticleStackingWithControllerElements) {
   EXPECT_EQ(scene_->GetUiElementByName(kLaser)->draw_phase(),
             element->draw_phase());
 }
-
-TEST_P(UiRendererTest, UiRendererSortingTest) {
-  model_->reticle.target_element_id = 0;
-  auto unsorted = ((*scene_).*GetParam().f)();
-  auto sorted = UiRenderer::GetElementsInDrawOrder(unsorted);
-
-  // Filter elements with no name. These elements usually created in ctor of
-  // their root element. See button.cc for example.
-  // We shouldn't need this once crbug.com/782395 is fixed.
-  sorted.erase(
-      std::remove_if(sorted.begin(), sorted.end(),
-                     [](const UiElement* e) { return e->name() == kNone; }),
-      sorted.end());
-
-  EXPECT_EQ(GetParam().expected_order.size(), sorted.size());
-
-  for (size_t i = 0; i < sorted.size(); ++i) {
-    EXPECT_NE(0, sorted[i]->name());
-    EXPECT_EQ(UiElementNameToString(GetParam().expected_order[i]),
-              sorted[i]->DebugName());
-  }
-}
-
-TestParams params[] = {
-    {&UiScene::GetVisible2dBrowsingElements,
-     {
-         kBackgroundFront,
-         kBackgroundLeft,
-         kBackgroundBack,
-         kBackgroundRight,
-         kBackgroundTop,
-         kBackgroundBottom,
-         kFloor,
-         kCeiling,
-         kBackplane,
-         kContentQuad,
-         kAudioCaptureIndicator,
-         kVideoCaptureIndicator,
-         kScreenCaptureIndicator,
-         kBluetoothConnectedIndicator,
-         kLocationAccessIndicator,
-         kUrlBar,
-         kLoadingIndicator,
-         kLoadingIndicatorForeground,
-         kUnderDevelopmentNotice,
-         kVoiceSearchButton,
-         kCloseButton,
-         kExclusiveScreenToast,
-         kExitPromptBackplane,
-         kExitPrompt,
-         kAudioPermissionPromptBackplane,
-         kAudioPermissionPromptShadow,
-         kAudioPermissionPrompt,
-         kOmniboxContainer,
-         kOmniboxTextField,
-         kOmniboxCloseButton,
-         kSpeechRecognitionResultText,
-         kSpeechRecognitionResultCircle,
-         kSpeechRecognitionResultMicrophoneIcon,
-         kSpeechRecognitionResultBackplane,
-         kSpeechRecognitionListeningGrowingCircle,
-         kSpeechRecognitionListeningInnerCircle,
-         kSpeechRecognitionListeningMicrophoneIcon,
-         kSpeechRecognitionListeningCloseButton,
-     }},
-    {&UiScene::GetVisible2dBrowsingOverlayElements,
-     {
-         kScreenDimmer, kExitWarning,
-     }},
-    {&UiScene::GetVisibleSplashScreenElements,
-     {
-         kSplashScreenBackground, kWebVrTimeoutSpinnerBackground,
-         kSplashScreenText, kWebVrTimeoutSpinner, kWebVrTimeoutMessage,
-         kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText,
-         kWebVrTimeoutMessageButton, kWebVrTimeoutMessageButtonText,
-     }},
-    {&UiScene::GetVisibleWebVrOverlayForegroundElements,
-     {
-         kWebVrUrlToast, kExclusiveScreenToastViewportAware,
-     }},
-    {&UiScene::GetVisibleControllerElements,
-     {
-         kController, kLaser, kReticle,
-     }},
-};
-
-INSTANTIATE_TEST_CASE_P(SortingTests,
-                        UiRendererTest,
-                        testing::ValuesIn(params));
 
 }  // namespace vr
