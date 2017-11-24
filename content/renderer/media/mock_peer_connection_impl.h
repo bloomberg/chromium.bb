@@ -165,10 +165,14 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
 
 class FakeRtpReceiver : public webrtc::RtpReceiverInterface {
  public:
-  FakeRtpReceiver(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track);
+  FakeRtpReceiver(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
+                  std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>>
+                      streams = {});
   ~FakeRtpReceiver() override;
 
   rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track() const override;
+  std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>> streams()
+      const override;
   cricket::MediaType media_type() const override;
   std::string id() const override;
   webrtc::RtpParameters GetParameters() const override;
@@ -177,6 +181,7 @@ class FakeRtpReceiver : public webrtc::RtpReceiverInterface {
 
  private:
   rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track_;
+  std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>> streams_;
 };
 
 }  // namespace content
