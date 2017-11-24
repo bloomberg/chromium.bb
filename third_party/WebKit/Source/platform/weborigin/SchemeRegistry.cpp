@@ -217,6 +217,11 @@ bool SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
       scheme);
 }
 
+void SchemeRegistry::RegisterURLSchemeAsCORSEnabled(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.DeprecatedLower());
+  GetMutableURLSchemesRegistry().cors_enabled_schemes.insert(scheme);
+}
+
 bool SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(const String& scheme) {
   DCHECK_EQ(scheme, scheme.DeprecatedLower());
   if (scheme.IsEmpty())
