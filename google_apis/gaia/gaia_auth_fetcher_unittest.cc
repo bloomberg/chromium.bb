@@ -49,7 +49,8 @@ const char kGetTokenPairValidResponse[] =
     "  \"refresh_token\": \"rt1\","
     "  \"access_token\": \"at1\","
     "  \"expires_in\": 3600,"
-    "  \"token_type\": \"Bearer\""
+    "  \"token_type\": \"Bearer\","
+    "  \"id_token\": \"it1\""
     "}";
 
 }  // namespace
@@ -354,8 +355,10 @@ TEST_F(GaiaAuthFetcherTest, ServiceUnavailableError) {
 TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccess) {
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnClientOAuthCode("test-code")).Times(0);
-  EXPECT_CALL(consumer, OnClientOAuthSuccess(
-      GaiaAuthConsumer::ClientOAuthResult("rt1", "at1", 3600))).Times(1);
+  EXPECT_CALL(consumer,
+              OnClientOAuthSuccess(GaiaAuthConsumer::ClientOAuthResult(
+                  "rt1", "at1", 3600, false /* is_child_account */)))
+      .Times(1);
 
   net::TestURLFetcherFactory factory;
   GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
@@ -391,8 +394,10 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccess) {
 TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccessNoTokenFetch) {
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnClientOAuthCode("test-code")).Times(1);
-  EXPECT_CALL(consumer, OnClientOAuthSuccess(
-      GaiaAuthConsumer::ClientOAuthResult("", "", 0))).Times(0);
+  EXPECT_CALL(consumer,
+              OnClientOAuthSuccess(GaiaAuthConsumer::ClientOAuthResult(
+                  "", "", 0, false /* is_child_account */)))
+      .Times(0);
 
   net::TestURLFetcherFactory factory;
   GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());

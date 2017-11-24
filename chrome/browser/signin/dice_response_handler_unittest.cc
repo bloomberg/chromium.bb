@@ -227,7 +227,8 @@ TEST_F(DiceResponseHandlerTest, Signin) {
   EXPECT_EQ("", finish_token_fetch_email_);
   // Simulate GaiaAuthFetcher success.
   signin_client_.consumer_->OnClientOAuthSuccess(
-      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
+      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10,
+                                          false /* is_child_account */));
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id));
   // Check that the reconcilor was blocked and unblocked exactly once.
@@ -287,8 +288,8 @@ TEST_F(DiceResponseHandlerTest, SigninRepeatedWithSameAccount) {
   // Check that there is no new request.
   ASSERT_THAT(signin_client_.consumer_, testing::IsNull());
   // Simulate GaiaAuthFetcher success for the first request.
-  consumer->OnClientOAuthSuccess(
-      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
+  consumer->OnClientOAuthSuccess(GaiaAuthConsumer::ClientOAuthResult(
+      "refresh_token", "access_token", 10, false /* is_child_account */));
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id));
   EXPECT_EQ(dice_params.signin_info.gaia_id, finish_token_fetch_gaia_id_);
@@ -323,13 +324,13 @@ TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
   GaiaAuthConsumer* consumer_2 = signin_client_.consumer_;
   ASSERT_THAT(consumer_2, testing::NotNull());
   // Simulate GaiaAuthFetcher success for the first request.
-  consumer_1->OnClientOAuthSuccess(
-      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
+  consumer_1->OnClientOAuthSuccess(GaiaAuthConsumer::ClientOAuthResult(
+      "refresh_token", "access_token", 10, false /* is_child_account */));
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id_1));
   // Simulate GaiaAuthFetcher success for the second request.
-  consumer_2->OnClientOAuthSuccess(
-      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
+  consumer_2->OnClientOAuthSuccess(GaiaAuthConsumer::ClientOAuthResult(
+      "refresh_token", "access_token", 10, false /* is_child_account */));
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id_2));
   // Check that the reconcilor was blocked and unblocked exactly once.
@@ -556,7 +557,8 @@ TEST_F(DiceResponseHandlerTest, SigninSignoutSecondaryAccount) {
       1u, dice_response_handler_->GetPendingDiceTokenFetchersCountForTesting());
   // Allow the remaining fetcher to complete.
   signin_client_.consumer_->OnClientOAuthSuccess(
-      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
+      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10,
+                                          false /* is_child_account */));
   EXPECT_EQ(
       0u, dice_response_handler_->GetPendingDiceTokenFetchersCountForTesting());
   // Check that the right token is available.
@@ -599,7 +601,8 @@ TEST_F(DiceResponseHandlerTest, FixAuthErrorSignOutDuringRequest) {
   signin_manager_.ForceSignOut();
   // Simulate GaiaAuthFetcher success.
   signin_client_.consumer_->OnClientOAuthSuccess(
-      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
+      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10,
+                                          false /* is_child_account */));
   // Check that the token has not been inserted in the token service.
   EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(account_id));
 }
@@ -631,7 +634,8 @@ TEST_F(DiceResponseHandlerTest, FixAuthError) {
   scoped_token_service_observer.Add(&token_service_);
   // Simulate GaiaAuthFetcher success.
   signin_client_.consumer_->OnClientOAuthSuccess(
-      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
+      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10,
+                                          false /* is_child_account */));
   // Check that the token has not been inserted in the token service.
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id));
   EXPECT_TRUE(token_service_observer->token_received());

@@ -39,12 +39,17 @@ GaiaAuthConsumer::ClientOAuthResult::ClientOAuthResult()
 GaiaAuthConsumer::ClientOAuthResult::ClientOAuthResult(
     const std::string& new_refresh_token,
     const std::string& new_access_token,
-    int new_expires_in_secs)
+    int new_expires_in_secs,
+    bool new_is_child_account)
     : refresh_token(new_refresh_token),
       access_token(new_access_token),
-      expires_in_secs(new_expires_in_secs) {}
+      expires_in_secs(new_expires_in_secs),
+      is_child_account(new_is_child_account) {}
 
-GaiaAuthConsumer::ClientOAuthResult::~ClientOAuthResult() {}
+GaiaAuthConsumer::ClientOAuthResult::ClientOAuthResult(
+    const ClientOAuthResult& other) = default;
+
+GaiaAuthConsumer::ClientOAuthResult::~ClientOAuthResult() = default;
 
 bool GaiaAuthConsumer::ClientOAuthResult::operator==(
     const ClientOAuthResult &b) const {
