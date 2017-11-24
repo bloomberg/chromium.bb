@@ -88205,6 +88205,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Thumbnails.CaptureOutcome" enum="ThumbnailCaptureOutcome">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    The result of trying to capture a thumbnail of the current page.
+  </summary>
+</histogram>
+
 <histogram name="Thumbnails.CopyFromSurfaceTime" units="ms">
   <owner>treib@chromium.org</owner>
   <summary>
@@ -108337,6 +108344,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="ThreadWatcher.ResponsiveThreads"/>
   <affected-histogram name="ThreadWatcher.Unresponsive"/>
   <affected-histogram name="ThreadWatcher.UnresponsiveThreads"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ThumbnailCaptureTrigger" separator=".">
+  <suffix name="TabHidden" label="Triggered by the tab being hidden."/>
+  <suffix name="NavigatingAway" label="Triggered by navigating away."/>
+  <affected-histogram name="Thumbnails.CaptureOutcome"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="TimestampTimebaseProcess" separator=".">

@@ -132,7 +132,7 @@ void ThumbnailTabHelper::DidStartNavigation(
     // At this point, the new navigation has just been started, but the
     // WebContents still shows the previous page. Grab a thumbnail before it
     // goes away.
-    UpdateThumbnailIfNecessary();
+    UpdateThumbnailIfNecessary(TriggerReason::NAVIGATING_AWAY);
   }
 
   // Now reset navigation-related state. It's important that this happens after
@@ -235,17 +235,19 @@ void ThumbnailTabHelper::StopWatchingRenderViewHost(
   }
 }
 
-void ThumbnailTabHelper::UpdateThumbnailIfNecessary() {
+void ThumbnailTabHelper::UpdateThumbnailIfNecessary(TriggerReason trigger) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Don't take a screenshot if we haven't painted anything since the last
   // navigation. This can happen when navigating away again very quickly.
   if (!has_painted_since_document_received_) {
+    LogThumbnailingOutcome(trigger, Outcome::NOT_ATTEMPTED_NO_PAINT_YET);
     return;
   }
 
   // Ignore thumbnail update requests if one is already in progress.
   if (thumbnailing_context_) {
+    LogThumbnailingOutcome(trigger, Outcome::NOT_ATTEMPTED_IN_PROGRESS);
     return;
   }
 
@@ -253,6 +255,7 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary() {
   // which would be unwise to attempt <http://crbug.com/130097>. If the
   // WebContents is in the middle of destruction, do not risk it.
   if (!web_contents() || web_contents()->IsBeingDestroyed()) {
+    LogThumbnailingOutcome(trigger, Outcome::NOT_ATTEMPTED_NO_WEBCONTENTS);
     return;
   }
 
@@ -261,6 +264,7 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary() {
   // to the currently visible content.
   const GURL& url = web_contents()->GetLastCommittedURL();
   if (!url.is_valid()) {
+    LogThumbnailingOutcome(trigger, Outcome::NOT_ATTEMPTED_NO_URL);
     return;
   }
   Profile* profile =
@@ -272,6 +276,7 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary() {
   // Skip if we don't need to update the thumbnail.
   if (!thumbnail_service ||
       !thumbnail_service->ShouldAcquirePageThumbnail(url, page_transition_)) {
+    LogThumbnailingOutcome(trigger, Outcome::NOT_ATTEMPTED_SHOULD_NOT_ACQUIRE);
     return;
   }
 
@@ -279,6 +284,7 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary() {
       web_contents()->GetRenderViewHost()->GetWidget();
   content::RenderWidgetHostView* view = render_widget_host->GetView();
   if (!view || !view->IsSurfaceAvailableForCopy()) {
+    LogThumbnailingOutcome(trigger, Outcome::NOT_ATTEMPTED_VIEW_NOT_AVAILABLE);
     return;
   }
 
@@ -292,6 +298,7 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary() {
   copy_rect.Inset(0, 0, scrollbar_size, scrollbar_size);
 
   if (copy_rect.IsEmpty()) {
+    LogThumbnailingOutcome(trigger, Outcome::NOT_ATTEMPTED_EMPTY_RECT);
     return;
   }
 
@@ -310,11 +317,12 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary() {
   waiting_for_capture_ = true;
   view->CopyFromSurface(copy_rect, thumbnailing_context_->requested_copy_size,
                         base::Bind(&ThumbnailTabHelper::ProcessCapturedBitmap,
-                                   weak_factory_.GetWeakPtr()),
+                                   weak_factory_.GetWeakPtr(), trigger),
                         kN32_SkColorType);
 }
 
 void ThumbnailTabHelper::ProcessCapturedBitmap(
+    TriggerReason trigger,
     const SkBitmap& bitmap,
     content::ReadbackResponse response) {
   // If |waiting_for_capture_| is false, that means something happened in the
@@ -329,6 +337,8 @@ void ThumbnailTabHelper::ProcessCapturedBitmap(
   if (response == content::READBACK_SUCCESS && !was_canceled) {
     // On success, we must be on the UI thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // From here on, nothing can fail, so log success.
+    LogThumbnailingOutcome(trigger, Outcome::SUCCESS);
     base::PostTaskWithTraitsAndReply(
         FROM_HERE,
         {base::TaskPriority::BACKGROUND,
@@ -337,6 +347,8 @@ void ThumbnailTabHelper::ProcessCapturedBitmap(
         base::Bind(&ThumbnailTabHelper::UpdateThumbnail,
                    weak_factory_.GetWeakPtr(), bitmap));
   } else {
+    LogThumbnailingOutcome(
+        trigger, was_canceled ? Outcome::CANCELED : Outcome::READBACK_FAILED);
     // On failure because of shutdown we are not on the UI thread, so ensure
     // that cleanup happens on that thread.
     // TODO(treib): Figure out whether it actually happen that we get called
@@ -376,7 +388,27 @@ void ThumbnailTabHelper::WidgetHidden(content::RenderWidgetHost* widget) {
   // Skip if a pending entry exists. WidgetHidden can be called while navigating
   // pages and this is not a time when thumbnails should be generated.
   if (!web_contents() || web_contents()->GetController().GetPendingEntry()) {
+    LogThumbnailingOutcome(TriggerReason::TAB_HIDDEN,
+                           Outcome::NOT_ATTEMPTED_PENDING_NAVIGATION);
     return;
   }
-  UpdateThumbnailIfNecessary();
+  UpdateThumbnailIfNecessary(TriggerReason::TAB_HIDDEN);
+}
+
+// static
+void ThumbnailTabHelper::LogThumbnailingOutcome(TriggerReason trigger,
+                                                Outcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION("Thumbnails.CaptureOutcome", outcome,
+                            Outcome::COUNT);
+
+  switch (trigger) {
+    case TriggerReason::TAB_HIDDEN:
+      UMA_HISTOGRAM_ENUMERATION("Thumbnails.CaptureOutcome.TabHidden", outcome,
+                                Outcome::COUNT);
+      break;
+    case TriggerReason::NAVIGATING_AWAY:
+      UMA_HISTOGRAM_ENUMERATION("Thumbnails.CaptureOutcome.NavigatingAway",
+                                outcome, Outcome::COUNT);
+      break;
+  }
 }
