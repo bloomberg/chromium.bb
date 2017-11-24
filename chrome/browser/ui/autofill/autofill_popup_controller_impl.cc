@@ -191,6 +191,7 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
 
 void AutofillPopupControllerImpl::Hide() {
   if (delegate_) {
+    delegate_->ClearPreviewedForm();
     delegate_->OnPopupHidden();
     static_cast<ContentAutofillDriver*>(delegate_->GetAutofillDriver())
         ->RemoveKeyPressHandler();
