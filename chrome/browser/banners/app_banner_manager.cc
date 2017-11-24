@@ -608,17 +608,17 @@ void AppBannerManager::OnBannerPromptReply(
     }
   }
 
-  if (IsExperimentalAppBannersEnabled() ||
-      reply == blink::mojom::AppBannerPromptReply::CANCEL) {
-    if (state_ == State::SENDING_EVENT) {
-      UpdateState(State::PENDING_PROMPT);
-      return;
-    }
-    DCHECK_EQ(State::SENDING_EVENT_GOT_EARLY_PROMPT, state_);
+  bool need_prompt = IsExperimentalAppBannersEnabled() ||
+                     reply == blink::mojom::AppBannerPromptReply::CANCEL;
+
+  if (need_prompt && state_ == State::SENDING_EVENT) {
+    UpdateState(State::PENDING_PROMPT);
+    return;
   }
 
-  if (!IsExperimentalAppBannersEnabled())
-    ShowBanner();
+  DCHECK(!need_prompt || State::SENDING_EVENT_GOT_EARLY_PROMPT == state_);
+
+  ShowBanner();
 }
 
 void AppBannerManager::ShowBanner() {
