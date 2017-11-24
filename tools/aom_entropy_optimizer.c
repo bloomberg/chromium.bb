@@ -425,11 +425,6 @@ int main(int argc, const char **argv) {
   /* New compound mode */
   cts_each_dim[0] = INTER_MODE_CONTEXTS;
   cts_each_dim[1] = INTER_COMPOUND_MODES;
-  optimize_entropy_table(
-      &fc.inter_compound_mode[0][0], probsfile, 2, cts_each_dim,
-      av1_inter_compound_mode_tree, 0,
-      "static const aom_prob default_inter_compound_mode_probs\n"
-      "[INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES - 1]");
   optimize_cdf_table(&fc.inter_compound_mode[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob\n"
                      "default_inter_compound_mode_cdf[INTER_MODE_CONTEXTS][CDF_"
@@ -470,10 +465,6 @@ int main(int argc, const char **argv) {
   /* Compound type */
   cts_each_dim[0] = BLOCK_SIZES_ALL;
   cts_each_dim[1] = COMPOUND_TYPES;
-  optimize_entropy_table(&fc.compound_interinter[0][0], probsfile, 2,
-                         cts_each_dim, av1_compound_type_tree, 0,
-                         "static const aom_prob default_compound_type_probs"
-                         "[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1]");
   optimize_cdf_table(
       &fc.compound_interinter[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"

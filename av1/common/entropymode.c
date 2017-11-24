@@ -724,17 +724,6 @@ static const aom_cdf_prob default_drl_cdf[DRL_MODE_CONTEXTS][CDF_SIZE(2)] = {
   { AOM_CDF2(128 * 128) }
 };
 
-static const aom_prob default_inter_compound_mode_probs
-    [INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES - 1] = {
-      { 154, 167, 233, 165, 143, 170, 167 },  // 0 = both zero mv
-      { 75, 168, 237, 155, 135, 176, 172 },   // 1 = 1 zero + 1 predicted
-      { 7, 173, 227, 128, 153, 188, 189 },    // 2 = two predicted mvs
-      { 8, 120, 214, 113, 154, 178, 174 },    // 3 = 1 pred/zero, 1 new
-      { 4, 85, 194, 94, 155, 173, 167 },      // 4 = two new mvs
-      { 23, 89, 180, 73, 157, 151, 155 },     // 5 = one intra neighbour
-      { 27, 49, 152, 91, 134, 153, 142 },     // 6 = two intra neighbours
-    };
-
 static const aom_cdf_prob
     default_inter_compound_mode_cdf[INTER_MODE_CONTEXTS][CDF_SIZE(
         INTER_COMPOUND_MODES)] = {
@@ -745,22 +734,6 @@ static const aom_cdf_prob
       { AOM_CDF8(512, 11222, 17217, 21445, 23473, 26133, 27550) },
       { AOM_CDF8(2944, 13313, 17214, 20751, 23211, 25500, 26992) },
       { AOM_CDF8(3456, 9067, 14069, 16907, 18817, 21214, 23139) }
-    };
-
-static const aom_prob
-    default_compound_type_probs[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1] = {
-      { 128, 128 }, { 128, 128 }, { 128, 128 }, { 128, 128 },
-      { 255, 128 }, { 255, 128 }, { 66, 51 },   { 72, 35 },
-      { 79, 29 },   { 71, 18 },   { 81, 29 },   { 81, 26 },
-      { 69, 19 },   { 104, 1 },   { 99, 1 },    { 75, 1 },
-#if CONFIG_EXT_PARTITION
-      { 255, 1 },   { 255, 1 },   { 255, 1 },
-#endif  // CONFIG_EXT_PARTITION
-      { 208, 128 }, { 208, 128 }, { 208, 128 }, { 208, 128 },
-      { 208, 1 },   { 208, 1 },
-#if CONFIG_EXT_PARTITION
-      { 208, 1 },   { 208, 1 }
-#endif  // CONFIG_EXT_PARTITION
     };
 
 static const aom_cdf_prob
@@ -3028,9 +3001,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->motion_mode_cdf, default_motion_mode_cdf);
   av1_copy(fc->obmc_prob, default_obmc_prob);
   av1_copy(fc->obmc_cdf, default_obmc_cdf);
-  av1_copy(fc->inter_compound_mode_probs, default_inter_compound_mode_probs);
   av1_copy(fc->inter_compound_mode_cdf, default_inter_compound_mode_cdf);
-  av1_copy(fc->compound_type_prob, default_compound_type_probs);
   av1_copy(fc->compound_type_cdf, default_compound_type_cdf);
   av1_copy(fc->interintra_prob, default_interintra_prob);
   av1_copy(fc->wedge_interintra_prob, default_wedge_interintra_prob);
@@ -3130,10 +3101,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
     fc->obmc_prob[i] =
         av1_mode_mv_merge_probs(pre_fc->obmc_prob[i], counts->obmc[i]);
 
-  for (i = 0; i < INTER_MODE_CONTEXTS; i++)
-    aom_tree_merge_probs(
-        av1_inter_compound_mode_tree, pre_fc->inter_compound_mode_probs[i],
-        counts->inter_compound_mode[i], fc->inter_compound_mode_probs[i]);
   if (cm->allow_interintra_compound) {
     for (i = 0; i < BLOCK_SIZE_GROUPS; ++i) {
       if (is_interintra_allowed_bsize_group(i))
@@ -3149,14 +3116,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
       if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i))
         fc->wedge_interintra_prob[i] = av1_mode_mv_merge_probs(
             pre_fc->wedge_interintra_prob[i], counts->wedge_interintra[i]);
-    }
-  }
-
-  if (cm->allow_masked_compound) {
-    for (i = 0; i < BLOCK_SIZES_ALL; ++i) {
-      aom_tree_merge_probs(
-          av1_compound_type_tree, pre_fc->compound_type_prob[i],
-          counts->compound_interinter[i], fc->compound_type_prob[i]);
     }
   }
 
