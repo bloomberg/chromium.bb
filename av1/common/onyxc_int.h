@@ -998,9 +998,9 @@ static INLINE void partition_gather_horz_alike(aom_cdf_prob *out,
   out[0] -= cdf_element_prob(in, PARTITION_HORZ_A);
   out[0] -= cdf_element_prob(in, PARTITION_HORZ_B);
   out[0] -= cdf_element_prob(in, PARTITION_VERT_A);
-#if !ALLOW_128X32_BLOCKS
+#if CONFIG_EXT_PARTITION && !ALLOW_128X32_BLOCKS
   if (bsize != BLOCK_128X128)
-#endif  // ALLOW_128X32_BLOCKS
+#endif  // CONFIG_EXT_PARTITION && !ALLOW_128X32_BLOCKS
     out[0] -= cdf_element_prob(in, PARTITION_HORZ_4);
 #endif  // CONFIG_EXT_PARTITION_TYPES
   out[0] = AOM_ICDF(out[0]);
@@ -1018,9 +1018,9 @@ static INLINE void partition_gather_vert_alike(aom_cdf_prob *out,
   out[0] -= cdf_element_prob(in, PARTITION_HORZ_A);
   out[0] -= cdf_element_prob(in, PARTITION_VERT_A);
   out[0] -= cdf_element_prob(in, PARTITION_VERT_B);
-#if !ALLOW_128X32_BLOCKS
+#if CONFIG_EXT_PARTITION && !ALLOW_128X32_BLOCKS
   if (bsize != BLOCK_128X128)
-#endif  // ALLOW_128X32_BLOCKS
+#endif  // CONFIG_EXT_PARTITION && !ALLOW_128X32_BLOCKS
     out[0] -= cdf_element_prob(in, PARTITION_VERT_4);
 #endif  // CONFIG_EXT_PARTITION_TYPES
   out[0] = AOM_ICDF(out[0]);
@@ -1115,10 +1115,10 @@ static INLINE int partition_plane_context(const MACROBLOCKD *xd, int mi_row,
 static INLINE int partition_cdf_length(BLOCK_SIZE bsize) {
 #if CONFIG_EXT_PARTITION_TYPES
   if (bsize <= BLOCK_8X8) return PARTITION_TYPES;
-#if !ALLOW_128X32_BLOCKS
+#if CONFIG_EXT_PARTITION && !ALLOW_128X32_BLOCKS
   else if (bsize == BLOCK_128X128)
     return EXT_PARTITION_TYPES - 2;
-#endif  // !ALLOW_128X32_BLOCKS
+#endif  // CONFIG_EXT_PARTITION && !ALLOW_128X32_BLOCKS
   else
     return EXT_PARTITION_TYPES;
 #else
