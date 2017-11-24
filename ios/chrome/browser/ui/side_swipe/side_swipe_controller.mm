@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/scoped_observer.h"
 #include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/infobars/infobar_container_view.h"
@@ -83,6 +84,10 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   // Bridge to observe the web state from Objective-C.
   std::unique_ptr<web::WebStateObserverBridge> webStateObserverBridge_;
 
+  // Scoped observer used to track registration of the WebStateObserverBridge.
+  std::unique_ptr<ScopedObserver<web::WebState, web::WebStateObserver>>
+      scopedWebStateObserver_;
+
   // Curtain over web view while waiting for it to load.
   UIView* curtain_;
 
@@ -138,6 +143,12 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
         initWithReadingList:ReadingListModelFactory::GetForBrowserState(
                                 browserState)];
 
+    webStateObserverBridge_ =
+        std::make_unique<web::WebStateObserverBridge>(self);
+    scopedWebStateObserver_ =
+        std::make_unique<ScopedObserver<web::WebState, web::WebStateObserver>>(
+            webStateObserverBridge_.get());
+
     browserState_ = browserState;
   }
   return self;
@@ -145,6 +156,9 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
 - (void)dealloc {
   [model_ removeObserver:self];
+
+  scopedWebStateObserver_.reset();
+  webStateObserverBridge_.reset();
 }
 
 - (void)addHorizontalGesturesToView:(UIView*)view {
@@ -435,8 +449,8 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
         }
 
         if (webState && webState->IsLoading()) {
-          webStateObserverBridge_.reset(
-              new web::WebStateObserverBridge(webState, self));
+          scopedWebStateObserver_->RemoveAll();
+          scopedWebStateObserver_->Add(webState);
           [self addCurtainWithCompletionHandler:^{
             inSwipe_ = NO;
           }];
@@ -528,7 +542,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
 - (void)dismissCurtainWithCompletionHandler:(ProceduralBlock)completionHandler {
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
-  webStateObserverBridge_.reset();
+  scopedWebStateObserver_->RemoveAll();
   [curtain_ removeFromSuperview];
   curtain_ = nil;
   completionHandler();
@@ -540,6 +554,10 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   [self dismissCurtainWithCompletionHandler:^{
     inSwipe_ = NO;
   }];
+}
+
+- (void)webStateDestroyed:(web::WebState*)webState {
+  scopedWebStateObserver_->Remove(webState);
 }
 
 #pragma mark - TabModelObserver Methods
