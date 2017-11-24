@@ -52,9 +52,10 @@ DEFINE_BINARY_PROTO_FUZZER(
 
   std::string source_string = protobuf_to_string(source_protobuf);
 
-  if (getenv("LPM_DUMP_NATIVE_INPUT"))
+  if (getenv("LPM_DUMP_NATIVE_INPUT")) {
     std::cout << source_string << std::endl;
-
+    std::cout << "module: " << source_protobuf.is_module() << std::endl;
+  }
   v8::Local<v8::String> source_v8_string =
       v8::String::NewFromUtf8(isolate, source_string.c_str(),
                               v8::NewStringType::kNormal)
