@@ -853,18 +853,6 @@ static const aom_cdf_prob
 #endif
     };
 
-// Probability for the case that only 1 additional motion mode is allowed
-static const aom_prob default_obmc_prob[BLOCK_SIZES_ALL] = {
-  128, 128, 128, 128, 128, 128, 45, 79, 75, 130, 141, 144, 208, 201, 186, 231,
-#if CONFIG_EXT_PARTITION
-  252, 252, 252,
-#endif  // CONFIG_EXT_PARTITION
-  208, 208, 208, 208, 208, 208,
-#if CONFIG_EXT_PARTITION
-  252, 252
-#endif  // CONFIG_EXT_PARTITION
-};
-
 static const aom_cdf_prob default_obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
   { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) },
   { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) },
@@ -2999,7 +2987,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->drl_cdf, default_drl_cdf);
   av1_copy(fc->motion_mode_prob, default_motion_mode_prob);
   av1_copy(fc->motion_mode_cdf, default_motion_mode_cdf);
-  av1_copy(fc->obmc_prob, default_obmc_prob);
   av1_copy(fc->obmc_cdf, default_obmc_cdf);
   av1_copy(fc->inter_compound_mode_cdf, default_inter_compound_mode_cdf);
   av1_copy(fc->compound_type_cdf, default_compound_type_cdf);
@@ -3097,9 +3084,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; ++i)
     aom_tree_merge_probs(av1_motion_mode_tree, pre_fc->motion_mode_prob[i],
                          counts->motion_mode[i], fc->motion_mode_prob[i]);
-  for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; ++i)
-    fc->obmc_prob[i] =
-        av1_mode_mv_merge_probs(pre_fc->obmc_prob[i], counts->obmc[i]);
 
   if (cm->allow_interintra_compound) {
     for (i = 0; i < BLOCK_SIZE_GROUPS; ++i) {

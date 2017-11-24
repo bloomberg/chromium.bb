@@ -201,7 +201,6 @@ typedef struct frame_contexts {
                                   [CDF_SIZE(INTERINTRA_MODES)];
   aom_prob motion_mode_prob[BLOCK_SIZES_ALL][MOTION_MODES - 1];
   aom_cdf_prob motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(MOTION_MODES)];
-  aom_prob obmc_prob[BLOCK_SIZES_ALL];
   aom_cdf_prob obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)];
   aom_prob comp_inter_prob[COMP_INTER_CONTEXTS];
   aom_cdf_prob palette_y_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(PALETTE_SIZES)];
