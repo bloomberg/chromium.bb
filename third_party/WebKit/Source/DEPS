@@ -1,4 +1,5 @@
 include_rules = [
+    "+base/debug",
     "+base/macros.h",
     "+base/gtest_prod_util.h",
     "+build",

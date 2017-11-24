@@ -31,6 +31,8 @@
 #include "core/loader/WorkerThreadableLoader.h"
 
 #include <memory>
+
+#include "base/debug/alias.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/timing/WorkerGlobalScopePerformance.h"
@@ -46,7 +48,6 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/debug/Alias.h"
 #include "public/platform/TaskType.h"
 
 namespace blink {
@@ -266,7 +267,7 @@ void WorkerThreadableLoader::Start(const ResourceRequest& original_request) {
     // Store the program counter where the task is posted from, and alias
     // it to ensure it is stored in the crash dump.
     const void* program_counter = task.location_.program_counter();
-    WTF::debug::Alias(&program_counter);
+    base::debug::Alias(&program_counter);
 
     std::move(task.task_).Run();
   }

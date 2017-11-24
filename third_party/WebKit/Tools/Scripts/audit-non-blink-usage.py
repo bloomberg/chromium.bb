@@ -41,6 +41,9 @@ _CONFIG = [
             'base::span',
             'logging::GetVlogLevel',
 
+            # Debugging helpers from //base/debug are allowed everywhere.
+            'base::debug::.+',
+
             # Standalone utility libraries that only depend on //base
             'skia::.+',
             'url::.+',

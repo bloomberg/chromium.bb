@@ -14,7 +14,6 @@
 #include "platform/scheduler/base/time_domain.h"
 #include "platform/scheduler/base/work_queue.h"
 #include "platform/scheduler/util/tracing_helper.h"
-#include "platform/wtf/debug/CrashLogging.h"
 
 namespace blink {
 namespace scheduler {
