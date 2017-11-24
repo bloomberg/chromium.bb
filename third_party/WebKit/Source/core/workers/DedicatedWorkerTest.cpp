@@ -186,7 +186,8 @@ class DedicatedWorkerTest : public ::testing::Test {
 
   void DispatchMessageEvent() {
     WorkerMessagingProxy()->PostMessageToWorkerGlobalScope(
-        nullptr /* message */, Vector<MessagePortChannel>());
+        nullptr /* message */, Vector<MessagePortChannel>(),
+        v8_inspector::V8StackTraceId());
   }
 
   DedicatedWorkerMessagingProxyForTest* WorkerMessagingProxy() {

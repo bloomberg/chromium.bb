@@ -75,8 +75,11 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
       ExecutionContext::From(script_state), ports, exception_state);
   if (exception_state.HadException())
     return;
+  v8_inspector::V8StackTraceId stack_id =
+      MainThreadDebugger::Instance()->StoreCurrentStackTrace(
+          "Worker.postMessage");
   context_proxy_->PostMessageToWorkerGlobalScope(std::move(message),
-                                                 std::move(channels));
+                                                 std::move(channels), stack_id);
 }
 
 void DedicatedWorker::Start() {

@@ -117,6 +117,12 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
   std::unique_ptr<UserGestureIndicator> user_gesture_indicator_;
 };
 
+template <>
+struct CrossThreadCopier<v8_inspector::V8StackTraceId> {
+  typedef v8_inspector::V8StackTraceId Type;
+  static Type Copy(const Type& id) { return id; }
+};
+
 }  // namespace blink
 
 #endif  // ThreadDebugger_h

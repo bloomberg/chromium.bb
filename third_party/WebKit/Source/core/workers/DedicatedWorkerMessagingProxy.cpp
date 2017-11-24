@@ -45,6 +45,7 @@ ConnectToWorkerInterfaceProvider(Document* document,
 struct DedicatedWorkerMessagingProxy::QueuedTask {
   scoped_refptr<SerializedScriptValue> message;
   Vector<MessagePortChannel> channels;
+  v8_inspector::V8StackTraceId stack_id;
 };
 
 DedicatedWorkerMessagingProxy::DedicatedWorkerMessagingProxy(
@@ -96,7 +97,8 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
 
 void DedicatedWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
     scoped_refptr<SerializedScriptValue> message,
-    Vector<MessagePortChannel> channels) {
+    Vector<MessagePortChannel> channels,
+    const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(IsParentContextThread());
   if (AskedToTerminate())
     return;
@@ -106,13 +108,13 @@ void DedicatedWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
         &DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject,
         CrossThreadUnretained(&WorkerObjectProxy()), std::move(message),
         WTF::Passed(std::move(channels)),
-        CrossThreadUnretained(GetWorkerThread()));
+        CrossThreadUnretained(GetWorkerThread()), stack_id);
     GetWorkerThread()
         ->GetTaskRunner(TaskType::kPostedMessage)
         ->PostTask(BLINK_FROM_HERE, std::move(task));
   } else {
     queued_early_tasks_.push_back(
-        QueuedTask{std::move(message), std::move(channels)});
+        QueuedTask{std::move(message), std::move(channels), stack_id});
   }
 }
 
@@ -126,7 +128,7 @@ void DedicatedWorkerMessagingProxy::WorkerThreadCreated() {
         CrossThreadUnretained(&WorkerObjectProxy()),
         std::move(queued_task.message),
         WTF::Passed(std::move(queued_task.channels)),
-        CrossThreadUnretained(GetWorkerThread()));
+        CrossThreadUnretained(GetWorkerThread()), queued_task.stack_id);
     GetWorkerThread()
         ->GetTaskRunner(TaskType::kPostedMessage)
         ->PostTask(BLINK_FROM_HERE, std::move(task));
