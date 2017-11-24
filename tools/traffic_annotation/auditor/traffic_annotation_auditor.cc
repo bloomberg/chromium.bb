@@ -109,7 +109,8 @@ base::FilePath TrafficAnnotationAuditor::GetClangLibraryPath() {
 
 bool TrafficAnnotationAuditor::RunClangTool(
     const std::vector<std::string>& path_filters,
-    const bool full_run) {
+    bool filter_files,
+    bool use_compile_commands) {
   if (!safe_list_loaded_ && !LoadSafeList())
     return false;
 
@@ -136,10 +137,13 @@ bool TrafficAnnotationAuditor::RunClangTool(
       base::MakeAbsoluteFilePath(clang_tool_path_).MaybeAsASCII().c_str(),
       base::MakeAbsoluteFilePath(GetClangLibraryPath()).MaybeAsASCII().c_str());
 
-  // |safe_list_[ALL]| is not passed when |full_run| is happening as there is
-  // no way to pass it to run_tools.py except enumerating all alternatives.
-  // The paths in |safe_list_[ALL]| are removed later from the results.
-  if (full_run) {
+  if (use_compile_commands)
+    fprintf(options_file, "--all ");
+
+  // If |use_compile_commands| is requested or |filter_files| is false, we pass
+  // all given file paths to the running script and the files in the safe list
+  // will be later removed from the results.
+  if (!filter_files || use_compile_commands) {
     for (const std::string& file_path : path_filters)
       fprintf(options_file, "%s ", file_path.c_str());
   } else {
@@ -189,23 +193,31 @@ bool TrafficAnnotationAuditor::RunClangTool(
   bool result = base::GetAppOutput(cmdline, &clang_tool_raw_output_);
 
   if (!result) {
-    std::string tool_errors;
-    std::string options_file_text;
+    if (use_compile_commands && !clang_tool_raw_output_.empty()) {
+      printf(
+          "\nWARNING: Ignoring clang tool error as it is called using "
+          "compile_commands.json which will result in processing some "
+          "library files that clang cannot process.\n");
+      result = true;
+    } else {
+      std::string tool_errors;
+      std::string options_file_text;
 
-    base::GetAppOutputAndError(cmdline, &tool_errors);
-    if (!base::ReadFileToString(options_filepath, &options_file_text))
-      options_file_text = "Could not read options file.";
+      base::GetAppOutputAndError(cmdline, &tool_errors);
+      if (!base::ReadFileToString(options_filepath, &options_file_text))
+        options_file_text = "Could not read options file.";
 
-    LOG(ERROR) << base::StringPrintf(
-        "Calling clang tool from %s returned false.\nCommand line: %s\n\n"
-        "Returned error text: %s\n\nPartial options file: %s\n",
-        source_path_.MaybeAsASCII().c_str(),
+      LOG(ERROR) << base::StringPrintf(
+          "Calling clang tool from %s returned false.\nCommand line: %s\n\n"
+          "Returned error text: %s\n\nPartial options file: %s\n",
+          source_path_.MaybeAsASCII().c_str(),
 #if defined(OS_WIN)
-        base::UTF16ToASCII(cmdline.GetCommandLineString()).c_str(),
+          base::UTF16ToASCII(cmdline.GetCommandLineString()).c_str(),
 #else
-        cmdline.GetCommandLineString().c_str(),
+          cmdline.GetCommandLineString().c_str(),
 #endif
-        tool_errors.c_str(), options_file_text.substr(0, 1024).c_str());
+          tool_errors.c_str(), options_file_text.substr(0, 1024).c_str());
+    }
   }
 
   base::SetCurrentDirectory(original_path);

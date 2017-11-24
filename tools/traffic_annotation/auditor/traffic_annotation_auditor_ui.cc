@@ -41,9 +41,14 @@ Options:
   --extractor-input   Optional path to the file that temporary extracted
                       annotations are already stored in. If this is provided,
                       clang tool is not run and this is used as input.
-  --full-run          Optional flag asking the tool to run on the whole
+  --no-filtering      Optional flag asking the tool to run on the whole
                       repository without text filtering files. Using this flag
                       may increase processing time x40.
+  --all-files         Optional flag asking to use compile_commands.json instead
+                      of git to get the list of files that will be checked.
+                      This flag is useful when using build flags that change
+                      files, like jumbo. This flag slows down the execution as
+                      it checks every compiled file.
   --test-only         Optional flag to request just running tests and not
                       updating any file. If not specified,
                       'tools/traffic_annotation/summary/annotations.xml' might
@@ -303,7 +308,8 @@ int main(int argc, char* argv[]) {
       command_line.GetSwitchValuePath("extractor-output");
   base::FilePath extractor_input =
       command_line.GetSwitchValuePath("extractor-input");
-  bool full_run = command_line.HasSwitch("full-run");
+  bool filter_files = !command_line.HasSwitch("no-filtering");
+  bool all_files = command_line.HasSwitch("all-files");
   bool test_only = command_line.HasSwitch("test-only");
   base::FilePath summary_file = command_line.GetSwitchValuePath("summary-file");
   base::FilePath annotations_file =
@@ -353,7 +359,7 @@ int main(int argc, char* argv[]) {
 
   // Extract annotations.
   if (extractor_input.empty()) {
-    if (!auditor.RunClangTool(path_filters, full_run)) {
+    if (!auditor.RunClangTool(path_filters, filter_files, all_files)) {
       LOG(ERROR) << "Failed to run clang tool.";
       return 1;
     }
@@ -403,8 +409,9 @@ int main(int argc, char* argv[]) {
 
   std::vector<AuditorResult> errors = auditor.errors();
 
-  // Test/Update annotations.xml if everything else is OK.
-  if (errors.empty()) {
+  // Test/Update annotations.xml if everything else is OK and the auditor is
+  // run on the whole repository (without path filters).
+  if (errors.empty() && path_filters.empty()) {
     TrafficAnnotationExporter exporter(source_path);
     if (!exporter.UpdateAnnotations(
             auditor.extracted_annotations(),
