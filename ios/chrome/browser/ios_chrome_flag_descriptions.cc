@@ -11,6 +11,11 @@
 
 namespace flag_descriptions {
 
+const char kBookmarkNewEditPageName[] = "Bookmark New Edit Page";
+const char kBookmarkNewEditPageDescription[] =
+    "When enabled, the new bookmark edit page and folder picker will be used "
+    "in the new bookmark UI.";
+
 const char kBookmarkNewGenerationName[] = "Bookmark New Generation";
 const char kBookmarkNewGenerationDescription[] =
     "When enabled, change to the new bookmark UI which will support bookmark "

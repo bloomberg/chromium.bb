@@ -7,6 +7,11 @@
 
 namespace flag_descriptions {
 
+// Title and description for the flag to enable the new bookmark edit page in
+// the new bookmark UI.
+extern const char kBookmarkNewEditPageName[];
+extern const char kBookmarkNewEditPageDescription[];
+
 // Title and description for the flag to enable the new bookmark UI.
 extern const char kBookmarkNewGenerationName[];
 extern const char kBookmarkNewGenerationDescription[];
