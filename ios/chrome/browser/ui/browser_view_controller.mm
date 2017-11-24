@@ -3115,6 +3115,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 #pragma mark - LegacyFullscreenControllerDelegate methods
 
+- (void)redrawHeader {
+  for (HeaderDefinition* header in self.headerViews) {
+    [header.view setNeedsLayout];
+  }
+}
+
 - (CGFloat)headerOffset {
   if (IsIPadIdiom())
     return StatusBarHeight();

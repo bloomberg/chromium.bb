@@ -56,6 +56,10 @@ extern NSString* const kSetupForTestingWillCloseAllTabsNotification;
 // headerHeight (fully hidden).
 - (CGFloat)currentHeaderOffset;
 
+// Redraw the header. Called when no adjustment of the header is necessary, but
+// a navigation had happened that might have affected the header's visiblity.
+- (void)redrawHeader;
+
 @end
 
 // This class will track a scrollview to make a header disappear on scroll down
