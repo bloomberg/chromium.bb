@@ -477,6 +477,27 @@ bool GLSurfaceGLX::InitializeExtensionSettingsOneOff() {
 }
 
 // static
+void GLSurfaceGLX::ShutdownOneOff() {
+  initialized_ = false;
+  g_display = nullptr;
+  g_glx_context_create = false;
+  g_glx_create_context_robustness_supported = false;
+  g_glx_create_context_profile_supported = false;
+  g_glx_create_context_profile_es2_supported = false;
+  g_glx_texture_from_pixmap_supported = false;
+  g_glx_oml_sync_control_supported = false;
+
+  g_glx_get_msc_rate_oml_supported = false;
+  g_glx_ext_swap_control_supported = false;
+  g_glx_mesa_swap_control_supported = false;
+  g_glx_sgi_video_sync_supported = false;
+
+  g_visual = nullptr;
+  g_depth = CopyFromParent;
+  g_colormap = CopyFromParent;
+}
+
+// static
 const char* GLSurfaceGLX::GetGLXExtensions() {
   return glXQueryExtensionsString(g_display, 0);
 }

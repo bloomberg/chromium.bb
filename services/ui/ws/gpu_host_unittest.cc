@@ -14,6 +14,7 @@
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/ui/ws/gpu_client.h"
 #include "services/ui/ws/gpu_host_delegate.h"
+#include "ui/gl/init/gl_factory.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -69,7 +70,10 @@ class GpuHostTest : public testing::Test {
     CHECK(io_thread_.Start());
     gpu_service_ = std::make_unique<TestGpuService>(io_thread_.task_runner());
   }
-  ~GpuHostTest() override {}
+  ~GpuHostTest() override {
+    gpu_service_ = nullptr;
+    io_thread_.Stop();
+  }
 
   GpuHost* gpu_host() { return gpu_host_.get(); }
 
@@ -78,6 +82,7 @@ class GpuHostTest : public testing::Test {
 
   // testing::Test
   void SetUp() override;
+  void TearDown() override;
 
  private:
   base::MessageLoop message_loop_;
@@ -107,6 +112,12 @@ void GpuHostTest::SetUp() {
   gpu_host_ = std::make_unique<DefaultGpuHost>(&gpu_host_delegate_, nullptr);
   gpu_service_->Bind(mojo::MakeRequest(&gpu_service_ptr_));
   gpu_host_->gpu_service_ = std::move(gpu_service_ptr_);
+}
+
+void GpuHostTest::TearDown() {
+  gpu_host_ = nullptr;
+  gl::init::ShutdownGL();
+  testing::Test::TearDown();
 }
 
 // Tests to verify, that if a GpuHost is deleted before GpuClient receives a

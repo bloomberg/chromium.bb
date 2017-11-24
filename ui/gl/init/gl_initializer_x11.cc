@@ -217,6 +217,7 @@ void InitializeDebugGLBindings() {
 
 void ShutdownGLPlatform() {
   GLSurfaceEGL::ShutdownOneOff();
+  GLSurfaceGLX::ShutdownOneOff();
   ClearBindingsEGL();
   ClearBindingsGL();
   ClearBindingsGLX();
