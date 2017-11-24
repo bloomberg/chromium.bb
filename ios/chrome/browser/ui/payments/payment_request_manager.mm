@@ -118,10 +118,6 @@ struct PendingPaymentResponse {
   // The observer for |_activeWebState|.
   std::unique_ptr<web::WebStateObserverBridge> _activeWebStateObserver;
 
-  // Boolean to track if the active WebState is enabled (JS callback is set
-  // up).
-  BOOL _activeWebStateEnabled;
-
   // Timer used to periodically unblock the webview's JS event queue.
   NSTimer* _unblockEventQueueTimer;
 
@@ -280,6 +276,9 @@ struct PendingPaymentResponse {
     _paymentRequestCache =
         payments::IOSPaymentRequestCacheFactory::GetForBrowserState(
             browserState->GetOriginalChromeBrowserState());
+
+    _activeWebStateObserver =
+        std::make_unique<web::WebStateObserverBridge>(self);
   }
   return self;
 }
@@ -289,21 +288,43 @@ struct PendingPaymentResponse {
   return nil;
 }
 
-- (void)setActiveWebState:(web::WebState*)webState {
-  [self disableActiveWebState];
+- (void)dealloc {
+  if (_activeWebState) {
+    _paymentRequestJsManager = nil;
 
-  _paymentRequestJsManager = nil;
-  _activeWebStateObserver.reset();
+    _activeWebState->RemoveObserver(_activeWebStateObserver.get());
+    _activeWebState->RemoveScriptCommandCallback(kCommandPrefix);
+    _activeWebStateObserver.reset();
+    _activeWebState = nullptr;
+  }
+}
+
+- (void)setActiveWebState:(web::WebState*)webState {
+  if (_activeWebState) {
+    _paymentRequestJsManager = nil;
+
+    _activeWebState->RemoveObserver(_activeWebStateObserver.get());
+    _activeWebState->RemoveScriptCommandCallback(kCommandPrefix);
+    _activeWebState = nullptr;
+  }
+
   _activeWebState = webState;
-  [self enableActiveWebState];
 
   if (_activeWebState) {
+    __weak PaymentRequestManager* weakSelf = self;
+    auto callback = base::BindBlockArc(^bool(const base::DictionaryValue& JSON,
+                                             const GURL& originURL,
+                                             bool userIsInteracting) {
+      // |originURL| and |userIsInteracting| aren't used.
+      return [weakSelf handleScriptCommand:JSON];
+    });
+    _activeWebState->AddObserver(_activeWebStateObserver.get());
+    _activeWebState->AddScriptCommandCallback(callback, kCommandPrefix);
+
     _paymentRequestJsManager =
         base::mac::ObjCCastStrict<JSPaymentRequestManager>(
             [_activeWebState->GetJSInjectionReceiver()
                 instanceOfClass:[JSPaymentRequestManager class]]);
-    _activeWebStateObserver =
-        base::MakeUnique<web::WebStateObserverBridge>(_activeWebState, self);
   }
 }
 
@@ -407,31 +428,6 @@ struct PendingPaymentResponse {
 
 - (void)close {
   [self setActiveWebState:nullptr];
-}
-
-- (void)enableActiveWebState {
-  if (!_activeWebState)
-    return;
-
-  DCHECK(!_activeWebStateEnabled);
-  __weak PaymentRequestManager* weakSelf = self;
-  auto callback =
-      base::BindBlockArc(^bool(const base::DictionaryValue& JSON,
-                               const GURL& originURL, bool userIsInteracting) {
-        // |originURL| and |userIsInteracting| aren't used.
-        return [weakSelf handleScriptCommand:JSON];
-      });
-  _activeWebState->AddScriptCommandCallback(callback, kCommandPrefix);
-  _activeWebStateEnabled = YES;
-}
-
-- (void)disableActiveWebState {
-  if (!_activeWebState)
-    return;
-
-  DCHECK(_activeWebStateEnabled);
-  _activeWebState->RemoveScriptCommandCallback(kCommandPrefix);
-  _activeWebStateEnabled = NO;
 }
 
 - (BOOL)handleScriptCommand:(const base::DictionaryValue&)JSONCommand {
@@ -1102,6 +1098,7 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
+  DCHECK_EQ(_activeWebState, webState);
   payments::JourneyLogger::AbortReason abortReason =
       navigation->IsRendererInitiated()
           ? payments::JourneyLogger::ABORT_REASON_MERCHANT_NAVIGATION
@@ -1140,6 +1137,13 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
                          _activeWebState->GetLastCommittedURL().scheme() !=
                              url::kDataScheme)
       completionHandler:nil];
+}
+
+- (void)webStateDestroyed:(web::WebState*)webState {
+  DCHECK_EQ(_activeWebState, webState);
+
+  // This unregister the observer from WebState.
+  self.activeWebState = nullptr;
 }
 
 #pragma mark - Helper methods
