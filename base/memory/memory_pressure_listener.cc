@@ -11,47 +11,46 @@ namespace base {
 
 namespace {
 
+// This class is thread safe and internally synchronized.
 class MemoryPressureObserver {
  public:
-  MemoryPressureObserver()
-      : async_observers_(new ObserverListThreadSafe<MemoryPressureListener>),
-        sync_observers_(new ObserverList<MemoryPressureListener>) {
-  }
+  // There is at most one MemoryPressureObserver and it is never deleted.
+  ~MemoryPressureObserver() = delete;
 
   void AddObserver(MemoryPressureListener* listener, bool sync) {
     async_observers_->AddObserver(listener);
     if (sync) {
       AutoLock lock(sync_observers_lock_);
-      sync_observers_->AddObserver(listener);
+      sync_observers_.AddObserver(listener);
     }
   }
 
   void RemoveObserver(MemoryPressureListener* listener) {
     async_observers_->RemoveObserver(listener);
     AutoLock lock(sync_observers_lock_);
-    sync_observers_->RemoveObserver(listener);
+    sync_observers_.RemoveObserver(listener);
   }
 
-  void Notify(MemoryPressureListener::MemoryPressureLevel
-      memory_pressure_level) {
-    async_observers_->Notify(FROM_HERE,
-        &MemoryPressureListener::Notify, memory_pressure_level);
+  void Notify(
+      MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+    async_observers_->Notify(FROM_HERE, &MemoryPressureListener::Notify,
+                             memory_pressure_level);
     AutoLock lock(sync_observers_lock_);
-    for (auto& observer : *sync_observers_)
-      observer.MemoryPressureListener::SyncNotify(memory_pressure_level);
+    for (auto& observer : sync_observers_)
+      observer.SyncNotify(memory_pressure_level);
   }
 
  private:
-  scoped_refptr<ObserverListThreadSafe<MemoryPressureListener>>
-      async_observers_;
-  ObserverList<MemoryPressureListener>* sync_observers_;
+  const scoped_refptr<ObserverListThreadSafe<MemoryPressureListener>>
+      async_observers_ = base::MakeRefCounted<
+          ObserverListThreadSafe<MemoryPressureListener>>();
+  ObserverList<MemoryPressureListener> sync_observers_;
   Lock sync_observers_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(MemoryPressureObserver);
 };
 
+// Gets the shared MemoryPressureObserver singleton instance.
 MemoryPressureObserver* GetMemoryPressureObserver() {
-  static auto* observer = new MemoryPressureObserver();
+  static auto* const observer = new MemoryPressureObserver();
   return observer;
 }
 
