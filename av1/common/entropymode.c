@@ -759,9 +759,6 @@ static const aom_cdf_prob
 #endif
     };
 
-static const aom_prob default_interintra_prob[BLOCK_SIZE_GROUPS] = {
-  128, 226, 244, 254,
-};
 static const aom_cdf_prob default_interintra_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(
     2)] = { { AOM_CDF2(128 * 128) },
             { AOM_CDF2(226 * 128) },
@@ -2983,7 +2980,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->obmc_cdf, default_obmc_cdf);
   av1_copy(fc->inter_compound_mode_cdf, default_inter_compound_mode_cdf);
   av1_copy(fc->compound_type_cdf, default_compound_type_cdf);
-  av1_copy(fc->interintra_prob, default_interintra_prob);
   av1_copy(fc->wedge_interintra_prob, default_wedge_interintra_prob);
   av1_copy(fc->interintra_cdf, default_interintra_cdf);
   av1_copy(fc->wedge_interintra_cdf, default_wedge_interintra_cdf);
@@ -3078,11 +3074,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
                          counts->motion_mode[i], fc->motion_mode_prob[i]);
 
   if (cm->allow_interintra_compound) {
-    for (i = 0; i < BLOCK_SIZE_GROUPS; ++i) {
-      if (is_interintra_allowed_bsize_group(i))
-        fc->interintra_prob[i] = av1_mode_mv_merge_probs(
-            pre_fc->interintra_prob[i], counts->interintra[i]);
-    }
     for (i = 0; i < BLOCK_SIZES_ALL; ++i) {
       if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i))
         fc->wedge_interintra_prob[i] = av1_mode_mv_merge_probs(

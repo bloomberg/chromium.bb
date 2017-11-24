@@ -433,9 +433,6 @@ int main(int argc, const char **argv) {
   /* Interintra */
   cts_each_dim[0] = BLOCK_SIZE_GROUPS;
   cts_each_dim[1] = 2;
-  optimize_entropy_table(
-      &fc.interintra[0][0], probsfile, 2, cts_each_dim, NULL, 1,
-      "static const aom_prob default_interintra_prob[BLOCK_SIZE_GROUPS]");
   optimize_cdf_table(&fc.interintra[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
                      "default_interintra_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(2)]");
