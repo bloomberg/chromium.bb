@@ -881,14 +881,7 @@ void EnqueueCallbacks(LogoServiceImpl* logo_service,
                             fresh_callbacks, start_index + 1));
 }
 
-#if defined(THREAD_SANITIZER)
-// Flakes on Linux TSan: https://crbug.com/754599 (data race).
-#define MAYBE_SupportOverlappingLogoRequests \
-  DISABLED_SupportOverlappingLogoRequests
-#else
-#define MAYBE_SupportOverlappingLogoRequests SupportOverlappingLogoRequests
-#endif
-TEST_F(LogoServiceImplTest, MAYBE_SupportOverlappingLogoRequests) {
+TEST_F(LogoServiceImplTest, SupportOverlappingLogoRequests) {
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
   ON_CALL(*logo_cache_, SetCachedLogo(_)).WillByDefault(Return());
@@ -913,10 +906,10 @@ TEST_F(LogoServiceImplTest, MAYBE_SupportOverlappingLogoRequests) {
                 Run(LogoCallbackReason::DETERMINED, Eq(fresh_logo)));
     fresh_callbacks.push_back(mocks.back()->Get());
   }
-  EnqueueCallbacks(logo_service_.get(), &cached_callbacks, &fresh_callbacks, 0);
-
   EXPECT_CALL(*logo_cache_, SetCachedLogo(_)).Times(AtMost(3));
   EXPECT_CALL(*logo_cache_, OnGetCachedLogo()).Times(AtMost(3));
+
+  EnqueueCallbacks(logo_service_.get(), &cached_callbacks, &fresh_callbacks, 0);
 
   task_environment_.RunUntilIdle();
 }
