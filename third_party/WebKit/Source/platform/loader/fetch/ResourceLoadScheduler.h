@@ -5,12 +5,12 @@
 #ifndef ResourceLoadScheduler_h
 #define ResourceLoadScheduler_h
 
+#include <set>
 #include "platform/WebFrameScheduler.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/Resource.h"
-#include "platform/wtf/Deque.h"
 #include "platform/wtf/HashSet.h"
 
 namespace blink {
@@ -90,6 +90,32 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   void OnThrottlingStateChanged(WebFrameScheduler::ThrottlingState) override;
 
  private:
+  class ClientIdWithPriority {
+   public:
+    ClientIdWithPriority(ClientId client_id,
+                         WebURLRequest::Priority priority,
+                         int intra_priority)
+        : client_id(client_id),
+          priority(priority),
+          intra_priority(intra_priority) {}
+    explicit ClientIdWithPriority(ClientId client_id)
+        : ClientIdWithPriority(client_id,
+                               WebURLRequest::kPriorityUnresolved,
+                               0) {}
+
+    bool operator<(const ClientIdWithPriority& other) const {
+      if (priority != other.priority)
+        return priority < other.priority;
+      if (intra_priority != other.intra_priority)
+        return intra_priority < other.intra_priority;
+      return client_id < other.client_id;
+    }
+
+    const ClientId client_id;
+    const WebURLRequest::Priority priority;
+    const int intra_priority;
+  };
+
   ResourceLoadScheduler(FetchContext*);
 
   // Generates the next ClientId.
@@ -140,7 +166,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // Holds clients that haven't been granted, and are waiting for a grant.
   HeapHashMap<ClientId, Member<ResourceLoadSchedulerClient>>
       pending_request_map_;
-  Deque<ClientId> pending_request_queue_;
+  // We use std::set here because WTF doesn't have its counterpart.
+  std::set<ClientIdWithPriority> pending_requests_;
 
   // Holds FetchContext reference to contact WebFrameScheduler.
   Member<FetchContext> context_;
