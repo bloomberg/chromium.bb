@@ -82,7 +82,7 @@ class ASH_EXPORT AshTouchExplorationManager
 
  private:
   // keyboard::KeyboardControllerObserver overrides:
-  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
+  void OnKeyboardVisibleBoundsChanging(const gfx::Rect& new_bounds) override;
   void OnKeyboardClosed() override;
 
   // ShellObserver overrides:
