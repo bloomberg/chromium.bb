@@ -42290,6 +42290,10 @@ Called by update_traffic_annotation_histograms.py.-->
     Blink did not request a code cache because it is compiling a script created
     by document.write
   </int>
+  <int value="19" label="kNoCacheBecauseResourceWithNoCacheHandler">
+    Blink did not request a code cache because it has a script resource without
+    a cache handler
+  </int>
 </enum>
 
 <enum name="V8CodeCacheRejectReason">
