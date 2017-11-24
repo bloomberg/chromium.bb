@@ -1475,7 +1475,6 @@ void RenderWidgetHostImpl::GetScreenInfo(ScreenInfo* result) {
 
   // TODO(sievers): find a way to make this done another way so the method
   // can be const.
-  latency_tracker_.set_device_scale_factor(result->device_scale_factor);
   if (IsUseZoomForDSFEnabled())
     input_router_->SetDeviceScaleFactor(result->device_scale_factor);
 }

@@ -148,7 +148,6 @@ RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker(
     : LatencyTracker(metric_sampling, GenerateUkmSourceId()),
       last_event_id_(0),
       latency_component_id_(0),
-      device_scale_factor_(1),
       has_seen_first_gesture_scroll_update_(false),
       active_multi_finger_gesture_(false),
       touch_start_default_prevented_(false),

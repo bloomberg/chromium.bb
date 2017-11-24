@@ -57,12 +57,6 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker
   // update from the renderer.
   void OnSwapCompositorFrame(std::vector<ui::LatencyInfo>* latencies);
 
-  // WebInputEvent coordinates are in DPIs, while LatencyInfo expects
-  // coordinates in device pixels.
-  void set_device_scale_factor(float device_scale_factor) {
-    device_scale_factor_ = device_scale_factor;
-  }
-
   void reset_delegate() { render_widget_host_delegate_ = nullptr; }
 
   // Returns the ID that uniquely describes this component to the latency
@@ -78,7 +72,6 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker
 
   int64_t last_event_id_;
   int64_t latency_component_id_;
-  float device_scale_factor_;
   bool has_seen_first_gesture_scroll_update_;
   bool set_url_for_ukm_ = false;
   // Whether the current stream of touch events includes more than one active
