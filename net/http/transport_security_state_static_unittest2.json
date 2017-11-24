@@ -27,22 +27,27 @@
   "entries": [
     {
       "name": "hsts.example.com",
+      "policy": "test",
       "mode": "force-https"
     }, {
       "name": "hpkp.example.com",
+      "policy": "test",
       "include_subdomains_for_pinning": true,
       "pins": "test1"
     }, {
       "name": "expect-ct.example.com",
+      "policy": "test",
       "expect_ct": true,
       "expect_ct_report_uri": "https://report.example.com/ct-upload"
     }, {
       "name": "expect-staple.example.com",
+      "policy": "test",
       "expect_staple": true,
       "expect_staple_report_uri": "https://report.example.com/staple-upload",
       "include_subdomains_for_expect_staple": false
     }, {
       "name": "mix.example.com",
+      "policy": "test",
       "mode": "force-https",
       "include_subdomains": false,
       "pins": "test2",

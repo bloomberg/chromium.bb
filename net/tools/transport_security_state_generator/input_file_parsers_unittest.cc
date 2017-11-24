@@ -28,32 +28,39 @@ TEST(InputFileParsersTest, ParseJSON) {
       "  \"entries\": ["
       "    {"
       "      \"name\": \"hsts.example.com\","
+      "      \"policy\": \"test\","
       "      \"mode\": \"force-https\", "
       "      \"include_subdomains\": true"
       "    }, {"
       "      \"name\": \"hsts-no-subdomains.example.com\","
+      "      \"policy\": \"test\","
       "      \"mode\": \"force-https\", "
       "      \"include_subdomains\": false"
       "    }, {"
       "      \"name\": \"hpkp.example.com\","
+      "      \"policy\": \"test\","
       "      \"pins\": \"thepinset\","
       "      \"include_subdomains_for_pinning\": true"
       "    }, {"
       "      \"name\": \"hpkp-no-subdomains.example.com\","
+      "      \"policy\": \"test\","
       "      \"pins\": \"thepinset2\", "
       "      \"include_subdomains_for_pinning\": false"
       "    }, {"
       "      \"name\": \"expect-ct.example.com\","
+      "      \"policy\": \"test\","
       "      \"expect_ct\": true,"
       "      \"expect_ct_report_uri\": \"https://expect-ct-log.example.com\""
       "    }, {"
       "      \"name\": \"expect-staple.example.com\","
+      "      \"policy\": \"test\","
       "      \"expect_staple\": true,"
       "      \"expect_staple_report_uri\": "
       "\"https://expect-staple-log.example.com\","
       "      \"include_subdomains_for_expect_staple\": true"
       "    }, {"
       "      \"name\": \"expect-staple-no-subdomains.example.com\","
+      "      \"policy\": \"test\","
       "      \"expect_staple\": true,"
       "      \"include_subdomains_for_expect_staple\": false"
       "    }"
@@ -188,12 +195,26 @@ TEST(InputFileParsersTest, ParseJSONInvalid) {
       "  \"pinsets\": [],"
       "  \"entries\": ["
       "    {"
+      "      \"policy\": \"test\","
       "      \"mode\": \"force-https\""
       "    }"
       "  ]"
       "}";
 
   EXPECT_FALSE(ParseJSON(missing_hostname, &entries, &pinsets));
+
+  std::string missing_policy =
+      "{"
+      "  \"pinsets\": [],"
+      "  \"entries\": ["
+      "    {"
+      "      \"name\": \"example.test\","
+      "      \"mode\": \"force-https\""
+      "    }"
+      "  ]"
+      "}";
+
+  EXPECT_FALSE(ParseJSON(missing_policy, &entries, &pinsets));
 }
 
 // Test that parsing valid JSON with an invalid (HPKP) pinset fails.
@@ -225,6 +246,7 @@ TEST(InputFileParsersTest, ParseJSONInvalidMode) {
       "  \"entries\": ["
       "    {"
       "      \"name\": \"preloaded.test\","
+      "      \"policy\": \"test\","
       "      \"mode\": \"something-invalid\""
       "    }"
       "  ]"
@@ -244,12 +266,33 @@ TEST(InputFileParsersTest, ParseJSONUnkownField) {
       "  \"entries\": ["
       "    {"
       "      \"name\": \"preloaded.test\","
+      "      \"policy\": \"test\","
       "      \"unknown_key\": \"value\""
       "    }"
       "  ]"
       "}";
 
   EXPECT_FALSE(ParseJSON(unknown_field, &entries, &pinsets));
+}
+
+// Test that parsing valid JSON containing an entry with an unknown policy
+// fails.
+TEST(InputFileParsersTest, ParseJSONUnkownPolicy) {
+  TransportSecurityStateEntries entries;
+  Pinsets pinsets;
+
+  std::string unknown_policy =
+      "{"
+      "  \"pinsets\": [],"
+      "  \"entries\": ["
+      "    {"
+      "      \"name\": \"preloaded.test\","
+      "      \"policy\": \"invalid\""
+      "    }"
+      "  ]"
+      "}";
+
+  EXPECT_FALSE(ParseJSON(unknown_policy, &entries, &pinsets));
 }
 
 // Test parsing of all 3 SPKI formats.
