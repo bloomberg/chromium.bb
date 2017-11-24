@@ -223,6 +223,13 @@ void FakePowerManagerClient::SetLidState(LidState state,
     observer.LidEventReceived(state, timestamp);
 }
 
+void FakePowerManagerClient::SetTabletMode(TabletMode mode,
+                                           const base::TimeTicks& timestamp) {
+  tablet_mode_ = mode;
+  for (auto& observer : observers_)
+    observer.TabletModeEventReceived(mode, timestamp);
+}
+
 void FakePowerManagerClient::UpdatePowerProperties(
     const power_manager::PowerSupplyProperties& power_props) {
   props_ = power_props;

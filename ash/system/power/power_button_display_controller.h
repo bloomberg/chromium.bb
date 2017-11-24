@@ -59,6 +59,8 @@ class ASH_EXPORT PowerButtonDisplayController
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
   void LidEventReceived(chromeos::PowerManagerClient::LidState state,
                         const base::TimeTicks& timestamp) override;
+  void TabletModeEventReceived(chromeos::PowerManagerClient::TabletMode mode,
+                               const base::TimeTicks& timestamp) override;
 
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
