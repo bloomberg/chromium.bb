@@ -8,3 +8,5 @@
   document.title = isSecureContext ? "secure context" : "insecure context";
 </script>
 
+<!-- Regression test for cl 787610. This shouldn't crash. -->
+<iframe src="iframe_blank.html"></iframe>
