@@ -45,10 +45,17 @@ void RecordUmaEventLatencyScrollWheelTimeToScrollUpdateSwapBegin2Histogram(
 
 }  // namespace
 
-LatencyTracker::LatencyTracker(bool metric_sampling)
-    : metric_sampling_(metric_sampling) {
+LatencyTracker::LatencyTracker(bool metric_sampling,
+                               ukm::SourceId ukm_source_id)
+    : metric_sampling_(metric_sampling), ukm_source_id_(ukm_source_id) {
   if (metric_sampling)
     metric_sampling_events_since_last_sample_ = rand() % kSamplingInterval;
+}
+
+void LatencyTracker::OnEventStart(LatencyInfo* latency) {
+  static uint64_t global_trace_id = 0;
+  latency->set_trace_id(++global_trace_id);
+  latency->set_ukm_source_id(ukm_source_id_);
 }
 
 void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {

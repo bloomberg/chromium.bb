@@ -25,8 +25,9 @@ class RenderWidgetHostDelegate;
 class CONTENT_EXPORT RenderWidgetHostLatencyTracker
     : public ui::LatencyTracker {
  public:
-  explicit RenderWidgetHostLatencyTracker(bool metric_sampling);
-  ~RenderWidgetHostLatencyTracker();
+  RenderWidgetHostLatencyTracker(bool metric_sampling,
+                                 RenderWidgetHostDelegate* delegate);
+  virtual ~RenderWidgetHostLatencyTracker();
 
   // Associates the latency tracker with a given route and process.
   // Called once after the RenderWidgetHost is fully initialized.
@@ -62,28 +63,24 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker
     device_scale_factor_ = device_scale_factor;
   }
 
+  void reset_delegate() { render_widget_host_delegate_ = nullptr; }
+
   // Returns the ID that uniquely describes this component to the latency
   // subsystem.
   int64_t latency_component_id() const { return latency_component_id_; }
 
-  // A delegate is used to get the url to be stored in Rappor Sample.
-  // If delegate is null no Rappor sample will be reported.
-  void SetDelegate(RenderWidgetHostDelegate*);
-
  private:
-  ukm::SourceId GetUkmSourceId();
-
   // ui::LatencyTracker:
   void ReportRapporScrollLatency(
       const std::string& name,
       const ui::LatencyInfo::LatencyComponent& start_component,
       const ui::LatencyInfo::LatencyComponent& end_component) override;
 
-  ukm::SourceId ukm_source_id_;
   int64_t last_event_id_;
   int64_t latency_component_id_;
   float device_scale_factor_;
   bool has_seen_first_gesture_scroll_update_;
+  bool set_url_for_ukm_ = false;
   // Whether the current stream of touch events includes more than one active
   // touch point. This is set in OnInputEvent, and cleared in OnInputEventAck.
   bool active_multi_finger_gesture_;

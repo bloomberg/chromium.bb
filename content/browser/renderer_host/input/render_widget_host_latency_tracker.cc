@@ -28,6 +28,11 @@ using ui::LatencyInfo;
 namespace content {
 namespace {
 
+ukm::SourceId GenerateUkmSourceId() {
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+  return ukm_recorder ? ukm_recorder->GetNewSourceID() : ukm::kInvalidSourceId;
+}
+
 std::string WebInputEventTypeToInputModalityString(WebInputEvent::Type type) {
   if (type == blink::WebInputEvent::kMouseWheel) {
     return "Wheel";
@@ -138,16 +143,16 @@ void RecordEQTAccuracy(base::TimeDelta queueing_time,
 }  // namespace
 
 RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker(
-    bool metric_sampling)
-    : LatencyTracker(metric_sampling),
-      ukm_source_id_(ukm::kInvalidSourceId),
+    bool metric_sampling,
+    RenderWidgetHostDelegate* delegate)
+    : LatencyTracker(metric_sampling, GenerateUkmSourceId()),
       last_event_id_(0),
       latency_component_id_(0),
       device_scale_factor_(1),
       has_seen_first_gesture_scroll_update_(false),
       active_multi_finger_gesture_(false),
       touch_start_default_prevented_(false),
-      render_widget_host_delegate_(nullptr) {}
+      render_widget_host_delegate_(delegate) {}
 
 RenderWidgetHostLatencyTracker::~RenderWidgetHostLatencyTracker() {}
 
@@ -263,9 +268,13 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
   DCHECK(latency);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  latency->set_ukm_source_id(GetUkmSourceId());
-  static uint64_t global_trace_id = 0;
-  latency->set_trace_id(++global_trace_id);
+  OnEventStart(latency);
+  if (!set_url_for_ukm_ && render_widget_host_delegate_ &&
+      ukm_source_id() != ukm::kInvalidSourceId) {
+    render_widget_host_delegate_->UpdateUrlForUkmSource(ukm::UkmRecorder::Get(),
+                                                        ukm_source_id());
+    set_url_for_ukm_ = true;
+  }
 
   if (event.GetType() == WebInputEvent::kTouchStart) {
     const WebTouchEvent& touch_event =
@@ -376,11 +385,6 @@ void RenderWidgetHostLatencyTracker::OnSwapCompositorFrame(
   }
 }
 
-void RenderWidgetHostLatencyTracker::SetDelegate(
-    RenderWidgetHostDelegate* delegate) {
-  render_widget_host_delegate_ = delegate;
-}
-
 void RenderWidgetHostLatencyTracker::ReportRapporScrollLatency(
     const std::string& name,
     const LatencyInfo::LatencyComponent& start_component,
@@ -399,17 +403,6 @@ void RenderWidgetHostLatencyTracker::ReportRapporScrollLatency(
         rappor::NO_NOISE);
     rappor_service->RecordSample(name, std::move(sample));
   }
-}
-
-ukm::SourceId RenderWidgetHostLatencyTracker::GetUkmSourceId() {
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  if (ukm_recorder && ukm_source_id_ == ukm::kInvalidSourceId &&
-      render_widget_host_delegate_) {
-    ukm_source_id_ = ukm_recorder->GetNewSourceID();
-    render_widget_host_delegate_->UpdateUrlForUkmSource(ukm_recorder,
-                                                        ukm_source_id_);
-  }
-  return ukm_source_id_;
 }
 
 }  // namespace content

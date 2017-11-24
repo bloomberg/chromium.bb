@@ -96,9 +96,7 @@ class RenderWidgetHostLatencyTrackerTestBrowserClient
 class RenderWidgetHostLatencyTrackerTest
     : public RenderViewHostImplTestHarness {
  public:
-  RenderWidgetHostLatencyTrackerTest()
-      : tracker_(false), old_browser_client_(nullptr) {
-    tracker_.Initialize(kTestRoutingId, kTestProcessId);
+  RenderWidgetHostLatencyTrackerTest() : old_browser_client_(nullptr) {
     ResetHistograms();
   }
 
@@ -197,7 +195,7 @@ class RenderWidgetHostLatencyTrackerTest
     }
   }
 
-  RenderWidgetHostLatencyTracker* tracker() { return &tracker_; }
+  RenderWidgetHostLatencyTracker* tracker() { return tracker_.get(); }
   void ResetHistograms() {
     histogram_tester_.reset(new base::HistogramTester());
   }
@@ -209,7 +207,9 @@ class RenderWidgetHostLatencyTrackerTest
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     old_browser_client_ = SetBrowserClientForTesting(&test_browser_client_);
-    tracker_.SetDelegate(contents());
+    tracker_ =
+        std::make_unique<RenderWidgetHostLatencyTracker>(false, contents());
+    tracker_->Initialize(kTestRoutingId, kTestProcessId);
   }
 
   void TearDown() override {
@@ -223,7 +223,7 @@ class RenderWidgetHostLatencyTrackerTest
   const int kTestRoutingId = 3;
   const int kTestProcessId = 1;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
-  RenderWidgetHostLatencyTracker tracker_;
+  std::unique_ptr<RenderWidgetHostLatencyTracker> tracker_;
   RenderWidgetHostLatencyTrackerTestBrowserClient test_browser_client_;
   ContentBrowserClient* old_browser_client_;
 };
