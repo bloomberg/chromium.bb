@@ -2815,7 +2815,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
 TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
-  viz::LocalSurfaceId local_surface_id = kArbitraryLocalSurfaceId;
+  viz::LocalSurfaceId local_surface_id =
+      local_surface_id_allocator_.GenerateId();
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -2928,7 +2929,8 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
 TEST_F(RenderWidgetHostViewAuraTest, ResizeAfterReceivingFrame) {
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
-  viz::LocalSurfaceId local_surface_id = kArbitraryLocalSurfaceId;
+  viz::LocalSurfaceId local_surface_id =
+      local_surface_id_allocator_.GenerateId();
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(

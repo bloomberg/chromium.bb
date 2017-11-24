@@ -1188,29 +1188,29 @@ TEST_F(SurfaceSynchronizationTest, OnlyBlockOnEmbeddedSurfaces) {
 
   // Submitting a CompositorFrame with |parent_id2| so that the display
   // CompositorFrame can hold a reference to it.
-  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
                                          MakeCompositorFrame());
 
   display_support().SubmitCompositorFrame(
       display_id.local_surface_id(),
-      MakeCompositorFrame({parent_id1}, {parent_id2},
+      MakeCompositorFrame({parent_id2}, {parent_id1},
                           std::vector<TransferableResource>()));
 
   EXPECT_TRUE(display_surface()->HasPendingFrame());
   EXPECT_FALSE(display_surface()->HasActiveFrame());
   EXPECT_TRUE(display_surface()->has_deadline());
 
-  // Verify that the display CompositorFrame will only block on |parent_id1|
-  // but not |parent_id2|.
+  // Verify that the display CompositorFrame will only block on |parent_id2|
+  // but not |parent_id1|.
   EXPECT_THAT(display_surface()->activation_dependencies(),
-              UnorderedElementsAre(parent_id1));
+              UnorderedElementsAre(parent_id2));
   // Verify that the display surface holds no references while its
   // CompositorFrame is pending.
   EXPECT_THAT(GetChildReferences(display_id), IsEmpty());
 
-  // Submitting a CompositorFrame with |parent_id1| should unblock the
+  // Submitting a CompositorFrame with |parent_id2| should unblock the
   // display CompositorFrame.
-  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
                                          MakeCompositorFrame());
 
   EXPECT_FALSE(display_surface()->has_deadline());
