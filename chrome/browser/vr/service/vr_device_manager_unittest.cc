@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
@@ -97,13 +98,13 @@ TEST_F(VRDeviceManagerTest, InitializationTest) {
   // initialization. And SetClient method in VRService class will invoke
   // GetVRDevices too.
   auto service = BindService();
-  DeviceManager()->AddService(service.get());
+  DeviceManager()->AddService(service.get(), base::BindOnce([]() {}));
   EXPECT_TRUE(Provider()->IsInitialized());
 }
 
 TEST_F(VRDeviceManagerTest, GetNoDevicesTest) {
   auto service = BindService();
-  DeviceManager()->AddService(service.get());
+  DeviceManager()->AddService(service.get(), base::BindOnce([]() {}));
   // Calling GetVRDevices should initialize the providers.
   EXPECT_TRUE(Provider()->IsInitialized());
 
