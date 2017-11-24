@@ -13,11 +13,6 @@ namespace blink {
 // static
 AnimationWorklet* WindowAnimationWorklet::animationWorklet(
     LocalDOMWindow& window) {
-  // TODO(nhiroki): Replace this with the [SecureContext] attribute when it's
-  // supported (https://crbug.com/782121)
-  String error_message;
-  if (!window.GetExecutionContext()->IsSecureContext(error_message))
-    return nullptr;
   if (!window.GetFrame())
     return nullptr;
   return From(window).animation_worklet_.Get();
