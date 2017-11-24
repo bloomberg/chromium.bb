@@ -772,18 +772,6 @@ static const aom_cdf_prob
           { AOM_CDF4(4864, 8461, 17481) },
           { AOM_CDF4(6528, 8681, 19031) } };
 
-static const aom_prob default_wedge_interintra_prob[BLOCK_SIZES_ALL] = {
-  128, 128, 128, 128, 128, 128, 194, 213,
-  217, 222, 224, 226, 220, 128, 128, 128,
-#if CONFIG_EXT_PARTITION
-  255, 255, 255,
-#endif  // CONFIG_EXT_PARTITION
-  208, 208, 208, 208, 255, 255,
-#if CONFIG_EXT_PARTITION
-  255, 255
-#endif  // CONFIG_EXT_PARTITION
-};
-
 static const aom_cdf_prob
     default_wedge_interintra_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
       { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) },
@@ -2980,7 +2968,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->obmc_cdf, default_obmc_cdf);
   av1_copy(fc->inter_compound_mode_cdf, default_inter_compound_mode_cdf);
   av1_copy(fc->compound_type_cdf, default_compound_type_cdf);
-  av1_copy(fc->wedge_interintra_prob, default_wedge_interintra_prob);
   av1_copy(fc->interintra_cdf, default_interintra_cdf);
   av1_copy(fc->wedge_interintra_cdf, default_wedge_interintra_cdf);
   av1_copy(fc->interintra_mode_cdf, default_interintra_mode_cdf);
@@ -3072,14 +3059,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; ++i)
     aom_tree_merge_probs(av1_motion_mode_tree, pre_fc->motion_mode_prob[i],
                          counts->motion_mode[i], fc->motion_mode_prob[i]);
-
-  if (cm->allow_interintra_compound) {
-    for (i = 0; i < BLOCK_SIZES_ALL; ++i) {
-      if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i))
-        fc->wedge_interintra_prob[i] = av1_mode_mv_merge_probs(
-            pre_fc->wedge_interintra_prob[i], counts->wedge_interintra[i]);
-    }
-  }
 
 #if CONFIG_JNT_COMP
   for (i = 0; i < COMP_INDEX_CONTEXTS; ++i)

@@ -446,9 +446,6 @@ int main(int argc, const char **argv) {
 
   cts_each_dim[0] = BLOCK_SIZES_ALL;
   cts_each_dim[1] = 2;
-  optimize_entropy_table(
-      &fc.wedge_interintra[0][0], probsfile, 2, cts_each_dim, NULL, 1,
-      "static const aom_prob default_wedge_interintra_prob[BLOCK_SIZES_ALL]");
   optimize_cdf_table(
       &fc.wedge_interintra[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"
