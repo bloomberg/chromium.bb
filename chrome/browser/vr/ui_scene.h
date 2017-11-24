@@ -58,6 +58,7 @@ class UiScene {
   Elements GetVisibleSplashScreenElements() const;
   Elements GetVisibleWebVrOverlayForegroundElements() const;
   Elements GetVisibleControllerElements() const;
+  Elements GetPotentiallyVisibleElements() const;
 
   float background_distance() const { return background_distance_; }
   void set_background_distance(float d) { background_distance_ = d; }

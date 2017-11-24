@@ -270,6 +270,7 @@ class UiElement : public cc::AnimationTarget {
   }
 
   gfx::Transform ComputeTargetWorldSpaceTransform() const;
+  float ComputeTargetOpacity() const;
 
   // Transformations are applied relative to the parent element, rather than
   // absolutely.

@@ -50,27 +50,35 @@ class UiTest : public testing::Test {
   void CreateSceneForAutoPresentation();
 
  protected:
-  bool IsVisible(UiElementName name) const;
-
   void SetIncognito(bool incognito);
 
-  // Verify that only the elements in the set are visible.
-  void VerifyElementsVisible(const std::string& debug_name,
-                             const std::set<UiElementName>& names) const;
+  // Check whether a named element is visible. In this test, visibilility is the
+  // target visibily, not the current (possibly animating) visibility. This
+  // makes it easier to test the visibility of elements in response to state
+  // changes.
+  bool IsVisible(UiElementName name) const;
 
   // Return false if not all elements in the set match the specified visibility
   // state. Other elements are ignored.
   bool VerifyVisibility(const std::set<UiElementName>& names,
                         bool visible) const;
 
+  // Verify all elements in the set are visible.
+  void VerifyVisible(const std::string& debug_name,
+                     const std::set<UiElementName>& names) const;
+
+  // Check that only a specific set of elements is visible, and others are not.
+  void VerifyOnlyElementsVisible(const std::string& trace_context,
+                                 const std::set<UiElementName>& names) const;
+
+  // Count the number of elements in the named element's subtree.
+  int NumVisibleInTree(UiElementName name) const;
+
   // Return false if not all elements in the set match the specified |animating|
   // state for the specified |properties|. Other elements are ignored.
   bool VerifyIsAnimating(const std::set<UiElementName>& names,
                          const std::vector<TargetProperty>& properties,
                          bool animating) const;
-
-  // Count the number of elements in the named element's subtree.
-  int NumVisibleInTree(UiElementName name) const;
 
   // Return false if not all elements in the set match the specified requires
   // layout state. Other elements are ignored.
@@ -82,7 +90,7 @@ class UiTest : public testing::Test {
 
   // Advances current_time_ by delta. This is done in frame increments and
   // UiScene::OnBeginFrame is called at each increment.
-  bool AnimateBy(base::TimeDelta delta);
+  bool RunFor(base::TimeDelta delta);
 
   // A wrapper to call scene_->OnBeginFrame.
   bool OnBeginFrame() const;
