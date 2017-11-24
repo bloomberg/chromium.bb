@@ -676,6 +676,80 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       performAction:grey_tap()];
 }
 
+// Checks that deleting a duplicated saved password from password details view
+// goes back to the list-of-passwords view which doesn't display that form
+// anymore.
+- (void)testDuplicatedSavedFormDeletionInDetailView {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kViewPasswords);
+
+  // Save form to be deleted later.
+  SaveExamplePasswordForm();
+  // Save duplicate of the previously saved form to be deleted at the same time.
+  // This entry is considered duplicated because it maps to the same sort key
+  // as the previous one.
+  PasswordForm exampleDuplicate;
+  exampleDuplicate.username_value = base::ASCIIToUTF16("concrete username");
+  exampleDuplicate.password_value = base::ASCIIToUTF16("concrete password");
+  exampleDuplicate.origin = GURL("https://example.com/example");
+  exampleDuplicate.signon_realm = exampleDuplicate.origin.spec();
+  SaveToPasswordStore(exampleDuplicate);
+
+  OpenPasswordSettings();
+
+  [GetInteractionForPasswordEntry(@"example.com, concrete username")
+      performAction:grey_tap()];
+
+  [GetInteractionForPasswordDetailItem(DeleteButton())
+      performAction:grey_tap()];
+
+  // Tap the alert's Delete button to confirm. Check accessibilityTrait to
+  // differentiate against the above DeleteButton()-matching element, which is
+  // has UIAccessibilityTraitSelected.
+  // TODO(crbug.com/751311): Revisit and check if there is a better solution to
+  // match the Delete button.
+  id<GREYMatcher> deleteConfirmationButton = grey_allOf(
+      ButtonWithAccessibilityLabel(
+          l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)),
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitSelected)), nil);
+  [[EarlGrey selectElementWithMatcher:deleteConfirmationButton]
+      performAction:grey_tap()];
+
+  // Wait until the alert and the detail view are dismissed.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  // Check that the current view is now the list view, by locating the header
+  // of the list of passwords.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                                IDS_IOS_SETTINGS_PASSWORDS_SAVED_HEADING)),
+                            grey_accessibilityTrait(UIAccessibilityTraitHeader),
+                            nullptr)] assertWithMatcher:grey_notNil()];
+
+  // Verify that the deletion was propagated to the PasswordStore.
+  TestStoreConsumer consumer;
+  GREYAssert(consumer.GetStoreResults().empty(),
+             @"Stored password was not removed from PasswordStore.");
+
+  // Also verify that the removed password is no longer in the list.
+  [GetInteractionForPasswordEntry(@"example.com, concrete username")
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+
+  // Finally, verify that the Edit button is visible and disabled, because there
+  // are no other password entries left for deletion via the "Edit" mode.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
+      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
+                                   grey_not(grey_enabled()), nil)];
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
+}
+
 // Checks that deleting a blacklisted form from password details view goes
 // back to the list-of-passwords view which doesn't display that form anymore.
 - (void)testBlacklistedFormDeletionInDetailView {
@@ -689,6 +763,82 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   blacklisted.signon_realm = blacklisted.origin.spec();
   blacklisted.blacklisted_by_user = true;
   SaveToPasswordStore(blacklisted);
+
+  OpenPasswordSettings();
+
+  [GetInteractionForPasswordEntry(@"blacklisted.com") performAction:grey_tap()];
+
+  [GetInteractionForPasswordDetailItem(DeleteButton())
+      performAction:grey_tap()];
+
+  // Tap the alert's Delete button to confirm. Check accessibilityTrait to
+  // differentiate against the above DeleteButton()-matching element, which is
+  // has UIAccessibilityTraitSelected.
+  // TODO(crbug.com/751311): Revisit and check if there is a better solution to
+  // match the Delete button.
+  id<GREYMatcher> deleteConfirmationButton = grey_allOf(
+      ButtonWithAccessibilityLabel(
+          l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)),
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitSelected)), nil);
+  [[EarlGrey selectElementWithMatcher:deleteConfirmationButton]
+      performAction:grey_tap()];
+
+  // Wait until the alert and the detail view are dismissed.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  // Check that the current view is now the list view, by locating the header
+  // of the list of passwords.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                                IDS_IOS_SETTINGS_PASSWORDS_EXCEPTIONS_HEADING)),
+                            grey_accessibilityTrait(UIAccessibilityTraitHeader),
+                            nullptr)] assertWithMatcher:grey_notNil()];
+
+  // Verify that the deletion was propagated to the PasswordStore.
+  TestStoreConsumer consumer;
+  GREYAssert(consumer.GetStoreResults().empty(),
+             @"Stored password was not removed from PasswordStore.");
+
+  // Also verify that the removed password is no longer in the list.
+  [GetInteractionForPasswordEntry(@"secret.com")
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+
+  // Finally, verify that the Edit button is visible and disabled, because there
+  // are no other password entries left for deletion via the "Edit" mode.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
+      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
+                                   grey_not(grey_enabled()), nil)];
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
+}
+
+// Checks that deleting a duplicated blacklisted form from password details view
+// goes back to the list-of-passwords view which doesn't display that form
+// anymore.
+- (void)testDuplicatedBlacklistedFormDeletionInDetailView {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kViewPasswords);
+
+  // Save blacklisted form to be deleted later.
+  PasswordForm blacklisted;
+  blacklisted.origin = GURL("https://blacklisted.com");
+  blacklisted.signon_realm = blacklisted.origin.spec();
+  blacklisted.blacklisted_by_user = true;
+  SaveToPasswordStore(blacklisted);
+  // Save duplicate of the previously saved form to be deleted at the same time.
+  // This entry is considered duplicated because it maps to the same sort key
+  // as the previous one.
+  PasswordForm blacklistedDuplicate;
+  blacklistedDuplicate.origin = GURL("https://blacklisted.com/blacklisted");
+  blacklistedDuplicate.signon_realm = blacklisted.origin.spec();
+  blacklistedDuplicate.blacklisted_by_user = true;
+  SaveToPasswordStore(blacklistedDuplicate);
 
   OpenPasswordSettings();
 
