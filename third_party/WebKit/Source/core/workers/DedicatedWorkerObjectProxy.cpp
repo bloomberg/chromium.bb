@@ -37,6 +37,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/ThreadDebugger.h"
 #include "core/workers/DedicatedWorkerMessagingProxy.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -75,12 +76,17 @@ void DedicatedWorkerObjectProxy::PostMessageToWorkerObject(
 void DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject(
     scoped_refptr<SerializedScriptValue> message,
     Vector<MessagePortChannel> channels,
-    WorkerThread* worker_thread) {
+    WorkerThread* worker_thread,
+    const v8_inspector::V8StackTraceId& stack_id) {
   WorkerGlobalScope* global_scope =
       ToWorkerGlobalScope(worker_thread->GlobalScope());
   MessagePortArray* ports =
       MessagePort::EntanglePorts(*global_scope, std::move(channels));
+
+  ThreadDebugger* debugger = ThreadDebugger::From(worker_thread->GetIsolate());
+  debugger->ExternalAsyncTaskStarted(stack_id);
   global_scope->DispatchEvent(MessageEvent::Create(ports, std::move(message)));
+  debugger->ExternalAsyncTaskFinished(stack_id);
 }
 
 void DedicatedWorkerObjectProxy::ProcessUnhandledException(

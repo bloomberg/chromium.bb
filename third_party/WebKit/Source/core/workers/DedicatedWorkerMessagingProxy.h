@@ -47,7 +47,8 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
                               ReferrerPolicy,
                               const v8_inspector::V8StackTraceId&);
   void PostMessageToWorkerGlobalScope(scoped_refptr<SerializedScriptValue>,
-                                      Vector<MessagePortChannel>);
+                                      Vector<MessagePortChannel>,
+                                      const v8_inspector::V8StackTraceId&);
 
   // Implements ThreadedMessagingProxyBase.
   void WorkerThreadCreated() override;
