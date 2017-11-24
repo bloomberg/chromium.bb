@@ -44,7 +44,7 @@ class CSSSupportsRule final : public CSSConditionRule {
     return new CSSSupportsRule(rule, sheet);
   }
 
-  ~CSSSupportsRule() override {}
+  ~CSSSupportsRule() override = default;
 
   String cssText() const override;
 

@@ -39,7 +39,7 @@ CSSKeyframeRule::CSSKeyframeRule(StyleRuleKeyframe* keyframe,
   SetParentRule(parent);
 }
 
-CSSKeyframeRule::~CSSKeyframeRule() {}
+CSSKeyframeRule::~CSSKeyframeRule() = default;
 
 void CSSKeyframeRule::setKeyText(const String& key_text,
                                  ExceptionState& exception_state) {

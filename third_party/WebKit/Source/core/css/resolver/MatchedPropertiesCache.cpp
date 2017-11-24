@@ -54,7 +54,7 @@ void CachedMatchedProperties::Clear() {
   parent_computed_style = nullptr;
 }
 
-MatchedPropertiesCache::MatchedPropertiesCache() {}
+MatchedPropertiesCache::MatchedPropertiesCache() = default;
 
 const CachedMatchedProperties* MatchedPropertiesCache::Find(
     unsigned hash,

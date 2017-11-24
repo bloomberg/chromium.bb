@@ -43,7 +43,7 @@ DocumentStyleSheetCollector::DocumentStyleSheetCollector(
       style_sheets_for_style_sheet_list_(sheets_for_list),
       visited_documents_(visited_documents) {}
 
-DocumentStyleSheetCollector::~DocumentStyleSheetCollector() {}
+DocumentStyleSheetCollector::~DocumentStyleSheetCollector() = default;
 
 void DocumentStyleSheetCollector::AppendActiveStyleSheet(
     const ActiveStyleSheet& sheet) {

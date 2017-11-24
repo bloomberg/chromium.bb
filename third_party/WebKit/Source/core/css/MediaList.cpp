@@ -49,7 +49,7 @@ namespace blink {
  * CSS 3 Media Queries Spec (http://www.w3.org/TR/css3-mediaqueries/)
  */
 
-MediaQuerySet::MediaQuerySet() {}
+MediaQuerySet::MediaQuerySet() = default;
 
 MediaQuerySet::MediaQuerySet(const MediaQuerySet& o)
     : queries_(o.queries_.size()) {

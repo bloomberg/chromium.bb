@@ -1435,7 +1435,7 @@ const std::string Converter::kPropertyLookupTable[] = {
     "INVALID_PROPERTY",
 };
 
-Converter::Converter() {}
+Converter::Converter() = default;
 
 std::string Converter::Convert(const StyleSheet& style_sheet_message) {
   Reset();

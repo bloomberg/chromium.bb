@@ -49,7 +49,7 @@ class DOMWindowCSS : public ScriptWrappable {
   static String escape(const String& ident);
 
  private:
-  DOMWindowCSS() {}
+  DOMWindowCSS() = default;
 };
 
 }  // namespace blink

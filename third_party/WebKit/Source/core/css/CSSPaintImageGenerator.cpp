@@ -28,6 +28,6 @@ CSSPaintImageGenerator* CSSPaintImageGenerator::Create(const String& name,
   return g_create_function(name, document, observer);
 }
 
-CSSPaintImageGenerator::~CSSPaintImageGenerator() {}
+CSSPaintImageGenerator::~CSSPaintImageGenerator() = default;
 
 }  // namespace blink

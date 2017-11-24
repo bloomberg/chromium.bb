@@ -35,7 +35,7 @@ namespace blink {
 CSSPageRule::CSSPageRule(StyleRulePage* page_rule, CSSStyleSheet* parent)
     : CSSRule(parent), page_rule_(page_rule) {}
 
-CSSPageRule::~CSSPageRule() {}
+CSSPageRule::~CSSPageRule() = default;
 
 CSSStyleDeclaration* CSSPageRule::style() const {
   if (!properties_cssom_wrapper_)

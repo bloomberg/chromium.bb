@@ -19,7 +19,7 @@ class CORE_EXPORT CSSStyleVariableReferenceValue final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~CSSStyleVariableReferenceValue() {}
+  virtual ~CSSStyleVariableReferenceValue() = default;
 
   static CSSStyleVariableReferenceValue* Create(
       const String& variable,

@@ -46,7 +46,7 @@ MediaQueryList::MediaQueryList(ExecutionContext* context,
   UpdateMatches();
 }
 
-MediaQueryList::~MediaQueryList() {}
+MediaQueryList::~MediaQueryList() = default;
 
 String MediaQueryList::media() const {
   return media_->MediaText();

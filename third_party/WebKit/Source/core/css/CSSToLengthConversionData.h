@@ -72,7 +72,7 @@ class CORE_EXPORT CSSToLengthConversionData {
     DISALLOW_NEW();
 
    public:
-    ViewportSize() {}
+    ViewportSize() = default;
     ViewportSize(double width, double height) : size_(width, height) {}
     explicit ViewportSize(const LayoutViewItem&);
 

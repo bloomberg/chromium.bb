@@ -1057,7 +1057,7 @@ CSSSelector::RareData::RareData(const AtomicString& value)
       attribute_(AnyQName()),
       argument_(g_null_atom) {}
 
-CSSSelector::RareData::~RareData() {}
+CSSSelector::RareData::~RareData() = default;
 
 // a helper function for checking nth-arguments
 bool CSSSelector::RareData::MatchNth(unsigned unsigned_count) {

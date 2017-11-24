@@ -41,7 +41,7 @@ FontFaceSetLoadEvent::FontFaceSetLoadEvent(
     const FontFaceSetLoadEventInit& initializer)
     : Event(type, initializer), fontfaces_(initializer.fontfaces()) {}
 
-FontFaceSetLoadEvent::~FontFaceSetLoadEvent() {}
+FontFaceSetLoadEvent::~FontFaceSetLoadEvent() = default;
 
 const AtomicString& FontFaceSetLoadEvent::InterfaceName() const {
   return EventNames::FontFaceSetLoadEvent;

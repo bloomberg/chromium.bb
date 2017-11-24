@@ -43,7 +43,7 @@ class CSSRuleList : public ScriptWrappable {
   virtual CSSStyleSheet* GetStyleSheet() const = 0;
 
  protected:
-  CSSRuleList() {}
+  CSSRuleList() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CSSRuleList);

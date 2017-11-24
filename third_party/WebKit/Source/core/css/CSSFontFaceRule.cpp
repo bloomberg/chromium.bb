@@ -32,7 +32,7 @@ CSSFontFaceRule::CSSFontFaceRule(StyleRuleFontFace* font_face_rule,
                                  CSSStyleSheet* parent)
     : CSSRule(parent), font_face_rule_(font_face_rule) {}
 
-CSSFontFaceRule::~CSSFontFaceRule() {}
+CSSFontFaceRule::~CSSFontFaceRule() = default;
 
 CSSStyleDeclaration* CSSFontFaceRule::style() const {
   if (!properties_cssom_wrapper_)

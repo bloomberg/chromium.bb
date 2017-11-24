@@ -25,7 +25,7 @@ CSSPaintValue::CSSPaintValue(
   argument_variable_data_.swap(variable_data);
 }
 
-CSSPaintValue::~CSSPaintValue() {}
+CSSPaintValue::~CSSPaintValue() = default;
 
 String CSSPaintValue::CustomCSSText() const {
   StringBuilder result;

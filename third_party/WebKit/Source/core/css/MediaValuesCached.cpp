@@ -80,7 +80,7 @@ MediaValuesCached* MediaValuesCached::Create(
   return new MediaValuesCached(data);
 }
 
-MediaValuesCached::MediaValuesCached() {}
+MediaValuesCached::MediaValuesCached() = default;
 
 MediaValuesCached::MediaValuesCached(const MediaValuesCachedData& data)
     : data_(data) {}

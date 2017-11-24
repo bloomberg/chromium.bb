@@ -62,7 +62,7 @@ ElementRuleCollector::ElementRuleCollector(const ElementResolveContext& context,
       matching_ua_rules_(false),
       include_empty_rules_(false) {}
 
-ElementRuleCollector::~ElementRuleCollector() {}
+ElementRuleCollector::~ElementRuleCollector() = default;
 
 const MatchResult& ElementRuleCollector::MatchedResult() const {
   return result_;

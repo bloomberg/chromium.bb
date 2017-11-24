@@ -24,7 +24,7 @@ OffscreenFontSelector::OffscreenFontSelector(ExecutionContext* context)
   FontCache::GetFontCache()->AddClient(this);
 }
 
-OffscreenFontSelector::~OffscreenFontSelector() {}
+OffscreenFontSelector::~OffscreenFontSelector() = default;
 
 void OffscreenFontSelector::UpdateGenericFontFamilySettings(
     const GenericFontFamilySettings& settings) {

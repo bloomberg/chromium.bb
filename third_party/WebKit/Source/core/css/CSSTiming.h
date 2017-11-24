@@ -20,7 +20,7 @@ class CSSTiming : public GarbageCollectedFinalized<CSSTiming>,
   USING_GARBAGE_COLLECTED_MIXIN(CSSTiming);
 
  public:
-  virtual ~CSSTiming() {}
+  virtual ~CSSTiming() = default;
 
   void RecordAuthorStyleSheetParseTime(double seconds);
   void RecordUpdateDuration(double seconds);

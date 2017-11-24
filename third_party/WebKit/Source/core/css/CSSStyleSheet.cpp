@@ -138,7 +138,7 @@ CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents,
   contents_->RegisterClient(this);
 }
 
-CSSStyleSheet::~CSSStyleSheet() {}
+CSSStyleSheet::~CSSStyleSheet() = default;
 
 void CSSStyleSheet::WillMutateRules() {
   // If we are the only client it is safe to mutate.

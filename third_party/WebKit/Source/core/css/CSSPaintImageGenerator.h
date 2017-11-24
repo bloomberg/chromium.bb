@@ -29,7 +29,8 @@ class CORE_EXPORT CSSPaintImageGenerator
   // registered and ready to use.
   class Observer : public GarbageCollectedFinalized<Observer> {
    public:
-    virtual ~Observer(){};
+    virtual ~Observer() = default;
+    ;
     virtual void PaintImageGeneratorReady() = 0;
     virtual void Trace(blink::Visitor* visitor) {}
   };

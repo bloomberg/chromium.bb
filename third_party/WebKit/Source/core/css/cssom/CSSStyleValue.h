@@ -61,7 +61,7 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
                                                 const String& value,
                                                 ExceptionState&);
 
-  virtual ~CSSStyleValue() {}
+  virtual ~CSSStyleValue() = default;
 
   virtual StyleValueType GetType() const = 0;
   virtual bool ContainsPercent() const { return false; }
@@ -77,7 +77,7 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
  protected:
   static String StyleValueTypeToString(StyleValueType);
 
-  CSSStyleValue() {}
+  CSSStyleValue() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CSSStyleValue);

@@ -236,7 +236,7 @@ StyleRule::StyleRule(const StyleRule& o)
       selector_list_(o.selector_list_.Copy()),
       properties_(o.Properties().MutableCopy()) {}
 
-StyleRule::~StyleRule() {}
+StyleRule::~StyleRule() = default;
 
 MutableCSSPropertyValueSet& StyleRule::MutableProperties() {
   // Ensure properties_ is initialized.
@@ -280,7 +280,7 @@ StyleRulePage::StyleRulePage(const StyleRulePage& page_rule)
       properties_(page_rule.properties_->MutableCopy()),
       selector_list_(page_rule.selector_list_.Copy()) {}
 
-StyleRulePage::~StyleRulePage() {}
+StyleRulePage::~StyleRulePage() = default;
 
 MutableCSSPropertyValueSet& StyleRulePage::MutableProperties() {
   if (!properties_->IsMutable())
@@ -300,7 +300,7 @@ StyleRuleFontFace::StyleRuleFontFace(const StyleRuleFontFace& font_face_rule)
     : StyleRuleBase(font_face_rule),
       properties_(font_face_rule.properties_->MutableCopy()) {}
 
-StyleRuleFontFace::~StyleRuleFontFace() {}
+StyleRuleFontFace::~StyleRuleFontFace() = default;
 
 MutableCSSPropertyValueSet& StyleRuleFontFace::MutableProperties() {
   if (!properties_->IsMutable())
@@ -349,9 +349,8 @@ StyleRuleCondition::StyleRuleCondition(
     HeapVector<Member<StyleRuleBase>>& adopt_rules)
     : StyleRuleGroup(type, adopt_rules), condition_text_(condition_text) {}
 
-StyleRuleCondition::StyleRuleCondition(const StyleRuleCondition& condition_rule)
-    : StyleRuleGroup(condition_rule),
-      condition_text_(condition_rule.condition_text_) {}
+StyleRuleCondition::StyleRuleCondition(
+    const StyleRuleCondition& condition_rule) = default;
 
 StyleRuleMedia::StyleRuleMedia(scoped_refptr<MediaQuerySet> media,
                                HeapVector<Member<StyleRuleBase>>& adopt_rules)
@@ -385,7 +384,7 @@ StyleRuleViewport::StyleRuleViewport(const StyleRuleViewport& viewport_rule)
     : StyleRuleBase(viewport_rule),
       properties_(viewport_rule.properties_->MutableCopy()) {}
 
-StyleRuleViewport::~StyleRuleViewport() {}
+StyleRuleViewport::~StyleRuleViewport() = default;
 
 MutableCSSPropertyValueSet& StyleRuleViewport::MutableProperties() {
   if (!properties_->IsMutable())

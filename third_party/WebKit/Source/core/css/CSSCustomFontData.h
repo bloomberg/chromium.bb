@@ -37,7 +37,7 @@ class CSSCustomFontData final : public CustomFontData {
     return base::AdoptRef(new CSSCustomFontData(source, visibility));
   }
 
-  ~CSSCustomFontData() override {}
+  ~CSSCustomFontData() override = default;
 
   bool ShouldSkipDrawing() const override {
     if (font_face_source_)

@@ -37,7 +37,7 @@ namespace blink {
 
 MatchedProperties::MatchedProperties() : possibly_padded_member(nullptr) {}
 
-MatchedProperties::~MatchedProperties() {}
+MatchedProperties::~MatchedProperties() = default;
 
 void MatchedProperties::Trace(blink::Visitor* visitor) {
   visitor->Trace(properties);

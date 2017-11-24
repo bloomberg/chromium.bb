@@ -24,7 +24,7 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~CSSStyleImageValue() {}
+  virtual ~CSSStyleImageValue() = default;
 
   double intrinsicWidth(bool& is_null) const;
   double intrinsicHeight(bool& is_null) const;

@@ -41,7 +41,7 @@ using cssvalue::ToCSSRadialGradientValue;
 CSSImageGeneratorValue::CSSImageGeneratorValue(ClassType class_type)
     : CSSValue(class_type) {}
 
-CSSImageGeneratorValue::~CSSImageGeneratorValue() {}
+CSSImageGeneratorValue::~CSSImageGeneratorValue() = default;
 
 void CSSImageGeneratorValue::AddClient(const ImageResourceObserver* client,
                                        const IntSize& size) {

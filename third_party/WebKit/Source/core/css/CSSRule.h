@@ -40,7 +40,7 @@ class CORE_EXPORT CSSRule : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~CSSRule() {}
+  virtual ~CSSRule() = default;
 
   enum Type {
     kStyleRule = 1,

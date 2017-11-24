@@ -21,5 +21,5 @@
 
 namespace blink {
 
-StyleSheet::~StyleSheet() {}
+StyleSheet::~StyleSheet() = default;
 }

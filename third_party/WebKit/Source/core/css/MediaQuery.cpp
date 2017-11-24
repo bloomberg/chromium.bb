@@ -115,7 +115,7 @@ MediaQuery::MediaQuery(const MediaQuery& o)
     expressions_.push_back(o.expressions_[i]);
 }
 
-MediaQuery::~MediaQuery() {}
+MediaQuery::~MediaQuery() = default;
 
 // http://dev.w3.org/csswg/cssom/#compare-media-queries
 bool MediaQuery::operator==(const MediaQuery& other) const {

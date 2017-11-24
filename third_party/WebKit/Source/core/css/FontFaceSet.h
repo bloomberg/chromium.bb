@@ -47,7 +47,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
         async_runner_(AsyncMethodRunner<FontFaceSet>::Create(
             this,
             &FontFaceSet::HandlePendingEventsAndPromises)) {}
-  ~FontFaceSet() {}
+  ~FontFaceSet() = default;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loading);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingdone);

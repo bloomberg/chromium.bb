@@ -46,7 +46,7 @@ class CSSGridTemplateAreasValue : public CSSValue {
     return new CSSGridTemplateAreasValue(grid_area_map, row_count,
                                          column_count);
   }
-  ~CSSGridTemplateAreasValue() {}
+  ~CSSGridTemplateAreasValue() = default;
 
   String CustomCSSText() const;
 

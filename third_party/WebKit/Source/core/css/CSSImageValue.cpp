@@ -51,7 +51,7 @@ CSSImageValue::CSSImageValue(const AtomicString& absolute_url)
       relative_url_(absolute_url),
       absolute_url_(absolute_url) {}
 
-CSSImageValue::~CSSImageValue() {}
+CSSImageValue::~CSSImageValue() = default;
 
 StyleImage* CSSImageValue::CacheImage(
     const Document& document,

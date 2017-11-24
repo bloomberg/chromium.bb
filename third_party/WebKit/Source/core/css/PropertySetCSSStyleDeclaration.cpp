@@ -357,7 +357,7 @@ StyleRuleCSSStyleDeclaration::StyleRuleCSSStyleDeclaration(
     : PropertySetCSSStyleDeclaration(property_set_arg),
       parent_rule_(parent_rule) {}
 
-StyleRuleCSSStyleDeclaration::~StyleRuleCSSStyleDeclaration() {}
+StyleRuleCSSStyleDeclaration::~StyleRuleCSSStyleDeclaration() = default;
 
 void StyleRuleCSSStyleDeclaration::WillMutate() {
   if (parent_rule_ && parent_rule_->parentStyleSheet())

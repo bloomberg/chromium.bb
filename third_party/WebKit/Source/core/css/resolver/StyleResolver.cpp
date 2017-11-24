@@ -148,7 +148,7 @@ StyleResolver::StyleResolver(Document& document) : document_(document) {
   UpdateMediaType();
 }
 
-StyleResolver::~StyleResolver() {}
+StyleResolver::~StyleResolver() = default;
 
 void StyleResolver::Dispose() {
   matched_properties_cache_.Clear();

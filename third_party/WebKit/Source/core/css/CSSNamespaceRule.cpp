@@ -14,7 +14,7 @@ CSSNamespaceRule::CSSNamespaceRule(StyleRuleNamespace* namespace_rule,
                                    CSSStyleSheet* parent)
     : CSSRule(parent), namespace_rule_(namespace_rule) {}
 
-CSSNamespaceRule::~CSSNamespaceRule() {}
+CSSNamespaceRule::~CSSNamespaceRule() = default;
 
 String CSSNamespaceRule::cssText() const {
   StringBuilder result;

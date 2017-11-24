@@ -44,7 +44,7 @@ class CSSGlobalRuleSet : public GarbageCollectedFinalized<CSSGlobalRuleSet> {
   void Trace(blink::Visitor*);
 
  private:
-  CSSGlobalRuleSet() {}
+  CSSGlobalRuleSet() = default;
   // Constructed from rules in all TreeScopes including UA style and style
   // injected from extensions.
   RuleFeatureSet features_;

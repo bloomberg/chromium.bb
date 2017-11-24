@@ -178,7 +178,7 @@ StyleInvalidator::StyleInvalidator() {
   InvalidationSet::CacheTracingFlag();
 }
 
-StyleInvalidator::~StyleInvalidator() {}
+StyleInvalidator::~StyleInvalidator() = default;
 
 void StyleInvalidator::RecursionData::PushInvalidationSet(
     const InvalidationSet& invalidation_set) {

@@ -48,7 +48,7 @@ CSSImageSetValue::CSSImageSetValue(CSSParserMode parser_mode)
       cached_scale_factor_(1),
       parser_mode_(parser_mode) {}
 
-CSSImageSetValue::~CSSImageSetValue() {}
+CSSImageSetValue::~CSSImageSetValue() = default;
 
 void CSSImageSetValue::FillImageSet() {
   size_t length = this->length();

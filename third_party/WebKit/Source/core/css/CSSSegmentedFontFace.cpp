@@ -41,7 +41,7 @@ CSSSegmentedFontFace::CSSSegmentedFontFace(
       first_non_css_connected_face_(font_faces_.end()),
       approximate_character_count_(0) {}
 
-CSSSegmentedFontFace::~CSSSegmentedFontFace() {}
+CSSSegmentedFontFace::~CSSSegmentedFontFace() = default;
 
 void CSSSegmentedFontFace::PruneTable() {
   // Make sure the glyph page tree prunes out all uses of this custom font.

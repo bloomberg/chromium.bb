@@ -39,7 +39,7 @@
 
 namespace blink {
 
-CSSTestHelper::~CSSTestHelper() {}
+CSSTestHelper::~CSSTestHelper() = default;
 
 CSSTestHelper::CSSTestHelper() {
   document_ = Document::CreateForTest();
