@@ -31,6 +31,7 @@ import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.ContentViewCoreImpl;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -53,7 +54,7 @@ public class Shell extends LinearLayout {
         }
     };
 
-    private ContentViewCore mContentViewCore;
+    private ContentViewCoreImpl mContentViewCore;
     private WebContents mWebContents;
     private NavigationController mNavigationController;
     private EditText mUrlTextView;
@@ -296,7 +297,7 @@ public class Shell extends LinearLayout {
     @CalledByNative
     private void initFromNativeTabContents(WebContents webContents) {
         Context context = getContext();
-        mContentViewCore = new ContentViewCore(context, "");
+        mContentViewCore = (ContentViewCoreImpl) ContentViewCore.create(context, "");
         ContentView cv = ContentView.createContentView(context, mContentViewCore);
         mViewAndroidDelegate = new ShellViewAndroidDelegate(cv);
         mContentViewCore.initialize(mViewAndroidDelegate, cv, webContents, mWindow);

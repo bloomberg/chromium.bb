@@ -373,7 +373,7 @@ public class CastWebContentsActivity extends Activity {
         nativeSetContentVideoViewEmbedder(webContents, new ActivityContentVideoViewEmbedder(this));
 
         // TODO(derekjchow): productVersion
-        mContentViewCore = new ContentViewCore(this, "");
+        mContentViewCore = ContentViewCore.create(this, "");
         mContentView = ContentView.createContentView(this, mContentViewCore);
         mContentViewCore.initialize(ViewAndroidDelegate.createBasicDelegate(mContentView),
                 mContentView, webContents, mWindow);

@@ -100,7 +100,7 @@ public class CastWebContentsService extends Service {
         startForeground(CAST_NOTIFICATION_ID, notification);
 
         // TODO(derekjchow): productVersion
-        mContentViewCore = new ContentViewCore(this, "");
+        mContentViewCore = ContentViewCore.create(this, "");
         mContentView = ContentView.createContentView(this, mContentViewCore);
         mContentViewCore.initialize(ViewAndroidDelegate.createBasicDelegate(mContentView),
                 mContentView, webContents, mWindow);

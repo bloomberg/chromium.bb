@@ -47,7 +47,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/user_agent.h"
-#include "jni/ContentViewCore_jni.h"
+#include "jni/ContentViewCoreImpl_jni.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
@@ -213,7 +213,7 @@ ContentViewCore::~ContentViewCore() {
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   java_ref_.reset();
   if (!j_obj.is_null()) {
-    Java_ContentViewCore_onNativeContentViewCoreDestroyed(
+    Java_ContentViewCoreImpl_onNativeContentViewCoreDestroyed(
         env, j_obj, reinterpret_cast<intptr_t>(this));
   }
 }
@@ -278,7 +278,7 @@ void ContentViewCore::RenderViewReady() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
-    Java_ContentViewCore_onRenderProcessChange(env, obj);
+    Java_ContentViewCoreImpl_onRenderProcessChange(env, obj);
 
   if (device_orientation_ != 0)
     SendOrientationChangeEventInternal();
@@ -308,7 +308,7 @@ void ContentViewCore::RenderViewHostChanged(RenderViewHost* old_host,
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
     if (!obj.is_null()) {
-      Java_ContentViewCore_onRenderProcessChange(env, obj);
+      Java_ContentViewCoreImpl_onRenderProcessChange(env, obj);
     }
   }
 
@@ -372,7 +372,7 @@ void ContentViewCore::UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
   float content_width = std::max(content_size.width(), view_size.width());
   float content_height = std::max(content_size.height(), view_size.height());
 
-  Java_ContentViewCore_updateFrameInfo(
+  Java_ContentViewCoreImpl_updateFrameInfo(
       env, obj, scroll_offset.x(), scroll_offset.y(), page_scale_factor,
       min_page_scale, max_page_scale, content_width, content_height,
       top_shown_pix, top_changed, is_mobile_optimized_hint);
@@ -439,7 +439,7 @@ void ContentViewCore::ShowSelectPopupMenu(RenderFrameHost* frame,
   if (IsUseZoomForDSFEnabled())
     bounds_dip.Scale(1 / dpi_scale_);
   view->SetAnchorRect(popup_view, bounds_dip);
-  Java_ContentViewCore_showSelectPopup(
+  Java_ContentViewCoreImpl_showSelectPopup(
       env, j_obj, popup_view, reinterpret_cast<intptr_t>(frame), items_array,
       enabled_array, multiple, selected_array, right_aligned);
 }
@@ -448,7 +448,7 @@ void ContentViewCore::HideSelectPopupMenu() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (!j_obj.is_null())
-    Java_ContentViewCore_hideSelectPopup(env, j_obj);
+    Java_ContentViewCoreImpl_hideSelectPopup(env, j_obj);
   select_popup_.Reset();
 }
 
@@ -463,40 +463,40 @@ void ContentViewCore::OnGestureEventAck(const blink::WebGestureEvent& event,
     case WebInputEvent::kGestureFlingStart:
       if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
         // The view expects the fling velocity in pixels/s.
-        Java_ContentViewCore_onFlingStartEventConsumed(env, j_obj);
+        Java_ContentViewCoreImpl_onFlingStartEventConsumed(env, j_obj);
       } else {
         // If a scroll ends with a fling, a SCROLL_END event is never sent.
         // However, if that fling went unconsumed, we still need to let the
         // listeners know that scrolling has ended.
-        Java_ContentViewCore_onScrollEndEventAck(env, j_obj);
+        Java_ContentViewCoreImpl_onScrollEndEventAck(env, j_obj);
       }
       break;
     case WebInputEvent::kGestureFlingCancel:
-      Java_ContentViewCore_onFlingCancelEventAck(env, j_obj);
+      Java_ContentViewCoreImpl_onFlingCancelEventAck(env, j_obj);
       break;
     case WebInputEvent::kGestureScrollBegin:
-      Java_ContentViewCore_onScrollBeginEventAck(env, j_obj);
+      Java_ContentViewCoreImpl_onScrollBeginEventAck(env, j_obj);
       break;
     case WebInputEvent::kGestureScrollUpdate:
       if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
-        Java_ContentViewCore_onScrollUpdateGestureConsumed(env, j_obj);
+        Java_ContentViewCoreImpl_onScrollUpdateGestureConsumed(env, j_obj);
       break;
     case WebInputEvent::kGestureScrollEnd:
-      Java_ContentViewCore_onScrollEndEventAck(env, j_obj);
+      Java_ContentViewCoreImpl_onScrollEndEventAck(env, j_obj);
       break;
     case WebInputEvent::kGesturePinchBegin:
-      Java_ContentViewCore_onPinchBeginEventAck(env, j_obj);
+      Java_ContentViewCoreImpl_onPinchBeginEventAck(env, j_obj);
       break;
     case WebInputEvent::kGesturePinchEnd:
-      Java_ContentViewCore_onPinchEndEventAck(env, j_obj);
+      Java_ContentViewCoreImpl_onPinchEndEventAck(env, j_obj);
       break;
     case WebInputEvent::kGestureTap:
-      Java_ContentViewCore_onSingleTapEventAck(
+      Java_ContentViewCoreImpl_onSingleTapEventAck(
           env, j_obj, ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
       break;
     case WebInputEvent::kGestureLongPress:
       if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
-        Java_ContentViewCore_performLongPressHapticFeedback(env, j_obj);
+        Java_ContentViewCoreImpl_performLongPressHapticFeedback(env, j_obj);
       break;
     default:
       break;
@@ -523,16 +523,16 @@ bool ContentViewCore::FilterInputEvent(const blink::WebInputEvent& event) {
   const blink::WebGestureEvent& gesture =
       static_cast<const blink::WebGestureEvent&>(event);
   int gesture_type = ToGestureEventType(event.GetType());
-  return Java_ContentViewCore_filterTapOrPressEvent(env, j_obj, gesture_type,
-                                                    gesture.x * dpi_scale(),
-                                                    gesture.y * dpi_scale());
+  return Java_ContentViewCoreImpl_filterTapOrPressEvent(
+      env, j_obj, gesture_type, gesture.x * dpi_scale(),
+      gesture.y * dpi_scale());
 }
 
 void ContentViewCore::RequestDisallowInterceptTouchEvent() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
-    Java_ContentViewCore_requestDisallowInterceptTouchEvent(env, obj);
+    Java_ContentViewCoreImpl_requestDisallowInterceptTouchEvent(env, obj);
 }
 
 void ContentViewCore::DidStopFlinging() {
@@ -540,7 +540,7 @@ void ContentViewCore::DidStopFlinging() {
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
-    Java_ContentViewCore_onNativeFlingStopped(env, obj);
+    Java_ContentViewCoreImpl_onNativeFlingStopped(env, obj);
 }
 
 gfx::Size ContentViewCore::GetViewportSizePix() const {
@@ -548,8 +548,8 @@ gfx::Size ContentViewCore::GetViewportSizePix() const {
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return gfx::Size();
-  return gfx::Size(Java_ContentViewCore_getViewportWidthPix(env, j_obj),
-                   Java_ContentViewCore_getViewportHeightPix(env, j_obj));
+  return gfx::Size(Java_ContentViewCoreImpl_getViewportWidthPix(env, j_obj),
+                   Java_ContentViewCoreImpl_getViewportHeightPix(env, j_obj));
 }
 
 int ContentViewCore::GetMouseWheelMinimumGranularity() const {
@@ -557,7 +557,7 @@ int ContentViewCore::GetMouseWheelMinimumGranularity() const {
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return 0;
-  return Java_ContentViewCore_getMouseWheelTickMultiplier(env, j_obj);
+  return Java_ContentViewCoreImpl_getMouseWheelTickMultiplier(env, j_obj);
 }
 
 void ContentViewCore::SendScreenRectsAndResizeWidget() {
@@ -802,7 +802,7 @@ void ContentViewCore::OnTouchDown(
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_ContentViewCore_onTouchDown(env, obj, event);
+  Java_ContentViewCoreImpl_onTouchDown(env, obj, event);
 }
 
 void ContentViewCore::WasResized(JNIEnv* env,
@@ -844,7 +844,8 @@ bool ContentViewCore::IsFullscreenRequiredForOrientationLock() const {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return true;
-  return Java_ContentViewCore_isFullscreenRequiredForOrientationLock(env, obj);
+  return Java_ContentViewCoreImpl_isFullscreenRequiredForOrientationLock(env,
+                                                                         obj);
 }
 
 void ContentViewCore::SendOrientationChangeEventInternal() {
@@ -885,7 +886,7 @@ void ContentViewCore::HidePopupsAndPreserveSelection() {
   if (obj.is_null())
     return;
 
-  Java_ContentViewCore_hidePopupsAndPreserveSelection(env, obj);
+  Java_ContentViewCoreImpl_hidePopupsAndPreserveSelection(env, obj);
 }
 
 void ContentViewCore::WebContentsDestroyed() {
@@ -896,7 +897,7 @@ void ContentViewCore::WebContentsDestroyed() {
 }
 
 // This is called for each ContentView.
-jlong JNI_ContentViewCore_Init(
+jlong JNI_ContentViewCoreImpl_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jweb_contents,
@@ -920,7 +921,8 @@ jlong JNI_ContentViewCore_Init(
   return reinterpret_cast<intptr_t>(view);
 }
 
-static ScopedJavaLocalRef<jobject> JNI_ContentViewCore_FromWebContentsAndroid(
+static ScopedJavaLocalRef<jobject>
+JNI_ContentViewCoreImpl_FromWebContentsAndroid(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jweb_contents) {
