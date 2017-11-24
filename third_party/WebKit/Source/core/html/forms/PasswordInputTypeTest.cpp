@@ -86,6 +86,8 @@ TEST(PasswordInputTypeTest, PasswordVisibilityEventInSecureContext) {
   page_holder->GetDocument().SetURL(KURL(NullURL(), "https://example.test"));
   page_holder->GetDocument().SetSecurityOrigin(
       SecurityOrigin::Create(KURL(NullURL(), "https://example.test")));
+  page_holder->GetDocument().SetSecureContextStateForTesting(
+      SecureContextState::kSecure);
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
@@ -336,6 +338,8 @@ TEST(PasswordInputTypeTest, DidEditFieldEventNotSentFromSecureContext) {
   page_holder->GetDocument().SetURL(KURL(NullURL(), "https://example.test"));
   page_holder->GetDocument().SetSecurityOrigin(
       SecurityOrigin::Create(KURL(NullURL(), "https://example.test")));
+  page_holder->GetDocument().SetSecureContextStateForTesting(
+      SecureContextState::kSecure);
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases();

@@ -50,6 +50,8 @@ TEST(CredentialsContainerTest, TestGetWithDocumentDestroyed) {
     // Set up.
     scope.GetDocument().SetSecurityOrigin(
         SecurityOrigin::CreateFromString("https://example.test"));
+    scope.GetDocument().SetSecureContextStateForTesting(
+        SecureContextState::kSecure);
     ::testing::StrictMock<MockCredentialManagerClient> mock_client;
     ProvideCredentialManagerClientTo(scope.GetPage(),
                                      new CredentialManagerClient(&mock_client));

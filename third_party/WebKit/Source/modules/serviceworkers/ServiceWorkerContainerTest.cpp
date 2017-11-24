@@ -177,6 +177,11 @@ class ServiceWorkerContainerTest : public ::testing::Test {
     // The basis for security checks.
     page_->GetDocument().SetSecurityOrigin(
         SecurityOrigin::CreateFromString(url));
+
+    if (url.StartsWith("https://") || url.StartsWith("http://localhost/")) {
+      page_->GetDocument().SetSecureContextStateForTesting(
+          SecureContextState::kSecure);
+    }
   }
 
   void TestRegisterRejected(const String& script_url,

@@ -258,6 +258,8 @@ enum class WouldLoadReason {
   kCount,
 };
 
+enum class SecureContextState { kUnknown, kNonSecure, kSecure };
+
 using DocumentClassFlags = unsigned char;
 
 class CORE_EXPORT Document : public ContainerNode,
@@ -1319,6 +1321,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool IsSecureContext(String& error_message) const override;
   bool IsSecureContext() const override;
+  void SetSecureContextStateForTesting(SecureContextState state) {
+    secure_context_state_ = state;
+  }
 
   ClientHintsPreferences& GetClientHintsPreferences() {
     return client_hints_preferences_;
@@ -1436,6 +1441,7 @@ class CORE_EXPORT Document : public ContainerNode,
   ScriptedAnimationController& EnsureScriptedAnimationController();
   ScriptedIdleTaskController& EnsureScriptedIdleTaskController();
   void InitSecurityContext(const DocumentInit&);
+  void InitSecureContextState();
   SecurityContext& GetSecurityContext() final { return *this; }
   EventQueue* GetEventQueue() const final;
 
@@ -1474,7 +1480,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool ChildTypeAllowed(NodeType) const final;
   Node* cloneNode(bool deep, ExceptionState&) final;
   void CloneDataFromDocument(const Document&);
-  bool IsSecureContextImpl() const;
 
   ShadowCascadeOrder shadow_cascade_order_ = kShadowCascadeNone;
 
@@ -1770,6 +1775,8 @@ class CORE_EXPORT Document : public ContainerNode,
   TaskHandle sensitive_input_edited_task_;
 
   mojom::EngagementLevel engagement_level_;
+
+  SecureContextState secure_context_state_;
 
   Member<NetworkStateObserver> network_state_observer_;
 
