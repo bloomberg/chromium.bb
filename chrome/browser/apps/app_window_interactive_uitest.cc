@@ -403,8 +403,10 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 // It also does not work on MacOS because ::ShowInactive() ends up behaving like
 // ::Show() because of Cocoa conventions. See http://crbug.com/326987
 // Those tests should be disabled on Linux GTK when they are enabled on the
-// other platforms, see http://crbug.com/328829
-#if (defined(OS_LINUX) && defined(USE_AURA)) || defined(OS_MACOSX)
+// other platforms, see http://crbug.com/328829.
+// Flaky failures on Windows; see https://crbug.com/788283.
+#if (defined(OS_LINUX) && defined(USE_AURA)) || defined(OS_MACOSX) || \
+    defined(OS_WIN)
 #define MAYBE_TestCreate DISABLED_TestCreate
 #else
 #define MAYBE_TestCreate TestCreate
