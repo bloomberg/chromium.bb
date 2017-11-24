@@ -172,6 +172,10 @@ bool LayoutSVGShape::FillContains(const FloatPoint& point,
 
 bool LayoutSVGShape::StrokeContains(const FloatPoint& point,
                                     bool requires_stroke) {
+  // "A zero value causes no stroke to be painted."
+  if (StyleRef().SvgStyle().StrokeWidth().IsZero())
+    return false;
+
   if (requires_stroke) {
     if (!StrokeBoundingBox().Contains(point))
       return false;
