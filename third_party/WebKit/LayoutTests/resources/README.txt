@@ -6,7 +6,6 @@ These files should not be modified locally, as they are imported.
 * testharness.css        from testharness.js
 * idlharness.js          from testharness.js
 * WebIDLParser.js        from webidl2.js
-* vendor-prefix.js       from web-platform-tests
 
 NOTE: The 'WebIDLParser.js' file is developed as 'webidl2.js' but
 web-platform-tests's wpt-tools server is configured to serve the
