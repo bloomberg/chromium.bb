@@ -470,6 +470,24 @@ TEST_F(TabletPowerButtonControllerTest, LidEventsStopForcingOff) {
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 }
 
+// Tests that tablet mode events from powerd stop forcing off backlights.
+TEST_F(TabletPowerButtonControllerTest, TabletModeEventsStopForcingOff) {
+  PressPowerButton();
+  ReleasePowerButton();
+  ASSERT_TRUE(power_manager_client_->backlights_forced_off());
+  power_manager_client_->SetTabletMode(
+      chromeos::PowerManagerClient::TabletMode::ON, tick_clock_->NowTicks());
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+
+  AdvanceClockToAvoidIgnoring();
+  PressPowerButton();
+  ReleasePowerButton();
+  ASSERT_TRUE(power_manager_client_->backlights_forced_off());
+  power_manager_client_->SetTabletMode(
+      chromeos::PowerManagerClient::TabletMode::OFF, tick_clock_->NowTicks());
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+}
+
 // Tests that with system reboot, the global touchscreen enabled status should
 // be synced with new backlights forced off state from powerd.
 TEST_F(TabletPowerButtonControllerTest, SyncTouchscreenEnabled) {

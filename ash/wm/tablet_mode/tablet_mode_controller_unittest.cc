@@ -592,8 +592,8 @@ TEST_F(TabletModeControllerTest, InitializedWhileTabletModeSwitchOn) {
   chromeos::FakePowerManagerClient* power_manager_client =
       static_cast<chromeos::FakePowerManagerClient*>(
           chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
-  power_manager_client->set_tablet_mode(
-      chromeos::PowerManagerClient::TabletMode::ON);
+  power_manager_client->SetTabletMode(
+      chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks::Now());
   TabletModeController controller;
   EXPECT_FALSE(controller.IsTabletModeWindowManagerEnabled());
   // PowerManagerClient callback is a posted task.

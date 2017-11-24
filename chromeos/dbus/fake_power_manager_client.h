@@ -48,9 +48,8 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   int num_set_backlights_forced_off_calls() const {
     return num_set_backlights_forced_off_calls_;
   }
-  void set_tablet_mode(TabletMode mode) { tablet_mode_ = mode; }
 
-  // PowerManagerClient overrides
+  // PowerManagerClient overrides:
   void Init(dbus::Bus* bus) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
@@ -104,8 +103,10 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   // Notifies observers that the power button has been pressed or released.
   void SendPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
 
-  // Sets |lid_state_| and notifies |observers_| about the change.
+  // Sets |lid_state_| or |tablet_mode_| and notifies |observers_| about the
+  // change.
   void SetLidState(LidState state, const base::TimeTicks& timestamp);
+  void SetTabletMode(TabletMode mode, const base::TimeTicks& timestamp);
 
   // Updates |props_| and notifies observers of its changes.
   void UpdatePowerProperties(
