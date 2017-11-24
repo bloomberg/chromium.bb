@@ -217,7 +217,8 @@ class ServiceWorkerVersionTest : public testing::Test {
   struct CachedMetadataUpdateListener : public ServiceWorkerVersion::Listener {
     CachedMetadataUpdateListener() = default;
     ~CachedMetadataUpdateListener() override = default;
-    void OnCachedMetadataUpdated(ServiceWorkerVersion* version) override {
+    void OnCachedMetadataUpdated(ServiceWorkerVersion* version,
+                                 size_t size) override {
       ++updated_count;
     }
     int updated_count = 0;

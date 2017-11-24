@@ -96,6 +96,9 @@ namespace content {
 
 namespace {
 
+// V8ScriptRunner::setCacheTimeStamp() stores 12 byte data (tag + timestamp).
+const int kV8CacheTimeStampDataSize = sizeof(unsigned) + sizeof(double);
+
 struct FetchResult {
   ServiceWorkerStatusCode status;
   ServiceWorkerFetchEventResult result;
@@ -2612,12 +2615,15 @@ class ServiceWorkerVersionBrowserV8CacheTest
 
  protected:
   // ServiceWorkerVersion::Listener overrides
-  void OnCachedMetadataUpdated(ServiceWorkerVersion* version) override {
+  void OnCachedMetadataUpdated(ServiceWorkerVersion* version,
+                               size_t size) override {
+    metadata_size_ = size;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             cache_updated_closure_);
   }
 
   base::Closure cache_updated_closure_;
+  size_t metadata_size_ = 0;
 };
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserV8CacheTest, Restart) {
@@ -2625,21 +2631,96 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserV8CacheTest, Restart) {
   RunOnIOThread(base::Bind(&self::SetUpRegistrationAndListenerOnIOThread,
                            base::Unretained(this),
                            "/service_worker/worker.js"));
+  {
+    base::RunLoop cached_metadata_run_loop;
+    cache_updated_closure_ = cached_metadata_run_loop.QuitClosure();
 
+    // Start a worker.
+    StartWorker(SERVICE_WORKER_OK);
+
+    // Wait for the metadata to be stored. This run loop should finish when
+    // OnCachedMetadataUpdated() is called.
+    cached_metadata_run_loop.Run();
+  }
+
+  // Time stamp data must be stored to the storage.
+  EXPECT_EQ(kV8CacheTimeStampDataSize, static_cast<int>(metadata_size_));
+
+  // Stop the worker.
+  StopWorker();
+
+  {
+    base::RunLoop cached_metadata_run_loop;
+    cache_updated_closure_ = cached_metadata_run_loop.QuitClosure();
+    // Restart the worker.
+    StartWorker(SERVICE_WORKER_OK);
+    // Wait for the matadata to be stored. This run loop should finish when
+    // OnCachedMetadataUpdated() is called.
+    cached_metadata_run_loop.Run();
+  }
+
+  // The V8 code cache should be stored to the storage. It must have size
+  // greater than 12 bytes.
+  EXPECT_GT(static_cast<int>(metadata_size_), kV8CacheTimeStampDataSize);
+
+  // Stop the worker.
+  StopWorker();
+}
+
+class ServiceWorkerVersionBrowserV8FullCodeCacheTest
+    : public ServiceWorkerVersionBrowserTest,
+      public ServiceWorkerVersion::Listener {
+ public:
+  using self = ServiceWorkerVersionBrowserV8FullCodeCacheTest;
+  ServiceWorkerVersionBrowserV8FullCodeCacheTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kServiceWorkerScriptFullCodeCache);
+  }
+  ~ServiceWorkerVersionBrowserV8FullCodeCacheTest() override {
+    if (version_)
+      version_->RemoveListener(this);
+  }
+  void SetUpRegistrationAndListenerOnIOThread(const std::string& worker_url) {
+    SetUpRegistrationOnIOThread(worker_url);
+    version_->AddListener(this);
+  }
+
+ protected:
+  // ServiceWorkerVersion::Listener overrides
+  void OnCachedMetadataUpdated(ServiceWorkerVersion* version,
+                               size_t size) override {
+    metadata_size_ = size;
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            cache_updated_closure_);
+  }
+
+  base::Closure cache_updated_closure_;
+  size_t metadata_size_ = 0;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserV8FullCodeCacheTest,
+                       FullCode) {
+  StartServerAndNavigateToSetup();
+  RunOnIOThread(base::Bind(&self::SetUpRegistrationAndListenerOnIOThread,
+                           base::Unretained(this),
+                           "/service_worker/worker.js"));
   base::RunLoop cached_metadata_run_loop;
   cache_updated_closure_ = cached_metadata_run_loop.QuitClosure();
 
   // Start a worker.
   StartWorker(SERVICE_WORKER_OK);
 
-  // Wait for the matadata is stored. This run loop should finish when
+  // Wait for the metadata to be stored. This run loop should finish when
   // OnCachedMetadataUpdated() is called.
   cached_metadata_run_loop.Run();
 
-  // Stop the worker.
-  StopWorker();
-  // Restart the worker.
-  StartWorker(SERVICE_WORKER_OK);
+  // The V8 code cache should be stored to the storage. It must have size
+  // greater than 12 bytes.
+  EXPECT_GT(static_cast<int>(metadata_size_), kV8CacheTimeStampDataSize);
+
   // Stop the worker.
   StopWorker();
 }
@@ -2774,8 +2855,6 @@ class ServiceWorkerV8CodeCacheForCacheStorageTest
   }
 
  protected:
-  static const int kV8CacheTimeStampDataSize;
-
   void RegisterAndActivateServiceWorker() {
     scoped_refptr<WorkerActivatedObserver> observer =
         new WorkerActivatedObserver(wrapper());
@@ -2833,10 +2912,6 @@ const char ServiceWorkerV8CodeCacheForCacheStorageTest::kWorkerUrl[] =
     "/service_worker/fetch_event_response_via_cache.js";
 const char ServiceWorkerV8CodeCacheForCacheStorageTest::kScriptUrl[] =
     "/service_worker/v8_cache_test.js";
-// V8ScriptRunner::setCacheTimeStamp() stores 12 byte data (tag + timestamp).
-const int
-    ServiceWorkerV8CodeCacheForCacheStorageTest::kV8CacheTimeStampDataSize =
-        sizeof(unsigned) + sizeof(double);
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CodeCacheForCacheStorageTest,
                        V8CacheOnCacheStorage) {

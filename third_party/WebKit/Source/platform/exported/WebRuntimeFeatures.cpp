@@ -394,6 +394,10 @@ void WebRuntimeFeatures::EnableServiceWorkerScriptStreaming(bool enable) {
   RuntimeEnabledFeatures::SetServiceWorkerScriptStreamingEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableServiceWorkerScriptFullCodeCache(bool enable) {
+  RuntimeEnabledFeatures::SetServiceWorkerScriptFullCodeCacheEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableAutoplayMutedVideos(bool enable) {
   RuntimeEnabledFeatures::SetAutoplayMutedVideosEnabled(enable);
 }

@@ -136,7 +136,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
     }
     virtual void OnNoControllees(ServiceWorkerVersion* version) {}
     virtual void OnNoWork(ServiceWorkerVersion* version) {}
-    virtual void OnCachedMetadataUpdated(ServiceWorkerVersion* version) {}
+    virtual void OnCachedMetadataUpdated(ServiceWorkerVersion* version,
+                                         size_t size) {}
 
    protected:
     virtual ~Listener() {}
@@ -553,7 +554,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
                          const std::vector<uint8_t>& data) override;
   void ClearCachedMetadata(const GURL& url) override;
 
-  void OnSetCachedMetadataFinished(int64_t callback_id, int result);
+  void OnSetCachedMetadataFinished(int64_t callback_id,
+                                   size_t size,
+                                   int result);
   void OnClearCachedMetadataFinished(int64_t callback_id, int result);
 
   // Message handlers.
