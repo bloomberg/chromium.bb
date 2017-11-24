@@ -20,13 +20,13 @@ async_test(function(t)
     {
         assert_equals(document.fullscreenElement, div);
         assert_equals(iframeDocument.fullscreenElement, null);
-        trusted_request(t, iframeBody, div);
+        trusted_request(t, iframeBody, iframeBody, iframe.getBoundingClientRect());
         document.onfullscreenchange = null;
         iframeDocument.onfullscreenchange = t.step_func(function()
         {
             assert_equals(document.fullscreenElement, iframe);
             assert_equals(iframeDocument.fullscreenElement, iframeBody);
-            trusted_click(t, fully_exit_fullscreen.bind(null, iframeDocument), iframeBody);
+            trusted_click(t, fully_exit_fullscreen.bind(null, iframeDocument), iframeBody, iframe.getBoundingClientRect());
             iframeDocument.onfullscreenchange = null;
             document.onfullscreenchange = t.step_func(function()
             {
