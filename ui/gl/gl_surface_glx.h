@@ -28,6 +28,7 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
 
   static bool InitializeOneOff();
   static bool InitializeExtensionSettingsOneOff();
+  static void ShutdownOneOff();
 
   // These aren't particularly tied to surfaces, but since we already
   // have the static InitializeOneOff here, it's easiest to reuse its
