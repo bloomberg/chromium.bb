@@ -11,6 +11,13 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/latency/latency_histogram_macros.h"
 
+// Impose some restrictions for tests etc, but also be lenient since some of the
+// data come from untrusted sources.
+#define DCHECK_AND_RETURN_ON_FAIL(x) \
+  DCHECK(x);                         \
+  if (!(x))                          \
+    return;
+
 namespace ui {
 namespace {
 
@@ -67,10 +74,9 @@ void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
   }
 
   LatencyInfo::LatencyComponent gpu_swap_begin_component;
-  if (!latency.FindLatency(ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0,
-                           &gpu_swap_begin_component)) {
-    return;
-  }
+  bool found_component = latency.FindLatency(
+      ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, &gpu_swap_begin_component);
+  DCHECK_AND_RETURN_ON_FAIL(found_component);
 
   LatencyInfo::LatencyComponent tab_switch_component;
   if (latency.FindLatency(ui::TAB_SHOW_COMPONENT, &tab_switch_component)) {
@@ -134,9 +140,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     const ui::LatencyInfo::LatencyComponent& gpu_swap_begin_component,
     const ui::LatencyInfo::LatencyComponent& gpu_swap_end_component,
     const ui::LatencyInfo& latency) {
-  DCHECK(!latency.coalesced());
-  if (latency.coalesced())
-    return;
+  DCHECK_AND_RETURN_ON_FAIL(!latency.coalesced());
 
   LatencyInfo::LatencyComponent original_component;
   std::string scroll_name = "Uninitialized";
@@ -215,10 +219,10 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
       ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT, 0,
       &rendering_scheduled_component);
   if (!rendering_scheduled_on_main) {
-    if (!latency.FindLatency(
-            ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT, 0,
-            &rendering_scheduled_component))
-      return;
+    bool found_component = latency.FindLatency(
+        ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT, 0,
+        &rendering_scheduled_component);
+    DCHECK_AND_RETURN_ON_FAIL(found_component);
   }
 
   const std::string thread_name = rendering_scheduled_on_main ? "Main" : "Impl";
@@ -235,9 +239,10 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   }
 
   LatencyInfo::LatencyComponent renderer_swap_component;
-  if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0,
-                           &renderer_swap_component))
-    return;
+  bool found_component =
+      latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0,
+                          &renderer_swap_component);
+  DCHECK_AND_RETURN_ON_FAIL(found_component);
 
   UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
       "Event.Latency." + scroll_name + "." + input_modality +
@@ -245,9 +250,10 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
       rendering_scheduled_component, renderer_swap_component);
 
   LatencyInfo::LatencyComponent browser_received_swap_component;
-  if (!latency.FindLatency(ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, 0,
-                           &browser_received_swap_component))
-    return;
+  found_component =
+      latency.FindLatency(ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, 0,
+                          &browser_received_swap_component);
+  DCHECK_AND_RETURN_ON_FAIL(found_component);
 
   UMA_HISTOGRAM_SCROLL_LATENCY_SHORT_2(
       "Event.Latency." + scroll_name + "." + input_modality +

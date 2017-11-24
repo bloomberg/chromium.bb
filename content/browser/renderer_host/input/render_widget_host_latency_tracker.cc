@@ -178,11 +178,13 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
     return;
   }
 
+  // The event will have gone through OnInputEvent(). So the BEGIN_RWH component
+  // should always be available here.
   LatencyInfo::LatencyComponent rwh_component;
-  if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                           latency_component_id, &rwh_component)) {
-    return;
-  }
+  bool found_component =
+      latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+                          latency_component_id, &rwh_component);
+  DCHECK(found_component);
   DCHECK_EQ(rwh_component.event_count, 1u);
 
   bool multi_finger_touch_gesture =
@@ -287,10 +289,12 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
            event.GetType() == WebInputEvent::kRawKeyDown);
   }
 
-  if (latency->FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                           latency_component_id_, nullptr)) {
-    return;
-  }
+  // This is the only place to add the BEGIN_RWH component. So this component
+  // should not already be present in the latency info.
+  bool found_component =
+      latency->FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+                           latency_component_id_, nullptr);
+  DCHECK(!found_component);
 
   if (event.TimeStampSeconds() &&
       !latency->FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
