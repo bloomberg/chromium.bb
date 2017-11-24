@@ -43,6 +43,7 @@
 #endif /* ENABLE_EGL */
 
 #include "shared/helpers.h"
+#include "shared/timespec-util.h"
 
 struct weston_test {
 	struct weston_compositor *compositor;
@@ -151,6 +152,7 @@ move_pointer(struct wl_client *client, struct wl_resource *resource,
 	struct weston_seat *seat = get_seat(test);
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 	struct weston_pointer_motion_event event = { 0 };
+	struct timespec time;
 
 	event = (struct weston_pointer_motion_event) {
 		.mask = WESTON_POINTER_MOTION_REL,
@@ -158,7 +160,9 @@ move_pointer(struct wl_client *client, struct wl_resource *resource,
 		.dy = wl_fixed_to_double(wl_fixed_from_int(y) - pointer->y),
 	};
 
-	notify_motion(seat, 100, &event);
+	timespec_from_msec(&time, 100);
+
+	notify_motion(seat, &time, &event);
 
 	notify_pointer_position(test, resource);
 }

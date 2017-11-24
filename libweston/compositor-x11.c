@@ -55,6 +55,7 @@
 #include "shared/config-parser.h"
 #include "shared/helpers.h"
 #include "shared/image-loader.h"
+#include "shared/timespec-util.h"
 #include "gl-renderer.h"
 #include "weston-egl-ext.h"
 #include "pixman-renderer.h"
@@ -1242,6 +1243,7 @@ x11_backend_deliver_motion_event(struct x11_backend *b,
 	struct weston_pointer_motion_event motion_event = { 0 };
 	xcb_motion_notify_event_t *motion_notify =
 			(xcb_motion_notify_event_t *) event;
+	struct timespec time;
 
 	if (!b->has_xkb)
 		update_xkb_state_from_core(b, motion_notify->state);
@@ -1260,8 +1262,8 @@ x11_backend_deliver_motion_event(struct x11_backend *b,
 		.dy = y - b->prev_y
 	};
 
-	notify_motion(&b->core_seat, weston_compositor_get_time(),
-		      &motion_event);
+	timespec_from_msec(&time, weston_compositor_get_time());
+	notify_motion(&b->core_seat, &time, &motion_event);
 	notify_pointer_frame(&b->core_seat);
 
 	b->prev_x = x;

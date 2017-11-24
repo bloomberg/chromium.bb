@@ -34,6 +34,7 @@
 
 #include "compositor.h"
 #include "shared/helpers.h"
+#include "shared/timespec-util.h"
 
 struct weston_drag {
 	struct wl_client *client;
@@ -575,7 +576,8 @@ drag_grab_focus(struct weston_pointer_grab *grab)
 }
 
 static void
-drag_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
+drag_grab_motion(struct weston_pointer_grab *grab,
+		 const struct timespec *time,
 		 struct weston_pointer_motion_event *event)
 {
 	struct weston_pointer_drag *drag =
@@ -583,6 +585,7 @@ drag_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 	struct weston_pointer *pointer = drag->grab.pointer;
 	float fx, fy;
 	wl_fixed_t sx, sy;
+	uint32_t msecs;
 
 	weston_pointer_move(pointer, event);
 
@@ -594,11 +597,12 @@ drag_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 	}
 
 	if (drag->base.focus_resource) {
+		msecs = timespec_to_msec(time);
 		weston_view_from_global_fixed(drag->base.focus,
 					      pointer->x, pointer->y,
 					      &sx, &sy);
 
-		wl_data_device_send_motion(drag->base.focus_resource, time, sx, sy);
+		wl_data_device_send_motion(drag->base.focus_resource, msecs, sx, sy);
 	}
 }
 

@@ -53,6 +53,7 @@
 #include "shared/image-loader.h"
 #include "shared/os-compatibility.h"
 #include "shared/cairo-util.h"
+#include "shared/timespec-util.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
 #include "presentation-time-server-protocol.h"
@@ -1589,6 +1590,7 @@ input_handle_motion(void *data, struct wl_pointer *pointer,
 	enum theme_location location;
 	bool want_frame = false;
 	double x, y;
+	struct timespec ts;
 
 	if (!input->output)
 		return;
@@ -1626,7 +1628,8 @@ input_handle_motion(void *data, struct wl_pointer *pointer,
 	}
 
 	if (location == THEME_LOCATION_CLIENT_AREA) {
-		notify_motion_absolute(&input->base, time, x, y);
+		timespec_from_msec(&ts, time);
+		notify_motion_absolute(&input->base, &ts, x, y);
 		want_frame = true;
 	}
 

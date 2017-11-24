@@ -81,6 +81,7 @@
 #endif
 
 #include "shared/helpers.h"
+#include "shared/timespec-util.h"
 #include "compositor.h"
 #include "compositor-rdp.h"
 #include "pixman-renderer.h"
@@ -1029,11 +1030,13 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 	struct rdp_output *output;
 	uint32_t button = 0;
 	bool need_frame = false;
+	struct timespec time;
 
 	if (flags & PTR_FLAGS_MOVE) {
 		output = peerContext->rdpBackend->output;
 		if (x < output->base.width && y < output->base.height) {
-			notify_motion_absolute(peerContext->item.seat, weston_compositor_get_time(),
+			timespec_from_msec(&time, weston_compositor_get_time());
+			notify_motion_absolute(peerContext->item.seat, &time,
 					x, y);
 			need_frame = true;
 		}
@@ -1088,11 +1091,12 @@ xf_extendedMouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 {
 	RdpPeerContext *peerContext = (RdpPeerContext *)input->context;
 	struct rdp_output *output;
+	struct timespec time;
 
 	output = peerContext->rdpBackend->output;
 	if (x < output->base.width && y < output->base.height) {
-		notify_motion_absolute(peerContext->item.seat, weston_compositor_get_time(),
-				x, y);
+		timespec_from_msec(&time, weston_compositor_get_time());
+		notify_motion_absolute(peerContext->item.seat, &time, x, y);
 	}
 
 	FREERDP_CB_RETURN(TRUE);

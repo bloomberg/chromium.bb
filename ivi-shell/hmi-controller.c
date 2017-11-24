@@ -1534,7 +1534,8 @@ layer_set_pos(struct ivi_layout_layer *layer, wl_fixed_t pos_x,
 }
 
 static void
-pointer_move_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
+pointer_move_grab_motion(struct weston_pointer_grab *grab,
+			 const struct timespec *time,
 			 struct weston_pointer_motion_event *event)
 {
 	struct pointer_move_grab *pnt_move_grab =

@@ -39,6 +39,7 @@
 #include "compositor.h"
 #include "libinput-device.h"
 #include "shared/helpers.h"
+#include "shared/timespec-util.h"
 
 void
 evdev_led_update(struct evdev_device *device, enum weston_led weston_leds)
@@ -86,26 +87,25 @@ handle_pointer_motion(struct libinput_device *libinput_device,
 	struct evdev_device *device =
 		libinput_device_get_user_data(libinput_device);
 	struct weston_pointer_motion_event event = { 0 };
-	uint64_t time_usec =
-		libinput_event_pointer_get_time_usec(pointer_event);
+	struct timespec time;
 	double dx_unaccel, dy_unaccel;
 
+	timespec_from_usec(&time,
+			   libinput_event_pointer_get_time_usec(pointer_event));
 	dx_unaccel = libinput_event_pointer_get_dx_unaccelerated(pointer_event);
 	dy_unaccel = libinput_event_pointer_get_dy_unaccelerated(pointer_event);
 
 	event = (struct weston_pointer_motion_event) {
 		.mask = WESTON_POINTER_MOTION_REL |
 			WESTON_POINTER_MOTION_REL_UNACCEL,
-		.time_usec = time_usec,
+		.time = time,
 		.dx = libinput_event_pointer_get_dx(pointer_event),
 		.dy = libinput_event_pointer_get_dy(pointer_event),
 		.dx_unaccel = dx_unaccel,
 		.dy_unaccel = dy_unaccel,
 	};
 
-	notify_motion(device->seat,
-		      libinput_event_pointer_get_time(pointer_event),
-		      &event);
+	notify_motion(device->seat, &time, &event);
 
 	return true;
 }
@@ -118,14 +118,15 @@ handle_pointer_motion_absolute(
 	struct evdev_device *device =
 		libinput_device_get_user_data(libinput_device);
 	struct weston_output *output = device->output;
-	uint32_t time;
+	struct timespec time;
 	double x, y;
 	uint32_t width, height;
 
 	if (!output)
 		return false;
 
-	time = libinput_event_pointer_get_time(pointer_event);
+	timespec_from_usec(&time,
+			   libinput_event_pointer_get_time_usec(pointer_event));
 	width = device->output->current_mode->width;
 	height = device->output->current_mode->height;
 
@@ -135,7 +136,7 @@ handle_pointer_motion_absolute(
 							      height);
 
 	weston_output_transform_coordinate(device->output, x, y, &x, &y);
-	notify_motion_absolute(device->seat, time, x, y);
+	notify_motion_absolute(device->seat, &time, x, y);
 
 	return true;
 }

@@ -349,7 +349,8 @@ exposay_focus(struct weston_pointer_grab *grab)
 }
 
 static void
-exposay_motion(struct weston_pointer_grab *grab, uint32_t time,
+exposay_motion(struct weston_pointer_grab *grab,
+	       const struct timespec *time,
 	       struct weston_pointer_motion_event *event)
 {
 	struct desktop_shell *shell =

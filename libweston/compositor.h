@@ -249,7 +249,7 @@ enum weston_pointer_motion_mask {
 
 struct weston_pointer_motion_event {
 	uint32_t mask;
-	uint64_t time_usec;
+	struct timespec time;
 	double x;
 	double y;
 	double dx;
@@ -268,7 +268,8 @@ struct weston_pointer_axis_event {
 struct weston_pointer_grab;
 struct weston_pointer_grab_interface {
 	void (*focus)(struct weston_pointer_grab *grab);
-	void (*motion)(struct weston_pointer_grab *grab, uint32_t time,
+	void (*motion)(struct weston_pointer_grab *grab,
+		       const struct timespec *time,
 		       struct weston_pointer_motion_event *event);
 	void (*button)(struct weston_pointer_grab *grab,
 		       uint32_t time, uint32_t button, uint32_t state);
@@ -423,7 +424,8 @@ weston_pointer_create(struct weston_seat *seat);
 void
 weston_pointer_destroy(struct weston_pointer *pointer);
 void
-weston_pointer_send_motion(struct weston_pointer *pointer, uint32_t time,
+weston_pointer_send_motion(struct weston_pointer *pointer,
+			   const struct timespec *time,
 			   struct weston_pointer_motion_event *event);
 bool
 weston_pointer_has_focus_resource(struct weston_pointer *pointer);
@@ -1363,10 +1365,10 @@ weston_view_activate(struct weston_view *view,
 		     uint32_t flags);
 
 void
-notify_motion(struct weston_seat *seat, uint32_t time,
+notify_motion(struct weston_seat *seat, const struct timespec *time,
 	      struct weston_pointer_motion_event *event);
 void
-notify_motion_absolute(struct weston_seat *seat, uint32_t time,
+notify_motion_absolute(struct weston_seat *seat, const struct timespec *time,
 		       double x, double y);
 void
 notify_button(struct weston_seat *seat, uint32_t time, int32_t button,

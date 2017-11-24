@@ -44,6 +44,7 @@
 #include "weston.h"
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
+#include "shared/timespec-util.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
 
 struct shared_output {
@@ -140,11 +141,14 @@ ss_seat_handle_motion(void *data, struct wl_pointer *pointer,
 		      uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 	struct ss_seat *seat = data;
+	struct timespec ts;
+
+	timespec_from_msec(&ts, time);
 
 	/* No transformation of input position is required here because we are
 	 * always receiving the input in the same coordinates as the output. */
 
-	notify_motion_absolute(&seat->base, time,
+	notify_motion_absolute(&seat->base, &ts,
 			       wl_fixed_to_double(x), wl_fixed_to_double(y));
 	notify_pointer_frame(&seat->base);
 }

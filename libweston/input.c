@@ -38,6 +38,7 @@
 
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
+#include "shared/timespec-util.h"
 #include "compositor.h"
 #include "relative-pointer-unstable-v1-server-protocol.h"
 #include "pointer-constraints-unstable-v1-server-protocol.h"
@@ -341,7 +342,7 @@ default_grab_pointer_focus(struct weston_pointer_grab *grab)
 
 static void
 pointer_send_relative_motion(struct weston_pointer *pointer,
-			     uint32_t time,
+			     const struct timespec *time,
 			     struct weston_pointer_motion_event *event)
 {
 	uint64_t time_usec;
@@ -359,9 +360,9 @@ pointer_send_relative_motion(struct weston_pointer *pointer,
 		return;
 
 	resource_list = &pointer->focus_client->relative_pointer_resources;
-	time_usec = event->time_usec;
+	time_usec = timespec_to_usec(&event->time);
 	if (time_usec == 0)
-		time_usec = time * 1000ULL;
+		time_usec = timespec_to_usec(time);
 
 	dxf = wl_fixed_from_double(dx);
 	dyf = wl_fixed_from_double(dy);
@@ -379,22 +380,26 @@ pointer_send_relative_motion(struct weston_pointer *pointer,
 }
 
 static void
-pointer_send_motion(struct weston_pointer *pointer, uint32_t time,
+pointer_send_motion(struct weston_pointer *pointer,
+		    const struct timespec *time,
 		    wl_fixed_t sx, wl_fixed_t sy)
 {
 	struct wl_list *resource_list;
 	struct wl_resource *resource;
+	uint32_t msecs;
 
 	if (!pointer->focus_client)
 		return;
 
 	resource_list = &pointer->focus_client->pointer_resources;
+	msecs = timespec_to_msec(time);
 	wl_resource_for_each(resource, resource_list)
-		wl_pointer_send_motion(resource, time, sx, sy);
+		wl_pointer_send_motion(resource, msecs, sx, sy);
 }
 
 WL_EXPORT void
-weston_pointer_send_motion(struct weston_pointer *pointer, uint32_t time,
+weston_pointer_send_motion(struct weston_pointer *pointer,
+			   const struct timespec *time,
 			   struct weston_pointer_motion_event *event)
 {
 	wl_fixed_t x, y;
@@ -418,7 +423,8 @@ weston_pointer_send_motion(struct weston_pointer *pointer, uint32_t time,
 }
 
 static void
-default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
+default_grab_pointer_motion(struct weston_pointer_grab *grab,
+			    const struct timespec *time,
 			    struct weston_pointer_motion_event *event)
 {
 	weston_pointer_send_motion(grab->pointer, time, event);
@@ -1551,7 +1557,7 @@ weston_pointer_handle_output_destroy(struct wl_listener *listener, void *data)
 
 WL_EXPORT void
 notify_motion(struct weston_seat *seat,
-	      uint32_t time,
+	      const struct timespec *time,
 	      struct weston_pointer_motion_event *event)
 {
 	struct weston_compositor *ec = seat->compositor;
@@ -1598,8 +1604,8 @@ run_modifier_bindings(struct weston_seat *seat, uint32_t old, uint32_t new)
 }
 
 WL_EXPORT void
-notify_motion_absolute(struct weston_seat *seat,
-		       uint32_t time, double x, double y)
+notify_motion_absolute(struct weston_seat *seat, const struct timespec *time,
+		       double x, double y)
 {
 	struct weston_compositor *ec = seat->compositor;
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
@@ -3314,7 +3320,7 @@ locked_pointer_grab_pointer_focus(struct weston_pointer_grab *grab)
 
 static void
 locked_pointer_grab_pointer_motion(struct weston_pointer_grab *grab,
-				   uint32_t time,
+				   const struct timespec *time,
 				   struct weston_pointer_motion_event *event)
 {
 	pointer_send_relative_motion(grab->pointer, time, event);
@@ -4291,7 +4297,7 @@ maybe_warp_confined_pointer(struct weston_pointer_constraint *constraint)
 
 static void
 confined_pointer_grab_pointer_motion(struct weston_pointer_grab *grab,
-				     uint32_t time,
+				     const struct timespec *time,
 				     struct weston_pointer_motion_event *event)
 {
 	struct weston_pointer_constraint *constraint =
