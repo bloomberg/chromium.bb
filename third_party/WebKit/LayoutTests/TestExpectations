@@ -4040,7 +4040,7 @@ crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/elements-pane
 
 # Sheriff failures 2017-11-16
 crbug.com/785980 [ Win10 ] virtual/mojo-loading/http/tests/devtools/network/network-xhr-same-url-as-main-resource.js [ Failure Pass ]
-crbug.com/785980 [ Win10 ] http/tests/devtools/network/network-xhr-same-url-as-main-resource.js [ Failure Pass ]
+crbug.com/785980 [ Win7 Win10 ] http/tests/devtools/network/network-xhr-same-url-as-main-resource.js [ Failure Pass ]
 
 # Sheriff failures 2017-11-17
 crbug.com/786235 http/tests/misc/resource-timing-sizes-tags.html [ Failure Pass ]
