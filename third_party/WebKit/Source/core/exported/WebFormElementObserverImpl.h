@@ -5,6 +5,7 @@
 #ifndef WebFormElementObserverImpl_h
 #define WebFormElementObserverImpl_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/heap/Member.h"
@@ -20,8 +21,6 @@ class WebFormElementObserverCallback;
 class CORE_EXPORT WebFormElementObserverImpl final
     : public GarbageCollectedFinalized<WebFormElementObserverImpl>,
       public WebFormElementObserver {
-  WTF_MAKE_NONCOPYABLE(WebFormElementObserverImpl);
-
  public:
   WebFormElementObserverImpl(HTMLElement&,
                              std::unique_ptr<WebFormElementObserverCallback>);
@@ -39,6 +38,8 @@ class CORE_EXPORT WebFormElementObserverImpl final
 
   // WebFormElementObserverImpl must remain alive until Disconnect() is called.
   SelfKeepAlive<WebFormElementObserverImpl> self_keep_alive_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebFormElementObserverImpl);
 };
 
 }  // namespace blink

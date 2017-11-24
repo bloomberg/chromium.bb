@@ -5,6 +5,7 @@
 #ifndef WebInputMethodControllerImpl_h
 #define WebInputMethodControllerImpl_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
@@ -22,7 +23,6 @@ class WebString;
 
 class CORE_EXPORT WebInputMethodControllerImpl
     : public WebInputMethodController {
-  WTF_MAKE_NONCOPYABLE(WebInputMethodControllerImpl);
   DISALLOW_NEW();
 
  public:
@@ -56,6 +56,8 @@ class CORE_EXPORT WebInputMethodControllerImpl
   WebPlugin* FocusedPluginIfInputMethodSupported() const;
 
   const Member<WebLocalFrameImpl> web_frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebInputMethodControllerImpl);
 };
 }  // namespace blink
 

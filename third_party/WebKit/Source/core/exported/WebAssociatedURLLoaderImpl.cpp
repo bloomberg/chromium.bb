@@ -32,6 +32,8 @@
 
 #include <limits.h>
 #include <memory>
+
+#include "base/macros.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
 #include "core/loader/DocumentThreadableLoader.h"
@@ -63,8 +65,6 @@ namespace blink {
 namespace {
 
 class HTTPRequestHeaderValidator : public WebHTTPHeaderVisitor {
-  WTF_MAKE_NONCOPYABLE(HTTPRequestHeaderValidator);
-
  public:
   HTTPRequestHeaderValidator() : is_safe_(true) {}
   ~HTTPRequestHeaderValidator() override {}
@@ -74,6 +74,8 @@ class HTTPRequestHeaderValidator : public WebHTTPHeaderVisitor {
 
  private:
   bool is_safe_;
+
+  DISALLOW_COPY_AND_ASSIGN(HTTPRequestHeaderValidator);
 };
 
 void HTTPRequestHeaderValidator::VisitHeader(const WebString& name,
@@ -91,8 +93,6 @@ void HTTPRequestHeaderValidator::VisitHeader(const WebString& name,
 // WebAssociatedURLLoaderClient.
 class WebAssociatedURLLoaderImpl::ClientAdapter final
     : public DocumentThreadableLoaderClient {
-  WTF_MAKE_NONCOPYABLE(ClientAdapter);
-
  public:
   static std::unique_ptr<ClientAdapter> Create(
       WebAssociatedURLLoaderImpl*,
@@ -155,6 +155,8 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   TaskRunnerTimer<ClientAdapter> error_timer_;
   bool enable_error_notifications_;
   bool did_fail_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClientAdapter);
 };
 
 std::unique_ptr<WebAssociatedURLLoaderImpl::ClientAdapter>

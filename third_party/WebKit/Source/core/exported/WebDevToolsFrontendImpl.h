@@ -31,11 +31,11 @@
 #ifndef WebDevToolsFrontendImpl_h
 #define WebDevToolsFrontendImpl_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorFrontendClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/web/WebDevToolsFrontend.h"
 
@@ -47,8 +47,6 @@ class WebLocalFrameImpl;
 class CORE_EXPORT WebDevToolsFrontendImpl final
     : public WebDevToolsFrontend,
       public InspectorFrontendClient {
-  WTF_MAKE_NONCOPYABLE(WebDevToolsFrontendImpl);
-
  public:
   WebDevToolsFrontendImpl(WebLocalFrameImpl*, WebDevToolsFrontendClient*);
   ~WebDevToolsFrontendImpl() override;
@@ -68,6 +66,8 @@ class CORE_EXPORT WebDevToolsFrontendImpl final
   Persistent<WebLocalFrameImpl> web_frame_;
   WebDevToolsFrontendClient* client_;
   Persistent<DevToolsHost> devtools_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebDevToolsFrontendImpl);
 };
 
 }  // namespace blink
