@@ -4559,9 +4559,9 @@
       'tags': [],
       'desc': '''Enables the integrated Google Translate service on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will show an integrated toolbar offering to translate the page for the user, when appropriate.
+      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will offer translation functionality to the user by showing an integrated translate toolbar (when appropriate) and a translate option on the right-click context menu.
 
-      If you disable this setting, users will never see the translation bar.
+      If you disable this setting, all built-in translate features will be disabled.
 
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
