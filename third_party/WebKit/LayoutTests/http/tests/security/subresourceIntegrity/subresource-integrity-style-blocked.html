@@ -2,7 +2,8 @@
 <html>
     <head>
         <title>Subresource integrity blocked style resources</title>
-        <script src="../../resources/testharness.js"></script>
+        <script src="/resources/testharness.js"></script>
+        <script src="/resources/testharnessreport.js"></script>
 
         <script>
             var steps = 0;
@@ -28,16 +29,6 @@
                 link.addEventListener('load', markLoaded);
                 link.addEventListener('error', markFailed);
                 document.head.appendChild(link);
-            }
-
-            function runTest()
-            {
-                if (window.testRunner) {
-                    testRunner.dumpAsText();
-                    testRunner.waitUntilDone();
-                }
-
-                runNextStep();
             }
 
             function runNextStep()
@@ -69,12 +60,10 @@
                 assert_equals(failed, 3, "All stylesheet loads should have failed.");
                 assert_equals(loaded, 0, "All stylesheet loads should have failed.");
                 done();
-                if (window.testRunner)
-                    testRunner.notifyDone();
             }
         </script>
     </head>
-    <body onload="runTest()">
+    <body onload="runNextStep()">
         <p id="p1">Test 1</p>
         <p id="p2">Test 2</p>
         <p id="p3">Test 3</p>
