@@ -172,13 +172,15 @@ function validateFrameRate(videoElementName, expected_frame_rate, callback) {
   }, 1000);
 }
 
-function waitForConnectionToStabilize(peerConnection, callback) {
-  peerConnection.onsignalingstatechange = function(event) {
-    if (peerConnection.signalingState == 'stable') {
-      peerConnection.onsignalingstatechange = null;
-      callback();
+function waitForConnectionToStabilize(peerConnection) {
+  return new Promise((resolve, reject) => {
+    peerConnection.onsignalingstatechange = function(event) {
+      if (peerConnection.signalingState == 'stable') {
+        peerConnection.onsignalingstatechange = null;
+        resolve();
+      }
     }
-  }
+  });
 }
 
 // Adds an expected event. You may call this function many times to add more

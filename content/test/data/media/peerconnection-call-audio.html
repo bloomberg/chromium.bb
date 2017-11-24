@@ -30,7 +30,7 @@
         .then(addStreamToBothConnectionsAndNegotiate)
         .catch(printGetUserMediaError);
 
-    waitForConnectionToStabilize(gFirstConnection, function() {
+    waitForConnectionToStabilize(gFirstConnection).then(() => {
       gFirstConnection.removeStream(gLocalStream);
       gSecondConnection.removeStream(gLocalStream);
 
@@ -38,15 +38,13 @@
           .then(addStreamToTheFirstConnectionAndNegotiate)
           .catch(printGetUserMediaError);
 
-      var onCallEstablished = function() {
-        ensureAudioPlaying(gSecondConnection);
-      };
-
-      waitForConnectionToStabilize(gFirstConnection, onCallEstablished);
+      waitForConnectionToStabilize(gFirstConnection)
+          .then(() => { return ensureAudioPlaying(gSecondConnection); })
+          .then(reportTestSuccess);
     });
   }
 
-  function callAndEnsureAudioIsPlaying(constraints) {
+  function setupCallAndPromiseAudioPlaying(constraints) {
     createConnections(null);
 
     // Add the local stream to gFirstConnection to play one-way audio.
@@ -54,11 +52,13 @@
         .then(addStreamToTheFirstConnectionAndNegotiate)
         .catch(printGetUserMediaError);
 
-    var onCallEstablished = function() {
-      ensureAudioPlaying(gSecondConnection);
-    };
+    return waitForConnectionToStabilize(gFirstConnection)
+        .then(() => { return ensureAudioPlaying(gSecondConnection); });
+  }
 
-    waitForConnectionToStabilize(gFirstConnection, onCallEstablished);
+  function callAndEnsureAudioIsPlaying(constraints) {
+    setupCallAndPromiseAudioPlaying(constraints)
+        .then(reportTestSuccess);
   }
 
   function callWithIsac16KAndEnsureAudioIsPlaying(constraints) {
@@ -95,34 +95,27 @@
   }
 
   function callAndEnsureRemoteAudioTrackMutingWorks() {
-    callAndEnsureAudioIsPlaying({audio: true, video: true});
-    setAllEventsOccuredHandler(function() {
-      setAllEventsOccuredHandler(reportTestSuccess);
-
+    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
       // Call is up, now mute the remote track and check we stop playing out
       // audio (after a small delay, we don't expect it to happen instantly).
       enableRemoteAudio(gSecondConnection, false);
-      ensureSilence(gSecondConnection);
+      ensureSilence(gSecondConnection)
+          .then(reportTestSuccess);
     });
   }
 
   function callAndEnsureLocalAudioTrackMutingWorks() {
-    callAndEnsureAudioIsPlaying({audio: true, video: true});
-    setAllEventsOccuredHandler(function() {
-      setAllEventsOccuredHandler(reportTestSuccess);
-
+    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
       // Call is up, now mute the local track of the sending side and ensure
       // the receiving side stops receiving audio.
       enableLocalAudio(gFirstConnection, false);
-      ensureSilence(gSecondConnection);
+      ensureSilence(gSecondConnection)
+          .then(reportTestSuccess);
     });
   }
 
   function callAndEnsureAudioTrackUnmutingWorks() {
-    callAndEnsureAudioIsPlaying({audio: true, video: true});
-    setAllEventsOccuredHandler(function() {
-      setAllEventsOccuredHandler(reportTestSuccess);
-
+    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
       // Mute, wait a while, unmute, verify audio gets back up.
       // (Also, ensure video muting doesn't affect audio).
       enableRemoteAudio(gSecondConnection, false);
@@ -133,26 +126,25 @@
       }, 500);
 
       setTimeout(function() {
-        ensureAudioPlaying(gSecondConnection);
+        ensureAudioPlaying(gSecondConnection)
+            .then(reportTestSuccess);
       }, 1500);
     });
   }
 
   function callAndEnsureLocalVideoMutingDoesntMuteAudio() {
-    callAndEnsureAudioIsPlaying({audio: true, video: true});
-    setAllEventsOccuredHandler(function() {
-      setAllEventsOccuredHandler(reportTestSuccess);
+    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
       enableLocalVideo(gFirstConnection, false);
-      ensureAudioPlaying(gSecondConnection);
+      ensureAudioPlaying(gSecondConnection)
+          .then(reportTestSuccess);
     });
   }
 
   function callAndEnsureRemoteVideoMutingDoesntMuteAudio() {
-    callAndEnsureAudioIsPlaying({audio: true, video: true});
-    setAllEventsOccuredHandler(function() {
-      setAllEventsOccuredHandler(reportTestSuccess);
+    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
       enableRemoteVideo(gSecondConnection, false);
-      ensureAudioPlaying(gSecondConnection);
+      ensureAudioPlaying(gSecondConnection)
+          .then(reportTestSuccess);
     });
   }
 
