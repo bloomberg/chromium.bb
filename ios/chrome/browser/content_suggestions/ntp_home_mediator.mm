@@ -74,19 +74,48 @@ const char kRateThisAppCommand[] = "ratethisapp";
 @synthesize alertCoordinator = _alertCoordinator;
 @synthesize metricsRecorder = _metricsRecorder;
 
+- (void)dealloc {
+  if (_webState && _webStateObserver) {
+    _webState->RemoveObserver(_webStateObserver.get());
+    _webStateObserver.reset();
+    _webState = nullptr;
+  }
+}
+
 - (void)setUp {
+  DCHECK(!_webStateObserver);
   DCHECK(self.suggestionsService);
-  _webStateObserver =
-      base::MakeUnique<web::WebStateObserverBridge>(self.webState, self);
+
+  _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
+  if (_webState) {
+    _webState->AddObserver(_webStateObserver.get());
+  }
 }
 
 - (void)shutdown {
-  _webStateObserver.reset();
+  DCHECK(_webStateObserver);
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserver.get());
+    _webStateObserver.reset();
+  }
+}
+
+#pragma mark - Properties.
+
+- (void)setWebState:(web::WebState*)webState {
+  if (_webState && _webStateObserver) {
+    _webState->RemoveObserver(_webStateObserver.get());
+  }
+  _webState = webState;
+  if (_webState && _webStateObserver) {
+    _webState->AddObserver(_webStateObserver.get());
+  }
 }
 
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+  DCHECK_EQ(_webState, webState);
   if (!success)
     return;
 
@@ -106,6 +135,12 @@ const char kRateThisAppCommand[] = "ratethisapp";
     // Update the constraints in case the omnibox needs to be moved.
     [self.suggestionsViewController updateConstraints];
   }
+}
+
+- (void)webStateDestroyed:(web::WebState*)webState {
+  DCHECK_EQ(_webState, webState);
+  _webState->RemoveObserver(_webStateObserver.get());
+  _webState = nullptr;
 }
 
 #pragma mark - ContentSuggestionsCommands
