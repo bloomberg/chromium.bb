@@ -210,6 +210,7 @@ source_set("unit_tests") {
     "signin_error_controller_unittest.cc",
     "signin_header_helper_unittest.cc",
     "signin_investigator_unittest.cc",
+    "signin_manager_unittest.cc",
     "signin_status_metrics_provider_unittest.cc",
     "webdata/token_service_table_unittest.cc",
   ]
@@ -230,6 +231,7 @@ source_set("unit_tests") {
   if (is_chromeos) {
     sources -= [
       "account_investigator_unittest.cc",
+      "signin_manager_unittest.cc",
       "signin_status_metrics_provider_unittest.cc",
     ]
   }
