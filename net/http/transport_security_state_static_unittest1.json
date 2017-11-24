@@ -26,6 +26,7 @@
   "entries": [
     {
       "name": "hsts.example.com",
+      "policy": "test",
       "mode": "force-https",
       "include_subdomains": true,
       "pins": "test1"

@@ -311,6 +311,12 @@ bool ParseJSON(base::StringPiece json,
                                       kExpectStapleReportURIJSONKey,
                                       kIncludeSubdomainsForExpectStapleJSONKey};
 
+  // See the comments in net/http/transport_security_state_static.json for more
+  // info on these policies.
+  std::set<std::string> valid_policies = {
+      "test",        "public-suffix", "google",      "custom",
+      "bulk-legacy", "bulk-18-weeks", "bulk-1-year", "public-suffix-requested"};
+
   std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
   base::DictionaryValue* dict_value = nullptr;
   if (!value.get() || !value->GetAsDictionary(&dict_value)) {
@@ -353,6 +359,14 @@ bool ParseJSON(base::StringPiece json,
                    << " contains an unknown " << entry_value.first << " field";
         return false;
       }
+    }
+
+    std::string policy;
+    parsed->GetString(kPolicyJSONKey, &policy);
+    if (valid_policies.find(policy) == valid_policies.cend()) {
+      LOG(ERROR) << "The entry for " << entry->hostname
+                 << " does not have a valid policy";
+      return false;
     }
 
     std::string mode;

@@ -27,21 +27,25 @@
   "entries": [
     {
       "name": "example.com",
+      "policy": "test",
       "mode": "force-https",
       "include_subdomains": true,
       "expect_staple": true,
       "expect_staple_report_uri": "https://report.example.com/staple-upload"
     }, {
       "name": "hpkp.example.com",
+      "policy": "test",
       "include_subdomains_for_pinning": true,
       "pins": "test1"
     }, {
       "name": "example.org",
+      "policy": "test",
       "mode": "force-https",
       "expect_ct": true,
       "expect_ct_report_uri": "https://report.example.org/ct-upload"
     }, {
       "name": "badssl.com",
+      "policy": "test",
       "include_subdomains": true,
       "pins": "test1",
       "expect_staple": true,
@@ -49,6 +53,7 @@
       "include_subdomains_for_expect_staple": true
     }, {
       "name": "mix.badssl.com",
+      "policy": "test",
       "mode": "force-https",
       "include_subdomains": false,
       "pins": "test2",
@@ -61,6 +66,7 @@
     }, {
       // Keep this a simple entry in the context of TrieWriter::IsSimpleEntry().
       "name": "simple-entry.example.com",
+      "policy": "test",
       "mode": "force-https",
       "include_subdomains": true
     }
