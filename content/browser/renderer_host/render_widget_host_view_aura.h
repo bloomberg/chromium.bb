@@ -616,8 +616,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   gfx::Insets insets_;
 
-  std::vector<ui::LatencyInfo> software_latency_info_;
-
   std::unique_ptr<wm::ScopedTooltipDisabler> tooltip_disabler_;
 
   // True when this view acts as a platform view hack for a
