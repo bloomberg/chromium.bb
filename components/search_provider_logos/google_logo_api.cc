@@ -115,7 +115,14 @@ GURL ParseUrl(const base::DictionaryValue& parent_dict,
   if (!parent_dict.GetString(key, &url_str) || url_str.empty()) {
     return GURL();
   }
-  return base_url.Resolve(url_str);
+  GURL result = base_url.Resolve(url_str);
+  // If the base URL is https:// (which should almost always be the case, see
+  // above), then we require all other URLs to be https:// too.
+  if (base_url.SchemeIs(url::kHttpsScheme) &&
+      !result.SchemeIs(url::kHttpsScheme)) {
+    return GURL();
+  }
+  return result;
 }
 
 }  // namespace
