@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/language/chrome_language_detection_client.h"
+#include "chrome/browser/language/chrome_language_detection_tab_helper.h"
 
 #include "base/logging.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
@@ -13,18 +13,18 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeLanguageDetectionClient);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeLanguageDetectionTabHelper);
 
-ChromeLanguageDetectionClient::ChromeLanguageDetectionClient(
+ChromeLanguageDetectionTabHelper::ChromeLanguageDetectionTabHelper(
     content::WebContents* const web_contents)
     : content::WebContentsObserver(web_contents),
       language_histogram_(UrlLanguageHistogramFactory::GetForBrowserContext(
           web_contents->GetBrowserContext())) {}
 
-ChromeLanguageDetectionClient::~ChromeLanguageDetectionClient() = default;
+ChromeLanguageDetectionTabHelper::~ChromeLanguageDetectionTabHelper() = default;
 
 // static
-void ChromeLanguageDetectionClient::BindContentTranslateDriver(
+void ChromeLanguageDetectionTabHelper::BindContentTranslateDriver(
     translate::mojom::ContentTranslateDriverRequest request,
     content::RenderFrameHost* const render_frame_host) {
   // Only valid for the main frame.
@@ -40,8 +40,8 @@ void ChromeLanguageDetectionClient::BindContentTranslateDriver(
   // not available for this render frame host, the request will be just dropped.
   // This would cause the message pipe to be closed, which will raise a
   // connection error on the peer side.
-  ChromeLanguageDetectionClient* const instance =
-      ChromeLanguageDetectionClient::FromWebContents(web_contents);
+  ChromeLanguageDetectionTabHelper* const instance =
+      ChromeLanguageDetectionTabHelper::FromWebContents(web_contents);
   if (!instance)
     return;
 
@@ -49,7 +49,7 @@ void ChromeLanguageDetectionClient::BindContentTranslateDriver(
 }
 
 // translate::mojom::ContentTranslateDriver implementation.
-void ChromeLanguageDetectionClient::RegisterPage(
+void ChromeLanguageDetectionTabHelper::RegisterPage(
     translate::mojom::PagePtr page,
     const translate::LanguageDetectionDetails& details,
     const bool page_needs_translation) {

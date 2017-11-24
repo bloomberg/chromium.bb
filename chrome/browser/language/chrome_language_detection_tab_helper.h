@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LANGUAGE_CHROME_LANGUAGE_DETECTION_CLIENT_H_
-#define CHROME_BROWSER_LANGUAGE_CHROME_LANGUAGE_DETECTION_CLIENT_H_
+#ifndef CHROME_BROWSER_LANGUAGE_CHROME_LANGUAGE_DETECTION_TAB_HELPER_H_
+#define CHROME_BROWSER_LANGUAGE_CHROME_LANGUAGE_DETECTION_TAB_HELPER_H_
 
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -23,12 +23,12 @@ class UrlLanguageHistogram;
 
 // Dispatches language detection messages from render frames to language and
 // translate components.
-class ChromeLanguageDetectionClient
+class ChromeLanguageDetectionTabHelper
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<ChromeLanguageDetectionClient>,
+      public content::WebContentsUserData<ChromeLanguageDetectionTabHelper>,
       public translate::mojom::ContentTranslateDriver {
  public:
-  ~ChromeLanguageDetectionClient() override;
+  ~ChromeLanguageDetectionTabHelper() override;
 
   static void BindContentTranslateDriver(
       translate::mojom::ContentTranslateDriverRequest request,
@@ -40,18 +40,18 @@ class ChromeLanguageDetectionClient
                     bool page_needs_translation) override;
 
  private:
-  explicit ChromeLanguageDetectionClient(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<ChromeLanguageDetectionClient>;
+  explicit ChromeLanguageDetectionTabHelper(content::WebContents* web_contents);
+  friend class content::WebContentsUserData<ChromeLanguageDetectionTabHelper>;
 
   // Histogram to be notified about detected language of every page visited. Not
   // owned here.
   language::UrlLanguageHistogram* const language_histogram_;
 
-  // ChromeLanguageDetectionClient is a singleton per web contents, serving
+  // ChromeLanguageDetectionTabHelper is a singleton per web contents, serving
   // for multiple render frames.
   mojo::BindingSet<translate::mojom::ContentTranslateDriver> bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeLanguageDetectionClient);
+  DISALLOW_COPY_AND_ASSIGN(ChromeLanguageDetectionTabHelper);
 };
 
-#endif  // CHROME_BROWSER_LANGUAGE_CHROME_LANGUAGE_DETECTION_CLIENT_H_
+#endif  // CHROME_BROWSER_LANGUAGE_CHROME_LANGUAGE_DETECTION_TAB_HELPER_H_

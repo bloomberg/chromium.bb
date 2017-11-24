@@ -47,7 +47,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/font_family_cache.h"
-#include "chrome/browser/language/chrome_language_detection_client.h"
+#include "chrome/browser/language/chrome_language_detection_tab_helper.h"
 #include "chrome/browser/media/platform_verification_impl.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
@@ -3543,8 +3543,8 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
   // Use feature to determine whether translate or language code handles
   // language detection. See crbug.com/736929.
   if (base::FeatureList::IsEnabled(kDecoupleTranslateLanguageFeature)) {
-    frame_interfaces_parameterized_->AddInterface(
-        base::Bind(&ChromeLanguageDetectionClient::BindContentTranslateDriver));
+    frame_interfaces_parameterized_->AddInterface(base::Bind(
+        &ChromeLanguageDetectionTabHelper::BindContentTranslateDriver));
   } else {
     frame_interfaces_parameterized_->AddInterface(
         base::Bind(&ChromeTranslateClient::BindContentTranslateDriver));
