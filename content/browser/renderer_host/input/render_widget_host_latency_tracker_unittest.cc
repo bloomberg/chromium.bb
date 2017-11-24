@@ -761,7 +761,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     EXPECT_TRUE(touch_latency.FindLatency(
         ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, nullptr));
     EXPECT_TRUE(touch_latency.terminated());
-    tracker()->OnGpuSwapBuffersCompleted(touch_latency);
   }
 
   {
@@ -1138,6 +1137,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyUILatency) {
           base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[0]),
       1);
 
+  // Add the BEGIN_RWH component explicitly here with a timestamp, instead of
+  // calling tracker()->OnInputEvent().
   latency_info.AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
       tracker()->latency_component_id(), 0,
@@ -1145,7 +1146,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyUILatency) {
           base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[1]),
       1);
 
-  tracker()->OnInputEvent(event, &latency_info);
   tracker()->OnInputEventAck(event, &latency_info,
                              InputEventAckState::INPUT_EVENT_ACK_STATE_UNKNOWN);
   EXPECT_THAT(
@@ -1166,6 +1166,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyAckedLatency) {
   latency_info.set_trace_id(kTraceEventId);
   latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
 
+  // Add the BEGIN_RWH component explicitly here with a timestamp, instead of
+  // calling tracker()->OnInputEvent().
   latency_info.AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
       tracker()->latency_component_id(), 0,
@@ -1173,13 +1175,14 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyAckedLatency) {
           base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[0]),
       1);
 
+  // Add the ACK_RWH component explicitly here with a timestamp, instead of
+  // calling tracker()->OnInputEventAck().
   latency_info.AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0,
       base::TimeTicks() +
           base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[1]),
       1);
 
-  tracker()->OnInputEvent(event, &latency_info);
   // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
   // overwriting components.
   tracker()->ComputeInputLatencyHistograms(
