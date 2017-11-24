@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.TintedImageView;
 
 /**
@@ -177,7 +176,7 @@ public class SuggestionsBinder {
 
         // Temporarily set placeholder and then fetch the thumbnail from a provider.
         mThumbnailView.setBackground(null);
-        if (FeatureUtilities.isChromeHomeEnabled()
+        if (SuggestionsConfig.useModernLayout()
                 && ChromeFeatureList.isEnabled(
                            ChromeFeatureList.CONTENT_SUGGESTIONS_THUMBNAIL_DOMINANT_COLOR)) {
             ColorDrawable colorDrawable =
@@ -400,7 +399,7 @@ public class SuggestionsBinder {
     private static int getThumbnailSize(Resources resources) {
         @DimenRes
         final int dimension;
-        if (FeatureUtilities.isChromeHomeEnabled()) {
+        if (SuggestionsConfig.useModernLayout()) {
             dimension = R.dimen.snippets_thumbnail_size_modern;
         } else {
             dimension = R.dimen.snippets_thumbnail_size;

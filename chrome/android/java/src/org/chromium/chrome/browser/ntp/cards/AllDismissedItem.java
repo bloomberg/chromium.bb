@@ -15,6 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.ImpressionTracker.Listener;
 import org.chromium.chrome.browser.metrics.OneShotImpressionListener;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.Calendar;
@@ -74,7 +75,7 @@ public class AllDismissedItem extends OptionalLeaf {
         public void onBindViewHolder(int hourOfDay, Listener listener) {
             @StringRes
             final int messageId;
-            if (FeatureUtilities.isChromeHomeEnabled()) {
+            if (SuggestionsConfig.useModernLayout()) {
                 messageId = R.string.ntp_all_dismissed_body_text_modern;
             } else if (hourOfDay >= 0 && hourOfDay < 12) {
                 messageId = R.string.ntp_all_dismissed_body_text_morning;
@@ -89,7 +90,7 @@ public class AllDismissedItem extends OptionalLeaf {
 
         @LayoutRes
         private static int getLayout() {
-            return FeatureUtilities.isChromeHomeEnabled()
+            return SuggestionsConfig.useModernLayout()
                     ? R.layout.content_suggestions_all_dismissed_card_modern
                     : R.layout.new_tab_page_all_dismissed;
         }

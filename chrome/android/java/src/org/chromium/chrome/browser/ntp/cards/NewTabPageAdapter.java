@@ -401,7 +401,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
         if (!FeatureUtilities.isChromeHomeEnabled()) return mSections.isEmpty();
 
-        // In the modern layout, we only consider articles.
+        // In Chrome Home we only consider articles.
         SuggestionsSection suggestions = mSections.getSection(KnownCategories.ARTICLES);
         return suggestions == null || !suggestions.hasCards();
     }

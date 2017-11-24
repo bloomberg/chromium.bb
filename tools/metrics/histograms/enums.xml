@@ -25440,6 +25440,7 @@ from previous Chrome versions.
   <int value="1070164693" label="MidiManagerDynamicInstantiation:disabled"/>
   <int value="1070300488" label="disable-webgl"/>
   <int value="1070449228" label="ContextualSuggestionsCarousel:enabled"/>
+  <int value="1072010558" label="NTPModernLayout:disabled"/>
   <int value="1074359194" label="UseSuggestionsEvenIfFew:enabled"/>
   <int value="1079032226" label="ParallelDownloading:enabled"/>
   <int value="1081546525" label="ash-enable-docked-windows"/>
@@ -25642,6 +25643,7 @@ from previous Chrome versions.
   <int value="1589341623" label="disable-easy-unlock"/>
   <int value="1591653786" label="SpeculativePreconnect:enabled"/>
   <int value="1594247626" label="ContentSuggestionsSettings:enabled"/>
+  <int value="1594664550" label="NTPModernLayout:enabled"/>
   <int value="1600926040" label="TranslateCompactUI:enabled"/>
   <int value="1605611615" label="enable-webrtc-srtp-aes-gcm"/>
   <int value="1612446645" label="enable-weak-memorycache"/>

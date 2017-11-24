@@ -17,11 +17,11 @@ import org.chromium.chrome.browser.ntp.cards.SectionList;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsBinder;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserverAdapter;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.ui.mojom.WindowOpenDisposition;
@@ -163,7 +163,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
     private boolean shouldShowThumbnailVideoBadge(boolean showThumbnail) {
         if (!showThumbnail) return false;
         if (!mArticle.mIsVideoSuggestion) return false;
-        return FeatureUtilities.isChromeHomeEnabled();
+        return SuggestionsConfig.useModernLayout();
     }
 
     /** Updates the visibility of the card's offline badge by checking the bound article's info. */
@@ -177,7 +177,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
      */
     @LayoutRes
     private static int getLayout() {
-        if (FeatureUtilities.isChromeHomeEnabled()) {
+        if (SuggestionsConfig.useModernLayout()) {
             return R.layout.content_suggestions_card_modern;
         }
         return R.layout.new_tab_page_snippets_card_large_thumbnail;

@@ -52,6 +52,7 @@ extern const base::Feature kNewPhotoPicker;
 extern const base::Feature kNoCreditCardAbort;
 extern const base::Feature kNTPCondensedLayoutFeature;
 extern const base::Feature kNTPCondensedTileLayoutFeature;
+extern const base::Feature kNTPModernLayoutFeature;
 extern const base::Feature kNTPLaunchAfterInactivity;
 extern const base::Feature kNTPOfflinePagesFeature;
 extern const base::Feature NTPShowGoogleGInOmniboxFeature;
