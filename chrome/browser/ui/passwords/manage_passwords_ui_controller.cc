@@ -74,6 +74,11 @@ ManagePasswordsUIController::~ManagePasswordsUIController() {}
 
 void ManagePasswordsUIController::OnPasswordSubmitted(
     std::unique_ptr<PasswordFormManager> form_manager) {
+  // If the save bubble is already shown (possibly manual fallback for saving)
+  // then ignore the changes because the user may interact with it right now.
+  if (bubble_status_ == SHOWN &&
+      GetState() == password_manager::ui::PENDING_PASSWORD_STATE)
+    return;
   bool show_bubble = !form_manager->IsBlacklisted();
   DestroyAccountChooser();
   save_fallback_timer_.Stop();

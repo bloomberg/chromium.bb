@@ -125,21 +125,6 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest, TabChangeTogglesIcon) {
   EXPECT_TRUE(decoration()->IsVisible());
 }
 
-IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest, DoubleOpenBubble) {
-  // Open the bubble first.
-  DoWithSwizzledNSWindow(^{ SetupPendingPassword(); });
-  base::scoped_nsobject<ManagePasswordsBubbleController> bubble_controller(
-      [controller() retain]);
-  EXPECT_TRUE(bubble_controller);
-  EXPECT_TRUE(GetView()->active());
-
-  // Open the bubble again, the first one should be replaced.
-  DoWithSwizzledNSWindow(^{ SetupPendingPassword(); });
-  EXPECT_NSNE(bubble_controller, controller());
-  EXPECT_TRUE(controller());
-  EXPECT_TRUE(GetView()->active());
-}
-
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest, DoubleOpenDifferentBubbles) {
   // Open the autosignin bubble first.
   DoWithSwizzledNSWindow(^{
