@@ -3987,6 +3987,7 @@ split_static_library("browser") {
     if (enable_gvr_services) {
       deps += [ "android/vr_shell:vr_android" ]
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
+      allow_circular_includes_from += [ "android/vr_shell:vr_android" ]
     }
 
     sources += [
