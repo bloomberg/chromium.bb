@@ -909,10 +909,18 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
   if (is_intrabc) sub8x8_inter = 0;
 
-  sub8x8_inter = sub8x8_inter && !build_for_obmc;
-  const int row_start = (block_size_high[bsize] == 4) && ss_y ? -1 : 0;
-  const int col_start = (block_size_wide[bsize] == 4) && ss_x ? -1 : 0;
+  // For sub8x8 chroma blocks, we may be covering more than one luma block's
+  // worth of pixels. Thus (mi_x, mi_y) may not be the correct coordinates for
+  // the top-left corner of the prediction source - the correct top-left corner
+  // is at (pre_x, pre_y).
+  const int row_start =
+      (block_size_high[bsize] == 4) && ss_y && !build_for_obmc ? -1 : 0;
+  const int col_start =
+      (block_size_wide[bsize] == 4) && ss_x && !build_for_obmc ? -1 : 0;
+  const int pre_x = (mi_x + MI_SIZE * col_start) >> ss_x;
+  const int pre_y = (mi_y + MI_SIZE * row_start) >> ss_y;
 
+  sub8x8_inter = sub8x8_inter && !build_for_obmc;
   if (sub8x8_inter) {
     for (int row = row_start; row <= 0 && sub8x8_inter; ++row) {
       for (int col = col_start; col <= 0; ++col) {
@@ -960,12 +968,10 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         const RefBuffer *ref_buf =
             &cm->frame_refs[this_mbmi->ref_frame[ref] - LAST_FRAME];
 
-        const int c_offset = (mi_x + MI_SIZE * col_start) >> ss_x;
-        const int r_offset = (mi_y + MI_SIZE * row_start) >> ss_y;
         pd->pre[ref].buf0 =
             (plane == 1) ? ref_buf->buf->u_buffer : ref_buf->buf->v_buffer;
         pd->pre[ref].buf =
-            pd->pre[ref].buf0 + scaled_buffer_offset(c_offset, r_offset,
+            pd->pre[ref].buf0 + scaled_buffer_offset(pre_x, pre_y,
                                                      ref_buf->buf->uv_stride,
                                                      &ref_buf->sf);
         pd->pre[ref].width = ref_buf->buf->uv_crop_width;
@@ -975,7 +981,9 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         const struct scale_factors *const sf =
             is_intrabc ? &cm->sf_identity : &ref_buf->sf;
         struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
+
         const MV mv = this_mbmi->mv[ref].as_mv;
+
         uint8_t *pre;
         int xs, ys, subpel_x, subpel_y;
         const int is_scaled = av1_is_scaled(sf);
@@ -986,9 +994,9 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         if (is_scaled) {
           int ssx = pd->subsampling_x;
           int ssy = pd->subsampling_y;
-          int orig_pos_y = (r_offset + y) << SUBPEL_BITS;
+          int orig_pos_y = (pre_y + y) << SUBPEL_BITS;
           orig_pos_y += mv.row * (1 << (1 - ssy));
-          int orig_pos_x = (c_offset + x) << SUBPEL_BITS;
+          int orig_pos_x = (pre_x + x) << SUBPEL_BITS;
           orig_pos_x += mv.col * (1 << (1 - ssx));
           int pos_y = sf->scale_value_y(orig_pos_y, sf);
           int pos_x = sf->scale_value_x(orig_pos_x, sf);
@@ -1066,9 +1074,9 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         // plane, then project into the reference frame
         int ssx = pd->subsampling_x;
         int ssy = pd->subsampling_y;
-        int orig_pos_y = (mi_y << (SUBPEL_BITS - ssy)) + (y << SUBPEL_BITS);
+        int orig_pos_y = (pre_y + y) << SUBPEL_BITS;
         orig_pos_y += mv.row * (1 << (1 - ssy));
-        int orig_pos_x = (mi_x << (SUBPEL_BITS - ssx)) + (x << SUBPEL_BITS);
+        int orig_pos_x = (pre_x + x) << SUBPEL_BITS;
         orig_pos_x += mv.col * (1 << (1 - ssx));
         int pos_y = sf->scale_value_y(orig_pos_y, sf);
         int pos_x = sf->scale_value_x(orig_pos_x, sf);
