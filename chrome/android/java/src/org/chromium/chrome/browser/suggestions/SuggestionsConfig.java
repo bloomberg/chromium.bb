@@ -48,7 +48,7 @@ public final class SuggestionsConfig {
      * @return The background color for the suggestions sheet content.
      */
     public static int getBackgroundColor(Resources resources) {
-        return FeatureUtilities.isChromeHomeEnabled()
+        return useModernLayout()
                 ? ApiCompatibilityUtils.getColor(resources, R.color.suggestions_modern_bg)
                 : ApiCompatibilityUtils.getColor(resources, R.color.ntp_bg);
     }
@@ -59,10 +59,9 @@ public final class SuggestionsConfig {
     @TileView.Style
     public static int getTileStyle(UiConfig uiConfig) {
         boolean small = uiConfig.getCurrentDisplayStyle().isSmall();
-        if (FeatureUtilities.isChromeHomeEnabled()) {
+        if (useModernLayout()) {
             return small ? TileView.Style.MODERN_CONDENSED : TileView.Style.MODERN;
         }
-        if (FeatureUtilities.isChromeHomeEnabled()) return TileView.Style.CLASSIC;
         if (useCondensedTileLayout(small)) return TileView.Style.CLASSIC_CONDENSED;
         return TileView.Style.CLASSIC;
     }
@@ -77,5 +76,10 @@ public final class SuggestionsConfig {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.NTP_CONDENSED_TILE_LAYOUT,
                 PARAM_CONDENSED_TILE_LAYOUT_FOR_LARGE_SCREENS_ENABLED, false);
+    }
+
+    public static boolean useModernLayout() {
+        return FeatureUtilities.isChromeHomeEnabled()
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_MODERN_LAYOUT);
     }
 }

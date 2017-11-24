@@ -15,7 +15,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserverAdapter;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
@@ -70,8 +69,8 @@ public class ContextualSuggestionsCardViewHolder extends NewTabPageViewHolder {
     }
 
     private static View getCardView(ViewGroup recyclerView) {
-        int res = FeatureUtilities.isChromeHomeEnabled() ? R.layout.content_suggestions_card_modern
-                                                         : R.layout.contextual_suggestions_card;
+        int res = SuggestionsConfig.useModernLayout() ? R.layout.content_suggestions_card_modern
+                                                      : R.layout.contextual_suggestions_card;
 
         return LayoutInflater.from(recyclerView.getContext()).inflate(res, recyclerView, false);
     }

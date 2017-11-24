@@ -286,6 +286,9 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
                 mManager.getNavigationDelegate(), mSearchProviderLogoView, profile);
 
         mSearchBoxView = mNewTabPageLayout.findViewById(R.id.search_box);
+        if (SuggestionsConfig.useModernLayout()) {
+            ViewUtils.setNinePatchBackgroundResource(mSearchBoxView, R.drawable.card_modern);
+        }
         mNoSearchLogoSpacer = mNewTabPageLayout.findViewById(R.id.no_search_logo_spacer);
 
         mSnapScrollRunnable = new SnapScrollRunnable();
