@@ -1,6 +1,7 @@
 // Invokes callback from a trusted click event, to satisfy
 // https://html.spec.whatwg.org/#triggered-by-user-activation
-function trusted_click(test, callback, container)
+function trusted_click(test, callback, container,
+                       clickRectInRootFrameCoordinate)
 {
     var document = container.ownerDocument;
 
@@ -9,6 +10,13 @@ function trusted_click(test, callback, container)
         setTimeout(test.step_func(function()
         {
             document.addEventListener("click", callback);
+            if (clickRectInRootFrameCoordinate) {
+                var x = (clickRectInRootFrameCoordinate.left
+                         + clickRectInRootFrameCoordinate.right) / 2;
+                var y = (clickRectInRootFrameCoordinate.top
+                         + clickRectInRootFrameCoordinate.bottom) / 2;
+                eventSender.mouseMoveTo(x, y);
+            }
             eventSender.mouseDown();
             eventSender.mouseUp();
             document.removeEventListener("click", callback);
@@ -31,7 +39,8 @@ function trusted_click(test, callback, container)
 }
 
 // Invokes element.requestFullscreen() from a trusted click.
-function trusted_request(test, element, container)
+function trusted_request(test, element, container, clickRectInRootFrameCoordinate)
 {
-    trusted_click(test, () => element.requestFullscreen(), container || element.parentNode);
+    trusted_click(test, () => element.requestFullscreen(), container || element.parentNode,
+                  clickRectInRootFrameCoordinate);
 }
