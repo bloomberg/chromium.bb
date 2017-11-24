@@ -28,6 +28,8 @@ constexpr gfx::Insets kEmptyIconPadding(0, 0, 4, 0);
 constexpr int kScrollShadowOffsetY = 2;
 constexpr int kScrollShadowBlur = 2;
 
+constexpr int kSettingsTransitionDurationMs = 500;
+
 // Return FontList for the given absolute font size and font weight.
 gfx::FontList GetFontListForSizeAndWeight(int font_size,
                                           gfx::Font::Weight weight);

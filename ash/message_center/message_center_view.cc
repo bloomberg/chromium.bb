@@ -62,7 +62,6 @@ bool MessageCenterView::disable_animation_for_testing = false;
 
 namespace {
 
-constexpr int kDefaultAnimationDurationMs = 500;
 constexpr int kMinScrollViewHeight = 77;
 constexpr int kEmptyViewHeight = 96;
 constexpr gfx::Insets kEmptyViewPadding(0, 0, 24, 0);
@@ -629,7 +628,8 @@ void MessageCenterView::SetVisibilityMode(Mode mode, bool animate) {
   NotifyAnimationState(true /* animating */);
 
   settings_transition_animation_ = std::make_unique<gfx::SlideAnimation>(this);
-  settings_transition_animation_->SetSlideDuration(kDefaultAnimationDurationMs);
+  settings_transition_animation_->SetSlideDuration(
+      message_center_style::kSettingsTransitionDurationMs);
   settings_transition_animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
   settings_transition_animation_->Show();
 }

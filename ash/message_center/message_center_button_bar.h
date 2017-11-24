@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/view.h"
@@ -27,7 +28,8 @@ class MessageCenterView;
 // MessageCenterButtonBar is the class that shows the content outside the main
 // notification area - the label and the buttons.
 class MessageCenterButtonBar : public views::View,
-                               public views::ButtonListener {
+                               public views::ButtonListener,
+                               public ui::ImplicitAnimationObserver {
  public:
   MessageCenterButtonBar(
       MessageCenterView* message_center_view,
@@ -40,9 +42,14 @@ class MessageCenterButtonBar : public views::View,
 
   // Overridden from views::View:
   void ChildVisibilityChanged(views::View* child) override;
+  void Layout() override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // Overridden from ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
 
   // Enables or disables all of the buttons in the center.  This is used to
   // prevent user clicks during the close-all animation.
@@ -81,6 +88,8 @@ class MessageCenterButtonBar : public views::View,
   views::ImageButton* settings_button_;
   views::ToggleImageButton* quiet_mode_button_;
   views::ImageButton* collapse_button_;
+
+  bool collapse_button_visible_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterButtonBar);
 };
