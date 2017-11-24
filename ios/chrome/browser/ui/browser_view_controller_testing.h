@@ -13,8 +13,6 @@
 
 - (void)testing_focusOmnibox;
 
-- (CGRect)testing_shareButtonAnchorRect;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BROWSER_VIEW_CONTROLLER_TESTING_H_

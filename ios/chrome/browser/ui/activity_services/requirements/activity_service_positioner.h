@@ -11,10 +11,6 @@
 // activity services menu on the screen.
 @protocol ActivityServicePositioner
 
-// Returns the anchor rect that shoud be used by the activity services menu.
-// This should contain the frame of the button that invoked the menu.
-- (CGRect)shareButtonAnchorRect;
-
 // Returns the view that defines the coordinate system that is used for the
 // CGRect returned by |shareButtonAnchorRect|.
 - (UIView*)shareButtonView;

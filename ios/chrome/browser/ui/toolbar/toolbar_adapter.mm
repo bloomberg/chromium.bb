@@ -164,12 +164,8 @@
 
 #pragma mark - ActivityServicePositioner
 
-- (CGRect)shareButtonAnchorRect {
-  return CGRectZero;
-}
-
 - (UIView*)shareButtonView {
-  return nil;
+  return [[self.toolbarCoordinator activityServicePositioner] shareButtonView];
 }
 
 #pragma mark - QRScannerResultLoading

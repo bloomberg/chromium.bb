@@ -118,8 +118,8 @@ NSString* const kActivityServicesSnackbarCategory =
   UIView* inView = nil;
   if (IsIPadIdiom()) {
     DCHECK(positionProvider);
-    fromRect = [positionProvider shareButtonAnchorRect];
     inView = [positionProvider shareButtonView];
+    fromRect = inView.bounds;
     DCHECK(fromRect.size.height);
     DCHECK(fromRect.size.width);
     DCHECK(inView);

@@ -428,6 +428,12 @@
   [self.tabSwitchStripButton setAccessibilityValue:tabStripButtonValue];
 }
 
+#pragma mark - ActivityServicePositioner
+
+- (UIView*)shareButtonView {
+  return self.shareButton;
+}
+
 #pragma mark - Helper Methods
 
 // Updates all Buttons visibility to match any recent WebState change.

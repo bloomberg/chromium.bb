@@ -27,8 +27,4 @@
   [[self toolbarController] focusOmnibox];
 }
 
-- (CGRect)testing_shareButtonAnchorRect {
-  return [[self toolbarController] shareButtonAnchorRect];
-}
-
 @end
