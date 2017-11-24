@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://dev.w3.org/2009/dap/file-system/file-dir-sys.html#the-errorcallback-interface
+// https://wicg.github.io/entries-api/#callbackdef-errorcallback
 callback interface ErrorCallback {
     void handleEvent(DOMException error);
 };
