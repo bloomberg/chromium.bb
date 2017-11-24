@@ -154,7 +154,7 @@ void AshTouchExplorationManager::SetTouchAccessibilityAnchorPoint(
   }
 }
 
-void AshTouchExplorationManager::OnKeyboardBoundsChanging(
+void AshTouchExplorationManager::OnKeyboardVisibleBoundsChanging(
     const gfx::Rect& new_bounds) {
   UpdateTouchExplorationState();
 }
