@@ -198,6 +198,9 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   // parent's dispatchBlurEvent().
   virtual void HandleBlurEvent() {}
 
+  // Whether the placeholder attribute value should be visible. Does not
+  // necessarily match the placeholder_element visibility because it can be used
+  // for suggested values too.
   bool PlaceholderShouldBeVisible() const;
 
   // Held directly instead of looked up by ID for speed.
