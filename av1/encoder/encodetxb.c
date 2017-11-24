@@ -1817,7 +1817,7 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   (void)fast_mode;
   (void)txb_cache;
   int update = 0;
-  // return update; //TODO: training only.
+  // return update;  // TODO(DKHE): training only.
   if (txb_info->eob == 0) return update;
   const int max_eob = av1_get_max_eob(txb_info->tx_size);
 
@@ -2258,6 +2258,19 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
       update_cdf(ec_ctx->coeff_base_cdf[txsize_ctx][plane_type][coeff_ctx],
                  AOMMIN(abs(v), 3), 4);
     }
+    {
+      if (c < eob - 1) {
+        ++(*nz_map_count)[coeff_ctx][is_nz];
+      }
+      if (is_nz) {
+        for (int k = 0; k < NUM_BASE_LEVELS; ++k) {
+          int is_k = (abs(v) > (k + 1));
+          ++td->counts->coeff_base[txsize_ctx][plane_type][k][coeff_ctx][is_k];
+          if (is_k == 0) break;
+        }
+      }
+    }
+
 #else
     update_cdf(ec_ctx->coeff_base_cdf[txsize_ctx][plane_type][coeff_ctx],
                AOMMIN(abs(v), 3), 4);
@@ -2358,6 +2371,11 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
         // base_range, k);
         update_cdf(ec_ctx->coeff_br_cdf[txsize_ctx][plane_type][ctx], k,
                    BR_CDF_SIZE);
+        for (int lps = 0; lps < BR_CDF_SIZE; lps++) {
+          ++td->counts->coeff_lps[txsize_ctx][plane_type][ctx][lps == k];
+          if (lps == k) break;
+        }
+
         if (k < BR_CDF_SIZE - 1) break;
       }
 #else

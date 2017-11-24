@@ -185,6 +185,18 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     }
     const int level = av1_read_record_symbol(counts, r, cdf, nsymbs, ACCT_STR) +
                       (c == *eob - 1);
+    if (counts) {
+      if (c < *eob - 1) {
+        ++counts->nz_map[txs_ctx][plane_type][coeff_ctx][level != 0];
+      }
+      if (level != 0) {
+        for (int k = 0; k < NUM_BASE_LEVELS; ++k) {
+          ++counts
+                ->coeff_base[txs_ctx][plane_type][k][coeff_ctx][level > k + 1];
+          if (level == k + 1) break;
+        }
+      }
+    }
 #else
     const int level = av1_read_record_symbol(
         counts, r, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx], 4,
@@ -326,6 +338,12 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
             counts, r, ec_ctx->coeff_br_cdf[txs_ctx][plane_type][ctx],
             BR_CDF_SIZE, ACCT_STR);
         *level += k;
+        if (counts) {
+          for (int lps = 0; lps < BR_CDF_SIZE; lps++) {
+            ++counts->coeff_lps[txs_ctx][plane_type][ctx][lps == k];
+            if (lps == k) break;
+          }
+        }
         if (k < BR_CDF_SIZE - 1) break;
       }
       if (*level <= NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
