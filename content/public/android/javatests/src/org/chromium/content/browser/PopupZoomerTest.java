@@ -224,25 +224,29 @@ public class PopupZoomerTest {
     @SmallTest
     @Feature({"Navigation"})
     public void testHidePopupOnLosingFocus() throws Exception {
-        mPopupZoomer.setBitmap(
-                        Bitmap.createBitmap(10, 10, Bitmap.Config.ALPHA_8));
-        mPopupZoomer.show(new Rect(0, 0, 5, 5));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mPopupZoomer.setBitmap(Bitmap.createBitmap(10, 10, Bitmap.Config.ALPHA_8));
+                mPopupZoomer.show(new Rect(0, 0, 5, 5));
 
-        // Wait for the animation to finish.
-        mPopupZoomer.finishPendingDraws();
+                // Wait for the animation to finish.
+                mPopupZoomer.finishPendingDraws();
 
-        // The view should be visible.
-        Assert.assertEquals(View.VISIBLE, mPopupZoomer.getVisibility());
-        Assert.assertTrue(mPopupZoomer.isShowing());
+                // The view should be visible.
+                Assert.assertEquals(View.VISIBLE, mPopupZoomer.getVisibility());
+                Assert.assertTrue(mPopupZoomer.isShowing());
 
-        // Simulate losing the focus.
-        mContentViewCore.onFocusChanged(false, true);
+                // Simulate losing the focus.
+                mContentViewCore.onFocusChanged(false, true);
 
-        // Wait for the hide animation to finish.
-        mPopupZoomer.finishPendingDraws();
+                // Wait for the hide animation to finish.
+                mPopupZoomer.finishPendingDraws();
 
-        // Now that another view has been focused, the view should be invisible.
-        Assert.assertEquals(View.INVISIBLE, mPopupZoomer.getVisibility());
-        Assert.assertFalse(mPopupZoomer.isShowing());
+                // Now that another view has been focused, the view should be invisible.
+                Assert.assertEquals(View.INVISIBLE, mPopupZoomer.getVisibility());
+                Assert.assertFalse(mPopupZoomer.isShowing());
+            }
+        });
     }
 }
