@@ -21,7 +21,7 @@ namespace blink {
 
 class RuleFeatureSetTest : public ::testing::Test {
  public:
-  RuleFeatureSetTest() {}
+  RuleFeatureSetTest() = default;
 
   void SetUp() {
     document_ = HTMLDocument::CreateForTest();

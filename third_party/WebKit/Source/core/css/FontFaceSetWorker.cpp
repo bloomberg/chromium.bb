@@ -26,7 +26,7 @@ FontFaceSetWorker::FontFaceSetWorker(WorkerGlobalScope& worker)
   PauseIfNeeded();
 }
 
-FontFaceSetWorker::~FontFaceSetWorker() {}
+FontFaceSetWorker::~FontFaceSetWorker() = default;
 
 WorkerGlobalScope* FontFaceSetWorker::GetWorker() const {
   return ToWorkerGlobalScope(GetExecutionContext());

@@ -116,7 +116,7 @@ CSSCrossfadeValue::CSSCrossfadeValue(CSSValue* from_value,
       cached_to_image_(nullptr),
       crossfade_subimage_observer_(this) {}
 
-CSSCrossfadeValue::~CSSCrossfadeValue() {}
+CSSCrossfadeValue::~CSSCrossfadeValue() = default;
 
 void CSSCrossfadeValue::Dispose() {
   if (cached_from_image_) {

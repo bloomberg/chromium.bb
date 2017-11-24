@@ -21,8 +21,8 @@ class FontFaceCacheTest : public PageTestBase {
   USING_FAST_MALLOC(FontFaceCacheTest);
 
  protected:
-  FontFaceCacheTest(){};
-  ~FontFaceCacheTest() override{};
+  FontFaceCacheTest() = default;
+  ~FontFaceCacheTest() override = default;
 
   void SetUp() override;
 

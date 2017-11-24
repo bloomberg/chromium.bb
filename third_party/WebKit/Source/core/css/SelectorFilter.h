@@ -59,7 +59,7 @@ class CORE_EXPORT SelectorFilter {
     Vector<unsigned, 4> identifier_hashes;
   };
 
-  SelectorFilter() {}
+  SelectorFilter() = default;
 
   void PushParent(Element& parent);
   void PopParent(Element& parent);

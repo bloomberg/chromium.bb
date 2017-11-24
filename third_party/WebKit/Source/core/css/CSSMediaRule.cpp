@@ -30,7 +30,7 @@ namespace blink {
 CSSMediaRule::CSSMediaRule(StyleRuleMedia* media_rule, CSSStyleSheet* parent)
     : CSSConditionRule(media_rule, parent) {}
 
-CSSMediaRule::~CSSMediaRule() {}
+CSSMediaRule::~CSSMediaRule() = default;
 
 scoped_refptr<MediaQuerySet> CSSMediaRule::MediaQueries() const {
   return ToStyleRuleMedia(group_rule_.Get())->MediaQueries();

@@ -182,7 +182,7 @@ FontFace::FontFace(ExecutionContext* context,
   SetPropertyFromString(context, descriptors.display(), CSSPropertyFontDisplay);
 }
 
-FontFace::~FontFace() {}
+FontFace::~FontFace() = default;
 
 String FontFace::style() const {
   return style_ ? style_->CssText() : "normal";

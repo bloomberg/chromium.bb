@@ -115,7 +115,7 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
 
   class CORE_EXPORT LoadFontCallback : public GarbageCollectedMixin {
    public:
-    virtual ~LoadFontCallback() {}
+    virtual ~LoadFontCallback() = default;
     virtual void NotifyLoaded(FontFace*) = 0;
     virtual void NotifyError(FontFace*) = 0;
     virtual void Trace(blink::Visitor* visitor) {}

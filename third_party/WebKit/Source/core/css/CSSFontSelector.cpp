@@ -57,7 +57,7 @@ CSSFontSelector::CSSFontSelector(Document* document)
       &font_face_cache_);
 }
 
-CSSFontSelector::~CSSFontSelector() {}
+CSSFontSelector::~CSSFontSelector() = default;
 
 void CSSFontSelector::RegisterForInvalidationCallbacks(
     FontSelectorClient* client) {

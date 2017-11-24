@@ -49,7 +49,7 @@ StyleRuleImport::StyleRuleImport(const String& href,
     media_queries_ = MediaQuerySet::Create(String());
 }
 
-StyleRuleImport::~StyleRuleImport() {}
+StyleRuleImport::~StyleRuleImport() = default;
 
 void StyleRuleImport::Dispose() {
   if (resource_)

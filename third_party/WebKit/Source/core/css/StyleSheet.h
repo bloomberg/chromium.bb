@@ -38,7 +38,7 @@ class CORE_EXPORT StyleSheet : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  StyleSheet() {}
+  StyleSheet() = default;
   virtual ~StyleSheet();
 
   virtual bool disabled() const = 0;

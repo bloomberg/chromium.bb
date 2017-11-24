@@ -221,7 +221,7 @@ void CSSPrimitiveValue::Init(CSSCalcValue* c) {
   value_.calc = c;
 }
 
-CSSPrimitiveValue::~CSSPrimitiveValue() {}
+CSSPrimitiveValue::~CSSPrimitiveValue() = default;
 
 double CSSPrimitiveValue::ComputeSeconds() const {
   DCHECK(IsTime() ||

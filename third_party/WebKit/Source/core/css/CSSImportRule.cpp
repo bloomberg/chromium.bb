@@ -34,7 +34,7 @@ CSSImportRule::CSSImportRule(StyleRuleImport* import_rule,
                              CSSStyleSheet* parent)
     : CSSRule(parent), import_rule_(import_rule) {}
 
-CSSImportRule::~CSSImportRule() {}
+CSSImportRule::~CSSImportRule() = default;
 
 String CSSImportRule::href() const {
   return import_rule_->Href();

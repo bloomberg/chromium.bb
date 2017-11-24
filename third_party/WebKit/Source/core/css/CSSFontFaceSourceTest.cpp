@@ -23,7 +23,7 @@ class DummyFontFaceSource : public CSSFontFaceSource {
         false));
   }
 
-  DummyFontFaceSource() {}
+  DummyFontFaceSource() = default;
 
   scoped_refptr<SimpleFontData> GetFontDataForSize(float size) {
     FontDescription font_description;

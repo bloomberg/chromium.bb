@@ -115,7 +115,7 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
     child_rules_[i] = o.child_rules_[i]->Copy();
 }
 
-StyleSheetContents::~StyleSheetContents() {}
+StyleSheetContents::~StyleSheetContents() = default;
 
 void StyleSheetContents::SetHasSyntacticallyValidCSSHeader(bool is_valid_css) {
   has_syntactically_valid_css_header_ = is_valid_css;

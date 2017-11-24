@@ -33,7 +33,7 @@
 
 namespace blink {
 
-StyleSheetCollection::StyleSheetCollection() {}
+StyleSheetCollection::StyleSheetCollection() = default;
 
 void StyleSheetCollection::Dispose() {
   style_sheets_for_style_sheet_list_.clear();

@@ -48,7 +48,7 @@ class CORE_EXPORT CSSSelectorWatch final
   USING_GARBAGE_COLLECTED_MIXIN(CSSSelectorWatch);
 
  public:
-  virtual ~CSSSelectorWatch() {}
+  virtual ~CSSSelectorWatch() = default;
 
   static CSSSelectorWatch& From(Document&);
   static CSSSelectorWatch* FromIfExists(Document&);

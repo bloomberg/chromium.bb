@@ -62,7 +62,7 @@ class CORE_EXPORT MediaQueryEvaluator final
   static void Init();
 
   // Creates evaluator which evaluates to true for all media queries.
-  MediaQueryEvaluator() {}
+  MediaQueryEvaluator() = default;
 
   // Creates evaluator which evaluates only simple media queries
   // Evaluator returns true for acceptedMediaType and returns true for any media

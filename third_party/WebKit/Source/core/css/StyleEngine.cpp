@@ -81,7 +81,7 @@ StyleEngine::StyleEngine(Document& document)
     global_rule_set_ = CSSGlobalRuleSet::Create();
 }
 
-StyleEngine::~StyleEngine() {}
+StyleEngine::~StyleEngine() = default;
 
 inline Document* StyleEngine::Master() {
   if (IsMaster())

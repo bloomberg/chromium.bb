@@ -47,7 +47,7 @@ CSSGroupingRule::CSSGroupingRule(StyleRuleGroup* group_rule,
       group_rule_(group_rule),
       child_rule_cssom_wrappers_(group_rule->ChildRules().size()) {}
 
-CSSGroupingRule::~CSSGroupingRule() {}
+CSSGroupingRule::~CSSGroupingRule() = default;
 
 unsigned CSSGroupingRule::insertRule(const ExecutionContext* execution_context,
                                      const String& rule_string,

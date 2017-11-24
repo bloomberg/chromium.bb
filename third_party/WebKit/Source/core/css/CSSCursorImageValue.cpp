@@ -38,7 +38,7 @@ CSSCursorImageValue::CSSCursorImageValue(const CSSValue& image_value,
   DCHECK(image_value.IsImageValue() || image_value.IsImageSetValue());
 }
 
-CSSCursorImageValue::~CSSCursorImageValue() {}
+CSSCursorImageValue::~CSSCursorImageValue() = default;
 
 String CSSCursorImageValue::CustomCSSText() const {
   StringBuilder result;

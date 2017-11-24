@@ -287,7 +287,7 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
     void Trace(blink::Visitor*);
 
    private:
-    PendingRuleMaps() {}
+    PendingRuleMaps() = default;
   };
 
   PendingRuleMaps* EnsurePendingRules() {

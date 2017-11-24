@@ -43,7 +43,7 @@ static SelectorTextCache& GetSelectorTextCache() {
 CSSStyleRule::CSSStyleRule(StyleRule* style_rule, CSSStyleSheet* parent)
     : CSSRule(parent), style_rule_(style_rule) {}
 
-CSSStyleRule::~CSSStyleRule() {}
+CSSStyleRule::~CSSStyleRule() = default;
 
 CSSStyleDeclaration* CSSStyleRule::style() const {
   if (!properties_cssom_wrapper_) {

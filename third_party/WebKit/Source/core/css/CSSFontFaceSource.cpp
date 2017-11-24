@@ -33,7 +33,7 @@
 
 namespace blink {
 
-CSSFontFaceSource::~CSSFontFaceSource() {}
+CSSFontFaceSource::~CSSFontFaceSource() = default;
 
 scoped_refptr<SimpleFontData> CSSFontFaceSource::GetFontData(
     const FontDescription& font_description,

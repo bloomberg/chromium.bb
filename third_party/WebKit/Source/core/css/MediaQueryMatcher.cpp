@@ -41,7 +41,7 @@ MediaQueryMatcher::MediaQueryMatcher(Document& document)
   DCHECK(document_);
 }
 
-MediaQueryMatcher::~MediaQueryMatcher() {}
+MediaQueryMatcher::~MediaQueryMatcher() = default;
 
 void MediaQueryMatcher::DocumentDetached() {
   document_ = nullptr;

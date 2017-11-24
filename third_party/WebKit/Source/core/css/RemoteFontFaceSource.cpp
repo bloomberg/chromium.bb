@@ -49,7 +49,7 @@ RemoteFontFaceSource::RemoteFontFaceSource(CSSFontFace* css_font_face,
   font_->AddClient(this);
 }
 
-RemoteFontFaceSource::~RemoteFontFaceSource() {}
+RemoteFontFaceSource::~RemoteFontFaceSource() = default;
 
 void RemoteFontFaceSource::Dispose() {
   if (font_) {

@@ -25,7 +25,7 @@
 
 namespace blink {
 
-StaticCSSRuleList::StaticCSSRuleList() {}
+StaticCSSRuleList::StaticCSSRuleList() = default;
 
 void StaticCSSRuleList::Trace(blink::Visitor* visitor) {
   visitor->Trace(rules_);

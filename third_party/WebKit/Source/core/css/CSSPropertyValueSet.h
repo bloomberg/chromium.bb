@@ -170,8 +170,8 @@ class CORE_EXPORT CSSPropertyValueSet
 class CSSLazyPropertyParser
     : public GarbageCollectedFinalized<CSSLazyPropertyParser> {
  public:
-  CSSLazyPropertyParser() {}
-  virtual ~CSSLazyPropertyParser() {}
+  CSSLazyPropertyParser() = default;
+  virtual ~CSSLazyPropertyParser() = default;
   virtual CSSPropertyValueSet* ParseProperties() = 0;
   virtual void Trace(blink::Visitor*);
   DISALLOW_COPY_AND_ASSIGN(CSSLazyPropertyParser);
@@ -224,7 +224,7 @@ DEFINE_TYPE_CASTS(ImmutableCSSPropertyValueSet,
 
 class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
  public:
-  ~MutableCSSPropertyValueSet() {}
+  ~MutableCSSPropertyValueSet() = default;
   static MutableCSSPropertyValueSet* Create(CSSParserMode);
   static MutableCSSPropertyValueSet* Create(const CSSPropertyValue* properties,
                                             unsigned count);

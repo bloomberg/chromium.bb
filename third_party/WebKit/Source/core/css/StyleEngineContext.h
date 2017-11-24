@@ -12,7 +12,7 @@ namespace blink {
 class CORE_EXPORT StyleEngineContext {
  public:
   StyleEngineContext();
-  ~StyleEngineContext() {}
+  ~StyleEngineContext() = default;
   bool AddedPendingSheetBeforeBody() const {
     return added_pending_sheet_before_body_;
   }

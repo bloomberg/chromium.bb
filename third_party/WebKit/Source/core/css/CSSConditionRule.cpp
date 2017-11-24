@@ -12,7 +12,7 @@ CSSConditionRule::CSSConditionRule(StyleRuleCondition* condition_rule,
                                    CSSStyleSheet* parent)
     : CSSGroupingRule(condition_rule, parent) {}
 
-CSSConditionRule::~CSSConditionRule() {}
+CSSConditionRule::~CSSConditionRule() = default;
 
 String CSSConditionRule::conditionText() const {
   return static_cast<StyleRuleCondition*>(group_rule_.Get())->ConditionText();

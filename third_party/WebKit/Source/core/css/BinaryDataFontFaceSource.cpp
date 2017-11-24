@@ -16,7 +16,7 @@ BinaryDataFontFaceSource::BinaryDataFontFaceSource(SharedBuffer* data,
     : custom_platform_data_(
           FontCustomPlatformData::Create(data, ots_parse_message)) {}
 
-BinaryDataFontFaceSource::~BinaryDataFontFaceSource() {}
+BinaryDataFontFaceSource::~BinaryDataFontFaceSource() = default;
 
 bool BinaryDataFontFaceSource::IsValid() const {
   return custom_platform_data_.get();

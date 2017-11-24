@@ -57,7 +57,7 @@ StyleElement::StyleElement(Document* document, bool created_by_parser)
   }
 }
 
-StyleElement::~StyleElement() {}
+StyleElement::~StyleElement() = default;
 
 StyleElement::ProcessingResult StyleElement::ProcessStyleSheet(
     Document& document,

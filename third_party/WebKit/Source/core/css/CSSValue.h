@@ -173,7 +173,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   // error: 'blink::CSSValue::~CSSValue' : cannot access protected member
   // declared in class 'blink::CSSValue' when compiling
   // 'source\wtf\refcounted.h' by using msvc.
-  ~CSSValue() {}
+  ~CSSValue() = default;
 
  protected:
   static const size_t kClassTypeBits = 6;

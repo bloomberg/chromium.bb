@@ -41,7 +41,7 @@ CSSViewportRule::CSSViewportRule(StyleRuleViewport* viewport_rule,
                                  CSSStyleSheet* sheet)
     : CSSRule(sheet), viewport_rule_(viewport_rule) {}
 
-CSSViewportRule::~CSSViewportRule() {}
+CSSViewportRule::~CSSViewportRule() = default;
 
 CSSStyleDeclaration* CSSViewportRule::style() const {
   if (!properties_cssom_wrapper_)

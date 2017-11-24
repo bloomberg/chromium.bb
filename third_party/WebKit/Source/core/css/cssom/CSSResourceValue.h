@@ -15,7 +15,7 @@ class CORE_EXPORT CSSResourceValue : public CSSStyleValue {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~CSSResourceValue() {}
+  virtual ~CSSResourceValue() = default;
 
   const String state() const {
     switch (Status()) {
@@ -37,7 +37,7 @@ class CORE_EXPORT CSSResourceValue : public CSSStyleValue {
   virtual void Trace(blink::Visitor* visitor) { CSSStyleValue::Trace(visitor); }
 
  protected:
-  CSSResourceValue() {}
+  CSSResourceValue() = default;
 
   virtual ResourceStatus Status() const = 0;
 

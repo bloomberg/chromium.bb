@@ -79,7 +79,7 @@ class CORE_EXPORT StyleRuleBase
   // causes C2248 error : 'blink::StyleRuleBase::~StyleRuleBase' : cannot
   // access protected member declared in class 'blink::StyleRuleBase' when
   // compiling 'source\wtf\refcounted.h' by using msvc.
-  ~StyleRuleBase() {}
+  ~StyleRuleBase() = default;
 
  protected:
   StyleRuleBase(RuleType type) : type_(type) {}

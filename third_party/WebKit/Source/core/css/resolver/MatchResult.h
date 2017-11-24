@@ -91,7 +91,7 @@ class CORE_EXPORT MatchResult {
   STACK_ALLOCATED();
 
  public:
-  MatchResult() {}
+  MatchResult() = default;
 
   void AddMatchedProperties(const CSSPropertyValueSet* properties,
                             unsigned link_match_type = CSSSelector::kMatchAll,

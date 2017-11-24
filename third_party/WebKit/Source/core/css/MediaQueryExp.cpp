@@ -294,7 +294,7 @@ MediaQueryExp MediaQueryExp::Create(
   return MediaQueryExp(lower_media_feature, exp_value);
 }
 
-MediaQueryExp::~MediaQueryExp() {}
+MediaQueryExp::~MediaQueryExp() = default;
 
 bool MediaQueryExp::operator==(const MediaQueryExp& other) const {
   return (other.media_feature_ == media_feature_) &&

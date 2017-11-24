@@ -71,7 +71,7 @@ class StyleRuleImport : public StyleRuleBase {
    public:
     ImportedStyleSheetClient(StyleRuleImport* owner_rule)
         : owner_rule_(owner_rule) {}
-    ~ImportedStyleSheetClient() override {}
+    ~ImportedStyleSheetClient() override = default;
     void SetCSSStyleSheet(const String& href,
                           const KURL& base_url,
                           ReferrerPolicy referrer_policy,

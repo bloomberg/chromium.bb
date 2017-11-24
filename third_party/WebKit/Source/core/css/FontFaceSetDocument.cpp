@@ -48,7 +48,7 @@ FontFaceSetDocument::FontFaceSetDocument(Document& document)
   PauseIfNeeded();
 }
 
-FontFaceSetDocument::~FontFaceSetDocument() {}
+FontFaceSetDocument::~FontFaceSetDocument() = default;
 
 Document* FontFaceSetDocument::GetDocument() const {
   return ToDocument(GetExecutionContext());

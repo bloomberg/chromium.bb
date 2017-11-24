@@ -22,7 +22,7 @@ CSSURIValue::CSSURIValue(const AtomicString& relative_url,
 CSSURIValue::CSSURIValue(const AtomicString& relative_url, const KURL& url)
     : CSSURIValue(relative_url, AtomicString(url.GetString())) {}
 
-CSSURIValue::~CSSURIValue() {}
+CSSURIValue::~CSSURIValue() = default;
 
 SVGElementProxy& CSSURIValue::EnsureElementProxy(
     const Document& document) const {

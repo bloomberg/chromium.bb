@@ -49,7 +49,7 @@ class CORE_EXPORT CSSTransformValue final : public CSSStyleValue {
   }
 
  private:
-  CSSTransformValue() {}
+  CSSTransformValue() = default;
   CSSTransformValue(
       const HeapVector<Member<CSSTransformComponent>>& transform_components)
       : CSSStyleValue(), transform_components_(transform_components) {}

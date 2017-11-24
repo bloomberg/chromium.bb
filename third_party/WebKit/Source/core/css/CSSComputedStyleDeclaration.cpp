@@ -211,7 +211,7 @@ CSSComputedStyleDeclaration::CSSComputedStyleDeclaration(
           CSSSelector::ParsePseudoId(pseudo_element_name)),
       allow_visited_style_(allow_visited_style) {}
 
-CSSComputedStyleDeclaration::~CSSComputedStyleDeclaration() {}
+CSSComputedStyleDeclaration::~CSSComputedStyleDeclaration() = default;
 
 String CSSComputedStyleDeclaration::cssText() const {
   StringBuilder result;
