@@ -11,7 +11,6 @@
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_manager.h"
-#include "platform/scheduler/base/task_queue_manager_delegate_for_test.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/base/work_queue.h"
 #include "testing/gmock/include/gmock/gmock.h"

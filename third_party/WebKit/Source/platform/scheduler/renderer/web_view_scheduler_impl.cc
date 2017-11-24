@@ -11,7 +11,6 @@
 #include "platform/WebFrameScheduler.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
