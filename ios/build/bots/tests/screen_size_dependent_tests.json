@@ -1,8 +1,7 @@
 {
   "tests": [
     {
-      "app": "base_unittests",
-      "host os": "Mac-10.12"
+      "app": "base_unittests"
     },
     {
       "app": "components_unittests"

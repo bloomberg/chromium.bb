@@ -17,6 +17,10 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_IOS)
+#include "base/ios/ios_util.h"
+#endif
+
 namespace base {
 
 namespace {
@@ -111,15 +115,64 @@ class TimeTest : public testing::Test {
   Time comparison_time_pdt_;
 };
 
-// Test conversions to/from time_t and exploding/unexploding.
-#if defined(OS_IOS)
-// TODO(crbug.com/782033): this test seems to be unreliable on the simulator;
-// possibly broken on 10.13?
-#define MAYBE_TimeT DISABLED_TimeT
-#else
-#define MAYBE_TimeT TimeT
+// Test conversion to/from time_t.
+TEST_F(TimeTest, TimeT) {
+  EXPECT_EQ(10, Time().FromTimeT(10).ToTimeT());
+  EXPECT_EQ(10.0, Time().FromTimeT(10).ToDoubleT());
+
+  // Conversions of 0 should stay 0.
+  EXPECT_EQ(0, Time().ToTimeT());
+  EXPECT_EQ(0, Time::FromTimeT(0).ToInternalValue());
+}
+
+// Test conversions to/from time_t and exploding/unexploding (utc time).
+TEST_F(TimeTest, UTCTimeT) {
+  // C library time and exploded time.
+  time_t now_t_1 = time(nullptr);
+  struct tm tms;
+#if defined(OS_WIN)
+  gmtime_s(&tms, &now_t_1);
+#elif defined(OS_POSIX)
+  gmtime_r(&now_t_1, &tms);
 #endif
-TEST_F(TimeTest, MAYBE_TimeT) {
+
+  // Convert to ours.
+  Time our_time_1 = Time::FromTimeT(now_t_1);
+  Time::Exploded exploded;
+  our_time_1.UTCExplode(&exploded);
+
+  // This will test both our exploding and our time_t -> Time conversion.
+  EXPECT_EQ(tms.tm_year + 1900, exploded.year);
+  EXPECT_EQ(tms.tm_mon + 1, exploded.month);
+  EXPECT_EQ(tms.tm_mday, exploded.day_of_month);
+  EXPECT_EQ(tms.tm_hour, exploded.hour);
+  EXPECT_EQ(tms.tm_min, exploded.minute);
+  EXPECT_EQ(tms.tm_sec, exploded.second);
+
+  // Convert exploded back to the time struct.
+  Time our_time_2;
+  EXPECT_TRUE(Time::FromUTCExploded(exploded, &our_time_2));
+  EXPECT_TRUE(our_time_1 == our_time_2);
+
+  time_t now_t_2 = our_time_2.ToTimeT();
+  EXPECT_EQ(now_t_1, now_t_2);
+}
+
+// Test conversions to/from time_t and exploding/unexploding (local time).
+TEST_F(TimeTest, LocalTimeT) {
+#if defined(OS_IOS) && TARGET_OS_SIMULATOR
+  // The function CFTimeZoneCopySystem() fails to determine the system timezone
+  // when running iOS 11.0 simulator on an host running High Sierra and return
+  // the "GMT" timezone. This causes Time::LocalExplode and localtime_r values
+  // to differ by the local timezone offset. Disable the test if simulating
+  // iOS 10.0 as it is not possible to check the version of the host mac.
+  // TODO(crbug.com/782033): remove this once support for iOS pre-11.0 is
+  // dropped or when the bug in CFTimeZoneCopySystem() is fixed.
+  if (ios::IsRunningOnIOS10OrLater() && !ios::IsRunningOnIOS11OrLater()) {
+    return;
+  }
+#endif
+
   // C library time and exploded time.
   time_t now_t_1 = time(nullptr);
   struct tm tms;
@@ -149,13 +202,6 @@ TEST_F(TimeTest, MAYBE_TimeT) {
 
   time_t now_t_2 = our_time_2.ToTimeT();
   EXPECT_EQ(now_t_1, now_t_2);
-
-  EXPECT_EQ(10, Time().FromTimeT(10).ToTimeT());
-  EXPECT_EQ(10.0, Time().FromTimeT(10).ToDoubleT());
-
-  // Conversions of 0 should stay 0.
-  EXPECT_EQ(0, Time().ToTimeT());
-  EXPECT_EQ(0, Time::FromTimeT(0).ToInternalValue());
 }
 
 // Test conversions to/from javascript time.
