@@ -4,5 +4,5 @@
 
 // https://dev.w3.org/2009/dap/file-system/file-dir-sys.html#the-filecallback-interface
 callback interface FileCallback {
-    void handleEvent(Blob file);
+    void handleEvent(File file);
 };

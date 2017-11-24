@@ -9,13 +9,13 @@
 
 namespace blink {
 
-class Blob;
+class File;
 
 class FileCallback : public GarbageCollectedFinalized<FileCallback> {
  public:
   virtual ~FileCallback() = default;
   virtual void Trace(blink::Visitor* visitor) {}
-  virtual void handleEvent(Blob*) = 0;
+  virtual void handleEvent(File*) = 0;
 };
 
 }  // namespace blink
