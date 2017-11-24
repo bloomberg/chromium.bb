@@ -27,7 +27,7 @@
 @synthesize tabStripVisibleCallCount = _tabStripVisibleCallCount;
 @synthesize contentScrollOffsetCallCount = _contentScrollOffsetCallCount;
 
-- (void)broadcastTabStripVisible:(BOOL)visible {
+- (void)broadcastScrollViewIsScrolling:(BOOL)visible {
   self.tabStripVisibleCallCount++;
   self.lastObservedBool = visible;
 }
@@ -57,7 +57,7 @@ TEST_F(ChromeBroadcasterTest, TestBroadcastBoolFirst) {
 
   [broadcaster broadcastValue:@"observableBool"
                      ofObject:observable
-                     selector:@selector(broadcastTabStripVisible:)];
+                     selector:@selector(broadcastScrollViewIsScrolling:)];
 
   observable.observableBool = YES;
 
@@ -65,7 +65,7 @@ TEST_F(ChromeBroadcasterTest, TestBroadcastBoolFirst) {
   EXPECT_FALSE(observer.lastObservedBool);
   EXPECT_EQ(0, observer.tabStripVisibleCallCount);
   [broadcaster addObserver:observer
-               forSelector:@selector(broadcastTabStripVisible:)];
+               forSelector:@selector(broadcastScrollViewIsScrolling:)];
   EXPECT_EQ(1, observer.tabStripVisibleCallCount);
   EXPECT_TRUE(observer.lastObservedBool);
   observable.observableBool = NO;
@@ -102,7 +102,7 @@ TEST_F(ChromeBroadcasterTest, TestObserveBoolFirst) {
   EXPECT_FALSE(observer.lastObservedBool);
   EXPECT_EQ(0, observer.tabStripVisibleCallCount);
   [broadcaster addObserver:observer
-               forSelector:@selector(broadcastTabStripVisible:)];
+               forSelector:@selector(broadcastScrollViewIsScrolling:)];
   EXPECT_FALSE(observer.lastObservedBool);
   EXPECT_EQ(0, observer.tabStripVisibleCallCount);
 
@@ -113,7 +113,7 @@ TEST_F(ChromeBroadcasterTest, TestObserveBoolFirst) {
 
   [broadcaster broadcastValue:@"observableBool"
                      ofObject:observable
-                     selector:@selector(broadcastTabStripVisible:)];
+                     selector:@selector(broadcastScrollViewIsScrolling:)];
   EXPECT_TRUE(observer.lastObservedBool);
   EXPECT_EQ(1, observer.tabStripVisibleCallCount);
   observable.observableBool = NO;
@@ -221,13 +221,13 @@ TEST_F(ChromeBroadcasterTest, TestSeparateObservers) {
 
   [broadcaster broadcastValue:@"observableBool"
                      ofObject:observable
-                     selector:@selector(broadcastTabStripVisible:)];
+                     selector:@selector(broadcastScrollViewIsScrolling:)];
   [broadcaster broadcastValue:@"observableCGFloat"
                      ofObject:observable
                      selector:@selector(broadcastContentScrollOffset:)];
 
   [broadcaster addObserver:boolObserver
-               forSelector:@selector(broadcastTabStripVisible:)];
+               forSelector:@selector(broadcastScrollViewIsScrolling:)];
   [broadcaster addObserver:floatObserver
                forSelector:@selector(broadcastContentScrollOffset:)];
   EXPECT_FALSE(boolObserver.lastObservedBool);
@@ -283,7 +283,7 @@ TEST_F(ChromeBroadcasterTest, TestStopObserving) {
 
   [broadcaster broadcastValue:@"observableBool"
                      ofObject:observable
-                     selector:@selector(broadcastTabStripVisible:)];
+                     selector:@selector(broadcastScrollViewIsScrolling:)];
   [broadcaster broadcastValue:@"observableCGFloat"
                      ofObject:observable
                      selector:@selector(broadcastContentScrollOffset:)];
@@ -293,7 +293,7 @@ TEST_F(ChromeBroadcasterTest, TestStopObserving) {
   TestObserver* observer = [[TestObserver alloc] init];
 
   [broadcaster addObserver:observer
-               forSelector:@selector(broadcastTabStripVisible:)];
+               forSelector:@selector(broadcastScrollViewIsScrolling:)];
   [broadcaster addObserver:observer
                forSelector:@selector(broadcastContentScrollOffset:)];
   EXPECT_EQ(2.0, observer.lastObservedCGFloat);
@@ -312,7 +312,7 @@ TEST_F(ChromeBroadcasterTest, TestStopObserving) {
   EXPECT_FALSE(observer.lastObservedBool);
   EXPECT_EQ(2, observer.tabStripVisibleCallCount);
   [broadcaster removeObserver:observer
-                  forSelector:@selector(broadcastTabStripVisible:)];
+                  forSelector:@selector(broadcastScrollViewIsScrolling:)];
   observable.observableBool = YES;
   EXPECT_FALSE(observer.lastObservedBool);
   EXPECT_EQ(2, observer.tabStripVisibleCallCount);

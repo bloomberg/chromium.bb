@@ -104,12 +104,6 @@
   _webState = nullptr;
 }
 
-#pragma mark - ChromeBroadcastObserver
-
-- (void)broadcastTabStripVisible:(BOOL)visible {
-  [self.consumer setTabStripVisible:visible];
-}
-
 #pragma mark - WebStateListObserver
 
 - (void)webStateList:(WebStateList*)webStateList

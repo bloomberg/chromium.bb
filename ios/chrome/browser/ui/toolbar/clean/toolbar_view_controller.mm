@@ -246,10 +246,9 @@
   [buttonConstraints
       addObject:[self.shareButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
-  // TODO(crbug.com/740793): Remove alert once share is implemented.
   self.shareButton.titleLabel.text = @"Share";
-  [self.shareButton addTarget:self
-                       action:@selector(showAlert:)
+  [self.shareButton addTarget:self.dispatcher
+                       action:@selector(sharePage)
              forControlEvents:UIControlEventTouchUpInside];
 
   // Reload button.
@@ -429,41 +428,6 @@
   [self.tabSwitchStripButton setAccessibilityValue:tabStripButtonValue];
 }
 
-#pragma mark - ZoomTransitionDelegate
-
-- (CGRect)rectForZoomWithKey:(NSObject*)key inView:(UIView*)view {
-  return [view convertRect:self.toolsMenuButton.bounds
-                  fromView:self.toolsMenuButton];
-}
-
-#pragma mark - TabHistoryPositioner
-
-- (CGPoint)originPointForToolbarButton:(ToolbarButtonType)toolbarButton {
-  UIButton* historyButton =
-      (toolbarButton == ToolbarButtonTypeBack) ? _backButton : _forwardButton;
-
-  // Set the origin for the tools popup to the leading side of the bottom of the
-  // pressed buttons.
-  CGRect buttonBounds = [historyButton.imageView bounds];
-  CGPoint leadingBottomCorner = CGPointMake(CGRectGetLeadingEdge(buttonBounds),
-                                            CGRectGetMaxY(buttonBounds));
-  CGPoint origin = [historyButton.imageView convertPoint:leadingBottomCorner
-                                                  toView:historyButton.window];
-  return origin;
-}
-
-#pragma mark - TabHistoryUIUpdater
-
-- (void)updateUIForTabHistoryPresentationFrom:(ToolbarButtonType)button {
-  ToolbarButton* historyButton = button ? self.backButton : self.forwardButton;
-  historyButton.selected = YES;
-}
-
-- (void)updateUIForTabHistoryWasDismissed {
-  self.backButton.selected = NO;
-  self.forwardButton.selected = NO;
-}
-
 #pragma mark - Helper Methods
 
 // Updates all Buttons visibility to match any recent WebState change.
@@ -483,22 +447,6 @@
     constraint.priority = priority;
   }
   [NSLayoutConstraint activateConstraints:constraintsArray];
-}
-
-// TODO(crbug.com/740793): Remove this method once no item is using it.
-- (void)showAlert:(UIButton*)sender {
-  UIAlertController* alertController =
-      [UIAlertController alertControllerWithTitle:sender.titleLabel.text
-                                          message:nil
-                                   preferredStyle:UIAlertControllerStyleAlert];
-  UIAlertAction* action =
-      [UIAlertAction actionWithTitle:@"Done"
-                               style:UIAlertActionStyleCancel
-                             handler:nil];
-  [alertController addAction:action];
-  [self.parentViewController presentViewController:alertController
-                                          animated:YES
-                                        completion:nil];
 }
 
 @end
