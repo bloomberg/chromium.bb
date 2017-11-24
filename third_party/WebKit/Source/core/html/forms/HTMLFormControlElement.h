@@ -125,7 +125,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   bool IsAutofilled() const { return is_autofilled_; }
   void SetAutofilled(bool = true);
 
-  static HTMLFormControlElement* EnclosingFormControlElement(Node*);
+  static const HTMLFormControlElement* EnclosingFormControlElement(const Node*);
 
   String NameForAutofill() const;
 
