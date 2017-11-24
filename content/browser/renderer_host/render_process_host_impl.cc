@@ -109,7 +109,7 @@
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
 #include "content/browser/quota_dispatcher_host.h"
-#include "content/browser/renderer_host/clipboard_message_filter.h"
+#include "content/browser/renderer_host/clipboard_host_impl.h"
 #include "content/browser/renderer_host/file_utilities_host_impl.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
@@ -1728,7 +1728,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       new MidiHost(GetID(), BrowserMainLoop::GetInstance()->midi_service()));
   AddFilter(new AppCacheDispatcherHost(
       storage_partition_impl_->GetAppCacheService(), GetID()));
-  AddFilter(new ClipboardMessageFilter(blob_storage_context));
   AddFilter(new DOMStorageMessageFilter(
       storage_partition_impl_->GetDOMStorageContext()));
 
@@ -1859,6 +1858,14 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
         registry.get(),
         base::Bind(&CreateProcessResourceCoordinator, base::Unretained(this)));
   }
+
+  BrowserContext* browser_context = GetBrowserContext();
+  scoped_refptr<ChromeBlobStorageContext> blob_storage_context =
+      ChromeBlobStorageContext::GetFor(browser_context);
+
+  AddUIThreadInterface(
+      registry.get(),
+      base::Bind(&ClipboardHostImpl::Create, std::move(blob_storage_context)));
 
   media::VideoDecodePerfHistory* video_perf_history =
       GetBrowserContext()->GetVideoDecodePerfHistory();

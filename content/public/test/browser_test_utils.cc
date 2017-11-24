@@ -1970,76 +1970,31 @@ void InputEventAckWaiter::OnInputEventAck(InputEventAckSource source,
   }
 }
 
-#if defined(OS_WIN)
-static void RunTaskAndSignalCompletion(const base::Closure& task,
-                                       base::WaitableEvent* completion) {
-  task.Run();
-  completion->Signal();
-}
-
-static void RunTaskOnIOThreadAndWait(const base::Closure& task) {
-  base::WaitableEvent completion(
-      base::WaitableEvent::ResetPolicy::AUTOMATIC,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&RunTaskAndSignalCompletion, task, &completion));
-  completion.Wait();
-}
-#endif
-
-static void SetUpTestClipboard() {
-#if defined(OS_WIN)
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    RunTaskOnIOThreadAndWait(base::Bind(&SetUpTestClipboard));
-    return;
-  }
-#endif
+// TODO(dcheng): Make the test clipboard on different threads share the
+// same backing store. crbug.com/629765
+// TODO(slangley): crbug.com/775830 - Cleanup BrowserTestClipboardScope now that
+// there is no need to thread hop for Windows.
+BrowserTestClipboardScope::BrowserTestClipboardScope() {
   ui::TestClipboard::CreateForCurrentThread();
 }
 
-// TODO(dcheng): Make the test clipboard on different threads share the
-// same backing store. crbug.com/629765
-BrowserTestClipboardScope::BrowserTestClipboardScope() {
-  SetUpTestClipboard();
-}
-
-static void TearDownTestClipboard() {
-#if defined(OS_WIN)
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    RunTaskOnIOThreadAndWait(base::Bind(&TearDownTestClipboard));
-    return;
-  }
-#endif
+BrowserTestClipboardScope::~BrowserTestClipboardScope() {
   ui::Clipboard::DestroyClipboardForCurrentThread();
 }
 
-BrowserTestClipboardScope::~BrowserTestClipboardScope() {
-  TearDownTestClipboard();
-}
-
 void BrowserTestClipboardScope::SetRtf(const std::string& rtf) {
-#if defined(OS_WIN)
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    RunTaskOnIOThreadAndWait(base::Bind(&BrowserTestClipboardScope::SetRtf,
-                                        base::Unretained(this), rtf));
-    return;
-  }
-#endif
   ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
   clipboard_writer.WriteRTF(rtf);
 }
 
 void BrowserTestClipboardScope::SetText(const std::string& text) {
-#if defined(OS_WIN)
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    RunTaskOnIOThreadAndWait(base::Bind(&BrowserTestClipboardScope::SetText,
-                                        base::Unretained(this), text));
-    return;
-  }
-#endif
   ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
   clipboard_writer.WriteText(base::ASCIIToUTF16(text));
+}
+
+void BrowserTestClipboardScope::GetText(std::string* result) {
+  ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
+      ui::CLIPBOARD_TYPE_COPY_PASTE, result);
 }
 
 class FrameFocusedObserver::FrameTreeNodeObserverImpl

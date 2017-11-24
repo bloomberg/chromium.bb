@@ -10,15 +10,15 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "content/common/clipboard.mojom.h"
 #include "third_party/WebKit/public/platform/WebClipboard.h"
 #include "ui/base/clipboard/clipboard.h"
 
 namespace content {
-class RendererClipboardDelegate;
 
 class WebClipboardImpl : public blink::WebClipboard {
  public:
-  explicit WebClipboardImpl(RendererClipboardDelegate* delegate);
+  explicit WebClipboardImpl(mojom::ClipboardHost& clipboard);
 
   virtual ~WebClipboardImpl();
 
@@ -49,7 +49,9 @@ class WebClipboardImpl : public blink::WebClipboard {
 
  private:
   bool ConvertBufferType(Buffer, ui::ClipboardType*);
-  RendererClipboardDelegate* const delegate_;
+  bool WriteImageToClipboard(ui::ClipboardType clipboard_type,
+                             const SkBitmap& bitmap);
+  mojom::ClipboardHost& clipboard_;
 };
 
 }  // namespace content

@@ -32,11 +32,6 @@
 #ifndef CONTENT_COMMON_CACHE_STORAGE_CACHE_STORAGE_MESSAGES_H_
 #error "Failed to include content/common/cache_storage/cache_storage_messages.h"
 #endif
-#undef CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
-#include "content/common/clipboard_messages.h"
-#ifndef CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
-#error "Failed to include content/common/clipboard_messages.h"
-#endif
 #undef CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
 #include "content/common/devtools_messages.h"
 #ifndef CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
