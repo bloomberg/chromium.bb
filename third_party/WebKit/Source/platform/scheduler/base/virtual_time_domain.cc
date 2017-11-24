@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_manager.h"
-#include "platform/scheduler/base/task_queue_manager_delegate.h"
 
 namespace blink {
 namespace scheduler {

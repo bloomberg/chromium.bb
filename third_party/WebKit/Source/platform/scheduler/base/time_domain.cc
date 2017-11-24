@@ -7,7 +7,6 @@
 #include <set>
 
 #include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/base/task_queue_manager_delegate.h"
 #include "platform/scheduler/base/work_queue.h"
 
 namespace blink {

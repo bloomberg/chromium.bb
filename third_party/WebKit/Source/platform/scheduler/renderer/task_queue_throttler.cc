@@ -11,7 +11,6 @@
 #include "base/optional.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/base/real_time_domain.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/throttled_time_domain.h"
