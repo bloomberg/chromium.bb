@@ -247,8 +247,8 @@ extern const char kEnableDataReductionProxyServerExperimentDescription[];
 extern const char kEnableDataReductionProxySavingsPromoName[];
 extern const char kEnableDataReductionProxySavingsPromoDescription[];
 
-extern const char kEnableDesktopPWAWindowingName[];
-extern const char kEnableDesktopPWAWindowingDescription[];
+extern const char kEnableDesktopPWAsName[];
+extern const char kEnableDesktopPWAsDescription[];
 
 extern const char kEnableEnumeratingAudioDevicesName[];
 extern const char kEnableEnumeratingAudioDevicesDescription[];
