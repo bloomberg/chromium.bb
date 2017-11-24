@@ -169,7 +169,8 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
 }
 
 // Tests that all URLs on chrome://chrome-urls page load without error.
-- (void)testChromeURLsLoadWithoutError {
+// Disabled due to failures; see https://crbug.com/788303.
+- (void)DISABLED_testChromeURLsLoadWithoutError {
   // Load WebUI pages and verify they load without any error.
   for (size_t i = 0; i < kNumberOfChromeHostURLs; ++i) {
     const char* host = kChromeHostURLs[i];
