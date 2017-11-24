@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -38,7 +39,8 @@ class VRDeviceManager {
   // Automatically connects all currently available VR devices by querying
   // the device providers and, for each returned device, calling
   // VRServiceImpl::ConnectDevice.
-  void AddService(VRServiceImpl* service);
+  void AddService(VRServiceImpl* service,
+                  device::mojom::VRService::SetClientCallback callback);
   void RemoveService(VRServiceImpl* service);
 
   device::VRDevice* GetDevice(unsigned int index);

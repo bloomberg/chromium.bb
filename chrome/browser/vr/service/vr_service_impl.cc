@@ -61,11 +61,7 @@ void VRServiceImpl::SetClient(device::mojom::VRServiceClientPtr service_client,
   // send ConnectDevice to it so that it's populated with the currently active
   // displays. Thereafter it will stay up to date by virtue of listening for new
   // connected events.
-  VRDeviceManager::GetInstance()->AddService(this);
-
-  // After displays are added, run the callback to let the VRController know
-  // initialization is complete.
-  std::move(callback).Run();
+  VRDeviceManager::GetInstance()->AddService(this, std::move(callback));
 }
 
 // Creates a VRDisplayImpl unique to this service so that the associated page
