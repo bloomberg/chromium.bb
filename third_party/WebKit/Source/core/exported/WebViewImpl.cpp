@@ -91,6 +91,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderStateMachine.h"
+#include "core/loader/InteractiveDetector.h"
 #include "core/loader/PrerendererClient.h"
 #include "core/page/ChromeClientImpl.h"
 #include "core/page/ContextMenuController.h"
@@ -2021,10 +2022,21 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
     return WebInputEventResult::kHandledSystem;
   }
 
+  Document& main_frame_document = *MainFrameImpl()->GetFrame()->GetDocument();
+
   if (input_event.GetType() != WebInputEvent::kMouseMove) {
-    FirstMeaningfulPaintDetector::From(
-        *MainFrameImpl()->GetFrame()->GetDocument())
-        .NotifyInputEvent();
+    FirstMeaningfulPaintDetector::From(main_frame_document).NotifyInputEvent();
+  }
+
+  if (input_event.GetType() != WebInputEvent::kMouseMove &&
+      input_event.GetType() != WebInputEvent::kMouseEnter &&
+      input_event.GetType() != WebInputEvent::kMouseLeave) {
+    InteractiveDetector* interactive_detector(
+        InteractiveDetector::From(main_frame_document));
+    if (interactive_detector) {
+      interactive_detector->OnInvalidatingInputEvent(
+          input_event.TimeStampSeconds());
+    }
   }
 
   if (mouse_capture_node_ &&

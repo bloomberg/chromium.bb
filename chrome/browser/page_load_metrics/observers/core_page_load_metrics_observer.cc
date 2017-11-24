@@ -70,6 +70,11 @@ void RecordFirstMeaningfulPaintStatus(
       status, internal::FIRST_MEANINGFUL_PAINT_LAST_ENTRY);
 }
 
+void RecordTimeToInteractiveStatus(internal::TimeToInteractiveStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(internal::kHistogramTimeToInteractiveStatus, status,
+                            internal::TIME_TO_INTERACTIVE_LAST_ENTRY);
+}
+
 }  // namespace
 
 namespace internal {
@@ -104,6 +109,10 @@ const char kBackgroundHistogramFirstContentfulPaint[] =
     "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.Background";
 const char kHistogramFirstMeaningfulPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint";
+const char kHistogramTimeToInteractive[] =
+    "PageLoad.Experimental.NavigationToInteractive";
+const char kHistogramInteractiveToInteractiveDetection[] =
+    "PageLoad.Internal.InteractiveToInteractiveDetection";
 const char kHistogramParseStartToFirstMeaningfulPaint[] =
     "PageLoad.Experimental.PaintTiming.ParseStartToFirstMeaningfulPaint";
 const char kHistogramParseStartToFirstContentfulPaint[] =
@@ -203,6 +212,9 @@ const char kHistogramFirstContentfulPaintUserInitiated[] =
 
 const char kHistogramFirstMeaningfulPaintStatus[] =
     "PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintStatus";
+
+const char kHistogramTimeToInteractiveStatus[] =
+    "PageLoad.Experimental.TimeToInteractiveStatus";
 
 const char kHistogramFirstNonScrollInputAfterFirstPaint[] =
     "PageLoad.InputTiming.NavigationToFirstNonScroll.AfterPaint";
@@ -489,6 +501,41 @@ void CorePageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
   }
 }
 
+void CorePageLoadMetricsObserver::OnPageInteractive(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  // Both interactive and interactive detection time must be present.
+  DCHECK(timing.interactive_timing->interactive);
+  DCHECK(timing.interactive_timing->interactive_detection);
+  DCHECK_GE(timing.interactive_timing->interactive_detection.value(),
+            timing.interactive_timing->interactive.value());
+
+  if (!WasStartedInForegroundOptionalEventInForeground(
+          timing.interactive_timing->interactive_detection, info)) {
+    RecordTimeToInteractiveStatus(internal::TIME_TO_INTERACTIVE_BACKGROUNDED);
+    return;
+  }
+
+  if (timing.interactive_timing->first_invalidating_input &&
+      timing.interactive_timing->first_invalidating_input.value() <
+          timing.interactive_timing->interactive) {
+    RecordTimeToInteractiveStatus(
+        internal::TIME_TO_INTERACTIVE_USER_INTERACTION_BEFORE_INTERACTIVE);
+    return;
+  }
+
+  base::TimeDelta time_to_interactive =
+      timing.interactive_timing->interactive.value();
+  base::TimeDelta interactive_to_detection =
+      timing.interactive_timing->interactive_detection.value() -
+      time_to_interactive;
+  PAGE_LOAD_HISTOGRAM(internal::kHistogramTimeToInteractive,
+                      time_to_interactive);
+  PAGE_LOAD_HISTOGRAM(internal::kHistogramInteractiveToInteractiveDetection,
+                      interactive_to_detection);
+  RecordTimeToInteractiveStatus(internal::TIME_TO_INTERACTIVE_RECORDED);
+}
+
 void CorePageLoadMetricsObserver::OnParseStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
@@ -671,6 +718,10 @@ void CorePageLoadMetricsObserver::OnLoadedResource(
   }
 }
 
+// This method records values for metrics that were not recorded during any
+// other event, or records failure status for metrics that have not been
+// collected yet. This is meant to be called at the end of a page lifetime, for
+// example, when the user is navigating away from the page.
 void CorePageLoadMetricsObserver::RecordTimingHistograms(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
@@ -688,6 +739,15 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
             ? internal::FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_NETWORK_STABLE
             : internal::
                   FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_FIRST_CONTENTFUL_PAINT);
+  }
+
+  if (timing.paint_timing->first_paint &&
+      !timing.interactive_timing->interactive) {
+    RecordTimeToInteractiveStatus(
+        timing.paint_timing->first_meaningful_paint
+            ? internal::TIME_TO_INTERACTIVE_DID_NOT_REACH_QUIESCENCE
+            : internal::
+                  TIME_TO_INTERACTIVE_DID_NOT_REACH_FIRST_MEANINGFUL_PAINT);
   }
 }
 

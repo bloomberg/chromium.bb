@@ -203,6 +203,15 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
     return internal::INVALID_ORDER_FIRST_PAINT_FIRST_MEANINGFUL_PAINT;
   }
 
+  if (!EventsInOrder(timing.paint_timing->first_meaningful_paint,
+                     timing.interactive_timing->interactive)) {
+    LOG(ERROR) << "Invalid first_meaningful_paint "
+               << timing.paint_timing->first_meaningful_paint
+               << " for time_to_interactive "
+               << timing.interactive_timing->interactive;
+    return internal::INVALID_ORDER_FIRST_MEANINGFUL_PAINT_PAGE_INTERACTIVE;
+  }
+
   return internal::VALID;
 }
 

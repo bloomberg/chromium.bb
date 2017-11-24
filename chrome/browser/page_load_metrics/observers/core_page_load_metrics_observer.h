@@ -21,6 +21,7 @@ extern const char kHistogramDomContentLoaded[];
 extern const char kHistogramLoad[];
 extern const char kHistogramFirstContentfulPaint[];
 extern const char kHistogramFirstMeaningfulPaint[];
+extern const char kHistogramTimeToInteractive[];
 extern const char kHistogramParseDuration[];
 extern const char kHistogramParseBlockedOnScriptLoad[];
 extern const char kHistogramParseBlockedOnScriptExecution[];
@@ -49,6 +50,7 @@ extern const char kHistogramForegroundToFirstMeaningfulPaint[];
 
 extern const char kRapporMetricsNameCoarseTiming[];
 extern const char kHistogramFirstMeaningfulPaintStatus[];
+extern const char kHistogramTimeToInteractiveStatus[];
 
 extern const char kHistogramFirstNonScrollInputAfterFirstPaint[];
 extern const char kHistogramFirstScrollInputAfterFirstPaint[];
@@ -80,6 +82,38 @@ enum FirstMeaningfulPaintStatus {
   FIRST_MEANINGFUL_PAINT_USER_INTERACTION_BEFORE_FMP,
   FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_FIRST_CONTENTFUL_PAINT,
   FIRST_MEANINGFUL_PAINT_LAST_ENTRY
+};
+
+enum TimeToInteractiveStatus {
+  // Time to Interactive recorded successfully.
+  TIME_TO_INTERACTIVE_RECORDED = 0,
+
+  // Reasons for not recording Time to Interactive:
+  // Main thread and network quiescence reached, but the user backgrounded the
+  // page at least once before reaching quiescence.
+  TIME_TO_INTERACTIVE_BACKGROUNDED = 1,
+
+  // Main thread and network quiescence reached, but there was a non-mouse-move
+  // user input that hit the renderer main thread between navigation start and
+  // the
+  // interactive time, so the detected interactive time is inaccurate. Note that
+  // Time to Interactive is not invalidated if the user input is after
+  // interactive time, but before quiescence windows are detected. User input
+  // invalidation has less priority than backgrounding - if there was an input
+  // event before reaching interactive, but the page was backgrounded before
+  // reaching interactive detection, the status is recorded as backgrounded
+  // instead of user-interaction-before-interactive.
+  TIME_TO_INTERACTIVE_USER_INTERACTION_BEFORE_INTERACTIVE = 2,
+
+  // User left page before main thread and network quiescence, but after First
+  // Meaningful Paint.
+  TIME_TO_INTERACTIVE_DID_NOT_REACH_QUIESCENCE = 3,
+
+  // User left page before First Meaningful Paint happened, but after First
+  // Paint.
+  TIME_TO_INTERACTIVE_DID_NOT_REACH_FIRST_MEANINGFUL_PAINT = 4,
+
+  TIME_TO_INTERACTIVE_LAST_ENTRY
 };
 
 }  // namespace internal
@@ -120,6 +154,9 @@ class CorePageLoadMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnFirstMeaningfulPaintInMainFrameDocument(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnPageInteractive(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnParseStart(

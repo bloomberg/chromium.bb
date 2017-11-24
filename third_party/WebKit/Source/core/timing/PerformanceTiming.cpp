@@ -40,6 +40,7 @@
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/InteractiveDetector.h"
 #include "core/paint/PaintTiming.h"
 #include "core/timing/PerformanceBase.h"
 #include "platform/loader/fetch/ResourceLoadTiming.h"
@@ -349,6 +350,34 @@ unsigned long long PerformanceTiming::FirstMeaningfulPaint() const {
   return MonotonicTimeToIntegerMilliseconds(timing->FirstMeaningfulPaint());
 }
 
+unsigned long long PerformanceTiming::PageInteractive() const {
+  InteractiveDetector* interactive_detector = GetInteractiveDetector();
+  if (!interactive_detector)
+    return 0;
+
+  return MonotonicTimeToIntegerMilliseconds(
+      interactive_detector->GetInteractiveTime());
+}
+
+unsigned long long PerformanceTiming::PageInteractiveDetection() const {
+  InteractiveDetector* interactive_detector = GetInteractiveDetector();
+  if (!interactive_detector)
+    return 0;
+
+  return MonotonicTimeToIntegerMilliseconds(
+      interactive_detector->GetInteractiveDetectionTime());
+}
+
+unsigned long long PerformanceTiming::FirstInputInvalidatingInteractive()
+    const {
+  InteractiveDetector* interactive_detector = GetInteractiveDetector();
+  if (!interactive_detector)
+    return 0;
+
+  return MonotonicTimeToIntegerMilliseconds(
+      interactive_detector->GetFirstInvalidatingInputTime());
+}
+
 unsigned long long PerformanceTiming::ParseStart() const {
   const DocumentParserTiming* timing = GetDocumentParserTiming();
   if (!timing)
@@ -487,6 +516,17 @@ ResourceLoadTiming* PerformanceTiming::GetResourceLoadTiming() const {
     return nullptr;
 
   return loader->GetResponse().GetResourceLoadTiming();
+}
+
+InteractiveDetector* PerformanceTiming::GetInteractiveDetector() const {
+  if (!GetFrame())
+    return nullptr;
+
+  Document* document = GetFrame()->GetDocument();
+  if (!document)
+    return nullptr;
+
+  return InteractiveDetector::From(*document);
 }
 
 ScriptValue PerformanceTiming::toJSONForBinding(

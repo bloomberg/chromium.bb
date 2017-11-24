@@ -40793,6 +40793,15 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Exceeded memory budget"/>
 </enum>
 
+<enum name="TimeToInteractiveStatus">
+  <int value="0" label="Recorded successfully"/>
+  <int value="1" label="Not recorded because the page was backgrounded"/>
+  <int value="2" label="Not recorded because of user interaction"/>
+  <int value="3" label="Not recorded because never reached quiescence"/>
+  <int value="4"
+      label="Not recorded because never reached first meaningful paint"/>
+</enum>
+
 <enum name="TimeZoneRequestEvent">
   <int value="0" label="Request start"/>
   <int value="1" label="Response success"/>

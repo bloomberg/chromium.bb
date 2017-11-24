@@ -5,6 +5,8 @@
 #include "core/loader/InteractiveDetector.h"
 
 #include "core/dom/Document.h"
+#include "core/loader/DocumentLoader.h"
+#include "platform/Histogram.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/wtf/Time.h"
@@ -91,8 +93,16 @@ void InteractiveDetector::StartOrPostponeCITimer(double timer_fire_time) {
   }
 }
 
-double InteractiveDetector::GetInteractiveTime() {
+double InteractiveDetector::GetInteractiveTime() const {
   return interactive_time_;
+}
+
+double InteractiveDetector::GetInteractiveDetectionTime() const {
+  return interactive_detection_time_;
+}
+
+double InteractiveDetector::GetFirstInvalidatingInputTime() const {
+  return page_event_times_.first_invalidating_input;
 }
 
 void InteractiveDetector::BeginNetworkQuietPeriod(double current_time) {
@@ -191,6 +201,15 @@ void InteractiveDetector::OnDomContentLoadedEnd(double dcl_end_time) {
   DCHECK(page_event_times_.dom_content_loaded_end == 0.0);
   page_event_times_.dom_content_loaded_end = dcl_end_time;
   CheckTimeToInteractiveReached();
+}
+
+void InteractiveDetector::OnInvalidatingInputEvent(double timestamp_seconds) {
+  if (page_event_times_.first_invalidating_input != 0.0)
+    return;
+
+  page_event_times_.first_invalidating_input = timestamp_seconds;
+  if (GetSupplementable()->Loader())
+    GetSupplementable()->Loader()->DidChangePerformanceTiming();
 }
 
 void InteractiveDetector::TimeToInteractiveTimerFired(TimerBase*) {
@@ -317,6 +336,7 @@ void InteractiveDetector::CheckTimeToInteractiveReached() {
 
   interactive_time_ = std::max(
       {interactive_candidate, page_event_times_.dom_content_loaded_end});
+  interactive_detection_time_ = MonotonicallyIncreasingTime();
   OnTimeToInteractiveDetected();
 }
 
@@ -325,10 +345,20 @@ void InteractiveDetector::OnTimeToInteractiveDetected() {
   main_thread_quiet_windows_.clear();
   network_quiet_windows_.clear();
 
-  TRACE_EVENT_MARK_WITH_TIMESTAMP1(
+  bool had_user_input_before_interactive =
+      page_event_times_.first_invalidating_input != 0 &&
+      page_event_times_.first_invalidating_input < interactive_time_;
+
+  // We log the trace event even if there is user input, but annotate the event
+  // with whether that happened.
+  TRACE_EVENT_MARK_WITH_TIMESTAMP2(
       "loading,rail", "InteractiveTime",
       TraceEvent::ToTraceTimestamp(interactive_time_), "frame",
-      GetSupplementable()->GetFrame());
+      GetSupplementable()->GetFrame(), "had_user_input_before_interactive",
+      had_user_input_before_interactive);
+
+  if (GetSupplementable()->Loader())
+    GetSupplementable()->Loader()->DidChangePerformanceTiming();
 }
 
 void InteractiveDetector::Trace(Visitor* visitor) {
