@@ -144,10 +144,10 @@ class ProfileExtender(object):
     network_controller = possible_browser.platform.network_controller
     if not network_controller.is_open:
       self._should_close_network_controller = True
-      network_controller.Open(wpr_mode,
-                              finder_options.browser_options.extra_wpr_args)
+      network_controller.Open(wpr_mode)
     network_controller.StartReplay(
-        wpr_archive_path, make_javascript_deterministic=True)
+        wpr_archive_path, make_javascript_deterministic=True,
+        extra_wpr_args=finder_options.browser_options.extra_wpr_args)
 
   def _GetPossibleBrowser(self, finder_options):
     """Return a possible_browser with the given options."""
