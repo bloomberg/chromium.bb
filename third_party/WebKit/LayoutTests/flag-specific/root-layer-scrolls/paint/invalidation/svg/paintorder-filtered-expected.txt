@@ -17,6 +17,36 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "LayoutSVGPath polygon id='t3'",
+          "rect": [304, 150, 165, 164],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon",
+          "rect": [31, 150, 165, 164],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon",
+          "rect": [441, 150, 164, 164],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon",
+          "rect": [168, 150, 164, 164],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='poly'",
+          "rect": [168, 150, 164, 163],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='poly'",
+          "rect": [32, 150, 163, 163],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutSVGContainer use id='t2'",
           "rect": [181, 163, 138, 137],
           "reason": "style change"
@@ -34,36 +64,6 @@
         {
           "object": "LayoutSVGContainer use id='t1'",
           "rect": [45, 163, 137, 137],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGPath polygon",
-          "rect": [183, 165, 134, 134],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGPath polygon",
-          "rect": [456, 165, 133, 134],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGPath polygon id='t3'",
-          "rect": [320, 165, 133, 134],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGPath polygon",
-          "rect": [47, 165, 133, 134],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='poly'",
-          "rect": [47, 166, 133, 132],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='poly'",
-          "rect": [184, 166, 132, 132],
           "reason": "style change"
         }
       ]

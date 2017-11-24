@@ -18,12 +18,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGPath path id='go'",
-          "rect": [89, 94, 100, 100],
+          "rect": [89, 94, 108, 108],
           "reason": "full"
         },
         {
           "object": "LayoutSVGContainer g",
-          "rect": [90, 95, 98, 98],
+          "rect": [90, 95, 106, 106],
           "reason": "geometry"
         }
       ]

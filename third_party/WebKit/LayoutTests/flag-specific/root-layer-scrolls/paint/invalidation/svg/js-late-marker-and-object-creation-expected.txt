@@ -18,17 +18,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGPath path",
-          "rect": [202, 211, 112, 112],
+          "rect": [189, 197, 139, 139],
           "reason": "style change"
         },
         {
           "object": "LayoutSVGPath path",
-          "rect": [202, 211, 112, 112],
+          "rect": [189, 197, 139, 139],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g id='content'",
-          "rect": [203, 211, 111, 111],
+          "rect": [190, 198, 137, 137],
           "reason": "appeared"
         }
       ]
