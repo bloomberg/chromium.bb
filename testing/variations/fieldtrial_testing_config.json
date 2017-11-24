@@ -3140,12 +3140,6 @@
                     ]
                 },
                 {
-                    "name": "OnlyShowScoutOptInGroup",
-                    "enable_features": [
-                        "OnlyShowScoutOptIn"
-                    ]
-                },
-                {
                     "name": "Control2",
                     "disable_features": [
                         "CanShowScoutOptIn",

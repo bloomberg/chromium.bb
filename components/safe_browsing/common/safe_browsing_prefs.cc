@@ -161,9 +161,6 @@ namespace safe_browsing {
 const base::Feature kCanShowScoutOptIn{"CanShowScoutOptIn",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kOnlyShowScoutOptIn{"OnlyShowScoutOptIn",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 std::string ChooseOptInTextPreference(
     const PrefService& prefs,
     const std::string& extended_reporting_pref,
@@ -190,10 +187,9 @@ ExtendedReportingLevel GetExtendedReportingLevel(const PrefService& prefs) {
 }
 
 const char* GetExtendedReportingPrefName(const PrefService& prefs) {
-  // The Scout pref is active if either of the experiment features are on, and
+  // The Scout pref is active if the experiment features is on, and
   // ScoutGroupSelected is on as well.
-  if ((base::FeatureList::IsEnabled(kCanShowScoutOptIn) ||
-       base::FeatureList::IsEnabled(kOnlyShowScoutOptIn)) &&
+  if (base::FeatureList::IsEnabled(kCanShowScoutOptIn) &&
       prefs.GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)) {
     return prefs::kSafeBrowsingScoutReportingEnabled;
   }
@@ -204,13 +200,8 @@ const char* GetExtendedReportingPrefName(const PrefService& prefs) {
 }
 
 void InitializeSafeBrowsingPrefs(PrefService* prefs) {
-  // Handle the three possible experiment states.
-  if (base::FeatureList::IsEnabled(kOnlyShowScoutOptIn)) {
-    // OnlyShowScoutOptIn immediately turns on ScoutGroupSelected pref.
-    prefs->SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, true);
-    UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
-                              ONLY_SHOW_SCOUT_OPT_IN, MAX_REASONS);
-  } else if (base::FeatureList::IsEnabled(kCanShowScoutOptIn)) {
+  // Handle the two possible experiment states.
+  if (base::FeatureList::IsEnabled(kCanShowScoutOptIn)) {
     // CanShowScoutOptIn will only turn on ScoutGroupSelected pref if the legacy
     // SBER pref is false. Otherwise the legacy SBER pref will stay on and
     // continue to be used until the next security incident, at which point
@@ -226,7 +217,7 @@ void InitializeSafeBrowsingPrefs(PrefService* prefs) {
                                 MAX_REASONS);
     }
   } else {
-    // Both experiment features are off, so this is the Control group. We must
+    // Experiment feature is off, so this is the Control group. We must
     // handle the possibility that the user was previously in an experiment
     // group (above) that was reverted. We want to restore the user to a
     // reasonable state based on the ScoutGroup and ScoutReporting preferences.
