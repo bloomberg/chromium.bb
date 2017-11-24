@@ -4,20 +4,14 @@
 
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
 
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host_view.h"
-
 namespace thumbnails {
 
-ThumbnailingContext::ThumbnailingContext(content::WebContents* web_contents,
-                                         ThumbnailService* receiving_service,
-                                         bool load_interrupted)
-    : service(receiving_service),
-      url(web_contents->GetLastCommittedURL()),
-      clip_result(CLIP_RESULT_UNPROCESSED) {
-  score.at_top =
-      (web_contents->GetRenderWidgetHostView()->GetLastScrollOffset().y() == 0);
-  score.load_completed = !web_contents->IsLoading() && !load_interrupted;
+ThumbnailingContext::ThumbnailingContext(const GURL& url,
+                                         bool at_top,
+                                         bool load_completed)
+    : url(url), clip_result(CLIP_RESULT_UNPROCESSED) {
+  score.at_top = at_top;
+  score.load_completed = load_completed;
 }
 
 ThumbnailingContext::~ThumbnailingContext() = default;
