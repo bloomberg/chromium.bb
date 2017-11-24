@@ -31,6 +31,7 @@
 #ifndef WebPagePopupImpl_h
 #define WebPagePopupImpl_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/page/PagePopup.h"
 #include "core/page/PageWidgetDelegate.h"
@@ -56,7 +57,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
                                            public PageWidgetEventHandler,
                                            public PagePopup,
                                            public RefCounted<WebPagePopupImpl> {
-  WTF_MAKE_NONCOPYABLE(WebPagePopupImpl);
   USING_FAST_MALLOC(WebPagePopupImpl);
 
  public:
@@ -130,6 +130,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   friend class WebPagePopup;
   friend class PagePopupChromeClient;
+
+  DISALLOW_COPY_AND_ASSIGN(WebPagePopupImpl);
 };
 
 DEFINE_TYPE_CASTS(WebPagePopupImpl,

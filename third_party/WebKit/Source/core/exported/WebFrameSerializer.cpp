@@ -30,6 +30,7 @@
 
 #include "public/web/WebFrameSerializer.h"
 
+#include "base/macros.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementShadow.h"
@@ -64,7 +65,6 @@
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringConcatenate.h"
@@ -87,7 +87,6 @@ const char kShadowDelegatesFocusAttributeName[] = "shadowdelegatesfocus";
 
 class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(MHTMLFrameSerializerDelegate);
 
  public:
   MHTMLFrameSerializerDelegate(
@@ -114,6 +113,8 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
   WebFrameSerializer::MHTMLPartsGenerationDelegate& web_delegate_;
   HeapHashSet<WeakMember<const Element>>& shadow_template_elements_;
   bool popup_overlays_skipped_;
+
+  DISALLOW_COPY_AND_ASSIGN(MHTMLFrameSerializerDelegate);
 };
 
 MHTMLFrameSerializerDelegate::MHTMLFrameSerializerDelegate(
