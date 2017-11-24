@@ -85,6 +85,11 @@ int suite_cs_tests_init();
 int suite_cs_tests_clean();
 
 /**
+ * Decide if the suite is enabled by default or not.
+ */
+CU_BOOL suite_cs_tests_enable(void);
+
+/**
  * Tests in cs test suite
  */
 extern CU_TestInfo cs_tests[];

@@ -146,7 +146,7 @@ static Suites_Active_Status suites_active_stat[] = {
 		},
 		{
 			.pName = CS_TESTS_STR,
-			.pActive = always_active,
+			.pActive = suite_cs_tests_enable,
 		},
 		{
 			.pName = VCE_TESTS_STR,

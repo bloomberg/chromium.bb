@@ -66,6 +66,26 @@ CU_TestInfo cs_tests[] = {
 	CU_TEST_INFO_NULL,
 };
 
+CU_BOOL suite_cs_tests_enable(void)
+{
+	if (amdgpu_device_initialize(drm_amdgpu[0], &major_version,
+					     &minor_version, &device_handle))
+		return CU_FALSE;
+
+	family_id = device_handle->info.family_id;
+
+	if (amdgpu_device_deinitialize(device_handle))
+		return CU_FALSE;
+
+
+	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI) {
+		printf("\n\nThe ASIC NOT support UVD, suite disabled\n");
+		return CU_FALSE;
+	}
+
+	return CU_TRUE;
+}
+
 int suite_cs_tests_init(void)
 {
 	amdgpu_bo_handle ib_result_handle;
@@ -89,11 +109,6 @@ int suite_cs_tests_init(void)
 	/* VI asic POLARIS10/11 have specific external_rev_id */
 	chip_rev = device_handle->info.chip_rev;
 	chip_id = device_handle->info.chip_external_rev;
-
-	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI) {
-		printf("\n\nThe ASIC NOT support UVD, all sub-tests will pass\n");
-		return CUE_SUCCESS;
-	}
 
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
 	if (r)
@@ -119,24 +134,18 @@ int suite_cs_tests_clean(void)
 {
 	int r;
 
-	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI) {
-		r = amdgpu_device_deinitialize(device_handle);
-		if (r)
-			return CUE_SCLEAN_FAILED;
-	} else {
-		r = amdgpu_bo_unmap_and_free(ib_handle, ib_va_handle,
-					     ib_mc_address, IB_SIZE);
-		if (r)
-			return CUE_SCLEAN_FAILED;
+	r = amdgpu_bo_unmap_and_free(ib_handle, ib_va_handle,
+				     ib_mc_address, IB_SIZE);
+	if (r)
+		return CUE_SCLEAN_FAILED;
 
-		r = amdgpu_cs_ctx_free(context_handle);
-		if (r)
-			return CUE_SCLEAN_FAILED;
+	r = amdgpu_cs_ctx_free(context_handle);
+	if (r)
+		return CUE_SCLEAN_FAILED;
 
-		r = amdgpu_device_deinitialize(device_handle);
-		if (r)
-			return CUE_SCLEAN_FAILED;
-	}
+	r = amdgpu_device_deinitialize(device_handle);
+	if (r)
+		return CUE_SCLEAN_FAILED;
 
 	return CUE_SUCCESS;
 }
@@ -202,9 +211,6 @@ static void amdgpu_cs_uvd_create(void)
 	amdgpu_va_handle va_handle;
 	void *msg;
 	int i, r;
-
-	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI)
-		return;
 
 	req.alloc_size = 4*1024;
 	req.preferred_heap = AMDGPU_GEM_DOMAIN_GTT;
@@ -276,9 +282,6 @@ static void amdgpu_cs_uvd_decode(void)
 	uint64_t sum;
 	uint8_t *ptr;
 	int i, r;
-
-	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI)
-                return;
 
 	req.alloc_size = 4*1024; /* msg */
 	req.alloc_size += 4*1024; /* fb */
@@ -418,9 +421,6 @@ static void amdgpu_cs_uvd_destroy(void)
 	uint64_t va = 0;
 	void *msg;
 	int i, r;
-
-	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI)
-                return;
 
 	req.alloc_size = 4*1024;
 	req.preferred_heap = AMDGPU_GEM_DOMAIN_GTT;
