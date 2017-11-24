@@ -1823,7 +1823,7 @@
         {
           "board_name": "reef",
           "name": "reef",
-          "cq_test_enabled": true,
+          "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }
       ]
