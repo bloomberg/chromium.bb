@@ -26,7 +26,6 @@ static_library("vr_common") {
     "cpu_surface_provider.cc",
     "cpu_surface_provider.h",
     "databinding/binding.h",
-    "databinding/binding_base.cc",
     "databinding/binding_base.h",
     "databinding/vector_binding.h",
     "databinding/vector_element_binding.h",
