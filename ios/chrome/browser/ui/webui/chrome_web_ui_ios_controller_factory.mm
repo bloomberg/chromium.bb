@@ -16,7 +16,6 @@
 #include "ios/chrome/browser/ui/webui/net_export/net_export_ui.h"
 #include "ios/chrome/browser/ui/webui/ntp_tiles_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/omaha_ui.h"
-#include "ios/chrome/browser/ui/webui/password_manager_internals_ui_ios.h"
 #include "ios/chrome/browser/ui/webui/physical_web_ui.h"
 #include "ios/chrome/browser/ui/webui/signin_internals_ui_ios.h"
 #include "ios/chrome/browser/ui/webui/suggestions_ui.h"
@@ -77,8 +76,6 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(WebUIIOS* web_ui,
     return &NewWebUIIOS<NTPTilesInternalsUI>;
   if (url_host == kChromeUIOmahaHost)
     return &NewWebUIIOS<OmahaUI>;
-  if (url_host == kChromeUIPasswordManagerInternalsHost)
-    return &NewWebUIIOS<PasswordManagerInternalsUIIOS>;
   if (experimental_flags::IsPhysicalWebEnabled()) {
     if (url_host == kChromeUIPhysicalWebHost)
       return &NewWebUIIOS<PhysicalWebUI>;
