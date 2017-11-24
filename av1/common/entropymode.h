@@ -194,7 +194,6 @@ typedef struct frame_contexts {
   aom_cdf_prob compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES)];
   aom_prob interintra_prob[BLOCK_SIZE_GROUPS];
   aom_prob wedge_interintra_prob[BLOCK_SIZES_ALL];
-  aom_prob interintra_mode_prob[BLOCK_SIZE_GROUPS][INTERINTRA_MODES - 1];
   aom_cdf_prob interintra_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(2)];
   aom_cdf_prob wedge_interintra_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)];
   aom_cdf_prob interintra_mode_cdf[BLOCK_SIZE_GROUPS]
