@@ -169,13 +169,15 @@ FcHashTableAdd (FcHashTable *table,
 
 	return !ret;
     }
+  retry:
     for (prev = &table->buckets[hash % FC_HASH_SIZE];
-	 (b = *prev); prev = &(b->next))
+	 (b = fc_atomic_ptr_get (prev)); prev = &(b->next))
     {
 	if (!table->compare_func (bucket->key, key))
 	    goto destroy;
     }
-    *prev = bucket;
+    if (!fc_atomic_ptr_cmpexch (prev, b, bucket))
+	goto retry;
 
     return FcTrue;
 }
