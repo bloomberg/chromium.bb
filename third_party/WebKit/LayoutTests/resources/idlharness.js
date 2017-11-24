@@ -55,6 +55,7 @@ function constValue (cnt)
     if (cnt.type === "null") return null;
     if (cnt.type === "NaN") return NaN;
     if (cnt.type === "Infinity") return cnt.negative ? -Infinity : Infinity;
+    if (cnt.type === "number") return +cnt.value;
     return cnt.value;
 }
 
@@ -167,11 +168,11 @@ self.IdlArray = function()
 };
 
 //@}
-IdlArray.prototype.add_idls = function(raw_idls)
+IdlArray.prototype.add_idls = function(raw_idls, options)
 //@{
 {
     /** Entry point.  See documentation at beginning of file. */
-    this.internal_add_idls(WebIDL2.parse(raw_idls));
+    this.internal_add_idls(WebIDL2.parse(raw_idls), options);
 };
 
 //@}
@@ -195,27 +196,60 @@ IdlArray.prototype.add_untested_idls = function(raw_idls)
 };
 
 //@}
-IdlArray.prototype.internal_add_idls = function(parsed_idls)
+IdlArray.prototype.internal_add_idls = function(parsed_idls, options)
 //@{
 {
     /**
      * Internal helper called by add_idls() and add_untested_idls().
+     *
      * parsed_idls is an array of objects that come from WebIDLParser.js's
      * "definitions" production.  The add_untested_idls() entry point
      * additionally sets an .untested property on each object (and its
      * .members) so that they'll be skipped by test() -- they'll only be
      * used for base interfaces of tested interfaces, return types, etc.
+     *
+     * options is a dictionary that can have an only or except member which are
+     * arrays. If only is given then only members, partials and interface
+     * targets listed will be added, and if except is given only those that
+     * aren't listed will be added. Only one of only and except can be used.
      */
+
+    if (options && options.only && options.except)
+    {
+        throw "The only and except options can't be used together."
+    }
+
+    function should_skip(name)
+    {
+        if (options && options.only && options.only.indexOf(name) == -1)
+        {
+            return true;
+        }
+        if (options && options.except && options.except.indexOf(name) != -1)
+        {
+            return true;
+        }
+        return false;
+    }
+
     parsed_idls.forEach(function(parsed_idl)
     {
         if (parsed_idl.type == "interface" && parsed_idl.partial)
         {
+            if (should_skip(parsed_idl.name))
+            {
+                return;
+            }
             this.partials.push(parsed_idl);
             return;
         }
 
         if (parsed_idl.type == "implements")
         {
+            if (should_skip(parsed_idl.target))
+            {
+                return;
+            }
             if (!(parsed_idl.target in this["implements"]))
             {
                 this["implements"][parsed_idl.target] = [];
@@ -228,6 +262,10 @@ IdlArray.prototype.internal_add_idls = function(parsed_idls)
         if (parsed_idl.name in this.members)
         {
             throw "Duplicate identifier " + parsed_idl.name;
+        }
+        if (should_skip(parsed_idl.name))
+        {
+            return;
         }
         switch(parsed_idl.type)
         {
@@ -1861,9 +1899,6 @@ IdlInterface.prototype.test_to_json_operation = function(memberHolderObject, mem
                 this.array.assert_type_is(json[k], type);
                 delete json[k];
             }, this);
-            for (var k in json) {
-                assert_unreached("property " + JSON.stringify(k) + " should not be present in the output of " + this.name + ".prototype.toJSON()");
-            }
         }.bind(this), "Test default toJSON operation of " + this.name);
     } else {
         test(function() {

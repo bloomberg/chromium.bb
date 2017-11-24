@@ -3,7 +3,7 @@ CONSOLE WARNING: line 23: An AudioContext in a cross origin iframe must be creat
 CONSOLE WARNING: line 30: OscillatorNode.frequency.value setter smoothing is deprecated and will be removed in M64, around January 2018. Please use setTargetAtTime() instead if smoothing is needed. See https://www.chromestatus.com/features/5287995770929152 for more details.
 CONSOLE WARNING: line 30: AudioParam value setter will become equivalent to AudioParam.setValueAtTime() in M65, around March 2018  See https://webaudio.github.io/web-audio-api/#dom-audioparam-value for more details.
 CONSOLE WARNING: line 36: An AudioContext in a cross origin iframe must be created or resumed from a user gesture to enable audio output.
-CONSOLE ERROR: line 2659: Uncaught Error: assert_equals: stateAfterClick expected "running" but got "suspended"
+CONSOLE ERROR: line 2676: Uncaught Error: assert_equals: stateAfterClick expected "running" but got "suspended"
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = Uncaught Error: assert_equals: stateAfterClick expected "running" but got "suspended"
 PASS Verify that autoplaying Web Audio from a cross origin iframe is blocked by mediaPlaybackRequiresUserGesture

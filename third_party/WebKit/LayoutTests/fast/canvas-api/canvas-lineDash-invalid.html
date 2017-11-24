@@ -44,10 +44,10 @@ test(function(t) {
       trySettingLineDashWithNoArgs();
     });
 
-    assert_array_equals(trySettingLineDashOffset(Infinity), initialLineDashOffset);
-    assert_array_equals(trySettingLineDashOffset(-Infinity), initialLineDashOffset);
-    assert_array_equals(trySettingLineDashOffset(NaN), initialLineDashOffset);
-    assert_array_equals(trySettingLineDashOffset('string'), initialLineDashOffset);
+    assert_equals(trySettingLineDashOffset(Infinity), initialLineDashOffset);
+    assert_equals(trySettingLineDashOffset(-Infinity), initialLineDashOffset);
+    assert_equals(trySettingLineDashOffset(NaN), initialLineDashOffset);
+    assert_equals(trySettingLineDashOffset('string'), initialLineDashOffset);
 }, "Test for invalid input of setLineDash, getLineDash and lineDashOffset");
 </script>
 </body>
