@@ -20,58 +20,58 @@ const StylePropertyShorthand& CSSProperty::BorderDirections() {
   return border_directions;
 }
 
-CSSPropertyID CSSProperty::ResolveAfterToPhysicalProperty(
+const CSSProperty& CSSProperty::ResolveAfterToPhysicalProperty(
     TextDirection direction,
     WritingMode writing_mode,
     const StylePropertyShorthand& shorthand) {
   const CSSPropertyID* shorthand_properties = shorthand.properties();
   if (IsHorizontalWritingMode(writing_mode))
-    return shorthand_properties[kBottomSide];
+    return Get(shorthand_properties[kBottomSide]);
   if (IsFlippedLinesWritingMode(writing_mode))
-    return shorthand_properties[kRightSide];
-  return shorthand_properties[kLeftSide];
+    return Get(shorthand_properties[kRightSide]);
+  return Get(shorthand_properties[kLeftSide]);
 }
 
-CSSPropertyID CSSProperty::ResolveBeforeToPhysicalProperty(
+const CSSProperty& CSSProperty::ResolveBeforeToPhysicalProperty(
     TextDirection direction,
     WritingMode writing_mode,
     const StylePropertyShorthand& shorthand) {
   const CSSPropertyID* shorthand_properties = shorthand.properties();
   if (IsHorizontalWritingMode(writing_mode))
-    return shorthand_properties[kTopSide];
+    return Get(shorthand_properties[kTopSide]);
   if (IsFlippedLinesWritingMode(writing_mode))
-    return shorthand_properties[kLeftSide];
-  return shorthand_properties[kRightSide];
+    return Get(shorthand_properties[kLeftSide]);
+  return Get(shorthand_properties[kRightSide]);
 }
 
-CSSPropertyID CSSProperty::ResolveEndToPhysicalProperty(
+const CSSProperty& CSSProperty::ResolveEndToPhysicalProperty(
     TextDirection direction,
     WritingMode writing_mode,
     const StylePropertyShorthand& shorthand) {
   const CSSPropertyID* shorthand_properties = shorthand.properties();
   if (direction == TextDirection::kLtr) {
     if (IsHorizontalWritingMode(writing_mode))
-      return shorthand_properties[kRightSide];
-    return shorthand_properties[kBottomSide];
+      return Get(shorthand_properties[kRightSide]);
+    return Get(shorthand_properties[kBottomSide]);
   }
   if (IsHorizontalWritingMode(writing_mode))
-    return shorthand_properties[kLeftSide];
-  return shorthand_properties[kTopSide];
+    return Get(shorthand_properties[kLeftSide]);
+  return Get(shorthand_properties[kTopSide]);
 }
 
-CSSPropertyID CSSProperty::ResolveStartToPhysicalProperty(
+const CSSProperty& CSSProperty::ResolveStartToPhysicalProperty(
     TextDirection direction,
     WritingMode writing_mode,
     const StylePropertyShorthand& shorthand) {
   const CSSPropertyID* shorthand_properties = shorthand.properties();
   if (direction == TextDirection::kLtr) {
     if (IsHorizontalWritingMode(writing_mode))
-      return shorthand_properties[kLeftSide];
-    return shorthand_properties[kTopSide];
+      return Get(shorthand_properties[kLeftSide]);
+    return Get(shorthand_properties[kTopSide]);
   }
   if (IsHorizontalWritingMode(writing_mode))
-    return shorthand_properties[kRightSide];
-  return shorthand_properties[kBottomSide];
+    return Get(shorthand_properties[kRightSide]);
+  return Get(shorthand_properties[kBottomSide]);
 }
 
 void CSSProperty::FilterEnabledCSSPropertiesIntoVector(

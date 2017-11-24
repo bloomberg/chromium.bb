@@ -743,7 +743,7 @@ scoped_refptr<AnimatableValue> StyleResolver::CreateAnimatableValueSnapshot(
                            parent_style);
   state.SetStyle(ComputedStyle::Clone(base_style));
   if (value) {
-    StyleBuilder::ApplyProperty(property.PropertyID(), state, *value);
+    StyleBuilder::ApplyProperty(property, state, *value);
     state.GetFontBuilder().CreateFont(
         state.GetDocument().GetStyleEngine().GetFontSelector(),
         state.MutableStyleRef());
@@ -1498,7 +1498,7 @@ void StyleResolver::ApplyAllProperty(
     if (inherited_only && !property_class.IsInherited())
       continue;
 
-    StyleBuilder::ApplyProperty(property_id, state, all_value);
+    StyleBuilder::ApplyProperty(property_class, state, all_value);
   }
 }
 
@@ -1514,9 +1514,10 @@ void StyleResolver::ApplyProperties(
   unsigned property_count = properties->PropertyCount();
   for (unsigned i = 0; i < property_count; ++i) {
     CSSPropertyValueSet::PropertyReference current = properties->PropertyAt(i);
-    CSSPropertyID property = current.Id();
+    CSSPropertyID property_id = current.Id();
 
-    if (property == CSSPropertyAll && is_important == current.IsImportant()) {
+    if (property_id == CSSPropertyAll &&
+        is_important == current.IsImportant()) {
       if (shouldUpdateNeedsApplyPass) {
         needs_apply_pass.Set(kAnimationPropertyPriority, is_important);
         needs_apply_pass.Set(kHighPropertyPriority, is_important);
@@ -1528,13 +1529,13 @@ void StyleResolver::ApplyProperties(
     }
 
     if (shouldUpdateNeedsApplyPass)
-      needs_apply_pass.Set(PriorityForProperty(property),
+      needs_apply_pass.Set(PriorityForProperty(property_id),
                            current.IsImportant());
 
     if (is_important != current.IsImportant())
       continue;
 
-    if (!IsPropertyInWhitelist(property_whitelist_type, property,
+    if (!IsPropertyInWhitelist(property_whitelist_type, property_id,
                                GetDocument()))
       continue;
 
@@ -1547,10 +1548,10 @@ void StyleResolver::ApplyProperties(
       continue;
     }
 
-    if (!CSSPropertyPriorityData<priority>::PropertyHasPriority(property))
+    if (!CSSPropertyPriorityData<priority>::PropertyHasPriority(property_id))
       continue;
 
-    StyleBuilder::ApplyProperty(property, state, current.Value());
+    StyleBuilder::ApplyProperty(current.Property(), state, current.Value());
   }
 }
 
@@ -1952,21 +1953,23 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
 // handled by FontStyleResolver.
 void StyleResolver::ComputeFont(ComputedStyle* style,
                                 const CSSPropertyValueSet& property_set) {
-  CSSPropertyID properties[] = {
-      CSSPropertyFontSize,   CSSPropertyFontFamily,      CSSPropertyFontStretch,
-      CSSPropertyFontStyle,  CSSPropertyFontVariantCaps, CSSPropertyFontWeight,
-      CSSPropertyLineHeight,
+  static const CSSProperty* properties[7] = {
+      &GetCSSPropertyFontSize(),        &GetCSSPropertyFontFamily(),
+      &GetCSSPropertyFontStretch(),     &GetCSSPropertyFontStyle(),
+      &GetCSSPropertyFontVariantCaps(), &GetCSSPropertyFontWeight(),
+      &GetCSSPropertyLineHeight(),
   };
 
   // TODO(timloh): This is weird, the style is being used as its own parent
   StyleResolverState state(GetDocument(), nullptr, style, style);
   state.SetStyle(style);
 
-  for (CSSPropertyID property : properties) {
-    if (property == CSSPropertyLineHeight)
+  for (const CSSProperty* property : properties) {
+    if (property->IDEquals(CSSPropertyLineHeight))
       UpdateFont(state);
-    StyleBuilder::ApplyProperty(property, state,
-                                *property_set.GetPropertyCSSValue(property));
+    StyleBuilder::ApplyProperty(
+        *property, state,
+        *property_set.GetPropertyCSSValue(property->PropertyID()));
   }
 }
 

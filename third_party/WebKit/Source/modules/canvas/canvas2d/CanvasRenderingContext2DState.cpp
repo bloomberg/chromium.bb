@@ -336,7 +336,7 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
                                       filter_style.get());
     resolver_state.SetStyle(filter_style);
 
-    StyleBuilder::ApplyProperty(CSSPropertyFilter, resolver_state,
+    StyleBuilder::ApplyProperty(GetCSSPropertyFilter(), resolver_state,
                                 *filter_value_);
     resolver_state.LoadPendingResources();
 

@@ -83,12 +83,13 @@ PropertyHandleSet StringKeyframe::Properties() const {
     DCHECK(!property.IsShorthand())
         << "Web Animations: Encountered unexpanded shorthand CSS property ("
         << property.PropertyID() << ").";
-    if (property.PropertyID() == CSSPropertyVariable)
+    if (property.IDEquals(CSSPropertyVariable)) {
       properties.insert(PropertyHandle(
           ToCSSCustomPropertyDeclaration(property_reference.Value())
               .GetName()));
-    else
+    } else {
       properties.insert(PropertyHandle(property, false));
+    }
   }
 
   for (unsigned i = 0; i < presentation_attribute_map_->PropertyCount(); ++i) {

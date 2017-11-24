@@ -358,8 +358,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
     return nullptr;
 
   const CSSValue* value = ComputedStyleCSSValueMapping::Get(
-      property_class.PropertyID(), *style, layout_object, styled_node,
-      allow_visited_style_);
+      property_class, *style, layout_object, styled_node, allow_visited_style_);
   if (value)
     return value;
 

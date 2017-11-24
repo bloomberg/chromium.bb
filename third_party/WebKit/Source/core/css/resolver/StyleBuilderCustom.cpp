@@ -111,10 +111,10 @@ static inline bool IsValidVisitedLinkProperty(CSSPropertyID id) {
 
 }  // namespace
 
-void StyleBuilder::ApplyProperty(CSSPropertyID id,
+void StyleBuilder::ApplyProperty(const CSSProperty& property,
                                  StyleResolverState& state,
                                  const CSSValue& value) {
-  const CSSProperty& property = CSSProperty::Get(id);
+  CSSPropertyID id = property.PropertyID();
   bool is_inherited = property.IsInherited();
   if (id != CSSPropertyVariable && (value.IsVariableReferenceValue() ||
                                     value.IsPendingSubstitutionValue())) {
@@ -123,7 +123,7 @@ void StyleBuilder::ApplyProperty(CSSPropertyID id,
     const CSSValue* resolved_value =
         CSSVariableResolver(state).ResolveVariableReferences(
             id, value, omit_animation_tainted);
-    ApplyProperty(id, state, *resolved_value);
+    ApplyProperty(property, state, *resolved_value);
 
     if (!state.Style()->HasVariableReferenceFromNonInheritedProperty() &&
         !is_inherited)
@@ -162,7 +162,7 @@ void StyleBuilder::ApplyProperty(CSSPropertyID id,
       is_initial = true;
   }
 
-  StyleBuilder::ApplyProperty(id, state, value, is_initial, is_inherit);
+  StyleBuilder::ApplyProperty(property, state, value, is_initial, is_inherit);
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyColor(
