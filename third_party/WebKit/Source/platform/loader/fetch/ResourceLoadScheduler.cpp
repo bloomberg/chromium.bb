@@ -112,7 +112,7 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
   }
 
   pending_request_map_.insert(*id, client);
-  pending_request_queue_.push_back(*id);
+  pending_requests_.insert(ClientIdWithPriority(*id));
   MaybeRun();
 }
 
@@ -132,7 +132,7 @@ bool ResourceLoadScheduler::Release(
   auto found = pending_request_map_.find(id);
   if (found != pending_request_map_.end()) {
     pending_request_map_.erase(found);
-    // Intentionally does not remove it from |pending_request_queue_|.
+    // Intentionally does not remove it from |pending_requests_|.
 
     // Didn't release any running requests, but the outstanding limit might be
     // changed to allow another request.
@@ -238,10 +238,11 @@ void ResourceLoadScheduler::MaybeRun() {
   if (is_shutdown_)
     return;
 
-  while (!pending_request_queue_.empty()) {
+  while (!pending_requests_.empty()) {
     if (running_requests_.size() >= outstanding_limit_)
       return;
-    ClientId id = pending_request_queue_.TakeFirst();
+    ClientId id = pending_requests_.begin()->client_id;
+    pending_requests_.erase(pending_requests_.begin());
     auto found = pending_request_map_.find(id);
     if (found == pending_request_map_.end())
       continue;  // Already released.
