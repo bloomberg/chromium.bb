@@ -28,7 +28,7 @@ process.
 
 Instead of building with `"Unix Makefiles"`, generate build files for Ninja with
 ```
-cmake -GNinja ../llvm
+cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm
 ```
 
 Then, instead of using `make`, use ninja to build the clang-tidy binary with
