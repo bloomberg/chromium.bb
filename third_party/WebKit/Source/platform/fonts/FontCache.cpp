@@ -31,6 +31,7 @@
 
 #include <memory>
 
+#include "base/debug/alias.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 #include "platform/Histogram.h"
@@ -53,7 +54,6 @@
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"
-#include "platform/wtf/debug/Alias.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 #include "platform/wtf/text/StringHash.h"
 #include "public/platform/Platform.h"
@@ -365,11 +365,10 @@ void FontCache::CrashWithFontInfo(const FontDescription* font_description) {
   }
 
   FontDescription font_description_copy = *font_description;
-  WTF::debug::Alias(&font_description_copy);
-
-  WTF::debug::Alias(&font_cache);
-  WTF::debug::Alias(&font_mgr);
-  WTF::debug::Alias(&num_families);
+  base::debug::Alias(&font_description_copy);
+  base::debug::Alias(&font_cache);
+  base::debug::Alias(&font_mgr);
+  base::debug::Alias(&num_families);
 
   CHECK(false);
 }

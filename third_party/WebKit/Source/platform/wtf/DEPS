@@ -7,7 +7,6 @@ include_rules = [
     "+base/bind.h",
     "+base/bits.h",
     "+base/compiler_specific.h",
-    "+base/debug",
     "+base/logging.h",
     "+base/memory/ptr_util.h",
     "+base/memory/ref_counted.h",

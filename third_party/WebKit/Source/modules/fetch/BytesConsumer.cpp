@@ -12,7 +12,6 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/blob/BlobData.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/debug/Alias.h"
 #include "public/platform/TaskType.h"
 #include "v8/include/v8.h"
 

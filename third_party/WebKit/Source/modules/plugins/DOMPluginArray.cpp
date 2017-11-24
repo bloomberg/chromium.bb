@@ -29,7 +29,6 @@
 #include "modules/plugins/NavigatorPlugins.h"
 #include "platform/plugins/PluginData.h"
 #include "platform/wtf/Vector.h"
-#include "platform/wtf/debug/Alias.h"
 #include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
