@@ -5,6 +5,7 @@
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/scoped_observer.h"
 #include "ios/web/public/favicon_url.h"
 #import "ios/web/public/test/fakes/crw_test_web_state_observer.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -31,14 +32,17 @@ class WebStateObserverBridgeTest : public PlatformTest {
  protected:
   WebStateObserverBridgeTest()
       : observer_([[CRWTestWebStateObserver alloc] init]),
-        bridge_(base::MakeUnique<WebStateObserverBridge>(&test_web_state_,
-                                                         observer_)),
+        observer_bridge_(observer_),
+        scoped_observer_(&observer_bridge_),
         response_headers_(new net::HttpResponseHeaders(
-            std::string(kRawResponseHeaders, sizeof(kRawResponseHeaders)))) {}
+            std::string(kRawResponseHeaders, sizeof(kRawResponseHeaders)))) {
+    scoped_observer_.Add(&test_web_state_);
+  }
 
   web::TestWebState test_web_state_;
   CRWTestWebStateObserver* observer_;
-  std::unique_ptr<WebStateObserverBridge> bridge_;
+  WebStateObserverBridge observer_bridge_;
+  ScopedObserver<WebState, WebStateObserver> scoped_observer_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
 };
 
@@ -46,7 +50,7 @@ class WebStateObserverBridgeTest : public PlatformTest {
 TEST_F(WebStateObserverBridgeTest, WasShown) {
   ASSERT_FALSE([observer_ wasShownInfo]);
 
-  bridge_->WasShown(&test_web_state_);
+  observer_bridge_.WasShown(&test_web_state_);
   ASSERT_TRUE([observer_ wasShownInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ wasShownInfo]->web_state);
 }
@@ -55,7 +59,7 @@ TEST_F(WebStateObserverBridgeTest, WasShown) {
 TEST_F(WebStateObserverBridgeTest, WasHidden) {
   ASSERT_FALSE([observer_ wasHiddenInfo]);
 
-  bridge_->WasHidden(&test_web_state_);
+  observer_bridge_.WasHidden(&test_web_state_);
   ASSERT_TRUE([observer_ wasHiddenInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ wasHiddenInfo]->web_state);
 }
@@ -64,7 +68,7 @@ TEST_F(WebStateObserverBridgeTest, WasHidden) {
 TEST_F(WebStateObserverBridgeTest, NavigationItemsPruned) {
   ASSERT_FALSE([observer_ navigationItemsPrunedInfo]);
 
-  bridge_->NavigationItemsPruned(&test_web_state_, 1);
+  observer_bridge_.NavigationItemsPruned(&test_web_state_, 1);
 
   ASSERT_TRUE([observer_ navigationItemsPrunedInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ navigationItemsPrunedInfo]->web_state);
@@ -80,7 +84,7 @@ TEST_F(WebStateObserverBridgeTest, DidStartNavigation) {
       web::NavigationContextImpl::CreateNavigationContext(
           &test_web_state_, url,
           ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK, false);
-  bridge_->DidStartNavigation(&test_web_state_, context.get());
+  observer_bridge_.DidStartNavigation(&test_web_state_, context.get());
 
   ASSERT_TRUE([observer_ didStartNavigationInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ didStartNavigationInfo]->web_state);
@@ -107,7 +111,7 @@ TEST_F(WebStateObserverBridgeTest, DidFinishNavigation) {
       web::NavigationContextImpl::CreateNavigationContext(
           &test_web_state_, url,
           ui::PageTransition::PAGE_TRANSITION_FROM_ADDRESS_BAR, false);
-  bridge_->DidFinishNavigation(&test_web_state_, context.get());
+  observer_bridge_.DidFinishNavigation(&test_web_state_, context.get());
 
   ASSERT_TRUE([observer_ didFinishNavigationInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ didFinishNavigationInfo]->web_state);
@@ -135,7 +139,7 @@ TEST_F(WebStateObserverBridgeTest, NavigationItemCommitted) {
   load_details.previous_url = GURL("https://chromium.test/");
   load_details.is_in_page = true;
 
-  bridge_->NavigationItemCommitted(&test_web_state_, load_details);
+  observer_bridge_.NavigationItemCommitted(&test_web_state_, load_details);
 
   ASSERT_TRUE([observer_ commitNavigationInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ commitNavigationInfo]->web_state);
@@ -154,13 +158,15 @@ TEST_F(WebStateObserverBridgeTest, PageLoaded) {
   ASSERT_FALSE([observer_ loadPageInfo]);
 
   // Forwarding PageLoadCompletionStatus::SUCCESS.
-  bridge_->PageLoaded(&test_web_state_, PageLoadCompletionStatus::SUCCESS);
+  observer_bridge_.PageLoaded(&test_web_state_,
+                              PageLoadCompletionStatus::SUCCESS);
   ASSERT_TRUE([observer_ loadPageInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ loadPageInfo]->web_state);
   EXPECT_TRUE([observer_ loadPageInfo]->success);
 
   // Forwarding PageLoadCompletionStatus::FAILURE.
-  bridge_->PageLoaded(&test_web_state_, PageLoadCompletionStatus::FAILURE);
+  observer_bridge_.PageLoaded(&test_web_state_,
+                              PageLoadCompletionStatus::FAILURE);
   ASSERT_TRUE([observer_ loadPageInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ loadPageInfo]->web_state);
   EXPECT_FALSE([observer_ loadPageInfo]->success);
@@ -171,7 +177,7 @@ TEST_F(WebStateObserverBridgeTest, LoadProgressChanged) {
   ASSERT_FALSE([observer_ changeLoadingProgressInfo]);
 
   const double kTestLoadProgress = 0.75;
-  bridge_->LoadProgressChanged(&test_web_state_, kTestLoadProgress);
+  observer_bridge_.LoadProgressChanged(&test_web_state_, kTestLoadProgress);
   ASSERT_TRUE([observer_ changeLoadingProgressInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ changeLoadingProgressInfo]->web_state);
   EXPECT_EQ(kTestLoadProgress, [observer_ changeLoadingProgressInfo]->progress);
@@ -181,7 +187,7 @@ TEST_F(WebStateObserverBridgeTest, LoadProgressChanged) {
 TEST_F(WebStateObserverBridgeTest, TitleWasSet) {
   ASSERT_FALSE([observer_ titleWasSetInfo]);
 
-  bridge_->TitleWasSet(&test_web_state_);
+  observer_bridge_.TitleWasSet(&test_web_state_);
   ASSERT_TRUE([observer_ titleWasSetInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ titleWasSetInfo]->web_state);
 }
@@ -190,7 +196,7 @@ TEST_F(WebStateObserverBridgeTest, TitleWasSet) {
 TEST_F(WebStateObserverBridgeTest, DidChangeVisibleSecurityState) {
   ASSERT_FALSE([observer_ didChangeVisibleSecurityStateInfo]);
 
-  bridge_->DidChangeVisibleSecurityState(&test_web_state_);
+  observer_bridge_.DidChangeVisibleSecurityState(&test_web_state_);
   ASSERT_TRUE([observer_ didChangeVisibleSecurityStateInfo]);
   EXPECT_EQ(&test_web_state_,
             [observer_ didChangeVisibleSecurityStateInfo]->web_state);
@@ -200,7 +206,7 @@ TEST_F(WebStateObserverBridgeTest, DidChangeVisibleSecurityState) {
 TEST_F(WebStateObserverBridgeTest, DidSuppressDialog) {
   ASSERT_FALSE([observer_ didSuppressDialogInfo]);
 
-  bridge_->DidSuppressDialog(&test_web_state_);
+  observer_bridge_.DidSuppressDialog(&test_web_state_);
   ASSERT_TRUE([observer_ didSuppressDialogInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ didSuppressDialogInfo]->web_state);
 }
@@ -211,7 +217,8 @@ TEST_F(WebStateObserverBridgeTest, DocumentSubmitted) {
 
   std::string kTestFormName("form-name");
   BOOL user_initiated = YES;
-  bridge_->DocumentSubmitted(&test_web_state_, kTestFormName, user_initiated);
+  observer_bridge_.DocumentSubmitted(&test_web_state_, kTestFormName,
+                                     user_initiated);
   ASSERT_TRUE([observer_ submitDocumentInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ submitDocumentInfo]->web_state);
   EXPECT_EQ(kTestFormName, [observer_ submitDocumentInfo]->form_name);
@@ -229,7 +236,7 @@ TEST_F(WebStateObserverBridgeTest, FormActivityRegistered) {
   params.type = "type";
   params.value = "value";
   params.input_missing = true;
-  bridge_->FormActivityRegistered(&test_web_state_, params);
+  observer_bridge_.FormActivityRegistered(&test_web_state_, params);
   ASSERT_TRUE([observer_ formActivityInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ formActivityInfo]->web_state);
   EXPECT_EQ(params.form_name,
@@ -250,7 +257,7 @@ TEST_F(WebStateObserverBridgeTest, FaviconUrlUpdated) {
   web::FaviconURL url(GURL("https://chromium.test/"),
                       web::FaviconURL::IconType::kTouchIcon, {gfx::Size(5, 6)});
 
-  bridge_->FaviconUrlUpdated(&test_web_state_, {url});
+  observer_bridge_.FaviconUrlUpdated(&test_web_state_, {url});
   ASSERT_TRUE([observer_ updateFaviconUrlCandidatesInfo]);
   EXPECT_EQ(&test_web_state_,
             [observer_ updateFaviconUrlCandidatesInfo]->web_state);
@@ -268,7 +275,7 @@ TEST_F(WebStateObserverBridgeTest, FaviconUrlUpdated) {
 TEST_F(WebStateObserverBridgeTest, RenderProcessGone) {
   ASSERT_FALSE([observer_ renderProcessGoneInfo]);
 
-  bridge_->RenderProcessGone(&test_web_state_);
+  observer_bridge_.RenderProcessGone(&test_web_state_);
   ASSERT_TRUE([observer_ renderProcessGoneInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ renderProcessGoneInfo]->web_state);
 }
@@ -277,7 +284,7 @@ TEST_F(WebStateObserverBridgeTest, RenderProcessGone) {
 TEST_F(WebStateObserverBridgeTest, WebStateDestroyed) {
   ASSERT_FALSE([observer_ webStateDestroyedInfo]);
 
-  bridge_->WebStateDestroyed(&test_web_state_);
+  observer_bridge_.WebStateDestroyed(&test_web_state_);
   ASSERT_TRUE([observer_ webStateDestroyedInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ webStateDestroyedInfo]->web_state);
 }
@@ -286,7 +293,7 @@ TEST_F(WebStateObserverBridgeTest, WebStateDestroyed) {
 TEST_F(WebStateObserverBridgeTest, DidStopLoading) {
   ASSERT_FALSE([observer_ stopLoadingInfo]);
 
-  bridge_->DidStopLoading(&test_web_state_);
+  observer_bridge_.DidStopLoading(&test_web_state_);
   ASSERT_TRUE([observer_ stopLoadingInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ stopLoadingInfo]->web_state);
 }
@@ -295,7 +302,7 @@ TEST_F(WebStateObserverBridgeTest, DidStopLoading) {
 TEST_F(WebStateObserverBridgeTest, DidStartLoading) {
   ASSERT_FALSE([observer_ startLoadingInfo]);
 
-  bridge_->DidStartLoading(&test_web_state_);
+  observer_bridge_.DidStartLoading(&test_web_state_);
   ASSERT_TRUE([observer_ startLoadingInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ startLoadingInfo]->web_state);
 }
