@@ -165,13 +165,14 @@ class Traversal {
                                            const Node* stay_within);
 
   // Pre-order traversal including the pseudo-elements.
-  static ElementType* PreviousIncludingPseudo(const Node&,
-                                              const Node* stay_within = 0);
+  static ElementType* PreviousIncludingPseudo(
+      const Node&,
+      const Node* stay_within = nullptr);
   static ElementType* NextIncludingPseudo(const Node&,
-                                          const Node* stay_within = 0);
+                                          const Node* stay_within = nullptr);
   static ElementType* NextIncludingPseudoSkippingChildren(
       const Node&,
-      const Node* stay_within = 0);
+      const Node* stay_within = nullptr);
 
   // Utility function to traverse only the element and pseudo-element siblings
   // of a node.

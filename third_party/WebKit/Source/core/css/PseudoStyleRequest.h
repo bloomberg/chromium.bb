@@ -38,7 +38,7 @@ class PseudoStyleRequest {
   enum RequestType { kForRenderer, kForComputedStyle };
 
   PseudoStyleRequest(PseudoId pseudo_id,
-                     LayoutScrollbar* scrollbar = 0,
+                     LayoutScrollbar* scrollbar = nullptr,
                      ScrollbarPart scrollbar_part = kNoPart)
       : pseudo_id(pseudo_id),
         type(kForRenderer),

@@ -102,7 +102,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   void HideVisibleValidationMessage();
   bool checkValidity(
       HeapVector<Member<HTMLFormControlElement>>* unhandled_invalid_controls =
-          0,
+          nullptr,
       CheckValidityEventBehavior = kCheckValidityDispatchInvalidEvent);
   bool reportValidity();
   // This must be called only after the caller check the element is focusable.

@@ -85,7 +85,7 @@ class MutationObserverInterestGroup final
       Node& target,
       MutationObserver::MutationType,
       MutationRecordDeliveryOptions old_value_flag,
-      const QualifiedName* attribute_name = 0);
+      const QualifiedName* attribute_name = nullptr);
   MutationObserverInterestGroup(
       HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>&
           observers,

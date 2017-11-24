@@ -17,7 +17,7 @@ class ThrowOnDynamicMarkupInsertionCountIncrementer {
  public:
   explicit ThrowOnDynamicMarkupInsertionCountIncrementer(Document* document)
       : count_(document ? &document->throw_on_dynamic_markup_insertion_count_
-                        : 0) {
+                        : nullptr) {
     if (!count_)
       return;
     ++(*count_);

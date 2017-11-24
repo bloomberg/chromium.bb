@@ -82,7 +82,7 @@ template <typename NodeType>
 NodeType* StaticNodeTypeList<NodeType>::item(unsigned index) const {
   if (index < nodes_.size())
     return nodes_[index].Get();
-  return 0;
+  return nullptr;
 }
 
 template <typename NodeType>

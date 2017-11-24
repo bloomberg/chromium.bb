@@ -37,7 +37,8 @@ class IgnoreDestructiveWriteCountIncrementer {
 
  public:
   explicit IgnoreDestructiveWriteCountIncrementer(Document* document)
-      : count_(document ? &document->ignore_destructive_write_count_ : 0) {
+      : count_(document ? &document->ignore_destructive_write_count_
+                        : nullptr) {
     if (!count_)
       return;
     ++(*count_);

@@ -58,18 +58,19 @@ class StylePendingImage final : public StyleImage {
   }
 
   CSSImageValue* CssImageValue() const {
-    return value_->IsImageValue() ? ToCSSImageValue(value_.Get()) : 0;
+    return value_->IsImageValue() ? ToCSSImageValue(value_.Get()) : nullptr;
   }
   CSSPaintValue* CssPaintValue() const {
-    return value_->IsPaintValue() ? ToCSSPaintValue(value_.Get()) : 0;
+    return value_->IsPaintValue() ? ToCSSPaintValue(value_.Get()) : nullptr;
   }
   CSSImageGeneratorValue* CssImageGeneratorValue() const {
     return value_->IsImageGeneratorValue()
                ? ToCSSImageGeneratorValue(value_.Get())
-               : 0;
+               : nullptr;
   }
   CSSImageSetValue* CssImageSetValue() const {
-    return value_->IsImageSetValue() ? ToCSSImageSetValue(value_.Get()) : 0;
+    return value_->IsImageSetValue() ? ToCSSImageSetValue(value_.Get())
+                                     : nullptr;
   }
 
   LayoutSize ImageSize(const Document&,

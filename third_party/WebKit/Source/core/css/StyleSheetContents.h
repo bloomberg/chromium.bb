@@ -49,11 +49,11 @@ class CORE_EXPORT StyleSheetContents
     : public GarbageCollectedFinalized<StyleSheetContents> {
  public:
   static StyleSheetContents* Create(const CSSParserContext* context) {
-    return new StyleSheetContents(0, String(), context);
+    return new StyleSheetContents(nullptr, String(), context);
   }
   static StyleSheetContents* Create(const String& original_url,
                                     const CSSParserContext* context) {
-    return new StyleSheetContents(0, original_url, context);
+    return new StyleSheetContents(nullptr, original_url, context);
   }
   static StyleSheetContents* Create(StyleRuleImport* owner_rule,
                                     const String& original_url,

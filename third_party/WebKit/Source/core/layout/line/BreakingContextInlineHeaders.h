@@ -227,7 +227,7 @@ class BreakingContext {
 // ignored.
 inline void EnsureLineBoxInsideIgnoredSpaces(LineMidpointState* midpoint_state,
                                              LineLayoutItem item) {
-  InlineIterator midpoint(0, item, 0);
+  InlineIterator midpoint(nullptr, item, 0);
   midpoint_state->StopIgnoringSpaces(midpoint);
   midpoint_state->StartIgnoringSpaces(midpoint);
 }
@@ -574,7 +574,7 @@ inline bool ShouldSkipWhitespaceAfterStartObject(
     LineLayoutText next_text(next);
     UChar next_char = next_text.CharacterAt(0);
     if (next_text.Style()->IsCollapsibleWhiteSpace(next_char)) {
-      line_midpoint_state.StartIgnoringSpaces(InlineIterator(0, o, 0));
+      line_midpoint_state.StartIgnoringSpaces(InlineIterator(nullptr, o, 0));
       return true;
     }
   }
@@ -641,10 +641,10 @@ inline void BreakingContext::HandleReplaced() {
     line_break_.MoveToStartOf(current_.GetLineLayoutItem());
   }
 
-  if (ignoring_spaces_)
+  if (ignoring_spaces_) {
     line_midpoint_state_.StopIgnoringSpaces(
-        InlineIterator(0, current_.GetLineLayoutItem(), 0));
-
+        InlineIterator(nullptr, current_.GetLineLayoutItem(), 0));
+  }
   line_info_.SetEmpty(false);
   ignoring_spaces_ = false;
   current_character_is_space_ = false;
@@ -1356,7 +1356,7 @@ inline void BreakingContext::StopIgnoringSpaces(unsigned& last_space) {
   // e.g., "Foo    goo", don't add in any of the ignored spaces.
   last_space = current_.Offset();
   line_midpoint_state_.StopIgnoringSpaces(
-      InlineIterator(0, current_.GetLineLayoutItem(), current_.Offset()));
+      InlineIterator(nullptr, current_.GetLineLayoutItem(), current_.Offset()));
 }
 
 inline WordMeasurement& BreakingContext::CalculateWordWidth(

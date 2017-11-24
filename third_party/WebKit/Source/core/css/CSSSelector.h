@@ -259,7 +259,8 @@ class CORE_EXPORT CSSSelector {
   // Selectors are kept in an array by CSSSelectorList. The next component of
   // the selector is the next item in the array.
   const CSSSelector* TagHistory() const {
-    return is_last_in_tag_history_ ? 0 : const_cast<CSSSelector*>(this + 1);
+    return is_last_in_tag_history_ ? nullptr
+                                   : const_cast<CSSSelector*>(this + 1);
   }
 
   const QualifiedName& TagQName() const;

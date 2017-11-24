@@ -60,7 +60,7 @@ static inline Attribute* FindAttributeInVector(Vector<Attribute>& attributes,
     if (attributes.at(i).GetName().Matches(name))
       return &attributes.at(i);
   }
-  return 0;
+  return nullptr;
 }
 
 class HTMLToken {
@@ -286,7 +286,7 @@ class HTMLToken {
     DCHECK_EQ(type_, kUninitialized);
     type_ = kStartTag;
     self_closing_ = false;
-    current_attribute_ = 0;
+    current_attribute_ = nullptr;
     attributes_.clear();
 
     data_.push_back(character);
@@ -297,7 +297,7 @@ class HTMLToken {
     DCHECK_EQ(type_, kUninitialized);
     type_ = kEndTag;
     self_closing_ = false;
-    current_attribute_ = 0;
+    current_attribute_ = nullptr;
     attributes_.clear();
 
     data_.push_back(character);
@@ -307,7 +307,7 @@ class HTMLToken {
     DCHECK_EQ(type_, kUninitialized);
     type_ = kEndTag;
     self_closing_ = false;
-    current_attribute_ = 0;
+    current_attribute_ = nullptr;
     attributes_.clear();
 
     data_.AppendVector(characters);
@@ -375,7 +375,7 @@ class HTMLToken {
       if (attributes_.at(i).GetName() == name.LocalName())
         return &attributes_.at(i);
     }
-    return 0;
+    return nullptr;
   }
 
   // Used by the XSSAuditor to nuke XSS-laden attributes.

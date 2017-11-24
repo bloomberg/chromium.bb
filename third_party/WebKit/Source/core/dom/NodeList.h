@@ -45,7 +45,7 @@ class CORE_EXPORT NodeList : public ScriptWrappable {
   virtual bool IsEmptyNodeList() const { return false; }
   virtual bool IsChildNodeList() const { return false; }
 
-  virtual Node* VirtualOwnerNode() const { return 0; }
+  virtual Node* VirtualOwnerNode() const { return nullptr; }
 
  protected:
   NodeList() {}

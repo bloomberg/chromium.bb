@@ -83,13 +83,13 @@ class CORE_EXPORT ReplaceSelectionCommand final : public CompositeEditCommand {
     Node* LastLeafInserted() const {
       return last_node_inserted_
                  ? &NodeTraversal::LastWithinOrSelf(*last_node_inserted_)
-                 : 0;
+                 : nullptr;
     }
     Node* PastLastLeaf() const {
       return last_node_inserted_
                  ? NodeTraversal::Next(
                        NodeTraversal::LastWithinOrSelf(*last_node_inserted_))
-                 : 0;
+                 : nullptr;
     }
     Node* RefNode() const { return ref_node_.Get(); }
     void SetRefNode(Node* node) { ref_node_ = node; }

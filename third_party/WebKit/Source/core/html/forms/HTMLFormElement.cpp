@@ -727,7 +727,7 @@ Element* HTMLFormElement::ElementFromPastNamesMap(
   Element* element = past_names_map_->at(past_name);
 #if DCHECK_IS_ON()
   if (!element)
-    return 0;
+    return nullptr;
   SECURITY_DCHECK(ToHTMLElement(element)->formOwner() == this);
   if (IsHTMLImageElement(*element)) {
     SECURITY_DCHECK(ImageElements().Find(element) != kNotFound);

@@ -39,9 +39,9 @@ class LineLayoutItem {
   explicit LineLayoutItem(WTF::HashTableDeletedValueType)
       : layout_object_(kHashTableDeletedValue) {}
 
-  LineLayoutItem(std::nullptr_t) : layout_object_(0) {}
+  LineLayoutItem(std::nullptr_t) : layout_object_(nullptr) {}
 
-  LineLayoutItem() : layout_object_(0) {}
+  LineLayoutItem() : layout_object_(nullptr) {}
 
   explicit operator bool() const { return layout_object_; }
 

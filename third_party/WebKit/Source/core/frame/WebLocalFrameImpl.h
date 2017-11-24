@@ -362,7 +362,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebViewImpl* ViewImpl() const;
 
   LocalFrameView* GetFrameView() const {
-    return GetFrame() ? GetFrame()->View() : 0;
+    return GetFrame() ? GetFrame()->View() : nullptr;
   }
 
   WebDevToolsAgentImpl* DevToolsAgentImpl() const {

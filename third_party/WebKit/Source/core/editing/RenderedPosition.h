@@ -57,7 +57,9 @@ class CORE_EXPORT RenderedPosition {
   bool IsEquivalent(const RenderedPosition&) const;
 
   bool IsNull() const { return !layout_object_; }
-  RootInlineBox* RootBox() { return inline_box_ ? &inline_box_->Root() : 0; }
+  RootInlineBox* RootBox() {
+    return inline_box_ ? &inline_box_->Root() : nullptr;
+  }
 
   unsigned char BidiLevelOnLeft() const;
   unsigned char BidiLevelOnRight() const;
@@ -83,7 +85,7 @@ class CORE_EXPORT RenderedPosition {
   Position PositionAtLeftBoundaryOfBiDiRun() const;
   Position PositionAtRightBoundaryOfBiDiRun() const;
 
-  IntRect AbsoluteRect(LayoutUnit* extra_width_to_end_of_line = 0) const;
+  IntRect AbsoluteRect(LayoutUnit* extra_width_to_end_of_line = nullptr) const;
 
   void PositionInGraphicsLayerBacking(CompositedSelectionBound&,
                                       bool selection_start) const;

@@ -44,13 +44,13 @@ class CORE_EXPORT StyleSheet : public ScriptWrappable {
   virtual bool disabled() const = 0;
   virtual void setDisabled(bool) = 0;
   virtual Node* ownerNode() const = 0;
-  virtual StyleSheet* parentStyleSheet() const { return 0; }
+  virtual StyleSheet* parentStyleSheet() const { return nullptr; }
   virtual String href() const = 0;
   virtual String title() const = 0;
-  virtual MediaList* media() const { return 0; }
+  virtual MediaList* media() const { return nullptr; }
   virtual String type() const = 0;
 
-  virtual CSSRule* ownerRule() const { return 0; }
+  virtual CSSRule* ownerRule() const { return nullptr; }
   virtual void ClearOwnerNode() = 0;
   virtual KURL BaseURL() const = 0;
   virtual bool IsLoading() const = 0;

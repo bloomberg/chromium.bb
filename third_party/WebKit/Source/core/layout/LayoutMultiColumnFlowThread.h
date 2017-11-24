@@ -166,7 +166,7 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
     // The flow thread is the first child of the multicol container. If the flow
     // thread is also the last child, it means that there are no siblings; i.e.
     // we have no column boxes.
-    return last_sibling_box != this ? last_sibling_box : 0;
+    return last_sibling_box != this ? last_sibling_box : nullptr;
   }
 
   // Find the first set inside which the specified layoutObject (which is a

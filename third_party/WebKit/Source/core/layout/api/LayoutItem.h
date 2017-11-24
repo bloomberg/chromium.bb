@@ -25,9 +25,9 @@ class LayoutItem {
   explicit LayoutItem(LayoutObject* layout_object)
       : layout_object_(layout_object) {}
 
-  LayoutItem(std::nullptr_t) : layout_object_(0) {}
+  LayoutItem(std::nullptr_t) : layout_object_(nullptr) {}
 
-  LayoutItem() : layout_object_(0) {}
+  LayoutItem() : layout_object_(nullptr) {}
 
   // TODO(leviw): This should be "explicit operator bool", but
   // using this operator allows the API to be landed in pieces.

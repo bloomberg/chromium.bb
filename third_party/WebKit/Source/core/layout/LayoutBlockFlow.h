@@ -318,7 +318,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   }
 
   LayoutMultiColumnFlowThread* MultiColumnFlowThread() const {
-    return rare_data_ ? rare_data_->multi_column_flow_thread_ : 0;
+    return rare_data_ ? rare_data_->multi_column_flow_thread_ : nullptr;
   }
   void ResetMultiColumnFlowThread() {
     if (rare_data_)

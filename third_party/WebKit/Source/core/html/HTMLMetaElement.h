@@ -80,7 +80,7 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
                                    bool report_warnings,
                                    const String& key,
                                    const String& value,
-                                   bool* ok = 0);
+                                   bool* ok = nullptr);
 
   static Length ParseViewportValueAsLength(Document*,
                                            bool report_warnings,

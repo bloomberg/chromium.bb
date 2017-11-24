@@ -94,7 +94,7 @@ class DateTimeEditElement final : public HTMLDivElement,
   void FocusIfNoFocus();
   // If oldFocusedNode is one of sub-fields, focus on it. Otherwise focus on
   // the first sub-field.
-  void FocusByOwner(Element* old_focused_element = 0);
+  void FocusByOwner(Element* old_focused_element = nullptr);
   bool HasFocusedField();
   void ReadOnlyStateChanged();
   void RemoveEditControlOwner() { edit_control_owner_ = nullptr; }

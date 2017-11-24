@@ -59,7 +59,7 @@ class CORE_EXPORT LayoutGeometryMap {
   }
 
   FloatRect AbsoluteRect(const FloatRect& rect) const {
-    return MapToAncestor(rect, 0).BoundingBox();
+    return MapToAncestor(rect, nullptr).BoundingBox();
   }
 
   // Map to an ancestor. Will assert that the ancestor has been pushed onto this

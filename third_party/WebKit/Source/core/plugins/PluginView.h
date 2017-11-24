@@ -58,7 +58,7 @@ class CORE_EXPORT PluginView : public EmbeddedContentView {
   virtual bool IsPluginContainer() const { return false; }
   virtual bool IsErrorplaceholder() { return false; }
 
-  virtual WebLayer* PlatformLayer() const { return 0; }
+  virtual WebLayer* PlatformLayer() const { return nullptr; }
   virtual v8::Local<v8::Object> ScriptableObject(v8::Isolate*) {
     return v8::Local<v8::Object>();
   }

@@ -63,7 +63,7 @@ PaintLayerStackingNode::PaintLayerStackingNode(PaintLayer* layer)
 #if DCHECK_IS_ON()
       ,
       layer_list_mutation_allowed_(true),
-      stacking_parent_(0)
+      stacking_parent_(nullptr)
 #endif
 {
   is_stacked_ = GetLayoutObject().StyleRef().IsStacked();
@@ -78,7 +78,7 @@ PaintLayerStackingNode::~PaintLayerStackingNode() {
   if (!GetLayoutObject().DocumentBeingDestroyed()) {
     DCHECK(!IsInStackingParentZOrderLists());
 
-    UpdateStackingParentForZOrderLists(0);
+    UpdateStackingParentForZOrderLists(nullptr);
   }
 #endif
 }
@@ -103,7 +103,7 @@ void PaintLayerStackingNode::DirtyZOrderLists() {
   DCHECK(IsStackingContext());
 
 #if DCHECK_IS_ON()
-  UpdateStackingParentForZOrderLists(0);
+  UpdateStackingParentForZOrderLists(nullptr);
 #endif
 
   if (pos_z_order_list_)

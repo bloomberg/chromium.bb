@@ -209,7 +209,7 @@ inline void PaintLayerStackingNode::ClearZOrderLists() {
   DCHECK(!IsStackingContext());
 
 #if DCHECK_IS_ON()
-  UpdateStackingParentForZOrderLists(0);
+  UpdateStackingParentForZOrderLists(nullptr);
 #endif
 
   pos_z_order_list_.reset();

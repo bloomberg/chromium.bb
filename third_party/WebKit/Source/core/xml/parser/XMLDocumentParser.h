@@ -182,7 +182,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   SegmentedString original_source_for_transform_;
 
   xmlParserCtxtPtr Context() const {
-    return context_ ? context_->Context() : 0;
+    return context_ ? context_->Context() : nullptr;
   }
   scoped_refptr<XMLParserContext> context_;
   Deque<std::unique_ptr<PendingCallback>> pending_callbacks_;

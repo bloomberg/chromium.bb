@@ -55,7 +55,7 @@ class StaticCSSRuleList final : public CSSRuleList {
 
   HeapVector<Member<CSSRule>>& Rules() { return rules_; }
 
-  CSSStyleSheet* GetStyleSheet() const override { return 0; }
+  CSSStyleSheet* GetStyleSheet() const override { return nullptr; }
 
   virtual void Trace(blink::Visitor*);
 

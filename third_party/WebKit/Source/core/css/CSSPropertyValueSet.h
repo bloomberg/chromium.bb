@@ -244,7 +244,7 @@ class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
                         const String& value,
                         bool important,
                         SecureContextMode,
-                        StyleSheetContents* context_style_sheet = 0);
+                        StyleSheetContents* context_style_sheet = nullptr);
   SetResult SetProperty(const AtomicString& custom_property_name,
                         const PropertyRegistry*,
                         const String& value,
@@ -258,10 +258,10 @@ class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
   bool SetProperty(CSSPropertyID,
                    CSSValueID identifier,
                    bool important = false);
-  bool SetProperty(const CSSPropertyValue&, CSSPropertyValue* slot = 0);
+  bool SetProperty(const CSSPropertyValue&, CSSPropertyValue* slot = nullptr);
 
   template <typename T>  // CSSPropertyID or AtomicString
-  bool RemoveProperty(T property, String* return_text = 0);
+  bool RemoveProperty(T property, String* return_text = nullptr);
   bool RemovePropertiesInSet(const CSSPropertyID* set, unsigned length);
   void RemoveEquivalentProperties(const CSSPropertyValueSet*);
   void RemoveEquivalentProperties(const CSSStyleDeclaration*);

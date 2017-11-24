@@ -42,8 +42,8 @@ class XMLDocumentParserScope {
   explicit XMLDocumentParserScope(Document*);
   XMLDocumentParserScope(Document*,
                          xmlGenericErrorFunc,
-                         xmlStructuredErrorFunc = 0,
-                         void* error_context = 0);
+                         xmlStructuredErrorFunc = nullptr,
+                         void* error_context = nullptr);
   ~XMLDocumentParserScope();
 
   static Document* current_document_;

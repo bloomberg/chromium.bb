@@ -75,7 +75,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   bool Async() const;
 
   CSSStyleSheet* sheet() const {
-    return GetLinkStyle() ? GetLinkStyle()->Sheet() : 0;
+    return GetLinkStyle() ? GetLinkStyle()->Sheet() : nullptr;
   }
   Document* import() const;
 
