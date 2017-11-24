@@ -346,7 +346,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_last_unlocked_by_target_(false),
       has_touch_handler_(false),
       is_in_touchpad_gesture_fling_(false),
-      latency_tracker_(true),
+      latency_tracker_(true, delegate_),
       next_browser_snapshot_id_(1),
       owned_by_render_frame_host_(false),
       is_focused_(false),
@@ -362,7 +362,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       weak_factory_(this) {
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
-  latency_tracker_.SetDelegate(delegate_);
   DCHECK(base::TaskScheduler::GetInstance())
       << "Ref. Prerequisite section of post_task.h";
 
@@ -2465,7 +2464,7 @@ void RenderWidgetHostImpl::DelayedAutoResized() {
 
 void RenderWidgetHostImpl::DetachDelegate() {
   delegate_ = nullptr;
-  latency_tracker_.SetDelegate(nullptr);
+  latency_tracker_.reset_delegate();
 }
 
 void RenderWidgetHostImpl::DidAllocateLocalSurfaceIdForAutoResize(

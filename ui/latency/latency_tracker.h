@@ -6,6 +6,7 @@
 #define UI_LATENCY_LATENCY_TRACKER_H_
 
 #include "base/macros.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/latency/latency_info.h"
 
 namespace ui {
@@ -14,8 +15,11 @@ namespace ui {
 // components logged by content::RenderWidgetHostLatencyTracker.
 class LatencyTracker {
  public:
-  explicit LatencyTracker(bool metric_sampling);
+  explicit LatencyTracker(bool metric_sampling,
+                          ukm::SourceId ukm_source_id = ukm::kInvalidSourceId);
   ~LatencyTracker() = default;
+
+  void OnEventStart(LatencyInfo* latency);
 
   // Terminates latency tracking for events that triggered rendering, also
   // performing relevant UMA latency reporting.
@@ -23,6 +27,8 @@ class LatencyTracker {
   void OnGpuSwapBuffersCompleted(const LatencyInfo& latency);
 
  protected:
+  ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
+
   virtual void ReportRapporScrollLatency(
       const std::string& name,
       const LatencyInfo::LatencyComponent& start_component,
@@ -46,6 +52,7 @@ class LatencyTracker {
   // a more permanent solution for crbug.com/739169.
   bool metric_sampling_;
   int metric_sampling_events_since_last_sample_ = -1;
+  const ukm::SourceId ukm_source_id_;
 
   DISALLOW_COPY_AND_ASSIGN(LatencyTracker);
 };
