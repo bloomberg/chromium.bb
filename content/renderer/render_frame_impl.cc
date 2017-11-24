@@ -4033,6 +4033,9 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     }
   }
 
+  if (commit_type == blink::WebHistoryCommitType::kWebBackForwardCommit)
+    render_view_->DidCommitProvisionalHistoryLoad();
+
   for (auto& observer : render_view_->observers_)
     observer.DidCommitProvisionalLoad(frame_, is_new_navigation);
   {

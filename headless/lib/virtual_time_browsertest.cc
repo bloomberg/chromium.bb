@@ -459,4 +459,144 @@ class RedirectVirtualTimeTest : public VirtualTimeBrowserTest {
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(RedirectVirtualTimeTest);
 
+namespace {
+static constexpr char kFooDotCom[] = R"(
+<html>
+<body>
+<script> console.log(document.location.href); </script>
+<iframe src='/a/'></iframe>\n"
+</body>
+</html>
+)";
+
+static constexpr char kFooDotComSlashA[] = R"(
+<html>
+<body>
+<script> console.log(document.location.href); </script>
+</body>
+</html>
+)";
+
+static constexpr char kBarDotCom[] = R"(
+<html>
+<body>
+<script> console.log(document.location.href); </script>
+<iframe src='/b/' id='frame_b'></iframe>
+<iframe src='/c/'></iframe>
+</body>
+</html>
+)";
+
+static constexpr char kBarDotComSlashB[] = R"(
+<html>
+<body>
+<script> console.log(document.location.href); </script>
+<iframe src='/d/'></iframe>
+</body>
+</html>
+)";
+
+static constexpr char kBarDotComSlashC[] = R"(
+<html>
+<body>
+<script> console.log(document.location.href); </script>
+</body>
+</html>
+)";
+
+static constexpr char kBarDotComSlashD[] = R"(
+<html>
+<body>
+<script> console.log(document.location.href); </script>
+</body>
+</html>
+)";
+
+static constexpr char kBarDotComSlashE[] = R"(
+<html>
+<body>
+<script> console.log(document.location.href); </script>
+<iframe src='/f/'></iframe>
+</body>
+</html>
+)";
+
+static constexpr char kBarDotComSlashF[] = R"(
+<html>
+<body>
+<script> console.log(document.location.href); </script>
+</body>
+</html>
+)";
+
+}  // namespace
+
+class VirtualTimeAndHistoryNavigationTest : public VirtualTimeBrowserTest {
+ public:
+  VirtualTimeAndHistoryNavigationTest() { SetInitialURL("http://foo.com/"); }
+
+  ProtocolHandlerMap GetProtocolHandlers() override {
+    ProtocolHandlerMap protocol_handlers;
+    std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
+        new TestInMemoryProtocolHandler(browser()->BrowserIOThread(), nullptr));
+    http_handler_ = http_handler.get();
+    http_handler->InsertResponse("http://foo.com/", {kFooDotCom, "text/html"});
+    http_handler->InsertResponse("http://foo.com/a/",
+                                 {kFooDotComSlashA, "text/html"});
+    http_handler->InsertResponse("http://bar.com/", {kBarDotCom, "text/html"});
+    http_handler->InsertResponse("http://bar.com/b/",
+                                 {kBarDotComSlashB, "text/html"});
+    http_handler->InsertResponse("http://bar.com/c/",
+                                 {kBarDotComSlashC, "text/html"});
+    http_handler->InsertResponse("http://bar.com/d/",
+                                 {kBarDotComSlashD, "text/html"});
+    http_handler->InsertResponse("http://bar.com/e/",
+                                 {kBarDotComSlashE, "text/html"});
+    http_handler->InsertResponse("http://bar.com/f/",
+                                 {kBarDotComSlashF, "text/html"});
+    protocol_handlers[url::kHttpScheme] = std::move(http_handler);
+    return protocol_handlers;
+  }
+
+  void RunDevTooledTest() override {
+    http_handler_->SetHeadlessBrowserContext(browser_context_);
+    VirtualTimeBrowserTest::RunDevTooledTest();
+  }
+
+  // emulation::Observer implementation:
+  void OnVirtualTimeBudgetExpired(
+      const emulation::VirtualTimeBudgetExpiredParams& params) override {
+    if (step_ < test_commands_.size()) {
+      devtools_client_->GetRuntime()->Evaluate(
+          test_commands_[step_++],
+          base::Bind(&VirtualTimeAndHistoryNavigationTest::OnEvaluateResult,
+                     base::Unretained(this)));
+    } else {
+      FinishAsynchronousTest();
+    }
+  }
+
+  void OnEvaluateResult(std::unique_ptr<runtime::EvaluateResult>) {
+    devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
+        emulation::SetVirtualTimePolicyParams::Builder()
+            .SetPolicy(
+                emulation::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING)
+            .SetBudget(5000)
+            .Build());
+  }
+
+  const std::vector<std::string> test_commands_ = {
+      "document.location.href = 'http://bar.com/'",
+      "document.getElementById('frame_b').src = '/e/'",
+      "history.back()",
+      "history.forward()",
+      "history.go(-1)",
+  };
+
+  size_t step_ = 0;
+  TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(VirtualTimeAndHistoryNavigationTest);
+
 }  // namespace headless
