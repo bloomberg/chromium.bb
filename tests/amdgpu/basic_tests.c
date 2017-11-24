@@ -50,6 +50,7 @@ static void amdgpu_command_submission_multi_fence(void);
 static void amdgpu_command_submission_sdma(void);
 static void amdgpu_userptr_test(void);
 static void amdgpu_semaphore_test(void);
+static void amdgpu_sync_dependency_test(void);
 
 static void amdgpu_command_submission_write_linear_helper(unsigned ip_type);
 static void amdgpu_command_submission_const_fill_helper(unsigned ip_type);
@@ -63,6 +64,7 @@ CU_TestInfo basic_tests[] = {
 	{ "Command submission Test (Multi-Fence)", amdgpu_command_submission_multi_fence },
 	{ "Command submission Test (SDMA)", amdgpu_command_submission_sdma },
 	{ "SW semaphore Test",  amdgpu_semaphore_test },
+	{ "Sync dependency Test",  amdgpu_sync_dependency_test },
 	CU_TEST_INFO_NULL,
 };
 #define BUFFER_SIZE (8 * 1024)
@@ -225,6 +227,60 @@ CU_TestInfo basic_tests[] = {
 		 * 3 - SRC_ADDR using L2
 		 */
 #              define PACKET3_DMA_DATA_SI_CP_SYNC     (1 << 31)
+
+
+#define PKT3_CONTEXT_CONTROL                   0x28
+#define     CONTEXT_CONTROL_LOAD_ENABLE(x)     (((unsigned)(x) & 0x1) << 31)
+#define     CONTEXT_CONTROL_LOAD_CE_RAM(x)     (((unsigned)(x) & 0x1) << 28)
+#define     CONTEXT_CONTROL_SHADOW_ENABLE(x)   (((unsigned)(x) & 0x1) << 31)
+
+#define PKT3_CLEAR_STATE                       0x12
+
+#define PKT3_SET_SH_REG                        0x76
+#define		PACKET3_SET_SH_REG_START			0x00002c00
+
+#define	PACKET3_DISPATCH_DIRECT				0x15
+
+
+/* gfx 8 */
+#define mmCOMPUTE_PGM_LO                                                        0x2e0c
+#define mmCOMPUTE_PGM_RSRC1                                                     0x2e12
+#define mmCOMPUTE_TMPRING_SIZE                                                  0x2e18
+#define mmCOMPUTE_USER_DATA_0                                                   0x2e40
+#define mmCOMPUTE_USER_DATA_1                                                   0x2e41
+#define mmCOMPUTE_RESOURCE_LIMITS                                               0x2e15
+#define mmCOMPUTE_NUM_THREAD_X                                                  0x2e07
+
+
+
+#define SWAP_32(num) ((num>>24)&0xff) | \
+			((num<<8)&0xff0000) | \
+			((num>>8)&0xff00) | \
+			((num<<24)&0xff000000)
+
+
+/* Shader code
+ * void main()
+{
+
+	float x = some_input;
+		for (unsigned i = 0; i < 1000000; i++)
+  	x = sin(x);
+
+	u[0] = 42u;
+}
+*/
+
+static  uint32_t shader_bin[] = {
+	SWAP_32(0x800082be), SWAP_32(0x02ff08bf), SWAP_32(0x7f969800), SWAP_32(0x040085bf),
+	SWAP_32(0x02810281), SWAP_32(0x02ff08bf), SWAP_32(0x7f969800), SWAP_32(0xfcff84bf),
+	SWAP_32(0xff0083be), SWAP_32(0x00f00000), SWAP_32(0xc10082be), SWAP_32(0xaa02007e),
+	SWAP_32(0x000070e0), SWAP_32(0x00000080), SWAP_32(0x000081bf)
+};
+
+#define CODE_OFFSET 512
+#define DATA_OFFSET 1024
+
 
 int suite_basic_tests_init(void)
 {
@@ -1385,4 +1441,212 @@ static void amdgpu_userptr_test(void)
 	CU_ASSERT_EQUAL(r, 0);
 
 	wait(NULL);
+}
+
+static void amdgpu_sync_dependency_test(void)
+{
+	amdgpu_context_handle context_handle[2];
+	amdgpu_bo_handle ib_result_handle;
+	void *ib_result_cpu;
+	uint64_t ib_result_mc_address;
+	struct amdgpu_cs_request ibs_request;
+	struct amdgpu_cs_ib_info ib_info;
+	struct amdgpu_cs_fence fence_status;
+	uint32_t expired;
+	int i, j, r, instance;
+	amdgpu_bo_list_handle bo_list;
+	amdgpu_va_handle va_handle;
+	static uint32_t *ptr;
+	uint64_t seq_no;
+
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_cs_ctx_create(device_handle, &context_handle[0]);
+	CU_ASSERT_EQUAL(r, 0);
+	r = amdgpu_cs_ctx_create(device_handle, &context_handle[1]);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_alloc_and_map(device_handle, 8192, 4096,
+			AMDGPU_GEM_DOMAIN_GTT, 0,
+						    &ib_result_handle, &ib_result_cpu,
+						    &ib_result_mc_address, &va_handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_get_bo_list(device_handle, ib_result_handle, NULL,
+			       &bo_list);
+	CU_ASSERT_EQUAL(r, 0);
+
+	ptr = ib_result_cpu;
+	i = 0;
+
+	memcpy(ptr + CODE_OFFSET , shader_bin, sizeof(shader_bin));
+
+	/* Dispatch minimal init config and verify it's executed */
+	ptr[i++] = PACKET3(PKT3_CONTEXT_CONTROL, 1);
+	ptr[i++] = 0x80000000;
+	ptr[i++] = 0x80000000;
+
+	ptr[i++] = PACKET3(PKT3_CLEAR_STATE, 0);
+	ptr[i++] = 0x80000000;
+
+
+	/* Program compute regs */
+	ptr[i++] = PACKET3(PKT3_SET_SH_REG, 2);
+	ptr[i++] = mmCOMPUTE_PGM_LO - PACKET3_SET_SH_REG_START;
+	ptr[i++] = (ib_result_mc_address + CODE_OFFSET * 4) >> 8;
+	ptr[i++] = (ib_result_mc_address + CODE_OFFSET * 4) >> 40;
+
+
+	ptr[i++] = PACKET3(PKT3_SET_SH_REG, 2);
+	ptr[i++] = mmCOMPUTE_PGM_RSRC1 - PACKET3_SET_SH_REG_START;
+	/*
+	 * 002c0040         COMPUTE_PGM_RSRC1 <- VGPRS = 0
+	                                      SGPRS = 1
+	                                      PRIORITY = 0
+	                                      FLOAT_MODE = 192 (0xc0)
+	                                      PRIV = 0
+	                                      DX10_CLAMP = 1
+	                                      DEBUG_MODE = 0
+	                                      IEEE_MODE = 0
+	                                      BULKY = 0
+	                                      CDBG_USER = 0
+	 *
+	 */
+	ptr[i++] = 0x002c0040;
+
+
+	/*
+	 * 00000010         COMPUTE_PGM_RSRC2 <- SCRATCH_EN = 0
+	                                      USER_SGPR = 8
+	                                      TRAP_PRESENT = 0
+	                                      TGID_X_EN = 0
+	                                      TGID_Y_EN = 0
+	                                      TGID_Z_EN = 0
+	                                      TG_SIZE_EN = 0
+	                                      TIDIG_COMP_CNT = 0
+	                                      EXCP_EN_MSB = 0
+	                                      LDS_SIZE = 0
+	                                      EXCP_EN = 0
+	 *
+	 */
+	ptr[i++] = 0x00000010;
+
+
+/*
+ * 00000100         COMPUTE_TMPRING_SIZE <- WAVES = 256 (0x100)
+                                         WAVESIZE = 0
+ *
+ */
+	ptr[i++] = PACKET3(PKT3_SET_SH_REG, 1);
+	ptr[i++] = mmCOMPUTE_TMPRING_SIZE - PACKET3_SET_SH_REG_START;
+	ptr[i++] = 0x00000100;
+
+	ptr[i++] = PACKET3(PKT3_SET_SH_REG, 2);
+	ptr[i++] = mmCOMPUTE_USER_DATA_0 - PACKET3_SET_SH_REG_START;
+	ptr[i++] = 0xffffffff & (ib_result_mc_address + DATA_OFFSET * 4);
+	ptr[i++] = (0xffffffff00000000 & (ib_result_mc_address + DATA_OFFSET * 4)) >> 32;
+
+	ptr[i++] = PACKET3(PKT3_SET_SH_REG, 1);
+	ptr[i++] = mmCOMPUTE_RESOURCE_LIMITS - PACKET3_SET_SH_REG_START;
+	ptr[i++] = 0;
+
+	ptr[i++] = PACKET3(PKT3_SET_SH_REG, 3);
+	ptr[i++] = mmCOMPUTE_NUM_THREAD_X - PACKET3_SET_SH_REG_START;
+	ptr[i++] = 1;
+	ptr[i++] = 1;
+	ptr[i++] = 1;
+
+
+	/* Dispatch */
+	ptr[i++] = PACKET3(PACKET3_DISPATCH_DIRECT, 3);
+	ptr[i++] = 1;
+	ptr[i++] = 1;
+	ptr[i++] = 1;
+	ptr[i++] = 0x00000045; /* DISPATCH DIRECT field */
+
+
+	while (i & 7)
+		ptr[i++] =  0xffff1000; /* type3 nop packet */
+
+	memset(&ib_info, 0, sizeof(struct amdgpu_cs_ib_info));
+	ib_info.ib_mc_address = ib_result_mc_address;
+	ib_info.size = i;
+
+	memset(&ibs_request, 0, sizeof(struct amdgpu_cs_request));
+	ibs_request.ip_type = AMDGPU_HW_IP_GFX;
+	ibs_request.ring = 0;
+	ibs_request.number_of_ibs = 1;
+	ibs_request.ibs = &ib_info;
+	ibs_request.resources = bo_list;
+	ibs_request.fence_info.handle = NULL;
+
+	r = amdgpu_cs_submit(context_handle[1], 0,&ibs_request, 1);
+	CU_ASSERT_EQUAL(r, 0);
+	seq_no = ibs_request.seq_no;
+
+
+
+	/* Prepare second command with dependency on the first */
+	j = i;
+	ptr[i++] = PACKET3(PACKET3_WRITE_DATA, 3);
+	ptr[i++] = WRITE_DATA_DST_SEL(5) | WR_CONFIRM;
+	ptr[i++] = 0xfffffffc & ib_result_mc_address + DATA_OFFSET * 4;
+	ptr[i++] = (0xffffffff00000000 & (ib_result_mc_address + DATA_OFFSET * 4)) >> 32;
+	ptr[i++] = 99;
+
+	while (i & 7)
+		ptr[i++] =  0xffff1000; /* type3 nop packet */
+
+	memset(&ib_info, 0, sizeof(struct amdgpu_cs_ib_info));
+	ib_info.ib_mc_address = ib_result_mc_address + j * 4;
+	ib_info.size = i - j;
+
+	memset(&ibs_request, 0, sizeof(struct amdgpu_cs_request));
+	ibs_request.ip_type = AMDGPU_HW_IP_GFX;
+	ibs_request.ring = 0;
+	ibs_request.number_of_ibs = 1;
+	ibs_request.ibs = &ib_info;
+	ibs_request.resources = bo_list;
+	ibs_request.fence_info.handle = NULL;
+
+	ibs_request.number_of_dependencies = 1;
+
+	ibs_request.dependencies = calloc(1, sizeof(*ibs_request.dependencies));
+	ibs_request.dependencies[0].context = context_handle[1];
+	ibs_request.dependencies[0].ip_instance = 0;
+	ibs_request.dependencies[0].ring = 0;
+	ibs_request.dependencies[0].fence = seq_no;
+
+
+	r = amdgpu_cs_submit(context_handle[0], 0,&ibs_request, 1);
+	CU_ASSERT_EQUAL(r, 0);
+
+
+	memset(&fence_status, 0, sizeof(struct amdgpu_cs_fence));
+	fence_status.context = context_handle[0];
+	fence_status.ip_type = AMDGPU_HW_IP_GFX;
+	fence_status.ip_instance = 0;
+	fence_status.ring = 0;
+	fence_status.fence = ibs_request.seq_no;
+
+	r = amdgpu_cs_query_fence_status(&fence_status,
+		       AMDGPU_TIMEOUT_INFINITE,0, &expired);
+	CU_ASSERT_EQUAL(r, 0);
+
+	/* Expect the second command to wait for shader to complete */
+	CU_ASSERT_EQUAL(ptr[DATA_OFFSET], 99);
+
+	r = amdgpu_bo_list_destroy(bo_list);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_unmap_and_free(ib_result_handle, va_handle,
+				     ib_result_mc_address, 4096);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_cs_ctx_free(context_handle[0]);
+	CU_ASSERT_EQUAL(r, 0);
+	r = amdgpu_cs_ctx_free(context_handle[1]);
+	CU_ASSERT_EQUAL(r, 0);
+
+	free(ibs_request.dependencies);
 }

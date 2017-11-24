@@ -49,6 +49,7 @@
 #include "CUnit/Basic.h"
 
 #include "amdgpu_test.h"
+#include "amdgpu_internal.h"
 
 /* Test suit names */
 #define BASIC_TESTS_STR "Basic Tests"
@@ -401,8 +402,19 @@ static int amdgpu_find_device(uint8_t bus, uint16_t dev)
 
 static void amdgpu_disable_suits()
 {
+	amdgpu_device_handle device_handle;
+	uint32_t major_version, minor_version, family_id;
 	int i;
 	int size = sizeof(suites_active_stat) / sizeof(suites_active_stat[0]);
+
+	if (amdgpu_device_initialize(drm_amdgpu[0], &major_version,
+				   &minor_version, &device_handle))
+		return;
+
+	family_id = device_handle->info.family_id;
+
+	if (amdgpu_device_deinitialize(device_handle))
+		return;
 
 	/* Set active status for suits based on their policies */
 	for (i = 0; i < size; ++i)
@@ -420,6 +432,12 @@ static void amdgpu_disable_suits()
 
 	if (amdgpu_set_test_active(BO_TESTS_STR, "Metadata", CU_FALSE))
 		fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
+
+
+	/* This test was ran on GFX8 and GFX9 only */
+	if (family_id < AMDGPU_FAMILY_VI || family_id > AMDGPU_FAMILY_RV)
+		if (amdgpu_set_test_active(BASIC_TESTS_STR, "Sync dependency Test", CU_FALSE))
+			fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
 }
 
 /* The main() function for setting up and running the tests.
