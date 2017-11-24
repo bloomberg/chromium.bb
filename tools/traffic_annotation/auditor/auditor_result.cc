@@ -154,7 +154,8 @@ std::string AuditorResult::ToText() const {
           "It is recommended to run traffic_annotation_auditor locally to do "
           "the updates automatically (please refer to tools/traffic_annotation/"
           "auditor/README.md), but you can also apply the following edit(s) to "
-          "do it manually:%s",
+          "do it manually:%s\n\n If you are using build flags that modify "
+          "files (like jumbo), rerun the auditor using --all-files switch.",
           details_[0].c_str());
 
     default:
