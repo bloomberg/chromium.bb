@@ -7,24 +7,16 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/history_popup/requirements/tab_history_positioner.h"
-#import "ios/chrome/browser/ui/history_popup/requirements/tab_history_ui_updater.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_consumer.h"
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class ToolbarButtonFactory;
 @class ToolbarButtonUpdater;
-@class ToolbarConfiguration;
 
 // View controller for a toolbar, which will show a horizontal row of
 // controls and/or labels.
-// This view controller will fill its container; it is up to the containing
-// view controller or presentation controller to configure an appropriate
-// height for it.
-@interface ToolbarViewController : UIViewController<TabHistoryPositioner,
-                                                    TabHistoryUIUpdater,
-                                                    ToolbarConsumer>
+@interface ToolbarViewController : UIViewController<ToolbarConsumer>
 
 - (instancetype)initWithDispatcher:
                     (id<ApplicationCommands, BrowserCommands>)dispatcher
@@ -39,7 +31,7 @@
 
 // The dispatcher for this view controller.
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
-
+// The location bar view, containing the omnibox.
 @property(nonatomic, strong) UIView* locationBarView;
 
 // Animates the toolbar so the omnibox is shrinking to its standard state.

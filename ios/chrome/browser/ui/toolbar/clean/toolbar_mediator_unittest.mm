@@ -194,17 +194,6 @@ TEST_F(ToolbarMediatorTest, TestLoadingProgress) {
   [[consumer_ verify] setLoadingProgressFraction:0.42];
 }
 
-// Test that the mediator's observation of -broadcastTabStripVisible: triggers
-// the correct consumer calls.
-TEST_F(ToolbarMediatorTest, TestTabStripVisible) {
-  mediator_.consumer = consumer_;
-
-  [mediator_ broadcastTabStripVisible:YES];
-  [[consumer_ verify] setTabStripVisible:YES];
-  [mediator_ broadcastTabStripVisible:NO];
-  [[consumer_ verify] setTabStripVisible:NO];
-}
-
 // Test that increasing the number of Webstates will update the consumer with
 // the right value.
 TEST_F(ToolbarMediatorTest, TestIncreaseNumberOfWebstates) {

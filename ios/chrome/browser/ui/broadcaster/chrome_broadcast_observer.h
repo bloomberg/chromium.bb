@@ -16,12 +16,6 @@
 @protocol ChromeBroadcastObserver<NSObject>
 @optional
 
-#pragma mark - Tab strip UI
-
-// Observer method for object that care about the current visibility of the tab
-// strip.
-- (void)broadcastTabStripVisible:(BOOL)visible;
-
 #pragma mark - Scrolling events
 
 // Observer method for objects that care about the current vertical (y-axis)
