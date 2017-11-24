@@ -7,7 +7,6 @@
 
 #include "StyleBuilderFunctions.h"
 #include "core/css/CSSPropertyValue.h"
-#include "core/css/properties/CSSProperty.h"
 #include "core/css/properties/Longhand.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
@@ -17,16 +16,16 @@
 
 namespace blink {
 
-void StyleBuilder::ApplyProperty(CSSPropertyID property,
+void StyleBuilder::ApplyProperty(const CSSProperty& property,
                                  StyleResolverState& state,
                                  const CSSValue& value,
                                  bool isInitial,
                                  bool isInherit) {
-  switch (property) {
-    {% for property in properties if property.should_declare_functions %}
-    {% set property_id = property.property_id %}
-    {% if property.use_property_class_in_stylebuilder %}
-    case {{property.property_id}}:
+  switch (property.PropertyID()) {
+    {% for input_property in properties if input_property.should_declare_functions %}
+    {% set property_id = input_property.property_id %}
+    {% if input_property.use_property_class_in_stylebuilder %}
+    case {{input_property.property_id}}:
       if (isInitial)
         ToLonghand(Get{{property_id}}()).ApplyInitial(state);
       else if (isInherit)
@@ -35,7 +34,7 @@ void StyleBuilder::ApplyProperty(CSSPropertyID property,
         ToLonghand(Get{{property_id}}()).ApplyValue(state, value);
       return;
       {% else %}
-    case {{property.property_id}}:
+    case {{input_property.property_id}}:
       if (isInitial)
         StyleBuilderFunctions::applyInitial{{property_id}}(state);
       else if (isInherit)
@@ -51,20 +50,19 @@ void StyleBuilder::ApplyProperty(CSSPropertyID property,
       DCHECK(!isInherit);
       StyleBuilderFunctions::applyValueCSSPropertyVariable(state, value);
       return;
-    {% for property in properties if property.direction_aware_options %}
-    case {{property.property_id}}:
+    {% for input_property in properties if input_property.direction_aware_options %}
+    case {{input_property.property_id}}:
     {% endfor %}
     {
-      CSSPropertyID resolvedProperty =
-          CSSProperty::Get(property)
-              .ResolveDirectionAwareProperty(state.Style()->Direction(),
+      const CSSProperty& resolved_property =
+              property.ResolveDirectionAwareProperty(state.Style()->Direction(),
                                              state.Style()->GetWritingMode());
-      DCHECK_NE(resolvedProperty, property);
-      ApplyProperty(resolvedProperty, state, value);
+      DCHECK(!resolved_property.IDEquals(property.PropertyID()));
+      ApplyProperty(resolved_property, state, value);
       return;
     }
-    {% for property in properties if property.builder_skip %}
-    case {{property.property_id}}:
+    {% for input_property in properties if input_property.builder_skip %}
+    case {{input_property.property_id}}:
     {% endfor %}
       return;
     default:

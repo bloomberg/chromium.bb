@@ -75,23 +75,23 @@ class {{property_classname}} : public {{property.superclass}} {
   {% endif %}
   {% if property.direction_aware_options %}
     {% if property.direction_aware_options.logical_side == "width" %}
-  CSSPropertyID ResolveDirectionAwareProperty(
+  const CSSProperty& ResolveDirectionAwareProperty(
       TextDirection direction,
       WritingMode writing_mode) const override {
     if (IsHorizontalWritingMode(writing_mode))
-      return {{property.direction_aware_options.shorthand_for_physical_side}}Width;
-    return {{property.direction_aware_options.shorthand_for_physical_side}}Height;
+      return Get{{property.direction_aware_options.shorthand_for_physical_side}}Width();
+    return Get{{property.direction_aware_options.shorthand_for_physical_side}}Height();
   }
     {% elif property.direction_aware_options.logical_side == "height" %}
-  CSSPropertyID ResolveDirectionAwareProperty(
+  const CSSProperty& ResolveDirectionAwareProperty(
       TextDirection direction,
       WritingMode writing_mode) const override {
     if (IsHorizontalWritingMode(writing_mode))
-      return {{property.direction_aware_options.shorthand_for_physical_side}}Height;
-    return {{property.direction_aware_options.shorthand_for_physical_side}}Width;
+      return Get{{property.direction_aware_options.shorthand_for_physical_side}}Height();
+    return Get{{property.direction_aware_options.shorthand_for_physical_side}}Width();
   }
     {% else %}
-  CSSPropertyID ResolveDirectionAwareProperty(
+  const CSSProperty& ResolveDirectionAwareProperty(
       TextDirection direction,
       WritingMode writing_mode) const override {
     return Resolve{{property.direction_aware_options.logical_side[0].upper() + property.direction_aware_options.logical_side[1:]}}ToPhysicalProperty(

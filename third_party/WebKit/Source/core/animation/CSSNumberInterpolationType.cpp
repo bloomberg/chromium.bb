@@ -108,7 +108,7 @@ void CSSNumberInterpolationType::ApplyStandardPropertyValue(
   if (!NumberPropertyFunctions::SetNumber(CssProperty(), *state.Style(),
                                           clamped_number))
     StyleBuilder::ApplyProperty(
-        CssProperty(), state,
+        GetProperty().GetCSSProperty(), state,
         *CSSPrimitiveValue::Create(clamped_number,
                                    CSSPrimitiveValue::UnitType::kNumber));
 }

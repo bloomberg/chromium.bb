@@ -33,6 +33,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/css/properties/CSSProperty.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -44,12 +45,12 @@ class CORE_EXPORT StyleBuilder {
   STATIC_ONLY(StyleBuilder);
 
  public:
-  static void ApplyProperty(CSSPropertyID,
+  static void ApplyProperty(const CSSProperty&,
                             StyleResolverState&,
                             const CSSValue&);
 
  private:
-  static void ApplyProperty(CSSPropertyID,
+  static void ApplyProperty(const CSSProperty&,
                             StyleResolverState&,
                             const CSSValue&,
                             bool is_initial,

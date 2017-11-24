@@ -86,10 +86,10 @@ bool ConsiderAnimationAsIncompatible(const Animation& animation,
 
 bool IsTransformRelatedCSSProperty(const PropertyHandle property) {
   return property.IsCSSProperty() &&
-         (property.GetCSSProperty().PropertyID() == CSSPropertyRotate ||
-          property.GetCSSProperty().PropertyID() == CSSPropertyScale ||
-          property.GetCSSProperty().PropertyID() == CSSPropertyTransform ||
-          property.GetCSSProperty().PropertyID() == CSSPropertyTranslate);
+         (property.GetCSSProperty().IDEquals(CSSPropertyRotate) ||
+          property.GetCSSProperty().IDEquals(CSSPropertyScale) ||
+          property.GetCSSProperty().IDEquals(CSSPropertyTransform) ||
+          property.GetCSSProperty().IDEquals(CSSPropertyTranslate));
 }
 
 bool IsTransformRelatedAnimation(const Element& target_element,
