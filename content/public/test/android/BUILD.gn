@@ -49,6 +49,7 @@ android_library("content_java_test_support") {
     "javatests/src/org/chromium/content/browser/test/util/KeyUtils.java",
     "javatests/src/org/chromium/content/browser/test/util/RenderProcessLimit.java",
     "javatests/src/org/chromium/content/browser/test/util/TestCallbackHelperContainer.java",
+    "javatests/src/org/chromium/content/browser/test/util/TestContentViewCore.java",
     "javatests/src/org/chromium/content/browser/test/util/TestInputMethodManagerWrapper.java",
     "javatests/src/org/chromium/content/browser/test/util/TestTouchUtils.java",
     "javatests/src/org/chromium/content/browser/test/util/TestWebContentsObserver.java",

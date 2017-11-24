@@ -1135,7 +1135,7 @@ public class AwContents implements SmartClipProvider {
 
         mWindowAndroid = getWindowAndroid(mContext);
 
-        mContentViewCore = new ContentViewCore(mContext, PRODUCT_VERSION);
+        mContentViewCore = ContentViewCore.create(mContext, PRODUCT_VERSION);
         mViewAndroidDelegate =
                 new AwViewAndroidDelegate(mContainerView, mContentsClient, mScrollOffsetManager);
         initializeContentViewCore(mContentViewCore, mContext, mViewAndroidDelegate,

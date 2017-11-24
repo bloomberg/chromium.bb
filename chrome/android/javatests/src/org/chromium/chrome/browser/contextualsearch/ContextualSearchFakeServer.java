@@ -12,7 +12,8 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentFactory;
-import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -59,6 +60,35 @@ class ContextualSearchFakeServer
     private boolean mIsOnline = true;
 
     private boolean mDidEverCallContentViewCoreOnShow;
+
+    private class ContentsObserver extends WebContentsObserver {
+        private boolean mIsVisible;
+
+        private ContentsObserver(WebContents webContents) {
+            super(webContents);
+        }
+
+        private boolean isVisible() {
+            return mIsVisible;
+        }
+
+        @Override
+        public void wasShown() {
+            mIsVisible = true;
+            mDidEverCallContentViewCoreOnShow = true;
+        }
+
+        @Override
+        public void wasHidden() {
+            mIsVisible = false;
+        }
+    };
+
+    private ContentsObserver mContentsObserver;
+
+    boolean isContentVisible() {
+        return mContentsObserver.isVisible();
+    }
 
     //============================================================================================
     // FakeSearch
@@ -368,17 +398,13 @@ class ContextualSearchFakeServer
             mLoadedUrl = url;
             mLoadedUrlCount++;
             super.loadUrl(url, shouldLoadImmediately);
+            mContentsObserver = new ContentsObserver(getContentViewCore().getWebContents());
         }
 
         @Override
         public void removeLastHistoryEntry(String url, long timeInMs) {
             // Override to prevent call to native code.
             mRemovedUrls.add(url);
-        }
-
-        @Override
-        protected ContentViewCore createContentViewCore(ChromeActivity activity) {
-            return new ContentViewCoreWrapper(activity);
         }
 
         /**
@@ -396,47 +422,6 @@ class ContextualSearchFakeServer
         private boolean isLowPriorityUrl(String url) {
             // Just check if it's set up to prefetch.
             return url.contains("&pf=c");
-        }
-    }
-
-    //============================================================================================
-    // ContentViewCoreWrapper
-    //============================================================================================
-
-    /**
-     * A wrapper around ContentViewCore to be used during tests.
-     */
-    public class ContentViewCoreWrapper extends ContentViewCore {
-        private boolean mIsVisible;
-
-        ContentViewCoreWrapper(ChromeActivity activity) {
-            super(activity, "");
-        }
-
-        @Override
-        public void destroy() {
-            super.destroy();
-            mIsVisible = false;
-        }
-
-        @Override
-        public void onShow() {
-            super.onShow();
-            mIsVisible = true;
-            mDidEverCallContentViewCoreOnShow = true;
-        }
-
-        @Override
-        public void onHide() {
-            super.onHide();
-            mIsVisible = false;
-        }
-
-        /**
-         * @return Whether the ContentViewCore is visible.
-         */
-        public boolean isVisible() {
-            return mIsVisible;
         }
     }
 

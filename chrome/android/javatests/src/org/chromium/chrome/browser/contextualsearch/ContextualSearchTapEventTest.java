@@ -29,6 +29,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.SelectionPopupController;
+import org.chromium.content.browser.test.util.TestContentViewCore;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -163,7 +164,7 @@ public class ContextualSearchTapEventTest {
     /**
      * A ContentViewCore that has some methods stubbed out for testing.
      */
-    private static final class StubbedContentViewCore extends ContentViewCore {
+    private static final class StubbedContentViewCore extends TestContentViewCore {
         private String mCurrentText;
 
         public StubbedContentViewCore(Context context) {

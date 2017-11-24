@@ -100,7 +100,7 @@ public class SelectPopupOtherContentViewTest {
                         new ActivityWindowAndroid(mActivityTestRule.getActivity());
 
                 ContentViewCore contentViewCore =
-                        new ContentViewCore(mActivityTestRule.getActivity(), "");
+                        ContentViewCore.create(mActivityTestRule.getActivity(), "");
                 ContentView cv = ContentView.createContentView(
                         mActivityTestRule.getActivity(), contentViewCore);
                 contentViewCore.initialize(ViewAndroidDelegate.createBasicDelegate(cv), cv,

@@ -39,7 +39,7 @@ public class PopupZoomerTest {
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
 
     private CustomCanvasPopupZoomer mPopupZoomer;
-    private ContentViewCore mContentViewCore;
+    private ContentViewCoreImpl mContentViewCore;
 
     private static class CustomCanvasPopupZoomer extends PopupZoomer {
         Canvas mCanvas;
@@ -102,7 +102,7 @@ public class PopupZoomerTest {
             public void run() {
                 Context context = mActivityTestRule.getActivity();
                 WebContents webContents = mActivityTestRule.getContentViewCore().getWebContents();
-                mContentViewCore = new ContentViewCore(context, "");
+                mContentViewCore = (ContentViewCoreImpl) ContentViewCore.create(context, "");
                 mContentViewCore.setSelectionPopupControllerForTesting(
                         new SelectionPopupController(context, null, webContents, null));
                 ViewGroup containerView = mActivityTestRule.getContentViewCore().getContainerView();
