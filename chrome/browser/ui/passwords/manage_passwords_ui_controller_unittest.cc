@@ -224,7 +224,9 @@ void ManagePasswordsUIControllerTest::SetUp() {
 
   test_local_form_.origin = GURL("http://example.com/login");
   test_local_form_.username_value = base::ASCIIToUTF16("username");
+  test_local_form_.username_element = base::ASCIIToUTF16("username_element");
   test_local_form_.password_value = base::ASCIIToUTF16("12345");
+  test_local_form_.password_element = base::ASCIIToUTF16("password_element");
 
   test_federated_form_.origin = GURL("http://example.com/login");
   test_federated_form_.username_value = base::ASCIIToUTF16("username");
@@ -1096,6 +1098,40 @@ TEST_F(ManagePasswordsUIControllerTest,
     }
     testing::Mock::VerifyAndClearExpectations(controller());
   }
+}
+
+TEST_F(ManagePasswordsUIControllerTest,
+       ManualFallbackForSavingFollowedByAutomaticBubble) {
+  std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManager());
+  test_form_manager->ProvisionallySave(
+      test_local_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnShowManualFallbackForSaving(
+      std::move(test_form_manager), false /* has_generated_password */,
+      false /* is_update */);
+  ExpectIconAndControllerStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
+  testing::Mock::VerifyAndClearExpectations(controller());
+
+  // A user opens the bubble.
+  controller()->OnBubbleShown();
+
+  // Automatic form submission detected.
+  test_form_manager = CreateFormManager();
+  autofill::PasswordForm form = test_local_form();
+  form.username_value = base::ASCIIToUTF16("some_other_username");
+  form.password_value = base::ASCIIToUTF16("password123");
+  test_form_manager->ProvisionallySave(
+      form,
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility()).Times(0);
+  controller()->OnPasswordSubmitted(std::move(test_form_manager));
+
+  // It should have no effect as the bubble was already open.
+  ExpectIconAndControllerStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
+  EXPECT_EQ(test_local_form(), controller()->GetPendingPassword());
 }
 
 TEST_F(ManagePasswordsUIControllerTest,
