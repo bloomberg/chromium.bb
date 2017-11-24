@@ -26,7 +26,7 @@ class Binding : public BindingBase {
   Binding(const base::Callback<T()>& getter,
           const base::Callback<void(const T&)>& setter)
       : getter_(getter), setter_(setter) {}
-  ~Binding() override {}
+  ~Binding() override = default;
 
   // This function will check if the getter is producing a different value than
   // when it was last polled. If so, it will pass that value to the provided
