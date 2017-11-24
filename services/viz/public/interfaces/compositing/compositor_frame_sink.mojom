@@ -55,9 +55,10 @@ interface CompositorFrameSink {
   // to screen the next time frames from all CompositorFrameSinks are aggregated
   // to produce a display CompositorFrame. If a client wishes to allocate a new
   // surface (e.g. during resize), then it can simply allocate a new
-  // |local_surface_id|. Submit time is set to when this function is called to
-  // used for tracing how much time is spend between a CompositorFrame is sent
-  // and received.
+  // |local_surface_id|. The local_id component of |local_surface_id| must be
+  // monontonically increasing for each change to LocalSurfaceId. Submit time is
+  // set to when this function is called to used for tracing how much time is
+  // spend between a CompositorFrame is sent and received.
   // TODO(weiliangc): Submit time is recorded in microseconds right now and
   // should be changed to use TimeTicks when Blink can send base types directly.
   // For successful swaps, the implementation must call

@@ -451,8 +451,8 @@ TEST_F(SurfaceReferencesTest, AddSurfacesSkipReference) {
   // Add two surfaces that have the same FrameSinkId. This would happen
   // when a client submits two CompositorFrames before parent submits a new
   // CompositorFrame.
-  const SurfaceId surface_id1 = CreateSurface(kFrameSink2, 2);
-  const SurfaceId surface_id2 = CreateSurface(kFrameSink2, 1);
+  const SurfaceId surface_id1 = CreateSurface(kFrameSink2, 1);
+  const SurfaceId surface_id2 = CreateSurface(kFrameSink2, 2);
 
   // Temporary references should be added for both surfaces and they should be
   // stored in the order of creation.

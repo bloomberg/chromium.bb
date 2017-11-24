@@ -200,8 +200,14 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     SurfaceInfo surface_info(surface_id, frame.device_scale_factor(),
                              frame.size_in_pixels());
 
-    if (!surface_info.is_valid()) {
-      TRACE_EVENT_INSTANT0("cc", "Invalid SurfaceInfo",
+    // LocalSurfaceIds should be monotonically increasing. This ID is used
+    // to determine the freshness of a surface at aggregation time.
+    bool monotonically_increasing_id =
+        local_surface_id.local_id() >
+        current_surface_id_.local_surface_id().local_id();
+
+    if (!surface_info.is_valid() || !monotonically_increasing_id) {
+      TRACE_EVENT_INSTANT0("viz", "Surface Invariants Violation",
                            TRACE_EVENT_SCOPE_THREAD);
       EvictCurrentSurface();
       std::vector<ReturnedResource> resources =
