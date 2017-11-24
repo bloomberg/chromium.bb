@@ -164,6 +164,13 @@ static NSString* gUserAgentProduct = nil;
   return self;
 }
 
+- (void)dealloc {
+  if (_webState && _webStateObserver) {
+    _webState->RemoveObserver(_webStateObserver.get());
+    _webStateObserver.reset();
+  }
+}
+
 - (void)goBack {
   if (_webState->GetNavigationManager())
     _webState->GetNavigationManager()->GoBack();
@@ -427,6 +434,10 @@ static NSString* gUserAgentProduct = nil;
 - (void)resetWebStateWithSessionStorage:
     (nullable CRWSessionStorage*)sessionStorage {
   if (_webState && _webState->GetView().superview == self) {
+    if (_webStateObserver) {
+      _webState->RemoveObserver(_webStateObserver.get());
+    }
+
     // The web view provided by the old |_webState| has been added as a subview.
     // It must be removed and replaced with a new |_webState|'s web view, which
     // is added later.
@@ -441,8 +452,11 @@ static NSString* gUserAgentProduct = nil;
     _webState = web::WebState::Create(webStateCreateParams);
   }
 
-  _webStateObserver =
-      base::MakeUnique<web::WebStateObserverBridge>(_webState.get(), self);
+  if (!_webStateObserver) {
+    _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
+  }
+  _webState->AddObserver(_webStateObserver.get());
+
   _webStateDelegate = base::MakeUnique<web::WebStateDelegateBridge>(self);
   _webState->SetDelegate(_webStateDelegate.get());
 
