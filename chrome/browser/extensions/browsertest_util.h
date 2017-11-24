@@ -7,9 +7,14 @@
 
 #include <string>
 
+class Browser;
 class Profile;
+struct WebApplicationInfo;
 
 namespace extensions {
+
+class Extension;
+
 namespace browsertest_util {
 
 // Waits until |script| calls "window.domAutomationController.send(result)",
@@ -33,6 +38,12 @@ bool ExecuteScriptInBackgroundPageNoWait(Profile* profile,
 // via update urls). The chromeos device setup scripts take care of this in
 // actual production devices, but some tests need to do it manually.
 void CreateAndInitializeLocalCache();
+
+// Installs a Bookmark App into |profile| using |info|.
+const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info);
+
+// Launches a new app window for |app| in |profile|.
+Browser* LaunchAppBrowser(Profile* profile, const Extension* app);
 
 }  // namespace browsertest_util
 }  // namespace extensions
