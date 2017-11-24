@@ -830,6 +830,9 @@ class BrowserTestClipboardScope {
   // Puts plain text |text| on the clipboard.
   void SetText(const std::string& text);
 
+  // Gets plain text from the clipboard, if any.
+  void GetText(std::string* text);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserTestClipboardScope);
 };

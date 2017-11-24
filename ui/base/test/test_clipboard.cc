@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/clipboard/clipboard_monitor.h"
 
 namespace ui {
 
@@ -153,6 +154,7 @@ void TestClipboard::WriteText(const char* text_data, size_t text_len) {
   GetDefaultStore().data[GetPlainTextWFormatType()];
   if (IsSupportedClipboardType(CLIPBOARD_TYPE_SELECTION))
     GetStore(CLIPBOARD_TYPE_SELECTION).data[GetPlainTextFormatType()] = text;
+  ui::ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
 }
 
 void TestClipboard::WriteHTML(const char* markup_data,

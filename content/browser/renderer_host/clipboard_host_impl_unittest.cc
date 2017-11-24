@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/clipboard_message_filter.h"
+#include "content/browser/renderer_host/clipboard_host_impl.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/test/test_clipboard.h"
@@ -20,53 +21,26 @@
 
 namespace content {
 
-class ClipboardMessageFilterTest : public ::testing::Test {
+class ClipboardHostImplTest : public ::testing::Test {
  protected:
-  ClipboardMessageFilterTest()
-      : filter_(new ClipboardMessageFilter(nullptr)),
-        clipboard_(ui::TestClipboard::CreateForCurrentThread()) {
-    filter_->set_peer_process_for_testing(base::Process::Current());
-  }
+  ClipboardHostImplTest()
+      : host_(new ClipboardHostImpl(nullptr)),
+        clipboard_(ui::TestClipboard::CreateForCurrentThread()) {}
 
-  ~ClipboardMessageFilterTest() override {
+  ~ClipboardHostImplTest() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
 
-  std::unique_ptr<base::SharedMemory> CreateAndMapReadOnlySharedMemory(
-      size_t size) {
-    std::unique_ptr<base::SharedMemory> m = CreateReadOnlySharedMemory(size);
-    if (!m->Map(size))
-      return nullptr;
-    return m;
-  }
-
-  std::unique_ptr<base::SharedMemory> CreateReadOnlySharedMemory(size_t size) {
-    std::unique_ptr<base::SharedMemory> m(new base::SharedMemory());
-    base::SharedMemoryCreateOptions options;
-    options.size = size;
-    options.share_read_only = true;
-    if (!m->Create(options))
-      return nullptr;
-    return m;
-  }
-
   void CallWriteImage(const gfx::Size& size,
-                      base::SharedMemory* shared_memory) {
-    base::SharedMemoryHandle handle = shared_memory->GetReadOnlyHandle();
-    shared_memory->Unmap();
-    shared_memory->Close();
-    ASSERT_TRUE(handle.IsValid());
-    CallWriteImageDirectly(size, handle);
-  }
-
-  // Prefer to use CallWriteImage() in tests.
-  void CallWriteImageDirectly(const gfx::Size& size,
-                              base::SharedMemoryHandle handle) {
-    filter_->OnWriteImage(ui::CLIPBOARD_TYPE_COPY_PASTE, size, handle);
+                      mojo::ScopedSharedBufferHandle shared_memory,
+                      size_t shared_memory_size) {
+    host_->WriteImage(
+        ui::CLIPBOARD_TYPE_COPY_PASTE, size,
+        shared_memory->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY));
   }
 
   void CallCommitWrite() {
-    filter_->OnCommitWrite(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    host_->CommitWrite(ui::CLIPBOARD_TYPE_COPY_PASTE);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -74,24 +48,27 @@ class ClipboardMessageFilterTest : public ::testing::Test {
 
  private:
   const TestBrowserThreadBundle thread_bundle_;
-  const scoped_refptr<ClipboardMessageFilter> filter_;
+  const std::unique_ptr<ClipboardHostImpl> host_;
   ui::Clipboard* const clipboard_;
 };
 
 // Test that it actually works.
-TEST_F(ClipboardMessageFilterTest, SimpleImage) {
+TEST_F(ClipboardHostImplTest, SimpleImage) {
   static const uint32_t bitmap_data[] = {
-      0x33333333, 0xdddddddd, 0xeeeeeeee, 0x00000000,
-      0x88888888, 0x66666666, 0x55555555, 0xbbbbbbbb,
-      0x44444444, 0xaaaaaaaa, 0x99999999, 0x77777777,
+      0x33333333, 0xdddddddd, 0xeeeeeeee, 0x00000000, 0x88888888, 0x66666666,
+      0x55555555, 0xbbbbbbbb, 0x44444444, 0xaaaaaaaa, 0x99999999, 0x77777777,
       0xffffffff, 0x11111111, 0x22222222, 0xcccccccc,
   };
 
-  std::unique_ptr<base::SharedMemory> shared_memory =
-      CreateAndMapReadOnlySharedMemory(sizeof(bitmap_data));
-  memcpy(shared_memory->memory(), bitmap_data, sizeof(bitmap_data));
+  mojo::ScopedSharedBufferHandle shared_memory =
+      mojo::SharedBufferHandle::Create(sizeof(bitmap_data));
+  mojo::ScopedSharedBufferMapping mapping =
+      shared_memory->Map(sizeof(bitmap_data));
 
-  CallWriteImage(gfx::Size(4, 4), shared_memory.get());
+  memcpy(mapping.get(), bitmap_data, sizeof(bitmap_data));
+
+  CallWriteImage(gfx::Size(4, 4), std::move(shared_memory),
+                 sizeof(bitmap_data));
   uint64_t sequence_number =
       clipboard()->GetSequenceNumber(ui::CLIPBOARD_TYPE_COPY_PASTE);
   CallCommitWrite();
@@ -110,11 +87,14 @@ TEST_F(ClipboardMessageFilterTest, SimpleImage) {
 }
 
 // Test with a size that would overflow a naive 32-bit row bytes calculation.
-TEST_F(ClipboardMessageFilterTest, ImageSizeOverflows32BitRowBytes) {
-  std::unique_ptr<base::SharedMemory> shared_memory =
-      CreateReadOnlySharedMemory(0x20000000);
+TEST_F(ClipboardHostImplTest, ImageSizeOverflows32BitRowBytes) {
+  mojo::ScopedSharedBufferHandle shared_memory =
+      mojo::SharedBufferHandle::Create(0x20000000);
 
-  CallWriteImage(gfx::Size(0x20000000, 1), shared_memory.get());
+  mojo::ScopedSharedBufferMapping mapping = shared_memory->Map(0x20000000);
+
+  CallWriteImage(gfx::Size(0x20000000, 1), std::move(shared_memory),
+                 0x20000000);
   uint64_t sequence_number =
       clipboard()->GetSequenceNumber(ui::CLIPBOARD_TYPE_COPY_PASTE);
   CallCommitWrite();
@@ -123,8 +103,9 @@ TEST_F(ClipboardMessageFilterTest, ImageSizeOverflows32BitRowBytes) {
             clipboard()->GetSequenceNumber(ui::CLIPBOARD_TYPE_COPY_PASTE));
 }
 
-TEST_F(ClipboardMessageFilterTest, InvalidSharedMemoryHandle) {
-  CallWriteImageDirectly(gfx::Size(5, 5), base::SharedMemoryHandle());
+TEST_F(ClipboardHostImplTest, InvalidSharedMemoryHandle) {
+  mojo::ScopedSharedBufferHandle shared_memory;
+  CallWriteImage(gfx::Size(5, 5), std::move(shared_memory), 0);
   uint64_t sequence_number =
       clipboard()->GetSequenceNumber(ui::CLIPBOARD_TYPE_COPY_PASTE);
   CallCommitWrite();

@@ -411,8 +411,6 @@ target(link_target_type, "renderer") {
     "render_widget_owner_delegate.h",
     "renderer_blink_platform_impl.cc",
     "renderer_blink_platform_impl.h",
-    "renderer_clipboard_delegate.cc",
-    "renderer_clipboard_delegate.h",
     "renderer_main.cc",
     "renderer_main_platform_delegate.h",
     "renderer_main_platform_delegate_android.cc",

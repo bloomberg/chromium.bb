@@ -28,6 +28,7 @@
           "blink::mojom::OffscreenCanvasProvider",
           "blink::mojom::ReportingServiceProxy",
           "blink::mojom::WebDatabaseHost",
+          "content::mojom::ClipboardHost",
           "content::mojom::FieldTrialRecorder",
           "content::mojom::FileUtilitiesHost",
           "content::mojom::FrameSinkProvider",

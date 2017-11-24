@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/clipboard_messages.h"
+#include "content/common/clipboard.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,6 +22,8 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "ipc/message_filter.h"
+#include "ui/base/clipboard/clipboard_monitor.h"
+#include "ui/base/clipboard/clipboard_observer.h"
 
 namespace content {
 
@@ -64,66 +66,29 @@ class TestInterstitialPageDelegate : public InterstitialPageDelegate {
   }
 };
 
-// A message filter that watches for WriteText and CommitWrite clipboard IPC
-// messages to make sure cut/copy is working properly. It will mark these events
-// as handled to prevent modification of the actual clipboard.
-class ClipboardMessageWatcher : public IPC::MessageFilter {
+class ClipboardChangedObserver : ui::ClipboardObserver {
  public:
-  explicit ClipboardMessageWatcher(InterstitialPage* interstitial) {
-    interstitial->GetMainFrame()->GetProcess()->GetChannel()->AddFilter(this);
+  ClipboardChangedObserver() {
+    ui::ClipboardMonitor::GetInstance()->AddObserver(this);
   }
 
-  void InitWait() {
-    DCHECK(!run_loop_);
-    run_loop_.reset(new base::RunLoop());
+  ~ClipboardChangedObserver() override {
+    ui::ClipboardMonitor::GetInstance()->RemoveObserver(this);
+  }
+
+  void OnClipboardDataChanged() override {
+    DCHECK(!quit_closure_.is_null());
+    std::move(quit_closure_).Run();
   }
 
   void WaitForWriteCommit() {
-    DCHECK(run_loop_);
-    run_loop_->Run();
-    run_loop_.reset();
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
-
-  const std::string& last_text() const { return last_text_; }
 
  private:
-  ~ClipboardMessageWatcher() override {}
-
-  void OnWriteText(const std::string& text) { last_text_ = text; }
-
-  void OnCommitWrite() {
-    DCHECK(run_loop_);
-    run_loop_->Quit();
-  }
-
-  // IPC::MessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    if (!run_loop_)
-      return false;
-
-    if (message.type() == ClipboardHostMsg_WriteText::ID) {
-      ClipboardHostMsg_WriteText::Param params;
-      if (ClipboardHostMsg_WriteText::Read(&message, &params)) {
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&ClipboardMessageWatcher::OnWriteText, this,
-                           base::UTF16ToUTF8(std::get<1>(params))));
-      }
-      return true;
-    }
-    if (message.type() == ClipboardHostMsg_CommitWrite::ID) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::BindOnce(&ClipboardMessageWatcher::OnCommitWrite, this));
-      return true;
-    }
-    return false;
-  }
-
-  std::unique_ptr<base::RunLoop> run_loop_;
-  std::string last_text_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClipboardMessageWatcher);
+  base::OnceClosure quit_closure_;
 };
 
 }  // namespace
@@ -155,9 +120,6 @@ class InterstitialPageImplTest : public ContentBrowserTest {
     static_cast<RenderFrameHostDelegate*>(interstitial_.get())
         ->SetFocusedFrame(frame_tree->root(),
                           frame_tree->GetMainFrame()->GetSiteInstance());
-
-    clipboard_message_watcher_ =
-        new ClipboardMessageWatcher(interstitial_.get());
 
     // Wait until page loads completely.
     ASSERT_TRUE(WaitForRenderFrameReady(interstitial_->GetMainFrame()));
@@ -196,26 +158,24 @@ class InterstitialPageImplTest : public ContentBrowserTest {
                          "set_selection_change_listener()");
   }
 
-  std::string PerformCut() {
-    clipboard_message_watcher_->InitWait();
+  void PerformCut() {
+    ClipboardChangedObserver clipboard_observer;
     const base::string16 expected_title = base::UTF8ToUTF16("TEXT_CHANGED");
     content::TitleWatcher title_watcher(shell()->web_contents(),
                                         expected_title);
     RenderFrameHostImpl* rfh =
         static_cast<RenderFrameHostImpl*>(interstitial_->GetMainFrame());
     rfh->GetRenderWidgetHost()->delegate()->Cut();
-    clipboard_message_watcher_->WaitForWriteCommit();
+    clipboard_observer.WaitForWriteCommit();
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-    return clipboard_message_watcher_->last_text();
   }
 
-  std::string PerformCopy() {
-    clipboard_message_watcher_->InitWait();
+  void PerformCopy() {
+    ClipboardChangedObserver clipboard_observer;
     RenderFrameHostImpl* rfh =
         static_cast<RenderFrameHostImpl*>(interstitial_->GetMainFrame());
     rfh->GetRenderWidgetHost()->delegate()->Copy();
-    clipboard_message_watcher_->WaitForWriteCommit();
-    return clipboard_message_watcher_->last_text();
+    clipboard_observer.WaitForWriteCommit();
   }
 
   void PerformPaste() {
@@ -241,24 +201,20 @@ class InterstitialPageImplTest : public ContentBrowserTest {
 
  private:
   std::unique_ptr<InterstitialPageImpl> interstitial_;
-  scoped_refptr<ClipboardMessageWatcher> clipboard_message_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialPageImplTest);
 };
 
-// Has errors on TSan. See https://crbug.com/631322.
-#if defined(THREAD_SANITIZER)
-#define MAYBE_Cut DISABLED_Cut
-#else
-#define MAYBE_Cut Cut
-#endif
-IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, MAYBE_Cut) {
+IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, Cut) {
+  BrowserTestClipboardScope clipboard;
   SetUpInterstitialPage();
 
   ASSERT_TRUE(CreateInputAndSetText("text-to-cut"));
   ASSERT_TRUE(FocusInputAndSelectText());
 
-  std::string clipboard_text = PerformCut();
+  PerformCut();
+  std::string clipboard_text;
+  clipboard.GetText(&clipboard_text);
   EXPECT_EQ("text-to-cut", clipboard_text);
 
   std::string input_text;
@@ -269,12 +225,15 @@ IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, MAYBE_Cut) {
 }
 
 IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, Copy) {
+  BrowserTestClipboardScope clipboard;
   SetUpInterstitialPage();
 
   ASSERT_TRUE(CreateInputAndSetText("text-to-copy"));
   ASSERT_TRUE(FocusInputAndSelectText());
 
-  std::string clipboard_text = PerformCopy();
+  PerformCopy();
+  std::string clipboard_text;
+  clipboard.GetText(&clipboard_text);
   EXPECT_EQ("text-to-copy", clipboard_text);
 
   std::string input_text;
