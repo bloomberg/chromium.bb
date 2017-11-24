@@ -63,8 +63,7 @@ bool IsOriginWhiteListedTrustworthy(const url::Origin& origin) {
   if (IsOriginUnique(origin))
     return false;
 
-  return base::ContainsValue(GetSecureOrigins(),
-                             origin.GetURL().HostNoBrackets());
+  return base::ContainsValue(GetSecureOrigins(), origin.GetURL());
 }
 
 bool IsPotentiallyTrustworthyOrigin(const url::Origin& origin) {
