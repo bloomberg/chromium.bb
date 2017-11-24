@@ -1232,6 +1232,11 @@ const char kServiceWorkerScriptStreamingDescription[] =
     "message pipe and data pipes, and that is never be blocked on the main "
     "thread.";
 
+const char kServiceWorkerScriptFullCodeCacheName[] =
+    "Service worker script full code cache.";
+const char kServiceWorkerScriptFullCodeCacheDescription[] =
+    "Generate V8 full code cache of Service Worker scripts while installing.";
+
 const char kSettingsWindowName[] = "Show settings in a window";
 const char kSettingsWindowDescription[] =
     "Settings will be shown in a dedicated window instead of as a browser tab.";

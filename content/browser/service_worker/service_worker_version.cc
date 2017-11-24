@@ -1022,7 +1022,7 @@ void ServiceWorkerVersion::SetCachedMetadata(const GURL& url,
   script_cache_map_.WriteMetadata(
       url, data,
       base::Bind(&ServiceWorkerVersion::OnSetCachedMetadataFinished,
-                 weak_factory_.GetWeakPtr(), callback_id));
+                 weak_factory_.GetWeakPtr(), callback_id, data.size()));
 }
 
 void ServiceWorkerVersion::ClearCachedMetadata(const GURL& url) {
@@ -1036,12 +1036,13 @@ void ServiceWorkerVersion::ClearCachedMetadata(const GURL& url) {
 }
 
 void ServiceWorkerVersion::OnSetCachedMetadataFinished(int64_t callback_id,
+                                                       size_t size,
                                                        int result) {
   TRACE_EVENT_ASYNC_END1("ServiceWorker",
                          "ServiceWorkerVersion::SetCachedMetadata", callback_id,
                          "result", result);
   for (auto& listener : listeners_)
-    listener.OnCachedMetadataUpdated(this);
+    listener.OnCachedMetadataUpdated(this, size);
 }
 
 void ServiceWorkerVersion::OnClearCachedMetadataFinished(int64_t callback_id,
@@ -1050,7 +1051,7 @@ void ServiceWorkerVersion::OnClearCachedMetadataFinished(int64_t callback_id,
                          "ServiceWorkerVersion::ClearCachedMetadata",
                          callback_id, "result", result);
   for (auto& listener : listeners_)
-    listener.OnCachedMetadataUpdated(this);
+    listener.OnCachedMetadataUpdated(this, 0);
 }
 
 void ServiceWorkerVersion::OnGetClient(int request_id,

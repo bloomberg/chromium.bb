@@ -418,6 +418,11 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         std::move(interface_provider_info_));
   }
 
+  if (RuntimeEnabledFeatures::ServiceWorkerScriptFullCodeCacheEnabled()) {
+    global_scope_creation_params->v8_cache_options =
+        kV8CacheOptionsFullCodeWithoutHeatCheck;
+  }
+
   worker_thread_ = std::make_unique<ServiceWorkerThread>(
       ThreadableLoadingContext::Create(*document),
       ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_),

@@ -95,7 +95,7 @@ V8CacheOptions CacheOptions(const ScriptResource* resource,
   // If the resource is served from CacheStorage, generate the V8 code cache in
   // the first load.
   if (resource && !resource->GetResponse().CacheStorageCacheName().IsNull())
-    return kV8CacheOptionsAlways;
+    return kV8CacheOptionsCodeWithoutHeatCheck;
   return v8_cache_options;
 }
 

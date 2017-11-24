@@ -24585,6 +24585,7 @@ from previous Chrome versions.
   <int value="-1386966873" label="disable-mac-views-native-app-windows"/>
   <int value="-1382671832" label="OmniboxUIExperimentVerticalMargin:enabled"/>
   <int value="-1377186702" label="DesktopIOSPromotion:disabled"/>
+  <int value="-1376510363" label="ServiceWorkerScriptFullCodeCache:disabled"/>
   <int value="-1375111024" label="enable-fixed-position-compositing"/>
   <int value="-1365503870" label="enable-simplified-fullscreen-ui"/>
   <int value="-1363709707" label="MaterialDesignHistory:disabled"/>
@@ -25334,6 +25335,7 @@ from previous Chrome versions.
   <int value="747847237" label="PhysicalWeb:enabled"/>
   <int value="752194066" label="enable-app-window-cycling"/>
   <int value="752939691" label="disable-tab-for-desktop-share"/>
+  <int value="760542355" label="ServiceWorkerScriptFullCodeCache:enabled"/>
   <int value="762700519" label="enable-checker-imaging"/>
   <int value="765306424" label="ModuleScriptsDynamicImport:disabled"/>
   <int value="765803208" label="AutofillShowTypePredictions:enabled"/>

@@ -938,6 +938,9 @@
       status: "experimental",
     },
     {
+      name: "ServiceWorkerScriptFullCodeCache",
+    },
+    {
       name: "ServiceWorkerScriptStreaming",
     },
     {

@@ -3280,6 +3280,31 @@
             ]
         }
     ],
+    "ServiceWorkerScriptFullCodeCache": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ServiceWorkerScriptFullCodeCache"
+                    ]
+                },
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "ServiceWorkerScriptFullCodeCache"
+                    ]
+                }
+            ]
+        }
+    ],
     "ServiceWorkerScriptStreaming": [
         {
             "platforms": [

@@ -291,6 +291,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableServiceWorkerScriptStreaming(
       base::FeatureList::IsEnabled(features::kServiceWorkerScriptStreaming));
 
+  WebRuntimeFeatures::EnableServiceWorkerScriptFullCodeCache(
+      base::FeatureList::IsEnabled(
+          features::kServiceWorkerScriptFullCodeCache));
+
   WebRuntimeFeatures::EnableOffMainThreadFetch(
       base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
 
