@@ -90,6 +90,9 @@ class WebPerformance {
   BLINK_EXPORT double FirstImagePaint() const;
   BLINK_EXPORT double FirstContentfulPaint() const;
   BLINK_EXPORT double FirstMeaningfulPaint() const;
+  BLINK_EXPORT double PageInteractive() const;
+  BLINK_EXPORT double PageInteractiveDetection() const;
+  BLINK_EXPORT double FirstInputInvalidatingInteractive() const;
   BLINK_EXPORT double ParseStart() const;
   BLINK_EXPORT double ParseStop() const;
   BLINK_EXPORT double ParseBlockedOnScriptLoadDuration() const;

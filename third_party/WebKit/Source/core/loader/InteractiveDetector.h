@@ -58,9 +58,19 @@ class CORE_EXPORT InteractiveDetector
   void SetNavigationStartTime(double navigation_start_time);
   void OnFirstMeaningfulPaintDetected(double fmp_time);
   void OnDomContentLoadedEnd(double dcl_time);
+  void OnInvalidatingInputEvent(double timestamp_seconds);
 
   // Returns Interactive Time if already detected, or 0.0 otherwise.
-  double GetInteractiveTime();
+  double GetInteractiveTime() const;
+
+  // Returns the time when page interactive was detected. The detection time can
+  // be useful to make decisions about metric invalidation in scenarios like tab
+  // backgrounding.
+  double GetInteractiveDetectionTime() const;
+
+  // Returns the first time interactive detector received a significant input
+  // that may cause observers to discard the interactive time value.
+  double GetFirstInvalidatingInputTime() const;
 
   virtual void Trace(Visitor*);
 
@@ -77,6 +87,7 @@ class CORE_EXPORT InteractiveDetector
   explicit InteractiveDetector(Document&, NetworkActivityChecker*);
 
   double interactive_time_ = 0.0;
+  double interactive_detection_time_ = 0.0;
 
   // Page event times that Interactive Detector depends on.
   // Value of 0.0 indicate the event has not been detected yet.
@@ -84,6 +95,7 @@ class CORE_EXPORT InteractiveDetector
     double first_meaningful_paint = 0.0;
     double dom_content_loaded_end = 0.0;
     double nav_start = 0.0;
+    double first_invalidating_input = 0.0;
   } page_event_times_;
 
   // Stores sufficiently long quiet windows on main thread and network.

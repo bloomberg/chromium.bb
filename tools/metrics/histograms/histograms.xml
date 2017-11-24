@@ -56696,6 +56696,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Experimental.NavigationToInteractive" units="ms">
+  <owner>dproy@chromium.org</owner>
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Measures Time to Interactive, a metric based on main thread and network
+    heurisitics to approximate the point in time when the page feels interactive
+    to the user. See https://goo.gl/TFw6xz for detailed explanation. This
+    histogram uses First Meaningful Paint as the lower bound for quiescent
+    windows.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Experimental.PageTiming.FirstPaintToFirstBackground"
     units="ms">
   <obsolete>
@@ -56873,6 +56885,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Experimental.TimeToInteractiveStatus"
+    enum="TimeToInteractiveStatus">
+  <owner>tdresser@chromium.org</owner>
+  <owner>dproy@chromium.org</owner>
+  <summary>
+    Records whether the Time To Interactive metric was reported for the page
+    load, or why it wasn't if not. See https://goo.gl/TFw6xz for definition of
+    Time to Interactive.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Experimental.TotalRequests.ParseStop"
     units="requests">
   <owner>csharrison@chromium.org</owner>
@@ -56969,6 +56992,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>bmcquade@chromium.org</owner>
   <summary>
     Counts of various internal error conditions in the page_load_metrics system.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Internal.InteractiveToInteractiveDetection"
+    units="ms">
+  <owner>dproy@chromium.org</owner>
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Measures time delta between Time to Interactive and when we can detect TTI.
+    TTI cannot be detected in real time - we have to wait sufficiently long to
+    determine main thread and network quiescence. See https://goo.gl/TFw6xz for
+    detailed explanation of Time to Interactive. This histogram uses First
+    Meaningful Paint as the lower bound for quiescent windows.
   </summary>
 </histogram>
 

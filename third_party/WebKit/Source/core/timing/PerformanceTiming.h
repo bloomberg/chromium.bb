@@ -43,6 +43,7 @@ class DocumentLoadTiming;
 class DocumentLoader;
 class DocumentParserTiming;
 class DocumentTiming;
+class InteractiveDetector;
 class LocalFrame;
 class PaintTiming;
 class ResourceLoadTiming;
@@ -98,6 +99,15 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // The time of the first 'meaningful' paint, A meaningful paint is a paint
   // where the page's primary content is visible.
   unsigned long long FirstMeaningfulPaint() const;
+  // The first time the page is considered 'interactive'. This is determined
+  // using heuristics based on main thread and network activity.
+  unsigned long long PageInteractive() const;
+  // The time of when we detect the page is interactive. There is a delay
+  // between when the page was interactive and when we were able to detect it.
+  unsigned long long PageInteractiveDetection() const;
+  // The time of when a significant input event happened that may cause
+  // observers to discard the value of Time to Interactive.
+  unsigned long long FirstInputInvalidatingInteractive() const;
 
   unsigned long long ParseStart() const;
   unsigned long long ParseStop() const;
@@ -126,6 +136,7 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   DocumentLoader* GetDocumentLoader() const;
   DocumentLoadTiming* GetDocumentLoadTiming() const;
   ResourceLoadTiming* GetResourceLoadTiming() const;
+  InteractiveDetector* GetInteractiveDetector() const;
 };
 
 }  // namespace blink

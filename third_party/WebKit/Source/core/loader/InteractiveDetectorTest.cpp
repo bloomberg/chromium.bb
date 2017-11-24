@@ -84,6 +84,11 @@ class InteractiveDetectorTest : public ::testing::Test {
     detector_->OnFirstMeaningfulPaintDetected(fmp_time);
   }
 
+  void SimulateInteractiveInvalidatingInput(double timestamp) {
+    RunTillTimestamp(timestamp);
+    detector_->OnInvalidatingInputEvent(timestamp);
+  }
+
   void RunTillTimestamp(double target_time) {
     double current_time = MonotonicallyIncreasingTime();
     platform_->RunForPeriodSeconds(std::max(0.0, target_time - current_time));
@@ -370,6 +375,24 @@ TEST_F(InteractiveDetectorTest, IntermittentNetworkBusyBlocksTTI) {
   RunTillTimestamp((t0 + 14.1) + 5.0 + 0.1);
   // TTI reached at long task 2 end.
   EXPECT_EQ(GetInteractiveTime(), t0 + 14.1);
+}
+
+TEST_F(InteractiveDetectorTest, InvalidatingUserInput) {
+  double t0 = MonotonicallyIncreasingTime();
+  SimulateNavigationStart(t0);
+  // Network is forever quiet for this test.
+  SetActiveConnections(1);
+  SimulateDOMContentLoadedEnd(t0 + 2.0);
+  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 4.0);
+  SimulateInteractiveInvalidatingInput(t0 + 5.0);
+  SimulateLongTask(t0 + 7.0, t0 + 7.1);  // Long task 1.
+  // Run till 5 seconds after long task 2 end.
+  RunTillTimestamp((t0 + 7.1) + 5.0 + 0.1);
+  // We still detect interactive time on the blink side even if there is an
+  // invalidating user input. Page Load Metrics filters out this value in the
+  // browser process for UMA reporting.
+  EXPECT_EQ(GetInteractiveTime(), t0 + 7.1);
+  EXPECT_EQ(GetDetector()->GetFirstInvalidatingInputTime(), t0 + 5.0);
 }
 
 class InteractiveDetectorTestWithDummyPage : public ::testing::Test {

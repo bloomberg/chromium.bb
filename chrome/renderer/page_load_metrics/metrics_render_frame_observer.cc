@@ -117,6 +117,19 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
   mojom::PageLoadTimingPtr timing(CreatePageLoadTiming());
   double start = perf.NavigationStart();
   timing->navigation_start = base::Time::FromDoubleT(start);
+  if (perf.PageInteractive() > 0.0) {
+    // PageInteractive and PageInteractiveDetection should be available at the
+    // same time. This is a renderer side DCHECK to ensure this.
+    DCHECK(perf.PageInteractiveDetection());
+    timing->interactive_timing->interactive =
+        ClampDelta(perf.PageInteractive(), start);
+    timing->interactive_timing->interactive_detection =
+        ClampDelta(perf.PageInteractiveDetection(), start);
+  }
+  if (perf.FirstInputInvalidatingInteractive() > 0.0) {
+    timing->interactive_timing->first_invalidating_input =
+        ClampDelta(perf.FirstInputInvalidatingInteractive(), start);
+  }
   if (perf.ResponseStart() > 0.0)
     timing->response_start = ClampDelta(perf.ResponseStart(), start);
   if (perf.DomContentLoadedEventStart() > 0.0) {

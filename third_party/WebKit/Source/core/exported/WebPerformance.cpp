@@ -166,6 +166,19 @@ double WebPerformance::FirstMeaningfulPaint() const {
   return MillisecondsToSeconds(private_->timing()->FirstMeaningfulPaint());
 }
 
+double WebPerformance::PageInteractive() const {
+  return MillisecondsToSeconds(private_->timing()->PageInteractive());
+}
+
+double WebPerformance::PageInteractiveDetection() const {
+  return MillisecondsToSeconds(private_->timing()->PageInteractiveDetection());
+}
+
+double WebPerformance::FirstInputInvalidatingInteractive() const {
+  return MillisecondsToSeconds(
+      private_->timing()->FirstInputInvalidatingInteractive());
+}
+
 double WebPerformance::ParseStart() const {
   return MillisecondsToSeconds(private_->timing()->ParseStart());
 }
