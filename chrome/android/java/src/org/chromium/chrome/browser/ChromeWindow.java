@@ -27,7 +27,10 @@ public class ChromeWindow extends ActivityWindowAndroid {
 
     @Override
     protected void logUMAOnRequestPermissionDenied(String permission) {
-        WebApkUma.recordAndroidRuntimePermissionDeniedInWebApk(new String[] {permission});
+        Activity activity = getActivity().get();
+        if (activity != null && ((ChromeActivity) activity).didFinishNativeInitialization()) {
+            WebApkUma.recordAndroidRuntimePermissionDeniedInWebApk(new String[] {permission});
+        }
     }
 
     /**
