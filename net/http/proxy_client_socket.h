@@ -41,11 +41,14 @@ class NET_EXPORT_PRIVATE ProxyClientSocket : public StreamSocket {
   virtual const scoped_refptr<HttpAuthController>& GetAuthController() const
       = 0;
 
-  // If Connect (or its callback) returns PROXY_AUTH_REQUESTED, then
-  // credentials should be added to the HttpAuthController before calling
-  // RestartWithAuth.  Not all ProxyClientSocket implementations will be
-  // restartable.  Such implementations should disconnect themselves and
-  // return OK.
+  // If Connect (or its callback) returns PROXY_AUTH_REQUESTED, then an
+  // auth challenge was received.  If the HttpAuthController's HaveAuth()
+  // method returns true, then the request just needs to be restarted with
+  // this method to try with those credentials, and new credentials cannot
+  // be provided.  Otherwise, credentials should be added to the
+  // HttpAuthController before calling RestartWithAuth.  Not all
+  // ProxyClientSocket implementations will be restartable.  Such
+  // implementations should disconnect themselves and return OK.
   virtual int RestartWithAuth(const CompletionCallback& callback) = 0;
 
   // Returns true of the connection to the proxy is using SPDY.

@@ -73,8 +73,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // Repeatedly try to log in with the same credentials.
   while (result == net::ERR_PROXY_AUTH_REQUESTED) {
-    auth_controller->ResetAuth(net::AuthCredentials(
-        base::ASCIIToUTF16("user"), base::ASCIIToUTF16("pass")));
+    if (!auth_controller->HaveAuth()) {
+      auth_controller->ResetAuth(net::AuthCredentials(
+          base::ASCIIToUTF16("user"), base::ASCIIToUTF16("pass")));
+    }
     result = socket.RestartWithAuth(callback.callback());
     result = callback.GetResult(result);
   }
