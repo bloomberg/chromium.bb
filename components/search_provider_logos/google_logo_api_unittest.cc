@@ -109,6 +109,53 @@ TEST(GoogleNewLogoApiTest, DoesNotResolveAbsoluteUrl) {
   EXPECT_EQ(GURL("https://www.doodle.com/target"), logo->metadata.on_click_url);
 }
 
+TEST(GoogleNewLogoApiTest, RequiresHttpsForContainedUrls) {
+  const GURL base_url("https://base.doo/");
+  const std::string json = R"json()]}'
+{
+  "ddljson": {
+    "doodle_type": "INTERACTIVE",
+    "target_url": "http://www.doodle.com/target",
+    "fullpage_interactive_url": "http://www.doodle.com/interactive"
+  }
+})json";
+
+  bool failed = false;
+  std::unique_ptr<EncodedLogo> logo = ParseDoodleLogoResponse(
+      base_url, std::make_unique<std::string>(json), base::Time(), &failed);
+
+  ASSERT_FALSE(failed);
+  ASSERT_TRUE(logo);
+  // Since the base URL is secure https://, the contained non-secure http://
+  // URLs should be ignored.
+  EXPECT_EQ(GURL(), logo->metadata.on_click_url);
+  EXPECT_EQ(GURL(), logo->metadata.full_page_url);
+}
+
+TEST(GoogleNewLogoApiTest, AcceptsHttpForContainedUrlsIfBaseInsecure) {
+  const GURL base_url("http://base.doo/");
+  const std::string json = R"json()]}'
+{
+  "ddljson": {
+    "doodle_type": "INTERACTIVE",
+    "target_url": "http://www.doodle.com/target",
+    "fullpage_interactive_url": "http://www.doodle.com/interactive"
+  }
+})json";
+
+  bool failed = false;
+  std::unique_ptr<EncodedLogo> logo = ParseDoodleLogoResponse(
+      base_url, std::make_unique<std::string>(json), base::Time(), &failed);
+
+  ASSERT_FALSE(failed);
+  ASSERT_TRUE(logo);
+  // Since the base URL itself is non-secure http://, the contained non-secure
+  // URLs should also be accepted.
+  EXPECT_EQ(GURL("http://www.doodle.com/target"), logo->metadata.on_click_url);
+  EXPECT_EQ(GURL("http://www.doodle.com/interactive"),
+            logo->metadata.full_page_url);
+}
+
 TEST(GoogleNewLogoApiTest, ParsesStaticImage) {
   const GURL base_url("https://base.doo/");
   // Note: The base64 encoding of "abc" is "YWJj".
