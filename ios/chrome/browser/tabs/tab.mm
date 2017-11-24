@@ -278,8 +278,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     // TODO(crbug.com/620465): Tab should only use public API of WebState.
     // Remove this cast once this is the case.
     _webStateImpl = static_cast<web::WebStateImpl*>(webState);
-    _webStateObserver =
-        base::MakeUnique<web::WebStateObserverBridge>(webState, self);
+    _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
+    _webStateImpl->AddObserver(_webStateObserver.get());
+
     _browserState =
         ios::ChromeBrowserState::FromBrowserState(webState->GetBrowserState());
 
@@ -292,6 +293,12 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                             tab:self];
   }
   return self;
+}
+
+- (void)dealloc {
+  // The WebState owns the Tab, so -webStateDestroyed: should be called before
+  // -dealloc and _webStateImpl set to nullptr.
+  DCHECK(!_webStateImpl);
 }
 
 - (void)attachTabHelpers {
@@ -507,6 +514,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // Cancel any queued dialogs.
   [self.dialogDelegate cancelDialogForTab:self];
 
+  _webStateImpl->RemoveObserver(_webStateObserver.get());
   _webStateObserver.reset();
   _webStateImpl = nullptr;
 }
