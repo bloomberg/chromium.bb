@@ -605,6 +605,21 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   DCHECK(iterator != forms.end());
   forms.erase(iterator);
 
+  password_manager::DuplicatesMap& duplicates =
+      form.blacklisted_by_user ? blacklistedPasswordDuplicates_
+                               : savedPasswordDuplicates_;
+  password_manager::PasswordEntryType entryType =
+      form.blacklisted_by_user
+          ? password_manager::PasswordEntryType::BLACKLISTED
+          : password_manager::PasswordEntryType::SAVED;
+  std::string key = password_manager::CreateSortKey(form, entryType);
+  auto duplicatesRange = duplicates.equal_range(key);
+  for (auto iterator = duplicatesRange.first;
+       iterator != duplicatesRange.second; ++iterator) {
+    passwordStore_->RemoveLogin(*(iterator->second));
+  }
+  duplicates.erase(key);
+
   [self updateEditButton];
   [self reloadData];
   [self.navigationController popViewControllerAnimated:YES];
