@@ -505,7 +505,8 @@ bool AppBannerManager::IsRunning() const {
 
 // static
 bool AppBannerManager::IsExperimentalAppBannersEnabled() {
-  return base::FeatureList::IsEnabled(features::kExperimentalAppBanners);
+  return base::FeatureList::IsEnabled(features::kExperimentalAppBanners) ||
+         base::FeatureList::IsEnabled(features::kDesktopPWAWindowing);
 }
 
 void AppBannerManager::ResetBindings() {

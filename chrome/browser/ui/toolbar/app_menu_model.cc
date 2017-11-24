@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -188,7 +189,7 @@ void ToolsMenuModel::Build(Browser* browser) {
   if (extensions::util::IsNewBookmarkAppsEnabled() &&
       // If kExperimentalAppBanners is enabled, this is moved to the top level
       // menu.
-      !base::FeatureList::IsEnabled(features::kExperimentalAppBanners)) {
+      !banners::AppBannerManager::IsExperimentalAppBannersEnabled()) {
     AddItemWithStringId(IDC_CREATE_HOSTED_APP, IDS_ADD_TO_OS_LAUNCH_SURFACE);
   }
 
@@ -714,7 +715,7 @@ void AppMenuModel::Build() {
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
   if (extensions::util::IsNewBookmarkAppsEnabled() &&
-      base::FeatureList::IsEnabled(features::kExperimentalAppBanners)) {
+      banners::AppBannerManager::IsExperimentalAppBannersEnabled()) {
     AddItemWithStringId(IDC_CREATE_HOSTED_APP, IDS_ADD_TO_OS_LAUNCH_SURFACE);
   }
 

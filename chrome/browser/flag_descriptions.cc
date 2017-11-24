@@ -367,10 +367,10 @@ const char kEnableDataReductionProxySavingsPromoDescription[] =
     "saved 1 MB of data, then the promo will not be shown. Data Saver must be "
     "enabled for the promo to be shown.";
 
-const char kEnableDesktopPWAWindowingName[] =
-    "Windowing related features for desktop PWAs.";
-const char kEnableDesktopPWAWindowingDescription[] =
-    "Enable experimental windowing features for desktop PWAs.";
+const char kEnableDesktopPWAsName[] = "Desktop PWAs";
+const char kEnableDesktopPWAsDescription[] =
+    "Experimental windowing and install banner treatment for Progressive Web "
+    "Apps on desktop platforms. Implies #enable-experimental-app-banners.";
 
 const char kEnableEnumeratingAudioDevicesName[] =
     "Experimentally enable enumerating audio devices.";
@@ -561,7 +561,8 @@ const char kExpensiveBackgroundTimerThrottlingDescription[] =
 
 const char kExperimentalAppBannersName[] = "Experimental app banners";
 const char kExperimentalAppBannersDescription[] =
-    "Enables a new experimental app banner flow and UI";
+    "Enables a new experimental app banner flow and UI. Implies "
+    "#enable-app-banners.";
 
 const char kExperimentalCanvasFeaturesName[] = "Experimental canvas features";
 const char kExperimentalCanvasFeaturesDescription[] =

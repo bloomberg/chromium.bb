@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
@@ -307,7 +308,7 @@ bool IsNewBookmarkAppsEnabled() {
 #if defined(OS_MACOSX)
   return base::FeatureList::IsEnabled(features::kBookmarkApps) ||
          base::FeatureList::IsEnabled(features::kAppBanners) ||
-         base::FeatureList::IsEnabled(features::kExperimentalAppBanners);
+         banners::AppBannerManager::IsExperimentalAppBannersEnabled();
 #else
   return true;
 #endif
