@@ -381,6 +381,7 @@ class UiElement : public cc::AnimationTarget {
   // whether each ancestor is the last child (which affects the lines we draw in
   // the tree).
   void DumpHierarchy(std::vector<size_t> counts, std::ostringstream* os) const;
+  virtual void DumpGeometry(std::ostringstream* os) const;
 
  protected:
   AnimationPlayer& animation_player() { return animation_player_; }
