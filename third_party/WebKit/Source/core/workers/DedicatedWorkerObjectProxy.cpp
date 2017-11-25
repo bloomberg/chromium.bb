@@ -63,14 +63,15 @@ DedicatedWorkerObjectProxy::~DedicatedWorkerObjectProxy() {}
 
 void DedicatedWorkerObjectProxy::PostMessageToWorkerObject(
     scoped_refptr<SerializedScriptValue> message,
-    Vector<MessagePortChannel> channels) {
+    Vector<MessagePortChannel> channels,
+    const v8_inspector::V8StackTraceId& stack_id) {
   GetParentFrameTaskRunners()
       ->Get(TaskType::kPostedMessage)
       ->PostTask(BLINK_FROM_HERE,
                  CrossThreadBind(
                      &DedicatedWorkerMessagingProxy::PostMessageToWorkerObject,
                      messaging_proxy_weak_ptr_, std::move(message),
-                     WTF::Passed(std::move(channels))));
+                     WTF::Passed(std::move(channels)), stack_id));
 }
 
 void DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject(

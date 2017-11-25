@@ -171,9 +171,10 @@ var TestRunner = class {
       if (parentId) {
         if (parentId.debuggerId)
           debuggerId = parentId.debuggerId;
-        stackTrace = (await debuggers.get(debuggerId).getStackTrace({
-                       stackTraceId: parentId
-                     })).result.stackTrace;
+        let result = await debuggers.get(debuggerId).getStackTrace({
+          stackTraceId: parentId
+        });
+        stackTrace = result.stackTrace || result.result.stackTrace;
       } else {
         stackTrace = parent;
       }
