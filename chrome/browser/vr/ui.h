@@ -102,9 +102,12 @@ class Ui : public BrowserUiInterface {
 
   Model* model_for_test() { return model_.get(); }
 
+  void ReinitializeForTest(const UiInitialState& ui_initial_state);
+
   void Dump();
 
  private:
+  void InitializeModel(const UiInitialState& ui_initial_state);
   UiBrowserInterface* browser_;
 
   // This state may be further abstracted into a SkiaUi object.

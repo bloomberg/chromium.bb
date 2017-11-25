@@ -42,20 +42,7 @@ Ui::Ui(UiBrowserInterface* browser,
       content_input_delegate_(std::move(content_input_delegate)),
       input_manager_(base::MakeUnique<UiInputManager>(scene_.get())),
       weak_ptr_factory_(this) {
-  model_->web_vr_started_for_autopresentation =
-      ui_initial_state.web_vr_autopresentation_expected;
-  model_->web_vr_show_splash_screen =
-      ui_initial_state.web_vr_autopresentation_expected;
-  model_->experimental_features_enabled =
-      base::FeatureList::IsEnabled(features::kVrBrowsingExperimentalFeatures);
-  model_->speech.has_or_can_request_audio_permission =
-      ui_initial_state.has_or_can_request_audio_permission;
-  model_->web_vr_mode = ui_initial_state.in_web_vr;
-  model_->in_cct = ui_initial_state.in_cct;
-  model_->browsing_disabled = ui_initial_state.browsing_disabled;
-  model_->skips_redraw_when_not_dirty =
-      ui_initial_state.skips_redraw_when_not_dirty;
-
+  InitializeModel(ui_initial_state);
   UiSceneCreator(browser, scene_.get(), content_input_delegate_.get(),
                  model_.get())
       .CreateScene();
@@ -261,6 +248,26 @@ void Ui::Dump() {
   os << std::endl;
   scene_->root_element().DumpHierarchy(std::vector<size_t>(), &os);
   LOG(ERROR) << os.str();
+}
+
+void Ui::ReinitializeForTest(const UiInitialState& ui_initial_state) {
+  InitializeModel(ui_initial_state);
+}
+
+void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
+  model_->web_vr_started_for_autopresentation =
+      ui_initial_state.web_vr_autopresentation_expected;
+  model_->web_vr_show_splash_screen =
+      ui_initial_state.web_vr_autopresentation_expected;
+  model_->experimental_features_enabled =
+      base::FeatureList::IsEnabled(features::kVrBrowsingExperimentalFeatures);
+  model_->speech.has_or_can_request_audio_permission =
+      ui_initial_state.has_or_can_request_audio_permission;
+  model_->web_vr_mode = ui_initial_state.in_web_vr;
+  model_->in_cct = ui_initial_state.in_cct;
+  model_->browsing_disabled = ui_initial_state.browsing_disabled;
+  model_->skips_redraw_when_not_dirty =
+      ui_initial_state.skips_redraw_when_not_dirty;
 }
 
 }  // namespace vr
