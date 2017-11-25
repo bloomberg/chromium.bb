@@ -53,6 +53,8 @@ class VrTestContext : public vr::UiBrowserInterface {
  private:
   unsigned int CreateFakeContentTexture();
   void CreateFakeOmniboxSuggestions();
+  void CycleWebVrModes();
+  void ToggleSplashScreen();
   gfx::Transform ProjectionMatrix() const;
   gfx::Transform ViewProjectionMatrix() const;
   ControllerModel UpdateController();
@@ -75,6 +77,8 @@ class VrTestContext : public vr::UiBrowserInterface {
 
   bool fullscreen_ = false;
   bool incognito_ = false;
+
+  bool show_web_vr_splash_screen_ = false;
 
   ControllerModel last_controller_model_;
 

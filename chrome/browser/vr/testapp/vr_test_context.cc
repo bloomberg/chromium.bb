@@ -123,7 +123,7 @@ void VrTestContext::HandleInput(ui::Event* event) {
         incognito_ = !incognito_;
         ui_->SetIncognito(incognito_);
         break;
-      case ui::DomCode::US_S:
+      case ui::DomCode::US_O:
         CreateFakeOmniboxSuggestions();
         break;
       case ui::DomCode::US_D:
@@ -131,6 +131,12 @@ void VrTestContext::HandleInput(ui::Event* event) {
         break;
       case ui::DomCode::US_V:
         ui_->SetVideoCaptureEnabled(!model_->permissions.video_capture_enabled);
+        break;
+      case ui::DomCode::US_W:
+        CycleWebVrModes();
+        break;
+      case ui::DomCode::US_S:
+        ToggleSplashScreen();
         break;
       default:
         break;
@@ -294,6 +300,34 @@ void VrTestContext::CreateFakeOmniboxSuggestions() {
         AutocompleteMatch::Type::VOICE_SUGGEST, GURL("http://www.test.com/")));
   }
   ui_->SetOmniboxSuggestions(std::move(result));
+}
+
+void VrTestContext::CycleWebVrModes() {
+  switch (model_->web_vr_timeout_state) {
+    case kWebVrNoTimeoutPending:
+      ui_->SetWebVrMode(true, true);
+      break;
+    case kWebVrAwaitingFirstFrame:
+      ui_->OnWebVrTimeoutImminent();
+      break;
+    case kWebVrTimeoutImminent:
+      ui_->OnWebVrTimedOut();
+      break;
+    case kWebVrTimedOut:
+      ui_->SetWebVrMode(false, false);
+      break;
+  }
+}
+
+void VrTestContext::ToggleSplashScreen() {
+  if (!show_web_vr_splash_screen_) {
+    UiInitialState state;
+    state.web_vr_autopresentation_expected = true;
+    ui_->ReinitializeForTest(state);
+  } else {
+    ui_->ReinitializeForTest(UiInitialState());
+  }
+  show_web_vr_splash_screen_ = !show_web_vr_splash_screen_;
 }
 
 gfx::Transform VrTestContext::ProjectionMatrix() const {
