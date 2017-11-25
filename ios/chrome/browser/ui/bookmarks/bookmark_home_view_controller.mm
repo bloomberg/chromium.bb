@@ -178,6 +178,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 }
 
 - (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
   if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     // Set the content position after views are laid out,
     // to ensure the right window of rows is shown. Once
@@ -187,6 +188,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
           setContentPosition:self.cachedContentPosition.floatValue];
       self.cachedContentPosition = nil;
     }
+    // The height of contextBar might change due to word wrapping of buttons
+    // after titleLabel or orientation changed.
+    [self.contextBar updateHeight];
   }
 }
 

@@ -39,6 +39,7 @@ typedef NS_ENUM(NSInteger, ContextBarButtonStyle) {
              forButton:(ContextBarButton)button;
 - (void)setButtonVisibility:(BOOL)visible forButton:(ContextBarButton)button;
 - (void)setButtonEnabled:(BOOL)enabled forButton:(ContextBarButton)button;
+- (void)updateHeight;
 
 @end
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BARS_BOOKMARK_CONTEXT_BAR_H_
