@@ -44,6 +44,7 @@ class UiRenderer {
  private:
   void Draw2dBrowsing(const RenderInfo& render_info);
   void DrawSplashScreen(const RenderInfo& render_info);
+  void DrawController(const RenderInfo& render_info);
 
   void DrawUiView(const RenderInfo& render_info,
                   const std::vector<const UiElement*>& elements);
