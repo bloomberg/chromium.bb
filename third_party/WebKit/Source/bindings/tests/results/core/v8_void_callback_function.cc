@@ -30,8 +30,8 @@ v8::Maybe<void> V8VoidCallbackFunction::Invoke(ScriptWrappable* callback_this_va
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
     v8::HandleScope handle_scope(GetIsolate());
-    v8::Context::Scope context_scope(
-        CallbackRelevantScriptState()->GetContext());
+    CHECK(!CallbackFunction().IsEmpty());
+    v8::Context::Scope context_scope(CallbackFunction()->CreationContext());
     V8ThrowException::ThrowError(
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
