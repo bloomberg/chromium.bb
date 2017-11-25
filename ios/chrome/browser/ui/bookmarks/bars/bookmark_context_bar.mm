@@ -13,6 +13,7 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#import "ui/gfx/ios/NSString+CrStringDrawing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -29,8 +30,10 @@ const CGFloat kHorizontalMargin = 16.0f;
 const CGFloat kVerticalMargin = 8.0f;
 // Horizontal spacing between the buttons inside BookmarkContextBar.
 const CGFloat kHorizontalSpacing = 8.0f;
-// Minimum height of BookmarkContextBar.
-const CGFloat kToolbarMinHeight = 48.0f;
+// Height of the toolbar in normal state.
+const CGFloat kToolbarNormalHeight = 48.0f;
+// Height of the expanded toolbar (buttons on multiple lines).
+const CGFloat kToolbarExpandedHeight = 58.0f;
 }  // namespace
 
 @interface BookmarkContextBar ()
@@ -46,6 +49,8 @@ const CGFloat kToolbarMinHeight = 48.0f;
 @property(nonatomic, strong) UIView* trailingButtonContainer;
 // Stack view for arranging the buttons.
 @property(nonatomic, strong) UIStackView* stackView;
+// Height constraint for the stack view containing the buttons.
+@property(nonatomic, strong) NSLayoutConstraint* heightConstraint;
 
 @end
 
@@ -58,6 +63,7 @@ const CGFloat kToolbarMinHeight = 48.0f;
 @synthesize trailingButton = _trailingButton;
 @synthesize trailingButtonContainer = _trailingButtonContainer;
 @synthesize stackView = _stackView;
+@synthesize heightConstraint = _heightConstraint;
 
 #pragma mark - Private Methods
 
@@ -100,7 +106,8 @@ const CGFloat kToolbarMinHeight = 48.0f;
   [self setButtonStyle:ContextBarButtonStyleDefault forUIButton:button];
   [button setTranslatesAutoresizingMaskIntoConstraints:NO];
 
-  button.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+  button.titleLabel.numberOfLines = 2;
+  button.titleLabel.adjustsFontSizeToFitWidth = YES;
   switch (contextBarButton) {
     case ContextBarLeadingButton: {
       if (UseRTLLayout()) {
@@ -134,10 +141,6 @@ const CGFloat kToolbarMinHeight = 48.0f;
     }
     default: { NOTREACHED(); }
   }
-
-  [button.heightAnchor
-      constraintGreaterThanOrEqualToAnchor:button.titleLabel.heightAnchor]
-      .active = YES;
 }
 
 #pragma mark - Public Methods
@@ -217,9 +220,10 @@ const CGFloat kToolbarMinHeight = 48.0f;
     _stackView.translatesAutoresizingMaskIntoConstraints = NO;
     _stackView.layoutMarginsRelativeArrangement = YES;
     PinToSafeArea(_stackView, self);
-    [_stackView.heightAnchor
-        constraintGreaterThanOrEqualToConstant:kToolbarMinHeight]
-        .active = YES;
+    _heightConstraint = [_stackView.heightAnchor
+        constraintEqualToConstant:kToolbarNormalHeight];
+    _heightConstraint.active = YES;
+
     _stackView.layoutMargins = UIEdgeInsetsMake(
         kVerticalMargin, kHorizontalMargin, kVerticalMargin, kHorizontalMargin);
     _stackView.spacing = kHorizontalSpacing;
@@ -267,6 +271,40 @@ const CGFloat kToolbarMinHeight = 48.0f;
     NOTREACHED();
   }
   [self.delegate trailingButtonClicked];
+}
+
+- (void)updateHeight {
+  NSArray* buttons = @[ _leadingButton, _centerButton, _trailingButton ];
+
+  CGFloat availableWidth = self.frame.size.width - kHorizontalMargin * 2;
+  NSUInteger visibleCount = 0;
+
+  // Count the number of visible buttons and deduct the button spacings from
+  // availableWidth.
+  for (UIButton* button in buttons) {
+    if (!button.superview.hidden) {
+      visibleCount++;
+      if (visibleCount > 1) {
+        availableWidth -= kHorizontalSpacing;
+      }
+    }
+  }
+
+  // Expand toolbar height in case word wrapping happens.
+  for (UIButton* button in buttons) {
+    if (!button.superview.hidden) {
+      CGFloat rect = [button.titleLabel.text
+                         cr_pixelAlignedSizeWithFont:button.titleLabel.font]
+                         .width;
+      if (rect > availableWidth / visibleCount) {
+        self.heightConstraint.constant = kToolbarExpandedHeight;
+        return;
+      }
+    }
+  }
+
+  // Use the normal height when there is no word wrapping.
+  self.heightConstraint.constant = kToolbarNormalHeight;
 }
 
 @end
