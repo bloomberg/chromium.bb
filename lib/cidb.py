@@ -35,6 +35,8 @@ try:
 except ImportError:
   pass
 
+log = logging.getLogger(__name__)
+
 CIDB_MIGRATIONS_DIR = os.path.join(constants.CHROMITE_DIR, 'cidb',
                                    'migrations')
 
@@ -82,11 +84,11 @@ def _IsRetryableException(e):
       # Suppress logging of error code 2006 retries. They are routine and
       # expected, and logging them confuses people.
       if not 2006 in encountered_error_codes:
-        logging.info('RETRYING cidb query due to %s.', e)
+        log.info('RETRYING cidb query due to %s.', e)
       return True
     else:
-      logging.info('None of error codes encountered %s are-retryable.',
-                   encountered_error_codes)
+      log.info('None of error codes encountered %s are-retryable.',
+               encountered_error_codes)
 
   return False
 
@@ -155,7 +157,7 @@ class SchemaVersionedMySQLConnection(object):
       value = osutils.ReadFile(file_path).strip()
       self._connect_url_args['query'].update({key: value})
     except IOError as e:
-      logging.warning('Error reading %s from file %s: %s', key, file_path, e)
+      log.warning('Error reading %s from file %s: %s', key, file_path, e)
 
   def _UpdateSslArgs(self, key, db_credentials_dir, filename):
     """Read an ssl argument for the sql connection from the given file.
@@ -271,7 +273,7 @@ class SchemaVersionedMySQLConnection(object):
                                         temp_engine).fetchall()
     if (db_name,) not in databases:
       self._ExecuteWithEngine('CREATE DATABASE %s' % db_name, temp_engine)
-      logging.info('Created database %s', db_name)
+      log.info('Created database %s', db_name)
 
     temp_engine.dispose()
 
@@ -286,8 +288,8 @@ class SchemaVersionedMySQLConnection(object):
 
     self.schema_version = self.QuerySchemaVersion()
 
-    logging.info('Created a SchemaVersionedMySQLConnection, '
-                 'sqlalchemy version %s', sqlalchemy.__version__)
+    log.info('Created a SchemaVersionedMySQLConnection, '
+             'sqlalchemy version %s', sqlalchemy.__version__)
 
   def DropDatabase(self):
     """Delete all data and tables from database, and drop database.
@@ -353,7 +355,7 @@ class SchemaVersionedMySQLConnection(object):
         # Invalidate self._meta, then run script and ensure that schema
         # version was increased.
         self._meta = None
-        logging.info('Running migration script %s', script)
+        log.info('Running migration script %s', script)
         self.RunQueryScript(script)
         self.schema_version = self.QuerySchemaVersion()
         if self.schema_version != number:
@@ -570,8 +572,8 @@ class SchemaVersionedMySQLConnection(object):
     """
     f = lambda: engine.execute(query, *args, **kwargs)
 
-    logging.info('Running cidb query on pid %s, repr(query) starts with %s',
-                 os.getpid(), repr(query)[:100])
+    log.info('Running cidb query on pid %s, repr(query) starts with %s',
+             os.getpid(), repr(query)[:100])
     return self._RunFunctorWithRetries(f)
 
   def _RunFunctorWithRetries(self, functor):
@@ -581,7 +583,7 @@ class SchemaVersionedMySQLConnection(object):
     # should be useful for other retry run, too.
     def _StatusCallback(attempt, success):
       if success and attempt:
-        logging.info('cidb query succeeded after %d retries', attempt)
+        log.info('cidb query succeeded after %d retries', attempt)
 
     return retry_stats.RetryWithStats(
         retry_stats.CIDB,
@@ -611,8 +613,8 @@ class SchemaVersionedMySQLConnection(object):
                                    listeners=[self._listener_class()])
       self._engine = e
       self._engine_pid = pid
-      logging.info('Created cidb engine %s@%s for pid %s', e.url.username,
-                   e.url.host, pid)
+      log.info('Created cidb engine %s@%s for pid %s', e.url.username,
+               e.url.host, pid)
       return self._engine
 
   def _InvalidateEngine(self):
