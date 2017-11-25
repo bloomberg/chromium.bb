@@ -136,8 +136,9 @@ void av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rsi,
   const int nunits = ntiles * rsi->units_per_tile;
 
   aom_free(rsi->unit_info);
-  CHECK_MEM_ERROR(cm, rsi->unit_info, (RestorationUnitInfo *)aom_malloc(
-                                          sizeof(*rsi->unit_info) * nunits));
+  CHECK_MEM_ERROR(cm, rsi->unit_info,
+                  (RestorationUnitInfo *)aom_memalign(
+                      16, sizeof(*rsi->unit_info) * nunits));
 }
 
 void av1_free_restoration_struct(RestorationInfo *rst_info) {
