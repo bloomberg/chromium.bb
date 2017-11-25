@@ -7,6 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
+// TODO(crbug.com/753599) : Rename this file as bookmark_empty_background when
+// clean up.
+
 // View shown as a background view of the bookmark collection view when there
 // are no bookmarks in the collection view.
 @interface BookmarkCollectionViewBackground : UIView

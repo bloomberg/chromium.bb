@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/ui/bookmarks/bookmark_collection_view_background.h"
 
+#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,6 +16,8 @@ NSString* const kBookmarkGrayStar = @"bookmark_gray_star_large";
 const CGFloat kEmptyBookmarkTextSize = 16.0;
 // Offset of the image view on top of the text.
 const CGFloat kImageViewOffsetFromText = 5.0;
+// Height of the bottom toolbar outside of this background.
+const CGFloat kToolbarHeight = 48.0;
 }  // namespace
 
 @interface BookmarkCollectionViewBackground ()
@@ -80,6 +83,13 @@ const CGFloat kImageViewOffsetFromText = 5.0;
 - (CGRect)emptyBookmarkLabelFrame {
   const CGSize labelSizeThatFit =
       [self.emptyBookmarksLabel sizeThatFits:CGSizeZero];
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
+    return CGRectMake(0,
+                      (CGRectGetHeight(self.bounds) + kToolbarHeight +
+                       labelSizeThatFit.height) /
+                          2.0,
+                      CGRectGetWidth(self.bounds), labelSizeThatFit.height);
+  }
   return CGRectMake(
       0, (CGRectGetHeight(self.bounds) - labelSizeThatFit.height) / 2.0,
       CGRectGetWidth(self.bounds), labelSizeThatFit.height);
