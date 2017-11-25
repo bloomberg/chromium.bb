@@ -337,8 +337,8 @@ static void set_offsets(const AV1_COMP *const cpi, const TileInfo *const tile,
 
   mbmi = &xd->mi[0]->mbmi;
 #if CONFIG_CFL
-  xd->cfl->mi_row = mi_row;
-  xd->cfl->mi_col = mi_col;
+  xd->cfl.mi_row = mi_row;
+  xd->cfl.mi_col = mi_col;
 #endif
 
   mbmi->segment_id = 0;
@@ -3615,9 +3615,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   td->mb.e_mbd.tile_ctx = &this_tile->tctx;
 
 #if CONFIG_CFL
-  MACROBLOCKD *const xd = &td->mb.e_mbd;
-  xd->cfl = &this_tile->cfl;
-  cfl_init(xd->cfl, cm);
+  cfl_init(&td->mb.e_mbd.cfl, cm);
 #endif
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
@@ -4852,7 +4850,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
   if (!is_inter) {
 #if CONFIG_CFL
-    xd->cfl->store_y = 1;
+    xd->cfl.store_y = 1;
 #endif  // CONFIG_CFL
     mbmi->skip = 1;
     for (int plane = 0; plane < num_planes; ++plane) {
@@ -4860,7 +4858,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                                    mi_row, mi_col);
     }
 #if CONFIG_CFL
-    xd->cfl->store_y = 0;
+    xd->cfl.store_y = 0;
 #endif  // CONFIG_CFL
     if (!dry_run) {
       sum_intra_stats(td->counts, xd, mi, xd->above_mi, xd->left_mi,
@@ -4998,7 +4996,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     set_txfm_ctxs(tx_size, xd->n8_w, xd->n8_h, (mbmi->skip || seg_skip), xd);
   }
 #if CONFIG_CFL
-  CFL_CTX *const cfl = xd->cfl;
+  CFL_CTX *const cfl = &xd->cfl;
   if (is_inter_block(mbmi) &&
       !is_chroma_reference(mi_row, mi_col, bsize, cfl->subsampling_x,
                            cfl->subsampling_y)) {

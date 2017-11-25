@@ -219,7 +219,7 @@ static void predict_and_reconstruct_intra_block(
     }
   }
 #if CONFIG_CFL
-  if (plane == AOM_PLANE_Y && xd->cfl->store_y) {
+  if (plane == AOM_PLANE_Y && xd->cfl.store_y) {
     cfl_store_tx(xd, row, col, tx_size, mbmi->sb_type);
   }
 #endif  // CONFIG_CFL
@@ -326,8 +326,8 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   xd->mi[0]->mbmi.mi_col = mi_col;
 #endif
 #if CONFIG_CFL
-  xd->cfl->mi_row = mi_row;
-  xd->cfl->mi_col = mi_col;
+  xd->cfl.mi_row = mi_row;
+  xd->cfl.mi_col = mi_col;
 #endif
 
   assert(x_mis && y_mis);
@@ -398,7 +398,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
 #if CONFIG_CFL
-  CFL_CTX *const cfl = xd->cfl;
+  CFL_CTX *const cfl = &xd->cfl;
   cfl->is_chroma_reference = is_chroma_reference(
       mi_row, mi_col, bsize, cfl->subsampling_x, cfl->subsampling_y);
 #endif  // CONFIG_CFL
@@ -2234,11 +2234,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
         td->bit_reader.accounting = NULL;
       }
 #endif
-      av1_init_macroblockd(cm, &td->xd,
-#if CONFIG_CFL
-                           &td->cfl,
-#endif
-                           td->dqcoeff);
+      av1_init_macroblockd(cm, &td->xd, td->dqcoeff);
 
       // Initialise the tile context from the frame context
       td->tctx = *cm->fc;

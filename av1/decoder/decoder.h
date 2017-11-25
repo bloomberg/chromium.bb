@@ -39,9 +39,6 @@ typedef struct TileData {
   DECLARE_ALIGNED(16, MACROBLOCKD, xd);
   /* dqcoeff are shared by all the planes. So planes must be decoded serially */
   DECLARE_ALIGNED(16, tran_low_t, dqcoeff[MAX_TX_SQUARE]);
-#if CONFIG_CFL
-  CFL_CTX cfl;
-#endif
   DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
   DECLARE_ALIGNED(16, uint8_t, color_index_map[2][MAX_PALETTE_SQUARE]);
 } TileData;

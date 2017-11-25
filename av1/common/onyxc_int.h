@@ -720,9 +720,6 @@ void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm);
 #endif  // CONFIG_CFL
 
 static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
-#if CONFIG_CFL
-                                        CFL_CTX *cfl,
-#endif
                                         tran_low_t *dqcoeff) {
   for (int i = 0; i < MAX_MB_PLANE; ++i) {
     xd->plane[i].dqcoeff = dqcoeff;
@@ -763,12 +760,11 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
   xd->fc = cm->fc;
   xd->above_seg_context = cm->above_seg_context;
   xd->above_txfm_context = cm->above_txfm_context;
-#if CONFIG_CFL
-  cfl_init(cfl, cm);
-  xd->cfl = cfl;
-#endif
   xd->mi_stride = cm->mi_stride;
   xd->error_info = &cm->error;
+#if CONFIG_CFL
+  cfl_init(&xd->cfl, cm);
+#endif
 }
 
 static INLINE void set_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col) {

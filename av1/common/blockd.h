@@ -713,7 +713,7 @@ typedef struct macroblockd {
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
 
 #if CONFIG_CFL
-  CFL_CTX *cfl;
+  CFL_CTX cfl;
 #endif
 
 #if CONFIG_JNT_COMP

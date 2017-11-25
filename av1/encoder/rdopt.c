@@ -2145,7 +2145,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     return;
   }
 #if CONFIG_CFL
-  if (plane == AOM_PLANE_Y && xd->cfl->store_y) {
+  if (plane == AOM_PLANE_Y && xd->cfl.store_y) {
     assert(!is_inter_block(mbmi) || plane_bsize < BLOCK_8X8);
     cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
   }
@@ -5418,7 +5418,7 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
   mbmi->cfl_alpha_idx = ind;
   mbmi->cfl_alpha_signs = signs;
 #if CONFIG_DEBUG
-  xd->cfl->rate = best_rate;
+  xd->cfl.rate = best_rate;
 #endif  // CONFIG_DEBUG
   return best_rate_overhead;
 }
@@ -5494,7 +5494,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (mode == UV_CFL_PRED) {
       this_rate += cfl_alpha_rate;
 #if CONFIG_DEBUG
-      assert(xd->cfl->rate == this_rate);
+      assert(xd->cfl.rate == this_rate);
 #endif  // CONFIG_DEBUG
     }
 #endif
@@ -5562,15 +5562,15 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
 #if CONFIG_CFL
   // Only store reconstructed luma when there's chroma RDO. When there's no
   // chroma RDO, the reconstructed luma will be stored in encode_superblock().
-  xd->cfl->store_y = !x->skip_chroma_rd;
-  if (xd->cfl->store_y) {
+  xd->cfl.store_y = !x->skip_chroma_rd;
+  if (xd->cfl.store_y) {
     // Perform one extra call to txfm_rd_in_plane(), with the values chosen
     // during luma RDO, so we can store reconstructed luma values
     RD_STATS this_rd_stats;
     txfm_rd_in_plane(x, cpi, &this_rd_stats, INT64_MAX, AOM_PLANE_Y,
                      mbmi->sb_type, mbmi->tx_size,
                      cpi->sf.use_fast_coef_costing);
-    xd->cfl->store_y = 0;
+    xd->cfl.store_y = 0;
   }
 #endif  // CONFIG_CFL
   rd_pick_intra_sbuv_mode(cpi, x, rate_uv, rate_uv_tokenonly, dist_uv, skip_uv,
@@ -8686,15 +8686,15 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 #if CONFIG_CFL
     // Only store reconstructed luma when there's chroma RDO. When there's no
     // chroma RDO, the reconstructed luma will be stored in encode_superblock().
-    xd->cfl->store_y = !x->skip_chroma_rd;
-    if (xd->cfl->store_y) {
+    xd->cfl.store_y = !x->skip_chroma_rd;
+    if (xd->cfl.store_y) {
       // Perform one extra call to txfm_rd_in_plane(), with the values chosen
       // during luma RDO, so we can store reconstructed luma values
       RD_STATS this_rd_stats;
       txfm_rd_in_plane(x, cpi, &this_rd_stats, INT64_MAX, AOM_PLANE_Y,
                        mbmi->sb_type, mbmi->tx_size,
                        cpi->sf.use_fast_coef_costing);
-      xd->cfl->store_y = 0;
+      xd->cfl.store_y = 0;
     }
 #endif  // CONFIG_CFL
     max_uv_tx_size = uv_txsize_lookup[bsize][mbmi->tx_size][pd[1].subsampling_x]

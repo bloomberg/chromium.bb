@@ -75,7 +75,6 @@ static void cfl_subtract_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
   const int block_row_stride = MAX_SB_SIZE << tx_size_high_log2[tx_size];
   const int num_pel_log2 =
       (tx_size_high_log2[tx_size] + tx_size_wide_log2[tx_size]);
-
   int16_t *pred_buf_q3 = cfl->pred_buf_q3;
 
   cfl_pad(cfl, width, height);
@@ -147,7 +146,7 @@ static void cfl_build_prediction_hbd(const int16_t *pred_buf_q3, uint16_t *dst,
 #endif  // CONFIG_HIGHBITDEPTH
 
 static void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
-  CFL_CTX *const cfl = xd->cfl;
+  CFL_CTX *const cfl = &xd->cfl;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
 
   // Do not call cfl_compute_parameters multiple time on the same values.
@@ -188,7 +187,7 @@ static void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
 
 void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
                        int row, int col, TX_SIZE tx_size, int plane) {
-  CFL_CTX *const cfl = xd->cfl;
+  CFL_CTX *const cfl = &xd->cfl;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
 
   if (!cfl->are_parameters_computed) cfl_compute_parameters(xd, tx_size);
@@ -462,7 +461,7 @@ static void sub8x8_set_val(CFL_CTX *cfl, int row, int col, TX_SIZE y_tx_size) {
 
 void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,
                   BLOCK_SIZE bsize) {
-  CFL_CTX *const cfl = xd->cfl;
+  CFL_CTX *const cfl = &xd->cfl;
   struct macroblockd_plane *const pd = &xd->plane[AOM_PLANE_Y];
   uint8_t *dst =
       &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
@@ -480,7 +479,7 @@ void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,
 }
 
 void cfl_store_block(MACROBLOCKD *const xd, BLOCK_SIZE bsize, TX_SIZE tx_size) {
-  CFL_CTX *const cfl = xd->cfl;
+  CFL_CTX *const cfl = &xd->cfl;
   struct macroblockd_plane *const pd = &xd->plane[AOM_PLANE_Y];
   int row = 0;
   int col = 0;

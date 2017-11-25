@@ -111,10 +111,6 @@ FILE *kf_list;
 FILE *keyfile;
 #endif
 
-#if CONFIG_CFL
-CFL_CTX NULL_CFL;
-#endif
-
 #if CONFIG_INTERNAL_STATS
 typedef enum { Y, U, V, ALL } STAT_TYPE;
 #endif  // CONFIG_INTERNAL_STATS
@@ -1037,11 +1033,7 @@ static void update_frame_size(AV1_COMP *cpi) {
 
   av1_set_mb_mi(cm, cm->width, cm->height);
   av1_init_context_buffers(cm);
-  av1_init_macroblockd(cm, xd,
-#if CONFIG_CFL
-                       &NULL_CFL,
-#endif
-                       NULL);
+  av1_init_macroblockd(cm, xd, NULL);
   memset(cpi->mbmi_ext_base, 0,
          cm->mi_rows * cm->mi_cols * sizeof(*cpi->mbmi_ext_base));
   set_tile_info(cpi);
