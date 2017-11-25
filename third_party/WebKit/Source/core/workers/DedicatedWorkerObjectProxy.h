@@ -67,7 +67,8 @@ class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {
   ~DedicatedWorkerObjectProxy() override;
 
   void PostMessageToWorkerObject(scoped_refptr<SerializedScriptValue>,
-                                 Vector<MessagePortChannel>);
+                                 Vector<MessagePortChannel>,
+                                 const v8_inspector::V8StackTraceId&);
   void ProcessUnhandledException(int exception_id, WorkerThread*);
   void ProcessMessageFromWorkerObject(scoped_refptr<SerializedScriptValue>,
                                       Vector<MessagePortChannel>,
