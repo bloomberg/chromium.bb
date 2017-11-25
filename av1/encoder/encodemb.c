@@ -821,11 +821,12 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
                              subsampling_y))
       continue;
 
-    bsize = scale_chroma_bsize(bsize, subsampling_x, subsampling_y);
+    const BLOCK_SIZE bsizec =
+        scale_chroma_bsize(bsize, subsampling_x, subsampling_y);
 
     // TODO(jingning): Clean this up.
     const struct macroblockd_plane *const pd = &xd->plane[plane];
-    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsizec, pd);
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     const int mi_height = block_size_high[plane_bsize] >> tx_size_wide_log2[0];
     const TX_SIZE max_tx_size = get_vartx_max_txsize(
@@ -836,9 +837,9 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
     int idx, idy;
     int block = 0;
     int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
-    av1_get_entropy_contexts(bsize, 0, pd, ctx.ta[plane], ctx.tl[plane]);
+    av1_get_entropy_contexts(bsizec, 0, pd, ctx.ta[plane], ctx.tl[plane]);
 
-    av1_subtract_plane(x, bsize, plane);
+    av1_subtract_plane(x, bsizec, plane);
 
     arg.ta = ctx.ta[plane];
     arg.tl = ctx.tl[plane];

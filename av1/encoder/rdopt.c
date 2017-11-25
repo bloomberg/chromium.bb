@@ -5008,8 +5008,8 @@ int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
   av1_init_rd_stats(rd_stats);
 
   if (x->skip_chroma_rd) return is_cost_valid;
-  bsize = scale_chroma_bsize(mbmi->sb_type, xd->plane[1].subsampling_x,
-                             xd->plane[1].subsampling_y);
+  const BLOCK_SIZE bsizec = scale_chroma_bsize(
+      bsize, xd->plane[1].subsampling_x, xd->plane[1].subsampling_y);
 
 #if 0   // CONFIG_EXT_TX
   if (is_rect_tx(mbmi->tx_size)) {
@@ -5019,13 +5019,13 @@ int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
 
   if (is_inter_block(mbmi) && is_cost_valid) {
     for (plane = 1; plane < MAX_MB_PLANE; ++plane)
-      av1_subtract_plane(x, bsize, plane);
+      av1_subtract_plane(x, bsizec, plane);
   }
 
   if (is_cost_valid) {
     for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *const pd = &xd->plane[plane];
-      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsizec, pd);
       const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
       const int mi_height =
           block_size_high[plane_bsize] >> tx_size_high_log2[0];
@@ -5040,7 +5040,7 @@ int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
       ENTROPY_CONTEXT tl[2 * MAX_MIB_SIZE];
       RD_STATS pn_rd_stats;
       av1_init_rd_stats(&pn_rd_stats);
-      av1_get_entropy_contexts(bsize, 0, pd, ta, tl);
+      av1_get_entropy_contexts(bsizec, 0, pd, ta, tl);
 
       for (idy = 0; idy < mi_height; idy += bh) {
         for (idx = 0; idx < mi_width; idx += bw) {

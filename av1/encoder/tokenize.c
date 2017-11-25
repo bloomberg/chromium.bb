@@ -653,8 +653,10 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
       continue;
     }
     const struct macroblockd_plane *const pd = &xd->plane[plane];
+    const BLOCK_SIZE bsizec =
+        scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
     const BLOCK_SIZE plane_bsize =
-        AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
+        AOMMAX(BLOCK_4X4, get_plane_block_size(bsizec, pd));
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     const int mi_height = block_size_high[plane_bsize] >> tx_size_wide_log2[0];
     const TX_SIZE max_tx_size = get_vartx_max_txsize(

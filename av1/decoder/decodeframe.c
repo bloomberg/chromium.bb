@@ -511,15 +511,16 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       int eobtotal = 0;
       for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
         const struct macroblockd_plane *const pd = &xd->plane[plane];
-        const BLOCK_SIZE plane_bsize =
-            AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-        const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
-        const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
-        int row, col;
-
         if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
                                  pd->subsampling_y))
           continue;
+        const BLOCK_SIZE bsizec =
+            scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
+        const BLOCK_SIZE plane_bsize =
+            AOMMAX(BLOCK_4X4, get_plane_block_size(bsizec, pd));
+        const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
+        const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
+        int row, col;
 
         const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
         int mu_blocks_wide =

@@ -1871,18 +1871,19 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
     assert(*tok < tok_end);
 #endif
     for (plane = 0; plane < num_planes; ++plane) {
-      if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type,
-                               xd->plane[plane].subsampling_x,
-                               xd->plane[plane].subsampling_y)) {
+      const struct macroblockd_plane *const pd = &xd->plane[plane];
+      if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type, pd->subsampling_x,
+                               pd->subsampling_y)) {
 #if !CONFIG_LV_MAP
         (*tok)++;
 #endif  // !CONFIG_LV_MAP
         continue;
       }
-      const struct macroblockd_plane *const pd = &xd->plane[plane];
-      BLOCK_SIZE bsize = mbmi->sb_type;
+      const BLOCK_SIZE bsize = mbmi->sb_type;
+      const BLOCK_SIZE bsizec =
+          scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
       const BLOCK_SIZE plane_bsize =
-          AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
+          AOMMAX(BLOCK_4X4, get_plane_block_size(bsizec, pd));
 
       const int num_4x4_w =
           block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
