@@ -32,6 +32,9 @@
 
   SourcesTestRunner.startDebuggerTestPromise(/* quiet */ true)
       .then(() => SourcesTestRunner.runTestFunctionAndWaitUntilPausedPromise())
+      .then(
+          () => TestRunner.addSnifferPromise(
+              Sources.CallStackSidebarPane.prototype, '_updatedForTest'))
       .then(() => dumpCallStackSidebarPane())
       .then(() => SourcesTestRunner.completeDebuggerTest());
 

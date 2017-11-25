@@ -30,7 +30,8 @@
   }
 
   function step5() {
-    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step6);
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused();
+    TestRunner.addSniffer(Sources.CallStackSidebarPane.prototype, '_updatedForTest', step6);
   }
 
   function step6() {
