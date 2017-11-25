@@ -88,37 +88,43 @@ comp6 0 3456
 include digits6DotsPlusDot6.uti
 include litdigits6DotsPlusDot6.uti
 
-math + 235				  # plus
-math * 35
-math / 34					  # barre oblique
-math = 2356				  # égal
-math \x0060 6       #
-math \x00F7 25		  # divisé par
-math < 5-126	 		  # inférieur à
-math > 5-345			  # supérieur à
+math + 235  # plus
+math * 35   # astérisque
+math / 34   # barre oblique
+math = 2356 # égal
+midnum + 235
+endnum + 235
+midnum = 2356
+endnum = 2356
 
-punctuation , 2			    # virgule
+math \x00F7 25     # divisé par
+math \x003c 5-126  # inférieur à
+math \x003e 5-345  # supérieur à
+
+punctuation , 2    # virgule
 postpunc , 2
-punctuation ; 23		    # point-virgule
+punctuation ; 23   # point-virgule
 postpunc ; 23
-punctuation : 25		    # deux-points
+punctuation : 25   # deux-points
 postpunc : 25
-punctuation . 256		    # point
+punctuation . 256  # point
 postpunc . 256
-punctuation ? 26		    # point d'interrogation
+punctuation ? 26   # point d'interrogation
 postpunc ? 26
-punctuation ! 235		    # point d'exclamation
+punctuation ! 235  # point d'exclamation
 postpunc ! 235
-punctuation " 2356 	    # guillemet
-punctuation ( 236		    # parenthèse ouvrante
-punctuation ) 356		    # parenthèse fermante
-prepunc ( 236		    # parenthèse ouvrante
-postpunc ) 356		    # parenthèse fermante
-punctuation ' 3			    # apostrophe
-punctuation « 2356	  #	guillemet français ouvrant
-punctuation » 2356	  #	guillemet français fermant
-prepunc « 2356	  #	guillemet français ouvrant
-postpunc » 2356	  #	guillemet français fermant
+punctuation " 2356 # guillemet
+postpunc " 2356 	    # guillemet
+prepunc " 2356 	   # guillemet
+punctuation ( 236  # parenthèse ouvrante
+punctuation ) 356  # parenthèse fermante
+prepunc ( 236      # parenthèse ouvrante
+postpunc ) 356     # parenthèse fermante
+punctuation ' 3    #  apostrophe
+punctuation « 2356 # guillemet français ouvrant
+prepunc « 2356	    # guillemet français ouvrant
+punctuation » 2356 # guillemet français fermant
+postpunc » 2356	   # guillemet français fermant
 
 # guillemets
 punctuation \x00AB 2356     # right-pointing double angle quotation mark
@@ -140,25 +146,25 @@ punctuation \x275E 2356     # heavy double comma quotation mark ornament
 punctuation \x275F 2356     # heavy low single comma quotation mark ornament
 punctuation \x2760 2356     # heavy low double comma quotation mark ornament
 
-noback sign \x200e 0           # (left to right mark)
-noback sign \x200f 0           # (right to left mark)
+noback sign \x200e 0        # (left to right mark)
+noback sign \x200f 0        # (right to left mark)
 
 # tirets et traits d'union
-punctuation - 36        # hyphen-minus
-sign \x2010 36          # hyphen
-sign \x2011 36          # non-breaking hyphen
-sign \x2012 36          # figure dash
-sign \x2013 36          # (en dash)
-sign \x2014 36          # (em dash)
-noback sign \x2015 36-36       # horizontal bar (quotation dash long dash introducing quoted text)
-sign \xFE58 36          # small em dash
-sign \xFE63 36          # small hyphen-minus
-sign \xFF0D 36          # fullwidth hyphen-minus
+punctuation - 36         # hyphen-minus
+sign \x2010 36           # hyphen
+sign \x2011 36           # non-breaking hyphen
+sign \x2012 36           # figure dash
+sign \x2013 36           # (en dash)
+sign \x2014 36           # (em dash)
+noback sign \x2015 36-36 # horizontal bar (quotation dash long dash introducing quoted text)
+sign \xFE58 36           # small em dash
+sign \xFE63 36           # small hyphen-minus
+sign \xFF0D 36           # fullwidth hyphen-minus
 
-sign \x2022 246-135     # (bullet)
-sign \x2026 256-256-256 # 8230	MS Word smart ellipsis
-sign \x25cf 35          # black circle
-sign \xf0b7 1245        # (bullet MS symbol font?)
+sign \x2022 246-135      # (bullet)
+sign \x2026 256-256-256  # 8230	MS Word smart ellipsis
+sign \x25cf 35           # black circle
+sign \xf0b7 1245         # (bullet MS symbol font?)
 
 sign \\ 5-34         # barre oblique inversée
 sign @ 345           # arobase
@@ -171,30 +177,31 @@ sign ‰ 5-346-346     # pour mille
 sign * 5-35          # astérisque
 sign _ 5-36          # souligné
 sign ¸ 456           # cédille
-noback sign ´ 5      # accent aigu
-sign \x007C 456      # barre verticale
+noback sign ´ 5
+sign \x0060 6   # accent aigu (`)
+sign \x007C 456 # barre verticale
 #sign \x0082 6       # [single low-9 quotation mark (break permitted here)
-sign \x0083 124     # [latin small letter f with hook (no break here)
-sign \x0084 56      # [double low-9 quotation mark (<control>)
-sign \x0085 36      # [horizontal ellipsis (next line)
-sign \x0086 356     # [dagger (start of selected area)
-sign \x0087 3567    # [double dagger (end of selected area)
+sign \x0083 124      # [latin small letter f with hook (no break here)
+sign \x0084 56       # [double low-9 quotation mark (<control>)
+sign \x0085 36       # [horizontal ellipsis (next line)
+sign \x0086 356      # [dagger (start of selected area)
+sign \x0087 3567     # [double dagger (end of selected area)
 noback sign \x0088 4 # [modifier letter circumflex accent (character tabulation set)
 sign \x0089 346      # [per mille sign (character tabulation with justification)
 noback sign \x008B 5 # [single left-pointing angle quotation mark] (partial line down)
 sign \x0095 1245     # [bullet] (message waiting)
-noback sign \x0096 36-36       # [en dash] (start of guarded area)
+noback sign \x0096 36-36      # [en dash] (start of guarded area)
 noback sign \x0097 36-36      # [em dash] (end of guarded area)
-sign \x0098 46	    # [small tilde] (start of string)
-sign \x0099 2345	  # [trade mark sign] (<control>)
-sign \x2122 5-2345	#	TRADE MARK SIGN
-noback sign \x009B 5       # [single right-pointing angle quotation mark] (control sequence introducer)
-sign \x00A1 235     # inverted exclamation mark
+sign \x0098 46     # [small tilde] (start of string)
+sign \x0099 2345   # [trade mark sign] (<control>)
+sign \x2122 5-2345 # TRADE MARK SIGN
+noback sign \x009B 5 # [single right-pointing angle quotation mark] (control sequence introducer)
+sign \x00A1 235      # inverted exclamation mark
 noback sign \x00A6 45      # broken bar
 sign \x00A8 46      # diaeresis
 noback sign \x00AA 16      # feminine ordinal indicator
-sign \x00AC 256     # not sign
-noback sign \x00AD 0       # soft hyphen
+sign \x00AC 256       # not sign
+noback sign \x00AD 0  # soft hyphen
 sign \x00AE 5-1235  # registered sign
 sign \x00B1 235-36  # plus-minus sign
 sign \x00B5 45-134  # micro sign
@@ -239,7 +246,7 @@ noback sign ³ 4-146 # exposant 3
 sign ¼ 16-34-1456   # un quart
 sign ½ 16-34-126    # un demi
 sign ¾ 146-34-1456  # trois quarts
-sign \x007E   5-26  # 126 ~    tilde
+sign \x007E 5-26  # 126 ~    tilde
 
 # unicode braille
 include braille-patterns.cti
@@ -249,7 +256,7 @@ include fr-bfu-comp68.cti
 # Braille indicators
 numsign 6             # number sign, just a dots operand
 numericmodechars ^,:.+-*/()=
-numericnocontchars âêîôûëïüœ#
+numericnocontchars âêîôûëïüœ
 capsletter 46
 begcapsword 46-46
 emphclass italic
@@ -262,7 +269,7 @@ emphletter italic 456
 begemphphrase bold 456-456
 endemphphrase bold before 456
 
-midword \x2019 3     # right single quotation mark
+noback midword \x2019 3     # right single quotation mark
 midnum \s 0						# espace entre les chiffres
 decpoint , 2
 
