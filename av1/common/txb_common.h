@@ -43,9 +43,28 @@ static const int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
 };
 
 #define CONTEXT_MAG_POSITION_NUM 3
+#if CONFIG_LV_MAP_MULTI && USE_CAUSAL_BR_CTX
+static const int mag_ref_offset_with_txclass[3][CONTEXT_MAG_POSITION_NUM][2] = {
+  { { 0, 1 }, { 1, 0 }, { 1, 1 } },
+  { { 0, 1 }, { 1, 0 }, { 0, 2 } },
+  { { 0, 1 }, { 1, 0 }, { 2, 0 } }
+};
+#endif
 static const int mag_ref_offset[CONTEXT_MAG_POSITION_NUM][2] = {
   { 0, 1 }, { 1, 0 }, { 1, 1 }
 };
+
+static INLINE TX_CLASS get_tx_class(TX_TYPE tx_type) {
+  switch (tx_type) {
+    case V_DCT:
+    case V_ADST:
+    case V_FLIPADST: return TX_CLASS_VERT;
+    case H_DCT:
+    case H_ADST:
+    case H_FLIPADST: return TX_CLASS_HORIZ;
+    default: return TX_CLASS_2D;
+  }
+}
 
 static INLINE void get_base_count_mag(int *mag, int *count,
                                       const tran_low_t *tcoeffs, int bwl,
@@ -98,6 +117,20 @@ static INLINE int get_level_count(const uint8_t *const levels, const int stride,
   }
   return count;
 }
+
+#if CONFIG_LV_MAP_MULTI && USE_CAUSAL_BR_CTX
+static INLINE void get_level_mag_with_txclass(const uint8_t *const levels,
+                                              const int stride, const int row,
+                                              const int col, int *const mag,
+                                              const TX_CLASS tx_class) {
+  for (int idx = 0; idx < CONTEXT_MAG_POSITION_NUM; ++idx) {
+    const int ref_row = row + mag_ref_offset_with_txclass[tx_class][idx][0];
+    const int ref_col = col + mag_ref_offset_with_txclass[tx_class][idx][1];
+    const int pos = ref_row * stride + ref_col;
+    mag[idx] = levels[pos];
+  }
+}
+#endif
 
 static INLINE void get_level_mag(const uint8_t *const levels, const int stride,
                                  const int row, const int col, int *const mag) {
@@ -267,16 +300,45 @@ static INLINE int get_br_ctx_from_count_mag(const int row, const int col,
 
 static INLINE int get_br_ctx(const uint8_t *const levels,
                              const int c,  // raster order
-                             const int bwl, const int count) {
+                             const int bwl, const int count
+#if CONFIG_LV_MAP_MULTI && USE_CAUSAL_BR_CTX
+                             ,
+                             const TX_TYPE tx_type
+#endif
+                             ) {
   const int row = c >> bwl;
   const int col = c - (row << bwl);
   const int stride = (1 << bwl) + TX_PAD_HOR;
   int mag = 0;
   int nb_mag[3] = { 0 };
+#if CONFIG_LV_MAP_MULTI && USE_CAUSAL_BR_CTX
+  (void)count;
+  const TX_CLASS tx_class = get_tx_class(tx_type);
+  get_level_mag_with_txclass(levels, stride, row, col, nb_mag, tx_class);
+
+  mag = AOMMIN(nb_mag[0], COEFF_BASE_RANGE + NUM_BASE_LEVELS + 1) +
+        AOMMIN(nb_mag[1], COEFF_BASE_RANGE + NUM_BASE_LEVELS + 1) +
+        AOMMIN(nb_mag[2], COEFF_BASE_RANGE + NUM_BASE_LEVELS + 1);
+  mag = AOMMIN((mag + 1) >> 1, 6);
+  if (c == 0) return mag;
+  if (tx_class == 0) {
+    if ((row < 2) && (col < 2)) return mag + 7;
+  } else {
+    if (tx_class == 1) {
+      if (col == 0) return mag + 7;
+    } else {
+      if (tx_class == 2) {
+        if (row == 0) return mag + 7;
+      }
+    }
+  }
+  return mag + 14;
+#else
   get_level_mag(levels, stride, row, col, nb_mag);
   for (int idx = 0; idx < 3; ++idx) mag = AOMMAX(mag, nb_mag[idx]);
   const int ctx = get_br_ctx_from_count_mag(row, col, count, mag);
   return ctx;
+#endif
 }
 
 #define SIG_REF_OFFSET_NUM 5
@@ -345,18 +407,6 @@ static INLINE int get_nz_count(const uint8_t *const levels, const int bwl,
     count += (levels[nb_pos] != 0);
   }
   return count;
-}
-
-static INLINE TX_CLASS get_tx_class(TX_TYPE tx_type) {
-  switch (tx_type) {
-    case V_DCT:
-    case V_ADST:
-    case V_FLIPADST: return TX_CLASS_VERT;
-    case H_DCT:
-    case H_ADST:
-    case H_FLIPADST: return TX_CLASS_HORIZ;
-    default: return TX_CLASS_2D;
-  }
 }
 
 // TODO(angiebird): optimize this function by generate a table that maps from

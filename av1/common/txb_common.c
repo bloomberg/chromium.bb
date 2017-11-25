@@ -195,15 +195,17 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
     for (plane = 0; plane < PLANE_TYPES; ++plane) {
 #if CONFIG_LV_MAP_MULTI
       for (ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx) {
-        int p = 32768 - fc->coeff_lps[tx_size][plane][ctx] * 128;
+        int p = 32768 - fc->coeff_lps[tx_size][plane][0][ctx] * 128;
         int sum = p;
         fc->coeff_br_cdf[tx_size][plane][ctx][0] = AOM_ICDF(sum);
+        p = 32768 - fc->coeff_lps[tx_size][plane][1][ctx] * 128;
         sum += ((32768 - sum) * p) >> 15;
         fc->coeff_br_cdf[tx_size][plane][ctx][1] = AOM_ICDF(sum);
+        p = 32768 - fc->coeff_lps[tx_size][plane][2][ctx] * 128;
         sum += ((32768 - sum) * p) >> 15;
         fc->coeff_br_cdf[tx_size][plane][ctx][2] = AOM_ICDF(sum);
         fc->coeff_br_cdf[tx_size][plane][ctx][3] = AOM_ICDF(32768);
-        fc->coeff_br_cdf[tx_size][plane][ctx][4] = AOM_ICDF(32768);
+        fc->coeff_br_cdf[tx_size][plane][ctx][4] = 0;
         // printf("br_cdf: %d %d %2d : %3d %3d %3d\n", tx_size, plane, ctx,
         //        fc->coeff_br_cdf[tx_size][plane][ctx][0] >> 7,
         //        fc->coeff_br_cdf[tx_size][plane][ctx][1] >> 7,

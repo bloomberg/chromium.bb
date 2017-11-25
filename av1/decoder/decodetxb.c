@@ -317,7 +317,9 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
 
   if (num_updates) {
+#if !CONFIG_LV_MAP_MULTI
     av1_get_br_level_counts(levels, width, height, level_counts);
+#endif
     for (c = 0; c < num_updates; ++c) {
       const int pos = update_pos[c];
       uint8_t *const level = &levels[get_paded_idx(pos, bwl)];
@@ -330,17 +332,26 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       if (*level <= NUM_BASE_LEVELS) continue;
 #endif
 
+#if !CONFIG_LV_MAP_MULTI
       ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
+#endif
 
 #if CONFIG_LV_MAP_MULTI
+#if USE_CAUSAL_BR_CTX
+      ctx = get_br_ctx(levels, pos, bwl, level_counts[pos], tx_type);
+#else
+      ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
+#endif
       for (idx = 0; idx < COEFF_BASE_RANGE / (BR_CDF_SIZE - 1); ++idx) {
         int k = av1_read_record_symbol(
-            counts, r, ec_ctx->coeff_br_cdf[txs_ctx][plane_type][ctx],
+            counts, r,
+            ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_16X16)][plane_type][ctx],
             BR_CDF_SIZE, ACCT_STR);
         *level += k;
         if (counts) {
-          for (int lps = 0; lps < BR_CDF_SIZE; lps++) {
-            ++counts->coeff_lps[txs_ctx][plane_type][ctx][lps == k];
+          for (int lps = 0; lps < BR_CDF_SIZE - 1; lps++) {
+            ++counts->coeff_lps[AOMMIN(txs_ctx, TX_16X16)][plane_type][lps][ctx]
+                               [lps == k];
             if (lps == k) break;
           }
         }
