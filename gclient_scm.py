@@ -433,7 +433,7 @@ class GitWrapper(SCMWrapper):
         (os.path.isdir(self.checkout_path) and
          not os.path.exists(os.path.join(self.checkout_path, '.git')))):
       if mirror:
-        self._UpdateMirror(mirror, options)
+        self._UpdateMirrorIfNotContains(mirror, options, rev_type, revision)
       try:
         self._Clone(revision, url, options)
       except subprocess2.CalledProcessError:
@@ -456,7 +456,7 @@ class GitWrapper(SCMWrapper):
     self._maybe_break_locks(options)
 
     if mirror:
-      self._UpdateMirror(mirror, options)
+      self._UpdateMirrorIfNotContains(mirror, options, rev_type, revision)
 
     # See if the url has changed (the unittests use git://foo for the url, let
     # that through).
@@ -842,9 +842,16 @@ class GitWrapper(SCMWrapper):
       mirror_kwargs['refs'].append('refs/tags/*')
     return git_cache.Mirror(url, **mirror_kwargs)
 
-  @staticmethod
-  def _UpdateMirror(mirror, options):
-    """Update a git mirror by fetching the latest commits from the remote."""
+  def _UpdateMirrorIfNotContains(self, mirror, options, rev_type, revision):
+    """Update a git mirror by fetching the latest commits from the remote,
+    unless mirror already contains revision whose type is sha1 hash.
+    """
+    if rev_type == 'hash' and mirror.contains_revision(revision):
+      if options.verbose:
+        self.Print('skipping mirror update, it has rev=%s already' % revision,
+                   timestamp=False)
+      return
+
     if getattr(options, 'shallow', False):
       # HACK(hinoka): These repositories should be super shallow.
       if 'flash' in mirror.url:

@@ -411,6 +411,24 @@ class Mirror(object):
       return False
     return True
 
+  def contains_revision(self, revision):
+    if not self.exists():
+      return False
+
+    if sys.platform.startswith('win'):
+      # Windows .bat scripts use ^ as escape sequence, which means we have to
+      # escape it with itself for every .bat invocation.
+      needle = '%s^^^^{commit}' % revision
+    else:
+      needle = '%s^{commit}' % revision
+    try:
+      # cat-file exits with 0 on success, that is git object of given hash was
+      # found.
+      self.RunGit(['cat-file', '-e', needle])
+      return True
+    except subprocess.CalledProcessError:
+      return False
+
   def exists(self):
     return os.path.isfile(os.path.join(self.mirror_path, 'config'))
 

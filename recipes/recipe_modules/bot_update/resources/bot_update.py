@@ -29,7 +29,6 @@ import os.path as path
 # How many bytes at a time to read from pipes.
 BUF_SIZE = 256
 
-
 # Define a bunch of directory paths.
 # Relative to this script's filesystem path.
 THIS_DIR = path.dirname(path.abspath(__file__))
