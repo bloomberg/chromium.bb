@@ -156,33 +156,33 @@ sign \xFE63 36          # small hyphen-minus
 sign \xFF0D 36          # fullwidth hyphen-minus
 
 sign \x2022 246-135     # (bullet)
-sign \x2026 256-256-256	# 8230	MS Word smart ellipsis
+sign \x2026 256-256-256 # 8230	MS Word smart ellipsis
 sign \x25cf 35          # black circle
 sign \xf0b7 1245        # (bullet MS symbol font?)
 
-sign \\ 5-34 				#	barre oblique inversée
-sign @ 345					# arobase
-sign \x0023 5-3456	# croisillon
-comp6 \x0023 5-3456	# croisillon
-sign \xFE5F 5-3456	# croisillon minuscule
-sign \xFF03 5-3456	# croisillon pleine chasse
-sign % 5-346 #	pourcent
-sign ‰ 5-346-346		#	pour mille
-sign * 5-35				  # astérisque
-sign _ 5-36					# souligné
-sign ¸ 456          # cédille
-noback sign ´ 5            # accent aigu
-sign \x007C 456     # barre verticale
+sign \\ 5-34         # barre oblique inversée
+sign @ 345           # arobase
+sign \x0023 5-3456   # croisillon
+comp6 \x0023 5-3456  # # croisillon
+sign \xFE5F 5-3456   # croisillon minuscule
+sign \xFF03 5-3456   # croisillon pleine chasse
+sign % 5-346         # pourcent
+sign ‰ 5-346-346     # pour mille
+sign * 5-35          # astérisque
+sign _ 5-36          # souligné
+sign ¸ 456           # cédille
+noback sign ´ 5      # accent aigu
+sign \x007C 456      # barre verticale
 #sign \x0082 6       # [single low-9 quotation mark (break permitted here)
 sign \x0083 124     # [latin small letter f with hook (no break here)
 sign \x0084 56      # [double low-9 quotation mark (<control>)
 sign \x0085 36      # [horizontal ellipsis (next line)
 sign \x0086 356     # [dagger (start of selected area)
 sign \x0087 3567    # [double dagger (end of selected area)
-noback sign \x0088 4       # [modifier letter circumflex accent (character tabulation set)
-sign \x0089 346     # [per mille sign (character tabulation with justification)
-noback sign \x008B 5       # [single left-pointing angle quotation mark] (partial line down)
-sign \x0095 1245    # [bullet] (message waiting)
+noback sign \x0088 4 # [modifier letter circumflex accent (character tabulation set)
+sign \x0089 346      # [per mille sign (character tabulation with justification)
+noback sign \x008B 5 # [single left-pointing angle quotation mark] (partial line down)
+sign \x0095 1245     # [bullet] (message waiting)
 noback sign \x0096 36-36       # [en dash] (start of guarded area)
 noback sign \x0097 36-36      # [em dash] (end of guarded area)
 sign \x0098 46	    # [small tilde] (start of string)
@@ -190,7 +190,6 @@ sign \x0099 2345	  # [trade mark sign] (<control>)
 sign \x2122 5-2345	#	TRADE MARK SIGN
 noback sign \x009B 5       # [single right-pointing angle quotation mark] (control sequence introducer)
 sign \x00A1 235     # inverted exclamation mark
-# (doublon) sign \x00A2 14      # cent sign
 noback sign \x00A6 45      # broken bar
 sign \x00A8 46      # diaeresis
 noback sign \x00AA 16      # feminine ordinal indicator
@@ -266,18 +265,9 @@ endemphphrase bold before 456
 midword \x2019 3     # right single quotation mark
 midnum \s 0						# espace entre les chiffres
 decpoint , 2
-midnum . 256
-midnum - 36
-hyphen - 36
-midnum + 235					# plus
-midnum = 2356			    # égal
-midnum / 34
-midnum * 35   				# astérisque
-midnum : 25
-midnum < 23		        # inférieur à
-midnum > 56				    # supérieur à
-endnum # 5-3456
-endnum € 45-15
+
+
 repeated ... 256-256-256		#	points de suspension
 repeated --- 36-36-36
 repeated ___ 456-456-456
+
