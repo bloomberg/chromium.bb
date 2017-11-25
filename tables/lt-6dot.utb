@@ -158,7 +158,7 @@ sign                   \x002a 35                           * ASTERISK
 sign                   \x002f 34                           / SOLIDUS
 sign                   \x0040 6-345                        @ COMMERCIAL AT
 sign                   \x005c 6-34                         \ REVERSE SOLIDUS
-sign                   \x005e 1246                         ^ CIRCUMFLEX ACCENT
+sign                   \x005e 6-256                        ^ CIRCUMFLEX ACCENT
 sign                   \x005f 1456                         _ LOW LINE
 sign                   \x007c 6-456                        | VERTICAL LINE
 # sign                   \x00a6 6-1456                       ¦ BROKEN BAR
