@@ -140,7 +140,6 @@ class TxbTest : public ::testing::TestWithParam<GetLevelCountsFunc> {
 
   GetLevelCountsFunc get_br_level_counts_func_;
   ACMRandom rnd_;
-  tran_low_t *coeff_;
   uint8_t levels_buf_[TX_PAD_2D];
   uint8_t *levels_;
   uint8_t *level_counts_ref_;
