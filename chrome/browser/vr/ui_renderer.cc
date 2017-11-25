@@ -23,12 +23,12 @@ UiRenderer::~UiRenderer() = default;
 void UiRenderer::Draw(const RenderInfo& render_info) {
   Draw2dBrowsing(render_info);
   DrawSplashScreen(render_info);
+  DrawController(render_info);
 }
 
 void UiRenderer::Draw2dBrowsing(const RenderInfo& render_info) {
   const auto& elements = scene_->GetVisible2dBrowsingElements();
   const auto& elements_overlay = scene_->GetVisible2dBrowsingOverlayElements();
-  const auto& controller_elements = scene_->GetVisibleControllerElements();
   if (elements.empty() && elements_overlay.empty())
     return;
 
@@ -39,16 +39,12 @@ void UiRenderer::Draw2dBrowsing(const RenderInfo& render_info) {
     DrawUiView(render_info, elements);
   }
 
-  if (elements_overlay.empty() && controller_elements.empty())
+  if (elements_overlay.empty())
     return;
 
-  // The overlays do not make use of depth testing.
+  // The overlays do not make use of depth testing or backface culling.
   glDisable(GL_CULL_FACE);
   DrawUiView(render_info, elements_overlay);
-
-  // We do want to cull backfaces on the controller, however.
-  glEnable(GL_CULL_FACE);
-  DrawUiView(render_info, controller_elements);
 }
 
 void UiRenderer::DrawSplashScreen(const RenderInfo& render_info) {
@@ -64,11 +60,19 @@ void UiRenderer::DrawSplashScreen(const RenderInfo& render_info) {
   // mode, this will need further testing if those get added
   // later.
   glDisable(GL_CULL_FACE);
-
   DrawUiView(render_info, elements);
 
   // NB: we do not draw the viewport aware objects here. They get put into
   // another buffer that is size optimized.
+}
+
+void UiRenderer::DrawController(const RenderInfo& render_info) {
+  const auto& controller_elements = scene_->GetVisibleControllerElements();
+  if (controller_elements.empty())
+    return;
+
+  glEnable(GL_CULL_FACE);
+  DrawUiView(render_info, controller_elements);
 }
 
 void UiRenderer::DrawWebVrOverlayForeground(const RenderInfo& render_info) {
