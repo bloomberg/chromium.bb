@@ -17,6 +17,7 @@
 
 #include "./aom_config.h"
 #include "./av1_rtcd.h"
+#include "aom/aom_integer.h"
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/mem.h"
 #include "av1/common/onyxc_int.h"

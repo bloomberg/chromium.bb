@@ -61,6 +61,18 @@ typedef size_t uintptr_t;
 #include <inttypes.h>
 #endif
 
+#if !defined(INT8_MAX)
+#define INT8_MAX 127
+#endif
+
+#if !defined(INT32_MAX)
+#define INT32_MAX 2147483647i32
+#endif
+
+#if !defined(INT32_MIN)
+#define INT32_MIN (-2147483647i32 - 1)
+#endif
+
 #define NELEMENTS(x) (int)(sizeof(x) / sizeof(x[0]))
 
 #endif  // AOM_AOM_INTEGER_H_
