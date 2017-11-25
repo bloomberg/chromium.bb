@@ -58,6 +58,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLTableRowsCollection.h"
+#include "core/html/custom/CEReactionsScope.h"
 #include "core/html/custom/V0CustomElementProcessingStack.h"
 #include "core/html/forms/HTMLDataListOptionsCollection.h"
 #include "core/html/forms/HTMLFormControlsCollection.h"
@@ -8190,6 +8191,73 @@ static void measureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackI
   exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
 }
 
+static void ceReactionsNotOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  CEReactionsScope ceReactionsScope;
+
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "ceReactionsNotOverloadedMethod");
+
+  TestObject* impl = V8TestObject::ToImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  bool arg;
+  arg = NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), info[0], exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  impl->ceReactionsNotOverloadedMethod(arg);
+}
+
+static void ceReactionsOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObject* impl = V8TestObject::ToImpl(info.Holder());
+
+  impl->ceReactionsOverloadedMethod();
+}
+
+static void ceReactionsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  CEReactionsScope ceReactionsScope;
+
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "ceReactionsOverloadedMethod");
+
+  TestObject* impl = V8TestObject::ToImpl(info.Holder());
+
+  int32_t arg;
+  arg = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[0], exceptionState, kNormalConversion);
+  if (exceptionState.HadException())
+    return;
+
+  impl->ceReactionsOverloadedMethod(arg);
+}
+
+static void ceReactionsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  bool isArityError = false;
+  switch (std::min(1, info.Length())) {
+    case 0:
+      if (true) {
+        ceReactionsOverloadedMethod1Method(info);
+        return;
+      }
+      break;
+    case 1:
+      if (true) {
+        ceReactionsOverloadedMethod2Method(info);
+        return;
+      }
+      break;
+    default:
+      isArityError = true;
+  }
+
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "ceReactionsOverloadedMethod");
+
+  if (isArityError) {
+  }
+  exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
+}
+
 static void deprecateAsMeasureAsSameValueOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
@@ -12661,6 +12729,18 @@ void V8TestObject::measureAsSameValueOverloadedMethodMethodCallback(const v8::Fu
   TestObjectV8Internal::measureAsSameValueOverloadedMethodMethod(info);
 }
 
+void V8TestObject::ceReactionsNotOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_ceReactionsNotOverloadedMethod");
+
+  TestObjectV8Internal::ceReactionsNotOverloadedMethodMethod(info);
+}
+
+void V8TestObject::ceReactionsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_ceReactionsOverloadedMethod");
+
+  TestObjectV8Internal::ceReactionsOverloadedMethodMethod(info);
+}
+
 void V8TestObject::deprecateAsMeasureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_deprecateAsMeasureAsSameValueOverloadedMethod");
 
@@ -13586,6 +13666,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"DeprecateAsSameValueOverloadedMethod", V8TestObject::DeprecateAsSameValueOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"measureAsOverloadedMethod", V8TestObject::measureAsOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"measureAsSameValueOverloadedMethod", V8TestObject::measureAsSameValueOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"ceReactionsNotOverloadedMethod", V8TestObject::ceReactionsNotOverloadedMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"ceReactionsOverloadedMethod", V8TestObject::ceReactionsOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"deprecateAsMeasureAsSameValueOverloadedMethod", V8TestObject::deprecateAsMeasureAsSameValueOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"deprecateAsSameValueMeasureAsOverloadedMethod", V8TestObject::deprecateAsSameValueMeasureAsOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"deprecateAsSameValueMeasureAsSameValueOverloadedMethod", V8TestObject::deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},

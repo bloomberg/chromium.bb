@@ -18,6 +18,10 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "{{interface_name}}", "{{method.name}}");
   {%- endset %}
 
+  {% if method.is_ce_reactions %}
+  CEReactionsScope ceReactionsScope;
+  {% endif %}
+
   {% set function_call = func_call_with_prep_of_args(method, world_suffix) %}
 
   {% if 'exceptionState' in function_call or
@@ -530,9 +534,6 @@ void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(cons
     Vector<v8::Local<v8::Value>> loggerArgs = ToImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
     contextData->ActivityLogger()->LogMethod("{{interface_name}}.{{method.name}}", info.Length(), loggerArgs.data());
   }
-  {% endif %}
-  {% if method.is_ce_reactions %}
-  CEReactionsScope ceReactionsScope;
   {% endif %}
   {% if method.is_custom %}
   {{v8_class}}::{{method.name}}MethodCustom(info);
