@@ -361,13 +361,23 @@ void UiElement::DumpHierarchy(std::vector<size_t> counts,
   *os << DebugName() << " ";
   *os << kCyan << DrawPhaseToString(draw_phase_) << " " << kReset;
 
-  float z = -GetCenter().z();
-  if (draw_phase_ != kPhaseNone && std::abs(z) > 1e-4) {
-    *os << kRed << "[" << (size().width() / z) << "DMM, "
-        << (size().height() / z) << "DMM] " << kReset;
+  if (draw_phase_ != kPhaseNone && !size().IsEmpty()) {
+    *os << kRed << "[" << size().width() << ", " << size().height() << "] "
+        << kReset;
   }
 
   *os << kGreen;
+  DumpGeometry(os);
+  *os << kReset << std::endl;
+
+  counts.push_back(0u);
+  for (auto& child : children_) {
+    child->DumpHierarchy(counts, os);
+    counts.back()++;
+  }
+}
+
+void UiElement::DumpGeometry(std::ostringstream* os) const {
   if (!transform_operations_.at(0).IsIdentity()) {
     const auto& translate = transform_operations_.at(0).translate;
     *os << "t(" << translate.x << ", " << translate.y << ", " << translate.z
@@ -387,15 +397,7 @@ void UiElement::DumpHierarchy(std::vector<size_t> counts,
 
   if (!transform_operations_.at(2).IsIdentity()) {
     const auto& scale = transform_operations_.at(2).scale;
-    *os << "t(" << scale.x << ", " << scale.y << ", " << scale.z << ") ";
-  }
-  *os << kReset;
-  *os << std::endl;
-
-  counts.push_back(0u);
-  for (auto& child : children_) {
-    child->DumpHierarchy(counts, os);
-    counts.back()++;
+    *os << "s(" << scale.x << ", " << scale.y << ", " << scale.z << ") ";
   }
 }
 
