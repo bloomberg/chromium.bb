@@ -89,10 +89,10 @@ include digits6DotsPlusDot6.uti
 include litdigits6DotsPlusDot6.uti
 
 math + 235				  # plus
-math = 2356				  # égal
-math / 34					  # barre oblique
-math \x0060 6       #
 math * 35
+math / 34					  # barre oblique
+math = 2356				  # égal
+math \x0060 6       #
 math \x00F7 25		  # divisé par
 math < 5-126	 		  # inférieur à
 math > 5-345			  # supérieur à
@@ -248,7 +248,7 @@ include fr-bfu-comp68.cti
 
 # Braille indicators
 numsign 6             # number sign, just a dots operand
-numericmodechars ,:.+-*/()=
+numericmodechars ^,:.+-*/()=
 numericnocontchars âêîôûëïüœ#
 capsletter 46
 begcapsword 46-46
