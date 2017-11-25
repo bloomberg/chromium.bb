@@ -59,9 +59,9 @@ noback uplow \x00d1\x00f1 12456 # n tilde (Ññ)
 
 uplow \x00c0\x00e0  12356 # a accent grave (Àà)
 uplow \x00c8\x00e8   2346 # e accent grave (Èè)
-uplow \x00d2\x00f2    346 # o accent grave (Òò)
 uplow \x00d9\x00f9  23456 # u accent grave (Ùù)
-noback uplow \x00cc\x00ec 34 # i accent grave (Ìì)
+noback uplow \x00cc\x00ec  34 # i accent grave (Ìì)
+noback uplow \x00d2\x00f2 346 # o accent grave (Òò)
 
 uplow \x00c2\x00e2     16 # a accent circonflexe (Ââ)
 uplow \x00ca\x00ea    126 # e accent circonflexe (Êê)
