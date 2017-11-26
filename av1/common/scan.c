@@ -5837,6 +5837,47 @@ void av1_init_scan_order(AV1_COMMON *cm) {
   }
 }
 
+#if UNI_RECT
+void unify_rect_tx_count(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type) {
+  uint32_t tmp_non_zero_counts[MAX_TX_SQUARE] = { 0 };
+  uint32_t *non_zero_count = get_non_zero_counts(&cm->counts, tx_size, tx_type);
+  int bw = tx_size_wide[tx_size];
+  int bh = tx_size_high[tx_size];
+  int tx_size_length = bw * bh;
+  for (int idx = 0; idx < tx_size_length; ++idx)
+    tmp_non_zero_counts[idx] = non_zero_count[idx];
+
+  TX_SIZE stx_size = TX_SIZES_ALL;
+  if (tx_size == TX_8X4) stx_size = TX_4X8;
+  if (tx_size == TX_16X8) stx_size = TX_8X16;
+  if (tx_size == TX_32X16) stx_size = TX_16X32;
+
+  bw = tx_size_wide[stx_size];
+  bh = tx_size_high[stx_size];
+  non_zero_count = get_non_zero_counts(&cm->counts, stx_size, tx_type);
+  for (int idy = 0; idy < bh; ++idy)
+    for (int idx = 0; idx < bw; ++idx)
+      tmp_non_zero_counts[idx * bh + idy] += non_zero_count[idy * bw + idx];
+
+  non_zero_count = get_non_zero_counts(&cm->counts, tx_size, tx_type);
+  for (int idx = 0; idx < tx_size_length; ++idx)
+    non_zero_count[idx] = tmp_non_zero_counts[idx];
+
+  non_zero_count = get_non_zero_counts(&cm->counts, stx_size, tx_type);
+  for (int idy = 0; idy < bh; ++idy)
+    for (int idx = 0; idx < bw; ++idx)
+      non_zero_count[idy * bw + idx] = tmp_non_zero_counts[idx * bh + idy];
+}
+
+void unify_rect_tx_count_facade(AV1_COMMON *cm) {
+  for (TX_TYPE tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
+    unify_rect_tx_count(cm, TX_8X4, tx_type);
+    unify_rect_tx_count(cm, TX_16X8, tx_type);
+    unify_rect_tx_count(cm, TX_32X16, tx_type);
+  }
+}
+#endif
+
 void av1_adapt_scan_order(AV1_COMMON *cm) {
   if (cm->use_adapt_scan) {
     TX_SIZE tx_size;
@@ -5845,6 +5886,10 @@ void av1_adapt_scan_order(AV1_COMMON *cm) {
 #else   // CACHE_SCAN_PROB
     int use_curr_frame = 1;
 #endif  // CACHE_SCAN_PROB
+
+#if UNI_RECT
+    unify_rect_tx_count_facade(cm);
+#endif
 
     for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
       TX_TYPE tx_type;
