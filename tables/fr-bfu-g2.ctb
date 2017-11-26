@@ -422,7 +422,7 @@ contraction abs		1-12-234
 word absolue		1-12-15
 word absolues		1-12-156
 word absolument		1-12-134
-prfword actation		1-3456
+prfword action		1-3456
 prfword actions		1-3456-234
 prfword actionnaire	1-3456-1235
 prfword actionnaires	1-3456-1235-234
@@ -761,11 +761,11 @@ word courageux		14-1245-1346
 word danger		145-1245
 contraction dg
 word dangers		145-1245-234
-word dangeureuse	145-1245-234-15
+word dangereuse	145-1245-234-15
 contraction dgse
-word dangeureuses	145-1245-234-156
-word dangeureusement	145-1245-234-134
-word dangeureux		145-1245-1346
+word dangereuses	145-1245-234-156
+word dangereusement	145-1245-234-134
+word dangereux		145-1245-1346
 word davantage		145-1
 word debout		145-12
 contraction db 145-12
@@ -841,8 +841,7 @@ word douloureusement	145-123-234-134
 word douloureux		145-123-1346
 word doute		145-1256
 word doutes		145-1256-234
-word duquel		145-12345-123
-
+word duquel		145-136-12345-123
 prfword effectif		15-124-124
 prfword effectifs		15-124-124-234
 prfword effective		15-124-1236
@@ -1515,7 +1514,7 @@ word parfois		1234-124
 word parmi		1234-134
 word parole		1234-1235
 word paroles		1234-1235-234
-word particularité	1234-1235-123-2345
+word particularité	1234-123-1235-2345
 word particularités	1234-1235-123-2345-234
 word particulier	1234-123
 word particuliers	1234-123-234
@@ -2028,7 +2027,7 @@ word d'abord 145-3-1
 word de\ssuite 145-456-234
 word en\smesure 26-456-134
 word en\sréalité 26-456-1235
-word et\scétera 15-456-14
+word et\scaetera 15-456-14
 word la\splupart 123-456-1246
 word non\sseulement 1345-456-234
 word parce\sque 1234-456-12345
