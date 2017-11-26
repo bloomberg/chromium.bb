@@ -88,14 +88,19 @@ comp6 0 3456
 include digits6DotsPlusDot6.uti
 include litdigits6DotsPlusDot6.uti
 
-math + 235  # plus
+noback sign + 6-235  # plus
+noback sign = 6-2356 # égal
+math + 235
+math = 2356
+noback begnum + 235
+noback begnum = 2356
+midnum + 235
+midnum = 2356
+endnum + 235
+endnum = 2356
+
 math * 35   # astérisque
 math / 34   # barre oblique
-math = 2356 # égal
-midnum + 235
-endnum + 235
-midnum = 2356
-endnum = 2356
 
 math \x00F7 25     # divisé par
 math \x003c 5-126  # inférieur à
