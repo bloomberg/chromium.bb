@@ -45,8 +45,8 @@ class DoublyLinkedListNode {
 
 template <typename T>
 inline DoublyLinkedListNode<T>::DoublyLinkedListNode() {
-  SetPrev(0);
-  SetNext(0);
+  SetPrev(nullptr);
+  SetNext(nullptr);
 }
 
 template <typename T>

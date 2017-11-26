@@ -61,24 +61,24 @@ WTF_EXPORT String Base64Encode(const CString&,
 WTF_EXPORT bool Base64Decode(
     const String&,
     Vector<char>&,
-    CharacterMatchFunctionPtr should_ignore_character = 0,
+    CharacterMatchFunctionPtr should_ignore_character = nullptr,
     Base64DecodePolicy = kBase64DoNotValidatePadding);
 WTF_EXPORT bool Base64Decode(
     const Vector<char>&,
     Vector<char>&,
-    CharacterMatchFunctionPtr should_ignore_character = 0,
+    CharacterMatchFunctionPtr should_ignore_character = nullptr,
     Base64DecodePolicy = kBase64DoNotValidatePadding);
 WTF_EXPORT bool Base64Decode(
     const char*,
     unsigned,
     Vector<char>&,
-    CharacterMatchFunctionPtr should_ignore_character = 0,
+    CharacterMatchFunctionPtr should_ignore_character = nullptr,
     Base64DecodePolicy = kBase64DoNotValidatePadding);
 WTF_EXPORT bool Base64Decode(
     const UChar*,
     unsigned,
     Vector<char>&,
-    CharacterMatchFunctionPtr should_ignore_character = 0,
+    CharacterMatchFunctionPtr should_ignore_character = nullptr,
     Base64DecodePolicy = kBase64DoNotValidatePadding);
 
 // Given an encoding in either base64 or base64url, returns a normalized

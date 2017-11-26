@@ -55,7 +55,7 @@ class PLATFORM_EXPORT ContextMenuItem {
   ContextMenuItem(ContextMenuItemType,
                   ContextMenuAction,
                   const String& title,
-                  ContextMenu* sub_menu = 0);
+                  ContextMenu* sub_menu = nullptr);
   ContextMenuItem(ContextMenuItemType,
                   ContextMenuAction,
                   const String& title,

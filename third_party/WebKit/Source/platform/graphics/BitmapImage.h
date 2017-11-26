@@ -53,7 +53,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   friend class GraphicsContext;
 
  public:
-  static scoped_refptr<BitmapImage> Create(ImageObserver* observer = 0,
+  static scoped_refptr<BitmapImage> Create(ImageObserver* observer = nullptr,
                                            bool is_multipart = false) {
     return base::AdoptRef(new BitmapImage(observer, is_multipart));
   }

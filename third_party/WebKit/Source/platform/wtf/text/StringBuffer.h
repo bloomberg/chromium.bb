@@ -56,7 +56,7 @@ class StringBuffer {
   unsigned length() const { return data_ ? data_->length() : 0; }
   CharType* Characters() {
     return length() ? const_cast<CharType*>(data_->GetCharacters<CharType>())
-                    : 0;
+                    : nullptr;
   }
 
   CharType& operator[](unsigned i) {

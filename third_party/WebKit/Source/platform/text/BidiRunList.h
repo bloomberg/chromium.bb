@@ -36,7 +36,10 @@ class BidiRunList final {
 
  public:
   BidiRunList()
-      : first_run_(0), last_run_(0), logically_last_run_(0), run_count_(0) {}
+      : first_run_(nullptr),
+        last_run_(nullptr),
+        logically_last_run_(nullptr),
+        run_count_(0) {}
 
   // FIXME: Once BidiResolver no longer owns the BidiRunList,
   // then ~BidiRunList should call deleteRuns() automatically.
@@ -97,7 +100,7 @@ inline void BidiRunList<Run>::MoveRunToEnd(Run* run) {
   DCHECK(last_run_);
   DCHECK(run->next_);
 
-  Run* current = 0;
+  Run* current = nullptr;
   Run* next = first_run_;
   while (next != run) {
     current = next;
@@ -109,7 +112,7 @@ inline void BidiRunList<Run>::MoveRunToEnd(Run* run) {
   else
     current->next_ = run->next_;
 
-  run->next_ = 0;
+  run->next_ = nullptr;
   last_run_->next_ = run;
   last_run_ = run;
 }
@@ -169,9 +172,9 @@ void BidiRunList<Run>::ReplaceRunWithRuns(Run* to_replace,
 
 template <class Run>
 void BidiRunList<Run>::ClearWithoutDestroyingRuns() {
-  first_run_ = 0;
-  last_run_ = 0;
-  logically_last_run_ = 0;
+  first_run_ = nullptr;
+  last_run_ = nullptr;
+  logically_last_run_ = nullptr;
   run_count_ = 0;
 }
 
@@ -201,7 +204,7 @@ void BidiRunList<Run>::ReverseRuns(unsigned start, unsigned end) {
   // Get the item before the start of the runs to reverse and put it in
   // |beforeStart|. |curr| should point to the first run to reverse.
   Run* curr = first_run_;
-  Run* before_start = 0;
+  Run* before_start = nullptr;
   unsigned i = 0;
   while (i < start) {
     i++;

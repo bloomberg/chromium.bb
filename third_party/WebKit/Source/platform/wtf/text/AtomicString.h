@@ -178,9 +178,9 @@ class WTF_EXPORT AtomicString {
   AtomicString UpperASCII() const;
 
   // See comments in WTFString.h.
-  int ToInt(bool* ok = 0) const { return string_.ToInt(ok); }
-  double ToDouble(bool* ok = 0) const { return string_.ToDouble(ok); }
-  float ToFloat(bool* ok = 0) const { return string_.ToFloat(ok); }
+  int ToInt(bool* ok = nullptr) const { return string_.ToInt(ok); }
+  double ToDouble(bool* ok = nullptr) const { return string_.ToDouble(ok); }
+  float ToFloat(bool* ok = nullptr) const { return string_.ToFloat(ok); }
 
   static AtomicString Number(int);
   static AtomicString Number(unsigned);

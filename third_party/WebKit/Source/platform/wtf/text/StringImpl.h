@@ -326,8 +326,8 @@ class WTF_EXPORT StringImpl {
   // there is trailing garbage.  Like NumberParsingOptions::kLoose, these return
   // the value when there is trailing garbage.  It would be better if these were
   // more consistent with the above functions instead.
-  double ToDouble(bool* ok = 0);
-  float ToFloat(bool* ok = 0);
+  double ToDouble(bool* ok = nullptr);
+  float ToFloat(bool* ok = nullptr);
 
   scoped_refptr<StringImpl> LowerUnicode();
   scoped_refptr<StringImpl> LowerASCII();

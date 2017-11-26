@@ -81,10 +81,10 @@ class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
   }
 
  private:
-  PODFreeListArena() : arena_(PODArena::Create()), free_list_(0) {}
+  PODFreeListArena() : arena_(PODArena::Create()), free_list_(nullptr) {}
 
   explicit PODFreeListArena(scoped_refptr<PODArena::Allocator> allocator)
-      : arena_(PODArena::Create(std::move(allocator))), free_list_(0) {}
+      : arena_(PODArena::Create(std::move(allocator))), free_list_(nullptr) {}
 
   ~PODFreeListArena() {}
 
@@ -94,7 +94,7 @@ class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
       free_list_ = free_list_->next;
       return memory;
     }
-    return 0;
+    return nullptr;
   }
 
   int GetFreeListSizeForTesting() const {

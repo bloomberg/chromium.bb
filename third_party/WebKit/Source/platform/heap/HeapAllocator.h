@@ -144,7 +144,7 @@ class PLATFORM_EXPORT HeapAllocator {
   template <typename T>
   static void* NewArray(size_t bytes) {
     NOTREACHED();
-    return 0;
+    return nullptr;
   }
 
   static void DeleteArray(void* ptr) { NOTREACHED(); }
@@ -281,7 +281,7 @@ class HeapListHashSetAllocator : public HeapAllocator {
    public:
     // For the heap allocation we don't need an actual allocator object, so
     // we just return null.
-    HeapListHashSetAllocator* Get() const { return 0; }
+    HeapListHashSetAllocator* Get() const { return nullptr; }
 
     // No allocator object is needed.
     void CreateAllocatorIfNeeded() {}

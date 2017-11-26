@@ -129,7 +129,7 @@ class PODIntervalTree final : public PODRedBlackTree<PODInterval<T, UserData>> {
       return false;
     if (!this->Root())
       return true;
-    return CheckInvariantsFromNode(this->Root(), 0);
+    return CheckInvariantsFromNode(this->Root(), nullptr);
   }
 
  private:

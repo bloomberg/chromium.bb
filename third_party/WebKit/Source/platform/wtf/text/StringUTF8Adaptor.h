@@ -48,7 +48,7 @@ class StringUTF8Adaptor final {
  public:
   StringUTF8Adaptor(const String& string,
                     UTF8ConversionMode mode = kLenientUTF8Conversion)
-      : data_(0), length_(0) {
+      : data_(nullptr), length_(0) {
     if (string.IsEmpty())
       return;
     // Unfortunately, 8 bit WTFStrings are encoded in Latin-1 and GURL uses

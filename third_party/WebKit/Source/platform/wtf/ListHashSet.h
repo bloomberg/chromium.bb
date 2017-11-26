@@ -154,16 +154,18 @@ class ListHashSet
   bool IsEmpty() const { return impl_.IsEmpty(); }
 
   iterator begin() { return MakeIterator(head_); }
-  iterator end() { return MakeIterator(0); }
+  iterator end() { return MakeIterator(nullptr); }
   const_iterator begin() const { return MakeConstIterator(head_); }
-  const_iterator end() const { return MakeConstIterator(0); }
+  const_iterator end() const { return MakeConstIterator(nullptr); }
 
   reverse_iterator rbegin() { return MakeReverseIterator(tail_); }
-  reverse_iterator rend() { return MakeReverseIterator(0); }
+  reverse_iterator rend() { return MakeReverseIterator(nullptr); }
   const_reverse_iterator rbegin() const {
     return MakeConstReverseIterator(tail_);
   }
-  const_reverse_iterator rend() const { return MakeConstReverseIterator(0); }
+  const_reverse_iterator rend() const {
+    return MakeConstReverseIterator(nullptr);
+  }
 
   ValueType& front();
   const ValueType& front() const;
@@ -1114,7 +1116,7 @@ void ListHashSet<T, inlineCapacity, U, V>::DeleteAllNodes() {
     return;
 
   for (Node *node = head_, *next = head_->Next(); node;
-       node = next, next = node ? node->Next() : 0)
+       node = next, next = node ? node->Next() : nullptr)
     node->Destroy(this->GetAllocator());
 }
 

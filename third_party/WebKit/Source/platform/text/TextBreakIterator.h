@@ -118,8 +118,8 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
 
  public:
   LazyLineBreakIterator()
-      : iterator_(0),
-        cached_prior_context_(0),
+      : iterator_(nullptr),
+        cached_prior_context_(nullptr),
         cached_prior_context_length_(0),
         break_type_(LineBreakType::kNormal) {
     ResetPriorContext();
@@ -130,8 +130,8 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
                         LineBreakType break_type = LineBreakType::kNormal)
       : string_(string),
         locale_(locale),
-        iterator_(0),
-        cached_prior_context_(0),
+        iterator_(nullptr),
+        cached_prior_context_(nullptr),
         cached_prior_context_length_(0),
         break_type_(break_type) {
     ResetPriorContext();
@@ -198,7 +198,7 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
     const UChar* prior_context =
         prior_context_length
             ? &prior_context_[kPriorContextCapacity - prior_context_length]
-            : 0;
+            : nullptr;
     if (!iterator_) {
       if (string_.Is8Bit())
         iterator_ = AcquireLineBreakIterator(
@@ -271,8 +271,8 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   void ReleaseIterator() const {
     if (iterator_)
       ReleaseLineBreakIterator(iterator_);
-    iterator_ = 0;
-    cached_prior_context_ = 0;
+    iterator_ = nullptr;
+    cached_prior_context_ = nullptr;
     cached_prior_context_length_ = 0;
   }
 

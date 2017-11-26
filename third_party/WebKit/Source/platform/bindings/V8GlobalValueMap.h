@@ -68,14 +68,14 @@ class V8GlobalValueMapTraits {
       MapType* map,
       KeyType key,
       const v8::Local<ValueType>& value) {
-    return 0;
+    return nullptr;
   }
 
   static void DisposeCallbackData(WeakCallbackDataType* callback_data) {}
 
   static MapType* MapFromWeakCallbackInfo(
       const v8::WeakCallbackInfo<WeakCallbackDataType>& data) {
-    return 0;
+    return nullptr;
   }
 
   static KeyType KeyFromWeakCallbackInfo(

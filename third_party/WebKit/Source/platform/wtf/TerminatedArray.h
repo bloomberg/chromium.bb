@@ -39,7 +39,7 @@ class TerminatedArray {
    public:
     iterator_base& operator++() {
       if (val_->IsLastInArray()) {
-        val_ = 0;
+        val_ = nullptr;
       } else {
         ++val_;
       }
@@ -71,8 +71,8 @@ class TerminatedArray {
     return const_iterator(reinterpret_cast<const T*>(this));
   }
 
-  iterator end() { return iterator(0); }
-  const_iterator end() const { return const_iterator(0); }
+  iterator end() { return iterator(nullptr); }
+  const_iterator end() const { return const_iterator(nullptr); }
 
   size_t size() const {
     size_t count = 0;

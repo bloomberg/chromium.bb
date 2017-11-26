@@ -215,7 +215,7 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::CreateShared(
 }
 
 ArrayBuffer::ArrayBuffer(ArrayBufferContents& contents)
-    : first_view_(0), is_neutered_(false) {
+    : first_view_(nullptr), is_neutered_(false) {
   if (contents.IsShared())
     contents.ShareWith(contents_);
   else

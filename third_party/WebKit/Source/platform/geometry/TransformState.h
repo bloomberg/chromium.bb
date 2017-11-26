@@ -117,19 +117,19 @@ class PLATFORM_EXPORT TransformState {
   }
   void ApplyTransform(const AffineTransform& transform_from_container,
                       TransformAccumulation = kFlattenTransform,
-                      bool* was_clamped = 0);
+                      bool* was_clamped = nullptr);
   void ApplyTransform(const TransformationMatrix& transform_from_container,
                       TransformAccumulation = kFlattenTransform,
-                      bool* was_clamped = 0);
-  void Flatten(bool* was_clamped = 0);
+                      bool* was_clamped = nullptr);
+  void Flatten(bool* was_clamped = nullptr);
 
   // Return the coords of the point or quad in the last flattened layer
   FloatPoint LastPlanarPoint() const { return last_planar_point_; }
   FloatQuad LastPlanarQuad() const { return last_planar_quad_; }
 
   // Return the point or quad mapped through the current transform
-  FloatPoint MappedPoint(bool* was_clamped = 0) const;
-  FloatQuad MappedQuad(bool* was_clamped = 0) const;
+  FloatPoint MappedPoint(bool* was_clamped = nullptr) const;
+  FloatQuad MappedQuad(bool* was_clamped = nullptr) const;
 
   // Return the accumulated transform.
   const TransformationMatrix& AccumulatedTransform() const;

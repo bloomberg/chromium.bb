@@ -269,7 +269,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   PaintImage::Id paint_image_id() const { return stable_image_id_; }
 
  protected:
-  Image(ImageObserver* = 0, bool is_multipart = false);
+  Image(ImageObserver* = nullptr, bool is_multipart = false);
 
   void DrawTiledBackground(GraphicsContext&,
                            const FloatRect& dst_rect,

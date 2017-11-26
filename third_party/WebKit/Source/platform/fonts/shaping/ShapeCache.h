@@ -117,7 +117,7 @@ class ShapeCache {
 
   ShapeCacheEntry* Add(const TextRun& run, ShapeCacheEntry entry) {
     if (run.length() > SmallStringKey::Capacity())
-      return 0;
+      return nullptr;
 
     return AddSlowCase(run, entry);
   }
