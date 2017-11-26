@@ -9,8 +9,6 @@ import("shell_apk_version.gni")
 shell_apk_manifest = "$target_gen_dir/shell_apk_manifest/AndroidManifest.xml"
 unbound_shell_apk_manifest =
     "$target_gen_dir/unbound_shell_apk_manifest/AndroidManifest.xml"
-shell_apk_manifest_javatests =
-    "$target_gen_dir/shell_apk_manifest_javatests/AndroidManifest.xml"
 
 manifest_processor_template("shell_apk_manifest") {
   input = "AndroidManifest.xml"
@@ -24,15 +22,6 @@ manifest_processor_template("unbound_shell_apk_manifest") {
   input = "AndroidManifest.xml"
   config_file = "unbound_manifest_config.json"
   output = unbound_shell_apk_manifest
-
-  extra_variables = [ "shell_apk_version=$template_shell_apk_version" ]
-}
-
-# Manifest for instrumentation tests. Cannot be customized via GN args.
-manifest_processor_template("shell_apk_manifest_javatests") {
-  input = "AndroidManifest.xml"
-  config_file = "javatest_manifest_config.json"
-  output = shell_apk_manifest_javatests
 
   extra_variables = [ "shell_apk_version=$template_shell_apk_version" ]
 }
@@ -171,13 +160,6 @@ webapk_tmpl("unbound_webapk") {
   android_manifest = unbound_shell_apk_manifest
   android_manifest_dep = ":unbound_shell_apk_manifest"
   apk_name = "UnboundWebApk"
-}
-
-# WebAPK for instrumentation tests.
-webapk_tmpl("webapk_javatests") {
-  android_manifest = shell_apk_manifest_javatests
-  android_manifest_dep = ":shell_apk_manifest_javatests"
-  apk_name = "webapk_javatests"
 }
 
 android_library("shell_apk_javatests") {

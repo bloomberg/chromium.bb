@@ -108,7 +108,7 @@ public class WebApkIntegrationTest {
     @LargeTest
     @Feature({"WebApk"})
     public void testLaunchAndNavigateOffOrigin() throws Exception {
-        startWebApkActivity("org.chromium.webapk.test",
+        startWebApkActivity("org.chromium.webapk",
                 mTestServerRule.getServer().getURL("/chrome/test/data/android/test.html"));
         waitUntilSplashscreenHides();
 
@@ -149,7 +149,7 @@ public class WebApkIntegrationTest {
     @Feature({"WebApk"})
     public void testLaunchIntervalHistogramNotRecordedOnFirstLaunch() throws Exception {
         final String histogramName = "WebApk.LaunchInterval";
-        final String packageName = "org.chromium.webapk.test";
+        final String packageName = "org.chromium.webapk";
         startWebApkActivity(packageName,
                 mTestServerRule.getServer().getURL("/chrome/test/data/android/test.html"));
 
@@ -173,7 +173,7 @@ public class WebApkIntegrationTest {
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
 
         final String histogramName = "WebApk.LaunchInterval";
-        final String packageName = "org.chromium.webapk.test";
+        final String packageName = "org.chromium.webapk";
 
         WebappDataStorage storage =
                 registerWithStorage(WebApkConstants.WEBAPK_ID_PREFIX + packageName);
