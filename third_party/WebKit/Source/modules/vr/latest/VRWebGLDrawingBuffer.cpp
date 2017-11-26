@@ -274,7 +274,7 @@ GLuint VRWebGLDrawingBuffer::CreateColorBuffer() {
   } else {
     GLenum gl_format = alpha_ ? GL_RGBA : GL_RGB;
     gl->TexImage2D(GL_TEXTURE_2D, 0, gl_format, size_.Width(), size_.Height(),
-                   0, gl_format, GL_UNSIGNED_BYTE, 0);
+                   0, gl_format, GL_UNSIGNED_BYTE, nullptr);
   }
 
   DrawingBuffer::Client* client =

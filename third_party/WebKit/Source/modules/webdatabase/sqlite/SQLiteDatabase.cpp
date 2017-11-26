@@ -355,7 +355,7 @@ void SQLiteDatabase::EnableAuthorizer(bool enable) {
     sqlite3_set_authorizer(db_, SQLiteDatabase::AuthorizerFunction,
                            authorizer_.Get());
   else
-    sqlite3_set_authorizer(db_, NULL, nullptr);
+    sqlite3_set_authorizer(db_, nullptr, nullptr);
 }
 
 bool SQLiteDatabase::IsAutoCommitOn() const {
