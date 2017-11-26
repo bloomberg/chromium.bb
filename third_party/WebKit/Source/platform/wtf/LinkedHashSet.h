@@ -115,7 +115,7 @@ class LinkedHashSetNodeBase {
   // since they point to something that does not point at us. This is used
   // inside the shouldExpand() "if" in HashTable::add.
   LinkedHashSetNodeBase(const LinkedHashSetNodeBase& other)
-      : prev_(0), next_(0) {}
+      : prev_(nullptr), next_(nullptr) {}
 
   LinkedHashSetNodeBase(LinkedHashSetNodeBase&& other)
       : prev_(other.prev_), next_(other.next_) {

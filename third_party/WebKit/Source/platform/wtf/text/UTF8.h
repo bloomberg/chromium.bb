@@ -53,12 +53,13 @@ typedef enum {
 // the replacement character; otherwise (when the flag is set to strict) they
 // constitute an error.
 
-WTF_EXPORT ConversionResult ConvertUTF8ToUTF16(const char** source_start,
-                                               const char* source_end,
-                                               UChar** target_start,
-                                               UChar* target_end,
-                                               bool* is_source_all_ascii = 0,
-                                               bool strict = true);
+WTF_EXPORT ConversionResult
+ConvertUTF8ToUTF16(const char** source_start,
+                   const char* source_end,
+                   UChar** target_start,
+                   UChar* target_end,
+                   bool* is_source_all_ascii = nullptr,
+                   bool strict = true);
 
 WTF_EXPORT ConversionResult ConvertLatin1ToUTF8(const LChar** source_start,
                                                 const LChar* source_end,

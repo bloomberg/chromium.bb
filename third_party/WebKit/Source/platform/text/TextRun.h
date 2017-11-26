@@ -128,7 +128,7 @@ class PLATFORM_EXPORT TextRun final {
         tab_size_(0) {
     if (!characters_length_) {
       is8_bit_ = true;
-      data_.characters8 = 0;
+      data_.characters8 = nullptr;
     } else if (string.Is8Bit()) {
       data_.characters8 = string.Characters8();
       is8_bit_ = true;

@@ -73,7 +73,7 @@ class PLATFORM_EXPORT GraphicsContext {
 
   explicit GraphicsContext(PaintController&,
                            DisabledMode = kNothingDisabled,
-                           SkMetaData* = 0);
+                           SkMetaData* = nullptr);
 
   ~GraphicsContext();
 
@@ -298,7 +298,7 @@ class PLATFORM_EXPORT GraphicsContext {
   // (i.e. endLayer()).
   void BeginLayer(float opacity = 1.0f,
                   SkBlendMode = SkBlendMode::kSrcOver,
-                  const FloatRect* = 0,
+                  const FloatRect* = nullptr,
                   ColorFilter = kColorFilterNone,
                   sk_sp<PaintFilter> = nullptr);
   void EndLayer();

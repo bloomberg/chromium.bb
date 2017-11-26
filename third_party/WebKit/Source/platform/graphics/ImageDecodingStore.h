@@ -79,7 +79,10 @@ class CacheEntry : public DoublyLinkedListNode<CacheEntry> {
   };
 
   CacheEntry(const ImageFrameGenerator* generator, int use_count)
-      : generator_(generator), use_count_(use_count), prev_(0), next_(0) {}
+      : generator_(generator),
+        use_count_(use_count),
+        prev_(nullptr),
+        next_(nullptr) {}
 
   virtual ~CacheEntry() { DCHECK(!use_count_); }
 

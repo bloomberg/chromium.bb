@@ -41,7 +41,7 @@ class PLATFORM_EXPORT BidiContext : public ThreadSafeRefCounted<BidiContext> {
       WTF::Unicode::CharDirection,
       bool override = false,
       BidiEmbeddingSource = kFromStyleOrDOM,
-      BidiContext* parent = 0);
+      BidiContext* parent = nullptr);
 
   BidiContext* Parent() const { return parent_.get(); }
   unsigned char Level() const { return level_; }

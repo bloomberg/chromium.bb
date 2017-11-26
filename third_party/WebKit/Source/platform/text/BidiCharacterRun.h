@@ -36,7 +36,7 @@ struct BidiCharacterRun {
                    WTF::Unicode::CharDirection override_dir)
       : override_(override),
         level_(level),
-        next_(0),
+        next_(nullptr),
         start_(start),
         stop_(stop) {
     DCHECK_LE(start_, stop_);
@@ -61,7 +61,11 @@ struct BidiCharacterRun {
   }
 
   BidiCharacterRun(int start, int stop, unsigned char level)
-      : override_(false), level_(level), next_(0), start_(start), stop_(stop) {}
+      : override_(false),
+        level_(level),
+        next_(nullptr),
+        start_(start),
+        stop_(stop) {}
 
   // BidiCharacterRun are allocated out of the rendering partition.
   PLATFORM_EXPORT void* operator new(size_t);

@@ -256,9 +256,9 @@ class PLATFORM_EXPORT TransformationMatrix {
   // a ray perpendicular to the source plane and computing
   // the local x,y position of the point where that ray intersects
   // with the destination plane.
-  FloatPoint ProjectPoint(const FloatPoint&, bool* clamped = 0) const;
+  FloatPoint ProjectPoint(const FloatPoint&, bool* clamped = nullptr) const;
   // Projects the four corners of the quad
-  FloatQuad ProjectQuad(const FloatQuad&, bool* clamped = 0) const;
+  FloatQuad ProjectQuad(const FloatQuad&, bool* clamped = nullptr) const;
   // Projects the four corners of the quad and takes a bounding box,
   // while sanitizing values created when the w component is negative.
   LayoutRect ClampedBoundsOfProjectedQuad(const FloatQuad&) const;

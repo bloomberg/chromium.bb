@@ -842,8 +842,8 @@ class HashTable final
            !Allocator::IsObjectResurrectionForbidden() &&
            Allocator::IsAllocationAllowed();
   }
-  ValueType* Expand(ValueType* entry = 0);
-  void Shrink() { Rehash(table_size_ / 2, 0); }
+  ValueType* Expand(ValueType* entry = nullptr);
+  void Shrink() { Rehash(table_size_ / 2, nullptr); }
 
   ValueType* ExpandBuffer(unsigned new_table_size, ValueType* entry, bool&);
   ValueType* RehashTo(ValueType* new_table,
@@ -1003,7 +1003,7 @@ void HashTable<Key,
     CHECK(!static_cast<int>(
         new_capacity >>
         31));  // HashTable capacity should not overflow 32bit int.
-    Rehash(new_capacity, 0);
+    Rehash(new_capacity, nullptr);
   }
 }
 

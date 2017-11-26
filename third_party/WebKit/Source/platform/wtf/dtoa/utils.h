@@ -137,7 +137,7 @@ class Vector {
  public:
   Vector() : start_(NULL), length_(0) {}
   Vector(T* data, int length) : start_(data), length_(length) {
-    DCHECK(length == 0 || (length > 0 && data != NULL));
+    DCHECK(length == 0 || (length > 0 && data != nullptr));
   }
 
   // Returns a vector using the same backing storage as this one,

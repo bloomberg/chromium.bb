@@ -83,7 +83,7 @@ class PLATFORM_EXPORT TransformOperations {
 
   size_t size() const { return operations_.size(); }
   const TransformOperation* at(size_t index) const {
-    return index < operations_.size() ? operations_.at(index).get() : 0;
+    return index < operations_.size() ? operations_.at(index).get() : nullptr;
   }
 
   bool BlendedBoundsForBox(const FloatBox&,

@@ -222,7 +222,7 @@ class BidiResolver final {
         reached_end_of_line_(false),
         empty_run_(true),
         nested_isolate_count_(0),
-        trailing_space_run_(0),
+        trailing_space_run_(nullptr),
         needs_trailing_space_(false) {}
 
 #if DCHECK_IS_ON()
@@ -297,12 +297,13 @@ class BidiResolver final {
   }
 
   TextDirection DetermineParagraphDirectionality(
-      bool* has_strong_directionality = 0) {
+      bool* has_strong_directionality = nullptr) {
     bool break_on_paragraph = true;
     return DetermineDirectionalityInternal(break_on_paragraph,
                                            has_strong_directionality);
   }
-  TextDirection DetermineDirectionality(bool* has_strong_directionality = 0) {
+  TextDirection DetermineDirectionality(
+      bool* has_strong_directionality = nullptr) {
     bool break_on_paragraph = false;
     return DetermineDirectionalityInternal(break_on_paragraph,
                                            has_strong_directionality);
@@ -329,7 +330,7 @@ class BidiResolver final {
                       Run*,
                       BidiContext*,
                       TextDirection) const {
-    return 0;
+    return nullptr;
   }
   Iterator current_;
   // sor and eor are "start of run" and "end of run" respectively and correpond
@@ -795,7 +796,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::CreateBidiRunsForLine(
     bool hard_line_break,
     bool reorder_runs) {
   DCHECK_EQ(direction_, WTF::Unicode::kOtherNeutral);
-  trailing_space_run_ = 0;
+  trailing_space_run_ = nullptr;
 
   end_of_line_ = end;
 

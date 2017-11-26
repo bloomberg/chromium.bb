@@ -438,7 +438,7 @@ class DrawingBufferForTests : public DrawingBuffer {
             false /* wantStencil */,
             DrawingBuffer::kAllowChromiumImage /* ChromiumImageUsage */,
             CanvasColorParams()),
-        live_(0) {}
+        live_(nullptr) {}
 
   ~DrawingBufferForTests() override {
     if (live_)

@@ -151,7 +151,7 @@ inline ThreadSpecific<T>::ThreadSpecific() {
 template <typename T>
 inline T* ThreadSpecific<T>::Get() {
   Data* data = static_cast<Data*>(pthread_getspecific(key_));
-  return data ? data->value : 0;
+  return data ? data->value : nullptr;
 }
 
 template <typename T>
@@ -243,7 +243,7 @@ inline void ThreadSpecific<T>::Destroy(void* ptr) {
   Partitions::FastFree(data->value);
 
 #if defined(OS_POSIX)
-  pthread_setspecific(data->owner->key_, 0);
+  pthread_setspecific(data->owner->key_, nullptr);
 #elif defined(OS_WIN)
   TlsSetValue(TlsKeys()[data->owner->index_], 0);
 #else

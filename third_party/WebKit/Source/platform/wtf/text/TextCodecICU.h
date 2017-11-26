@@ -88,7 +88,7 @@ struct ICUConverterWrapper {
   USING_FAST_MALLOC(ICUConverterWrapper);
 
  public:
-  ICUConverterWrapper() : converter(0) {}
+  ICUConverterWrapper() : converter(nullptr) {}
   ~ICUConverterWrapper();
 
   UConverter* converter;

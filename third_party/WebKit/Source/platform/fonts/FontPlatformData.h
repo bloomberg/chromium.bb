@@ -160,7 +160,7 @@ class PLATFORM_EXPORT FontPlatformData {
 #endif
   void SetupPaintFont(PaintFont*,
                       float device_scale_factor = 1,
-                      const Font* = 0) const;
+                      const Font* = nullptr) const;
   const PaintTypeface& GetPaintTypeface() const;
 
 #if defined(OS_WIN)

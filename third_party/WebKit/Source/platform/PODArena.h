@@ -106,12 +106,12 @@ class PODArena final : public RefCounted<PODArena> {
 
   PODArena()
       : allocator_(FastMallocAllocator::Create()),
-        current_(0),
+        current_(nullptr),
         current_chunk_size_(kDefaultChunkSize) {}
 
   explicit PODArena(scoped_refptr<Allocator> allocator)
       : allocator_(std::move(allocator)),
-        current_(0),
+        current_(nullptr),
         current_chunk_size_(kDefaultChunkSize) {}
 
   // Returns the alignment requirement for classes and structs on the
@@ -123,7 +123,7 @@ class PODArena final : public RefCounted<PODArena> {
 
   template <class T>
   void* AllocateBase() {
-    void* ptr = 0;
+    void* ptr = nullptr;
     size_t rounded_size = RoundUp(sizeof(T), MinAlignment<T>());
     if (current_)
       ptr = current_->Allocate(rounded_size);
@@ -167,10 +167,10 @@ class PODArena final : public RefCounted<PODArena> {
     void* Allocate(size_t size) {
       // Check for overflow
       if (current_offset_ + size < current_offset_)
-        return 0;
+        return nullptr;
 
       if (current_offset_ + size > size_)
-        return 0;
+        return nullptr;
 
       void* result = base_ + current_offset_;
       current_offset_ += size;

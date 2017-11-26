@@ -38,7 +38,7 @@ class TextRunIterator {
   DISALLOW_NEW();
 
  public:
-  TextRunIterator() : text_run_(0), offset_(0), length_(0) {}
+  TextRunIterator() : text_run_(nullptr), offset_(0), length_(0) {}
 
   TextRunIterator(const TextRun* text_run, unsigned offset)
       : text_run_(text_run), offset_(offset), length_(text_run_->length()) {}

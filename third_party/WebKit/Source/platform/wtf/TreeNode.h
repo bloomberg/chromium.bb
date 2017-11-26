@@ -57,7 +57,11 @@ class TreeNode {
   typedef T NodeType;
 
   TreeNode()
-      : next_(0), previous_(0), parent_(0), first_child_(0), last_child_(0) {}
+      : next_(nullptr),
+        previous_(nullptr),
+        parent_(nullptr),
+        first_child_(nullptr),
+        last_child_(nullptr) {}
 
   NodeType* Next() const { return next_; }
   NodeType* Previous() const { return previous_; }
@@ -127,7 +131,7 @@ class TreeNode {
 
     NodeType* old_next = child->Next();
     NodeType* old_previous = child->Previous();
-    child->parent_ = child->next_ = child->previous_ = 0;
+    child->parent_ = child->next_ = child->previous_ = nullptr;
 
     if (old_next)
       old_next->previous_ = old_previous;
@@ -157,22 +161,22 @@ class TreeNode {
 template <class T>
 inline typename TreeNode<T>::NodeType* TraverseNext(
     const TreeNode<T>* current,
-    const TreeNode<T>* stay_within = 0) {
+    const TreeNode<T>* stay_within = nullptr) {
   if (typename TreeNode<T>::NodeType* next = current->FirstChild())
     return next;
   if (current == stay_within)
-    return 0;
+    return nullptr;
   if (typename TreeNode<T>::NodeType* next = current->Next())
     return next;
   for (typename TreeNode<T>::NodeType* parent = current->Parent(); parent;
        parent = parent->Parent()) {
     if (parent == stay_within)
-      return 0;
+      return nullptr;
     if (typename TreeNode<T>::NodeType* next = parent->Next())
       return next;
   }
 
-  return 0;
+  return nullptr;
 }
 
 template <class T>
@@ -187,9 +191,9 @@ inline typename TreeNode<T>::NodeType* TraverseFirstPostOrder(
 template <class T>
 inline typename TreeNode<T>::NodeType* TraverseNextPostOrder(
     const TreeNode<T>* current,
-    const TreeNode<T>* stay_within = 0) {
+    const TreeNode<T>* stay_within = nullptr) {
   if (current == stay_within)
-    return 0;
+    return nullptr;
 
   typename TreeNode<T>::NodeType* next = current->Next();
   if (!next)

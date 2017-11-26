@@ -199,8 +199,8 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   Scrollbar(ScrollableArea*,
             ScrollbarOrientation,
             ScrollbarControlSize,
-            PlatformChromeClient* = 0,
-            ScrollbarTheme* = 0);
+            PlatformChromeClient* = nullptr,
+            ScrollbarTheme* = nullptr);
 
   void AutoscrollTimerFired(TimerBase*);
   void StartTimerIfNeeded(double delay);

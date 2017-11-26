@@ -82,7 +82,7 @@ CallbackStack::Block::~Block() {
 #if DCHECK_IS_ON()
 void CallbackStack::Block::Clear() {
   for (size_t i = 0; i < CallbackStackMemoryPool::kBlockSize; i++)
-    buffer_[i] = Item(0, 0);
+    buffer_[i] = Item(nullptr, nullptr);
 }
 #endif
 

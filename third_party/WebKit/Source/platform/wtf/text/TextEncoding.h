@@ -38,7 +38,7 @@ class WTF_EXPORT TextEncoding final {
   USING_FAST_MALLOC(TextEncoding);
 
  public:
-  TextEncoding() : name_(0) {}
+  TextEncoding() : name_(nullptr) {}
   explicit TextEncoding(const char* name);
   explicit TextEncoding(const String& name);
 

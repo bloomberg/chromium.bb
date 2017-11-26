@@ -13,7 +13,7 @@
 namespace WTF {
 
 ScopedLogger::ScopedLogger(bool condition, const char* format, ...)
-    : parent_(condition ? Current() : 0), multiline_(false) {
+    : parent_(condition ? Current() : nullptr), multiline_(false) {
   if (!condition)
     return;
 
