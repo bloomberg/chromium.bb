@@ -102,7 +102,13 @@ public class WebappInterceptNavigationDelegate extends InterceptNavigationDelega
                     mActivity.getActivityType());
             customTabIntent.intent.putExtra(
                     Browser.EXTRA_APPLICATION_ID, mActivity.mWebappInfo.apkPackageName());
+
+            if (shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent()) {
+                customTabIntent.intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
             customTabIntent.launchUrl(mActivity, Uri.parse(navigationParams.url));
+
+            onOverrideUrlLoadingAndLaunchIntent();
             return true;
         }
 
