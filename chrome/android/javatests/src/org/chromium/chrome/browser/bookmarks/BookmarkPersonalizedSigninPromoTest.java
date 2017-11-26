@@ -11,7 +11,6 @@ import static android.support.test.espresso.assertion.ViewAssertions.doesNotExis
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -32,7 +31,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -76,7 +74,6 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure(message = "crbug.com/778283")
     public void testManualDismissPromo() throws Exception {
         openBookmarkManager();
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
@@ -141,7 +138,6 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure(message = "crbug.com/778283")
     public void testSigninButtonNewAccount() throws Exception {
         openBookmarkManager();
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
@@ -162,8 +158,7 @@ public class BookmarkPersonalizedSigninPromoTest {
     }
 
     private void openBookmarkManager() throws InterruptedException {
-        onView(withId(R.id.menu_button)).perform(click());
-        onView(withText("Bookmarks")).perform(click());
+        BookmarkUtils.showBookmarkManager((ChromeActivity) mActivityTestRule.getActivity());
     }
 
     private void addTestAccount() {
