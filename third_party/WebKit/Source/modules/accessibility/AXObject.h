@@ -674,7 +674,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   // Hit testing.
   // Called on the root AX object to return the deepest available element.
-  virtual AXObject* AccessibilityHitTest(const IntPoint&) const { return 0; }
+  virtual AXObject* AccessibilityHitTest(const IntPoint&) const {
+    return nullptr;
+  }
   // Called on the AX object after the layout tree determines which is the right
   // AXLayoutObject.
   virtual AXObject* ElementAccessibilityHitTest(const IntPoint&) const;
@@ -685,7 +687,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   AXObject* ParentObject() const;
   AXObject* ParentObjectIfExists() const;
   virtual AXObject* ComputeParent() const = 0;
-  virtual AXObject* ComputeParentIfExists() const { return 0; }
+  virtual AXObject* ComputeParentIfExists() const { return nullptr; }
   AXObject* CachedParentObject() const { return parent_; }
   AXObject* ParentObjectUnignored() const;
   AXObject* ContainerWidget() const;
@@ -693,8 +695,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   // Low-level accessibility tree exploration, only for use within the
   // accessibility module.
-  virtual AXObject* RawFirstChild() const { return 0; }
-  virtual AXObject* RawNextSibling() const { return 0; }
+  virtual AXObject* RawFirstChild() const { return nullptr; }
+  virtual AXObject* RawNextSibling() const { return nullptr; }
   virtual void AddChildren() {}
   virtual bool CanHaveChildren() const { return true; }
   bool HasChildren() const { return have_children_; }
@@ -702,8 +704,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool NeedsToUpdateChildren() const { return false; }
   virtual void SetNeedsToUpdateChildren() {}
   virtual void ClearChildren();
-  virtual void DetachFromParent() { parent_ = 0; }
-  virtual AXObject* ScrollBar(AccessibilityOrientation) { return 0; }
+  virtual void DetachFromParent() { parent_ = nullptr; }
+  virtual AXObject* ScrollBar(AccessibilityOrientation) { return nullptr; }
   virtual void AddAccessibleNodeChildren();
 
   // Properties of the object's owning document or page.
@@ -738,7 +740,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   void SetScrollOffset(const IntPoint&) const;
 
   // If this object itself scrolls, return its ScrollableArea.
-  virtual ScrollableArea* GetScrollableAreaIfScrollable() const { return 0; }
+  virtual ScrollableArea* GetScrollableAreaIfScrollable() const {
+    return nullptr;
+  }
 
   // Modify or take an action on an object.
   //
@@ -841,7 +845,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
                                 Vector<String>& ids) const;
   String TextFromAriaDescribedby(AXRelatedObjectVector* related_objects,
                                  Vector<String>& ids) const;
-  virtual const AXObject* InheritsPresentationalRoleFrom() const { return 0; }
+  virtual const AXObject* InheritsPresentationalRoleFrom() const {
+    return nullptr;
+  }
 
   bool CanReceiveAccessibilityFocus() const;
   bool NameFromContents(bool recursive) const;

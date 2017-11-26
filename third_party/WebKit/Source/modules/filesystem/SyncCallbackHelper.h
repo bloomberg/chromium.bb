@@ -133,7 +133,7 @@ class SyncCallbackHelper final
 };
 
 struct EmptyType : public GarbageCollected<EmptyType> {
-  static EmptyType* Create(EmptyType*) { return 0; }
+  static EmptyType* Create(EmptyType*) { return nullptr; }
 
   void Trace(blink::Visitor* visitor) {}
 };

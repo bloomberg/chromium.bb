@@ -51,7 +51,7 @@ class MODULES_EXPORT Path2D final : public ScriptWrappable, public CanvasPath {
 
   const Path& GetPath() const { return path_; }
 
-  void addPath(Path2D* path) { addPath(path, 0); }
+  void addPath(Path2D* path) { addPath(path, nullptr); }
 
   void addPath(Path2D* path, SVGMatrixTearOff* transform) {
     Path src = path->GetPath();

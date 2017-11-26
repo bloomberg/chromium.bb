@@ -58,7 +58,7 @@ class SourceBufferList final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(removesourcebuffer);
 
   SourceBuffer* item(unsigned index) const {
-    return (index < list_.size()) ? list_[index].Get() : 0;
+    return (index < list_.size()) ? list_[index].Get() : nullptr;
   }
 
   void Add(SourceBuffer*);
