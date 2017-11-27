@@ -36,6 +36,7 @@ Button::Button(base::Callback<void()> click_handler,
 
   auto background = base::MakeUnique<Rect>();
   background->set_name(kNone);
+  background->set_type(kTypeButtonBackground);
   background->set_draw_phase(draw_phase);
   background->set_bubble_events(true);
   background->SetSize(width, height);
@@ -47,6 +48,7 @@ Button::Button(base::Callback<void()> click_handler,
 
   auto vector_icon = base::MakeUnique<VectorIcon>(512);
   vector_icon->set_name(kNone);
+  vector_icon->set_type(kTypeButtonForeground);
   vector_icon->SetIcon(icon);
   vector_icon->set_draw_phase(draw_phase);
   vector_icon->set_bubble_events(true);
@@ -58,6 +60,7 @@ Button::Button(base::Callback<void()> click_handler,
 
   auto hit_plane = base::MakeUnique<InvisibleHitTarget>();
   hit_plane->set_name(kNone);
+  hit_plane->set_type(kTypeButtonHitTarget);
   hit_plane->set_draw_phase(draw_phase);
   hit_plane->set_bubble_events(true);
   hit_plane->SetSize(width, height);
