@@ -59,12 +59,12 @@ void daala_inv_txfm_add(const tran_low_t *input_coeffs, void *output_pixels,
     assert(tx_type == DCT_DCT);
     assert(tx_size == TX_4X4);
     if (txfm_param->is_hbd)
-      av1_iwht4x4_add(input_coeffs, output_pixels, output_stride, txfm_param);
-    else
       // Note that the output pointer in the prototype is uint8, but the
       // function converts to short internally
       av1_highbd_iwht4x4_add(input_coeffs, output_pixels, output_stride,
                              txfm_param->eob, px_depth);
+    else
+      av1_iwht4x4_add(input_coeffs, output_pixels, output_stride, txfm_param);
   } else {
     // General TX case
     const int downshift = TX_COEFF_DEPTH - px_depth;
