@@ -20,11 +20,10 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/test_time_source.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
+#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -210,9 +209,9 @@ class RendererSchedulerImplForTest : public RendererSchedulerImpl {
   using RendererSchedulerImpl::OnIdlePeriodStarted;
   using RendererSchedulerImpl::EstimateLongestJankFreeTaskDuration;
 
-  RendererSchedulerImplForTest(
-      scoped_refptr<SchedulerTqmDelegate> main_task_runner)
-      : RendererSchedulerImpl(main_task_runner), update_policy_count_(0) {}
+  explicit RendererSchedulerImplForTest(
+      std::unique_ptr<TaskQueueManager> manager)
+      : RendererSchedulerImpl(std::move(manager)), update_policy_count_(0) {}
 
   void UpdatePolicyLocked(UpdateType update_type) override {
     update_policy_count_++;
@@ -279,17 +278,15 @@ class RendererSchedulerImplTest : public ::testing::Test {
   ~RendererSchedulerImplTest() override {}
 
   void SetUp() override {
-    if (message_loop_) {
-      main_task_runner_ = SchedulerTqmDelegateImpl::Create(
-          message_loop_.get(), std::make_unique<TestTimeSource>(clock_.get()));
-    } else {
+    if (!message_loop_) {
       mock_task_runner_ = base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(
           clock_.get(), false);
-      main_task_runner_ = SchedulerTqmDelegateForTest::Create(
-          mock_task_runner_, std::make_unique<TestTimeSource>(clock_.get()));
     }
-    Initialize(
-        std::make_unique<RendererSchedulerImplForTest>(main_task_runner_));
+    Initialize(std::make_unique<RendererSchedulerImplForTest>(
+        CreateTaskQueueManagerWithUnownedClockForTest(
+            message_loop_.get(),
+            message_loop_ ? message_loop_->task_runner() : mock_task_runner_,
+            clock_.get())));
   }
 
   void Initialize(std::unique_ptr<RendererSchedulerImplForTest> scheduler) {
@@ -719,7 +716,6 @@ class RendererSchedulerImplTest : public ::testing::Test {
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<base::MessageLoop> message_loop_;
 
-  scoped_refptr<SchedulerTqmDelegate> main_task_runner_;
   std::unique_ptr<RendererSchedulerImplForTest> scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
@@ -1860,9 +1856,9 @@ class RendererSchedulerImplWithMockSchedulerTest
   void SetUp() override {
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), false);
-    main_task_runner_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, std::make_unique<TestTimeSource>(clock_.get()));
-    mock_scheduler_ = new RendererSchedulerImplForTest(main_task_runner_);
+    mock_scheduler_ = new RendererSchedulerImplForTest(
+        CreateTaskQueueManagerWithUnownedClockForTest(
+            nullptr, mock_task_runner_, clock_.get()));
     Initialize(base::WrapUnique(mock_scheduler_));
   }
 

@@ -9,12 +9,15 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/base/task_queue_manager_delegate.h"
 #include "platform/scheduler/base/task_queue_selector.h"
 #include "platform/scheduler/base/task_time_observer.h"
+#include "platform/scheduler/base/thread_controller.h"
+#include "platform/scheduler/base/thread_controller_impl.h"
 #include "platform/scheduler/base/work_queue.h"
 #include "platform/scheduler/base/work_queue_sets.h"
 
@@ -30,37 +33,38 @@ double MonotonicTimeInSeconds(base::TimeTicks time_ticks) {
 }  // namespace
 
 TaskQueueManager::TaskQueueManager(
-    scoped_refptr<TaskQueueManagerDelegate> delegate)
+    std::unique_ptr<internal::ThreadController> controller)
     : real_time_domain_(new RealTimeDomain()),
       graceful_shutdown_helper_(new internal::GracefulQueueShutdownHelper()),
-      delegate_(delegate),
+      controller_(std::move(controller)),
       task_was_run_on_quiescence_monitored_queue_(false),
       work_batch_size_(1),
       task_count_(0),
       currently_executing_task_queue_(nullptr),
       observer_(nullptr),
       weak_factory_(this) {
-  DCHECK(delegate->RunsTasksInCurrentSequence());
+  // TODO(altimin): Create a sequence checker here.
+  DCHECK(controller_->RunsTasksInCurrentSequence());
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "TaskQueueManager",
       this);
   selector_.SetTaskQueueSelectorObserver(this);
 
-  delayed_do_work_closure_ = base::BindRepeating(
-      &TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), true);
-  immediate_do_work_closure_ = base::BindRepeating(
-      &TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), false);
-
   // TODO(alexclarke): Change this to be a parameter that's passed in.
   RegisterTimeDomain(real_time_domain_.get());
 
-  delegate_->AddNestingObserver(this);
+  controller_->SetSequence(this);
+  controller_->AddNestingObserver(this);
 }
 
 TaskQueueManager::~TaskQueueManager() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "TaskQueueManager",
       this);
+
+  // TODO(altimin): restore default task runner automatically when
+  // ThreadController is destroyed.
+  controller_->RestoreDefaultTaskRunner();
 
   for (internal::TaskQueueImpl* queue : active_queues_) {
     selector_.RemoveQueue(queue);
@@ -74,7 +78,14 @@ TaskQueueManager::~TaskQueueManager() {
 
   selector_.SetTaskQueueSelectorObserver(nullptr);
 
-  delegate_->RemoveNestingObserver(this);
+  controller_->RemoveNestingObserver(this);
+}
+
+std::unique_ptr<TaskQueueManager> TaskQueueManager::TakeOverCurrentThread() {
+  return std::unique_ptr<TaskQueueManager>(
+      new TaskQueueManager(internal::ThreadControllerImpl::Create(
+          base::MessageLoop::current(),
+          std::make_unique<base::DefaultTickClock>())));
 }
 
 TaskQueueManager::AnyThread::AnyThread()
@@ -166,7 +177,7 @@ void TaskQueueManager::OnBeginNestedRunLoop() {
   if (observer_)
     observer_->OnBeginNestedRunLoop();
 
-  delegate_->PostTask(FROM_HERE, immediate_do_work_closure_);
+  controller_->ScheduleWork();
 }
 
 void TaskQueueManager::OnQueueHasIncomingImmediateWork(
@@ -203,7 +214,7 @@ void TaskQueueManager::MaybeScheduleImmediateWorkLocked(
 
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "TaskQueueManager::MaybeScheduleImmediateWorkLocked::PostTask");
-  delegate_->PostTask(from_here, immediate_do_work_closure_);
+  controller_->ScheduleWork();
 }
 
 void TaskQueueManager::MaybeScheduleDelayedWork(
@@ -233,17 +244,12 @@ void TaskQueueManager::MaybeScheduleDelayedWork(
   if (next_delayed_do_work_ && next_delayed_do_work_.run_time() <= run_time)
     return;
 
-  cancelable_delayed_do_work_closure_.Reset(delayed_do_work_closure_);
-
   base::TimeDelta delay = std::max(base::TimeDelta(), run_time - now);
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "TaskQueueManager::MaybeScheduleDelayedWork::PostDelayedTask",
                "delay_ms", delay.InMillisecondsF());
-
-  cancelable_delayed_do_work_closure_.Reset(delayed_do_work_closure_);
   next_delayed_do_work_ = NextDelayedDoWork(run_time, requesting_time_domain);
-  delegate_->PostDelayedTask(
-      from_here, cancelable_delayed_do_work_closure_.callback(), delay);
+  controller_->ScheduleDelayedWork(delay);
 }
 
 void TaskQueueManager::CancelDelayedWork(TimeDomain* requesting_time_domain,
@@ -253,21 +259,21 @@ void TaskQueueManager::CancelDelayedWork(TimeDomain* requesting_time_domain,
     return;
 
   DCHECK_EQ(next_delayed_do_work_.time_domain(), requesting_time_domain);
-  cancelable_delayed_do_work_closure_.Cancel();
+  controller_->CancelDelayedWork();
   next_delayed_do_work_.Clear();
 }
 
-void TaskQueueManager::DoWork(bool delayed) {
+void TaskQueueManager::DoWork(WorkType work_type) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   TRACE_EVENT1("renderer.scheduler", "TaskQueueManager::DoWork", "delayed",
-               delayed);
+               work_type == WorkType::kDelayed);
 
   LazyNow lazy_now(real_time_domain()->CreateLazyNow());
-  bool is_nested = delegate_->IsNested();
+  bool is_nested = controller_->IsNested();
 
   // This must be done before running any tasks because they could invoke a
   // nested run loop and we risk having a stale |next_delayed_do_work_|.
-  if (delayed)
+  if (work_type == WorkType::kDelayed)
     next_delayed_do_work_.Clear();
 
   for (int i = 0; i < work_batch_size_; i++) {
@@ -279,7 +285,7 @@ void TaskQueueManager::DoWork(bool delayed) {
       if (i == 0) {
         any_thread().do_work_running_count++;
 
-        if (!delayed) {
+        if (work_type == WorkType::kImmediate) {
           any_thread().immediate_do_work_posted_count--;
           DCHECK_GE(any_thread().immediate_do_work_posted_count, 0);
         }
@@ -287,11 +293,12 @@ void TaskQueueManager::DoWork(bool delayed) {
         // Ideally we'd have an OnNestedMessageloopExit observer, but in it's
         // absence we may need to clear this flag after running a task (which
         // ran a nested messageloop).
+        // TODO(altimin): Add OnNestedMessageLoopExit observer.
         if (any_thread().is_nested && !is_nested)
           was_nested = true;
         any_thread().is_nested = is_nested;
       }
-      DCHECK_EQ(any_thread().is_nested, delegate_->IsNested());
+      DCHECK_EQ(any_thread().is_nested, controller_->IsNested());
       std::swap(queues_to_reload, any_thread().has_incoming_immediate_work);
     }
 
@@ -349,7 +356,7 @@ void TaskQueueManager::DoWork(bool delayed) {
     if (any_thread().is_nested && !is_nested)
       was_nested = true;
     any_thread().is_nested = is_nested;
-    DCHECK_EQ(any_thread().is_nested, delegate_->IsNested());
+    DCHECK_EQ(any_thread().is_nested, controller_->IsNested());
 
     PostDoWorkContinuationLocked(next_delay, &lazy_now, std::move(lock));
   }
@@ -372,7 +379,7 @@ void TaskQueueManager::PostDoWorkContinuationLocked(
       // If there's a pending delayed DoWork, cancel it because it's not needed.
       if (next_delayed_do_work_) {
         next_delayed_do_work_.Clear();
-        cancelable_delayed_do_work_closure_.Cancel();
+        controller_->CancelDelayedWork();
       }
       return;
     }
@@ -395,7 +402,7 @@ void TaskQueueManager::PostDoWorkContinuationLocked(
 
   // We avoid holding |any_thread_lock_| while posting the task.
   if (next_delay->Delay() <= base::TimeDelta()) {
-    delegate_->PostTask(FROM_HERE, immediate_do_work_closure_);
+    controller_->ScheduleWork();
   } else {
     base::TimeTicks run_time = lazy_now->Now() + next_delay->Delay();
 
@@ -404,10 +411,7 @@ void TaskQueueManager::PostDoWorkContinuationLocked(
 
     next_delayed_do_work_ =
         NextDelayedDoWork(run_time, next_delay->time_domain());
-    cancelable_delayed_do_work_closure_.Reset(delayed_do_work_closure_);
-    delegate_->PostDelayedTask(FROM_HERE,
-                               cancelable_delayed_do_work_closure_.callback(),
-                               next_delay->Delay());
+    controller_->ScheduleDelayedWork(next_delay->Delay());
   }
 }
 
@@ -485,8 +489,8 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     // arbitrarily delayed so the additional delay should not be a problem.
     // TODO(skyostil): Figure out a way to not forget which task queue the
     // task is associated with. See http://crbug.com/522843.
-    delegate_->PostNonNestableTask(pending_task.posted_from,
-                                   std::move(pending_task.task));
+    controller_->PostNonNestableTask(pending_task.posted_from,
+                                     std::move(pending_task.task));
     return ProcessTaskResult::kDeferred;
   }
 
@@ -499,7 +503,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
       observer.WillProcessTask(pending_task);
     queue->NotifyWillProcessTask(pending_task);
 
-    bool notify_time_observers = !delegate_->IsNested() &&
+    bool notify_time_observers = !controller_->IsNested() &&
                                  (task_time_observers_.might_have_observers() ||
                                   queue->RequiresTaskTiming());
     if (notify_time_observers) {
@@ -554,10 +558,6 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   return ProcessTaskResult::kExecuted;
 }
 
-bool TaskQueueManager::RunsTasksInCurrentSequence() const {
-  return delegate_->RunsTasksInCurrentSequence();
-}
-
 void TaskQueueManager::SetWorkBatchSize(int work_batch_size) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_GE(work_batch_size, 1);
@@ -594,17 +594,12 @@ bool TaskQueueManager::GetAndClearSystemIsQuiescentBit() {
   return !task_was_run;
 }
 
-const scoped_refptr<TaskQueueManagerDelegate>& TaskQueueManager::Delegate()
-    const {
-  return delegate_;
-}
-
 internal::EnqueueOrder TaskQueueManager::GetNextSequenceNumber() {
   return enqueue_order_generator_.GenerateNext();
 }
 
 LazyNow TaskQueueManager::CreateLazyNow() const {
-  return LazyNow(delegate_.get());
+  return LazyNow(controller_->GetClock());
 }
 
 size_t TaskQueueManager::GetNumberOfPendingTasks() const {
@@ -729,6 +724,17 @@ void TaskQueueManager::CleanUpQueues() {
   queues_to_delete_.clear();
 }
 
+base::Optional<base::PendingTask> TaskQueueManager::TakeTask(
+    WorkType work_type) {
+  // TODO(altimin): Unify TakeTask and DoWork and run selector here.
+  return base::PendingTask(FROM_HERE, base::Bind(&TaskQueueManager::DoWork,
+                                                 GetWeakPtr(), work_type));
+}
+
+bool TaskQueueManager::DidRunTask() {
+  return false;
+}
+
 scoped_refptr<internal::GracefulQueueShutdownHelper>
 TaskQueueManager::GetGracefulQueueShutdownHelper() const {
   return graceful_shutdown_helper_;
@@ -736,6 +742,19 @@ TaskQueueManager::GetGracefulQueueShutdownHelper() const {
 
 base::WeakPtr<TaskQueueManager> TaskQueueManager::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+void TaskQueueManager::SetDefaultTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  controller_->SetDefaultTaskRunner(task_runner);
+}
+
+base::TickClock* TaskQueueManager::GetClock() const {
+  return controller_->GetClock();
+}
+
+base::TimeTicks TaskQueueManager::NowTicks() const {
+  return controller_->GetClock()->NowTicks();
 }
 
 }  // namespace scheduler

@@ -13,17 +13,14 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/scheduler_helper.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate.h"
 
 namespace blink {
 namespace scheduler {
 
 CompositorWorkerScheduler::CompositorWorkerScheduler(
     base::Thread* thread,
-    scoped_refptr<SchedulerTqmDelegate> main_task_runner)
-    : WorkerScheduler(
-          std::make_unique<WorkerSchedulerHelper>(main_task_runner)),
-      thread_(thread) {}
+    std::unique_ptr<WorkerSchedulerHelper> scheduler_helper)
+    : WorkerScheduler(std::move(scheduler_helper)), thread_(thread) {}
 
 CompositorWorkerScheduler::~CompositorWorkerScheduler() {}
 

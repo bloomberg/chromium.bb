@@ -11,6 +11,7 @@
 #include "base/debug/task_annotator.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/base/sequence.h"
@@ -60,6 +61,8 @@ class PLATFORM_EXPORT ThreadControllerImpl : public ThreadController {
 
  private:
   void DoWork(Sequence::WorkType work_type);
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   scoped_refptr<base::SingleThreadTaskRunner> message_loop_task_runner_;
   std::unique_ptr<base::TickClock> time_source_;

@@ -22,11 +22,11 @@
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/base/task_queue_manager_delegate_for_test.h"
 #include "platform/scheduler/base/task_queue_selector.h"
 #include "platform/scheduler/base/test_count_uses_time_source.h"
 #include "platform/scheduler/base/test_task_time_observer.h"
 #include "platform/scheduler/base/test_time_source.h"
+#include "platform/scheduler/base/thread_controller_impl.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/base/work_queue.h"
 #include "platform/scheduler/base/work_queue_sets.h"
@@ -50,8 +50,8 @@ namespace task_queue_manager_unittest {
 class TaskQueueManagerForTest : public TaskQueueManager {
  public:
   explicit TaskQueueManagerForTest(
-      scoped_refptr<TaskQueueManagerDelegate> delegate)
-      : TaskQueueManager(delegate) {}
+      std::unique_ptr<internal::ThreadController> thread_controller)
+      : TaskQueueManager(std::move(thread_controller)) {}
 
   using TaskQueueManager::NextTaskDelay;
   using TaskQueueManager::ActiveQueuesCount;
@@ -59,34 +59,29 @@ class TaskQueueManagerForTest : public TaskQueueManager {
   using TaskQueueManager::QueuesToDeleteCount;
 };
 
-class MessageLoopTaskRunner : public TaskQueueManagerDelegateForTest {
+class ThreadControllerForTest : public internal::ThreadControllerImpl {
  public:
-  static scoped_refptr<MessageLoopTaskRunner> Create(
-      std::unique_ptr<base::TickClock> tick_clock) {
-    return base::WrapRefCounted(
-        new MessageLoopTaskRunner(std::move(tick_clock)));
-  }
+  ThreadControllerForTest(
+      base::MessageLoop* message_loop,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      std::unique_ptr<base::TickClock> time_source)
+      : ThreadControllerImpl(message_loop,
+                             std::move(task_runner),
+                             std::move(time_source)) {}
 
-  // TaskQueueManagerDelegateForTest:
-  bool IsNested() const override {
-    DCHECK(RunsTasksInCurrentSequence());
-    return base::RunLoop::IsNestedOnCurrentThread();
-  }
+  ~ThreadControllerForTest() override {}
 
   void AddNestingObserver(base::RunLoop::NestingObserver* observer) override {
-    base::RunLoop::AddNestingObserverOnCurrentThread(observer);
+    if (!message_loop_)
+      return;
+    ThreadControllerImpl::AddNestingObserver(observer);
   }
-
   void RemoveNestingObserver(
       base::RunLoop::NestingObserver* observer) override {
-    base::RunLoop::RemoveNestingObserverOnCurrentThread(observer);
+    if (!message_loop_)
+      return;
+    ThreadControllerImpl::RemoveNestingObserver(observer);
   }
-
- private:
-  explicit MessageLoopTaskRunner(std::unique_ptr<base::TickClock> tick_clock)
-      : TaskQueueManagerDelegateForTest(base::ThreadTaskRunnerHandle::Get(),
-                                        std::move(tick_clock)) {}
-  ~MessageLoopTaskRunner() override {}
 };
 
 class TaskQueueManagerTest : public ::testing::Test {
@@ -114,11 +109,11 @@ class TaskQueueManagerTest : public ::testing::Test {
                            std::unique_ptr<base::TickClock> test_time_source) {
     test_task_runner_ = base::WrapRefCounted(
         new cc::OrderedSimpleTaskRunner(now_src_.get(), false));
-    main_task_runner_ = TaskQueueManagerDelegateForTest::Create(
-        test_task_runner_.get(),
-        std::make_unique<TestTimeSource>(now_src_.get()));
 
-    manager_ = std::make_unique<TaskQueueManagerForTest>(main_task_runner_);
+    manager_ = std::make_unique<TaskQueueManagerForTest>(
+        std::make_unique<ThreadControllerForTest>(
+            nullptr, test_task_runner_.get(),
+            std::make_unique<TestTimeSource>(now_src_.get())));
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(CreateTaskQueue());
@@ -134,11 +129,13 @@ class TaskQueueManagerTest : public ::testing::Test {
   void InitializeWithRealMessageLoop(size_t num_queues) {
     now_src_.reset(new base::SimpleTestTickClock());
     message_loop_.reset(new base::MessageLoop());
+    original_message_loop_task_runner_ = message_loop_->task_runner();
     // A null clock triggers some assertions.
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
-    manager_ =
-        std::make_unique<TaskQueueManagerForTest>(MessageLoopTaskRunner::Create(
-            base::WrapUnique(new TestTimeSource(now_src_.get()))));
+    manager_ = std::make_unique<TaskQueueManagerForTest>(
+        std::make_unique<ThreadControllerForTest>(
+            message_loop_.get(), base::ThreadTaskRunnerHandle::Get(),
+            std::make_unique<TestTimeSource>(now_src_.get())));
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(CreateTaskQueue());
@@ -203,8 +200,9 @@ class TaskQueueManagerTest : public ::testing::Test {
   base::TimeTicks Now() const { return now_src_->NowTicks(); }
 
   std::unique_ptr<base::MessageLoop> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner>
+      original_message_loop_task_runner_;
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
-  scoped_refptr<TaskQueueManagerDelegateForTest> main_task_runner_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> test_task_runner_;
   std::unique_ptr<TaskQueueManagerForTest> manager_;
   std::vector<scoped_refptr<TestTaskQueue>> runners_;
@@ -235,8 +233,9 @@ TEST_F(TaskQueueManagerTest,
   TestCountUsesTimeSource* test_count_uses_time_source =
       new TestCountUsesTimeSource();
 
-  manager_ =
-      std::make_unique<TaskQueueManagerForTest>(MessageLoopTaskRunner::Create(
+  manager_ = std::make_unique<TaskQueueManagerForTest>(
+      std::make_unique<ThreadControllerForTest>(
+          nullptr, base::ThreadTaskRunnerHandle::Get(),
           base::WrapUnique(test_count_uses_time_source)));
   manager_->SetWorkBatchSize(6);
   manager_->AddTaskTimeObserver(&test_task_time_observer_);
@@ -265,8 +264,9 @@ TEST_F(TaskQueueManagerTest, NowNotCalledForNestedTasks) {
   TestCountUsesTimeSource* test_count_uses_time_source =
       new TestCountUsesTimeSource();
 
-  manager_ =
-      std::make_unique<TaskQueueManagerForTest>(MessageLoopTaskRunner::Create(
+  manager_ = std::make_unique<TaskQueueManagerForTest>(
+      std::make_unique<ThreadControllerForTest>(
+          message_loop_.get(), message_loop_->task_runner(),
           base::WrapUnique(test_count_uses_time_source)));
   manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
@@ -1622,7 +1622,7 @@ TEST_F(TaskQueueManagerTest, ShutdownTaskQueueInNestedLoop) {
 TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
   Initialize(2u);
 
-  base::TimeTicks start_time = manager_->Delegate()->NowTicks();
+  base::TimeTicks start_time = manager_->NowTicks();
   std::unique_ptr<VirtualTimeDomain> domain_a(
       new VirtualTimeDomain(start_time));
   std::unique_ptr<VirtualTimeDomain> domain_b(
@@ -1669,7 +1669,7 @@ TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
 TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
   Initialize(1u);
 
-  base::TimeTicks start_time = manager_->Delegate()->NowTicks();
+  base::TimeTicks start_time = manager_->NowTicks();
   std::unique_ptr<VirtualTimeDomain> domain_a(
       new VirtualTimeDomain(start_time));
   manager_->RegisterTimeDomain(domain_a.get());
@@ -1710,7 +1710,7 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
 TEST_F(TaskQueueManagerTest, TimeDomainMigrationWithIncomingImmediateTasks) {
   Initialize(1u);
 
-  base::TimeTicks start_time = manager_->Delegate()->NowTicks();
+  base::TimeTicks start_time = manager_->NowTicks();
   std::unique_ptr<VirtualTimeDomain> domain_a(
       new VirtualTimeDomain(start_time));
   std::unique_ptr<VirtualTimeDomain> domain_b(
@@ -1807,7 +1807,7 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_ImmediateTask) {
 TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTask) {
   Initialize(1u);
 
-  base::TimeTicks start_time = manager_->Delegate()->NowTicks();
+  base::TimeTicks start_time = manager_->NowTicks();
   base::TimeDelta delay10s(base::TimeDelta::FromSeconds(10));
   base::TimeDelta delay100s(base::TimeDelta::FromSeconds(100));
   base::TimeDelta delay1s(base::TimeDelta::FromSeconds(1));
@@ -1856,7 +1856,7 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTaskMultipleQueues) {
   runners_[0]->SetObserver(&observer);
   runners_[1]->SetObserver(&observer);
 
-  base::TimeTicks start_time = manager_->Delegate()->NowTicks();
+  base::TimeTicks start_time = manager_->NowTicks();
   base::TimeDelta delay1s(base::TimeDelta::FromSeconds(1));
   base::TimeDelta delay10s(base::TimeDelta::FromSeconds(10));
 
@@ -1958,7 +1958,7 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_SweepCanceledDelayedTasks) {
   MockTaskQueueObserver observer;
   runners_[0]->SetObserver(&observer);
 
-  base::TimeTicks start_time = manager_->Delegate()->NowTicks();
+  base::TimeTicks start_time = manager_->NowTicks();
   base::TimeDelta delay1(base::TimeDelta::FromSeconds(5));
   base::TimeDelta delay2(base::TimeDelta::FromSeconds(10));
 
@@ -2350,7 +2350,7 @@ TEST_F(TaskQueueManagerTestWithTracing, BlameContextAttribution) {
 TEST_F(TaskQueueManagerTest, NoWakeUpsForCanceledDelayedTasks) {
   Initialize(1u);
 
-  base::TimeTicks start_time = manager_->Delegate()->NowTicks();
+  base::TimeTicks start_time = manager_->NowTicks();
 
   CancelableTask task1(now_src_.get());
   CancelableTask task2(now_src_.get());
@@ -2398,7 +2398,7 @@ TEST_F(TaskQueueManagerTest, NoWakeUpsForCanceledDelayedTasks) {
 TEST_F(TaskQueueManagerTest, NoWakeUpsForCanceledDelayedTasksReversePostOrder) {
   Initialize(1u);
 
-  base::TimeTicks start_time = manager_->Delegate()->NowTicks();
+  base::TimeTicks start_time = manager_->NowTicks();
 
   CancelableTask task1(now_src_.get());
   CancelableTask task2(now_src_.get());
@@ -2446,7 +2446,7 @@ TEST_F(TaskQueueManagerTest, NoWakeUpsForCanceledDelayedTasksReversePostOrder) {
 TEST_F(TaskQueueManagerTest, TimeDomainWakeUpOnlyCancelledIfAllUsesCancelled) {
   Initialize(1u);
 
-  base::TimeTicks start_time = manager_->Delegate()->NowTicks();
+  base::TimeTicks start_time = manager_->NowTicks();
 
   CancelableTask task1(now_src_.get());
   CancelableTask task2(now_src_.get());
@@ -2985,7 +2985,7 @@ TEST_F(TaskQueueManagerTest, GetNextScheduledWakeUp) {
 
   EXPECT_EQ(base::nullopt, runners_[0]->GetNextScheduledWakeUp());
 
-  base::TimeTicks start_time = manager_->Delegate()->NowTicks();
+  base::TimeTicks start_time = manager_->NowTicks();
   base::TimeDelta delay1 = base::TimeDelta::FromMilliseconds(10);
   base::TimeDelta delay2 = base::TimeDelta::FromMilliseconds(2);
 
@@ -3030,7 +3030,7 @@ TEST_F(TaskQueueManagerTest, SetTimeDomainForDisabledQueue) {
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(0);
 
   std::unique_ptr<VirtualTimeDomain> domain(
-      new VirtualTimeDomain(manager_->Delegate()->NowTicks()));
+      new VirtualTimeDomain(manager_->NowTicks()));
   manager_->RegisterTimeDomain(domain.get());
   runners_[0]->SetTimeDomain(domain.get());
 
@@ -3265,6 +3265,22 @@ TEST_F(TaskQueueManagerTest,
       run_times,
       ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(101),
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(201)));
+}
+
+TEST_F(TaskQueueManagerTest, DefaultTaskRunnerSupport) {
+  base::MessageLoop message_loop;
+  scoped_refptr<base::SingleThreadTaskRunner> original_task_runner =
+      message_loop.task_runner();
+  scoped_refptr<base::SingleThreadTaskRunner> custom_task_runner =
+      base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  {
+    std::unique_ptr<TaskQueueManagerForTest> manager(
+        new TaskQueueManagerForTest(std::make_unique<ThreadControllerForTest>(
+            &message_loop, message_loop.task_runner(), nullptr)));
+    manager->SetDefaultTaskRunner(custom_task_runner);
+    DCHECK_EQ(custom_task_runner, message_loop.task_runner());
+  }
+  DCHECK_EQ(original_task_runner, message_loop.task_runner());
 }
 
 }  // namespace task_queue_manager_unittest

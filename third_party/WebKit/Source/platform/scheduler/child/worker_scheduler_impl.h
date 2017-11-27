@@ -17,14 +17,14 @@
 namespace blink {
 namespace scheduler {
 
-class SchedulerTqmDelegate;
+class TaskQueueManager;
 
 class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
                                             public IdleHelper::Delegate,
                                             public TaskTimeObserver {
  public:
   explicit WorkerSchedulerImpl(
-      scoped_refptr<SchedulerTqmDelegate> main_task_runner);
+      std::unique_ptr<TaskQueueManager> task_queue_manager);
   ~WorkerSchedulerImpl() override;
 
   // WorkerScheduler implementation:

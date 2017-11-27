@@ -11,8 +11,8 @@
 #include "base/test/test_simple_task_runner.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/scheduler/base/test_time_source.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/child/worker_scheduler_impl.h"
+#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,10 +33,10 @@ class WorkerGlobalScopeSchedulerTest : public ::testing::Test {
   WorkerGlobalScopeSchedulerTest()
       : clock_(new base::SimpleTestTickClock()),
         mock_task_runner_(new base::TestSimpleTaskRunner()),
-        main_task_runner_(SchedulerTqmDelegateForTest::Create(
-            mock_task_runner_,
-            base::WrapUnique(new TestTimeSource(clock_.get())))),
-        scheduler_(new WorkerSchedulerImpl(main_task_runner_)) {
+        scheduler_(new WorkerSchedulerImpl(
+            CreateTaskQueueManagerWithUnownedClockForTest(nullptr,
+                                                          mock_task_runner_,
+                                                          clock_.get()))) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
@@ -63,7 +63,6 @@ class WorkerGlobalScopeSchedulerTest : public ::testing::Test {
   std::unique_ptr<base::SimpleTestTickClock> clock_;
   scoped_refptr<base::TestSimpleTaskRunner> mock_task_runner_;
 
-  scoped_refptr<SchedulerTqmDelegate> main_task_runner_;
   std::unique_ptr<WorkerSchedulerImpl> scheduler_;
   std::unique_ptr<WorkerGlobalScopeScheduler> global_scope_scheduler_;
 

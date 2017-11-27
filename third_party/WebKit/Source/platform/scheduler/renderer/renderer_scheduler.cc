@@ -10,7 +10,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/util/tracing_helper.h"
 
@@ -30,10 +29,8 @@ std::unique_ptr<RendererScheduler> RendererScheduler::Create() {
   // Workers might be short-lived, so placing warmup here.
   TRACE_EVENT_WARMUP_CATEGORY(TRACE_DISABLED_BY_DEFAULT("worker.scheduler"));
 
-  base::MessageLoop* message_loop = base::MessageLoop::current();
   std::unique_ptr<RendererSchedulerImpl> scheduler(
-      new RendererSchedulerImpl(SchedulerTqmDelegateImpl::Create(
-          message_loop, std::make_unique<base::DefaultTickClock>())));
+      new RendererSchedulerImpl(TaskQueueManager::TakeOverCurrentThread()));
   return base::WrapUnique<RendererScheduler>(scheduler.release());
 }
 

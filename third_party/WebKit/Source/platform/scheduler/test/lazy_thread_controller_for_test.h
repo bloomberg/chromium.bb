@@ -34,6 +34,9 @@ class LazyThreadControllerForTest : public internal::ThreadControllerImpl {
   void CancelDelayedWork() override;
   void PostNonNestableTask(const base::Location& from_here,
                            base::OnceClosure task);
+  void SetDefaultTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
+  void RestoreDefaultTaskRunner() override;
 
  private:
   bool HasMessageLoop();
@@ -42,6 +45,7 @@ class LazyThreadControllerForTest : public internal::ThreadControllerImpl {
   base::PlatformThreadRef thread_ref_;
 
   base::RunLoop::NestingObserver* pending_observer_ = nullptr;
+  scoped_refptr<base::SingleThreadTaskRunner> pending_default_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(LazyThreadControllerForTest);
 };

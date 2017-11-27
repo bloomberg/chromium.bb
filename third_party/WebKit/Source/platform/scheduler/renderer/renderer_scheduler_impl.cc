@@ -25,7 +25,6 @@
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_selector.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/task_queue_throttler.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
@@ -82,8 +81,8 @@ const char* YesNoStateToString(bool is_yes) {
 }  // namespace
 
 RendererSchedulerImpl::RendererSchedulerImpl(
-    scoped_refptr<SchedulerTqmDelegate> main_task_runner)
-    : helper_(main_task_runner, this),
+    std::unique_ptr<TaskQueueManager> task_queue_manager)
+    : helper_(std::move(task_queue_manager), this),
       idle_helper_(
           &helper_,
           this,
@@ -109,8 +108,8 @@ RendererSchedulerImpl::RendererSchedulerImpl(
           QueueingTimeEstimator(this, kQueueingTimeWindowDuration, 20)),
       main_thread_only_(this,
                         compositor_task_queue_,
-                        helper_.scheduler_tqm_delegate().get(),
-                        helper_.scheduler_tqm_delegate()->NowTicks()),
+                        helper_.GetClock(),
+                        helper_.NowTicks()),
       policy_may_need_update_(&any_thread_lock_),
       weak_factory_(this) {
   task_queue_throttler_.reset(new TaskQueueThrottler(this));
@@ -301,12 +300,15 @@ RendererSchedulerImpl::RendererPauseHandleImpl::~RendererPauseHandleImpl() {
 }
 
 void RendererSchedulerImpl::Shutdown() {
+  if (main_thread_only().was_shutdown)
+    return;
+
   base::TimeTicks now = tick_clock()->NowTicks();
   main_thread_only().metrics_helper.OnRendererShutdown(now);
 
   task_queue_throttler_.reset();
-  helper_.Shutdown();
   idle_helper_.Shutdown();
+  helper_.Shutdown();
   main_thread_only().was_shutdown = true;
   main_thread_only().rail_mode_observer = nullptr;
 }
@@ -505,7 +507,7 @@ void RendererSchedulerImpl::DidCommitFrameToCompositor() {
   if (helper_.IsShutdown())
     return;
 
-  base::TimeTicks now(helper_.scheduler_tqm_delegate()->NowTicks());
+  base::TimeTicks now(helper_.NowTicks());
   if (now < main_thread_only().estimated_next_frame_begin) {
     // TODO(rmcilroy): Consider reducing the idle period based on the runtime of
     // the next pending delayed tasks (as currently done in for long idle times)
@@ -538,7 +540,7 @@ void RendererSchedulerImpl::BeginMainFrameNotExpectedUntil(
   if (helper_.IsShutdown())
     return;
 
-  base::TimeTicks now(helper_.scheduler_tqm_delegate()->NowTicks());
+  base::TimeTicks now(helper_.NowTicks());
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::BeginMainFrameNotExpectedUntil",
                "time_remaining", (time - now).InMillisecondsF());
@@ -669,8 +671,7 @@ void RendererSchedulerImpl::OnAudioStateChanged() {
   if (is_audio_playing == main_thread_only().is_audio_playing)
     return;
 
-  main_thread_only().last_audio_state_change =
-      helper_.scheduler_tqm_delegate()->NowTicks();
+  main_thread_only().last_audio_state_change = helper_.NowTicks();
   main_thread_only().is_audio_playing = is_audio_playing;
 
   UpdatePolicy();
@@ -759,7 +760,7 @@ void RendererSchedulerImpl::DidAnimateForInputOnCompositorThread() {
                "RendererSchedulerImpl::DidAnimateForInputOnCompositorThread");
   base::AutoLock lock(any_thread_lock_);
   any_thread().fling_compositor_escalation_deadline =
-      helper_.scheduler_tqm_delegate()->NowTicks() +
+      helper_.NowTicks() +
       base::TimeDelta::FromMilliseconds(kFlingEscalationLimitMillis);
 }
 
@@ -767,7 +768,7 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
     blink::WebInputEvent::Type type,
     InputEventState input_event_state) {
   base::AutoLock lock(any_thread_lock_);
-  base::TimeTicks now = helper_.scheduler_tqm_delegate()->NowTicks();
+  base::TimeTicks now = helper_.NowTicks();
 
   // TODO(alexclarke): Move WebInputEventTraits where we can access it from here
   // and record the name rather than the integer representation.
@@ -887,8 +888,7 @@ void RendererSchedulerImpl::DidHandleInputEventOnMainThread(
   helper_.CheckOnValidThread();
   if (ShouldPrioritizeInputEvent(web_input_event)) {
     base::AutoLock lock(any_thread_lock_);
-    any_thread().user_model.DidFinishProcessingInputEvent(
-        helper_.scheduler_tqm_delegate()->NowTicks());
+    any_thread().user_model.DidFinishProcessingInputEvent(helper_.NowTicks());
 
     // If we were waiting for a touchstart response and the main thread has
     // prevented the default gesture, consider the gesture established. This
@@ -1023,7 +1023,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   if (helper_.IsShutdown())
     return;
 
-  base::TimeTicks now = helper_.scheduler_tqm_delegate()->NowTicks();
+  base::TimeTicks now = helper_.NowTicks();
   policy_may_need_update_.SetWhileLocked(false);
 
   base::TimeDelta expected_use_case_duration;
@@ -1674,15 +1674,13 @@ RendererSchedulerImpl::AsValue(base::TimeTicks optional_now) const {
 void RendererSchedulerImpl::CreateTraceEventObjectSnapshot() const {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"),
-      "RendererScheduler", this,
-      AsValue(helper_.scheduler_tqm_delegate()->NowTicks()));
+      "RendererScheduler", this, AsValue(helper_.NowTicks()));
 }
 
 void RendererSchedulerImpl::CreateTraceEventObjectSnapshotLocked() const {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"),
-      "RendererScheduler", this,
-      AsValueLocked(helper_.scheduler_tqm_delegate()->NowTicks()));
+      "RendererScheduler", this, AsValueLocked(helper_.NowTicks()));
 }
 
 // static
@@ -1707,7 +1705,7 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   any_thread_lock_.AssertAcquired();
 
   if (optional_now.is_null())
-    optional_now = helper_.scheduler_tqm_delegate()->NowTicks();
+    optional_now = helper_.NowTicks();
   std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
   state->SetBoolean(
@@ -1892,8 +1890,7 @@ void RendererSchedulerImpl::OnIdlePeriodStarted() {
 
 void RendererSchedulerImpl::OnIdlePeriodEnded() {
   base::AutoLock lock(any_thread_lock_);
-  any_thread().last_idle_period_end_time =
-      helper_.scheduler_tqm_delegate()->NowTicks();
+  any_thread().last_idle_period_end_time = helper_.NowTicks();
   any_thread().in_idle_period = false;
   UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
@@ -1984,7 +1981,7 @@ void RendererSchedulerImpl::ResetForNavigationLocked() {
                "RendererSchedulerImpl::ResetForNavigationLocked");
   helper_.CheckOnValidThread();
   any_thread_lock_.AssertAcquired();
-  any_thread().user_model.Reset(helper_.scheduler_tqm_delegate()->NowTicks());
+  any_thread().user_model.Reset(helper_.NowTicks());
   any_thread().have_seen_a_potentially_blocking_gesture = false;
   any_thread().waiting_for_meaningful_paint = true;
   any_thread().have_seen_input_since_navigation = false;
@@ -2091,7 +2088,7 @@ void RendererSchedulerImpl::UnregisterTimeDomain(TimeDomain* time_domain) {
 }
 
 base::TickClock* RendererSchedulerImpl::tick_clock() const {
-  return helper_.scheduler_tqm_delegate().get();
+  return helper_.GetClock();
 }
 
 void RendererSchedulerImpl::AddWebViewScheduler(

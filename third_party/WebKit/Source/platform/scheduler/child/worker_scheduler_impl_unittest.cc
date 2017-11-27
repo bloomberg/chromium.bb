@@ -12,7 +12,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/scheduler/base/test_time_source.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
+#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,10 +54,9 @@ void TimelineIdleTestTask(std::vector<std::string>* timeline,
 
 class WorkerSchedulerImplForTest : public WorkerSchedulerImpl {
  public:
-  WorkerSchedulerImplForTest(
-      scoped_refptr<SchedulerTqmDelegate> main_task_runner,
-      base::SimpleTestTickClock* clock_)
-      : WorkerSchedulerImpl(main_task_runner),
+  WorkerSchedulerImplForTest(std::unique_ptr<TaskQueueManager> manager,
+                             base::SimpleTestTickClock* clock_)
+      : WorkerSchedulerImpl(std::move(manager)),
         clock_(clock_),
         timeline_(nullptr) {}
 
@@ -94,11 +93,11 @@ class WorkerSchedulerImplTest : public ::testing::Test {
   WorkerSchedulerImplTest()
       : clock_(new base::SimpleTestTickClock()),
         mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_.get(), true)),
-        main_task_runner_(SchedulerTqmDelegateForTest::Create(
-            mock_task_runner_,
-            base::WrapUnique(new TestTimeSource(clock_.get())))),
-        scheduler_(
-            new WorkerSchedulerImplForTest(main_task_runner_, clock_.get())),
+        scheduler_(new WorkerSchedulerImplForTest(
+            CreateTaskQueueManagerWithUnownedClockForTest(nullptr,
+                                                          mock_task_runner_,
+                                                          clock_.get()),
+            clock_.get())),
         timeline_(nullptr) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
   }
@@ -172,7 +171,6 @@ class WorkerSchedulerImplTest : public ::testing::Test {
   // Only one of mock_task_runner_ or message_loop_ will be set.
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
 
-  scoped_refptr<SchedulerTqmDelegate> main_task_runner_;
   std::unique_ptr<WorkerSchedulerImplForTest> scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;

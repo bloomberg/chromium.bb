@@ -11,7 +11,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/default_tick_clock.h"
 #include "platform/scheduler/base/task_queue.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "platform/scheduler/child/web_scheduler_impl.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"
 #include "platform/scheduler/child/worker_scheduler_impl.h"
@@ -44,14 +43,13 @@ void WebThreadImplForWorkerScheduler::Init() {
 }
 
 WebThreadImplForWorkerScheduler::~WebThreadImplForWorkerScheduler() {
-  if (task_runner_delegate_) {
+  if (worker_scheduler_) {
     base::WaitableEvent completion(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
-    // Restore the original task runner so that the thread can tear itself down.
     thread_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&WebThreadImplForWorkerScheduler::RestoreTaskRunnerOnThread,
+        base::Bind(&WebThreadImplForWorkerScheduler::ShutdownOnThread,
                    base::Unretained(this), &completion));
     completion.Wait();
   }
@@ -62,8 +60,6 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
     base::WaitableEvent* completion) {
   // TODO(alexclarke): Do we need to unify virtual time for workers and the
   // main thread?
-  task_runner_delegate_ = SchedulerTqmDelegateImpl::Create(
-      thread_->message_loop(), std::make_unique<base::DefaultTickClock>());
   worker_scheduler_ = CreateWorkerScheduler();
   worker_scheduler_->Init();
   task_queue_ = worker_scheduler_->DefaultTaskQueue();
@@ -78,23 +74,25 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
   completion->Signal();
 }
 
-void WebThreadImplForWorkerScheduler::RestoreTaskRunnerOnThread(
+void WebThreadImplForWorkerScheduler::ShutdownOnThread(
     base::WaitableEvent* completion) {
-  task_runner_delegate_->RestoreDefaultTaskRunner();
-  completion->Signal();
+  task_queue_ = nullptr;
+  idle_task_runner_ = nullptr;
+  web_scheduler_ = nullptr;
+  worker_scheduler_ = nullptr;
+  web_task_runner_ = nullptr;
+
+  if (completion)
+    completion->Signal();
+}
+
+std::unique_ptr<WorkerScheduler>
+WebThreadImplForWorkerScheduler::CreateWorkerScheduler() {
+  return WorkerScheduler::Create();
 }
 
 void WebThreadImplForWorkerScheduler::WillDestroyCurrentMessageLoop() {
-  task_queue_ = nullptr;
-  idle_task_runner_ = nullptr;
-  web_scheduler_.reset();
-  worker_scheduler_.reset();
-  web_task_runner_.Reset();
-}
-
-std::unique_ptr<scheduler::WorkerScheduler>
-WebThreadImplForWorkerScheduler::CreateWorkerScheduler() {
-  return WorkerScheduler::Create(task_runner_delegate_);
+  ShutdownOnThread(nullptr);
 }
 
 blink::PlatformThreadId WebThreadImplForWorkerScheduler::ThreadId() const {
