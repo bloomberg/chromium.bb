@@ -4,9 +4,9 @@
 
 #include "chrome/browser/vr/elements/button.h"
 
-#include "base/memory/ptr_util.h"
 #include "cc/animation/transform_operation.h"
 #include "cc/animation/transform_operations.h"
+#include "cc/test/geometry_test_utils.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/vector_icon.h"
@@ -18,30 +18,63 @@
 namespace vr {
 
 TEST(Button, HoverTest) {
-  auto button =
-      base::MakeUnique<Button>(base::Callback<void()>(), kPhaseForeground, 1.0,
-                               1.0, 0.5, vector_icons::kMicrophoneIcon);
+  Button button(base::Callback<void()>(), vector_icons::kMicrophoneIcon);
+  button.SetSize(1.0f, 1.0f);
+  button.set_hover_offset(0.5f);
 
   cc::TransformOperation foreground_op =
-      button->foreground()->GetTargetTransform().at(UiElement::kTranslateIndex);
+      button.foreground()->GetTargetTransform().at(UiElement::kTranslateIndex);
   cc::TransformOperation background_op =
-      button->background()->GetTargetTransform().at(UiElement::kTranslateIndex);
+      button.background()->GetTargetTransform().at(UiElement::kTranslateIndex);
   cc::TransformOperation hit_plane_op =
-      button->hit_plane()->GetTargetTransform().at(UiElement::kScaleIndex);
+      button.hit_plane()->GetTargetTransform().at(UiElement::kScaleIndex);
 
-  button->OnHoverEnter(gfx::PointF(0.5f, 0.5f));
+  button.OnHoverEnter(gfx::PointF(0.5f, 0.5f));
   cc::TransformOperation foreground_op_hover =
-      button->foreground()->GetTargetTransform().at(UiElement::kTranslateIndex);
+      button.foreground()->GetTargetTransform().at(UiElement::kTranslateIndex);
   cc::TransformOperation background_op_hover =
-      button->background()->GetTargetTransform().at(UiElement::kTranslateIndex);
+      button.background()->GetTargetTransform().at(UiElement::kTranslateIndex);
   cc::TransformOperation hit_plane_op_hover =
-      button->hit_plane()->GetTargetTransform().at(UiElement::kScaleIndex);
+      button.hit_plane()->GetTargetTransform().at(UiElement::kScaleIndex);
 
   EXPECT_TRUE(foreground_op_hover.translate.z - foreground_op.translate.z >
               0.f);
   EXPECT_TRUE(background_op_hover.translate.z - background_op.translate.z >
               0.f);
   EXPECT_TRUE(hit_plane_op_hover.scale.x - hit_plane_op.scale.x > 0.f);
+}
+
+TEST(Button, SizePropagatesToSubElements) {
+  Button button(base::Callback<void()>(), vector_icons::kMicrophoneIcon);
+  gfx::SizeF size(1000.0f, 1000.0f);
+  gfx::SizeF icon_size = size;
+  icon_size.Scale(0.5f);
+  button.SetSize(size.width(), size.height());
+
+  for (auto& child : button.children()) {
+    switch (child->type()) {
+      case kTypeButtonBackground:
+      case kTypeButtonHitTarget:
+        EXPECT_SIZE_EQ(size, child->size());
+        EXPECT_FLOAT_EQ(size.width() * 0.5f, child->corner_radius());
+        break;
+      case kTypeButtonForeground:
+        EXPECT_SIZE_EQ(icon_size, child->size());
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+}
+
+TEST(Button, DrawPhasePropagatesToSubElements) {
+  Button button(base::Callback<void()>(), vector_icons::kMicrophoneIcon);
+  button.set_draw_phase(kPhaseOverlayForeground);
+
+  for (auto& child : button.children()) {
+    EXPECT_EQ(kPhaseOverlayForeground, child->draw_phase());
+  }
 }
 
 }  // namespace vr

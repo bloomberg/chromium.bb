@@ -119,6 +119,10 @@ class UiElement : public cc::AnimationTarget {
   void set_type(UiElementType type);
   virtual void OnSetType();
 
+  DrawPhase draw_phase() const { return draw_phase_; }
+  void set_draw_phase(DrawPhase draw_phase);
+  virtual void OnSetDrawPhase();
+
   // Returns true if the element needs to be re-drawn.
   virtual bool PrepareToDraw();
 
@@ -258,9 +262,6 @@ class UiElement : public cc::AnimationTarget {
     x_padding_ = x_padding;
     y_padding_ = y_padding;
   }
-
-  DrawPhase draw_phase() const { return draw_phase_; }
-  void set_draw_phase(DrawPhase draw_phase) { draw_phase_ = draw_phase; }
 
   const gfx::Transform& inheritable_transform() const {
     return inheritable_transform_;
@@ -419,7 +420,7 @@ class UiElement : public cc::AnimationTarget {
   bool bubble_events_ = false;
 
   // The size of the object.  This does not affect children.
-  gfx::SizeF size_ = {1.0f, 1.0f};
+  gfx::SizeF size_;
 
   // The local orgin of the element. This can be updated, say, so that an
   // element can contain its children, even if they are not centered about its
