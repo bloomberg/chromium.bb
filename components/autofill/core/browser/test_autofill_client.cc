@@ -46,6 +46,11 @@ ukm::UkmRecorder* TestAutofillClient::GetUkmRecorder() {
   return ukm::UkmRecorder::Get();
 }
 
+AddressNormalizer* TestAutofillClient::GetAddressNormalizer() {
+  // TODO(crbug.com/788432): Should use a TestAddressNormalizer.
+  return nullptr;
+}
+
 SaveCardBubbleController* TestAutofillClient::GetSaveCardBubbleController() {
 #if defined(OS_ANDROID)
   return nullptr;

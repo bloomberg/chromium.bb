@@ -64,6 +64,11 @@ ukm::UkmRecorder* ChromeAutofillClientIOS::GetUkmRecorder() {
   return GetApplicationContext()->GetUkmRecorder();
 }
 
+AddressNormalizer* ChromeAutofillClientIOS::GetAddressNormalizer() {
+  // TODO(crbug.com/788229): Supply an AddressNormalizer instance.
+  return nullptr;
+}
+
 void ChromeAutofillClientIOS::ShowUnmaskPrompt(
     const CreditCard& card,
     UnmaskCardReason reason,

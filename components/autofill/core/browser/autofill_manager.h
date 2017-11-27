@@ -452,11 +452,10 @@ class AutofillManager : public AutofillHandler,
       const ServerFieldTypeSet& upload_types);
 
   void FillFieldWithValue(AutofillField* autofill_field,
-                          const base::string16& value,
-                          const std::string& profile_language_code,
-                          const base::string16& profile_full_name,
+                          const AutofillDataModel& data_model,
                           FormFieldData* field_data,
-                          bool should_notify);
+                          bool should_notify,
+                          const base::string16& cvc);
 
   AutofillClient* const client_;
 

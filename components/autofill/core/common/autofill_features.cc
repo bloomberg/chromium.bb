@@ -7,6 +7,11 @@
 namespace autofill {
 namespace features {
 
+// Controls whether the AddressNormalizer is supplied. If available, it may be
+// used to normalize address and will incur fetching rules from the server.
+const base::Feature kAutofillAddressNormalizer{
+    "AutofillAddressNormalizer", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls attaching the autofill type predictions to their respective
 // element in the DOM.
 const base::Feature kAutofillShowTypePredictions{

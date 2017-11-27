@@ -39,6 +39,7 @@ class UkmRecorder;
 
 namespace autofill {
 
+class AddressNormalizer;
 class AutofillPopupDelegate;
 class AutofillWebDataService;
 class CardUnmaskDelegate;
@@ -106,6 +107,9 @@ class AutofillClient : public RiskDataLoader {
 
   // Gets the UKM service associated with this client (for metrics).
   virtual ukm::UkmRecorder* GetUkmRecorder() = 0;
+
+  // Gets an AddressNormalizer instance (can be null).
+  virtual AddressNormalizer* GetAddressNormalizer() = 0;
 
   // Gets the SaveCardBubbleController instance associated with the client.
   // May return nullptr if the save card bubble has not been shown yet.

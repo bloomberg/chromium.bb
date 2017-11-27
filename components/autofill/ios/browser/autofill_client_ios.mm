@@ -66,6 +66,10 @@ ukm::UkmRecorder* AutofillClientIOS::GetUkmRecorder() {
   return nullptr;
 }
 
+AddressNormalizer* AutofillClientIOS::GetAddressNormalizer() {
+  return nullptr;
+}
+
 SaveCardBubbleController* AutofillClientIOS::GetSaveCardBubbleController() {
   return nullptr;
 }

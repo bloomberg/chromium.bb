@@ -189,8 +189,12 @@ bool AddressNormalizerImpl::NormalizeAddressSync(AutofillProfile* profile) {
   const std::string region_code =
       data_util::GetCountryCodeWithFallback(*profile, app_locale_);
   FormatPhoneNumberToE164(profile, region_code, app_locale_);
-  if (!AreRulesLoadedForRegion(region_code))
+  if (!AreRulesLoadedForRegion(region_code)) {
+    // Start loading the rules for that region so that they are available next
+    // time.
+    LoadRulesForRegion(region_code);
     return false;
+  }
 
   return NormalizeProfileWithValidator(profile, app_locale_,
                                        &address_validator_);

@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/browser_process.h"
@@ -36,6 +38,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -148,6 +151,12 @@ IdentityProvider* ChromeAutofillClient::GetIdentityProvider() {
 
 ukm::UkmRecorder* ChromeAutofillClient::GetUkmRecorder() {
   return ukm::UkmRecorder::Get();
+}
+
+AddressNormalizer* ChromeAutofillClient::GetAddressNormalizer() {
+  if (base::FeatureList::IsEnabled(features::kAutofillAddressNormalizer))
+    return AddressNormalizerFactory::GetInstance();
+  return nullptr;
 }
 
 SaveCardBubbleController* ChromeAutofillClient::GetSaveCardBubbleController() {
