@@ -63,7 +63,7 @@ const char kCacheName[] = "test_cache";
 std::unique_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
     storage::BlobStorageContext* blob_storage_context) {
   return base::WrapUnique(
-      new storage::BlobProtocolHandler(blob_storage_context, nullptr));
+      new storage::BlobProtocolHandler(blob_storage_context));
 }
 
 // A disk_cache::Backend wrapper that can delay operations.

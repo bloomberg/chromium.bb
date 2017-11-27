@@ -657,7 +657,7 @@ void CannedSyncableFileSystem::DoWriteString(
   EXPECT_TRUE(io_task_runner_->RunsTasksInCurrentSequence());
   EXPECT_TRUE(is_filesystem_opened_);
   MockBlobURLRequestContext* url_request_context(
-      new MockBlobURLRequestContext(file_system_context_.get()));
+      new MockBlobURLRequestContext());
   WriteHelper* helper = new WriteHelper(url_request_context, data);
   operation_runner()->Write(url_request_context, url,
                             helper->scoped_text_blob()->GetBlobDataHandle(), 0,

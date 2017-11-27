@@ -14,10 +14,6 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "storage/browser/storage_browser_export.h"
 
-namespace storage {
-class FileSystemContext;
-}  // namespace storage
-
 namespace net {
 class URLRequestContext;
 }  // namespace net
@@ -45,8 +41,7 @@ class STORAGE_EXPORT BlobProtocolHandler
   // This gets the handle on the request if it exists.
   static BlobDataHandle* GetRequestBlobDataHandle(net::URLRequest* request);
 
-  BlobProtocolHandler(BlobStorageContext* context,
-                      storage::FileSystemContext* file_system_context);
+  explicit BlobProtocolHandler(BlobStorageContext* context);
   ~BlobProtocolHandler() override;
 
   net::URLRequestJob* MaybeCreateJob(
@@ -57,7 +52,6 @@ class STORAGE_EXPORT BlobProtocolHandler
   BlobDataHandle* LookupBlobHandle(net::URLRequest* request) const;
 
   base::WeakPtr<BlobStorageContext> context_;
-  const scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobProtocolHandler);
 };

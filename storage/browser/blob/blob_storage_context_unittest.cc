@@ -467,7 +467,8 @@ TEST_F(BlobStorageContextTest, AddFinishedBlob_LargeOffset) {
   const std::string kId2("id2");
 
   BlobDataBuilder builder1(kId1);
-  builder1.AppendFileSystemFile(GURL(), 0, kLargeSize, base::Time::Now());
+  builder1.AppendFileSystemFile(GURL(), 0, kLargeSize, base::Time::Now(),
+                                nullptr);
 
   BlobDataBuilder builder2(kId2);
   builder2.AppendBlob(kId1, kLargeSize - kBlobLength, kBlobLength);

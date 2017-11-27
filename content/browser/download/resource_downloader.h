@@ -13,6 +13,10 @@
 #include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+namespace storage {
+class FileSystemContext;
+}
+
 namespace content {
 
 class ThrottlingURLLoader;

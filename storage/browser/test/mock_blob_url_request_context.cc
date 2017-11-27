@@ -13,13 +13,12 @@
 
 namespace content {
 
-MockBlobURLRequestContext::MockBlobURLRequestContext(
-    storage::FileSystemContext* file_system_context)
+MockBlobURLRequestContext::MockBlobURLRequestContext()
     : blob_storage_context_(new storage::BlobStorageContext) {
   // Job factory owns the protocol handler.
   job_factory_.SetProtocolHandler(
       "blob", base::MakeUnique<storage::BlobProtocolHandler>(
-                  blob_storage_context_.get(), file_system_context));
+                  blob_storage_context_.get()));
   set_job_factory(&job_factory_);
 }
 

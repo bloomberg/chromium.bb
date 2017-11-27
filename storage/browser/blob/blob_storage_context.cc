@@ -354,7 +354,8 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
         element->SetToFileSystemUrlRange(
             source_item->filesystem_url(), source_item->offset() + item_offset,
             read_size, source_item->expected_modification_time());
-        data_item = new BlobDataItem(std::move(element));
+        data_item = new BlobDataItem(std::move(element),
+                                     source_item->file_system_context());
         break;
       }
       case DataElement::TYPE_DISK_CACHE_ENTRY: {

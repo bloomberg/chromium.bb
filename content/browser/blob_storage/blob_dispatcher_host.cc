@@ -182,6 +182,7 @@ void BlobDispatcherHost::OnRegisterBlob(
 
   HostedBlobState hosted_state(transport_host_.StartBuildingBlob(
       uuid, content_type, content_disposition, descriptions, context,
+      file_system_context_,
       base::Bind(&BlobDispatcherHost::SendMemoryRequest, base::Unretained(this),
                  uuid),
       base::Bind(&BlobDispatcherHost::SendFinalBlobStatus,

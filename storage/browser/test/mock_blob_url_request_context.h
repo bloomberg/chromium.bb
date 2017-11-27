@@ -11,10 +11,6 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 
 namespace storage {
-class FileSystemContext;
-}
-
-namespace storage {
 class BlobDataHandle;
 class BlobStorageContext;
 }
@@ -23,7 +19,7 @@ namespace content {
 
 class MockBlobURLRequestContext : public net::URLRequestContext {
  public:
-  MockBlobURLRequestContext(storage::FileSystemContext* file_system_context);
+  MockBlobURLRequestContext();
   ~MockBlobURLRequestContext() override;
 
   storage::BlobStorageContext* blob_storage_context() const {

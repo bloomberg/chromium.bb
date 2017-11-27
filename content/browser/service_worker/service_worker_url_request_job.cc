@@ -609,7 +609,7 @@ void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
   DCHECK(HasRequestBody());
   storage::BlobDataBuilder blob_builder(base::GenerateGUID());
   for (const ResourceRequestBody::Element& element : (*body_->elements())) {
-    blob_builder.AppendIPCDataElement(element);
+    blob_builder.AppendIPCDataElement(element, nullptr);  // TODO
   }
 
   request_body_blob_data_handle_ =

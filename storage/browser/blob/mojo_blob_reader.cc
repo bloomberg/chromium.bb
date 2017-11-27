@@ -11,20 +11,18 @@
 namespace storage {
 
 // static
-void MojoBlobReader::Create(FileSystemContext* file_system_context,
-                            const BlobDataHandle* handle,
+void MojoBlobReader::Create(const BlobDataHandle* handle,
                             const net::HttpByteRange& range,
                             std::unique_ptr<Delegate> delegate) {
-  new MojoBlobReader(file_system_context, handle, range, std::move(delegate));
+  new MojoBlobReader(handle, range, std::move(delegate));
 }
 
-MojoBlobReader::MojoBlobReader(FileSystemContext* file_system_context,
-                               const BlobDataHandle* handle,
+MojoBlobReader::MojoBlobReader(const BlobDataHandle* handle,
                                const net::HttpByteRange& range,
                                std::unique_ptr<Delegate> delegate)
     : delegate_(std::move(delegate)),
       byte_range_(range),
-      blob_reader_(handle->CreateReader(file_system_context)),
+      blob_reader_(handle->CreateReader()),
       writable_handle_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       peer_closed_handle_watcher_(FROM_HERE,

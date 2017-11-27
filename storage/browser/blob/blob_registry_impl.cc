@@ -386,7 +386,8 @@ void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobDependencies() {
       const auto& f = element->get_file_filesystem();
       builder_.AppendFileSystemFile(
           f->url, f->offset, f->length,
-          f->expected_modification_time.value_or(base::Time()));
+          f->expected_modification_time.value_or(base::Time()),
+          blob_registry_->file_system_context_);
     } else if (element->is_blob()) {
       DCHECK(blob_uuid_it != referenced_blob_uuids_.end());
       const std::string& blob_uuid = *blob_uuid_it++;

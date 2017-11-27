@@ -63,6 +63,7 @@ class STORAGE_EXPORT BlobTransportHost {
       const std::string& content_disposition,
       const std::vector<DataElement>& elements,
       BlobStorageContext* context,
+      const scoped_refptr<FileSystemContext>& file_system_context,
       const RequestMemoryCallback& request_memory,
       const BlobStatusCallback& completion_callback);
 

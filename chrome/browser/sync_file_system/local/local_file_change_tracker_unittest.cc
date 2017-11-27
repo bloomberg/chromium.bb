@@ -280,7 +280,7 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
   ASSERT_EQ(0U, urls.size());
 
   const std::string kData("Lorem ipsum.");
-  MockBlobURLRequestContext url_request_context(file_system_context());
+  MockBlobURLRequestContext url_request_context;
   ScopedTextBlob blob(url_request_context, "blob_id:test", kData);
 
   // Create files and nested directories.
@@ -431,7 +431,7 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCopyChanges) {
   ASSERT_EQ(0U, urls.size());
 
   const std::string kData("Lorem ipsum.");
-  MockBlobURLRequestContext url_request_context(file_system_context());
+  MockBlobURLRequestContext url_request_context;
   ScopedTextBlob blob(url_request_context, "blob_id:test", kData);
 
   // Create files and nested directories.

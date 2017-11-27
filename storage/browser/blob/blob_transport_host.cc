@@ -80,6 +80,7 @@ std::unique_ptr<BlobDataHandle> BlobTransportHost::StartBuildingBlob(
     const std::string& content_disposition,
     const std::vector<DataElement>& elements,
     BlobStorageContext* context,
+    const scoped_refptr<FileSystemContext>& file_system_context,
     const RequestMemoryCallback& request_memory,
     const BlobStatusCallback& completion_callback) {
   DCHECK(context);
@@ -123,7 +124,7 @@ std::unique_ptr<BlobDataHandle> BlobTransportHost::StartBuildingBlob(
       // elements along and tell our callback we're done transporting.
       for (const DataElement& e : elements) {
         DCHECK_NE(e.type(), DataElement::TYPE_BYTES_DESCRIPTION);
-        state.data_builder.AppendIPCDataElement(e);
+        state.data_builder.AppendIPCDataElement(e, file_system_context);
       }
       handle = context->BuildBlob(
           state.data_builder, BlobStorageContext::TransportAllowedCallback());
@@ -134,19 +135,20 @@ std::unique_ptr<BlobDataHandle> BlobTransportHost::StartBuildingBlob(
       state.strategy = IPCBlobItemRequestStrategy::IPC;
       state.request_builder.InitializeForIPCRequests(
           memory_controller.limits().max_ipc_memory_size, transport_memory_size,
-          elements, &(state.data_builder));
+          elements, file_system_context, &(state.data_builder));
       break;
     case MemoryStrategy::SHARED_MEMORY:
       state.strategy = IPCBlobItemRequestStrategy::SHARED_MEMORY;
       state.request_builder.InitializeForSharedMemoryRequests(
           memory_controller.limits().max_shared_memory_size,
-          transport_memory_size, elements, &(state.data_builder));
+          transport_memory_size, elements, file_system_context,
+          &(state.data_builder));
       break;
     case MemoryStrategy::FILE:
       state.strategy = IPCBlobItemRequestStrategy::FILE;
       state.request_builder.InitializeForFileRequests(
           memory_controller.limits().max_file_size, transport_memory_size,
-          elements, &(state.data_builder));
+          elements, file_system_context, &(state.data_builder));
       break;
   }
   // We initialize our requests received state now that they are populated.

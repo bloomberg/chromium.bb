@@ -63,7 +63,9 @@ BlobDataBuilder::BlobDataBuilder(BlobDataBuilder&&) = default;
 BlobDataBuilder& BlobDataBuilder::operator=(BlobDataBuilder&&) = default;
 BlobDataBuilder::~BlobDataBuilder() {}
 
-void BlobDataBuilder::AppendIPCDataElement(const DataElement& ipc_data) {
+void BlobDataBuilder::AppendIPCDataElement(
+    const DataElement& ipc_data,
+    const scoped_refptr<FileSystemContext>& file_system_context) {
   uint64_t length = ipc_data.length();
   switch (ipc_data.type()) {
     case DataElement::TYPE_BYTES:
@@ -77,7 +79,8 @@ void BlobDataBuilder::AppendIPCDataElement(const DataElement& ipc_data) {
       break;
     case DataElement::TYPE_FILE_FILESYSTEM:
       AppendFileSystemFile(ipc_data.filesystem_url(), ipc_data.offset(), length,
-                           ipc_data.expected_modification_time());
+                           ipc_data.expected_modification_time(),
+                           file_system_context);
       break;
     case DataElement::TYPE_BLOB:
       // This is a temporary item that will be deconstructed later in
@@ -217,12 +220,14 @@ void BlobDataBuilder::AppendFileSystemFile(
     const GURL& url,
     uint64_t offset,
     uint64_t length,
-    const base::Time& expected_modification_time) {
+    const base::Time& expected_modification_time,
+    scoped_refptr<FileSystemContext> file_system_context) {
   DCHECK_GT(length, 0ul);
   std::unique_ptr<DataElement> element(new DataElement());
   element->SetToFileSystemUrlRange(url, offset, length,
                                    expected_modification_time);
-  items_.push_back(new BlobDataItem(std::move(element)));
+  items_.push_back(
+      new BlobDataItem(std::move(element), std::move(file_system_context)));
 }
 
 void BlobDataBuilder::AppendDiskCacheEntry(

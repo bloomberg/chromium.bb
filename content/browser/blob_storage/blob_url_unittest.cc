@@ -143,8 +143,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
         net::URLRequest* request,
         net::NetworkDelegate* network_delegate) const override {
       return new BlobURLRequestJob(request, network_delegate,
-                                   test_->GetHandleFromBuilder(),
-                                   test_->file_system_context_.get());
+                                   test_->GetHandleFromBuilder());
     }
 
    private:
@@ -284,8 +283,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
       scoped_refptr<BlobURLLoaderFactory> factory =
           BlobURLLoaderFactory::Create(
               base::BindOnce(&BlobURLRequestJobTest::GetStorageContext,
-                             base::Unretained(this)),
-              file_system_context_);
+                             base::Unretained(this)));
       base::RunLoop().RunUntilIdle();
       factory->CreateLoaderAndStart(mojo::MakeRequest(&url_loader), 0, 0,
                                     mojom::kURLLoadOptionNone, request,
@@ -342,7 +340,8 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
     *expected_result += std::string(kTestDiskCacheData1);
 
     blob_data_->AppendFileSystemFile(temp_file_system_file1_, 3, 4,
-                                     temp_file_system_file_modification_time1_);
+                                     temp_file_system_file_modification_time1_,
+                                     file_system_context_);
     *expected_result += std::string(kTestFileSystemFileData1 + 3, 4);
 
     blob_data_->AppendData(kTestData2 + 4, 5);
@@ -352,7 +351,8 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
     *expected_result += std::string(kTestFileData2 + 5, 6);
 
     blob_data_->AppendFileSystemFile(temp_file_system_file2_, 6, 7,
-                                     temp_file_system_file_modification_time2_);
+                                     temp_file_system_file_modification_time2_,
+                                     file_system_context_);
     *expected_result += std::string(kTestFileSystemFileData2 + 6, 7);
   }
 
@@ -467,7 +467,7 @@ TEST_P(BlobURLRequestJobTest, TestGetSimpleFileSystemFileRequest) {
   SetUpFileSystem();
   blob_data_->AppendFileSystemFile(temp_file_system_file1_, 0,
                                    std::numeric_limits<uint64_t>::max(),
-                                   base::Time());
+                                   base::Time(), file_system_context_);
   TestSuccessNonrangeRequest(kTestFileSystemFileData1,
                              arraysize(kTestFileSystemFileData1) - 1);
 }
@@ -484,23 +484,25 @@ TEST_P(BlobURLRequestJobTest, TestGetLargeFileSystemFileRequest) {
 
   blob_data_->AppendFileSystemFile(GetFileSystemURL(kFilename), 0,
                                    std::numeric_limits<uint64_t>::max(),
-                                   base::Time());
+                                   base::Time(), file_system_context_);
   TestSuccessNonrangeRequest(large_data, large_data.size());
 }
 
 TEST_P(BlobURLRequestJobTest, TestGetNonExistentFileSystemFileRequest) {
   SetUpFileSystem();
   GURL non_existent_file = GetFileSystemURL("non-existent.dat");
-  blob_data_->AppendFileSystemFile(
-      non_existent_file, 0, std::numeric_limits<uint64_t>::max(), base::Time());
+  blob_data_->AppendFileSystemFile(non_existent_file, 0,
+                                   std::numeric_limits<uint64_t>::max(),
+                                   base::Time(), file_system_context_);
   TestErrorRequest(404);
 }
 
 TEST_P(BlobURLRequestJobTest, TestGetInvalidFileSystemFileRequest) {
   SetUpFileSystem();
   GURL invalid_file;
-  blob_data_->AppendFileSystemFile(
-      invalid_file, 0, std::numeric_limits<uint64_t>::max(), base::Time());
+  blob_data_->AppendFileSystemFile(invalid_file, 0,
+                                   std::numeric_limits<uint64_t>::max(),
+                                   base::Time(), file_system_context_);
   TestErrorRequest(500);
 }
 
@@ -508,14 +510,16 @@ TEST_P(BlobURLRequestJobTest, TestGetChangedFileSystemFileRequest) {
   SetUpFileSystem();
   base::Time old_time = temp_file_system_file_modification_time1_ -
                         base::TimeDelta::FromSeconds(10);
-  blob_data_->AppendFileSystemFile(temp_file_system_file1_, 0, 3, old_time);
+  blob_data_->AppendFileSystemFile(temp_file_system_file1_, 0, 3, old_time,
+                                   file_system_context_);
   TestErrorRequest(404);
 }
 
 TEST_P(BlobURLRequestJobTest, TestGetSlicedFileSystemFileRequest) {
   SetUpFileSystem();
   blob_data_->AppendFileSystemFile(temp_file_system_file1_, 2, 4,
-                                   temp_file_system_file_modification_time1_);
+                                   temp_file_system_file_modification_time1_,
+                                   file_system_context_);
   std::string result(kTestFileSystemFileData1 + 2, 4);
   TestSuccessNonrangeRequest(result, 4);
 }

@@ -356,8 +356,8 @@ class BlobReaderTest : public ::testing::Test {
   void InitializeReader(BlobDataBuilder* builder) {
     blob_handle_ = builder ? context_.AddFinishedBlob(builder) : nullptr;
     provider_ = new MockFileStreamReaderProvider();
-    reader_.reset(
-        new BlobReader(blob_handle_.get(), base::WrapUnique(provider_)));
+    reader_.reset(new BlobReader(blob_handle_.get()));
+    reader_->SetFileStreamProviderForTesting(base::WrapUnique(provider_));
   }
 
   // Takes ownership of the file reader (the blob reader takes ownership).
@@ -487,7 +487,7 @@ TEST_F(BlobReaderTest, BasicFileSystem) {
   const GURL kURL("file://test_file/here.txt");
   const std::string kData = "FileData!!!";
   const base::Time kTime = base::Time::Now();
-  b.AppendFileSystemFile(kURL, 0, kData.size(), kTime);
+  b.AppendFileSystemFile(kURL, 0, kData.size(), kTime, nullptr);
   this->InitializeReader(&b);
   // Non-async reader.
   ExpectFileSystemCall(kURL, 0, kData.size(), kTime,
@@ -755,7 +755,7 @@ TEST_F(BlobReaderTest, FileSystemAsync) {
   const GURL kURL("file://test_file/here.txt");
   const std::string kData = "FileData!!!";
   const base::Time kTime = base::Time::Now();
-  b.AppendFileSystemFile(kURL, 0, kData.size(), kTime);
+  b.AppendFileSystemFile(kURL, 0, kData.size(), kTime, nullptr);
   this->InitializeReader(&b);
 
   std::unique_ptr<FakeFileStreamReader> reader(new FakeFileStreamReader(kData));
@@ -1191,8 +1191,8 @@ TEST_F(BlobReaderTest, HandleBeforeAsyncCancel) {
       b, base::Bind(&SaveBlobStatusAndFiles, &can_populate_status, &files));
   EXPECT_EQ(BlobStatus::PENDING_TRANSPORT, can_populate_status);
   provider_ = new MockFileStreamReaderProvider();
-  reader_.reset(
-      new BlobReader(blob_handle_.get(), base::WrapUnique(provider_)));
+  reader_.reset(new BlobReader(blob_handle_.get()));
+  reader_->SetFileStreamProviderForTesting(base::WrapUnique(provider_));
   int size_result = -1;
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
@@ -1217,8 +1217,8 @@ TEST_F(BlobReaderTest, ReadFromIncompleteBlob) {
       b, base::Bind(&SaveBlobStatusAndFiles, &can_populate_status, &files));
   EXPECT_EQ(BlobStatus::PENDING_TRANSPORT, can_populate_status);
   provider_ = new MockFileStreamReaderProvider();
-  reader_.reset(
-      new BlobReader(blob_handle_.get(), base::WrapUnique(provider_)));
+  reader_.reset(new BlobReader(blob_handle_.get()));
+  reader_->SetFileStreamProviderForTesting(base::WrapUnique(provider_));
   int size_result = -1;
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));

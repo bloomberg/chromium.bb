@@ -324,7 +324,7 @@ void ServiceWorkerURLLoaderJob::StartResponse(
     blob_client_binding_.Bind(mojo::MakeRequest(&client));
     BlobURLLoaderFactory::CreateLoaderAndStart(
         std::move(request), resource_request_, std::move(client),
-        std::move(blob_data_handle), nullptr /* file_system_context */);
+        std::move(blob_data_handle));
     return;
   }
 
