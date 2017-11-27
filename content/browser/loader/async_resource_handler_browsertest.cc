@@ -65,6 +65,13 @@ std::unique_ptr<net::test_server::HttpResponse> HandlePostAndRedirectURLs(
 
 }  // namespace
 
+// https://crbug.com/788748
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#define MAYBE_AsyncResourceHandlerBrowserTest \
+  DISABLED_AsyncResourceHandlerBrowserTest
+#else
+#define MAYBE_AsyncResourceHandlerBrowserTest AsyncResourceHandlerBrowserTest
+#endif  // defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 class AsyncResourceHandlerBrowserTest
     : public ContentBrowserTest,
       public testing::WithParamInterface<bool> {
