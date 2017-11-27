@@ -38,12 +38,16 @@ class TestExporter(object):
         Returns:
             A boolean: True if success, False if there were any patch failures.
         """
-        args = self.parse_args(argv)
-        self.dry_run = args.dry_run
+        options = self.parse_args(argv)
 
-        configure_logging(logging_level=logging.INFO, include_time=True)
+        self.dry_run = options.dry_run
+        log_level = logging.DEBUG if options.verbose else logging.INFO
+        configure_logging(logging_level=log_level, include_time=True)
+        if options.verbose:
+            # Print out the full output when executive.run_command fails.
+            self.host.executive.error_output_limit = None
 
-        credentials = read_credentials(self.host, args.credentials_json)
+        credentials = read_credentials(self.host, options.credentials_json)
         if not (credentials['GH_USER'] and credentials['GH_TOKEN']):
             _log.error('Must provide both user and token for GitHub.')
             return False
@@ -73,6 +77,9 @@ class TestExporter(object):
 
     def parse_args(self, argv):
         parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument(
+            '-v', '--verbose', action='store_true',
+            help='log extra details that may be helpful when debugging')
         parser.add_argument(
             '--dry-run', action='store_true',
             help='See what would be done without actually creating or merging '
@@ -307,8 +314,9 @@ class TestExporter(object):
             _log.info('[dry_run] Stopping before %s PR from %s', action_str, origin_str)
             _log.info('\n\n[dry_run] message:')
             _log.info(message)
-            _log.debug('\n\n[dry_run] patch[0:500]:')
+            _log.debug('\n[dry_run] First 500 characters of patch: << END_OF_PATCH_EXCERPT')
             _log.debug(patch[0:500])
+            _log.debug('END_OF_PATCH_EXCERPT')
             return
 
         self.local_wpt.create_branch_with_patch(pr_branch_name, message, patch, author, force_push=updating)

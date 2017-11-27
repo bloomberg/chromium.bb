@@ -87,6 +87,14 @@ class Executive(object):
     STDOUT = subprocess.STDOUT
     DEVNULL = open(os.devnull, 'wb')
 
+    def __init__(self, error_output_limit=500):
+        """Args:
+            error_output_limit: The maximum length of output included in the
+                message of ScriptError when run_command sees a non-zero exit
+                code. None means no limit.
+        """
+        self.error_output_limit = error_output_limit
+
     def _should_close_fds(self):
         # We need to pass close_fds=True to work around Python bug #2320
         # (otherwise we can hang when we kill DumpRenderTree when we are running
@@ -137,12 +145,14 @@ class Executive(object):
                         ('dwFlags', ctypes.c_ulong),
                         ('szExeFile', ctypes.c_char * 260)]
 
+        # Follow the Win32 API naming style. pylint: disable=invalid-name
         CreateToolhelp32Snapshot = ctypes.windll.kernel32.CreateToolhelp32Snapshot
         Process32First = ctypes.windll.kernel32.Process32First
         Process32Next = ctypes.windll.kernel32.Process32Next
         CloseHandle = ctypes.windll.kernel32.CloseHandle
         TH32CS_SNAPPROCESS = 0x00000002  # win32 magic number
         hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+        # pylint does not understand ctypes. pylint: disable=attribute-defined-outside-init
         pe32 = PROCESSENTRY32()
         pe32.dwSize = ctypes.sizeof(PROCESSENTRY32)
         result = False
@@ -237,24 +247,24 @@ class Executive(object):
     def ignore_error(error):
         pass
 
-    def _compute_stdin(self, input):
+    def _compute_stdin(self, user_input):
         """Returns (stdin, string_to_communicate)"""
         # FIXME: We should be returning /dev/null for stdin
         # or closing stdin after process creation to prevent
         # child processes from getting input from the user.
-        if not input:
+        if not user_input:
             return (None, None)
-        if hasattr(input, 'read'):  # Check if the input is a file.
-            return (input, None)  # Assume the file is in the right encoding.
+        if hasattr(user_input, 'read'):  # Check if the user_input is a file.
+            return (user_input, None)  # Assume the file is in the right encoding.
 
         # Popen in Python 2.5 and before does not automatically encode unicode objects.
         # http://bugs.python.org/issue5290
         # See https://bugs.webkit.org/show_bug.cgi?id=37528
         # for an example of a regression caused by passing a unicode string directly.
         # FIXME: We may need to encode differently on different platforms.
-        if isinstance(input, unicode):
-            input = input.encode(self._child_process_encoding())
-        return (self.PIPE, input)
+        if isinstance(user_input, unicode):
+            user_input = user_input.encode(self._child_process_encoding())
+        return (self.PIPE, user_input)
 
     def command_for_printing(self, args):
         """Returns a print-ready string representing command args.
@@ -274,7 +284,7 @@ class Executive(object):
                     args,
                     cwd=None,
                     env=None,
-                    input=None,
+                    input=None,  # pylint: disable=redefined-builtin
                     timeout_seconds=None,
                     error_handler=None,
                     return_exit_code=False,
@@ -322,7 +332,8 @@ class Executive(object):
             script_error = ScriptError(script_args=args,
                                        exit_code=exit_code,
                                        output=output,
-                                       cwd=cwd)
+                                       cwd=cwd,
+                                       output_limit=self.error_output_limit)
             (error_handler or self.default_error_handler)(script_error)
         return output
 
