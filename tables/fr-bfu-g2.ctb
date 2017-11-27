@@ -229,12 +229,18 @@ nofor endword lles 456-156
 nofor midendword llou 456-1256
 
 partword oi 23456
-before con always om 2456
+noback before con always om 2456
+nofor before conabr always om 2456
 endword om 2456
-before con always on 346
+noback before con always on 346
+nofor before conabr always on 346
+nofor before voyabr before voyabr2 always ongl 346-345
+nofor before voyabr before voyabr2 always onfr 346-16
+nofor before voyabr before voyabr2 always onfl 346-126
 endword on 346
 noback before con midword or 56
 nofor before conabr midword or 56
+nofor before voyabr before voyabr2 midword orfl 56-126
 endword or 56
 noback always ou 1256
 nofor midendword ou 1256
