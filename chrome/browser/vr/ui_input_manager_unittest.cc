@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "cc/test/geometry_test_utils.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/ui_element.h"
@@ -69,19 +70,25 @@ class UiInputManagerTest : public testing::Test {
 
   void HandleInput(const gfx::Vector3dF& laser_direction,
                    UiInputManager::ButtonState button_state) {
-    ControllerModel controller_model;
-    controller_model.laser_direction = laser_direction;
-    controller_model.laser_origin = {0, 0, 0};
-    controller_model.touchpad_button_state = button_state;
-    ReticleModel reticle_model;
-    GestureList gesture_list;
-    input_manager_->HandleInput(MsToTicks(1), controller_model, &reticle_model,
-                                &gesture_list);
+    HandleInput({0, 0, 0}, laser_direction, button_state);
+  }
+
+  void HandleInput(const gfx::Point3F& laser_origin,
+                   const gfx::Vector3dF& laser_direction,
+                   UiInputManager::ButtonState button_state) {
+    controller_model_.laser_direction = laser_direction;
+    controller_model_.laser_origin = laser_origin;
+    controller_model_.touchpad_button_state = button_state;
+    input_manager_->HandleInput(MsToTicks(1), controller_model_,
+                                &reticle_model_, &gesture_list_);
   }
 
  protected:
   std::unique_ptr<UiScene> scene_;
   std::unique_ptr<UiInputManager> input_manager_;
+  ReticleModel reticle_model_;
+  ControllerModel controller_model_;
+  GestureList gesture_list_;
   InSequence inSequence;
 };
 
@@ -229,6 +236,40 @@ TEST_F(UiInputManagerTest, ElementDeletion) {
   HandleInput(kBackwardVector, kDown);
   HandleInput(kBackwardVector, kUp);
   Mock::VerifyAndClearExpectations(p_element);
+}
+
+// This ensures that the input manager can support both the strategy of hit
+// testing along the laser's ray as well as the ray from the world origin to a
+// point far along the laser.
+TEST_F(UiInputManagerTest, HitTestStrategy) {
+  auto element = base::MakeUnique<Rect>();
+  auto* p_element = element.get();
+  element->SetTranslate(0, 0, -2.5);
+  element->SetVisible(true);
+  element->SetSize(1000.0f, 1000.0f);
+  scene_->AddUiElement(kRoot, std::move(element));
+  scene_->OnBeginFrame(base::TimeTicks(), kForwardVector);
+
+  gfx::Point3F center;
+  p_element->world_space_transform().TransformPoint(&center);
+  gfx::Point3F laser_origin(0.5, -0.5, 0.0);
+
+  HandleInput(laser_origin, center - laser_origin, kDown);
+
+  ASSERT_NE(0, reticle_model_.target_element_id);
+  EXPECT_EQ(p_element->id(), reticle_model_.target_element_id);
+  EXPECT_POINT3F_EQ(gfx::Point3F(-0.45f, 0.45f, -2.5f),
+                    reticle_model_.target_point);
+
+  input_manager_->set_hit_test_strategy(
+      UiInputManager::PROJECT_TO_LASER_ORIGIN_FOR_TEST);
+
+  HandleInput(laser_origin, center - laser_origin, kDown);
+
+  ASSERT_NE(0, reticle_model_.target_element_id);
+  EXPECT_EQ(p_element->id(), reticle_model_.target_element_id);
+  EXPECT_POINT3F_EQ(gfx::Point3F(0.0f, 0.0, -2.5f),
+                    reticle_model_.target_point);
 }
 
 TEST_F(UiInputManagerContentTest, NoMouseMovesDuringClick) {

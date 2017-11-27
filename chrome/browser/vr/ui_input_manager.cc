@@ -372,13 +372,20 @@ void UiInputManager::GetVisualTargetElement(
       controller_model.laser_origin +
       gfx::ScaleVector3d(controller_model.laser_direction, distance);
 
-  // Determine which UI element (if any) intersects the line between the eyes
-  // and the controller target position.
+  // Determine which UI element (if any) intersects the line between the ray
+  // origin and the controller target position. The ray origin will typically be
+  // the world origin (roughly the eye) to make targeting with a real controller
+  // more intuitive. For testing, however, we occasionally hit test along the
+  // laser precisely since this geometric accuracy is important and we are not
+  // dealing with a physical controller.
   float closest_element_distance =
       (reticle_model->target_point - kOrigin).Length();
 
   HitTestRequest request;
-  request.ray_origin = kOrigin;
+  request.ray_origin =
+      hit_test_strategy_ == HitTestStrategy::PROJECT_TO_WORLD_ORIGIN
+          ? kOrigin
+          : controller_model.laser_origin;
   request.ray_target = reticle_model->target_point;
   request.max_distance_to_plane = closest_element_distance;
   HitTestElements(&scene_->root_element(), reticle_model, &request);
