@@ -17,6 +17,7 @@
 namespace net {
 
 typedef uint16_t QuicPacketLength;
+typedef uint32_t QuicControlFrameId;
 typedef uint32_t QuicHeaderId;
 typedef uint32_t QuicStreamId;
 typedef uint64_t QuicByteCount;

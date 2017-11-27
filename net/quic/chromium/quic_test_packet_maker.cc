@@ -79,7 +79,7 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
   header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
   header.packet_number = num;
 
-  QuicRstStreamFrame rst(stream_id, error_code, bytes_written);
+  QuicRstStreamFrame rst(1, stream_id, error_code, bytes_written);
   DVLOG(1) << "Adding frame: " << QuicFrame(&rst);
   return std::unique_ptr<QuicReceivedPacket>(
       MakePacket(header, QuicFrame(&rst)));
@@ -133,7 +133,7 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   frames.push_back(QuicFrame(&stop_waiting));
   DVLOG(1) << "Adding frame: " << frames[1];
 
-  QuicRstStreamFrame rst(stream_id, error_code, bytes_written);
+  QuicRstStreamFrame rst(1, stream_id, error_code, bytes_written);
   frames.push_back(QuicFrame(&rst));
   DVLOG(1) << "Adding frame: " << frames[2];
 

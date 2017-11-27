@@ -7,8 +7,7 @@
 
 #include <ostream>
 
-#include "net/quic/core/quic_types.h"
-#include "net/quic/platform/api/quic_export.h"
+#include "net/quic/core/frames/quic_control_frame.h"
 
 namespace net {
 
@@ -16,9 +15,9 @@ namespace net {
 // endpoint believes itself to be flow-control blocked but otherwise ready to
 // send data. The BLOCKED frame is purely advisory and optional.
 // Based on SPDY's BLOCKED frame (undocumented as of 2014-01-28).
-struct QUIC_EXPORT_PRIVATE QuicBlockedFrame {
-  QuicBlockedFrame() {}
-  explicit QuicBlockedFrame(QuicStreamId stream_id);
+struct QUIC_EXPORT_PRIVATE QuicBlockedFrame : public QuicControlFrame {
+  QuicBlockedFrame();
+  QuicBlockedFrame(QuicControlFrameId control_frame_id, QuicStreamId stream_id);
 
   friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
       std::ostream& os,

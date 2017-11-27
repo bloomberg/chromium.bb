@@ -1166,6 +1166,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // retransmission code.
   bool probing_retransmission_pending_;
 
+  // Id of latest sent control frame. 0 if no control frame has been sent.
+  QuicControlFrameId last_control_frame_id_;
+
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };
 

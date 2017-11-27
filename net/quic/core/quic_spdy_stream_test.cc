@@ -594,8 +594,8 @@ TEST_P(QuicSpdyStreamTest, TestHandlingQuicRstStreamNoError) {
   Initialize(kShouldProcessData);
   ProcessHeaders(false, headers_);
 
-  stream_->OnStreamReset(
-      QuicRstStreamFrame(stream_->id(), QUIC_STREAM_NO_ERROR, 0));
+  stream_->OnStreamReset(QuicRstStreamFrame(
+      kInvalidControlFrameId, stream_->id(), QUIC_STREAM_NO_ERROR, 0));
   EXPECT_TRUE(stream_->write_side_closed());
   EXPECT_FALSE(stream_->reading_stopped());
 }

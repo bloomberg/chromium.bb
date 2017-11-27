@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "net/quic/core/frames/quic_frame.h"
+#include "net/quic/core/quic_constants.h"
+#include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_logging.h"
 
 using std::string;
@@ -45,41 +47,45 @@ QuicFrame::QuicFrame(QuicBlockedFrame* frame)
 
 void DeleteFrames(QuicFrames* frames) {
   for (QuicFrame& frame : *frames) {
-    switch (frame.type) {
-      // Frames smaller than a pointer are inlined, so don't need to be deleted.
-      case PADDING_FRAME:
-      case MTU_DISCOVERY_FRAME:
-      case PING_FRAME:
-        break;
-      case STREAM_FRAME:
-        delete frame.stream_frame;
-        break;
-      case ACK_FRAME:
-        delete frame.ack_frame;
-        break;
-      case STOP_WAITING_FRAME:
-        delete frame.stop_waiting_frame;
-        break;
-      case RST_STREAM_FRAME:
-        delete frame.rst_stream_frame;
-        break;
-      case CONNECTION_CLOSE_FRAME:
-        delete frame.connection_close_frame;
-        break;
-      case GOAWAY_FRAME:
-        delete frame.goaway_frame;
-        break;
-      case BLOCKED_FRAME:
-        delete frame.blocked_frame;
-        break;
-      case WINDOW_UPDATE_FRAME:
-        delete frame.window_update_frame;
-        break;
-      case NUM_FRAME_TYPES:
-        DCHECK(false) << "Cannot delete type: " << frame.type;
-    }
+    DeleteFrame(&frame);
   }
   frames->clear();
+}
+
+void DeleteFrame(QuicFrame* frame) {
+  switch (frame->type) {
+    // Frames smaller than a pointer are inlined, so don't need to be deleted.
+    case PADDING_FRAME:
+    case MTU_DISCOVERY_FRAME:
+    case PING_FRAME:
+      break;
+    case STREAM_FRAME:
+      delete frame->stream_frame;
+      break;
+    case ACK_FRAME:
+      delete frame->ack_frame;
+      break;
+    case STOP_WAITING_FRAME:
+      delete frame->stop_waiting_frame;
+      break;
+    case RST_STREAM_FRAME:
+      delete frame->rst_stream_frame;
+      break;
+    case CONNECTION_CLOSE_FRAME:
+      delete frame->connection_close_frame;
+      break;
+    case GOAWAY_FRAME:
+      delete frame->goaway_frame;
+      break;
+    case BLOCKED_FRAME:
+      delete frame->blocked_frame;
+      break;
+    case WINDOW_UPDATE_FRAME:
+      delete frame->window_update_frame;
+      break;
+    case NUM_FRAME_TYPES:
+      DCHECK(false) << "Cannot delete type: " << frame->type;
+  }
 }
 
 void RemoveFramesForStream(QuicFrames* frames, QuicStreamId stream_id) {
@@ -91,6 +97,59 @@ void RemoveFramesForStream(QuicFrames* frames, QuicStreamId stream_id) {
     }
     delete it->stream_frame;
     it = frames->erase(it);
+  }
+}
+
+bool IsControlFrame(QuicFrameType type) {
+  switch (type) {
+    case RST_STREAM_FRAME:
+    case GOAWAY_FRAME:
+    case WINDOW_UPDATE_FRAME:
+    case BLOCKED_FRAME:
+    case PING_FRAME:
+      return true;
+    default:
+      return false;
+  }
+}
+
+QuicControlFrameId GetControlFrameId(const QuicFrame& frame) {
+  switch (frame.type) {
+    case RST_STREAM_FRAME:
+      return frame.rst_stream_frame->control_frame_id;
+    case GOAWAY_FRAME:
+      return frame.goaway_frame->control_frame_id;
+    case WINDOW_UPDATE_FRAME:
+      return frame.window_update_frame->control_frame_id;
+    case BLOCKED_FRAME:
+      return frame.blocked_frame->control_frame_id;
+    case PING_FRAME:
+      return frame.ping_frame.control_frame_id;
+    default:
+      return kInvalidControlFrameId;
+  }
+}
+
+void SetControlFrameId(QuicControlFrameId control_frame_id, QuicFrame* frame) {
+  switch (frame->type) {
+    case RST_STREAM_FRAME:
+      frame->rst_stream_frame->control_frame_id = control_frame_id;
+      return;
+    case GOAWAY_FRAME:
+      frame->goaway_frame->control_frame_id = control_frame_id;
+      return;
+    case WINDOW_UPDATE_FRAME:
+      frame->window_update_frame->control_frame_id = control_frame_id;
+      return;
+    case BLOCKED_FRAME:
+      frame->blocked_frame->control_frame_id = control_frame_id;
+      return;
+    case PING_FRAME:
+      frame->ping_frame.control_frame_id = control_frame_id;
+      return;
+    default:
+      QUIC_BUG
+          << "Try to set control frame id of a frame without control frame id";
   }
 }
 

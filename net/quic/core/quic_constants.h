@@ -192,6 +192,9 @@ const QuicByteCount kQuicStreamSendBufferSliceSize = 4 * 1024;
 // anyplace in the range 1...((2^31)-1) or 0x7fffffff
 const QuicPacketNumber kMaxRandomInitialPacketNumber = 0x7fffffff;
 
+// Used to represent an invalid or no control frame id.
+const QuicControlFrameId kInvalidControlFrameId = 0;
+
 }  // namespace net
 
 #endif  // NET_QUIC_CORE_QUIC_CONSTANTS_H_

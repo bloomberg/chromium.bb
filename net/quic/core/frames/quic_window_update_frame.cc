@@ -6,13 +6,20 @@
 
 namespace net {
 
-QuicWindowUpdateFrame::QuicWindowUpdateFrame(QuicStreamId stream_id,
-                                             QuicStreamOffset byte_offset)
-    : stream_id(stream_id), byte_offset(byte_offset) {}
+QuicWindowUpdateFrame::QuicWindowUpdateFrame() {}
+
+QuicWindowUpdateFrame::QuicWindowUpdateFrame(
+    QuicControlFrameId control_frame_id,
+    QuicStreamId stream_id,
+    QuicStreamOffset byte_offset)
+    : QuicControlFrame(control_frame_id),
+      stream_id(stream_id),
+      byte_offset(byte_offset) {}
 
 std::ostream& operator<<(std::ostream& os,
                          const QuicWindowUpdateFrame& window_update_frame) {
-  os << "{ stream_id: " << window_update_frame.stream_id
+  os << "{ control_frame_id: " << window_update_frame.control_frame_id
+     << ", stream_id: " << window_update_frame.stream_id
      << ", byte_offset: " << window_update_frame.byte_offset << " }\n";
   return os;
 }
