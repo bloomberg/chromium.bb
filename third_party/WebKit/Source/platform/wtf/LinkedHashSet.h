@@ -594,6 +594,7 @@ class LinkedHashSetConstIterator {
 template <typename LinkedHashSetType>
 class LinkedHashSetReverseIterator
     : public LinkedHashSetIterator<LinkedHashSetType> {
+  typedef LinkedHashSetReverseIterator<LinkedHashSetType> reverse_iterator;
   typedef LinkedHashSetIterator<LinkedHashSetType> Superclass;
   typedef LinkedHashSetConstReverseIterator<LinkedHashSetType>
       const_reverse_iterator;
@@ -617,7 +618,8 @@ class LinkedHashSetReverseIterator
   // Postfix ++ and -- intentionally omitted.
 
   operator const_reverse_iterator() const {
-    return *reinterpret_cast<const_reverse_iterator*>(this);
+    return *reinterpret_cast<const_reverse_iterator*>(
+        const_cast<reverse_iterator*>(this));
   }
 
   template <typename T, typename U, typename V, typename W>
