@@ -63,7 +63,7 @@ TEST_P(WaylandPointerTest, Leave) {
                         0);
   wl_pointer_send_button(pointer->resource(), 4, 1004, BTN_LEFT,
                          WL_POINTER_BUTTON_STATE_PRESSED);
-  EXPECT_CALL(delegate, DispatchEvent(_)).Times(0);
+  EXPECT_CALL(delegate, DispatchEvent(_)).Times(1);
 
   // Do an extra Sync() here so that we process the second enter event before we
   // destroy |other_window|.
