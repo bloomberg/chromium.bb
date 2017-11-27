@@ -2,3 +2,4 @@ rmistry@chromium.org
 
 per-file loading_ct.py=nednguyen@chromium.org
 per-file repaint*=wkorman@chromium.org
+per-file leak_detection_ct.py=yuzus@chromium.org
