@@ -178,6 +178,9 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
     context.DrawText(font, text_run_paint_info,
                      text_origin + IntSize(font.Width(suffix_run), 0));
   }
+  // TODO(npm): Check that there are non-whitespace characters. See
+  // crbug.com/788444.
+  context.GetPaintController().SetTextPainted();
 }
 
 }  // namespace blink

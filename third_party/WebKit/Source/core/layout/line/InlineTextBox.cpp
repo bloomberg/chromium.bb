@@ -34,8 +34,10 @@
 #include "core/layout/line/AbstractInlineTextBox.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/paint/InlineTextBoxPainter.h"
+#include "core/paint/PaintInfo.h"
 #include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringBuilder.h"
 
@@ -546,6 +548,10 @@ void InlineTextBox::Paint(const PaintInfo& paint_info,
                           LayoutUnit /*lineTop*/,
                           LayoutUnit /*lineBottom*/) const {
   InlineTextBoxPainter(*this).Paint(paint_info, paint_offset);
+  if (GetLineLayoutItem().ContainsOnlyWhitespaceOrNbsp() !=
+      OnlyWhitespaceOrNbsp::kYes) {
+    paint_info.context.GetPaintController().SetTextPainted();
+  }
 }
 
 void InlineTextBox::SelectionStartEnd(int& s_pos, int& e_pos) const {
@@ -597,6 +603,10 @@ void InlineTextBox::PaintTextMatchMarkerForeground(
     const Font& font) const {
   InlineTextBoxPainter(*this).PaintTextMatchMarkerForeground(
       paint_info, box_origin, marker, style, font);
+  if (GetLineLayoutItem().ContainsOnlyWhitespaceOrNbsp() !=
+      OnlyWhitespaceOrNbsp::kYes) {
+    paint_info.context.GetPaintController().SetTextPainted();
+  }
 }
 
 void InlineTextBox::PaintTextMatchMarkerBackground(

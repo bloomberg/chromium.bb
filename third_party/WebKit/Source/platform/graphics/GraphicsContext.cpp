@@ -743,10 +743,8 @@ void GraphicsContext::DrawTextInternal(const Font& font,
   if (ContextDisabled())
     return;
 
-  if (font.DrawText(canvas_, text_info, point, device_scale_factor_,
-                    ApplyHighContrastFilter(&flags))) {
-    paint_controller_.SetTextPainted();
-  }
+  font.DrawText(canvas_, text_info, point, device_scale_factor_,
+                ApplyHighContrastFilter(&flags));
 }
 
 void GraphicsContext::DrawText(const Font& font,
@@ -790,9 +788,8 @@ void GraphicsContext::DrawTextInternal(const Font& font,
     return;
 
   DrawTextPasses([&font, &text_info, &point, this](const PaintFlags& flags) {
-    if (font.DrawText(canvas_, text_info, point, device_scale_factor_,
-                      ApplyHighContrastFilter(&flags)))
-      paint_controller_.SetTextPainted();
+    font.DrawText(canvas_, text_info, point, device_scale_factor_,
+                  ApplyHighContrastFilter(&flags));
   });
 }
 
