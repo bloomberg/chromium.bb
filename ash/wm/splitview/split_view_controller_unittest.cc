@@ -331,7 +331,7 @@ TEST_F(SplitViewControllerTest, WindowStateChangeTest) {
   // of the screen is the overview window grid.
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), true);
-  Shell::Get()->window_selector_controller()->ToggleOverview();
+  ToggleOverview();
   EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), true);
 
   // Maximize the snapped window will end the split view mode and overview mode.
@@ -341,7 +341,7 @@ TEST_F(SplitViewControllerTest, WindowStateChangeTest) {
 
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), true);
-  Shell::Get()->window_selector_controller()->ToggleOverview();
+  ToggleOverview();
   EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), true);
 
   // Fullscreen the snapped window will end the split view mode and overview
@@ -632,12 +632,14 @@ TEST_F(SplitViewControllerTest, LongPressExitsSplitView) {
   wm::ActivateWindow(window2.get());
   wm::ActivateWindow(window1.get());
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  ToggleOverview();
   ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
 
   // Verify that by long pressing on the overview button tray with one snapped
-  // window, split view mode gets exited.
+  // window, split view mode gets exited and we are not in overview mode.
   LongPressOnOverivewButtonTray();
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
 
   // Snap two windows.
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
@@ -649,17 +651,19 @@ TEST_F(SplitViewControllerTest, LongPressExitsSplitView) {
   // windows, split view mode gets exited.
   LongPressOnOverivewButtonTray();
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_EQ(window1.get(), wm::GetActiveWindow());
 }
 
 // Verify that split view mode get activated when long pressing on the overview
 // button while in overview mode iff we have more than two windows in the mru
 // list.
 TEST_F(SplitViewControllerTest, LongPressInOverviewMode) {
-  ToggleOverview();
-
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   wm::ActivateWindow(window1.get());
+
+  ToggleOverview();
+  ASSERT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
   ASSERT_FALSE(split_view_controller()->IsSplitViewModeActive());
 
   // Nothing happens if there is only one window.
@@ -670,6 +674,10 @@ TEST_F(SplitViewControllerTest, LongPressInOverviewMode) {
   // enter splitview.
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
   wm::ActivateWindow(window2.get());
+  ToggleOverview();
+  ASSERT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  ASSERT_FALSE(split_view_controller()->IsSplitViewModeActive());
+
   LongPressOnOverivewButtonTray();
   EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
   EXPECT_EQ(window2.get(), split_view_controller()->left_window());
