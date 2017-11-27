@@ -196,14 +196,9 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   EXPECT_TRUE(GenerationPopupShowing());
 }
 
-// Flaky on Linux and Mac. See https://crbug.com/784861.
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#define MAYBE_AutoSavingGeneratedPassword DISABLED_AutoSavingGeneratedPassword
-#else
-#define MAYBE_AutoSavingGeneratedPassword AutoSavingGeneratedPassword
-#endif
+// Flaky; see https://crbug.com/784861.
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
-                       MAYBE_AutoSavingGeneratedPassword) {
+                       DISABLED_AutoSavingGeneratedPassword) {
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
