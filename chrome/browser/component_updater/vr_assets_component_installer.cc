@@ -115,6 +115,7 @@ void RegisterVrAssetsComponent(ComponentUpdateService* cus) {
       new VrAssetsComponentInstallerTraits());
   auto installer = base::MakeRefCounted<ComponentInstaller>(std::move(policy));
   installer->Register(cus, base::Closure());
+  VLOG(1) << "Registered VR assets component";
 }
 
 }  // namespace component_updater
