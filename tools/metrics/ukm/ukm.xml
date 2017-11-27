@@ -1511,6 +1511,14 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Pepper.Broker" singular="True">
+  <owner>raymes@chromium.org</owner>
+  <summary>
+    Event recorded when a flash instance connects to the broker, resulting in a
+    channel being opened to the broker process.
+  </summary>
+</event>
+
 <event name="SubresourceFilter" singular="True">
   <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>

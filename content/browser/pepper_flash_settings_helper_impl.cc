@@ -38,7 +38,7 @@ void PepperFlashSettingsHelperImpl::OpenChannelToBroker(
 
   callback_ = callback;
   PluginServiceImpl* plugin_service = PluginServiceImpl::GetInstance();
-  plugin_service->OpenChannelToPpapiBroker(0, path, this);
+  plugin_service->OpenChannelToPpapiBroker(0, 0, path, this);
 }
 
 void PepperFlashSettingsHelperImpl::GetPpapiChannelInfo(

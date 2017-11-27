@@ -106,6 +106,7 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
                                 const base::FilePath& profile_data_directory,
                                 PpapiPluginProcessHost::PluginClient* client);
   void OpenChannelToPpapiBroker(int render_process_id,
+                                int render_frame_id,
                                 const base::FilePath& path,
                                 PpapiPluginProcessHost::BrokerClient* client);
 

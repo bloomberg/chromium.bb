@@ -1736,6 +1736,7 @@ test("content_unittests") {
     # Put WebRTC-related plugins sources in the "enable_webrtc &&
     # enable_plugins" section below.
     sources += [
+      "../browser/plugin_service_impl_unittest.cc",
       "../browser/renderer_host/pepper/browser_ppapi_host_test.cc",
       "../browser/renderer_host/pepper/browser_ppapi_host_test.h",
       "../browser/renderer_host/pepper/pepper_file_system_browser_host_unittest.cc",
