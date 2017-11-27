@@ -56,10 +56,13 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   virtual void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const = 0;
 
-  // Get the size of the dialog.
+  // Get the size of the dialog. Implementations can safely assume |size| is a
+  // valid pointer. Callers should be able to handle the case where
+  // implementations do not write into |size|.
   virtual void GetDialogSize(gfx::Size* size) const = 0;
 
-  // Get the size of the dialog.
+  // Get the minimum size of the dialog. The default implementation just calls
+  // GetDialogSize().
   virtual void GetMinimumDialogSize(gfx::Size* size) const;
 
   // Gets the JSON string input to use when showing the dialog.
@@ -72,7 +75,7 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   virtual bool CanCloseDialog() const;
 
   // Returns true if the dialog can ever be resized. Default implementation
-  // returns |true|.
+  // returns true.
   virtual bool CanResizeDialog() const;
 
   // A callback to notify the delegate that |source|'s loading state has
