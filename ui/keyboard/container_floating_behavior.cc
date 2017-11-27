@@ -232,6 +232,10 @@ bool ContainerFloatingBehavior::TextBlurHidesKeyboard() const {
   return true;
 }
 
+bool ContainerFloatingBehavior::BoundsObscureUsableRegion() const {
+  return false;
+}
+
 bool ContainerFloatingBehavior::BoundsAffectWorkspaceLayout() const {
   return false;
 }

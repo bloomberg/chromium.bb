@@ -35,6 +35,12 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
   virtual void OnKeyboardWorkspaceOccludedBoundsChanging(
       const gfx::Rect& new_bounds) {}
 
+  // Called when the keyboard bounds have changed in a way that affects how the
+  // workspace should change to not take up the screen space occupied by the
+  // keyboard.
+  virtual void OnKeyboardWorkspaceDisplacingBoundsChanging(
+      const gfx::Rect& new_bounds){};
+
   // Called when the keyboard was closed.
   virtual void OnKeyboardClosed() = 0;
 
