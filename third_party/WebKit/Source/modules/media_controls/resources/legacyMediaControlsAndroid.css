@@ -75,8 +75,3 @@ video::-webkit-media-controls-toggle-closed-captions-button {
     width: 48px;
     height: 48px;
 }
-
-video::-internal-media-remoting-disable-button {
-    /* The button is not used on Android. */
-    display: none;
-}

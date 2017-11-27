@@ -145,7 +145,6 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   bool IsPersistent() const;
 
   bool IsRemotingInterstitialVisible() const;
-  void DisableMediaRemoting();
 
   void MediaRemotingStarted(const WebString& remote_device_friendly_name) final;
   void MediaRemotingStopped() final;
