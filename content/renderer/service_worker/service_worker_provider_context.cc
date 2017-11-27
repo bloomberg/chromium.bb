@@ -35,12 +35,12 @@
 namespace content {
 
 // Holds state for service worker clients.
-struct ServiceWorkerProviderContext::ControlleeState {
-  explicit ControlleeState(
+struct ServiceWorkerProviderContext::ProviderStateForClient {
+  explicit ProviderStateForClient(
       scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter)
       : default_loader_factory_getter(
             std::move(default_loader_factory_getter)) {}
-  ~ControlleeState() = default;
+  ~ProviderStateForClient() = default;
 
   // |controller| will be set by SetController() and taken by TakeController().
   std::unique_ptr<ServiceWorkerHandleReference> controller;
@@ -86,9 +86,9 @@ struct ServiceWorkerProviderContext::ControlleeState {
 };
 
 // Holds state for service worker execution contexts.
-struct ServiceWorkerProviderContext::ControllerState {
-  ControllerState() = default;
-  ~ControllerState() = default;
+struct ServiceWorkerProviderContext::ProviderStateForServiceWorker {
+  ProviderStateForServiceWorker() = default;
+  ~ProviderStateForServiceWorker() = default;
   // |registration->host_ptr_info| will be taken by
   // ServiceWorkerProviderContext::TakeRegistrationForServiceWorkerGlobalScope()
   // means after that |registration| will be in a half-way taken state.
@@ -114,10 +114,11 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(
       binding_(this, std::move(request)),
       weak_factory_(this) {
   container_host_.Bind(std::move(host_ptr_info));
-  if (provider_type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER) {
-    controller_state_ = std::make_unique<ControllerState>();
+  if (provider_type == SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER) {
+    state_for_service_worker_ =
+        std::make_unique<ProviderStateForServiceWorker>();
   } else {
-    controllee_state_ = std::make_unique<ControlleeState>(
+    state_for_client_ = std::make_unique<ProviderStateForClient>(
         std::move(default_loader_factory_getter));
   }
 }
@@ -128,7 +129,7 @@ void ServiceWorkerProviderContext::SetRegistrationForServiceWorkerGlobalScope(
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration,
     scoped_refptr<ThreadSafeSender> sender) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  ControllerState* state = controller_state_.get();
+  ProviderStateForServiceWorker* state = state_for_service_worker_.get();
   DCHECK(state);
   DCHECK(!state->registration);
   DCHECK(!state->installing && !state->waiting && !state->active);
@@ -146,8 +147,8 @@ void ServiceWorkerProviderContext::SetRegistrationForServiceWorkerGlobalScope(
 scoped_refptr<WebServiceWorkerRegistrationImpl>
 ServiceWorkerProviderContext::TakeRegistrationForServiceWorkerGlobalScope(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, provider_type_);
-  ControllerState* state = controller_state_.get();
+  DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER, provider_type_);
+  ProviderStateForServiceWorker* state = state_for_service_worker_.get();
   DCHECK(state);
   DCHECK(state->registration);
   DCHECK(state->registration->host_ptr_info.is_valid());
@@ -198,20 +199,20 @@ ServiceWorkerProviderContext::TakeRegistrationForServiceWorkerGlobalScope(
 std::unique_ptr<ServiceWorkerHandleReference>
 ServiceWorkerProviderContext::TakeController() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(controllee_state_);
-  return std::move(controllee_state_->controller);
+  DCHECK(state_for_client_);
+  return std::move(state_for_client_->controller);
 }
 
 int64_t ServiceWorkerProviderContext::GetControllerVersionId() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(controllee_state_);
-  return controllee_state_->controller_version_id;
+  DCHECK(state_for_client_);
+  return state_for_client_->controller_version_id;
 }
 
 mojom::URLLoaderFactory*
 ServiceWorkerProviderContext::subresource_loader_factory() {
-  DCHECK(controllee_state_);
-  return controllee_state_->subresource_loader_factory.get();
+  DCHECK(state_for_client_);
+  return state_for_client_->subresource_loader_factory.get();
 }
 
 mojom::ServiceWorkerContainerHost*
@@ -222,26 +223,26 @@ ServiceWorkerProviderContext::container_host() const {
 
 const std::set<blink::mojom::WebFeature>&
 ServiceWorkerProviderContext::used_features() const {
-  DCHECK(controllee_state_);
-  return controllee_state_->used_features;
+  DCHECK(state_for_client_);
+  return state_for_client_->used_features;
 }
 
 void ServiceWorkerProviderContext::SetWebServiceWorkerProvider(
     base::WeakPtr<WebServiceWorkerProviderImpl> provider) {
-  DCHECK(controllee_state_);
-  controllee_state_->web_service_worker_provider = provider;
+  DCHECK(state_for_client_);
+  state_for_client_->web_service_worker_provider = provider;
 }
 
 mojom::ServiceWorkerWorkerClientRequest
 ServiceWorkerProviderContext::CreateWorkerClientRequest() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(controllee_state_);
+  DCHECK(state_for_client_);
   mojom::ServiceWorkerWorkerClientPtr client;
   mojom::ServiceWorkerWorkerClientRequest request = mojo::MakeRequest(&client);
   client.set_connection_error_handler(base::BindOnce(
       &ServiceWorkerProviderContext::UnregisterWorkerFetchContext,
       base::Unretained(this), client.get()));
-  controllee_state_->worker_clients.push_back(std::move(client));
+  state_for_client_->worker_clients.push_back(std::move(client));
   return request;
 }
 
@@ -249,7 +250,7 @@ mojom::ServiceWorkerContainerHostPtrInfo
 ServiceWorkerProviderContext::CloneContainerHostPtrInfo() {
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(controllee_state_);
+  DCHECK(state_for_client_);
   mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
   container_host_->CloneForWorker(mojo::MakeRequest(&container_host_ptr_info));
   return container_host_ptr_info;
@@ -259,7 +260,7 @@ scoped_refptr<WebServiceWorkerRegistrationImpl>
 ServiceWorkerProviderContext::GetOrCreateRegistrationForServiceWorkerClient(
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info) {
   DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_WINDOW, provider_type_);
-  DCHECK(controllee_state_);
+  DCHECK(state_for_client_);
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   DCHECK(dispatcher);
@@ -273,8 +274,8 @@ ServiceWorkerProviderContext::GetOrCreateRegistrationForServiceWorkerClient(
       ServiceWorkerHandleReference::Adopt(std::move(info->active),
                                           dispatcher->thread_safe_sender());
 
-  auto found = controllee_state_->registrations_.find(info->registration_id);
-  if (found != controllee_state_->registrations_.end()) {
+  auto found = state_for_client_->registrations_.find(info->registration_id);
+  if (found != state_for_client_->registrations_.end()) {
     DCHECK(!info->request.is_pending());
     found->second->AttachForServiceWorkerClient(std::move(info));
     return found->second;
@@ -283,7 +284,7 @@ ServiceWorkerProviderContext::GetOrCreateRegistrationForServiceWorkerClient(
   DCHECK(info->request.is_pending());
   // WebServiceWorkerRegistrationImpl constructor calls
   // AddServiceWorkerRegistration to add itself into
-  // |controllee_state_->registrations_|.
+  // |state_for_client_->registrations_|.
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration =
       WebServiceWorkerRegistrationImpl::CreateForServiceWorkerClient(
           std::move(info), weak_factory_.GetWeakPtr());
@@ -299,16 +300,16 @@ ServiceWorkerProviderContext::GetOrCreateRegistrationForServiceWorkerClient(
 
 void ServiceWorkerProviderContext::OnNetworkProviderDestroyed() {
   container_host_.reset();
-  if (controllee_state_ && controllee_state_->controller_connector)
-    controllee_state_->controller_connector->OnContainerHostConnectionClosed();
+  if (state_for_client_ && state_for_client_->controller_connector)
+    state_for_client_->controller_connector->OnContainerHostConnectionClosed();
 }
 
 void ServiceWorkerProviderContext::UnregisterWorkerFetchContext(
     mojom::ServiceWorkerWorkerClient* client) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(controllee_state_);
+  DCHECK(state_for_client_);
   base::EraseIf(
-      controllee_state_->worker_clients,
+      state_for_client_->worker_clients,
       [client](const mojom::ServiceWorkerWorkerClientPtr& client_ptr) {
         return client_ptr.get() == client;
       });
@@ -319,7 +320,7 @@ void ServiceWorkerProviderContext::SetController(
     const std::vector<blink::mojom::WebFeature>& used_features,
     bool should_notify_controllerchange) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  ControlleeState* state = controllee_state_.get();
+  ProviderStateForClient* state = state_for_client_.get();
   DCHECK(state);
   DCHECK(!state->controller || state->controller->handle_id() !=
                                    blink::mojom::kInvalidServiceWorkerHandleId);
@@ -379,7 +380,7 @@ void ServiceWorkerProviderContext::PostMessageToClient(
     const base::string16& message,
     std::vector<mojo::ScopedMessagePipeHandle> message_pipes) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  ControlleeState* state = controllee_state_.get();
+  ProviderStateForClient* state = state_for_client_.get();
   DCHECK(state);
 
   if (state->web_service_worker_provider) {
@@ -391,30 +392,30 @@ void ServiceWorkerProviderContext::PostMessageToClient(
 void ServiceWorkerProviderContext::AddServiceWorkerRegistration(
     int64_t registration_id,
     WebServiceWorkerRegistrationImpl* registration) {
-  DCHECK(controllee_state_);
+  DCHECK(state_for_client_);
   DCHECK(
-      !base::ContainsKey(controllee_state_->registrations_, registration_id));
-  controllee_state_->registrations_[registration_id] = registration;
+      !base::ContainsKey(state_for_client_->registrations_, registration_id));
+  state_for_client_->registrations_[registration_id] = registration;
 }
 
 void ServiceWorkerProviderContext::RemoveServiceWorkerRegistration(
     int64_t registration_id) {
-  DCHECK(controllee_state_);
-  DCHECK(base::ContainsKey(controllee_state_->registrations_, registration_id));
-  controllee_state_->registrations_.erase(registration_id);
+  DCHECK(state_for_client_);
+  DCHECK(base::ContainsKey(state_for_client_->registrations_, registration_id));
+  state_for_client_->registrations_.erase(registration_id);
 }
 
 bool ServiceWorkerProviderContext::ContainsServiceWorkerRegistrationForTesting(
     int64_t registration_id) {
-  DCHECK(controllee_state_);
-  return base::ContainsKey(controllee_state_->registrations_, registration_id);
+  DCHECK(state_for_client_);
+  return base::ContainsKey(state_for_client_->registrations_, registration_id);
 }
 
 void ServiceWorkerProviderContext::CountFeature(
     blink::mojom::WebFeature feature) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(controllee_state_);
-  ControlleeState* state = controllee_state_.get();
+  DCHECK(state_for_client_);
+  ProviderStateForClient* state = state_for_client_.get();
 
   // ServiceWorkerProviderContext keeps track of features in order to propagate
   // it to WebServiceWorkerProviderClient, which actually records the

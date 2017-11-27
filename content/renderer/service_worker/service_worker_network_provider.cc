@@ -308,7 +308,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
   // TODO(kinuko): Split ServiceWorkerProviderContext ctor for
   // controller and controllee.
   context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      info->provider_id, SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
+      info->provider_id, SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER,
       std::move(info->client_request), std::move(info->host_ptr_info),
       nullptr /* loader_factory_getter */);
   context_->SetRegistrationForServiceWorkerGlobalScope(
