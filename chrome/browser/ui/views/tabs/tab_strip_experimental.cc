@@ -1375,12 +1375,10 @@ void TabStripExperimental::GenerateIdealBounds() {
         const TabDataExperimental* inner_data =
             top_data->children()[inner_i].get();
         const auto inner_found = tabs_.find(inner_data);
-        if (inner_found == tabs_.end()) {
-          NOTREACHED();
-        } else {
-          inner_found->second->set_ideal_bounds(gfx::Rect(
-              x, kTopPaddingForGroups, tab_width, standard_size.height()));
-        }
+        if (inner_found == tabs_.end())
+          continue;  // Can happen during tab close.
+        inner_found->second->set_ideal_bounds(gfx::Rect(
+            x, kTopPaddingForGroups, tab_width, standard_size.height()));
         x += tab_width + TabSpacingAfter(top_data->children(), inner_i);
       }
 

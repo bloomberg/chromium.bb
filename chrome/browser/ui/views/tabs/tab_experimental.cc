@@ -4,17 +4,22 @@
 
 #include "chrome/browser/ui/views/tabs/tab_experimental.h"
 
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_experimental.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "components/grit/components_scaled_resources.h"
+#include "ui/base/theme_provider.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
+
+constexpr int kAfterTitleSpacing = 4;
 
 // Returns the width of the tab endcap in DIP.  More precisely, this is the
 // width of the curve making up either the outer or inner edge of the stroke;
@@ -26,6 +31,10 @@ namespace {
 float GetTabEndcapWidth() {
   return GetLayoutInsets(TAB).left() - 0.5f;
 }
+
+// Callback needed for the close button. This will likely need to be hooked
+// up to something to support middle mouse clicking on the close button.
+void OnMouseEventInTab(views::View* source, const ui::MouseEvent& event) {}
 
 }  // namespace
 
@@ -44,6 +53,12 @@ TabExperimental::TabExperimental(TabStripModelExperimental* model,
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetText(CoreTabHelper::GetDefaultTitle());
   AddChildView(title_);
+
+  // Unretained is safe here because this class outlives its close button, and
+  // the controller outlives this Tab.
+  close_button_ =
+      new TabCloseButton(this, base::BindRepeating(&OnMouseEventInTab));
+  AddChildView(close_button_);
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
@@ -105,6 +120,15 @@ bool TabExperimental::GetHitTestMask(gfx::Path* mask) const {
   return true;
 }
 
+void TabExperimental::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  // If this hierarchy changed has resulted in us being part of a widget
+  // hierarchy for the first time, we can now get at the theme provider, and
+  // should recalculate the button color.
+  if (details.is_add)
+    OnButtonColorMaybeChanged();
+}
+
 void TabExperimental::OnPaint(gfx::Canvas* canvas) {
   if (type_ == TabDataExperimental::Type::kSingle)
     paint_.PaintTabBackground(canvas, active_, 0, 0, nullptr);
@@ -123,9 +147,30 @@ void TabExperimental::Layout() {
     title_right = first_child_begin_x_;
   else
     title_right = bounds.width() - kTitleSpacing;
-
   title_->SetBoundsRect(gfx::Rect(title_left, bounds.y(),
                                   title_right - title_left, bounds.height()));
+
+  // TODO(brettw) will need an "if (showing_close_button)" condition for very
+  // small tabs.
+  close_button_->SetBorder(views::NullBorder());
+  const gfx::Size close_button_size(close_button_->GetPreferredSize());
+  const int top =
+      bounds.y() + (bounds.height() - close_button_size.height() + 1) / 2;
+  const int left = kAfterTitleSpacing;
+  const int close_button_end = bounds.right();
+  // TODO(brettw) this needs to be fixed for RTL.
+  close_button_->SetPosition(
+      gfx::Point(close_button_end - close_button_size.width() - left, 0));
+  const int bottom = height() - close_button_size.height() - top;
+  const int right = width() - close_button_end;
+  close_button_->SetBorder(views::CreateEmptyBorder(top, left, bottom, right));
+  close_button_->SizeToPreferredSize();
+}
+
+void TabExperimental::OnThemeChanged() {
+  OnButtonColorMaybeChanged();
+  // TODO(brettw) favicons.
+  // favicon_ = gfx::ImageSkia();
 }
 
 bool TabExperimental::OnMousePressed(const ui::MouseEvent& event) {
@@ -159,5 +204,33 @@ void TabExperimental::OnMouseReleased(const ui::MouseEvent& event) {
         controller_->CloseTab(closest_tab, CLOSE_TAB_FROM_MOUSE);
       */
     }
+  }
+}
+
+void TabExperimental::ButtonPressed(views::Button* sender,
+                                    const ui::Event& event) {
+  DCHECK_EQ(close_button_, sender);
+  model_->CloseWebContentsAt(model_->GetViewIndexForData(data_),
+                             TabStripModel::CLOSE_USER_GESTURE |
+                                 TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+}
+
+void TabExperimental::OnButtonColorMaybeChanged() {
+  // The theme provider may be null if we're not currently in a widget
+  // hierarchy.
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
+  if (!theme_provider)
+    return;
+
+  const SkColor title_color = theme_provider->GetColor(
+      active_ ? ThemeProperties::COLOR_TAB_TEXT
+              : ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
+  const SkColor new_button_color = SkColorSetA(title_color, 0xA0);
+  if (button_color_ != new_button_color) {
+    button_color_ = new_button_color;
+    title_->SetEnabledColor(title_color);
+    // TODO(brettw) alert indicator.
+    // alert_indicator_button_->OnParentTabButtonColorChanged();
+    close_button_->SetTabColor(button_color_);
   }
 }

@@ -8,10 +8,12 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/tabs/tab_data_experimental.h"
 #include "chrome/browser/ui/views/tabs/tab_experimental_paint.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/glow_hover_controller.h"
 #include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/view.h"
 
+class TabCloseButton;
 class TabDataExperimental;
 class TabStripModelExperimental;
 
@@ -19,7 +21,8 @@ namespace views {
 class Label;
 }
 
-class TabExperimental : public views::MaskedTargeterDelegate,
+class TabExperimental : public views::ButtonListener,
+                        public views::MaskedTargeterDelegate,
                         public views::View {
  public:
   explicit TabExperimental(TabStripModelExperimental* model,
@@ -73,10 +76,21 @@ class TabExperimental : public views::MaskedTargeterDelegate,
   bool GetHitTestMask(gfx::Path* mask) const override;
 
   // views::View:
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void Layout() override;
+  void OnThemeChanged() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // Recalculates the correct |button_color_| and resets the title, alert
+  // indicator, and close button colors if necessary.  This should be called any
+  // time the theme or active state may have changed.
+  void OnButtonColorMaybeChanged();
 
   TabStripModelExperimental* model_;
 
@@ -92,10 +106,15 @@ class TabExperimental : public views::MaskedTargeterDelegate,
   bool selected_ = false;
   bool closing_ = false;
 
-  views::Label* title_;  // Non-owning (owned by View hierarchy).
+  // Non-owning child view pointers (owned by View hierarchy).
+  views::Label* title_;
+  TabCloseButton* close_button_ = nullptr;
 
   // Location of the first child tab. Negative indicates unused.
   int first_child_begin_x_ = -1;
+
+  // The current color of the alert indicator and close button icons.
+  SkColor button_color_ = SK_ColorTRANSPARENT;
 
   views::GlowHoverController hover_controller_;
 
