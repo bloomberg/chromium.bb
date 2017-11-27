@@ -572,10 +572,11 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
   DCHECK(GetDocument().GetFrame());
   DCHECK(GetDocument().GetSettings());
 
-  // Once an element has a layoutObject, we don't try to destroy it, since
-  // otherwise the layoutObject will vanish if a style recalc happens during
-  // loading.
-  if (!GetDocument().IsRenderingReady() && !element->GetLayoutObject()) {
+  // Once an element has a layout object or non-layout style, we don't try to
+  // destroy it, since that means it could be rendering already and we cannot
+  // arbitrarily change its style during loading.
+  if (!GetDocument().IsRenderingReady() && !element->GetLayoutObject() &&
+      !element->NonLayoutObjectComputedStyle()) {
     if (!style_not_yet_available_) {
       auto style = ComputedStyle::Create();
       style->AddRef();
