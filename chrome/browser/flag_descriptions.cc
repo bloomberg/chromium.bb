@@ -2350,15 +2350,6 @@ const char kTranslateNewUxName[] = "New Translate UX";
 const char kTranslateNewUxDescription[] =
     "Enable the new Translate bubble UX is offered instead of the infobar.";
 
-// Non-Mac ---------------------------------------------------------------------
-
-#else  // !defined(OS_MACOSX)
-
-const char kPermissionPromptPersistenceToggleName[] =
-    "Persistence Toggle in Permission Prompts";
-const char kPermissionPromptPersistenceToggleDescription[] =
-    "Whether to display a persistence toggle in permission prompts.";
-
 #endif
 
 // Chrome OS -------------------------------------------------------------------

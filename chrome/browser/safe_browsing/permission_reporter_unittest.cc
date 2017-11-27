@@ -36,8 +36,6 @@ const PermissionAction kDummyAction = PermissionAction::GRANTED;
 const PermissionSourceUI kDummySourceUI = PermissionSourceUI::PROMPT;
 const PermissionRequestGestureType kDummyGestureType =
     PermissionRequestGestureType::GESTURE;
-const PermissionPersistDecision kDummyPersistDecision =
-    PermissionPersistDecision::PERSISTED;
 const int kDummyNumPriorDismissals = 10;
 const int kDummyNumPriorIgnores = 12;
 
@@ -59,8 +57,8 @@ struct base::Feature kFeatureOffByDefault {
 PermissionReportInfo BuildDummyReportInfo(const char* requesting_origin,
                                           ContentSettingsType permission) {
   PermissionReportInfo info(GURL(requesting_origin), permission, kDummyAction,
-      kDummySourceUI, kDummyGestureType, kDummyPersistDecision,
-      kDummyNumPriorDismissals, kDummyNumPriorIgnores);
+                            kDummySourceUI, kDummyGestureType,
+                            kDummyNumPriorDismissals, kDummyNumPriorIgnores);
 
   return info;
 }
@@ -101,7 +99,8 @@ TEST_F(PermissionReporterTest, SendReport) {
   EXPECT_EQ(PermissionReport::GRANTED, permission_report.action());
   EXPECT_EQ(PermissionReport::PROMPT, permission_report.source_ui());
   EXPECT_EQ(PermissionReport::GESTURE, permission_report.gesture());
-  EXPECT_EQ(PermissionReport::PERSISTED, permission_report.persisted());
+  EXPECT_EQ(PermissionReport::PERSIST_DECISION_UNSPECIFIED,
+            permission_report.persisted());
   EXPECT_EQ(kDummyOriginOne, permission_report.origin());
   EXPECT_EQ(kDummyNumPriorDismissals,
             permission_report.num_prior_dismissals());

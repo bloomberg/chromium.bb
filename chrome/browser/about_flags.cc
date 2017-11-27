@@ -2808,14 +2808,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kModalPermissionPromptsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kModalPermissionPrompts)},
 #endif
-#if !defined(OS_MACOSX)
-    {"permission-prompt-persistence-toggle",
-     flag_descriptions::kPermissionPromptPersistenceToggleName,
-     flag_descriptions::kPermissionPromptPersistenceToggleDescription,
-     kOsWin | kOsCrOS | kOsLinux | kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         features::kDisplayPersistenceToggleInPermissionPrompts)},
-#endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     {"enable-new-print-preview", flag_descriptions::kEnableNewPrintPreview,
      flag_descriptions::kEnableNewPrintPreviewDescription, kOsDesktop,

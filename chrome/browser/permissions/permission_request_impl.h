@@ -19,7 +19,7 @@ class GURL;
 // is executed.
 class PermissionRequestImpl : public PermissionRequest {
  public:
-  using PermissionDecidedCallback = base::Callback<void(bool, ContentSetting)>;
+  using PermissionDecidedCallback = base::Callback<void(ContentSetting)>;
 
   PermissionRequestImpl(
       const GURL& request_origin,
@@ -42,7 +42,6 @@ class PermissionRequestImpl : public PermissionRequest {
   void PermissionDenied() override;
   void Cancelled() override;
   void RequestFinished() override;
-  bool ShouldShowPersistenceToggle() const override;
   PermissionRequestType GetPermissionRequestType() const override;
   PermissionRequestGestureType GetGestureType() const override;
   ContentSettingsType GetContentSettingsType() const override;

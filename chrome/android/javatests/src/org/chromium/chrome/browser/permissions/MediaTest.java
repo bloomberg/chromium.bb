@@ -39,14 +39,13 @@ public class MediaTest {
     public MediaTest() {}
 
     private void testMediaPermissionsPlumbing(String prefix, String script, int numUpdates,
-            boolean withGesture, boolean isDialog, boolean hasSwitch, boolean toggleSwitch)
-            throws Exception {
+            boolean withGesture, boolean isDialog) throws Exception {
         Tab tab = mPermissionRule.getActivity().getActivityTab();
         PermissionUpdateWaiter updateWaiter =
                 new PermissionUpdateWaiter(prefix, mPermissionRule.getActivity());
         tab.addObserver(updateWaiter);
-        mPermissionRule.runAllowTest(updateWaiter, TEST_FILE, script, numUpdates, withGesture,
-                isDialog, hasSwitch, toggleSwitch);
+        mPermissionRule.runAllowTest(
+                updateWaiter, TEST_FILE, script, numUpdates, withGesture, isDialog);
         tab.removeObserver(updateWaiter);
     }
 
@@ -59,8 +58,7 @@ public class MediaTest {
     @Feature({"MediaPermissions", "Main"})
     @CommandLineFlags.Add({FAKE_DEVICE, "disable-features=" + PermissionTestRule.MODAL_FLAG})
     public void testMicrophonePermissionsPlumbingInfoBar() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Mic count:", "initiate_getMicrophone()", 1, false, false, false, false);
+        testMediaPermissionsPlumbing("Mic count:", "initiate_getMicrophone()", 1, false, false);
     }
 
     /**
@@ -72,8 +70,7 @@ public class MediaTest {
     @Feature({"MediaPermissions", "Main"})
     @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + PermissionTestRule.MODAL_FLAG})
     public void testMicrophoneMediaPermissionsPlumbingDialog() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Mic count:", "initiate_getMicrophone()", 1, true, true, false, false);
+        testMediaPermissionsPlumbing("Mic count:", "initiate_getMicrophone()", 1, true, true);
     }
 
     /**
@@ -85,8 +82,7 @@ public class MediaTest {
     @Feature({"MediaPermissions", "Main"})
     @CommandLineFlags.Add({FAKE_DEVICE, "disable-features=" + PermissionTestRule.MODAL_FLAG})
     public void testCameraPermissionsPlumbingInfoBar() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Camera count:", "initiate_getCamera()", 1, false, false, false, false);
+        testMediaPermissionsPlumbing("Camera count:", "initiate_getCamera()", 1, false, false);
     }
 
     /**
@@ -99,8 +95,7 @@ public class MediaTest {
     @Feature({"MediaPermissions", "Main"})
     @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + PermissionTestRule.MODAL_FLAG})
     public void testCameraPermissionsPlumbingDialog() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Camera count:", "initiate_getCamera()", 1, false, true, false, false);
+        testMediaPermissionsPlumbing("Camera count:", "initiate_getCamera()", 1, false, true);
     }
 
     /**
@@ -113,8 +108,7 @@ public class MediaTest {
     @Feature({"MediaPermissions", "Main"})
     @CommandLineFlags.Add({FAKE_DEVICE, "disable-features=" + PermissionTestRule.MODAL_FLAG})
     public void testCombinedPermissionsPlumbing() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Combined count:", "initiate_getCombined()", 1, false, false, false, false);
+        testMediaPermissionsPlumbing("Combined count:", "initiate_getCombined()", 1, false, false);
     }
 
     /**
@@ -127,153 +121,6 @@ public class MediaTest {
     @Feature({"MediaPermissions", "Main"})
     @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + PermissionTestRule.MODAL_FLAG})
     public void testCombinedPermissionsPlumbingDialog() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Combined count:", "initiate_getCombined()", 1, true, true, false, false);
-    }
-
-    /**
-     * Verify microphone creates an InfoBar with a persistence toggle if that feature is enabled.
-     * Check the switch appears and that permission is granted with it toggled on.
-     * @throws Exception
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + PermissionTestRule.TOGGLE_FLAG,
-            "disable-features=" + PermissionTestRule.MODAL_FLAG})
-    @Feature({"MediaPermissions"})
-    public void testMicrophonePersistenceOnInfoBar() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Mic count:", "initiate_getMicrophone()", 1, false, false, true, false);
-    }
-
-    /**
-     * Verify microphone creates an InfoBar with a persistence toggle if that feature is enabled.
-     * Check the switch appears and that permission is granted with it toggled off.
-     * @throws Exception
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + PermissionTestRule.TOGGLE_FLAG,
-            "disable-features=" + PermissionTestRule.MODAL_FLAG})
-    @Feature({"MediaPermissions"})
-    public void testMicrophonePersistenceOffInfoBar() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Mic count:", "initiate_getMicrophone()", 1, false, false, true, true);
-    }
-
-    /**
-     * Verify microphone creates a dialog with a persistence toggle if that feature is enabled.
-     * Check the switch appears and that permission is granted with it toggled on.
-     * @throws Exception
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + PermissionTestRule.MODAL_TOGGLE_FLAG})
-    @Feature({"MediaPermissions"})
-    public void testMicrophonePersistenceOnDialog() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Mic count:", "initiate_getMicrophone()", 1, true, true, true, false);
-    }
-
-    /**
-     * Verify microphone creates a dialog with a persistence toggle if that feature is enabled.
-     * Check the switch appears and that permission is granted with it toggled off.
-     * @throws Exception
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + PermissionTestRule.MODAL_TOGGLE_FLAG})
-    @Feature({"MediaPermissions"})
-    public void testMicrophonePersistenceOffDialog() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Mic count:", "initiate_getMicrophone()", 1, true, true, true, true);
-    }
-
-    /**
-     * Verify camera prompts with a persistence toggle if that feature is enabled. Check the
-     * switch appears and that permission is granted with it toggled on.
-     * @throws Exception
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + PermissionTestRule.TOGGLE_FLAG,
-            "disable-features=" + PermissionTestRule.MODAL_FLAG})
-    @Feature({"MediaPermissions"})
-    public void testCameraPersistenceOn() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Camera count:", "initiate_getCamera()", 1, false, false, true, false);
-    }
-
-    /**
-     * Verify camera prompts with a persistence toggle if that feature is enabled. Check the
-     * switch appears and that permission is granted with it toggled off.
-     * @throws Exception
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + PermissionTestRule.TOGGLE_FLAG,
-            "disable-features=" + PermissionTestRule.MODAL_FLAG})
-    @Feature({"MediaPermissions"})
-    public void testCameraPersistenceOff() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Camera count:", "initiate_getCamera()", 1, false, false, true, true);
-    }
-
-    /**
-     * Verify combined creates an InfoBar with a persistence toggle if that feature is enabled.
-     * Check the switch appears and that permission is granted with it toggled on.
-     * @throws Exception
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + PermissionTestRule.TOGGLE_FLAG,
-            "disable-features=" + PermissionTestRule.MODAL_FLAG})
-    @Feature({"MediaPermissions"})
-    public void testCombinedPersistenceOnInfoBar() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Combined count:", "initiate_getCombined()", 1, false, false, true, false);
-    }
-
-    /**
-     * Verify combined creates an InfoBar with a persistence toggle if that feature is enabled.
-     * Check the switch appears and that permission is granted with it toggled off.
-     * @throws Exception
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + PermissionTestRule.TOGGLE_FLAG,
-            "disable-features=" + PermissionTestRule.MODAL_FLAG})
-    @Feature({"MediaPermissions"})
-    public void testCombinedPersistenceOffInfoBar() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Combined count:", "initiate_getCombined()", 1, false, false, true, true);
-    }
-
-    /**
-     * Verify combined creates a dialog with a persistence toggle if that feature is enabled. Check
-     * the switch appears and that permission is granted with it toggled on.
-     * @throws Exception
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + PermissionTestRule.MODAL_TOGGLE_FLAG})
-    @Feature({"MediaPermissions"})
-    public void testCombinedPersistenceOnDialog() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Combined count:", "initiate_getCombined()", 1, true, true, true, false);
-    }
-
-    /**
-     * Verify combined creates a dialog with a persistence toggle if that feature is enabled. Check
-     * the switch appears and that permission is granted with it toggled off.
-     * @throws Exception
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + PermissionTestRule.MODAL_TOGGLE_FLAG})
-    @Feature({"MediaPermissions"})
-    public void testCombinedPersistenceOffDialog() throws Exception {
-        testMediaPermissionsPlumbing(
-                "Combined count:", "initiate_getCombined()", 1, true, true, true, true);
+        testMediaPermissionsPlumbing("Combined count:", "initiate_getCombined()", 1, true, true);
     }
 }

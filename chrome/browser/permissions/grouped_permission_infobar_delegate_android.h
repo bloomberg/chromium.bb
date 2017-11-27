@@ -27,13 +27,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
       const base::WeakPtr<PermissionPromptAndroid>& permission_prompt,
       InfoBarService* infobar_service);
 
-  bool persist() const { return persist_; }
-  void set_persist(bool persist) { persist_ = persist; }
   size_t PermissionCount() const;
-
-  // Returns true if the infobar should display a toggle to allow users to
-  // opt-out of persisting their accept/deny decision.
-  bool ShouldShowPersistenceToggle() const;
 
   ContentSettingsType GetContentSettingType(size_t position) const;
 
@@ -59,8 +53,6 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   // InfoBarDelegate:
   bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
 
-  // Whether the accept/deny decision is persisted.
-  bool persist_;
   base::WeakPtr<PermissionPromptAndroid> permission_prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(GroupedPermissionInfoBarDelegate);

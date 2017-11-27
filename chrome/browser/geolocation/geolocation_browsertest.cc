@@ -293,9 +293,6 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   // Convenience method to look up the number of queued permission requests.
   int GetRequestQueueSize(PermissionRequestManager* manager);
 
-  // Toggle whether the prompt decision should be persisted.
-  void TogglePersist(bool persist);
-
  private:
   // Calls watchPosition() in JavaScript and accepts or denies the resulting
   // permission request. Returns the JavaScript response.
@@ -468,13 +465,6 @@ int GeolocationBrowserTest::GetRequestQueueSize(
   return static_cast<int>(manager->requests_.size());
 }
 
-void GeolocationBrowserTest::TogglePersist(bool persist) {
-  content::WebContents* web_contents =
-      current_browser()->tab_strip_model()->GetActiveWebContents();
-  PermissionRequestManager::FromWebContents(web_contents)
-      ->TogglePersist(persist);
-}
-
 // Tests ----------------------------------------------------------------------
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DisplaysPrompt) {
@@ -606,46 +596,6 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoLeakFromOffTheRecord) {
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
   ASSERT_TRUE(WatchPositionAndGrantPermission());
   ExpectPosition(fake_latitude(), fake_longitude());
-}
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TogglePersistGranted) {
-  // Initialize and turn persistence off.
-  ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
-  TogglePersist(false);
-
-  ASSERT_TRUE(WatchPositionAndGrantPermission());
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            GetHostContentSettingsMap()->GetContentSetting(
-                current_url(), current_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                std::string()));
-
-  // Expect the grant to be remembered at the blink layer, so a second request
-  // on this page doesn't create a request.
-  WatchPositionAndObservePermissionRequest(false);
-
-  // Navigate and ensure that a prompt is shown when we request again.
-  ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
-  WatchPositionAndObservePermissionRequest(true);
-}
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TogglePersistBlocked) {
-  // Initialize and turn persistence off.
-  ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
-  TogglePersist(false);
-
-  ASSERT_TRUE(WatchPositionAndDenyPermission());
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            GetHostContentSettingsMap()->GetContentSetting(
-                current_url(), current_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                std::string()));
-
-  // Expect the page to make another request since we have not persisted the
-  // user's response.
-  WatchPositionAndObservePermissionRequest(true);
-
-  // Navigate and ensure that a prompt is shown when we request again.
-  ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
-  WatchPositionAndObservePermissionRequest(true);
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {

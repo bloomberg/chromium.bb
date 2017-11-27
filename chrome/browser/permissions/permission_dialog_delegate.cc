@@ -66,23 +66,16 @@ void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env,
       base::android::ToJavaIntArray(env, content_settings_types),
       ResourceMapper::MapFromChromiumId(permission_prompt_->GetIconId()),
       ConvertUTF16ToJavaString(env, permission_prompt_->GetMessageText()),
-      primaryButtonText, secondaryButtonText,
-      permission_prompt_->ShouldShowPersistenceToggle()));
+      primaryButtonText, secondaryButtonText));
 }
 
 void PermissionDialogDelegate::Accept(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj,
-                                      jboolean persist) {
-  if (permission_prompt_->ShouldShowPersistenceToggle())
-    permission_prompt_->TogglePersist(persist);
+                                      const JavaParamRef<jobject>& obj) {
   permission_prompt_->Accept();
 }
 
 void PermissionDialogDelegate::Cancel(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj,
-                                      jboolean persist) {
-  if (permission_prompt_->ShouldShowPersistenceToggle())
-    permission_prompt_->TogglePersist(persist);
+                                      const JavaParamRef<jobject>& obj) {
   permission_prompt_->Deny();
 }
 

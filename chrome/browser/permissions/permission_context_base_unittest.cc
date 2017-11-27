@@ -222,14 +222,10 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
   void RespondToPermission(TestPermissionContext* context,
                            const PermissionRequestID& id,
                            const GURL& url,
-                           bool persist,
                            ContentSetting response) {
     DCHECK(response == CONTENT_SETTING_ALLOW ||
            response == CONTENT_SETTING_BLOCK ||
            response == CONTENT_SETTING_ASK);
-    PermissionRequestManager* manager =
-        PermissionRequestManager::FromWebContents(web_contents());
-    manager->TogglePersist(persist);
     using AutoResponseType = PermissionRequestManager::AutoResponseType;
     AutoResponseType decision = AutoResponseType::DISMISS;
     if (response == CONTENT_SETTING_ALLOW)
@@ -240,8 +236,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
   }
 
   void TestAskAndDecide_TestContent(ContentSettingsType content_settings_type,
-                                    ContentSetting decision,
-                                    bool persist) {
+                                    ContentSetting decision) {
     TestPermissionContext permission_context(profile(), content_settings_type);
     GURL url("https://www.google.com");
     SetUpUrl(url);
@@ -250,10 +245,9 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     const PermissionRequestID id(
         web_contents()->GetMainFrame()->GetProcess()->GetID(),
         web_contents()->GetMainFrame()->GetRoutingID(), -1);
-    permission_context.SetRespondPermissionCallback(
-        base::Bind(&PermissionContextBaseTests::RespondToPermission,
-                   base::Unretained(this), &permission_context, id, url,
-                   persist, decision));
+    permission_context.SetRespondPermissionCallback(base::Bind(
+        &PermissionContextBaseTests::RespondToPermission,
+        base::Unretained(this), &permission_context, id, url, decision));
     permission_context.RequestPermission(
         web_contents(), id, url, true /* user_gesture */,
         base::Bind(&TestPermissionContext::TrackPermissionDecision,
@@ -281,13 +275,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           0, 1);
     }
 
-    if (persist) {
-      EXPECT_EQ(decision,
-                permission_context.GetContentSettingFromMap(url, url));
-    } else {
-      EXPECT_EQ(CONTENT_SETTING_ASK,
-                permission_context.GetContentSettingFromMap(url, url));
-    }
+    EXPECT_EQ(decision, permission_context.GetContentSettingFromMap(url, url));
 
     histograms.ExpectUniqueSample(
         "Permissions.AutoBlocker.EmbargoPromptSuppression",
@@ -315,7 +303,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       permission_context.SetRespondPermissionCallback(
           base::Bind(&PermissionContextBaseTests::RespondToPermission,
                      base::Unretained(this), &permission_context, id, url,
-                     false, CONTENT_SETTING_ASK));
+                     CONTENT_SETTING_ASK));
 
       permission_context.RequestPermission(
           web_contents(), id, url, true /* user_gesture */,
@@ -365,7 +353,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     permission_context.SetRespondPermissionCallback(
         base::Bind(&PermissionContextBaseTests::RespondToPermission,
-                   base::Unretained(this), &permission_context, id, url, false,
+                   base::Unretained(this), &permission_context, id, url,
                    CONTENT_SETTING_ASK));
 
     permission_context.RequestPermission(
@@ -405,7 +393,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         permission_context.SetRespondPermissionCallback(
             base::Bind(&PermissionContextBaseTests::RespondToPermission,
                        base::Unretained(this), &permission_context, id, url,
-                       false, CONTENT_SETTING_ASK));
+                       CONTENT_SETTING_ASK));
         permission_context.RequestPermission(
             web_contents(), id, url, true /* user_gesture */,
             base::Bind(&TestPermissionContext::TrackPermissionDecision,
@@ -489,7 +477,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       permission_context.SetRespondPermissionCallback(
           base::Bind(&PermissionContextBaseTests::RespondToPermission,
                      base::Unretained(this), &permission_context, id, url,
-                     false, CONTENT_SETTING_ASK));
+                     CONTENT_SETTING_ASK));
       permission_context.RequestPermission(
           web_contents(), id, url, true /* user_gesture */,
           base::Bind(&TestPermissionContext::TrackPermissionDecision,
@@ -572,7 +560,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         web_contents()->GetMainFrame()->GetRoutingID(), -1);
     permission_context.SetRespondPermissionCallback(
         base::Bind(&PermissionContextBaseTests::RespondToPermission,
-                   base::Unretained(this), &permission_context, id, url, true,
+                   base::Unretained(this), &permission_context, id, url,
                    CONTENT_SETTING_ALLOW));
 
     permission_context.RequestPermission(
@@ -629,9 +617,6 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         web_contents()->GetMainFrame()->GetProcess()->GetID(),
         web_contents()->GetMainFrame()->GetRoutingID(), 1);
 
-    bool persist = (response == CONTENT_SETTING_ALLOW ||
-                    response == CONTENT_SETTING_BLOCK);
-
     // Request a permission without setting the callback to DecidePermission.
     permission_context.RequestPermission(
         web_contents(), id0, url, true /* user_gesture */,
@@ -641,10 +626,9 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(0u, permission_context.decisions().size());
 
     // Set the callback, and make a second permission request.
-    permission_context.SetRespondPermissionCallback(
-        base::Bind(&PermissionContextBaseTests::RespondToPermission,
-                   base::Unretained(this), &permission_context, id0, url,
-                   persist, response));
+    permission_context.SetRespondPermissionCallback(base::Bind(
+        &PermissionContextBaseTests::RespondToPermission,
+        base::Unretained(this), &permission_context, id0, url, response));
     permission_context.RequestPermission(
         web_contents(), id1, url, true /* user_gesture */,
         base::Bind(&TestPermissionContext::TrackPermissionDecision,
@@ -683,7 +667,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       permission_context.SetRespondPermissionCallback(
           base::Bind(&PermissionContextBaseTests::RespondToPermission,
                      base::Unretained(this), &permission_context, id, url,
-                     true /* persist */, expected_permission_status));
+                     expected_permission_status));
     }
 
     permission_context.RequestPermission(
@@ -735,36 +719,23 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
 // Simulates clicking Accept. The permission should be granted and
 // saved for future use.
-TEST_F(PermissionContextBaseTests, TestAskAndGrantPersist) {
+TEST_F(PermissionContextBaseTests, TestAskAndGrant) {
   TestAskAndDecide_TestContent(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                               CONTENT_SETTING_ALLOW, true);
-}
-
-// Simulates clicking Accept. The permission should be granted, but not
-// persisted.
-TEST_F(PermissionContextBaseTests, TestAskAndGrantNoPersist) {
-  TestAskAndDecide_TestContent(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                               CONTENT_SETTING_ALLOW, false);
+                               CONTENT_SETTING_ALLOW);
 }
 
 // Simulates clicking Block. The permission should be denied and
 // saved for future use.
-TEST_F(PermissionContextBaseTests, TestAskAndBlockPersist) {
+TEST_F(PermissionContextBaseTests, TestAskAndBlock) {
   TestAskAndDecide_TestContent(CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                               CONTENT_SETTING_BLOCK, true);
-}
-
-// Simulates clicking Block. The permission should be denied, but not persisted.
-TEST_F(PermissionContextBaseTests, TestAskAndBlockNoPersist) {
-  TestAskAndDecide_TestContent(CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                               CONTENT_SETTING_BLOCK, false);
+                               CONTENT_SETTING_BLOCK);
 }
 
 // Simulates clicking Dismiss (X) in the prompt.
 // The permission should be denied but not saved for future use.
 TEST_F(PermissionContextBaseTests, TestAskAndDismiss) {
   TestAskAndDecide_TestContent(CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
-                               CONTENT_SETTING_ASK, false);
+                               CONTENT_SETTING_ASK);
 }
 
 // Simulates clicking Dismiss (X) in the prompt with the block on too

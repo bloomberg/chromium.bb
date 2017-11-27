@@ -176,14 +176,6 @@ bool PermissionUtil::IsPermission(ContentSettingsType type) {
   }
 }
 
-bool PermissionUtil::ShouldShowPersistenceToggle(ContentSettingsType type) {
-  return (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
-          type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-          type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) &&
-         base::FeatureList::IsEnabled(
-             features::kDisplayPersistenceToggleInPermissionPrompts);
-}
-
 PermissionUtil::ScopedRevocationReporter::ScopedRevocationReporter(
     Profile* profile,
     const GURL& primary_url,

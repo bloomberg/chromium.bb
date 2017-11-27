@@ -9,7 +9,6 @@ import android.content.DialogInterface;
 import android.support.annotation.IntDef;
 import android.support.v4.widget.TextViewCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.SwitchCompat;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,7 +49,6 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
     private @interface State {}
 
     private AlertDialog mDialog;
-    private SwitchCompat mSwitchView;
     private PermissionDialogDelegate mDialogDelegate;
 
     // As the PermissionRequestManager handles queueing for a tab and only shows prompts for active
@@ -120,7 +118,7 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
         if (mDialogDelegate == null) {
             mState = NOT_SHOWING;
         } else {
-            mDialogDelegate.onAccept(mSwitchView.isChecked());
+            mDialogDelegate.onAccept();
             destroyDelegate();
         }
         scheduleDisplay();
@@ -214,22 +212,6 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
         TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(
                 messageTextView, mDialogDelegate.getDrawableId(), 0, 0, 0);
 
-        mSwitchView = (SwitchCompat) view.findViewById(R.id.permission_dialog_persist_toggle);
-        mSwitchView.setChecked(true);
-        TextView toggleTextView =
-                (TextView) view.findViewById(R.id.permission_dialog_persist_message);
-        if (mDialogDelegate.shouldShowPersistenceToggle()) {
-            mSwitchView.setVisibility(View.VISIBLE);
-            String toggleMessage =
-                    mDialog.getContext().getString(R.string.permission_prompt_persist_text);
-            toggleTextView.setText(toggleMessage);
-            toggleTextView.setVisibility(View.VISIBLE);
-            toggleTextView.announceForAccessibility(toggleMessage);
-
-        } else {
-            view.findViewById(R.id.permission_dialog_persist_layout).setVisibility(View.GONE);
-        }
-
         mDialog.setView(view);
 
         // Set the buttons to call the appropriate delegate methods. When the dialog is dismissed,
@@ -274,7 +256,7 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
                     // Otherwise, run the necessary delegate callback immediately and schedule the
                     // next dialog.
                     if (mState == PROMPT_DENIED) {
-                        mDialogDelegate.onCancel(mSwitchView.isChecked());
+                        mDialogDelegate.onCancel();
                     } else {
                         assert mState == PROMPT_OPEN;
                         mDialogDelegate.onDismiss();

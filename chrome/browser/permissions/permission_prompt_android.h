@@ -28,14 +28,12 @@ class PermissionPromptAndroid : public PermissionPrompt {
   gfx::NativeWindow GetNativeWindow() override;
 
   void Closing();
-  void TogglePersist(bool value);
   void Accept();
   void Deny();
 
   // We show one permission at a time except for grouped mic+camera, for which
   // we still have a single icon and message text.
   size_t PermissionCount() const;
-  bool ShouldShowPersistenceToggle() const;
   ContentSettingsType GetContentSettingType(size_t position) const;
   int GetIconId() const;
   base::string16 GetMessageText() const;
@@ -47,8 +45,6 @@ class PermissionPromptAndroid : public PermissionPrompt {
   content::WebContents* web_contents_;
   // |delegate_| is the PermissionRequestManager, which owns this object.
   Delegate* delegate_;
-
-  bool persist_;
 
   base::WeakPtrFactory<PermissionPromptAndroid> weak_factory_;
 

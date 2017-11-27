@@ -2531,7 +2531,6 @@
                 {
                     "name": "ModalToggleEnabled",
                     "enable_features": [
-                        "DisplayPersistenceToggleInPermissionPrompts",
                         "ModalPermissionPrompts"
                     ]
                 }

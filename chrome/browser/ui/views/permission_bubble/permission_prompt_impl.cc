@@ -31,7 +31,7 @@
 #include "ui/gfx/text_constants.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -95,7 +95,6 @@ class PermissionsBubbleDialogDelegateView
  private:
   PermissionPromptImpl* owner_;
   base::string16 display_origin_;
-  views::Checkbox* persist_checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionsBubbleDialogDelegateView);
 };
@@ -103,7 +102,7 @@ class PermissionsBubbleDialogDelegateView
 PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     PermissionPromptImpl* owner,
     const std::vector<PermissionRequest*>& requests)
-    : owner_(owner), persist_checkbox_(nullptr) {
+    : owner_(owner) {
   DCHECK(!requests.empty());
 
   set_close_on_deactivate(false);
@@ -126,7 +125,6 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
       requests[0]->GetOrigin(),
       url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
 
-  bool show_persistence_toggle = true;
   for (size_t index = 0; index < requests.size(); index++) {
     views::View* label_container = new views::View();
     int indent =
@@ -145,19 +143,8 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_container->AddChildView(label);
     AddChildView(label_container);
-
-    // Only show the toggle if every request wants to show it.
-    show_persistence_toggle = show_persistence_toggle &&
-                              requests[index]->ShouldShowPersistenceToggle();
   }
 
-  if (show_persistence_toggle) {
-    persist_checkbox_ = new views::Checkbox(
-        l10n_util::GetStringUTF16(IDS_PERMISSIONS_BUBBLE_PERSIST_TEXT));
-    persist_checkbox_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    persist_checkbox_->SetChecked(true);
-    AddChildView(persist_checkbox_);
-  }
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PERMISSIONS);
 }
 
@@ -246,18 +233,14 @@ base::string16 PermissionsBubbleDialogDelegateView::GetDialogButtonLabel(
 }
 
 bool PermissionsBubbleDialogDelegateView::Cancel() {
-  if (owner_) {
-    owner_->TogglePersist(!persist_checkbox_ || persist_checkbox_->checked());
+  if (owner_)
     owner_->Deny();
-  }
   return true;
 }
 
 bool PermissionsBubbleDialogDelegateView::Accept() {
-  if (owner_) {
-    owner_->TogglePersist(!persist_checkbox_ || persist_checkbox_->checked());
+  if (owner_)
     owner_->Accept();
-  }
   return true;
 }
 
@@ -312,11 +295,6 @@ void PermissionPromptImpl::Closing() {
     bubble_delegate_ = nullptr;
   if (delegate_)
     delegate_->Closing();
-}
-
-void PermissionPromptImpl::TogglePersist(bool value) {
-  if (delegate_)
-    delegate_->TogglePersist(value);
 }
 
 void PermissionPromptImpl::Accept() {

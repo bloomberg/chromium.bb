@@ -59946,6 +59946,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Permissions.Prompt.Accepted.Persisted" enum="BooleanPersisted">
+  <obsolete>
+    Persist toggle experiments ran from M56 to M59.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <summary>
@@ -59987,6 +59990,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Permissions.Prompt.Denied.Persisted" enum="BooleanPersisted">
+  <obsolete>
+    Persist toggle experiments ran from M56 to M59.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <summary>

@@ -171,24 +171,20 @@ GURL PermissionRequestImpl::GetOrigin() const {
 }
 
 void PermissionRequestImpl::PermissionGranted() {
-  permission_decided_callback_.Run(persist(), CONTENT_SETTING_ALLOW);
+  permission_decided_callback_.Run(CONTENT_SETTING_ALLOW);
 }
 
 void PermissionRequestImpl::PermissionDenied() {
-  permission_decided_callback_.Run(persist(), CONTENT_SETTING_BLOCK);
+  permission_decided_callback_.Run(CONTENT_SETTING_BLOCK);
 }
 
 void PermissionRequestImpl::Cancelled() {
-  permission_decided_callback_.Run(false, CONTENT_SETTING_DEFAULT);
+  permission_decided_callback_.Run(CONTENT_SETTING_DEFAULT);
 }
 
 void PermissionRequestImpl::RequestFinished() {
   is_finished_ = true;
   delete_callback_.Run();
-}
-
-bool PermissionRequestImpl::ShouldShowPersistenceToggle() const {
-  return PermissionUtil::ShouldShowPersistenceToggle(content_settings_type_);
 }
 
 PermissionRequestType PermissionRequestImpl::GetPermissionRequestType()

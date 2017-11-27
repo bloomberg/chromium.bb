@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.permissions;
 import android.content.DialogInterface;
 import android.support.test.InstrumentationRegistry;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.SwitchCompat;
 
 import org.junit.Assert;
 import org.junit.runner.Description;
@@ -15,7 +14,6 @@ import org.junit.runners.model.Statement;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -178,13 +176,11 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
      * @param nUpdates      How many updates of the page title to wait for.
      * @param withGeature   True if we require a user gesture to trigger the prompt.
      * @param isDialog      True if we are expecting a permission dialog, false for an infobar.
-     * @param hasSwitch     True if we are expecting a persistence switch, false otherwise.
-     * @param toggleSwitch  True if we should toggle the switch off, false otherwise.
      * @throws Exception
      */
     public void runAllowTest(PermissionUpdateWaiter updateWaiter, final String url,
-            String javascript, int nUpdates, boolean withGesture, boolean isDialog,
-            boolean hasSwitch, boolean toggleSwitch) throws Exception {
+            String javascript, int nUpdates, boolean withGesture, boolean isDialog)
+            throws Exception {
         setUpUrl(url);
 
         if (withGesture) {
@@ -197,29 +193,21 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
         if (isDialog) {
             DialogShownCriteria criteria = new DialogShownCriteria("Dialog not shown", true);
             CriteriaHelper.pollUiThread(criteria);
-            replyToDialogAndWaitForUpdates(
-                    updateWaiter, criteria.getDialog(), nUpdates, true, hasSwitch, toggleSwitch);
+            replyToDialogAndWaitForUpdates(updateWaiter, criteria.getDialog(), nUpdates, true);
         } else {
-            replyToInfoBarAndWaitForUpdates(updateWaiter, nUpdates, true, hasSwitch, toggleSwitch);
+            replyToInfoBarAndWaitForUpdates(updateWaiter, nUpdates, true);
         }
     }
 
     /**
-     * Replies to an infobar permission prompt, optionally checking for the presence of a
-     * persistence switch and toggling it. Waits for a provided number of updates to the page title
-     * in response.
+     * Replies to an infobar permission prompt and waits for a provided number
+     * of updates to the page title in response.
      */
-    private void replyToInfoBarAndWaitForUpdates(PermissionUpdateWaiter updateWaiter, int nUpdates,
-            boolean allow, boolean hasSwitch, boolean toggleSwitch) throws Exception {
+    private void replyToInfoBarAndWaitForUpdates(
+            PermissionUpdateWaiter updateWaiter, int nUpdates, boolean allow) throws Exception {
         mListener.addInfoBarAnimationFinished("InfoBar not added.");
         InfoBar infobar = getInfoBars().get(0);
         Assert.assertNotNull(infobar);
-
-        if (hasSwitch) {
-            SwitchCompat persistSwitch = (SwitchCompat) infobar.getView().findViewById(
-                    R.id.permission_infobar_persist_toggle);
-            checkAndToggleSwitch(persistSwitch, toggleSwitch);
-        }
 
         if (allow) {
             Assert.assertTrue("Allow button wasn't found", InfoBarUtil.clickPrimaryButton(infobar));
@@ -231,37 +219,16 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
     }
 
     /**
-     * Replies to a dialog permission prompt, optionally checking for the presence of a
-     * persistence switch and toggling it. Waits for a provided number of updates to the page title
-     * in response.
+     * Replies to a dialog permission prompt and waits for a provided number of
+     * updates to the page title in response.
      */
     private void replyToDialogAndWaitForUpdates(PermissionUpdateWaiter updateWaiter,
-            AlertDialog dialog, int nUpdates, boolean allow, boolean hasSwitch,
-            boolean toggleSwitch) throws Exception {
-        if (hasSwitch) {
-            SwitchCompat persistSwitch =
-                    (SwitchCompat) dialog.findViewById(R.id.permission_dialog_persist_toggle);
-            checkAndToggleSwitch(persistSwitch, toggleSwitch);
-        }
-
+            AlertDialog dialog, int nUpdates, boolean allow) throws Exception {
         if (allow) {
             clickButton(dialog, DialogInterface.BUTTON_POSITIVE);
         } else {
             clickButton(dialog, DialogInterface.BUTTON_NEGATIVE);
         }
         updateWaiter.waitForNumUpdates(nUpdates);
-    }
-
-    private void checkAndToggleSwitch(final SwitchCompat persistSwitch, boolean toggleSwitch) {
-        Assert.assertNotNull(persistSwitch);
-        Assert.assertTrue(persistSwitch.isChecked());
-        if (toggleSwitch) {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    persistSwitch.toggle();
-                }
-            });
-        }
     }
 }

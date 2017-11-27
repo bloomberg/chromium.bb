@@ -30,8 +30,7 @@ ScopedJavaLocalRef<jobject> PermissionInfoBar::CreateRenderInfoBarHelper(
     const base::string16& link_text,
     const base::string16& ok_button_text,
     const base::string16& cancel_button_text,
-    std::vector<int>& content_settings,
-    bool show_persistence_toggle) {
+    std::vector<int>& content_settings) {
   ScopedJavaLocalRef<jstring> message_text_java =
       base::android::ConvertUTF16ToJavaString(env, message_text);
   ScopedJavaLocalRef<jstring> link_text_java =
@@ -46,10 +45,5 @@ ScopedJavaLocalRef<jobject> PermissionInfoBar::CreateRenderInfoBarHelper(
   return Java_PermissionInfoBar_create(
       env, tab, enumerated_icon_id, icon_bitmap, message_text_java,
       link_text_java, ok_button_text_java, cancel_button_text_java,
-      content_settings_types, show_persistence_toggle);
-}
-
-bool PermissionInfoBar::IsSwitchOn(JNIEnv* env,
-                                   const JavaRef<jobject>& info_bar_obj) {
-  return Java_PermissionInfoBar_isPersistSwitchOn(env, info_bar_obj);
+      content_settings_types);
 }

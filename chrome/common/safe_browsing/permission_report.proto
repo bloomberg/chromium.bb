@@ -99,6 +99,7 @@ message PermissionReport {
     FLASH = 11;
   }
 
+  // OBSOLETE: Persist toggle experiments ran from M56 to M59.
   // Whether the decision on a prompt was persisted.
   enum PersistDecision {
     PERSIST_DECISION_UNSPECIFIED = 0;

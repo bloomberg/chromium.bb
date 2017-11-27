@@ -182,12 +182,6 @@ const base::Feature kDesktopIOSPromotion{"DesktopIOSPromotion",
 const base::Feature kDesktopPWAWindowing{"DesktopPWAWindowing",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Experiment to display a toggle allowing users to opt-out of persisting a
-// Grant or Deny decision in a permission prompt.
-const base::Feature kDisplayPersistenceToggleInPermissionPrompts{
-    "DisplayPersistenceToggleInPermissionPrompts",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if !defined(OS_ANDROID)
 const base::Feature kDoodlesOnLocalNtp{"DoodlesOnLocalNtp",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

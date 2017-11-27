@@ -126,7 +126,6 @@ class PermissionRequestManager
 
   // PermissionPrompt::Delegate:
   const std::vector<PermissionRequest*>& Requests() override;
-  void TogglePersist(bool new_value) override;
   void Accept() override;
   void Deny() override;
   void Closing() override;
@@ -190,9 +189,6 @@ class PermissionRequestManager
   // duped against it.
   std::unordered_multimap<PermissionRequest*, PermissionRequest*>
       duplicate_requests_;
-
-  // Whether the response to each request should be persisted.
-  bool persist_;
 
   base::ObserverList<Observer> observer_list_;
   AutoResponseType auto_response_for_test_;

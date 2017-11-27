@@ -20,7 +20,7 @@ class TestPermisisonRequestOwner {
  public:
   explicit TestPermisisonRequestOwner(ContentSettingsType type) {
     bool user_gesture = true;
-    auto decided = [](bool, ContentSetting) {};
+    auto decided = [](ContentSetting) {};
     request_ = base::MakeUnique<PermissionRequestImpl>(
         GURL("https://example.com"), type, user_gesture, base::Bind(decided),
         base::Bind(&TestPermisisonRequestOwner::DeleteThis,

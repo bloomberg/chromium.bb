@@ -132,7 +132,6 @@ PermissionRequestManager::PermissionRequestManager(
       view_(nullptr),
       main_frame_has_fully_loaded_(false),
       tab_is_visible_(web_contents->IsVisible()),
-      persist_(true),
       auto_response_for_test_(NONE),
       weak_factory_(this) {}
 
@@ -340,10 +339,6 @@ const std::vector<PermissionRequest*>& PermissionRequestManager::Requests() {
   return requests_;
 }
 
-void PermissionRequestManager::TogglePersist(bool new_value) {
-  persist_ = new_value;
-}
-
 void PermissionRequestManager::Accept() {
   DCHECK(view_);
   std::vector<PermissionRequest*>::iterator requests_iter;
@@ -506,26 +501,22 @@ void PermissionRequestManager::PermissionGrantedIncludingDuplicates(
     PermissionRequest* request) {
   DCHECK_EQ(request, GetExistingRequest(request))
       << "Only requests in [queued_[frame_]]requests_ can have duplicates";
-  request->set_persist(persist_);
   request->PermissionGranted();
   auto range = duplicate_requests_.equal_range(request);
-  for (auto it = range.first; it != range.second; ++it) {
-    it->second->set_persist(persist_);
+  for (auto it = range.first; it != range.second; ++it)
     it->second->PermissionGranted();
-  }
 }
+
 void PermissionRequestManager::PermissionDeniedIncludingDuplicates(
     PermissionRequest* request) {
   DCHECK_EQ(request, GetExistingRequest(request))
       << "Only requests in [queued_]requests_ can have duplicates";
-  request->set_persist(persist_);
   request->PermissionDenied();
   auto range = duplicate_requests_.equal_range(request);
-  for (auto it = range.first; it != range.second; ++it) {
-    it->second->set_persist(persist_);
+  for (auto it = range.first; it != range.second; ++it)
     it->second->PermissionDenied();
-  }
 }
+
 void PermissionRequestManager::CancelledIncludingDuplicates(
     PermissionRequest* request) {
   DCHECK_EQ(request, GetExistingRequest(request))
@@ -535,6 +526,7 @@ void PermissionRequestManager::CancelledIncludingDuplicates(
   for (auto it = range.first; it != range.second; ++it)
     it->second->Cancelled();
 }
+
 void PermissionRequestManager::RequestFinishedIncludingDuplicates(
     PermissionRequest* request) {
   // We can't call GetExistingRequest here, because other entries in requests_,

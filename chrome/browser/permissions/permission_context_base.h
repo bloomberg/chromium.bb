@@ -181,7 +181,6 @@ class PermissionContextBase : public KeyedService {
                          const GURL& embedding_origin,
                          bool user_gesture,
                          const BrowserPermissionCallback& callback,
-                         bool persist,
                          ContentSetting content_setting);
 
   // Called when the user has made a permission decision. This is a hook for

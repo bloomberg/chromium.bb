@@ -4,12 +4,7 @@
 
 #include "chrome/browser/permissions/permission_request.h"
 
-
-PermissionRequest::PermissionRequest() : persist_(true) {}
-
-bool PermissionRequest::ShouldShowPersistenceToggle() const {
-  return false;
-}
+PermissionRequest::PermissionRequest() {}
 
 PermissionRequestGestureType PermissionRequest::GetGestureType() const {
   return PermissionRequestGestureType::UNKNOWN;

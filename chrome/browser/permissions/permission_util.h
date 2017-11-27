@@ -66,8 +66,6 @@ class PermissionUtil {
   // PermissionManager.
   static bool IsPermission(ContentSettingsType type);
 
-  static bool ShouldShowPersistenceToggle(ContentSettingsType type);
-
   // A scoped class that will check the current resolved content setting on
   // construction and report a revocation metric accordingly if the revocation
   // condition is met (from ALLOW to something else).
