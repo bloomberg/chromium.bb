@@ -95,8 +95,7 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
   // Restore session history last because WKBasedNavigationManagerImpl relies on
   // CRWWebController to restore history into the web view.
   if (session_storage) {
-    SessionStorageBuilder session_storage_builder;
-    session_storage_builder.ExtractSessionState(this, session_storage);
+    RestoreSessionStorage(session_storage);
   } else {
     certificate_policy_cache_ =
         base::MakeUnique<SessionCertificatePolicyCacheImpl>();
@@ -546,6 +545,20 @@ bool WebStateImpl::IsWebUsageEnabled() const {
 }
 
 void WebStateImpl::SetWebUsageEnabled(bool enabled) {
+  // SetWebUsageEnabled(false) will cause the WKWebView to be removed and this
+  // is the only way to clear browser data. Cache the session history in this
+  // WebState so that when web usage is re-enabled, history can be restored into
+  // the newly created WKWebView.
+  // TODO(crbug.com/557963): don't destroy WKWebView to clear browser data.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    if (enabled && cached_session_storage_) {
+      RestoreSessionStorage(cached_session_storage_.get());
+      cached_session_storage_.reset();
+    } else {
+      cached_session_storage_.reset(BuildSessionStorage());
+    }
+  }
+
   [web_controller_ setWebUsageEnabled:enabled];
 }
 
@@ -792,6 +805,11 @@ WebState* WebStateImpl::GetWebState() {
 
 id<CRWWebViewNavigationProxy> WebStateImpl::GetWebViewNavigationProxy() const {
   return [web_controller_ webViewNavigationProxy];
+}
+
+void WebStateImpl::RestoreSessionStorage(CRWSessionStorage* session_storage) {
+  SessionStorageBuilder session_storage_builder;
+  session_storage_builder.ExtractSessionState(this, session_storage);
 }
 
 }  // namespace web

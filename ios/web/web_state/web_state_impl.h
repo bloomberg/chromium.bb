@@ -308,6 +308,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Returns true if |web_controller_| has been set.
   bool Configured() const;
 
+  // Restores session history into the navigation manager.
+  void RestoreSessionStorage(CRWSessionStorage* session_storage);
+
   // Delegate, not owned by this object.
   WebStateDelegate* delegate_;
 
@@ -369,6 +372,10 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Mojo interface registry for this WebState.
   std::unique_ptr<WebStateInterfaceProvider> web_state_interface_provider_;
+
+  // Cached session history when web usage is disabled. It is used to restore
+  // history into WKWebView when web usage is re-enabled.
+  base::scoped_nsobject<CRWSessionStorage> cached_session_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateImpl);
 };
