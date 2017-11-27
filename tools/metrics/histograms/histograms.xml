@@ -105068,6 +105068,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="PageLoadMetricsClientsNoScriptPreview" separator="."
+    ordering="prefix">
+  <suffix name="Clients.NoScriptPreview"
+      label="PageLoadMetrics that are a result of a navigation that tirggered
+             the NoScript Preview intervention."/>
+  <affected-histogram
+      name="PageLoad.DocumentTiming.NavigationToLoadEventFired"/>
+  <affected-histogram name="PageLoad.Experimental.Bytes.Network"/>
+  <affected-histogram name="PageLoad.Experimental.CompletedResources.Network"/>
+  <affected-histogram
+      name="PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad"/>
+  <affected-histogram name="PageLoad.ParseTiming.ParseDuration"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="PageLoadMetricsClientsNoServiceWorkerSpecialApps"
     separator=".">
   <suffix name="search"
