@@ -175,8 +175,10 @@ void ResourceDispatcher::OnReceivedResponse(
 
   if (delegate_) {
     std::unique_ptr<RequestPeer> new_peer = delegate_->OnReceivedResponse(
-        std::move(request_info->peer), response_head.mime_type,
-        request_info->url);
+        std::move(request_info->peer), request_info->render_frame_id,
+        request_info->response_url, request_info->response_referrer,
+        request_info->response_method, request_info->resource_type,
+        response_head);
     DCHECK(new_peer);
     request_info->peer = std::move(new_peer);
   }
@@ -315,6 +317,8 @@ void ResourceDispatcher::OnReceivedRedirect(
     // We update the response_url here so that we can send it to
     // SiteIsolationStatsGatherer later when OnReceivedResponse is called.
     request_info->response_url = redirect_info.new_url;
+    request_info->response_method = redirect_info.new_method;
+    request_info->response_referrer = GURL(redirect_info.new_referrer);
     request_info->pending_redirect_message.reset(
         new ResourceHostMsg_FollowRedirect(request_id));
     if (!request_info->is_deferred) {
@@ -479,16 +483,22 @@ void ResourceDispatcher::OnTransferSizeUpdated(int request_id,
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     std::unique_ptr<RequestPeer> peer,
     ResourceType resource_type,
+    int render_frame_id,
     int origin_pid,
     const url::Origin& frame_origin,
     const GURL& request_url,
+    const std::string& method,
+    const GURL& referrer,
     bool download_to_file)
     : peer(std::move(peer)),
       resource_type(resource_type),
+      render_frame_id(render_frame_id),
       origin_pid(origin_pid),
       url(request_url),
       frame_origin(frame_origin),
       response_url(request_url),
+      response_method(method),
+      response_referrer(referrer),
       download_to_file(download_to_file),
       request_start(base::TimeTicks::Now()) {}
 
@@ -627,8 +637,9 @@ int ResourceDispatcher::StartAsync(
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
   pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
-      std::move(peer), request->resource_type, request->origin_pid,
-      frame_origin, request->url, request->download_to_file);
+      std::move(peer), request->resource_type, request->render_frame_id,
+      request->origin_pid, frame_origin, request->url, request->method,
+      request->referrer, request->download_to_file);
 
   if (resource_scheduling_filter_.get() && loading_task_runner) {
     resource_scheduling_filter_->SetRequestIdTaskRunner(request_id,

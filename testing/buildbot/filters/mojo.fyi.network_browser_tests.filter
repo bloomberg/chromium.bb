@@ -878,12 +878,6 @@
 -WebNavigationApiTest.TargetBlankIncognito
 -WebNavigationApiTest.UserAction
 
-# Stop using WebContentsObserver::DidGetResourceResponseStart, which gets
-# notified from ResourceDispatcherHostDelegate. Instead use DidFinishNavigation
-# for frame requests and send IPCs from the renderer for subresources.
-# http://crbug.com/783981
--ClientSideDetectionHostBrowserTest.VerifyIPAddressCollection
-
 # http://crbug.com/787614
 -ChromeResourceDispatcherHostDelegateBrowserTest.PolicyHeader
 -ChromeResourceDispatcherHostDelegateBrowserTest.PolicyHeaderForRedirect

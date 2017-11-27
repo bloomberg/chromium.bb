@@ -39,10 +39,10 @@ class StringData final : public content::RequestPeer::ReceivedData {
 ExtensionLocalizationPeer::ExtensionLocalizationPeer(
     std::unique_ptr<content::RequestPeer> peer,
     IPC::Sender* message_sender,
-    const GURL& request_url)
+    const GURL& response_url)
     : original_peer_(std::move(peer)),
       message_sender_(message_sender),
-      request_url_(request_url) {}
+      response_url_(response_url) {}
 
 ExtensionLocalizationPeer::~ExtensionLocalizationPeer() {
 }
@@ -53,14 +53,14 @@ ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
     std::unique_ptr<content::RequestPeer> peer,
     IPC::Sender* message_sender,
     const std::string& mime_type,
-    const GURL& request_url) {
+    const GURL& response_url) {
   // Return the given |peer| as is if content is not text/css or it doesn't
   // belong to extension scheme.
-  return (request_url.SchemeIs(extensions::kExtensionScheme) &&
+  return (response_url.SchemeIs(extensions::kExtensionScheme) &&
           base::StartsWith(mime_type, "text/css",
                            base::CompareCase::INSENSITIVE_ASCII))
              ? base::WrapUnique(new ExtensionLocalizationPeer(
-                   std::move(peer), message_sender, request_url))
+                   std::move(peer), message_sender, response_url))
              : std::move(peer);
 }
 
@@ -114,10 +114,10 @@ void ExtensionLocalizationPeer::ReplaceMessages() {
   if (!message_sender_ || data_.empty())
     return;
 
-  if (!request_url_.is_valid())
+  if (!response_url_.is_valid())
     return;
 
-  std::string extension_id = request_url_.host();
+  std::string extension_id = response_url_.host();
   extensions::L10nMessagesMap* l10n_messages =
       extensions::GetL10nMessagesMap(extension_id);
   if (!l10n_messages) {

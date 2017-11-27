@@ -61,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(ClientSideDetectionHostBrowserTest,
   ui_test_utils::NavigateToURL(browser(), page_url);
 
   BrowseInfo* browse_info = csd_host->GetBrowseInfo();
-  ASSERT_EQ(1u, browse_info->ips.size());
+  EXPECT_EQ(1u, browse_info->ips.size());
   const std::vector<IPUrlInfo>& ip_urls =
       browse_info->ips[embedded_test_server()->base_url().host()];
   IPUrlInfo expected_result_1(
@@ -72,8 +72,8 @@ IN_PROC_BROWSER_TEST_F(ClientSideDetectionHostBrowserTest,
                                   .spec(),
                               "GET", page_url.spec(),
                               content::RESOURCE_TYPE_SUB_FRAME);
-  ASSERT_TRUE(FindExpectedIPUrlInfo(expected_result_1, ip_urls));
-  ASSERT_TRUE(FindExpectedIPUrlInfo(expected_result_2, ip_urls));
+  EXPECT_TRUE(FindExpectedIPUrlInfo(expected_result_1, ip_urls));
+  EXPECT_TRUE(FindExpectedIPUrlInfo(expected_result_2, ip_urls));
 }
 
 }  // namespace safe_browsing
