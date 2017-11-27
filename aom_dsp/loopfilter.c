@@ -201,7 +201,11 @@ void aom_lpf_horizontal_4_dual_c(uint8_t *s, int p, const uint8_t *blimit0,
                                  const uint8_t *blimit1, const uint8_t *limit1,
                                  const uint8_t *thresh1) {
   aom_lpf_horizontal_4_c(s, p, blimit0, limit0, thresh0);
+#if CONFIG_PARALLEL_DEBLOCKING
+  aom_lpf_horizontal_4_c(s + 4, p, blimit1, limit1, thresh1);
+#else
   aom_lpf_horizontal_4_c(s + 8, p, blimit1, limit1, thresh1);
+#endif
 }
 
 void aom_lpf_vertical_4_c(uint8_t *s, int pitch, const uint8_t *blimit,
@@ -236,7 +240,11 @@ void aom_lpf_vertical_4_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
                                const uint8_t *blimit1, const uint8_t *limit1,
                                const uint8_t *thresh1) {
   aom_lpf_vertical_4_c(s, pitch, blimit0, limit0, thresh0);
+#if CONFIG_PARALLEL_DEBLOCKING
+  aom_lpf_vertical_4_c(s + 4 * pitch, pitch, blimit1, limit1, thresh1);
+#else
   aom_lpf_vertical_4_c(s + 8 * pitch, pitch, blimit1, limit1, thresh1);
+#endif
 }
 
 #if PARALLEL_DEBLOCKING_5_TAP_CHROMA
@@ -333,7 +341,11 @@ void aom_lpf_horizontal_8_dual_c(uint8_t *s, int p, const uint8_t *blimit0,
                                  const uint8_t *blimit1, const uint8_t *limit1,
                                  const uint8_t *thresh1) {
   aom_lpf_horizontal_8_c(s, p, blimit0, limit0, thresh0);
+#if CONFIG_PARALLEL_DEBLOCKING
+  aom_lpf_horizontal_8_c(s + 4, p, blimit1, limit1, thresh1);
+#else
   aom_lpf_horizontal_8_c(s + 8, p, blimit1, limit1, thresh1);
+#endif
 }
 
 #if PARALLEL_DEBLOCKING_5_TAP_CHROMA
@@ -384,7 +396,11 @@ void aom_lpf_vertical_8_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
                                const uint8_t *blimit1, const uint8_t *limit1,
                                const uint8_t *thresh1) {
   aom_lpf_vertical_8_c(s, pitch, blimit0, limit0, thresh0);
+#if CONFIG_PARALLEL_DEBLOCKING
+  aom_lpf_vertical_8_c(s + 4 * pitch, pitch, blimit1, limit1, thresh1);
+#else
   aom_lpf_vertical_8_c(s + 8 * pitch, pitch, blimit1, limit1, thresh1);
+#endif
 }
 
 #if PARALLEL_DEBLOCKING_13_TAP
@@ -674,7 +690,11 @@ void aom_lpf_vertical_16_c(uint8_t *s, int p, const uint8_t *blimit,
 
 void aom_lpf_vertical_16_dual_c(uint8_t *s, int p, const uint8_t *blimit,
                                 const uint8_t *limit, const uint8_t *thresh) {
+#if CONFIG_PARALLEL_DEBLOCKING
+  mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 8);
+#else
   mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 16);
+#endif
 }
 
 #if CONFIG_HIGHBITDEPTH
@@ -842,7 +862,11 @@ void aom_highbd_lpf_horizontal_4_dual_c(
     const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1,
     const uint8_t *thresh1, int bd) {
   aom_highbd_lpf_horizontal_4_c(s, p, blimit0, limit0, thresh0, bd);
+#if CONFIG_PARALLEL_DEBLOCKING
+  aom_highbd_lpf_horizontal_4_c(s + 4, p, blimit1, limit1, thresh1, bd);
+#else
   aom_highbd_lpf_horizontal_4_c(s + 8, p, blimit1, limit1, thresh1, bd);
+#endif
 }
 
 void aom_highbd_lpf_vertical_4_c(uint16_t *s, int pitch, const uint8_t *blimit,
@@ -879,8 +903,13 @@ void aom_highbd_lpf_vertical_4_dual_c(
     const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1,
     const uint8_t *thresh1, int bd) {
   aom_highbd_lpf_vertical_4_c(s, pitch, blimit0, limit0, thresh0, bd);
+#if CONFIG_PARALLEL_DEBLOCKING
+  aom_highbd_lpf_vertical_4_c(s + 4 * pitch, pitch, blimit1, limit1, thresh1,
+                              bd);
+#else
   aom_highbd_lpf_vertical_4_c(s + 8 * pitch, pitch, blimit1, limit1, thresh1,
                               bd);
+#endif
 }
 
 #if PARALLEL_DEBLOCKING_5_TAP_CHROMA
@@ -981,7 +1010,11 @@ void aom_highbd_lpf_horizontal_8_dual_c(
     const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1,
     const uint8_t *thresh1, int bd) {
   aom_highbd_lpf_horizontal_8_c(s, p, blimit0, limit0, thresh0, bd);
+#if CONFIG_PARALLEL_DEBLOCKING
+  aom_highbd_lpf_horizontal_8_c(s + 4, p, blimit1, limit1, thresh1, bd);
+#else
   aom_highbd_lpf_horizontal_8_c(s + 8, p, blimit1, limit1, thresh1, bd);
+#endif
 }
 
 #if PARALLEL_DEBLOCKING_5_TAP_CHROMA
@@ -1036,8 +1069,13 @@ void aom_highbd_lpf_vertical_8_dual_c(
     const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1,
     const uint8_t *thresh1, int bd) {
   aom_highbd_lpf_vertical_8_c(s, pitch, blimit0, limit0, thresh0, bd);
+#if CONFIG_PARALLEL_DEBLOCKING
+  aom_highbd_lpf_vertical_8_c(s + 4 * pitch, pitch, blimit1, limit1, thresh1,
+                              bd);
+#else
   aom_highbd_lpf_vertical_8_c(s + 8 * pitch, pitch, blimit1, limit1, thresh1,
                               bd);
+#endif
 }
 
 #if PARALLEL_DEBLOCKING_13_TAP

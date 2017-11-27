@@ -662,7 +662,11 @@ void aom_highbd_lpf_horizontal_8_dual_sse2(
     const uint8_t *_thresh0, const uint8_t *_blimit1, const uint8_t *_limit1,
     const uint8_t *_thresh1, int bd) {
   aom_highbd_lpf_horizontal_8_sse2(s, p, _blimit0, _limit0, _thresh0, bd);
+#if CONFIG_PARALLEL_DEBLOCKING
+  aom_highbd_lpf_horizontal_8_sse2(s + 4, p, _blimit1, _limit1, _thresh1, bd);
+#else
   aom_highbd_lpf_horizontal_8_sse2(s + 8, p, _blimit1, _limit1, _thresh1, bd);
+#endif
 }
 
 void aom_highbd_lpf_horizontal_4_sse2(uint16_t *s, int p,
@@ -859,7 +863,11 @@ void aom_highbd_lpf_horizontal_4_dual_sse2(
     const uint8_t *_thresh0, const uint8_t *_blimit1, const uint8_t *_limit1,
     const uint8_t *_thresh1, int bd) {
   aom_highbd_lpf_horizontal_4_sse2(s, p, _blimit0, _limit0, _thresh0, bd);
+#if CONFIG_PARALLEL_DEBLOCKING
+  aom_highbd_lpf_horizontal_4_sse2(s + 4, p, _blimit1, _limit1, _thresh1, bd);
+#else
   aom_highbd_lpf_horizontal_4_sse2(s + 8, p, _blimit1, _limit1, _thresh1, bd);
+#endif
 }
 
 void aom_highbd_lpf_vertical_4_sse2(uint16_t *s, int p, const uint8_t *blimit,
