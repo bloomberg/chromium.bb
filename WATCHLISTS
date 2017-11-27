@@ -1538,6 +1538,9 @@
                   '|media/muxers/'\
                   '|services/video_capture/',
     },
+    'video_vaapi': {
+      'filepath': 'media/gpu/.*vaapi.*',
+    },
     'views': {
       # Applies to all files and subdirs within this directory.
       'filepath': '^ui/views/',
@@ -2295,9 +2298,9 @@
                  'glider+watch@chromium.org'],
     'version_assembly': ['caitkp+watch@chromium.org',
                          'gab+watch@chromium.org'],
-    'video': ['posciak+watch@chromium.org',
-              'acourbot+watch@chromium.org'],
+    'video': ['posciak+watch@chromium.org'],
     'video_capture': ['chfremer+watch@chromium.org'],
+    'video_vaapi': ['acourbot+watch@chromium.org'],
     'views': ['tfarina@chromium.org'],
     'virtual_keyboard': ['blakeo+virtualkb@chromium.org',
                          'dfaden+virtualkb@google.com',
