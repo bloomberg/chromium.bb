@@ -122,6 +122,9 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
   AddString(translated_strings.get(), "attributionIntro",
             IDS_NEW_TAB_ATTRIBUTION_INTRO);
   AddString(translated_strings.get(), "title", IDS_NEW_TAB_TITLE);
+  AddString(translated_strings.get(), "mostVisitedTitle",
+            IDS_NEW_TAB_MOST_VISITED);
+
   if (is_google) {
     AddString(translated_strings.get(), "searchboxPlaceholder",
               IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT);

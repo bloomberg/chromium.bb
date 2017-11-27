@@ -723,6 +723,7 @@ function init() {
   var iframe = document.createElement('iframe');
   iframe.id = IDS.TILES_IFRAME;
   iframe.name = IDS.TILES_IFRAME;
+  iframe.title = configData.translatedStrings.mostVisitedTitle;
   iframe.src = 'chrome-search://most-visited/single.html?' + args.join('&');
   $(IDS.TILES).appendChild(iframe);
 
