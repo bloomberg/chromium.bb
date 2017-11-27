@@ -14,9 +14,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 /**
  * Helper class for getting the configuration settings related to safebrowsing in WebView.
  */
@@ -37,28 +34,8 @@ public class AwSafeBrowsingConfigHelper {
         AwContentsStatics.setSafeBrowsingEnabledByManifest(
                 appOptIn == null ? getCommandLineOptIn() : appOptIn);
 
-        // If GMS is available, we will figure out if the user has opted-in to Safe Browsing and set
-        // the correct value for sSafeBrowsingUserOptIn.
-        final String getUserOptInPreferenceMethodName = "getUserOptInPreference";
-        try {
-            Class awSafeBrowsingApiHelperClass =
-                    Class.forName("com.android.webview.chromium.AwSafeBrowsingApiHandler");
-            Method getUserOptInPreference = awSafeBrowsingApiHelperClass.getDeclaredMethod(
-                    getUserOptInPreferenceMethodName, Context.class, Callback.class);
-            // TODO(ntfschr): remove clang-format directives once crbug/764581 is resolved
-            // clang-format off
-            getUserOptInPreference.invoke(null, appContext,
-                    (Callback<Boolean>) optin -> setSafeBrowsingUserOptIn(
-                            optin == null ? false : optin));
-            // clang-format on
-        } catch (ClassNotFoundException e) {
-            // This is not an error; it just means this device doesn't have specialized services.
-        } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException e) {
-            Log.e(TAG, "Failed to invoke " + getUserOptInPreferenceMethodName + ": " + e);
-        } catch (InvocationTargetException e) {
-            Log.e(TAG, "Failed invocation for " + getUserOptInPreferenceMethodName + ": ",
-                    e.getCause());
-        }
+        Callback<Boolean> cb = optin -> setSafeBrowsingUserOptIn(optin == null ? false : optin);
+        PlatformServiceBridge.getInstance().querySafeBrowsingUserConsent(appContext, cb);
     }
 
     private static boolean getCommandLineOptIn() {
