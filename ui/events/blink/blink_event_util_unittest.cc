@@ -185,6 +185,14 @@ TEST(BlinkEventUtilTest, WebMouseWheelEventCoalescing) {
   EXPECT_EQ(7, coalesced_event.delta_x);
   EXPECT_EQ(9, coalesced_event.delta_y);
 
+  event_to_be_coalesced.phase = blink::WebMouseWheelEvent::kPhaseChanged;
+  coalesced_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  EXPECT_TRUE(CanCoalesce(event_to_be_coalesced, coalesced_event));
+  Coalesce(event_to_be_coalesced, &coalesced_event);
+  EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseBegan, coalesced_event.phase);
+  EXPECT_EQ(10, coalesced_event.delta_x);
+  EXPECT_EQ(13, coalesced_event.delta_y);
+
   event_to_be_coalesced.resending_plugin_id = 3;
   EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
 }

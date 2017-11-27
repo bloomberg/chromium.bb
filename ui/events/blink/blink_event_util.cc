@@ -294,8 +294,12 @@ bool HaveConsistentPhase(const WebMouseWheelEvent& event_to_coalesce,
     // alright to coalesce an event with synthetic phaseBegan to its previous
     // event with synthetic phaseEnded since these phase values don't correspond
     // with real start and end of the scroll sequences.
-    return event.phase == WebMouseWheelEvent::kPhaseEnded &&
-           event_to_coalesce.phase == WebMouseWheelEvent::kPhaseBegan;
+    // It is also alright to coalesce a wheel event with synthetic phaseChanged
+    // to its previous one with synthetic phaseBegan.
+    return (event.phase == WebMouseWheelEvent::kPhaseEnded &&
+            event_to_coalesce.phase == WebMouseWheelEvent::kPhaseBegan) ||
+           (event.phase == WebMouseWheelEvent::kPhaseBegan &&
+            event_to_coalesce.phase == WebMouseWheelEvent::kPhaseChanged);
   } else {
     return event.phase == event_to_coalesce.phase &&
            event.momentum_phase == event_to_coalesce.momentum_phase;
@@ -329,6 +333,7 @@ void Coalesce(const WebMouseWheelEvent& event_to_coalesce,
   float old_wheelTicksY = event->wheel_ticks_y;
   float old_movementX = event->movement_x;
   float old_movementY = event->movement_y;
+  WebMouseWheelEvent::Phase old_phase = event->phase;
   WebInputEvent::DispatchType old_dispatch_type = event->dispatch_type;
   *event = event_to_coalesce;
   event->delta_x += old_deltaX;
@@ -343,11 +348,20 @@ void Coalesce(const WebMouseWheelEvent& event_to_coalesce,
       GetAccelerationRatio(event->delta_y, unaccelerated_y);
   event->dispatch_type =
       MergeDispatchTypes(old_dispatch_type, event_to_coalesce.dispatch_type);
-  // Coalesce a wheel event with synthetic phase began with a wheel event with
-  // synthetic phase ended.
   if (event_to_coalesce.has_synthetic_phase &&
-      event_to_coalesce.phase == WebMouseWheelEvent::kPhaseBegan) {
-    event->phase = WebMouseWheelEvent::kPhaseChanged;
+      event_to_coalesce.phase != old_phase) {
+    if (event_to_coalesce.phase == WebMouseWheelEvent::kPhaseBegan) {
+      // Coalesce a wheel event with synthetic phase began with a wheel event
+      // with synthetic phase ended.
+      DCHECK_EQ(WebMouseWheelEvent::kPhaseEnded, old_phase);
+      event->phase = WebMouseWheelEvent::kPhaseChanged;
+    } else {
+      // Coalesce  a wheel event with synthetic phase changed to a wheel event
+      // with synthetic phase began.
+      DCHECK_EQ(WebMouseWheelEvent::kPhaseChanged, event_to_coalesce.phase);
+      DCHECK_EQ(WebMouseWheelEvent::kPhaseBegan, old_phase);
+      event->phase = WebMouseWheelEvent::kPhaseBegan;
+    }
   }
 }
 
