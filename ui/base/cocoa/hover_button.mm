@@ -18,6 +18,7 @@ constexpr CGFloat kDragDistance = 5;
 @synthesize hoverState = hoverState_;
 @synthesize trackingEnabled = trackingEnabled_;
 @synthesize dragDelegate = dragDelegate_;
+@synthesize sendActionOnMouseDown = sendActionOnMouseDown_;
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
@@ -78,6 +79,9 @@ constexpr CGFloat kDragDistance = 5;
   mouseDown_ = YES;
   self.hoverState = kHoverStateMouseDown;
 
+  if (sendActionOnMouseDown_)
+    [self sendAction:self.action to:self.target];
+
   // The hover button needs to hold onto itself here for a bit.  Otherwise,
   // it can be freed while in the tracking loop below.
   // http://crbug.com/28220
@@ -115,7 +119,7 @@ constexpr CGFloat kDragDistance = 5;
 
   // If the mouse is still over the button, it means the user clicked the
   // button.
-  if (self.hoverState == kHoverStateMouseDown) {
+  if (!sendActionOnMouseDown_ && self.hoverState == kHoverStateMouseDown) {
     [self sendAction:self.action to:self.target];
   }
 

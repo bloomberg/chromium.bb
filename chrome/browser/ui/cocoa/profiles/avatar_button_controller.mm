@@ -165,6 +165,7 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
 
     AvatarButton* avatarButton =
         [[AvatarButton alloc] initWithFrame:NSZeroRect];
+    avatarButton.sendActionOnMouseDown = YES;
     button_.reset(avatarButton);
 
     base::scoped_nsobject<NSButtonCell> cell(
