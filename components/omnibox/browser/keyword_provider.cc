@@ -201,11 +201,12 @@ AutocompleteMatch KeywordProvider::CreateVerbatimMatch(
     const base::string16& text,
     const base::string16& keyword,
     const AutocompleteInput& input) {
-  // A verbatim match is allowed to be the default match.
+  // A verbatim match is allowed to be the default match when appropriate.
   return CreateAutocompleteMatch(
       GetTemplateURLService()->GetTemplateURLForKeyword(keyword),
       keyword.length(), input, keyword.length(),
-      SplitReplacementStringFromInput(text, true), true, 0, false);
+      SplitReplacementStringFromInput(text, true),
+      input.allow_exact_keyword_match(), 0, false);
 }
 
 void KeywordProvider::DeleteMatch(const AutocompleteMatch& match) {
@@ -341,12 +342,15 @@ void KeywordProvider::Start(const AutocompleteInput& input,
 
     // When creating an exact match (either for the keyword itself, no
     // remaining query or an extension keyword, possibly with remaining
-    // input), allow the match to be the default match.
+    // input), allow the match to be the default match when appropriate.
     matches_.push_back(CreateAutocompleteMatch(
         template_url, meaningful_keyword_length, input, keyword.length(),
-        remaining_input, true, -1, false));
+        remaining_input, input.allow_exact_keyword_match(), -1, false));
 
-    if (is_extension_keyword && extensions_delegate_) {
+    // Having extension-provided suggestions appear outside keyword mode can
+    // be surprising, so only query for suggestions when in keyword mode.
+    if (is_extension_keyword && extensions_delegate_ &&
+        input.allow_exact_keyword_match()) {
       if (extensions_delegate_->Start(input, minimal_changes, template_url,
                                       remaining_input))
         keyword_mode_toggle.StayInKeywordMode();
