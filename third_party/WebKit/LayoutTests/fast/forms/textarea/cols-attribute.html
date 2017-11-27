@@ -41,10 +41,15 @@ var arabicIndicDigitOne = String.fromCharCode(0x661);
 shouldBe('colsAttributeEffect(arabicIndicDigitOne)', '20');
 shouldBe('colsAttributeEffect("2" + arabicIndicDigitOne)', '2');
 
+// Verify that values >= 2^31 result in the default value.
+shouldBe('colsAttributeEffect("2147483646")', '2147483646');
 shouldBe('colsAttributeEffect("2147483647")', '2147483647');
-shouldBe('colsAttributeEffect("2147483648")', '2147483648');
-shouldBe('colsAttributeEffect("4294967295")', '4294967295');
+shouldBe('colsAttributeEffect("2147483648")', '20');
+shouldBe('colsAttributeEffect("2147483649")', '20');
+// Verify that 2^32 is no special boundary at all.
+shouldBe('colsAttributeEffect("4294967295")', '20');
 shouldBe('colsAttributeEffect("4294967296")', '20');
+shouldBe('colsAttributeEffect("4294967297")', '20');
 </script>
 </body>
 </html>

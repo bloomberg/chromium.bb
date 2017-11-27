@@ -152,7 +152,7 @@ void HTMLTextAreaElement::ParseAttribute(
   if (name == rowsAttr) {
     unsigned rows = 0;
     if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, rows) ||
-        rows <= 0)
+        rows <= 0 || rows > 0x7fffffffu)
       rows = kDefaultRows;
     if (rows_ != rows) {
       rows_ = rows;
@@ -165,7 +165,7 @@ void HTMLTextAreaElement::ParseAttribute(
   } else if (name == colsAttr) {
     unsigned cols = 0;
     if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, cols) ||
-        cols <= 0)
+        cols <= 0 || cols > 0x7fffffffu)
       cols = kDefaultCols;
     if (cols_ != cols) {
       cols_ = cols;
@@ -568,11 +568,13 @@ void HTMLTextAreaElement::AccessKeyAction(bool) {
 }
 
 void HTMLTextAreaElement::setCols(unsigned cols) {
-  SetUnsignedIntegralAttribute(colsAttr, cols ? cols : kDefaultCols);
+  SetUnsignedIntegralAttribute(colsAttr, cols ? cols : kDefaultCols,
+                               kDefaultCols);
 }
 
 void HTMLTextAreaElement::setRows(unsigned rows) {
-  SetUnsignedIntegralAttribute(rowsAttr, rows ? rows : kDefaultRows);
+  SetUnsignedIntegralAttribute(rowsAttr, rows ? rows : kDefaultRows,
+                               kDefaultRows);
 }
 
 bool HTMLTextAreaElement::MatchesReadOnlyPseudoClass() const {
