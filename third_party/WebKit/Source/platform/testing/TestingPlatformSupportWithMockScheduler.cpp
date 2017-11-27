@@ -9,8 +9,8 @@
 #include "platform/WaitableEvent.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/test_time_source.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
+#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "platform/wtf/ThreadSpecific.h"
 #include "public/platform/scheduler/child/webthread_base.h"
 
@@ -45,9 +45,10 @@ TestingPlatformSupportWithMockScheduler::
       clock_(new base::SimpleTestTickClock()),
       mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_.get(), true)),
       scheduler_(new scheduler::RendererSchedulerImpl(
-          scheduler::SchedulerTqmDelegateForTest::Create(
+          scheduler::CreateTaskQueueManagerWithUnownedClockForTest(
+              nullptr,
               mock_task_runner_,
-              base::WrapUnique(new scheduler::TestTimeSource(clock_.get()))))),
+              clock_.get()))),
       thread_(scheduler_->CreateMainThread()) {
   DCHECK(IsMainThread());
   // Set the work batch size to one so RunPendingTasks behaves as expected.

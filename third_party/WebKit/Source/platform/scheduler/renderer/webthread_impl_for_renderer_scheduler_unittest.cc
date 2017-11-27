@@ -15,8 +15,8 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/scheduler/base/test_time_source.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
+#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "public/platform/WebTraceLocation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,8 +46,9 @@ class WebThreadImplForRendererSchedulerTest : public ::testing::Test {
   void SetUp() override {
     clock_.reset(new base::SimpleTestTickClock());
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
-    scheduler_.reset(new RendererSchedulerImpl(SchedulerTqmDelegateImpl::Create(
-        &message_loop_, std::make_unique<TestTimeSource>(clock_.get()))));
+    scheduler_.reset(
+        new RendererSchedulerImpl(CreateTaskQueueManagerWithUnownedClockForTest(
+            &message_loop_, message_loop_.task_runner(), clock_.get())));
     default_task_runner_ = scheduler_->DefaultTaskQueue();
     thread_ = scheduler_->CreateMainThread();
   }

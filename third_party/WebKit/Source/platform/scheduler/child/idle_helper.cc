@@ -11,7 +11,6 @@
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/child/scheduler_helper.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate.h"
 
 namespace blink {
 namespace scheduler {
@@ -142,7 +141,7 @@ void IdleHelper::EnableLongIdlePeriod() {
     return;
   }
 
-  base::TimeTicks now(helper_->scheduler_tqm_delegate()->NowTicks());
+  base::TimeTicks now(helper_->NowTicks());
   base::TimeDelta next_long_idle_period_delay;
   IdlePeriodState new_idle_period_state =
       ComputeNewLongIdlePeriodState(now, &next_long_idle_period_delay);
@@ -224,8 +223,7 @@ void IdleHelper::DidProcessTask(const base::PendingTask& pending_task) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "DidProcessTask");
   if (state_.idle_period_state() != IdlePeriodState::kInLongIdlePeriodPaused &&
-      helper_->scheduler_tqm_delegate()->NowTicks() >=
-          state_.idle_period_deadline()) {
+      helper_->NowTicks() >= state_.idle_period_deadline()) {
     // If the idle period deadline has now been reached, either end the idle
     // period or trigger a new long-idle period.
     if (IsInLongIdlePeriod(state_.idle_period_state())) {
@@ -255,8 +253,7 @@ void IdleHelper::UpdateLongIdlePeriodStateAfterIdleTask() {
     // Ensure that we kick the scheduler at the right time to
     // initiate the next idle period.
     next_long_idle_period_delay = std::max(
-        base::TimeDelta(), state_.idle_period_deadline() -
-                               helper_->scheduler_tqm_delegate()->NowTicks());
+        base::TimeDelta(), state_.idle_period_deadline() - helper_->NowTicks());
     if (next_long_idle_period_delay.is_zero()) {
       EnableLongIdlePeriod();
     } else {
@@ -317,7 +314,7 @@ void IdleHelper::DidProcessIdleTask() {
 }
 
 base::TimeTicks IdleHelper::NowTicks() {
-  return helper_->scheduler_tqm_delegate()->NowTicks();
+  return helper_->NowTicks();
 }
 
 // static
@@ -380,9 +377,8 @@ void IdleHelper::State::UpdateState(IdlePeriodState new_state,
   bool is_tracing;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED("renderer.scheduler", &is_tracing);
   if (is_tracing) {
-    base::TimeTicks now(optional_now.is_null()
-                            ? helper_->scheduler_tqm_delegate()->NowTicks()
-                            : optional_now);
+    base::TimeTicks now(optional_now.is_null() ? helper_->NowTicks()
+                                               : optional_now);
     TraceEventIdlePeriodStateChange(new_state, running_idle_task_for_tracing_,
                                     new_deadline, now);
   }

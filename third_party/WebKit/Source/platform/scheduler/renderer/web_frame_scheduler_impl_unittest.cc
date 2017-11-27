@@ -12,9 +12,9 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/base/test_time_source.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
+#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "public/platform/WebTraceLocation.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,9 +34,9 @@ class WebFrameSchedulerImplTest : public ::testing::Test {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), true);
-    delegate_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, base::WrapUnique(new TestTimeSource(clock_.get())));
-    scheduler_.reset(new RendererSchedulerImpl(delegate_));
+    scheduler_.reset(
+        new RendererSchedulerImpl(CreateTaskQueueManagerWithUnownedClockForTest(
+            nullptr, mock_task_runner_, clock_.get())));
     web_view_scheduler_.reset(
         new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
     web_frame_scheduler_ = web_view_scheduler_->CreateWebFrameSchedulerImpl(
@@ -73,7 +73,6 @@ class WebFrameSchedulerImplTest : public ::testing::Test {
 
   std::unique_ptr<base::SimpleTestTickClock> clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  scoped_refptr<SchedulerTqmDelegate> delegate_;
   std::unique_ptr<RendererSchedulerImpl> scheduler_;
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler_;
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler_;

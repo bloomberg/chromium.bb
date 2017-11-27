@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_manager.h"
-#include "platform/scheduler/base/task_queue_manager_delegate.h"
 
 namespace blink {
 namespace scheduler {
@@ -27,7 +26,7 @@ LazyNow RealTimeDomain::CreateLazyNow() const {
 }
 
 base::TimeTicks RealTimeDomain::Now() const {
-  return task_queue_manager_->Delegate()->NowTicks();
+  return task_queue_manager_->NowTicks();
 }
 
 void RealTimeDomain::RequestWakeUpAt(base::TimeTicks now,

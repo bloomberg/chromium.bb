@@ -11,8 +11,8 @@
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/base/test_time_source.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
+#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "platform/scheduler/test/fake_web_frame_scheduler.h"
 #include "platform/scheduler/test/fake_web_view_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,9 +36,9 @@ class RendererMetricsHelperTest : public ::testing::Test {
     clock_ = std::make_unique<base::SimpleTestTickClock>();
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), true);
-    delegate_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, std::make_unique<TestTimeSource>(clock_.get()));
-    scheduler_ = std::make_unique<RendererSchedulerImpl>(delegate_);
+    scheduler_ = std::make_unique<RendererSchedulerImpl>(
+        CreateTaskQueueManagerWithUnownedClockForTest(
+            nullptr, mock_task_runner_, clock_.get()));
     metrics_helper_ = &scheduler_->main_thread_only().metrics_helper;
   }
 
@@ -193,7 +193,6 @@ class RendererMetricsHelperTest : public ::testing::Test {
 
   std::unique_ptr<base::SimpleTestTickClock> clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  scoped_refptr<SchedulerTqmDelegate> delegate_;
   std::unique_ptr<RendererSchedulerImpl> scheduler_;
   RendererMetricsHelper* metrics_helper_;  // NOT OWNED
   std::unique_ptr<base::HistogramTester> histogram_tester_;

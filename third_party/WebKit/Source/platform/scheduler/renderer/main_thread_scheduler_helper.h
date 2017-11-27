@@ -17,7 +17,7 @@ class RendererSchedulerImpl;
 class PLATFORM_EXPORT MainThreadSchedulerHelper : public SchedulerHelper {
  public:
   MainThreadSchedulerHelper(
-      scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate,
+      std::unique_ptr<TaskQueueManager> task_queue_manager,
       RendererSchedulerImpl* renderer_scheduler);
   ~MainThreadSchedulerHelper() override;
 

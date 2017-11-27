@@ -4,15 +4,14 @@
 
 #include "platform/scheduler/child/worker_scheduler_helper.h"
 
-#include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "platform/scheduler/child/worker_task_queue.h"
 
 namespace blink {
 namespace scheduler {
 
 WorkerSchedulerHelper::WorkerSchedulerHelper(
-    scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate)
-    : SchedulerHelper(task_queue_manager_delegate),
+    std::unique_ptr<TaskQueueManager> manager)
+    : SchedulerHelper(std::move(manager)),
       default_task_queue_(NewTaskQueue(TaskQueue::Spec("worker_default_tq")
                                            .SetShouldMonitorQuiescence(true))),
       control_task_queue_(NewTaskQueue(TaskQueue::Spec("worker_control_tq")

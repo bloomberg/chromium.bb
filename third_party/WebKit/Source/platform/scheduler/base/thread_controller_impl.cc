@@ -43,6 +43,7 @@ std::unique_ptr<ThreadControllerImpl> ThreadControllerImpl::Create(
 }
 
 void ThreadControllerImpl::SetSequence(Sequence* sequence) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sequence);
   DCHECK(!sequence_);
   sequence_ = sequence;
@@ -54,6 +55,7 @@ void ThreadControllerImpl::ScheduleWork() {
 }
 
 void ThreadControllerImpl::ScheduleDelayedWork(base::TimeDelta delay) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sequence_);
   cancelable_delayed_do_work_closure_.Reset(delayed_do_work_closure_);
   task_runner_->PostDelayedTask(
@@ -61,6 +63,7 @@ void ThreadControllerImpl::ScheduleDelayedWork(base::TimeDelta delay) {
 }
 
 void ThreadControllerImpl::CancelDelayedWork() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sequence_);
   cancelable_delayed_do_work_closure_.Cancel();
 }
@@ -90,27 +93,33 @@ void ThreadControllerImpl::RestoreDefaultTaskRunner() {
     return;
   message_loop_->SetTaskRunner(message_loop_task_runner_);
 }
+
 bool ThreadControllerImpl::IsNested() {
-  DCHECK(RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::RunLoop::IsNestedOnCurrentThread();
 }
 
 void ThreadControllerImpl::DoWork(Sequence::WorkType work_type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sequence_);
-  base::PendingTask task = sequence_->TakeTask(work_type);
+  base::Optional<base::PendingTask> task = sequence_->TakeTask(work_type);
+  if (!task)
+    return;
   base::WeakPtr<ThreadControllerImpl> weak_ptr = weak_factory_.GetWeakPtr();
-  task_annotator_.RunTask("ThreadControllerImpl::DoWork", &task);
+  task_annotator_.RunTask("ThreadControllerImpl::DoWork", &task.value());
   if (weak_ptr)
     sequence_->DidRunTask();
 }
 
 void ThreadControllerImpl::AddNestingObserver(
     base::RunLoop::NestingObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::RunLoop::AddNestingObserverOnCurrentThread(observer);
 }
 
 void ThreadControllerImpl::RemoveNestingObserver(
     base::RunLoop::NestingObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::RunLoop::RemoveNestingObserverOnCurrentThread(observer);
 }
 

@@ -12,8 +12,8 @@
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/idle_helper.h"
 #include "platform/scheduler/child/scheduler_helper.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/renderer/main_thread_scheduler_helper.h"
+#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -34,10 +34,11 @@ class IdleCanceledDelayedTaskSweeperTest : public ::testing::Test,
   IdleCanceledDelayedTaskSweeperTest()
       : clock_(new base::SimpleTestTickClock()),
         mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_.get(), true)),
-        delegate_(SchedulerTqmDelegateForTest::Create(
-            mock_task_runner_,
-            base::WrapUnique(new TestTimeSource(clock_.get())))),
-        scheduler_helper_(new MainThreadSchedulerHelper(delegate_, nullptr)),
+        scheduler_helper_(new MainThreadSchedulerHelper(
+            CreateTaskQueueManagerWithUnownedClockForTest(nullptr,
+                                                          mock_task_runner_,
+                                                          clock_.get()),
+            nullptr)),
         idle_helper_(
             new IdleHelper(scheduler_helper_.get(),
                            this,
@@ -77,7 +78,6 @@ class IdleCanceledDelayedTaskSweeperTest : public ::testing::Test,
   std::unique_ptr<base::SimpleTestTickClock> clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
 
-  scoped_refptr<SchedulerTqmDelegateForTest> delegate_;
   std::unique_ptr<MainThreadSchedulerHelper> scheduler_helper_;
   std::unique_ptr<IdleHelper> idle_helper_;
   std::unique_ptr<IdleCanceledDelayedTaskSweeper>

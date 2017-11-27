@@ -16,11 +16,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/base/task_queue_manager_delegate_for_test.h"
 #include "platform/scheduler/base/task_queue_selector.h"
 #include "platform/scheduler/base/test_task_time_observer.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/base/work_queue_sets.h"
+#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "platform/scheduler/test/test_task_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -84,10 +84,9 @@ class TaskQueueManagerPerfTest : public ::testing::Test {
   void Initialize(size_t num_queues) {
     num_queues_ = num_queues;
     message_loop_.reset(new base::MessageLoop());
-    manager_ = std::make_unique<TaskQueueManager>(
-        TaskQueueManagerDelegateForTest::Create(
-            message_loop_->task_runner(),
-            base::WrapUnique(new base::DefaultTickClock())));
+    manager_ = CreateTaskQueueManagerForTest(
+        message_loop_.get(), message_loop_->task_runner(),
+        std::make_unique<base::DefaultTickClock>());
     manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
     virtual_time_domain_.reset(new PerfTestTimeDomain());

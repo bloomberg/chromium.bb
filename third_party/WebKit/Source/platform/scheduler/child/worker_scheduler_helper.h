@@ -14,8 +14,7 @@ namespace scheduler {
 
 class PLATFORM_EXPORT WorkerSchedulerHelper : public SchedulerHelper {
  public:
-  explicit WorkerSchedulerHelper(
-      scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate);
+  explicit WorkerSchedulerHelper(std::unique_ptr<TaskQueueManager> manager);
   ~WorkerSchedulerHelper() override;
 
   scoped_refptr<WorkerTaskQueue> NewTaskQueue(const TaskQueue::Spec& spec);

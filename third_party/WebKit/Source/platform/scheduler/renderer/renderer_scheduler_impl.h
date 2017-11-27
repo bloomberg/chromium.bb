@@ -94,7 +94,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   static const char* VirtualTimePolicyToString(
       WebViewScheduler::VirtualTimePolicy virtual_time_policy);
 
-  RendererSchedulerImpl(scoped_refptr<SchedulerTqmDelegate> main_task_runner);
+  explicit RendererSchedulerImpl(
+      std::unique_ptr<TaskQueueManager> task_queue_manager);
   ~RendererSchedulerImpl() override;
 
   // RendererScheduler implementation:

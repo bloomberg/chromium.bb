@@ -13,7 +13,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "platform/Histogram.h"
 #include "platform/scheduler/base/task_queue.h"
-#include "platform/scheduler/child/scheduler_tqm_delegate.h"
+#include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/child/worker_scheduler_helper.h"
 
 namespace blink {
@@ -44,9 +44,9 @@ base::TimeTicks MonotonicTimeInSecondsToTimeTicks(
 }  // namespace
 
 WorkerSchedulerImpl::WorkerSchedulerImpl(
-    scoped_refptr<SchedulerTqmDelegate> main_task_runner)
-    : WorkerScheduler(
-          std::make_unique<WorkerSchedulerHelper>(main_task_runner)),
+    std::unique_ptr<TaskQueueManager> task_queue_manager)
+    : WorkerScheduler(std::make_unique<WorkerSchedulerHelper>(
+          std::move(task_queue_manager))),
       idle_helper_(helper_.get(),
                    this,
                    "WorkerSchedulerIdlePeriod",
@@ -54,11 +54,11 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
                    helper_->NewTaskQueue(TaskQueue::Spec("worker_idle_tq"))),
       idle_canceled_delayed_task_sweeper_(helper_.get(),
                                           idle_helper_.IdleTaskRunner()),
-      load_tracker_(helper_->scheduler_tqm_delegate()->NowTicks(),
+      load_tracker_(helper_->NowTicks(),
                     base::Bind(&ReportWorkerTaskLoad),
                     kWorkerThreadLoadTrackerReportingInterval) {
   initialized_ = false;
-  thread_start_time_ = helper_->scheduler_tqm_delegate()->NowTicks();
+  thread_start_time_ = helper_->NowTicks();
   load_tracker_.Resume(thread_start_time_);
   helper_->AddTaskTimeObserver(this);
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
@@ -122,8 +122,8 @@ void WorkerSchedulerImpl::RemoveTaskObserver(
 
 void WorkerSchedulerImpl::Shutdown() {
   DCHECK(initialized_);
-  load_tracker_.RecordIdle(helper_->scheduler_tqm_delegate()->NowTicks());
-  base::TimeTicks end_time = helper_->scheduler_tqm_delegate()->NowTicks();
+  load_tracker_.RecordIdle(helper_->NowTicks());
+  base::TimeTicks end_time = helper_->NowTicks();
   base::TimeDelta delta = end_time - thread_start_time_;
 
   // The lifetime could be radically different for different workers,
