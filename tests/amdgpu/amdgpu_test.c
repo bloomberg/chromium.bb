@@ -417,6 +417,9 @@ static void amdgpu_disable_suits()
 	*/
 	if (amdgpu_set_test_active(DEADLOCK_TESTS_STR, "compute ring block test", CU_FALSE))
 		fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
+
+	if (amdgpu_set_test_active(BO_TESTS_STR, "Metadata", CU_FALSE))
+		fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
 }
 
 /* The main() function for setting up and running the tests.

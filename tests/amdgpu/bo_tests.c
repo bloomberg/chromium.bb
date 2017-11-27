@@ -51,9 +51,7 @@ static void amdgpu_mem_fail_alloc(void);
 
 CU_TestInfo bo_tests[] = {
 	{ "Export/Import",  amdgpu_bo_export_import },
-#if 0
 	{ "Metadata",  amdgpu_bo_metadata },
-#endif
 	{ "CPU map/unmap",  amdgpu_bo_map_unmap },
 	{ "Memory alloc Test",  amdgpu_memory_alloc },
 	{ "Memory fail alloc Test",  amdgpu_mem_fail_alloc },
