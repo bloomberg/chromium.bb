@@ -169,6 +169,7 @@ void InitializeFieldTrialAndFeatureList(
   base::FeatureList::SetInstance(std::move(feature_list));
 }
 
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 void LoadV8ContextSnapshotFile() {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   base::FileDescriptorStore& file_descriptor_store =
@@ -181,14 +182,13 @@ void LoadV8ContextSnapshotFile() {
                                                     region.size);
     return;
   }
-#endif  // OS
+#endif  // OS_POSIX && !OS_MACOSX
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
   gin::V8Initializer::LoadV8ContextSnapshot();
-#endif
+#endif  // !CHROME_MULTIPLE_DLL_BROWSER
 }
 
 void LoadV8SnapshotFile() {
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   base::FileDescriptorStore& file_descriptor_store =
       base::FileDescriptorStore::GetInstance();
@@ -203,12 +203,10 @@ void LoadV8SnapshotFile() {
 #endif  // OS_POSIX && !OS_MACOSX
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
   gin::V8Initializer::LoadV8Snapshot();
-#endif
-#endif  // V8_USE_EXTERNAL_STARTUP_DATA
+#endif  // !CHROME_MULTIPLE_DLL_BROWSER
 }
 
 void LoadV8NativesFile() {
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   base::FileDescriptorStore& file_descriptor_store =
       base::FileDescriptorStore::GetInstance();
@@ -223,18 +221,20 @@ void LoadV8NativesFile() {
 #endif  // OS_POSIX && !OS_MACOSX
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
   gin::V8Initializer::LoadV8Natives();
-#endif
-#endif  // V8_USE_EXTERNAL_STARTUP_DATA
+#endif  // !CHROME_MULTIPLE_DLL_BROWSER
 }
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
 void InitializeV8IfNeeded(const base::CommandLine& command_line,
                           const std::string& process_type) {
   if (process_type == switches::kGpuProcess)
     return;
 
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   LoadV8SnapshotFile();
   LoadV8NativesFile();
   LoadV8ContextSnapshotFile();
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
 }
 
 }  // namespace
