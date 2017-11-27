@@ -16,6 +16,7 @@
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "net/base/network_change_notifier.h"
 
@@ -27,6 +28,13 @@
 // SSO Recall promo has been displayed.
 NSString* kDisplayedSSORecallForMajorVersionKey =
     @"DisplayedSSORecallForMajorVersionKey";
+// Key in the UserDefaults to record the GAIA id list when the sign-in promo
+// was shown.
+NSString* kLastShownAccountGaiaIdVersionKey =
+    @"LastShownAccountGaiaIdVersionKey";
+// Key in the UserDefaults to record the number of time the sign-in promo has
+// been shown.
+NSString* kSigninPromoViewDisplayCountKey = @"SigninPromoViewDisplayCountKey";
 
 namespace {
 
@@ -53,6 +61,13 @@ enum PromoAction {
   PROMO_ACTION_COUNT
 };
 
+NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
+  NSMutableSet* gaiaIdSet = [NSMutableSet set];
+  for (ChromeIdentity* identity in identities) {
+    [gaiaIdSet addObject:identity.gaiaID];
+  }
+  return [gaiaIdSet copy];
+}
 }  // namespace
 
 @interface SigninPromoViewController ()<ChromeSigninViewControllerDelegate>
@@ -125,15 +140,23 @@ enum PromoAction {
   UMA_HISTOGRAM_COUNTS_100(kUMASSORecallPromoSeenCount, promoSeenCount);
 }
 
-// Called to obtain the current version of the application to compare against
-// the version the last time the promo was seen.
-// Separated out into a discrete function to allow overriding when testing.
 + (void)recordVersionSeen {
   base::Version currentVersion = [self currentVersion];
   NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
   [standardDefaults
       setObject:base::SysUTF8ToNSString(currentVersion.GetString())
          forKey:kDisplayedSSORecallForMajorVersionKey];
+  NSArray* identities = ios::GetChromeBrowserProvider()
+                            ->GetChromeIdentityService()
+                            ->GetAllIdentitiesSortedForDisplay();
+  NSArray* gaiaIdList = GaiaIdSetWithIdentities(identities).allObjects;
+  [standardDefaults setObject:gaiaIdList
+                       forKey:kLastShownAccountGaiaIdVersionKey];
+  NSInteger displayCount =
+      [standardDefaults integerForKey:kSigninPromoViewDisplayCountKey];
+  ++displayCount;
+  [standardDefaults setInteger:displayCount
+                        forKey:kSigninPromoViewDisplayCountKey];
 }
 
 + (base::Version)currentVersion {
@@ -173,11 +196,26 @@ enum PromoAction {
     if (currentVersion.components()[0] - seenVersion.components()[0] < 2)
       return NO;
   }
-
+  // Don't show the promo if there is no identities.
   NSArray* identities = ios::GetChromeBrowserProvider()
                             ->GetChromeIdentityService()
                             ->GetAllIdentitiesSortedForDisplay();
-  return [identities count] > 0;
+  if ([identities count] == 0)
+    return NO;
+  // The sign-in promo should be shown twice, even if no account has been added.
+  NSInteger displayCount =
+      [standardDefaults integerForKey:kSigninPromoViewDisplayCountKey];
+  if (displayCount <= 1)
+    return YES;
+  // Otherwise, it can be shown only if a new account has been added.
+  NSArray* lastKnownGaiaIdList =
+      [standardDefaults arrayForKey:kLastShownAccountGaiaIdVersionKey];
+  NSSet* lastKnownGaiaIdSet = lastKnownGaiaIdList
+                                  ? [NSSet setWithArray:lastKnownGaiaIdList]
+                                  : [NSSet set];
+  NSSet* currentGaiaIdSet = GaiaIdSetWithIdentities(identities);
+  return [lastKnownGaiaIdSet isSubsetOfSet:currentGaiaIdSet] &&
+         ![lastKnownGaiaIdSet isEqualToSet:currentGaiaIdSet];
 }
 
 
