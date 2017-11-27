@@ -94,6 +94,8 @@ mr.Route = class {
     this.supportsMediaRouteController = false;
 
     /**
+     * The type of controller associated with this route, or kNone if controller
+     * is not supported for the route.
 
      * @type {mojo.RouteControllerType}
      * @export

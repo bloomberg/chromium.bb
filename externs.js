@@ -766,9 +766,21 @@ chrome.settingsPrivate.onPrefsChanged = {};
 
 
 /**
- * @param {function(!Object):void} callback
+ * @param {function(!Array<!Object>):void} callback
+ */
+chrome.settingsPrivate.onPrefsChanged.hasListener = function(callback) {};
+
+
+/**
+ * @param {function(!Array<!Object>):void} callback
  */
 chrome.settingsPrivate.onPrefsChanged.addListener = function(callback) {};
+
+
+/**
+ * @param {function(!Array<!Object>):void} callback
+ */
+chrome.settingsPrivate.onPrefsChanged.removeListener = function(callback) {};
 
 
 //////////////////////////////////////////////////////////////////////////////

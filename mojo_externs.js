@@ -365,7 +365,8 @@ mojo.RouteControllerType.kNone;
 mojo.RouteControllerType.kGeneric;
 /** @type {mojo.RouteControllerType} */
 mojo.RouteControllerType.kHangouts;
-
+/** @type {mojo.RouteControllerType} */
+mojo.RouteControllerType.kMirroring;
 
 
 // Mojom interfaces.
