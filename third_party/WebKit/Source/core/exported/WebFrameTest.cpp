@@ -172,12 +172,6 @@ using ::testing::_;
 
 namespace blink {
 
-#if defined(THREAD_SANITIZER)
-#define DISABLE_ON_TSAN(test_name) DISABLED_##test_name
-#else
-#define DISABLE_ON_TSAN(test_name) test_name
-#endif  // defined(THREAD_SANITIZER)
-
 ::std::ostream& operator<<(::std::ostream& os, const WebFloatSize& size) {
   return os << "WebFloatSize: [" << size.width << ", " << size.height << "]";
 }
@@ -10533,7 +10527,13 @@ TEST_P(ParameterizedWebFrameTest, OrientationFrameDetach) {
   web_view_impl->MainFrameImpl()->SendOrientationChangeEvent();
 }
 
-TEST_P(ParameterizedWebFrameTest, DISABLE_ON_TSAN(MaxFramesDetach)) {
+// Macro is not correctly expanded in TEST_P (We cannot use
+// TEST_P(ParameterizedWebFrameTest, MAYBE_MaxFramesDetach for example).
+#if defined(THREAD_SANITIZER)
+TEST_P(ParameterizedWebFrameTest, DISABLED_MaxFramesDetach) {
+#else
+TEST_P(ParameterizedWebFrameTest, MaxFramesDetach) {
+#endif  // defined(THREAD_SANITIZER)
   RegisterMockedHttpURLLoad("max-frames-detach.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl =
