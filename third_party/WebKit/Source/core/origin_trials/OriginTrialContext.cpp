@@ -159,7 +159,7 @@ std::unique_ptr<Vector<String>> OriginTrialContext::GetTokens(
   const OriginTrialContext* context = From(execution_context);
   if (!context || context->tokens_.IsEmpty())
     return nullptr;
-  return std::unique_ptr<Vector<String>>(new Vector<String>(context->tokens_));
+  return std::make_unique<Vector<String>>(context->tokens_);
 }
 
 void OriginTrialContext::AddToken(const String& token) {

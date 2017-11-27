@@ -59,8 +59,8 @@ static const int32_t kMaximumDomainNameLength = 255;
 static const int32_t kIdnaConversionOption = UIDNA_CHECK_BIDI;
 
 std::unique_ptr<ScriptRegexp> EmailInputType::CreateEmailRegexp() {
-  return std::unique_ptr<ScriptRegexp>(
-      new ScriptRegexp(kEmailPattern, kTextCaseUnicodeInsensitive));
+  return std::make_unique<ScriptRegexp>(kEmailPattern,
+                                        kTextCaseUnicodeInsensitive);
 }
 
 String EmailInputType::ConvertEmailAddressToASCII(const ScriptRegexp& regexp,
