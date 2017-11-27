@@ -19,6 +19,7 @@
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_change_processor.h"
+#include "net/base/network_change_notifier.h"
 
 using browser_sync::ChromeSyncClient;
 using browser_sync::ProfileSyncComponentsFactoryImpl;
@@ -36,6 +37,7 @@ const char kKey4[] = "key4";
 const char kValue1[] = "value1";
 const char kValue2[] = "value2";
 const char kValue3[] = "value3";
+const char kValue4[] = "value4";
 const char* kPassphrase = "12345";
 
 // A ChromeSyncClient that provides a ModelTypeSyncBridge for PREFERENCES.
@@ -192,6 +194,22 @@ class PrefsNotRunningChecker : public SingleClientStatusChangeChecker {
   }
 };
 
+// Wait for sync cycle failure.
+class SyncCycleFailedChecker : public SingleClientStatusChangeChecker {
+ public:
+  explicit SyncCycleFailedChecker(browser_sync::ProfileSyncService* service)
+      : SingleClientStatusChangeChecker(service) {}
+
+  bool IsExitConditionSatisfied() override {
+    const syncer::SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
+    return HasSyncerError(snap.model_neutral_state());
+  }
+
+  std::string GetDebugMessage() const override {
+    return "Waiting for  sync cycle failure";
+  }
+};
+
 class TwoClientUssSyncTest : public SyncTest {
  public:
   TwoClientUssSyncTest() : SyncTest(TWO_CLIENT) {
@@ -213,6 +231,11 @@ class TwoClientUssSyncTest : public SyncTest {
   ~TwoClientUssSyncTest() override {
     ProfileSyncServiceFactory::SetSyncClientFactoryForTest(nullptr);
     ProfileSyncComponentsFactoryImpl::OverridePrefsForUssTest(false);
+  }
+
+  void SetUp() override {
+    net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
+    SyncTest::SetUp();
   }
 
   bool TestUsesSelfNotifications() override { return false; }
@@ -300,32 +323,42 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
   ASSERT_EQ(1U, model1->db().metadata_count());
 }
 
-// Flaky on Linux. See https://crbug.com/785967.
-#if defined(OS_LINUX)
-#define MAYBE_ConflictResolution DISABLED_ConflictResolution
-#else
-#define MAYBE_ConflictResolution ConflictResolution
-#endif
-IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, MAYBE_ConflictResolution) {
+IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, ConflictResolution) {
   ASSERT_TRUE(SetupSync());
   TestModelTypeSyncBridge* model0 = GetModelTypeSyncBridge(0);
   TestModelTypeSyncBridge* model1 = GetModelTypeSyncBridge(1);
   model0->SetConflictResolution(ConflictResolution::UseNew(
-      FakeModelTypeSyncBridge::GenerateEntityData(kKey1, kValue3)));
+      FakeModelTypeSyncBridge::GenerateEntityData(kKey1, kValue4)));
   model1->SetConflictResolution(ConflictResolution::UseNew(
-      FakeModelTypeSyncBridge::GenerateEntityData(kKey1, kValue3)));
+      FakeModelTypeSyncBridge::GenerateEntityData(kKey1, kValue4)));
 
-  // Write conflicting entities.
+  // Write initial value and wait for it to sync to the other client.
   model0->WriteItem(kKey1, kValue1);
-  // Wait for the server to see the first commit to avoid a race condition where
-  // both clients commit without seeing each other's update.
-  ASSERT_TRUE(ServerCountMatchStatusChecker(syncer::PREFERENCES, 1).Wait());
-  model1->WriteItem(kKey1, kValue2);
+  ASSERT_TRUE(DataChecker(model1, kKey1, kValue1).Wait());
 
-  // Wait for them to be resolved to kResolutionValue by the custom conflict
-  // resolution logic in TestModelTypeSyncBridge.
-  ASSERT_TRUE(DataChecker(model0, kKey1, kValue3).Wait());
-  ASSERT_TRUE(DataChecker(model1, kKey1, kValue3).Wait());
+  // Disable network, write value on client 0 and wait for it to attempt
+  // committing the value. This client now has conflicting change.
+  GetFakeServer()->DisableNetwork();
+  model0->WriteItem(kKey1, kValue2);
+  ASSERT_TRUE(SyncCycleFailedChecker(GetSyncService(0)).Wait());
+
+  // Enable network, write different value on client 1 and wait for it to arrive
+  // on server. Server now has value different from client 0 which will cause
+  // conflict when client 0 performs GetUpdates.
+  GetFakeServer()->EnableNetwork();
+  model1->WriteItem(kKey1, kValue3);
+  model1->WriteItem(kKey2, kValue1);
+  ASSERT_TRUE(ServerCountMatchStatusChecker(syncer::PREFERENCES, 2).Wait());
+
+  // Trigger sync cycle on client 0 by delivering network change notification.
+  // Wait for it to resolve conflicting value to kResolutionValue by the custom
+  // conflict resolution logic in TestModelTypeSyncBridge.
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  ASSERT_TRUE(DataChecker(model0, kKey1, kValue4).Wait());
+
+  // Wait for client 1 to settle on resolved value.
+  ASSERT_TRUE(DataChecker(model1, kKey1, kValue4).Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Error) {
