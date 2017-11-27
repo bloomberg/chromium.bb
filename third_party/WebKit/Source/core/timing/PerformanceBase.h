@@ -44,7 +44,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/LinkedHashSet.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -59,7 +59,7 @@ class UserTiming;
 class SubTaskAttribution;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
-using PerformanceObservers = HeapListHashSet<Member<PerformanceObserver>>;
+using PerformanceObservers = HeapLinkedHashSet<Member<PerformanceObserver>>;
 
 class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
 
