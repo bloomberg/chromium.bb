@@ -94,10 +94,11 @@ nofor endword bler 45-236
 nofor endword bles 45-156
 
 noback before voy always br 23
-nofor before voyabr before voyabr2 always br 23
-nofor always brê 23-126
+nofor before voyabr before voyabr2 begword br 23
+nofor after voyabr before voyabr always br 23
+nofor begmidword brê 23-126
 nofor before conabr always brè 23-2346
-nofor always brû 23-156
+nofor begmidword brû 23-156
 nofor always brou 23-1256
 nofor begmidword brui 12-1235-23
 
@@ -116,10 +117,14 @@ before con begword com 36
 nofor before con before conabr begword com 36
 noback before con always con 25
 nofor before conabr begmidword con 25
+nofor before voyabr begmidword confl 25-126
+nofor before voyabr begmidword confr 25-16
 prfword cons	14-346-234
 noback before voy always cr 25
-nofor begmidword cr 25
+nofor before voyabr begmidword cr 25
+nofor always crai 25-34
 nofor before conabr begmidword cran 25-2
+nofor always crou 25-1256
 
 noback before con begword dis 256
 nofor before conabr begword dis 256
@@ -127,6 +132,7 @@ nofor before conabr begword dis 256
 noback before voy always dr 1456
 nofor before voyabr begmidword dr 1456
 nofor always drai 1456-34
+nofor begmidword drui 1456-23
 nofor before conabr always dran 1456-2
 nofor before voyabr2 midword dr 1456
 nofor begword drôl 145-1235-1456-123
@@ -135,6 +141,7 @@ endword elle 456
 endword elles 456-234
 noback before con always em 345
 nofor before con before conabr always em 345
+nofor before voyabr always embl 345-45
 noback before con always en 26
 nofor begmidword en 26
 noback endword en 26
@@ -166,12 +173,14 @@ endword ez 1356
 noback before voy always fl 126
 nofor before voyabr begmidword fl 126
 nofor always flai 126-34
+nofor begmidword flui 126-23
 nofor before conabr always flan 126-2
 nofor before voyabr2 midword fl 126
 
 noback before voy always fr 16
 nofor before voyabr begmidword fr 16
 nofor always frai 16-34
+nofor begmidword frui 16-23
 nofor before conabr always fran 16-2
 nofor before voyabr2 midword fl 126
 nofor always frou 16-1256
@@ -256,6 +265,7 @@ nofor endword oyen 135-13456-26
 noback before voy always pl 1246
 nofor before voyabr begmidword pl 1246
 nofor always plai 1246-34
+nofor begmidword plui 1246-23
 nofor before conabr always plan 1246-2
 nofor before voyabr2 midword pl 1246
 noback before voy always pr 235
@@ -273,6 +283,7 @@ before con begword rem 1235-345
 
 noback before voy after voy always ss 2346
 nofor after voyabr after voyabr2 before voyabr before voyabr2 midword ss 2346
+nofor after voyabr always ssion 2346-3456
 
 noback before voy always tr 356
 nofor before voyabr before voyabr2 always tr 356
@@ -284,9 +295,10 @@ noback before voy after voy always tt 2456
 nofor after voyabr after voyabr2 before voyabr before voyabr2 midword tt 2456
 
 noback before con always ui 23
-nofor before conabr always ui 23
+nofor after conabr always ui 23
 nofor before voyabr before voyabr2 always uiss 23-2346
 nofor before voyabr before voyabr2 always uitt 23-2456
+nofor after conabr always ui 23
 endword uin 136-35
 endword uins 136-35-234
 nofor endword zz 1356-1356
