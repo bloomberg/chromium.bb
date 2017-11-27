@@ -28,21 +28,20 @@ void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
                      blob_factory.PassInterface()));
 }
 
-mojom::URLLoaderFactoryPtr* URLLoaderFactoryGetter::GetNetworkFactory() {
+mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetNetworkFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return test_factory_.is_bound() ? &test_factory_ : &network_factory_;
+  return test_factory_ ? test_factory_ : network_factory_.get();
 }
 
-mojom::URLLoaderFactoryPtr* URLLoaderFactoryGetter::GetBlobFactory() {
+mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetBlobFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return &blob_factory_;
+  return blob_factory_.get();
 }
 
 void URLLoaderFactoryGetter::SetNetworkFactoryForTesting(
-    mojom::URLLoaderFactoryPtr test_factory) {
+    mojom::URLLoaderFactory* test_factory) {
   if (content::BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    URLLoaderFactoryGetter::SetTestNetworkFactoryOnIOThread(
-        test_factory.PassInterface());
+    URLLoaderFactoryGetter::SetTestNetworkFactoryOnIOThread(test_factory);
   } else {
     // Since the URLLoaderFactory pointers are bound on the IO thread, and this
     // method is called on the UI thread, we are not able to unbind and return
@@ -51,7 +50,7 @@ void URLLoaderFactoryGetter::SetNetworkFactoryForTesting(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&URLLoaderFactoryGetter::SetTestNetworkFactoryOnIOThread,
-                       this, test_factory.PassInterface()));
+                       this, test_factory));
   }
 }
 
@@ -65,8 +64,9 @@ void URLLoaderFactoryGetter::InitializeOnIOThread(
 }
 
 void URLLoaderFactoryGetter::SetTestNetworkFactoryOnIOThread(
-    mojom::URLLoaderFactoryPtrInfo test_factory) {
-  test_factory_.Bind(std::move(test_factory));
+    mojom::URLLoaderFactory* test_factory) {
+  DCHECK(!test_factory_ || !test_factory);
+  test_factory_ = test_factory;
 }
 
 }  // namespace content

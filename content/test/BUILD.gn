@@ -169,6 +169,8 @@ static_library("test_support") {
     "../public/test/text_input_test_utils_mac.mm",
     "../public/test/unittest_test_suite.cc",
     "../public/test/unittest_test_suite.h",
+    "../public/test/url_loader_interceptor.cc",
+    "../public/test/url_loader_interceptor.h",
     "../public/test/web_contents_binding_set_test_binder.h",
     "../public/test/web_contents_tester.cc",
     "../public/test/web_contents_tester.h",
@@ -806,6 +808,7 @@ test("content_browsertests") {
     "../renderer/webclipboard_impl_browsertest.cc",
     "../test/browser_test_utils_browsertest.cc",
     "../test/content_browser_test_test.cc",
+    "../test/url_loader_interceptor_test.cc",
     "../test/webui_resource_browsertest.cc",
   ]
 

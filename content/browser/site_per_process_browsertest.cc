@@ -2984,16 +2984,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   GURL url_b = embedded_test_server()->GetURL("b.com", "/title3.html");
   bool network_service =
       base::FeatureList::IsEnabled(features::kNetworkService);
-  mojom::URLLoaderFactoryPtr failing_factory;
-  mojo::MakeStrongBinding(std::make_unique<FailingLoadFactory>(),
-                          mojo::MakeRequest(&failing_factory));
+  FailingLoadFactory failing_factory;
   StoragePartitionImpl* storage_partition = nullptr;
   if (network_service) {
     storage_partition = static_cast<StoragePartitionImpl*>(
         BrowserContext::GetDefaultStoragePartition(
             shell()->web_contents()->GetBrowserContext()));
     storage_partition->url_loader_factory_getter()->SetNetworkFactoryForTesting(
-        std::move(failing_factory));
+        &failing_factory);
   } else {
     host_resolver()->ClearRules();
   }

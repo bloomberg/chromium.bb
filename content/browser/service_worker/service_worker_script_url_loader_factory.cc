@@ -43,10 +43,9 @@ void ServiceWorkerScriptURLLoaderFactory::CreateLoaderAndStart(
     // associated message pipes.
     // TODO(kinuko): Record the reason like what we do with netlog in
     // ServiceWorkerContextRequestHandler.
-    (*loader_factory_getter_->GetNetworkFactory())
-        ->CreateLoaderAndStart(std::move(request), routing_id, request_id,
-                               options, resource_request, std::move(client),
-                               traffic_annotation);
+    loader_factory_getter_->GetNetworkFactory()->CreateLoaderAndStart(
+        std::move(request), routing_id, request_id, options, resource_request,
+        std::move(client), traffic_annotation);
     return;
   }
   mojo::MakeStrongBinding(

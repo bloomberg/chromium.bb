@@ -199,13 +199,13 @@ void AddInterceptorForURL(const GURL& url,
 }
 
 void SetNetworkFactoryForTesting(Browser* browser,
-                                 content::mojom::URLLoaderFactoryPtr loader) {
+                                 content::mojom::URLLoaderFactory* factory) {
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
 
   auto* storage_partition = content::BrowserContext::GetDefaultStoragePartition(
       web_contents->GetBrowserContext());
-  storage_partition->SetNetworkFactoryForTesting(std::move(loader));
+  storage_partition->SetNetworkFactoryForTesting(factory);
 }
 
 // An url loader that fails a configurable number of requests, then succeeds
@@ -1174,13 +1174,11 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
     requests_ = failures_ = 0;
 
     if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-      content::mojom::URLLoaderFactoryPtr test_loader_factory;
-      mojo::MakeStrongBinding(
+      url_loader_factory_ =
           std::make_unique<FailFirstNRequestsURLLoaderFactory>(
-              requests_to_fail, &requests_, &failures_),
-          mojo::MakeRequest(&test_loader_factory));
+              requests_to_fail, &requests_, &failures_);
 
-      SetNetworkFactoryForTesting(browser(), std::move(test_loader_factory));
+      SetNetworkFactoryForTesting(browser(), url_loader_factory_.get());
     } else {
       std::unique_ptr<net::URLRequestInterceptor> owned_interceptor(
           new FailFirstNRequestsInterceptor(requests_to_fail, &requests_,
@@ -1217,6 +1215,7 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
   int32_t interceptor_failures() const { return failures_; }
 
  private:
+  std::unique_ptr<FailFirstNRequestsURLLoaderFactory> url_loader_factory_;
   int32_t requests_;
   int32_t failures_;
 };
@@ -1382,12 +1381,10 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
       content::mojom::URLLoaderFactory* default_network_factory =
           storage_partition->GetURLLoaderFactoryForBrowserProcess();
 
-      content::mojom::URLLoaderFactoryPtr test_loader_factory;
-      mojo::MakeStrongBinding(
+      url_loader_factory_ =
           std::make_unique<AddressUnreachableURLLoaderFactory>(
-              default_network_factory, google_util::LinkDoctorBaseURL()),
-          mojo::MakeRequest(&test_loader_factory));
-      SetNetworkFactoryForTesting(browser(), std::move(test_loader_factory));
+              default_network_factory, google_util::LinkDoctorBaseURL());
+      SetNetworkFactoryForTesting(browser(), url_loader_factory_.get());
     } else {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
@@ -1425,6 +1422,8 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     net::URLRequestFilter::GetInstance()->ClearHandlers();
   }
+
+  std::unique_ptr<AddressUnreachableURLLoaderFactory> url_loader_factory_;
 };
 
 // Make sure that when corrections fail to load, the network error page is

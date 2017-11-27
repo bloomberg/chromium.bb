@@ -285,7 +285,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     mojom::URLLoaderFactory* factory = nullptr;
     DCHECK_EQ(handlers_.size(), handler_index_);
     if (resource_request_->url.SchemeIs(url::kBlobScheme)) {
-      factory = default_url_loader_factory_getter_->GetBlobFactory()->get();
+      factory = default_url_loader_factory_getter_->GetBlobFactory();
     } else if (!IsURLHandledByNetworkService(resource_request_->url) &&
                !resource_request_->url.SchemeIs(url::kDataScheme)) {
       mojom::URLLoaderFactoryPtr& non_network_factory =
@@ -300,7 +300,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       }
       factory = non_network_factory.get();
     } else {
-      factory = default_url_loader_factory_getter_->GetNetworkFactory()->get();
+      factory = default_url_loader_factory_getter_->GetNetworkFactory();
       default_loader_used_ = true;
     }
     url_chain_.push_back(resource_request_->url);

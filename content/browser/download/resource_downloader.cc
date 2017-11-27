@@ -135,7 +135,7 @@ void ResourceDownloader::Start(
         std::move(client), download_url_parameters->GetBlobDataHandle());
   } else {
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
-        url_loader_factory_getter->GetNetworkFactory()->get(),
+        url_loader_factory_getter->GetNetworkFactory(),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
         0,  // routing_id
         0,  // request_id

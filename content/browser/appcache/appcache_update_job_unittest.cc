@@ -592,10 +592,7 @@ class IfModifiedSinceJobFactory
 // classes by refactoring the response headers/data into a common class.
 class MockURLLoaderFactory : public mojom::URLLoaderFactory {
  public:
-  static void Create(mojom::URLLoaderFactoryPtr* loader_factory) {
-    mojom::URLLoaderFactoryRequest request = mojo::MakeRequest(loader_factory);
-    new MockURLLoaderFactory(std::move(request));
-  }
+  MockURLLoaderFactory() {}
 
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,
@@ -643,16 +640,6 @@ class MockURLLoaderFactory : public mojom::URLLoaderFactory {
   void Clone(mojom::URLLoaderFactoryRequest factory) override { NOTREACHED(); }
 
  private:
-  MockURLLoaderFactory(mojom::URLLoaderFactoryRequest request)
-      : binding_(this, std::move(request)) {
-    binding_.set_connection_error_handler(base::BindOnce(
-        &MockURLLoaderFactory::OnConnectionError, base::Unretained(this)));
-  }
-
-  void OnConnectionError() { delete this; }
-
-  mojo::Binding<mojom::URLLoaderFactory> binding_;
-
   DISALLOW_COPY_AND_ASSIGN(MockURLLoaderFactory);
 };
 
@@ -760,10 +747,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   void InitializeFactory() {
     if (!loader_factory_getter_.get())
       return;
-    mojom::URLLoaderFactoryPtr test_loader_factory;
-    MockURLLoaderFactory::Create(&test_loader_factory);
     loader_factory_getter_->SetNetworkFactoryForTesting(
-        std::move(test_loader_factory));
+        &mock_url_loader_factory_);
   }
 
   void StartCacheAttemptTest() {
@@ -3789,6 +3774,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
   RequestHandlerType request_handler_type_;
   base::test::ScopedFeatureList feature_list_;
+  MockURLLoaderFactory mock_url_loader_factory_;
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
