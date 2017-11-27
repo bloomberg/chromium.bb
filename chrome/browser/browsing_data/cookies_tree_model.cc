@@ -1062,7 +1062,7 @@ void CookiesTreeModel::GetIcons(std::vector<gfx::ImageSkia>* icons) {
                         .GetNativeImageNamed(IDR_DEFAULT_FAVICON)
                         .ToImageSkia());
   icons->push_back(*ui::ResourceBundle::GetSharedInstance()
-                        .GetNativeImageNamed(IDR_COOKIE_ICON)
+                        .GetNativeImageNamed(IDR_ACCESSED_COOKIES)
                         .ToImageSkia());
   icons->push_back(*ui::ResourceBundle::GetSharedInstance()
                         .GetNativeImageNamed(IDR_COOKIE_STORAGE_ICON)
