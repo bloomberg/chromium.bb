@@ -28,7 +28,6 @@ namespace storage {
 
 class BlobDataHandle;
 class FileStreamReader;
-class FileSystemContext;
 
 // A request job that handles reading blob URLs.
 class STORAGE_EXPORT BlobURLRequestJob
@@ -36,8 +35,7 @@ class STORAGE_EXPORT BlobURLRequestJob
  public:
   BlobURLRequestJob(net::URLRequest* request,
                     net::NetworkDelegate* network_delegate,
-                    BlobDataHandle* blob_handle,
-                    storage::FileSystemContext* file_system_context);
+                    BlobDataHandle* blob_handle);
 
   // net::URLRequestJob methods.
   void Start() override;

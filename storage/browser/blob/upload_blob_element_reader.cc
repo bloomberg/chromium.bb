@@ -13,19 +13,17 @@
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_reader.h"
-#include "storage/browser/fileapi/file_system_context.h"
 
 namespace storage {
 
 UploadBlobElementReader::UploadBlobElementReader(
-    std::unique_ptr<BlobDataHandle> handle,
-    FileSystemContext* file_system_context)
-    : handle_(std::move(handle)), file_system_context_(file_system_context) {}
+    std::unique_ptr<BlobDataHandle> handle)
+    : handle_(std::move(handle)) {}
 
 UploadBlobElementReader::~UploadBlobElementReader() {}
 
 int UploadBlobElementReader::Init(const net::CompletionCallback& callback) {
-  reader_ = handle_->CreateReader(file_system_context_.get());
+  reader_ = handle_->CreateReader();
   BlobReader::Status status = reader_->CalculateSize(callback);
   switch (status) {
     case BlobReader::Status::NET_ERROR:

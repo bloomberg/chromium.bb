@@ -24,7 +24,6 @@ class NetToMojoPendingBuffer;
 
 namespace storage {
 class BlobDataHandle;
-class FileSystemContext;
 
 // Reads a blob into a data pipe. Owns itself, and owns its delegate. Self
 // destructs when reading is complete.
@@ -78,14 +77,12 @@ class STORAGE_EXPORT MojoBlobReader {
                             uint64_t total_written_bytes) = 0;
   };
 
-  static void Create(FileSystemContext* file_system_context,
-                     const BlobDataHandle* handle,
+  static void Create(const BlobDataHandle* handle,
                      const net::HttpByteRange& range,
                      std::unique_ptr<Delegate> delegate);
 
  private:
-  MojoBlobReader(FileSystemContext* file_system_context,
-                 const BlobDataHandle* handle,
+  MojoBlobReader(const BlobDataHandle* handle,
                  const net::HttpByteRange& range,
                  std::unique_ptr<Delegate> delegate);
   ~MojoBlobReader();

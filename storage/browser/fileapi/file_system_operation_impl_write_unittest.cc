@@ -78,8 +78,7 @@ class FileSystemOperationImplWriteTest : public testing::Test {
 
     file_system_context_ = CreateFileSystemContextForTesting(
         quota_manager_->proxy(), dir_.GetPath());
-    url_request_context_.reset(
-        new MockBlobURLRequestContext(file_system_context_.get()));
+    url_request_context_.reset(new MockBlobURLRequestContext());
 
     file_system_context_->operation_runner()->CreateFile(
         URLForPath(virtual_path_), true /* exclusive */,

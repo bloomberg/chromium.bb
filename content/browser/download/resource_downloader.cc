@@ -132,8 +132,7 @@ void ResourceDownloader::Start(
     blob_client_binding_.Bind(mojo::MakeRequest(&client));
     BlobURLLoaderFactory::CreateLoaderAndStart(
         std::move(url_loader_request), *(resource_request_.get()),
-        std::move(client), download_url_parameters->GetBlobDataHandle(),
-        file_system_context.get());
+        std::move(client), download_url_parameters->GetBlobDataHandle());
   } else {
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         factory->get(), std::vector<std::unique_ptr<URLLoaderThrottle>>(),

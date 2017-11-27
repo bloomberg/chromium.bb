@@ -17,6 +17,7 @@
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/shareable_file_reference.h"
+#include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/storage_browser_export.h"
 
 namespace disk_cache {
@@ -54,7 +55,11 @@ class STORAGE_EXPORT BlobDataBuilder {
   // it's a 'bytes' element. Data elements of BYTES_DESCRIPTION or
   // DISK_CACHE_ENTRY types are not valid IPC data element types, and cannot be
   // given to this method.
-  void AppendIPCDataElement(const DataElement& ipc_data);
+  // |file_system_context| needs to be set if data element is of type
+  // FILE_FILESYSTEM.
+  void AppendIPCDataElement(
+      const DataElement& ipc_data,
+      const scoped_refptr<FileSystemContext>& file_system_context);
 
   // Copies the given data into the blob.
   void AppendData(const std::string& data) {
@@ -122,10 +127,12 @@ class STORAGE_EXPORT BlobDataBuilder {
 
   void AppendBlob(const std::string& uuid);
 
-  void AppendFileSystemFile(const GURL& url,
-                            uint64_t offset,
-                            uint64_t length,
-                            const base::Time& expected_modification_time);
+  void AppendFileSystemFile(
+      const GURL& url,
+      uint64_t offset,
+      uint64_t length,
+      const base::Time& expected_modification_time,
+      scoped_refptr<FileSystemContext> file_system_context);
 
   void AppendDiskCacheEntry(const scoped_refptr<DataHandle>& data_handle,
                             disk_cache::Entry* disk_cache_entry,

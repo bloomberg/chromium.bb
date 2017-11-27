@@ -28,7 +28,6 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
-#include "storage/browser/fileapi/file_system_context.h"
 
 namespace content {
 
@@ -45,8 +44,7 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
   BlobURLLoader(mojom::URLLoaderRequest url_loader_request,
                 const ResourceRequest& request,
                 mojom::URLLoaderClientPtr client,
-                std::unique_ptr<storage::BlobDataHandle> blob_handle,
-                storage::FileSystemContext* file_system_context)
+                std::unique_ptr<storage::BlobDataHandle> blob_handle)
       : binding_(this, std::move(url_loader_request)),
         client_(std::move(client)),
         blob_handle_(std::move(blob_handle)),
@@ -55,14 +53,12 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
 
     // PostTask since it might destruct.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&BlobURLLoader::Start, weak_factory_.GetWeakPtr(),
-                       request, base::WrapRefCounted(file_system_context)));
+        FROM_HERE, base::BindOnce(&BlobURLLoader::Start,
+                                  weak_factory_.GetWeakPtr(), request));
   }
 
  private:
-  void Start(const ResourceRequest& request,
-             scoped_refptr<storage::FileSystemContext> file_system_context) {
+  void Start(const ResourceRequest& request) {
     if (!blob_handle_) {
       OnComplete(net::ERR_FILE_NOT_FOUND, 0);
       delete this;
@@ -96,8 +92,7 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
       }
     }
 
-    storage::MojoBlobReader::Create(file_system_context.get(),
-                                    blob_handle_.get(), byte_range_,
+    storage::MojoBlobReader::Create(blob_handle_.get(), byte_range_,
                                     base::WrapUnique(this));
   }
 
@@ -219,11 +214,9 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
 
 // static
 scoped_refptr<BlobURLLoaderFactory> BlobURLLoaderFactory::Create(
-    BlobContextGetter blob_storage_context_getter,
-    scoped_refptr<storage::FileSystemContext> file_system_context) {
+    BlobContextGetter blob_storage_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto factory = base::MakeRefCounted<BlobURLLoaderFactory>(
-      std::move(file_system_context));
+  auto factory = base::MakeRefCounted<BlobURLLoaderFactory>();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&BlobURLLoaderFactory::InitializeOnIO, factory,
@@ -239,9 +232,7 @@ void BlobURLLoaderFactory::HandleRequest(
                                          std::move(request)));
 }
 
-BlobURLLoaderFactory::BlobURLLoaderFactory(
-    scoped_refptr<storage::FileSystemContext> file_system_context)
-    : file_system_context_(std::move(file_system_context)) {}
+BlobURLLoaderFactory::BlobURLLoaderFactory() {}
 
 BlobURLLoaderFactory::~BlobURLLoaderFactory() {}
 
@@ -261,10 +252,9 @@ void BlobURLLoaderFactory::CreateLoaderAndStart(
     mojom::URLLoaderRequest loader,
     const ResourceRequest& request,
     mojom::URLLoaderClientPtr client,
-    std::unique_ptr<storage::BlobDataHandle> blob_handle,
-    storage::FileSystemContext* file_system_context) {
+    std::unique_ptr<storage::BlobDataHandle> blob_handle) {
   new BlobURLLoader(std::move(loader), request, std::move(client),
-                    std::move(blob_handle), file_system_context);
+                    std::move(blob_handle));
 }
 
 void BlobURLLoaderFactory::CreateLoaderAndStart(
@@ -281,7 +271,7 @@ void BlobURLLoaderFactory::CreateLoaderAndStart(
     blob_handle = blob_storage_context_->GetBlobDataFromPublicURL(request.url);
   }
   CreateLoaderAndStart(std::move(loader), request, std::move(client),
-                       std::move(blob_handle), file_system_context_.get());
+                       std::move(blob_handle));
 }
 
 void BlobURLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {

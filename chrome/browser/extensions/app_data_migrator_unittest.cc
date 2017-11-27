@@ -57,7 +57,7 @@ class AppDataMigratorTest : public testing::Test {
     default_fs_context_ = default_partition_->GetFileSystemContext();
 
     url_request_context_ = std::unique_ptr<content::MockBlobURLRequestContext>(
-        new content::MockBlobURLRequestContext(default_fs_context_));
+        new content::MockBlobURLRequestContext());
   }
 
   void TearDown() override {}

@@ -39,8 +39,12 @@ class FileStorageStrategy {
   FileStorageStrategy(
       std::vector<BlobTransportRequestBuilder::RendererMemoryItemRequest>*
           requests,
+      const scoped_refptr<FileSystemContext>& file_system_context,
       BlobDataBuilder* builder)
-      : requests(requests), builder(builder), current_item_index(0) {}
+      : requests(requests),
+        file_system_context(file_system_context),
+        builder(builder),
+        current_item_index(0) {}
 
   ~FileStorageStrategy() {}
 
@@ -66,13 +70,14 @@ class FileStorageStrategy {
   }
 
   void VisitNonBytesSegment(const DataElement& element, size_t element_index) {
-    builder->AppendIPCDataElement(element);
+    builder->AppendIPCDataElement(element, file_system_context);
     current_item_index++;
   }
 
   void Done() {}
 
   std::vector<BlobTransportRequestBuilder::RendererMemoryItemRequest>* requests;
+  const scoped_refptr<FileSystemContext>& file_system_context;
   BlobDataBuilder* builder;
 
   size_t current_item_index;
@@ -86,9 +91,11 @@ class SharedMemoryStorageStrategy {
       size_t max_segment_size,
       std::vector<BlobTransportRequestBuilder::RendererMemoryItemRequest>*
           requests,
+      const scoped_refptr<FileSystemContext>& file_system_context,
       BlobDataBuilder* builder)
       : requests(requests),
         max_segment_size(max_segment_size),
+        file_system_context(file_system_context),
         builder(builder),
         current_item_size(0),
         current_item_index(0) {}
@@ -125,7 +132,7 @@ class SharedMemoryStorageStrategy {
       builder->AppendFutureData(current_item_size);
       current_item_index++;
     }
-    builder->AppendIPCDataElement(element);
+    builder->AppendIPCDataElement(element, file_system_context);
     current_item_index++;
     current_item_size = 0;
   }
@@ -139,6 +146,7 @@ class SharedMemoryStorageStrategy {
   std::vector<BlobTransportRequestBuilder::RendererMemoryItemRequest>* requests;
 
   size_t max_segment_size;
+  const scoped_refptr<FileSystemContext>& file_system_context;
   BlobDataBuilder* builder;
   size_t current_item_size;
   uint64_t current_item_index;
@@ -209,11 +217,12 @@ void BlobTransportRequestBuilder::InitializeForFileRequests(
     size_t max_file_size,
     uint64_t blob_total_size,
     const std::vector<DataElement>& elements,
+    const scoped_refptr<FileSystemContext>& file_system_context,
     BlobDataBuilder* builder) {
   DCHECK(requests_.empty());
   total_bytes_size_ = blob_total_size;
   ComputeHandleSizes(total_bytes_size_, max_file_size, &file_sizes_);
-  FileStorageStrategy strategy(&requests_, builder);
+  FileStorageStrategy strategy(&requests_, file_system_context, builder);
   ForEachWithSegment(elements, static_cast<uint64_t>(max_file_size), &strategy);
 }
 
@@ -221,6 +230,7 @@ void BlobTransportRequestBuilder::InitializeForSharedMemoryRequests(
     size_t max_shared_memory_size,
     uint64_t blob_total_size,
     const std::vector<DataElement>& elements,
+    const scoped_refptr<FileSystemContext>& file_system_context,
     BlobDataBuilder* builder) {
   DCHECK(requests_.empty());
   DCHECK(blob_total_size <= std::numeric_limits<size_t>::max());
@@ -228,7 +238,7 @@ void BlobTransportRequestBuilder::InitializeForSharedMemoryRequests(
   ComputeHandleSizes(total_bytes_size_, max_shared_memory_size,
                      &shared_memory_sizes_);
   SharedMemoryStorageStrategy strategy(max_shared_memory_size, &requests_,
-                                       builder);
+                                       file_system_context, builder);
   ForEachWithSegment(elements, static_cast<uint64_t>(max_shared_memory_size),
                      &strategy);
 }
@@ -237,6 +247,7 @@ void BlobTransportRequestBuilder::InitializeForIPCRequests(
     size_t max_ipc_memory_size,
     uint64_t blob_total_size,
     const std::vector<DataElement>& elements,
+    const scoped_refptr<FileSystemContext>& file_system_context,
     BlobDataBuilder* builder) {
   DCHECK(requests_.empty());
   // We don't segment anything, and just request the memory items directly
@@ -246,7 +257,7 @@ void BlobTransportRequestBuilder::InitializeForIPCRequests(
   for (size_t i = 0; i < items_length; i++) {
     const auto& info = elements.at(i);
     if (!IsBytes(info.type())) {
-      builder->AppendIPCDataElement(info);
+      builder->AppendIPCDataElement(info, file_system_context);
       continue;
     }
     BlobTransportRequestBuilder::RendererMemoryItemRequest request;

@@ -27,7 +27,6 @@ namespace storage {
 class BlobDataSnapshot;
 class BlobReader;
 class BlobStorageContext;
-class FileSystemContext;
 
 // BlobDataHandle ensures that the underlying blob (keyed by the uuid) remains
 // in the BlobStorageContext's collection while this object is alive. Anything
@@ -82,8 +81,7 @@ class STORAGE_EXPORT BlobDataHandle
   // A BlobReader is used to read the data from the blob.  This object is
   // intended to be transient and should not be stored for any extended period
   // of time.
-  std::unique_ptr<BlobReader> CreateReader(
-      FileSystemContext* file_system_context) const;
+  std::unique_ptr<BlobReader> CreateReader() const;
 
   // May be accessed on any thread.
   const std::string& uuid() const;

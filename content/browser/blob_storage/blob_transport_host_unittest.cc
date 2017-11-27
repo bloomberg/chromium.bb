@@ -116,6 +116,7 @@ class BlobTransportHostTest : public testing::Test {
     status_called_ = false;
     *storage = host_.StartBuildingBlob(
         uuid, kContentType, kContentDisposition, descriptions, &context_,
+        nullptr,
         base::Bind(&BlobTransportHostTest::RequestMemoryCallback,
                    base::Unretained(this)),
         base::Bind(&BlobTransportHostTest::StatusCallback,

@@ -16,7 +16,6 @@
 namespace storage {
 class BlobDataHandle;
 class BlobStorageContext;
-class FileSystemContext;
 }
 
 namespace content {
@@ -32,8 +31,7 @@ class BlobURLLoaderFactory
       base::OnceCallback<base::WeakPtr<storage::BlobStorageContext>()>;
 
   static CONTENT_EXPORT scoped_refptr<BlobURLLoaderFactory> Create(
-      BlobContextGetter blob_storage_context_getter,
-      scoped_refptr<storage::FileSystemContext> file_system_context);
+      BlobContextGetter blob_storage_context_getter);
 
   // Creates a URLLoaderFactory interface pointer for serving blob requests.
   // Called on the UI thread.
@@ -47,8 +45,7 @@ class BlobURLLoaderFactory
       mojom::URLLoaderRequest url_loader_request,
       const ResourceRequest& request,
       mojom::URLLoaderClientPtr client,
-      std::unique_ptr<storage::BlobDataHandle> blob_handle,
-      storage::FileSystemContext* file_system_context);
+      std::unique_ptr<storage::BlobDataHandle> blob_handle);
 
   // mojom::URLLoaderFactory implementation:
   void CreateLoaderAndStart(mojom::URLLoaderRequest loader,
@@ -67,15 +64,13 @@ class BlobURLLoaderFactory
   template <typename T, typename... Args>
   friend scoped_refptr<T> base::MakeRefCounted(Args&&... args);
 
-  BlobURLLoaderFactory(
-      scoped_refptr<storage::FileSystemContext> file_system_context);
+  BlobURLLoaderFactory();
   ~BlobURLLoaderFactory() override;
 
   void InitializeOnIO(BlobContextGetter blob_storage_context_getter);
   void BindOnIO(mojom::URLLoaderFactoryRequest request);
 
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
-  scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   // Used on the IO thread.
   mojo::BindingSet<mojom::URLLoaderFactory> loader_factory_bindings_;

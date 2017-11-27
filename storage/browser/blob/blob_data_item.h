@@ -24,6 +24,7 @@ class BlobDataBuilder;
 class BlobMemoryController;
 class BlobStorageContext;
 class DataElement;
+class FileSystemContext;
 
 // Ref counted blob item. This class owns the backing data of the blob item. The
 // backing data is immutable, and cannot change after creation. The purpose of
@@ -65,6 +66,10 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
     return disk_cache_side_stream_index_;
   }
 
+  FileSystemContext* file_system_context() const {
+    return file_system_context_.get();
+  }
+
  private:
   friend class BlobDataBuilder;
   friend class BlobMemoryController;
@@ -83,6 +88,8 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
                disk_cache::Entry* entry,
                int disk_cache_stream_index,
                int disk_cache_side_stream_index);
+  BlobDataItem(std::unique_ptr<DataElement> item,
+               scoped_refptr<FileSystemContext> file_system_context);
 
   virtual ~BlobDataItem();
 
@@ -94,6 +101,9 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
   disk_cache::Entry* disk_cache_entry_;
   int disk_cache_stream_index_;  // For TYPE_DISK_CACHE_ENTRY.
   int disk_cache_side_stream_index_;  // For TYPE_DISK_CACHE_ENTRY.
+
+  scoped_refptr<FileSystemContext>
+      file_system_context_;  // For TYPE_FILE_FILESYSTEM
 };
 
 STORAGE_EXPORT bool operator==(const BlobDataItem& a, const BlobDataItem& b);

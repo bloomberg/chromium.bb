@@ -71,11 +71,8 @@ int ConvertBlobErrorToNetError(BlobStatus reason) {
 
 BlobReader::FileStreamReaderProvider::~FileStreamReaderProvider() {}
 
-BlobReader::BlobReader(
-    const BlobDataHandle* blob_handle,
-    std::unique_ptr<FileStreamReaderProvider> file_stream_provider)
-    : file_stream_provider_(std::move(file_stream_provider)),
-      file_task_runner_(base::CreateTaskRunnerWithTraits(
+BlobReader::BlobReader(const BlobDataHandle* blob_handle)
+    : file_task_runner_(base::CreateTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       net_error_(net::OK),
       weak_factory_(this) {
@@ -652,16 +649,32 @@ std::unique_ptr<FileStreamReader> BlobReader::CreateFileStreamReader(
 
   switch (item.type()) {
     case DataElement::TYPE_FILE:
-      return file_stream_provider_->CreateForLocalFile(
+      if (file_stream_provider_for_testing_) {
+        return file_stream_provider_for_testing_->CreateForLocalFile(
+            file_task_runner_.get(), item.path(),
+            item.offset() + additional_offset,
+            item.expected_modification_time());
+      }
+      return base::WrapUnique(FileStreamReader::CreateForLocalFile(
           file_task_runner_.get(), item.path(),
-          item.offset() + additional_offset, item.expected_modification_time());
-    case DataElement::TYPE_FILE_FILESYSTEM:
-      return file_stream_provider_->CreateFileStreamReader(
-          item.filesystem_url(), item.offset() + additional_offset,
+          item.offset() + additional_offset,
+          item.expected_modification_time()));
+    case DataElement::TYPE_FILE_FILESYSTEM: {
+      int64_t max_bytes_to_read =
           item.length() == std::numeric_limits<uint64_t>::max()
               ? storage::kMaximumLength
-              : item.length() - additional_offset,
+              : item.length() - additional_offset;
+      if (file_stream_provider_for_testing_) {
+        return file_stream_provider_for_testing_->CreateFileStreamReader(
+            item.filesystem_url(), item.offset() + additional_offset,
+            max_bytes_to_read, item.expected_modification_time());
+      }
+      return item.file_system_context()->CreateFileStreamReader(
+          storage::FileSystemURL(
+              item.file_system_context()->CrackURL(item.filesystem_url())),
+          item.offset() + additional_offset, max_bytes_to_read,
           item.expected_modification_time());
+    }
     case DataElement::TYPE_RAW_FILE:
     case DataElement::TYPE_BLOB:
     case DataElement::TYPE_BYTES:

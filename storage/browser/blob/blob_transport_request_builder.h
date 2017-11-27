@@ -55,14 +55,18 @@ class STORAGE_EXPORT BlobTransportRequestBuilder {
   // blob_total_size: This is the total in-memory size of the blob.
   // elements: These are the descriptions of the blob items being sent from the
   //           renderer.
+  // file_system_context: This is the context that will be used to resolve
+  //                      filesystem URL data elements.
   // builder: This is the builder that is populated with the 'future' versions
   //          of the data elements. In this case, we call 'AppendFutureData' in
   //          the items that we expect to be backed by files writen by the
   //          renderer.
-  void InitializeForFileRequests(size_t max_file_size,
-                                 uint64_t blob_total_size,
-                                 const std::vector<DataElement>& elements,
-                                 BlobDataBuilder* builder);
+  void InitializeForFileRequests(
+      size_t max_file_size,
+      uint64_t blob_total_size,
+      const std::vector<DataElement>& elements,
+      const scoped_refptr<FileSystemContext>& file_system_context,
+      BlobDataBuilder* builder);
 
   // Initializes the request builder for shared memory requests. We try to
   // consolidate as much memory as possible in each shared memory segment we
@@ -74,6 +78,8 @@ class STORAGE_EXPORT BlobTransportRequestBuilder {
   // blob_total_size: This is the total in-memory size of the blob.
   // elements: These are the descriptions of the blob items being sent from the
   //           renderer.
+  // file_system_context: This is the context that will be used to resolve
+  //                      filesystem URL data elements.
   // builder: This is the builder that is populated with the 'future' versions
   //          of the data elements. In this case, we call 'AppendFutureData' for
   //          the items we expect to be populated later.
@@ -81,6 +87,7 @@ class STORAGE_EXPORT BlobTransportRequestBuilder {
       size_t max_shared_memory_size,
       uint64_t blob_total_size,
       const std::vector<DataElement>& elements,
+      const scoped_refptr<FileSystemContext>& file_system_context,
       BlobDataBuilder* builder);
 
   // Initializes the request builder for IPC requests. We put as much memory
@@ -91,13 +98,17 @@ class STORAGE_EXPORT BlobTransportRequestBuilder {
   // blob_total_size: This is the total in-memory size of the blob.
   // elements: These are the descriptions of the blob items being sent from the
   //           renderer.
+  // file_system_context: This is the context that will be used to resolve
+  //                      filesystem URL data elements.
   // builder: This is the builder that is populated with the 'future' versions
   //          of the data elements. In this case, we call 'AppendFutureData' for
   //          the items we expect to be populated later.
-  void InitializeForIPCRequests(size_t max_ipc_memory_size,
-                                uint64_t blob_total_size,
-                                const std::vector<DataElement>& elements,
-                                BlobDataBuilder* builder);
+  void InitializeForIPCRequests(
+      size_t max_ipc_memory_size,
+      uint64_t blob_total_size,
+      const std::vector<DataElement>& elements,
+      const scoped_refptr<FileSystemContext>& file_system_context,
+      BlobDataBuilder* builder);
 
   // The sizes of the shared memory handles being used (by handle index).
   const std::vector<size_t>& shared_memory_sizes() const {
