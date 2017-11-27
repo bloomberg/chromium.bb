@@ -53,7 +53,7 @@ class MockKeyboardDelegate : public exo::KeyboardDelegate {
   MOCK_METHOD1(OnKeyboardDestroying, void(exo::Keyboard*));
   MOCK_CONST_METHOD1(CanAcceptKeyboardEventsForSurface, bool(exo::Surface*));
   MOCK_METHOD2(OnKeyboardEnter,
-               void(exo::Surface*, const std::vector<ui::DomCode>&));
+               void(exo::Surface*, const base::flat_set<ui::DomCode>&));
   MOCK_METHOD1(OnKeyboardLeave, void(exo::Surface*));
   MOCK_METHOD3(OnKeyboardKey, uint32_t(base::TimeTicks, ui::DomCode, bool));
   MOCK_METHOD1(OnKeyboardModifiers, void(int));

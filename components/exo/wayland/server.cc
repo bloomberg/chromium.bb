@@ -3110,8 +3110,9 @@ class WaylandKeyboardDelegate
     return surface_resource &&
            wl_resource_get_client(surface_resource) == client();
   }
-  void OnKeyboardEnter(Surface* surface,
-                       const std::vector<ui::DomCode>& pressed_keys) override {
+  void OnKeyboardEnter(
+      Surface* surface,
+      const base::flat_set<ui::DomCode>& pressed_keys) override {
     wl_resource* surface_resource = GetSurfaceResource(surface);
     DCHECK(surface_resource);
     wl_array keys;
