@@ -100,6 +100,11 @@ void MidiService::EndSession(MidiManagerClient* client) {
   if (!manager_ || !manager_->EndSession(client))
     return;
 
+// Do not destruct MidiManager on macOS to avoid a Core MIDI issue that
+// MIDIClientCreate starts failing with the OSStatus -50 after repeated calls
+// of MIDIClientDispose. It rarely happens, but once it starts, it will never
+// get back to be sane. See https://crbug.com/718140.
+#if !defined(OS_MACOSX)
   if (is_dynamic_instantiation_enabled_ && !manager_->HasOpenSession()) {
     // MidiManager for each platform should be able to shutdown correctly even
     // if following Shutdown() call happens in the middle of
@@ -108,6 +113,7 @@ void MidiService::EndSession(MidiManagerClient* client) {
     manager_.reset();
     manager_destructor_runner_ = nullptr;
   }
+#endif
 }
 
 void MidiService::DispatchSendMidiData(MidiManagerClient* client,
