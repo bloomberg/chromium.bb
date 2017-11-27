@@ -92,7 +92,7 @@ uint64_t TestContextSupport::ShareGroupTracingGUID() const {
 }
 
 void TestContextSupport::SetErrorMessageCallback(
-    const base::Callback<void(const char*, int32_t)>& callback) {}
+    base::RepeatingCallback<void(const char*, int32_t)> callback) {}
 
 void TestContextSupport::SetSnapshotRequested() {}
 

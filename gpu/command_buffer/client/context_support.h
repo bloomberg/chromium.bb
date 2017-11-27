@@ -64,7 +64,7 @@ class ContextSupport {
 
   // Sets a callback to be run when an error occurs.
   virtual void SetErrorMessageCallback(
-      const base::Callback<void(const char*, int32_t)>& callback) = 0;
+      base::RepeatingCallback<void(const char*, int32_t)> callback) = 0;
 
   // Indicates whether a snapshot is associated with the next swap.
   virtual void SetSnapshotRequested() = 0;

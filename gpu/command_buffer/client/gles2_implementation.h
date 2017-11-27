@@ -207,7 +207,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
                             const gfx::RectF& uv_rect) override;
   uint64_t ShareGroupTracingGUID() const override;
   void SetErrorMessageCallback(
-      const base::Callback<void(const char*, int32_t)>& callback) override;
+      base::RepeatingCallback<void(const char*, int32_t)> callback) override;
   void SetSnapshotRequested() override;
   bool ThreadSafeShallowLockDiscardableTexture(uint32_t texture_id) override;
   void CompleteLockDiscardableTexureOnContextThread(
