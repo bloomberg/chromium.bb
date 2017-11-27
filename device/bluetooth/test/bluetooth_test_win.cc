@@ -181,12 +181,8 @@ BluetoothDevice* BluetoothTestWin::SimulateLowEnergyDevice(int device_ordinal) {
 
 void BluetoothTestWin::SimulateGattConnection(BluetoothDevice* device) {
   FinishPendingTasks();
-
-  // Clear records caused by CreateGattConnection since we do not support it on
-  // Windows.
+  // We don't actually attempt to discover on Windows, so fake it for testing.
   gatt_discovery_attempts_++;
-  expected_success_callback_calls_--;
-  unexpected_error_callback_ = false;
 }
 
 void BluetoothTestWin::SimulateGattServicesDiscovered(
