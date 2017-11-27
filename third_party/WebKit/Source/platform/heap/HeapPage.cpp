@@ -1658,7 +1658,7 @@ Address ObjectStartBitmap::FindHeader(
 }
 
 HeapObjectHeader* NormalPage::FindHeaderFromAddress(Address address) {
-  if (address < Payload())
+  if (!ContainedInObjectPayload(address))
     return nullptr;
   HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(
       object_start_bit_map()->FindHeader(address));
