@@ -132,8 +132,6 @@ class CONTENT_EXPORT MainThreadEventQueue
   bool enable_fling_passive_listener_flag_;
   bool enable_non_blocking_due_to_main_thread_responsiveness_flag_;
   base::TimeDelta main_thread_responsiveness_threshold_;
-  bool handle_raf_aligned_touch_input_;
-  bool handle_raf_aligned_mouse_input_;
   bool needs_low_latency_;
 
   // Contains data to be shared between main thread and compositor thread.
