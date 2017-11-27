@@ -40,17 +40,19 @@
 #endif
 
 namespace {
+
 const CGFloat kFontSize = 16;
 const CGFloat kEditingRectX = 16;
 const CGFloat kEditingRectWidthInset = 10;
 const CGFloat kTextInset = 8;
-const CGFloat kTextInsetNoLeftView = 12;
-const CGFloat kImageInset = 9;
+const CGFloat kTextInsetNoLeftView = 8;
 const CGFloat kClearButtonRightMarginIphone = 7;
 const CGFloat kClearButtonRightMarginIpad = 12;
 // Amount to shift the origin.x of the text areas so they're centered within the
 // omnibox border.
 const CGFloat kTextAreaLeadingOffset = -2;
+
+const CGFloat kLeadingButtonEdgeOffset = 9;
 
 const CGFloat kStarButtonWidth = 36;
 const CGFloat kVoiceSearchButtonWidth = 36.0;
@@ -66,9 +68,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 @interface OmniboxTextFieldIOS ()
 
-// Current image id used in left view.
-@property(nonatomic, assign) NSUInteger leftViewImageId;
-
 // Gets the bounds of the rect covering the URL.
 - (CGRect)preEditLabelRectForBounds:(CGRect)bounds;
 // Creates the UILabel if it doesn't already exist and adds it as a
@@ -78,8 +77,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 // to contain the correct inline autocomplete text.
 - (void)setTextInternal:(NSAttributedString*)text
      autocompleteLength:(NSUInteger)autocompleteLength;
-// Display an image or chip text in the left accessory view.
-- (void)updateLeftView;
 // Override deleteBackward so that backspace can clear query refinement chips.
 - (void)deleteBackward;
 // Returns the layers affected by animations added by |-animateFadeWithStyle:|.
@@ -94,8 +91,21 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 #pragma mark - LocationBarView
 
+@interface LocationBarView ()
+// Constraints the leading textfield side to the leading of |self|.
+// Active when the |leadingView| is nil or hidden.
+@property(nonatomic, strong) NSLayoutConstraint* leadingTextfieldConstraint;
+// When the |leadingButton| is not hidden, this is a constraint that links the
+// leading edge of the button to self leading edge. Used for animations.
+@property(nonatomic, strong) NSLayoutConstraint* leadingButtonLeadingConstraint;
+@end
+
 @implementation LocationBarView
 @synthesize textField = _textField;
+@synthesize leadingButton = _leadingButton;
+@synthesize leadingTextfieldConstraint = _leadingTextfieldConstraint;
+@synthesize incognito = _incognito;
+@synthesize leadingButtonLeadingConstraint = _leadingButtonLeadingConstraint;
 
 - (instancetype)initWithFrame:(CGRect)frame
                          font:(UIFont*)font
@@ -103,19 +113,20 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
                     tintColor:(UIColor*)tintColor {
   self = [super initWithFrame:frame];
   if (self) {
-    frame.origin.x = 0;
-    frame.origin.y = 0;
     _textField = [[OmniboxTextFieldIOS alloc] initWithFrame:frame
                                                        font:font
                                                   textColor:textColor
                                                   tintColor:tintColor];
     [self addSubview:_textField];
 
+    _leadingTextfieldConstraint =
+        [_textField.leadingAnchor constraintEqualToAnchor:self.leadingAnchor];
+
     [NSLayoutConstraint activateConstraints:@[
-      [_textField.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
       [_textField.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
       [_textField.topAnchor constraintEqualToAnchor:self.topAnchor],
       [_textField.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+      _leadingTextfieldConstraint,
     ]];
 
     _textField.translatesAutoresizingMaskIntoConstraints = NO;
@@ -123,6 +134,206 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   return self;
 }
 
+- (void)setLeadingButtonEnabled:(BOOL)enabled {
+  _leadingButton.enabled = enabled;
+}
+
+- (void)setLeadingButtonHidden:(BOOL)hidden {
+  if (!_leadingButton) {
+    return;
+  }
+
+  if (hidden) {
+    [_leadingButton removeFromSuperview];
+    self.leadingTextfieldConstraint.active = YES;
+  } else {
+    [self addSubview:_leadingButton];
+    self.leadingTextfieldConstraint.active = NO;
+    self.leadingButtonLeadingConstraint = [self.leadingAnchor
+        constraintEqualToAnchor:self.leadingButton.leadingAnchor
+                       constant:-kLeadingButtonEdgeOffset];
+    [NSLayoutConstraint activateConstraints:@[
+      [_leadingButton.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+      self.leadingButtonLeadingConstraint,
+      [self.leadingButton.trailingAnchor
+          constraintEqualToAnchor:self.textField.leadingAnchor],
+    ]];
+  }
+}
+
+- (void)setLeadingButton:(UIButton*)leadingButton {
+  _leadingButton = leadingButton;
+  _leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
+  [_leadingButton
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                      forAxis:UILayoutConstraintAxisHorizontal];
+  [_leadingButton
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                      forAxis:UILayoutConstraintAxisVertical];
+  [_leadingButton setContentHuggingPriority:UILayoutPriorityRequired
+                                    forAxis:UILayoutConstraintAxisHorizontal];
+  [_leadingButton setContentHuggingPriority:UILayoutPriorityRequired
+                                    forAxis:UILayoutConstraintAxisVertical];
+}
+
+- (void)setPlaceholderImage:(int)imageID {
+  [self.leadingButton setImage:[self placeholderImageWithID:imageID]
+                      forState:UIControlStateNormal];
+  [self.leadingButton setTintColor:[self tintColorForLeftImageWithId:imageID]];
+
+  // TODO(crbug.com/774121): This should not be done like this; instead the
+  // responder status of the textfield should be broadcasted and observed
+  // by the mediator of location bar, that would then show/hide the
+  // leading button.
+  BOOL hidden = (!IsIPadIdiom() && [self.textField isFirstResponder]);
+  [self setLeadingButtonHidden:hidden];
+}
+
+- (void)fadeInLeadingButton {
+  self.leadingButton.alpha = 0;
+  // Instead of passing a delay into -fadeInView:, wait to call -fadeInView:.
+  // The CABasicAnimation's start and end positions are calculated immediately
+  // instead of after the animation's delay, but the omnibox's layer isn't set
+  // yet to its final state and as a result the start and end positions will not
+  // be correct.
+  dispatch_time_t delay = dispatch_time(
+      DISPATCH_TIME_NOW, ios::material::kDuration2 * NSEC_PER_SEC);
+  dispatch_after(delay, dispatch_get_main_queue(), ^(void) {
+    UIView* view = self.leadingButton;
+    LayoutOffset leadingOffset = kPositionAnimationLeadingOffset;
+    NSTimeInterval duration = ios::material::kDuration1;
+    NSTimeInterval delay = 0;
+
+    [CATransaction begin];
+    [CATransaction setDisableActions:YES];
+    [CATransaction setCompletionBlock:^{
+      [view.layer removeAnimationForKey:@"fadeIn"];
+    }];
+    view.alpha = 1.0;
+
+    // Animate the position of |view| |leadingOffset| pixels after |delay|.
+    CGRect shiftedFrame = CGRectLayoutOffset(view.frame, leadingOffset);
+    CAAnimation* shiftAnimation =
+        FrameAnimationMake(view.layer, shiftedFrame, view.frame);
+    shiftAnimation.duration = duration;
+    shiftAnimation.beginTime = delay;
+    shiftAnimation.timingFunction =
+        TimingFunction(ios::material::CurveEaseInOut);
+
+    // Animate the opacity of |view| to 1 after |delay|.
+    CAAnimation* fadeAnimation = OpacityAnimationMake(0.0, 1.0);
+    fadeAnimation.duration = duration;
+    fadeAnimation.beginTime = delay;
+    shiftAnimation.timingFunction =
+        TimingFunction(ios::material::CurveEaseInOut);
+
+    // Add group animation to layer.
+    CAAnimation* group = AnimationGroupMake(@[ shiftAnimation, fadeAnimation ]);
+    [view.layer addAnimation:group forKey:@"fadeIn"];
+
+    [CATransaction commit];
+  });
+}
+
+- (void)fadeOutLeadingButton {
+  [self setLeadingButtonHidden:NO];
+
+  UIView* leadingView = [self leadingButton];
+
+  // Move the leadingButton outside of the bounds; this constraint will be
+  // created from scratch when the button is shown.
+  self.leadingButtonLeadingConstraint.constant = leadingView.frame.size.width;
+  [UIView animateWithDuration:ios::material::kDuration2
+      delay:0
+      options:UIViewAnimationOptionCurveEaseInOut
+      animations:^{
+        // Fade out the alpha and apply the constraint change above.
+        leadingView.alpha = 0;
+        [self setNeedsLayout];
+        [self layoutIfNeeded];
+      }
+      completion:^(BOOL finished) {
+        // Restore alpha and update the hidden state.
+        leadingView.alpha = 1;
+        [self setLeadingButtonHidden:YES];
+      }];
+}
+
+- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
+    API_AVAILABLE(ios(10.0)) {
+  UIView* leadingView = [self leadingButton];
+  leadingView.alpha = 1;
+  self.leadingButtonLeadingConstraint.constant = -100;
+  [animator addAnimations:^{
+    leadingView.alpha = 0;
+
+    [self setNeedsLayout];
+    [self layoutIfNeeded];
+  }];
+
+  [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+    [self setLeadingButtonHidden:YES];
+    [self setNeedsLayout];
+    [self layoutIfNeeded];
+  }];
+
+  [self.textField addExpandOmniboxAnimations:animator];
+}
+
+- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator
+    API_AVAILABLE(ios(10.0)) {
+  [self setLeadingButtonHidden:NO];
+
+  UIView* leadingView = [self leadingButton];
+
+  // Move the leadingButton outside of the bounds; this constraint will be
+  // created from scratch when the button is shown.
+  self.leadingButtonLeadingConstraint.constant = leadingView.frame.size.width;
+  leadingView.alpha = 0;
+
+  [animator addAnimations:^{
+    // Fade out the alpha and apply the constraint change above.
+    leadingView.alpha = 1;
+    [self setNeedsLayout];
+    [self layoutIfNeeded];
+  }
+              delayFactor:ios::material::kDuration2];
+  [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+    [self setLeadingButtonHidden:NO];
+  }];
+
+  [self.textField addContractOmniboxAnimations:animator];
+}
+
+#pragma mark - private
+
+- (UIImage*)placeholderImageWithID:(int)imageID {
+  return [NativeImage(imageID)
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+}
+
+- (UIColor*)tintColorForLeftImageWithId:(int)imageID {
+  UIColor* tint = [UIColor whiteColor];
+  if (!self.incognito) {
+    switch (imageID) {
+      case IDR_IOS_LOCATION_BAR_HTTP:
+        tint = [UIColor darkGrayColor];
+        break;
+      case IDR_IOS_OMNIBOX_HTTPS_VALID:
+        tint = skia::UIColorFromSkColor(gfx::kGoogleGreen700);
+        break;
+      case IDR_IOS_OMNIBOX_HTTPS_POLICY_WARNING:
+        tint = skia::UIColorFromSkColor(gfx::kGoogleYellow700);
+        break;
+      case IDR_IOS_OMNIBOX_HTTPS_INVALID:
+        tint = skia::UIColorFromSkColor(gfx::kGoogleRed700);
+        break;
+      default:
+        tint = [UIColor darkGrayColor];
+    }
+  }
+  return tint;
+}
 
 @end
 
@@ -137,14 +348,11 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   UIColor* _displayedTintColor;
 }
 
-@synthesize leftViewImageId = _leftViewImageId;
 @synthesize preEditText = _preEditText;
 @synthesize clearingPreEditText = _clearingPreEditText;
 @synthesize selectedTextBackgroundColor = _selectedTextBackgroundColor;
 @synthesize placeholderTextColor = _placeholderTextColor;
 @synthesize incognito = _incognito;
-@synthesize omniboxExpanderAnimator = _omniboxExpanderAnimator;
-@synthesize omniboxContractorAnimator = _omniboxContractorAnimator;
 
 // Overload to allow for code-based initialization.
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -201,32 +409,11 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   return nil;
 }
 
-- (void)setOmniboxExpanderAnimator:(UIViewPropertyAnimator*)animator
+- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
     API_AVAILABLE(ios(10.0)) {
-  _omniboxExpanderAnimator = animator;
-  [self addExpandOmniboxAnimations];
-}
-
-- (void)setOmniboxContractorAnimator:(UIViewPropertyAnimator*)animator
-    API_AVAILABLE(ios(10.0)) {
-  _omniboxContractorAnimator = animator;
-  [self addContractOmniboxAnimations];
-}
-
-- (void)addExpandOmniboxAnimations API_AVAILABLE(ios(10.0)) {
-  UIView* leadingView = [self leftView];
-  [_omniboxExpanderAnimator addAnimations:^{
-    leadingView.alpha = 0;
-    leadingView.frame =
-        CGRectMake(leadingView.frame.origin.x - kPositionAnimationLeadingOffset,
-                   leadingView.frame.origin.y, leadingView.frame.size.width,
-                   leadingView.frame.size.height);
-  }];
-
   __weak OmniboxTextFieldIOS* weakSelf = self;
   [self rightView].alpha = 0;
-  [_omniboxExpanderAnimator addCompletion:^(
-                                UIViewAnimatingPosition finalPosition) {
+  [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
     UIView* trailingView = [weakSelf rightView];
     CGRect finalTrailingViewFrame = trailingView.frame;
     trailingView.frame =
@@ -243,24 +430,18 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   }];
 }
 
-- (void)addContractOmniboxAnimations API_AVAILABLE(ios(10.0)) {
-  UIView* leadingView = [self leftView];
-  leadingView.alpha = 0;
-  CGRect finalLeadingViewFrame = leadingView.frame;
-  leadingView.frame =
-      CGRectLayoutOffset(leadingView.frame, kPositionAnimationLeadingOffset);
-  [_omniboxContractorAnimator addAnimations:^{
-    leadingView.alpha = 1.0;
-    leadingView.frame = finalLeadingViewFrame;
-  }
-                                delayFactor:ios::material::kDuration2];
-
+- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator
+    API_AVAILABLE(ios(10.0)) {
   UIView* trailingView = [self rightView];
-  [_omniboxContractorAnimator addAnimations:^{
+  [animator addAnimations:^{
     trailingView.alpha = 0;
     trailingView.frame.origin = CGPointMake(
         trailingView.frame.origin.x + kPositionAnimationLeadingOffset,
         trailingView.frame.origin.y);
+  }];
+
+  [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+    self.rightView = nil;
   }];
 }
 
@@ -431,11 +612,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   return !![self preEditText];
 }
 
-- (void)enableLeftViewButton:(BOOL)isEnabled {
-  if ([self leftView])
-    [(UIButton*)[self leftView] setEnabled:isEnabled];
-}
-
 - (NSString*)nsDisplayedText {
   if (_selection)
     return [_selection text];
@@ -489,51 +665,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   [_selection setBackgroundColor:[UIColor clearColor]];
   [self addSubview:_selection];
   [self hideTextAndCursor];
-}
-
-- (void)updateLeftView {
-  UIButton* leftViewButton = (UIButton*)self.leftView;
-
-  // For iPhone, the left view is only updated when not in editing mode (i.e.
-  // the text field is not first responder).
-  if (_leftViewImageId && (IsIPadIdiom() || ![self isFirstResponder])) {
-    UIImage* image = [NativeImage(_leftViewImageId)
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    UIImageView* imageView = [[UIImageView alloc] initWithImage:image];
-    [leftViewButton setImage:imageView.image forState:UIControlStateNormal];
-    [leftViewButton setTitle:nil forState:UIControlStateNormal];
-    UIColor* tint = [UIColor whiteColor];
-    if (!_incognito) {
-      switch (_leftViewImageId) {
-        case IDR_IOS_LOCATION_BAR_HTTP:
-          tint = [UIColor darkGrayColor];
-          break;
-        case IDR_IOS_OMNIBOX_HTTPS_VALID:
-          tint = skia::UIColorFromSkColor(gfx::kGoogleGreen700);
-          break;
-        case IDR_IOS_OMNIBOX_HTTPS_POLICY_WARNING:
-          tint = skia::UIColorFromSkColor(gfx::kGoogleYellow700);
-          break;
-        case IDR_IOS_OMNIBOX_HTTPS_INVALID:
-          tint = skia::UIColorFromSkColor(gfx::kGoogleRed700);
-          break;
-        default:
-          tint = [UIColor darkGrayColor];
-      }
-    }
-    [leftViewButton setTintColor:tint];
-  } else {
-    // Reset the chip text.
-    [leftViewButton setTitle:nil forState:UIControlStateNormal];
-  }
-  // Normally this isn't needed, but there is a bug in iOS 7.1+ where setting
-  // the image while disabled doesn't always honor UIControlStateNormal.
-  // crbug.com/355077
-  [leftViewButton setNeedsLayout];
-
-  [leftViewButton sizeToFit];
-  self.leftView.isAccessibilityElement =
-      self.attributedText.length != 0 && leftViewButton.isEnabled;
 }
 
 - (void)deleteBackward {
@@ -753,9 +884,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
   LayoutRect textRectLayout =
       LayoutRectForRectInBoundingRect(newBounds, bounds);
-  CGFloat textInset = [self leftViewMode] == UITextFieldViewModeAlways
-                          ? kTextInset
-                          : kTextInsetNoLeftView;
+  CGFloat textInset = kTextInsetNoLeftView;
+
   // Shift the text right and reduce the width to create empty space between the
   // left view and the omnibox text.
   textRectLayout.position.leading += textInset + kTextAreaLeadingOffset;
@@ -768,10 +898,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
       textRectLayout.size.width += self.rightView.bounds.size.width -
                                    kVoiceSearchButtonWidth - kStarButtonWidth;
     }
-  } else if (self.leftView.alpha == 0) {
-    CGFloat xDiff = textRectLayout.position.leading - kEditingRectX;
-    textRectLayout.position.leading = kEditingRectX;
-    textRectLayout.size.width += xDiff;
   }
 
   return LayoutRectGetRect(textRectLayout);
@@ -959,14 +1085,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (CGRect)layoutLeftViewForBounds:(CGRect)bounds {
-  if ([self leftView]) {
-    CGSize imageSize = [[self leftView] bounds].size;
-    LayoutRect leftViewLayout =
-        LayoutRectMake(kImageInset, CGRectGetWidth(bounds),
-                       floor((bounds.size.height - imageSize.height) / 2.0),
-                       imageSize.width, imageSize.height);
-    return LayoutRectGetRect(leftViewLayout);
-  }
   return CGRectZero;
 }
 
@@ -1011,21 +1129,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 - (void)cleanUpFadeAnimations {
   RemoveAnimationForKeyFromLayers(kOmniboxFadeAnimationKey,
                                   [self fadeAnimationLayers]);
-}
-
-#pragma mark - Placeholder image handling methods.
-
-- (void)setPlaceholderImage:(int)imageId {
-  _leftViewImageId = imageId;
-  [self updateLeftView];
-}
-
-- (void)showPlaceholderImage {
-  [self setLeftViewMode:UITextFieldViewModeAlways];
-}
-
-- (void)hidePlaceholderImage {
-  [self setLeftViewMode:UITextFieldViewModeNever];
 }
 
 #pragma mark - Copy/Paste

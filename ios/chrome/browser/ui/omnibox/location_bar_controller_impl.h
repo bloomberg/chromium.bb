@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller.h"
+#include "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -34,7 +35,8 @@ class ToolbarModel;
 class OmniboxPopupViewIOS;
 
 // Concrete implementation of the LocationBarController interface.
-class LocationBarControllerImpl : public LocationBarController {
+class LocationBarControllerImpl : public LocationBarController,
+                                  public LeftImageProvider {
  public:
   LocationBarControllerImpl(LocationBarView* location_bar_view,
                             ios::ChromeBrowserState* browser_state,
@@ -68,6 +70,9 @@ class LocationBarControllerImpl : public LocationBarController {
   const OmniboxView* GetLocationEntry() const override;
   OmniboxView* GetLocationEntry() override;
   bool IsShowingPlaceholderWhileCollapsed() override;
+
+  // LeftImageProvider implementation.
+  void SetLeftImage(int ImageId) override;
 
  private:
   // Installs a UIButton that serves as the location icon and lock icon.  This

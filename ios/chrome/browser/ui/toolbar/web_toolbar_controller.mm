@@ -269,6 +269,7 @@ using ios::material::TimingFunction;
 #pragma clang diagnostic pop
   }
   if (_incognito) {
+    [_locationBarView setIncognito:YES];
     [_locationBarView.textField setIncognito:YES];
     [_locationBarView.textField
         setSelectedTextBackgroundColor:[UIColor colorWithWhite:1 alpha:0.1]];
@@ -1143,13 +1144,6 @@ using ios::material::TimingFunction;
   // Hide the clear and voice search buttons during omniBox frame animations.
   [_locationBarView.textField setRightViewMode:UITextFieldViewModeNever];
 
-  // Make sure the accessory images are in the correct positions so they do not
-  // move during the animation.
-  [_locationBarView.textField rightView].frame =
-      [_locationBarView.textField rightViewRectForBounds:newOmniboxFrame];
-  [_locationBarView.textField leftView].frame =
-      [_locationBarView.textField leftViewRectForBounds:newOmniboxFrame];
-
   CGRect materialBackgroundFrame = RectShiftedDownForStatusBar(newOmniboxFrame);
 
   // Extreme jank happens during initial layout if an animation is invoked. Not
@@ -1517,9 +1511,9 @@ using ios::material::TimingFunction;
               }
 
               // Omnibox and OmniboxBackground.
-              _locationBarView.textField.frame =
+              _locationBarView.frame =
                   CGRectMake(newOmniboxFrame.origin.x + omniboxLeadingPadding,
-                             _locationBarView.textField.frame.origin.y,
+                             _locationBarView.frame.origin.y,
                              toBounds.size.width - 10, toBounds.size.height);
               _omniboxBackground.frame = CGRectMake(
                   self.view.bounds.origin.x, self.view.bounds.origin.y,
@@ -1556,8 +1550,7 @@ using ios::material::TimingFunction;
   [self configureFadeOutNavigationControlsAnimation];
 
   // Set the _omnibox animator.
-  _locationBarView.textField.omniboxExpanderAnimator =
-      self.omniboxExpanderAnimator;
+  [_locationBarView addExpandOmniboxAnimations:self.omniboxExpanderAnimator];
 
   [self.omniboxExpanderAnimator startAnimation];
 }
@@ -1598,9 +1591,8 @@ using ios::material::TimingFunction;
                              weakCancelButton.frame.size.height);
 
               // Omnibox and OmniboxBackground bounds.
-              _locationBarView.textField.frame = CGRectMake(
-                  newOmniboxFrame.origin.x,
-                  _locationBarView.textField.frame.origin.y,
+              _locationBarView.frame = CGRectMake(
+                  newOmniboxFrame.origin.x, _locationBarView.frame.origin.y,
                   newOmniboxFrame.size.width - 10, newOmniboxFrame.size.height);
               _omniboxBackground.frame = CGRectMake(
                   newOmniboxFrame.origin.x,
@@ -1622,8 +1614,8 @@ using ios::material::TimingFunction;
   [self configureFadeInNavigationControlsAnimation];
 
   // Set the _omnibox animator.
-  _locationBarView.textField.omniboxContractorAnimator =
-      self.omniboxContractorAnimator;
+  [_locationBarView
+      addContractOmniboxAnimations:self.omniboxContractorAnimator];
 
   [self.omniboxContractorAnimator startAnimation];
 }
@@ -1709,7 +1701,7 @@ using ios::material::TimingFunction;
     if (_locationBar.get()->IsShowingPlaceholderWhileCollapsed())
       [self fadeOutOmniboxLeadingView];
     else
-      [_locationBarView.textField leftView].alpha = 0;
+      [_locationBarView leadingButton].alpha = 0;
 
     if (_incognito)
       [self fadeInIncognitoIcon];
@@ -1720,7 +1712,7 @@ using ios::material::TimingFunction;
     if (_locationBar.get()->IsShowingPlaceholderWhileCollapsed())
       [self fadeInOmniboxLeadingView];
     else
-      [_locationBarView.textField leftView].alpha = 1;
+      [_locationBarView leadingButton].alpha = 1;
 
     if (_incognito)
       [self fadeOutIncognitoIcon];
@@ -1811,21 +1803,7 @@ using ios::material::TimingFunction;
 }
 
 - (void)fadeInOmniboxLeadingView {
-  UIView* leadingView = [_locationBarView.textField leftView];
-  leadingView.alpha = 0;
-  // Instead of passing a delay into -fadeInView:, wait to call -fadeInView:.
-  // The CABasicAnimation's start and end positions are calculated immediately
-  // instead of after the animation's delay, but the omnibox's layer isn't set
-  // yet to its final state and as a result the start and end positions will not
-  // be correct.
-  dispatch_time_t delay = dispatch_time(
-      DISPATCH_TIME_NOW, ios::material::kDuration2 * NSEC_PER_SEC);
-  dispatch_after(delay, dispatch_get_main_queue(), ^(void) {
-    [self fadeInView:leadingView
-        fromLeadingOffset:kPositionAnimationLeadingOffset
-             withDuration:ios::material::kDuration1
-               afterDelay:0];
-  });
+  [_locationBarView fadeInLeadingButton];
 }
 
 - (void)fadeOutOmniboxTrailingView {
@@ -1873,29 +1851,7 @@ using ios::material::TimingFunction;
 }
 
 - (void)fadeOutOmniboxLeadingView {
-  UIView* leadingView = [_locationBarView.textField leftView];
-
-  // Animate the opacity of leadingView to 0.
-  [CATransaction begin];
-  [CATransaction setAnimationDuration:ios::material::kDuration2];
-  [CATransaction
-      setAnimationTimingFunction:TimingFunction(ios::material::CurveEaseInOut)];
-  CABasicAnimation* fadeOut =
-      [CABasicAnimation animationWithKeyPath:@"opacity"];
-  fadeOut.fromValue = @1;
-  fadeOut.toValue = @0;
-  leadingView.layer.opacity = 0;
-  [leadingView.layer addAnimation:fadeOut forKey:@"fade"];
-
-  // Animate leadingView |kPositionAnimationLeadingOffset| pixels trailing.
-  CABasicAnimation* shift = [CABasicAnimation animationWithKeyPath:@"position"];
-  CGPoint startPosition = [leadingView layer].position;
-  CGPoint endPosition =
-      CGPointLayoutOffset(startPosition, kPositionAnimationLeadingOffset);
-  shift.fromValue = [NSValue valueWithCGPoint:startPosition];
-  shift.toValue = [NSValue valueWithCGPoint:endPosition];
-  [[leadingView layer] addAnimation:shift forKey:@"shift"];
-  [CATransaction commit];
+  [_locationBarView fadeOutLeadingButton];
 }
 
 #pragma mark Toolbar Buttons Animation.

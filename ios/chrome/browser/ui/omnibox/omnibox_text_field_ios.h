@@ -32,7 +32,36 @@ typedef enum {
 
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
+// The containted omnibox textfield.
 @property(nonatomic, strong) OmniboxTextFieldIOS* textField;
+
+// The leading button, such as the security status icon.
+@property(nonatomic, strong) UIButton* leadingButton;
+
+// Incognito status of the location bar changes the appearance, such as text
+// and icon colors.
+@property(nonatomic, assign) BOOL incognito;
+
+// Hides and shows the leading button, without animation.
+- (void)setLeadingButtonHidden:(BOOL)hidden;
+// Enables or disables the leading button for user interaction.
+- (void)setLeadingButtonEnabled:(BOOL)enabled;
+
+// Sets the leading button's image by resource id.
+- (void)setPlaceholderImage:(int)imageID;
+
+// Perform an animation of |leadingButton| fading in and sliding in from the
+// leading edge.
+- (void)fadeInLeadingButton;
+// Perform an animation of |leadingButton| sliding out and fading out towards
+// the leading edge.
+- (void)fadeOutLeadingButton;
+
+- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
+    API_AVAILABLE(ios(10.0));
+
+- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator
+    API_AVAILABLE(ios(10.0));
 
 @end
 
@@ -84,19 +113,6 @@ typedef enum {
 // on older version of iOS.
 - (NSString*)markedText;
 
-// Display a placeholder image. There is no iOS concept of placeholder images,
-// circumventing it by using leftView property of UITextField and controlling
-// its visibility programatically.
-- (void)showPlaceholderImage;
-
-// Hide a placeholder image. There is no iOS concept of placeholder images,
-// circumventing it by using leftView property of UITextField and controlling
-// its visibility programatically.
-- (void)hidePlaceholderImage;
-
-// Select which placeholder image to display.
-- (void)setPlaceholderImage:(int)imageId;
-
 // Initial touch on the Omnibox triggers a "pre-edit" state. The current
 // URL is shown without any insertion point. First character typed replaces
 // the URL. A second touch turns on the insertion point. |preEditStaticLabel|
@@ -105,9 +121,6 @@ typedef enum {
 - (void)enterPreEditState;
 - (void)exitPreEditState;
 - (BOOL)isPreEditing;
-
-// Enable or disable the padlock button.
-- (void)enableLeftViewButton:(BOOL)isEnabled;
 
 // Returns the current selected text range as an NSRange.
 - (NSRange)selectedNSRange;
@@ -138,12 +151,11 @@ typedef enum {
 @property(nonatomic, strong) UIColor* selectedTextBackgroundColor;
 @property(nonatomic, strong) UIColor* placeholderTextColor;
 @property(nonatomic, assign) BOOL incognito;
-// UIViewPropertyAnimator for expanding the location bar.
-@property(nonatomic, strong)
-    UIViewPropertyAnimator* omniboxExpanderAnimator API_AVAILABLE(ios(10.0));
-// UIViewPropertyAnimator for contracting the location bar.
-@property(nonatomic, strong)
-    UIViewPropertyAnimator* omniboxContractorAnimator API_AVAILABLE(ios(10.0));
+
+- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
+    API_AVAILABLE(ios(10.0));
+- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator
+    API_AVAILABLE(ios(10.0));
 
 @end
 

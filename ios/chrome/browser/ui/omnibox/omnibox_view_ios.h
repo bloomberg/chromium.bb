@@ -27,6 +27,13 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+// Allows setting left images.
+class LeftImageProvider {
+ public:
+  // Sets the left image.
+  virtual void SetLeftImage(int imageId) = 0;
+};
+
 // iOS implementation of OmniBoxView.  Wraps a UITextField and
 // interfaces with the rest of the autocomplete system.
 class OmniboxViewIOS : public OmniboxView,
@@ -35,6 +42,7 @@ class OmniboxViewIOS : public OmniboxView,
   // Retains |field|.
   OmniboxViewIOS(OmniboxTextFieldIOS* field,
                  WebOmniboxEditController* controller,
+                 LeftImageProvider* left_image_provider,
                  ios::ChromeBrowserState* browser_state);
   ~OmniboxViewIOS() override;
 
@@ -173,6 +181,7 @@ class OmniboxViewIOS : public OmniboxView,
   base::scoped_nsobject<OmniboxTextFieldIOS> field_;
   base::scoped_nsobject<OmniboxTextFieldPasteDelegate> paste_delegate_;
   WebOmniboxEditController* controller_;  // weak, owns us
+  LeftImageProvider* left_image_provider_;  // weak
 
   State state_before_change_;
   base::scoped_nsobject<NSString> marked_text_before_change_;

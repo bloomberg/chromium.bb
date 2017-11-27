@@ -55,7 +55,21 @@ void ShowTabSwitcher() {
   }
   DCHECK(matcher);
 
-  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
+  // Perform a tap with a timeout. Occasionally EG doesn't sync up properly to
+  // the animations of tab switcher, so it is necessary to poll here.
+  GREYCondition* tapTabSwitcher =
+      [GREYCondition conditionWithName:@"Tap tab switcher button"
+                                 block:^BOOL {
+                                   NSError* error;
+                                   [[EarlGrey selectElementWithMatcher:matcher]
+                                       performAction:grey_tap()
+                                               error:&error];
+                                   return error == nil;
+                                 }];
+
+  // Wait until 2 seconds for the tap.
+  BOOL hasClicked = [tapTabSwitcher waitWithTimeout:2];
+  GREYAssertTrue(hasClicked, @"Tab switcher could not be clicked.");
 }
 
 // Hides the tab switcher by tapping the switcher button.  Works on both phone
@@ -325,9 +339,9 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 
 // Tests exiting the tab switcher by selecting a normal tab.
 - (void)testLeaveSwitcherBySelectingNormalTab {
-  NSString* tab1_title = @"NormalTab1";
-  NSString* tab2_title = @"NormalTab2";
-  NSString* tab3_title = @"NormalTab3";
+  NSString* tab1_title = @"NormalTabLongerStringForTest1";
+  NSString* tab2_title = @"NormalTabLongerStringForTest2";
+  NSString* tab3_title = @"NormalTabLongerStringForTest3";
   [self setUpTestServer];
 
   // Create a few tabs and give them all unique titles.
@@ -377,7 +391,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 
 // Tests exiting the tab switcher by selecting a tab in the other tab model.
 - (void)testLeaveSwitcherBySelectingTabInOtherMode {
-  NSString* normal_title = @"NormalTab";
+  NSString* normal_title = @"NormalTabLongerStringForTest";
   NSString* incognito_title = @"IncognitoTab";
   [self setUpTestServer];
 
