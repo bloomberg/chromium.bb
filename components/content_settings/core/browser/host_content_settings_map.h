@@ -54,8 +54,7 @@ class HostContentSettingsMap : public content_settings::Observer,
     // EXTENSION names is a layering violation when this class will move to
     // components.
     // TODO(mukai): find the solution.
-    INTERNAL_EXTENSION_PROVIDER = 0,
-    POLICY_PROVIDER,
+    POLICY_PROVIDER = 0,
     SUPERVISED_PROVIDER,
     CUSTOM_EXTENSION_PROVIDER,
     NOTIFICATION_ANDROID_PROVIDER,
@@ -110,6 +109,14 @@ class HostContentSettingsMap : public content_settings::Observer,
   //
   // May be called on any thread.
   ContentSetting GetContentSetting(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier) const;
+
+  // This is the same as GetContentSetting() but ignores providers which are not
+  // user-controllable (e.g. policy and extensions).
+  ContentSetting GetUserModifiableContentSetting(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
@@ -340,6 +347,7 @@ class HostContentSettingsMap : public content_settings::Observer,
       const GURL& secondary_url,
       ContentSettingsType content_type,
       const std::string& resource_identifier,
+      ProviderType first_provider_to_search,
       content_settings::SettingInfo* info) const;
 
   content_settings::PatternPair GetNarrowestPatterns(
