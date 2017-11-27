@@ -32,6 +32,8 @@ namespace blink {
 
 class Document;
 
+// This class represents an <image> that loads a single image resource (the
+// url(...) function.)
 class StyleFetchedImage final : public StyleImage,
                                 public ImageResourceObserver {
   USING_PRE_FINALIZER(StyleFetchedImage, Dispose);

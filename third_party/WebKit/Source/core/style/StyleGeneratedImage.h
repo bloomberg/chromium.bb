@@ -34,6 +34,8 @@ class CSSImageGeneratorValue;
 class Document;
 class ImageResourceObserver;
 
+// This class represents a generated <image> such as a gradient, cross-fade or
+// paint(...) function.
 class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
  public:
   static StyleGeneratedImage* Create(const CSSImageGeneratorValue& value) {

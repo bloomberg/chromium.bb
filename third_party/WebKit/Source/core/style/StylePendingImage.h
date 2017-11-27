@@ -41,7 +41,6 @@ class ImageResourceObserver;
 // ComputedStyle during style resolution, in order to avoid loading images that
 // are not referenced by the final style.  They should never exist in a
 // ComputedStyle after it has been returned from the style selector.
-
 class StylePendingImage final : public StyleImage {
  public:
   static StylePendingImage* Create(const CSSValue& value) {
