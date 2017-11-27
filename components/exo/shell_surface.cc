@@ -1391,7 +1391,7 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   window_state->set_ignore_keyboard_bounds_change(movement_disabled);
 
   // AutoHide shelf in fullscreen state.
-  window_state->set_hide_shelf_when_fullscreen(false);
+  window_state->SetHideShelfWhenFullscreen(false);
 
   // Fade visibility animations for non-activatable windows.
   if (!activatable_) {

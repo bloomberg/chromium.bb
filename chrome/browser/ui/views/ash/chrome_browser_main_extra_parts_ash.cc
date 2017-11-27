@@ -72,6 +72,10 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
         ash::mojom::kCanConsumeSystemKeys_Property,
         aura::PropertyConverter::CreateAcceptAnyValueCallback());
     converter->RegisterPrimitiveProperty(
+        ash::kHideShelfWhenFullscreenKey,
+        ash::mojom::kHideShelfWhenFullscreen_Property,
+        aura::PropertyConverter::CreateAcceptAnyValueCallback());
+    converter->RegisterPrimitiveProperty(
         ash::kPanelAttachedKey,
         ui::mojom::WindowManager::kPanelAttached_Property,
         aura::PropertyConverter::CreateAcceptAnyValueCallback());

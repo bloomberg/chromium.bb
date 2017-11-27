@@ -12,6 +12,7 @@
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/screen_util.h"
+#include "ash/shell.h"
 #include "ash/wm/default_state.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -328,6 +329,15 @@ void WindowState::RemoveObserver(WindowStateObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+bool WindowState::GetHideShelfWhenFullscreen() const {
+  return window_->GetProperty(kHideShelfWhenFullscreenKey);
+}
+
+void WindowState::SetHideShelfWhenFullscreen(bool value) {
+  base::AutoReset<bool> resetter(&ignore_property_change_, true);
+  window_->SetProperty(kHideShelfWhenFullscreenKey, value);
+}
+
 bool WindowState::GetWindowPositionManaged() const {
   return window_->GetProperty(kWindowPositionManagedTypeKey);
 }
@@ -564,6 +574,14 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     if (!ignore_property_change_) {
       // This change came from somewhere else. Revert it.
       window->SetProperty(kWindowStateTypeKey, GetStateType());
+    }
+    return;
+  }
+  if (key == kHideShelfWhenFullscreenKey) {
+    if (!ignore_property_change_) {
+      // This change came from outside ash. Update our shelf visibility based
+      // on our changed state.
+      ash::Shell::Get()->UpdateShelfVisibility();
     }
     return;
   }
