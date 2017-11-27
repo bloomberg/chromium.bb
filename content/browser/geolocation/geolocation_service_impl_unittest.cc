@@ -55,8 +55,10 @@ class TestPermissionManager : public MockPermissionManager {
   }
 
   void CancelPermissionRequest(int request_id) override {
-    EXPECT_EQ(request_id, request_id_);
-    cancel_callback_.Run();
+    if (request_id != PermissionManager::kNoPendingOperation) {
+      EXPECT_EQ(request_id, request_id_);
+      cancel_callback_.Run();
+    }
   }
 
   void SetRequestId(int request_id) { request_id_ = request_id; }
@@ -120,8 +122,10 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
   }
 
  private:
-  std::unique_ptr<GeolocationServiceImpl> service_;
+  // The |permission_manager_| needs to come before the |service_| since
+  // GeolocationService calls PermissionManager in its destructor.
   std::unique_ptr<TestPermissionManager> permission_manager_;
+  std::unique_ptr<GeolocationServiceImpl> service_;
   GeolocationServicePtr service_ptr_;
   GeolocationContext context_;
 

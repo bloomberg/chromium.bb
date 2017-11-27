@@ -18,16 +18,20 @@ GeolocationServiceImplContext::GeolocationServiceImplContext(
       request_id_(PermissionManager::kNoPendingOperation) {}
 
 GeolocationServiceImplContext::~GeolocationServiceImplContext() {
-  if (request_id_ == PermissionManager::kNoPendingOperation)
-    return;
-
-  CancelPermissionRequest();
+  permission_manager_->CancelPermissionRequest(request_id_);
 }
 
 void GeolocationServiceImplContext::RequestPermission(
     RenderFrameHost* render_frame_host,
     bool user_gesture,
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
+  if (request_id_ != PermissionManager::kNoPendingOperation) {
+    mojo::ReportBadMessage(
+        "GeolocationService client may only create one Geolocation at a "
+        "time.");
+    return;
+  }
+
   request_id_ = permission_manager_->RequestPermission(
       PermissionType::GEOLOCATION, render_frame_host,
       render_frame_host->GetLastCommittedOrigin().GetURL(), user_gesture,
@@ -35,18 +39,6 @@ void GeolocationServiceImplContext::RequestPermission(
       // safe to pass |this| as Unretained.
       base::Bind(&GeolocationServiceImplContext::HandlePermissionStatus,
                  base::Unretained(this), std::move(callback)));
-}
-
-void GeolocationServiceImplContext::CancelPermissionRequest() {
-  if (request_id_ == PermissionManager::kNoPendingOperation) {
-    mojo::ReportBadMessage(
-        "GeolocationService client may only create one Geolocation at a "
-        "time.");
-    return;
-  }
-
-  permission_manager_->CancelPermissionRequest(request_id_);
-  request_id_ = PermissionManager::kNoPendingOperation;
 }
 
 void GeolocationServiceImplContext::HandlePermissionStatus(

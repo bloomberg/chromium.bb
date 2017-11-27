@@ -29,7 +29,6 @@ class GeolocationServiceImplContext {
       RenderFrameHost* render_frame_host,
       bool user_gesture,
       const base::Callback<void(blink::mojom::PermissionStatus)>& callback);
-  void CancelPermissionRequest();
 
  private:
   PermissionManager* permission_manager_;
