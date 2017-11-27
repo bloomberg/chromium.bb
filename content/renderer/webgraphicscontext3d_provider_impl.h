@@ -47,7 +47,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   bool IsSoftwareRendering() const override;
   void SetLostContextCallback(const base::Closure&) override;
   void SetErrorMessageCallback(
-      const base::Callback<void(const char*, int32_t)>&) override;
+      base::RepeatingCallback<void(const char*, int32_t)>) override;
   void SignalQuery(uint32_t, base::OnceClosure) override;
 
   ui::ContextProviderCommandBuffer* context_provider() const {

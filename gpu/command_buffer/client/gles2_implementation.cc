@@ -6089,8 +6089,8 @@ uint64_t GLES2Implementation::ShareGroupTracingGUID() const {
 }
 
 void GLES2Implementation::SetErrorMessageCallback(
-    const base::Callback<void(const char*, int32_t)>& callback) {
-  error_message_callback_ = callback;
+    base::RepeatingCallback<void(const char*, int32_t)> callback) {
+  error_message_callback_ = std::move(callback);
 }
 
 void GLES2Implementation::SetSnapshotRequested() {
