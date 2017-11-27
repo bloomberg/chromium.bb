@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/css/StyleChangeReason.h"
 #include "core/dom/Document.h"
 #include "core/dom/FrameRequestCallbackCollection.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/geometry/DOMRect.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -426,6 +428,57 @@ TEST_F(DocumentLoadingRenderingTest,
   import_resource.Write("div { color: red; }");
   import_resource.Finish();
   main_resource.Finish();
+}
+
+TEST_F(DocumentLoadingRenderingTest, StableSVGStopStylingWhileLoadingImport) {
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest import_resource("https://example.com/import.css", "text/css");
+
+  LoadURL("https://example.com/test.html");
+
+  main_resource.Start();
+
+  main_resource.Write(R"HTML(
+    <html><body>
+      <svg>
+        <linearGradient>
+          <stop id='test' stop-color='green' stop-opacity='0.5' />
+        </linearGradient>
+      </svg>
+  )HTML");
+
+  // Verify that SVG <stop> styling is stable/accurate when recalculated
+  // during import loading.
+  const auto recalc_and_check = [this]() {
+    GetDocument().SetNeedsStyleRecalc(
+        kNeedsReattachStyleChange,
+        StyleChangeReasonForTracing::Create("test reason"));
+    GetDocument().UpdateStyleAndLayout();
+
+    Element* element = GetDocument().getElementById("test");
+    ASSERT_NE(nullptr, element);
+    EXPECT_EQ(0xff008000, element->ComputedStyleRef().SvgStyle().StopColor());
+    EXPECT_EQ(.5f, element->ComputedStyleRef().SvgStyle().StopOpacity());
+  };
+
+  EXPECT_TRUE(GetDocument().IsRenderingReady());
+  recalc_and_check();
+
+  main_resource.Write(
+      "<script>"
+      "var link = document.createElement('link');"
+      "link.rel = 'import';"
+      "link.href = 'import.css';"
+      "document.head.appendChild(link);"
+      "</script>");
+
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
+  recalc_and_check();
+
+  import_resource.Complete();
+  main_resource.Finish();
+
+  recalc_and_check();
 }
 
 }  // namespace blink
