@@ -17,7 +17,9 @@ const char kWidevineKeySystem[] = "com.widevine.alpha";
 
 const char kWidevineCdmGuid[] = "AD87877A-0213-49A8-8849-9E93B075E477";
 
-// Widevine CDM files are in a directory with this name.
+// Widevine CDM files are in a directory with this name. This path is also
+// hardcoded in some build files and changing it requires changing the build
+// files as well.
 const char kWidevineCdmBaseDirectory[] = "WidevineCdm";
 
 // This name is used by UMA. Do not change it!
