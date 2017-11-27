@@ -8,7 +8,6 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_physical_offset.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -35,7 +34,6 @@ class CORE_EXPORT NGInlineFragmentIterator {
     NGPhysicalOffset offset_to_container_box;
   };
   using Results = Vector<Result, 1>;
-  using LayoutObjectMap = HashMap<const LayoutObject*, Results>;
 
   Results::const_iterator begin() const { return results_.begin(); }
   Results::const_iterator end() const { return results_.end(); }
