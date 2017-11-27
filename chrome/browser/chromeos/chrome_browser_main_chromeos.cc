@@ -738,6 +738,9 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   chromeos::ResourceReporter::GetInstance()->StartMonitoring(
       task_manager::TaskManagerInterface::GetTaskManager());
 
+  if (!base::FeatureList::IsEnabled(features::kNativeNotifications))
+    notification_client_.reset(NotificationPlatformBridge::Create());
+
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
 
@@ -885,9 +888,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // header of new-style notification.
   message_center::MessageCenter::Get()->SetProductOSName(
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME));
-
-  if (!base::FeatureList::IsEnabled(features::kNativeNotifications))
-    notification_client_.reset(NotificationPlatformBridge::Create());
 
   // Register all installed components for regular update.
   base::PostTaskWithTraitsAndReplyWithResult(
@@ -1192,6 +1192,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // is called.
   g_browser_process->platform_part()->browser_policy_connector_chromeos()->
       PreShutdown();
+
+  // Close the notification client before destroying the profile manager.
+  notification_client_.reset();
 
   // NOTE: Closes ash and destroys ash::Shell.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
