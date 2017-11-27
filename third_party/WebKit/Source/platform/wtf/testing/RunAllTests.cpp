@@ -30,18 +30,11 @@
 
 #include <string.h>
 #include "base/test/test_suite.h"
-#include "platform/wtf/CryptographicallyRandomNumber.h"
-#include "platform/wtf/Time.h"
 #include "platform/wtf/WTF.h"
 #include "platform/wtf/allocator/Partitions.h"
 
-static double dummyCurrentTime() {
-  return 0.0;
-}
-
 int main(int argc, char** argv) {
   WTF::Partitions::Initialize(nullptr);
-  WTF::SetTimeFunctionsForTesting(dummyCurrentTime);
   WTF::Initialize(nullptr);
   return base::RunUnitTestsUsingBaseTestSuite(argc, argv);
 }

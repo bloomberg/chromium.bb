@@ -51,7 +51,6 @@
 #include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/wtf/CryptographicallyRandomNumber.h"
-#include "platform/wtf/Time.h"
 #include "platform/wtf/WTF.h"
 #include "platform/wtf/allocator/Partitions.h"
 #include "public/platform/InterfaceProvider.h"
@@ -81,10 +80,6 @@ class TestingPlatformSupport::TestingInterfaceProvider
 };
 
 namespace {
-
-double DummyCurrentTime() {
-  return 0.0;
-}
 
 class DummyThread final : public blink::WebThread {
  public:
@@ -238,7 +233,6 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   Platform::SetCurrentPlatformForTesting(dummy_platform_.get());
 
   WTF::Partitions::Initialize(nullptr);
-  WTF::SetTimeFunctionsForTesting(DummyCurrentTime);
   WTF::Initialize(nullptr);
 
   compositor_support_ = WTF::WrapUnique(new cc_blink::WebCompositorSupportImpl);
