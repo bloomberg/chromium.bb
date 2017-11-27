@@ -399,6 +399,10 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
         base::UTF8ToUTF16(*card->expiration_year));
   }
 
+  if (!card->billing_address_id->empty()) {
+    credit_card.set_billing_address_id(*card->billing_address_id);
+  }
+
   if (!base::IsValidGUID(credit_card.guid())) {
     credit_card.set_guid(base::GenerateGUID());
     personal_data->AddCreditCard(credit_card);

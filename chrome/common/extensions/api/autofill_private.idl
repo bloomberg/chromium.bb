@@ -157,6 +157,9 @@ namespace autofillPrivate {
     // Year as a 4-character string (as in "2015").
     DOMString? expirationYear;
 
+    // The identifier of the billing address for the card.
+    DOMString? billingAddressId;
+
     AutofillMetadata? metadata;
   };
 

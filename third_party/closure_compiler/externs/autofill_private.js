@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,6 +108,7 @@ chrome.autofillPrivate.AddressComponents;
  *   cardNumber: (string|undefined),
  *   expirationMonth: (string|undefined),
  *   expirationYear: (string|undefined),
+ *   billingAddressId: (string|undefined),
  *   metadata: (!chrome.autofillPrivate.AutofillMetadata|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/autofillPrivate#type-CreditCardEntry
