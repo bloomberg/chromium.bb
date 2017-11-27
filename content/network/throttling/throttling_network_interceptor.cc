@@ -21,7 +21,7 @@ int64_t kPacketSize = 1500;
 
 base::TimeDelta CalculateTickLength(double throughput) {
   if (!throughput)
-    return base::TimeDelta();
+    return base::TimeDelta::FromMicroseconds(1);
   int64_t us_tick_length = (1000000L * kPacketSize) / throughput;
   DCHECK(us_tick_length != 0);
   if (us_tick_length == 0)
@@ -234,8 +234,9 @@ int ThrottlingNetworkInterceptor::StartThrottle(
   if (conditions_->offline())
     return is_upload ? result : net::ERR_INTERNET_DISCONNECTED;
 
-  if ((is_upload && !conditions_->upload_throughput()) ||
-      (!is_upload && !conditions_->download_throughput())) {
+  if (!conditions_->latency() &&
+      ((is_upload && !conditions_->upload_throughput()) ||
+       (!is_upload && !conditions_->download_throughput()))) {
     return result;
   }
 
