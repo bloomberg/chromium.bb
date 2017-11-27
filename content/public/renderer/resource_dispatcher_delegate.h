@@ -10,11 +10,10 @@
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 
-class GURL;
-
 namespace content {
 
 class RequestPeer;
+struct ResourceResponseHead;
 
 // Interface that allows observing request events and optionally replacing
 // the peer. Note that if it doesn't replace the peer it must return the
@@ -29,10 +28,16 @@ class CONTENT_EXPORT ResourceDispatcherDelegate {
       ResourceType resource_type,
       int error_code) = 0;
 
+  // Note that |url|, |referrer| and |method| are the final values (e.g. after
+  // any redirects).
   virtual std::unique_ptr<RequestPeer> OnReceivedResponse(
       std::unique_ptr<RequestPeer> current_peer,
-      const std::string& mime_type,
-      const GURL& url) = 0;
+      int render_frame_id,
+      const GURL& url,
+      const GURL& referrer,
+      const std::string& method,
+      ResourceType resource_type,
+      const ResourceResponseHead& response_head) = 0;
 };
 
 }  // namespace content

@@ -20,6 +20,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/offline_pages/features/features.h"
 #include "content/public/common/browser_controls_state.h"
+#include "content/public/common/common_param_traits_macros.h"
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -176,5 +177,15 @@ IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_IsCrashReportingEnabled,
 // Tells the browser to open a PDF file in a new tab. Used when no PDF Viewer is
 // available, and user clicks to view PDF.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_OpenPDF, GURL /* url */)
+
+#if defined(FULL_SAFE_BROWSING)
+// Inform the browser about a subresource response that has started.
+IPC_MESSAGE_ROUTED5(SafeBrowsingHostMsg_SubresourceResponseStarted,
+                    std::string /* ip */,
+                    GURL /* url */,
+                    std::string /* method */,
+                    GURL /* referrer */,
+                    content::ResourceType /* resource_type */)
+#endif
 
 #endif  // CHROME_COMMON_RENDER_MESSAGES_H_

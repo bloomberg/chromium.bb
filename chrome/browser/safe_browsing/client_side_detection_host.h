@@ -40,8 +40,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // From content::WebContentsObserver.
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
-  void DidGetResourceResponseStart(
-      const content::ResourceRequestDetails& details) override;
 
   // From content::WebContentsObserver.  If we navigate away we cancel all
   // pending callbacks that could show an interstitial, and check to see whether
@@ -84,6 +82,11 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
 
   // Verdict is an encoded ClientPhishingRequest protocol message.
   void OnPhishingDetectionDone(const std::string& verdict);
+  void OnSubresourceResponseStarted(const std::string& ip,
+                                    const GURL& url,
+                                    const std::string& method,
+                                    const GURL& referrer,
+                                    content::ResourceType resource_type);
 
   // Callback that is called when the server ping back is
   // done. Display an interstitial if |is_phishing| is true.

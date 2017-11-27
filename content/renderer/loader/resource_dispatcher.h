@@ -180,15 +180,19 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   struct PendingRequestInfo {
     PendingRequestInfo(std::unique_ptr<RequestPeer> peer,
                        ResourceType resource_type,
+                       int render_frame_id,
                        int origin_pid,
                        const url::Origin& frame_origin,
                        const GURL& request_url,
+                       const std::string& method,
+                       const GURL& referrer,
                        bool download_to_file);
 
     ~PendingRequestInfo();
 
     std::unique_ptr<RequestPeer> peer;
     ResourceType resource_type;
+    int render_frame_id;
     // The PID of the original process which issued this request. This gets
     // non-zero only for a request proxied by another renderer, particularly
     // requests from plugins.
@@ -199,8 +203,11 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     GURL url;
     // The security origin of the frame that initiates this request.
     url::Origin frame_origin;
-    // The url of the latest response even in case of redirection.
+    // The url, method and referrer of the latest response even in case of
+    // redirection.
     GURL response_url;
+    std::string response_method;
+    GURL response_referrer;
     bool download_to_file;
     std::unique_ptr<IPC::Message> pending_redirect_message;
     base::TimeTicks request_start;
