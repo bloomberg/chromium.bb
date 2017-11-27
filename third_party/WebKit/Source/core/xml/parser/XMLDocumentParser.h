@@ -120,7 +120,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   XMLDocumentParser(DocumentFragment*, Element*, ParserContentPolicy);
 
   // From DocumentParser
-  void insert(const SegmentedString&) override;
+  void insert(const String&) override { NOTREACHED(); }
   void Append(const String&) override;
   void Finish() override;
   bool IsWaitingForScripts() const override;
