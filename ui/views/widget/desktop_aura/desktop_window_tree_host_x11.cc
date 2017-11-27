@@ -1881,7 +1881,7 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
       show_state != ui::SHOW_STATE_INACTIVE &&
       show_state != ui::SHOW_STATE_MAXIMIZED) {
     // It will behave like SHOW_STATE_NORMAL.
-    NOTIMPLEMENTED();
+    NOTIMPLEMENTED_LOG_ONCE();
   }
 
   // Before we map the window, set size hints. Otherwise, some window managers
