@@ -1647,4 +1647,44 @@ TEST_F(SharedModelTypeProcessorTest, GarbageCollectionByAge) {
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
 }
 
+// Tests that SharedModelTypeProcessor can do garbage collection by item limit.
+// Create 3 entries, one is 15-days-old, one is 10-days-old, another is
+// 5-days-old. Check if sync will delete 15-days-old entry when server set
+// limited item is 2 days.
+TEST_F(SharedModelTypeProcessorTest, GarbageCollectionByItemLimit) {
+  InitializeToReadyState();
+
+  // Create 3 entries, one is 15-days-old, one is 10-days-old, another is
+  // 5-days-old.
+  std::unique_ptr<EntityData> entity_data =
+      bridge()->GenerateEntityData(kKey1, kValue1);
+  entity_data->modification_time =
+      base::Time::Now() - base::TimeDelta::FromDays(15);
+  WriteItemAndAck(kKey1, std::move(entity_data));
+  entity_data = bridge()->GenerateEntityData(kKey2, kValue2);
+  entity_data->modification_time =
+      base::Time::Now() - base::TimeDelta::FromDays(5);
+  WriteItemAndAck(kKey2, std::move(entity_data));
+  entity_data = bridge()->GenerateEntityData(kKey3, kValue3);
+  entity_data->modification_time =
+      base::Time::Now() - base::TimeDelta::FromDays(10);
+  WriteItemAndAck(kKey3, std::move(entity_data));
+
+  // Verify entries are created correctly.
+  EXPECT_EQ(3U, ProcessorEntityCount());
+  EXPECT_EQ(3U, db().metadata_count());
+  EXPECT_EQ(3U, db().data_count());
+  EXPECT_EQ(0U, worker()->GetNumPendingCommits());
+
+  // Expired the entries which are older than 10 days.
+  sync_pb::GarbageCollectionDirective garbage_collection_directive;
+  garbage_collection_directive.set_max_number_of_items(2);
+  worker()->UpdateWithGarbageConllection(garbage_collection_directive);
+
+  EXPECT_EQ(2U, ProcessorEntityCount());
+  EXPECT_EQ(2U, db().metadata_count());
+  EXPECT_EQ(3U, db().data_count());
+  EXPECT_EQ(0U, worker()->GetNumPendingCommits());
+}
+
 }  // namespace syncer
