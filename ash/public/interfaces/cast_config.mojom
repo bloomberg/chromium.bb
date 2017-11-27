@@ -4,10 +4,25 @@
 
 module ash.mojom;
 
+// The type of icon the sink is associated with. These values match
+// media_router::SinkIconType.
+enum SinkIconType {
+  CAST = 0,
+  CAST_AUDIO_GROUP = 1,
+  CAST_AUDIO = 2,
+  MEETING = 3,
+  HANGOUT = 4,
+  EDUCATION = 5,
+  GENERIC = 6
+};
+
 struct CastSink {
   string id;
   string name;
   string domain;
+
+  // Icon which describes the type of sink media is being routed to.
+  SinkIconType sink_icon_type = SinkIconType.GENERIC;
 };
 
 enum ContentSource {
