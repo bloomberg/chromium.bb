@@ -44,6 +44,7 @@ UI_BASE_EXPORT
   // Tracking area for button mouseover states. Nil if not enabled.
   ui::ScopedCrTrackingArea trackingArea_;
   BOOL mouseDown_;
+  BOOL sendActionOnMouseDown_;
 }
 
 @property(nonatomic) HoverState hoverState;
@@ -53,6 +54,9 @@ UI_BASE_EXPORT
 
 // Assign an object to make the button a drag source.
 @property(nonatomic, assign) id<HoverButtonDragDelegate> dragDelegate;
+
+// Enables or disables sending the action on mouse down event.
+@property(nonatomic) BOOL sendActionOnMouseDown;
 
 // An NSRect in the view's coordinate space which is used for hover and hit
 // testing. Default value is NSZeroRect, which makes the hitbox equal to the
