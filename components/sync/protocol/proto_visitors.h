@@ -892,6 +892,14 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::Translation& proto) {
   VISIT_ENUM(interaction);
 }
 
+VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::UserConsent& proto) {
+  VISIT(feature);
+  VISIT_REP(consent_grd_ids);
+  VISIT_REP(placeholder_replacements);
+  VISIT(locale);
+  VISIT_ENUM(status);
+}
+
 VISIT_PROTO_FIELDS(const sync_pb::TypeHint& proto) {
   VISIT(data_type_id);
   VISIT(has_valid_hint);
@@ -920,6 +928,7 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics& proto) {
   VISIT(field_trial_event);
   VISIT(language_detection_event);
   VISIT(translation_event);
+  VISIT(user_consent);
   VISIT(gaia_password_reuse_event);
 }
 
