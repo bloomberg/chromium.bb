@@ -372,6 +372,18 @@ TYPED_TEST(ListOrLinkedHashSetTest, Swap) {
   EXPECT_EQ(it2, set1.end());
 }
 
+TYPED_TEST(ListOrLinkedHashSetTest, IteratorsConvertToConstVersions) {
+  using Set = TypeParam;
+  Set set;
+  set.insert(42);
+  typename Set::iterator it = set.begin();
+  typename Set::const_iterator cit = it;
+  typename Set::reverse_iterator rit = set.rbegin();
+  typename Set::const_reverse_iterator crit = rit;
+  // Use the variables to make the compiler happy.
+  ASSERT_EQ(*cit, *crit);
+}
+
 class DummyRefCounted : public RefCounted<DummyRefCounted> {
  public:
   DummyRefCounted(bool& is_deleted) : is_deleted_(is_deleted) {
