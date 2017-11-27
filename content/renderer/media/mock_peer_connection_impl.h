@@ -97,10 +97,23 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
                     webrtc::SessionDescriptionInterface* desc));
   void SetLocalDescriptionWorker(
       webrtc::SetSessionDescriptionObserver* observer,
-      webrtc::SessionDescriptionInterface* desc) ;
+      webrtc::SessionDescriptionInterface* desc);
+  // TODO(hbos): Remove once no longer mandatory to implement.
   MOCK_METHOD2(SetRemoteDescription,
                void(webrtc::SetSessionDescriptionObserver* observer,
                     webrtc::SessionDescriptionInterface* desc));
+  void SetRemoteDescription(
+      std::unique_ptr<webrtc::SessionDescriptionInterface> desc,
+      rtc::scoped_refptr<webrtc::SetRemoteDescriptionObserverInterface>
+          observer) override {
+    SetRemoteDescriptionForMock(&desc, &observer);
+  }
+  // Work-around due to MOCK_METHOD being unable to handle move-only arguments.
+  MOCK_METHOD2(
+      SetRemoteDescriptionForMock,
+      void(std::unique_ptr<webrtc::SessionDescriptionInterface>* desc,
+           rtc::scoped_refptr<webrtc::SetRemoteDescriptionObserverInterface>*
+               observer));
   void SetRemoteDescriptionWorker(
       webrtc::SetSessionDescriptionObserver* observer,
       webrtc::SessionDescriptionInterface* desc);

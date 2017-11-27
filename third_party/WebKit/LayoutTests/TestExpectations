@@ -3993,7 +3993,6 @@ crbug.com/778745 http/tests/inspector-protocol/cachestorage/read-cached-response
 crbug.com/778745 virtual/mojo-loading/http/tests/inspector-protocol/cachestorage/read-cached-response.js [ Pass Failure ]
 
 # Sheriff failures 2017-10-24
-crbug.com/777777 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-tracks.https.html [ Pass Failure ]
 crbug.com/773122 crbug.com/777813 [ Win ] fast/text/font-ascent-mac.html [ Failure Pass ]
 
 # Sheriff failures 2017-11-03
