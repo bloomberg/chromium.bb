@@ -32,6 +32,9 @@ class X11_WINDOW_EXPORT X11WindowOzone : public X11WindowBase,
   void SetCursor(PlatformCursor cursor) override;
 
   // XEventDispatcher:
+  void CheckCanDispatchNextPlatformEvent(XEvent* xev) override;
+  void PlatformEventDispatchFinished() override;
+  PlatformEventDispatcher* GetPlatformEventDispatcher() override;
   bool DispatchXEvent(XEvent* event) override;
 
  private:
@@ -40,6 +43,11 @@ class X11_WINDOW_EXPORT X11WindowOzone : public X11WindowBase,
   uint32_t DispatchEvent(const PlatformEvent& event) override;
 
   X11WindowManagerOzone* window_manager_;
+
+  // Tells if this dispatcher can process next translated event based on a
+  // previous check in ::CheckCanDispatchNextPlatformEvent based on a XID
+  // target.
+  bool handle_next_event_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(X11WindowOzone);
 };

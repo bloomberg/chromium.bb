@@ -11,6 +11,8 @@
 
 namespace ui {
 
+class PlatformEventDispatcher;
+
 // Ozone specific implementation of GLX surface. Registers as a XEventDispatcher
 // to handle XEvents.
 class GLSurfaceGLXOzone : public gl::NativeViewGLSurfaceGLX,
@@ -26,6 +28,9 @@ class GLSurfaceGLXOzone : public gl::NativeViewGLSurfaceGLX,
   void UnregisterEvents() override;
 
   // XEventDispatcher:
+  void CheckCanDispatchNextPlatformEvent(XEvent* xev) override;
+  void PlatformEventDispatchFinished() override;
+  PlatformEventDispatcher* GetPlatformEventDispatcher() override;
   bool DispatchXEvent(XEvent* xevent) override;
 
  private:
