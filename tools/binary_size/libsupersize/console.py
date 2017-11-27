@@ -51,8 +51,7 @@ def _WriteToStream(lines, use_pager=None, to_file=None):
   if use_pager is None and sys.stdout.isatty():
     # Does not take into account line-wrapping... Oh well.
     first_lines = list(itertools.islice(lines, _THRESHOLD_FOR_PAGER))
-    if len(first_lines) == _THRESHOLD_FOR_PAGER:
-      use_pager = True
+    use_pager = len(first_lines) == _THRESHOLD_FOR_PAGER
     lines = itertools.chain(first_lines, lines)
 
   if use_pager:
@@ -164,14 +163,6 @@ class _Session(object):
     logging.debug('Diff complete')
     return ret
 
-  def _GetObjToPrint(self, obj=None):
-    if isinstance(obj, int):
-      obj = self._printed_variables[obj]
-    elif not self._printed_variables or self._printed_variables[-1] != obj:
-      if not isinstance(obj, models.SymbolGroup) or len(obj) > 0:
-        self._printed_variables.append(obj)
-    return obj if obj is not None else self._size_infos[-1]
-
   def _PrintFunc(self, obj=None, verbose=False, summarize=True, recursive=False,
                  use_pager=None, to_file=None):
     """Prints out the given Symbol / SymbolGroup / SizeInfo.
@@ -179,9 +170,7 @@ class _Session(object):
     For convenience, |obj| will be appended to the global "printed" list.
 
     Args:
-      obj: The object to be printed. Defaults to |size_infos[-1]|. Also accepts
-          an index into the |_printed_variables| array for showing previous
-          results.
+      obj: The object to be printed.
       verbose: Show more detailed output.
       summarize: If False, show symbols only (no headers / summaries).
       recursive: Print children of nested SymbolGroups.
@@ -189,7 +178,8 @@ class _Session(object):
           default is to automatically pipe when output is long.
       to_file: Rather than print to stdio, write to the given file.
     """
-    obj = self._GetObjToPrint(obj)
+    if obj is not None:
+      self._printed_variables.append(obj)
     lines = describe.GenerateLines(
         obj, verbose=verbose, recursive=recursive, summarize=summarize,
         format_name='text')
@@ -201,14 +191,13 @@ class _Session(object):
     For convenience, |obj| will be appended to the global "printed" list.
 
     Args:
-      obj: The object to be printed as CSV. Defaults to |size_infos[-1]|. Also
-          accepts an index into the |_printed_variables| array for showing
-          previous results.
+      obj: The object to be printed as CSV.
       use_pager: Pipe output through `less`. Ignored when |obj| is a Symbol.
           default is to automatically pipe when output is long.
       to_file: Rather than print to stdio, write to the given file.
     """
-    obj = self._GetObjToPrint(obj)
+    if obj is not None:
+      self._printed_variables.append(obj)
     lines = describe.GenerateLines(obj, verbose=verbose, recursive=False,
                                    format_name='csv')
     _WriteToStream(lines, use_pager=use_pager, to_file=to_file)
