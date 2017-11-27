@@ -54,7 +54,9 @@ class CORE_EXPORT ScriptRegexp {
                MultilineMode = kMultilineDisabled,
                CharacterMode = BMP);
 
-  int Match(const String&, int start_from = 0, int* match_length = 0) const;
+  int Match(const String&,
+            int start_from = 0,
+            int* match_length = nullptr) const;
 
   bool IsValid() const { return !regex_.IsEmpty(); }
   // exceptionMessage is available only if !isValid().

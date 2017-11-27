@@ -120,7 +120,7 @@ class CORE_EXPORT V8ScriptRunner final {
       v8::Local<v8::Object>,
       ExecutionContext*,
       int argc = 0,
-      v8::Local<v8::Value> argv[] = 0);
+      v8::Local<v8::Value> argv[] = nullptr);
   static v8::MaybeLocal<v8::Value> CallInternalFunction(
       v8::Local<v8::Function>,
       v8::Local<v8::Value> receiver,

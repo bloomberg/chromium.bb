@@ -130,7 +130,7 @@ class Supplement : public GarbageCollectedMixin,
 
   static Supplement<T>* From(const Supplementable<T>* supplementable,
                              const char* key) {
-    return supplementable ? supplementable->RequireSupplement(key) : 0;
+    return supplementable ? supplementable->RequireSupplement(key) : nullptr;
   }
 
   virtual void Trace(blink::Visitor* visitor) {
