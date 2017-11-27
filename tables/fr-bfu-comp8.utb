@@ -1,10 +1,6 @@
 #+locale:fr
 #+type:computer
 #+dots:8
-#+label:"Unified French 8 dots"
-#+author:['André-Abush CLAUSE <dev@andreabc.net>','Michel Such <michel.such@free.fr>','The BRLTTY Team <http://brltty.com/>']
-#+license:LGPL
-#+lastUpdate:2017-11-27
 
 # liblouis: Unified French 8 dots Braille table
 
