@@ -7,8 +7,10 @@
 #include "base/logging.h"
 #include "components/exo/data_device_delegate.h"
 #include "components/exo/data_offer.h"
+#include "components/exo/seat.h"
 #include "components/exo/surface.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 
@@ -30,14 +32,41 @@ class ScopedDataOffer {
   DISALLOW_COPY_AND_ASSIGN(ScopedDataOffer);
 };
 
-DataDevice::DataDevice(DataDeviceDelegate* delegate, FileHelper* file_helper)
-    : delegate_(delegate), file_helper_(file_helper) {
+class ScopedSurface {
+ public:
+  ScopedSurface(Surface* surface, SurfaceObserver* observer)
+      : surface_(surface), observer_(observer) {
+    surface_->AddSurfaceObserver(observer_);
+  }
+  ~ScopedSurface() { surface_->RemoveSurfaceObserver(observer_); }
+  Surface* get() { return surface_; }
+
+ private:
+  Surface* const surface_;
+  SurfaceObserver* const observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSurface);
+};
+
+DataDevice::DataDevice(DataDeviceDelegate* delegate,
+                       Seat* seat,
+                       FileHelper* file_helper)
+    : delegate_(delegate), seat_(seat), file_helper_(file_helper) {
   WMHelper::GetInstance()->AddDragDropObserver(this);
+  ui::ClipboardMonitor::GetInstance()->AddObserver(this);
+
+  seat_->AddObserver(this);
+
+  OnSurfaceFocusing(seat_->GetFocusedSurface());
 }
 
 DataDevice::~DataDevice() {
   delegate_->OnDataDeviceDestroying(this);
+
   WMHelper::GetInstance()->RemoveDragDropObserver(this);
+  ui::ClipboardMonitor::GetInstance()->RemoveObserver(this);
+
+  seat_->RemoveObserver(this);
 }
 
 void DataDevice::StartDrag(const DataSource* source_resource,
@@ -116,9 +145,40 @@ int DataDevice::OnPerformDrop(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_NONE;
 }
 
+void DataDevice::OnClipboardDataChanged() {
+  if (!focused_surface_)
+    return;
+  SendSelection();
+}
+
+void DataDevice::OnSurfaceFocusing(Surface* surface) {
+  Surface* next_focused_surface =
+      surface && delegate_->CanAcceptDataEventsForSurface(surface) ? surface
+                                                                   : nullptr;
+  // Check if focused surface is not changed.
+  if (focused_surface_ && focused_surface_->get() == next_focused_surface)
+    return;
+
+  bool last_focused = static_cast<bool>(focused_surface_);
+  focused_surface_ = next_focused_surface ? std::make_unique<ScopedSurface>(
+                                                next_focused_surface, this)
+                                          : nullptr;
+
+  // Check if the client newly obtained focus.
+  if (focused_surface_ && !last_focused)
+    SendSelection();
+}
+
+void DataDevice::OnSurfaceFocused(Surface* surface) {}
+
 void DataDevice::OnDataOfferDestroying(DataOffer* data_offer) {
   if (data_offer_ && data_offer_->get() == data_offer)
     data_offer_.reset();
+}
+
+void DataDevice::OnSurfaceDestroying(Surface* surface) {
+  if (focused_surface_ && focused_surface_->get() == surface)
+    focused_surface_.reset();
 }
 
 Surface* DataDevice::GetEffectiveTargetForEvent(
@@ -131,6 +191,12 @@ Surface* DataDevice::GetEffectiveTargetForEvent(
     return nullptr;
 
   return delegate_->CanAcceptDataEventsForSurface(target) ? target : nullptr;
+}
+
+void DataDevice::SendSelection() {
+  DataOffer* data_offer = delegate_->OnDataOffer();
+  // TODO(hirono): Populate clipboard data to data offer.
+  delegate_->OnSelection(*data_offer);
 }
 
 }  // namespace exo
