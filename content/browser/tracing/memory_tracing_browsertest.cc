@@ -217,7 +217,14 @@ IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest,
   DisableTracing();
 }
 
-IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, ManyInterleavedDumps) {
+// https://crbug.com/788788
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#define MAYBE_ManyInterleavedDumps DISABLED_ManyInterleavedDumps
+#else
+#define MAYBE_ManyInterleavedDumps ManyInterleavedDumps
+#endif  // defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest,
+                       MAYBE_ManyInterleavedDumps) {
   Navigate(shell());
 
   EXPECT_CALL(*mock_dump_provider_, OnMemoryDump(_,_))
