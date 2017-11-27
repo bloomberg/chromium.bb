@@ -24,6 +24,19 @@ const char kTracingCategoryNameVerboseSnapshots[] =
 
 }  // namespace
 
+namespace internal {
+
+void ValidateTracingCategory(const char* category) {
+  // Category must be a constant defined in tracing_helper.
+  // Unfortunately, static_assert won't work with templates because
+  // inequality (!=) of linker symbols is undefined in compile-time.
+  DCHECK(category == kTracingCategoryNameDefault ||
+         category == kTracingCategoryNameInfo ||
+         category == kTracingCategoryNameDebug);
+}
+
+}  // namespace internal
+
 bool AreVerboseSnapshotsEnabled() {
   bool result = false;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTracingCategoryNameVerboseSnapshots,
