@@ -1088,9 +1088,9 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 - (void)settingsWillBeDismissed {
   DCHECK(!_settingsHasBeenDismissed);
   _settingsHasBeenDismissed = YES;
+  [self.signinInteractionCoordinator cancel];
   [_signinPromoViewMediator signinPromoViewRemoved];
   _signinPromoViewMediator = nil;
-  [self.signinInteractionCoordinator cancel];
   [self stopBrowserStateServiceObservers];
 }
 
@@ -1205,20 +1205,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 - (void)configureSigninPromoWithConfigurator:
             (SigninPromoViewConfigurator*)configurator
                              identityChanged:(BOOL)identityChanged {
-  if (self.signinInteractionCoordinator.isActive) {
-    // When sign-in is started in a cold state (no default account), the sign-in
-    // interaction coordinator does the sign-in and then asks for sync
-    // authorization. If the user cancels this operation, the coordinator
-    // signs-out from this new account, and then the sign in UI disappears while
-    // removing the new account asynchronously.
-    // This leads to an UI glitch. The sign in UI disappears before the newly
-    // added account is removed. The user can see the sign-in promo in warm
-    // state quickly before being replaced by the cold state sign-in promo. To
-    // avoid this UI glitch, all notifications from the mediator should be
-    // ignored, while the sign-in is in progress to avoid showing the warm
-    // state.
-    return;
-  }
+  DCHECK(!self.signinInteractionCoordinator.isActive);
   if (![self.collectionViewModel hasItemForItemType:ItemTypeSigninPromo
                                   sectionIdentifier:SectionIdentifierSignIn]) {
     return;

@@ -211,9 +211,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   BOOL promoVisible =
       ((_currentRootNode == self.bookmarkModel->root_node()) &&
        [self.delegate bookmarkTableViewShouldShowPromoCell:self]) ||
-      (_signinPromoViewMediator &&
-       _signinPromoViewMediator.signinPromoViewState ==
-           ios::SigninPromoViewState::SigninStarted);
+      (_signinPromoViewMediator && _signinPromoViewMediator.signinInProgress);
 
   if (promoVisible == _promoVisible) {
     return;
