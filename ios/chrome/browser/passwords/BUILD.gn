@@ -36,6 +36,8 @@ source_set("passwords") {
     "password_controller.h",
     "password_controller.mm",
     "password_form_filler.h",
+    "password_manager_internals_service_factory.cc",
+    "password_manager_internals_service_factory.h",
     "password_tab_helper.h",
     "password_tab_helper.mm",
     "update_password_infobar_controller.h",
