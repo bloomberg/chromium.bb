@@ -23,8 +23,9 @@
     menuModel_.reset(
         new PermissionMenuModel(profile, url, permissionInfo, callback));
 
-    menuController_.reset([[MenuController alloc] initWithModel:menuModel_.get()
-                                         useWithPopUpButtonCell:NO]);
+    menuController_.reset([[MenuControllerCocoa alloc]
+                 initWithModel:menuModel_.get()
+        useWithPopUpButtonCell:NO]);
     [self setMenu:[menuController_ menu]];
     [self selectItemWithTag:permissionInfo.setting];
 

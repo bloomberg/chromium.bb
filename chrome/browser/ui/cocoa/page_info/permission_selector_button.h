@@ -13,14 +13,14 @@
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
 #include "components/content_settings/core/common/content_settings.h"
 
-@class MenuController;
+@class MenuControllerCocoa;
 
 class Profile;
 
 @interface PermissionSelectorButton : NSPopUpButton {
  @private
   std::unique_ptr<PermissionMenuModel> menuModel_;
-  base::scoped_nsobject<MenuController> menuController_;
+  base::scoped_nsobject<MenuControllerCocoa> menuController_;
 }
 
 // Designated initializer.

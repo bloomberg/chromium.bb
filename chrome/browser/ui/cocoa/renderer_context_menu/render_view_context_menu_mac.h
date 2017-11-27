@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 
-@class MenuController;
+@class MenuControllerCocoa;
 
 // Mac implementation of the context menu display code. Uses a Cocoa NSMenu
 // to display the context menu. Internally uses an obj-c object as the
@@ -63,7 +63,7 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
   void StopSpeaking();
 
   // The Cocoa menu controller for this menu.
-  base::scoped_nsobject<MenuController> menu_controller_;
+  base::scoped_nsobject<MenuControllerCocoa> menu_controller_;
 
   // Model for the "Speech" submenu.
   ui::SimpleMenuModel speech_submenu_model_;

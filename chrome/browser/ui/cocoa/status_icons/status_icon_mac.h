@@ -15,7 +15,7 @@
 #include "chrome/browser/status_icons/desktop_notification_balloon.h"
 #include "chrome/browser/status_icons/status_icon.h"
 
-@class MenuController;
+@class MenuControllerCocoa;
 @class NSStatusItem;
 @class StatusItemController;
 
@@ -58,7 +58,7 @@ class StatusIconMac : public StatusIcon {
 
   // Status menu shown when right-clicking the system icon, if it has been
   // created by |UpdatePlatformContextMenu|.
-  base::scoped_nsobject<MenuController> menu_;
+  base::scoped_nsobject<MenuControllerCocoa> menu_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusIconMac);
 };

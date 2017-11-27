@@ -28,7 +28,7 @@ const CGFloat kNativeCheckmarkWidth = 18;
 const CGFloat kNativeMenuItemHeight = 18;
 
 // Returns the first item in |menu_controller|'s menu that will be checked.
-NSMenuItem* FirstCheckedItem(MenuController* menu_controller) {
+NSMenuItem* FirstCheckedItem(MenuControllerCocoa* menu_controller) {
   for (NSMenuItem* item in [[menu_controller menu] itemArray]) {
     if ([menu_controller model]->IsItemCheckedAt([item tag]))
       return item;
@@ -133,8 +133,8 @@ MenuRunnerImplCocoa::MenuRunnerImplCocoa(
       delete_after_run_(false),
       closing_event_time_(base::TimeTicks()),
       on_menu_closed_callback_(on_menu_closed_callback) {
-  menu_controller_.reset(
-      [[MenuController alloc] initWithModel:menu useWithPopUpButtonCell:NO]);
+  menu_controller_.reset([[MenuControllerCocoa alloc] initWithModel:menu
+                                             useWithPopUpButtonCell:NO]);
   [menu_controller_ setPostItemSelectedAsTask:YES];
 }
 

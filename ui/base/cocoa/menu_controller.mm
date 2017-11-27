@@ -52,7 +52,7 @@ NSString* const kMenuControllerMenuDidCloseNotification =
     @"MenuControllerMenuDidClose";
 
 // Internal methods.
-@interface MenuController ()
+@interface MenuControllerCocoa ()
 // Adds a separator item at the given index. As the separator doesn't need
 // anything from the model, this method doesn't need the model index as the
 // other method below does.
@@ -74,7 +74,7 @@ NSString* const kMenuControllerMenuDidCloseNotification =
 @interface ResponsiveNSMenuItem : NSMenuItem
 @end
 
-@implementation MenuController {
+@implementation MenuControllerCocoa {
   BOOL useWithPopUpButtonCell_;  // If YES, 0th item is blank
   BOOL isMenuOpen_;
   BOOL postItemSelectedAsTask_;
@@ -157,7 +157,7 @@ NSString* const kMenuControllerMenuDidCloseNotification =
   base::string16 label16 = model->GetLabelAt(index);
   int maxWidth = [self maxWidthForMenuModel:model modelIndex:index];
   if (maxWidth != -1)
-    label16 = [MenuController elideMenuTitle:label16 toWidth:maxWidth];
+    label16 = [MenuControllerCocoa elideMenuTitle:label16 toWidth:maxWidth];
 
   NSString* label = l10n_util::FixUpWindowsStyleLabel(label16);
   base::scoped_nsobject<NSMenuItem> item([[ResponsiveNSMenuItem alloc]
@@ -255,12 +255,12 @@ NSString* const kMenuControllerMenuDidCloseNotification =
     const int uiEventFlags = ui::EventFlagsFromNative([NSApp currentEvent]);
 
     // Take care here to retain |menu_| in the block, but not |self|. Since the
-    // block may run before -menuDidClose:, a release of the MenuController
+    // block may run before -menuDidClose:, a release of the MenuControllerCocoa
     // will think the menu is open, and invoke -cancel. So if the delegate is
-    // bad (see below), and decides to release the MenuController in its menu
-    // action, ensure the -dealloc happens there. To do otherwise risks |model_|
-    // being deleted when it is used in -cancel, whereas that is less likely if
-    // the -cancel happens in the delegate method.
+    // bad (see below), and decides to release the MenuControllerCocoa in its
+    // menu action, ensure the -dealloc happens there. To do otherwise risks
+    // |model_| being deleted when it is used in -cancel, whereas that is less
+    // likely if the -cancel happens in the delegate method.
     NSMenu* menu = menu_;
 
     postedItemSelectedTask_ =
@@ -272,10 +272,10 @@ NSString* const kMenuControllerMenuDidCloseNotification =
             NOTREACHED();
 
           // Ensure consumers that use -postItemSelectedAsTask:YES have not
-          // destroyed the MenuController in the menu action. AppKit will still
-          // send messages to [item target] (the MenuController), and the target
-          // can not be set to nil here since that prevents re-use of the menu
-          // for well-behaved consumers.
+          // destroyed the MenuControllerCocoa in the menu action. AppKit will
+          // still send messages to [item target] (the MenuControllerCocoa), and
+          // the target can not be set to nil here since that prevents re-use of
+          // the menu for well-behaved consumers.
           CHECK([menu delegate]);  // Note: set to nil in -dealloc.
         }));
     base::ThreadTaskRunnerHandle::Get()->PostTask(

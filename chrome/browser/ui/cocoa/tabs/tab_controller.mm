@@ -72,7 +72,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   BOOL selected_;
   std::unique_ptr<ui::SimpleMenuModel> contextMenuModel_;
   std::unique_ptr<MenuDelegate> contextMenuDelegate_;
-  base::scoped_nsobject<MenuController> contextMenuController_;
+  base::scoped_nsobject<MenuControllerCocoa> contextMenuController_;
 
   enum AttentionType : int {
     kPinnedTabTitleChange = 1 << 0,     // The title of a pinned tab changed.
@@ -233,9 +233,9 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   contextMenuModel_.reset(
       [target_ contextMenuModelForController:self
                                 menuDelegate:contextMenuDelegate_.get()]);
-  contextMenuController_.reset(
-      [[MenuController alloc] initWithModel:contextMenuModel_.get()
-                     useWithPopUpButtonCell:NO]);
+  contextMenuController_.reset([[MenuControllerCocoa alloc]
+               initWithModel:contextMenuModel_.get()
+      useWithPopUpButtonCell:NO]);
   return [contextMenuController_ menu];
 }
 

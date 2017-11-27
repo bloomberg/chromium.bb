@@ -25,7 +25,7 @@ UI_BASE_EXPORT extern NSString* const kMenuControllerMenuDidCloseNotification;
 // that particular item. It is important that the model outlives this object
 // as it only maintains weak references.
 UI_BASE_EXPORT
-@interface MenuController : NSObject<NSMenuDelegate> {
+@interface MenuControllerCocoa : NSObject<NSMenuDelegate> {
  @protected
   ui::MenuModel* model_;  // Weak.
   base::scoped_nsobject<NSMenu> menu_;
@@ -77,7 +77,7 @@ UI_BASE_EXPORT
 @end
 
 // Protected methods that subclassers can override and/or invoke.
-@interface MenuController (Protected)
+@interface MenuControllerCocoa (Protected)
 
 // Called before the menu is to be displayed to update the state (enabled,
 // radio, etc) of each item in the menu. Also will update the title if the item

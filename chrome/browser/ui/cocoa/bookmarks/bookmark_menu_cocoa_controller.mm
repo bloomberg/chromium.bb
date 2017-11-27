@@ -49,8 +49,9 @@ NSMenuItem* GetItemWithSubmenu(NSMenu* submenu) {
 }
 
 + (NSString*)menuTitleForNode:(const BookmarkNode*)node {
-  base::string16 title = [MenuController elideMenuTitle:node->GetTitle()
-                                          toWidth:kMaximumMenuPixelsWide];
+  base::string16 title =
+      [MenuControllerCocoa elideMenuTitle:node->GetTitle()
+                                  toWidth:kMaximumMenuPixelsWide];
   return base::SysUTF16ToNSString(title);
 }
 

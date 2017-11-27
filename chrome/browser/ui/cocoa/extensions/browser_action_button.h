@@ -14,7 +14,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_button_cocoa.h"
 
 @class BrowserActionsController;
-@class MenuController;
+@class MenuControllerCocoa;
 class ToolbarActionViewController;
 class ToolbarActionViewDelegateBridge;
 
@@ -35,7 +35,7 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
   std::unique_ptr<ToolbarActionViewDelegateBridge> viewControllerDelegate_;
 
   // The context menu controller.
-  base::scoped_nsobject<MenuController> contextMenuController_;
+  base::scoped_nsobject<MenuControllerCocoa> contextMenuController_;
 
   // A substitute context menu to use in testing. We need this because normally
   // menu code is blocking, making it difficult to test.
