@@ -62,16 +62,13 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     uint32_t download_id,
     bool is_parallel_request) {
-  mojom::URLLoaderFactoryPtr* factory =
-      params->url().SchemeIs(url::kBlobScheme)
-          ? url_loader_factory_getter->GetBlobFactory()
-          : url_loader_factory_getter->GetNetworkFactory();
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(request),
       std::make_unique<DownloadSaveInfo>(params->GetSaveInfo()), download_id,
       params->guid(), is_parallel_request, params->is_transient(),
       params->fetch_error_body());
-  downloader->Start(factory, file_system_context, std::move(params));
+  downloader->Start(url_loader_factory_getter, file_system_context,
+                    std::move(params));
   return downloader;
 }
 
@@ -122,11 +119,14 @@ ResourceDownloader::ResourceDownloader(
 ResourceDownloader::~ResourceDownloader() = default;
 
 void ResourceDownloader::Start(
-    mojom::URLLoaderFactoryPtr* factory,
+    scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     scoped_refptr<storage::FileSystemContext> file_system_context,
     std::unique_ptr<DownloadUrlParameters> download_url_parameters) {
   callback_ = download_url_parameters->callback();
   if (download_url_parameters->url().SchemeIs(url::kBlobScheme)) {
+    // To avoid race conditions with blob URL being immediately revoked after
+    // the download starting (which ThrottlingURLLoader doesn't handle), call
+    // directly into BlobURLLoaderFactory for blob URLs.
     mojom::URLLoaderRequest url_loader_request;
     mojom::URLLoaderClientPtr client;
     blob_client_binding_.Bind(mojo::MakeRequest(&client));
@@ -135,7 +135,8 @@ void ResourceDownloader::Start(
         std::move(client), download_url_parameters->GetBlobDataHandle());
   } else {
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
-        factory->get(), std::vector<std::unique_ptr<URLLoaderThrottle>>(),
+        url_loader_factory_getter->GetNetworkFactory()->get(),
+        std::vector<std::unique_ptr<URLLoaderThrottle>>(),
         0,  // routing_id
         0,  // request_id
         mojom::kURLLoadOptionSendSSLInfoWithResponse |
