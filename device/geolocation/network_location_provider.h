@@ -18,8 +18,8 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "device/geolocation/geolocation_export.h"
-#include "device/geolocation/location_provider.h"
 #include "device/geolocation/network_location_request.h"
+#include "device/geolocation/public/cpp/location_provider.h"
 #include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "device/geolocation/wifi_data_provider_manager.h"
 

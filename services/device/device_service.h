@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "device/geolocation/geolocation_provider_impl.h"
 #include "device/geolocation/public/interfaces/geolocation_context.mojom.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -48,18 +49,20 @@ class PowerMonitorMessageBroadcaster;
 class TimeZoneMonitor;
 
 #if defined(OS_ANDROID)
-// NOTE: See the comments on the definitions of |WakeLockContextCallback|
-// and NFCDelegate.java to understand the semantics and usage of these
-// parameters.
+// NOTE: See the comments on the definitions of |WakeLockContextCallback|,
+// |CustomLocationProviderCallback| and NFCDelegate.java to understand the
+// semantics and usage of these parameters.
 std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const WakeLockContextCallback& wake_lock_context_callback,
+    const CustomLocationProviderCallback& custom_location_provider_callback,
     const base::android::JavaRef<jobject>& java_nfc_delegate);
 #else
 std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    const CustomLocationProviderCallback& custom_location_provider_callback);
 #endif
 
 class DeviceService : public service_manager::Service {

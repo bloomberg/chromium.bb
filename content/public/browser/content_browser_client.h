@@ -55,6 +55,10 @@ class CommandLine;
 class FilePath;
 }
 
+namespace device {
+class LocationProvider;
+}
+
 namespace gfx {
 class ImageSkia;
 }
@@ -473,6 +477,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the IO thread.
   virtual net::URLRequestContext* OverrideRequestContextForURL(
       const GURL& url, ResourceContext* context);
+
+  // Allows the embedder to override the LocationProvider implementation.
+  // Return nullptr to indicate the default one for the platform should be
+  // created.
+  virtual std::unique_ptr<device::LocationProvider>
+  OverrideSystemLocationProvider();
 
   // Allows the embedder to provide a URLRequestContextGetter to use for network
   // geolocation queries.

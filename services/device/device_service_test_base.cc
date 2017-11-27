@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "device/geolocation/public/cpp/location_provider.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/device_service.h"
 #include "services/device/public/interfaces/constants.mojom.h"
@@ -20,6 +21,11 @@ namespace device {
 namespace {
 
 const char kTestServiceName[] = "device_unittests";
+
+// Simply return a nullptr which means no CustomLocationProvider from embedder.
+std::unique_ptr<LocationProvider> GetCustomLocationProviderForTest() {
+  return nullptr;
+}
 
 // The test service responsible to package Device Service.
 class ServiceTestClient : public service_manager::test::ServiceTestClient,
@@ -49,12 +55,14 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
     if (name == device::mojom::kServiceName) {
 #if defined(OS_ANDROID)
       device_service_context_.reset(new service_manager::ServiceContext(
-          CreateDeviceService(file_task_runner_, io_task_runner_,
-                              wake_lock_context_callback_, nullptr),
+          CreateDeviceService(
+              file_task_runner_, io_task_runner_, wake_lock_context_callback_,
+              base::Bind(&GetCustomLocationProviderForTest), nullptr),
           std::move(request)));
 #else
       device_service_context_.reset(new service_manager::ServiceContext(
-          CreateDeviceService(file_task_runner_, io_task_runner_),
+          CreateDeviceService(file_task_runner_, io_task_runner_,
+                              base::Bind(&GetCustomLocationProviderForTest)),
           std::move(request)));
 #endif
     }

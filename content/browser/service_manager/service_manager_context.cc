@@ -425,17 +425,21 @@ ServiceManagerContext::ServiceManagerContext() {
   java_nfc_delegate.Reset(Java_ContentNfcDelegate_create(env));
   DCHECK(!java_nfc_delegate.is_null());
 
-  // See the comments on wake_lock_context_host.h and ContentNfcDelegate.java
-  // respectively for comments on those parameters.
-  device_info.factory =
-      base::Bind(&device::CreateDeviceService, device_blocking_task_runner,
-                 BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-                 base::Bind(&WakeLockContextHost::GetNativeViewForContext),
-                 std::move(java_nfc_delegate));
+  // See the comments on wake_lock_context_host.h, content_browser_client.h and
+  // ContentNfcDelegate.java respectively for comments on those parameters.
+  device_info.factory = base::Bind(
+      &device::CreateDeviceService, device_blocking_task_runner,
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+      base::Bind(&WakeLockContextHost::GetNativeViewForContext),
+      base::Bind(&ContentBrowserClient::OverrideSystemLocationProvider,
+                 base::Unretained(GetContentClient()->browser())),
+      std::move(java_nfc_delegate));
 #else
-  device_info.factory =
-      base::Bind(&device::CreateDeviceService, device_blocking_task_runner,
-                 BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  device_info.factory = base::Bind(
+      &device::CreateDeviceService, device_blocking_task_runner,
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+      base::Bind(&ContentBrowserClient::OverrideSystemLocationProvider,
+                 base::Unretained(GetContentClient()->browser())));
 #endif
   device_info.task_runner = base::ThreadTaskRunnerHandle::Get();
   packaged_services_connection_->AddEmbeddedService(device::mojom::kServiceName,

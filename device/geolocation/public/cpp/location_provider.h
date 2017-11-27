@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_GEOLOCATION_LOCATION_PROVIDER_H_
-#define DEVICE_GEOLOCATION_LOCATION_PROVIDER_H_
+#ifndef DEVICE_GEOLOCATION_PUBLIC_CPP_LOCATION_PROVIDER_H_
+#define DEVICE_GEOLOCATION_PUBLIC_CPP_LOCATION_PROVIDER_H_
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/public/interfaces/geoposition.mojom.h"
 
 namespace device {
 
 // The interface for providing location information.
-class DEVICE_GEOLOCATION_EXPORT LocationProvider {
+class LocationProvider {
  public:
   virtual ~LocationProvider() {}
 
@@ -50,4 +49,4 @@ class DEVICE_GEOLOCATION_EXPORT LocationProvider {
 
 }  // namespace device
 
-#endif  // DEVICE_GEOLOCATION_LOCATION_PROVIDER_H_
+#endif  // DEVICE_GEOLOCATION_PUBLIC_CPP_LOCATION_PROVIDER_H_

@@ -214,6 +214,7 @@ source_set("test_support") {
     ":lib",
     "//base",
     "//base/test:test_support",
+    "//device/geolocation/public/cpp",
     "//mojo/public/cpp/bindings",
     "//net",
     "//net:test_support",
