@@ -131,7 +131,7 @@ CreateProviderHostForServiceWorkerContext(
     ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
   ServiceWorkerProviderHostInfo info(
       kInvalidServiceWorkerProviderId, MSG_ROUTING_NONE,
-      SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, is_parent_frame_secure);
+      SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER, is_parent_frame_secure);
   std::unique_ptr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateForController(std::move(context));
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info =

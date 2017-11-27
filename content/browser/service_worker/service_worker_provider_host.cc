@@ -163,7 +163,7 @@ ServiceWorkerProviderHost::PreCreateForController(
       ChildProcessHost::kInvalidUniqueID,
       ServiceWorkerProviderHostInfo(NextBrowserProvidedProviderId(),
                                     MSG_ROUTING_NONE,
-                                    SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
+                                    SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER,
                                     true /* is_parent_frame_secure */),
       std::move(context), nullptr));
   return host;
@@ -196,7 +196,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       interface_provider_binding_(this) {
   DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, info_.type);
 
-  if (info_.type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER) {
+  if (info_.type == SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER) {
     // Actual |render_process_id| will be set after choosing a process for the
     // controller, and |render_thread id| will be set when the service worker
     // context gets started.
@@ -211,11 +211,11 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
   context_->RegisterProviderHostByClientID(client_uuid_, this);
 
   // |client_| and |binding_| will be bound on CompleteNavigationInitialized
-  // (PlzNavigate) or on CompleteStartWorkerPreparation (providers for
-  // controller).
+  // (providers for clients created during PlzNavigate) or on
+  // CompleteStartWorkerPreparation (providers for service workers).
   if (!info_.client_ptr_info.is_valid() && !info_.host_request.is_pending()) {
     DCHECK(IsBrowserSideNavigationEnabled() ||
-           info_.type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER);
+           info_.type == SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER);
     return;
   }
 
@@ -338,7 +338,7 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
   if (previous_version.get())
     previous_version->RemoveControllee(this);
 
-  // SetController message should be sent only for controllees.
+  // SetController message should be sent only for clients.
   DCHECK(IsProviderForClient());
   SendSetControllerServiceWorker(version, notify_controllerchange);
 }
@@ -348,7 +348,7 @@ bool ServiceWorkerProviderHost::IsProviderForClient() const {
     case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
     case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
       return true;
-    case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
+    case SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER:
       return false;
     case SERVICE_WORKER_PROVIDER_UNKNOWN:
       NOTREACHED() << info_.type;
@@ -364,7 +364,7 @@ blink::mojom::ServiceWorkerClientType ServiceWorkerProviderHost::client_type()
       return blink::mojom::ServiceWorkerClientType::kWindow;
     case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
       return blink::mojom::ServiceWorkerClientType::kSharedWorker;
-    case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
+    case SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER:
     case SERVICE_WORKER_PROVIDER_UNKNOWN:
       NOTREACHED() << info_.type;
   }
@@ -542,7 +542,7 @@ void ServiceWorkerProviderHost::PostMessageToClient(
 void ServiceWorkerProviderHost::CountFeature(uint32_t feature) {
   if (!dispatcher_host_)
     return;
-  // CountFeature message should be sent only for controllees.
+  // CountFeature message should be sent only for clients.
   DCHECK(IsProviderForClient());
   DCHECK_LT(feature,
             static_cast<uint32_t>(blink::mojom::WebFeature::kNumberOfFeatures));
@@ -687,7 +687,7 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   DCHECK(context_);
   DCHECK_EQ(kInvalidEmbeddedWorkerThreadId, render_thread_id_);
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
-  DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, provider_type());
+  DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER, provider_type());
   DCHECK(!running_hosted_version_);
 
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);

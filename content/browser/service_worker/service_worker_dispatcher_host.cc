@@ -241,7 +241,7 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
                      this, worker, message, source_origin, sent_message_ports,
                      base::nullopt, callback));
       break;
-    case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER: {
+    case SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER: {
       // Clamp timeout to the sending worker's remaining timeout, to prevent
       // postMessage from keeping workers alive forever.
       base::TimeDelta timeout =
@@ -307,9 +307,9 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
                                                  std::move(info), AsWeakPtr());
     GetContext()->AddProviderHost(std::move(provider_host));
   } else {
-    // Provider host for controller should be pre-created on StartWorker in
-    // ServiceWorkerVersion.
-    if (info.type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER) {
+    // Provider hosts for service workers should be pre-created in StartWorker
+    // in ServiceWorkerVersion.
+    if (info.type == SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER) {
       bad_message::ReceivedBadMessage(
           this, bad_message::SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_CONTROLLER);
       return;

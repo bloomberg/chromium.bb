@@ -46,7 +46,7 @@ WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
       DCHECK(context_->container_host());
       context_->SetWebServiceWorkerProvider(weak_factory_.GetWeakPtr());
       break;
-    case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
+    case SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER:
       // Do nothing.
       break;
     case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:

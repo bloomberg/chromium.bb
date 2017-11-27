@@ -191,9 +191,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // The running version, if any, that this provider is providing resource
   // loads for.
   ServiceWorkerVersion* running_hosted_version() const {
-    // Only providers for controllers can host a running version.
     DCHECK(!running_hosted_version_ ||
-           info_.type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER);
+           info_.type == SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER);
     return running_hosted_version_.get();
   }
 
@@ -286,11 +285,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       ServiceWorkerProviderHostInfo info,
       base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host);
 
-  // Completes initialization of provider hosts for controllers and returns the
-  // value to create ServiceWorkerNetworkProvider on the renderer which will be
-  // connected to this instance.
-  // This instance will keep the reference to |hosted_version|, so please be
-  // careful not to create a reference cycle.
+  // Completes initialization of this provider host (which is for hosting a
+  // service worker). It is called once a renderer process has been found to
+  // host the worker. Returns the info needed for creating a
+  // ServiceWorkerNetworkProvider on the renderer which will be connected to
+  // this instance. This instance will keep the reference to |hosted_version|,
+  // so please be careful not to create a reference cycle.
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr
   CompleteStartWorkerPreparation(
       int process_id,

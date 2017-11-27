@@ -219,7 +219,7 @@ TEST_F(ServiceWorkerProviderContextTest, CreateForController) {
   // Set up ServiceWorkerProviderContext for ServiceWorkerGlobalScope.
   const int kProviderId = 10;
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      kProviderId, SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, nullptr, nullptr,
+      kProviderId, SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER, nullptr, nullptr,
       nullptr /* loader_factory_getter */);
 
   // The passed references should be adopted and owned by the provider context.
@@ -428,7 +428,7 @@ TEST_F(ServiceWorkerProviderContextTest,
   // Set up ServiceWorkerProviderContext for ServiceWorkerGlobalScope.
   const int kProviderId = 10;
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      kProviderId, SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, nullptr, nullptr,
+      kProviderId, SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER, nullptr, nullptr,
       nullptr /* loader_factory_getter */);
 
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info =

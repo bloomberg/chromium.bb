@@ -42,16 +42,10 @@ struct ServiceWorkerProviderContextDeleter;
 // the same underlying entity hold strong references to a shared instance of
 // this class.
 //
-// The ServiceWorkerProviderContext has different roles depending on if it's for
-// a "controllee" (a Document or Worker execution context), or a "controller" (a
-// service worker execution context).
-//  - For controllees, it's used for keeping the controller alive to create
-//    controllee's ServiceWorkerContainer#controller. The reference to the
-//    controller is kept until SetController() is called with an
-//    invalid worker info.
-//  - For controllers, it's used for keeping the associated registration and
-//    its versions alive to create the controller's
-//    ServiceWorkerGlobalScope#registration.
+// A service worker provider may exist for either a service worker client or a
+// service worker itself. Therefore, this class has different roles depending on
+// its provider type. See the implementation of ProviderStateForClient and
+// ProviderStateForServiceWorker for details.
 //
 // Created and destructed on the main thread. Unless otherwise noted, all
 // methods are called on the main thread.
@@ -180,8 +174,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   friend class ServiceWorkerProviderContextTest;
   friend class WebServiceWorkerRegistrationImpl;
   friend struct ServiceWorkerProviderContextDeleter;
-  struct ControlleeState;
-  struct ControllerState;
+  struct ProviderStateForClient;
+  struct ProviderStateForServiceWorker;
 
   ~ServiceWorkerProviderContext() override;
   void DestructOnMainThread() const;
@@ -228,9 +222,14 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // Note: Currently this is always bound on main thread.
   mojom::ServiceWorkerContainerHostAssociatedPtr container_host_;
 
-  // Either |controllee_state_| or |controller_state_| is non-null.
-  std::unique_ptr<ControlleeState> controllee_state_;
-  std::unique_ptr<ControllerState> controller_state_;
+  // Either |state_for_client_| or |state_for_service_worker_| is non-null.
+  // State for service worker clients.
+  std::unique_ptr<ProviderStateForClient> state_for_client_;
+  // State for service workers.
+  std::unique_ptr<ProviderStateForServiceWorker> state_for_service_worker_;
+
+  // NOTE: New members should usually be added to either service_worker_state_
+  // or client_state_. Not here!
 
   base::WeakPtrFactory<ServiceWorkerProviderContext> weak_factory_;
 
