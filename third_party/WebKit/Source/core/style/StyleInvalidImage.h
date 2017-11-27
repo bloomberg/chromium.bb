@@ -28,6 +28,7 @@ class StyleInvalidImage final : public StyleImage {
   }
 
   CSSValue* ComputedCSSValue() const override { return CssValue(); }
+  bool CanRender() const override { return false; }
 
   LayoutSize ImageSize(const Document&,
                        float /*multiplier*/,
