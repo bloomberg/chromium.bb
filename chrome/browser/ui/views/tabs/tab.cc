@@ -8,6 +8,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
@@ -17,7 +18,6 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_recorder.h"
 #include "cc/paint/paint_shader.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/alert_indicator_button.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
@@ -34,7 +35,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/grit/components_scaled_resources.h"
-#include "components/strings/grit/components_strings.h"
 #include "content/public/common/url_constants.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
@@ -93,8 +93,6 @@ const double kSelectedTabOpacity = 0.3;
 
 // Inactive selected tabs have their throb value scaled by this.
 const double kSelectedTabThrobScale = 0.95 - kSelectedTabOpacity;
-
-const char kTabCloseButtonName[] = "TabCloseButton";
 
 ////////////////////////////////////////////////////////////////////////////////
 // Drawing and utility functions
@@ -254,100 +252,6 @@ class Tab::FaviconCrashAnimation : public gfx::LinearAnimation,
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabCloseButton
-//
-//  This is a Button subclass that causes middle clicks to be forwarded to the
-//  parent View by explicitly not handling them in OnMousePressed.
-class Tab::TabCloseButton : public views::ImageButton,
-                            public views::MaskedTargeterDelegate {
- public:
-  explicit TabCloseButton(Tab* tab)
-      : views::ImageButton(tab),
-        tab_(tab) {
-    SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
-  }
-
-  ~TabCloseButton() override {}
-
-  // views::View:
-  View* GetTooltipHandlerForPoint(const gfx::Point& point) override {
-    // Tab close button has no children, so tooltip handler should be the same
-    // as the event handler.
-    // In addition, a hit test has to be performed for the point (as
-    // GetTooltipHandlerForPoint() is responsible for it).
-    if (!HitTestPoint(point))
-      return NULL;
-    return GetEventHandlerForPoint(point);
-  }
-
-  bool OnMousePressed(const ui::MouseEvent& event) override {
-    tab_->controller_->OnMouseEventInTab(this, event);
-
-    bool handled = ImageButton::OnMousePressed(event);
-    // Explicitly mark midle-mouse clicks as non-handled to ensure the tab
-    // sees them.
-    return !event.IsMiddleMouseButton() && handled;
-  }
-
-  void OnMouseMoved(const ui::MouseEvent& event) override {
-    tab_->controller_->OnMouseEventInTab(this, event);
-    Button::OnMouseMoved(event);
-  }
-
-  void OnMouseReleased(const ui::MouseEvent& event) override {
-    tab_->controller_->OnMouseEventInTab(this, event);
-    Button::OnMouseReleased(event);
-  }
-
-  void OnGestureEvent(ui::GestureEvent* event) override {
-    // Consume all gesture events here so that the parent (Tab) does not
-    // start consuming gestures.
-    ImageButton::OnGestureEvent(event);
-    event->SetHandled();
-  }
-
-  const char* GetClassName() const override { return kTabCloseButtonName; }
-
- private:
-  // views::MaskedTargeterDelegate:
-  View* TargetForRect(View* root, const gfx::Rect& rect) override {
-    CHECK_EQ(root, this);
-
-    if (!views::UsePointBasedTargeting(rect))
-      return ViewTargeterDelegate::TargetForRect(root, rect);
-
-    // Ignore the padding set on the button.
-    gfx::Rect contents_bounds = GetMirroredRect(GetContentsBounds());
-
-#if defined(USE_AURA)
-    // Include the padding in hit-test for touch events.
-    // TODO(pkasting): It seems like touch events would generate rects rather
-    // than points and thus use the TargetForRect() call above.  If this is
-    // reached, it may be from someone calling GetEventHandlerForPoint() while a
-    // touch happens to be occurring.  In such a case, maybe we don't want this
-    // code to run?  It's possible this block should be removed, or maybe this
-    // whole function deleted.  Note that in these cases, we should probably
-    // also remove the padding on the close button bounds (see Tab::Layout()),
-    // as it will be pointless.
-    if (aura::Env::GetInstance()->is_touch_down())
-      contents_bounds = GetLocalBounds();
-#endif
-
-    return contents_bounds.Intersects(rect) ? this : parent();
-  }
-
-  // We need to define this so hit-testing won't include the border region.
-  bool GetHitTestMask(gfx::Path* mask) const override {
-    mask->addRect(gfx::RectToSkRect(GetMirroredRect(GetContentsBounds())));
-    return true;
-  }
-
-  Tab* tab_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabCloseButton);
-};
-
-////////////////////////////////////////////////////////////////////////////////
 // ThrobberView
 //
 // A Layer-backed view for updating a waiting or loading tab throbber.
@@ -422,25 +326,12 @@ const char Tab::kViewClassName[] = "Tab";
 
 Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
     : controller_(controller),
-      closing_(false),
-      dragging_(false),
-      detached_(false),
-      favicon_hiding_offset_(0),
-      should_display_crashed_favicon_(false),
       pulse_animation_(this),
       crash_icon_animation_(base::MakeUnique<FaviconCrashAnimation>(this)),
       animation_container_(container),
-      throbber_(nullptr),
-      alert_indicator_button_(nullptr),
-      close_button_(nullptr),
       title_(new views::Label()),
       title_animation_(this),
-      tab_activated_with_last_tap_down_(false),
-      hover_controller_(this),
-      showing_icon_(false),
-      showing_alert_indicator_(false),
-      showing_close_button_(false),
-      button_color_(SK_ColorTRANSPARENT) {
+      hover_controller_(this) {
   DCHECK(controller);
 
   // So we get don't get enter/exit on children and don't prematurely stop the
@@ -469,22 +360,11 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
   alert_indicator_button_ = new AlertIndicatorButton(this);
   AddChildView(alert_indicator_button_);
 
-  close_button_ = new TabCloseButton(this);
-  close_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
-  // The normal image is set by OnButtonColorMaybeChanged() because it depends
-  // on the current theme and active state.  The hovered and pressed images
-  // don't depend on the these, so we can set them here.
-  const gfx::ImageSkia& hovered = gfx::CreateVectorIcon(
-      kTabCloseHoveredPressedIcon, SkColorSetRGB(0xDB, 0x44, 0x37));
-  const gfx::ImageSkia& pressed = gfx::CreateVectorIcon(
-      kTabCloseHoveredPressedIcon, SkColorSetRGB(0xA8, 0x35, 0x2A));
-  close_button_->SetImage(views::Button::STATE_HOVERED, &hovered);
-  close_button_->SetImage(views::Button::STATE_PRESSED, &pressed);
-
-  // Disable animation so that the red danger sign shows up immediately
-  // to help avoid mis-clicks.
-  close_button_->SetAnimationDuration(0);
+  // Unretained is safe here because this class outlives its close button, and
+  // the controller outlives this Tab.
+  close_button_ = new TabCloseButton(
+      this, base::BindRepeating(&TabController::OnMouseEventInTab,
+                                base::Unretained(controller_)));
   AddChildView(close_button_);
 
   set_context_menu_controller(this);
@@ -1464,10 +1344,7 @@ void Tab::OnButtonColorMaybeChanged() {
     button_color_ = new_button_color;
     title_->SetEnabledColor(title_color);
     alert_indicator_button_->OnParentTabButtonColorChanged();
-    const gfx::ImageSkia& close_button_normal_image =
-        gfx::CreateVectorIcon(kTabCloseNormalIcon, button_color_);
-    close_button_->SetImage(views::Button::STATE_NORMAL,
-                            &close_button_normal_image);
+    close_button_->SetTabColor(button_color_);
   }
 }
 

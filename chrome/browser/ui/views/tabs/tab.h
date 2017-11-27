@@ -27,6 +27,7 @@
 #include "ui/views/view.h"
 
 class AlertIndicatorButton;
+class TabCloseButton;
 class TabController;
 
 namespace gfx {
@@ -36,7 +37,6 @@ class LinearAnimation;
 class ThrobAnimation;
 }
 namespace views {
-class ImageButton;
 class Label;
 }
 
@@ -174,7 +174,6 @@ class Tab : public gfx::AnimationDelegate,
   // The animation object used to swap the favicon with the sad tab icon.
   class FaviconCrashAnimation;
 
-  class TabCloseButton;
   class ThrobberView;
 
   // gfx::AnimationDelegate:
@@ -314,19 +313,19 @@ class Tab : public gfx::AnimationDelegate,
   TabRendererData data_;
 
   // True if the tab is being animated closed.
-  bool closing_;
+  bool closing_ = false;
 
   // True if the tab is being dragged.
-  bool dragging_;
+  bool dragging_ = false;
 
   // True if the tab has been detached.
-  bool detached_;
+  bool detached_ = false;
 
   // The offset used to animate the favicon location. This is used when the tab
   // crashes.
-  int favicon_hiding_offset_;
+  int favicon_hiding_offset_ = 0;
 
-  bool should_display_crashed_favicon_;
+  bool should_display_crashed_favicon_ = false;
 
   enum AttentionType : int {
     kPinnedTabTitleChange = 1 << 0,     // The title of a pinned tab changed.
@@ -343,9 +342,9 @@ class Tab : public gfx::AnimationDelegate,
 
   scoped_refptr<gfx::AnimationContainer> animation_container_;
 
-  ThrobberView* throbber_;
-  AlertIndicatorButton* alert_indicator_button_;
-  views::ImageButton* close_button_;
+  ThrobberView* throbber_ = nullptr;
+  AlertIndicatorButton* alert_indicator_button_ = nullptr;
+  TabCloseButton* close_button_ = nullptr;
 
   views::Label* title_;
   // The title's bounds are animated when switching between showing and hiding
@@ -354,7 +353,7 @@ class Tab : public gfx::AnimationDelegate,
   gfx::Rect target_title_bounds_;
   gfx::LinearAnimation title_animation_;
 
-  bool tab_activated_with_last_tap_down_;
+  bool tab_activated_with_last_tap_down_ = false;
 
   views::GlowHoverController hover_controller_;
 
@@ -366,18 +365,18 @@ class Tab : public gfx::AnimationDelegate,
 
   // Whether we're showing the icon. It is cached so that we can detect when it
   // changes and layout appropriately.
-  bool showing_icon_;
+  bool showing_icon_ = false;
 
   // Whether we're showing the alert indicator. It is cached so that we can
   // detect when it changes and layout appropriately.
-  bool showing_alert_indicator_;
+  bool showing_alert_indicator_ = false;
 
   // Whether we are showing the close button. It is cached so that we can
   // detect when it changes and layout appropriately.
-  bool showing_close_button_;
+  bool showing_close_button_ = false;
 
   // The current color of the alert indicator and close button icons.
-  SkColor button_color_;
+  SkColor button_color_ = SK_ColorTRANSPARENT;
 
   // The favicon for the tab. This might be the sad tab icon or a copy of
   // data().favicon and may be modified for theming. It is created on demand
