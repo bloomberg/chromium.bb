@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <unistd.h>
+#include "tools/cygprofile/lightweight_cygprofile.h"
 
 #include <atomic>
 #include <cstdio>
+#include <cstring>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "base/android/library_loader/anchor_functions.h"
@@ -22,6 +22,7 @@
 #error Only supported on ARM.
 #endif  // !defined(ARCH_CPU_ARMEL)
 
+namespace cygprofile {
 namespace {
 
 // These are large overestimates, which is not an issue, as the data is
@@ -64,29 +65,28 @@ std::atomic<std::atomic<uint32_t>*> g_enabled_and_offsets = {g_offsets};
 // Ordered list of recorded offsets.
 std::atomic<size_t> g_ordered_offsets[kMaxElements];
 // Next free slot.
-std::atomic<size_t> g_ordered_offset_index;
-
-// Stops recording.
-void Disable() {
-  g_enabled_and_offsets.store(nullptr, std::memory_order_relaxed);
-}
+std::atomic<size_t> g_ordered_offsets_index;
 
 // Records that |address| has been reached, if recording is enabled.
 // To avoid any risk of infinite recursion, this *must* *never* call any
 // instrumented function.
+template <bool for_testing>
 void RecordAddress(size_t address) {
   auto* offsets = g_enabled_and_offsets.load(std::memory_order_relaxed);
   if (!offsets)
     return;
 
-  if (UNLIKELY(address < base::android::kStartOfText ||
-               address > base::android::kEndOfText)) {
+  const size_t start =
+      for_testing ? kStartOfTextForTesting : base::android::kStartOfText;
+  const size_t end =
+      for_testing ? kEndOfTextForTesting : base::android::kEndOfText;
+  if (UNLIKELY(address < start || address > end)) {
     Disable();
     LOG(FATAL) << "Return address out of bounds (are dummy functions in the "
                << "orderfile?)";
   }
 
-  size_t offset = address - base::android::kStartOfText;
+  size_t offset = address - start;
   static_assert(sizeof(int) == 4,
                 "Collection and processing code assumes that sizeof(int) == 4");
   size_t index = offset / 4;
@@ -109,13 +109,26 @@ void RecordAddress(size_t address) {
   // Use relaxed ordering, as the value is not published, or used for
   // synchronization.
   size_t ordered_offsets_index =
-      g_ordered_offset_index.fetch_add(1, std::memory_order_relaxed);
+      g_ordered_offsets_index.fetch_add(1, std::memory_order_relaxed);
   if (UNLIKELY(ordered_offsets_index >= kMaxElements)) {
     Disable();
     LOG(FATAL) << "Too many reached offsets";
   }
   g_ordered_offsets[ordered_offsets_index].store(offset,
                                                  std::memory_order_relaxed);
+}
+
+}  // namespace
+
+void Disable() {
+  g_enabled_and_offsets.store(nullptr, std::memory_order_relaxed);
+  std::atomic_thread_fence(std::memory_order_seq_cst);
+}
+
+void SanityChecks() {
+  CHECK_LT(base::android::kEndOfText - base::android::kStartOfText,
+           kMaxTextSizeInBytes);
+  base::android::CheckOrderingSanity();
 }
 
 // Stops recording, and outputs the data to |path|.
@@ -130,7 +143,7 @@ void StopAndDumpToFile(const base::FilePath& path) {
 
   std::atomic_thread_fence(std::memory_order_seq_cst);
   // |g_ordered_offset_index| is the index of the next insertion.
-  size_t count = g_ordered_offset_index.load(std::memory_order_relaxed) - 1;
+  size_t count = g_ordered_offsets_index.load(std::memory_order_relaxed) - 1;
   for (size_t i = 0; i < count; i++) {
     // |g_ordered_offsets| is initialized to 0, so a 0 in the middle of it
     // indicates a case where the index was incremented, but the write is not
@@ -145,33 +158,33 @@ void StopAndDumpToFile(const base::FilePath& path) {
   }
 }
 
-// Disables the logging and dumps the result after |kDelayInSeconds|.
-class DelayedDumper {
- public:
-  DelayedDumper() {
-    CHECK_LT(base::android::kEndOfText - base::android::kStartOfText,
-             kMaxTextSizeInBytes);
-    base::android::CheckOrderingSanity();
+void ResetForTesting() {
+  Disable();
+  g_ordered_offsets_index = 0;
+  memset(reinterpret_cast<uint32_t*>(g_offsets), 0,
+         sizeof(uint32_t) * kBitfieldSize);
+  memset(reinterpret_cast<size_t*>(g_ordered_offsets), 0,
+         sizeof(size_t) * kMaxElements);
+  g_enabled_and_offsets.store(g_offsets);
+}
 
-    std::thread([]() {
-      sleep(kDelayInSeconds);
-      auto path = base::StringPrintf(
-          "/data/local/tmp/chrome/cyglog/"
-          "cygprofile-instrumented-code-hitmap-%d.txt",
-          getpid());
-      StopAndDumpToFile(base::FilePath(path));
-    })
-        .detach();
+void RecordAddressForTesting(size_t address) {
+  return RecordAddress<true>(address);
+}
+
+std::vector<size_t> GetOrderedOffsetsForTesting() {
+  std::vector<size_t> result;
+
+  size_t max_index = g_ordered_offsets_index.load(std::memory_order_relaxed);
+  for (size_t i = 0; i < max_index; ++i) {
+    auto value = g_ordered_offsets[i].load(std::memory_order_relaxed);
+    if (value)
+      result.push_back(value);
   }
+  return result;
+}
 
-  static constexpr int kDelayInSeconds = 30;
-};
-
-// Static initializer on purpose. Will disable instrumentation after
-// |kDelayInSeconds|.
-DelayedDumper g_dump_later;
-
-}  // namespace
+}  // namespace cygprofile
 
 extern "C" {
 
@@ -181,7 +194,8 @@ extern "C" {
 // We cannot use ALWAYS_INLINE from src/base/compiler_specific.h, as it doesn't
 // always map to always_inline, for instance when NDEBUG is not defined.
 __attribute__((__always_inline__)) void mcount() {
-  RecordAddress(reinterpret_cast<size_t>(__builtin_return_address(0)));
+  cygprofile::RecordAddress<false>(
+      reinterpret_cast<size_t>(__builtin_return_address(0)));
 }
 
 void __cyg_profile_func_enter(void* unused1, void* unused2) {

@@ -4,25 +4,42 @@
 
 import("//build/config/android/config.gni")
 
-static_library("cygprofile") {
-  if (use_lightweight_order_profiling) {
-    assert(use_order_profiling)
+if (target_cpu == "arm") {
+  static_library("lightweight_cygprofile") {
     sources = [
       "lightweight_cygprofile.cc",
+      "lightweight_cygprofile.h",
     ]
-  } else {
-    sources = [
-      "cygprofile.cc",
-      "cygprofile.h",
+    deps = [
+      "//base",
     ]
-  }
 
+    configs -= [ "//build/config/android:default_cygprofile_instrumentation" ]
+    configs += [ "//build/config/android:no_cygprofile_instrumentation" ]
+  }
+}
+
+static_library("cygprofile") {
   deps = [
     # This adds uninstrumented symbols to the static library from base.
     # These symbols are likely *not* to be used because there are many other
     # duplicates in other objects/libraries.
     "//base",
   ]
+
+  if (use_lightweight_order_profiling) {
+    assert(use_order_profiling)
+    assert(target_cpu == "arm")
+    sources = [
+      "delayed_dumper.cc",
+    ]
+    deps += [ ":lightweight_cygprofile" ]
+  } else {
+    sources = [
+      "cygprofile.cc",
+      "cygprofile.h",
+    ]
+  }
 
   configs -= [ "//build/config/android:default_cygprofile_instrumentation" ]
   configs += [ "//build/config/android:no_cygprofile_instrumentation" ]
@@ -61,4 +78,24 @@ executable("cygprofile_perftests") {
     "//testing/gtest",
     "//testing/perf",
   ]
+}
+
+if (target_cpu == "arm") {
+  executable("lightweight_cygprofile_perftests") {
+    testonly = true
+
+    sources = [
+      "lightweight_cygprofile_perftest.cc",
+    ]
+
+    configs -= [ "//build/config/android:default_cygprofile_instrumentation" ]
+    configs += [ "//build/config/android:no_cygprofile_instrumentation" ]
+
+    deps = [
+      ":lightweight_cygprofile",
+      "//base",
+      "//testing/gtest",
+      "//testing/perf",
+    ]
+  }
 }
