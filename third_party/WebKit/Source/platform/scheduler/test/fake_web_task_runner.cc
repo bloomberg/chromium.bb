@@ -18,24 +18,23 @@ namespace scheduler {
 
 class FakeWebTaskRunner::Data : public WTF::ThreadSafeRefCounted<Data> {
  public:
-  Data() : time_(0.0) {}
+  Data() {}
 
   void PostTask(base::OnceClosure task, base::TimeDelta delay) {
-    task_queue_.push_back(
-        std::make_pair(std::move(task), time_ + delay.InSecondsF()));
+    task_queue_.emplace_back(std::move(task), time_ + delay);
   }
 
-  using QueueItem = std::pair<base::OnceClosure, double>;
-  std::deque<QueueItem>::iterator FindRunnableTask() {
+  using PendingTask = FakeWebTaskRunner::PendingTask;
+  std::deque<PendingTask>::iterator FindRunnableTask() {
     // TODO(tkent): This should return an item which has the minimum |second|.
     return std::find_if(
         task_queue_.begin(), task_queue_.end(),
-        [&](const QueueItem& item) { return item.second <= time_; });
+        [&](const PendingTask& item) { return item.second <= time_; });
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  std::deque<QueueItem> task_queue_;
-  double time_;
+  std::deque<PendingTask> task_queue_;
+  base::TimeTicks time_;
 
  private:
   ~Data() {}
@@ -80,7 +79,7 @@ FakeWebTaskRunner::FakeWebTaskRunner(
 FakeWebTaskRunner::~FakeWebTaskRunner() {
 }
 
-void FakeWebTaskRunner::SetTime(double new_time) {
+void FakeWebTaskRunner::SetTime(base::TimeTicks new_time) {
   data_->time_ = new_time;
 }
 
@@ -89,7 +88,7 @@ bool FakeWebTaskRunner::RunsTasksInCurrentSequence() {
 }
 
 double FakeWebTaskRunner::MonotonicallyIncreasingVirtualTimeSeconds() const {
-  return data_->time_;
+  return (data_->time_ - base::TimeTicks()).InSecondsF();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -107,8 +106,8 @@ void FakeWebTaskRunner::RunUntilIdle() {
   }
 }
 
-void FakeWebTaskRunner::AdvanceTimeAndRun(double delta_seconds) {
-  data_->time_ += delta_seconds;
+void FakeWebTaskRunner::AdvanceTimeAndRun(base::TimeDelta delta) {
+  data_->time_ += delta;
   for (auto it = data_->FindRunnableTask(); it != data_->task_queue_.end();
        it = data_->FindRunnableTask()) {
     base::OnceClosure task = std::move(*it).first;
@@ -117,7 +116,7 @@ void FakeWebTaskRunner::AdvanceTimeAndRun(double delta_seconds) {
   }
 }
 
-std::deque<std::pair<base::OnceClosure, double>>
+std::deque<std::pair<base::OnceClosure, base::TimeTicks>>
 FakeWebTaskRunner::TakePendingTasksForTesting() {
   return std::move(data_->task_queue_);
 }
