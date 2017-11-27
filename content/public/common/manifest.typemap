@@ -9,7 +9,7 @@ sources = [
   "//content/public/common/manifest_struct_traits.cc",
 ]
 type_mappings = [
-  "blink.mojom.Manifest=content::Manifest",
+  "blink.mojom.Manifest=content::Manifest[nullable_is_same_type]",
   "blink.mojom.ManifestIcon=content::Manifest::Icon",
   "blink.mojom.ManifestRelatedApplication=content::Manifest::RelatedApplication",
   "blink.mojom.ManifestShareTarget=content::Manifest::ShareTarget",

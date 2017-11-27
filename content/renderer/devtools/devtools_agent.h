@@ -17,6 +17,7 @@
 #include "content/common/devtools.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/WebKit/public/platform/modules/manifest/manifest.mojom.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgentClient.h"
 
 namespace blink {
@@ -28,8 +29,6 @@ class GURL;
 namespace content {
 
 class RenderFrameImpl;
-struct Manifest;
-struct ManifestDebugInfo;
 
 // Implementation of content.mojom.DevToolsAgent interface for RenderFrameImpl.
 class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
@@ -91,8 +90,7 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
   void GotManifest(int session_id,
                    int command_id,
                    const GURL& manifest_url,
-                   const Manifest& manifest,
-                   const ManifestDebugInfo& debug_info);
+                   blink::mojom::ManifestDebugInfoPtr debug_info);
   void SendChunkedProtocolMessage(int session_id,
                                   int call_id,
                                   std::string message,

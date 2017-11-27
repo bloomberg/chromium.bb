@@ -15,7 +15,6 @@
 #include "content/common/manifest_observer.mojom.h"
 #include "content/public/common/manifest.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "content/renderer/manifest/manifest_debug_info.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/WebKit/public/platform/modules/manifest/manifest_manager.mojom.h"
 
@@ -32,21 +31,13 @@ class ManifestFetcher;
 // The ManifestManager is a helper class that takes care of fetching and parsing
 // the Manifest of the associated RenderFrame. It uses the ManifestFetcher and
 // the ManifestParser in order to do so.
-// There are two expected consumers of this helper: ManifestManagerHost, via IPC
-// messages and callers inside the renderer process. The latter should use
-// GetManifest().
+//
+// Consumers should use the mojo ManifestManager interface to use this class.
 class ManifestManager : public RenderFrameObserver,
                         public blink::mojom::ManifestManager {
  public:
-  using GetManifestCallback = base::OnceCallback<
-      void(const GURL&, const Manifest&, const ManifestDebugInfo&)>;
-
   explicit ManifestManager(RenderFrame* render_frame);
   ~ManifestManager() override;
-
-  // Will call the given |callback| with the Manifest associated with the
-  // RenderFrame if any. Will pass an empty Manifest in case of error.
-  void GetManifest(GetManifestCallback callback);
 
   // RenderFrameObserver implementation.
   void DidChangeManifest() override;
@@ -61,17 +52,20 @@ class ManifestManager : public RenderFrameObserver,
     ResolveStateFailure
   };
 
+  using InternalRequestManifestCallback =
+      base::OnceCallback<void(const GURL&,
+                              const Manifest&,
+                              const blink::mojom::ManifestDebugInfo*)>;
+
   // RenderFrameObserver implementation.
   void OnDestruct() override;
 
   // blink::mojom::ManifestManager implementation.
   void RequestManifest(RequestManifestCallback callback) override;
+  void RequestManifestDebugInfo(
+      RequestManifestDebugInfoCallback callback) override;
 
-  // Called when receiving a RequestManifest() call from the browser process.
-  void OnRequestManifestComplete(RequestManifestCallback callback,
-                                 const GURL& url,
-                                 const Manifest& manifest,
-                                 const ManifestDebugInfo& debug_info);
+  void RequestManifestImpl(InternalRequestManifestCallback callback);
 
   void FetchManifest();
   void OnManifestFetchComplete(const GURL& document_url,
@@ -100,11 +94,11 @@ class ManifestManager : public RenderFrameObserver,
   GURL manifest_url_;
 
   // Current Manifest debug information.
-  ManifestDebugInfo manifest_debug_info_;
+  blink::mojom::ManifestDebugInfoPtr manifest_debug_info_;
 
   mojom::ManifestUrlChangeObserverAssociatedPtr manifest_change_observer_;
 
-  std::vector<GetManifestCallback> pending_callbacks_;
+  std::vector<InternalRequestManifestCallback> pending_callbacks_;
 
   mojo::BindingSet<blink::mojom::ManifestManager> bindings_;
 

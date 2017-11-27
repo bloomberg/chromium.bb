@@ -30,6 +30,10 @@ inline base::Optional<base::StringPiece16> TruncateNullableString16(
 
 template <>
 struct StructTraits<blink::mojom::ManifestDataView, content::Manifest> {
+  static bool IsNull(const content::Manifest& m) { return m.IsEmpty(); }
+
+  static void SetToNull(content::Manifest* m) { *m = content::Manifest(); }
+
   static base::Optional<base::StringPiece16> name(const content::Manifest& m) {
     return internal::TruncateNullableString16(m.name);
   }

@@ -34,12 +34,12 @@ class ManifestParserTest : public testing::Test  {
                                  const GURL& document_url) {
     ManifestParser parser(data, manifest_url, document_url);
     parser.Parse();
-    std::vector<ManifestDebugInfo::Error> errors;
+    std::vector<blink::mojom::ManifestErrorPtr> errors;
     parser.TakeErrors(&errors);
 
     errors_.clear();
-    for (const auto& error : errors)
-      errors_.push_back(error.message);
+    for (auto& error : errors)
+      errors_.push_back(std::move(error->message));
     return parser.manifest();
   }
 
@@ -76,7 +76,7 @@ TEST_F(ManifestParserTest, CrashTest) {
   GURL url("http://example.com");
   ManifestParser parser(json, url, url);
   parser.Parse();
-  std::vector<ManifestDebugInfo::Error> errors;
+  std::vector<blink::mojom::ManifestErrorPtr> errors;
   parser.TakeErrors(&errors);
 
   // .Parse() should have been call without crashing and succeeded.

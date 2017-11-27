@@ -64,13 +64,12 @@ void ManifestManagerHost::OnConnectionError() {
     callback.Run(GURL(), Manifest());
 }
 
-void ManifestManagerHost::OnRequestManifestResponse(
-    int request_id,
-    const GURL& url,
-    const base::Optional<Manifest>& manifest) {
+void ManifestManagerHost::OnRequestManifestResponse(int request_id,
+                                                    const GURL& url,
+                                                    const Manifest& manifest) {
   auto callback = std::move(*callbacks_.Lookup(request_id));
   callbacks_.Remove(request_id);
-  callback.Run(url, manifest.value_or(Manifest()));
+  callback.Run(url, manifest);
 }
 
 void ManifestManagerHost::ManifestUrlChanged(

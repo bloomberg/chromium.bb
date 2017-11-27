@@ -6,14 +6,15 @@
 
 #include "base/bind.h"
 #include "content/public/common/manifest.h"
-#include "content/renderer/manifest/manifest_debug_info.h"
-#include "content/renderer/manifest/manifest_manager.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/installedapp/WebRelatedApplication.h"
+#include "third_party/WebKit/public/platform/modules/manifest/manifest.mojom.h"
+#include "third_party/WebKit/public/platform/modules/manifest/manifest_manager.mojom.h"
 
 namespace content {
 
-RelatedAppsFetcher::RelatedAppsFetcher(ManifestManager* manifest_manager)
+RelatedAppsFetcher::RelatedAppsFetcher(
+    blink::mojom::ManifestManager* manifest_manager)
     : manifest_manager_(manifest_manager) {}
 
 RelatedAppsFetcher::~RelatedAppsFetcher() {}
@@ -22,7 +23,7 @@ void RelatedAppsFetcher::GetManifestRelatedApplications(
     std::unique_ptr<blink::WebCallbacks<
         const blink::WebVector<blink::WebRelatedApplication>&,
         void>> callbacks) {
-  manifest_manager_->GetManifest(
+  manifest_manager_->RequestManifest(
       base::BindOnce(&RelatedAppsFetcher::OnGetManifestForRelatedApplications,
                      base::Unretained(this), base::Passed(&callbacks)));
 }
@@ -32,8 +33,7 @@ void RelatedAppsFetcher::OnGetManifestForRelatedApplications(
         const blink::WebVector<blink::WebRelatedApplication>&,
         void>> callbacks,
     const GURL& /*url*/,
-    const Manifest& manifest,
-    const ManifestDebugInfo& /*manifest_debug_info*/) {
+    const Manifest& manifest) {
   std::vector<blink::WebRelatedApplication> related_apps;
   for (const auto& relatedApplication : manifest.related_applications) {
     blink::WebRelatedApplication webRelatedApplication;

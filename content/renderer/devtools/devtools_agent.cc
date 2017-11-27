@@ -22,7 +22,6 @@
 #include "content/common/frame_messages.h"
 #include "content/public/common/manifest.h"
 #include "content/renderer/devtools/devtools_cpu_throttler.h"
-#include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
 #include "ipc/ipc_channel.h"
@@ -340,10 +339,9 @@ void DevToolsAgent::DispatchOnInspectorBackend(int session_id,
                                                const std::string& message) {
   TRACE_EVENT0("devtools", "DevToolsAgent::DispatchOnInspectorBackend");
   if (method == kPageGetAppManifest) {
-    ManifestManager* manager = frame_->manifest_manager();
-    manager->GetManifest(base::BindOnce(&DevToolsAgent::GotManifest,
-                                        weak_factory_.GetWeakPtr(), session_id,
-                                        call_id));
+    frame_->GetManifestManager().RequestManifestDebugInfo(
+        base::BindOnce(&DevToolsAgent::GotManifest, weak_factory_.GetWeakPtr(),
+                       session_id, call_id));
     return;
   }
   GetWebAgent()->DispatchOnInspectorBackend(session_id, call_id,
@@ -394,31 +392,30 @@ void DevToolsAgent::DetachAllSessions() {
 void DevToolsAgent::GotManifest(int session_id,
                                 int call_id,
                                 const GURL& manifest_url,
-                                const Manifest& manifest,
-                                const ManifestDebugInfo& debug_info) {
+                                blink::mojom::ManifestDebugInfoPtr debug_info) {
   std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
   response->SetInteger("id", call_id);
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   std::unique_ptr<base::ListValue> errors(new base::ListValue());
 
   bool failed = false;
-  for (const auto& error : debug_info.errors) {
-    std::unique_ptr<base::DictionaryValue> error_value(
-        new base::DictionaryValue());
-    error_value->SetString("message", error.message);
-    error_value->SetBoolean("critical", error.critical);
-    error_value->SetInteger("line", error.line);
-    error_value->SetInteger("column", error.column);
-    if (error.critical)
-      failed = true;
-    errors->Append(std::move(error_value));
+  if (debug_info) {
+    for (const auto& error : debug_info->errors) {
+      std::unique_ptr<base::DictionaryValue> error_value(
+          new base::DictionaryValue());
+      error_value->SetString("message", error->message);
+      error_value->SetBoolean("critical", error->critical);
+      error_value->SetInteger("line", error->line);
+      error_value->SetInteger("column", error->column);
+      if (error->critical)
+        failed = true;
+      errors->Append(std::move(error_value));
+    }
+    if (!failed)
+      result->SetString("data", debug_info->raw_manifest);
   }
 
-  WebString url =
-      frame_->GetWebFrame()->GetDocument().ManifestURL().GetString();
-  result->SetString("url", url.Utf16());
-  if (!failed)
-    result->SetString("data", debug_info.raw_data);
+  result->SetString("url", manifest_url.possibly_invalid_spec());
   result->Set("errors", std::move(errors));
   response->Set("result", std::move(result));
 
