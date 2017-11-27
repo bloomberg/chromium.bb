@@ -194,15 +194,15 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
 void PowerPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(prefs::kPowerAcScreenDimDelayMs, 420000);
-  registry->RegisterIntegerPref(prefs::kPowerAcScreenOffDelayMs, 480000);
+  registry->RegisterIntegerPref(prefs::kPowerAcScreenOffDelayMs, 450000);
   registry->RegisterIntegerPref(prefs::kPowerAcScreenLockDelayMs, 0);
   registry->RegisterIntegerPref(prefs::kPowerAcIdleWarningDelayMs, 0);
   registry->RegisterIntegerPref(prefs::kPowerAcIdleDelayMs, 1800000);
   registry->RegisterIntegerPref(prefs::kPowerBatteryScreenDimDelayMs, 300000);
-  registry->RegisterIntegerPref(prefs::kPowerBatteryScreenOffDelayMs, 360000);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryScreenOffDelayMs, 330000);
   registry->RegisterIntegerPref(prefs::kPowerBatteryScreenLockDelayMs, 0);
   registry->RegisterIntegerPref(prefs::kPowerBatteryIdleWarningDelayMs, 0);
-  registry->RegisterIntegerPref(prefs::kPowerBatteryIdleDelayMs, 600000);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryIdleDelayMs, 390000);
   registry->RegisterIntegerPref(prefs::kPowerLockScreenDimDelayMs, 30000);
   registry->RegisterIntegerPref(prefs::kPowerLockScreenOffDelayMs, 40000);
   registry->RegisterIntegerPref(prefs::kPowerAcIdleAction,
