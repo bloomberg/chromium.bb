@@ -258,6 +258,16 @@ bool SecurityOrigin::HasSameSuboriginAs(const SecurityOrigin* other) const {
   return true;
 }
 
+bool SecurityOrigin::SerializesAsNull() const {
+  if (IsUnique())
+    return true;
+
+  if (IsLocal() && block_local_access_from_local_origin_)
+    return true;
+
+  return false;
+}
+
 bool SecurityOrigin::CanAccess(const SecurityOrigin* other) const {
   if (universal_access_)
     return true;
@@ -433,25 +443,25 @@ bool SecurityOrigin::IsLocalhost() const {
 }
 
 String SecurityOrigin::ToString() const {
-  if (IsUnique())
-    return "null";
-  if (IsLocal() && block_local_access_from_local_origin_)
+  if (SerializesAsNull())
     return "null";
   return ToRawString();
 }
 
 AtomicString SecurityOrigin::ToAtomicString() const {
-  if (IsUnique())
+  if (SerializesAsNull())
     return AtomicString("null");
-  if (IsLocal() && block_local_access_from_local_origin_)
-    return AtomicString("null");
-  return ToRawAtomicString();
+
+  if (protocol_ == "file")
+    return AtomicString("file://");
+
+  StringBuilder result;
+  BuildRawString(result, true);
+  return result.ToAtomicString();
 }
 
 String SecurityOrigin::ToPhysicalOriginString() const {
-  if (IsUnique())
-    return "null";
-  if (IsLocal() && block_local_access_from_local_origin_)
+  if (SerializesAsNull())
     return "null";
   return ToRawStringIgnoreSuborigin();
 }
@@ -497,15 +507,6 @@ bool SecurityOrigin::DeserializeSuboriginAndProtocolAndHost(
   suborigin = host_with_prefix.Substring(0, suborigin_end);
   host = host_with_prefix.Substring(suborigin_end + 1);
   return true;
-}
-
-AtomicString SecurityOrigin::ToRawAtomicString() const {
-  if (protocol_ == "file")
-    return AtomicString("file://");
-
-  StringBuilder result;
-  BuildRawString(result, true);
-  return result.ToAtomicString();
 }
 
 void SecurityOrigin::BuildRawString(StringBuilder& builder,

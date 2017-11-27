@@ -233,14 +233,16 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // we shouldTreatURLSchemeAsNoAccess.
   String ToString() const;
   AtomicString ToAtomicString() const;
-  // Same as toString above, but ignores Suborigin, if present. This is
+
+  // Same as ToString(), but ignores Suborigin, if present. This is
   // generally not what you want.
+  //
+  // https://w3c.github.io/webappsec-suborigins/#physical-origin
   String ToPhysicalOriginString() const;
 
-  // Similar to toString(), but does not take into account any factors that
+  // Similar to ToString(), but does not take into account any factors that
   // could make the string return "null".
   String ToRawString() const;
-  AtomicString ToRawAtomicString() const;
 
   // This method checks for equality, ignoring the value of document.domain
   // (and whether it was set) but considering the host. It is used for
@@ -303,6 +305,8 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
       String& host);
 
   bool HasSameSuboriginAs(const SecurityOrigin* other) const;
+
+  bool SerializesAsNull() const;
 
   String protocol_;
   String host_;
