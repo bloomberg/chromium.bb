@@ -9,11 +9,9 @@
 
 namespace sql {
 
-SQLTestBase::SQLTestBase() {
-}
+SQLTestBase::SQLTestBase() = default;
 
-SQLTestBase::~SQLTestBase() {
-}
+SQLTestBase::~SQLTestBase() = default;
 
 base::FilePath SQLTestBase::db_path() {
   return temp_dir_.GetPath().AppendASCII("SQLTest.db");

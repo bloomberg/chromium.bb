@@ -12,7 +12,7 @@ namespace sql {
 SQLTestSuite::SQLTestSuite(int argc, char** argv)
     : base::TestSuite(argc, argv) {}
 
-SQLTestSuite::~SQLTestSuite() {}
+SQLTestSuite::~SQLTestSuite() = default;
 
 void SQLTestSuite::Initialize() {
   base::TestSuite::Initialize();

@@ -17,7 +17,7 @@ ConnectionMemoryDumpProvider::ConnectionMemoryDumpProvider(
     const std::string& name)
     : db_(db), connection_name_(name) {}
 
-ConnectionMemoryDumpProvider::~ConnectionMemoryDumpProvider() {}
+ConnectionMemoryDumpProvider::~ConnectionMemoryDumpProvider() = default;
 
 void ConnectionMemoryDumpProvider::ResetDatabase() {
   base::AutoLock lock(lock_);
