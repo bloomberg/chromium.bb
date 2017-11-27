@@ -9,6 +9,7 @@ Bug(none) virtual/mojo-loading [ Skip ]
 
 Bug(none) external/wpt/clear-site-data/storage.https.html [ Failure ]
 Bug(none) external/wpt/XMLHttpRequest/overridemimetype-blob.html [ Failure ]
+Bug(none) external/wpt/XMLHttpRequest/anonymous-mode-unsupported.htm [ Failure Pass ]
 Bug(none) external/wpt/clear-site-data/navigation.https.html [ Timeout ]
 Bug(none) external/wpt/content-security-policy/generic/filesystem-urls-match-filesystem.sub.html [ Failure ]
 Bug(none) external/wpt/content-security-policy/inside-worker/dedicated-inheritance.html [ Failure Timeout ]
