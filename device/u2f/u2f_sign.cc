@@ -46,7 +46,7 @@ void U2fSign::TryDevice() {
     current_device_->Register(
         U2fRequest::GetBogusAppParam(), U2fRequest::GetBogusChallenge(),
         base::Bind(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
-                   registered_keys_.cbegin()));
+                   registered_keys_.cend()));
     return;
   }
   // Try signing current device with the first registered key
@@ -62,7 +62,12 @@ void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
   switch (return_code) {
     case U2fReturnCode::SUCCESS:
       state_ = State::COMPLETE;
-      cb_.Run(return_code, response_data);
+      if (it == registered_keys_.cend()) {
+        // This was a response to a fake enrollment. Return an empty key handle.
+        cb_.Run(return_code, response_data, std::vector<uint8_t>());
+      } else {
+        cb_.Run(return_code, response_data, *it);
+      }
       break;
     case U2fReturnCode::CONDITIONS_NOT_SATISFIED: {
       // Key handle is accepted by this device, but waiting on user touch. Move
@@ -83,7 +88,7 @@ void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
         current_device_->Register(
             U2fRequest::GetBogusAppParam(), U2fRequest::GetBogusChallenge(),
             base::Bind(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
-                       registered_keys_.cbegin()));
+                       registered_keys_.cend()));
       }
       break;
     default:
