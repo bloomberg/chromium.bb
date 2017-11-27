@@ -431,7 +431,7 @@ The suite job has another 2:39:39.789250 till timeout.
                            commands._SWARMING_ADDITIONAL_TIMEOUT)
     self.SetCmdResults(
         args=[
-            '--pool', 'test-pool', '--num', '42',
+            '--pool', 'test-pool',
             '--file_bugs', 'True',
             '--priority', 'test-priority', '--timeout_mins', '2880',
             '--max_runtime_mins', '2880',
@@ -445,7 +445,7 @@ The suite job has another 2:39:39.789250 till timeout.
     self.PatchJson([(self.JOB_ID_OUTPUT, False, None),
                     (self.WAIT_OUTPUT, False, None)])
     with self.OutputCapturer() as output:
-      cmd_result = self.RunHWTestSuite(pool=self._pool, num=self._num,
+      cmd_result = self.RunHWTestSuite(pool=self._pool,
                                        file_bugs=self._file_bugs,
                                        wait_for_results=self._wait_for_results,
                                        priority=self._priority,

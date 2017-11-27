@@ -19,6 +19,7 @@ import re
 import shutil
 import sys
 import tempfile
+import warnings
 
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -796,13 +797,15 @@ def RunHWTestSuite(
     exception to be raised; the second element is the json dump cmd result,
     if json_dump cmd is not called, None will be returned.
   """
+  if num is not None:
+    warnings.warn('Passing num to RunHWTestSuite is deprecated')
+    del num
   try:
     cmd = [RUN_SUITE_PATH]
     cmd += _GetRunSuiteArgs(
         build, suite, board,
         model=model,
         pool=pool,
-        num=num,
         file_bugs=file_bugs,
         priority=priority,
         timeout_mins=timeout_mins,
@@ -926,7 +929,6 @@ def _GetRunSuiteArgs(
     build, suite, board,
     model=None,
     pool=None,
-    num=None,
     file_bugs=None,
     priority=None,
     timeout_mins=None,
@@ -962,9 +964,6 @@ def _GetRunSuiteArgs(
   # Add optional arguments to command, if present.
   if pool is not None:
     args += ['--pool', pool]
-
-  if num is not None:
-    args += ['--num', str(num)]
 
   if file_bugs is not None:
     args += ['--file_bugs', str(file_bugs)]
