@@ -65,7 +65,7 @@ class ResourceDownloader : public UrlDownloadHandler,
 
  private:
   // Helper method to start the network request.
-  void Start(mojom::URLLoaderFactoryPtr* factory,
+  void Start(scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
              scoped_refptr<storage::FileSystemContext> file_system_context,
              std::unique_ptr<DownloadUrlParameters> download_url_parameters);
 
