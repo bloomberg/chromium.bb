@@ -129,25 +129,14 @@ GpuArcVideoServiceHost* GpuArcVideoServiceHost::GetForBrowserContext(
 GpuArcVideoServiceHost::GpuArcVideoServiceHost(content::BrowserContext* context,
                                                ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),
-      binding_(this),
       video_accelerator_factory_(CreateVideoAcceleratorFactory()) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  arc_bridge_service_->video()->AddObserver(this);
+  arc_bridge_service_->video()->SetHost(this);
 }
 
 GpuArcVideoServiceHost::~GpuArcVideoServiceHost() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  arc_bridge_service_->video()->RemoveObserver(this);
-}
-
-void GpuArcVideoServiceHost::OnConnectionReady() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* video_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->video(), Init);
-  DCHECK(video_instance);
-  mojom::VideoHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  video_instance->Init(std::move(host_proxy));
+  arc_bridge_service_->video()->SetHost(nullptr);
 }
 
 void GpuArcVideoServiceHost::OnBootstrapVideoAcceleratorFactory(

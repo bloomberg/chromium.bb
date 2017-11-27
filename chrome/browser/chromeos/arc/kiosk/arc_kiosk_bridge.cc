@@ -71,22 +71,13 @@ ArcKioskBridge::ArcKioskBridge(content::BrowserContext* context,
 
 ArcKioskBridge::ArcKioskBridge(ArcBridgeService* bridge_service,
                                Delegate* delegate)
-    : arc_bridge_service_(bridge_service), binding_(this), delegate_(delegate) {
+    : arc_bridge_service_(bridge_service), delegate_(delegate) {
   DCHECK(delegate_);
-  arc_bridge_service_->kiosk()->AddObserver(this);
+  arc_bridge_service_->kiosk()->SetHost(this);
 }
 
 ArcKioskBridge::~ArcKioskBridge() {
-  arc_bridge_service_->kiosk()->RemoveObserver(this);
-}
-
-void ArcKioskBridge::OnConnectionReady() {
-  mojom::KioskInstance* kiosk_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->kiosk(), Init);
-  DCHECK(kiosk_instance);
-  mojom::KioskHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  kiosk_instance->Init(std::move(host_proxy));
+  arc_bridge_service_->kiosk()->SetHost(nullptr);
 }
 
 void ArcKioskBridge::OnMaintenanceSessionCreated(int32_t session_id) {

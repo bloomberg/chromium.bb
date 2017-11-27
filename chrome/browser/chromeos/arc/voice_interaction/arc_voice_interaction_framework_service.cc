@@ -231,11 +231,11 @@ ArcVoiceInteractionFrameworkService::ArcVoiceInteractionFrameworkService(
     ArcBridgeService* bridge_service)
     : context_(context),
       arc_bridge_service_(bridge_service),
-      binding_(this),
       highlighter_client_(std::make_unique<HighlighterControllerClient>(this)),
       voice_interaction_controller_client_(
           std::make_unique<VoiceInteractionControllerClient>()),
       weak_ptr_factory_(this) {
+  arc_bridge_service_->voice_interaction_framework()->SetHost(this);
   arc_bridge_service_->voice_interaction_framework()->AddObserver(this);
   ArcSessionManager::Get()->AddObserver(this);
   session_manager::SessionManager::Get()->AddObserver(this);
@@ -247,23 +247,27 @@ ArcVoiceInteractionFrameworkService::~ArcVoiceInteractionFrameworkService() {
   session_manager::SessionManager::Get()->RemoveObserver(this);
   ArcSessionManager::Get()->RemoveObserver(this);
   arc_bridge_service_->voice_interaction_framework()->RemoveObserver(this);
+  arc_bridge_service_->voice_interaction_framework()->SetHost(nullptr);
 }
 
 void ArcVoiceInteractionFrameworkService::OnConnectionReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  mojom::VoiceInteractionFrameworkInstance* framework_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(
-          arc_bridge_service_->voice_interaction_framework(), Init);
-  DCHECK(framework_instance);
-  mojom::VoiceInteractionFrameworkHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  framework_instance->Init(std::move(host_proxy));
 
   if (is_request_pending_) {
     is_request_pending_ = false;
     if (is_pending_request_toggle_) {
+      mojom::VoiceInteractionFrameworkInstance* framework_instance =
+          ARC_GET_INSTANCE_FOR_METHOD(
+              arc_bridge_service_->voice_interaction_framework(),
+              ToggleVoiceInteractionSession);
+      DCHECK(framework_instance);
       framework_instance->ToggleVoiceInteractionSession(IsHomescreenActive());
     } else {
+      mojom::VoiceInteractionFrameworkInstance* framework_instance =
+          ARC_GET_INSTANCE_FOR_METHOD(
+              arc_bridge_service_->voice_interaction_framework(),
+              StartVoiceInteractionSession);
+      DCHECK(framework_instance);
       framework_instance->StartVoiceInteractionSession(IsHomescreenActive());
     }
   }
@@ -273,7 +277,6 @@ void ArcVoiceInteractionFrameworkService::OnConnectionReady() {
 
 void ArcVoiceInteractionFrameworkService::OnConnectionClosed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  binding_.Close();
   highlighter_client_->Detach();
 }
 

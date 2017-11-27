@@ -9,9 +9,7 @@
 
 #include "base/macros.h"
 #include "components/arc/common/crash_collector.mojom.h"
-#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;
@@ -24,7 +22,6 @@ class ArcBridgeService;
 // Relays dumps for non-native ARC crashes to the crash reporter in Chrome OS.
 class ArcCrashCollectorBridge
     : public KeyedService,
-      public ConnectionObserver<mojom::CrashCollectorInstance>,
       public mojom::CrashCollectorHost {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -37,9 +34,6 @@ class ArcCrashCollectorBridge
 
   ~ArcCrashCollectorBridge() override;
 
-  // ConnectionObserver<mojom::CrashCollectorInstance> overrides.
-  void OnConnectionReady() override;
-
   // mojom::CrashCollectorHost overrides.
   void DumpCrash(const std::string& type, mojo::ScopedHandle pipe) override;
 
@@ -49,8 +43,6 @@ class ArcCrashCollectorBridge
 
  private:
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-
-  mojo::Binding<mojom::CrashCollectorHost> binding_;
 
   std::string device_;
   std::string board_;

@@ -150,25 +150,15 @@ ArcClipboardBridge* ArcClipboardBridge::GetForBrowserContext(
 ArcClipboardBridge::ArcClipboardBridge(content::BrowserContext* context,
                                        ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),
-      binding_(this),
       event_originated_at_instance_(false) {
-  arc_bridge_service_->clipboard()->AddObserver(this);
+  arc_bridge_service_->clipboard()->SetHost(this);
   ui::ClipboardMonitor::GetInstance()->AddObserver(this);
 }
 
 ArcClipboardBridge::~ArcClipboardBridge() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   ui::ClipboardMonitor::GetInstance()->RemoveObserver(this);
-  arc_bridge_service_->clipboard()->RemoveObserver(this);
-}
-
-void ArcClipboardBridge::OnConnectionReady() {
-  mojom::ClipboardInstance* clipboard_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->clipboard(), Init);
-  DCHECK(clipboard_instance);
-  mojom::ClipboardHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  clipboard_instance->Init(std::move(host_proxy));
+  arc_bridge_service_->clipboard()->SetHost(nullptr);
 }
 
 void ArcClipboardBridge::OnClipboardDataChanged() {

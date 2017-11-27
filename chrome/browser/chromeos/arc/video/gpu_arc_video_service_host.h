@@ -7,9 +7,7 @@
 
 #include "base/macros.h"
 #include "components/arc/common/video.mojom.h"
-#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace content {
@@ -28,7 +26,6 @@ class ArcBridgeService;
 //
 // Lives on the UI thread.
 class GpuArcVideoServiceHost : public KeyedService,
-                               public ConnectionObserver<mojom::VideoInstance>,
                                public mojom::VideoHost {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -40,16 +37,12 @@ class GpuArcVideoServiceHost : public KeyedService,
                          ArcBridgeService* bridge_service);
   ~GpuArcVideoServiceHost() override;
 
-  // ConnectionObserver<mojom::VideoInstance>::Observer implementation.
-  void OnConnectionReady() override;
-
   // arc::mojom::VideoHost implementation.
   void OnBootstrapVideoAcceleratorFactory(
       OnBootstrapVideoAcceleratorFactoryCallback callback) override;
 
  private:
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-  mojo::Binding<mojom::VideoHost> binding_;
   std::unique_ptr<mojom::VideoAcceleratorFactory> video_accelerator_factory_;
   mojo::BindingSet<mojom::VideoAcceleratorFactory>
       video_accelerator_factory_bindings_;

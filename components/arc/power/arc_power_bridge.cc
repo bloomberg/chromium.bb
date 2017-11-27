@@ -124,13 +124,14 @@ ArcPowerBridge* ArcPowerBridge::GetForBrowserContext(
 ArcPowerBridge::ArcPowerBridge(content::BrowserContext* context,
                                ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),
-      binding_(this),
       weak_ptr_factory_(this) {
+  arc_bridge_service_->power()->SetHost(this);
   arc_bridge_service_->power()->AddObserver(this);
 }
 
 ArcPowerBridge::~ArcPowerBridge() {
   arc_bridge_service_->power()->RemoveObserver(this);
+  arc_bridge_service_->power()->SetHost(nullptr);
 }
 
 bool ArcPowerBridge::TriggerNotifyBrightnessTimerForTesting() {
@@ -146,12 +147,6 @@ void ArcPowerBridge::FlushWakeLocksForTesting() {
 }
 
 void ArcPowerBridge::OnConnectionReady() {
-  mojom::PowerInstance* power_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->power(), Init);
-  DCHECK(power_instance);
-  mojom::PowerHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  power_instance->Init(std::move(host_proxy));
   // TODO(mash): Support this functionality without ash::Shell access in Chrome.
   if (ash::Shell::HasInstance())
     ash::Shell::Get()->display_configurator()->AddObserver(this);
@@ -171,7 +166,6 @@ void ArcPowerBridge::OnConnectionClosed() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       RemoveObserver(this);
   wake_lock_requestors_.clear();
-  binding_.Close();
 }
 
 void ArcPowerBridge::SuspendImminent(

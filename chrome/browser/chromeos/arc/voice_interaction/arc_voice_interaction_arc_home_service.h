@@ -13,7 +13,6 @@
 #include "components/arc/common/voice_interaction_arc_home.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/accessibility/ax_tree_update.h"
 
 namespace content {
@@ -59,7 +58,6 @@ class ArcVoiceInteractionArcHomeService
   void Shutdown() override;
 
   // ConnectionObserver<mojom::VoiceInteractionArcHomeInstance> overrides;
-  void OnConnectionReady() override;
   void OnConnectionClosed() override;
 
   // Gets view hierarchy from current focused app and send it to ARC.
@@ -114,8 +112,6 @@ class ArcVoiceInteractionArcHomeService
   // Waits for wizard completed notification.
   base::OneShotTimer wizard_completed_timer_;
   base::TimeDelta wizard_completed_timeout_;
-
-  mojo::Binding<mojom::VoiceInteractionArcHomeHost> binding_;
 
   // Whether there is a pending request to lock PAI before it's available.
   bool pending_pai_lock_ = false;

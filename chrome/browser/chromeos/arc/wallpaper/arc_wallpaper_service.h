@@ -16,7 +16,6 @@
 #include "components/arc/common/wallpaper.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;
@@ -81,7 +80,6 @@ class ArcWallpaperService : public KeyedService,
   void NotifyWallpaperChangedAndReset(int android_id);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-  mojo::Binding<mojom::WallpaperHost> binding_;
   std::unique_ptr<DecodeRequest> decode_request_;
   std::vector<WallpaperIdPair> id_pairs_;
   std::unique_ptr<DecodeRequestSender> decode_request_sender_;

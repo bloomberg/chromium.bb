@@ -18,7 +18,6 @@
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/session_manager/core/session_manager_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 class KeyedServiceBaseFactory;
 
@@ -151,7 +150,6 @@ class ArcVoiceInteractionFrameworkService
 
   content::BrowserContext* context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager
-  mojo::Binding<mojom::VoiceInteractionFrameworkHost> binding_;
 
   // Whether there is a pending request to start/toggle voice interaction.
   bool is_request_pending_ = false;

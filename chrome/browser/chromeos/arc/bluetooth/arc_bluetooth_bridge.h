@@ -32,7 +32,6 @@
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;
@@ -43,6 +42,7 @@ namespace arc {
 namespace mojom {
 class AppHost;
 class AppInstance;
+class IntentHelperHost;
 class IntentHelperInstance;
 }  // namespace mojom
 
@@ -484,8 +484,6 @@ class ArcBluetoothBridge
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
-  mojo::Binding<mojom::BluetoothHost> binding_;
-
   scoped_refptr<bluez::BluetoothAdapterBlueZ> bluetooth_adapter_;
   scoped_refptr<device::BluetoothAdvertisement> advertisment_;
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
@@ -520,7 +518,8 @@ class ArcBluetoothBridge
   // Observers to listen the start-up of App and Intent Helper.
   std::unique_ptr<ConnectionObserverImpl<mojom::AppInstance, mojom::AppHost>>
       app_observer_;
-  std::unique_ptr<ConnectionObserverImpl<mojom::IntentHelperInstance, void>>
+  std::unique_ptr<ConnectionObserverImpl<mojom::IntentHelperInstance,
+                                         mojom::IntentHelperHost>>
       intent_helper_observer_;
   // Queue to track the powered state changes initiated by Android.
   base::queue<AdapterPowerState> remote_power_changes_;

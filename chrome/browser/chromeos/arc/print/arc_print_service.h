@@ -11,9 +11,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/common/print.mojom.h"
-#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;
@@ -24,7 +22,6 @@ namespace arc {
 class ArcBridgeService;
 
 class ArcPrintService : public KeyedService,
-                        public ConnectionObserver<mojom::PrintInstance>,
                         public mojom::PrintHost {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -35,9 +32,6 @@ class ArcPrintService : public KeyedService,
   ArcPrintService(content::BrowserContext* context,
                   ArcBridgeService* bridge_service);
   ~ArcPrintService() override;
-
-  // ConnectionObserver<mojom::PrintInstance> override:
-  void OnConnectionReady() override;
 
   // mojom::PrintHost override:
   void Print(mojo::ScopedHandle pdf_data) override;
@@ -50,7 +44,6 @@ class ArcPrintService : public KeyedService,
   THREAD_CHECKER(thread_checker_);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-  mojo::Binding<mojom::PrintHost> binding_;
 
   base::WeakPtrFactory<ArcPrintService> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ArcPrintService);

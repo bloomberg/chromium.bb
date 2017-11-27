@@ -52,26 +52,12 @@ ArcOemCryptoBridge* ArcOemCryptoBridge::GetForBrowserContext(
 
 ArcOemCryptoBridge::ArcOemCryptoBridge(content::BrowserContext* context,
                                        ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service), binding_(this), weak_factory_(this) {
-  arc_bridge_service_->oemcrypto()->AddObserver(this);
+    : arc_bridge_service_(bridge_service), weak_factory_(this) {
+  arc_bridge_service_->oemcrypto()->SetHost(this);
 }
 
 ArcOemCryptoBridge::~ArcOemCryptoBridge() {
-  arc_bridge_service_->oemcrypto()->RemoveObserver(this);
-}
-
-void ArcOemCryptoBridge::OnConnectionReady() {
-  DVLOG(1) << "ArcOemCryptoBridge::OnConnectionReady() called";
-  mojom::OemCryptoInstance* oemcrypto_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->oemcrypto(), Init);
-  DCHECK(oemcrypto_instance);
-
-  DVLOG(1) << "Calling Init back on other side of OemCrypto";
-  mojom::OemCryptoHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  oemcrypto_instance->Init(std::move(host_proxy));
-  binding_.set_connection_error_handler(base::Bind(
-      &mojo::Binding<OemCryptoHost>::Close, base::Unretained(&binding_)));
+  arc_bridge_service_->oemcrypto()->SetHost(nullptr);
 }
 
 void ArcOemCryptoBridge::OnBootstrapMojoConnection(

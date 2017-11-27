@@ -125,28 +125,13 @@ ArcIntentHelperBridge::ArcIntentHelperBridge(content::BrowserContext* context,
                                              ArcBridgeService* bridge_service)
     : context_(context),
       arc_bridge_service_(bridge_service),
-      binding_(this),
       open_url_delegate_(std::make_unique<OpenUrlDelegateImpl>()) {
-  arc_bridge_service_->intent_helper()->AddObserver(this);
+  arc_bridge_service_->intent_helper()->SetHost(this);
 }
 
 ArcIntentHelperBridge::~ArcIntentHelperBridge() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  arc_bridge_service_->intent_helper()->RemoveObserver(this);
-}
-
-void ArcIntentHelperBridge::OnConnectionReady() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  auto* instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->intent_helper(), Init);
-  DCHECK(instance);
-  mojom::IntentHelperHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  instance->Init(std::move(host_proxy));
-}
-
-void ArcIntentHelperBridge::OnConnectionClosed() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  arc_bridge_service_->intent_helper()->SetHost(nullptr);
 }
 
 void ArcIntentHelperBridge::OnIconInvalidated(const std::string& package_name) {

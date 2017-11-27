@@ -13,7 +13,6 @@
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/message_center/message_center.h"
 
 namespace content {
@@ -88,8 +87,6 @@ class ArcNotificationManager
   ItemMap items_;
 
   bool ready_ = false;
-
-  mojo::Binding<mojom::NotificationsHost> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationManager);
 };

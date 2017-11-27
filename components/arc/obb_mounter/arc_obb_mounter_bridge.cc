@@ -46,21 +46,12 @@ ArcObbMounterBridge* ArcObbMounterBridge::GetForBrowserContext(
 
 ArcObbMounterBridge::ArcObbMounterBridge(content::BrowserContext* context,
                                          ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service), binding_(this) {
-  arc_bridge_service_->obb_mounter()->AddObserver(this);
+    : arc_bridge_service_(bridge_service) {
+  arc_bridge_service_->obb_mounter()->SetHost(this);
 }
 
 ArcObbMounterBridge::~ArcObbMounterBridge() {
-  arc_bridge_service_->obb_mounter()->RemoveObserver(this);
-}
-
-void ArcObbMounterBridge::OnConnectionReady() {
-  mojom::ObbMounterInstance* obb_mounter_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->obb_mounter(), Init);
-  DCHECK(obb_mounter_instance);
-  mojom::ObbMounterHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  obb_mounter_instance->Init(std::move(host_proxy));
+  arc_bridge_service_->obb_mounter()->SetHost(nullptr);
 }
 
 void ArcObbMounterBridge::MountObb(const std::string& obb_file,

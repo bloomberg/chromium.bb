@@ -79,22 +79,12 @@ ArcPrintService* ArcPrintService::GetForBrowserContext(
 ArcPrintService::ArcPrintService(content::BrowserContext* context,
                                  ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),
-      binding_(this),
       weak_ptr_factory_(this) {
-  arc_bridge_service_->print()->AddObserver(this);
+  arc_bridge_service_->print()->SetHost(this);
 }
 
 ArcPrintService::~ArcPrintService() {
-  arc_bridge_service_->print()->RemoveObserver(this);
-}
-
-void ArcPrintService::OnConnectionReady() {
-  mojom::PrintInstance* print_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->print(), Init);
-  DCHECK(print_instance);
-  mojom::PrintHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  print_instance->Init(std::move(host_proxy));
+  arc_bridge_service_->print()->SetHost(nullptr);
 }
 
 void ArcPrintService::Print(mojo::ScopedHandle pdf_data) {

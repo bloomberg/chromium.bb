@@ -36,6 +36,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/crx_file/id_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -218,6 +219,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
   void TearDown() override {
     if (initialized_) {
       NoteTakingHelper::Shutdown();
+      intent_helper_bridge_.reset();
       arc_test_.TearDown();
     }
     extensions::ExtensionSystem::Get(profile())->Shutdown();
@@ -269,6 +271,10 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
     profile()->GetPrefs()->SetBoolean(arc::prefs::kArcEnabled,
                                       flags & ENABLE_PLAY_STORE);
     arc_test_.SetUp(profile());
+    // Set up ArcIntentHelperBridge to emulate full-duplex IntentHelper
+    // connection.
+    intent_helper_bridge_ = std::make_unique<arc::ArcIntentHelperBridge>(
+        profile(), arc::ArcServiceManager::Get()->arc_bridge_service());
     arc::ArcServiceManager::Get()
         ->arc_bridge_service()
         ->intent_helper()
@@ -499,6 +505,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
 
   FakeSessionManagerClient* session_manager_client_ = nullptr;  // Not owned.
   ArcAppTest arc_test_;
+  std::unique_ptr<arc::ArcIntentHelperBridge> intent_helper_bridge_;
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   // |test_note_taking_controller_| is owned by |connector_factory_|.
   TestNoteTakingController* test_note_taking_controller_;

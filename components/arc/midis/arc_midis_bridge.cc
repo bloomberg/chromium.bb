@@ -49,26 +49,12 @@ ArcMidisBridge* ArcMidisBridge::GetForBrowserContext(
 
 ArcMidisBridge::ArcMidisBridge(content::BrowserContext* context,
                                ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service), binding_(this), weak_factory_(this) {
-  arc_bridge_service_->midis()->AddObserver(this);
+    : arc_bridge_service_(bridge_service), weak_factory_(this) {
+  arc_bridge_service_->midis()->SetHost(this);
 }
 
 ArcMidisBridge::~ArcMidisBridge() {
-  arc_bridge_service_->midis()->RemoveObserver(this);
-}
-
-void ArcMidisBridge::OnConnectionReady() {
-  DVLOG(1) << "ArcMidisBridge::OnConnectionReady() called.";
-  mojom::MidisInstance* midis_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->midis(), Init);
-  DCHECK(midis_instance);
-
-  DVLOG(1) << "Calling Init on the other side of MidisInstance.";
-  mojom::MidisHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  midis_instance->Init(std::move(host_proxy));
-  binding_.set_connection_error_handler(base::Bind(
-      &mojo::Binding<MidisHost>::Close, base::Unretained(&binding_)));
+  arc_bridge_service_->midis()->SetHost(nullptr);
 }
 
 void ArcMidisBridge::OnBootstrapMojoConnection(

@@ -76,34 +76,16 @@ ArcMetricsService* ArcMetricsService::GetForBrowserContext(
 ArcMetricsService::ArcMetricsService(content::BrowserContext* context,
                                      ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),
-      binding_(this),
       process_observer_(this),
       weak_ptr_factory_(this) {
-  arc_bridge_service_->metrics()->AddObserver(this);
+  arc_bridge_service_->metrics()->SetHost(this);
   arc_bridge_service_->process()->AddObserver(&process_observer_);
 }
 
 ArcMetricsService::~ArcMetricsService() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   arc_bridge_service_->process()->RemoveObserver(&process_observer_);
-  arc_bridge_service_->metrics()->RemoveObserver(this);
-}
-
-void ArcMetricsService::OnConnectionReady() {
-  VLOG(2) << "Start metrics service.";
-  auto* instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->metrics(), Init);
-  DCHECK(instance);
-  mojom::MetricsHostPtr host_ptr;
-  binding_.Bind(mojo::MakeRequest(&host_ptr));
-  instance->Init(std::move(host_ptr));
-}
-
-void ArcMetricsService::OnConnectionClosed() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  VLOG(2) << "Close metrics service.";
-  if (binding_.is_bound())
-    binding_.Unbind();
+  arc_bridge_service_->metrics()->SetHost(nullptr);
 }
 
 void ArcMetricsService::OnProcessConnectionReady() {

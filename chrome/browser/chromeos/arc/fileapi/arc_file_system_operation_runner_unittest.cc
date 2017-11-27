@@ -54,6 +54,12 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
     ASSERT_TRUE(file_system_instance_.InitCalled());
   }
 
+  void TearDown() override {
+    // Explicitly calls Shutdown() to detach from services.
+    if (runner_)
+      runner_->Shutdown();
+  }
+
  protected:
   // Calls private ArcFileSystemOperationRunner::SetShouldDefer().
   void CallSetShouldDefer(bool should_defer) {
@@ -151,6 +157,7 @@ TEST_F(ArcFileSystemOperationRunnerTest, DeferAndDiscard) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, counter);
 
+  runner_->Shutdown();
   runner_.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, counter);

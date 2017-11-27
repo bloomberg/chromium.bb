@@ -10,9 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/arc/common/ime.mojom.h"
-#include "components/arc/connection_observer.h"
 #include "components/arc/ime/arc_ime_bridge.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -26,15 +24,10 @@ class ArcBridgeService;
 
 // This class encapsulates the detail of IME related IPC between
 // Chromium and the ARC container.
-class ArcImeBridgeImpl : public ArcImeBridge,
-                         public mojom::ImeHost,
-                         public ConnectionObserver<mojom::ImeInstance> {
+class ArcImeBridgeImpl : public ArcImeBridge, public mojom::ImeHost {
  public:
   ArcImeBridgeImpl(Delegate* delegate, ArcBridgeService* bridge_service);
   ~ArcImeBridgeImpl() override;
-
-  // ConnectionObserver<mojom::ImeInstance> overrides:
-  void OnConnectionReady() override;
 
   // ArcImeBridge overrides:
   void SendSetCompositionText(const ui::CompositionText& composition) override;
@@ -55,7 +48,6 @@ class ArcImeBridgeImpl : public ArcImeBridge,
       const gfx::Range& selection_range) override;
 
  private:
-  mojo::Binding<mojom::ImeHost> binding_;
   Delegate* const delegate_;
   ArcBridgeService* const bridge_service_;
 

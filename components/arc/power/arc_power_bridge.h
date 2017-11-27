@@ -14,7 +14,6 @@
 #include "components/arc/common/power.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 
@@ -88,7 +87,6 @@ class ArcPowerBridge : public KeyedService,
   void UpdateAndroidScreenBrightness(double percent);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-  mojo::Binding<mojom::PowerHost> binding_;
 
   // If non-null, used instead of the process-wide connector to fetch services.
   service_manager::Connector* connector_for_test_ = nullptr;

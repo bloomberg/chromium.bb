@@ -81,21 +81,12 @@ ArcCrashCollectorBridge* ArcCrashCollectorBridge::GetForBrowserContext(
 ArcCrashCollectorBridge::ArcCrashCollectorBridge(
     content::BrowserContext* context,
     ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service), binding_(this) {
-  arc_bridge_service_->crash_collector()->AddObserver(this);
+    : arc_bridge_service_(bridge_service) {
+  arc_bridge_service_->crash_collector()->SetHost(this);
 }
 
 ArcCrashCollectorBridge::~ArcCrashCollectorBridge() {
-  arc_bridge_service_->crash_collector()->RemoveObserver(this);
-}
-
-void ArcCrashCollectorBridge::OnConnectionReady() {
-  mojom::CrashCollectorHostPtr host_ptr;
-  binding_.Bind(mojo::MakeRequest(&host_ptr));
-  auto* instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->crash_collector(), Init);
-  DCHECK(instance);
-  instance->Init(std::move(host_ptr));
+  arc_bridge_service_->crash_collector()->SetHost(nullptr);
 }
 
 void ArcCrashCollectorBridge::DumpCrash(const std::string& type,

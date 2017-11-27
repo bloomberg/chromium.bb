@@ -108,11 +108,10 @@ ArcBootPhaseMonitorBridge::ArcBootPhaseMonitorBridge(
       arc_bridge_service_(bridge_service),
       account_id_(multi_user_util::GetAccountIdFromProfile(
           Profile::FromBrowserContext(context))),
-      binding_(this),
       // Set the default delegate. Unit tests may use a different one.
       delegate_(std::make_unique<DefaultDelegateImpl>()),
       weak_ptr_factory_(this) {
-  arc_bridge_service_->boot_phase_monitor()->AddObserver(this);
+  arc_bridge_service_->boot_phase_monitor()->SetHost(this);
   auto* arc_session_manager = ArcSessionManager::Get();
   DCHECK(arc_session_manager);
   arc_session_manager->AddObserver(this);
@@ -131,7 +130,7 @@ ArcBootPhaseMonitorBridge::ArcBootPhaseMonitorBridge(
 
 ArcBootPhaseMonitorBridge::~ArcBootPhaseMonitorBridge() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  arc_bridge_service_->boot_phase_monitor()->RemoveObserver(this);
+  arc_bridge_service_->boot_phase_monitor()->SetHost(nullptr);
   auto* arc_session_manager = ArcSessionManager::Get();
   DCHECK(arc_session_manager);
   arc_session_manager->RemoveObserver(this);
@@ -151,16 +150,6 @@ void ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMAInternal() {
     return;
   }
   app_launch_time_ = base::TimeTicks::Now();
-}
-
-void ArcBootPhaseMonitorBridge::OnConnectionReady() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->boot_phase_monitor(), Init);
-  DCHECK(instance);
-  mojom::BootPhaseMonitorHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  instance->Init(std::move(host_proxy));
 }
 
 void ArcBootPhaseMonitorBridge::OnBootCompleted() {

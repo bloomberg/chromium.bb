@@ -104,15 +104,14 @@ ArcFileSystemBridge::ArcFileSystemBridge(content::BrowserContext* context,
                                          ArcBridgeService* bridge_service)
     : profile_(Profile::FromBrowserContext(context)),
       bridge_service_(bridge_service),
-      binding_(this),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  bridge_service_->file_system()->AddObserver(this);
+  bridge_service_->file_system()->SetHost(this);
 }
 
 ArcFileSystemBridge::~ArcFileSystemBridge() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  bridge_service_->file_system()->RemoveObserver(this);
+  bridge_service_->file_system()->SetHost(nullptr);
 }
 
 // static
@@ -212,17 +211,6 @@ void ArcFileSystemBridge::OpenFileToRead(const std::string& url,
       url, base::BindOnce(&ArcFileSystemBridge::OpenFileToReadAfterGetFileSize,
                           weak_ptr_factory_.GetWeakPtr(), url_decoded,
                           std::move(callback)));
-}
-
-void ArcFileSystemBridge::OnConnectionReady() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* file_system_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->file_system(), Init);
-  if (file_system_instance) {
-    mojom::FileSystemHostPtr host_proxy;
-    binding_.Bind(mojo::MakeRequest(&host_proxy));
-    file_system_instance->Init(std::move(host_proxy));
-  }
 }
 
 void ArcFileSystemBridge::OpenFileToReadAfterGetFileSize(

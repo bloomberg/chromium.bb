@@ -17,9 +17,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/arc/fileapi/file_stream_forwarder.h"
 #include "components/arc/common/file_system.mojom.h"
-#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "storage/browser/fileapi/watcher_manager.h"
 
 class BrowserContextKeyedServiceFactory;
@@ -35,10 +33,7 @@ namespace arc {
 class ArcBridgeService;
 
 // This class handles file system related IPC from the ARC container.
-class ArcFileSystemBridge
-    : public KeyedService,
-      public mojom::FileSystemHost,
-      public ConnectionObserver<mojom::FileSystemInstance> {
+class ArcFileSystemBridge : public KeyedService, public mojom::FileSystemHost {
  public:
   class Observer {
    public:
@@ -89,9 +84,6 @@ class ArcFileSystemBridge
   void OpenFileToRead(const std::string& url,
                       OpenFileToReadCallback callback) override;
 
-  // ConnectionObserver<mojom::FileSystemInstance> overrides:
-  void OnConnectionReady() override;
-
  private:
   // Used to implement OpenFileToRead().
   void OpenFileToReadAfterGetFileSize(const GURL& url_decoded,
@@ -111,7 +103,6 @@ class ArcFileSystemBridge
 
   Profile* const profile_;
   ArcBridgeService* const bridge_service_;  // Owned by ArcServiceManager
-  mojo::Binding<mojom::FileSystemHost> binding_;
   base::ObserverList<Observer> observer_list_;
 
   // Map from file descriptor IDs to requested URLs.

@@ -76,20 +76,12 @@ std::vector<mojom::CompositionSegmentPtr> ConvertSegments(
 
 ArcImeBridgeImpl::ArcImeBridgeImpl(Delegate* delegate,
                                    ArcBridgeService* bridge_service)
-    : binding_(this), delegate_(delegate), bridge_service_(bridge_service) {
-  bridge_service_->ime()->AddObserver(this);
+    : delegate_(delegate), bridge_service_(bridge_service) {
+  bridge_service_->ime()->SetHost(this);
 }
 
 ArcImeBridgeImpl::~ArcImeBridgeImpl() {
-  bridge_service_->ime()->RemoveObserver(this);
-}
-
-void ArcImeBridgeImpl::OnConnectionReady() {
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->ime(), Init);
-  DCHECK(instance);
-  mojom::ImeHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  instance->Init(std::move(host_proxy));
+  bridge_service_->ime()->SetHost(nullptr);
 }
 
 void ArcImeBridgeImpl::SendSetCompositionText(
