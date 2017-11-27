@@ -241,11 +241,10 @@ void MidiManagerMac::ReceiveMidiNotify(const MIDINotification* message) {
         // On kMIDIMsgObjectRemoved, the entry will be ignored because it
         // will not be found in the pool.
         if (!info.id.empty()) {
-          size_t index = it - sources_.begin();
           sources_.push_back(endpoint);
           AddInputPort(info);
           MIDIPortConnectSource(midi_input_, endpoint,
-                                reinterpret_cast<void*>(index));
+                                reinterpret_cast<void*>(sources_.size() - 1));
         }
       } else {
         SetInputPortState(it - sources_.begin(), PortState::OPENED);
