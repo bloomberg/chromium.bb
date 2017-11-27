@@ -87,54 +87,20 @@ v8::Local<v8::Object> V8PerContextData::CreateWrapperFromCacheSlowCase(
 
 v8::Local<v8::Function> V8PerContextData::ConstructorForTypeSlowCase(
     const WrapperTypeInfo* type) {
-  v8::Local<v8::Context> current_context = GetContext();
-  v8::Context::Scope scope(current_context);
-  const DOMWrapperWorld& world = DOMWrapperWorld::World(current_context);
-  // We shouldn't reach this point for the types that are implemented in v8 such
-  // as typed arrays and hence don't have domTemplateFunction.
-  DCHECK(type->dom_template_function);
-  v8::Local<v8::FunctionTemplate> interface_template =
-      type->domTemplate(isolate_, world);
-  // Getting the function might fail if we're running out of stack or memory.
-  v8::Local<v8::Function> interface_object;
-  if (!interface_template->GetFunction(current_context)
-           .ToLocal(&interface_object))
-    return v8::Local<v8::Function>();
+  v8::Local<v8::Context> context = GetContext();
+  v8::Context::Scope scope(context);
 
+  v8::Local<v8::Function> parent_interface_object;
   if (type->parent_class) {
-    v8::Local<v8::Object> prototype_template =
-        ConstructorForType(type->parent_class);
-    if (prototype_template.IsEmpty())
-      return v8::Local<v8::Function>();
-    if (!V8CallBoolean(interface_object->SetPrototype(current_context,
-                                                      prototype_template)))
-      return v8::Local<v8::Function>();
+    parent_interface_object = ConstructorForType(type->parent_class);
   }
 
-  v8::Local<v8::Object> prototype_object;
-  if (type->wrapper_type_prototype !=
-      WrapperTypeInfo::kWrapperTypeNoPrototype) {
-    v8::Local<v8::Value> prototype_value;
-    if (!interface_object
-             ->Get(current_context, V8AtomicString(isolate_, "prototype"))
-             .ToLocal(&prototype_value) ||
-        !prototype_value->IsObject())
-      return v8::Local<v8::Function>();
-    prototype_object = prototype_value.As<v8::Object>();
-    if (prototype_object->InternalFieldCount() ==
-            kV8PrototypeInternalFieldcount &&
-        type->wrapper_type_prototype ==
-            WrapperTypeInfo::kWrapperTypeObjectPrototype) {
-      prototype_object->SetAlignedPointerInInternalField(
-          kV8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
-    }
-    type->InstallConditionalFeatures(current_context, world,
-                                     v8::Local<v8::Object>(), prototype_object,
-                                     interface_object, interface_template);
-  }
+  const DOMWrapperWorld& world = DOMWrapperWorld::World(context);
+  v8::Local<v8::Function> interface_object =
+      V8ObjectConstructor::CreateInterfaceObject(
+          type, context, world, isolate_, parent_interface_object,
+          V8ObjectConstructor::CreationMode::kInstallConditionalFeatures);
 
-  InstallOriginTrialFeatures(type, ScriptState::From(current_context),
-                             prototype_object, interface_object);
   constructor_map_.Set(type, interface_object);
   return interface_object;
 }
