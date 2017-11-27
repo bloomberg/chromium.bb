@@ -145,13 +145,10 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientEmptyReferer) {
             base::WriteFile(temp_file,
                             file_redirect_contents.data(),
                             file_redirect_contents.size()));
-  base::FilePath path_with_extension;
-  path_with_extension = temp_file.AddExtension(FILE_PATH_LITERAL(".html"));
-  EXPECT_TRUE(base::Move(temp_file, path_with_extension));
 
   // Navigate to the file through the browser. The client redirect will appear
   // as two page visits in the browser.
-  GURL first_url = net::FilePathToFileURL(path_with_extension);
+  GURL first_url = net::FilePathToFileURL(temp_file);
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), first_url, 2);
 

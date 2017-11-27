@@ -776,14 +776,13 @@ bool SniffMimeType(const char* content,
   // Cache information about the type_hint
   const bool hint_is_unknown_mime_type = IsUnknownMimeType(type_hint);
 
-  // We're only willing to sniff HTML if:
-  // 1. The content was not served by a file:// URI (https://crbug.com/777737).
-  // 2. The server has not supplied a mime type, or the type it did supply
-  //    indicates that it doesn't know what the type should be.
-  if (hint_is_unknown_mime_type && !url.SchemeIsFile() &&
-      SniffForHTML(content, content_size, &have_enough_content, result)) {
-    // We succeeded in sniffing HTML. No more content needed.
-    return true;
+  // First check for HTML
+  if (hint_is_unknown_mime_type) {
+    // We're only willing to sniff HTML if the server has not supplied a mime
+    // type, or if the type it did supply indicates that it doesn't know what
+    // the type should be.
+    if (SniffForHTML(content, content_size, &have_enough_content, result))
+      return true;  // We succeeded in sniffing HTML.  No more content needed.
   }
 
   // We're only willing to sniff for binary in 3 cases:
