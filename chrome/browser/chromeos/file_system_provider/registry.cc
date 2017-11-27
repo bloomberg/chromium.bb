@@ -93,10 +93,10 @@ void Registry::RememberFileSystem(
                                    prefs::kFileSystemProviderMounted);
 
   base::Value* file_systems_per_extension = dict_update->FindKeyOfType(
-      file_system_info.provider_id(), base::Value::Type::DICTIONARY);
+      file_system_info.provider_id().ToString(), base::Value::Type::DICTIONARY);
   if (!file_systems_per_extension) {
     file_systems_per_extension =
-        dict_update->SetKey(file_system_info.provider_id(),
+        dict_update->SetKey(file_system_info.provider_id().ToString(),
                             base::Value(base::Value::Type::DICTIONARY));
   }
 
@@ -104,7 +104,7 @@ void Registry::RememberFileSystem(
                                      std::move(file_system));
 }
 
-void Registry::ForgetFileSystem(const std::string& provider_id,
+void Registry::ForgetFileSystem(const ProviderId& provider_id,
                                 const std::string& file_system_id) {
   PrefService* const pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
@@ -114,16 +114,16 @@ void Registry::ForgetFileSystem(const std::string& provider_id,
 
   base::DictionaryValue* file_systems_per_extension = NULL;
   if (!dict_update->GetDictionaryWithoutPathExpansion(
-          provider_id, &file_systems_per_extension))
+          provider_id.ToString(), &file_systems_per_extension))
     return;  // Nothing to forget.
 
   file_systems_per_extension->RemoveWithoutPathExpansion(file_system_id, NULL);
   if (file_systems_per_extension->empty())
-    dict_update->Remove(provider_id, NULL);
+    dict_update->Remove(provider_id.ToString(), NULL);
 }
 
 std::unique_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
-    const std::string& provider_id) {
+    const ProviderId& provider_id) {
   PrefService* const pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
 
@@ -133,7 +133,7 @@ std::unique_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
 
   const base::DictionaryValue* file_systems_per_extension = NULL;
   if (!file_systems->GetDictionaryWithoutPathExpansion(
-          provider_id, &file_systems_per_extension)) {
+          provider_id.ToString(), &file_systems_per_extension)) {
     return base::WrapUnique(new RestoredFileSystems);  // Nothing to restore.
   }
 
@@ -262,7 +262,8 @@ void Registry::UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
   base::DictionaryValue* watchers = NULL;
   base::DictionaryValue* watcher_value = NULL;
   if (!dict_update->GetDictionaryWithoutPathExpansion(
-          file_system_info.provider_id(), &file_systems_per_extension) ||
+          file_system_info.provider_id().ToString(),
+          &file_systems_per_extension) ||
       !file_systems_per_extension->GetDictionaryWithoutPathExpansion(
           file_system_info.file_system_id(), &file_system) ||
       !file_system->GetDictionaryWithoutPathExpansion(kPrefKeyWatchers,

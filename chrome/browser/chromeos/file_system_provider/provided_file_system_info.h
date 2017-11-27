@@ -28,12 +28,43 @@ struct MountOptions {
   int opened_files_limit;
 };
 
+class ProviderId {
+ public:
+  enum ProviderType : uint32_t { EXTENSION, NATIVE, INVALID };
+  ProviderId();
+
+  static ProviderId CreateFromExtensionId(const std::string& extension_id);
+  static ProviderId CreateFromNativeId(const std::string& native_id);
+
+  const std::string& GetIdUnsafe() const;
+  const std::string& GetExtensionId() const;
+  const std::string& GetNativeId() const;
+  std::string ToString() const;
+
+  ProviderType GetType() const;
+
+  bool operator==(const ProviderId& other) const;
+
+ private:
+  ProviderId(const std::string& internal_id, ProviderType provider_type);
+
+  std::string internal_id_;
+  ProviderType type_;
+};
+
 // Contains information about the provided file system instance.
 class ProvidedFileSystemInfo {
  public:
   ProvidedFileSystemInfo();
 
-  ProvidedFileSystemInfo(const std::string& provider_id,
+  ProvidedFileSystemInfo(const ProviderId& provider_id,
+                         const MountOptions& mount_options,
+                         const base::FilePath& mount_path,
+                         bool configurable,
+                         bool watchable,
+                         extensions::FileSystemProviderSource source);
+
+  ProvidedFileSystemInfo(const std::string& extension_id,
                          const MountOptions& mount_options,
                          const base::FilePath& mount_path,
                          bool configurable,
@@ -44,7 +75,7 @@ class ProvidedFileSystemInfo {
 
   ~ProvidedFileSystemInfo();
 
-  const std::string& provider_id() const { return provider_id_; }
+  const ProviderId& provider_id() const { return provider_id_; }
   const std::string& file_system_id() const { return file_system_id_; }
   const std::string& display_name() const { return display_name_; }
   bool writable() const { return writable_; }
@@ -57,7 +88,7 @@ class ProvidedFileSystemInfo {
 
  private:
   // ID of the provider supplying this file system.
-  std::string provider_id_;
+  ProviderId provider_id_;
 
   // ID of the file system.
   std::string file_system_id_;

@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
 
 using chromeos::file_system_provider::ProvidedFileSystemInterface;
+using chromeos::file_system_provider::ProviderId;
 using chromeos::file_system_provider::RequestManager;
 using chromeos::file_system_provider::RequestValue;
 using chromeos::file_system_provider::Service;
@@ -161,8 +162,8 @@ bool FileSystemProviderInternalFunction::PreRunValidation(std::string* error) {
     return false;
   }
 
-  ProvidedFileSystemInterface* file_system =
-      service->GetProvidedFileSystem(extension_id(), file_system_id);
+  ProvidedFileSystemInterface* file_system = service->GetProvidedFileSystem(
+      ProviderId::CreateFromExtensionId(extension_id()), file_system_id);
   if (!file_system) {
     *error = FileErrorToString(base::File::FILE_ERROR_NOT_FOUND);
     return false;

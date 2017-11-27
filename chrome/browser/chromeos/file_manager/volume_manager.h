@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -106,7 +107,9 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   // Getters for all members. See below for details.
   const std::string& volume_id() const { return volume_id_; }
   const std::string& file_system_id() const { return file_system_id_; }
-  const std::string& provider_id() const { return provider_id_; }
+  const chromeos::file_system_provider::ProviderId& provider_id() const {
+    return provider_id_;
+  }
   Source source() const { return source_; }
   VolumeType type() const { return type_; }
   chromeos::DeviceType device_type() const { return device_type_; }
@@ -149,8 +152,8 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   std::string file_system_id_;
 
   // The ID of an extension or native provider providing the file system. If
-  // other type, then equal to an empty string.
-  std::string provider_id_;
+  // other type, then equal to a ProviderId of the type INVALID.
+  chromeos::file_system_provider::ProviderId provider_id_;
 
   // The source of the volume's data.
   Source source_;

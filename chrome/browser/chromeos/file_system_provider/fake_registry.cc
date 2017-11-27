@@ -20,11 +20,11 @@ void FakeRegistry::RememberFileSystem(
   watchers_.reset(new Watchers(watchers));
 }
 
-void FakeRegistry::ForgetFileSystem(const std::string& extension_id,
+void FakeRegistry::ForgetFileSystem(const ProviderId& provider_id,
                                     const std::string& file_system_id) {
   if (!file_system_info_.get() || !watchers_.get())
     return;
-  if (file_system_info_->provider_id() == extension_id &&
+  if (file_system_info_->provider_id() == provider_id &&
       file_system_info_->file_system_id() == file_system_id) {
     file_system_info_.reset();
     watchers_.reset();
@@ -32,7 +32,7 @@ void FakeRegistry::ForgetFileSystem(const std::string& extension_id,
 }
 
 std::unique_ptr<RegistryInterface::RestoredFileSystems>
-FakeRegistry::RestoreFileSystems(const std::string& extension_id) {
+FakeRegistry::RestoreFileSystems(const ProviderId& provider_id) {
   std::unique_ptr<RestoredFileSystems> result(new RestoredFileSystems);
 
   if (file_system_info_.get() && watchers_.get()) {

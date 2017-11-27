@@ -32,9 +32,10 @@ bool DispatchEventImpl(extensions::EventRouter* event_router,
 Operation::Operation(extensions::EventRouter* event_router,
                      const ProvidedFileSystemInfo& file_system_info)
     : file_system_info_(file_system_info),
-      dispatch_event_impl_(base::Bind(&DispatchEventImpl,
-                                      event_router,
-                                      file_system_info_.provider_id())) {}
+      dispatch_event_impl_(
+          base::Bind(&DispatchEventImpl,
+                     event_router,
+                     file_system_info_.provider_id().GetExtensionId())) {}
 
 Operation::~Operation() {
 }

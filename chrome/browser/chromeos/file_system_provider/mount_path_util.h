@@ -17,12 +17,13 @@ namespace chromeos {
 namespace file_system_provider {
 
 class ProvidedFileSystemInterface;
+class ProviderId;
 
 namespace util {
 
 // Constructs a safe mount point path for the provided file system.
 base::FilePath GetMountPath(Profile* profile,
-                            const std::string& provider_id,
+                            const ProviderId& provider_id,
                             const std::string& file_system_id);
 
 // Checks whether a local path is handled by File System Provider API or not.

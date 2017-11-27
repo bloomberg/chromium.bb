@@ -30,8 +30,9 @@ const char kTemporaryOrigin[] =
     "chrome-extension://abcabcabcabcabcabcabcabcabcabcabcabca/";
 const char kPersistentOrigin[] =
     "chrome-extension://efgefgefgefgefgefgefgefgefgefgefgefge/";
-const char kProviderId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
+const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kDisplayName[] = "Camera Pictures";
+const ProviderId kProviderId = ProviderId::CreateFromExtensionId(kExtensionId);
 
 // The dot in the file system ID is there in order to check that saving to
 // preferences works correctly. File System ID is used as a key in
@@ -43,7 +44,7 @@ const int kOpenedFilesLimit = 5;
 // Stores a provided file system information in preferences together with a
 // fake watcher.
 void RememberFakeFileSystem(TestingProfile* profile,
-                            const std::string& provider_id,
+                            const ProviderId& provider_id,
                             const std::string& file_system_id,
                             const std::string& display_name,
                             bool writable,
@@ -87,7 +88,8 @@ void RememberFakeFileSystem(TestingProfile* profile,
   file_system->SetWithoutPathExpansion(kPrefKeyWatchers, std::move(watchers));
   auto file_systems = base::MakeUnique<base::DictionaryValue>();
   file_systems->SetWithoutPathExpansion(kFileSystemId, std::move(file_system));
-  extensions.SetWithoutPathExpansion(kProviderId, std::move(file_systems));
+  extensions.SetWithoutPathExpansion(kProviderId.ToString(),
+                                     std::move(file_systems));
   pref_service->Set(prefs::kFileSystemProviderMounted, extensions);
 }
 
@@ -177,8 +179,8 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
   ASSERT_TRUE(extensions);
 
   const base::DictionaryValue* file_systems = NULL;
-  ASSERT_TRUE(extensions->GetDictionaryWithoutPathExpansion(kProviderId,
-                                                            &file_systems));
+  ASSERT_TRUE(extensions->GetDictionaryWithoutPathExpansion(
+      kProviderId.ToString(), &file_systems));
   EXPECT_EQ(1u, file_systems->size());
 
   const base::Value* file_system_value = NULL;
@@ -265,8 +267,8 @@ TEST_F(FileSystemProviderRegistryTest, ForgetFileSystem) {
   ASSERT_TRUE(extensions);
 
   const base::DictionaryValue* file_systems = NULL;
-  EXPECT_FALSE(extensions->GetDictionaryWithoutPathExpansion(kProviderId,
-                                                             &file_systems));
+  EXPECT_FALSE(extensions->GetDictionaryWithoutPathExpansion(
+      kProviderId.GetExtensionId(), &file_systems));
 }
 
 TEST_F(FileSystemProviderRegistryTest, UpdateWatcherTag) {
@@ -296,8 +298,8 @@ TEST_F(FileSystemProviderRegistryTest, UpdateWatcherTag) {
   ASSERT_TRUE(extensions);
 
   const base::DictionaryValue* file_systems = NULL;
-  ASSERT_TRUE(extensions->GetDictionaryWithoutPathExpansion(kProviderId,
-                                                            &file_systems));
+  ASSERT_TRUE(extensions->GetDictionaryWithoutPathExpansion(
+      kProviderId.ToString(), &file_systems));
   EXPECT_EQ(1u, file_systems->size());
 
   const base::Value* file_system_value = NULL;

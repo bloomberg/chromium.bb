@@ -9,6 +9,58 @@
 namespace chromeos {
 namespace file_system_provider {
 
+ProviderId::ProviderId(const std::string& internal_id,
+                       ProviderType provider_type)
+    : internal_id_(internal_id), type_(provider_type) {}
+
+ProviderId::ProviderId() : type_(INVALID) {}
+
+// static
+ProviderId ProviderId::CreateFromExtensionId(const std::string& extension_id) {
+  return ProviderId(extension_id, EXTENSION);
+}
+
+// static
+ProviderId ProviderId::CreateFromNativeId(const std::string& native_id) {
+  return ProviderId(native_id, NATIVE);
+}
+
+const std::string& ProviderId::GetExtensionId() const {
+  CHECK_EQ(EXTENSION, type_);
+  return internal_id_;
+}
+
+const std::string& ProviderId::GetNativeId() const {
+  CHECK_EQ(NATIVE, type_);
+  return internal_id_;
+}
+
+const std::string& ProviderId::GetIdUnsafe() const {
+  return internal_id_;
+}
+
+ProviderId::ProviderType ProviderId::GetType() const {
+  return type_;
+}
+
+// Returns the internal_id_ for extensions for  backwards compatibility,
+// Adds '@' for native ids to avoid collisions.
+std::string ProviderId::ToString() const {
+  switch (type_) {
+    case EXTENSION:
+      return internal_id_;
+    case NATIVE:
+      return std::string("@") + internal_id_;
+    case INVALID:
+      NOTREACHED();
+      return "";
+  }
+}
+
+bool ProviderId::operator==(const ProviderId& other) const {
+  return type_ == other.GetType() && internal_id_ == other.GetIdUnsafe();
+}
+
 MountOptions::MountOptions()
     : writable(false),
       supports_notify_tag(false),
@@ -33,7 +85,7 @@ ProvidedFileSystemInfo::ProvidedFileSystemInfo()
 }
 
 ProvidedFileSystemInfo::ProvidedFileSystemInfo(
-    const std::string& provider_id,
+    const ProviderId& provider_id,
     const MountOptions& mount_options,
     const base::FilePath& mount_path,
     bool configurable,
@@ -51,6 +103,20 @@ ProvidedFileSystemInfo::ProvidedFileSystemInfo(
       source_(source) {
   DCHECK_LE(0, mount_options.opened_files_limit);
 }
+
+ProvidedFileSystemInfo::ProvidedFileSystemInfo(
+    const std::string& extension_id,
+    const MountOptions& mount_options,
+    const base::FilePath& mount_path,
+    bool configurable,
+    bool watchable,
+    extensions::FileSystemProviderSource source)
+    : ProvidedFileSystemInfo(ProviderId::CreateFromExtensionId(extension_id),
+                             mount_options,
+                             mount_path,
+                             configurable,
+                             watchable,
+                             source) {}
 
 ProvidedFileSystemInfo::ProvidedFileSystemInfo(
     const ProvidedFileSystemInfo& other) = default;

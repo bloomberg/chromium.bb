@@ -34,17 +34,18 @@ namespace util {
 
 namespace {
 
-const char kProviderId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
+const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "File/System/Id";
 const char kDisplayName[] = "Camera Pictures";
+const ProviderId kProviderId = ProviderId::CreateFromExtensionId(kExtensionId);
+const ProviderId kNativeProviderId = ProviderId::CreateFromNativeId("native");
 
 // Creates a FileSystemURL for tests.
 storage::FileSystemURL CreateFileSystemURL(
     Profile* profile,
     const ProvidedFileSystemInfo& file_system_info,
     const base::FilePath& file_path) {
-  const std::string origin =
-      std::string("chrome-extension://") + file_system_info.provider_id();
+  const std::string origin = std::string("chrome-extension://") + kExtensionId;
   const base::FilePath mount_path = file_system_info.mount_path();
   const storage::ExternalMountPoints* const mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
@@ -75,7 +76,7 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
     user_manager_->AddUser(
         AccountId::FromUserEmail(profile_->GetProfileUserName()));
     file_system_provider_service_ = Service::Get(profile_);
-    file_system_provider_service_->SetDefaultFileSystemFactoryForTesting(
+    file_system_provider_service_->SetExtensionFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
   }
 
@@ -88,12 +89,19 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
 };
 
 TEST_F(FileSystemProviderMountPathUtilTest, GetMountPath) {
-  const base::FilePath result =
+  const base::FilePath extension_result =
       GetMountPath(profile_, kProviderId, kFileSystemId);
-  const std::string expected =
+  const std::string extension_expected =
       "/provided/mbflcebpggnecokmikipoihdbecnjfoj:"
       "File%2FSystem%2FId:testing-profile-hash";
-  EXPECT_EQ(expected, result.AsUTF8Unsafe());
+  EXPECT_EQ(extension_expected, extension_result.AsUTF8Unsafe());
+
+  const base::FilePath native_result =
+      GetMountPath(profile_, kNativeProviderId, kFileSystemId);
+  const std::string native_expected =
+      "/provided/@native:"
+      "File%2FSystem%2FId:testing-profile-hash";
+  EXPECT_EQ(native_expected, native_result.AsUTF8Unsafe());
 }
 
 TEST_F(FileSystemProviderMountPathUtilTest, IsFileSystemProviderLocalPath) {
