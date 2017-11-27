@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 #include "platform/WebTaskRunner.h"
 
 namespace blink {
@@ -20,7 +21,10 @@ class FakeWebTaskRunner : public WebTaskRunner {
  public:
   FakeWebTaskRunner();
 
-  void SetTime(double new_time);
+  void SetTime(base::TimeTicks new_time);
+  void SetTime(double new_time) {
+    SetTime(base::TimeTicks() + base::TimeDelta::FromSecondsD(new_time));
+  }
 
   // WebTaskRunner implementation:
   bool RunsTasksInCurrentSequence() override;
@@ -29,8 +33,13 @@ class FakeWebTaskRunner : public WebTaskRunner {
       override;
 
   void RunUntilIdle();
-  void AdvanceTimeAndRun(double delta_seconds);
-  std::deque<std::pair<base::OnceClosure, double>> TakePendingTasksForTesting();
+  void AdvanceTimeAndRun(base::TimeDelta delta);
+  void AdvanceTimeAndRun(double delta_seconds) {
+    AdvanceTimeAndRun(base::TimeDelta::FromSecondsD(delta_seconds));
+  }
+
+  using PendingTask = std::pair<base::OnceClosure, base::TimeTicks>;
+  std::deque<PendingTask> TakePendingTasksForTesting();
 
  protected:
   bool PostDelayedTask(const base::Location& location,
