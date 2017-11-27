@@ -95,6 +95,8 @@ class SigninPromoViewControllerTest : public BlockCleanupTest {
   void TearDown() override {
     NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
     [standardDefaults removeObjectForKey:kDisplayedSSORecallForMajorVersionKey];
+    [standardDefaults removeObjectForKey:kLastShownAccountGaiaIdVersionKey];
+    [standardDefaults removeObjectForKey:kSigninPromoViewDisplayCountKey];
     [standardDefaults synchronize];
     [FakeVersionSigninPromoViewController clearFakeCurrentVersion];
     BlockCleanupTest::TearDown();
@@ -129,17 +131,20 @@ TEST_F(SigninPromoViewControllerTest, TestConstructorDestructor) {
   EXPECT_TRUE([controller() view]);
 }
 
+// Should show the sign-in promo for the first time.
 TEST_F(SigninPromoViewControllerTest, TestWillDisplay) {
   EXPECT_TRUE([SigninPromoViewController
       shouldBePresentedForBrowserState:chrome_browser_state_.get()]);
 }
 
+// Should not show the sign-in promo twice on the same version.
 TEST_F(SigninPromoViewControllerTest, TestWillNotDisplaySameVersion) {
   SetPromoHasBeenShown();
   EXPECT_FALSE([FakeVersionSigninPromoViewController
       shouldBePresentedForBrowserState:chrome_browser_state_.get()]);
 }
 
+// Should not show the sign-in promo twice until to major version after.
 TEST_F(SigninPromoViewControllerTest, TestWillNotDisplayOneMinorVersion) {
   SetPromoHasBeenShown();
   // Set the future version to be one minor release ahead.
@@ -148,6 +153,7 @@ TEST_F(SigninPromoViewControllerTest, TestWillNotDisplayOneMinorVersion) {
       shouldBePresentedForBrowserState:chrome_browser_state_.get()]);
 }
 
+// Should not show the sign-in promo twice until to major version after.
 TEST_F(SigninPromoViewControllerTest, TestWillNotDisplayTwoMinorVersions) {
   SetPromoHasBeenShown();
   // Set the future version to be two minor releases ahead.
@@ -156,6 +162,7 @@ TEST_F(SigninPromoViewControllerTest, TestWillNotDisplayTwoMinorVersions) {
       shouldBePresentedForBrowserState:chrome_browser_state_.get()]);
 }
 
+// Should not show the sign-in promo twice until to major version after.
 TEST_F(SigninPromoViewControllerTest, TestWillNotDisplayOneMajorVersion) {
   SetPromoHasBeenShown();
   // Set the future version to be one major release ahead.
@@ -164,11 +171,103 @@ TEST_F(SigninPromoViewControllerTest, TestWillNotDisplayOneMajorVersion) {
       shouldBePresentedForBrowserState:chrome_browser_state_.get()]);
 }
 
+// Should show the sign-in promo a second time, 2 version after.
 TEST_F(SigninPromoViewControllerTest, TestWillDisplayTwoMajorVersions) {
   SetPromoHasBeenShown();
   // Set the future version to be two major releases ahead.
   [FakeVersionSigninPromoViewController setFakeCurrentVersion:"3.0"];
   EXPECT_TRUE([FakeVersionSigninPromoViewController
+      shouldBePresentedForBrowserState:chrome_browser_state_.get()]);
+}
+
+// Show the sign-in promo on version 1.0.
+// Show the sign-in promo on version 3.0.
+// Move to version 5.0.
+// Expected: should not show the sign-in promo.
+TEST_F(SigninPromoViewControllerTest, TestWillShowTwoTimesOnly) {
+  SetPromoHasBeenShown();
+  [FakeVersionSigninPromoViewController setFakeCurrentVersion:"3.0"];
+  SetPromoHasBeenShown();
+  [FakeVersionSigninPromoViewController setFakeCurrentVersion:"5.0"];
+  EXPECT_FALSE([FakeVersionSigninPromoViewController
+      shouldBePresentedForBrowserState:chrome_browser_state_.get()]);
+}
+
+// Show the sign-in promo on version 1.0.
+// Show the sign-in promo on version 3.0.
+// Move to version 5.0.
+// Add new account.
+// Expected: should show the sign-in promo.
+TEST_F(SigninPromoViewControllerTest, TestWillShowForNewAccountAdded) {
+  SetPromoHasBeenShown();
+  [FakeVersionSigninPromoViewController setFakeCurrentVersion:"3.0"];
+  SetPromoHasBeenShown();
+  [FakeVersionSigninPromoViewController setFakeCurrentVersion:"5.0"];
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+      ->AddIdentities(@[ @"foo1" ]);
+  EXPECT_TRUE([FakeVersionSigninPromoViewController
+      shouldBePresentedForBrowserState:chrome_browser_state_.get()]);
+}
+
+// Add new account.
+// Show the sign-in promo on version 1.0.
+// Show the sign-in promo on version 3.0.
+// Move to version 5.0.
+// Remove previous account.
+// Expected: should not show the sign-in promo.
+TEST_F(SigninPromoViewControllerTest, TestWillNotShowWithAccountRemoved) {
+  NSString* newAccountGaiaId = @"foo1";
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+      ->AddIdentities(@[ newAccountGaiaId ]);
+  SetPromoHasBeenShown();
+  [FakeVersionSigninPromoViewController setFakeCurrentVersion:"3.0"];
+  SetPromoHasBeenShown();
+  [FakeVersionSigninPromoViewController setFakeCurrentVersion:"5.0"];
+  NSArray* allIdentities =
+      ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+          ->GetAllIdentities();
+  ChromeIdentity* foo1Identity = nil;
+  for (ChromeIdentity* identity in allIdentities) {
+    if ([identity.userFullName isEqualToString:newAccountGaiaId]) {
+      ASSERT_EQ(nil, foo1Identity);
+      foo1Identity = identity;
+    }
+  }
+  ASSERT_NE(nil, foo1Identity);
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+      ->RemoveIdentity(foo1Identity);
+  EXPECT_FALSE([FakeVersionSigninPromoViewController
+      shouldBePresentedForBrowserState:chrome_browser_state_.get()]);
+}
+
+// Show the sign-in promo on version 1.0.
+// Show the sign-in promo on version 3.0.
+// Move to version 4.0.
+// Add an account.
+// Expected: should not show the sign-in promo.
+TEST_F(SigninPromoViewControllerTest,
+       TestWillNotShowNewAccountUntilTwoVersion) {
+  SetPromoHasBeenShown();
+  [FakeVersionSigninPromoViewController setFakeCurrentVersion:"3.0"];
+  SetPromoHasBeenShown();
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+      ->AddIdentities(@[ @"foo1" ]);
+  [FakeVersionSigninPromoViewController setFakeCurrentVersion:"4.0"];
+  EXPECT_FALSE([FakeVersionSigninPromoViewController
+      shouldBePresentedForBrowserState:chrome_browser_state_.get()]);
+}
+
+// Show the sign-in promo on version 1.0.
+// Move to version 2.0.
+// Add an account.
+// Expected: should not show the sign-in promo (only display every 2 versions).
+TEST_F(SigninPromoViewControllerTest,
+       TestWillNotShowNewAccountUntilTwoVersionBis) {
+  SetPromoHasBeenShown();
+  [FakeVersionSigninPromoViewController setFakeCurrentVersion:"2.0"];
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+      ->AddIdentities(@[ @"foo1" ]);
+  EXPECT_FALSE([FakeVersionSigninPromoViewController
       shouldBePresentedForBrowserState:chrome_browser_state_.get()]);
 }
 
