@@ -238,9 +238,6 @@ MainThreadEventQueue::MainThreadEventQueue(
       enable_non_blocking_due_to_main_thread_responsiveness_flag_(
           base::FeatureList::IsEnabled(
               features::kMainThreadBusyScrollIntervention)),
-      handle_raf_aligned_mouse_input_(
-          allow_raf_aligned_input &&
-          base::FeatureList::IsEnabled(features::kRafAlignedMouseInputEvents)),
       needs_low_latency_(false),
       main_task_runner_(main_task_runner),
       renderer_scheduler_(renderer_scheduler),
@@ -523,7 +520,7 @@ bool MainThreadEventQueue::IsRafAlignedEvent(
   switch (event->event().GetType()) {
     case blink::WebInputEvent::kMouseMove:
     case blink::WebInputEvent::kMouseWheel:
-      return handle_raf_aligned_mouse_input_ && !needs_low_latency_;
+      return !needs_low_latency_;
     case blink::WebInputEvent::kTouchMove:
       return !needs_low_latency_;
     default:
