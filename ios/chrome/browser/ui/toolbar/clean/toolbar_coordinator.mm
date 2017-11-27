@@ -171,6 +171,10 @@
   return self.toolbarViewController;
 }
 
+- (id<BubbleViewAnchorPointProvider>)bubbleAnchorPointProvider {
+  return self.toolbarViewController;
+}
+
 - (void)updateOmniboxState {
   _locationBar->SetShouldShowHintText(
       [self.delegate toolbarModelIOS]->ShouldDisplayHintText());

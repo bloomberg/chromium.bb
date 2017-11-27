@@ -179,11 +179,13 @@
 #pragma mark - BubbleViewAnchorPointProvider
 
 - (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
-  return CGPointZero;
+  return [[self.toolbarCoordinator bubbleAnchorPointProvider]
+      anchorPointForTabSwitcherButton:direction];
 }
 
 - (CGPoint)anchorPointForToolsMenuButton:(BubbleArrowDirection)direction {
-  return CGPointZero;
+  return [[self.toolbarCoordinator bubbleAnchorPointProvider]
+      anchorPointForToolsMenuButton:direction];
 }
 
 @end

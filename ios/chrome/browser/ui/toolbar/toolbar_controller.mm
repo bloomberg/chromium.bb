@@ -795,21 +795,14 @@ using ios::material::TimingFunction;
 #pragma mark - BubbleViewAnchorPointProvider methods.
 
 - (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
-  // Shrink the padding around the tab switcher button so popovers are anchored
-  // correctly.
-  CGRect unpaddedRect =
-      CGRectInset(stackButton_.frame, kPopoverAnchorHorizontalPadding, 0.0);
-  CGPoint anchorPoint = bubble_util::AnchorPoint(unpaddedRect, direction);
+  CGPoint anchorPoint = bubble_util::AnchorPoint(stackButton_.frame, direction);
   return [stackButton_.superview convertPoint:anchorPoint
                                        toView:stackButton_.window];
 }
 
 - (CGPoint)anchorPointForToolsMenuButton:(BubbleArrowDirection)direction {
-  // Shrink the padding around the tools menu button so popovers are anchored
-  // correctly.
-  CGRect unpaddedRect =
-      CGRectInset(toolsMenuButton_.frame, kPopoverAnchorHorizontalPadding, 0.0);
-  CGPoint anchorPoint = bubble_util::AnchorPoint(unpaddedRect, direction);
+  CGPoint anchorPoint =
+      bubble_util::AnchorPoint(toolsMenuButton_.frame, direction);
   return [toolsMenuButton_.superview convertPoint:anchorPoint
                                            toView:toolsMenuButton_.window];
 }
