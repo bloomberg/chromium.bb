@@ -759,8 +759,8 @@ public class VrShellDelegate
         // case of autopresentation, we don't want to enter WebVR mode so that we can show the
         // splash screen. In this case, we enter WebVR mode when the site requests presentation.
         // Note that we don't want to dispatch vrdisplayactivate for auto-present and vr intents.
-        boolean tentativeWebVrMode = mListeningForWebVrActivateBeforePause && !mRequestedWebVr
-                && !mAutopresentWebVr && !mEnterVrOnStartup;
+        boolean tentativeWebVrMode =
+                mListeningForWebVrActivateBeforePause && !mRequestedWebVr && !mEnterVrOnStartup;
         if (tentativeWebVrMode) {
             // Before we fire DisplayActivate, we need focus to propagate to the WebContents we're
             // about to send DisplayActivate to. Focus propagates during onResume, which is when
@@ -812,7 +812,7 @@ public class VrShellDelegate
         mExitedDueToUnsupportedMode = false;
 
         addVrViews();
-        boolean webVrMode = mRequestedWebVr || tentativeWebVrMode && !mAutopresentWebVr;
+        boolean webVrMode = mRequestedWebVr || tentativeWebVrMode || mAutopresentWebVr;
         mVrShell.initializeNative(mActivity.getActivityTab(), webVrMode, mAutopresentWebVr,
                 mActivity instanceof CustomTabActivity);
         mVrShell.setWebVrModeEnabled(webVrMode, false);
@@ -1070,6 +1070,7 @@ public class VrShellDelegate
 
     @CalledByNative
     private void presentRequested() {
+        if (DEBUG_LOGS) Log.i(TAG, "WebVR page requested presentation");
         mRequestedWebVr = true;
         switch (enterVrInternal()) {
             case ENTER_VR_NOT_NECESSARY:
@@ -1360,6 +1361,7 @@ public class VrShellDelegate
 
     @CalledByNative
     private void setListeningForWebVrActivate(boolean listening) {
+        if (DEBUG_LOGS) Log.i(TAG, "WebVR page listening for vrdisplayactivate: " + listening);
         // Non-Daydream devices may not have the concept of display activate. So disable
         // mListeningForWebVrActivate for them.
         if (mVrSupportLevel != VR_DAYDREAM) return;
