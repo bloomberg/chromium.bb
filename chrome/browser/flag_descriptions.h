@@ -1033,6 +1033,9 @@ extern const char kBackgroundLoaderForDownloadsDescription[];
 extern const char kChromeHomeBottomNavLabelsName[];
 extern const char kChromeHomeBottomNavLabelsDescription[];
 
+extern const char kChromeHomeInactivitySheetExpansionName[];
+extern const char kChromeHomeInactivitySheetExpansionDescription[];
+
 extern const char kChromeHomeOptOutSnackbarName[];
 extern const char kChromeHomeOptOutSnackbarDescription[];
 
