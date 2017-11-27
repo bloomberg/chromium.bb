@@ -2468,11 +2468,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="User did type"/>
   <int value="6" label="Suggestions shown"/>
   <int value="7" label="Suggestions shown (once)"/>
-  <int value="8" label="User did autofill"/>
-  <int value="9" label="User did autofill (once)"/>
+  <int value="8" label="User triggered autofill"/>
+  <int value="9" label="User triggered autofill (once)"/>
   <int value="10" label="User edited autofilled field"/>
   <int value="11" label="User edited autofilled field (once)"/>
   <int value="12" label="User entered a UPI VPA into a form"/>
+  <int value="13" label="A field was populated by autofill"/>
 </enum>
 
 <enum name="AutofillWalletAddressConversionType">
