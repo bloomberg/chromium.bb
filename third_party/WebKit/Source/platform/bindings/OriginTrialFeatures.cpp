@@ -15,20 +15,12 @@ void InstallOriginTrialFeaturesDefault(
     v8::Local<v8::Object> prototype_object,
     v8::Local<v8::Function> interface_object) {}
 
-void InstallOriginTrialFeaturesOnGlobalDefault(
-    const WrapperTypeInfo* wrapper_type_info,
-    const ScriptState* script_state) {}
-
 void InstallPendingOriginTrialFeatureDefault(const String& feature,
                                              const ScriptState* script_state) {}
 
 namespace {
 InstallOriginTrialFeaturesFunction g_install_origin_trial_features_function =
     &InstallOriginTrialFeaturesDefault;
-
-InstallOriginTrialFeaturesOnGlobalFunction
-    g_install_origin_trial_features_on_global_function =
-        &InstallOriginTrialFeaturesOnGlobalDefault;
 
 InstallPendingOriginTrialFeatureFunction
     g_install_pending_origin_trial_feature_function =
@@ -42,17 +34,6 @@ InstallOriginTrialFeaturesFunction SetInstallOriginTrialFeaturesFunction(
       g_install_origin_trial_features_function;
   g_install_origin_trial_features_function =
       new_install_origin_trial_features_function;
-  return original_function;
-}
-
-InstallOriginTrialFeaturesOnGlobalFunction
-SetInstallOriginTrialFeaturesOnGlobalFunction(
-    InstallOriginTrialFeaturesOnGlobalFunction
-        new_install_origin_trial_features_on_global_function) {
-  InstallOriginTrialFeaturesOnGlobalFunction original_function =
-      g_install_origin_trial_features_on_global_function;
-  g_install_origin_trial_features_on_global_function =
-      new_install_origin_trial_features_on_global_function;
   return original_function;
 }
 
@@ -73,16 +54,6 @@ void InstallOriginTrialFeatures(const WrapperTypeInfo* type,
                                 v8::Local<v8::Function> interface_object) {
   (*g_install_origin_trial_features_function)(
       type, script_state, prototype_object, interface_object);
-}
-
-void InstallOriginTrialFeaturesOnGlobal(const WrapperTypeInfo* type,
-                                        const ScriptState* script_state) {
-  DCHECK(script_state);
-  DCHECK(script_state->GetContext() ==
-         script_state->GetIsolate()->GetCurrentContext());
-  DCHECK(script_state->PerContextData());
-
-  (*g_install_origin_trial_features_on_global_function)(type, script_state);
 }
 
 void InstallPendingOriginTrialFeature(const String& feature,

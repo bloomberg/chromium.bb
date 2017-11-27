@@ -944,7 +944,8 @@ void {{v8_class_or_partial}}::install{{feature.name}}(ScriptState* scriptState) 
 {% block native_value_traits %}{% endblock %}
 {##############################################################################}
 {% block install_conditional_features %}
-{% from 'attributes.cpp.tmpl' import install_conditional_attributes with context %}
+{% from 'attributes.cpp.tmpl' import install_conditional_attributes,
+      install_conditional_interface_objects with context %}
 {% from 'methods.cpp.tmpl' import install_conditional_methods with context %}
 {% if install_conditional_features_func %}
 void {{v8_class_or_partial}}::InstallConditionalFeatures(
@@ -987,6 +988,8 @@ void {{v8_class_or_partial}}::InstallConditionalFeatures(
 
   {% if conditional_attributes or conditional_methods %}
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  {% endif %}
+  {% if conditional_attributes or conditional_methods or conditional_interface_objects %}
   ExecutionContext* executionContext = ToExecutionContext(context);
   DCHECK(executionContext);
   {% if has_conditional_secure_attributes or has_conditional_secure_methods %}
@@ -994,9 +997,10 @@ void {{v8_class_or_partial}}::InstallConditionalFeatures(
   {% endif %}
 
   {% set attributes_on_instance = conditional_attributes | selectattr('on_instance') | list  %}
-  {% if attributes_on_instance %}
+  {% if attributes_on_instance or conditional_interface_objects %}
   if (!instanceObject.IsEmpty()) {
-    {{install_conditional_attributes('isSecureContext', attributes_on_instance) | indent(2)}}
+    {{install_conditional_attributes('isSecureContext', attributes_on_instance) | indent(4)}}
+    {{install_conditional_interface_objects('isSecureContext', conditional_interface_objects) | indent(4)}}
   }
   {% endif %}
 
@@ -1011,26 +1015,6 @@ void {{v8_class_or_partial}}::InstallConditionalFeatures(
 {% endif %}
 
 {% endblock %}{# install_conditional_features #}
-{##############################################################################}
-{% block install_conditional_features_on_global %}
-{% from 'attributes.cpp.tmpl' import install_conditional_interface_objects_on_global with context %}
-{% if has_install_conditional_features_on_global_func %}
-void {{v8_class_or_partial}}::InstallConditionalFeaturesOnGlobal(
-    v8::Local<v8::Context> context, const DOMWrapperWorld& world) {
-  v8::Isolate* isolate = context->GetIsolate();
-  v8::Local<v8::Object> prototype_object;
-  v8::Local<v8::Object> global_object = context->Global();
-  ExecutionContext* execution_context = ToExecutionContext(context);
-  DCHECK(execution_context);
-  {% if conditional_interface_objects | selectattr('secure_context_test') | list %}
-  bool is_secure_context = (execution_context && execution_context->IsSecureContext());
-  {% endif %}
-
-  {{install_conditional_interface_objects_on_global('is_secure_context') | indent(2)}}
-}
-{% endif %}
-
-{% endblock %}{# install_conditional_features_on_global_func #}
 {##############################################################################}
 {% block partial_interface %}{% endblock %}
 }  // namespace blink

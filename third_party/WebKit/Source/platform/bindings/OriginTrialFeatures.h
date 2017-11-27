@@ -19,9 +19,6 @@ using InstallOriginTrialFeaturesFunction = void (*)(const WrapperTypeInfo*,
                                                     v8::Local<v8::Object>,
                                                     v8::Local<v8::Function>);
 
-using InstallOriginTrialFeaturesOnGlobalFunction =
-    void (*)(const WrapperTypeInfo*, const ScriptState*);
-
 using InstallPendingOriginTrialFeatureFunction = void (*)(const String&,
                                                           const ScriptState*);
 
@@ -31,14 +28,6 @@ using InstallPendingOriginTrialFeatureFunction = void (*)(const String&,
 // function is returned, so that functions can be chained.
 PLATFORM_EXPORT InstallOriginTrialFeaturesFunction
     SetInstallOriginTrialFeaturesFunction(InstallOriginTrialFeaturesFunction);
-
-// Sets the function to be called by |InstallOriginTrialFeaturesOnGlobal|. It is
-// initially set to the private |InstallOriginTrialFeaturesOnGlobalDefault|
-// function, but can be overridden by this function. A pointer to the previously
-// set function is returned, so that functions can be chained.
-PLATFORM_EXPORT InstallOriginTrialFeaturesOnGlobalFunction
-    SetInstallOriginTrialFeaturesOnGlobalFunction(
-        InstallOriginTrialFeaturesOnGlobalFunction);
 
 // Sets the function to be called by |InstallPendingOriginTrialFeature|. This
 // is initially set to the private |InstallPendingOriginTrialFeatureDefault|
@@ -56,15 +45,6 @@ PLATFORM_EXPORT void InstallOriginTrialFeatures(const WrapperTypeInfo*,
                                                 const ScriptState*,
                                                 v8::Local<v8::Object>,
                                                 v8::Local<v8::Function>);
-
-// Installs all of the conditionally enabled V8 bindings for the given global
-// type (i.e. marked in IDL by [Global] or [PrimaryGlobal]). Specifically,
-// global objects must have members on the instance itself, instead of the
-// prototype (see https://heycam.github.io/webidl/#Global). This means the
-// InstallOriginTrialFeatures() method is insufficient for all conditional V8
-// bindings.
-PLATFORM_EXPORT void InstallOriginTrialFeaturesOnGlobal(const WrapperTypeInfo*,
-                                                        const ScriptState*);
 
 // Installs all of the conditionally enabled V8 bindings for a feature, if
 // needed. This is called to install a newly-enabled feature on any existing

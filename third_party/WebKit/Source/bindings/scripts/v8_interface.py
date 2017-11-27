@@ -405,7 +405,7 @@ def interface_context(interface, interfaces):
     conditional_attributes = [attr for attr in conditionally_enabled_attributes if not attr['constructor_type']]
     conditional_interface_objects = [attr for attr in conditionally_enabled_attributes if attr['constructor_type']]
     has_conditional_secure_attributes = any(  # pylint: disable=invalid-name
-        v8_attributes.is_secure_context(attr) for attr in conditional_attributes)
+        v8_attributes.is_secure_context(attr) for attr in conditionally_enabled_attributes)
     context.update({
         'conditional_attributes': conditional_attributes,
         'conditional_interface_objects': conditional_interface_objects,
@@ -444,14 +444,12 @@ def interface_context(interface, interfaces):
 
     # Conditionally enabled members
     install_conditional_features_func = None  # pylint: disable=invalid-name
-    if unscopables or conditional_attributes or conditional_methods:
+    if unscopables or conditional_interface_objects or conditional_attributes or conditional_methods:
         install_conditional_features_func = (  # pylint: disable=invalid-name
             v8_class_name_or_partial + '::InstallConditionalFeatures')
-    has_install_conditional_features_on_global_func = bool(conditional_interface_objects)  # pylint: disable=invalid-name
 
     context.update({
         'install_conditional_features_func': install_conditional_features_func,
-        'has_install_conditional_features_on_global_func': has_install_conditional_features_on_global_func,
     })
 
     context.update({

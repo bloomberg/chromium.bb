@@ -238,7 +238,9 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
                                              human_readable_name);
   }
 
-  InstallOriginTrialFeaturesOnGlobal(wrapper_type_info, script_state_.get());
+  wrapper_type_info->InstallConditionalFeatures(
+      context, *world_, global_object, v8::Local<v8::Object>(),
+      v8::Local<v8::Function>(), global_interface_template);
 
   return true;
 }
