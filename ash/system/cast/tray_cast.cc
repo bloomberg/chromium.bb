@@ -27,6 +27,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -48,6 +49,39 @@ base::string16 ElideString(const base::string16& text) {
   base::string16 elided;
   gfx::ElideString(text, kMaximumStatusStringLength, &elided);
   return elided;
+}
+
+// Returns the correct vector icon for |icon_type|. Some types may be different
+// for branded builds.
+const gfx::VectorIcon& SinkIconTypeToIcon(mojom::SinkIconType icon_type) {
+  switch (icon_type) {
+#if defined(GOOGLE_CHROME_BUILD)
+    case mojom::SinkIconType::CAST:
+      return kSystemMenuCastDeviceIcon;
+    case mojom::SinkIconType::EDUCATION:
+      return kSystemMenuCastEducationIcon;
+    case mojom::SinkIconType::HANGOUT:
+      return kSystemMenuCastHangoutIcon;
+    case mojom::SinkIconType::MEETING:
+      return kSystemMenuCastMeetingIcon;
+#else
+    case mojom::SinkIconType::CAST:
+    case mojom::SinkIconType::EDUCATION:
+      return kSystemMenuCastGenericIcon;
+    case mojom::SinkIconType::HANGOUT:
+    case mojom::SinkIconType::MEETING:
+      return kSystemMenuCastMessageIcon;
+#endif
+    case mojom::SinkIconType::GENERIC:
+      return kSystemMenuCastGenericIcon;
+    case mojom::SinkIconType::CAST_AUDIO_GROUP:
+      return kSystemMenuCastAudioGroupIcon;
+    case mojom::SinkIconType::CAST_AUDIO:
+      return kSystemMenuCastAudioIcon;
+  }
+
+  NOTREACHED();
+  return kSystemMenuCastGenericIcon;
 }
 
 }  // namespace
@@ -389,7 +423,8 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
   for (auto& it : sinks_and_routes_) {
     const ash::mojom::SinkAndRoutePtr& sink_route = it.second;
     const base::string16 name = base::UTF8ToUTF16(sink_route->sink->name);
-    views::View* container = AddScrollListItem(kSystemMenuCastDeviceIcon, name);
+    views::View* container = AddScrollListItem(
+        SinkIconTypeToIcon(sink_route->sink->sink_icon_type), name);
     view_to_sink_map_[container] = sink_route->sink.Clone();
   }
 

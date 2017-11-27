@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
 import("//components/vector_icons/vector_icons.gni")
 
 aggregate_vector_icons("ash_vector_icons") {
@@ -174,10 +175,16 @@ aggregate_vector_icons("ash_vector_icons") {
     "system_menu_caps_lock.icon",
     "system_menu_cast.1x.icon",
     "system_menu_cast.icon",
-    "system_menu_cast_device.1x.icon",
-    "system_menu_cast_device.icon",
+    "system_menu_cast_audio.1x.icon",
+    "system_menu_cast_audio.icon",
+    "system_menu_cast_audio_group.1x.icon",
+    "system_menu_cast_audio_group.icon",
     "system_menu_cast_enabled.1x.icon",
     "system_menu_cast_enabled.icon",
+    "system_menu_cast_generic.1x.icon",
+    "system_menu_cast_generic.icon",
+    "system_menu_cast_message.1x.icon",
+    "system_menu_cast_message.icon",
     "system_menu_child_user.1x.icon",
     "system_menu_child_user.icon",
     "system_menu_computer.1x.icon",
@@ -295,6 +302,19 @@ aggregate_vector_icons("ash_vector_icons") {
     "window_control_right_snapped.1x.icon",
     "window_control_right_snapped.icon",
   ]
+
+  if (is_chrome_branded) {
+    icons += [
+      "system_menu_cast_device.1x.icon",
+      "system_menu_cast_device.icon",
+      "system_menu_cast_education.1x.icon",
+      "system_menu_cast_education.icon",
+      "system_menu_cast_hangout.1x.icon",
+      "system_menu_cast_hangout.icon",
+      "system_menu_cast_meeting.1x.icon",
+      "system_menu_cast_meeting.icon",
+    ]
+  }
 }
 
 source_set("vector_icons") {

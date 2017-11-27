@@ -197,6 +197,10 @@ void CastConfigClientMediaRouter::RequestDeviceRefresh() {
     sr->sink->id = sink.id();
     sr->sink->name = sink.name();
     sr->sink->domain = sink.domain().value_or(std::string());
+    // TODO(crbug.com/788854): Replace SinkIconType with
+    // ash::mojom::SinkIconType.
+    sr->sink->sink_icon_type =
+        static_cast<ash::mojom::SinkIconType>(sink.icon_type());
     items.push_back(std::move(sr));
   }
 
