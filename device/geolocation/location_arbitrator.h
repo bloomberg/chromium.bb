@@ -15,8 +15,8 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "device/geolocation/geolocation_export.h"
-#include "device/geolocation/geolocation_provider.h"
-#include "device/geolocation/location_provider.h"
+#include "device/geolocation/geolocation_provider_impl.h"
+#include "device/geolocation/public/cpp/location_provider.h"
 #include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -26,8 +26,6 @@ class URLRequestContextGetter;
 }
 
 namespace device {
-class GeolocationDelegate;
-class LocationProvider;
 
 // This class is responsible for handling updates from multiple underlying
 // providers and resolving them to a single 'best' location fix at any given
@@ -38,10 +36,14 @@ class DEVICE_GEOLOCATION_EXPORT LocationArbitrator : public LocationProvider {
   // switching to this location provider on the basis of it being fresher
   // (regardles of relative accuracy). Public for tests.
   static const base::TimeDelta kFixStaleTimeoutTimeDelta;
-  LocationArbitrator(std::unique_ptr<GeolocationDelegate> delegate,
-                     const GeolocationProvider::RequestContextProducer
-                         request_context_producer,
-                     const std::string& api_key);
+
+  // If the |custom_location_provider_getter| callback returns nullptr, then
+  // LocationArbitrator uses the default system location provider.
+  LocationArbitrator(
+      const CustomLocationProviderCallback& custom_location_provider_getter,
+      const GeolocationProvider::RequestContextProducer
+          request_context_producer,
+      const std::string& api_key);
   ~LocationArbitrator() override;
 
   static GURL DefaultNetworkProviderURL();
@@ -93,7 +95,7 @@ class DEVICE_GEOLOCATION_EXPORT LocationArbitrator : public LocationProvider {
                            const mojom::Geoposition& new_position,
                            bool from_same_provider) const;
 
-  const std::unique_ptr<GeolocationDelegate> delegate_;
+  const CustomLocationProviderCallback custom_location_provider_getter_;
   const GeolocationProvider::RequestContextProducer request_context_producer_;
   const std::string api_key_;
 

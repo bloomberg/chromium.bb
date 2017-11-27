@@ -12,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "device/geolocation/geolocation_delegate.h"
 #include "device/geolocation/network_location_provider.h"
 #include "device/geolocation/public/cpp/geoposition.h"
 
@@ -24,10 +23,10 @@ const base::TimeDelta LocationArbitrator::kFixStaleTimeoutTimeDelta =
     base::TimeDelta::FromSeconds(11);
 
 LocationArbitrator::LocationArbitrator(
-    std::unique_ptr<GeolocationDelegate> delegate,
+    const CustomLocationProviderCallback& custom_location_provider_getter,
     GeolocationProvider::RequestContextProducer request_context_producer,
     const std::string& api_key)
-    : delegate_(std::move(delegate)),
+    : custom_location_provider_getter_(custom_location_provider_getter),
       request_context_producer_(request_context_producer),
       api_key_(api_key),
       position_provider_(nullptr),
@@ -115,8 +114,11 @@ void LocationArbitrator::RegisterProvider(
 }
 
 void LocationArbitrator::RegisterSystemProvider() {
-  std::unique_ptr<LocationProvider> provider =
-      delegate_->OverrideSystemLocationProvider();
+  std::unique_ptr<LocationProvider> provider;
+  if (custom_location_provider_getter_)
+    provider = custom_location_provider_getter_.Run();
+
+  // Use the default system provider if the custom provider is null.
   if (!provider)
     provider = NewSystemLocationProvider();
   RegisterProvider(std::move(provider));

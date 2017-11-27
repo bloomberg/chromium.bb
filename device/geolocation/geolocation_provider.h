@@ -13,7 +13,6 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace device {
-class GeolocationDelegate;
 
 // This is the main API to the geolocation subsystem. The application will hold
 // a single instance of this class and can register multiple clients to be
@@ -29,12 +28,6 @@ class GeolocationDelegate;
 class GeolocationProvider {
  public:
   DEVICE_GEOLOCATION_EXPORT static GeolocationProvider* GetInstance();
-
-  // Optional: provide a Delegate to override typical services.
-  // Call before using Init() on the singleton GetInstance(), and call no more
-  // than once.
-  DEVICE_GEOLOCATION_EXPORT static void SetGeolocationDelegate(
-      GeolocationDelegate* delegate);
 
   // Callback type for a function that asynchronously produces a
   // URLRequestContextGetter.

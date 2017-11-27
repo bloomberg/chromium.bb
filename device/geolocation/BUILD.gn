@@ -19,8 +19,6 @@ component("geolocation") {
     "geolocation_config.h",
     "geolocation_context.cc",
     "geolocation_context.h",
-    "geolocation_delegate.cc",
-    "geolocation_delegate.h",
     "geolocation_export.h",
     "geolocation_impl.cc",
     "geolocation_impl.h",
@@ -31,7 +29,6 @@ component("geolocation") {
     "location_api_adapter_android.h",
     "location_arbitrator.cc",
     "location_arbitrator.h",
-    "location_provider.h",
     "location_provider_android.cc",
     "location_provider_android.h",
     "network_location_provider.cc",
@@ -158,6 +155,7 @@ source_set("test_support") {
     ":geolocation",
   ]
   deps = [
+    "//device/geolocation/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
   ]

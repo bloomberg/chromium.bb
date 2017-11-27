@@ -15,7 +15,7 @@
 #include "base/threading/thread.h"
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/geolocation_provider.h"
-#include "device/geolocation/location_provider.h"
+#include "device/geolocation/public/cpp/location_provider.h"
 #include "device/geolocation/public/interfaces/geoposition.mojom.h"
 
 namespace base {
@@ -25,6 +25,11 @@ class SingleThreadTaskRunner;
 }
 
 namespace device {
+
+// Callback that returns the embedder's custom location provider. This callback
+// is provided to the Device Service by its embedder.
+using CustomLocationProviderCallback =
+    base::Callback<std::unique_ptr<LocationProvider>()>;
 
 class DEVICE_GEOLOCATION_EXPORT GeolocationProviderImpl
     : public GeolocationProvider,
@@ -47,6 +52,12 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationProviderImpl
   // called on the UI thread so that the GeolocationProviderImpl is always
   // instantiated on the same thread. Ownership is NOT returned.
   static GeolocationProviderImpl* GetInstance();
+
+  // Optional: provide a callback which can return a custom location provider
+  // from embedder. Call before using Init() on the singleton GetInstance(),
+  // and call no more than once.
+  static void SetCustomLocationProviderCallback(
+      const CustomLocationProviderCallback& callback);
 
   bool user_did_opt_into_location_services_for_testing() {
     return user_did_opt_into_location_services_;

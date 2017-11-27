@@ -1,6 +1,7 @@
 include_rules = [
   "+content/common/input/input_handler.mojom.h",
   "+components/viz/common",
+  "+device/geolocation/public/cpp",
   "+device/screen_orientation/public/interfaces",
   "+services/device/public/interfaces",
   "+services/service_manager/sandbox",

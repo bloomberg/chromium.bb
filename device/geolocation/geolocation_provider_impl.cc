@@ -16,15 +16,14 @@
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "device/geolocation/geolocation_delegate.h"
 #include "device/geolocation/location_arbitrator.h"
 #include "device/geolocation/public/cpp/geoposition.h"
 
 namespace device {
 
 namespace {
-base::LazyInstance<std::unique_ptr<GeolocationDelegate>>::Leaky g_delegate =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<CustomLocationProviderCallback>::Leaky
+    g_custom_location_provider_callback = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<GeolocationProvider::RequestContextProducer>::Leaky
     g_request_context_producer = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<std::string>::Leaky g_api_key = LAZY_INSTANCE_INITIALIZER;
@@ -36,13 +35,6 @@ GeolocationProvider* GeolocationProvider::GetInstance() {
 }
 
 // static
-void GeolocationProvider::SetGeolocationDelegate(
-    GeolocationDelegate* delegate) {
-  DCHECK(!g_delegate.Get());
-  g_delegate.Get().reset(delegate);
-}
-
-// static
 void GeolocationProvider::SetRequestContextProducer(
     GeolocationProvider::RequestContextProducer request_context_producer) {
   g_request_context_producer.Get() = request_context_producer;
@@ -51,6 +43,12 @@ void GeolocationProvider::SetRequestContextProducer(
 // static
 void GeolocationProvider::SetApiKey(const std::string& api_key) {
   g_api_key.Get() = api_key;
+}
+
+// static
+void GeolocationProviderImpl::SetCustomLocationProviderCallback(
+    const CustomLocationProviderCallback& callback) {
+  g_custom_location_provider_callback.Get() = callback;
 }
 
 std::unique_ptr<GeolocationProvider::Subscription>
@@ -209,12 +207,9 @@ void GeolocationProviderImpl::Init() {
 
   LocationProvider::LocationProviderUpdateCallback callback = base::Bind(
       &GeolocationProviderImpl::OnLocationUpdate, base::Unretained(this));
-  // Use the embedder's |g_delegate| or fall back to the default one.
-  if (!g_delegate.Get())
-    g_delegate.Get().reset(new GeolocationDelegate);
 
   arbitrator_ = std::make_unique<LocationArbitrator>(
-      base::WrapUnique(g_delegate.Get().get()),
+      g_custom_location_provider_callback.Get(),
       g_request_context_producer.Get(), g_api_key.Get());
   arbitrator_->SetUpdateCallback(callback);
 }

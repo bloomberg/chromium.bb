@@ -18,6 +18,7 @@
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_loader_throttle.h"
+#include "device/geolocation/public/cpp/location_provider.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/cdm_factory.h"
 #include "media/media_features.h"
@@ -302,6 +303,11 @@ void ContentBrowserClient::SelectClientCertificate(
 
 net::URLRequestContext* ContentBrowserClient::OverrideRequestContextForURL(
     const GURL& url, ResourceContext* context) {
+  return nullptr;
+}
+
+std::unique_ptr<device::LocationProvider>
+ContentBrowserClient::OverrideSystemLocationProvider() {
   return nullptr;
 }
 

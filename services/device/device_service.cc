@@ -46,7 +46,10 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const WakeLockContextCallback& wake_lock_context_callback,
+    const CustomLocationProviderCallback& custom_location_provider_callback,
     const base::android::JavaRef<jobject>& java_nfc_delegate) {
+  GeolocationProviderImpl::SetCustomLocationProviderCallback(
+      custom_location_provider_callback);
   return std::make_unique<DeviceService>(
       std::move(file_task_runner), std::move(io_task_runner),
       wake_lock_context_callback, java_nfc_delegate);
@@ -54,7 +57,10 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
 #else
 std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    const CustomLocationProviderCallback& custom_location_provider_callback) {
+  GeolocationProviderImpl::SetCustomLocationProviderCallback(
+      custom_location_provider_callback);
   return std::make_unique<DeviceService>(std::move(file_task_runner),
                                          std::move(io_task_runner));
 }
