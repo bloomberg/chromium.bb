@@ -7,6 +7,8 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
@@ -28,19 +30,27 @@ BackgroundTabNavigationThrottle::MaybeCreateThrottleFor(
   if (!navigation_handle->IsInMainFrame())
     return nullptr;
 
+  content::WebContents* web_contents = navigation_handle->GetWebContents();
+
   // Never delay foreground tabs.
-  if (navigation_handle->GetWebContents()->IsVisible())
+  if (web_contents->IsVisible())
     return nullptr;
 
   // Never delay the tab when there is opener, so the created window can talk
   // to the creator immediately.
-  if (navigation_handle->GetWebContents()->HasOpener())
+  if (web_contents->HasOpener())
     return nullptr;
 
   // Only delay the first navigation in a newly created tab.
-  if (!navigation_handle->GetWebContents()
-           ->GetController()
-           .IsInitialNavigation()) {
+  if (!web_contents->GetController().IsInitialNavigation())
+    return nullptr;
+
+  // Do not delay prerenders.
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
+  if (prerender_manager &&
+      prerender_manager->IsWebContentsPrerendering(web_contents, nullptr)) {
     return nullptr;
   }
 
@@ -48,7 +58,7 @@ BackgroundTabNavigationThrottle::MaybeCreateThrottleFor(
   // and is used to show customized favicon and title for the delayed tab. If
   // the corresponding TabUIHelper is null, it indicates that this WebContents
   // is not a tab, e.g., it can be a BrowserPlugin.
-  if (!TabUIHelper::FromWebContents(navigation_handle->GetWebContents()))
+  if (!TabUIHelper::FromWebContents(web_contents))
     return nullptr;
 
   return base::MakeUnique<BackgroundTabNavigationThrottle>(navigation_handle);
