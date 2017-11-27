@@ -195,7 +195,7 @@ void WindowOcclusionTracker::CleanupAnimatedWindows() {
 
 bool WindowOcclusionTracker::MaybeObserveAnimatedWindow(Window* window) {
   // MaybeObserveAnimatedWindow() is called when OnWindowBoundsChanged(),
-  // OnWindowTransformed() or OnWindowOpacityChanged() is called with
+  // OnWindowTransformed() or OnWindowOpacitySet() is called with
   // ui::PropertyChangeReason::FROM_ANIMATION. Despite that, if the animation is
   // ending, the IsAnimatingOnePropertyOf() call below may return false. It is
   // important not to register an observer in that case because it would never
@@ -399,7 +399,7 @@ void WindowOcclusionTracker::OnWindowBoundsChanged(
   });
 }
 
-void WindowOcclusionTracker::OnWindowOpacityChanged(
+void WindowOcclusionTracker::OnWindowOpacitySet(
     Window* window,
     ui::PropertyChangeReason reason) {
   // Call MaybeObserveAnimatedWindow() outside the lambda so that the window can

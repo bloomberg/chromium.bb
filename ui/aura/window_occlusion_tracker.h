@@ -151,8 +151,8 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
-  void OnWindowOpacityChanged(Window* window,
-                              ui::PropertyChangeReason reason) override;
+  void OnWindowOpacitySet(Window* window,
+                          ui::PropertyChangeReason reason) override;
   void OnWindowTransformed(Window* window,
                            ui::PropertyChangeReason reason) override;
   void OnWindowStackingChanged(Window* window) override;

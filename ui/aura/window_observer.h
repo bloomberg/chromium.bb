@@ -80,7 +80,7 @@ class AURA_EXPORT WindowObserver {
   // on.
   virtual void OnWindowVisibilityChanged(Window* window, bool visible) {}
 
-  // Invoked when the bounds of the |window|'s layer are set. |old_bounds| and
+  // Invoked when the bounds of the |window|'s layer change. |old_bounds| and
   // |new_bounds| are in parent coordinates. |reason| indicates whether the
   // bounds were set directly or by an animation. This will be called at every
   // step of a bounds animation. The client can determine whether the animation
@@ -91,26 +91,28 @@ class AURA_EXPORT WindowObserver {
                                      const gfx::Rect& new_bounds,
                                      ui::PropertyChangeReason reason) {}
 
-  // Invoked when the opacity of the |window|'s layer is set. |reason| indicates
-  // whether the opacity was set directly or by an animation. This won't
-  // necessarily be called at every step of an animation. However, it will
-  // always be called before the first frame of the animation is rendered and
-  // when the animation ends. The client can determine whether the animation is
-  // ending by calling window->layer()->GetAnimator()->IsAnimatingProperty(
+  // Invoked when the opacity of the |window|'s layer is set (even if it didn't
+  // change). |reason| indicates whether the opacity was set directly or by an
+  // animation. This won't necessarily be called at every step of an animation.
+  // However, it will always be called before the first frame of the animation
+  // is rendered and when the animation ends. The client can determine whether
+  // the animation is ending by calling
+  // window->layer()->GetAnimator()->IsAnimatingProperty(
   // ui::LayerAnimationElement::OPACITY).
-  virtual void OnWindowOpacityChanged(Window* window,
-                                      ui::PropertyChangeReason reason) {}
+  virtual void OnWindowOpacitySet(Window* window,
+                                  ui::PropertyChangeReason reason) {}
 
   // Invoked before Window::SetTransform() sets the transform of a window.
   virtual void OnWindowTargetTransformChanging(
       Window* window,
       const gfx::Transform& new_transform) {}
 
-  // Invoked when the transform of |window| changes. |reason| indicates whether
-  // the transform was set directly or by an animation. This won't necessarily
-  // be called at every step of an animation. However, it will always be called
-  // before the first frame of the animation is rendered and when the animation
-  // ends. The client can determine whether the animation is ending by calling
+  // Invoked when the transform of |window| is set (even if it didn't change).
+  // |reason| indicates whether the transform was set directly or by an
+  // animation. This won't necessarily be called at every step of an animation.
+  // However, it will always be called before the first frame of the animation
+  // is rendered and when the animation ends. The client can determine whether
+  // the animation is ending by calling
   // window->layer()->GetAnimator()->IsAnimatingProperty(
   // ui::LayerAnimationElement::TRANSFORM).
   virtual void OnWindowTransformed(Window* window,
