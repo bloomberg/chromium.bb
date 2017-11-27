@@ -199,6 +199,10 @@ void VrMetricsHelper::SetVRActive(bool is_vr_enabled) {
   UpdateMode();
 }
 
+void VrMetricsHelper::RecordVoiceSearchStarted() {
+  num_voice_search_started_++;
+}
+
 void VrMetricsHelper::SetVrMode(VRMode mode) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_NE(mode, mode_);
@@ -261,6 +265,8 @@ void VrMetricsHelper::SetVrMode(VRMode mode) {
                              num_session_video_playback_);
     UMA_HISTOGRAM_COUNTS_100("VRSessionNavigationCount",
                              num_session_navigation_);
+    UMA_HISTOGRAM_COUNTS_100("VRSessionVoiceSearchCount",
+                             num_voice_search_started_);
   }
 
   // start the new session
@@ -269,6 +275,7 @@ void VrMetricsHelper::SetVrMode(VRMode mode) {
     session_timer_->StartSession(switch_time);
     num_session_video_playback_ = 0;
     num_session_navigation_ = 0;
+    num_voice_search_started_ = 0;
 
     if (num_videos_playing_ > 0) {
       session_video_timer_->StartSession(switch_time);

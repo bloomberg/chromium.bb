@@ -3251,6 +3251,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Checked"/>
 </enum>
 
+<enum name="BooleanChoice">
+  <int value="0" label="Chose CANCEL"/>
+  <int value="1" label="Chose CONTINUE"/>
+</enum>
+
 <enum name="BooleanCleared">
   <int value="0" label="Not cleared"/>
   <int value="1" label="Cleared"/>
@@ -43063,6 +43068,12 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="0" label="UNKNOWN_TYPE"/>
   <int value="1" label="CARDBOARD"/>
   <int value="2" label="DAYDREAM"/>
+</enum>
+
+<enum name="VRVoiceSearchEndState">
+  <int value="0" label="Voice search in VR opened a search page"/>
+  <int value="1" label="Voice search in VR cancelled"/>
+  <int value="2" label="Voice search in VR didn't catch phrase or timed out"/>
 </enum>
 
 <enum name="VTVDAInitializationFailureType">
