@@ -516,7 +516,7 @@ class PLATFORM_EXPORT ObjectStartBitmap {
   uint8_t object_start_bit_map_[kReservedForBitmap];
 };
 
-class NormalPage final : public BasePage {
+class PLATFORM_EXPORT NormalPage final : public BasePage {
  public:
   NormalPage(PageMemory*, BaseArena*);
   ~NormalPage();
@@ -594,12 +594,12 @@ class NormalPage final : public BasePage {
   // is also reachable through iteration on the page.
   void VerifyObjectStartBitmapIsConsistentWithPayload();
 
- private:
   // Uses the object_start_bit_map_ to find an object for a given address. The
   // returned header is either nullptr, indicating that no object could be
   // found, or it is pointing to valid object or free list entry.
   HeapObjectHeader* FindHeaderFromAddress(Address);
 
+ private:
   ObjectStartBitmap object_start_bit_map_;
 };
 

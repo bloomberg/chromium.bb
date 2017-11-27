@@ -14,7 +14,9 @@
 
 // Enables incremental marking in Oilpan. Note that to fully enable incremental
 // marking the runtime flag HeapIncrementalMarking also needs to be true.
+#ifndef HEAP_INCREMENTAL_MARKING
 #define HEAP_INCREMENTAL_MARKING 0
+#endif  // HEAP_INCREMENTAL_MARKING
 
 namespace blink {
 

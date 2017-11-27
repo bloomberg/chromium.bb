@@ -19,7 +19,7 @@ namespace blink {
 // If more space is needed a new CallbackStack instance is created and chained
 // together with the former instance. I.e. a logical CallbackStack can be made
 // of multiple chained CallbackStack object instances.
-class CallbackStack final {
+class PLATFORM_EXPORT CallbackStack final {
   USING_FAST_MALLOC(CallbackStack);
 
  public:
