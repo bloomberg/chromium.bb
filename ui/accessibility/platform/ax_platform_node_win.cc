@@ -43,34 +43,44 @@
   if (!delegate_)                      \
     return E_FAIL;                     \
   if (!arg)                            \
-    return E_INVALIDARG;
+    return E_INVALIDARG;               \
+  *arg = {};
 #define COM_OBJECT_VALIDATE_2_ARGS(arg1, arg2) \
   if (!delegate_)                              \
     return E_FAIL;                             \
   if (!arg1)                                   \
     return E_INVALIDARG;                       \
+  *arg1 = {};                                  \
   if (!arg2)                                   \
-    return E_INVALIDARG;
+    return E_INVALIDARG;                       \
+  *arg2 = {};
 #define COM_OBJECT_VALIDATE_3_ARGS(arg1, arg2, arg3) \
   if (!delegate_)                                    \
     return E_FAIL;                                   \
   if (!arg1)                                         \
     return E_INVALIDARG;                             \
+  *arg1 = {};                                        \
   if (!arg2)                                         \
     return E_INVALIDARG;                             \
+  *arg2 = {};                                        \
   if (!arg3)                                         \
-    return E_INVALIDARG;
+    return E_INVALIDARG;                             \
+  *arg3 = {};
 #define COM_OBJECT_VALIDATE_4_ARGS(arg1, arg2, arg3, arg4) \
   if (!delegate_)                                          \
     return E_FAIL;                                         \
   if (!arg1)                                               \
     return E_INVALIDARG;                                   \
+  *arg1 = {};                                              \
   if (!arg2)                                               \
     return E_INVALIDARG;                                   \
+  *arg2 = {};                                              \
   if (!arg3)                                               \
     return E_INVALIDARG;                                   \
+  *arg3 = {};                                              \
   if (!arg4)                                               \
-    return E_INVALIDARG;
+    return E_INVALIDARG;                                   \
+  *arg4 = {};
 #define COM_OBJECT_VALIDATE_VAR_ID_AND_GET_TARGET(var_id, target) \
   if (!delegate_)                                                 \
     return E_FAIL;                                                \
@@ -84,6 +94,7 @@
     return E_FAIL;                                                           \
   if (!arg)                                                                  \
     return E_INVALIDARG;                                                     \
+  *arg = {};                                                                 \
   target = GetTargetFromChildID(var_id);                                     \
   if (!target)                                                               \
     return E_INVALIDARG;                                                     \
@@ -95,8 +106,10 @@
     return E_FAIL;                                                           \
   if (!arg1)                                                                 \
     return E_INVALIDARG;                                                     \
+  *arg1 = {};                                                                \
   if (!arg2)                                                                 \
     return E_INVALIDARG;                                                     \
+  *arg2 = {};                                                                \
   target = GetTargetFromChildID(var_id);                                     \
   if (!target)                                                               \
     return E_INVALIDARG;                                                     \
@@ -108,10 +121,13 @@
     return E_FAIL;                                                           \
   if (!arg1)                                                                 \
     return E_INVALIDARG;                                                     \
+  *arg1 = {};                                                                \
   if (!arg2)                                                                 \
     return E_INVALIDARG;                                                     \
+  *arg2 = {};                                                                \
   if (!arg3)                                                                 \
     return E_INVALIDARG;                                                     \
+  *arg3 = {};                                                                \
   target = GetTargetFromChildID(var_id);                                     \
   if (!target)                                                               \
     return E_INVALIDARG;                                                     \
@@ -123,12 +139,16 @@
     return E_FAIL;                                                           \
   if (!arg1)                                                                 \
     return E_INVALIDARG;                                                     \
+  *arg1 = {};                                                                \
   if (!arg2)                                                                 \
     return E_INVALIDARG;                                                     \
+  *arg2 = {};                                                                \
   if (!arg3)                                                                 \
     return E_INVALIDARG;                                                     \
+  *arg3 = {};                                                                \
   if (!arg4)                                                                 \
     return E_INVALIDARG;                                                     \
+  *arg4 = {};                                                                \
   target = GetTargetFromChildID(var_id);                                     \
   if (!target)                                                               \
     return E_INVALIDARG;                                                     \
