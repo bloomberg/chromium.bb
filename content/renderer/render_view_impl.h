@@ -468,8 +468,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
 
   // RenderWidgetOwnerDelegate implementation ----------------------------------
 
-  bool DoesRenderWidgetHaveTouchEventHandlersAt(
-      const gfx::Point& point) const override;
   bool RenderWidgetWillHandleMouseEvent(
       const blink::WebMouseEvent& event) override;
 

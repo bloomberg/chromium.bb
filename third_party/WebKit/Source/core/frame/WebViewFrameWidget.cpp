@@ -101,10 +101,6 @@ void WebViewFrameWidget::SetCursorVisibilityState(bool is_visible) {
   return web_view_->SetCursorVisibilityState(is_visible);
 }
 
-bool WebViewFrameWidget::HasTouchEventHandlersAt(const WebPoint& point) {
-  return web_view_->HasTouchEventHandlersAt(point);
-}
-
 void WebViewFrameWidget::ApplyViewportDeltas(
     const WebFloatSize& visual_viewport_delta,
     const WebFloatSize& layout_viewport_delta,

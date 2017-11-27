@@ -1466,12 +1466,6 @@ bool WebViewImpl::ZoomToMultipleTargetsRect(const WebRect& rect_in_root_frame) {
   return true;
 }
 
-bool WebViewImpl::HasTouchEventHandlersAt(const WebPoint& point) {
-  // FIXME: Implement this. Note that the point must be divided by
-  // pageScaleFactor.
-  return true;
-}
-
 #if !defined(OS_MACOSX)
 // Mac has no way to open a context menu based on a keyboard event.
 WebInputEventResult WebViewImpl::SendContextMenuEvent() {

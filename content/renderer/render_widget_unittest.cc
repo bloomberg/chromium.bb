@@ -148,10 +148,6 @@ class InteractiveRenderWidget : public RenderWidget {
         nullptr, std::move(widget_input_handler));
   }
 
-  void SetTouchRegion(const std::vector<gfx::Rect>& rects) {
-    rects_ = rects;
-  }
-
   void SendInputEvent(const blink::WebInputEvent& event,
                       HandledEventCallback callback) {
     HandleInputEvent(blink::WebCoalescedInputEvent(
@@ -175,15 +171,6 @@ class InteractiveRenderWidget : public RenderWidget {
   ~InteractiveRenderWidget() override { webwidget_internal_ = nullptr; }
 
   // Overridden from RenderWidget:
-  bool HasTouchEventHandlersAt(const gfx::Point& point) const override {
-    for (std::vector<gfx::Rect>::const_iterator iter = rects_.begin();
-         iter != rects_.end(); ++iter) {
-      if ((*iter).Contains(point))
-        return true;
-    }
-    return false;
-  }
-
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override {
     if (always_overscroll_ &&
         event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
@@ -208,7 +195,6 @@ class InteractiveRenderWidget : public RenderWidget {
   }
 
  private:
-  std::vector<gfx::Rect> rects_;
   IPC::TestSink sink_;
   bool always_overscroll_;
   MockWebWidget mock_webwidget_;
@@ -253,61 +239,6 @@ class RenderWidgetUnittest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetUnittest);
 };
-
-TEST_F(RenderWidgetUnittest, TouchHitTestSinglePoint) {
-  SyntheticWebTouchEvent touch;
-  touch.PressPoint(10, 10);
-
-  EXPECT_CALL(*widget()->mock_webwidget(), HandleInputEvent(_))
-      .WillRepeatedly(
-          ::testing::Return(blink::WebInputEventResult::kNotHandled));
-
-  MockHandledEventCallback handled_event;
-  // Since there's currently no touch-event handling region, the response should
-  // be 'no consumer exists'.
-  EXPECT_CALL(handled_event,
-              Run(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, _, _, _))
-      .Times(1);
-
-  widget()->SendInputEvent(touch, handled_event.GetCallback());
-
-  std::vector<gfx::Rect> rects;
-  rects.push_back(gfx::Rect(0, 0, 20, 20));
-  rects.push_back(gfx::Rect(25, 0, 10, 10));
-  widget()->SetTouchRegion(rects);
-
-  EXPECT_CALL(handled_event, Run(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, _, _, _))
-      .Times(1);
-  widget()->SendInputEvent(touch, handled_event.GetCallback());
-}
-
-TEST_F(RenderWidgetUnittest, TouchHitTestMultiplePoints) {
-  std::vector<gfx::Rect> rects;
-  rects.push_back(gfx::Rect(0, 0, 20, 20));
-  rects.push_back(gfx::Rect(25, 0, 10, 10));
-  widget()->SetTouchRegion(rects);
-
-  SyntheticWebTouchEvent touch;
-  touch.PressPoint(25, 25);
-
-  EXPECT_CALL(*widget()->mock_webwidget(), HandleInputEvent(_))
-      .WillRepeatedly(
-          ::testing::Return(blink::WebInputEventResult::kNotHandled));
-
-  MockHandledEventCallback handled_event;
-  // Since there's currently no touch-event handling region, the response should
-  // be 'no consumer exists'.
-  EXPECT_CALL(handled_event,
-              Run(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, _, _, _))
-      .Times(1);
-  widget()->SendInputEvent(touch, handled_event.GetCallback());
-
-  // Press a second touch point. This time, on a touch-handling region.
-  touch.PressPoint(10, 10);
-  EXPECT_CALL(handled_event, Run(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, _, _, _))
-      .Times(1);
-  widget()->SendInputEvent(touch, handled_event.GetCallback());
-}
 
 TEST_F(RenderWidgetUnittest, EventOverscroll) {
   widget()->set_always_overscroll(true);

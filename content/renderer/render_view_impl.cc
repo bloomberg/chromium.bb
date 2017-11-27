@@ -1072,13 +1072,6 @@ void RenderViewImpl::OnGetRenderedText() {
 
 // RenderWidgetInputHandlerDelegate -----------------------------------------
 
-bool RenderViewImpl::DoesRenderWidgetHaveTouchEventHandlersAt(
-    const gfx::Point& point) const {
-  if (!webview())
-    return false;
-  return webview()->HasTouchEventHandlersAt(point);
-}
-
 bool RenderViewImpl::RenderWidgetWillHandleMouseEvent(
     const blink::WebMouseEvent& event) {
   // If the mouse is locked, only the current owner of the mouse lock can
