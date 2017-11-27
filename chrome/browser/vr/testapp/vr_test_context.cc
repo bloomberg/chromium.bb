@@ -78,6 +78,8 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   ui_->SetAudioCaptureEnabled(true);
   ui_->SetBluetoothConnected(true);
   ui_->SetLocationAccess(true);
+  ui_->input_manager()->set_hit_test_strategy(
+      UiInputManager::PROJECT_TO_LASER_ORIGIN_FOR_TEST);
 }
 
 VrTestContext::~VrTestContext() = default;
@@ -199,8 +201,17 @@ void VrTestContext::HandleInput(ui::Event* event) {
 }
 
 ControllerModel VrTestContext::UpdateController() {
-  // We first comput two points behind the mouse position in normalized device
-  // coordinates. The z components are arbitrary.
+  // We could map mouse position to controller position, and skip this logic,
+  // but it will make targeting elements with a mouse feel strange and not
+  // mouse-like. Instead, we make the reticle track the mouse position linearly
+  // by working from reticle position backwards to compute controller position.
+  // We also don't apply the elbow model (the controller pivots around its
+  // centroid), so do not expect the positioning of the controller in the test
+  // app to exactly match what will happen in production.
+  //
+  // We first set up a controller model that simulates firing the laser directly
+  // through a screen pixel. We do this by computing two points behind the mouse
+  // position in normalized device coordinates. The z components are arbitrary.
   gfx::Point3F mouse_point_far(
       2.0 * last_mouse_point_.x() / window_size_.width() - 1.0,
       -2.0 * last_mouse_point_.y() / window_size_.height() + 1.0, 0.8);

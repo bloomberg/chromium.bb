@@ -37,6 +37,16 @@ class UiInputManager {
     CLICKED,  // Since the last update the button has been pressed and released.
               // The button is released now.
   };
+
+  // When testing, it can be useful to hit test directly along the laser.
+  // Updating the strategy permits this behavior, but it should not be used in
+  // production. In production, we hit test along a ray that extends from the
+  // world origin to a point far along the laser.
+  enum HitTestStrategy {
+    PROJECT_TO_WORLD_ORIGIN,
+    PROJECT_TO_LASER_ORIGIN_FOR_TEST,
+  };
+
   explicit UiInputManager(UiScene* scene);
   ~UiInputManager();
   // TODO(tiborg): Use generic gesture type instead of blink::WebGestureEvent.
@@ -46,6 +56,10 @@ class UiInputManager {
                    GestureList* gesture_list);
 
   bool controller_quiescent() const { return controller_quiescent_; }
+
+  void set_hit_test_strategy(HitTestStrategy strategy) {
+    hit_test_strategy_ = strategy;
+  }
 
  private:
   void SendFlingCancel(GestureList* gesture_list,
@@ -82,6 +96,7 @@ class UiInputManager {
   bool in_click_ = false;
   bool in_scroll_ = false;
 
+  HitTestStrategy hit_test_strategy_ = HitTestStrategy::PROJECT_TO_WORLD_ORIGIN;
   ButtonState previous_button_state_ = ButtonState::UP;
 
   base::TimeTicks last_significant_controller_update_time_;
