@@ -444,3 +444,18 @@ TEST_F(HistoryStateOperationsTest, ReplaceStateNoHashChangeEvent) {
   EXPECT_FALSE(static_cast<web::NavigationItemImpl*>(GetLastCommittedItem())
                    ->IsCreatedFromHashChange());
 }
+
+// Regression test for crbug.com/788464.
+TEST_F(HistoryStateOperationsTest, ReplaceStateThenReload) {
+  GURL url = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/"
+      "onload_replacestate_reload.html");
+  LoadUrl(url);
+  GURL new_url = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/pony.html");
+  BOOL completed =
+      testing::WaitUntilConditionOrTimeout(kWaitForStateUpdateTimeout, ^{
+        return GetLastCommittedItem()->GetURL() == new_url;
+      });
+  EXPECT_TRUE(completed);
+}
