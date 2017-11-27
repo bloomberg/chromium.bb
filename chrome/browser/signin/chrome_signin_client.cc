@@ -470,7 +470,6 @@ void ChromeSigninClient::OnCloseBrowsersSuccess(
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   if (signin_util::IsForceSigninEnabled() && force_signin_verifier_.get()) {
     force_signin_verifier_->Cancel();
-    force_signin_verifier_->AbortSignoutCountdownIfExisted();
   }
 #endif
   SigninClient::PreSignOut(sign_out, signout_source_metric);
