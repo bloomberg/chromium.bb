@@ -45,12 +45,13 @@ class TestGetLuciContextAccessToken(auto_stub.TestCase):
 
   def test_correct_local_auth_format(self):
     self._mock_local_auth('dead', 'beef', 10)
-    expiry_time = datetime.datetime.min + datetime.timedelta(minutes=60)
+    expiry_time = datetime.datetime.min + datetime.timedelta(hours=1)
     resp_content = {
       'error_code': None,
       'error_message': None,
       'access_token': 'token',
-      'expiry': time.mktime(expiry_time.timetuple()),
+      'expiry': (expiry_time
+                 - datetime.datetime.utcfromtimestamp(0)).total_seconds(),
     }
     self._mock_loc_server_resp(200, json.dumps(resp_content))
     token = auth._get_luci_context_access_token(
