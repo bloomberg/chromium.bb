@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/css/cssom/StyleValueFactory.h"
+#include "core/css/parser/CSSParserContext.h"
 #include "core/css/properties/CSSProperty.h"
 
 namespace blink {
@@ -35,7 +36,7 @@ CSSStyleValueVector ParseCSSStyleValue(
   }
 
   const auto style_values = StyleValueFactory::FromString(
-      property_id, value, execution_context->SecureContextMode());
+      property_id, value, CSSParserContext::Create(*execution_context));
   if (style_values.IsEmpty()) {
     exception_state.ThrowDOMException(
         kSyntaxError, "The value provided ('" + value +
