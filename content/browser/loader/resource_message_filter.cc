@@ -12,10 +12,15 @@
 #include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/resource_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace content {
+namespace {
+mojom::URLLoaderFactory* g_test_factory;
+ResourceMessageFilter* g_current_filter;
+}  // namespace
 
 ResourceMessageFilter::ResourceMessageFilter(
     int child_id,
@@ -96,6 +101,15 @@ void ResourceMessageFilter::CreateLoaderAndStart(
     const ResourceRequest& url_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  if (g_test_factory && !g_current_filter) {
+    g_current_filter = this;
+    g_test_factory->CreateLoaderAndStart(std::move(request), routing_id,
+                                         request_id, options, url_request,
+                                         std::move(client), traffic_annotation);
+    g_current_filter = nullptr;
+    return;
+  }
+
   URLLoaderFactoryImpl::CreateLoaderAndStart(
       requester_info_.get(), std::move(request), routing_id, request_id,
       options, url_request, std::move(client),
@@ -112,6 +126,18 @@ int ResourceMessageFilter::child_id() const {
 
 void ResourceMessageFilter::InitializeForTest() {
   InitializeOnIOThread();
+}
+
+void ResourceMessageFilter::SetNetworkFactoryForTesting(
+    mojom::URLLoaderFactory* test_factory) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!test_factory || !g_test_factory);
+  g_test_factory = test_factory;
+}
+
+ResourceMessageFilter* ResourceMessageFilter::GetCurrentForTesting() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return g_current_filter;
 }
 
 void ResourceMessageFilter::InitializeOnIOThread() {

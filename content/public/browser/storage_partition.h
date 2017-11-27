@@ -200,7 +200,7 @@ class CONTENT_EXPORT StoragePartition {
   // Overrides the network URLLoaderFactory for subsequent requests. Passing a
   // null pointer will restore the default behavior.
   virtual void SetNetworkFactoryForTesting(
-      mojom::URLLoaderFactoryPtr test_factory) = 0;
+      mojom::URLLoaderFactory* test_factory) = 0;
 
  protected:
   virtual ~StoragePartition() {}

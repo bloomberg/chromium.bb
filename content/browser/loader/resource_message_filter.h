@@ -88,6 +88,16 @@ class CONTENT_EXPORT ResourceMessageFilter
   }
   void InitializeForTest();
 
+  // Overrides the network URLLoaderFactory for subsequent requests. Passing a
+  // null pointer will restore the default behavior.
+  // When the testing pointer's CreateLoaderAndStart() is being called,
+  // |GetCurrentForTesting()| will return the filter that's calling the testing
+  // pointer. Also, the testing pointer won't be used for nested
+  // CreateLoaderAndStart's. Must be called on the IO thread.
+  static void SetNetworkFactoryForTesting(
+      mojom::URLLoaderFactory* test_factory);
+  static ResourceMessageFilter* GetCurrentForTesting();
+
  protected:
   // Protected destructor so that we can be overriden in tests.
   ~ResourceMessageFilter() override;

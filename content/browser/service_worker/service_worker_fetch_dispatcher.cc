@@ -838,7 +838,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
   mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
   url_loader_client->Bind(&url_loader_client_ptr_to_pass);
   mojom::URLLoaderPtr url_loader_associated_ptr;
-  url_loader_factory_getter->GetNetworkFactory()->get()->CreateLoaderAndStart(
+  url_loader_factory_getter->GetNetworkFactory()->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_associated_ptr), -1 /* routing_id? */,
       -1 /* request_id? */, mojom::kURLLoadOptionNone, resource_request,
       std::move(url_loader_client_ptr_to_pass),

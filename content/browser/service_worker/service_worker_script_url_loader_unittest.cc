@@ -149,11 +149,10 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
 
     // Initialize URLLoaderFactory.
     mojom::URLLoaderFactoryPtr test_loader_factory;
-    mojo::MakeStrongBinding(
-        std::make_unique<MockNetworkURLLoaderFactory>(mock_server_.get()),
-        MakeRequest(&test_loader_factory));
+    mock_url_loader_factory_ =
+        std::make_unique<MockNetworkURLLoaderFactory>(mock_server_.get());
     helper_->url_loader_factory_getter()->SetNetworkFactoryForTesting(
-        std::move(test_loader_factory));
+        mock_url_loader_factory_.get());
   }
 
   void InitializeStorage() {
@@ -252,6 +251,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
 
  protected:
   TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<MockNetworkURLLoaderFactory> mock_url_loader_factory_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 
   scoped_refptr<ServiceWorkerRegistration> registration_;

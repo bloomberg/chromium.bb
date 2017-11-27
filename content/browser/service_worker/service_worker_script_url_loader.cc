@@ -95,7 +95,7 @@ ServiceWorkerScriptURLLoader::ServiceWorkerScriptURLLoader(
 
   mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
-  loader_factory_getter->GetNetworkFactory()->get()->CreateLoaderAndStart(
+  loader_factory_getter->GetNetworkFactory()->CreateLoaderAndStart(
       mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
       resource_request, std::move(network_client), traffic_annotation);
 }

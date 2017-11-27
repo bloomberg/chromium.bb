@@ -112,7 +112,7 @@ class SubresourceLoader : public mojom::URLLoader,
     DCHECK(!appcache_loader_);
     mojom::URLLoaderClientPtr client_ptr;
     local_client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-    network_loader_factory_->GetNetworkFactory()->get()->CreateLoaderAndStart(
+    network_loader_factory_->GetNetworkFactory()->CreateLoaderAndStart(
         mojo::MakeRequest(&network_loader_), routing_id_, request_id_, options_,
         request_, std::move(client_ptr), traffic_annotation_);
     if (has_set_priority_)

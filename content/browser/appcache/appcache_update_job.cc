@@ -703,7 +703,9 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* fetcher,
   if (response_code == 304 || manifest_data_ == fetcher->manifest_data()) {
     // Only need to store response in storage if manifest is not already
     // an entry in the cache.
-    AppCacheEntry* entry = inprogress_cache_->GetEntry(manifest_url_);
+    AppCacheEntry* entry = nullptr;
+    if (inprogress_cache_)
+      entry = inprogress_cache_->GetEntry(manifest_url_);
     if (entry) {
       entry->add_types(AppCacheEntry::MANIFEST);
       StoreGroupAndCache();
