@@ -602,10 +602,10 @@ int av1_get_pred_context_comp_ref_p1(const AV1_COMMON *cm,
       const MB_MODE_INFO *edge_mbmi = above_intra ? left_mbmi : above_mbmi;
 
       if (!has_second_ref(edge_mbmi))  // single pred (1/3)
-        pred_context = 1 + 2 * (edge_mbmi->ref_frame[0] != LAST_FRAME);
+        pred_context = 1 + 2 * (edge_mbmi->ref_frame[0] != LAST2_FRAME);
       else  // comp pred (1/3)
         pred_context =
-            1 + 2 * (edge_mbmi->ref_frame[fwd_ref_sign_idx] != LAST_FRAME);
+            1 + 2 * (edge_mbmi->ref_frame[fwd_ref_sign_idx] != LAST2_FRAME);
     } else {  // inter/inter
       const int l_sg = !has_second_ref(left_mbmi);
       const int a_sg = !has_second_ref(above_mbmi);
@@ -616,10 +616,10 @@ int av1_get_pred_context_comp_ref_p1(const AV1_COMMON *cm,
           l_sg ? left_mbmi->ref_frame[0]
                : left_mbmi->ref_frame[fwd_ref_sign_idx];
 
-      if (frfa == frfl && frfa == LAST_FRAME)
+      if (frfa == frfl && frfa == LAST2_FRAME)
         pred_context = 0;
       else if (l_sg && a_sg) {  // single/single
-        if (frfa == LAST_FRAME || frfl == LAST_FRAME)
+        if (frfa == LAST2_FRAME || frfl == LAST2_FRAME)
           pred_context = 1;
         else if (CHECK_GOLDEN_OR_LAST3(frfa) || CHECK_GOLDEN_OR_LAST3(frfl))
           pred_context = 2 + (frfa != frfl);
@@ -632,15 +632,14 @@ int av1_get_pred_context_comp_ref_p1(const AV1_COMMON *cm,
         const MV_REFERENCE_FRAME frfc = l_sg ? frfa : frfl;
         const MV_REFERENCE_FRAME rfs = a_sg ? frfa : frfl;
 
-        if (frfc == LAST_FRAME && rfs != LAST_FRAME)
+        if (frfc == LAST2_FRAME && rfs != LAST2_FRAME)
           pred_context = 1;
-        else if (rfs == LAST_FRAME && frfc != LAST_FRAME)
+        else if (rfs == LAST2_FRAME && frfc != LAST2_FRAME)
           pred_context = 2;
         else
-          pred_context =
-              3 + (frfc == LAST2_FRAME || CHECK_GOLDEN_OR_LAST3(rfs));
+          pred_context = 3 + (frfc == LAST_FRAME || CHECK_GOLDEN_OR_LAST3(rfs));
       } else {  // comp/comp
-        if (frfa == LAST_FRAME || frfl == LAST_FRAME)
+        if (frfa == LAST2_FRAME || frfl == LAST2_FRAME)
           pred_context = 2;
         else
           pred_context =
@@ -655,9 +654,9 @@ int av1_get_pred_context_comp_ref_p1(const AV1_COMMON *cm,
     } else {
       if (has_second_ref(edge_mbmi)) {
         pred_context =
-            4 * (edge_mbmi->ref_frame[fwd_ref_sign_idx] != LAST_FRAME);
+            4 * (edge_mbmi->ref_frame[fwd_ref_sign_idx] != LAST2_FRAME);
       } else {
-        if (edge_mbmi->ref_frame[0] == LAST_FRAME)
+        if (edge_mbmi->ref_frame[0] == LAST2_FRAME)
           pred_context = 0;
         else
           pred_context = 2 + CHECK_GOLDEN_OR_LAST3(edge_mbmi->ref_frame[0]);

@@ -6072,8 +6072,8 @@ static void estimate_ref_frame_costs(
       ref_bicomp_costs[LAST3_FRAME] += av1_cost_bit(ref_comp_p, 1);
       ref_bicomp_costs[GOLDEN_FRAME] += av1_cost_bit(ref_comp_p, 1);
 
-      ref_bicomp_costs[LAST_FRAME] += av1_cost_bit(ref_comp_p1, 1);
-      ref_bicomp_costs[LAST2_FRAME] += av1_cost_bit(ref_comp_p1, 0);
+      ref_bicomp_costs[LAST_FRAME] += av1_cost_bit(ref_comp_p1, 0);
+      ref_bicomp_costs[LAST2_FRAME] += av1_cost_bit(ref_comp_p1, 1);
 
       ref_bicomp_costs[LAST3_FRAME] += av1_cost_bit(ref_comp_p2, 0);
       ref_bicomp_costs[GOLDEN_FRAME] += av1_cost_bit(ref_comp_p2, 1);
@@ -6127,8 +6127,8 @@ static void estimate_ref_frame_costs(
       ref_costs_comp[LAST3_FRAME] += av1_cost_bit(ref_comp_p, 1);
       ref_costs_comp[GOLDEN_FRAME] += av1_cost_bit(ref_comp_p, 1);
 
-      ref_costs_comp[LAST_FRAME] += av1_cost_bit(ref_comp_p1, 1);
-      ref_costs_comp[LAST2_FRAME] += av1_cost_bit(ref_comp_p1, 0);
+      ref_costs_comp[LAST_FRAME] += av1_cost_bit(ref_comp_p1, 0);
+      ref_costs_comp[LAST2_FRAME] += av1_cost_bit(ref_comp_p1, 1);
 
       ref_costs_comp[LAST3_FRAME] += av1_cost_bit(ref_comp_p2, 0);
       ref_costs_comp[GOLDEN_FRAME] += av1_cost_bit(ref_comp_p2, 1);

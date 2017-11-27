@@ -1364,7 +1364,7 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
         const int ctx1 = av1_get_pred_context_comp_ref_p1(cm, xd);
         const int bit1 = READ_REF_BIT(comp_ref_p1);
         if (counts) ++counts->comp_ref[ctx1][1][bit1];
-        ref_frame[!idx] = cm->comp_fwd_ref[bit1 ? 0 : 1];
+        ref_frame[!idx] = cm->comp_fwd_ref[bit1 ? 1 : 0];
       } else {
         const int ctx2 = av1_get_pred_context_comp_ref_p2(cm, xd);
         const int bit2 = READ_REF_BIT(comp_ref_p2);

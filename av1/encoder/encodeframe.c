@@ -1161,7 +1161,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
             counts->comp_ref[av1_get_pred_context_comp_ref_p(cm, xd)][0][bit]++;
             if (!bit) {
               counts->comp_ref[av1_get_pred_context_comp_ref_p1(cm, xd)][1]
-                              [ref0 == LAST_FRAME]++;
+                              [ref0 == LAST2_FRAME]++;
             } else {
               counts->comp_ref[av1_get_pred_context_comp_ref_p2(cm, xd)][2]
                               [ref0 == GOLDEN_FRAME]++;
