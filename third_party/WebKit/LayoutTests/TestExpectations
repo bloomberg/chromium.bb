@@ -770,7 +770,6 @@ crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slots-text-nodes.html
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-element-dynamic-attribute-change.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-element-shared-style.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-element.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/v0/get-destination-insertion-points-re-distribution.html [ Failure Crash ]
 
 # ====== IncrementalShadowDOM-only failures until here ======
 
