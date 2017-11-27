@@ -33,7 +33,7 @@ OffscreenCanvasResourceProvider::CreateOrRecycleFrameResource() {
     recyclable_resource_->spare_lock_ = true;
     return std::move(recyclable_resource_);
   }
-  return std::unique_ptr<FrameResource>(new FrameResource());
+  return std::make_unique<FrameResource>();
 }
 
 void OffscreenCanvasResourceProvider::TransferResource(
