@@ -164,7 +164,7 @@ void ScreenOrientationControllerImpl::NotifyOrientationChanged() {
 
   // Notify current orientation object.
   if (IsActive() && !dispatch_event_timer_.IsActive())
-    dispatch_event_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    dispatch_event_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 
   // ... and child frames, if they have a ScreenOrientationControllerImpl.
   for (size_t i = 0; i < child_frames.size(); ++i) {

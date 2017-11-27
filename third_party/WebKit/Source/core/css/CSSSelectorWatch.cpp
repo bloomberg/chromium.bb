@@ -72,7 +72,7 @@ void CSSSelectorWatch::CallbackSelectorChangeTimerFired(TimerBase*) {
 
   if (timer_expirations_ < 1) {
     timer_expirations_++;
-    callback_selector_change_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    callback_selector_change_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
     return;
   }
   if (GetSupplementable()->GetFrame()) {
@@ -130,8 +130,10 @@ void CSSSelectorWatch::UpdateSelectorMatches(
     }
   } else {
     timer_expirations_ = 0;
-    if (!callback_selector_change_timer_.IsActive())
-      callback_selector_change_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    if (!callback_selector_change_timer_.IsActive()) {
+      callback_selector_change_timer_.StartOneShot(TimeDelta(),
+                                                   BLINK_FROM_HERE);
+    }
   }
 }
 

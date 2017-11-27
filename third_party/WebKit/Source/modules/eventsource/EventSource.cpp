@@ -118,7 +118,7 @@ void EventSource::ScheduleInitialConnect() {
   DCHECK_EQ(kConnecting, state_);
   DCHECK(!loader_);
 
-  connect_timer_.StartOneShot(0, BLINK_FROM_HERE);
+  connect_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void EventSource::Connect() {

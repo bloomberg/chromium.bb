@@ -95,7 +95,7 @@ bool DOMWindowEventQueue::EnqueueEvent(const WebTraceLocation& from_here,
   DCHECK(was_added);  // It should not have already been in the list.
 
   if (!pending_event_timer_->IsActive())
-    pending_event_timer_->StartOneShot(0, from_here);
+    pending_event_timer_->StartOneShot(TimeDelta(), from_here);
 
   return true;
 }

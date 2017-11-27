@@ -617,7 +617,7 @@ void LocalDOMWindow::SchedulePostMessage(MessageEvent* event,
   PostMessageTimer* timer =
       new PostMessageTimer(*this, event, std::move(target), std::move(location),
                            UserGestureIndicator::CurrentToken());
-  timer->StartOneShot(0, BLINK_FROM_HERE);
+  timer->StartOneShot(TimeDelta(), BLINK_FROM_HERE);
   timer->PauseIfNeeded();
   post_message_timers_.insert(timer);
 }

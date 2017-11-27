@@ -195,7 +195,7 @@ void PausableScriptExecutor::Run() {
     ExecuteAndDestroySelf();
     return;
   }
-  StartOneShot(0, BLINK_FROM_HERE);
+  StartOneShot(TimeDelta(), BLINK_FROM_HERE);
   PauseIfNeeded();
 }
 
@@ -206,7 +206,7 @@ void PausableScriptExecutor::RunAsync(BlockingOption blocking) {
   if (blocking_option_ == kOnloadBlocking)
     ToDocument(GetExecutionContext())->IncrementLoadEventDelayCount();
 
-  StartOneShot(0, BLINK_FROM_HERE);
+  StartOneShot(TimeDelta(), BLINK_FROM_HERE);
   PauseIfNeeded();
 }
 

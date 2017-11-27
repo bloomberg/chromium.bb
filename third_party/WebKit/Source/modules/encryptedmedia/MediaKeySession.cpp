@@ -501,7 +501,7 @@ ScriptPromise MediaKeySession::generateRequest(
   pending_actions_.push_back(PendingAction::CreatePendingGenerateRequest(
       result, init_data_type, init_data_buffer));
   DCHECK(!action_timer_.IsActive());
-  action_timer_.StartOneShot(0, BLINK_FROM_HERE);
+  action_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 
   // 11. Return promise.
   return promise;
@@ -596,7 +596,7 @@ ScriptPromise MediaKeySession::load(ScriptState* script_state,
   pending_actions_.push_back(
       PendingAction::CreatePendingLoadRequest(result, session_id));
   DCHECK(!action_timer_.IsActive());
-  action_timer_.StartOneShot(0, BLINK_FROM_HERE);
+  action_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 
   // 9. Return promise.
   return promise;
@@ -715,7 +715,7 @@ ScriptPromise MediaKeySession::update(ScriptState* script_state,
   pending_actions_.push_back(
       PendingAction::CreatePendingUpdate(result, response_copy));
   if (!action_timer_.IsActive())
-    action_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    action_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 
   // 7. Return promise.
   return promise;
@@ -759,7 +759,7 @@ ScriptPromise MediaKeySession::close(ScriptState* script_state) {
   // 5. Run the following steps in parallel (done in closeTask()).
   pending_actions_.push_back(PendingAction::CreatePendingClose(result));
   if (!action_timer_.IsActive())
-    action_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    action_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 
   // 6. Return promise.
   return promise;
@@ -799,7 +799,7 @@ ScriptPromise MediaKeySession::remove(ScriptState* script_state) {
   // 4. Run the following steps asynchronously (done in removeTask()).
   pending_actions_.push_back(PendingAction::CreatePendingRemove(result));
   if (!action_timer_.IsActive())
-    action_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    action_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 
   // 5. Return promise.
   return promise;

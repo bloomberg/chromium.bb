@@ -152,7 +152,7 @@ class CORE_EXPORT ScriptPromiseResolver
     // resolve.
     // See: http://crbug.com/663476
     if (ScriptForbiddenScope::IsScriptForbidden()) {
-      timer_.StartOneShot(0, BLINK_FROM_HERE);
+      timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
       return;
     }
     ResolveOrRejectImmediately();

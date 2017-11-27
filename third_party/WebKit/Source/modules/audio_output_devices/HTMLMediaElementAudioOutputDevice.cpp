@@ -62,7 +62,7 @@ SetSinkIdResolver::SetSinkIdResolver(ScriptState* script_state,
              &SetSinkIdResolver::TimerFired) {}
 
 void SetSinkIdResolver::StartAsync() {
-  timer_.StartOneShot(0, BLINK_FROM_HERE);
+  timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void SetSinkIdResolver::TimerFired(TimerBase* timer) {

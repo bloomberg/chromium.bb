@@ -77,7 +77,7 @@ bool TextTrackLoader::RedirectReceived(Resource* resource,
 
   CorsPolicyPreventedLoad(GetDocument().GetSecurityOrigin(), request.Url());
   if (!cue_load_timer_.IsActive())
-    cue_load_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    cue_load_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
   ClearResource();
   return false;
 }
@@ -122,7 +122,7 @@ void TextTrackLoader::NotifyFinished(Resource* resource) {
   }
 
   if (!cue_load_timer_.IsActive())
-    cue_load_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    cue_load_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 
   CancelLoad();
 }
@@ -156,14 +156,14 @@ void TextTrackLoader::NewCuesParsed() {
     return;
 
   new_cues_available_ = true;
-  cue_load_timer_.StartOneShot(0, BLINK_FROM_HERE);
+  cue_load_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void TextTrackLoader::FileFailedToParse() {
   state_ = kFailed;
 
   if (!cue_load_timer_.IsActive())
-    cue_load_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    cue_load_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 
   CancelLoad();
 }

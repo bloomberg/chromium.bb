@@ -717,7 +717,7 @@ bool BitmapImage::InternalAdvanceAnimation(AnimationAdvancement advancement) {
         frame_timer_ = WTF::WrapUnique(new TaskRunnerTimer<BitmapImage>(
             task_runner_, this,
             &BitmapImage::NotifyObserversOfAnimationAdvance));
-        frame_timer_->StartOneShot(0, BLINK_FROM_HERE);
+        frame_timer_->StartOneShot(TimeDelta(), BLINK_FROM_HERE);
       }
 
       return false;

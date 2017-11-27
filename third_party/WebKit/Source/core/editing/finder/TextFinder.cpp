@@ -95,7 +95,7 @@ class TextFinder::DeferredScopeStringMatches
         identifier_(identifier),
         search_text_(search_text),
         options_(options) {
-    timer_.StartOneShot(0.0, BLINK_FROM_HERE);
+    timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
   }
 
   void DoTimeout(TimerBase*) {

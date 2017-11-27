@@ -2415,7 +2415,7 @@ void Document::LayoutUpdated() {
 
 void Document::ClearFocusedElementSoon() {
   if (!clear_focused_element_timer_.IsActive())
-    clear_focused_element_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    clear_focused_element_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void Document::ClearFocusedElementTimerFired(TimerBase*) {
@@ -5800,7 +5800,8 @@ void Document::FinishedParsing() {
   // on cache access since that could lead to huge caches being kept alive
   // indefinitely by something innocuous like JS setting .innerHTML repeatedly
   // on a timer.
-  element_data_cache_clear_timer_.StartOneShot(10, BLINK_FROM_HERE);
+  element_data_cache_clear_timer_.StartOneShot(TimeDelta::FromSeconds(10),
+                                               BLINK_FROM_HERE);
 
   // Parser should have picked up all preloads by now
   fetcher_->ClearPreloads(ResourceFetcher::kClearSpeculativeMarkupPreloads);
@@ -6290,7 +6291,7 @@ bool Document::IsContextThread() const {
 
 void Document::UpdateFocusAppearanceLater() {
   if (!update_focus_appearance_timer_.IsActive())
-    update_focus_appearance_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    update_focus_appearance_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void Document::CancelFocusAppearanceUpdate() {
@@ -6506,7 +6507,7 @@ void Document::DecrementLoadEventDelayCountAndCheckLoadEvent() {
 
 void Document::CheckLoadEventSoon() {
   if (GetFrame() && !load_event_delay_timer_.IsActive())
-    load_event_delay_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    load_event_delay_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 bool Document::IsDelayingLoadEvent() {
@@ -6530,7 +6531,7 @@ void Document::LoadPluginsSoon() {
   // FIXME: Remove this timer once we don't need to compute layout to load
   // plugins.
   if (!plugin_loading_timer_.IsActive())
-    plugin_loading_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    plugin_loading_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void Document::PluginLoadingTimerFired(TimerBase*) {
@@ -6900,8 +6901,10 @@ void Document::DidAssociateFormControl(Element* element) {
     return;
 
   // We add a slight delay because this could be called rapidly.
-  if (!did_associate_form_controls_timer_.IsActive())
-    did_associate_form_controls_timer_.StartOneShot(0.3, BLINK_FROM_HERE);
+  if (!did_associate_form_controls_timer_.IsActive()) {
+    did_associate_form_controls_timer_.StartOneShot(
+        TimeDelta::FromMilliseconds(300), BLINK_FROM_HERE);
+  }
 }
 
 void Document::DidAssociateFormControlsTimerFired(TimerBase* timer) {
