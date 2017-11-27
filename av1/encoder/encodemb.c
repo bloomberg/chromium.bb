@@ -261,7 +261,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       if (x_a != 0) {
 #if CONFIG_DAALA_TX
 #if CONFIG_NEW_QUANT
-        dx = av1_dequant_coeff_nuq(x, dqv, dequant_val[band_translate[i]]) -
+        dx = av1_dequant_coeff_nuq(x_a, dqv, dequant_val[band_translate[i]]) -
              coeff[rc];
 #else   // CONFIG_NEW_QUANT
         dx -= (dqv + sz) ^ sz;
