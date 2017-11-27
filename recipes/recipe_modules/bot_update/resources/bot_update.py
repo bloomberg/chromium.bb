@@ -575,14 +575,6 @@ def _maybe_break_locks(checkout_path, tries=3):
 def git_checkouts(solutions, revisions, shallow, refs, git_cache_dir,
                   cleanup_dir):
   build_dir = os.getcwd()
-  # Before we do anything, break all git_cache locks.
-  if path.isdir(git_cache_dir):
-    git('cache', 'unlock', '-vv', '--force', '--all',
-        '--cache-dir', git_cache_dir)
-    for item in os.listdir(git_cache_dir):
-      filename = os.path.join(git_cache_dir, item)
-      if item.endswith('.lock'):
-        raise Exception('%s exists after cache unlock' % filename)
   first_solution = True
   for sln in solutions:
     sln_dir = path.join(build_dir, sln['name'])
