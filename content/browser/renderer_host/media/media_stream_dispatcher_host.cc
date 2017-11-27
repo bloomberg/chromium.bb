@@ -18,10 +18,10 @@ namespace content {
 
 namespace {
 
-void BindMediaStreamDispatcherRequest(
+void BindMediaStreamDeviceObserverRequest(
     int render_process_id,
     int render_frame_id,
-    mojom::MediaStreamDispatcherRequest request) {
+    mojom::MediaStreamDeviceObserverRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderFrameHost* render_frame_host =
@@ -69,38 +69,38 @@ void MediaStreamDispatcherHost::OnDeviceStopped(
            << " device_id=" << device.id;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  GetMediaStreamDispatcherForFrame(render_frame_id)
+  GetMediaStreamDeviceObserverForFrame(render_frame_id)
       ->OnDeviceStopped(label, device);
 }
 
-mojom::MediaStreamDispatcher*
-MediaStreamDispatcherHost::GetMediaStreamDispatcherForFrame(
+mojom::MediaStreamDeviceObserver*
+MediaStreamDispatcherHost::GetMediaStreamDeviceObserverForFrame(
     int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto it = dispatchers_.find(render_frame_id);
-  if (it != dispatchers_.end())
+  auto it = observers_.find(render_frame_id);
+  if (it != observers_.end())
     return it->second.get();
 
-  mojom::MediaStreamDispatcherPtr dispatcher;
-  auto dispatcher_request = mojo::MakeRequest(&dispatcher);
-  dispatcher.set_connection_error_handler(base::BindOnce(
-      &MediaStreamDispatcherHost::OnMediaStreamDispatcherConnectionError,
+  mojom::MediaStreamDeviceObserverPtr observer;
+  auto dispatcher_request = mojo::MakeRequest(&observer);
+  observer.set_connection_error_handler(base::BindOnce(
+      &MediaStreamDispatcherHost::OnMediaStreamDeviceObserverConnectionError,
       weak_factory_.GetWeakPtr(), render_frame_id));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&BindMediaStreamDispatcherRequest, render_process_id_,
+      base::BindOnce(&BindMediaStreamDeviceObserverRequest, render_process_id_,
                      render_frame_id, std::move(dispatcher_request)));
-  dispatchers_[render_frame_id] = std::move(dispatcher);
+  observers_[render_frame_id] = std::move(observer);
 
-  return dispatchers_[render_frame_id].get();
+  return observers_[render_frame_id].get();
 }
 
-void MediaStreamDispatcherHost::OnMediaStreamDispatcherConnectionError(
+void MediaStreamDispatcherHost::OnMediaStreamDeviceObserverConnectionError(
     int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  dispatchers_.erase(render_frame_id);
+  observers_.erase(render_frame_id);
 }
 
 void MediaStreamDispatcherHost::CancelAllRequests() {

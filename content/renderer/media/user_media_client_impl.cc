@@ -16,7 +16,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/apply_constraints_processor.h"
-#include "content/renderer/media/media_stream_dispatcher.h"
+#include "content/renderer/media/media_stream_device_observer.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc_logging.h"
@@ -117,14 +117,14 @@ UserMediaClientImpl::UserMediaClientImpl(
 UserMediaClientImpl::UserMediaClientImpl(
     RenderFrame* render_frame,
     PeerConnectionDependencyFactory* dependency_factory,
-    std::unique_ptr<MediaStreamDispatcher> media_stream_dispatcher,
+    std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
     const scoped_refptr<base::TaskRunner>& worker_task_runner)
     : UserMediaClientImpl(
           render_frame,
           std::make_unique<UserMediaProcessor>(
               render_frame,
               dependency_factory,
-              std::move(media_stream_dispatcher),
+              std::move(media_stream_device_observer),
               base::BindRepeating(
                   &UserMediaClientImpl::GetMediaDevicesDispatcher,
                   base::Unretained(this)),

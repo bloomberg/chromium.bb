@@ -122,7 +122,7 @@
 #include "content/renderer/media/audio_ipc_factory.h"
 #include "content/renderer/media/media_devices_listener_impl.h"
 #include "content/renderer/media/media_permission_dispatcher.h"
-#include "content/renderer/media/media_stream_dispatcher.h"
+#include "content/renderer/media/media_stream_device_observer.h"
 #include "content/renderer/media/user_media_client_impl.h"
 #include "content/renderer/mojo/blink_connector_js_wrapper.h"
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
@@ -1669,11 +1669,11 @@ void RenderFrameImpl::OnImeFinishComposingText(bool keep_selection) {
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
-MediaStreamDispatcher* RenderFrameImpl::GetMediaStreamDispatcher() {
+MediaStreamDeviceObserver* RenderFrameImpl::GetMediaStreamDeviceObserver() {
   if (!web_user_media_client_)
     InitializeUserMediaClient();
   return web_user_media_client_
-             ? web_user_media_client_->media_stream_dispatcher()
+             ? web_user_media_client_->media_stream_device_observer()
              : nullptr;
 }
 
@@ -6688,7 +6688,7 @@ void RenderFrameImpl::InitializeUserMediaClient() {
   DCHECK(!web_user_media_client_);
   web_user_media_client_ = new UserMediaClientImpl(
       this, RenderThreadImpl::current()->GetPeerConnectionDependencyFactory(),
-      std::make_unique<MediaStreamDispatcher>(this),
+      std::make_unique<MediaStreamDeviceObserver>(this),
       render_thread->GetWorkerTaskRunner());
   registry_.AddInterface(
       base::Bind(&MediaDevicesListenerImpl::Create, GetRoutingID()));
