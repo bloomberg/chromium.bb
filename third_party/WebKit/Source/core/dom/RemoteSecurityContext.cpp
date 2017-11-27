@@ -44,4 +44,8 @@ void RemoteSecurityContext::ResetReplicatedContentSecurityPolicy() {
   GetContentSecurityPolicy()->SetupSelf(*GetSecurityOrigin());
 }
 
+void RemoteSecurityContext::ResetSandboxFlags() {
+  sandbox_flags_ = kSandboxNone;
+}
+
 }  // namespace blink

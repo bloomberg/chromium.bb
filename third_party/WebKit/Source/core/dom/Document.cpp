@@ -696,6 +696,8 @@ Document::Document(const DocumentInit& initializer,
   }
 
   InitSecurityContext(initializer);
+  if (frame_)
+    frame_->Client()->DidSetFramePolicyHeaders(GetSandboxFlags(), {});
 
   InitDNSPrefetch();
 
@@ -5922,18 +5924,31 @@ HTMLLinkElement* Document::LinkCanonical() const {
   });
 }
 
-void Document::SetFeaturePolicy(const String& feature_policy_header) {
+void Document::ApplyFeaturePolicyFromHeader(
+    const String& feature_policy_header) {
+  if (!feature_policy_header.IsEmpty())
+    UseCounter::Count(*this, WebFeature::kFeaturePolicyHeader);
+  Vector<String> messages;
+  const ParsedFeaturePolicy& declared_policy = ParseFeaturePolicyHeader(
+      feature_policy_header, GetSecurityOrigin(), &messages);
+  for (auto& message : messages) {
+    AddConsoleMessage(
+        ConsoleMessage::Create(kSecurityMessageSource, kErrorMessageLevel,
+                               "Error with Feature-Policy header: " + message));
+  }
+  ApplyFeaturePolicy(declared_policy);
+  if (frame_) {
+    frame_->Client()->DidSetFramePolicyHeaders(GetSandboxFlags(),
+                                               declared_policy);
+  }
+}
+
+void Document::ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy) {
   if (!RuntimeEnabledFeatures::FeaturePolicyEnabled())
     return;
 
-  if (!feature_policy_header.IsEmpty())
-    UseCounter::Count(*this, WebFeature::kFeaturePolicyHeader);
-
   FeaturePolicy* parent_feature_policy = nullptr;
   ParsedFeaturePolicy container_policy;
-  Vector<String> messages;
-  const ParsedFeaturePolicy& parsed_header = ParseFeaturePolicyHeader(
-      feature_policy_header, GetSecurityOrigin(), &messages);
 
   // If this frame is not the main frame, then get the appropriate parent policy
   // and container policy to construct the policy for this frame.
@@ -5946,16 +5961,8 @@ void Document::SetFeaturePolicy(const String& feature_policy_header) {
       container_policy = frame_->Owner()->ContainerPolicy();
   }
 
-  InitializeFeaturePolicy(parsed_header, container_policy,
+  InitializeFeaturePolicy(declared_policy, container_policy,
                           parent_feature_policy);
-
-  for (const auto& message : messages) {
-    AddConsoleMessage(
-        ConsoleMessage::Create(kOtherMessageSource, kErrorMessageLevel,
-                               "Error with Feature-Policy header: " + message));
-  }
-  if (frame_ && !parsed_header.empty())
-    frame_->Client()->DidSetFeaturePolicyHeader(parsed_header);
 }
 
 ukm::UkmRecorder* Document::UkmRecorder() {
@@ -5986,7 +5993,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     cookie_url_ = KURL(g_empty_string);
     SetSecurityOrigin(SecurityOrigin::CreateUnique());
     InitContentSecurityPolicy();
-    SetFeaturePolicy(g_empty_string);
+    ApplyFeaturePolicy({});
     // Unique security origins cannot have a suborigin
     return;
   }
@@ -6099,7 +6106,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
   if (GetSecurityOrigin()->HasSuborigin())
     EnforceSuborigin(*GetSecurityOrigin()->GetSuborigin());
 
-  SetFeaturePolicy(g_empty_string);
+  ApplyFeaturePolicy({});
 
   InitSecureContextState();
 }

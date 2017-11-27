@@ -24,7 +24,7 @@ class PolicyTest : public ::testing::Test {
   void SetUp() override {
     document_ = Document::CreateForTest();
     document_->SetSecurityOrigin(SecurityOrigin::CreateFromString(kSelfOrigin));
-    document_->SetFeaturePolicy(
+    document_->ApplyFeaturePolicyFromHeader(
         "fullscreen *; payment 'self'; midi 'none'; camera 'self' "
         "https://example.com https://example.net");
     policy_ = Policy::Create(document_);

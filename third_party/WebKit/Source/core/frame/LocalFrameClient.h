@@ -280,7 +280,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                     SandboxFlags,
                                     const ParsedFeaturePolicy&) {}
 
-  virtual void DidSetFeaturePolicyHeader(
+  virtual void DidSetFramePolicyHeaders(
+      SandboxFlags,
       const ParsedFeaturePolicy& parsed_header) {}
 
   // Called when a set of new Content Security Policies is added to the frame's

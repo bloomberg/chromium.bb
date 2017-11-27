@@ -879,6 +879,10 @@ IPC_MESSAGE_ROUTED1(FrameMsg_Collapse, bool /* collapsed */)
 // container policy.
 IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateFramePolicy, blink::FramePolicy)
 
+// Sent to a frame proxy when the active sandbox flags on its real frame have
+// been updated by a CSP header which sets sandbox flags.
+IPC_MESSAGE_ROUTED1(FrameMsg_DidSetActiveSandboxFlags, blink::WebSandboxFlags)
+
 // Update a proxy's window.name property.  Used when the frame's name is
 // changed in another process.
 IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,
@@ -1174,10 +1178,12 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeName,
                     std::string /* name */,
                     std::string /* unique_name */)
 
-// Notifies the browser process that a non-empty Feature-Policy HTTP header was
-// delivered with the document being loaded into the frame. |parsed_header| is
-// a list of an origin whitelist for each feature in the policy.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DidSetFeaturePolicyHeader,
+// Notifies the browser process that HTTP headers which affect the frame
+// polices were delivered with the document being lodaded into the frame. This
+// can be either or both of 'Feature-Policy' or 'Content-Security-Policy' (which
+// can set sandbox flags).
+IPC_MESSAGE_ROUTED2(FrameHostMsg_DidSetFramePolicyHeaders,
+                    blink::WebSandboxFlags,
                     blink::ParsedFeaturePolicy /* parsed_header */)
 
 // Notifies the browser process about a new Content Security Policy that needs

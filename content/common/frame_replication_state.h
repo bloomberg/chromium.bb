@@ -76,11 +76,18 @@ struct CONTENT_EXPORT FrameReplicationState {
   // document.
   blink::ParsedFeaturePolicy feature_policy_header;
 
+  // Contains the currently active sandbox flags for this frame, including flags
+  // inherited from parent frames, the currently active flags from the <iframe>
+  // element hosting this frame, as well as any flags set from a
+  // Content-Security-Policy HTTP header.
+  blink::WebSandboxFlags active_sandbox_flags;
+
   // Iframe sandbox flags and container policy currently in effect for the
   // frame. Container policy may be empty if this is the top-level frame.
   // |sandbox_flags| are initialized for new child frames using the value of the
   // <iframe> element's "sandbox" attribute, combined with any sandbox flags in
-  // effect for the parent frame.
+  // effect for the parent frame. This does *not* include any flags set by a
+  // Content-Security-Policy header delivered with the framed document.
   //
   // When a parent frame updates an <iframe>'s sandbox attribute via
   // JavaScript, |sandbox_flags| are updated only after the child frame commits

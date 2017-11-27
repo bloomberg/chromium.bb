@@ -169,6 +169,10 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void set_pending_commit(bool pending) { pending_commit_ = pending; }
   bool pending_commit() const { return pending_commit_; }
 
+  // Send a message with the sandbox flags and feature policy
+  void SendFramePolicy(blink::WebSandboxFlags sandbox_flags,
+                       const blink::ParsedFeaturePolicy& declared_policy);
+
   // Creates a WebBluetooth Service with a dummy InterfaceRequest.
   WebBluetoothServiceImpl* CreateWebBluetoothServiceForTesting();
 

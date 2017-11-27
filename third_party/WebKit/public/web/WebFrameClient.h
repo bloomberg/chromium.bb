@@ -266,9 +266,10 @@ class BLINK_EXPORT WebFrameClient {
       WebSandboxFlags flags,
       const ParsedFeaturePolicy& container_policy) {}
 
-  // Called when a Feature-Policy HTTP header is encountered while loading the
-  // frame's document.
-  virtual void DidSetFeaturePolicyHeader(
+  // Called when a Feature-Policy or Content-Security-Policy HTTP header (for
+  // sandbox flags) is encountered while loading the frame's document.
+  virtual void DidSetFramePolicyHeaders(
+      WebSandboxFlags flags,
       const ParsedFeaturePolicy& parsed_header) {}
 
   // Called when a new Content Security Policy is added to the frame's

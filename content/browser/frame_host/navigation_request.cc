@@ -187,7 +187,7 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   if (frame_tree_node->IsMainFrame()) {
     // For main frame, the origin is the url currently loading.
     origin = url::Origin::Create(url);
-  } else if ((frame_tree_node->effective_frame_policy().sandbox_flags &
+  } else if ((frame_tree_node->active_sandbox_flags() &
               blink::WebSandboxFlags::kOrigin) ==
              blink::WebSandboxFlags::kNone) {
     // The origin should be the origin of the root, except for sandboxed

@@ -429,6 +429,11 @@ class CONTENT_EXPORT RenderFrameHostManager
   // skipping the parent process.
   void OnDidUpdateFrameOwnerProperties(const FrameOwnerProperties& properties);
 
+  // Notify the proxies that the active sandbox flags on the frame have been
+  // changed during page load. This happens when a CSP header sets sandbox
+  // flags.
+  void OnDidSetActiveSandboxFlags();
+
   // Send updated origin to all frame proxies when the frame navigates to a new
   // origin.
   void OnDidUpdateOrigin(const url::Origin& origin,
@@ -703,7 +708,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Helper to call CommitPending() in all necessary cases.
   void CommitPendingIfNecessary(RenderFrameHostImpl* render_frame_host,
                                 bool was_caused_by_user_gesture);
-
   // Commits any pending sandbox flag or feature policy updates when the
   // renderer's frame navigates.
   void CommitPendingFramePolicy();
