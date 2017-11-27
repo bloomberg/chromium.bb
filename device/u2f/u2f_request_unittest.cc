@@ -24,7 +24,8 @@ class FakeU2fRequest : public U2fRequest {
   ~FakeU2fRequest() override {}
 
   void TryDevice() override {
-    cb_.Run(U2fReturnCode::SUCCESS, std::vector<uint8_t>());
+    cb_.Run(U2fReturnCode::SUCCESS, std::vector<uint8_t>(),
+            std::vector<uint8_t>());
   }
 };
 
@@ -42,7 +43,8 @@ class U2fRequestTest : public testing::Test {
 
 TEST_F(U2fRequestTest, TestIterateDevice) {
   // No discoveries are needed, since |request.devices_| is accessed directly.
-  auto do_nothing = [](U2fReturnCode, const std::vector<uint8_t>&) {};
+  auto do_nothing = [](U2fReturnCode, const std::vector<uint8_t>&,
+                       const std::vector<uint8_t>&) {};
   FakeU2fRequest request({}, base::Bind(do_nothing));
 
   // Add two U2F devices
@@ -89,7 +91,8 @@ TEST_F(U2fRequestTest, TestBasicMachine) {
   MockU2fDiscovery* discovery_weak = discovery.get();
   discoveries.push_back(std::move(discovery));
 
-  auto do_nothing = [](U2fReturnCode, const std::vector<uint8_t>&) {};
+  auto do_nothing = [](U2fReturnCode, const std::vector<uint8_t>&,
+                       const std::vector<uint8_t>&) {};
   FakeU2fRequest request(std::move(discoveries), base::Bind(do_nothing));
   request.Start();
 

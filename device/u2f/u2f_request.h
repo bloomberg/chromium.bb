@@ -17,9 +17,12 @@ namespace device {
 
 class U2fRequest : public U2fDiscovery::Delegate {
  public:
+  // Response and key_handle are optional, depending on the status and
+  // the type of request being served.
   using ResponseCallback =
       base::Callback<void(U2fReturnCode status_code,
-                          const std::vector<uint8_t>& response)>;
+                          const std::vector<uint8_t>& response,
+                          const std::vector<uint8_t>& key_handle)>;
 
   U2fRequest(std::vector<std::unique_ptr<U2fDiscovery>> discoveries,
              ResponseCallback callback);

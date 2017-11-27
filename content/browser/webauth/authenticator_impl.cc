@@ -150,11 +150,14 @@ void AuthenticatorImpl::MakeCredential(
 }
 
 // Callback to handle the async response from a U2fDevice.
+// |data| is returned for both successful sign and register responses, whereas
+//  |key_handle| is only returned for successful sign responses.
 void AuthenticatorImpl::OnDeviceResponse(
     MakeCredentialCallback callback,
     std::unique_ptr<CollectedClientData> client_data,
     device::U2fReturnCode status_code,
-    const std::vector<uint8_t>& u2f_register_response) {
+    const std::vector<uint8_t>& u2f_register_response,
+    const std::vector<uint8_t>& key_handle) {
   timer_.Stop();
 
   if (status_code == device::U2fReturnCode::SUCCESS) {

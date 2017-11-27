@@ -50,7 +50,8 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
   void OnDeviceResponse(MakeCredentialCallback callback,
                         std::unique_ptr<CollectedClientData> client_data,
                         device::U2fReturnCode status_code,
-                        const std::vector<uint8_t>& data);
+                        const std::vector<uint8_t>& data,
+                        const std::vector<uint8_t>& key_handle);
 
   // Runs when timer expires and cancels all issued requests to a U2fDevice.
   void OnTimeout(

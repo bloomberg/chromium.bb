@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "device/u2f/u2f_register.h"
+
 #include <utility>
+
 #include "base/stl_util.h"
 #include "device/u2f/u2f_discovery.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -117,7 +119,7 @@ void U2fRegister::OnTryDevice(bool is_duplicate_registration,
       state_ = State::COMPLETE;
       if (is_duplicate_registration)
         return_code = U2fReturnCode::CONDITIONS_NOT_SATISFIED;
-      cb_.Run(return_code, response_data);
+      cb_.Run(return_code, response_data, std::vector<uint8_t>());
       break;
     case U2fReturnCode::CONDITIONS_NOT_SATISFIED:
       // Waiting for user touch, move on and try this device later.
