@@ -45,11 +45,6 @@ class CONTENT_EXPORT LoaderDelegate {
       const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
       std::unique_ptr<ResourceRequestDetails> details) = 0;
 
-  // Notification that a redirect was received while requesting a resource.
-  virtual void DidGetRedirectForResourceRequest(
-      const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-      std::unique_ptr<ResourceRedirectDetails> details) = 0;
-
   // Called when the network stack started handling the navigation request.
   virtual void LogResourceRequestTime(base::TimeTicks timestamp,
                                       int render_process_id,

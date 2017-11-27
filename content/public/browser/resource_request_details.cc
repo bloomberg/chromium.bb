@@ -31,13 +31,4 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
 
 ResourceRequestDetails::~ResourceRequestDetails() {}
 
-ResourceRedirectDetails::ResourceRedirectDetails(const net::URLRequest* request,
-                                                 bool has_certificate,
-                                                 const GURL& new_url)
-    : ResourceRequestDetails(request, has_certificate),
-      new_url(new_url) {
-}
-
-ResourceRedirectDetails::~ResourceRedirectDetails() {}
-
 }  // namespace content

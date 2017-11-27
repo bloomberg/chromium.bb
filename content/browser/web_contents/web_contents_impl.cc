@@ -3426,12 +3426,6 @@ void WebContentsImpl::DidGetResourceResponseStart(
     observer.DidGetResourceResponseStart(details);
 }
 
-void WebContentsImpl::DidGetRedirectForResourceRequest(
-  const ResourceRedirectDetails& details) {
-  for (auto& observer : observers_)
-    observer.DidGetRedirectForResourceRequest(details);
-}
-
 void WebContentsImpl::NotifyWebContentsFocused(
     RenderWidgetHost* render_widget_host) {
   for (auto& observer : observers_)
