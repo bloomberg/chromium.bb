@@ -2,6 +2,10 @@
 #+type:literary
 #+contraction:no
 #+dots:6
+#+label:"Unified French 6 dots"
+#+author:['Michel Such <michel.such@free.fr>','André-Abush CLAUSE <dev@andreabc.net>','Ludovic Oger <oger.ludovic@gmail.com>','Nicolas Pitre <nico@cam.org>','The BRLTTY Team <http://brltty.com/>']
+#+license:LGPL
+#+lastUpdate:2017-11-27
 
 # liblouis: Unified French 6 dots Braille table
 
