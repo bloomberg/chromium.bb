@@ -87,9 +87,9 @@ def _MakeToolPrefixAbsolute(tool_prefix):
 def _IsRelevantNmName(name):
   # Skip lines like:
   # 00000000 t $t
-  # 00000000 r $d
+  # 00000000 r $d.23
   # 00000344 N
-  return name and not (len(name) == 2 and name.startswith('$'))
+  return name and not name.startswith('$')
 
 
 def _IsRelevantObjectFileName(name):
