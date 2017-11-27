@@ -68,7 +68,8 @@ yes_no() {
 # Checks whether a particular package is available in the repos.
 # USAGE: $ package_exists <package name>
 package_exists() {
-  [ ! -z "`apt-cache search --names-only "$1"`" ]
+  [ ! -z "$(apt-cache search --names-only "$1" | \
+            awk '$1 == "'$1'" { print $1; }')" ]
 }
 
 # These default to on because (some) bots need them and it keeps things
