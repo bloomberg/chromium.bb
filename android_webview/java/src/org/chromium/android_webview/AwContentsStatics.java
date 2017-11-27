@@ -13,7 +13,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
-import java.lang.reflect.Method;
 import java.util.List;
 
 /**
@@ -122,13 +121,7 @@ public class AwContentsStatics {
             }
         };
 
-        try {
-            Class cls = Class.forName(sSafeBrowsingWarmUpHelper);
-            Method m = cls.getDeclaredMethod("warmUpSafeBrowsing", Context.class, Callback.class);
-            m.invoke(null, appContext, wrapperCallback);
-        } catch (ReflectiveOperationException e) {
-            wrapperCallback.onResult(false);
-        }
+        PlatformServiceBridge.getInstance().warmUpSafeBrowsing(appContext, wrapperCallback);
     }
 
     public static Uri getSafeBrowsingPrivacyPolicyUrl() {

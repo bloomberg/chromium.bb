@@ -939,6 +939,7 @@ android_library("android_webview_platform_services_java") {
 
   deps = [
     "//base:base_java",
+    "//third_party/android_tools:android_support_annotations_java",
   ]
 }
 
