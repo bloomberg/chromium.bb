@@ -78,6 +78,10 @@ const char* YesNoStateToString(bool is_yes) {
   }
 }
 
+double TimeDeltaToMilliseconds(const base::TimeDelta& value) {
+  return value.InMillisecondsF();
+}
+
 }  // namespace
 
 RendererSchedulerImpl::RendererSchedulerImpl(
@@ -231,13 +235,23 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       stopping_when_backgrounded_enabled(false),
       stopped_when_backgrounded(false),
       was_shutdown(false),
+      loading_task_estimated_cost(
+          base::TimeDelta(),
+          "RendererScheduler.LoadingTaskEstimatedCostMs",
+          renderer_scheduler_impl,
+          TimeDeltaToMilliseconds),
+      timer_task_estimated_cost(
+          base::TimeDelta(),
+          "RendererScheduler.TimerTaskEstimatedCostMs",
+          renderer_scheduler_impl,
+          TimeDeltaToMilliseconds),
       loading_tasks_seem_expensive(
           false,
-          "RendererScheduler.LoadingTasksSeemsExpensive",
+          "RendererScheduler.LoadingTasksSeemExpensive",
           renderer_scheduler_impl,
           YesNoStateToString),
       timer_tasks_seem_expensive(false,
-                                 "RendererScheduler.TimerTasksSeemsExpensive",
+                                 "RendererScheduler.TimerTasksSeemExpensive",
                                  renderer_scheduler_impl,
                                  YesNoStateToString),
       touchstart_expected_soon(false,
@@ -1045,11 +1059,16 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   main_thread_only().longest_jank_free_task_duration =
       longest_jank_free_task_duration;
 
+  main_thread_only().loading_task_estimated_cost =
+      main_thread_only().loading_task_cost_estimator.expected_task_duration();
   bool loading_tasks_seem_expensive =
-      main_thread_only().loading_task_cost_estimator.expected_task_duration() >
+      main_thread_only().loading_task_estimated_cost.get() >
       longest_jank_free_task_duration;
+
+  main_thread_only().timer_task_estimated_cost =
+      main_thread_only().timer_task_cost_estimator.expected_task_duration();
   bool timer_tasks_seem_expensive =
-      main_thread_only().timer_task_cost_estimator.expected_task_duration() >
+      main_thread_only().timer_task_estimated_cost.get() >
       longest_jank_free_task_duration;
 
   main_thread_only().timer_tasks_seem_expensive = timer_tasks_seem_expensive;
@@ -2280,6 +2299,8 @@ void RendererSchedulerImpl::OnTraceLogEnabled() {
   main_thread_only().expensive_task_policy.OnTraceLogEnabled();
   main_thread_only().rail_mode_for_tracing.OnTraceLogEnabled();
   main_thread_only().renderer_backgrounded.OnTraceLogEnabled();
+  main_thread_only().loading_task_estimated_cost.Trace();
+  main_thread_only().timer_task_estimated_cost.Trace();
   main_thread_only().loading_tasks_seem_expensive.OnTraceLogEnabled();
   main_thread_only().timer_tasks_seem_expensive.OnTraceLogEnabled();
   main_thread_only().touchstart_expected_soon.OnTraceLogEnabled();

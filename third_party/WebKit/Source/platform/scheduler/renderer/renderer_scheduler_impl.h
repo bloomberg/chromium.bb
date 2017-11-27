@@ -636,6 +636,10 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     bool stopping_when_backgrounded_enabled;
     bool stopped_when_backgrounded;
     bool was_shutdown;
+    TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>
+        loading_task_estimated_cost;
+    TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>
+        timer_task_estimated_cost;
     TraceableState<bool, kTracingCategoryNameInfo> loading_tasks_seem_expensive;
     TraceableState<bool, kTracingCategoryNameInfo> timer_tasks_seem_expensive;
     TraceableState<bool, kTracingCategoryNameDefault> touchstart_expected_soon;
