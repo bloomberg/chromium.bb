@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/observers/previews_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/offline_page_previews_page_load_metrics_observer.h"
 
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -37,12 +37,14 @@ const char kHistogramOfflinePreviewsParseStart[] =
 
 }  // namespace internal
 
-PreviewsPageLoadMetricsObserver::PreviewsPageLoadMetricsObserver() {}
+OfflinePagePreviewsPageLoadMetricsObserver::
+    OfflinePagePreviewsPageLoadMetricsObserver() {}
 
-PreviewsPageLoadMetricsObserver::~PreviewsPageLoadMetricsObserver() {}
+OfflinePagePreviewsPageLoadMetricsObserver::
+    ~OfflinePagePreviewsPageLoadMetricsObserver() {}
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-PreviewsPageLoadMetricsObserver::OnCommit(
+OfflinePagePreviewsPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
   return IsOfflinePreview(navigation_handle->GetWebContents())
@@ -51,7 +53,7 @@ PreviewsPageLoadMetricsObserver::OnCommit(
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-PreviewsPageLoadMetricsObserver::ShouldObserveMimeType(
+OfflinePagePreviewsPageLoadMetricsObserver::ShouldObserveMimeType(
     const std::string& mime_type) const {
   // On top of base-supported types, support MHTML. Offline previews are served
   // as MHTML (multipart/related).
@@ -62,7 +64,7 @@ PreviewsPageLoadMetricsObserver::ShouldObserveMimeType(
              : STOP_OBSERVING;
 }
 
-void PreviewsPageLoadMetricsObserver::OnDomContentLoadedEventStart(
+void OfflinePagePreviewsPageLoadMetricsObserver::OnDomContentLoadedEventStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!WasStartedInForegroundOptionalEventInForeground(
@@ -74,7 +76,7 @@ void PreviewsPageLoadMetricsObserver::OnDomContentLoadedEventStart(
       timing.document_timing->dom_content_loaded_event_start.value());
 }
 
-void PreviewsPageLoadMetricsObserver::OnLoadEventStart(
+void OfflinePagePreviewsPageLoadMetricsObserver::OnLoadEventStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!WasStartedInForegroundOptionalEventInForeground(
@@ -85,7 +87,7 @@ void PreviewsPageLoadMetricsObserver::OnLoadEventStart(
                       timing.document_timing->load_event_start.value());
 }
 
-void PreviewsPageLoadMetricsObserver::OnFirstLayout(
+void OfflinePagePreviewsPageLoadMetricsObserver::OnFirstLayout(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!WasStartedInForegroundOptionalEventInForeground(
@@ -96,7 +98,7 @@ void PreviewsPageLoadMetricsObserver::OnFirstLayout(
                       timing.document_timing->first_layout.value());
 }
 
-void PreviewsPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
+void OfflinePagePreviewsPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!WasStartedInForegroundOptionalEventInForeground(
@@ -107,7 +109,7 @@ void PreviewsPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
                       timing.paint_timing->first_contentful_paint.value());
 }
 
-void PreviewsPageLoadMetricsObserver::OnParseStart(
+void OfflinePagePreviewsPageLoadMetricsObserver::OnParseStart(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!WasStartedInForegroundOptionalEventInForeground(
@@ -118,7 +120,7 @@ void PreviewsPageLoadMetricsObserver::OnParseStart(
                       timing.parse_timing->parse_start.value());
 }
 
-bool PreviewsPageLoadMetricsObserver::IsOfflinePreview(
+bool OfflinePagePreviewsPageLoadMetricsObserver::IsOfflinePreview(
     content::WebContents* web_contents) const {
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageTabHelper* tab_helper =

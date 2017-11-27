@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PREVIEWS_PAGE_LOAD_METRICS_OBSERVER_H_
-#define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PREVIEWS_PAGE_LOAD_METRICS_OBSERVER_H_
+#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_OFFLINE_PAGE_PREVIEWS_PAGE_LOAD_METRICS_OBSERVER_H_
+#define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_OFFLINE_PAGE_PREVIEWS_PAGE_LOAD_METRICS_OBSERVER_H_
 
 #include <string>
 
@@ -14,7 +14,7 @@
 namespace content {
 class NavigationHandle;
 class WebContents;
-}
+}  // namespace content
 
 namespace previews {
 
@@ -31,11 +31,11 @@ extern const char kHistogramOfflinePreviewsParseStart[];
 
 // Observer responsible for recording core page load metrics relevant to
 // Previews.
-class PreviewsPageLoadMetricsObserver
+class OfflinePagePreviewsPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
-  PreviewsPageLoadMetricsObserver();
-  ~PreviewsPageLoadMetricsObserver() override;
+  OfflinePagePreviewsPageLoadMetricsObserver();
+  ~OfflinePagePreviewsPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
@@ -61,9 +61,9 @@ class PreviewsPageLoadMetricsObserver
   // testing.
   virtual bool IsOfflinePreview(content::WebContents* web_contents) const;
 
-  DISALLOW_COPY_AND_ASSIGN(PreviewsPageLoadMetricsObserver);
+  DISALLOW_COPY_AND_ASSIGN(OfflinePagePreviewsPageLoadMetricsObserver);
 };
 
 }  // namespace previews
 
-#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PREVIEWS_PAGE_LOAD_METRICS_OBSERVER_H_
+#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_OFFLINE_PAGE_PREVIEWS_PAGE_LOAD_METRICS_OBSERVER_H_

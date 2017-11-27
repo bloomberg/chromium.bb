@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/observers/previews_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/offline_page_previews_page_load_metrics_observer.h"
 
 #include <string>
 
@@ -23,12 +23,12 @@ namespace {
 const char kDefaultTestUrl1[] = "https://google.com";
 const char kDefaultTestUrl2[] = "https://example.com";
 
-class TestPreviewsPageLoadMetricsObserver
-    : public PreviewsPageLoadMetricsObserver {
+class TestOfflinePagePreviewsPageLoadMetricsObserver
+    : public OfflinePagePreviewsPageLoadMetricsObserver {
  public:
-  explicit TestPreviewsPageLoadMetricsObserver(bool offline_preview)
+  explicit TestOfflinePagePreviewsPageLoadMetricsObserver(bool offline_preview)
       : offline_preview_(offline_preview) {}
-  ~TestPreviewsPageLoadMetricsObserver() override {}
+  ~TestOfflinePagePreviewsPageLoadMetricsObserver() override {}
 
   bool IsOfflinePreview(content::WebContents* web_contents) const override {
     return offline_preview_;
@@ -40,10 +40,11 @@ class TestPreviewsPageLoadMetricsObserver
 
 }  // namespace
 
-class PreviewsPageLoadMetricsObserverTest
+class OfflinePagePreviewsPageLoadMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  public:
-  PreviewsPageLoadMetricsObserverTest() : is_offline_preview_(false) {}
+  OfflinePagePreviewsPageLoadMetricsObserverTest()
+      : is_offline_preview_(false) {}
 
   void ResetTest() {
     page_load_metrics::InitPageLoadTimingForTest(&timing_);
@@ -91,31 +92,33 @@ class PreviewsPageLoadMetricsObserverTest
     if (!is_offline_preview_)
       return;
     histogram_tester().ExpectUniqueSample(
-        histogram_, static_cast<base::HistogramBase::Sample>(
-                        event.value().InMilliseconds()),
+        histogram_,
+        static_cast<base::HistogramBase::Sample>(
+            event.value().InMilliseconds()),
         1);
   }
 
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(base::WrapUnique(
-        new TestPreviewsPageLoadMetricsObserver(is_offline_preview_)));
+    tracker->AddObserver(
+        base::WrapUnique(new TestOfflinePagePreviewsPageLoadMetricsObserver(
+            is_offline_preview_)));
   }
 
  private:
   page_load_metrics::mojom::PageLoadTiming timing_;
   bool is_offline_preview_;
 
-  DISALLOW_COPY_AND_ASSIGN(PreviewsPageLoadMetricsObserverTest);
+  DISALLOW_COPY_AND_ASSIGN(OfflinePagePreviewsPageLoadMetricsObserverTest);
 };
 
-TEST_F(PreviewsPageLoadMetricsObserverTest, NoPreview) {
+TEST_F(OfflinePagePreviewsPageLoadMetricsObserverTest, NoPreview) {
   ResetTest();
   RunTest(false);
   ValidateHistograms();
 }
 
-TEST_F(PreviewsPageLoadMetricsObserverTest, OfflinePreviews) {
+TEST_F(OfflinePagePreviewsPageLoadMetricsObserverTest, OfflinePreviews) {
   ResetTest();
   RunTest(true);
   ValidateHistograms();
