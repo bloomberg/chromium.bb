@@ -58,8 +58,7 @@ namespace sql {
 MetaTable::MetaTable() : db_(NULL) {
 }
 
-MetaTable::~MetaTable() {
-}
+MetaTable::~MetaTable() = default;
 
 // static
 constexpr int64_t MetaTable::kMmapFailure;

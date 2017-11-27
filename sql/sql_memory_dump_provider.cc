@@ -17,9 +17,9 @@ SqlMemoryDumpProvider* SqlMemoryDumpProvider::GetInstance() {
       base::LeakySingletonTraits<SqlMemoryDumpProvider>>::get();
 }
 
-SqlMemoryDumpProvider::SqlMemoryDumpProvider() {}
+SqlMemoryDumpProvider::SqlMemoryDumpProvider() = default;
 
-SqlMemoryDumpProvider::~SqlMemoryDumpProvider() {}
+SqlMemoryDumpProvider::~SqlMemoryDumpProvider() = default;
 
 bool SqlMemoryDumpProvider::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,

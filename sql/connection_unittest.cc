@@ -60,7 +60,7 @@ class ScopedMockTimeSource {
     MockTimeSource(ScopedMockTimeSource& owner)
         : owner_(owner) {
     }
-    ~MockTimeSource() override {}
+    ~MockTimeSource() override = default;
 
     base::TimeTicks Now() override {
       base::TimeTicks ret(owner_.current_time_);
