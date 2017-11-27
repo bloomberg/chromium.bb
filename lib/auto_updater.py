@@ -1250,8 +1250,9 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
          The file will be removed by stateful update or full install.
     """
     logging.debug('Start pre-setup for the whole CrOS update process...')
-    self._RetryCommand(['touch', self.REMOTE_PROVISION_FAILED_FILE_PATH],
-                       **self._cmd_kwargs)
+    if not self.is_au_endtoendtest:
+      self._RetryCommand(['touch', self.REMOTE_PROVISION_FAILED_FILE_PATH],
+                         **self._cmd_kwargs)
 
     # Related to crbug.com/360944.
     release_pattern = r'^.*-release/R[0-9]+-[0-9]+\.[0-9]+\.0$'
