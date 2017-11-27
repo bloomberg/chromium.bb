@@ -210,13 +210,6 @@ void BluetoothDeviceWin::ConnectToServiceInsecurely(
   error_callback.Run(kApiUnavailable);
 }
 
-void BluetoothDeviceWin::CreateGattConnection(
-      const GattConnectionCallback& callback,
-      const ConnectErrorCallback& error_callback) {
-  // TODO(armansito): Implement.
-  error_callback.Run(ERROR_UNSUPPORTED_DEVICE);
-}
-
 const BluetoothServiceRecordWin* BluetoothDeviceWin::GetServiceRecord(
     const device::BluetoothUUID& uuid) const {
   for (const auto& record : service_record_list_)
@@ -296,15 +289,12 @@ void BluetoothDeviceWin::GattServiceDiscoveryComplete(
 }
 
 void BluetoothDeviceWin::CreateGattConnectionImpl() {
-  // Windows implementation does not use the default CreateGattConnection
-  // implementation.
-  NOTIMPLEMENTED();
+  // Windows will create the Gatt connection as needed.  See:
+  // https://docs.microsoft.com/en-us/windows/uwp/devices-sensors/gatt-client#connecting-to-the-device
 }
 
 void BluetoothDeviceWin::DisconnectGatt() {
-  // Windows implementation does not use the default CreateGattConnection
-  // implementation.
-  NOTIMPLEMENTED();
+  // On Windows, the adapter cannot force a disconnection.
 }
 
 void BluetoothDeviceWin::SetVisible(bool visible) {

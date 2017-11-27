@@ -86,9 +86,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin
       const BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) override;
-  void CreateGattConnection(
-      const GattConnectionCallback& callback,
-      const ConnectErrorCallback& error_callback) override;
 
   // Used by BluetoothProfileWin to retrieve the service record for the given
   // |uuid|.
