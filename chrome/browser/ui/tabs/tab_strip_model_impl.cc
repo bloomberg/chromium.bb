@@ -460,8 +460,9 @@ void TabStripModelImpl::CloseAllTabs() {
 
 bool TabStripModelImpl::CloseWebContentsAt(int index, uint32_t close_types) {
   DCHECK(ContainsIndex(index));
-  std::vector<content::WebContents*> closing_tabs(1, GetWebContentsAt(index));
-  return InternalCloseTabs(closing_tabs, close_types);
+  WebContents* contents = GetWebContentsAt(index);
+  return InternalCloseTabs(base::span<WebContents* const>(&contents, 1),
+                           close_types);
 }
 
 bool TabStripModelImpl::TabsAreLoading() const {
@@ -1104,7 +1105,7 @@ std::vector<content::WebContents*> TabStripModelImpl::GetWebContentsesByIndices(
 }
 
 bool TabStripModelImpl::InternalCloseTabs(
-    const std::vector<content::WebContents*>& items,
+    base::span<content::WebContents* const> items,
     uint32_t close_types) {
   if (items.empty())
     return true;

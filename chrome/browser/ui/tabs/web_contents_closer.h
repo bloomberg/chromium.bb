@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include <vector>
+#include "base/containers/span.h"
 
 namespace content {
 class WebContents;
@@ -43,7 +43,7 @@ class WebContentsCloseDelegate {
 // for the WebContents. See UnloadController for details on how unload handlers
 // are processed.
 bool CloseWebContentses(WebContentsCloseDelegate* delegate,
-                        const std::vector<content::WebContents*>& items,
+                        base::span<content::WebContents* const> items,
                         uint32_t close_types);
 
 #endif  // CHROME_BROWSER_UI_TABS_WEB_CONTENTS_CLOSER_H_

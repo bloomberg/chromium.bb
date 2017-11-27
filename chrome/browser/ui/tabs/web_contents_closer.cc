@@ -20,7 +20,7 @@ namespace {
 // is deleted.
 class CloseTracker {
  public:
-  using Contents = std::vector<content::WebContents*>;
+  using Contents = base::span<content::WebContents* const>;
 
   explicit CloseTracker(const Contents& contents);
   ~CloseTracker();
@@ -93,7 +93,7 @@ void CloseTracker::OnWebContentsDestroyed(DeletionObserver* observer) {
 }  // namespace
 
 bool CloseWebContentses(WebContentsCloseDelegate* delegate,
-                        const std::vector<content::WebContents*>& items,
+                        base::span<content::WebContents* const> items,
                         uint32_t close_types) {
   if (items.empty())
     return true;

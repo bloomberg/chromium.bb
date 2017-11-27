@@ -235,9 +235,8 @@ class TabStripModelExperimental : public TabStripModel {
       Notify notify_types,
       const ui::ListSelectionModel& old_model);
 
-  bool InternalCloseTabs(
-      const std::vector<content::WebContents*>& tabs_to_close,
-      uint32_t close_types);
+  bool InternalCloseTabs(base::span<content::WebContents* const> tabs_to_close,
+                         uint32_t close_types);
 
   // Returns the iterator associated with the give view index, or end() if
   // not found.
