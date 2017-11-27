@@ -40,6 +40,11 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   static CSSImageValue* Create(const KURL& url, StyleImage* image = nullptr) {
     return Create(url.GetString(), url, Referrer(), image);
   }
+  static CSSImageValue* Create(const AtomicString& relative_url,
+                               const KURL& absolute_url,
+                               StyleImage* image = 0) {
+    return Create(relative_url, absolute_url, Referrer(), image);
+  }
   static CSSImageValue* Create(const String& raw_value,
                                const KURL& url,
                                const Referrer& referrer,
@@ -84,6 +89,10 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
 
   CSSImageValue* ValueWithURLMadeAbsolute() const {
     return Create(KURL(absolute_url_), cached_image_.Get());
+  }
+
+  CSSImageValue* Clone() const {
+    return Create(relative_url_, KURL(absolute_url_), cached_image_.Get());
   }
 
   void SetInitiator(const AtomicString& name) { initiator_name_ = name; }

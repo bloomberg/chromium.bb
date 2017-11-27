@@ -92,6 +92,10 @@ class CORE_EXPORT CSSParserContext
 
   KURL CompleteURL(const String& url) const;
 
+  SecureContextMode GetSecureContextMode() const {
+    return secure_context_mode_;
+  }
+
   void Count(WebFeature) const;
   void Count(CSSParserMode, CSSPropertyID) const;
   void CountDeprecation(WebFeature) const;
