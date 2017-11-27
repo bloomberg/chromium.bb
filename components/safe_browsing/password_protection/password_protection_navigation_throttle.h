@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SAFE_BROWSING_PASSWORD_PROTECTION_PASSWORD_PROTECTION_NAVIGATION_THROTTLE_H_
 #define COMPONENTS_SAFE_BROWSING_PASSWORD_PROTECTION_PASSWORD_PROTECTION_NAVIGATION_THROTTLE_H_
 
+#include "base/memory/ref_counted.h"
 #include "content/public/browser/navigation_throttle.h"
 
 namespace content {
@@ -12,6 +13,8 @@ class NavigationHandle;
 }  // namespace content
 
 namespace safe_browsing {
+class PasswordProtectionRequest;
+
 // PasswordProtectionNavigationThrottle defers or cancel navigation under the
 // following condition:
 // (1) if a navigation starts when there is a on-going sync password reuse ping,
@@ -26,6 +29,7 @@ class PasswordProtectionNavigationThrottle
  public:
   PasswordProtectionNavigationThrottle(
       content::NavigationHandle* navigation_handle,
+      scoped_refptr<PasswordProtectionRequest> request,
       bool is_warning_showing);
   ~PasswordProtectionNavigationThrottle() override;
 
@@ -40,6 +44,7 @@ class PasswordProtectionNavigationThrottle
       content::NavigationThrottle::ThrottleCheckResult result);
 
  private:
+  scoped_refptr<PasswordProtectionRequest> request_;
   bool is_warning_showing_;
   DISALLOW_COPY_AND_ASSIGN(PasswordProtectionNavigationThrottle);
 };
