@@ -240,10 +240,12 @@ void MediaDevicesManager::StartMonitoring() {
   monitoring_started_ = true;
   base::SystemMonitor::Get()->AddDevicesChangedObserver(this);
 
-  for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
-    DCHECK(cache_policies_[i] != CachePolicy::SYSTEM_MONITOR);
-    SetCachePolicy(static_cast<MediaDeviceType>(i),
-                   CachePolicy::SYSTEM_MONITOR);
+  if (base::FeatureList::IsEnabled(features::kMediaDevicesSystemMonitorCache)) {
+    for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
+      DCHECK(cache_policies_[i] != CachePolicy::SYSTEM_MONITOR);
+      SetCachePolicy(static_cast<MediaDeviceType>(i),
+                     CachePolicy::SYSTEM_MONITOR);
+    }
   }
 
 #if defined(OS_MACOSX)
