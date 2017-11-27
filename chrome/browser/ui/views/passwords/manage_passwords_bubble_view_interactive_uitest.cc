@@ -316,10 +316,36 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, TwoTabsWithBubbleClose) {
   // clicking the location bar button repeatedly).
   content::RunAllPendingInMessageLoop();
   SetupPendingPassword();
+  ASSERT_TRUE(IsBubbleShowing());
+
+  // Queue an event to interact with the bubble (bubble should stay open for
+  // now). Ideally this would use ui_controls::SendKeyPress(..), but picking
+  // the event that would activate a button is tricky. It's also hard to send
+  // events directly to the button, since that's buried in private classes.
+  // Instead, simulate the action in ManagePasswordsBubbleView::PendingView::
+  // ButtonPressed(), and simulate the OS event queue by posting a task.
+  auto press_button = [](ManagePasswordsBubbleView* bubble, bool* ran) {
+    bubble->model()->OnNeverForThisSiteClicked();
+    *ran = true;
+  };
+  ManagePasswordsBubbleView* bubble =
+      ManagePasswordsBubbleView::manage_password_bubble();
+  bool ran_event_task = false;
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(press_button, bubble, &ran_event_task));
   EXPECT_TRUE(IsBubbleShowing());
+
   // Close the tab.
   ASSERT_TRUE(tab_model->CloseWebContentsAt(0, 0));
   EXPECT_FALSE(IsBubbleShowing());
+
+  // The bubble is now hidden, but not destroyed. However, the WebContents _is_
+  // destroyed. Emptying the runloop will process the queued event, and should
+  // not cause a crash trying to access objects owned by the WebContents.
+  EXPECT_TRUE(bubble->GetWidget()->IsClosed());
+  EXPECT_FALSE(ran_event_task);
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(ran_event_task);
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {

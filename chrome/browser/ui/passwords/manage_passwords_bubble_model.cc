@@ -398,8 +398,10 @@ void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
   interaction_keeper_->set_dismissal_reason(metrics_util::CLICKED_NEVER);
   interaction_keeper_->set_update_password_submission_event(
       GetUpdateDismissalReason(NOPE_CLICKED));
-  CleanStatisticsForSite(GetProfile(), origin_);
-  delegate_->NeverSavePassword();
+  if (delegate_) {
+    CleanStatisticsForSite(GetProfile(), origin_);
+    delegate_->NeverSavePassword();
+  }
 }
 
 void ManagePasswordsBubbleModel::OnCredentialEdited(
@@ -415,22 +417,26 @@ void ManagePasswordsBubbleModel::OnSaveClicked() {
   interaction_keeper_->set_dismissal_reason(metrics_util::CLICKED_SAVE);
   interaction_keeper_->set_update_password_submission_event(
       GetUpdateDismissalReason(UPDATE_CLICKED));
-  CleanStatisticsForSite(GetProfile(), origin_);
-  delegate_->SavePassword(pending_password_.username_value,
-                          pending_password_.password_value);
+  if (delegate_) {
+    CleanStatisticsForSite(GetProfile(), origin_);
+    delegate_->SavePassword(pending_password_.username_value,
+                            pending_password_.password_value);
+  }
 }
 
 void ManagePasswordsBubbleModel::OnNopeUpdateClicked() {
   interaction_keeper_->set_update_password_submission_event(
       GetUpdateDismissalReason(NOPE_CLICKED));
-  delegate_->OnNopeUpdateClicked();
+  if (delegate_)
+    delegate_->OnNopeUpdateClicked();
 }
 
 void ManagePasswordsBubbleModel::OnUpdateClicked(
     const autofill::PasswordForm& password_form) {
   interaction_keeper_->set_update_password_submission_event(
       GetUpdateDismissalReason(UPDATE_CLICKED));
-  delegate_->UpdatePassword(password_form);
+  if (delegate_)
+    delegate_->UpdatePassword(password_form);
 }
 
 void ManagePasswordsBubbleModel::OnDoneClicked() {
@@ -445,19 +451,22 @@ void ManagePasswordsBubbleModel::OnOKClicked() {
 
 void ManagePasswordsBubbleModel::OnManageLinkClicked() {
   interaction_keeper_->set_dismissal_reason(metrics_util::CLICKED_MANAGE);
-  delegate_->NavigateToPasswordManagerSettingsPage();
+  if (delegate_)
+    delegate_->NavigateToPasswordManagerSettingsPage();
 }
 
 void ManagePasswordsBubbleModel::
     OnNavigateToPasswordManagerAccountDashboardLinkClicked() {
   interaction_keeper_->set_dismissal_reason(
       metrics_util::CLICKED_PASSWORDS_DASHBOARD);
-  delegate_->NavigateToPasswordManagerAccountDashboard();
+  if (delegate_)
+    delegate_->NavigateToPasswordManagerAccountDashboard();
 }
 
 void ManagePasswordsBubbleModel::OnBrandLinkClicked() {
   interaction_keeper_->set_dismissal_reason(metrics_util::CLICKED_BRAND_NAME);
-  delegate_->NavigateToSmartLockHelpPage();
+  if (delegate_)
+    delegate_->NavigateToSmartLockHelpPage();
 }
 
 void ManagePasswordsBubbleModel::OnAutoSignInToastTimeout() {
@@ -486,7 +495,8 @@ void ManagePasswordsBubbleModel::OnSignInToChromeClicked() {
       metrics_util::CHROME_SIGNIN_OK);
   GetProfile()->GetPrefs()->SetBoolean(
       password_manager::prefs::kWasSignInPasswordPromoClicked, true);
-  delegate_->NavigateToChromeSignIn();
+  if (delegate_)
+    delegate_->NavigateToChromeSignIn();
 }
 
 void ManagePasswordsBubbleModel::OnSkipSignInClicked() {
