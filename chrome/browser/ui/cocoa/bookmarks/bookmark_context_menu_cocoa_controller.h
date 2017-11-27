@@ -14,7 +14,7 @@
 @class BookmarkBarController;
 class BookmarkContextMenuController;
 class BookmarkContextMenuDelegateBridge;
-@class MenuController;
+@class MenuControllerCocoa;
 
 namespace bookmarks {
 class BookmarkNode;
@@ -43,7 +43,7 @@ class BookmarkNode;
 
   // Controller responsible for creating a Cocoa NSMenu from the cross-platform
   // SimpleMenuModel owned by the |bookmarkContextMenuController_|.
-  base::scoped_nsobject<MenuController> menuController_;
+  base::scoped_nsobject<MenuControllerCocoa> menuController_;
 }
 
 // Initializes the BookmarkContextMenuCocoaController for the given bookmark

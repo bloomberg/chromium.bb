@@ -12,15 +12,15 @@
 
 @class DownloadItemController;
 
-// MenuController that retains a DownloadItemController and instantiates a menu
-// based on the contextMenuModel from the DownloadItemController.
-@interface DownloadShelfContextMenuController : MenuController {
+// MenuControllerCocoa that retains a DownloadItemController and instantiates a
+// menu based on the contextMenuModel from the DownloadItemController.
+@interface DownloadShelfContextMenuController : MenuControllerCocoa {
  @private
   base::scoped_nsobject<DownloadItemController> itemController_;
   id<NSMenuDelegate> menuDelegate_;
 }
 
-// Initializes the MenuController using [itemController contextMenuModel].
+// Initializes the MenuControllerCocoa using [itemController contextMenuModel].
 // menuDelegate will be sent a menuDidClose message when the menu closes.
 - (id)initWithItemController:(DownloadItemController*)itemController
                 withDelegate:(id<NSMenuDelegate>)menuDelegate;

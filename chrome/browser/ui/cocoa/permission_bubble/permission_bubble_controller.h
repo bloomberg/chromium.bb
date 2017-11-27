@@ -14,7 +14,7 @@
 
 class Browser;
 class LocationBarDecoration;
-@class MenuController;
+@class MenuControllerCocoa;
 class PermissionBubbleCocoa;
 
 @interface PermissionBubbleController

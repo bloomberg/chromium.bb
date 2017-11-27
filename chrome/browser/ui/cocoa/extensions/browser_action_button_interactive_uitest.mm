@@ -40,7 +40,7 @@
 
 // A helper class to wait for a menu to open and close.
 @interface MenuWatcher : NSObject
-- (id)initWithController:(MenuController*)controller;
+- (id)initWithController:(MenuControllerCocoa*)controller;
 @property(nonatomic, assign) base::Closure openClosure;
 @property(nonatomic, assign) base::Closure closeClosure;
 @end
@@ -180,8 +180,8 @@ void ClickOnOverflowedAction(
 @end
 
 @implementation MenuWatcher {
-  // The MenuController for the menu this object is watching.
-  MenuController* menuController_;
+  // The MenuControllerCocoa for the menu this object is watching.
+  MenuControllerCocoa* menuController_;
 
   // The closure to run when the menu opens, if any.
   base::Closure openClosure_;
@@ -193,7 +193,7 @@ void ClickOnOverflowedAction(
 @synthesize openClosure = openClosure_;
 @synthesize closeClosure = closeClosure_;
 
-- (id)initWithController:(MenuController*)controller {
+- (id)initWithController:(MenuControllerCocoa*)controller {
   if (self = [super init]) {
     menuController_ = controller;
     [[NSNotificationCenter defaultCenter]

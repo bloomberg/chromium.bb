@@ -94,7 +94,7 @@ void DrawBezel(id<ConstrainedWindowButtonDrawableCell> cell,
     : NSPopUpButtonCell<ConstrainedWindowButtonDrawableCell> {
  @private
   BOOL isMouseInside_;
-  base::scoped_nsobject<MenuController> menuController_;
+  base::scoped_nsobject<MenuControllerCocoa> menuController_;
   std::unique_ptr<ui::SimpleMenuModel> menuModel_;
 }
 
@@ -310,8 +310,9 @@ void DrawBezel(id<ConstrainedWindowButtonDrawableCell> cell,
     [self setBackgroundColor:[NSColor clearColor]];
     menuModel_.reset(new ui::SimpleMenuModel(menuDelegate));
     menuModel_->AddItemWithStringId(0, IDS_PERMISSION_CUSTOMIZE);
-    menuController_.reset([[MenuController alloc] initWithModel:menuModel_.get()
-                                         useWithPopUpButtonCell:NO]);
+    menuController_.reset([[MenuControllerCocoa alloc]
+                 initWithModel:menuModel_.get()
+        useWithPopUpButtonCell:NO]);
     [self setMenu:[menuController_ menu]];
     [self setUsesItemFromMenu:NO];
   }

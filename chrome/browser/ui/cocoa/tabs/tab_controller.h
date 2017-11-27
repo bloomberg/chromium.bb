@@ -24,7 +24,7 @@ enum TabLoadingState {
 };
 
 @class AlertIndicatorButton;
-@class MenuController;
+@class MenuControllerCocoa;
 @class SpriteView;
 @class TabView;
 @protocol TabControllerTarget;

@@ -82,8 +82,8 @@ class BookmarkContextMenuDelegateBridge :
                                         nodes));
   ui::SimpleMenuModel* menuModel =
       bookmarkContextMenuController_->menu_model();
-  menuController_.reset([[MenuController alloc] initWithModel:menuModel
-                                       useWithPopUpButtonCell:NO]);
+  menuController_.reset([[MenuControllerCocoa alloc] initWithModel:menuModel
+                                            useWithPopUpButtonCell:NO]);
 }
 
 - (BookmarkModel*)bookmarkModel {

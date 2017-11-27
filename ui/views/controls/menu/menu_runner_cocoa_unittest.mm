@@ -116,9 +116,9 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
   // Runs the menu after registering |callback| as the menu open callback.
   void RunMenu(const base::Closure& callback) {
     if (IsAsync()) {
-      // Cancelling an async menu under MenuController::OpenMenuImpl() (which
-      // invokes WillShowMenu()) will cause a UAF when that same function tries
-      // to show the menu. So post a task instead.
+      // Cancelling an async menu under MenuControllerCocoa::OpenMenuImpl()
+      // (which invokes WillShowMenu()) will cause a UAF when that same function
+      // tries to show the menu. So post a task instead.
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
     } else {
       menu_->set_menu_open_callback(
@@ -255,9 +255,9 @@ TEST_P(MenuRunnerCocoaTest, RunMenuAndCancel) {
   EXPECT_FALSE(runner_->IsRunning());
 
   if (GetParam() == MenuType::VIEWS) {
-    // MenuItemView's MenuRunnerImpl gets the closing time from MenuController::
-    // closing_event_time(). This is is reset on show, but only updated when an
-    // event closes the menu -- not a cancellation.
+    // MenuItemView's MenuRunnerImpl gets the closing time from
+    // MenuControllerCocoa:: closing_event_time(). This is is reset on show, but
+    // only updated when an event closes the menu -- not a cancellation.
     EXPECT_EQ(runner_->GetClosingEventTime(), base::TimeTicks());
   } else {
     EXPECT_GE(runner_->GetClosingEventTime(), min_time);

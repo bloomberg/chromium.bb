@@ -28,7 +28,7 @@ ui::MenuModel* MediaGalleryListEntryController::GetContextMenu(
 @interface MediaGalleryButton : NSButton {
  @private
   MediaGalleryListEntry* controller_;  // |controller_| owns |self|.
-  base::scoped_nsobject<MenuController> menuController_;
+  base::scoped_nsobject<MenuControllerCocoa> menuController_;
 }
 
 - (id)initWithFrame:(NSRect)frameRect
@@ -48,9 +48,9 @@ ui::MenuModel* MediaGalleryListEntryController::GetContextMenu(
 }
 
 - (NSMenu*)menuForEvent:(NSEvent*)theEvent {
-  menuController_.reset(
-    [[MenuController alloc] initWithModel:[controller_ getContextMenu]
-                   useWithPopUpButtonCell:NO]);
+  menuController_.reset([[MenuControllerCocoa alloc]
+               initWithModel:[controller_ getContextMenu]
+      useWithPopUpButtonCell:NO]);
   return [menuController_ menu];
 }
 

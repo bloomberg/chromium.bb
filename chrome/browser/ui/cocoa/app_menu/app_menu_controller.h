@@ -38,13 +38,13 @@ class ZoomLevelObserver;
 // The App menu has a creative layout, with buttons in menu items. There is a
 // cross-platform model for this special menu, but on the Mac it's easier to
 // get spacing and alignment precisely right using a NIB. To do that, we
-// subclass the generic MenuController implementation and special-case the two
-// items that require specific layout and load them from the NIB.
+// subclass the generic MenuControllerCocoa implementation and special-case the
+// two items that require specific layout and load them from the NIB.
 //
 // This object is owned by the ToolbarController and receives its NIB-based
 // views using the shim view controller below.
 @interface AppMenuController
-    : MenuController<NSMenuDelegate, HasWeakBrowserPointer> {
+    : MenuControllerCocoa<NSMenuDelegate, HasWeakBrowserPointer> {
  @private
   // Used to provide accelerators for the menu.
   std::unique_ptr<AppMenuControllerInternal::AcceleratorDelegate>
@@ -58,7 +58,7 @@ class ZoomLevelObserver;
   std::unique_ptr<RecentTabsMenuModelDelegate> recentTabsMenuModelDelegate_;
 
   // A shim NSViewController that loads the buttons from the NIB because ObjC
-  // doesn't have multiple inheritance as this class is a MenuController.
+  // doesn't have multiple inheritance as this class is a MenuControllerCocoa.
   base::scoped_nsobject<AppMenuButtonViewController> buttonViewController_;
 
   // The browser for which this controller exists.
