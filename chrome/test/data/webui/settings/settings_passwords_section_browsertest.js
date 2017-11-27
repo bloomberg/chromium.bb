@@ -572,6 +572,26 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
       MockInteractions.tap(exportDialog.$.exportPasswordsButton);
     });
+
+    test('closingPasswordsSectionHidesUndoToast', function(done) {
+      var passwordEntry = FakeDataMaker.passwordEntry('goo.gl', 'bart', 1);
+      var passwordsSection =
+          createPasswordsSection(passwordManager, [passwordEntry], []);
+
+      // Click the remove button on the first password and assert that an undo
+      // toast is shown.
+      var firstNode = Polymer.dom(passwordsSection.$.passwordList).children[1];
+      MockInteractions.tap(firstNode.$$('#passwordMenu'));
+      MockInteractions.tap(passwordsSection.$.menuRemovePassword);
+      assertTrue(passwordsSection.$.undoToast.open);
+
+      // Remove the passwords section from the DOM and check that this closes
+      // the undo toast.
+      document.body.removeChild(passwordsSection);
+      assertFalse(passwordsSection.$.undoToast.open);
+
+      done();
+    });
   });
 
   mocha.run();
