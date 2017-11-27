@@ -82,11 +82,8 @@
 }
 
 - (void)setHiddenInCurrentState:(BOOL)hiddenInCurrentState {
-  BOOL wasHidden = _hiddenInCurrentState;
   _hiddenInCurrentState = hiddenInCurrentState;
-  if (wasHidden != _hiddenInCurrentState) {
-    [self setHiddenForCurrentStateAndSizeClass];
-  }
+  [self setHiddenForCurrentStateAndSizeClass];
 }
 
 #pragma mark - Private
