@@ -96,8 +96,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoMostVisitedChangedOnTabSwitch) {
   EXPECT_EQ(1, on_most_visited_change_calls_);
 }
 
-// Flaky on all bots since re-enabled in r208032, crbug.com/253092
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_NavigateBackToNTP) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateBackToNTP) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmnibox();
 
