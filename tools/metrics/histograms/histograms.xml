@@ -92572,6 +92572,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="VR.Shell.AudioPermission.ExitVRChoice" enum="BooleanChoice">
+  <owner>bshe@chromium.org</owner>
+  <summary>
+    When audio permission is needed, we show an exit VR prompt. The prompt gives
+    user two choices: CANCEL or CONTINUE. This tracks which choice did user
+    select.
+  </summary>
+</histogram>
+
 <histogram name="VR.Shell.EncounteredSuppressedUI" enum="VRSuppressedElement">
   <owner>asimjour@chromium.org</owner>
   <summary>
@@ -92650,9 +92659,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="VRSessionVoiceSearchCount" units="searches">
+  <owner>bshe@chromium.org</owner>
+  <summary>
+    Number of times voice search is started while in a VR session.  Logged when
+    a new disjoint session has begun, or when the session has ended in a
+    non-continuable way.
+  </summary>
+</histogram>
+
 <histogram name="VRViewerType" enum="VRViewerType">
   <owner>billorr@chromium.org</owner>
   <summary>The type of headset being used for VR.</summary>
+</histogram>
+
+<histogram name="VRVoiceSearchEndState" enum="VRVoiceSearchEndState">
+  <owner>bshe@chromium.org</owner>
+  <summary>The end state of voice search request in VR.</summary>
 </histogram>
 
 <histogram name="Wallet.ApiCallDuration.AcceptLegalDocuments" units="ms">
