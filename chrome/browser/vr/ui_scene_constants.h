@@ -149,35 +149,27 @@ static constexpr float kSpinnerHeight = kCloseButtonHeight;
 static constexpr float kSpinnerVerticalOffset = kSplashScreenTextVerticalOffset;
 static constexpr float kSpinnerDistance = kSplashScreenTextDistance;
 
-static constexpr float kTimeoutMessageBackgroundWidthM =
-    kUnderDevelopmentNoticeWidthM;
-static constexpr float kTimeoutMessageBackgroundHeightM =
-    kUnderDevelopmentNoticeHeightM * 0.85;
-static constexpr float kTimeoutMessageCornerRadius = kContentCornerRadius * 1.5;
+static constexpr float kTimeoutMessageHorizontalPaddingDMM = 0.04f;
+static constexpr float kTimeoutMessageVerticalPaddingDMM = 0.024f;
 
-static constexpr float kTimeoutMessageLayoutGap = kIndicatorGap * 0.5;
+static constexpr float kTimeoutMessageCornerRadiusDMM = 0.008f;
 
-static constexpr float kTimeoutMessageIconWidth = kCloseButtonWidth * 0.6;
-static constexpr float kTimeoutMessageIconHeight = kCloseButtonHeight * 0.6;
-
-static constexpr float kTimeoutMessageTextFontHeightM =
-    kUnderDevelopmentNoticeFontHeightM;
-
-static constexpr float kTimeoutMessageTextHeightM =
-    kUnderDevelopmentNoticeHeightM;
-static constexpr float kTimeoutMessageTextWidthM =
-    kUnderDevelopmentNoticeWidthM * 0.7;
+static constexpr float kTimeoutMessageLayoutGapDMM = 0.024f;
+static constexpr float kTimeoutMessageIconWidthDMM = 0.056f;
+static constexpr float kTimeoutMessageIconHeightDMM = 0.056f;
+static constexpr float kTimeoutMessageTextFontHeightDMM = 0.022f;
+static constexpr float kTimeoutMessageTextHeightDMM = 0.056f;
+static constexpr float kTimeoutMessageTextWidthDMM = 0.4f;
 
 static constexpr float kTimeoutButtonVerticalOffset = kUrlBarVerticalOffset;
 static constexpr float kTimeoutButtonDistance = kUrlBarDistance;
+static constexpr float kTimeoutButtonDepthOffset = -0.1f;
 static constexpr float kTimeoutButtonRotationRad = kUrlBarRotationRad;
-static constexpr float kTimeoutButtonWidth = kCloseButtonWidth;
-static constexpr float kTimeoutButtonHeight = kCloseButtonHeight;
+static constexpr float kWebVrTimeoutMessageButtonDiameterDMM = 0.096f;
 
-static constexpr float kTimeoutButtonTextWidth = kCloseButtonWidth;
-static constexpr float kTimeoutButtonTextHeight = kCloseButtonHeight * 0.25;
-static constexpr float kTimeoutButtonTextVerticalOffset =
-    kTimeoutButtonTextHeight;
+static constexpr float kTimeoutButtonTextWidthDMM = 0.058f;
+static constexpr float kTimeoutButtonTextHeightDMM = 0.024f;
+static constexpr float kTimeoutButtonTextVerticalOffsetDMM = 0.024f;
 
 static constexpr float kScreenDimmerOpacity = 0.9f;
 

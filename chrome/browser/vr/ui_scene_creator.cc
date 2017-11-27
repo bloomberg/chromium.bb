@@ -23,6 +23,7 @@
 #include "chrome/browser/vr/elements/linear_layout.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/reticle.h"
+#include "chrome/browser/vr/elements/scaled_depth_adjuster.h"
 #include "chrome/browser/vr/elements/simple_textured_element.h"
 #include "chrome/browser/vr/elements/spinner.h"
 #include "chrome/browser/vr/elements/suggestion.h"
@@ -156,6 +157,14 @@ TransientElement* AddTransientParent(UiElementName name,
     element->SetTransitionedProperties({OPACITY});
   scene->AddUiElement(parent_name, std::move(element));
   return to_return;
+}
+
+template <typename T, typename... Args>
+std::unique_ptr<T> Create(UiElementName name, DrawPhase phase, Args&&... args) {
+  auto element = base::MakeUnique<T>(std::forward<Args>(args)...);
+  element->set_name(name);
+  element->set_draw_phase(phase);
+  return element;
 }
 
 }  // namespace
@@ -495,80 +504,86 @@ void UiSceneCreator::CreateSplashScreenForDirectWebVrLaunch() {
 }
 
 void UiSceneCreator::CreateWebVrTimeoutScreen() {
-  auto timeout_message = base::MakeUnique<Rect>();
-  timeout_message->set_name(kWebVrTimeoutMessage);
-  timeout_message->set_draw_phase(kPhaseOverlayForeground);
+  auto scaler = base::MakeUnique<ScaledDepthAdjuster>(kSpinnerDistance);
+
+  auto timeout_message =
+      Create<Rect>(kWebVrTimeoutMessage, kPhaseOverlayForeground);
   timeout_message->SetVisible(false);
-  timeout_message->SetSize(kTimeoutMessageBackgroundWidthM,
-                           kTimeoutMessageBackgroundHeightM);
-  timeout_message->SetTranslate(0, kSpinnerVerticalOffset, -kSpinnerDistance);
-  timeout_message->set_corner_radius(kTimeoutMessageCornerRadius);
-  timeout_message->SetTransitionedProperties({OPACITY});
+  timeout_message->set_bounds_contain_children(true);
+  timeout_message->set_corner_radius(kTimeoutMessageCornerRadiusDMM);
+  timeout_message->SetTransitionedProperties({OPACITY, TRANSFORM});
+  timeout_message->set_padding(kTimeoutMessageHorizontalPaddingDMM,
+                               kTimeoutMessageVerticalPaddingDMM);
   timeout_message->AddBinding(
       VR_BIND_FUNC(bool, Model, model_, web_vr_timeout_state == kWebVrTimedOut,
                    Rect, timeout_message.get(), SetVisible));
   timeout_message->SetColor(model_->color_scheme().timeout_message_background);
-  scene_->AddUiElement(kSplashScreenViewportAwareRoot,
-                       std::move(timeout_message));
 
-  auto timeout_layout = base::MakeUnique<LinearLayout>(LinearLayout::kRight);
-  timeout_layout->set_name(kWebVrTimeoutMessageLayout);
+  auto timeout_layout = Create<LinearLayout>(kWebVrTimeoutMessageLayout,
+                                             kPhaseNone, LinearLayout::kRight);
   timeout_layout->set_hit_testable(false);
   timeout_layout->SetVisible(true);
-  timeout_layout->set_margin(kTimeoutMessageLayoutGap);
-  scene_->AddUiElement(kWebVrTimeoutMessage, std::move(timeout_layout));
+  timeout_layout->set_margin(kTimeoutMessageLayoutGapDMM);
 
-  auto timeout_icon = base::MakeUnique<VectorIcon>(512);
+  auto timeout_icon = Create<VectorIcon>(kWebVrTimeoutMessageIcon,
+                                         kPhaseOverlayForeground, 512);
   timeout_icon->SetIcon(kSadTabIcon);
-  timeout_icon->set_name(kWebVrTimeoutMessageIcon);
-  timeout_icon->set_draw_phase(kPhaseOverlayForeground);
   timeout_icon->SetVisible(true);
-  timeout_icon->SetSize(kTimeoutMessageIconWidth, kTimeoutMessageIconHeight);
-  scene_->AddUiElement(kWebVrTimeoutMessageLayout, std::move(timeout_icon));
+  timeout_icon->SetSize(kTimeoutMessageIconWidthDMM,
+                        kTimeoutMessageIconHeightDMM);
 
-  auto timeout_text = base::MakeUnique<Text>(
-      512, kTimeoutMessageTextFontHeightM, kTimeoutMessageTextWidthM);
+  auto timeout_text = Create<Text>(
+      kWebVrTimeoutMessageText, kPhaseOverlayForeground, 512,
+      kTimeoutMessageTextFontHeightDMM, kTimeoutMessageTextWidthDMM);
   timeout_text->SetText(
       l10n_util::GetStringUTF16(IDS_VR_WEB_VR_TIMEOUT_MESSAGE));
   timeout_text->SetColor(model_->color_scheme().timeout_message_foreground);
   timeout_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
-  timeout_text->set_name(kWebVrTimeoutMessageText);
-  timeout_text->set_draw_phase(kPhaseOverlayForeground);
   timeout_text->SetVisible(true);
-  timeout_text->SetSize(kTimeoutMessageTextWidthM, kTimeoutMessageTextHeightM);
-  scene_->AddUiElement(kWebVrTimeoutMessageLayout, std::move(timeout_text));
+  timeout_text->SetSize(kTimeoutMessageTextWidthDMM,
+                        kTimeoutMessageTextHeightDMM);
 
-  auto button = base::MakeUnique<Button>(
+  auto button_scaler =
+      base::MakeUnique<ScaledDepthAdjuster>(kTimeoutButtonDepthOffset);
+
+  auto button = Create<Button>(
+      kWebVrTimeoutMessageButton, kPhaseOverlayForeground,
       base::Bind(&UiBrowserInterface::ExitPresent, base::Unretained(browser_)),
-      kPhaseOverlayForeground, kTimeoutButtonWidth, kTimeoutButtonHeight,
-      kButtonZOffsetHoverDMM * kTimeoutButtonDistance,
       vector_icons::kClose16Icon);
-  button->set_name(kWebVrTimeoutMessageButton);
   button->SetVisible(false);
-  button->SetTranslate(0, kTimeoutButtonVerticalOffset,
-                       -kTimeoutButtonDistance);
+  button->SetTranslate(0, -kTimeoutMessageTextWidthDMM, 0);
   button->SetRotate(1, 0, 0, kTimeoutButtonRotationRad);
   button->SetTransitionedProperties({OPACITY});
+  button->SetSize(kWebVrTimeoutMessageButtonDiameterDMM,
+                  kWebVrTimeoutMessageButtonDiameterDMM);
   button->AddBinding(VR_BIND_FUNC(bool, Model, model_,
                                   web_vr_timeout_state == kWebVrTimedOut,
                                   Button, button.get(), SetVisible));
   BindButtonColors(model_, button.get(), &ColorScheme::button_colors,
                    &Button::SetButtonColors);
-  scene_->AddUiElement(kSplashScreenViewportAwareRoot, std::move(button));
 
-  timeout_text = base::MakeUnique<Text>(512, kTimeoutMessageTextFontHeightM,
-                                        kTimeoutButtonTextWidth);
+  auto timeout_button_text = Create<Text>(
+      kWebVrTimeoutMessageButtonText, kPhaseOverlayForeground, 512,
+      kTimeoutMessageTextFontHeightDMM, kTimeoutButtonTextWidthDMM);
+
   // Disk-style button text is not uppercase. See crbug.com/787654.
-  timeout_text->SetText(
+  timeout_button_text->SetText(
       l10n_util::GetStringUTF16(IDS_VR_WEB_VR_EXIT_BUTTON_LABEL));
-  timeout_text->set_name(kWebVrTimeoutMessageButtonText);
-  timeout_text->SetColor(model_->color_scheme().spinner_color);
-  timeout_text->set_draw_phase(kPhaseOverlayForeground);
-  timeout_text->SetVisible(true);
-  timeout_text->SetSize(kTimeoutButtonTextWidth, kTimeoutButtonTextHeight);
-  timeout_text->set_y_anchoring(BOTTOM);
-  timeout_text->SetTranslate(0, -kTimeoutButtonTextVerticalOffset, 0);
-  scene_->AddUiElement(kWebVrTimeoutMessageButton, std::move(timeout_text));
+  timeout_button_text->SetColor(model_->color_scheme().spinner_color);
+  timeout_button_text->SetVisible(true);
+  timeout_button_text->SetSize(kTimeoutButtonTextWidthDMM,
+                               kTimeoutButtonTextHeightDMM);
+  timeout_button_text->set_y_anchoring(BOTTOM);
+  timeout_button_text->SetTranslate(0, -kTimeoutButtonTextVerticalOffsetDMM, 0);
+
+  button->AddChild(std::move(timeout_button_text));
+  timeout_layout->AddChild(std::move(timeout_icon));
+  timeout_layout->AddChild(std::move(timeout_text));
+  timeout_message->AddChild(std::move(timeout_layout));
+  button_scaler->AddChild(std::move(button));
+  timeout_message->AddChild(std::move(button_scaler));
+  scaler->AddChild(std::move(timeout_message));
+  scene_->AddUiElement(kSplashScreenViewportAwareRoot, std::move(scaler));
 }
 
 void UiSceneCreator::CreateUnderDevelopmentNotice() {
@@ -671,12 +686,15 @@ void UiSceneCreator::CreateViewportAwareRoot() {
 }
 
 void UiSceneCreator::CreateVoiceSearchUiGroup() {
-  auto voice_search_button = base::MakeUnique<Button>(
-      base::Bind(&UiBrowserInterface::SetVoiceSearchActive,
-                 base::Unretained(browser_), true),
-      kPhaseForeground, kVoiceSearchButtonWidth, kVoiceSearchButtonHeight,
-      kButtonZOffsetHoverDMM * kUrlBarDistance, vector_icons::kMicrophoneIcon);
-  voice_search_button->set_name(kVoiceSearchButton);
+  auto voice_search_button =
+      Create<Button>(kVoiceSearchButton, kPhaseForeground,
+                     base::Bind(&UiBrowserInterface::SetVoiceSearchActive,
+                                base::Unretained(browser_), true),
+                     vector_icons::kMicrophoneIcon);
+  voice_search_button->SetSize(kVoiceSearchButtonWidth,
+                               kVoiceSearchButtonHeight);
+  voice_search_button->set_hover_offset(kButtonZOffsetHoverDMM *
+                                        kUrlBarDistance);
   voice_search_button->SetTranslate(0.f, -kVoiceSearchButtonYOffset, 0.f);
   voice_search_button->set_y_anchoring(BOTTOM);
   voice_search_button->AddBinding(base::MakeUnique<Binding<bool>>(
@@ -824,13 +842,14 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   microphone_icon->SetSize(kCloseButtonWidth, kCloseButtonHeight);
   scene_->AddUiElement(kSpeechRecognitionListening, std::move(microphone_icon));
 
-  auto close_button = base::MakeUnique<Button>(
-      base::Bind(&UiBrowserInterface::SetVoiceSearchActive,
-                 base::Unretained(browser_), false),
-      kPhaseForeground, kVoiceSearchCloseButtonWidth,
-      kVoiceSearchCloseButtonHeight, kButtonZOffsetHoverDMM * kContentDistance,
-      vector_icons::kClose16Icon);
-  close_button->set_name(kSpeechRecognitionListeningCloseButton);
+  auto close_button =
+      Create<Button>(kSpeechRecognitionListeningCloseButton, kPhaseForeground,
+                     base::Bind(&UiBrowserInterface::SetVoiceSearchActive,
+                                base::Unretained(browser_), false),
+                     vector_icons::kClose16Icon);
+  close_button->SetSize(kVoiceSearchCloseButtonWidth,
+                        kVoiceSearchCloseButtonHeight);
+  close_button->set_hover_offset(kButtonZOffsetHoverDMM * kContentDistance);
   close_button->SetTranslate(0.0, -kVoiceSearchCloseButtonYOffset, 0.f);
   BindButtonColors(model_, close_button.get(), &ColorScheme::button_colors,
                    &Button::SetButtonColors);
@@ -1017,14 +1036,13 @@ void UiSceneCreator::CreateOmnibox() {
       &UiBrowserInterface::StartAutocomplete, base::Unretained(browser_)));
   scene_->AddUiElement(kOmniboxContainer, std::move(omnibox_text_field));
 
-  auto close_button = base::MakeUnique<Button>(
+  auto close_button = Create<Button>(
+      kOmniboxCloseButton, kPhaseForeground,
       base::Bind([](Model* m) { m->omnibox_input_active = false; },
                  base::Unretained(model_)),
-      kPhaseForeground, kCloseButtonWidth, kCloseButtonHeight,
-      kButtonZOffsetHoverDMM * kCloseButtonDistance,
       vector_icons::kClose16Icon);
-  close_button->set_name(kOmniboxCloseButton);
-  close_button->set_draw_phase(kPhaseForeground);
+  close_button->SetSize(kCloseButtonWidth, kCloseButtonHeight);
+  close_button->set_hover_offset(kButtonZOffsetHoverDMM * kCloseButtonDistance);
   close_button->SetTranslate(0, kOmniboxCloseButtonVerticalOffset, 0);
   close_button->SetSize(kCloseButtonWidth, kCloseButtonHeight);
   BindButtonColors(model_, close_button.get(), &ColorScheme::button_colors,
@@ -1083,27 +1101,27 @@ void UiSceneCreator::CreateWebVrUrlToast() {
 }
 
 void UiSceneCreator::CreateCloseButton() {
-  std::unique_ptr<Button> element = base::MakeUnique<Button>(
-      base::Bind(
-          [](Model* model, UiBrowserInterface* browser) {
-            if (model->fullscreen) {
-              browser->ExitFullscreen();
-            }
-            if (model->in_cct) {
-              browser->ExitCct();
-            }
-          },
-          base::Unretained(model_), base::Unretained(browser_)),
-      kPhaseForeground, kCloseButtonWidth, kCloseButtonHeight,
-      kButtonZOffsetHoverDMM * kCloseButtonDistance,
-      vector_icons::kClose16Icon);
-  element->set_name(kCloseButton);
+  base::Callback<void()> click_handler = base::Bind(
+      [](Model* model, UiBrowserInterface* browser) {
+        if (model->fullscreen) {
+          browser->ExitFullscreen();
+        }
+        if (model->in_cct) {
+          browser->ExitCct();
+        }
+      },
+      base::Unretained(model_), base::Unretained(browser_));
+  std::unique_ptr<Button> element =
+      Create<Button>(kCloseButton, kPhaseForeground, click_handler,
+                     vector_icons::kClose16Icon);
+  element->SetSize(kCloseButtonWidth, kCloseButtonHeight);
+  element->set_hover_offset(kButtonZOffsetHoverDMM * kCloseButtonDistance);
   element->SetTranslate(0, kCloseButtonVerticalOffset, -kCloseButtonDistance);
   BindButtonColors(model_, element.get(), &ColorScheme::button_colors,
                    &Button::SetButtonColors);
 
-  // Close button is a special control element that needs to be hidden when in
-  // WebVR, but it needs to be visible when in cct or fullscreen.
+  // Close button is a special control element that needs to be hidden when
+  // in WebVR, but it needs to be visible when in cct or fullscreen.
   element->AddBinding(
       VR_BIND_FUNC(bool, Model, model_,
                    browsing_mode() && (model->fullscreen || model->in_cct),

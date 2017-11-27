@@ -18,53 +18,36 @@ namespace vr {
 
 namespace {
 
-constexpr float kIconScaleFactor = 0.5;
-constexpr float kHitPlaneScaleFactorHovered = 1.2;
-
+constexpr float kIconScaleFactor = 0.5f;
+constexpr float kHitPlaneScaleFactorHovered = 1.2f;
+constexpr float kDefaultHoverOffsetDMM = 0.048f;
 }  // namespace
 
 Button::Button(base::Callback<void()> click_handler,
-               DrawPhase draw_phase,
-               float width,
-               float height,
-               float hover_offset,
                const gfx::VectorIcon& icon)
-    : click_handler_(click_handler), hover_offset_(hover_offset) {
-  set_draw_phase(draw_phase);
+    : click_handler_(click_handler), hover_offset_(kDefaultHoverOffsetDMM) {
   set_hit_testable(false);
-  SetSize(width, height);
 
   auto background = base::MakeUnique<Rect>();
-  background->set_name(kNone);
   background->set_type(kTypeButtonBackground);
-  background->set_draw_phase(draw_phase);
   background->set_bubble_events(true);
-  background->SetSize(width, height);
   background->SetTransitionedProperties({TRANSFORM});
-  background->set_corner_radius(width / 2);
   background->set_hit_testable(false);
   background_ = background.get();
   AddChild(std::move(background));
 
   auto vector_icon = base::MakeUnique<VectorIcon>(512);
-  vector_icon->set_name(kNone);
   vector_icon->set_type(kTypeButtonForeground);
   vector_icon->SetIcon(icon);
-  vector_icon->set_draw_phase(draw_phase);
   vector_icon->set_bubble_events(true);
-  vector_icon->SetSize(width * kIconScaleFactor, height * kIconScaleFactor);
   vector_icon->SetTransitionedProperties({TRANSFORM});
   vector_icon->set_hit_testable(false);
   foreground_ = vector_icon.get();
   AddChild(std::move(vector_icon));
 
   auto hit_plane = base::MakeUnique<InvisibleHitTarget>();
-  hit_plane->set_name(kNone);
   hit_plane->set_type(kTypeButtonHitTarget);
-  hit_plane->set_draw_phase(draw_phase);
   hit_plane->set_bubble_events(true);
-  hit_plane->SetSize(width, height);
-  hit_plane->set_corner_radius(width / 2);
   hit_plane_ = hit_plane.get();
   foreground_->AddChild(std::move(hit_plane));
 
@@ -135,6 +118,26 @@ void Button::OnStateUpdated() {
 
   background_->SetColor(colors_.GetBackgroundColor(hovered_, pressed_));
   foreground_->SetColor(colors_.GetForegroundColor(disabled_));
+}
+
+void Button::OnSetDrawPhase() {
+  background_->set_draw_phase(draw_phase());
+  foreground_->set_draw_phase(draw_phase());
+  hit_plane_->set_draw_phase(draw_phase());
+}
+
+void Button::NotifyClientSizeAnimated(const gfx::SizeF& size,
+                                      int target_property_id,
+                                      cc::Animation* animation) {
+  if (target_property_id == BOUNDS) {
+    background_->SetSize(size.width(), size.height());
+    background_->set_corner_radius(size.width() * 0.5f);
+    foreground_->SetSize(size.width() * kIconScaleFactor,
+                         size.height() * kIconScaleFactor);
+    hit_plane_->SetSize(size.width(), size.height());
+    hit_plane_->set_corner_radius(size.width() * 0.5f);
+  }
+  UiElement::NotifyClientSizeAnimated(size, target_property_id, animation);
 }
 
 }  // namespace vr

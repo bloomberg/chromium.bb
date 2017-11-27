@@ -72,6 +72,13 @@ void UiElement::set_type(UiElementType type) {
 
 void UiElement::OnSetType() {}
 
+void UiElement::set_draw_phase(DrawPhase draw_phase) {
+  draw_phase_ = draw_phase;
+  OnSetDrawPhase();
+}
+
+void UiElement::OnSetDrawPhase() {}
+
 void UiElement::Render(UiElementRenderer* renderer,
                        const CameraModel& model) const {
   // Elements without an overridden implementation of Render should have their
@@ -550,7 +557,7 @@ void UiElement::DoLayOutChildren() {
   gfx::RectF bounds;
   bool first = false;
   for (auto& child : children_) {
-    if (!child->IsVisible()) {
+    if (!child->IsVisible() || child->size().IsEmpty()) {
       continue;
     }
     gfx::Point3F child_center(child->local_origin());
@@ -606,7 +613,9 @@ void UiElement::UpdateComputedOpacity() {
 void UiElement::UpdateWorldSpaceTransformRecursive() {
   gfx::Transform transform;
   transform.Translate(local_origin_.x(), local_origin_.y());
-  transform.Scale(size_.width(), size_.height());
+  if (!size_.IsEmpty()) {
+    transform.Scale(size_.width(), size_.height());
+  }
 
   // Compute an inheritable transformation that can be applied to this element,
   // and it's children, if applicable.
