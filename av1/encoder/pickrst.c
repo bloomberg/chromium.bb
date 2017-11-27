@@ -1174,7 +1174,7 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
 
   assert(ntiles[1] <= ntiles[0]);
   RestUnitSearchInfo *rusi =
-      (RestUnitSearchInfo *)aom_malloc(sizeof(*rusi) * ntiles[0]);
+      (RestUnitSearchInfo *)aom_memalign(16, sizeof(*rusi) * ntiles[0]);
 
   RestSearchCtxt rsc;
   for (int plane = AOM_PLANE_Y; plane <= AOM_PLANE_V; ++plane) {
