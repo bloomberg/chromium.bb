@@ -294,21 +294,6 @@ crbug.com/763610 external/wpt/css/CSS2/cascade [ WontFix ]
 # The revert keyword is not yet supported.
 external/wpt/css/css-cascade/revert-val-001.html [ WontFix ]
 
-# Temporary disabling of most encrypted-media WPT tests while enabling
-# https only. Once the switch is complete (and the WPT tests renamed so they
-# run using https), they can be re-enabled.
-crbug.com/672605 external/wpt/encrypted-media/clearkey-check-initdata-type.https.html [ WontFix ]
-crbug.com/672605 external/wpt/encrypted-media/clearkey-events.https.html [ WontFix ]
-crbug.com/672605 external/wpt/encrypted-media/clearkey-generate-request-disallowed-input.https.html [ WontFix ]
-crbug.com/672605 external/wpt/encrypted-media/clearkey-invalid-license.https.html [ WontFix ]
-crbug.com/672605 external/wpt/encrypted-media/clearkey-keystatuses-multiple-sessions.https.html [ WontFix ]
-crbug.com/672605 external/wpt/encrypted-media/clearkey-keystatuses.https.html [ WontFix ]
-crbug.com/672605 external/wpt/encrypted-media/clearkey-not-callable-after-createsession.https.html [ WontFix ]
-crbug.com/672605 external/wpt/encrypted-media/idlharness.https.html [ WontFix ]
-
-# Note that all the encrypted-media tests below require https too but are
-# disabled for other reasons also.
-
 # These tests require a DRM system that is not available with content_shell.
 external/wpt/encrypted-media/drm-check-initdata-type.https.html [ WontFix ]
 external/wpt/encrypted-media/drm-events.https.html [ WontFix ]
@@ -403,9 +388,6 @@ external/wpt/encrypted-media/clearkey-mp4-update-disallowed-input.https.html [ W
 external/wpt/encrypted-media/clearkey-mp4-waiting-for-a-key.https.html [ WontFix ]
 external/wpt/encrypted-media/clearkey-events-session-closed-event.https.html [ WontFix ]
 external/wpt/encrypted-media/clearkey-update-non-ascii-input.https.html [ WontFix ]
-
-# This W3C EME test fetches a file, which is not allowed.
-#external/wpt/encrypted-media/idlharness.html [ WontFix ]
 
 # Below are manual tests from web-platform-tests without automation.
 external/wpt/2dcontext/drawing-paths-to-the-canvas/canvas_focus_drawFocusIfNeeded_AAPI_001-manual.html [ WontFix ]
