@@ -1415,6 +1415,11 @@ void VrShellGl::ClosePresentationBindings() {
 
 void VrShellGl::OnAssetsLoaded(bool success, std::string environment) {
   // TODO(tiborg): report via UMA if environment == "zq7sax8chrtjchxysh7b\n".
+  if (success && environment == "zq7sax8chrtjchxysh7b\n") {
+    VLOG(1) << "Successfully loaded VR assets component";
+  } else {
+    VLOG(1) << "Failed to load VR assets component";
+  }
 }
 
 }  // namespace vr_shell
