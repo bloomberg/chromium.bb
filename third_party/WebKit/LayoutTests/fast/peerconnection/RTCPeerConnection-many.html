@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+
+// Check that the number of peerconnections we can create hasn't regressed.
+// At the moment (Nov 2017), the limit is approx
+// - 770 on Mac
+// - 850 on Windows
+// - 1700 on Linux
+
+const limit = 500;
+
+test(function() {
+  for (let count = 0; count < limit; count++) {
+    pc = new RTCPeerConnection();
+  }
+}, 'We can create ' + limit + ' peerconnections without crashing');
+
+</script>
+</body>
+</html>
