@@ -19,25 +19,17 @@ namespace blink {
 
 namespace {
 
-// Minimal TestSimpleFontData implementation.
-// Font has no glyphs, but that's okay.
-class TestSimpleFontData : public SimpleFontData {
- public:
-  static scoped_refptr<TestSimpleFontData> Create(bool force_rotation = false) {
-    FontPlatformData platform_data(
-        PaintTypeface::FromSkTypeface(SkTypeface::MakeDefault()), nullptr, 10,
-        false, false,
-        force_rotation ? FontOrientation::kVerticalUpright
-                       : FontOrientation::kHorizontal);
-    return base::AdoptRef(
-        new TestSimpleFontData(platform_data, force_rotation));
-  }
-
- private:
-  TestSimpleFontData(const FontPlatformData& platform_data,
-                     bool used_vertically)
-      : SimpleFontData(platform_data, used_vertically) {}
-};
+// Creating minimal test SimpleFontData objects,
+// the font won't have any glyphs, but that's okay.
+static scoped_refptr<SimpleFontData> CreateTestSimpleFontData(
+    bool force_rotation = false) {
+  FontPlatformData platform_data(
+      PaintTypeface::FromSkTypeface(SkTypeface::MakeDefault()), nullptr, 10,
+      false, false,
+      force_rotation ? FontOrientation::kVerticalUpright
+                     : FontOrientation::kHorizontal);
+  return SimpleFontData::Create(platform_data, nullptr);
+}
 
 class ShapeResultBloberizerTest : public ::testing::Test {
  protected:
@@ -89,8 +81,8 @@ TEST_F(ShapeResultBloberizerTest, StoresGlyphsOffsets) {
   Font font;
   ShapeResultBloberizer bloberizer(font, 1);
 
-  scoped_refptr<SimpleFontData> font1 = TestSimpleFontData::Create();
-  scoped_refptr<SimpleFontData> font2 = TestSimpleFontData::Create();
+  scoped_refptr<SimpleFontData> font1 = CreateTestSimpleFontData();
+  scoped_refptr<SimpleFontData> font2 = CreateTestSimpleFontData();
 
   // 2 pending glyphs
   bloberizer.Add(42, font1.get(), 10);
@@ -149,8 +141,8 @@ TEST_F(ShapeResultBloberizerTest, StoresGlyphsVerticalOffsets) {
   Font font;
   ShapeResultBloberizer bloberizer(font, 1);
 
-  scoped_refptr<SimpleFontData> font1 = TestSimpleFontData::Create();
-  scoped_refptr<SimpleFontData> font2 = TestSimpleFontData::Create();
+  scoped_refptr<SimpleFontData> font1 = CreateTestSimpleFontData();
+  scoped_refptr<SimpleFontData> font2 = CreateTestSimpleFontData();
 
   // 2 pending glyphs
   bloberizer.Add(42, font1.get(), FloatPoint(10, 0));
@@ -213,12 +205,12 @@ TEST_F(ShapeResultBloberizerTest, MixedBlobRotation) {
   ShapeResultBloberizer bloberizer(font, 1);
 
   // Normal (horizontal) font.
-  scoped_refptr<SimpleFontData> font_normal = TestSimpleFontData::Create();
+  scoped_refptr<SimpleFontData> font_normal = CreateTestSimpleFontData();
   ASSERT_FALSE(font_normal->PlatformData().IsVerticalAnyUpright());
   ASSERT_EQ(font_normal->UsedVertically(), false);
 
   // Rotated (vertical upright) font.
-  scoped_refptr<SimpleFontData> font_rotated = TestSimpleFontData::Create(true);
+  scoped_refptr<SimpleFontData> font_rotated = CreateTestSimpleFontData(true);
   ASSERT_TRUE(font_rotated->PlatformData().IsVerticalAnyUpright());
   ASSERT_EQ(font_rotated->UsedVertically(), true);
 

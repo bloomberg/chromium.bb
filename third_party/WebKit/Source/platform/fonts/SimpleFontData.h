@@ -72,7 +72,10 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   }
 
   const FontPlatformData& PlatformData() const { return platform_data_; }
-  bool UsedVertically() const { return used_vertically_; }
+  bool UsedVertically() const {
+    return platform_data_.IsVerticalAnyUpright() &&
+           !is_text_orientation_fallback_;
+  }
 
   scoped_refptr<SimpleFontData> SmallCapsFontData(const FontDescription&) const;
   scoped_refptr<SimpleFontData> EmphasisMarkFontData(const FontDescription&) const;
@@ -152,9 +155,6 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
                  bool is_text_orientation_fallback = false,
                  bool subpixel_ascent_descent = false);
 
-  // Only used for testing.
-  SimpleFontData(const FontPlatformData&, bool used_vertically);
-
  private:
   void PlatformInit(bool subpixel_ascent_descent);
   void PlatformGlyphInit();
@@ -171,8 +171,6 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
 
   FontPlatformData platform_data_;
   SkPaint paint_;
-
-  bool used_vertically_;
 
   Glyph space_glyph_;
   float space_width_;
