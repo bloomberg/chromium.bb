@@ -49,28 +49,28 @@ class PLATFORM_EXPORT TimerBase {
   explicit TimerBase(scoped_refptr<WebTaskRunner>);
   virtual ~TimerBase();
 
-  void Start(double next_fire_interval,
-             double repeat_interval,
-             const WebTraceLocation&);
   void Start(TimeDelta next_fire_interval,
              TimeDelta repeat_interval,
+             const WebTraceLocation&);
+  void Start(double next_fire_interval,
+             double repeat_interval,
              const WebTraceLocation& from_here) {
-    Start(next_fire_interval.InSecondsF(), repeat_interval.InSecondsF(),
-          from_here);
+    Start(TimeDelta::FromSecondsD(next_fire_interval),
+          TimeDelta::FromSecondsD(repeat_interval), from_here);
   }
 
-  void StartRepeating(double repeat_interval, const WebTraceLocation& caller) {
+  void StartRepeating(TimeDelta repeat_interval,
+                      const WebTraceLocation& caller) {
     Start(repeat_interval, repeat_interval, caller);
   }
-  void StartRepeating(base::TimeDelta repeat_interval,
-                      const WebTraceLocation& caller) {
-    StartRepeating(repeat_interval.InSecondsF(), caller);
+  void StartRepeating(double repeat_interval, const WebTraceLocation& caller) {
+    StartRepeating(TimeDelta::FromSecondsD(repeat_interval), caller);
+  }
+  void StartOneShot(TimeDelta interval, const WebTraceLocation& caller) {
+    Start(interval, TimeDelta(), caller);
   }
   void StartOneShot(double interval, const WebTraceLocation& caller) {
-    Start(interval, 0, caller);
-  }
-  void StartOneShot(base::TimeDelta interval, const WebTraceLocation& caller) {
-    StartOneShot(interval.InSecondsF(), caller);
+    StartOneShot(TimeDelta::FromSecondsD(interval), caller);
   }
 
   // Timer cancellation is fast enough that you shouldn't have to worry
@@ -79,23 +79,21 @@ class PLATFORM_EXPORT TimerBase {
   bool IsActive() const;
   const WebTraceLocation& GetLocation() const { return location_; }
 
-  double NextFireInterval() const;
-  TimeDelta NextFireIntervalDelta() const {
-    return TimeDelta::FromSecondsD(NextFireInterval());
+  TimeDelta NextFireIntervalDelta() const;
+  double NextFireInterval() const {
+    return NextFireIntervalDelta().InSecondsF();
   }
 
-  double RepeatInterval() const { return repeat_interval_; }
-  TimeDelta RepeatIntervalDelta() const {
-    return TimeDelta::FromSecondsD(RepeatInterval());
-  }
+  TimeDelta RepeatIntervalDelta() const { return repeat_interval_; }
+  double RepeatInterval() const { return RepeatIntervalDelta().InSecondsF(); }
 
-  void AugmentRepeatInterval(double delta) {
-    double now = TimerMonotonicallyIncreasingTime();
-    SetNextFireTime(now, std::max(next_fire_time_ - now + delta, 0.0));
+  void AugmentRepeatInterval(TimeDelta delta) {
+    TimeTicks now = TimerMonotonicallyIncreasingTime();
+    SetNextFireTime(now, std::max(next_fire_time_ - now + delta, TimeDelta()));
     repeat_interval_ += delta;
   }
-  void AugmentRepeatInterval(TimeDelta delta) {
-    AugmentRepeatInterval(delta.InSecondsF());
+  void AugmentRepeatInterval(double delta) {
+    AugmentRepeatInterval(TimeDelta::FromSecondsD(delta));
   }
 
   void MoveToNewTaskRunner(scoped_refptr<WebTaskRunner>);
@@ -115,14 +113,14 @@ class PLATFORM_EXPORT TimerBase {
   NO_SANITIZE_ADDRESS
   virtual bool CanFire() const { return true; }
 
-  double TimerMonotonicallyIncreasingTime() const;
+  TimeTicks TimerMonotonicallyIncreasingTime() const;
 
-  void SetNextFireTime(double now, double delay);
+  void SetNextFireTime(TimeTicks now, TimeDelta delay);
 
   void RunInternal();
 
-  double next_fire_time_;   // 0 if inactive
-  double repeat_interval_;  // 0 if not repeating
+  TimeTicks next_fire_time_;   // 0 if inactive
+  TimeDelta repeat_interval_;  // 0 if not repeating
   WebTraceLocation location_;
   scoped_refptr<WebTaskRunner> web_task_runner_;
 
