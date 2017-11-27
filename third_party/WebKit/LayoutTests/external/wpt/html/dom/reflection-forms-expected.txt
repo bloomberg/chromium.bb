@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 7041 tests; 6721 PASS, 320 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 7041 tests; 6729 PASS, 312 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS form.title: 32 tests
 PASS form.lang: 32 tests
 PASS form.dir: 62 tests
@@ -338,12 +338,7 @@ NOTRUN test
 NOTRUN test
 NOTRUN test
 PASS textarea.autofocus: 33 tests
-PASS textarea.cols: 9 tests
-NOTRUN test
-NOTRUN test
-PASS textarea.cols: 46 tests
-NOTRUN test
-NOTRUN test
+PASS textarea.cols: 59 tests
 PASS textarea.dirName: 32 tests
 PASS textarea.disabled: 33 tests
 PASS textarea.inputMode: 3 tests
@@ -508,12 +503,7 @@ PASS textarea.name: 32 tests
 PASS textarea.placeholder: 32 tests
 PASS textarea.readOnly: 33 tests
 PASS textarea.required: 33 tests
-PASS textarea.rows: 9 tests
-NOTRUN test
-NOTRUN test
-PASS textarea.rows: 46 tests
-NOTRUN test
-NOTRUN test
+PASS textarea.rows: 59 tests
 PASS textarea.wrap: 32 tests
 PASS output.title: 32 tests
 PASS output.lang: 32 tests

@@ -21,10 +21,13 @@ PASS colsAttributeEffect("7") is 20
 PASS colsAttributeEffect("  7") is 7
 PASS colsAttributeEffect(arabicIndicDigitOne) is 20
 PASS colsAttributeEffect("2" + arabicIndicDigitOne) is 2
+PASS colsAttributeEffect("2147483646") is 2147483646
 PASS colsAttributeEffect("2147483647") is 2147483647
-PASS colsAttributeEffect("2147483648") is 2147483648
-PASS colsAttributeEffect("4294967295") is 4294967295
+PASS colsAttributeEffect("2147483648") is 20
+PASS colsAttributeEffect("2147483649") is 20
+PASS colsAttributeEffect("4294967295") is 20
 PASS colsAttributeEffect("4294967296") is 20
+PASS colsAttributeEffect("4294967297") is 20
 PASS successfullyParsed is true
 
 TEST COMPLETE
