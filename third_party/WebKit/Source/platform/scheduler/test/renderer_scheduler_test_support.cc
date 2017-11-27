@@ -14,9 +14,9 @@ namespace scheduler {
 
 namespace {
 
-class TaskQueueManagerForTest : public TaskQueueManager {
+class TaskQueueManagerForRendererSchedulerTest : public TaskQueueManager {
  public:
-  explicit TaskQueueManagerForTest(
+  explicit TaskQueueManagerForRendererSchedulerTest(
       std::unique_ptr<internal::ThreadController> thread_controller)
       : TaskQueueManager(std::move(thread_controller)) {}
 };
@@ -25,7 +25,7 @@ class TaskQueueManagerForTest : public TaskQueueManager {
 
 std::unique_ptr<RendererScheduler> CreateRendererSchedulerForTests() {
   return std::make_unique<scheduler::RendererSchedulerImpl>(
-      std::make_unique<TaskQueueManagerForTest>(
+      std::make_unique<TaskQueueManagerForRendererSchedulerTest>(
           std::make_unique<LazyThreadControllerForTest>()));
 }
 
