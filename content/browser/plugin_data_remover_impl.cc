@@ -114,7 +114,7 @@ class PluginDataRemoverImpl::Context
     AddRef();
     plugin_name_ = pepper_info->name;
     // Use the broker since we run this function outside the sandbox.
-    plugin_service->OpenChannelToPpapiBroker(0, plugin_path, this);
+    plugin_service->OpenChannelToPpapiBroker(0, 0, plugin_path, this);
   }
 
   // Called when a timeout happens in order not to block the client

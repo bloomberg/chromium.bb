@@ -662,8 +662,7 @@ void RenderFrameMessageFilter::OnOpenChannelToPpapiBroker(
     int routing_id,
     const base::FilePath& path) {
   plugin_service_->OpenChannelToPpapiBroker(
-      render_process_id_,
-      path,
+      render_process_id_, routing_id, path,
       new OpenChannelToPpapiBrokerCallback(this, routing_id));
 }
 

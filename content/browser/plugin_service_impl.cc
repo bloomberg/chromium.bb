@@ -32,11 +32,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/plugin_service_filter.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace content {
 namespace {
@@ -55,6 +58,17 @@ enum FlashUsage {
 // correct thread.
 void WillLoadPluginsCallback(base::SequenceChecker* sequence_checker) {
   DCHECK(sequence_checker->CalledOnValidSequence());
+}
+
+void RecordBrokerUsage(int render_process_id, int render_frame_id) {
+  ukm::UkmRecorder* recorder = ukm::UkmRecorder::Get();
+  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+  WebContents* web_contents = WebContents::FromRenderFrameHost(
+      RenderFrameHost::FromID(render_process_id, render_frame_id));
+  if (web_contents) {
+    recorder->UpdateSourceURL(source_id, web_contents->GetLastCommittedURL());
+    ukm::builders::Pepper_Broker(source_id).Record(recorder);
+  }
 }
 
 }  // namespace
@@ -213,8 +227,13 @@ void PluginServiceImpl::OpenChannelToPpapiPlugin(
 
 void PluginServiceImpl::OpenChannelToPpapiBroker(
     int render_process_id,
+    int render_frame_id,
     const base::FilePath& path,
     PpapiPluginProcessHost::BrokerClient* client) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&RecordBrokerUsage, render_process_id, render_frame_id));
+
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiBrokerProcess(
       render_process_id, path);
   if (plugin_host) {
