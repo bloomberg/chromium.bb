@@ -27,7 +27,8 @@ def GetAllStorySets():
       'loading.cluster_telemetry',
       'skpicture_printer',
       'cros_tab_switching.typical_24',
-      'multipage_skpicture_printer']
+      'multipage_skpicture_printer',
+      'leak_detection.cluster_telemetry']
 
   for benchmark in benchmark_finders.GetAllBenchmarks():
     if benchmark.Name() in benchmarks_to_skip:
