@@ -71,8 +71,10 @@ BookmarkSuggestionsProvider::BookmarkSuggestionsProvider(
           Category::FromKnownCategory(KnownCategories::BOOKMARKS)),
       bookmark_model_(bookmark_model),
       fetch_requested_(false),
+      fetch_in_progress_(false),
       end_of_list_last_visit_date_(GetThresholdTime()),
-      consider_bookmark_visits_from_desktop_(AreDesktopVisitsConsidered()) {
+      consider_bookmark_visits_from_desktop_(AreDesktopVisitsConsidered()),
+      weak_ptr_factory_(this) {
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
   bookmark_model_->AddObserver(this);
   FetchBookmarks();
@@ -177,7 +179,7 @@ void BookmarkSuggestionsProvider::BookmarkModelLoaded(
   DCHECK_EQ(bookmark_model_, model);
   if (fetch_requested_) {
     fetch_requested_ = false;
-    FetchBookmarksInternal();
+    FetchBookmarks();
   }
 }
 
@@ -290,14 +292,28 @@ void BookmarkSuggestionsProvider::FetchBookmarksInternal() {
   }
   observer()->OnNewSuggestions(this, provided_category_,
                                std::move(suggestions));
+  fetch_in_progress_ = false;
 }
 
 void BookmarkSuggestionsProvider::FetchBookmarks() {
-  if (bookmark_model_->loaded()) {
-    FetchBookmarksInternal();
-  } else {
+  if (!bookmark_model_->loaded()) {
     fetch_requested_ = true;
+    return;
   }
+  if (fetch_in_progress_) {
+    return;
+  }
+
+  // Post an async task (and block further calls before it gets executed) so
+  // that the bookmarks are fetched only once per a sequence of updates to the
+  // model. In particular, if the user has plenty of bookmarks for one given
+  // URL, bookmark_last_visit_updater updates each such bookmark separately.
+  // Using the async task here, we avoid fetching once per each such bookmark.
+  fetch_in_progress_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&BookmarkSuggestionsProvider::FetchBookmarksInternal,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BookmarkSuggestionsProvider::NotifyStatusChanged(
