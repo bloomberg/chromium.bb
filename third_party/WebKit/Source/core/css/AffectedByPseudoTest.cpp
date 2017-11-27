@@ -33,7 +33,7 @@ class AffectedByPseudoTest : public PageTestBase {
 void AffectedByPseudoTest::SetHtmlInnerHTML(const char* html_content) {
   GetDocument().documentElement()->SetInnerHTMLFromString(
       String::FromUTF8(html_content));
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 }
 
 void AffectedByPseudoTest::CheckElementsForFocus(
@@ -168,15 +168,15 @@ TEST_F(AffectedByPseudoTest, AffectedByFocusUpdate) {
     </div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
-  unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
+  unsigned start_count = GetStyleEngine().StyleForElementCount();
 
-  GetDocument().getElementById("d")->focus();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetElementById("d")->focus();
+  UpdateAllLifecyclePhases();
 
   unsigned element_count =
-      GetDocument().GetStyleEngine().StyleForElementCount() - start_count;
+      GetStyleEngine().StyleForElementCount() - start_count;
 
   ASSERT_EQ(1U, element_count);
 }
@@ -201,15 +201,15 @@ TEST_F(AffectedByPseudoTest, ChildrenOrSiblingsAffectedByFocusUpdate) {
     </div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
-  unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
+  unsigned start_count = GetStyleEngine().StyleForElementCount();
 
-  GetDocument().getElementById("d")->focus();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetElementById("d")->focus();
+  UpdateAllLifecyclePhases();
 
   unsigned element_count =
-      GetDocument().GetStyleEngine().StyleForElementCount() - start_count;
+      GetStyleEngine().StyleForElementCount() - start_count;
 
   ASSERT_EQ(11U, element_count);
 }
@@ -234,15 +234,15 @@ TEST_F(AffectedByPseudoTest, InvalidationSetFocusUpdate) {
     </div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
-  unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
+  unsigned start_count = GetStyleEngine().StyleForElementCount();
 
-  GetDocument().getElementById("d")->focus();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetElementById("d")->focus();
+  UpdateAllLifecyclePhases();
 
   unsigned element_count =
-      GetDocument().GetStyleEngine().StyleForElementCount() - start_count;
+      GetStyleEngine().StyleForElementCount() - start_count;
 
   ASSERT_EQ(2U, element_count);
 }
@@ -269,15 +269,15 @@ TEST_F(AffectedByPseudoTest, NoInvalidationSetFocusUpdate) {
     </div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
-  unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
+  unsigned start_count = GetStyleEngine().StyleForElementCount();
 
-  GetDocument().getElementById("d")->focus();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetElementById("d")->focus();
+  UpdateAllLifecyclePhases();
 
   unsigned element_count =
-      GetDocument().GetStyleEngine().StyleForElementCount() - start_count;
+      GetStyleEngine().StyleForElementCount() - start_count;
 
   ASSERT_EQ(1U, element_count);
 }
@@ -296,25 +296,24 @@ TEST_F(AffectedByPseudoTest, FocusWithinCommonAncestor) {
     </div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
-  unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
+  unsigned start_count = GetStyleEngine().StyleForElementCount();
 
-  GetDocument().getElementById("focusme1")->focus();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetElementById("focusme1")->focus();
+  UpdateAllLifecyclePhases();
 
   unsigned element_count =
-      GetDocument().GetStyleEngine().StyleForElementCount() - start_count;
+      GetStyleEngine().StyleForElementCount() - start_count;
 
   EXPECT_EQ(3U, element_count);
 
   start_count += element_count;
 
-  GetDocument().getElementById("focusme2")->focus();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetElementById("focusme2")->focus();
+  UpdateAllLifecyclePhases();
 
-  element_count =
-      GetDocument().GetStyleEngine().StyleForElementCount() - start_count;
+  element_count = GetStyleEngine().StyleForElementCount() - start_count;
 
   // Only "focusme1" & "focusme2" elements need a recalc thanks to the common
   // ancestor strategy.
@@ -326,11 +325,8 @@ TEST_F(AffectedByPseudoTest, HoverScrollbar) {
       "<style>div::-webkit-scrollbar:hover { color: pink; }</style>"
       "<div id=div1></div>");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_FALSE(GetDocument()
-                   .getElementById("div1")
-                   ->GetComputedStyle()
-                   ->AffectedByHover());
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetElementById("div1")->GetComputedStyle()->AffectedByHover());
 }
 
 }  // namespace blink

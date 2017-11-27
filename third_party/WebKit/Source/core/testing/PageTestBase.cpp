@@ -10,6 +10,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/html/HTMLElement.h"
 #include "platform/testing/UnitTestHelpers.h"
 
 namespace blink {
@@ -75,6 +76,29 @@ void PageTestBase::LoadAhem(LocalFrame& frame) {
   DummyExceptionStateForTesting exception_state;
   FontFaceSetDocument::From(document)->addForBinding(script_state, ahem,
                                                      exception_state);
+}
+
+// Both sets the inner html and runs the document lifecycle.
+void PageTestBase::SetBodyInnerHTML(const String& html_content) {
+  GetDocument().body()->SetInnerHTMLFromString(html_content,
+                                               ASSERT_NO_EXCEPTION);
+  UpdateAllLifecyclePhases();
+}
+
+void PageTestBase::SetBodyContent(const std::string& body_content) {
+  SetBodyInnerHTML(String::FromUTF8(body_content.c_str()));
+}
+
+void PageTestBase::UpdateAllLifecyclePhases() {
+  GetDocument().View()->UpdateAllLifecyclePhases();
+}
+
+StyleEngine& PageTestBase::GetStyleEngine() {
+  return GetDocument().GetStyleEngine();
+}
+
+Element* PageTestBase::GetElementById(const char* id) const {
+  return GetDocument().getElementById(id);
 }
 
 }  // namespace blink

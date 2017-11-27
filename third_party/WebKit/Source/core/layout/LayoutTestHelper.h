@@ -87,13 +87,6 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
         GetDocument().View()->GetLayoutViewItem()));
   }
 
-  // Both sets the inner html and runs the document lifecycle.
-  void SetBodyInnerHTML(const String& html_content) {
-    GetDocument().body()->SetInnerHTMLFromString(html_content,
-                                                 ASSERT_NO_EXCEPTION);
-    GetDocument().View()->UpdateAllLifecyclePhases();
-  }
-
   Document& ChildDocument() {
     return *ToLocalFrame(GetFrame().Tree().FirstChild())->GetDocument();
   }
@@ -106,10 +99,6 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
     GetDocument().View()->SetParentVisible(true);
     GetDocument().View()->SetSelfVisible(true);
     GetDocument().View()->UpdateAllLifecyclePhases();
-  }
-
-  Element* GetElementById(const char* id) const {
-    return GetDocument().getElementById(id);
   }
 
   LayoutObject* GetLayoutObjectByElementId(const char* id) const {

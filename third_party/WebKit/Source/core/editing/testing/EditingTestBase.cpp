@@ -90,21 +90,11 @@ ShadowRoot* EditingTestBase::CreateShadowRootForElementWithIDAndSetInnerHTML(
   return &shadow_root;
 }
 
-void EditingTestBase::SetBodyContent(const std::string& body_content) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      String::FromUTF8(body_content.c_str()), ASSERT_NO_EXCEPTION);
-  UpdateAllLifecyclePhases();
-}
-
 ShadowRoot* EditingTestBase::SetShadowContent(const char* shadow_content,
                                               const char* host) {
   ShadowRoot* shadow_root = CreateShadowRootForElementWithIDAndSetInnerHTML(
       GetDocument(), host, shadow_content);
   return shadow_root;
-}
-
-void EditingTestBase::UpdateAllLifecyclePhases() {
-  GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
 }  // namespace blink

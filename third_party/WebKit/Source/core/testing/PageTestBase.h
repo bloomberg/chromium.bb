@@ -27,11 +27,19 @@ class PageTestBase : public ::testing::Test {
   void SetupPageWithClients(Page::PageClients* = nullptr,
                             LocalFrameClient* = nullptr,
                             FrameSettingOverrideFunction = nullptr);
+  // TODO(shanmuga.m@samsung.com): These two function to be unified.
+  void SetBodyContent(const std::string&);
+  void SetBodyInnerHTML(const String&);
+
   Document& GetDocument() const;
   Page& GetPage() const;
   LocalFrame& GetFrame() const;
   FrameSelection& Selection() const;
   DummyPageHolder& GetDummyPageHolder() const { return *dummy_page_holder_; }
+  StyleEngine& GetStyleEngine();
+  Element* GetElementById(const char* id) const;
+
+  void UpdateAllLifecyclePhases();
 
   // Load the 'Ahem' font to the LocalFrame.
   // The 'Ahem' font is the only font whose font metrics is consistent across
