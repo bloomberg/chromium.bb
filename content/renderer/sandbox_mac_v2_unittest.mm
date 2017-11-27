@@ -134,11 +134,10 @@ MULTIPROCESS_TEST_MAIN(SandboxProfileProcess) {
       bootstrap_port, "com.apple.system.logger", &service_port);
   CHECK_EQ(status, BOOTSTRAP_SUCCESS) << bootstrap_strerror(status);
 
-  // This test case temporarily disabled for performance experiments.
-  //  mach_port_t forbidden_mach;
-  //  status = bootstrap_look_up(bootstrap_port, "com.apple.cfprefsd.daemon",
-  //                             &forbidden_mach);
-  //  CHECK_NE(BOOTSTRAP_SUCCESS, status);
+  mach_port_t forbidden_mach;
+  status = bootstrap_look_up(bootstrap_port, "com.apple.cfprefsd.daemon",
+                             &forbidden_mach);
+  CHECK_NE(BOOTSTRAP_SUCCESS, status);
 
   // Read bundle contents.
   base::FilePath bundle_path = base::mac::MainBundlePath();
