@@ -175,8 +175,11 @@ void ElementShadowV0::Distribute() {
       } else {
         pool.DistributeTo(point, this);
         if (ElementShadow* shadow =
-                ShadowWhereNodeCanBeDistributedForV0(*point))
-          shadow->SetNeedsDistributionRecalc();
+                ShadowWhereNodeCanBeDistributedForV0(*point)) {
+          if (!(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() &&
+                shadow->IsV1()))
+            shadow->SetNeedsDistributionRecalc();
+        }
       }
     }
   }
