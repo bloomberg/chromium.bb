@@ -135,12 +135,19 @@ TEST_F(PointerTest, OnPointerLeave) {
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
       .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(delegate, OnPointerFrame()).Times(2);
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(4);
   EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::PointF(), 0));
   generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin());
 
   EXPECT_CALL(delegate, OnPointerLeave(surface.get()));
   generator.MoveMouseTo(surface->window()->GetBoundsInScreen().bottom_right());
+
+  EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::PointF(), 0));
+  generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin());
+
+  EXPECT_CALL(delegate, OnPointerLeave(surface.get()));
+  shell_surface.reset();
+  surface.reset();
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();

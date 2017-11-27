@@ -273,8 +273,7 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
 
 void Keyboard::OnSurfaceDestroying(Surface* surface) {
   DCHECK(surface == focus_);
-  focus_ = nullptr;
-  surface->RemoveSurfaceObserver(this);
+  SetFocus(nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -310,24 +309,27 @@ void Keyboard::OnSurfaceFocused(Surface* gained_focus) {
       gained_focus && delegate_->CanAcceptKeyboardEventsForSurface(gained_focus)
           ? gained_focus
           : nullptr;
-  if (gained_focus_surface != focus_) {
-    if (focus_) {
-      delegate_->OnKeyboardLeave(focus_);
-      focus_->RemoveSurfaceObserver(this);
-      focus_ = nullptr;
-      pending_key_acks_.clear();
-    }
-    if (gained_focus_surface) {
-      delegate_->OnKeyboardModifiers(modifier_flags_);
-      delegate_->OnKeyboardEnter(gained_focus_surface, pressed_keys_);
-      focus_ = gained_focus_surface;
-      focus_->AddSurfaceObserver(this);
-    }
-  }
+  if (gained_focus_surface != focus_)
+    SetFocus(gained_focus_surface);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Keyboard, private:
+
+void Keyboard::SetFocus(Surface* surface) {
+  if (focus_) {
+    delegate_->OnKeyboardLeave(focus_);
+    focus_->RemoveSurfaceObserver(this);
+    focus_ = nullptr;
+    pending_key_acks_.clear();
+  }
+  if (surface) {
+    delegate_->OnKeyboardModifiers(modifier_flags_);
+    delegate_->OnKeyboardEnter(surface, pressed_keys_);
+    focus_ = surface;
+    focus_->AddSurfaceObserver(this);
+  }
+}
 
 void Keyboard::ProcessExpiredPendingKeyAcks() {
   DCHECK(process_expired_pending_key_acks_pending_);
