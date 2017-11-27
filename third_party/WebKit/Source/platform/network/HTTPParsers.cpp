@@ -485,8 +485,13 @@ ReflectedXSSDisposition ParseXSSProtectionHeader(const String& header,
 }
 
 ContentTypeOptionsDisposition ParseContentTypeOptionsHeader(
-    const String& header) {
-  if (header.StripWhiteSpace().DeprecatedLower() == "nosniff")
+    const String& value) {
+  if (value.IsEmpty())
+    return kContentTypeOptionsNone;
+
+  Vector<String> results;
+  value.Split(",", results);
+  if (results[0].StripWhiteSpace().LowerASCII() == "nosniff")
     return kContentTypeOptionsNosniff;
   return kContentTypeOptionsNone;
 }
