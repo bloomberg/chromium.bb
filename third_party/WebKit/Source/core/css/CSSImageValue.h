@@ -42,7 +42,7 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   }
   static CSSImageValue* Create(const AtomicString& relative_url,
                                const KURL& absolute_url,
-                               StyleImage* image = 0) {
+                               StyleImage* image = nullptr) {
     return Create(relative_url, absolute_url, Referrer(), image);
   }
   static CSSImageValue* Create(const String& raw_value,
