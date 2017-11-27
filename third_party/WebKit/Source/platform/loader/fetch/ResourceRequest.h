@@ -53,6 +53,7 @@ enum class ResourceRequestBlockedReason {
   kInspector,
   kSubresourceFilter,
   kOther,
+  kContentType,
   kNone
 };
 

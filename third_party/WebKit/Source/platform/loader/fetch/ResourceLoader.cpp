@@ -524,6 +524,14 @@ void ResourceLoader::DidReceiveResponse(
   StringBuilder cors_error_msg;
   resource_->SetCORSStatus(DetermineCORSStatus(response, cors_error_msg));
 
+  ResourceRequestBlockedReason blocked_reason =
+      Context().CheckResponseNosniff(request_context, response);
+  if (blocked_reason != ResourceRequestBlockedReason::kNone) {
+    HandleError(ResourceError::CancelledDueToAccessCheckError(response.Url(),
+                                                              blocked_reason));
+    return;
+  }
+
   if (response.WasFetchedViaServiceWorker()) {
     if (options.cors_handling_by_resource_fetcher ==
             kEnableCORSHandlingByResourceFetcher &&
