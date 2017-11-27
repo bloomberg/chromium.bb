@@ -184,6 +184,11 @@ class PLATFORM_EXPORT FetchContext
       ResourceRequest::RedirectStatus) const {
     return ResourceRequestBlockedReason::kOther;
   }
+  virtual ResourceRequestBlockedReason CheckResponseNosniff(
+      WebURLRequest::RequestContext,
+      const ResourceResponse&) const {
+    return ResourceRequestBlockedReason::kOther;
+  }
 
   virtual bool IsControlledByServiceWorker() const { return false; }
   virtual int64_t ServiceWorkerID() const { return -1; }

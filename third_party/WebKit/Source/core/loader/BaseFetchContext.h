@@ -43,6 +43,9 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
       ResourceRequest::RedirectStatus) const override;
+  ResourceRequestBlockedReason CheckResponseNosniff(
+      WebURLRequest::RequestContext,
+      const ResourceResponse&) const override;
 
   void Trace(blink::Visitor*) override;
 

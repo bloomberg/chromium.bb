@@ -16,6 +16,7 @@
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceLoadingLog.h"
 #include "platform/loader/fetch/fetch_initiator_type_names.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
@@ -292,6 +293,32 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
       return ResourceRequestBlockedReason::kSubresourceFilter;
     }
   }
+
+  return ResourceRequestBlockedReason::kNone;
+}
+
+ResourceRequestBlockedReason BaseFetchContext::CheckResponseNosniff(
+    WebURLRequest::RequestContext request_context,
+    const ResourceResponse& response) const {
+  bool sniffing_allowed =
+      ParseContentTypeOptionsHeader(response.HttpHeaderField(
+          HTTPNames::X_Content_Type_Options)) != kContentTypeOptionsNosniff;
+  if (sniffing_allowed)
+    return ResourceRequestBlockedReason::kNone;
+
+  String mime_type = response.HttpContentType();
+  if (request_context == WebURLRequest::kRequestContextStyle &&
+      !MIMETypeRegistry::IsSupportedStyleSheetMIMEType(mime_type)) {
+    AddConsoleMessage(ConsoleMessage::Create(
+        kSecurityMessageSource, kErrorMessageLevel,
+        "Refused to apply style from '" + response.Url().ElidedString() +
+            "' because its MIME type ('" + mime_type + "') " +
+            "is not a supported stylesheet MIME type, and strict MIME checking "
+            "is enabled."));
+    return ResourceRequestBlockedReason::kContentType;
+  }
+  // TODO(mkwst): Move the 'nosniff' bit of 'AllowedByNosniff::MimeTypeAsScript'
+  // here alongside the style checks, and put its use counters somewhere else.
 
   return ResourceRequestBlockedReason::kNone;
 }
