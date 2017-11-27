@@ -872,4 +872,22 @@ TEST_F(PasswordGenerationAgentTest, GenerationFallback_NoFocusedElement) {
   password_generation_->UserSelectedManualGenerationOption();
 }
 
+TEST_F(PasswordGenerationAgentTest, AutofillToGenerationField) {
+  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+  SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(password_generation_,
+                                         GetMainFrame()->GetDocument(), 0, 1);
+  ExpectGenerationAvailable("first_password", true);
+
+  WebDocument document = GetMainFrame()->GetDocument();
+  WebElement element =
+      document.GetElementById(WebString::FromUTF8("first_password"));
+  ASSERT_FALSE(element.IsNull());
+  const WebInputElement input_element = element.To<WebInputElement>();
+  // Since password isn't generated (just suitable field was detected),
+  // |OnFieldAutofilled| wouldn't trigger any actions.
+  password_generation_->OnFieldAutofilled(input_element);
+  EXPECT_FALSE(fake_driver_.called_password_no_longer_generated());
+}
+
 }  // namespace autofill
