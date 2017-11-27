@@ -106,6 +106,11 @@
   [self setConstraints];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+  [self updateAllButtonsVisibility];
+  [super viewDidAppear:animated];
+}
+
 #pragma mark - View Setup
 
 // Sets up the StackView that contains toolbar navigation items.
@@ -118,7 +123,6 @@
   self.stackView.translatesAutoresizingMaskIntoConstraints = NO;
   self.stackView.spacing = kStackViewSpacing;
   self.stackView.distribution = UIStackViewDistributionFill;
-  [self updateAllButtonsVisibility];
 }
 
 - (void)setConstraints {
@@ -381,7 +385,6 @@
   self.reloadButton.hiddenInCurrentState = isLoading;
   self.stopButton.hiddenInCurrentState = !isLoading;
   [self.progressBar setHidden:!isLoading animated:YES completion:nil];
-  [self updateAllButtonsVisibility];
 }
 
 - (void)setLoadingProgressFraction:(double)progress {
@@ -391,7 +394,6 @@
 - (void)setTabStripVisible:(BOOL)visible {
   self.tabSwitchStripButton.hiddenInCurrentState = visible;
   self.tabSwitchGridButton.hiddenInCurrentState = !visible;
-  [self updateAllButtonsVisibility];
 }
 
 - (void)setTabCount:(int)tabCount {
@@ -441,7 +443,7 @@
   for (UIView* view in self.stackView.arrangedSubviews) {
     if ([view isKindOfClass:[ToolbarButton class]]) {
       ToolbarButton* button = base::mac::ObjCCastStrict<ToolbarButton>(view);
-      [button setHiddenForCurrentStateAndSizeClass];
+      [button updateHiddenInCurrentSizeClass];
     }
   }
 }

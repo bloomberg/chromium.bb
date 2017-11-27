@@ -27,9 +27,6 @@
 // Checks if the ToolbarButton should be visible in the current SizeClass,
 // afterwards it calls setHiddenForCurrentStateAndSizeClass if needed.
 - (void)updateHiddenInCurrentSizeClass;
-// Checks if the button should be visible based on its hiddenInCurrentSizeClass
-// and hiddenInCurrentState properties, then updates its visibility accordingly.
-- (void)setHiddenForCurrentStateAndSizeClass;
 
 @end
 

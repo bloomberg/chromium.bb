@@ -18,10 +18,6 @@ class WebStateList;
 // to a consumer.
 @interface ToolbarMediator : NSObject
 
-// The WebState whose properties this object mediates. This can change during
-// the lifetime of this object and may be null.
-@property(nonatomic, assign) web::WebState* webState;
-
 // The WebStateList that this mediator listens for any changes on the total
 // number of Webstates.
 @property(nonatomic, assign) WebStateList* webStateList;
