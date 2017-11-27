@@ -38,6 +38,8 @@ class AbstractInlineTextBox;
 class InlineTextBox;
 class NGOffsetMapping;
 
+enum class OnlyWhitespaceOrNbsp : unsigned { kUnknown = 0, kNo = 1, kYes = 2 };
+
 // LayoutText is the root class for anything that represents
 // a text node (see core/dom/Text.h).
 //
@@ -256,6 +258,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
     known_to_have_no_overflow_and_no_fallback_fonts_ = false;
   }
 
+  OnlyWhitespaceOrNbsp ContainsOnlyWhitespaceOrNbsp() const;
+
   virtual UChar PreviousCharacter() const;
 
  protected:
@@ -330,22 +334,23 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // We put the bitfield first to minimize padding on 64-bit.
 
   // Whether or not we can be broken into multiple lines.
-  bool has_breakable_char_ : 1;
+  unsigned has_breakable_char_ : 1;
   // Whether or not we have a hard break (e.g., <pre> with '\n').
-  bool has_break_ : 1;
+  unsigned has_break_ : 1;
   // Whether or not we have a variable width tab character (e.g., <pre> with
   // '\t').
-  bool has_tab_ : 1;
-  bool has_breakable_start_ : 1;
-  bool has_breakable_end_ : 1;
-  bool has_end_white_space_ : 1;
+  unsigned has_tab_ : 1;
+  unsigned has_breakable_start_ : 1;
+  unsigned has_breakable_end_ : 1;
+  unsigned has_end_white_space_ : 1;
   // This bit indicates that the text run has already dirtied specific line
   // boxes, and this hint will enable layoutInlineChildren to avoid just
   // dirtying everything when character data is modified (e.g., appended/
   // inserted or removed).
-  bool lines_dirty_ : 1;
-  bool contains_reversed_text_ : 1;
-  mutable bool known_to_have_no_overflow_and_no_fallback_fonts_ : 1;
+  unsigned lines_dirty_ : 1;
+  unsigned contains_reversed_text_ : 1;
+  mutable unsigned known_to_have_no_overflow_and_no_fallback_fonts_ : 1;
+  unsigned contains_only_whitespace_or_nbsp_ : 2;
 
   float min_width_;
   float max_width_;

@@ -69,6 +69,9 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
                            ellipsis_box_.IsHorizontal());
   text_painter.Paint(0, ellipsis_box_.EllipsisStr().length(),
                      ellipsis_box_.EllipsisStr().length(), text_style);
+  // TODO(npm): Check that there are non-whitespace characters. See
+  // crbug.com/788444.
+  context.GetPaintController().SetTextPainted();
 }
 
 }  // namespace blink
