@@ -41,11 +41,12 @@ std::string LatencySourceEventTypeToInputModalityString(
 void RecordUmaEventLatencyScrollWheelTimeToScrollUpdateSwapBegin2Histogram(
     const ui::LatencyInfo::LatencyComponent& start,
     const ui::LatencyInfo::LatencyComponent& end) {
-  CONFIRM_VALID_TIMING(start, end);
+  CONFIRM_EVENT_TIMES_EXIST(start, end);
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Event.Latency.Scroll.Wheel.TimeToScrollUpdateSwapBegin2",
-      (end.last_event_time - start.first_event_time).InMicroseconds(), 1,
-      1000000, 100);
+      std::max(static_cast<int64_t>(0),
+               (end.last_event_time - start.first_event_time).InMicroseconds()),
+      1, 1000000, 100);
 }
 
 }  // namespace
@@ -111,7 +112,7 @@ void LatencyTracker::ReportUkmScrollLatency(
     const LatencyInfo::LatencyComponent& start_component,
     const LatencyInfo::LatencyComponent& end_component,
     const ukm::SourceId ukm_source_id) {
-  CONFIRM_VALID_TIMING(start_component, end_component)
+  CONFIRM_EVENT_TIMES_EXIST(start_component, end_component)
 
   // Only report a subset of this metric as the volume is too high.
   if (metric_sampling_ &&
@@ -139,9 +140,11 @@ void LatencyTracker::ReportUkmScrollLatency(
   }
   std::unique_ptr<ukm::UkmEntryBuilder> builder =
       ukm_recorder->GetEntryBuilder(ukm_source_id, event_name.c_str());
-  builder->AddMetric(metric_name.c_str(), (end_component.last_event_time -
-                                           start_component.first_event_time)
-                                              .InMicroseconds());
+  builder->AddMetric(
+      metric_name.c_str(),
+      std::max(static_cast<int64_t>(0), (end_component.last_event_time -
+                                         start_component.first_event_time)
+                                            .InMicroseconds()));
 }
 
 void LatencyTracker::ComputeEndToEndLatencyHistograms(
