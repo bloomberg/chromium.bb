@@ -3574,6 +3574,13 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'useflags': append_useflags(['afdo_chrome_exp2', 'afdo_use']),
       },
 
+      'terra-release': {
+          'useflags': append_useflags(['thinlto']),
+      },
+      'caroline-release': {
+          'useflags': append_useflags(['thinlto']),
+      },
+
       'lumpy-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
