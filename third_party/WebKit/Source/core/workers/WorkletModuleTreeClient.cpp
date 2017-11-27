@@ -57,7 +57,8 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
   // TODO(nhiroki): Call WorkerReportingProxy::WillEvaluateWorkerScript() or
   // something like that (e.g., WillEvaluateModuleScript()).
   // Step 4: "Run a module script given script."
-  modulator_->ExecuteModule(module_script);
+  modulator_->ExecuteModule(module_script,
+                            Modulator::CaptureEvalErrorFlag::kReport);
   WorkletGlobalScope* global_scope = ToWorkletGlobalScope(
       ExecutionContext::From(modulator_->GetScriptState()));
   global_scope->ReportingProxy().DidEvaluateModuleScript(

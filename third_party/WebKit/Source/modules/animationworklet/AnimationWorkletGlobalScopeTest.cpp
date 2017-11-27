@@ -274,8 +274,7 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
     EXPECT_FALSE(module.IsNull());
     ScriptValue exception = module.Instantiate(script_state);
     EXPECT_TRUE(exception.IsEmpty());
-    ScriptValue value =
-        module.Evaluate(script_state, CaptureEvalErrorFlag::kCapture);
+    ScriptValue value = module.Evaluate(script_state);
     return value.IsEmpty();
   }
 

@@ -225,7 +225,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
     CHECK(!record.IsNull());
 
     // Step 7.2 "Let evaluationStatus be record.ModuleEvaluate()." [spec text]
-    error = record.Evaluate(script_state_.get(), capture_error);
+    error = record.Evaluate(script_state_.get());
   }
 
   // Step 8. "If evaluationStatus is an abrupt completion, then:" [spec text]

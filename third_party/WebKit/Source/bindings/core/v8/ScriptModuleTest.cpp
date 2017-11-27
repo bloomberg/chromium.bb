@@ -238,8 +238,7 @@ TEST(ScriptModuleTest, instantiateError) {
   module_failure.Instantiate(scope.GetScriptState());
   ASSERT_EQ(ScriptModuleState::kInstantiated,
             module_failure.Status(scope.GetScriptState()));
-  module_failure.Evaluate(scope.GetScriptState(),
-                          CaptureEvalErrorFlag::kReport);
+  EXPECT_FALSE(module_failure.Evaluate(scope.GetScriptState()).IsEmpty());
   ASSERT_EQ(ScriptModuleState::kErrored,
             module_failure.Status(scope.GetScriptState()));
   v8::Local<v8::Value> error =
@@ -278,7 +277,7 @@ TEST(ScriptModuleTest, Evaluate) {
   ScriptValue exception = module.Instantiate(scope.GetScriptState());
   ASSERT_TRUE(exception.IsEmpty());
 
-  module.Evaluate(scope.GetScriptState(), CaptureEvalErrorFlag::kReport);
+  EXPECT_TRUE(module.Evaluate(scope.GetScriptState()).IsEmpty());
   v8::Local<v8::Value> value = scope.GetFrame()
                                    .GetScriptController()
                                    .ExecuteScriptInMainWorldAndReturnValue(
@@ -312,8 +311,7 @@ TEST(ScriptModuleTest, EvaluateCaptureError) {
   ScriptValue exception = module.Instantiate(scope.GetScriptState());
   ASSERT_TRUE(exception.IsEmpty());
 
-  ScriptValue error =
-      module.Evaluate(scope.GetScriptState(), CaptureEvalErrorFlag::kCapture);
+  ScriptValue error = module.Evaluate(scope.GetScriptState());
   ASSERT_TRUE(error.V8Value()->IsString());
   EXPECT_EQ("bar", ToCoreString(v8::Local<v8::String>::Cast(error.V8Value())));
   EXPECT_EQ(ScriptModuleState::kErrored, module.Status(scope.GetScriptState()));

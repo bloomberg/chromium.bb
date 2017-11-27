@@ -235,7 +235,8 @@ bool ModuleScript::CheckMIMETypeBeforeRunScript(Document* context_document,
 
 void ModuleScript::RunScript(LocalFrame* frame, const SecurityOrigin*) const {
   DVLOG(1) << *this << "::RunScript()";
-  settings_object_->ExecuteModule(this);
+  settings_object_->ExecuteModule(this,
+                                  Modulator::CaptureEvalErrorFlag::kReport);
 }
 
 String ModuleScript::InlineSourceTextForCSP() const {

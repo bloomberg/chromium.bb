@@ -69,8 +69,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
     EXPECT_EQ(CaptureEvalErrorFlag::kCapture, capture_error);
 
     ScriptState::Scope scope(script_state_.get());
-    return module_script->Record().Evaluate(script_state_.get(),
-                                            CaptureEvalErrorFlag::kCapture);
+    return module_script->Record().Evaluate(script_state_.get());
   }
 
   ScriptModuleState GetRecordStatus(ScriptModule script_module) final {
