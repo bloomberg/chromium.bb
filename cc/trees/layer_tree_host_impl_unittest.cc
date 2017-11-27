@@ -11342,6 +11342,77 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   host_impl_->DidFinishImplFrame();
 }
 
+// Test to ensure that animated scrolls correctly account for the page scale
+// factor. That is, if you zoom into the page, a wheel scroll should scroll the
+// content *less* than before so that it appears to move the same distance when
+// zoomed in.
+TEST_F(LayerTreeHostImplTest, ScrollAnimatedWhileZoomed) {
+  const gfx::Size content_size(1000, 1000);
+  const gfx::Size viewport_size(50, 100);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+  LayerImpl* scrolling_layer = host_impl_->InnerViewportScrollLayer();
+
+  DrawFrame();
+
+  // Zoom in to 2X
+  {
+    float min_page_scale = 1.f, max_page_scale = 4.f;
+    float page_scale_factor = 2.f;
+    host_impl_->active_tree()->PushPageScaleFromMainThread(
+        page_scale_factor, min_page_scale, max_page_scale);
+    host_impl_->active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
+  }
+
+  // Start an animated scroll then do another animated scroll immediately
+  // afterwards. This will ensure we test both the starting animation and
+  // animation update code.
+  {
+    EXPECT_EQ(
+        InputHandler::SCROLL_ON_IMPL_THREAD,
+        host_impl_->ScrollAnimated(gfx::Point(10, 10), gfx::Vector2d(0, 10))
+            .thread);
+    EXPECT_EQ(
+        InputHandler::SCROLL_ON_IMPL_THREAD,
+        host_impl_->ScrollAnimated(gfx::Point(10, 10), gfx::Vector2d(0, 20))
+            .thread);
+
+    EXPECT_EQ(scrolling_layer->scroll_tree_index(),
+              host_impl_->CurrentlyScrollingNode()->id);
+  }
+
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+
+  viz::BeginFrameArgs begin_frame_args =
+      viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+
+  // Tick a frame to get the animation started.
+  {
+    begin_frame_args.frame_time = start_time;
+    begin_frame_args.sequence_number++;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
+    host_impl_->UpdateAnimationState(true);
+
+    EXPECT_NE(0, scrolling_layer->CurrentScrollOffset().y());
+    host_impl_->DidFinishImplFrame();
+  }
+
+  // Tick ahead to the end of the animation. We scrolled 30 viewport pixels but
+  // since we're zoomed in to 2x we should have scrolled 15 content pixels.
+  {
+    begin_frame_args.frame_time =
+        start_time + base::TimeDelta::FromMilliseconds(1000);
+    begin_frame_args.sequence_number++;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
+    host_impl_->UpdateAnimationState(true);
+
+    EXPECT_EQ(15, scrolling_layer->CurrentScrollOffset().y());
+    host_impl_->DidFinishImplFrame();
+  }
+}
+
 TEST_F(LayerTreeHostImplTest, SecondScrollAnimatedBeginNotIgnored) {
   const gfx::Size content_size(1000, 1000);
   const gfx::Size viewport_size(50, 100);
