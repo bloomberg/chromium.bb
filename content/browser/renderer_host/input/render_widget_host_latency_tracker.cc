@@ -194,18 +194,25 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
   if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0,
                           &ui_component)) {
     DCHECK_EQ(ui_component.event_count, 1u);
+    CONFIRM_EVENT_TIMES_EXIST(ui_component, rwh_component);
     base::TimeDelta ui_delta =
         rwh_component.last_event_time - ui_component.first_event_time;
 
     if (latency.source_event_type() == ui::SourceEventType::WHEEL) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser.WheelUI",
-                                  ui_delta.InMicroseconds(), 1, 20000, 100);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Latency.Browser.WheelUI",
+          std::max(static_cast<int64_t>(0), ui_delta.InMicroseconds()), 1,
+          20000, 100);
     } else if (latency.source_event_type() == ui::SourceEventType::TOUCH) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser.TouchUI",
-                                  ui_delta.InMicroseconds(), 1, 20000, 100);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Latency.Browser.TouchUI",
+          std::max(static_cast<int64_t>(0), ui_delta.InMicroseconds()), 1,
+          20000, 100);
     } else if (latency.source_event_type() == ui::SourceEventType::KEY_PRESS) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser.KeyPressUI",
-                                  ui_delta.InMicroseconds(), 1, 20000, 50);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Latency.Browser.KeyPressUI",
+          std::max(static_cast<int64_t>(0), ui_delta.InMicroseconds()), 1,
+          20000, 50);
     } else {
       // We should only report these histograms for wheel, touch and keyboard.
       NOTREACHED();
@@ -392,7 +399,7 @@ void RenderWidgetHostLatencyTracker::ReportRapporScrollLatency(
     const std::string& name,
     const LatencyInfo::LatencyComponent& start_component,
     const LatencyInfo::LatencyComponent& end_component) {
-  CONFIRM_VALID_TIMING(start_component, end_component)
+  CONFIRM_EVENT_TIMES_EXIST(start_component, end_component)
   rappor::RapporService* rappor_service =
       GetContentClient()->browser()->GetRapporService();
   if (rappor_service && render_widget_host_delegate_) {
@@ -401,8 +408,9 @@ void RenderWidgetHostLatencyTracker::ReportRapporScrollLatency(
     render_widget_host_delegate_->AddDomainInfoToRapporSample(sample.get());
     sample->SetUInt64Field(
         "Latency",
-        (end_component.last_event_time - start_component.first_event_time)
-            .InMicroseconds(),
+        std::max(static_cast<int64_t>(0), (end_component.last_event_time -
+                                           start_component.first_event_time)
+                                              .InMicroseconds()),
         rappor::NO_NOISE);
     rappor_service->RecordSample(name, std::move(sample));
   }
