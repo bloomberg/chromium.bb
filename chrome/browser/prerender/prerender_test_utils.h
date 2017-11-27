@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PRERENDER_PRERENDER_TEST_UTILS_H_
 
 #include <functional>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -15,6 +16,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/synchronization/lock.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -380,7 +382,11 @@ class PrerenderInProcessBrowserTest : virtual public InProcessBrowserTest {
                       const GURL& url_to_prerender,
                       const std::string& loader_query);
 
+  uint32_t GetRequestCount(const GURL& url);
+  void WaitForRequestCount(const GURL& url, uint32_t expected_count);
+
  private:
+  void MonitorResourceRequest(const net::test_server::HttpRequest& request);
   std::unique_ptr<ExternalProtocolHandler::Delegate>
       external_protocol_handler_delegate_;
   std::unique_ptr<safe_browsing::TestSafeBrowsingServiceFactory>
@@ -390,6 +396,13 @@ class PrerenderInProcessBrowserTest : virtual public InProcessBrowserTest {
   bool autostart_test_server_;
   base::HistogramTester histogram_tester_;
   std::unique_ptr<net::EmbeddedTestServer> https_src_server_;
+
+  // The following are guarded by |lock_| as they're used on multiple threads.
+  std::map<GURL, uint32_t> requests_;
+  GURL waiting_url_;
+  uint32_t waiting_count_ = 0;
+  base::Closure waiting_closure_;
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderInProcessBrowserTest);
 };

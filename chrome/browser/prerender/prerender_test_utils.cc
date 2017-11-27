@@ -35,6 +35,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/ppapi_test_utils.h"
 #include "net/base/load_flags.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/url_request/url_request_filter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
@@ -703,6 +704,9 @@ void PrerenderInProcessBrowserTest::SetUpInProcessBrowserTestFixture() {
 void PrerenderInProcessBrowserTest::SetUpOnMainThread() {
   current_browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kPromptForDownload, false);
+  embedded_test_server()->RegisterRequestMonitor(
+      base::Bind(&PrerenderInProcessBrowserTest::MonitorResourceRequest,
+                 base::Unretained(this)));
   if (autostart_test_server_)
     CHECK(embedded_test_server()->Start());
   ChromeResourceDispatcherHostDelegate::
@@ -737,6 +741,9 @@ void PrerenderInProcessBrowserTest::UseHttpsSrcServer() {
   https_src_server_.reset(
       new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
   https_src_server_->ServeFilesFromSourceDirectory("chrome/test/data");
+  https_src_server_->RegisterRequestMonitor(
+      base::Bind(&PrerenderInProcessBrowserTest::MonitorResourceRequest,
+                 base::Unretained(this)));
   CHECK(https_src_server_->Start());
 }
 
@@ -795,6 +802,46 @@ GURL PrerenderInProcessBrowserTest::ServeLoaderURL(
   net::test_server::GetFilePathWithReplacements(loader_path, replacement_text,
                                                 &replacement_path);
   return src_server()->GetURL(replacement_path + loader_query);
+}
+
+void PrerenderInProcessBrowserTest::MonitorResourceRequest(
+    const net::test_server::HttpRequest& request) {
+  base::AutoLock auto_lock(lock_);
+  requests_[request.GetURL()]++;
+  if (waiting_url_ == request.GetURL() &&
+      requests_[request.GetURL()] == waiting_count_) {
+    waiting_closure_.Run();
+  }
+}
+
+uint32_t PrerenderInProcessBrowserTest::GetRequestCount(const GURL& url) {
+  base::AutoLock auto_lock(lock_);
+  auto i = requests_.find(url);
+  if (i == requests_.end())
+    return 0;
+  return i->second;
+}
+
+void PrerenderInProcessBrowserTest::WaitForRequestCount(
+    const GURL& url,
+    uint32_t expected_count) {
+  if (GetRequestCount(url) == expected_count)
+    return;
+
+  base::RunLoop run_loop;
+  {
+    base::AutoLock auto_lock(lock_);
+    waiting_closure_ = run_loop.QuitClosure();
+    waiting_url_ = url;
+    waiting_count_ = expected_count;
+  }
+  run_loop.Run();
+  {
+    base::AutoLock auto_lock(lock_);
+    waiting_url_ = GURL();
+    waiting_count_ = 0;
+    waiting_closure_.Reset();
+  }
 }
 
 void CreateCountingInterceptorOnIO(
