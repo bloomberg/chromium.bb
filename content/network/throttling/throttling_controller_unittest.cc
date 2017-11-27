@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "content/network/throttling/network_conditions.h"
 #include "content/network/throttling/throttling_network_interceptor.h"
 #include "content/network/throttling/throttling_network_transaction.h"
@@ -55,7 +56,8 @@ class TestCallback {
 class ThrottlingControllerHelper {
  public:
   ThrottlingControllerHelper()
-      : completion_callback_(
+      : task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>()),
+        completion_callback_(
             base::Bind(&TestCallback::Run, base::Unretained(&callback_))),
         mock_transaction_(kSimpleGET_Transaction),
         buffer_(new net::IOBuffer(64)) {
@@ -70,6 +72,7 @@ class ThrottlingControllerHelper {
                                      &network_transaction);
     transaction_.reset(
         new ThrottlingNetworkTransaction(std::move(network_transaction)));
+    message_loop_.SetTaskRunner(task_runner_);
   }
 
   void SetNetworkState(bool offline, double download, double upload) {
@@ -132,7 +135,12 @@ class ThrottlingControllerHelper {
   TestCallback* callback() { return &callback_; }
   ThrottlingNetworkTransaction* transaction() { return transaction_.get(); }
 
+  void FastForwardUntilNoTasksRemain() {
+    task_runner_->FastForwardUntilNoTasksRemain();
+  }
+
  private:
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::MessageLoop message_loop_;
   MockNetworkLayer network_layer_;
   TestCallback callback_;
@@ -202,7 +210,7 @@ TEST(ThrottlingControllerTest, FailRunningTransaction) {
 
   // Wait until HttpTrancation completes reading and invokes callback.
   // ThrottlingNetworkTransaction should report error instead.
-  base::RunLoop().RunUntilIdle();
+  helper.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(callback->run_count(), 1);
   EXPECT_EQ(callback->value(), net::ERR_INTERNET_DISCONNECTED);
 
@@ -279,14 +287,14 @@ TEST(ThrottlingControllerTest, DownloadOnly) {
   helper.SetNetworkState(false, 10000000, 0);
   int rv = helper.Start(false);
   EXPECT_EQ(rv, net::ERR_IO_PENDING);
-  base::RunLoop().RunUntilIdle();
+  helper.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(callback->run_count(), 1);
   EXPECT_GE(callback->value(), net::OK);
 
   rv = helper.Read();
   EXPECT_EQ(rv, net::ERR_IO_PENDING);
   EXPECT_EQ(callback->run_count(), 1);
-  base::RunLoop().RunUntilIdle();
+  helper.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(callback->run_count(), 2);
   EXPECT_GE(callback->value(), net::OK);
 }
@@ -298,20 +306,20 @@ TEST(ThrottlingControllerTest, UploadOnly) {
   helper.SetNetworkState(false, 0, 1000000);
   int rv = helper.Start(true);
   EXPECT_EQ(rv, net::OK);
-  base::RunLoop().RunUntilIdle();
+  helper.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(callback->run_count(), 0);
 
   rv = helper.Read();
   EXPECT_EQ(rv, net::ERR_IO_PENDING);
   EXPECT_EQ(callback->run_count(), 0);
-  base::RunLoop().RunUntilIdle();
+  helper.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(callback->run_count(), 1);
   EXPECT_GE(callback->value(), net::OK);
 
   rv = helper.ReadUploadData();
   EXPECT_EQ(rv, net::ERR_IO_PENDING);
   EXPECT_EQ(callback->run_count(), 1);
-  base::RunLoop().RunUntilIdle();
+  helper.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(callback->run_count(), 2);
   EXPECT_EQ(callback->value(), static_cast<int>(arraysize(kUploadData)));
 }
