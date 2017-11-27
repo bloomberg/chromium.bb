@@ -9,16 +9,16 @@ namespace client {
 
 namespace {
 
-WindowStackingClient* instance = NULL;
+WindowStackingClient* g_window_stacking_client_instance = NULL;
 
 }  // namespace
 
 void SetWindowStackingClient(WindowStackingClient* client) {
-  instance = client;
+  g_window_stacking_client_instance = client;
 }
 
 WindowStackingClient* GetWindowStackingClient() {
-  return instance;
+  return g_window_stacking_client_instance;
 }
 
 }  // namespace client

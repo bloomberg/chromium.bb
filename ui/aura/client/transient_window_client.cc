@@ -9,16 +9,16 @@ namespace client {
 
 namespace {
 
-TransientWindowClient* instance = nullptr;
+TransientWindowClient* g_transient_window_client_instance = nullptr;
 
 }  // namespace
 
 void SetTransientWindowClient(TransientWindowClient* client) {
-  instance = client;
+  g_transient_window_client_instance = client;
 }
 
 TransientWindowClient* GetTransientWindowClient() {
-  return instance;
+  return g_transient_window_client_instance;
 }
 
 }  // namespace client
