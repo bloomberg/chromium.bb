@@ -6,13 +6,13 @@
 #define MOJO_EDK_SYSTEM_BROKER_HOST_H_
 
 #include <stdint.h>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel.h"
 
@@ -39,12 +39,12 @@ class BrokerHost : public Channel::Delegate,
  private:
   ~BrokerHost() override;
 
-  bool PrepareHandlesForClient(std::vector<ScopedPlatformHandle>* handles);
+  bool PrepareHandlesForClient(PlatformHandleVector* handles);
 
   // Channel::Delegate:
   void OnChannelMessage(const void* payload,
                         size_t payload_size,
-                        std::vector<ScopedPlatformHandle> handles) override;
+                        ScopedPlatformHandleVectorPtr handles) override;
   void OnChannelError(Channel::Error error) override;
 
   // base::MessageLoop::DestructionObserver:

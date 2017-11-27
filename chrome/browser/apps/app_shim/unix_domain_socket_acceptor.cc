@@ -41,7 +41,8 @@ bool UnixDomainSocketAcceptor::Listen() {
 void UnixDomainSocketAcceptor::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK(fd == listen_handle_.get().handle);
   mojo::edk::ScopedPlatformHandle connection_handle;
-  if (!mojo::edk::ServerAcceptConnection(listen_handle_, &connection_handle)) {
+  if (!mojo::edk::ServerAcceptConnection(listen_handle_.get(),
+                                         &connection_handle)) {
     Close();
     delegate_->OnListenError();
     return;

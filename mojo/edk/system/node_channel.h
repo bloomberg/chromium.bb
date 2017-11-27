@@ -5,8 +5,8 @@
 #ifndef MOJO_EDK_SYSTEM_NODE_CHANNEL_H_
 #define MOJO_EDK_SYSTEM_NODE_CHANNEL_H_
 
+#include <unordered_map>
 #include <utility>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "mojo/edk/embedder/connection_params.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/ports/name.h"
@@ -177,7 +178,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   // Channel::Delegate:
   void OnChannelMessage(const void* payload,
                         size_t payload_size,
-                        std::vector<ScopedPlatformHandle> handles) override;
+                        ScopedPlatformHandleVectorPtr handles) override;
   void OnChannelError(Channel::Error error) override;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

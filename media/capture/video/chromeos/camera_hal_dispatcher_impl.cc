@@ -9,8 +9,6 @@
 #include <poll.h>
 #include <sys/uio.h>
 
-#include <vector>
-
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/posix/eintr_wrapper.h"
@@ -22,6 +20,7 @@
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
+#include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace media {
@@ -266,7 +265,8 @@ void CameraHalDispatcherImpl::StartServiceLoop(
     }
 
     mojo::edk::ScopedPlatformHandle accepted_fd;
-    if (mojo::edk::ServerAcceptConnection(proxy_fd_, &accepted_fd, false) &&
+    if (mojo::edk::ServerAcceptConnection(proxy_fd_.get(), &accepted_fd,
+                                          false) &&
         accepted_fd.is_valid()) {
       VLOG(1) << "Accepted a connection";
       // Hardcode pid 0 since it is unused in mojo.
@@ -282,12 +282,13 @@ void CameraHalDispatcherImpl::StartServiceLoop(
           mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
                                       channel_pair.PassServerHandle()));
 
-      std::vector<mojo::edk::ScopedPlatformHandle> handles;
-      handles.emplace_back(channel_pair.PassClientHandle());
+      mojo::edk::ScopedPlatformHandleVectorPtr handles(
+          new mojo::edk::PlatformHandleVector{
+              channel_pair.PassClientHandle().release()});
 
       struct iovec iov = {const_cast<char*>(token.c_str()), token.length()};
       ssize_t result = mojo::edk::PlatformChannelSendmsgWithHandles(
-          accepted_fd, &iov, 1, handles);
+          accepted_fd.get(), &iov, 1, handles->data(), handles->size());
       if (result == -1) {
         PLOG(ERROR) << "sendmsg()";
       } else {
