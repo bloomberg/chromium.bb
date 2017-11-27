@@ -86,7 +86,7 @@ const Manifest& ManifestParser::manifest() const {
 }
 
 void ManifestParser::TakeErrors(
-    std::vector<ManifestDebugInfo::Error>* errors) {
+    std::vector<blink::mojom::ManifestErrorPtr>* errors) {
   errors->clear();
   errors->swap(errors_);
 }
@@ -459,7 +459,8 @@ void ManifestParser::AddErrorInfo(const std::string& error_msg,
                                   bool critical,
                                   int error_line,
                                   int error_column) {
-  errors_.push_back({error_msg, critical, error_line, error_column});
+  errors_.push_back(
+      {base::in_place, error_msg, critical, error_line, error_column});
 }
 
 } // namespace content

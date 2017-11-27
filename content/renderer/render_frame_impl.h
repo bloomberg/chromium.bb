@@ -73,6 +73,7 @@
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/media_engagement.mojom.h"
+#include "third_party/WebKit/public/platform/modules/manifest/manifest_manager.mojom.h"
 #include "third_party/WebKit/public/platform/site_engagement.mojom.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocumentLoader.h"
@@ -762,7 +763,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void BindFrameNavigationControl(
       mojom::FrameNavigationControlAssociatedRequest request);
 
-  ManifestManager* manifest_manager();
+  blink::mojom::ManifestManager& GetManifestManager();
 
   // TODO(creis): Remove when the only caller, the HistoryController, is no
   // more.
@@ -1438,7 +1439,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // The Manifest Manager handles the manifest requests from the browser
   // process.
-  ManifestManager* manifest_manager_;
+  std::unique_ptr<ManifestManager> manifest_manager_;
 
   // The current accessibility mode.
   ui::AXMode accessibility_mode_;

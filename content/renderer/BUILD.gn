@@ -276,8 +276,6 @@ target(link_target_type, "renderer") {
     "loader/web_url_request_util.h",
     "loader/weburlresponse_extradata_impl.cc",
     "loader/weburlresponse_extradata_impl.h",
-    "manifest/manifest_debug_info.cc",
-    "manifest/manifest_debug_info.h",
     "manifest/manifest_manager.cc",
     "manifest/manifest_manager.h",
     "manifest/manifest_parser.cc",

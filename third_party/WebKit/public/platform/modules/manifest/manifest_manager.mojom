@@ -12,4 +12,14 @@ interface ManifestManager {
   // will be empty if the document specifies no manifest, and |manifest| will be
   // empty if any other failures occurred.
   RequestManifest() => (url.mojom.Url url, Manifest? manifest);
+
+  // Requests the manifest URL and the debug info for Manifest of the frame's
+  // document. |url| will be empty if the document specifies no manifest.
+  // |debug_info| will be null if the document specifies no manifest or if
+  // fetching the manifest fails.
+  //
+  // This method is temporary until all clients are migrated from
+  // content/renderer into blink.
+  RequestManifestDebugInfo() => (url.mojom.Url url,
+                                 ManifestDebugInfo? debug_info);
 };

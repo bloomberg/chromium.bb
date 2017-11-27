@@ -15,7 +15,7 @@
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "content/public/common/manifest.h"
-#include "content/renderer/manifest/manifest_debug_info.h"
+#include "third_party/WebKit/public/platform/modules/manifest/manifest.mojom.h"
 
 class GURL;
 
@@ -42,7 +42,7 @@ class CONTENT_EXPORT ManifestParser {
   const Manifest& manifest() const;
   bool failed() const;
 
-  void TakeErrors(std::vector<ManifestDebugInfo::Error>* errors);
+  void TakeErrors(std::vector<blink::mojom::ManifestErrorPtr>* errors);
 
  private:
   // Used to indicate whether to strip whitespace when parsing a string.
@@ -234,7 +234,7 @@ class CONTENT_EXPORT ManifestParser {
 
   bool failed_;
   Manifest manifest_;
-  std::vector<ManifestDebugInfo::Error> errors_;
+  std::vector<blink::mojom::ManifestErrorPtr> errors_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestParser);
 };

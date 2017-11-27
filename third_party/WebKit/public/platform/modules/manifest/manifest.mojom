@@ -100,3 +100,18 @@ struct ManifestShareTarget {
   // data. Null if the parsing failed.
   mojo.common.mojom.String16? url_template;
 };
+
+// Debug information for a parsed manifest.
+struct ManifestDebugInfo {
+  array<ManifestError> errors;
+
+  string raw_manifest;
+};
+
+// An individual manifest parsing error.
+struct ManifestError {
+  string message;
+  bool critical;
+  uint32 line;
+  uint32 column;
+};
