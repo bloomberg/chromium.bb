@@ -9,21 +9,35 @@
 
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_dialog.h"
-#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
 // Handles details of signing the user in with SigninManager and turning on
 // sync for an account that is already present in the token service.
 class DiceTurnSyncOnHelper {
  public:
+  // Create a helper that turns sync on for an account that is already present
+  // in the token service.
   DiceTurnSyncOnHelper(Profile* profile,
                        Browser* browser,
                        signin_metrics::AccessPoint signin_access_point,
                        signin_metrics::Reason signin_reason,
                        const std::string& account_id);
+
+  // Create a helper that turns sync on for given account (the account is not
+  // yet present in the token service).
+  DiceTurnSyncOnHelper(Profile* profile,
+                       Browser* browser,
+                       signin_metrics::AccessPoint signin_access_point,
+                       signin_metrics::Reason signin_reason,
+                       const std::string& gaia_id,
+                       const std::string& email,
+                       const std::string& refresh_token);
+
   virtual ~DiceTurnSyncOnHelper();
 
  private:
+  void Initialize();
+
   // Handles can offer sign-in errors.  It returns true if there is an error,
   // and false otherwise.
   bool HandleCanOfferSigninError();
@@ -45,7 +59,14 @@ class DiceTurnSyncOnHelper {
   Browser* browser_;
   signin_metrics::AccessPoint signin_access_point_;
   signin_metrics::Reason signin_reason_;
-  const AccountInfo account_info_;
+
+  // Account information.
+  const std::string gaia_id_;
+  const std::string email_;
+
+  // Refresh token (non-empty when turning on sync for an account that is
+  // *not* yet present in the token service).
+  const std::string refresh_token_;
 
   DISALLOW_COPY_AND_ASSIGN(DiceTurnSyncOnHelper);
 };

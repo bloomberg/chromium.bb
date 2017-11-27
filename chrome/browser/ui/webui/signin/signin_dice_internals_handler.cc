@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "google_apis/gaia/gaia_urls.h"
 
 SigninDiceInternalsHandler::SigninDiceInternalsHandler(Profile* profile)
@@ -65,12 +65,9 @@ void SigninDiceInternalsHandler::HandleEnableSync(const base::ListValue* args) {
 
   // OneClickSigninSyncStarter is suicidal (it will kill itself once it finishes
   // enabling sync).
-  OneClickSigninSyncStarter::Callback callback;
-  new OneClickSigninSyncStarter(
-      profile_, browser, account_id,
-      signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
-      signin_metrics::Reason::REASON_UNKNOWN_REASON,
-      OneClickSigninSyncStarter::CURRENT_PROFILE, callback);
+  new DiceTurnSyncOnHelper(
+      profile_, browser, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
+      signin_metrics::Reason::REASON_UNKNOWN_REASON, account_id);
 }
 
 void SigninDiceInternalsHandler::HandleDisableSync(

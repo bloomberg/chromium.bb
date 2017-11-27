@@ -71,22 +71,6 @@ void SetUserChoiceHistogram(SigninChoice choice) {
                             SIGNIN_CHOICE_SIZE);
 }
 
-std::string GetEmail(Profile* profile, const std::string& account_id) {
-  AccountInfo account_info =
-      AccountTrackerServiceFactory::GetForProfile(profile)->GetAccountInfo(
-          account_id);
-  DCHECK(!account_info.email.empty());
-  return account_info.email;
-}
-
-std::string GetGaiaId(Profile* profile, const std::string& account_id) {
-  AccountInfo account_info =
-      AccountTrackerServiceFactory::GetForProfile(profile)->GetAccountInfo(
-          account_id);
-  DCHECK(!account_info.gaia.empty());
-  return account_info.gaia;
-}
-
 }  // namespace
 
 OneClickSigninSyncStarter::OneClickSigninSyncStarter(
@@ -119,30 +103,6 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
       refresh_token, gaia_id, email, password,
       base::Bind(&OneClickSigninSyncStarter::ConfirmSignin,
                  weak_pointer_factory_.GetWeakPtr(), profile_mode));
-}
-
-OneClickSigninSyncStarter::OneClickSigninSyncStarter(
-    Profile* profile,
-    Browser* browser,
-    const std::string& account_id,
-    signin_metrics::AccessPoint signin_access_point,
-    signin_metrics::Reason signin_reason,
-    ProfileMode profile_mode,
-    Callback callback)
-    : OneClickSigninSyncStarter(
-          profile,
-          browser,
-          GetGaiaId(profile, account_id),
-          GetEmail(profile, account_id),
-          std::string() /* password */,
-          std::string() /* refresh_token */,
-          signin_access_point,
-          signin_reason,
-          profile_mode,
-          OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST,
-          OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN,
-          callback) {
-  DCHECK(signin::IsDicePrepareMigrationEnabled());
 }
 
 void OneClickSigninSyncStarter::OnBrowserRemoved(Browser* browser) {

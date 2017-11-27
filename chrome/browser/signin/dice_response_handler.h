@@ -31,17 +31,20 @@ class Profile;
 extern const int kDiceTokenFetchTimeoutSeconds;
 
 // Delegate interface for processing a dice request.
-class ProcessDiceHeaderObserver {
+class ProcessDiceHeaderDelegate {
  public:
-  virtual ~ProcessDiceHeaderObserver() = default;
+  virtual ~ProcessDiceHeaderDelegate() = default;
 
   // Called before starting to fetch a refresh token.
   virtual void WillStartRefreshTokenFetch(const std::string& gaia_id,
                                           const std::string& email) = 0;
 
-  // Called after the refresh token was fetched and added in the token service.
-  virtual void DidFinishRefreshTokenFetch(const std::string& gaia_id,
-                                          const std::string& email) = 0;
+  // Called after the refresh token was fetched.
+  // If this returns true, then the credentials for the account will be updated
+  // in the token service.
+  virtual bool ShouldUpdateCredentials(const std::string& gaia_id,
+                                       const std::string& email,
+                                       const std::string& refresh_token) = 0;
 };
 
 // Processes the Dice responses from Gaia.
@@ -60,7 +63,7 @@ class DiceResponseHandler : public KeyedService {
 
   // Must be called when receiving a Dice response header.
   void ProcessDiceHeader(const signin::DiceResponseParams& dice_params,
-                         std::unique_ptr<ProcessDiceHeaderObserver> observer);
+                         std::unique_ptr<ProcessDiceHeaderDelegate> delegate);
 
   // Returns the number of pending DiceTokenFetchers. Exposed for testing.
   size_t GetPendingDiceTokenFetchersCountForTesting() const;
@@ -74,7 +77,7 @@ class DiceResponseHandler : public KeyedService {
                      const std::string& authorization_code,
                      SigninClient* signin_client,
                      AccountReconcilor* account_reconcilor,
-                     std::unique_ptr<ProcessDiceHeaderObserver> observer,
+                     std::unique_ptr<ProcessDiceHeaderDelegate> delegate,
                      DiceResponseHandler* dice_response_handler);
     ~DiceTokenFetcher() override;
 
@@ -99,7 +102,7 @@ class DiceResponseHandler : public KeyedService {
     std::string gaia_id_;
     std::string email_;
     std::string authorization_code_;
-    std::unique_ptr<ProcessDiceHeaderObserver> observer_;
+    std::unique_ptr<ProcessDiceHeaderDelegate> delegate_;
     DiceResponseHandler* dice_response_handler_;
     base::CancelableClosure timeout_closure_;
     std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
@@ -120,7 +123,7 @@ class DiceResponseHandler : public KeyedService {
       const std::string& gaia_id,
       const std::string& email,
       const std::string& authorization_code,
-      std::unique_ptr<ProcessDiceHeaderObserver> observer);
+      std::unique_ptr<ProcessDiceHeaderDelegate> delegate);
 
   // Process the Dice signout action.
   void ProcessDiceSignoutHeader(const std::vector<std::string>& gaia_ids,
@@ -133,7 +136,7 @@ class DiceResponseHandler : public KeyedService {
       std::string gaia_id,
       std::string email,
       std::string refresh_token,
-      std::unique_ptr<ProcessDiceHeaderObserver> observer);
+      std::unique_ptr<ProcessDiceHeaderDelegate> delegate);
   void OnTokenExchangeFailure(DiceTokenFetcher* token_fetcher,
                               const GoogleServiceAuthError& error);
 
