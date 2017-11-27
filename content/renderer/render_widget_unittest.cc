@@ -437,33 +437,6 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
       PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED, 1);
 }
 
-TEST_F(RenderWidgetUnittest, TouchDuringOrOutsideFlingUmaMetrics) {
-  EXPECT_CALL(*widget()->mock_webwidget(), HandleInputEvent(_))
-      .Times(3)
-      .WillRepeatedly(
-          ::testing::Return(blink::WebInputEventResult::kNotHandled));
-
-  SyntheticWebTouchEvent touch;
-  touch.PressPoint(10, 10);
-  touch.dispatch_type = blink::WebInputEvent::DispatchType::kBlocking;
-  touch.touch_start_or_first_touch_move = true;
-  widget()->SendInputEvent(touch, HandledEventCallback());
-  histogram_tester().ExpectTotalCount("Event.Touch.TouchLatencyOutsideFling",
-                                      1);
-
-  touch.MovePoint(0, 10, 10);
-  touch.touch_start_or_first_touch_move = true;
-  widget()->SendInputEvent(touch, HandledEventCallback());
-  histogram_tester().ExpectTotalCount("Event.Touch.TouchLatencyOutsideFling",
-                                      2);
-
-  touch.MovePoint(0, 30, 30);
-  touch.touch_start_or_first_touch_move = false;
-  widget()->SendInputEvent(touch, HandledEventCallback());
-  histogram_tester().ExpectTotalCount("Event.Touch.TouchLatencyOutsideFling",
-                                      2);
-}
-
 class PopupRenderWidget : public RenderWidget {
  public:
   explicit PopupRenderWidget(CompositorDependencies* compositor_deps)
