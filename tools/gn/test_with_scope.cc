@@ -37,8 +37,7 @@ TestWithScope::TestWithScope()
   scope_.set_item_collector(&items_);
 }
 
-TestWithScope::~TestWithScope() {
-}
+TestWithScope::~TestWithScope() = default;
 
 Label TestWithScope::ParseLabel(const std::string& str) const {
   Err err;
@@ -209,8 +208,7 @@ TestParseInput::TestParseInput(const std::string& input)
     parsed_ = Parser::Parse(tokens_, &parse_err_);
 }
 
-TestParseInput::~TestParseInput() {
-}
+TestParseInput::~TestParseInput() = default;
 
 TestTarget::TestTarget(const TestWithScope& setup,
                        const std::string& label_string,
@@ -221,5 +219,4 @@ TestTarget::TestTarget(const TestWithScope& setup,
   SetToolchain(setup.toolchain());
 }
 
-TestTarget::~TestTarget() {
-}
+TestTarget::~TestTarget() = default;

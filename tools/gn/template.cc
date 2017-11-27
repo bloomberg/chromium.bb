@@ -23,8 +23,7 @@ Template::Template(const Scope* scope, const FunctionCallNode* def)
 Template::Template(std::unique_ptr<Scope> scope, const FunctionCallNode* def)
     : closure_(std::move(scope)), definition_(def) {}
 
-Template::~Template() {
-}
+Template::~Template() = default;
 
 Value Template::Invoke(Scope* scope,
                        const FunctionCallNode* invocation,

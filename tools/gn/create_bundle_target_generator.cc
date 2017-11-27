@@ -24,7 +24,7 @@ CreateBundleTargetGenerator::CreateBundleTargetGenerator(
     Err* err)
     : TargetGenerator(target, scope, function_call, err) {}
 
-CreateBundleTargetGenerator::~CreateBundleTargetGenerator() {}
+CreateBundleTargetGenerator::~CreateBundleTargetGenerator() = default;
 
 void CreateBundleTargetGenerator::DoRun() {
   target_->set_output_type(Target::CREATE_BUNDLE);

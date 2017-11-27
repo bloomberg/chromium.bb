@@ -18,8 +18,7 @@ ScopePerFileProvider::ScopePerFileProvider(Scope* scope,
       allow_target_vars_(allow_target_vars) {
 }
 
-ScopePerFileProvider::~ScopePerFileProvider() {
-}
+ScopePerFileProvider::~ScopePerFileProvider() = default;
 
 const Value* ScopePerFileProvider::GetProgrammaticValue(
     const base::StringPiece& ident) {

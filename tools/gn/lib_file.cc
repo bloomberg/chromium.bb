@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-LibFile::LibFile() {}
+LibFile::LibFile() = default;
 
 LibFile::LibFile(const SourceFile& source_file) : source_file_(source_file) {}
 

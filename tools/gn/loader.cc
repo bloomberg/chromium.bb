@@ -37,7 +37,7 @@ struct SourceFileAndOrigin {
 // Identifies one time a file is loaded in a given toolchain so we don't load
 // it more than once.
 struct LoaderImpl::LoadID {
-  LoadID() {}
+  LoadID() = default;
   LoadID(const SourceFile& f, const Label& tc_name)
       : file(f),
         toolchain_name(tc_name) {
@@ -82,11 +82,9 @@ struct LoaderImpl::ToolchainRecord {
 
 const void* const Loader::kDefaultToolchainKey = &kDefaultToolchainKey;
 
-Loader::Loader() {
-}
+Loader::Loader() = default;
 
-Loader::~Loader() {
-}
+Loader::~Loader() = default;
 
 void Loader::Load(const Label& label, const LocationRange& origin) {
   Load(BuildFileForLabel(label), origin, label.GetToolchainLabel());
@@ -107,8 +105,7 @@ LoaderImpl::LoaderImpl(const BuildSettings* build_settings)
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
-LoaderImpl::~LoaderImpl() {
-}
+LoaderImpl::~LoaderImpl() = default;
 
 void LoaderImpl::Load(const SourceFile& file,
                       const LocationRange& origin,

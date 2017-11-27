@@ -134,8 +134,7 @@ HeaderChecker::HeaderChecker(const BuildSettings* build_settings,
     AddTargetToFileMap(target, &file_map_);
 }
 
-HeaderChecker::~HeaderChecker() {
-}
+HeaderChecker::~HeaderChecker() = default;
 
 bool HeaderChecker::Run(const std::vector<const Target*>& to_check,
                         bool force_check,

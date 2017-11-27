@@ -9,8 +9,7 @@
 #include "base/files/file_util.h"
 #include "tools/gn/filesystem_utils.h"
 
-BuildSettings::BuildSettings() {
-}
+BuildSettings::BuildSettings() = default;
 
 BuildSettings::BuildSettings(const BuildSettings& other)
     : root_path_(other.root_path_),
@@ -22,8 +21,7 @@ BuildSettings::BuildSettings(const BuildSettings& other)
       build_dir_(other.build_dir_),
       build_args_(other.build_args_) {}
 
-BuildSettings::~BuildSettings() {
-}
+BuildSettings::~BuildSettings() = default;
 
 void BuildSettings::SetRootTargetLabel(const Label& r) {
   root_target_label_ = r;

@@ -57,8 +57,7 @@ ConfigValuesGenerator::ConfigValuesGenerator(
       err_(err) {
 }
 
-ConfigValuesGenerator::~ConfigValuesGenerator() {
-}
+ConfigValuesGenerator::~ConfigValuesGenerator() = default;
 
 void ConfigValuesGenerator::Run() {
 #define FILL_STRING_CONFIG_VALUE(name) \

@@ -33,8 +33,7 @@ Scope::MergeOptions::MergeOptions()
       mark_dest_used(false) {
 }
 
-Scope::MergeOptions::~MergeOptions() {
-}
+Scope::MergeOptions::~MergeOptions() = default;
 
 Scope::ProgrammaticProvider::~ProgrammaticProvider() {
   scope_->RemoveProvider(this);
@@ -61,8 +60,7 @@ Scope::Scope(const Scope* parent)
       mode_flags_(0),
       item_collector_(nullptr) {}
 
-Scope::~Scope() {
-}
+Scope::~Scope() = default;
 
 void Scope::DetachFromContaining() {
   const_containing_ = nullptr;

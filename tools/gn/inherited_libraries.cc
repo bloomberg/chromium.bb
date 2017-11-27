@@ -6,11 +6,9 @@
 
 #include "tools/gn/target.h"
 
-InheritedLibraries::InheritedLibraries() {
-}
+InheritedLibraries::InheritedLibraries() = default;
 
-InheritedLibraries::~InheritedLibraries() {
-}
+InheritedLibraries::~InheritedLibraries() = default;
 
 std::vector<const Target*> InheritedLibraries::GetOrdered() const {
   std::vector<const Target*> result;

@@ -16,11 +16,9 @@ void VectorAppend(std::vector<T>* append_to,
 
 }  // namespace
 
-ConfigValues::ConfigValues() {
-}
+ConfigValues::ConfigValues() = default;
 
-ConfigValues::~ConfigValues() {
-}
+ConfigValues::~ConfigValues() = default;
 
 void ConfigValues::AppendValues(const ConfigValues& append) {
   VectorAppend(&asmflags_,     append.asmflags_);

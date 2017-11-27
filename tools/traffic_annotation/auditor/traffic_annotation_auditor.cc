@@ -92,7 +92,7 @@ TrafficAnnotationAuditor::TrafficAnnotationAuditor(
   DCHECK(!clang_tool_path.empty());
 }
 
-TrafficAnnotationAuditor::~TrafficAnnotationAuditor() {}
+TrafficAnnotationAuditor::~TrafficAnnotationAuditor() = default;
 
 // static
 int TrafficAnnotationAuditor::ComputeHashValue(const std::string& unique_id) {

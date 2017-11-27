@@ -57,8 +57,7 @@ bool RecursiveFindCycle(const BuilderRecord* search_in,
 Builder::Builder(Loader* loader) : loader_(loader) {
 }
 
-Builder::~Builder() {
-}
+Builder::~Builder() = default;
 
 void Builder::ItemDefined(std::unique_ptr<Item> item) {
   ScopedTrace trace(TraceItem::TRACE_DEFINE_TARGET, item->label());

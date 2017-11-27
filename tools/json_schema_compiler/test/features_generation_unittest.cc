@@ -63,7 +63,7 @@ FeatureComparator::FeatureComparator(const std::string& name)
       component_extensions_auto_granted(kDefaultAutoGrant),
       internal(kDefaultInternal) {}
 
-FeatureComparator::~FeatureComparator() {}
+FeatureComparator::~FeatureComparator() = default;
 
 void FeatureComparator::CompareFeature(const SimpleFeature* feature) {
   ASSERT_TRUE(feature);

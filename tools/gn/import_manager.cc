@@ -51,8 +51,8 @@ std::unique_ptr<Scope> UncachedImport(const Settings* settings,
 }  // namespace
 
 struct ImportManager::ImportInfo {
-  ImportInfo() {}
-  ~ImportInfo() {}
+  ImportInfo() = default;
+  ~ImportInfo() = default;
 
   // This lock protects the unique_ptr. Once the scope is computed,
   // it is const and can be accessed read-only outside of the lock.
@@ -66,11 +66,9 @@ struct ImportManager::ImportInfo {
   Err load_result;
 };
 
-ImportManager::ImportManager() {
-}
+ImportManager::ImportManager() = default;
 
-ImportManager::~ImportManager() {
-}
+ImportManager::~ImportManager() = default;
 
 bool ImportManager::DoImport(const SourceFile& file,
                              const ParseNode* node_for_err,

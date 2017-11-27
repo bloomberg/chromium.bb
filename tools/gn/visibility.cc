@@ -17,11 +17,9 @@
 #include "tools/gn/value.h"
 #include "tools/gn/variables.h"
 
-Visibility::Visibility() {
-}
+Visibility::Visibility() = default;
 
-Visibility::~Visibility() {
-}
+Visibility::~Visibility() = default;
 
 bool Visibility::Set(const SourceDir& current_dir,
                      const Value& value,

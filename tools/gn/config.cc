@@ -11,8 +11,7 @@
 Config::Config(const Settings* settings, const Label& label)
     : Item(settings, label), resolved_(false) {}
 
-Config::~Config() {
-}
+Config::~Config() = default;
 
 Config* Config::AsConfig() {
   return this;

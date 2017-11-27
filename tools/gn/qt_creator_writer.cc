@@ -68,7 +68,7 @@ QtCreatorWriter::QtCreatorWriter(const BuildSettings* build_settings,
       project_prefix_(project_prefix),
       root_target_name_(root_target_name) {}
 
-QtCreatorWriter::~QtCreatorWriter() {}
+QtCreatorWriter::~QtCreatorWriter() = default;
 
 void QtCreatorWriter::CollectDeps(const Target* target) {
   for (const auto& dep : target->GetDeps(Target::DEPS_ALL)) {

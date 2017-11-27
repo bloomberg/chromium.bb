@@ -75,8 +75,7 @@ Value::Value(const Value& other)
 
 Value::Value(Value&& other) noexcept = default;
 
-Value::~Value() {
-}
+Value::~Value() = default;
 
 Value& Value::operator=(const Value& other) {
   type_ = other.type_;

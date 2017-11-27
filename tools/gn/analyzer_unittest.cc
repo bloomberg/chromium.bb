@@ -14,7 +14,7 @@ namespace {
 
 class MockLoader : public Loader {
  public:
-  MockLoader() {}
+  MockLoader() = default;
 
   void Load(const SourceFile& file,
             const LocationRange& origin,
@@ -28,7 +28,7 @@ class MockLoader : public Loader {
   }
 
  private:
-  ~MockLoader() override {}
+  ~MockLoader() override = default;
 };
 
 class AnalyzerTest : public testing::Test {

@@ -121,8 +121,7 @@ TraceItem::TraceItem(Type type,
       thread_id_(thread_id) {
 }
 
-TraceItem::~TraceItem() {
-}
+TraceItem::~TraceItem() = default;
 
 ScopedTrace::ScopedTrace(TraceItem::Type t, const std::string& name)
     : item_(nullptr), done_(false) {

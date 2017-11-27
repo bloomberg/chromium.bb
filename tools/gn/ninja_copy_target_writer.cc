@@ -19,8 +19,7 @@ NinjaCopyTargetWriter::NinjaCopyTargetWriter(const Target* target,
     : NinjaTargetWriter(target, out) {
 }
 
-NinjaCopyTargetWriter::~NinjaCopyTargetWriter() {
-}
+NinjaCopyTargetWriter::~NinjaCopyTargetWriter() = default;
 
 void NinjaCopyTargetWriter::Run() {
   const Tool* copy_tool = target_->toolchain()->GetTool(Toolchain::TYPE_COPY);

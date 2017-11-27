@@ -146,8 +146,7 @@ Err::Err(const Value& value,
 
 Err::Err(const Err& other) = default;
 
-Err::~Err() {
-}
+Err::~Err() = default;
 
 void Err::PrintToStdout() const {
   InternalPrintToStdout(false, true);

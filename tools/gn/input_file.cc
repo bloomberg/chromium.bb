@@ -12,8 +12,7 @@ InputFile::InputFile(const SourceFile& name)
       contents_loaded_(false) {
 }
 
-InputFile::~InputFile() {
-}
+InputFile::~InputFile() = default;
 
 void InputFile::SetContents(const std::string& c) {
   contents_loaded_ = true;

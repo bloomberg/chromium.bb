@@ -8,9 +8,9 @@
 #include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
 
-ActionValues::ActionValues() {}
+ActionValues::ActionValues() = default;
 
-ActionValues::~ActionValues() {}
+ActionValues::~ActionValues() = default;
 
 void ActionValues::GetOutputsAsSourceFiles(
     const Target* target,

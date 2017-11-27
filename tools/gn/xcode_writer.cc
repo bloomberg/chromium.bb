@@ -281,7 +281,7 @@ void AddXCTestFilesToTestModuleTarget(const Target::FileList& xctest_file_list,
 
 class CollectPBXObjectsPerClassHelper : public PBXObjectVisitor {
  public:
-  CollectPBXObjectsPerClassHelper() {}
+  CollectPBXObjectsPerClassHelper() = default;
 
   void Visit(PBXObject* object) override {
     DCHECK(object);
@@ -399,7 +399,7 @@ XcodeWriter::XcodeWriter(const std::string& name) : name_(name) {
     name_.assign("all");
 }
 
-XcodeWriter::~XcodeWriter() {}
+XcodeWriter::~XcodeWriter() = default;
 
 // static
 bool XcodeWriter::FilterTargets(const BuildSettings* build_settings,

@@ -13,6 +13,6 @@
 namespace battor {
 
 BattOrConnection::BattOrConnection(Listener* listener) : listener_(listener) {}
-BattOrConnection::~BattOrConnection() {}
+BattOrConnection::~BattOrConnection() = default;
 
 }  // namespace battor

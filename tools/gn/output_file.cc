@@ -25,8 +25,7 @@ OutputFile::OutputFile(const BuildSettings* build_settings,
                         build_settings->root_path_utf8())) {
 }
 
-OutputFile::~OutputFile() {
-}
+OutputFile::~OutputFile() = default;
 
 SourceFile OutputFile::AsSourceFile(const BuildSettings* build_settings) const {
   DCHECK(!value_.empty());

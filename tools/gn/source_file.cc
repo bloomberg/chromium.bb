@@ -23,8 +23,7 @@ void AssertValueSourceFileString(const std::string& s) {
 
 }  // namespace
 
-SourceFile::SourceFile() {
-}
+SourceFile::SourceFile() = default;
 
 SourceFile::SourceFile(const base::StringPiece& p)
     : value_(p.data(), p.size()) {
@@ -40,8 +39,7 @@ SourceFile::SourceFile(SwapIn, std::string* value) {
   NormalizePath(&value_);
 }
 
-SourceFile::~SourceFile() {
-}
+SourceFile::~SourceFile() = default;
 
 std::string SourceFile::GetName() const {
   if (is_null())

@@ -77,8 +77,7 @@ Tokenizer::Tokenizer(const InputFile* input_file, Err* err)
       column_number_(1) {
 }
 
-Tokenizer::~Tokenizer() {
-}
+Tokenizer::~Tokenizer() = default;
 
 // static
 std::vector<Token> Tokenizer::Tokenize(const InputFile* input_file, Err* err) {

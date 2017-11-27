@@ -297,8 +297,7 @@ Setup::Setup()
   loader_->set_task_runner(scheduler_.task_runner());
 }
 
-Setup::~Setup() {
-}
+Setup::~Setup() = default;
 
 bool Setup::DoSetup(const std::string& build_dir, bool force_create) {
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();

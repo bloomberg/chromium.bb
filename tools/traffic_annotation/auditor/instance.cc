@@ -22,7 +22,7 @@ class SimpleErrorCollector : public google::protobuf::io::ErrorCollector {
       : google::protobuf::io::ErrorCollector(),
         line_offset_(proto_starting_line) {}
 
-  ~SimpleErrorCollector() override {}
+  ~SimpleErrorCollector() override = default;
 
   void AddError(int line,
                 google::protobuf::io::ColumnNumber column,

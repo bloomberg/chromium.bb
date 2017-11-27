@@ -87,11 +87,9 @@ InputFileManager::InputFileData::InputFileData(const SourceFile& file_name)
       sync_invocation(false) {
 }
 
-InputFileManager::InputFileData::~InputFileData() {
-}
+InputFileManager::InputFileData::~InputFileData() = default;
 
-InputFileManager::InputFileManager() {
-}
+InputFileManager::InputFileManager() = default;
 
 InputFileManager::~InputFileManager() {
   // Should be single-threaded by now.

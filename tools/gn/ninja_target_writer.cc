@@ -35,8 +35,7 @@ NinjaTargetWriter::NinjaTargetWriter(const Target* target,
                    ESCAPE_NINJA) {
 }
 
-NinjaTargetWriter::~NinjaTargetWriter() {
-}
+NinjaTargetWriter::~NinjaTargetWriter() = default;
 
 // static
 std::string NinjaTargetWriter::RunAndWriteFile(const Target* target) {

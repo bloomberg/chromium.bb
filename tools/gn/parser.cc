@@ -299,8 +299,7 @@ Parser::Parser(const std::vector<Token>& tokens, Err* err)
   }
 }
 
-Parser::~Parser() {
-}
+Parser::~Parser() = default;
 
 // static
 std::unique_ptr<ParseNode> Parser::Parse(const std::vector<Token>& tokens,

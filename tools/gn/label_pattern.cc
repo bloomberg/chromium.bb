@@ -63,8 +63,7 @@ LabelPattern::LabelPattern(Type type,
 
 LabelPattern::LabelPattern(const LabelPattern& other) = default;
 
-LabelPattern::~LabelPattern() {
-}
+LabelPattern::~LabelPattern() = default;
 
 // static
 LabelPattern LabelPattern::GetPattern(const SourceDir& current_dir,

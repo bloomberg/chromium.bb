@@ -16,7 +16,7 @@ namespace {
 // InputConversion needs a global scheduler object.
 class InputConversionTest : public testing::Test {
  public:
-  InputConversionTest() {}
+  InputConversionTest() = default;
 
   const Settings* settings() { return setup_.settings(); }
 

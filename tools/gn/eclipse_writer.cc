@@ -47,7 +47,7 @@ EclipseWriter::EclipseWriter(const BuildSettings* build_settings,
   languages_.push_back("Assembly");
 }
 
-EclipseWriter::~EclipseWriter() {}
+EclipseWriter::~EclipseWriter() = default;
 
 // static
 bool EclipseWriter::RunAndWriteFile(

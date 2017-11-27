@@ -25,8 +25,7 @@ ActionTargetGenerator::ActionTargetGenerator(
       output_type_(type) {
 }
 
-ActionTargetGenerator::~ActionTargetGenerator() {
-}
+ActionTargetGenerator::~ActionTargetGenerator() = default;
 
 void ActionTargetGenerator::DoRun() {
   target_->set_output_type(output_type_);
