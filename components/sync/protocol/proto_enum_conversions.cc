@@ -317,6 +317,18 @@ const char* ProtoEnumToString(
 }
 
 const char* ProtoEnumToString(
+    sync_pb::UserEventSpecifics::UserConsent::ConsentStatus status) {
+  ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::UserConsent, ConsentStatus,
+                     REVOKED, GIVEN);
+  switch (status) {
+    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, REVOKED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, GIVEN);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseDetected::
         SafeBrowsingStatus::ReportingPopulation
             safe_browsing_reporting_population) {

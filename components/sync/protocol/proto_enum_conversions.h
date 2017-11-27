@@ -69,6 +69,9 @@ const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::Translation::Interaction interaction);
 
 const char* ProtoEnumToString(
+    sync_pb::UserEventSpecifics::UserConsent::ConsentStatus status);
+
+const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseDetected::
         SafeBrowsingStatus::ReportingPopulation
             safe_browsing_reporting_population);

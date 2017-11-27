@@ -93,6 +93,24 @@ message UserEventSpecifics {
     optional Interaction interaction = 3;
   }
 
+  // User consented to the usage of a feature or revoked a consent.
+  message UserConsent {
+    // Name of the feature this consent belongs to.
+    optional string feature = 1;
+    // Ids of descriptions and button text presented to the user.
+    repeated int32 consent_grd_ids = 2;
+    // Strings put into placeholders.
+    repeated string placeholder_replacements = 3;
+    // The UI language Chrome is using.
+    optional string locale = 4;
+    // Was the consent for |feature| given or revoked?
+    enum ConsentStatus {
+      REVOKED = 0;
+      GIVEN = 1;
+    }
+    optional ConsentStatus status = 5;
+  }
+
   // User reused their GAIA password on another website.
   message GaiaPasswordReuse {
     // Logged when we detect a password re-use event on a non-GAIA site.
@@ -177,6 +195,7 @@ message UserEventSpecifics {
     FieldTrial field_trial_event = 9;
     LanguageDetection language_detection_event = 10;
     Translation translation_event = 11;
+    UserConsent user_consent = 12;
     // Happens when a user types their Google account password on another site.
     GaiaPasswordReuse gaia_password_reuse_event = 104;
   }
