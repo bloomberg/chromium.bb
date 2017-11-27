@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
@@ -162,6 +161,8 @@ public class ThumbnailDiskStorageTest {
             }
         });
         assertInitialized();
+        assertDiskSizeBytes(0);
+        mTestThumbnailDiskStorage.removeCount.set(0);
     }
 
     /**
@@ -170,8 +171,6 @@ public class ThumbnailDiskStorageTest {
     @Test
     @SmallTest
     public void testCanInsertAndGet() throws Throwable {
-        assertDiskSizeBytes(0);
-
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID1, BITMAP1, ICON_WIDTH1);
         Assert.assertEquals(1, mTestThumbnailDiskStorage.getCacheCount());
 
@@ -195,8 +194,6 @@ public class ThumbnailDiskStorageTest {
     @Test
     @SmallTest
     public void testRepeatedInsertShouldBeUpdated() throws Throwable {
-        assertDiskSizeBytes(0);
-
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID1, BITMAP1, ICON_WIDTH1);
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID1, BITMAP2, ICON_WIDTH1);
 
@@ -213,12 +210,9 @@ public class ThumbnailDiskStorageTest {
     /**
      * Verify that retrieveThumbnail makes the called entry the most recent entry in cache.
      */
-    @DisabledTest(message = "crbug.com/786212")
     @Test
     @SmallTest
     public void testRetrieveThumbnailShouldMakeEntryMostRecent() throws Throwable {
-        assertDiskSizeBytes(0);
-
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID1, BITMAP1, ICON_WIDTH1);
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID2, BITMAP1, ICON_WIDTH1);
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID3, BITMAP1, ICON_WIDTH1);
@@ -250,8 +244,6 @@ public class ThumbnailDiskStorageTest {
     @Test
     @SmallTest
     public void testExceedLimitShouldTrim() throws Throwable {
-        assertDiskSizeBytes(0);
-
         // Add thumbnails up to cache limit to get 1 entry trimmed
         int count = 0;
         while (mTestThumbnailDiskStorage.removeCount.get() == 0) {
@@ -276,12 +268,9 @@ public class ThumbnailDiskStorageTest {
      * Verify that removeFromDisk removes all thumbnails with the same content ID but different
      * sizes.
      */
-    @DisabledTest(message = "crbug.com/778829")
     @Test
     @SmallTest
     public void testRemoveAllThumbnailsWithSameContentId() throws Throwable {
-        assertDiskSizeBytes(0);
-
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID1, BITMAP1, ICON_WIDTH1);
         mTestThumbnailDiskStorage.addToDisk(CONTENT_ID1, BITMAP1, ICON_WIDTH2);
         Assert.assertEquals(2, mTestThumbnailDiskStorage.getCacheCount());
