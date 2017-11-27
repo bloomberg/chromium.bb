@@ -946,10 +946,13 @@ void LocalFrameClientImpl::DidChangeFramePolicy(
       container_policy);
 }
 
-void LocalFrameClientImpl::DidSetFeaturePolicyHeader(
+void LocalFrameClientImpl::DidSetFramePolicyHeaders(
+    SandboxFlags sandbox_flags,
     const ParsedFeaturePolicy& parsed_header) {
-  if (web_frame_->Client())
-    web_frame_->Client()->DidSetFeaturePolicyHeader(parsed_header);
+  if (web_frame_->Client()) {
+    web_frame_->Client()->DidSetFramePolicyHeaders(
+        static_cast<WebSandboxFlags>(sandbox_flags), parsed_header);
+  }
 }
 
 void LocalFrameClientImpl::DidAddContentSecurityPolicies(

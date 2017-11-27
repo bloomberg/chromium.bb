@@ -214,6 +214,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnViewChanged(const viz::FrameSinkId& frame_sink_id);
   void OnDidStopLoading();
   void OnDidUpdateFramePolicy(const blink::FramePolicy& frame_policy);
+  void OnDidSetActiveSandboxFlags(blink::WebSandboxFlags active_sandbox_flags);
   void OnDispatchLoad();
   void OnCollapse(bool collapsed);
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);

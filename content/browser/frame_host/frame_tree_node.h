@@ -86,6 +86,13 @@ class CONTENT_EXPORT FrameTreeNode {
   // Clears process specific-state in this node to prepare for a new process.
   void ResetForNewProcess();
 
+  // Clears any state in this node which was set by the document itself (CSP
+  // Headers, Feature Policy Headers, and CSP-set sandbox flags), and notifies
+  // proxies as appropriate. Invoked after committing navigation to a new
+  // document (since the new document comes with a fresh set of CSP and
+  // Feature-Policy HTTP headers).
+  void ResetForNavigation();
+
   FrameTree* frame_tree() const {
     return frame_tree_;
   }
@@ -188,17 +195,9 @@ class CONTENT_EXPORT FrameTreeNode {
   // Set the frame's feature policy header, clearing any existing header.
   void SetFeaturePolicyHeader(const blink::ParsedFeaturePolicy& parsed_header);
 
-  // Clear any feature policy header associated with the frame.
-  void ResetFeaturePolicyHeader();
-
   // Add CSP headers to replication state, notify proxies about the update.
   void AddContentSecurityPolicies(
       const std::vector<ContentSecurityPolicyHeader>& headers);
-
-  // Discards previous CSP headers and notifies proxies about the update.
-  // Typically invoked after committing navigation to a new document (since the
-  // new document comes with a fresh set of CSP http headers).
-  void ResetCspHeaders();
 
   // Sets the current insecure request policy, and notifies proxies about the
   // update.
@@ -344,6 +343,25 @@ class CONTENT_EXPORT FrameTreeNode {
   FrameTreeNodeBlameContext& blame_context() { return blame_context_; }
 
   void OnSetHasReceivedUserGesture();
+
+  // Returns the sandbox flags currently in effect for this frame. This includes
+  // flags inherited from parent frames, the currently active flags from the
+  // <iframe> element hosting this frame, as well as any flags set from a
+  // Content-Security-Policy HTTP header. This does not include flags that have
+  // have been updated in an <iframe> element but have not taken effect yet; use
+  // pending_frame_policy() for those. To see the flags which will take effect
+  // on navigation (which does not include the CSP-set flags), use
+  // effective_frame_policy().
+  blink::WebSandboxFlags active_sandbox_flags() const {
+    return replication_state_.active_sandbox_flags;
+  }
+
+  // Updates the active sandbox flags in this frame, in response to a
+  // Content-Security-Policy header adding additional flags, in addition to
+  // those given to this frame by its parent. Note that on navigation, these
+  // updates will be cleared, and the flags in the pending frame policy will be
+  // applied to the frame.
+  void UpdateActiveSandboxFlags(blink::WebSandboxFlags sandbox_flags);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessFeaturePolicyBrowserTest,

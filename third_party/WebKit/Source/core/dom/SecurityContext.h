@@ -106,12 +106,12 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
 
   void SetContentSecurityPolicy(ContentSecurityPolicy*);
 
+  SandboxFlags sandbox_flags_;
+
  private:
   scoped_refptr<SecurityOrigin> security_origin_;
   Member<ContentSecurityPolicy> content_security_policy_;
   std::unique_ptr<FeaturePolicy> feature_policy_;
-
-  SandboxFlags sandbox_flags_;
 
   WebAddressSpace address_space_;
   WebInsecureRequestPolicy insecure_request_policy_;

@@ -234,6 +234,7 @@ void WebRemoteFrameImpl::SetReplicatedOrigin(const WebSecurityOrigin& origin) {
 
 void WebRemoteFrameImpl::SetReplicatedSandboxFlags(WebSandboxFlags flags) {
   DCHECK(GetFrame());
+  GetFrame()->GetSecurityContext()->ResetSandboxFlags();
   GetFrame()->GetSecurityContext()->EnforceSandboxFlags(
       static_cast<SandboxFlags>(flags));
 }

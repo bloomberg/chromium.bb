@@ -22,6 +22,7 @@ class CORE_EXPORT RemoteSecurityContext
   static RemoteSecurityContext* Create();
   void SetReplicatedOrigin(scoped_refptr<SecurityOrigin>);
   void ResetReplicatedContentSecurityPolicy();
+  void ResetSandboxFlags();
 
   // FIXME: implement
   void DidUpdateSecurityOrigin() override {}

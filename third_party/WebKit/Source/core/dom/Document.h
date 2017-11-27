@@ -1393,7 +1393,10 @@ class CORE_EXPORT Document : public ContainerNode,
   CoreProbeSink* GetProbeSink() final;
   service_manager::InterfaceProvider* GetInterfaceProvider() final;
 
-  void SetFeaturePolicy(const String& feature_policy_header);
+  // Set an explicit feature policy on this document in response to an HTTP
+  // Feature Policy header. This will be relayed to the embedder through the
+  // LocalFrameClient.
+  void ApplyFeaturePolicyFromHeader(const String& feature_policy_header);
 
   const AtomicString& bgColor() const;
   void setBgColor(const AtomicString&);
@@ -1539,6 +1542,12 @@ class CORE_EXPORT Document : public ContainerNode,
 
   const AtomicString& BodyAttributeValue(const QualifiedName&) const;
   void SetBodyAttribute(const QualifiedName&, const AtomicString&);
+
+  // Set the feature policy on this document, inheriting as necessary from the
+  // parent document and frame owner (if they exist). The caller must ensure
+  // that any changes to the declared policy are relayed to the embedder through
+  // the LocalFrameClient.
+  void ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy);
 
   DocumentLifecycle lifecycle_;
 

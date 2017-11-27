@@ -10,7 +10,8 @@
 namespace content {
 
 FrameReplicationState::FrameReplicationState()
-    : scope(blink::WebTreeScopeType::kDocument),
+    : active_sandbox_flags(blink::WebSandboxFlags::kNone),
+      scope(blink::WebTreeScopeType::kDocument),
       insecure_request_policy(blink::kLeaveInsecureRequestsAlone),
       has_potentially_trustworthy_unique_origin(false),
       has_received_user_gesture(false) {}
@@ -25,6 +26,7 @@ FrameReplicationState::FrameReplicationState(
     : origin(),
       name(name),
       unique_name(unique_name),
+      active_sandbox_flags(blink::WebSandboxFlags::kNone),
       scope(scope),
       insecure_request_policy(insecure_request_policy),
       has_potentially_trustworthy_unique_origin(

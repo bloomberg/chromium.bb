@@ -595,8 +595,7 @@ void NavigatorImpl::DidNavigate(
   // <meta> elements - we need to reset CSP and Feature Policy.
   if (!is_same_document_navigation) {
     render_frame_host->ResetContentSecurityPolicies();
-    frame_tree_node->ResetCspHeaders();
-    frame_tree_node->ResetFeaturePolicyHeader();
+    frame_tree_node->ResetForNavigation();
   }
 
   frame_tree_node->render_manager()->DidNavigateFrame(
