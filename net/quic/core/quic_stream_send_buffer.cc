@@ -9,6 +9,7 @@
 #include "net/quic/core/quic_stream_send_buffer.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 
@@ -25,8 +26,13 @@ BufferedSlice& BufferedSlice::operator=(BufferedSlice&& other) = default;
 
 BufferedSlice::~BufferedSlice() {}
 
-QuicStreamSendBuffer::QuicStreamSendBuffer(QuicBufferAllocator* allocator)
-    : stream_offset_(0), allocator_(allocator) {}
+QuicStreamSendBuffer::QuicStreamSendBuffer(QuicBufferAllocator* allocator,
+                                           bool allow_multiple_acks_for_data)
+    : stream_offset_(0),
+      allocator_(allocator),
+      stream_bytes_written_(0),
+      stream_bytes_outstanding_(0),
+      allow_multiple_acks_for_data_(allow_multiple_acks_for_data) {}
 
 QuicStreamSendBuffer::~QuicStreamSendBuffer() {}
 
@@ -59,6 +65,11 @@ void QuicStreamSendBuffer::SaveMemSlice(QuicMemSlice slice) {
   stream_offset_ += length;
 }
 
+void QuicStreamSendBuffer::OnStreamDataConsumed(size_t bytes_consumed) {
+  stream_bytes_written_ += bytes_consumed;
+  stream_bytes_outstanding_ += bytes_consumed;
+}
+
 bool QuicStreamSendBuffer::WriteStreamData(QuicStreamOffset offset,
                                            QuicByteCount data_length,
                                            QuicDataWriter* writer) {
@@ -82,8 +93,38 @@ bool QuicStreamSendBuffer::WriteStreamData(QuicStreamOffset offset,
   return data_length == 0;
 }
 
-void QuicStreamSendBuffer::RemoveStreamFrame(QuicStreamOffset offset,
-                                             QuicByteCount data_length) {
+bool QuicStreamSendBuffer::OnStreamDataAcked(
+    QuicStreamOffset offset,
+    QuicByteCount data_length,
+    QuicByteCount* newly_acked_length) {
+  *newly_acked_length = 0;
+  if (data_length == 0) {
+    return true;
+  }
+  QuicIntervalSet<QuicStreamOffset> newly_acked(offset, offset + data_length);
+  if (allow_multiple_acks_for_data_) {
+    newly_acked.Difference(bytes_acked_);
+  }
+  for (const auto& interval : newly_acked) {
+    *newly_acked_length += (interval.max() - interval.min());
+  }
+  if (stream_bytes_outstanding_ < *newly_acked_length) {
+    return false;
+  }
+  stream_bytes_outstanding_ -= *newly_acked_length;
+  if (allow_multiple_acks_for_data_) {
+    bytes_acked_.Add(offset, offset + data_length);
+    while (!buffered_slices_.empty() &&
+           bytes_acked_.Contains(buffered_slices_.front().offset,
+                                 buffered_slices_.front().offset +
+                                     buffered_slices_.front().slice.length())) {
+      // Remove data which stops waiting for acks. Please note, data can be
+      // acked out of order, but send buffer is cleaned up in order.
+      buffered_slices_.pop_front();
+    }
+    return true;
+  }
+
   for (BufferedSlice& slice : buffered_slices_) {
     if (offset < slice.offset) {
       break;
@@ -106,6 +147,7 @@ void QuicStreamSendBuffer::RemoveStreamFrame(QuicStreamOffset offset,
          buffered_slices_.front().outstanding_data_length == 0) {
     buffered_slices_.pop_front();
   }
+  return true;
 }
 
 size_t QuicStreamSendBuffer::size() const {

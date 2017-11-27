@@ -277,6 +277,10 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
 
   bool can_use_slices() const { return can_use_slices_; }
 
+  bool allow_multiple_acks_for_data() const {
+    return allow_multiple_acks_for_data_;
+  }
+
  protected:
   using StaticStreamMap = QuicSmallMap<QuicStreamId, QuicStream*, 2>;
 
@@ -491,6 +495,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // QUIC stream can take ownership of application data provided in reference
   // counted memory to avoid data copy.
   const bool can_use_slices_;
+
+  // Latched value of quic_reloadable_flag_quic_allow_multiple_acks_for_data2.
+  const bool allow_multiple_acks_for_data_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };

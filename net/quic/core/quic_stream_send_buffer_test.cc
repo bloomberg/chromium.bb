@@ -25,8 +25,13 @@ struct iovec MakeIovec(QuicStringPiece data) {
 
 class QuicStreamSendBufferTest : public QuicTest {
  public:
-  QuicStreamSendBufferTest() : send_buffer_(&allocator_) {
+  QuicStreamSendBufferTest()
+      : send_buffer_(
+            &allocator_,
+            FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2) {
     EXPECT_EQ(0u, send_buffer_.size());
+    EXPECT_EQ(0u, send_buffer_.stream_bytes_written());
+    EXPECT_EQ(0u, send_buffer_.stream_bytes_outstanding());
     string data1(1536, 'a');
     string data2 = string(256, 'b') + string(256, 'c');
     struct iovec iov[2];
@@ -45,6 +50,10 @@ class QuicStreamSendBufferTest : public QuicTest {
     EXPECT_TRUE(slice1.empty());
     send_buffer_.SaveMemSlice(std::move(slice2));
     EXPECT_TRUE(slice2.empty());
+    // Write all data.
+    send_buffer_.OnStreamDataConsumed(3840);
+    EXPECT_EQ(3840u, send_buffer_.stream_bytes_written());
+    EXPECT_EQ(3840u, send_buffer_.stream_bytes_outstanding());
 
     EXPECT_EQ(4u, send_buffer_.size());
   }
@@ -85,29 +94,72 @@ TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
 }
 
 TEST_F(QuicStreamSendBufferTest, RemoveStreamFrame) {
-  send_buffer_.RemoveStreamFrame(1024, 1024);
+  QuicByteCount newly_acked_length;
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(1024, 1024, &newly_acked_length));
+  EXPECT_EQ(1024u, newly_acked_length);
   EXPECT_EQ(4u, send_buffer_.size());
-  send_buffer_.RemoveStreamFrame(2048, 1024);
+
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(2048, 1024, &newly_acked_length));
+  EXPECT_EQ(1024u, newly_acked_length);
   EXPECT_EQ(4u, send_buffer_.size());
-  send_buffer_.RemoveStreamFrame(0, 1024);
+
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(0, 1024, &newly_acked_length));
+  EXPECT_EQ(1024u, newly_acked_length);
+
   // Send buffer is cleaned up in order.
   EXPECT_EQ(1u, send_buffer_.size());
-  send_buffer_.RemoveStreamFrame(3072, 768);
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(3072, 768, &newly_acked_length));
+  EXPECT_EQ(768u, newly_acked_length);
   EXPECT_EQ(0u, send_buffer_.size());
 }
 
 TEST_F(QuicStreamSendBufferTest, RemoveStreamFrameAcrossBoundries) {
-  send_buffer_.RemoveStreamFrame(2024, 576);
+  QuicByteCount newly_acked_length;
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(2024, 576, &newly_acked_length));
+  EXPECT_EQ(576u, newly_acked_length);
   EXPECT_EQ(4u, send_buffer_.size());
-  send_buffer_.RemoveStreamFrame(0, 1000);
+
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(0, 1000, &newly_acked_length));
+  EXPECT_EQ(1000u, newly_acked_length);
   EXPECT_EQ(4u, send_buffer_.size());
-  send_buffer_.RemoveStreamFrame(1000, 1024);
+
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(1000, 1024, &newly_acked_length));
+  EXPECT_EQ(1024u, newly_acked_length);
   // Send buffer is cleaned up in order.
   EXPECT_EQ(2u, send_buffer_.size());
-  send_buffer_.RemoveStreamFrame(2600, 1024);
+
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(2600, 1024, &newly_acked_length));
+  EXPECT_EQ(1024u, newly_acked_length);
   EXPECT_EQ(1u, send_buffer_.size());
-  send_buffer_.RemoveStreamFrame(3624, 216);
+
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(3624, 216, &newly_acked_length));
+  EXPECT_EQ(216u, newly_acked_length);
   EXPECT_EQ(0u, send_buffer_.size());
+}
+
+TEST_F(QuicStreamSendBufferTest, AckStreamDataMultipleTimes) {
+  if (!FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2) {
+    return;
+  }
+  QuicByteCount newly_acked_length;
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(100, 1500, &newly_acked_length));
+  EXPECT_EQ(1500u, newly_acked_length);
+  EXPECT_EQ(4u, send_buffer_.size());
+
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(2000, 500, &newly_acked_length));
+  EXPECT_EQ(500u, newly_acked_length);
+  EXPECT_EQ(4u, send_buffer_.size());
+
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(0, 2600, &newly_acked_length));
+  EXPECT_EQ(600u, newly_acked_length);
+  // Send buffer is cleaned up in order.
+  EXPECT_EQ(2u, send_buffer_.size());
+
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(2200, 1640, &newly_acked_length));
+  EXPECT_EQ(1240u, newly_acked_length);
+  EXPECT_EQ(0u, send_buffer_.size());
+
+  EXPECT_FALSE(send_buffer_.OnStreamDataAcked(4000, 100, &newly_acked_length));
 }
 
 }  // namespace

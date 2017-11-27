@@ -14,6 +14,7 @@ namespace net {
 
 namespace test {
 class QuicStreamSendBufferPeer;
+class QuicStreamPeer;
 }  // namespace test
 
 class QuicDataWriter;
@@ -36,6 +37,8 @@ struct BufferedSlice {
   // Location of this data slice in the stream.
   QuicStreamOffset offset;
   // Length of payload which is outstanding and waiting for acks.
+  // TODO(fayang): remove this field when deprecating
+  // quic_reloadable_flag_quic_allow_multiple_acks_for_data2.
   QuicByteCount outstanding_data_length;
 };
 
@@ -45,7 +48,8 @@ struct BufferedSlice {
 // across slice boundaries.
 class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
  public:
-  explicit QuicStreamSendBuffer(QuicBufferAllocator* allocator);
+  explicit QuicStreamSendBuffer(QuicBufferAllocator* allocator,
+                                bool allow_multiple_acks_for_data);
   QuicStreamSendBuffer(const QuicStreamSendBuffer& other) = delete;
   QuicStreamSendBuffer(QuicStreamSendBuffer&& other) = delete;
   ~QuicStreamSendBuffer();
@@ -59,22 +63,39 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
   // Save |slice| to send buffer.
   void SaveMemSlice(QuicMemSlice slice);
 
+  // Called when |bytes_consumed| bytes has been consumed by the stream.
+  void OnStreamDataConsumed(size_t bytes_consumed);
+
   // Write |data_length| of data starts at |offset|.
   bool WriteStreamData(QuicStreamOffset offset,
                        QuicByteCount data_length,
                        QuicDataWriter* writer);
 
   // Called when data [offset, offset + data_length) is acked or removed as
-  // stream is canceled. Removes fully acked data slice from send buffer.
-  void RemoveStreamFrame(QuicStreamOffset offset, QuicByteCount data_length);
+  // stream is canceled. Removes fully acked data slice from send buffer. Set
+  // |newly_acked_length|. Returns false if trying to ack unsent data.
+  bool OnStreamDataAcked(QuicStreamOffset offset,
+                         QuicByteCount data_length,
+                         QuicByteCount* newly_acked_length);
 
   // Number of data slices in send buffer.
   size_t size() const;
 
   QuicStreamOffset stream_offset() const { return stream_offset_; }
 
+  uint64_t stream_bytes_written() const { return stream_bytes_written_; }
+
+  uint64_t stream_bytes_outstanding() const {
+    return stream_bytes_outstanding_;
+  }
+
+  const QuicIntervalSet<QuicStreamOffset>& bytes_acked() const {
+    return bytes_acked_;
+  }
+
  private:
   friend class test::QuicStreamSendBufferPeer;
+  friend class test::QuicStreamPeer;
 
   QuicDeque<BufferedSlice> buffered_slices_;
 
@@ -82,6 +103,18 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
   QuicStreamOffset stream_offset_;
 
   QuicBufferAllocator* allocator_;
+
+  // Bytes that have been consumed by the stream.
+  uint64_t stream_bytes_written_;
+
+  // Bytes that have been consumed and are waiting to be acked.
+  uint64_t stream_bytes_outstanding_;
+
+  // Offsets of data that has been acked.
+  QuicIntervalSet<QuicStreamOffset> bytes_acked_;
+
+  // Latch value for quic_reloadable_flag_quic_allow_multiple_acks_for_data2.
+  const bool allow_multiple_acks_for_data_;
 };
 
 }  // namespace net

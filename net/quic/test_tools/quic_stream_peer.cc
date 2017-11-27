@@ -21,8 +21,8 @@ void QuicStreamPeer::SetWriteSideClosed(bool value, QuicStream* stream) {
 void QuicStreamPeer::SetStreamBytesWritten(
     QuicStreamOffset stream_bytes_written,
     QuicStream* stream) {
-  stream->stream_bytes_written_ = stream_bytes_written;
-  stream->stream_bytes_outstanding_ = stream_bytes_written;
+  stream->send_buffer_.stream_bytes_written_ = stream_bytes_written;
+  stream->send_buffer_.stream_bytes_outstanding_ = stream_bytes_written;
   QuicStreamSendBufferPeer::SetStreamOffset(&stream->send_buffer_,
                                             stream_bytes_written);
 }
