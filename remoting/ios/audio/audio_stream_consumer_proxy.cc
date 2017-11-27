@@ -75,7 +75,9 @@ AudioStreamConsumerProxy::Core::~Core() {}
 
 void AudioStreamConsumerProxy::Core::AddAudioPacket(
     std::unique_ptr<AudioPacket> packet) {
-  audio_stream_consumer_->AddAudioPacket(std::move(packet));
+  if (audio_stream_consumer_) {
+    audio_stream_consumer_->AddAudioPacket(std::move(packet));
+  }
 }
 
 base::WeakPtr<AudioStreamConsumerProxy::Core>
