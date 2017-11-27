@@ -964,12 +964,21 @@ void PaintLayerCompositor::PaintContents(const GraphicsLayer* graphics_layer,
   if (!scrollbar && graphics_layer != LayerForScrollCorner())
     return;
 
+  // Map context and cull_rect which are in the local space of the scrollbar
+  // to the space of the containing scrollable area in which Scrollbar::Paint()
+  // will paint the scrollbar.
+  IntSize offset = graphics_layer->OffsetFromLayoutObject();
+  IntRect cull_rect = interest_rect;
+  cull_rect.Move(offset);
+  TransformRecorder transform_recorder(
+      context, *graphics_layer,
+      AffineTransform::Translation(-offset.Width(), -offset.Height()));
+
   if (scrollbar) {
-    ScrollableAreaPainter::PaintCompositedScrollbar(*scrollbar, context,
-                                                    CullRect(interest_rect));
+    scrollbar->Paint(context, CullRect(cull_rect));
   } else {
     FramePainter(*layout_view_.GetFrameView())
-        .PaintScrollCorner(context, interest_rect);
+        .PaintScrollCorner(context, cull_rect);
   }
 }
 

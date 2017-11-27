@@ -2150,10 +2150,12 @@ void CompositedLayerMapping::PositionOverflowControlsLayers() {
   if (GraphicsLayer* layer = LayerForHorizontalScrollbar()) {
     Scrollbar* h_bar = owning_layer_.GetScrollableArea()->HorizontalScrollbar();
     if (h_bar) {
-      layer->SetPosition(h_bar->FrameRect().Location());
-      layer->SetSize(FloatSize(h_bar->FrameRect().Size()));
+      IntRect frame_rect = h_bar->FrameRect();
+      layer->SetPosition(frame_rect.Location());
+      layer->SetOffsetFromLayoutObject(ToIntSize(frame_rect.Location()));
+      layer->SetSize(FloatSize(frame_rect.Size()));
       if (layer->HasContentsLayer())
-        layer->SetContentsRect(IntRect(IntPoint(), h_bar->FrameRect().Size()));
+        layer->SetContentsRect(IntRect(IntPoint(), frame_rect.Size()));
     }
     layer->SetDrawsContent(h_bar && !layer->HasContentsLayer());
   }
@@ -2161,10 +2163,12 @@ void CompositedLayerMapping::PositionOverflowControlsLayers() {
   if (GraphicsLayer* layer = LayerForVerticalScrollbar()) {
     Scrollbar* v_bar = owning_layer_.GetScrollableArea()->VerticalScrollbar();
     if (v_bar) {
-      layer->SetPosition(v_bar->FrameRect().Location());
-      layer->SetSize(FloatSize(v_bar->FrameRect().Size()));
+      IntRect frame_rect = v_bar->FrameRect();
+      layer->SetPosition(frame_rect.Location());
+      layer->SetOffsetFromLayoutObject(ToIntSize(frame_rect.Location()));
+      layer->SetSize(FloatSize(frame_rect.Size()));
       if (layer->HasContentsLayer())
-        layer->SetContentsRect(IntRect(IntPoint(), v_bar->FrameRect().Size()));
+        layer->SetContentsRect(IntRect(IntPoint(), frame_rect.Size()));
     }
     layer->SetDrawsContent(v_bar && !layer->HasContentsLayer());
   }
@@ -2173,6 +2177,8 @@ void CompositedLayerMapping::PositionOverflowControlsLayers() {
     const IntRect& scroll_corner_and_resizer =
         owning_layer_.GetScrollableArea()->ScrollCornerAndResizerRect();
     layer->SetPosition(FloatPoint(scroll_corner_and_resizer.Location()));
+    layer->SetOffsetFromLayoutObject(
+        ToIntSize(scroll_corner_and_resizer.Location()));
     layer->SetSize(FloatSize(scroll_corner_and_resizer.Size()));
     layer->SetDrawsContent(!scroll_corner_and_resizer.IsEmpty());
   }
@@ -3517,28 +3523,26 @@ void CompositedLayerMapping::PaintScrollableArea(
   // frame. For painting frame ScrollableAreas, see
   // PaintLayerCompositor::paintContents.
 
+  // Map context and cull_rect which are in the local space of the scrollbar
+  // to the space of the containing scrollable area in which Scrollbar::Paint()
+  // will paint the scrollbar.
+  auto offset = graphics_layer->OffsetFromLayoutObject();
+  CullRect cull_rect(CullRect(interest_rect), offset);
+  TransformRecorder transform_recorder(
+      context, *graphics_layer,
+      AffineTransform::Translation(-offset.Width(), -offset.Height()));
+
   PaintLayerScrollableArea* scrollable_area = owning_layer_.GetScrollableArea();
   if (graphics_layer == LayerForHorizontalScrollbar()) {
-    if (const Scrollbar* scrollbar = scrollable_area->HorizontalScrollbar()) {
-      ScrollableAreaPainter::PaintCompositedScrollbar(*scrollbar, context,
-                                                      CullRect(interest_rect));
-    }
+    if (const Scrollbar* scrollbar = scrollable_area->HorizontalScrollbar())
+      scrollbar->Paint(context, cull_rect);
   } else if (graphics_layer == LayerForVerticalScrollbar()) {
-    if (const Scrollbar* scrollbar = scrollable_area->VerticalScrollbar()) {
-      ScrollableAreaPainter::PaintCompositedScrollbar(*scrollbar, context,
-                                                      CullRect(interest_rect));
-    }
+    if (const Scrollbar* scrollbar = scrollable_area->VerticalScrollbar())
+      scrollbar->Paint(context, cull_rect);
   } else if (graphics_layer == LayerForScrollCorner()) {
-    // Note that scroll corners always paint into local space, whereas
-    // scrollbars paint in the space of their containing frame.
-    IntPoint scroll_corner_and_resizer_location =
-        scrollable_area->ScrollCornerAndResizerRect().Location();
-    CullRect cull_rect(interest_rect);
-    ScrollableAreaPainter(*scrollable_area)
-        .PaintScrollCorner(context, -scroll_corner_and_resizer_location,
-                           cull_rect);
-    ScrollableAreaPainter(*scrollable_area)
-        .PaintResizer(context, -scroll_corner_and_resizer_location, cull_rect);
+    ScrollableAreaPainter painter(*scrollable_area);
+    painter.PaintScrollCorner(context, IntPoint(), cull_rect);
+    painter.PaintResizer(context, IntPoint(), cull_rect);
   }
 }
 
