@@ -13,7 +13,6 @@
       "import_history": false,
       "import_search_engine": false,
       "make_chrome_default_for_user": false,
-      "show_welcome_page": false,
       "skip_first_run_ui": true
    },
    "dns_prefetching": {
