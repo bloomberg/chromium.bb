@@ -5,6 +5,7 @@ LOCAL_CFLAGS += \
 	-DHAVE_LIBDRM_ATOMIC_PRIMITIVES=1
 
 LOCAL_CFLAGS += \
+	-Wno-error \
 	-Wno-unused-parameter \
 	-Wno-missing-field-initializers \
 	-Wno-pointer-arith \
