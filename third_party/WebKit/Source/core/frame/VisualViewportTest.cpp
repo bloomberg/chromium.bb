@@ -982,56 +982,6 @@ TEST_P(VisualViewportTest,
   EXPECT_EQ("t ", mainFrame->SelectionAsText().Utf8());
 }
 
-// Test that the scrollFocusedEditableElementIntoRect method works with the
-// visual viewport.
-TEST_P(VisualViewportTest, DISABLED_TestScrollFocusedEditableElementIntoView) {
-  InitializeWithDesktopSettings();
-  WebView()->Resize(IntSize(500, 300));
-
-  RegisterMockedHttpURLLoad("pinch-viewport-input-field.html");
-  NavigateTo(base_url_ + "pinch-viewport-input-field.html");
-
-  VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  WebView()->ResizeVisualViewport(IntSize(200, 100));
-  WebView()->SetInitialFocus(false);
-  visual_viewport.SetLocation(FloatPoint());
-  WebView()->ScrollFocusedEditableElementIntoView();
-
-  EXPECT_EQ(ScrollOffset(0, GetFrame()->View()->MaximumScrollOffset().Height()),
-            GetFrame()->View()->GetScrollOffset());
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(150, 200),
-                        visual_viewport.VisibleRect().Location());
-
-  // Try it again but with the page zoomed in
-  GetFrame()->View()->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll);
-  WebView()->ResizeVisualViewport(IntSize(500, 300));
-  visual_viewport.SetLocation(FloatPoint(0, 0));
-
-  WebView()->SetPageScaleFactor(2);
-  WebView()->ScrollFocusedEditableElementIntoView();
-  EXPECT_EQ(ScrollOffset(0, GetFrame()->View()->MaximumScrollOffset().Height()),
-            GetFrame()->View()->GetScrollOffset());
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(125, 150),
-                        visual_viewport.VisibleRect().Location());
-
-  // Once more but make sure that we don't move the visual viewport unless
-  // necessary.
-  RegisterMockedHttpURLLoad("pinch-viewport-input-field-long-and-wide.html");
-  NavigateTo(base_url_ + "pinch-viewport-input-field-long-and-wide.html");
-  WebView()->SetInitialFocus(false);
-  visual_viewport.SetLocation(FloatPoint());
-  GetFrame()->View()->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll);
-  WebView()->ResizeVisualViewport(IntSize(500, 300));
-  visual_viewport.SetLocation(FloatPoint(30, 50));
-
-  WebView()->SetPageScaleFactor(2);
-  WebView()->ScrollFocusedEditableElementIntoView();
-  EXPECT_EQ(ScrollOffset(200 - 30 - 75, 600 - 50 - 65),
-            GetFrame()->View()->GetScrollOffset());
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(30, 50),
-                        visual_viewport.VisibleRect().Location());
-}
-
 // Test that resizing the WebView causes ViewportConstrained objects to
 // relayout.
 TEST_P(VisualViewportTest, TestWebViewResizeCausesViewportConstrainedLayout) {
