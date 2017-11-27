@@ -2173,6 +2173,29 @@ TEST_F(AutofillManagerTest, WillFillCreditCardNumber) {
   EXPECT_TRUE(WillFillCreditCardNumber(form, *number_field));
 }
 
+// Test that we correctly log FIELD_WAS_AUTOFILLED event in UserHappiness.
+TEST_F(AutofillManagerTest, FillCreditCardForm_LogFieldWasAutofill) {
+  // Set up our form data.
+  FormData form;
+  // Construct a form with 4 fields: cardholder name, card number,
+  // expiration date and cvc.
+  CreateTestCreditCardFormData(&form, true, true);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  const char guid[] = "00000000-0000-0000-0000-000000000004";
+  int response_page_id = 0;
+  FormData response_data;
+  base::HistogramTester histogram_tester;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
+                                     MakeFrontendID(guid, std::string()),
+                                     &response_page_id, &response_data);
+  // Cardholder name, card number, expiration data were autofilled but cvc was
+  // not be autofilled.
+  histogram_tester.ExpectBucketCount("Autofill.UserHappiness.CreditCard",
+                                     AutofillMetrics::FIELD_WAS_AUTOFILLED, 3);
+}
+
 // Test that we correctly fill a credit card form.
 TEST_F(AutofillManagerTest, FillCreditCardForm_Simple) {
   // Set up our form data.

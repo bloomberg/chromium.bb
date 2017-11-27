@@ -371,6 +371,9 @@ class AutofillMetrics {
     // User entered form data that appears to be a UPI Virtual Payment Address.
     USER_DID_ENTER_UPI_VPA,
 
+    // A field was populated by autofill.
+    FIELD_WAS_AUTOFILLED,
+
     NUM_USER_HAPPINESS_METRICS,
   };
 
