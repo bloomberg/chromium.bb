@@ -1202,9 +1202,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(0u, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 
-  // Use a different app here because LoadAndLaunchExtension() will unload
-  // the previous extension and close all its windows.
-  LoadAndLaunchExtension("app2", extensions::LAUNCH_CONTAINER_TAB,
+  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
                          WindowOpenDisposition::NEW_WINDOW);
 
   // A new browser should get detected and one more should be running.
