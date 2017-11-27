@@ -1681,7 +1681,7 @@ std::ostream& operator<<(std::ostream& ostream, const Node& node) {
   if (node.IsShadowRoot()) {
     // nodeName of ShadowRoot is #document-fragment.  It's confused with
     // DocumentFragment.
-    return ostream << "#shadow-root";
+    return ostream << "#shadow-root(" << ToShadowRoot(node).GetType() << ")";
   }
   if (node.IsDocumentTypeNode())
     return ostream << "DOCTYPE " << node.nodeName().Utf8().data();
