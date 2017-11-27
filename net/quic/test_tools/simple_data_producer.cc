@@ -4,7 +4,9 @@
 
 #include "net/quic/test_tools/simple_data_producer.h"
 
+#include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_map_util.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 
 namespace net {
 
@@ -23,7 +25,9 @@ void SimpleDataProducer::SaveStreamData(QuicStreamId id,
     return;
   }
   if (!QuicContainsKey(send_buffer_map_, id)) {
-    send_buffer_map_[id].reset(new QuicStreamSendBuffer(&allocator_));
+    send_buffer_map_[id] = QuicMakeUnique<QuicStreamSendBuffer>(
+        &allocator_,
+        FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2);
   }
   send_buffer_map_[id]->SaveStreamData(iov, iov_count, iov_offset, data_length);
 }
@@ -45,8 +49,9 @@ void SimpleDataProducer::OnStreamFrameDiscarded(const QuicStreamFrame& frame) {
   if (!QuicContainsKey(send_buffer_map_, frame.stream_id)) {
     return;
   }
-  send_buffer_map_[frame.stream_id]->RemoveStreamFrame(frame.offset,
-                                                       frame.data_length);
+  QuicByteCount newly_acked_length = 0;
+  send_buffer_map_[frame.stream_id]->OnStreamDataAcked(
+      frame.offset, frame.data_length, &newly_acked_length);
 }
 
 }  // namespace test

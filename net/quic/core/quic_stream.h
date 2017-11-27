@@ -117,7 +117,7 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   uint64_t BufferedDataBytes() const;
 
   uint64_t stream_bytes_read() const { return stream_bytes_read_; }
-  uint64_t stream_bytes_written() const { return stream_bytes_written_; }
+  uint64_t stream_bytes_written() const;
 
   size_t busy_counter() const { return busy_counter_; }
   void set_busy_counter(size_t busy_counter) { busy_counter_ = busy_counter; }
@@ -279,6 +279,8 @@ class QUIC_EXPORT_PRIVATE QuicStream {
     ack_listener_ = std::move(ack_listener);
   }
 
+  const QuicIntervalSet<QuicStreamOffset>& bytes_acked() const;
+
  private:
   friend class test::QuicStreamPeer;
   friend class QuicStreamUtils;
@@ -300,12 +302,9 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   QuicStreamId id_;
   // Pointer to the owning QuicSession object.
   QuicSession* session_;
-  // Bytes read and written refer to payload bytes only: they do not include
-  // framing, encryption overhead etc.
+  // Bytes read refers to payload bytes only: they do not include framing,
+  // encryption overhead etc.
   uint64_t stream_bytes_read_;
-  uint64_t stream_bytes_written_;
-  // Written bytes which are waiting to be acked.
-  uint64_t stream_bytes_outstanding_;
 
   // Stream error code received from a RstStreamFrame or error code sent by the
   // visitor or sequencer in the RstStreamFrame.

@@ -45,8 +45,6 @@ QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
       id_(id),
       session_(session),
       stream_bytes_read_(0),
-      stream_bytes_written_(0),
-      stream_bytes_outstanding_(0),
       stream_error_(QUIC_STREAM_NO_ERROR),
       connection_error_(QUIC_NO_ERROR),
       read_side_closed_(false),
@@ -71,7 +69,8 @@ QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
       add_random_padding_after_fin_(false),
       ack_listener_(nullptr),
       send_buffer_(
-          session->connection()->helper()->GetStreamSendBufferAllocator()),
+          session->connection()->helper()->GetStreamSendBufferAllocator(),
+          session->allow_multiple_acks_for_data()),
       buffered_data_threshold_(GetQuicFlag(FLAGS_quic_buffered_data_threshold)),
       remove_on_stream_frame_discarded_(
           FLAGS_quic_reloadable_flag_quic_remove_on_stream_frame_discarded) {
@@ -83,7 +82,7 @@ QuicStream::~QuicStream() {
     QUIC_DVLOG(1)
         << ENDPOINT << "Stream " << id_
         << " gets destroyed while waiting for acks. stream_bytes_outstanding = "
-        << stream_bytes_outstanding_
+        << send_buffer_.stream_bytes_outstanding()
         << ", fin_outstanding: " << fin_outstanding_;
   }
 }
@@ -184,7 +183,7 @@ void QuicStream::OnFinRead() {
 void QuicStream::Reset(QuicRstStreamErrorCode error) {
   stream_error_ = error;
   // Sending a RstStream results in calling CloseStream.
-  session()->SendRstStream(id(), error, stream_bytes_written_);
+  session()->SendRstStream(id(), error, stream_bytes_written());
   rst_sent_ = true;
 }
 
@@ -387,8 +386,8 @@ void QuicStream::CloseWriteSide() {
 }
 
 bool QuicStream::HasBufferedData() const {
-  DCHECK_GE(send_buffer_.stream_offset(), stream_bytes_written_);
-  return send_buffer_.stream_offset() > stream_bytes_written_;
+  DCHECK_GE(send_buffer_.stream_offset(), stream_bytes_written());
+  return send_buffer_.stream_offset() > stream_bytes_written();
 }
 
 QuicTransportVersion QuicStream::transport_version() const {
@@ -414,7 +413,7 @@ void QuicStream::OnClose() {
     // RST_STREAM frame.
     QUIC_DLOG(INFO) << ENDPOINT << "Sending RST_STREAM in OnClose: " << id();
     session_->SendRstStream(id(), QUIC_RST_ACKNOWLEDGEMENT,
-                            stream_bytes_written_);
+                            stream_bytes_written());
     rst_sent_ = true;
   }
 
@@ -494,24 +493,30 @@ void QuicStream::OnStreamFrameAcked(QuicStreamOffset offset,
                                     QuicByteCount data_length,
                                     bool fin_acked,
                                     QuicTime::Delta ack_delay_time) {
-  if (stream_bytes_outstanding_ < data_length ||
-      (!fin_outstanding_ && fin_acked)) {
+  QuicByteCount newly_acked_length = 0;
+  if (!send_buffer_.OnStreamDataAcked(offset, data_length,
+                                      &newly_acked_length)) {
     CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
                                "Trying to ack unsent data.");
     return;
   }
-  stream_bytes_outstanding_ -= data_length;
+  if (!fin_sent_ && fin_acked) {
+    CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
+                               "Trying to ack unsent fin.");
+    return;
+  }
+  // Indicates whether ack listener's OnPacketAcked should be called.
+  const bool new_data_acked = !session()->allow_multiple_acks_for_data() ||
+                              newly_acked_length > 0 ||
+                              (fin_acked && fin_outstanding_);
   if (fin_acked) {
     fin_outstanding_ = false;
-  }
-  if (data_length > 0) {
-    send_buffer_.RemoveStreamFrame(offset, data_length);
   }
   if (!IsWaitingForAcks()) {
     session_->OnStreamDoneWaitingForAcks(id_);
   }
-  if (ack_listener_ != nullptr) {
-    ack_listener_->OnPacketAcked(data_length, ack_delay_time);
+  if (ack_listener_ != nullptr && new_data_acked) {
+    ack_listener_->OnPacketAcked(newly_acked_length, ack_delay_time);
   }
 }
 
@@ -533,18 +538,21 @@ void QuicStream::OnStreamFrameDiscarded(QuicStreamOffset offset,
         quic_reloadable_flag_quic_remove_on_stream_frame_discarded, 1, 2);
     return;
   }
-  if (stream_bytes_outstanding_ < data_length ||
-      (!fin_outstanding_ && fin_discarded)) {
+
+  QuicByteCount newly_acked_length = 0;
+  if (!send_buffer_.OnStreamDataAcked(offset, data_length,
+                                      &newly_acked_length)) {
     CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
                                "Trying to discard unsent data.");
     return;
   }
-  stream_bytes_outstanding_ -= data_length;
+  if (!fin_sent_ && fin_discarded) {
+    CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
+                               "Trying to discard unsent fin.");
+    return;
+  }
   if (fin_discarded) {
     fin_outstanding_ = false;
-  }
-  if (data_length > 0) {
-    send_buffer_.RemoveStreamFrame(offset, data_length);
   }
   if (!IsWaitingForAcks()) {
     session_->OnStreamDoneWaitingForAcks(id_);
@@ -554,7 +562,7 @@ void QuicStream::OnStreamFrameDiscarded(QuicStreamOffset offset,
 bool QuicStream::IsWaitingForAcks() const {
   return (!remove_on_stream_frame_discarded_ || !rst_sent_ ||
           stream_error_ == QUIC_STREAM_NO_ERROR) &&
-         (stream_bytes_outstanding_ || fin_outstanding_);
+         (send_buffer_.stream_bytes_outstanding() || fin_outstanding_);
 }
 
 bool QuicStream::WriteStreamData(QuicStreamOffset offset,
@@ -604,14 +612,13 @@ void QuicStream::WriteBufferedData() {
   }
 
   QuicConsumedData consumed_data =
-      WritevDataInner(write_length, stream_bytes_written_, fin);
+      WritevDataInner(write_length, stream_bytes_written(), fin);
 
-  stream_bytes_written_ += consumed_data.bytes_consumed;
-  stream_bytes_outstanding_ += consumed_data.bytes_consumed;
+  send_buffer_.OnStreamDataConsumed(consumed_data.bytes_consumed);
 
   AddBytesSent(consumed_data.bytes_consumed);
   QUIC_DVLOG(1) << ENDPOINT << "stream " << id_ << " sends "
-                << stream_bytes_written_ << " bytes "
+                << stream_bytes_written() << " bytes "
                 << " and has buffered data " << BufferedDataBytes() << " bytes."
                 << " fin is sent: " << consumed_data.fin_consumed
                 << " fin is buffered: " << fin_buffered_;
@@ -645,12 +652,20 @@ void QuicStream::WriteBufferedData() {
 }
 
 uint64_t QuicStream::BufferedDataBytes() const {
-  DCHECK_GE(send_buffer_.stream_offset(), stream_bytes_written_);
-  return send_buffer_.stream_offset() - stream_bytes_written_;
+  DCHECK_GE(send_buffer_.stream_offset(), stream_bytes_written());
+  return send_buffer_.stream_offset() - stream_bytes_written();
 }
 
 bool QuicStream::CanWriteNewData() const {
   return BufferedDataBytes() < buffered_data_threshold_;
+}
+
+uint64_t QuicStream::stream_bytes_written() const {
+  return send_buffer_.stream_bytes_written();
+}
+
+const QuicIntervalSet<QuicStreamOffset>& QuicStream::bytes_acked() const {
+  return send_buffer_.bytes_acked();
 }
 
 }  // namespace net
