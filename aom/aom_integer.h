@@ -70,7 +70,7 @@ typedef size_t uintptr_t;
 #endif
 
 #if !defined(INT32_MIN)
-#define INT32_MIN (-2147483648)
+#define INT32_MIN (-2147483647 - 1)
 #endif
 
 #define NELEMENTS(x) (int)(sizeof(x) / sizeof(x[0]))
