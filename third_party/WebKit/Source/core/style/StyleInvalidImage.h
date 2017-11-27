@@ -12,6 +12,9 @@ namespace blink {
 
 class ImageResourceObserver;
 
+// This class represents an <image> (url(...) even) that was invalid or because
+// of other reasons failed to initiate a load of the underlying image
+// resource.
 class StyleInvalidImage final : public StyleImage {
  public:
   static StyleInvalidImage* Create(const String& url) {

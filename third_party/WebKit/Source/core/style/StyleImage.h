@@ -41,6 +41,9 @@ class ImageResourceObserver;
 
 typedef void* WrappedImagePtr;
 
+// This class represents a CSS <image> value in ComputedStyle. The underlying
+// object can be an image, a gradient or anything else defined as an <image>
+// value.
 class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
  public:
   virtual ~StyleImage();
@@ -49,33 +52,76 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
     return Data() == other.Data();
   }
 
+  // Returns a CSSValue representing the origin <image> value. May not be the
+  // actual CSSValue from which this StyleImage was originally created if the
+  // CSSValue can be recreated easily (like for StyleFetchedImage and
+  // StyleInvalidImage) and does not contain per-client state (like for
+  // StyleGeneratedImage.)
   virtual CSSValue* CssValue() const = 0;
+
+  // Returns a CSSValue suitable for using as part of a computed style
+  // value. This often means that any URLs have been made absolute, and similar
+  // actions described by a "Computed value" in the relevant specification.
   virtual CSSValue* ComputedCSSValue() const = 0;
 
+  // An Image can be provided for rendering by GetImage.
   virtual bool CanRender() const { return true; }
+
+  // All underlying resources this <image> references has finished loading.
   virtual bool IsLoaded() const { return true; }
+
+  // Any underlying resources this <image> references failed to load.
   virtual bool ErrorOccurred() const { return false; }
-  // Note that the defaultObjectSize is assumed to be in the
-  // effective zoom level given by multiplier, i.e. if multiplier is
-  // the constant 1 the defaultObjectSize should be unzoomed.
+
+  // Determine the concrete object size of this <image>, scaled by multiplier,
+  // using the specified default object size.
+  //
+  // The default object size is context dependent, see for instance the
+  // "Examples of CSS Object Sizing" section of the CSS images specification.
+  // https://drafts.csswg.org/css-images/#sizing
+  //
+  // The |default_object_size| is assumed to be in the effective zoom level
+  // given by multiplier, i.e. if multiplier is 1 the |default_object_size| is
+  // not zoomed.
   virtual LayoutSize ImageSize(const Document&,
                                float multiplier,
                                const LayoutSize& default_object_size) const = 0;
+
+  // The <image> does not have any intrinsic dimensions.
   virtual bool ImageHasRelativeSize() const = 0;
+
+  // The <image> may depend on dimensions from the context the image is used in
+  // (the "container".)
   virtual bool UsesImageContainerSize() const = 0;
+
   virtual void AddClient(ImageResourceObserver*) = 0;
   virtual void RemoveClient(ImageResourceObserver*) = 0;
-  // Note that the container_size is in the effective zoom level of
-  // the style that applies to the given ImageResourceObserver, i.e if the zoom
-  // level is 1.0 the container_size should be unzoomed.
+
+  // Retrieve an Image representation for painting this <image>, using a
+  // concrete object size (|container_size|.)
+  //
+  // Note that the |container_size| is in the effective zoom level of the
+  // computed style, i.e if the style has an effective zoom level of 1.0 the
+  // |container_size| is not zoomed.
   virtual scoped_refptr<Image> GetImage(
       const ImageResourceObserver&,
       const Document&,
       const ComputedStyle&,
       const IntSize& container_size) const = 0;
+
+  // Opaque handle representing the underlying value of this <image>.
   virtual WrappedImagePtr Data() const = 0;
+
+  // A scale factor indicating how many physical pixels in an image represent a
+  // logical (CSS) pixel.
   virtual float ImageScaleFactor() const { return 1; }
+
+  // Returns true if it can be determined that this <image> will always provide
+  // an opaque Image.
   virtual bool KnownToBeOpaque(const Document&, const ComputedStyle&) const = 0;
+
+  // If this <image> is intrinsically an image resource, this returns its
+  // underlying ImageResourceContent, or otherwise nullptr.
   virtual ImageResourceContent* CachedImage() const { return nullptr; }
 
   ALWAYS_INLINE bool IsImageResource() const { return is_image_resource_; }

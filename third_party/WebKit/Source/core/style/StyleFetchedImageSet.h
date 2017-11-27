@@ -36,8 +36,11 @@ namespace blink {
 class CSSImageSetValue;
 class ImageResourceObserver;
 
-// This class keeps one cached image and has access to a set of alternatives.
-
+// This class represents an <image> that loads one image resource out of a set
+// of alternatives (the -webkit-image-set(...) function.)
+//
+// This class keeps one cached image from the set, and has access to a set of
+// alternatives via the referenced CSSImageSetValue.
 class StyleFetchedImageSet final : public StyleImage,
                                    public ImageResourceObserver {
   USING_PRE_FINALIZER(StyleFetchedImageSet, Dispose);
