@@ -153,8 +153,8 @@ void SVGImageElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 
 void SVGImageElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == SVGNames::asyncAttr &&
-      RuntimeEnabledFeatures::ImageAsyncAttributeEnabled()) {
+  if (params.name == SVGNames::decodingAttr &&
+      RuntimeEnabledFeatures::ImageDecodingAttributeEnabled()) {
     decoding_mode_ = ParseImageDecodingMode(params.new_value);
   } else {
     SVGElement::ParseAttribute(params);
