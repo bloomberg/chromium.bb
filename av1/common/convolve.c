@@ -623,6 +623,66 @@ void av1_convolve_2d_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
   }
 }
 
+void av1_convolve_x_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
+                      int dst_stride, int w, int h,
+                      InterpFilterParams *filter_params_x,
+                      InterpFilterParams *filter_params_y,
+                      const int subpel_x_q4, const int subpel_y_q4,
+                      ConvolveParams *conv_params) {
+  int x, y, k;
+  const int fo_vert = filter_params_y->taps / 2 - 1;
+  const int bits = FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+  (void)filter_params_x;
+  (void)subpel_x_q4;
+
+  // vertical filter
+  const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
+      *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
+  for (y = 0; y < h; ++y) {
+    for (x = 0; x < w; ++x) {
+      CONV_BUF_TYPE res = 0;
+      for (k = 0; k < filter_params_y->taps; ++k) {
+        res += y_filter[k] * src[(y - fo_vert + k) * src_stride + x];
+      }
+      res *= (1 << bits);
+      if (conv_params->do_average)
+        dst[y * dst_stride + x] += res;
+      else
+        dst[y * dst_stride + x] = res;
+    }
+  }
+}
+
+void av1_convolve_y_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
+                      int dst_stride, int w, int h,
+                      InterpFilterParams *filter_params_x,
+                      InterpFilterParams *filter_params_y,
+                      const int subpel_x_q4, const int subpel_y_q4,
+                      ConvolveParams *conv_params) {
+  int x, y, k;
+  const int fo_horiz = filter_params_x->taps / 2 - 1;
+  const int bits = FILTER_BITS - conv_params->round_1;
+  (void)filter_params_y;
+  (void)subpel_y_q4;
+
+  // horizontal filter
+  const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
+      *filter_params_x, subpel_x_q4 & SUBPEL_MASK);
+  for (y = 0; y < h; ++y) {
+    for (x = 0; x < w; ++x) {
+      CONV_BUF_TYPE res = 0;
+      for (k = 0; k < filter_params_x->taps; ++k) {
+        res += x_filter[k] * src[y * src_stride + x - fo_horiz + k];
+      }
+      res = (1 << bits) * ROUND_POWER_OF_TWO(res, conv_params->round_0);
+      if (conv_params->do_average)
+        dst[y * dst_stride + x] += res;
+      else
+        dst[y * dst_stride + x] = res;
+    }
+  }
+}
+
 void av1_convolve_2d_copy_c(const uint8_t *src, int src_stride,
                             CONV_BUF_TYPE *dst, int dst_stride, int w, int h,
                             InterpFilterParams *filter_params_x,
@@ -882,17 +942,21 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                       conv_params->dst_stride, w, h, &filter_params_x,
                       &filter_params_y, subpel_x_q4, subpel_y_q4, conv_params);
 #else
+      // Special case convolve functions should produce the same result as
+      // av1_convolve_2d.
       if (subpel_x_q4 == 0 && subpel_y_q4 == 0) {
         av1_convolve_2d_copy(src, src_stride, conv_params->dst,
                              conv_params->dst_stride, w, h, &filter_params_x,
                              &filter_params_y, subpel_x_q4, subpel_y_q4,
                              conv_params);
-      } else if (subpel_x_q4 == 0 || subpel_y_q4 == 0) {
-        // place holder
-        av1_convolve_2d(src, src_stride, conv_params->dst,
-                        conv_params->dst_stride, w, h, &filter_params_x,
-                        &filter_params_y, subpel_x_q4, subpel_y_q4,
-                        conv_params);
+      } else if (subpel_x_q4 == 0) {
+        av1_convolve_x(src, src_stride, conv_params->dst,
+                       conv_params->dst_stride, w, h, &filter_params_x,
+                       &filter_params_y, subpel_x_q4, subpel_y_q4, conv_params);
+      } else if (subpel_y_q4 == 0) {
+        av1_convolve_y(src, src_stride, conv_params->dst,
+                       conv_params->dst_stride, w, h, &filter_params_x,
+                       &filter_params_y, subpel_x_q4, subpel_y_q4, conv_params);
       } else {
         // subpel_x_q4 != 0 && subpel_y_q4 != 0
         av1_convolve_2d(src, src_stride, conv_params->dst,
