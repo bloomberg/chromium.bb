@@ -69,6 +69,12 @@ class KEYBOARD_EXPORT ContainerBehavior {
   // Removing focus from a text field should cause the keyboard to be dismissed.
   virtual bool TextBlurHidesKeyboard() const = 0;
 
+  // The keyboard should be considered a reasonable hinderence to use the region
+  // of the screen behind it. This is used to determine if window manager or
+  // other system UI should respond to the presence of the keyboard such as
+  // moving windows out of the obscured region.
+  virtual bool BoundsObscureUsableRegion() const = 0;
+
   // Any region of the screen that is occluded by the keyboard should cause the
   // workspace to change its layout.
   virtual bool BoundsAffectWorkspaceLayout() const = 0;
