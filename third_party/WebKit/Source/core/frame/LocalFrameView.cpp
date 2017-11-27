@@ -4746,6 +4746,8 @@ static void PositionScrollbarLayer(GraphicsLayer* graphics_layer,
 
   IntRect scrollbar_rect = scrollbar->FrameRect();
   graphics_layer->SetPosition(scrollbar_rect.Location());
+  graphics_layer->SetOffsetFromLayoutObject(
+      ToIntSize(scrollbar_rect.Location()));
 
   if (scrollbar_rect.Size() == graphics_layer->Size())
     return;
@@ -4768,6 +4770,7 @@ static void PositionScrollCornerLayer(GraphicsLayer* graphics_layer,
     return;
   graphics_layer->SetDrawsContent(!corner_rect.IsEmpty());
   graphics_layer->SetPosition(corner_rect.Location());
+  graphics_layer->SetOffsetFromLayoutObject(ToIntSize(corner_rect.Location()));
   if (corner_rect.Size() != graphics_layer->Size())
     graphics_layer->SetNeedsDisplay();
   graphics_layer->SetSize(FloatSize(corner_rect.Size()));
