@@ -35,7 +35,7 @@ AppLifetimeMonitor::AppLifetimeMonitor(content::BrowserContext* context)
   app_window_registry->AddObserver(this);
 }
 
-AppLifetimeMonitor::~AppLifetimeMonitor() {}
+AppLifetimeMonitor::~AppLifetimeMonitor() = default;
 
 void AppLifetimeMonitor::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);

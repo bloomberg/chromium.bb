@@ -190,7 +190,7 @@ SavedFilesService::SavedFilesService(content::BrowserContext* context)
                  content::NotificationService::AllSources());
 }
 
-SavedFilesService::~SavedFilesService() {}
+SavedFilesService::~SavedFilesService() = default;
 
 void SavedFilesService::Observe(int type,
                                 const content::NotificationSource& source,
@@ -287,7 +287,7 @@ SavedFilesService::SavedFiles::SavedFiles(content::BrowserContext* context,
   LoadSavedFileEntriesFromPreferences();
 }
 
-SavedFilesService::SavedFiles::~SavedFiles() {}
+SavedFilesService::SavedFiles::~SavedFiles() = default;
 
 void SavedFilesService::SavedFiles::RegisterFileEntry(
     const std::string& id,

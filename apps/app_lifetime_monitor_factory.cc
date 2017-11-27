@@ -30,7 +30,7 @@ AppLifetimeMonitorFactory::AppLifetimeMonitorFactory()
   DependsOn(extensions::AppWindowRegistry::Factory::GetInstance());
 }
 
-AppLifetimeMonitorFactory::~AppLifetimeMonitorFactory() {}
+AppLifetimeMonitorFactory::~AppLifetimeMonitorFactory() = default;
 
 KeyedService* AppLifetimeMonitorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
