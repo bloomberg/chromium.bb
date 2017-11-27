@@ -14,6 +14,7 @@ function fetchAllAndCreateGraph(urls) {
 
 const CODE_PAGE = "code_page";
 const REACHED_PAGE = "reached_page";
+const RESIDENCY = "residency";
 
 /**
  * @return {string} the fill color for a given page slice.
@@ -24,6 +25,8 @@ function getFillColor(d) {
       return pageFillColor(d.data);
     case REACHED_PAGE:
       return reachedPageFillColor(d.data);
+    case RESIDENCY:
+      return residencyPageFillColor(d.data);
   }
 }
 
@@ -76,6 +79,10 @@ function reachedPageFillColor(page) {
   if (page.reached == 0) return "red";
   const percentage = 100 * page.reached / page.total;
   return reachedColorScale(percentage);
+}
+
+function residencyPageFillColor(page) {
+  return page.resident ? "green" : "red";
 }
 
 /**
@@ -156,6 +163,8 @@ function typeToLane(d) {
       return 0;
     case REACHED_PAGE:
       return 1;
+    case RESIDENCY:
+      return 2;
   }
 }
 
@@ -182,22 +191,36 @@ function getOffsetToData(flatData) {
  * @param codePages data relative to code pages and their content.
  * @param reachedData data relative to which fraction of code pages is reached.
  */
-function createGraph(codePages, reachedPerPage) {
+function createGraph(codePages, reachedPerPage, residency) {
   const PAGE_SIZE = 4096;
 
   let offsets = codePages.map((x) => x.offset).sort((a, b) => a - b);
   let minOffset = +offsets[0];
   let maxOffset = +offsets[offsets.length - 1] + PAGE_SIZE;
 
-  let lanes = reachedPerPage ? 2 : 1;
-
-  // [{type: REACHED_PAGE | CODE_PAGE, data: pageData}]
+  const labels = ["Component", "Reached", "Residency"];
+  const lanes = labels.length;
+  // [{type: REACHED_PAGE | CODE_PAGE | RESIDENCY, data: pageData}]
   let flatData = codePages.map((page) => ({"type": CODE_PAGE, "data": page}));
   if (reachedPerPage) {
     let typedReachedPerPage = reachedPerPage.map(
         (page) => ({"type": REACHED_PAGE, "data": page}));
     flatData = flatData.concat(typedReachedPerPage);
   }
+
+  if (residency) {
+    let timestamps = Object.keys(
+        residency).map((x) => +x).sort((a, b) => a - b);
+    let lastTimestamp = +timestamps[timestamps.length - 1];
+    let residencyData = residency[lastTimestamp];
+    // Other offsets are relative to start of the native library.
+    let typedResidencyData = residencyData.map(
+        (page) => (
+            {"type": RESIDENCY, "data": {"offset": page.offset + minOffset,
+                                         "resident": page.resident}}));
+    flatData = flatData.concat(typedResidencyData);
+  }
+
   const offsetToData = getOffsetToData(flatData);
 
   let margins = [20, 15, 15, 120]  // top right bottom left
@@ -259,7 +282,6 @@ function createGraph(codePages, reachedPerPage) {
       .attr("transform", `translate(0, -10)`)
       .call(mainAxis);
 
-  const labels = ["Component", "Reached"].slice(0, lanes);
   main.append("g").selectAll(".laneLines")
       .data(labels)
       .enter().append("line")

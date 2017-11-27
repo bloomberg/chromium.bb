@@ -145,7 +145,8 @@ bool CollectResidency(const NativeLibraryPrefetcher::AddressRange& range,
   return true;
 }
 
-void DumpResidency(std::unique_ptr<std::vector<TimestampAndResidency>> data) {
+void DumpResidency(const NativeLibraryPrefetcher::AddressRange& range,
+                   std::unique_ptr<std::vector<TimestampAndResidency>> data) {
   auto path = base::FilePath(
       base::StringPrintf("/data/local/tmp/chrome/residency-%d.txt", getpid()));
   auto file =
@@ -155,6 +156,15 @@ void DumpResidency(std::unique_ptr<std::vector<TimestampAndResidency>> data) {
                 << path.value();
     return;
   }
+
+  // First line: start-end of text range.
+  CheckOrderingSanity();
+  CHECK_LT(range.first, kStartOfText);
+  CHECK_LT(kEndOfText, range.second);
+  auto start_end =
+      base::StringPrintf("%" PRIuS " %" PRIuS "\n", kStartOfText - range.first,
+                         kEndOfText - range.first);
+  file.WriteAtCurrentPos(start_end.c_str(), start_end.size());
 
   for (const auto& data_point : *data) {
     auto timestamp =
@@ -300,7 +310,7 @@ void NativeLibraryPrefetcher::PeriodicallyCollectResidency() {
       return;
     usleep(2e5);
   }
-  DumpResidency(std::move(data));
+  DumpResidency(range, std::move(data));
 #else
   CHECK(false) << "Only supported on ARM";
 #endif
