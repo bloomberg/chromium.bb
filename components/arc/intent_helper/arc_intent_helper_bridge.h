@@ -14,11 +14,9 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/common/intent_helper.mojom.h"
-#include "components/arc/connection_observer.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "url/gurl.h"
 
 class KeyedServiceBaseFactory;
@@ -35,7 +33,6 @@ class IntentFilter;
 // Receives intents from ARC.
 class ArcIntentHelperBridge
     : public KeyedService,
-      public ConnectionObserver<mojom::IntentHelperInstance>,
       public mojom::IntentHelperHost {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -57,10 +54,6 @@ class ArcIntentHelperBridge
   void AddObserver(ArcIntentHelperObserver* observer);
   void RemoveObserver(ArcIntentHelperObserver* observer);
   bool HasObserver(ArcIntentHelperObserver* observer) const;
-
-  // ConnectionObserver<mojom::IntentHelperInstance>
-  void OnConnectionReady() override;
-  void OnConnectionClosed() override;
 
   // mojom::IntentHelperHost
   void OnIconInvalidated(const std::string& package_name) override;
@@ -124,7 +117,6 @@ class ArcIntentHelperBridge
   content::BrowserContext* const context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
-  mojo::Binding<mojom::IntentHelperHost> binding_;
   std::unique_ptr<OpenUrlDelegate> open_url_delegate_;
   internal::ActivityIconLoader icon_loader_;
 

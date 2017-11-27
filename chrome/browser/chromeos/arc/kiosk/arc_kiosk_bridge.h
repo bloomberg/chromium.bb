@@ -9,9 +9,7 @@
 
 #include "base/macros.h"
 #include "components/arc/common/kiosk.mojom.h"
-#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;
@@ -23,7 +21,6 @@ class ArcBridgeService;
 
 // TODO(hidehiko): Consider to migrate this class into ArcKioskAppService.
 class ArcKioskBridge : public KeyedService,
-                       public ConnectionObserver<mojom::KioskInstance>,
                        public mojom::KioskHost {
  public:
   // Received IPCs are passed to this delegate.
@@ -47,9 +44,6 @@ class ArcKioskBridge : public KeyedService,
                  ArcBridgeService* bridge_service);
   ~ArcKioskBridge() override;
 
-  // ConnectionObserver<mojom::KioskInstance> overrides.
-  void OnConnectionReady() override;
-
   // mojom::KioskHost overrides.
   void OnMaintenanceSessionCreated(int32_t session_id) override;
   void OnMaintenanceSessionFinished(int32_t session_id, bool success) override;
@@ -60,7 +54,6 @@ class ArcKioskBridge : public KeyedService,
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
-  mojo::Binding<mojom::KioskHost> binding_;
   Delegate* const delegate_;
 
   // Tracks current maintenance session id.

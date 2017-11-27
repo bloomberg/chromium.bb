@@ -49,24 +49,13 @@ ArcEnterpriseReportingService::ArcEnterpriseReportingService(
     content::BrowserContext* context,
     ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),
-      binding_(this),
       weak_ptr_factory_(this) {
-  arc_bridge_service_->enterprise_reporting()->AddObserver(this);
+  arc_bridge_service_->enterprise_reporting()->SetHost(this);
 }
 
 ArcEnterpriseReportingService::~ArcEnterpriseReportingService() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  arc_bridge_service_->enterprise_reporting()->RemoveObserver(this);
-}
-
-void ArcEnterpriseReportingService::OnConnectionReady() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->enterprise_reporting(), Init);
-  DCHECK(instance);
-  mojom::EnterpriseReportingHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  instance->Init(std::move(host_proxy));
+  arc_bridge_service_->enterprise_reporting()->SetHost(nullptr);
 }
 
 void ArcEnterpriseReportingService::ReportManagementState(

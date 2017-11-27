@@ -340,23 +340,26 @@ ArcBluetoothBridge::ConnectionObserverImpl<mojom::AppInstance,
 }
 
 template <>
-ConnectionHolder<mojom::IntentHelperInstance>*
-ArcBluetoothBridge::ConnectionObserverImpl<mojom::IntentHelperInstance,
-                                           void>::GetHolder() {
+ConnectionHolder<mojom::IntentHelperInstance, mojom::IntentHelperHost>*
+ArcBluetoothBridge::ConnectionObserverImpl<
+    mojom::IntentHelperInstance,
+    mojom::IntentHelperHost>::GetHolder() {
   return arc_bridge_service()->intent_helper();
 }
 
 ArcBluetoothBridge::ArcBluetoothBridge(content::BrowserContext* context,
                                        ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service), binding_(this), weak_factory_(this) {
+    : arc_bridge_service_(bridge_service), weak_factory_(this) {
+  arc_bridge_service_->bluetooth()->SetHost(this);
   arc_bridge_service_->bluetooth()->AddObserver(this);
 
   app_observer_ = std::make_unique<
       ConnectionObserverImpl<mojom::AppInstance, mojom::AppHost>>(
       this, arc_bridge_service_);
-  intent_helper_observer_ = std::make_unique<
-      ConnectionObserverImpl<mojom::IntentHelperInstance, void>>(
-      this, arc_bridge_service_);
+  intent_helper_observer_ =
+      std::make_unique<ConnectionObserverImpl<mojom::IntentHelperInstance,
+                                              mojom::IntentHelperHost>>(
+          this, arc_bridge_service_);
 
   if (BluetoothAdapterFactory::IsBluetoothSupported()) {
     VLOG(1) << "Registering bluetooth adapter.";
@@ -374,6 +377,7 @@ ArcBluetoothBridge::~ArcBluetoothBridge() {
     bluetooth_adapter_->RemoveObserver(this);
 
   arc_bridge_service_->bluetooth()->RemoveObserver(this);
+  arc_bridge_service_->bluetooth()->SetHost(nullptr);
 }
 
 void ArcBluetoothBridge::OnAdapterInitialized(
@@ -391,14 +395,7 @@ void ArcBluetoothBridge::OnAdapterInitialized(
 }
 
 void ArcBluetoothBridge::OnConnectionReady() {
-  mojom::BluetoothInstance* bluetooth_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->bluetooth(), Init);
-  DCHECK(bluetooth_instance);
-
-  mojom::BluetoothHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  bluetooth_instance->Init(std::move(host_proxy));
-
+  // TODO(hidehiko): Replace this by ConnectionHolder::IsConnected().
   is_bluetooth_instance_up_ = true;
 }
 

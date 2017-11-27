@@ -12,9 +12,7 @@
 #include "base/macros.h"
 #include "components/arc/common/oemcrypto.mojom.h"
 #include "components/arc/common/oemcrypto_daemon.mojom.h"
-#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;
@@ -25,7 +23,6 @@ namespace arc {
 class ArcBridgeService;
 
 class ArcOemCryptoBridge : public KeyedService,
-                           public ConnectionObserver<mojom::OemCryptoInstance>,
                            public mojom::OemCryptoHost {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -37,9 +34,6 @@ class ArcOemCryptoBridge : public KeyedService,
                      ArcBridgeService* bridge_service);
   ~ArcOemCryptoBridge() override;
 
-  // Overridden from ConnectionObserver<mojom::OemCryptoInstance>:
-  void OnConnectionReady() override;
-
   // OemCrypto Mojo host interface
   void Connect(mojom::OemCryptoServiceRequest request) override;
 
@@ -49,7 +43,6 @@ class ArcOemCryptoBridge : public KeyedService,
   void ConnectToDaemon(mojom::OemCryptoServiceRequest request);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-  mojo::Binding<mojom::OemCryptoHost> binding_;
   arc_oemcrypto::mojom::OemCryptoHostDaemonPtr oemcrypto_host_daemon_ptr_;
 
   // WeakPtrFactory to use for callbacks.

@@ -16,7 +16,6 @@
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;
@@ -28,7 +27,6 @@ class ArcBridgeService;
 
 // Collects information from other ArcServices and send UMA metrics.
 class ArcMetricsService : public KeyedService,
-                          public ConnectionObserver<mojom::MetricsInstance>,
                           public mojom::MetricsHost {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -39,10 +37,6 @@ class ArcMetricsService : public KeyedService,
   ArcMetricsService(content::BrowserContext* context,
                     ArcBridgeService* bridge_service);
   ~ArcMetricsService() override;
-
-  // ConnectionObserver<mojom::MetricsInstance> overrides.
-  void OnConnectionReady() override;
-  void OnConnectionClosed() override;
 
   // Implementations for ConnectionObserver<mojom::ProcessInstance>.
   void OnProcessConnectionReady();
@@ -80,8 +74,6 @@ class ArcMetricsService : public KeyedService,
   THREAD_CHECKER(thread_checker_);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-
-  mojo::Binding<mojom::MetricsHost> binding_;
 
   ProcessObserver process_observer_;
   base::RepeatingTimer timer_;

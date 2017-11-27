@@ -89,8 +89,8 @@ ArcNotificationManager::ArcNotificationManager(
     message_center::MessageCenter* message_center)
     : arc_bridge_service_(bridge_service),
       main_profile_id_(main_profile_id),
-      message_center_(message_center),
-      binding_(this) {
+      message_center_(message_center) {
+  arc_bridge_service_->notifications()->SetHost(this);
   arc_bridge_service_->notifications()->AddObserver(this);
   if (!message_center::MessageViewFactory::HasCustomNotificationViewFactory())
     SetCustomNotificationViewFactory();
@@ -98,18 +98,12 @@ ArcNotificationManager::ArcNotificationManager(
 
 ArcNotificationManager::~ArcNotificationManager() {
   arc_bridge_service_->notifications()->RemoveObserver(this);
+  arc_bridge_service_->notifications()->SetHost(nullptr);
 }
 
 void ArcNotificationManager::OnConnectionReady() {
   DCHECK(!ready_);
-
-  auto* notifications_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->notifications(), Init);
-  DCHECK(notifications_instance);
-
-  mojom::NotificationsHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  notifications_instance->Init(std::move(host_proxy));
+  // TODO(hidehiko): Replace this by ConnectionHolder::IsConnected().
   ready_ = true;
 }
 

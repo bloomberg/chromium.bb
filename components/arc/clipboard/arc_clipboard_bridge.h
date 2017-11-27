@@ -10,9 +10,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/common/clipboard.mojom.h"
-#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/clipboard/clipboard_observer.h"
 
 namespace content {
@@ -25,7 +23,6 @@ class ArcBridgeService;
 
 class ArcClipboardBridge : public KeyedService,
                            public ui::ClipboardObserver,
-                           public ConnectionObserver<mojom::ClipboardInstance>,
                            public mojom::ClipboardHost {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -36,9 +33,6 @@ class ArcClipboardBridge : public KeyedService,
   ArcClipboardBridge(content::BrowserContext* context,
                      ArcBridgeService* bridge_service);
   ~ArcClipboardBridge() override;
-
-  // ConnectionObserver<mojom::ClipboardInstance> overrides.
-  void OnConnectionReady() override;
 
   // ClipboardObserver overrides.
   void OnClipboardDataChanged() override;
@@ -51,7 +45,6 @@ class ArcClipboardBridge : public KeyedService,
 
  private:
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-  mojo::Binding<mojom::ClipboardHost> binding_;
 
   bool event_originated_at_instance_;
 

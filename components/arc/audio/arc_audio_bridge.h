@@ -12,7 +12,6 @@
 #include "components/arc/common/audio.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;
@@ -53,8 +52,6 @@ class ArcAudioBridge : public KeyedService,
   void SendVolumeState();
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-
-  mojo::Binding<mojom::AudioHost> binding_;
 
   chromeos::CrasAudioHandler* cras_audio_handler_ = nullptr;
 

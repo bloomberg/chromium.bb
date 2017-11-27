@@ -14,10 +14,8 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 #include "components/arc/common/boot_phase_monitor.mojom.h"
-#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 class BrowserContextKeyedServiceFactory;
 
@@ -35,7 +33,6 @@ class ArcInstanceThrottle;
 // in response.
 class ArcBootPhaseMonitorBridge
     : public KeyedService,
-      public ConnectionObserver<mojom::BootPhaseMonitorInstance>,
       public mojom::BootPhaseMonitorHost,
       public ArcSessionManager::Observer,
       public SessionRestoreObserver {
@@ -71,9 +68,6 @@ class ArcBootPhaseMonitorBridge
                             ArcBridgeService* bridge_service);
   ~ArcBootPhaseMonitorBridge() override;
 
-  // ConnectionObserver<mojom::BootPhaseMonitorInstance>
-  void OnConnectionReady() override;
-
   // mojom::BootPhaseMonitorHost
   void OnBootCompleted() override;
 
@@ -108,7 +102,6 @@ class ArcBootPhaseMonitorBridge
   content::BrowserContext* const context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   const AccountId account_id_;
-  mojo::Binding<mojom::BootPhaseMonitorHost> binding_;
   std::unique_ptr<Delegate> delegate_;
 
   // Indicates whether all extensions for the profile have been loaded.

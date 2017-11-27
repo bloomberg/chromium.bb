@@ -50,22 +50,12 @@ ArcTtsService* ArcTtsService::GetForBrowserContext(
 ArcTtsService::ArcTtsService(content::BrowserContext* context,
                              ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),
-      binding_(this),
       tts_controller_(nullptr) {
-  arc_bridge_service_->tts()->AddObserver(this);
+  arc_bridge_service_->tts()->SetHost(this);
 }
 
 ArcTtsService::~ArcTtsService() {
-  arc_bridge_service_->tts()->RemoveObserver(this);
-}
-
-void ArcTtsService::OnConnectionReady() {
-  mojom::TtsInstance* tts_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->tts(), Init);
-  DCHECK(tts_instance);
-  mojom::TtsHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  tts_instance->Init(std::move(host_proxy));
+  arc_bridge_service_->tts()->SetHost(nullptr);
 }
 
 void ArcTtsService::OnTtsEvent(uint32_t id,

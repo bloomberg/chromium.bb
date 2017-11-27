@@ -361,7 +361,8 @@ ArcNetHostImpl* ArcNetHostImpl::GetForBrowserContext(
 
 ArcNetHostImpl::ArcNetHostImpl(content::BrowserContext* context,
                                ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service), binding_(this), weak_factory_(this) {
+    : arc_bridge_service_(bridge_service), weak_factory_(this) {
+  arc_bridge_service_->net()->SetHost(this);
   arc_bridge_service_->net()->AddObserver(this);
 }
 
@@ -372,17 +373,11 @@ ArcNetHostImpl::~ArcNetHostImpl() {
     GetNetworkConnectionHandler()->RemoveObserver(this);
   }
   arc_bridge_service_->net()->RemoveObserver(this);
+  arc_bridge_service_->net()->SetHost(nullptr);
 }
 
 void ArcNetHostImpl::OnConnectionReady() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  mojom::NetHostPtr host;
-  binding_.Bind(MakeRequest(&host));
-  auto* instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(), Init);
-  DCHECK(instance);
-  instance->Init(std::move(host));
 
   if (chromeos::NetworkHandler::IsInitialized()) {
     GetStateHandler()->AddObserver(this, FROM_HERE);

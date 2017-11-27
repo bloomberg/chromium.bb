@@ -14,7 +14,6 @@
 #include "components/arc/common/auth.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 class Profile;
 
@@ -44,7 +43,6 @@ class ArcAuthService : public KeyedService,
   static const char kArcServiceName[];
 
   // ConnectionObserver<mojom::AuthInstance>:
-  void OnConnectionReady() override;
   void OnConnectionClosed() override;
 
   // mojom::AuthHost:
@@ -70,8 +68,6 @@ class ArcAuthService : public KeyedService,
 
   Profile* const profile_;
   ArcBridgeService* const arc_bridge_service_;
-
-  mojo::Binding<mojom::AuthHost> binding_;
 
   std::unique_ptr<ArcFetcherBase> fetcher_;
 

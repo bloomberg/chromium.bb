@@ -11,9 +11,7 @@
 
 #include "base/macros.h"
 #include "components/arc/common/midis.mojom.h"
-#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;
@@ -24,7 +22,6 @@ namespace arc {
 class ArcBridgeService;
 
 class ArcMidisBridge : public KeyedService,
-                       public ConnectionObserver<mojom::MidisInstance>,
                        public mojom::MidisHost {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -34,9 +31,6 @@ class ArcMidisBridge : public KeyedService,
   ArcMidisBridge(content::BrowserContext* context,
                  ArcBridgeService* bridge_service);
   ~ArcMidisBridge() override;
-
-  // Overridden from ConnectionObserver<mojom::MidisInstance>:
-  void OnConnectionReady() override;
 
   // Midis Mojo host interface
   void Connect(mojom::MidisServerRequest request,
@@ -48,7 +42,6 @@ class ArcMidisBridge : public KeyedService,
                                  bool result);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-  mojo::Binding<mojom::MidisHost> binding_;
   mojom::MidisHostPtr midis_host_ptr_;
 
   // WeakPtrFactory to use for callbacks.

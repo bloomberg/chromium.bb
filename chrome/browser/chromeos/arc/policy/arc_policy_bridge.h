@@ -16,7 +16,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;
@@ -88,7 +87,6 @@ class ArcPolicyBridge : public KeyedService,
   content::BrowserContext* const context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
-  mojo::Binding<PolicyHost> binding_;
   policy::PolicyService* policy_service_ = nullptr;
   bool is_managed_ = false;
 

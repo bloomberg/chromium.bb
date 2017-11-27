@@ -15,7 +15,6 @@
 #include "components/arc/common/accessibility_helper.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/accessibility/ax_host_delegate.h"
 #include "ui/arc/notification/arc_notification_surface_manager.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -106,7 +105,6 @@ class ArcAccessibilityHelperBridge
 
   Profile* const profile_;
   ArcBridgeService* const arc_bridge_service_;
-  mojo::Binding<mojom::AccessibilityHelperHost> binding_;
   std::map<int32_t, std::unique_ptr<AXTreeSourceArc>> task_id_to_tree_;
   std::map<std::string, std::unique_ptr<AXTreeSourceArc>>
       notification_key_to_tree_;

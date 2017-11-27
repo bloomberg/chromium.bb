@@ -15,7 +15,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/prefs/pref_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/scoped_nss_types.h"
@@ -79,7 +78,6 @@ class ArcCertStoreBridge
 
   content::BrowserContext* const context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-  mojo::Binding<CertStoreHost> binding_;
   policy::PolicyService* policy_service_ = nullptr;
   // Set to true if at least one ARC app is whitelisted by KeyPermissions
   // policy.
