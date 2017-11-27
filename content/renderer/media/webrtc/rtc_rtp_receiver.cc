@@ -17,14 +17,14 @@ uintptr_t RTCRtpReceiver::getId(
 }
 
 RTCRtpReceiver::RTCRtpReceiver(
-    rtc::scoped_refptr<webrtc::RtpReceiverInterface> webrtc_rtp_receiver,
+    rtc::scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver,
     std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_adapter,
     std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
         stream_adapter_refs)
-    : webrtc_rtp_receiver_(std::move(webrtc_rtp_receiver)),
+    : webrtc_receiver_(std::move(webrtc_receiver)),
       track_adapter_(std::move(track_adapter)),
       stream_adapter_refs_(std::move(stream_adapter_refs)) {
-  DCHECK(webrtc_rtp_receiver_);
+  DCHECK(webrtc_receiver_);
   DCHECK(track_adapter_);
 }
 
@@ -36,17 +36,17 @@ std::unique_ptr<RTCRtpReceiver> RTCRtpReceiver::ShallowCopy() const {
   for (size_t i = 0; i < stream_adapter_refs_.size(); ++i) {
     stream_adapter_ref_copies[i] = stream_adapter_refs_[i]->Copy();
   }
-  return std::make_unique<RTCRtpReceiver>(webrtc_rtp_receiver_,
+  return std::make_unique<RTCRtpReceiver>(webrtc_receiver_,
                                           track_adapter_->Copy(),
                                           std::move(stream_adapter_ref_copies));
 }
 
 uintptr_t RTCRtpReceiver::Id() const {
-  return getId(webrtc_rtp_receiver_.get());
+  return getId(webrtc_receiver_.get());
 }
 
 const blink::WebMediaStreamTrack& RTCRtpReceiver::Track() const {
-  DCHECK(track_adapter_->webrtc_track() == webrtc_rtp_receiver_->track());
+  DCHECK(track_adapter_->webrtc_track() == webrtc_receiver_->track());
   return track_adapter_->web_track();
 }
 
@@ -60,7 +60,7 @@ blink::WebVector<blink::WebMediaStream> RTCRtpReceiver::Streams() const {
 
 blink::WebVector<std::unique_ptr<blink::WebRTCRtpContributingSource>>
 RTCRtpReceiver::GetSources() {
-  auto webrtc_sources = webrtc_rtp_receiver_->GetSources();
+  auto webrtc_sources = webrtc_receiver_->GetSources();
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpContributingSource>> sources(
       webrtc_sources.size());
   for (size_t i = 0; i < webrtc_sources.size(); ++i) {
@@ -69,8 +69,12 @@ RTCRtpReceiver::GetSources() {
   return sources;
 }
 
+webrtc::RtpReceiverInterface* RTCRtpReceiver::webrtc_receiver() const {
+  return webrtc_receiver_.get();
+}
+
 const webrtc::MediaStreamTrackInterface& RTCRtpReceiver::webrtc_track() const {
-  DCHECK(track_adapter_->webrtc_track() == webrtc_rtp_receiver_->track());
+  DCHECK(track_adapter_->webrtc_track() == webrtc_receiver_->track());
   DCHECK(track_adapter_->webrtc_track());
   return *track_adapter_->webrtc_track();
 }

@@ -171,8 +171,17 @@ MockPeerConnectionImpl::MockPeerConnectionImpl(
       observer_(observer) {
   ON_CALL(*this, SetLocalDescription(_, _)).WillByDefault(testing::Invoke(
       this, &MockPeerConnectionImpl::SetLocalDescriptionWorker));
+  // TODO(hbos): Remove once no longer mandatory to implement.
   ON_CALL(*this, SetRemoteDescription(_, _)).WillByDefault(testing::Invoke(
       this, &MockPeerConnectionImpl::SetRemoteDescriptionWorker));
+  ON_CALL(*this, SetRemoteDescriptionForMock(_, _))
+      .WillByDefault(testing::Invoke(
+          [this](
+              std::unique_ptr<webrtc::SessionDescriptionInterface>* desc,
+              rtc::scoped_refptr<webrtc::SetRemoteDescriptionObserverInterface>*
+                  observer) {
+            SetRemoteDescriptionWorker(nullptr, desc->release());
+          }));
 }
 
 MockPeerConnectionImpl::~MockPeerConnectionImpl() {}
