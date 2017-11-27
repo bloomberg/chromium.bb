@@ -498,6 +498,10 @@ typedef struct SPEED_FEATURES {
   int use_transform_domain_distortion;
 
   GM_SEARCH_TYPE gm_search_type;
+
+  // Do limited interpolation filter search for dual filters, since best choice
+  // usually includes EIGHTTAP_REGULAR.
+  int use_fast_interpolation_filter_search;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

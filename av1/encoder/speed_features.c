@@ -141,6 +141,9 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
 #if CONFIG_EXT_PARTITION_TYPES
     sf->prune_ext_partition_types_search = 1;
 #endif  // CONFIG_EXT_PARTITION_TYPES
+#if CONFIG_DUAL_FILTER
+    sf->use_fast_interpolation_filter_search = 1;
+#endif  // CONFIG_DUAL_FILTER
   }
 
   if (speed >= 2) {
@@ -453,6 +456,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   // Set this at the appropriate speed levels
   sf->use_transform_domain_distortion = 0;
   sf->gm_search_type = GM_FULL_SEARCH;
+  sf->use_fast_interpolation_filter_search = 0;
 
   if (oxcf->mode == GOOD
 #if CONFIG_XIPHRC

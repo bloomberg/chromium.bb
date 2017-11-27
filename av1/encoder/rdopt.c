@@ -7405,38 +7405,118 @@ int64_t interpolation_filter_search(
       int best_in_temp = 0;
       InterpFilters best_filters = mbmi->interp_filters;
       restore_dst_buf(xd, *tmp_dst);
-      // EIGHTTAP_REGULAR mode is calculated beforehand
-      for (i = 1; i < filter_set_size; ++i) {
+
+#if CONFIG_DUAL_FILTER  // Speed feature use_fast_interpolation_filter_search
+      if (cpi->sf.use_fast_interpolation_filter_search) {
         int tmp_skip_sb = 0;
         int64_t tmp_skip_sse = INT64_MAX;
         int tmp_rs;
         int64_t tmp_rd;
+
+        // default to (R,R): EIGHTTAP_REGULARxEIGHTTAP_REGULAR
+        int best_dual_mode = 0;
+        // Find best of {R}x{R,Sm,Sh}
+        // EIGHTTAP_REGULAR mode is calculated beforehand
+        for (i = 1; i < SWITCHABLE_FILTERS; ++i) {
+          tmp_skip_sb = 0;
+          tmp_skip_sse = INT64_MAX;
+
+          mbmi->interp_filters =
+              av1_make_interp_filters(filter_sets[i][0], filter_sets[i][1]);
+
+          tmp_rs = av1_get_switchable_rate(cm, x, xd);
+          av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst,
+                                        bsize);
+          model_rd_for_sb(cpi, bsize, x, xd, 0, MAX_MB_PLANE - 1, &tmp_rate,
+                          &tmp_dist, &tmp_skip_sb, &tmp_skip_sse);
+          tmp_rd = RDCOST(x->rdmult, tmp_rs + tmp_rate, tmp_dist);
+
+          if (tmp_rd < *rd) {
+            best_dual_mode = i;
+
+            *rd = tmp_rd;
+            *switchable_rate = av1_get_switchable_rate(cm, x, xd);
+            best_filters = mbmi->interp_filters;
+            *skip_txfm_sb = tmp_skip_sb;
+            *skip_sse_sb = tmp_skip_sse;
+            best_in_temp = !best_in_temp;
+            if (best_in_temp) {
+              restore_dst_buf(xd, *orig_dst);
+            } else {
+              restore_dst_buf(xd, *tmp_dst);
+            }
+          }
+        }
+
+        // From best of horizontal EIGHTTAP_REGULAR modes, check vertical modes
+        for (i = best_dual_mode + SWITCHABLE_FILTERS; i < filter_set_size;
+             i += SWITCHABLE_FILTERS) {
+          tmp_skip_sb = 0;
+          tmp_skip_sse = INT64_MAX;
+
+          mbmi->interp_filters =
+              av1_make_interp_filters(filter_sets[i][0], filter_sets[i][1]);
+
+          tmp_rs = av1_get_switchable_rate(cm, x, xd);
+          av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst,
+                                        bsize);
+          model_rd_for_sb(cpi, bsize, x, xd, 0, MAX_MB_PLANE - 1, &tmp_rate,
+                          &tmp_dist, &tmp_skip_sb, &tmp_skip_sse);
+          tmp_rd = RDCOST(x->rdmult, tmp_rs + tmp_rate, tmp_dist);
+
+          if (tmp_rd < *rd) {
+            *rd = tmp_rd;
+            *switchable_rate = av1_get_switchable_rate(cm, x, xd);
+            best_filters = mbmi->interp_filters;
+            *skip_txfm_sb = tmp_skip_sb;
+            *skip_sse_sb = tmp_skip_sse;
+            best_in_temp = !best_in_temp;
+            if (best_in_temp) {
+              restore_dst_buf(xd, *orig_dst);
+            } else {
+              restore_dst_buf(xd, *tmp_dst);
+            }
+          }
+        }
+      } else {
+#endif  // CONFIG_DUAL_FILTER Speed feature use_fast_interpolation_filter_search
+        // EIGHTTAP_REGULAR mode is calculated beforehand
+        for (i = 1; i < filter_set_size; ++i) {
+          int tmp_skip_sb = 0;
+          int64_t tmp_skip_sse = INT64_MAX;
+          int tmp_rs;
+          int64_t tmp_rd;
 #if CONFIG_DUAL_FILTER
-        mbmi->interp_filters =
-            av1_make_interp_filters(filter_sets[i][0], filter_sets[i][1]);
+          mbmi->interp_filters =
+              av1_make_interp_filters(filter_sets[i][0], filter_sets[i][1]);
 #else
         mbmi->interp_filters = av1_broadcast_interp_filter((InterpFilter)i);
 #endif  // CONFIG_DUAL_FILTER
-        tmp_rs = av1_get_switchable_rate(cm, x, xd);
-        av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
-        model_rd_for_sb(cpi, bsize, x, xd, 0, MAX_MB_PLANE - 1, &tmp_rate,
-                        &tmp_dist, &tmp_skip_sb, &tmp_skip_sse);
-        tmp_rd = RDCOST(x->rdmult, tmp_rs + tmp_rate, tmp_dist);
+          tmp_rs = av1_get_switchable_rate(cm, x, xd);
+          av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst,
+                                        bsize);
+          model_rd_for_sb(cpi, bsize, x, xd, 0, MAX_MB_PLANE - 1, &tmp_rate,
+                          &tmp_dist, &tmp_skip_sb, &tmp_skip_sse);
+          tmp_rd = RDCOST(x->rdmult, tmp_rs + tmp_rate, tmp_dist);
 
-        if (tmp_rd < *rd) {
-          *rd = tmp_rd;
-          *switchable_rate = av1_get_switchable_rate(cm, x, xd);
-          best_filters = mbmi->interp_filters;
-          *skip_txfm_sb = tmp_skip_sb;
-          *skip_sse_sb = tmp_skip_sse;
-          best_in_temp = !best_in_temp;
-          if (best_in_temp) {
-            restore_dst_buf(xd, *orig_dst);
-          } else {
-            restore_dst_buf(xd, *tmp_dst);
+          if (tmp_rd < *rd) {
+            *rd = tmp_rd;
+            *switchable_rate = av1_get_switchable_rate(cm, x, xd);
+            best_filters = mbmi->interp_filters;
+            *skip_txfm_sb = tmp_skip_sb;
+            *skip_sse_sb = tmp_skip_sse;
+            best_in_temp = !best_in_temp;
+            if (best_in_temp) {
+              restore_dst_buf(xd, *orig_dst);
+            } else {
+              restore_dst_buf(xd, *tmp_dst);
+            }
           }
         }
+#if CONFIG_DUAL_FILTER  // Speed feature use_fast_interpolation_filter_search
       }
+#endif  // CONFIG_DUAL_FILTER Speed feature use_fast_interpolation_filter_search
+
       if (best_in_temp) {
         restore_dst_buf(xd, *tmp_dst);
       } else {
