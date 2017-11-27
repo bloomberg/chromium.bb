@@ -357,7 +357,6 @@ void PermissionContextBase::PermissionDecided(
     const GURL& embedding_origin,
     bool user_gesture,
     const BrowserPermissionCallback& callback,
-    bool persist,
     ContentSetting content_setting) {
   PermissionRequestGestureType gesture_type =
       user_gesture ? PermissionRequestGestureType::GESTURE
@@ -367,6 +366,7 @@ void PermissionContextBase::PermissionDecided(
   DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
          content_setting == CONTENT_SETTING_BLOCK ||
          content_setting == CONTENT_SETTING_DEFAULT);
+  bool persist = true;
   if (content_setting == CONTENT_SETTING_ALLOW) {
     PermissionUmaUtil::PermissionGranted(content_settings_type_, gesture_type,
                                          requesting_origin, profile_);
@@ -377,6 +377,7 @@ void PermissionContextBase::PermissionDecided(
     PermissionUmaUtil::PermissionDismissed(content_settings_type_, gesture_type,
                                            requesting_origin, profile_);
 
+    persist = false;
     if (PermissionDecisionAutoBlocker::GetForProfile(profile_)
             ->RecordDismissAndEmbargo(requesting_origin,
                                       content_settings_type_)) {

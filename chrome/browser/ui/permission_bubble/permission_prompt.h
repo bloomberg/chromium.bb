@@ -33,7 +33,6 @@ class PermissionPrompt {
     // deleted upon navigation and so on.
     virtual const std::vector<PermissionRequest*>& Requests() = 0;
 
-    virtual void TogglePersist(bool new_value) = 0;
     virtual void Accept() = 0;
     virtual void Deny() = 0;
     virtual void Closing() = 0;

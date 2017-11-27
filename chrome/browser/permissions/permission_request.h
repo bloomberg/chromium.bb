@@ -110,9 +110,6 @@ class PermissionRequest {
   // eventually be called on every request which is not unregistered.
   virtual void RequestFinished() = 0;
 
-  // True if a persistence toggle should be shown in the UI for this request.
-  virtual bool ShouldShowPersistenceToggle() const;
-
   // Used to record UMA metrics for permission requests.
   virtual PermissionRequestType GetPermissionRequestType() const = 0;
 
@@ -125,15 +122,7 @@ class PermissionRequest {
   // this permission request.
   virtual ContentSettingsType GetContentSettingsType() const;
 
-  void set_persist(bool persist) { persist_ = persist; }
-
- protected:
-  bool persist() const { return persist_; }
-
  private:
-  // Whether or not the response for this prompt should be persisted.
-  bool persist_;
-
   DISALLOW_COPY_AND_ASSIGN(PermissionRequest);
 };
 

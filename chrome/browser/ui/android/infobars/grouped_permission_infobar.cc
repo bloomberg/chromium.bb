@@ -19,18 +19,6 @@ GroupedPermissionInfoBar::GroupedPermissionInfoBar(
 GroupedPermissionInfoBar::~GroupedPermissionInfoBar() {
 }
 
-void GroupedPermissionInfoBar::ProcessButton(int action) {
-  // Check if the delegate asked us to display a persistence toggle. If so,
-  // inform it of the toggle state.
-  GroupedPermissionInfoBarDelegate* delegate = GetDelegate();
-  if (delegate->ShouldShowPersistenceToggle()) {
-    delegate->set_persist(PermissionInfoBar::IsSwitchOn(
-        base::android::AttachCurrentThread(), GetJavaInfoBar()));
-  }
-
-  ConfirmInfoBar::ProcessButton(action);
-}
-
 base::android::ScopedJavaLocalRef<jobject>
 GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   GroupedPermissionInfoBarDelegate* delegate = GetDelegate();
@@ -51,8 +39,7 @@ GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
   return PermissionInfoBar::CreateRenderInfoBarHelper(
       env, permission_icon, GetTab()->GetJavaObject(), nullptr, message_text,
-      link_text, ok_button_text, cancel_button_text, content_settings_types,
-      delegate->ShouldShowPersistenceToggle());
+      link_text, ok_button_text, cancel_button_text, content_settings_types);
 }
 
 GroupedPermissionInfoBarDelegate* GroupedPermissionInfoBar::GetDelegate() {

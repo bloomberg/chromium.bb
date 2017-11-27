@@ -36,14 +36,14 @@ public class QuotaTest {
 
     public QuotaTest() {}
 
-    private void testQuotaPermissionsPlumbing(String script, int numUpdates, boolean withGesture,
-            boolean isDialog, boolean hasSwitch, boolean toggleSwitch) throws Exception {
+    private void testQuotaPermissionsPlumbing(
+            String script, int numUpdates, boolean withGesture, boolean isDialog) throws Exception {
         Tab tab = mPermissionRule.getActivity().getActivityTab();
         PermissionUpdateWaiter updateWaiter =
                 new PermissionUpdateWaiter("Count: ", mPermissionRule.getActivity());
         tab.addObserver(updateWaiter);
-        mPermissionRule.runAllowTest(updateWaiter, TEST_FILE, script, numUpdates, withGesture,
-                isDialog, hasSwitch, toggleSwitch);
+        mPermissionRule.runAllowTest(
+                updateWaiter, TEST_FILE, script, numUpdates, withGesture, isDialog);
         tab.removeObserver(updateWaiter);
     }
 
@@ -56,6 +56,6 @@ public class QuotaTest {
     @Feature({"QuotaPermissions"})
     @CommandLineFlags.Add("disable-features=" + PermissionTestRule.MODAL_FLAG)
     public void testQuotaShowsInfobar() throws Exception {
-        testQuotaPermissionsPlumbing("initiate_requestQuota(1024)", 1, false, false, false, false);
+        testQuotaPermissionsPlumbing("initiate_requestQuota(1024)", 1, false, false);
     }
 }

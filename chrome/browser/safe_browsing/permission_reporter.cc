@@ -114,21 +114,6 @@ PermissionReport::GestureType GestureTypeForReport(
   return PermissionReport::GESTURE_TYPE_UNSPECIFIED;
 }
 
-PermissionReport::PersistDecision PersistDecisionForReport(
-    PermissionPersistDecision persist_decision) {
-  switch (persist_decision) {
-    case PermissionPersistDecision::UNSPECIFIED:
-      return PermissionReport::PERSIST_DECISION_UNSPECIFIED;
-    case PermissionPersistDecision::PERSISTED:
-      return PermissionReport::PERSISTED;
-    case PermissionPersistDecision::NOT_PERSISTED:
-      return PermissionReport::NOT_PERSISTED;
-  }
-
-  NOTREACHED();
-  return PermissionReport::PERSIST_DECISION_UNSPECIFIED;
-}
-
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("permission_reporting", R"(
         semantics {
@@ -225,8 +210,8 @@ bool PermissionReporter::BuildReport(const PermissionReportInfo& report_info,
   report.set_action(PermissionActionForReport(report_info.action));
   report.set_source_ui(SourceUIForReport(report_info.source_ui));
   report.set_gesture(GestureTypeForReport(report_info.gesture_type));
-  report.set_persisted(
-      PersistDecisionForReport(report_info.persist_decision));
+  // The persistence experiment was removed in M64.
+  report.set_persisted(PermissionReport::PERSIST_DECISION_UNSPECIFIED);
   report.set_num_prior_dismissals(report_info.num_prior_dismissals);
   report.set_num_prior_ignores(report_info.num_prior_ignores);
 

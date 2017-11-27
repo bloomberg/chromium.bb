@@ -32,12 +32,6 @@ size_t GroupedPermissionInfoBarDelegate::PermissionCount() const {
   return permission_prompt_->PermissionCount();
 }
 
-bool GroupedPermissionInfoBarDelegate::ShouldShowPersistenceToggle() const {
-  if (!permission_prompt_)
-    return false;
-  return permission_prompt_->ShouldShowPersistenceToggle();
-}
-
 ContentSettingsType GroupedPermissionInfoBarDelegate::GetContentSettingType(
     size_t position) const {
   return permission_prompt_->GetContentSettingType(position);
@@ -52,20 +46,14 @@ base::string16 GroupedPermissionInfoBarDelegate::GetMessageText() const {
 }
 
 bool GroupedPermissionInfoBarDelegate::Accept() {
-  if (permission_prompt_) {
-    if (permission_prompt_->ShouldShowPersistenceToggle())
-      permission_prompt_->TogglePersist(persist_);
+  if (permission_prompt_)
     permission_prompt_->Accept();
-  }
   return true;
 }
 
 bool GroupedPermissionInfoBarDelegate::Cancel() {
-  if (permission_prompt_) {
-    if (permission_prompt_->ShouldShowPersistenceToggle())
-      permission_prompt_->TogglePersist(persist_);
+  if (permission_prompt_)
     permission_prompt_->Deny();
-  }
   return true;
 }
 
@@ -76,7 +64,7 @@ void GroupedPermissionInfoBarDelegate::InfoBarDismissed() {
 
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
     const base::WeakPtr<PermissionPromptAndroid>& permission_prompt)
-    : persist_(true), permission_prompt_(permission_prompt) {
+    : permission_prompt_(permission_prompt) {
   DCHECK(permission_prompt);
 }
 

@@ -34,14 +34,6 @@ enum class PermissionSourceUI {
   NUM,
 };
 
-// This should stay in sync with the PersistDecision enum in the permission
-// report message (src/chrome/common/safe_browsing/permission_report.proto).
-enum class PermissionPersistDecision {
-  UNSPECIFIED = 0,
-  PERSISTED = 1,
-  NOT_PERSISTED = 2,
-};
-
 // Any new values should be inserted immediately prior to NUM.
 enum class SafeBrowsingResponse {
   NOT_BLACKLISTED = 0,
@@ -71,7 +63,6 @@ struct PermissionReportInfo {
       PermissionAction action,
       PermissionSourceUI source_ui,
       PermissionRequestGestureType gesture_type,
-      PermissionPersistDecision persist_decision,
       int num_prior_dismissals,
       int num_prior_ignores);
 
@@ -82,7 +73,6 @@ struct PermissionReportInfo {
   PermissionAction action;
   PermissionSourceUI source_ui;
   PermissionRequestGestureType gesture_type;
-  PermissionPersistDecision persist_decision;
   int num_prior_dismissals;
   int num_prior_ignores;
 };
@@ -169,17 +159,6 @@ class PermissionUmaUtil {
   static void RecordPermissionPromptDenied(
       PermissionRequestType request_type,
       PermissionRequestGestureType gesture_type);
-
-  // A permission prompt was accepted or denied, and the prompt displayed a
-  // persistence toggle. Records whether the toggle was enabled (persist) or
-  // disabled (don't persist).
-  static void PermissionPromptAcceptedWithPersistenceToggle(
-      ContentSettingsType permission,
-      bool toggle_enabled);
-
-  static void PermissionPromptDeniedWithPersistenceToggle(
-      ContentSettingsType permission,
-      bool toggle_enabled);
 
   static void RecordWithBatteryBucket(const std::string& histogram);
 

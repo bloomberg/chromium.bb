@@ -1562,11 +1562,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Download
       </message>
 
-      <!-- PermissionInfoBar -->
-      <message name="IDS_PERMISSION_PROMPT_PERSIST_TEXT" desc="Toggle to persist a permission prompt decision">
-        Remember my decision
-      </message>
-
       <!-- TranslateInfoBar -->
       <message name="IDS_TRANSLATE_INFOBAR_TEXT" desc="Text to display on the translate infobar to offer a translate. [CHAR-LIMIT=64]" meaning="Android">
         This page is in <ph name="SOURCE_LANGUAGE">^1<ex>English</ex></ph>. Translate it to <ph name="TARGET_LANGUAGE">^2<ex>FRENCH</ex></ph>?

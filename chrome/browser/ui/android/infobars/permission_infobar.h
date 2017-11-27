@@ -23,11 +23,7 @@ class PermissionInfoBar {
       const base::string16& link_text,
       const base::string16& ok_button_text,
       const base::string16& cancel_button_text,
-      std::vector<int>& content_settings,
-      bool show_persistence_toggle);
-
-  static bool IsSwitchOn(JNIEnv* env,
-                         const base::android::JavaRef<jobject>& info_bar_obj);
+      std::vector<int>& content_settings);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PermissionInfoBar);
