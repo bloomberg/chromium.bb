@@ -65,29 +65,11 @@ class HWTestList(object):
     Args:
       *kwargs: overrides for the configs
     """
-    # Number of tests running in parallel in the INSTALLER suite.
-    INSTALLER_TESTS_NUM = 2
-    # Number of tests running in parallel in the asynchronous canary
-    # test suite
-    ASYNC_TEST_NUM = 2
-
-    # Set the number of machines for the au and qav suites. If we are
-    # constrained in the number of duts in the lab, only give 1 dut to each.
-    if (kwargs.get('num', constants.HWTEST_DEFAULT_NUM) >=
-        constants.HWTEST_DEFAULT_NUM):
-      installer_dict = dict(num=INSTALLER_TESTS_NUM)
-      async_dict = dict(num=ASYNC_TEST_NUM)
-    else:
-      installer_dict = dict(num=1)
-      async_dict = dict(num=1)
-
     installer_kwargs = kwargs.copy()
-    installer_kwargs.update(installer_dict)
     # Force au suite to run first.
     installer_kwargs['priority'] = constants.HWTEST_CQ_PRIORITY
 
     async_kwargs = kwargs.copy()
-    async_kwargs.update(async_dict)
     async_kwargs['priority'] = constants.HWTEST_POST_BUILD_PRIORITY
     async_kwargs['async'] = True
     async_kwargs['suite_min_duts'] = 1
@@ -137,7 +119,7 @@ class HWTestList(object):
       *kwargs: overrides for the configs
     """
     afdo_dict = dict(pool=constants.HWTEST_SUITES_POOL,
-                     timeout=120 * 60, num=1, async=True, retry=False,
+                     timeout=120 * 60, async=True, retry=False,
                      max_retries=None)
     afdo_dict.update(kwargs)
     return [config_lib.HWTestConfig('perf_v2', **afdo_dict)]
@@ -219,7 +201,7 @@ class HWTestList(object):
     sanity_dict = dict(pool=constants.HWTEST_MACH_POOL,
                        file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY)
     sanity_dict.update(kwargs)
-    sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
+    sanity_dict.update(dict(minimum_duts=1, suite_min_duts=1,
                             blocking=True))
     default_dict = dict(pool=constants.HWTEST_MACH_POOL,
                         suite_min_duts=3)
@@ -244,10 +226,10 @@ class HWTestList(object):
     # TODO(crbug.com/610807): Disable the HWTests for now, since we are having
     # issues getting them to run and complete in time.
     # return [config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
-    #                                num=8, pool=constants.HWTEST_MACH_POOL,
+    #                                pool=constants.HWTEST_MACH_POOL,
     #                                **default_dict),
     return [config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
-                                    num=3, pool=constants.HWTEST_MACH_POOL,
+                                    pool=constants.HWTEST_MACH_POOL,
                                     **default_dict)]
 
   def SharedPoolAndroidPFQ(self, **kwargs):
@@ -260,7 +242,7 @@ class HWTestList(object):
     sanity_dict = dict(pool=constants.HWTEST_MACH_POOL,
                        file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY)
     sanity_dict.update(kwargs)
-    sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
+    sanity_dict.update(dict(minimum_duts=1, suite_min_duts=1,
                             blocking=True))
     default_dict = dict(suite_min_duts=3)
     default_dict.update(kwargs)
@@ -280,7 +262,7 @@ class HWTestList(object):
                        timeout=config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT,
                        file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY)
     sanity_dict.update(kwargs)
-    sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
+    sanity_dict.update(dict(minimum_duts=1, suite_min_duts=1,
                             blocking=True))
     default_dict = dict(pool=constants.HWTEST_MACH_POOL,
                         suite_min_duts=10)
@@ -299,7 +281,7 @@ class HWTestList(object):
     """
     sanity_dict = dict(pool=constants.HWTEST_MACH_POOL, file_bugs=True)
     sanity_dict.update(kwargs)
-    sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
+    sanity_dict.update(dict(minimum_duts=1, suite_min_duts=1,
                             blocking=True))
     default_dict = dict(pool=constants.HWTEST_MACH_POOL,
                         suite_min_duts=6)
@@ -311,7 +293,7 @@ class HWTestList(object):
 
   def AFDORecordTest(self, **kwargs):
     default_dict = dict(pool=constants.HWTEST_MACH_POOL,
-                        warn_only=True, num=1, file_bugs=True,
+                        warn_only=True, file_bugs=True,
                         timeout=constants.AFDO_GENERATE_TIMEOUT,
                         priority=constants.HWTEST_PFQ_PRIORITY)
     # Allows kwargs overrides to default_dict for cq.
@@ -1037,7 +1019,7 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'default_hw_tests_override',
       hw_tests_override=hw_test_list.DefaultList(
-          num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
+          pool=constants.HWTEST_TRYBOT_POOL,
           file_bugs=False),
   )
 
@@ -1085,7 +1067,7 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'paladin',
       hw_tests_override=hw_test_list.DefaultListNonCanary(
-          num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
+          pool=constants.HWTEST_TRYBOT_POOL,
           file_bugs=False),
       chroot_replace=False,
       important=True,
@@ -1411,7 +1393,7 @@ def GeneralTemplates(site_config, ge_build_config):
       description='Chrome Performance test bot',
       hw_tests=[config_lib.HWTestConfig(
           'perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
-          timeout=90 * 60, critical=True, num=1)],
+          timeout=90 * 60, critical=True)],
       use_chrome_lkgm=True,
       useflags=append_useflags(['-cros-debug']),
   )
@@ -1558,7 +1540,7 @@ def GeneralTemplates(site_config, ge_build_config):
       suite_scheduling=False,
       trybot_list=False,
       hw_tests=(
-          hw_test_list.DefaultList(pool=constants.HWTEST_SUITES_POOL, num=4) +
+          hw_test_list.DefaultList(pool=constants.HWTEST_SUITES_POOL) +
           hw_test_list.AFDOList()
       ),
       push_image=False,
@@ -1575,7 +1557,6 @@ def GeneralTemplates(site_config, ge_build_config):
 
       hw_tests=[hw_test_list.AFDORecordTest()],
       hw_tests_override=[hw_test_list.AFDORecordTest(
-          num=constants.HWTEST_TRYBOT_NUM,
           pool=constants.HWTEST_TRYBOT_POOL,
           file_bugs=False,
           priority=constants.HWTEST_DEFAULT_PRIORITY,
@@ -1601,11 +1582,11 @@ def GeneralTemplates(site_config, ge_build_config):
       signer_tests=False,
       hw_tests=[
           config_lib.HWTestConfig(constants.HWTEST_MOBLAB_SUITE,
-                                  num=1, timeout=120*60),
+                                  timeout=120*60),
           config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
-                                  warn_only=True, num=1),
+                                  warn_only=True),
           config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
-                                  warn_only=True, num=1)],
+                                  warn_only=True)],
   )
 
   site_config.AddTemplate(
@@ -1613,9 +1594,9 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.release,
       description='Cheets release builders',
       hw_tests=[
-          config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE, num=1),
+          config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE),
           config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
-                                  warn_only=True, num=1)],
+                                  warn_only=True)],
   )
 
   # Factory and Firmware releases much inherit from these classes.
@@ -2523,7 +2504,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           hw_tests=[
               config_lib.HWTestConfig(
                   constants.HWTEST_MOBLAB_QUICK_SUITE,
-                  num=1, timeout=90*60,
+                  timeout=90*60,
                   pool=constants.HWTEST_PALADIN_POOL)
           ],
           hw_tests_override=None)
@@ -3465,7 +3446,6 @@ def InsertHwTestsOverrideDefaults(build):
 
     # Adjust for manual test environment.
     for hw_config in build['hw_tests_override']:
-      hw_config.num = constants.HWTEST_TRYBOT_NUM
       hw_config.pool = constants.HWTEST_TRYBOT_POOL
       hw_config.file_bugs = False
       hw_config.priority = constants.HWTEST_DEFAULT_PRIORITY
