@@ -6,6 +6,7 @@
 
 #include <inttypes.h>
 #include <algorithm>
+#include "base/time/tick_clock.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/web/WebKit.h"
@@ -35,14 +36,14 @@ void RuntimeCallTimer::Start(RuntimeCallCounter* counter,
   DCHECK(!IsRunning());
   counter_ = counter;
   parent_ = parent;
-  start_ticks_ = TimeTicks::Now();
+  start_ticks_ = TimeTicks(clock_->NowTicks());
   if (parent_)
     parent_->Pause(start_ticks_);
 }
 
 RuntimeCallTimer* RuntimeCallTimer::Stop() {
   DCHECK(IsRunning());
-  TimeTicks now = TimeTicks::Now();
+  TimeTicks now = TimeTicks(clock_->NowTicks());
   elapsed_time_ += (now - start_ticks_);
   start_ticks_ = TimeTicks();
   counter_->IncrementAndAddTime(elapsed_time_);
@@ -51,7 +52,7 @@ RuntimeCallTimer* RuntimeCallTimer::Stop() {
   return parent_;
 }
 
-RuntimeCallStats::RuntimeCallStats() {
+RuntimeCallStats::RuntimeCallStats(base::TickClock* clock) : clock_(clock) {
   static const char* const names[] = {
 #define BINDINGS_COUNTER_NAME(name) "Blink_Bindings_" #name,
       BINDINGS_COUNTERS(BINDINGS_COUNTER_NAME)  //
@@ -138,7 +139,8 @@ String RuntimeCallStats::ToString() const {
 
 // static
 void RuntimeCallStats::SetRuntimeCallStatsForTesting() {
-  DEFINE_STATIC_LOCAL(RuntimeCallStats, s_rcs_for_testing, ());
+  DEFINE_STATIC_LOCAL(base::DefaultTickClock, s_clock, ());
+  DEFINE_STATIC_LOCAL(RuntimeCallStats, s_rcs_for_testing, (&s_clock));
   g_runtime_call_stats_for_testing =
       static_cast<RuntimeCallStats*>(&s_rcs_for_testing);
 }
