@@ -165,7 +165,7 @@ class PlatformAppPathLauncher
  private:
   friend class base::RefCountedThreadSafe<PlatformAppPathLauncher>;
 
-  virtual ~PlatformAppPathLauncher() {}
+  virtual ~PlatformAppPathLauncher() = default;
 
   void MakePathAbsolute(const base::FilePath& current_directory) {
     for (std::vector<base::FilePath>::iterator it = entry_paths_.begin();

@@ -29,8 +29,7 @@ AppRestoreServiceFactory::AppRestoreServiceFactory()
   DependsOn(AppLifetimeMonitorFactory::GetInstance());
 }
 
-AppRestoreServiceFactory::~AppRestoreServiceFactory() {
-}
+AppRestoreServiceFactory::~AppRestoreServiceFactory() = default;
 
 KeyedService* AppRestoreServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {

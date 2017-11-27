@@ -34,7 +34,7 @@ SavedFilesServiceFactory::SavedFilesServiceFactory()
           "SavedFilesService",
           BrowserContextDependencyManager::GetInstance()) {}
 
-SavedFilesServiceFactory::~SavedFilesServiceFactory() {}
+SavedFilesServiceFactory::~SavedFilesServiceFactory() = default;
 
 KeyedService* SavedFilesServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {

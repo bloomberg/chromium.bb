@@ -55,7 +55,7 @@ AppWindowFrameView::AppWindowFrameView(views::Widget* widget,
       resize_area_corner_size_(kDefaultResizeAreaCornerSize) {
 }
 
-AppWindowFrameView::~AppWindowFrameView() {}
+AppWindowFrameView::~AppWindowFrameView() = default;
 
 void AppWindowFrameView::Init() {
   if (draw_frame_) {
