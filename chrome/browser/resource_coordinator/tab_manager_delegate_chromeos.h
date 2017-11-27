@@ -73,7 +73,7 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
                          aura::Window* lost_active) override;
 
   // Kills a process on memory pressure.
-  void LowMemoryKill(DiscardCondition condition);
+  void LowMemoryKill(DiscardReason reason);
 
   // Returns oom_score_adj of a process if the score is cached by |this|.
   // If couldn't find the score in the cache, returns -1001 since the valid
@@ -95,7 +95,7 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
 
   // Kills a tab. Returns true if the tab is killed successfully.
   // Virtual for unit testing.
-  virtual bool KillTab(const TabStats& tab_stats, DiscardCondition condition);
+  virtual bool KillTab(const TabStats& tab_stats, DiscardReason reason);
 
   // Get debugd client instance. Virtual for unit testing.
   virtual chromeos::DebugDaemonClient* GetDebugDaemonClient();
@@ -139,7 +139,7 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   void OnFocusTabScoreAdjustmentTimeout();
 
   // Kills a process after getting all info of tabs and apps.
-  void LowMemoryKillImpl(DiscardCondition condition,
+  void LowMemoryKillImpl(DiscardReason reason,
                          const TabStatsList& tab_list,
                          const std::vector<arc::ArcProcess>& arc_processes);
 

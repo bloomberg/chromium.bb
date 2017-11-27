@@ -10,7 +10,7 @@
 #include "base/containers/flat_set.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/browser/resource_coordinator/discard_condition.h"
+#include "chrome/browser/resource_coordinator/discard_reason.h"
 
 namespace resource_coordinator {
 
@@ -58,7 +58,7 @@ class LifecycleUnit {
   // replaced with a method that returns a numeric value representing the
   // expected user pain caused by a discard. A values above a given threshold
   // would be equivalent to CanDiscard() returning false for a given
-  // DiscardCondition. https://crbug.com/775644
+  // DiscardReason. https://crbug.com/775644
   virtual SortKey GetSortKey() const = 0;
 
   // Returns the current state of this LifecycleUnit.
@@ -74,7 +74,7 @@ class LifecycleUnit {
   virtual int GetEstimatedMemoryFreedOnDiscardKB() const = 0;
 
   // Returns true if this LifecycleUnit can be discared.
-  virtual bool CanDiscard(DiscardCondition discard_condition) const = 0;
+  virtual bool CanDiscard(DiscardReason reason) const = 0;
 
   // Discards this LifecycleUnit.
   //
@@ -83,7 +83,7 @@ class LifecycleUnit {
   // is easier to achieve that if we discard a group of LifecycleUnits that live
   // in the same process(es) than if we discard individual LifecycleUnits.
   // https://crbug.com/775644
-  virtual bool Discard(DiscardCondition discard_condition) = 0;
+  virtual bool Discard(DiscardReason discard_reason) = 0;
 };
 
 using LifecycleUnitSet = base::flat_set<LifecycleUnit*>;

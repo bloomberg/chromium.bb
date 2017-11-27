@@ -430,8 +430,8 @@ TEST_F(TabManagerTest, DiscardWebContentsAt) {
   tabstrip.AddObserver(&tabstrip_observer);
 
   // Discard one of the tabs.
-  WebContents* null_contents1 = tab_manager.DiscardWebContentsAt(
-      0, &tabstrip, DiscardCondition::kProactive);
+  WebContents* null_contents1 =
+      tab_manager.DiscardWebContentsAt(0, &tabstrip, DiscardReason::kProactive);
   ASSERT_EQ(2, tabstrip.count());
   EXPECT_TRUE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(0)));
   EXPECT_FALSE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(1)));
@@ -445,8 +445,8 @@ TEST_F(TabManagerTest, DiscardWebContentsAt) {
   // Discard the same tab again, after resetting its discard state.
   tab_manager.GetWebContentsData(tabstrip.GetWebContentsAt(0))
       ->SetDiscardState(false);
-  WebContents* null_contents2 = tab_manager.DiscardWebContentsAt(
-      0, &tabstrip, DiscardCondition::kProactive);
+  WebContents* null_contents2 =
+      tab_manager.DiscardWebContentsAt(0, &tabstrip, DiscardReason::kProactive);
   ASSERT_EQ(2, tabstrip.count());
   EXPECT_TRUE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(0)));
   EXPECT_FALSE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(1)));
@@ -489,7 +489,7 @@ TEST_F(TabManagerTest, ReloadDiscardedTabContextMenu) {
       ->NavigateAndCommit(GURL("chrome://newtab"));
   EXPECT_FALSE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(1)));
 
-  tab_manager.DiscardWebContentsAt(1, &tabstrip, DiscardCondition::kProactive);
+  tab_manager.DiscardWebContentsAt(1, &tabstrip, DiscardReason::kProactive);
   EXPECT_TRUE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(1)));
 
   tabstrip.GetWebContentsAt(1)->GetController().Reload(
@@ -517,8 +517,8 @@ TEST_F(TabManagerTest, DiscardedTabKeepsLastActiveTime) {
   test_contents->SetLastActiveTime(new_last_active_time);
   EXPECT_EQ(new_last_active_time, test_contents->GetLastActiveTime());
 
-  WebContents* null_contents = tab_manager.DiscardWebContentsAt(
-      1, &tabstrip, DiscardCondition::kProactive);
+  WebContents* null_contents =
+      tab_manager.DiscardWebContentsAt(1, &tabstrip, DiscardReason::kProactive);
   EXPECT_EQ(new_last_active_time, null_contents->GetLastActiveTime());
 
   tabstrip.CloseAllTabs();
@@ -703,7 +703,7 @@ TEST_F(TabManagerTest, DiscardTabWithNonVisibleTabs) {
   task_runner_->FastForwardBy(TabManager::kDiscardProtectionTime);
 
   for (int i = 0; i < 4; ++i)
-    tab_manager.DiscardTab(DiscardCondition::kProactive);
+    tab_manager.DiscardTab(DiscardReason::kProactive);
 
   // Active tab in a visible window should not be discarded.
   EXPECT_FALSE(tab_manager.IsTabDiscarded(tab_strip1.GetWebContentsAt(0)));

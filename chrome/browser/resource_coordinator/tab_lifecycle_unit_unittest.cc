@@ -38,8 +38,8 @@ class DummyTabLifecycleUnit : public TabLifecycleUnit {
   SortKey GetSortKey() const override { return SortKey(); }
   State GetState() const override { return State::LOADED; }
   int GetEstimatedMemoryFreedOnDiscardKB() const override { return 0; }
-  bool CanDiscard(DiscardCondition) const override { return false; }
-  bool Discard(DiscardCondition) override { return false; }
+  bool CanDiscard(DiscardReason) const override { return false; }
+  bool Discard(DiscardReason) override { return false; }
 
  private:
   content::WebContents* const contents_;
