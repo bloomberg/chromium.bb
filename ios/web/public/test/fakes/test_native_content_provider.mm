@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "ios/web/public/web_client.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -26,6 +27,7 @@
 
 - (id<CRWNativeContent>)controllerForURL:(const GURL&)URL
                                 webState:(web::WebState*)webState {
+  DCHECK(web::GetWebClient()->IsAppSpecificURL(URL));
   auto nativeContent = _nativeContent.find(URL);
   return nativeContent == _nativeContent.end() ? nil : nativeContent->second;
 }
