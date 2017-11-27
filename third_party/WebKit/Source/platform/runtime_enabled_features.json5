@@ -168,10 +168,6 @@
       name: "ClientPlaceholdersForServerLoFi",
     },
     {
-      name: "CoalescedEvents",
-      status: "stable",
-    },
-    {
       name: "CompositedSelectionUpdate",
     },
     {

@@ -17,5 +17,5 @@ dictionary PointerEventInit : MouseEventInit {
     boolean   isPrimary = false;
 
     // https://w3c.github.io/pointerevents/extension.html#extensions-to-the-pointerevent-interface
-    [RuntimeEnabled=CoalescedEvents] sequence<PointerEvent> coalescedEvents = [];
+    sequence<PointerEvent> coalescedEvents = [];
 };
