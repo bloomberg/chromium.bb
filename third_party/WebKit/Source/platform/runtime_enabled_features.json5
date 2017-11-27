@@ -505,10 +505,6 @@
       status: "experimental",
     },
     {
-      name: "InputEvent",
-      status: "stable",
-    },
-    {
       name: "InputModeAttribute",
       status: "experimental",
     },

@@ -95,8 +95,6 @@ bool NeedsIncrementalInsertion(const LocalFrame& frame,
 void DispatchBeforeInputFromComposition(EventTarget* target,
                                         InputEvent::InputType input_type,
                                         const String& data) {
-  if (!RuntimeEnabledFeatures::InputEventEnabled())
-    return;
   if (!target)
     return;
   // TODO(chongz): Pass appropriate |ranges| after it's defined on spec.

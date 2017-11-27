@@ -2118,8 +2118,6 @@ DispatchEventResult DispatchBeforeInputInsertText(
     const String& data,
     InputEvent::InputType input_type,
     const StaticRangeVector* ranges) {
-  if (!RuntimeEnabledFeatures::InputEventEnabled())
-    return DispatchEventResult::kNotCanceled;
   if (!target)
     return DispatchEventResult::kNotCanceled;
   // TODO(chongz): Pass appropriate |ranges| after it's defined on spec.
@@ -2135,8 +2133,6 @@ DispatchEventResult DispatchBeforeInputEditorCommand(
     Node* target,
     InputEvent::InputType input_type,
     const StaticRangeVector* ranges) {
-  if (!RuntimeEnabledFeatures::InputEventEnabled())
-    return DispatchEventResult::kNotCanceled;
   if (!target)
     return DispatchEventResult::kNotCanceled;
   InputEvent* before_input_event = InputEvent::CreateBeforeInput(
@@ -2149,8 +2145,6 @@ DispatchEventResult DispatchBeforeInputDataTransfer(
     Node* target,
     InputEvent::InputType input_type,
     DataTransfer* data_transfer) {
-  if (!RuntimeEnabledFeatures::InputEventEnabled())
-    return DispatchEventResult::kNotCanceled;
   if (!target)
     return DispatchEventResult::kNotCanceled;
 
