@@ -2,10 +2,13 @@
 #+type:literary
 #+contraction:full
 #+grade:2
-#+label:"Unified French Grade 2"
-#+author:['Michel Such <michel.such@free.fr>','André-Abush CLAUSE <dev@andreabc.net>','Nicolas Pitre <nico@cam.org>','The BRLTTY Team <http://brltty.com/>']
-#+license:LGPL
-#+lastUpdate:2017-11-27
+#-display-name: Unified French Grade 2
+#-author: Michel Such <michel.such@free.fr>
+#-author: André-Abush CLAUSE <dev@andreabc.net>
+#-author: Nicolas Pitre <nico@cam.org>
+#-author: The BRLTTY Team <http://brltty.com/>
+#-license: LGPL
+#-updated: 2017-11-27
 
 # liblouis: Unified French Grade 2 Table
 
