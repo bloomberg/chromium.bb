@@ -356,7 +356,7 @@ bool WidevineCdmComponentInstallerPolicy::VerifyInstallation(
 // <profile>\AppData\Local\Google\Chrome\User Data\WidevineCdm\.
 base::FilePath WidevineCdmComponentInstallerPolicy::GetRelativeInstallDir()
     const {
-  return base::FilePath(FILE_PATH_LITERAL(kWidevineCdmBaseDirectory));
+  return base::FilePath(FILE_PATH_LITERAL("WidevineCdm"));
 }
 
 void WidevineCdmComponentInstallerPolicy::GetHash(
