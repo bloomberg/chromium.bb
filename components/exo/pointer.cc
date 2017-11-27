@@ -170,8 +170,7 @@ void Pointer::OnSurfaceCommit() {
 
 void Pointer::OnSurfaceDestroying(Surface* surface) {
   if (surface == focus_surface_) {
-    focus_surface_ = nullptr;
-    surface->RemoveSurfaceObserver(this);
+    SetFocus(nullptr, gfx::PointF(), 0);
     return;
   }
   if (surface == root_surface()) {
@@ -187,31 +186,9 @@ void Pointer::OnSurfaceDestroying(Surface* surface) {
 void Pointer::OnMouseEvent(ui::MouseEvent* event) {
   Surface* target = GetEffectiveTargetForEvent(event);
 
-  // If target is different than the current pointer focus then we need to
-  // generate enter and leave events.
-  if (target != focus_surface_) {
-    // First generate a leave event if we currently have a target in focus.
-    if (focus_surface_) {
-      delegate_->OnPointerLeave(focus_surface_);
-      focus_surface_->RemoveSurfaceObserver(this);
-      // Require SetCursor() to be called and cursor to be re-defined in
-      // response to each OnPointerEnter() call.
-      focus_surface_->UnregisterCursorProvider(this);
-      focus_surface_ = nullptr;
-      cursor_ = ui::CursorType::kNull;
-      cursor_capture_weak_ptr_factory_.InvalidateWeakPtrs();
-    }
-    // Second generate an enter event if focus moved to a new target.
-    if (target) {
-      delegate_->OnPointerEnter(target, event->location_f(),
-                                event->button_flags());
-      location_ = event->location_f();
-      focus_surface_ = target;
-      focus_surface_->AddSurfaceObserver(this);
-      focus_surface_->RegisterCursorProvider(this);
-    }
-    delegate_->OnPointerFrame();
-  }
+  // Update focus if target is different than the current pointer focus.
+  if (target != focus_surface_)
+    SetFocus(target, event->location_f(), event->button_flags());
 
   if (!focus_surface_)
     return;
@@ -363,6 +340,31 @@ Surface* Pointer::GetEffectiveTargetForEvent(ui::Event* event) const {
     return nullptr;
 
   return delegate_->CanAcceptPointerEventsForSurface(target) ? target : nullptr;
+}
+
+void Pointer::SetFocus(Surface* surface,
+                       const gfx::PointF& location,
+                       int button_flags) {
+  // First generate a leave event if we currently have a target in focus.
+  if (focus_surface_) {
+    delegate_->OnPointerLeave(focus_surface_);
+    focus_surface_->RemoveSurfaceObserver(this);
+    // Require SetCursor() to be called and cursor to be re-defined in
+    // response to each OnPointerEnter() call.
+    focus_surface_->UnregisterCursorProvider(this);
+    focus_surface_ = nullptr;
+    cursor_ = ui::CursorType::kNull;
+    cursor_capture_weak_ptr_factory_.InvalidateWeakPtrs();
+  }
+  // Second generate an enter event if focus moved to a new surface.
+  if (surface) {
+    delegate_->OnPointerEnter(surface, location, button_flags);
+    location_ = location;
+    focus_surface_ = surface;
+    focus_surface_->AddSurfaceObserver(this);
+    focus_surface_->RegisterCursorProvider(this);
+  }
+  delegate_->OnPointerFrame();
 }
 
 void Pointer::UpdatePointerSurface(Surface* surface) {

@@ -57,7 +57,6 @@ class Keyboard : public ui::EventHandler,
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
 
-
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
 
@@ -74,6 +73,9 @@ class Keyboard : public ui::EventHandler,
   void OnSurfaceFocused(Surface* gained_focus) override;
 
  private:
+  // Change keyboard focus to |surface|.
+  void SetFocus(Surface* surface);
+
   // Processes expired key state changes in |pending_key_acks_| as they have not
   // been acknowledged.
   void ProcessExpiredPendingKeyAcks();

@@ -83,6 +83,11 @@ class Pointer : public SurfaceTreeHost,
   // Returns the effective target for |event|.
   Surface* GetEffectiveTargetForEvent(ui::Event* event) const;
 
+  // Change pointer focus to |surface|.
+  void SetFocus(Surface* surface,
+                const gfx::PointF& location,
+                int button_flags);
+
   // Updates the root_surface in |SurfaceTreeHost| from which the cursor
   // is captured.
   void UpdatePointerSurface(Surface* surface);
