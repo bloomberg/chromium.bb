@@ -284,8 +284,7 @@ Target::Target(const Settings* settings, const Label& label)
       testonly_(false),
       toolchain_(nullptr) {}
 
-Target::~Target() {
-}
+Target::~Target() = default;
 
 // static
 const char* Target::GetStringForOutputType(OutputType type) {

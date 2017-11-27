@@ -9,13 +9,11 @@
 
 #include "tools/gn/value.h"
 
-SubstitutionList::SubstitutionList() {
-}
+SubstitutionList::SubstitutionList() = default;
 
 SubstitutionList::SubstitutionList(const SubstitutionList& other) = default;
 
-SubstitutionList::~SubstitutionList() {
-}
+SubstitutionList::~SubstitutionList() = default;
 
 bool SubstitutionList::Parse(const Value& value, Err* err) {
   if (!value.VerifyTypeIs(Value::LIST, err))

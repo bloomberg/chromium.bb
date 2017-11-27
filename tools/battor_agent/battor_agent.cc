@@ -69,7 +69,7 @@ std::unique_ptr<BattOrEEPROM> ParseEEPROM(BattOrMessageType message_type,
 }
 }  // namespace
 
-BattOrResults::BattOrResults() {}
+BattOrResults::BattOrResults() = default;
 
 BattOrResults::BattOrResults(std::string details,
                              std::vector<float> power_samples_W,
@@ -80,7 +80,7 @@ BattOrResults::BattOrResults(std::string details,
 
 BattOrResults::BattOrResults(const BattOrResults&) = default;
 
-BattOrResults::~BattOrResults() {}
+BattOrResults::~BattOrResults() = default;
 
 BattOrAgent::BattOrAgent(
     const std::string& path,

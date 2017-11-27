@@ -20,8 +20,7 @@ PathOutput::PathOutput(const SourceDir& current_dir,
   options_.mode = escaping;
 }
 
-PathOutput::~PathOutput() {
-}
+PathOutput::~PathOutput() = default;
 
 void PathOutput::WriteFile(std::ostream& out, const SourceFile& file) const {
   WritePathStr(out, file.value());

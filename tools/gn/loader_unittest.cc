@@ -24,8 +24,7 @@ class MockInputFileManager {
  public:
   typedef base::Callback<void(const ParseNode*)> Callback;
 
-  MockInputFileManager() {
-  }
+  MockInputFileManager() = default;
 
   LoaderImpl::AsyncLoadFileCallback GetCallback();
 

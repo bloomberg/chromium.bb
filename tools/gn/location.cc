@@ -61,8 +61,7 @@ std::string Location::Describe(bool include_column_number) const {
   return ret;
 }
 
-LocationRange::LocationRange() {
-}
+LocationRange::LocationRange() = default;
 
 LocationRange::LocationRange(const Location& begin, const Location& end)
     : begin_(begin),

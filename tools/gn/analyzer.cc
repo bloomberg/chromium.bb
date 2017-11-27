@@ -238,7 +238,7 @@ Analyzer::Analyzer(const Builder& builder)
   }
 }
 
-Analyzer::~Analyzer() {}
+Analyzer::~Analyzer() = default;
 
 std::string Analyzer::Analyze(const std::string& input, Err* err) const {
   Inputs inputs;

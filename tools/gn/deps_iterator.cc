@@ -52,5 +52,4 @@ DepsIteratorRange::DepsIteratorRange(const DepsIterator& b)
       end_() {
 }
 
-DepsIteratorRange::~DepsIteratorRange() {
-}
+DepsIteratorRange::~DepsIteratorRange() = default;

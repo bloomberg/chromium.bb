@@ -60,7 +60,7 @@ class MockBattOrConnection : public BattOrConnection {
  public:
   MockBattOrConnection(BattOrConnection::Listener* listener)
       : BattOrConnection(listener) {}
-  ~MockBattOrConnection() override {}
+  ~MockBattOrConnection() override = default;
 
   MOCK_METHOD0(Open, void());
   MOCK_METHOD0(Close, void());

@@ -47,9 +47,9 @@ bool IsSourceFileFromAssetsCatalog(base::StringPiece source,
 
 }  // namespace
 
-BundleData::BundleData() {}
+BundleData::BundleData() = default;
 
-BundleData::~BundleData() {}
+BundleData::~BundleData() = default;
 
 void BundleData::AddBundleData(const Target* target) {
   DCHECK_EQ(target->output_type(), Target::BUNDLE_DATA);

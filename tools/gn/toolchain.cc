@@ -31,8 +31,7 @@ const char* Toolchain::kToolAction = "action";
 Toolchain::Toolchain(const Settings* settings, const Label& label)
     : Item(settings, label), setup_complete_(false) {}
 
-Toolchain::~Toolchain() {
-}
+Toolchain::~Toolchain() = default;
 
 Toolchain* Toolchain::AsToolchain() {
   return this;

@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 
-Pool::~Pool() {}
+Pool::~Pool() = default;
 
 Pool* Pool::AsPool() {
   return this;

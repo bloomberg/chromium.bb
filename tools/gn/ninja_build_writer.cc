@@ -165,8 +165,7 @@ NinjaBuildWriter::NinjaBuildWriter(
                    build_settings->root_path_utf8(),
                    ESCAPE_NINJA) {}
 
-NinjaBuildWriter::~NinjaBuildWriter() {
-}
+NinjaBuildWriter::~NinjaBuildWriter() = default;
 
 bool NinjaBuildWriter::Run(Err* err) {
   WriteNinjaRules();

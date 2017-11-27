@@ -306,8 +306,7 @@ VisualStudioWriter::VisualStudioWriter(const BuildSettings* build_settings,
   windows_kits_include_dirs_ = GetWindowsKitsIncludeDirs(win_kit);
 }
 
-VisualStudioWriter::~VisualStudioWriter() {
-}
+VisualStudioWriter::~VisualStudioWriter() = default;
 
 // static
 bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,

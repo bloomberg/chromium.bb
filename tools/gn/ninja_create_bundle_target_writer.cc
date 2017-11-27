@@ -49,7 +49,7 @@ NinjaCreateBundleTargetWriter::NinjaCreateBundleTargetWriter(
     std::ostream& out)
     : NinjaTargetWriter(target, out) {}
 
-NinjaCreateBundleTargetWriter::~NinjaCreateBundleTargetWriter() {}
+NinjaCreateBundleTargetWriter::~NinjaCreateBundleTargetWriter() = default;
 
 void NinjaCreateBundleTargetWriter::Run() {
   if (!EnsureAllToolsAvailable(target_))

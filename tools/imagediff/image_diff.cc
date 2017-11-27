@@ -56,11 +56,7 @@ class Image {
   Image() : w_(0), h_(0) {
   }
 
-  Image(const Image& image)
-      : w_(image.w_),
-        h_(image.h_),
-        data_(image.data_) {
-  }
+  Image(const Image& image) = default;
 
   bool has_image() const {
     return w_ > 0 && h_ > 0;

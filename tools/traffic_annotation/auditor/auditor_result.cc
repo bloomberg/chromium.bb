@@ -45,13 +45,10 @@ AuditorResult::AuditorResult(Type type)
                                    std::string(),
                                    kNoCodeLineSpecified) {}
 
-AuditorResult::AuditorResult(const AuditorResult& other)
-    : type_(other.type_),
-      details_(other.details_),
-      file_path_(other.file_path_),
-      line_(other.line_){};
+AuditorResult::AuditorResult(const AuditorResult& other) = default;
+;
 
-AuditorResult::~AuditorResult() {}
+AuditorResult::~AuditorResult() = default;
 
 void AuditorResult::AddDetail(const std::string& message) {
   details_.push_back(message);

@@ -31,5 +31,4 @@ Settings::Settings(const BuildSettings* build_settings,
     toolchain_gen_dir_ = SourceDir(toolchain_output_dir_.value() + "gen/");
 }
 
-Settings::~Settings() {
-}
+Settings::~Settings() = default;

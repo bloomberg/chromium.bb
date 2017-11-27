@@ -22,8 +22,7 @@ SubstitutionPattern::Subrange::Subrange(SubstitutionType t,
       literal(l) {
 }
 
-SubstitutionPattern::Subrange::~Subrange() {
-}
+SubstitutionPattern::Subrange::~Subrange() = default;
 
 SubstitutionPattern::SubstitutionPattern() : origin_(nullptr) {
 }
@@ -31,8 +30,7 @@ SubstitutionPattern::SubstitutionPattern() : origin_(nullptr) {
 SubstitutionPattern::SubstitutionPattern(const SubstitutionPattern& other) =
     default;
 
-SubstitutionPattern::~SubstitutionPattern() {
-}
+SubstitutionPattern::~SubstitutionPattern() = default;
 
 bool SubstitutionPattern::Parse(const Value& value, Err* err) {
   if (!value.VerifyTypeIs(Value::STRING, err))

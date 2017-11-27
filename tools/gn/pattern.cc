@@ -62,8 +62,7 @@ Pattern::Pattern(const std::string& s) {
 
 Pattern::Pattern(const Pattern& other) = default;
 
-Pattern::~Pattern() {
-}
+Pattern::~Pattern() = default;
 
 bool Pattern::MatchesString(const std::string& s) const {
   // Empty pattern matches only empty string.
@@ -150,13 +149,11 @@ bool Pattern::RecursiveMatch(const std::string& s,
   return false;
 }
 
-PatternList::PatternList() {
-}
+PatternList::PatternList() = default;
 
 PatternList::PatternList(const PatternList& other) = default;
 
-PatternList::~PatternList() {
-}
+PatternList::~PatternList() = default;
 
 void PatternList::Append(const Pattern& pattern) {
   patterns_.push_back(pattern);

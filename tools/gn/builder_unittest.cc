@@ -14,8 +14,7 @@ namespace {
 
 class MockLoader : public Loader {
  public:
-  MockLoader() {
-  }
+  MockLoader() = default;
 
   // Loader implementation:
   void Load(const SourceFile& file,
@@ -58,7 +57,7 @@ class MockLoader : public Loader {
   }
 
  private:
-  ~MockLoader() override {}
+  ~MockLoader() override = default;
 
   std::vector<SourceFile> files_;
 };

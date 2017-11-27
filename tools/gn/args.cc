@@ -96,11 +96,9 @@ Args::ValueWithOverride::ValueWithOverride(const Value& def_val)
       override_value() {
 }
 
-Args::ValueWithOverride::~ValueWithOverride() {
-}
+Args::ValueWithOverride::~ValueWithOverride() = default;
 
-Args::Args() {
-}
+Args::Args() = default;
 
 Args::Args(const Args& other)
     : overrides_(other.overrides_),
@@ -110,8 +108,7 @@ Args::Args(const Args& other)
       toolchain_overrides_(other.toolchain_overrides_) {
 }
 
-Args::~Args() {
-}
+Args::~Args() = default;
 
 void Args::AddArgOverride(const char* name, const Value& value) {
   base::AutoLock lock(lock_);

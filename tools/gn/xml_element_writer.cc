@@ -6,7 +6,7 @@
 
 #include <memory>
 
-XmlAttributes::XmlAttributes() {}
+XmlAttributes::XmlAttributes() = default;
 
 XmlAttributes::XmlAttributes(const base::StringPiece& attr_key,
                              const base::StringPiece& attr_value) {

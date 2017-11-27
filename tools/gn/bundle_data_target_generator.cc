@@ -17,7 +17,7 @@ BundleDataTargetGenerator::BundleDataTargetGenerator(
     const FunctionCallNode* function_call,
     Err* err) : TargetGenerator(target, scope, function_call, err) {}
 
-BundleDataTargetGenerator::~BundleDataTargetGenerator() {}
+BundleDataTargetGenerator::~BundleDataTargetGenerator() = default;
 
 void BundleDataTargetGenerator::DoRun() {
   target_->set_output_type(Target::BUNDLE_DATA);

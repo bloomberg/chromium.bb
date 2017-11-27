@@ -20,7 +20,7 @@ BundleFileRule::BundleFileRule(const Target* bundle_data_target,
 
 BundleFileRule::BundleFileRule(const BundleFileRule& other) = default;
 
-BundleFileRule::~BundleFileRule() {}
+BundleFileRule::~BundleFileRule() = default;
 
 SourceFile BundleFileRule::ApplyPatternToSource(
     const Settings* settings,

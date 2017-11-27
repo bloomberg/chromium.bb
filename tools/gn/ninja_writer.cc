@@ -16,8 +16,7 @@ NinjaWriter::NinjaWriter(const Builder& builder)
     : builder_(builder) {
 }
 
-NinjaWriter::~NinjaWriter() {
-}
+NinjaWriter::~NinjaWriter() = default;
 
 // static
 bool NinjaWriter::RunAndWriteFiles(

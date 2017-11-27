@@ -252,8 +252,7 @@ Printer::Printer() : penalty_depth_(0) {
   stack_.push_back(IndentState());
 }
 
-Printer::~Printer() {
-}
+Printer::~Printer() = default;
 
 void Printer::Print(base::StringPiece str) {
   str.AppendToString(&output_);

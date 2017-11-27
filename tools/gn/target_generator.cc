@@ -38,8 +38,7 @@ TargetGenerator::TargetGenerator(Target* target,
       err_(err) {
 }
 
-TargetGenerator::~TargetGenerator() {
-}
+TargetGenerator::~TargetGenerator() = default;
 
 void TargetGenerator::Run() {
   // All target types use these.

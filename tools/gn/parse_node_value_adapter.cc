@@ -10,9 +10,7 @@
 ParseNodeValueAdapter::ParseNodeValueAdapter() : ref_(nullptr) {
 }
 
-ParseNodeValueAdapter::~ParseNodeValueAdapter() {
-}
-
+ParseNodeValueAdapter::~ParseNodeValueAdapter() = default;
 
 bool ParseNodeValueAdapter::Init(Scope* scope,
                                  const ParseNode* node,

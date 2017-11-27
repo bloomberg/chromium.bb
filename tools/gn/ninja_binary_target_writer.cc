@@ -70,8 +70,7 @@ struct DefineWriter {
 struct IncludeWriter {
   explicit IncludeWriter(PathOutput& path_output) : path_output_(path_output) {
   }
-  ~IncludeWriter() {
-  }
+  ~IncludeWriter() = default;
 
   void operator()(const SourceDir& d, std::ostream& out) const {
     std::ostringstream path_out;
@@ -259,8 +258,7 @@ NinjaBinaryTargetWriter::NinjaBinaryTargetWriter(const Target* target,
       rule_prefix_(GetNinjaRulePrefixForToolchain(settings_)) {
 }
 
-NinjaBinaryTargetWriter::~NinjaBinaryTargetWriter() {
-}
+NinjaBinaryTargetWriter::~NinjaBinaryTargetWriter() = default;
 
 void NinjaBinaryTargetWriter::Run() {
   // Figure out what source types are needed.

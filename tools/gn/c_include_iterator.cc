@@ -122,8 +122,7 @@ CIncludeIterator::CIncludeIterator(const InputFile* input)
       lines_since_last_include_(0) {
 }
 
-CIncludeIterator::~CIncludeIterator() {
-}
+CIncludeIterator::~CIncludeIterator() = default;
 
 bool CIncludeIterator::GetNextIncludeString(base::StringPiece* out,
                                             LocationRange* location) {

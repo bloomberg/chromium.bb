@@ -36,8 +36,7 @@ NinjaToolchainWriter::NinjaToolchainWriter(
                    ESCAPE_NINJA) {
 }
 
-NinjaToolchainWriter::~NinjaToolchainWriter() {
-}
+NinjaToolchainWriter::~NinjaToolchainWriter() = default;
 
 void NinjaToolchainWriter::Run(
     const std::vector<NinjaWriter::TargetRulePair>& rules) {

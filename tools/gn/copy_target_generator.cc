@@ -17,8 +17,7 @@ CopyTargetGenerator::CopyTargetGenerator(Target* target,
     : TargetGenerator(target, scope, function_call, err) {
 }
 
-CopyTargetGenerator::~CopyTargetGenerator() {
-}
+CopyTargetGenerator::~CopyTargetGenerator() = default;
 
 void CopyTargetGenerator::DoRun() {
   target_->set_output_type(Target::COPY_FILES);

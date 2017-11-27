@@ -12,8 +12,7 @@ Tool::Tool()
       complete_(false) {
 }
 
-Tool::~Tool() {
-}
+Tool::~Tool() = default;
 
 void Tool::SetComplete() {
   DCHECK(!complete_);

@@ -14,8 +14,7 @@ BuilderRecord::BuilderRecord(ItemType type, const Label& label)
       resolved_(false) {
 }
 
-BuilderRecord::~BuilderRecord() {
-}
+BuilderRecord::~BuilderRecord() = default;
 
 // static
 const char* BuilderRecord::GetNameForType(ItemType type) {

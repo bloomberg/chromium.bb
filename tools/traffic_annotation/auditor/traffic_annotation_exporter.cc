@@ -67,13 +67,9 @@ TrafficAnnotationExporter::ReportItem::ReportItem()
     : unique_id_hash_code(-1), content_hash_code(-1) {}
 
 TrafficAnnotationExporter::ReportItem::ReportItem(
-    const TrafficAnnotationExporter::ReportItem& other)
-    : unique_id_hash_code(other.unique_id_hash_code),
-      deprecation_date(other.deprecation_date),
-      content_hash_code(other.content_hash_code),
-      os_list(other.os_list) {}
+    const TrafficAnnotationExporter::ReportItem& other) = default;
 
-TrafficAnnotationExporter::ReportItem::~ReportItem() {}
+TrafficAnnotationExporter::ReportItem::~ReportItem() = default;
 
 TrafficAnnotationExporter::TrafficAnnotationExporter(
     const base::FilePath& source_path)
@@ -82,7 +78,7 @@ TrafficAnnotationExporter::TrafficAnnotationExporter(
   all_supported_platforms_.push_back("windows");
 }
 
-TrafficAnnotationExporter::~TrafficAnnotationExporter() {}
+TrafficAnnotationExporter::~TrafficAnnotationExporter() = default;
 
 bool TrafficAnnotationExporter::LoadAnnotationsXML() {
   report_items_.clear();

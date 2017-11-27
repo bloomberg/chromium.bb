@@ -49,7 +49,7 @@ BattOrSampleConverter::BattOrSampleConverter(
   baseline_voltage_ /= calibration_frame.size();
 }
 
-BattOrSampleConverter::~BattOrSampleConverter() {}
+BattOrSampleConverter::~BattOrSampleConverter() = default;
 
 BattOrSample BattOrSampleConverter::ToSample(const RawBattOrSample& sample,
                                              size_t sample_number) const {

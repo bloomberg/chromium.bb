@@ -85,7 +85,7 @@ BattOrConnectionImpl::BattOrConnectionImpl(
   tick_clock_ = std::make_unique<base::DefaultTickClock>();
 }
 
-BattOrConnectionImpl::~BattOrConnectionImpl() {}
+BattOrConnectionImpl::~BattOrConnectionImpl() = default;
 
 void BattOrConnectionImpl::Open() {
   if (io_handler_) {

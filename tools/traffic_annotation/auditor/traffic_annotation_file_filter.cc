@@ -49,9 +49,9 @@ const char* kRelevantKeywords[] = {
 
 }  // namespace
 
-TrafficAnnotationFileFilter::TrafficAnnotationFileFilter() {}
+TrafficAnnotationFileFilter::TrafficAnnotationFileFilter() = default;
 
-TrafficAnnotationFileFilter::~TrafficAnnotationFileFilter() {}
+TrafficAnnotationFileFilter::~TrafficAnnotationFileFilter() = default;
 
 void TrafficAnnotationFileFilter::GetFilesFromGit(
     const base::FilePath& source_path) {

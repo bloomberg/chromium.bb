@@ -273,15 +273,15 @@ const char* ToString(PBXObjectClass cls) {
 
 // PBXObjectVisitor -----------------------------------------------------------
 
-PBXObjectVisitor::PBXObjectVisitor() {}
+PBXObjectVisitor::PBXObjectVisitor() = default;
 
-PBXObjectVisitor::~PBXObjectVisitor() {}
+PBXObjectVisitor::~PBXObjectVisitor() = default;
 
 // PBXObject ------------------------------------------------------------------
 
-PBXObject::PBXObject() {}
+PBXObject::PBXObject() = default;
 
-PBXObject::~PBXObject() {}
+PBXObject::~PBXObject() = default;
 
 void PBXObject::SetId(const std::string& id) {
   DCHECK(id_.empty());
@@ -307,9 +307,9 @@ void PBXObject::Visit(PBXObjectVisitor& visitor) {
 
 // PBXBuildPhase --------------------------------------------------------------
 
-PBXBuildPhase::PBXBuildPhase() {}
+PBXBuildPhase::PBXBuildPhase() = default;
 
-PBXBuildPhase::~PBXBuildPhase() {}
+PBXBuildPhase::~PBXBuildPhase() = default;
 
 // PBXTarget ------------------------------------------------------------------
 
@@ -325,7 +325,7 @@ PBXTarget::PBXTarget(const std::string& name,
   }
 }
 
-PBXTarget::~PBXTarget() {}
+PBXTarget::~PBXTarget() = default;
 
 void PBXTarget::AddDependency(std::unique_ptr<PBXTargetDependency> dependency) {
   DCHECK(dependency);
@@ -353,7 +353,7 @@ PBXAggregateTarget::PBXAggregateTarget(const std::string& name,
                                        const PBXAttributes& attributes)
     : PBXTarget(name, shell_script, config_name, attributes) {}
 
-PBXAggregateTarget::~PBXAggregateTarget() {}
+PBXAggregateTarget::~PBXAggregateTarget() = default;
 
 PBXObjectClass PBXAggregateTarget::Class() const {
   return PBXAggregateTargetClass;
@@ -384,7 +384,7 @@ PBXBuildFile::PBXBuildFile(const PBXFileReference* file_reference,
   DCHECK(build_phase_);
 }
 
-PBXBuildFile::~PBXBuildFile() {}
+PBXBuildFile::~PBXBuildFile() = default;
 
 PBXObjectClass PBXBuildFile::Class() const {
   return PBXBuildFileClass;
@@ -414,7 +414,7 @@ PBXContainerItemProxy::PBXContainerItemProxy(const PBXProject* project,
                                              const PBXTarget* target)
     : project_(project), target_(target) {}
 
-PBXContainerItemProxy::~PBXContainerItemProxy() {}
+PBXContainerItemProxy::~PBXContainerItemProxy() = default;
 
 PBXObjectClass PBXContainerItemProxy::Class() const {
   return PBXContainerItemProxyClass;
@@ -447,7 +447,7 @@ PBXFileReference::PBXFileReference(const std::string& name,
                                    const std::string& type)
     : name_(name), path_(path), type_(type) {}
 
-PBXFileReference::~PBXFileReference() {}
+PBXFileReference::~PBXFileReference() = default;
 
 PBXObjectClass PBXFileReference::Class() const {
   return PBXFileReferenceClass;
@@ -486,9 +486,9 @@ void PBXFileReference::Print(std::ostream& out, unsigned indent) const {
 
 // PBXFrameworksBuildPhase ----------------------------------------------------
 
-PBXFrameworksBuildPhase::PBXFrameworksBuildPhase() {}
+PBXFrameworksBuildPhase::PBXFrameworksBuildPhase() = default;
 
-PBXFrameworksBuildPhase::~PBXFrameworksBuildPhase() {}
+PBXFrameworksBuildPhase::~PBXFrameworksBuildPhase() = default;
 
 PBXObjectClass PBXFrameworksBuildPhase::Class() const {
   return PBXFrameworksBuildPhaseClass;
@@ -514,7 +514,7 @@ void PBXFrameworksBuildPhase::Print(std::ostream& out, unsigned indent) const {
 PBXGroup::PBXGroup(const std::string& path, const std::string& name)
     : name_(name), path_(path) {}
 
-PBXGroup::~PBXGroup() {}
+PBXGroup::~PBXGroup() = default;
 
 PBXObject* PBXGroup::AddChild(std::unique_ptr<PBXObject> child) {
   DCHECK(child);
@@ -624,7 +624,7 @@ PBXNativeTarget::PBXNativeTarget(const std::string& name,
   build_phases_.push_back(std::make_unique<PBXFrameworksBuildPhase>());
 }
 
-PBXNativeTarget::~PBXNativeTarget() {}
+PBXNativeTarget::~PBXNativeTarget() = default;
 
 void PBXNativeTarget::AddFileForIndexing(const PBXFileReference* file_reference,
                                          const CompilerFlags compiler_flag) {
@@ -673,7 +673,7 @@ PBXProject::PBXProject(const std::string& name,
   configurations_.reset(new XCConfigurationList(config_name, attributes, this));
 }
 
-PBXProject::~PBXProject() {}
+PBXProject::~PBXProject() = default;
 
 void PBXProject::AddSourceFileToIndexingTarget(
     const std::string& navigator_path,
@@ -828,7 +828,7 @@ PBXShellScriptBuildPhase::PBXShellScriptBuildPhase(
     : name_("Action \"Compile and copy " + name + " via ninja\""),
       shell_script_(shell_script) {}
 
-PBXShellScriptBuildPhase::~PBXShellScriptBuildPhase() {}
+PBXShellScriptBuildPhase::~PBXShellScriptBuildPhase() = default;
 
 PBXObjectClass PBXShellScriptBuildPhase::Class() const {
   return PBXShellScriptBuildPhaseClass;
@@ -857,9 +857,9 @@ void PBXShellScriptBuildPhase::Print(std::ostream& out, unsigned indent) const {
 
 // PBXSourcesBuildPhase -------------------------------------------------------
 
-PBXSourcesBuildPhase::PBXSourcesBuildPhase() {}
+PBXSourcesBuildPhase::PBXSourcesBuildPhase() = default;
 
-PBXSourcesBuildPhase::~PBXSourcesBuildPhase() {}
+PBXSourcesBuildPhase::~PBXSourcesBuildPhase() = default;
 
 void PBXSourcesBuildPhase::AddBuildFile(
     std::unique_ptr<PBXBuildFile> build_file) {
@@ -897,7 +897,7 @@ PBXTargetDependency::PBXTargetDependency(
     std::unique_ptr<PBXContainerItemProxy> container_item_proxy)
     : target_(target), container_item_proxy_(std::move(container_item_proxy)) {}
 
-PBXTargetDependency::~PBXTargetDependency() {}
+PBXTargetDependency::~PBXTargetDependency() = default;
 
 PBXObjectClass PBXTargetDependency::Class() const {
   return PBXTargetDependencyClass;
@@ -925,7 +925,7 @@ XCBuildConfiguration::XCBuildConfiguration(const std::string& name,
                                            const PBXAttributes& attributes)
     : attributes_(attributes), name_(name) {}
 
-XCBuildConfiguration::~XCBuildConfiguration() {}
+XCBuildConfiguration::~XCBuildConfiguration() = default;
 
 PBXObjectClass XCBuildConfiguration::Class() const {
   return XCBuildConfigurationClass;
@@ -956,7 +956,7 @@ XCConfigurationList::XCConfigurationList(const std::string& name,
       std::make_unique<XCBuildConfiguration>(name, attributes));
 }
 
-XCConfigurationList::~XCConfigurationList() {}
+XCConfigurationList::~XCConfigurationList() = default;
 
 PBXObjectClass XCConfigurationList::Class() const {
   return XCConfigurationListClass;

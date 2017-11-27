@@ -10,8 +10,7 @@
 Item::Item(const Settings* settings, const Label& label)
     : settings_(settings), label_(label), defined_from_(nullptr) {}
 
-Item::~Item() {
-}
+Item::~Item() = default;
 
 Config* Item::AsConfig() {
   return nullptr;
