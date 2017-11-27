@@ -182,10 +182,10 @@ FileTasks.create = function(
       if (!FileTasks.zipArchiverUnpackerEnabledPromise_) {
         FileTasks.zipArchiverUnpackerEnabledPromise_ =
             new Promise(function(resolve, reject) {
-              // Enabled by default.
+              // Disabled by default.
               chrome.commandLinePrivate.hasSwitch(
-                  'disable-zip-archiver-unpacker', function(disabled) {
-                    resolve(!disabled);
+                  'enable-zip-archiver-unpacker', function(enabled) {
+                    resolve(enabled);
                   });
             });
       }
