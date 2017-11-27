@@ -439,12 +439,15 @@ public class PageInfoPopup implements OnClickListener {
             mOpenOnlineButton.setVisibility(View.GONE);
         }
 
-        mInstantAppIntent = (mIsInternalPage || isShowingOfflinePage()) ? null
-                : InstantAppsHandler.getInstance().getInstantAppIntentForUrl(mFullUrl);
-        if (mInstantAppIntent == null) {
-            mInstantAppButton.setVisibility(View.GONE);
-        } else {
+        InstantAppsHandler instantAppsHandler = InstantAppsHandler.getInstance();
+        if (!mIsInternalPage && !isShowingOfflinePage()
+                && instantAppsHandler.isInstantAppAvailable(mFullUrl, false /* checkHoldback */,
+                           false /* includeUserPrefersBrowser */)) {
+            mInstantAppIntent = instantAppsHandler.getInstantAppIntentForUrl(mFullUrl);
             RecordUserAction.record("Android.InstantApps.OpenInstantAppButtonShown");
+        } else {
+            mInstantAppIntent = null;
+            mInstantAppButton.setVisibility(View.GONE);
         }
 
         // Create the dialog.
