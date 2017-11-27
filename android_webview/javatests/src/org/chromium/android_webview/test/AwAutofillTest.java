@@ -977,12 +977,22 @@ public class AwAutofillTest {
     }
 
     private void invokeOnProvideAutoFillVirtualStructure() {
-        mTestValues.testViewStructure = new TestViewStructure();
-        mAwContents.onProvideAutoFillVirtualStructure(mTestValues.testViewStructure, 1);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mTestValues.testViewStructure = new TestViewStructure();
+                mAwContents.onProvideAutoFillVirtualStructure(mTestValues.testViewStructure, 1);
+            }
+        });
     }
 
     private void invokeAutofill(SparseArray<AutofillValue> values) {
-        mAwContents.autofill(values);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mAwContents.autofill(values);
+            }
+        });
     }
 
     private int getCallbackCount() {
