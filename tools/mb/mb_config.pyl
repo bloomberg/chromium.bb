@@ -699,6 +699,7 @@
       'mac_perf_bisect_builder': 'official_goma',
       'mac_retina_perf_bisect': 'official_goma',
       'mac_retina_perf_cq': 'official_goma',
+      'obbs_fyi': 'official_goma_perf',
       'Win Builder': 'official_goma_x86',
       'Win x64 Builder': 'official_goma',
       'win_8_perf_bisect': 'official_goma_x86',
