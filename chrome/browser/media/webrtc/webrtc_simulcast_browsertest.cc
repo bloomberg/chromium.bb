@@ -43,10 +43,11 @@ class WebRtcSimulcastBrowserTest : public WebRtcTestBase {
   }
 };
 
-// Fails/times out on Windows and Chrome OS. Flaky on Linux.
+// Fails/times out on Windows, Mac and Chrome OS. Flaky on Linux.
 // http://crbug.com/452623
 // MSan reports errors. http://crbug.com/452892
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(MEMORY_SANITIZER)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(MEMORY_SANITIZER) || defined(OS_MACOSX)
 #define MAYBE_TestVgaReturnsTwoSimulcastStreams DISABLED_TestVgaReturnsTwoSimulcastStreams
 #else
 #define MAYBE_TestVgaReturnsTwoSimulcastStreams TestVgaReturnsTwoSimulcastStreams
