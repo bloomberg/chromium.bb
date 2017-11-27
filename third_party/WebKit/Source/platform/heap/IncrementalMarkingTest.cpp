@@ -14,8 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
-
-namespace {
+namespace incremental_marking_test {
 
 class Dummy : public GarbageCollected<Dummy> {
  public:
@@ -30,8 +29,6 @@ class Dummy : public GarbageCollected<Dummy> {
 
   Member<Dummy> next_;
 };
-
-}  // namespace
 
 TEST(IncrementalMarkingTest, EnableDisableBarrier) {
   Dummy* dummy = Dummy::Create();
@@ -182,4 +179,5 @@ TEST(IncrementalMarkingTest, NoWriteBarrierOnMarkedMixinApplication) {
   heap.DisableIncrementalMarkingBarrier();
 }
 
+}  // namespace incremental_marking_test
 }  // namespace blink
