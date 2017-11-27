@@ -269,6 +269,10 @@ group("exe_and_shlib_deps") {
   if (use_afl) {
     public_deps += [ "//third_party/afl" ]
   }
+
+  if (is_win && generate_order_files && !is_nacl) {
+    public_deps += [ "//tools/cygprofile_win" ]
+  }
 }
 
 # Executable configs -----------------------------------------------------------

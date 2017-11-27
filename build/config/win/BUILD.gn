@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
@@ -448,5 +449,23 @@ config("target_winrt") {
   cflags_cc = [
     "/ZW",
     "/EHsc",
+  ]
+}
+
+# Generating order files -------------------------------------------------------
+
+config("default_cygprofile_instrumentation") {
+  if (generate_order_files) {
+    assert(is_clang, "cygprofile instrumentation only works with clang")
+    assert(is_official_build, "order files should be made w/ official builds")
+    assert(!is_chrome_branded, "order files could leak internal symbol names")
+    configs = [ ":cygprofile_instrumentation" ]
+  }
+}
+
+config("cygprofile_instrumentation") {
+  cflags = [
+    "-Xclang",
+    "-finstrument-functions-after-inlining",
   ]
 }
