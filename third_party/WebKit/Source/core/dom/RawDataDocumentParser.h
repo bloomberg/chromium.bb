@@ -42,7 +42,7 @@ class RawDataDocumentParser : public DocumentParser {
   }
 
  private:
-  void insert(const SegmentedString&) final {}
+  void insert(const String&) final {}
 
   void Append(const String&) final { NOTREACHED(); }
 };

@@ -34,7 +34,6 @@ namespace blink {
 
 class Document;
 class DocumentParserClient;
-class SegmentedString;
 class ScriptableDocumentParser;
 class TextResourceDecoder;
 
@@ -53,7 +52,7 @@ class CORE_EXPORT DocumentParser
   virtual bool HasInsertionPoint() { return true; }
 
   // insert is used by document.write.
-  virtual void insert(const SegmentedString&) = 0;
+  virtual void insert(const String&) = 0;
 
   // The below functions are used by DocumentWriter (the loader).
   virtual void AppendBytes(const char* bytes, size_t length) = 0;

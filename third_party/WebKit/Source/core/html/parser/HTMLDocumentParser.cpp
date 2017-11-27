@@ -757,7 +757,7 @@ bool HTMLDocumentParser::HasInsertionPoint() {
          (WasCreatedByScript() && !input_.HaveSeenEndOfFile());
 }
 
-void HTMLDocumentParser::insert(const SegmentedString& source) {
+void HTMLDocumentParser::insert(const String& source) {
   if (IsStopped())
     return;
 

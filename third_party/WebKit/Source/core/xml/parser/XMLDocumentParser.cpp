@@ -314,10 +314,6 @@ void XMLDocumentParser::ClearCurrentNodeStack() {
   }
 }
 
-void XMLDocumentParser::insert(const SegmentedString&) {
-  NOTREACHED();
-}
-
 void XMLDocumentParser::Append(const String& input_source) {
   const SegmentedString source(input_source);
   if (saw_xsl_transform_ || !saw_first_element_)

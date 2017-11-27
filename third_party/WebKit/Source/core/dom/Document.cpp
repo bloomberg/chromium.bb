@@ -242,7 +242,6 @@
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/text/PlatformLocale.h"
-#include "platform/text/SegmentedString.h"
 #include "platform/weborigin/OriginAccessEntry.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -3565,7 +3564,7 @@ bool Document::CanCreateHistoryEntry() const {
   return false;
 }
 
-void Document::write(const SegmentedString& text,
+void Document::write(const String& text,
                      Document* entered_document,
                      ExceptionState& exception_state) {
   if (ImportLoader()) {
@@ -3628,12 +3627,6 @@ void Document::write(const SegmentedString& text,
       "Avoid using document.write().", 0, nullptr);
   probe::breakableLocation(this, "Document.write");
   parser_->insert(text);
-}
-
-void Document::write(const String& text,
-                     Document* entered_document,
-                     ExceptionState& exception_state) {
-  write(SegmentedString(text), entered_document, exception_state);
 }
 
 void Document::writeln(const String& text,

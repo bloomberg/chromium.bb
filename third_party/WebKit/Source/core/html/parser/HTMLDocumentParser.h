@@ -65,7 +65,6 @@ class HTMLParserScriptRunner;
 class HTMLPreloadScanner;
 class HTMLResourcePreloader;
 class HTMLTreeBuilder;
-class SegmentedString;
 class TokenizedChunkQueue;
 
 class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
@@ -139,7 +138,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void SetDecoder(std::unique_ptr<TextResourceDecoder>) final;
 
  protected:
-  void insert(const SegmentedString&) final;
+  void insert(const String&) final;
   void Append(const String&) override;
   void Finish() final;
 
