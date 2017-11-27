@@ -168,6 +168,20 @@ class TestWebHistoryService : public FakeWebHistoryService {
   };
 };
 
+class ReversedWebHistoryService : public TestWebHistoryService {
+ private:
+  std::vector<FakeWebHistoryService::Visit> GetVisitsBetween(
+      base::Time begin,
+      base::Time end,
+      size_t count,
+      bool* more_results_left) override {
+    auto result = FakeWebHistoryService::GetVisitsBetween(begin, end, count,
+                                                          more_results_left);
+    std::reverse(result.begin(), result.end());
+    return result;
+  }
+};
+
 class TimeoutWebHistoryService : public TestWebHistoryService {
  private:
   // WebHistoryService implementation.
@@ -230,19 +244,23 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
     return baseline_time_ + TimeDelta::FromHours(hour_offset);
   }
 
-  void AddHistory(const std::vector<TestResult>& data) {
+  void AddHistory(const std::vector<TestResult>& data,
+                  TestWebHistoryService* web_history) {
     for (const TestResult& entry : data) {
       if (entry.type == kLocal) {
         local_history()->AddPage(GURL(entry.url),
                                  OffsetToTime(entry.hour_offset),
                                  VisitSource::SOURCE_BROWSED);
       } else if (entry.type == kRemote) {
-        web_history()->AddSyncedVisit(entry.url,
-                                      OffsetToTime(entry.hour_offset));
+        web_history->AddSyncedVisit(entry.url, OffsetToTime(entry.hour_offset));
       } else {
         NOTREACHED();
       }
     }
+  }
+
+  void AddHistory(const std::vector<TestResult>& data) {
+    AddHistory(data, web_history());
   }
 
   void VerifyEntry(const TestResult& expected, const HistoryEntry& actual) {
@@ -537,9 +555,8 @@ TEST_F(BrowsingHistoryServiceTest, QueryHistoryFullLocalPending) {
       {{kUrl3, 3, kRemote}}, QueryHistory(1));
 
   local_history()->DeleteURL(GURL(kUrl1));
-  VerifyQueryResult(
-      /*reached_beginning*/ true, /*has_synced_results*/ true,
-      {{kUrl2, 2, kRemote}, {kUrl1, 1, kLocal}}, ContinueQuery());
+  VerifyQueryResult(/*reached_beginning*/ true, /*has_synced_results*/ true,
+                    {{kUrl2, 2, kRemote}, {kUrl1, 1, kLocal}}, ContinueQuery());
 }
 
 // Part of a request worth of local results will sit in pending, resulting in us
@@ -691,6 +708,30 @@ TEST_F(BrowsingHistoryServiceTest, ObservingWebHistoryDelayedWeb) {
   // Only now should deletion should be propagated through.
   web_history()->TriggerOnWebHistoryDeleted();
   EXPECT_EQ(1, driver()->GetHistoryDeletedCount());
+}
+
+TEST_F(BrowsingHistoryServiceTest, IncorrectlyOrderedRemoteResults) {
+  // Created from crbug.com/787928, where suspected MergeDuplicateResults did
+  // not start with sorted data. This case originally hit a NOTREACHED.
+  ReversedWebHistoryService reversed;
+  driver()->SetWebHistory(&reversed);
+  ResetService(driver(), local_history(), sync());
+  AddHistory({{kUrl1, 1, kRemote},
+              {kUrl1, 2, kLocal},
+              {kUrl3, 3, kLocal},
+              {kUrl5, 4, kRemote},
+              {kUrl5, 5, kLocal},
+              {kUrl6, 6, kRemote}},
+             &reversed);
+  VerifyQueryResult(
+      /*reached_beginning*/ false, /*has_synced_results*/ true,
+      {{kUrl6, 6, kRemote}, {kUrl5, 5, kBoth}}, QueryHistory(2));
+
+  // WebHistoryService will DCHECK if we destroy it before the observer in
+  // BrowsingHistoryService is removed, so reset our first
+  // BrowsingHistoryService before |reversed| goes out of scope.
+  driver()->SetWebHistory(nullptr);
+  ResetService(driver(), nullptr, nullptr);
 }
 
 }  // namespace
