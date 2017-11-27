@@ -84,18 +84,13 @@ ScriptValue ScriptModule::Instantiate(ScriptState* script_state) {
   return ScriptValue();
 }
 
-ScriptValue ScriptModule::Evaluate(ScriptState* script_state,
-                                   CaptureEvalErrorFlag capture_error) const {
+ScriptValue ScriptModule::Evaluate(ScriptState* script_state) const {
   v8::Isolate* isolate = script_state->GetIsolate();
 
   // Isolate exceptions that occur when executing the code. These exceptions
   // should not interfere with javascript code we might evaluate from C++ when
   // returning from here.
   v8::TryCatch try_catch(isolate);
-
-  // "If rethrow errors is true, .... Otherwise, report the exception
-  // given by evaluationStatus.[[Value]]." [spec text]
-  try_catch.SetVerbose(capture_error == CaptureEvalErrorFlag::kReport);
 
   probe::ExecuteScript probe(ExecutionContext::From(script_state));
   // TODO(kouhei): We currently don't have a code-path which use return value of
@@ -105,12 +100,7 @@ ScriptValue ScriptModule::Evaluate(ScriptState* script_state,
                                       script_state->GetContext(), isolate)
            .ToLocal(&result)) {
     DCHECK(try_catch.HasCaught());
-    switch (capture_error) {
-      case CaptureEvalErrorFlag::kCapture:
-        return ScriptValue(script_state, try_catch.Exception());
-      case CaptureEvalErrorFlag::kReport:
-        return ScriptValue();
-    }
+    return ScriptValue(script_state, try_catch.Exception());
   }
 
   return ScriptValue();

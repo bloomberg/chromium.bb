@@ -76,8 +76,8 @@ void DynamicImportTreeClient::NotifyModuleTreeLoadFinished(
 
   // Step 2.6. "Run the module script module script, with the rethrow errors
   // boolean set to true." [spec text]
-  ScriptValue error =
-      modulator_->ExecuteModule(module_script, CaptureEvalErrorFlag::kCapture);
+  ScriptValue error = modulator_->ExecuteModule(
+      module_script, Modulator::CaptureEvalErrorFlag::kCapture);
 
   // Step 2.7. "If running the module script throws an exception, ..." [spec
   // text]
