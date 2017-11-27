@@ -71,7 +71,7 @@ class PreviewsContentUtilTest : public testing::Test {
   }
 
   std::unique_ptr<net::URLRequest> CreateHttpsRequest() const {
-    return CreateRequestWithURL(GURL("https://secure,example.com"));
+    return CreateRequestWithURL(GURL("https://secure.example.com"));
   }
 
   std::unique_ptr<net::URLRequest> CreateRequestWithURL(const GURL& url) const {
@@ -88,7 +88,18 @@ class PreviewsContentUtilTest : public testing::Test {
   net::TestURLRequestContext context_;
 };
 
-TEST_F(PreviewsContentUtilTest, DetermineClientPreviewsState) {
+TEST_F(PreviewsContentUtilTest, DetermineClientPreviewsStateClientLoFi) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine("ClientLoFi", std::string());
+  EXPECT_EQ(content::CLIENT_LOFI_ON,
+            previews::DetermineClientPreviewsState(*CreateHttpsRequest(),
+                                                   previews_decider()));
+  EXPECT_EQ(content::CLIENT_LOFI_ON, previews::DetermineClientPreviewsState(
+                                         *CreateRequest(), previews_decider()));
+}
+
+TEST_F(PreviewsContentUtilTest,
+       DetermineClientPreviewsStateNoScriptAndClientLoFi) {
   // First, verify no client previews enabled.
   EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
             previews::DetermineClientPreviewsState(*CreateHttpsRequest(),
@@ -103,10 +114,15 @@ TEST_F(PreviewsContentUtilTest, DetermineClientPreviewsState) {
   EXPECT_EQ(content::NOSCRIPT_ON,
             previews::DetermineClientPreviewsState(*CreateHttpsRequest(),
                                                    previews_decider()));
+  EXPECT_EQ(content::NOSCRIPT_ON, previews::DetermineClientPreviewsState(
+                                      *CreateRequest(), previews_decider()));
 
-  // Verify Client LoFi enabled for http (and NoScript is not).
-  EXPECT_EQ(content::CLIENT_LOFI_ON, previews::DetermineClientPreviewsState(
-                                         *CreateRequest(), previews_decider()));
+  // Verify non-HTTP[S] URL has no previews enabled.
+  std::unique_ptr<net::URLRequest> data_url_request(
+      CreateRequestWithURL(GURL("data://someblob")));
+  EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
+            previews::DetermineClientPreviewsState(*data_url_request,
+                                                   previews_decider()));
 }
 
 TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
