@@ -4,6 +4,7 @@
 
 #include "platform/bindings/RuntimeCallStats.h"
 
+#include "base/test/simple_test_tick_clock.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/wtf/Time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,12 +12,6 @@
 namespace blink {
 
 namespace {
-
-TimeTicks ticks_;
-
-void AdvanceClock(int milliseconds) {
-  ticks_ += TimeDelta::FromMilliseconds(milliseconds);
-}
 
 RuntimeCallStats::CounterId test_counter_1_id =
     RuntimeCallStats::CounterId::kTestCounter1;
@@ -30,19 +25,22 @@ class RuntimeCallStatsTest : public ::testing::Test {
   void SetUp() override {
     // Add one millisecond because RuntimeCallTimer uses |start_ticks_| =
     // TimeTicks() to represent that the timer is not running.
-    ticks_ = WTF::TimeTicks() + TimeDelta::FromMilliseconds(1);
-    original_time_function_ =
-        SetTimeFunctionsForTesting([] { return ticks_.InSeconds(); });
+    clock_.SetNowTicks(base::TimeTicks() + TimeDelta::FromMilliseconds(1));
   }
 
   void TearDown() override {
-    SetTimeFunctionsForTesting(original_time_function_);
     features_backup_.Restore();
   }
 
+  void AdvanceClock(int milliseconds) {
+    clock_.Advance(TimeDelta::FromMilliseconds(milliseconds));
+  }
+
+  base::TickClock* clock() { return &clock_; }
+
  private:
-  TimeFunction original_time_function_;
   RuntimeEnabledFeatures::Backup features_backup_;
+  base::SimpleTestTickClock clock_;
 };
 
 TEST_F(RuntimeCallStatsTest, InitialCountShouldBeZero) {
@@ -51,20 +49,20 @@ TEST_F(RuntimeCallStatsTest, InitialCountShouldBeZero) {
 }
 
 TEST_F(RuntimeCallStatsTest, StatsCounterNameIsCorrect) {
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   EXPECT_STREQ("Blink_TestCounter1",
                stats.GetCounter(test_counter_1_id)->GetName());
 }
 
 TEST_F(RuntimeCallStatsTest, TestBindingsCountersForMethods) {
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* method_counter =
       stats.GetCounter(RuntimeCallStats::CounterId::kBindingsMethodTestCounter);
   EXPECT_STREQ("Blink_BindingsMethodTestCounter", method_counter->GetName());
 }
 
 TEST_F(RuntimeCallStatsTest, TestBindingsCountersForReadOnlyAttributes) {
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* getter_counter =
       stats.GetCounter(RuntimeCallStats::CounterId::
                            kBindingsReadOnlyAttributeTestCounter_Getter);
@@ -73,7 +71,7 @@ TEST_F(RuntimeCallStatsTest, TestBindingsCountersForReadOnlyAttributes) {
 }
 
 TEST_F(RuntimeCallStatsTest, TestBindingsCountersForAttributes) {
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* getter_counter = stats.GetCounter(
       RuntimeCallStats::CounterId::kBindingsAttributeTestCounter_Getter);
   RuntimeCallCounter* setter_counter = stats.GetCounter(
@@ -85,8 +83,8 @@ TEST_F(RuntimeCallStatsTest, TestBindingsCountersForAttributes) {
 }
 
 TEST_F(RuntimeCallStatsTest, CountIsUpdatedAfterLeave) {
-  RuntimeCallTimer timer;
-  RuntimeCallStats stats;
+  RuntimeCallTimer timer(clock());
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
   stats.Enter(&timer, test_counter_1_id);
@@ -96,8 +94,8 @@ TEST_F(RuntimeCallStatsTest, CountIsUpdatedAfterLeave) {
 }
 
 TEST_F(RuntimeCallStatsTest, TimeIsUpdatedAfterLeave) {
-  RuntimeCallStats stats;
-  RuntimeCallTimer timer;
+  RuntimeCallStats stats(clock());
+  RuntimeCallTimer timer(clock());
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
   stats.Enter(&timer, test_counter_1_id);
@@ -107,16 +105,17 @@ TEST_F(RuntimeCallStatsTest, TimeIsUpdatedAfterLeave) {
 }
 
 TEST_F(RuntimeCallStatsTest, CountAndTimeAreUpdatedAfterMultipleExecutions) {
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
   const unsigned func_duration = 20;
   const unsigned loops = 5;
 
-  auto func = [&stats, func_duration]() {
-    RuntimeCallTimer timer;
+  RuntimeCallStatsTest* test = this;
+  auto func = [&stats, func_duration, test]() {
+    RuntimeCallTimer timer(test->clock());
     stats.Enter(&timer, test_counter_1_id);
-    AdvanceClock(func_duration);
+    test->AdvanceClock(func_duration);
     stats.Leave(&timer);
   };
 
@@ -128,25 +127,26 @@ TEST_F(RuntimeCallStatsTest, CountAndTimeAreUpdatedAfterMultipleExecutions) {
 }
 
 TEST_F(RuntimeCallStatsTest, NestedTimersTest) {
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* outer_counter = stats.GetCounter(test_counter_1_id);
   RuntimeCallCounter* inner_counter = stats.GetCounter(test_counter_2_id);
 
   const unsigned inner_func_duration = 50;
   const unsigned outer_func_duration = 20;
 
-  auto inner_func = [&stats, inner_func_duration]() {
-    RuntimeCallTimer timer;
+  RuntimeCallStatsTest* test = this;
+  auto inner_func = [&stats, inner_func_duration, test]() {
+    RuntimeCallTimer timer(test->clock());
     stats.Enter(&timer, test_counter_2_id);
-    AdvanceClock(inner_func_duration);
+    test->AdvanceClock(inner_func_duration);
     stats.Leave(&timer);
   };
 
-  auto outer_func = [&stats, &inner_func, outer_func_duration]() {
-    RuntimeCallTimer timer;
+  auto outer_func = [&stats, &inner_func, outer_func_duration, test]() {
+    RuntimeCallTimer timer(test->clock());
     stats.Enter(&timer, test_counter_1_id);
     inner_func();
-    AdvanceClock(outer_func_duration);
+    test->AdvanceClock(outer_func_duration);
     stats.Leave(&timer);
   };
 
@@ -159,12 +159,13 @@ TEST_F(RuntimeCallStatsTest, NestedTimersTest) {
 }
 
 TEST_F(RuntimeCallStatsTest, RuntimeCallTimerScopeTest) {
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
-  auto func = [&stats]() {
+  RuntimeCallStatsTest* test = this;
+  auto func = [&stats, test]() {
     RuntimeCallTimerScope scope(&stats, test_counter_1_id);
-    AdvanceClock(50);
+    test->AdvanceClock(50);
   };
 
   func();
@@ -179,15 +180,16 @@ TEST_F(RuntimeCallStatsTest, RuntimeCallTimerScopeTest) {
 }
 
 TEST_F(RuntimeCallStatsTest, RecursiveFunctionWithScopeTest) {
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
+  RuntimeCallStatsTest* test = this;
   std::function<void(int)> recursive_func;
-  recursive_func = [&stats, &recursive_func](int x) {
+  recursive_func = [&stats, &recursive_func, test](int x) {
     RuntimeCallTimerScope scope(&stats, test_counter_1_id);
     if (x <= 0)
       return;
-    AdvanceClock(50);
+    test->AdvanceClock(50);
     recursive_func(x - 1);
   };
   recursive_func(5);
@@ -197,8 +199,8 @@ TEST_F(RuntimeCallStatsTest, RecursiveFunctionWithScopeTest) {
 }
 
 TEST_F(RuntimeCallStatsTest, ReuseTimer) {
-  RuntimeCallStats stats;
-  RuntimeCallTimer timer;
+  RuntimeCallStats stats(clock());
+  RuntimeCallTimer timer(clock());
   RuntimeCallCounter* counter1 = stats.GetCounter(test_counter_1_id);
   RuntimeCallCounter* counter2 = stats.GetCounter(test_counter_2_id);
 
@@ -219,7 +221,7 @@ TEST_F(RuntimeCallStatsTest, ReuseTimer) {
 }
 
 TEST_F(RuntimeCallStatsTest, ResetCallStats) {
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* counter1 = stats.GetCounter(test_counter_1_id);
   RuntimeCallCounter* counter2 = stats.GetCounter(test_counter_2_id);
 
@@ -239,9 +241,9 @@ TEST_F(RuntimeCallStatsTest, ResetCallStats) {
 
 TEST_F(RuntimeCallStatsTest, TestEnterAndLeaveMacrosWithCallStatsDisabled) {
   ScopedBlinkRuntimeCallStatsForTest blink_runtime_call_stats(false);
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
-  RuntimeCallTimer timer;
+  RuntimeCallTimer timer(clock());
 
   RUNTIME_CALL_STATS_ENTER_WITH_RCS(&stats, &timer, test_counter_1_id);
   AdvanceClock(25);
@@ -253,9 +255,9 @@ TEST_F(RuntimeCallStatsTest, TestEnterAndLeaveMacrosWithCallStatsDisabled) {
 
 TEST_F(RuntimeCallStatsTest, TestEnterAndLeaveMacrosWithCallStatsEnabled) {
   ScopedBlinkRuntimeCallStatsForTest blink_runtime_call_stats(true);
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
-  RuntimeCallTimer timer;
+  RuntimeCallTimer timer(clock());
 
   RUNTIME_CALL_STATS_ENTER_WITH_RCS(&stats, &timer, test_counter_1_id);
   AdvanceClock(25);
@@ -267,7 +269,7 @@ TEST_F(RuntimeCallStatsTest, TestEnterAndLeaveMacrosWithCallStatsEnabled) {
 
 TEST_F(RuntimeCallStatsTest, TestScopeMacroWithCallStatsDisabled) {
   ScopedBlinkRuntimeCallStatsForTest blink_runtime_call_stats(false);
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
   {
@@ -281,7 +283,7 @@ TEST_F(RuntimeCallStatsTest, TestScopeMacroWithCallStatsDisabled) {
 
 TEST_F(RuntimeCallStatsTest, TestScopeMacroWithCallStatsEnabled) {
   ScopedBlinkRuntimeCallStatsForTest blink_runtime_call_stats(true);
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
   {
@@ -295,7 +297,7 @@ TEST_F(RuntimeCallStatsTest, TestScopeMacroWithCallStatsEnabled) {
 
 TEST_F(RuntimeCallStatsTest, TestScopeWithOptionalMacroWithCallStatsDisabled) {
   ScopedBlinkRuntimeCallStatsForTest blink_runtime_call_stats(false);
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
   {
@@ -311,7 +313,7 @@ TEST_F(RuntimeCallStatsTest, TestScopeWithOptionalMacroWithCallStatsDisabled) {
 
 TEST_F(RuntimeCallStatsTest, TestScopeWithOptionalMacroWithCallStatsEnabled) {
   ScopedBlinkRuntimeCallStatsForTest blink_runtime_call_stats(true);
-  RuntimeCallStats stats;
+  RuntimeCallStats stats(clock());
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
   {

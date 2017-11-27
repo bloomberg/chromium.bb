@@ -19,6 +19,10 @@
 #include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace blink {
 
 // A simple counter used to track total execution count & time for a particular
@@ -58,7 +62,7 @@ class PLATFORM_EXPORT RuntimeCallCounter {
 // with the macros below.
 class PLATFORM_EXPORT RuntimeCallTimer {
  public:
-  RuntimeCallTimer() = default;
+  explicit RuntimeCallTimer(base::TickClock* clock) : clock_(clock) {}
   ~RuntimeCallTimer() { DCHECK(!IsRunning()); };
 
   // Starts recording time for <counter>, and pauses <parent> (if non-null).
@@ -93,6 +97,7 @@ class PLATFORM_EXPORT RuntimeCallTimer {
   RuntimeCallTimer* parent_;
   TimeTicks start_ticks_;
   TimeDelta elapsed_time_;
+  base::TickClock* clock_ = nullptr;
 };
 
 // Macros that take RuntimeCallStats as a parameter; used only in
@@ -157,7 +162,7 @@ class PLATFORM_EXPORT RuntimeCallTimer {
 // scope.
 class PLATFORM_EXPORT RuntimeCallStats {
  public:
-  RuntimeCallStats();
+  explicit RuntimeCallStats(base::TickClock*);
   // Get RuntimeCallStats object associated with the given isolate.
   static RuntimeCallStats* From(v8::Isolate*);
 
@@ -300,12 +305,15 @@ class PLATFORM_EXPORT RuntimeCallStats {
   RuntimeCallCounter* GetCounter(const char* name);
 #endif
 
+  base::TickClock* clock() const { return clock_; }
+
  private:
   RuntimeCallTimer* current_timer_ = nullptr;
   bool in_use_ = false;
   RuntimeCallCounter counters_[static_cast<int>(CounterId::kNumberOfCounters)];
   static const int number_of_counters_ =
       static_cast<int>(CounterId::kNumberOfCounters);
+  base::TickClock* clock_ = nullptr;
 
 #if BUILDFLAG(RCS_COUNT_EVERYTHING)
   typedef HashMap<const char*, std::unique_ptr<RuntimeCallCounter>> CounterMap;
@@ -323,12 +331,12 @@ class PLATFORM_EXPORT RuntimeCallTimerScope {
  public:
   RuntimeCallTimerScope(RuntimeCallStats* stats,
                         RuntimeCallStats::CounterId counter)
-      : call_stats_(stats) {
+      : call_stats_(stats), timer_(stats->clock()) {
     call_stats_->Enter(&timer_, counter);
   }
 #if BUILDFLAG(RCS_COUNT_EVERYTHING)
   RuntimeCallTimerScope(RuntimeCallStats* stats, const char* counterName)
-      : call_stats_(stats) {
+      : call_stats_(stats), timer_(stats->clock()) {
     call_stats_->Enter(&timer_, counterName);
   }
 #endif
