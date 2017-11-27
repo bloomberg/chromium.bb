@@ -47,11 +47,36 @@ class ArcMigrationGuideNotificationDelegate
 
   // message_center::NotificationDelegate
   void ButtonClick(int button_index) override { chrome::AttemptUserExit(); }
+  void Click() override { chrome::AttemptUserExit(); }
 
  private:
   ~ArcMigrationGuideNotificationDelegate() override = default;
 
   DISALLOW_COPY_AND_ASSIGN(ArcMigrationGuideNotificationDelegate);
+};
+
+class ArcMigrationCompletedNotificationDelegate
+    : public message_center::NotificationDelegate {
+ public:
+  explicit ArcMigrationCompletedNotificationDelegate(Profile* profile)
+      : profile_(profile) {}
+
+  // message_center::NotificationDelegate
+  void ButtonClick(int button_index) override {
+    arc::SetArcPlayStoreEnabledForProfile(profile_, true);
+  }
+
+  void Click() override {
+    arc::SetArcPlayStoreEnabledForProfile(profile_, true);
+  }
+
+ private:
+  ~ArcMigrationCompletedNotificationDelegate() override = default;
+
+  // Unowned pointer.
+  Profile* const profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcMigrationCompletedNotificationDelegate);
 };
 
 void DoShowArcMigrationSuccessNotification(Profile* profile) {
@@ -67,7 +92,9 @@ void DoShowArcMigrationSuccessNotification(Profile* profile) {
         l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_TITLE),
         l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
         gfx::Image(), base::string16(), GURL(), notifier_id,
-        message_center::RichNotificationData(), nullptr,
+        message_center::RichNotificationData(),
+        scoped_refptr<message_center::NotificationDelegate>(
+            new ArcMigrationCompletedNotificationDelegate(profile)),
         ash::kNotificationSettingsIcon,
         message_center::SystemNotificationWarningLevel::NORMAL);
   } else {
@@ -78,7 +105,9 @@ void DoShowArcMigrationSuccessNotification(Profile* profile) {
         gfx::Image(gfx::CreateVectorIcon(kArcMigrateEncryptionNotificationIcon,
                                          gfx::kPlaceholderColor)),
         base::string16(), GURL(), notifier_id,
-        message_center::RichNotificationData(), nullptr);
+        message_center::RichNotificationData(),
+        scoped_refptr<message_center::NotificationDelegate>(
+            new ArcMigrationCompletedNotificationDelegate(profile)));
   }
 
   NotificationDisplayService::GetForProfile(profile)->Display(
@@ -119,7 +148,8 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
             IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
         message, gfx::Image(), base::string16(), GURL(), notifier_id,
         message_center::RichNotificationData(),
-        new ArcMigrationGuideNotificationDelegate(),
+        scoped_refptr<message_center::NotificationDelegate>(
+            new ArcMigrationGuideNotificationDelegate()),
         ash::kNotificationSettingsIcon,
         message_center::SystemNotificationWarningLevel::NORMAL);
   } else {
@@ -134,7 +164,8 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
         gfx::Image(gfx::CreateVectorIcon(kArcMigrateEncryptionNotificationIcon,
                                          gfx::kPlaceholderColor)),
         base::string16(), GURL(), notifier_id, data,
-        new ArcMigrationGuideNotificationDelegate());
+        scoped_refptr<message_center::NotificationDelegate>(
+            new ArcMigrationGuideNotificationDelegate()));
   }
 
   NotificationDisplayService::GetForProfile(profile)->Display(
