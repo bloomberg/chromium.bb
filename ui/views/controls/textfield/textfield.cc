@@ -1940,8 +1940,8 @@ void Textfield::UpdateBackgroundColor() {
   } else {
     SetBackground(CreateSolidBackground(color));
   }
-  // Disable subpixel rendering when the background color is transparent
-  // because it draws incorrect colors around the glyphs in that case.
+  // Disable subpixel rendering when the background color is not opaque because
+  // it draws incorrect colors around the glyphs in that case.
   // See crbug.com/115198
   GetRenderText()->set_subpixel_rendering_suppressed(SkColorGetA(color) !=
                                                      SK_AlphaOPAQUE);
@@ -2004,6 +2004,13 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
   // Draw placeholder text if needed.
   gfx::RenderText* render_text = GetRenderText();
   if (text().empty() && !GetPlaceholderText().empty()) {
+    // Disable subpixel rendering when the background color is not opaque
+    // because it draws incorrect colors around the glyphs in that case.
+    // See crbug.com/786343
+    int placeholder_text_draw_flags = placeholder_text_draw_flags_;
+    if (SkColorGetA(GetBackgroundColor()) != SK_AlphaOPAQUE)
+      placeholder_text_draw_flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
+
     canvas->DrawStringRectWithFlags(
         GetPlaceholderText(),
         placeholder_font_list_.has_value() ? placeholder_font_list_.value()
@@ -2011,7 +2018,7 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
         ui::MaterialDesignController::IsSecondaryUiMaterial()
             ? SkColorSetA(GetTextColor(), 0x83)
             : placeholder_text_color_,
-        render_text->display_rect(), placeholder_text_draw_flags_);
+        render_text->display_rect(), placeholder_text_draw_flags);
   }
 
   render_text->Draw(canvas);

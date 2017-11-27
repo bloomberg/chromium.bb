@@ -80,6 +80,7 @@ class LoginShelfButton : public views::LabelButton {
     SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
     set_ink_drop_base_color(kShelfInkDropBaseColor);
     set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
+    SetTextSubpixelRenderingEnabled(false);
 
     SetImageLabelSpacing(kImageLabelSpacingDp);
     SetTextColor(views::Button::STATE_NORMAL, kButtonColor);
