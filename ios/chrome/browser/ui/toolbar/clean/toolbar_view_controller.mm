@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_view_controller.h"
 
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/history_popup_commands.h"
@@ -32,7 +33,6 @@
 @property(nonatomic, strong) ToolbarButton* backButton;
 @property(nonatomic, strong) ToolbarButton* forwardButton;
 @property(nonatomic, strong) ToolbarButton* tabSwitchStripButton;
-@property(nonatomic, strong) ToolbarButton* tabSwitchGridButton;
 @property(nonatomic, strong) ToolbarButton* toolsMenuButton;
 @property(nonatomic, strong) ToolbarButton* shareButton;
 @property(nonatomic, strong) ToolbarButton* reloadButton;
@@ -50,7 +50,6 @@
 @synthesize backButton = _backButton;
 @synthesize forwardButton = _forwardButton;
 @synthesize tabSwitchStripButton = _tabSwitchStripButton;
-@synthesize tabSwitchGridButton = _tabSwitchGridButton;
 @synthesize toolsMenuButton = _toolsMenuButton;
 @synthesize shareButton = _shareButton;
 @synthesize reloadButton = _reloadButton;
@@ -118,7 +117,7 @@
   self.stackView = [[UIStackView alloc] initWithArrangedSubviews:@[
     self.backButton, self.forwardButton, self.reloadButton, self.stopButton,
     self.locationBarContainer, self.shareButton, self.tabSwitchStripButton,
-    self.tabSwitchGridButton, self.toolsMenuButton
+    self.toolsMenuButton
   ]];
   self.stackView.translatesAutoresizingMaskIntoConstraints = NO;
   self.stackView.spacing = kStackViewSpacing;
@@ -219,19 +218,6 @@
   [self.tabSwitchStripButton addTarget:self.dispatcher
                                 action:@selector(displayTabSwitcher)
                       forControlEvents:UIControlEventTouchUpInside];
-
-  // Tab switcher Grid button.
-  self.tabSwitchGridButton = [self.buttonFactory tabSwitcherGridToolbarButton];
-  self.tabSwitchGridButton.visibilityMask =
-      ToolbarComponentVisibilityCompactWidth |
-      ToolbarComponentVisibilityRegularWidth;
-  [buttonConstraints
-      addObject:[self.tabSwitchGridButton.widthAnchor
-                    constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.tabSwitchGridButton addTarget:self.dispatcher
-                               action:@selector(displayTabSwitcher)
-                     forControlEvents:UIControlEventTouchUpInside];
-  self.tabSwitchGridButton.hiddenInCurrentState = YES;
 
   // Tools menu button.
   self.toolsMenuButton = [self.buttonFactory toolsMenuToolbarButton];
@@ -391,11 +377,6 @@
   [self.progressBar setProgress:progress animated:YES completion:nil];
 }
 
-- (void)setTabStripVisible:(BOOL)visible {
-  self.tabSwitchStripButton.hiddenInCurrentState = visible;
-  self.tabSwitchGridButton.hiddenInCurrentState = !visible;
-}
-
 - (void)setTabCount:(int)tabCount {
   // Return if tabSwitchStripButton wasn't initialized.
   if (!self.tabSwitchStripButton)
@@ -434,6 +415,24 @@
 
 - (UIView*)shareButtonView {
   return self.shareButton;
+}
+
+#pragma mark = BubbleViewAnchorPointProvider
+
+- (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
+  CGPoint anchorPoint =
+      bubble_util::AnchorPoint(self.tabSwitchStripButton.frame, direction);
+  return [self.tabSwitchStripButton.superview
+      convertPoint:anchorPoint
+            toView:self.tabSwitchStripButton.window];
+}
+
+- (CGPoint)anchorPointForToolsMenuButton:(BubbleArrowDirection)direction {
+  CGPoint anchorPoint =
+      bubble_util::AnchorPoint(self.toolsMenuButton.frame, direction);
+  return
+      [self.toolsMenuButton.superview convertPoint:anchorPoint
+                                            toView:self.toolsMenuButton.window];
 }
 
 #pragma mark - Helper Methods

@@ -13,6 +13,7 @@
 
 @protocol ActivityServicePositioner;
 @protocol ApplicationCommands;
+@protocol BubbleViewAnchorPointProvider;
 @protocol BrowserCommands;
 @class ToolbarButtonUpdater;
 @protocol ToolbarCoordinatorDelegate;
@@ -47,6 +48,8 @@ class WebState;
 
 // Returns the ActivityServicePositioner for this toolbar.
 - (id<ActivityServicePositioner>)activityServicePositioner;
+// Returns the BubbleViewAnchorPointProvider for this toolbar.
+- (id<BubbleViewAnchorPointProvider>)bubbleAnchorPointProvider;
 
 // Start this coordinator.
 - (void)start;
