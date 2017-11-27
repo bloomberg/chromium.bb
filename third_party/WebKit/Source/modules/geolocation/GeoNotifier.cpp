@@ -57,12 +57,12 @@ void GeoNotifier::SetFatalError(PositionError* error) {
   fatal_error_ = error;
   // An existing timer may not have a zero timeout.
   timer_.Stop();
-  timer_.StartOneShot(0, BLINK_FROM_HERE);
+  timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void GeoNotifier::SetUseCachedPosition() {
   use_cached_position_ = true;
-  timer_.StartOneShot(0, BLINK_FROM_HERE);
+  timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void GeoNotifier::RunSuccessCallback(Geoposition* position) {

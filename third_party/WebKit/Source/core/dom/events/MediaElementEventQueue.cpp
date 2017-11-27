@@ -70,7 +70,7 @@ bool MediaElementEventQueue::EnqueueEvent(const WebTraceLocation& from_here,
   pending_events_.push_back(event);
 
   if (!timer_.IsActive())
-    timer_.StartOneShot(0, from_here);
+    timer_.StartOneShot(TimeDelta(), from_here);
 
   return true;
 }

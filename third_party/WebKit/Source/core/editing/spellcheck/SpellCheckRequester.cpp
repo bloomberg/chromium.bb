@@ -299,7 +299,7 @@ void SpellCheckRequester::DidCheck(int sequence) {
 
   ClearProcessingRequest();
   if (!request_queue_.IsEmpty())
-    timer_to_process_queued_request_.StartOneShot(0, BLINK_FROM_HERE);
+    timer_to_process_queued_request_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void SpellCheckRequester::DidCheckSucceed(

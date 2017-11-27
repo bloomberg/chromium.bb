@@ -125,7 +125,7 @@ void InspectorRevalidateDOMTask::ScheduleStyleAttrRevalidationFor(
     Element* element) {
   style_attr_invalidated_elements_.insert(element);
   if (!timer_.IsActive())
-    timer_.StartOneShot(0, BLINK_FROM_HERE);
+    timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void InspectorRevalidateDOMTask::OnTimer(TimerBase*) {

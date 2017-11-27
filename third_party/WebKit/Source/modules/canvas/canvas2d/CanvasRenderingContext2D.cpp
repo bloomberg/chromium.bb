@@ -186,7 +186,7 @@ void CanvasRenderingContext2D::LoseContext(LostContextMode lost_mode) {
   if (context_lost_mode_ == kSyntheticLostContext && canvas()) {
     Host()->DiscardImageBuffer();
   }
-  dispatch_context_lost_event_timer_.StartOneShot(0, BLINK_FROM_HERE);
+  dispatch_context_lost_event_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void CanvasRenderingContext2D::DidSetSurfaceSize() {
@@ -198,7 +198,8 @@ void CanvasRenderingContext2D::DidSetSurfaceSize() {
 
   if (GetImageBuffer()) {
     if (ContextLostRestoredEventsEnabled()) {
-      dispatch_context_restored_event_timer_.StartOneShot(0, BLINK_FROM_HERE);
+      dispatch_context_restored_event_timer_.StartOneShot(TimeDelta(),
+                                                          BLINK_FROM_HERE);
     } else {
       // legacy synchronous context restoration.
       Reset();

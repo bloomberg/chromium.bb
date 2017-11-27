@@ -1287,7 +1287,7 @@ void MediaControlsImpl::NotifyElementSizeChanged(DOMRectReadOnly* new_size) {
 
   // Don't bother to do any work if this matches the most recent size.
   if (old_size != size_)
-    element_size_changed_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    element_size_changed_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void MediaControlsImpl::ElementSizeChangedTimerFired(TimerBase*) {

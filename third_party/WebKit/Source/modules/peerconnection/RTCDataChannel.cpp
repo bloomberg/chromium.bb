@@ -310,7 +310,7 @@ void RTCDataChannel::Pause() {
 
 void RTCDataChannel::Unpause() {
   if (!scheduled_events_.IsEmpty() && !scheduled_event_timer_.IsActive())
-    scheduled_event_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    scheduled_event_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void RTCDataChannel::ContextDestroyed(ExecutionContext*) {
@@ -363,7 +363,7 @@ void RTCDataChannel::ScheduleDispatchEvent(Event* event) {
   scheduled_events_.push_back(event);
 
   if (!scheduled_event_timer_.IsActive())
-    scheduled_event_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    scheduled_event_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void RTCDataChannel::ScheduledEventTimerFired(TimerBase*) {

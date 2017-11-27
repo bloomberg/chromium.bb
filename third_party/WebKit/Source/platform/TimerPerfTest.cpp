@@ -41,13 +41,13 @@ TEST_F(TimerPerfTest, PostAndRunTimers) {
                                          &TimerPerfTest::RecordStartRunTime);
   Timer<TimerPerfTest> measure_run_end(this, &TimerPerfTest::RecordEndRunTime);
 
-  measure_run_start.StartOneShot(0.0, BLINK_FROM_HERE);
+  measure_run_start.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
   base::ThreadTicks post_start = base::ThreadTicks::Now();
   for (int i = 0; i < kNumIterations; i++) {
-    timers[i]->StartOneShot(0.0, BLINK_FROM_HERE);
+    timers[i]->StartOneShot(TimeDelta(), BLINK_FROM_HERE);
   }
   base::ThreadTicks post_end = base::ThreadTicks::Now();
-  measure_run_end.StartOneShot(0.0, BLINK_FROM_HERE);
+  measure_run_end.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 
   testing::EnterRunLoop();
 
@@ -71,13 +71,13 @@ TEST_F(TimerPerfTest, PostThenCancelTenThousandTimers) {
                                          &TimerPerfTest::RecordStartRunTime);
   Timer<TimerPerfTest> measure_run_end(this, &TimerPerfTest::RecordEndRunTime);
 
-  measure_run_start.StartOneShot(0.0, BLINK_FROM_HERE);
+  measure_run_start.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
   base::ThreadTicks post_start = base::ThreadTicks::Now();
   for (int i = 0; i < kNumIterations; i++) {
-    timers[i]->StartOneShot(0.0, BLINK_FROM_HERE);
+    timers[i]->StartOneShot(TimeDelta(), BLINK_FROM_HERE);
   }
   base::ThreadTicks post_end = base::ThreadTicks::Now();
-  measure_run_end.StartOneShot(0.0, BLINK_FROM_HERE);
+  measure_run_end.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 
   base::ThreadTicks cancel_start = base::ThreadTicks::Now();
   for (int i = 0; i < kNumIterations; i++) {

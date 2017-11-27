@@ -286,7 +286,7 @@ ScriptPromise MediaKeys::setServerCertificate(
   pending_actions_.push_back(PendingAction::CreatePendingSetServerCertificate(
       result, server_certificate_buffer));
   if (!timer_.IsActive())
-    timer_.StartOneShot(0, BLINK_FROM_HERE);
+    timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 
   // 6. Return promise.
   return promise;
@@ -327,7 +327,7 @@ ScriptPromise MediaKeys::getStatusForPolicy(
   pending_actions_.push_back(
       PendingAction::CreatePendingGetStatusForPolicy(result, min_hdcp_version));
   if (!timer_.IsActive())
-    timer_.StartOneShot(0, BLINK_FROM_HERE);
+    timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 
   // Return promise.
   return promise;

@@ -123,7 +123,7 @@ void ExternalPopupMenu::Show() {
     synthetic_event_ = WTF::WrapUnique(new WebMouseEvent);
     *synthetic_event_ = *static_cast<const WebMouseEvent*>(current_event);
     synthetic_event_->SetType(WebInputEvent::kMouseUp);
-    dispatch_event_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    dispatch_event_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
     // FIXME: show() is asynchronous. If preparing a popup is slow and a
     // user released the mouse button before showing the popup, mouseup and
     // click events are correctly dispatched. Dispatching the synthetic

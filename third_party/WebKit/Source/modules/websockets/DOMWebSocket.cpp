@@ -113,7 +113,7 @@ void DOMWebSocket::EventQueue::Unpause() {
   if (state_ != kPaused || resume_timer_.IsActive())
     return;
 
-  resume_timer_.StartOneShot(0, BLINK_FROM_HERE);
+  resume_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void DOMWebSocket::EventQueue::ContextDestroyed() {
@@ -733,7 +733,7 @@ void DOMWebSocket::DidConsumeBufferedAmount(uint64_t consumed) {
     return;
   consumed_buffered_amount_ += consumed;
   if (!buffered_amount_consume_timer_.IsActive())
-    buffered_amount_consume_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    buffered_amount_consume_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void DOMWebSocket::DidStartClosingHandshake() {

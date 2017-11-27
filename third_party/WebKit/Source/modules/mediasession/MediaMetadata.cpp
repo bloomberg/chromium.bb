@@ -93,7 +93,7 @@ void MediaMetadata::SetSession(MediaSession* session) {
 void MediaMetadata::NotifySessionAsync() {
   if (!session_ || notify_session_timer_.IsActive())
     return;
-  notify_session_timer_.StartOneShot(0, BLINK_FROM_HERE);
+  notify_session_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
 }
 
 void MediaMetadata::NotifySessionTimerFired(TimerBase*) {

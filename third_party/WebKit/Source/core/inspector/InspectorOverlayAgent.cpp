@@ -989,7 +989,7 @@ void InspectorOverlayAgent::OverlaySteppedOver() {
 void InspectorOverlayAgent::PageLayoutInvalidated(bool resized) {
   if (resized && draw_view_size_) {
     resize_timer_active_ = true;
-    timer_.StartOneShot(1, BLINK_FROM_HERE);
+    timer_.StartOneShot(TimeDelta::FromSeconds(1), BLINK_FROM_HERE);
   }
   ScheduleUpdate();
 }
