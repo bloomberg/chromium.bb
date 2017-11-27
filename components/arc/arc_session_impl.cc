@@ -9,7 +9,6 @@
 #include <unistd.h>
 
 #include <utility>
-#include <vector>
 
 #include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
@@ -28,6 +27,7 @@
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
+#include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -183,7 +183,7 @@ mojo::ScopedMessagePipeHandle ArcSessionDelegateImpl::ConnectMojoInternal(
   }
 
   mojo::edk::ScopedPlatformHandle scoped_fd;
-  if (!mojo::edk::ServerAcceptConnection(socket_fd, &scoped_fd,
+  if (!mojo::edk::ServerAcceptConnection(socket_fd.get(), &scoped_fd,
                                          /* check_peer_user = */ false) ||
       !scoped_fd.is_valid()) {
     return mojo::ScopedMessagePipeHandle();
@@ -202,8 +202,9 @@ mojo::ScopedMessagePipeHandle ArcSessionDelegateImpl::ConnectMojoInternal(
       mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
                                   channel_pair.PassServerHandle()));
 
-  std::vector<mojo::edk::ScopedPlatformHandle> handles;
-  handles.emplace_back(channel_pair.PassClientHandle());
+  mojo::edk::ScopedPlatformHandleVectorPtr handles(
+      new mojo::edk::PlatformHandleVector{
+          channel_pair.PassClientHandle().release()});
 
   // We need to send the length of the message as a single byte, so make sure it
   // fits.
@@ -212,7 +213,8 @@ mojo::ScopedMessagePipeHandle ArcSessionDelegateImpl::ConnectMojoInternal(
   struct iovec iov[] = {{&message_length, sizeof(message_length)},
                         {const_cast<char*>(token.c_str()), token.size()}};
   ssize_t result = mojo::edk::PlatformChannelSendmsgWithHandles(
-      scoped_fd, iov, sizeof(iov) / sizeof(iov[0]), handles);
+      scoped_fd.get(), iov, sizeof(iov) / sizeof(iov[0]), handles->data(),
+      handles->size());
   if (result == -1) {
     PLOG(ERROR) << "sendmsg";
     return mojo::ScopedMessagePipeHandle();

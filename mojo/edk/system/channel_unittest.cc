@@ -27,7 +27,7 @@ class TestChannel : public Channel {
                bool(size_t num_handles,
                     const void* extra_header,
                     size_t extra_header_size,
-                    std::vector<ScopedPlatformHandle>* handles));
+                    ScopedPlatformHandleVectorPtr* handles));
   MOCK_METHOD0(Start, void());
   MOCK_METHOD0(ShutDownImpl, void());
   MOCK_METHOD0(LeakHandle, void());
@@ -50,7 +50,7 @@ class MockChannelDelegate : public Channel::Delegate {
  protected:
   void OnChannelMessage(const void* payload,
                         size_t payload_size,
-                        std::vector<ScopedPlatformHandle> handles) override {
+                        ScopedPlatformHandleVectorPtr handles) override {
     payload_.reset(new char[payload_size]);
     memcpy(payload_.get(), payload, payload_size);
     payload_size_ = payload_size;

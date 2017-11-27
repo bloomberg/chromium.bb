@@ -5,14 +5,14 @@
 #ifndef MOJO_EDK_SYSTEM_CHANNEL_H_
 #define MOJO_EDK_SYSTEM_CHANNEL_H_
 
-#include <vector>
-
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/connection_params.h"
+#include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace mojo {
@@ -179,13 +179,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
     // Note: SetHandles() and TakeHandles() invalidate any previous value of
     // handles().
-    void SetHandles(std::vector<ScopedPlatformHandle> new_handles);
-    std::vector<ScopedPlatformHandle> TakeHandles();
+    void SetHandles(ScopedPlatformHandleVectorPtr new_handles);
+    ScopedPlatformHandleVectorPtr TakeHandles();
     // Version of TakeHandles that returns a vector of platform handles suitable
     // for transfer over an underlying OS mechanism. i.e. file descriptors over
     // a unix domain socket. Any handle that cannot be transferred this way,
     // such as Mach ports, will be removed.
-    std::vector<ScopedPlatformHandle> TakeHandlesForTransport();
+    ScopedPlatformHandleVectorPtr TakeHandlesForTransport();
 
 #if defined(OS_WIN)
     // Prepares the handles in this message for use in a different process.
@@ -195,7 +195,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     // duplication.
     static bool RewriteHandles(base::ProcessHandle from_process,
                                base::ProcessHandle to_process,
-                               std::vector<ScopedPlatformHandle>* handles);
+                               PlatformHandleVector* handles);
 #endif
 
     void SetVersionForTest(uint16_t version_number);
@@ -215,7 +215,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     // Maximum number of handles which may be attached to this message.
     size_t max_handles_ = 0;
 
-    std::vector<ScopedPlatformHandle> handle_vector_;
+    ScopedPlatformHandleVectorPtr handle_vector_;
 
 #if defined(OS_WIN)
     // On Windows, handles are serialised into the extra header section.
@@ -252,10 +252,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     // Notify of a received message. |payload| is not owned and must not be
     // retained; it will be null if |payload_size| is 0. |handles| are
     // transferred to the callee.
-    virtual void OnChannelMessage(
-        const void* payload,
-        size_t payload_size,
-        std::vector<ScopedPlatformHandle> handles) = 0;
+    virtual void OnChannelMessage(const void* payload,
+                                  size_t payload_size,
+                                  ScopedPlatformHandleVectorPtr handles) = 0;
 
     // Notify that an error has occured and the Channel will cease operation.
     virtual void OnChannelError(Error error) = 0;
@@ -330,14 +329,14 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
       size_t num_handles,
       const void* extra_header,
       size_t extra_header_size,
-      std::vector<ScopedPlatformHandle>* handles) = 0;
+      ScopedPlatformHandleVectorPtr* handles) = 0;
 
   // Handles a received control message. Returns |true| if the message is
   // accepted, or |false| otherwise.
   virtual bool OnControlMessage(Message::MessageType message_type,
                                 const void* payload,
                                 size_t payload_size,
-                                std::vector<ScopedPlatformHandle> handles);
+                                ScopedPlatformHandleVectorPtr handles);
 
  private:
   friend class base::RefCountedThreadSafe<Channel>;

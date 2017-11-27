@@ -15,12 +15,12 @@
 #include "base/containers/circular_deque.h"
 #include "base/files/scoped_file.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
+#include "mojo/edk/embedder/platform_handle_vector.h"
 
 namespace mojo {
 namespace edk {
@@ -31,12 +31,12 @@ const size_t kMaxBatchReadCapacity = 256 * 1024;
 
 bool UnwrapPlatformHandle(ScopedPlatformHandle handle,
                           Channel::Message::HandleInfoEntry* info_out,
-                          std::vector<ScopedPlatformHandle>* handles_out) {
+                          PlatformHandleVector* handles_out) {
   DCHECK(handle.get().is_valid());
 
   if (!handle.get().is_valid_fd()) {
     *info_out = {0u, 0u};
-    handles_out->emplace_back(std::move(handle));
+    handles_out->emplace_back(handle.release());
     return true;
   }
 
@@ -72,7 +72,7 @@ bool UnwrapPlatformHandle(ScopedPlatformHandle handle,
   for (int i = 0; i < result; ++i) {
     DCHECK_EQ(PA_HND_TYPE(info[0]), PA_HND_TYPE(info[i]));
     DCHECK_EQ(0u, PA_HND_SUBTYPE(info[i]));
-    handles_out->emplace_back(PlatformHandle::ForHandle(handles[i]));
+    handles_out->push_back(PlatformHandle::ForHandle(handles[i]));
   }
 
   return true;
@@ -153,23 +153,26 @@ class MessageView {
     offset_ += num_bytes;
   }
 
-  std::vector<ScopedPlatformHandle> TakeHandles() {
-    if (handles_.empty())
-      return std::vector<ScopedPlatformHandle>();
+  ScopedPlatformHandleVectorPtr TakeHandles() {
+    if (handles_) {
+      // We can only pass Fuchsia handles via IPC, so unwrap any FDIO file-
+      // descriptors in |handles_| into the underlying handles, and serialize
+      // the metadata, if any, into the extra header.
+      auto* handles_info = reinterpret_cast<Channel::Message::HandleInfoEntry*>(
+          message_->mutable_extra_header());
+      memset(handles_info, 0, message_->extra_header_size());
 
-    // We can only pass Fuchsia handles via IPC, so unwrap any FDIO file-
-    // descriptors in |handles_| into the underlying handles, and serialize the
-    // metadata, if any, into the extra header.
-    auto* handles_info = reinterpret_cast<Channel::Message::HandleInfoEntry*>(
-        message_->mutable_extra_header());
-    memset(handles_info, 0, message_->extra_header_size());
+      ScopedPlatformHandleVectorPtr in_handles(std::move(handles_));
 
-    std::vector<ScopedPlatformHandle> in_handles = std::move(handles_);
-    handles_.reserve(in_handles.size());
-    for (size_t i = 0; i < in_handles.size(); i++) {
-      if (!UnwrapPlatformHandle(std::move(in_handles[i]), &handles_info[i],
-                                &handles_))
-        return std::vector<ScopedPlatformHandle>();
+      handles_.reset(new PlatformHandleVector);
+      handles_->reserve(in_handles->size());
+      for (size_t i = 0; i < in_handles->size(); i++) {
+        ScopedPlatformHandle old_handle((*in_handles)[i]);
+        (*in_handles)[i] = PlatformHandle();
+        if (!UnwrapPlatformHandle(std::move(old_handle), &handles_info[i],
+                                  handles_.get()))
+          return nullptr;
+      }
     }
     return std::move(handles_);
   }
@@ -177,7 +180,7 @@ class MessageView {
  private:
   Channel::MessagePtr message_;
   size_t offset_;
-  std::vector<ScopedPlatformHandle> handles_;
+  ScopedPlatformHandleVectorPtr handles_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
@@ -234,11 +237,10 @@ class ChannelFuchsia : public Channel,
     leak_handle_ = true;
   }
 
-  bool GetReadPlatformHandles(
-      size_t num_handles,
-      const void* extra_header,
-      size_t extra_header_size,
-      std::vector<ScopedPlatformHandle>* handles) override {
+  bool GetReadPlatformHandles(size_t num_handles,
+                              const void* extra_header,
+                              size_t extra_header_size,
+                              ScopedPlatformHandleVectorPtr* handles) override {
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
     if (num_handles > std::numeric_limits<uint16_t>::max())
       return false;
@@ -266,9 +268,10 @@ class ChannelFuchsia : public Channel,
     if (incoming_handles_.size() < num_raw_handles)
       return true;
 
-    handles->reserve(num_handles);
+    handles->reset(new PlatformHandleVector);
+    (*handles)->reserve(num_handles);
     for (size_t i = 0; i < num_handles; ++i) {
-      handles->emplace_back(
+      (*handles)->push_back(
           WrapPlatformHandles(handles_info[i], &incoming_handles_).release());
     }
     return true;
@@ -376,15 +379,18 @@ class ChannelFuchsia : public Channel,
     do {
       message_view.advance_data_offset(write_bytes);
 
-      std::vector<ScopedPlatformHandle> outgoing_handles =
+      ScopedPlatformHandleVectorPtr outgoing_handles =
           message_view.TakeHandles();
+      size_t handles_count = 0;
       zx_handle_t handles[ZX_CHANNEL_MAX_MSG_HANDLES] = {};
-      size_t handles_count = outgoing_handles.size();
+      if (outgoing_handles) {
+        DCHECK_LE(outgoing_handles->size(), arraysize(handles));
 
-      DCHECK_LE(handles_count, arraysize(handles));
-      for (size_t i = 0; i < handles_count; ++i) {
-        DCHECK(outgoing_handles[i].is_valid());
-        handles[i] = outgoing_handles[i].get().as_handle();
+        handles_count = outgoing_handles->size();
+        for (size_t i = 0; i < handles_count; ++i) {
+          DCHECK(outgoing_handles->data()[i].is_valid_handle());
+          handles[i] = outgoing_handles->data()[i].as_handle();
+        }
       }
 
       write_bytes = std::min(message_view.data_num_bytes(),
@@ -401,10 +407,13 @@ class ChannelFuchsia : public Channel,
         return false;
       }
 
-      // |handles| have been transferred to the peer process, so release()
-      // them, to avoid them being double-closed.
-      for (auto& outgoing_handle : outgoing_handles)
-        ignore_result(outgoing_handle.release());
+      if (outgoing_handles) {
+        // |handles| have been transferred to the peer process, so clear them to
+        // avoid them being double-closed.
+        for (auto& outgoing_handle : *outgoing_handles) {
+          outgoing_handle = PlatformHandle();
+        }
+      }
     } while (write_bytes < message_view.data_num_bytes());
 
     return true;

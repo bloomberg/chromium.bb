@@ -12,8 +12,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/edk/embedder/named_platform_channel_pair.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/broker_messages.h"
 
 namespace mojo {
@@ -47,8 +47,7 @@ BrokerHost::~BrokerHost() {
     channel_->ShutDown();
 }
 
-bool BrokerHost::PrepareHandlesForClient(
-    std::vector<ScopedPlatformHandle>* handles) {
+bool BrokerHost::PrepareHandlesForClient(PlatformHandleVector* handles) {
 #if defined(OS_WIN)
   if (!Channel::Message::RewriteHandles(base::GetCurrentProcessHandle(),
                                         client_process_, handles)) {
@@ -75,12 +74,13 @@ bool BrokerHost::SendChannel(ScopedPlatformHandle handle) {
   Channel::MessagePtr message =
       CreateBrokerMessage(BrokerMessageType::INIT, 1, nullptr);
 #endif
-  std::vector<ScopedPlatformHandle> handles(1);
-  handles[0] = std::move(handle);
+  ScopedPlatformHandleVectorPtr handles;
+  handles.reset(new PlatformHandleVector(1));
+  handles->at(0) = handle.release();
 
   // This may legitimately fail on Windows if the client process is in another
   // session, e.g., is an elevated process.
-  if (!PrepareHandlesForClient(&handles))
+  if (!PrepareHandlesForClient(handles.get()))
     return false;
 
   message->SetHandles(std::move(handles));
@@ -119,10 +119,11 @@ void BrokerHost::OnBufferRequest(uint32_t num_bytes) {
     base::UnguessableToken guid = buffer->GetGUID();
     response->guid_high = guid.GetHighForSerialization();
     response->guid_low = guid.GetLowForSerialization();
-    std::vector<ScopedPlatformHandle> handles(2);
-    handles[0] = buffer->PassPlatformHandle();
-    handles[1] = read_only_buffer->PassPlatformHandle();
-    PrepareHandlesForClient(&handles);
+    ScopedPlatformHandleVectorPtr handles;
+    handles.reset(new PlatformHandleVector(2));
+    handles->at(0) = buffer->PassPlatformHandle().release();
+    handles->at(1) = read_only_buffer->PassPlatformHandle().release();
+    PrepareHandlesForClient(handles.get());
     message->SetHandles(std::move(handles));
   }
 
@@ -131,7 +132,7 @@ void BrokerHost::OnBufferRequest(uint32_t num_bytes) {
 
 void BrokerHost::OnChannelMessage(const void* payload,
                                   size_t payload_size,
-                                  std::vector<ScopedPlatformHandle> handles) {
+                                  ScopedPlatformHandleVectorPtr handles) {
   if (payload_size < sizeof(BrokerMessageHeader))
     return;
 
