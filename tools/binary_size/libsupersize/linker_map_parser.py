@@ -343,8 +343,9 @@ class MapFileParserLld(object):
             sym_maker.cur_sym.object_path = cur_obj
 
         elif indent_size == 16:
-          # If multiple entries exist, take only the first.
-          if not sym_maker.cur_sym.full_name:
+          # If multiple entries exist, take the first on that reports a size.
+          # Zero-length symbols look like "$t.4", "$d.5".
+          if size and not sym_maker.cur_sym.full_name:
             sym_maker.cur_sym.full_name = tok
 
         else:
