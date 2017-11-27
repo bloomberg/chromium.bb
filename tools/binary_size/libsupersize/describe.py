@@ -169,7 +169,7 @@ class Describer(object):
       return self._DescribeSymbol(obj)
     if hasattr(obj, '__iter__'):
       return self._DescribeIterable(obj)
-    return (repr(obj),)
+    return iter((repr(obj),))
 
 
 class DescriberText(Describer):
