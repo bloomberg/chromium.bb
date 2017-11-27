@@ -997,6 +997,7 @@ class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
       // TODO(hbos): Use |error.type()| to reject the promise with the
       // appropriate DOMException.
       web_request_.RequestFailed(blink::WebString::FromUTF8(error.message()));
+      web_request_.Reset();
       return;
     }
 
@@ -1030,6 +1031,7 @@ class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
       }
     }
     web_request_.RequestSucceeded();
+    web_request_.Reset();
   }
 
  private:
