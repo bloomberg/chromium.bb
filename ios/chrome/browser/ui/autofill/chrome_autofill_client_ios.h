@@ -49,6 +49,7 @@ class ChromeAutofillClientIOS : public AutofillClientIOS {
 
   // AutofillClientIOS implementation.
   ukm::UkmRecorder* GetUkmRecorder() override;
+  AddressNormalizer* GetAddressNormalizer() override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         UnmaskCardReason reason,
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;

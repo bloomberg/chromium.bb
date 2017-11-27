@@ -13,23 +13,27 @@
 
 namespace autofill {
 
+class AddressNormalizer;
+class AutofillDataModel;
 class AutofillField;
 
 // Helper class to put user content in fields, to eventually send to the
 // renderer.
 class FieldFiller {
  public:
-  explicit FieldFiller(const std::string& app_locale);
+  FieldFiller(const std::string& app_locale,
+              AddressNormalizer* address_normalizer);
   ~FieldFiller();
 
-  // Set |field_data|'s value to |value|. Uses |field|, |address_language_code|,
-  // and |app_locale_| as hints when filling exceptional cases like phone number
-  // values and <select> fields. Returns |true| if the field has been filled,
-  // |false| otherwise.
+  // Set |field_data|'s value to the right value in |data_model|. Uses |field|
+  // to determine which field type should be filled, and |app_locale_| as hint
+  // when filling exceptional cases like phone number values. Returns |true| if
+  // the field has been filled, false otherwise. |cvc| is not stored in the
+  // data model and may be needed at fill time.
   bool FillFormField(const AutofillField& field,
-                     const base::string16& value,
-                     const std::string& address_language_code,
-                     FormFieldData* field_data);
+                     const AutofillDataModel& data_model,
+                     FormFieldData* field_data,
+                     const base::string16& cvc);
 
   // Returns the phone number value for the given |field|. The returned value
   // might be |number|, or could possibly be a meaningful subset |number|, if
@@ -46,6 +50,8 @@ class FieldFiller {
 
  private:
   const std::string app_locale_;
+  // Weak, should outlive this object. May be null.
+  AddressNormalizer* address_normalizer_;
 };
 
 }  // namespace autofill

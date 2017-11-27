@@ -49,6 +49,7 @@ class AutofillClientIOS : public AutofillClient {
   syncer::SyncService* GetSyncService() override;
   IdentityProvider* GetIdentityProvider() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
+  AddressNormalizer* GetAddressNormalizer() override;
   SaveCardBubbleController* GetSaveCardBubbleController() override;
   void ShowAutofillSettings() override;
   void ShowUnmaskPrompt(const CreditCard& card,

@@ -1189,7 +1189,7 @@ AutofillManager::AutofillManager(
                                              payments_client_.get(),
                                              personal_data,
                                              app_locale_)),
-      field_filler_(app_locale),
+      field_filler_(app_locale, client->GetAddressNormalizer()),
       autocomplete_history_manager_(
           std::make_unique<AutocompleteHistoryManager>(driver, client)),
       form_interactions_ukm_logger_(
@@ -1323,27 +1323,13 @@ void AutofillManager::FillOrPreviewDataModelForm(
 
   FormData result = form;
 
-  base::string16 profile_full_name;
-  std::string profile_language_code;
-  if (!is_credit_card) {
-    profile_full_name =
-        data_model.GetInfo(AutofillType(NAME_FULL), app_locale_);
-    profile_language_code =
-        static_cast<const AutofillProfile*>(&data_model)->language_code();
-  }
-
   // If the relevant section is auto-filled, we should fill |field| but not the
   // rest of the form.
   if (SectionIsAutofilled(*form_structure, form, autofill_field->section())) {
     for (FormFieldData& iter : result.fields) {
       if (iter.SameFieldAs(field)) {
-        const base::string16 value =
-            data_model.GetInfo(autofill_field->Type(), app_locale_);
-        if (!value.empty()) {
-          FillFieldWithValue(autofill_field, value, profile_language_code,
-                             profile_full_name, &iter,
-                             /*should_notify=*/!is_credit_card);
-        }
+        FillFieldWithValue(autofill_field, data_model, &iter,
+                           /*should_notify=*/!is_credit_card, cvc);
         break;
       }
     }
@@ -1386,17 +1372,6 @@ void AutofillManager::FillOrPreviewDataModelForm(
       continue;
     }
 
-    base::string16 value =
-        data_model.GetInfo(cached_field->Type(), app_locale_);
-    if (cached_field->Type().GetStorableType() ==
-        CREDIT_CARD_VERIFICATION_CODE) {
-      value = cvc;
-    }
-
-    // Do not attempt to fill empty values because it would skew the metrics.
-    if (value.empty())
-      continue;
-
     // Must match ForEachMatchingFormField() in form_autofill_util.cc.
     // Only notify autofilling of empty fields and the field that initiated
     // the filling (note that "select-one" controls may not be empty but will
@@ -1405,10 +1380,11 @@ void AutofillManager::FillOrPreviewDataModelForm(
                          (result.fields[i].SameFieldAs(field) ||
                           result.fields[i].form_control_type == "select-one" ||
                           result.fields[i].value.empty());
-    // Fill the non-empty |value| into the result vector, which will be sent to
-    // the renderer.
-    FillFieldWithValue(cached_field, value, profile_language_code,
-                       profile_full_name, &result.fields[i], should_notify);
+
+    // Fill the non-empty value from |data_model| into the result vector, which
+    // will be sent to the renderer.
+    FillFieldWithValue(cached_field, data_model, &result.fields[i],
+                       should_notify, cvc);
   }
 
   autofilled_form_signatures_.push_front(form_structure->FormSignatureAsStr());
@@ -1933,15 +1909,13 @@ void AutofillManager::DisambiguateNameUploadTypes(
   }
 }
 
-void AutofillManager::FillFieldWithValue(
-    AutofillField* autofill_field,
-    const base::string16& value,
-    const std::string& profile_language_code,
-    const base::string16& profile_full_name,
-    FormFieldData* field_data,
-    bool should_notify) {
-  if (field_filler_.FillFormField(*autofill_field, value, profile_language_code,
-                                  field_data)) {
+void AutofillManager::FillFieldWithValue(AutofillField* autofill_field,
+                                         const AutofillDataModel& data_model,
+                                         FormFieldData* field_data,
+                                         bool should_notify,
+                                         const base::string16& cvc) {
+  if (field_filler_.FillFormField(*autofill_field, data_model, field_data,
+                                  cvc)) {
     // Mark the cached field as autofilled, so that we can detect when a
     // user edits an autofilled field (for metrics).
     autofill_field->is_autofilled = true;
@@ -1951,8 +1925,12 @@ void AutofillManager::FillFieldWithValue(
     // fields with non-empty values, such as select-one fields.
     field_data->is_autofilled = true;
 
-    if (should_notify)
-      client_->DidFillOrPreviewField(value, profile_full_name);
+    if (should_notify) {
+      client_->DidFillOrPreviewField(
+          /*value=*/data_model.GetInfo(autofill_field->Type(), app_locale_),
+          /*profile_full_name=*/data_model.GetInfo(AutofillType(NAME_FULL),
+                                                   app_locale_));
+    }
   }
 }
 

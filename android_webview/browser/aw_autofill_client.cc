@@ -82,6 +82,10 @@ ukm::UkmRecorder* AwAutofillClient::GetUkmRecorder() {
   return nullptr;
 }
 
+autofill::AddressNormalizer* AwAutofillClient::GetAddressNormalizer() {
+  return nullptr;
+}
+
 autofill::SaveCardBubbleController*
 AwAutofillClient::GetSaveCardBubbleController() {
   return nullptr;

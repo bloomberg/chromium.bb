@@ -224,6 +224,7 @@ static_library("browser") {
     "//components/autofill/core/common",
     "//components/resources",
     "//skia",
+    "//third_party/libaddressinput",
   ]
   deps = [
     "//base",
@@ -248,7 +249,6 @@ static_library("browser") {
     "//sql",
     "//third_party/fips181",
     "//third_party/icu",
-    "//third_party/libaddressinput",
     "//third_party/libphonenumber",
     "//third_party/re2",
     "//ui/base",

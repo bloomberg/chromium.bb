@@ -11,6 +11,7 @@ namespace autofill {
 namespace features {
 
 // All features in alphabetical order.
+extern const base::Feature kAutofillAddressNormalizer;
 extern const base::Feature kAutofillShowTypePredictions;
 
 }  // namespace features
