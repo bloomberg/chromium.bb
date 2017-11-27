@@ -781,6 +781,9 @@ cr.define('login', function() {
           this.handleActionAreaButtonClick_.bind(this));
       this.actionBoxAreaElement.addEventListener('keydown',
           this.handleActionAreaButtonKeyDown_.bind(this));
+      this.actionBoxAreaElement.addEventListener('focus', () => {
+        this.isActionBoxMenuActive = false;
+      });
 
       this.actionBoxMenuTitleElement.addEventListener('keydown',
           this.handleMenuTitleElementKeyDown_.bind(this));
