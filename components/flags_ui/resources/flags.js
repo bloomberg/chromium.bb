@@ -176,6 +176,25 @@ function returnExperimentalFeatures(experimentalFeaturesData) {
 }
 
 /**
+ * Handles updating the UI after experiment selections have been made.
+ * Adds or removes experiment highlighting depending on whether the experiment
+ * is set to the default option then shows the restart button.
+ * @param {HTMLElement} node The select node for the experiment being changed.
+ * @param {number} index The selected option index.
+ */
+function experimentChangesUiUpdates(node, index) {
+  var selected = node.options[index];
+  var experimentContainerEl = $(node.internal_name).firstElementChild;
+  var isDefault =
+      ("default" in selected.dataset && selected.dataset.default == "1") ||
+      (!("default" in selected.dataset) && index === 0);
+  experimentContainerEl.classList.toggle('experiment-default', isDefault);
+  experimentContainerEl.classList.toggle('experiment-switched', !isDefault);
+
+  $('needs-restart').classList.add('show');
+}
+
+/**
  * Handles a 'enable' or 'disable' button getting clicked.
  * @param {HTMLElement} node The node for the experiment being changed.
  * @param {boolean} enable Whether to enable or disable the experiment.
@@ -184,7 +203,7 @@ function handleEnableExperimentalFeature(node, enable) {
   // Tell the C++ FlagsDOMHandler to enable/disable the experiment.
   chrome.send('enableExperimentalFeature', [String(node.internal_name),
                                             String(enable)]);
-  requestExperimentalFeaturesData();
+  experimentChangesUiUpdates(node, enable ? 1 : 0);
 }
 
 /**
@@ -197,7 +216,7 @@ function handleSelectExperimentalFeatureChoice(node, index) {
   // Tell the C++ FlagsDOMHandler to enable the selected choice.
   chrome.send('enableExperimentalFeature',
               [String(node.internal_name) + '@' + index, 'true']);
-  requestExperimentalFeaturesData();
+  experimentChangesUiUpdates(node, index);
 }
 
 /**

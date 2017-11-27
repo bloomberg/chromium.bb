@@ -59,15 +59,55 @@
             tabindex="4">Available</a>
         <div id="tab-content-available" class="tab-content"
             role="tabpanel" aria-labelledby="tab-available" aria-hidden="false">
-          <div class="experiment"
-              jsselect="supportedFeatures"
-              jsvalues="id:internal_name">
+          <!-- Non default experiments. -->
+          <div jsselect="supportedFeatures"
+              jsvalues="id:internal_name; class: is_default ? 'hidden' : 'experiment'"
+              jsdisplay="!is_default">
             <div class="experiment-default"
                 jsvalues="class: is_default ? 'experiment-default flex-container'
                     : 'experiment-switched flex-container'">
               <div class="flex">
                 <h3 class="experiment-name" jscontent="name"
-                    jsvalues="title: is_default ? '' : 'Experiment enabled'">Name</h3>
+                    jsvalues="title: is_default ? '' : 'Experiment enabled'"></h3>
+                <p>
+                  <span jsvalues=".innerHTML:description"></span> –
+                  <span class="platforms" jscontent="supported_platforms.join(', ')"></span>
+                </p>
+                <a class="permalink" jsvalues="href: '#' + internal_name"
+                    jscontent="'#' + internal_name" tabindex="6"></a>
+              </div>
+              <div class="flex experiment-actions">
+                <div jsdisplay="options && options.length > 0">
+                  <select class="experiment-select" tabindex="6"
+                      jsvalues=".internal_name:internal_name;.disabled:!enabled;">
+                    <option jsvalues=".selected:selected;"
+                        jsselect="options"
+                        jscontent="description">
+                    </option>
+                  </select>
+                </div>
+                <select class="experiment-enable-disable" tabindex="6"
+                    jsdisplay="enabled !== undefined"
+                    jsvalues=".internal_name:internal_name;">
+                  <option jsvalues=".selected:!enabled; data-default: enabled ? 1 : 0"
+                      value="disabled">Disabled</option>
+                  <option jsvalues=".selected:enabled; data-default: !enabled ? 1 : 0"
+                      value="enabled">Enabled</option>
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <!-- Experiments with default settings. -->
+          <div class="experiment" jsselect="supportedFeatures"
+              jsvalues="id:internal_name; class: is_default ? 'experiment' : 'hidden'"
+              jsdisplay="is_default">
+            <div class="experiment-default"
+                jsvalues="class: is_default ? 'experiment-default flex-container'
+                    : 'experiment-switched flex-container'">
+              <div class="flex">
+                <h3 class="experiment-name" jscontent="name"
+                    jsvalues="title: is_default ? '' : 'Experiment enabled'"></h3>
                 <p>
                   <span jsvalues=".innerHTML:description"></span> –
                   <span class="platforms" jscontent="supported_platforms.join(', ')"></span>
@@ -79,18 +119,20 @@
                 <div jsdisplay="options && options.length > 0">
                   <select class="experiment-select" tabindex="6"
                       jsvalues=".internal_name:internal_name;.disabled:!enabled">
-                    <option jsvalues=".selected:selected"
+                    <option jsvalues=".selected:selected;"
                         jsselect="options"
-                        jscontent="description">NAME
+                        jscontent="description">
                     </option>
                   </select>
                 </div>
                 <!-- Represent enabled / disabled options in a drop down -->
                 <select class="experiment-enable-disable" tabindex="6"
-                    jsdisplay="enabled || !enabled"
+                    jsdisplay="enabled !== undefined"
                     jsvalues=".internal_name:internal_name;">
-                  <option jsvalues=".selected:!enabled" value="disabled">Disabled</option>
-                  <option jsvalues=".selected:enabled" value="enabled">Enabled</option>
+                  <option jsvalues=".selected:!enabled; data-default:!enabled ? 1 : 0"
+                      value="disabled">Disabled</option>
+                  <option jsvalues=".selected:enabled; data-default: enabled ? 1 : 0"
+                      value="enabled">Enabled</option>
                 </select>
               </div>
             </div>
