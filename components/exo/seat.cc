@@ -12,8 +12,8 @@
 #include "ui/aura/client/focus_client.h"
 
 namespace exo {
-
 namespace {
+
 Surface* GetEffectiveFocus(aura::Window* window) {
   if (!window)
     return nullptr;
@@ -26,16 +26,19 @@ Surface* GetEffectiveFocus(aura::Window* window) {
     return nullptr;
   return ShellSurface::GetMainSurface(top_level_window);
 }
+
 }  // namespace
 
 Seat::Seat() {
   aura::client::GetFocusClient(ash::Shell::Get()->GetPrimaryRootWindow())
       ->AddObserver(this);
+  WMHelper::GetInstance()->AddPreTargetHandler(this);
 }
 
 Seat::~Seat() {
   aura::client::GetFocusClient(ash::Shell::Get()->GetPrimaryRootWindow())
       ->RemoveObserver(this);
+  WMHelper::GetInstance()->RemovePreTargetHandler(this);
 }
 
 void Seat::AddObserver(SeatObserver* observer) {
@@ -50,6 +53,9 @@ Surface* Seat::GetFocusedSurface() {
   return GetEffectiveFocus(WMHelper::GetInstance()->GetFocusedWindow());
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// aura::client::FocusChangeObserver overrides:
+
 void Seat::OnWindowFocused(aura::Window* gained_focus,
                            aura::Window* lost_focus) {
   Surface* const surface = GetEffectiveFocus(gained_focus);
@@ -58,6 +64,23 @@ void Seat::OnWindowFocused(aura::Window* gained_focus,
   }
   for (auto& observer : observers_) {
     observer.OnSurfaceFocused(surface);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ui::EventHandler overrides:
+
+void Seat::OnKeyEvent(ui::KeyEvent* event) {
+  switch (event->type()) {
+    case ui::ET_KEY_PRESSED:
+      pressed_keys_.insert(event->code());
+      break;
+    case ui::ET_KEY_RELEASED:
+      pressed_keys_.erase(event->code());
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 }
 

@@ -19,7 +19,6 @@
 #include "ui/events/event_handler.h"
 
 namespace ui {
-enum class DomCode;
 class KeyEvent;
 }
 
@@ -107,9 +106,6 @@ class Keyboard : public ui::EventHandler,
 
   // The current focus surface for the keyboard.
   Surface* focus_ = nullptr;
-
-  // Vector of currently pressed keys.
-  std::vector<ui::DomCode> pressed_keys_;
 
   // Current set of modifier flags.
   int modifier_flags_ = 0;
