@@ -837,6 +837,11 @@ void V4L2CaptureDelegate::DoCapture() {
       buffer.bytesused = 0;
     } else
 #endif
+        if (buffer.bytesused < capture_format_.ImageAllocationSize()) {
+      LOG(ERROR) << "Dequeued v4l2 buffer contains invalid length ("
+                 << buffer.bytesused << " bytes).";
+      buffer.bytesused = 0;
+    } else
       client_->OnIncomingCapturedData(
           buffer_tracker->start(), buffer_tracker->payload_size(),
           capture_format_, rotation_, now, timestamp);
