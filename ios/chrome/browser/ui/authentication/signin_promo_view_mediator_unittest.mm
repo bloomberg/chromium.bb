@@ -254,11 +254,13 @@ TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateSignedin) {
                                                    PROMO_ACTION_NEW_ACCOUNT
                                     completion:completion_arg]);
   [mediator_ signinPromoViewDidTapSigninWithNewAccount:signin_promo_view_];
-  EXPECT_EQ(ios::SigninPromoViewState::SigninStarted,
+  EXPECT_TRUE(mediator_.isSigninInProgress);
+  EXPECT_EQ(ios::SigninPromoViewState::UsedAtLeastOnce,
             mediator_.signinPromoViewState);
   EXPECT_NE(nil, (id)completion);
   OCMExpect([consumer_ signinDidFinish]);
   completion(YES);
+  EXPECT_FALSE(mediator_.isSigninInProgress);
   EXPECT_EQ(ios::SigninPromoViewState::UsedAtLeastOnce,
             mediator_.signinPromoViewState);
 }

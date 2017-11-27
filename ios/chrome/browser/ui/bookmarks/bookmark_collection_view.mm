@@ -338,9 +338,7 @@ CGFloat minFaviconSizePt = 16;
       (!self.editing && self.folder &&
        self.folder->type() == BookmarkNode::MOBILE &&
        [self.delegate bookmarkCollectionViewShouldShowPromoCell:self]) ||
-      (_signinPromoViewMediator &&
-       _signinPromoViewMediator.signinPromoViewState ==
-           ios::SigninPromoViewState::SigninStarted);
+      (_signinPromoViewMediator && _signinPromoViewMediator.signinInProgress);
   if (shouldShowPromo == _promoVisible)
     return;
   // This is awful, but until the old code to do the refresh when switching
