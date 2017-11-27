@@ -1,4 +1,8 @@
 per-file CharacterNames.h=drott@chromium.org
+per-file TextCodec*.*=jsbell@chromium.org
+per-file TextCodec*.*=jshin@chromium.org
+per-file TextEncoding*.*=jshin@chromium.org
+per-file TextEncoding*.*=jshin@chromium.org
 
 # TEAM: platform-architecture-dev@chromium.org
 # COMPONENT: Blink>Internals>WTF
