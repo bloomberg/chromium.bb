@@ -812,9 +812,6 @@ below:
       <message name="IDS_MEDIA_OVERFLOW_MENU_DOWNLOAD" desc="Media controls overflow menu item label for a download button.">
        Download
       </message>
-      <message name="IDS_MEDIA_REMOTING_DISABLE_TEXT" desc="Media remoting disable button label.">
-       Play on both screens
-      </message>
       <message name="IDS_MEDIA_REMOTING_CAST_TEXT" desc="Text message shown to the user when casting a video to a known remote device.">
        Now casting to <ph name="DEVICE_FRIENDLY_NAME">$1<ex>Living Room TV</ex></ph>
       </message>

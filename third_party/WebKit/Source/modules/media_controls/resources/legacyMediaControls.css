@@ -241,36 +241,6 @@ video::-internal-media-remoting-cast-text-message {
     margin: 0px;
 }
 
-/* TODO(xjz): Remove this after the new MR dialog landed.*/
-video::-internal-media-remoting-disable-button {
-    display: flex;
-    position: absolute;
-    top: calc(50% + 100px);
-    left: calc(50% - 170px);
-    height: 50px;
-    border: 1.5pt solid rgba(255,255,255,.54);
-    border-radius: 2pt;
-    background-color: transparent;
-    color: rgba(255,255,255,.54);
-    margin: 0px;
-    padding: 5.5px 16px 0px 16px;
-    text-wrap: none;
-    text-align: center;
-    font-size: 90%;
-    font-weight: 500;
-    font-family: Roboto-Medium, Sans-serif, Segoe, Serif, Helvetica;
-    box-sizing: border-box;
-    transition: border,color .5s ease-out;
-    z-index: 1;  /* Set this z-index to make the hover effect work. */
-}
-
-/* TODO(xjz): Remove this after the new MR dialog landed.*/
-video::-internal-media-remoting-disable-button:hover {
-    border: 1.5pt solid rgba(255,255,255,.70);
-    color: rgba(255,255,255,.70);
-    cursor: pointer;
-}
-
 video::-internal-media-controls-overlay-cast-button {
     -webkit-appearance: none;
     background-image: -webkit-image-set(

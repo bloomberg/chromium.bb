@@ -495,8 +495,6 @@ blink_core_sources("html") {
     "media/MediaError.h",
     "media/MediaFragmentURIParser.cpp",
     "media/MediaFragmentURIParser.h",
-    "media/MediaRemotingElements.cpp",
-    "media/MediaRemotingElements.h",
     "media/MediaRemotingInterstitial.cpp",
     "media/MediaRemotingInterstitial.h",
     "shadow/DetailsMarkerControl.cpp",

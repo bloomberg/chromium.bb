@@ -532,11 +532,6 @@ WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
   return HTMLMediaElement::DisplayType();
 }
 
-void HTMLVideoElement::DisableMediaRemoting() {
-  if (GetWebMediaPlayer())
-    GetWebMediaPlayer()->RequestRemotePlaybackDisabled(true);
-}
-
 bool HTMLVideoElement::IsRemotingInterstitialVisible() const {
   return remoting_interstitial_ && remoting_interstitial_->IsVisible();
 }

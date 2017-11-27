@@ -90,7 +90,6 @@ struct WebLocalizedString {
     kFileButtonChooseMultipleFilesLabel,
     kFileButtonNoFileSelectedLabel,
     kInputElementAltText,
-    kMediaRemotingDisableText,
     kMediaRemotingCastText,
     kMediaRemotingCastToUnknownDeviceText,
     kMissingPluginText,

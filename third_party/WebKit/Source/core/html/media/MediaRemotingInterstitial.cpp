@@ -8,7 +8,6 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/media/HTMLVideoElement.h"
-#include "core/html/media/MediaRemotingElements.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/WebLocalizedString.h"
 
@@ -30,20 +29,21 @@ MediaRemotingInterstitial::MediaRemotingInterstitial(
           &MediaRemotingInterstitial::ToggleInterstitialTimerFired),
       video_element_(&videoElement) {
   SetShadowPseudoId(AtomicString("-internal-media-remoting-interstitial"));
-  background_image_ = HTMLImageElement::Create(videoElement.GetDocument());
+  background_image_ = HTMLImageElement::Create(GetDocument());
   background_image_->SetShadowPseudoId(
       AtomicString("-internal-media-remoting-background-image"));
   background_image_->SetSrc(videoElement.getAttribute(HTMLNames::posterAttr));
   AppendChild(background_image_);
 
-  cast_icon_ = new MediaRemotingCastIconElement(*this);
+  cast_icon_ = HTMLDivElement::Create(GetDocument());
+  cast_icon_->SetShadowPseudoId(
+      AtomicString("-internal-media-remoting-cast-icon"));
   AppendChild(cast_icon_);
 
-  cast_text_message_ = new MediaRemotingCastMessageElement(*this);
+  cast_text_message_ = HTMLDivElement::Create(GetDocument());
+  cast_text_message_->SetShadowPseudoId(
+      AtomicString("-internal-media-remoting-cast-text-message"));
   AppendChild(cast_text_message_);
-
-  exit_button_ = new MediaRemotingExitButtonElement(*this);
-  AppendChild(exit_button_);
 }
 
 void MediaRemotingInterstitial::Show(
@@ -66,7 +66,6 @@ void MediaRemotingInterstitial::Show(
     toggle_insterstitial_timer_.Stop();
   should_be_visible_ = true;
   RemoveInlineStyleProperty(CSSPropertyDisplay);
-  exit_button_->OnShown();
   toggle_insterstitial_timer_.StartOneShot(kStyleChangeTransSeconds,
                                            BLINK_FROM_HERE);
 }
@@ -79,7 +78,6 @@ void MediaRemotingInterstitial::Hide() {
   should_be_visible_ = false;
   SetInlineStyleProperty(CSSPropertyOpacity, 0,
                          CSSPrimitiveValue::UnitType::kNumber);
-  exit_button_->OnHidden();
   toggle_insterstitial_timer_.StartOneShot(kHiddenAnimationSeconds,
                                            BLINK_FROM_HERE);
 }
@@ -109,7 +107,6 @@ void MediaRemotingInterstitial::OnPosterImageChanged() {
 void MediaRemotingInterstitial::Trace(blink::Visitor* visitor) {
   visitor->Trace(video_element_);
   visitor->Trace(background_image_);
-  visitor->Trace(exit_button_);
   visitor->Trace(cast_icon_);
   visitor->Trace(cast_text_message_);
   HTMLDivElement::Trace(visitor);
