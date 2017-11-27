@@ -4,16 +4,28 @@
 
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 
+#include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "content/public/browser/navigation_handle.h"
 
 namespace safe_browsing {
 PasswordProtectionNavigationThrottle::PasswordProtectionNavigationThrottle(
     content::NavigationHandle* navigation_handle,
+    scoped_refptr<PasswordProtectionRequest> request,
     bool is_warning_showing)
     : content::NavigationThrottle(navigation_handle),
-      is_warning_showing_(is_warning_showing) {}
+      request_(request),
+      is_warning_showing_(is_warning_showing) {
+  // Only call AddThrottle() if there is no modal warning showing. If there's a
+  // modal dialog, PPNavigationThrottle will simply cancel this navigation
+  // immediately, therefore no need to keep track of it.
+  if (!is_warning_showing_)
+    request_->AddThrottle(this);
+}
 
-PasswordProtectionNavigationThrottle::~PasswordProtectionNavigationThrottle() {}
+PasswordProtectionNavigationThrottle::~PasswordProtectionNavigationThrottle() {
+  if (request_)
+    request_->RemoveThrottle(this);
+}
 
 content::NavigationThrottle::ThrottleCheckResult
 PasswordProtectionNavigationThrottle::WillStartRequest() {

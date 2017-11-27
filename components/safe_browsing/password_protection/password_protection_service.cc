@@ -804,18 +804,15 @@ PasswordProtectionService::MaybeCreateNavigationThrottle(
         request->trigger_type() ==
             safe_browsing::LoginReputationClientRequest::PASSWORD_REUSE_EVENT &&
         request->matches_sync_password()) {
-      std::unique_ptr<PasswordProtectionNavigationThrottle> throttle =
-          base::MakeUnique<PasswordProtectionNavigationThrottle>(
-              navigation_handle, /*is_warning_showing=*/false);
-      request->AddThrottle(throttle.get());
-      return throttle;
+      return base::MakeUnique<PasswordProtectionNavigationThrottle>(
+          navigation_handle, request, /*is_warning_showing=*/false);
     }
   }
 
   for (scoped_refptr<PasswordProtectionRequest> request : warning_requests_) {
     if (request->web_contents() == web_contents) {
       return base::MakeUnique<PasswordProtectionNavigationThrottle>(
-          navigation_handle, /*is_warning_showing=*/true);
+          navigation_handle, request, /*is_warning_showing=*/true);
     }
   }
   return nullptr;

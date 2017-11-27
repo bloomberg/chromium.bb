@@ -243,6 +243,10 @@ class ChromePasswordProtectionServiceTest
     return unhandled_sync_password_reuses->size();
   }
 
+  size_t GetNumberOfNavigationThrottles() {
+    return request_ ? request_->throttles_.size() : 0u;
+  }
+
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   sync_preferences::TestingPrefServiceSyncable test_pref_service_;
@@ -550,6 +554,37 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EXPECT_EQ(content::NavigationThrottle::CANCEL,
             SimulateWillStart(test_handle.get()));
   EXPECT_FALSE(test_handle->HasCommitted());
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyNavigationThrottleRemovedWhenNavigationHandleIsGone) {
+  GURL trigger_url(kPhishingURL);
+  NavigateAndCommit(trigger_url);
+  // Simulate a on-going password reuse request that hasn't received
+  // verdict yet.
+  PrepareRequest(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                 /*is_warning_showing=*/false);
+
+  GURL redirect_url(kRedirectURL);
+  std::unique_ptr<content::NavigationHandle> test_handle =
+      content::NavigationHandle::CreateNavigationHandleForTesting(redirect_url,
+                                                                  main_rfh());
+  // Verify navigation get deferred.
+  EXPECT_EQ(content::NavigationThrottle::DEFER,
+            SimulateWillStart(test_handle.get()));
+
+  EXPECT_EQ(1u, GetNumberOfNavigationThrottles());
+
+  // Simulate the deletion of NavigationHandle.
+  test_handle.reset();
+  base::RunLoop().RunUntilIdle();
+
+  // Expect no navigation throttle kept by |request_|.
+  EXPECT_EQ(0u, GetNumberOfNavigationThrottles());
+
+  // Simulate receiving a SAFE verdict.
+  SimulateRequestFinished(LoginReputationClientResponse::SAFE);
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
