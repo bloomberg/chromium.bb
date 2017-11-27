@@ -204,13 +204,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Gets/sets whether the shelf should be hidden when this window is
   // fullscreen.
-  bool hide_shelf_when_fullscreen() const {
-    return hide_shelf_when_fullscreen_;
-  }
-
-  void set_hide_shelf_when_fullscreen(bool value) {
-    hide_shelf_when_fullscreen_ = value;
-  }
+  bool GetHideShelfWhenFullscreen() const;
+  void SetHideShelfWhenFullscreen(bool value);
 
   // Gets/sets whether the shelf should be autohidden when this window is
   // fullscreen or active.

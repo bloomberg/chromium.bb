@@ -9,6 +9,11 @@ module ash.mojom;
 const string kCanConsumeSystemKeys_Property =
   "ash:can-consume-system-keys";
 
+// True if the shelf should be hidden when this window is put into fullscreen.
+// Exposed because some windows want to explicitly opt-out of this.
+const string kHideShelfWhenFullscreen_Property =
+  "ash:hide-shelf-when-fullscreen";
+
 // This is put on windows to indicate that ash should perform auto management of
 // window positions; when you open a second browser, ash will move the two to
 // minimize overlap.

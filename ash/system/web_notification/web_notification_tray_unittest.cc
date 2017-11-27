@@ -350,7 +350,7 @@ TEST_F(WebNotificationTrayTest, PopupAndFullscreen) {
   // this is used by immersive fullscreen and forces the shelf to be auto
   // hidden.
   wm::GetWindowState(widget->GetNativeWindow())
-      ->set_hide_shelf_when_fullscreen(false);
+      ->SetHideShelfWhenFullscreen(false);
   widget->SetFullscreen(true);
   RunAllPendingInMessageLoop();
 

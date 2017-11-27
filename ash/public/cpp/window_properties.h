@@ -31,6 +31,11 @@ enum class WindowStateType;
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kCanConsumeSystemKeysKey;
 
+// Whether the shelf should be hidden when this window is put into fullscreen.
+// Exposed because some windows want to explicitly opt-out of this.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kHideShelfWhenFullscreenKey;
+
 // If true (and the window is a panel), it's attached to its shelf item.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kPanelAttachedKey;
