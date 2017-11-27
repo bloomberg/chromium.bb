@@ -244,7 +244,7 @@ void PasswordGenerationAgent::OnDynamicFormsSeen() {
 
 void PasswordGenerationAgent::OnFieldAutofilled(
     const blink::WebInputElement& password_element) {
-  if (generation_element_ == password_element)
+  if (password_is_generated_ && generation_element_ == password_element)
     PasswordNoLongerGenerated();
 }
 
@@ -607,6 +607,7 @@ void PasswordGenerationAgent::HidePopup() {
 }
 
 void PasswordGenerationAgent::PasswordNoLongerGenerated() {
+  DCHECK(password_is_generated_);
   // Do not treat the password as generated, either here or in the browser.
   password_is_generated_ = false;
   password_edited_ = false;
