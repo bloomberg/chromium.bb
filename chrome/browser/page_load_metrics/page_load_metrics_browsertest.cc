@@ -1069,7 +1069,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 0);
 }
 
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CSSTiming) {
+// Flaky on Linux; see https://crbug.com/788651.
+#if defined(OS_LINUX)
+#define MAYBE_CSSTiming DISABLED_CSSTiming
+#else
+#define MAYBE_CSSTiming CSSTiming
+#endif
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, MAYBE_CSSTiming) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
