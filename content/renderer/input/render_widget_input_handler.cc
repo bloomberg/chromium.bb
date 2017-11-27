@@ -302,19 +302,6 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
     LogPassiveEventListenersUma(processed, touch.dispatch_type,
                                 input_event.TimeStampSeconds(), latency_info);
-
-    // TODO(lanwei): Remove this metric for event latency outside fling in M56,
-    // once we've gathered enough data to decide if we want to ship the passive
-    // event listener for fling, see https://crbug.com/638661.
-    if (touch.dispatch_type == WebInputEvent::kBlocking &&
-        touch.touch_start_or_first_touch_move &&
-        base::TimeTicks::IsHighResolution()) {
-      base::TimeTicks now = base::TimeTicks::Now();
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.Touch.TouchLatencyOutsideFling",
-          GetEventLatencyMicros(input_event.TimeStampSeconds(), now), 1,
-          100000000, 50);
-    }
   } else if (input_event.GetType() == WebInputEvent::kMouseWheel) {
     LogPassiveEventListenersUma(
         processed,
