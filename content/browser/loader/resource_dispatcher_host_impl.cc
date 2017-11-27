@@ -601,21 +601,6 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(
     delegate_->OnRequestRedirected(
         new_url, loader->request(), info->GetContext(), response);
   }
-
-  // Don't notify WebContents observers for requests known to be
-  // downloads; they aren't really associated with the Webcontents.
-  // Note that not all downloads are known before content sniffing.
-  if (info->IsDownload())
-    return;
-
-  // Notify the observers on the UI thread.
-  net::URLRequest* request = loader->request();
-  std::unique_ptr<ResourceRedirectDetails> detail(new ResourceRedirectDetails(
-      loader->request(),
-      !!request->ssl_info().cert,
-      new_url));
-  loader_delegate_->DidGetRedirectForResourceRequest(
-      info->GetWebContentsGetterForRequest(), std::move(detail));
 }
 
 void ResourceDispatcherHostImpl::DidReceiveResponse(

@@ -100,7 +100,6 @@ struct ColorSuggestion;
 struct FaviconURL;
 struct LoadNotificationDetails;
 struct MHTMLGenerationParams;
-struct ResourceRedirectDetails;
 struct ResourceRequestDetails;
 
 namespace mojom {
@@ -215,10 +214,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // A response has been received for a resource request.
   void DidGetResourceResponseStart(
       const ResourceRequestDetails& details);
-
-  // A redirect was received while requesting a resource.
-  void DidGetRedirectForResourceRequest(
-      const ResourceRedirectDetails& details);
 
   // Notify observers that the web contents has been focused.
   void NotifyWebContentsFocused(RenderWidgetHost* render_widget_host);

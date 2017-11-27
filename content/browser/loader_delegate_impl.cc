@@ -23,16 +23,6 @@ void DidGetResourceResponseStartOnUI(
     web_contents->DidGetResourceResponseStart(*details.get());
 }
 
-void DidGetRedirectForResourceRequestOnUI(
-    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    std::unique_ptr<ResourceRedirectDetails> details) {
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(web_contents_getter.Run());
-  if (!web_contents)
-    return;
-  web_contents->DidGetRedirectForResourceRequest(*details.get());
-}
-
 // This method is called in the UI thread to send the timestamp of a resource
 // request to the respective Navigator (for an UMA histogram).
 void DidGetLogResourceRequestTimeOnUI(base::TimeTicks timestamp,
@@ -71,16 +61,6 @@ void LoaderDelegateImpl::DidGetResourceResponseStart(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&DidGetResourceResponseStartOnUI, web_contents_getter,
-                     base::Passed(std::move(details))));
-}
-
-void LoaderDelegateImpl::DidGetRedirectForResourceRequest(
-    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    std::unique_ptr<ResourceRedirectDetails> details) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&DidGetRedirectForResourceRequestOnUI, web_contents_getter,
                      base::Passed(std::move(details))));
 }
 

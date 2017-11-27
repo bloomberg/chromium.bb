@@ -43,17 +43,6 @@ struct ResourceRequestDetails {
   int http_response_code;
 };
 
-// Details about a redirection of a resource request.
-struct ResourceRedirectDetails : public ResourceRequestDetails {
-  ResourceRedirectDetails(const net::URLRequest* request,
-                          bool has_certificate,
-                          const GURL& new_url);
-  ~ResourceRedirectDetails() override;
-
-  // The URL to which we are being redirected.
-  GURL new_url;
-};
-
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_RESOURCE_REQUEST_DETAILS_H_

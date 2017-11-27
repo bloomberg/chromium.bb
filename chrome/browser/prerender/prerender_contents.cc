@@ -38,7 +38,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -51,7 +50,6 @@
 using content::BrowserThread;
 using content::OpenURLParams;
 using content::RenderViewHost;
-using content::ResourceRedirectDetails;
 using content::SessionStorageNamespace;
 using content::WebContents;
 

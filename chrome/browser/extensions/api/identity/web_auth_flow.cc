@@ -38,7 +38,6 @@
 #include "url/url_constants.h"
 
 using content::RenderViewHost;
-using content::ResourceRedirectDetails;
 using content::WebContents;
 using content::WebContentsObserver;
 using guest_view::GuestViewBase;
