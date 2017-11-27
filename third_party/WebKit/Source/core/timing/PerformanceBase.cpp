@@ -363,7 +363,7 @@ void PerformanceBase::AddResourceTiming(const ResourceTimingInfo& info) {
 
   ResourceLoadTiming* last_redirect_timing =
       redirect_chain.back().GetResourceLoadTiming();
-  DCHECK(last_redirect_timing);
+  CHECK(last_redirect_timing);
   double last_redirect_end_time = last_redirect_timing->ReceiveHeadersEnd();
 
   PerformanceEntry* entry = PerformanceResourceTiming::Create(
