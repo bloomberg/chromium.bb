@@ -161,6 +161,8 @@ AudioCodec MimeUtilToAudioCodec(MimeUtil::Codec codec) {
 
 VideoCodec MimeUtilToVideoCodec(MimeUtil::Codec codec) {
   switch (codec) {
+    case MimeUtil::AV1:
+      return kCodecAV1;
     case MimeUtil::H264:
       return kCodecH264;
     case MimeUtil::HEVC:
@@ -768,6 +770,16 @@ bool MimeUtil::ParseCodecHelper(const std::string& mime_type_lower_case,
         case Codec::THEORA:
           out_result->video_profile = THEORAPROFILE_ANY;
           break;
+        case Codec::AV1: {
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+          if (base::FeatureList::IsEnabled(kAv1Decoder)) {
+            out_result->video_profile = AV1PROFILE_PROFILE0;
+            break;
+          }
+#endif
+          return false;
+        }
+
         default:
           NOTREACHED();
       }
@@ -866,7 +878,10 @@ SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
   VideoCodec video_codec = MimeUtilToVideoCodec(codec);
   if (video_codec != kUnknownVideoCodec &&
       // Theora and VP8 do not have profiles/levels.
-      video_codec != kCodecTheora && video_codec != kCodecVP8) {
+      video_codec != kCodecTheora && video_codec != kCodecVP8 &&
+      // TODO(dalecurtis): AV1 has levels, but they aren't supported yet;
+      // http://crbug.com/784993
+      video_codec != kCodecAV1) {
     DCHECK_NE(video_profile, VIDEO_CODEC_PROFILE_UNKNOWN);
     DCHECK_GT(video_level, 0);
   }
