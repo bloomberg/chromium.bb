@@ -334,7 +334,7 @@ bool TabStripModelExperimental::CloseWebContentsAt(int view_index,
   DCHECK(found != end());
   content::WebContents* closing = found->contents_;
   return closing &&
-         InternalCloseTabs(std::vector<content::WebContents*>(1, closing),
+         InternalCloseTabs(base::span<content::WebContents* const>(&closing, 1),
                            close_types);
 }
 
@@ -877,7 +877,7 @@ void TabStripModelExperimental::NotifyIfActiveOrSelectionChanged(
 }
 
 bool TabStripModelExperimental::InternalCloseTabs(
-    const std::vector<content::WebContents*>& tabs_to_close,
+    base::span<content::WebContents* const> tabs_to_close,
     uint32_t close_types) {
   if (tabs_to_close.empty())
     return true;

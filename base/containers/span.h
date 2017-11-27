@@ -121,13 +121,25 @@ using EnableIfConstSpanCompatibleContainer =
 //     // std::string HexEncode(base::span<const uint8_t> data);
 //     std::vector<uint8_t> data_buffer = GenerateData();
 //     std::string r = HexEncode(data_buffer);
-
+//
 //  Mutable:
 //     // ssize_t SafeSNPrintf(base::span<char>, const char* fmt, Args...);
 //     char str_buffer[100];
 //     SafeSNPrintf(str_buffer, "Pi ~= %lf", 3.14);
 //
-// ======= Differences from the working group proposal =======
+// Spans with "const" and pointers
+// -------------------------------
+//
+// Const and pointers can get confusing. Here are vectors of pointers and their
+// corresponding spans (you can always make the span "more const" too):
+//
+//   const std::vector<int*>        =>  base::span<int* const>
+//   std::vector<const int*>        =>  base::span<const int*>
+//   const std::vector<const int*>  =>  base::span<const int* const>
+//
+// Differences from the working group proposal
+// -------------------------------------------
+//
 // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0122r5.pdf is the
 // latest working group proposal. The biggest difference is span does not
 // support a static extent template parameter. Other differences are documented
