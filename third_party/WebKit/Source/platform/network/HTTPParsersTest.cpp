@@ -689,4 +689,29 @@ TEST(HTTPParsersTest, ParseServerTimingHeader) {
   testServerTimingHeader("=;,", {});
 }
 
+TEST(HTTPParsersTest, ParseContentTypeOptionsTest) {
+  struct {
+    const char* value;
+    ContentTypeOptionsDisposition result;
+  } cases[] = {{"nosniff", kContentTypeOptionsNosniff},
+               {"NOSNIFF", kContentTypeOptionsNosniff},
+               {"NOsniFF", kContentTypeOptionsNosniff},
+               {"nosniff, nosniff", kContentTypeOptionsNosniff},
+               {"nosniff, not-nosniff", kContentTypeOptionsNosniff},
+               {"nosniff, none", kContentTypeOptionsNosniff},
+               {" nosniff", kContentTypeOptionsNosniff},
+               {"NOSNIFF ", kContentTypeOptionsNosniff},
+               {" NOsniFF ", kContentTypeOptionsNosniff},
+               {" nosniff, nosniff", kContentTypeOptionsNosniff},
+               {"nosniff , not-nosniff", kContentTypeOptionsNosniff},
+               {" nosniff , none", kContentTypeOptionsNosniff},
+               {"", kContentTypeOptionsNone},
+               {"none", kContentTypeOptionsNone},
+               {"none, nosniff", kContentTypeOptionsNone}};
+  for (const auto& test : cases) {
+    SCOPED_TRACE(test.value);
+    EXPECT_EQ(test.result, ParseContentTypeOptionsHeader(test.value));
+  }
+}
+
 }  // namespace blink
