@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_utils_desktop.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
@@ -42,13 +43,41 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
       browser_(browser),
       signin_access_point_(signin_access_point),
       signin_reason_(signin_reason),
-      account_info_(GetAccountInfo(profile, account_id)) {
+      gaia_id_(GetAccountInfo(profile, account_id).gaia),
+      email_(GetAccountInfo(profile, account_id).email) {
   DCHECK(profile_);
   DCHECK(browser_);
-  DCHECK(!account_info_.account_id.empty());
-  DCHECK(!account_info_.email.empty());
-  DCHECK(!account_info_.gaia.empty());
+  DCHECK(!gaia_id_.empty());
+  DCHECK(!email_.empty());
+  Initialize();
+}
 
+DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
+    Profile* profile,
+    Browser* browser,
+    signin_metrics::AccessPoint signin_access_point,
+    signin_metrics::Reason signin_reason,
+    const std::string& gaia_id,
+    const std::string& email,
+    const std::string& refresh_token)
+    : profile_(profile),
+      browser_(browser),
+      signin_access_point_(signin_access_point),
+      signin_reason_(signin_reason),
+      gaia_id_(gaia_id),
+      email_(email),
+      refresh_token_(refresh_token) {
+  DCHECK(profile_);
+  DCHECK(browser_);
+  DCHECK(!gaia_id_.empty());
+  DCHECK(!email_.empty());
+  DCHECK(!refresh_token_.empty());
+  Initialize();
+}
+
+DiceTurnSyncOnHelper::~DiceTurnSyncOnHelper() {}
+
+void DiceTurnSyncOnHelper::Initialize() {
   // Should not start synching if the profile is already authenticated
   DCHECK(!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated());
 
@@ -65,20 +94,16 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
   }
 }
 
-DiceTurnSyncOnHelper::~DiceTurnSyncOnHelper() {}
-
 bool DiceTurnSyncOnHelper::HandleCanOfferSigninError() {
   std::string error_msg;
-  bool can_offer =
-      CanOfferSignin(profile_, CAN_OFFER_SIGNIN_FOR_ALL_ACCOUNTS,
-                     account_info_.gaia, account_info_.email, &error_msg);
+  bool can_offer = CanOfferSignin(profile_, CAN_OFFER_SIGNIN_FOR_ALL_ACCOUNTS,
+                                  gaia_id_, email_, &error_msg);
   if (can_offer)
     return false;
 
   // Display the error message
   LoginUIServiceFactory::GetForProfile(profile_)->DisplayLoginResult(
-      browser_, base::UTF8ToUTF16(error_msg),
-      base::UTF8ToUTF16(account_info_.email));
+      browser_, base::UTF8ToUTF16(error_msg), base::UTF8ToUTF16(email_));
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   return true;
 }
@@ -88,14 +113,14 @@ bool DiceTurnSyncOnHelper::HandleCrossAccountError() {
       profile_->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
 
   // TODO(skym): Warn for high risk upgrade scenario, crbug.com/572754.
-  if (!IsCrossAccountError(profile_, account_info_.email, account_info_.gaia))
+  if (!IsCrossAccountError(profile_, email_, gaia_id_))
     return false;
 
   content::WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
 
   SigninEmailConfirmationDialog::AskForConfirmation(
-      web_contents, profile_, last_email, account_info_.email,
+      web_contents, profile_, last_email, email_,
       base::Bind(&DiceTurnSyncOnHelper::ConfirmEmailAction,
                  base::Unretained(this), web_contents));
   return true;
@@ -129,6 +154,9 @@ void DiceTurnSyncOnHelper::CreateSyncStarter(
     OneClickSigninSyncStarter::ProfileMode profile_mode) {
   // OneClickSigninSyncStarter will delete itself once the job is done.
   new OneClickSigninSyncStarter(
-      profile_, browser_, account_info_.account_id, signin_access_point_,
-      signin_reason_, profile_mode, OneClickSigninSyncStarter::Callback());
+      profile_, browser_, gaia_id_, email_, "", refresh_token_,
+      signin_access_point_, signin_reason_, profile_mode,
+      OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST,
+      OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN,
+      OneClickSigninSyncStarter::Callback());
 }

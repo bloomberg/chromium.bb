@@ -107,20 +107,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                             ConfirmationRequired display_confirmation,
                             Callback callback);
 
-  // Convenience method to create a sign-in sync starter for an account that
-  // is already available in the token service with the following properties:
-  // * sign-in is done in the current profile;
-  // * sync confirmation dialog is presented after sign-in.
-  //
-  // This is only available when DICE is enabled.
-  OneClickSigninSyncStarter(Profile* profile,
-                            Browser* browser,
-                            const std::string& account_id,
-                            signin_metrics::AccessPoint signin_access_point,
-                            signin_metrics::Reason signin_reason,
-                            ProfileMode profile_mode,
-                            Callback callback);
-
   // chrome::BrowserListObserver override.
   void OnBrowserRemoved(Browser* browser) override;
 

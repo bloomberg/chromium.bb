@@ -3311,8 +3311,8 @@ split_static_library("browser") {
       "signin/dice_response_handler.h",
       "signin/dice_tab_helper.cc",
       "signin/dice_tab_helper.h",
-      "signin/process_dice_header_observer_impl.cc",
-      "signin/process_dice_header_observer_impl.h",
+      "signin/process_dice_header_delegate_impl.cc",
+      "signin/process_dice_header_delegate_impl.h",
     ]
   }
 
