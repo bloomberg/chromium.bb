@@ -275,8 +275,8 @@ void HTMLImageElement::ParseAttribute(
       UseCounter::Count(GetDocument(),
                         WebFeature::kHTMLImageElementReferrerPolicyAttribute);
     }
-  } else if (name == asyncAttr &&
-             RuntimeEnabledFeatures::ImageAsyncAttributeEnabled()) {
+  } else if (name == decodingAttr &&
+             RuntimeEnabledFeatures::ImageDecodingAttributeEnabled()) {
     decoding_mode_ = ParseImageDecodingMode(params.new_value);
   } else {
     HTMLElement::ParseAttribute(params);

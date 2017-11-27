@@ -591,12 +591,12 @@ html element image
 html element img
     property align
     property alt
-    property async
     property border
     property complete
     property crossOrigin
     property currentSrc
     property decode
+    property decoding
     property height
     property hspace
     property isMap
@@ -1762,8 +1762,8 @@ svg element g
     property systemLanguage
     property transform
 svg element image
-    property async
     property decode
+    property decoding
     property farthestViewportElement
     property getBBox
     property getCTM
