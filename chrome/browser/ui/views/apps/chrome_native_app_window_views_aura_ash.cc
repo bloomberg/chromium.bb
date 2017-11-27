@@ -342,12 +342,9 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
 
   // Enter immersive mode if the app is opened in tablet mode with the hide
   // titlebars feature enabled.
-  if (!ash_util::IsRunningInMash()) {
-    DCHECK(ash::Shell::HasInstance());
-    if (CanAutohideTitlebarsInTabletMode()) {
-      immersive_fullscreen_controller_->SetEnabled(
-          ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP, true);
-    }
+  if (CanAutohideTitlebarsInTabletMode()) {
+    immersive_fullscreen_controller_->SetEnabled(
+        ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP, true);
   }
 
   if (HasFrameColor()) {
@@ -366,9 +363,7 @@ void ChromeNativeAppWindowViewsAuraAsh::SetFullscreen(int fullscreen_types) {
   if (immersive_fullscreen_controller_.get()) {
     // Immersive mode should not change if we set fullscreen on a maximizable
     // app in tablet mode when the hide titlebars feature is enabled.
-    bool autohide_titlebars_enabled = false;
-    if (!ash_util::IsRunningInMash())
-      autohide_titlebars_enabled = CanAutohideTitlebarsInTabletMode();
+    bool autohide_titlebars_enabled = CanAutohideTitlebarsInTabletMode();
 
     if (!autohide_titlebars_enabled) {
       // |immersive_fullscreen_controller_| should only be set if immersive
