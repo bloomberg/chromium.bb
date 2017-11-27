@@ -1460,6 +1460,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 }
 
+// TODO(crbug.com/788465): Verify that the history state management here are not
+// needed for WKBasedNavigationManagerImpl and delete this method. The
+// OnNavigationItemCommitted() call is likely the only thing that needs to be
+// retained.
 - (void)updateHTML5HistoryState {
   web::NavigationItemImpl* currentItem = self.currentNavItem;
   if (!currentItem)
@@ -1550,8 +1554,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self executeJavaScript:script
         completionHandler:^(id, NSError*) {
           CRWWebController* strongSelf = weakSelf;
-          if (strongSelf && !strongSelf->_isBeingDestroyed)
+          if (strongSelf &&
+              !strongSelf->_isBeingDestroyed
+              // Make sure that no new navigation has started since URL value
+              // was captured to avoid clobbering _lastRegisteredRequestURL.
+              // See crbug.com/788231.
+              // TODO(crbug.com/788465): simplify history state handling to
+              // avoid this hack.
+              && currentItem == self.currentNavItem) {
             strongSelf->_lastRegisteredRequestURL = URL;
+          }
         }];
 }
 
@@ -1981,7 +1993,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
           _documentURL.spec() == url::kAboutBlankURL) ||
          // about URL was changed by WebKit (e.g. about:newtab -> about:blank)
          (_lastRegisteredRequestURL.scheme() == url::kAboutScheme &&
-          currentURL.spec() == url::kAboutBlankURL))
+          currentURL.spec() == url::kAboutBlankURL) ||
+         // In a very unfortunate edge case, window.history.didReplaceState
+         // message can arrive between the |webView:didCommitNavigation| and
+         // |webView:didFinishNavigation| callbacks of the page that contains
+         // the replaceState call. In this case, _lastRegisteredRequestURL and
+         // webView.URL are already updated to the replace state URL, but
+         // currentURL is still the old URL. See crbug.com/788464.
+         // TODO(crbug.com/788465): simplify history state handling to avoid
+         // this hack.
+         (_lastRegisteredRequestURL == net::GURLWithNSURL(_webView.URL)))
       << std::endl
       << "currentURL = [" << currentURL << "]" << std::endl
       << "_lastRegisteredRequestURL = [" << _lastRegisteredRequestURL << "]";
@@ -4927,6 +4948,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
       return;
     [self URLDidChangeWithoutDocumentChange:URL];
   } else if ([self isKVOChangePotentialSameDocumentNavigationToURL:URL]) {
+    WKNavigation* navigation = [_navigationStates lastAddedNavigation];
     [_webView
         evaluateJavaScript:@"window.location.href"
          completionHandler:^(id result, NSError* error) {
@@ -4955,9 +4977,22 @@ registerLoadRequestForURL:(const GURL&)requestURL
            // Check that the new URL is different from the current
            // document URL. If not, URL change should not be reported.
            BOOL URLDidChangeFromDocumentURL = URL != _documentURL;
+           // Check if a new different document navigation started before the JS
+           // completion block fires. Check WKNavigationState to make sure this
+           // navigation has started in WKWebView. If so, don't run the block to
+           // avoid clobbering global states. See crbug.com/788452.
+           // TODO(crbug.com/788465): simplify history state handling to avoid
+           // this hack.
+           WKNavigation* last_added_navigation =
+              [_navigationStates lastAddedNavigation];
+           BOOL differentDocumentNavigationStarted =
+             navigation != last_added_navigation &&
+             [_navigationStates stateForNavigation:last_added_navigation] >=
+             web::WKNavigationState::STARTED;
            if (windowLocationMatchesNewURL &&
                newURLOriginMatchesDocumentURLOrigin &&
-               webViewURLMatchesNewURL && URLDidChangeFromDocumentURL) {
+               webViewURLMatchesNewURL && URLDidChangeFromDocumentURL &&
+               !differentDocumentNavigationStarted) {
              [self URLDidChangeWithoutDocumentChange:URL];
            }
          }];
