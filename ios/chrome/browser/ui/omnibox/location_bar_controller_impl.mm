@@ -23,7 +23,6 @@
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
-#include "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -147,6 +146,7 @@ LocationBarControllerImpl::LocationBarControllerImpl(
     id<BrowserCommands> dispatcher)
     : edit_view_(base::MakeUnique<OmniboxViewIOS>(location_bar_view.textField,
                                                   this,
+                                                  this,
                                                   browser_state)),
       location_bar_view_(location_bar_view),
       delegate_(delegate),
@@ -209,7 +209,7 @@ void LocationBarControllerImpl::OnAutocompleteAccept(
 void LocationBarControllerImpl::OnChanged() {
   const bool page_is_offline = IsCurrentPageOffline(GetWebState());
   const int resource_id = edit_view_->GetIcon(page_is_offline);
-  [location_bar_view_.textField setPlaceholderImage:resource_id];
+  [location_bar_view_ setPlaceholderImage:resource_id];
 
   // TODO(rohitrao): Can we get focus information from somewhere other than the
   // model?
@@ -222,10 +222,10 @@ void LocationBarControllerImpl::OnChanged() {
           experimental_flags::IsPageIconForDowngradedHTTPSEnabled() &&
           DoesCurrentPageHaveCertInfo(GetWebState());
       if (show_icon_for_state || page_has_downgraded_HTTPS || page_is_offline) {
-        [location_bar_view_.textField showPlaceholderImage];
+        [location_bar_view_ setLeadingButtonHidden:NO];
         is_showing_placeholder_while_collapsed_ = true;
       } else {
-        [location_bar_view_.textField hidePlaceholderImage];
+        [location_bar_view_ setLeadingButtonHidden:YES];
         is_showing_placeholder_while_collapsed_ = false;
       }
     }
@@ -252,14 +252,17 @@ void LocationBarControllerImpl::OnKillFocus() {
   // Hide the location icon on phone.  A subsequent call to OnChanged() will
   // bring the icon back if needed.
   if (!IsIPadIdiom()) {
-    [location_bar_view_.textField hidePlaceholderImage];
+    [location_bar_view_ setLeadingButtonHidden:YES];
     is_showing_placeholder_while_collapsed_ = false;
   }
+
+  // Enable the button since the textfield is now defocused.
+  [location_bar_view_ setLeadingButtonEnabled:YES];
 
   // Update the placeholder icon.
   const int resource_id =
       edit_view_->GetIcon(IsCurrentPageOffline(GetWebState()));
-  [location_bar_view_.textField setPlaceholderImage:resource_id];
+  [location_bar_view_ setPlaceholderImage:resource_id];
 
   // Show the placeholder text on iPad.
   if (IsIPadIdiom()) {
@@ -274,12 +277,15 @@ void LocationBarControllerImpl::OnKillFocus() {
 void LocationBarControllerImpl::OnSetFocus() {
   // Show the location icon on phone.
   if (!IsIPadIdiom())
-    [location_bar_view_.textField showPlaceholderImage];
+    [location_bar_view_ setLeadingButtonHidden:NO];
+
+  // Disable the button while focused.
+  [location_bar_view_ setLeadingButtonEnabled:NO];
 
   // Update the placeholder icon.
   const int resource_id =
       edit_view_->GetIcon(IsCurrentPageOffline(GetWebState()));
-  [location_bar_view_.textField setPlaceholderImage:resource_id];
+  [location_bar_view_ setPlaceholderImage:resource_id];
 
   // Hide the placeholder text on iPad.
   if (IsIPadIdiom()) {
@@ -321,14 +327,11 @@ void LocationBarControllerImpl::InstallLocationIcon() {
   [button setTitleColor:[UIColor colorWithWhite:0.631 alpha:1]
                forState:UIControlStateNormal];
   [button titleLabel].font = [[MDCTypography fontLoader] regularFontOfSize:12];
-  [location_bar_view_.textField setLeftView:button];
+  [location_bar_view_ setLeadingButton:button];
 
   // The placeholder image is only shown when in edit mode on iPhone, and always
   // shown on iPad.
-  if (IsIPadIdiom())
-    [location_bar_view_.textField setLeftViewMode:UITextFieldViewModeAlways];
-  else
-    [location_bar_view_.textField setLeftViewMode:UITextFieldViewModeNever];
+  [location_bar_view_ setLeadingButtonHidden:!IsIPadIdiom()];
 }
 
 void LocationBarControllerImpl::CreateClearTextIcon(bool is_incognito) {
@@ -370,4 +373,10 @@ void LocationBarControllerImpl::UpdateRightDecorations() {
     [location_bar_view_.textField setRightView:clear_text_button_];
     [clear_text_button_ setAlpha:1];
   }
+}
+
+#pragma mark - LeftImageProvider
+
+void LocationBarControllerImpl::SetLeftImage(int imageId) {
+  [location_bar_view_ setPlaceholderImage:imageId];
 }
