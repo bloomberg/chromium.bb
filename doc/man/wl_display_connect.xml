@@ -55,14 +55,38 @@
     <title>Description</title>
     <para><function>wl_display_connect</function> connects to a Wayland socket
           that was previously opened by a Wayland server. The server socket must
-          be placed in <envar>XDG_RUNTIME_DIR</envar> for this function to
-          find it. The <varname>name</varname> argument specifies the name of
+          be placed in <envar>XDG_RUNTIME_DIR</envar> when <envar>WAYLAND_DISPLAY</envar>
+	  (or <varname>name</varname>, see below) is a simple name, for this
+	  function to find it. The server socket is also allowed to exist at an
+	  arbitrary path; usage details follow. See below for compatibility issue
+	  details.</para>
+
+    <para>The <varname>name</varname> argument specifies the name of
           the socket or <constant>NULL</constant> to use the default (which is
           <constant>"wayland-0"</constant>). The environment variable
-          <envar>WAYLAND_DISPLAY</envar> replaces the default value. If
-          <envar>WAYLAND_SOCKET</envar> is set, this function behaves like
+          <envar>WAYLAND_DISPLAY</envar> replaces the default value.
+
+	  If <varname>name</varname> is an absolute path, then that path is used
+	  as the Wayland socket to which the connection is attempted. Note that
+	  in combination with the default-value behavior described above, this
+	  implies that setting <envar>WAYLAND_DISPLAY</envar> to an absolute
+	  path will implicitly cause <varname>name</varname> to take on that
+	  absolute path if <varname>name</varname> is <constant>NULL</constant>.
+
+          If <envar>WAYLAND_SOCKET</envar> is set, this function behaves like
           <function>wl_display_connect_to_fd</function> with the file-descriptor
           number taken from the environment variable.</para>
+
+    <para>Support for interpreting <envar>WAYLAND_DISPLAY</envar> as an
+          absolute path is a change in behavior compared to
+          <function>wl_display_connect</function>'s behavior in versions
+          1.14 and older of Wayland. It is no longer guaranteed in versions
+          1.15 and higher that the Wayland socket chosen is equivalent to
+          manually constructing a socket pathname by concatenating
+          <envar>XDG_RUNTIME_DIR</envar> and <envar>WAYLAND_DISPLAY</envar>.
+          Manual construction of the socket path must account for the
+          possibility that <envar>WAYLAND_DISPLAY</envar> contains an absolute
+          path.</para>
 
     <para><function>wl_display_connect_to_fd</function> connects to a Wayland
           socket with an explicit file-descriptor. The file-descriptor is passed

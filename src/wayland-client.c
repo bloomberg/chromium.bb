@@ -857,9 +857,17 @@ connect_to_socket(const char *name)
 	socklen_t size;
 	const char *runtime_dir;
 	int name_size, fd;
+	bool path_is_absolute;
+
+	if (name == NULL)
+		name = getenv("WAYLAND_DISPLAY");
+	if (name == NULL)
+		name = "wayland-0";
+
+	path_is_absolute = name[0] == '/';
 
 	runtime_dir = getenv("XDG_RUNTIME_DIR");
-	if (!runtime_dir) {
+	if (!runtime_dir && !path_is_absolute) {
 		wl_log("error: XDG_RUNTIME_DIR not set in the environment.\n");
 		/* to prevent programs reporting
 		 * "failed to create display: Success" */
@@ -867,25 +875,32 @@ connect_to_socket(const char *name)
 		return -1;
 	}
 
-	if (name == NULL)
-		name = getenv("WAYLAND_DISPLAY");
-	if (name == NULL)
-		name = "wayland-0";
-
 	fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
 	if (fd < 0)
 		return -1;
 
 	memset(&addr, 0, sizeof addr);
 	addr.sun_family = AF_LOCAL;
-	name_size =
-		snprintf(addr.sun_path, sizeof addr.sun_path,
-			 "%s/%s", runtime_dir, name) + 1;
+	if (!path_is_absolute) {
+		name_size =
+			snprintf(addr.sun_path, sizeof addr.sun_path,
+			         "%s/%s", runtime_dir, name) + 1;
+	} else {
+		/* absolute path */
+		name_size =
+			snprintf(addr.sun_path, sizeof addr.sun_path,
+			         "%s", name) + 1;
+	}
 
 	assert(name_size > 0);
 	if (name_size > (int)sizeof addr.sun_path) {
-		wl_log("error: socket path \"%s/%s\" plus null terminator"
-		       " exceeds 108 bytes\n", runtime_dir, name);
+		if (!path_is_absolute) {
+			wl_log("error: socket path \"%s/%s\" plus null terminator"
+			       " exceeds %i bytes\n", runtime_dir, name, (int) sizeof(addr.sun_path));
+		} else {
+			wl_log("error: socket path \"%s\" plus null terminator"
+			       " exceeds %i bytes\n", name, (int) sizeof(addr.sun_path));
+		}
 		close(fd);
 		/* to prevent programs reporting
 		 * "failed to add socket: Success" */
@@ -993,6 +1008,16 @@ wl_display_connect_to_fd(int fd)
  * Connect to the Wayland display named \c name. If \c name is \c NULL,
  * its value will be replaced with the WAYLAND_DISPLAY environment
  * variable if it is set, otherwise display "wayland-0" will be used.
+ *
+ * If \c name is an absolute path, then that path is used as-is for
+ * the location of the socket at which the Wayland server is listening;
+ * no qualification inside XDG_RUNTIME_DIR is attempted.
+ *
+ * If \c name is \c NULL and the WAYLAND_DISPLAY environment variable
+ * is set to an absolute pathname, then that pathname is used as-is
+ * for the socket in the same manner as if \c name held an absolute
+ * path. Support for absolute paths in \c name and WAYLAND_DISPLAY
+ * is present since Wayland version 1.15.
  *
  * \memberof wl_display
  */
