@@ -74,6 +74,7 @@ class FakeExternalProtocolHandlerDelegate
     EXPECT_EQ(block_state_, ExternalProtocolHandler::UNKNOWN);
     EXPECT_NE(os_state_, shell_integration::IS_DEFAULT);
     has_prompted_ = true;
+    launch_or_prompt_url_ = url;
   }
 
   void LaunchUrlWithoutSecurityCheck(
@@ -82,6 +83,7 @@ class FakeExternalProtocolHandlerDelegate
     EXPECT_EQ(block_state_, ExternalProtocolHandler::DONT_BLOCK);
     EXPECT_NE(os_state_, shell_integration::IS_DEFAULT);
     has_launched_ = true;
+    launch_or_prompt_url_ = url;
   }
 
   void FinishedProcessingCheck() override {
@@ -100,12 +102,17 @@ class FakeExternalProtocolHandlerDelegate
   bool has_prompted() { return has_prompted_; }
   bool has_blocked() { return has_blocked_; }
 
+  const std::string& launch_or_prompt_url() {
+    return launch_or_prompt_url_.spec();
+  }
+
  private:
   ExternalProtocolHandler::BlockState block_state_;
   shell_integration::DefaultWebClientState os_state_;
   bool has_launched_;
   bool has_prompted_;
   bool has_blocked_;
+  GURL launch_or_prompt_url_;
 };
 
 class ExternalProtocolHandlerTest : public testing::Test {
@@ -131,7 +138,14 @@ class ExternalProtocolHandlerTest : public testing::Test {
   void DoTest(ExternalProtocolHandler::BlockState block_state,
               shell_integration::DefaultWebClientState os_state,
               Action expected_action) {
-    GURL url("mailto:test@test.com");
+    DoTest(block_state, os_state, expected_action,
+           GURL("mailto:test@test.com"));
+  }
+
+  void DoTest(ExternalProtocolHandler::BlockState block_state,
+              shell_integration::DefaultWebClientState os_state,
+              Action expected_action,
+              const GURL& url) {
     EXPECT_FALSE(delegate_.has_prompted());
     EXPECT_FALSE(delegate_.has_launched());
     EXPECT_FALSE(delegate_.has_blocked());
@@ -216,6 +230,16 @@ TEST_F(ExternalProtocolHandlerTest,
        TestLaunchSchemeUnknownChromeOtherModeDefault) {
   DoTest(ExternalProtocolHandler::UNKNOWN,
          shell_integration::OTHER_MODE_IS_DEFAULT, Action::PROMPT);
+}
+
+TEST_F(ExternalProtocolHandlerTest, TestUrlEscape) {
+  GURL url("alert:test message\" --bad%2B\r\n 文本 \"file");
+  DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::NOT_DEFAULT,
+         Action::PROMPT, url);
+  // Expect that the "\r\n" has been removed, and all other illegal URL
+  // characters have been escaped.
+  EXPECT_EQ("alert:test%20message%22%20--bad%2B%20%E6%96%87%E6%9C%AC%20%22file",
+            delegate_.launch_or_prompt_url());
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateUnknown) {
