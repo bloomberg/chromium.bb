@@ -230,7 +230,8 @@ class UserSessionManager
   scoped_refptr<input_method::InputMethodManager::State> GetDefaultIMEState(
       Profile* profile);
 
-  // Check given profile's EndofLife Status and show notification accordingly.
+  // Check to see if given profile should show EndOfLife Notification
+  // and show the message accordingly.
   void CheckEolStatus(Profile* profile);
 
   // Note this could return NULL if not enabled.
@@ -398,10 +399,6 @@ class UserSessionManager
   bool TokenHandlesEnabled();
 
   void CreateTokenUtilIfMissing();
-
-  // Returns |true| if given profile show see EndofLife Notification when
-  // applicable.
-  bool ShouldShowEolNotification(Profile* profile);
 
   // Test API methods.
 

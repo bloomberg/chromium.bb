@@ -140,6 +140,8 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
     if (tether_service)
       tether_service->StartTetherIfPossible();
   }
+
+  UserSessionManager::GetInstance()->CheckEolStatus(user_profile);
 }
 
 // Starts a user session with stub user. This also happens on a dev machine
