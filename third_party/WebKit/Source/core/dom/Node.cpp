@@ -2407,11 +2407,6 @@ void Node::DefaultEventHandler(Event* event) {
           frame->GetEventHandler().StartMiddleClickAutoscroll(layout_object);
       }
     }
-  } else if (event->type() == EventTypeNames::webkitEditableContentChanged) {
-    // TODO(chongz): Remove after shipped.
-    // New InputEvent are dispatched in Editor::appliedEditing, etc.
-    if (!RuntimeEnabledFeatures::InputEventEnabled())
-      DispatchInputEvent();
   }
 }
 

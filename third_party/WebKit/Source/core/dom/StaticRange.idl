@@ -4,9 +4,7 @@
 
 // https://garykac.github.io/staticrange/#interface-staticrange
 
-[
-    RuntimeEnabled=InputEvent
-] interface StaticRange {
+interface StaticRange {
     readonly attribute Node startContainer;
     readonly attribute unsigned long startOffset;
     readonly attribute Node endContainer;

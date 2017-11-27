@@ -111,8 +111,6 @@ void DispatchInputEvent(Element* target,
                         InputEvent::InputType input_type,
                         const String& data,
                         InputEvent::EventIsComposing is_composing) {
-  if (!RuntimeEnabledFeatures::InputEventEnabled())
-    return;
   if (!target)
     return;
   // TODO(chongz): Pass appreciate |ranges| after it's defined on spec.
