@@ -135,6 +135,8 @@ void OomInterventionTabHelper::DidStartNavigation(
   if (navigation_handle->IsSameDocument())
     return;
 
+  intervention_.reset();
+
   // Filter out background navigation.
   if (!IsLastVisibleWebContents(navigation_handle->GetWebContents())) {
     ResetInterventionState();
