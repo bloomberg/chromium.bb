@@ -219,10 +219,12 @@ public class ChromeTabbedActivity
 
     /**
      * Time in ms from when we last backgrounded Chrome until we show the bottom sheet at half.
-     * Time is 3 hours.
+     * Default time is 3 hours.
      * crbug.com/706258
      */
-    private static final long TIME_SINCE_BACKGROUNDED_TO_SHOW_BOTTOM_SHEET_HALF_MS = 10800000L;
+    private static final int TIME_SINCE_BACKGROUNDED_TO_SHOW_BOTTOM_SHEET_HALF_MINS = 180;
+    private static final String TIME_SINCE_BACKGROUNDED_IN_MINS_PARAM =
+            "time_since_backgrounded_in_mins";
 
     // Name of the ChromeTabbedActivity alias that handles MAIN intents.
     public static final String MAIN_LAUNCHER_ACTIVITY_NAME = "com.google.android.apps.chrome.Main";
@@ -964,13 +966,19 @@ public class ChromeTabbedActivity
 
         if (!mIntentHandler.isIntentUserVisible()) return false;
 
-        if (FeatureUtilities.isChromeHomeEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()
+                && ChromeFeatureList.isEnabled(
+                           ChromeFeatureList.CHROME_HOME_INACTIVITY_SHEET_EXPANSION)) {
             BottomSheet bottomSheet = getBottomSheet();
             assert bottomSheet != null;
 
+            int timeoutMinsFieldTrialValue = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                    ChromeFeatureList.CHROME_HOME_INACTIVITY_SHEET_EXPANSION,
+                    TIME_SINCE_BACKGROUNDED_IN_MINS_PARAM,
+                    TIME_SINCE_BACKGROUNDED_TO_SHOW_BOTTOM_SHEET_HALF_MINS);
+            long timeoutExpandBottomSheet = TimeUnit.MINUTES.toMillis(timeoutMinsFieldTrialValue);
             if (bottomSheet.isSheetOpen()
-                    || (getTimeSinceLastBackgroundedMs()
-                               < TIME_SINCE_BACKGROUNDED_TO_SHOW_BOTTOM_SHEET_HALF_MS)) {
+                    || (getTimeSinceLastBackgroundedMs() < timeoutExpandBottomSheet)) {
                 return false;
             }
 
@@ -984,8 +992,9 @@ public class ChromeTabbedActivity
                 }
                 return false;
             }
-            maybeSetBottomSheetStateToHalfOnStartup(bottomSheet);
-            return false;
+            bottomSheet.setSheetState(
+                    BottomSheet.SHEET_STATE_HALF, true, StateChangeReason.STARTUP);
+            return true;
         }
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_LAUNCH_AFTER_INACTIVITY)) {
@@ -1019,16 +1028,6 @@ public class ChromeTabbedActivity
         if (!reuseOrCreateNewNtp()) return false;
         RecordUserAction.record("MobileStartup.MainIntent.NTPCreatedDueToInactivity");
         return true;
-    }
-
-    private boolean maybeSetBottomSheetStateToHalfOnStartup(BottomSheet bottomSheet) {
-        if (getTimeSinceLastBackgroundedMs()
-                >= TIME_SINCE_BACKGROUNDED_TO_SHOW_BOTTOM_SHEET_HALF_MS) {
-            bottomSheet.setSheetState(
-                    BottomSheet.SHEET_STATE_HALF, true, StateChangeReason.STARTUP);
-            return true;
-        }
-        return false;
     }
 
     /**

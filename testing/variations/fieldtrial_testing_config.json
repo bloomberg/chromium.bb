@@ -751,6 +751,30 @@
             ]
         }
     ],
+    "ChromeHomeInactivitySheetExpansion": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ChromeHomeInactivitySheetExpansion"
+                    ]
+                },
+                {
+                    "name": "3Hours",
+                    "params": {
+                        "time_since_backgrounded_in_mins": "180"
+                    },
+                    "enable_features": [
+                        "ChromeHomeInactivitySheetExpansion"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChromeHomePromo": [
         {
             "platforms": [

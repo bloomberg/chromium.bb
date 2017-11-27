@@ -1696,6 +1696,12 @@ const char kChromeHomeBottomNavLabelsName[] =
 const char kChromeHomeBottomNavLabelsDescription[] =
     "Enables text labels for Chrome Home bottom navigation menu items.";
 
+const char kChromeHomeInactivitySheetExpansionName[] =
+    "Expansion of Chrome Home bottom sheet on startup";
+const char kChromeHomeInactivitySheetExpansionDescription[] =
+    "Expand bottom sheet on startup in Chrome Home after a period of"
+    " inactivity.";
+
 const char kChromeHomeName[] = "Chrome Home";
 const char kChromeHomeDescription[] =
     "Enables Chrome Home on Android. You must restart the browser"
