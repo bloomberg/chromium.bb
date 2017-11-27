@@ -29,15 +29,19 @@
 
 namespace WTF {
 
-// ListHashSet: Just like HashSet, this class provides a Set interface - a
-// collection of unique objects with O(1) insertion, removal and test for
-// containership. However, it also has an order - iterating it will always give
-// back values in the order in which they are added.
-
-// Unlike iteration of most WTF Hash data structures, iteration is guaranteed
-// safe against mutation of the ListHashSet, except for removal of the item
-// currently pointed to by a given iterator.
-
+// ListHashSet provides a Set interface like HashSet, but also has a
+// predictable iteration order. It has O(1) insertion, removal, and test for
+// containership. It maintains a linked list through its contents such that
+// iterating it yields values in the order in which they were inserted.
+//
+// ListHashSet iterators are not invalidated by mutation of the collection,
+// unless they point to removed items. This means, for example, that you can
+// safely modify the container while iterating over it, as long as you don't
+// remove the current item.
+//
+// Prefer to use LinkedHashSet instead where possible
+// (https://crbug.com/614112). We would like to eventually remove ListHashSet
+// in favor of LinkedHashSet, because the latter supports WeakMember<T>.
 template <typename Value,
           size_t inlineCapacity,
           typename HashFunctions,
