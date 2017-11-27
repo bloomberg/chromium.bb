@@ -41676,6 +41676,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.DNS.ResolveError.Fast" enum="NetErrorCodes">
+  <owner>mgersh@chromium.org</owner>
+  <summary>
+    For DNS resolutions that failed after less than 10 ms, which are probably
+    local failures, what error code the jobs failed with.
+  </summary>
+</histogram>
+
+<histogram name="Net.DNS.ResolveError.Slow" enum="NetErrorCodes">
+  <owner>mgersh@chromium.org</owner>
+  <summary>
+    For DNS resolutions that failed after at least 10 ms, which are probably
+    remote failures or connectivity problems, what error code the jobs failed
+    with.
+  </summary>
+</histogram>
+
 <histogram name="Net.DNS.ResolveFailureTime" units="ms">
   <owner>mgersh@chromium.org</owner>
   <summary>

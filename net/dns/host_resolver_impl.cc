@@ -1722,6 +1722,15 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     DCHECK_LT(static_cast<int>(category),
               static_cast<int>(RESOLVE_MAX));  // Be sure it was set.
     UMA_HISTOGRAM_ENUMERATION("Net.DNS.ResolveCategory", category, RESOLVE_MAX);
+
+    if (category == RESOLVE_FAIL || category == RESOLVE_ABORT) {
+      if (duration < base::TimeDelta::FromMilliseconds(10))
+        UMA_HISTOGRAM_SPARSE_SLOWLY("Net.DNS.ResolveError.Fast",
+                                    std::abs(error));
+      else
+        UMA_HISTOGRAM_SPARSE_SLOWLY("Net.DNS.ResolveError.Slow",
+                                    std::abs(error));
+    }
   }
 
   // Performs Job's last rites. Completes all Requests. Deletes this.
