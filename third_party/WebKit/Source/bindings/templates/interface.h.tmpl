@@ -136,10 +136,6 @@ class {{v8_class}} {
       v8::Local<v8::Function> interfaceObject,
       v8::Local<v8::FunctionTemplate> interfaceTemplate) {}
   {% endif %}
-  {% if has_install_conditional_features_on_global_func %}
-  {{exported}}static void InstallConditionalFeaturesOnGlobal(
-      v8::Local<v8::Context>, const DOMWrapperWorld&);
-  {% endif %}{# has_install_conditional_features_on_global_func #}
 
   {% if has_partial_interface %}
   {{exported}}static void UpdateWrapperTypeInfo(

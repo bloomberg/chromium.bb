@@ -175,7 +175,7 @@ void LocalWindowProxy::Initialize() {
 
   InstallConditionalFeatures();
 
-  if (world_->IsMainWorld()) {
+  if (World().IsMainWorld()) {
     GetFrame()->Loader().DispatchDidClearWindowObjectInMainWorld();
   }
 }
@@ -248,12 +248,8 @@ void LocalWindowProxy::InstallConditionalFeatures() {
                GetFrame()->IsMainFrame());
 
   v8::Local<v8::Context> context = script_state_->GetContext();
-  const WrapperTypeInfo* wrapper_type_info =
-      GetFrame()->DomWindow()->GetWrapperTypeInfo();
 
-  InstallOriginTrialFeaturesOnGlobal(wrapper_type_info, script_state_.get());
-
-  // If the context was created from snapshot, all remained conditionally
+  // If the context was created from snapshot, all conditionally
   // enabled features are installed in
   // V8ContextSnapshot::InstallConditionalFeatures().
   if (V8ContextSnapshot::InstallConditionalFeatures(
@@ -262,12 +258,17 @@ void LocalWindowProxy::InstallConditionalFeatures() {
   }
 
   v8::Local<v8::Object> global_proxy = context->Global();
+  const WrapperTypeInfo* wrapper_type_info =
+      GetFrame()->DomWindow()->GetWrapperTypeInfo();
+
+  v8::Local<v8::Object> unused_prototype_object;
+  v8::Local<v8::Function> unused_interface_object;
   wrapper_type_info->InstallConditionalFeatures(
-      context, World(), global_proxy, v8::Local<v8::Object>(),
-      v8::Local<v8::Function>(),
+      context, World(), global_proxy, unused_prototype_object,
+      unused_interface_object,
       wrapper_type_info->domTemplate(GetIsolate(), World()));
 
-  if (world_->IsMainWorld()) {
+  if (World().IsMainWorld()) {
     // For the main world, install any remaining conditional bindings (i.e.
     // for origin trials, which do not apply to extensions). Some conditional
     // bindings cannot be enabled until the execution context is available

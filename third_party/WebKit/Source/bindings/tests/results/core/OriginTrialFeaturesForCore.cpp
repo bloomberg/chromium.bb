@@ -25,8 +25,6 @@ namespace blink {
 namespace {
 InstallOriginTrialFeaturesFunction g_old_install_origin_trial_features_function =
     nullptr;
-InstallOriginTrialFeaturesOnGlobalFunction
-    g_old_install_origin_trial_features_on_global_function = nullptr;
 InstallPendingOriginTrialFeatureFunction
     g_old_install_pending_origin_trial_feature_function = nullptr;
 
@@ -66,20 +64,6 @@ void InstallOriginTrialFeaturesForCore(
   }
 }
 
-void InstallOriginTrialFeaturesOnGlobalForCore(
-    const WrapperTypeInfo* wrapper_type_info,
-    const ScriptState* script_state) {
-  (*g_old_install_origin_trial_features_on_global_function)(wrapper_type_info,
-                                                           script_state);
-
-  // TODO(chasej): Generate this logic at compile-time, based on interfaces with
-  // [SecureContext] attribute.
-  if (wrapper_type_info == &V8Window::wrapperTypeInfo) {
-    V8Window::InstallConditionalFeaturesOnGlobal(script_state->GetContext(),
-                                                 script_state->World());
-  }
-}
-
 void InstallPendingOriginTrialFeatureForCore(const String& feature,
                                              const ScriptState* script_state) {
   (*g_old_install_pending_origin_trial_feature_function)(feature, script_state);
@@ -105,9 +89,6 @@ void InstallPendingOriginTrialFeatureForCore(const String& feature,
 void RegisterInstallOriginTrialFeaturesForCore() {
   g_old_install_origin_trial_features_function =
       SetInstallOriginTrialFeaturesFunction(&InstallOriginTrialFeaturesForCore);
-  g_old_install_origin_trial_features_on_global_function =
-      SetInstallOriginTrialFeaturesOnGlobalFunction(
-          &InstallOriginTrialFeaturesOnGlobalForCore);
   g_old_install_pending_origin_trial_feature_function =
       SetInstallPendingOriginTrialFeatureFunction(
           &InstallPendingOriginTrialFeatureForCore);
