@@ -3214,18 +3214,22 @@ void av1_remove_compressor(AV1_COMP *cpi) {
         const double total_ssim =
             100 * pow(cpi->summed_quality / cpi->summed_weights, 8.0);
         snprintf(headings, sizeof(headings),
-                 "Bitrate\tAVGPsnr\tGLBPsnr\tAVPsnrP\tGLPsnrP\t"
+                 "Bitrate\tAVGPsnr\tGLBPsnr\tAVPsnrY\tGLPsnrP\t"
                  "AOMSSIM\tVPSSIMP\tFASTSIM\tPSNRHVS\t"
-                 "WstPsnr\tWstSsim\tWstFast\tWstHVS");
+                 "WstPsnr\tWstSsim\tWstFast\tWstHVS\t"
+                 "APsnrCb\tAPsnrCr");
         snprintf(results, sizeof(results),
                  "%7.2f\t%7.3f\t%7.3f\t%7.3f\t%7.3f\t"
                  "%7.3f\t%7.3f\t%7.3f\t%7.3f\t"
-                 "%7.3f\t%7.3f\t%7.3f\t%7.3f",
+                 "%7.3f\t%7.3f\t%7.3f\t%7.3f\t"
+                 "%7.3f\t%7.3f",
                  dr, cpi->psnr.stat[ALL] / cpi->count, total_psnr,
-                 cpi->psnr.stat[ALL] / cpi->count, total_psnr, total_ssim,
+                 cpi->psnr.stat[Y] / cpi->count, total_psnr, total_ssim,
                  total_ssim, cpi->fastssim.stat[ALL] / cpi->count,
                  cpi->psnrhvs.stat[ALL] / cpi->count, cpi->psnr.worst,
-                 cpi->worst_ssim, cpi->fastssim.worst, cpi->psnrhvs.worst);
+                 cpi->worst_ssim, cpi->fastssim.worst, cpi->psnrhvs.worst,
+                 cpi->psnr.stat[U] / cpi->count,
+                 cpi->psnr.stat[V] / cpi->count);
 
         if (cpi->b_calculate_blockiness) {
           SNPRINT(headings, "\t  Block\tWstBlck");
