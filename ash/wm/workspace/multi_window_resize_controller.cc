@@ -281,8 +281,8 @@ MultiWindowResizeController::DetermineWindowsFromScreenPoint(
 }
 
 void MultiWindowResizeController::CreateMouseWatcher() {
-  mouse_watcher_.reset(
-      new views::MouseWatcher(new ResizeMouseWatcherHost(this), this));
+  mouse_watcher_ = std::make_unique<views::MouseWatcher>(
+      std::make_unique<ResizeMouseWatcherHost>(this), this);
   mouse_watcher_->set_notify_on_exit_time(
       base::TimeDelta::FromMilliseconds(kHideDelayMS));
   mouse_watcher_->Start();

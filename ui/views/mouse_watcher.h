@@ -50,8 +50,10 @@ class VIEWS_EXPORT MouseWatcher {
  public:
   // Creates a new MouseWatcher. The |listener| will be notified when the |host|
   // determines that the mouse has moved outside its monitored region.
-  // |host| will be owned by the watcher and deleted upon completion.
-  MouseWatcher(MouseWatcherHost* host, MouseWatcherListener* listener);
+  // |host| will be owned by the watcher and deleted upon completion, while the
+  // listener must remain alive for the lifetime of this object.
+  MouseWatcher(std::unique_ptr<MouseWatcherHost> host,
+               MouseWatcherListener* listener);
   ~MouseWatcher();
 
   // Sets the amount to delay before notifying the listener when the mouse exits
