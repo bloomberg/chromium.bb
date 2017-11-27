@@ -1772,6 +1772,9 @@ UserSessionManager::GetDefaultIMEState(Profile* profile) {
 }
 
 void UserSessionManager::CheckEolStatus(Profile* profile) {
+  if (!EolNotification::ShouldShowEolNotification())
+    return;
+
   std::map<Profile*, std::unique_ptr<EolNotification>, ProfileCompare>::iterator
       iter = eol_notification_handler_.find(profile);
   if (iter == eol_notification_handler_.end()) {
@@ -1888,8 +1891,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
 
   // Check to see if this profile should show EndOfLife Notification and show
   // the message accordingly.
-  if (ShouldShowEolNotification(profile))
-    CheckEolStatus(profile);
+  CheckEolStatus(profile);
 
   // Show the one-time notification and update the relevant pref about the
   // completion of the file system migration necessary for ARC, when needed.
@@ -1998,24 +2000,6 @@ void UserSessionManager::Shutdown() {
 void UserSessionManager::CreateTokenUtilIfMissing() {
   if (!token_handle_util_.get())
     token_handle_util_.reset(new TokenHandleUtil());
-}
-
-bool UserSessionManager::ShouldShowEolNotification(Profile* profile) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableEolNotification)) {
-    return false;
-  }
-
-  // Do not show end of life notification if this device is managed by
-  // enterprise user.
-  if (g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->IsEnterpriseManaged()) {
-    return false;
-  }
-
-  // Do not show end of life notification if this is a guest session
-  return !profile->IsGuestSession();
 }
 
 void UserSessionManager::NotifyEasyUnlockKeyOpsFinished() {

@@ -3677,8 +3677,8 @@
   <message name="IDS_EOL_NOTIFICATION_TITLE" desc="Notification title shown to inform the user that this device is no longer supported.">
     This device is no longer supported
   </message>
-  <message name="IDS_EOL_NOTIFICATION_EOL" desc="Notification shown to inform the user that this device will no longer receive software updates.">
-    Software updates for this device are no longer available. Please consider upgrading.
+  <message name="IDS_EOL_NOTIFICATION_EOL" desc="Notification shown to inform the user that this device will no longer receive latest software updates.">
+    This device will no longer receive the latest software updates. Please consider upgrading.
   </message>
   <message name="IDS_EOL_MORE_INFO_BUTTON" desc="A button label shown in the notification for eol status change to get more information.">
     Learn more
