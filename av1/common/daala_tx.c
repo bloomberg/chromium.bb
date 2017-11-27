@@ -11,7 +11,7 @@
 #  define OD_DCT_OVERFLOW_CHECK(val, scale, offset, idx)
 # endif
 
-#define OD_FDCT_2(p0, p1) \
+#define OD_FDCT_2_PR(p0, p1) \
   /* Embedded 2-point orthonormal Type-II fDCT. */ \
   do { \
     /* 13573/32768 ~= Tan[pi/8] ~= 0.414213562373095 */ \
@@ -26,7 +26,7 @@
   } \
   while (0)
 
-#define OD_IDCT_2(p0, p1) \
+#define OD_IDCT_2_PR(p0, p1) \
   /* Embedded 2-point orthonormal Type-II iDCT. */ \
   do { \
     /* 3393/8192 ~= Tan[pi/8] ~= 0.414213562373095 */ \
@@ -38,7 +38,7 @@
   } \
   while (0)
 
-#define OD_FDCT_2_ASYM(p0, p1, p1h) \
+#define OD_FDCT_2_ASYM_PR(p0, p1, p1h) \
   /* Embedded 2-point asymmetric Type-II fDCT. */ \
   do { \
     p0 += p1h; \
@@ -46,7 +46,7 @@
   } \
   while (0)
 
-#define OD_IDCT_2_ASYM(p0, p1, p1h) \
+#define OD_IDCT_2_ASYM_PR(p0, p1, p1h) \
   /* Embedded 2-point asymmetric Type-II iDCT. */ \
   do { \
     p1 = p0 - p1; \
@@ -55,7 +55,7 @@
   } \
   while (0)
 
-#define OD_FDST_2(p0, p1) \
+#define OD_FDST_2_PR(p0, p1) \
   /* Embedded 2-point orthonormal Type-IV fDST. */ \
   do { \
     /* 10947/16384 ~= Tan[3*Pi/16] ~= 0.668178637919299 */ \
@@ -70,7 +70,7 @@
   } \
   while (0)
 
-#define OD_IDST_2(p0, p1) \
+#define OD_IDST_2_PR(p0, p1) \
   /* Embedded 2-point orthonormal Type-IV iDST. */ \
   do { \
     /* 10947/16384 ~= Tan[3*Pi/16]) ~= 0.668178637919299 */ \
@@ -82,7 +82,7 @@
   } \
   while (0)
 
-#define OD_FDST_2_ASYM(p0, p1) \
+#define OD_FDST_2_ASYM_PR(p0, p1) \
   /* Embedded 2-point asymmetric Type-IV fDST. */ \
   do { \
     /* 11507/16384 ~= 4*Sin[Pi/8] - 2*Tan[Pi/8] ~= 0.702306604714169 */ \
@@ -97,7 +97,7 @@
   } \
   while (0)
 
-#define OD_IDST_2_ASYM(p0, p1) \
+#define OD_IDST_2_ASYM_PR(p0, p1) \
   /* Embedded 2-point asymmetric Type-IV iDST. */ \
   do { \
     /* 4573/4096 ~= 4*Sin[Pi/8] - Tan[Pi/8] ~= 1.11652016708726 */ \
@@ -109,7 +109,7 @@
   } \
   while (0)
 
-#define OD_FDCT_4(q0, q2, q1, q3) \
+#define OD_FDCT_4_PR(q0, q2, q1, q3) \
   /* Embedded 4-point orthonormal Type-II fDCT. */ \
   do { \
     int q2h; \
@@ -120,18 +120,18 @@
     q2 += q1; \
     q2h = OD_RSHIFT1(q2); \
     q1 = q2h - q1; \
-    OD_FDCT_2_ASYM(q0, q2, q2h); \
-    OD_FDST_2_ASYM(q3, q1); \
+    OD_FDCT_2_ASYM_PR(q0, q2, q2h); \
+    OD_FDST_2_ASYM_PR(q3, q1); \
   } \
   while (0)
 
-#define OD_IDCT_4(q0, q2, q1, q3) \
+#define OD_IDCT_4_PR(q0, q2, q1, q3) \
   /* Embedded 4-point orthonormal Type-II iDCT. */ \
   do { \
     int q1h; \
     int q3h; \
-    OD_IDST_2_ASYM(q3, q2); \
-    OD_IDCT_2_ASYM(q0, q1, q1h); \
+    OD_IDST_2_ASYM_PR(q3, q2); \
+    OD_IDCT_2_ASYM_PR(q0, q1, q1h); \
     q3h = OD_RSHIFT1(q3); \
     q0 += q3h; \
     q3 = q0 - q3; \
@@ -140,23 +140,23 @@
   } \
   while (0)
 
-#define OD_FDCT_4_ASYM(q0, q2, q2h, q1, q3, q3h) \
+#define OD_FDCT_4_ASYM_PR(q0, q2, q2h, q1, q3, q3h) \
   /* Embedded 4-point asymmetric Type-II fDCT. */ \
   do { \
     q0 += q3h; \
     q3 = q0 - q3; \
     q1 = q2h - q1; \
     q2 = q1 - q2; \
-    OD_FDCT_2(q0, q2); \
-    OD_FDST_2(q3, q1); \
+    OD_FDCT_2_PR(q0, q2); \
+    OD_FDST_2_PR(q3, q1); \
   } \
   while (0)
 
-#define OD_IDCT_4_ASYM(q0, q2, q1, q1h, q3, q3h) \
+#define OD_IDCT_4_ASYM_PR(q0, q2, q1, q1h, q3, q3h) \
   /* Embedded 4-point asymmetric Type-II iDCT. */ \
   do { \
-    OD_IDST_2(q3, q2); \
-    OD_IDCT_2(q0, q1); \
+    OD_IDST_2_PR(q3, q2); \
+    OD_IDCT_2_PR(q0, q1); \
     q1 = q2 - q1; \
     q1h = OD_RSHIFT1(q1); \
     q2 = q1h - q2; \
@@ -166,7 +166,7 @@
   } \
   while (0)
 
-#define OD_FDST_4(q0, q2, q1, q3) \
+#define OD_FDST_4_PR(q0, q2, q1, q3) \
   /* Embedded 4-point orthonormal Type-IV fDST. */ \
   do { \
     int q0h; \
@@ -211,7 +211,7 @@
   } \
   while (0)
 
-#define OD_IDST_4(q0, q2, q1, q3) \
+#define OD_IDST_4_PR(q0, q2, q1, q3) \
   /* Embedded 4-point orthonormal Type-IV iDST. */ \
   do { \
     int q0h; \
@@ -247,7 +247,7 @@
   } \
   while (0)
 
-#define OD_FDST_4_ASYM(t0, t0h, t2, t1, t3) \
+#define OD_FDST_4_ASYM_PR(t0, t0h, t2, t1, t3) \
   /* Embedded 4-point asymmetric Type-IV fDST. */ \
   do { \
     /* 7489/8192 ~= Tan[Pi/8] + Tan[Pi/4]/2 ~= 0.914213562373095 */ \
@@ -284,7 +284,7 @@
   } \
   while (0)
 
-#define OD_IDST_4_ASYM(t0, t0h, t2, t1, t3) \
+#define OD_IDST_4_ASYM_PR(t0, t0h, t2, t1, t3) \
   /* Embedded 4-point asymmetric Type-IV iDST. */ \
   do { \
     /* 8757/16384 ~= Tan[5*Pi/32] ~= 0.534511135950792 */ \
@@ -313,7 +313,7 @@
   } \
   while (0)
 
-#define OD_FDCT_8(r0, r4, r2, r6, r1, r5, r3, r7) \
+#define OD_FDCT_8_PR(r0, r4, r2, r6, r1, r5, r3, r7) \
   /* Embedded 8-point orthonormal Type-II fDCT. */ \
   do { \
     int r4h; \
@@ -332,20 +332,20 @@
     r4 += r3; \
     r4h = OD_RSHIFT1(r4); \
     r3 = r4h - r3; \
-    OD_FDCT_4_ASYM(r0, r4, r4h, r2, r6, r6h); \
-    OD_FDST_4_ASYM(r7, r7h, r3, r5, r1); \
+    OD_FDCT_4_ASYM_PR(r0, r4, r4h, r2, r6, r6h); \
+    OD_FDST_4_ASYM_PR(r7, r7h, r3, r5, r1); \
   } \
   while (0)
 
-#define OD_IDCT_8(r0, r4, r2, r6, r1, r5, r3, r7) \
+#define OD_IDCT_8_PR(r0, r4, r2, r6, r1, r5, r3, r7) \
   /* Embedded 8-point orthonormal Type-II iDCT. */ \
   do { \
     int r1h; \
     int r3h; \
     int r5h; \
     int r7h; \
-    OD_IDST_4_ASYM(r7, r7h, r5, r6, r4); \
-    OD_IDCT_4_ASYM(r0, r2, r1, r1h, r3, r3h); \
+    OD_IDST_4_ASYM_PR(r7, r7h, r5, r6, r4); \
+    OD_IDCT_4_ASYM_PR(r0, r2, r1, r1h, r3, r3h); \
     r0 += r7h; \
     r7 = r0 - r7; \
     r6 = r1h - r6; \
@@ -358,7 +358,7 @@
   } \
   while (0)
 
-#define OD_FDCT_8_ASYM(r0, r4, r4h, r2, r6, r6h, r1, r5, r5h, r3, r7, r7h) \
+#define OD_FDCT_8_ASYM_PR(r0, r4, r4h, r2, r6, r6h, r1, r5, r5h, r3, r7, r7h) \
   /* Embedded 8-point asymmetric Type-II fDCT. */ \
   do { \
     r0 += r7h; \
@@ -369,16 +369,16 @@
     r5 = r2 - r5; \
     r3 = r4h - r3; \
     r4 -= r3; \
-    OD_FDCT_4(r0, r4, r2, r6); \
-    OD_FDST_4(r7, r3, r5, r1); \
+    OD_FDCT_4_PR(r0, r4, r2, r6); \
+    OD_FDST_4_PR(r7, r3, r5, r1); \
   } \
   while (0)
 
-#define OD_IDCT_8_ASYM(r0, r4, r2, r6, r1, r1h, r5, r5h, r3, r3h, r7, r7h) \
+#define OD_IDCT_8_ASYM_PR(r0, r4, r2, r6, r1, r1h, r5, r5h, r3, r3h, r7, r7h) \
   /* Embedded 8-point asymmetric Type-II iDCT. */ \
   do { \
-    OD_IDST_4(r7, r5, r6, r4); \
-    OD_IDCT_4(r0, r2, r1, r3); \
+    OD_IDST_4_PR(r7, r5, r6, r4); \
+    OD_IDCT_4_PR(r0, r2, r1, r3); \
     r7 = r0 - r7; \
     r7h = OD_RSHIFT1(r7); \
     r0 -= r7h; \
@@ -394,7 +394,7 @@
   } \
   while (0)
 
-#define OD_FDST_8(t0, t4, t2, t6, t1, t5, t3, t7)  \
+#define OD_FDST_8_PR(t0, t4, t2, t6, t1, t5, t3, t7)  \
   /* Embedded 8-point orthonormal Type-IV fDST. */ \
   do { \
     int t0h; \
@@ -489,7 +489,7 @@
   } \
   while (0)
 
-#define OD_IDST_8(t0, t4, t2, t6, t1, t5, t3, t7) \
+#define OD_IDST_8_PR(t0, t4, t2, t6, t1, t5, t3, t7) \
   /* Embedded 8-point orthonormal Type-IV iDST. */ \
   do { \
     int t0h; \
@@ -564,7 +564,7 @@
   while (0)
 
 /* Rewrite this so that t0h can be passed in. */
-#define OD_FDST_8_ASYM(t0, t4, t2, t6, t1, t5, t3, t7) \
+#define OD_FDST_8_ASYM_PR(t0, t4, t2, t6, t1, t5, t3, t7) \
   /* Embedded 8-point asymmetric Type-IV fDST. */ \
   do { \
     int t0h; \
@@ -657,7 +657,7 @@
   } \
   while (0)
 
-#define OD_IDST_8_ASYM(t0, t4, t2, t6, t1, t5, t3, t7) \
+#define OD_IDST_8_ASYM_PR(t0, t4, t2, t6, t1, t5, t3, t7) \
   /* Embedded 8-point asymmetric Type-IV iDST. */ \
   do { \
     int t0h; \
@@ -729,7 +729,7 @@
   } \
   while (0)
 
-#define OD_FDCT_16(s0, s8, s4, sc, s2, sa, s6, se, \
+#define OD_FDCT_16_PR(s0, s8, s4, sc, s2, sa, s6, se, \
   s1, s9, s5, sd, s3, sb, s7, sf) \
   /* Embedded 16-point orthonormal Type-II fDCT. */ \
   do { \
@@ -759,12 +759,12 @@
     s8 += s7; \
     s8h = OD_RSHIFT1(s8); \
     s7 = s8h - s7; \
-    OD_FDCT_8_ASYM(s0, s8, s8h, s4, sc, sch, s2, sa, sah, s6, se, seh); \
-    OD_FDST_8_ASYM(sf, s7, sb, s3, sd, s5, s9, s1); \
+    OD_FDCT_8_ASYM_PR(s0, s8, s8h, s4, sc, sch, s2, sa, sah, s6, se, seh); \
+    OD_FDST_8_ASYM_PR(sf, s7, sb, s3, sd, s5, s9, s1); \
   } \
   while (0)
 
-#define OD_IDCT_16(s0, s8, s4, sc, s2, sa, s6, se, \
+#define OD_IDCT_16_PR(s0, s8, s4, sc, s2, sa, s6, se, \
   s1, s9, s5, sd, s3, sb, s7, sf) \
   /* Embedded 16-point orthonormal Type-II iDCT. */ \
   do { \
@@ -773,8 +773,8 @@
     int s5h; \
     int s7h; \
     int sfh; \
-    OD_IDST_8_ASYM(sf, sb, sd, s9, se, sa, sc, s8); \
-    OD_IDCT_8_ASYM(s0, s4, s2, s6, s1, s1h, s5, s5h, s3, s3h, s7, s7h); \
+    OD_IDST_8_ASYM_PR(sf, sb, sd, s9, se, sa, sc, s8); \
+    OD_IDCT_8_ASYM_PR(s0, s4, s2, s6, s1, s1h, s5, s5h, s3, s3h, s7, s7h); \
     sfh = OD_RSHIFT1(sf); \
     s0 += sfh; \
     sf = s0 - sf; \
@@ -795,7 +795,7 @@
   } \
   while (0)
 
-#define OD_FDCT_16_ASYM(t0, t8, t8h, t4, tc, tch, t2, ta, tah, t6, te, teh, \
+#define OD_FDCT_16_ASYM_PR(t0, t8, t8h, t4, tc, tch, t2, ta, tah, t6, te, teh, \
   t1, t9, t9h, t5, td, tdh, t3, tb, tbh, t7, tf, tfh) \
   /* Embedded 16-point asymmetric Type-II fDCT. */ \
   do { \
@@ -815,17 +815,17 @@
     t9 = t6 - t9; \
     t7 -= t8h; \
     t8 += t7; \
-    OD_FDCT_8(t0, t8, t4, tc, t2, ta, t6, te); \
-    OD_FDST_8(tf, t7, tb, t3, td, t5, t9, t1); \
+    OD_FDCT_8_PR(t0, t8, t4, tc, t2, ta, t6, te); \
+    OD_FDST_8_PR(tf, t7, tb, t3, td, t5, t9, t1); \
   } \
   while (0)
 
-#define OD_IDCT_16_ASYM(t0, t8, t4, tc, t2, ta, t6, te, \
+#define OD_IDCT_16_ASYM_PR(t0, t8, t4, tc, t2, ta, t6, te, \
   t1, t1h, t9, t9h, t5, t5h, td, tdh, t3, t3h, tb, tbh, t7, t7h, tf, tfh) \
   /* Embedded 16-point asymmetric Type-II iDCT. */ \
   do { \
-    OD_IDST_8(tf, tb, td, t9, te, ta, tc, t8); \
-    OD_IDCT_8(t0, t4, t2, t6, t1, t5, t3, t7); \
+    OD_IDST_8_PR(tf, tb, td, t9, te, ta, tc, t8); \
+    OD_IDCT_8_PR(t0, t4, t2, t6, t1, t5, t3, t7); \
     t1 -= te; \
     t1h = OD_RSHIFT1(t1); \
     te += t1h; \
@@ -853,7 +853,7 @@
   } \
   while (0)
 
-#define OD_FDST_16(s0, s8, s4, sc, s2, sa, s6, se, \
+#define OD_FDST_16_PR(s0, s8, s4, sc, s2, sa, s6, se, \
   s1, s9, s5, sd, s3, sb, s7, sf) \
   /* Embedded 16-point orthonormal Type-IV fDST. */ \
   do { \
@@ -1069,7 +1069,7 @@
   } \
   while (0)
 
-#define OD_IDST_16(s0, s8, s4, sc, s2, sa, s6, se, \
+#define OD_IDST_16_PR(s0, s8, s4, sc, s2, sa, s6, se, \
   s1, s9, s5, sd, s3, sb, s7, sf) \
   /* Embedded 16-point orthonormal Type-IV iDST. */ \
   do { \
@@ -1235,7 +1235,7 @@
   while (0)
 
 /* TODO: rewrite this to match OD_FDST_16. */
-#define OD_FDST_16_ASYM(t0, t0h, t8, t4, t4h, tc, t2, ta, t6, te, \
+#define OD_FDST_16_ASYM_PR(t0, t0h, t8, t4, t4h, tc, t2, ta, t6, te, \
   t1, t9, t5, td, t3, tb, t7, t7h, tf) \
   /* Embedded 16-point asymmetric Type-IV fDST. */ \
   do { \
@@ -1476,7 +1476,7 @@
   } \
   while (0)
 
-#define OD_IDST_16_ASYM(t0, t0h, t8, t4, tc, t2, t2h, ta, t6, te, teh, \
+#define OD_IDST_16_ASYM_PR(t0, t0h, t8, t4, tc, t2, t2h, ta, t6, te, teh, \
   t1, t9, t5, td, t3, tb, t7, tf) \
   /* Embedded 16-point asymmetric Type-IV iDST. */ \
   do { \
@@ -1669,7 +1669,7 @@
   } \
   while (0)
 
-#define OD_FDCT_32(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, tm, \
+#define OD_FDCT_32_PR(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, tm, \
   te, tu, t1, th, t9, tp, t5, tl, td, tt, t3, tj, tb, tr, t7, tn, tf, tv) \
   /* Embedded 32-point orthonormal Type-II fDCT. */ \
   do { \
@@ -1727,14 +1727,14 @@
     tg += tf; \
     tgh = OD_RSHIFT1(tg); \
     tf = tgh - tf; \
-    OD_FDCT_16_ASYM(t0, tg, tgh, t8, to, toh, t4, tk, tkh, tc, ts, tsh, \
+    OD_FDCT_16_ASYM_PR(t0, tg, tgh, t8, to, toh, t4, tk, tkh, tc, ts, tsh, \
      t2, ti, tih, ta, tq, tqh, t6, tm, tmh, te, tu, tuh); \
-    OD_FDST_16_ASYM(tv, tvh, tf, tn, tnh, t7, tr, tb, tj, t3, \
+    OD_FDST_16_ASYM_PR(tv, tvh, tf, tn, tnh, t7, tr, tb, tj, t3, \
      tt, td, tl, t5, tp, t9, th, thh, t1); \
   } \
   while (0)
 
-#define OD_IDCT_32(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, tm, \
+#define OD_IDCT_32_PR(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, tm, \
   te, tu, t1, th, t9, tp, t5, tl, td, tt, t3, tj, tb, tr, t7, tn, tf, tv) \
   /* Embedded 32-point orthonormal Type-II iDCT. */ \
   do { \
@@ -1749,9 +1749,9 @@
     int thh; \
     int tth; \
     int tvh; \
-    OD_IDST_16_ASYM(tv, tvh, tn, tr, tj, tt, tth, tl, tp, th, thh, \
+    OD_IDST_16_ASYM_PR(tv, tvh, tn, tr, tj, tt, tth, tl, tp, th, thh, \
      tu, tm, tq, ti, ts, tk, to, tg); \
-    OD_IDCT_16_ASYM(t0, t8, t4, tc, t2, ta, t6, te, \
+    OD_IDCT_16_ASYM_PR(t0, t8, t4, tc, t2, ta, t6, te, \
      t1, t1h, t9, t9h, t5, t5h, td, tdh, t3, t3h, tb, tbh, t7, t7h, tf, tfh); \
     tu = t1h - tu; \
     t1 -= tu; \
@@ -1789,7 +1789,7 @@
   while (0)
 
 /* Embedded 32-point orthonormal Type-IV fDST. */
-#define OD_FDST_32(t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, ta, tb, tc, td, \
+#define OD_FDST_32_PR(t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, ta, tb, tc, td, \
   te, tf, tg, th, ti, tj, tk, tl, tm, tn, to, tp, tq, tr, ts, tt, tu, tv) \
   /* 117 "muls", 117 + 128 = 245 adds, 36 shifts */ \
   do { \
@@ -2106,7 +2106,7 @@
   while (0)
 
 /* Embedded 32-point orthonormal Type-IV iDST. */
-#define OD_IDST_32(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, tm, \
+#define OD_IDST_32_PR(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, tm, \
   te, tu, t1, th, t9, tp, t5, tl, td, tt, t3, tj, tb, tr, t7, tn, tf, tv) \
   /* 117 "muls", 117 + 128 = 245 adds, 36 shifts */ \
   do { \
@@ -2423,7 +2423,7 @@
   while (0)
 
 #if CONFIG_TX64X64
-#define OD_FDCT_32_ASYM(t0, tg, tgh, t8, to, toh, t4, tk, tkh, tc, ts, tsh, \
+#define OD_FDCT_32_ASYM_PR(t0, tg, tgh, t8, to, toh, t4, tk, tkh, tc, ts, tsh, \
   t2, ti, tih, ta, tq, tqh, t6, tm, tmh, te, tu, tuh, t1, th, thh, \
   t9, tp, tph, t5, tl, tlh, td, tt, tth, t3, tj, tjh, tb, tr, trh, \
   t7, tn, tnh, tf, tv, tvh) \
@@ -2461,22 +2461,22 @@
     th = te - th; \
     tf = tgh - tf; \
     tg -= tf; \
-    OD_FDCT_16(t0, tg, t8, to, t4, tk, tc, ts, \
+    OD_FDCT_16_PR(t0, tg, t8, to, t4, tk, tc, ts, \
      t2, ti, ta, tq, t6, tm, te, tu); \
-    OD_FDST_16(tv, tf, tn, t7, tr, tb, tj, t3, \
+    OD_FDST_16_PR(tv, tf, tn, t7, tr, tb, tj, t3, \
      tt, td, tl, t5, tp, t9, th, t1); \
   } \
   while (0)
 
-#define OD_IDCT_32_ASYM(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, \
+#define OD_IDCT_32_ASYM_PR(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, \
   t6, tm, te, tu, t1, t1h, th, thh, t9, t9h, tp, tph, t5, t5h, tl, tlh, \
   td, tdh, tt, tth, t3, t3h, tj, tjh, tb, tbh, tr, trh, t7, t7h, tn, tnh, \
   tf, tfh, tv, tvh) \
   /* Embedded 32-point asymmetric Type-II iDCT. */ \
   do { \
-    OD_IDST_16(tv, tn, tr, tj, tt, tl, tp, th, \
+    OD_IDST_16_PR(tv, tn, tr, tj, tt, tl, tp, th, \
      tu, tm, tq, ti, ts, tk, to, tg); \
-    OD_IDCT_16(t0, t8, t4, tc, t2, ta, t6, te, \
+    OD_IDCT_16_PR(t0, t8, t4, tc, t2, ta, t6, te, \
      t1, t9, t5, td, t3, tb, t7, tf); \
     tv = t0 - tv; \
     tvh = OD_RSHIFT1(tv); \
@@ -2529,7 +2529,7 @@
   } \
   while (0)
 
-#define OD_FDST_32_ASYM(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, \
+#define OD_FDST_32_ASYM_PR(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, \
   tm, te, tu, t1, th, t9, tp, t5, tl, td, tt, t3, tj, tb, tr, t7, tn, tf, tv) \
   /* Embedded 32-point asymmetric Type-IV fDST. */ \
   do { \
@@ -3063,7 +3063,7 @@
   } \
   while (0)
 
-#define OD_IDST_32_ASYM(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, \
+#define OD_IDST_32_ASYM_PR(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, \
   tm, te, tu, t1, th, t9, tp, t5, tl, td, tt, t3, tj, tb, tr, t7, tn, tf, tv) \
   /* Embedded 32-point asymmetric Type-IV iDST. */ \
   do { \
@@ -3482,7 +3482,7 @@
   } \
   while (0)
 
-#define OD_FDCT_64(u0, uw, ug, uM, u8, uE, uo, uU, u4, uA, uk, uQ, uc, uI, \
+#define OD_FDCT_64_PR(u0, uw, ug, uM, u8, uE, uo, uU, u4, uA, uk, uQ, uc, uI, \
   us, uY, u2, uy, ui, uO, ua, uG, uq, uW, u6, uC, um, uS, ue, uK, uu, u_, u1, \
   ux, uh, uN, u9, uF, up, uV, u5, uB, ul, uR, ud, uJ, ut, uZ, u3, uz, uj, uP, \
   ub, uH, ur, uX, u7, uD, un, uT, uf, uL, uv, u) \
@@ -3616,16 +3616,16 @@
     uw += uv; \
     uwh = OD_RSHIFT1(uw); \
     uv = uwh - uv; \
-    OD_FDCT_32_ASYM(u0, uw, uwh, ug, uM, uMh, u8, uE, uEh, uo, uU, uUh, \
+    OD_FDCT_32_ASYM_PR(u0, uw, uwh, ug, uM, uMh, u8, uE, uEh, uo, uU, uUh, \
       u4, uA, uAh, uk, uQ, uQh, uc, uI, uIh, us, uY, uYh, u2, uy, uyh, \
       ui, uO, uOh, ua, uG, uGh, uq, uW, uWh, u6, uC, uCh, um, uS, uSh, \
       ue, uK, uKh, uu, u_, u_h); \
-    OD_FDST_32_ASYM(u, uv, uL, uf, uT, un, uD, u7, uX, ur, uH, ub, uP, uj, \
+    OD_FDST_32_ASYM_PR(u, uv, uL, uf, uT, un, uD, u7, uX, ur, uH, ub, uP, uj, \
       uz, u3, uZ, ut, uJ, ud, uR, ul, uB, u5, uV, up, uF, u9, uN, uh, ux, u1); \
   } \
   while (0)
 
-#define OD_IDCT_64(u0, uw, ug, uM, u8, uE, uo, uU, u4, uA, uk, uQ, uc, uI, \
+#define OD_IDCT_64_PR(u0, uw, ug, uM, u8, uE, uo, uU, u4, uA, uk, uQ, uc, uI, \
   us, uY, u2, uy, ui, uO, ua, uG, uq, uW, u6, uC, um, uS, ue, uK, uu, u_, u1, \
   ux, uh, uN, u9, uF, up, uV, u5, uB, ul, uR, ud, uJ, ut, uZ, u3, uz, uj, uP, \
   ub, uH, ur, uX, u7, uD, un, uT, uf, uL, uv, u) \
@@ -3663,9 +3663,9 @@
     int uXh; \
     int uZh; \
     int uh_; \
-    OD_IDST_32_ASYM(u, uL, uT, uD, uX, uH, uP, uz, uZ, uJ, uR, uB, uV, uF, \
+    OD_IDST_32_ASYM_PR(u, uL, uT, uD, uX, uH, uP, uz, uZ, uJ, uR, uB, uV, uF, \
       uN, ux, u_, uK, uS, uC, uW, uG, uO, uy, uY, uI, uQ, uA, uU, uE, uM, uw); \
-    OD_IDCT_32_ASYM(u0, ug, u8, uo, u4, uk, uc, us, u2, ui, ua, uq, u6, um, \
+    OD_IDCT_32_ASYM_PR(u0, ug, u8, uo, u4, uk, uc, us, u2, ui, ua, uq, u6, um, \
       ue, uu, u1, u1h, uh, uhh, u9, u9h, up, uph, u5, u5h, ul, ulh, ud, udh, \
       ut, uth, u3, u3h, uj, ujh, ub, ubh, ur, urh, u7, u7h, un, unh, uf, ufh, \
       uv, uvh); \
@@ -3929,7 +3929,7 @@ void od_bin_fdct8(od_coeff y[8], const od_coeff *x, int xstride) {
   r5 = x[5*xstride];
   r3 = x[6*xstride];
   r7 = x[7*xstride];
-  OD_FDCT_8(r0, r4, r2, r6, r1, r5, r3, r7);
+  OD_FDCT_8_PR(r0, r4, r2, r6, r1, r5, r3, r7);
   y[0] = (od_coeff)r0;
   y[1] = (od_coeff)r1;
   y[2] = (od_coeff)r2;
@@ -3957,7 +3957,7 @@ void od_bin_idct8(od_coeff *x, int xstride, const od_coeff y[8]) {
   r5 = y[5];
   r3 = y[6];
   r7 = y[7];
-  OD_IDCT_8(r0, r4, r2, r6, r1, r5, r3, r7);
+  OD_IDCT_8_PR(r0, r4, r2, r6, r1, r5, r3, r7);
   x[0*xstride] = (od_coeff)r0;
   x[1*xstride] = (od_coeff)r1;
   x[2*xstride] = (od_coeff)r2;
@@ -4204,7 +4204,7 @@ void od_bin_fdct16(od_coeff y[16], const od_coeff *x, int xstride) {
   sb = x[13*xstride];
   s7 = x[14*xstride];
   sf = x[15*xstride];
-  OD_FDCT_16(s0, s8, s4, sc, s2, sa, s6, se, s1, s9, s5, sd, s3, sb, s7, sf);
+  OD_FDCT_16_PR(s0, s8, s4, sc, s2, sa, s6, se, s1, s9, s5, sd, s3, sb, s7, sf);
   y[0] = (od_coeff)s0;
   y[1] = (od_coeff)s1;
   y[2] = (od_coeff)s2;
@@ -4256,7 +4256,7 @@ void od_bin_idct16(od_coeff *x, int xstride, const od_coeff y[16]) {
   sb = y[13];
   s7 = y[14];
   sf = y[15];
-  OD_IDCT_16(s0, s8, s4, sc, s2, sa, s6, se, s1, s9, s5, sd, s3, sb, s7, sf);
+  OD_IDCT_16_PR(s0, s8, s4, sc, s2, sa, s6, se, s1, s9, s5, sd, s3, sb, s7, sf);
   x[0*xstride] = (od_coeff)s0;
   x[1*xstride] = (od_coeff)s1;
   x[2*xstride] = (od_coeff)s2;
@@ -4308,7 +4308,7 @@ void od_bin_fdst16(od_coeff y[16], const od_coeff *x, int xstride) {
   sb = x[2*xstride];
   s7 = x[1*xstride];
   sf = x[0*xstride];
-  OD_FDST_16(s0, s8, s4, sc, s2, sa, s6, se, s1, s9, s5, sd, s3, sb, s7, sf);
+  OD_FDST_16_PR(s0, s8, s4, sc, s2, sa, s6, se, s1, s9, s5, sd, s3, sb, s7, sf);
   y[0] = (od_coeff)sf;
   y[1] = (od_coeff)-se;
   y[2] = (od_coeff)sd;
@@ -4360,7 +4360,7 @@ void od_bin_idst16(od_coeff *x, int xstride, const od_coeff y[16]) {
   sb = y[2];
   s7 = -y[1];
   sf = y[0];
-  OD_IDST_16(s0, s8, s4, sc, s2, sa, s6, se, s1, s9, s5, sd, s3, sb, s7, sf);
+  OD_IDST_16_PR(s0, s8, s4, sc, s2, sa, s6, se, s1, s9, s5, sd, s3, sb, s7, sf);
   x[0*xstride] = (od_coeff)sf;
   x[1*xstride] = (od_coeff)se;
   x[2*xstride] = (od_coeff)sd;
@@ -4445,7 +4445,7 @@ void od_bin_fdct32(od_coeff y[32], const od_coeff *x, int xstride) {
   tn = x[29*xstride];
   tf = x[30*xstride];
   tv = x[31*xstride];
-  OD_FDCT_32(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, tm, te, tu,
+  OD_FDCT_32_PR(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, tm, te, tu,
     t1, th, t9, tp, t5, tl, td, tt, t3, tj, tb, tr, t7, tn, tf, tv);
   y[0] = (od_coeff)t0;
   y[1] = (od_coeff)t1;
@@ -4546,7 +4546,7 @@ void od_bin_idct32(od_coeff *x, int xstride, const od_coeff y[32]) {
   tn = y[29];
   tf = y[30];
   tv = y[31];
-  OD_IDCT_32(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, tm, te, tu,
+  OD_IDCT_32_PR(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, tm, te, tu,
     t1, th, t9, tp, t5, tl, td, tt, t3, tj, tb, tr, t7, tn, tf, tv);
   x[0*xstride] = (od_coeff)t0;
   x[1*xstride] = (od_coeff)t1;
@@ -4647,7 +4647,7 @@ void od_bin_fdst32(od_coeff y[32], const od_coeff *x, int xstride) {
   tt = x[29*xstride];
   tu = x[30*xstride];
   tv = x[31*xstride];
-  OD_FDST_32(t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, ta, tb, tc, td, te, tf,
+  OD_FDST_32_PR(t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, ta, tb, tc, td, te, tf,
     tg, th, ti, tj, tk, tl, tm, tn, to, tp, tq, tr, ts, tt, tu, tv);
   y[0] = t0;
   y[1] = tg;
@@ -4748,7 +4748,7 @@ void od_bin_idst32(od_coeff *x, int xstride, const od_coeff y[32]) {
   tn = y[29];
   tf = y[30];
   tv = y[31];
-  OD_IDST_32(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, tm, te, tu,
+  OD_IDST_32_PR(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, tm, te, tu,
     t1, th, t9, tp, t5, tl, td, tt, t3, tj, tb, tr, t7, tn, tf, tv);
   x[0*xstride] = t0;
   x[1*xstride] = t1;
@@ -4914,10 +4914,10 @@ void od_bin_fdct64(od_coeff y[64], const od_coeff *x, int xstride) {
   tL = x[61*xstride];
   tv = x[62*xstride];
   t = x[63*xstride];
-  OD_FDCT_64(t0, tw, tg, tM, t8, tE, to, tU, t4, tA, tk, tQ, tc, tI, ts, tY,
-    t2, ty, ti, tO, ta, tG, tq, tW, t6, tC, tm, tS, te, tK, tu, t_, t1, tx,
-    th, tN, t9, tF, tp, tV, t5, tB, tl, tR, td, tJ, tt, tZ, t3, tz, tj, tP,
-    tb, tH, tr, tX, t7, tD, tn, tT, tf, tL, tv, t);
+  OD_FDCT_64_PR(t0, tw, tg, tM, t8, tE, to, tU, t4, tA, tk, tQ, tc, tI, ts, tY,
+    t2, ty, ti, tO, ta, tG, tq, tW, t6, tC, tm, tS, te, tK, tu, t_, t1, tx, th,
+    tN, t9, tF, tp, tV, t5, tB, tl, tR, td, tJ, tt, tZ, t3, tz, tj, tP, tb, tH,
+    tr, tX, t7, tD, tn, tT, tf, tL, tv, t);
   y[0] = (od_coeff)t0;
   y[1] = (od_coeff)t1;
   y[2] = (od_coeff)t2;
@@ -5114,10 +5114,10 @@ void od_bin_idct64(od_coeff *x, int xstride, const od_coeff y[64]) {
   tL = y[61];
   tv = y[62];
   t = y[63];
-  OD_IDCT_64(t0, tw, tg, tM, t8, tE, to, tU, t4, tA, tk, tQ, tc, tI, ts, tY,
-    t2, ty, ti, tO, ta, tG, tq, tW, t6, tC, tm, tS, te, tK, tu, t_, t1, tx,
-    th, tN, t9, tF, tp, tV, t5, tB, tl, tR, td, tJ, tt, tZ, t3, tz, tj, tP,
-    tb, tH, tr, tX, t7, tD, tn, tT, tf, tL, tv, t);
+  OD_IDCT_64_PR(t0, tw, tg, tM, t8, tE, to, tU, t4, tA, tk, tQ, tc, tI, ts, tY,
+    t2, ty, ti, tO, ta, tG, tq, tW, t6, tC, tm, tS, te, tK, tu, t_, t1, tx, th,
+    tN, t9, tF, tp, tV, t5, tB, tl, tR, td, tJ, tt, tZ, t3, tz, tj, tP, tb, tH,
+    tr, tX, t7, tD, tn, tT, tf, tL, tv, t);
   x[0*xstride] = (od_coeff)t0;
   x[1*xstride] = (od_coeff)t1;
   x[2*xstride] = (od_coeff)t2;
