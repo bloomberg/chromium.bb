@@ -15,23 +15,37 @@
 #include "components/previews/core/previews_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 
 class PreviewsBrowserTest : public InProcessBrowserTest {
  public:
   PreviewsBrowserTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        http_server_(net::EmbeddedTestServer::TYPE_HTTP),
         noscript_css_requested_(false),
         noscript_js_requested_(false) {
+    // Set up https server with resource monitor.
     https_server_.ServeFilesFromSourceDirectory("chrome/test/data/previews");
-
     https_server_.RegisterRequestMonitor(base::Bind(
         &PreviewsBrowserTest::MonitorResourceRequest, base::Unretained(this)));
-
     EXPECT_TRUE(https_server_.Start());
 
-    test_url_ = https_server_.GetURL("/noscript_test.html");
-    EXPECT_TRUE(test_url_.SchemeIsHTTPOrHTTPS());
-    EXPECT_TRUE(test_url_.SchemeIsCryptographic());
+    https_url_ = https_server_.GetURL("/noscript_test.html");
+    EXPECT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
+
+    // Set up http server with resource monitor and redirect handler.
+    http_server_.ServeFilesFromSourceDirectory("chrome/test/data/previews");
+    http_server_.RegisterRequestMonitor(base::Bind(
+        &PreviewsBrowserTest::MonitorResourceRequest, base::Unretained(this)));
+    http_server_.RegisterRequestHandler(base::Bind(
+        &PreviewsBrowserTest::HandleRedirectRequest, base::Unretained(this)));
+    EXPECT_TRUE(http_server_.Start());
+
+    http_url_ = http_server_.GetURL("/noscript_test.html");
+    EXPECT_TRUE(http_url_.SchemeIs(url::kHttpScheme));
+
+    redirect_url_ = http_server_.GetURL("/redirect.html");
+    EXPECT_TRUE(redirect_url_.SchemeIs(url::kHttpScheme));
   }
 
   ~PreviewsBrowserTest() override {}
@@ -41,10 +55,10 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
   }
 
-  const GURL& test_url() const { return test_url_; }
-
+  const GURL& https_url() const { return https_url_; }
+  const GURL& http_url() const { return http_url_; }
+  const GURL& redirect_url() const { return redirect_url_; }
   bool noscript_css_requested() const { return noscript_css_requested_; }
-
   bool noscript_js_requested() const { return noscript_js_requested_; }
 
  private:
@@ -59,8 +73,22 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
     }
   }
 
+  std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
+      const net::test_server::HttpRequest& request) {
+    std::unique_ptr<net::test_server::BasicHttpResponse> response;
+    if (request.GetURL().spec().find("redirect") != std::string::npos) {
+      response.reset(new net::test_server::BasicHttpResponse);
+      response->set_code(net::HTTP_FOUND);
+      response->AddCustomHeader("Location", https_url().spec());
+    }
+    return std::move(response);
+  }
+
   net::EmbeddedTestServer https_server_;
-  GURL test_url_;
+  net::EmbeddedTestServer http_server_;
+  GURL https_url_;
+  GURL http_url_;
+  GURL redirect_url_;
   bool noscript_css_requested_;
   bool noscript_js_requested_;
 };
@@ -69,7 +97,7 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
 // a script resource. Verifies that the noscript tag is not evaluated and the
 // script resource is loaded.
 IN_PROC_BROWSER_TEST_F(PreviewsBrowserTest, NoScriptPreviewsDisabled) {
-  ui_test_utils::NavigateToURL(browser(), test_url());
+  ui_test_utils::NavigateToURL(browser(), https_url());
 
   // Verify loaded js resource but not css triggered by noscript tag.
   EXPECT_TRUE(noscript_js_requested());
@@ -92,12 +120,16 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Previews InfoBar (which this test triggers) does not work on Mac.
+// Previews InfoBar (which these tests triggers) does not work on Mac.
 // See crbug.com/782322 for detail.
 #if defined(OS_MACOSX)
 #define MAYBE_NoScriptPreviewsEnabled DISABLED_NoScriptPreviewsEnabled
+#define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
+  DISABLED_NoScriptPreviewsEnabledHttpRedirectToHttps
 #else
 #define MAYBE_NoScriptPreviewsEnabled NoScriptPreviewsEnabled
+#define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
+  NoScriptPreviewsEnabledHttpRedirectToHttps
 #endif
 
 // Loads a webpage that has both script and noscript tags and also requests
@@ -105,7 +137,25 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 // script resource is not loaded.
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabled) {
-  ui_test_utils::NavigateToURL(browser(), test_url());
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  // Verify loaded noscript tag triggered css resource but not js one.
+  EXPECT_TRUE(noscript_css_requested());
+  EXPECT_FALSE(noscript_js_requested());
+}
+
+IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
+                       NoScriptPreviewsEnabledButHttpRequest) {
+  ui_test_utils::NavigateToURL(browser(), http_url());
+
+  // Verify loaded js resource but not css triggered by noscript tag.
+  EXPECT_TRUE(noscript_js_requested());
+  EXPECT_FALSE(noscript_css_requested());
+}
+
+IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
+                       MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps) {
+  ui_test_utils::NavigateToURL(browser(), redirect_url());
 
   // Verify loaded noscript tag triggered css resource but not js one.
   EXPECT_TRUE(noscript_css_requested());
@@ -154,9 +204,9 @@ class PreviewsOptimizationGuideBrowserTest : public PreviewsBrowserTest {
 IN_PROC_BROWSER_TEST_F(PreviewsOptimizationGuideBrowserTest,
                        MAYBE_NoScriptPreviewsEnabledByWhitelist) {
   // Whitelist test URL for NoScript.
-  SetNoScriptWhitelist({test_url().host()});
+  SetNoScriptWhitelist({https_url().host()});
 
-  ui_test_utils::NavigateToURL(browser(), test_url());
+  ui_test_utils::NavigateToURL(browser(), https_url());
 
   // Verify loaded noscript tag triggered css resource but not js one.
   EXPECT_TRUE(noscript_css_requested());
@@ -168,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsOptimizationGuideBrowserTest,
   // Whitelist random site for NoScript.
   SetNoScriptWhitelist({"foo.com"});
 
-  ui_test_utils::NavigateToURL(browser(), test_url());
+  ui_test_utils::NavigateToURL(browser(), https_url());
 
   // Verify loaded js resource but not css triggered by noscript tag.
   EXPECT_TRUE(noscript_js_requested());
