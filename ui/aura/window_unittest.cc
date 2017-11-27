@@ -1876,8 +1876,8 @@ class WindowObserverTest : public WindowTest,
     window_bounds_info_.reason = reason;
   }
 
-  void OnWindowOpacityChanged(Window* window,
-                              ui::PropertyChangeReason reason) override {
+  void OnWindowOpacitySet(Window* window,
+                          ui::PropertyChangeReason reason) override {
     ++window_opacity_info_.changed_count;
     window_opacity_info_.window = window;
     window_opacity_info_.reason = reason;
@@ -2094,7 +2094,7 @@ TEST_P(WindowObserverTest, WindowBoundsChangedAnimation) {
             window_bounds_info().reason);
 }
 
-// Verify that WindowObserver::OnWindowOpacityChanged() is notified when the
+// Verify that WindowObserver::OnWindowOpacitySet() is notified when the
 // opacity of a Window's Layer changes without an animation.
 TEST_P(WindowObserverTest, WindowOpacityChanged) {
   std::unique_ptr<Window> window(CreateTestWindowWithId(1, root_window()));
@@ -2106,7 +2106,7 @@ TEST_P(WindowObserverTest, WindowOpacityChanged) {
             window_opacity_info().reason);
 }
 
-// Verify that WindowObserver::OnWindowOpacityChanged() is notified at the
+// Verify that WindowObserver::OnWindowOpacitySet() is notified at the
 // beginning and at the end of a threaded opacity animation.
 TEST_P(WindowObserverTest, WindowOpacityChangedAnimation) {
   std::unique_ptr<Window> window(CreateTestWindowWithId(1, root_window()));
