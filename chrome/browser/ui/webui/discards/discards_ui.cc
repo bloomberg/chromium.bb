@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/resource_coordinator/discard_condition.h"
+#include "chrome/browser/resource_coordinator/discard_reason.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_stats.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -26,9 +26,9 @@ namespace {
 
 namespace {
 
-resource_coordinator::DiscardCondition GetDiscardTabCondition(bool urgent) {
-  return urgent ? resource_coordinator::DiscardCondition::kUrgent
-                : resource_coordinator::DiscardCondition::kProactive;
+resource_coordinator::DiscardReason GetDiscardReason(bool urgent) {
+  return urgent ? resource_coordinator::DiscardReason::kUrgent
+                : resource_coordinator::DiscardReason::kProactive;
 }
 
 }  // namespace
@@ -95,14 +95,14 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
                    DiscardByIdCallback callback) override {
     resource_coordinator::TabManager* tab_manager =
         g_browser_process->GetTabManager();
-    tab_manager->DiscardTabById(tab_id, GetDiscardTabCondition(urgent));
+    tab_manager->DiscardTabById(tab_id, GetDiscardReason(urgent));
     std::move(callback).Run();
   }
 
   void Discard(bool urgent, DiscardCallback callback) override {
     resource_coordinator::TabManager* tab_manager =
         g_browser_process->GetTabManager();
-    tab_manager->DiscardTab(GetDiscardTabCondition(urgent));
+    tab_manager->DiscardTab(GetDiscardReason(urgent));
     std::move(callback).Run();
   }
 

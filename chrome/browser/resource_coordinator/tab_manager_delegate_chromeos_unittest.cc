@@ -159,7 +159,7 @@ class MockTabManagerDelegate : public TabManagerDelegate {
     return true;
   }
 
-  bool KillTab(const TabStats& tab_stats, DiscardCondition condition) override {
+  bool KillTab(const TabStats& tab_stats, DiscardReason reason) override {
     killed_tabs_.push_back(tab_stats.id);
     return true;
   }
@@ -338,7 +338,7 @@ TEST_F(TabManagerDelegateTest, DoNotKillRecentlyKilledArcProcesses) {
   memory_stat->SetTargetMemoryToFreeKB(250000);
   memory_stat->SetProcessPss(30, 10000);
   TabStatsList tab_list;
-  tab_manager_delegate.LowMemoryKillImpl(DiscardCondition::kUrgent, tab_list,
+  tab_manager_delegate.LowMemoryKillImpl(DiscardReason::kUrgent, tab_list,
                                          arc_processes);
 
   auto killed_arc_processes = tab_manager_delegate.GetKilledArcProcesses();
@@ -416,7 +416,7 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   memory_stat->SetProcessPss(20, 30000);
   memory_stat->SetProcessPss(10, 100000);
 
-  tab_manager_delegate.LowMemoryKillImpl(DiscardCondition::kProactive, tab_list,
+  tab_manager_delegate.LowMemoryKillImpl(DiscardReason::kProactive, tab_list,
                                          arc_processes);
 
   auto killed_arc_processes = tab_manager_delegate.GetKilledArcProcesses();

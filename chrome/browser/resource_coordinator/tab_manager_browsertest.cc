@@ -148,14 +148,14 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
 
   // Discard a tab.  It should kill the first tab, since it was the oldest
   // and was not selected.
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
   EXPECT_EQ(3, tsm->count());
   EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
   EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
   EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(2)));
 
   // Run discard again, make sure it kills the second tab.
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
   EXPECT_EQ(3, tsm->count());
   EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
   EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
 
   // Kill the third tab. It should not kill the last tab, since it is active
   // tab.
-  EXPECT_FALSE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_FALSE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
   EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
   EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
   EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(2)));
@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   tsm->ActivateTabAt(1, true);
   EXPECT_EQ(1, tsm->active_index());
   EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
-  tab_manager->DiscardWebContentsAt(2, tsm, DiscardCondition::kProactive);
+  tab_manager->DiscardWebContentsAt(2, tsm, DiscardReason::kProactive);
   EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(2)));
 
   // Force creation of the FindBarController.
@@ -312,11 +312,11 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, InvalidOrEmptyURL) {
 
   // This shouldn't be able to discard a tab as the background tab has not yet
   // started loading (its URL is not committed).
-  EXPECT_FALSE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_FALSE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
 
   // Wait for the background tab to load which then allows it to be discarded.
   load2.Wait();
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
 }
 
 // Makes sure that PDF pages are protected.
@@ -339,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectPDFPages) {
 
   // No discarding should be possible as the only background tab is displaying a
   // PDF page, hence protected.
-  EXPECT_FALSE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_FALSE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
 }
 
 #if !defined(OS_CHROMEOS)
@@ -362,14 +362,14 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectRecentlyUsedTabs) {
   test_clock_.Advance(TabManager::kDiscardProtectionTime / 2);
 
   // Should not be able to discard a tab.
-  ASSERT_FALSE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  ASSERT_FALSE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
 
   // Advance the clock for more than the protection time.
   test_clock_.Advance(TabManager::kDiscardProtectionTime / 2 +
                       base::TimeDelta::FromSeconds(1));
 
   // Should be able to discard the background tab now.
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
 
   // Activate the 2nd tab.
   tsm->ActivateTabAt(1, true);
@@ -379,14 +379,14 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectRecentlyUsedTabs) {
   test_clock_.Advance(TabManager::kDiscardProtectionTime / 2);
 
   // Should not be able to discard a tab.
-  ASSERT_FALSE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  ASSERT_FALSE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
 
   // Advance the clock for more than the protection time.
   test_clock_.Advance(TabManager::kDiscardProtectionTime / 2 +
                       base::TimeDelta::FromSeconds(1));
 
   // Should be able to discard the background tab now.
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
 
   // This is necessary otherwise the test crashes in
   // WebContentsData::WebContentsDestroyed.
@@ -422,13 +422,13 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
   video_stream_ui->OnStarted(base::Closure());
 
   // Should not be able to discard a tab.
-  ASSERT_FALSE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  ASSERT_FALSE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
 
   // Remove the video stream.
   video_stream_ui.reset();
 
   // Should be able to discard the background tab now.
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
 }
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, CanPurgeBackgroundedRenderer) {
@@ -497,13 +497,13 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, AutoDiscardable) {
   tab_manager->SetTabAutoDiscardableState(tsm->GetWebContentsAt(0), false);
 
   // Shouldn't discard the tab, since auto-discardable is deactivated.
-  EXPECT_FALSE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_FALSE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
 
   // Reset auto-discardable state to true.
   tab_manager->SetTabAutoDiscardableState(tsm->GetWebContentsAt(0), true);
 
   // Now it should be able to discard the tab.
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
   EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
 }
 
@@ -614,12 +614,12 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProactiveFastShutdownSingleTabProcess) {
 
   // The Tab Manager should be able to fast-kill a process for the discarded tab
   // on all platforms, as each tab will be running in a separate process by
-  // itself regardless of the condition.
+  // itself regardless of the discard reason.
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::NotificationService::AllSources());
   base::HistogramTester tester;
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
   tester.ExpectUniqueSample(
       "TabManager.Discarding.DiscardedTabCouldFastShutdown", true, 1);
   observer.Wait();
@@ -633,12 +633,12 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, UrgentFastShutdownSingleTabProcess) {
 
   // The Tab Manager should be able to fast-kill a process for the discarded tab
   // on all platforms, as each tab will be running in a separate process by
-  // itself regardless of the condition.
+  // itself regardless of the discard reason.
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::NotificationService::AllSources());
   base::HistogramTester tester;
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kUrgent));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kUrgent));
   tester.ExpectUniqueSample(
       "TabManager.Discarding.DiscardedTabCouldFastShutdown", true, 1);
   observer.Wait();
@@ -654,10 +654,10 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProactiveFastShutdownSharedTabProcess) {
   FastForwardAfterDiscardProtectionTime();
 
   // The Tab Manager will not be able to fast-kill either of the tabs since they
-  // share the same process regardless of the condition. No unsafe attempts will
-  // be made.
+  // share the same process regardless of the discard reason. No unsafe attempts
+  // will be made.
   base::HistogramTester tester;
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
   tester.ExpectUniqueSample(
       "TabManager.Discarding.DiscardedTabCouldFastShutdown", false, 1);
 }
@@ -673,10 +673,10 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, UrgentFastShutdownSharedTabProcess) {
   FastForwardAfterDiscardProtectionTime();
 
   // The Tab Manager will not be able to fast-kill either of the tabs since they
-  // share the same process regardless of the condition. An unsafe attempt will
-  // be made on some platforms.
+  // share the same process regardless of the discard reason. An unsafe attempt
+  // will be made on some platforms.
   base::HistogramTester tester;
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kUrgent));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kUrgent));
 #ifdef OS_CHROMEOS
   // The unsafe killing attempt will fail for the same reason.
   tester.ExpectUniqueSample(
@@ -698,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProactiveFastShutdownWithUnloadHandler) {
   // The Tab Manager will not be able to safely fast-kill either of the tabs as
   // one of them is current, and the other has an unload handler. No unsafe
   // attempts will be made.
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
   tester.ExpectUniqueSample(
       "TabManager.Discarding.DiscardedTabCouldFastShutdown", false, 1);
 }
@@ -722,7 +722,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, UrgentFastShutdownWithUnloadHandler) {
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::NotificationService::AllSources());
 #endif  // OS_CHROMEOS
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kUrgent));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kUrgent));
 #ifdef OS_CHROMEOS
   tester.ExpectUniqueSample(
       "TabManager.Discarding.DiscardedTabCouldUnsafeFastShutdown", true, 1);
@@ -748,7 +748,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   // one of them is current, and the other has a beforeunload handler. No unsafe
   // attempts will be made.
   base::HistogramTester tester;
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kProactive));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
   tester.ExpectUniqueSample(
       "TabManager.Discarding.DiscardedTabCouldFastShutdown", false, 1);
 }
@@ -766,7 +766,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   // one of them is current, and the other has a beforeunload handler. An unsafe
   // attempt will be made on some platforms.
   base::HistogramTester tester;
-  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardCondition::kUrgent));
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kUrgent));
 #ifdef OS_CHROMEOS
   // The unsafe killing attempt will fail as ChromeOS does not ignore
   // beforeunload handlers.
@@ -840,7 +840,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   FastForwardAfterDiscardProtectionTime();
 
   for (int i = 0; i < 8; ++i)
-    tab_manager->DiscardTab(DiscardCondition::kProactive);
+    tab_manager->DiscardTab(DiscardReason::kProactive);
 
   base::RunLoop().RunUntilIdle();
 

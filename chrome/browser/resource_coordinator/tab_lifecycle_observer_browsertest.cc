@@ -105,14 +105,14 @@ IN_PROC_BROWSER_TEST_F(TabLifecycleObserverTest, OnDiscardStateChange) {
 
   // Discards both tabs and make sure the events were observed properly.
   EXPECT_TRUE(tab_manager->DiscardTabById(ContentsId(GetContents(index_1)),
-                                          DiscardCondition::kProactive));
+                                          DiscardReason::kProactive));
   EXPECT_EQ(1, tabmanager_observer.nb_events());
   EXPECT_EQ(ContentsId(GetContents(index_1)),
             ContentsId(tabmanager_observer.content()));
   EXPECT_TRUE(tabmanager_observer.is_discarded());
 
   EXPECT_TRUE(tab_manager->DiscardTabById(ContentsId(GetContents(index_2)),
-                                          DiscardCondition::kProactive));
+                                          DiscardReason::kProactive));
   EXPECT_EQ(2, tabmanager_observer.nb_events());
   EXPECT_EQ(ContentsId(GetContents(index_2)),
             ContentsId(tabmanager_observer.content()));
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(TabLifecycleObserverTest, OnDiscardStateChange) {
 
   // Discarding an already discarded tab shouldn't fire the observers.
   EXPECT_FALSE(tab_manager->DiscardTabById(ContentsId(GetContents(index_1)),
-                                           DiscardCondition::kProactive));
+                                           DiscardReason::kProactive));
   EXPECT_EQ(2, tabmanager_observer.nb_events());
 
   // Reload tab 1.
@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(TabLifecycleObserverTest, OnDiscardStateChange) {
   // receive events anymore.
   tab_manager->RemoveObserver(&tabmanager_observer);
   EXPECT_TRUE(tab_manager->DiscardTabById(ContentsId(GetContents(index_1)),
-                                          DiscardCondition::kProactive));
+                                          DiscardReason::kProactive));
   EXPECT_EQ(4, tabmanager_observer.nb_events());
 }
 
