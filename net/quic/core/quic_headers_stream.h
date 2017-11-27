@@ -38,10 +38,13 @@ class QUIC_EXPORT_PRIVATE QuicHeadersStream : public QuicStream {
   // Release underlying buffer if allowed.
   void MaybeReleaseSequencerBuffer();
 
-  void OnStreamFrameAcked(const QuicStreamFrame& frame,
+  void OnStreamFrameAcked(QuicStreamOffset offset,
+                          QuicByteCount data_length,
+                          bool fin_acked,
                           QuicTime::Delta ack_delay_time) override;
 
-  void OnStreamFrameRetransmitted(const QuicStreamFrame& frame) override;
+  void OnStreamFrameRetransmitted(QuicStreamOffset offset,
+                                  QuicByteCount data_length) override;
 
  private:
   friend class test::QuicHeadersStreamPeer;

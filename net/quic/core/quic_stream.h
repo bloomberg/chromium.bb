@@ -43,11 +43,11 @@ class QuicStreamPeer;
 
 class QuicSession;
 
-class QUIC_EXPORT_PRIVATE QuicStream : public StreamNotifierInterface {
+class QUIC_EXPORT_PRIVATE QuicStream {
  public:
   QuicStream(QuicStreamId id, QuicSession* session);
 
-  ~QuicStream() override;
+  virtual ~QuicStream();
 
   // Not in use currently.
   void SetFromConfig();
@@ -198,11 +198,23 @@ class QUIC_EXPORT_PRIVATE QuicStream : public StreamNotifierInterface {
                        QuicByteCount data_length,
                        QuicDataWriter* writer);
 
-  // StreamNotifierInterface methods:
-  void OnStreamFrameAcked(const QuicStreamFrame& frame,
-                          QuicTime::Delta ack_delay_time) override;
-  void OnStreamFrameRetransmitted(const QuicStreamFrame& frame) override;
-  void OnStreamFrameDiscarded(const QuicStreamFrame& frame) override;
+  // Called when data [offset, offset + data_length) is acked. |fin_acked|
+  // indicates whether the fin is acked.
+  virtual void OnStreamFrameAcked(QuicStreamOffset offset,
+                                  QuicByteCount data_length,
+                                  bool fin_acked,
+                                  QuicTime::Delta ack_delay_time);
+
+  // Called when data [offset, offset + data_length) gets retransmitted.
+  virtual void OnStreamFrameRetransmitted(QuicStreamOffset offset,
+                                          QuicByteCount data_length);
+
+  // Called when data [offset, offset + data_length) gets discarded because
+  // stream is cancelled. |fin_discarded| indicates whether the fin is
+  // discarded.
+  void OnStreamFrameDiscarded(QuicStreamOffset offset,
+                              QuicByteCount data_length,
+                              bool fin_discarded);
 
   // Same as WritevData except data is provided in reference counted memory so
   // that data copy is avoided.

@@ -490,37 +490,41 @@ void QuicStream::AddRandomPaddingAfterFin() {
   add_random_padding_after_fin_ = true;
 }
 
-void QuicStream::OnStreamFrameAcked(const QuicStreamFrame& frame,
+void QuicStream::OnStreamFrameAcked(QuicStreamOffset offset,
+                                    QuicByteCount data_length,
+                                    bool fin_acked,
                                     QuicTime::Delta ack_delay_time) {
-  DCHECK_EQ(id_, frame.stream_id);
-  if (stream_bytes_outstanding_ < frame.data_length ||
-      (!fin_outstanding_ && frame.fin)) {
+  if (stream_bytes_outstanding_ < data_length ||
+      (!fin_outstanding_ && fin_acked)) {
     CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
-                               "Trying to discard unsent data.");
+                               "Trying to ack unsent data.");
     return;
   }
-  stream_bytes_outstanding_ -= frame.data_length;
-  if (frame.fin) {
+  stream_bytes_outstanding_ -= data_length;
+  if (fin_acked) {
     fin_outstanding_ = false;
   }
-  if (frame.data_length > 0) {
-    send_buffer_.RemoveStreamFrame(frame.offset, frame.data_length);
+  if (data_length > 0) {
+    send_buffer_.RemoveStreamFrame(offset, data_length);
   }
   if (!IsWaitingForAcks()) {
     session_->OnStreamDoneWaitingForAcks(id_);
   }
   if (ack_listener_ != nullptr) {
-    ack_listener_->OnPacketAcked(frame.data_length, ack_delay_time);
+    ack_listener_->OnPacketAcked(data_length, ack_delay_time);
   }
 }
 
-void QuicStream::OnStreamFrameRetransmitted(const QuicStreamFrame& frame) {
+void QuicStream::OnStreamFrameRetransmitted(QuicStreamOffset /*offset*/,
+                                            QuicByteCount data_length) {
   if (ack_listener_ != nullptr) {
-    ack_listener_->OnPacketRetransmitted(frame.data_length);
+    ack_listener_->OnPacketRetransmitted(data_length);
   }
 }
 
-void QuicStream::OnStreamFrameDiscarded(const QuicStreamFrame& frame) {
+void QuicStream::OnStreamFrameDiscarded(QuicStreamOffset offset,
+                                        QuicByteCount data_length,
+                                        bool fin_discarded) {
   if (remove_on_stream_frame_discarded_) {
     // TODO(fayang): Remove OnStreamFrameDiscarded from StreamNotifierInterface
     // when deprecating
@@ -529,19 +533,18 @@ void QuicStream::OnStreamFrameDiscarded(const QuicStreamFrame& frame) {
         quic_reloadable_flag_quic_remove_on_stream_frame_discarded, 1, 2);
     return;
   }
-  DCHECK_EQ(id_, frame.stream_id);
-  if (stream_bytes_outstanding_ < frame.data_length ||
-      (!fin_outstanding_ && frame.fin)) {
+  if (stream_bytes_outstanding_ < data_length ||
+      (!fin_outstanding_ && fin_discarded)) {
     CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
                                "Trying to discard unsent data.");
     return;
   }
-  stream_bytes_outstanding_ -= frame.data_length;
-  if (frame.fin) {
+  stream_bytes_outstanding_ -= data_length;
+  if (fin_discarded) {
     fin_outstanding_ = false;
   }
-  if (frame.data_length > 0) {
-    send_buffer_.RemoveStreamFrame(frame.offset, frame.data_length);
+  if (data_length > 0) {
+    send_buffer_.RemoveStreamFrame(offset, data_length);
   }
   if (!IsWaitingForAcks()) {
     session_->OnStreamDoneWaitingForAcks(id_);
