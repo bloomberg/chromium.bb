@@ -359,7 +359,8 @@ TEST_F(QuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
       QuicFlowControllerPeer::SendWindowOffset(stream_->flow_controller()));
 
   // Check a single WINDOW_UPDATE results in correct offset.
-  QuicWindowUpdateFrame window_update_1(stream_->id(), 1234);
+  QuicWindowUpdateFrame window_update_1(kInvalidControlFrameId, stream_->id(),
+                                        1234);
   stream_->OnWindowUpdateFrame(window_update_1);
   EXPECT_EQ(
       window_update_1.byte_offset,
@@ -367,9 +368,12 @@ TEST_F(QuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
 
   // Now send a few more WINDOW_UPDATES and make sure that only the largest is
   // remembered.
-  QuicWindowUpdateFrame window_update_2(stream_->id(), 1);
-  QuicWindowUpdateFrame window_update_3(stream_->id(), 9999);
-  QuicWindowUpdateFrame window_update_4(stream_->id(), 5678);
+  QuicWindowUpdateFrame window_update_2(kInvalidControlFrameId, stream_->id(),
+                                        1);
+  QuicWindowUpdateFrame window_update_3(kInvalidControlFrameId, stream_->id(),
+                                        9999);
+  QuicWindowUpdateFrame window_update_4(kInvalidControlFrameId, stream_->id(),
+                                        5678);
   stream_->OnWindowUpdateFrame(window_update_2);
   stream_->OnWindowUpdateFrame(window_update_3);
   stream_->OnWindowUpdateFrame(window_update_4);
@@ -443,7 +447,8 @@ TEST_F(QuicStreamTest, FinalByteOffsetFromRst) {
   Initialize(kShouldProcessData);
 
   EXPECT_FALSE(stream_->HasFinalReceivedByteOffset());
-  QuicRstStreamFrame rst_frame(stream_->id(), QUIC_STREAM_CANCELLED, 1234);
+  QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream_->id(),
+                               QUIC_STREAM_CANCELLED, 1234);
   stream_->OnStreamReset(rst_frame);
   EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
 }
@@ -452,8 +457,8 @@ TEST_F(QuicStreamTest, InvalidFinalByteOffsetFromRst) {
   Initialize(kShouldProcessData);
 
   EXPECT_FALSE(stream_->HasFinalReceivedByteOffset());
-  QuicRstStreamFrame rst_frame(stream_->id(), QUIC_STREAM_CANCELLED,
-                               0xFFFFFFFFFFFF);
+  QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream_->id(),
+                               QUIC_STREAM_CANCELLED, 0xFFFFFFFFFFFF);
   // Stream should not accept the frame, and the connection should be closed.
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _, _));
@@ -698,7 +703,8 @@ TEST_F(QuicStreamTest, RstFrameReceivedStreamNotFinishSending) {
   EXPECT_EQ(1u, QuicStreamPeer::SendBuffer(stream_).size());
 
   // RST_STREAM received.
-  QuicRstStreamFrame rst_frame(stream_->id(), QUIC_STREAM_CANCELLED, 9);
+  QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream_->id(),
+                               QUIC_STREAM_CANCELLED, 9);
   EXPECT_CALL(*session_,
               SendRstStream(stream_->id(), QUIC_RST_ACKNOWLEDGEMENT, 9));
   stream_->OnStreamReset(rst_frame);
@@ -725,7 +731,8 @@ TEST_F(QuicStreamTest, RstFrameReceivedStreamFinishSending) {
 
   // RST_STREAM received.
   EXPECT_CALL(*session_, SendRstStream(_, _, _)).Times(0);
-  QuicRstStreamFrame rst_frame(stream_->id(), QUIC_STREAM_CANCELLED, 1234);
+  QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream_->id(),
+                               QUIC_STREAM_CANCELLED, 1234);
   stream_->OnStreamReset(rst_frame);
   // Stream stops waiting for acks as it has unacked data.
   EXPECT_TRUE(stream_->IsWaitingForAcks());

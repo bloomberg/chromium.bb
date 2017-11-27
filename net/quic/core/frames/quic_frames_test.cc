@@ -63,12 +63,16 @@ TEST_F(QuicFramesTest, PaddingFrameToString) {
 }
 
 TEST_F(QuicFramesTest, RstStreamFrameToString) {
-  QuicRstStreamFrame frame;
-  frame.stream_id = 1;
-  frame.error_code = QUIC_STREAM_CANCELLED;
+  QuicRstStreamFrame rst_stream;
+  QuicFrame frame(&rst_stream);
+  SetControlFrameId(1, &frame);
+  EXPECT_EQ(1u, GetControlFrameId(frame));
+  rst_stream.stream_id = 1;
+  rst_stream.error_code = QUIC_STREAM_CANCELLED;
   std::ostringstream stream;
-  stream << frame;
-  EXPECT_EQ("{ stream_id: 1, error_code: 6 }\n", stream.str());
+  stream << rst_stream;
+  EXPECT_EQ("{ control_frame_id: 1, stream_id: 1, error_code: 6 }\n",
+            stream.str());
 }
 
 TEST_F(QuicFramesTest, ConnectionCloseFrameToString) {
@@ -78,37 +82,60 @@ TEST_F(QuicFramesTest, ConnectionCloseFrameToString) {
   std::ostringstream stream;
   stream << frame;
   EXPECT_EQ(
-      "{ error_code: 25, error_details: 'No recent network activity.' }\n",
+      "{ error_code: 25, error_details: 'No recent network activity.' "
+      "}\n",
       stream.str());
 }
 
 TEST_F(QuicFramesTest, GoAwayFrameToString) {
-  QuicGoAwayFrame frame;
-  frame.error_code = QUIC_NETWORK_IDLE_TIMEOUT;
-  frame.last_good_stream_id = 2;
-  frame.reason_phrase = "Reason";
+  QuicGoAwayFrame goaway_frame;
+  QuicFrame frame(&goaway_frame);
+  SetControlFrameId(2, &frame);
+  EXPECT_EQ(2u, GetControlFrameId(frame));
+  goaway_frame.error_code = QUIC_NETWORK_IDLE_TIMEOUT;
+  goaway_frame.last_good_stream_id = 2;
+  goaway_frame.reason_phrase = "Reason";
   std::ostringstream stream;
-  stream << frame;
+  stream << goaway_frame;
   EXPECT_EQ(
-      "{ error_code: 25, last_good_stream_id: 2, reason_phrase: 'Reason' }\n",
+      "{ control_frame_id: 2, error_code: 25, last_good_stream_id: 2, "
+      "reason_phrase: "
+      "'Reason' }\n",
       stream.str());
 }
 
 TEST_F(QuicFramesTest, WindowUpdateFrameToString) {
-  QuicWindowUpdateFrame frame;
+  QuicWindowUpdateFrame window_update;
+  QuicFrame frame(&window_update);
+  SetControlFrameId(3, &frame);
+  EXPECT_EQ(3u, GetControlFrameId(frame));
   std::ostringstream stream;
-  frame.stream_id = 1;
-  frame.byte_offset = 2;
-  stream << frame;
-  EXPECT_EQ("{ stream_id: 1, byte_offset: 2 }\n", stream.str());
+  window_update.stream_id = 1;
+  window_update.byte_offset = 2;
+  stream << window_update;
+  EXPECT_EQ("{ control_frame_id: 3, stream_id: 1, byte_offset: 2 }\n",
+            stream.str());
 }
 
 TEST_F(QuicFramesTest, BlockedFrameToString) {
-  QuicBlockedFrame frame;
-  frame.stream_id = 1;
+  QuicBlockedFrame blocked;
+  QuicFrame frame(&blocked);
+  SetControlFrameId(4, &frame);
+  EXPECT_EQ(4u, GetControlFrameId(frame));
+  blocked.stream_id = 1;
   std::ostringstream stream;
-  stream << frame;
-  EXPECT_EQ("{ stream_id: 1 }\n", stream.str());
+  stream << blocked;
+  EXPECT_EQ("{ control_frame_id: 4, stream_id: 1 }\n", stream.str());
+}
+
+TEST_F(QuicFramesTest, PingFrameToString) {
+  QuicPingFrame ping;
+  QuicFrame frame(ping);
+  SetControlFrameId(5, &frame);
+  EXPECT_EQ(5u, GetControlFrameId(frame));
+  std::ostringstream stream;
+  stream << frame.ping_frame;
+  EXPECT_EQ("{ control_frame_id: 5 }\n", stream.str());
 }
 
 TEST_F(QuicFramesTest, StreamFrameToString) {

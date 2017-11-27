@@ -355,7 +355,7 @@ class QuicStreamFactoryTestBase {
     }
 
     if (goaway_received) {
-      QuicGoAwayFrame goaway(QUIC_NO_ERROR, 1, "");
+      QuicGoAwayFrame goaway(kInvalidControlFrameId, QUIC_NO_ERROR, 1, "");
       session->connection()->OnGoAwayFrame(goaway);
     }
 
@@ -1188,7 +1188,7 @@ TEST_P(QuicStreamFactoryTest, GoAwayForConnectionMigrationWithPortOnly) {
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
 
   session->OnGoAway(
-      QuicGoAwayFrame(QUIC_ERROR_MIGRATING_PORT, 0,
+      QuicGoAwayFrame(kInvalidControlFrameId, QUIC_ERROR_MIGRATING_PORT, 0,
                       "peer connection migration due to port change only"));
   NetErrorDetails details;
   EXPECT_FALSE(details.quic_port_migration_detected);

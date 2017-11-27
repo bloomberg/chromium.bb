@@ -7,15 +7,15 @@
 
 #include <ostream>
 
+#include "net/quic/core/frames/quic_control_frame.h"
 #include "net/quic/core/quic_error_codes.h"
-#include "net/quic/core/quic_types.h"
-#include "net/quic/platform/api/quic_export.h"
 
 namespace net {
 
-struct QUIC_EXPORT_PRIVATE QuicRstStreamFrame {
+struct QUIC_EXPORT_PRIVATE QuicRstStreamFrame : public QuicControlFrame {
   QuicRstStreamFrame();
-  QuicRstStreamFrame(QuicStreamId stream_id,
+  QuicRstStreamFrame(QuicControlFrameId control_frame_id,
+                     QuicStreamId stream_id,
                      QuicRstStreamErrorCode error_code,
                      QuicStreamOffset bytes_written);
 

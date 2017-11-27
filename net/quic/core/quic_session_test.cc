@@ -819,7 +819,7 @@ TEST_P(QuicSessionTestServer, SendGoAway) {
 }
 
 TEST_P(QuicSessionTestServer, InvalidGoAway) {
-  QuicGoAwayFrame go_away(QUIC_PEER_GOING_AWAY,
+  QuicGoAwayFrame go_away(kInvalidControlFrameId, QUIC_PEER_GOING_AWAY,
                           session_.next_outgoing_stream_id(), "");
   session_.OnGoAway(go_away);
 }
@@ -874,7 +874,7 @@ TEST_P(QuicSessionTestServer, RstStreamBeforeHeadersDecompressed) {
   EXPECT_EQ(1u, session_.GetNumOpenIncomingStreams());
 
   EXPECT_CALL(*connection_, SendRstStream(GetNthClientInitiatedId(0), _, _));
-  QuicRstStreamFrame rst1(GetNthClientInitiatedId(0),
+  QuicRstStreamFrame rst1(kInvalidControlFrameId, GetNthClientInitiatedId(0),
                           QUIC_ERROR_PROCESSING_STREAM, 0);
   session_.OnRstStream(rst1);
   EXPECT_EQ(0u, session_.GetNumOpenIncomingStreams());
@@ -894,7 +894,8 @@ TEST_P(QuicSessionTestServer, OnStreamFrameFinStaticStreamId) {
 
 TEST_P(QuicSessionTestServer, OnRstStreamStaticStreamId) {
   // Send two bytes of payload.
-  QuicRstStreamFrame rst1(kCryptoStreamId, QUIC_ERROR_PROCESSING_STREAM, 0);
+  QuicRstStreamFrame rst1(kInvalidControlFrameId, kCryptoStreamId,
+                          QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(*connection_,
               CloseConnection(
                   QUIC_INVALID_STREAM_ID, "Attempt to reset a static stream",
@@ -914,7 +915,8 @@ TEST_P(QuicSessionTestServer, OnStreamFrameInvalidStreamId) {
 
 TEST_P(QuicSessionTestServer, OnRstStreamInvalidStreamId) {
   // Send two bytes of payload.
-  QuicRstStreamFrame rst1(kInvalidStreamId, QUIC_ERROR_PROCESSING_STREAM, 0);
+  QuicRstStreamFrame rst1(kInvalidControlFrameId, kInvalidStreamId,
+                          QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(*connection_,
               CloseConnection(
                   QUIC_INVALID_STREAM_ID, "Recevied data for an invalid stream",
@@ -1076,8 +1078,8 @@ TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingRstOutOfOrder) {
                   0, kInitialSessionFlowControlWindowForTest + kByteOffset));
 
   EXPECT_CALL(*connection_, SendRstStream(stream->id(), _, _));
-  QuicRstStreamFrame rst_frame(stream->id(), QUIC_STREAM_CANCELLED,
-                               kByteOffset);
+  QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream->id(),
+                               QUIC_STREAM_CANCELLED, kByteOffset);
   session_.OnRstStream(rst_frame);
   session_.PostProcessAfterData();
   EXPECT_EQ(kByteOffset, session_.flow_controller()->bytes_consumed());
@@ -1171,8 +1173,8 @@ TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingRstAfterRst) {
   // connection level flow control receive window to take into account the total
   // number of bytes sent by the peer.
   const QuicStreamOffset kByteOffset = 5678;
-  QuicRstStreamFrame rst_frame(stream->id(), QUIC_STREAM_CANCELLED,
-                               kByteOffset);
+  QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream->id(),
+                               QUIC_STREAM_CANCELLED, kByteOffset);
   session_.OnRstStream(rst_frame);
 
   EXPECT_EQ(kInitialConnectionBytesConsumed + kByteOffset,
@@ -1232,8 +1234,8 @@ TEST_P(QuicSessionTestServer, FlowControlWithInvalidFinalOffset) {
   session_.OnStreamFrame(frame);
 
   // Check that RST results in connection close.
-  QuicRstStreamFrame rst_frame(stream->id(), QUIC_STREAM_CANCELLED,
-                               kLargeOffset);
+  QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream->id(),
+                               QUIC_STREAM_CANCELLED, kLargeOffset);
   session_.OnRstStream(rst_frame);
 }
 
@@ -1251,7 +1253,8 @@ TEST_P(QuicSessionTestServer, WindowUpdateUnblocksHeadersStream) {
   EXPECT_TRUE(session_.IsStreamFlowControlBlocked());
 
   // Unblock the headers stream by supplying a WINDOW_UPDATE.
-  QuicWindowUpdateFrame window_update_frame(headers_stream->id(),
+  QuicWindowUpdateFrame window_update_frame(kInvalidControlFrameId,
+                                            headers_stream->id(),
                                             2 * kMinimumFlowControlSendWindow);
   session_.OnWindowUpdateFrame(window_update_frame);
   EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());

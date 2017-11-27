@@ -275,7 +275,8 @@ QuicConnection::QuicConnection(
       no_stop_waiting_frames_(false),
       consecutive_num_packets_with_no_retransmittable_frames_(0),
       fill_up_link_during_probing_(false),
-      probing_retransmission_pending_(false) {
+      probing_retransmission_pending_(false),
+      last_control_frame_id_(kInvalidControlFrameId) {
   QUIC_DLOG(INFO) << ENDPOINT
                   << "Created connection with connection_id: " << connection_id;
   framer_.set_visitor(this);
@@ -1212,8 +1213,8 @@ void QuicConnection::SendRstStream(QuicStreamId id,
                                    QuicStreamOffset bytes_written) {
   // Opportunistically bundle an ack with this outgoing packet.
   ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
-  packet_generator_.AddControlFrame(
-      QuicFrame(new QuicRstStreamFrame(id, error, bytes_written)));
+  packet_generator_.AddControlFrame(QuicFrame(new QuicRstStreamFrame(
+      ++last_control_frame_id_, id, error, bytes_written)));
 
   if (error == QUIC_STREAM_NO_ERROR) {
     // All data for streams which are reset with QUIC_STREAM_NO_ERROR must
@@ -1255,14 +1256,15 @@ void QuicConnection::SendWindowUpdate(QuicStreamId id,
                                       QuicStreamOffset byte_offset) {
   // Opportunistically bundle an ack with this outgoing packet.
   ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
-  packet_generator_.AddControlFrame(
-      QuicFrame(new QuicWindowUpdateFrame(id, byte_offset)));
+  packet_generator_.AddControlFrame(QuicFrame(
+      new QuicWindowUpdateFrame(++last_control_frame_id_, id, byte_offset)));
 }
 
 void QuicConnection::SendBlocked(QuicStreamId id) {
   // Opportunistically bundle an ack with this outgoing packet.
   ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
-  packet_generator_.AddControlFrame(QuicFrame(new QuicBlockedFrame(id)));
+  packet_generator_.AddControlFrame(
+      QuicFrame(new QuicBlockedFrame(++last_control_frame_id_, id)));
   stats_.blocked_frames_sent++;
 }
 
@@ -1926,7 +1928,8 @@ void QuicConnection::OnPingTimeout() {
 
 void QuicConnection::SendPing() {
   ScopedPacketFlusher flusher(this, SEND_ACK_IF_QUEUED);
-  packet_generator_.AddControlFrame(QuicFrame(QuicPingFrame()));
+  packet_generator_.AddControlFrame(
+      QuicFrame(QuicPingFrame(++last_control_frame_id_)));
   // Send PING frame immediately, without checking for congestion window bounds.
   packet_generator_.FlushAllQueuedFrames();
   if (debug_visitor_ != nullptr) {
@@ -1956,7 +1959,8 @@ void QuicConnection::SendAck() {
   visitor_->OnAckNeedsRetransmittableFrame();
   if (!packet_generator_.HasRetransmittableFrames()) {
     // Visitor did not add a retransmittable frame, add a ping frame.
-    packet_generator_.AddControlFrame(QuicFrame(QuicPingFrame()));
+    packet_generator_.AddControlFrame(
+        QuicFrame(QuicPingFrame(++last_control_frame_id_)));
   }
 }
 
@@ -2175,8 +2179,8 @@ void QuicConnection::SendGoAway(QuicErrorCode error,
 
   // Opportunistically bundle an ack with this outgoing packet.
   ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
-  packet_generator_.AddControlFrame(
-      QuicFrame(new QuicGoAwayFrame(error, last_good_stream_id, reason)));
+  packet_generator_.AddControlFrame(QuicFrame(new QuicGoAwayFrame(
+      ++last_control_frame_id_, error, last_good_stream_id, reason)));
 }
 
 QuicByteCount QuicConnection::max_packet_length() const {

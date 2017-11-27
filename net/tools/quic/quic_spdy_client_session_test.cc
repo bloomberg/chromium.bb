@@ -206,8 +206,8 @@ TEST_P(QuicSpdyClientSessionTest, MaxNumStreamsWithRst) {
 
   // Close the stream and receive an RST frame to remove the unfinished stream
   session_->CloseStream(stream->id());
-  session_->OnRstStream(
-      QuicRstStreamFrame(stream->id(), QUIC_RST_ACKNOWLEDGEMENT, 0));
+  session_->OnRstStream(QuicRstStreamFrame(kInvalidControlFrameId, stream->id(),
+                                           QUIC_RST_ACKNOWLEDGEMENT, 0));
   // Check that a new one can be created.
   EXPECT_EQ(0u, session_->GetNumOpenOutgoingStreams());
   stream = session_->CreateOutgoingDynamicStream();
@@ -282,8 +282,8 @@ TEST_P(QuicSpdyClientSessionTest, GoAwayReceived) {
 
   // After receiving a GoAway, I should no longer be able to create outgoing
   // streams.
-  session_->connection()->OnGoAwayFrame(
-      QuicGoAwayFrame(QUIC_PEER_GOING_AWAY, 1u, "Going away."));
+  session_->connection()->OnGoAwayFrame(QuicGoAwayFrame(
+      kInvalidControlFrameId, QUIC_PEER_GOING_AWAY, 1u, "Going away."));
   EXPECT_EQ(nullptr, session_->CreateOutgoingDynamicStream());
 }
 

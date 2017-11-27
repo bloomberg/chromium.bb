@@ -47,6 +47,8 @@ void QuicPacketGenerator::SetShouldSendAck(bool also_send_stop_waiting) {
 }
 
 void QuicPacketGenerator::AddControlFrame(const QuicFrame& frame) {
+  QUIC_BUG_IF(IsControlFrame(frame.type) && !GetControlFrameId(frame))
+      << "Adding a control frame with no control frame id: " << frame;
   queued_control_frames_.push_back(frame);
   SendQueuedFrames(/*flush=*/false);
 }

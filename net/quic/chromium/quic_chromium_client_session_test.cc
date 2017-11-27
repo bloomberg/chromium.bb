@@ -429,7 +429,8 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
                                   callback.callback()));
 
   // Close a stream and ensure the stream request completes.
-  QuicRstStreamFrame rst(GetNthClientInitiatedStreamId(0),
+  QuicRstStreamFrame rst(kInvalidControlFrameId,
+                         GetNthClientInitiatedStreamId(0),
                          QUIC_STREAM_CANCELLED, 0);
   session_->OnRstStream(rst);
   ASSERT_TRUE(callback.have_result());
@@ -520,7 +521,8 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
   handle.reset();
 
   // Close a stream and ensure that no new stream is created.
-  QuicRstStreamFrame rst(GetNthClientInitiatedStreamId(0),
+  QuicRstStreamFrame rst(kInvalidControlFrameId,
+                         GetNthClientInitiatedStreamId(0),
                          QUIC_STREAM_CANCELLED, 0);
   session_->OnRstStream(rst);
   EXPECT_EQ(kMaxOpenStreams - 1, session_->GetNumOpenOutgoingStreams());
@@ -649,7 +651,8 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   session_->CloseStream(stream_id);
 
   EXPECT_FALSE(session_->CreateOutgoingDynamicStream());
-  QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
+  QuicRstStreamFrame rst1(kInvalidControlFrameId, stream_id,
+                          QUIC_STREAM_NO_ERROR, 0);
   session_->OnRstStream(rst1);
   EXPECT_EQ(kMaxOpenStreams - 1, session_->GetNumOpenOutgoingStreams());
   EXPECT_TRUE(session_->CreateOutgoingDynamicStream());
@@ -947,7 +950,8 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   // Close a stream and ensure I can now open a new one.
   QuicStreamId stream_id = streams[0]->id();
   session_->CloseStream(stream_id);
-  QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
+  QuicRstStreamFrame rst1(kInvalidControlFrameId, stream_id,
+                          QUIC_STREAM_NO_ERROR, 0);
   session_->OnRstStream(rst1);
   ASSERT_TRUE(callback.have_result());
   EXPECT_THAT(callback.WaitForResult(), IsOk());
@@ -967,8 +971,8 @@ TEST_P(QuicChromiumClientSessionTest, GoAwayReceived) {
 
   // After receiving a GoAway, I should no longer be able to create outgoing
   // streams.
-  session_->connection()->OnGoAwayFrame(
-      QuicGoAwayFrame(QUIC_PEER_GOING_AWAY, 1u, "Going away."));
+  session_->connection()->OnGoAwayFrame(QuicGoAwayFrame(
+      kInvalidControlFrameId, QUIC_PEER_GOING_AWAY, 1u, "Going away."));
   EXPECT_EQ(nullptr, session_->CreateOutgoingDynamicStream());
 }
 

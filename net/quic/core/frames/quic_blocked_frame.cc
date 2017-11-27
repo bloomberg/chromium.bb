@@ -6,12 +6,16 @@
 
 namespace net {
 
-QuicBlockedFrame::QuicBlockedFrame(QuicStreamId stream_id)
-    : stream_id(stream_id) {}
+QuicBlockedFrame::QuicBlockedFrame() {}
+
+QuicBlockedFrame::QuicBlockedFrame(QuicControlFrameId control_frame_id,
+                                   QuicStreamId stream_id)
+    : QuicControlFrame(control_frame_id), stream_id(stream_id) {}
 
 std::ostream& operator<<(std::ostream& os,
                          const QuicBlockedFrame& blocked_frame) {
-  os << "{ stream_id: " << blocked_frame.stream_id << " }\n";
+  os << "{ control_frame_id: " << blocked_frame.control_frame_id
+     << ", stream_id: " << blocked_frame.stream_id << " }\n";
   return os;
 }
 

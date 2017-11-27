@@ -9,16 +9,19 @@ namespace net {
 QuicRstStreamFrame::QuicRstStreamFrame()
     : stream_id(0), error_code(QUIC_STREAM_NO_ERROR), byte_offset(0) {}
 
-QuicRstStreamFrame::QuicRstStreamFrame(QuicStreamId stream_id,
+QuicRstStreamFrame::QuicRstStreamFrame(QuicControlFrameId control_frame_id,
+                                       QuicStreamId stream_id,
                                        QuicRstStreamErrorCode error_code,
                                        QuicStreamOffset bytes_written)
-    : stream_id(stream_id),
+    : QuicControlFrame(control_frame_id),
+      stream_id(stream_id),
       error_code(error_code),
       byte_offset(bytes_written) {}
 
 std::ostream& operator<<(std::ostream& os,
                          const QuicRstStreamFrame& rst_frame) {
-  os << "{ stream_id: " << rst_frame.stream_id
+  os << "{ control_frame_id: " << rst_frame.control_frame_id
+     << ", stream_id: " << rst_frame.stream_id
      << ", error_code: " << rst_frame.error_code << " }\n";
   return os;
 }
