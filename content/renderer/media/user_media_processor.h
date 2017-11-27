@@ -37,7 +37,7 @@ namespace content {
 
 class AudioCaptureSettings;
 class MediaStreamAudioSource;
-class MediaStreamDispatcher;
+class MediaStreamDeviceObserver;
 class MediaStreamVideoSource;
 class PeerConnectionDependencyFactory;
 class VideoCaptureSettings;
@@ -70,7 +70,7 @@ class CONTENT_EXPORT UserMediaProcessor
   UserMediaProcessor(
       RenderFrame* render_frame,
       PeerConnectionDependencyFactory* dependency_factory,
-      std::unique_ptr<MediaStreamDispatcher> media_stream_dispatcher,
+      std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
       MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
       const scoped_refptr<base::TaskRunner>& worker_task_runner);
   ~UserMediaProcessor() override;
@@ -101,8 +101,8 @@ class CONTENT_EXPORT UserMediaProcessor
   // those sources.
   void StopAllProcessing();
 
-  MediaStreamDispatcher* media_stream_dispatcher() const {
-    return media_stream_dispatcher_.get();
+  MediaStreamDeviceObserver* media_stream_device_observer() const {
+    return media_stream_device_observer_.get();
   }
 
   // MediaStreamDispatcherEventHandler implementation.
@@ -270,9 +270,11 @@ class CONTENT_EXPORT UserMediaProcessor
   // audio.
   PeerConnectionDependencyFactory* const dependency_factory_;
 
-  // UserMediaProcessor owns MediaStreamDispatcher instead of RenderFrameImpl
-  // (or RenderFrameObserver) to ensure tear-down occurs in the right order.
-  const std::unique_ptr<MediaStreamDispatcher> media_stream_dispatcher_;
+  // UserMediaProcessor owns MediaStreamDeviceObserver instead of
+  // RenderFrameImpl (or RenderFrameObserver) to ensure tear-down occurs in the
+  // right order.
+  const std::unique_ptr<MediaStreamDeviceObserver>
+      media_stream_device_observer_;
 
   LocalStreamSources local_sources_;
   LocalStreamSources pending_local_sources_;

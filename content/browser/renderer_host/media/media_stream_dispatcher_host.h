@@ -41,18 +41,18 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
       MediaDeviceSaltAndOriginCallback callback) {
     salt_and_origin_callback_ = std::move(callback);
   }
-  void SetMediaStreamDispatcherForTesting(
+  void SetMediaStreamDeviceObserverForTesting(
       int render_frame_id,
-      mojom::MediaStreamDispatcherPtr dispatcher) {
-    dispatchers_[render_frame_id] = std::move(dispatcher);
+      mojom::MediaStreamDeviceObserverPtr observer) {
+    observers_[render_frame_id] = std::move(observer);
   }
 
  private:
   friend class MockMediaStreamDispatcherHost;
 
-  mojom::MediaStreamDispatcher* GetMediaStreamDispatcherForFrame(
+  mojom::MediaStreamDeviceObserver* GetMediaStreamDeviceObserverForFrame(
       int render_frame_id);
-  void OnMediaStreamDispatcherConnectionError(int render_frame_id);
+  void OnMediaStreamDeviceObserverConnectionError(int render_frame_id);
   void CancelAllRequests();
 
   // mojom::MediaStreamDispatcherHost implementation
@@ -95,7 +95,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
 
   const int render_process_id_;
   MediaStreamManager* media_stream_manager_;
-  std::map<int, mojom::MediaStreamDispatcherPtr> dispatchers_;
+  std::map<int, mojom::MediaStreamDeviceObserverPtr> observers_;
   mojo::BindingSet<mojom::MediaStreamDispatcherHost> bindings_;
   MediaDeviceSaltAndOriginCallback salt_and_origin_callback_;
 

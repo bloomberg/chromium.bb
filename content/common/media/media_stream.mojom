@@ -56,12 +56,9 @@ struct StreamControls {
   bool disable_local_echo;
 };
 
-// TODO(c.padhi): Rename this interface to
-// MediaStreamDeviceObserver/MediaStreamDeviceListener, see
-// https://crbug.com/742682.
 // Per-frame renderer-side interface that receives device stopped notifications
 // from the browser process.
-interface MediaStreamDispatcher {
+interface MediaStreamDeviceObserver {
   OnDeviceStopped(string label, MediaStreamDevice device);
 };
 

@@ -33,7 +33,7 @@ class TaskRunner;
 namespace content {
 
 class ApplyConstraintsProcessor;
-class MediaStreamDispatcher;
+class MediaStreamDeviceObserver;
 class PeerConnectionDependencyFactory;
 
 // UserMediaClientImpl handles requests coming from the Blink MediaDevices
@@ -49,14 +49,14 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   UserMediaClientImpl(
       RenderFrame* render_frame,
       PeerConnectionDependencyFactory* dependency_factory,
-      std::unique_ptr<MediaStreamDispatcher> media_stream_dispatcher,
+      std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
       const scoped_refptr<base::TaskRunner>& worker_task_runner);
   UserMediaClientImpl(RenderFrame* render_frame,
                       std::unique_ptr<UserMediaProcessor> user_media_processor);
   ~UserMediaClientImpl() override;
 
-  MediaStreamDispatcher* media_stream_dispatcher() const {
-    return user_media_processor_->media_stream_dispatcher();
+  MediaStreamDeviceObserver* media_stream_device_observer() const {
+    return user_media_processor_->media_stream_device_observer();
   }
 
   // blink::WebUserMediaClient implementation

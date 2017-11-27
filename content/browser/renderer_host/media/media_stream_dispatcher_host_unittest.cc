@@ -77,7 +77,7 @@ void AudioInputDevicesEnumerated(base::Closure quit_closure,
 }  // anonymous namespace
 
 class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
-                                      public mojom::MediaStreamDispatcher {
+                                      public mojom::MediaStreamDeviceObserver {
  public:
   MockMediaStreamDispatcherHost(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -129,16 +129,16 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     MediaStreamDispatcherHost::OnStreamStarted(label);
   }
 
-  // mojom::MediaStreamDispatcher implementation.
+  // mojom::MediaStreamDeviceObserver implementation.
   void OnDeviceStopped(const std::string& label,
                        const MediaStreamDevice& device) override {
     OnDeviceStoppedInternal(label, device);
   }
 
-  mojom::MediaStreamDispatcherPtr CreateInterfacePtrAndBind() {
-    mojom::MediaStreamDispatcherPtr dispatcher;
-    bindings_.AddBinding(this, mojo::MakeRequest(&dispatcher));
-    return dispatcher;
+  mojom::MediaStreamDeviceObserverPtr CreateInterfacePtrAndBind() {
+    mojom::MediaStreamDeviceObserverPtr observer;
+    bindings_.AddBinding(this, mojo::MakeRequest(&observer));
+    return observer;
   }
 
   std::string label_;
@@ -208,7 +208,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     }
   }
 
-  mojo::BindingSet<mojom::MediaStreamDispatcher> bindings_;
+  mojo::BindingSet<mojom::MediaStreamDeviceObserver> bindings_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::queue<base::Closure> quit_closures_;
 };
@@ -253,9 +253,10 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     host_->set_salt_and_origin_callback_for_testing(
         base::BindRepeating(&MediaStreamDispatcherHostTest::GetSaltAndOrigin,
                             base::Unretained(this)));
-    mojom::MediaStreamDispatcherPtr dispatcher =
+    mojom::MediaStreamDeviceObserverPtr observer =
         host_->CreateInterfacePtrAndBind();
-    host_->SetMediaStreamDispatcherForTesting(kRenderId, std::move(dispatcher));
+    host_->SetMediaStreamDeviceObserverForTesting(kRenderId,
+                                                  std::move(observer));
 
 #if defined(OS_CHROMEOS)
     chromeos::CrasAudioHandler::InitializeForTesting();
@@ -588,10 +589,10 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsDifferentRenderId) {
   const int session_id1 = host_->video_devices_.front().session_id;
 
   // Generate second stream from another render frame.
-  mojom::MediaStreamDispatcherPtr dispatcher =
+  mojom::MediaStreamDeviceObserverPtr observer =
       host_->CreateInterfacePtrAndBind();
-  host_->SetMediaStreamDispatcherForTesting(kRenderId + 1,
-                                            std::move(dispatcher));
+  host_->SetMediaStreamDeviceObserverForTesting(kRenderId + 1,
+                                                std::move(observer));
   GenerateStreamAndWaitForResult(kRenderId + 1, kPageRequestId + 1, controls);
 
   // Check the latest generated stream.
@@ -828,7 +829,7 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
   base::RunLoop().RunUntilIdle();
 }
 
-// Test that the dispatcher is notified if a video device that is in use is
+// Test that the observer is notified if a video device that is in use is
 // being unplugged.
 TEST_F(MediaStreamDispatcherHostTest, VideoDeviceUnplugged) {
   StreamControls controls(true, true);

@@ -28,7 +28,7 @@
 #include "content/renderer/media/media_stream_constraints_util_audio.h"
 #include "content/renderer/media/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/media_stream_constraints_util_video_device.h"
-#include "content/renderer/media/media_stream_dispatcher.h"
+#include "content/renderer/media/media_stream_device_observer.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/user_media_client_impl.h"
@@ -323,18 +323,18 @@ void UserMediaProcessor::RequestInfo::OnAudioSourceStarted(
 UserMediaProcessor::UserMediaProcessor(
     RenderFrame* render_frame,
     PeerConnectionDependencyFactory* dependency_factory,
-    std::unique_ptr<MediaStreamDispatcher> media_stream_dispatcher,
+    std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
     MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
     const scoped_refptr<base::TaskRunner>& worker_task_runner)
     : dependency_factory_(dependency_factory),
-      media_stream_dispatcher_(std::move(media_stream_dispatcher)),
+      media_stream_device_observer_(std::move(media_stream_device_observer)),
       media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
       worker_task_runner_(worker_task_runner),
       render_frame_id_(render_frame ? render_frame->GetRoutingID()
                                     : MSG_ROUTING_NONE),
       weak_factory_(this) {
   DCHECK(dependency_factory_);
-  DCHECK(media_stream_dispatcher_.get());
+  DCHECK(media_stream_device_observer_.get());
 }
 
 UserMediaProcessor::~UserMediaProcessor() {
@@ -591,8 +591,8 @@ void UserMediaProcessor::OnStreamGenerated(
     return;
   }
 
-  media_stream_dispatcher_->AddStream(label, audio_devices, video_devices,
-                                      weak_factory_.GetWeakPtr());
+  media_stream_device_observer_->AddStream(label, audio_devices, video_devices,
+                                           weak_factory_.GetWeakPtr());
 
   current_request_info_->set_state(RequestInfo::State::GENERATED);
 
@@ -1157,7 +1157,7 @@ void UserMediaProcessor::OnLocalSourceStopped(
 
   MediaStreamSource* source_impl =
       static_cast<MediaStreamSource*>(source.GetExtraData());
-  media_stream_dispatcher_->RemoveStreamDevice(source_impl->device());
+  media_stream_device_observer_->RemoveStreamDevice(source_impl->device());
   GetMediaStreamDispatcherHost()->StopStreamDevice(render_frame_id_,
                                                    source_impl->device().id);
 }
@@ -1171,7 +1171,7 @@ void UserMediaProcessor::StopLocalSource(
            << "{device_id = " << source_impl->device().id << "})";
 
   if (notify_dispatcher) {
-    media_stream_dispatcher_->RemoveStreamDevice(source_impl->device());
+    media_stream_device_observer_->RemoveStreamDevice(source_impl->device());
     GetMediaStreamDispatcherHost()->StopStreamDevice(render_frame_id_,
                                                      source_impl->device().id);
   }

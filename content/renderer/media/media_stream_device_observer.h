@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_DISPATCHER_H_
-#define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_DISPATCHER_H_
+#ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_DEVICE_OBSERVER_H_
+#define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_DEVICE_OBSERVER_H_
 
 #include <list>
 #include <map>
@@ -26,17 +26,14 @@ namespace content {
 
 class MediaStreamDispatcherEventHandler;
 
-// TODO(c.padhi): Rename this class to
-// MediaStreamDeviceObserver/MediaStreamDeviceListener, see
-// https://crbug.com/742682.
 // This class implements a Mojo object that receives device stopped
 // notifications and forwards them to MediaStreamDispatcherEventHandler.
-class CONTENT_EXPORT MediaStreamDispatcher
+class CONTENT_EXPORT MediaStreamDeviceObserver
     : public RenderFrameObserver,
-      public mojom::MediaStreamDispatcher {
+      public mojom::MediaStreamDeviceObserver {
  public:
-  explicit MediaStreamDispatcher(RenderFrame* render_frame);
-  ~MediaStreamDispatcher() override;
+  explicit MediaStreamDeviceObserver(RenderFrame* render_frame);
+  ~MediaStreamDeviceObserver() override;
 
   // Get all the media devices of video capture, e.g. webcam. This is the set
   // of devices that should be suspended when the content frame is no longer
@@ -58,7 +55,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
   int audio_session_id(const std::string& label);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest,
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamDeviceObserverTest,
                            GetNonScreenCaptureDevices);
 
   // Private class for keeping track of opened devices and who have
@@ -71,14 +68,14 @@ class CONTENT_EXPORT MediaStreamDispatcher
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void OnDestruct() override;
 
-  // mojom::MediaStreamDispatcher implementation.
+  // mojom::MediaStreamDeviceObserver implementation.
   void OnDeviceStopped(const std::string& label,
                        const MediaStreamDevice& device) override;
 
-  void BindMediaStreamDispatcherRequest(
-      mojom::MediaStreamDispatcherRequest request);
+  void BindMediaStreamDeviceObserverRequest(
+      mojom::MediaStreamDeviceObserverRequest request);
 
-  mojo::Binding<mojom::MediaStreamDispatcher> binding_;
+  mojo::Binding<mojom::MediaStreamDeviceObserver> binding_;
 
   // Used for DCHECKs so methods calls won't execute in the wrong thread.
   base::ThreadChecker thread_checker_;
@@ -88,9 +85,9 @@ class CONTENT_EXPORT MediaStreamDispatcher
 
   service_manager::BinderRegistry registry_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaStreamDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(MediaStreamDeviceObserver);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_DISPATCHER_H_
+#endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_DEVICE_OBSERVER_H_

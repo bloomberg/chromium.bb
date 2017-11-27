@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/media_stream_dispatcher.h"
+#include "content/renderer/media/media_stream_device_observer.h"
 
 #include <stddef.h>
 
@@ -34,7 +34,7 @@ bool RemoveStreamDeviceFromArray(const MediaStreamDevice& device,
 
 }  // namespace
 
-struct MediaStreamDispatcher::Stream {
+struct MediaStreamDeviceObserver::Stream {
   Stream() {}
   ~Stream() {}
   base::WeakPtr<MediaStreamDispatcherEventHandler> handler;
@@ -42,16 +42,16 @@ struct MediaStreamDispatcher::Stream {
   MediaStreamDevices video_devices;
 };
 
-MediaStreamDispatcher::MediaStreamDispatcher(RenderFrame* render_frame)
+MediaStreamDeviceObserver::MediaStreamDeviceObserver(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame), binding_(this) {
-  registry_.AddInterface(
-      base::Bind(&MediaStreamDispatcher::BindMediaStreamDispatcherRequest,
-                 base::Unretained(this)));
+  registry_.AddInterface(base::Bind(
+      &MediaStreamDeviceObserver::BindMediaStreamDeviceObserverRequest,
+      base::Unretained(this)));
 }
 
-MediaStreamDispatcher::~MediaStreamDispatcher() {}
+MediaStreamDeviceObserver::~MediaStreamDeviceObserver() {}
 
-MediaStreamDevices MediaStreamDispatcher::GetNonScreenCaptureDevices() {
+MediaStreamDevices MediaStreamDeviceObserver::GetNonScreenCaptureDevices() {
   MediaStreamDevices video_devices;
   for (const auto& stream_it : label_stream_map_) {
     for (const auto& video_device : stream_it.second.video_devices) {
@@ -62,18 +62,19 @@ MediaStreamDevices MediaStreamDispatcher::GetNonScreenCaptureDevices() {
   return video_devices;
 }
 
-void MediaStreamDispatcher::OnInterfaceRequestForFrame(
+void MediaStreamDeviceObserver::OnInterfaceRequestForFrame(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe) {
   registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
-void MediaStreamDispatcher::OnDestruct() {
+void MediaStreamDeviceObserver::OnDestruct() {
   // Do not self-destruct. UserMediaClientImpl owns |this|.
 }
 
-void MediaStreamDispatcher::OnDeviceStopped(const std::string& label,
-                                            const MediaStreamDevice& device) {
+void MediaStreamDeviceObserver::OnDeviceStopped(
+    const std::string& label,
+    const MediaStreamDevice& device) {
   DVLOG(1) << __func__ << " label=" << label << " device_id=" << device.id;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -105,12 +106,12 @@ void MediaStreamDispatcher::OnDeviceStopped(const std::string& label,
     label_stream_map_.erase(it);
 }
 
-void MediaStreamDispatcher::BindMediaStreamDispatcherRequest(
-    mojom::MediaStreamDispatcherRequest request) {
+void MediaStreamDeviceObserver::BindMediaStreamDeviceObserverRequest(
+    mojom::MediaStreamDeviceObserverRequest request) {
   binding_.Bind(std::move(request));
 }
 
-void MediaStreamDispatcher::AddStream(
+void MediaStreamDeviceObserver::AddStream(
     const std::string& label,
     const MediaStreamDevices& audio_devices,
     const MediaStreamDevices& video_devices,
@@ -125,8 +126,8 @@ void MediaStreamDispatcher::AddStream(
   label_stream_map_[label] = stream;
 }
 
-void MediaStreamDispatcher::AddStream(const std::string& label,
-                                      const MediaStreamDevice& device) {
+void MediaStreamDeviceObserver::AddStream(const std::string& label,
+                                          const MediaStreamDevice& device) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   Stream stream;
@@ -140,7 +141,7 @@ void MediaStreamDispatcher::AddStream(const std::string& label,
   label_stream_map_[label] = stream;
 }
 
-bool MediaStreamDispatcher::RemoveStream(const std::string& label) {
+bool MediaStreamDeviceObserver::RemoveStream(const std::string& label) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto it = label_stream_map_.find(label);
@@ -151,7 +152,7 @@ bool MediaStreamDispatcher::RemoveStream(const std::string& label) {
   return true;
 }
 
-void MediaStreamDispatcher::RemoveStreamDevice(
+void MediaStreamDeviceObserver::RemoveStreamDevice(
     const MediaStreamDevice& device) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -175,7 +176,7 @@ void MediaStreamDispatcher::RemoveStreamDevice(
   DCHECK(device_found);
 }
 
-int MediaStreamDispatcher::audio_session_id(const std::string& label) {
+int MediaStreamDeviceObserver::audio_session_id(const std::string& label) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto it = label_stream_map_.find(label);
@@ -185,7 +186,7 @@ int MediaStreamDispatcher::audio_session_id(const std::string& label) {
   return it->second.audio_devices[0].session_id;
 }
 
-int MediaStreamDispatcher::video_session_id(const std::string& label) {
+int MediaStreamDeviceObserver::video_session_id(const std::string& label) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto it = label_stream_map_.find(label);

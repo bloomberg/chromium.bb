@@ -14,7 +14,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/media/media_devices_event_dispatcher.h"
-#include "content/renderer/media/media_stream_dispatcher.h"
+#include "content/renderer/media/media_stream_device_observer.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "media/media_features.h"
@@ -185,7 +185,7 @@ void PepperMediaDeviceManager::CancelOpenDevice(int request_id) {
 
 void PepperMediaDeviceManager::CloseDevice(const std::string& label) {
 #if BUILDFLAG(ENABLE_WEBRTC)
-  if (!GetMediaStreamDispatcher()->RemoveStream(label))
+  if (!GetMediaStreamDeviceObserver()->RemoveStream(label))
     return;
 
   GetMediaStreamDispatcherHost()->CloseDevice(label);
@@ -197,9 +197,9 @@ int PepperMediaDeviceManager::GetSessionID(PP_DeviceType_Dev type,
 #if BUILDFLAG(ENABLE_WEBRTC)
   switch (type) {
     case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
-      return GetMediaStreamDispatcher()->audio_session_id(label);
+      return GetMediaStreamDeviceObserver()->audio_session_id(label);
     case PP_DEVICETYPE_DEV_VIDEOCAPTURE:
-      return GetMediaStreamDispatcher()->video_session_id(label);
+      return GetMediaStreamDeviceObserver()->video_session_id(label);
     default:
       NOTREACHED();
       return 0;
@@ -236,7 +236,7 @@ void PepperMediaDeviceManager::OnDeviceOpened(int request_id,
   }
 
   if (success)
-    GetMediaStreamDispatcher()->AddStream(label, device);
+    GetMediaStreamDeviceObserver()->AddStream(label, device);
 
   OpenDeviceCallback callback = iter->second;
   open_callbacks_.erase(iter);
@@ -272,13 +272,14 @@ PepperMediaDeviceManager::GetMediaStreamDispatcherHost() {
   return dispatcher_host_;
 }
 
-MediaStreamDispatcher* PepperMediaDeviceManager::GetMediaStreamDispatcher()
-    const {
+MediaStreamDeviceObserver*
+PepperMediaDeviceManager::GetMediaStreamDeviceObserver() const {
   DCHECK(render_frame());
-  MediaStreamDispatcher* const dispatcher =
-      static_cast<RenderFrameImpl*>(render_frame())->GetMediaStreamDispatcher();
-  DCHECK(dispatcher);
-  return dispatcher;
+  MediaStreamDeviceObserver* const observer =
+      static_cast<RenderFrameImpl*>(render_frame())
+          ->GetMediaStreamDeviceObserver();
+  DCHECK(observer);
+  return observer;
 }
 
 const ::mojom::MediaDevicesDispatcherHostPtr&

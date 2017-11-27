@@ -20,7 +20,7 @@
 #include "ppapi/c/pp_instance.h"
 
 namespace content {
-class MediaStreamDispatcher;
+class MediaStreamDeviceObserver;
 
 class PepperMediaDeviceManager
     : public PepperDeviceEnumerationHostHelper::Delegate,
@@ -88,7 +88,7 @@ class PepperMediaDeviceManager
                       const MediaDeviceInfoArray& enumeration);
 
   const mojom::MediaStreamDispatcherHostPtr& GetMediaStreamDispatcherHost();
-  MediaStreamDispatcher* GetMediaStreamDispatcher() const;
+  MediaStreamDeviceObserver* GetMediaStreamDeviceObserver() const;
   const ::mojom::MediaDevicesDispatcherHostPtr& GetMediaDevicesDispatcher();
 
   int next_id_;

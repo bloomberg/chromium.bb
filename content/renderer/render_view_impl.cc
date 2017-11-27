@@ -82,7 +82,7 @@
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/media_stream_dispatcher.h"
+#include "content/renderer/media/media_stream_device_observer.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/render_frame_impl.h"
@@ -2363,13 +2363,13 @@ void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
   if (!main_render_frame_)
     return;
 
-  MediaStreamDispatcher* media_stream_dispatcher =
-      main_render_frame_->GetMediaStreamDispatcher();
-  if (!media_stream_dispatcher)
+  MediaStreamDeviceObserver* media_stream_device_observer =
+      main_render_frame_->GetMediaStreamDeviceObserver();
+  if (!media_stream_device_observer)
     return;
 
   MediaStreamDevices video_devices =
-      media_stream_dispatcher->GetNonScreenCaptureDevices();
+      media_stream_device_observer->GetNonScreenCaptureDevices();
   RenderThreadImpl::current()->video_capture_impl_manager()->SuspendDevices(
       video_devices, suspend);
 #endif  // BUILDFLAG(ENABLE_WEBRTC)

@@ -143,7 +143,7 @@ class ExternalPopupMenu;
 class HistoryEntry;
 class ManifestManager;
 class MediaPermissionDispatcher;
-class MediaStreamDispatcher;
+class MediaStreamDeviceObserver;
 class NavigationState;
 class PepperPluginInstanceImpl;
 class PresentationDispatcher;
@@ -423,7 +423,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // May return NULL in some cases, especially if userMediaClient() returns
   // NULL.
-  MediaStreamDispatcher* GetMediaStreamDispatcher();
+  MediaStreamDeviceObserver* GetMediaStreamDeviceObserver();
 
   void ScriptedPrint(bool user_initiated);
 
