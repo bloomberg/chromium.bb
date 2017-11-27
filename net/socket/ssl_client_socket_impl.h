@@ -50,7 +50,6 @@ namespace net {
 
 class CertVerifier;
 class CTVerifier;
-class SocketBIOAdapter;
 class SSLCertRequestInfo;
 class SSLInfo;
 
