@@ -58,7 +58,6 @@ class OAuth2TokenFetcher : public base::SupportsWeakPtr<OAuth2TokenFetcher>,
   void OnClientOAuthFailure(const GoogleServiceAuthError& error) override;
 
   OAuth2TokenFetcher::Delegate* delegate_;
-  GaiaAuthConsumer::ClientOAuthResult oauth_tokens_;
   GaiaAuthFetcher auth_fetcher_;
 
   // The retry counter. Increment this only when failure happened.
