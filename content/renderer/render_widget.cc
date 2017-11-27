@@ -1094,13 +1094,6 @@ void RenderWidget::FocusChangeComplete() {
     focused->AutofillClient()->DidCompleteFocusChangeInFrame();
 }
 
-bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
-  if (owner_delegate_)
-    return owner_delegate_->DoesRenderWidgetHaveTouchEventHandlersAt(point);
-
-  return true;
-}
-
 void RenderWidget::ObserveGestureEventAndResult(
     const blink::WebGestureEvent& gesture_event,
     const gfx::Vector2dF& unused_delta,

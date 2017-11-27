@@ -321,23 +321,6 @@ void RenderWidgetInputHandler::HandleInputEvent(
   InputEventAckState ack_result = processed == WebInputEventResult::kNotHandled
                                       ? INPUT_EVENT_ACK_STATE_NOT_CONSUMED
                                       : INPUT_EVENT_ACK_STATE_CONSUMED;
-  if (processed == WebInputEventResult::kNotHandled &&
-      input_event.GetType() == WebInputEvent::kTouchStart) {
-    const WebTouchEvent& touch_event =
-        static_cast<const WebTouchEvent&>(input_event);
-    // Hit-test for all the pressed touch points. If there is a touch-handler
-    // for any of the touch points, then the renderer should continue to receive
-    // touch events.
-    ack_result = INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
-    for (size_t i = 0; i < touch_event.touches_length; ++i) {
-      if (touch_event.touches[i].state == WebTouchPoint::kStatePressed &&
-          delegate_->HasTouchEventHandlersAt(
-              gfx::ToFlooredPoint(touch_event.touches[i].PositionInWidget()))) {
-        ack_result = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-        break;
-      }
-    }
-  }
 
   // Send gesture scroll events and their dispositions to the compositor thread,
   // so that they can be used to produce the elastic overscroll effect on Mac.

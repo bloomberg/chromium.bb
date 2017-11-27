@@ -11,10 +11,6 @@ namespace blink {
 class WebMouseEvent;
 }
 
-namespace gfx {
-class Point;
-}
-
 namespace content {
 
 //
@@ -26,8 +22,6 @@ namespace content {
 class CONTENT_EXPORT RenderWidgetOwnerDelegate {
  public:
   // As in RenderWidgetInputHandlerDelegate.
-  virtual bool DoesRenderWidgetHaveTouchEventHandlersAt(
-      const gfx::Point& point) const = 0;
   virtual bool RenderWidgetWillHandleMouseEvent(
       const blink::WebMouseEvent& event) = 0;
 

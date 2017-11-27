@@ -456,12 +456,6 @@ void WebFrameWidgetImpl::SetCursorVisibilityState(bool is_visible) {
   GetPage()->SetIsCursorVisible(is_visible);
 }
 
-bool WebFrameWidgetImpl::HasTouchEventHandlersAt(const WebPoint& point) {
-  // FIXME: Implement this. Note that the point must be divided by
-  // pageScaleFactor.
-  return true;
-}
-
 Color WebFrameWidgetImpl::BaseBackgroundColor() const {
   return base_background_color_override_enabled_
              ? base_background_color_override_

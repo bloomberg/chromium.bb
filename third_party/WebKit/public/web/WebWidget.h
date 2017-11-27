@@ -133,9 +133,6 @@ class WebWidget {
   // Called to inform the WebWidget of the mouse cursor's visibility.
   virtual void SetCursorVisibilityState(bool is_visible) {}
 
-  // Check whether the given point hits any registered touch event handlers.
-  virtual bool HasTouchEventHandlersAt(const WebPoint&) { return true; }
-
   // Applies viewport related properties during a commit from the compositor
   // thread.
   virtual void ApplyViewportDeltas(const WebFloatSize& visual_viewport_delta,

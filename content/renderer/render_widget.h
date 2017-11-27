@@ -259,7 +259,6 @@ class CONTENT_EXPORT RenderWidget
 
   // RenderWidgetInputHandlerDelegate
   void FocusChangeComplete() override;
-  bool HasTouchEventHandlersAt(const gfx::Point& point) const override;
   void ObserveGestureEventAndResult(const blink::WebGestureEvent& gesture_event,
                                     const gfx::Vector2dF& unused_delta,
                                     bool event_processed) override;

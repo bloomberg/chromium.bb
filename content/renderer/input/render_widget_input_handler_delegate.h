@@ -17,7 +17,6 @@ class WebMouseEvent;
 }
 
 namespace gfx {
-class Point;
 class Vector2dF;
 }
 
@@ -31,10 +30,6 @@ class CONTENT_EXPORT RenderWidgetInputHandlerDelegate {
  public:
   // Called when animations due to focus change have completed (if any).
   virtual void FocusChangeComplete() = 0;
-
-  // Check whether the WebWidget has any touch event handlers registered
-  // at the given point.
-  virtual bool HasTouchEventHandlersAt(const gfx::Point& point) const = 0;
 
   // Called to forward a gesture event to the compositor thread, to effect
   // the elastic overscroll effect.
