@@ -66,7 +66,9 @@ public class AutofillProfilesFragment
             }
             Bundle args = pref.getExtras();
             args.putString(AutofillAndPaymentsPreferences.AUTOFILL_GUID, profile.getGUID());
-            getPreferenceScreen().addPreference(pref);
+            try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+                getPreferenceScreen().addPreference(pref);
+            }
         }
 
         // Add 'Add address' button. Tap of it brings up address editor which allows users type in
