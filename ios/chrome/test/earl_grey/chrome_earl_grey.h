@@ -11,7 +11,7 @@
 
 namespace chrome_test_util {
 
-// TODO(crbug.com/638674): Evaluate if this can move to shared code.
+// TODO(crbug.com/788813): Evaluate if JS helpers can be consolidated.
 // Execute |javascript| on current web state, and wait for either the completion
 // of execution or timeout. If |out_error| is not nil, it is set to the
 // error resulting from the execution, if one occurs. The return value is the
