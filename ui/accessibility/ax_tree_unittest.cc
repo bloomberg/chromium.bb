@@ -836,7 +836,7 @@ TEST(AXTreeTest, EmptyNodeBoundsIsUnionOfChildren) {
 
 // If a node doesn't specify its location but at least one child does have
 // a location, it will be offscreen if all of its children are offscreen.
-TEST(AXTreeTest, EmptyNodeOffscreenWhenAllChildrenOffscreen) {
+TEST(AXTreeTest, EmptyNodeNotOffscreenEvenIfAllChildrenOffscreen) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(4);
@@ -855,7 +855,9 @@ TEST(AXTreeTest, EmptyNodeOffscreenWhenAllChildrenOffscreen) {
   tree_update.nodes[3].location = gfx::RectF(1000, 30, 400, 20);
 
   AXTree tree(tree_update);
-  EXPECT_TRUE(IsNodeOffscreen(tree, 2));
+  EXPECT_FALSE(IsNodeOffscreen(tree, 2));
+  EXPECT_TRUE(IsNodeOffscreen(tree, 3));
+  EXPECT_TRUE(IsNodeOffscreen(tree, 4));
 }
 
 // Test that getting the bounds of a node works when there's a transform.
