@@ -72,10 +72,10 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   bool IsInsideAtomicInlineElement() const;
 
   EphemeralRangeTemplate<Strategy> Range() const;
-  Node* GetNode() const;
+  const Node* GetNode() const;
 
   Document* OwnerDocument() const;
-  Node* CurrentContainer() const;
+  const Node* CurrentContainer() const;
   int StartOffsetInCurrentContainer() const;
   int EndOffsetInCurrentContainer() const;
   PositionTemplate<Strategy> StartPositionInCurrentContainer() const;
@@ -114,12 +114,12 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
       const TextIteratorBehavior& =
           TextIteratorBehavior::DefaultRangeLengthBehavior());
 
-  static bool ShouldEmitTabBeforeNode(Node*);
-  static bool ShouldEmitNewlineBeforeNode(Node&);
-  static bool ShouldEmitNewlineAfterNode(Node&);
-  static bool ShouldEmitNewlineForNode(Node*, bool emits_original_text);
+  static bool ShouldEmitTabBeforeNode(const Node&);
+  static bool ShouldEmitNewlineBeforeNode(const Node&);
+  static bool ShouldEmitNewlineAfterNode(const Node&);
+  static bool ShouldEmitNewlineForNode(const Node&, bool emits_original_text);
 
-  static bool SupportsAltText(Node*);
+  static bool SupportsAltText(const Node&);
 
  private:
   enum IterationProgress {
@@ -132,7 +132,7 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
 
   void ExitNode();
   bool ShouldRepresentNodeOffsetZero();
-  bool ShouldEmitSpaceBeforeAndAfterNode(Node*);
+  bool ShouldEmitSpaceBeforeAndAfterNode(const Node&);
   void RepresentNodeOffsetZero();
 
   // Returns true if text is emitted from the remembered progress (if any).
@@ -142,8 +142,8 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   void HandleReplacedElement();
   void HandleNonTextNode();
   void SpliceBuffer(UChar,
-                    Node* text_node,
-                    Node* offset_base_node,
+                    const Node* text_node,
+                    const Node* offset_base_node,
                     unsigned text_start_offset,
                     unsigned text_end_offset);
 
@@ -203,18 +203,18 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
                        unsigned copy_length) const;
 
   // The range.
-  const Member<Node> start_container_;
+  const Member<const Node> start_container_;
   const unsigned start_offset_;
-  const Member<Node> end_container_;
+  const Member<const Node> end_container_;
   const unsigned end_offset_;
   // |m_endNode| stores |Strategy::childAt(*m_endContainer, m_endOffset - 1)|,
   // if it exists, or |nullptr| otherwise.
-  const Member<Node> end_node_;
-  const Member<Node> past_end_node_;
+  const Member<const Node> end_node_;
+  const Member<const Node> past_end_node_;
 
   // Current position, not necessarily of the text being returned, but position
   // as we walk through the DOM tree.
-  Member<Node> node_;
+  Member<const Node> node_;
   IterationProgress iteration_progress_;
   FullyClippedStateStackAlgorithm<Strategy> fully_clipped_stack_;
   unsigned shadow_depth_;
@@ -224,7 +224,7 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   bool needs_another_newline_ = false;
   bool needs_handle_replaced_element_ = false;
 
-  Member<Text> last_text_node_;
+  Member<const Text> last_text_node_;
 
   const TextIteratorBehavior behavior_;
 

@@ -68,7 +68,7 @@ const TreeScope* PositionTemplate<Strategy>::CommonAncestorTreeScope(
 
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::EditingPositionOf(
-    Node* anchor_node,
+    const Node* anchor_node,
     int offset) {
   if (!anchor_node || anchor_node->IsTextNode())
     return PositionTemplate<Strategy>(anchor_node, offset);

@@ -49,7 +49,7 @@ static int CollapsedSpaceLength(LayoutText* layout_text, int text_end) {
   return length - text_end;
 }
 
-static int MaxOffsetIncludingCollapsedSpaces(Node* node) {
+static int MaxOffsetIncludingCollapsedSpaces(const Node* node) {
   int offset = CaretMaxOffset(node);
 
   if (node->GetLayoutObject() && node->GetLayoutObject()->IsText()) {
@@ -79,10 +79,10 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::
       have_passed_start_node_(false),
       should_handle_first_letter_(false),
       should_stop_(false) {
-  Node* start_node = range.StartPosition().AnchorNode();
+  const Node* start_node = range.StartPosition().AnchorNode();
   if (!start_node)
     return;
-  Node* end_node = range.EndPosition().AnchorNode();
+  const Node* end_node = range.EndPosition().AnchorNode();
   int start_offset = range.StartPosition().ComputeEditingOffset();
   int end_offset = range.EndPosition().ComputeEditingOffset();
 
@@ -90,10 +90,11 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::
 }
 
 template <typename Strategy>
-void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::Init(Node* start_node,
-                                                              Node* end_node,
-                                                              int start_offset,
-                                                              int end_offset) {
+void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::Init(
+    const Node* start_node,
+    const Node* end_node,
+    int start_offset,
+    int end_offset) {
   if (!start_node->IsCharacterDataNode() && start_offset >= 0) {
     // |Strategy::childAt()| will return 0 if the offset is out of range. We
     // rely on this behavior instead of calling |countChildren()| to avoid
@@ -153,7 +154,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::Advance() {
             offset_ > 0)
           handled_node_ = HandleTextNode();
       } else if (layout_object && (layout_object->IsLayoutEmbeddedContent() ||
-                                   TextIterator::SupportsAltText(node_))) {
+                                   TextIterator::SupportsAltText(*node_))) {
         if (layout_object->Style()->Visibility() == EVisibility::kVisible &&
             offset_ > 0)
           handled_node_ = HandleReplacedElement();
@@ -314,9 +315,9 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::HandleNonTextNode() {
   // We can use a linefeed in place of a tab because this simple iterator is
   // only used to find boundaries, not actual content. A linefeed breaks words,
   // sentences, and paragraphs.
-  if (TextIterator::ShouldEmitNewlineForNode(node_, false) ||
+  if (TextIterator::ShouldEmitNewlineForNode(*node_, false) ||
       TextIterator::ShouldEmitNewlineAfterNode(*node_) ||
-      TextIterator::ShouldEmitTabBeforeNode(node_)) {
+      TextIterator::ShouldEmitTabBeforeNode(*node_)) {
     unsigned index = Strategy::Index(*node_);
     // The start of this emitted range is wrong. Ensuring correctness would
     // require VisiblePositions and so would be slow. previousBoundary expects
@@ -328,9 +329,9 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::HandleNonTextNode() {
 
 template <typename Strategy>
 void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::ExitNode() {
-  if (TextIterator::ShouldEmitNewlineForNode(node_, false) ||
+  if (TextIterator::ShouldEmitNewlineForNode(*node_, false) ||
       TextIterator::ShouldEmitNewlineBeforeNode(*node_) ||
-      TextIterator::ShouldEmitTabBeforeNode(node_)) {
+      TextIterator::ShouldEmitTabBeforeNode(*node_)) {
     // The start of this emitted range is wrong. Ensuring correctness would
     // require VisiblePositions and so would be slow. previousBoundary expects
     // this.
@@ -341,7 +342,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::ExitNode() {
 template <typename Strategy>
 void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::EmitCharacter(
     UChar c,
-    Node* node,
+    const Node* node,
     int start_offset,
     int end_offset) {
   text_state_.SpliceBuffer(c, node, node, start_offset, end_offset);
@@ -349,7 +350,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::EmitCharacter(
 
 template <typename Strategy>
 bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::AdvanceRespectingRange(
-    Node* next) {
+    const Node* next) {
   if (!next)
     return false;
   have_passed_start_node_ |= node_ == start_node_;
@@ -360,7 +361,7 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::AdvanceRespectingRange(
 }
 
 template <typename Strategy>
-Node* SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::StartContainer()
+const Node* SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::StartContainer()
     const {
   if (text_state_.PositionNode())
     return text_state_.PositionNode();
@@ -381,7 +382,7 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::StartPosition() const {
     return PositionTemplate<Strategy>::EditingPositionOf(
         text_state_.PositionNode(), text_state_.PositionStartOffset());
   }
-  return PositionTemplate<Strategy>::EditingPositionOf(start_node_,
+  return PositionTemplate<Strategy>::EditingPositionOf(start_node_.Get(),
                                                        start_offset_);
 }
 
@@ -392,7 +393,7 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::EndPosition() const {
     return PositionTemplate<Strategy>::EditingPositionOf(
         text_state_.PositionNode(), text_state_.PositionEndOffset());
   }
-  return PositionTemplate<Strategy>::EditingPositionOf(start_node_,
+  return PositionTemplate<Strategy>::EditingPositionOf(start_node_.Get(),
                                                        start_offset_);
 }
 

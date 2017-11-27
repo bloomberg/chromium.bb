@@ -26,23 +26,25 @@ class TextIteratorTextNodeHandler {
   TextIteratorTextNodeHandler(const TextIteratorBehavior&,
                               TextIteratorTextState*);
 
-  Text* GetNode() const { return text_node_; }
+  const Text* GetNode() const { return text_node_; }
 
   // Returns true if more text is emitted without traversing to the next node.
   bool HandleRemainingTextRuns();
 
   // Returns true if a leading white space is emitted before a replaced element.
-  bool FixLeadingWhiteSpaceForReplacedElement(Node*);
+  bool FixLeadingWhiteSpaceForReplacedElement(const Node*);
 
   void ResetCollapsedWhiteSpaceFixup();
 
   // Emit plain text from the given text node.
-  void HandleTextNodeWhole(Text*);
+  void HandleTextNodeWhole(const Text*);
 
   // Variants that emit plain text within the given DOM offset range.
-  void HandleTextNodeStartFrom(Text*, unsigned start_offset);
-  void HandleTextNodeEndAt(Text*, unsigned end_offset);
-  void HandleTextNodeInRange(Text*, unsigned start_offset, unsigned end_offset);
+  void HandleTextNodeStartFrom(const Text*, unsigned start_offset);
+  void HandleTextNodeEndAt(const Text*, unsigned end_offset);
+  void HandleTextNodeInRange(const Text*,
+                             unsigned start_offset,
+                             unsigned end_offset);
 
  private:
   void HandlePreFormattedTextNode();
@@ -62,17 +64,17 @@ class TextIteratorTextNodeHandler {
   }
 
   void SpliceBuffer(UChar,
-                    Node* text_node,
-                    Node* offset_base_node,
+                    const Node* text_node,
+                    const Node* offset_base_node,
                     unsigned text_start_offset,
                     unsigned text_end_offset);
-  void EmitText(Node* text_node,
-                LayoutText* layout_object,
+  void EmitText(const Node* text_node,
+                const LayoutText* layout_object,
                 unsigned text_start_offset,
                 unsigned text_end_offset);
 
   // The current text node and offset range, from which text should be emitted.
-  Member<Text> text_node_;
+  Member<const Text> text_node_;
   unsigned offset_ = 0;
   unsigned end_offset_ = 0;
 

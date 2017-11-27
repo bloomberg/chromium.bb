@@ -65,7 +65,7 @@ class CORE_EXPORT CharacterIteratorAlgorithm {
   int CharacterOffset() const { return offset_; }
 
   Document* OwnerDocument() const;
-  Node* CurrentContainer() const;
+  const Node* CurrentContainer() const;
   int StartOffset() const;
   int EndOffset() const;
   PositionTemplate<Strategy> StartPosition() const;

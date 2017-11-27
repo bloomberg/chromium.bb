@@ -90,7 +90,7 @@ static bool NotSkipping(const Node& node) {
 }
 
 template <typename Strategy>
-Node* StartNode(Node* start_container, unsigned start_offset) {
+const Node* StartNode(const Node* start_container, unsigned start_offset) {
   if (start_container->IsCharacterDataNode())
     return start_container;
   if (Node* child = Strategy::ChildAt(*start_container, start_offset))
@@ -101,7 +101,7 @@ Node* StartNode(Node* start_container, unsigned start_offset) {
 }
 
 template <typename Strategy>
-Node* EndNode(const Node& end_container, unsigned end_offset) {
+const Node* EndNode(const Node& end_container, unsigned end_offset) {
   if (!end_container.IsCharacterDataNode() && end_offset)
     return Strategy::ChildAt(end_container, end_offset - 1);
   return nullptr;
@@ -111,7 +111,8 @@ Node* EndNode(const Node& end_container, unsigned end_offset) {
 // climb up out of shadow trees and ignores all nodes that will be skipped in
 // |advance()|.
 template <typename Strategy>
-Node* PastLastNode(const Node& range_end_container, unsigned range_end_offset) {
+const Node* PastLastNode(const Node& range_end_container,
+                         unsigned range_end_offset) {
   if (!range_end_container.IsCharacterDataNode() &&
       NotSkipping(range_end_container)) {
     for (Node* next = Strategy::ChildAt(range_end_container, range_end_offset);
@@ -249,7 +250,7 @@ bool TextIteratorAlgorithm<Strategy>::HandleRememberedProgress() {
     // FIXME: It would be cleaner if we emitted two newlines during the last
     // iteration, instead of using m_needsAnotherNewline.
     Node* last_child = Strategy::LastChild(*node_);
-    Node* base_node = last_child ? last_child : node_.Get();
+    const Node* base_node = last_child ? last_child : node_.Get();
     SpliceBuffer('\n', Strategy::Parent(*base_node), base_node, 1, 1);
     needs_another_newline_ = false;
     return true;
@@ -411,7 +412,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
             should_stop_ = true;
             return;
           }
-          ShadowRoot* shadow_root = ToShadowRoot(node_);
+          const ShadowRoot* shadow_root = ToShadowRoot(node_);
           if (shadow_root->GetType() == ShadowRootType::V0 ||
               shadow_root->GetType() == ShadowRootType::kOpen) {
             ShadowRoot* next_shadow_root = shadow_root->OlderShadowRoot();
@@ -473,7 +474,7 @@ void TextIteratorAlgorithm<Strategy>::HandleTextNode() {
 
   DCHECK_NE(last_text_node_, node_)
       << "We should never call HandleTextNode on the same node twice";
-  Text* text = ToText(node_);
+  const Text* text = ToText(node_);
   last_text_node_ = text;
 
   // TODO(editing-dev): Introduce a |DOMOffsetRange| class so that we can pass
@@ -493,16 +494,16 @@ void TextIteratorAlgorithm<Strategy>::HandleTextNode() {
 }
 
 template <typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::SupportsAltText(Node* node) {
-  if (!node->IsHTMLElement())
+bool TextIteratorAlgorithm<Strategy>::SupportsAltText(const Node& node) {
+  if (!node.IsHTMLElement())
     return false;
-  HTMLElement& element = ToHTMLElement(*node);
+  const HTMLElement& element = ToHTMLElement(node);
 
   // FIXME: Add isSVGImageElement.
   if (IsHTMLImageElement(element))
     return true;
-  if (IsHTMLInputElement(ToHTMLElement(*node)) &&
-      ToHTMLInputElement(*node).type() == InputTypeNames::image)
+  if (IsHTMLInputElement(element) &&
+      ToHTMLInputElement(node).type() == InputTypeNames::image)
     return true;
   return false;
 }
@@ -550,7 +551,7 @@ void TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
 
   text_state_.UpdateForReplacedElement(node_);
 
-  if (EmitsImageAltText() && TextIterator::SupportsAltText(node_)) {
+  if (EmitsImageAltText() && TextIterator::SupportsAltText(*node_)) {
     text_state_.EmitAltText(node_);
     if (text_state_.length())
       return;
@@ -558,11 +559,12 @@ void TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
 }
 
 template <typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::ShouldEmitTabBeforeNode(Node* node) {
-  LayoutObject* r = node->GetLayoutObject();
+bool TextIteratorAlgorithm<Strategy>::ShouldEmitTabBeforeNode(
+    const Node& node) {
+  LayoutObject* r = node.GetLayoutObject();
 
   // Table cells are delimited by tabs.
-  if (!r || !IsTableCell(node))
+  if (!r || !IsTableCell(&node))
     return false;
 
   // Want a tab before every cell other than the first one
@@ -573,17 +575,17 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitTabBeforeNode(Node* node) {
 
 template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::ShouldEmitNewlineForNode(
-    Node* node,
+    const Node& node,
     bool emits_original_text) {
-  LayoutObject* layout_object = node->GetLayoutObject();
+  LayoutObject* layout_object = node.GetLayoutObject();
 
   if (layout_object ? !layout_object->IsBR() : !IsHTMLBRElement(node))
     return false;
-  return emits_original_text || !(node->IsInShadowTree() &&
-                                  IsHTMLInputElement(*node->OwnerShadowHost()));
+  return emits_original_text || !(node.IsInShadowTree() &&
+                                  IsHTMLInputElement(*node.OwnerShadowHost()));
 }
 
-static bool ShouldEmitNewlinesBeforeAndAfterNode(Node& node) {
+static bool ShouldEmitNewlinesBeforeAndAfterNode(const Node& node) {
   // Block flow (versus inline flow) is represented by having
   // a newline both before and after the element.
   LayoutObject* r = node.GetLayoutObject();
@@ -624,13 +626,14 @@ static bool ShouldEmitNewlinesBeforeAndAfterNode(Node& node) {
 }
 
 template <typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::ShouldEmitNewlineAfterNode(Node& node) {
+bool TextIteratorAlgorithm<Strategy>::ShouldEmitNewlineAfterNode(
+    const Node& node) {
   // FIXME: It should be better but slower to create a VisiblePosition here.
   if (!ShouldEmitNewlinesBeforeAndAfterNode(node))
     return false;
   // Check if this is the very last layoutObject in the document.
   // If so, then we should not emit a newline.
-  Node* next = &node;
+  const Node* next = &node;
   do {
     next = Strategy::NextSkippingChildren(*next);
     if (next && next->GetLayoutObject())
@@ -640,11 +643,12 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitNewlineAfterNode(Node& node) {
 }
 
 template <typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::ShouldEmitNewlineBeforeNode(Node& node) {
+bool TextIteratorAlgorithm<Strategy>::ShouldEmitNewlineBeforeNode(
+    const Node& node) {
   return ShouldEmitNewlinesBeforeAndAfterNode(node);
 }
 
-static bool ShouldEmitExtraNewlineForNode(Node* node) {
+static bool ShouldEmitExtraNewlineForNode(const Node* node) {
   // https://html.spec.whatwg.org/multipage/dom.html#the-innertext-idl-attribute
   // Append two required linebreaks after a P element.
   LayoutObject* r = node->GetLayoutObject();
@@ -727,9 +731,9 @@ bool TextIteratorAlgorithm<Strategy>::ShouldRepresentNodeOffsetZero() {
 
 template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::ShouldEmitSpaceBeforeAndAfterNode(
-    Node* node) {
-  return IsRenderedAsTable(node) &&
-         (node->GetLayoutObject()->IsInline() ||
+    const Node& node) {
+  return IsRenderedAsTable(&node) &&
+         (node.GetLayoutObject()->IsInline() ||
           EmitsCharactersBetweenAllVisiblePositions());
 }
 
@@ -742,13 +746,13 @@ void TextIteratorAlgorithm<Strategy>::RepresentNodeOffsetZero() {
   // expensive. So, we perform the inexpensive checks on m_node to see if it
   // necessitates emitting a character first and will early return before
   // encountering shouldRepresentNodeOffsetZero()s worse case behavior.
-  if (ShouldEmitTabBeforeNode(node_)) {
+  if (ShouldEmitTabBeforeNode(*node_)) {
     if (ShouldRepresentNodeOffsetZero())
       SpliceBuffer('\t', Strategy::Parent(*node_), node_, 0, 0);
   } else if (ShouldEmitNewlineBeforeNode(*node_)) {
     if (ShouldRepresentNodeOffsetZero())
       SpliceBuffer('\n', Strategy::Parent(*node_), node_, 0, 0);
-  } else if (ShouldEmitSpaceBeforeAndAfterNode(node_)) {
+  } else if (ShouldEmitSpaceBeforeAndAfterNode(*node_)) {
     if (ShouldRepresentNodeOffsetZero())
       SpliceBuffer(kSpaceCharacter, Strategy::Parent(*node_), node_, 0, 0);
   }
@@ -756,7 +760,7 @@ void TextIteratorAlgorithm<Strategy>::RepresentNodeOffsetZero() {
 
 template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::HandleNonTextNode() {
-  if (ShouldEmitNewlineForNode(node_, EmitsOriginalText()))
+  if (ShouldEmitNewlineForNode(*node_, EmitsOriginalText()))
     SpliceBuffer('\n', Strategy::Parent(*node_), node_, 0, 1);
   else if (EmitsCharactersBetweenAllVisiblePositions() &&
            node_->GetLayoutObject() && node_->GetLayoutObject()->IsHR())
@@ -779,7 +783,7 @@ void TextIteratorAlgorithm<Strategy>::ExitNode() {
   // case it is a block, because the run should start where the
   // emitted character is positioned visually.
   Node* last_child = Strategy::LastChild(*node_);
-  Node* base_node = last_child ? last_child : node_.Get();
+  const Node* base_node = last_child ? last_child : node_.Get();
   // FIXME: This shouldn't require the m_lastTextNode to be true, but we can't
   // change that without making the logic in _web_attributedStringFromRange
   // match. We'll get that for free when we switch to use TextIterator in
@@ -806,15 +810,15 @@ void TextIteratorAlgorithm<Strategy>::ExitNode() {
   }
 
   // If nothing was emitted, see if we need to emit a space.
-  if (!text_state_.PositionNode() && ShouldEmitSpaceBeforeAndAfterNode(node_))
+  if (!text_state_.PositionNode() && ShouldEmitSpaceBeforeAndAfterNode(*node_))
     SpliceBuffer(kSpaceCharacter, Strategy::Parent(*base_node), base_node, 1,
                  1);
 }
 
 template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::SpliceBuffer(UChar c,
-                                                   Node* text_node,
-                                                   Node* offset_base_node,
+                                                   const Node* text_node,
+                                                   const Node* offset_base_node,
                                                    unsigned text_start_offset,
                                                    unsigned text_end_offset) {
   text_state_.SpliceBuffer(c, text_node, offset_base_node, text_start_offset,
@@ -849,9 +853,9 @@ Document* TextIteratorAlgorithm<Strategy>::OwnerDocument() const {
 }
 
 template <typename Strategy>
-Node* TextIteratorAlgorithm<Strategy>::GetNode() const {
+const Node* TextIteratorAlgorithm<Strategy>::GetNode() const {
   if (text_state_.PositionNode() || end_container_) {
-    Node* node = CurrentContainer();
+    const Node* node = CurrentContainer();
     if (node->IsCharacterDataNode())
       return node;
     return Strategy::ChildAt(*node, StartOffsetInCurrentContainer());
@@ -880,7 +884,7 @@ int TextIteratorAlgorithm<Strategy>::EndOffsetInCurrentContainer() const {
 }
 
 template <typename Strategy>
-Node* TextIteratorAlgorithm<Strategy>::CurrentContainer() const {
+const Node* TextIteratorAlgorithm<Strategy>::CurrentContainer() const {
   if (text_state_.PositionNode()) {
     return text_state_.PositionNode();
   }

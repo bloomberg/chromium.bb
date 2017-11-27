@@ -63,7 +63,7 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
   // then |characterAt(0)| returns 'c'.
   UChar CharacterAt(unsigned index) const;
 
-  Node* GetNode() const { return node_; }
+  const Node* GetNode() const { return node_; }
 
   // Calculate the minimum |actualLength >= minLength| such that code units
   // with offset range [position, position + actualLength) are whole code
@@ -73,20 +73,23 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
                  int min_length) const;
   int CopyTextTo(BackwardsTextBuffer* output, int position = 0) const;
 
-  Node* StartContainer() const;
+  const Node* StartContainer() const;
   int EndOffset() const;
   PositionTemplate<Strategy> StartPosition() const;
   PositionTemplate<Strategy> EndPosition() const;
 
  private:
-  void Init(Node* start_node, Node* end_node, int start_offset, int end_offset);
+  void Init(const Node* start_node,
+            const Node* end_node,
+            int start_offset,
+            int end_offset);
   void ExitNode();
   bool HandleTextNode();
   LayoutText* HandleFirstLetter(int& start_offset, int& offset_in_node);
   bool HandleReplacedElement();
   bool HandleNonTextNode();
-  void EmitCharacter(UChar, Node*, int start_offset, int end_offset);
-  bool AdvanceRespectingRange(Node*);
+  void EmitCharacter(UChar, const Node*, int start_offset, int end_offset);
+  bool AdvanceRespectingRange(const Node*);
 
   bool IsBetweenSurrogatePair(int position) const;
 
@@ -97,17 +100,17 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
 
   // Current position, not necessarily of the text being returned, but position
   // as we walk through the DOM tree.
-  Member<Node> node_;
+  Member<const Node> node_;
   int offset_;
   bool handled_node_;
   bool handled_children_;
   FullyClippedStateStackAlgorithm<Strategy> fully_clipped_stack_;
 
   // End of the range.
-  Member<Node> start_node_;
+  Member<const Node> start_node_;
   int start_offset_;
   // Start of the range.
-  Member<Node> end_node_;
+  Member<const Node> end_node_;
   int end_offset_;
 
   // Whether m_node has advanced beyond the iteration range (i.e. m_startNode).

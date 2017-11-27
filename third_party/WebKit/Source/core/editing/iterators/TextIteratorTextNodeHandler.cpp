@@ -146,14 +146,14 @@ bool TextIteratorTextNodeHandler::ShouldHandleFirstLetter(
   return offset_ < text_fragment.TextStartOffset();
 }
 
-static bool HasVisibleTextNode(LayoutText* layout_object) {
+static bool HasVisibleTextNode(const LayoutText* layout_object) {
   if (layout_object->Style()->Visibility() == EVisibility::kVisible)
     return true;
 
   if (!layout_object->IsTextFragment())
     return false;
 
-  LayoutTextFragment* fragment = ToLayoutTextFragment(layout_object);
+  const LayoutTextFragment* fragment = ToLayoutTextFragment(layout_object);
   if (!fragment->IsRemainingTextLayoutObject())
     return false;
 
@@ -217,7 +217,7 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
   EmitText(text_node_, text_node_->GetLayoutObject(), run_start, run_end);
 }
 
-void TextIteratorTextNodeHandler::HandleTextNodeInRange(Text* node,
+void TextIteratorTextNodeHandler::HandleTextNodeInRange(const Text* node,
                                                         unsigned start_offset,
                                                         unsigned end_offset) {
   DCHECK(node);
@@ -291,17 +291,17 @@ void TextIteratorTextNodeHandler::HandleTextNodeInRange(Text* node,
 }
 
 void TextIteratorTextNodeHandler::HandleTextNodeStartFrom(
-    Text* node,
+    const Text* node,
     unsigned start_offset) {
   HandleTextNodeInRange(node, start_offset, kMaxOffset);
 }
 
-void TextIteratorTextNodeHandler::HandleTextNodeEndAt(Text* node,
+void TextIteratorTextNodeHandler::HandleTextNodeEndAt(const Text* node,
                                                       unsigned end_offset) {
   HandleTextNodeInRange(node, 0, end_offset);
 }
 
-void TextIteratorTextNodeHandler::HandleTextNodeWhole(Text* node) {
+void TextIteratorTextNodeHandler::HandleTextNodeWhole(const Text* node) {
   HandleTextNodeStartFrom(node, 0);
 }
 
@@ -512,7 +512,7 @@ void TextIteratorTextNodeHandler::HandleTextNodeFirstLetter(
 }
 
 bool TextIteratorTextNodeHandler::FixLeadingWhiteSpaceForReplacedElement(
-    Node* parent) {
+    const Node* parent) {
   // This is a hacky way for white space fixup in legacy layout. With LayoutNG,
   // we can get rid of this function.
   if (uses_layout_ng_)
@@ -542,8 +542,8 @@ void TextIteratorTextNodeHandler::ResetCollapsedWhiteSpaceFixup() {
 }
 
 void TextIteratorTextNodeHandler::SpliceBuffer(UChar c,
-                                               Node* text_node,
-                                               Node* offset_base_node,
+                                               const Node* text_node,
+                                               const Node* offset_base_node,
                                                unsigned text_start_offset,
                                                unsigned text_end_offset) {
   text_state_.SpliceBuffer(c, text_node, offset_base_node, text_start_offset,
@@ -551,8 +551,8 @@ void TextIteratorTextNodeHandler::SpliceBuffer(UChar c,
   ResetCollapsedWhiteSpaceFixup();
 }
 
-void TextIteratorTextNodeHandler::EmitText(Node* text_node,
-                                           LayoutText* layout_object,
+void TextIteratorTextNodeHandler::EmitText(const Node* text_node,
+                                           const LayoutText* layout_object,
                                            unsigned text_start_offset,
                                            unsigned text_end_offset) {
   String string = behavior_.EmitsOriginalText() ? layout_object->OriginalText()
