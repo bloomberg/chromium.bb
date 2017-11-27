@@ -270,6 +270,7 @@ TEST_F(SecurityOriginTest, Suborigins) {
 TEST_F(SecurityOriginTest, SuboriginsParsing) {
   ScopedSuboriginsForTest suborigins(true);
   String protocol, real_protocol, host, real_host, suborigin;
+
   protocol = "https";
   host = "test.com";
   EXPECT_FALSE(SecurityOrigin::DeserializeSuboriginAndProtocolAndHost(
@@ -277,11 +278,36 @@ TEST_F(SecurityOriginTest, SuboriginsParsing) {
 
   protocol = "https-so";
   host = "foobar.test.com";
+  suborigin = "";
+  real_protocol = "";
+  real_host = "";
   EXPECT_TRUE(SecurityOrigin::DeserializeSuboriginAndProtocolAndHost(
       protocol, host, suborigin, real_protocol, real_host));
   EXPECT_EQ("https", real_protocol);
   EXPECT_EQ("test.com", real_host);
   EXPECT_EQ("foobar", suborigin);
+
+  protocol = "https-so";
+  host = ".test.com";
+  suborigin = String();
+  real_protocol = String();
+  real_host = String();
+  EXPECT_FALSE(SecurityOrigin::DeserializeSuboriginAndProtocolAndHost(
+      protocol, host, suborigin, real_protocol, real_host));
+  EXPECT_TRUE(real_protocol.IsNull());
+  EXPECT_TRUE(real_host.IsNull());
+  EXPECT_TRUE(suborigin.IsNull());
+
+  protocol = "https-so";
+  host = "test";
+  suborigin = String();
+  real_protocol = String();
+  real_host = String();
+  EXPECT_FALSE(SecurityOrigin::DeserializeSuboriginAndProtocolAndHost(
+      protocol, host, suborigin, real_protocol, real_host));
+  EXPECT_TRUE(real_protocol.IsNull());
+  EXPECT_TRUE(real_host.IsNull());
+  EXPECT_TRUE(suborigin.IsNull());
 
   scoped_refptr<SecurityOrigin> origin;
   StringBuilder builder;
@@ -382,7 +408,7 @@ TEST_F(SecurityOriginTest, CanRequest) {
   }
 }
 
-TEST_F(SecurityOriginTest, EffectivePort) {
+TEST_F(SecurityOriginTest, PortAndEffectivePortMethod) {
   struct TestCase {
     unsigned short port;
     unsigned short effective_port;
@@ -394,6 +420,8 @@ TEST_F(SecurityOriginTest, EffectivePort) {
       {0, 443, "https://example.com"},
       {0, 443, "https://example.com:443"},
       {444, 444, "https://example.com:444"},
+      {0, 80, "http-so://suborigin.example.com"},
+      {81, 81, "http-so://suborigin.example.com:81"},
   };
 
   for (const auto& test : cases) {

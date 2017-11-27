@@ -117,8 +117,7 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
     : protocol_(url.Protocol()),
       host_(url.Host()),
       port_(url.Port()),
-      effective_port_(url.Port() ? url.Port()
-                                 : DefaultPortForProtocol(protocol_)),
+      effective_port_(url.Port()),
       is_unique_(false),
       universal_access_(false),
       domain_was_set_in_dom_(false),
@@ -133,11 +132,12 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
   String suborigin_name;
   if (DeserializeSuboriginAndProtocolAndHost(protocol_, host_, suborigin_name,
                                              protocol_, host_)) {
-    if (!url.Port())
-      effective_port_ = DefaultPortForProtocol(protocol_);
 
     suborigin_.SetName(suborigin_name);
   }
+
+  if (!effective_port_)
+    effective_port_ = DefaultPortForProtocol(protocol_);
 
   // document.domain starts as m_host, but can be set by the DOM.
   domain_ = host_;
@@ -474,32 +474,28 @@ String SecurityOrigin::ToRawStringIgnoreSuborigin() const {
   return result.ToString();
 }
 
-// Returns true if and only if a suborigin component was found. If false, no
-// guarantees about the return value |suboriginName| are made.
 bool SecurityOrigin::DeserializeSuboriginAndProtocolAndHost(
-    const String& old_protocol,
-    const String& old_host,
-    String& suborigin_name,
-    String& new_protocol,
-    String& new_host) {
-  String original_protocol = old_protocol;
-  if (old_protocol != "http-so" && old_protocol != "https-so")
+    const String& scheme_with_suffix,
+    const String& host_with_prefix,
+    String& suborigin,
+    String& scheme,
+    String& host) {
+  String parsed_scheme;
+  if (scheme_with_suffix == "http-so")
+    parsed_scheme = "http";
+  else if (scheme_with_suffix == "https-so")
+    parsed_scheme = "https";
+  else
     return false;
 
-  size_t protocol_end = old_protocol.ReverseFind("-so");
-  DCHECK_NE(protocol_end, WTF::kNotFound);
-  new_protocol = old_protocol.Substring(0, protocol_end);
-
-  size_t suborigin_end = old_host.find('.');
+  size_t suborigin_end = host_with_prefix.find('.');
   // Suborigins cannot be empty.
-  if (suborigin_end == 0 || suborigin_end == WTF::kNotFound) {
-    new_protocol = original_protocol;
+  if (suborigin_end == 0 || suborigin_end == WTF::kNotFound)
     return false;
-  }
 
-  suborigin_name = old_host.Substring(0, suborigin_end);
-  new_host = old_host.Substring(suborigin_end + 1);
-
+  scheme = parsed_scheme;
+  suborigin = host_with_prefix.Substring(0, suborigin_end);
+  host = host_with_prefix.Substring(suborigin_end + 1);
   return true;
 }
 
