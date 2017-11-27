@@ -13,11 +13,28 @@
 
 namespace ui {
 
-// Interface for classes that want to receive XEvent directly. Only used with
-// Ozone X11 currently and only events that can't be translated into ui::Events
-// are sent via this path.
+// The XEventDispatcher interface is used in two different ways: the first is
+// when classes want to receive XEvent directly and second is to say if classes,
+// which also implement the PlatformEventDispatcher interface, are able to
+// process next translated from XEvent to ui::Event events. Only used with Ozone
+// X11 currently.
 class EVENTS_EXPORT XEventDispatcher {
  public:
+  // XEventDispatchers can be used to test if they are able to process next
+  // translated event sent by a PlatformEventSource. If so, they must make a
+  // promise internally to process next event sent by PlatformEventSource.
+  virtual void CheckCanDispatchNextPlatformEvent(XEvent* xev) = 0;
+
+  // Tells that an event has been dispatched and an event handling promise must
+  // be removed.
+  virtual void PlatformEventDispatchFinished() = 0;
+
+  // Returns PlatformEventDispatcher if this XEventDispatcher is associated with
+  // a PlatformEventDispatcher as well. Used to explicitly add a
+  // PlatformEventDispatcher during a call from an XEventDispatcher to
+  // AddXEventDispatcher.
+  virtual PlatformEventDispatcher* GetPlatformEventDispatcher() = 0;
+
   // Sends XEvent to XEventDispatcher for handling. Returns true if the XEvent
   // was dispatched, otherwise false. After the first XEventDispatcher returns
   // true XEvent dispatching stops.
@@ -42,9 +59,19 @@ class EVENTS_EXPORT X11EventSourceLibevent
   static X11EventSourceLibevent* GetInstance();
 
   // Adds a XEvent dispatcher to the XEvent dispatcher list.
+  // Also calls XEventDispatcher::GetPlatformEventDispatcher
+  // to explicitly add this |dispatcher| to a list of PlatformEventDispatchers
+  // in case if XEventDispatcher has a PlatformEventDispatcher. Thus,
+  // there is no need to separately add self to the list of
+  // PlatformEventDispatchers. This is needed because XEventDispatchers are
+  // tested if they can receive an XEvent based on a XID target. If so, the
+  // translated XEvent into a PlatformEvent is sent to that
+  // PlatformEventDispatcher.
   void AddXEventDispatcher(XEventDispatcher* dispatcher);
 
-  // Removes a XEvent dispatcher fERrom the XEvent dispatcher list.
+  // Removes an XEvent dispatcher from the XEvent dispatcher list.
+  // Also explicitly removes an XEventDispatcher from a PlatformEventDispatcher
+  // list if the XEventDispatcher has a PlatformEventDispatcher.
   void RemoveXEventDispatcher(XEventDispatcher* dispatcher);
 
   // X11EventSourceDelegate:
@@ -53,6 +80,12 @@ class EVENTS_EXPORT X11EventSourceLibevent
  private:
   // Registers event watcher with Libevent.
   void AddEventWatcher();
+
+  // Tells XEventDispatchers, which can also have PlatformEventDispatchers, that
+  // a translated event is going to be sent next, then dispatches the event and
+  // notifies XEventDispatchers the event has been sent out and, most probably,
+  // consumed.
+  void DispatchPlatformEvent(const PlatformEvent& event, XEvent* xevent);
 
   // Sends XEvent to registered XEventDispatchers.
   void DispatchXEventToXEventDispatchers(XEvent* xevent);
