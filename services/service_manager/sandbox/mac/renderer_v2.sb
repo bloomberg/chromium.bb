@@ -182,11 +182,3 @@
     (sysctl-name "kern.usrstack64")
     (sysctl-name "kern.version")
     (sysctl-name "sysctl.proc_cputype")))
-
-; These are just part of a temporary experiment to see the perf
-; implications of allowing these resources.
-(allow mach-lookup (global-name "com.apple.cfprefsd.agent"))
-(allow mach-lookup (global-name "com.apple.cfprefsd.daemon"))
-(allow ipc-posix-shm-read-data (ipc-posix-name "apple.shm.cfprefsd.daemon"))
-(allow ipc-posix-shm-read-data (ipc-posix-name "apple.shm.cfprefsd.501"))
-(allow mach-lookup (global-name "com.apple.GameController.gamecontrollerd"))
