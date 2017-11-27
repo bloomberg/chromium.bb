@@ -857,37 +857,30 @@ TEST_P(QuicHeadersStreamTest, AckSentData) {
   // Packet 3.
   headers_stream_->WriteOrBufferData("Header9", false, ack_listener3);
 
-  QuicStreamFrame frame1(kHeadersStreamId, false, 0, "Header5");
-  QuicStreamFrame frame2(kHeadersStreamId, false, 7, "Header5");
-  // This is a bad frame3.
-  QuicStreamFrame frame3(kHeadersStreamId, false, 14, "BadHeader7");
-  QuicStreamFrame frame4(kHeadersStreamId, false, 21, "Header9");
-  QuicStreamFrame frame5(kHeadersStreamId, false, 28, "Header7");
-  QuicStreamFrame frame6(kHeadersStreamId, false, 35, "Header9");
   // Packet 2 gets retransmitted.
   EXPECT_CALL(*ack_listener3, OnPacketRetransmitted(7)).Times(1);
   EXPECT_CALL(*ack_listener2, OnPacketRetransmitted(7)).Times(1);
-  headers_stream_->OnStreamFrameRetransmitted(frame4);
-  headers_stream_->OnStreamFrameRetransmitted(frame5);
+  headers_stream_->OnStreamFrameRetransmitted(21, 7);
+  headers_stream_->OnStreamFrameRetransmitted(28, 7);
 
   // Packets are acked in order: 2, 3, 1.
   EXPECT_CALL(*ack_listener3, OnPacketAcked(7, _));
   EXPECT_CALL(*ack_listener2, OnPacketAcked(7, _));
-  headers_stream_->OnStreamFrameAcked(frame4, QuicTime::Delta::Zero());
-  headers_stream_->OnStreamFrameAcked(frame5, QuicTime::Delta::Zero());
+  headers_stream_->OnStreamFrameAcked(21, 7, false, QuicTime::Delta::Zero());
+  headers_stream_->OnStreamFrameAcked(28, 7, false, QuicTime::Delta::Zero());
 
   EXPECT_CALL(*ack_listener3, OnPacketAcked(7, _));
-  headers_stream_->OnStreamFrameAcked(frame6, QuicTime::Delta::Zero());
+  headers_stream_->OnStreamFrameAcked(35, 7, false, QuicTime::Delta::Zero());
 
   EXPECT_CALL(*ack_listener1, OnPacketAcked(7, _));
   EXPECT_CALL(*ack_listener1, OnPacketAcked(7, _));
-  headers_stream_->OnStreamFrameAcked(frame1, QuicTime::Delta::Zero());
-  headers_stream_->OnStreamFrameAcked(frame2, QuicTime::Delta::Zero());
+  headers_stream_->OnStreamFrameAcked(0, 7, false, QuicTime::Delta::Zero());
+  headers_stream_->OnStreamFrameAcked(7, 7, false, QuicTime::Delta::Zero());
   // Unsent data is acked.
   EXPECT_CALL(*ack_listener2, OnPacketAcked(7, _));
-  EXPECT_QUIC_BUG(
-      headers_stream_->OnStreamFrameAcked(frame3, QuicTime::Delta::Zero()),
-      "Unsent stream data is acked.");
+  EXPECT_QUIC_BUG(headers_stream_->OnStreamFrameAcked(14, 10, false,
+                                                      QuicTime::Delta::Zero()),
+                  "Unsent stream data is acked.");
 }
 
 TEST_P(QuicHeadersStreamTest, FrameContainsMultipleHeaders) {
@@ -910,28 +903,24 @@ TEST_P(QuicHeadersStreamTest, FrameContainsMultipleHeaders) {
   headers_stream_->WriteOrBufferData("Header7", false, ack_listener2);
   headers_stream_->WriteOrBufferData("Header9", false, ack_listener3);
 
-  QuicStreamFrame frame1(kHeadersStreamId, false, 0, "Header5Header5Hea");
-  QuicStreamFrame frame2(kHeadersStreamId, false, 17, "der7Header9He");
-  QuicStreamFrame frame3(kHeadersStreamId, false, 30, "ader7Header9");
-
   // Frame 1 is retransmitted.
   EXPECT_CALL(*ack_listener1, OnPacketRetransmitted(14));
   EXPECT_CALL(*ack_listener2, OnPacketRetransmitted(3));
-  headers_stream_->OnStreamFrameRetransmitted(frame1);
+  headers_stream_->OnStreamFrameRetransmitted(0, 17);
 
   // Frames are acked in order: 2, 3, 1.
   EXPECT_CALL(*ack_listener2, OnPacketAcked(4, _));
   EXPECT_CALL(*ack_listener3, OnPacketAcked(7, _));
   EXPECT_CALL(*ack_listener2, OnPacketAcked(2, _));
-  headers_stream_->OnStreamFrameAcked(frame2, QuicTime::Delta::Zero());
+  headers_stream_->OnStreamFrameAcked(17, 13, false, QuicTime::Delta::Zero());
 
   EXPECT_CALL(*ack_listener2, OnPacketAcked(5, _));
   EXPECT_CALL(*ack_listener3, OnPacketAcked(7, _));
-  headers_stream_->OnStreamFrameAcked(frame3, QuicTime::Delta::Zero());
+  headers_stream_->OnStreamFrameAcked(30, 12, false, QuicTime::Delta::Zero());
 
   EXPECT_CALL(*ack_listener1, OnPacketAcked(14, _));
   EXPECT_CALL(*ack_listener2, OnPacketAcked(3, _));
-  headers_stream_->OnStreamFrameAcked(frame1, QuicTime::Delta::Zero());
+  headers_stream_->OnStreamFrameAcked(0, 17, false, QuicTime::Delta::Zero());
 }
 
 }  // namespace

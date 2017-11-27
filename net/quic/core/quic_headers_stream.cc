@@ -57,39 +57,41 @@ void QuicHeadersStream::MaybeReleaseSequencerBuffer() {
   }
 }
 
-void QuicHeadersStream::OnStreamFrameAcked(const QuicStreamFrame& frame,
+void QuicHeadersStream::OnStreamFrameAcked(QuicStreamOffset offset,
+                                           QuicByteCount data_length,
+                                           bool fin_acked,
                                            QuicTime::Delta ack_delay_time) {
-  QuicStreamOffset offset = frame.offset;
-  QuicByteCount length = frame.data_length;
+  QuicStreamOffset acked_offset = offset;
+  QuicByteCount acked_length = data_length;
   for (CompressedHeaderInfo& header : unacked_headers_) {
-    if (offset < header.headers_stream_offset) {
+    if (acked_offset < header.headers_stream_offset) {
       // This header frame offset belongs to headers with smaller offset, stop
       // processing.
       break;
     }
 
-    if (offset >= header.headers_stream_offset + header.full_length) {
+    if (acked_offset >= header.headers_stream_offset + header.full_length) {
       // This header frame belongs to headers with larger offset.
       continue;
     }
 
-    QuicByteCount header_offset = offset - header.headers_stream_offset;
-    QuicByteCount acked_length =
-        std::min(length, header.full_length - header_offset);
+    QuicByteCount header_offset = acked_offset - header.headers_stream_offset;
+    QuicByteCount header_length =
+        std::min(acked_length, header.full_length - header_offset);
 
-    if (header.unacked_length < acked_length) {
+    if (header.unacked_length < header_length) {
       QUIC_BUG << "Unsent stream data is acked. unacked_length: "
-               << header.unacked_length << " acked_length: " << acked_length;
+               << header.unacked_length << " acked_length: " << header_length;
       CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
                                  "Unsent stream data is acked");
       return;
     }
-    if (header.ack_listener != nullptr && acked_length > 0) {
-      header.ack_listener->OnPacketAcked(acked_length, ack_delay_time);
+    if (header.ack_listener != nullptr && header_length > 0) {
+      header.ack_listener->OnPacketAcked(header_length, ack_delay_time);
     }
-    header.unacked_length -= acked_length;
-    offset += acked_length;
-    length -= acked_length;
+    header.unacked_length -= header_length;
+    acked_offset += header_length;
+    acked_length -= header_length;
   }
 
   // Remove headers which are fully acked. Please note, header frames can be
@@ -98,13 +100,12 @@ void QuicHeadersStream::OnStreamFrameAcked(const QuicStreamFrame& frame,
          unacked_headers_.front().unacked_length == 0) {
     unacked_headers_.pop_front();
   }
-  QuicStream::OnStreamFrameAcked(frame, ack_delay_time);
+  QuicStream::OnStreamFrameAcked(offset, data_length, fin_acked,
+                                 ack_delay_time);
 }
 
-void QuicHeadersStream::OnStreamFrameRetransmitted(
-    const QuicStreamFrame& frame) {
-  QuicStreamOffset offset = frame.offset;
-  QuicByteCount length = frame.data_length;
+void QuicHeadersStream::OnStreamFrameRetransmitted(QuicStreamOffset offset,
+                                                   QuicByteCount data_length) {
   for (CompressedHeaderInfo& header : unacked_headers_) {
     if (offset < header.headers_stream_offset) {
       // This header frame offset belongs to headers with smaller offset, stop
@@ -119,12 +120,12 @@ void QuicHeadersStream::OnStreamFrameRetransmitted(
 
     QuicByteCount header_offset = offset - header.headers_stream_offset;
     QuicByteCount retransmitted_length =
-        std::min(length, header.full_length - header_offset);
+        std::min(data_length, header.full_length - header_offset);
     if (header.ack_listener != nullptr && retransmitted_length > 0) {
       header.ack_listener->OnPacketRetransmitted(retransmitted_length);
     }
     offset += retransmitted_length;
-    length -= retransmitted_length;
+    data_length -= retransmitted_length;
   }
 }
 
