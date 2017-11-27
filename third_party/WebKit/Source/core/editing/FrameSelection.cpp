@@ -1190,10 +1190,10 @@ void FrameSelection::ClearDocumentCachedRange() {
   selection_editor_->ClearDocumentCachedRange();
 }
 
-WTF::Optional<int> FrameSelection::LayoutSelectionStart() const {
+WTF::Optional<unsigned> FrameSelection::LayoutSelectionStart() const {
   return layout_selection_->SelectionStart();
 }
-WTF::Optional<int> FrameSelection::LayoutSelectionEnd() const {
+WTF::Optional<unsigned> FrameSelection::LayoutSelectionEnd() const {
   return layout_selection_->SelectionEnd();
 }
 
