@@ -75,10 +75,6 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
   MediaCanPlayTypeTest() : url_("about:blank") {}
 
   void SetUpOnMainThread() override {
-#if BUILDFLAG(ENABLE_AV1_DECODER)
-    scoped_feature_list_.InitAndEnableFeature(media::kAv1Decoder);
-#endif
-
     NavigateToURL(shell(), url_);
   }
 
@@ -581,9 +577,43 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
 
  private:
   GURL url_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(MediaCanPlayTypeTest);
 };
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+class AV1MediaCanPlayTypeTest : public MediaCanPlayTypeTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    scoped_feature_list_.InitAndEnableFeature(media::kAv1Decoder);
+    MediaCanPlayTypeTest::SetUpCommandLine(command_line);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Note: This must be a separate test since features can not be changed after
+// the initial navigation.
+IN_PROC_BROWSER_TEST_F(AV1MediaCanPlayTypeTest, CodecSupportTest_av1) {
+  // TODO(dalecurtis): This is not the correct final string. Fix before enabling
+  // by default. This test needs to be merged into the existing mp4 and webm
+  // before release as well. http://crbug.com/784607
+  EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"av1\"'"));
+#if defined(USE_PROPRIETARY_CODECS)
+  EXPECT_EQ(kProbably, CanPlay("'video/mp4; codecs=\"av1\"'"));
+#else
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"av1\"'"));
+#endif
+}
+#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
+
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_av1_unsupported) {
+  // TODO(dalecurtis): This is not the correct final string. Fix before enabling
+  // by default. This test needs to be merged into the existing mp4 and webm
+  // before release as well. http://crbug.com/784607
+  EXPECT_EQ(kNot, CanPlay("'video/webm; codecs=\"av1\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"av1\"'"));
+}
 
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_wav) {
   EXPECT_EQ(kMaybe, CanPlay("'audio/wav'"));
@@ -595,19 +625,6 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_wav) {
   EXPECT_EQ(kProbably, CanPlay("'audio/x-wav; codecs=\"1\"'"));
 
   TestWAVUnacceptableCombinations("audio/x-wav");
-}
-
-IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_av1) {
-#if BUILDFLAG(ENABLE_AV1_DECODER)
-  // TODO(dalecurtis): This is not the correct final string. Fix before enabling
-  // by default. This test needs to be merged into the existing mp4 and webm
-  // before release as well. http://crbug.com/784607
-  EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"av1\"'"));
-  EXPECT_EQ(kProbably, CanPlay("'video/mp4; codecs=\"av1\"'"));
-#else
-  EXPECT_EQ(kNot, CanPlay("'video/webm; codecs=\"av1\"'"));
-  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"av1\"'"));
-#endif
 }
 
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_webm) {
