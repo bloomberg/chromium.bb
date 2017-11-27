@@ -65,6 +65,13 @@ UiElement::~UiElement() {
   animation_player_.set_target(nullptr);
 }
 
+void UiElement::set_type(UiElementType type) {
+  type_ = type;
+  OnSetType();
+}
+
+void UiElement::OnSetType() {}
+
 void UiElement::Render(UiElementRenderer* renderer,
                        const CameraModel& model) const {
   // Elements without an overridden implementation of Render should have their
@@ -242,8 +249,7 @@ cc::TransformOperations UiElement::GetTargetTransform() const {
 gfx::Transform UiElement::ComputeTargetWorldSpaceTransform() const {
   gfx::Transform m;
   for (const UiElement* current = this; current; current = current->parent()) {
-    m.ConcatTransform(current->layout_offset_.Apply() *
-                      current->GetTargetTransform().Apply());
+    m.ConcatTransform(current->GetTargetLocalTransform());
   }
   return m;
 }
@@ -358,8 +364,12 @@ void UiElement::DumpHierarchy(std::vector<size_t> counts,
     *os << kYellow << "(h) " << kReset;
   }
 
-  *os << DebugName() << " ";
-  *os << kCyan << DrawPhaseToString(draw_phase_) << " " << kReset;
+  *os << DebugName();
+  if (type_ != kTypeNone) {
+    *os << ":" << UiElementTypeToString(type_);
+  }
+
+  *os << " " << kCyan << DrawPhaseToString(draw_phase_) << " " << kReset;
 
   if (draw_phase_ != kPhaseNone && !size().IsEmpty()) {
     *os << kRed << "[" << size().width() << ", " << size().height() << "] "
@@ -620,6 +630,10 @@ void UiElement::UpdateWorldSpaceTransformRecursive() {
 
 gfx::Transform UiElement::LocalTransform() const {
   return layout_offset_.Apply() * transform_operations_.Apply();
+}
+
+gfx::Transform UiElement::GetTargetLocalTransform() const {
+  return layout_offset_.Apply() * GetTargetTransform().Apply();
 }
 
 }  // namespace vr
