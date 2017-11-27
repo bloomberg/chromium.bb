@@ -30,16 +30,16 @@ class ProcessProfilesTestCase(unittest.TestCase):
     self.assertListEqual(self.offset_to_symbol_info, offset_to_symbol_info)
 
   def testGetReachedSymbolsFromDump(self):
-    dump = (
-        [True, False,  # No symbol
-         True, True, False, False,  # 2 hits for symbol_1,
-         False, False,  # Hole
-         False, False,  # No symbol_2
-         False, True, False  # symbol_3
-        ])
+    # 2 hits for symbol_1, 0 for symbol_2, 1 for symbol_3
+    dump = [8, 12, 48]
     reached = process_profiles.GetReachedSymbolsFromDump(
         dump, self.offset_to_symbol_info)
-    self.assertSetEqual(set([self.symbol_1, self.symbol_3]), reached)
+    self.assertListEqual([self.symbol_1, self.symbol_3], reached)
+    # Ordering matters, no repetitions
+    dump = [48, 12, 8, 12, 8, 16]
+    reached = process_profiles.GetReachedSymbolsFromDump(
+        dump, self.offset_to_symbol_info)
+    self.assertListEqual([self.symbol_3, self.symbol_1], reached)
 
   def testSymbolNameToPrimary(self):
     symbol_infos = [SymbolInfo('1', 8, 16),

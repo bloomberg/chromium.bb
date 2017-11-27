@@ -17,24 +17,6 @@ sys.path.append(path)
 import symbol_extractor
 
 
-def ProcessDump(filename):
-  """Parses a process dump.
-
-  Args:
-    filename: (str) Process dump filename.
-
-  Returns:
-    [bool] Reached locations, each element representing 4 bytes in the binary,
-    relative to the start of .text.
-  """
-  data = None
-  with open(filename) as f:
-    data = f.read().strip()
-  result = [x == '1' for x in data]
-  logging.info('Reached locations = %d', sum(result))
-  return result
-
-
 def MergeDumps(filenames):
   """Merges several dumps.
 
@@ -42,14 +24,17 @@ def MergeDumps(filenames):
     filenames: [str] List of dump filenames.
 
   Returns:
-    A bitwise OR of all the dumps as returned by ProcessDump().
+    [int] Ordered list of reached offsets. Each offset only appears
+    once in the output, in the order of the first dump that contains it.
   """
-  dumps = [ProcessDump(filename) for filename in filenames]
-  assert len(set([len(d) for d in dumps])) == 1
-  result = dumps[0]
-  for d in dumps:
-    for (i, x) in enumerate(d):
-      result[i] |= x
+  dumps = [[int(x.strip()) for x in open(filename)] for filename in filenames]
+  seen_offsets = set()
+  result = []
+  for dump in dumps:
+    for offset in dump:
+      if offset not in seen_offsets:
+        result.append(offset)
+        seen_offsets.add(offset)
   return result
 
 
@@ -92,31 +77,31 @@ def GetOffsetToSymbolArray(instrumented_native_lib_filename):
   return GetOffsetToSymbolInfo(symbol_infos)
 
 
-def GetReachedSymbolsFromDump(dump, offset_to_symbol_info):
+def GetReachedSymbolsFromDump(offsets, offset_to_symbol_info):
   """From a dump and an offset->symbol array, returns reached symbols.
 
   Args:
-   dump: As returned by MergeDumps()
+   offsets: ([int]) As returned by MergeDumps()
    offset_to_symbol_info: As returned by GetOffsetToSymbolArray()
 
   Returns:
-    set(symbol_extractor.SymbolInfo) set of reached symbols.
+    [symbol_extractor.SymbolInfo] Reached symbols.
   """
-  logging.info('Dump size = %d', len(dump))
+  logging.info('Reached offsets = %d', len(offsets))
   logging.info('Offset to Symbol size = %d', len(offset_to_symbol_info))
-  # It's OK for the dump to be larger if none is reached.
-  if len(dump) > len(offset_to_symbol_info):
-    assert sum(dump[len(offset_to_symbol_info):]) == 0
-    dump = dump[:len(offset_to_symbol_info)]
-  reached_symbols = set()
+  assert max(offsets) / 4 <= len(offset_to_symbol_info)
+  already_seen = set()
+  reached_symbols = []
   reached_return_addresses_not_found = 0
-  for (reached, symbol_info) in zip(dump, offset_to_symbol_info):
-    if not reached:
-      continue
+  for offset in offsets:
+    symbol_info = offset_to_symbol_info[offset / 4]
     if symbol_info is None:
       reached_return_addresses_not_found += 1
       continue
-    reached_symbols.add(symbol_info)
+    if symbol_info in already_seen:
+      continue
+    reached_symbols.append(symbol_info)
+    already_seen.add(symbol_info)
   if reached_return_addresses_not_found:
     logging.warning('%d return addresses don\'t map to any symbol',
                     reached_return_addresses_not_found)
@@ -167,9 +152,10 @@ def MatchSymbolsInRegularBuild(reached_symbol_infos,
   logging.info('Matched symbols = %d', len(matched_names))
 
   symbol_name_to_primary = SymbolNameToPrimary(regular_build_symbol_infos)
-  matched_primary_symbols = set()
-  for name in matched_names:
-    matched_primary_symbols.add(symbol_name_to_primary[name])
+  matched_primary_symbols = []
+  for symbol in reached_symbol_names:
+    if symbol in matched_names:
+      matched_primary_symbols.append(symbol_name_to_primary[symbol])
   return matched_primary_symbols
 
 
@@ -185,9 +171,9 @@ def GetReachedSymbolsFromDumpsAndMaybeWriteOffsets(
   Returns:
     [symbol_extractor.SymbolInfo] Reached symbols.
   """
-  dump = MergeDumps(dump_filenames)
+  offsets = MergeDumps(dump_filenames)
   offset_to_symbol_info = GetOffsetToSymbolArray(native_lib_filename)
-  reached_symbols = GetReachedSymbolsFromDump(dump, offset_to_symbol_info)
+  reached_symbols = GetReachedSymbolsFromDump(offsets, offset_to_symbol_info)
   if output_filename:
     offsets = [s.offset for s in reached_symbols]
     with open(output_filename, 'w') as f:
