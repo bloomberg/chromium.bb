@@ -170,9 +170,9 @@ bool IsAtomicNode(const Node* node) {
 }
 
 template <typename Traversal>
-static int ComparePositions(Node* container_a,
+static int ComparePositions(const Node* container_a,
                             int offset_a,
-                            Node* container_b,
+                            const Node* container_b,
                             int offset_b,
                             bool* disconnected) {
   DCHECK(container_a);
@@ -198,7 +198,7 @@ static int ComparePositions(Node* container_a,
   }
 
   // case 2: node C (container B or an ancestor) is a child node of A
-  Node* c = container_b;
+  const Node* c = container_b;
   while (c && Traversal::Parent(*c) != container_a)
     c = Traversal::Parent(*c);
   if (c) {
@@ -239,12 +239,12 @@ static int ComparePositions(Node* container_a,
       *disconnected = true;
     return 0;
   }
-  Node* child_a = container_a;
+  const Node* child_a = container_a;
   while (child_a && Traversal::Parent(*child_a) != common_ancestor)
     child_a = Traversal::Parent(*child_a);
   if (!child_a)
     child_a = common_ancestor;
-  Node* child_b = container_b;
+  const Node* child_b = container_b;
   while (child_b && Traversal::Parent(*child_b) != common_ancestor)
     child_b = Traversal::Parent(*child_b);
   if (!child_b)
@@ -267,18 +267,18 @@ static int ComparePositions(Node* container_a,
   return 0;
 }
 
-int ComparePositionsInDOMTree(Node* container_a,
+int ComparePositionsInDOMTree(const Node* container_a,
                               int offset_a,
-                              Node* container_b,
+                              const Node* container_b,
                               int offset_b,
                               bool* disconnected) {
   return ComparePositions<NodeTraversal>(container_a, offset_a, container_b,
                                          offset_b, disconnected);
 }
 
-int ComparePositionsInFlatTree(Node* container_a,
+int ComparePositionsInFlatTree(const Node* container_a,
                                int offset_a,
-                               Node* container_b,
+                               const Node* container_b,
                                int offset_b,
                                bool* disconnected) {
   return ComparePositions<FlatTreeTraversal>(container_a, offset_a, container_b,
@@ -327,7 +327,7 @@ int ComparePositions(const VisiblePosition& a, const VisiblePosition& b) {
   return ComparePositions(a.DeepEquivalent(), b.DeepEquivalent());
 }
 
-bool IsNodeFullyContained(const EphemeralRange& range, Node& node) {
+bool IsNodeFullyContained(const EphemeralRange& range, const Node& node) {
   if (range.IsNull())
     return false;
 
@@ -450,7 +450,7 @@ ContainerNode* HighestEditableRoot(const PositionInFlatTree& position) {
 }
 
 bool IsEditablePosition(const Position& position) {
-  Node* node = position.ParentAnchoredEquivalent().AnchorNode();
+  const Node* node = position.ParentAnchoredEquivalent().AnchorNode();
   if (!node)
     return false;
   DCHECK(node->GetDocument().IsActive());
@@ -476,7 +476,7 @@ bool IsEditablePosition(const PositionInFlatTree& p) {
 }
 
 bool IsRichlyEditablePosition(const Position& p) {
-  Node* node = p.AnchorNode();
+  const Node* node = p.AnchorNode();
   if (!node)
     return false;
 
@@ -648,7 +648,7 @@ VisiblePositionInFlatTree FirstEditableVisiblePositionAfterPositionInRoot(
 template <typename Strategy>
 PositionTemplate<Strategy> FirstEditablePositionAfterPositionInRootAlgorithm(
     const PositionTemplate<Strategy>& position,
-    Node& highest_root) {
+    const Node& highest_root) {
   DCHECK(!NeedsLayoutTreeUpdate(highest_root))
       << position << ' ' << highest_root;
   // position falls before highestRoot.
@@ -694,14 +694,14 @@ PositionTemplate<Strategy> FirstEditablePositionAfterPositionInRootAlgorithm(
 }
 
 Position FirstEditablePositionAfterPositionInRoot(const Position& position,
-                                                  Node& highest_root) {
+                                                  const Node& highest_root) {
   return FirstEditablePositionAfterPositionInRootAlgorithm<EditingStrategy>(
       position, highest_root);
 }
 
 PositionInFlatTree FirstEditablePositionAfterPositionInRoot(
     const PositionInFlatTree& position,
-    Node& highest_root) {
+    const Node& highest_root) {
   return FirstEditablePositionAfterPositionInRootAlgorithm<
       EditingInFlatTreeStrategy>(position, highest_root);
 }
@@ -725,7 +725,7 @@ VisiblePositionInFlatTree LastEditableVisiblePositionBeforePositionInRoot(
 template <typename Strategy>
 PositionTemplate<Strategy> LastEditablePositionBeforePositionInRootAlgorithm(
     const PositionTemplate<Strategy>& position,
-    Node& highest_root) {
+    const Node& highest_root) {
   DCHECK(!NeedsLayoutTreeUpdate(highest_root))
       << position << ' ' << highest_root;
   // When position falls after highestRoot, the result is easy to compute.
@@ -762,14 +762,14 @@ PositionTemplate<Strategy> LastEditablePositionBeforePositionInRootAlgorithm(
 }
 
 Position LastEditablePositionBeforePositionInRoot(const Position& position,
-                                                  Node& highest_root) {
+                                                  const Node& highest_root) {
   return LastEditablePositionBeforePositionInRootAlgorithm<EditingStrategy>(
       position, highest_root);
 }
 
 PositionInFlatTree LastEditablePositionBeforePositionInRoot(
     const PositionInFlatTree& position,
-    Node& highest_root) {
+    const Node& highest_root) {
   return LastEditablePositionBeforePositionInRootAlgorithm<
       EditingInFlatTreeStrategy>(position, highest_root);
 }
@@ -972,7 +972,7 @@ bool IsInline(const Node* node) {
 // |Position| version The enclosing block of [table, x] for example, should be
 // the block that contains the table and not the table, and this function should
 // be the only one responsible for knowing about these kinds of special cases.
-Element* EnclosingBlock(Node* node, EditingBoundaryCrossingRule rule) {
+Element* EnclosingBlock(const Node* node, EditingBoundaryCrossingRule rule) {
   if (!node)
     return nullptr;
   return EnclosingBlock(FirstPositionInOrBeforeNode(*node), rule);
@@ -1231,7 +1231,7 @@ Element* TableElementJustAfter(const VisiblePosition& visible_position) {
 }
 
 // Returns the visible position at the beginning of a node
-VisiblePosition VisiblePositionBeforeNode(Node& node) {
+VisiblePosition VisiblePositionBeforeNode(const Node& node) {
   DCHECK(!NeedsLayoutTreeUpdate(node));
   if (node.hasChildren())
     return CreateVisiblePosition(FirstPositionInOrBeforeNode(node));
@@ -1241,7 +1241,7 @@ VisiblePosition VisiblePositionBeforeNode(Node& node) {
 }
 
 // Returns the visible position at the ending of a node
-VisiblePosition VisiblePositionAfterNode(Node& node) {
+VisiblePosition VisiblePositionAfterNode(const Node& node) {
   DCHECK(!NeedsLayoutTreeUpdate(node));
   if (node.hasChildren())
     return CreateVisiblePosition(LastPositionInOrAfterNode(node));
@@ -1250,7 +1250,7 @@ VisiblePosition VisiblePositionAfterNode(Node& node) {
   return VisiblePosition::InParentAfterNode(node);
 }
 
-bool IsHTMLListElement(Node* n) {
+bool IsHTMLListElement(const Node* n) {
   return (n && (IsHTMLUListElement(*n) || IsHTMLOListElement(*n) ||
                 IsHTMLDListElement(*n)));
 }
@@ -1361,8 +1361,9 @@ Node* HighestEnclosingNodeOfType(const Position& p,
   return highest;
 }
 
-static bool HasARenderedDescendant(Node* node, Node* excluded_node) {
-  for (Node* n = node->firstChild(); n;) {
+static bool HasARenderedDescendant(const Node* node,
+                                   const Node* excluded_node) {
+  for (const Node* n = node->firstChild(); n;) {
     if (n == excluded_node) {
       n = NodeTraversal::NextSkippingChildren(*n, node);
       continue;
@@ -1374,7 +1375,7 @@ static bool HasARenderedDescendant(Node* node, Node* excluded_node) {
   return false;
 }
 
-Node* HighestNodeToRemoveInPruning(Node* node, Node* exclude_node) {
+Node* HighestNodeToRemoveInPruning(Node* node, const Node* exclude_node) {
   Node* previous_node = nullptr;
   Element* element = node ? RootEditableElement(*node) : nullptr;
   for (; node; node = node->parentNode()) {
@@ -1406,7 +1407,7 @@ Element* EnclosingAnchorElement(const Position& p) {
   return nullptr;
 }
 
-HTMLElement* EnclosingList(Node* node) {
+HTMLElement* EnclosingList(const Node* node) {
   if (!node)
     return nullptr;
 
@@ -1422,7 +1423,7 @@ HTMLElement* EnclosingList(Node* node) {
   return nullptr;
 }
 
-Node* EnclosingListChild(Node* node) {
+Node* EnclosingListChild(const Node* node) {
   if (!node)
     return nullptr;
   // Check for a list item element, or for a node whose parent is a list
@@ -1432,7 +1433,10 @@ Node* EnclosingListChild(Node* node) {
 
   // FIXME: This function is inappropriately named if it starts with node
   // instead of node->parentNode()
-  for (Node* n = node; n && n->parentNode(); n = n->parentNode()) {
+  // TODO(editing-dev): We should make this function return |const Node*| and
+  // make const_cast<> restricted inside editing/commands.
+  for (Node* n = const_cast<Node*>(node); n && n->parentNode();
+       n = n->parentNode()) {
     if (IsHTMLLIElement(*n) ||
         (IsHTMLListElement(n->parentNode()) && n != root))
       return n;
@@ -1467,7 +1471,8 @@ Node* EnclosingEmptyListItem(const VisiblePosition& visible_pos) {
   return list_child_node;
 }
 
-HTMLElement* OutermostEnclosingList(Node* node, HTMLElement* root_list) {
+HTMLElement* OutermostEnclosingList(const Node* node,
+                                    const HTMLElement* root_list) {
   HTMLElement* list = EnclosingList(node);
   if (!list)
     return nullptr;
@@ -1723,7 +1728,7 @@ Position TrailingWhitespacePosition(const Position& position,
 
 unsigned NumEnclosingMailBlockquotes(const Position& p) {
   unsigned num = 0;
-  for (Node* n = p.AnchorNode(); n; n = n->parentNode()) {
+  for (const Node* n = p.AnchorNode(); n; n = n->parentNode()) {
     if (IsMailHTMLBlockquoteElement(n))
       num++;
   }
@@ -1754,7 +1759,8 @@ PositionWithAffinity PositionRespectingEditingBoundary(
   return target_node->GetLayoutObject()->PositionForPoint(selection_end_point);
 }
 
-Position ComputePositionForNodeRemoval(const Position& position, Node& node) {
+Position ComputePositionForNodeRemoval(const Position& position,
+                                       const Node& node) {
   if (position.IsNull())
     return position;
   switch (position.AnchorType()) {
@@ -1824,7 +1830,7 @@ bool LineBreakExistsAtPosition(const Position& position) {
       !position.AnchorNode()->GetLayoutObject()->Style()->PreserveNewline())
     return false;
 
-  Text* text_node = ToText(position.AnchorNode());
+  const Text* text_node = ToText(position.AnchorNode());
   unsigned offset = position.OffsetInContainerNode();
   return offset < text_node->length() && text_node->data()[offset] == '\n';
 }
