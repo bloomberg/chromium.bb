@@ -361,16 +361,16 @@ void ShadowRoot::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
 std::ostream& operator<<(std::ostream& ostream, const ShadowRootType& type) {
   switch (type) {
     case ShadowRootType::kUserAgent:
-      ostream << "ShadowRootType::UserAgent";
+      ostream << "UserAgent";
       break;
     case ShadowRootType::V0:
-      ostream << "ShadowRootType::V0";
+      ostream << "V0";
       break;
     case ShadowRootType::kOpen:
-      ostream << "ShadowRootType::Open";
+      ostream << "Open";
       break;
     case ShadowRootType::kClosed:
-      ostream << "ShadowRootType::Closed";
+      ostream << "Closed";
       break;
   }
   return ostream;
