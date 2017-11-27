@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -36,13 +38,26 @@ namespace extensions {
 
 namespace {
 
+bool IsWindowedBookmarkApp(const Extension* app,
+                           content::BrowserContext* context) {
+  if (!app || !app->from_bookmark())
+    return false;
+
+  if (GetLaunchContainer(extensions::ExtensionPrefs::Get(context), app) !=
+      LAUNCH_CONTAINER_WINDOW) {
+    return false;
+  }
+
+  return true;
+}
+
 scoped_refptr<const Extension> GetAppForURL(
     const GURL& url,
     const content::WebContents* web_contents) {
-  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
+  content::BrowserContext* context = web_contents->GetBrowserContext();
   for (scoped_refptr<const extensions::Extension> app :
-       ExtensionRegistry::Get(browser_context)->enabled_extensions()) {
-    if (!app->from_bookmark())
+       ExtensionRegistry::Get(context)->enabled_extensions()) {
+    if (!IsWindowedBookmarkApp(app.get(), context))
       continue;
 
     const UrlHandlerInfo* url_handler =
@@ -242,16 +257,16 @@ void BookmarkAppNavigationThrottle::OpenInNewTab() {
 scoped_refptr<const Extension>
 BookmarkAppNavigationThrottle::GetAppForWindow() {
   content::WebContents* source = navigation_handle()->GetWebContents();
+  content::BrowserContext* context = source->GetBrowserContext();
   Browser* browser = chrome::FindBrowserWithWebContents(source);
   if (!browser || !browser->is_app())
     return nullptr;
 
-  const Extension* app =
-      ExtensionRegistry::Get(source->GetBrowserContext())
-          ->GetExtensionById(
-              web_app::GetExtensionIdFromApplicationName(browser->app_name()),
-              extensions::ExtensionRegistry::ENABLED);
-  if (!app || !app->from_bookmark())
+  const Extension* app = ExtensionRegistry::Get(context)->GetExtensionById(
+      web_app::GetExtensionIdFromApplicationName(browser->app_name()),
+      extensions::ExtensionRegistry::ENABLED);
+
+  if (!IsWindowedBookmarkApp(app, context))
     return nullptr;
 
   // Bookmark Apps for installable websites have scope.

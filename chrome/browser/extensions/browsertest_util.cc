@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -100,7 +101,14 @@ const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info) {
 
   EXPECT_EQ(++num_extensions,
             ExtensionRegistry::Get(profile)->enabled_extensions().size());
-  return content::Details<const Extension>(windowed_observer.details()).ptr();
+  const Extension* app =
+      content::Details<const Extension>(windowed_observer.details()).ptr();
+  extensions::SetLaunchType(profile, app->id(),
+                            info.open_as_window
+                                ? extensions::LAUNCH_TYPE_WINDOW
+                                : extensions::LAUNCH_TYPE_REGULAR);
+
+  return app;
 }
 
 Browser* LaunchAppBrowser(Profile* profile, const Extension* extension_app) {

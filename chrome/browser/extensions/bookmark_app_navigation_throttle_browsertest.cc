@@ -8,6 +8,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -29,6 +30,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/common/constants.h"
 #include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -220,6 +222,7 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
         embedded_test_server()->GetURL(kAppUrlHost, kAppScopePath);
     web_app_info.title = base::UTF8ToUTF16("Test app");
     web_app_info.description = base::UTF8ToUTF16("Test description");
+    web_app_info.open_as_window = true;
 
     test_bookmark_app_ = InstallBookmarkApp(web_app_info);
   }
@@ -346,6 +349,8 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
     return embedded_test_server()->GetURL(kLaunchingPageHost,
                                           kLaunchingPagePath);
   }
+
+  const Extension* test_bookmark_app() { return test_bookmark_app_; }
 
  private:
   const Extension* test_bookmark_app_;
@@ -488,6 +493,24 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 
   ASSERT_TRUE(ui::PageTransitionCoreTypeIs(
       observer.transition_type(), ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
+}
+
+// Tests that clicking a link to an app that launches in a tab does not open a
+// a new app window.
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest, TabApp) {
+  InstallTestBookmarkApp();
+
+  // Set a pref indicating that the user wants to launch in a regular tab.
+  extensions::SetLaunchType(browser()->profile(), test_bookmark_app()->id(),
+                            extensions::LAUNCH_TYPE_REGULAR);
+
+  NavigateToLaunchingPage();
+
+  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  TestTabActionDoesNotOpenAppWindow(
+      app_url, base::Bind(&ClickLinkAndWait,
+                          browser()->tab_strip_model()->GetActiveWebContents(),
+                          app_url, LinkTarget::SELF, GetParam()));
 }
 
 // Tests that clicking a link with target="_self" to the app's app_url opens the
