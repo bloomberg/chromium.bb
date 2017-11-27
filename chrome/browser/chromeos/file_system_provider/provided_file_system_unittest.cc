@@ -230,8 +230,9 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
 
   void SetUp() override {
     profile_.reset(new TestingProfile);
-    const base::FilePath mount_path =
-        util::GetMountPath(profile_.get(), kExtensionId, kFileSystemId);
+    const base::FilePath mount_path = util::GetMountPath(
+        profile_.get(), ProviderId::CreateFromExtensionId(kExtensionId),
+        kFileSystemId);
     MountOptions mount_options;
     mount_options.file_system_id = kFileSystemId;
     mount_options.display_name = kDisplayName;
@@ -411,8 +412,9 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, AddWatcher_PersistentIllegal) {
 
     // Create a provided file system interface, which does not support a notify
     // tag, though.
-    const base::FilePath mount_path =
-        util::GetMountPath(profile_.get(), kExtensionId, kFileSystemId);
+    const base::FilePath mount_path = util::GetMountPath(
+        profile_.get(), ProviderId::CreateFromExtensionId(kExtensionId),
+        kFileSystemId);
     MountOptions mount_options;
     mount_options.file_system_id = kFileSystemId;
     mount_options.display_name = kDisplayName;

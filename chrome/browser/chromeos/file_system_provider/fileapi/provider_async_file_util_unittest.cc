@@ -39,6 +39,7 @@ namespace {
 
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "testing-file-system";
+const ProviderId kProviderId = ProviderId::CreateFromExtensionId(kExtensionId);
 
 // Logs callbacks invocations on the tested operations.
 // TODO(mtomasz): Store and verify more arguments, once the operations return
@@ -128,14 +129,14 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
         content::CreateFileSystemContextForTesting(NULL, data_dir_.GetPath());
 
     Service* service = Service::Get(profile_);  // Owned by its factory.
-    service->SetDefaultFileSystemFactoryForTesting(
+    service->SetExtensionFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
 
     const base::File::Error result = service->MountFileSystem(
-        kExtensionId, MountOptions(kFileSystemId, "Testing File System"));
+        kProviderId, MountOptions(kFileSystemId, "Testing File System"));
     ASSERT_EQ(base::File::FILE_OK, result);
     const ProvidedFileSystemInfo& file_system_info =
-        service->GetProvidedFileSystem(kExtensionId, kFileSystemId)
+        service->GetProvidedFileSystem(kProviderId, kFileSystemId)
             ->GetFileSystemInfo();
     const std::string mount_point_name =
         file_system_info.mount_path().BaseName().AsUTF8Unsafe();

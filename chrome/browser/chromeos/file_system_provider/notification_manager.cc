@@ -55,7 +55,9 @@ NotificationManager::NotificationManager(
     : profile_(profile),
       file_system_info_(file_system_info),
       icon_loader_(
-          new extensions::ChromeAppIconLoader(profile, kIconSize, this)) {}
+          new extensions::ChromeAppIconLoader(profile, kIconSize, this)) {
+  DCHECK_EQ(ProviderId::EXTENSION, file_system_info.provider_id().GetType());
+}
 
 NotificationManager::~NotificationManager() {
   if (callbacks_.size()) {
@@ -102,7 +104,7 @@ std::string NotificationManager::GetNotificationId() {
 
 void NotificationManager::ShowNotification() {
   if (!extension_icon_.get())
-    icon_loader_->FetchImage(file_system_info_.provider_id());
+    icon_loader_->FetchImage(file_system_info_.provider_id().GetExtensionId());
 
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.buttons.push_back(

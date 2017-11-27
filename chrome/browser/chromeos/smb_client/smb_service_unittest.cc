@@ -46,7 +46,7 @@ class SmbServiceTest : public testing::Test {
         std::make_unique<extensions::ExtensionRegistry>(profile_);
     fsp_service_ = std::make_unique<file_system_provider::Service>(
         profile_, extension_registry_.get());
-    fsp_service_->SetDefaultFileSystemFactoryForTesting(
+    fsp_service_->SetExtensionFileSystemFactoryForTesting(
         base::Bind(&file_system_provider::FakeProvidedFileSystem::Create));
 
     fsp_service_->SetRegistryForTesting(

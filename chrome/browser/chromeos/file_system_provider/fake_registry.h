@@ -23,10 +23,10 @@ class FakeRegistry : public RegistryInterface {
   ~FakeRegistry() override;
   void RememberFileSystem(const ProvidedFileSystemInfo& file_system_info,
                           const Watchers& watchers) override;
-  void ForgetFileSystem(const std::string& extension_id,
+  void ForgetFileSystem(const ProviderId& provider_id,
                         const std::string& file_system_id) override;
   std::unique_ptr<RestoredFileSystems> RestoreFileSystems(
-      const std::string& extension_id) override;
+      const ProviderId& provider_id) override;
   void UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
                         const Watcher& watcher) override;
   const ProvidedFileSystemInfo* file_system_info() const;

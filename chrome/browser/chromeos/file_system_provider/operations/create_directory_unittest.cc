@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/create_directory.h"
 
+#include <stddef.h>
+
 #include <memory>
 #include <string>
 #include <vector>
