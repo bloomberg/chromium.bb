@@ -18,7 +18,7 @@ var invalid_schemes = ['http', 'https', 'file', 'web+'];
 invalid_schemes.forEach(function (scheme) {
     var succeeded = false;
     try {
-        window.navigator.unregisterProtocolHandler(scheme, "invalid scheme %s", "title");
+        window.navigator.unregisterProtocolHandler(scheme, "invalid scheme %s");
     } catch (e) {
         succeeded = 'SecurityError' == e.name;
         errorMessage = e.message;
@@ -34,7 +34,7 @@ var valid_schemes = ['bitcoin', 'BitcoIn', 'geo', 'im', 'irc', 'Irc', 'ircs', 'm
 valid_schemes.forEach(function (scheme) {
     var succeeded = false;
     try {
-        window.navigator.unregisterProtocolHandler(scheme, "valid scheme %s", "title");
+        window.navigator.unregisterProtocolHandler(scheme, "valid scheme %s");
         succeeded = true;
     } catch (e) {
         succeeded = false;
@@ -50,7 +50,7 @@ var invalid_schemes = ['mailto:', 'ssh:/', 'magnet:+', 'tel:sip'];
 invalid_schemes.forEach(function (scheme) {
     var succeeded = false;
     try {
-        window.navigator.unregisterProtocolHandler(scheme, 'invalid scheme uri=%s', 'title');
+        window.navigator.unregisterProtocolHandler(scheme, 'invalid scheme uri=%s');
     } catch (e) {
         succeeded = 'SecurityError' == e.name;
         errorMessage = e.message;
@@ -66,7 +66,7 @@ var invalid_urls = ["", "%S"];
 invalid_urls.forEach(function (url) {
    var succeeded = false;
    try {
-        window.navigator.unregisterProtocolHandler('web+myscheme', url, 'title');
+        window.navigator.unregisterProtocolHandler('web+myscheme', url);
     } catch (e) {
         succeeded = 'SyntaxError' == e.name;
         errorMessage = e.message;
@@ -82,7 +82,7 @@ invalid_urls.forEach(function (url) {
 succeeded = false;
 var errorMessage;
 try {
-    window.navigator.unregisterProtocolHandler('web+myprotocol', "http://www.example.com/soup?url=%s", "title");
+    window.navigator.unregisterProtocolHandler('web+myprotocol', "http://www.example.com/soup?url=%s");
 } catch (e) {
     succeeded = true;
     errorMessage = e.message;
@@ -96,7 +96,7 @@ else
 // Test that the API has default no-op implementation.
 var succeeded = true;
 try {
-    window.navigator.unregisterProtocolHandler('web+myscheme', "%s", "title");
+    window.navigator.unregisterProtocolHandler('web+myscheme', "%s");
 } catch (e) {
     succeeded = false;
 }
