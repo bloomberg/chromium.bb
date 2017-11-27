@@ -290,8 +290,8 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectLineWrap) {
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT("bar\n", kStartAndEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  EXPECT_EQ(Selection().LayoutSelectionStart(), 0);
-  EXPECT_EQ(Selection().LayoutSelectionEnd(), 4);
+  EXPECT_EQ(0u, Selection().LayoutSelectionStart());
+  EXPECT_EQ(4u, Selection().LayoutSelectionEnd());
 }
 
 TEST_F(LayoutSelectionTest, FirstLetter) {
@@ -416,8 +416,8 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_Start) {
   TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
   TEST_NEXT("bar", kEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  EXPECT_EQ(1, Selection().LayoutSelectionStart());
-  EXPECT_EQ(1, Selection().LayoutSelectionEnd());
+  EXPECT_EQ(1u, Selection().LayoutSelectionStart());
+  EXPECT_EQ(1u, Selection().LayoutSelectionEnd());
 
   // Paint virtually and clear ShouldInvalidate flag.
   UpdateAllLifecyclePhases();
@@ -440,8 +440,8 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_Start) {
   TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
   TEST_NEXT("bar", kEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  EXPECT_EQ(2, Selection().LayoutSelectionStart());
-  EXPECT_EQ(1, Selection().LayoutSelectionEnd());
+  EXPECT_EQ(2u, Selection().LayoutSelectionStart());
+  EXPECT_EQ(1u, Selection().LayoutSelectionEnd());
 }
 
 TEST_F(LayoutSelectionTest, MoveOnSameNode_End) {
@@ -454,8 +454,8 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_End) {
   TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
   TEST_NEXT("bar", kEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  EXPECT_EQ(1, Selection().LayoutSelectionStart());
-  EXPECT_EQ(1, Selection().LayoutSelectionEnd());
+  EXPECT_EQ(1u, Selection().LayoutSelectionStart());
+  EXPECT_EQ(1u, Selection().LayoutSelectionEnd());
 
   // Paint virtually and clear ShouldInvalidate flag.
   UpdateAllLifecyclePhases();
@@ -478,8 +478,8 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_End) {
   TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
   TEST_NEXT("bar", kEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  EXPECT_EQ(1, Selection().LayoutSelectionStart());
-  EXPECT_EQ(2, Selection().LayoutSelectionEnd());
+  EXPECT_EQ(1u, Selection().LayoutSelectionStart());
+  EXPECT_EQ(2u, Selection().LayoutSelectionEnd());
 }
 
 TEST_F(LayoutSelectionTest, MoveOnSameNode_StartAndEnd) {
@@ -489,8 +489,8 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_StartAndEnd) {
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT("foobar", kStartAndEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  EXPECT_EQ(1, Selection().LayoutSelectionStart());
-  EXPECT_EQ(4, Selection().LayoutSelectionEnd());
+  EXPECT_EQ(1u, Selection().LayoutSelectionStart());
+  EXPECT_EQ(4u, Selection().LayoutSelectionEnd());
 
   // Paint virtually and clear ShouldInvalidate flag.
   UpdateAllLifecyclePhases();
@@ -509,8 +509,8 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_StartAndEnd) {
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT("foobar", kStartAndEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  EXPECT_EQ(1, Selection().LayoutSelectionStart());
-  EXPECT_EQ(5, Selection().LayoutSelectionEnd());
+  EXPECT_EQ(1u, Selection().LayoutSelectionStart());
+  EXPECT_EQ(5u, Selection().LayoutSelectionEnd());
 }
 
 TEST_F(LayoutSelectionTest, MoveOnSameNode_StartAndEnd_Collapse) {
@@ -520,8 +520,8 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_StartAndEnd_Collapse) {
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT("foobar", kStartAndEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  EXPECT_EQ(1, Selection().LayoutSelectionStart());
-  EXPECT_EQ(4, Selection().LayoutSelectionEnd());
+  EXPECT_EQ(1u, Selection().LayoutSelectionStart());
+  EXPECT_EQ(4u, Selection().LayoutSelectionEnd());
 
   // Paint virtually and clear ShouldInvalidate flag.
   UpdateAllLifecyclePhases();
@@ -562,8 +562,8 @@ TEST_F(LayoutSelectionTest, ClearSelection) {
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT("foo", kStartAndEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  EXPECT_EQ(1, Selection().LayoutSelectionStart());
-  EXPECT_EQ(2, Selection().LayoutSelectionEnd());
+  EXPECT_EQ(1u, Selection().LayoutSelectionStart());
+  EXPECT_EQ(2u, Selection().LayoutSelectionEnd());
 
   UpdateAllLifecyclePhases();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
@@ -591,8 +591,8 @@ TEST_F(LayoutSelectionTest, SVG) {
   TEST_NEXT(IsSVGText, kContain, ShouldInvalidate);
   TEST_NEXT("foobar", kStartAndEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  EXPECT_EQ(2, Selection().LayoutSelectionStart());
-  EXPECT_EQ(3, Selection().LayoutSelectionEnd());
+  EXPECT_EQ(2u, Selection().LayoutSelectionStart());
+  EXPECT_EQ(3u, Selection().LayoutSelectionEnd());
 
   UpdateAllLifecyclePhases();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
@@ -612,8 +612,8 @@ TEST_F(LayoutSelectionTest, SVG) {
   TEST_NEXT(IsSVGText, kContain, ShouldInvalidate);
   TEST_NEXT("foobar", kStartAndEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  EXPECT_EQ(2, Selection().LayoutSelectionStart());
-  EXPECT_EQ(4, Selection().LayoutSelectionEnd());
+  EXPECT_EQ(2u, Selection().LayoutSelectionStart());
+  EXPECT_EQ(4u, Selection().LayoutSelectionEnd());
 }
 
 // crbug.com/781705
@@ -629,8 +629,8 @@ TEST_F(LayoutSelectionTest, SVGAncestor) {
   TEST_NEXT(IsSVGTSpan, kNone, NotInvalidate);
   TEST_NEXT("foobar", kStartAndEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  EXPECT_EQ(2, Selection().LayoutSelectionStart());
-  EXPECT_EQ(3, Selection().LayoutSelectionEnd());
+  EXPECT_EQ(2u, Selection().LayoutSelectionStart());
+  EXPECT_EQ(3u, Selection().LayoutSelectionEnd());
 
   UpdateAllLifecyclePhases();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
@@ -652,8 +652,8 @@ TEST_F(LayoutSelectionTest, SVGAncestor) {
   TEST_NEXT(IsSVGTSpan, kNone, NotInvalidate);
   TEST_NEXT("foobar", kStartAndEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  EXPECT_EQ(2, Selection().LayoutSelectionStart());
-  EXPECT_EQ(4, Selection().LayoutSelectionEnd());
+  EXPECT_EQ(2u, Selection().LayoutSelectionStart());
+  EXPECT_EQ(4u, Selection().LayoutSelectionEnd());
 }
 
 TEST_F(LayoutSelectionTest, Embed) {

@@ -223,8 +223,8 @@ class CORE_EXPORT FrameSelection final
 
   FrameCaret& FrameCaretForTesting() const { return *frame_caret_; }
 
-  WTF::Optional<int> LayoutSelectionStart() const;
-  WTF::Optional<int> LayoutSelectionEnd() const;
+  WTF::Optional<unsigned> LayoutSelectionStart() const;
+  WTF::Optional<unsigned> LayoutSelectionEnd() const;
   void ClearLayoutSelection();
 
   void Trace(blink::Visitor*);
