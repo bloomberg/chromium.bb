@@ -39,19 +39,19 @@ class AudioDebugRecordingHelper;
 //                                AudioDebugFileWriter
 //                                        ^
 //                                        | owns
-//                        owns            |
-//   OnMoreDataConverter  ---->  AudioDebugRecordingHelper
-//            ^                           ^
-//            | owns several              | raw pointer to several
-//            |                           |
-//   AudioOutputResampler        AudioDebugRecordingManager
-//            ^                           ^
-//            |                           | owns
-//            | owns several              |
-//             ------------------  AudioManagerBase
+//                        owns            |                     owns
+//   OnMoreDataConverter  ---->  AudioDebugRecordingHelper <---------
+//            ^                           ^                          |
+//            | owns several              | raw pointer to several   |
+//            |                   AudioDebugRecordingManager         |
+//   AudioOutputResampler                 ^                          |
+//            ^                           |      AudioInputStreamDataInterceptor
+//            |                           |                          ^
+//            | owns several              | owns        owns several |
+//             ------------------  AudioManagerBase  ----------------
 //
 // AudioDebugRecordingManager is created when
-// AudioManager::InitializeOutputDebugRecording() is called. That is done
+// AudioManager::InitializeDebugRecording() is called. That is done
 // in AudioManager::Create() in WebRTC enabled builds, but not in non WebRTC
 // enabled builds.
 // If AudioDebugRecordingManager is not created, neither is

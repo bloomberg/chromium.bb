@@ -25,7 +25,7 @@ int g_next_stream_id = 1;
 
 // Helper function that returns |base_file_name| with |file_name_extension| and
 // |id| added to it as as extensions.
-base::FilePath GetOutputDebugRecordingFileNameWithExtensions(
+base::FilePath GetDebugRecordingFileNameWithExtensions(
     const base::FilePath& base_file_name,
     const base::FilePath::StringType& file_name_extension,
     int id) {
@@ -48,8 +48,8 @@ void AudioDebugRecordingManager::EnableDebugRecording(
 
   for (const auto& it : debug_recording_helpers_) {
     it.second.first->EnableDebugRecording(
-        GetOutputDebugRecordingFileNameWithExtensions(
-            base_file_name, it.second.second, it.first));
+        GetDebugRecordingFileNameWithExtensions(base_file_name,
+                                                it.second.second, it.first));
   }
   debug_recording_base_file_name_ = base_file_name;
 }
@@ -80,8 +80,8 @@ AudioDebugRecordingManager::RegisterDebugRecordingSource(
 
   if (IsDebugRecordingEnabled()) {
     recording_helper->EnableDebugRecording(
-        GetOutputDebugRecordingFileNameWithExtensions(
-            debug_recording_base_file_name_, file_name_extension, id));
+        GetDebugRecordingFileNameWithExtensions(debug_recording_base_file_name_,
+                                                file_name_extension, id));
   }
 
   debug_recording_helpers_[id] =
