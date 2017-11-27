@@ -144,24 +144,6 @@ views::View* CreateAddUserView(AddUserSessionPolicy policy) {
   return view;
 }
 
-class UserViewMouseWatcherHost : public views::MouseWatcherHost {
- public:
-  explicit UserViewMouseWatcherHost(const gfx::Rect& screen_area)
-      : screen_area_(screen_area) {}
-  ~UserViewMouseWatcherHost() override {}
-
-  // Implementation of MouseWatcherHost.
-  bool Contains(const gfx::Point& screen_point,
-                views::MouseWatcherHost::MouseEventType type) override {
-    return screen_area_.Contains(screen_point);
-  }
-
- private:
-  gfx::Rect screen_area_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserViewMouseWatcherHost);
-};
-
 // A view that acts as the contents of the widget that appears when clicking
 // the active user. If the mouse exits this view or an otherwise unhandled
 // click is detected, it will invoke a closure passed at construction time.

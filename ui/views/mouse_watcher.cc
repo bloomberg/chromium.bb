@@ -98,28 +98,27 @@ MouseWatcherListener::~MouseWatcherListener() {
 MouseWatcherHost::~MouseWatcherHost() {
 }
 
-MouseWatcher::MouseWatcher(MouseWatcherHost* host,
+MouseWatcher::MouseWatcher(std::unique_ptr<MouseWatcherHost> host,
                            MouseWatcherListener* listener)
-    : host_(host),
+    : host_(std::move(host)),
       listener_(listener),
-      notify_on_exit_time_(base::TimeDelta::FromMilliseconds(
-          kNotifyListenerTimeMs)) {
-}
+      notify_on_exit_time_(
+          base::TimeDelta::FromMilliseconds(kNotifyListenerTimeMs)) {}
 
 MouseWatcher::~MouseWatcher() {
 }
 
 void MouseWatcher::Start() {
   if (!is_observing())
-    observer_.reset(new Observer(this));
+    observer_ = std::make_unique<Observer>(this);
 }
 
 void MouseWatcher::Stop() {
-  observer_.reset(NULL);
+  observer_.reset();
 }
 
 void MouseWatcher::NotifyListener() {
-  observer_.reset(NULL);
+  observer_.reset();
   listener_->MouseMovedOutOfHost();
 }
 

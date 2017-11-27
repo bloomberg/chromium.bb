@@ -387,9 +387,8 @@ void TrayBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
     // do not call the delegate, but wait for the first mouse move within the
     // bubble. The used MouseWatcher will notify use of a movement and call
     // |MouseMovedOutOfHost|.
-    mouse_watcher_.reset(new MouseWatcher(
-        new views::internal::MouseMoveDetectorHost(),
-        this));
+    mouse_watcher_ = std::make_unique<MouseWatcher>(
+        std::make_unique<views::internal::MouseMoveDetectorHost>(), this);
     // Set the mouse sampling frequency to roughly a frame time so that the user
     // cannot see a lag.
     mouse_watcher_->set_notify_on_exit_time(

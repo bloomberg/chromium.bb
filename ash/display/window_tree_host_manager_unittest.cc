@@ -65,16 +65,7 @@ class TestObserver : public WindowTreeHostManager::Observer,
                      public aura::client::FocusChangeObserver,
                      public ::wm::ActivationChangeObserver {
  public:
-  TestObserver()
-      : changing_count_(0),
-        changed_count_(0),
-        bounds_changed_count_(0),
-        rotation_changed_count_(0),
-        workarea_changed_count_(0),
-        primary_changed_count_(0),
-        changed_display_id_(0),
-        focus_changed_count_(0),
-        activation_changed_count_(0) {
+  TestObserver() {
     Shell::Get()->window_tree_host_manager()->AddObserver(this);
     display::Screen::GetScreen()->AddObserver(this);
     aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
@@ -162,17 +153,17 @@ class TestObserver : public WindowTreeHostManager::Observer,
   }
 
  private:
-  int changing_count_;
-  int changed_count_;
+  int changing_count_ = 0;
+  int changed_count_ = 0;
 
-  int bounds_changed_count_;
-  int rotation_changed_count_;
-  int workarea_changed_count_;
-  int primary_changed_count_;
-  int64_t changed_display_id_;
+  int bounds_changed_count_ = 0;
+  int rotation_changed_count_ = 0;
+  int workarea_changed_count_ = 0;
+  int primary_changed_count_ = 0;
+  int64_t changed_display_id_ = 0;
 
-  int focus_changed_count_;
-  int activation_changed_count_;
+  int focus_changed_count_ = 0;
+  int activation_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -1690,7 +1681,8 @@ TEST_F(WindowTreeHostManagerTest,
 
   TestMouseWatcherListener listener;
   views::MouseWatcher watcher(
-      new views::MouseWatcherViewHost(view, gfx::Insets()), &listener);
+      std::make_unique<views::MouseWatcherViewHost>(view, gfx::Insets()),
+      &listener);
   watcher.Start();
 
   ui::test::EventGenerator event_generator(

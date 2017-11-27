@@ -96,8 +96,9 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
       show_all_view_(nullptr),
       close_button_(views::CreateVectorImageButton(this)),
       parent_(parent),
-      mouse_watcher_(new views::MouseWatcherViewHost(this, gfx::Insets()),
-                     this) {
+      mouse_watcher_(
+          std::make_unique<views::MouseWatcherViewHost>(this, gfx::Insets()),
+          this) {
   // Start out hidden: the shelf might be created but never shown in some
   // cases, like when installing a theme. See DownloadShelf::AddDownload().
   SetVisible(false);
