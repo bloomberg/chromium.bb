@@ -164,3 +164,14 @@ ZUC_TEST(timespec_test, timespec_sub_to_msec)
 	b.tv_nsec = 1000000L;
 	ZUC_ASSERT_EQ((998 * 1000) + 1, timespec_sub_to_msec(&a, &b));
 }
+
+ZUC_TEST(timespec_test, timespec_is_zero)
+{
+	struct timespec zero = { 0 };
+	struct timespec non_zero_sec = { .tv_sec = 1, .tv_nsec = 0 };
+	struct timespec non_zero_nsec = { .tv_sec = 0, .tv_nsec = 1 };
+
+	ZUC_ASSERT_TRUE(timespec_is_zero(&zero));
+	ZUC_ASSERT_FALSE(timespec_is_zero(&non_zero_nsec));
+	ZUC_ASSERT_FALSE(timespec_is_zero(&non_zero_sec));
+}

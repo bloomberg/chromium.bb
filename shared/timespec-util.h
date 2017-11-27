@@ -29,6 +29,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <time.h>
+#include <stdbool.h>
 
 #define NSEC_PER_SEC 1000000000
 
@@ -131,6 +132,17 @@ static inline int64_t
 timespec_sub_to_msec(const struct timespec *a, const struct timespec *b)
 {
 	return timespec_sub_to_nsec(a, b) / 1000000;
+}
+
+/* Check if a timespec is zero
+ *
+ * \param a timespec
+ * \return whether the timespec is zero
+ */
+static inline bool
+timespec_is_zero(const struct timespec *a)
+{
+	return a->tv_sec == 0 && a->tv_nsec == 0;
 }
 
 /* Convert milli-Hertz to nanoseconds
