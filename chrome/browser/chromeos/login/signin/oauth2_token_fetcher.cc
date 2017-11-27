@@ -77,8 +77,7 @@ void OAuth2TokenFetcher::OnClientOAuthSuccess(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   VLOG(1) << "Got OAuth2 tokens!";
   retry_count_ = 0;
-  oauth_tokens_ = oauth_tokens;
-  delegate_->OnOAuth2TokensAvailable(oauth_tokens_);
+  delegate_->OnOAuth2TokensAvailable(oauth_tokens);
 }
 
 void OAuth2TokenFetcher::OnClientOAuthFailure(
