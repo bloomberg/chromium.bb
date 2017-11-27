@@ -11291,6 +11291,101 @@ class WebFrameSimTest : public ::testing::WithParamInterface<bool>,
 
 INSTANTIATE_TEST_CASE_P(All, WebFrameSimTest, ::testing::Bool());
 
+TEST_P(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
+  // TODO(bokan): This test fails with RLS turned on but it shouldn't. This is
+  // due to WebViewImpl::SelectionBound incorrectly returning the caret
+  // location in the document. The conversion methods (e.g. ContentToFrame) in
+  // LocalFrameView as well as LayoutObject::MapLocalToAncestor need to account
+  // for the changed scroller. crbug.com/788248
+  if (GetParam())
+    return;
+
+  WebView().Resize(WebSize(500, 300));
+  WebView().SetDefaultPageScaleLimits(1.f, 4);
+  WebView().EnableFakePageScaleAnimationForTesting(true);
+  WebView().GetPage()->GetSettings().SetTextAutosizingEnabled(false);
+  WebView().GetPage()->GetSettings().SetViewportEnabled(false);
+  WebView().GetSettings()->SetAutoZoomFocusedNodeToLegibleScale(true);
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        ::-webkit-scrollbar {
+          width: 0px;
+          height: 0px;
+        }
+        body {
+          margin: 0px;
+        }
+        input {
+          border: 0;
+          padding: 0;
+          position: absolute;
+          left: 200px;
+          top: 600px;
+          width: 100px;
+          height: 20px;
+        }
+        #content {
+          background: silver;
+          width: 500px;
+          height: 600px;
+        }
+      </style>
+      <div id="content">a</div>
+      <input type="text">
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  WebView().AdvanceFocus(false);
+
+  LocalFrame* frame = ToLocalFrame(WebView().GetPage()->MainFrame());
+  LocalFrameView* frame_view = frame->View();
+  VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
+  FloatRect inputRect(200, 600, 100, 20);
+
+  frame_view->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 0),
+                                                   kProgrammaticScroll);
+
+  ASSERT_EQ(FloatPoint(), visual_viewport.VisibleRectInDocument().Location());
+
+  WebView().ScrollFocusedEditableElementIntoView();
+
+  EXPECT_EQ(1, WebView().FakePageScaleAnimationPageScaleForTesting());
+
+  frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
+      ToFloatSize(WebView().FakePageScaleAnimationTargetPositionForTesting()),
+      kProgrammaticScroll);
+
+  EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
+
+  // Reset the testing getters.
+  WebView().EnableFakePageScaleAnimationForTesting(true);
+
+  // This input is already in view, this shouldn't cause a scroll.
+  WebView().ScrollFocusedEditableElementIntoView();
+
+  EXPECT_EQ(0, WebView().FakePageScaleAnimationPageScaleForTesting());
+  EXPECT_EQ(IntPoint(),
+            WebView().FakePageScaleAnimationTargetPositionForTesting());
+
+  // Now resize the visual viewport so that the input box is no longer in view
+  // (e.g. a keyboard is overlayed).
+  WebView().ResizeVisualViewport(IntSize(200, 100));
+  ASSERT_FALSE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
+
+  WebView().ScrollFocusedEditableElementIntoView();
+  frame_view->GetScrollableArea()->SetScrollOffset(
+      ToFloatSize(WebView().FakePageScaleAnimationTargetPositionForTesting()),
+      kProgrammaticScroll);
+
+  EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
+  EXPECT_EQ(1, WebView().FakePageScaleAnimationPageScaleForTesting());
+}
+
 TEST_P(WebFrameSimTest, ChangeBackgroundColor) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
 

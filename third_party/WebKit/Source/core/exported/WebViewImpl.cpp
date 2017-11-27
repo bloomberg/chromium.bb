@@ -900,6 +900,9 @@ bool WebViewImpl::StartPageScaleAnimation(const IntPoint& target_position,
 
 void WebViewImpl::EnableFakePageScaleAnimationForTesting(bool enable) {
   enable_fake_page_scale_animation_for_testing_ = enable;
+  fake_page_scale_animation_target_position_ = IntPoint();
+  fake_page_scale_animation_use_anchor_ = false;
+  fake_page_scale_animation_page_scale_factor_ = 0;
 }
 
 void WebViewImpl::SetShowFPSCounter(bool show) {
