@@ -263,8 +263,6 @@
 #include "public/platform/modules/insecure_input/insecure_input_service.mojom-blink.h"
 #include "public/platform/site_engagement.mojom-blink.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/metrics/public/interfaces/ukm_interface.mojom-shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
@@ -316,18 +314,12 @@ class DocumentOutliveTimeReporter : public BlinkGCObserver {
     int outlive_time_count = GetOutliveTimeCount();
     if (outlive_time_count == 5 || outlive_time_count == 10) {
       const char* kUMAString = "Document.OutliveTimeAfterShutdown.GCCount";
-
       if (outlive_time_count == 5)
         UMA_HISTOGRAM_ENUMERATION(kUMAString, kGCCount5, kGCCountMax);
       else if (outlive_time_count == 10)
         UMA_HISTOGRAM_ENUMERATION(kUMAString, kGCCount10, kGCCountMax);
       else
         NOTREACHED();
-    }
-
-    if (outlive_time_count == 5 || outlive_time_count == 10 ||
-        outlive_time_count == 20 || outlive_time_count == 50) {
-      document_->RecordUkmOutliveTimeAfterShutdown(outlive_time_count);
     }
   }
 
@@ -667,9 +659,7 @@ Document::Document(const DocumentInit& initializer,
       password_count_(0),
       logged_field_edit_(false),
       engagement_level_(mojom::blink::EngagementLevel::NONE),
-      secure_context_state_(SecureContextState::kUnknown),
-      ukm_source_id_(ukm::kInvalidSourceId),
-      needs_to_record_ukm_outlive_time_(false) {
+      secure_context_state_(SecureContextState::kUnknown) {
   if (frame_) {
     DCHECK(frame_->GetPage());
     ProvideContextFeaturesToDocumentFrom(*this, *frame_->GetPage());
@@ -2799,12 +2789,6 @@ void Document::Shutdown() {
   ExecutionContext::NotifyContextDestroyed();
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!View()->IsAttached());
-
-  needs_to_record_ukm_outlive_time_ = IsInMainFrame();
-  if (needs_to_record_ukm_outlive_time_) {
-    // Ensure |ukm_recorder_| and |ukm_source_id_|.
-    UkmRecorder();
-  }
 
   // This is required, as our LocalFrame might delete itself as soon as it
   // detaches us. However, this violates Node::detachLayoutTree() semantics, as
@@ -7289,18 +7273,6 @@ void Document::RecordDeferredLoadReason(WouldLoadReason reason) {
        i <= static_cast<int>(reason); ++i)
     RecordLoadReasonToHistogram(static_cast<WouldLoadReason>(i));
   would_load_reason_ = reason;
-}
-
-void Document::RecordUkmOutliveTimeAfterShutdown(int outlive_time_count) {
-  if (!needs_to_record_ukm_outlive_time_)
-    return;
-
-  DCHECK(ukm_recorder_);
-  DCHECK(ukm_source_id_ != ukm::kInvalidSourceId);
-
-  ukm::builders::Document_OutliveTimeAfterShutdown(ukm_source_id_)
-      .SetGCCount(outlive_time_count)
-      .Record(ukm_recorder_.get());
 }
 
 void Document::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
