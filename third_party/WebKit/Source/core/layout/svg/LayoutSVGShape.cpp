@@ -54,7 +54,9 @@ LayoutSVGShape::LayoutSVGShape(SVGGeometryElement* node)
       needs_shape_update_(true),
       // Default is true, so we grab a AffineTransform object once from
       // SVGGeometryElement.
-      needs_transform_update_(true) {}
+      needs_transform_update_(true),
+      // <line> elements have no joins and thus needn't care about miters.
+      affected_by_miter_(!IsSVGLineElement(node)) {}
 
 LayoutSVGShape::~LayoutSVGShape() {}
 
@@ -104,7 +106,7 @@ FloatRect LayoutSVGShape::ApproximateStrokeBoundingBox(
 
   const SVGComputedStyle& svg_style = StyleRef().SvgStyle();
   float delta = stroke_width / 2;
-  if (HasMiterJoinStyle(svg_style)) {
+  if (affected_by_miter_ && HasMiterJoinStyle(svg_style)) {
     const float miter = svg_style.StrokeMiterLimit();
     if (miter < M_SQRT2 && HasSquareCapStyle(svg_style))
       delta *= M_SQRT2;

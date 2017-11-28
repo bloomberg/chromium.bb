@@ -168,6 +168,7 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   bool needs_boundaries_update_ : 1;
   bool needs_shape_update_ : 1;
   bool needs_transform_update_ : 1;
+  bool affected_by_miter_ : 1;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGShape, IsSVGShape());
