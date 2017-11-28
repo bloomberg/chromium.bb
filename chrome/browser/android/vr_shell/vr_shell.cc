@@ -667,20 +667,26 @@ content::WebContents* VrShell::GetNonNativePageWebContents() const {
 
 void VrShell::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
   switch (mode) {
-    case vr::UiUnsupportedMode::kAndroidPermissionNeeded: {
-      JNIEnv* env = base::android::AttachCurrentThread();
-      Java_VrShellImpl_onUnhandledPermissionPrompt(env, j_vr_shell_);
-      break;
-    }
+    case vr::UiUnsupportedMode::kUnhandledCodePoint:
+      ExitVrDueToUnsupportedMode(mode);
+      return;
     case vr::UiUnsupportedMode::kUnhandledPageInfo: {
       JNIEnv* env = base::android::AttachCurrentThread();
       Java_VrShellImpl_onUnhandledPageInfo(env, j_vr_shell_);
-      break;
+      return;
     }
-    default:
-      ExitVrDueToUnsupportedMode(mode);
-      break;
+    case vr::UiUnsupportedMode::kAndroidPermissionNeeded: {
+      JNIEnv* env = base::android::AttachCurrentThread();
+      Java_VrShellImpl_onUnhandledPermissionPrompt(env, j_vr_shell_);
+      return;
+    }
+    case vr::UiUnsupportedMode::kCount:
+      NOTREACHED();  // Should never be used as a mode.
+      return;
   }
+
+  NOTREACHED();
+  ExitVrDueToUnsupportedMode(mode);
 }
 
 void VrShell::OnExitVrPromptResult(vr::UiUnsupportedMode reason,

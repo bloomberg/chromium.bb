@@ -43104,9 +43104,9 @@ Called by update_traffic_annotation_histograms.py.-->
 
 <enum name="VRUnsupportedMode">
   <int value="0" label="Unhandled code point in URL"/>
-  <int value="1" label="Could not elide URL"/>
+  <int value="1" label="Could not elide URL (obsolete)"/>
   <int value="2" label="Unhandled PageInfo"/>
-  <int value="3" label="URL contained strong RTL chars"/>
+  <int value="3" label="URL contained strong RTL chars (obsolete)"/>
   <int value="4" label="Chrome needs audio permission for voice input"/>
 </enum>
 
