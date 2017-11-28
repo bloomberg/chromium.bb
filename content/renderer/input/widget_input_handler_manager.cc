@@ -290,8 +290,11 @@ void WidgetInputHandlerManager::BindAssociatedChannel(
     mojom::WidgetInputHandlerAssociatedRequest request) {
   if (!request.is_pending())
     return;
+  // Don't pass the |input_event_queue_| on if we don't have a
+  // |compositor_task_runner_| as events might get out of order.
   WidgetInputHandlerImpl* handler = new WidgetInputHandlerImpl(
-      this, main_thread_task_runner_, input_event_queue_, render_widget_);
+      this, main_thread_task_runner_,
+      compositor_task_runner_ ? input_event_queue_ : nullptr, render_widget_);
   handler->SetAssociatedBinding(std::move(request));
 }
 
@@ -299,8 +302,11 @@ void WidgetInputHandlerManager::BindChannel(
     mojom::WidgetInputHandlerRequest request) {
   if (!request.is_pending())
     return;
+  // Don't pass the |input_event_queue_| on if we don't have a
+  // |compositor_task_runner_| as events might get out of order.
   WidgetInputHandlerImpl* handler = new WidgetInputHandlerImpl(
-      this, main_thread_task_runner_, input_event_queue_, render_widget_);
+      this, main_thread_task_runner_,
+      compositor_task_runner_ ? input_event_queue_ : nullptr, render_widget_);
   handler->SetBinding(std::move(request));
 }
 
