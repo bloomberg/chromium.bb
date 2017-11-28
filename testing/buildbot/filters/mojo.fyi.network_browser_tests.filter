@@ -902,8 +902,3 @@
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.Prefetch301LoadFlags/1
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchLoadFlag/0
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchLoadFlag/1
-
-# Started failing after r519463
--SBNavigationObserverBrowserTest.DownloadViaHTML5FileApiWithoutUserGesture
--SBNavigationObserverBrowserTest.DownloadViaHTML5FileApiWithUserGesture
--DownloadTest.CloseNewTab4
