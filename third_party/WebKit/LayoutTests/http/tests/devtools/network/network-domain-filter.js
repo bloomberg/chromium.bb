@@ -1,9 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/network-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests doamin filter.\n`);
+  await TestRunner.loadModule('network_test_runner');
+  await TestRunner.showPanel('network');
+
   function checkSubdomains(domain) {
     TestRunner.addResult('');
     TestRunner.addResult('Domain: ' + domain);
@@ -26,11 +29,4 @@ function test() {
   checkFilter('*.bar.*', ['foo.bar.com', 'baz.bar.org', 'bar.foo.net']);
 
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests doamin filter.</p>
-</body>
-</html>
+})();

@@ -1,9 +1,17 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/network-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(
+      `Tests empty xhr content is correctly loaded in inspector. https://bugs.webkit.org/show_bug.cgi?id=79026`);
+  await TestRunner.loadModule('network_test_runner');
+  await TestRunner.showPanel('network');
+  await TestRunner.loadHTML(`
+      <p> Tests empty xhr content is correctly loaded in inspector.</p>
+      <a href="https://bugs.webkit.org/show_bug.cgi?id=79026">Bug 79026</a>
+    `);
+
   function dumpRequest(request, callback) {
     if (!request)
       return callback();
@@ -39,12 +47,4 @@ function test() {
   function step4() {
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p> Tests empty xhr content is correctly loaded in inspector.</p>
-<a href="https://bugs.webkit.org/show_bug.cgi?id=79026">Bug 79026</a>
-</body>
-</html>
-
+})();

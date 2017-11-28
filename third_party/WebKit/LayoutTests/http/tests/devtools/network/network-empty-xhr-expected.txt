@@ -1,9 +1,4 @@
-CONSOLE WARNING: line 31: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
-CONSOLE MESSAGE: line 5: XHR loaded: 1
-CONSOLE MESSAGE: line 5: XHR loaded: 2
-Tests empty xhr content is correctly loaded in inspector.
-
-Bug 79026
+Tests empty xhr content is correctly loaded in inspector. https://bugs.webkit.org/show_bug.cgi?id=79026
 http://127.0.0.1:8000/devtools/network/resources/empty.html?sync
 resource.content: 
 http://127.0.0.1:8000/devtools/network/resources/empty.html?async
