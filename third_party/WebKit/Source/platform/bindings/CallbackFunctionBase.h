@@ -9,6 +9,7 @@
 #include "platform/bindings/TraceWrapperBase.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/heap/Handle.h"
+#include "platform/heap/Persistent.h"
 
 namespace blink {
 
@@ -25,6 +26,10 @@ class PLATFORM_EXPORT CallbackFunctionBase
     : public GarbageCollectedFinalized<CallbackFunctionBase>,
       public TraceWrapperBase {
  public:
+  // Custom version of blink::Persistent
+  template <typename T>
+  class Persistent;
+
   virtual ~CallbackFunctionBase() = default;
 
   virtual void Trace(blink::Visitor* visitor) {}
@@ -55,6 +60,41 @@ class PLATFORM_EXPORT CallbackFunctionBase
   // https://heycam.github.io/webidl/#dfn-callback-context
   scoped_refptr<ScriptState> incumbent_script_state_;
 };
+
+template <typename T>
+class CallbackFunctionBase::Persistent
+    : public PersistentBase<T,
+                            kNonWeakPersistentConfiguration,
+                            kSingleThreadPersistentConfiguration> {
+  using Parent = PersistentBase<T,
+                                kNonWeakPersistentConfiguration,
+                                kSingleThreadPersistentConfiguration>;
+
+ public:
+  Persistent(T* raw) : Parent(raw) {
+    if (raw)
+      function_.Reset(raw->GetIsolate(), raw->callback_function_.Get());
+  }
+  Persistent(const Persistent& other)
+      : Parent(other), function_(other.function_) {}
+  ~Persistent() = default;
+
+  Persistent& operator=(const Persistent& other) = default;
+
+  void Clear() {
+    Parent::Clear();
+    function_.Reset();
+  }
+
+ private:
+  v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>>
+      function_;
+};
+
+template <typename T>
+typename T::template Persistent<T> WrapPersistentCallbackFunction(T* value) {
+  return typename T::template Persistent<T>(value);
+}
 
 }  // namespace blink
 
