@@ -363,6 +363,52 @@ void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi) {
     cpi->find_fractional_mv_step = av1_return_min_sub_pixel_mv;
 }
 
+static void set_dev_sf(AV1_COMP *cpi, SPEED_FEATURES *sf, int speed) {
+  AV1_COMMON *const cm = &cpi->common;
+
+  if (speed & TXFM_CODING_SF) {
+    sf->tx_size_search_init_depth_rect = 1;
+    sf->tx_size_search_init_depth_sqr = 1;
+    sf->tx_size_search_method = USE_FAST_RD;
+    sf->tx_type_search.fast_intra_tx_type_search = 1;
+    sf->tx_type_search.fast_inter_tx_type_search = 1;
+  }
+
+  if (speed & INTER_PRED_SF) {
+    sf->selective_ref_frame = 2;
+    sf->adaptive_motion_search = 1;
+    sf->mv.auto_mv_step_size = 1;
+    sf->adaptive_rd_thresh = 1;
+    sf->mv.subpel_iters_per_step = 1;
+    sf->adaptive_pred_interp_filter = 1;
+  }
+
+  if (speed & INTRA_PRED_SF) {
+    sf->max_intra_bsize = BLOCK_32X32;
+  }
+
+  if (speed & PARTITION_SF) {
+    if ((cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION) ||
+        av1_internal_image_edge(cpi)) {
+      sf->use_square_partition_only = !frame_is_boosted(cpi);
+    } else {
+      sf->use_square_partition_only = !frame_is_intra_only(cm);
+    }
+    sf->less_rectangular_check = 1;
+#if CONFIG_EXT_PARTITION_TYPES
+    sf->prune_ext_partition_types_search = 1;
+#endif  // CONFIG_EXT_PARTITION_TYPES
+  }
+
+  if (speed & LOOP_FILTER_SF) {
+    sf->fast_cdef_search = 1;
+  }
+
+  if (speed & RD_SKIP_SF) {
+    sf->use_rd_breakout = 1;
+  }
+}
+
 void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   SPEED_FEATURES *const sf = &cpi->sf;
@@ -457,6 +503,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->use_transform_domain_distortion = 0;
   sf->gm_search_type = GM_FULL_SEARCH;
   sf->use_fast_interpolation_filter_search = 0;
+
+  set_dev_sf(cpi, sf, oxcf->dev_sf);
 
   if (oxcf->mode == GOOD
 #if CONFIG_XIPHRC

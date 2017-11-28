@@ -412,6 +412,8 @@ static const arg_def_t max_intra_rate_pct =
 #if CONFIG_AV1_ENCODER
 static const arg_def_t cpu_used_av1 =
     ARG_DEF(NULL, "cpu-used", 1, "CPU Used (0..8)");
+static const arg_def_t dev_sf_av1 =
+    ARG_DEF(NULL, "dev-sf", 1, "Dev Speed (0..255)");
 #if CONFIG_EXT_TILE
 static const arg_def_t single_tile_decoding =
     ARG_DEF(NULL, "single-tile-decoding", 1,
@@ -559,6 +561,7 @@ static const arg_def_t superblock_size = ARG_DEF_ENUM(
 #endif  // CONFIG_EXT_PARTITION
 
 static const arg_def_t *av1_args[] = { &cpu_used_av1,
+                                       &dev_sf_av1,
                                        &auto_altref,
                                        &sharpness,
                                        &static_thresh,
@@ -617,6 +620,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
 #endif  // CONFIG_HIGHBITDEPTH
                                        NULL };
 static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
+                                        AOME_SET_DEVSF,
                                         AOME_SET_ENABLEAUTOALTREF,
                                         AOME_SET_SHARPNESS,
                                         AOME_SET_STATIC_THRESHOLD,

@@ -31,6 +31,7 @@
 
 struct av1_extracfg {
   int cpu_used;  // available cpu percentage in 1/16
+  int dev_sf;
   unsigned int enable_auto_alt_ref;
   unsigned int enable_auto_bwd_ref;
   unsigned int noise_sensitivity;
@@ -95,6 +96,7 @@ struct av1_extracfg {
 
 static struct av1_extracfg default_extra_cfg = {
   0,  // cpu_used
+  0,  // dev_sf
   1,  // enable_auto_alt_ref
   0,  // enable_auto_bwd_ref
   0,  // noise_sensitivity
@@ -279,6 +281,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK_HI(extra_cfg, enable_auto_alt_ref, 2);
   RANGE_CHECK_HI(extra_cfg, enable_auto_bwd_ref, 2);
   RANGE_CHECK(extra_cfg, cpu_used, 0, 8);
+  RANGE_CHECK(extra_cfg, dev_sf, 0, UINT8_MAX);
   RANGE_CHECK_HI(extra_cfg, noise_sensitivity, 6);
   RANGE_CHECK(extra_cfg, superblock_size, AOM_SUPERBLOCK_SIZE_64X64,
               AOM_SUPERBLOCK_SIZE_DYNAMIC);
@@ -572,6 +575,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->key_freq = cfg->kf_max_dist;
 
   oxcf->speed = extra_cfg->cpu_used;
+  oxcf->dev_sf = extra_cfg->dev_sf;
   oxcf->enable_auto_arf = extra_cfg->enable_auto_alt_ref;
   oxcf->enable_auto_brf = extra_cfg->enable_auto_bwd_ref;
   oxcf->noise_sensitivity = extra_cfg->noise_sensitivity;
@@ -747,6 +751,12 @@ static aom_codec_err_t ctrl_set_cpuused(aom_codec_alg_priv_t *ctx,
                                         va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.cpu_used = CAST(AOME_SET_CPUUSED, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_devsf(aom_codec_alg_priv_t *ctx, va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.dev_sf = CAST(AOME_SET_DEVSF, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1588,6 +1598,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AOME_SET_ACTIVEMAP, ctrl_set_active_map },
   { AOME_SET_SCALEMODE, ctrl_set_scale_mode },
   { AOME_SET_CPUUSED, ctrl_set_cpuused },
+  { AOME_SET_DEVSF, ctrl_set_devsf },
   { AOME_SET_ENABLEAUTOALTREF, ctrl_set_enable_auto_alt_ref },
   { AOME_SET_ENABLEAUTOBWDREF, ctrl_set_enable_auto_bwd_ref },
   { AOME_SET_SHARPNESS, ctrl_set_sharpness },

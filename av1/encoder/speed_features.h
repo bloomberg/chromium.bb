@@ -95,6 +95,17 @@ enum {
 };
 
 typedef enum {
+  TXFM_CODING_SF = 1,
+  INTER_PRED_SF = 2,
+  INTRA_PRED_SF = 4,
+  PARTITION_SF = 8,
+  LOOP_FILTER_SF = 16,
+  RD_SKIP_SF = 32,
+  RESERVE_2_SF = 64,
+  RESERVE_3_SF = 128,
+} DEV_SPEED_FEATURES;
+
+typedef enum {
   DIAMOND = 0,
   NSTEP = 1,
   HEX = 2,

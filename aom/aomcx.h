@@ -153,6 +153,10 @@ enum aome_enc_control_id {
    */
   AOME_SET_CPUUSED = 13,
 
+  /*!\brief Speed features for codec development
+   */
+  AOME_SET_DEVSF,
+
   /*!\brief Codec control function to enable automatic set and use alf frames.
    */
   AOME_SET_ENABLEAUTOALTREF,
@@ -692,6 +696,8 @@ AOM_CTRL_USE_TYPE(AOME_SET_SCALEMODE, aom_scaling_mode_t *)
 
 AOM_CTRL_USE_TYPE(AOME_SET_CPUUSED, int)
 #define AOM_CTRL_AOME_SET_CPUUSED
+AOM_CTRL_USE_TYPE(AOME_SET_DEVSF, int)
+#define AOM_CTRL_AOME_SET_DEVSF
 AOM_CTRL_USE_TYPE(AOME_SET_ENABLEAUTOALTREF, unsigned int)
 #define AOM_CTRL_AOME_SET_ENABLEAUTOALTREF
 
