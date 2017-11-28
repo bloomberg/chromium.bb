@@ -65,8 +65,9 @@ void SystemLogsFetcher::Fetch(const SysLogsFetcherCallback& callback) {
   }
 }
 
-void SystemLogsFetcher::OnFetched(const std::string& source_name,
-                                  SystemLogsResponse* response) {
+void SystemLogsFetcher::OnFetched(
+    const std::string& source_name,
+    std::unique_ptr<SystemLogsResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   VLOG(1) << "Received SystemLogSource: " << source_name;
@@ -77,11 +78,12 @@ void SystemLogsFetcher::OnFetched(const std::string& source_name,
         element.second = anonymizer_->Anonymize(element.second);
     }
   }
-  AddResponse(source_name, response);
+  AddResponse(source_name, std::move(response));
 }
 
-void SystemLogsFetcher::AddResponse(const std::string& source_name,
-                                    SystemLogsResponse* response) {
+void SystemLogsFetcher::AddResponse(
+    const std::string& source_name,
+    std::unique_ptr<SystemLogsResponse> response) {
   for (const auto& it : *response) {
     // An element with a duplicate key would not be successfully inserted.
     bool ok = response_->emplace(it).second;

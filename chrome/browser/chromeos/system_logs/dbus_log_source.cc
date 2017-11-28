@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/system_logs/dbus_log_source.h"
 
+#include <memory>
+
 #include "content/public/browser/browser_thread.h"
 #include "dbus/dbus_statistics.h"
 
@@ -22,14 +24,14 @@ void DBusLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  SystemLogsResponse response;
-  response[kDBusLogEntryShort] = dbus::statistics::GetAsString(
-      dbus::statistics::SHOW_INTERFACE,
-      dbus::statistics::FORMAT_ALL);
-  response[kDBusLogEntryLong] = dbus::statistics::GetAsString(
-      dbus::statistics::SHOW_METHOD,
-      dbus::statistics::FORMAT_TOTALS);
-  callback.Run(&response);
+  auto response = std::make_unique<SystemLogsResponse>();
+  response->emplace(kDBusLogEntryShort, dbus::statistics::GetAsString(
+                                            dbus::statistics::SHOW_INTERFACE,
+                                            dbus::statistics::FORMAT_ALL));
+  response->emplace(kDBusLogEntryLong, dbus::statistics::GetAsString(
+                                           dbus::statistics::SHOW_METHOD,
+                                           dbus::statistics::FORMAT_TOTALS));
+  callback.Run(std::move(response));
 }
 
 }  // namespace system_logs

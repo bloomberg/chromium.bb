@@ -102,10 +102,10 @@ void SingleLogFileLogSource::Fetch(const SysLogsSourceCallback& callback) {
   base::PostTaskWithTraitsAndReply(
       FROM_HERE,
       base::TaskTraits(base::MayBlock(), base::TaskPriority::BACKGROUND),
-      base::Bind(&SingleLogFileLogSource::ReadFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 kMaxNumAllowedLogRotationsDuringFileRead, response_ptr),
-      base::Bind(callback, base::Owned(response.release())));
+      base::BindOnce(&SingleLogFileLogSource::ReadFile,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     kMaxNumAllowedLogRotationsDuringFileRead, response_ptr),
+      base::BindOnce(callback, std::move(response)));
 }
 
 base::FilePath SingleLogFileLogSource::GetLogFilePath() const {

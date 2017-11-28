@@ -43,8 +43,6 @@ using SysLogsFetcherCallback =
 class SystemLogsFetcher {
  public:
   // If scrub_data is true, logs will be anonymized.
-  // TODO(battre): This class needs to be expanded to provide better scrubbing
-  // of system logs.
   explicit SystemLogsFetcher(bool scrub_data);
   ~SystemLogsFetcher();
 
@@ -58,13 +56,14 @@ class SystemLogsFetcher {
  private:
   // Callback passed to all the data sources. May call Scrub(), then calls
   // AddResponse().
-  void OnFetched(const std::string& source_name, SystemLogsResponse* response);
+  void OnFetched(const std::string& source_name,
+                 std::unique_ptr<SystemLogsResponse> response);
 
   // Merges the |response| it receives into response_. When all the data sources
   // have responded, it deletes their objects and returns the response to the
   // callback_. After this it deletes this instance of the object.
   void AddResponse(const std::string& source_name,
-                   SystemLogsResponse* response);
+                   std::unique_ptr<SystemLogsResponse> response);
 
   std::vector<std::unique_ptr<SystemLogsSource>> data_sources_;
   SysLogsFetcherCallback callback_;

@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/feedback_private/feedback_private_api_unittest_base_chromeos.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -51,14 +53,14 @@ class TestSingleLogSource : public SystemLogsSource {
     DCHECK_GT(result.size(), 0U);
     ++call_count_;
 
-    SystemLogsResponse* result_map = new SystemLogsResponse;
+    auto result_map = std::make_unique<SystemLogsResponse>();
     result_map->emplace("", result);
 
     // Do not directly pass the result to the callback, because that's not how
     // log sources actually work. Instead, simulate the asynchronous operation
     // of a SystemLogsSource by invoking the callback separately.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, base::Owned(result_map)));
+        FROM_HERE, base::BindOnce(callback, std::move(result_map)));
   }
 
  private:

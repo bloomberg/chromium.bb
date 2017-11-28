@@ -78,11 +78,11 @@ void CrashIdsSource::OnUploadListAvailable() {
 
 void CrashIdsSource::RespondWithCrashIds(
     const SysLogsSourceCallback& callback) const {
-  std::unique_ptr<SystemLogsResponse> response(new SystemLogsResponse());
+  auto response = std::make_unique<SystemLogsResponse>();
   (*response)[feedback::FeedbackReport::kCrashReportIdsKey] = crash_ids_list_;
 
   // We must respond anyways.
-  callback.Run(response.get());
+  callback.Run(std::move(response));
 }
 
 }  // namespace system_logs

@@ -115,7 +115,7 @@ void LogSourceAccessManager::OnFetchComplete(
     ResourceId resource_id,
     bool delete_resource,
     const ReadLogSourceCallback& callback,
-    SystemLogsResponse* response) {
+    std::unique_ptr<SystemLogsResponse> response) {
   ReadLogSourceResult result;
   // Always return invalid resource ID if there is a cleanup.
   result.reader_id = delete_resource ? kInvalidResourceId : resource_id;
