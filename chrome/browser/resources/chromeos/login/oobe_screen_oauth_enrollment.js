@@ -272,6 +272,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         }]);
       }
 
+      $('oauth-enroll-auth-view').partition = data.webviewPartitionName;
+
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ENROLLMENT;
       $('progress-dots').hidden = true;
       this.classList.remove('saml');

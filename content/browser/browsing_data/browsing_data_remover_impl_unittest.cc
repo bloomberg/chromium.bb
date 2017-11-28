@@ -136,12 +136,12 @@ class StoragePartitionRemovalTestStoragePartition
                           uint32_t quota_storage_remove_mask,
                           const GURL& storage_origin,
                           net::URLRequestContextGetter* rq_context,
-                          const base::Closure& callback) override {
+                          base::OnceClosure callback) override {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(
             &StoragePartitionRemovalTestStoragePartition::AsyncRunCallback,
-            base::Unretained(this), callback));
+            base::Unretained(this), std::move(callback)));
   }
 
   void ClearData(uint32_t remove_mask,
@@ -150,7 +150,7 @@ class StoragePartitionRemovalTestStoragePartition
                  const OriginMatcherFunction& origin_matcher,
                  const base::Time begin,
                  const base::Time end,
-                 const base::Closure& callback) override {
+                 base::OnceClosure callback) override {
     // Store stuff to verify parameters' correctness later.
     storage_partition_removal_data_.remove_mask = remove_mask;
     storage_partition_removal_data_.quota_storage_remove_mask =
@@ -163,7 +163,7 @@ class StoragePartitionRemovalTestStoragePartition
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(
             &StoragePartitionRemovalTestStoragePartition::AsyncRunCallback,
-            base::Unretained(this), callback));
+            base::Unretained(this), std::move(callback)));
   }
 
   void ClearData(uint32_t remove_mask,
@@ -172,7 +172,7 @@ class StoragePartitionRemovalTestStoragePartition
                  const CookieMatcherFunction& cookie_matcher,
                  const base::Time begin,
                  const base::Time end,
-                 const base::Closure& callback) override {
+                 base::OnceClosure callback) override {
     // Store stuff to verify parameters' correctness later.
     storage_partition_removal_data_.remove_mask = remove_mask;
     storage_partition_removal_data_.quota_storage_remove_mask =
@@ -186,7 +186,7 @@ class StoragePartitionRemovalTestStoragePartition
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(
             &StoragePartitionRemovalTestStoragePartition::AsyncRunCallback,
-            base::Unretained(this), callback));
+            base::Unretained(this), std::move(callback)));
   }
 
   StoragePartitionRemovalData GetStoragePartitionRemovalData() {
@@ -194,7 +194,9 @@ class StoragePartitionRemovalTestStoragePartition
   }
 
  private:
-  void AsyncRunCallback(const base::Closure& callback) { callback.Run(); }
+  void AsyncRunCallback(base::OnceClosure callback) {
+    std::move(callback).Run();
+  }
 
   StoragePartitionRemovalData storage_partition_removal_data_;
 

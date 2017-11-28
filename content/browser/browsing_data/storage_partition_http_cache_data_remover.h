@@ -47,7 +47,7 @@ class StoragePartitionHttpCacheDataRemover {
       base::Time delete_end);
 
   // Calls |done_callback| upon completion and also destroys itself.
-  void Remove(const base::Closure& done_callback);
+  void Remove(base::OnceClosure done_callback);
 
  private:
   enum CacheState {
@@ -85,7 +85,7 @@ class StoragePartitionHttpCacheDataRemover {
   const scoped_refptr<net::URLRequestContextGetter> main_context_getter_;
   const scoped_refptr<net::URLRequestContextGetter> media_context_getter_;
 
-  base::Closure done_callback_;
+  base::OnceClosure done_callback_;
 
   // IO.
   int next_cache_state_;

@@ -285,6 +285,18 @@ bool WebViewGuest::GetGuestPartitionConfigForSite(
 }
 
 // static
+GURL WebViewGuest::GetSiteForGuestPartitionConfig(
+    const std::string& partition_domain,
+    const std::string& partition_name,
+    bool in_memory) {
+  std::string url_encoded_partition =
+      net::EscapeQueryParamValue(partition_name, false);
+  return GURL(base::StringPrintf(
+      "%s://%s/%s?%s", content::kGuestScheme, partition_domain.c_str(),
+      in_memory ? "" : "persist", url_encoded_partition.c_str()));
+}
+
+// static
 std::string WebViewGuest::GetPartitionID(
     const RenderProcessHost* render_process_host) {
   WebViewRendererState* renderer_state = WebViewRendererState::GetInstance();
@@ -338,14 +350,10 @@ void WebViewGuest::CreateWebContents(
     callback.Run(nullptr);
     return;
   }
-  std::string url_encoded_partition = net::EscapeQueryParamValue(
-      storage_partition_id, false);
   std::string partition_domain = GetOwnerSiteURL().host();
-  GURL guest_site(base::StringPrintf("%s://%s/%s?%s",
-                                     content::kGuestScheme,
-                                     partition_domain.c_str(),
-                                     persist_storage ? "persist" : "",
-                                     url_encoded_partition.c_str()));
+  GURL guest_site(
+      GetSiteForGuestPartitionConfig(partition_domain, storage_partition_id,
+                                     !persist_storage /* in_memory */));
 
   // If we already have a webview tag in the same app using the same storage
   // partition, we should use the same SiteInstance so the existing tag and
