@@ -20,13 +20,15 @@
 
   var gRemoteStreams = {};
 
+  setAllEventsOccuredHandler(reportTestSuccess);
+
   // Test that we can setup a call with an audio and video track (must request
   // video in this call since we expect video to be playing).
   function call(constraints) {
     createConnections(null);
     navigator.mediaDevices.getUserMedia(constraints)
         .then(addStreamToBothConnectionsAndNegotiate)
-        .catch(failTest);
+        .catch(printGetUserMediaError);
 
     Promise.all([
       detectVideoPlaying('remote-view-1'),
@@ -38,7 +40,7 @@
     createConnections(null);
     navigator.webkitGetUserMedia({video: true, audio: true},
         addStreamToBothConnectionsAndNegotiate,
-        failTest);
+        printGetUserMediaError);
 
     Promise.all([
       detectVideoPlaying('remote-view-1'),
@@ -67,7 +69,7 @@
     createConnections(null);
     navigator.mediaDevices.getUserMedia(constraints)
         .then(addStreamToBothConnectionsAndNegotiate)
-        .catch(failTest);
+        .catch(printGetUserMediaError);
 
     detectVideoPlaying('remote-view-1').then(() => {
       assertEquals(gLocalStream.getVideoTracks().length, 1);
@@ -75,8 +77,7 @@
 
       detectBlackVideo('remote-view-1')
           .then(reportTestSuccess);
-    })
-    .catch(failTest);
+    });
   }
 
   // Test that we can setup call with an audio and video track and check that
@@ -87,7 +88,7 @@
     createConnections(null);
     navigator.mediaDevices.getUserMedia(constraints)
         .then(addStreamToBothConnectionsAndNegotiate)
-        .catch(failTest);
+        .catch(printGetUserMediaError);
 
     function hasExpectedResolution(elementName) {
       // Returns a promise that video is playing and has the expected
@@ -114,12 +115,12 @@
     negotiate();
     waitForConnectionToStabilize(gFirstConnection).then(() => {
       return navigator.mediaDevices.getUserMedia(constraints)
-          .then(addStreamToTheFirstConnectionAndNegotiate);
+          .then(addStreamToTheFirstConnectionAndNegotiate)
+          .catch(printGetUserMediaError);
     }).then(() => {
       // Only the first connection is sending here.
       return detectVideoPlaying('remote-view-2');
-    }).then(reportTestSuccess)
-    .catch(failTest);
+    }).then(reportTestSuccess);
   }
 
   // The second set of constraints should request video (e.g. video:true) since
@@ -128,20 +129,20 @@
     createConnections(null);
     navigator.mediaDevices.getUserMedia(constraints)
         .then(addStreamToBothConnectionsAndNegotiate)
-        .catch(failTest);
+        .catch(printGetUserMediaError);
 
     waitForConnectionToStabilize(gFirstConnection).then(() => {
       gFirstConnection.removeStream(gLocalStream);
       gSecondConnection.removeStream(gLocalStream);
     }).then(() => {
       return navigator.mediaDevices.getUserMedia(renegotiationConstraints)
-          .then(addStreamToBothConnectionsAndNegotiate);
+          .then(addStreamToBothConnectionsAndNegotiate)
+          .catch(printGetUserMediaError);
     }).then(() => {
       return Promise.all([
         detectVideoPlaying('remote-view-1'),
         detectVideoPlaying('remote-view-1')]);
-    }).then(reportTestSuccess)
-    .catch(failTest);
+    }).then(reportTestSuccess);
   }
 
   // First makes a call between pc1 and pc2 where a stream is sent from pc1 to
@@ -153,7 +154,7 @@
 
     navigator.mediaDevices.getUserMedia(constraints)
         .then(addStreamToTheFirstConnectionAndNegotiate)
-        .catch(failTest);
+        .catch(printGetUserMediaError);
 
     console.log('Initial setup done. Waiting.');
 
@@ -169,8 +170,7 @@
       // Wait for video to be forwarded back to connection 1.
       detectVideoPlaying('remote-view-1')
           .then(reportTestSuccess);
-    })
-    .catch(failTest);
+    });
   }
 
   // First makes a call between pc1 and pc2, and then construct a new media
@@ -180,7 +180,7 @@
     createConnections(null);
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
         .then(addStreamToBothConnectionsAndNegotiate)
-        .catch(failTest);
+        .catch(printGetUserMediaError);
 
     detectVideoPlaying('remote-view-2').then(() => {
       // Construct a new media stream with remote tracks.
@@ -195,8 +195,7 @@
       videoElement.src = URL.createObjectURL(newStream);
       detectVideoPlaying('remote-view-2')
           .then(reportTestSuccess);
-    })
-    .catch(failTest);
+    });
   }
 
   // Test that we can setup call with an audio and video track and
@@ -208,7 +207,7 @@
     gTestWithoutMsid = true;
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
         .then(addStreamToBothConnectionsAndNegotiate)
-        .catch(failTest);
+        .catch(printGetUserMediaError);
 
     Promise.all([
       detectVideoPlaying('remote-view-1'),
@@ -230,7 +229,7 @@
     });
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
         .then(addStreamToBothConnectionsAndNegotiate)
-        .catch(failTest);
+        .catch(printGetUserMediaError);
   }
 
   // Test that we can't setup a call if one peer does not support encryption
@@ -246,7 +245,7 @@
     });
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
         .then(addStreamToBothConnectionsAndNegotiate)
-        .catch(failTest);
+        .catch(printGetUserMediaError);
   }
 
   // Test that we can negotiate a call with an SDP offer that includes a
@@ -256,7 +255,7 @@
     setOfferSdpTransform(addBandwithControl);
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
         .then(addStreamToBothConnectionsAndNegotiate)
-        .catch(failTest);
+        .catch(printGetUserMediaError);
 
     Promise.all([
       detectVideoPlaying('remote-view-1'),
@@ -269,7 +268,7 @@
     createConnections(null);
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
       .then(addStreamToBothConnectionsAndNegotiate)
-      .catch(failTest);
+      .catch(printGetUserMediaError);
 
     // Do the DTMF test after we have received video.
     detectVideoPlaying('remote-view-2').then(() => {
@@ -285,8 +284,7 @@
         }
       };
       window.sender.insertDTMF(tones);
-    })
-    .catch(failTest);
+    });
   }
 
   function testCreateOfferOptions() {
@@ -320,7 +318,7 @@
     createConnections(null);
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
         .then(addStreamToBothConnectionsAndNegotiate)
-        .catch(failTest);
+        .catch(printGetUserMediaError);
 
     detectVideoPlaying('remote-view-2').then(() => {
       // Disable the receiver's remote media stream. Video should stop.
@@ -334,8 +332,7 @@
         detectVideoPlaying('remote-view-2')
             .then(reportTestSuccess);
       })
-    })
-    .catch(failTest);
+    });
   }
 
   // Test call with a new Video MediaStream that has been created based on a
@@ -344,7 +341,7 @@
     createConnections(null);
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
         .then(createNewVideoStreamAndAddToBothConnections)
-        .catch(failTest);
+        .catch(printGetUserMediaError);
 
     Promise.all([
       detectVideoPlaying('remote-view-1'),
@@ -361,7 +358,7 @@
     createConnections(null);
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
         .then(createNewVideoStreamAndAddToBothConnections)
-        .catch(failTest);
+        .then(printGetUserMediaError);
 
     Promise.all([
       detectVideoPlaying('remote-view-1'),
@@ -419,8 +416,7 @@
       gSecondConnection.addStream(localStream);
 
       negotiate();
-    })
-    .catch(failTest);
+    });
   }
 
   // Loads this page inside itself using an iframe, and ensures we can make a
@@ -441,6 +437,11 @@
 
     function onIframeLoaded() {
       var iframe = window.document.querySelector('iframe');
+
+      // Propagate test success out of the iframe.
+      iframe.contentWindow.setAllEventsOccuredHandler(
+          window.parent.reportTestSuccess);
+
       func(iframe);
     }
   }
@@ -465,6 +466,7 @@
     }
 
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
+        .catch(printGetUserMediaError)
         .then((localStream) => {
           displayAndRemember(localStream);
 
@@ -495,8 +497,7 @@
           verifyHasOneAudioAndVideoTrack(
               gSecondConnection.getRemoteStreams()[1]);
           })
-        .then(reportTestSuccess)
-        .catch(failTest);
+        .then(reportTestSuccess);
   }
 
   function createConnections(constraints) {
@@ -669,7 +670,7 @@
     createConnections(null);
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
       .then(addStreamToBothConnectionsAndNegotiate)
-      .catch(failTest);
+      .catch(printGetUserMediaError);
 
     detectVideoPlaying('remote-view-1').then(() => {
       var track = gFirstConnection.getRemoteStreams()[0].getVideoTracks()[0];
@@ -692,7 +693,7 @@
     createConnections(null);
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
       .then(addStreamToBothConnectionsAndNegotiate)
-      .catch(failTest);
+      .catch(printGetUserMediaError);
 
     detectVideoPlaying('remote-view-1').then(() => {
       var settings1 = gFirstConnection.getRemoteStreams()[0].getVideoTracks()[0]

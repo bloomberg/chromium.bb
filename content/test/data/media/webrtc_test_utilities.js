@@ -9,7 +9,22 @@ const VIDEO_TAG_HEIGHT = 240;
 // Fake video capture background green is of value 135.
 const COLOR_BACKGROUND_GREEN = 135;
 
+// Number of test events to occur before the test pass. When the test pass,
+// the function gAllEventsOccured is called.
+var gNumberOfExpectedEvents = 0;
+
+// Number of events that currently have occurred.
+var gNumberOfEvents = 0;
+
+var gAllEventsOccured = function () {};
+
 var gPendingTimeout;
+
+// Use this function to set a function that will be called once all expected
+// events has occurred.
+function setAllEventsOccuredHandler(handler) {
+  gAllEventsOccured = handler;
+}
 
 // Tells the C++ code we succeeded, which will generally exit the test.
 function reportTestSuccess() {
@@ -24,11 +39,7 @@ function sendValueToTest(value) {
 
 // Immediately fails the test on the C++ side.
 function failTest(reason) {
-  if (reason instanceof Error) {
-    var error = reason;
-  } else {
-    var error = new Error(reason);
-  }
+  var error = new Error(reason);
   window.domAutomationController.send(error.stack);
 }
 
@@ -44,6 +55,16 @@ function failTestAfterTimeout(reason, timeout_ms) {
 function cancelTestTimeout() {
   clearTimeout(gPendingTimeout);
   gPendingTimeout = null;
+}
+
+// Called if getUserMedia fails.
+function printGetUserMediaError(error) {
+  var message = 'getUserMedia request unexpectedly failed:';
+  if (error.constraintName)
+    message += ' could not satisfy constraint ' + error.constraintName;
+  else
+    message += ' devices not working/user denied access.';
+  failTest(message);
 }
 
 function detectVideoPlaying(videoElementName) {
@@ -111,45 +132,44 @@ function detectVideo(videoElementName, predicate) {
   });
 }
 
-// Calculates the current frame rate and compares to |expectedFrameRate|
-// The promise is resolved with value |true| if the calculated frame rate
-// is +-1 the expected or rejected with an error message if five calculations
-// fail to match |expectedFrameRate|.
-function validateFrameRate(videoElementName, expectedFrameRate) {
-  return new Promise((resolve, reject) => {
-    var videoElement = $(videoElementName);
-    var startTime = new Date().getTime();
-    var decodedFrames = videoElement.webkitDecodedFrameCount;
-    var attempts = 0;
+// Calculates the current frame rate and compares to |expected_frame_rate|
+// |callback| is triggered with value |true| if the calculated frame rate
+// is +-1 the expected or |false| if five calculations fail to match
+// |expected_frame_rate|. Calls back with OK if the check passed, otherwise
+// an error message.
+function validateFrameRate(videoElementName, expected_frame_rate, callback) {
+  var videoElement = $(videoElementName);
+  var startTime = new Date().getTime();
+  var decodedFrames = videoElement.webkitDecodedFrameCount;
+  var attempts = 0;
 
-    if (videoElement.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA ||
-            videoElement.paused || videoElement.ended) {
-      reject("getFrameRate - " + videoElementName + " is not plaing.");
-      return;
-    }
+  if (videoElement.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA ||
+          videoElement.paused || videoElement.ended) {
+    failTest("getFrameRate - " + videoElementName + " is not plaing.");
+    return;
+  }
 
-    var waitVideo = setInterval(function() {
-      attempts++;
-      currentTime = new Date().getTime();
-      deltaTime = (currentTime - startTime) / 1000;
-      startTime = currentTime;
+  var waitVideo = setInterval(function() {
+    attempts++;
+    currentTime = new Date().getTime();
+    deltaTime = (currentTime - startTime) / 1000;
+    startTime = currentTime;
 
-      // Calculate decoded frames per sec.
-      var fps =
-          (videoElement.webkitDecodedFrameCount - decodedFrames) / deltaTime;
-      decodedFrames = videoElement.webkitDecodedFrameCount;
+    // Calculate decoded frames per sec.
+    var fps =
+        (videoElement.webkitDecodedFrameCount - decodedFrames) / deltaTime;
+    decodedFrames = videoElement.webkitDecodedFrameCount;
 
-      console.log('FrameRate in ' + videoElementName + ' is ' + fps);
-      if (fps < expectedFrameRate + 1  && fps > expectedFrameRate - 1) {
-        clearInterval(waitVideo);
-        resolve(true);
-      } else if (attempts == 5) {
-        clearInterval(waitVideo);
-        reject('Expected frame rate ' + expectedFrameRate + ' for ' +
+    console.log('FrameRate in ' + videoElementName + ' is ' + fps);
+    if (fps < expected_frame_rate + 1  && fps > expected_frame_rate - 1) {
+      clearInterval(waitVideo);
+      callback('OK');
+    } else if (attempts == 5) {
+      clearInterval(waitVideo);
+      callback('Expected frame rate ' + expected_frame_rate + ' for ' +
                'element ' + videoElementName + ', but got ' + fps);
-      }
-    }, 1000);
-  });
+    }
+  }, 1000);
 }
 
 function waitForConnectionToStabilize(peerConnection) {
@@ -161,6 +181,22 @@ function waitForConnectionToStabilize(peerConnection) {
       }
     }
   });
+}
+
+// Adds an expected event. You may call this function many times to add more
+// expected events. Each expected event must later be matched by a call to
+// eventOccurred. When enough events have occurred, the "all events occurred
+// handler" will be called.
+function addExpectedEvent() {
+  ++gNumberOfExpectedEvents;
+}
+
+// See addExpectedEvent.
+function eventOccured() {
+  ++gNumberOfEvents;
+  if (gNumberOfEvents == gNumberOfExpectedEvents) {
+    gAllEventsOccured();
+  }
 }
 
 // This very basic video verification algorithm will be satisfied if any
