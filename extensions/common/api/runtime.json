@@ -541,6 +541,7 @@
         "name": "onMessageExternal",
         "type": "function",
         "nocompile": true,
+        "options": { "unmanaged": true },
         "description": "Fired when a message is sent from another extension/app (by $(ref:runtime.sendMessage)). Cannot be used in a content script.",
         "parameters": [
           {"name": "message", "type": "any", "optional": true, "description": "The message sent by the calling script."},
