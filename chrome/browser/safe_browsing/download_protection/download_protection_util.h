@@ -13,9 +13,6 @@
 
 namespace safe_browsing {
 
-const void* const kDownloadReferrerChainDataKey =
-    &kDownloadReferrerChainDataKey;
-
 enum class DownloadCheckResult {
   UNKNOWN,
   SAFE,
