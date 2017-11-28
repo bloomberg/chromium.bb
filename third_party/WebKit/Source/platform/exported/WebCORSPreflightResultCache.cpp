@@ -27,6 +27,8 @@
 #include "public/platform/WebCORSPreflightResultCache.h"
 
 #include <memory>
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/http_names.h"
@@ -41,16 +43,16 @@ namespace {
 
 // These values are at the discretion of the user agent.
 
-constexpr unsigned kDefaultPreflightCacheTimeoutSeconds = 5;
+constexpr TimeDelta kDefaultPreflightCacheTimeout = TimeDelta::FromSeconds(5);
 
 // Should be short enough to minimize the risk of using a poisoned cache after
 // switching to a secure network.
-constexpr unsigned kMaxPreflightCacheTimeoutSeconds = 600;
+constexpr TimeDelta kMaxPreflightCacheTimeout = TimeDelta::FromSeconds(600);
 
-bool ParseAccessControlMaxAge(const String& string, unsigned& expiry_delta) {
+bool ParseAccessControlMaxAge(const String& string, TimeDelta& expiry_delta) {
   // FIXME: this will not do the correct thing for a number starting with a '+'
   bool ok = false;
-  expiry_delta = string.ToUIntStrict(&ok);
+  expiry_delta = TimeDelta::FromSeconds(string.ToUIntStrict(&ok));
   return ok;
 }
 
@@ -95,19 +97,23 @@ bool ParseAccessControlAllowList(const std::string& string, SetType& set) {
 }  // namespace
 
 WebCORSPreflightResultCacheItem::WebCORSPreflightResultCacheItem(
-    network::mojom::FetchCredentialsMode credentials_mode)
-    : absolute_expiry_time_(0),
-      credentials_(credentials_mode ==
-                   network::mojom::FetchCredentialsMode::kInclude) {}
+    network::mojom::FetchCredentialsMode credentials_mode,
+    base::TickClock* clock)
+    : credentials_(credentials_mode ==
+                   network::mojom::FetchCredentialsMode::kInclude),
+      clock_(clock) {}
 
 // static
 std::unique_ptr<WebCORSPreflightResultCacheItem>
 WebCORSPreflightResultCacheItem::Create(
     const network::mojom::FetchCredentialsMode credentials_mode,
     const WebHTTPHeaderMap& response_header,
-    WebString& error_description) {
+    WebString& error_description,
+    base::TickClock* clock) {
   std::unique_ptr<WebCORSPreflightResultCacheItem> item =
-      base::WrapUnique(new WebCORSPreflightResultCacheItem(credentials_mode));
+      base::WrapUnique(new WebCORSPreflightResultCacheItem(
+          credentials_mode,
+          clock ? clock : base::DefaultTickClock::GetInstance()));
 
   if (!item->Parse(response_header, error_description))
     return nullptr;
@@ -145,17 +151,17 @@ bool WebCORSPreflightResultCacheItem::Parse(
     return false;
   }
 
-  unsigned expiry_delta;
+  TimeDelta expiry_delta;
   if (ParseAccessControlMaxAge(
           response_header_map.Get(HTTPNames::Access_Control_Max_Age),
           expiry_delta)) {
-    if (expiry_delta > kMaxPreflightCacheTimeoutSeconds)
-      expiry_delta = kMaxPreflightCacheTimeoutSeconds;
+    if (expiry_delta > kMaxPreflightCacheTimeout)
+      expiry_delta = kMaxPreflightCacheTimeout;
   } else {
-    expiry_delta = kDefaultPreflightCacheTimeoutSeconds;
+    expiry_delta = kDefaultPreflightCacheTimeout;
   }
 
-  absolute_expiry_time_ = CurrentTime() + expiry_delta;
+  absolute_expiry_time_ = clock_->NowTicks() + expiry_delta;
 
   return true;
 }
@@ -205,7 +211,7 @@ bool WebCORSPreflightResultCacheItem::AllowsRequest(
     const WebHTTPHeaderMap& request_headers) const {
   WebString ignored_explanation;
 
-  if (absolute_expiry_time_ < CurrentTime())
+  if (absolute_expiry_time_ < clock_->NowTicks())
     return false;
   if (!credentials_ &&
       credentials_mode == network::mojom::FetchCredentialsMode::kInclude) {
