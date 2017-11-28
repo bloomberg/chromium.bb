@@ -427,7 +427,6 @@
     {
       name: "ForeignFetch",
       origin_trial_feature_name: "ForeignFetch",
-      status: "experimental",
     },
     {
       name: "FractionalMouseEvent",
@@ -544,7 +543,6 @@
     {
       name: "LinkServiceWorker",
       origin_trial_feature_name: "ForeignFetch",
-      status: "experimental",
     },
     {
       name: "LoadingWithMojo",
