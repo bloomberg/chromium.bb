@@ -188,6 +188,9 @@ function setUpFileSystem(openedFilesLimit, callback) {
   var options = {};
   if (openedFilesLimit)
     options.openedFilesLimit = openedFilesLimit;
+  // TODO(mtomasz): Rather than clearing out opened files tests should wait for
+  // all files to be closed before unmounting the file system. crbug.com/789083
+  test_util.openedFiles = [];
   if (test_util.fileSystem) {
     chrome.fileSystemProvider.unmount({
       fileSystemId: test_util.FILE_SYSTEM_ID

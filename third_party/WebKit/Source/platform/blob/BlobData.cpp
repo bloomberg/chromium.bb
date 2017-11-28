@@ -456,4 +456,24 @@ void BlobDataHandle::SetBlobRegistryForTesting(
   g_blob_registry_for_testing = registry;
 }
 
+void BlobDataHandle::ReadAll(mojo::ScopedDataPipeProducerHandle pipe,
+                             mojom::blink::BlobReaderClientPtr client) {
+  MutexLocker locker(blob_info_mutex_);
+  BlobPtr blob;
+  blob.Bind(std::move(blob_info_));
+  blob->ReadAll(std::move(pipe), std::move(client));
+  blob_info_ = blob.PassInterface();
+}
+
+void BlobDataHandle::ReadRange(uint64_t offset,
+                               uint64_t length,
+                               mojo::ScopedDataPipeProducerHandle pipe,
+                               mojom::blink::BlobReaderClientPtr client) {
+  MutexLocker locker(blob_info_mutex_);
+  BlobPtr blob;
+  blob.Bind(std::move(blob_info_));
+  blob->ReadRange(offset, length, std::move(pipe), std::move(client));
+  blob_info_ = blob.PassInterface();
+}
+
 }  // namespace blink

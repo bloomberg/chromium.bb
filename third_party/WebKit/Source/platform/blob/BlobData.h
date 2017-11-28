@@ -266,6 +266,13 @@ class PLATFORM_EXPORT BlobDataHandle
 
   static void SetBlobRegistryForTesting(mojom::blink::BlobRegistry*);
 
+  void ReadAll(mojo::ScopedDataPipeProducerHandle,
+               mojom::blink::BlobReaderClientPtr);
+  void ReadRange(uint64_t offset,
+                 uint64_t length,
+                 mojo::ScopedDataPipeProducerHandle,
+                 mojom::blink::BlobReaderClientPtr);
+
  private:
   BlobDataHandle();
   BlobDataHandle(std::unique_ptr<BlobData>, long long size);
