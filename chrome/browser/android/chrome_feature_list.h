@@ -39,6 +39,7 @@ extern const base::Feature kContentSuggestionsScrollToLoad;
 extern const base::Feature kContentSuggestionsSettings;
 extern const base::Feature kContentSuggestionsThumbnailDominantColor;
 extern const base::Feature kContextualSearchMlTapSuppression;
+extern const base::Feature kContextualSearchRankerQuery;
 extern const base::Feature kContextualSuggestionsCarousel;
 extern const base::Feature kCustomContextMenu;
 extern const base::Feature kCustomFeedbackUi;

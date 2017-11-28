@@ -81,11 +81,6 @@ public class ContextualSearchFieldTrial {
     private static final String DISABLE_PAGE_CONTENT_NOTIFICATION =
             "disable_page_content_notification";
 
-    // --------------------------------------
-    // Params that also exist in native code.
-    // --------------------------------------
-    private static final String ENABLE_RANKER_INTEGRATION = "enable_ranker_integration";
-
     // Cached values to avoid repeated and redundant JNI operations.
     // TODO(donnd): consider creating a single Map to cache these static values.
     private static Boolean sEnabled;
@@ -105,7 +100,6 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsOnlineDetectionDisabled;
     private static Boolean sIsAmpAsSeparateTabDisabled;
     private static Boolean sContextualSearchMlTapSuppressionEnabled;
-    private static Boolean sIsRankerIntegrationEnabled;
     private static Boolean sIsSendHomeCountryDisabled;
     private static Boolean sIsPageContentNotificationDisabled;
     private static Boolean sIsUkmRankerLoggingDisabled;
@@ -362,30 +356,6 @@ public class ContextualSearchFieldTrial {
     }
 
     /**
-     * Whether Ranker integration is enabled or not, to apply machine intelligence for Tap gestures.
-     * This controls whether we call the Ranker logic to produce an inference or not, and may have
-     * no user-visible effect.  There's a similar user-visible flag for whether Tap suppression is
-     * enabled or not, so call {@link #isRankerIntegrationOrMlTapSuppressionEnabled} in order to
-     * check if either is enabled.
-     * @return Whether Ranker will be used or not in this session, even for internal ranking.
-     */
-    private static boolean isRankerIntegrationEnabled() {
-        if (sIsRankerIntegrationEnabled == null) {
-            sIsRankerIntegrationEnabled = getBooleanParam(ENABLE_RANKER_INTEGRATION);
-        }
-        return sIsRankerIntegrationEnabled;
-    }
-
-    /**
-     * Whether Ranker integration or the user-visible flag for whether ML-based Tap suppression is
-     * enabled or not.
-     * @return Whether to apply Ranker ML in this session, even if only for internal ranking.
-     */
-    static boolean isRankerIntegrationOrMlTapSuppressionEnabled() {
-        return isRankerIntegrationEnabled() || isContextualSearchMlTapSuppressionEnabled();
-    }
-
-    /**
      * Gets an amount to delay after a Tap gesture is recognized, in case some user gesture
      * immediately follows that would prevent the UI from showing.
      * The classic example is a scroll, which might be a signal that the previous tap was
@@ -435,7 +405,6 @@ public class ContextualSearchFieldTrial {
             sContextualSearchMlTapSuppressionEnabled = ChromeFeatureList.isEnabled(
                     ChromeFeatureList.CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION);
         }
-
         return sContextualSearchMlTapSuppressionEnabled;
     }
 

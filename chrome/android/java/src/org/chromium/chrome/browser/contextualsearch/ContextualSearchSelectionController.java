@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -377,6 +378,11 @@ public class ContextualSearchSelectionController {
         } else {
             mLastTapState = null;
         }
+
+        // Make sure Tap Suppression features are consistent.
+        assert !ContextualSearchFieldTrial.isContextualSearchMlTapSuppressionEnabled()
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_RANKER_QUERY)
+            : "Tap Suppression requires the Ranker Query feature to be enabled!";
 
         // If we're suppressing based on heuristics then Ranker doesn't need to know about it.
         @AssistRankerPrediction

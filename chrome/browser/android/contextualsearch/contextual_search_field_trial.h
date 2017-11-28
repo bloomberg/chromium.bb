@@ -38,10 +38,6 @@ class ContextualSearchFieldTrial {
   // not set.
   int GetContextualCardsVersion();
 
-  // Gets whether either the CS Ranker integration param, or the ML Tap
-  // Suppression feature flag is enabled.
-  bool IsRankerIntegrationOrMlTapSuppressionEnabled();
-
   // Disables the cache.
   void DisableCache();
 
@@ -93,9 +89,6 @@ class ContextualSearchFieldTrial {
 
   bool is_contextual_cards_version_cached_;
   int contextual_cards_version_;
-
-  bool is_ranker_integration_enabled_cached_;
-  bool is_ranker_integration_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchFieldTrial);
 };
