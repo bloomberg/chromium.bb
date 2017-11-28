@@ -599,11 +599,7 @@ IN_PROC_BROWSER_TEST_F(AV1MediaCanPlayTypeTest, CodecSupportTest_av1) {
   // by default. This test needs to be merged into the existing mp4 and webm
   // before release as well. http://crbug.com/784607
   EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"av1\"'"));
-#if defined(USE_PROPRIETARY_CODECS)
-  EXPECT_EQ(kProbably, CanPlay("'video/mp4; codecs=\"av1\"'"));
-#else
-  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"av1\"'"));
-#endif
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"av1\"'"));
 }
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
