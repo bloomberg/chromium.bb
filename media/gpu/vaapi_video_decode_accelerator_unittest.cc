@@ -322,6 +322,22 @@ TEST_P(VaapiVideoDecodeAcceleratorTest, QueueInputBufferAndDecodeFinished) {
   ResetSequence();
 }
 
+// Verify that it is possible to select DRM(egl) and TFP(glx) at runtime.
+TEST_P(VaapiVideoDecodeAcceleratorTest, SupportedPlatforms) {
+  EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationNone,
+            mock_vaapi_picture_factory_->GetVaapiImplementation(
+                gl::kGLImplementationNone));
+  EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationDrm,
+            mock_vaapi_picture_factory_->GetVaapiImplementation(
+                gl::kGLImplementationEGLGLES2));
+
+#if defined(USE_X11)
+  EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationX11,
+            mock_vaapi_picture_factory_->GetVaapiImplementation(
+                gl::kGLImplementationDesktopGL));
+#endif
+}
+
 INSTANTIATE_TEST_CASE_P(/* No prefix. */,
                         VaapiVideoDecodeAcceleratorTest,
                         ValuesIn(kCodecProfiles));
