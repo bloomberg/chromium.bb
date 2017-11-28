@@ -12,6 +12,10 @@ namespace switches {
 UI_BASE_EXPORT bool IsLinkDisambiguationPopupEnabled();
 UI_BASE_EXPORT bool IsTouchDragDropEnabled();
 
+// Returns whether mus is hosting viz. Mus is hosting viz only if --mus flag
+// is set to 'viz'.
+UI_BASE_EXPORT bool IsMusHostingViz();
+
 }  // namespace switches
 
 #endif  // UI_BASE_UI_BASE_SWITCHES_UTIL_H_

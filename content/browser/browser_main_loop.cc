@@ -130,6 +130,7 @@
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/switches.h"
 
@@ -1454,9 +1455,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
 #if BUILDFLAG(ENABLE_MUS)
   if (IsUsingMus()) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kMus,
-        IsMusHostingViz() ? switches::kMusHostVizValue : std::string());
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableSurfaceSynchronization);
   }
@@ -1480,7 +1478,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
   // If mus is not hosting viz, then the browser must.
-  bool browser_is_viz_host = !IsMusHostingViz();
+  bool browser_is_viz_host = !switches::IsMusHostingViz();
 
   bool always_uses_gpu = true;
   bool established_gpu_channel = false;

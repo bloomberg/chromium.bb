@@ -20,4 +20,13 @@ bool IsTouchDragDropEnabled() {
 #endif
 }
 
+bool IsMusHostingViz() {
+#if defined(USE_AURA)
+  auto* cmd = base::CommandLine::ForCurrentProcess();
+  return cmd->GetSwitchValueASCII(switches::kMus) == switches::kMusHostVizValue;
+#else
+  return false;
+#endif
+}
+
 }  // namespace switches

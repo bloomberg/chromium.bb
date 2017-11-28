@@ -16,6 +16,7 @@
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/reflector.h"
 #include "ui/compositor/test/fake_context_factory.h"
@@ -36,6 +37,8 @@ void MashTestSuite::Initialize() {
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kOverrideUseSoftwareGLForTests);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kMus, switches::kMusHostVizValue);
 
   // Load ash mus strings and resources; not 'common' (Chrome) resources.
   base::FilePath resources;
