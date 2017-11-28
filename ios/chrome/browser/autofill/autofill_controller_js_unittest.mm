@@ -1486,58 +1486,6 @@ TEST_F(AutofillControllerJsTest, ExtractFormsAndFormElements) {
   TestExtractNewForms(html, true, test_forms);
 }
 
-TEST_F(AutofillControllerJsTest, ExtractFormsAndFormElementsNestedFrame) {
-  NSArray* testFirstFormItems = @[
-    GetTestFormInputElementWithLabelFromPrevious(),
-    GetTestFormInputElementWithLabelFromPreviousSpan(),
-    GetTestFormInputElementWithLabelFromPreviousParagraph(),
-    GetTestFormInputElementWithLabelFromPreviousLabel(),
-    GetTestFormInputElementWithLabelFromPreviousLabelOtherIgnored(),
-    GetTestFormInputElementWithLabelFromPreviousTextSpanBr(),
-    GetTestFormInputElementWithLabelFromPreviousTextBrAndSpan(),
-    GetTestFormInputElementWithLabelFromListItem(),
-    GetTestFormInputElementWithLabelFromTableColumnTD(),
-    GetTestFormInputElementWithLabelFromTableColumnTH(),
-    GetTestFormInputElementWithLabelFromTableNested(),
-    GetTestFormInputElementWithLabelFromTableRow(),
-    GetTestFormInputElementWithLabelFromDivTable(),
-    GetTestFormInputElementWithLabelFromDefinitionList(), GetTestInputRadio(),
-    GetTestInputCheckbox()
-  ];
-  NSArray* testSecondFormItems = @[
-    GetTestFormInputElementWithLabelFromDivTable(), GetTestFormSelectElement(),
-    GetTestFormSelectElementWithOptgroup()
-  ];
-  NSArray* test_forms = @[ testFirstFormItems, testSecondFormItems ];
-
-  // Test an html that has nested frames.
-  NSString* nested_frame_html_fragment = @"<html><body>";
-  for (NSUInteger i = 0; i < [test_forms count]; ++i) {
-    NSArray* test_elements = [test_forms objectAtIndex:i];
-    NSString* form_string =
-        @"<form name='TestForm' action='http://c.com' method='post'>";
-    for (NSUInteger j = 0; j < [test_elements count]; ++j) {
-      form_string =
-          [form_string stringByAppendingString:[[test_elements objectAtIndex:j]
-                                                   objectAtIndex:0U]];
-    }
-    form_string = [form_string stringByAppendingFormat:@"</form>"];
-
-    if (i == 0) {
-      nested_frame_html_fragment =
-          [nested_frame_html_fragment stringByAppendingString:form_string];
-    } else {
-      nested_frame_html_fragment = [nested_frame_html_fragment
-          stringByAppendingString:
-              [NSString stringWithFormat:@"<iframe srcdoc=\"%@\"></iframe>",
-                                         form_string]];
-    }
-  }
-  nested_frame_html_fragment =
-      [nested_frame_html_fragment stringByAppendingString:@"</body></html>"];
-  TestExtractNewForms(nested_frame_html_fragment, false, test_forms);
-}
-
 TEST_F(AutofillControllerJsTest,
        ExtractFormsAndFormElementsWithFormAssociatedElementsOutOfForm) {
   NSString* html = @"<html><body>"
