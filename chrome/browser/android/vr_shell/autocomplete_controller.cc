@@ -13,16 +13,18 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_input.h"
+#include "components/search_engines/util.h"
 
-namespace vr {
+namespace vr_shell {
 
-AutocompleteController::AutocompleteController(BrowserUiInterface* ui)
-    : profile_(ProfileManager::GetActiveUserProfile()),
-      autocomplete_controller_(base::MakeUnique<::AutocompleteController>(
-          base::MakeUnique<ChromeAutocompleteProviderClient>(profile_),
-          this,
-          AutocompleteClassifier::DefaultOmniboxProviders())),
-      ui_(ui) {}
+AutocompleteController::AutocompleteController(vr::BrowserUiInterface* ui)
+    : profile_(ProfileManager::GetActiveUserProfile()), ui_(ui) {
+  auto client = base::MakeUnique<ChromeAutocompleteProviderClient>(profile_);
+  client_ = client.get();
+  autocomplete_controller_ = base::MakeUnique<::AutocompleteController>(
+      std::move(client), this,
+      AutocompleteClassifier::DefaultOmniboxProviders());
+}
 
 AutocompleteController::~AutocompleteController() = default;
 
@@ -37,13 +39,29 @@ void AutocompleteController::Stop() {
   autocomplete_controller_->Stop(true);
 }
 
+GURL AutocompleteController::GetUrlFromVoiceInput(const base::string16& input) {
+  AutocompleteMatch match;
+  base::string16 culled_input;
+  base::RemoveChars(input, base::ASCIIToUTF16(" "), &culled_input);
+  client_->Classify(culled_input, false, false,
+                    metrics::OmniboxEventProto::INVALID_SPEC, &match, nullptr);
+  if (match.destination_url.is_valid() &&
+      (match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
+       match.type == AutocompleteMatchType::HISTORY_URL ||
+       match.type == AutocompleteMatchType::NAVSUGGEST)) {
+    return match.destination_url;
+  }
+  return GURL(GetDefaultSearchURLForSearchTerms(
+      client_->GetTemplateURLService(), input));
+}
+
 void AutocompleteController::OnResultChanged(bool default_match_changed) {
-  auto suggestions = base::MakeUnique<OmniboxSuggestions>();
+  auto suggestions = base::MakeUnique<vr::OmniboxSuggestions>();
   for (const auto& match : autocomplete_controller_->result()) {
-    suggestions->suggestions.emplace_back(OmniboxSuggestion(
+    suggestions->suggestions.emplace_back(vr::OmniboxSuggestion(
         match.contents, match.description, match.type, match.destination_url));
   }
   ui_->SetOmniboxSuggestions(std::move(suggestions));
 }
 
-}  // namespace vr
+}  // namespace vr_shell
