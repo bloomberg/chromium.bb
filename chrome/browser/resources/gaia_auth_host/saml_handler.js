@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // <include src="post_message_channel.js">
+// <include src="webview_event_manager.js">
 
 /**
  * @fileoverview Saml support for webview based auth.
@@ -33,6 +34,9 @@ cr.define('cr.login', function() {
 
   /** @const */
   var SAML_HEADER = 'google-accounts-saml';
+
+  /** @const */
+  var injectedScriptName = 'samlInjected';
 
   /**
    * The script to inject into webview and its sub frames.
@@ -141,23 +145,30 @@ cr.define('cr.login', function() {
      */
     this.blockInsecureContent = false;
 
-    this.webview_.addEventListener(
-        'contentload', this.onContentLoad_.bind(this));
-    this.webview_.addEventListener('loadabort', this.onLoadAbort_.bind(this));
-    this.webview_.addEventListener('loadcommit', this.onLoadCommit_.bind(this));
-    this.webview_.addEventListener(
-        'permissionrequest', this.onPermissionRequest_.bind(this));
+    this.webviewEventManager_ = WebviewEventManager.create();
 
-    this.webview_.request.onBeforeRequest.addListener(
+    this.webviewEventManager_.addEventListener(
+        this.webview_, 'contentload', this.onContentLoad_.bind(this));
+    this.webviewEventManager_.addEventListener(
+        this.webview_, 'loadabort', this.onLoadAbort_.bind(this));
+    this.webviewEventManager_.addEventListener(
+        this.webview_, 'loadcommit', this.onLoadCommit_.bind(this));
+    this.webviewEventManager_.addEventListener(
+        this.webview_, 'permissionrequest',
+        this.onPermissionRequest_.bind(this));
+
+    this.webviewEventManager_.addWebRequestEventListener(
+        this.webview_.request.onBeforeRequest,
         this.onInsecureRequest.bind(this),
         {urls: ['http://*/*', 'file://*/*', 'ftp://*/*']}, ['blocking']);
-    this.webview_.request.onHeadersReceived.addListener(
+    this.webviewEventManager_.addWebRequestEventListener(
+        this.webview_.request.onHeadersReceived,
         this.onHeadersReceived_.bind(this),
         {urls: ['<all_urls>'], types: ['main_frame', 'xmlhttprequest']},
         ['blocking', 'responseHeaders']);
 
     this.webview_.addContentScripts([{
-      name: 'samlInjected',
+      name: injectedScriptName,
       matches: ['http://*/*', 'https://*/*'],
       js: {code: injectedJs},
       all_frames: true,
@@ -214,6 +225,16 @@ cr.define('cr.login', function() {
         passwords[this.passwordStore_[property]] = true;
       }
       return Object.keys(passwords);
+    },
+
+    /**
+     * Removes the injected content script and unbinds all listeners from the
+     * webview passed to the constructor. This SAMLHandler will be unusable
+     * after this function returns.
+     */
+    unbindFromWebview: function() {
+      this.webview_.removeContentScripts([injectedScriptName]);
+      this.webviewEventManager_.removeAllListeners();
     },
 
     /**

@@ -132,7 +132,7 @@ class CONTENT_EXPORT StoragePartition {
                                   uint32_t quota_storage_remove_mask,
                                   const GURL& storage_origin,
                                   net::URLRequestContextGetter* rq_context,
-                                  const base::Closure& callback) = 0;
+                                  base::OnceClosure callback) = 0;
 
   // A callback type to check if a given origin matches a storage policy.
   // Can be passed empty/null where used, which means the origin will always
@@ -157,7 +157,7 @@ class CONTENT_EXPORT StoragePartition {
                          const OriginMatcherFunction& origin_matcher,
                          const base::Time begin,
                          const base::Time end,
-                         const base::Closure& callback) = 0;
+                         base::OnceClosure callback) = 0;
 
   // Similar to ClearData().
   // Deletes all data out for the StoragePartition.
@@ -177,7 +177,7 @@ class CONTENT_EXPORT StoragePartition {
                          const CookieMatcherFunction& cookie_matcher,
                          const base::Time begin,
                          const base::Time end,
-                         const base::Closure& callback) = 0;
+                         base::OnceClosure callback) = 0;
 
   // Clears the HTTP and media caches associated with this StoragePartition's
   // request contexts. If |begin| and |end| are not null, only entries with
@@ -187,7 +187,7 @@ class CONTENT_EXPORT StoragePartition {
       const base::Time begin,
       const base::Time end,
       const base::Callback<bool(const GURL&)>& url_matcher,
-      const base::Closure& callback) = 0;
+      base::OnceClosure callback) = 0;
 
   // Write any unwritten data to disk.
   // Note: this method does not sync the data - it only ensures that any

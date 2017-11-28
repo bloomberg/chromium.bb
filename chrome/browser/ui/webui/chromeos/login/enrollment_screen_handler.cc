@@ -20,11 +20,13 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
+#include "chrome/browser/chromeos/login/signin_partition_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/network/network_state.h"
@@ -681,7 +683,18 @@ void EnrollmentScreenHandler::ShowErrorMessage(const std::string& message,
 }
 
 void EnrollmentScreenHandler::DoShow() {
+  // Start a new session with SigninPartitionManager, generating a unique
+  // StoragePartition.
+  login::SigninPartitionManager* signin_partition_manager =
+      login::SigninPartitionManager::Factory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  signin_partition_manager->StartSigninSession(web_ui()->GetWebContents());
+
+  // Then leave it running forever.
   base::DictionaryValue screen_data;
+  screen_data.SetString(
+      "webviewPartitionName",
+      signin_partition_manager->GetCurrentStoragePartitionName());
   screen_data.SetString("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
   screen_data.SetString("clientId",
                         GaiaUrls::GetInstance()->oauth2_chrome_client_id());

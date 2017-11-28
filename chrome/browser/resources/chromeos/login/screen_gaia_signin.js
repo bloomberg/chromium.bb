@@ -621,6 +621,52 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
+     * Copies attributes between nodes.
+     * @param {!Object} fromNode source to copy attributes from
+     * @param {!Object} toNode target to copy attributes to
+     * @param {!Set<string>} skipAttributes specifies attributes to be skipped
+     * @private
+     */
+    copyAttributes_: function(fromNode, toNode, skipAttributes) {
+      for (var i = 0; i < fromNode.attributes.length; ++i) {
+        var attribute = fromNode.attributes[i];
+        if (!skipAttributes.has(attribute.nodeName))
+          toNode.setAttribute(attribute.nodeName, attribute.nodeValue);
+      }
+    },
+
+    /**
+     * Changes the 'partition' attribute of the sign-in frame. If the sign-in
+     * frame has already navigated, this function re-creates it.
+     * @param {string} newWebviewPartitionName the new partition
+     * @private
+     */
+    setSigninFramePartition_: function(newWebviewPartitionName) {
+      var signinFrame = $('signin-frame');
+
+      if (!signinFrame.src) {
+        // We have not navigated anywhere yet. Note that a webview's src
+        // attribute does not allow a change back to "".
+        signinFrame.partition = newWebviewPartitionName;
+      } else if (signinFrame.partition != newWebviewPartitionName) {
+        // The webview has already navigated. We have to re-create it.
+        var signinFrameParent = signinFrame.parentElement;
+
+        // Copy all attributes except for partition and src from the previous
+        // webview. Use the specified |newWebviewPartitionName|.
+        var newSigninFrame = document.createElement('webview');
+        this.copyAttributes_(
+            signinFrame, newSigninFrame, new Set(['src', 'partition']));
+        newSigninFrame.partition = newWebviewPartitionName;
+
+        signinFrameParent.replaceChild(newSigninFrame, signinFrame);
+
+        // Make sure the auth host uses the new webview from now on.
+        this.gaiaAuthHost_.rebindWebview($('signin-frame'));
+      }
+    },
+
+    /**
      * Loads the authentication extension into the iframe.
      * @param {Object} data Extension parameters bag.
      * @private
@@ -632,6 +678,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           data.screenMode != ScreenMode.DEFAULT) {
         this.gaiaAuthHost_.resetWebview();
       }
+
+      this.setSigninFramePartition_(data.webviewPartitionName);
 
       this.screenMode = data.screenMode;
       this.email = '';

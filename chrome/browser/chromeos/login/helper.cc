@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/chromeos/login/signin_partition_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -22,11 +23,9 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_util.h"
-#include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
@@ -38,56 +37,6 @@ namespace chromeos {
 namespace {
 
 constexpr char kInvalidJsonError[] = "Invalid JSON Dictionary";
-
-// Gets the WebContents instance of current login display. If there is none,
-// returns nullptr.
-content::WebContents* GetLoginWebContents() {
-  LoginDisplayHost* host = LoginDisplayHost::default_host();
-  if (!host || !host->GetWebUILoginView())
-    return nullptr;
-
-  return host->GetWebUILoginView()->GetWebContents();
-}
-
-// Callback used by GetPartition below to return the first guest contents with a
-// matching partition name.
-bool FindGuestByPartitionName(const std::string& partition_name,
-                              content::WebContents** out_guest_contents,
-                              content::WebContents* guest_contents) {
-  std::string domain;
-  std::string name;
-  bool in_memory;
-  extensions::WebViewGuest::GetGuestPartitionConfigForSite(
-      guest_contents->GetSiteInstance()->GetSiteURL(), &domain, &name,
-      &in_memory);
-  if (partition_name != name)
-    return false;
-
-  *out_guest_contents = guest_contents;
-  return true;
-}
-
-// Gets the storage partition of guest contents of a given embedder.
-// If a name is given, returns the partition associated with the name.
-// Otherwise, returns the default shared in-memory partition. Returns nullptr if
-// a matching partition could not be found.
-content::StoragePartition* GetPartition(content::WebContents* embedder,
-                                        const std::string& partition_name) {
-  guest_view::GuestViewManager* manager =
-      guest_view::GuestViewManager::FromBrowserContext(
-          embedder->GetBrowserContext());
-  if (!manager)
-    return nullptr;
-
-  content::WebContents* guest_contents = nullptr;
-  manager->ForEachGuest(embedder, base::Bind(&FindGuestByPartitionName,
-                                             partition_name, &guest_contents));
-
-  return guest_contents ? content::BrowserContext::GetStoragePartition(
-                              guest_contents->GetBrowserContext(),
-                              guest_contents->GetSiteInstance())
-                        : nullptr;
-}
 
 }  // namespace
 
@@ -217,13 +166,12 @@ void NetworkStateHelper::OnCreateConfiguration(
 }
 
 content::StoragePartition* GetSigninPartition() {
-  content::WebContents* embedder = GetLoginWebContents();
-  if (!embedder)
+  Profile* signin_profile = ProfileHelper::GetSigninProfile();
+  SigninPartitionManager* signin_partition_manager =
+      SigninPartitionManager::Factory::GetForBrowserContext(signin_profile);
+  if (!signin_partition_manager->IsInSigninSession())
     return nullptr;
-
-  // Note the partition name must match the sign-in webview used. For now,
-  // this is the default unnamed, shared, in-memory partition.
-  return GetPartition(embedder, std::string());
+  return signin_partition_manager->GetCurrentStoragePartition();
 }
 
 net::URLRequestContextGetter* GetSigninContext() {

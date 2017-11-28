@@ -96,8 +96,8 @@ class NetworkStateHelper {
 // Webview based login helpers.
 //
 
-// Returns the storage partition for the sign-in webview. Note the function gets
-// the partition via the sign-in WebContents thus returns nullptr if the sign-in
+// Returns the storage partition for the sign-in webview. Note the function
+// returns nullptr if the sign-in partition is not available yet, or if sign-in
 // webui is torn down.
 content::StoragePartition* GetSigninPartition();
 
