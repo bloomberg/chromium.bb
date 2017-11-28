@@ -10,6 +10,10 @@ static_library("tether") {
     "active_host.h",
     "active_host_network_state_updater.cc",
     "active_host_network_state_updater.h",
+    "ad_hoc_ble_advertiser.cc",
+    "ad_hoc_ble_advertiser.h",
+    "ad_hoc_ble_advertiser_impl.cc",
+    "ad_hoc_ble_advertiser_impl.h",
     "asynchronous_shutdown_object_container.h",
     "asynchronous_shutdown_object_container_impl.cc",
     "asynchronous_shutdown_object_container_impl.h",
@@ -147,6 +151,8 @@ static_library("test_support") {
   sources = [
     "fake_active_host.cc",
     "fake_active_host.h",
+    "fake_ad_hoc_ble_advertiser.cc",
+    "fake_ad_hoc_ble_advertiser.h",
     "fake_asynchronous_shutdown_object_container.cc",
     "fake_asynchronous_shutdown_object_container.h",
     "fake_ble_advertiser.cc",
@@ -219,6 +225,7 @@ source_set("unit_tests") {
   sources = [
     "active_host_network_state_updater_unittest.cc",
     "active_host_unittest.cc",
+    "ad_hoc_ble_advertiser_impl_unittest.cc",
     "asynchronous_shutdown_object_container_impl_unittest.cc",
     "ble_advertisement_device_queue_unittest.cc",
     "ble_advertiser_impl_unittest.cc",

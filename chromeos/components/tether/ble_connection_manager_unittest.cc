@@ -8,6 +8,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/tether/ble_constants.h"
+#include "chromeos/components/tether/fake_ad_hoc_ble_advertiser.h"
 #include "chromeos/components/tether/fake_ble_advertiser.h"
 #include "chromeos/components/tether/fake_ble_scanner.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
@@ -270,6 +271,8 @@ class BleConnectionManagerTest : public testing::Test {
     fake_ble_scanner_ = base::MakeUnique<FakeBleScanner>(
         true /* automatically_update_discovery_session */);
 
+    fake_ad_hoc_ble_advertiser_ = base::MakeUnique<FakeAdHocBleAdvertiser>();
+
     fake_connection_factory_ = base::WrapUnique(new FakeConnectionFactory(
         mock_adapter_, device::BluetoothUUID(kGattServerUuid)));
     cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::Factory::
@@ -282,7 +285,8 @@ class BleConnectionManagerTest : public testing::Test {
 
     manager_ = base::WrapUnique(new BleConnectionManager(
         fake_cryptauth_service_.get(), mock_adapter_, device_queue_.get(),
-        fake_ble_advertiser_.get(), fake_ble_scanner_.get()));
+        fake_ble_advertiser_.get(), fake_ble_scanner_.get(),
+        fake_ad_hoc_ble_advertiser_.get()));
     test_observer_ = base::WrapUnique(new TestObserver());
     manager_->AddObserver(test_observer_.get());
 
@@ -517,6 +521,7 @@ class BleConnectionManagerTest : public testing::Test {
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
   std::unique_ptr<FakeBleAdvertiser> fake_ble_advertiser_;
   std::unique_ptr<FakeBleScanner> fake_ble_scanner_;
+  std::unique_ptr<FakeAdHocBleAdvertiser> fake_ad_hoc_ble_advertiser_;
   std::unique_ptr<BleAdvertisementDeviceQueue> device_queue_;
   MockTimerFactory* mock_timer_factory_;
   base::SimpleTestClock* test_clock_;
@@ -592,6 +597,30 @@ TEST_F(BleConnectionManagerTest, TestRegistersAndUnregister_NoConnection) {
 
   VerifyAdvertisingToConnectionDurationMetricNotRecorded();
   VerifyConnectionToAuthenticationDurationMetricNotRecorded();
+}
+
+TEST_F(BleConnectionManagerTest, TestAdHocBleAdvertiser) {
+  manager_->RegisterRemoteDevice(test_devices_[0],
+                                 MessageType::TETHER_AVAILABILITY_REQUEST);
+  VerifyAdvertisingTimeoutSet(test_devices_[0]);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0], cryptauth::SecureChannel::Status::DISCONNECTED,
+       cryptauth::SecureChannel::Status::CONNECTING}});
+
+  // Simulate the channel failing to find GATT services and disconnecting.
+  FakeSecureChannel* channel =
+      ConnectChannel(test_devices_[0], kBluetoothAddress1);
+  channel->NotifyGattCharacteristicsNotAvailable();
+  channel->Disconnect();
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0], cryptauth::SecureChannel::Status::CONNECTING,
+       cryptauth::SecureChannel::Status::DISCONNECTED},
+      {test_devices_[0], cryptauth::SecureChannel::Status::DISCONNECTED,
+       cryptauth::SecureChannel::Status::CONNECTING}});
+
+  // A GATT services workaround should have been requested for that device.
+  EXPECT_EQ(std::vector<std::string>{test_devices_[0].GetDeviceId()},
+            fake_ad_hoc_ble_advertiser_->requested_device_ids());
 }
 
 TEST_F(BleConnectionManagerTest, TestRegisterWithNoConnection_TimeoutOccurs) {
