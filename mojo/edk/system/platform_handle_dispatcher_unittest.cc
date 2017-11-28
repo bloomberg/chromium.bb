@@ -12,7 +12,7 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/edk/embedder/platform_handle_vector.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -87,11 +87,12 @@ TEST(PlatformHandleDispatcherTest, Serialization) {
   EXPECT_EQ(0u, num_ports);
   EXPECT_EQ(1u, num_handles);
 
-  ScopedPlatformHandleVectorPtr handles(new PlatformHandleVector(1));
-  EXPECT_TRUE(dispatcher->EndSerialize(nullptr, nullptr, handles->data()));
+  ScopedPlatformHandle received_handle;
+  EXPECT_TRUE(dispatcher->EndSerialize(nullptr, nullptr, &received_handle));
+
   dispatcher->CompleteTransitAndClose();
 
-  EXPECT_TRUE(handles->at(0).is_valid());
+  EXPECT_TRUE(received_handle.is_valid());
 
   ScopedPlatformHandle handle = dispatcher->PassPlatformHandle();
   EXPECT_FALSE(handle.is_valid());
@@ -100,10 +101,11 @@ TEST(PlatformHandleDispatcherTest, Serialization) {
 
   dispatcher = static_cast<PlatformHandleDispatcher*>(
       Dispatcher::Deserialize(Dispatcher::Type::PLATFORM_HANDLE, nullptr,
-                              num_bytes, nullptr, num_ports, handles->data(),
-                              1).get());
+                              num_bytes, nullptr, num_ports, &received_handle,
+                              1u)
+          .get());
 
-  EXPECT_FALSE(handles->at(0).is_valid());
+  EXPECT_FALSE(received_handle.is_valid());
   EXPECT_TRUE(dispatcher->GetType() == Dispatcher::Type::PLATFORM_HANDLE);
 
   fp = test::FILEFromPlatformHandle(dispatcher->PassPlatformHandle(), "rb");

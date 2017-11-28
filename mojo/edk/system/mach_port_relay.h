@@ -6,6 +6,7 @@
 #define MOJO_EDK_SYSTEM_MACH_PORT_RELAY_H_
 
 #include <set>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/process/port_provider_mac.h"
@@ -43,7 +44,7 @@ class MachPortRelay : public base::PortProvider::Observer {
   //
   // See SendPortsToProcess() for the definition of intermediate and final Mach
   // ports.
-  static void ReceivePorts(PlatformHandleVector* handles);
+  static void ReceivePorts(std::vector<ScopedPlatformHandle>* handles);
 
   explicit MachPortRelay(base::PortProvider* port_provider);
   ~MachPortRelay() override;
@@ -62,7 +63,7 @@ class MachPortRelay : public base::PortProvider::Observer {
   // updates the contents of the PlatformHandle to have Type::MACH and have the
   // actual Mach port. On failure, replaces the contents with Type::MACH and
   // MACH_PORT_NULL.
-  void ExtractPort(PlatformHandle* handle, base::ProcessHandle process);
+  void ExtractPort(ScopedPlatformHandle* handle, base::ProcessHandle process);
 
   // Observer interface.
   void AddObserver(Observer* observer);

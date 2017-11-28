@@ -20,7 +20,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
-#include "mojo/edk/embedder/platform_handle_vector.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 
 #if !defined(OS_NACL)
 #include <sys/uio.h>
@@ -68,17 +68,19 @@ class MessageView {
     offset_ += num_bytes;
   }
 
-  ScopedPlatformHandleVectorPtr TakeHandles() { return std::move(handles_); }
+  std::vector<ScopedPlatformHandle> TakeHandles() {
+    return std::move(handles_);
+  }
   Channel::MessagePtr TakeMessage() { return std::move(message_); }
 
-  void SetHandles(ScopedPlatformHandleVectorPtr handles) {
+  void SetHandles(std::vector<ScopedPlatformHandle> handles) {
     handles_ = std::move(handles);
   }
 
  private:
   Channel::MessagePtr message_;
   size_t offset_;
-  ScopedPlatformHandleVectorPtr handles_;
+  std::vector<ScopedPlatformHandle> handles_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
@@ -94,10 +96,6 @@ class ChannelPosix : public Channel,
         self_(this),
         handle_(connection_params.TakeChannelHandle()),
         io_task_runner_(io_task_runner)
-#if defined(OS_MACOSX)
-        ,
-        handles_to_close_(new PlatformHandleVector)
-#endif
   {
     CHECK(handle_.is_valid());
   }
@@ -144,10 +142,11 @@ class ChannelPosix : public Channel,
     leak_handle_ = true;
   }
 
-  bool GetReadPlatformHandles(size_t num_handles,
-                              const void* extra_header,
-                              size_t extra_header_size,
-                              ScopedPlatformHandleVectorPtr* handles) override {
+  bool GetReadPlatformHandles(
+      size_t num_handles,
+      const void* extra_header,
+      size_t extra_header_size,
+      std::vector<ScopedPlatformHandle>* handles) override {
     if (num_handles > std::numeric_limits<uint16_t>::max())
       return false;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -164,40 +163,35 @@ class ChannelPosix : public Channel,
     size_t num_mach_ports = mach_ports_header->num_ports;
     if (num_mach_ports > num_handles)
       return false;
-    if (incoming_platform_handles_.size() + num_mach_ports < num_handles) {
-      handles->reset();
+    if (incoming_platform_handles_.size() + num_mach_ports < num_handles)
       return true;
-    }
 
-    handles->reset(new PlatformHandleVector(num_handles));
+    handles->resize(num_handles);
     const MachPortsEntry* mach_ports = mach_ports_header->entries;
     for (size_t i = 0, mach_port_index = 0; i < num_handles; ++i) {
       if (mach_port_index < num_mach_ports &&
           mach_ports[mach_port_index].index == i) {
-        (*handles)->at(i) = PlatformHandle(
-            static_cast<mach_port_t>(mach_ports[mach_port_index].mach_port));
-        if ((*handles)->at(i).type != PlatformHandle::Type::MACH)
-          return false;
+        handles->at(i).reset(PlatformHandle(
+            static_cast<mach_port_t>(mach_ports[mach_port_index].mach_port)));
+        DCHECK_EQ(handles->at(i).get().type, PlatformHandle::Type::MACH);
         // These are actually just Mach port names until they're resolved from
         // the remote process.
-        (*handles)->at(i).type = PlatformHandle::Type::MACH_NAME;
+        handles->at(i).get().type = PlatformHandle::Type::MACH_NAME;
         mach_port_index++;
       } else {
         if (incoming_platform_handles_.empty())
           return false;
-        (*handles)->at(i) = incoming_platform_handles_.front();
+        handles->at(i) = std::move(incoming_platform_handles_.front());
         incoming_platform_handles_.pop_front();
       }
     }
 #else
-    if (incoming_platform_handles_.size() < num_handles) {
-      handles->reset();
+    if (incoming_platform_handles_.size() < num_handles)
       return true;
-    }
 
-    handles->reset(new PlatformHandleVector(num_handles));
+    handles->resize(num_handles);
     for (size_t i = 0; i < num_handles; ++i) {
-      (*handles)->at(i) = incoming_platform_handles_.front();
+      handles->at(i) = std::move(incoming_platform_handles_.front());
       incoming_platform_handles_.pop_front();
     }
 #endif
@@ -209,8 +203,6 @@ class ChannelPosix : public Channel,
   ~ChannelPosix() override {
     DCHECK(!read_watcher_);
     DCHECK(!write_watcher_);
-    for (auto handle : incoming_platform_handles_)
-      handle.CloseIfNecessary();
   }
 
   void StartOnIOThread() {
@@ -264,7 +256,7 @@ class ChannelPosix : public Channel,
       ignore_result(handle_.release());
     handle_.reset();
 #if defined(OS_MACOSX)
-    handles_to_close_.reset();
+    handles_to_close_.clear();
 #endif
 
     // May destroy the |this| if it was the last reference.
@@ -287,7 +279,7 @@ class ChannelPosix : public Channel,
       base::MessageLoop::current()->RemoveDestructionObserver(this);
 
       ScopedPlatformHandle accept_fd;
-      ServerAcceptConnection(handle_.get(), &accept_fd);
+      ServerAcceptConnection(handle_, &accept_fd);
       if (!accept_fd.is_valid()) {
         OnError(Error::kConnectionFailed);
         return;
@@ -312,7 +304,7 @@ class ChannelPosix : public Channel,
       DCHECK_GT(buffer_capacity, 0u);
 
       ssize_t read_result = PlatformChannelRecvmsg(
-          handle_.get(), buffer, buffer_capacity, &incoming_platform_handles_);
+          handle_, buffer, buffer_capacity, &incoming_platform_handles_);
 
       if (read_result > 0) {
         bytes_read = static_cast<size_t>(read_result);
@@ -364,13 +356,12 @@ class ChannelPosix : public Channel,
       message_view.advance_data_offset(bytes_written);
 
       ssize_t result;
-      ScopedPlatformHandleVectorPtr handles = message_view.TakeHandles();
-      if (handles && handles->size()) {
+      std::vector<ScopedPlatformHandle> handles = message_view.TakeHandles();
+      if (!handles.empty()) {
         iovec iov = {const_cast<void*>(message_view.data()),
                      message_view.data_num_bytes()};
         // TODO: Handle lots of handles.
-        result = PlatformChannelSendmsgWithHandles(
-            handle_.get(), &iov, 1, handles->data(), handles->size());
+        result = PlatformChannelSendmsgWithHandles(handle_, &iov, 1, handles);
         if (result >= 0) {
 #if defined(OS_MACOSX)
           // There is a bug on OSX which makes it dangerous to close
@@ -382,12 +373,12 @@ class ChannelPosix : public Channel,
           // descriptor. For more information, see:
           // http://crbug.com/298276
           std::vector<int> fds;
-          for (auto& handle : *handles)
-            fds.push_back(handle.handle);
+          for (auto& handle : handles)
+            fds.push_back(handle.get().handle);
           {
             base::AutoLock l(handles_to_close_lock_);
-            for (auto& handle : *handles)
-              handles_to_close_->push_back(handle);
+            for (auto& handle : handles)
+              handles_to_close_.emplace_back(std::move(handle));
           }
           MessagePtr fds_message(
               new Channel::Message(sizeof(fds[0]) * fds.size(), 0,
@@ -395,13 +386,10 @@ class ChannelPosix : public Channel,
           memcpy(fds_message->mutable_payload(), fds.data(),
                  sizeof(fds[0]) * fds.size());
           outgoing_messages_.emplace_back(std::move(fds_message), 0);
-          handles->clear();
-#else
-          handles.reset();
 #endif  // defined(OS_MACOSX)
         }
       } else {
-        result = PlatformChannelWrite(handle_.get(), message_view.data(),
+        result = PlatformChannelWrite(handle_, message_view.data(),
                                       message_view.data_num_bytes());
       }
 
@@ -470,7 +458,7 @@ class ChannelPosix : public Channel,
   bool OnControlMessage(Message::MessageType message_type,
                         const void* payload,
                         size_t payload_size,
-                        ScopedPlatformHandleVectorPtr handles) override {
+                        std::vector<ScopedPlatformHandle> handles) override {
     switch (message_type) {
       case Message::MessageType::HANDLES_SENT: {
         if (payload_size == 0)
@@ -508,27 +496,30 @@ class ChannelPosix : public Channel,
       return false;
 
     auto start =
-        std::find_if(handles_to_close_->begin(), handles_to_close_->end(),
-                     [&fds](const PlatformHandle& handle) {
-                       return handle.handle == fds[0];
+        std::find_if(handles_to_close_.begin(), handles_to_close_.end(),
+                     [&fds](const ScopedPlatformHandle& handle) {
+                       return handle.get().handle == fds[0];
                      });
-    if (start == handles_to_close_->end())
+    if (start == handles_to_close_.end())
       return false;
 
     auto it = start;
     size_t i = 0;
     // The FDs in the message should match a sequence of handles in
     // |handles_to_close_|.
-    for (; i < num_fds && it != handles_to_close_->end(); i++, ++it) {
-      if (it->handle != fds[i])
+    // TODO(wez): Consider making handles_to_close_ a circular_deque<>
+    // for greater efficiency? Or assign a unique Id to each FD-containing
+    // message, and map that to a vector of FDs to close, to avoid the
+    // need for this traversal? Id could even be the first FD in the message.
+    for (; i < num_fds && it != handles_to_close_.end(); i++, ++it) {
+      if (it->get().handle != fds[i])
         return false;
-
-      it->CloseIfNecessary();
     }
     if (i != num_fds)
       return false;
 
-    handles_to_close_->erase(start, it);
+    // Close the FDs by erase()ing their ScopedPlatformHandles.
+    handles_to_close_.erase(start, it);
     return true;
   }
 #endif  // defined(OS_MACOSX)
@@ -543,7 +534,7 @@ class ChannelPosix : public Channel,
   std::unique_ptr<base::MessageLoopForIO::FileDescriptorWatcher> read_watcher_;
   std::unique_ptr<base::MessageLoopForIO::FileDescriptorWatcher> write_watcher_;
 
-  base::circular_deque<PlatformHandle> incoming_platform_handles_;
+  base::circular_deque<ScopedPlatformHandle> incoming_platform_handles_;
 
   // Protects |pending_write_| and |outgoing_messages_|.
   base::Lock write_lock_;
@@ -555,7 +546,7 @@ class ChannelPosix : public Channel,
 
 #if defined(OS_MACOSX)
   base::Lock handles_to_close_lock_;
-  ScopedPlatformHandleVectorPtr handles_to_close_;
+  std::vector<ScopedPlatformHandle> handles_to_close_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChannelPosix);
