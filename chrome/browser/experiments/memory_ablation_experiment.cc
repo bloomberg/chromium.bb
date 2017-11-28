@@ -91,6 +91,7 @@ void MemoryAblationExperiment::TouchMemory(size_t offset) {
     for (; offset < max_offset; offset += page_size) {
       memory[offset] = static_cast<uint8_t>(offset);
     }
+    // Make sure compiler doesn't optimize away the writes.
     base::debug::Alias(memory_.get());
     if (offset < memory_size_) {
       ScheduleTouchMemory(offset);
