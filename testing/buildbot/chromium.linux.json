@@ -3689,18 +3689,6 @@
         "test": "compositor_unittests"
       },
       {
-        "args": [
-          "--enable-viz",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_browsertests.filter"
-        ],
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
-        },
-        "test": "content_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -3724,6 +3712,18 @@
         "name": "site_per_process_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--enable-viz",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_browsertests.filter"
+        ],
+        "name": "viz_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         },
         "test": "content_browsertests"
       },
@@ -4193,12 +4193,12 @@
         "script": "checkdeps.py"
       },
       {
-        "name": "webkit_lint",
-        "script": "webkit_lint.py"
-      },
-      {
         "name": "checkperms",
         "script": "checkperms.py"
+      },
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
       }
     ]
   },
@@ -4672,7 +4672,7 @@
       },
       {
         "args": [
-          "--site_per_process"
+          "--site-per-process"
         ],
         "name": "site_per_process_unit_tests",
         "swarming": {
