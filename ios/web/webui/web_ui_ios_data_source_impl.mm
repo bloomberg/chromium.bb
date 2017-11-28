@@ -57,7 +57,8 @@ class WebUIIOSDataSourceImpl::InternalDataSource : public URLDataSourceIOS {
     return parent_->deny_xframe_options_;
   }
   bool IsGzipped(const std::string& path) const override {
-    return parent_->use_gzip_;
+    return parent_->use_gzip_ &&
+           (parent_->json_path_.empty() || path != parent_->json_path_);
   }
 
  private:
