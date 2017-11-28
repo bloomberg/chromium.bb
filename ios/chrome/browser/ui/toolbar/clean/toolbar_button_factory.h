@@ -42,8 +42,10 @@
 - (ToolbarButton*)reloadToolbarButton;
 // Stop ToolbarButton.
 - (ToolbarButton*)stopToolbarButton;
-// Star ToolbarButton.
-- (ToolbarButton*)starToolbarButton;
+// Bookmark ToolbarButton.
+- (ToolbarButton*)bookmarkToolbarButton;
+// VoiceSearch ToolbarButton.
+- (ToolbarButton*)voiceSearchButton;
 
 // Returns images for Voice Search in an array representing the NORMAL/PRESSED
 // state

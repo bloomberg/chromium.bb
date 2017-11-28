@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -22,6 +23,12 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+class MockEnabledVoiceSearchProvider : public VoiceSearchProvider {
+  bool IsVoiceSearchEnabled() const override { return true; }
+};
+}
 
 @interface TestToolbarMediator
     : ToolbarMediator<CRWWebStateObserver, WebStateListObserving>
@@ -227,6 +234,39 @@ TEST_F(ToolbarMediatorTest, TestDecreaseNumberOfWebstates) {
 
   web_state_list_->DetachWebStateAt(0);
   [[consumer_ verify] setTabCount:kNumberOfWebStates - 1];
+}
+
+// Test that setting the voice search provider after the consumer works.
+TEST_F(ToolbarMediatorTest, TestVoiceSearchProviderAfterConsumer) {
+  MockEnabledVoiceSearchProvider provider;
+
+  OCMExpect([consumer_ setVoiceSearchEnabled:YES]);
+  mediator_.consumer = consumer_;
+  mediator_.voiceSearchProvider = &provider;
+
+  EXPECT_OCMOCK_VERIFY(consumer_);
+}
+
+// Test that setting the voice search provider after the consumer works.
+TEST_F(ToolbarMediatorTest, TestVoiceSearchProviderBeforeConsumer) {
+  MockEnabledVoiceSearchProvider provider;
+
+  OCMExpect([consumer_ setVoiceSearchEnabled:YES]);
+  mediator_.voiceSearchProvider = &provider;
+  mediator_.consumer = consumer_;
+
+  EXPECT_OCMOCK_VERIFY(consumer_);
+}
+
+// Test that setting the voice search provider after the consumer works.
+TEST_F(ToolbarMediatorTest, TestVoiceSearchProviderNotEnabled) {
+  VoiceSearchProvider provider;
+
+  OCMExpect([consumer_ setVoiceSearchEnabled:NO]);
+  mediator_.voiceSearchProvider = &provider;
+  mediator_.consumer = consumer_;
+
+  EXPECT_OCMOCK_VERIFY(consumer_);
 }
 
 }  // namespace

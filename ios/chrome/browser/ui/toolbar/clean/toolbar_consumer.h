@@ -19,6 +19,10 @@
 - (void)setLoadingProgressFraction:(double)progress;
 // Updates the toolbar with the current number of total tabs.
 - (void)setTabCount:(int)tabCount;
+// Sets the bookmarks status of the page.
+- (void)setPageBookmarked:(BOOL)bookmarked;
+// Sets whether the voice search is enabled or not.
+- (void)setVoiceSearchEnabled:(BOOL)enabled;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_CONSUMER_H_

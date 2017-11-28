@@ -7,9 +7,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_consumer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -30,7 +32,9 @@
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
 }
 
+@synthesize bookmarkModel = _bookmarkModel;
 @synthesize consumer = _consumer;
+@synthesize voiceSearchProvider = _voiceSearchProvider;
 @synthesize webState = _webState;
 @synthesize webStateList = _webStateList;
 
@@ -88,7 +92,7 @@
 
 - (void)webStateDidStartLoading:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
-  [self.consumer setIsLoading:self.webState->IsLoading()];
+  [self updateConsumer];
 }
 
 - (void)webStateDidStopLoading:(web::WebState*)webState {
@@ -136,6 +140,14 @@
 
 #pragma mark - Setters
 
+- (void)setVoiceSearchProvider:(VoiceSearchProvider*)voiceSearchProvider {
+  _voiceSearchProvider = voiceSearchProvider;
+  if (_voiceSearchProvider) {
+    [self.consumer
+        setVoiceSearchEnabled:_voiceSearchProvider->IsVoiceSearchEnabled()];
+  }
+}
+
 - (void)setWebState:(web::WebState*)webState {
   if (_webState) {
     _webState->RemoveObserver(_webStateObserver.get());
@@ -154,6 +166,10 @@
 
 - (void)setConsumer:(id<ToolbarConsumer>)consumer {
   _consumer = consumer;
+  if (self.voiceSearchProvider) {
+    [consumer
+        setVoiceSearchEnabled:self.voiceSearchProvider->IsVoiceSearchEnabled()];
+  }
   if (self.webState) {
     [self updateConsumer];
   }
@@ -181,6 +197,13 @@
   }
 }
 
+- (void)setBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel {
+  _bookmarkModel = bookmarkModel;
+  if (self.webState && self.consumer) {
+    [self updateConsumer];
+  }
+}
+
 #pragma mark - Helper methods
 
 // Updates the consumer to match the current WebState.
@@ -189,11 +212,15 @@
   DCHECK(self.consumer);
   [self updateConsumerForWebState:self.webState];
   [self.consumer setIsLoading:self.webState->IsLoading()];
+  [self.consumer setPageBookmarked:self.bookmarkModel &&
+                                   self.bookmarkModel->IsBookmarked(
+                                       self.webState->GetLastCommittedURL())];
 }
 
 // Updates the consumer with the new forward and back states.
 - (void)updateNavigationBackAndForwardStateForWebState:
     (web::WebState*)webState {
+  DCHECK(webState);
   [self.consumer
       setCanGoForward:webState->GetNavigationManager()->CanGoForward()];
   [self.consumer setCanGoBack:webState->GetNavigationManager()->CanGoBack()];

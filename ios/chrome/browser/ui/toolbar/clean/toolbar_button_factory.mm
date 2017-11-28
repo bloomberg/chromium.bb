@@ -193,19 +193,34 @@ const int styleCount = 2;
   return stopButton;
 }
 
-- (ToolbarButton*)starToolbarButton {
-  int starButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
+- (ToolbarButton*)bookmarkToolbarButton {
+  int bookmarkButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
       TOOLBAR_IDR_TWO_STATE(STAR);
-  ToolbarButton* starButton = [ToolbarButton
+  ToolbarButton* bookmarkButton = [ToolbarButton
       toolbarButtonWithImageForNormalState:NativeImage(
-                                               starButtonImages[self.style]
-                                                               [DEFAULT])
+                                               bookmarkButtonImages[self.style]
+                                                                   [DEFAULT])
                   imageForHighlightedState:NativeImage(
-                                               starButtonImages[self.style]
-                                                               [PRESSED])
+                                               bookmarkButtonImages[self.style]
+                                                                   [PRESSED])
                      imageForDisabledState:nil];
-  starButton.accessibilityLabel = l10n_util::GetNSString(IDS_TOOLTIP_STAR);
-  return starButton;
+  bookmarkButton.adjustsImageWhenHighlighted = NO;
+  [bookmarkButton
+      setImage:NativeImage(bookmarkButtonImages[self.style][PRESSED])
+      forState:UIControlStateSelected];
+  bookmarkButton.accessibilityLabel = l10n_util::GetNSString(IDS_TOOLTIP_STAR);
+  return bookmarkButton;
+}
+
+- (ToolbarButton*)voiceSearchButton {
+  NSArray<UIImage*>* images = [self voiceSearchImages];
+  ToolbarButton* voiceSearchButton =
+      [ToolbarButton toolbarButtonWithImageForNormalState:images[0]
+                                 imageForHighlightedState:images[1]
+                                    imageForDisabledState:nil];
+  voiceSearchButton.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_ACCNAME_VOICE_SEARCH);
+  return voiceSearchButton;
 }
 
 - (NSArray<UIImage*>*)voiceSearchImages {
