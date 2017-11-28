@@ -6,6 +6,8 @@
 
 #include "base/macros.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/gfx/shadow_util.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/wm/core/shadow_types.h"
 
 namespace wm {
@@ -13,6 +15,15 @@ namespace {
 
 gfx::Insets InsetsForElevation(int elevation) {
   return -gfx::Insets(2 * elevation) + gfx::Insets(elevation, 0, -elevation, 0);
+}
+
+gfx::Size NineboxImageSizeForElevationAndCornerRadius(int elevation,
+                                                      int corner_radius) {
+  auto values = gfx::ShadowValue::MakeMdShadowValues(elevation);
+  gfx::Rect bounds(0, 0, 1, 1);
+  bounds.Inset(-gfx::ShadowValue::GetBlurRegion(values));
+  bounds.Inset(-gfx::Insets(corner_radius));
+  return bounds.size();
 }
 
 using ShadowTest = aura::test::AuraTestBase;
@@ -72,6 +83,21 @@ TEST_F(ShadowTest, AdjustElevationForSmallContents) {
     shadow_bounds.Inset(InsetsForElevation((kHeight - 4) / 4));
     EXPECT_EQ(shadow_bounds, shadow.layer()->bounds());
   }
+}
+
+// Test that rounded corner radius is handled correctly.
+TEST_F(ShadowTest, AdjustRoundedCornerRadius) {
+  Shadow shadow;
+  shadow.Init(ShadowElevation::SMALL);
+  gfx::Rect content_bounds(100, 100, 300, 300);
+  shadow.SetContentBounds(content_bounds);
+  EXPECT_EQ(content_bounds, shadow.content_bounds());
+  shadow.SetRoundedCornerRadius(0);
+  gfx::Rect shadow_bounds(content_bounds);
+  shadow_bounds.Inset(InsetsForElevation(6));
+  EXPECT_EQ(shadow_bounds, shadow.layer()->bounds());
+  EXPECT_EQ(NineboxImageSizeForElevationAndCornerRadius(6, 0),
+            shadow.details_for_testing()->ninebox_image.size());
 }
 
 }  // namespace

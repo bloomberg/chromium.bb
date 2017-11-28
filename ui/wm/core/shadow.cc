@@ -124,7 +124,9 @@ void Shadow::UpdateLayerBounds() {
       gfx::ShadowDetails::Get(size_adjusted_elevation, rounded_corner_radius_);
   gfx::Insets blur_region = gfx::ShadowValue::GetBlurRegion(details.values) +
                             gfx::Insets(rounded_corner_radius_);
-  if (size_adjusted_elevation != effective_elevation_) {
+  // Update |shadow_layer_| if details changed and it has been updated in
+  // the past (|details_| is set), or elevation is non-zero.
+  if ((&details != details_) && (details_ || size_adjusted_elevation)) {
     shadow_layer_->UpdateNinePatchLayerImage(details.ninebox_image);
     // The ninebox grid is defined in terms of the image size. The shadow blurs
     // in both inward and outward directions from the edge of the contents, so
@@ -133,8 +135,8 @@ void Shadow::UpdateLayerBounds() {
     gfx::Rect aperture(details.ninebox_image.size());
     aperture.Inset(blur_region);
     shadow_layer_->UpdateNinePatchLayerAperture(aperture);
+    details_ = &details;
   }
-  effective_elevation_ = size_adjusted_elevation;
 
   // Shadow margins are negative, so this expands outwards from
   // |content_bounds_|.
