@@ -1,7 +1,0 @@
-{
-   "name": "plugins",
-   "version": "1",
-   "plugins": [
-     {"path": "plugin.dll", "public": true}
-   ]
-}

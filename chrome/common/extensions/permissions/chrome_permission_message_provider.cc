@@ -91,14 +91,6 @@ bool ChromePermissionMessageProvider::IsPrivilegeIncrease(
     const PermissionSet& old_permissions,
     const PermissionSet& new_permissions,
     Manifest::Type extension_type) const {
-  // Things can't get worse than native code access.
-  if (old_permissions.HasEffectiveFullAccess())
-    return false;
-
-  // Otherwise, it's a privilege increase if the new one has full access.
-  if (new_permissions.HasEffectiveFullAccess())
-    return true;
-
   if (IsHostPrivilegeIncrease(old_permissions, new_permissions, extension_type))
     return true;
 

@@ -602,23 +602,6 @@ class ExtensionServiceTest
   }
 
  protected:
-  // Paths to some of the fake extensions.
-  base::FilePath good1_path() {
-    return data_dir()
-        .AppendASCII("good")
-        .AppendASCII("Extensions")
-        .AppendASCII(good1)
-        .AppendASCII("2");
-  }
-
-  base::FilePath good2_path() {
-    return data_dir()
-        .AppendASCII("good")
-        .AppendASCII("Extensions")
-        .AppendASCII(good2)
-        .AppendASCII("1.0");
-  }
-
   void TestExternalProvider(MockExternalProvider* provider,
                             Manifest::Location location);
 
@@ -1390,7 +1373,6 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
   ASSERT_TRUE(known_perms.get());
   EXPECT_FALSE(known_perms->IsEmpty());
   EXPECT_EQ(expected_api_perms, known_perms->apis());
-  EXPECT_FALSE(known_perms->HasEffectiveFullAccess());
   EXPECT_EQ(expected_host_perms, known_perms->effective_hosts());
 }
 
@@ -1691,34 +1673,6 @@ TEST_F(ExtensionServiceTest, DefaultAppsGrantedPermissions) {
   EXPECT_TRUE(known_perms.get());
   EXPECT_FALSE(known_perms->IsEmpty());
   EXPECT_EQ(expected_api_perms, known_perms->apis());
-  EXPECT_FALSE(known_perms->HasEffectiveFullAccess());
-}
-#endif
-
-#if !defined(OS_POSIX) || defined(OS_MACOSX)
-// Tests that the granted permissions full_access bit gets set correctly when
-// an extension contains an NPAPI plugin.
-// Only run this on platforms that support NPAPI plugins.
-TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
-  InitPluginService();
-
-  InitializeEmptyExtensionService();
-
-  ASSERT_TRUE(base::PathExists(good1_path()));
-  const Extension* extension = PackAndInstallCRX(good1_path(), INSTALL_NEW);
-  EXPECT_EQ(0u, GetErrors().size());
-  EXPECT_EQ(1u, registry()->enabled_extensions().size());
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-
-  std::unique_ptr<const PermissionSet> permissions =
-      prefs->GetGrantedPermissions(extension->id());
-  EXPECT_FALSE(permissions->IsEmpty());
-  EXPECT_TRUE(permissions->HasEffectiveFullAccess());
-  EXPECT_FALSE(permissions->apis().empty());
-  EXPECT_TRUE(permissions->HasAPIPermission(APIPermission::kPlugin));
-
-  // Full access implies full host access too...
-  EXPECT_TRUE(permissions->HasEffectiveAccessToAllHosts());
 }
 #endif
 
@@ -1777,7 +1731,6 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
       prefs->GetGrantedPermissions(extension_id);
   ASSERT_TRUE(current_perms.get());
   ASSERT_FALSE(current_perms->IsEmpty());
-  ASSERT_FALSE(current_perms->HasEffectiveFullAccess());
   ASSERT_EQ(expected_api_permissions, current_perms->apis());
   ASSERT_EQ(expected_host_permissions, current_perms->effective_hosts());
 
@@ -1817,7 +1770,6 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   current_perms = prefs->GetGrantedPermissions(extension_id);
   ASSERT_TRUE(current_perms.get());
   ASSERT_FALSE(current_perms->IsEmpty());
-  ASSERT_FALSE(current_perms->HasEffectiveFullAccess());
   ASSERT_EQ(expected_api_permissions, current_perms->apis());
   ASSERT_EQ(expected_host_permissions, current_perms->effective_hosts());
 }

@@ -332,13 +332,6 @@ ChromePermissionMessageRule::GetAllRules() {
       // Full access permission messages.
       {IDS_EXTENSION_PROMPT_WARNING_DEBUGGER, {APIPermission::kDebugger}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS,
-       {APIPermission::kPlugin},
-       {APIPermission::kDeclarativeWebRequest, APIPermission::kFavicon,
-        APIPermission::kFullAccess, APIPermission::kHostsAll,
-        APIPermission::kHostsAllReadOnly, APIPermission::kProcesses,
-        APIPermission::kTab, APIPermission::kTopSites,
-        APIPermission::kWebNavigation}},
-      {IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS,
        {APIPermission::kFullAccess},
        {APIPermission::kDeclarativeWebRequest, APIPermission::kFavicon,
         APIPermission::kHostsAll, APIPermission::kHostsAllReadOnly,

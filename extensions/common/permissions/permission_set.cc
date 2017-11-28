@@ -218,15 +218,6 @@ bool PermissionSet::HasEffectiveAccessToURL(const GURL& url) const {
   return effective_hosts().MatchesURL(url);
 }
 
-bool PermissionSet::HasEffectiveFullAccess() const {
-  for (APIPermissionSet::const_iterator i = apis().begin();
-       i != apis().end(); ++i) {
-    if (i->info()->implies_full_access())
-      return true;
-  }
-  return false;
-}
-
 PermissionSet::PermissionSet(const PermissionSet& permissions)
     : apis_(permissions.apis_),
       manifest_permissions_(permissions.manifest_permissions_),

@@ -108,10 +108,6 @@ class PermissionSet {
   // Returns true if this permission set includes effective access to |url|.
   bool HasEffectiveAccessToURL(const GURL& url) const;
 
-  // Returns true if this permission set effectively represents full access
-  // (e.g. native code).
-  bool HasEffectiveFullAccess() const;
-
   const APIPermissionSet& apis() const { return apis_; }
 
   const ManifestPermissionSet& manifest_permissions() const {
