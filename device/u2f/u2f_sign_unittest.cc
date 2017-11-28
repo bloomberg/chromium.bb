@@ -13,7 +13,10 @@
 #include "device/u2f/u2f_sign.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
+
 namespace device {
+
 class U2fSignTest : public testing::Test {
  public:
   U2fSignTest()
@@ -61,9 +64,9 @@ TEST_F(U2fSignTest, TestSignSuccess) {
   std::unique_ptr<MockU2fDevice> device(new MockU2fDevice());
   auto discovery = std::make_unique<MockU2fDiscovery>();
 
-  EXPECT_CALL(*device.get(), DeviceTransactPtr(testing::_, testing::_))
+  EXPECT_CALL(*device.get(), DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
-  EXPECT_CALL(*device.get(), TryWink(testing::_))
+  EXPECT_CALL(*device.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(*discovery, Start())
       .WillOnce(testing::Invoke(discovery.get(),
@@ -98,10 +101,10 @@ TEST_F(U2fSignTest, TestDelayedSuccess) {
   auto discovery = std::make_unique<MockU2fDiscovery>();
 
   // Go through the state machine twice before success
-  EXPECT_CALL(*device.get(), DeviceTransactPtr(testing::_, testing::_))
+  EXPECT_CALL(*device.get(), DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::NotSatisfied))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
-  EXPECT_CALL(*device.get(), TryWink(testing::_))
+  EXPECT_CALL(*device.get(), TryWinkRef(_))
       .Times(2)
       .WillRepeatedly(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(*discovery, Start())
@@ -143,13 +146,13 @@ TEST_F(U2fSignTest, TestMultipleHandles) {
   auto discovery = std::make_unique<MockU2fDiscovery>();
 
   // Wrong key would respond with SW_WRONG_DATA
-  EXPECT_CALL(*device.get(), DeviceTransactPtr(testing::_, testing::_))
+  EXPECT_CALL(*device.get(), DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
   // Only one wink expected per device
-  EXPECT_CALL(*device.get(), TryWink(testing::_))
+  EXPECT_CALL(*device.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(*discovery, Start())
       .WillOnce(testing::Invoke(discovery.get(),
@@ -185,15 +188,15 @@ TEST_F(U2fSignTest, TestMultipleDevices) {
   std::unique_ptr<MockU2fDevice> device1(new MockU2fDevice());
   auto discovery = std::make_unique<MockU2fDiscovery>();
 
-  EXPECT_CALL(*device0.get(), DeviceTransactPtr(testing::_, testing::_))
+  EXPECT_CALL(*device0.get(), DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::NotSatisfied));
   // One wink per device
-  EXPECT_CALL(*device0.get(), TryWink(testing::_))
+  EXPECT_CALL(*device0.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
-  EXPECT_CALL(*device1.get(), DeviceTransactPtr(testing::_, testing::_))
+  EXPECT_CALL(*device1.get(), DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
-  EXPECT_CALL(*device1.get(), TryWink(testing::_))
+  EXPECT_CALL(*device1.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(*discovery, Start())
       .WillOnce(testing::Invoke(discovery.get(),
@@ -230,18 +233,18 @@ TEST_F(U2fSignTest, TestFakeEnroll) {
   std::unique_ptr<MockU2fDevice> device1(new MockU2fDevice());
   auto discovery = std::make_unique<MockU2fDiscovery>();
 
-  EXPECT_CALL(*device0.get(), DeviceTransactPtr(testing::_, testing::_))
+  EXPECT_CALL(*device0.get(), DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::NotSatisfied));
   // One wink per device
-  EXPECT_CALL(*device0.get(), TryWink(testing::_))
+  EXPECT_CALL(*device0.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   // Both keys will be tried, when both fail, register is tried on that device
-  EXPECT_CALL(*device1.get(), DeviceTransactPtr(testing::_, testing::_))
+  EXPECT_CALL(*device1.get(), DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorRegister));
-  EXPECT_CALL(*device1.get(), TryWink(testing::_))
+  EXPECT_CALL(*device1.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(*discovery, Start())
       .WillOnce(testing::Invoke(discovery.get(),

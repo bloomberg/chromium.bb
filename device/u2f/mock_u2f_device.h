@@ -24,21 +24,28 @@ class MockU2fDevice : public U2fDevice {
   MockU2fDevice();
   ~MockU2fDevice() override;
 
-  MOCK_METHOD1(TryWink, void(const WinkCallback& cb));
+  // GMock cannot mock a method taking a move-only type.
+  // TODO(crbug.com/729950): Remove these workarounds once support for move-only
+  // types is added to GMock.
+  MOCK_METHOD1(TryWinkRef, void(WinkCallback& cb));
+  void TryWink(WinkCallback cb) override;
+
   MOCK_CONST_METHOD0(GetId, std::string(void));
-  // GMock cannot mock a method taking a std::unique_ptr<T>
+  // GMock cannot mock a method taking a move-only type.
+  // TODO(crbug.com/729950): Remove these workarounds once support for move-only
+  // types is added to GMock.
   MOCK_METHOD2(DeviceTransactPtr,
-               void(U2fApduCommand* command, const DeviceCallback& cb));
+               void(U2fApduCommand* command, DeviceCallback& cb));
   void DeviceTransact(std::unique_ptr<U2fApduCommand> command,
-                      const DeviceCallback& cb) override;
+                      DeviceCallback cb) override;
   base::WeakPtr<U2fDevice> GetWeakPtr() override;
   static void TransactNoError(std::unique_ptr<U2fApduCommand> command,
-                              const DeviceCallback& cb);
-  static void NotSatisfied(U2fApduCommand* cmd, const DeviceCallback& cb);
-  static void WrongData(U2fApduCommand* cmd, const DeviceCallback& cb);
-  static void NoErrorSign(U2fApduCommand* cmd, const DeviceCallback& cb);
-  static void NoErrorRegister(U2fApduCommand* cmd, const DeviceCallback& cb);
-  static void WinkDoNothing(const WinkCallback& cb);
+                              DeviceCallback cb);
+  static void NotSatisfied(U2fApduCommand* cmd, DeviceCallback& cb);
+  static void WrongData(U2fApduCommand* cmd, DeviceCallback& cb);
+  static void NoErrorSign(U2fApduCommand* cmd, DeviceCallback& cb);
+  static void NoErrorRegister(U2fApduCommand* cmd, DeviceCallback& cb);
+  static void WinkDoNothing(WinkCallback& cb);
 
  private:
   base::WeakPtrFactory<U2fDevice> weak_factory_;

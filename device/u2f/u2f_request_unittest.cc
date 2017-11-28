@@ -13,6 +13,8 @@
 #include "device/u2f/u2f_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
+
 namespace device {
 namespace {
 
@@ -73,7 +75,7 @@ TEST_F(U2fRequestTest, TestIterateDevice) {
   // device will be tried again. Check for the expected behavior here.
   auto* mock_device =
       static_cast<MockU2fDevice*>(request.devices_.front().get());
-  EXPECT_CALL(*mock_device, TryWink(testing::_));
+  EXPECT_CALL(*mock_device, TryWinkRef(_));
   task_runner_->FastForwardUntilNoTasksRemain();
 
   EXPECT_EQ(mock_device, request.current_device_.get());
@@ -98,7 +100,7 @@ TEST_F(U2fRequestTest, TestBasicMachine) {
 
   // Add one U2F device
   auto device = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device, TryWink(testing::_))
+  EXPECT_CALL(*device, TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery_weak->AddDevice(std::move(device));
 

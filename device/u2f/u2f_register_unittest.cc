@@ -65,7 +65,7 @@ TEST_F(U2fRegisterTest, TestRegisterSuccess) {
       .WillRepeatedly(testing::Return("device0"));
   EXPECT_CALL(*device.get(), DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorRegister));
-  EXPECT_CALL(*device.get(), TryWink(_))
+  EXPECT_CALL(*device.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(*discovery, Start())
       .WillOnce(testing::Invoke(discovery.get(),
@@ -102,7 +102,7 @@ TEST_F(U2fRegisterTest, TestDelayedSuccess) {
   EXPECT_CALL(*device.get(), DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::NotSatisfied))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorRegister));
-  EXPECT_CALL(*device.get(), TryWink(_))
+  EXPECT_CALL(*device.get(), TryWinkRef(_))
       .Times(2)
       .WillRepeatedly(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(*discovery, Start())
@@ -143,11 +143,11 @@ TEST_F(U2fRegisterTest, TestMultipleDevices) {
   EXPECT_CALL(*device0.get(), DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::NotSatisfied));
   // One wink per device
-  EXPECT_CALL(*device0.get(), TryWink(_))
+  EXPECT_CALL(*device0.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(*device1.get(), DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorRegister));
-  EXPECT_CALL(*device1.get(), TryWink(_))
+  EXPECT_CALL(*device1.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(*discovery, Start())
       .WillOnce(testing::Invoke(discovery.get(),
@@ -204,7 +204,7 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
   // TryWink() will be called twice. First during the check only sign-in. After
   // check only sign operation is complete, request state is changed to IDLE,
   // and TryWink() is called again before Register() is called.
-  EXPECT_CALL(*device.get(), TryWink(_))
+  EXPECT_CALL(*device.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   EXPECT_CALL(*discovery, Start())
@@ -270,10 +270,10 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
 
   // TryWink() will be called twice on both devices -- during check only
   // sign-in operation and during registration attempt.
-  EXPECT_CALL(*device0.get(), TryWink(_))
+  EXPECT_CALL(*device0.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
-  EXPECT_CALL(*device1.get(), TryWink(_))
+  EXPECT_CALL(*device1.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
 
@@ -338,7 +338,7 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithDuplicateHandle) {
   // Since duplicate key handle is found, registration process is terminated
   // before actual Register() is called on the device. Therefore, TryWink() is
   // invoked once.
-  EXPECT_CALL(*device.get(), TryWink(_))
+  EXPECT_CALL(*device.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
 
   EXPECT_CALL(*discovery, Start())
@@ -401,10 +401,10 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorRegister));
 
-  EXPECT_CALL(*device0.get(), TryWink(_))
+  EXPECT_CALL(*device0.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
 
-  EXPECT_CALL(*device1.get(), TryWink(_))
+  EXPECT_CALL(*device1.get(), TryWinkRef(_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
 
   EXPECT_CALL(*discovery, Start())
