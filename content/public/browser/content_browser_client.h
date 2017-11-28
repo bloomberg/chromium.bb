@@ -201,6 +201,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents);
 
+  // Allow embedder control GPU process launch retry on failure behavior.
+  virtual bool AllowGpuLaunchRetryOnIOThread();
+
   // Notifies that a render process will be created. This is called before
   // the content layer adds its own BrowserMessageFilters, so that the
   // embedder's IPC filters have priority.

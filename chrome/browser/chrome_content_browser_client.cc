@@ -286,6 +286,7 @@
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
 #include "chrome/browser/android/app_hooks.h"
 #include "chrome/browser/android/chrome_context_util.h"
 #include "chrome/browser/android/devtools_manager_delegate_android.h"
@@ -1052,6 +1053,18 @@ content::WebContentsViewDelegate*
     ChromeContentBrowserClient::GetWebContentsViewDelegate(
         content::WebContents* web_contents) {
   return CreateWebContentsViewDelegate(web_contents);
+}
+
+bool ChromeContentBrowserClient::AllowGpuLaunchRetryOnIOThread() {
+#if defined(OS_ANDROID)
+  const base::android::ApplicationState app_state =
+      base::android::ApplicationStatusListener::GetState();
+  return base::android::APPLICATION_STATE_UNKNOWN == app_state ||
+         base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES == app_state ||
+         base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES == app_state;
+#else
+  return true;
+#endif
 }
 
 void ChromeContentBrowserClient::RenderProcessWillLaunch(

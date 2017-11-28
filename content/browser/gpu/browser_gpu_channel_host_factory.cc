@@ -139,7 +139,10 @@ void BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO(
     const gpu::GpuFeatureInfo& gpu_feature_info,
     GpuProcessHost::EstablishChannelStatus status) {
   if (!channel_handle.is_valid() &&
-      status == GpuProcessHost::EstablishChannelStatus::GPU_HOST_INVALID) {
+      status == GpuProcessHost::EstablishChannelStatus::GPU_HOST_INVALID &&
+      // Ask client every time instead of passing this down from UI thread to
+      // avoid having the value be stale.
+      GetContentClient()->browser()->AllowGpuLaunchRetryOnIOThread()) {
     DVLOG(1) << "Failed to create channel on existing GPU process. Trying to "
                 "restart GPU process.";
     main_task_runner_->PostTask(
