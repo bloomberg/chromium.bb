@@ -17,7 +17,6 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   DefaultAccessibilityDelegate();
   ~DefaultAccessibilityDelegate() override;
 
-  bool IsSpokenFeedbackEnabled() const override;
   void SetMagnifierEnabled(bool enabled) override;
   bool IsMagnifierEnabled() const override;
   void SetAutoclickEnabled(bool enabled) override;
@@ -41,8 +40,6 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   bool ShouldShowAccessibilityMenu() const override;
   bool IsBrailleDisplayConnected() const override;
   void SilenceSpokenFeedback() const override;
-  void ToggleSpokenFeedback(
-      AccessibilityNotificationVisibility notify) override;
   void SaveScreenMagnifierScale(double scale) override;
   double GetSavedScreenMagnifierScale() override;
   bool ShouldToggleSpokenFeedbackViaTouch() override;
@@ -52,7 +49,6 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   void HandleAccessibilityGesture(ui::AXGesture gesture) override;
 
  private:
-  bool spoken_feedback_enabled_ = false;
   bool screen_magnifier_enabled_ = false;
   bool autoclick_enabled_ = false;
   bool virtual_keyboard_enabled_ = false;

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -970,8 +971,6 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowNotification) {
   const base::string16 BRAILLE_CONNECTED =
       base::ASCIIToUTF16("Braille display connected.");
-  const base::string16 CHROMEVOX_ENABLED_TITLE =
-      base::ASCIIToUTF16("ChromeVox enabled");
   const base::string16 CHROMEVOX_ENABLED =
       base::ASCIIToUTF16("Press Ctrl + Alt + Z to disable spoken feedback.");
   const base::string16 BRAILLE_CONNECTED_AND_CHROMEVOX_ENABLED_TITLE =
@@ -979,18 +978,17 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowNotification) {
 
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
-  // Enabling spoken feedback should show the notification.
-  EnableSpokenFeedback(true, ash::A11Y_NOTIFICATION_SHOW);
-  message_center::NotificationList::Notifications notifications =
-      MessageCenter::Get()->GetVisibleNotifications();
-  EXPECT_EQ(1u, notifications.size());
-  EXPECT_EQ(CHROMEVOX_ENABLED_TITLE, (*notifications.begin())->title());
-  EXPECT_EQ(CHROMEVOX_ENABLED, (*notifications.begin())->message());
+  ash::Shell::Get()->accessibility_controller()->SetSpokenFeedbackEnabled(
+      true, ash::A11Y_NOTIFICATION_SHOW);
+  // Spin the run loop to make sure ash see the change.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   // Connecting a braille display when spoken feedback is already enabled
   // should only show the message about the braille display.
   SetBrailleConnected(true);
-  notifications = MessageCenter::Get()->GetVisibleNotifications();
+  message_center::NotificationList::Notifications notifications =
+      MessageCenter::Get()->GetVisibleNotifications();
   EXPECT_EQ(1u, notifications.size());
   EXPECT_EQ(base::string16(), (*notifications.begin())->title());
   EXPECT_EQ(BRAILLE_CONNECTED, (*notifications.begin())->message());
@@ -1001,7 +999,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowNotification) {
   EXPECT_TRUE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   notifications = MessageCenter::Get()->GetVisibleNotifications();
   EXPECT_EQ(0u, notifications.size());
-  EnableSpokenFeedback(false, ash::A11Y_NOTIFICATION_SHOW);
+  ash::Shell::Get()->accessibility_controller()->SetSpokenFeedbackEnabled(
+      false, ash::A11Y_NOTIFICATION_SHOW);
+  // Spin the run loop to make sure ash see the change.
+  base::RunLoop().RunUntilIdle();
   notifications = MessageCenter::Get()->GetVisibleNotifications();
   EXPECT_EQ(0u, notifications.size());
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
@@ -1009,6 +1010,8 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowNotification) {
   // Connecting a braille display should enable spoken feedback and show
   // both messages.
   SetBrailleConnected(true);
+  // Spin the run loop to make sure ash see the change.
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   notifications = MessageCenter::Get()->GetVisibleNotifications();
   EXPECT_EQ(BRAILLE_CONNECTED_AND_CHROMEVOX_ENABLED_TITLE,
