@@ -13,6 +13,9 @@ namespace password_manager {
 // exported.
 class Destination {
  public:
+  Destination() = default;
+  virtual ~Destination() = default;
+
   // Send the data to the destination, synchronously.
   virtual bool Write(const std::string& data) = 0;
 };

@@ -14,10 +14,13 @@
 class DestinationFileSystem : public password_manager::Destination {
  public:
   explicit DestinationFileSystem(base::FilePath destination_path);
-  virtual ~DestinationFileSystem() = default;
+  ~DestinationFileSystem() override = default;
 
   // password_manager::Destination
   bool Write(const std::string& data) override;
+
+  // Get this instance's target.
+  const base::FilePath& GetDestinationPathForTesting();
 
  private:
   // The file, to which the data will be written.
