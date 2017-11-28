@@ -59,20 +59,6 @@ static const int kInvalidEmbeddedWorkerThreadId = -1;
 static constexpr base::TimeDelta kServiceWorkerScriptMaxCacheAge =
     base::TimeDelta::FromHours(24);
 
-// ServiceWorker provider type.
-enum ServiceWorkerProviderType {
-  SERVICE_WORKER_PROVIDER_UNKNOWN,
-
-  // For ServiceWorker clients.
-  SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-  SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER,
-
-  // For ServiceWorkers.
-  SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER,
-
-  SERVICE_WORKER_PROVIDER_TYPE_LAST = SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER
-};
-
 // Indicates how the service worker handled a fetch event.
 enum ServiceWorkerFetchEventResult {
   // Browser should fallback to native fetch.

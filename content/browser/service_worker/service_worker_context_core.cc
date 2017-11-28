@@ -39,6 +39,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "third_party/WebKit/common/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
@@ -94,7 +95,7 @@ bool IsSameOriginClientProviderHost(const GURL& origin,
 bool IsSameOriginWindowProviderHost(const GURL& origin,
                                     ServiceWorkerProviderHost* host) {
   return host->provider_type() ==
-             ServiceWorkerProviderType::SERVICE_WORKER_PROVIDER_FOR_WINDOW &&
+             blink::mojom::ServiceWorkerProviderType::kForWindow &&
          host->document_url().GetOrigin() == origin;
 }
 

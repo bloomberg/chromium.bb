@@ -7,6 +7,7 @@
 
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/WebKit/common/service_worker/service_worker_provider_type.mojom.h"
 
 namespace content {
 
@@ -22,7 +23,7 @@ struct CONTENT_EXPORT ServiceWorkerProviderHostInfo {
       mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info);
   ServiceWorkerProviderHostInfo(int provider_id,
                                 int route_id,
-                                ServiceWorkerProviderType type,
+                                blink::mojom::ServiceWorkerProviderType type,
                                 bool is_parent_frame_secure);
   ~ServiceWorkerProviderHostInfo();
 
@@ -40,9 +41,9 @@ struct CONTENT_EXPORT ServiceWorkerProviderHostInfo {
   // |route_id| is MSG_ROUTING_NONE.
   int route_id;
 
-  // This identifies whether this provider is for Service Worker controllees
-  // (documents and Shared Workers) or for controllers (Service Workers).
-  ServiceWorkerProviderType type;
+  // This identifies whether this provider is for a service worker or for a
+  // service worker client (Documents and Shared Workers).
+  blink::mojom::ServiceWorkerProviderType type;
 
   // |is_parent_frame_secure| is false if the provider is created for a document
   // whose parent frame is not secure from the point of view of the document;

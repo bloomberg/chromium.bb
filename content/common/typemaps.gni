@@ -16,7 +16,6 @@ typemaps = [
   "//content/common/service_worker/service_worker_event_dispatcher.typemap",
   "//content/common/service_worker/service_worker_fetch_request.typemap",
   "//content/common/service_worker/service_worker_provider.typemap",
-  "//content/common/service_worker/service_worker_types.typemap",
   "//content/common/url_loader_factory_bundle.typemap",
   "//content/common/web_preferences.typemap",
   "//content/common/media/media_session.typemap",

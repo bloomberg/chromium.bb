@@ -221,9 +221,10 @@ class ServiceWorkerProviderHostTest : public testing::Test {
       host = ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true,
           base::Callback<WebContents*(void)>());
-      ServiceWorkerProviderHostInfo info(host->provider_id(), 1 /* route_id */,
-                                         SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-                                         true /* is_parent_frame_secure */);
+      ServiceWorkerProviderHostInfo info(
+          host->provider_id(), 1 /* route_id */,
+          blink::mojom::ServiceWorkerProviderType::kForWindow,
+          true /* is_parent_frame_secure */);
       remote_endpoint->BindWithProviderHostInfo(&info);
       host->CompleteNavigationInitialized(
           helper_->mock_render_process_id(), std::move(info),
@@ -402,7 +403,8 @@ TEST_F(ServiceWorkerProviderHostTest, CrossSiteTransfer) {
   const int process_id = provider_host->process_id();
   const int provider_id = provider_host->provider_id();
   const int frame_id = provider_host->frame_id();
-  const ServiceWorkerProviderType type = provider_host->provider_type();
+  const blink::mojom::ServiceWorkerProviderType type =
+      provider_host->provider_type();
   const bool is_parent_frame_secure = provider_host->is_parent_frame_secure();
   const ServiceWorkerDispatcherHost* dispatcher_host =
       provider_host->dispatcher_host();
@@ -422,7 +424,8 @@ TEST_F(ServiceWorkerProviderHostTest, CrossSiteTransfer) {
   EXPECT_EQ(ChildProcessHost::kInvalidUniqueID, provider_host->process_id());
   EXPECT_EQ(kInvalidServiceWorkerProviderId, provider_host->provider_id());
   EXPECT_EQ(MSG_ROUTING_NONE, provider_host->frame_id());
-  EXPECT_EQ(SERVICE_WORKER_PROVIDER_UNKNOWN, provider_host->provider_type());
+  EXPECT_EQ(blink::mojom::ServiceWorkerProviderType::kUnknown,
+            provider_host->provider_type());
   EXPECT_FALSE(provider_host->is_parent_frame_secure());
   EXPECT_EQ(nullptr, provider_host->dispatcher_host());
 
@@ -439,7 +442,8 @@ TEST_F(ServiceWorkerProviderHostTest, CrossSiteTransfer) {
 
   EXPECT_EQ(kInvalidServiceWorkerProviderId, provisional_host->provider_id());
   EXPECT_EQ(MSG_ROUTING_NONE, provisional_host->frame_id());
-  EXPECT_EQ(SERVICE_WORKER_PROVIDER_UNKNOWN, provisional_host->provider_type());
+  EXPECT_EQ(blink::mojom::ServiceWorkerProviderType::kUnknown,
+            provisional_host->provider_type());
   EXPECT_FALSE(provisional_host->is_parent_frame_secure());
   EXPECT_EQ(dispatcher_host, provisional_host->dispatcher_host());
 
@@ -495,9 +499,10 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
           base::Callback<WebContents*(void)>());
-  ServiceWorkerProviderHostInfo info(host->provider_id(), 1 /* route_id */,
-                                     SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-                                     true /* is_parent_frame_secure */);
+  ServiceWorkerProviderHostInfo info(
+      host->provider_id(), 1 /* route_id */,
+      blink::mojom::ServiceWorkerProviderType::kForWindow,
+      true /* is_parent_frame_secure */);
   remote_endpoints_.emplace_back();
   remote_endpoints_.back().BindWithProviderHostInfo(&info);
   auto container = std::make_unique<MockServiceWorkerContainer>(
@@ -535,9 +540,10 @@ TEST_F(ServiceWorkerProviderHostTest, ActiveIsNotController) {
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
           base::Callback<WebContents*(void)>());
-  ServiceWorkerProviderHostInfo info(host->provider_id(), 1 /* route_id */,
-                                     SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-                                     true /* is_parent_frame_secure */);
+  ServiceWorkerProviderHostInfo info(
+      host->provider_id(), 1 /* route_id */,
+      blink::mojom::ServiceWorkerProviderType::kForWindow,
+      true /* is_parent_frame_secure */);
   remote_endpoints_.emplace_back();
   remote_endpoints_.back().BindWithProviderHostInfo(&info);
   auto container = std::make_unique<MockServiceWorkerContainer>(

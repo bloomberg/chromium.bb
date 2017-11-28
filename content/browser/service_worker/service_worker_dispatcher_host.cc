@@ -25,7 +25,6 @@
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
@@ -35,6 +34,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/common/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
@@ -231,8 +231,8 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
     ServiceWorkerProviderHost* sender_provider_host,
     const StatusCallback& callback) {
   switch (sender_provider_host->provider_type()) {
-    case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
-    case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
+    case blink::mojom::ServiceWorkerProviderType::kForWindow:
+    case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
       service_worker_client_utils::GetClient(
           sender_provider_host,
           base::Bind(&ServiceWorkerDispatcherHost::
@@ -241,7 +241,7 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
                      this, worker, message, source_origin, sent_message_ports,
                      base::nullopt, callback));
       break;
-    case SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER: {
+    case blink::mojom::ServiceWorkerProviderType::kForServiceWorker: {
       // Clamp timeout to the sending worker's remaining timeout, to prevent
       // postMessage from keeping workers alive forever.
       base::TimeDelta timeout =
@@ -260,7 +260,7 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
                          callback, *worker_info));
       break;
     }
-    case SERVICE_WORKER_PROVIDER_UNKNOWN:
+    case blink::mojom::ServiceWorkerProviderType::kUnknown:
     default:
       NOTREACHED() << sender_provider_host->provider_type();
       break;
@@ -298,7 +298,7 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     }
 
     // Otherwise, completed the initialization of the pre-created host.
-    if (info.type != SERVICE_WORKER_PROVIDER_FOR_WINDOW) {
+    if (info.type != blink::mojom::ServiceWorkerProviderType::kForWindow) {
       bad_message::ReceivedBadMessage(
           this, bad_message::SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_NOT_WINDOW);
       return;
@@ -309,7 +309,8 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
   } else {
     // Provider hosts for service workers should be pre-created in StartWorker
     // in ServiceWorkerVersion.
-    if (info.type == SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER) {
+    if (info.type ==
+        blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
       bad_message::ReceivedBadMessage(
           this, bad_message::SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_CONTROLLER);
       return;

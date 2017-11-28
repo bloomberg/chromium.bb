@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "third_party/WebKit/common/service_worker/service_worker_provider_type.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -85,7 +86,7 @@ class ServiceWorkerContextCoreObserver {
       int process_id,
       int route_id,
       const base::Callback<WebContents*(void)>& web_contents_getter,
-      ServiceWorkerProviderType type) {}
+      blink::mojom::ServiceWorkerProviderType type) {}
   virtual void OnControlleeRemoved(int64_t version_id,
                                    const std::string& uuid) {}
   virtual void OnRegistrationStored(int64_t registration_id,
