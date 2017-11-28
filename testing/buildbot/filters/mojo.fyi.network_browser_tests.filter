@@ -430,6 +430,8 @@
 -PreviewsBrowserTest.NoScriptPreviewsEnabled
 # Started failing in r514649.
 -PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabled
+# Added in r519342.
+-PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabledHttpRedirectToHttps
 
 # crbug.com/756642 Need to add support for URL blacklist.
 -PolicyTest.FileURLBlacklist
