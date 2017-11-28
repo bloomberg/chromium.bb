@@ -146,64 +146,75 @@ TEST_F(CWVAutofillControllerTest, ClearForm) {
 
 // Tests CWVAutofillController delegate focus callback is invoked.
 TEST_F(CWVAutofillControllerTest, FocusCallback) {
-  // [delegate expect] returns an autoreleased object, but it must be destroyed
-  // before this test exits to avoid holding on to |autofill_controller_|.
-  @autoreleasepool {
     id delegate = OCMProtocolMock(@protocol(CWVAutofillControllerDelegate));
     autofill_controller_.delegate = delegate;
 
-    web::FormActivityParams params;
-    params.form_name = base::SysNSStringToUTF8(kTestFormName);
-    params.field_name = base::SysNSStringToUTF8(kTestFieldName);
-    params.value = base::SysNSStringToUTF8(kTestFieldValue);
-    params.type = "focus";
+    // [delegate expect] returns an autoreleased object, but it must be
+    // destroyed before this test exits to avoid holding on to
+    // |autofill_controller_|.
+    @autoreleasepool {
+      [[delegate expect] autofillController:autofill_controller_
+                    didFocusOnFieldWithName:kTestFieldName
+                                   formName:kTestFormName
+                                      value:kTestFieldValue];
 
-    [[delegate expect] autofillController:autofill_controller_
-                  didFocusOnFieldWithName:kTestFieldName
-                                 formName:kTestFormName
-                                    value:kTestFieldValue];
+      web::FormActivityParams params;
+      params.form_name = base::SysNSStringToUTF8(kTestFormName);
+      params.field_name = base::SysNSStringToUTF8(kTestFieldName);
+      params.value = base::SysNSStringToUTF8(kTestFieldValue);
+      params.type = "focus";
+      web_state_.OnFormActivity(params);
+
+      [delegate verify];
   }
 }
 
 // Tests CWVAutofillController delegate input callback is invoked.
 TEST_F(CWVAutofillControllerTest, InputCallback) {
-  // [delegate expect] returns an autoreleased object, but it must be destroyed
-  // before this test exits to avoid holding on to |autofill_controller_|.
-  @autoreleasepool {
     id delegate = OCMProtocolMock(@protocol(CWVAutofillControllerDelegate));
     autofill_controller_.delegate = delegate;
 
-    web::FormActivityParams params;
-    params.form_name = base::SysNSStringToUTF8(kTestFormName);
-    params.field_name = base::SysNSStringToUTF8(kTestFieldName);
-    params.value = base::SysNSStringToUTF8(kTestFieldValue);
-    params.type = "input";
+    // [delegate expect] returns an autoreleased object, but it must be
+    // destroyed before this test exits to avoid holding on to
+    // |autofill_controller_|.
+    @autoreleasepool {
+      [[delegate expect] autofillController:autofill_controller_
+                    didInputInFieldWithName:kTestFieldName
+                                   formName:kTestFormName
+                                      value:kTestFieldValue];
 
-    [[delegate expect] autofillController:autofill_controller_
-                  didInputInFieldWithName:kTestFieldName
-                                 formName:kTestFormName
-                                    value:kTestFieldValue];
+      web::FormActivityParams params;
+      params.form_name = base::SysNSStringToUTF8(kTestFormName);
+      params.field_name = base::SysNSStringToUTF8(kTestFieldName);
+      params.value = base::SysNSStringToUTF8(kTestFieldValue);
+      params.type = "input";
+      web_state_.OnFormActivity(params);
+
+      [delegate verify];
   }
 }
 
 // Tests CWVAutofillController delegate blur callback is invoked.
 TEST_F(CWVAutofillControllerTest, BlurCallback) {
+  id delegate = OCMProtocolMock(@protocol(CWVAutofillControllerDelegate));
+  autofill_controller_.delegate = delegate;
+
   // [delegate expect] returns an autoreleased object, but it must be destroyed
   // before this test exits to avoid holding on to |autofill_controller_|.
   @autoreleasepool {
-    id delegate = OCMProtocolMock(@protocol(CWVAutofillControllerDelegate));
-    autofill_controller_.delegate = delegate;
+    [[delegate expect] autofillController:autofill_controller_
+                   didBlurOnFieldWithName:kTestFieldName
+                                 formName:kTestFormName
+                                    value:kTestFieldValue];
 
     web::FormActivityParams params;
     params.form_name = base::SysNSStringToUTF8(kTestFormName);
     params.field_name = base::SysNSStringToUTF8(kTestFieldName);
     params.value = base::SysNSStringToUTF8(kTestFieldValue);
     params.type = "blur";
+    web_state_.OnFormActivity(params);
 
-    [[delegate expect] autofillController:autofill_controller_
-                   didBlurOnFieldWithName:kTestFieldName
-                                 formName:kTestFormName
-                                    value:kTestFieldValue];
+    [delegate verify];
   }
 }
 
