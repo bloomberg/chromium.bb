@@ -41,6 +41,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.AwActivityTestRule.TestDependencyFactory;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
@@ -65,6 +66,18 @@ import java.util.concurrent.TimeoutException;
 @MinAndroidSdkLevel(Build.VERSION_CODES.O)
 @SuppressLint("NewApi")
 public class AwAutofillTest {
+    public static final boolean DEBUG = false;
+    public static final String TAG = "AutofillTest";
+
+    public static final String FILE = "/login.html";
+    public static final String FILE_URL = "file:///android_asset/autofill.html";
+
+    public final static int AUTOFILL_VIEW_ENTERED = 1;
+    public final static int AUTOFILL_VIEW_EXITED = 2;
+    public final static int AUTOFILL_VALUE_CHANGED = 3;
+    public final static int AUTOFILL_COMMIT = 4;
+    public final static int AUTOFILL_CANCEL = 5;
+
     /**
      * This class only implements the necessary methods of ViewStructure for testing.
      */
@@ -416,18 +429,21 @@ public class AwAutofillTest {
 
         @Override
         public void notifyVirtualViewEntered(View parent, int childId, Rect absBounds) {
+            if (DEBUG) Log.i(TAG, "notifyVirtualViewEntered");
             mEventQueue.add(AUTOFILL_VIEW_ENTERED);
             mCallbackHelper.notifyCalled();
         }
 
         @Override
         public void notifyVirtualViewExited(View parent, int childId) {
+            if (DEBUG) Log.i(TAG, "notifyVirtualViewExited");
             mEventQueue.add(AUTOFILL_VIEW_EXITED);
             mCallbackHelper.notifyCalled();
         }
 
         @Override
         public void notifyVirtualValueChanged(View parent, int childId, AutofillValue value) {
+            if (DEBUG) Log.i(TAG, "notifyVirtualValueChanged");
             if (mTestValues.changedValues == null) {
                 mTestValues.changedValues = new ArrayList<Pair<Integer, AutofillValue>>();
             }
@@ -438,12 +454,14 @@ public class AwAutofillTest {
 
         @Override
         public void commit() {
+            if (DEBUG) Log.i(TAG, "commit");
             mEventQueue.add(AUTOFILL_COMMIT);
             mCallbackHelper.notifyCalled();
         }
 
         @Override
         public void cancel() {
+            if (DEBUG) Log.i(TAG, "cancel");
             mEventQueue.add(AUTOFILL_CANCEL);
             mCallbackHelper.notifyCalled();
         }
@@ -470,15 +488,6 @@ public class AwAutofillTest {
             return super.shouldInterceptRequest(request);
         }
     }
-
-    public static final String FILE = "/login.html";
-    public static final String FILE_URL = "file:///android_asset/autofill.html";
-
-    public final static int AUTOFILL_VIEW_ENTERED = 1;
-    public final static int AUTOFILL_VIEW_EXITED = 2;
-    public final static int AUTOFILL_VALUE_CHANGED = 3;
-    public final static int AUTOFILL_COMMIT = 4;
-    public final static int AUTOFILL_CANCEL = 5;
 
     @Rule
     public AwActivityTestRule mRule = new AwActivityTestRule();
