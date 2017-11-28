@@ -2607,8 +2607,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   sharded_hw_tests = hw_test_list.DefaultListCQ()
-  # Remove provision suite.
-  sharded_hw_tests.pop(0)
+  # Run provision suite first everywhere.
+  default_tests = [sharded_hw_tests.pop(0)]
   for board_assignments in _paladin_hwtest_assignments:
     assert len(board_assignments) == len(sharded_hw_tests)
     for board, suite in zip(board_assignments, sharded_hw_tests):
@@ -2619,9 +2619,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       # models they want to test against (based on lab provisioning)
       if board in _unified_board_names:
         if site_config[config_name]['models']:
-          site_config[config_name]['hw_tests'] = [suite]
+          site_config[config_name]['hw_tests'] = default_tests + [suite]
       else:
-        site_config[config_name]['hw_tests'] = [suite]
+        site_config[config_name]['hw_tests'] = default_tests + [suite]
 
   #
   # Paladins with alternative configs.
