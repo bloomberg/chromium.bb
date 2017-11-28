@@ -178,7 +178,7 @@ class MidiManagerTest : public ::testing::Test {
 
   void EndSession(FakeMidiManagerClient* client, size_t before, size_t after) {
     EXPECT_EQ(before, manager_->GetClientCount());
-    manager_->EndSession(client);
+    EXPECT_TRUE(manager_->EndSession(client));
     EXPECT_EQ(after, manager_->GetClientCount());
   }
 
@@ -219,7 +219,7 @@ TEST_F(MidiManagerTest, StartAndEndSessionWithError) {
   StartTheFirstSession(client.get());
   CompleteInitialization(Result::INITIALIZATION_ERROR);
   EXPECT_EQ(Result::INITIALIZATION_ERROR, client->WaitForResult());
-  EndSession(client.get(), 0U, 0U);
+  EndSession(client.get(), 1U, 0U);
 }
 
 TEST_F(MidiManagerTest, StartMultipleSessions) {
