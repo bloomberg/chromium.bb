@@ -399,6 +399,8 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 #endif
 
 #if CONFIG_DIST_8X8
+  if (extra_cfg->enable_dist_8x8 && extra_cfg->lossless)
+    ERROR("dist-8x8 cannot be used with lossless compression.");
   RANGE_CHECK(extra_cfg, tuning, AOM_TUNE_PSNR, AOM_TUNE_DAALA_DIST);
 #else
   RANGE_CHECK(extra_cfg, tuning, AOM_TUNE_PSNR, AOM_TUNE_SSIM);

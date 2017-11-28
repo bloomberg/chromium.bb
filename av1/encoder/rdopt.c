@@ -2259,14 +2259,14 @@ static void dist_8x8_sub8x8_txfm_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
 #if CONFIG_HIGHBITDEPTH
   uint8_t *pred8;
-  DECLARE_ALIGNED(16, uint16_t, pred16[MAX_TX_SQUARE]);
+  DECLARE_ALIGNED(16, uint16_t, pred16[MAX_SB_SQUARE]);
 
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     pred8 = CONVERT_TO_BYTEPTR(pred16);
   else
     pred8 = (uint8_t *)pred16;
 #else
-  DECLARE_ALIGNED(16, uint8_t, pred8[MAX_TX_SQUARE]);
+  DECLARE_ALIGNED(16, uint8_t, pred8[MAX_SB_SQUARE]);
 #endif  // CONFIG_HIGHBITDEPTH
 
 #if CONFIG_HIGHBITDEPTH
