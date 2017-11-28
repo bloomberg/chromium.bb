@@ -111,14 +111,24 @@ TEST_F(HeaderCoalescerTest, HeaderNameNotValid) {
   ExpectEntry("%01%7F%80%FF", "foo", "Invalid character in header name.");
 }
 
+// RFC 7540 Section 8.1.2.6. Uppercase in header name is invalid.
+TEST_F(HeaderCoalescerTest, HeaderNameHasUppercase) {
+  SpdyStringPiece header_name("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+  header_coalescer_.OnHeader(header_name, "foo");
+  EXPECT_TRUE(header_coalescer_.error_seen());
+  ExpectEntry("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "foo",
+              "Upper case characters in header name.");
+}
+
 // RFC 7230 Section 3.2. Valid header name is defined as:
 // field-name     = token
 // token          = 1*tchar
 // tchar          = "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." /
 //                  "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
 TEST_F(HeaderCoalescerTest, HeaderNameValid) {
+  // Due to RFC 7540 Section 8.1.2.6. Uppercase characters are not included.
   SpdyStringPiece header_name(
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&'*+-."
+      "abcdefghijklmnopqrstuvwxyz0123456789!#$%&'*+-."
       "^_`|~");
   header_coalescer_.OnHeader(header_name, "foo");
   EXPECT_FALSE(header_coalescer_.error_seen());

@@ -422,8 +422,7 @@ TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterStreamFailed) {
   // BidirectionalStreamSpdyStreamJob does not count the bytes sent for |rst|
   // because it is sent after SpdyStream::Delegate::OnClose is called.
   EXPECT_EQ(CountWriteBytes(writes, 1), delegate->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            delegate->GetTotalReceivedBytes());
+  EXPECT_EQ(0, delegate->GetTotalReceivedBytes());
 }
 
 INSTANTIATE_TEST_CASE_P(BidirectionalStreamSpdyImplTests,
