@@ -76,7 +76,6 @@ void ProcessorEntityTracker::SetCommitData(EntityData* data) {
     data->id = metadata_.server_id();
   data->creation_time = ProtoTimeToTime(metadata_.creation_time());
   data->modification_time = ProtoTimeToTime(metadata_.modification_time());
-  DCHECK(MatchesSpecificsHash(data->specifics));
 
   commit_data_.reset();
   CacheCommitData(data->PassToPtr());
