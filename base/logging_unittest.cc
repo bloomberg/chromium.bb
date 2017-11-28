@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,6 +28,10 @@
 #include <excpt.h>
 #include <windows.h>
 #endif  // OS_WIN
+
+#if defined(OS_FUCHSIA)
+#include "base/fuchsia/fuchsia_logging.h"
+#endif
 
 namespace logging {
 
@@ -634,6 +639,26 @@ TEST_F(LoggingTest, AsanConditionalDCheckFeature) {
   }
 }
 #endif  // DCHECK_IS_ON() && defined(SYZYASAN)
+
+#if defined(OS_FUCHSIA)
+TEST_F(LoggingTest, FuchsiaLogging) {
+  MockLogSource mock_log_source;
+  EXPECT_CALL(mock_log_source, Log())
+      .Times(DCHECK_IS_ON() ? 2 : 1)
+      .WillRepeatedly(Return("log message"));
+
+  SetMinLogLevel(LOG_INFO);
+
+  EXPECT_TRUE(LOG_IS_ON(INFO));
+  EXPECT_TRUE((DCHECK_IS_ON() != 0) == DLOG_IS_ON(INFO));
+
+  ZX_LOG(INFO, ZX_ERR_INTERNAL) << mock_log_source.Log();
+  ZX_DLOG(INFO, ZX_ERR_INTERNAL) << mock_log_source.Log();
+
+  ZX_CHECK(true, ZX_ERR_INTERNAL);
+  ZX_DCHECK(true, ZX_ERR_INTERNAL);
+}
+#endif  // defined(OS_FUCHSIA)
 
 }  // namespace
 
