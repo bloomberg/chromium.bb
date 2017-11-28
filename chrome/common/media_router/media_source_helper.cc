@@ -28,10 +28,6 @@ constexpr char kTabRemotingUrnFormat[] =
 constexpr char kCastPresentationUrlDomain[] = "google.com";
 constexpr char kCastPresentationUrlPath[] = "/cast";
 
-// This value must be the same as |chrome.cast.AUTO_JOIN_PRESENTATION_ID| in the
-// component extension.
-constexpr char kAutoJoinPresentationId[] = "auto-join";
-
 // List of non-http(s) schemes that are allowed in a Presentation URL.
 constexpr std::array<const char* const, 5> kAllowedSchemes{
     {kCastPresentationUrlScheme, kCastDialPresentationUrlScheme,
