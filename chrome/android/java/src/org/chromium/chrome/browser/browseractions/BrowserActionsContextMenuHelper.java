@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -19,6 +20,8 @@ import android.support.annotation.IntDef;
 import android.support.customtabs.browseractions.BrowserActionItem;
 import android.support.customtabs.browseractions.BrowserActionsIntent;
 import android.support.customtabs.browseractions.BrowserActionsIntent.BrowserActionsItemId;
+import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.view.ContextMenu;
@@ -27,7 +30,6 @@ import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnCreateContextMenuListener;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -219,10 +221,19 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
             Drawable drawable = null;
             if (resources != null && customItems.get(i).getIconId() != 0) {
                 try {
-                    drawable = ApiCompatibilityUtils.getDrawable(
-                            resources, customItems.get(i).getIconId());
-                } catch (NotFoundException e) {
-                    Log.e(TAG, "Cannot get Drawable for %s", customItems.get(i).getTitle(), e);
+                    drawable = ResourcesCompat.getDrawable(
+                            resources, customItems.get(i).getIconId(), null);
+                } catch (NotFoundException e1) {
+                    try {
+                        Context context = mActivity.createPackageContext(sourcePackageName,
+                                Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
+                        drawable = AppCompatResources.getDrawable(
+                                context, customItems.get(i).getIconId());
+                    } catch (NameNotFoundException e2) {
+                        Log.e(TAG, "Cannot find the package name %s", sourcePackageName, e2);
+                    } catch (NotFoundException e3) {
+                        Log.e(TAG, "Cannot get Drawable for %s", customItems.get(i).getTitle(), e3);
+                    }
                 }
             }
             items.add(
