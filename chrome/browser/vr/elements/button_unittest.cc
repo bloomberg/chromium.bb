@@ -77,4 +77,13 @@ TEST(Button, DrawPhasePropagatesToSubElements) {
   }
 }
 
+TEST(Button, NamePropagatesToSubElements) {
+  Button button(base::Callback<void()>(), vector_icons::kMicrophoneIcon);
+  button.set_name(kCloseButton);
+
+  for (auto& child : button.children()) {
+    EXPECT_EQ(child->owner_name_for_test(), kCloseButton);
+  }
+}
+
 }  // namespace vr

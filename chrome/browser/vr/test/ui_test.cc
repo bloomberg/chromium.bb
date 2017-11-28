@@ -103,22 +103,20 @@ bool UiTest::VerifyVisibility(const std::set<UiElementName>& names,
   return true;
 }
 
-void UiTest::VerifyVisible(const std::string& trace_context,
-                           const std::set<UiElementName>& names) const {
-  SCOPED_TRACE(trace_context);
-  VerifyVisibility(names, true);
-}
-
-// TODO(cjgrant): Restore this method. We previously checked that only a
-// specific set of elements is visible, and others are not. After eliminating
-// violations, it can replace VerifyVisible().
 void UiTest::VerifyOnlyElementsVisible(
     const std::string& trace_context,
     const std::set<UiElementName>& names) const {
+  OnBeginFrame();
   SCOPED_TRACE(trace_context);
   for (const auto& element : scene_->root_element()) {
-    SCOPED_TRACE(element.DebugName());
     UiElementName name = element.name();
+    if (name == kNone)
+      name = element.owner_name_for_test();
+    if (element.draw_phase() == kPhaseNone) {
+      EXPECT_TRUE(names.find(name) == names.end());
+      continue;
+    }
+    SCOPED_TRACE(element.DebugName());
     bool should_be_visibile = (names.find(name) != names.end());
     EXPECT_EQ(WillElementBeVisible(&element), should_be_visibile);
   }

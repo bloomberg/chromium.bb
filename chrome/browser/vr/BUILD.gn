@@ -247,7 +247,6 @@ test("vr_common_unittests") {
     "test/ui_test.cc",
     "test/ui_test.h",
     "ui_input_manager_unittest.cc",
-    "ui_renderer_unittest.cc",
     "ui_scene_unittest.cc",
     "ui_unittest.cc",
     "vr_gl_util_unittest.cc",
