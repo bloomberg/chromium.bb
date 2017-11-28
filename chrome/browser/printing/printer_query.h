@@ -30,6 +30,7 @@ class PrinterQuery : public PrintJobWorkerOwner {
     ASK_USER,
   };
 
+  // Can only be called on the IO thread.
   PrinterQuery(int render_process_id, int render_frame_id);
 
   // PrintJobWorkerOwner implementation.

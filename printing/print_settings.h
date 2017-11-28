@@ -88,6 +88,7 @@ class PRINTING_EXPORT PrintSettings {
   // Set printer printable area in in device units.
   // Some platforms already provide flipped area. Set |landscape_needs_flip|
   // to false on those platforms to avoid double flipping.
+  // This method assumes correct DPI is already set.
   void SetPrinterPrintableArea(const gfx::Size& physical_size_device_units,
                                const gfx::Rect& printable_area_device_units,
                                bool landscape_needs_flip);
