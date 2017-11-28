@@ -187,10 +187,6 @@ void MockInputMethodManager::MaybeNotifyImeMenuActivationChanged() {}
 void MockInputMethodManager::OverrideKeyboardUrlRef(const std::string& keyset) {
 }
 
-bool MockInputMethodManager::IsEmojiHandwritingVoiceOnImeMenuEnabled() {
-  return true;
-}
-
 void MockInputMethodManager::SetImeMenuFeatureEnabled(ImeMenuFeature feature,
                                                       bool enabled) {
   if (enabled)

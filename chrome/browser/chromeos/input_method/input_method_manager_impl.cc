@@ -1278,10 +1278,6 @@ void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
     keyboard_controller->Reload();
 }
 
-bool InputMethodManagerImpl::IsEmojiHandwritingVoiceOnImeMenuEnabled() {
-  return base::FeatureList::IsEnabled(features::kEHVInputOnImeMenu);
-}
-
 void InputMethodManagerImpl::SetImeMenuFeatureEnabled(ImeMenuFeature feature,
                                                       bool enabled) {
   const uint32_t original_state = features_enabled_state_;
