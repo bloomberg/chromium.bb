@@ -12,7 +12,7 @@ To update the order files:
 
 1.  Build with instrumentation enabled:
 
-    The instrumentation will capture the first million or so function calls
+    The instrumentation will capture the couple of million function calls
     in a binary as it runs and write them to a file in the `\src\tmp` directory.
     Make sure this directory exists.
 
@@ -21,8 +21,8 @@ To update the order files:
     ninja -C out\instrument chrome
     ```
 
-    (If you have access to Goma, add `use_goma=true symbol_level=1` to the gn
-    args and `-j500` to the Ninja invocation.)
+    (If you have access to Goma, add `use_goma=true` to the gn args and `-j500`
+    to the Ninja invocation.)
 
 
 1.  Run the instrumented binaries:
@@ -41,7 +41,6 @@ To update the order files:
 
     ```shell
     out\instrument\chrome --no-sandbox --renderer-startup-dialog
-
     ```
 
     Note the Process IDs of the browser and render process (there is sometimes
@@ -80,5 +79,5 @@ To update the order files:
     ```
 
 
-1.  Check in the `.sha1` files corresponding to the orderfiles, created by the
+1.  Check in the `.sha1` files corresponding to the orderfiles created by the
     previous step.
