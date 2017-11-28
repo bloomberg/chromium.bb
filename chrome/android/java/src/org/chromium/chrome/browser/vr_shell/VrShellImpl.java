@@ -755,7 +755,6 @@ public class VrShellImpl
 
     @CalledByNative
     private void loadUrl(String url) {
-        // TODO(bshe): reuse voice suggestion provider if possible.
         assert mTab != null;
         mTab.loadUrl(new LoadUrlParams(url));
     }

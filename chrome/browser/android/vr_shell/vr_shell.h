@@ -39,7 +39,6 @@ class WindowAndroid;
 }  // namespace ui
 
 namespace vr {
-class AutocompleteController;
 class BrowserUiInterface;
 class ToolbarHelper;
 class WebContentsEventForwarder;
@@ -48,6 +47,7 @@ class WebContentsEventForwarder;
 namespace vr_shell {
 
 class AndroidUiGestureTarget;
+class AutocompleteController;
 class VrCompositor;
 class VrGLThread;
 class VrMetricsHelper;
@@ -252,7 +252,7 @@ class VrShell : device::GvrGamepadDataProvider,
   // These instances make use of ui_ (provided by gl_thread_), and hence must be
   // destroyed before gl_thread_;
   std::unique_ptr<vr::ToolbarHelper> toolbar_;
-  std::unique_ptr<vr::AutocompleteController> autocomplete_controller_;
+  std::unique_ptr<vr_shell::AutocompleteController> autocomplete_controller_;
   std::unique_ptr<vr::SpeechRecognizer> speech_recognizer_;
 
   bool reprojected_rendering_;
