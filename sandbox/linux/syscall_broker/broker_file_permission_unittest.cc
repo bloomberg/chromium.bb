@@ -231,20 +231,11 @@ void CheckUnlink(BrokerFilePermission& perm,
   ASSERT_TRUE(unlink);
 }
 
-TEST(BrokerFilePermission, ReadWriteCreateUnlink) {
-  const char kPath[] = "/tmp/good";
-  BrokerFilePermission perm =
-      BrokerFilePermission::ReadWriteCreateUnlink(kPath);
-  CheckUnlink(perm, kPath, O_RDWR);
-  // Don't do anything here, so that ASSERT works in the subfunction as
-  // expected.
-}
-
-TEST(BrokerFilePermission, ReadWriteCreateUnlinkRecursive) {
+TEST(BrokerFilePermission, ReadWriteCreateTemporaryRecursive) {
   const char kPath[] = "/tmp/good/";
   const char kPathFile[] = "/tmp/good/file";
   BrokerFilePermission perm =
-      BrokerFilePermission::ReadWriteCreateUnlinkRecursive(kPath);
+      BrokerFilePermission::ReadWriteCreateTemporaryRecursive(kPath);
   CheckUnlink(perm, kPathFile, O_RDWR);
   // Don't do anything here, so that ASSERT works in the subfunction as
   // expected.
