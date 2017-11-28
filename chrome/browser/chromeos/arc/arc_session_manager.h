@@ -308,7 +308,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   void OnBackgroundAndroidManagementChecked(
       policy::AndroidManagementClient::Result result);
 
-  // Requests to starts ARC instance. Also, update the internal state to
+  // Requests to start ARC instance. Also, updates the internal state to
   // ACTIVE.
   void StartArc();
 
