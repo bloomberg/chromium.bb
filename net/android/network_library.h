@@ -8,6 +8,7 @@
 #include <jni.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 #include <string>
 #include <vector>
@@ -16,6 +17,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_export.h"
+#include "net/socket/socket_descriptor.h"
 
 namespace net {
 namespace android {
@@ -82,6 +84,12 @@ NET_EXPORT_PRIVATE std::string GetWifiSSID();
 // Gets the DNS servers and puts them in |dns_servers|.
 // Only callable on Marshmallow and newer releases.
 NET_EXPORT_PRIVATE void GetDnsServers(std::vector<IPEndPoint>* dns_servers);
+
+// Apply TrafficStats tag |tag| and UID |uid| to |socket|. Future network
+// traffic used by |socket| will be attributed to |uid| and |tag|.
+NET_EXPORT_PRIVATE void TagSocket(SocketDescriptor socket,
+                                  uid_t uid,
+                                  int32_t tag);
 
 }  // namespace android
 }  // namespace net
