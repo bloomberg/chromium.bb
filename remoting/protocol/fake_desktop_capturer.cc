@@ -46,7 +46,7 @@ class DefaultFrameGenerator
 
  private:
   friend class base::RefCountedThreadSafe<DefaultFrameGenerator>;
-  ~DefaultFrameGenerator() {}
+  ~DefaultFrameGenerator() = default;
 
   webrtc::DesktopSize size_;
   int box_pos_x_;
@@ -126,7 +126,7 @@ FakeDesktopCapturer::FakeDesktopCapturer()
                                 new DefaultFrameGenerator());
 }
 
-FakeDesktopCapturer::~FakeDesktopCapturer() {}
+FakeDesktopCapturer::~FakeDesktopCapturer() = default;
 
 void FakeDesktopCapturer::set_frame_generator(
     const FrameGenerator& frame_generator) {

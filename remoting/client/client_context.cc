@@ -14,8 +14,7 @@ ClientContext::ClientContext(
       audio_decode_thread_("ChromotingClientAudioDecodeThread") {
 }
 
-ClientContext::~ClientContext() {
-}
+ClientContext::~ClientContext() = default;
 
 void ClientContext::Start() {
   // Start all the threads.

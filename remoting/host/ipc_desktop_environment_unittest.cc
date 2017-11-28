@@ -63,8 +63,8 @@ namespace {
 
 class MockScreenCapturerCallback : public webrtc::DesktopCapturer::Callback {
  public:
-  MockScreenCapturerCallback() {}
-  virtual ~MockScreenCapturerCallback() {}
+  MockScreenCapturerCallback() = default;
+  virtual ~MockScreenCapturerCallback() = default;
 
   MOCK_METHOD2(OnCaptureResultPtr,
                void(webrtc::DesktopCapturer::Result result,
@@ -81,8 +81,8 @@ class MockScreenCapturerCallback : public webrtc::DesktopCapturer::Callback {
 // Receives messages sent from the network process to the daemon.
 class FakeDaemonSender : public IPC::Sender {
  public:
-  FakeDaemonSender() {}
-  ~FakeDaemonSender() override {}
+  FakeDaemonSender() = default;
+  ~FakeDaemonSender() override = default;
 
   // IPC::Sender implementation.
   bool Send(IPC::Message* message) override;
@@ -100,8 +100,8 @@ class FakeDaemonSender : public IPC::Sender {
 // Receives messages sent from the desktop process to the daemon.
 class MockDaemonListener : public IPC::Listener {
  public:
-  MockDaemonListener() {}
-  ~MockDaemonListener() override {}
+  MockDaemonListener() = default;
+  ~MockDaemonListener() override = default;
 
   bool OnMessageReceived(const IPC::Message& message) override;
 
@@ -258,8 +258,7 @@ IpcDesktopEnvironmentTest::IpcDesktopEnvironmentTest()
       client_session_control_factory_(&client_session_control_) {
 }
 
-IpcDesktopEnvironmentTest::~IpcDesktopEnvironmentTest() {
-}
+IpcDesktopEnvironmentTest::~IpcDesktopEnvironmentTest() = default;
 
 void IpcDesktopEnvironmentTest::SetUp() {
   // Arrange to run |message_loop_| until no components depend on it.

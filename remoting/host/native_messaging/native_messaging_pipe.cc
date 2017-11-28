@@ -13,8 +13,8 @@
 
 namespace remoting {
 
-NativeMessagingPipe::NativeMessagingPipe() {}
-NativeMessagingPipe::~NativeMessagingPipe() {}
+NativeMessagingPipe::NativeMessagingPipe() = default;
+NativeMessagingPipe::~NativeMessagingPipe() = default;
 
 void NativeMessagingPipe::Start(
     std::unique_ptr<extensions::NativeMessageHost> host,

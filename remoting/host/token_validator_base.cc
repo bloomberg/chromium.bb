@@ -97,8 +97,7 @@ TokenValidatorBase::TokenValidatorBase(
   DCHECK(third_party_auth_config_.token_validation_url.is_valid());
 }
 
-TokenValidatorBase::~TokenValidatorBase() {
-}
+TokenValidatorBase::~TokenValidatorBase() = default;
 
 // TokenValidator interface.
 void TokenValidatorBase::ValidateThirdPartyToken(

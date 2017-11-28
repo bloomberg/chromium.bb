@@ -36,7 +36,7 @@ float ScaleAndClamp(float value, int output_max, int input_max) {
 TouchInputScaler::TouchInputScaler(InputStub* input_stub)
     : InputFilter(input_stub) {}
 
-TouchInputScaler::~TouchInputScaler() {}
+TouchInputScaler::~TouchInputScaler() = default;
 
 void TouchInputScaler::InjectTouchEvent(const TouchEvent& event) {
   if (input_size_.is_empty() || output_size_.is_empty())

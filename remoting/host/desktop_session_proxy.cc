@@ -65,7 +65,7 @@ class DesktopSessionProxy::IpcSharedBufferCore
   void* memory() { return shared_memory_.memory(); }
 
  private:
-  virtual ~IpcSharedBufferCore() {}
+  virtual ~IpcSharedBufferCore() = default;
   friend class base::RefCountedThreadSafe<IpcSharedBufferCore>;
 
   int id_;

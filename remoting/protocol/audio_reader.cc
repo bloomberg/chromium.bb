@@ -20,7 +20,7 @@ namespace protocol {
 AudioReader::AudioReader(AudioStub* audio_stub)
     : ChannelDispatcherBase(kAudioChannelName), audio_stub_(audio_stub) {}
 
-AudioReader::~AudioReader() {}
+AudioReader::~AudioReader() = default;
 
 void AudioReader::OnIncomingMessage(std::unique_ptr<CompoundBuffer> message) {
   std::unique_ptr<AudioPacket> audio_packet =

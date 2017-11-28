@@ -45,7 +45,8 @@ MATCHER_P(IsPolicies, dict, "") {
 
 class MockPolicyCallback {
  public:
-  MockPolicyCallback(){};
+  MockPolicyCallback() = default;
+  ;
 
   // TODO(lukasza): gmock cannot mock a method taking std::unique_ptr<T>...
   MOCK_METHOD1(OnPolicyUpdatePtr, void(const base::DictionaryValue* policies));

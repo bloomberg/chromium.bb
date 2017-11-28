@@ -36,7 +36,7 @@ VideoFrameWriter::VideoFrameWriter()
     : instance_creation_time_(base::Time::Now()),
       frame_name_unique_number_(0) {}
 
-VideoFrameWriter::~VideoFrameWriter() {}
+VideoFrameWriter::~VideoFrameWriter() = default;
 
 void VideoFrameWriter::WriteFrameToPath(const webrtc::DesktopFrame& frame,
                                         const base::FilePath& image_path) {

@@ -80,14 +80,14 @@ class FakeIt2MeConfirmationDialog : public It2MeConfirmationDialog {
   DISALLOW_COPY_AND_ASSIGN(FakeIt2MeConfirmationDialog);
 };
 
-FakeIt2MeConfirmationDialog::FakeIt2MeConfirmationDialog() {}
+FakeIt2MeConfirmationDialog::FakeIt2MeConfirmationDialog() = default;
 
 FakeIt2MeConfirmationDialog::FakeIt2MeConfirmationDialog(
     const std::string& remote_user_email,
     DialogResult dialog_result)
     : remote_user_email_(remote_user_email), dialog_result_(dialog_result) {}
 
-FakeIt2MeConfirmationDialog::~FakeIt2MeConfirmationDialog() {}
+FakeIt2MeConfirmationDialog::~FakeIt2MeConfirmationDialog() = default;
 
 void FakeIt2MeConfirmationDialog::Show(const std::string& remote_user_email,
                                        const ResultCallback& callback) {
@@ -122,7 +122,7 @@ class FakeIt2MeDialogFactory : public It2MeConfirmationDialogFactory {
 FakeIt2MeDialogFactory::FakeIt2MeDialogFactory()
     : remote_user_email_(kTestUserName) {}
 
-FakeIt2MeDialogFactory::~FakeIt2MeDialogFactory() {}
+FakeIt2MeDialogFactory::~FakeIt2MeDialogFactory() = default;
 
 std::unique_ptr<It2MeConfirmationDialog> FakeIt2MeDialogFactory::Create() {
   EXPECT_FALSE(remote_user_email_.empty());
@@ -196,7 +196,7 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
 };
 
 It2MeHostTest::It2MeHostTest() : weak_factory_(this) {}
-It2MeHostTest::~It2MeHostTest() {}
+It2MeHostTest::~It2MeHostTest() = default;
 
 void It2MeHostTest::SetUp() {
 #if defined(OS_LINUX)

@@ -91,8 +91,7 @@ FakeDesktopSession::FakeDesktopSession(DaemonProcess* daemon_process, int id)
     : DesktopSession(daemon_process, id) {
 }
 
-FakeDesktopSession::~FakeDesktopSession() {
-}
+FakeDesktopSession::~FakeDesktopSession() = default;
 
 MockDaemonProcess::MockDaemonProcess(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
@@ -101,8 +100,7 @@ MockDaemonProcess::MockDaemonProcess(
     : DaemonProcess(caller_task_runner, io_task_runner, stopped_callback) {
 }
 
-MockDaemonProcess::~MockDaemonProcess() {
-}
+MockDaemonProcess::~MockDaemonProcess() = default;
 
 std::unique_ptr<DesktopSession> MockDaemonProcess::DoCreateDesktopSession(
     int terminal_id,
@@ -162,8 +160,7 @@ class DaemonProcessTest : public testing::Test {
 DaemonProcessTest::DaemonProcessTest() : terminal_id_(0) {
 }
 
-DaemonProcessTest::~DaemonProcessTest() {
-}
+DaemonProcessTest::~DaemonProcessTest() = default;
 
 void DaemonProcessTest::SetUp() {
   scoped_refptr<AutoThreadTaskRunner> task_runner = new AutoThreadTaskRunner(

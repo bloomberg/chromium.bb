@@ -132,7 +132,7 @@ class CreateSessionDescriptionObserver
   explicit CreateSessionDescriptionObserver(
       const ResultCallback& result_callback)
       : result_callback_(result_callback) {}
-  ~CreateSessionDescriptionObserver() override {}
+  ~CreateSessionDescriptionObserver() override = default;
 
  private:
   ResultCallback result_callback_;
@@ -165,7 +165,7 @@ class SetSessionDescriptionObserver
  protected:
   explicit SetSessionDescriptionObserver(const ResultCallback& result_callback)
       : result_callback_(result_callback) {}
-  ~SetSessionDescriptionObserver() override {}
+  ~SetSessionDescriptionObserver() override = default;
 
  private:
   ResultCallback result_callback_;

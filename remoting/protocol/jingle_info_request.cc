@@ -28,7 +28,7 @@ static const int kJingleInfoUpdatePeriodSeconds = 3600;
 JingleInfoRequest::JingleInfoRequest(SignalStrategy* signal_strategy)
     : iq_sender_(signal_strategy) {}
 
-JingleInfoRequest::~JingleInfoRequest() {}
+JingleInfoRequest::~JingleInfoRequest() = default;
 
 void JingleInfoRequest::Send(const OnIceConfigCallback& callback) {
   on_ice_config_callback_ = callback;

@@ -14,7 +14,7 @@ LeakyBucket::LeakyBucket(int depth, int rate)
       current_level_(0),
       level_updated_time_(base::TimeTicks::Now()) {}
 
-LeakyBucket::~LeakyBucket() {}
+LeakyBucket::~LeakyBucket() = default;
 
 bool LeakyBucket::RefillOrSpill(int drops, base::TimeTicks now) {
   UpdateLevel(now);

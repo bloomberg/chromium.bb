@@ -25,7 +25,7 @@ const uint8_t kDummyAudioData = 0x8B;
 class FakeAudioConsumer : public AudioStub {
  public:
   FakeAudioConsumer(): weak_factory_(this) {}
-  ~FakeAudioConsumer() override {}
+  ~FakeAudioConsumer() override = default;
 
   base::WeakPtr<FakeAudioConsumer> GetWeakPtr(){
     return weak_factory_.GetWeakPtr();
@@ -48,7 +48,7 @@ class FakeAudioConsumer : public AudioStub {
 
 class AudioDecodeSchedulerTest : public ::testing::Test {
  public:
-  AudioDecodeSchedulerTest() {}
+  AudioDecodeSchedulerTest() = default;
 
   void SetUp() override;
   void TearDown() override;

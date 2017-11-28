@@ -34,8 +34,8 @@ const int kFrameHeight = 200;
 
 class TestFrameConsumer : public protocol::FrameConsumer {
  public:
-  TestFrameConsumer() {}
-  ~TestFrameConsumer() override {}
+  TestFrameConsumer() = default;
+  ~TestFrameConsumer() override = default;
 
   std::unique_ptr<DesktopFrame> WaitForNextFrame(
       base::Closure* out_done_callback) {

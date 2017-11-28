@@ -44,7 +44,7 @@ float GetDuration(float time_constant, float initial_speed_rate) {
 FlingTracker::FlingTracker(float time_constant)
     : time_constant_(time_constant) {}
 
-FlingTracker::~FlingTracker() {}
+FlingTracker::~FlingTracker() = default;
 
 void FlingTracker::StartFling(float velocity_x, float velocity_y) {
   // Convert to pixel/ms

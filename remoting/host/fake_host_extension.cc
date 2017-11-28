@@ -18,7 +18,7 @@ namespace remoting {
 class FakeExtension::Session : public HostExtensionSession {
  public:
   Session(FakeExtension* extension, const std::string& message_type);
-  ~Session() override {}
+  ~Session() override = default;
 
   // HostExtensionSession interface.
   bool OnExtensionMessage(ClientSessionDetails* client_session_details,
@@ -51,7 +51,7 @@ FakeExtension::FakeExtension(const std::string& message_type,
                              const std::string& capability)
     : message_type_(message_type), capability_(capability) {}
 
-FakeExtension::~FakeExtension() {}
+FakeExtension::~FakeExtension() = default;
 
 std::string FakeExtension::capability() const {
   return capability_;

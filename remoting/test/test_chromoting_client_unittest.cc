@@ -58,8 +58,8 @@ class TestChromotingClientTest : public ::testing::Test,
   DISALLOW_COPY_AND_ASSIGN(TestChromotingClientTest);
 };
 
-TestChromotingClientTest::TestChromotingClientTest() {}
-TestChromotingClientTest::~TestChromotingClientTest() {}
+TestChromotingClientTest::TestChromotingClientTest() = default;
+TestChromotingClientTest::~TestChromotingClientTest() = default;
 
 void TestChromotingClientTest::SetUp() {
   test_chromoting_client_.reset(new TestChromotingClient());

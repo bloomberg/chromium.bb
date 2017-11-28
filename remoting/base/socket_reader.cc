@@ -23,8 +23,7 @@ SocketReader::SocketReader()
       weak_factory_(this) {
 }
 
-SocketReader::~SocketReader() {
-}
+SocketReader::~SocketReader() = default;
 
 void SocketReader::Init(net::Socket* socket,
                         ReadResultCallback read_result_callback) {

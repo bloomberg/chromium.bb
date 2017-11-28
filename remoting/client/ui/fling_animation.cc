@@ -14,7 +14,7 @@ FlingAnimation::FlingAnimation(float time_constant,
       fling_callback_(fling_callback),
       clock_(new base::DefaultTickClock()) {}
 
-FlingAnimation::~FlingAnimation() {}
+FlingAnimation::~FlingAnimation() = default;
 
 void FlingAnimation::SetVelocity(float velocity_x, float velocity_y) {
   fling_tracker_.StartFling(velocity_x, velocity_y);

@@ -176,7 +176,7 @@ FakePacketSocketFactory::PendingPacket::PendingPacket(
 FakePacketSocketFactory::PendingPacket::PendingPacket(
     const PendingPacket& other) = default;
 
-FakePacketSocketFactory::PendingPacket::~PendingPacket() {}
+FakePacketSocketFactory::PendingPacket::~PendingPacket() = default;
 
 FakePacketSocketFactory::FakePacketSocketFactory(
     FakeNetworkDispatcher* dispatcher)

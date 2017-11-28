@@ -62,7 +62,7 @@ WebrtcVideoEncoderGpu::WebrtcVideoEncoderGpu(
       bitrate_filter_(kH264MinimumTargetBitrateKbpsPerMegapixel),
       weak_factory_(this) {}
 
-WebrtcVideoEncoderGpu::~WebrtcVideoEncoderGpu() {}
+WebrtcVideoEncoderGpu::~WebrtcVideoEncoderGpu() = default;
 
 // TODO(gusss): Implement either a software fallback or some sort of delay if
 // the hardware encoder crashes.

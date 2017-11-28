@@ -35,11 +35,9 @@ class ConnectionTimeObserverTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ConnectionTimeObserverTest);
 };
 
-ConnectionTimeObserverTest::ConnectionTimeObserverTest() {
-}
+ConnectionTimeObserverTest::ConnectionTimeObserverTest() = default;
 
-ConnectionTimeObserverTest::~ConnectionTimeObserverTest() {
-}
+ConnectionTimeObserverTest::~ConnectionTimeObserverTest() = default;
 
 void ConnectionTimeObserverTest::SetUp() {
   connection_time_observer_.reset(new ConnectionTimeObserver());

@@ -38,9 +38,9 @@ class It2MeConfirmationDialogChromeOS : public It2MeConfirmationDialog {
   DISALLOW_COPY_AND_ASSIGN(It2MeConfirmationDialogChromeOS);
 };
 
-It2MeConfirmationDialogChromeOS::It2MeConfirmationDialogChromeOS() {}
+It2MeConfirmationDialogChromeOS::It2MeConfirmationDialogChromeOS() = default;
 
-It2MeConfirmationDialogChromeOS::~It2MeConfirmationDialogChromeOS() {}
+It2MeConfirmationDialogChromeOS::~It2MeConfirmationDialogChromeOS() = default;
 
 void It2MeConfirmationDialogChromeOS::Show(const std::string& remote_user_email,
                                            const ResultCallback& callback) {

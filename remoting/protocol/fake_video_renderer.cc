@@ -15,8 +15,8 @@
 namespace remoting {
 namespace protocol {
 
-FakeVideoStub::FakeVideoStub() {}
-FakeVideoStub::~FakeVideoStub() {}
+FakeVideoStub::FakeVideoStub() = default;
+FakeVideoStub::~FakeVideoStub() = default;
 
 void FakeVideoStub::set_on_frame_callback(base::Closure on_frame_callback) {
   CHECK(thread_checker_.CalledOnValidThread());
@@ -34,8 +34,8 @@ void FakeVideoStub::ProcessVideoPacket(
     on_frame_callback_.Run();
 }
 
-FakeFrameConsumer::FakeFrameConsumer() {}
-FakeFrameConsumer::~FakeFrameConsumer() {}
+FakeFrameConsumer::FakeFrameConsumer() = default;
+FakeFrameConsumer::~FakeFrameConsumer() = default;
 
 void FakeFrameConsumer::set_on_frame_callback(base::Closure on_frame_callback) {
   CHECK(thread_checker_.CalledOnValidThread());
@@ -63,8 +63,8 @@ FrameConsumer::PixelFormat FakeFrameConsumer::GetPixelFormat() {
   return FORMAT_BGRA;
 }
 
-FakeFrameStatsConsumer::FakeFrameStatsConsumer() {}
-FakeFrameStatsConsumer::~FakeFrameStatsConsumer() {}
+FakeFrameStatsConsumer::FakeFrameStatsConsumer() = default;
+FakeFrameStatsConsumer::~FakeFrameStatsConsumer() = default;
 
 void FakeFrameStatsConsumer::set_on_stats_callback(
     base::Closure on_stats_callback) {
@@ -78,8 +78,8 @@ void FakeFrameStatsConsumer::OnVideoFrameStats(const FrameStats& stats) {
     on_stats_callback_.Run();
 }
 
-FakeVideoRenderer::FakeVideoRenderer() {}
-FakeVideoRenderer::~FakeVideoRenderer() {}
+FakeVideoRenderer::FakeVideoRenderer() = default;
+FakeVideoRenderer::~FakeVideoRenderer() = default;
 
 bool FakeVideoRenderer::Initialize(
     const ClientContext& client_context,

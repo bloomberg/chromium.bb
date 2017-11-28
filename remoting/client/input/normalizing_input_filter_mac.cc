@@ -17,7 +17,7 @@ NormalizingInputFilterMac::NormalizingInputFilterMac(
     protocol::InputStub* input_stub)
     : protocol::InputFilter(input_stub) {}
 
-NormalizingInputFilterMac::~NormalizingInputFilterMac() {}
+NormalizingInputFilterMac::~NormalizingInputFilterMac() = default;
 
 void NormalizingInputFilterMac::InjectKeyEvent(
     const protocol::KeyEvent& event_arg) {

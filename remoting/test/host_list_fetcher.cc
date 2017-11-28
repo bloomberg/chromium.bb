@@ -18,11 +18,9 @@
 namespace remoting {
 namespace test {
 
-HostListFetcher::HostListFetcher() {
-}
+HostListFetcher::HostListFetcher() = default;
 
-HostListFetcher::~HostListFetcher() {
-}
+HostListFetcher::~HostListFetcher() = default;
 
 void HostListFetcher::RetrieveHostlist(const std::string& access_token,
                                        const std::string& target_url,

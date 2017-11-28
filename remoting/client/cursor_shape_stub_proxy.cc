@@ -14,7 +14,7 @@ CursorShapeStubProxy::CursorShapeStubProxy(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : stub_(stub), task_runner_(task_runner) {}
 
-CursorShapeStubProxy::~CursorShapeStubProxy() {}
+CursorShapeStubProxy::~CursorShapeStubProxy() = default;
 
 void CursorShapeStubProxy::SetCursorShape(
     const protocol::CursorShapeInfo& cursor_shape) {

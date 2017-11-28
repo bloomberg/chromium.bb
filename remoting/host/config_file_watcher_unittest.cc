@@ -25,8 +25,8 @@ namespace {
 
 class ConfigFileWatcherDelegate : public ConfigFileWatcher::Delegate {
  public:
-  ConfigFileWatcherDelegate() {}
-  virtual ~ConfigFileWatcherDelegate() {}
+  ConfigFileWatcherDelegate() = default;
+  virtual ~ConfigFileWatcherDelegate() = default;
 
   MOCK_METHOD1(OnConfigUpdated, void(const std::string&));
   MOCK_METHOD0(OnConfigWatcherError, void());
@@ -62,11 +62,9 @@ class ConfigFileWatcherTest : public testing::Test {
   std::unique_ptr<ConfigFileWatcher> watcher_;
 };
 
-ConfigFileWatcherTest::ConfigFileWatcherTest() {
-}
+ConfigFileWatcherTest::ConfigFileWatcherTest() = default;
 
-ConfigFileWatcherTest::~ConfigFileWatcherTest() {
-}
+ConfigFileWatcherTest::~ConfigFileWatcherTest() = default;
 
 void ConfigFileWatcherTest::StopWatcher() {
   watcher_.reset();

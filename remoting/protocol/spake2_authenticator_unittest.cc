@@ -37,8 +37,8 @@ const char kTestSharedSecretBad[] = "0000-0000-0001";
 
 class Spake2AuthenticatorTest : public AuthenticatorTestBase {
  public:
-  Spake2AuthenticatorTest() {}
-  ~Spake2AuthenticatorTest() override {}
+  Spake2AuthenticatorTest() = default;
+  ~Spake2AuthenticatorTest() override = default;
 
  protected:
   void InitAuthenticators(const std::string& client_secret,

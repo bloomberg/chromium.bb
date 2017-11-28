@@ -28,7 +28,7 @@ DelegatingSignalStrategy::DelegatingSignalStrategy(
                           weak_factory_.GetWeakPtr(), client_task_runner_);
 }
 
-DelegatingSignalStrategy::~DelegatingSignalStrategy() {}
+DelegatingSignalStrategy::~DelegatingSignalStrategy() = default;
 
 DelegatingSignalStrategy::IqCallback
 DelegatingSignalStrategy::GetIncomingMessageCallback() {

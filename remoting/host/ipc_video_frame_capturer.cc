@@ -18,8 +18,7 @@ IpcVideoFrameCapturer::IpcVideoFrameCapturer(
       weak_factory_(this) {
 }
 
-IpcVideoFrameCapturer::~IpcVideoFrameCapturer() {
-}
+IpcVideoFrameCapturer::~IpcVideoFrameCapturer() = default;
 
 void IpcVideoFrameCapturer::Start(Callback* callback) {
   DCHECK(!callback_);

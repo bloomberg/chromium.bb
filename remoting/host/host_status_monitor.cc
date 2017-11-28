@@ -6,8 +6,8 @@
 
 namespace remoting {
 
-HostStatusMonitor::HostStatusMonitor() {}
-HostStatusMonitor::~HostStatusMonitor() {}
+HostStatusMonitor::HostStatusMonitor() = default;
+HostStatusMonitor::~HostStatusMonitor() = default;
 
 void HostStatusMonitor::AddStatusObserver(HostStatusObserver* observer) {
   observers_.AddObserver(observer);

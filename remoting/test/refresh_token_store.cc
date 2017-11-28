@@ -58,8 +58,7 @@ RefreshTokenStoreOnDisk::RefreshTokenStoreOnDisk(
     refresh_token_file_path_(base::MakeAbsoluteFilePath(refresh_token_path)) {
 }
 
-RefreshTokenStoreOnDisk::~RefreshTokenStoreOnDisk() {
-}
+RefreshTokenStoreOnDisk::~RefreshTokenStoreOnDisk() = default;
 
 std::string RefreshTokenStoreOnDisk::FetchRefreshToken() {
   base::FilePath refresh_token_file_path(GetPathForRefreshTokenFile());

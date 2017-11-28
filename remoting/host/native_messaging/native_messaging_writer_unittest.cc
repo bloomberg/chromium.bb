@@ -30,8 +30,8 @@ class NativeMessagingWriterTest : public testing::Test {
   base::File write_file_;
 };
 
-NativeMessagingWriterTest::NativeMessagingWriterTest() {}
-NativeMessagingWriterTest::~NativeMessagingWriterTest() {}
+NativeMessagingWriterTest::NativeMessagingWriterTest() = default;
+NativeMessagingWriterTest::~NativeMessagingWriterTest() = default;
 
 void NativeMessagingWriterTest::SetUp() {
   ASSERT_TRUE(MakePipe(&read_file_, &write_file_));

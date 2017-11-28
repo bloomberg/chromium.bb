@@ -17,7 +17,7 @@ namespace remoting {
 namespace protocol {
 
 FakeVideoStream::FakeVideoStream() : weak_factory_(this) {}
-FakeVideoStream::~FakeVideoStream() {}
+FakeVideoStream::~FakeVideoStream() = default;
 
 void FakeVideoStream::SetEventTimestampsSource(
     scoped_refptr<InputEventTimestampsSource> event_timestamps_source) {}
@@ -39,7 +39,7 @@ base::WeakPtr<FakeVideoStream> FakeVideoStream::GetWeakPtr() {
 FakeConnectionToClient::FakeConnectionToClient(std::unique_ptr<Session> session)
     : session_(std::move(session)) {}
 
-FakeConnectionToClient::~FakeConnectionToClient() {}
+FakeConnectionToClient::~FakeConnectionToClient() = default;
 
 void FakeConnectionToClient::SetEventHandler(EventHandler* event_handler) {
   event_handler_ = event_handler;

@@ -17,8 +17,8 @@ namespace remoting {
 
 static const int kBytesPerPixel = 4;
 
-VideoDecoderVerbatim::VideoDecoderVerbatim() {}
-VideoDecoderVerbatim::~VideoDecoderVerbatim() {}
+VideoDecoderVerbatim::VideoDecoderVerbatim() = default;
+VideoDecoderVerbatim::~VideoDecoderVerbatim() = default;
 
 void VideoDecoderVerbatim::SetPixelFormat(
     VideoDecoder::PixelFormat pixel_format) {

@@ -18,7 +18,7 @@ RendererProxy::RendererProxy(
       ui_task_poster_(new remoting::QueuedTaskPoster(task_runner_)),
       weak_factory_(this) {}
 
-RendererProxy::~RendererProxy() {}
+RendererProxy::~RendererProxy() = default;
 
 void RendererProxy::Initialize(base::WeakPtr<GlRenderer> renderer) {
   renderer_ = renderer;

@@ -33,6 +33,6 @@ SkiaBitmapDesktopFrame::SkiaBitmapDesktopFrame(webrtc::DesktopSize size,
                                                std::unique_ptr<SkBitmap> bitmap)
     : DesktopFrame(size, stride, data, nullptr), bitmap_(std::move(bitmap)) {}
 
-SkiaBitmapDesktopFrame::~SkiaBitmapDesktopFrame() {}
+SkiaBitmapDesktopFrame::~SkiaBitmapDesktopFrame() = default;
 
 }  // namespace remoting

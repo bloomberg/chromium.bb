@@ -44,7 +44,7 @@ class SingleWindowDesktopEnvironment : public BasicDesktopEnvironment {
   DISALLOW_COPY_AND_ASSIGN(SingleWindowDesktopEnvironment);
 };
 
-SingleWindowDesktopEnvironment::~SingleWindowDesktopEnvironment() {}
+SingleWindowDesktopEnvironment::~SingleWindowDesktopEnvironment() = default;
 
 std::unique_ptr<webrtc::DesktopCapturer>
 SingleWindowDesktopEnvironment::CreateVideoCapturer() {
@@ -103,8 +103,7 @@ SingleWindowDesktopEnvironmentFactory::SingleWindowDesktopEnvironmentFactory(
       window_id_(window_id) {}
 
 SingleWindowDesktopEnvironmentFactory::
-    ~SingleWindowDesktopEnvironmentFactory() {
-}
+    ~SingleWindowDesktopEnvironmentFactory() = default;
 
 std::unique_ptr<DesktopEnvironment>
 SingleWindowDesktopEnvironmentFactory::Create(

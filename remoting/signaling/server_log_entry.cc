@@ -33,13 +33,11 @@ const char kKeyCpu[] = "cpu";
 
 }  // namespace
 
-ServerLogEntry::ServerLogEntry() {
-}
+ServerLogEntry::ServerLogEntry() = default;
 
 ServerLogEntry::ServerLogEntry(const ServerLogEntry& other) = default;
 
-ServerLogEntry::~ServerLogEntry() {
-}
+ServerLogEntry::~ServerLogEntry() = default;
 
 void ServerLogEntry::Set(const std::string& key, const std::string& value) {
   values_map_[key] = value;

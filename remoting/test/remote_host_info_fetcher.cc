@@ -25,11 +25,9 @@ const char kRequestTestOrigin[] =
 namespace remoting {
 namespace test {
 
-RemoteHostInfoFetcher::RemoteHostInfoFetcher() {
-}
+RemoteHostInfoFetcher::RemoteHostInfoFetcher() = default;
 
-RemoteHostInfoFetcher::~RemoteHostInfoFetcher() {
-}
+RemoteHostInfoFetcher::~RemoteHostInfoFetcher() = default;
 
 bool RemoteHostInfoFetcher::RetrieveRemoteHostInfo(
     const std::string& application_id,

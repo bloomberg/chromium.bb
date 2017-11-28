@@ -17,7 +17,7 @@ OAuthTokenGetter::OAuthAuthorizationCredentials::OAuthAuthorizationCredentials(
       is_service_account(is_service_account) {}
 
 OAuthTokenGetter::OAuthAuthorizationCredentials::
-    ~OAuthAuthorizationCredentials() {}
+    ~OAuthAuthorizationCredentials() = default;
 
 // OAuthIntermediateCredentials implementation.
 
@@ -28,6 +28,6 @@ OAuthTokenGetter::OAuthIntermediateCredentials::OAuthIntermediateCredentials(
       is_service_account(is_service_account) {}
 
 OAuthTokenGetter::OAuthIntermediateCredentials::
-    ~OAuthIntermediateCredentials() {}
+    ~OAuthIntermediateCredentials() = default;
 
 }  // namespace remoting

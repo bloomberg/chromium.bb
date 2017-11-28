@@ -45,7 +45,7 @@ class ServiceClient::Core
 
  private:
   friend class base::RefCountedThreadSafe<Core>;
-  ~Core() override {}
+  ~Core() override = default;
 
   enum PendingRequestType {
     PENDING_REQUEST_NONE,
@@ -174,8 +174,7 @@ ServiceClient::ServiceClient(const std::string& chromoting_hosts_url,
   core_ = new Core(chromoting_hosts_url, context_getter);
 }
 
-ServiceClient::~ServiceClient() {
-}
+ServiceClient::~ServiceClient() = default;
 
 void ServiceClient::RegisterHost(
     const std::string& host_id,

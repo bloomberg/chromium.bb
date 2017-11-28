@@ -94,7 +94,7 @@ NormalizingInputFilterCros::NormalizingInputFilterCros(
       previous_mouse_x_(-1),
       previous_mouse_y_(-1) {}
 
-NormalizingInputFilterCros::~NormalizingInputFilterCros() {}
+NormalizingInputFilterCros::~NormalizingInputFilterCros() = default;
 
 void NormalizingInputFilterCros::InjectKeyEvent(
     const protocol::KeyEvent& event_arg) {

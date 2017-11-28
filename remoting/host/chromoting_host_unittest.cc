@@ -57,7 +57,7 @@ namespace remoting {
 
 class ChromotingHostTest : public testing::Test {
  public:
-  ChromotingHostTest() {}
+  ChromotingHostTest() = default;
 
   void SetUp() override {
     task_runner_ = new AutoThreadTaskRunner(message_loop_.task_runner(),

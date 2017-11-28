@@ -29,7 +29,7 @@ class DisconnectWindowAura : public HostWindow {
   DISALLOW_COPY_AND_ASSIGN(DisconnectWindowAura);
 };
 
-DisconnectWindowAura::DisconnectWindowAura() {}
+DisconnectWindowAura::DisconnectWindowAura() = default;
 
 DisconnectWindowAura::~DisconnectWindowAura() {
   ash::Shell::Get()->system_tray_notifier()->NotifyScreenShareStop();

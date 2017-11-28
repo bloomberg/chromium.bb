@@ -70,7 +70,7 @@ class SecurityKeyMessageReaderImplTest : public testing::Test {
 SecurityKeyMessageReaderImplTest::SecurityKeyMessageReaderImplTest()
     : run_loop_(new base::RunLoop()) {}
 
-SecurityKeyMessageReaderImplTest::~SecurityKeyMessageReaderImplTest() {}
+SecurityKeyMessageReaderImplTest::~SecurityKeyMessageReaderImplTest() = default;
 
 void SecurityKeyMessageReaderImplTest::SetUp() {
   ASSERT_TRUE(MakePipe(&read_file_, &write_file_));

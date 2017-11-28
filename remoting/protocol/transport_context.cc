@@ -58,7 +58,7 @@ TransportContext::TransportContext(
       network_settings_(network_settings),
       role_(role) {}
 
-TransportContext::~TransportContext() {}
+TransportContext::~TransportContext() = default;
 
 void TransportContext::Prepare() {
   EnsureFreshIceConfig();

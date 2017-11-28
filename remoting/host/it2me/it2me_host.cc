@@ -57,7 +57,7 @@ typedef ValidatingAuthenticator::ResultCallback ValidationResultCallback;
 
 }  // namespace
 
-It2MeHost::It2MeHost() {}
+It2MeHost::It2MeHost() = default;
 
 It2MeHost::~It2MeHost() {
   // Check that resources that need to be torn down on the UI thread are gone.
@@ -558,8 +558,8 @@ void It2MeHost::OnConfirmationResult(
   }
 }
 
-It2MeHostFactory::It2MeHostFactory() {}
-It2MeHostFactory::~It2MeHostFactory() {}
+It2MeHostFactory::It2MeHostFactory() = default;
+It2MeHostFactory::~It2MeHostFactory() = default;
 
 scoped_refptr<It2MeHost> It2MeHostFactory::CreateIt2MeHost() {
   return new It2MeHost();

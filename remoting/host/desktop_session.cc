@@ -9,8 +9,7 @@
 
 namespace remoting {
 
-DesktopSession::~DesktopSession() {
-}
+DesktopSession::~DesktopSession() = default;
 
 DesktopSession::DesktopSession(DaemonProcess* daemon_process, int id)
     : daemon_process_(daemon_process),

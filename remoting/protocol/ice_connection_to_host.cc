@@ -27,7 +27,7 @@
 namespace remoting {
 namespace protocol {
 
-IceConnectionToHost::IceConnectionToHost() {}
+IceConnectionToHost::IceConnectionToHost() = default;
 IceConnectionToHost::~IceConnectionToHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }

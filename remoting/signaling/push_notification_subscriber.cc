@@ -21,8 +21,8 @@ const char kGooglePushNamespace[] = "google:push";
 
 }  // namespace
 
-PushNotificationSubscriber::Subscription::Subscription() {}
-PushNotificationSubscriber::Subscription::~Subscription() {}
+PushNotificationSubscriber::Subscription::Subscription() = default;
+PushNotificationSubscriber::Subscription::~Subscription() = default;
 
 PushNotificationSubscriber::PushNotificationSubscriber(
     SignalStrategy* signal_strategy,

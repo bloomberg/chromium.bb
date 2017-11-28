@@ -62,7 +62,7 @@ HttpIceConfigRequest::HttpIceConfigRequest(
   url_request_->SetPostData("application/json", "");
 }
 
-HttpIceConfigRequest::~HttpIceConfigRequest() {}
+HttpIceConfigRequest::~HttpIceConfigRequest() = default;
 
 void HttpIceConfigRequest::Send(const OnIceConfigCallback& callback) {
   DCHECK(on_ice_config_callback_.is_null());

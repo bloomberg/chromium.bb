@@ -34,7 +34,7 @@ ValidatingAuthenticator::ValidatingAuthenticator(
   DCHECK(current_authenticator_);
 }
 
-ValidatingAuthenticator::~ValidatingAuthenticator() {}
+ValidatingAuthenticator::~ValidatingAuthenticator() = default;
 
 Authenticator::State ValidatingAuthenticator::state() const {
   return pending_auth_message_ ? MESSAGE_READY : state_;

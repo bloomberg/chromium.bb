@@ -65,8 +65,8 @@ AppRemotingTestDriverEnvironmentTest::AppRemotingTestDriverEnvironmentTest()
     : fake_access_token_fetcher_(nullptr) {
 }
 
-AppRemotingTestDriverEnvironmentTest::~AppRemotingTestDriverEnvironmentTest() {
-}
+AppRemotingTestDriverEnvironmentTest::~AppRemotingTestDriverEnvironmentTest() =
+    default;
 
 void AppRemotingTestDriverEnvironmentTest::Initialize() {
   AppRemotingTestDriverEnvironment::EnvironmentOptions options;

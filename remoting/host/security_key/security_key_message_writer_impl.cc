@@ -16,7 +16,7 @@ SecurityKeyMessageWriterImpl::SecurityKeyMessageWriterImpl(
     base::File output_file)
     : output_stream_(std::move(output_file)) {}
 
-SecurityKeyMessageWriterImpl::~SecurityKeyMessageWriterImpl() {}
+SecurityKeyMessageWriterImpl::~SecurityKeyMessageWriterImpl() = default;
 
 bool SecurityKeyMessageWriterImpl::WriteMessage(
     SecurityKeyMessageType message_type) {

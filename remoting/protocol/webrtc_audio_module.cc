@@ -35,8 +35,8 @@ const int kBytesPerSample = 2;
 // functions that are actually used. All unused functions are marked as
 // NOTREACHED().
 
-WebrtcAudioModule::WebrtcAudioModule() {}
-WebrtcAudioModule::~WebrtcAudioModule() {}
+WebrtcAudioModule::WebrtcAudioModule() = default;
+WebrtcAudioModule::~WebrtcAudioModule() = default;
 
 void WebrtcAudioModule::SetAudioTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner) {

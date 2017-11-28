@@ -75,7 +75,7 @@ NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
   return result;
 }
 
-NegotiatingHostAuthenticator::~NegotiatingHostAuthenticator() {}
+NegotiatingHostAuthenticator::~NegotiatingHostAuthenticator() = default;
 
 void NegotiatingHostAuthenticator::ProcessMessage(
     const buzz::XmlElement* message,

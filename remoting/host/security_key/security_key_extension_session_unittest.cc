@@ -83,7 +83,7 @@ class TestClientStub : public protocol::ClientStub {
 
 TestClientStub::TestClientStub() : run_loop_(new base::RunLoop) {}
 
-TestClientStub::~TestClientStub() {}
+TestClientStub::~TestClientStub() = default;
 
 void TestClientStub::SetCapabilities(
     const protocol::Capabilities& capabilities) {}
@@ -139,9 +139,9 @@ class TestClientSessionDetails : public ClientSessionDetails {
   DISALLOW_COPY_AND_ASSIGN(TestClientSessionDetails);
 };
 
-TestClientSessionDetails::TestClientSessionDetails() {}
+TestClientSessionDetails::TestClientSessionDetails() = default;
 
-TestClientSessionDetails::~TestClientSessionDetails() {}
+TestClientSessionDetails::~TestClientSessionDetails() = default;
 
 class SecurityKeyExtensionSessionTest : public testing::Test {
  public:
@@ -180,7 +180,7 @@ SecurityKeyExtensionSessionTest::SecurityKeyExtensionSessionTest()
       base::WrapUnique(mock_security_key_auth_handler_));
 }
 
-SecurityKeyExtensionSessionTest::~SecurityKeyExtensionSessionTest() {}
+SecurityKeyExtensionSessionTest::~SecurityKeyExtensionSessionTest() = default;
 
 void SecurityKeyExtensionSessionTest::WaitForAndVerifyHostMessage() {
   client_stub_.WaitForDeliverHostMessage(

@@ -25,9 +25,9 @@ const int SecurityKeyMessage::kHeaderSizeBytes = 4;
 
 const int SecurityKeyMessage::kMessageTypeSizeBytes = 1;
 
-SecurityKeyMessage::SecurityKeyMessage() {}
+SecurityKeyMessage::SecurityKeyMessage() = default;
 
-SecurityKeyMessage::~SecurityKeyMessage() {}
+SecurityKeyMessage::~SecurityKeyMessage() = default;
 
 bool SecurityKeyMessage::IsValidMessageSize(uint32_t message_size) {
   return message_size > 0 && message_size <= kMaxSecurityKeyMessageByteCount;

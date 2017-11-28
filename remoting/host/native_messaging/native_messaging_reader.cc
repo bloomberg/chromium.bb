@@ -85,7 +85,7 @@ NativeMessagingReader::Core::Core(
       read_task_runner_(read_task_runner) {
 }
 
-NativeMessagingReader::Core::~Core() {}
+NativeMessagingReader::Core::~Core() = default;
 
 void NativeMessagingReader::Core::ReadMessage() {
   DCHECK(read_task_runner_->RunsTasksInCurrentSequence());

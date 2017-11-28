@@ -21,7 +21,7 @@ PairingClientAuthenticator::PairingClientAuthenticator(
       create_base_authenticator_callback_(create_base_authenticator_callback),
       weak_factory_(this) {}
 
-PairingClientAuthenticator::~PairingClientAuthenticator() {}
+PairingClientAuthenticator::~PairingClientAuthenticator() = default;
 
 void PairingClientAuthenticator::Start(State initial_state,
                                        const base::Closure& resume_callback) {

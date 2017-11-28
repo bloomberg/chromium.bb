@@ -56,8 +56,8 @@ class TestTransportEventHandler : public IceTransport::EventHandler {
  public:
   typedef base::Callback<void(ErrorCode error)> ErrorCallback;
 
-  TestTransportEventHandler() {}
-  ~TestTransportEventHandler() {}
+  TestTransportEventHandler() = default;
+  ~TestTransportEventHandler() = default;
 
   void set_error_callback(const ErrorCallback& callback) {
     error_callback_ = callback;

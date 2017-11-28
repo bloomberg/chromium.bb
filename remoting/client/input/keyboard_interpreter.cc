@@ -15,7 +15,7 @@ KeyboardInterpreter::KeyboardInterpreter(ClientInputInjector* input_injector) {
   input_strategy_.reset(new TextKeyboardInputStrategy(input_injector));
 }
 
-KeyboardInterpreter::~KeyboardInterpreter() {}
+KeyboardInterpreter::~KeyboardInterpreter() = default;
 
 void KeyboardInterpreter::HandleTextEvent(const std::string& text,
                                           uint8_t modifiers) {

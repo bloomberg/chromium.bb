@@ -14,8 +14,7 @@ IpcScreenControls::IpcScreenControls(
     : desktop_session_proxy_(desktop_session_proxy) {
 }
 
-IpcScreenControls::~IpcScreenControls() {
-}
+IpcScreenControls::~IpcScreenControls() = default;
 
 void IpcScreenControls::SetScreenResolution(
     const ScreenResolution& resolution) {

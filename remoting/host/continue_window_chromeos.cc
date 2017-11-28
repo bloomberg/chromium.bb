@@ -31,9 +31,9 @@ class ContinueWindowAura : public ContinueWindow {
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowAura);
 };
 
-ContinueWindowAura::ContinueWindowAura() {}
+ContinueWindowAura::ContinueWindowAura() = default;
 
-ContinueWindowAura::~ContinueWindowAura() {}
+ContinueWindowAura::~ContinueWindowAura() = default;
 
 void ContinueWindowAura::OnMessageBoxResult(MessageBox::Result result) {
   if (result == MessageBox::OK) {

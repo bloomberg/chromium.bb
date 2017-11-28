@@ -26,7 +26,7 @@ RsaKeyPair::RsaKeyPair(std::unique_ptr<crypto::RSAPrivateKey> key)
   DCHECK(key_);
 }
 
-RsaKeyPair::~RsaKeyPair() {}
+RsaKeyPair::~RsaKeyPair() = default;
 
 // static
 scoped_refptr<RsaKeyPair> RsaKeyPair::Generate() {

@@ -46,7 +46,7 @@ ACTION_P(SaveUniquePtrArg, dest) {
 class AuraDesktopCapturerTest : public testing::Test,
                                 public webrtc::DesktopCapturer::Callback {
  public:
-  AuraDesktopCapturerTest() {}
+  AuraDesktopCapturerTest() = default;
 
   void SetUp() override;
 

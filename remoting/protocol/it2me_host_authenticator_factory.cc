@@ -27,7 +27,7 @@ It2MeHostAuthenticatorFactory::It2MeHostAuthenticatorFactory(
       access_code_hash_(access_code_hash),
       validation_callback_(callback) {}
 
-It2MeHostAuthenticatorFactory::~It2MeHostAuthenticatorFactory() {}
+It2MeHostAuthenticatorFactory::~It2MeHostAuthenticatorFactory() = default;
 
 std::unique_ptr<Authenticator>
 It2MeHostAuthenticatorFactory::CreateAuthenticator(

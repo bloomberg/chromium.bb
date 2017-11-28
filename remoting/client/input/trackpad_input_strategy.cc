@@ -20,7 +20,7 @@ const float kDragFeedbackRadius = 8.f;
 TrackpadInputStrategy::TrackpadInputStrategy(const DesktopViewport& viewport)
     : cursor_position_(viewport.GetViewportCenter()) {}
 
-TrackpadInputStrategy::~TrackpadInputStrategy() {}
+TrackpadInputStrategy::~TrackpadInputStrategy() = default;
 
 void TrackpadInputStrategy::HandleZoom(const ViewMatrix::Point& pivot,
                                        float scale,

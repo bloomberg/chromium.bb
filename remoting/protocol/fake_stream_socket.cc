@@ -153,7 +153,7 @@ FakeStreamChannelFactory::FakeStreamChannelFactory()
       weak_factory_(this) {
 }
 
-FakeStreamChannelFactory::~FakeStreamChannelFactory() {}
+FakeStreamChannelFactory::~FakeStreamChannelFactory() = default;
 
 FakeStreamSocket* FakeStreamChannelFactory::GetFakeChannel(
     const std::string& name) {

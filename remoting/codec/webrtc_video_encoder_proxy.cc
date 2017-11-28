@@ -15,7 +15,7 @@ class WebrtcVideoEncoderProxy::Core {
   Core(std::unique_ptr<WebrtcVideoEncoder> encoder)
       : encoder_(std::move(encoder)),
         main_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
-  ~Core() {}
+  ~Core() = default;
 
   void Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
               const FrameParams& params,

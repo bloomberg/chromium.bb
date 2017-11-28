@@ -32,7 +32,7 @@ class WebrtcFrameSchedulerTest : public ::testing::Test {
                       base::Bind(&WebrtcFrameSchedulerTest::CaptureCallback,
                                  base::Unretained(this)));
   }
-  ~WebrtcFrameSchedulerTest() override {}
+  ~WebrtcFrameSchedulerTest() override = default;
 
   void CaptureCallback() { capture_callback_called_ = true; }
 

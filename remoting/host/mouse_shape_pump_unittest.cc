@@ -35,7 +35,7 @@ static const int kHotspotY = 12;
 class TestMouseCursorMonitor : public webrtc::MouseCursorMonitor  {
  public:
   TestMouseCursorMonitor() : callback_(nullptr) {}
-  ~TestMouseCursorMonitor() override {}
+  ~TestMouseCursorMonitor() override = default;
 
   void Init(Callback* callback, Mode mode) override {
     EXPECT_FALSE(callback_);

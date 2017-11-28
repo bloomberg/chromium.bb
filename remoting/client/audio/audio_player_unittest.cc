@@ -30,7 +30,7 @@ namespace remoting {
 
 class FakeAudioPlayer : public AudioPlayer {
  public:
-  FakeAudioPlayer() {}
+  FakeAudioPlayer() = default;
 
   bool ResetAudioPlayer(AudioPacket::SamplingRate) override { return true; }
 

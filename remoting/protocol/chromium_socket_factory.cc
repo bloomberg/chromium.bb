@@ -377,11 +377,9 @@ void UdpPacketSocket::HandleReadResult(int result) {
 
 }  // namespace
 
-ChromiumPacketSocketFactory::ChromiumPacketSocketFactory() {
-}
+ChromiumPacketSocketFactory::ChromiumPacketSocketFactory() = default;
 
-ChromiumPacketSocketFactory::~ChromiumPacketSocketFactory() {
-}
+ChromiumPacketSocketFactory::~ChromiumPacketSocketFactory() = default;
 
 rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateUdpSocket(
     const rtc::SocketAddress& local_address,
