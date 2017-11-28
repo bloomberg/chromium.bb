@@ -41,11 +41,6 @@ class AccountReconcilorDelegate {
       const std::string& primary_account,
       bool first_execution) const;
 
-  // Returns true if all secondary accounts should be cleared at the beginning
-  // of the reconcile.
-  virtual bool ShouldRevokeAllSecondaryTokensBeforeReconcile(
-      const std::vector<gaia::ListedAccount>& gaia_accounts);
-
   // Called when reconcile is finished.
   virtual void OnReconcileFinished(const std::string& first_account,
                                    bool reconcile_is_noop) {}

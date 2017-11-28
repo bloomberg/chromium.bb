@@ -58,28 +58,3 @@ TEST(DiceAccountReconcilorDelegateTest, NewProfile) {
   signin::DiceAccountReconcilorDelegate delegate(&pref_service, true);
   EXPECT_TRUE(signin::IsDiceEnabledForProfile(&pref_service));
 }
-
-TEST(DiceAccountReconcilorDelegateTest, RevokeTokens) {
-  sync_preferences::TestingPrefServiceSyncable pref_service;
-  signin::DiceAccountReconcilorDelegate::RegisterProfilePrefs(
-      pref_service.registry());
-  signin::RegisterAccountConsistencyProfilePrefs(pref_service.registry());
-  signin::DiceAccountReconcilorDelegate delegate(&pref_service, false);
-  {
-    // Dice is enabled, don't revoke.
-    signin::ScopedAccountConsistencyDice scoped_dice;
-    EXPECT_FALSE(delegate.ShouldRevokeAllSecondaryTokensBeforeReconcile(
-        std::vector<gaia::ListedAccount>()));
-  }
-  {
-    signin::ScopedAccountConsistencyDiceMigration scoped_dice_migration;
-    // Gaia accounts are not empty, don't revoke.
-    gaia::ListedAccount gaia_account;
-    gaia_account.id = "other";
-    EXPECT_FALSE(delegate.ShouldRevokeAllSecondaryTokensBeforeReconcile(
-        std::vector<gaia::ListedAccount>{gaia_account}));
-    // Revoke.
-    EXPECT_TRUE(delegate.ShouldRevokeAllSecondaryTokensBeforeReconcile(
-        std::vector<gaia::ListedAccount>()));
-  }
-}
