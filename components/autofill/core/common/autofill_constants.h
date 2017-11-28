@@ -18,15 +18,10 @@ extern const char kHelpURL[];
 extern const char kSettingsOrigin[];
 
 // The number of fields required by Autofill to execute its heuristic and
-// crowdsourcing prediction routines. Ideally we would execute those routines no
-// matter how many fields are in the forms; however, finding the label for each
-// field is a costly operation and we can't spare the cycles if it's not
-// necessary.
-const size_t kRequiredFieldsForPredictionRoutines = 3;
-
-// The minimum number of fields required to upload a form to the Autofill
-// servers.
-const size_t kRequiredFieldsForUpload = 3;
+// crowd-sourcing query/upload routines.
+size_t MinRequiredFieldsForHeuristics();
+size_t MinRequiredFieldsForQuery();
+size_t MinRequiredFieldsForUpload();
 
 // The minimum number of fields in a form that contains only password fields to
 // upload the form to and request predictions from the Autofill servers.

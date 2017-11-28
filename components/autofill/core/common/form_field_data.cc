@@ -370,7 +370,7 @@ bool DeserializeFormFieldData(base::PickleIterator* iter,
 }
 
 std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
-  std::string check_status_str;
+  const char* check_status_str = nullptr;
   switch (field.check_status) {
     case FormFieldData::CheckStatus::NOT_CHECKABLE:
       check_status_str = "NOT_CHECKABLE";
@@ -381,9 +381,12 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
     case FormFieldData::CheckStatus::CHECKED:
       check_status_str = "CHECKED";
       break;
+    default:
+      NOTREACHED();
+      check_status_str = "<invalid>";
   }
 
-  std::string role_str;
+  const char* role_str = nullptr;
   switch (field.role) {
     case FormFieldData::RoleAttribute::ROLE_ATTRIBUTE_PRESENTATION:
       role_str = "ROLE_ATTRIBUTE_PRESENTATION";
@@ -391,19 +394,27 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
     case FormFieldData::RoleAttribute::ROLE_ATTRIBUTE_OTHER:
       role_str = "ROLE_ATTRIBUTE_OTHER";
       break;
+    default:
+      NOTREACHED();
+      role_str = "<invalid>";
   }
 
-  return os << base::UTF16ToUTF8(field.label) << " "
-            << base::UTF16ToUTF8(field.name) << " "
-            << base::UTF16ToUTF8(field.id) << " "
-            << base::UTF16ToUTF8(field.value) << " " << field.form_control_type
-            << " " << field.autocomplete_attribute << " " << field.placeholder
-            << " " << field.max_length << " " << field.css_classes << " "
-            << (field.is_autofilled ? "true" : "false") << " "
-            << check_status_str << (field.is_focusable ? "true" : "false")
-            << " " << (field.should_autocomplete ? "true" : "false") << " "
-            << role_str << " " << field.text_direction << " "
-            << field.properties_mask;
+  return os << "label='" << base::UTF16ToUTF8(field.label) << "' "
+            << "name='" << base::UTF16ToUTF8(field.name) << "' "
+            << "id='" << base::UTF16ToUTF8(field.id) << "' "
+            << "value='" << base::UTF16ToUTF8(field.value) << "' "
+            << "control='" << field.form_control_type << "' "
+            << "autocomplete='" << field.autocomplete_attribute << "' "
+            << "placeholder='" << field.placeholder << "' "
+            << "max_length=" << field.max_length << " "
+            << "css_classes='" << field.css_classes << "' "
+            << "autofilled=" << field.is_autofilled << " "
+            << "check_status=" << check_status_str << " "
+            << "is_focusable=" << field.is_focusable << " "
+            << "should_autocomplete=" << field.should_autocomplete << " "
+            << "role=" << role_str << " "
+            << "text_direction=" << field.text_direction << " "
+            << "properties_mask=" << field.properties_mask;
 }
 
 }  // namespace autofill

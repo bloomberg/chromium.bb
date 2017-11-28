@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/name_field.h"
 #include "components/autofill/core/browser/phone_field.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_util.h"
 
@@ -75,13 +76,14 @@ FieldCandidatesMap FormField::ParseFormFields(
   // Name pass.
   ParseFormFieldsPass(NameField::Parse, processed_fields, &field_candidates);
 
-  // Do not autofill a form if there are less than 3 recognized fields.
-  // Otherwise it is very easy to have false positives. http://crbug.com/447332
-  // For <form> tags, make an exception for email fields, which are commonly the
-  // only recognized field on account registration sites.
-  static const size_t kThreshold = 3;
-  const bool accept_parsing = (field_candidates.size() >= kThreshold ||
-                               (is_form_tag && email_count > 0));
+  // Do not autofill a form if there aren't enough fields. Otherwise, it is
+  // very easy to have false positives. See http://crbug.com/447332
+  // For <form> tags, make an exception for email fields, which are commonly
+  // the only recognized field on account registration sites.
+  const bool accept_parsing =
+      field_candidates.size() >= MinRequiredFieldsForHeuristics() ||
+      (is_form_tag && email_count > 0);
+
   if (!accept_parsing)
     field_candidates.clear();
 

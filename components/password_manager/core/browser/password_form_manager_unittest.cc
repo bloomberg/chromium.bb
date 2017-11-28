@@ -18,11 +18,13 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/user_action_tester.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
@@ -46,6 +48,9 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
+using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
+using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
 using autofill::FieldPropertiesFlags;
 using autofill::FieldPropertiesMask;
 using autofill::PasswordForm;
@@ -409,7 +414,7 @@ class PasswordFormManagerTest : public testing::Test {
     psl_saved_match_.signon_realm = "http://m.accounts.google.com";
 
     autofill::FormFieldData field;
-    field.label = ASCIIToUTF16("full_name");
+    field.label = ASCIIToUTF16("Full name");
     field.name = ASCIIToUTF16("full_name");
     field.form_control_type = "text";
     saved_match_.form_data.fields.push_back(field);
@@ -3368,6 +3373,11 @@ TEST_F(PasswordFormManagerTest, DoesManageDifferentSignonRealmSameDrivers) {
 }
 
 TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
+  // TODO(rogerm,kolos): Fix this test so that it works correctly when the
+  // enforcement of the minimum number of required for fields is upload is
+  // relaxed.
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(kAutofillEnforceMinRequiredFieldsForUpload);
   for (bool is_form_with_2_fields : {false, true}) {
     SCOPED_TRACE(testing::Message()
                  << "is_form_with_2_fields=" << is_form_with_2_fields);

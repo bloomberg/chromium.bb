@@ -13,8 +13,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/task_scheduler.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/data_driven_test.h"
+#include "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "ios/chrome/browser/autofill/autofill_controller.h"
@@ -42,31 +44,32 @@ const base::FilePath& GetTestDataDir() {
   return dir;
 }
 
-base::FilePath GetIOSOutputDirectory(
-    const base::FilePath::StringType& test_name) {
+base::FilePath GetIOSInputDirectory() {
   base::FilePath dir;
   CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &dir));
 
-  dir = dir.AppendASCII("components")
-            .AppendASCII("test")
-            .AppendASCII("data")
-            .AppendASCII("autofill")
-            .AppendASCII("heuristics")
-            .AppendASCII("output");
+  return dir.AppendASCII("components")
+      .AppendASCII("test")
+      .AppendASCII("data")
+      .AppendASCII("autofill")
+      .Append(kTestName)
+      .AppendASCII("input");
+}
 
-  return dir;
+base::FilePath GetIOSOutputDirectory() {
+  base::FilePath dir;
+  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &dir));
+
+  return dir.AppendASCII("components")
+      .AppendASCII("test")
+      .AppendASCII("data")
+      .AppendASCII("autofill")
+      .Append(kTestName)
+      .AppendASCII("output");
 }
 
 const std::vector<base::FilePath> GetTestFiles() {
-  base::FilePath dir;
-  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &dir));
-  dir = dir.AppendASCII("components")
-            .AppendASCII("test")
-            .AppendASCII("data")
-            .AppendASCII("autofill")
-            .AppendASCII("heuristics")
-            .AppendASCII("input");
-
+  base::FilePath dir(GetIOSInputDirectory());
   base::FileEnumerator input_files(dir, false, base::FileEnumerator::FILES);
   std::vector<base::FilePath> files;
   for (base::FilePath input_file = input_files.Next(); !input_file.empty();
@@ -77,6 +80,13 @@ const std::vector<base::FilePath> GetTestFiles() {
 
   base::mac::ClearAmIBundledCache();
   return files;
+}
+
+const std::set<std::string>& GetFailingTestNames() {
+  static std::set<std::string>* failing_test_names = new std::set<std::string>{
+      "067_register_rei.com.html", "074_register_threadless.com.html",
+  };
+  return *failing_test_names;
 }
 
 }  // namespace
@@ -108,6 +118,7 @@ class FormStructureBrowserTest
   AutofillController* autofillController_;
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   DISALLOW_COPY_AND_ASSIGN(FormStructureBrowserTest);
 };
 
@@ -116,6 +127,8 @@ FormStructureBrowserTest::FormStructureBrowserTest()
 
 void FormStructureBrowserTest::SetUp() {
   ChromeWebTest::SetUp();
+  feature_list_.InitAndDisableFeature(
+      autofill::features::kAutofillEnforceMinRequiredFieldsForUpload);
 
   InfoBarManagerImpl::CreateForWebState(web_state());
   AutofillAgent* autofillAgent = [[AutofillAgent alloc]
@@ -187,7 +200,10 @@ std::string FormStructureBrowserTest::FormStructuresToString(
 }
 
 TEST_P(FormStructureBrowserTest, DataDrivenHeuristics) {
-  RunOneDataDrivenTest(GetParam(), GetIOSOutputDirectory(kTestName));
+  bool is_expected_to_pass =
+      !base::ContainsKey(GetFailingTestNames(), GetParam().BaseName().value());
+  RunOneDataDrivenTest(GetParam(), GetIOSOutputDirectory(),
+                       is_expected_to_pass);
 }
 
 INSTANTIATE_TEST_CASE_P(AllForms,

@@ -98,7 +98,7 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
   __block BOOL block_was_called = NO;
   __block NSString* result;
   [manager_ fetchFormsWithMinimumRequiredFieldsCount:
-                autofill::kRequiredFieldsForPredictionRoutines
+                autofill::MinRequiredFieldsForHeuristics()
                                    completionHandler:^(NSString* actualResult) {
                                      block_was_called = YES;
                                      result = [actualResult copy];
