@@ -992,43 +992,11 @@ void shell_surface_set_transient(wl_client* client,
   if (shell_surface->enabled())
     return;
 
-  // Parent widget can be found by locating the closest ancestor with a widget.
-  views::Widget* parent_widget = nullptr;
-  aura::Window* parent_window =
-      GetUserDataAs<Surface>(parent_resource)->window();
-  while (parent_window) {
-    parent_widget = views::Widget::GetWidgetForNativeWindow(parent_window);
-    if (parent_widget)
-      break;
-    parent_window = parent_window->parent();
-  }
-
-  DLOG_IF(WARNING, parent_resource && !!parent_widget)
-      << "Parent surface is not a visible shell surface";
-
-  gfx::Point origin(x, y);
-  ShellSurface* parent_shell_surface = nullptr;
-
-  // Set parent if found and it is associated with a shell surface.
-  if (parent_widget &&
-      ShellSurface::GetMainSurface(parent_widget->GetNativeWindow())) {
-    wm::ConvertPointToScreen(
-        ShellSurface::GetMainSurface(parent_widget->GetNativeWindow())
-            ->window(),
-        &origin);
-    // Shell surface widget delegate implementation of GetContentsView()
-    // returns a pointer to the shell surface instance.
-    parent_shell_surface = static_cast<ShellSurface*>(
-        parent_widget->widget_delegate()->GetContentsView());
-  }
-
   if (flags & WL_SHELL_SURFACE_TRANSIENT_INACTIVE) {
-    shell_surface->SetOrigin(origin);
     shell_surface->SetContainer(ash::kShellWindowId_SystemModalContainer);
     shell_surface->SetActivatable(false);
-  } else {
-    shell_surface->SetParent(parent_shell_surface);
   }
+
   shell_surface->SetEnabled(true);
 }
 
@@ -1090,15 +1058,6 @@ const struct wl_shell_surface_interface shell_surface_implementation = {
 ////////////////////////////////////////////////////////////////////////////////
 // wl_shell_interface:
 
-void HandleShellSurfaceCloseCallback(wl_resource* resource) {
-  // Shell surface interface doesn't have a close event. Just send a ping event
-  // for now.
-  uint32_t serial = wl_display_next_serial(
-      wl_client_get_display(wl_resource_get_client(resource)));
-  wl_shell_surface_send_ping(resource, serial);
-  wl_client_flush(wl_resource_get_client(resource));
-}
-
 uint32_t HandleShellSurfaceConfigureCallback(
     wl_resource* resource,
     const gfx::Size& size,
@@ -1131,10 +1090,6 @@ void shell_get_shell_surface(wl_client* client,
   // Shell surfaces are initially disabled and needs to be explicitly mapped
   // before they are enabled and can become visible.
   shell_surface->SetEnabled(false);
-
-  shell_surface->set_close_callback(
-      base::Bind(&HandleShellSurfaceCloseCallback,
-                 base::Unretained(shell_surface_resource)));
 
   shell_surface->set_configure_callback(
       base::Bind(&HandleShellSurfaceConfigureCallback,
