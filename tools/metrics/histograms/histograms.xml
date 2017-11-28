@@ -10527,11 +10527,39 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Compositing.SurfaceAggregator.SurfaceDrawQuad.UsingFallbackSurface">
+  <owner>fsamuel@chromium.org</owner>
+  <summary>
+    The number of SurfaceDrawQuads where the primary SurfaceId doe not have a
+    corresponding active CompositorFrame and so the fallback surface is used
+    instead. This is logged for each call to Aggregate().
+  </summary>
+</histogram>
+
 <histogram name="Compositing.SurfaceAggregator.SurfaceDrawQuad.ValidSurface">
   <owner>kylechar@chromium.org</owner>
   <summary>
     The number of SurfaceDrawQuads where the surface exists and has an active
     CompositorFrame. This is logged for each call to Aggregate().
+  </summary>
+</histogram>
+
+<histogram name="Compositing.SurfaceDependencyDeadline.DeadlineHit"
+    units="Boolean">
+  <owner>fsamuel@chromium.org</owner>
+  <summary>
+    Tracks whether an activation of a surface was due to due to a deadline or
+    the resolution of dependencies.
+  </summary>
+</histogram>
+
+<histogram name="Compositing.SurfaceDependencyDeadline.Duration" units="ms">
+  <owner>fsamuel@chromium.org</owner>
+  <summary>
+    The amount of time it took for a Surface with unresolved dependencies to
+    activate. Note that some activations may be triggered due to a deadline
+    hitting. That is tracked in the DeadlineHit histogram.
   </summary>
 </histogram>
 
@@ -89312,6 +89340,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The amount of time the CompositorResizeLock was held in milliseconds. This
     is a measure of jank as UI will not generate new frames as long as the lock
     is held.
+  </summary>
+</histogram>
+
+<histogram name="UI.CompositorResizeLock.TimedOut" units="Boolean">
+  <owner>fsamuel@chromium.org</owner>
+  <summary>
+    Tracks whether the CompositorResizeLock is being released due to timing out
+    or not.
   </summary>
 </histogram>
 

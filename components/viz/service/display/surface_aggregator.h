@@ -83,14 +83,21 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       valid_surface = 0;
       missing_surface = 0;
       no_active_frame = 0;
+      using_fallback_surface = 0;
     }
 
     // The surface exists and has an active frame.
     int valid_surface;
+
     // The surface doesn't exist.
     int missing_surface;
+
     // The surface exists but doesn't have an active frame.
     int no_active_frame;
+
+    // The primary surface is not available but the fallback
+    // is used.
+    int using_fallback_surface;
   };
 
   ClipData CalculateClipRect(const ClipData& surface_clip,

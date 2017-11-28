@@ -32,6 +32,8 @@ CompositorResizeLock::~CompositorResizeLock() {
 
   UMA_HISTOGRAM_TIMES("UI.CompositorResizeLock.Duration",
                       base::TimeTicks::Now() - acquisition_time_);
+
+  UMA_HISTOGRAM_BOOLEAN("UI.CompositorResizeLock.TimedOut", timed_out_);
 }
 
 bool CompositorResizeLock::Lock() {
