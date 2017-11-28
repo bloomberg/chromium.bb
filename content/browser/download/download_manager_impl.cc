@@ -194,14 +194,16 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
     return nullptr;
   }
 
+  ResourceRequestInfo::WebContentsGetter getter = base::Bind(
+      &GetWebContents, request->origin_pid, request->render_frame_id, -1);
   // TODO(qinmin): Check the storage permission before creating the URLLoader.
   // This is already done for context menu download, but it is missing for
   // download service and download resumption.
   return DownloadManagerImpl::UniqueUrlDownloadHandlerPtr(
       ResourceDownloader::BeginDownload(
           download_manager, std::move(params), std::move(request),
-          url_loader_factory_getter, file_system_context,
-          base::Bind(&GetWebContents, -1, -1, -1), download_id, false)
+          url_loader_factory_getter, file_system_context, getter, download_id,
+          false)
           .release());
 }
 
@@ -713,7 +715,6 @@ DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
     int render_view_route_id,
     int render_frame_route_id,
     bool do_not_prompt_for_login) {
-  LOG(ERROR) << "BeginDownloadRequest";
   if (ResourceDispatcherHostImpl::Get()->is_shutdown())
     return DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
 

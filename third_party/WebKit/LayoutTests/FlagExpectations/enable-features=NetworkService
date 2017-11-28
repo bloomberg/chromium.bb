@@ -233,8 +233,5 @@ crbug.com/778721 http/tests/fetch/workers/thorough/scheme-blob.html [ Pass Failu
 
 crbug.com/721408 http/tests/inspector-protocol/network/navigation-xfer-size.js [ Failure ]
 
-crbug.com/789081 fast/dom/HTMLAnchorElement/anchor-download.html [ Timeout ]
-crbug.com/789081 fast/dom/HTMLAnchorElement/anchor-nodownload-set.html [ Timeout ]
-
 # Started flaking after test was rewritten in r517585.
 Bug(none) http/tests/devtools/service-workers/service-worker-agents.js [ Crash Pass ]
