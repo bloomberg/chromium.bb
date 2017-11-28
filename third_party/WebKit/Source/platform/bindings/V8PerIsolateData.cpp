@@ -77,7 +77,7 @@ V8PerIsolateData::V8PerIsolateData(
       use_counter_disabled_(false),
       is_handling_recursion_level_error_(false),
       is_reporting_exception_(false),
-      runtime_call_stats_(&clock_) {
+      runtime_call_stats_(base::DefaultTickClock::GetInstance()) {
   // If it fails to load the snapshot file, falls back to kDontUseSnapshot mode.
   // TODO(peria): Remove this fallback routine.
   if (v8_context_snapshot_mode_ == V8ContextSnapshotMode::kUseSnapshot &&
@@ -105,7 +105,7 @@ V8PerIsolateData::V8PerIsolateData()
       use_counter_disabled_(false),
       is_handling_recursion_level_error_(false),
       is_reporting_exception_(false),
-      runtime_call_stats_(&clock_) {
+      runtime_call_stats_(base::DefaultTickClock::GetInstance()) {
   CHECK(IsMainThread());
 
   // SnapshotCreator enters the isolate, so we don't call Isolate::Enter() here.
