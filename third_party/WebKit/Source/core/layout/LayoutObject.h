@@ -458,12 +458,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void ShowTreeForThis() const;
   void ShowLayoutTreeForThis() const;
   void ShowLineTreeForThis() const;
-
   void ShowLayoutObject() const;
-  // We don't make stringBuilder an optional parameter so that
-  // showLayoutObject can be called from gdb easily.
-  void ShowLayoutObject(StringBuilder&) const;
-  void ShowLayoutTreeAndMark(const LayoutObject* marked_object1 = nullptr,
+
+  // Dump this layout object to the specified string builder.
+  void DumpLayoutObject(StringBuilder&) const;
+
+  // Dump the subtree established by this layout object to the specified string
+  // builder. There will be one object per line, and descendants will be
+  // indented according to their tree level. The optional "marked_foo"
+  // parameters can be used to mark up to two objects in the subtree with a
+  // label.
+  void DumpLayoutTreeAndMark(StringBuilder&,
+                             const LayoutObject* marked_object1 = nullptr,
                              const char* marked_label1 = nullptr,
                              const LayoutObject* marked_object2 = nullptr,
                              const char* marked_label2 = nullptr,
