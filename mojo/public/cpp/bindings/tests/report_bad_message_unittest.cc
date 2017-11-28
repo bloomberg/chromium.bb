@@ -27,7 +27,7 @@ class TestBadMessagesImpl : public TestBadMessages {
     binding_.Bind(std::move(request));
   }
 
-  const ReportBadMessageCallback& bad_message_callback() {
+  ReportBadMessageCallback& bad_message_callback() {
     return bad_message_callback_;
   }
 
@@ -115,7 +115,7 @@ TEST_P(ReportBadMessageTest, RequestAsync) {
 
   // Now we can run the callback and it should trigger a bad message report.
   DCHECK(!impl()->bad_message_callback().is_null());
-  impl()->bad_message_callback().Run("bad!");
+  std::move(impl()->bad_message_callback()).Run("bad!");
   EXPECT_TRUE(error);
 }
 
@@ -157,7 +157,8 @@ TEST_P(ReportBadMessageTest, ResponseAsync) {
 
   // Invoking this callback should report a bad message and trigger the error
   // handler immediately.
-  bad_message_callback.Run("this message is bad and should feel bad");
+  std::move(bad_message_callback)
+      .Run("this message is bad and should feel bad");
   EXPECT_TRUE(error);
 }
 
@@ -185,7 +186,7 @@ TEST_P(ReportBadMessageTest, ResponseSyncDeferred) {
   }
 
   EXPECT_FALSE(error);
-  bad_message_callback.Run("nope nope nope");
+  std::move(bad_message_callback).Run("nope nope nope");
   EXPECT_TRUE(error);
 }
 

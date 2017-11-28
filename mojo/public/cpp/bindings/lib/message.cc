@@ -480,13 +480,9 @@ void SyncMessageResponseContext::ReportBadMessage(const std::string& error) {
   GetBadMessageCallback().Run(error);
 }
 
-const ReportBadMessageCallback&
-SyncMessageResponseContext::GetBadMessageCallback() {
-  if (bad_message_callback_.is_null()) {
-    bad_message_callback_ =
-        base::Bind(&DoNotifyBadMessage, base::Passed(&response_));
-  }
-  return bad_message_callback_;
+ReportBadMessageCallback SyncMessageResponseContext::GetBadMessageCallback() {
+  DCHECK(!response_.IsNull());
+  return base::BindOnce(&DoNotifyBadMessage, std::move(response_));
 }
 
 MojoResult ReadMessage(MessagePipeHandle handle, Message* message) {
@@ -533,13 +529,9 @@ MessageDispatchContext* MessageDispatchContext::current() {
   return g_tls_message_dispatch_context.Get().Get();
 }
 
-const ReportBadMessageCallback&
-MessageDispatchContext::GetBadMessageCallback() {
-  if (bad_message_callback_.is_null()) {
-    bad_message_callback_ =
-        base::Bind(&DoNotifyBadMessage, base::Passed(message_));
-  }
-  return bad_message_callback_;
+ReportBadMessageCallback MessageDispatchContext::GetBadMessageCallback() {
+  DCHECK(!message_->IsNull());
+  return base::BindOnce(&DoNotifyBadMessage, std::move(*message_));
 }
 
 // static

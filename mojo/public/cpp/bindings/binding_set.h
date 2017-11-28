@@ -179,11 +179,11 @@ class BindingSetBase {
   // The returned callback must be called on the BindingSet's own sequence.
   ReportBadMessageCallback GetBadMessageCallback() {
     DCHECK(dispatch_context_);
-    return base::Bind(
-        [](const ReportBadMessageCallback& error_callback,
+    return base::BindOnce(
+        [](ReportBadMessageCallback error_callback,
            base::WeakPtr<BindingSetBase> binding_set, BindingId binding_id,
            const std::string& error) {
-          error_callback.Run(error);
+          std::move(error_callback).Run(error);
           if (binding_set)
             binding_set->RemoveBinding(binding_id);
         },
