@@ -25,6 +25,8 @@ static_library("safe_browsing") {
     "chrome_cleaner/chrome_cleaner_reboot_dialog_controller_win.h",
     "chrome_cleaner/chrome_cleaner_runner_win.cc",
     "chrome_cleaner/chrome_cleaner_runner_win.h",
+    "chrome_cleaner/chrome_cleaner_scanner_results.cc",
+    "chrome_cleaner/chrome_cleaner_scanner_results.h",
     "chrome_cleaner/chrome_cleaner_state_change_observer_win.cc",
     "chrome_cleaner/chrome_cleaner_state_change_observer_win.h",
     "chrome_cleaner/reporter_runner_win.cc",

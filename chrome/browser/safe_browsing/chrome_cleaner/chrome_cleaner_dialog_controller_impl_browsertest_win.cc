@@ -98,14 +98,14 @@ class ChromeCleanerPromptUserTest
 IN_PROC_BROWSER_TEST_P(ChromeCleanerPromptUserTest,
                        OnInfectedBrowserAvailable) {
   EXPECT_CALL(mock_delegate_, ShowChromeCleanerPrompt(_, _, _)).Times(1);
-  dialog_controller_->OnInfected(std::set<base::FilePath>());
+  dialog_controller_->OnInfected(ChromeCleanerScannerResults());
 }
 
 IN_PROC_BROWSER_TEST_P(ChromeCleanerPromptUserTest,
                        DISABLED_OnInfectedBrowserNotAvailable) {
   browser()->window()->Minimize();
   base::RunLoop().RunUntilIdle();
-  dialog_controller_->OnInfected(std::set<base::FilePath>());
+  dialog_controller_->OnInfected(ChromeCleanerScannerResults());
 
   base::RunLoop run_loop;
   // We only set the expectation here because we want to make sure that the
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_P(ChromeCleanerPromptUserTest, AllBrowsersClosed) {
 
   CloseAllBrowsers();
   base::RunLoop().RunUntilIdle();
-  dialog_controller_->OnInfected(std::set<base::FilePath>());
+  dialog_controller_->OnInfected(ChromeCleanerScannerResults());
 
   base::RunLoop run_loop;
   // We only set the expectation here because we want to make sure that the

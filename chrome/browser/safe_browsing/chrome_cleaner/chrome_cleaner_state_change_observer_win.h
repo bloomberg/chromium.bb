@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_CHROME_CLEANER_STATE_CHANGE_OBSERVER_WIN_H_
 
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results.h"
 
 namespace safe_browsing {
 
@@ -29,8 +30,8 @@ class ChromeCleanerStateChangeObserver
   // ChromeCleanerController::Observer implementation.
   void OnIdle(ChromeCleanerController::IdleReason idle_reason) override;
   void OnScanning() override;
-  void OnInfected(const std::set<base::FilePath>& files) override;
-  void OnCleaning(const std::set<base::FilePath>& files) override;
+  void OnInfected(const ChromeCleanerScannerResults& scanner_results) override;
+  void OnCleaning(const ChromeCleanerScannerResults& scanner_results) override;
   void OnRebootRequired() override;
   void OnLogsEnabledChanged(bool logs_enabled) override;
 

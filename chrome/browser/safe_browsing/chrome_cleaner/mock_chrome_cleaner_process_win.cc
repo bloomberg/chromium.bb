@@ -37,6 +37,7 @@ using ::chrome_cleaner::mojom::PromptAcceptance;
 constexpr char kCrashPointSwitch[] = "mock-crash-point";
 constexpr char kUwsFoundSwitch[] = "mock-uws-found";
 constexpr char kRebootRequiredSwitch[] = "mock-reboot-required";
+constexpr char kRegistryKeysReportingSwitch[] = "registry-keys-reporting";
 constexpr char kExpectedUserResponseSwitch[] = "mock-expected-user-response";
 
 }  // namespace
@@ -45,7 +46,19 @@ constexpr char kExpectedUserResponseSwitch[] = "mock-expected-user-response";
 bool MockChromeCleanerProcess::Options::FromCommandLine(
     const base::CommandLine& command_line,
     Options* options) {
-  options->SetDoFindUws(command_line.HasSwitch(kUwsFoundSwitch));
+  int registry_keys_reporting_int = -1;
+  if (!base::StringToInt(
+          command_line.GetSwitchValueASCII(kRegistryKeysReportingSwitch),
+          &registry_keys_reporting_int) ||
+      registry_keys_reporting_int < 0 ||
+      registry_keys_reporting_int >=
+          static_cast<int>(RegistryKeysReporting::kNumRegistryKeysReporting)) {
+    return false;
+  }
+
+  options->SetReportedResults(
+      command_line.HasSwitch(kUwsFoundSwitch),
+      static_cast<RegistryKeysReporting>(registry_keys_reporting_int));
   options->set_reboot_required(command_line.HasSwitch(kRebootRequiredSwitch));
 
   if (command_line.HasSwitch(kCrashPointSwitch)) {
@@ -82,15 +95,19 @@ MockChromeCleanerProcess::Options::Options() = default;
 
 MockChromeCleanerProcess::Options::Options(const Options& other)
     : files_to_delete_(other.files_to_delete_),
+      registry_keys_(other.registry_keys_),
       reboot_required_(other.reboot_required_),
       crash_point_(other.crash_point_),
+      registry_keys_reporting_(other.registry_keys_reporting_),
       expected_user_response_(other.expected_user_response_) {}
 
 MockChromeCleanerProcess::Options& MockChromeCleanerProcess::Options::operator=(
     const Options& other) {
   files_to_delete_ = other.files_to_delete_;
+  registry_keys_ = other.registry_keys_;
   reboot_required_ = other.reboot_required_;
   crash_point_ = other.crash_point_;
+  registry_keys_reporting_ = other.registry_keys_reporting_;
   expected_user_response_ = other.expected_user_response_;
   return *this;
 }
@@ -110,6 +127,10 @@ void MockChromeCleanerProcess::Options::AddSwitchesToCommandLine(
         kCrashPointSwitch, base::IntToString(static_cast<int>(crash_point())));
   }
 
+  command_line->AppendSwitchASCII(
+      kRegistryKeysReportingSwitch,
+      base::IntToString(static_cast<int>(registry_keys_reporting())));
+
   if (expected_user_response() != PromptAcceptance::UNSPECIFIED) {
     command_line->AppendSwitchASCII(
         kExpectedUserResponseSwitch,
@@ -117,17 +138,47 @@ void MockChromeCleanerProcess::Options::AddSwitchesToCommandLine(
   }
 }
 
-void MockChromeCleanerProcess::Options::SetDoFindUws(bool do_find_uws) {
-  files_to_delete_.clear();
-  if (!do_find_uws)
-    return;
+void MockChromeCleanerProcess::Options::SetReportedResults(
+    bool has_files_to_remove,
+    RegistryKeysReporting registry_keys_reporting) {
+  if (!has_files_to_remove)
+    files_to_delete_.clear();
+  if (has_files_to_remove) {
+    files_to_delete_.push_back(
+        base::FilePath(FILE_PATH_LITERAL("/path/to/file1.exe")));
+    files_to_delete_.push_back(
+        base::FilePath(FILE_PATH_LITERAL("/path/to/other/file2.exe")));
+    files_to_delete_.push_back(
+        base::FilePath(FILE_PATH_LITERAL("/path/to/some file.dll")));
+  }
 
-  files_to_delete_.insert(
-      base::FilePath(FILE_PATH_LITERAL("/path/to/file1.exe")));
-  files_to_delete_.insert(
-      base::FilePath(FILE_PATH_LITERAL("/path/to/other/file2.exe")));
-  files_to_delete_.insert(
-      base::FilePath(FILE_PATH_LITERAL("/path/to/some file.dll")));
+  registry_keys_reporting_ = registry_keys_reporting;
+  switch (registry_keys_reporting) {
+    case RegistryKeysReporting::kUnsupported:
+      // Defined as an optional object in which a registry keys vector is not
+      // present.
+      registry_keys_ = base::Optional<std::vector<base::string16>>();
+      break;
+
+    case RegistryKeysReporting::kNotReported:
+      // Defined as an optional object in which an empty registry keys vector is
+      // present.
+      registry_keys_ =
+          base::Optional<std::vector<base::string16>>(base::in_place);
+      break;
+
+    case RegistryKeysReporting::kReported:
+      // Defined as an optional object in which a non-empty registry keys vector
+      // is present.
+      registry_keys_ = base::Optional<std::vector<base::string16>>({
+          L"HKCU:32\\Software\\Some\\Unwanted Software",
+          L"HKCU:32\\Software\\Another\\Unwanted Software",
+      });
+      break;
+
+    default:
+      NOTREACHED();
+  }
 }
 
 int MockChromeCleanerProcess::Options::ExpectedExitCode(
@@ -229,8 +280,7 @@ void MockChromeCleanerProcess::SendScanResults(
 
   (*chrome_prompt_ptr_)
       ->PromptUser(
-          std::vector<base::FilePath>(options_.files_to_delete().begin(),
-                                      options_.files_to_delete().end()),
+          options_.files_to_delete(), options_.registry_keys(),
           base::BindOnce(&MockChromeCleanerProcess::PromptUserCallback,
                          base::Unretained(this), std::move(quit_closure)));
 }

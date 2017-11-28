@@ -72,7 +72,8 @@ class ChromeCleanerDialog
   void OnIdle(
       safe_browsing::ChromeCleanerController::IdleReason idle_reason) override;
   void OnScanning() override;
-  void OnCleaning(const std::set<base::FilePath>& files_to_delete) override;
+  void OnCleaning(const safe_browsing::ChromeCleanerScannerResults&
+                      scanner_results) override;
   void OnRebootRequired() override;
 
  private:
