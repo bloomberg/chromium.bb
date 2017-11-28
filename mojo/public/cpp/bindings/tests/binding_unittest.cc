@@ -524,7 +524,7 @@ TEST_P(BindingTest, GetBadMessageCallback) {
     EXPECT_TRUE(bad_message_callback);
   }
 
-  bad_message_callback.Run("delayed bad message");
+  std::move(bad_message_callback).Run("delayed bad message");
   EXPECT_EQ("delayed bad message", received_error);
 
   edk::SetDefaultProcessErrorCallback(mojo::edk::ProcessErrorCallback());

@@ -61,12 +61,11 @@ class MOJO_CPP_BINDINGS_EXPORT MessageDispatchContext {
 
   static MessageDispatchContext* current();
 
-  const base::Callback<void(const std::string&)>& GetBadMessageCallback();
+  base::OnceCallback<void(const std::string&)> GetBadMessageCallback();
 
  private:
   MessageDispatchContext* outer_context_;
   Message* message_;
-  base::Callback<void(const std::string&)> bad_message_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageDispatchContext);
 };

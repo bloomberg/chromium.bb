@@ -55,10 +55,10 @@ void BindingStateBase::CloseWithReason(uint32_t custom_reason,
 }
 
 ReportBadMessageCallback BindingStateBase::GetBadMessageCallback() {
-  return base::Bind(
-      [](const ReportBadMessageCallback& inner_callback,
+  return base::BindOnce(
+      [](ReportBadMessageCallback inner_callback,
          base::WeakPtr<BindingStateBase> binding, const std::string& error) {
-        inner_callback.Run(error);
+        std::move(inner_callback).Run(error);
         if (binding)
           binding->Close();
       },

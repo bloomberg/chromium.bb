@@ -276,13 +276,13 @@ TEST_P(BindingSetTest, BindingSetGetBadMessageCallback) {
     loop.Run();
   }
 
-  bad_message_callback_a.Run("message 1");
+  std::move(bad_message_callback_a).Run("message 1");
   EXPECT_EQ("message 1", last_received_error);
 
   {
     base::RunLoop loop;
     ping_b.set_connection_error_handler(loop.QuitClosure());
-    bad_message_callback_b.Run("message 2");
+    std::move(bad_message_callback_b).Run("message 2");
     EXPECT_EQ("message 2", last_received_error);
     loop.Run();
   }
@@ -314,7 +314,7 @@ TEST_P(BindingSetTest, BindingSetGetBadMessageCallbackOutlivesBindingSet) {
     loop.Run();
   }
 
-  bad_message_callback.Run("message 1");
+  std::move(bad_message_callback).Run("message 1");
   EXPECT_EQ("message 1", last_received_error);
 
   edk::SetDefaultProcessErrorCallback(mojo::edk::ProcessErrorCallback());
