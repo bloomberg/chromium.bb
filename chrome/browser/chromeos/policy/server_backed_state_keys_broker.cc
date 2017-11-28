@@ -72,12 +72,12 @@ void ServerBackedStateKeysBroker::StoreStateKeys(
   bool send_notification = !initial_retrieval_completed_;
 
   requested_ = false;
-  initial_retrieval_completed_ = true;
   if (state_keys.empty()) {
     LOG(WARNING) << "Failed to obtain server-backed state keys.";
   } else if (base::ContainsValue(state_keys, std::string())) {
     LOG(WARNING) << "Bad state keys.";
   } else {
+    initial_retrieval_completed_ = true;
     send_notification |= state_keys_ != state_keys;
     state_keys_ = state_keys;
   }
