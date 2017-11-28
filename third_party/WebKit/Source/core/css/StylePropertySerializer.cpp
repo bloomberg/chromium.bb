@@ -50,8 +50,7 @@ StylePropertySerializer::CSSPropertyValueSetForSerializer::
   for (unsigned i = 0; i < property_set_->PropertyCount(); ++i) {
     CSSPropertyValueSet::PropertyReference property =
         property_set_->PropertyAt(i);
-    if (CSSProperty::Get(resolveCSSPropertyID(property.Id()))
-            .IsAffectedByAll()) {
+    if (property.Property().IsAffectedByAll()) {
       if (all_property.IsImportant() && !property.IsImportant())
         continue;
       if (static_cast<unsigned>(all_index_) >= i)
@@ -114,9 +113,8 @@ bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
   if (!need_to_expand_all_) {
     CSSPropertyValueSet::PropertyReference property =
         property_set_->PropertyAt(index);
-    if (property.Id() == CSSPropertyAll ||
-        !CSSProperty::Get(resolveCSSPropertyID(property.Id()))
-             .IsAffectedByAll())
+    if (property.Property().IDEquals(CSSPropertyAll) ||
+        !property.Property().IsAffectedByAll())
       return true;
     if (!isCSSPropertyIDWithName(property.Id()))
       return false;
@@ -132,7 +130,7 @@ bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
   // Since "all" is expanded, we don't need to process "all".
   // We should not process expanded shorthands (e.g. font, background,
   // and so on) either.
-  if (property_class.IsShorthand() || property_id == CSSPropertyAll)
+  if (property_class.IsShorthand() || property_class.IDEquals(CSSPropertyAll))
     return false;
 
   // The all property is a shorthand that resets all CSS properties except
@@ -145,7 +143,8 @@ bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
 }
 
 int StylePropertySerializer::CSSPropertyValueSetForSerializer::
-    FindPropertyIndex(CSSPropertyID property_id) const {
+    FindPropertyIndex(const CSSProperty& property) const {
+  CSSPropertyID property_id = property.PropertyID();
   if (!HasExpandedAllProperty())
     return property_set_->FindPropertyIndex(property_id);
   return property_id - firstCSSProperty;
@@ -153,8 +152,8 @@ int StylePropertySerializer::CSSPropertyValueSetForSerializer::
 
 const CSSValue*
 StylePropertySerializer::CSSPropertyValueSetForSerializer::GetPropertyCSSValue(
-    CSSPropertyID property_id) const {
-  int index = FindPropertyIndex(property_id);
+    const CSSProperty& property) const {
+  int index = FindPropertyIndex(property);
   if (index == -1)
     return nullptr;
   StylePropertySerializer::PropertyValueForSerializer value = PropertyAt(index);
@@ -271,7 +270,7 @@ String StylePropertySerializer::AsText() const {
       shorthand_appeared.set(shorthand_property_index);
       bool serialized_other_longhand = false;
       for (unsigned i = 0; i < shorthand.length(); i++) {
-        if (longhand_serialized.test(shorthand.properties()[i] -
+        if (longhand_serialized.test(shorthand.properties()[i]->PropertyID() -
                                      firstCSSProperty)) {
           serialized_other_longhand = true;
           break;
@@ -288,8 +287,10 @@ String StylePropertySerializer::AsText() const {
       result.Append(GetPropertyText(shorthand_property, shorthand_result,
                                     property.IsImportant(), num_decls++));
       serialized_as_shorthand = true;
-      for (unsigned i = 0; i < shorthand.length(); i++)
-        longhand_serialized.set(shorthand.properties()[i] - firstCSSProperty);
+      for (unsigned i = 0; i < shorthand.length(); i++) {
+        longhand_serialized.set(shorthand.properties()[i]->PropertyID() -
+                                firstCSSProperty);
+      }
       break;
     }
 
@@ -354,7 +355,7 @@ String StylePropertySerializer::CommonShorthandChecks(
   bool has_non_important = false;
 
   for (int i = 0; i < longhand_count; i++) {
-    int index = property_set_.FindPropertyIndex(shorthand.properties()[i]);
+    int index = property_set_.FindPropertyIndex(*shorthand.properties()[i]);
     if (index == -1)
       return g_empty_string;
     PropertyValueForSerializer value = property_set_.PropertyAt(index);
@@ -499,7 +500,7 @@ String StylePropertySerializer::GetPropertyValue(
       return GetShorthandValue(webkitTextStrokeShorthand());
     case CSSPropertyMarker: {
       if (const CSSValue* value =
-              property_set_.GetPropertyCSSValue(CSSPropertyMarkerStart))
+              property_set_.GetPropertyCSSValue(GetCSSPropertyMarkerStart()))
         return value->CssText();
       return String();
     }
@@ -525,9 +526,9 @@ String StylePropertySerializer::GetPropertyValue(
 String StylePropertySerializer::BorderSpacingValue(
     const StylePropertyShorthand& shorthand) const {
   const CSSValue* horizontal_value =
-      property_set_.GetPropertyCSSValue(shorthand.properties()[0]);
+      property_set_.GetPropertyCSSValue(*shorthand.properties()[0]);
   const CSSValue* vertical_value =
-      property_set_.GetPropertyCSSValue(shorthand.properties()[1]);
+      property_set_.GetPropertyCSSValue(*shorthand.properties()[1]);
 
   String horizontal_value_css_text = horizontal_value->CssText();
   String vertical_value_css_text = vertical_value->CssText();
@@ -537,9 +538,9 @@ String StylePropertySerializer::BorderSpacingValue(
 }
 
 void StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
-    CSSPropertyID property_id,
+    const CSSProperty& property,
     StringBuilder& result) const {
-  int found_property_index = property_set_.FindPropertyIndex(property_id);
+  int found_property_index = property_set_.FindPropertyIndex(property);
   DCHECK_NE(found_property_index, -1);
 
   const CSSValue* val = property_set_.PropertyAt(found_property_index).Value();
@@ -548,7 +549,7 @@ void StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
     return;
 
   char prefix = '\0';
-  switch (property_id) {
+  switch (property.PropertyID()) {
     case CSSPropertyFontStyle:
       break;  // No prefix.
     case CSSPropertyFontFamily:
@@ -573,7 +574,7 @@ void StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
   String value;
   // In the font-variant shorthand a "none" ligatures value needs to be
   // expanded.
-  if (property_id == CSSPropertyFontVariantLigatures &&
+  if (property.IDEquals(CSSPropertyFontVariantLigatures) &&
       val->IsIdentifierValue() &&
       ToCSSIdentifierValue(val)->GetValueID() == CSSValueNone) {
     value =
@@ -588,17 +589,17 @@ void StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
 
 String StylePropertySerializer::FontValue() const {
   int font_size_property_index =
-      property_set_.FindPropertyIndex(CSSPropertyFontSize);
+      property_set_.FindPropertyIndex(GetCSSPropertyFontSize());
   int font_family_property_index =
-      property_set_.FindPropertyIndex(CSSPropertyFontFamily);
+      property_set_.FindPropertyIndex(GetCSSPropertyFontFamily());
   int font_variant_caps_property_index =
-      property_set_.FindPropertyIndex(CSSPropertyFontVariantCaps);
+      property_set_.FindPropertyIndex(GetCSSPropertyFontVariantCaps());
   int font_variant_ligatures_property_index =
-      property_set_.FindPropertyIndex(CSSPropertyFontVariantLigatures);
+      property_set_.FindPropertyIndex(GetCSSPropertyFontVariantLigatures());
   int font_variant_numeric_property_index =
-      property_set_.FindPropertyIndex(CSSPropertyFontVariantNumeric);
+      property_set_.FindPropertyIndex(GetCSSPropertyFontVariantNumeric());
   int font_variant_east_asian_property_index =
-      property_set_.FindPropertyIndex(CSSPropertyFontVariantEastAsian);
+      property_set_.FindPropertyIndex(GetCSSPropertyFontVariantEastAsian());
   DCHECK_NE(font_size_property_index, -1);
   DCHECK_NE(font_family_property_index, -1);
   DCHECK_NE(font_variant_caps_property_index, -1);
@@ -637,21 +638,21 @@ String StylePropertySerializer::FontValue() const {
     return g_empty_string;
 
   StringBuilder result;
-  AppendFontLonghandValueIfNotNormal(CSSPropertyFontStyle, result);
+  AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontStyle(), result);
 
   const CSSValue* val = font_variant_caps_property.Value();
   if (val->IsIdentifierValue() &&
       (ToCSSIdentifierValue(val)->GetValueID() != CSSValueSmallCaps &&
        ToCSSIdentifierValue(val)->GetValueID() != CSSValueNormal))
     return g_empty_string;
-  AppendFontLonghandValueIfNotNormal(CSSPropertyFontVariantCaps, result);
+  AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantCaps(), result);
 
-  AppendFontLonghandValueIfNotNormal(CSSPropertyFontWeight, result);
-  AppendFontLonghandValueIfNotNormal(CSSPropertyFontStretch, result);
+  AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontWeight(), result);
+  AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontStretch(), result);
   if (!result.IsEmpty())
     result.Append(' ');
   result.Append(font_size_property.Value()->CssText());
-  AppendFontLonghandValueIfNotNormal(CSSPropertyLineHeight, result);
+  AppendFontLonghandValueIfNotNormal(GetCSSPropertyLineHeight(), result);
   if (!result.IsEmpty())
     result.Append(' ');
   result.Append(font_family_property.Value()->CssText());
@@ -664,10 +665,13 @@ String StylePropertySerializer::FontVariantValue() const {
   // TODO(drott): Decide how we want to return ligature values in shorthands,
   // reduced to "none" or spelled out, filed as W3C bug:
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=29594
-  AppendFontLonghandValueIfNotNormal(CSSPropertyFontVariantLigatures, result);
-  AppendFontLonghandValueIfNotNormal(CSSPropertyFontVariantCaps, result);
-  AppendFontLonghandValueIfNotNormal(CSSPropertyFontVariantNumeric, result);
-  AppendFontLonghandValueIfNotNormal(CSSPropertyFontVariantEastAsian, result);
+  AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantLigatures(),
+                                     result);
+  AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantCaps(), result);
+  AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantNumeric(),
+                                     result);
+  AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantEastAsian(),
+                                     result);
 
   if (result.IsEmpty()) {
     return "normal";
@@ -680,17 +684,17 @@ String StylePropertySerializer::OffsetValue() const {
   StringBuilder result;
   if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
     const CSSValue* position =
-        property_set_.GetPropertyCSSValue(CSSPropertyOffsetPosition);
+        property_set_.GetPropertyCSSValue(GetCSSPropertyOffsetPosition());
     if (!position->IsInitialValue()) {
       result.Append(position->CssText());
     }
   }
   const CSSValue* path =
-      property_set_.GetPropertyCSSValue(CSSPropertyOffsetPath);
+      property_set_.GetPropertyCSSValue(GetCSSPropertyOffsetPath());
   const CSSValue* distance =
-      property_set_.GetPropertyCSSValue(CSSPropertyOffsetDistance);
+      property_set_.GetPropertyCSSValue(GetCSSPropertyOffsetDistance());
   const CSSValue* rotate =
-      property_set_.GetPropertyCSSValue(CSSPropertyOffsetRotate);
+      property_set_.GetPropertyCSSValue(GetCSSPropertyOffsetRotate());
   if (!path->IsInitialValue()) {
     if (!result.IsEmpty())
       result.Append(" ");
@@ -709,7 +713,7 @@ String StylePropertySerializer::OffsetValue() const {
   }
   if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
     const CSSValue* anchor =
-        property_set_.GetPropertyCSSValue(CSSPropertyOffsetAnchor);
+        property_set_.GetPropertyCSSValue(GetCSSPropertyOffsetAnchor());
     if (!anchor->IsInitialValue()) {
       result.Append(" / ");
       result.Append(anchor->CssText());
@@ -722,9 +726,9 @@ String StylePropertySerializer::Get2Values(
     const StylePropertyShorthand& shorthand) const {
   // Assume the properties are in the usual order start, end.
   int start_value_index =
-      property_set_.FindPropertyIndex(shorthand.properties()[0]);
+      property_set_.FindPropertyIndex(*shorthand.properties()[0]);
   int end_value_index =
-      property_set_.FindPropertyIndex(shorthand.properties()[1]);
+      property_set_.FindPropertyIndex(*shorthand.properties()[1]);
 
   if (start_value_index == -1 || end_value_index == -1)
     return String();
@@ -748,13 +752,13 @@ String StylePropertySerializer::Get4Values(
     const StylePropertyShorthand& shorthand) const {
   // Assume the properties are in the usual order top, right, bottom, left.
   int top_value_index =
-      property_set_.FindPropertyIndex(shorthand.properties()[0]);
+      property_set_.FindPropertyIndex(*shorthand.properties()[0]);
   int right_value_index =
-      property_set_.FindPropertyIndex(shorthand.properties()[1]);
+      property_set_.FindPropertyIndex(*shorthand.properties()[1]);
   int bottom_value_index =
-      property_set_.FindPropertyIndex(shorthand.properties()[2]);
+      property_set_.FindPropertyIndex(*shorthand.properties()[2]);
   int left_value_index =
-      property_set_.FindPropertyIndex(shorthand.properties()[3]);
+      property_set_.FindPropertyIndex(*shorthand.properties()[3]);
 
   if (top_value_index == -1 || right_value_index == -1 ||
       bottom_value_index == -1 || left_value_index == -1)
@@ -800,7 +804,7 @@ String StylePropertySerializer::GetLayeredShorthandValue(
   // TODO(timloh): Shouldn't we fail if the lists are differently sized, with
   // the exception of background-color?
   for (size_t i = 0; i < size; i++) {
-    values[i] = property_set_.GetPropertyCSSValue(shorthand.properties()[i]);
+    values[i] = property_set_.GetPropertyCSSValue(*shorthand.properties()[i]);
     if (values[i]->IsBaseValueList()) {
       const CSSValueList* value_list = ToCSSValueList(values[i]);
       num_layers = std::max(num_layers, value_list->length());
@@ -820,7 +824,7 @@ String StylePropertySerializer::GetLayeredShorthandValue(
 
     for (unsigned property_index = 0; property_index < size; property_index++) {
       const CSSValue* value = nullptr;
-      CSSPropertyID property = shorthand.properties()[property_index];
+      const CSSProperty* property = shorthand.properties()[property_index];
 
       // Get a CSSValue for this property and layer.
       if (values[property_index]->IsBaseValueList()) {
@@ -829,9 +833,10 @@ String StylePropertySerializer::GetLayeredShorthandValue(
         // There might not be an item for this layer for this property.
         if (layer < property_values->length())
           value = &property_values->Item(layer);
-      } else if ((layer == 0 && property != CSSPropertyBackgroundColor) ||
+      } else if ((layer == 0 &&
+                  !property->IDEquals(CSSPropertyBackgroundColor)) ||
                  (layer == num_layers - 1 &&
-                  property == CSSPropertyBackgroundColor)) {
+                  property->IDEquals(CSSPropertyBackgroundColor))) {
         // Singletons except background color belong in the 0th layer.
         // Background color belongs in the last layer.
         value = values[property_index];
@@ -841,12 +846,12 @@ String StylePropertySerializer::GetLayeredShorthandValue(
         continue;
 
       // Special case for background-repeat.
-      if (property == CSSPropertyBackgroundRepeatX ||
-          property == CSSPropertyWebkitMaskRepeatX) {
-        DCHECK(shorthand.properties()[property_index + 1] ==
-                   CSSPropertyBackgroundRepeatY ||
-               shorthand.properties()[property_index + 1] ==
-                   CSSPropertyWebkitMaskRepeatY);
+      if (property->IDEquals(CSSPropertyBackgroundRepeatX) ||
+          property->IDEquals(CSSPropertyWebkitMaskRepeatX)) {
+        DCHECK(shorthand.properties()[property_index + 1]->IDEquals(
+                   CSSPropertyBackgroundRepeatY) ||
+               shorthand.properties()[property_index + 1]->IDEquals(
+                   CSSPropertyWebkitMaskRepeatY));
         const CSSValue& y_value =
             values[property_index + 1]->IsValueList()
                 ? ToCSSValueList(values[property_index + 1])->Item(layer)
@@ -875,8 +880,8 @@ String StylePropertySerializer::GetLayeredShorthandValue(
       }
 
       if (!value->IsInitialValue()) {
-        if (property == CSSPropertyBackgroundSize ||
-            property == CSSPropertyWebkitMaskSize) {
+        if (property->IDEquals(CSSPropertyBackgroundSize) ||
+            property->IDEquals(CSSPropertyWebkitMaskSize)) {
           if (found_position_ycss_property || found_position_xcss_property)
             layer_result.Append(" / ");
           else
@@ -898,11 +903,11 @@ String StylePropertySerializer::GetLayeredShorthandValue(
             use_single_word_shorthand = false;
           layer_result.Append(value->CssText());
         }
-        if (property == CSSPropertyBackgroundPositionX ||
-            property == CSSPropertyWebkitMaskPositionX)
+        if (property->IDEquals(CSSPropertyBackgroundPositionX) ||
+            property->IDEquals(CSSPropertyWebkitMaskPositionX))
           found_position_xcss_property = true;
-        if (property == CSSPropertyBackgroundPositionY ||
-            property == CSSPropertyWebkitMaskPositionY) {
+        if (property->IDEquals(CSSPropertyBackgroundPositionY) ||
+            property->IDEquals(CSSPropertyWebkitMaskPositionY)) {
           found_position_ycss_property = true;
           // background-position is a special case. If only the first offset is
           // specified, the second one defaults to "center", not the same value.
@@ -925,7 +930,7 @@ String StylePropertySerializer::GetShorthandValue(
   StringBuilder result;
   for (unsigned i = 0; i < shorthand.length(); ++i) {
     const CSSValue* value =
-        property_set_.GetPropertyCSSValue(shorthand.properties()[i]);
+        property_set_.GetPropertyCSSValue(*shorthand.properties()[i]);
     String value_text = value->CssText();
     if (value->IsInitialValue())
       continue;
@@ -942,7 +947,7 @@ String StylePropertySerializer::GetCommonValue(
   String res;
   for (unsigned i = 0; i < shorthand.length(); ++i) {
     const CSSValue* value =
-        property_set_.GetPropertyCSSValue(shorthand.properties()[i]);
+        property_set_.GetPropertyCSSValue(*shorthand.properties()[i]);
     // FIXME: CSSInitialValue::CssText should generate the right value.
     String text = value->CssText();
     if (res.IsNull())
@@ -1011,9 +1016,9 @@ static void AppendBackgroundRepeatValue(StringBuilder& builder,
 
 String StylePropertySerializer::BackgroundRepeatPropertyValue() const {
   const CSSValue& repeat_x =
-      *property_set_.GetPropertyCSSValue(CSSPropertyBackgroundRepeatX);
+      *property_set_.GetPropertyCSSValue(GetCSSPropertyBackgroundRepeatX());
   const CSSValue& repeat_y =
-      *property_set_.GetPropertyCSSValue(CSSPropertyBackgroundRepeatY);
+      *property_set_.GetPropertyCSSValue(GetCSSPropertyBackgroundRepeatY());
 
   const CSSValueList* repeat_x_list = nullptr;
   int repeat_x_length = 1;

@@ -54,7 +54,7 @@ class StylePropertySerializer {
                            String separator = " ") const;
   String FontValue() const;
   String FontVariantValue() const;
-  void AppendFontLonghandValueIfNotNormal(CSSPropertyID,
+  void AppendFontLonghandValueIfNotNormal(const CSSProperty&,
                                           StringBuilder& result) const;
   String OffsetValue() const;
   String BackgroundRepeatPropertyValue() const;
@@ -122,8 +122,8 @@ class StylePropertySerializer {
     unsigned PropertyCount() const;
     PropertyValueForSerializer PropertyAt(unsigned index) const;
     bool ShouldProcessPropertyAt(unsigned index) const;
-    int FindPropertyIndex(CSSPropertyID) const;
-    const CSSValue* GetPropertyCSSValue(CSSPropertyID) const;
+    int FindPropertyIndex(const CSSProperty&) const;
+    const CSSValue* GetPropertyCSSValue(const CSSProperty&) const;
     bool IsDescriptorContext() const;
 
     void Trace(blink::Visitor*);

@@ -37,7 +37,7 @@ class CSSProperty {
   // In case we need to call a function that hasn't been converted to using
   // property classes yet.
   CSSPropertyID PropertyID() const { return id_; }
-  bool IDEquals(CSSPropertyID other_id) const { return id_ == other_id; }
+  bool IDEquals(CSSPropertyID id) const { return id_ == id; }
 
   virtual bool IsInterpolable() const { return false; }
   virtual bool IsInherited() const { return false; }
@@ -62,7 +62,7 @@ class CSSProperty {
   virtual bool IsLonghand() const { return false; }
   static void FilterEnabledCSSPropertiesIntoVector(const CSSPropertyID*,
                                                    size_t length,
-                                                   Vector<CSSPropertyID>&);
+                                                   Vector<const CSSProperty*>&);
 
  protected:
   static const StylePropertyShorthand& BorderDirections();

@@ -858,7 +858,8 @@ void CSSAnimations::CalculateTransitionUpdateForStandardProperty(
   // refer to the property directly.
   for (unsigned i = 0; !i || i < property_list.length(); ++i) {
     CSSPropertyID longhand_id =
-        property_list.length() ? property_list.properties()[i] : resolved_id;
+        property_list.length() ? property_list.properties()[i]->PropertyID()
+                               : resolved_id;
     DCHECK_GE(longhand_id, firstCSSProperty);
     const CSSProperty& property = CSSProperty::Get(longhand_id);
     PropertyHandle property_handle = PropertyHandle(property);
@@ -1197,7 +1198,7 @@ void CSSAnimations::TransitionEventDelegate::Trace(blink::Visitor* visitor) {
 }
 
 const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
-  DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
+  DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   DEFINE_STATIC_LOCAL(StylePropertyShorthand, property_shorthand, ());
   if (properties.IsEmpty()) {
     for (int i = firstCSSProperty; i <= lastCSSProperty; ++i) {
@@ -1210,8 +1211,9 @@ const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
           id == CSSPropertyWebkitTransformOriginY ||
           id == CSSPropertyWebkitTransformOriginZ)
         continue;
-      if (CSSProperty::Get(id).IsInterpolable())
-        properties.push_back(id);
+      const CSSProperty& property = CSSProperty::Get(id);
+      if (property.IsInterpolable())
+        properties.push_back(&property);
     }
     property_shorthand = StylePropertyShorthand(
         CSSPropertyInvalid, properties.begin(), properties.size());

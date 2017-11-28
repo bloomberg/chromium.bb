@@ -32,8 +32,9 @@ bool CSSPropertyAnimationUtils::ConsumeAnimationShorthand(
         if (parsed_longhand[i])
           continue;
 
-        CSSValue* value = consumeLonghandItem(shorthand.properties()[i], range,
-                                              context, use_legacy_parsing);
+        CSSValue* value =
+            consumeLonghandItem(shorthand.properties()[i]->PropertyID(), range,
+                                context, use_legacy_parsing);
         if (value) {
           parsed_longhand[i] = true;
           found_property = true;
