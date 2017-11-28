@@ -635,7 +635,7 @@ void RenderWidgetHostViewAura::OnBeginFrame() {
   UpdateNeedsBeginFramesInternal();
 }
 
-RenderFrameHostImpl* RenderWidgetHostViewAura::GetFocusedFrame() {
+RenderFrameHostImpl* RenderWidgetHostViewAura::GetFocusedFrame() const {
   RenderViewHost* rvh = RenderViewHost::From(host_);
   if (!rvh)
     return nullptr;
@@ -1494,6 +1494,10 @@ bool RenderWidgetHostViewAura::IsTextEditCommandEnabled(
 
 void RenderWidgetHostViewAura::SetTextEditCommandForNextKeyEvent(
     ui::TextEditCommand command) {}
+
+const std::string& RenderWidgetHostViewAura::GetClientSourceInfo() const {
+  return GetFocusedFrame()->GetLastCommittedURL().spec();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, display::DisplayObserver implementation:

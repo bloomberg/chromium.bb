@@ -139,6 +139,12 @@ bool PrefixSelector::IsTextEditCommandEnabled(
 void PrefixSelector::SetTextEditCommandForNextKeyEvent(
     ui::TextEditCommand command) {}
 
+const std::string& PrefixSelector::GetClientSourceInfo() const {
+  // TODO(yhanada): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return base::EmptyString();
+}
+
 void PrefixSelector::OnTextInput(const base::string16& text) {
   // Small hack to filter out 'tab' and 'enter' input, as the expectation is
   // that they are control characters and will not affect the currently-active
