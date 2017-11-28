@@ -375,7 +375,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
                      ->CurrentThread()
                      ->Scheduler()
                      ->CreateWebViewScheduler(this, this)),
-      last_frame_time_monotonic_(0),
       override_compositor_visibility_(false) {
   Page::PageClients page_clients;
   page_clients.chrome_client = chrome_client_.Get();
@@ -1844,8 +1843,6 @@ void WebViewImpl::BeginFrame(double last_frame_time_monotonic) {
 
   if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidget())
     widget->UpdateGestureAnimation(last_frame_time_monotonic);
-
-  last_frame_time_monotonic_ = last_frame_time_monotonic;
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());

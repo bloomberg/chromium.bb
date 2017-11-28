@@ -461,8 +461,6 @@ class CORE_EXPORT WebViewImpl final
 
   FloatSize ElasticOverscroll() const { return elastic_overscroll_; }
 
-  double LastFrameTimeMonotonic() const { return last_frame_time_monotonic_; }
-
   class ChromeClient& GetChromeClient() const {
     return *chrome_client_.Get();
   }
@@ -688,8 +686,6 @@ class CORE_EXPORT WebViewImpl final
   WebPageImportanceSignals page_importance_signals_;
 
   const std::unique_ptr<WebViewScheduler> scheduler_;
-
-  double last_frame_time_monotonic_;
 
   // TODO(lfg): This is used in order to disable compositor visibility while
   // the page is still visible. This is needed until the WebView and WebWidget
