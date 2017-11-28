@@ -33,6 +33,9 @@ bool FramePainter::in_paint_contents_ = false;
 void FramePainter::Paint(GraphicsContext& context,
                          const GlobalPaintFlags global_paint_flags,
                          const CullRect& rect) {
+  if (GetFrameView().ShouldThrottleRendering())
+    return;
+
   GetFrameView().NotifyPageThatContentAreaWillPaint();
 
   IntRect document_dirty_rect;
