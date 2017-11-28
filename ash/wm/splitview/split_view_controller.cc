@@ -242,13 +242,9 @@ gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreen(
             IsCurrentScreenOrientationLandscape(), &left_or_top_rect,
             &right_or_bottom_rect);
 
-  // Only need to adjust the bounds for |left_or_top_rect| since the origin of
-  // the left or top snapped window's bounds is always the origin of the work
-  // area's bounds. It can not be moved to outside of the work area when the
-  // window's minimum size is larger than current acquired window bounds, which
-  // will lead to the divider pass over the window. This is no need for
-  // |right_or_bottom_rect| since its origin of the bounds is flexible.
-  AdjustLeftOrTopSnappedWindowBounds(&left_or_top_rect);
+  // Adjust the bounds for |left_or_top_rect| and |right_or_bottom_rect| if the
+  // desired bound is smaller than the minimum bounds of the window.
+  AdjustSnappedWindowBounds(&left_or_top_rect, &right_or_bottom_rect);
 
   if (IsLeftWindowOnTopOrLeftOfScreen(screen_orientation_))
     return (snap_position == LEFT) ? left_or_top_rect : right_or_bottom_rect;
@@ -686,9 +682,6 @@ void SplitViewController::SplitRect(const gfx::Rect& work_area_rect,
                                     const bool is_split_vertically,
                                     gfx::Rect* left_or_top_rect,
                                     gfx::Rect* right_or_bottom_rect) {
-  if (!work_area_rect.Contains(divider_rect))
-    return;
-
   if (is_split_vertically) {
     left_or_top_rect->SetRect(work_area_rect.x(), work_area_rect.y(),
                               divider_rect.x() - work_area_rect.x(),
@@ -789,29 +782,48 @@ void SplitViewController::OnSnappedWindowMinimizedOrDestroyed(
   }
 }
 
-void SplitViewController::AdjustLeftOrTopSnappedWindowBounds(
-    gfx::Rect* left_or_top_rect) {
+void SplitViewController::AdjustSnappedWindowBounds(
+    gfx::Rect* left_or_top_rect,
+    gfx::Rect* right_or_bottom_rect) {
   aura::Window* left_or_top_window =
       IsLeftWindowOnTopOrLeftOfScreen(screen_orientation_) ? left_window_
                                                            : right_window_;
+  aura::Window* right_or_bottom_window =
+      IsLeftWindowOnTopOrLeftOfScreen(screen_orientation_) ? right_window_
+                                                           : left_window_;
+
+  auto get_minimum_size = [](aura::Window* window, bool is_landscape) -> int {
+    int minimum_width = 0;
+    if (window && window->delegate()) {
+      gfx::Size minimum_size = window->delegate()->GetMinimumSize();
+      minimum_width =
+          is_landscape ? minimum_size.width() : minimum_size.height();
+    }
+    return minimum_width;
+  };
+
   bool is_landscape = IsCurrentScreenOrientationLandscape();
-  int minimum_width = 0;
-  if (left_or_top_window && left_or_top_window->delegate()) {
-    gfx::Size minimum_size = left_or_top_window->delegate()->GetMinimumSize();
-    minimum_width = is_landscape ? minimum_size.width() : minimum_size.height();
+  int left_minimum_width = get_minimum_size(left_or_top_window, is_landscape);
+  int right_minimum_width =
+      get_minimum_size(right_or_bottom_window, is_landscape);
+
+  if (!is_landscape) {
+    TransposeRect(left_or_top_rect);
+    TransposeRect(right_or_bottom_rect);
   }
 
-  if (!is_landscape)
-    TransposeRect(left_or_top_rect);
-
-  if (left_or_top_rect->width() < minimum_width) {
+  if (left_or_top_rect->width() < left_minimum_width) {
     left_or_top_rect->set_x(left_or_top_rect->x() -
-                            (minimum_width - left_or_top_rect->width()));
-    left_or_top_rect->set_width(minimum_width);
+                            (left_minimum_width - left_or_top_rect->width()));
+    left_or_top_rect->set_width(left_minimum_width);
   }
+  if (right_or_bottom_rect->width() < right_minimum_width)
+    right_or_bottom_rect->set_width(right_minimum_width);
 
-  if (!is_landscape)
+  if (!is_landscape) {
     TransposeRect(left_or_top_rect);
+    TransposeRect(right_or_bottom_rect);
+  }
 }
 
 float SplitViewController::FindClosestPositionRatio(float distance,
