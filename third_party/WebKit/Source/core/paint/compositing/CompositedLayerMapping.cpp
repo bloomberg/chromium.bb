@@ -2322,39 +2322,31 @@ void CompositedLayerMapping::UpdateRenderingContext() {
       this, functor, kApplyToAllGraphicsLayers);
 }
 
-struct UpdateShouldFlattenTransformFunctor {
-  void operator()(GraphicsLayer* layer) const {
-    layer->SetShouldFlattenTransform(should_flatten);
-  }
-  bool should_flatten;
-};
-
 void CompositedLayerMapping::UpdateShouldFlattenTransform() {
-  // All CLM-managed layers that could affect a descendant layer should update
-  // their should-flatten-transform value (the other layers' transforms don't
-  // matter here).
-  UpdateShouldFlattenTransformFunctor functor = {
-      !owning_layer_.ShouldPreserve3D()};
-  ApplyToGraphicsLayersMode mode = kApplyToLayersAffectedByPreserve3D;
-  ApplyToGraphicsLayers(this, functor, mode);
+  // TODO(trchen): Simplify logic here.
+  //
+  // The code here is equivalent to applying kApplyToLayersAffectedByPreserve3D
+  // layer with the computed ShouldPreserve3D() value, then disable flattening
+  // on kApplyToChildContainingLayers layers if the current layer has
+  // perspective transform, then again disable flattening on main layer and
+  // scrolling layer if we have scrolling layer. See crbug.com/521768.
+  //
+  // If we toggle flattening back and forth as said above, it will result in
+  // unnecessary redrawing because the compositor doesn't have delayed
+  // invalidation for this flag. See crbug.com/783614.
+  bool is_flat = !owning_layer_.ShouldPreserve3D();
 
-  // Note, if we apply perspective, we have to set should flatten differently
-  // so that the transform propagates to child layers correctly.
-  if (HasChildTransformLayer()) {
-    ApplyToGraphicsLayers(
-        this,
-        [](GraphicsLayer* layer) { layer->SetShouldFlattenTransform(false); },
-        kApplyToChildContainingLayers);
-  }
-
-  // Regardless, mark the graphics layer, scrolling layer and scrolling block
-  // selection layer (if they exist) as not flattening. Having them flatten
-  // causes unclipped render surfaces which cause bugs.
-  // http://crbug.com/521768
-  if (HasScrollingLayer()) {
-    graphics_layer_->SetShouldFlattenTransform(false);
-    scrolling_layer_->SetShouldFlattenTransform(false);
-  }
+  if (GraphicsLayer* layer = ChildTransformLayer())
+    layer->SetShouldFlattenTransform(false);
+  if (GraphicsLayer* layer = ScrollingLayer())
+    layer->SetShouldFlattenTransform(false);
+  graphics_layer_->SetShouldFlattenTransform(is_flat && !HasScrollingLayer());
+  if (GraphicsLayer* layer = ClippingLayer())
+    layer->SetShouldFlattenTransform(is_flat && !HasChildTransformLayer());
+  if (GraphicsLayer* layer = ScrollingContentsLayer())
+    layer->SetShouldFlattenTransform(is_flat && !HasChildTransformLayer());
+  if (GraphicsLayer* layer = ForegroundLayer())
+    layer->SetShouldFlattenTransform(is_flat);
 }
 
 struct AnimatingData {
