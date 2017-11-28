@@ -1787,10 +1787,61 @@ external/wpt/css/css-transforms/translateY/svg-translatey-relative-002.html [ Wo
 external/wpt/css/css-transforms/ttwf-transform-skewx-001.html [ WontFix ]
 external/wpt/css/css-transforms/ttwf-transform-skewy-001.html [ WontFix ]
 external/wpt/css/css-transforms/ttwf-transform-translatex-001.html [ WontFix ]
+
+# The ic unit isn't supported. https://crbug.com/778495
 external/wpt/css/css-values/ic-unit-001.html [ WontFix ]
 external/wpt/css/css-values/ic-unit-002.html [ WontFix ]
 external/wpt/css/css-values/ic-unit-003.html [ WontFix ]
 external/wpt/css/css-values/ic-unit-004.html [ WontFix ]
+
+# https://github.com/w3c/web-platform-tests/issues/8439
+external/wpt/css/css-color/currentcolor-001.html [ WontFix ]
+external/wpt/css/css-color/currentcolor-002.html [ WontFix ]
+
+# lab() and lch() aren't supported.
+external/wpt/css/css-color/lab-001.html [ WontFix ]
+external/wpt/css/css-color/lab-002.html [ WontFix ]
+external/wpt/css/css-color/lab-003.html [ WontFix ]
+external/wpt/css/css-color/lab-004.html [ WontFix ]
+external/wpt/css/css-color/lab-005.html [ WontFix ]
+external/wpt/css/css-color/lab-006.html [ WontFix ]
+external/wpt/css/css-color/lab-007.html [ WontFix ]
+external/wpt/css/css-color/lch-001.html [ WontFix ]
+external/wpt/css/css-color/lch-002.html [ WontFix ]
+external/wpt/css/css-color/lch-003.html [ WontFix ]
+external/wpt/css/css-color/lch-004.html [ WontFix ]
+external/wpt/css/css-color/lch-005.html [ WontFix ]
+external/wpt/css/css-color/lch-006.html [ WontFix ]
+external/wpt/css/css-color/lch-007.html [ WontFix ]
+
+# New rgb() and rgba() syntax not supported. https://crbug.com/788707
+external/wpt/css/css-color/rgb-001.html [ WontFix ]
+external/wpt/css/css-color/rgb-002.html [ WontFix ]
+external/wpt/css/css-color/rgb-003.html [ WontFix ]
+external/wpt/css/css-color/rgb-004.html [ WontFix ]
+external/wpt/css/css-color/rgb-005.html [ WontFix ]
+external/wpt/css/css-color/rgb-006.html [ WontFix ]
+external/wpt/css/css-color/rgb-007.html [ WontFix ]
+external/wpt/css/css-color/rgb-008.html [ WontFix ]
+external/wpt/css/css-color/rgba-001.html [ WontFix ]
+external/wpt/css/css-color/rgba-002.html [ WontFix ]
+external/wpt/css/css-color/rgba-003.html [ WontFix ]
+external/wpt/css/css-color/rgba-004.html [ WontFix ]
+external/wpt/css/css-color/rgba-005.html [ WontFix ]
+external/wpt/css/css-color/rgba-006.html [ WontFix ]
+external/wpt/css/css-color/rgba-007.html [ WontFix ]
+external/wpt/css/css-color/rgba-008.html [ WontFix ]
+
+# Failures on the initial import of css-color. Test suite had many other bugs,
+# so these may also be incorrect tests, but probably some real issues too.
+external/wpt/css/css-color/t32-opacity-offscreen-multiple-boxes-1-c.xht [ WontFix ]
+external/wpt/css/css-color/t32-opacity-offscreen-multiple-boxes-2-c.xht [ WontFix ]
+external/wpt/css/css-color/t422-rgba-onscreen-b.xht [ WontFix ]
+external/wpt/css/css-color/t422-rgba-onscreen-multiple-boxes-c.xht [ WontFix ]
+external/wpt/css/css-color/t424-hsl-basic-a.xht [ WontFix ]
+external/wpt/css/css-color/t424-hsl-parsing-f.xht [ WontFix ]
+external/wpt/css/css-color/t425-hsla-onscreen-multiple-boxes-c.xht [ WontFix ]
+external/wpt/css/css-color/t425-hsla-parsing-f.xht [ WontFix ]
 
 # Requires --use-fake-ui-for-media-stream to run.
 external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ WontFix ]
