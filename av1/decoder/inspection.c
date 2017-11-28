@@ -12,9 +12,6 @@
 #include "av1/decoder/inspection.h"
 #include "av1/common/enums.h"
 #include "av1/common/cdef.h"
-#if CONFIG_CFL
-#include "av1/common/cfl.h"
-#endif
 
 static void ifd_init_mi_rc(insp_frame_data *fd, int mi_cols, int mi_rows) {
   fd->mi_cols = mi_cols;

@@ -23,6 +23,9 @@
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/system_state.h"
 
+#if CONFIG_CFL
+#include "av1/common/cfl.h"
+#endif
 #include "av1/common/common.h"
 #include "av1/common/entropy.h"
 #include "av1/common/entropymode.h"

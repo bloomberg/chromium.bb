@@ -25,6 +25,9 @@
 #endif  // CONFIG_BITSTREAM_DEBUG
 
 #include "av1/common/cdef.h"
+#if CONFIG_CFL
+#include "av1/common/cfl.h"
+#endif
 #include "av1/common/entropy.h"
 #include "av1/common/entropymode.h"
 #include "av1/common/entropymv.h"

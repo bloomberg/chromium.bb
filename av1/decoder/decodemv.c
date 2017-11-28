@@ -29,6 +29,10 @@
 
 #include "aom_dsp/aom_dsp_common.h"
 
+#if CONFIG_CFL
+#include "av1/common/cfl.h"
+#endif
+
 #define ACCT_STR __func__
 
 #define DEC_MISMATCH_DEBUG 0

@@ -32,9 +32,6 @@
 #endif  // CONFIG_LOOP_RESTORATION
 #include "av1/common/tile_common.h"
 #include "av1/common/odintrin.h"
-#if CONFIG_CFL
-#include "av1/common/cfl.h"
-#endif
 #if CONFIG_HASH_ME
 // TODO(youzhou@microsoft.com): Encoder only. Move it out of common
 #include "av1/encoder/hash_motion.h"
