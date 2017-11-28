@@ -177,9 +177,11 @@
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
 #include "ios/chrome/browser/ui/toolbar/legacy_toolbar_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/legacy_toolbar_ui_updater.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_ui.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_configuration_provider.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
@@ -566,6 +568,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Coordinator for the toolbar.
   LegacyToolbarCoordinator* _toolbarCoordinator;
 
+  // The toolbar UI updater for the toolbar managed by |_toolbarCoordinator|.
+  LegacyToolbarUIUpdater* _toolbarUIUpdater;
+
   // Coordinator for the External Search UI.
   ExternalSearchCoordinator* _externalSearchCoordinator;
 
@@ -722,6 +727,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (UIImageView*)pageFullScreenOpenCloseAnimationView;
 // Updates the toolbar display based on the current tab.
 - (void)updateToolbar;
+// Starts or stops broadcasting the toolbar UI depending on whether the BVC is
+// visible and active.
+- (void)updateToolbarBroadcastState;
 // Updates |dialogPresenter|'s |active| property to account for the BVC's
 // |active|, |visible|, and |inNewTabAnimation| properties.
 - (void)updateDialogPresenterActiveState;
@@ -1133,6 +1141,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   [_model setWebUsageEnabled:active];
   [self updateDialogPresenterActiveState];
+  [self updateToolbarBroadcastState];
 
   if (active) {
     // Make sure the tab (if any; it's possible to get here without a current
@@ -1156,6 +1165,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_model setPrimary:primary];
   if (primary) {
     [self updateDialogPresenterActiveState];
+    [self updateToolbarBroadcastState];
   } else {
     self.dialogPresenter.active = false;
   }
@@ -1242,6 +1252,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _viewVisible = viewVisible;
   self.visible = viewVisible;
   [self updateDialogPresenterActiveState];
+  [self updateToolbarBroadcastState];
 }
 
 - (BOOL)isToolbarOnScreen {
@@ -1253,6 +1264,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return;
   _inNewTabAnimation = inNewTabAnimation;
   [self updateDialogPresenterActiveState];
+  [self updateToolbarBroadcastState];
 }
 
 - (BOOL)isInNewTabAnimation {
@@ -1358,6 +1370,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [super viewDidAppear:animated];
   self.viewVisible = YES;
   [self updateDialogPresenterActiveState];
+  [self updateToolbarBroadcastState];
 
   // |viewDidAppear| can be called after |browserState| is destroyed. Since
   // |presentBubblesIfEligible| requires that |self.browserState| is not NULL,
@@ -1391,6 +1404,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)viewWillDisappear:(BOOL)animated {
   self.viewVisible = NO;
   [self updateDialogPresenterActiveState];
+  [self updateToolbarBroadcastState];
   [[_model currentTab] wasHidden];
   [_bookmarkInteractionController dismissSnackbar];
   if (IsIPadIdiom() && _infoBarContainer) {
@@ -1447,6 +1461,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _readingListCoordinator = nil;
     self.recentTabsCoordinator = nil;
     _toolbarCoordinator = nil;
+    [_toolbarUIUpdater stopUpdating];
+    _toolbarUIUpdater = nil;
     _toolbarModelDelegate = nil;
     _toolbarModelIOS = nil;
     [self.tabStripCoordinator stop];
@@ -1930,6 +1946,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_dispatcher startDispatchingToTarget:_toolbarCoordinator
                             forProtocol:@protocol(OmniboxFocuser)];
   [_toolbarCoordinator setTabCount:[_model count]];
+  [self updateToolbarBroadcastState];
   if (_voiceSearchController)
     _voiceSearchController->SetDelegate(
         [_toolbarCoordinator voiceSearchDelegate]);
@@ -2183,6 +2200,24 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                     ![_toolbarCoordinator showingOmniboxPopup];
     }
     [_toolbarCoordinator.toolbarViewController.view setHidden:hideToolbar];
+  }
+}
+
+- (void)updateToolbarBroadcastState {
+  BOOL shouldBroadcast =
+      self.active && self.viewVisible && !self.inNewTabAnimation;
+  BOOL broadcasting = _toolbarUIUpdater != nil;
+  if (shouldBroadcast == broadcasting)
+    return;
+  if (shouldBroadcast) {
+    _toolbarUIUpdater = [[LegacyToolbarUIUpdater alloc]
+        initWithToolbarUI:[[ToolbarUIState alloc] init]
+             toolbarOwner:self
+             webStateList:[_model webStateList]];
+    [_toolbarUIUpdater startUpdating];
+  } else {
+    [_toolbarUIUpdater stopUpdating];
+    _toolbarUIUpdater = nil;
   }
 }
 
@@ -4834,6 +4869,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 #pragma mark - ToolbarOwner
+
+- (CGFloat)toolbarHeight {
+  return [self headerHeight];
+}
 
 - (CGRect)toolbarFrame {
   return _toolbarCoordinator.toolbarViewController.view.frame;
