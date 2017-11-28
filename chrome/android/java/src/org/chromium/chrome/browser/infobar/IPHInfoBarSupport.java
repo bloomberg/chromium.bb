@@ -88,6 +88,9 @@ class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAn
     /** The state of the currently showing in-product window or {@code null} if none is showing. */
     private PopupState mCurrentState;
 
+    /** Helper for tracking invalid calls to {@link #onDismiss()}.  See crbug.com/786916. */
+    private Throwable mLastDismissStack;
+
     /** Creates a new instance of an IPHInfoBarSupport class. */
     IPHInfoBarSupport(IPHBubbleDelegate delegate) {
         mDelegate = delegate;
@@ -149,6 +152,9 @@ class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAn
     // PopupWindow.OnDismissListener implementation.
     @Override
     public void onDismiss() {
+        // Helper for crbug.com/786916 to catch why we are getting two dismiss calls in a row.
+        if (mCurrentState == null) throw new IllegalStateException(mLastDismissStack);
+        mLastDismissStack = new Exception();
         assert mCurrentState != null;
         mDelegate.onPopupDismissed(mCurrentState);
         mCurrentState = null;
