@@ -17,7 +17,7 @@ static HelpAndFeedback* g_helpAndFeedback;
 #pragma mark - Public
 
 - (void)presentFeedbackFlowWithContext:(NSString*)context {
-  NOTREACHED() << "This should be implemented by a subclass.";
+  NOTIMPLEMENTED() << "This should be implemented by a subclass.";
 }
 
 #pragma mark - Static Properties

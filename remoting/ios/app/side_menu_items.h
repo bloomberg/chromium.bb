@@ -12,6 +12,10 @@ typedef void (^SideMenuItemAction)(void);
 // Represents an item on the side menu.
 @interface SideMenuItem : NSObject
 
+- (instancetype)initWithTitle:(NSString*)title
+                         icon:(UIImage*)icon
+                       action:(SideMenuItemAction)action;
+
 @property(nonatomic, readonly) NSString* title;
 @property(nonatomic, readonly) UIImage* icon;
 @property(nonatomic, readonly) SideMenuItemAction action;
