@@ -4663,25 +4663,55 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
   return 1;
 }
 
+static const uint32_t skip_pred_threshold[3][BLOCK_SIZES_ALL] = {
+  {
+      0,  0,  0,  50, 50, 50, 55, 47, 47, 53, 53, 53, 0, 0, 0, 0,
+#if CONFIG_EXT_PARTITION
+      0,  0,  0,
+#endif
+      50, 50, 55, 55, 53, 53,
+#if CONFIG_EXT_PARTITION
+      0,  0,
+#endif
+  },
+  {
+      0,  0,  0,  69, 69, 69, 67, 68, 68, 53, 53, 53, 0, 0, 0, 0,
+#if CONFIG_EXT_PARTITION
+      0,  0,  0,
+#endif
+      69, 69, 67, 67, 53, 53,
+#if CONFIG_EXT_PARTITION
+      0,  0,
+#endif
+  },
+  {
+      0,  0,  0,  70, 73, 73, 70, 73, 73, 58, 58, 58, 0, 0, 0, 0,
+#if CONFIG_EXT_PARTITION
+      0,  0,  0,
+#endif
+      70, 70, 70, 70, 58, 58,
+#if CONFIG_EXT_PARTITION
+      0,  0,
+#endif
+  }
+};
+
 // Uses simple features on top of DCT coefficients to quickly predict
 // whether optimal RD decision is to skip encoding the residual.
 static int predict_skip_flag(const MACROBLOCK *x, BLOCK_SIZE bsize) {
-  if (bsize > BLOCK_16X16) return 0;
-  // Tuned for target false-positive rate of 5% for all block sizes:
-  const uint32_t threshold_table[3][BLOCK_16X16 - BLOCK_4X4 + 1] = {
-    { 50, 50, 50, 55, 47, 47, 53 },
-    { 69, 69, 69, 67, 68, 68, 53 },
-    { 70, 73, 73, 70, 73, 73, 58 }
-  };
-  const struct macroblock_plane *const p = &x->plane[0];
+  const int max_tx_size =
+      get_max_rect_tx_size(bsize, is_inter_block(&x->e_mbd.mi[0]->mbmi));
+  const int tx_h = tx_size_high[max_tx_size];
+  const int tx_w = tx_size_wide[max_tx_size];
+  if (tx_h > 16 || tx_w > 16) return 0;
+
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
   const MACROBLOCKD *xd = &x->e_mbd;
   DECLARE_ALIGNED(32, tran_low_t, DCT_coefs[32 * 32]);
   TxfmParam param;
   param.tx_type = DCT_DCT;
-  param.tx_size =
-      get_max_rect_tx_size(bsize, is_inter_block(&x->e_mbd.mi[0]->mbmi));
+  param.tx_size = max_tx_size;
   param.bd = xd->bd;
   param.is_hbd = get_bitdepth_data_path_index(xd);
   param.lossless = 0;
@@ -4693,29 +4723,33 @@ static int predict_skip_flag(const MACROBLOCK *x, BLOCK_SIZE bsize) {
   // within this function.
   param.tx_set_type = get_ext_tx_set_type(param.tx_size, plane_bsize,
                                           is_inter_block(&xd->mi[0]->mbmi), 0);
-
+  const uint32_t dc = (uint32_t)av1_dc_quant_QTX(x->qindex, 0, xd->bd);
+  const uint32_t ac = (uint32_t)av1_ac_quant_QTX(x->qindex, 0, xd->bd);
+  uint32_t max_quantized_coef = 0;
+  const int16_t *src_diff = x->plane[0].src_diff;
+  for (int row = 0; row < bh; row += tx_h) {
+    for (int col = 0; col < bw; col += tx_w) {
 #if CONFIG_TXMG
-  av1_highbd_fwd_txfm(p->src_diff, DCT_coefs, bw, &param);
+      av1_highbd_fwd_txfm(src_diff + col, DCT_coefs, bw, &param);
 #else   // CONFIG_TXMG
-  if (param.is_hbd)
-    av1_highbd_fwd_txfm(p->src_diff, DCT_coefs, bw, &param);
-  else
-    av1_fwd_txfm(p->src_diff, DCT_coefs, bw, &param);
+      if (param.is_hbd)
+        av1_highbd_fwd_txfm(src_diff + col, DCT_coefs, bw, &param);
+      else
+        av1_fwd_txfm(src_diff + col, DCT_coefs, bw, &param);
 #endif  // CONFIG_TXMG
 
-  // Operating on TX domain, not pixels; we want the QTX quantizers
-  uint32_t dc = (uint32_t)av1_dc_quant_QTX(x->qindex, 0, xd->bd);
-  uint32_t ac = (uint32_t)av1_ac_quant_QTX(x->qindex, 0, xd->bd);
-  uint32_t max_quantized_coef = (100 * (uint32_t)abs(DCT_coefs[0])) / dc;
-  for (int i = 1; i < bw * bh; i++) {
-    uint32_t cur_quantized_coef = (100 * (uint32_t)abs(DCT_coefs[i])) / ac;
-    if (cur_quantized_coef > max_quantized_coef)
-      max_quantized_coef = cur_quantized_coef;
+      // Operating on TX domain, not pixels; we want the QTX quantizers
+      for (int i = 0; i < tx_w * tx_h; ++i) {
+        uint32_t cur_quantized_coef =
+            (100 * (uint32_t)abs(DCT_coefs[i])) / (i ? ac : dc);
+        if (cur_quantized_coef > max_quantized_coef)
+          max_quantized_coef = cur_quantized_coef;
+      }
+    }
+    src_diff += tx_h * bw;
   }
-
   const int bd_idx = (xd->bd == 8) ? 0 : ((xd->bd == 10) ? 1 : 2);
-  return max_quantized_coef <
-         threshold_table[bd_idx][AOMMAX(bsize - BLOCK_4X4, 0)];
+  return max_quantized_coef < skip_pred_threshold[bd_idx][bsize];
 }
 
 // Used to set proper context for early termination with skip = 1.
