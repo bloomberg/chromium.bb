@@ -72,8 +72,6 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
 
   // Callback passed to base::MemoryDumpManager::CreateProcessDump().
   void OnChromeMemoryDumpDone(
-      const RequestChromeMemoryDumpCallback&,
-      const base::trace_event::MemoryDumpRequestArgs& req_args,
       bool success,
       uint64_t dump_guid,
       std::unique_ptr<base::trace_event::ProcessMemoryDump>);
@@ -88,6 +86,9 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
   mojo::Binding<mojom::ClientProcess> binding_;
   const mojom::ProcessType process_type_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // Map containing pending chrome memory callbacks indexed by dump guid.
+  std::map<uint64_t, RequestChromeMemoryDumpCallback> pending_chrome_callbacks_;
 
   // TODO(ssid): This should be moved to coordinator instead of clients once we
   // have the whole chrome dumps sent via mojo, crbug.com/728199.
