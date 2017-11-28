@@ -779,6 +779,24 @@
             ]
         }
     ],
+    "ChromeHomeBottomNavLabels": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ChromeHomeBottomNavLabels"
+                    ]
+                },
+                {
+                    "name": "Default"
+                }
+            ]
+        }
+    ],
     "ChromeHomeInactivitySheetExpansion": [
         {
             "platforms": [
