@@ -26,6 +26,7 @@
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
 #import "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -49,44 +50,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface GoogleLandingMediator (UsedBySearchEngineObserver)
-// Check to see if the logo visibility should change.
-- (void)updateShowLogo;
-@end
-
-namespace google_landing {
-
-// Observer used to hide the Google logo and doodle if the TemplateURLService
-// changes.
-class SearchEngineObserver : public TemplateURLServiceObserver {
- public:
-  SearchEngineObserver(GoogleLandingMediator* owner,
-                       TemplateURLService* urlService);
-  ~SearchEngineObserver() override;
-  void OnTemplateURLServiceChanged() override;
-
- private:
-  __weak GoogleLandingMediator* _owner;
-  TemplateURLService* _templateURLService;  // weak
-};
-
-SearchEngineObserver::SearchEngineObserver(GoogleLandingMediator* owner,
-                                           TemplateURLService* urlService)
-    : _owner(owner), _templateURLService(urlService) {
-  _templateURLService->AddObserver(this);
-}
-
-SearchEngineObserver::~SearchEngineObserver() {
-  _templateURLService->RemoveObserver(this);
-}
-
-void SearchEngineObserver::OnTemplateURLServiceChanged() {
-  [_owner updateShowLogo];
-}
-
-}  // namespace google_landing
-
-@interface GoogleLandingMediator ()<WebStateListObserving> {
+@interface GoogleLandingMediator ()<SearchEngineObserving,
+                                    WebStateListObserving> {
   // The ChromeBrowserState associated with this mediator.
   ios::ChromeBrowserState* _browserState;  // Weak.
 
@@ -94,15 +59,12 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   id<LogoVendor> _doodleController;
 
   // Listen for default search engine changes.
-  std::unique_ptr<google_landing::SearchEngineObserver> _observer;
+  std::unique_ptr<SearchEngineObserverBridge> _observer;
   TemplateURLService* _templateURLService;  // weak
 
   // Observes the WebStateList so that this mediator can update the UI when the
   // active WebState changes.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
-
-  // Used to cancel tasks for the LargeIconService.
-  base::CancelableTaskTracker _cancelable_task_tracker;
 }
 
 // The WebStateList that is being observed by this mediator.
@@ -150,13 +112,13 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   // Set up template URL service to listen for default search engine changes.
   _templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(_browserState);
-  _observer.reset(
-      new google_landing::SearchEngineObserver(self, _templateURLService));
+  _observer =
+      std::make_unique<SearchEngineObserverBridge>(self, _templateURLService);
   _templateURLService->Load();
   _doodleController = ios::GetChromeBrowserProvider()->CreateLogoVendor(
       _browserState, self.dispatcher);
   [_consumer setLogoVendor:_doodleController];
-  [self updateShowLogo];
+  [self searchEngineChanged];
 
   // Set up notifications;
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
@@ -170,7 +132,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
                       object:nil];
 }
 
-- (void)updateShowLogo {
+- (void)searchEngineChanged {
   BOOL showLogo = NO;
   const TemplateURL* defaultURL =
       _templateURLService->GetDefaultSearchProvider();
