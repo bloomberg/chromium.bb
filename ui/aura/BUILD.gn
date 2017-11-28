@@ -223,6 +223,8 @@ static_library("test_support") {
     "test/aura_mus_test_base.h",
     "test/aura_test_base.cc",
     "test/aura_test_base.h",
+    "test/aura_test_context_factory.cc",
+    "test/aura_test_context_factory.h",
     "test/aura_test_helper.cc",
     "test/aura_test_helper.h",
     "test/aura_test_utils.cc",
@@ -270,6 +272,8 @@ static_library("test_support") {
   ]
   deps = [
     "//base/test:test_support",
+    "//cc:test_support",
+    "//components/viz/test:test_support",
     "//services/ui/public/interfaces",
     "//skia",
     "//testing/gtest",

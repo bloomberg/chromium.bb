@@ -208,7 +208,9 @@ WindowTreeClient::WindowTreeClient(
   // Allow for a null request in tests.
   if (request.is_pending())
     binding_.Bind(std::move(request));
-  client::GetTransientWindowClient()->AddObserver(this);
+  // Some tests may not create a TransientWindowClient.
+  if (client::GetTransientWindowClient())
+    client::GetTransientWindowClient()->AddObserver(this);
   if (window_manager_delegate)
     window_manager_delegate->SetWindowManagerClient(this);
   if (connector) {  // |connector| can be null in tests.
@@ -253,7 +255,9 @@ WindowTreeClient::~WindowTreeClient() {
 
   capture_synchronizer_.reset();
 
-  client::GetTransientWindowClient()->RemoveObserver(this);
+  // Some tests may not create a TransientWindowClient.
+  if (client::GetTransientWindowClient())
+    client::GetTransientWindowClient()->RemoveObserver(this);
 
   Env* env = Env::GetInstance();
   if (compositor_context_factory_ &&
@@ -515,9 +519,13 @@ void WindowTreeClient::CreateOrUpdateWindowFromWindowData(
   if (window_data.transient_parent_id == kInvalidServerId)
     return;
 
-  // Adjust the transient parent if necessary.
+  // Some tests may not create a TransientWindowClient.
   client::TransientWindowClient* transient_window_client =
       client::GetTransientWindowClient();
+  if (!transient_window_client)
+    return;
+
+  // Adjust the transient parent if necessary.
   Window* existing_transient_parent =
       transient_window_client->GetTransientParent(window->GetWindow());
   WindowMus* new_transient_parent =

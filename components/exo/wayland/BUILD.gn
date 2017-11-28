@@ -322,6 +322,7 @@ test("wayland_client_perftests") {
     "//mojo/edk/embedder:headers",
     "//testing/perf",
     "//ui/aura",
+    "//ui/aura:test_support",
     "//ui/base",
     "//ui/compositor:test_support",
     "//ui/events:gesture_detection",

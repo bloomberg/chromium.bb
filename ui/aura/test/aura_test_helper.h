@@ -14,6 +14,7 @@
 
 namespace ui {
 class ContextFactory;
+class ContextFactoryPrivate;
 class ScopedAnimationDurationScaleMode;
 }
 
@@ -76,7 +77,7 @@ class AuraTestHelper {
   // Flushes message loop.
   void RunAllPendingInMessageLoop();
 
-  Window* root_window() { return host_->window(); }
+  Window* root_window() { return host_ ? host_->window() : nullptr; }
   ui::EventSink* event_sink() { return host_->event_sink(); }
   WindowTreeHost* host() { return host_.get(); }
 
@@ -114,7 +115,10 @@ class AuraTestHelper {
   Mode mode_ = Mode::LOCAL;
   bool setup_called_;
   bool teardown_called_;
+  ui::ContextFactory* context_factory_to_restore_ = nullptr;
+  ui::ContextFactoryPrivate* context_factory_private_to_restore_ = nullptr;
   std::unique_ptr<TestWindowTreeClientSetup> window_tree_client_setup_;
+  Env::Mode env_mode_to_restore_ = Env::Mode::LOCAL;
   std::unique_ptr<aura::Env> env_;
   std::unique_ptr<wm::WMState> wm_state_;
   std::unique_ptr<WindowTreeHost> host_;

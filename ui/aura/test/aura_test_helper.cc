@@ -109,6 +109,8 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
     InitWindowTreeClient();
   if (!Env::GetInstanceDontCreate())
     env_ = Env::CreateInstance(env_mode);
+  else
+    env_mode_to_restore_ = Env::GetInstance()->mode();
   EnvTestHelper env_helper;
   // Always reset the mode. This really only matters for if Env was created
   // above.
@@ -117,6 +119,9 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   // Tests assume they can set the mouse location on Env() and have it reflected
   // in tests.
   env_helper.SetAlwaysUseLastMouseLocation(true);
+  context_factory_to_restore_ = Env::GetInstance()->context_factory();
+  context_factory_private_to_restore_ =
+      Env::GetInstance()->context_factory_private();
   Env::GetInstance()->set_context_factory(context_factory);
   Env::GetInstance()->set_context_factory_private(context_factory_private);
   // Unit tests generally don't want to query the system, rather use the state
@@ -133,20 +138,22 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
     // This must be reset before creating TestScreen, which sets up the display
     // scale factor for this test iteration.
     display::Display::ResetForceDeviceScaleFactorForTesting();
-    test_screen_.reset(TestScreen::Create(host_size));
+    test_screen_.reset(TestScreen::Create(host_size, window_tree_client_));
     if (!screen)
       display::Screen::SetScreenInstance(test_screen_.get());
-    host_.reset(test_screen_->CreateHostForPrimaryDisplay());
-    host_->window()->SetEventTargeter(
-        std::unique_ptr<ui::EventTargeter>(new WindowTargeter()));
+    if (env_mode == Env::Mode::LOCAL || window_manager_delegate_) {
+      host_.reset(test_screen_->CreateHostForPrimaryDisplay());
+      host_->window()->SetEventTargeter(
+          std::unique_ptr<ui::EventTargeter>(new WindowTargeter()));
 
-    client::SetFocusClient(root_window(), focus_client_.get());
-    client::SetCaptureClient(root_window(), capture_client());
-    parenting_client_.reset(new TestWindowParentingClient(root_window()));
+      client::SetFocusClient(root_window(), focus_client_.get());
+      client::SetCaptureClient(root_window(), capture_client());
+      parenting_client_.reset(new TestWindowParentingClient(root_window()));
 
-    root_window()->Show();
-    // Ensure width != height so tests won't confuse them.
-    host()->SetBoundsInPixels(gfx::Rect(host_size));
+      root_window()->Show();
+      // Ensure width != height so tests won't confuse them.
+      host()->SetBoundsInPixels(gfx::Rect(host_size));
+    }
   }
 
   if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT) {
@@ -162,7 +169,7 @@ void AuraTestHelper::TearDown() {
   g_instance = nullptr;
   teardown_called_ = true;
   parenting_client_.reset();
-  if (mode_ != Mode::MUS) {
+  if (mode_ != Mode::MUS && root_window()) {
     client::SetFocusClient(root_window(), nullptr);
     client::SetCaptureClient(root_window(), nullptr);
     host_.reset();
@@ -174,12 +181,23 @@ void AuraTestHelper::TearDown() {
     window_tree_client_setup_.reset();
     focus_client_.reset();
     capture_client_.reset();
+  } else {
+    if (display::Screen::GetScreen() == test_screen_.get())
+      display::Screen::SetScreenInstance(nullptr);
+    test_screen_.reset();
+    window_tree_client_setup_.reset();
   }
   ui::GestureRecognizer::Reset();
   ui::ShutdownInputMethodForTesting();
 
-  if (env_)
+  if (env_) {
     env_.reset();
+  } else {
+    Env::GetInstance()->set_context_factory(context_factory_to_restore_);
+    Env::GetInstance()->set_context_factory_private(
+        context_factory_private_to_restore_);
+    EnvTestHelper().SetMode(env_mode_to_restore_);
+  }
   wm_state_.reset();
 }
 

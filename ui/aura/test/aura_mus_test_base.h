@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/compositor/test/fake_context_factory.h"
 
 namespace aura {
 namespace test {
@@ -24,12 +23,8 @@ class AuraMusWmTestBase : public AuraTestBase {
 
   // AuraTestBase:
   void SetUp() override;
-  void TearDown() override;
 
  private:
-  ui::FakeContextFactory context_factory_;
-  ui::ContextFactory* context_factory_to_restore_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(AuraMusWmTestBase);
 };
 
@@ -46,12 +41,8 @@ class AuraMusClientTestBase : public AuraTestBase {
 
   // AuraTestBase:
   void SetUp() override;
-  void TearDown() override;
 
  private:
-  ui::FakeContextFactory context_factory_;
-  ui::ContextFactory* context_factory_to_restore_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(AuraMusClientTestBase);
 };
 
