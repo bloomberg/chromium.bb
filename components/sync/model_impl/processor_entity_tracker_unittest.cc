@@ -106,6 +106,7 @@ class ProcessorEntityTrackerTest : public ::testing::Test {
   std::unique_ptr<ProcessorEntityTracker> CreateNew() {
     return ProcessorEntityTracker::CreateNew(kKey, kHash, "", ctime_);
   }
+
   std::unique_ptr<ProcessorEntityTracker> CreateNewWithEmptyStorageKey() {
     return ProcessorEntityTracker::CreateNew("", kHash, "", ctime_);
   }
@@ -116,6 +117,11 @@ class ProcessorEntityTrackerTest : public ::testing::Test {
         GenerateUpdate(*entity, kHash, kId, kName, kValue1, ctime_, 1));
     DCHECK(!entity->IsUnsynced());
     return entity;
+  }
+
+  std::unique_ptr<ProcessorEntityTracker> RestoreFromMetadata(
+      sync_pb::EntityMetadata* entity_metadata) {
+    return ProcessorEntityTracker::CreateFromMetadata(kKey, entity_metadata);
   }
 
   const base::Time ctime_;
@@ -518,6 +524,23 @@ TEST_F(ProcessorEntityTrackerTest, NewLocalChangeUpdatedId) {
   entity->InitializeCommitRequestData(&request);
   EXPECT_EQ(kId, request.entity->id);
   EXPECT_EQ(1, request.base_version);
+}
+
+// Tests that entity restored after restart accepts specifics that don't match
+// the ones passed originally to MakeLocalChange.
+TEST_F(ProcessorEntityTrackerTest, RestoredLocalChangeWithUpdatedSpecifics) {
+  // Create new entity and preserver its metadata.
+  std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
+  entity->MakeLocalChange(GenerateEntityData(kHash, kName, kValue1));
+  sync_pb::EntityMetadata entity_metadata = entity->metadata();
+
+  // Restore entity from metadata and emulate bridge passing different specifics
+  // to SetCommitData.
+  entity = RestoreFromMetadata(&entity_metadata);
+  auto entity_data = GenerateEntityData(kHash, kName, kValue2);
+  entity->SetCommitData(entity_data.get());
+
+  // No verification is necessary. SetCommitData shouldn't DCHECK.
 }
 
 }  // namespace syncer
