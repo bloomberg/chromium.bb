@@ -366,6 +366,9 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
   }
 
   if (extension->from_bookmark()) {
+    UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchSource",
+                              params.source,
+                              extensions::NUM_APP_LAUNCH_SOURCES);
     UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchContainer",
                               params.container,
                               extensions::NUM_LAUNCH_CONTAINERS);

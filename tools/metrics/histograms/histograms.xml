@@ -22080,7 +22080,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>benwells@chromium.org</owner>
   <owner>cylee@chromium.org</owner>
   <summary>
-    The number of times times apps are launched grouped by
+    The number of times apps are launched grouped by
     extensions::AppLaunchSource.
   </summary>
 </histogram>
@@ -22192,6 +22192,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="AppLaunchContainer">
   <owner>benwells@chromium.org</owner>
   <summary>Records the container used for a bookmark app launch.</summary>
+</histogram>
+
+<histogram name="Extensions.BookmarkAppLaunchSource" enum="AppLaunchSource">
+  <owner>benwells@chromium.org</owner>
+  <owner>mgiuca@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <summary>
+    The number of times Bookmark Apps are launched, grouped by
+    extensions::AppLaunchSource. The equivalent histogram on Android is called
+    Launch.HomeScreenSource.
+  </summary>
 </histogram>
 
 <histogram name="Extensions.CheckForExternalUpdatesTime" units="ms">
