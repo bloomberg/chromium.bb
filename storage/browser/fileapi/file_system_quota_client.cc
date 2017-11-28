@@ -82,7 +82,7 @@ FileSystemQuotaClient::FileSystemQuotaClient(
       is_incognito_(is_incognito) {
 }
 
-FileSystemQuotaClient::~FileSystemQuotaClient() {}
+FileSystemQuotaClient::~FileSystemQuotaClient() = default;
 
 storage::QuotaClient::ID FileSystemQuotaClient::id() const {
   return storage::QuotaClient::kFileSystem;

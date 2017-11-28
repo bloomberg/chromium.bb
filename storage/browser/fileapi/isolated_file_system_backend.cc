@@ -43,8 +43,7 @@ IsolatedFileSystemBackend::IsolatedFileSystemBackend(
       transient_file_util_(new AsyncFileUtilAdapter(new TransientFileUtil())) {
 }
 
-IsolatedFileSystemBackend::~IsolatedFileSystemBackend() {
-}
+IsolatedFileSystemBackend::~IsolatedFileSystemBackend() = default;
 
 bool IsolatedFileSystemBackend::CanHandleType(FileSystemType type) const {
   switch (type) {

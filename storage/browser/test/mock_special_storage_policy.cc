@@ -41,6 +41,6 @@ bool MockSpecialStoragePolicy::IsStorageDurable(const GURL& origin) {
   return base::ContainsKey(durable_, origin);
 }
 
-MockSpecialStoragePolicy::~MockSpecialStoragePolicy() {}
+MockSpecialStoragePolicy::~MockSpecialStoragePolicy() = default;
 
 }  // namespace content

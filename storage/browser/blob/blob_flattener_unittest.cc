@@ -57,7 +57,7 @@ class BlobFlattenerTest : public testing::Test {
 
   BlobFlattenerTest()
       : fake_file_path_(base::FilePath(FILE_PATH_LITERAL("kFakePath"))) {}
-  ~BlobFlattenerTest() override {}
+  ~BlobFlattenerTest() override = default;
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

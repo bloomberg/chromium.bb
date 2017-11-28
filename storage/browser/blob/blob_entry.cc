@@ -26,7 +26,7 @@ BlobEntry::ItemCopyEntry::ItemCopyEntry(
 BlobEntry::ItemCopyEntry::ItemCopyEntry(ItemCopyEntry&& other) = default;
 BlobEntry::ItemCopyEntry& BlobEntry::ItemCopyEntry::operator=(
     BlobEntry::ItemCopyEntry&& rhs) = default;
-BlobEntry::ItemCopyEntry::~ItemCopyEntry() {}
+BlobEntry::ItemCopyEntry::~ItemCopyEntry() = default;
 
 BlobEntry::BuildingState::BuildingState(
     bool transport_items_present,
@@ -53,7 +53,7 @@ void BlobEntry::BuildingState::CancelRequests() {
 BlobEntry::BlobEntry(const std::string& content_type,
                      const std::string& content_disposition)
     : content_type_(content_type), content_disposition_(content_disposition) {}
-BlobEntry::~BlobEntry() {}
+BlobEntry::~BlobEntry() = default;
 
 void BlobEntry::AppendSharedBlobItem(
     scoped_refptr<ShareableBlobDataItem> item) {

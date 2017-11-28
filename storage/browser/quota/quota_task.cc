@@ -18,8 +18,7 @@ namespace storage {
 
 // QuotaTask ---------------------------------------------------------------
 
-QuotaTask::~QuotaTask() {
-}
+QuotaTask::~QuotaTask() = default;
 
 void QuotaTask::Start() {
   DCHECK(observer_);
@@ -62,8 +61,7 @@ QuotaTaskObserver::~QuotaTaskObserver() {
     task->Abort();
 }
 
-QuotaTaskObserver::QuotaTaskObserver() {
-}
+QuotaTaskObserver::QuotaTaskObserver() = default;
 
 void QuotaTaskObserver::RegisterTask(QuotaTask* task) {
   running_quota_tasks_.insert(task);

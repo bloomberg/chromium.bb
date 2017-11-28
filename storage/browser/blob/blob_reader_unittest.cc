@@ -66,7 +66,7 @@ void SaveBlobStatusAndFiles(BlobStatus* status_ptr,
 // scope the disk cache and entries.
 class EmptyDataHandle : public storage::BlobDataBuilder::DataHandle {
  private:
-  ~EmptyDataHandle() override {}
+  ~EmptyDataHandle() override = default;
 };
 
 // A disk_cache::Entry that arbitrarily delays the completion of a read
@@ -225,7 +225,7 @@ class FakeFileStreamReader : public FileStreamReader {
         net_error_(net::OK),
         size_(size) {}
 
-  ~FakeFileStreamReader() override {}
+  ~FakeFileStreamReader() override = default;
 
   void SetReturnError(int net_error) { net_error_ = net_error; }
 
@@ -305,7 +305,7 @@ class FakeFileStreamReader : public FileStreamReader {
 class MockFileStreamReaderProvider
     : public BlobReader::FileStreamReaderProvider {
  public:
-  ~MockFileStreamReaderProvider() override {}
+  ~MockFileStreamReaderProvider() override = default;
 
   MOCK_METHOD4(CreateForLocalFileMock,
                FileStreamReader*(base::TaskRunner* task_runner,
@@ -342,8 +342,8 @@ class MockFileStreamReaderProvider
 
 class BlobReaderTest : public ::testing::Test {
  public:
-  BlobReaderTest() {}
-  ~BlobReaderTest() override {}
+  BlobReaderTest() = default;
+  ~BlobReaderTest() override = default;
 
   void TearDown() override {
     reader_.reset();

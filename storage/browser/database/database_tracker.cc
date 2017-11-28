@@ -46,12 +46,9 @@ const base::FilePath::CharType kTemporaryDirectoryPattern[] =
 OriginInfo::OriginInfo()
     : total_size_(0) {}
 
-OriginInfo::OriginInfo(const OriginInfo& origin_info)
-    : origin_identifier_(origin_info.origin_identifier_),
-      total_size_(origin_info.total_size_),
-      database_info_(origin_info.database_info_) {}
+OriginInfo::OriginInfo(const OriginInfo& origin_info) = default;
 
-OriginInfo::~OriginInfo() {}
+OriginInfo::~OriginInfo() = default;
 
 void OriginInfo::GetAllDatabaseNames(
     std::vector<base::string16>* databases) const {

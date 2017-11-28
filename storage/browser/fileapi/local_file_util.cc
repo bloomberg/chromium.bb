@@ -37,7 +37,7 @@ class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
         virtual_root_path_(virtual_root_path) {
   }
 
-  ~LocalFileEnumerator() override {}
+  ~LocalFileEnumerator() override = default;
 
   base::FilePath Next() override;
   int64_t Size() override;
@@ -77,9 +77,9 @@ bool LocalFileEnumerator::IsDirectory() {
   return file_util_info_.IsDirectory();
 }
 
-LocalFileUtil::LocalFileUtil() {}
+LocalFileUtil::LocalFileUtil() = default;
 
-LocalFileUtil::~LocalFileUtil() {}
+LocalFileUtil::~LocalFileUtil() = default;
 
 base::File LocalFileUtil::CreateOrOpen(
     FileSystemOperationContext* context,

@@ -164,7 +164,7 @@ DatabaseIdentifier::DatabaseIdentifier(const std::string& scheme,
       is_file_(is_file) {
 }
 
-DatabaseIdentifier::~DatabaseIdentifier() {}
+DatabaseIdentifier::~DatabaseIdentifier() = default;
 
 std::string DatabaseIdentifier::ToString() const {
   if (is_file_)

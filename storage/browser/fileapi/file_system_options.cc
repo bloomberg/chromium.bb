@@ -17,7 +17,6 @@ FileSystemOptions::FileSystemOptions(
 
 FileSystemOptions::FileSystemOptions(const FileSystemOptions& other) = default;
 
-FileSystemOptions::~FileSystemOptions() {
-}
+FileSystemOptions::~FileSystemOptions() = default;
 
 }  // namespace storage

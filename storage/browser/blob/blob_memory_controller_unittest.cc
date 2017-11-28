@@ -49,7 +49,7 @@ int64_t FakeDiskSpaceMethod(const base::FilePath& path) {
 
 class BlobMemoryControllerTest : public testing::Test {
  protected:
-  BlobMemoryControllerTest() {}
+  BlobMemoryControllerTest() = default;
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

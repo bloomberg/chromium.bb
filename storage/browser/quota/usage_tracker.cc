@@ -48,7 +48,7 @@ UsageTracker::UsageTracker(const QuotaClientList& clients,
   }
 }
 
-UsageTracker::~UsageTracker() {}
+UsageTracker::~UsageTracker() = default;
 
 ClientUsageTracker* UsageTracker::GetClientTracker(QuotaClient::ID client_id) {
   auto found = client_tracker_map_.find(client_id);
@@ -185,9 +185,9 @@ void UsageTracker::SetUsageCacheEnabled(QuotaClient::ID client_id,
   client_tracker->SetUsageCacheEnabled(origin, enabled);
 }
 
-UsageTracker::AccumulateInfo::AccumulateInfo() {}
+UsageTracker::AccumulateInfo::AccumulateInfo() = default;
 
-UsageTracker::AccumulateInfo::~AccumulateInfo() {}
+UsageTracker::AccumulateInfo::~AccumulateInfo() = default;
 
 void UsageTracker::AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
                                                       int64_t limited_usage) {

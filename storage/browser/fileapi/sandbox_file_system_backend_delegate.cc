@@ -95,7 +95,7 @@ class ObfuscatedOriginEnumerator
   explicit ObfuscatedOriginEnumerator(ObfuscatedFileUtil* file_util) {
     enum_.reset(file_util->CreateOriginEnumerator());
   }
-  ~ObfuscatedOriginEnumerator() override {}
+  ~ObfuscatedOriginEnumerator() override = default;
 
   GURL Next() override { return enum_->Next(); }
 

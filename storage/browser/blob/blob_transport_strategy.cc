@@ -379,7 +379,7 @@ std::unique_ptr<BlobTransportStrategy> BlobTransportStrategy::Create(
   return nullptr;
 }
 
-BlobTransportStrategy::~BlobTransportStrategy() {}
+BlobTransportStrategy::~BlobTransportStrategy() = default;
 
 BlobTransportStrategy::BlobTransportStrategy(BlobDataBuilder* builder,
                                              ResultCallback result_callback)

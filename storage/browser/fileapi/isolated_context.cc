@@ -54,8 +54,8 @@ static base::LazyInstance<IsolatedContext>::Leaky g_isolated_context =
 
 }  // namespace
 
-IsolatedContext::FileInfoSet::FileInfoSet() {}
-IsolatedContext::FileInfoSet::~FileInfoSet() {}
+IsolatedContext::FileInfoSet::FileInfoSet() = default;
+IsolatedContext::FileInfoSet::~FileInfoSet() = default;
 
 bool IsolatedContext::FileInfoSet::AddPath(
     const base::FilePath& path, std::string* registered_name) {
@@ -173,7 +173,7 @@ IsolatedContext::Instance::Instance(FileSystemType type,
   DCHECK(!IsSinglePathIsolatedFileSystem(type_));
 }
 
-IsolatedContext::Instance::~Instance() {}
+IsolatedContext::Instance::~Instance() = default;
 
 bool IsolatedContext::Instance::ResolvePathForName(const std::string& name,
                                                    base::FilePath* path) const {

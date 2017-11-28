@@ -417,8 +417,7 @@ namespace storage {
 SandboxDirectoryDatabase::FileInfo::FileInfo() : parent_id(0) {
 }
 
-SandboxDirectoryDatabase::FileInfo::~FileInfo() {
-}
+SandboxDirectoryDatabase::FileInfo::~FileInfo() = default;
 
 SandboxDirectoryDatabase::SandboxDirectoryDatabase(
     const base::FilePath& filesystem_data_directory,
@@ -427,8 +426,7 @@ SandboxDirectoryDatabase::SandboxDirectoryDatabase(
       env_override_(env_override) {
 }
 
-SandboxDirectoryDatabase::~SandboxDirectoryDatabase() {
-}
+SandboxDirectoryDatabase::~SandboxDirectoryDatabase() = default;
 
 bool SandboxDirectoryDatabase::GetChildWithName(
     FileId parent_id,

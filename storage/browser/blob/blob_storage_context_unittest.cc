@@ -57,7 +57,7 @@ const uint64_t kTestBlobStorageMaxFileSizeBytes = 100;
 // scope the disk cache and entries.
 class EmptyDataHandle : public storage::BlobDataBuilder::DataHandle {
  private:
-  ~EmptyDataHandle() override {}
+  ~EmptyDataHandle() override = default;
 };
 
 std::unique_ptr<disk_cache::Backend> CreateInMemoryDiskCache() {
@@ -112,8 +112,8 @@ void IncrementNumber(size_t* number, BlobStatus status) {
 
 class BlobStorageContextTest : public testing::Test {
  protected:
-  BlobStorageContextTest() {}
-  ~BlobStorageContextTest() override {}
+  BlobStorageContextTest() = default;
+  ~BlobStorageContextTest() override = default;
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

@@ -37,7 +37,7 @@ ScopedTextBlob::ScopedTextBlob(const MockBlobURLRequestContext& request_context,
   handle_ = context_->AddFinishedBlob(&blob_builder);
 }
 
-ScopedTextBlob::~ScopedTextBlob() {}
+ScopedTextBlob::~ScopedTextBlob() = default;
 
 std::unique_ptr<storage::BlobDataHandle> ScopedTextBlob::GetBlobDataHandle() {
   return context_->GetBlobDataFromUUID(blob_id_);

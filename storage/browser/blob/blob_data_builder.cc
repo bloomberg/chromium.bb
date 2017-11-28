@@ -61,7 +61,7 @@ BlobDataBuilder::BlobDataBuilder(const std::string& uuid) : uuid_(uuid) {}
 
 BlobDataBuilder::BlobDataBuilder(BlobDataBuilder&&) = default;
 BlobDataBuilder& BlobDataBuilder::operator=(BlobDataBuilder&&) = default;
-BlobDataBuilder::~BlobDataBuilder() {}
+BlobDataBuilder::~BlobDataBuilder() = default;
 
 void BlobDataBuilder::AppendIPCDataElement(
     const DataElement& ipc_data,

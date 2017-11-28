@@ -61,8 +61,7 @@ void Int64CallbackAdapter(const net::Int64CompletionCallback& callback,
 
 }  // namespace
 
-FileSystemFileStreamReader::~FileSystemFileStreamReader() {
-}
+FileSystemFileStreamReader::~FileSystemFileStreamReader() = default;
 
 int FileSystemFileStreamReader::Read(
     net::IOBuffer* buf, int buf_len,

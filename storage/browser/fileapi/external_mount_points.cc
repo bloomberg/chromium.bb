@@ -43,7 +43,7 @@ class SystemMountPointsLazyWrapper {
       : system_mount_points_(storage::ExternalMountPoints::CreateRefCounted()) {
   }
 
-  ~SystemMountPointsLazyWrapper() {}
+  ~SystemMountPointsLazyWrapper() = default;
 
   storage::ExternalMountPoints* get() { return system_mount_points_.get(); }
 
@@ -66,7 +66,7 @@ class ExternalMountPoints::Instance {
       : type_(type),
         path_(path.StripTrailingSeparators()),
         mount_option_(mount_option) {}
-  ~Instance() {}
+  ~Instance() = default;
 
   FileSystemType type() const { return type_; }
   const base::FilePath& path() const { return path_; }

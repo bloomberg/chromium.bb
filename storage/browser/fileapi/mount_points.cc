@@ -6,7 +6,7 @@
 
 namespace storage {
 
-MountPoints::MountPointInfo::MountPointInfo() {}
+MountPoints::MountPointInfo::MountPointInfo() = default;
 MountPoints::MountPointInfo::MountPointInfo(
     const std::string& name, const base::FilePath& path)
     : name(name), path(path) {}

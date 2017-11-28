@@ -58,8 +58,7 @@ SandboxPrioritizedOriginDatabase::SandboxPrioritizedOriginDatabase(
           file_system_directory_.Append(kPrimaryOriginFile)) {
 }
 
-SandboxPrioritizedOriginDatabase::~SandboxPrioritizedOriginDatabase() {
-}
+SandboxPrioritizedOriginDatabase::~SandboxPrioritizedOriginDatabase() = default;
 
 bool SandboxPrioritizedOriginDatabase::InitializePrimaryOrigin(
     const std::string& origin) {

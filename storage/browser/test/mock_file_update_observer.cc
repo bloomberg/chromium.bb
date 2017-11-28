@@ -11,8 +11,7 @@ namespace storage {
 MockFileUpdateObserver::MockFileUpdateObserver() : is_ready_(false) {
 }
 
-MockFileUpdateObserver::~MockFileUpdateObserver() {
-}
+MockFileUpdateObserver::~MockFileUpdateObserver() = default;
 
 // static
 UpdateObserverList MockFileUpdateObserver::CreateList(

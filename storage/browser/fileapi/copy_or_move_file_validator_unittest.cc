@@ -205,7 +205,7 @@ class TestCopyOrMoveFileValidatorFactory
   // TODO(gbillock): switch args to enum or something
   explicit TestCopyOrMoveFileValidatorFactory(Validity validity)
       : validity_(validity) {}
-  ~TestCopyOrMoveFileValidatorFactory() override {}
+  ~TestCopyOrMoveFileValidatorFactory() override = default;
 
   storage::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
       const FileSystemURL& /*src_url*/,
@@ -224,7 +224,7 @@ class TestCopyOrMoveFileValidatorFactory
                         base::File::FILE_OK :
                         base::File::FILE_ERROR_SECURITY) {
     }
-    ~TestCopyOrMoveFileValidator() override {}
+    ~TestCopyOrMoveFileValidator() override = default;
 
     void StartPreWriteValidation(
         const ResultCallback& result_callback) override {

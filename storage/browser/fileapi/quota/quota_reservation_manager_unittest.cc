@@ -54,7 +54,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
  public:
   FakeBackend()
       : on_memory_usage_(kInitialFileSize), on_disk_usage_(kInitialFileSize) {}
-  ~FakeBackend() override {}
+  ~FakeBackend() override = default;
 
   void ReserveQuota(const GURL& origin,
                     storage::FileSystemType type,
@@ -183,8 +183,8 @@ void RefreshReservation(QuotaReservation* reservation, int64_t size) {
 
 class QuotaReservationManagerTest : public testing::Test {
  public:
-  QuotaReservationManagerTest() {}
-  ~QuotaReservationManagerTest() override {}
+  QuotaReservationManagerTest() = default;
+  ~QuotaReservationManagerTest() override = default;
 
   void SetUp() override {
     ASSERT_TRUE(work_dir_.CreateUniqueTempDir());

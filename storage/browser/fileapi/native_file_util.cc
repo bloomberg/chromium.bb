@@ -85,7 +85,7 @@ class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
     : file_enum_(root_path, recursive, file_type) {
   }
 
-  ~NativeFileEnumerator() override {}
+  ~NativeFileEnumerator() override = default;
 
   base::FilePath Next() override;
   int64_t Size() override;

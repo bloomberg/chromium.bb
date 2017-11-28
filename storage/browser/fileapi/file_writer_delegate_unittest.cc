@@ -92,7 +92,7 @@ class BlobURLRequestJobFactory;
 
 class FileWriterDelegateTest : public PlatformTest {
  public:
-  FileWriterDelegateTest() {}
+  FileWriterDelegateTest() = default;
 
  protected:
   void SetUp() override;
@@ -213,7 +213,7 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
   }
 
  protected:
-  ~FileWriterDelegateTestJob() override {}
+  ~FileWriterDelegateTestJob() override = default;
 
  private:
   std::string content_;

@@ -27,7 +27,7 @@ SandboxQuotaObserver::SandboxQuotaObserver(
       file_system_usage_cache_(file_system_usage_cache) {
 }
 
-SandboxQuotaObserver::~SandboxQuotaObserver() {}
+SandboxQuotaObserver::~SandboxQuotaObserver() = default;
 
 void SandboxQuotaObserver::OnStartUpdate(const FileSystemURL& url) {
   DCHECK(update_notify_runner_->RunsTasksInCurrentSequence());

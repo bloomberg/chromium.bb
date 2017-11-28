@@ -49,7 +49,7 @@ class LoggingRecursiveOperation : public storage::RecursiveOperationDelegate {
         root_(root),
         callback_(callback),
         weak_factory_(this) {}
-  ~LoggingRecursiveOperation() override {}
+  ~LoggingRecursiveOperation() override = default;
 
   const std::vector<LogEntry>& log_entries() const { return log_entries_; }
 
