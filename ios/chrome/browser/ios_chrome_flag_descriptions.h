@@ -76,6 +76,11 @@ extern const char kOmniboxUIHideSuggestionUrlSchemeDescription[];
 extern const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsName[];
 extern const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription[];
 
+// Title and description for the flag to enable the ability to export passwords
+// from the password settings.
+extern const char kPasswordExportName[];
+extern const char kPasswordExportDescription[];
+
 // Title and description for the flag to enable Physical Web in the omnibox.
 extern const char kPhysicalWeb[];
 extern const char kPhysicalWebDescription[];
