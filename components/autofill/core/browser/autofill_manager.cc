@@ -378,16 +378,14 @@ bool AutofillManager::OnFormSubmitted(const FormData& form) {
 
   CreditCard credit_card =
       form_data_importer_->ExtractCreditCardFromForm(*submitted_form);
-  if (IsValidCreditCardNumber(credit_card.number())) {
-    credit_card_form_event_logger_->DetectedCardInSubmittedForm();
-    if (personal_data_->IsKnownCard(credit_card)) {
-      credit_card_form_event_logger_->SubmittedKnownCard();
-    }
-  }
+  AutofillMetrics::CardNumberStatus card_number_status =
+      GetCardNumberStatus(credit_card);
 
-  address_form_event_logger_->OnFormSubmitted(/*force_logging=*/false);
+  address_form_event_logger_->OnFormSubmitted(/*force_logging=*/false,
+                                              card_number_status);
   if (IsCreditCardAutofillEnabled())
-    credit_card_form_event_logger_->OnFormSubmitted(enable_ablation_logging_);
+    credit_card_form_event_logger_->OnFormSubmitted(enable_ablation_logging_,
+                                                    card_number_status);
 
   // Update Personal Data with the form's submitted data.
   // Also triggers offering local/upload credit card save, if applicable.
@@ -1934,6 +1932,21 @@ void AutofillManager::FillFieldWithValue(AutofillField* autofill_field,
                                                    app_locale_));
     }
   }
+}
+
+AutofillMetrics::CardNumberStatus AutofillManager::GetCardNumberStatus(
+    CreditCard& credit_card) {
+  base::string16 number = credit_card.number();
+  if (number.empty())
+    return AutofillMetrics::EMPTY_CARD;
+  else if (!HasCorrectLength(number))
+    return AutofillMetrics::WRONG_SIZE_CARD;
+  else if (!PassesLuhnCheck(number))
+    return AutofillMetrics::FAIL_LUHN_CHECK_CARD;
+  else if (personal_data_->IsKnownCard(credit_card))
+    return AutofillMetrics::KNOWN_CARD;
+  else
+    return AutofillMetrics::UNKNOWN_CARD;
 }
 
 }  // namespace autofill

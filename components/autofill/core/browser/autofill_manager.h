@@ -457,6 +457,9 @@ class AutofillManager : public AutofillHandler,
                           bool should_notify,
                           const base::string16& cvc);
 
+  AutofillMetrics::CardNumberStatus GetCardNumberStatus(
+      CreditCard& credit_card);
+
   AutofillClient* const client_;
 
   // Handles Payments service requests.
