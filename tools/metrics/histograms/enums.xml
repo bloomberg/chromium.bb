@@ -1300,6 +1300,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Outside of NTP (e.g. bookmarks bar)"/>
 </enum>
 
+<enum name="AppsWindowType">
+  <int value="0" label="Default"/>
+  <int value="1" label="Panel"/>
+</enum>
+
 <enum name="ArcAuthAccountCheckStatus">
   <int value="0" label="Account is up to date"/>
   <int value="1" label="New account"/>
