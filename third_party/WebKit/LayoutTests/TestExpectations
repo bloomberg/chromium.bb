@@ -4068,3 +4068,5 @@ crbug.com/786641 [ Win Linux ] virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageS
 
 # Sheriff failures 2017-11-28
 crbug.com/789111 http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Failure ]
+crbug.com/789139 [ Linux ] http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Pass Failure ]
+crbug.com/789139 [ Linux ] virtual/mojo-loading/http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Pass Failure ]
