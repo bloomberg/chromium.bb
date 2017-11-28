@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_UI_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_UI_UTIL_H_
 
+#include "url/gurl.h"
+
 namespace content {
 class BrowserContext;
 }
@@ -38,6 +40,12 @@ bool ShouldDisplayInNewTabPage(const Extension* extension,
 // an ephemeral app.
 bool ShouldDisplayInExtensionSettings(const Extension* extension,
                                       content::BrowserContext* context);
+
+// If |url| is an extension URL, returns the name of the associated extension,
+// with whitespace collapsed. Otherwise, returns empty string. |context| is used
+// to get at the extension registry.
+base::string16 GetEnabledExtensionNameForUrl(const GURL& url,
+                                             content::BrowserContext* context);
 
 }  // namespace ui_util
 }  // namespace extensions

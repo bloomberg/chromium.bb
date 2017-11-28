@@ -4,10 +4,13 @@
 
 #include "chrome/browser/extensions/extension_ui_util.h"
 
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -49,6 +52,20 @@ bool ShouldDisplayInNewTabPage(const Extension* extension,
 bool ShouldDisplayInExtensionSettings(const Extension* extension,
                                       content::BrowserContext* context) {
   return extension->ShouldDisplayInExtensionSettings();
+}
+
+base::string16 GetEnabledExtensionNameForUrl(const GURL& url,
+                                             content::BrowserContext* context) {
+  if (!url.SchemeIs(extensions::kExtensionScheme))
+    return base::string16();
+
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(context);
+  const extensions::Extension* extension =
+      extension_registry->enabled_extensions().GetByID(url.host());
+  return extension ? base::CollapseWhitespace(
+                         base::UTF8ToUTF16(extension->name()), false)
+                   : base::string16();
 }
 
 }  // namespace ui_util

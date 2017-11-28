@@ -17,6 +17,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -591,8 +592,9 @@ void LocationBarViewMac::UpdatePageInfoText() {
   PageInfoVerboseType type = GetPageInfoVerboseType();
   if (type == PageInfoVerboseType::kEVCert) {
     label = GetToolbarModel()->GetEVCertName();
-  } else if (type == PageInfoVerboseType::kExtension) {
-    label = GetExtensionName(GetToolbarModel()->GetURL(), GetWebContents());
+  } else if (type == PageInfoVerboseType::kExtension && GetWebContents()) {
+    label = extensions::ui_util::GetEnabledExtensionNameForUrl(
+        GetToolbarModel()->GetURL(), GetWebContents()->GetBrowserContext());
   } else if (type == PageInfoVerboseType::kChrome) {
     label = l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   } else if (type == PageInfoVerboseType::kSecurity &&

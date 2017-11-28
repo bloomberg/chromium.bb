@@ -17,6 +17,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -814,10 +815,19 @@ base::string16 LocationBarView::GetLocationIconText() const {
   if (GetToolbarModel()->GetURL().SchemeIs(content::kChromeUIScheme))
     return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
 
-  const base::string16 extension_name = GetExtensionName(
-      GetToolbarModel()->GetURL(), delegate_->GetWebContents());
-  if (!extension_name.empty())
-    return extension_name;
+  if (delegate_->GetWebContents()) {
+    // On ChromeOS, this can be called using web_contents from
+    // SimpleWebViewDialog::GetWebContents() which always returns null.
+    // TODO(crbug.com/680329) Remove the null check and make
+    // SimpleWebViewDialog::GetWebContents return the proper web contents
+    // instead.
+    const base::string16 extension_name =
+        extensions::ui_util::GetEnabledExtensionNameForUrl(
+            GetToolbarModel()->GetURL(),
+            delegate_->GetWebContents()->GetBrowserContext());
+    if (!extension_name.empty())
+      return extension_name;
+  }
 
   bool has_ev_cert =
       (GetToolbarModel()->GetSecurityLevel(false) == security_state::EV_SECURE);

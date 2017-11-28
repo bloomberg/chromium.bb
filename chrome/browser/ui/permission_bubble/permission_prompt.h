@@ -32,6 +32,7 @@ class PermissionPrompt {
     // These pointers should not be stored as the actual request objects may be
     // deleted upon navigation and so on.
     virtual const std::vector<PermissionRequest*>& Requests() = 0;
+    virtual base::string16 GetDisplayOrigin() = 0;
 
     virtual void Accept() = 0;
     virtual void Deny() = 0;
