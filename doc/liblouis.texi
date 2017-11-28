@@ -128,7 +128,7 @@ How to Write Translation Tables
 * Swap Opcodes::
 * The Context and Multipass Opcodes::
 * The correct Opcode::
-* The match Opcodes::
+* The match Opcode::
 * Miscellaneous Opcodes::
 
 Emphasis Opcodes
@@ -278,7 +278,7 @@ program in which you can test your work.
 * Swap Opcodes::
 * The Context and Multipass Opcodes::
 * The correct Opcode::
-* The match Opcodes::
+* The match Opcode::
 * Miscellaneous Opcodes::
 @end menu
 
@@ -1532,25 +1532,19 @@ correct "\s?" "?" drop space before question mark
 
 @end table
 
-@node The match Opcodes
-@section The match Opcodes
+@node The match Opcode
+@section The match Opcode
 
-In my most recent update, I have added to opcodes; attribute and
-match. They work together and their description is complex. I would
-recommend looking at the en-ueb-g2.ctb table to get the best idea
-about how they are used as the following descriptions and examples are
-terse.
+The match opcode is similar the multipass opcodes and can be seen as
+the more low-level and powerful cousin to the @opcoderef{context}.
 
 @table @code
-@opcode{attribute bit CHARACTERS}
-
-Sets the CTC_UserDefined# bit on the list of CHARACTERS.  There are 0 - 7 bits available.
-
 @opcode{match, pre-pattern characters post-pattern dots}
 
-This opcode allows for matching a string of characters via pre and
-post patterns. The patterns are specified using an expression syntax
-somewhat like regular expressions. A single hyphen by itself means no
+This opcode allows for matching a string of characters via @emph{pre}
+and @emph{post patterns}. The patterns are specified using an
+expression syntax somewhat like regular expressions (@pxref{pattern
+expression syntax}). A single hyphen (@samp{-}) by itself means no
 pattern is specified.
 
 The following will replace @samp{xyz} with the dots
@@ -1568,7 +1562,9 @@ match ^ ONE : 3456-1
 @end example
 @end table
 
-The list of expression specifiers:
+@anchor{pattern expression syntax}
+The @code{pre-pattern} and the @code{post-pattern} can contain
+any of the following expressions:
 
 @table @samp
 @item [ ]
@@ -1582,47 +1578,23 @@ Expression can be any character.
 @item %[ ]
 Expression is a character with the attributes listed between the
 brackets. If only one character is present then the brackets are not
-needed. The set of attributes are specifed as follows:
+needed. The set of attributes are specified as follows:
 
 @table @samp
 @item _
-CTC_Space
+space
 @item #
-CTC_Digit
+digit
 @item a
-CTC_Letter
+letter
 @item u
-CTC_UpperCase
+uppercase
 @item l
-CTC_LowerCase
+lowercase
 @item .
-CTC_Punctuation
+punctuation
 @item $
-CTC_Sign
-@item ~
-CTC_SeqDelimiter
-@item <
-CTC_SeqBefore
-@item >
-CTC_SeqAfter
-@item 0
-CTC_UserDefined0  (set via the attribute opcode)
-@item 1
-CTC_UserDefined1
-@item 2
-CTC_UserDefined2
-@item 3
-CTC_UserDefined3
-@item 4
-CTC_UserDefined4
-@item 5
-CTC_UserDefined5
-@item 6
-CTC_UserDefined6
-@item 7
-CTC_UserDefined7
-@item ^
-CTC_EndOfInput  (Special use for pattern matcher)
+sign
 @end table
 
 @item ^
@@ -1630,7 +1602,7 @@ Match at the end of input processing (or beginning depending of the
 direction pre or post).
 
 @item $
-Same as ^.
+Same as @samp{^}.
 @end table
 
 For example the following will replace @samp{bb} with the dots @samp{23} when it
@@ -1641,14 +1613,15 @@ match %a bb %a 23
 @end example
 
 The following will replace @samp{con} with the dots @samp{25} when it
-is preceded by a space, seqdelimiter, or beginning of input, and
-followed by an @samp{s} and then any letter.
+is preceded by a space or beginning of input, and followed by an
+@samp{s} and then any letter.
 
 @example
-match %[^_~] con s%a 25  cons  "mod cons" 10.6.4
+match %[^_] con s%a 25
 @end example
 
-Expression can be modified by the following:
+Similar to regular expressions the pattern expressions can contain
+grouping, quantifiers and even negation:
 
 @table @samp
 @item ( )
@@ -1672,20 +1645,20 @@ Either the previous or the following expressions must match.
 @end table
 
 For example the following will replace @samp{ing} with the dots
-@samp{346} when it is NOT preceded by a space, seqdelimiter, or
-beginning of input.  What is after it does not matter
+@samp{346} when it is @emph{not} preceded by a space or beginning of
+input. What follows after the @samp{ing} does not matter, hence the
+@samp{-}.
 
 @example
-!%[^_~] ing - 346
+!%[^_] ing - 346
 @end example
 
 The following will replace @samp{con} with the dots @samp{25} when it
-is preceded by a space, seqdelimiter, or beginning of input, then zero
-or more CTC_SeqBefore characters; then followed by a @samp{c} that is
-followed by any character but @samp{h}.
+is preceded by a space, or beginning of input; then followed by a
+@samp{c} that is followed by any character but @samp{h}.
 
 @example
-match %[^_~]%<* con c!h 25
+match %[^_] con c!h 25
 @end example
 
 @node Miscellaneous Opcodes
