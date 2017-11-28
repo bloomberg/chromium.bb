@@ -10,7 +10,7 @@
 #include "tools/gn/test_with_scope.h"
 #include "tools/gn/toolchain.h"
 
-namespace {
+namespace gn_builder_unittest {
 
 class MockLoader : public Loader {
  public:
@@ -88,8 +88,6 @@ class BuilderTest : public testing::Test {
   Settings settings_;
   Scope scope_;
 };
-
-}  // namespace
 
 TEST_F(BuilderTest, BasicDeps) {
   SourceDir toolchain_dir = settings_.toolchain_label().dir();
@@ -246,3 +244,5 @@ TEST_F(BuilderTest, ConfigLoad) {
   // Should have requested that B is loaded.
   EXPECT_TRUE(loader_->HasLoadedOne(SourceFile("//b/BUILD.gn")));
 }
+
+}  // namespace gn_builder_unittest
