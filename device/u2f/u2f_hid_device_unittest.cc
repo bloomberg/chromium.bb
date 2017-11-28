@@ -76,14 +76,14 @@ class TestVersionCallback {
  public:
   TestVersionCallback()
       : closure_(),
-        callback_(base::Bind(&TestVersionCallback::ReceivedCallback,
-                             base::Unretained(this))),
+        callback_(base::BindOnce(&TestVersionCallback::ReceivedCallback,
+                                 base::Unretained(this))),
         run_loop_() {}
   ~TestVersionCallback() {}
 
   void ReceivedCallback(bool success, U2fDevice::ProtocolVersion version) {
     version_ = version;
-    closure_.Run();
+    std::move(closure_).Run();
   }
 
   U2fDevice::ProtocolVersion WaitForCallback() {
@@ -92,11 +92,11 @@ class TestVersionCallback {
     return version_;
   }
 
-  const U2fDevice::VersionCallback& callback() { return callback_; }
+  U2fDevice::VersionCallback callback() { return std::move(callback_); }
 
  private:
   U2fDevice::ProtocolVersion version_;
-  base::Closure closure_;
+  base::OnceClosure closure_;
   U2fDevice::VersionCallback callback_;
   base::RunLoop run_loop_;
 };
@@ -165,7 +165,7 @@ TEST_F(U2fHidDeviceTest, TestHidDeviceVersion) {
     U2fDevice::ProtocolVersion version = vc.WaitForCallback();
     EXPECT_EQ(version, U2fDevice::ProtocolVersion::U2F_V2);
   }
-};
+}
 
 TEST_F(U2fHidDeviceTest, TestMultipleRequests) {
   if (!U2fHidDevice::IsTestEnabled())
@@ -187,7 +187,7 @@ TEST_F(U2fHidDeviceTest, TestMultipleRequests) {
     version = vc2.WaitForCallback();
     EXPECT_EQ(version, U2fDevice::ProtocolVersion::U2F_V2);
   }
-};
+}
 
 TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   // Setup and enumerate mock device
@@ -222,14 +222,14 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   // Add pending transactions manually and ensure they are processed
   std::unique_ptr<U2fApduResponse> response1(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
-  device->pending_transactions_.push_back(
-      {U2fApduCommand::CreateVersion(),
-       base::Bind(&ResponseCallback, &response1)});
+  device->pending_transactions_.emplace(
+      U2fApduCommand::CreateVersion(),
+      base::BindOnce(&ResponseCallback, &response1));
   std::unique_ptr<U2fApduResponse> response2(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
-  device->pending_transactions_.push_back(
-      {U2fApduCommand::CreateVersion(),
-       base::Bind(&ResponseCallback, &response2)});
+  device->pending_transactions_.emplace(
+      U2fApduCommand::CreateVersion(),
+      base::BindOnce(&ResponseCallback, &response2));
   std::unique_ptr<U2fApduResponse> response3(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->DeviceTransact(U2fApduCommand::CreateVersion(),
@@ -238,7 +238,7 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   EXPECT_EQ(nullptr, response1);
   EXPECT_EQ(nullptr, response2);
   EXPECT_EQ(nullptr, response3);
-};
+}
 
 TEST_F(U2fHidDeviceTest, TestDeviceError) {
   // Setup and enumerate mock device
@@ -277,14 +277,14 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
   // Add pending transactions manually and ensure they are processed
   std::unique_ptr<U2fApduResponse> response1(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
-  device->pending_transactions_.push_back(
-      {U2fApduCommand::CreateVersion(),
-       base::Bind(&ResponseCallback, &response1)});
+  device->pending_transactions_.emplace(
+      U2fApduCommand::CreateVersion(),
+      base::BindOnce(&ResponseCallback, &response1));
   std::unique_ptr<U2fApduResponse> response2(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
-  device->pending_transactions_.push_back(
-      {U2fApduCommand::CreateVersion(),
-       base::Bind(&ResponseCallback, &response2)});
+  device->pending_transactions_.emplace(
+      U2fApduCommand::CreateVersion(),
+      base::BindOnce(&ResponseCallback, &response2));
   std::unique_ptr<U2fApduResponse> response3(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->DeviceTransact(U2fApduCommand::CreateVersion(),
@@ -295,6 +295,6 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
   EXPECT_EQ(nullptr, response1);
   EXPECT_EQ(nullptr, response2);
   EXPECT_EQ(nullptr, response3);
-};
+}
 
 }  // namespace device
