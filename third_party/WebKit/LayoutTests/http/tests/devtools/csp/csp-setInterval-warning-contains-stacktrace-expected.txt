@@ -6,7 +6,7 @@ Message[0]: csp-setInterval-warning-contains-stacktrace.html:10 Refused to evalu
 
 Stack Trace:
 
-    url: http://127.0.0.1:8000/devtools/stacktraces/csp-setInterval-warning-contains-stacktrace.html
+    url: http://127.0.0.1:8000/devtools/csp/csp-setInterval-warning-contains-stacktrace.html
     function: thisTest
     line: 10
 
