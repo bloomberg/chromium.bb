@@ -2,21 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * Enumeration of Google-promoted destination IDs.
- * @enum {string}
- */
-const GooglePromotedId = {
-  DOCS: '__google__docs',
-  SAVE_AS_PDF: 'Save as PDF'
-};
-
 Polymer({
   is: 'print-preview-header',
 
+  behaviors: [SettingsBehavior],
+
   properties: {
-    /** @type {!print_preview_new.Model} */
-    model: Object,
+    /** @type {!print_preview.Destination} */
+    destination: Object,
+
+    /** @type {!print_preview_new.State} */
+    state: Object,
 
     /** @private {boolean} */
     printInProgress_: {
@@ -31,11 +27,9 @@ Polymer({
      */
     currentErrorOrState_: {
       type: String,
-      computed: 'computeErrorOrStateString_(model.previewLoading, ' +
-          'model.previewFailed, model.cloudPrintError, ' +
-          'model.privetExtensionError, model.invalidSettings, ' +
-          'model.copiesInvalid, model.scalingInvalid, model.pagesInvalid, ' +
-          'printInProgress_)'
+      computed: 'computeErrorOrStateString_(state.*, ' +
+          'settings.copies.valid, settings.scaling.valid, ' +
+          'settings.pages.valid, printInProgress_)'
     },
 
     /**
@@ -46,8 +40,9 @@ Polymer({
      */
     labelInfo_: {
       type: Object,
-      computed: 'getLabelInfo_(currentErrorOrState_, model.destinationId, ' +
-          'model.copies, model.pageRange, model.duplex)'
+      computed: 'getLabelInfo_(currentErrorOrState_, destination.id, ' +
+          'settings.copies.value, settings.pages.value, ' +
+          'settings.duplex.value)'
     },
   },
 
@@ -66,8 +61,9 @@ Polymer({
    * @private
    */
   isPdfOrDrive_: function() {
-    return this.model.destinationId == GooglePromotedId.SAVE_AS_PDF ||
-        this.model.destinationId == GooglePromotedId.DOCS;
+    return this.destination.id ==
+        print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
+        this.destination.id == print_preview.Destination.GooglePromotedId.DOCS;
   },
 
   /**
@@ -84,13 +80,13 @@ Polymer({
    * @private
    */
   computeErrorOrStateString_: function() {
-    if (this.model.cloudPrintError != '')
-      return this.model.cloudPrintError;
-    if (this.model.privetExtensionError != '')
-      return this.model.privetExtensionError;
-    if (this.model.invalidSettings || this.model.previewFailed ||
-        this.model.previewLoading || this.model.copiesInvalid ||
-        this.model.scalingInvalid || this.model.pagesInvalid) {
+    if (this.state.cloudPrintError != '')
+      return this.state.cloudPrintError;
+    if (this.state.privetExtensionError != '')
+      return this.state.privetExtensionError;
+    if (this.state.invalidSettings || this.state.previewFailed ||
+        this.state.previewLoading || !this.getSetting('copies').valid ||
+        !this.getSetting('scaling').valid || !this.getSetting('pages').valid) {
       return '';
     }
     if (this.printInProgress_) {
@@ -109,13 +105,13 @@ Polymer({
    */
   getLabelInfo_: function() {
     const saveToPdfOrDrive = this.isPdfOrDrive_();
-    let numPages = this.model.pageRange.length;
+    let numPages = this.getSetting('pages').value.length;
     let numSheets = numPages;
-    if (!saveToPdfOrDrive && this.model.duplex) {
+    if (!saveToPdfOrDrive && this.getSetting('duplex').value) {
       numSheets = Math.ceil(numPages / 2);
     }
 
-    const copies = this.model.copies;
+    const copies = /** @type {number} */ (this.getSetting('copies').value);
     numSheets *= copies;
     numPages *= copies;
 

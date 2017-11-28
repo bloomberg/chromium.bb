@@ -14,12 +14,11 @@ const PagesInputErrorState = {
 Polymer({
   is: 'print-preview-pages-settings',
 
+  behaviors: [SettingsBehavior],
+
   properties: {
-    /** @type {!print_preview_new.Model} */
-    model: {
-      type: Object,
-      notify: true,
-    },
+    /** @type {!print_preview.DocumentInfo} */
+    documentInfo: Object,
 
     /** @private {string} */
     inputString_: {
@@ -30,7 +29,7 @@ Polymer({
     /** @private {!Array<number>} */
     allPagesArray_: {
       type: Array,
-      computed: 'computeAllPagesArray_(model.documentNumPages)',
+      computed: 'computeAllPagesArray_(documentInfo.pageCount)',
     },
 
     /** @private {boolean} */
@@ -70,7 +69,7 @@ Polymer({
    * @private
    */
   computeAllPagesArray_: function() {
-    const array = new Array(this.model.documentNumPages);
+    const array = new Array(this.documentInfo.pageCount);
     for (let i = 0; i < array.length; i++)
       array[i] = i + 1;
     return array;
@@ -148,13 +147,13 @@ Polymer({
    */
   onRangeChange_: function() {
     if (this.errorState_ != PagesInputErrorState.NO_ERROR) {
-      this.set('model.pagesInvalid', true);
+      this.setSettingValid('pages', false);
       this.$$('.user-value').classList.add('invalid');
       return;
     }
     this.$$('.user-value').classList.remove('invalid');
-    this.set('model.pagesInvalid', false);
-    this.set('model.pageRange', this.pagesToPrint_);
+    this.setSettingValid('pages', true);
+    this.setSetting('pages', this.pagesToPrint_);
   },
 
   /** @private */
@@ -202,7 +201,7 @@ Polymer({
           loadTimeData.getString('examplePageRangeText'));
     } else {
       return loadTimeData.getStringF(
-          'pageRangeLimitInstructionWithValue', this.model.documentNumPages);
+          'pageRangeLimitInstructionWithValue', this.documentInfo.pageCount);
     }
   },
 

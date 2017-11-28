@@ -5,11 +5,28 @@
 Polymer({
   is: 'print-preview-other-options-settings',
 
+  behaviors: [SettingsBehavior],
+
   properties: {
-    /** @type {!print_preview_new.Model} */
-    model: {
-      type: Object,
-      notify: true,
-    },
+    /** @private {boolean} */
+    duplexValue_: Boolean,
+  },
+
+  observers: [
+    'onInitialized_(settings.duplex.value)',
+    'onDuplexChange_(duplexValue_)',
+  ],
+
+  isInitialized_: false,
+
+  onInitialized_: function() {
+    if (this.isInitialized_)
+      return;
+    this.set('duplexValue_', this.getSetting('duplex').value);
+    this.isInitialized_ = true;
+  },
+
+  onDuplexChange_: function() {
+    this.setSetting('duplex', this.duplexValue_);
   },
 });

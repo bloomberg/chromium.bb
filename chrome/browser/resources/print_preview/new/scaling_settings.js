@@ -5,12 +5,11 @@
 Polymer({
   is: 'print-preview-scaling-settings',
 
+  behaviors: [SettingsBehavior],
+
   properties: {
-    /** @type {!print_preview_new.Model} */
-    model: {
-      type: Object,
-      notify: true,
-    },
+    /** @type {Object} */
+    documentInfo: Object,
 
     /** @private {string} */
     inputString_: String,
@@ -25,25 +24,46 @@ Polymer({
   /** @private {number} */
   fitToPageFlag_: 0,
 
-  observers: ['onScalingChanged_(inputString_, inputValid_)'],
+  /** @private {boolean} */
+  isInitialized_: false,
+
+  observers: [
+    'onInputChanged_(inputString_, inputValid_, documentInfo.isModifiable)',
+    'onInitialized_(settings.scaling.value)'
+  ],
 
   /**
-   * Updates model.scaling and model.scalingInvalid based on the validity
-   * and current value of the scaling input.
+   * Updates the input string when the setting has been initialized.
    * @private
    */
-  onScalingChanged_: function() {
+  onInitialized_: function() {
+    // Avoid loops from setting inputString_ -> onInputChanged_ sets scaling
+    // value -> onInitialized_ sets inputString_
+    if (this.isInitialized_)
+      return;
+    this.isInitialized_ = true;
+    const scaling = this.getSetting('scaling');
+    this.inputString_ = /** @type {string} */ (scaling.value);
+  },
+
+  /**
+   * Updates model.settings.scaling based on the validity and current value of
+   * the scaling input.
+   * @private
+   */
+  onInputChanged_: function() {
     if (this.fitToPageFlag_ > 0) {
       this.fitToPageFlag_--;
-      return;
+    } else {
+      const checkbox = this.$$('.checkbox input[type="checkbox"]');
+      if (checkbox.checked && !this.documentInfo.isModifiable) {
+        checkbox.checked = false;
+      } else if (this.inputValid_) {
+        this.lastValidScaling_ = this.inputString_;
+      }
+      this.setSetting('scaling', this.inputString_);
     }
-    const checkbox = this.$$('.checkbox input[type="checkbox"]');
-    if (checkbox.checked && this.model.isPdfDocument) {
-      checkbox.checked = false;
-    } else if (this.inputValid_) {
-      this.lastValidScaling_ = this.inputString_;
-    }
-    this.set('model.scalingInvalid', !this.inputValid_);
+    this.setSettingValid('scaling', this.inputValid_);
   },
 
   /**
@@ -52,7 +72,7 @@ Polymer({
   onFitToPageChange_: function() {
     if (this.$$('.checkbox input[type="checkbox"]').checked) {
       this.fitToPageFlag_ = 2;
-      this.set('inputString_', this.model.fitToPageScaling);
+      this.set('inputString_', this.documentInfo.fitToPageScaling);
     } else {
       this.set('inputString_', this.lastValidScaling_);
     }

@@ -2,8 +2,10 @@
 
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="checkbox_radio_css.html">
+<link rel="import" href="../data/document_info.html">
 <link rel="import" href="input_css.html">
 <link rel="import" href="print_preview_shared_css.html">
+<link rel="import" href="settings_behavior.html">
 <link rel="import" href="settings_section.html">
 
 <dom-module id="print-preview-pages-settings">
@@ -46,7 +48,7 @@
         </div>
         <span class="hint" aria-live="polite"
             inner-h-t-m-l="[[getHintMessage_(errorState_,
-                                             model.documentNumPages)]]"
+                                             documentInfo.pageCount)]]"
             hidden$="[[hintHidden_(inputString_, errorState_)]]">
         </span>
       </div>

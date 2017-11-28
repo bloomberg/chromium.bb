@@ -6,11 +6,8 @@ Polymer({
   is: 'print-preview-destination-settings',
 
   properties: {
-    /** @type {!print_preview_new.Model} */
-    model: {
-      type: Object,
-      notify: true,
-    },
+    /** @type {!print_preview.Destination} */
+    destination: Object,
 
     /** @private {boolean} */
     loadingDestination_: Boolean,

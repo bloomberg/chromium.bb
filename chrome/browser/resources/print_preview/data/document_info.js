@@ -37,6 +37,12 @@ cr.define('print_preview', function() {
       this.isScalingDisabled_ = false;
 
       /**
+       * Scaling required to fit to page.
+       * @private {number}
+       */
+      this.fitToPageScaling_ = 100;
+
+      /**
        * Margins of the document in points.
        * @private {print_preview.Margins}
        */
@@ -98,6 +104,11 @@ cr.define('print_preview', function() {
     /** @return {boolean} Whether scaling of the document is prohibited. */
     get isScalingDisabled() {
       return this.isScalingDisabled_;
+    }
+
+    /** @return {number} Scaling required to fit to page. */
+    get fitToPageScaling() {
+      return this.fitToPageScaling_;
     }
 
     /** @return {print_preview.Margins} Margins of the document in points. */

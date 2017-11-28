@@ -35,11 +35,6 @@ Polymer({
     hintMessage: String,
   },
 
-  /** @override */
-  ready: function() {
-    this.inputString = this.defaultValue;
-  },
-
   /**
    * @param {!KeyboardEvent} e The keyboard event
    */
