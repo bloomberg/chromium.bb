@@ -16,7 +16,6 @@
 #include "core/paint/SelectionPaintingUtils.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {

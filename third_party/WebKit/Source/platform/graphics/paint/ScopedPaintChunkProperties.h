@@ -11,6 +11,7 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
@@ -19,25 +20,73 @@ class ScopedPaintChunkProperties {
   WTF_MAKE_NONCOPYABLE(ScopedPaintChunkProperties);
 
  public:
-  ScopedPaintChunkProperties(PaintController& paint_controller,
-                             const DisplayItemClient& client,
-                             DisplayItem::Type type,
-                             const PaintChunkProperties& properties)
+  // Use new PaintChunkProperties for the scope.
+  ScopedPaintChunkProperties(
+      PaintController& paint_controller,
+      const PaintChunkProperties& properties,
+      const DisplayItemClient& client,
+      DisplayItem::Type type = DisplayItem::kUninitializedType)
       : paint_controller_(paint_controller),
         previous_properties_(paint_controller.CurrentPaintChunkProperties()) {
-    PaintChunk::Id id(client, type);
-    paint_controller_.UpdateCurrentPaintChunkProperties(&id, properties);
+    paint_controller_.UpdateCurrentPaintChunkProperties(
+        PaintChunk::Id(client, type), properties);
   }
 
-  // Omits the type parameter, in case that the client creates only one
-  // PaintChunkProperties node during each painting.
-  ScopedPaintChunkProperties(PaintController& paint_controller,
-                             const DisplayItemClient& client,
-                             const PaintChunkProperties& properties)
-      : ScopedPaintChunkProperties(paint_controller,
-                                   client,
-                                   DisplayItem::kUninitializedType,
-                                   properties) {}
+  // Use new PropertyTreeState, and keep the current backface_hidden.
+  ScopedPaintChunkProperties(
+      PaintController& paint_controller,
+      const PropertyTreeState& state,
+      const DisplayItemClient& client,
+      DisplayItem::Type type = DisplayItem::kUninitializedType)
+      : paint_controller_(paint_controller),
+        previous_properties_(paint_controller.CurrentPaintChunkProperties()) {
+    PaintChunkProperties properties(state);
+    properties.backface_hidden = previous_properties_.backface_hidden;
+    paint_controller_.UpdateCurrentPaintChunkProperties(
+        PaintChunk::Id(client, type), properties);
+  }
+
+  // Use new transform state, and keep the current other properties.
+  ScopedPaintChunkProperties(
+      PaintController& paint_controller,
+      scoped_refptr<const TransformPaintPropertyNode> transform,
+      const DisplayItemClient& client,
+      DisplayItem::Type type = DisplayItem::kUninitializedType)
+      : paint_controller_(paint_controller),
+        previous_properties_(paint_controller.CurrentPaintChunkProperties()) {
+    PaintChunkProperties properties(previous_properties_);
+    properties.property_tree_state.SetTransform(std::move(transform));
+    paint_controller_.UpdateCurrentPaintChunkProperties(
+        PaintChunk::Id(client, type), properties);
+  }
+
+  // Use new clip state, and keep the current other properties.
+  ScopedPaintChunkProperties(
+      PaintController& paint_controller,
+      scoped_refptr<const ClipPaintPropertyNode> clip,
+      const DisplayItemClient& client,
+      DisplayItem::Type type = DisplayItem::kUninitializedType)
+      : paint_controller_(paint_controller),
+        previous_properties_(paint_controller.CurrentPaintChunkProperties()) {
+    PaintChunkProperties properties(previous_properties_);
+    properties.property_tree_state.SetClip(std::move(clip));
+    paint_controller_.UpdateCurrentPaintChunkProperties(
+        PaintChunk::Id(client, type), properties);
+  }
+
+  // Use new effect state, and keep the current other properties.
+  ScopedPaintChunkProperties(
+      PaintController& paint_controller,
+      scoped_refptr<const EffectPaintPropertyNode> effect,
+      const DisplayItemClient& client,
+      DisplayItem::Type type = DisplayItem::kUninitializedType)
+      : paint_controller_(paint_controller),
+        previous_properties_(paint_controller.CurrentPaintChunkProperties()) {
+    PaintChunkProperties properties(previous_properties_);
+    properties.property_tree_state.SetEffect(std::move(effect));
+    paint_controller_.UpdateCurrentPaintChunkProperties(
+        PaintChunk::Id(client, type), properties);
+  }
 
   ~ScopedPaintChunkProperties() {
     // We should not return to the previous id, because that may cause a new
@@ -45,7 +94,7 @@ class ScopedPaintChunkProperties {
     // ScopedPaintChunkProperties. The painter should create another scope of
     // paint properties with new id, or the new chunk will use the id of the
     // first display item as its id.
-    paint_controller_.UpdateCurrentPaintChunkProperties(nullptr,
+    paint_controller_.UpdateCurrentPaintChunkProperties(WTF::nullopt,
                                                         previous_properties_);
   }
 
