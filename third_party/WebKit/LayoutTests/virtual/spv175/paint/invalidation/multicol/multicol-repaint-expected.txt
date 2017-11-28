@@ -1,0 +1,120 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV class='container'",
+          "rect": [8, 8, 402, 102],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [209, 15, 325, 150],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [9, 0, 200, 67],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [9, 0, 200, 67],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [209, 15, 75, 150],
+          "reason": "chunk uncacheable"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutMultiColumnFlowThread (anonymous)",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutMultiColumnFlowThread (anonymous)",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutInline SPAN id='a'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutInline SPAN id='a'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "appeared"
+    },
+    {
+      "object": "InlineTextBox 'XXXXXX'",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "appeared"
+    },
+    {
+      "object": "InlineTextBox 'XXXXXX'",
+      "reason": "appeared"
+    }
+  ]
+}
+
