@@ -58,6 +58,9 @@ public class SigninPromoController {
     private final String mImpressionUserActionName;
     private final String mImpressionWithAccountUserActionName;
     private final String mImpressionWithNoAccountUserActionName;
+    private final String mSigninWithDefaultUserActionName;
+    private final String mSigninNotDefaultUserActionName;
+    private final String mSigninNewAccountUserActionName;
     private final @Nullable String mImpressionsTilDismissHistogramName;
     private final @Nullable String mImpressionsTilSigninButtonsHistogramName;
     private final @Nullable String mImpressionsTilXButtonHistogramName;
@@ -112,6 +115,9 @@ public class SigninPromoController {
                         "Signin_ImpressionWithAccount_FromBookmarkManager";
                 mImpressionWithNoAccountUserActionName =
                         "Signin_ImpressionWithNoAccount_FromBookmarkManager";
+                mSigninWithDefaultUserActionName = "Signin_SigninWithDefault_FromBookmarkManager";
+                mSigninNotDefaultUserActionName = "Signin_SigninNotDefault_FromBookmarkManager";
+                mSigninNewAccountUserActionName = "Signin_SigninNewAccount_FromBookmarkManager";
                 mImpressionsTilDismissHistogramName =
                         "MobileSignInPromo.BookmarkManager.ImpressionsTilDismiss";
                 mImpressionsTilSigninButtonsHistogramName =
@@ -128,6 +134,12 @@ public class SigninPromoController {
                         "Signin_ImpressionWithAccount_FromNTPContentSuggestions";
                 mImpressionWithNoAccountUserActionName =
                         "Signin_ImpressionWithNoAccount_FromNTPContentSuggestions";
+                mSigninWithDefaultUserActionName =
+                        "Signin_SigninWithDefault_FromNTPContentSuggestions";
+                mSigninNotDefaultUserActionName =
+                        "Signin_SigninNotDefault_FromNTPContentSuggestions";
+                mSigninNewAccountUserActionName =
+                        "Signin_SigninNewAccount_FromNTPContentSuggestions";
                 mImpressionsTilDismissHistogramName = null;
                 mImpressionsTilSigninButtonsHistogramName = null;
                 mImpressionsTilXButtonHistogramName = null;
@@ -141,6 +153,9 @@ public class SigninPromoController {
                         "Signin_ImpressionWithAccount_FromRecentTabs";
                 mImpressionWithNoAccountUserActionName =
                         "Signin_ImpressionWithNoAccount_FromRecentTabs";
+                mSigninWithDefaultUserActionName = "Signin_SigninWithDefault_FromRecentTabs";
+                mSigninNotDefaultUserActionName = "Signin_SigninNotDefault_FromRecentTabs";
+                mSigninNewAccountUserActionName = "Signin_SigninNewAccount_FromRecentTabs";
                 mImpressionsTilDismissHistogramName = null;
                 mImpressionsTilSigninButtonsHistogramName = null;
                 mImpressionsTilXButtonHistogramName = null;
@@ -150,6 +165,9 @@ public class SigninPromoController {
                 mImpressionCountName = SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS;
                 mImpressionUserActionName = "Signin_Impression_FromSettings";
                 mImpressionWithAccountUserActionName = "Signin_ImpressionWithAccount_FromSettings";
+                mSigninWithDefaultUserActionName = "Signin_SigninWithDefault_FromSettings";
+                mSigninNotDefaultUserActionName = "Signin_SigninNotDefault_FromSettings";
+                mSigninNewAccountUserActionName = "Signin_SigninNewAccount_FromSettings";
                 mImpressionWithNoAccountUserActionName =
                         "Signin_ImpressionWithNoAccount_FromSettings";
                 mImpressionsTilDismissHistogramName =
@@ -241,11 +259,7 @@ public class SigninPromoController {
         setImageSize(context, view, R.dimen.signin_promo_cold_state_image_size);
 
         view.getSigninButton().setText(R.string.sign_in_to_chrome);
-        view.getSigninButton().setOnClickListener(promoView -> {
-            recordSigninButtonUsed();
-            context.startActivity(AccountSigninActivity.createIntentForAddAccountSigninFlow(
-                    context, mAccessPoint, true));
-        });
+        view.getSigninButton().setOnClickListener(v -> signinWithNewAccount(context));
 
         view.getChooseAccountButton().setVisibility(View.GONE);
     }
@@ -258,26 +272,39 @@ public class SigninPromoController {
         String signinButtonText = context.getString(
                 R.string.signin_promo_continue_as, mProfileData.getFullNameOrEmail());
         view.getSigninButton().setText(signinButtonText);
-        view.getSigninButton().setOnClickListener(promoView -> {
-            recordSigninButtonUsed();
-            context.startActivity(AccountSigninActivity.createIntentForConfirmationOnlySigninFlow(
-                    context, mAccessPoint, mProfileData.getAccountName(), true, true));
-        });
+        view.getSigninButton().setOnClickListener(v -> signinWithDefaultAccount(context));
 
         String chooseAccountButtonText = context.getString(
                 R.string.signin_promo_choose_account, mProfileData.getAccountName());
         view.getChooseAccountButton().setText(chooseAccountButtonText);
-        view.getChooseAccountButton().setOnClickListener(promoView -> {
-            recordSigninButtonUsed();
-            context.startActivity(AccountSigninActivity.createIntentForDefaultSigninFlow(
-                    context, mAccessPoint, true));
-        });
+        view.getChooseAccountButton().setOnClickListener(v -> signinWithNotDefaultAccount(context));
         view.getChooseAccountButton().setVisibility(View.VISIBLE);
     }
 
     private int getNumImpressions() {
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         return preferences.getInt(mImpressionCountName, 0);
+    }
+
+    private void signinWithNewAccount(Context context) {
+        recordSigninButtonUsed();
+        RecordUserAction.record(mSigninNewAccountUserActionName);
+        context.startActivity(AccountSigninActivity.createIntentForAddAccountSigninFlow(
+                context, mAccessPoint, true));
+    }
+
+    private void signinWithDefaultAccount(Context context) {
+        recordSigninButtonUsed();
+        RecordUserAction.record(mSigninWithDefaultUserActionName);
+        context.startActivity(AccountSigninActivity.createIntentForConfirmationOnlySigninFlow(
+                context, mAccessPoint, mProfileData.getAccountName(), true, true));
+    }
+
+    private void signinWithNotDefaultAccount(Context context) {
+        recordSigninButtonUsed();
+        RecordUserAction.record(mSigninNotDefaultUserActionName);
+        context.startActivity(AccountSigninActivity.createIntentForDefaultSigninFlow(
+                context, mAccessPoint, true));
     }
 
     private void recordSigninButtonUsed() {
