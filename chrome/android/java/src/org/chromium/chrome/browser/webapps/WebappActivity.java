@@ -18,7 +18,9 @@ import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
+import android.support.customtabs.TrustedWebUtils;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnSystemUiVisibilityChangeListener;
@@ -41,6 +43,8 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.BrowserSessionDataProvider;
+import org.chromium.chrome.browser.browserservices.OriginVerifier;
+import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabLayoutManager;
@@ -115,7 +119,11 @@ public class WebappActivity extends SingleTabActivity {
 
     private TrustedWebContentProvider mTrustedWebContentProvider;
 
-    private class TrustedWebContentProvider implements BrowserSessionContentHandler {
+    private class TrustedWebContentProvider
+            implements BrowserSessionContentHandler, OriginVerificationListener {
+        private boolean mVerificationFailed;
+        private OriginVerifier mOriginVerifier;
+
         @Override
         public void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {}
 
@@ -146,6 +154,32 @@ public class WebappActivity extends SingleTabActivity {
 
             return getActivityTab().getUrl();
         }
+
+        /**
+         * Verify the Digital Asset Links declared by the Android native client with the currently
+         * loading origin. See {@link TrustedWebContentProvider#didVerificationFail()} for the
+         * result.
+         */
+        void verifyRelationship() {
+            mOriginVerifier = new OriginVerifier(mTrustedWebContentProvider,
+                    getNativeClientPackageName(), CustomTabsService.RELATION_HANDLE_ALL_URLS);
+            mOriginVerifier.start(mWebappInfo.uri());
+        }
+
+        @Override
+        public void onOriginVerified(String packageName, Uri origin, boolean verified) {
+            mVerificationFailed = !verified;
+            mOriginVerifier.cleanUp();
+            mOriginVerifier = null;
+            if (mVerificationFailed) getFullscreenManager().setPositionsForTabToNonFullscreen();
+        }
+
+        /**
+         * @return Whether origin verification for the corresponding client failed.
+         */
+        boolean didVerificationFail() {
+            return mVerificationFailed;
+        }
     }
 
     /** Initialization-on-demand holder. This exists for thread-safe lazy initialization. */
@@ -164,12 +198,8 @@ public class WebappActivity extends SingleTabActivity {
     public WebappActivity() {
         mWebappInfo = createWebappInfo(null);
         mDirectoryManager = new WebappDirectoryManager();
-        mSplashController = createWebappSplashScreenController();
+        mSplashController = new WebappSplashScreenController();
         mNotificationManager = new WebappActionsNotificationManager(this);
-    }
-
-    protected WebappSplashScreenController createWebappSplashScreenController() {
-        return new WebappSplashScreenController();
     }
 
     @Override
@@ -218,8 +248,7 @@ public class WebappActivity extends SingleTabActivity {
 
     @Override
     protected boolean shouldPreferLightweightFre(Intent intent) {
-        return intent.getBooleanExtra(
-                BrowserSessionDataProvider.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, false);
+        return intent.getBooleanExtra(TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, false);
     }
 
     @Override
@@ -268,9 +297,10 @@ public class WebappActivity extends SingleTabActivity {
         ScreenOrientationProvider.lockOrientation(
                 getWindowAndroid(), (byte) mWebappInfo.orientation());
 
-        // TODO(yusufo): Consider not initializing these for WebAPKs.
-        mBrowserSessionDataProvider = new BrowserSessionDataProvider(intent);
-        mTrustedWebContentProvider = new TrustedWebContentProvider();
+        if (intent.hasExtra(TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY)) {
+            mBrowserSessionDataProvider = new BrowserSessionDataProvider(intent);
+            mTrustedWebContentProvider = new TrustedWebContentProvider();
+        }
 
         // When turning on TalkBack on Android, hitting app switcher to bring a WebappActivity to
         // front will speak "Web App", which is the label of WebappActivity. Therefore, we set title
@@ -516,6 +546,7 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     public void postInflationStartup() {
         initializeWebappData();
+        if (getBrowserSession() != null) mTrustedWebContentProvider.verifyRelationship();
 
         super.postInflationStartup();
     }
@@ -549,7 +580,7 @@ public class WebappActivity extends SingleTabActivity {
         }
 
         ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
-        mSplashController.showSplashScreen(contentView, mWebappInfo);
+        mSplashController.showSplashScreen(getActivityType(), contentView, mWebappInfo);
     }
 
     protected void updateStorage(WebappDataStorage storage) {
@@ -715,7 +746,8 @@ public class WebappActivity extends SingleTabActivity {
      *         through Digital Asset Links (DAL) or browser level confirmation.
      */
     protected boolean isVerified() {
-        return mTrustedWebContentProvider.getSession() != null;
+        return mTrustedWebContentProvider != null
+                && mTrustedWebContentProvider.getSession() != null;
     }
 
     /**
@@ -886,5 +918,15 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     protected boolean isContextualSearchAllowed() {
         return false;
+    }
+
+    /**
+     * @return Whether origin verification for the corresponding client failed. Since the
+     *         verification happens async, this being false during startup may mean the verification
+     *         hasn't finished yet.
+     */
+    boolean didVerificationFail() {
+        if (!isVerified()) return false;
+        return mTrustedWebContentProvider.didVerificationFail();
     }
 }

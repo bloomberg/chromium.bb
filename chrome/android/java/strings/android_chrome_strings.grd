@@ -2998,11 +2998,11 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_WEBAPP_TAP_TO_COPY_URL" desc="Message on the notification that indicates that taping it will copy a Web App's URL into the clipboard.">
         Tap to copy the URL for this app
       </message>
+      <message name="IDS_WEBAPP_TWA_OFFLINE_DIALOG" desc="The message on the dialog shown when launching a Webapp or TWA needs network connection.">
+        To use <ph name="APP_NAME">%1$s<ex>PWA List</ex></ph>, please connect to the internet.
+      </message>
       <message name="IDS_WEBAPK_OFFLINE_DIALOG" desc="The message on the dialog shown when launching a WebAPK needs network connection.">
         To use <ph name="APP_NAME">%1$s<ex>PWA List</ex></ph> for the first time, please connect to the internet.
-      </message>
-      <message name="IDS_WEBAPK_OFFLINE_DIALOG_QUIT_BUTTON" desc="The text on the quit button on the dialog shown when launching a WebAPK needs network connection.">
-        OK
       </message>
 
       <!-- Keyboard shortcuts in Android N-->

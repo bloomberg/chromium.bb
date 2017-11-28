@@ -10,15 +10,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.metrics.WebApkUma;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content.browser.ChildProcessCreationParams;
-import org.chromium.net.NetError;
-import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.concurrent.TimeUnit;
@@ -42,95 +38,9 @@ public class WebApkActivity extends WebappActivity {
 
     private static final String TAG = "cr_WebApkActivity";
 
-    /** A {@link WebappSplashScreenController} that also handles WebAPK logic. */
-    private class WebApkSplashScreenController extends WebappSplashScreenController {
-        // TODO(yusufo): Move this to be shared with Trusted Web Activity.
-        /** The error code of the navigation. */
-        private int mErrorCode;
-
-        private WebApkOfflineDialog mOfflineDialog;
-
-        /** Indicates whether reloading is allowed. */
-        private boolean mAllowReloads;
-
-        @Override
-        public void onDidFinishNavigation(final Tab tab, final String url, boolean isInMainFrame,
-                boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-                boolean isFragmentNavigation, Integer pageTransition, int errorCode,
-                int httpStatusCode) {
-            super.onDidFinishNavigation(tab, url, isInMainFrame, isErrorPage, hasCommitted,
-                    isSameDocument, isFragmentNavigation, pageTransition, errorCode,
-                    httpStatusCode);
-            mErrorCode = errorCode;
-
-            switch (mErrorCode) {
-                case NetError.ERR_NETWORK_CHANGED:
-                    onNetworkChanged(tab);
-                    break;
-                case NetError.ERR_INTERNET_DISCONNECTED:
-                    onNetworkDisconnected(tab);
-                    break;
-                default:
-                    if (mOfflineDialog != null) {
-                        mOfflineDialog.cancel();
-                        mOfflineDialog = null;
-                    }
-                    break;
-            }
-        }
-
-        @Override
-        protected boolean canHideSplashScreen() {
-            return mErrorCode != NetError.ERR_INTERNET_DISCONNECTED
-                    && mErrorCode != NetError.ERR_NETWORK_CHANGED;
-        }
-
-        private void onNetworkChanged(Tab tab) {
-            if (!mAllowReloads) return;
-
-            // It is possible that we get {@link NetError.ERR_NETWORK_CHANGED} during the first
-            // reload after the device is online. The navigation will fail until the next auto
-            // reload fired by {@link NetErrorHelperCore}. We call reload explicitly to reduce the
-            // waiting time.
-            tab.reloadIgnoringCache();
-            mAllowReloads = false;
-        }
-
-        private void onNetworkDisconnected(final Tab tab) {
-            if (mOfflineDialog != null) return;
-
-            final NetworkChangeNotifier.ConnectionTypeObserver observer =
-                    new NetworkChangeNotifier.ConnectionTypeObserver() {
-                        @Override
-                        public void onConnectionTypeChanged(int connectionType) {
-                            if (!NetworkChangeNotifier.isOnline()) return;
-
-                            NetworkChangeNotifier.removeConnectionTypeObserver(this);
-                            tab.reloadIgnoringCache();
-                            // One more reload is allowed after the network connection is back.
-                            mAllowReloads = true;
-                        }
-                    };
-
-            NetworkChangeNotifier.addConnectionTypeObserver(observer);
-            mOfflineDialog = new WebApkOfflineDialog();
-            mOfflineDialog.show(WebApkActivity.this, new WebApkOfflineDialog.DialogListener() {
-                @Override
-                public void onQuit() {
-                    ApiCompatibilityUtils.finishAndRemoveTask(WebApkActivity.this);
-                }
-            }, mWebappInfo.name());
-        }
-    }
-
     @Override
     protected boolean isVerified() {
         return true;
-    }
-
-    @Override
-    protected WebappSplashScreenController createWebappSplashScreenController() {
-        return new WebApkSplashScreenController();
     }
 
     @Override

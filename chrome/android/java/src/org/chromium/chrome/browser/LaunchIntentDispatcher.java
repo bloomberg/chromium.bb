@@ -18,6 +18,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsSessionToken;
+import android.support.customtabs.TrustedWebUtils;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
@@ -26,7 +27,6 @@ import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
-import org.chromium.chrome.browser.browserservices.BrowserSessionDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
@@ -239,7 +239,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         // Check if we should launch a Custom Tab.
         if (mIsCustomTabIntent) {
             if (!mIntent.getBooleanExtra(
-                        BrowserSessionDataProvider.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, false)
+                        TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, false)
                     || !launchTrustedWebActivity()) {
                 launchCustomTabActivity();
             }

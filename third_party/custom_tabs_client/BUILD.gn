@@ -55,6 +55,7 @@ android_library("custom_tabs_support_java") {
     "src/customtabs/src/android/support/customtabs/CustomTabsSessionToken.java",
     "src/customtabs/src/android/support/customtabs/PostMessageService.java",
     "src/customtabs/src/android/support/customtabs/PostMessageServiceConnection.java",
+    "src/customtabs/src/android/support/customtabs/TrustedWebUtils.java",
   ]
   deps = [
     "//third_party/android_tools:android_support_annotations_java",

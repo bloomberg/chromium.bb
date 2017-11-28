@@ -1262,7 +1262,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webapps/WebApkInstaller.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkInstallService.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkManagedActivity.java",
-  "java/src/org/chromium/chrome/browser/webapps/WebApkOfflineDialog.java",
+  "java/src/org/chromium/chrome/browser/webapps/WebappOfflineDialog.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkServiceClient.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkUpdateDataFetcher.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkUpdateManager.java",
