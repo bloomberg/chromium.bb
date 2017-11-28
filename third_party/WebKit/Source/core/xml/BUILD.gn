@@ -45,8 +45,6 @@ blink_core_sources("xml") {
     "XPathValue.h",
     "XPathVariableReference.cpp",
     "XPathVariableReference.h",
-    "XSLImportRule.cpp",
-    "XSLImportRule.h",
     "XSLStyleSheet.h",
     "XSLStyleSheetLibxslt.cpp",
     "XSLTExtensions.cpp",
