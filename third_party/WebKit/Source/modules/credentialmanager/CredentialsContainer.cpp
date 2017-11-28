@@ -192,8 +192,13 @@ class RequestCallbacks : public WebCredentialManagerClient::RequestCallbacks {
 
     std::unique_ptr<WebCredential> credential =
         WTF::WrapUnique(web_credential.release());
-    if (!credential || !frame) {
+    if (!frame) {
       resolver_->Resolve();
+      return;
+    }
+
+    if (!credential) {
+      resolver_->Resolve(v8::Null(resolver_->GetScriptState()->GetIsolate()));
       return;
     }
 
@@ -236,14 +241,14 @@ class PublicKeyCallbacks : public WebAuthenticationClient::PublicKeyCallbacks {
     Frame* frame = ToDocument(context)->GetFrame();
     SECURITY_CHECK(!frame || frame == frame->Tree().Top());
 
-    if (!credential || !frame) {
+    if (!frame) {
       resolver_->Resolve();
       return;
     }
 
-    if (credential->client_data_json.IsEmpty() ||
+    if (!credential || credential->client_data_json.IsEmpty() ||
         credential->response->attestation_object.IsEmpty()) {
-      resolver_->Resolve();
+      resolver_->Resolve(v8::Null(resolver_->GetScriptState()->GetIsolate()));
       return;
     }
 
