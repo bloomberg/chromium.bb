@@ -155,15 +155,6 @@ std::string DiceAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
   return std::string();
 }
 
-bool DiceAccountReconcilorDelegate::
-    ShouldRevokeAllSecondaryTokensBeforeReconcile(
-        const std::vector<gaia::ListedAccount>& gaia_accounts) {
-  // During the Dice migration step, before Dice is actually enabled, chrome
-  // tokens must be cleared when the cookies are cleared.
-  return signin::IsDicePrepareMigrationEnabled() &&
-         !signin::IsDiceEnabledForProfile(user_prefs_) && gaia_accounts.empty();
-}
-
 void DiceAccountReconcilorDelegate::OnReconcileFinished(
     const std::string& first_account,
     bool reconcile_is_noop) {

@@ -125,9 +125,6 @@ class AccountReconcilor : public KeyedService,
                            DiceNoMigrationAfterReconcile);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            DiceReconcileReuseGaiaFirstAccount);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
-                           MigrationClearSecondaryTokens);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, MigrationClearAllTokens);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, TokensNotLoaded);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            StartReconcileCookiesDisabled);
@@ -183,17 +180,18 @@ class AccountReconcilor : public KeyedService,
   // Used during periodic reconciliation.
   void StartReconcile();
   // |gaia_accounts| are the accounts in the Gaia cookie.
-  void FinishReconcile(const std::vector<std::string>& chrome_accounts,
-                       std::vector<gaia::ListedAccount>&& gaia_accounts);
+  void FinishReconcile(std::vector<gaia::ListedAccount>&& gaia_accounts);
   void AbortReconcile();
   void CalculateIfReconcileIsDone();
   void ScheduleStartReconcileIfChromeAccountsChanged();
-  // Revokes tokens for all accounts in chrome_accounts but primary_account_.
-  void RevokeAllSecondaryTokens(
-      const std::vector<std::string>& chrome_accounts);
+  // Revokes tokens for all accounts in chrome_accounts_ but primary_account_.
+  void RevokeAllSecondaryTokens();
 
   // Returns the list of valid accounts from the TokenService.
-  std::vector<std::string> LoadValidAccountsFromTokenService() const;
+  // The primary account is returned in |out_primary_account| if any.
+  std::vector<std::string> LoadValidAccountsFromTokenService(
+      std::string* out_primary_account,
+      bool* out_is_primary_account_valid) const;
 
   // Note internally that this |account_id| is added to the cookie jar.
   bool MarkAccountAsAddedToCookie(const std::string& account_id);
@@ -264,6 +262,7 @@ class AccountReconcilor : public KeyedService,
   // Used during reconcile action.
   // These members are used to validate the tokens in OAuth2TokenService.
   std::string primary_account_;
+  std::vector<std::string> chrome_accounts_;
   std::vector<std::string> add_to_cookie_;
   bool chrome_accounts_changed_;
 
