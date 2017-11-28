@@ -24,8 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#the-canvas-element
-
+// https://html.spec.whatwg.org/multipage/canvas.html#the-canvas-element
 interface HTMLCanvasElement : HTMLElement
 {
     // Note: Due to dependecies on modules, getContext is defined in a partial
@@ -41,3 +40,6 @@ interface HTMLCanvasElement : HTMLElement
 
     [MeasureAs=CanvasToBlob, RaisesException] void toBlob(BlobCallback _callback, optional DOMString type = null, optional any arguments);
 };
+
+// https://html.spec.whatwg.org/multipage/canvas.html#blobcallback
+callback BlobCallback = void (Blob? blob);

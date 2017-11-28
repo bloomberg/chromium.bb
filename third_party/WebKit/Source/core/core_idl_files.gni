@@ -168,7 +168,6 @@ core_idl_files =
                     "events/UIEvent.idl",
                     "events/WheelEvent.idl",
                     "fileapi/Blob.idl",
-                    "fileapi/BlobCallback.idl",
                     "fileapi/File.idl",
                     "fileapi/FileList.idl",
                     "fileapi/FileReader.idl",
