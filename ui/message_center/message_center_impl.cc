@@ -124,10 +124,12 @@ void MessageCenterImpl::OnBlockingStateChanged(NotificationBlocker* blocker) {
   visible_notifications_ =
       notification_list_->GetVisibleNotifications(blockers_);
 
-  for (const auto* notification : blocked) {
+  {
     internal::ScopedNotificationsIterationLock lock(this);
-    for (auto& observer : observer_list_)
-      observer.OnNotificationUpdated(notification->id());
+    for (const auto* notification : blocked) {
+      for (auto& observer : observer_list_)
+        observer.OnNotificationUpdated(notification->id());
+    }
   }
   for (auto& observer : observer_list_)
     observer.OnBlockingStateChanged(blocker);
