@@ -9,7 +9,8 @@ import "third_party/WebKit/public/platform/modules/permissions/permission_status
 // Service through which Blink can request notifications to be shown, closed or
 // retrieved from the embedder.
 interface NotificationService {
-  // Synchronously retrieves the permission status for |origin|. Required to
-  // be synchronous due to the Notification.permission JavaScript getter.
-  [Sync] GetPermissionStatus(string origin) => (PermissionStatus status);
+  // Synchronously retrieves the permission status for the origin associated
+  // with the interface connection. Required to be synchronous due to the
+  // Notification.permission JavaScript getter.
+  [Sync] GetPermissionStatus() => (PermissionStatus status);
 };

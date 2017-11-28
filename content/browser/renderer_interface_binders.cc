@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/dedicated_worker/dedicated_worker_host.h"
+#include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -27,6 +28,7 @@
 #include "services/shape_detection/public/interfaces/constants.mojom.h"
 #include "services/shape_detection/public/interfaces/facedetection_provider.mojom.h"
 #include "services/shape_detection/public/interfaces/textdetection.mojom.h"
+#include "third_party/WebKit/public/platform/modules/notifications/notification_service.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -123,6 +125,13 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
       }));
   parameterized_binder_registry_.AddInterface(
       base::Bind(&CreateDedicatedWorkerHostFactory));
+  parameterized_binder_registry_.AddInterface(
+      base::Bind([](blink::mojom::NotificationServiceRequest request,
+                    RenderProcessHost* host, const url::Origin& origin) {
+        static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
+            ->GetPlatformNotificationContext()
+            ->CreateService(host->GetID(), origin, std::move(request));
+      }));
 }
 
 RendererInterfaceBinders& GetRendererInterfaceBinders() {
