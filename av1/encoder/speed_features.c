@@ -519,11 +519,10 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
     cpi->find_fractional_mv_step = av1_find_best_sub_pixel_tree_pruned_evenmore;
   }
 
-#if !CONFIG_AOM_QM
   x->optimize = sf->optimize_coefficients == 1 && oxcf->pass != 1;
-#else
+#if CONFIG_AOM_QM
   // FIXME: trellis not very efficient for quantisation matrices
-  x->optimize = 0;
+  if (cm->using_qmatrix) x->optimize = 0;
 #endif
 
   x->min_partition_size = sf->default_min_partition_size;
