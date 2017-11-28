@@ -14,7 +14,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
-import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
+import org.chromium.chrome.browser.compositor.animation.FloatProperty;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
@@ -34,9 +34,7 @@ import java.util.List;
  * {@link StripLayoutTab} is used to keep track of the strip position and rendering information for
  * a particular tab so it can draw itself onto the GL canvas.
  */
-public class StripLayoutTab
-        implements ChromeAnimation.Animatable<StripLayoutTab.Property>, VirtualView {
-
+public class StripLayoutTab implements VirtualView {
     /** An observer interface for StripLayoutTab. */
     public interface Observer {
         /** @param visible Whether the StripLayoutTab is visible. */
@@ -61,15 +59,47 @@ public class StripLayoutTab
         void handleCloseButtonClick(StripLayoutTab tab, long time);
     }
 
-    /**
-     * Animatable properties that can be used with a {@link ChromeAnimation.Animatable} on a
-     * {@link StripLayoutTab}.
-     */
-    enum Property {
-        X_OFFSET,
-        Y_OFFSET,
-        WIDTH,
-    }
+    /** A property for animations to use for changing the X offset of the tab. */
+    public static final FloatProperty<StripLayoutTab> X_OFFSET =
+            new FloatProperty<StripLayoutTab>("offsetX") {
+                @Override
+                public void setValue(StripLayoutTab object, float value) {
+                    object.setOffsetX(value);
+                }
+
+                @Override
+                public Float get(StripLayoutTab object) {
+                    return object.getOffsetX();
+                }
+            };
+
+    /** A property for animations to use for changing the Y offset of the tab. */
+    public static final FloatProperty<StripLayoutTab> Y_OFFSET =
+            new FloatProperty<StripLayoutTab>("offsetY") {
+                @Override
+                public void setValue(StripLayoutTab object, float value) {
+                    object.setOffsetY(value);
+                }
+
+                @Override
+                public Float get(StripLayoutTab object) {
+                    return object.getOffsetY();
+                }
+            };
+
+    /** A property for animations to use for changing the width of the tab. */
+    public static final FloatProperty<StripLayoutTab> WIDTH =
+            new FloatProperty<StripLayoutTab>("width") {
+                @Override
+                public void setValue(StripLayoutTab object, float value) {
+                    object.setWidth(value);
+                }
+
+                @Override
+                public Float get(StripLayoutTab object) {
+                    return object.getHeight();
+                }
+            };
 
     // Behavior Constants
     private static final float VISIBILITY_FADE_CLOSE_BUTTON_PERCENTAGE = 0.99f;
@@ -513,24 +543,6 @@ public class StripLayoutTab
     public void finishAnimation() {
         if (mButtonOpacityAnimation != null) mButtonOpacityAnimation.end();
     }
-
-    @Override
-    public void setProperty(Property prop, float val) {
-        switch (prop) {
-            case X_OFFSET:
-                setOffsetX(val);
-                break;
-            case Y_OFFSET:
-                setOffsetY(val);
-                break;
-            case WIDTH:
-                setWidth(val);
-                break;
-        }
-    }
-
-    @Override
-    public void onPropertyAnimationFinished(Property prop) {}
 
     private void resetCloseRect() {
         RectF closeRect = getCloseRect();
