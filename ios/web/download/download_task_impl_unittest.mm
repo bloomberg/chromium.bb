@@ -460,6 +460,32 @@ TEST_F(DownloadTaskImplTest, FileDeletion) {
   EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
+// Tests changing MIME type during the download.
+TEST_F(DownloadTaskImplTest, MimeTypeChange) {
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  CRWFakeNSURLSessionTask* session_task = Start();
+  ASSERT_TRUE(session_task);
+  testing::Mock::VerifyAndClearExpectations(&task_observer_);
+
+  // Download has finished with a different MIME type.
+  ASSERT_EQ(kMimeType, task_->GetMimeType());
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  const char kOtherMimeType[] = "application/foo";
+  session_task.response =
+      [[NSURLResponse alloc] initWithURL:[NSURL URLWithString:@(kUrl)]
+                                MIMEType:@(kOtherMimeType)
+                   expectedContentLength:0
+                        textEncodingName:nil];
+  SimulateDownloadCompletion(session_task);
+  testing::Mock::VerifyAndClearExpectations(&task_observer_);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
+    return task_->IsDone();
+  }));
+  EXPECT_EQ(kOtherMimeType, task_->GetMimeType());
+
+  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
+}
+
 // Tests that destructing DownloadTaskImpl calls -[NSURLSessionDataTask cancel]
 // and OnTaskDestroyed().
 TEST_F(DownloadTaskImplTest, DownloadTaskDestruction) {
