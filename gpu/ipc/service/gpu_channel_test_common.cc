@@ -28,6 +28,7 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
 
   // GpuChannelManagerDelegate implementation:
   void SetActiveURL(const GURL& url) override {}
+  void DidCreateContextSuccessfully() override {}
   void DidCreateOffscreenContext(const GURL& active_url) override {}
   void DidDestroyChannel(int client_id) override {}
   void DidDestroyOffscreenContext(const GURL& active_url) override {}

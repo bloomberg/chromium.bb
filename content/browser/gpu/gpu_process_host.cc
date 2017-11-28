@@ -773,10 +773,6 @@ void GpuProcessHost::SendDestroyingVideoSurface(int surface_id,
       surface_id, base::Bind(&GpuProcessHost::OnDestroyingVideoSurfaceAck,
                              weak_ptr_factory_.GetWeakPtr()));
 }
-
-void GpuProcessHost::DidSuccessfullyInitializeContext() {
-  gpu_recent_crash_count_ = 0;
-}
 #endif
 
 void GpuProcessHost::OnChannelEstablished(
@@ -885,6 +881,15 @@ void GpuProcessHost::DidFailInitialize() {
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
   gpu_data_manager->OnGpuProcessInitFailure();
   RunRequestGPUInfoCallbacks(gpu_data_manager->GetGPUInfo());
+}
+
+void GpuProcessHost::DidCreateContextSuccessfully() {
+#if defined(OS_ANDROID)
+  // Android may kill the GPU process to free memory, especially when the app
+  // is the background, so Android cannot have a hard limit on GPU starts.
+  // Reset crash count on Android when context creation succeeds.
+  gpu_recent_crash_count_ = 0;
+#endif
 }
 
 void GpuProcessHost::DidCreateOffscreenContext(const GURL& url) {
