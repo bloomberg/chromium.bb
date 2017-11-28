@@ -57,7 +57,7 @@ PLATFORM_EXPORT void Vsmul(const float* source_p,
 
 // Vector add:
 //
-// dest[k*dest_stride] = source1[k*source_stride1] + source2[source_stride2]
+// dest[k*dest_stride] = source1[k*source_stride1] + source2[k*source_stride2]
 PLATFORM_EXPORT void Vadd(const float* source1p,
                           int source_stride1,
                           const float* source2p,
