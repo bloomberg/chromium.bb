@@ -72,17 +72,18 @@ class ChromeCleanerRunnerSimpleTest
   }
 
   void CallRunChromeCleaner() {
-    SwReporterInvocation reporter_invocation;
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    SwReporterInvocation reporter_invocation(command_line);
     switch (reporter_engine_) {
       case ReporterEngine::kUnspecified:
         // No engine switch.
         break;
       case ReporterEngine::kOldEngine:
-        reporter_invocation.command_line.AppendSwitchASCII(
+        reporter_invocation.mutable_command_line().AppendSwitchASCII(
             chrome_cleaner::kEngineSwitch, "1");
         break;
       case ReporterEngine::kNewEngine:
-        reporter_invocation.command_line.AppendSwitchASCII(
+        reporter_invocation.mutable_command_line().AppendSwitchASCII(
             chrome_cleaner::kEngineSwitch, "2");
         break;
     }
@@ -234,9 +235,10 @@ class ChromeCleanerRunnerTest
   }
 
   void CallRunChromeCleaner() {
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     ChromeCleanerRunner::RunChromeCleanerAndReplyWithExitCode(
         base::FilePath(FILE_PATH_LITERAL("cleaner.exe")),
-        SwReporterInvocation(), ChromeMetricsStatus::kDisabled,
+        SwReporterInvocation(command_line), ChromeMetricsStatus::kDisabled,
         base::BindOnce(&ChromeCleanerRunnerTest::OnPromptUser,
                        base::Unretained(this)),
         base::BindOnce(&ChromeCleanerRunnerTest::OnConnectionClosed,

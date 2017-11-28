@@ -223,7 +223,7 @@ bool ChromeCleanerControllerImpl::IsPoweredByPartner() {
   }
 
   const std::string& reporter_engine =
-      reporter_invocation_->command_line.GetSwitchValueASCII(
+      reporter_invocation_->command_line().GetSwitchValueASCII(
           chrome_cleaner::kEngineSwitch);
   // Currently, only engine=2 corresponds to a partner-powered engine. This
   // condition should be updated if other partner-powered engines are added.

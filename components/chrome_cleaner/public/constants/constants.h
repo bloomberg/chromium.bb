@@ -95,7 +95,11 @@ extern const wchar_t kVersionValueName[];
 constexpr int kSwReporterCleanupNeeded = 0;
 constexpr int kSwReporterNothingFound = 2;
 constexpr int kSwReporterPostRebootCleanupNeeded = 4;
+constexpr int kSwReporterNonRemovableOnly = 10;
 constexpr int kSwReporterDelayedPostRebootCleanupNeeded = 15;
+constexpr int kSwReporterSuspiciousOnly = 32;
+constexpr int kSwReporterTimeoutWithoutUwS = 34;
+constexpr int kSwReporterTimeoutWithUwS = 35;
 
 // Values to be passed to the kChromePromptSwitch of the Chrome Cleanup Tool to
 // indicate how the user interacted with the accept button.
