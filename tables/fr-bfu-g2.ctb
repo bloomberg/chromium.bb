@@ -181,7 +181,7 @@ nofor after conabr after voyabr endword es 156
 word eu 15-136
 always eu 5
 noback before con always eur 46
-nofor before con before conabr midendword eur 46
+nofor before conabr midword eur 46
 endword eur 46
 noback before con always ex 1346
 nofor before conabr always ex 1346
@@ -207,7 +207,7 @@ nofor always frô 16-1456
 noback before voy always gl 345
 nofor before voyabr before voyabr2 begmidword gl 345
 noback always gn 2356
-nofor before voyabr partword gn 2356
+nofor before voyabr midword gn 2356
 nofor midendword gnai 2356-34
 nofor before conabr midword gnan 2356-2
 nofor before voyabr2 midword gn 2356
@@ -220,7 +220,8 @@ nofor before voyabr2 midword gr 12456
 nofor always grâc 12456-16-14
 nofor always grê 12456-126
 
-begmidword ien 256
+noback midword ien 256
+nofor before con midword ien 256
 endword ien 24-26
 noback midendword ieu 6
 nofor endword ieu 6
@@ -257,7 +258,7 @@ nofor midendword llou 456-1256
 partword oi 23456
 noback before con always om 2456
 nofor before conabr always om 2456
-nofor before voyabr always ombr 2456-23
+nofor before voyabr before voyabr2 always ombr 2456-23
 endword om 2456
 noback before con always on 346
 nofor before conabr always on 346
@@ -274,6 +275,7 @@ nofor midendword ou 1256
 nofor before conabr before voyabr begword ou 1256
 nofor before con begword ouai 1256-34
 nofor begword oue 1256-15
+nofor begword oubl 1256-45
 nofor word oui 1256-24
 
 before con always our 12346
@@ -287,7 +289,7 @@ nofor begmidword plui 1246-23
 nofor before conabr always plan 1246-2
 nofor before voyabr2 midword pl 1246
 noback before voy always pr 235
-nofor before voy always pr 235
+nofor before voyabr always pr 235
 noback before con always pro 235
 nofor before con before conabr always pro 235
 
@@ -302,6 +304,7 @@ before con begword rem 1235-345
 noback before voy after voy always ss 2346
 nofor after voyabr after voyabr2 before voyabr before voyabr2 midword ss 2346
 nofor after voyabr always ssion 2346-3456
+nofor after voyabr always ssable 2346-45
 
 noback before voy always tr 356
 nofor before voyabr before voyabr2 always tr 356
@@ -319,6 +322,7 @@ nofor before voyabr before voyabr2 always uitt 23-2456
 endword uin 136-35
 endword uins 136-35-234
 nofor endword zz 1356-1356
+nofor midword wee 2456-15-15
 
 endword bilité 12-123-2345
 endword bilités 12-123-2345-234
@@ -386,7 +390,7 @@ word celui 36
 word cet 146
 word dans 1456
 word de 145
-word dès 256
+lowword dès 256
 word du 236
 word elle 1356
 word elles 1356-234
@@ -2103,6 +2107,12 @@ nofor word çà 12346-12356
 nofor begword wh 2456-125
 nofor word € 45-15
 
+#Ponctuations suivies d'un signe
+nofor postpunc ." 256-2356
+nofor postpunc .] 256-23456-12
+nofor postpunc .) 256-356
+nofor postpunc .} 256-356-3-3
+
 #Astuce pour différencier "riz" et "riez"
 nofor pass2 @56-1235-24[@1356] @1-1-1-1356
 nofor correct "riaaaz" "riz"
@@ -2137,3 +2147,4 @@ compbrl .mp3
 compbrl .wav
 compbrl .tar
 compbrl .zip
+
