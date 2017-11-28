@@ -9,6 +9,15 @@
 
 
 /**
+ * Whether the most visited tiles have finished loading, i.e. we've received the
+ * 'loaded' postMessage from the iframe. Used by tests to detect that loading
+ * has completed.
+ * @type {boolean}
+ */
+var tilesAreLoaded = false;
+
+
+/**
  * Controls rendering the new tab page for InstantExtended.
  * @return {Object} A limited interface for testing the local NTP.
  */
@@ -546,6 +555,7 @@ function handlePostMessage(event) {
   var cmd = event.data.cmd;
   var args = event.data;
   if (cmd == 'loaded') {
+    tilesAreLoaded = true;
     if (configData.isGooglePage && !$('one-google-loader')) {
       // Load the OneGoogleBar script. It'll create a global variable name "og"
       // which is a dict corresponding to the native OneGoogleBarData type.

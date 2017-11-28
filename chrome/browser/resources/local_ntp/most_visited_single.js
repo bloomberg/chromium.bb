@@ -166,7 +166,8 @@ var countLoad = function() {
     swapInNewTiles();
     logEvent(LOG_TYPE.NTP_ALL_TILES_LOADED);
     window.parent.postMessage({cmd: 'loaded'}, DOMAIN_ORIGIN);
-    // TODO(treib): Why do we reset to 1 here?
+    // Reset to 1, so that any further 'show' message will cause us to swap in
+    // fresh tiles.
     loadedCounter = 1;
   }
 };
