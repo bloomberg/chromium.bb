@@ -31,4 +31,9 @@
 #egyptian_hieroglyphs:
 "DejaVu Sans" : 16
 
+ខ្ញុំអាចញុំកញ្ចក់បាន ដោយគ្មានបញ្ហារ
+#khmer:
+"Noto Sans Khmer" : 26,
+"Times New Roman" : 1
+
 

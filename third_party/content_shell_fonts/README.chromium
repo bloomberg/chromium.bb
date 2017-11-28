@@ -18,8 +18,8 @@ How to update or add fonts:
     section headers in the LICENSE file: When adding a new license, add a dashed
     line, list the new font files that it applies to, and copy and paste the
     additional license below.)
-4.  Update the `//third_party/blimp_fonts` target to include all the
-    current fonts and their license files.
+4.  Update the `//third_party/content_shell_fonts/` BUILD.gn target to include
+    all the current fonts and their license files.
 5.  Run the `upload_to_google_storage.py` (from depot_tools) script to upload
     the files. You must do this in the //third_party/content_shell_fonts directory.
     To do this, execute:
@@ -27,6 +27,8 @@ How to update or add fonts:
 6.  Add all the font_bundle.tar.gz.sha1 file to the chromium src repository,
     by executing the following command:
      $ git add ./third_party/content_shell_fonts/content_shell_test_fonts.tar.gz.sha1
+7.  (optional) Modify loaded kSystemFontsForFontconfig and
+    kCloudStorageSyncedFonts lists in fontconfig_util_linux.cc
 
 If you need access to the chromium-fonts bucket, contact Chrome infra. For
 details, please refer to
@@ -34,7 +36,8 @@ https://chromium.googlesource.com/infra/infra/+/master/doc/users/contacting_troo
 
 Font Origins:
 
-Lohit-Tamil.ttf       https://pagure.io/lohit
-Lohit-Devanagari.ttf  https://pagure.io/lohit
-MuktiNarrow.ttf       http://www.nongnu.org/freebangfont/downloads.html#mukti
-DejaVuSans.ttf        https://dejavu-fonts.github.io/Download.html
+Lohit-Tamil.ttf            https://pagure.io/lohit
+Lohit-Devanagari.ttf       https://pagure.io/lohit
+MuktiNarrow.ttf            http://www.nongnu.org/freebangfont/downloads.html#mukti
+DejaVuSans.ttf             https://dejavu-fonts.github.io/Download.html
+NotoSansKhmer-Regular.ttf  https://www.google.com/get/noto/#sans-khmr
