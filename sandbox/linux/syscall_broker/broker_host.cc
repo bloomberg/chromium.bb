@@ -22,6 +22,7 @@
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/third_party/valgrind/valgrind.h"
 #include "sandbox/linux/syscall_broker/broker_common.h"
 #include "sandbox/linux/syscall_broker/broker_policy.h"
@@ -32,10 +33,6 @@ namespace sandbox {
 namespace syscall_broker {
 
 namespace {
-
-bool IsRunningOnValgrind() {
-  return RUNNING_ON_VALGRIND;
-}
 
 // A little open(2) wrapper to handle some oddities for us. In the general case
 // make a direct system call since we want to keep in control of the broker
@@ -48,7 +45,7 @@ int sys_open(const char* pathname, int flags) {
   } else {
     mode = 0;
   }
-  if (IsRunningOnValgrind()) {
+  if (RunningOnValgrind()) {
     // Valgrind does not support AT_FDCWD, just use libc's open() in this case.
     return open(pathname, flags, mode);
   } else {

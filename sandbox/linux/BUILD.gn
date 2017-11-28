@@ -112,6 +112,7 @@ source_set("sandbox_linux_unittests_sources") {
     ":sandbox",
     ":sandbox_linux_test_utils",
     "//base",
+    "//base/third_party/dynamic_annotations",
     "//testing/gtest",
   ]
 
@@ -250,6 +251,7 @@ component("seccomp_bpf") {
   deps = [
     ":sandbox_services",
     "//base",
+    "//base/third_party/dynamic_annotations",
   ]
 
   if (is_nacl_nonsfi) {
@@ -374,6 +376,7 @@ component("sandbox_services") {
   ]
   deps = [
     "//base",
+    "//base/third_party/dynamic_annotations",
   ]
 
   if (compile_credentials || is_nacl_nonsfi) {
@@ -457,6 +460,7 @@ if (compile_suid_client || is_nacl_nonsfi) {
     deps = [
       ":sandbox_services",
       "//base",
+      "//base/third_party/dynamic_annotations",
     ]
 
     if (is_nacl_nonsfi) {

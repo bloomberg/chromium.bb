@@ -20,15 +20,12 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
 #include "base/strings/safe_sprintf.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/third_party/valgrind/valgrind.h"
 
 namespace sandbox {
 
 namespace {
-bool IsRunningOnValgrind() {
-  return RUNNING_ON_VALGRIND;
-}
-
 const char kProcSelfSetgroups[] = "/proc/self/setgroups";
 }  // namespace
 
@@ -57,7 +54,7 @@ bool NamespaceUtils::WriteToIdMapFile(const char* map_file, generic_id_t id) {
 bool NamespaceUtils::KernelSupportsUnprivilegedNamespace(int type) {
   // Valgrind will let clone(2) pass-through, but doesn't support unshare(),
   // so always consider namespaces unsupported there.
-  if (IsRunningOnValgrind()) {
+  if (RunningOnValgrind()) {
     return false;
   }
 
