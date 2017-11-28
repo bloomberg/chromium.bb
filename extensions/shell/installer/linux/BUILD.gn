@@ -201,7 +201,7 @@ template("linux_package") {
       "-o",
       rebase_path(root_out_dir, root_build_dir),
       "-s",
-      rebase_path(sysroot),
+      rebase_path(sysroot, root_build_dir),
     ]
     if (is_official_build) {
       args += [ "-f" ]
