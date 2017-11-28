@@ -71,10 +71,10 @@ TEST_F(HeaderCoalescerTest, HeaderBlockTooLarge) {
   EXPECT_FALSE(header_coalescer_.error_seen());
 
   // Another 3 + 4 + 32 bytes: too large.
-  SpdyStringPiece header_value("\x1\x7F\x80\xFF");
+  SpdyStringPiece header_value("abcd");
   header_coalescer_.OnHeader("bar", header_value);
   EXPECT_TRUE(header_coalescer_.error_seen());
-  ExpectEntry("bar", "%01%7F%80%FF", "Header list too large.");
+  ExpectEntry("bar", "abcd", "Header list too large.");
 }
 
 TEST_F(HeaderCoalescerTest, PseudoHeadersMustNotFollowRegularHeaders) {
@@ -96,12 +96,6 @@ TEST_F(HeaderCoalescerTest, Append) {
   EXPECT_THAT(header_block,
               ElementsAre(Pair("foo", SpdyStringPiece("bar\0quux", 8)),
                           Pair("cookie", "baz; qux")));
-}
-
-TEST_F(HeaderCoalescerTest, CRLFInHeaderValue) {
-  header_coalescer_.OnHeader("foo", "bar\r\nbaz");
-  EXPECT_TRUE(header_coalescer_.error_seen());
-  ExpectEntry("foo", "bar%0D%0Abaz", "Header value must not contain CR+LF.");
 }
 
 TEST_F(HeaderCoalescerTest, HeaderNameNotValid) {
@@ -136,41 +130,29 @@ TEST_F(HeaderCoalescerTest, HeaderNameValid) {
   EXPECT_THAT(header_block, ElementsAre(Pair(header_name, "foo")));
 }
 
-// RFC 7230 Section 3.2. Valid header value is defined as:
-// field-value    = *( field-content / obs-fold )
-// field-content  = field-vchar [ 1*( SP / HTAB ) field-vchar ]
-// field-vchar    = VCHAR / obs-text
-//
-// obs-fold       = CRLF 1*( SP / HTAB )
-//                ; obsolete line folding
-//                ; see Section 3.2.4
+// According to RFC 7540 Section 10.3 and RFC 7230 Section 3.2, allowed
+// characters in header values are '\t', '  ', 0x21 to 0x7E, and 0x80 to 0xFF.
 TEST_F(HeaderCoalescerTest, HeaderValueValid) {
-  // Add two headers, one with an HTAB and one with a SP.
-  std::vector<char> header_values[2];
-  char prefixes[] = {'\t', ' '};
-  for (int i = 0; i < 2; ++i) {
-    header_values[i] = std::vector<char>();
-    header_values[i].push_back(prefixes[i]);
-    // obs-text. From 0x80 to 0xff.
-    for (int j = 0x80; j <= 0xff; ++j) {
-      header_values[i].push_back(j);
-    }
-    // vchar
-    for (int j = 0x21; j <= 0x7E; ++j) {
-      header_values[i].push_back(j);
-    }
-    header_coalescer_.OnHeader(
-        SpdyStringPrintf("%s_%d", "foo", i),
-        SpdyStringPiece(header_values[i].data(), header_values[i].size()));
-    EXPECT_FALSE(header_coalescer_.error_seen());
-  }
-  SpdyHeaderBlock header_block = header_coalescer_.release_headers();
-  EXPECT_THAT(
-      header_block,
-      ElementsAre(Pair("foo_0", SpdyStringPiece(header_values[0].data(),
-                                                header_values[0].size())),
-                  Pair("foo_1", SpdyStringPiece(header_values[1].data(),
-                                                header_values[1].size()))));
+  header_coalescer_.OnHeader("foo", " bar \x21 \x7e baz\tqux\x80\xff ");
+  EXPECT_FALSE(header_coalescer_.error_seen());
+}
+
+TEST_F(HeaderCoalescerTest, HeaderValueContainsLF) {
+  header_coalescer_.OnHeader("foo", "bar\nbaz");
+  EXPECT_TRUE(header_coalescer_.error_seen());
+  ExpectEntry("foo", "bar%0Abaz", "Invalid character in header value.");
+}
+
+TEST_F(HeaderCoalescerTest, HeaderValueContainsCR) {
+  header_coalescer_.OnHeader("foo", "bar\rbaz");
+  EXPECT_TRUE(header_coalescer_.error_seen());
+  ExpectEntry("foo", "bar%0Dbaz", "Invalid character in header value.");
+}
+
+TEST_F(HeaderCoalescerTest, HeaderValueContains0x7f) {
+  header_coalescer_.OnHeader("foo", "bar\x7f baz");
+  EXPECT_TRUE(header_coalescer_.error_seen());
+  ExpectEntry("foo", "bar%7F%20baz", "Invalid character in header value.");
 }
 
 }  // namespace test

@@ -18,6 +18,7 @@
 
 namespace net {
 namespace {
+
 std::unique_ptr<base::Value> ElideNetLogHeaderCallback(
     SpdyStringPiece header_name,
     SpdyStringPiece header_value,
@@ -105,13 +106,24 @@ bool HeaderCoalescer::AddHeader(SpdyStringPiece key, SpdyStringPiece value) {
     return false;
   }
 
-  // End of line delimiter is forbidden according to RFC 7230 Section 3.2.
-  // Line folding, RFC 7230 Section 3.2.4., is a special case of this.
-  if (value.find("\r\n") != SpdyStringPiece::npos) {
-    net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_INVALID_HEADER,
-                      base::Bind(&ElideNetLogHeaderCallback, key, value,
-                                 "Header value must not contain CR+LF."));
-    return false;
+  // RFC 7540 Section 10.3: "Any request or response that contains a character
+  // not permitted in a header field value MUST be treated as malformed (Section
+  // 8.1.2.6). Valid characters are defined by the field-content ABNF rule in
+  // Section 3.2 of [RFC7230]." RFC 7230 Section 3.2 says:
+  // field-content  = field-vchar [ 1*( SP / HTAB ) field-vchar ]
+  // field-vchar    = VCHAR / obs-text
+  // RFC 5234 Appendix B.1 defines |VCHAR|:
+  // VCHAR          =  %x21-7E
+  // RFC 7230 Section 3.2.6 defines |obs-text|:
+  // obs-text       = %x80-FF
+  // Therefore allowed characters are '\t' (HTAB), x20 (SP), x21-7E, and x80-FF.
+  for (const unsigned char c : value) {
+    if (c < '\t' || ('\t' < c && c < 0x20) || c == 0x7f) {
+      net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_INVALID_HEADER,
+                        base::Bind(&ElideNetLogHeaderCallback, key, value,
+                                   "Invalid character in header value."));
+      return false;
+    }
   }
 
   auto iter = headers_.find(key);
