@@ -136,6 +136,12 @@ Polymer({
       // The password might have been cleared during the duration of the
       // getActiveModes call.
       this.passwordInvalid_ = !valid && !!this.password_;
+      // Return focus to the password input if it lost focus while being checked
+      // (user pressed confirm button).
+      if (this.passwordInvalid_ &&
+          this.shadowRoot.activeElement != this.$.passwordInput) {
+        this.$.passwordInput.focus();
+      }
 
       if (valid) {
         // Create the |this.setModes| closure and automatically clear it after

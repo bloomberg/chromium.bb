@@ -90,6 +90,16 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertDeepEquals([''], quickUnlockPrivateApi.credentials);
       });
 
+      test('TapConfirmButtonWithWrongPasswordRestoresFocus', function() {
+        var confirmButton = getFromElement('#passwordInput');
+        quickUnlockPrivateApi.accountPassword = 'bar';
+        passwordElement.value = 'foo';
+        MockInteractions.tap(
+            getFromElement('paper-button[class="action-button"]'));
+
+        assertEquals(element.shadowRoot.activeElement, passwordElement);
+      });
+
       // A bad password does not provide an authenticated setModes object, and a
       // entered password correctly uma should not be recorded.
       test('InvalidPasswordDoesNotProvideAuthentication', function() {
