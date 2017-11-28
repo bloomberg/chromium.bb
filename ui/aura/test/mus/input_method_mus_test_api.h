@@ -37,6 +37,21 @@ class InputMethodMusTestApi {
     input_method->OnDidChangeFocusedClient(focused_before, focused);
   }
 
+  static void CallOnTextInputTypeChanged(InputMethodMus* input_method,
+                                         ui::TextInputClient* client) {
+    input_method->OnTextInputTypeChanged(client);
+  }
+
+  static void CallOnCaretBoundsChanged(InputMethodMus* input_method,
+                                       ui::TextInputClient* client) {
+    input_method->OnCaretBoundsChanged(client);
+  }
+
+  static void CallCancelComposition(InputMethodMus* input_method,
+                                    ui::TextInputClient* client) {
+    input_method->CancelComposition(client);
+  }
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(InputMethodMusTestApi);
 };
