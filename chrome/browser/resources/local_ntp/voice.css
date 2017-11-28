@@ -24,7 +24,6 @@
 
 /* Color constants. */
 :root {
-  --dark_grey: #dbdbdb;
   --dark_red: rgb(205, 0, 0);
   --grey: #777;
   --light_grey: #eee;
@@ -33,6 +32,7 @@
   --active_icon_color: white;
   --button_shadow: rgba(0, 0, 0, .1);
   --inactive_icon_color: #999;
+  --level_animation_color: #dbdbdb;
   --listening_icon_color: var(--light_red);
   --text_link_color: rgb(17, 85, 204);
 }
@@ -64,13 +64,13 @@
 
 /* The close 'x' button. */
 .close-button {
-  color: var(--grey);
+  color: black;
   cursor: pointer;
   font-size: 26px;
   height: 11px;
   line-height: 15px;
   margin: 15px;
-  opacity: .6;
+  opacity: .54;
   padding: 0;
   position: absolute;
   right: 0;
@@ -84,11 +84,11 @@ html[dir=rtl] .close-button {
 }
 
 .close-button:hover {
-  opacity: .8;
+  opacity: .66;
 }
 
 .close-button:active {
-  opacity: 1;
+  opacity: .78;
 }
 
 /* The vertical positioning container. */
@@ -172,7 +172,7 @@ html[dir=rtl] .close-button {
 
 /* Vibrating input volume level. */
 .level {
-  background-color: var(--dark_grey);
+  background-color: var(--level_animation_color);
   border-radius: 100%;
   display: inline-block;
   height: 301px;
