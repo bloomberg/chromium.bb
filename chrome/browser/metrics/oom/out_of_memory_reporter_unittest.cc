@@ -17,13 +17,18 @@
 #include "base/process/kill.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "components/ukm/test_ukm_recorder.h"
+#include "components/ukm/ukm_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/net_errors.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -89,7 +94,17 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
                    process()->GetID()));
 #endif
     OutOfMemoryReporter::CreateForWebContents(web_contents());
-    OutOfMemoryReporter::FromWebContents(web_contents())->AddObserver(this);
+    OutOfMemoryReporter* reporter =
+        OutOfMemoryReporter::FromWebContents(web_contents());
+    reporter->AddObserver(this);
+    auto tick_clock = std::make_unique<base::SimpleTestTickClock>();
+    test_tick_clock_ = tick_clock.get();
+    reporter->SetTickClockForTest(std::move(tick_clock));
+    // Ensure clock is set to something that's not 0 to begin.
+    test_tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
+
+    test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
+    ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
   }
 
   // OutOfMemoryReporter::Observer:
@@ -101,6 +116,7 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
   }
 
   void SimulateOOM() {
+    test_tick_clock_->Advance(base::TimeDelta::FromSeconds(3));
 #if defined(OS_ANDROID)
     process()->SimulateRenderProcessExit(base::TERMINATION_STATUS_OOM_PROTECTED,
                                          0);
@@ -135,13 +151,26 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
         &OutOfMemoryReporterTest::SimulateOOM, base::Unretained(this)));
   }
 
+  void CheckUkmMetricRecorded(const GURL& url, int64_t time_delta) {
+    const ukm::UkmSource* source =
+        *test_ukm_recorder_->GetSourcesForUrl(url.spec().c_str()).begin();
+    std::vector<int64_t> metrics = test_ukm_recorder_->GetMetricValues(
+        source->id(), ukm::builders::Tab_RendererOOM::kEntryName,
+        ukm::builders::Tab_RendererOOM::kTimeSinceLastNavigationName);
+    EXPECT_EQ(1u, metrics.size());
+    EXPECT_EQ(time_delta, metrics.at(0));
+  }
+
  protected:
   base::ShadowingAtExitManager at_exit_;
 
   base::Optional<GURL> last_oom_url_;
   base::OnceClosure oom_closure_;
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
  private:
+  base::SimpleTestTickClock* test_tick_clock_;
+
   DISALLOW_COPY_AND_ASSIGN(OutOfMemoryReporterTest);
 };
 
@@ -151,6 +180,7 @@ TEST_F(OutOfMemoryReporterTest, SimpleOOM) {
 
   SimulateOOMAndWait();
   EXPECT_EQ(url, last_oom_url_.value());
+  CheckUkmMetricRecorded(url, 3000);
 }
 
 TEST_F(OutOfMemoryReporterTest, NormalCrash_NoOOM) {
@@ -161,6 +191,9 @@ TEST_F(OutOfMemoryReporterTest, NormalCrash_NoOOM) {
                      base::Unretained(process()),
                      base::TERMINATION_STATUS_ABNORMAL_TERMINATION, 0));
   EXPECT_FALSE(last_oom_url_.has_value());
+  EXPECT_FALSE(
+      test_ukm_recorder_->HasEntry(*test_ukm_recorder_->GetSourceForUrl(url),
+                                   ukm::builders::Tab_RendererOOM::kEntryName));
 }
 
 TEST_F(OutOfMemoryReporterTest, SubframeNavigation_IsNotLogged) {
@@ -176,7 +209,8 @@ TEST_F(OutOfMemoryReporterTest, SubframeNavigation_IsNotLogged) {
   EXPECT_TRUE(subframe);
 
   SimulateOOMAndWait();
-  EXPECT_EQ(last_oom_url_.value(), url);
+  EXPECT_EQ(url, last_oom_url_.value());
+  CheckUkmMetricRecorded(url, 3000);
 }
 
 TEST_F(OutOfMemoryReporterTest, OOMOnPreviousPage) {
@@ -191,6 +225,7 @@ TEST_F(OutOfMemoryReporterTest, OOMOnPreviousPage) {
                                                            net::ERR_ABORTED);
   SimulateOOMAndWait();
   EXPECT_EQ(url2, last_oom_url_.value());
+  CheckUkmMetricRecorded(url2, 3000);
 
   last_oom_url_.reset();
   NavigateAndCommit(url1);
@@ -201,4 +236,7 @@ TEST_F(OutOfMemoryReporterTest, OOMOnPreviousPage) {
   // Don't report OOMs on error pages.
   SimulateOOMAndWait();
   EXPECT_FALSE(last_oom_url_.has_value());
+  // Only the first OOM is recorded.
+  EXPECT_EQ(1u, test_ukm_recorder_->entries_count());
+  CheckUkmMetricRecorded(url2, 3000);
 }

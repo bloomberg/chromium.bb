@@ -4,11 +4,16 @@
 
 #include "chrome/browser/metrics/oom/out_of_memory_reporter.h"
 
+#include <utility>
+
 #include "base/logging.h"
+#include "base/time/default_tick_clock.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(OutOfMemoryReporter);
 
@@ -23,7 +28,8 @@ void OutOfMemoryReporter::RemoveObserver(Observer* observer) {
 }
 
 OutOfMemoryReporter::OutOfMemoryReporter(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents)
+    : content::WebContentsObserver(web_contents),
+      tick_clock_(std::make_unique<base::DefaultTickClock>())
 #if defined(OS_ANDROID)
       ,
       scoped_observer_(this) {
@@ -40,9 +46,21 @@ OutOfMemoryReporter::OutOfMemoryReporter(content::WebContents* web_contents)
 
 void OutOfMemoryReporter::OnForegroundOOMDetected(const GURL& url,
                                                   ukm::SourceId source_id) {
+  DCHECK(!last_navigation_timestamp_.is_null());
+  base::TimeDelta time_since_last_navigation =
+      tick_clock_->NowTicks() - last_navigation_timestamp_;
+  ukm::builders::Tab_RendererOOM(source_id)
+      .SetTimeSinceLastNavigation(time_since_last_navigation.InMilliseconds())
+      .Record(ukm::UkmRecorder::Get());
   for (auto& observer : observers_) {
     observer.OnForegroundOOMDetected(url, source_id);
   }
+}
+
+void OutOfMemoryReporter::SetTickClockForTest(
+    std::unique_ptr<base::TickClock> tick_clock) {
+  DCHECK(tick_clock_);
+  tick_clock_ = std::move(tick_clock);
 }
 
 void OutOfMemoryReporter::DidFinishNavigation(
@@ -53,6 +71,7 @@ void OutOfMemoryReporter::DidFinishNavigation(
     return;
   }
   last_committed_source_id_.reset();
+  last_navigation_timestamp_ = tick_clock_->NowTicks();
   crashed_render_process_id_ = content::ChildProcessHost::kInvalidUniqueID;
   if (handle->IsErrorPage())
     return;
