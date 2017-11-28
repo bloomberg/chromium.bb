@@ -234,12 +234,16 @@ bool IsControlKeyModifier(int flags) {
 const char Textfield::kViewClassName[] = "Textfield";
 
 // static
-size_t Textfield::GetCaretBlinkMs() {
-  static const size_t default_value = 500;
+base::TimeDelta Textfield::GetCaretBlinkInterval() {
+  static constexpr base::TimeDelta default_value =
+      base::TimeDelta::FromMilliseconds(500);
 #if defined(OS_WIN)
   static const size_t system_value = ::GetCaretBlinkTime();
-  if (system_value != 0)
-    return (system_value == INFINITE) ? 0 : system_value;
+  if (system_value != 0) {
+    return (system_value == INFINITE)
+               ? base::TimeDelta()
+               : base::TimeDelta::FromMilliseconds(system_value);
+  }
 #endif
   return default_value;
 }
@@ -2165,15 +2169,13 @@ bool Textfield::ShouldShowCursor() const {
 }
 
 bool Textfield::ShouldBlinkCursor() const {
-  return ShouldShowCursor() && Textfield::GetCaretBlinkMs() != 0;
+  return ShouldShowCursor() && !Textfield::GetCaretBlinkInterval().is_zero();
 }
 
 void Textfield::StartBlinkingCursor() {
   DCHECK(ShouldBlinkCursor());
-  cursor_blink_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(Textfield::GetCaretBlinkMs()), this,
-      &Textfield::OnCursorBlinkTimerFired);
+  cursor_blink_timer_.Start(FROM_HERE, Textfield::GetCaretBlinkInterval(), this,
+                            &Textfield::OnCursorBlinkTimerFired);
 }
 
 void Textfield::StopBlinkingCursor() {

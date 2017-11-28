@@ -27,7 +27,7 @@ RendererPreferences::RendererPreferences()
       inactive_selection_bg_color(SkColorSetRGB(200, 200, 200)),
       inactive_selection_fg_color(SkColorSetRGB(50, 50, 50)),
       browser_handles_all_top_level_requests(false),
-      caret_blink_interval(0.5),
+      caret_blink_interval(base::TimeDelta::FromMilliseconds(500)),
       use_custom_colors(true),
       enable_referrers(true),
       enable_do_not_track(false),

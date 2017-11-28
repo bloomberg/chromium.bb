@@ -83,10 +83,10 @@ struct CONTENT_EXPORT RendererPreferences {
   // Browser wants a look at all top-level navigation requests.
   bool browser_handles_all_top_level_requests;
 
-  // Cursor blink rate in seconds.
+  // Cursor blink rate.
   // Currently only changed from default on Linux.  Uses |gtk-cursor-blink|
   // from GtkSettings.
-  double caret_blink_interval;
+  base::TimeDelta caret_blink_interval;
 
   // Whether or not to set custom colors at all.
   bool use_custom_colors;

@@ -127,13 +127,13 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  prefs->caret_blink_interval = views::Textfield::GetCaretBlinkMs() / 1000.0;
+  prefs->caret_blink_interval = views::Textfield::GetCaretBlinkInterval();
 #endif
 
 #if defined(OS_MACOSX)
   base::TimeDelta interval;
   if (ui::TextInsertionCaretBlinkPeriod(&interval))
-    prefs->caret_blink_interval = interval.InSecondsF();
+    prefs->caret_blink_interval = interval;
 #endif
 
 #if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
