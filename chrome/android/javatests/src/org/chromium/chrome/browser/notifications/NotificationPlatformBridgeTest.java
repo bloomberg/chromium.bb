@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import static org.junit.Assert.assertThat;
+
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.annotation.TargetApi;
@@ -21,6 +23,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,6 +37,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.engagement.SiteEngagementService;
@@ -53,6 +57,8 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -343,6 +349,8 @@ public class NotificationPlatformBridgeTest {
         mNotificationTestRule.setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
         Context context = InstrumentationRegistry.getTargetContext();
 
+        UserActionTester actionTester = new UserActionTester();
+
         // +5 engagement from notification permission and +0.5 from navigating to the test page.
         Assert.assertEquals(5.5, getEngagementScoreBlocking(), 0);
         Notification notification = mNotificationTestRule.showAndGetNotification("MyNotification",
@@ -364,6 +372,11 @@ public class NotificationPlatformBridgeTest {
         // Expect +1 engagement from interacting with the notification.
         waitForTitle("reply: My Reply");
         Assert.assertEquals(6.5, getEngagementScoreBlocking(), 0);
+
+        // Replies are always delivered to an action button.
+        assertThat(actionTester.toString(), getNotificationActions(actionTester),
+                Matchers.contains("Notifications.Persistent.Shown",
+                        "Notifications.Persistent.ClickedActionButton"));
     }
 
     /**
@@ -692,6 +705,8 @@ public class NotificationPlatformBridgeTest {
         // +5 engagement from notification permission and +0.5 from navigating to the test page.
         Assert.assertEquals(5.5, getEngagementScoreBlocking(), 0);
 
+        UserActionTester actionTester = new UserActionTester();
+
         Notification notification =
                 mNotificationTestRule.showAndGetNotification("MyNotification", "{}");
 
@@ -712,6 +727,11 @@ public class NotificationPlatformBridgeTest {
                     RecordHistogram.getHistogramTotalCountForTesting(
                             "Notifications.Android.JobStartDelay"));
         }
+
+        // Clicking on a notification should record the right user metrics.
+        assertThat(actionTester.toString(), getNotificationActions(actionTester),
+                Matchers.contains(
+                        "Notifications.Persistent.Shown", "Notifications.Persistent.Clicked"));
     }
 
     /**
@@ -858,5 +878,19 @@ public class NotificationPlatformBridgeTest {
 
         // Expect +1 engagement from interacting with the notification.
         Assert.assertEquals(7.5, getEngagementScoreBlocking(), 0);
+    }
+
+    /**
+     * Get Notification related actions, filter all other actions to avoid flakes.
+     */
+    private List<String> getNotificationActions(UserActionTester actionTester) {
+        List<String> actions = new ArrayList<>(actionTester.getActions());
+        Iterator<String> it = actions.iterator();
+        while (it.hasNext()) {
+            if (!it.next().startsWith("Notifications.")) {
+                it.remove();
+            }
+        }
+        return actions;
     }
 }
