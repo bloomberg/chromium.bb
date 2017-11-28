@@ -4,6 +4,7 @@
 
 #include "public/platform/WebCORSPreflightResultCache.h"
 
+#include "base/test/simple_test_tick_clock.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/weborigin/KURL.h"
@@ -13,12 +14,6 @@
 namespace blink {
 
 namespace test {
-
-static double current_time = 1000.0;
-
-static double MockTimeFunction() {
-  return current_time;
-}
 
 class TestWebCORSPreflightResultCache : public WebCORSPreflightResultCache {
  public:
@@ -68,12 +63,14 @@ class WebCORSPreflightResultCacheTest : public ::testing::Test {
     WebString error_description;
     std::unique_ptr<WebCORSPreflightResultCacheItem> item =
         WebCORSPreflightResultCacheItem::Create(
-            credentials_mode, response_header, error_description);
+            credentials_mode, response_header, error_description, clock());
 
     EXPECT_TRUE(item);
 
     return item;
   }
+
+  base::SimpleTestTickClock* clock() { return &clock_; }
 
   // This is by no means a robust parser and works only for the headers strings
   // used in this tests.
@@ -92,6 +89,9 @@ class WebCORSPreflightResultCacheTest : public ::testing::Test {
 
     return header_map;
   }
+
+ private:
+  base::SimpleTestTickClock clock_;
 };
 
 TEST_F(WebCORSPreflightResultCacheTest, CacheTimeout) {
@@ -100,8 +100,6 @@ TEST_F(WebCORSPreflightResultCacheTest, CacheTimeout) {
   WebURL other_url = URLTestHelpers::ToKURL("http://www.test.com/B");
 
   test::TestWebCORSPreflightResultCache cache;
-
-  TimeFunction previous = SetTimeFunctionsForTesting(test::MockTimeFunction);
 
   // Cache should be empty:
   EXPECT_EQ(0, cache.CacheSize());
@@ -124,7 +122,7 @@ TEST_F(WebCORSPreflightResultCacheTest, CacheTimeout) {
       HTTPHeaderMap()));
 
   // Advance time by ten seconds:
-  test::current_time += 10;
+  clock()->Advance(TimeDelta::FromSeconds(10));
 
   // Cache entry should now be expired:
   EXPECT_FALSE(cache.CanSkipPreflight(
@@ -143,8 +141,6 @@ TEST_F(WebCORSPreflightResultCacheTest, CacheTimeout) {
   // Cache size should be 0, with the expired entry removed by call to
   // CanSkipPreflight():
   EXPECT_EQ(0, cache.CacheSize());
-
-  SetTimeFunctionsForTesting(previous);
 }
 
 TEST_F(WebCORSPreflightResultCacheTest, CacheSize) {
