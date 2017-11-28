@@ -1,17 +1,16 @@
-<html>
-<head>
-<script src="/inspector/inspector-test.js"></script>
-<script src="/js-test-resources/js-test.js"></script>
-<script>
-var ws;
-function sendMessages() {
-    ws = new WebSocket('ws://localhost:8880/duplicated-headers');
-    ws.onopen = function() {
-        debug('onopen');
-    };
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that WebSocket handshake information is passed to Web Inspector.\n`);
+  await TestRunner.evaluateInPagePromise(`
+      var ws;
+      function sendMessages() {
+          ws = new WebSocket('ws://localhost:8880/duplicated-headers');
+      }
+  `);
+
   function outputHeaders(name, headers) {
     var headersToOutput = [];
     for (var i = 0; i < headers.length; ++i) {
@@ -60,10 +59,4 @@ function test() {
   }
   TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
   TestRunner.evaluateInPage('sendMessages()');
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that WebSocket handshake information is passed to Web Inspector.</p>
-</body>
-</html>
+})();

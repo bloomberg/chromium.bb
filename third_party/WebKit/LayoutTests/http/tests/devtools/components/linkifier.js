@@ -1,22 +1,24 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script>
-function test() {
-  var script;
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
+(async function() {
+  TestRunner.addResult(`Tests that Linkifier works correctly.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.evaluateInPagePromise(`function foo () {} //# sourceURL=linkifier.js`)
+  var script;
+  var sourceURL = 'linkifier.js';
   SourcesTestRunner.startDebuggerTest(waitForScripts);
 
   function waitForScripts() {
-    SourcesTestRunner.showScriptSource('linkifier.html', debuggerTest);
+    SourcesTestRunner.showScriptSource(sourceURL, debuggerTest);
   }
 
   function debuggerTest() {
     var target = SDK.targetManager.mainTarget();
-    var url = target.inspectedURL();
     for (var scriptCandidate of TestRunner.debuggerModel.scripts()) {
-      if (scriptCandidate.sourceURL === url) {
+      if (scriptCandidate.sourceURL === sourceURL) {
         script = scriptCandidate;
         break;
       }
@@ -28,11 +30,11 @@ function test() {
     TestRunner.addResult('Created linkifier');
     dumpLiveLocationsCount();
 
-    var linkA = linkifier.linkifyScriptLocation(target, null, url, 10);
+    var linkA = linkifier.linkifyScriptLocation(target, null, sourceURL, 10);
     TestRunner.addResult('Linkified script location A');
     dumpLiveLocationsCount();
 
-    var linkB = linkifier.linkifyScriptLocation(target, null, url, 15);
+    var linkB = linkifier.linkifyScriptLocation(target, null, sourceURL, 15);
     TestRunner.addResult('Linkified script location B');
     dumpLiveLocationsCount();
 
@@ -53,15 +55,4 @@ function test() {
     TestRunner.addResult('Live locations count: ' + locations.size);
     TestRunner.addResult('');
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that Linkifier works correctly.
-<p>
-
-</body>
-</html>
+})();

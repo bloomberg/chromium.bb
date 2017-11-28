@@ -1,20 +1,21 @@
-<html>
-<head>
-<script src="/inspector/inspector-test.js"></script>
-<script src="/js-test-resources/js-test.js"></script>
-<script>
-var ws;
-function sendMessages() {
-    ws = new WebSocket("ws://localhost:8880/echo");
-    ws.onopen = function()
-    {
-        debug("Connected.");
-        ws.send("test");
-        ws.send("exit");
-    };
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that WebSocketFrames are being sent and received by Web Inspector.\n`);
+  await TestRunner.evaluateInPagePromise(`
+      var ws;
+      function sendMessages() {
+          ws = new WebSocket("ws://localhost:8880/echo");
+          ws.onopen = function()
+          {
+              ws.send("test");
+              ws.send("exit");
+          };
+      }
+  `);
+
   var frames = [];
   function onRequest(event) {
     var request = event.data;
@@ -41,10 +42,4 @@ function test() {
   }
   TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
   TestRunner.evaluateInPage('sendMessages()');
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that WebSocketFrames are being sent and received by Web Inspector.</p>
-</body>
-</html>
+})();

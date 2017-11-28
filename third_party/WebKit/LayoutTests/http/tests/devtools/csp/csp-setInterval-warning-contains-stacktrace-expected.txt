@@ -1,12 +1,10 @@
-CONSOLE ERROR: line 11: Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self' 'unsafe-inline'".
+This test should trigger a CSP violation by attempting to evaluate a string with setInterval.
 
-This test attempts to evaluate script via setInterval. The resulting console error should contain a stack trace tied to line 11.
-
-Message[0]: csp-setInterval-warning-contains-stacktrace.html:10 Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self' 'unsafe-inline'".
+Message[0]: csp-setInterval-warning-contains-stacktrace.js:16 Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self' 'unsafe-inline'".
 
 Stack Trace:
 
-    url: http://127.0.0.1:8000/devtools/csp/csp-setInterval-warning-contains-stacktrace.html
-    function: thisTest
-    line: 10
+  url: test://evaluations/0/csp-setInterval-warning-contains-stacktrace.js
+  function: thisTest
+  line: 16
 
