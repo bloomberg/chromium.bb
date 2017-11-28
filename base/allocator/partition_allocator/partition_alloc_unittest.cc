@@ -246,13 +246,17 @@ void FreeFullPage(PartitionPage* page) {
   }
 }
 
-void CheckPageInCore(void* ptr, bool inCore) {
 #if defined(OS_LINUX)
-  unsigned char ret;
+bool IsPageInCore(void* ptr) {
+  unsigned char ret = 0;
   EXPECT_EQ(0, mincore(ptr, kSystemPageSize, &ret));
-  EXPECT_EQ(inCore, ret);
-#endif
+  return (ret & 1) != 0;
 }
+
+#define CHECK_PAGE_IN_CORE(ptr, in_core) EXPECT_EQ(IsPageInCore(ptr), in_core);
+#else
+#define CHECK_PAGE_IN_CORE(ptr, in_core) (void)(0)
+#endif  // defined(OS_LINUX)
 
 class MockPartitionStatsDumper : public PartitionStatsDumper {
  public:
@@ -1324,7 +1328,6 @@ TEST_F(PartitionAllocTest, LostFreePagesBug) {
 
 #if !defined(ARCH_CPU_64_BITS) || defined(OS_POSIX)
 
-
 // Unit tests that check if an allocation fails in "return null" mode,
 // repeating it doesn't crash, and still returns null. The tests need to
 // stress memory subsystem limits to do so, hence they try to allocate
@@ -1753,8 +1756,8 @@ TEST_F(PartitionAllocTest, Purge) {
   generic_allocator.root()->Free(bigPtr);
   generic_allocator.root()->PurgeMemory(PartitionPurgeDecommitEmptyPages);
 
-  CheckPageInCore(ptr - kPointerOffset, false);
-  CheckPageInCore(bigPtr - kPointerOffset, false);
+  CHECK_PAGE_IN_CORE(ptr - kPointerOffset, false);
+  CHECK_PAGE_IN_CORE(bigPtr - kPointerOffset, false);
 }
 
 // Tests that we prefer to allocate into a non-empty partition page over an
@@ -1835,10 +1838,10 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
       EXPECT_EQ(kSystemPageSize, stats->active_bytes);
       EXPECT_EQ(2 * kSystemPageSize, stats->resident_bytes);
     }
-    CheckPageInCore(ptr2 - kPointerOffset, true);
+    CHECK_PAGE_IN_CORE(ptr2 - kPointerOffset, true);
     generic_allocator.root()->PurgeMemory(
         PartitionPurgeDiscardUnusedSystemPages);
-    CheckPageInCore(ptr2 - kPointerOffset, false);
+    CHECK_PAGE_IN_CORE(ptr2 - kPointerOffset, false);
     EXPECT_EQ(3u, page->num_unprovisioned_slots);
 
     generic_allocator.root()->Free(ptr1);
@@ -1869,14 +1872,10 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
       EXPECT_EQ(kSystemPageSize, stats->active_bytes);
       EXPECT_EQ(2 * kSystemPageSize, stats->resident_bytes);
     }
-    CheckPageInCore(ptr1 - kPointerOffset, true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, true);
     generic_allocator.root()->PurgeMemory(
         PartitionPurgeDiscardUnusedSystemPages);
-#if defined(OS_WIN)
-    CheckPageInCore(ptr1 - kPointerOffset, true);
-#else
-    CheckPageInCore(ptr1 - kPointerOffset, false);
-#endif
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, false);
 
     generic_allocator.root()->Free(ptr2);
   }
@@ -1907,18 +1906,18 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
       EXPECT_EQ(9216u * 2, stats->active_bytes);
       EXPECT_EQ(9 * kSystemPageSize, stats->resident_bytes);
     }
-    CheckPageInCore(ptr1 - kPointerOffset, true);
-    CheckPageInCore(ptr1 - kPointerOffset + kSystemPageSize, true);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 2), true);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 3), true);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 4), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + kSystemPageSize, true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 2), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 3), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 4), true);
     generic_allocator.root()->PurgeMemory(
         PartitionPurgeDiscardUnusedSystemPages);
-    CheckPageInCore(ptr1 - kPointerOffset, true);
-    CheckPageInCore(ptr1 - kPointerOffset + kSystemPageSize, false);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 2), true);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 3), false);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 4), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + kSystemPageSize, false);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 2), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 3), false);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 4), true);
 
     generic_allocator.root()->Free(ptr3);
     generic_allocator.root()->Free(ptr4);
@@ -1945,16 +1944,16 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
       EXPECT_EQ(61 * kSystemPageSize, stats->active_bytes);
       EXPECT_EQ(64 * kSystemPageSize, stats->resident_bytes);
     }
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 60), true);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 61), true);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 62), true);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 63), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 60), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 61), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 62), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 63), true);
     generic_allocator.root()->PurgeMemory(
         PartitionPurgeDiscardUnusedSystemPages);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 60), true);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 61), false);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 62), false);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 63), false);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 60), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 61), false);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 62), false);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 63), false);
 
     generic_allocator.root()->Free(ptr1);
   }
@@ -2000,21 +1999,17 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
       EXPECT_EQ(kSystemPageSize, stats->active_bytes);
       EXPECT_EQ(4 * kSystemPageSize, stats->resident_bytes);
     }
-    CheckPageInCore(ptr1 - kPointerOffset, true);
-    CheckPageInCore(ptr1 - kPointerOffset + kSystemPageSize, true);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 2), true);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 3), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + kSystemPageSize, true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 2), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 3), true);
     generic_allocator.root()->PurgeMemory(
         PartitionPurgeDiscardUnusedSystemPages);
     EXPECT_EQ(1u, page->num_unprovisioned_slots);
-    CheckPageInCore(ptr1 - kPointerOffset, true);
-#if defined(OS_WIN)
-    CheckPageInCore(ptr1 - kPointerOffset + kSystemPageSize, true);
-#else
-    CheckPageInCore(ptr1 - kPointerOffset + kSystemPageSize, false);
-#endif
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 2), true);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 3), false);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + kSystemPageSize, false);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 2), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 3), false);
 
     // Let's check we didn't brick the freelist.
     void* ptr1b = generic_allocator.root()->Alloc(
@@ -2065,17 +2060,17 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
       EXPECT_EQ(2 * kSystemPageSize, stats->active_bytes);
       EXPECT_EQ(4 * kSystemPageSize, stats->resident_bytes);
     }
-    CheckPageInCore(ptr1 - kPointerOffset, true);
-    CheckPageInCore(ptr1 - kPointerOffset + kSystemPageSize, true);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 2), true);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 3), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + kSystemPageSize, true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 2), true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 3), true);
     generic_allocator.root()->PurgeMemory(
         PartitionPurgeDiscardUnusedSystemPages);
     EXPECT_EQ(2u, page->num_unprovisioned_slots);
-    CheckPageInCore(ptr1 - kPointerOffset, true);
-    CheckPageInCore(ptr1 - kPointerOffset + kSystemPageSize, true);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 2), false);
-    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 3), false);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + kSystemPageSize, true);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 2), false);
+    CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (kSystemPageSize * 3), false);
 
     EXPECT_FALSE(page->freelist_head);
 
