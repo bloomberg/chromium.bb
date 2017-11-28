@@ -879,7 +879,8 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
     // type hint or whether autocomplete should be enabled at all.  Ignore the
     // latter type of attribute value.
     if (tokens.empty() ||
-        (tokens.size() == 1 && (tokens[0] == "on" || tokens[0] == "off"))) {
+        (tokens.size() == 1 &&
+         (tokens[0] == "on" || tokens[0] == "off" || tokens[0] == "false"))) {
       continue;
     }
 
