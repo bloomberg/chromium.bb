@@ -64,6 +64,12 @@ void WebSocketHandleImpl::Connect(const KURL& url,
   mojom::blink::WebSocketClientPtr client_proxy;
   client_binding_.Bind(mojo::MakeRequest(
       &client_proxy, task_runner->ToSingleThreadTaskRunner()));
+
+  // TODO(crbug.com/786608) remove the following CHECKs once bug is solved.
+  CHECK(url.IsValid());
+  CHECK(site_for_cookies.IsValid());
+  CHECK(origin);
+
   websocket_->AddChannelRequest(
       url, protocols, origin, site_for_cookies,
       user_agent_override.IsNull() ? g_empty_string : user_agent_override,
