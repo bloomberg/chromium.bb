@@ -28,9 +28,6 @@ typedef struct {
   MODE_INFO mic;
   MB_MODE_INFO_EXT mbmi_ext;
   uint8_t *color_index_map[2];
-#if CONFIG_MRC_TX
-  uint8_t *mrc_mask;
-#endif  // CONFIG_MRC_TX
   uint8_t *blk_skip[MAX_MB_PLANE];
 
   tran_low_t *coeff[MAX_MB_PLANE];

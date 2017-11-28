@@ -53,13 +53,9 @@ void av1_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
 void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
                       TxfmParam *txfm_param);
 void av1_inverse_transform_block(const MACROBLOCKD *xd,
-                                 const tran_low_t *dqcoeff,
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                                 uint8_t *mrc_mask,
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                                 int plane, TX_TYPE tx_type, TX_SIZE tx_size,
-                                 uint8_t *dst, int stride, int eob,
-                                 int reduced_tx_set);
+                                 const tran_low_t *dqcoeff, int plane,
+                                 TX_TYPE tx_type, TX_SIZE tx_size, uint8_t *dst,
+                                 int stride, int eob, int reduced_tx_set);
 
 void av1_highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
                             int eob, int bd);

@@ -1084,9 +1084,6 @@ static int prune_one_for_sby(const AV1_COMP *cpi, BLOCK_SIZE bsize,
 // ext_tx_used_inter is changed
 static const int ext_tx_used_inter_1D[EXT_TX_SETS_INTER][TX_TYPES_1D] = {
   { 1, 0, 0, 0 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 0, 0, 1 },
-#if CONFIG_MRC_TX
-  { 1, 0, 0, 1 },
-#endif  // CONFIG_MRC_TX
 };
 
 static void get_energy_distribution_finer(const int16_t *diff, int stride,
@@ -1731,21 +1728,6 @@ int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
 #if !CONFIG_LV_MAP
   (void)blk_row;
   (void)blk_col;
-#if CONFIG_MRC_TX
-  const MACROBLOCKD *xd = &x->e_mbd;
-  const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  const TX_TYPE tx_type = av1_get_tx_type(xd->plane[plane].plane_type, xd,
-                                          blk_row, blk_col, block, tx_size);
-  const int is_inter = is_inter_block(mbmi);
-  if (tx_type == MRC_DCT && ((is_inter && SIGNAL_MRC_MASK_INTER) ||
-                             (!is_inter && SIGNAL_MRC_MASK_INTRA))) {
-    const int mrc_mask_cost =
-        av1_cost_color_map(x, plane, block, mbmi->sb_type, tx_size, MRC_MAP);
-    return cost_coeffs(cm, x, plane, block, tx_size, scan_order, a, l,
-                       use_fast_coef_costing) +
-           mrc_mask_cost;
-  }
-#endif
   return cost_coeffs(cm, x, plane, block, tx_size, scan_order, a, l,
                      use_fast_coef_costing);
 #else   // !CONFIG_LV_MAP
@@ -1894,9 +1876,6 @@ void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
                                         int reduced_tx_set) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-  uint8_t *mrc_mask = BLOCK_OFFSET(xd->mrc_mask, block);
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
   const TX_TYPE tx_type =
@@ -1904,12 +1883,8 @@ void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
   const int dst_stride = pd->dst.stride;
   uint8_t *dst =
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
-  av1_inverse_transform_block(xd, dqcoeff,
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                              mrc_mask,
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                              plane, tx_type, tx_size, dst, dst_stride, eob,
-                              reduced_tx_set);
+  av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
+                              dst_stride, eob, reduced_tx_set);
 }
 
 void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
@@ -2020,18 +1995,12 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         }
 #endif  // CONFIG_HIGHBITDEPTH
 
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-        uint8_t *mrc_mask = BLOCK_OFFSET(xd->mrc_mask, block);
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
         const PLANE_TYPE plane_type = get_plane_type(plane);
         TX_TYPE tx_type =
             av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
-        av1_inverse_transform_block(xd, dqcoeff,
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                                    mrc_mask,
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                                    plane, tx_type, tx_size, recon, MAX_TX_SIZE,
-                                    eob, cpi->common.reduced_tx_set_used);
+        av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, recon,
+                                    MAX_TX_SIZE, eob,
+                                    cpi->common.reduced_tx_set_used);
 
 #if CONFIG_DIST_8X8
         if (x->using_dist_8x8 && plane == 0 && (bsw < 8 || bsh < 8)) {
@@ -2157,13 +2126,6 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     return;
   }
 #endif  // DISABLE_TRELLISQ_SEARCH
-
-#if CONFIG_MRC_TX
-  if (mbmi->tx_type == MRC_DCT && !mbmi->valid_mrc_mask) {
-    args->exit_early = 1;
-    return;
-  }
-#endif  // CONFIG_MRC_TX
 
   if (!is_inter_block(mbmi)) {
     struct macroblock_plane *const p = &x->plane[plane];
@@ -2478,14 +2440,6 @@ static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
   const TX_SIZE max_tx_size = max_txsize_lookup[bs];
   const int is_inter = is_inter_block(mbmi);
 
-#if CONFIG_MRC_TX
-  // MRC_DCT only implemented for TX_32X32 so only include this tx in
-  // the search for TX_32X32
-  if (tx_type == MRC_DCT &&
-      ((is_inter && !USE_MRC_INTER) || (!is_inter && !USE_MRC_INTRA) ||
-       tx_size != TX_32X32))
-    return 1;
-#endif  // CONFIG_MRC_TX
   if (mbmi->ref_mv_idx > 0 && tx_type != DCT_DCT) return 1;
   if (FIXED_TX_TYPE && tx_type != get_default_tx_type(0, xd, 0, tx_size))
     return 1;
@@ -3647,9 +3601,6 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   int64_t tmp;
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-  uint8_t *mrc_mask = BLOCK_OFFSET(xd->mrc_mask, block);
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
   PLANE_TYPE plane_type = get_plane_type(plane);
   TX_TYPE tx_type =
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
@@ -3772,12 +3723,6 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   tmp_dist = RIGHT_SIGNED_SHIFT(tmp_dist, shift);
 
-#if CONFIG_MRC_TX
-  if (tx_type == MRC_DCT && !xd->mi[0]->mbmi.valid_mrc_mask) {
-    av1_invalid_rd_stats(rd_stats);
-    return;
-  }
-#endif  // CONFIG_MRC_TX
   if (
 #if CONFIG_DIST_8X8
       disable_early_skip ||
@@ -3796,12 +3741,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   const int eob = p->eobs[block];
 
-  av1_inverse_transform_block(xd, dqcoeff,
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                              mrc_mask,
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                              plane, tx_type, tx_size, rec_buffer, MAX_TX_SIZE,
-                              eob, cm->reduced_tx_set_used);
+  av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, rec_buffer,
+                              MAX_TX_SIZE, eob, cm->reduced_tx_set_used);
   if (eob > 0) {
 #if CONFIG_DIST_8X8
     if (x->using_dist_8x8 && plane == 0 && (bw < 8 && bh < 8)) {
@@ -3966,13 +3907,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 #endif
   }
 
-  if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH && tx_split_prune_flag == 0
-#if CONFIG_MRC_TX
-      // If the tx type we are trying is MRC_DCT, we cannot partition the
-      // transform into anything smaller than TX_32X32
-      && mbmi->tx_type != MRC_DCT
-#endif  // CONFIG_MRC_TX
-      ) {
+  if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH && tx_split_prune_flag == 0) {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
@@ -4888,19 +4823,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   for (tx_type = txk_start; tx_type < txk_end; ++tx_type) {
     RD_STATS this_rd_stats;
     av1_init_rd_stats(&this_rd_stats);
-#if CONFIG_MRC_TX
-    // MRC_DCT only implemented for TX_32X32 so only include this tx in
-    // the search for TX_32X32
-    if (tx_type == MRC_DCT &&
-        (max_tx_size != TX_32X32 || (is_inter && !USE_MRC_INTER) ||
-         (!is_inter && !USE_MRC_INTRA)))
-      continue;
-    // MRC_DCT won't be included in the tx_set_type determined 1 level below
-    // a 32X32 block, but we still want to search MRC_DCT
-    if (!av1_ext_tx_used[tx_set_type][tx_type] && tx_type != MRC_DCT) continue;
-#else
     if (!av1_ext_tx_used[tx_set_type][tx_type]) continue;
-#endif  // CONFIG_MRC_TX
     (void)prune;
     // TODO(sarahparker) This speed feature has been temporarily disabled
     // with ext-tx because it is not compatible with the current

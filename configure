@@ -309,7 +309,6 @@ EXPERIMENT_LIST="
     ext_comp_refs
     bgsprite
     simplify_tx_mode
-    mrc_tx
     loopfilter_level
     no_frame_context_signaling
     txmg
@@ -537,7 +536,6 @@ post_process_cmdline() {
 
     # Fix up experiment dependencies
     enabled lv_map_multi && soft_enable lv_map
-    enabled lv_map && disable_feature mrc_tx
     enabled eob_first && enable_feature lv_map
     enabled txk_sel && soft_enable lv_map
     enabled ctx1d && soft_enable lv_map

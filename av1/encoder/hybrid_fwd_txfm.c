@@ -109,13 +109,6 @@ static void fwd_txfm_16x16(const int16_t *src_diff, tran_low_t *coeff,
 
 static void fwd_txfm_32x32(const int16_t *src_diff, tran_low_t *coeff,
                            int diff_stride, TxfmParam *txfm_param) {
-#if CONFIG_MRC_TX
-  // MRC_DCT currently only has a C implementation
-  if (txfm_param->tx_type == MRC_DCT) {
-    av1_fht32x32_c(src_diff, coeff, diff_stride, txfm_param);
-    return;
-  }
-#endif  // CONFIG_MRC_TX
   av1_fht32x32(src_diff, coeff, diff_stride, txfm_param);
 }
 

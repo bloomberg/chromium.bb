@@ -69,18 +69,14 @@ static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][EXT_TX_SIZES] =
       { 1, 1, 1, 1 },  // unused
       { 1, 1, 0, 0 },
       { 0, 0, 1, 0 },
-#if CONFIG_MRC_TX
-      { 0, 0, 0, 1 },
-#endif  // CONFIG_MRC_TX
     };
 
 static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER][EXT_TX_SIZES] =
     {
       { 1, 1, 1, 1 },  // unused
-      { 1, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 },
-#if CONFIG_MRC_TX
+      { 1, 1, 0, 0 },
+      { 0, 0, 1, 0 },
       { 0, 0, 0, 1 },
-#endif  // CONFIG_MRC_TX
     };
 
 void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
@@ -158,16 +154,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                                fc->palette_uv_color_index_cdf[i][j], NULL);
     }
   }
-#if CONFIG_MRC_TX
-  for (i = 0; i < PALETTE_SIZES; ++i) {
-    for (j = 0; j < PALETTE_COLOR_INDEX_CONTEXTS; ++j) {
-      av1_cost_tokens_from_cdf(x->mrc_mask_inter_cost[i][j],
-                               fc->mrc_mask_inter_cdf[i][j], NULL);
-      av1_cost_tokens_from_cdf(x->mrc_mask_intra_cost[i][j],
-                               fc->mrc_mask_intra_cdf[i][j], NULL);
-    }
-  }
-#endif  // CONFIG_MRC_TX
 
 #if CONFIG_CFL
   int sign_cost[CFL_JOINT_SIGNS];

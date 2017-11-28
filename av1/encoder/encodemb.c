@@ -528,7 +528,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   TxfmParam txfm_param;
 
-#if CONFIG_DIST_8X8 || CONFIG_MRC_TX
+#if CONFIG_DIST_8X8
   uint8_t *dst;
   const int dst_stride = pd->dst.stride;
 #if CONFIG_DIST_8X8
@@ -558,10 +558,9 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   qparam.iqmatrix = iqmatrix;
 #endif  // CONFIG_AOM_QM
 
-#if CONFIG_DIST_8X8 || CONFIG_MRC_TX
+#if CONFIG_DIST_8X8
   dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
-#endif  // CONFIG_DIST_8X8 ||
-        // CONFIG_MRC_TX
+#endif  // CONFIG_DIST_8X8
 
 #if CONFIG_DIST_8X8
   if (x->using_dist_8x8) {
@@ -594,19 +593,6 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   txfm_param.tx_set_type =
       get_ext_tx_set_type(txfm_param.tx_size, plane_bsize, is_inter_block(mbmi),
                           cm->reduced_tx_set_used);
-#if CONFIG_MRC_TX
-  txfm_param.is_inter = is_inter_block(mbmi);
-#endif
-#if CONFIG_MRC_TX
-  txfm_param.dst = dst;
-  txfm_param.stride = dst_stride;
-#if CONFIG_MRC_TX
-  txfm_param.valid_mask = &mbmi->valid_mrc_mask;
-#if SIGNAL_ANY_MRC_MASK
-  txfm_param.mask = BLOCK_OFFSET(xd->mrc_mask, block);
-#endif  // SIGNAL_ANY_MRC_MASK
-#endif  // CONFIG_MRC_TX
-#endif  // CONFIG_MRC_TX
 
   txfm_param.bd = xd->bd;
   txfm_param.is_hbd = get_bitdepth_data_path_index(xd);
@@ -648,9 +634,6 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-  uint8_t *mrc_mask = BLOCK_OFFSET(xd->mrc_mask, block);
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
   uint8_t *dst;
   ENTROPY_CONTEXT *a, *l;
 
@@ -684,12 +667,9 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   {
     TX_TYPE tx_type =
         av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col, block, tx_size);
-    av1_inverse_transform_block(xd, dqcoeff,
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                                mrc_mask,
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                                plane, tx_type, tx_size, dst, pd->dst.stride,
-                                p->eobs[block], cm->reduced_tx_set_used);
+    av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
+                                pd->dst.stride, p->eobs[block],
+                                cm->reduced_tx_set_used);
   }
 }
 
@@ -929,9 +909,6 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-  uint8_t *mrc_mask = BLOCK_OFFSET(xd->mrc_mask, block);
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
   PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_TYPE tx_type =
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
@@ -958,12 +935,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                     ctx, AV1_XFORM_QUANT_B);
   }
 
-  av1_inverse_transform_block(xd, dqcoeff,
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                              mrc_mask,
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                              plane, tx_type, tx_size, dst, dst_stride, *eob,
-                              cm->reduced_tx_set_used);
+  av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
+                              dst_stride, *eob, cm->reduced_tx_set_used);
 
   if (*eob) *(args->skip) = 0;
 

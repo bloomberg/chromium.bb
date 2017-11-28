@@ -421,24 +421,10 @@ static INLINE void write_coeff_extra(const aom_cdf_prob *const *cdf, int val,
 static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
                            const TOKENEXTRA *const stop,
                            aom_bit_depth_t bit_depth, const TX_SIZE tx_size,
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                           TX_TYPE tx_type, int is_inter,
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                            TOKEN_STATS *token_stats) {
   const TOKENEXTRA *p = *tp;
   int count = 0;
   const int seg_eob = av1_get_max_eob(tx_size);
-
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-  if (tx_type == MRC_DCT && ((is_inter && SIGNAL_MRC_MASK_INTER) ||
-                             (!is_inter && SIGNAL_MRC_MASK_INTRA))) {
-    int rows = tx_size_high[tx_size];
-    int cols = tx_size_wide[tx_size];
-    assert(tx_size == TX_32X32);
-    assert(p < stop);
-    pack_map_tokens(w, &p, 2, rows * cols);
-  }
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
 
   while (p < stop && p->token != EOSB_TOKEN) {
     const int token = p->token;
@@ -567,10 +553,6 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
   TX_SIZE plane_tx_size;
   const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-  TX_TYPE tx_type = av1_get_tx_type(plane ? PLANE_TYPE_UV : PLANE_TYPE_Y, xd,
-                                    blk_row, blk_col, block, tx_size);
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
 
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
@@ -585,11 +567,7 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
       ) {
     TOKEN_STATS tmp_token_stats;
     init_token_stats(&tmp_token_stats);
-    pack_mb_tokens(w, tp, tok_end, bit_depth, tx_size,
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                   tx_type, is_inter_block(mbmi),
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                   &tmp_token_stats);
+    pack_mb_tokens(w, tp, tok_end, bit_depth, tx_size, &tmp_token_stats);
 #if CONFIG_RD_DEBUG
     token_stats->txb_coeff_cost_map[blk_row][blk_col] = tmp_token_stats.cost;
     token_stats->cost += tmp_token_stats.cost;
@@ -1130,10 +1108,6 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
          (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
         !mbmi->skip &&
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-#if CONFIG_MRC_TX
-      if (tx_type == MRC_DCT)
-        assert(mbmi->valid_mrc_mask && "Invalid MRC mask");
-#endif  // CONFIG_MRC_TX
       const TxSetType tx_set_type = get_ext_tx_set_type(
           tx_size, bsize, is_inter, cm->reduced_tx_set_used);
       const int eset =
@@ -1956,15 +1930,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 
             for (blk_row = row; blk_row < unit_height; blk_row += bkh) {
               for (blk_col = col; blk_col < unit_width; blk_col += bkw) {
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                TX_TYPE tx_type =
-                    av1_get_tx_type(plane ? PLANE_TYPE_UV : PLANE_TYPE_Y, xd,
-                                    blk_row, blk_col, 0, tx);
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                 pack_mb_tokens(w, tok, tok_end, cm->bit_depth, tx,
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                               tx_type, is_inter_block(mbmi),
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                                &token_stats);
               }
             }

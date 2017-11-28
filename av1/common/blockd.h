@@ -283,10 +283,6 @@ typedef struct MB_MODE_INFO {
 #endif
   int8_t seg_id_predicted;  // valid only when temporal_update is enabled
 
-#if CONFIG_MRC_TX
-  int valid_mrc_mask;
-#endif  // CONFIG_MRC_TX
-
   // Only for INTRA blocks
   UV_PREDICTION_MODE uv_mode;
 
@@ -716,10 +712,6 @@ typedef struct macroblockd {
 
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
 
-#if CONFIG_MRC_TX
-  uint8_t *mrc_mask;
-#endif  // CONFIG_MRC_TX
-
 #if CONFIG_CFL
   CFL_CTX *cfl;
 #endif
@@ -765,23 +757,11 @@ static INLINE int block_signals_txsize(BLOCK_SIZE bsize) {
   return bsize > BLOCK_4X4;
 }
 
-#if CONFIG_MRC_TX
-#define USE_MRC_INTRA 0
-#define USE_MRC_INTER 1
-#define SIGNAL_MRC_MASK_INTRA (USE_MRC_INTRA && 0)
-#define SIGNAL_MRC_MASK_INTER (USE_MRC_INTER && 1)
-#define SIGNAL_ANY_MRC_MASK (SIGNAL_MRC_MASK_INTRA || SIGNAL_MRC_MASK_INTER)
-#endif  // CONFIG_MRC_TX
-
 #define ALLOW_INTRA_EXT_TX 1
 
 // Number of transform types in each set type
 static const int av1_num_ext_tx_set[EXT_TX_SET_TYPES] = {
-  1, 2,
-#if CONFIG_MRC_TX
-  2, 3,
-#endif  // CONFIG_MRC_TX
-  5, 7, 12, 16,
+  1, 2, 5, 7, 12, 16,
 };
 
 static const int av1_ext_tx_set_idx_to_type[2][AOMMAX(EXT_TX_SETS_INTRA,
@@ -789,48 +769,14 @@ static const int av1_ext_tx_set_idx_to_type[2][AOMMAX(EXT_TX_SETS_INTRA,
   {
       // Intra
       EXT_TX_SET_DCTONLY, EXT_TX_SET_DTT4_IDTX_1DDCT, EXT_TX_SET_DTT4_IDTX,
-#if CONFIG_MRC_TX
-      EXT_TX_SET_MRC_DCT,
-#endif  // CONFIG_MRC_TX
   },
   {
       // Inter
       EXT_TX_SET_DCTONLY, EXT_TX_SET_ALL16, EXT_TX_SET_DTT9_IDTX_1DDCT,
       EXT_TX_SET_DCT_IDTX,
-#if CONFIG_MRC_TX
-      EXT_TX_SET_MRC_DCT_IDTX,
-#endif  // CONFIG_MRC_TX
   }
 };
 
-#if CONFIG_MRC_TX
-static const int av1_ext_tx_used[EXT_TX_SET_TYPES][TX_TYPES] = {
-  {
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  },
-  {
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
-  },
-  {
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-  },
-  {
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1,
-  },
-  {
-      1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
-  },
-  {
-      1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
-  },
-  {
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-  },
-  {
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-  },
-};
-#else   // CONFIG_MRC_TX
 static const int av1_ext_tx_used[EXT_TX_SET_TYPES][TX_TYPES] = {
   {
       1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -851,7 +797,6 @@ static const int av1_ext_tx_used[EXT_TX_SET_TYPES][TX_TYPES] = {
       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
   },
 };
-#endif  // CONFIG_MRC_TX
 
 static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
                                             int is_inter, int use_reduced_set) {
@@ -865,14 +810,6 @@ static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
 #endif  // USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
   if (use_reduced_set)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
-#if CONFIG_MRC_TX
-  if (tx_size == TX_32X32) {
-    if (is_inter && USE_MRC_INTER)
-      return EXT_TX_SET_MRC_DCT_IDTX;
-    else if (!is_inter && USE_MRC_INTRA)
-      return EXT_TX_SET_MRC_DCT;
-  }
-#endif  // CONFIG_MRC_TX
 #if CONFIG_DAALA_TX32
   if (tx_size_sqr_up > TX_32X32)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DCTONLY;
@@ -897,19 +834,11 @@ static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
 static const int ext_tx_set_index[2][EXT_TX_SET_TYPES] = {
   {
       // Intra
-      0, -1,
-#if CONFIG_MRC_TX
-      3, -1,
-#endif  // CONFIG_MRC_TX
-      2, 1, -1, -1,
+      0, -1, 2, 1, -1, -1,
   },
   {
       // Inter
-      0, 3,
-#if CONFIG_MRC_TX
-      -1, 4,
-#endif  // CONFIG_MRC_TX
-      -1, -1, 2, 1,
+      0, 3, -1, -1, 2, 1,
   },
 };
 
@@ -1089,18 +1018,6 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   return get_default_tx_type(plane_type, xd, block_raster_idx, tx_size);
 #endif  // FIXED_TX_TYPE
 
-#if CONFIG_MRC_TX
-  if (mbmi->tx_type == MRC_DCT) {
-    assert(((is_inter_block(mbmi) && USE_MRC_INTER) ||
-            (!is_inter_block(mbmi) && USE_MRC_INTRA)) &&
-           "INVALID BLOCK TYPE FOR MRC_DCT");
-    if (plane_type == PLANE_TYPE_Y) {
-      assert(tx_size == TX_32X32);
-      return mbmi->tx_type;
-    }
-    return DCT_DCT;
-  }
-#endif  // CONFIG_MRC_TX
 #if CONFIG_DAALA_TX32
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] > TX_32X32)
 #else

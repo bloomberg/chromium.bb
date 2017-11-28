@@ -53,21 +53,6 @@ static INLINE tran_high_t check_range(tran_high_t input, int bd) {
 #define WRAPLOW(x) ((int32_t)check_range(x, 8))
 #define HIGHBD_WRAPLOW(x, bd) ((int32_t)check_range((x), bd))
 
-#if CONFIG_MRC_TX
-// These each perform dct but add coefficients based on a mask
-void aom_imrc32x32_1_add_c(const tran_low_t *input, uint8_t *dest, int stride,
-                           uint8_t *mask);
-
-void aom_imrc32x32_1024_add_c(const tran_low_t *input, uint8_t *dest,
-                              int stride, uint8_t *mask);
-
-void aom_imrc32x32_135_add_c(const tran_low_t *input, uint8_t *dest, int stride,
-                             uint8_t *mask);
-
-void aom_imrc32x32_34_add_c(const tran_low_t *input, uint8_t *dest, int stride,
-                            uint8_t *mask);
-#endif  // CONFIG_MRC_TX
-
 void aom_idct4_c(const tran_low_t *input, tran_low_t *output);
 void aom_idct8_c(const tran_low_t *input, tran_low_t *output);
 void aom_idct16_c(const tran_low_t *input, tran_low_t *output);
