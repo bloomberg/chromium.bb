@@ -6093,9 +6093,6 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     InitContentSecurityPolicy(nullptr, policy_to_inherit);
   }
 
-  if (GetSecurityOrigin()->HasSuborigin())
-    EnforceSuborigin(*GetSecurityOrigin()->GetSuborigin());
-
   if (Settings* settings = initializer.GetSettings()) {
     if (!settings->GetWebSecurityEnabled()) {
       // Web security is turned off. We should let this document access every
@@ -6118,9 +6115,6 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
   if (GetSecurityOrigin()->IsUnique() &&
       SecurityOrigin::Create(url_)->IsPotentiallyTrustworthy())
     GetSecurityOrigin()->SetUniqueOriginIsPotentiallyTrustworthy(true);
-
-  if (GetSecurityOrigin()->HasSuborigin())
-    EnforceSuborigin(*GetSecurityOrigin()->GetSuborigin());
 
   ApplyFeaturePolicy({});
 
