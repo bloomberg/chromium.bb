@@ -11,6 +11,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/feature_list.h"
 #include "components/prefs/pref_member.h"
 
@@ -125,6 +126,11 @@ void RegisterAccountConsistencyProfilePrefs(
 
 // Whether the chrome.identity API should be multi-account.
 bool IsExtensionsMultiAccount();
+
+// |is_gaia_isolated| callback returns whether Gaia origin is isolated, which is
+// a requirement for kDicePrepareMigration and later Dice steps.
+void SetGaiaOriginIsolatedCallback(
+    const base::RepeatingCallback<bool()>& is_gaia_isolated);
 
 }  // namespace signin
 

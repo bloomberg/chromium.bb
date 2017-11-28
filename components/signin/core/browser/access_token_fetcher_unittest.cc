@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -50,6 +51,8 @@ class AccessTokenFetcherTest : public testing::Test {
     SigninManager::RegisterProfilePrefs(pref_service_.registry());
     SigninManager::RegisterPrefs(pref_service_.registry());
 #endif  // OS_CHROMEOS
+
+    signin::SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
 
     account_tracker_ = base::MakeUnique<AccountTrackerService>();
     account_tracker_->Initialize(&signin_client_);

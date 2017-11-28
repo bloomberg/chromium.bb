@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -132,6 +133,7 @@ class DiceResponseHandlerTest : public testing::Test,
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     SigninManager::RegisterProfilePrefs(pref_service_.registry());
     signin::RegisterAccountConsistencyProfilePrefs(pref_service_.registry());
+    signin::SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
     auto account_reconcilor_delegate =
         std::make_unique<signin::DiceAccountReconcilorDelegate>(
             &pref_service_, false /* is_new_profile */);
