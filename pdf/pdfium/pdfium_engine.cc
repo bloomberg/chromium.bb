@@ -2343,16 +2343,14 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
   if (text_length <= 0)
     return;
 
-  // Adding +1 to text_length to account for the string terminator that is
-  // included.
   base::string16 page_text;
   PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(
-      &page_text, text_length + 1, false);
+      &page_text, text_length, false);
   unsigned short* data =
       reinterpret_cast<unsigned short*>(api_string_adapter.GetData());
-  int written = FPDFText_GetText(pages_[current_page]->GetTextPage(),
-                                 character_to_start_searching_from,
-                                 text_length + 1, data);
+  int written =
+      FPDFText_GetText(pages_[current_page]->GetTextPage(),
+                       character_to_start_searching_from, text_length, data);
   api_string_adapter.Close(written);
 
   std::vector<PDFEngine::Client::SearchStringResult> results =
