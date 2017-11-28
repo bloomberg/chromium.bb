@@ -21325,6 +21325,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="InternalsPage">
     A forced close was requested from the indexeddb-internals page.
   </int>
+  <int value="3" label="CopyOrigin">
+    The database is force closed so that it can be copied.
+  </int>
 </enum>
 
 <enum name="IDBException">
