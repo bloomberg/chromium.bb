@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/webui/extensions/install_extension_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
@@ -27,6 +29,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -46,6 +49,9 @@
 namespace extensions {
 
 namespace {
+
+constexpr char kInDevModeKey[] = "inDevMode";
+constexpr char kLoadTimeClassesKey[] = "loadTimeClasses";
 
 class ExtensionWebUiTimer : public content::WebContentsObserver {
  public:
@@ -105,7 +111,11 @@ class ExtensionWebUiTimer : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebUiTimer);
 };
 
-content::WebUIDataSource* CreateMdExtensionsSource() {
+std::string GetLoadTimeClasses(bool in_dev_mode) {
+  return in_dev_mode ? "in-dev-mode" : std::string();
+}
+
+content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIExtensionsHost);
 
@@ -329,6 +339,9 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
               GURL(extension_urls::GetWebstoreExtensionsCategoryURL()),
               g_browser_process->GetApplicationLocale()).spec()));
 
+  source->AddBoolean(kInDevModeKey, in_dev_mode);
+  source->AddString(kLoadTimeClassesKey, GetLoadTimeClasses(in_dev_mode));
+
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_MD_EXTENSIONS_CRISPER_JS);
   source->SetDefaultResource(IDR_MD_EXTENSIONS_VULCANIZED_HTML);
@@ -369,7 +382,11 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
       base::FeatureList::IsEnabled(features::kMaterialDesignExtensions);
 
   if (is_md) {
-    source = CreateMdExtensionsSource();
+    in_dev_mode_.Init(
+        prefs::kExtensionsUIDeveloperMode, profile->GetPrefs(),
+        base::Bind(&ExtensionsUI::OnDevModeChanged, base::Unretained(this)));
+
+    source = CreateMdExtensionsSource(*in_dev_mode_);
 
     source->AddBoolean(
         "isGuest",
@@ -424,6 +441,7 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
 
   content::WebUIDataSource::Add(profile, source);
+
   // Handles its own lifetime.
   new ExtensionWebUiTimer(web_ui->GetWebContents(), is_md);
 }
@@ -435,6 +453,17 @@ base::RefCountedMemory* ExtensionsUI::GetFaviconResourceBytes(
     ui::ScaleFactor scale_factor) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.LoadDataResourceBytesForScale(IDR_EXTENSIONS_FAVICON, scale_factor);
+}
+
+// Normally volatile data does not belong in loadTimeData, but in this case
+// prevents flickering on a very prominent surface (top of the landing page).
+void ExtensionsUI::OnDevModeChanged() {
+  auto update = std::make_unique<base::DictionaryValue>();
+  update->SetBoolean(kInDevModeKey, *in_dev_mode_);
+  update->SetString(kLoadTimeClassesKey, GetLoadTimeClasses(*in_dev_mode_));
+  content::WebUIDataSource::Update(Profile::FromWebUI(web_ui()),
+                                   chrome::kChromeUIExtensionsHost,
+                                   std::move(update));
 }
 
 }  // namespace extensions
