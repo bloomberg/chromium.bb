@@ -38,6 +38,11 @@ def GenerateJavadoc(options, src_dir):
   working_dir = os.path.join(options.input_dir, 'android', 'api')
   overview_file = os.path.abspath(options.overview_file)
 
+  android_sdk_jar = os.path.abspath(options.android_sdk_jar)
+  if not android_sdk_jar:
+    android_sdk_jar = os.path.join(
+        SDK_DIR, 'platforms', 'android-27', 'android.jar')
+
   build_utils.DeleteDirectory(output_dir)
   build_utils.MakeDirectory(output_dir)
   javadoc_cmd = [
@@ -52,7 +57,7 @@ def GenerateJavadoc(options, src_dir):
     '-federate', 'Android', 'https://developer.android.com/',
     '-federationapi', 'Android', os.path.join(DOCLAVA_DIR, 'current.txt'),
     '-bootclasspath',
-    '%s:%s' % (os.path.join(SDK_DIR, 'platforms', 'android-26', 'android.jar'),
+    '%s:%s' % (android_sdk_jar,
                os.path.join(SDK_DIR, 'extras', 'android', 'support',
                             'annotations', 'android-support-annotations.jar')),
   ]
@@ -77,6 +82,7 @@ def main():
   parser.add_option('--overview-file', help='Path of the overview page')
   parser.add_option('--readme-file', help='Path of the README.md')
   parser.add_option('--stamp', help='Path to touch on success.')
+  parser.add_option('--android-sdk-jar', help='Path to android.jar')
 
   options, _ = parser.parse_args()
   # A temporary directory to put the output of cronet api source jar files.

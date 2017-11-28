@@ -30,7 +30,7 @@ if (is_android) {
   } else {
     import("//build/config/android/sdk.gni")
     declare_args() {
-      # Android SDK release. Currently, only "o" is publicly supported.
+      # Android SDK release. Currently, only "o_mr1" is publicly supported.
       android_sdk_release = default_android_sdk_release
     }
   }
@@ -51,11 +51,11 @@ if (is_android) {
     assert(defined(default_android_ndk_major_version))
   }
 
-  if (android_sdk_release == "o") {
+  if (android_sdk_release == "o_mr1") {
     default_android_sdk_root = "//third_party/android_tools/sdk"
-    default_android_sdk_version = "26"
-    default_android_sdk_build_tools_version = "26.0.2"
-    default_android_sdk_tools_version_suffix = "-25.3.2"
+    default_android_sdk_version = "27"
+    default_android_sdk_build_tools_version = "27.0.1"
+    default_android_sdk_tools_version_suffix = "-26.0.0-dev"
     public_android_sdk = true
   }
 

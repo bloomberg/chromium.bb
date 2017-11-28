@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.ntp.snippets;
 
+import android.annotation.SuppressLint;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
@@ -88,6 +89,7 @@ public class SnippetArticle implements OfflinableSuggestion {
     /**
      * Creates a SnippetArticleListItem object that will hold the data.
      */
+    @SuppressLint("SupportAnnotationUsage") // for ColorInt on an Integer rather than int or long
     public SnippetArticle(int category, String idWithinCategory, String title, String publisher,
             String url, long publishTimestamp, float score, long fetchTimestamp,
             boolean isVideoSuggestion, @ColorInt Integer thumbnailDominantColor) {
