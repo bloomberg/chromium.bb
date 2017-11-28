@@ -26,6 +26,10 @@ void HostFrameSinkManager::SetLocalManager(
   frame_sink_manager_impl_ = frame_sink_manager_impl;
 
   frame_sink_manager_ = frame_sink_manager_impl;
+
+  // Assign temporary references if FrameSinkManagerImpl is using them.
+  assign_temporary_references_ =
+      frame_sink_manager_impl_->surface_manager()->using_surface_references();
 }
 
 void HostFrameSinkManager::BindAndSetManager(
@@ -176,13 +180,19 @@ void HostFrameSinkManager::UnregisterFrameSinkHierarchy(
     frame_sink_data_map_.erase(parent_frame_sink_id);
 }
 
+void HostFrameSinkManager::WillAssignTemporaryReferencesExternally() {
+  assign_temporary_references_ = false;
+}
+
 void HostFrameSinkManager::AssignTemporaryReference(
     const SurfaceId& surface_id,
     const FrameSinkId& frame_sink_id) {
+  DCHECK(!assign_temporary_references_);
   frame_sink_manager_->AssignTemporaryReference(surface_id, frame_sink_id);
 }
 
 void HostFrameSinkManager::DropTemporaryReference(const SurfaceId& surface_id) {
+  DCHECK(!assign_temporary_references_);
   frame_sink_manager_->DropTemporaryReference(surface_id);
 }
 
@@ -223,10 +233,14 @@ void HostFrameSinkManager::CompositorFrameSinkSupportDestroyed(
 
 void HostFrameSinkManager::PerformAssignTemporaryReference(
     const SurfaceId& surface_id) {
-  // Find the expected embedder for the new surface and assign the temporary
-  // reference to it.
   auto iter = frame_sink_data_map_.find(surface_id.frame_sink_id());
-  DCHECK(iter != frame_sink_data_map_.end());
+  if (iter == frame_sink_data_map_.end()) {
+    // We don't have any hierarchy information for what will embed the new
+    // surface, drop the temporary reference.
+    frame_sink_manager_->DropTemporaryReference(surface_id);
+    return;
+  }
+
   const FrameSinkData& data = iter->second;
 
   // Display roots don't have temporary references to assign.
@@ -244,7 +258,7 @@ void HostFrameSinkManager::PerformAssignTemporaryReference(
   for (const FrameSinkId& parent_id : data.parents) {
     const FrameSinkData& parent_data = frame_sink_data_map_[parent_id];
     if (parent_data.IsFrameSinkRegistered()) {
-      frame_sink_manager_impl_->AssignTemporaryReference(surface_id, parent_id);
+      frame_sink_manager_->AssignTemporaryReference(surface_id, parent_id);
       return;
     }
   }
@@ -264,7 +278,7 @@ void HostFrameSinkManager::OnConnectionLost() {
 
   binding_.Close();
   frame_sink_manager_ptr_.reset();
-  frame_sink_manager_impl_ = nullptr;
+  frame_sink_manager_ = nullptr;
 
   // CompositorFrameSinks are lost along with the connection to
   // mojom::FrameSinkManager.
@@ -297,23 +311,20 @@ void HostFrameSinkManager::RegisterAfterConnectionLoss() {
 
 void HostFrameSinkManager::OnFirstSurfaceActivation(
     const SurfaceInfo& surface_info) {
+  // TODO(kylechar): This needs to happen when the surface is created, not when
+  // it first activates.
+  if (assign_temporary_references_)
+    PerformAssignTemporaryReference(surface_info.id());
+
   auto it = frame_sink_data_map_.find(surface_info.id().frame_sink_id());
+
   // If we've received a bogus or stale SurfaceId from Viz then just ignore it.
-  if (it == frame_sink_data_map_.end()) {
-    // We don't have any hierarchy information for what will embed the new
-    // surface, drop the temporary reference.
-    frame_sink_manager_->DropTemporaryReference(surface_info.id());
+  if (it == frame_sink_data_map_.end())
     return;
-  }
 
   FrameSinkData& frame_sink_data = it->second;
   if (frame_sink_data.client)
     frame_sink_data.client->OnFirstSurfaceActivation(surface_info);
-
-  if (frame_sink_manager_impl_ &&
-      frame_sink_manager_impl_->surface_manager()->using_surface_references()) {
-    PerformAssignTemporaryReference(surface_info.id());
-  }
 }
 
 void HostFrameSinkManager::OnClientConnectionClosed(

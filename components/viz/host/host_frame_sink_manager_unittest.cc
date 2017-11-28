@@ -624,5 +624,33 @@ TEST_F(HostFrameSinkManagerRemoteTest, DeletedHitTestQuery) {
       kFrameSinkChild1, 1);
 }
 
+// Verify that HostFrameSinkManager assigns temporary references when connected
+// to a remote mojom::FrameSinkManager.
+TEST_F(HostFrameSinkManagerRemoteTest, AssignTemporaryReference) {
+  FakeHostFrameSinkClient host_client;
+  host().RegisterFrameSinkId(kFrameSinkParent1, &host_client);
+
+  const SurfaceId surface_id = MakeSurfaceId(kFrameSinkChild1, 1);
+  host().RegisterFrameSinkId(surface_id.frame_sink_id(), &host_client);
+  MockCompositorFrameSinkClient compositor_frame_sink_client;
+  mojom::CompositorFrameSinkPtr compositor_frame_sink;
+  host().CreateCompositorFrameSink(
+      kFrameSinkChild1, MakeRequest(&compositor_frame_sink),
+      compositor_frame_sink_client.BindInterfacePtr());
+
+  host().RegisterFrameSinkHierarchy(kFrameSinkParent1,
+                                    surface_id.frame_sink_id());
+
+  // When HostFrameSinkManager gets OnFirstSurfaceActivation() it should assign
+  // the temporary reference to the registered parent |kFrameSinkParent1|.
+  GetFrameSinkManagerClient()->OnFirstSurfaceActivation(
+      MakeSurfaceInfo(surface_id));
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(impl(), AssignTemporaryReference(surface_id, kFrameSinkParent1))
+      .WillOnce(InvokeClosure(run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
 }  // namespace test
 }  // namespace viz
