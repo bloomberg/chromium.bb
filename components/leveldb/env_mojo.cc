@@ -100,9 +100,8 @@ class MojoSequentialFile : public leveldb::SequentialFile {
       uma_logger_->RecordOSError(leveldb_env::kSequentialFileSkip, error);
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          leveldb_env::kSequentialFileSkip, error);
-    } else {
-      return Status::OK();
     }
+    return Status::OK();
   }
 
  private:
@@ -509,10 +508,9 @@ Status MojoEnv::NewLogger(const std::string& fname, Logger** result) {
     RecordOSError(leveldb_env::kNewLogger, f.error_details());
     return MakeIOError(fname, "Unable to create log file",
                        leveldb_env::kNewLogger, f.error_details());
-  } else {
-    *result = new leveldb::ChromiumLogger(std::move(f));
-    return Status::OK();
   }
+  *result = new leveldb::ChromiumLogger(std::move(f));
+  return Status::OK();
 }
 
 uint64_t MojoEnv::NowMicros() {

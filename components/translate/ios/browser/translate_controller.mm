@@ -85,7 +85,7 @@ bool TranslateController::OnJavascriptCommandReceived(
   value->GetAsString(&out_string);
   if (out_string == "translate.ready")
     return OnTranslateReady(command);
-  else if (out_string == "translate.status")
+  if (out_string == "translate.status")
     return OnTranslateComplete(command);
 
   NOTREACHED();

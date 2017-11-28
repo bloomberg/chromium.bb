@@ -354,9 +354,8 @@ std::string JSONSchemaValidator::GetJSONSchemaType(const base::Value* value) {
       if (std::abs(double_value) <= std::pow(2.0, DBL_MANT_DIG) &&
           double_value == floor(double_value)) {
         return schema::kInteger;
-      } else {
-        return schema::kNumber;
       }
+      return schema::kNumber;
     }
     case base::Value::Type::STRING:
       return schema::kString;
@@ -817,15 +816,14 @@ bool JSONSchemaValidator::ValidateType(const base::Value* instance,
   if (expected_type == actual_type ||
       (expected_type == schema::kNumber && actual_type == schema::kInteger)) {
     return true;
-  } else if (expected_type == schema::kInteger &&
-             actual_type == schema::kNumber) {
+  }
+  if (expected_type == schema::kInteger && actual_type == schema::kNumber) {
     errors_.push_back(Error(path, kInvalidTypeIntegerNumber));
     return false;
-  } else {
-    errors_.push_back(Error(path, FormatErrorMessage(
-        kInvalidType, expected_type, actual_type)));
-    return false;
   }
+  errors_.push_back(Error(
+      path, FormatErrorMessage(kInvalidType, expected_type, actual_type)));
+  return false;
 }
 
 bool JSONSchemaValidator::SchemaAllowsAnyAdditionalItems(
@@ -841,7 +839,6 @@ bool JSONSchemaValidator::SchemaAllowsAnyAdditionalItems(
     CHECK((*additional_properties_schema)->GetString(
         schema::kType, &additional_properties_type));
     return additional_properties_type == schema::kAny;
-  } else {
-    return default_allow_additional_properties_;
   }
+  return default_allow_additional_properties_;
 }

@@ -70,27 +70,23 @@ DataUseUserData::DataUseContentType ContentURLRequestClassifier::GetContentType(
         request_info->GetResourceType() ==
             content::ResourceType::RESOURCE_TYPE_MAIN_FRAME) {
       return DataUseUserData::MAIN_FRAME_HTML;
-    } else if (mime_type == "text/html") {
-      return DataUseUserData::NON_MAIN_FRAME_HTML;
-    } else if (mime_type == "text/css") {
-      return DataUseUserData::CSS;
-    } else if (base::StartsWith(mime_type, "image/",
-                                base::CompareCase::SENSITIVE)) {
-      return DataUseUserData::IMAGE;
-    } else if (base::EndsWith(mime_type, "javascript",
-                              base::CompareCase::SENSITIVE) ||
-               base::EndsWith(mime_type, "ecmascript",
-                              base::CompareCase::SENSITIVE)) {
-      return DataUseUserData::JAVASCRIPT;
-    } else if (mime_type.find("font") != std::string::npos) {
-      return DataUseUserData::FONT;
-    } else if (base::StartsWith(mime_type, "audio/",
-                                base::CompareCase::SENSITIVE)) {
-      return DataUseUserData::AUDIO;
-    } else if (base::StartsWith(mime_type, "video/",
-                                base::CompareCase::SENSITIVE)) {
-      return DataUseUserData::VIDEO;
     }
+    if (mime_type == "text/html")
+      return DataUseUserData::NON_MAIN_FRAME_HTML;
+    if (mime_type == "text/css")
+      return DataUseUserData::CSS;
+    if (base::StartsWith(mime_type, "image/", base::CompareCase::SENSITIVE))
+      return DataUseUserData::IMAGE;
+    if (base::EndsWith(mime_type, "javascript", base::CompareCase::SENSITIVE) ||
+        base::EndsWith(mime_type, "ecmascript", base::CompareCase::SENSITIVE)) {
+      return DataUseUserData::JAVASCRIPT;
+    }
+    if (mime_type.find("font") != std::string::npos)
+      return DataUseUserData::FONT;
+    if (base::StartsWith(mime_type, "audio/", base::CompareCase::SENSITIVE))
+      return DataUseUserData::AUDIO;
+    if (base::StartsWith(mime_type, "video/", base::CompareCase::SENSITIVE))
+      return DataUseUserData::VIDEO;
   }
   return DataUseUserData::OTHER;
 }
