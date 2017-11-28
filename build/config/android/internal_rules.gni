@@ -1383,7 +1383,19 @@ if (enable_java_templates) {
 
   # Runs process_resources.py
   template("process_resources") {
-    action(target_name) {
+    _process_resources_target_name = target_name
+    if (defined(invoker.output)) {
+      _post_process = defined(invoker.post_process_script)
+      _packaged_resources_path = invoker.output
+      if (_post_process) {
+        _process_resources_target_name = "${target_name}__intermediate"
+        _packaged_resources_path =
+            get_path_info(_packaged_resources_path, "dir") + "/" +
+            get_path_info(_packaged_resources_path, "name") +
+            ".intermediate.ap_"
+      }
+    }
+    action(_process_resources_target_name) {
       set_sources_assignment_filter([])
       forward_variables_from(invoker,
                              [
@@ -1426,6 +1438,7 @@ if (enable_java_templates) {
       }
 
       inputs = [
+        android_default_aapt_path,
         invoker.build_config,
         invoker.android_manifest,
         _android_aapt_path,
@@ -1445,26 +1458,46 @@ if (enable_java_templates) {
         rebase_path(_android_aapt_path, root_build_dir),
         "--android-manifest",
         rebase_path(invoker.android_manifest, root_build_dir),
-        "--resource-dirs=$_rebased_all_resource_dirs",
         "--dependencies-res-zips=@FileArg($_rebased_build_config:resources:dependency_zips)",
         "--extra-res-packages=@FileArg($_rebased_build_config:resources:extra_package_names)",
         "--extra-r-text-files=@FileArg($_rebased_build_config:resources:extra_r_text_files)",
       ]
+
+      if (_rebased_all_resource_dirs != []) {
+        args += [ "--resource-dirs=$_rebased_all_resource_dirs" ]
+      }
+
+      if (defined(invoker.version_code)) {
+        args += [
+          "--version-code",
+          invoker.version_code,
+        ]
+      }
+      if (defined(invoker.version_name)) {
+        args += [
+          "--version-name",
+          invoker.version_name,
+        ]
+      }
+      if (defined(_packaged_resources_path)) {
+        outputs += [ _packaged_resources_path ]
+        args += [
+          "--apk-path",
+          rebase_path(_packaged_resources_path, root_build_dir),
+        ]
+      }
+
+      # Useful to have android:debuggable in the manifest even for Release
+      # builds. Just omit it for officai
+      if (debuggable_apks) {
+        args += [ "--debuggable" ]
+      }
 
       if (defined(invoker.zip_path)) {
         outputs += [ invoker.zip_path ]
         args += [
           "--resource-zip-out",
           rebase_path(invoker.zip_path, root_build_dir),
-        ]
-      }
-
-      if (defined(invoker.all_resources_zip_path)) {
-        _all_resources_zip = invoker.all_resources_zip_path
-        outputs += [ _all_resources_zip ]
-        args += [
-          "--all-resources-zip-out",
-          rebase_path(_all_resources_zip, root_build_dir),
         ]
       }
 
@@ -1517,11 +1550,6 @@ if (enable_java_templates) {
         args += [ "--app-as-shared-lib" ]
       }
 
-      if (defined(invoker.include_all_resources) &&
-          invoker.include_all_resources) {
-        args += [ "--include-all-resources" ]
-      }
-
       if (defined(invoker.proguard_file)) {
         outputs += [ invoker.proguard_file ]
         args += [
@@ -1538,112 +1566,6 @@ if (enable_java_templates) {
         ]
       }
 
-      if (defined(invoker.support_zh_hk) && invoker.support_zh_hk) {
-        args += [ "--support-zh-hk" ]
-      }
-
-      if (defined(invoker.args)) {
-        args += invoker.args
-      }
-    }
-  }
-
-  # Runs aapt to create an .ap_ file, which is a zip file containing
-  # compiled xml and a resources.arsc file.
-  #
-  # Required Variables:
-  #   output: Path to .ap_ to create.
-  #   android_manifest: The AndroidManifest.xml for the apk.
-  #   version_code: The verison code to use.
-  #   version_name: The verison name to use.
-  # Optional Variables:
-  #   aapt_locale_whitelist: If set, all locales not in this list will be
-  #     stripped from resources.arsc.
-  #   alternative_android_sdk_jar: An alternative android sdk jar.
-  #   app_as_shared_lib: Enables --app-as-shared-lib.
-  #   exclude_xxxhdpi: Causes all drawable-xxxhdpi images to be excluded
-  #     (mipmaps are still included).
-  #   png_to_webp: If true, pngs (with the exception of 9-patch) are
-  #     converted to webp.
-  #   post_process_script: Script to call to post-process the .ap_.
-  #   resources_zip: Resource .zip file created by process_resources to package.
-  #   shared_resources: Enables --shared-lib.
-  #   density_splits: A list of densities to create apk splits for.
-  #   language_splits: A list of language codes to create apk splits for.
-  #   xxxhdpi_whitelist: A list of globs used when exclude_xxxhdpi=true. Files
-  #     that match this whitelist will still be included.
-  template("package_resources") {
-    _post_process = defined(invoker.post_process_script)
-    _package_resources_target_name = target_name
-    _packaged_resources_path = invoker.output
-    if (_post_process) {
-      _package_resources_target_name = "${target_name}__intermediate"
-      _packaged_resources_path =
-          get_path_info(_packaged_resources_path, "dir") + "/" +
-          get_path_info(_packaged_resources_path, "name") + ".intermediate.ap_"
-    }
-
-    action(_package_resources_target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "deps",
-                               "testonly",
-                               "visibility",
-                             ])
-
-      script = "//build/android/gyp/package_resources.py"
-      depfile = "${target_gen_dir}/${target_name}.d"
-      outputs = [
-        _packaged_resources_path,
-      ]
-
-      _android_sdk_jar = android_sdk_jar
-      if (defined(invoker.alternative_android_sdk_jar)) {
-        _android_sdk_jar = invoker.alternative_android_sdk_jar
-      }
-
-      inputs = [
-        android_default_aapt_path,
-        _android_sdk_jar,
-        invoker.android_manifest,
-      ]
-
-      args = [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-        "--android-sdk-jar",
-        rebase_path(_android_sdk_jar, root_build_dir),
-        "--aapt-path",
-        rebase_path(android_default_aapt_path, root_build_dir),
-        "--android-manifest",
-        rebase_path(invoker.android_manifest, root_build_dir),
-        "--version-code",
-        invoker.version_code,
-        "--version-name",
-        invoker.version_name,
-        "--apk-path",
-        rebase_path(_packaged_resources_path, root_build_dir),
-      ]
-
-      # Useful to have android:debuggable in the manifest even for Release
-      # builds. Just omit it for officai
-      if (debuggable_apks) {
-        args += [ "--debuggable" ]
-      }
-
-      if (defined(invoker.resources_zip)) {
-        inputs += [ invoker.resources_zip ]
-        args += [
-          "--resource-zips",
-          rebase_path(invoker.resources_zip, root_build_dir),
-        ]
-      }
-      if (defined(invoker.shared_resources) && invoker.shared_resources) {
-        args += [ "--shared-resources" ]
-      }
-      if (defined(invoker.app_as_shared_lib) && invoker.app_as_shared_lib) {
-        args += [ "--app-as-shared-lib" ]
-      }
       if (defined(invoker.density_splits) && invoker.density_splits != []) {
         args += [ "--create-density-splits" ]
         foreach(_density, invoker.density_splits) {
@@ -1675,12 +1597,17 @@ if (enable_java_templates) {
           args += [ "--xxxhdpi-whitelist=${invoker.xxxhdpi_whitelist}" ]
         }
       }
+
       if (defined(invoker.support_zh_hk) && invoker.support_zh_hk) {
         args += [ "--support-zh-hk" ]
       }
+
+      if (defined(invoker.args)) {
+        args += invoker.args
+      }
     }
 
-    if (_post_process) {
+    if (defined(_packaged_resources_path) && _post_process) {
       action(target_name) {
         depfile = "${target_gen_dir}/${target_name}.d"
         script = invoker.post_process_script
@@ -1699,7 +1626,7 @@ if (enable_java_templates) {
           invoker.output,
         ]
         public_deps = [
-          ":${_package_resources_target_name}",
+          ":${_process_resources_target_name}",
         ]
       }
     }
