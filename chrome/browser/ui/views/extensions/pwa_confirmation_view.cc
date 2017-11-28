@@ -158,9 +158,8 @@ namespace chrome {
 void ShowPWAInstallDialog(content::WebContents* web_contents,
                           const WebApplicationInfo& web_app_info,
                           AppInstallationAcceptanceCallback callback) {
-  constrained_window::CreateWebModalDialogViews(
-      new PWAConfirmationView(web_app_info, std::move(callback)), web_contents)
-      ->Show();
+  constrained_window::ShowWebModalDialogViews(
+      new PWAConfirmationView(web_app_info, std::move(callback)), web_contents);
 }
 
 }  // namespace chrome
