@@ -50,6 +50,9 @@ declare_args() {
   # disable security measures like sandboxing or ASLR.
   # IMPORTANT: Unsafe developer builds should never be distributed to end users.
   is_unsafe_developer_build = !is_official_build
+
+  # Set to true to disable COM init check hooks.
+  com_init_check_hook_disabled = false
 }
 
 if (is_android) {
@@ -1429,6 +1432,10 @@ jumbo_component("base") {
       "//base/trace_event/etw_manifest:chrome_events_win",
       "//base/win:base_win_features",
     ]
+
+    if (com_init_check_hook_disabled) {
+      defines += [ "COM_INIT_CHECK_HOOK_DISABLED" ]
+    }
 
     if (is_component_build) {
       # Copy the VS runtime DLLs into the isolate so that they don't have to be
