@@ -7,6 +7,8 @@ import("//rlz/features/features.gni")
 
 source_set("search_engines") {
   sources = [
+    "search_engine_observer_bridge.h",
+    "search_engine_observer_bridge.mm",
     "search_engines_util.cc",
     "search_engines_util.h",
     "template_url_service_client_impl.cc",
@@ -38,6 +40,7 @@ source_set("search_engines") {
     "//ui/base",
     "//url",
   ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 
   if (enable_rlz) {
     deps += [ "//components/rlz" ]
