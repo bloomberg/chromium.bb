@@ -63,7 +63,7 @@ uint32_t GetAccessibilityState() {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
   uint32_t state = A11Y_NONE;
-  if (delegate->IsSpokenFeedbackEnabled())
+  if (controller->IsSpokenFeedbackEnabled())
     state |= A11Y_SPOKEN_FEEDBACK;
   if (controller->IsHighContrastEnabled())
     state |= A11Y_HIGH_CONTRAST;
@@ -157,7 +157,7 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
 
-  spoken_feedback_enabled_ = delegate->IsSpokenFeedbackEnabled();
+  spoken_feedback_enabled_ = controller->IsSpokenFeedbackEnabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(spoken_feedback_view_,
                                             spoken_feedback_enabled_);
 
@@ -215,7 +215,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
 
-  spoken_feedback_enabled_ = delegate->IsSpokenFeedbackEnabled();
+  spoken_feedback_enabled_ = controller->IsSpokenFeedbackEnabled();
   spoken_feedback_view_ = AddScrollListCheckableItem(
       kSystemMenuAccessibilityChromevoxIcon,
       l10n_util::GetStringUTF16(
@@ -304,10 +304,11 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
   using base::RecordAction;
   using base::UserMetricsAction;
   if (view == spoken_feedback_view_) {
-    RecordAction(delegate->IsSpokenFeedbackEnabled()
-                     ? UserMetricsAction("StatusArea_SpokenFeedbackDisabled")
-                     : UserMetricsAction("StatusArea_SpokenFeedbackEnabled"));
-    delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
+    bool new_state = !controller->IsSpokenFeedbackEnabled();
+    RecordAction(new_state
+                     ? UserMetricsAction("StatusArea_SpokenFeedbackEnabled")
+                     : UserMetricsAction("StatusArea_SpokenFeedbackDisabled"));
+    controller->SetSpokenFeedbackEnabled(new_state, A11Y_NOTIFICATION_NONE);
   } else if (view == high_contrast_view_) {
     bool new_state = !controller->IsHighContrastEnabled();
     RecordAction(new_state

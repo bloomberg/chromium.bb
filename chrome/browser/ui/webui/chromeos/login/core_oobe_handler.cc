@@ -98,8 +98,7 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui,
   }
 }
 
-CoreOobeHandler::~CoreOobeHandler() {
-}
+CoreOobeHandler::~CoreOobeHandler() {}
 
 void CoreOobeHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
@@ -153,16 +152,13 @@ void CoreOobeHandler::Initialize() {
 }
 
 void CoreOobeHandler::RegisterMessages() {
-  AddCallback("screenStateInitialize",
-              &CoreOobeHandler::HandleInitialized);
+  AddCallback("screenStateInitialize", &CoreOobeHandler::HandleInitialized);
   AddCallback("skipUpdateEnrollAfterEula",
               &CoreOobeHandler::HandleSkipUpdateEnrollAfterEula);
   AddCallback("updateCurrentScreen",
               &CoreOobeHandler::HandleUpdateCurrentScreen);
-  AddCallback("enableHighContrast",
-              &CoreOobeHandler::HandleEnableHighContrast);
-  AddCallback("enableLargeCursor",
-              &CoreOobeHandler::HandleEnableLargeCursor);
+  AddCallback("enableHighContrast", &CoreOobeHandler::HandleEnableHighContrast);
+  AddCallback("enableLargeCursor", &CoreOobeHandler::HandleEnableLargeCursor);
   AddCallback("enableVirtualKeyboard",
               &CoreOobeHandler::HandleEnableVirtualKeyboard);
   AddCallback("enableScreenMagnifier",
@@ -171,17 +167,14 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableSpokenFeedback);
   AddCallback("setDeviceRequisition",
               &CoreOobeHandler::HandleSetDeviceRequisition);
-  AddCallback("screenAssetsLoaded",
-              &CoreOobeHandler::HandleScreenAssetsLoaded);
+  AddCallback("screenAssetsLoaded", &CoreOobeHandler::HandleScreenAssetsLoaded);
   AddRawCallback("skipToLoginForTesting",
                  &CoreOobeHandler::HandleSkipToLoginForTesting);
-  AddCallback("launchHelpApp",
-              &CoreOobeHandler::HandleLaunchHelpApp);
+  AddCallback("launchHelpApp", &CoreOobeHandler::HandleLaunchHelpApp);
   AddCallback("toggleResetScreen", &CoreOobeHandler::HandleToggleResetScreen);
   AddCallback("toggleEnableDebuggingScreen",
               &CoreOobeHandler::HandleEnableDebuggingScreen);
-  AddCallback("headerBarVisible",
-              &CoreOobeHandler::HandleHeaderBarVisible);
+  AddCallback("headerBarVisible", &CoreOobeHandler::HandleHeaderBarVisible);
   AddCallback("raiseTabKeyEvent", &CoreOobeHandler::HandleRaiseTabKeyEvent);
   AddCallback("setOobeBootstrappingSlave",
               &CoreOobeHandler::HandleSetOobeBootstrappingSlave);
@@ -193,8 +186,8 @@ void CoreOobeHandler::ShowSignInError(
     const std::string& help_link_text,
     HelpAppLauncher::HelpTopic help_topic_id) {
   LOG(ERROR) << "CoreOobeHandler::ShowSignInError: error_text=" << error_text;
-  CallJSOrDefer("showSignInError", login_attempts, error_text,
-         help_link_text, static_cast<int>(help_topic_id));
+  CallJSOrDefer("showSignInError", login_attempts, error_text, help_link_text,
+                static_cast<int>(help_topic_id));
 }
 
 void CoreOobeHandler::ShowTpmError() {
@@ -234,8 +227,7 @@ void CoreOobeHandler::ShowDeviceResetScreen() {
 
 void CoreOobeHandler::ShowEnableDebuggingScreen() {
   // Don't recreate WizardController if it already exists.
-  WizardController* wizard_controller =
-      WizardController::default_controller();
+  WizardController* wizard_controller = WizardController::default_controller();
   if (wizard_controller && !wizard_controller->login_screen_started()) {
     wizard_controller->AdvanceToScreen(
         OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
@@ -349,8 +341,9 @@ void CoreOobeHandler::HandleEnableScreenMagnifier(bool enabled) {
 void CoreOobeHandler::HandleEnableSpokenFeedback(bool /* enabled */) {
   // Checkbox is initialized on page init and updates when spoken feedback
   // setting is changed so just toggle spoken feedback here.
-  AccessibilityManager::Get()->ToggleSpokenFeedback(
-      ash::A11Y_NOTIFICATION_NONE);
+  AccessibilityManager* manager = AccessibilityManager::Get();
+  manager->EnableSpokenFeedback(!manager->IsSpokenFeedbackEnabled(),
+                                ash::A11Y_NOTIFICATION_NONE);
 }
 
 void CoreOobeHandler::HandleSetDeviceRequisition(
@@ -371,7 +364,7 @@ void CoreOobeHandler::HandleSetDeviceRequisition(
 
   // Exit Chrome to force the restart as soon as a new requisition is set.
   if (initial_requisition !=
-          connector->GetDeviceCloudPolicyManager()->GetDeviceRequisition()) {
+      connector->GetDeviceCloudPolicyManager()->GetDeviceRequisition()) {
     chrome::AttemptRestart();
   }
 }
@@ -381,11 +374,10 @@ void CoreOobeHandler::HandleScreenAssetsLoaded(
   oobe_ui_->OnScreenAssetsLoaded(screen_async_load_id);
 }
 
-void CoreOobeHandler::HandleSkipToLoginForTesting(
-    const base::ListValue* args) {
+void CoreOobeHandler::HandleSkipToLoginForTesting(const base::ListValue* args) {
   LoginScreenContext context(args);
   if (WizardController::default_controller())
-      WizardController::default_controller()->SkipToLoginForTesting(context);
+    WizardController::default_controller()->SkipToLoginForTesting(context);
 }
 
 void CoreOobeHandler::HandleToggleResetScreen() {
@@ -435,8 +427,8 @@ void CoreOobeHandler::UpdateA11yState() {
 void CoreOobeHandler::UpdateOobeUIVisibility() {
   const std::string& display = oobe_ui_->display_type();
   CallJSOrDefer("showAPIKeysNotice", !google_apis::HasKeysConfigured() &&
-                                  (display == OobeUI::kOobeDisplay ||
-                                   display == OobeUI::kLoginDisplay));
+                                         (display == OobeUI::kOobeDisplay ||
+                                          display == OobeUI::kLoginDisplay));
 
   // Don't show version label on the stable channel by default.
   bool should_show_version = true;
@@ -456,8 +448,8 @@ void CoreOobeHandler::OnOSVersionLabelTextUpdated(
   UpdateLabel("version", os_version_label_text);
 }
 
-void CoreOobeHandler::OnEnterpriseInfoUpdated(
-    const std::string& message_text, const std::string& asset_id) {
+void CoreOobeHandler::OnEnterpriseInfoUpdated(const std::string& message_text,
+                                              const std::string& asset_id) {
   CallJSOrDefer("setEnterpriseInfo", message_text, asset_id);
 }
 

@@ -6,7 +6,6 @@
 
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/media_controller.h"
@@ -823,7 +822,8 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   app_list::test::TestAppListPresenter test_app_list_presenter;
   Shell::Get()->app_list()->SetAppListPresenter(
       test_app_list_presenter.CreateInterfacePtrAndBind());
-  AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
 
   // The press event should not toggle the AppList, the release should instead.
   EXPECT_FALSE(
@@ -839,12 +839,14 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   EXPECT_EQ(ui::VKEY_LWIN, GetPreviousAccelerator().key_code());
 
   // When spoken feedback is on, the AppList should not toggle.
-  delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
+  controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
+  EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
   EXPECT_FALSE(
       ProcessInController(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   EXPECT_FALSE(ProcessInController(
       CreateReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
+  controller->SetSpokenFeedbackEnabled(false, A11Y_NOTIFICATION_NONE);
+  EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
   RunAllPendingInMessageLoop();
   EXPECT_EQ(1u, test_app_list_presenter.toggle_count());
 

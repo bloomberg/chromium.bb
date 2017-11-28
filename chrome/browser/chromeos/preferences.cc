@@ -203,7 +203,7 @@ void Preferences::RegisterProfilePrefs(
                                 ash::kDefaultLargeCursorSize,
                                 PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(ash::prefs::kAccessibilitySpokenFeedbackEnabled,
-                                false);
+                                false, PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityHighContrastEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
