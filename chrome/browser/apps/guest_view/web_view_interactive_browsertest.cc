@@ -320,7 +320,7 @@ class WebViewInteractiveTestBase : public extensions::PlatformAppBrowserTest {
             embedder_web_contents();
 
     gfx::Rect offset = embedder_web_contents_->GetContainerBounds();
-    corner_ = gfx::Point(offset.x(), offset.y());
+    corner_ = offset.origin();
 
     const testing::TestInfo* const test_info =
             testing::UnitTest::GetInstance()->current_test_info();

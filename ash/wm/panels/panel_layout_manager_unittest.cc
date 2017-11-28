@@ -116,7 +116,7 @@ class PanelLayoutManagerTest : public AshTestBase {
 
   void PanelInScreen(aura::Window* panel) {
     gfx::Rect panel_bounds = panel->GetBoundsInRootWindow();
-    gfx::Point root_point = gfx::Point(panel_bounds.x(), panel_bounds.y());
+    gfx::Point root_point = panel_bounds.origin();
     display::Display display =
         display::Screen::GetScreen()->GetDisplayNearestPoint(root_point);
 
