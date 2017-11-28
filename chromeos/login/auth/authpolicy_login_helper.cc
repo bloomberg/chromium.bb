@@ -44,8 +44,11 @@ AuthPolicyLoginHelper::AuthPolicyLoginHelper() : weak_factory_(this) {}
 void AuthPolicyLoginHelper::TryAuthenticateUser(const std::string& username,
                                                 const std::string& object_guid,
                                                 const std::string& password) {
+  authpolicy::AuthenticateUserRequest request;
+  request.set_user_principal_name(username);
+  request.set_account_id(object_guid);
   chromeos::DBusThreadManager::Get()->GetAuthPolicyClient()->AuthenticateUser(
-      username, object_guid, GetDataReadPipe(password).get(),
+      request, GetDataReadPipe(password).get(),
       base::BindOnce(&AuthCallbackDoNothing));
 }
 
@@ -61,8 +64,11 @@ void AuthPolicyLoginHelper::JoinAdDomain(const std::string& machine_name,
                                          const std::string& password,
                                          JoinCallback callback) {
   DCHECK(!weak_factory_.HasWeakPtrs()) << "Another operation is in progress";
+  authpolicy::JoinDomainRequest request;
+  request.set_machine_name(machine_name);
+  request.set_user_principal_name(username);
   chromeos::DBusThreadManager::Get()->GetAuthPolicyClient()->JoinAdDomain(
-      machine_name, username, GetDataReadPipe(password).get(),
+      request, GetDataReadPipe(password).get(),
       base::BindOnce(&AuthPolicyLoginHelper::OnJoinCallback,
                      weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
@@ -72,8 +78,11 @@ void AuthPolicyLoginHelper::AuthenticateUser(const std::string& username,
                                              const std::string& password,
                                              AuthCallback callback) {
   DCHECK(!weak_factory_.HasWeakPtrs()) << "Another operation is in progress";
+  authpolicy::AuthenticateUserRequest request;
+  request.set_user_principal_name(username);
+  request.set_account_id(object_guid);
   chromeos::DBusThreadManager::Get()->GetAuthPolicyClient()->AuthenticateUser(
-      username, object_guid, GetDataReadPipe(password).get(),
+      request, GetDataReadPipe(password).get(),
       base::BindOnce(&AuthPolicyLoginHelper::OnAuthCallback,
                      weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }

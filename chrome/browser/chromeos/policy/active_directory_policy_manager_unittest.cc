@@ -28,15 +28,13 @@ class TestAuthPolicyClient : public chromeos::AuthPolicyClient {
  public:
   void Init(dbus::Bus* bus) override { NOTIMPLEMENTED(); }
 
-  void JoinAdDomain(const std::string& machine_name,
-                    const std::string& user_principal_name,
+  void JoinAdDomain(const authpolicy::JoinDomainRequest& request,
                     int password_fd,
                     JoinCallback callback) override {
     NOTIMPLEMENTED();
   }
 
-  void AuthenticateUser(const std::string& user_principal_name,
-                        const std::string& object_guid,
+  void AuthenticateUser(const authpolicy::AuthenticateUserRequest& request,
                         int password_fd,
                         AuthCallback callback) override {
     NOTIMPLEMENTED();

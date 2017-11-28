@@ -37,13 +37,22 @@ class CHROMEOS_EXPORT AuthPolicyLoginHelper {
   // Restarts AuthPolicy service.
   static void Restart();
 
-  // See AuthPolicyClient::JoinAdDomain.
+  // Packs arguments and calls AuthPolicyClient::JoinAdDomain. Joins machine to
+  // Active directory domain. |machine_name| is a name for a local machine.
+  // |username|, |password| are credentials of the Active directory account
+  // which has right to join the machine to the domain. |callback| is called
+  // after getting (or failing to get) D-BUS response.
   void JoinAdDomain(const std::string& machine_name,
                     const std::string& username,
                     const std::string& password,
                     JoinCallback callback);
 
-  // See AuthPolicyClient::AuthenticateUser.
+  // Packs arguments and calls AuthPolicyClient::AuthenticateUser. Authenticates
+  // user against Active Directory server. |username|, |password| are
+  // credentials of the Active Directory account. |username| should be in the
+  // user@example.domain.com format. |object_guid| is the user's LDAP GUID. If
+  // specified, it is used instead of |username|. The GUID is guaranteed to be
+  // stable, the user's name can change on the server.
   void AuthenticateUser(const std::string& username,
                         const std::string& object_guid,
                         const std::string& password,
