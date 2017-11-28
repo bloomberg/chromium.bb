@@ -149,8 +149,6 @@ class VADisplayState {
 
   // Initialize static data before sandbox is enabled.
   static void PreSandboxInitialization();
-  // Returns false on init failure.
-  static bool PostSandboxInitialization();
 
   VADisplayState();
   ~VADisplayState() = delete;
@@ -165,6 +163,9 @@ class VADisplayState {
   void SetDrmFd(base::PlatformFile fd) { drm_fd_.reset(HANDLE_EINTR(dup(fd))); }
 
  private:
+  // Returns false on init failure.
+  static bool PostSandboxInitialization();
+
   // Protected by |va_lock_|.
   int refcount_;
 
@@ -231,6 +232,11 @@ VADisplayState::VADisplayState()
 
 bool VADisplayState::Initialize() {
   va_lock_.AssertAcquired();
+
+  static bool result = PostSandboxInitialization();
+  if (!result)
+    return false;
+
   if (refcount_++ > 0)
     return true;
 
@@ -411,10 +417,6 @@ VASupportedProfiles::VASupportedProfiles()
       report_error_to_uma_cb_(base::Bind(&base::DoNothing)) {
   static_assert(arraysize(supported_profiles_) == VaapiWrapper::kCodecModeMax,
                 "The array size of supported profile is incorrect.");
-
-  static bool result = VADisplayState::PostSandboxInitialization();
-  if (!result)
-    return;
   {
     base::AutoLock auto_lock(*va_lock_);
     if (!VADisplayState::Get()->Initialize())
