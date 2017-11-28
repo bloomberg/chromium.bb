@@ -261,7 +261,7 @@ void ScriptExecutor::ExecuteScript(const HostID& host_id,
   params.is_javascript = (script_type == JAVASCRIPT);
   params.code = code;
   params.match_about_blank = (about_blank == MATCH_ABOUT_BLANK);
-  params.run_at = static_cast<int>(run_at);
+  params.run_at = run_at;
   params.in_main_world = (world_type == MAIN_WORLD);
   params.is_web_view = (process_type == WEB_VIEW_PROCESS);
   params.webview_src = webview_src;

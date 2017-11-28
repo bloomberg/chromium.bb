@@ -479,8 +479,7 @@ void ScriptInjectionManager::HandleExecuteCode(
 
   std::unique_ptr<ScriptInjection> injection(new ScriptInjection(
       std::unique_ptr<ScriptInjector>(new ProgrammaticScriptInjector(params)),
-      render_frame, std::move(injection_host),
-      static_cast<UserScript::RunLocation>(params.run_at),
+      render_frame, std::move(injection_host), params.run_at,
       activity_logging_enabled_));
 
   FrameStatusMap::const_iterator iter = frame_statuses_.find(render_frame);

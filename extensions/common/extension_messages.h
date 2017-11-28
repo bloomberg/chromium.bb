@@ -160,7 +160,7 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
   IPC_STRUCT_MEMBER(bool, match_about_blank)
 
   // When to inject the code.
-  IPC_STRUCT_MEMBER(int, run_at)
+  IPC_STRUCT_MEMBER(extensions::UserScript::RunLocation, run_at)
 
   // Whether to execute code in the main world (as opposed to an isolated
   // world).
