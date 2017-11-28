@@ -25,7 +25,8 @@ class HostedAppFrameHeaderAsh : public ash::DefaultFrameHeader {
       extensions::HostedAppBrowserController* app_controller,
       views::Widget* frame,
       views::View* header_view,
-      ash::FrameCaptionButtonContainerView* caption_button_container);
+      ash::FrameCaptionButtonContainerView* caption_button_container,
+      ash::FrameCaptionButton* back_button);
   ~HostedAppFrameHeaderAsh() override;
 
  private:

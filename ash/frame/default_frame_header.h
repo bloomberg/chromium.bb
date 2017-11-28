@@ -39,6 +39,7 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
       views::Widget* frame,
       views::View* header_view,
       FrameCaptionButtonContainerView* caption_button_container,
+      FrameCaptionButton* back_button,
       mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT);
   ~DefaultFrameHeader() override;
 
@@ -52,13 +53,12 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
   void SchedulePaintForTitle() override;
   void SetPaintAsActive(bool paint_as_active) override;
 
-  void set_left_header_view(views::View* left_header_view) {
-    left_header_view_ = left_header_view;
-  }
+  // Sets the left header view for the header. Passing |nullptr| removes the
+  // view.
+  void UpdateLeftHeaderView(views::View* left_header_view);
 
-  void set_back_button(FrameCaptionButton* back_button) {
-    back_button_ = back_button;
-  }
+  // Sets the back button for the header. Passing |nullptr| removes the view.
+  void UpdateBackButton(FrameCaptionButton* button);
 
   // Sets the active and inactive frame colors. Note the inactive frame color
   // will have some transparency added when the frame is drawn.

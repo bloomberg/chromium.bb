@@ -17,8 +17,12 @@ HostedAppFrameHeaderAsh::HostedAppFrameHeaderAsh(
     extensions::HostedAppBrowserController* app_controller,
     views::Widget* frame,
     views::View* header_view,
-    ash::FrameCaptionButtonContainerView* caption_button_container)
-    : DefaultFrameHeader(frame, header_view, caption_button_container),
+    ash::FrameCaptionButtonContainerView* caption_button_container,
+    ash::FrameCaptionButton* back_button)
+    : DefaultFrameHeader(frame,
+                         header_view,
+                         caption_button_container,
+                         back_button),
       app_controller_(app_controller),
       app_name_(base::UTF8ToUTF16(app_controller->GetAppShortName())),
       app_and_domain_(l10n_util::GetStringFUTF16(
