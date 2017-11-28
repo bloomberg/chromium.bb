@@ -128,6 +128,9 @@ PreviewsOptimizationGuide::~PreviewsOptimizationGuide() {
 
 bool PreviewsOptimizationGuide::IsWhitelisted(const net::URLRequest& request,
                                               PreviewsType type) const {
+  if (!hints_)
+    return false;
+
   return hints_->IsWhitelisted(request.url(), type);
 }
 

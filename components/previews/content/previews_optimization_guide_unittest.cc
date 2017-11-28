@@ -95,6 +95,12 @@ class PreviewsOptimizationGuideTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuideTest);
 };
 
+TEST_F(PreviewsOptimizationGuideTest, IsWhitelistedWithoutHints) {
+  std::unique_ptr<net::URLRequest> request =
+      CreateRequestWithURL(GURL("https://m.facebook.com"));
+  EXPECT_FALSE(guide()->IsWhitelisted(*request, PreviewsType::NOSCRIPT));
+}
+
 TEST_F(PreviewsOptimizationGuideTest,
        ProcessHintsWhitelistForNoScriptPopulatedCorrectly) {
   optimization_guide::proto::Configuration config;
