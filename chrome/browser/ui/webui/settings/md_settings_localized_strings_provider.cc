@@ -1680,7 +1680,6 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"searchPageTitle", IDS_SETTINGS_SEARCH},
 #endif
     {"searchEnginesManage", IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES},
-    {"searchOkGoogleLabel", IDS_SETTINGS_SEARCH_OK_GOOGLE_LABEL},
 #if defined(OS_CHROMEOS)
     {"searchGoogleAssistant", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT},
     {"searchGoogleAssistantEnabled",
@@ -1689,25 +1688,9 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
      IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_DISABLED},
     {"assistantTurnOn", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_TURN_ON},
 #endif
-    {"searchOkGoogleSubtextAlwaysOn",
-     IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_ALWAYS_ON},
-    {"searchOkGoogleSubtextNoHardware",
-     IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_NO_HARDWARE},
-    {"searchOkGoogleAudioHistoryLabel",
-     IDS_SETTINGS_SEARCH_OK_GOOGLE_AUDIO_HISTORY_LABEL},
-    {"searchOkGoogleAudioHistorySubtext",
-     IDS_SETTINGS_SEARCH_OK_GOOGLE_AUDIO_HISTORY_SUBTEXT},
-    {"searchOkGoogleRetrain", IDS_SETTINGS_SEARCH_OK_GOOGLE_RETRAIN},
-#if defined(OS_CHROMEOS)
-    {"searchOkGoogleDisabled", IDS_SETTINGS_SEARCH_OK_GOOGLE_DISABLED},
-#endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
-  html_source->AddString("hotwordLearnMoreUrl",
-                         chrome::kHotwordLearnMoreURL);
-  html_source->AddString("manageAudioHistoryUrl",
-                         chrome::kManageAudioHistoryURL);
   base::string16 search_explanation_text = l10n_util::GetStringFUTF16(
       IDS_SETTINGS_SEARCH_EXPLANATION,
       base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL));

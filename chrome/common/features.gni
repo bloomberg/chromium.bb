@@ -38,10 +38,6 @@ declare_args() {
   # It is enableable separately to facilitate testing.
   enable_hangout_services_extension = is_chrome_branded
 
-  # 'Ok Google' hotwording is disabled to prepare for its removal.
-  # http://crbug.com/755579
-  enable_hotwording = false
-
   # Enables usage of the system-provided notification center.
   enable_native_notifications = is_android || is_mac || is_win ||
                                 (is_desktop_linux && use_dbus) || is_chromeos
@@ -86,7 +82,6 @@ chrome_grit_defines = [
   "enable_extensions=$enable_extensions",
   "enable_google_now=$enable_google_now",
   "enable_hangout_services_extension=$enable_hangout_services_extension",
-  "enable_hotwording=$enable_hotwording",
   "enable_plugins=$enable_plugins",
   "enable_print_preview=$enable_print_preview",
   "enable_printing=$_enable_printing",

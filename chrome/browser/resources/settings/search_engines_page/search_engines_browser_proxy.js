@@ -37,18 +37,6 @@ var SearchEngine;
  */
 var SearchEnginesInfo;
 
-/**
- * @typedef {{
- *   allowed: boolean,
- *   enabled: boolean,
- *   alwaysOn: boolean,
- *   errorMessage: string,
- *   userName: string,
- *   historyEnabled: boolean
- * }}
- */
-var SearchPageHotwordInfo;
-
 cr.define('settings', function() {
   /** @interface */
   class SearchEnginesBrowserProxy {
@@ -79,12 +67,6 @@ cr.define('settings', function() {
      * @return {!Promise<boolean>}
      */
     validateSearchEngineInput(fieldName, fieldValue) {}
-
-    /** @return {!Promise<!SearchPageHotwordInfo>} */
-    getHotwordInfo() {}
-
-    /** @param {boolean} enabled */
-    setHotwordSearchEnabled(enabled) {}
 
     turnOnGoogleAssistant() {}
   }
@@ -131,16 +113,6 @@ cr.define('settings', function() {
     validateSearchEngineInput(fieldName, fieldValue) {
       return cr.sendWithPromise(
           'validateSearchEngineInput', fieldName, fieldValue);
-    }
-
-    /** @override */
-    getHotwordInfo() {
-      return cr.sendWithPromise('getHotwordInfo');
-    }
-
-    /** @override */
-    setHotwordSearchEnabled(enabled) {
-      chrome.send('setHotwordSearchEnabled', [enabled]);
     }
 
     /** @override */

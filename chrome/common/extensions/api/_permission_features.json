@@ -365,14 +365,6 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
-  "hotwordPrivate": {
-    "channel": "stable",
-    "extension_types": ["extension", "platform_app"],
-    "whitelist": [
-      "62CCAAD339E6451BBF97C4BBDF758E934A05AD0B",  // hotword component
-      "B6356EFF4047BC5F868C7D91868B6F5C01951A8A"   // hotword_audio_verification
-    ]
-  },
   "identity": {
     "channel": "stable",
     "extension_types": ["extension", "platform_app"]

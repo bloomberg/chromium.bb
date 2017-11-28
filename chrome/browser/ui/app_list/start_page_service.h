@@ -77,9 +77,6 @@ class StartPageService : public KeyedService,
   // Called when the WebUI has finished loading.
   void WebUILoaded();
 
-  // Returns true if the hotword is enabled in the app-launcher.
-  bool HotwordEnabled();
-
   // They return essentially the same web contents but might return NULL when
   // some flag disables the feature.
   content::WebContents* GetStartPageContents();
@@ -97,7 +94,7 @@ class StartPageService : public KeyedService,
   void OnSpeechRecognitionStateChanged(
       SpeechRecognitionState new_state) override;
   void GetSpeechAuthParameters(std::string* auth_scope,
-                               std::string* auth_token) override;
+                               std::string* auth_token) override {}
 
  protected:
   // Protected for testing.

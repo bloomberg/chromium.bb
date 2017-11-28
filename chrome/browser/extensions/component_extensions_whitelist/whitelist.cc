@@ -26,7 +26,6 @@ namespace extensions {
 
 bool IsComponentExtensionWhitelisted(const std::string& extension_id) {
   const char* const kAllowed[] = {
-    extension_misc::kHotwordSharedModuleId,
     extension_misc::kInAppPaymentsSupportAppId,
     extension_misc::kMediaRouterStableExtensionId,
     extension_misc::kPdfExtensionId,
@@ -72,10 +71,6 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
     case IDR_GAIA_AUTH_MANIFEST:
 #if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
     case IDR_HANGOUT_SERVICES_MANIFEST:
-#endif
-#if defined(ENABLE_HOTWORDING)
-    case IDR_HOTWORD_AUDIO_VERIFICATION_MANIFEST:
-    case IDR_HOTWORD_MANIFEST:
 #endif
     case IDR_IDENTITY_API_SCOPE_APPROVAL_MANIFEST:
 #if defined(OS_CHROMEOS)

@@ -372,9 +372,6 @@ extern const char kExperimentalExtensionApisDescription[];
 extern const char kExperimentalFullscreenExitUIName[];
 extern const char kExperimentalFullscreenExitUIDescription[];
 
-extern const char kExperimentalHotwordHardwareName[];
-extern const char kExperimentalHotwordHardwareDescription[];
-
 extern const char kExperimentalKeyboardLockUiName[];
 extern const char kExperimentalKeyboardLockUiDescription[];
 

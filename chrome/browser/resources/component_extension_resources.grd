@@ -13,7 +13,6 @@
   <release seq="1">
     <structures>
       <structure name="IDR_BOOKMARK_MANAGER_MAIN" file="bookmark_manager/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
-      <structure name="IDR_HOTWORD_AUDIO_VERIFICATION_MAIN" file="hotword_audio_verification/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
       <if expr="chromeos">
         <structure name="IDR_WALLPAPER_MANAGER_MAIN" file="chromeos/wallpaper_manager/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
         <if expr="not _google_chrome">
@@ -47,49 +46,6 @@
       <if expr="_google_chrome or enable_hangout_services_extension">
         <include name="IDR_HANGOUT_SERVICES_BACKGROUND_HTML" file="hangout_services/background.html" type="BINDATA" />
         <include name="IDR_HANGOUT_SERVICES_THUNK_JS" file="hangout_services/thunk.js" type="BINDATA" />
-      </if>
-      <if expr="enable_extensions">
-        <!-- Hotword Audio Verification app -->
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_BACKGROUND_JS" file="hotword_audio_verification/event_page.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_MAIN_JS" file="hotword_audio_verification/main.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_FLOW_JS" file="hotword_audio_verification/flow.js" type="BINDATA" />
-        <include name="IDR_START_STEP_HTML" file="hotword_audio_verification/steps/start_step.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_AUDIO_HISTORY_STEP_HTML" file="hotword_audio_verification/steps/audio_history_step.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_SPEECH_TRAINING_STEP_HTML" file="hotword_audio_verification/steps/speech_training_step.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_FINISHED_STEP_HTML" file="hotword_audio_verification/steps/finished_step.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_STYLE_CSS" file="hotword_audio_verification/style.css" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_CLOSE_1X" file="hotword_audio_verification/images/ic-x-white-1x.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_CLOSE_2X" file="hotword_audio_verification/images/ic-x-white-2x.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_INTRO_1X" file="hotword_audio_verification/images/intro-1x.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_INTRO_2X" file="hotword_audio_verification/images/intro-2x.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_HEADER_1X" file="hotword_audio_verification/images/gradient-1x.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_HEADER_2X" file="hotword_audio_verification/images/gradient-2x.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_CHECK_BLUE_1X" file="hotword_audio_verification/images/ic-check-blue-1x.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_CHECK_BLUE_2X" file="hotword_audio_verification/images/ic-check-blue-2x.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_CHECK_GRAY_1X" file="hotword_audio_verification/images/ic-check-gray-1x.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_CHECK_GRAY_2X" file="hotword_audio_verification/images/ic-check-gray-2x.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_LOADER_1X" file="hotword_audio_verification/images/placeholder-loader-1x.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_LOADER_2X" file="hotword_audio_verification/images/placeholder-loader-2x.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_ERROR_1X" file="hotword_audio_verification/images/ic-error-1x.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_ERROR_2X" file="hotword_audio_verification/images/ic-error-2x.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_ICON_16" file="hotword_audio_verification/images/icon-16.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_ICON_48" file="hotword_audio_verification/images/icon-48.png" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_ICON_128" file="hotword_audio_verification/images/icon-128.png" type="BINDATA" />
-
-        <!-- Hotword extension -->
-        <include name="IDR_HOTWORD_ALWAYS_ON_MANAGER_JS" file="hotword/always_on_manager.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_CLIENT_JS" file="hotword/audio_client.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_BASE_SESSION_MANAGER_JS" file="hotword/base_session_manager.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_CONSTANTS_JS" file="hotword/constants.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_KEEP_ALIVE_JS" file="hotword/keep_alive.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_LAUNCHER_MANAGER_JS" file="hotword/launcher_manager.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_LOGGING_JS" file="hotword/logging.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_MANAGER_JS" file="hotword/manager.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_METRICS_JS" file="hotword/metrics.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_NACL_MANAGER_JS" file="hotword/nacl_manager.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_PAGE_AUDIO_MANAGER_JS" file="hotword/page_audio_manager.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_STATE_MANAGER_JS" file="hotword/state_manager.js" type="BINDATA" />
-        <include name="IDR_HOTWORD_TRAINING_MANAGER_JS" file="hotword/training_manager.js" type="BINDATA" />
       </if>
       <if expr="not is_android">
         <include name="IDR_FEEDBACK_DEFAULT_HTML" file="feedback/html/default.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

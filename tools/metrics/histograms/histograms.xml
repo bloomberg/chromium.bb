@@ -28244,6 +28244,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Hotword.AudioLoggingEnabled" enum="BooleanEnabled">
+  <obsolete>
+    Deprecated as of 10/2017. Feature removed with crbug/761426.
+  </obsolete>
   <owner>rlp@chromium.org</owner>
   <summary>
     The state of the hotword audio logging preference. This value is emitted
@@ -28254,6 +28257,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Hotword.Enabled" enum="HotwordPrefState">
+  <obsolete>
+    Deprecated as of 10/2017. Feature removed with crbug/761426.
+  </obsolete>
   <owner>rlp@chromium.org</owner>
   <summary>
     The state of the hotword preference. This value is emitted during
@@ -28262,6 +28268,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Hotword.ExtensionAvailability" enum="HotwordAvailability">
+  <obsolete>
+    Deprecated as of 10/2017. Feature removed with crbug/761426.
+  </obsolete>
   <owner>rlp@chromium.org</owner>
   <summary>
     Whether the external component hotword extension exists (i.e., not pending
@@ -28272,6 +28281,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Hotword.HotwordError" enum="HotwordError">
+  <obsolete>
+    Deprecated as of 10/2017. Feature removed with crbug/761426.
+  </obsolete>
   <owner>rlp@chromium.org</owner>
   <summary>
     Errors reported by the hotword service when determining if hotwording is
@@ -28282,6 +28294,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Hotword.HotwordMediaStreamResult"
     enum="HotwordMediaStreamResult">
+  <obsolete>
+    Deprecated as of 10/2017. Feature removed with crbug/761426.
+  </obsolete>
   <owner>amistry@chromium.org</owner>
   <owner>rlp@chromium.org</owner>
   <owner>somast@chromium.org</owner>
@@ -28293,6 +28308,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Hotword.HotwordNaClMessageTimeout"
     enum="HotwordNaClMessageTimeout">
+  <obsolete>
+    Deprecated as of 10/2017. Feature removed with crbug/761426.
+  </obsolete>
   <owner>amistry@chromium.org</owner>
   <owner>rlp@chromium.org</owner>
   <owner>somast@chromium.org</owner>
@@ -28305,6 +28323,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Hotword.HotwordNaClPluginLoadResult"
     enum="HotwordNaClPluginLoadResult">
+  <obsolete>
+    Deprecated as of 10/2017. Feature removed with crbug/761426.
+  </obsolete>
   <owner>amistry@chromium.org</owner>
   <owner>rlp@chromium.org</owner>
   <owner>somast@chromium.org</owner>
@@ -28314,6 +28335,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Hotword.HotwordTriggerSource" enum="HotwordTriggerSource">
+  <obsolete>
+    Deprecated as of 10/2017. Feature removed with crbug/761426.
+  </obsolete>
   <owner>amistry@chromium.org</owner>
   <owner>rlp@chromium.org</owner>
   <owner>somast@chromium.org</owner>
@@ -28324,6 +28348,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Hotword.SharedModuleReinstallLanguage" enum="LanguageCode">
+  <obsolete>
+    Deprecated as of 10/2017. Feature removed with crbug/761426.
+  </obsolete>
   <owner>amistry@chromium.org</owner>
   <owner>rlp@chromium.org</owner>
   <owner>somast@chromium.org</owner>

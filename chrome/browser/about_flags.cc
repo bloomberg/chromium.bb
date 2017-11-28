@@ -1948,10 +1948,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUserConsentForExtensionScriptsDescription, kOsAll,
      SINGLE_VALUE_TYPE(extensions::switches::kEnableScriptsRequireAction)},
 #endif  // ENABLE_EXTENSIONS
-    {"enable-hotword-hardware",
-     flag_descriptions::kExperimentalHotwordHardwareName,
-     flag_descriptions::kExperimentalHotwordHardwareDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kEnableExperimentalHotwordHardware)},
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {"enable-embedded-extension-options",
      flag_descriptions::kEmbeddedExtensionOptionsName,

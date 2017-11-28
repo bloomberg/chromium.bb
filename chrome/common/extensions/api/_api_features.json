@@ -501,10 +501,6 @@
     "dependencies": ["permission:history"],
     "contexts": ["blessed_extension"]
   },
-  "hotwordPrivate": {
-    "dependencies": ["permission:hotwordPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "i18n": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],

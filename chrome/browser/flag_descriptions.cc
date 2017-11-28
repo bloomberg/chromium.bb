@@ -580,12 +580,6 @@ const char kExperimentalFullscreenExitUIDescription[] =
     "Displays experimental UI to allow mouse and touch input methods to exit "
     "fullscreen mode.";
 
-const char kExperimentalHotwordHardwareName[] =
-    "Simulated hardware 'Ok Google' features";
-const char kExperimentalHotwordHardwareDescription[] =
-    "Enables an experimental version of 'Ok Google' hotword detection features "
-    "that have a hardware dependency.";
-
 const char kExperimentalKeyboardLockUiName[] = "Experimental keyboard lock UI.";
 const char kExperimentalKeyboardLockUiDescription[] =
     "An experimental full screen with keyboard lock mode requiring users to "

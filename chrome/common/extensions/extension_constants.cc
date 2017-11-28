@@ -57,10 +57,6 @@ const char kHTermAppId[] = "pnhechapfaindjhompbnflcldabbghjo";
 const char kHTermDevAppId[] = "okddffdblfhhnmhodogpojmfkjmhinfp";
 const char kIdentityApiUiAppId[] = "ahjaciijnoiaklcomgnblndopackapon";
 const char kCroshBuiltinAppId[] = "nkoccljplnhpfnfiajclkommnmllphnl";
-const char kHotwordAudioVerificationAppId[] =
-    "abjokfonkihficiokmkfboogholifghn";
-const char kHotwordNewExtensionId[] = "nbpagnldghgfoolbancepceaanlmhfmd";
-const char kHotwordSharedModuleId[] = "lccekmodgklaepjeofjdjpbminllajkg";
 const char kTextEditorAppId[] = "mmfbcljfglbokpmkimbfghdkjmjhdgbg";
 const char kYoutubeAppId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
 const char kInAppPaymentsSupportAppId[] = "nmmhkkegccagdldgiimedpiccmgmieda";
