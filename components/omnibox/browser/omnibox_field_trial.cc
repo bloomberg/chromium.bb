@@ -333,6 +333,7 @@ bool OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial(
 #endif
 }
 
+// static
 bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
     PrefService* prefs) {
   std::string variant(variations::GetVariationParamValue(
