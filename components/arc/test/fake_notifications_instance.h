@@ -18,7 +18,10 @@ class FakeNotificationsInstance : public mojom::NotificationsInstance {
   FakeNotificationsInstance();
   ~FakeNotificationsInstance() override;
 
-  void Init(mojom::NotificationsHostPtr host_ptr) override;
+  // mojom::NotificationsInstance overrides:
+  void InitDeprecated(mojom::NotificationsHostPtr host_ptr) override;
+  void Init(mojom::NotificationsHostPtr host_ptr,
+            InitCallback callback) override;
 
   void SendNotificationEventToAndroid(
       const std::string& key,

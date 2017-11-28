@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 19
+// Next MinVersion: 20
 
 module arc.mojom;
 
@@ -131,7 +131,7 @@ interface IntentHelperHost {
 };
 
 // Sends intents to ARC on behalf of Chrome.
-// Next method ID: 13
+// Next method ID: 14
 interface IntentHelperInstance {
   // Sets the given package as a preferred package. The next time an ACTION_VIEW
   // intent is sent with a URL that requires disambiguation, instead of opening
@@ -154,8 +154,11 @@ interface IntentHelperInstance {
                                  ActivityName activity,
                                  ActionType action_type);
 
+  // DEPRECATED: Please use Init@13 instead.
+  InitDeprecated@0(IntentHelperHost host_ptr);
+
   // Establishes full-duplex communication with the host.
-  Init@0(IntentHelperHost host_ptr);
+  [MinVersion=19] Init@13(IntentHelperHost host_ptr) => ();
 
   // DEPRECATED. Use FileSystemInstance.OpenFileToRead() instead.
   [MinVersion=15] OpenFileToReadDeprecated@12(string url) => (handle? fd);

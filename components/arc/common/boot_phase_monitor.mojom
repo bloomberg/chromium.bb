@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 1
+// Next MinVersion: 2
 
 module arc.mojom;
 
@@ -12,8 +12,11 @@ interface BootPhaseMonitorHost {
   OnBootCompleted@0();
 };
 
-// Next method ID: 1
+// Next method ID: 2
 interface BootPhaseMonitorInstance {
+  // DEPRECATED: Please use Init@1 instead.
+  InitDeprecated@0(BootPhaseMonitorHost host_ptr);
+
   // Establishes full-duplex communication with the host.
-  Init@0(BootPhaseMonitorHost host_ptr);
+  [MinVersion=1] Init@1(BootPhaseMonitorHost host_ptr) => ();
 };

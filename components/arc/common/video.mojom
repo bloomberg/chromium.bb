@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 6
+
 module arc.mojom;
 
 import "video_decode_accelerator.mojom";
 import "video_encode_accelerator.mojom";
 
-// Next MinVersion: 5
 // Deprecated method IDs: 0
 // Next method ID: 2
 interface VideoHost {
@@ -19,15 +20,16 @@ interface VideoHost {
                                              string token);
 };
 
-// Next MinVersion: 1
-// Next method ID: 1
+// Next method ID: 2
 interface VideoInstance {
+  // DEPRECATED: Please use Init@1 instead.
+  InitDeprecated@0(VideoHost host_ptr);
+
   // Establishes full-duplex communication with the host.
-  Init@0(VideoHost host_ptr);
+  [MinVersion=5] Init@1(VideoHost host_ptr) => ();
 };
 
-// Next MinVersion: 2
-// Next method ID: 3
+// Next method ID: 2
 interface VideoAcceleratorFactory {
   CreateDecodeAccelerator@0(VideoDecodeAccelerator& decoder);
 

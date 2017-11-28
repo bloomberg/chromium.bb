@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 2
+// Next MinVersion: 3
 
 module arc.mojom;
 
+// Next Method ID: 2
 interface PolicyHost {
   // Get policies from Chrome OS, as JSON-encoded dictionary with the policies'
   // names as keys and their values as values. The list of possible policies can
@@ -19,9 +20,13 @@ interface PolicyHost {
   [MinVersion=1] ReportCompliance@1(string request) => (string response);
 };
 
+// Next Method ID: 3
 interface PolicyInstance {
+  // DEPRECATED: Please use Init@2 instead.
+  InitDeprecated@0(PolicyHost host_ptr);
+
   // Establishes full-duplex communication with the host.
-  Init@0(PolicyHost host_ptr);
+  [MinVersion=2] Init@2(PolicyHost host_ptr) => ();
 
   // Indicates some policies have changed
   OnPolicyUpdated@1();

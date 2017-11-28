@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -42,10 +44,15 @@ FakeAppInstance::FakeAppInstance(mojom::AppHost* app_host)
     : app_host_(app_host) {}
 FakeAppInstance::~FakeAppInstance() {}
 
-void FakeAppInstance::Init(mojom::AppHostPtr host_ptr) {
+void FakeAppInstance::InitDeprecated(mojom::AppHostPtr host_ptr) {
+  Init(std::move(host_ptr), base::BindOnce(&base::DoNothing));
+}
+
+void FakeAppInstance::Init(mojom::AppHostPtr host_ptr, InitCallback callback) {
   // ARC app instance calls RefreshAppList after Init() successfully. Call
   // RefreshAppList() here to keep the same behavior.
   RefreshAppList();
+  std::move(callback).Run();
 }
 
 void FakeAppInstance::RefreshAppList() {

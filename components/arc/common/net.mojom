@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 8
+// Next MinVersion: 9
 
 module arc.mojom;
 
@@ -162,6 +162,7 @@ struct AndroidVpnConfiguration {
   array<string> domains@8;
 };
 
+// Next Method ID: 13
 interface NetHost {
   // Sends a request to get enabled / disabled status of WiFi.
   GetWifiEnabledState@1() => (bool is_enabled);
@@ -210,9 +211,13 @@ interface NetHost {
   [MinVersion=7] AndroidVpnStateChanged@12(ConnectionStateType state);
 };
 
+// Next Method ID: 7
 interface NetInstance {
+  // DEPRECATED: Please use Init@6 instead.
+  InitDeprecated@0(NetHost host_ptr);
+
   // Establishes full-duplex communication with the host.
-  Init@0(NetHost host_ptr);
+  [MinVersion=8] Init@6(NetHost host_ptr) => ();
 
   // Notifies the instance of a WiFI AP scan being completed.
   [MinVersion=1] ScanCompleted@1();

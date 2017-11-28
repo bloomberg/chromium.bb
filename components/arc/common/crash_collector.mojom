@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 3
+
 module arc.mojom;
 
+// Next Method ID: 2
 interface CrashCollectorHost {
   // Sends a dump for a non-native crash of the given |type|. The host reads
   // the dump from |pipe|, or rejects the dump by closing |pipe|. Note that
@@ -17,6 +20,11 @@ interface CrashCollectorHost {
                                       string cpu_abi);
 };
 
+// Next Method ID: 2
 interface CrashCollectorInstance {
-  Init@0(CrashCollectorHost host_ptr);
+  // DEPRECATED: Please use Init@1 instead.
+  InitDeprecated@0(CrashCollectorHost host_ptr);
+
+  // Establishes full-duplex communication with the host.
+  [MinVersion=2] Init@1(CrashCollectorHost host_ptr) => ();
 };

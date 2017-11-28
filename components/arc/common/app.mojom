@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 26
+// Next MinVersion: 27
 
 module arc.mojom;
 
@@ -219,9 +219,13 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 21
+// Next method ID: 22
 interface AppInstance {
-  Init@0(AppHost host_ptr);
+  // DEPRECATED: Please use Init@21 instead.
+  InitDeprecated@0(AppHost host_ptr);
+
+  // Establishes full-duplex communication with the host.
+  [MinVersion=26] Init@21(AppHost host_ptr) => ();
 
   [MinVersion=1] CanHandleResolutionDeprecated@4(
       string package_name, string activity, Rect dimension) =>

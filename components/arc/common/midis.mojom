@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 2
+
 // This file defines the mojo interface between Android, Chrome and the
 // Chrome OS daemon for the MIDI implementation used in ARC.
 
@@ -66,7 +68,11 @@ interface MidisHost {
 
 // MidisInstance is implemented in the ARC MIDI JNI code that
 // runs in Android and handles the Android side of the ArcBridge connection.
-// Next Method ID: 1
+// Next Method ID: 2
 interface MidisInstance {
-  Init@0(MidisHost host_ptr);
+  // DEPRECATED: Please use Init@1 instead.
+  InitDeprecated@0(MidisHost host_ptr);
+
+  // Establishes full-duplex communication with the host.
+  [MinVersion=1] Init@1(MidisHost host_ptr) => ();
 };

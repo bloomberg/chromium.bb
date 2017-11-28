@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 14
+// Next MinVersion: 15
 
 module arc.mojom;
 
@@ -145,6 +145,7 @@ struct ArcToastData {
   string? dismiss_text;
 };
 
+// Next Method ID: 6
 interface NotificationsHost {
   // Tells the Chrome that a notification is posted (created or updated) on
   // Android. If you know that the notification exists, please consider to use
@@ -169,10 +170,14 @@ interface NotificationsHost {
   OnNotificationUpdated@5(ArcNotificationData notification_data);
 };
 
+// Next Method ID: 6
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
 interface NotificationsInstance {
+  // DEPRECATED: Please use Init@5 instead.
+  InitDeprecated@0(NotificationsHost host_ptr);
+
   // Establishes full-duplex communication with the host.
-  Init@0(NotificationsHost host_ptr);
+  [MinVersion=14] Init@5(NotificationsHost host_ptr) => ();
 
   // Sends an event from Chrome notification UI to Android.
   // |event| is a type of occured event.

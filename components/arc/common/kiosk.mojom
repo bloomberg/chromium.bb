@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 1
+// Next MinVersion: 2
 
 module arc.mojom;
 
@@ -20,10 +20,11 @@ interface KioskHost {
   OnMaintenanceSessionFinished@1(int32 session_id, bool succeeded);
 };
 
-// Next method ID: 1
+// Next method ID: 2
 interface KioskInstance {
+  // DEPRECATED: Please use Init@1 instead.
+  InitDeprecated@0(KioskHost host_ptr);
+
   // Establishes full-duplex communication with the host.
-  // |host_ptr| is the MessagePipe endpoint that is bound to the
-  // KioskHost binding.
-  Init@0(KioskHost host_ptr);
+  [MinVersion=1] Init@1(KioskHost host_ptr) => ();
 };

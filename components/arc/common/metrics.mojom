@@ -1,7 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// Next MinVersion: 2
+// Next MinVersion: 3
 
 module arc.mojom;
 
@@ -46,7 +46,11 @@ interface MetricsHost {
                        [MinVersion=1] BootType boot_type);
 };
 
-// Next method ID: 1
+// Next method ID: 2
 interface MetricsInstance {
-  Init@0(MetricsHost host_ptr);
+  // DEPRECATED: Please use Init@1 instead.
+  InitDeprecated@0(MetricsHost host_ptr);
+
+  // Establishes full-duplex communication with the host.
+  [MinVersion=2] Init@1(MetricsHost host_ptr) => ();
 };
