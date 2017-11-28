@@ -160,11 +160,6 @@ public class MainPreferences extends PreferenceFragment
 
         updateSearchEnginePreference();
 
-        ChromeBasePreference passwordsPref =
-                (ChromeBasePreference) findPreference(PREF_SAVED_PASSWORDS);
-        setOnOffSummary(
-                passwordsPref, PrefServiceBridge.getInstance().isRememberPasswordsEnabled());
-
         if (HomepageManager.shouldShowHomepageSetting()) {
             Preference homepagePref = addPreferenceIfAbsent(PREF_HOMEPAGE);
             setOnOffSummary(homepagePref, HomepageManager.getInstance().getPrefHomepageEnabled());
