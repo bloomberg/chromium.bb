@@ -20,6 +20,10 @@ namespace bookmarks {
 class BookmarkNode;
 }
 
+namespace test {
+class AppMenuControllerTest;
+}
+
 // C++ controller for the bookmark menu; one per AppController (which
 // means there is only one).  When bookmarks are changed, this class
 // takes care of updating Cocoa bookmark menus.  This is not named
@@ -82,6 +86,7 @@ class BookmarkMenuBridge : public bookmarks::BookmarkModelObserver {
 
  private:
   friend class BookmarkMenuBridgeTest;
+  friend class test::AppMenuControllerTest;
 
   void BuildRootMenu();
 
