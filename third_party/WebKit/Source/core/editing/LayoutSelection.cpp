@@ -160,16 +160,33 @@ static EphemeralRangeInFlatTree CalcSelectionInFlatTree(
 }
 
 // LayoutObjects each has SelectionState of kStart, kEnd, kStartAndEnd, or
-// kInside
+// kInside.
 using SelectedLayoutObjects = HashSet<LayoutObject*>;
+// OldSelectedLayoutObjects is current selected LayoutObjects with
+// current SelectionState which is kStart, kEnd, kStartAndEnd or kInside.
+using OldSelectedLayoutObjects = HashMap<LayoutObject*, SelectionState>;
 
 #ifndef NDEBUG
-void PrintPaintInvalidationSet(const SelectedLayoutObjects& selected_objects) {
+void PrintSelectedLayoutObjects(
+    const SelectedLayoutObjects& new_selected_objects) {
   std::stringstream stream;
-  stream << std::endl << "layout_objects:" << std::endl;
-  for (LayoutObject* layout_object : selected_objects) {
+  stream << std::endl;
+  for (LayoutObject* layout_object : new_selected_objects) {
     PrintLayoutObjectForSelection(stream, layout_object);
     stream << std::endl;
+  }
+  LOG(INFO) << stream.str();
+}
+
+void PrintOldSelectedLayoutObjects(
+    const OldSelectedLayoutObjects& old_selected_objects) {
+  std::stringstream stream;
+  stream << std::endl;
+  for (const auto& key_pair : old_selected_objects) {
+    LayoutObject* layout_object = key_pair.key;
+    SelectionState old_state = key_pair.value;
+    PrintLayoutObjectForSelection(stream, layout_object);
+    stream << " old: " << old_state << std::endl;
   }
   LOG(INFO) << stream.str();
 }
@@ -314,6 +331,34 @@ WTF::Optional<unsigned> LayoutSelection::SelectionEnd() const {
   return paint_range_.EndOffset();
 }
 
+static OldSelectedLayoutObjects ResetOldSelectedLayoutObjects(
+    const SelectionPaintRange& old_range) {
+  OldSelectedLayoutObjects old_selected_objects;
+  HashSet<LayoutObject*> containing_block_set;
+  for (LayoutObject* layout_object : old_range) {
+    const SelectionState old_state = layout_object->GetSelectionState();
+    if (old_state == SelectionState::kNone)
+      continue;
+    if (old_state != SelectionState::kContain)
+      old_selected_objects.insert(layout_object, old_state);
+    // TODO(yoichio): Once we make LayoutObject::SetSelectionState() trivial,
+    // use it directly.
+    layout_object->LayoutObject::SetSelectionState(SelectionState::kNone);
+
+    // Reset containing block SelectionState for CSS ::selection style.
+    // See LayoutObject::InvalidatePaintForSelection().
+    for (LayoutObject* containing_block = layout_object->ContainingBlock();
+         containing_block;
+         containing_block = containing_block->ContainingBlock()) {
+      if (containing_block_set.Contains(containing_block))
+        break;
+      containing_block->LayoutObject::SetSelectionState(SelectionState::kNone);
+      containing_block_set.insert(containing_block);
+    }
+  }
+  return old_selected_objects;
+}
+
 void LayoutSelection::ClearSelection() {
   // For querying Layer::compositingState()
   // This is correct, since destroying layout objects needs to cause eager paint
@@ -324,18 +369,10 @@ void LayoutSelection::ClearSelection() {
   if (paint_range_.IsNull())
     return;
 
-  for (auto layout_object : paint_range_) {
-    if (layout_object->GetSelectionState() == SelectionState::kNone)
-      continue;
-    layout_object->LayoutObject::SetSelectionState(SelectionState::kNone);
-    layout_object->SetShouldInvalidateSelection();
-    for (LayoutObject* runner = layout_object->ContainingBlock(); runner;
-         runner = runner->ContainingBlock()) {
-      if (runner->GetSelectionState() == SelectionState::kNone)
-        break;
-      runner->LayoutObject::SetSelectionState(SelectionState::kNone);
-    }
-  }
+  const OldSelectedLayoutObjects& old_selected_objects =
+      ResetOldSelectedLayoutObjects(paint_range_);
+  for (LayoutObject* const layout_object : old_selected_objects.Keys())
+    SetShouldInvalidateIfNeeded(layout_object);
 
   // Reset selection.
   paint_range_ = SelectionPaintRange();

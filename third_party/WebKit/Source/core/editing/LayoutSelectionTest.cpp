@@ -328,11 +328,11 @@ TEST_F(LayoutSelectionTest, FirstLetterClearSeletion) {
   TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
   TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
   TEST_NEXT("foo", kNone, ShouldInvalidate);
-  TEST_NEXT(IsLayoutBlock, kNone, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
   TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
   TEST_NEXT(IsLayoutTextFragmentOf("b"), kNone, ShouldInvalidate);
   TEST_NEXT(IsLayoutTextFragmentOf("ar"), kNone, ShouldInvalidate);
-  TEST_NEXT(IsLayoutBlock, kNone, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
   TEST_NEXT("baz", kNone, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
 }
