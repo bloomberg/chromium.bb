@@ -495,7 +495,10 @@
     canvas_has_fallback,
 
     // Indicates this node is scrollable (Android only).
-    scrollable
+    scrollable,
+
+    // A hint to clients that the node is clickable.
+    clickable
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXIntListAttribute {

@@ -501,6 +501,10 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
           node, arc::mojom::AccessibilityBooleanProperty::SCROLLABLE)) {
     out_data->AddBoolAttribute(ui::AX_ATTR_SCROLLABLE, true);
   }
+  if (GetBooleanProperty(node,
+                         arc::mojom::AccessibilityBooleanProperty::CLICKABLE)) {
+    out_data->AddBoolAttribute(ui::AX_ATTR_CLICKABLE, true);
+  }
 
   exo::WMHelper* wm_helper =
       exo::WMHelper::HasInstance() ? exo::WMHelper::GetInstance() : nullptr;

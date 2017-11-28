@@ -477,7 +477,11 @@ CommandHandler.onCommand = function(command) {
           ChromeVoxState.instance.navigateToRange(
               cursors.Range.fromNode(actionNode.inPageLinkTarget));
         } else {
-          actionNode.doDefault();
+          // Scan for a clickable, which overrides the |actionNode|.
+          var clickable = actionNode;
+          while (clickable && !clickable.clickable)
+            clickable = clickable.parent;
+          clickable ? clickable.doDefault() : actionNode.doDefault();
         }
       }
       // Skip all other processing; if focus changes, we should get an event
