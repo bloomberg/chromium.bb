@@ -114,37 +114,23 @@ bool IsURLAllowedForSupervisedUser(const GURL& url, Profile* profile) {
   return true;
 }
 
-// Returns whether |new_tab_url| can be used as a URL for the New Tab page.
-// NEW_TAB_URL_VALID means a valid URL; other enum values imply an invalid URL.
-NewTabURLState IsValidNewTabURL(Profile* profile, const GURL& new_tab_url) {
-  if (profile->IsOffTheRecord())
-    return NEW_TAB_URL_INCOGNITO;
-  if (!new_tab_url.is_valid())
-    return NEW_TAB_URL_NOT_SET;
-  if (!new_tab_url.SchemeIsCryptographic())
-    return NEW_TAB_URL_INSECURE;
-  if (!IsURLAllowedForSupervisedUser(new_tab_url, profile))
-    return NEW_TAB_URL_BLOCKED;
-  return NEW_TAB_URL_VALID;
+bool ShouldShowLocalNewTab(Profile* profile) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kForceLocalNtp) ||
+         (base::FeatureList::IsEnabled(features::kUseGoogleLocalNtp) &&
+          profile && DefaultSearchProviderIsGoogle(profile));
 }
 
-bool ShouldShowLocalNewTab(const GURL& url, Profile* profile) {
+bool ShouldDelayRemoteNTP(const GURL& search_provider_url, Profile* profile) {
 #if defined(OS_CHROMEOS)
   // On Chrome OS, if the session hasn't merged yet, we need to avoid loading
   // the remote NTP because that will trigger showing the merge session throttle
   // interstitial page, which can show for 5+ seconds. crbug.com/591530.
-  if (merge_session_throttling_utils::ShouldDelayUrl(url) &&
+  if (merge_session_throttling_utils::ShouldDelayUrl(search_provider_url) &&
       merge_session_throttling_utils::IsSessionRestorePending(profile)) {
     return true;
   }
 #endif  // defined(OS_CHROMEOS)
-
-  if (!profile->IsOffTheRecord() &&
-      base::FeatureList::IsEnabled(features::kUseGoogleLocalNtp) &&
-      DefaultSearchProviderIsGoogle(profile)) {
-    return true;
-  }
-
   return false;
 }
 
@@ -155,10 +141,13 @@ struct NewTabURLDetails {
       : url(url), state(state) {}
 
   static NewTabURLDetails ForProfile(Profile* profile) {
+    // Incognito has its own New Tab.
+    if (profile->IsOffTheRecord())
+      return NewTabURLDetails(GURL(), NEW_TAB_URL_INCOGNITO);
+
     const GURL local_url(chrome::kChromeSearchLocalNtpUrl);
 
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kForceLocalNtp))
+    if (ShouldShowLocalNewTab(profile))
       return NewTabURLDetails(local_url, NEW_TAB_URL_VALID);
 
     const TemplateURL* template_url =
@@ -170,21 +159,17 @@ struct NewTabURLDetails {
         TemplateURLRef::SearchTermsArgs(base::string16()),
         UIThreadSearchTermsData(profile)));
 
-    if (ShouldShowLocalNewTab(search_provider_url, profile))
+    if (ShouldDelayRemoteNTP(search_provider_url, profile))
       return NewTabURLDetails(local_url, NEW_TAB_URL_VALID);
 
-    NewTabURLState state = IsValidNewTabURL(profile, search_provider_url);
-    switch (state) {
-      case NEW_TAB_URL_VALID:
-        // We can use the search provider's page.
-        return NewTabURLDetails(search_provider_url, state);
-      case NEW_TAB_URL_INCOGNITO:
-        // Incognito has its own New Tab.
-        return NewTabURLDetails(GURL(), state);
-      default:
-        // Use the local New Tab otherwise.
-        return NewTabURLDetails(local_url, state);
-    }
+    if (!search_provider_url.is_valid())
+      return NewTabURLDetails(local_url, NEW_TAB_URL_NOT_SET);
+    if (!search_provider_url.SchemeIsCryptographic())
+      return NewTabURLDetails(local_url, NEW_TAB_URL_INSECURE);
+    if (!IsURLAllowedForSupervisedUser(search_provider_url, profile))
+      return NewTabURLDetails(local_url, NEW_TAB_URL_BLOCKED);
+
+    return NewTabURLDetails(search_provider_url, NEW_TAB_URL_VALID);
   }
 
   const GURL url;
