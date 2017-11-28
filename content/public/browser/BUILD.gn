@@ -380,6 +380,8 @@ source_set("browser_sources") {
     sources += [
       "desktop_capture.cc",
       "desktop_capture.h",
+      "webrtc_log.cc",
+      "webrtc_log.h",
     ]
     deps += [ "//third_party/webrtc/modules/desktop_capture" ]
   }

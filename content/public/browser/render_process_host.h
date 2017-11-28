@@ -278,21 +278,14 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // AEC is deprecated.
   virtual void SetEchoCanceller3(bool enable) = 0;
 
-  // When set, |callback| receives log messages regarding, for example, media
-  // devices (webcams, mics, etc) that were initially requested in the render
-  // process associated with this RenderProcessHost.
-  virtual void SetWebRtcLogMessageCallback(
-      base::Callback<void(const std::string&)> callback) = 0;
-  virtual void ClearWebRtcLogMessageCallback() = 0;
+  using WebRtcRtpPacketCallback =
+      base::Callback<void(std::unique_ptr<uint8_t[]> packet_header,
+                          size_t header_length,
+                          size_t packet_length,
+                          bool incoming)>;
 
-  typedef base::Callback<void(std::unique_ptr<uint8_t[]> packet_header,
-                              size_t header_length,
-                              size_t packet_length,
-                              bool incoming)>
-      WebRtcRtpPacketCallback;
-
-  typedef base::Callback<void(bool incoming, bool outgoing)>
-      WebRtcStopRtpDumpCallback;
+  using WebRtcStopRtpDumpCallback =
+      base::Callback<void(bool incoming, bool outgoing)>;
 
   // Starts passing RTP packets to |packet_callback| and returns the callback
   // used to stop dumping.
@@ -504,6 +497,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   static size_t GetMaxRendererProcessCount();
 };
 
-}  // namespace content.
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_RENDER_PROCESS_HOST_H_
