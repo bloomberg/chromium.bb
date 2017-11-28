@@ -542,26 +542,10 @@ content::RenderFrameHost* GetMostVisitedIframe(content::WebContents* tab) {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, LoadsIframe) {
-  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-
-  content::DOMMessageQueue msg_queue;
-
-  bool result = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "!!setupAdvancedTest(true)", &result));
-  ASSERT_TRUE(result);
-
-  // Wait for the MV iframe to load.
-  std::string message;
-  // First get rid of the "true" message from the GetBoolFromJS call above.
-  ASSERT_TRUE(msg_queue.PopMessage(&message));
-  ASSERT_EQ("true", message);
-  // Now wait for the "loaded" message.
-  ASSERT_TRUE(msg_queue.WaitForMessage(&message));
-  ASSERT_EQ("\"loaded\"", message);
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsIframe) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  NavigateToNTPAndWaitUntilLoaded();
 
   // Get the iframe and check that the tiles loaded correctly.
   content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
