@@ -29,7 +29,7 @@ MojoVideoDecoderService::MojoVideoDecoderService(
     MojoMediaClient* mojo_media_client,
     MojoCdmServiceContext* mojo_cdm_service_context)
     : mojo_media_client_(mojo_media_client),
-      mojo_cdm_service_context_(std::move(mojo_cdm_service_context)),
+      mojo_cdm_service_context_(mojo_cdm_service_context),
       weak_factory_(this) {
   DCHECK(mojo_cdm_service_context_);
   weak_this_ = weak_factory_.GetWeakPtr();
