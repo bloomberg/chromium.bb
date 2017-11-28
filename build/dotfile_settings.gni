@@ -17,6 +17,7 @@ build_dotfile_settings = {
     "//build/config/linux/BUILD.gn",
     "//build/config/linux/pkg_config.gni",
     "//build/config/linux/atk/BUILD.gn",
+    "//build/config/linux/dri/BUILD.gn",
     "//build/config/mac/mac_sdk.gni",
     "//build/config/mac/rules.gni",
     "//build/config/posix/BUILD.gn",
