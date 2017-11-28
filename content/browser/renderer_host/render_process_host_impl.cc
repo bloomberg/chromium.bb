@@ -103,7 +103,6 @@
 #include "content/browser/mus_util.h"
 #include "content/browser/net/reporting_service_proxy.h"
 #include "content/browser/notifications/notification_message_filter.h"
-#include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
@@ -1827,12 +1826,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::Bind(&BackgroundSyncContext::CreateService,
                  base::Unretained(
                      storage_partition_impl_->GetBackgroundSyncContext())));
-  AddUIThreadInterface(
-      registry.get(),
-      base::Bind(&PlatformNotificationContextImpl::CreateService,
-                 base::Unretained(
-                     storage_partition_impl_->GetPlatformNotificationContext()),
-                 GetID()));
   AddUIThreadInterface(
       registry.get(),
       base::Bind(&RenderProcessHostImpl::CreateStoragePartitionService,

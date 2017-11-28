@@ -26,7 +26,7 @@
                   win.close();
 
               } else if (event.data == 'closed') {
-                  assert_equals(notificationObj.permission, 'granted');
+                  assert_equals(notificationObj.permission, 'denied');
                   notificationObj.requestPermission(function () {});
 
                   test.done();

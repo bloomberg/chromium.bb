@@ -127,6 +127,7 @@
           "blink::mojom::InsecureInputService",
           "blink::mojom::KeyboardLockService",
           "blink::mojom::MediaSessionService",
+          "blink::mojom::NotificationService",
           "blink::mojom::PermissionService",
           "blink::mojom::PresentationService",
           "blink::mojom::TextSuggestionHost",
@@ -175,6 +176,7 @@
     "navigation:dedicated_worker": {
       "provides": {
         "renderer": [
+          "blink::mojom::NotificationService",
           "blink::mojom::PermissionService",
           "payments::mojom::PaymentManager",
           "shape_detection::mojom::BarcodeDetection",
@@ -186,6 +188,7 @@
     "navigation:service_worker": {
       "provides": {
         "renderer": [
+          "blink::mojom::NotificationService",
           "blink::mojom::PermissionService",
           "blink::mojom::WebSocket",
           "payments::mojom::PaymentManager",
@@ -198,6 +201,7 @@
     "navigation:shared_worker": {
       "provides": {
         "renderer": [
+          "blink::mojom::NotificationService",
           "blink::mojom::PermissionService",
           "blink::mojom::WebSocket",
           "payments::mojom::PaymentManager",
