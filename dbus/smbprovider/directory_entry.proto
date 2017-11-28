@@ -61,5 +61,24 @@ message MountOptions {
 
 // UnmountOptions is used for passing inputs into SmbProvider.Unmount().
 message UnmountOptions {
+  // ID of the mount returned from Mount().
   optional int32 mount_id = 1;
+}
+
+// Used for passing inputs into SmbProvider.ReadDirectory().
+message ReadDirectoryOptions {
+  // ID of the mount returned from Mount().
+  optional int32 mount_id = 1;
+  // Path of the directory to be read. The paths are relative to the mount root.
+  // (e.g. "/testfolder")
+  optional string directory_path = 2;
+}
+
+// Used for passing inputs into SmbProvider.GetMetadataEntry().
+message GetMetadataEntryOptions {
+  // ID of the mount returned from Mount().
+  optional int32 mount_id = 1;
+  // Path of the entry to be read. This can be a file or directory path.
+  // The paths are relative to the mount root. (e.g. "/testfolder/dog.jpg")
+  optional string entry_path = 2;
 }
