@@ -1195,6 +1195,9 @@ action("generate_javadoc") {
     "--stamp",
     rebase_path(_stamp_file, root_build_dir),
 
+    "--android-sdk-jar",
+    rebase_path(android_sdk_jar, root_build_dir),
+
     # JavaDoc is generated from Cronet's API source jar.
     "--input-src-jar",
     rebase_path("$_package_dir/cronet_api-src.jar", root_build_dir),
