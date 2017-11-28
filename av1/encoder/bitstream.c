@@ -1453,18 +1453,18 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
       }
     } else if (mode == NEAREST_NEWMV || mode == NEAR_NEWMV) {
       int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-      int nmv_ctx =
-          av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
-                      mbmi_ext->ref_mv_stack[rf_type], 1, mbmi->ref_mv_idx);
+      int nmv_ctx = av1_nmv_ctx(
+          mbmi_ext->ref_mv_count[rf_type], mbmi_ext->ref_mv_stack[rf_type], 1,
+          mbmi->ref_mv_idx + (mode == NEAR_NEWMV ? 1 : 0));
       nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
       av1_encode_mv(cpi, w, &mbmi->mv[1].as_mv,
                     &mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0].as_mv, nmvc,
                     allow_hp);
     } else if (mode == NEW_NEARESTMV || mode == NEW_NEARMV) {
       int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-      int nmv_ctx =
-          av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
-                      mbmi_ext->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
+      int nmv_ctx = av1_nmv_ctx(
+          mbmi_ext->ref_mv_count[rf_type], mbmi_ext->ref_mv_stack[rf_type], 0,
+          mbmi->ref_mv_idx + (mode == NEW_NEARMV ? 1 : 0));
       nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
       av1_encode_mv(cpi, w, &mbmi->mv[0].as_mv,
                     &mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0].as_mv, nmvc,

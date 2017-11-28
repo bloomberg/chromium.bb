@@ -1711,8 +1711,9 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
     }
     case NEAR_NEWMV: {
       int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-      int nmv_ctx = av1_nmv_ctx(xd->ref_mv_count[rf_type],
-                                xd->ref_mv_stack[rf_type], 1, mbmi->ref_mv_idx);
+      int nmv_ctx =
+          av1_nmv_ctx(xd->ref_mv_count[rf_type], xd->ref_mv_stack[rf_type], 1,
+                      mbmi->ref_mv_idx + 1);
       nmv_context *const nmvc = &ec_ctx->nmvc[nmv_ctx];
       mv[0].as_int = near_mv[0].as_int;
       read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, nmvc, allow_hp);
@@ -1723,8 +1724,9 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
     }
     case NEW_NEARMV: {
       int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-      int nmv_ctx = av1_nmv_ctx(xd->ref_mv_count[rf_type],
-                                xd->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
+      int nmv_ctx =
+          av1_nmv_ctx(xd->ref_mv_count[rf_type], xd->ref_mv_stack[rf_type], 0,
+                      mbmi->ref_mv_idx + 1);
       nmv_context *const nmvc = &ec_ctx->nmvc[nmv_ctx];
       read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, nmvc, allow_hp);
       assert(is_compound);

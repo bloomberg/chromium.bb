@@ -5980,7 +5980,9 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     best_mv->col >>= 3;
     best_mv->row >>= 3;
 
-    av1_set_mvcost(x, refs[id], id, mbmi->ref_mv_idx);
+    av1_set_mvcost(
+        x, refs[id], id,
+        mbmi->ref_mv_idx + (have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0));
 
     // Small-range full-pixel motion search.
     bestsme = av1_refining_search_8p_c(x, sadpb, search_range,
@@ -6039,7 +6041,9 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
         xd->plane[i].pre[ref] = backup_yv12[ref][i];
     }
 
-    av1_set_mvcost(x, refs[ref], ref, mbmi->ref_mv_idx);
+    av1_set_mvcost(
+        x, refs[ref], ref,
+        mbmi->ref_mv_idx + (have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0));
 
     *rate_mv += av1_mv_bit_cost(&frame_mv[refs[ref]].as_mv,
                                 &x->mbmi_ext->ref_mvs[refs[ref]][0].as_mv,
@@ -6351,7 +6355,9 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   av1_set_mv_search_range(&x->mv_limits, &ref_mv);
 
-  av1_set_mvcost(x, ref, ref_idx, mbmi->ref_mv_idx);
+  av1_set_mvcost(
+      x, ref, ref_idx,
+      mbmi->ref_mv_idx + (have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0));
 
   // Work out the size of the first step in the mv step search.
   // 0 here is maximum length first step. 1 is AOMMAX >> 1 etc.
@@ -6680,7 +6686,9 @@ static void compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   best_mv->col >>= 3;
   best_mv->row >>= 3;
 
-  av1_set_mvcost(x, ref, ref_idx, mbmi->ref_mv_idx);
+  av1_set_mvcost(
+      x, ref, ref_idx,
+      mbmi->ref_mv_idx + (have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0));
 
   // Small-range full-pixel motion search.
   bestsme = av1_refining_search_8p_c(x, sadpb, search_range,
@@ -6732,7 +6740,9 @@ static void compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
       xd->plane[i].pre[ref_idx] = backup_yv12[i];
   }
 
-  av1_set_mvcost(x, ref, ref_idx, mbmi->ref_mv_idx);
+  av1_set_mvcost(
+      x, ref, ref_idx,
+      mbmi->ref_mv_idx + (have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0));
   *rate_mv += av1_mv_bit_cost(this_mv, &ref_mv.as_mv, x->nmvjointcost,
                               x->mvcost, MV_COST_WEIGHT);
 }
@@ -7399,7 +7409,8 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
         compound_single_motion_search_interinter(
             cpi, x, bsize, frame_mv, mi_row, mi_col, NULL, 0, rate_mv, 0, 1);
       } else {
-        av1_set_mvcost(x, refs[1], 1, mbmi->ref_mv_idx);
+        av1_set_mvcost(x, refs[1], 1,
+                       mbmi->ref_mv_idx + (this_mode == NEAR_NEWMV ? 1 : 0));
         *rate_mv = av1_mv_bit_cost(&frame_mv[refs[1]].as_mv,
                                    &mbmi_ext->ref_mvs[refs[1]][0].as_mv,
                                    x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
@@ -7413,7 +7424,8 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
         compound_single_motion_search_interinter(
             cpi, x, bsize, frame_mv, mi_row, mi_col, NULL, 0, rate_mv, 0, 0);
       } else {
-        av1_set_mvcost(x, refs[0], 0, mbmi->ref_mv_idx);
+        av1_set_mvcost(x, refs[0], 0,
+                       mbmi->ref_mv_idx + (this_mode == NEW_NEARMV ? 1 : 0));
         *rate_mv = av1_mv_bit_cost(&frame_mv[refs[0]].as_mv,
                                    &mbmi_ext->ref_mvs[refs[0]][0].as_mv,
                                    x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
