@@ -4071,7 +4071,7 @@ error::Error GLES2DecoderPassthroughImpl::DoReleaseTexImage2DCHROMIUM(
   }
 
   // Only release the image if it is currently bound
-  if (bound_texture.texture->GetLevelImage(target, 0) != image) {
+  if (bound_texture.texture->GetLevelImage(target, 0) == image) {
     image->ReleaseTexImage(target);
     bound_texture.texture->SetLevelImage(target, 0, nullptr);
   }
