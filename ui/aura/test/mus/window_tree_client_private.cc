@@ -38,7 +38,9 @@ WindowTreeHostMus* WindowTreeClientPrivate::CallWmNewDisplayAdded(
     const display::Display& display) {
   ui::mojom::WindowDataPtr root_data(ui::mojom::WindowData::New());
   root_data->parent_id = 0;
-  root_data->window_id = next_window_id_++;
+  // Windows representing displays are owned by mus, which is identified by
+  // non-zero high word.
+  root_data->window_id = next_window_id_++ | 0x00010000;
   root_data->visible = true;
   root_data->bounds = gfx::Rect(display.bounds().size());
   const bool parent_drawn = true;

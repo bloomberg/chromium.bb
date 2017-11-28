@@ -67,7 +67,7 @@ const char kTestPropertyServerKey2[] = "test-property-server2";
 const char kTestPropertyServerKey3[] = "test-property-server3";
 
 Id server_id(Window* window) {
-  return WindowMus::Get(window)->server_id();
+  return window ? WindowMus::Get(window)->server_id() : 0;
 }
 
 std::unique_ptr<Window> CreateWindowUsingId(
@@ -137,7 +137,51 @@ WindowTreeHostMusInitParams CreateWindowTreeHostMusInitParams(
 }  // namespace
 
 using WindowTreeClientWmTest = test::AuraMusWmTestBase;
-using WindowTreeClientClientTest = test::AuraMusClientTestBase;
+
+class WindowTreeClientClientTest : public test::AuraMusClientTestBase {
+ public:
+  WindowTreeClientClientTest() = default;
+  ~WindowTreeClientClientTest() override = default;
+
+  struct TopLevel {
+    std::unique_ptr<client::DefaultCaptureClient> capture_client;
+    std::unique_ptr<WindowTreeHostMus> host;
+  };
+
+  std::unique_ptr<TopLevel> CreateWindowTreeHostForTopLevel() {
+    std::unique_ptr<TopLevel> top_level = std::make_unique<TopLevel>();
+    top_level->host = std::make_unique<WindowTreeHostMus>(
+        CreateInitParamsForTopLevel(window_tree_client_impl()));
+    top_level->host->InitHost();
+    Window* top_level_window = top_level->host->window();
+    top_level->capture_client =
+        std::make_unique<client::DefaultCaptureClient>();
+    client::SetCaptureClient(top_level_window, top_level->capture_client.get());
+    window_tree_client_impl()->capture_synchronizer()->AttachToCaptureClient(
+        top_level->capture_client.get());
+
+    // Ack the request to the windowtree to create the new window.
+    uint32_t change_id = 0;
+    EXPECT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
+        WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
+    EXPECT_EQ(window_tree()->window_id(), server_id(top_level_window));
+
+    ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
+    data->window_id = server_id(top_level_window);
+    data->visible = true;
+    window_tree_client()->OnTopLevelCreated(
+        change_id, std::move(data), next_display_id_++, true, base::nullopt);
+    EXPECT_EQ(0u, window_tree()->GetChangeCountForType(
+                      WindowTreeChangeType::VISIBLE));
+    EXPECT_TRUE(top_level_window->TargetVisibility());
+    return top_level;
+  }
+
+ private:
+  int64_t next_display_id_ = 1;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeClientClientTest);
+};
 
 class WindowTreeClientWmTestSurfaceSync
     : public WindowTreeClientWmTest,
@@ -546,65 +590,69 @@ TEST_F(WindowTreeClientWmTest, FocusFromServer) {
 // server replies with a new bounds and the original bounds change fails.
 // The server bounds change takes hold along with the associated
 // viz::LocalSurfaceId.
-TEST_F(WindowTreeClientWmTest, SetBoundsFailedWithPendingChange) {
-  const gfx::Rect original_bounds(root_window()->bounds());
+TEST_F(WindowTreeClientClientTest, SetBoundsFailedWithPendingChange) {
+  aura::Window root_window(nullptr);
+  root_window.Init(ui::LAYER_NOT_DRAWN);
+  const gfx::Rect original_bounds(root_window.bounds());
   const gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
-  ASSERT_NE(new_bounds, root_window()->bounds());
-  root_window()->SetBounds(new_bounds);
-  EXPECT_EQ(new_bounds, root_window()->bounds());
+  ASSERT_NE(new_bounds, root_window.bounds());
+  root_window.SetBounds(new_bounds);
+  EXPECT_EQ(new_bounds, root_window.bounds());
 
   // Simulate the server responding with a bounds change.
   const gfx::Rect server_changed_bounds(gfx::Rect(0, 0, 101, 102));
   const viz::LocalSurfaceId server_changed_local_surface_id(
       1, base::UnguessableToken::Create());
   window_tree_client()->OnWindowBoundsChanged(
-      server_id(root_window()), original_bounds, server_changed_bounds,
+      server_id(&root_window), original_bounds, server_changed_bounds,
       server_changed_local_surface_id);
 
-  WindowMus* root_window_mus = WindowMus::Get(root_window());
+  WindowMus* root_window_mus = WindowMus::Get(&root_window);
   ASSERT_NE(nullptr, root_window_mus);
 
   // This shouldn't trigger the bounds changing yet.
-  EXPECT_EQ(new_bounds, root_window()->bounds());
+  EXPECT_EQ(new_bounds, root_window.bounds());
   EXPECT_FALSE(root_window_mus->GetLocalSurfaceId().is_valid());
 
   // Tell the client the change failed, which should trigger failing to the
   // most recent bounds from server.
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(WindowTreeChangeType::BOUNDS,
                                                    false));
-  EXPECT_EQ(server_changed_bounds, root_window()->bounds());
+  EXPECT_EQ(server_changed_bounds, root_window.bounds());
   EXPECT_EQ(server_changed_local_surface_id,
             root_window_mus->GetLocalSurfaceId());
 
   // Simulate server changing back to original bounds. Should take immediately.
-  window_tree_client()->OnWindowBoundsChanged(server_id(root_window()),
+  window_tree_client()->OnWindowBoundsChanged(server_id(&root_window),
                                               server_changed_bounds,
                                               original_bounds, base::nullopt);
-  EXPECT_EQ(original_bounds, root_window()->bounds());
+  EXPECT_EQ(original_bounds, root_window.bounds());
   EXPECT_FALSE(root_window_mus->GetLocalSurfaceId().is_valid());
 }
 
-TEST_F(WindowTreeClientWmTest, TwoInFlightBoundsChangesBothCanceled) {
-  const gfx::Rect original_bounds(root_window()->bounds());
+TEST_F(WindowTreeClientClientTest, TwoInFlightBoundsChangesBothCanceled) {
+  aura::Window root_window(nullptr);
+  root_window.Init(ui::LAYER_NOT_DRAWN);
+  const gfx::Rect original_bounds(root_window.bounds());
   const gfx::Rect bounds1(gfx::Rect(0, 0, 100, 100));
   const gfx::Rect bounds2(gfx::Rect(0, 0, 100, 102));
-  root_window()->SetBounds(bounds1);
-  EXPECT_EQ(bounds1, root_window()->bounds());
+  root_window.SetBounds(bounds1);
+  EXPECT_EQ(bounds1, root_window.bounds());
 
-  root_window()->SetBounds(bounds2);
-  EXPECT_EQ(bounds2, root_window()->bounds());
+  root_window.SetBounds(bounds2);
+  EXPECT_EQ(bounds2, root_window.bounds());
 
   // Tell the client the first bounds failed. As there is a still a change in
   // flight nothing should happen.
   ASSERT_TRUE(
       window_tree()->AckFirstChangeOfType(WindowTreeChangeType::BOUNDS, false));
-  EXPECT_EQ(bounds2, root_window()->bounds());
+  EXPECT_EQ(bounds2, root_window.bounds());
 
   // Tell the client the seconds bounds failed. Should now fallback to original
   // value.
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(WindowTreeChangeType::BOUNDS,
                                                    false));
-  EXPECT_EQ(original_bounds, root_window()->bounds());
+  EXPECT_EQ(original_bounds, root_window.bounds());
 }
 
 TEST_F(WindowTreeClientWmTest, TwoInFlightTransformsChangesBothCanceled) {
@@ -1646,7 +1694,6 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindow) {
   window_tree_host->InitHost();
   EXPECT_FALSE(window_tree_host->window()->TargetVisibility());
   aura::Window* top_level = window_tree_host->window();
-  EXPECT_NE(server_id(top_level), server_id(root_window()));
   EXPECT_EQ(initial_root_count + 1,
             window_tree_client_impl()->GetRoots().size());
   EXPECT_TRUE(window_tree_client_impl()->GetRoots().count(top_level) > 0u);
@@ -1809,14 +1856,16 @@ TEST_F(WindowTreeClientClientTest, NewWindowGetsProperties) {
 
 // Assertions around transient windows.
 TEST_F(WindowTreeClientClientTest, Transients) {
+  aura::Window root_window(nullptr);
+  root_window.Init(ui::LAYER_NOT_DRAWN);
   client::TransientWindowClient* transient_client =
       client::GetTransientWindowClient();
   Window parent(nullptr);
   parent.Init(ui::LAYER_NOT_DRAWN);
-  root_window()->AddChild(&parent);
+  root_window.AddChild(&parent);
   Window transient(nullptr);
   transient.Init(ui::LAYER_NOT_DRAWN);
-  root_window()->AddChild(&transient);
+  root_window.AddChild(&transient);
   window_tree()->AckAllChanges();
   transient_client->AddTransientChild(&parent, &transient);
   ASSERT_EQ(1u, window_tree()->GetChangeCountForType(
@@ -1885,23 +1934,25 @@ TEST_F(WindowTreeClientClientTest, DontRestackTransientsFromOtherClients) {
 // when the change originates from the server.
 TEST_F(WindowTreeClientClientTest,
        TransientChildServerMutateNotifiesOfRestack) {
+  aura::Window root_window(nullptr);
+  root_window.Init(ui::LAYER_NOT_DRAWN);
   Window* w1 = new Window(nullptr);
   w1->Init(ui::LAYER_NOT_DRAWN);
-  root_window()->AddChild(w1);
+  root_window.AddChild(w1);
   Window* w2 = new Window(nullptr);
   w2->Init(ui::LAYER_NOT_DRAWN);
-  root_window()->AddChild(w2);
+  root_window.AddChild(w2);
   Window* w3 = new Window(nullptr);
   w3->Init(ui::LAYER_NOT_DRAWN);
-  root_window()->AddChild(w3);
+  root_window.AddChild(w3);
   // Three children of root: |w1|, |w2| and |w3| (in that order). Make |w1| a
   // transient child of |w2|. Should trigger moving |w1| on top of |w2|, but not
   // notify the server of the reorder.
   window_tree()->AckAllChanges();
   window_tree_client()->OnTransientWindowAdded(server_id(w2), server_id(w1));
-  EXPECT_EQ(w2, root_window()->children()[0]);
-  EXPECT_EQ(w1, root_window()->children()[1]);
-  EXPECT_EQ(w3, root_window()->children()[2]);
+  EXPECT_EQ(w2, root_window.children()[0]);
+  EXPECT_EQ(w1, root_window.children()[1]);
+  EXPECT_EQ(w3, root_window.children()[2]);
   // Only reorders should be generated.
   EXPECT_NE(0u, window_tree()->number_of_changes());
   window_tree()->AckAllChangesOfType(WindowTreeChangeType::REORDER, true);
@@ -1909,9 +1960,9 @@ TEST_F(WindowTreeClientClientTest,
 
   // Make |w3| also a transient child of |w2|.
   window_tree_client()->OnTransientWindowAdded(server_id(w2), server_id(w3));
-  EXPECT_EQ(w2, root_window()->children()[0]);
-  EXPECT_EQ(w1, root_window()->children()[1]);
-  EXPECT_EQ(w3, root_window()->children()[2]);
+  EXPECT_EQ(w2, root_window.children()[0]);
+  EXPECT_EQ(w1, root_window.children()[1]);
+  EXPECT_EQ(w3, root_window.children()[2]);
   // Only reorders should be generated.
   EXPECT_NE(0u, window_tree()->number_of_changes());
   window_tree()->AckAllChangesOfType(WindowTreeChangeType::REORDER, true);
@@ -1919,9 +1970,9 @@ TEST_F(WindowTreeClientClientTest,
 
   // Remove |w1| as a transient child, this should move |w3| on top of |w2|.
   window_tree_client()->OnTransientWindowRemoved(server_id(w2), server_id(w1));
-  EXPECT_EQ(w2, root_window()->children()[0]);
-  EXPECT_EQ(w3, root_window()->children()[1]);
-  EXPECT_EQ(w1, root_window()->children()[2]);
+  EXPECT_EQ(w2, root_window.children()[0]);
+  EXPECT_EQ(w3, root_window.children()[1]);
+  EXPECT_EQ(w1, root_window.children()[2]);
   // Only reorders should be generated.
   EXPECT_NE(0u, window_tree()->number_of_changes());
   window_tree()->AckAllChangesOfType(WindowTreeChangeType::REORDER, true);
@@ -1932,25 +1983,28 @@ TEST_F(WindowTreeClientClientTest,
 // restacks;
 TEST_F(WindowTreeClientClientTest,
        TransientChildClientMutateNotifiesOfRestack) {
+  aura::Window root_window(nullptr);
+  root_window.Init(ui::LAYER_NOT_DRAWN);
+
   client::TransientWindowClient* transient_client =
       client::GetTransientWindowClient();
   Window* w1 = new Window(nullptr);
   w1->Init(ui::LAYER_NOT_DRAWN);
-  root_window()->AddChild(w1);
+  root_window.AddChild(w1);
   Window* w2 = new Window(nullptr);
   w2->Init(ui::LAYER_NOT_DRAWN);
-  root_window()->AddChild(w2);
+  root_window.AddChild(w2);
   Window* w3 = new Window(nullptr);
   w3->Init(ui::LAYER_NOT_DRAWN);
-  root_window()->AddChild(w3);
+  root_window.AddChild(w3);
   // Three children of root: |w1|, |w2| and |w3| (in that order). Make |w1| a
   // transient child of |w2|. Should trigger moving |w1| on top of |w2|, and
   // notify notify the server of the reorder.
   window_tree()->AckAllChanges();
   transient_client->AddTransientChild(w2, w1);
-  EXPECT_EQ(w2, root_window()->children()[0]);
-  EXPECT_EQ(w1, root_window()->children()[1]);
-  EXPECT_EQ(w3, root_window()->children()[2]);
+  EXPECT_EQ(w2, root_window.children()[0]);
+  EXPECT_EQ(w1, root_window.children()[1]);
+  EXPECT_EQ(w3, root_window.children()[2]);
   EXPECT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::ADD_TRANSIENT, true));
   EXPECT_TRUE(window_tree()->AckSingleChangeOfType(
@@ -1959,9 +2013,9 @@ TEST_F(WindowTreeClientClientTest,
 
   // Make |w3| also a transient child of |w2|. Order shouldn't change.
   transient_client->AddTransientChild(w2, w3);
-  EXPECT_EQ(w2, root_window()->children()[0]);
-  EXPECT_EQ(w1, root_window()->children()[1]);
-  EXPECT_EQ(w3, root_window()->children()[2]);
+  EXPECT_EQ(w2, root_window.children()[0]);
+  EXPECT_EQ(w1, root_window.children()[1]);
+  EXPECT_EQ(w3, root_window.children()[2]);
   EXPECT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::ADD_TRANSIENT, true));
   // While the order doesn't change, internally aura shuffles things around,
@@ -1972,9 +2026,9 @@ TEST_F(WindowTreeClientClientTest,
 
   // Remove |w1| as a transient child, this should move |w3| on top of |w2|.
   transient_client->RemoveTransientChild(w2, w1);
-  EXPECT_EQ(w2, root_window()->children()[0]);
-  EXPECT_EQ(w3, root_window()->children()[1]);
-  EXPECT_EQ(w1, root_window()->children()[2]);
+  EXPECT_EQ(w2, root_window.children()[0]);
+  EXPECT_EQ(w3, root_window.children()[1]);
+  EXPECT_EQ(w1, root_window.children()[2]);
   EXPECT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::REMOVE_TRANSIENT, true));
   EXPECT_TRUE(window_tree()->AckSingleChangeOfType(
@@ -1982,20 +2036,20 @@ TEST_F(WindowTreeClientClientTest,
   EXPECT_EQ(0u, window_tree()->number_of_changes());
 
   // Make |w1| the first child and ensure a REORDER was scheduled.
-  root_window()->StackChildAtBottom(w1);
-  EXPECT_EQ(w1, root_window()->children()[0]);
-  EXPECT_EQ(w2, root_window()->children()[1]);
-  EXPECT_EQ(w3, root_window()->children()[2]);
+  root_window.StackChildAtBottom(w1);
+  EXPECT_EQ(w1, root_window.children()[0]);
+  EXPECT_EQ(w2, root_window.children()[1]);
+  EXPECT_EQ(w3, root_window.children()[2]);
   EXPECT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::REORDER, true));
   EXPECT_EQ(0u, window_tree()->number_of_changes());
 
   // Try stacking |w2| above |w3|. This should be disallowed as that would
   // result in placing |w2| above its transient child.
-  root_window()->StackChildAbove(w2, w3);
-  EXPECT_EQ(w1, root_window()->children()[0]);
-  EXPECT_EQ(w2, root_window()->children()[1]);
-  EXPECT_EQ(w3, root_window()->children()[2]);
+  root_window.StackChildAbove(w2, w3);
+  EXPECT_EQ(w1, root_window.children()[0]);
+  EXPECT_EQ(w2, root_window.children()[1]);
+  EXPECT_EQ(w3, root_window.children()[2]);
   // The stack above is followed by a reorder from TransientWindowManager,
   // hence multiple changes.
   EXPECT_NE(0u, window_tree()->number_of_changes());
@@ -2310,76 +2364,50 @@ TEST_F(WindowTreeClientWmTest, OnWindowTreeCaptureChanged) {
 }
 
 TEST_F(WindowTreeClientClientTest, TwoWindowTreesRequestCapture) {
-  // Creating a WindowTreeHost so we can have two root windows: top_level
-  // and root_window().
-  std::unique_ptr<WindowTreeHostMus> window_tree_host =
-      std::make_unique<WindowTreeHostMus>(
-          CreateInitParamsForTopLevel(window_tree_client_impl()));
-  window_tree_host->InitHost();
-  Window* top_level = window_tree_host->window();
-  std::unique_ptr<client::DefaultCaptureClient> capture_client(
-      std::make_unique<client::DefaultCaptureClient>());
-  client::SetCaptureClient(top_level, capture_client.get());
-  window_tree_client_impl()->capture_synchronizer()->AttachToCaptureClient(
-      capture_client.get());
-  EXPECT_NE(server_id(top_level), server_id(root_window()));
+  std::unique_ptr<TopLevel> top_level1 = CreateWindowTreeHostForTopLevel();
+  std::unique_ptr<TopLevel> top_level2 = CreateWindowTreeHostForTopLevel();
 
-  // Ack the request to the windowtree to create the new window.
-  uint32_t change_id;
-  ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
-      WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
-  EXPECT_EQ(window_tree()->window_id(), server_id(top_level));
-
-  ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
-  data->window_id = server_id(top_level);
-  data->visible = true;
-  const int64_t display_id = 1;
-  window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
-                                          display_id, true, base::nullopt);
-  EXPECT_EQ(
-      0u, window_tree()->GetChangeCountForType(WindowTreeChangeType::VISIBLE));
-  EXPECT_TRUE(top_level->TargetVisibility());
-
+  aura::Window* root_window1 = top_level1->host->window();
+  aura::Window* root_window2 = top_level2->host->window();
   std::unique_ptr<CaptureRecorder> capture_recorder1(
-      std::make_unique<CaptureRecorder>(root_window()));
+      std::make_unique<CaptureRecorder>(root_window1));
   std::unique_ptr<CaptureRecorder> capture_recorder2(
-      std::make_unique<CaptureRecorder>(top_level));
-  EXPECT_NE(client::GetCaptureClient(root_window()),
-            client::GetCaptureClient(top_level));
+      std::make_unique<CaptureRecorder>(root_window2));
+  EXPECT_NE(client::GetCaptureClient(root_window1),
+            client::GetCaptureClient(root_window2));
 
   EXPECT_EQ(0, capture_recorder1->capture_changed_count());
   EXPECT_EQ(0, capture_recorder2->capture_changed_count());
-  // Give capture to top_level and ensure everyone is notified correctly.
-  top_level->SetCapture();
+  // Give capture to root_window2 and ensure everyone is notified correctly.
+  root_window2->SetCapture();
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::CAPTURE, true));
   EXPECT_EQ(0, capture_recorder1->capture_changed_count());
   EXPECT_EQ(1, capture_recorder2->capture_changed_count());
-  EXPECT_EQ(top_level->id(),
+  EXPECT_EQ(root_window2->id(),
             capture_recorder2->last_gained_capture_window_id());
   EXPECT_EQ(0, capture_recorder2->last_lost_capture_window_id());
-  top_level->ReleaseCapture();
+  root_window2->ReleaseCapture();
   capture_recorder1->reset_capture_captured_count();
   capture_recorder2->reset_capture_captured_count();
 
-  // Release capture of top_level shouldn't affect the capture of root_window().
-  top_level->SetCapture();
-  root_window()->SetCapture();
-  top_level->ReleaseCapture();
+  // Release capture of  shouldn't affect the capture of root_window1.
+  root_window2->SetCapture();
+  root_window1->SetCapture();
+  root_window2->ReleaseCapture();
   EXPECT_EQ(1, capture_recorder1->capture_changed_count());
   EXPECT_EQ(2, capture_recorder2->capture_changed_count());
-  EXPECT_EQ(root_window()->id(),
+  EXPECT_EQ(root_window1->id(),
             capture_recorder1->last_gained_capture_window_id());
   EXPECT_EQ(0, capture_recorder1->last_lost_capture_window_id());
   EXPECT_EQ(0, capture_recorder2->last_gained_capture_window_id());
-  EXPECT_EQ(top_level->id(), capture_recorder2->last_lost_capture_window_id());
+  EXPECT_EQ(root_window2->id(),
+            capture_recorder2->last_lost_capture_window_id());
 
   capture_recorder1->reset_capture_captured_count();
   capture_recorder2->reset_capture_captured_count();
   capture_recorder1.reset();
   capture_recorder2.reset();
-  window_tree_host.reset();
-  capture_client.reset();
 }
 
 TEST_F(WindowTreeClientClientTest, ModalTypeWindowFail) {

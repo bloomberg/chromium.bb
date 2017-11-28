@@ -9,6 +9,7 @@
 #include "ui/aura/mus/property_utils.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/test/aura_test_context_factory.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method_initializer.h"
@@ -77,11 +78,16 @@ void AuraTestBase::SetUp() {
       ui::VelocityTracker::Strategy::LSQ2_RESTRICTED);
 
   // The ContextFactory must exist before any Compositors are created.
-  bool enable_pixel_output = false;
   ui::ContextFactory* context_factory = nullptr;
   ui::ContextFactoryPrivate* context_factory_private = nullptr;
-  ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                       &context_factory_private);
+  if (use_mus_) {
+    mus_context_factory_ = std::make_unique<AuraTestContextFactory>();
+    context_factory = mus_context_factory_.get();
+  } else {
+    const bool enable_pixel_output = false;
+    ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                         &context_factory_private);
+  }
 
   helper_ = std::make_unique<AuraTestHelper>();
   if (use_mus_) {
@@ -98,9 +104,18 @@ void AuraTestBase::TearDown() {
   // and these tasks if un-executed would upset Valgrind.
   RunAllPendingInMessageLoop();
 
-  window_tree_hosts_.clear();
+  // AuraTestHelper may own a WindowTreeHost, don't delete it here else
+  // AuraTestHelper will have use after frees.
+  for (size_t i = window_tree_hosts_.size(); i > 0; --i) {
+    if (window_tree_hosts_[i - 1].get() == helper_->host()) {
+      window_tree_hosts_[i - 1].release();
+      window_tree_hosts_.erase(window_tree_hosts_.begin() + i - 1);
+      break;
+    }
+  }
 
   helper_->TearDown();
+  window_tree_hosts_.clear();
   ui::TerminateContextFactoryForTests();
   ui::ShutdownInputMethodForTesting();
   testing::Test::TearDown();

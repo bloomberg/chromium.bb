@@ -190,6 +190,7 @@ test("exo_unittests") {
     "//mojo/edk/embedder:headers",
     "//testing/gtest",
     "//ui/aura",
+    "//ui/aura:test_support",
     "//ui/base",
     "//ui/compositor:test_support",
     "//ui/gl:test_support",
