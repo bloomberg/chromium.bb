@@ -12,9 +12,17 @@ cr.define('extensions', function() {
      * @return {string} The app or extension label depending on |type|.
      */
     appOrExtension: function(type, appLabel, extensionLabel) {
-      return (type == chrome.developerPrivate.ExtensionType.EXTENSION) ?
-          extensionLabel :
-          appLabel;
+      const ExtensionType = chrome.developerPrivate.ExtensionType;
+      switch (type) {
+        case ExtensionType.HOSTED_APP:
+        case ExtensionType.LEGACY_PACKAGED_APP:
+        case ExtensionType.PLATFORM_APP:
+          return appLabel;
+        case ExtensionType.EXTENSION:
+        case ExtensionType.SHARED_MODULE:
+          return extensionLabel;
+      }
+      assertNotReached('Item type is not App or Extension.');
     },
   };
 
