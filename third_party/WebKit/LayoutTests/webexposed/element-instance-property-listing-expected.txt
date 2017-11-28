@@ -703,7 +703,6 @@ html element link
     property rel
     property relList
     property rev
-    property scope
     property sheet
     property sizes
     property target

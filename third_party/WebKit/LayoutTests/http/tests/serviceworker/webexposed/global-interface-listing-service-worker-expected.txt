@@ -509,12 +509,6 @@ interface FontFace
     setter unicodeRange
     setter variant
     setter weight
-interface ForeignFetchEvent : ExtendableEvent
-    attribute @@toStringTag
-    getter origin
-    getter request
-    method constructor
-    method respondWith
 interface FormData
     attribute @@toStringTag
     method @@iterator
@@ -702,7 +696,6 @@ interface ImageData
 interface InstallEvent : ExtendableEvent
     attribute @@toStringTag
     method constructor
-    method registerForeignFetch
 interface MessageChannel
     attribute @@toStringTag
     getter port1
@@ -2579,7 +2572,6 @@ interface WritableStream
     getter onbackgroundfetchfail
     getter oncanmakepayment
     getter onfetch
-    getter onforeignfetch
     getter oninstall
     getter onmessage
     getter onnotificationclick
@@ -2599,7 +2591,6 @@ interface WritableStream
     setter onbackgroundfetchfail
     setter oncanmakepayment
     setter onfetch
-    setter onforeignfetch
     setter oninstall
     setter onmessage
     setter onnotificationclick
