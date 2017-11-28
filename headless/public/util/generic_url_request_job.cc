@@ -310,28 +310,9 @@ void CompletionCallback(int* dest, base::Closure* quit_closure, int value) {
   *dest = value;
   quit_closure->Run();
 }
-}  // namespace
 
-std::string GenericURLRequestJob::GetPostData() const {
-  if (!request_->has_upload())
-    return "";
-
-  const net::UploadDataStream* stream = request_->get_upload();
-  if (!stream->GetElementReaders())
-    return "";
-
-  if (stream->GetElementReaders()->size() == 0)
-    return "";
-
-  DCHECK_EQ(1u, stream->GetElementReaders()->size());
-  const std::unique_ptr<net::UploadElementReader>& reader =
-      (*stream->GetElementReaders())[0];
-  // If |reader| is actually an UploadBytesElementReader we can get the data
-  // directly (should be faster than the horrible stuff below).
-  const net::UploadBytesElementReader* bytes_reader = reader->AsBytesReader();
-  if (bytes_reader)
-    return std::string(bytes_reader->bytes(), bytes_reader->length());
-
+bool ReadAndAppendBytes(const std::unique_ptr<net::UploadElementReader>& reader,
+                        std::string& post_data) {
   // TODO(alexclarke): Consider changing the interface of
   // GenericURLRequestJob::GetPostData to use a callback which would let us
   // avoid the nested run loops below.
@@ -348,13 +329,11 @@ std::string GenericURLRequestJob::GetPostData() const {
     }
 
     if (init_result != net::OK)
-      return "";
+      return false;
   }
 
   // Read the POST bytes.
   uint64_t content_length = reader->GetContentLength();
-  std::string post_data;
-  post_data.reserve(content_length);
   const size_t block_size = 1024;
   scoped_refptr<net::IOBuffer> read_buffer(new net::IOBuffer(block_size));
   while (post_data.size() < content_length) {
@@ -371,9 +350,49 @@ std::string GenericURLRequestJob::GetPostData() const {
 
     // Bail out if an error occured.
     if (bytes_read < 0)
-      return "";
+      return false;
 
     post_data.append(read_buffer->data(), bytes_read);
+  }
+  return true;
+}
+}  // namespace
+
+std::string GenericURLRequestJob::GetPostData() const {
+  if (!request_->has_upload())
+    return "";
+
+  const net::UploadDataStream* stream = request_->get_upload();
+  if (!stream->GetElementReaders())
+    return "";
+
+  if (stream->GetElementReaders()->size() == 0)
+    return "";
+
+  const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
+      stream->GetElementReaders();
+  if (!readers)
+    return "";
+
+  uint64_t total_content_length = 0;
+  for (size_t i = 0; i < readers->size(); ++i) {
+    const std::unique_ptr<net::UploadElementReader>& reader = (*readers)[i];
+    total_content_length += reader->GetContentLength();
+  }
+  std::string post_data;
+  post_data.reserve(total_content_length);
+
+  for (size_t i = 0; i < readers->size(); ++i) {
+    const std::unique_ptr<net::UploadElementReader>& reader = (*readers)[i];
+    // If |reader| is actually an UploadBytesElementReader we can get the data
+    // directly.
+    const net::UploadBytesElementReader* bytes_reader = reader->AsBytesReader();
+    if (bytes_reader) {
+      post_data.append(bytes_reader->bytes(), bytes_reader->length());
+    } else {
+      if (!ReadAndAppendBytes(reader, post_data))
+        break;  // Bail out if something went wrong.
+    }
   }
 
   return post_data;
