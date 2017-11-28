@@ -614,8 +614,8 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
 #elif defined(USE_X11)
   BrowserAccessibilityManager* manager =
       host_->GetOrCreateRootBrowserAccessibilityManager();
-  if (manager)
-    return ToBrowserAccessibilityAuraLinux(manager->GetRoot())->GetAtkObject();
+  if (manager && manager->GetRoot())
+    return manager->GetRoot()->GetNativeViewAccessible();
 #endif
 
   NOTIMPLEMENTED();
