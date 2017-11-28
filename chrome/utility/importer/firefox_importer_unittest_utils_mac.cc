@@ -150,7 +150,8 @@ bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   std::string token = mojo::edk::GenerateRandomToken();
   mojo::ScopedMessagePipeHandle parent_pipe =
       invitation.AttachMessagePipe(token);
-  channel_ = IPC::Channel::CreateServer(parent_pipe.release(), listener_.get());
+  channel_ = IPC::Channel::CreateServer(parent_pipe.release(), listener_.get(),
+                                        base::ThreadTaskRunnerHandle::Get());
   CHECK(channel_->Connect());
   listener_->SetSender(channel_.get());
 
@@ -290,8 +291,8 @@ MULTIPROCESS_TEST_MAIN(NSSDecrypterChildProcess) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           kMojoChannelToken));
 
-  std::unique_ptr<IPC::Channel> channel =
-      IPC::Channel::CreateClient(mojo_handle.release(), &listener);
+  std::unique_ptr<IPC::Channel> channel = IPC::Channel::CreateClient(
+      mojo_handle.release(), &listener, base::ThreadTaskRunnerHandle::Get());
   CHECK(channel->Connect());
   listener.SetSender(channel.get());
 

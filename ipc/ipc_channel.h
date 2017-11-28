@@ -178,14 +178,12 @@ class IPC_EXPORT Channel : public Sender {
   static std::unique_ptr<Channel> CreateClient(
       const IPC::ChannelHandle& channel_handle,
       Listener* listener,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner =
-          base::ThreadTaskRunnerHandle::Get());
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   static std::unique_ptr<Channel> CreateServer(
       const IPC::ChannelHandle& channel_handle,
       Listener* listener,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner =
-          base::ThreadTaskRunnerHandle::Get());
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   ~Channel() override;
 

@@ -38,9 +38,9 @@ void IPCChannelMojoTestBase::TearDown() {
 }
 
 void IPCChannelMojoTestBase::CreateChannel(IPC::Listener* listener) {
-  channel_ =
-      IPC::ChannelMojo::Create(TakeHandle(), IPC::Channel::MODE_SERVER,
-                               listener, base::ThreadTaskRunnerHandle::Get());
+  channel_ = IPC::ChannelMojo::Create(
+      TakeHandle(), IPC::Channel::MODE_SERVER, listener,
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get());
 }
 
 bool IPCChannelMojoTestBase::ConnectChannel() {
@@ -64,9 +64,9 @@ void IpcChannelMojoTestClient::Init(mojo::ScopedMessagePipeHandle handle) {
 }
 
 void IpcChannelMojoTestClient::Connect(IPC::Listener* listener) {
-  channel_ =
-      IPC::ChannelMojo::Create(std::move(handle_), IPC::Channel::MODE_CLIENT,
-                               listener, base::ThreadTaskRunnerHandle::Get());
+  channel_ = IPC::ChannelMojo::Create(
+      std::move(handle_), IPC::Channel::MODE_CLIENT, listener,
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get());
   CHECK(channel_->Connect());
 }
 

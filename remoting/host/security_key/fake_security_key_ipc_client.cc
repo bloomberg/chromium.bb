@@ -78,7 +78,7 @@ bool FakeSecurityKeyIpcClient::ConnectViaIpc(
           ->Connect(mojo::edk::ConnectionParams(
               mojo::edk::TransportProtocol::kLegacy, std::move(handle)))
           .release(),
-      this);
+      this, base::ThreadTaskRunnerHandle::Get());
   return client_channel_->Connect();
 }
 

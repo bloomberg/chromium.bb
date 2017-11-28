@@ -351,7 +351,8 @@ void PepperFlashSettingsManager::Core::ConnectToChannel(
     return;
   }
 
-  channel_ = IPC::Channel::CreateClient(handle, this);
+  channel_ = IPC::Channel::CreateClient(handle, this,
+                                        base::ThreadTaskRunnerHandle::Get());
   if (!channel_->Connect()) {
     DLOG(ERROR) << "Couldn't connect to plugin";
     NotifyErrorFromIOThread();

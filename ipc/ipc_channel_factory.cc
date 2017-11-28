@@ -26,7 +26,7 @@ class PlatformChannelFactory : public ChannelFactory {
     DCHECK(handle_.is_mojo_channel_handle());
     return ChannelMojo::Create(
         mojo::ScopedMessagePipeHandle(handle_.mojo_handle), mode_, listener,
-        ipc_task_runner_);
+        ipc_task_runner_, base::ThreadTaskRunnerHandle::Get());
 #endif
   }
 
