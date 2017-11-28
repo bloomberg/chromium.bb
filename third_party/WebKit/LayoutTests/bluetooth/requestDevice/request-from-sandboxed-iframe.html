@@ -22,15 +22,15 @@ bluetooth_test(() => getHealthThermometerDevice()
   }))
   // 2. Request the device from the iframe.
   .then(() => new Promise(resolve => {
+    callWithTrustedClick(() => {
+      iframe.contentWindow.postMessage('Go', '*');
+    });
+
     window.onmessage = messageEvent => {
       assert_equals(messageEvent.data, 'SecurityError: requestDevice() ' +
           'called from cross-origin iframe.');
       resolve();
     }
-
-    callWithTrustedClick(() => {
-      iframe.contentWindow.postMessage('Go', '*');
-    });
 })), test_desc);
 </script>
 </body>

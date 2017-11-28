@@ -22,14 +22,14 @@ async_test(test =>
   }))
   // 2. Request the device from the iframe.
   .then(() => {
+    callWithTrustedClick(() => {
+      iframe.contentWindow.postMessage('Go', '*');
+    });
+
     window.onmessage = messageEvent => test.step(() => {
       assert_equals(messageEvent.data, 'SecurityError: requestDevice() ' +
           'called from cross-origin iframe.');
       test.done();
-    });
-
-    callWithTrustedClick(() => {
-      iframe.contentWindow.postMessage('Go', '*');
     });
 }), test_desc);
 </script>
