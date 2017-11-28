@@ -15,6 +15,8 @@ source_set("cpp") {
     "safe_json_parser_impl.cc",
     "safe_json_parser_impl.h",
     "safe_json_parser_impl.h",
+    "safe_xml_parser.cc",
+    "safe_xml_parser.h",
   ]
 
   public_deps = [

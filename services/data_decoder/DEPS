@@ -2,6 +2,7 @@ include_rules = [
   "+gin",
   "+jni",
   "+skia",
+  "+third_party/libxml/chromium",
   "+third_party/WebKit/public",
   "+third_party/skia",
   "+ui/gfx",
