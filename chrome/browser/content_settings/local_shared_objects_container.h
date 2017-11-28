@@ -20,6 +20,7 @@ class CannedBrowsingDataFileSystemHelper;
 class CannedBrowsingDataIndexedDBHelper;
 class CannedBrowsingDataLocalStorageHelper;
 class CannedBrowsingDataServiceWorkerHelper;
+class CannedBrowsingDataSharedWorkerHelper;
 class CannedBrowsingDataCacheStorageHelper;
 class CookiesTreeModel;
 class GURL;
@@ -65,6 +66,9 @@ class LocalSharedObjectsContainer {
   CannedBrowsingDataServiceWorkerHelper* service_workers() const {
     return service_workers_.get();
   }
+  CannedBrowsingDataSharedWorkerHelper* shared_workers() const {
+    return shared_workers_.get();
+  }
   CannedBrowsingDataCacheStorageHelper* cache_storages() const {
     return cache_storages_.get();
   }
@@ -81,6 +85,7 @@ class LocalSharedObjectsContainer {
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> indexed_dbs_;
   scoped_refptr<CannedBrowsingDataLocalStorageHelper> local_storages_;
   scoped_refptr<CannedBrowsingDataServiceWorkerHelper> service_workers_;
+  scoped_refptr<CannedBrowsingDataSharedWorkerHelper> shared_workers_;
   scoped_refptr<CannedBrowsingDataCacheStorageHelper> cache_storages_;
   scoped_refptr<CannedBrowsingDataLocalStorageHelper> session_storages_;
 

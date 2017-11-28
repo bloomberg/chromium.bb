@@ -402,6 +402,16 @@ class CONTENT_EXPORT ContentBrowserClient {
       ResourceContext* context,
       const base::Callback<WebContents*(void)>& wc_getter);
 
+  // Allow the embedder to control if a Shared Worker can be connected from a
+  // given tab.
+  // This is called on the UI thread.
+  virtual bool AllowSharedWorker(const GURL& worker_url,
+                                 const GURL& main_frame_url,
+                                 const std::string& name,
+                                 BrowserContext* context,
+                                 int render_process_id,
+                                 int render_frame_id);
+
   virtual bool IsDataSaverEnabled(BrowserContext* context);
 
   // Allow the embedder to return additional headers that should be sent when

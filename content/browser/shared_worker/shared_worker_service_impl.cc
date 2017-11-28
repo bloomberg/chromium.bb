@@ -16,9 +16,14 @@
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/shared_worker/shared_worker_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
+#include "content/browser/storage_partition_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/shared_worker/shared_worker_client.mojom.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
 
@@ -32,7 +37,8 @@ bool IsShuttingDown(RenderProcessHost* host) {
 
 }  // namespace
 
-SharedWorkerServiceImpl* SharedWorkerServiceImpl::GetInstance() {
+// static
+SharedWorkerService* SharedWorkerService::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // OK to just leak the instance.
   // TODO(darin): Consider hanging instances off of StoragePartitionImpl.
@@ -50,7 +56,36 @@ void SharedWorkerServiceImpl::ResetForTesting() {
   worker_hosts_.clear();
 }
 
-bool SharedWorkerServiceImpl::TerminateWorker(int process_id, int route_id) {
+bool SharedWorkerServiceImpl::TerminateWorker(
+    const GURL& url,
+    const std::string& name,
+    StoragePartition* storage_partition,
+    ResourceContext* resource_context) {
+  StoragePartitionImpl* storage_partition_impl =
+      static_cast<StoragePartitionImpl*>(storage_partition);
+  WorkerStoragePartitionId partition_id(WorkerStoragePartition(
+      storage_partition_impl->GetURLRequestContext(),
+      storage_partition_impl->GetMediaURLRequestContext(),
+      storage_partition_impl->GetAppCacheService(),
+      storage_partition_impl->GetQuotaManager(),
+      storage_partition_impl->GetFileSystemContext(),
+      storage_partition_impl->GetDatabaseTracker(),
+      storage_partition_impl->GetIndexedDBContext(),
+      storage_partition_impl->GetServiceWorkerContext()));
+
+  for (const auto& iter : worker_hosts_) {
+    SharedWorkerHost* host = iter.second.get();
+    if (host->IsAvailable() &&
+        host->instance()->Matches(url, name, partition_id, resource_context)) {
+      host->TerminateWorker();
+      return true;
+    }
+  }
+  return false;
+}
+
+bool SharedWorkerServiceImpl::TerminateWorkerById(int process_id,
+                                                  int route_id) {
   SharedWorkerHost* host = FindSharedWorkerHost(process_id, route_id);
   if (!host || !host->instance())
     return false;
@@ -84,6 +119,21 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     ResourceContext* resource_context,
     const WorkerStoragePartitionId& partition_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (RenderFrameHost::FromID(process_id, frame_id)) {
+    RenderFrameHost* main_frame = RenderFrameHost::FromID(process_id, frame_id)
+                                      ->GetRenderViewHost()
+                                      ->GetMainFrame();
+
+    if (!GetContentClient()->browser()->AllowSharedWorker(
+            info->url, main_frame->GetLastCommittedURL(), info->name,
+            WebContentsImpl::FromRenderFrameHostID(process_id, frame_id)
+                ->GetBrowserContext(),
+            process_id, frame_id)) {
+      client->OnScriptLoadFailed();
+      return;
+    }
+  }
 
   auto instance = std::make_unique<SharedWorkerInstance>(
       info->url, info->name, info->content_security_policy,

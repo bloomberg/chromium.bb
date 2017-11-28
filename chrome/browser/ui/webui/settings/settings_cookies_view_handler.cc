@@ -28,6 +28,7 @@
 #include "chrome/browser/browsing_data/browsing_data_media_license_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_shared_worker_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/cookies_tree_model_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -91,6 +92,11 @@ int GetCategoryLabelID(CookieTreeNode::DetailedInfo::NodeType node_type) {
        IDS_SETTINGS_COOKIES_SERVICE_WORKER},
       {CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER,
        IDS_SETTINGS_COOKIES_SERVICE_WORKER},
+
+      {CookieTreeNode::DetailedInfo::TYPE_SHARED_WORKERS,
+       IDS_SETTINGS_COOKIES_SHARED_WORKER},
+      {CookieTreeNode::DetailedInfo::TYPE_SHARED_WORKER,
+       IDS_SETTINGS_COOKIES_SHARED_WORKER},
 
       {CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGES,
        IDS_SETTINGS_COOKIES_CACHE_STORAGE},
@@ -270,6 +276,8 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         BrowsingDataQuotaHelper::Create(profile),
         BrowsingDataChannelIDHelper::Create(profile->GetRequestContext()),
         new BrowsingDataServiceWorkerHelper(service_worker_context),
+        new BrowsingDataSharedWorkerHelper(storage_partition,
+                                           profile->GetResourceContext()),
         new BrowsingDataCacheStorageHelper(cache_storage_context),
         BrowsingDataFlashLSOHelper::Create(profile),
         BrowsingDataMediaLicenseHelper::Create(file_system_context));

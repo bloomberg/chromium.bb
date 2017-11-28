@@ -2125,6 +2125,7 @@ test("unit_tests") {
     "../browser/browsing_data/browsing_data_media_license_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_quota_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_service_worker_helper_unittest.cc",
+    "../browser/browsing_data/browsing_data_shared_worker_helper_unittest.cc",
     "../browser/browsing_data/chrome_browsing_data_remover_delegate_unittest.cc",
     "../browser/browsing_data/cookies_tree_model_unittest.cc",
     "../browser/browsing_data/site_data_counting_helper_unittest.cc",

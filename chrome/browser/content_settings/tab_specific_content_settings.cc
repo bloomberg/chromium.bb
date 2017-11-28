@@ -231,6 +231,19 @@ void TabSpecificContentSettings::ServiceWorkerAccessed(
                                       blocked_by_policy_cookie);
 }
 
+// static
+void TabSpecificContentSettings::SharedWorkerAccessed(int render_process_id,
+                                                      int render_frame_id,
+                                                      const GURL& worker_url,
+                                                      const std::string& name,
+                                                      bool blocked_by_policy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  TabSpecificContentSettings* settings =
+      GetForFrame(render_process_id, render_frame_id);
+  if (settings)
+    settings->OnSharedWorkerAccessed(worker_url, name, blocked_by_policy);
+}
+
 bool TabSpecificContentSettings::IsContentBlocked(
     ContentSettingsType content_type) const {
   DCHECK_NE(CONTENT_SETTINGS_TYPE_GEOLOCATION, content_type)
@@ -481,6 +494,22 @@ void TabSpecificContentSettings::OnServiceWorkerAccessed(
   if (blocked_by_policy_cookie) {
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
+    OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
+  }
+}
+
+void TabSpecificContentSettings::OnSharedWorkerAccessed(
+    const GURL& worker_url,
+    const std::string& name,
+    bool blocked_by_policy) {
+  DCHECK(worker_url.is_valid());
+  if (blocked_by_policy) {
+    blocked_local_shared_objects_.shared_workers()->AddSharedWorker(worker_url,
+                                                                    name);
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
+  } else {
+    allowed_local_shared_objects_.shared_workers()->AddSharedWorker(worker_url,
+                                                                    name);
     OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 }

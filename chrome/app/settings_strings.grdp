@@ -2839,6 +2839,12 @@
   <message name="IDS_SETTINGS_COOKIES_SERVICE_WORKER_SCOPES_LABEL" desc="Label for list of Service Worker (name of an HTML standard) patterns">
     Scopes
   </message>
+  <message name="IDS_SETTINGS_COOKIES_SHARED_WORKER" desc="The text shown when there is data for Shared Workers within an origin (name of a Web standard) in the Cookies table">
+    Shared Workers
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_SHARED_WORKER_WORKER_LABEL" desc="Label for the URL of a Shared Worker's (name of an HTML standard) main script">
+    URL
+  </message>
   <message name="IDS_SETTINGS_COOKIES_CACHE_STORAGE" desc="The text shown when there is Cache Storage (name of a Web standard) in the Cookies table">
     Cache Storage
   </message>

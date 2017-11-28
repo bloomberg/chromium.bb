@@ -247,6 +247,7 @@ source_set("browser_sources") {
     "service_worker_usage_info.h",
     "session_storage_namespace.h",
     "session_storage_usage_info.h",
+    "shared_worker_service.h",
     "site_instance.h",
     "speech_recognition_event_listener.h",
     "speech_recognition_manager.h",

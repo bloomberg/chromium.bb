@@ -25,6 +25,7 @@
 #include "chrome/browser/browsing_data/browsing_data_media_license_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_shared_worker_helper.h"
 #include "net/ssl/channel_id_store.h"
 
 class BrowsingDataFlashLSOHelper;
@@ -51,6 +52,8 @@ typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
 typedef std::list<BrowsingDataQuotaHelper::QuotaInfo> QuotaInfoList;
 typedef net::ChannelIDStore::ChannelIDList ChannelIDList;
 typedef std::list<content::ServiceWorkerUsageInfo> ServiceWorkerUsageInfoList;
+typedef std::list<BrowsingDataSharedWorkerHelper::SharedWorkerInfo>
+    SharedWorkerInfoList;
 typedef std::list<content::CacheStorageUsageInfo> CacheStorageUsageInfoList;
 typedef std::map<GURL, std::list<content::AppCacheInfo> > AppCacheInfoMap;
 typedef std::vector<std::string> FlashLSODomainList;
@@ -78,6 +81,7 @@ class LocalDataContainer {
       scoped_refptr<BrowsingDataQuotaHelper> quota_helper,
       scoped_refptr<BrowsingDataChannelIDHelper> channel_id_helper,
       scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper,
+      scoped_refptr<BrowsingDataSharedWorkerHelper> shared_worker_helper,
       scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper,
       scoped_refptr<BrowsingDataFlashLSOHelper> flash_data_helper,
       scoped_refptr<BrowsingDataMediaLicenseHelper> media_license_helper);
@@ -100,6 +104,7 @@ class LocalDataContainer {
   friend class CookieTreeQuotaNode;
   friend class CookieTreeChannelIDNode;
   friend class CookieTreeServiceWorkerNode;
+  friend class CookieTreeSharedWorkerNode;
   friend class CookieTreeCacheStorageNode;
   friend class CookieTreeFlashLSONode;
 
@@ -120,6 +125,7 @@ class LocalDataContainer {
   void OnChannelIDModelInfoLoaded(const ChannelIDList& channel_id_list);
   void OnServiceWorkerModelInfoLoaded(
       const ServiceWorkerUsageInfoList& service_worker_info);
+  void OnSharedWorkerInfoLoaded(const SharedWorkerInfoList& shared_worker_info);
   void OnCacheStorageModelInfoLoaded(
       const CacheStorageUsageInfoList& cache_storage_info);
   void OnFlashLSOInfoLoaded(const FlashLSODomainList& domains);
@@ -137,6 +143,7 @@ class LocalDataContainer {
   scoped_refptr<BrowsingDataQuotaHelper> quota_helper_;
   scoped_refptr<BrowsingDataChannelIDHelper> channel_id_helper_;
   scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper_;
+  scoped_refptr<BrowsingDataSharedWorkerHelper> shared_worker_helper_;
   scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper_;
   scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
   scoped_refptr<BrowsingDataMediaLicenseHelper> media_license_helper_;
@@ -153,6 +160,7 @@ class LocalDataContainer {
   QuotaInfoList quota_info_list_;
   ChannelIDList channel_id_list_;
   ServiceWorkerUsageInfoList service_worker_info_list_;
+  SharedWorkerInfoList shared_worker_info_list_;
   CacheStorageUsageInfoList cache_storage_info_list_;
   FlashLSODomainList flash_lso_domain_list_;
   MediaLicenseInfoList media_license_info_list_;
