@@ -15,18 +15,24 @@
 
 namespace content {
 
+namespace authenticator_utils {
+constexpr char kCreateType[] = "webauthn.create";
+}
+
 // Represents the contextual bindings of both the Relying Party and the
 // client platform that is used in authenticator signatures.
 // https://www.w3.org/TR/2017/WD-webauthn-20170505/#dictdef-collectedclientdata
 class CONTENT_EXPORT CollectedClientData {
  public:
-  CollectedClientData(std::string base64_encoded_challenge_,
+  CollectedClientData(std::string type_,
+                      std::string base64_encoded_challenge_,
                       std::string origin,
-                      std::string hash_alg,
+                      std::string hash_algorithm,
                       std::string token_binding_id);
   virtual ~CollectedClientData();
 
   static std::unique_ptr<CollectedClientData> Create(
+      std::string type,
       std::string relying_party_id,
       std::vector<uint8_t> challenge);
 
@@ -35,9 +41,10 @@ class CONTENT_EXPORT CollectedClientData {
   std::string SerializeToJson();
 
  private:
+  const std::string type_;
   const std::string base64_encoded_challenge_;
   const std::string origin_;
-  const std::string hash_alg_;
+  const std::string hash_algorithm_;
   const std::string token_binding_id_;
   // TODO(kpaulhamus): Add extensions support. https://crbug/757502.
 

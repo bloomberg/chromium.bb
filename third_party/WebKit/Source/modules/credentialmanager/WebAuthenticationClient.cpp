@@ -12,7 +12,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/credentialmanager/CredentialManagerTypeConverters.h"
-#include "modules/credentialmanager/MakeCredentialOptions.h"
+#include "modules/credentialmanager/MakePublicKeyCredentialOptions.h"
 #include "public/platform/InterfaceProvider.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -77,9 +77,10 @@ WebAuthenticationClient::WebAuthenticationClient(LocalFrame& frame) {
 WebAuthenticationClient::~WebAuthenticationClient() {}
 
 void WebAuthenticationClient::DispatchMakeCredential(
-    const MakeCredentialOptions& publicKey,
+    const MakePublicKeyCredentialOptions& publicKey,
     std::unique_ptr<PublicKeyCallbacks> callbacks) {
-  auto options = webauth::mojom::blink::MakeCredentialOptions::From(publicKey);
+  auto options =
+      webauth::mojom::blink::MakePublicKeyCredentialOptions::From(publicKey);
   if (!options) {
     callbacks->OnError(
         WebCredentialManagerError::kWebCredentialManagerNotSupportedError);

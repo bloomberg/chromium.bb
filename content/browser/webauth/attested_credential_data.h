@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEBAUTH_ATTESTATION_DATA_H_
-#define CONTENT_BROWSER_WEBAUTH_ATTESTATION_DATA_H_
+#ifndef CONTENT_BROWSER_WEBAUTH_ATTESTED_CREDENTIAL_DATA_H_
+#define CONTENT_BROWSER_WEBAUTH_ATTESTED_CREDENTIAL_DATA_H_
 
 #include "content/browser/webauth/public_key.h"
 
@@ -17,15 +17,15 @@
 namespace content {
 
 // https://www.w3.org/TR/2017/WD-webauthn-20170505/#sec-attestation-data
-class CONTENT_EXPORT AttestationData {
+class CONTENT_EXPORT AttestedCredentialData {
  public:
-  AttestationData(std::vector<uint8_t> aaguid,
-                  std::vector<uint8_t> length,
-                  std::vector<uint8_t> credential_id,
-                  std::unique_ptr<PublicKey> public_key);
-  virtual ~AttestationData();
+  AttestedCredentialData(std::vector<uint8_t> aaguid,
+                         std::vector<uint8_t> length,
+                         std::vector<uint8_t> credential_id,
+                         std::unique_ptr<PublicKey> public_key);
+  virtual ~AttestedCredentialData();
 
-  static std::unique_ptr<AttestationData> CreateFromU2fRegisterResponse(
+  static std::unique_ptr<AttestedCredentialData> CreateFromU2fRegisterResponse(
       const std::vector<uint8_t>& u2f_data,
       std::vector<uint8_t> aaguid,
       std::unique_ptr<PublicKey> public_key);
@@ -48,9 +48,9 @@ class CONTENT_EXPORT AttestationData {
   const std::vector<uint8_t> credential_id_;
   const std::unique_ptr<PublicKey> public_key_;
 
-  DISALLOW_COPY_AND_ASSIGN(AttestationData);
+  DISALLOW_COPY_AND_ASSIGN(AttestedCredentialData);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_WEBAUTH_ATTESTATION_DATA_H_
+#endif  // CONTENT_BROWSER_WEBAUTH_ATTESTED_CREDENTIAL_DATA_H_

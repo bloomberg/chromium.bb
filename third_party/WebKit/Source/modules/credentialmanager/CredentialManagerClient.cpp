@@ -84,7 +84,7 @@ void CredentialManagerClient::DispatchGet(
 
 void CredentialManagerClient::DispatchMakeCredential(
     LocalFrame& frame,
-    const MakeCredentialOptions& options,
+    const MakePublicKeyCredentialOptions& options,
     std::unique_ptr<WebAuthenticationClient::PublicKeyCallbacks> callbacks) {
   if (!authentication_client_)
     authentication_client_ = new WebAuthenticationClient(frame);

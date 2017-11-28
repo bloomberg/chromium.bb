@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "content/browser/webauth/attestation_data.h"
+#include "content/browser/webauth/attested_credential_data.h"
 #include "content/browser/webauth/authenticator_utils.h"
 #include "content/browser/webauth/ec_public_key.h"
 #include "content/browser/webauth/fido_attestation_statement.h"
@@ -25,12 +25,12 @@ RegisterResponseData::CreateFromU2fRegisterResponse(
   // Construct the attestation data.
   // AAGUID is zeroed out for U2F responses.
   std::vector<uint8_t> aaguid(16u, 0u);
-  std::unique_ptr<AttestationData> attestation_data =
-      AttestationData::CreateFromU2fRegisterResponse(
+  std::unique_ptr<AttestedCredentialData> attested_data =
+      AttestedCredentialData::CreateFromU2fRegisterResponse(
           u2f_data, std::move(aaguid), std::move(public_key));
 
   // Extract the credential_id for packing into the reponse data.
-  std::vector<uint8_t> credential_id = attestation_data->credential_id();
+  std::vector<uint8_t> credential_id = attested_data->credential_id();
 
   // Construct the authenticator data.
   // The counter is zeroed out for Register requests.
@@ -43,8 +43,7 @@ RegisterResponseData::CreateFromU2fRegisterResponse(
 
   std::unique_ptr<AuthenticatorData> authenticator_data =
       AuthenticatorData::Create(client_data->SerializeToJson(), flags,
-                                std::move(counter),
-                                std::move(attestation_data));
+                                std::move(counter), std::move(attested_data));
 
   // Construct the attestation statement.
   std::unique_ptr<FidoAttestationStatement> fido_attestation_statement =

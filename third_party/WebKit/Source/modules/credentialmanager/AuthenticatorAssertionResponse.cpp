@@ -9,24 +9,28 @@ namespace blink {
 AuthenticatorAssertionResponse* AuthenticatorAssertionResponse::Create(
     DOMArrayBuffer* client_data_json,
     DOMArrayBuffer* authenticator_data,
-    DOMArrayBuffer* signature) {
-  return new AuthenticatorAssertionResponse(client_data_json,
-                                            authenticator_data, signature);
+    DOMArrayBuffer* signature,
+    DOMArrayBuffer* user_handle) {
+  return new AuthenticatorAssertionResponse(
+      client_data_json, authenticator_data, signature, user_handle);
 }
 
 AuthenticatorAssertionResponse::AuthenticatorAssertionResponse(
     DOMArrayBuffer* client_data_json,
     DOMArrayBuffer* authenticator_data,
-    DOMArrayBuffer* signature)
+    DOMArrayBuffer* signature,
+    DOMArrayBuffer* user_handle)
     : AuthenticatorResponse(client_data_json),
       authenticator_data_(authenticator_data),
-      signature_(signature) {}
+      signature_(signature),
+      user_handle_(user_handle) {}
 
 AuthenticatorAssertionResponse::~AuthenticatorAssertionResponse() {}
 
 void AuthenticatorAssertionResponse::Trace(blink::Visitor* visitor) {
   visitor->Trace(authenticator_data_);
   visitor->Trace(signature_);
+  visitor->Trace(user_handle_);
   AuthenticatorResponse::Trace(visitor);
 }
 

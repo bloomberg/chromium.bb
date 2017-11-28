@@ -15,6 +15,7 @@ namespace content {
 
 // static
 std::unique_ptr<CollectedClientData> CollectedClientData::Create(
+    std::string type,
     std::string relying_party_id,
     std::vector<uint8_t> challenge) {
   //  The base64url encoding of options.challenge.
@@ -28,22 +29,25 @@ std::unique_ptr<CollectedClientData> CollectedClientData::Create(
   // supports Token Binding, but is not using it to talk to the origin.
   // TODO(kpaulhamus): Fetch and add the Token Binding ID public key used to
   // communicate with the origin.
-  return std::make_unique<CollectedClientData>(std::move(encoded_challenge),
-                                               std::move(relying_party_id),
-                                               "SHA-256", "unused");
+  return std::make_unique<CollectedClientData>(
+      std::move(type), std::move(encoded_challenge),
+      std::move(relying_party_id), "SHA-256", "unused");
 }
 
-CollectedClientData::CollectedClientData(std::string base64_encoded_challenge,
+CollectedClientData::CollectedClientData(std::string type,
+                                         std::string base64_encoded_challenge,
                                          std::string origin,
-                                         std::string hash_alg,
+                                         std::string hash_algorithm,
                                          std::string token_binding_id)
-    : base64_encoded_challenge_(std::move(base64_encoded_challenge)),
+    : type_(std::move(type)),
+      base64_encoded_challenge_(std::move(base64_encoded_challenge)),
       origin_(std::move(origin)),
-      hash_alg_(std::move(hash_alg)),
+      hash_algorithm_(std::move(hash_algorithm)),
       token_binding_id_(std::move(token_binding_id)) {}
 
 std::string CollectedClientData::SerializeToJson() {
   base::DictionaryValue client_data;
+  client_data.SetString(authenticator_utils::kTypeKey, type_);
   client_data.SetString(authenticator_utils::kChallengeKey,
                         base64_encoded_challenge_);
 
@@ -52,7 +56,7 @@ std::string CollectedClientData::SerializeToJson() {
 
   // The recognized algorithm name of the hash algorithm selected by the client
   // for generating the hash of the serialized client data.
-  client_data.SetString(authenticator_utils::kHashAlg, hash_alg_);
+  client_data.SetString(authenticator_utils::kHashAlgorithm, hash_algorithm_);
 
   client_data.SetString(authenticator_utils::kTokenBindingKey,
                         token_binding_id_);

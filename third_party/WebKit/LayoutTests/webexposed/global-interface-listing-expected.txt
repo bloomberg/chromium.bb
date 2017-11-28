@@ -409,6 +409,7 @@ interface AuthenticatorAssertionResponse : AuthenticatorResponse
     attribute @@toStringTag
     getter authenticatorData
     getter signature
+    getter userHandle
     method constructor
 interface AuthenticatorAttestationResponse : AuthenticatorResponse
     attribute @@toStringTag

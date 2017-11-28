@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://www.w3.org/TR/2017/WD-webauthn-20170505/#authenticatorattestationresponse
+// https://w3c.github.io/webauthn/#authenticatorattestationresponse
 
 [
     RuntimeEnabled=WebAuth,
-    SecureContext
+    SecureContext,
+    Exposed=Window
 ] interface AuthenticatorAttestationResponse : AuthenticatorResponse {
-    readonly attribute ArrayBuffer attestationObject;
+    [SameObject] readonly attribute ArrayBuffer attestationObject;
 };

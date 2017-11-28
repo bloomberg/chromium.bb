@@ -25,5 +25,6 @@ PASS AuthenticatorAssertionResponse interface: existence and properties of inter
 PASS AuthenticatorAssertionResponse interface: existence and properties of interface prototype object's "constructor" property
 PASS AuthenticatorAssertionResponse interface: attribute authenticatorData
 PASS AuthenticatorAssertionResponse interface: attribute signature
+PASS AuthenticatorAssertionResponse interface: attribute userHandle
 Harness: the test ran to completion.
 
