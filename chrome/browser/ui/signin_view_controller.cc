@@ -6,8 +6,10 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -126,11 +128,21 @@ void SigninViewController::ShowDiceSigninTab(
     Browser* browser,
     signin_metrics::AccessPoint access_point) {
   signin_metrics::Reason signin_reason = GetSigninReasonFromMode(mode);
-  chrome::ShowSingletonTab(browser, GaiaUrls::GetInstance()->add_account_url());
-  content::WebContents* active_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  DCHECK_EQ(GaiaUrls::GetInstance()->add_account_url(),
-            active_contents->GetVisibleURL());
+  GURL add_account_url =
+      signin_util::GetGaiaAddAccountUrlForDice(browser->profile());
+  content::WebContents* active_contents = nullptr;
+  if (access_point == signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE) {
+    active_contents = browser->tab_strip_model()->GetActiveWebContents();
+    content::OpenURLParams params(add_account_url, content::Referrer(),
+                                  WindowOpenDisposition::CURRENT_TAB,
+                                  ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
+    active_contents->OpenURL(params);
+  } else {
+    chrome::ShowSingletonTab(browser, add_account_url);
+    active_contents = browser->tab_strip_model()->GetActiveWebContents();
+  }
+  DCHECK(active_contents);
+  DCHECK_EQ(add_account_url, active_contents->GetVisibleURL());
   DiceTabHelper::CreateForWebContents(active_contents);
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(active_contents);
   tab_helper->SetSigninAccessPoint(access_point);
