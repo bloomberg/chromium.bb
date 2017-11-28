@@ -19,8 +19,6 @@ const uint32_t kDefaultMaxNavigationEventsBuffered = 100;
 
 }  // namespace
 
-namespace chrome {
-
 namespace android {
 
 DataUseUITabModel::DataUseUITabModel()
@@ -275,8 +273,8 @@ bool DataUseUITabModel::ConvertTransitionType(
       *transition_type = DataUseTabModel::TRANSITION_BOOKMARK;
       return true;
     case ui::PAGE_TRANSITION_AUTO_TOPLEVEL:
-      if (gurl == kDeprecatedChromeUIHistoryFrameURL ||
-          gurl == kChromeUIHistoryURL) {
+      if (gurl == chrome::kDeprecatedChromeUIHistoryFrameURL ||
+          gurl == chrome::kChromeUIHistoryURL) {
         // History menu.
         *transition_type = DataUseTabModel::TRANSITION_HISTORY_ITEM;
         return true;
@@ -350,5 +348,3 @@ void DataUseUITabModel::ProcessBufferedNavigationEvents() {
 }
 
 }  // namespace android
-
-}  // namespace chrome

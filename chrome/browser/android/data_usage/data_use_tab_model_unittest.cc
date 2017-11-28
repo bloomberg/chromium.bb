@@ -69,7 +69,7 @@ enum TrackingState {
 
 // Mock observer to track the calls to start and end tracking events.
 class MockTabDataUseObserver
-    : public chrome::android::DataUseTabModel::TabDataUseObserver {
+    : public android::DataUseTabModel::TabDataUseObserver {
  public:
   MOCK_METHOD1(NotifyTrackingStarting, void(SessionID::id_type tab_id));
   MOCK_METHOD1(NotifyTrackingEnding, void(SessionID::id_type tab_id));
@@ -77,7 +77,7 @@ class MockTabDataUseObserver
 };
 
 class TestExternalDataUseObserverBridge
-    : public chrome::android::ExternalDataUseObserverBridge {
+    : public android::ExternalDataUseObserverBridge {
  public:
   TestExternalDataUseObserverBridge() {}
   void FetchMatchingRules() const override {}
@@ -102,8 +102,6 @@ void ExpectDataUseLabelInNavigationEntry(
 }
 
 }  // namespace
-
-namespace chrome {
 
 namespace android {
 
@@ -1146,5 +1144,3 @@ TEST_F(DataUseTabModelTest, ReadyForNavigationEventAfterRuleFetch) {
 }
 
 }  // namespace android
-
-}  // namespace chrome

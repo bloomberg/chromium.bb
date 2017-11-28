@@ -31,8 +31,6 @@ enum TabEntrySessionSize { ZERO = 0, ONE, TWO, THREE };
 
 }  // namespace
 
-namespace chrome {
-
 namespace android {
 
 // Test version of |TickClock|.
@@ -555,5 +553,3 @@ TEST_F(TabDataUseEntryTest, OldInactiveSessionRemovaltimeHistogram) {
 }
 
 }  // namespace android
-
-}  // namespace chrome

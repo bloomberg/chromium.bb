@@ -71,8 +71,8 @@ jboolean JNI_DataUseTabUIManager_CheckAndResetDataUseTrackingStarted(
   DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
 
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  chrome::android::DataUseUITabModel* data_use_ui_tab_model =
-      chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
+  android::DataUseUITabModel* data_use_ui_tab_model =
+      android::DataUseUITabModelFactory::GetForBrowserContext(profile);
   if (!data_use_ui_tab_model)
     return false;
 
@@ -89,8 +89,8 @@ jboolean JNI_DataUseTabUIManager_CheckAndResetDataUseTrackingEnded(
   DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
 
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  chrome::android::DataUseUITabModel* data_use_ui_tab_model =
-      chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
+  android::DataUseUITabModel* data_use_ui_tab_model =
+      android::DataUseUITabModelFactory::GetForBrowserContext(profile);
   if (!data_use_ui_tab_model)
     return false;
 
@@ -107,8 +107,8 @@ void JNI_DataUseTabUIManager_UserClickedContinueOnDialogBox(
   DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
 
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  chrome::android::DataUseUITabModel* data_use_ui_tab_model =
-      chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
+  android::DataUseUITabModel* data_use_ui_tab_model =
+      android::DataUseUITabModelFactory::GetForBrowserContext(profile);
   if (!data_use_ui_tab_model)
     return;
 
@@ -131,8 +131,8 @@ jboolean JNI_DataUseTabUIManager_WouldDataUseTrackingEnd(
   DCHECK(web_contents);
 
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  chrome::android::DataUseUITabModel* data_use_ui_tab_model =
-      chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
+  android::DataUseUITabModel* data_use_ui_tab_model =
+      android::DataUseUITabModelFactory::GetForBrowserContext(profile);
   if (!data_use_ui_tab_model)
     return false;
 
@@ -153,8 +153,8 @@ void JNI_DataUseTabUIManager_OnCustomTabInitialNavigation(
   DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
 
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  chrome::android::DataUseUITabModel* data_use_ui_tab_model =
-      chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
+  android::DataUseUITabModel* data_use_ui_tab_model =
+      android::DataUseUITabModelFactory::GetForBrowserContext(profile);
   if (!data_use_ui_tab_model)
     return;
 

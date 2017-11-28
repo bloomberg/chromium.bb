@@ -52,8 +52,6 @@ const char kBarLabel[] = "bar_label";
 
 }  // namespace
 
-namespace chrome {
-
 namespace android {
 
 class ExternalDataUseReporterTest : public testing::Test {
@@ -565,5 +563,3 @@ TEST_F(ExternalDataUseReporterTest, Variations) {
 }
 
 }  // namespace android
-
-}  // namespace chrome
