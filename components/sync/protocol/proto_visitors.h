@@ -715,15 +715,12 @@ VISIT_PROTO_FIELDS(const sync_pb::SearchEngineSpecifics& proto) {
   VISIT(suggestions_url);
   VISIT(prepopulate_id);
   VISIT(autogenerate_keyword);
-  VISIT(instant_url);
   VISIT(last_modified);
   VISIT(sync_guid);
   VISIT_REP(alternate_urls);
-  VISIT(search_terms_replacement_key);
   VISIT(image_url);
   VISIT(search_url_post_params);
   VISIT(suggestions_url_post_params);
-  VISIT(instant_url_post_params);
   VISIT(image_url_post_params);
   VISIT(new_tab_url);
 }
