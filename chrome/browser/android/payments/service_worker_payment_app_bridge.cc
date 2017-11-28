@@ -12,6 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/service_worker_payment_app_factory.h"
@@ -101,6 +102,37 @@ void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
         jweb_contents, jcallback);
   }
   Java_ServiceWorkerPaymentAppBridge_onAllPaymentAppsCreated(env, jcallback);
+}
+
+void OnHasServiceWorkerPaymentAppsResponse(
+    const JavaRef<jobject>& jcallback,
+    content::PaymentAppProvider::PaymentApps apps) {
+  JNIEnv* env = AttachCurrentThread();
+
+  Java_ServiceWorkerPaymentAppBridge_onHasServiceWorkerPaymentApps(
+      env, jcallback, apps.size() > 0);
+}
+
+void OnGetServiceWorkerPaymentAppsInfo(
+    const JavaRef<jobject>& jcallback,
+    content::PaymentAppProvider::PaymentApps apps) {
+  JNIEnv* env = AttachCurrentThread();
+
+  base::android::ScopedJavaLocalRef<jobject> jappsInfo =
+      Java_ServiceWorkerPaymentAppBridge_createPaymentAppsInfo(env);
+
+  for (const auto& app_info : apps) {
+    Java_ServiceWorkerPaymentAppBridge_addPaymentAppInfo(
+        env, jappsInfo,
+        ConvertUTF8ToJavaString(env, app_info.second->scope.spec()),
+        ConvertUTF8ToJavaString(env, app_info.second->name),
+        app_info.second->icon == nullptr
+            ? nullptr
+            : gfx::ConvertToJavaBitmap(app_info.second->icon.get()));
+  }
+
+  Java_ServiceWorkerPaymentAppBridge_onGetServiceWorkerPaymentAppsInfo(
+      env, jcallback, jappsInfo);
 }
 
 void OnCanMakePayment(const JavaRef<jobject>& jweb_contents,
@@ -210,6 +242,28 @@ static void JNI_ServiceWorkerPaymentAppBridge_GetAllPaymentApps(
         /* Nothing needs to be done after writing cache. This callback is used
          * only in tests. */
       }));
+}
+
+static void JNI_ServiceWorkerPaymentAppBridge_HasServiceWorkerPaymentApps(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& jcallback) {
+  // Checks whether there is a installed service worker payment app through
+  // GetAllPaymentApps.
+  content::PaymentAppProvider::GetInstance()->GetAllPaymentApps(
+      ProfileManager::GetActiveUserProfile(),
+      base::BindOnce(&OnHasServiceWorkerPaymentAppsResponse,
+                     ScopedJavaGlobalRef<jobject>(env, jcallback)));
+}
+
+static void JNI_ServiceWorkerPaymentAppBridge_GetServiceWorkerPaymentAppsInfo(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& jcallback) {
+  content::PaymentAppProvider::GetInstance()->GetAllPaymentApps(
+      ProfileManager::GetActiveUserProfile(),
+      base::BindOnce(&OnGetServiceWorkerPaymentAppsInfo,
+                     ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
 static void JNI_ServiceWorkerPaymentAppBridge_CanMakePayment(

@@ -8,17 +8,21 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.text.TextUtils;
+import android.util.Pair;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,6 +34,26 @@ import javax.annotation.Nullable;
 public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentAppFactoryAddition {
     private static final String TAG = "SWPaymentApp";
     private static boolean sCanMakePaymentForTesting;
+
+    /** The interface for checking whether there is an installed SW payment app. */
+    static public interface HasServiceWorkerPaymentAppsCallback {
+        /**
+         * Called to return checking result.
+         *
+         * @param hasPaymentApps Indicates whehter there is an installed SW payment app.
+         */
+        public void onHasServiceWorkerPaymentAppsResponse(boolean hasPaymentApps);
+    }
+
+    /** The interface for getting all installed SW payment apps' information. */
+    static public interface GetServiceWorkerPaymentAppsInfoCallback {
+        /**
+         * Called to return installed SW payment apps' information.
+         *
+         * @param appsInfo Contains all installed SW payment apps' information.
+         */
+        public void onGetServiceWorkerPaymentAppsInfo(Map<String, Pair<String, Bitmap>> appsInfo);
+    }
 
     /**
      * The interface for the requester to check whether a SW payment app can make payment.
@@ -48,6 +72,48 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
             PaymentAppFactory.PaymentAppCreatedCallback callback) {
         nativeGetAllPaymentApps(webContents,
                 methodData.values().toArray(new PaymentMethodData[methodData.size()]), callback);
+    }
+
+    /**
+     * Checks whether there is a installed SW payment app.
+     *
+     * @param callback The callback to return result.
+     */
+    public static void hasServiceWorkerPaymentApps(HasServiceWorkerPaymentAppsCallback callback) {
+        ThreadUtils.assertOnUiThread();
+
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onHasServiceWorkerPaymentAppsResponse(false);
+                }
+            });
+            return;
+        }
+        nativeHasServiceWorkerPaymentApps(callback);
+    }
+
+    /**
+     * Gets all installed SW payment apps' information.
+     *
+     * @param callback The callback to return result.
+     */
+    public static void getServiceWorkerPaymentAppsInfo(
+            GetServiceWorkerPaymentAppsInfoCallback callback) {
+        ThreadUtils.assertOnUiThread();
+
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onGetServiceWorkerPaymentAppsInfo(
+                            new HashMap<String, Pair<String, Bitmap>>());
+                }
+            });
+            return;
+        }
+        nativeGetServiceWorkerPaymentAppsInfo(callback);
     }
 
     /**
@@ -210,6 +276,29 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     @CalledByNative
+    private static void onHasServiceWorkerPaymentApps(
+            HasServiceWorkerPaymentAppsCallback callback, boolean hasPaymentApps) {
+        callback.onHasServiceWorkerPaymentAppsResponse(hasPaymentApps);
+    }
+
+    @CalledByNative
+    private static Object createPaymentAppsInfo() {
+        return new HashMap<String, Pair<String, Bitmap>>();
+    }
+
+    @CalledByNative
+    private static void addPaymentAppInfo(
+            Object appsInfo, String scope, @Nullable String name, @Nullable Bitmap icon) {
+        ((Map<String, Pair<String, Bitmap>>) appsInfo).put(scope, new Pair<>(name, icon));
+    }
+
+    @CalledByNative
+    private static void onGetServiceWorkerPaymentAppsInfo(
+            GetServiceWorkerPaymentAppsInfoCallback callback, Object appsInfo) {
+        callback.onGetServiceWorkerPaymentAppsInfo(((Map<String, Pair<String, Bitmap>>) appsInfo));
+    }
+
+    @CalledByNative
     private static void onPaymentAppInvoked(
             Object callback, String methodName, String stringifiedDetails) {
         if (TextUtils.isEmpty(methodName) || TextUtils.isEmpty(stringifiedDetails)) {
@@ -238,6 +327,11 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      */
     private static native void nativeGetAllPaymentApps(
             WebContents webContents, PaymentMethodData[] methodData, Object callback);
+
+    private static native void nativeHasServiceWorkerPaymentApps(
+            HasServiceWorkerPaymentAppsCallback callback);
+    private static native void nativeGetServiceWorkerPaymentAppsInfo(
+            GetServiceWorkerPaymentAppsInfoCallback callback);
 
     /*
      * TODO(tommyt): crbug.com/505554. Change the |callback| parameter below to
