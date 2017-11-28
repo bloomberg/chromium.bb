@@ -75,12 +75,11 @@ DefaultFrameHeader::DefaultFrameHeader(
     views::Widget* frame,
     views::View* header_view,
     FrameCaptionButtonContainerView* caption_button_container,
-    FrameCaptionButton* back_button,
     mojom::WindowStyle window_style)
     : window_style_(window_style),
       frame_(frame),
       view_(header_view),
-      back_button_(back_button),
+      back_button_(nullptr),
       left_header_view_(nullptr),
       active_frame_color_(kDefaultFrameColor),
       inactive_frame_color_(kDefaultFrameColor),
@@ -238,14 +237,6 @@ SkColor DefaultFrameHeader::GetTitleColor() const {
 bool DefaultFrameHeader::ShouldUseLightImages() const {
   return color_utils::IsDark(mode_ == MODE_INACTIVE ? inactive_frame_color_
                                                     : active_frame_color_);
-}
-
-void DefaultFrameHeader::UpdateLeftHeaderView(views::View* left_header_view) {
-  left_header_view_ = left_header_view;
-}
-
-void DefaultFrameHeader::UpdateBackButton(FrameCaptionButton* button) {
-  back_button_ = button;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -32,8 +32,8 @@ TEST_F(DefaultFrameHeaderTest, TitleIconAlignment) {
   w->Show();
 
   DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
-                                  &container, nullptr);
-  frame_header.UpdateLeftHeaderView(&window_icon);
+                                  &container);
+  frame_header.set_left_header_view(&window_icon);
   frame_header.LayoutHeader();
   gfx::Rect title_bounds = frame_header.GetAvailableTitleBounds();
   EXPECT_EQ(window_icon.bounds().CenterPoint().y(),
@@ -47,8 +47,8 @@ TEST_F(DefaultFrameHeaderTest, BackButtonAlignment) {
   FrameBackButton back;
 
   DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
-                                  &container, nullptr);
-  frame_header.UpdateBackButton(&back);
+                                  &container);
+  frame_header.set_back_button(&back);
   frame_header.LayoutHeader();
   gfx::Rect title_bounds = frame_header.GetAvailableTitleBounds();
   // The back button should be positioned at the left edge, and
@@ -68,7 +68,7 @@ TEST_F(DefaultFrameHeaderTest, LightIcons) {
   w->Show();
 
   DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
-                                  &container, nullptr);
+                                  &container);
 
   // Check by default light icons are not used.
   frame_header.mode_ = FrameHeader::MODE_ACTIVE;

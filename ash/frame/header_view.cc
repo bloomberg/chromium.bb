@@ -31,7 +31,7 @@ HeaderView::HeaderView(views::Widget* target_widget,
   AddChildView(caption_button_container_);
 
   frame_header_ = std::make_unique<DefaultFrameHeader>(
-      target_widget_, this, caption_button_container_, nullptr, window_style);
+      target_widget_, this, caption_button_container_, window_style);
 
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
@@ -89,7 +89,7 @@ void HeaderView::SetAvatarIcon(const gfx::ImageSkia& avatar) {
     }
     avatar_icon_->SetImage(avatar);
   }
-  frame_header_->UpdateLeftHeaderView(avatar_icon_);
+  frame_header_->set_left_header_view(avatar_icon_);
   Layout();
 }
 
@@ -104,7 +104,7 @@ void HeaderView::SetBackButtonState(FrameBackButtonState state) {
     delete back_button_;
     back_button_ = nullptr;
   }
-  frame_header_->UpdateBackButton(back_button_);
+  frame_header_->set_back_button(back_button_);
   Layout();
 }
 
