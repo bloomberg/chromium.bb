@@ -12,6 +12,7 @@
 #include <random>
 #include <vector>
 
+#include "build/build_config.h"
 #include "platform/wtf/MathExtras.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -225,7 +226,7 @@ class VectorMathTest : public ::testing::Test {
       if (i != kFullyNonNanSource)
         sources_[i][index_distribution(generator)] = NAN;
     }
-  };
+  }
 
  private:
   static float destinations_[kDestinationCount][kFloatArraySize];
@@ -299,8 +300,7 @@ TEST_F(VectorMathTest, Vmul) {
   }
 }
 
-// Fails on macOS, http://crbug.com/778262
-TEST_F(VectorMathTest, DISABLED_Vsma) {
+TEST_F(VectorMathTest, Vsma) {
   for (const auto& source : GetPrimaryVectors(GetSource(0u))) {
     const float scale = *GetSource(1u);
     const TestVector<const float> dest_source(GetSource(2u), source);
@@ -315,10 +315,18 @@ TEST_F(VectorMathTest, DISABLED_Vsma) {
       // results which may result in different rounding errors thus let's
       // expect only mostly equal floats.
       for (size_t i = 0u; i < source.size(); ++i) {
-        if (std::isfinite(expected_dest[i]))
+        if (std::isfinite(expected_dest[i])) {
+#if defined(OS_MACOSX)
+          // On Mac, OS provided vectorized functions are used which may result
+          // in bigger rounding errors than functions used on other OSes.
+          EXPECT_NEAR(expected_dest[i], dest[i],
+                      1e-5 * std::abs(expected_dest[i]));
+#else
           EXPECT_FLOAT_EQ(expected_dest[i], dest[i]);
-        else
+#endif
+        } else {
           EXPECT_PRED2(Equal, expected_dest[i], dest[i]);
+        }
       }
     }
   }
@@ -352,17 +360,14 @@ TEST_F(VectorMathTest, Vsvesq) {
         // in different rounding errors than the non-partial sum algorithm used
         // here and in non-optimized paths in Vsvesq.
         EXPECT_FLOAT_EQ(expected_sum, sum);
-      } else if (std::isnan(expected_sum)) {
-        EXPECT_TRUE(std::isnan(sum));
-      } else {  // +INFINITY or -INFINITY
-        EXPECT_EQ(expected_sum, sum);
+      } else {
+        EXPECT_PRED2(Equal, expected_sum, sum);
       }
     }
   }
 }
 
-// Fails on macOS, http://crbug.com/778262
-TEST_F(VectorMathTest, DISABLED_Zvmul) {
+TEST_F(VectorMathTest, Zvmul) {
   constexpr float kMax = std::numeric_limits<float>::max();
   std::vector<std::array<float, kFloatArraySize + 1u>> sources(4u);
   for (size_t i = 0u; i < sources.size(); ++i) {
@@ -402,14 +407,42 @@ TEST_F(VectorMathTest, DISABLED_Zvmul) {
       // results which may result in different rounding errors thus let's
       // expect only mostly equal floats.
       for (size_t i = 0u; i < real1.size(); ++i) {
-        if (std::isfinite(expected_dest_real[i]))
+        if (std::isfinite(expected_dest_real[i])) {
+#if defined(OS_MACOSX)
+          // On Mac, OS provided vectorized functions are used which may result
+          // in bigger rounding errors than functions used on other OSes.
+          EXPECT_NEAR(expected_dest_real[i], dest_real[i],
+                      1e-5 * std::abs(expected_dest_real[i]));
+#else
           EXPECT_FLOAT_EQ(expected_dest_real[i], dest_real[i]);
-        else
+#endif
+        } else {
+#if defined(OS_MACOSX)
+          // On Mac, OS provided vectorized functions are used which may result
+          // in different NaN handling than functions used on other OSes.
+          EXPECT_TRUE(!std::isfinite(dest_real[i]));
+#else
           EXPECT_PRED2(Equal, expected_dest_real[i], dest_real[i]);
-        if (std::isfinite(expected_dest_imag[i]))
+#endif
+        }
+        if (std::isfinite(expected_dest_imag[i])) {
+#if defined(OS_MACOSX)
+          // On Mac, OS provided vectorized functions are used which may result
+          // in bigger rounding errors than functions used on other OSes.
+          EXPECT_NEAR(expected_dest_imag[i], dest_imag[i],
+                      1e-5 * std::abs(expected_dest_imag[i]));
+#else
           EXPECT_FLOAT_EQ(expected_dest_imag[i], dest_imag[i]);
-        else
+#endif
+        } else {
+#if defined(OS_MACOSX)
+          // On Mac, OS provided vectorized functions are used which may result
+          // in different NaN handling than functions used on other OSes.
+          EXPECT_TRUE(!std::isfinite(dest_imag[i]));
+#else
           EXPECT_PRED2(Equal, expected_dest_imag[i], dest_imag[i]);
+#endif
+        }
       }
     }
   }
