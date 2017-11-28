@@ -12,7 +12,7 @@
 
 #if defined(USE_AURA)
 namespace aura {
-class Env;
+class AuraTestSuiteSetup;
 }
 #endif
 
@@ -41,7 +41,7 @@ class UnitTestTestSuite {
 
   std::unique_ptr<TestBlinkWebUnitTestSupport> blink_test_support_;
 #if defined(USE_AURA)
-  std::unique_ptr<aura::Env> env_;
+  std::unique_ptr<aura::AuraTestSuiteSetup> aura_test_suite_setup_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(UnitTestTestSuite);

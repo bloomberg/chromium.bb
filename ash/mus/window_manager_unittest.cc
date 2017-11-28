@@ -6,6 +6,8 @@
 #include <memory>
 #include <vector>
 
+#include "ash/mus/window_manager.h"
+#include "ash/mus/window_manager_service.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
@@ -13,8 +15,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/window_manager.h"
-#include "ash/window_manager_service.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -41,8 +41,8 @@ namespace ash {
 
 class WindowTreeClientDelegate : public aura::WindowTreeClientDelegate {
  public:
-  WindowTreeClientDelegate() = default;
-  ~WindowTreeClientDelegate() override = default;
+  WindowTreeClientDelegate() {}
+  ~WindowTreeClientDelegate() override {}
 
   void WaitForEmbed() { run_loop_.Run(); }
 
@@ -76,7 +76,7 @@ class WindowManagerServiceTest : public service_manager::test::ServiceTest {
  public:
   WindowManagerServiceTest()
       : service_manager::test::ServiceTest("mash_unittests") {}
-  ~WindowManagerServiceTest() override = default;
+  ~WindowManagerServiceTest() override {}
 
   void TearDown() override {
     // Unset the screen installed by the test.

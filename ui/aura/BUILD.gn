@@ -227,8 +227,11 @@ static_library("test_support") {
     "test/aura_test_context_factory.h",
     "test/aura_test_helper.cc",
     "test/aura_test_helper.h",
+    "test/aura_test_suite_setup.cc",
+    "test/aura_test_suite_setup.h",
     "test/aura_test_utils.cc",
     "test/aura_test_utils.h",
+    "test/env_test_helper.cc",
     "test/env_test_helper.h",
     "test/event_generator_delegate_aura.cc",
     "test/event_generator_delegate_aura.h",
@@ -237,8 +240,12 @@ static_library("test_support") {
     "test/mus/input_method_mus_test_api.h",
     "test/mus/test_window_manager_client.cc",
     "test/mus/test_window_manager_client.h",
+    "test/mus/test_window_manager_delegate.cc",
+    "test/mus/test_window_manager_delegate.h",
     "test/mus/test_window_tree.cc",
     "test/mus/test_window_tree.h",
+    "test/mus/test_window_tree_client_delegate.cc",
+    "test/mus/test_window_tree_client_delegate.h",
     "test/mus/test_window_tree_client_setup.cc",
     "test/mus/test_window_tree_client_setup.h",
     "test/mus/window_tree_client_private.cc",
@@ -269,11 +276,15 @@ static_library("test_support") {
 
   public_deps = [
     ":aura",
+
+    # Must be public as headers include ui_features.h.
+    "//ui/base:ui_features",
   ]
   deps = [
     "//base/test:test_support",
     "//cc:test_support",
     "//components/viz/test:test_support",
+    "//services/ui/public/cpp/input_devices",
     "//services/ui/public/interfaces",
     "//skia",
     "//testing/gtest",

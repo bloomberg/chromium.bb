@@ -20,6 +20,7 @@
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
+#include "ui/aura/test/mus/test_window_manager_delegate.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -39,69 +40,6 @@ aura::Window* GetChildWindowByServerId(aura::WindowTreeClient* client,
                                        aura::Id id) {
   return aura::WindowTreeClientPrivate(client).GetWindowByServerId(id);
 }
-
-class TestWindowManagerDelegate : public aura::WindowManagerDelegate {
- public:
-  TestWindowManagerDelegate() {}
-  ~TestWindowManagerDelegate() override {}
-
-  // WindowManagerDelegate:
-  void SetWindowManagerClient(aura::WindowManagerClient* client) override {}
-  void OnWmAcceleratedWidgetAvailableForDisplay(
-      int64_t display_id,
-      gfx::AcceleratedWidget widget) override {}
-  void OnWmConnected() override {}
-  void OnWmSetBounds(aura::Window* window, const gfx::Rect& bounds) override {}
-  bool OnWmSetProperty(
-      aura::Window* window,
-      const std::string& name,
-      std::unique_ptr<std::vector<uint8_t>>* new_data) override {
-    return false;
-  }
-  void OnWmSetModalType(aura::Window* window, ui::ModalType type) override {}
-  void OnWmSetCanFocus(aura::Window* window, bool can_focus) override {}
-  aura::Window* OnWmCreateTopLevelWindow(
-      ui::mojom::WindowType window_type,
-      std::map<std::string, std::vector<uint8_t>>* properties) override {
-    return nullptr;
-  }
-  void OnWmClientJankinessChanged(const std::set<aura::Window*>& client_windows,
-                                  bool not_responding) override {}
-  void OnWmBuildDragImage(const gfx::Point& screen_location,
-                          const SkBitmap& drag_image,
-                          const gfx::Vector2d& drag_image_offset,
-                          ui::mojom::PointerKind source) override {}
-  void OnWmMoveDragImage(const gfx::Point& screen_location) override {}
-  void OnWmDestroyDragImage() override {}
-  void OnWmWillCreateDisplay(const display::Display& display) override {}
-  void OnWmNewDisplay(std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
-                      const display::Display& display) override {}
-  void OnWmDisplayRemoved(aura::WindowTreeHostMus* window_tree_host) override {}
-  void OnWmDisplayModified(const display::Display& display) override {}
-  mojom::EventResult OnAccelerator(
-      uint32_t accelerator_id,
-      const ui::Event& event,
-      std::unordered_map<std::string, std::vector<uint8_t>>* properties)
-      override {
-    return ui::mojom::EventResult::UNHANDLED;
-  }
-  void OnCursorTouchVisibleChanged(bool enabled) override {}
-  void OnWmPerformMoveLoop(aura::Window* window,
-                           mojom::MoveLoopSource source,
-                           const gfx::Point& cursor_location,
-                           const base::Callback<void(bool)>& on_done) override {
-  }
-  void OnWmCancelMoveLoop(aura::Window* window) override {}
-  void OnWmSetClientArea(
-      aura::Window* window,
-      const gfx::Insets& insets,
-      const std::vector<gfx::Rect>& additional_client_areas) override {}
-  bool IsWindowActive(aura::Window* window) override { return true; }
-  void OnWmDeactivateWindow(aura::Window* window) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestWindowManagerDelegate);
-};
 
 class BoundsChangeObserver : public aura::WindowObserver {
  public:
@@ -444,7 +382,7 @@ TEST_F(WindowServerTest, SetBounds) {
 // Verifies that bounds changes applied to a window owned by a different
 // client can be refused.
 TEST_F(WindowServerTest, SetBoundsSecurity) {
-  TestWindowManagerDelegate wm_delegate;
+  aura::TestWindowManagerDelegate wm_delegate;
   set_window_manager_delegate(&wm_delegate);
 
   aura::Window* window = NewVisibleWindow(GetFirstWMRoot(), window_manager(),
@@ -703,7 +641,8 @@ TEST_F(WindowServerTest, ClientAreaChanged) {
   EXPECT_EQ(insets, client_area_change->insets);
 }
 
-class EstablishConnectionViaFactoryDelegate : public TestWindowManagerDelegate {
+class EstablishConnectionViaFactoryDelegate
+    : public aura::TestWindowManagerDelegate {
  public:
   explicit EstablishConnectionViaFactoryDelegate(aura::WindowTreeClient* client)
       : client_(client), run_loop_(nullptr), created_window_(nullptr) {}
