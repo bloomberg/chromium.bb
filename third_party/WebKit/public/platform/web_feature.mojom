@@ -1765,6 +1765,7 @@ enum WebFeature {
   kWindowEventInV0ShadowTree = 2244,
   kHTMLAnchorElementDownloadInSandboxWithUserGesture = 2245,
   kHTMLAnchorElementDownloadInSandboxWithoutUserGesture = 2246,
+  kWindowOpenRealmMismatch = 2247,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
