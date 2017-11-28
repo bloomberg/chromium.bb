@@ -1584,6 +1584,12 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 //   1. Fill form using a saved profile.
 //   2. Reset the form.
 //   3. Fill form using a saved profile.
+// Tests using PopulateForm() are flaky on CrOS; see https://crbug.com/516052.
+#if defined(OS_CHROMEOS)
+#define MAYBE_FormFillableOnReset DISABLED_FormFillableOnReset
+#else
+#define MAYBE_FormFillableOnReset FormFillableOnReset
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FormFillableOnReset) {
   CreateTestProfile();
 
