@@ -32,12 +32,13 @@ class GLVirtualContextsEXTWindowRectanglesTest : public testing::Test {
   }
 
   bool IsApplicable() const {
-    // If a driver isn't capable of supporting ES3 context, creating
-    // ContextGroup will fail.
-    bool have_es3 = gl_real_shared_.decoder() &&
-                    gl_real_shared_.decoder()->GetContextGroup();
+    // Not applicable for devices not supporting OpenGLES3.
+    if (!gl_real_shared_.IsInitialized()) {
+      return false;
+    }
+
     bool have_ext = GLTestHelper::HasExtension("GL_EXT_window_rectangles");
-    return have_es3 && have_ext;
+    return have_ext;
   }
 
   GLManager gl_real_shared_;
