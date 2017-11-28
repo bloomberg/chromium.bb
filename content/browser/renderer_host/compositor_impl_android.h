@@ -148,8 +148,6 @@ class CONTENT_EXPORT CompositorImpl
       scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider,
       scoped_refptr<viz::ContextProvider> context_provider);
   void DidSwapBuffers();
-  // Reports back when the gpu process is functioning. See crbug.com/772049.
-  void DidSuccessfullyInitializeContext();
 
   bool HavePendingReadbacks();
 

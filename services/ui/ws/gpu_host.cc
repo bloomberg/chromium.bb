@@ -152,6 +152,8 @@ void DefaultGpuHost::DidInitialize(
 
 void DefaultGpuHost::DidFailInitialize() {}
 
+void DefaultGpuHost::DidCreateContextSuccessfully() {}
+
 void DefaultGpuHost::DidCreateOffscreenContext(const GURL& url) {}
 
 void DefaultGpuHost::DidDestroyOffscreenContext(const GURL& url) {}

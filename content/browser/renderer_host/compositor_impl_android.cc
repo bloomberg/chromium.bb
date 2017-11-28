@@ -54,7 +54,6 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu_stream_constants.h"
 #include "content/public/browser/android/compositor.h"
@@ -689,8 +688,6 @@ void CompositorImpl::DidInitializeLayerTreeFrameSink() {
     AddChildFrameSink(frame_sink_id);
 
   pending_child_frame_sink_ids_.clear();
-
-  DidSuccessfullyInitializeContext();
 }
 
 void CompositorImpl::DidFailToInitializeLayerTreeFrameSink() {
@@ -791,8 +788,6 @@ void CompositorImpl::OnGpuChannelEstablished(
     return;
   }
 
-  DidSuccessfullyInitializeContext();
-
   // Unretained is safe this owns viz::Display which owns OutputSurface.
   auto display_output_surface = std::make_unique<AndroidOutputSurface>(
       context_provider,
@@ -861,16 +856,6 @@ void CompositorImpl::InitializeDisplay(
 
 void CompositorImpl::DidSwapBuffers() {
   client_->DidSwapBuffers();
-}
-
-void CompositorImpl::DidSuccessfullyInitializeContext() {
-  auto on_io_thread = [] {
-    GpuProcessHost* host = GpuProcessHost::Get();
-    if (host)
-      host->DidSuccessfullyInitializeContext();
-  };
-  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
-      ->PostTask(FROM_HERE, base::BindOnce(on_io_thread));
 }
 
 cc::UIResourceId CompositorImpl::CreateUIResource(

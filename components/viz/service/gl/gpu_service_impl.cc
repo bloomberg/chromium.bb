@@ -480,6 +480,11 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
 }
 #endif
 
+void GpuServiceImpl::DidCreateContextSuccessfully() {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+  (*gpu_host_)->DidCreateContextSuccessfully();
+}
+
 void GpuServiceImpl::DidCreateOffscreenContext(const GURL& active_url) {
   DCHECK(main_runner_->BelongsToCurrentThread());
   (*gpu_host_)->DidCreateOffscreenContext(active_url);

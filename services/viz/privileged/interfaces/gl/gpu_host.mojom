@@ -17,6 +17,7 @@ interface GpuHost {
                 gpu.mojom.GpuFeatureInfo gpu_feature_info);
   DidFailInitialize();
 
+  DidCreateContextSuccessfully();
   DidCreateOffscreenContext(url.mojom.Url url);
   DidDestroyOffscreenContext(url.mojom.Url url);
 
