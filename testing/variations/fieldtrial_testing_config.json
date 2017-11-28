@@ -78,10 +78,12 @@
                 {
                     "name": "Tracking",
                     "params": {
-                        "availability": "any",
-                        "event_trigger": "name:chrome_home_cold_start_iph_trigger;comparator:==0;window:90;storage:360",
-                        "event_used": "name:bottom_sheet_expanded;comparator:any;window:90;storage:360",
-                        "session_rate": "<0"
+                        "availability": ">=5",
+                        "event_1": "name:bottom_sheet_expanded_from_button;comparator:<5; window:360;storage:360",
+                        "event_2": "name:chrome_home_cold_start_iph_trigger;comparator:==0;window:30;storage:30",
+                        "event_trigger": "name:chrome_home_cold_start_iph_trigger;comparator:<4;window:360;storage:360",
+                        "event_used": "name:bottom_sheet_expanded_from_swipe;comparator:<5;window:360;storage:360",
+                        "session_rate": "==0"
                     },
                     "enable_features": [
                         "IPH_ChromeHomeExpand"
@@ -109,6 +111,32 @@
                     },
                     "enable_features": [
                         "IPH_ChromeHomeMenuHeader"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AndroidInProductHelpChromeHomePullToRefresh": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Tracking",
+                    "params": {
+                        "availability": ">=5",
+                        "event_1": "name:bottom_sheet_expanded_from_button;comparator:<5; window:360;storage:360",
+                        "event_2": "name:chrome_home_pull_to_refresh_trigger;comparator:==0;window:30;storage:30",
+                        "event_3": "name:pull_to_refresh;comparator:>3;window:30;storage:30",
+                        "event_trigger": "name:chrome_home_pull_to_refresh_trigger;comparator:<4;window:360;storage:360",
+                        "event_used": "name:bottom_sheet_expanded_from_swipe;comparator:<5;window:360;storage:360",
+                        "session_rate": "any",
+                        "x_iph-timeout-duration-ms": "5000"
+                    },
+                    "enable_features": [
+                        "ChromeHomePersistentIph",
+                        "IPH_ChromeHomePullToRefresh"
                     ]
                 }
             ]

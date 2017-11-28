@@ -101575,6 +101575,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="IPH_ChromeHomeMenuHeader"
       label="In product help for Chrome Home shown as a header in the app
              menu."/>
+  <suffix name="IPH_ChromeHomePullToRefresh"
+      label="In product help for Chrome Home shown after a pull-to-refresh."/>
   <suffix name="IPH_DataSaverPreview"
       label="In product help data saver preview."/>
   <suffix name="IPH_ContextualSearch">
