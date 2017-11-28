@@ -45,15 +45,26 @@ class TestImporter(object):
 
     def __init__(self, host, wpt_github=None):
         self.host = host
+        self.wpt_github = wpt_github
+
         self.executive = host.executive
         self.fs = host.filesystem
         self.finder = PathFinder(self.fs)
-        self.verbose = False
-        self.git_cl = None
-        self.wpt_github = wpt_github
+        self.chromium_git = self.host.git(self.finder.chromium_base())
         self.dest_path = self.finder.path_from_layout_tests('external', 'wpt')
 
+        # A common.net.git_cl.GitCL instance.
+        self.git_cl = None
+        # Another Git instance with local WPT as CWD to be instantiated later.
+        self.wpt_git = None
+        # The WPT revision we are importing.
+        self.wpt_revision = None
+        self.verbose = False
+
     def main(self, argv=None):
+        # TODO(robertma): Test this method! Split it to make it easier to test
+        # if necessary.
+
         options = self.parse_args(argv)
 
         self.verbose = options.verbose
@@ -72,34 +83,33 @@ class TestImporter(object):
         self.wpt_github = self.wpt_github or WPTGitHub(self.host, gh_user, gh_token)
         local_wpt = LocalWPT(self.host, gh_token=gh_token)
         self.git_cl = GitCL(self.host, auth_refresh_token_json=options.auth_refresh_token_json)
+        self.wpt_git = self.host.git(local_wpt.path)
 
-        _log.debug('Noting the current Chromium commit.')
-        # TODO(qyearsley): Use Git (self.host.git) to run git commands.
-        _, show_ref_output = self.run(['git', 'show-ref', '--verify', '--head', '--hash', 'HEAD'])
-        chromium_commit = show_ref_output.strip()
+        _log.debug('Noting the current Chromium revision.')
+        chromium_revision = self.chromium_git.latest_git_commit()
 
         local_wpt.fetch()
 
         if options.revision is not None:
             _log.info('Checking out %s', options.revision)
-            self.run(['git', 'checkout', options.revision], cwd=local_wpt.path)
+            self.wpt_git.run(['checkout', options.revision])
 
         _log.debug('Noting the revision we are importing.')
-        _, show_ref_output = self.run(['git', 'show-ref', 'origin/master'], cwd=local_wpt.path)
-        import_commit = 'wpt@%s' % show_ref_output.split()[0]
+        self.wpt_revision = self.wpt_git.latest_git_commit()
+        import_commit = 'wpt@%s' % self.wpt_revision
 
-        _log.info('Importing %s to Chromium %s', import_commit, chromium_commit)
+        _log.info('Importing %s to Chromium %s', import_commit, chromium_revision)
 
-        commit_message = self._commit_message(chromium_commit, import_commit)
-
-        if not options.ignore_exportable_commits:
+        if options.ignore_exportable_commits:
+            commit_message = self._commit_message(chromium_revision, import_commit)
+        else:
             commits = self.apply_exportable_commits_locally(local_wpt)
             if commits is None:
                 _log.error('Could not apply some exportable commits cleanly.')
                 _log.error('Aborting import to prevent clobbering commits.')
                 return 1
             commit_message = self._commit_message(
-                chromium_commit, import_commit, locally_applied_commits=commits)
+                chromium_revision, import_commit, locally_applied_commits=commits)
 
         self._clear_out_dest_path()
 
@@ -107,7 +117,8 @@ class TestImporter(object):
         test_copier = TestCopier(self.host, local_wpt.path)
         test_copier.do_import()
 
-        self.run(['git', 'add', '--all', 'external/wpt'])
+        # TODO(robertma): Implement `add --all` in Git (it is different from `commit --all`).
+        self.chromium_git.run(['add', '--all', self.dest_path])
 
         self._generate_manifest()
 
@@ -120,8 +131,7 @@ class TestImporter(object):
         _log.info('Updating TestExpectations for any removed or renamed tests.')
         self.update_all_test_expectations_files(self._list_deleted_tests(), self._list_renamed_tests())
 
-        has_changes = self._has_changes()
-        if not has_changes:
+        if not self.chromium_git.has_working_directory_changes():
             _log.info('Done: no changes to import.')
             return 0
 
@@ -177,10 +187,10 @@ class TestImporter(object):
 
         if try_results and self.git_cl.some_failed(try_results):
             self.fetch_new_expectations_and_baselines()
-            if self.host.git().has_working_directory_changes():
+            if self.chromium_git.has_working_directory_changes():
                 self._generate_manifest()
                 message = 'Update test expectations and baselines.'
-                self.check_run(['git', 'commit', '-a', '-m', message])
+                self._commit_changes(message)
                 self._upload_patchset(message)
         return True
 
@@ -259,13 +269,11 @@ class TestImporter(object):
         return parser.parse_args(argv)
 
     def checkout_is_okay(self):
-        git_diff_retcode, _ = self.run(
-            ['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)
-        if git_diff_retcode:
+        if self.chromium_git.has_working_directory_changes():
             _log.warning('Checkout is dirty; aborting.')
             return False
-        _, local_commits = self.run(
-            ['git', 'log', '--oneline', 'origin/master..HEAD'])
+        # TODO(robertma): Add a method in Git to query a range of commits.
+        local_commits = self.chromium_git.run(['log', '--oneline', 'origin/master..HEAD'])
         if local_commits:
             _log.warning('Checkout has local commits before import.')
         return True
@@ -304,10 +312,7 @@ class TestImporter(object):
                 _log.error('Commit cannot be applied cleanly:')
                 _log.error(error)
                 return None
-            self.run(
-                ['git', 'commit', '--all', '-F', '-'],
-                stdin='Applying patch %s' % commit.sha,
-                cwd=local_wpt.path)
+            self.wpt_git.commit_locally_with_message('Applying patch %s' % commit.sha)
         return commits
 
     def exportable_but_not_exported_commits(self, local_wpt):
@@ -336,7 +341,7 @@ class TestImporter(object):
         manifest_base_path = self.fs.normpath(
             self.fs.join(self.dest_path, '..', 'WPT_BASE_MANIFEST.json'))
         self.copyfile(manifest_path, manifest_base_path)
-        self.run(['git', 'add', manifest_base_path])
+        self.chromium_git.add_list([manifest_base_path])
 
     def _clear_out_dest_path(self):
         """Removes all files that are synced with upstream from Chromium WPT.
@@ -353,14 +358,10 @@ class TestImporter(object):
 
     def _commit_changes(self, commit_message):
         _log.info('Committing changes.')
-        self.run(['git', 'commit', '--all', '-F', '-'], stdin=commit_message)
-
-    def _has_changes(self):
-        return_code, _ = self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)
-        return return_code == 1
+        self.chromium_git.commit_locally_with_message(commit_message)
 
     def _only_wpt_manifest_changed(self):
-        changed_files = self.host.git().changed_files()
+        changed_files = self.chromium_git.changed_files()
         wpt_base_manifest = self.fs.relpath(
             self.fs.join(self.dest_path, '..', 'WPT_BASE_MANIFEST.json'),
             self.finder.chromium_base())
@@ -408,30 +409,6 @@ class TestImporter(object):
         base = '/' + rel_path.replace('-expected.txt', '')
         return any((base + ext) in wpt_urls for ext in Port.supported_file_extensions)
 
-    def run(self, cmd, exit_on_failure=True, cwd=None, stdin=''):
-        _log.debug('Running command: %s', ' '.join(cmd))
-
-        cwd = cwd or self.finder.path_from_layout_tests()
-        proc = self.executive.popen(cmd, stdout=self.executive.PIPE, stderr=self.executive.PIPE, stdin=self.executive.PIPE, cwd=cwd)
-        out, err = proc.communicate(stdin)
-        if proc.returncode or self.verbose:
-            _log.info('# ret> %d', proc.returncode)
-            if out:
-                for line in out.splitlines():
-                    _log.info('# out> %s', line)
-            if err:
-                for line in err.splitlines():
-                    _log.info('# err> %s', line)
-        if exit_on_failure and proc.returncode:
-            self.host.exit(proc.returncode)
-        return proc.returncode, out
-
-    def check_run(self, command):
-        return_code, out = self.run(command)
-        if return_code:
-            raise Exception('%s failed with exit code %d.' % ' '.join(command), return_code)
-        return out
-
     def copyfile(self, source, destination):
         _log.debug('cp %s %s', source, destination)
         self.fs.copyfile(source, destination)
@@ -469,7 +446,7 @@ class TestImporter(object):
     def get_directory_owners(self):
         """Returns a mapping of email addresses to owners of changed tests."""
         _log.info('Gathering directory owners emails to CC.')
-        changed_files = self.host.git().changed_files()
+        changed_files = self.chromium_git.changed_files()
         extractor = DirectoryOwnersExtractor(self.fs)
         return extractor.list_owners(changed_files)
 
@@ -479,7 +456,8 @@ class TestImporter(object):
         Args:
             directory_owners: A dict of tuples of owner names to lists of directories.
         """
-        description = self.check_run(['git', 'log', '-1', '--format=%B'])
+        # TODO(robertma): Add a method in Git for getting the commit body.
+        description = self.chromium_git.run(['log', '-1', '--format=%B'])
         build_link = current_build_link(self.host)
         if build_link:
             description += 'Build: %s\n\n' % build_link
@@ -586,7 +564,8 @@ class TestImporter(object):
 
     def _list_deleted_tests(self):
         """List of layout tests that have been deleted."""
-        out = self.check_run(['git', 'diff', 'origin/master', '-M100%', '--diff-filter=D', '--name-only'])
+        # TODO(robertma): Improve Git.changed_files so that we can use it here.
+        out = self.chromium_git.run(['diff', 'origin/master', '-M100%', '--diff-filter=D', '--name-only'])
         deleted_tests = []
         for path in out.splitlines():
             test = self._relative_to_layout_test_dir(path)
@@ -599,7 +578,7 @@ class TestImporter(object):
 
         Returns a dict mapping source name to destination name.
         """
-        out = self.check_run(['git', 'diff', 'origin/master', '-M100%', '--diff-filter=R', '--name-status'])
+        out = self.chromium_git.run(['diff', 'origin/master', '-M100%', '--diff-filter=R', '--name-status'])
         renamed_tests = {}
         for line in out.splitlines():
             _, source_path, dest_path = line.split()
