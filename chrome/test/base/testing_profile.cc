@@ -65,8 +65,8 @@
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database_params.h"
-#include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/history/core/test/history_service_test_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/offline_pages/features/features.h"
@@ -147,28 +147,6 @@ namespace {
 
 // Default profile name
 const char kTestingProfile[] = "testing_profile";
-
-// Task used to make sure history has finished processing a request. Intended
-// for use with BlockUntilHistoryProcessesPendingRequests.
-
-class QuittingHistoryDBTask : public history::HistoryDBTask {
- public:
-  QuittingHistoryDBTask() {}
-
-  bool RunOnDBThread(history::HistoryBackend* backend,
-                     history::HistoryDatabase* db) override {
-    return true;
-  }
-
-  void DoneRunOnMainThread() override {
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  }
-
- private:
-  ~QuittingHistoryDBTask() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(QuittingHistoryDBTask);
-};
 
 class TestExtensionURLRequestContext : public net::URLRequestContext {
  public:
@@ -925,13 +903,7 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
       HistoryServiceFactory::GetForProfile(this,
                                            ServiceAccessType::EXPLICIT_ACCESS);
   DCHECK(history_service);
-  DCHECK(base::MessageLoop::current());
-
-  base::CancelableTaskTracker tracker;
-  history_service->ScheduleDBTask(
-      std::unique_ptr<history::HistoryDBTask>(new QuittingHistoryDBTask()),
-      &tracker);
-  base::RunLoop().Run();
+  history::BlockUntilHistoryProcessesPendingRequests(history_service);
 }
 
 chrome_browser_net::Predictor* TestingProfile::GetNetworkPredictor() {
