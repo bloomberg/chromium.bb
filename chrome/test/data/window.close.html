@@ -6,36 +6,33 @@
 
     // window.open, window.close should be synchronous
     function test1() {
-      console.log("test1");
       popup = window.open('title1.html', 'name');
       popup.close();
 
       popup = window.open('title2.html', 'name', 'width=200,height=200');
       popup.close();
+      document.location = 'title2.html'
     }
 
     // Try opening/closing a few windows.
     function test2() {
-      console.log("test2");
       openPopups();
       closePopups();
+      document.location = 'title2.html'
     }
 
     function test3() {
-      console.log("test3");
       openPopups();
       setTimeout(closePopups, 0);
       setTimeout(test4, 1);
     }
 
     function test4() {
-      console.log("test4");
       openPopups();
-      setTimeout(closePopupsAndDone, 1);
+      setTimeout(closePopupsAndDone, 250);
     }
 
     function openPopups() {
-      console.log("openPopups");
       popup = window.open('title1.html', 'name');
       popup2 = window.open('title1.html', 'name2');
       popup3 = window.open('title1.html', 'name3');
@@ -43,7 +40,6 @@
     }
 
     function closePopups() {
-      console.log("closePopups");
       popup.close();
       popup2.close();
       popup3.close();
@@ -51,16 +47,17 @@
     }
 
     function closePopupsAndDone() {
-      console.log("closePopupsAndDone");
       closePopups();
       document.location = 'title2.html'
     }
 
     function startTheTest() {
-      console.log("startTheTest");
-      test1();
-      test2();
-      test3();
+      if (location.search == "?test1")
+        test1();
+      else if (location.search == "?test2")
+        test2();
+      else if (location.search == "?test3")
+        test3();
     }
   </script>
 </head>
