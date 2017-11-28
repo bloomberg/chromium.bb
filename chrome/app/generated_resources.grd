@@ -9718,7 +9718,7 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
             Please unlock your profile before adding a person.
           </message>
           <message name="IDS_USER_MANAGER_PROMPT_MESSAGE" desc="Prompt message displayed on UserManager when force-sign-in policy is enabled.">
-            To use Chrome, please sign in.
+            To use Chrome, please sign in
           </message>
           <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC" desc="Main text shown as a warning when attempting to remove an user.">
             This will permanently delete your browsing data from this device.
