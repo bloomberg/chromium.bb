@@ -3395,19 +3395,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
     case OverscrollAction::CLOSE_TAB:
       [self.dispatcher closeCurrentTab];
       break;
-    case OverscrollAction::REFRESH: {
-      web::WebState* webState = [_model currentTab].webState;
-      if (webState) {
-        if (webState->IsLoading()) {
-          webState->Stop();
-        }
-        // |check_for_repost| is true because the reload is explicitly initiated
-        // by the user.
-        webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
-                                                 true /* check_for_repost */);
-      }
+    case OverscrollAction::REFRESH:
+      [self reload];
       break;
-    }
     case OverscrollAction::NONE:
       NOTREACHED();
       break;
