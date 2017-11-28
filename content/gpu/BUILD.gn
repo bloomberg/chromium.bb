@@ -119,4 +119,8 @@ target(link_target_type, "gpu_sources") {
   if (enable_vulkan) {
     deps += [ "//gpu/vulkan" ]
   }
+
+  if (is_desktop_linux) {
+    configs += [ "//build/config/linux/dri" ]
+  }
 }
