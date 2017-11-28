@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
 
 #import <QuartzCore/CAAnimation.h>
 #import <QuartzCore/CAMediaTimingFunction.h>
 
 #include "base/logging.h"
-#include "ios/chrome/browser/ui/toolbar/toolbar_button_tints.h"
+#include "ios/chrome/browser/ui/toolbar/clean/toolbar_button_tints.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,6 +20,8 @@ const int kNumberOfDots = 3;
 // Position of the topmost dot.
 const CGFloat kDotOffsetX = 22;
 const CGFloat kDotOffsetY = 18;
+// Y offset of the topmost dot in case the button is the smaller version.
+const CGFloat kSmallButtonOffset = 3;
 // Vertical space between dots.
 const CGFloat kVerticalSpaceBetweenDots = 6;
 // The duration of the animation, in seconds.
@@ -57,30 +59,28 @@ const CGFloat kLineWidthAtApogee = 3;
   // Whether the CALayers are being animated.
   BOOL animationOnGoing_;
 }
-// Updates the tint configuration based on the button's situation, e.g. whether
-// the tools menu is visible or not.
-- (void)updateTintOfButton;
-// Initializes the pathLayers.
-- (void)initializeShapeLayers;
-// Returns a keyframe-based animation of the property identified by |keyPath|.
-// The animation immediately sets the property's value to |initialValue|.
-// After |frameStart| frames, the property's value animates to
-// |intermediaryValue|, and then to |finalValue|.
-- (CAAnimation*)animationWithInitialValue:(id)initialValue
-                        intermediaryValue:(id)intermediaryValue
-                               finalValue:(id)finalValue
-                               frameStart:(int)frameStart
-                               forKeyPath:(NSString*)keyPath;
-// Starts animating the button towards the color |targetColor|.
-- (void)animateToColor:(UIColor*)targetColor;
+
+// Whether the button is the smaller version.
+@property(nonatomic, assign, getter=isSmallButton) BOOL smallButton;
+
+// Tints of the button.
+@property(nonatomic, strong) UIColor* normalStateTint;
+@property(nonatomic, strong) UIColor* highlightedStateTint;
+
 @end
 
 @implementation ToolbarToolsMenuButton
 
+@synthesize smallButton = _smallButton;
+@synthesize normalStateTint = _normalStateTint;
+@synthesize highlightedStateTint = _highlightedStateTint;
+
 - (instancetype)initWithFrame:(CGRect)frame
-                        style:(ToolbarControllerStyle)style {
+                        style:(ToolbarControllerStyle)style
+                        small:(BOOL)smallButton {
   if (self = [super initWithFrame:frame]) {
     style_ = style;
+    _smallButton = smallButton;
     pathLayers_ = [[NSMutableArray alloc] initWithCapacity:kNumberOfDots];
 
     [self setTintColor:toolbar::NormalButtonTint(style_)
@@ -107,6 +107,8 @@ const CGFloat kLineWidthAtApogee = 3;
 
 #pragma mark - Private
 
+// Updates the tint configuration based on the button's situation, e.g. whether
+// the tools menu is visible or not.
 - (void)updateTintOfButton {
   if (toolsMenuVisible_ || readingListContainsUnseenItems_) {
     [self setTintColor:toolbar::HighlighButtonTint(style_)
@@ -117,6 +119,51 @@ const CGFloat kLineWidthAtApogee = 3;
   }
 }
 
+// Sets the tint color of a button to use for the specified state.
+// Currently only supports |UIControlStateNormal| and
+// |UIControlStateHighlighted|.
+- (void)setTintColor:(UIColor*)color forState:(UIControlState)state {
+  switch (state) {
+    case UIControlStateNormal:
+      self.normalStateTint = [color copy];
+      break;
+    case UIControlStateHighlighted:
+      self.highlightedStateTint = [color copy];
+      break;
+    default:
+      return;
+  }
+
+  if (self.normalStateTint || self.highlightedStateTint)
+    self.adjustsImageWhenHighlighted = NO;
+  else
+    self.adjustsImageWhenHighlighted = YES;
+  [self updateTint];
+}
+
+// Makes the button's tint color reflect its current state.
+- (void)updateTint {
+  UIColor* newTint = nil;
+  switch (self.state) {
+    case UIControlStateNormal:
+      newTint = self.normalStateTint;
+      break;
+    case UIControlStateHighlighted:
+      newTint = self.highlightedStateTint;
+      break;
+    default:
+      newTint = self.normalStateTint;
+      break;
+  }
+  self.tintColor = newTint;
+}
+
+// Returns the Y offset of the topmost dot.
+- (CGFloat)dotOffsetY {
+  return self.smallButton ? kDotOffsetY - kSmallButtonOffset : kDotOffsetY;
+}
+
+// Initializes the pathLayers.
 - (void)initializeShapeLayers {
   for (NSUInteger i = 0; i < pathLayers_.count; i++) {
     [pathLayers_[i] removeFromSuperlayer];
@@ -125,7 +172,7 @@ const CGFloat kLineWidthAtApogee = 3;
   pathLayers_ = [[NSMutableArray alloc] initWithCapacity:kNumberOfDots];
   for (NSUInteger i = 0; i < kNumberOfDots; i++) {
     const CGFloat x = kDotOffsetX;
-    const CGFloat y = kDotOffsetY + kVerticalSpaceBetweenDots * i;
+    const CGFloat y = [self dotOffsetY] + kVerticalSpaceBetweenDots * i;
 
     UIBezierPath* path = [UIBezierPath bezierPath];
     [path moveToPoint:CGPointMake(x - kMaxWidthOfSegment * 0.5, y)];
@@ -145,6 +192,10 @@ const CGFloat kLineWidthAtApogee = 3;
   }
 }
 
+// Returns a keyframe-based animation of the property identified by |keyPath|.
+// The animation immediately sets the property's value to |initialValue|.
+// After |frameStart| frames, the property's value animates to
+// |intermediaryValue|, and then to |finalValue|.
 - (CAAnimation*)animationWithInitialValue:(id)initialValue
                         intermediaryValue:(id)intermediaryValue
                                finalValue:(id)finalValue
@@ -208,6 +259,7 @@ const CGFloat kLineWidthAtApogee = 3;
   return animation;
 }
 
+// Starts animating the button towards the color |targetColor|.
 - (void)animateToColor:(UIColor*)targetColor {
   animationOnGoing_ = YES;
 
@@ -282,6 +334,13 @@ const CGFloat kLineWidthAtApogee = 3;
   // recreated at the end of the animation.
   if (!animationOnGoing_)
     [self initializeShapeLayers];
+}
+
+#pragma mark - UIControl
+
+- (void)setHighlighted:(BOOL)highlighted {
+  [super setHighlighted:highlighted];
+  [self updateTint];
 }
 
 #pragma mark - CAAnimationDelegate

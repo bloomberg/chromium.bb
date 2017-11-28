@@ -15,6 +15,7 @@
 @protocol BrowserCommands;
 @class ToolbarButtonFactory;
 @class ToolbarButtonUpdater;
+@class ToolbarToolsMenuButton;
 
 // View controller for a toolbar, which will show a horizontal row of
 // controls and/or labels.
@@ -38,6 +39,8 @@
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 // The location bar view, containing the omnibox.
 @property(nonatomic, strong) UIView* locationBarView;
+// The ToolsMenu button.
+@property(nonatomic, strong, readonly) ToolbarToolsMenuButton* toolsMenuButton;
 
 // Animates the toolbar so the omnibox is shrinking to its standard state.
 - (void)contractOmnibox;
