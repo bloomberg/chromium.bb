@@ -78,7 +78,7 @@ class CronetTestBase : public ::testing::Test {
   void SetUp() override;
   void TearDown() override;
   bool StartDataTaskAndWaitForCompletion(NSURLSessionDataTask* task,
-                                         int64_t deadline_ns = 30 *
+                                         int64_t deadline_ns = 15 *
                                                                NSEC_PER_SEC);
   std::unique_ptr<net::MockCertVerifier> CreateMockCertVerifier(
       const std::vector<std::string>& certs,
