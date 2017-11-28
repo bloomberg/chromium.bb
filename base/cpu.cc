@@ -107,9 +107,6 @@ std::string* CpuInfoBrand() {
     std::string contents;
     ReadFileToString(FilePath("/proc/cpuinfo"), &contents);
     DCHECK(!contents.empty());
-    if (contents.empty()) {
-      return new std::string();
-    }
 
     std::istringstream iss(contents);
     std::string line;
