@@ -123,7 +123,7 @@ ui::TouchBarAction TouchBarActionFromCommand(int command) {
 }
 
 // A class registered for C++ notifications. This is used to detect changes in
-// the home button preferences and the back/forward commands.
+// the profile preferences and the back/forward commands.
 class BrowserTouchBarNotificationBridge : public CommandObserver {
  public:
   BrowserTouchBarNotificationBridge(BrowserWindowTouchBar* observer,
@@ -161,6 +161,9 @@ class BrowserTouchBarNotificationBridge : public CommandObserver {
 
   // Used to monitor the optional home button pref.
   BooleanPrefMember showHomeButton_;
+
+  // Used to listen for default search engine pref changes.
+  PrefChangeRegistrar profilePrefRegistrar_;
 
   // Used to receive and handle notifications.
   std::unique_ptr<BrowserTouchBarNotificationBridge> notificationBridge_;
@@ -210,6 +213,12 @@ class BrowserTouchBarNotificationBridge : public CommandObserver {
     PrefService* prefs = browser->profile()->GetPrefs();
     showHomeButton_.Init(
         prefs::kShowHomeButton, prefs,
+        base::Bind(&BrowserTouchBarNotificationBridge::UpdateTouchBar,
+                   base::Unretained(notificationBridge_.get())));
+
+    profilePrefRegistrar_.Init(prefs);
+    profilePrefRegistrar_.Add(
+        DefaultSearchManager::kDefaultSearchProviderDataPrefName,
         base::Bind(&BrowserTouchBarNotificationBridge::UpdateTouchBar,
                    base::Unretained(notificationBridge_.get())));
   }
