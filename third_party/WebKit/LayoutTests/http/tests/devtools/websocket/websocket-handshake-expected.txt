@@ -1,7 +1,3 @@
-PASS successfullyParsed is true
-
-TEST COMPLETE
-onopen
 Tests that WebSocket handshake information is passed to Web Inspector.
 
 log: requestMethod: GET
