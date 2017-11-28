@@ -413,6 +413,9 @@ PaintImage BitmapImage::PaintImageForCurrentFrame() {
 scoped_refptr<Image> BitmapImage::ImageForDefaultFrame() {
   if (FrameCount() > 1) {
     PaintImage paint_image = FrameAtIndex(PaintImage::kDefaultFrameIndex);
+    if (!paint_image)
+      return nullptr;
+
     if (paint_image.ShouldAnimate()) {
       // To prevent the compositor from animating this image, we set the
       // animation count to kAnimationNone. This makes the image essentially
