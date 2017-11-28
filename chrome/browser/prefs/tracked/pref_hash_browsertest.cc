@@ -35,6 +35,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/template_url_data.h"
+#include "content/public/test/test_launcher.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "services/preferences/public/cpp/tracked/tracked_preference_histogram_names.h"
@@ -218,7 +219,7 @@ class PrefHashBrowserTestBase
   bool SetUpUserDataDirectory() override {
     // Do the normal setup in the PRE test and attack preferences in the main
     // test.
-    if (IsPRETest())
+    if (content::IsPreTest())
       return ExtensionBrowserTest::SetUpUserDataDirectory();
 
 #if defined(OS_CHROMEOS)
@@ -299,7 +300,7 @@ class PrefHashBrowserTestBase
 
     // Keys should be unique, but to avoid flakes in the long run make sure an
     // identical test key wasn't left behind by a previous test.
-    if (IsPRETest()) {
+    if (content::IsPreTest()) {
       base::win::RegKey key;
       if (key.Open(HKEY_CURRENT_USER,
                    registry_key_for_external_validation_.c_str(),
@@ -314,7 +315,7 @@ class PrefHashBrowserTestBase
   void TearDown() override {
 #if defined(OS_WIN)
     // When done, delete the Registry key to avoid polluting the registry.
-    if (!IsPRETest()) {
+    if (!content::IsPreTest()) {
       base::string16 registry_key = GetRegistryPathForTestProfile();
       base::win::RegKey key;
       if (key.Open(HKEY_CURRENT_USER, registry_key.c_str(),
@@ -343,7 +344,7 @@ class PrefHashBrowserTestBase
     num_tracked_prefs_file =
         num_tracked_prefs_file.AppendASCII(kNumTrackedPrefFilename);
 
-    if (IsPRETest()) {
+    if (content::IsPreTest()) {
       num_tracked_prefs_ = GetTrackedPrefHistogramCount(
           user_prefs::tracked::kTrackedPrefHistogramNullInitialized, ALLOW_ANY);
       EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM,
@@ -416,13 +417,6 @@ class PrefHashBrowserTestBase
   const SettingsProtectionLevel protection_level_;
 
  private:
-  // Returns true if this is the PRE_ phase of the test.
-  bool IsPRETest() {
-    return base::StartsWith(
-        testing::UnitTest::GetInstance()->current_test_info()->name(), "PRE_",
-        base::CompareCase::SENSITIVE);
-  }
-
   SettingsProtectionLevel GetProtectionLevelFromTrialGroup(
       const std::string& trial_group) {
     if (!ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking)
@@ -438,27 +432,24 @@ class PrefHashBrowserTestBase
     return PROTECTION_ENABLED_ALL;
 #else
     return PROTECTION_DISABLED_FOR_GROUP;
-#endif
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 #else  // defined(OFFICIAL_BUILD)
 
     using namespace chrome_prefs::internals;
-    if (trial_group == kSettingsEnforcementGroupNoEnforcement) {
+    if (trial_group == kSettingsEnforcementGroupNoEnforcement)
       return PROTECTION_DISABLED_FOR_GROUP;
-    } else if (trial_group == kSettingsEnforcementGroupEnforceAlways) {
+    if (trial_group == kSettingsEnforcementGroupEnforceAlways)
       return PROTECTION_ENABLED_BASIC;
-    } else if (trial_group == kSettingsEnforcementGroupEnforceAlwaysWithDSE) {
+    if (trial_group == kSettingsEnforcementGroupEnforceAlwaysWithDSE)
       return PROTECTION_ENABLED_DSE;
-    } else if (trial_group ==
-               kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE) {
+    if (trial_group ==
+        kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE) {
       return PROTECTION_ENABLED_EXTENSIONS;
-    } else {
-      ADD_FAILURE();
-      return static_cast<SettingsProtectionLevel>(-1);
     }
-
+    ADD_FAILURE();
+    return static_cast<SettingsProtectionLevel>(-1);
 #endif  // defined(OFFICIAL_BUILD)
-
   }
 
   int num_tracked_prefs_;

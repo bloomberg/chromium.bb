@@ -85,6 +85,10 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 TestLauncherDelegate* GetCurrentTestLauncherDelegate();
 ContentMainParams* GetContentMainParams();
 
+// Returns true if the currently running test has a prefix that indicates it
+// should run before a test of the same name without the prefix.
+bool IsPreTest();
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_TEST_LAUNCHER_H_
