@@ -519,7 +519,8 @@ public class BrowserActionActivityTest {
             @Override
             public boolean isSatisfied() {
                 return activity2.areTabModelsInitialized()
-                        && activity2.getTabModelSelector().isTabStateInitialized();
+                        && activity2.getTabModelSelector().isTabStateInitialized()
+                        && activity2.getActivityTab() != null;
             }
         });
         String cta2ActivityTabUrl = activity2.getActivityTab().getUrl();
