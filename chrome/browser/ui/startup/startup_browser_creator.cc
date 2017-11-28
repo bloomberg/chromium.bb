@@ -55,6 +55,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/util.h"
+#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -248,8 +249,8 @@ void DumpBrowserHistograms(const base::FilePath& output_file) {
 // explicit user action.
 bool CanOpenProfileOnStartup(Profile* profile) {
 #if defined(OS_CHROMEOS)
-  // On ChromeOS, ther user has alrady chosen and logged into the profile
-  // before Chrome starts up.
+  // On ChromeOS, the user has already chosen and logged into the profile before
+  // Chrome starts up.
   return true;
 #else
   // Profiles that require signin are not available.
@@ -557,9 +558,9 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   TRACE_EVENT0("startup", "StartupBrowserCreator::ProcessCmdLineImpl");
 
   DCHECK(last_used_profile);
-  if (process_startup) {
-    if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
-      content::NavigationController::DisablePromptOnRepost();
+  if (process_startup &&
+      command_line.HasSwitch(switches::kDisablePromptOnRepost)) {
+    content::NavigationController::DisablePromptOnRepost();
   }
 
   bool silent_launch = false;
@@ -662,8 +663,11 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     silent_launch = true;
 
   // If we don't want to launch a new browser window or tab we are done here.
-  if (silent_launch)
+  if (silent_launch) {
+    if (process_startup)
+      startup_metric_utils::SetNonBrowserUIDisplayed();
     return true;
+  }
 
   if (command_line.HasSwitch(extensions::switches::kLoadApps) &&
       can_use_last_profile) {
