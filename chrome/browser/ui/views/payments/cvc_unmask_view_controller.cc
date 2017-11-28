@@ -159,8 +159,13 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
                                   views::GridLayout::SizeType::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
-  std::unique_ptr<views::Label> instructions = base::MakeUnique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS));
+  // The prompt for server cards should reference Google Payments, whereas the
+  // prompt for local cards should not.
+  std::unique_ptr<views::Label> instructions =
+      base::MakeUnique<views::Label>(l10n_util::GetStringUTF16(
+          credit_card_.record_type() == autofill::CreditCard::LOCAL_CARD
+              ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_LOCAL_CARD
+              : IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS));
   instructions->SetMultiLine(true);
   instructions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->AddView(instructions.release());
