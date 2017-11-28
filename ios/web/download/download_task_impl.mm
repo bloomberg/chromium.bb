@@ -8,6 +8,7 @@
 #import <WebKit/WebKit.h>
 
 #import "base/mac/bind_objc_block.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/web/net/cookies/wk_cookie_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/download/download_task_observer.h"
@@ -248,6 +249,8 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier) {
         error_code_ = GetNetErrorCodeFromNSError(error);
         percent_complete_ = GetTaskPercentComplete(task);
         total_bytes_ = task.countOfBytesExpectedToReceive;
+        if (task.response.MIMEType)
+          mime_type_ = base::SysNSStringToUTF8(task.response.MIMEType);
 
         if (task.state != NSURLSessionTaskStateCompleted) {
           OnDownloadUpdated();

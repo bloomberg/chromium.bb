@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic) int64_t countOfBytesReceived;
 @property(nonatomic) int64_t countOfBytesExpectedToReceive;
 @property(nonatomic) NSURLSessionTaskState state;
+@property(nonatomic, nullable, copy) NSURLResponse* response;
 
 - (nullable instancetype)initWithURL:(NSURL*)URL NS_DESIGNATED_INITIALIZER;
 - (nullable instancetype)init NS_UNAVAILABLE;

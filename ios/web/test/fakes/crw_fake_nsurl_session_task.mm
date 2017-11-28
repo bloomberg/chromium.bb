@@ -21,6 +21,7 @@
 @synthesize state = _state;
 @synthesize originalRequest = _originalRequest;
 @synthesize currentRequest = _currentRequest;
+@synthesize response = _response;
 
 - (instancetype)initWithURL:(NSURL*)URL {
   if ((self = [super init])) {
