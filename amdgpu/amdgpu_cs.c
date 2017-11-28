@@ -606,6 +606,16 @@ int amdgpu_cs_destroy_semaphore(amdgpu_semaphore_handle sem)
 	return amdgpu_cs_unreference_sem(sem);
 }
 
+int amdgpu_cs_create_syncobj2(amdgpu_device_handle dev,
+			      uint32_t  flags,
+			      uint32_t *handle)
+{
+	if (NULL == dev)
+		return -EINVAL;
+
+	return drmSyncobjCreate(dev->fd, flags, handle);
+}
+
 int amdgpu_cs_create_syncobj(amdgpu_device_handle dev,
 			     uint32_t *handle)
 {
