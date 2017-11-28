@@ -1407,10 +1407,16 @@ void AutofillControllerJsTest::TestExtractNewForms(
   // Generates verifying javascripts.
   NSMutableArray* verifying_javascripts = [NSMutableArray array];
   for (NSUInteger i = 0U; i < [expected_items count]; ++i) {
+    // All forms created in this test suite are named "TestForm".
+    // If a page contains more than one of these forms, ExtractForms will rename
+    // all forms but the fist one.
+    NSString* formName =
+        (i == 0) ? @"TestForm"
+                 : [NSString stringWithFormat:@"gChrome~form~%" PRIuNS, i];
     [verifying_javascripts
         addObject:[NSString stringWithFormat:@"forms[%" PRIuNS
-                                              "]['name'] === 'TestForm'",
-                                             i]];
+                                              "]['name'] === '%@'",
+                                             i, formName]];
     [verifying_javascripts
         addObject:[NSString stringWithFormat:@"forms[%" PRIuNS
                                               "]['method'] === 'post'",
