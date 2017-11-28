@@ -86,16 +86,17 @@ void RealtimeAnalyser::WriteInput(AudioBus* bus, size_t frames_to_process) {
   if (!is_bus_good)
     return;
 
+  unsigned write_index = GetWriteIndex();
   // FIXME : allow to work with non-FFTSize divisible chunking
   bool is_destination_good =
-      write_index_ < input_buffer_.size() &&
-      write_index_ + frames_to_process <= input_buffer_.size();
+      write_index < input_buffer_.size() &&
+      write_index + frames_to_process <= input_buffer_.size();
   DCHECK(is_destination_good);
   if (!is_destination_good)
     return;
 
   // Perform real-time analysis
-  float* dest = input_buffer_.Data() + write_index_;
+  float* dest = input_buffer_.Data() + write_index;
 
   // Clear the bus and downmix the input according to the down mixing rules.
   // Then save the result in the m_inputBuffer at the appropriate place.
@@ -104,9 +105,10 @@ void RealtimeAnalyser::WriteInput(AudioBus* bus, size_t frames_to_process) {
   memcpy(dest, down_mix_bus_->Channel(0)->Data(),
          frames_to_process * sizeof(*dest));
 
-  write_index_ += frames_to_process;
-  if (write_index_ >= kInputBufferSize)
-    write_index_ = 0;
+  write_index += frames_to_process;
+  if (write_index >= kInputBufferSize)
+    write_index = 0;
+  SetWriteIndex(write_index);
 }
 
 namespace {
@@ -143,7 +145,7 @@ void RealtimeAnalyser::DoFFTAnalysis() {
 
   // Take the previous fftSize values from the input buffer and copy into the
   // temporary buffer.
-  unsigned write_index = write_index_;
+  unsigned write_index = GetWriteIndex();
   if (write_index < fft_size) {
     memcpy(temp_p, input_buffer + write_index - fft_size + kInputBufferSize,
            sizeof(*temp_p) * (fft_size - write_index));
@@ -290,7 +292,7 @@ void RealtimeAnalyser::GetFloatTimeDomainData(
     float* input_buffer = input_buffer_.Data();
     float* destination = destination_array->Data();
 
-    unsigned write_index = write_index_;
+    unsigned write_index = GetWriteIndex();
 
     for (unsigned i = 0; i < len; ++i) {
       // Buffer access is protected due to modulo operation.
@@ -319,7 +321,7 @@ void RealtimeAnalyser::GetByteTimeDomainData(DOMUint8Array* destination_array) {
     float* input_buffer = input_buffer_.Data();
     unsigned char* destination = destination_array->Data();
 
-    unsigned write_index = write_index_;
+    unsigned write_index = GetWriteIndex();
 
     for (unsigned i = 0; i < len; ++i) {
       // Buffer access is protected due to modulo operation.
