@@ -110,7 +110,7 @@ class TitleView : public views::View, public views::ButtonListener {
     AddChildView(settings_button_);
   }
 
-  ~TitleView() override {}
+  ~TitleView() override = default;
 
  private:
   // views::ButtonListener:

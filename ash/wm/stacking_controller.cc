@@ -12,9 +12,9 @@ namespace ash {
 ////////////////////////////////////////////////////////////////////////////////
 // StackingController, public:
 
-StackingController::StackingController() {}
+StackingController::StackingController() = default;
 
-StackingController::~StackingController() {}
+StackingController::~StackingController() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
 // StackingController, aura::client::WindowParentingClient implementation:

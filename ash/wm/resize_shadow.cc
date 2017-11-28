@@ -36,7 +36,7 @@ class ResizeShadowImageSource : public gfx::CanvasImageSource {
       : gfx::CanvasImageSource(gfx::Size(kImageSide, kImageSide),
                                false /* is opaque */) {}
 
-  ~ResizeShadowImageSource() override {}
+  ~ResizeShadowImageSource() override = default;
 
   // gfx::CanvasImageSource:
   void Draw(gfx::Canvas* canvas) override {

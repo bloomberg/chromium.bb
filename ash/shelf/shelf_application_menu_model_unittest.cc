@@ -30,7 +30,7 @@ class ShelfApplicationMenuModelTestAPI {
   // Creates a test api to access the internals of the |menu|.
   explicit ShelfApplicationMenuModelTestAPI(ShelfApplicationMenuModel* menu)
       : menu_(menu) {}
-  ~ShelfApplicationMenuModelTestAPI() {}
+  ~ShelfApplicationMenuModelTestAPI() = default;
 
   // Give public access to this metrics recording functions.
   void RecordMenuItemSelectedMetrics(int command_id,

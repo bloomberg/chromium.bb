@@ -88,7 +88,7 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
     layer()->SetVisible(true);
     layer()->set_delegate(this);
   }
-  ~ScreenshotLayer() override {}
+  ~ScreenshotLayer() override = default;
 
   const gfx::Rect& region() const { return region_; }
 

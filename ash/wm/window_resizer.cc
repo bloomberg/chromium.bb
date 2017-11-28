@@ -48,7 +48,7 @@ WindowResizer::WindowResizer(wm::WindowState* window_state)
   DCHECK(window_state_->drag_details());
 }
 
-WindowResizer::~WindowResizer() {}
+WindowResizer::~WindowResizer() = default;
 
 // static
 int WindowResizer::GetBoundsChangeForWindowComponent(int component) {

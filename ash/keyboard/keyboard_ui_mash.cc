@@ -17,7 +17,7 @@ KeyboardUIMash::KeyboardUIMash(service_manager::Connector* connector)
   // http://crbug.com/683289.
 }
 
-KeyboardUIMash::~KeyboardUIMash() {}
+KeyboardUIMash::~KeyboardUIMash() = default;
 
 // static
 std::unique_ptr<KeyboardUI> KeyboardUIMash::Create(

@@ -38,7 +38,7 @@ ShellPortMash::ShellPortMash(
   DCHECK_EQ(Config::MASH, GetAshConfig());
 }
 
-ShellPortMash::~ShellPortMash() {}
+ShellPortMash::~ShellPortMash() = default;
 
 // static
 ShellPortMash* ShellPortMash::Get() {

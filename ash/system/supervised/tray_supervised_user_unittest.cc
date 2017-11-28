@@ -28,8 +28,8 @@ namespace ash {
 // Tests handle creating their own sessions.
 class TraySupervisedUserTest : public NoSessionAshTestBase {
  public:
-  TraySupervisedUserTest() {}
-  ~TraySupervisedUserTest() override {}
+  TraySupervisedUserTest() = default;
+  ~TraySupervisedUserTest() override = default;
 
  protected:
   message_center::Notification* GetPopup();

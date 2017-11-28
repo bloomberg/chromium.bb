@@ -21,7 +21,7 @@ WindowWatcherShelfItemDelegate::WindowWatcherShelfItemDelegate(
   DCHECK(watcher_);
 }
 
-WindowWatcherShelfItemDelegate::~WindowWatcherShelfItemDelegate() {}
+WindowWatcherShelfItemDelegate::~WindowWatcherShelfItemDelegate() = default;
 
 void WindowWatcherShelfItemDelegate::ItemSelected(
     std::unique_ptr<ui::Event> event,

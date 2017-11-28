@@ -27,8 +27,8 @@ namespace ash {
 
 class CursorWindowControllerTest : public AshTestBase {
  public:
-  CursorWindowControllerTest() {}
-  ~CursorWindowControllerTest() override {}
+  CursorWindowControllerTest() = default;
+  ~CursorWindowControllerTest() override = default;
 
   // AshTestBase:
   void SetUp() override {

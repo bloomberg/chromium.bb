@@ -40,8 +40,8 @@ struct WarpGroup {
 
 class UnifiedMouseWarpControllerTest : public AshTestBase {
  public:
-  UnifiedMouseWarpControllerTest() {}
-  ~UnifiedMouseWarpControllerTest() override {}
+  UnifiedMouseWarpControllerTest() = default;
+  ~UnifiedMouseWarpControllerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

@@ -193,7 +193,7 @@ DragWindowController::DragWindowController(aura::Window* window)
   }
 }
 
-DragWindowController::~DragWindowController() {}
+DragWindowController::~DragWindowController() = default;
 
 void DragWindowController::Update(const gfx::Rect& bounds_in_screen,
                                   const gfx::Point& drag_location_in_screen) {

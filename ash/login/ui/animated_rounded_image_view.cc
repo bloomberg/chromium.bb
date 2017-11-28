@@ -16,7 +16,7 @@ AnimatedRoundedImageView::AnimatedRoundedImageView(const gfx::Size& size,
                                                    int corner_radius)
     : image_size_(size), corner_radius_(corner_radius) {}
 
-AnimatedRoundedImageView::~AnimatedRoundedImageView() {}
+AnimatedRoundedImageView::~AnimatedRoundedImageView() = default;
 
 void AnimatedRoundedImageView::SetAnimation(const AnimationFrames& animation) {
   frames_.clear();

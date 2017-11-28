@@ -21,7 +21,7 @@ const float OverviewGestureHandler::horizontal_threshold_pixels_ = 330;
 
 OverviewGestureHandler::OverviewGestureHandler() : scroll_x_(0), scroll_y_(0) {}
 
-OverviewGestureHandler::~OverviewGestureHandler() {}
+OverviewGestureHandler::~OverviewGestureHandler() = default;
 
 bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
   if (event.type() == ui::ET_SCROLL_FLING_START ||

@@ -29,8 +29,8 @@ namespace {
 // Base class for all metalayer ash tests.
 class MetalayerToolTest : public AshTestBase {
  public:
-  MetalayerToolTest() {}
-  ~MetalayerToolTest() override {}
+  MetalayerToolTest() = default;
+  ~MetalayerToolTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

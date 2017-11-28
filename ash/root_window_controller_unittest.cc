@@ -51,7 +51,7 @@ namespace {
 class TestDelegate : public views::WidgetDelegateView {
  public:
   explicit TestDelegate(bool system_modal) : system_modal_(system_modal) {}
-  ~TestDelegate() override {}
+  ~TestDelegate() override = default;
 
   // Overridden from views::WidgetDelegate:
   ui::ModalType GetModalType() const override {
@@ -68,7 +68,7 @@ class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate,
                              public aura::client::FocusChangeObserver {
  public:
   DeleteOnBlurDelegate() : window_(NULL) {}
-  ~DeleteOnBlurDelegate() override {}
+  ~DeleteOnBlurDelegate() override = default;
 
   void SetWindow(aura::Window* window) {
     window_ = window;
@@ -641,8 +641,8 @@ TEST_F(RootWindowControllerTest, DontDeleteWindowsNotOwnedByParent) {
 class VirtualKeyboardRootWindowControllerTest
     : public RootWindowControllerTest {
  public:
-  VirtualKeyboardRootWindowControllerTest() {}
-  ~VirtualKeyboardRootWindowControllerTest() override {}
+  VirtualKeyboardRootWindowControllerTest() = default;
+  ~VirtualKeyboardRootWindowControllerTest() override = default;
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -679,7 +679,7 @@ class MockTextInputClient : public ui::DummyTextInputClient {
 
 class TargetHitTestEventHandler : public ui::test::TestEventHandler {
  public:
-  TargetHitTestEventHandler() {}
+  TargetHitTestEventHandler() = default;
 
   // ui::test::TestEventHandler overrides.
   void OnMouseEvent(ui::MouseEvent* event) override {

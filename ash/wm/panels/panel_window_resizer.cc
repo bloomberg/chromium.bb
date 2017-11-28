@@ -27,7 +27,7 @@ const int kPanelSnapToLauncherDistance = 30;
 
 }  // namespace
 
-PanelWindowResizer::~PanelWindowResizer() {}
+PanelWindowResizer::~PanelWindowResizer() = default;
 
 // static
 PanelWindowResizer* PanelWindowResizer::Create(

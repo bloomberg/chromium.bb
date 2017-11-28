@@ -179,7 +179,7 @@ WindowTreeHostManager::WindowTreeHostManager()
   primary_display_id = display::kInvalidDisplayId;
 }
 
-WindowTreeHostManager::~WindowTreeHostManager() {}
+WindowTreeHostManager::~WindowTreeHostManager() = default;
 
 void WindowTreeHostManager::Start() {
   display::Screen::GetScreen()->AddObserver(this);

@@ -49,7 +49,7 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
   // horizontally symmetrical.
 }
 
-FrameCaptionButton::~FrameCaptionButton() {}
+FrameCaptionButton::~FrameCaptionButton() = default;
 
 void FrameCaptionButton::SetImage(CaptionButtonIcon icon,
                                   Animate animate,

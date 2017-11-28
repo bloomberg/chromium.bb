@@ -110,7 +110,7 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
   opaque_background_.SetBounds(GetLocalBounds());
 }
 
-ShelfWidget::DelegateView::~DelegateView() {}
+ShelfWidget::DelegateView::~DelegateView() = default;
 
 // static
 bool ShelfWidget::IsUsingMdLoginShelf() {

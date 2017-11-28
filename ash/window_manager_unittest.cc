@@ -41,8 +41,8 @@ namespace ash {
 
 class WindowTreeClientDelegate : public aura::WindowTreeClientDelegate {
  public:
-  WindowTreeClientDelegate() {}
-  ~WindowTreeClientDelegate() override {}
+  WindowTreeClientDelegate() = default;
+  ~WindowTreeClientDelegate() override = default;
 
   void WaitForEmbed() { run_loop_.Run(); }
 
@@ -76,7 +76,7 @@ class WindowManagerServiceTest : public service_manager::test::ServiceTest {
  public:
   WindowManagerServiceTest()
       : service_manager::test::ServiceTest("mash_unittests") {}
-  ~WindowManagerServiceTest() override {}
+  ~WindowManagerServiceTest() override = default;
 
   void TearDown() override {
     // Unset the screen installed by the test.

@@ -41,7 +41,7 @@ gfx::ImageSkia CreateImageSkiaIcon(SkColor color) {
 class ShelfWindowWatcherTest : public AshTestBase {
  public:
   ShelfWindowWatcherTest() : model_(nullptr) {}
-  ~ShelfWindowWatcherTest() override {}
+  ~ShelfWindowWatcherTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

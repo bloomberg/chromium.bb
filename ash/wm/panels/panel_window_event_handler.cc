@@ -14,9 +14,9 @@
 
 namespace ash {
 
-PanelWindowEventHandler::PanelWindowEventHandler() {}
+PanelWindowEventHandler::PanelWindowEventHandler() = default;
 
-PanelWindowEventHandler::~PanelWindowEventHandler() {}
+PanelWindowEventHandler::~PanelWindowEventHandler() = default;
 
 void PanelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());

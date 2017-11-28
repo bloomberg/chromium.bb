@@ -18,7 +18,7 @@ TermBreakIterator::TermBreakIterator(const base::string16& word)
       iter_(new base::i18n::UTF16CharIterator(&word)),
       state_(STATE_START) {}
 
-TermBreakIterator::~TermBreakIterator() {}
+TermBreakIterator::~TermBreakIterator() = default;
 
 bool TermBreakIterator::Advance() {
   // 2D matrix that defines term boundaries. Each row represents current state.

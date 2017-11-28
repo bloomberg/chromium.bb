@@ -509,7 +509,7 @@ void ShelfLayoutManager::SetChromeVoxPanelHeight(int height) {
 ShelfLayoutManager::TargetBounds::TargetBounds()
     : opacity(0.0f), status_opacity(0.0f) {}
 
-ShelfLayoutManager::TargetBounds::~TargetBounds() {}
+ShelfLayoutManager::TargetBounds::~TargetBounds() = default;
 
 void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   State state;

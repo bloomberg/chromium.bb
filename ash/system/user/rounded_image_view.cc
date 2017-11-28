@@ -18,7 +18,7 @@ RoundedImageView::RoundedImageView(int corner_radius) {
     corner_radius_[i] = corner_radius;
 }
 
-RoundedImageView::~RoundedImageView() {}
+RoundedImageView::~RoundedImageView() = default;
 
 void RoundedImageView::SetImage(const gfx::ImageSkia& image,
                                 const gfx::Size& size) {

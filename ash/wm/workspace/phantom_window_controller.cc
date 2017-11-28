@@ -44,7 +44,7 @@ constexpr int kMinHeightWithShadow = 4 * static_cast<int>(kShadowElevation);
 PhantomWindowController::PhantomWindowController(aura::Window* window)
     : window_(window) {}
 
-PhantomWindowController::~PhantomWindowController() {}
+PhantomWindowController::~PhantomWindowController() = default;
 
 void PhantomWindowController::Show(const gfx::Rect& bounds_in_screen) {
   if (bounds_in_screen == target_bounds_in_screen_)

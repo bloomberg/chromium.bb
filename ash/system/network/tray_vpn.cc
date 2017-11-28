@@ -145,7 +145,7 @@ TrayVPN::TrayVPN(SystemTray* system_tray)
   network_state_observer_.reset(new TrayNetworkStateObserver(this));
 }
 
-TrayVPN::~TrayVPN() {}
+TrayVPN::~TrayVPN() = default;
 
 views::View* TrayVPN::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == nullptr);

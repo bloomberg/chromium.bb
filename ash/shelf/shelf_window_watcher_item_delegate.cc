@@ -43,7 +43,7 @@ ShelfWindowWatcherItemDelegate::ShelfWindowWatcherItemDelegate(
   DCHECK(window_);
 }
 
-ShelfWindowWatcherItemDelegate::~ShelfWindowWatcherItemDelegate() {}
+ShelfWindowWatcherItemDelegate::~ShelfWindowWatcherItemDelegate() = default;
 
 void ShelfWindowWatcherItemDelegate::ItemSelected(
     std::unique_ptr<ui::Event> event,

@@ -39,7 +39,7 @@ class StatusAreaWidgetDelegateAnimationSettings
     SetTweenType(gfx::Tween::EASE_IN_OUT);
   }
 
-  ~StatusAreaWidgetDelegateAnimationSettings() override {}
+  ~StatusAreaWidgetDelegateAnimationSettings() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidgetDelegateAnimationSettings);
@@ -60,7 +60,7 @@ StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(Shelf* shelf)
   layer()->SetFillsBoundsOpaquely(false);
 }
 
-StatusAreaWidgetDelegate::~StatusAreaWidgetDelegate() {}
+StatusAreaWidgetDelegate::~StatusAreaWidgetDelegate() = default;
 
 void StatusAreaWidgetDelegate::SetFocusCyclerForTesting(
     const FocusCycler* focus_cycler) {

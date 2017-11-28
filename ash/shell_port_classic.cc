@@ -34,9 +34,9 @@
 
 namespace ash {
 
-ShellPortClassic::ShellPortClassic() {}
+ShellPortClassic::ShellPortClassic() = default;
 
-ShellPortClassic::~ShellPortClassic() {}
+ShellPortClassic::~ShellPortClassic() = default;
 
 // static
 ShellPortClassic* ShellPortClassic::Get() {

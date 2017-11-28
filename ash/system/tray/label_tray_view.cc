@@ -22,7 +22,7 @@ LabelTrayView::LabelTrayView(ViewClickListener* click_listener,
   SetVisible(false);
 }
 
-LabelTrayView::~LabelTrayView() {}
+LabelTrayView::~LabelTrayView() = default;
 
 void LabelTrayView::SetMessage(const base::string16& message) {
   if (message_ == message)

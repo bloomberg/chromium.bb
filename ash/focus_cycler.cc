@@ -26,7 +26,7 @@ bool HasFocusableWindow() {
 
 FocusCycler::FocusCycler() : widget_activating_(nullptr) {}
 
-FocusCycler::~FocusCycler() {}
+FocusCycler::~FocusCycler() = default;
 
 void FocusCycler::AddWidget(views::Widget* widget) {
   widgets_.push_back(widget);

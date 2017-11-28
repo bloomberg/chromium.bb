@@ -45,7 +45,7 @@ ButtonFromView::ButtonFromView(views::View* content,
   SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
 }
 
-ButtonFromView::~ButtonFromView() {}
+ButtonFromView::~ButtonFromView() = default;
 
 void ButtonFromView::OnMouseEntered(const ui::MouseEvent& event) {
   button_hovered_ = true;

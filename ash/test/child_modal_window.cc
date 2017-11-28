@@ -81,7 +81,7 @@ ChildModalWindow::ChildModalWindow() {
                        kChildTextfieldWidth, kChildTextfieldHeight);
 }
 
-ChildModalWindow::~ChildModalWindow() {}
+ChildModalWindow::~ChildModalWindow() = default;
 
 void ChildModalWindow::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(GetLocalBounds(), kChildColor);
@@ -123,7 +123,7 @@ ChildModalParent::ChildModalParent(aura::Window* context)
   AddChildView(host_);
 }
 
-ChildModalParent::~ChildModalParent() {}
+ChildModalParent::~ChildModalParent() = default;
 
 void ChildModalParent::ShowChild() {
   if (!child_)

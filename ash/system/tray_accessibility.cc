@@ -126,7 +126,7 @@ class DefaultAccessibilityView : public TrayItemMore {
     set_id(VIEW_ID_ACCESSIBILITY_TRAY_ITEM);
   }
 
-  ~DefaultAccessibilityView() override {}
+  ~DefaultAccessibilityView() override = default;
 
  protected:
   // TrayItemMore:

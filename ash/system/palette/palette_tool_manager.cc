@@ -18,7 +18,7 @@ PaletteToolManager::PaletteToolManager(Delegate* delegate)
   DCHECK(delegate_);
 }
 
-PaletteToolManager::~PaletteToolManager() {}
+PaletteToolManager::~PaletteToolManager() = default;
 
 bool PaletteToolManager::HasTool(PaletteToolId tool_id) {
   return FindToolById(tool_id);

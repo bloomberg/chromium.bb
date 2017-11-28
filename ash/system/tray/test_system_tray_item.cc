@@ -22,7 +22,7 @@ TestSystemTrayItem::TestSystemTrayItem(SystemTrayItem::UmaType uma_type)
       default_view_(nullptr),
       detailed_view_(nullptr) {}
 
-TestSystemTrayItem::~TestSystemTrayItem() {}
+TestSystemTrayItem::~TestSystemTrayItem() = default;
 
 views::View* TestSystemTrayItem::CreateTrayView(LoginStatus status) {
   if (!has_views_) {

@@ -21,7 +21,7 @@ CleanupAnimationObserver::CleanupAnimationObserver(
   widget_->GetNativeWindow()->set_owned_by_parent(false);
 }
 
-CleanupAnimationObserver::~CleanupAnimationObserver() {}
+CleanupAnimationObserver::~CleanupAnimationObserver() = default;
 
 void CleanupAnimationObserver::OnImplicitAnimationsCompleted() {
   // |widget_| may get reset if Shutdown() is called prior to this method.

@@ -21,7 +21,7 @@ const int32_t kMinimumDurationMs = 200;
 
 ToastManager::ToastManager() : weak_ptr_factory_(this) {}
 
-ToastManager::~ToastManager() {}
+ToastManager::~ToastManager() = default;
 
 void ToastManager::Show(const ToastData& data) {
   const std::string& id = data.id;

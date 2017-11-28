@@ -20,7 +20,7 @@ namespace {
 class MockMessageCenter : public message_center::FakeMessageCenter {
  public:
   MockMessageCenter() : add_count_(0), remove_count_(0), update_count_(0) {}
-  ~MockMessageCenter() override {}
+  ~MockMessageCenter() override = default;
 
   int add_count() const { return add_count_; }
   int remove_count() const { return remove_count_; }
@@ -70,8 +70,8 @@ namespace ash {
 
 class TrayPowerTest : public AshTestBase {
  public:
-  TrayPowerTest() {}
-  ~TrayPowerTest() override {}
+  TrayPowerTest() = default;
+  ~TrayPowerTest() override = default;
 
   MockMessageCenter* message_center() { return message_center_.get(); }
   TrayPower* tray_power() { return tray_power_.get(); }

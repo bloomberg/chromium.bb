@@ -31,7 +31,7 @@ views::BoxLayout::Orientation GetOrientation(TriView::Orientation orientation) {
 // A View that will perform a layout if a child view's preferred size changes.
 class RelayoutView : public views::View {
  public:
-  RelayoutView() {}
+  RelayoutView() = default;
 
   // views::View:
   void ChildPreferredSizeChanged(View* child) override { Layout(); }

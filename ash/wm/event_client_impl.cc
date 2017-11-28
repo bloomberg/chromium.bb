@@ -13,9 +13,9 @@
 
 namespace ash {
 
-EventClientImpl::EventClientImpl() {}
+EventClientImpl::EventClientImpl() = default;
 
-EventClientImpl::~EventClientImpl() {}
+EventClientImpl::~EventClientImpl() = default;
 
 bool EventClientImpl::CanProcessEventsWithinSubtree(
     const aura::Window* window) const {

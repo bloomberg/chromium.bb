@@ -33,7 +33,7 @@ class PaintMessageHandler : public WebUIMessageHandler,
                             public base::SupportsWeakPtr<PaintMessageHandler> {
  public:
   explicit PaintMessageHandler(views::Widget* widget) : widget_(widget) {}
-  ~PaintMessageHandler() override {}
+  ~PaintMessageHandler() override = default;
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
@@ -65,7 +65,7 @@ KeyboardOverlayDelegate::KeyboardOverlayDelegate(const base::string16& title,
                                                  const GURL& url)
     : title_(title), url_(url), widget_(NULL) {}
 
-KeyboardOverlayDelegate::~KeyboardOverlayDelegate() {}
+KeyboardOverlayDelegate::~KeyboardOverlayDelegate() = default;
 
 views::Widget* KeyboardOverlayDelegate::Show(views::WebDialogView* view) {
   widget_ = new views::Widget;

@@ -12,7 +12,7 @@ namespace ash {
 TrayTiles::TrayTiles(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_NOT_RECORDED), default_view_(nullptr) {}
 
-TrayTiles::~TrayTiles() {}
+TrayTiles::~TrayTiles() = default;
 
 views::View* TrayTiles::GetHelpButtonView() const {
   if (!default_view_)

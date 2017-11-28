@@ -34,7 +34,7 @@ TaskSwitchTimeTracker::TaskSwitchTimeTracker(
     std::unique_ptr<base::TickClock> tick_clock)
     : histogram_name_(histogram_name), tick_clock_(tick_clock.release()) {}
 
-TaskSwitchTimeTracker::~TaskSwitchTimeTracker() {}
+TaskSwitchTimeTracker::~TaskSwitchTimeTracker() = default;
 
 void TaskSwitchTimeTracker::OnTaskSwitch() {
   if (!HasLastActionTime())

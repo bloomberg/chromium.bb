@@ -83,9 +83,9 @@ class ScreenForShutdown : public display::Screen {
 
 }  // namespace
 
-ScreenAsh::ScreenAsh() {}
+ScreenAsh::ScreenAsh() = default;
 
-ScreenAsh::~ScreenAsh() {}
+ScreenAsh::~ScreenAsh() = default;
 
 gfx::Point ScreenAsh::GetCursorScreenPoint() {
   return aura::Env::GetInstance()->last_mouse_location();

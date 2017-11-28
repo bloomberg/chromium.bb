@@ -31,7 +31,7 @@ ClientControlledState::ClientControlledState(std::unique_ptr<Delegate> delegate)
     : BaseState(mojom::WindowStateType::DEFAULT),
       delegate_(std::move(delegate)) {}
 
-ClientControlledState::~ClientControlledState() {}
+ClientControlledState::~ClientControlledState() = default;
 
 void ClientControlledState::HandleTransitionEvents(WindowState* window_state,
                                                    const WMEvent* event) {

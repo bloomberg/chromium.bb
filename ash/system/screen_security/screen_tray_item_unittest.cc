@@ -38,7 +38,7 @@ void ClickViewCenter(views::View* view) {
 class ScreenTrayItemTest : public AshTestBase {
  public:
   ScreenTrayItemTest() : tray_item_(NULL), stop_callback_hit_count_(0) {}
-  ~ScreenTrayItemTest() override {}
+  ~ScreenTrayItemTest() override = default;
 
   ScreenTrayItem* tray_item() { return tray_item_; }
   void set_tray_item(ScreenTrayItem* tray_item) { tray_item_ = tray_item; }
@@ -63,8 +63,8 @@ class ScreenTrayItemTest : public AshTestBase {
 
 class ScreenCaptureTest : public ScreenTrayItemTest {
  public:
-  ScreenCaptureTest() {}
-  ~ScreenCaptureTest() override {}
+  ScreenCaptureTest() = default;
+  ~ScreenCaptureTest() override = default;
 
   void SetUp() override {
     ScreenTrayItemTest::SetUp();
@@ -81,8 +81,8 @@ class ScreenCaptureTest : public ScreenTrayItemTest {
 
 class ScreenShareTest : public ScreenTrayItemTest {
  public:
-  ScreenShareTest() {}
-  ~ScreenShareTest() override {}
+  ScreenShareTest() = default;
+  ~ScreenShareTest() override = default;
 
   void SetUp() override {
     ScreenTrayItemTest::SetUp();

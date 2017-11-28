@@ -77,7 +77,7 @@ void RunAnimationForWidget(views::Widget* widget) {
 class TaskObserver : public base::MessageLoop::TaskObserver {
  public:
   TaskObserver() : processed_(false) {}
-  ~TaskObserver() override {}
+  ~TaskObserver() override = default;
 
   // MessageLoop::TaskObserver overrides.
   void WillProcessTask(const base::PendingTask& pending_task) override {}
@@ -135,7 +135,7 @@ class WallpaperControllerTest : public AshTestBase {
  public:
   WallpaperControllerTest()
       : controller_(nullptr), wallpaper_delegate_(nullptr) {}
-  ~WallpaperControllerTest() override {}
+  ~WallpaperControllerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

@@ -20,8 +20,8 @@ namespace ash {
 
 class VirtualKeyboardAlwaysOnTopControllerTest : public AshTestBase {
  public:
-  VirtualKeyboardAlwaysOnTopControllerTest() {}
-  ~VirtualKeyboardAlwaysOnTopControllerTest() override {}
+  VirtualKeyboardAlwaysOnTopControllerTest() = default;
+  ~VirtualKeyboardAlwaysOnTopControllerTest() override = default;
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -38,7 +38,7 @@ class TestLayoutManager : public WorkspaceLayoutManager {
   explicit TestLayoutManager(aura::Window* window)
       : WorkspaceLayoutManager(window), keyboard_bounds_changed_(false) {}
 
-  ~TestLayoutManager() override {}
+  ~TestLayoutManager() override = default;
 
   void OnKeyboardBoundsChanging(const gfx::Rect& bounds) override {
     keyboard_bounds_changed_ = true;

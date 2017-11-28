@@ -17,7 +17,7 @@ LaserPointerMode::LaserPointerMode(Delegate* delegate)
     : CommonPaletteTool(delegate) {
 }
 
-LaserPointerMode::~LaserPointerMode() {}
+LaserPointerMode::~LaserPointerMode() = default;
 
 PaletteGroup LaserPointerMode::GetGroup() const {
   return PaletteGroup::MODE;

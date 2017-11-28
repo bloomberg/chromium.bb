@@ -35,7 +35,7 @@ PanelWindow::PanelWindow(const std::string& name)
   params_.delegate = this;
 }
 
-PanelWindow::~PanelWindow() {}
+PanelWindow::~PanelWindow() = default;
 
 views::Widget* PanelWindow::CreateWidget() {
   views::Widget* widget = new views::Widget;

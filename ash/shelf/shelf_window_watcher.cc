@@ -91,7 +91,8 @@ ShelfWindowWatcher::ContainerWindowObserver::ContainerWindowObserver(
     ShelfWindowWatcher* window_watcher)
     : window_watcher_(window_watcher) {}
 
-ShelfWindowWatcher::ContainerWindowObserver::~ContainerWindowObserver() {}
+ShelfWindowWatcher::ContainerWindowObserver::~ContainerWindowObserver() =
+    default;
 
 void ShelfWindowWatcher::ContainerWindowObserver::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
@@ -114,7 +115,7 @@ ShelfWindowWatcher::UserWindowObserver::UserWindowObserver(
     ShelfWindowWatcher* window_watcher)
     : window_watcher_(window_watcher) {}
 
-ShelfWindowWatcher::UserWindowObserver::~UserWindowObserver() {}
+ShelfWindowWatcher::UserWindowObserver::~UserWindowObserver() = default;
 
 void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
     aura::Window* window,

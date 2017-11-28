@@ -15,7 +15,7 @@ WallpaperControllerTestApi::WallpaperControllerTestApi(
     WallpaperController* controller)
     : controller_(controller) {}
 
-WallpaperControllerTestApi::~WallpaperControllerTestApi() {}
+WallpaperControllerTestApi::~WallpaperControllerTestApi() = default;
 
 SkColor WallpaperControllerTestApi::ApplyColorProducingWallpaper() {
   const SkColor color = SkColorSetRGB(60, 40, 40);

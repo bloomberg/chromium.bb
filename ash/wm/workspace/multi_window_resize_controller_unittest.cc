@@ -29,8 +29,8 @@ namespace {
 // which is actually used in Ash.
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
-  TestWidgetDelegate() {}
-  ~TestWidgetDelegate() override {}
+  TestWidgetDelegate() = default;
+  ~TestWidgetDelegate() override = default;
 
   // views::WidgetDelegateView:
   bool CanResize() const override { return true; }
@@ -49,7 +49,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 class MultiWindowResizeControllerTest : public AshTestBase {
  public:
   MultiWindowResizeControllerTest() : resize_controller_(NULL) {}
-  ~MultiWindowResizeControllerTest() override {}
+  ~MultiWindowResizeControllerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

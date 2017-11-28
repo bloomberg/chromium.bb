@@ -190,7 +190,7 @@ class PrefixMatcher {
 
 TokenizedStringMatch::TokenizedStringMatch() : relevance_(kNoMatchScore) {}
 
-TokenizedStringMatch::~TokenizedStringMatch() {}
+TokenizedStringMatch::~TokenizedStringMatch() = default;
 
 bool TokenizedStringMatch::Calculate(const TokenizedString& query,
                                      const TokenizedString& text) {

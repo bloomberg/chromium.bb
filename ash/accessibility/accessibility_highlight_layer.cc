@@ -29,7 +29,7 @@ AccessibilityHighlightLayer::AccessibilityHighlightLayer(
     AccessibilityLayerDelegate* delegate)
     : AccessibilityLayer(delegate) {}
 
-AccessibilityHighlightLayer::~AccessibilityHighlightLayer() {}
+AccessibilityHighlightLayer::~AccessibilityHighlightLayer() = default;
 
 void AccessibilityHighlightLayer::Set(const std::vector<gfx::Rect>& rects,
                                       SkColor color) {

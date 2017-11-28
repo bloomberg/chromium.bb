@@ -110,7 +110,7 @@ class TrayBackground : public views::Background {
       : tray_background_view_(tray_background_view),
         color_(SK_ColorTRANSPARENT) {}
 
-  ~TrayBackground() override {}
+  ~TrayBackground() override = default;
 
   void set_color(SkColor color) { color_ = color; }
 
@@ -143,7 +143,7 @@ class CloseBubbleObserver : public ui::ImplicitAnimationObserver {
   explicit CloseBubbleObserver(TrayBackgroundView* tray_background_view)
       : tray_background_view_(tray_background_view) {}
 
-  ~CloseBubbleObserver() override {}
+  ~CloseBubbleObserver() override = default;
 
   void OnImplicitAnimationsCompleted() override {
     tray_background_view_->CloseBubble();

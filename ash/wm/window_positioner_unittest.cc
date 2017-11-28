@@ -101,7 +101,7 @@ namespace {
 class OutOfDisplayDelegate : public views::WidgetDelegate {
  public:
   explicit OutOfDisplayDelegate(views::Widget* widget) : widget_(widget) {}
-  ~OutOfDisplayDelegate() override {}
+  ~OutOfDisplayDelegate() override = default;
 
   // Overridden from WidgetDelegate:
   void DeleteDelegate() override { delete this; }

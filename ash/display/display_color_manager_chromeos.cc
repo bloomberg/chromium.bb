@@ -280,8 +280,8 @@ void DisplayColorManager::UpdateCalibrationData(
   }
 }
 
-DisplayColorManager::ColorCalibrationData::ColorCalibrationData() {}
+DisplayColorManager::ColorCalibrationData::ColorCalibrationData() = default;
 
-DisplayColorManager::ColorCalibrationData::~ColorCalibrationData() {}
+DisplayColorManager::ColorCalibrationData::~ColorCalibrationData() = default;
 
 }  // namespace ash

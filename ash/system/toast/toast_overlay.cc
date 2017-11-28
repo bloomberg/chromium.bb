@@ -79,7 +79,7 @@ ToastOverlayLabel::ToastOverlayLabel(const base::string16& label)
                                      verticalSpacing, kToastHorizontalSpacing));
 }
 
-ToastOverlayLabel::~ToastOverlayLabel() {}
+ToastOverlayLabel::~ToastOverlayLabel() = default;
 
 }  // namespace
 
@@ -89,7 +89,7 @@ class ToastOverlayButton : public views::LabelButton {
  public:
   explicit ToastOverlayButton(views::ButtonListener* listener,
                               const base::string16& label);
-  ~ToastOverlayButton() override {}
+  ~ToastOverlayButton() override = default;
 
  private:
   friend class ToastOverlay;  // for ToastOverlay::ClickDismissButtonForTesting.
@@ -169,7 +169,7 @@ ToastOverlayView::ToastOverlayView(
   }
 }
 
-ToastOverlayView::~ToastOverlayView() {}
+ToastOverlayView::~ToastOverlayView() = default;
 
 void ToastOverlayView::OnPaint(gfx::Canvas* canvas) {
   cc::PaintFlags flags;

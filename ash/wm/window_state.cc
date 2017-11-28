@@ -44,8 +44,8 @@ namespace {
 // manager with proper friendship.
 class BoundsSetter : public aura::LayoutManager {
  public:
-  BoundsSetter() {}
-  ~BoundsSetter() override {}
+  BoundsSetter() = default;
+  ~BoundsSetter() override = default;
 
   // aura::LayoutManager overrides:
   void OnWindowResized() override {}

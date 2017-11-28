@@ -263,7 +263,7 @@ CustomFrameViewAsh::OverlayView::OverlayView(HeaderView* header_view)
       std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
-CustomFrameViewAsh::OverlayView::~OverlayView() {}
+CustomFrameViewAsh::OverlayView::~OverlayView() = default;
 
 void CustomFrameViewAsh::OverlayView::SetHeaderHeight(
     base::Optional<int> height) {
@@ -342,7 +342,7 @@ CustomFrameViewAsh::CustomFrameViewAsh(
   }
 }
 
-CustomFrameViewAsh::~CustomFrameViewAsh() {}
+CustomFrameViewAsh::~CustomFrameViewAsh() = default;
 
 void CustomFrameViewAsh::InitImmersiveFullscreenControllerForView(
     ImmersiveFullscreenController* immersive_fullscreen_controller) {

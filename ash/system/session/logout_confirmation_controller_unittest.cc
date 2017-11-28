@@ -48,7 +48,7 @@ LogoutConfirmationControllerTest::LogoutConfirmationControllerTest()
       &LogoutConfirmationControllerTest::LogOut, base::Unretained(this)));
 }
 
-LogoutConfirmationControllerTest::~LogoutConfirmationControllerTest() {}
+LogoutConfirmationControllerTest::~LogoutConfirmationControllerTest() = default;
 
 void LogoutConfirmationControllerTest::LogOut() {
   log_out_called_ = true;

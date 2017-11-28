@@ -19,7 +19,7 @@ class PartialMagnificationControllerTestApi {
   explicit PartialMagnificationControllerTestApi(
       PartialMagnificationController* controller)
       : controller_(controller) {}
-  ~PartialMagnificationControllerTestApi() {}
+  ~PartialMagnificationControllerTestApi() = default;
 
   bool is_enabled() const { return controller_->is_enabled_; }
   bool is_active() const { return controller_->is_active_; }
@@ -37,8 +37,8 @@ class PartialMagnificationControllerTestApi {
 
 class PartialMagnificationControllerTest : public AshTestBase {
  public:
-  PartialMagnificationControllerTest() {}
-  ~PartialMagnificationControllerTest() override {}
+  PartialMagnificationControllerTest() = default;
+  ~PartialMagnificationControllerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

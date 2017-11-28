@@ -27,7 +27,7 @@ namespace ash {
 // Implementation that just records video state changes.
 class TestObserver : public VideoDetector::Observer {
  public:
-  TestObserver() {}
+  TestObserver() = default;
 
   bool empty() const { return states_.empty(); }
   void reset() { states_.clear(); }
@@ -55,7 +55,7 @@ class TestObserver : public VideoDetector::Observer {
 class VideoDetectorTest : public AshTestBase {
  public:
   VideoDetectorTest() : next_window_id_(1000) {}
-  ~VideoDetectorTest() override {}
+  ~VideoDetectorTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

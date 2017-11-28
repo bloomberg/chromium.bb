@@ -41,7 +41,7 @@ class TestSessionStateAnimator::AnimationSequence
         sequence_aborted_(false),
         animator_(animator) {}
 
-  ~AnimationSequence() override {}
+  ~AnimationSequence() override = default;
 
   virtual void SequenceAttached() { ++sequence_count_; }
 
@@ -97,7 +97,7 @@ TestSessionStateAnimator::ActiveAnimation::ActiveAnimation(
 TestSessionStateAnimator::ActiveAnimation::ActiveAnimation(
     const ActiveAnimation& other) = default;
 
-TestSessionStateAnimator::ActiveAnimation::~ActiveAnimation() {}
+TestSessionStateAnimator::ActiveAnimation::~ActiveAnimation() = default;
 
 TestSessionStateAnimator::TestSessionStateAnimator()
     : last_animation_epoch_(0), is_wallpaper_hidden_(false) {}

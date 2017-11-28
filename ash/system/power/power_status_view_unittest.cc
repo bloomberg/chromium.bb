@@ -18,8 +18,8 @@ namespace ash {
 
 class PowerStatusViewTest : public AshTestBase {
  public:
-  PowerStatusViewTest() {}
-  ~PowerStatusViewTest() override {}
+  PowerStatusViewTest() = default;
+  ~PowerStatusViewTest() override = default;
 
   // Overridden from testing::Test:
   void SetUp() override {

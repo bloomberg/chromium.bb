@@ -22,13 +22,13 @@ namespace ash {
 class DummyEvent : public ui::Event {
  public:
   DummyEvent() : Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
-  ~DummyEvent() override {}
+  ~DummyEvent() override = default;
 };
 
 class ToastManagerTest : public AshTestBase {
  public:
-  ToastManagerTest() {}
-  ~ToastManagerTest() override {}
+  ToastManagerTest() = default;
+  ~ToastManagerTest() override = default;
 
  private:
   void SetUp() override {

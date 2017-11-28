@@ -23,7 +23,7 @@ class TestClickEvent : public ui::Event {
 
 class TestDelegate : public TrayInfoLabel::Delegate {
  public:
-  TestDelegate() {}
+  TestDelegate() = default;
 
   const std::vector<int>& clicked_message_ids() { return clicked_message_ids_; }
 

@@ -8,8 +8,8 @@
 
 namespace ash {
 
-TestShellContentState::TestShellContentState() {}
-TestShellContentState::~TestShellContentState() {}
+TestShellContentState::TestShellContentState() = default;
+TestShellContentState::~TestShellContentState() = default;
 
 content::BrowserContext* TestShellContentState::GetActiveBrowserContext() {
   active_browser_context_.reset(new content::TestBrowserContext());

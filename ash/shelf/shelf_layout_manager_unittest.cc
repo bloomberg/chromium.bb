@@ -142,7 +142,7 @@ class ShelfDragCallback {
               shelf_widget_bounds_.bottom());
   }
 
-  virtual ~ShelfDragCallback() {}
+  virtual ~ShelfDragCallback() = default;
 
   void ProcessScroll(ui::EventType type, const gfx::Vector2dF& delta) {
     if (GetShelfLayoutManager()->visibility_state() == SHELF_HIDDEN)
@@ -228,7 +228,7 @@ class ShelfLayoutObserverTest : public ShelfLayoutManagerObserver {
  public:
   ShelfLayoutObserverTest() : changed_auto_hide_state_(false) {}
 
-  ~ShelfLayoutObserverTest() override {}
+  ~ShelfLayoutObserverTest() override = default;
 
   bool changed_auto_hide_state() const { return changed_auto_hide_state_; }
 
@@ -247,7 +247,7 @@ class ShelfLayoutObserverTest : public ShelfLayoutManagerObserver {
 
 class ShelfLayoutManagerTest : public AshTestBase {
  public:
-  ShelfLayoutManagerTest() {}
+  ShelfLayoutManagerTest() = default;
 
   // Calls the private SetState() function.
   void SetState(ShelfLayoutManager* layout_manager,
@@ -2086,8 +2086,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {
  public:
-  ShelfLayoutManagerKeyboardTest() {}
-  ~ShelfLayoutManagerKeyboardTest() override {}
+  ShelfLayoutManagerKeyboardTest() = default;
+  ~ShelfLayoutManagerKeyboardTest() override = default;
 
   // AshTestBase:
   void SetUp() override {

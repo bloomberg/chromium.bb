@@ -41,7 +41,7 @@ TrayPopupItemStyle::TrayPopupItemStyle(FontStyle font_style)
     color_style_ = ColorStyle::INACTIVE;
 }
 
-TrayPopupItemStyle::~TrayPopupItemStyle() {}
+TrayPopupItemStyle::~TrayPopupItemStyle() = default;
 
 SkColor TrayPopupItemStyle::GetTextColor() const {
   const SkColor kBaseTextColor = SkColorSetA(SK_ColorBLACK, 0xDE);

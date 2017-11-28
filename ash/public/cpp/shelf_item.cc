@@ -6,8 +6,8 @@
 
 namespace ash {
 
-ShelfItem::ShelfItem() {}
+ShelfItem::ShelfItem() = default;
 ShelfItem::ShelfItem(const ShelfItem& shelf_item) = default;
-ShelfItem::~ShelfItem() {}
+ShelfItem::~ShelfItem() = default;
 
 }  // namespace ash

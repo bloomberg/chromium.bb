@@ -38,7 +38,7 @@ OverviewWindowDragController::OverviewWindowDragController(
     : window_selector_(window_selector),
       split_view_controller_(Shell::Get()->split_view_controller()) {}
 
-OverviewWindowDragController::~OverviewWindowDragController() {}
+OverviewWindowDragController::~OverviewWindowDragController() = default;
 
 void OverviewWindowDragController::InitiateDrag(
     WindowSelectorItem* item,

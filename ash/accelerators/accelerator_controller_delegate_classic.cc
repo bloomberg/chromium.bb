@@ -81,9 +81,11 @@ void HandleTouchHudModeChange() {
 
 }  // namespace
 
-AcceleratorControllerDelegateClassic::AcceleratorControllerDelegateClassic() {}
+AcceleratorControllerDelegateClassic::AcceleratorControllerDelegateClassic() =
+    default;
 
-AcceleratorControllerDelegateClassic::~AcceleratorControllerDelegateClassic() {}
+AcceleratorControllerDelegateClassic::~AcceleratorControllerDelegateClassic() =
+    default;
 
 bool AcceleratorControllerDelegateClassic::HandlesAction(
     AcceleratorAction action) {

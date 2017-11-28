@@ -50,7 +50,7 @@ device::BluetoothAdapter* GetBluetoothAdapter() {
 class BluetoothPowerControllerTest : public NoSessionAshTestBase {
  public:
   BluetoothPowerControllerTest() { disable_provide_local_state(); }
-  ~BluetoothPowerControllerTest() override {}
+  ~BluetoothPowerControllerTest() override = default;
 
   void SetUp() override {
     NoSessionAshTestBase::SetUp();

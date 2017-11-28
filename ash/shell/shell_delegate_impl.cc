@@ -26,9 +26,9 @@
 namespace ash {
 namespace shell {
 
-ShellDelegateImpl::ShellDelegateImpl() {}
+ShellDelegateImpl::ShellDelegateImpl() = default;
 
-ShellDelegateImpl::~ShellDelegateImpl() {}
+ShellDelegateImpl::~ShellDelegateImpl() = default;
 
 ::service_manager::Connector* ShellDelegateImpl::GetShellConnector() const {
   return nullptr;

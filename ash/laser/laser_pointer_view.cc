@@ -169,7 +169,7 @@ LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
           base::Bind(&LaserPointerView::UpdateTime, base::Unretained(this)),
           true /* is_repeating */)) {}
 
-LaserPointerView::~LaserPointerView() {}
+LaserPointerView::~LaserPointerView() = default;
 
 void LaserPointerView::AddNewPoint(const gfx::PointF& new_point,
                                    const base::TimeTicks& new_time) {

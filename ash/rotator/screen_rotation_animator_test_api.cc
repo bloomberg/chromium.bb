@@ -14,7 +14,7 @@ ScreenRotationAnimatorTestApi::ScreenRotationAnimatorTestApi(
     ScreenRotationAnimator* animator)
     : ui::test::MultiLayerAnimatorTestController(this), animator_(animator) {}
 
-ScreenRotationAnimatorTestApi::~ScreenRotationAnimatorTestApi() {}
+ScreenRotationAnimatorTestApi::~ScreenRotationAnimatorTestApi() = default;
 
 void ScreenRotationAnimatorTestApi::DisableAnimationTimers() {
   animator_->set_disable_animation_timers_for_test(true);

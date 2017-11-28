@@ -46,7 +46,7 @@ class AlwaysOnTopWindowTargeter : public aura::WindowTargeter {
  public:
   explicit AlwaysOnTopWindowTargeter(aura::Window* divider_window)
       : divider_window_(divider_window) {}
-  ~AlwaysOnTopWindowTargeter() override {}
+  ~AlwaysOnTopWindowTargeter() override = default;
 
  private:
   bool GetHitTestRects(aura::Window* target,
@@ -75,7 +75,7 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
     SetEventTargeter(
         std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
   }
-  ~DividerView() override {}
+  ~DividerView() override = default;
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override {

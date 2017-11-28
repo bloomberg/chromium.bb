@@ -14,7 +14,7 @@ LaserPointerControllerTestApi::LaserPointerControllerTestApi(
     LaserPointerController* instance)
     : instance_(instance) {}
 
-LaserPointerControllerTestApi::~LaserPointerControllerTestApi() {}
+LaserPointerControllerTestApi::~LaserPointerControllerTestApi() = default;
 
 void LaserPointerControllerTestApi::SetEnabled(bool enabled) {
   instance_->SetEnabled(enabled);

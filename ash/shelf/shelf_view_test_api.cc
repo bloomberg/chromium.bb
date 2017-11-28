@@ -20,8 +20,8 @@ namespace {
 // A class used to wait for animations.
 class TestAPIAnimationObserver : public views::BoundsAnimatorObserver {
  public:
-  TestAPIAnimationObserver() {}
-  ~TestAPIAnimationObserver() override {}
+  TestAPIAnimationObserver() = default;
+  ~TestAPIAnimationObserver() override = default;
 
   // views::BoundsAnimatorObserver overrides:
   void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override {}
@@ -40,7 +40,7 @@ namespace ash {
 ShelfViewTestAPI::ShelfViewTestAPI(ShelfView* shelf_view)
     : shelf_view_(shelf_view) {}
 
-ShelfViewTestAPI::~ShelfViewTestAPI() {}
+ShelfViewTestAPI::~ShelfViewTestAPI() = default;
 
 int ShelfViewTestAPI::GetButtonCount() {
   return shelf_view_->view_model_->view_size();

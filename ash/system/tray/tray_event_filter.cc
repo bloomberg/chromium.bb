@@ -17,7 +17,7 @@
 
 namespace ash {
 
-TrayEventFilter::TrayEventFilter() {}
+TrayEventFilter::TrayEventFilter() = default;
 
 TrayEventFilter::~TrayEventFilter() {
   DCHECK(wrappers_.empty());

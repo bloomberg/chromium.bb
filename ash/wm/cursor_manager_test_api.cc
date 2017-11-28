@@ -16,7 +16,7 @@ namespace ash {
 CursorManagerTestApi::CursorManagerTestApi(::wm::CursorManager* cursor_manager)
     : cursor_manager_(cursor_manager) {}
 
-CursorManagerTestApi::~CursorManagerTestApi() {}
+CursorManagerTestApi::~CursorManagerTestApi() = default;
 
 // TODO(tdanderson): CursorManagerTestApi may no longer be needed.
 ui::CursorSize CursorManagerTestApi::GetCurrentCursorSize() const {

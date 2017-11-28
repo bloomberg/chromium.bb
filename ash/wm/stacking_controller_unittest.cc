@@ -18,8 +18,8 @@ namespace ash {
 
 class StackingControllerTest : public AshTestBase {
  public:
-  StackingControllerTest() {}
-  ~StackingControllerTest() override {}
+  StackingControllerTest() = default;
+  ~StackingControllerTest() override = default;
 
   aura::Window* CreateTestWindow() {
     aura::Window* window = new aura::Window(NULL);

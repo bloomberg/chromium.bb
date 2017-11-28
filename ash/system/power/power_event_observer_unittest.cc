@@ -24,8 +24,8 @@ namespace ash {
 
 class PowerEventObserverTest : public AshTestBase {
  public:
-  PowerEventObserverTest() {}
-  ~PowerEventObserverTest() override {}
+  PowerEventObserverTest() = default;
+  ~PowerEventObserverTest() override = default;
 
   // AshTestBase:
   void SetUp() override {

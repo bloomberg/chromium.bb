@@ -18,7 +18,7 @@ namespace ash {
 StatusAreaLayoutManager::StatusAreaLayoutManager(ShelfWidget* shelf_widget)
     : in_layout_(false), shelf_widget_(shelf_widget) {}
 
-StatusAreaLayoutManager::~StatusAreaLayoutManager() {}
+StatusAreaLayoutManager::~StatusAreaLayoutManager() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
 // StatusAreaLayoutManager, aura::LayoutManager implementation:

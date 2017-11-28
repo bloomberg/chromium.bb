@@ -72,7 +72,7 @@ MultiprofilesIntroDialog::MultiprofilesIntroDialog(OnAcceptCallback on_accept)
   never_show_again_checkbox_->SetChecked(true);
 }
 
-MultiprofilesIntroDialog::~MultiprofilesIntroDialog() {}
+MultiprofilesIntroDialog::~MultiprofilesIntroDialog() = default;
 
 void MultiprofilesIntroDialog::InitDialog() {
   SetBorder(

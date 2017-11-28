@@ -141,7 +141,7 @@ EntryView::EntryView(views::View* contents)
   AddChildView(contents);
 }
 
-EntryView::~EntryView() {}
+EntryView::~EntryView() = default;
 
 void EntryView::Layout() {
   DCHECK_EQ(1, child_count());
@@ -313,7 +313,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
   UpdateIconImage(notifier_ui_data.icon);
 }
 
-NotifierSettingsView::NotifierButton::~NotifierButton() {}
+NotifierSettingsView::NotifierButton::~NotifierButton() = default;
 
 void NotifierSettingsView::NotifierButton::UpdateIconImage(
     const gfx::ImageSkia& icon) {

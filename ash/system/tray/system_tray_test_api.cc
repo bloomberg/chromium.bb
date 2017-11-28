@@ -41,7 +41,7 @@ bool HasChildWithTooltip(views::View* view,
 
 SystemTrayTestApi::SystemTrayTestApi(SystemTray* tray) : tray_(tray) {}
 
-SystemTrayTestApi::~SystemTrayTestApi() {}
+SystemTrayTestApi::~SystemTrayTestApi() = default;
 
 // static
 void SystemTrayTestApi::BindRequest(mojom::SystemTrayTestApiRequest request) {

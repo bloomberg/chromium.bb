@@ -203,8 +203,8 @@ bool g_is_browser_process_with_mash = false;
 // so we can pick up our extended animations. See ash/wm/window_animations.h.
 class AshVisibilityController : public ::wm::VisibilityController {
  public:
-  AshVisibilityController() {}
-  ~AshVisibilityController() override {}
+  AshVisibilityController() = default;
+  ~AshVisibilityController() override = default;
 
  private:
   // Overridden from ::wm::VisibilityController:

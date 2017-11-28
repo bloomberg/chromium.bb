@@ -24,8 +24,8 @@ void MirrorOwnedProperty(aura::Window* window,
 
 namespace ash {
 
-MusPropertyMirrorAsh::MusPropertyMirrorAsh() {}
-MusPropertyMirrorAsh::~MusPropertyMirrorAsh() {}
+MusPropertyMirrorAsh::MusPropertyMirrorAsh() = default;
+MusPropertyMirrorAsh::~MusPropertyMirrorAsh() = default;
 
 void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
     aura::Window* window,

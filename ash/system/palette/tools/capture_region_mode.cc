@@ -25,7 +25,7 @@ const int kToastDurationMs = 2500;
 CaptureRegionMode::CaptureRegionMode(Delegate* delegate)
     : CommonPaletteTool(delegate), weak_factory_(this) {}
 
-CaptureRegionMode::~CaptureRegionMode() {}
+CaptureRegionMode::~CaptureRegionMode() = default;
 
 PaletteGroup CaptureRegionMode::GetGroup() const {
   return PaletteGroup::MODE;

@@ -47,7 +47,7 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container, Shelf* shelf)
   SetContentsView(status_area_widget_delegate_);
 }
 
-StatusAreaWidget::~StatusAreaWidget() {}
+StatusAreaWidget::~StatusAreaWidget() = default;
 
 void StatusAreaWidget::CreateTrayViews() {
   AddOverviewButtonTray();

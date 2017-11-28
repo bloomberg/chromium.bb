@@ -41,8 +41,8 @@ const int kRootHeight = 600;
 // A simple window delegate that returns the specified min size.
 class TestWindowDelegate : public aura::test::TestWindowDelegate {
  public:
-  TestWindowDelegate() {}
-  ~TestWindowDelegate() override {}
+  TestWindowDelegate() = default;
+  ~TestWindowDelegate() override = default;
 
   void set_min_size(const gfx::Size& size) { min_size_ = size; }
 
@@ -65,7 +65,7 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
 class WorkspaceWindowResizerTest : public AshTestBase {
  public:
   WorkspaceWindowResizerTest() : workspace_resizer_(nullptr) {}
-  ~WorkspaceWindowResizerTest() override {}
+  ~WorkspaceWindowResizerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

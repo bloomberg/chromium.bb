@@ -169,7 +169,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   SetBackArrowVisible(settings_initially_visible);
 }
 
-MessageCenterButtonBar::~MessageCenterButtonBar() {}
+MessageCenterButtonBar::~MessageCenterButtonBar() = default;
 
 void MessageCenterButtonBar::SetSettingsAndQuietModeButtonsEnabled(
     bool enabled) {

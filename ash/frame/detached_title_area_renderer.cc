@@ -87,7 +87,8 @@ DetachedTitleAreaRendererForInternal::DetachedTitleAreaRendererForInternal(
   ConfigureCommonWidgetProperties(widget_.get());
 }
 
-DetachedTitleAreaRendererForInternal::~DetachedTitleAreaRendererForInternal() {}
+DetachedTitleAreaRendererForInternal::~DetachedTitleAreaRendererForInternal() =
+    default;
 
 DetachedTitleAreaRendererForClient::DetachedTitleAreaRendererForClient(
     aura::Window* parent,
@@ -141,6 +142,7 @@ void DetachedTitleAreaRendererForClient::DeleteDelegate() {
   delete this;
 }
 
-DetachedTitleAreaRendererForClient::~DetachedTitleAreaRendererForClient() {}
+DetachedTitleAreaRendererForClient::~DetachedTitleAreaRendererForClient() =
+    default;
 
 }  // namespace ash

@@ -27,8 +27,8 @@ namespace ash {
 
 class TrayRotationLockTest : public AshTestBase {
  public:
-  TrayRotationLockTest() {}
-  ~TrayRotationLockTest() override {}
+  TrayRotationLockTest() = default;
+  ~TrayRotationLockTest() override = default;
 
   TrayRotationLock* tray() { return tray_.get(); }
 

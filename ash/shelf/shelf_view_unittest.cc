@@ -126,8 +126,8 @@ class TestShelfObserver : public ShelfObserver {
 
 class ShelfObserverIconTest : public AshTestBase {
  public:
-  ShelfObserverIconTest() {}
-  ~ShelfObserverIconTest() override {}
+  ShelfObserverIconTest() = default;
+  ~ShelfObserverIconTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
@@ -157,7 +157,7 @@ class ShelfObserverIconTest : public AshTestBase {
 class ShelfItemSelectionTracker : public ShelfItemDelegate {
  public:
   ShelfItemSelectionTracker() : ShelfItemDelegate(ShelfID()) {}
-  ~ShelfItemSelectionTracker() override {}
+  ~ShelfItemSelectionTracker() override = default;
 
   size_t item_selected_count() const { return item_selected_count_; }
   void set_item_selected_action(ShelfAction item_selected_action) {
@@ -251,8 +251,8 @@ class ShelfViewTest : public AshTestBase {
   static const char*
       kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName;
 
-  ShelfViewTest() {}
-  ~ShelfViewTest() override {}
+  ShelfViewTest() = default;
+  ~ShelfViewTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
@@ -670,7 +670,7 @@ class ShelfViewTextDirectionTest : public ShelfViewTest,
                                    public testing::WithParamInterface<bool> {
  public:
   ShelfViewTextDirectionTest() : scoped_locale_(GetParam() ? "he" : "") {}
-  virtual ~ShelfViewTextDirectionTest() {}
+  virtual ~ShelfViewTextDirectionTest() = default;
 
  private:
   // Restores locale to the default when destructor is called.
@@ -2176,7 +2176,7 @@ class InkDropSpy : public views::InkDrop {
  public:
   explicit InkDropSpy(std::unique_ptr<views::InkDrop> ink_drop)
       : ink_drop_(std::move(ink_drop)) {}
-  ~InkDropSpy() override {}
+  ~InkDropSpy() override = default;
 
   std::vector<views::InkDropState> GetAndResetRequestedStates() {
     std::vector<views::InkDropState> requested_states;
@@ -2226,7 +2226,7 @@ class InkDropSpy : public views::InkDrop {
 class ListMenuShelfItemDelegate : public ShelfItemDelegate {
  public:
   ListMenuShelfItemDelegate() : ShelfItemDelegate(ShelfID()) {}
-  ~ListMenuShelfItemDelegate() override {}
+  ~ListMenuShelfItemDelegate() override = default;
 
  private:
   // ShelfItemDelegate:
@@ -2251,8 +2251,8 @@ class ListMenuShelfItemDelegate : public ShelfItemDelegate {
 // Test fixture for testing material design ink drop ripples on shelf.
 class ShelfViewInkDropTest : public ShelfViewTest {
  public:
-  ShelfViewInkDropTest() {}
-  ~ShelfViewInkDropTest() override {}
+  ShelfViewInkDropTest() = default;
+  ~ShelfViewInkDropTest() override = default;
 
   void SetUp() override {
     ash_test_helper()->set_test_shell_delegate(new TestShellDelegate());
@@ -2691,7 +2691,7 @@ class AppListButtonInkDropTest
  public:
   AppListButtonInkDropTest() : pointer_type_(GetParam()) {}
 
-  ~AppListButtonInkDropTest() override {}
+  ~AppListButtonInkDropTest() override = default;
 
   void MovePointerTo(const gfx::Point& point) {
     if (pointer_type_ == ui::EventPointerType::POINTER_TYPE_MOUSE)
@@ -2825,8 +2825,8 @@ std::string ToString(ShelfAlignment shelf_alignment) {
 // Test fixture for testing material design ink drop on overflow button.
 class OverflowButtonInkDropTest : public ShelfViewInkDropTest {
  public:
-  OverflowButtonInkDropTest() {}
-  ~OverflowButtonInkDropTest() override {}
+  OverflowButtonInkDropTest() = default;
+  ~OverflowButtonInkDropTest() override = default;
 
   void SetUp() override {
     ShelfViewInkDropTest::SetUp();
@@ -3101,7 +3101,7 @@ class OverflowButtonTextDirectionTest
       public testing::WithParamInterface<bool> {
  public:
   OverflowButtonTextDirectionTest() : scoped_locale_(GetParam() ? "he" : "") {}
-  ~OverflowButtonTextDirectionTest() override {}
+  ~OverflowButtonTextDirectionTest() override = default;
 
   void SetUp() override {
     OverflowButtonInkDropTest::SetUp();
@@ -3174,8 +3174,8 @@ TEST_P(OverflowButtonTextDirectionTest, ChevronDirection) {
 // it is active.
 class OverflowButtonActiveInkDropTest : public OverflowButtonInkDropTest {
  public:
-  OverflowButtonActiveInkDropTest() {}
-  ~OverflowButtonActiveInkDropTest() override {}
+  OverflowButtonActiveInkDropTest() = default;
+  ~OverflowButtonActiveInkDropTest() override = default;
 
   void SetUp() override {
     OverflowButtonInkDropTest::SetUp();

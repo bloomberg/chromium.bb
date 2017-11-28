@@ -29,8 +29,8 @@ namespace ash {
 
 class PeripheralBatteryNotifierTest : public ash::AshTestBase {
  public:
-  PeripheralBatteryNotifierTest() {}
-  ~PeripheralBatteryNotifierTest() override {}
+  PeripheralBatteryNotifierTest() = default;
+  ~PeripheralBatteryNotifierTest() override = default;
 
   void SetUp() override {
     ash::AshTestBase::SetUp();

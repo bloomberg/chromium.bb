@@ -83,7 +83,7 @@ const char kActiveWindowChangedFromOverview[] =
 class TestDragWindowDelegate : public aura::test::TestWindowDelegate {
  public:
   TestDragWindowDelegate() { set_window_component(HTCAPTION); }
-  ~TestDragWindowDelegate() override {}
+  ~TestDragWindowDelegate() override = default;
 
  private:
   // Overridden from aura::Test::TestWindowDelegate:
@@ -111,8 +111,8 @@ float GetItemScale(const gfx::Rect& source,
 // declaration.
 class WindowSelectorTest : public AshTestBase {
  public:
-  WindowSelectorTest() {}
-  ~WindowSelectorTest() override {}
+  WindowSelectorTest() = default;
+  ~WindowSelectorTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
@@ -2048,8 +2048,8 @@ class SplitViewWindowSelectorTest : public WindowSelectorTest {
  private:
   class SplitViewTestWindowDelegate : public aura::test::TestWindowDelegate {
    public:
-    SplitViewTestWindowDelegate() {}
-    ~SplitViewTestWindowDelegate() override {}
+    SplitViewTestWindowDelegate() = default;
+    ~SplitViewTestWindowDelegate() override = default;
 
     // aura::test::TestWindowDelegate:
     void OnWindowDestroying(aura::Window* window) override { window->Hide(); }

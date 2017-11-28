@@ -67,9 +67,11 @@ class DesktopTaskSwitchMetricRecorderTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(DesktopTaskSwitchMetricRecorderTest);
 };
 
-DesktopTaskSwitchMetricRecorderTest::DesktopTaskSwitchMetricRecorderTest() {}
+DesktopTaskSwitchMetricRecorderTest::DesktopTaskSwitchMetricRecorderTest() =
+    default;
 
-DesktopTaskSwitchMetricRecorderTest::~DesktopTaskSwitchMetricRecorderTest() {}
+DesktopTaskSwitchMetricRecorderTest::~DesktopTaskSwitchMetricRecorderTest() =
+    default;
 
 void DesktopTaskSwitchMetricRecorderTest::SetUp() {
   AshTestBase::SetUp();
@@ -278,10 +280,10 @@ class DesktopTaskSwitchMetricRecorderWithShellIntegrationTest
 };
 
 DesktopTaskSwitchMetricRecorderWithShellIntegrationTest::
-    DesktopTaskSwitchMetricRecorderWithShellIntegrationTest() {}
+    DesktopTaskSwitchMetricRecorderWithShellIntegrationTest() = default;
 
 DesktopTaskSwitchMetricRecorderWithShellIntegrationTest::
-    ~DesktopTaskSwitchMetricRecorderWithShellIntegrationTest() {}
+    ~DesktopTaskSwitchMetricRecorderWithShellIntegrationTest() = default;
 
 void DesktopTaskSwitchMetricRecorderWithShellIntegrationTest::SetUp() {
   AshTestBase::SetUp();

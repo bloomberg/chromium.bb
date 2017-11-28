@@ -25,8 +25,8 @@ namespace ash {
 
 class VirtualKeyboardControllerTest : public AshTestBase {
  public:
-  VirtualKeyboardControllerTest() {}
-  ~VirtualKeyboardControllerTest() override {}
+  VirtualKeyboardControllerTest() = default;
+  ~VirtualKeyboardControllerTest() override = default;
 
   void UpdateTouchscreenDevices(
       std::vector<ui::TouchscreenDevice> touchscreen_devices) {
@@ -59,7 +59,7 @@ class VirtualKeyboardControllerTest : public AshTestBase {
 // is called.
 class MockEventBlocker : public ScopedDisableInternalMouseAndKeyboard {
  public:
-  MockEventBlocker() {}
+  MockEventBlocker() = default;
   ~MockEventBlocker() override {
     std::vector<ui::InputDevice> keyboard_devices;
     keyboard_devices.push_back(ui::InputDevice(
@@ -86,7 +86,7 @@ class VirtualKeyboardControllerAutoTest : public VirtualKeyboardControllerTest,
                                           public VirtualKeyboardObserver {
  public:
   VirtualKeyboardControllerAutoTest() : notified_(false), suppressed_(false) {}
-  ~VirtualKeyboardControllerAutoTest() override {}
+  ~VirtualKeyboardControllerAutoTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
@@ -275,7 +275,7 @@ class VirtualKeyboardControllerAlwaysEnabledTest
  public:
   VirtualKeyboardControllerAlwaysEnabledTest()
       : VirtualKeyboardControllerAutoTest() {}
-  ~VirtualKeyboardControllerAlwaysEnabledTest() override {}
+  ~VirtualKeyboardControllerAlwaysEnabledTest() override = default;
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(

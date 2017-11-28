@@ -95,7 +95,7 @@ class TestHelper {
       : basic_watcher_(views::PointerWatcherEventTypes::BASIC),
         move_watcher_(views::PointerWatcherEventTypes::MOVES),
         drag_watcher_(views::PointerWatcherEventTypes::DRAGS) {}
-  ~TestHelper() {}
+  ~TestHelper() = default;
 
   // Used to verify call counts. One ExpectCallCount call should be made after
   // each generated mouse events. |basic_events_bitmask| defines which events

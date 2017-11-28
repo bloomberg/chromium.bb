@@ -20,7 +20,7 @@ TrayContainer::TrayContainer(Shelf* shelf) : shelf_(shelf) {
   UpdateLayout();
 }
 
-TrayContainer::~TrayContainer() {}
+TrayContainer::~TrayContainer() = default;
 
 void TrayContainer::UpdateAfterShelfAlignmentChange() {
   UpdateLayout();

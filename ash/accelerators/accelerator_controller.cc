@@ -102,7 +102,7 @@ const int kToastDurationMs = 2500;
 class DeprecatedAcceleratorNotificationDelegate
     : public message_center::NotificationDelegate {
  public:
-  DeprecatedAcceleratorNotificationDelegate() {}
+  DeprecatedAcceleratorNotificationDelegate() = default;
 
   // message_center::NotificationDelegate:
   void Click() override {
@@ -112,7 +112,7 @@ class DeprecatedAcceleratorNotificationDelegate
 
  private:
   // Private destructor since NotificationDelegate is ref-counted.
-  ~DeprecatedAcceleratorNotificationDelegate() override {}
+  ~DeprecatedAcceleratorNotificationDelegate() override = default;
 
   DISALLOW_COPY_AND_ASSIGN(DeprecatedAcceleratorNotificationDelegate);
 };
@@ -872,7 +872,7 @@ AcceleratorController::AcceleratorController(
   Init();
 }
 
-AcceleratorController::~AcceleratorController() {}
+AcceleratorController::~AcceleratorController() = default;
 
 void AcceleratorController::Register(
     const std::vector<ui::Accelerator>& accelerators,

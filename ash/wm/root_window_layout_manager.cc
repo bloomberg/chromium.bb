@@ -44,7 +44,7 @@ namespace wm {
 RootWindowLayoutManager::RootWindowLayoutManager(aura::Window* owner)
     : owner_(owner) {}
 
-RootWindowLayoutManager::~RootWindowLayoutManager() {}
+RootWindowLayoutManager::~RootWindowLayoutManager() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowLayoutManager, aura::LayoutManager implementation:

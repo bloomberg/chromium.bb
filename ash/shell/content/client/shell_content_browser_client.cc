@@ -19,7 +19,7 @@ namespace shell {
 ShellContentBrowserClient::ShellContentBrowserClient()
     : shell_browser_main_parts_(nullptr) {}
 
-ShellContentBrowserClient::~ShellContentBrowserClient() {}
+ShellContentBrowserClient::~ShellContentBrowserClient() = default;
 
 content::BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {

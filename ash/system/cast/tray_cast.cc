@@ -114,7 +114,7 @@ CastSelectDefaultView::CastSelectDefaultView(SystemTrayItem* owner)
   SetAccessibleName(label);
 }
 
-CastSelectDefaultView::~CastSelectDefaultView() {}
+CastSelectDefaultView::~CastSelectDefaultView() = default;
 
 void CastSelectDefaultView::UpdateStyle() {
   TrayItemMore::UpdateStyle();
@@ -159,7 +159,7 @@ CastCastView::CastCastView()
       gfx::CreateVectorIcon(kSystemMenuCastEnabledIcon, kMenuIconColor));
 }
 
-CastCastView::~CastCastView() {}
+CastCastView::~CastCastView() = default;
 
 void CastCastView::StopCasting() {
   Shell::Get()->cast_config()->StopCasting(displayed_route_.Clone());
@@ -327,7 +327,7 @@ CastTrayView::CastTrayView(SystemTrayItem* tray_item)
       gfx::CreateVectorIcon(kSystemTrayCastIcon, kTrayIconColor));
 }
 
-CastTrayView::~CastTrayView() {}
+CastTrayView::~CastTrayView() = default;
 
 // This view displays a list of cast receivers that can be clicked on and casted
 // to. It is activated by clicking on the chevron inside of
@@ -370,7 +370,7 @@ CastDetailedView::CastDetailedView(
   UpdateReceiverList(sinks_routes);
 }
 
-CastDetailedView::~CastDetailedView() {}
+CastDetailedView::~CastDetailedView() = default;
 
 void CastDetailedView::SimulateViewClickedForTest(
     const std::string& receiver_id) {

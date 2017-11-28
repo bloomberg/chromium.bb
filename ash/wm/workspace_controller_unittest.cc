@@ -77,8 +77,8 @@ std::string GetLayerNames(const aura::Window* window) {
 
 class WorkspaceControllerTest : public AshTestBase {
  public:
-  WorkspaceControllerTest() {}
-  ~WorkspaceControllerTest() override {}
+  WorkspaceControllerTest() = default;
+  ~WorkspaceControllerTest() override = default;
 
   aura::Window* CreateTestWindowUnparented() {
     aura::Window* window = new aura::Window(NULL);

@@ -15,9 +15,9 @@
 namespace ash {
 namespace shell {
 
-ShellMainDelegate::ShellMainDelegate() {}
+ShellMainDelegate::ShellMainDelegate() = default;
 
-ShellMainDelegate::~ShellMainDelegate() {}
+ShellMainDelegate::~ShellMainDelegate() = default;
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   const base::CommandLine& command_line =

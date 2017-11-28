@@ -21,7 +21,7 @@ ShelfButtonPressedMetricTracker::ShelfButtonPressedMetricTracker()
       time_of_last_minimize_(base::TimeTicks()),
       last_minimized_source_button_(nullptr) {}
 
-ShelfButtonPressedMetricTracker::~ShelfButtonPressedMetricTracker() {}
+ShelfButtonPressedMetricTracker::~ShelfButtonPressedMetricTracker() = default;
 
 void ShelfButtonPressedMetricTracker::ButtonPressed(
     const ui::Event& event,

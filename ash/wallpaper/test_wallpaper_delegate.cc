@@ -11,7 +11,7 @@ namespace ash {
 
 TestWallpaperDelegate::TestWallpaperDelegate() : update_wallpaper_count_(0) {}
 
-TestWallpaperDelegate::~TestWallpaperDelegate() {}
+TestWallpaperDelegate::~TestWallpaperDelegate() = default;
 
 void TestWallpaperDelegate::UpdateWallpaper(bool clear_cache) {
   DefaultWallpaperDelegate::UpdateWallpaper(clear_cache);

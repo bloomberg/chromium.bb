@@ -74,7 +74,7 @@ void AddTestImes() {
 class TestTarget : public ui::AcceleratorTarget {
  public:
   TestTarget() : accelerator_pressed_count_(0), accelerator_repeat_count_(0) {}
-  ~TestTarget() override {}
+  ~TestTarget() override = default;
 
   int accelerator_pressed_count() const { return accelerator_pressed_count_; }
 
@@ -107,7 +107,7 @@ class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
  public:
   DummyBrightnessControlDelegate()
       : handle_brightness_down_count_(0), handle_brightness_up_count_(0) {}
-  ~DummyBrightnessControlDelegate() override {}
+  ~DummyBrightnessControlDelegate() override = default;
 
   void HandleBrightnessDown(const ui::Accelerator& accelerator) override {
     ++handle_brightness_down_count_;
@@ -160,7 +160,7 @@ class DummyKeyboardBrightnessControlDelegate
   DummyKeyboardBrightnessControlDelegate()
       : handle_keyboard_brightness_down_count_(0),
         handle_keyboard_brightness_up_count_(0) {}
-  ~DummyKeyboardBrightnessControlDelegate() override {}
+  ~DummyKeyboardBrightnessControlDelegate() override = default;
 
   void HandleKeyboardBrightnessDown(
       const ui::Accelerator& accelerator) override {
@@ -1006,8 +1006,8 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
 
 class PreferredReservedAcceleratorsTest : public AshTestBase {
  public:
-  PreferredReservedAcceleratorsTest() {}
-  ~PreferredReservedAcceleratorsTest() override {}
+  PreferredReservedAcceleratorsTest() = default;
+  ~PreferredReservedAcceleratorsTest() override = default;
 
   // AshTestBase:
   void SetUp() override {

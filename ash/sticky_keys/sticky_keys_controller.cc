@@ -49,7 +49,7 @@ ui::EventRewriteStatus RewriteUpdate(
 StickyKeysController::StickyKeysController()
     : enabled_(false), mod3_enabled_(false), altgr_enabled_(false) {}
 
-StickyKeysController::~StickyKeysController() {}
+StickyKeysController::~StickyKeysController() = default;
 
 void StickyKeysController::Enable(bool enabled) {
   if (enabled_ != enabled) {
@@ -209,7 +209,7 @@ StickyKeysHandler::StickyKeysHandler(ui::EventFlags modifier_flag)
       preparing_to_enable_(false),
       scroll_delta_(0) {}
 
-StickyKeysHandler::~StickyKeysHandler() {}
+StickyKeysHandler::~StickyKeysHandler() = default;
 
 bool StickyKeysHandler::HandleKeyEvent(const ui::KeyEvent& event,
                                        int* mod_down_flags,

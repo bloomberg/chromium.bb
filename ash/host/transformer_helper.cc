@@ -49,7 +49,7 @@ class SimpleRootWindowTransformer : public RootWindowTransformer {
   gfx::Insets GetHostInsets() const override { return gfx::Insets(); }
 
  private:
-  ~SimpleRootWindowTransformer() override {}
+  ~SimpleRootWindowTransformer() override = default;
 
   const aura::Window* root_window_;
   const gfx::Transform transform_;
@@ -62,7 +62,7 @@ class SimpleRootWindowTransformer : public RootWindowTransformer {
 TransformerHelper::TransformerHelper(AshWindowTreeHost* ash_host)
     : ash_host_(ash_host) {}
 
-TransformerHelper::~TransformerHelper() {}
+TransformerHelper::~TransformerHelper() = default;
 
 void TransformerHelper::Init() {
   SetTransform(gfx::Transform());

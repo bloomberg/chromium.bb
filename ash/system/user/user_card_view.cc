@@ -141,7 +141,7 @@ PublicAccountUserDetails::PublicAccountUserDetails() : learn_more_(nullptr) {
   DeterminePreferredSize();
 }
 
-PublicAccountUserDetails::~PublicAccountUserDetails() {}
+PublicAccountUserDetails::~PublicAccountUserDetails() = default;
 
 void PublicAccountUserDetails::Layout() {
   lines_.clear();

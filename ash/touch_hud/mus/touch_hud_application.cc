@@ -67,7 +67,7 @@ TouchHudApplication::TouchHudApplication() : binding_(this) {
   registry_.AddInterface<mash::mojom::Launchable>(
       base::Bind(&TouchHudApplication::Create, base::Unretained(this)));
 }
-TouchHudApplication::~TouchHudApplication() {}
+TouchHudApplication::~TouchHudApplication() = default;
 
 void TouchHudApplication::OnStart() {
   const bool register_path_provider = running_standalone_;

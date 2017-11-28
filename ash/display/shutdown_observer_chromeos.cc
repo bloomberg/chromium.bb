@@ -13,7 +13,7 @@ ShutdownObserver::ShutdownObserver(
     : display_configurator_(display_configurator),
       scoped_session_observer_(this) {}
 
-ShutdownObserver::~ShutdownObserver() {}
+ShutdownObserver::~ShutdownObserver() = default;
 
 void ShutdownObserver::OnChromeTerminating() {
   // Stop handling display configuration events once the shutdown

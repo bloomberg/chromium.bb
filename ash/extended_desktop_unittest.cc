@@ -43,8 +43,8 @@ void SetSecondaryDisplayLayout(display::DisplayPlacement::Position position) {
 
 class ModalWidgetDelegate : public views::WidgetDelegateView {
  public:
-  ModalWidgetDelegate() {}
-  ~ModalWidgetDelegate() override {}
+  ModalWidgetDelegate() = default;
+  ~ModalWidgetDelegate() override = default;
 
   // Overridden from views::WidgetDelegate:
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
@@ -59,7 +59,7 @@ class MoveWindowByClickEventHandler : public ui::EventHandler {
  public:
   explicit MoveWindowByClickEventHandler(aura::Window* target)
       : target_(target) {}
-  ~MoveWindowByClickEventHandler() override {}
+  ~MoveWindowByClickEventHandler() override = default;
 
  private:
   // ui::EventHandler overrides:
@@ -79,7 +79,7 @@ class MoveWindowByClickEventHandler : public ui::EventHandler {
 class EventLocationRecordingEventHandler : public ui::EventHandler {
  public:
   explicit EventLocationRecordingEventHandler() { reset(); }
-  ~EventLocationRecordingEventHandler() override {}
+  ~EventLocationRecordingEventHandler() override = default;
 
   std::string GetLocationsAndReset() {
     std::string result = location_.ToString() + " " + root_location_.ToString();
@@ -110,8 +110,8 @@ class EventLocationRecordingEventHandler : public ui::EventHandler {
 
 class EventLocationHandler : public ui::EventHandler {
  public:
-  EventLocationHandler() {}
-  ~EventLocationHandler() override {}
+  EventLocationHandler() = default;
+  ~EventLocationHandler() override = default;
 
   const gfx::Point& press_location() const { return press_location_; }
   const gfx::Point& release_location() const { return release_location_; }

@@ -91,7 +91,7 @@ class AutoclickRingHandler::AutoclickRingView : public views::View {
     SetNewLocation(event_location);
   }
 
-  ~AutoclickRingView() override {}
+  ~AutoclickRingView() override = default;
 
   void SetNewLocation(const gfx::Point& new_event_location) {
     gfx::Point point = new_event_location;

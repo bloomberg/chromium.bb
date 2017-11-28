@@ -9,9 +9,9 @@
 
 namespace app_list {
 
-AppListItemList::AppListItemList() {}
+AppListItemList::AppListItemList() = default;
 
-AppListItemList::~AppListItemList() {}
+AppListItemList::~AppListItemList() = default;
 
 void AppListItemList::AddObserver(AppListItemListObserver* observer) {
   observers_.AddObserver(observer);

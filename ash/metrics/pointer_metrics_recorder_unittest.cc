@@ -46,9 +46,9 @@ class PointerMetricsRecorderTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(PointerMetricsRecorderTest);
 };
 
-PointerMetricsRecorderTest::PointerMetricsRecorderTest() {}
+PointerMetricsRecorderTest::PointerMetricsRecorderTest() = default;
 
-PointerMetricsRecorderTest::~PointerMetricsRecorderTest() {}
+PointerMetricsRecorderTest::~PointerMetricsRecorderTest() = default;
 
 void PointerMetricsRecorderTest::SetUp() {
   AshTestBase::SetUp();

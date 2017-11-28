@@ -16,8 +16,8 @@ namespace ash {
 
 class VideoActivityNotifierTest : public AshTestBase {
  public:
-  VideoActivityNotifierTest() {}
-  ~VideoActivityNotifierTest() override {}
+  VideoActivityNotifierTest() = default;
+  ~VideoActivityNotifierTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

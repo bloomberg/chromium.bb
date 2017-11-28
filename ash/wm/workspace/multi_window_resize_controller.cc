@@ -190,7 +190,7 @@ MultiWindowResizeController::ResizeWindows::ResizeWindows()
 MultiWindowResizeController::ResizeWindows::ResizeWindows(
     const ResizeWindows& other) = default;
 
-MultiWindowResizeController::ResizeWindows::~ResizeWindows() {}
+MultiWindowResizeController::ResizeWindows::~ResizeWindows() = default;
 
 bool MultiWindowResizeController::ResizeWindows::Equals(
     const ResizeWindows& other) const {
@@ -198,7 +198,7 @@ bool MultiWindowResizeController::ResizeWindows::Equals(
          direction == other.direction;
 }
 
-MultiWindowResizeController::MultiWindowResizeController() {}
+MultiWindowResizeController::MultiWindowResizeController() = default;
 
 MultiWindowResizeController::~MultiWindowResizeController() {
   window_resizer_.reset();

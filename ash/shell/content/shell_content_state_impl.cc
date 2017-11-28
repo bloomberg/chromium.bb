@@ -10,7 +10,7 @@ namespace ash {
 
 ShellContentStateImpl::ShellContentStateImpl(content::BrowserContext* context)
     : browser_context_(context) {}
-ShellContentStateImpl::~ShellContentStateImpl() {}
+ShellContentStateImpl::~ShellContentStateImpl() = default;
 
 content::BrowserContext* ShellContentStateImpl::GetActiveBrowserContext() {
   return browser_context_;

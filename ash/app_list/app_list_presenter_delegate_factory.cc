@@ -15,7 +15,7 @@ AppListPresenterDelegateFactory::AppListPresenterDelegateFactory(
     std::unique_ptr<app_list::AppListViewDelegateFactory> view_delegate_factory)
     : view_delegate_factory_(std::move(view_delegate_factory)) {}
 
-AppListPresenterDelegateFactory::~AppListPresenterDelegateFactory() {}
+AppListPresenterDelegateFactory::~AppListPresenterDelegateFactory() = default;
 
 std::unique_ptr<app_list::AppListPresenterDelegate>
 AppListPresenterDelegateFactory::GetDelegate(
