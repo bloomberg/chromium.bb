@@ -2,13 +2,14 @@
 #+type:literary
 #+contraction:full
 #+grade:2
+
 #-display-name: Unified French Grade 2
 #-author: Michel Such <michel.such@free.fr>
 #-author: André-Abush CLAUSE <dev@andreabc.net>
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
-#-license: LGPL
-#-updated: 2017-11-27
+#-license: LGPLv2.1
+#-updated: 2017-11-28
 
 # liblouis: Unified French Grade 2 Table
 
@@ -63,6 +64,7 @@ class voyabr2 0âêîôûëïüœ./,
 #punctuation ' 56		so the line below compiles
 letsign 56
 noletsignafter '.\X2019\X0092
+hyphen - 36
 
 
 ###
@@ -78,6 +80,7 @@ noback endword ait 146
 nofor after conabr after voyabr after voyabr2 endword ait 146
 endword aits 146-234
 nofor word examen 15-1346-1-134-26
+nofor before voyabr always ambr 1-134-23
 noback before con always an 2
 nofor begmidword an 2
 noback endword ant 1456
@@ -113,6 +116,7 @@ nofor before conabr always brè 23-2346
 nofor begmidword brû 23-156
 nofor always brou 23-1256
 nofor begmidword brui 12-1235-23
+nofor endword bres 23-156
 
 partword ch 12356
 nofor endword ck 14-13
@@ -153,7 +157,8 @@ endword elle 456
 endword elles 456-234
 noback before con always em 345
 nofor before con before conabr always em 345
-nofor before voyabr always embl 345-45
+nofor before voyabr before voyabr2 always embl 345-45
+nofor before voyabr always embr 345-23
 noback before con always en 26
 nofor begmidword en 26
 noback endword en 26
@@ -252,6 +257,7 @@ nofor midendword llou 456-1256
 partword oi 23456
 noback before con always om 2456
 nofor before conabr always om 2456
+nofor before voyabr always ombr 2456-23
 endword om 2456
 noback before con always on 346
 nofor before conabr always on 346
@@ -310,7 +316,6 @@ noback before con always ui 23
 nofor after conabr always ui 23
 nofor before voyabr before voyabr2 always uiss 23-2346
 nofor before voyabr before voyabr2 always uitt 23-2456
-nofor after conabr always ui 23
 endword uin 136-35
 endword uins 136-35-234
 nofor endword zz 1356-1356
@@ -1545,7 +1550,7 @@ word parmi		1234-134
 word parole		1234-1235
 word paroles		1234-1235-234
 word particularité	1234-123-1235-2345
-word particularités	1234-1235-123-2345-234
+word particularités	1234-123-1235-2345-234
 word particulier	1234-123
 word particuliers	1234-123-234
 word particulière	1234-123-1235
@@ -2132,4 +2137,3 @@ compbrl .mp3
 compbrl .wav
 compbrl .tar
 compbrl .zip
-

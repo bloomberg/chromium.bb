@@ -2,14 +2,15 @@
 #+type:literary
 #+contraction:no
 #+dots:6
+
 #-display-name: Unified French 6 dots
 #-author: Michel Such <michel.such@free.fr>
 #-author: André-Abush CLAUSE <dev@andreabc.net>
 #-author: Ludovic Oger <oger.ludovic@gmail.com>
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
-#-license: LGPL
-#-updated: 2017-11-27
+#-license: LGPLv2.1
+#-updated: 2017-11-28
 
 # liblouis: Unified French 6 dots Braille table
 
@@ -101,6 +102,19 @@ comp6 0 3456
 include digits6DotsPlusDot6.uti
 include litdigits6DotsPlusDot6.uti
 
+math + 235  # plus
+math * 35   # astérisque
+math / 34   # barre oblique
+math = 2356 # égal
+midnum + 235
+endnum + 235
+midnum = 2356
+endnum = 2356
+
+math \x00F7 25     # divisé par
+math \x003c 5-126  # inférieur à
+math \x003e 5-345  # supérieur à
+
 punctuation , 2    # virgule
 postpunc , 2
 punctuation ; 23   # point-virgule
@@ -112,16 +126,21 @@ postpunc . 256
 punctuation ? 26   # point d'interrogation
 postpunc ? 26
 punctuation ! 235  # point d'exclamation
+postpunc ! 235
 punctuation " 2356 # guillemet
+postpunc " 2356 	    # guillemet
+prepunc " 2356 	   # guillemet
 punctuation ( 236  # parenthèse ouvrante
 punctuation ) 356  # parenthèse fermante
 prepunc ( 236      # parenthèse ouvrante
 postpunc ) 356     # parenthèse fermante
 punctuation ' 3    #  apostrophe
-noback punctuation « 2356 # guillemet français ouvrant
-noback prepunc « 2356	    # guillemet français ouvrant
-noback punctuation » 2356 # guillemet français fermant
-noback postpunc » 2356	   # guillemet français fermant
+punctuation « 2356 # guillemet français ouvrant
+prepunc « 2356	    # guillemet français ouvrant
+punctuation » 2356 # guillemet français fermant
+postpunc » 2356	   # guillemet français fermant
+
+# guillemets
 punctuation \x00AB 2356     # right-pointing double angle quotation mark
 punctuation \x00BB 2356     # left-pointing double angle quotation mark
 punctuation \x0091 2356     # [left single quotation mark] (private use one)
@@ -140,11 +159,6 @@ punctuation \x275D 2356     # heavy double turned comma quotation mark ornament
 punctuation \x275E 2356     # heavy double comma quotation mark ornament
 punctuation \x275F 2356     # heavy low single comma quotation mark ornament
 punctuation \x2760 2356     # heavy low double comma quotation mark ornament
-punctuation [ 45-236  # crochet droit ouvrant
-punctuation ] 356-12	#	crochet droit fermant
-punctuation { 6-6-236	#	accolade de gauche
-punctuation } 356-3-3	#	accolade de droite
-
 
 noback sign \x200e 0        # (left to right mark)
 noback sign \x200f 0        # (right to left mark)
@@ -163,7 +177,6 @@ sign \xFF0D 36           # fullwidth hyphen-minus
 
 sign \x2022 246-135      # (bullet)
 sign \x2026 256-256-256  # 8230	MS Word smart ellipsis
-math * 35   # astérisque
 sign \x25cf 35           # black circle
 sign \xf0b7 1245         # (bullet MS symbol font?)
 
@@ -175,7 +188,7 @@ sign \xFE5F 5-3456   # croisillon minuscule
 sign \xFF03 5-3456   # croisillon pleine chasse
 sign % 5-346         # pourcent
 sign ‰ 5-346-346     # pour mille
-sign × 5-35          # signe de multiplication
+sign * 5-35          # astérisque
 sign _ 5-36          # souligné
 sign ¸ 456           # cédille
 noback sign ´ 5
@@ -214,6 +227,7 @@ sign \x00BF 26      #*inverted question mark
 sign \x00C5 2       #*latin capital letter a with ring above
 sign \x00C6 345     #*latin capital letter ae
 sign \x00D0 12      # latin capital letter eth
+sign \x00D7 5-35    # multiplication sign
 sign \x00D8 3456    # latin capital letter o with stroke
 sign \x00DE 245     # latin capital letter thorn
 sign \x00DF 234     # latin small letter sharp s
@@ -234,6 +248,11 @@ sign ¥ 45-13456		  # yen
 sign ¤ 6-45					  # symbole monétaire
 sign § 5-1234			  # paragraphe
 
+punctuation [ 45-236  # crochet droit ouvrant
+punctuation ] 356-12	#	crochet droit fermant
+punctuation { 6-6-236	#	accolade de gauche
+punctuation } 356-3-3	#	accolade de droite
+
 sign ^ 4 # accent circonflexe
 noback sign ¹ 4-16  # exposant 1
 noback sign ² 4-126 # exposant 2
@@ -243,30 +262,6 @@ sign ½ 16-34-126    # un demi
 sign ¾ 146-34-1456  # trois quarts
 sign \x007E 5-26  # 126 ~    tilde
 
-math + 235
-math = 2356
-
-endnum + 235
-begnum + 235
-prepunc ! 235
-
-endnum = 2356
-prepunc " 2356
-postpunc " 2356 	    # guillemet
-begnum = 2356
-
-
-midnum + 235
-midnum = 2356
-
-postpunc ! 235
-
-math / 34   # barre oblique
-
-math \x00F7 25     # divisé par
-math \x003c 5-126  # inférieur à
-math \x003e 5-345  # supérieur à
-
 # unicode braille
 include braille-patterns.cti
 # other signs: 8 and 6 dots
@@ -274,7 +269,7 @@ include fr-bfu-comp68.cti
 
 # Braille indicators
 numsign 6             # number sign, just a dots operand
-numericmodechars +-*/^,:.()=
+numericmodechars ^,:.+-*/()=
 numericnocontchars âêîôûëïüœ
 capsletter 46
 begcapsword 46-46
