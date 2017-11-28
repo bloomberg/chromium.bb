@@ -180,15 +180,13 @@ var SerializedPaymentResponse;
    */
   __gCrWeb['paymentRequestManager'].validatePaymentCurrencyAmount = function(
       amount, amountName) {
-    if (typeof amount.value !== 'string')
-      throw new TypeError(amountName + ' value must be a string');
-    if (amount.value.length >
-        __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH) {
+    var value = String(amount.value);
+    if (value > __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH) {
       throw new TypeError(
           amountName + ' value cannot be longer than ' +
           __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH + ' characters');
     }
-    if (!/^-?[0-9]+(\.[0-9]+)?$/.test(amount.value)) {
+    if (!/^-?[0-9]+(\.[0-9]+)?$/.test(value)) {
       throw new TypeError(
           amountName + ' value is not a valid decimal monetary value');
     }
@@ -402,7 +400,7 @@ var SerializedPaymentResponse;
       if (typeof modifiers[i].total !== 'undefined') {
         __gCrWeb['paymentRequestManager'].validatePaymentItem(
             modifiers[i].total, 'Modifier total');
-        if (modifiers[i].total.amount.value[0] == '-')
+        if (String(modifiers[i].total.amount.value)[0] == '-')
           throw new TypeError('Modifier total value should be non-negative');
       }
 
@@ -531,7 +529,7 @@ var SerializedPaymentResponse;
       throw new TypeError('Total is missing.');
     __gCrWeb['paymentRequestManager'].validatePaymentItem(
         details.total, 'Total');
-    if (details.total.amount.value[0] == '-')
+    if (String(details.total.amount.value)[0] == '-')
       throw new TypeError('Total value should be non-negative');
 
     return __gCrWeb['paymentRequestManager'].validatePaymentDetailsBase(
@@ -552,7 +550,7 @@ var SerializedPaymentResponse;
     if (details.total) {
       __gCrWeb['paymentRequestManager'].validatePaymentItem(
           details.total, 'Total');
-      if (details.total.amount.value[0] == '-')
+      if (String(details.total.amount.value)[0] == '-')
         throw new TypeError('Total value should be non-negative');
     }
 
