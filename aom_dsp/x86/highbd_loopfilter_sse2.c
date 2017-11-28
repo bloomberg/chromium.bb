@@ -383,10 +383,10 @@ static INLINE void highbd_lpf_horz_edge_8_8p(uint16_t *s, int pitch,
   highbd_lpf_horz_edge_8_internal(s, pitch, blt, lt, thr, bd, EIGHT_PIXELS);
 }
 
-void aom_highbd_lpf_horizontal_edge_8_sse2(uint16_t *s, int p,
-                                           const uint8_t *_blimit,
-                                           const uint8_t *_limit,
-                                           const uint8_t *_thresh, int bd) {
+void aom_highbd_lpf_horizontal_16_sse2(uint16_t *s, int p,
+                                       const uint8_t *_blimit,
+                                       const uint8_t *_limit,
+                                       const uint8_t *_thresh, int bd) {
 #if CONFIG_PARALLEL_DEBLOCKING
   highbd_lpf_horz_edge_8_4p(s, p, _blimit, _limit, _thresh, bd);
 #else
@@ -394,7 +394,7 @@ void aom_highbd_lpf_horizontal_edge_8_sse2(uint16_t *s, int p,
 #endif
 }
 
-void aom_highbd_lpf_horizontal_edge_16_sse2(uint16_t *s, int p,
+void aom_highbd_lpf_horizontal_16_dual_sse2(uint16_t *s, int p,
                                             const uint8_t *_blimit,
                                             const uint8_t *_limit,
                                             const uint8_t *_thresh, int bd) {
@@ -979,8 +979,8 @@ void aom_highbd_lpf_vertical_16_sse2(uint16_t *s, int p, const uint8_t *blimit,
   highbd_transpose(src, p, dst, 8, 2);
 
   // Loop filtering
-  aom_highbd_lpf_horizontal_edge_8_sse2(t_dst + 8 * 8, 8, blimit, limit, thresh,
-                                        bd);
+  aom_highbd_lpf_horizontal_16_sse2(t_dst + 8 * 8, 8, blimit, limit, thresh,
+                                    bd);
   src[0] = t_dst;
   src[1] = t_dst + 8 * 8;
   dst[0] = s - 8;
@@ -1003,7 +1003,7 @@ void aom_highbd_lpf_vertical_16_dual_sse2(uint16_t *s, int p,
 #if CONFIG_PARALLEL_DEBLOCKING
   highbd_lpf_horz_edge_8_8p(t_dst + 8 * 16, 16, blimit, limit, thresh, bd);
 #else
-  aom_highbd_lpf_horizontal_edge_16_sse2(t_dst + 8 * 16, 16, blimit, limit,
+  aom_highbd_lpf_horizontal_16_dual_sse2(t_dst + 8 * 16, 16, blimit, limit,
                                          thresh, bd);
 #endif
   //  Transpose back

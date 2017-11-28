@@ -830,12 +830,12 @@ static void highbd_filter_selectively_horiz(
     if (mask & 1) {
       if (mask_16x16 & 1) {
         if ((mask_16x16 & 3) == 3) {
-          aom_highbd_lpf_horizontal_edge_16(s, pitch, lfi->mblim, lfi->lim,
+          aom_highbd_lpf_horizontal_16_dual(s, pitch, lfi->mblim, lfi->lim,
                                             lfi->hev_thr, bd);
           count = 2;
         } else {
-          aom_highbd_lpf_horizontal_edge_8(s, pitch, lfi->mblim, lfi->lim,
-                                           lfi->hev_thr, bd);
+          aom_highbd_lpf_horizontal_16(s, pitch, lfi->mblim, lfi->lim,
+                                       lfi->hev_thr, bd);
         }
       } else if (mask_8x8 & 1) {
         if ((mask_8x8 & 3) == 3) {
@@ -2483,11 +2483,11 @@ static void av1_filter_block_plane_horz(
           if (cm->use_highbitdepth)
 #if CONFIG_DEBLOCK_13TAP
             // TODO(olah): Remove _c once SIMD for 13-tap is available
-            aom_highbd_lpf_horizontal_edge_16_c(
+            aom_highbd_lpf_horizontal_16_dual_c(
                 CONVERT_TO_SHORTPTR(p), dst_stride, params.mblim, params.lim,
                 params.hev_thr, cm->bit_depth);
 #else
-            aom_highbd_lpf_horizontal_edge_16(
+            aom_highbd_lpf_horizontal_16_dual(
                 CONVERT_TO_SHORTPTR(p), dst_stride, params.mblim, params.lim,
                 params.hev_thr, cm->bit_depth);
 #endif

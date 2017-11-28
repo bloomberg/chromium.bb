@@ -204,11 +204,11 @@ static INLINE void highbd_filter4(__m256i *p, __m256i *q, const __m256i *mask,
 #endif  // #if !CONFIG_PARALLEL_DEBLOCKING
 
 #if CONFIG_PARALLEL_DEBLOCKING
-void aom_highbd_lpf_horizontal_edge_16_avx2(uint16_t *s, int p,
+void aom_highbd_lpf_horizontal_16_dual_avx2(uint16_t *s, int p,
                                             const uint8_t *blt,
                                             const uint8_t *lt,
                                             const uint8_t *thr, int bd) {
-  aom_highbd_lpf_horizontal_edge_16_sse2(s, p, blt, lt, thr, bd);
+  aom_highbd_lpf_horizontal_16_dual_sse2(s, p, blt, lt, thr, bd);
 }
 
 void aom_highbd_lpf_vertical_16_dual_avx2(uint16_t *s, int p,
@@ -249,7 +249,7 @@ void aom_highbd_lpf_vertical_8_dual_avx2(
                                       limit1, thresh1, bd);
 }
 #else
-void aom_highbd_lpf_horizontal_edge_16_avx2(uint16_t *s, int pitch,
+void aom_highbd_lpf_horizontal_16_dual_avx2(uint16_t *s, int pitch,
                                             const uint8_t *blt,
                                             const uint8_t *lt,
                                             const uint8_t *thr, int bd) {
@@ -415,7 +415,7 @@ void aom_highbd_lpf_vertical_16_dual_avx2(uint16_t *s, int p,
   highbd_transpose16x16(s - 8, p, t_dst, 16);
 
   //  Loop filtering
-  aom_highbd_lpf_horizontal_edge_16_avx2(t_dst + 8 * 16, 16, blimit, limit,
+  aom_highbd_lpf_horizontal_16_dual_avx2(t_dst + 8 * 16, 16, blimit, limit,
                                          thresh, bd);
 
   //  Transpose back

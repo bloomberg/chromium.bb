@@ -494,12 +494,12 @@ const loop8_param_t kHbdLoop8Test6[] = {
 #if !CONFIG_DEBLOCK_13TAP
   // Despite the name the following funcition is doing 15-tap filtering
   // which is changed to 13-tap and not yet implemented in SIMD
-  make_tuple(&aom_highbd_lpf_horizontal_edge_8_sse2,
-             &aom_highbd_lpf_horizontal_edge_8_c, 8),
+  make_tuple(&aom_highbd_lpf_horizontal_16_sse2,
+             &aom_highbd_lpf_horizontal_16_c, 8),
 #endif
 #if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-  make_tuple(&aom_highbd_lpf_horizontal_edge_16_sse2,
-             &aom_highbd_lpf_horizontal_edge_16_c, 8),
+  make_tuple(&aom_highbd_lpf_horizontal_16_dual_sse2,
+             &aom_highbd_lpf_horizontal_16_dual_c, 8),
 #endif
   make_tuple(&aom_highbd_lpf_vertical_8_sse2, &aom_highbd_lpf_vertical_8_c, 8),
 #if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
@@ -514,12 +514,12 @@ const loop8_param_t kHbdLoop8Test6[] = {
 #if !CONFIG_DEBLOCK_13TAP
   // Despite the name the following funcition is doing 15-tap filtering
   // which is changed to 13-tap and not yet implemented in SIMD
-  make_tuple(&aom_highbd_lpf_horizontal_edge_8_sse2,
-             &aom_highbd_lpf_horizontal_edge_8_c, 10),
+  make_tuple(&aom_highbd_lpf_horizontal_16_sse2,
+             &aom_highbd_lpf_horizontal_16_c, 10),
 #endif
 #if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-  make_tuple(&aom_highbd_lpf_horizontal_edge_16_sse2,
-             &aom_highbd_lpf_horizontal_edge_16_c, 10),
+  make_tuple(&aom_highbd_lpf_horizontal_16_dual_sse2,
+             &aom_highbd_lpf_horizontal_16_dual_c, 10),
 #endif
   make_tuple(&aom_highbd_lpf_vertical_8_sse2, &aom_highbd_lpf_vertical_8_c, 10),
 #if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
@@ -534,12 +534,12 @@ const loop8_param_t kHbdLoop8Test6[] = {
 #if !CONFIG_DEBLOCK_13TAP
   // Despite the name the following funcition is doing 15-tap filtering
   // which is changed to 13-tap and not yet implemented in SIMD
-  make_tuple(&aom_highbd_lpf_horizontal_edge_8_sse2,
-             &aom_highbd_lpf_horizontal_edge_8_c, 12),
+  make_tuple(&aom_highbd_lpf_horizontal_16_sse2,
+             &aom_highbd_lpf_horizontal_16_c, 12),
 #endif
 #if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-  make_tuple(&aom_highbd_lpf_horizontal_edge_16_sse2,
-             &aom_highbd_lpf_horizontal_edge_16_c, 12),
+  make_tuple(&aom_highbd_lpf_horizontal_16_dual_sse2,
+             &aom_highbd_lpf_horizontal_16_dual_c, 12),
   make_tuple(&aom_highbd_lpf_vertical_16_sse2, &aom_highbd_lpf_vertical_16_c,
              12),
   make_tuple(&aom_highbd_lpf_vertical_16_dual_sse2,
@@ -587,12 +587,12 @@ INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test6Param,
 
 #if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
 const loop8_param_t kHbdLoop8Test6Avx2[] = {
-  make_tuple(&aom_highbd_lpf_horizontal_edge_16_avx2,
-             &aom_highbd_lpf_horizontal_edge_16_c, 8),
-  make_tuple(&aom_highbd_lpf_horizontal_edge_16_avx2,
-             &aom_highbd_lpf_horizontal_edge_16_c, 10),
-  make_tuple(&aom_highbd_lpf_horizontal_edge_16_avx2,
-             &aom_highbd_lpf_horizontal_edge_16_c, 12),
+  make_tuple(&aom_highbd_lpf_horizontal_16_dual_avx2,
+             &aom_highbd_lpf_horizontal_16_dual_c, 8),
+  make_tuple(&aom_highbd_lpf_horizontal_16_dual_avx2,
+             &aom_highbd_lpf_horizontal_16_dual_c, 10),
+  make_tuple(&aom_highbd_lpf_horizontal_16_dual_avx2,
+             &aom_highbd_lpf_horizontal_16_dual_c, 12),
   make_tuple(&aom_highbd_lpf_vertical_16_dual_avx2,
              &aom_highbd_lpf_vertical_16_dual_c, 8),
   make_tuple(&aom_highbd_lpf_vertical_16_dual_avx2,
