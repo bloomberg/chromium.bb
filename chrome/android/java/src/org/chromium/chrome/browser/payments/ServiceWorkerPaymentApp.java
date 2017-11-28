@@ -137,22 +137,9 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     public void getInstruments(Map<String, PaymentMethodData> methodDataMap, String origin,
             String iframeOrigin, byte[][] unusedCertificateChain,
             Map<String, PaymentDetailsModifier> modifiers, final InstrumentsCallback callback) {
-        boolean isOnlySupportBasiccard = isOnlySupportBasiccard(methodDataMap);
-        if (isOnlySupportBasiccard
-                && !matchBasiccardCapabilities(
-                           methodDataMap.get(BasicCardUtils.BASIC_CARD_METHOD_NAME))) {
-            // Do not list this app if 'basic-card' is the only supported payment method with
-            // unmatched capabilities.
-            new Handler().post(() -> {
-                List<PaymentInstrument> instruments = new ArrayList();
-                callback.onInstrumentsReady(ServiceWorkerPaymentApp.this, instruments);
-            });
-            return;
-        }
-
         // Do not send canMakePayment event when in incognito mode or basic-card is the only
         // supported payment method for the payment request.
-        if (mIsIncognito || isOnlySupportBasiccard) {
+        if (mIsIncognito || isOnlySupportBasiccard(methodDataMap)) {
             new Handler().post(() -> {
                 List<PaymentInstrument> instruments = new ArrayList();
                 instruments.add(ServiceWorkerPaymentApp.this);
