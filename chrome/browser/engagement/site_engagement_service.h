@@ -254,6 +254,13 @@ class SiteEngagementService : public KeyedService,
   void HandleUserInput(content::WebContents* web_contents,
                        SiteEngagementMetrics::EngagementType type);
 
+  // Called when the engagement for |url| loaded in |web_contents| increases.
+  // Calls OnEngagementIncreased in all observers. |web_contents| may be null if
+  // the engagement has increased when |url| is not in a tab, e.g. from a
+  // notification interaction.
+  void OnEngagementIncreased(content::WebContents* web_contents,
+                             const GURL& url);
+
   // Called if |url| changes to |level| engagement, and informs every Helper of
   // the change.
   void SendLevelChangeToHelpers(const GURL& url,
