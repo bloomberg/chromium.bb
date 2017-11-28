@@ -7,6 +7,7 @@
 #include "base/format_macros.h"
 #include "net/quic/core/quic_constants.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_str_cat.h"
@@ -15,6 +16,18 @@ using std::string;
 
 namespace net {
 namespace {
+
+size_t CalculateBlockCount(size_t max_capacity_bytes) {
+  if (FLAGS_quic_reloadable_flag_quic_fix_sequencer_buffer_block_count2) {
+    QUIC_FLAG_COUNT(
+        quic_reloadable_flag_quic_fix_sequencer_buffer_block_count2);
+    return (max_capacity_bytes + QuicStreamSequencerBuffer::kBlockSizeBytes -
+            1) /
+           QuicStreamSequencerBuffer::kBlockSizeBytes;
+  }
+  return ceil(static_cast<double>(max_capacity_bytes) /
+              QuicStreamSequencerBuffer::kBlockSizeBytes);
+}
 
 // Upper limit of how many gaps allowed in buffer, which ensures a reasonable
 // number of iterations needed to find the right gap to fill when a frame
@@ -36,8 +49,7 @@ QuicStreamSequencerBuffer::FrameInfo::FrameInfo(size_t length,
 
 QuicStreamSequencerBuffer::QuicStreamSequencerBuffer(size_t max_capacity_bytes)
     : max_buffer_capacity_bytes_(max_capacity_bytes),
-      blocks_count_(
-          ceil(static_cast<double>(max_capacity_bytes) / kBlockSizeBytes)),
+      blocks_count_(CalculateBlockCount(max_capacity_bytes)),
       total_bytes_read_(0),
       blocks_(nullptr),
       destruction_indicator_(123456) {

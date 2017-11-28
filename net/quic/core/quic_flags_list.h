@@ -209,3 +209,9 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_truncate_long_details, true)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2,
           false)
+
+// If true, calculate stream sequencer buffer block count in a way that
+// guaranteed to be 2048.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fix_sequencer_buffer_block_count2,
+          false)
