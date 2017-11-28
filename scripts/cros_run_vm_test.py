@@ -21,16 +21,17 @@ from chromite.scripts import cros_vm
 class VMTest(object):
   """Class for running VM tests."""
 
-  CATAPULT_RUN_TESTS = \
-      '/usr/local/telemetry/src/third_party/catapult/telemetry/bin/run_tests'
-  SANITY_TEST = '/usr/local/autotest/bin/vm_sanity.py'
-
-  def __init__(self, catapult_tests, guest, start_vm, vm_args):
+  def __init__(self, opts, vm_args):
     self.start_time = datetime.datetime.utcnow()
-    self.test_pattern = catapult_tests
-    self.guest = guest
-    self.start_vm = start_vm
+    self.catapult_tests = opts.catapult_tests
+    self.guest = opts.guest
+    self.autotest = opts.autotest
+    self.board = opts.board
+    self.results_dir = opts.results_dir
+    self.start_vm = opts.start_vm
 
+    if self.board:
+      vm_args += ['--board', self.board]
     self._vm = cros_vm.VM(vm_args)
 
   def __del__(self):
@@ -85,36 +86,54 @@ class VMTest(object):
                               log_output=True)
     self._vm.WaitForBoot()
 
-  def _RunCatapultTests(self, test_pattern, guest):
-    """Run catapult tests matching a pattern.
-
-    Args:
-      test_pattern: Run tests matching this pattern.
-      guest: Run in guest mode.
+  def _RunCatapultTests(self):
+    """Run catapult tests matching a pattern using run_tests.
 
     Returns:
       cros_build_lib.CommandResult object.
     """
 
-    browser = 'system-guest' if guest else 'system'
-    return self._vm.RemoteCommand(['python', self.CATAPULT_RUN_TESTS,
-                                   '--browser=%s' % browser,
-                                   test_pattern])
+    browser = 'system-guest' if self.guest else 'system'
+    return self._vm.RemoteCommand([
+        'python',
+        '/usr/local/telemetry/src/third_party/catapult/telemetry/bin/run_tests',
+        '--browser=%s' % browser,
+        self.catapult_tests,
+    ])
+
+  def _RunAutotest(self):
+    """Run an autotest using test_that.
+
+    Returns:
+      cros_build_lib.CommandResult object.
+    """
+    cmd = ['test_that']
+    if self.board:
+      cmd += ['--board', self.board]
+    if self.results_dir:
+      cmd += ['--results-dir', self.results_dir]
+    cmd += [
+        '--no-quickmerge',
+        '--ssh_options', '-F /dev/null -i /dev/null',
+        'localhost:%d' % self._vm.ssh_port,
+        self.autotest,
+    ]
+    return cros_build_lib.RunCommand(cmd, log_output=True)
 
   def RunTests(self):
-    """Run all eligible tests.
-
-    If a test_pattern for catapult tests has been specified, run those tests.
-    Otherwise, run vm_sanity.
+    """Run catapult tests, autotest, or the default, vm_sanity.
 
     Returns:
       cros_build_lib.CommandResult object.
     """
 
-    if self.test_pattern:
-      return self._RunCatapultTests(self.test_pattern, self.guest)
+    if self.catapult_tests:
+      return self._RunCatapultTests()
 
-    return self._vm.RemoteCommand([self.SANITY_TEST])
+    if self.autotest:
+      return self._RunAutotest()
+
+    return self._vm.RemoteCommand(['/usr/local/autotest/bin/vm_sanity.py'])
 
   def ProcessResult(self, result, output):
     """Process the CommandResult object from RunVMCmd/RunTests.
@@ -191,6 +210,10 @@ def ParseCommandLine(argv):
                       help='Start a new VM before running tests.')
   parser.add_argument('--catapult-tests',
                       help='Catapult test pattern to run, passed to run_tests.')
+  parser.add_argument('--autotest',
+                      help='Autotest test pattern to run, passed to test_that.')
+  parser.add_argument('--board', help='Board to use.')
+  parser.add_argument('--results-dir', help='Autotest results directory.')
   parser.add_argument('--output', type='path', help='Save output to file.')
   parser.add_argument('--guest', action='store_true', default=False,
                       help='Run tests in incognito mode.')
@@ -253,10 +276,7 @@ def FileList(files, files_from):
 
 def main(argv):
   opts, vm_args = ParseCommandLine(argv)
-  vm_test = VMTest(catapult_tests=opts.catapult_tests,
-                   guest=opts.guest,
-                   start_vm=opts.start_vm, vm_args=vm_args)
-
+  vm_test = VMTest(opts, vm_args)
   vm_test.StartVM()
 
   if opts.build:
