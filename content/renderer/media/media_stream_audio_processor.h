@@ -149,6 +149,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   // This method is called on the libjingle thread.
   void GetStats(AudioProcessorStats* stats) override;
 
+  // This method is called on the libjingle thread.
+  AudioProcessorStatistics GetStats(bool has_remote_tracks) override;
+
   // Helper to initialize the WebRtc AudioProcessing.
   void InitializeAudioProcessingModule(
       const AudioProcessingProperties& properties);
