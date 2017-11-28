@@ -40,7 +40,7 @@
       <input id="native" type="checkbox" checked="[[checked]]"
           on-change="onNativeChange_" on-click="onNativeClick_">
       <slot></slot>
-      <cr-toggle id="crToggle" checked="{{checked}}"
+      <cr-toggle id="crToggle" checked="{{checked}}" aria-labelledby="label"
           on-change="onCrToggleChange_"></cr-toggle>
     </label>
   </template>
