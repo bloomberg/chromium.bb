@@ -71,6 +71,7 @@ class GPU_EXPORT ClientDiscardableHandle : public DiscardableHandleBase {
                     uint64_t,
                     std::numeric_limits<uint64_t>::max()>;
 
+  ClientDiscardableHandle();  // Constructs an invalid handle.
   ClientDiscardableHandle(scoped_refptr<Buffer> buffer,
                           uint32_t byte_offset,
                           int32_t shm_id);
@@ -90,6 +91,8 @@ class GPU_EXPORT ClientDiscardableHandle : public DiscardableHandleBase {
   // Gets an Id which uniquely identifies this ClientDiscardableHandle within
   // the ClientDiscardableManager which created it.
   Id GetId() const;
+
+  bool IsValid() const { return !GetId().is_null(); }
 };
 
 // ServiceDiscardableHandle can wrap an existing handle (via the constructor),

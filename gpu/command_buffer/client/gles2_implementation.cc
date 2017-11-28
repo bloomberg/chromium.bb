@@ -7075,6 +7075,9 @@ void GLES2Implementation::InitializeDiscardableTextureCHROMIUM(
   }
   ClientDiscardableHandle handle =
       manager->InitializeTexture(helper_->command_buffer(), texture_id);
+  if (!handle.IsValid())
+    return;
+
   helper_->InitializeDiscardableTextureCHROMIUM(texture_id, handle.shm_id(),
                                                 handle.byte_offset());
 }

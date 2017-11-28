@@ -38,7 +38,7 @@ class GPU_EXPORT ClientDiscardableManager {
   }
 
  private:
-  void FindAllocation(CommandBuffer* command_buffer,
+  bool FindAllocation(CommandBuffer* command_buffer,
                       scoped_refptr<Buffer>* buffer,
                       int32_t* shm_id,
                       uint32_t* offset);
