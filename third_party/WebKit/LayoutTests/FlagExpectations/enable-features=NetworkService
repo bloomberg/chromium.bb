@@ -73,6 +73,7 @@ Bug(none) external/wpt/websockets/cookies/003.html [ Failure ]
 Bug(none) external/wpt/websockets/cookies/006.html?wss [ Crash ]
 Bug(none) fast/dom/Range/surround-contents-font-face-crash.svg [ Timeout ]
 Bug(none) fast/dom/split-cdata.xml [ Timeout ]
+
 Bug(none) fast/events/attribute-listener-cloned-from-frameless-doc.xhtml [ Timeout ]
 Bug(none) fast/files/xhr-response-blob.html [ Crash Failure ]
 Bug(none) fast/history/history-back-twice-with-subframes-assert.html [ Pass Timeout ]
@@ -231,6 +232,9 @@ crbug.com/778721 http/tests/fetch/workers/thorough/redirect-password.html [ Pass
 crbug.com/778721 http/tests/fetch/workers/thorough/scheme-blob.html [ Pass Failure ]
 
 crbug.com/721408 http/tests/inspector-protocol/network/navigation-xfer-size.js [ Failure ]
+
+crbug.com/789081 fast/dom/HTMLAnchorElement/anchor-download.html [ Timeout ]
+crbug.com/789081 fast/dom/HTMLAnchorElement/anchor-nodownload-set.html [ Timeout ]
 
 # Started flaking after test was rewritten in r517585.
 Bug(none) http/tests/devtools/service-workers/service-worker-agents.js [ Crash Pass ]
