@@ -26,22 +26,8 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/gurl.h"
-
-using metrics::OmniboxEventProto;
-
-namespace {
-bool IsNTPPage(OmniboxEventProto::PageClassification page_classification) {
-  return (page_classification == OmniboxEventProto::NTP) ||
-         (page_classification == OmniboxEventProto::OBSOLETE_INSTANT_NTP) ||
-         (page_classification ==
-          OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS) ||
-         (page_classification ==
-          OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS);
-}
-}  // namespace
 
 // SuggestionDeletionHandler -------------------------------------------------
 
@@ -224,23 +210,14 @@ const char BaseSearchProvider::kFalse[] = "false";
 
 BaseSearchProvider::~BaseSearchProvider() {}
 
-void BaseSearchProvider::SetDeletionURL(const std::string& deletion_url,
-                                        AutocompleteMatch* match) {
-  if (deletion_url.empty())
-    return;
-
-  TemplateURLService* template_url_service = client_->GetTemplateURLService();
-  if (!template_url_service)
-    return;
-  GURL url =
-      template_url_service->GetDefaultSearchProvider()->GenerateSearchURL(
-          template_url_service->search_terms_data());
-  url = url.GetOrigin().Resolve(deletion_url);
-  if (url.is_valid()) {
-    match->RecordAdditionalInfo(BaseSearchProvider::kDeletionUrlKey,
-        url.spec());
-    match->deletable = true;
-  }
+// static
+bool BaseSearchProvider::IsNTPPage(
+    metrics::OmniboxEventProto::PageClassification classification) {
+  using OEP = metrics::OmniboxEventProto;
+  return (classification == OEP::NTP) ||
+         (classification == OEP::OBSOLETE_INSTANT_NTP) ||
+         (classification == OEP::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS) ||
+         (classification == OEP::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS);
 }
 
 // static
@@ -331,28 +308,11 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
 }
 
 // static
-bool BaseSearchProvider::ZeroSuggestEnabled(
-    OmniboxEventProto::PageClassification page_classification,
-    const AutocompleteProviderClient* client) {
-  // Don't show zero suggest on the NTP.
-  // TODO(hfung): Experiment with showing MostVisited zero suggest on NTP
-  // under the conditions described in crbug.com/305366.
-  if (IsNTPPage(page_classification))
-    return false;
-
-  // Don't run if in incognito mode.
-  if (client->IsOffTheRecord())
-    return false;
-
-  return true;
-}
-
-// static
 bool BaseSearchProvider::CanSendURL(
     const GURL& current_page_url,
     const GURL& suggest_url,
     const TemplateURL* template_url,
-    OmniboxEventProto::PageClassification page_classification,
+    metrics::OmniboxEventProto::PageClassification page_classification,
     const SearchTermsData& search_terms_data,
     AutocompleteProviderClient* client) {
   // Make sure we are sending the suggest request through a cryptographically
@@ -403,6 +363,25 @@ bool BaseSearchProvider::CanSendURL(
     return false;
 
   return true;
+}
+
+void BaseSearchProvider::SetDeletionURL(const std::string& deletion_url,
+                                        AutocompleteMatch* match) {
+  if (deletion_url.empty())
+    return;
+
+  TemplateURLService* template_url_service = client_->GetTemplateURLService();
+  if (!template_url_service)
+    return;
+  GURL url =
+      template_url_service->GetDefaultSearchProvider()->GenerateSearchURL(
+          template_url_service->search_terms_data());
+  url = url.GetOrigin().Resolve(deletion_url);
+  if (url.is_valid()) {
+    match->RecordAdditionalInfo(BaseSearchProvider::kDeletionUrlKey,
+                                url.spec());
+    match->deletable = true;
+  }
 }
 
 void BaseSearchProvider::AddMatchToMap(
