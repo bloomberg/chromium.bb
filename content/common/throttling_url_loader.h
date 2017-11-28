@@ -45,8 +45,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
       const ResourceRequest& url_request,
       mojom::URLLoaderClient* client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-          base::ThreadTaskRunnerHandle::Get());
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   using StartLoaderCallback =
       base::OnceCallback<void(mojom::URLLoaderRequest request,
@@ -62,8 +61,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
       const ResourceRequest& url_request,
       mojom::URLLoaderClient* client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-          base::ThreadTaskRunnerHandle::Get());
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ~ThrottlingURLLoader() override;
 

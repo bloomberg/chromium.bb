@@ -276,7 +276,8 @@ class ThrottlingURLLoaderTest : public testing::Test {
     request.url = request_url;
     loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         factory_.factory_ptr().get(), std::move(throttles_), 0, 0, options,
-        request, &client_, TRAFFIC_ANNOTATION_FOR_TESTS);
+        request, &client_, TRAFFIC_ANNOTATION_FOR_TESTS,
+        base::ThreadTaskRunnerHandle::Get());
     factory_.factory_ptr().FlushForTesting();
   }
 
