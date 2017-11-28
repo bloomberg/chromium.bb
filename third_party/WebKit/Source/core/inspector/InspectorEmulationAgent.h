@@ -5,6 +5,7 @@
 #ifndef InspectorEmulationAgent_h
 #define InspectorEmulationAgent_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Emulation.h"
@@ -25,8 +26,6 @@ class RGBA;
 class CORE_EXPORT InspectorEmulationAgent final
     : public InspectorBaseAgent<protocol::Emulation::Metainfo>,
       public WebViewScheduler::VirtualTimeObserver {
-  WTF_MAKE_NONCOPYABLE(InspectorEmulationAgent);
-
  public:
   class Client {
    public:
@@ -88,6 +87,8 @@ class CORE_EXPORT InspectorEmulationAgent final
   Member<WebLocalFrameImpl> web_local_frame_;
   Client* client_;
   bool virtual_time_observer_registered_;
+
+  DISALLOW_COPY_AND_ASSIGN(InspectorEmulationAgent);
 };
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #ifndef CSPDirective_h
 #define CSPDirective_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
@@ -15,14 +16,12 @@ class ContentSecurityPolicy;
 
 class CORE_EXPORT CSPDirective
     : public GarbageCollectedFinalized<CSPDirective> {
-  WTF_MAKE_NONCOPYABLE(CSPDirective);
-
  public:
   CSPDirective(const String& name,
                const String& value,
                ContentSecurityPolicy* policy)
       : name_(name), text_(name + ' ' + value), policy_(policy) {}
-  virtual ~CSPDirective() {}
+  virtual ~CSPDirective() = default;
   virtual void Trace(blink::Visitor* visitor) { visitor->Trace(policy_); }
 
   const String& GetName() const { return name_; }
@@ -35,6 +34,8 @@ class CORE_EXPORT CSPDirective
   String name_;
   String text_;
   Member<ContentSecurityPolicy> policy_;
+
+  DISALLOW_COPY_AND_ASSIGN(CSPDirective);
 };
 
 }  // namespace blink

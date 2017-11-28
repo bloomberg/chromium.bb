@@ -5,6 +5,7 @@
 #ifndef GridPositionsResolver_h
 #define GridPositionsResolver_h
 
+#include "base/macros.h"
 #include "core/style/GridPosition.h"
 #include "platform/wtf/Allocator.h"
 
@@ -24,8 +25,6 @@ enum GridPositionSide {
 enum GridTrackSizingDirection { kForColumns, kForRows };
 
 class NamedLineCollection {
-  WTF_MAKE_NONCOPYABLE(NamedLineCollection);
-
  public:
   NamedLineCollection(const ComputedStyle&,
                       const String& named_line,
@@ -51,6 +50,8 @@ class NamedLineCollection {
   size_t last_line_;
   size_t auto_repeat_total_tracks_;
   size_t auto_repeat_track_list_length_;
+
+  DISALLOW_COPY_AND_ASSIGN(NamedLineCollection);
 };
 
 // This is a utility class with all the code related to grid items positions

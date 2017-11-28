@@ -24,7 +24,6 @@ class {{ agent | agent_name_to_class }};
 {% endfor %}
 
 class {{export_symbol}} {{sink_class}} : public GarbageCollectedFinalized<{{sink_class}}> {
-  WTF_MAKE_NONCOPYABLE({{sink_class}});
 
  public:
   enum AgentType : unsigned {
@@ -35,6 +34,9 @@ class {{export_symbol}} {{sink_class}} : public GarbageCollectedFinalized<{{sink
 
   {{sink_class}}();
   ~{{sink_class}}();
+  {{sink_class}} (const {{sink_class}}&) = delete;
+  {{sink_class}}& operator=(const {{sink_class}}&) = delete;
+
   void Trace(Visitor*);
 
 {% for agent in agents %}

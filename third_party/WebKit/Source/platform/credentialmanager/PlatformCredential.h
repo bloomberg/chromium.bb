@@ -4,7 +4,7 @@
 
 #ifndef PlatformCredential_h
 #define PlatformCredential_h
-
+#include "base/macros.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -12,8 +12,6 @@ namespace blink {
 
 class PLATFORM_EXPORT PlatformCredential
     : public GarbageCollectedFinalized<PlatformCredential> {
-  WTF_MAKE_NONCOPYABLE(PlatformCredential);
-
  public:
   static PlatformCredential* Create(const String& id);
   virtual ~PlatformCredential();
@@ -34,6 +32,8 @@ class PLATFORM_EXPORT PlatformCredential
  private:
   String id_;
   String type_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformCredential);
 };
 
 }  // namespace blink

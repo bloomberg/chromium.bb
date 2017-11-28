@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/ThreadingPrimitives.h"
@@ -20,7 +21,6 @@ class ScriptStreamer;
 // A singleton thread for running background tasks for script streaming.
 class CORE_EXPORT ScriptStreamerThread {
   USING_FAST_MALLOC(ScriptStreamerThread);
-  WTF_MAKE_NONCOPYABLE(ScriptStreamerThread);
 
  public:
   static void Init();
@@ -51,6 +51,8 @@ class CORE_EXPORT ScriptStreamerThread {
   std::unique_ptr<WebThread> thread_;
   bool running_task_;
   mutable Mutex mutex_;  // Guards m_runningTask.
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptStreamerThread);
 };
 
 }  // namespace blink

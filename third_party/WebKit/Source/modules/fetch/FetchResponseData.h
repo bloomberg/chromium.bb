@@ -6,6 +6,8 @@
 #define FetchResponseData_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
@@ -27,8 +29,6 @@ class WebServiceWorkerResponse;
 
 class MODULES_EXPORT FetchResponseData final
     : public GarbageCollectedFinalized<FetchResponseData> {
-  WTF_MAKE_NONCOPYABLE(FetchResponseData);
-
  public:
   // "A response can have an associated termination reason which is one of
   // end-user abort, fatal, and timeout."
@@ -125,6 +125,8 @@ class MODULES_EXPORT FetchResponseData final
   Time response_time_;
   String cache_storage_cache_name_;
   WebHTTPHeaderSet cors_exposed_header_names_;
+
+  DISALLOW_COPY_AND_ASSIGN(FetchResponseData);
 };
 
 }  // namespace blink

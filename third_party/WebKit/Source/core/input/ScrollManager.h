@@ -6,6 +6,8 @@
 #define ScrollManager_h
 
 #include <deque>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "platform/geometry/LayoutSize.h"
@@ -33,8 +35,6 @@ class WebGestureEvent;
 // classes and they call into this class for doing the work.
 class CORE_EXPORT ScrollManager
     : public GarbageCollectedFinalized<ScrollManager> {
-  WTF_MAKE_NONCOPYABLE(ScrollManager);
-
  public:
   explicit ScrollManager(LocalFrame&);
   void Trace(blink::Visitor*);
@@ -151,6 +151,8 @@ class CORE_EXPORT ScrollManager
 
   LayoutSize
       offset_from_resize_corner_;  // In the coords of m_resizeScrollableArea.
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollManager);
 };
 
 }  // namespace blink

@@ -7,6 +7,7 @@
 #ifndef InspectorTracingAgent_h
 #define InspectorTracingAgent_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Tracing.h"
@@ -20,8 +21,6 @@ class InspectorWorkerAgent;
 
 class CORE_EXPORT InspectorTracingAgent final
     : public InspectorBaseAgent<protocol::Tracing::Metainfo> {
-  WTF_MAKE_NONCOPYABLE(InspectorTracingAgent);
-
  public:
   class Client {
    public:
@@ -74,6 +73,8 @@ class CORE_EXPORT InspectorTracingAgent final
   Client* client_;
   Member<InspectorWorkerAgent> worker_agent_;
   Member<InspectedFrames> inspected_frames_;
+
+  DISALLOW_COPY_AND_ASSIGN(InspectorTracingAgent);
 };
 
 }  // namespace blink

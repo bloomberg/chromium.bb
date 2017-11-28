@@ -21,6 +21,7 @@
 #ifndef SVGPathStringSource_h
 #define SVGPathStringSource_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/SVGPathData.h"
@@ -29,7 +30,6 @@
 namespace blink {
 
 class CORE_EXPORT SVGPathStringSource {
-  WTF_MAKE_NONCOPYABLE(SVGPathStringSource);
   STACK_ALLOCATED();
 
  public:
@@ -64,6 +64,8 @@ class CORE_EXPORT SVGPathStringSource {
   SVGPathSegType previous_command_;
   SVGParsingError error_;
   String string_;
+
+  DISALLOW_COPY_AND_ASSIGN(SVGPathStringSource);
 };
 
 }  // namespace blink

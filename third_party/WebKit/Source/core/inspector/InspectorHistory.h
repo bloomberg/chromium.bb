@@ -31,6 +31,7 @@
 #ifndef InspectorHistory_h
 #define InspectorHistory_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
@@ -41,8 +42,6 @@ namespace blink {
 class ExceptionState;
 
 class InspectorHistory final : public GarbageCollected<InspectorHistory> {
-  WTF_MAKE_NONCOPYABLE(InspectorHistory);
-
  public:
   class Action : public GarbageCollectedFinalized<Action> {
    public:
@@ -81,6 +80,8 @@ class InspectorHistory final : public GarbageCollected<InspectorHistory> {
  private:
   HeapVector<Member<Action>> history_;
   size_t after_last_action_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(InspectorHistory);
 };
 
 }  // namespace blink

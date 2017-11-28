@@ -33,6 +33,8 @@
 
 #include <memory>
 #include <utility>
+
+#include "base/macros.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
@@ -78,8 +80,6 @@ class TestingCompositorSupport : public WebCompositorSupport {
 // behavior by subclassing TestingPlatformSupport or using
 // ScopedTestingPlatformSupport (see below).
 class TestingPlatformSupport : public Platform {
-  WTF_MAKE_NONCOPYABLE(TestingPlatformSupport);
-
  public:
   struct Config {
     WebCompositorSupport* compositor_support = nullptr;
@@ -112,6 +112,8 @@ class TestingPlatformSupport : public Platform {
   const Config config_;
   Platform* const old_platform_;
   std::unique_ptr<TestingInterfaceProvider> interface_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestingPlatformSupport);
 };
 
 // ScopedTestingPlatformSupport<MyTestingPlatformSupport> can be used to
@@ -138,7 +140,7 @@ class TestingPlatformSupport : public Platform {
 // }
 template <class T, typename... Args>
 class ScopedTestingPlatformSupport final {
-  WTF_MAKE_NONCOPYABLE(ScopedTestingPlatformSupport);
+  DISALLOW_COPY_AND_ASSIGN(ScopedTestingPlatformSupport);
 
  public:
   explicit ScopedTestingPlatformSupport(Args&&... args) {
@@ -165,7 +167,7 @@ class ScopedTestingPlatformSupport final {
 };
 
 class ScopedUnittestsEnvironmentSetup final {
-  WTF_MAKE_NONCOPYABLE(ScopedUnittestsEnvironmentSetup);
+  DISALLOW_COPY_AND_ASSIGN(ScopedUnittestsEnvironmentSetup);
 
  public:
   ScopedUnittestsEnvironmentSetup(int argc, char** argv);

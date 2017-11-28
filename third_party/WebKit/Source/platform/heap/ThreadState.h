@@ -32,6 +32,8 @@
 #define ThreadState_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/BlinkGC.h"
 #include "platform/heap/ThreadingTraits.h"
@@ -129,7 +131,6 @@ class PLATFORM_EXPORT BlinkGCObserver {
 
 class PLATFORM_EXPORT ThreadState {
   USING_FAST_MALLOC(ThreadState);
-  WTF_MAKE_NONCOPYABLE(ThreadState);
 
  public:
   // See setGCState() for possible state transitions.
@@ -668,6 +669,8 @@ class PLATFORM_EXPORT ThreadState {
     std::unique_ptr<Visitor> visitor;
   };
   GCData current_gc_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadState);
 };
 
 template <>
