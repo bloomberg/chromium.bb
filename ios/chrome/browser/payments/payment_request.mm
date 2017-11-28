@@ -89,9 +89,10 @@ PaymentRequest::PaymentRequest(
       web_state_(web_state),
       personal_data_manager_(personal_data_manager),
       payment_request_ui_delegate_(payment_request_ui_delegate),
+      // TODO(crbug.com/788229): Use a factory for the AddressNormalizer.
       address_normalizer_(
           GetAddressInputSource(
-              personal_data_manager_->GetURLRequestContextGetter()),
+              GetApplicationContext()->GetSystemURLRequestContext()),
           GetAddressInputStorage(),
           GetApplicationContext()->GetApplicationLocale()),
       address_normalization_manager_(
@@ -105,7 +106,7 @@ PaymentRequest::PaymentRequest(
       journey_logger_(IsIncognito(), GetLastCommittedURL(), GetUkmRecorder()),
       payment_instruments_ready_(false),
       ios_instrument_finder_(
-          personal_data_manager_->GetURLRequestContextGetter(),
+          GetApplicationContext()->GetSystemURLRequestContext(),
           payment_request_ui_delegate_) {
   PopulateAvailableShippingOptions();
   PopulateProfileCache();
@@ -184,7 +185,7 @@ autofill::AddressNormalizer* PaymentRequest::GetAddressNormalizer() {
 autofill::RegionDataLoader* PaymentRequest::GetRegionDataLoader() {
   return new autofill::RegionDataLoaderImpl(
       GetAddressInputSource(
-          personal_data_manager_->GetURLRequestContextGetter())
+          GetApplicationContext()->GetSystemURLRequestContext())
           .release(),
       GetAddressInputStorage().release(), GetApplicationLocale());
 }
