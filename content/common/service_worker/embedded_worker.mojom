@@ -4,20 +4,51 @@
 
 module content.mojom;
 
+import "content/common/native_types.mojom";
 import "content/common/service_worker/controller_service_worker.mojom";
 import "content/common/service_worker/service_worker_event_dispatcher.mojom";
 import "content/common/service_worker/service_worker_installed_scripts_manager.mojom";
 import "content/common/service_worker/service_worker_provider.mojom";
 import "mojo/common/string16.mojom";
 import "mojo/common/time.mojom";
+import "mojo/common/unguessable_token.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker.mojom";
 import "third_party/WebKit/public/web/console_message.mojom";
 import "third_party/WebKit/public/web/worker_content_settings_proxy.mojom";
 import "url/mojo/url.mojom";
 
-[Native]
-struct EmbeddedWorkerStartParams;
+// Parameters to launch a service worker. This is passed from the browser to the
+// renderer at mojom::EmbeddedWorkerInstanceClient::StartWorker().
+struct EmbeddedWorkerStartParams {
+  // The id of the embedded worker. This changes when the service worker is
+  // stopped and restarted.
+  int32 embedded_worker_id;
+  // The id of the service worker being started. This remains fixed even if the
+  // worker is stopped and restarted, or even if the browser restarts.
+  int64 service_worker_version_id;
+  // This service worker's registration's scope:
+  // https://w3c.github.io/ServiceWorker/#service-worker-registration-scope
+  url.mojom.Url scope;
+  // This service worker's script url:
+  // https://w3c.github.io/ServiceWorker/#dom-serviceworker-scripturl
+  url.mojom.Url script_url;
+  // The id to talk with the DevTools agent for the worker.
+  int32 worker_devtools_agent_route_id;
+  // Unique token identifying this worker for DevTools.
+  mojo.common.mojom.UnguessableToken devtools_worker_token;
+  // When true, worker script evaluation is blocked until
+  // EmbeddedWorkerInstanceClient::ResumeAfterDownload() is called.
+  bool pause_after_download;
+  // True if starting the worker should wait until DevTools gets ready.
+  bool wait_for_debugger;
+  // True if this service worker has been installed.
+  bool is_installed;
+  // Determines how eagerly V8 creates the code cache.
+  V8CacheOptions v8_cache_options;
+  // True if Data Saver is enabled.
+  bool data_saver_enabled;
+};
 
 // Holds timing information about the start worker sequence for UMA.
 struct EmbeddedWorkerStartTiming {
