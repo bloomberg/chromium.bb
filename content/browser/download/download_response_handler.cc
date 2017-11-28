@@ -51,11 +51,12 @@ DownloadResponseHandler::DownloadResponseHandler(
     std::unique_ptr<DownloadSaveInfo> save_info,
     bool is_parallel_request,
     bool is_transient,
-    bool fetch_error_body)
+    bool fetch_error_body,
+    std::vector<GURL> url_chain)
     : delegate_(delegate),
       started_(false),
       save_info_(std::move(save_info)),
-      url_chain_(1, resource_request->url),
+      url_chain_(std::move(url_chain)),
       method_(resource_request->method),
       referrer_(resource_request->referrer),
       is_transient_(is_transient),
@@ -197,11 +198,8 @@ void DownloadResponseHandler::OnComplete(
   // happen when the request was aborted.
   create_info_ = CreateDownloadCreateInfo(ResourceResponseHead());
   create_info_->result = reason;
-  OnResponseStarted(mojom::DownloadStreamHandlePtr());
-}
 
-void DownloadResponseHandler::SetURLChain(std::vector<GURL> url_chain) {
-  url_chain_ = std::move(url_chain);
+  OnResponseStarted(mojom::DownloadStreamHandlePtr());
 }
 
 void DownloadResponseHandler::OnResponseStarted(

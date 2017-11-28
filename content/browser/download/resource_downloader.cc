@@ -9,35 +9,61 @@
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace content {
 
+// This object monitors the URLLoaderCompletionStatus change when
+// ResourceDownloader is asking |delegate_| whether download can proceed.
+class URLLoaderStatusMonitor : public mojom::URLLoaderClient {
+ public:
+  using URLLoaderStatusChangeCallback =
+      base::OnceCallback<void(const network::URLLoaderCompletionStatus&)>;
+  explicit URLLoaderStatusMonitor(URLLoaderStatusChangeCallback callback);
+  ~URLLoaderStatusMonitor() override = default;
+
+  // mojom::URLLoaderClient
+  void OnReceiveResponse(
+      const ResourceResponseHead& head,
+      const base::Optional<net::SSLInfo>& ssl_info,
+      mojom::DownloadedTempFilePtr downloaded_file) override {}
+  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
+                         const ResourceResponseHead& head) override {}
+  void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override {}
+  void OnUploadProgress(int64_t current_position,
+                        int64_t total_size,
+                        OnUploadProgressCallback callback) override {}
+  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {}
+  void OnTransferSizeUpdated(int32_t transfer_size_diff) override {}
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override {}
+  void OnComplete(const network::URLLoaderCompletionStatus& status) override;
+
+ private:
+  URLLoaderStatusChangeCallback callback_;
+  DISALLOW_COPY_AND_ASSIGN(URLLoaderStatusMonitor);
+};
+
+URLLoaderStatusMonitor::URLLoaderStatusMonitor(
+    URLLoaderStatusChangeCallback callback)
+    : callback_(std::move(callback)) {}
+
+void URLLoaderStatusMonitor::OnComplete(
+    const network::URLLoaderCompletionStatus& status) {
+  std::move(callback_).Run(status);
+}
+
 // This class is only used for providing the WebContents to DownloadItemImpl.
 class RequestHandle : public DownloadRequestHandleInterface {
  public:
-  RequestHandle(int render_process_id,
-                int render_frame_id,
-                int frame_tree_node_id)
-      : render_process_id_(render_process_id),
-        render_frame_id_(render_frame_id),
-        frame_tree_node_id_(frame_tree_node_id) {}
+  explicit RequestHandle(const ResourceRequestInfo::WebContentsGetter& getter)
+      : web_contents_getter_(getter) {}
   RequestHandle(RequestHandle&& other)
-      : render_process_id_(other.render_process_id_),
-        render_frame_id_(other.render_frame_id_),
-        frame_tree_node_id_(other.frame_tree_node_id_) {}
+      : web_contents_getter_(other.web_contents_getter_) {}
 
   // DownloadRequestHandleInterface
   WebContents* GetWebContents() const override {
-    DCHECK(IsBrowserSideNavigationEnabled());
-
-    WebContents* web_contents = WebContents::FromRenderFrameHost(
-        RenderFrameHost::FromID(render_process_id_, render_frame_id_));
-    if (web_contents)
-      return web_contents;
-
-    return WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
+    return web_contents_getter_.Run();
   }
 
   DownloadManager* GetDownloadManager() const override { return nullptr; }
@@ -46,9 +72,7 @@ class RequestHandle : public DownloadRequestHandleInterface {
   void CancelRequest(bool user_cancel) const override {}
 
  private:
-  int render_process_id_;
-  int render_frame_id_;
-  int frame_tree_node_id_;
+  ResourceRequestInfo::WebContentsGetter web_contents_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestHandle);
 };
@@ -60,60 +84,40 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     std::unique_ptr<ResourceRequest> request,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     scoped_refptr<storage::FileSystemContext> file_system_context,
+    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     uint32_t download_id,
     bool is_parallel_request) {
   auto downloader = std::make_unique<ResourceDownloader>(
-      delegate, std::move(request),
-      std::make_unique<DownloadSaveInfo>(params->GetSaveInfo()), download_id,
-      params->guid(), is_parallel_request, params->is_transient(),
-      params->fetch_error_body());
+      delegate, std::move(request), web_contents_getter, download_id);
+
   downloader->Start(url_loader_factory_getter, file_system_context,
-                    std::move(params));
+                    std::move(params), is_parallel_request);
   return downloader;
 }
 
 // static
-std::unique_ptr<ResourceDownloader>
-ResourceDownloader::InterceptNavigationResponse(
+std::unique_ptr<ResourceDownloader> ResourceDownloader::CreateWithURLLoader(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<ResourceRequest> resource_request,
-    const scoped_refptr<ResourceResponse>& response,
-    mojo::ScopedDataPipeConsumerHandle consumer_handle,
-    const SSLStatus& ssl_status,
-    int frame_tree_node_id,
+    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     std::unique_ptr<ThrottlingURLLoader> url_loader,
-    std::vector<GURL> url_chain,
     base::Optional<network::URLLoaderCompletionStatus> status) {
   auto downloader = std::make_unique<ResourceDownloader>(
-      delegate, std::move(resource_request),
-      std::make_unique<DownloadSaveInfo>(), content::DownloadItem::kInvalidId,
-      std::string(), false, false, false);
-  downloader->InterceptResponse(
-      std::move(url_loader), response, std::move(consumer_handle), ssl_status,
-      frame_tree_node_id, std::move(url_chain), std::move(status));
+      delegate, std::move(resource_request), web_contents_getter,
+      DownloadItem::kInvalidId);
+  downloader->InitializeURLLoader(std::move(url_loader), std::move(status));
   return downloader;
 }
 
 ResourceDownloader::ResourceDownloader(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<ResourceRequest> resource_request,
-    std::unique_ptr<DownloadSaveInfo> save_info,
-    uint32_t download_id,
-    std::string guid,
-    bool is_parallel_request,
-    bool is_transient,
-    bool fetch_error_body)
+    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    uint32_t download_id)
     : delegate_(delegate),
       resource_request_(std::move(resource_request)),
-      response_handler_(resource_request_.get(),
-                        this,
-                        std::move(save_info),
-                        is_parallel_request,
-                        is_transient,
-                        fetch_error_body),
-      blob_client_binding_(&response_handler_),
       download_id_(download_id),
-      guid_(guid),
+      web_contents_getter_(web_contents_getter),
       weak_ptr_factory_(this) {}
 
 ResourceDownloader::~ResourceDownloader() = default;
@@ -121,15 +125,28 @@ ResourceDownloader::~ResourceDownloader() = default;
 void ResourceDownloader::Start(
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     scoped_refptr<storage::FileSystemContext> file_system_context,
-    std::unique_ptr<DownloadUrlParameters> download_url_parameters) {
+    std::unique_ptr<DownloadUrlParameters> download_url_parameters,
+    bool is_parallel_request) {
   callback_ = download_url_parameters->callback();
+  guid_ = download_url_parameters->guid();
+  url_loader_client_ = base::MakeUnique<DownloadResponseHandler>(
+      resource_request_.get(), this,
+      std::make_unique<DownloadSaveInfo>(
+          download_url_parameters->GetSaveInfo()),
+      is_parallel_request, download_url_parameters->is_transient(),
+      download_url_parameters->fetch_error_body(),
+      std::vector<GURL>(1, resource_request_->url));
+
   if (download_url_parameters->url().SchemeIs(url::kBlobScheme)) {
     // To avoid race conditions with blob URL being immediately revoked after
     // the download starting (which ThrottlingURLLoader doesn't handle), call
     // directly into BlobURLLoaderFactory for blob URLs.
     mojom::URLLoaderRequest url_loader_request;
     mojom::URLLoaderClientPtr client;
-    blob_client_binding_.Bind(mojo::MakeRequest(&client));
+    blob_client_binding_ =
+        base::MakeUnique<mojo::Binding<mojom::URLLoaderClient>>(
+            url_loader_client_.get());
+    blob_client_binding_->Bind(mojo::MakeRequest(&client));
     BlobURLLoaderFactory::CreateLoaderAndStart(
         std::move(url_loader_request), *(resource_request_.get()),
         std::move(client), download_url_parameters->GetBlobDataHandle());
@@ -141,33 +158,47 @@ void ResourceDownloader::Start(
         0,  // request_id
         mojom::kURLLoadOptionSendSSLInfoWithResponse |
             mojom::kURLLoadOptionSniffMimeType,
-        *(resource_request_.get()), &response_handler_,
+        *(resource_request_.get()), url_loader_client_.get(),
         download_url_parameters->GetNetworkTrafficAnnotation());
     url_loader_->SetPriority(net::RequestPriority::IDLE,
                              0 /* intra_priority_value */);
   }
 }
 
-void ResourceDownloader::InterceptResponse(
+void ResourceDownloader::InitializeURLLoader(
     std::unique_ptr<ThrottlingURLLoader> url_loader,
+    base::Optional<network::URLLoaderCompletionStatus> status) {
+  url_loader_status_ = std::move(status);
+  url_loader_ = std::move(url_loader);
+  url_loader_client_ = base::MakeUnique<URLLoaderStatusMonitor>(
+      base::Bind(&ResourceDownloader::OnURLLoaderStatusChanged,
+                 weak_ptr_factory_.GetWeakPtr()));
+  url_loader_->set_forwarding_client(url_loader_client_.get());
+}
+
+void ResourceDownloader::OnURLLoaderStatusChanged(
+    const network::URLLoaderCompletionStatus& status) {
+  DCHECK(!url_loader_status_);
+  url_loader_status_ = status;
+}
+
+void ResourceDownloader::StartNavigationInterception(
     const scoped_refptr<ResourceResponse>& response,
     mojo::ScopedDataPipeConsumerHandle consumer_handle,
     const SSLStatus& ssl_status,
-    int frame_tree_node_id,
-    std::vector<GURL> url_chain,
-    base::Optional<network::URLLoaderCompletionStatus> status) {
-  url_loader_ = std::move(url_loader);
-  url_loader_->set_forwarding_client(&response_handler_);
+    std::vector<GURL> url_chain) {
+  url_loader_client_ = base::MakeUnique<DownloadResponseHandler>(
+      resource_request_.get(), this, std::make_unique<DownloadSaveInfo>(),
+      false, false, false, url_chain);
+  url_loader_->set_forwarding_client(url_loader_client_.get());
   net::SSLInfo info;
   info.cert_status = ssl_status.cert_status;
-  frame_tree_node_id_ = frame_tree_node_id;
-  response_handler_.SetURLChain(std::move(url_chain));
-  response_handler_.OnReceiveResponse(response->head,
-                                      base::Optional<net::SSLInfo>(info),
-                                      mojom::DownloadedTempFilePtr());
-  response_handler_.OnStartLoadingResponseBody(std::move(consumer_handle));
-  if (status.has_value())
-    response_handler_.OnComplete(status.value());
+  url_loader_client_->OnReceiveResponse(response->head,
+                                        base::Optional<net::SSLInfo>(info),
+                                        mojom::DownloadedTempFilePtr());
+  url_loader_client_->OnStartLoadingResponseBody(std::move(consumer_handle));
+  if (url_loader_status_)
+    url_loader_client_->OnComplete(url_loader_status_.value());
 }
 
 void ResourceDownloader::OnResponseStarted(
@@ -175,9 +206,8 @@ void ResourceDownloader::OnResponseStarted(
     mojom::DownloadStreamHandlePtr stream_handle) {
   download_create_info->download_id = download_id_;
   download_create_info->guid = guid_;
-  download_create_info->request_handle.reset(new RequestHandle(
-      resource_request_->origin_pid, resource_request_->render_frame_id,
-      frame_tree_node_id_));
+  download_create_info->request_handle.reset(
+      new RequestHandle(web_contents_getter_));
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
