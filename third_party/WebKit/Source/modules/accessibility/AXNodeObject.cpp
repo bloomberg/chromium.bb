@@ -1886,13 +1886,13 @@ bool AXNodeObject::NameFromLabelElement() const {
   return false;
 }
 
-void AXNodeObject::GetRelativeBounds(
-    AXObject** out_container,
-    FloatRect& out_bounds_in_container,
-    SkMatrix44& out_container_transform) const {
+void AXNodeObject::GetRelativeBounds(AXObject** out_container,
+                                     FloatRect& out_bounds_in_container,
+                                     SkMatrix44& out_container_transform,
+                                     bool* clips_children) const {
   if (LayoutObjectForRelativeBounds()) {
     AXObject::GetRelativeBounds(out_container, out_bounds_in_container,
-                                out_container_transform);
+                                out_container_transform, clips_children);
     return;
   }
 
@@ -1921,7 +1921,8 @@ void AXNodeObject::GetRelativeBounds(
         if (AXObject* obj = AXObjectCache().Get(&child)) {
           AXObject* container;
           FloatRect bounds;
-          obj->GetRelativeBounds(&container, bounds, out_container_transform);
+          obj->GetRelativeBounds(&container, bounds, out_container_transform,
+                                 clips_children);
           if (container) {
             *out_container = container;
             rects.push_back(bounds);
@@ -1944,7 +1945,8 @@ void AXNodeObject::GetRelativeBounds(
        position_provider = position_provider->ParentObject()) {
     if (position_provider->IsAXLayoutObject()) {
       position_provider->GetRelativeBounds(
-          out_container, out_bounds_in_container, out_container_transform);
+          out_container, out_bounds_in_container, out_container_transform,
+          clips_children);
       if (*out_container)
         out_bounds_in_container.SetSize(
             FloatSize(out_bounds_in_container.Width(),

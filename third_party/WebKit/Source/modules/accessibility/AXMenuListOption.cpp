@@ -132,10 +132,10 @@ bool AXMenuListOption::ComputeAccessibilityIsIgnored(
   return AccessibilityIsIgnoredByDefault(ignored_reasons);
 }
 
-void AXMenuListOption::GetRelativeBounds(
-    AXObject** out_container,
-    FloatRect& out_bounds_in_container,
-    SkMatrix44& out_container_transform) const {
+void AXMenuListOption::GetRelativeBounds(AXObject** out_container,
+                                         FloatRect& out_bounds_in_container,
+                                         SkMatrix44& out_container_transform,
+                                         bool* clips_children) const {
   *out_container = nullptr;
   out_bounds_in_container = FloatRect();
   out_container_transform.setIdentity();
@@ -150,7 +150,7 @@ void AXMenuListOption::GetRelativeBounds(
     return;
   DCHECK(grandparent->IsMenuList());
   grandparent->GetRelativeBounds(out_container, out_bounds_in_container,
-                                 out_container_transform);
+                                 out_container_transform, clips_children);
 }
 
 String AXMenuListOption::TextAlternative(bool recursive,

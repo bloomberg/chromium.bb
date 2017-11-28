@@ -431,13 +431,16 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   WebAXObject offset_container;
   WebFloatRect bounds_in_container;
   SkMatrix44 container_transform;
+  bool clips_children = false;
   src.GetRelativeBounds(offset_container, bounds_in_container,
-                        container_transform);
+                        container_transform, &clips_children);
   dst->location = bounds_in_container;
   if (!container_transform.isIdentity())
     dst->transform = base::WrapUnique(new gfx::Transform(container_transform));
   if (!offset_container.IsDetached())
     dst->offset_container_id = offset_container.AxID();
+  if (clips_children)
+    dst->AddBoolAttribute(ui::AX_ATTR_CLIPS_CHILDREN, true);
 
   AXContentNodeDataSparseAttributeAdapter sparse_attribute_adapter(dst);
   src.GetSparseAXAttributes(sparse_attribute_adapter);

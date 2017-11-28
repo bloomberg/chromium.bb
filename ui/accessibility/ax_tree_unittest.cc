@@ -843,6 +843,7 @@ TEST(AXTreeTest, EmptyNodeNotOffscreenEvenIfAllChildrenOffscreen) {
   tree_update.nodes[0].id = 1;
   tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
   tree_update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
+  tree_update.nodes[0].AddBoolAttribute(ui::AX_ATTR_CLIPS_CHILDREN, true);
   tree_update.nodes[0].child_ids.push_back(2);
   tree_update.nodes[1].id = 2;
   tree_update.nodes[1].location = gfx::RectF();  // Deliberately empty.
@@ -936,6 +937,7 @@ TEST(AXTreeTest, GetBoundsEmptyBoundsInheritsFromParent) {
   tree_update.nodes.resize(3);
   tree_update.nodes[0].id = 1;
   tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[1].AddBoolAttribute(ui::AX_ATTR_CLIPS_CHILDREN, true);
   tree_update.nodes[0].child_ids.push_back(2);
   tree_update.nodes[1].id = 2;
   tree_update.nodes[1].location = gfx::RectF(300, 200, 100, 100);
@@ -983,6 +985,41 @@ TEST(AXTreeTest, DISABLED_GetBoundsCropsChildToRoot) {
   EXPECT_EQ("(50, 599) size (150 x 1)", GetBoundsAsString(tree, 5));
 }
 
+TEST(AXTreeTest, GetBoundsSetsOffscreenIfClipsChildren) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(5);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].AddBoolAttribute(ui::AX_ATTR_CLIPS_CHILDREN, true);
+  tree_update.nodes[0].child_ids.push_back(2);
+  tree_update.nodes[0].child_ids.push_back(3);
+
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].location = gfx::RectF(0, 0, 200, 200);
+  tree_update.nodes[1].AddBoolAttribute(ui::AX_ATTR_CLIPS_CHILDREN, true);
+  tree_update.nodes[1].child_ids.push_back(4);
+
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].location = gfx::RectF(0, 0, 200, 200);
+  tree_update.nodes[2].child_ids.push_back(5);
+
+  // Clipped by its parent
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].location = gfx::RectF(250, 250, 100, 100);
+  tree_update.nodes[3].offset_container_id = 2;
+
+  // Outside of its parent, but its parent does not clip children,
+  // so it should not be offscreen.
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].location = gfx::RectF(250, 250, 100, 100);
+  tree_update.nodes[4].offset_container_id = 3;
+
+  AXTree tree(tree_update);
+  EXPECT_TRUE(IsNodeOffscreen(tree, 4));
+  EXPECT_FALSE(IsNodeOffscreen(tree, 5));
+}
+
 TEST(AXTreeTest, GetBoundsUpdatesOffscreen) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
@@ -990,6 +1027,7 @@ TEST(AXTreeTest, GetBoundsUpdatesOffscreen) {
   tree_update.nodes[0].id = 1;
   tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
   tree_update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
+  tree_update.nodes[0].AddBoolAttribute(ui::AX_ATTR_CLIPS_CHILDREN, true);
   tree_update.nodes[0].child_ids.push_back(2);
   tree_update.nodes[0].child_ids.push_back(3);
   tree_update.nodes[0].child_ids.push_back(4);

@@ -345,9 +345,12 @@ class WebAXObject {
   // not null, walk up to its container and offset by the container's offset
   // from origin, the container's scroll position if any, and apply the
   // container's transform.  Do this until you reach the root of the tree.
+  // If the container clips its children, for example with overflow:hidden
+  // or similar, set |clips_children| to true.
   BLINK_EXPORT void GetRelativeBounds(WebAXObject& offset_container,
                                       WebFloatRect& bounds_in_container,
-                                      SkMatrix44& container_transform) const;
+                                      SkMatrix44& container_transform,
+                                      bool* clips_children = nullptr) const;
 
 #if INSIDE_BLINK
   BLINK_EXPORT WebAXObject(AXObject*);
