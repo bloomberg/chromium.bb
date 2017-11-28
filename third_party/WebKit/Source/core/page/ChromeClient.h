@@ -342,10 +342,6 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
       BlameContext*,
       WebFrameScheduler::FrameType) = 0;
 
-  // Returns the time of the beginning of the last beginFrame, in seconds, if
-  // any, and 0.0 otherwise.
-  virtual double LastFrameTimeMonotonic() const { return 0.0; }
-
   virtual void InstallSupplements(LocalFrame&);
 
   virtual WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) { return nullptr; }

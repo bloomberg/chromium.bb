@@ -224,8 +224,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
       BlameContext*,
       WebFrameScheduler::FrameType) override;
 
-  double LastFrameTimeMonotonic() const override;
-
   void RegisterPopupOpeningObserver(PopupOpeningObserver*) override;
   void UnregisterPopupOpeningObserver(PopupOpeningObserver*) override;
   void NotifyPopupOpeningObservers() const override;
