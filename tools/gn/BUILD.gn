@@ -2,12 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 defines = [ "GN_BUILD" ]
 
-static_library("gn_lib") {
+jumbo_static_library("gn_lib") {
   configs += [ "//build/config:precompiled_headers" ]
 
   sources = [
@@ -276,6 +277,18 @@ executable("gn") {
 }
 
 test("gn_unittests") {
+  deps = [
+    ":gn_unittests_sources",
+  ]
+
+  data = [
+    "format_test_data/",
+  ]
+}
+
+jumbo_source_set("gn_unittests_sources") {
+  testonly = true
+
   sources = [
     "action_target_generator_unittest.cc",
     "analyzer_unittest.cc",
@@ -342,11 +355,7 @@ test("gn_unittests") {
     "xml_element_writer_unittest.cc",
   ]
 
-  data = [
-    "format_test_data/",
-  ]
-
-  deps = [
+  public_deps = [
     ":gn_lib",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
