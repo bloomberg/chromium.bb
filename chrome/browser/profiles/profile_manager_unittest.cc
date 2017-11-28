@@ -356,7 +356,14 @@ TEST_F(ProfileManagerTest, UserProfileLoading) {
 
 #endif
 
-TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
+// Data race on Linux bots. http://crbug.com/789214
+#if defined(OS_LINUX)
+#define MAYBE_CreateAndUseTwoProfiles DISABLED_CreateAndUseTwoProfiles
+#else
+#define MAYBE_CreateAndUseTwoProfiles CreateAndUseTwoProfiles
+#endif
+
+TEST_F(ProfileManagerTest, MAYBE_CreateAndUseTwoProfiles) {
   base::FilePath dest_path1 = temp_dir_.GetPath();
   dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("New Profile 1"));
 
