@@ -26,6 +26,8 @@ import elfinfo
 DIR_SOURCE_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 SDK_ROOT = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'fuchsia-sdk')
+QEMU_ROOT = os.path.join(DIR_SOURCE_ROOT, 'third_party',
+                         'qemu-' + platform.machine())
 SYMBOLIZATION_TIMEOUT_SECS = 10
 
 # The guest will get 192.168.3.9 from DHCP, while the host will be
@@ -649,7 +651,7 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
         stdout=subprocess.PIPE, stdin=open(os.devnull))
   else:
     qemu_path = os.path.join(
-        SDK_ROOT, 'qemu', 'bin',
+        QEMU_ROOT,'bin',
         'qemu-system-' + _TargetCpuToArch(bootfs_data.target_cpu))
     qemu_command = [qemu_path,
         '-m', '2048',
