@@ -26,7 +26,7 @@ class CompositorController::AnimationBeginFrameTask
         weak_ptr_factory_(this) {}
 
   // VirtualTimeController::RepeatingTask implementation:
-  void IntervalElapsed(const base::TimeDelta& virtual_time,
+  void IntervalElapsed(base::TimeDelta virtual_time_offset,
                        const base::Closure& continue_callback) override {
     continue_callback_ = continue_callback;
 
@@ -42,8 +42,8 @@ class CompositorController::AnimationBeginFrameTask
         FROM_HERE, begin_frame_task_.callback());
   }
 
-  void BudgetRequested(const base::TimeDelta& virtual_time,
-                       int requested_budget_ms,
+  void BudgetRequested(base::TimeDelta virtual_time_offset,
+                       base::TimeDelta requested_budget,
                        const base::Closure& continue_callback) override {
     // Run a BeginFrame if we cancelled it because the budged expired previously
     // and no other BeginFrame was sent while virtual time was paused.
@@ -55,7 +55,7 @@ class CompositorController::AnimationBeginFrameTask
     continue_callback.Run();
   }
 
-  void BudgetExpired(const base::TimeDelta& virtual_time) override {
+  void BudgetExpired(base::TimeDelta virtual_time_offset) override {
     // Wait until a new budget was requested before sending another animation
     // BeginFrame, as it's likely that we will send a screenshotting BeginFrame.
     if (!begin_frame_task_.IsCancelled()) {
@@ -111,13 +111,13 @@ CompositorController::CompositorController(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     HeadlessDevToolsClient* devtools_client,
     VirtualTimeController* virtual_time_controller,
-    int animation_begin_frame_interval_ms,
+    base::TimeDelta animation_begin_frame_interval,
     base::TimeDelta wait_for_compositor_ready_begin_frame_delay)
     : task_runner_(std::move(task_runner)),
       devtools_client_(devtools_client),
       virtual_time_controller_(virtual_time_controller),
       animation_task_(base::MakeUnique<AnimationBeginFrameTask>(this)),
-      animation_begin_frame_interval_ms_(animation_begin_frame_interval_ms),
+      animation_begin_frame_interval_(animation_begin_frame_interval),
       wait_for_compositor_ready_begin_frame_delay_(
           wait_for_compositor_ready_begin_frame_delay),
       weak_ptr_factory_(this) {
@@ -129,7 +129,7 @@ CompositorController::CompositorController(
   devtools_client_->GetHeadlessExperimental()->GetExperimental()->Enable(
       headless_experimental::EnableParams::Builder().Build());
   virtual_time_controller_->ScheduleRepeatingTask(
-      animation_task_.get(), animation_begin_frame_interval_ms_);
+      animation_task_.get(), animation_begin_frame_interval_);
 }
 
 CompositorController::~CompositorController() {
@@ -162,6 +162,24 @@ void CompositorController::BeginFrame(
   begin_frame_complete_callback_ = begin_frame_complete_callback;
   if (needs_begin_frames_ || screenshot) {
     auto params_builder = headless_experimental::BeginFrameParams::Builder();
+
+    // Use virtual time for frame time, so that rendering of animations etc. is
+    // aligned with virtual time progression.
+    base::Time frame_time = virtual_time_controller_->GetCurrentVirtualTime();
+    if (frame_time <= last_begin_frame_time_) {
+      // Frame time cannot go backwards or stop, so we issue another BeginFrame
+      // with a small time offset from the last BeginFrame's time instead.
+      frame_time =
+          last_begin_frame_time_ + base::TimeDelta::FromMicroseconds(1);
+    }
+    params_builder.SetFrameTime(frame_time.ToJsTime());
+    DCHECK_GT(frame_time, last_begin_frame_time_);
+    DCHECK_GT(frame_time.ToJsTime(), last_begin_frame_time_.ToJsTime());
+    last_begin_frame_time_ = frame_time;
+
+    params_builder.SetInterval(
+        animation_begin_frame_interval_.InMillisecondsF());
+
     // TODO(eseckler): Set time fields. This requires obtaining the absolute
     // virtual time stamp.
     if (screenshot)

@@ -8,18 +8,20 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "headless/public/internal/headless_devtools_client_impl.h"
-#include "headless/public/util/virtual_time_controller.h"
 #include "headless/public/util/testing/mock_devtools_agent_host.h"
+#include "headless/public/util/virtual_time_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace headless {
 
 namespace {
-static constexpr int kAnimationFrameIntervalMs = 16;
+static constexpr base::TimeDelta kAnimationFrameInterval =
+    base::TimeDelta::FromMilliseconds(16);
 static constexpr base::TimeDelta kWaitForCompositorReadyFrameDelay =
     base::TimeDelta::FromMilliseconds(20);
 } // namespace
@@ -35,12 +37,15 @@ class TestVirtualTimeController : public VirtualTimeController {
 
   MOCK_METHOD4(GrantVirtualTimeBudget,
                void(emulation::VirtualTimePolicy policy,
-                    int budget_ms,
+                    base::TimeDelta budget,
                     const base::Callback<void()>& set_up_complete_callback,
                     const base::Callback<void()>& budget_expired_callback));
   MOCK_METHOD2(ScheduleRepeatingTask,
-               void(RepeatingTask* task, int interval_ms));
+               void(RepeatingTask* task, base::TimeDelta interval));
   MOCK_METHOD1(CancelRepeatingTask, void(RepeatingTask* task));
+
+  MOCK_CONST_METHOD0(GetVirtualTimeBase, base::Time());
+  MOCK_CONST_METHOD0(GetCurrentVirtualTimeOffset, base::TimeDelta());
 };
 
 class CompositorControllerTest : public ::testing::Test {
@@ -56,12 +61,12 @@ class CompositorControllerTest : public ::testing::Test {
     virtual_time_controller_ =
         base::MakeUnique<TestVirtualTimeController>(&client_);
     EXPECT_CALL(*virtual_time_controller_,
-                ScheduleRepeatingTask(_, kAnimationFrameIntervalMs))
+                ScheduleRepeatingTask(_, kAnimationFrameInterval))
         .WillOnce(testing::SaveArg<0>(&task_));
     ExpectHeadlessExperimentalEnable();
     controller_ = base::MakeUnique<CompositorController>(
         task_runner_, &client_, virtual_time_controller_.get(),
-        kAnimationFrameIntervalMs, kWaitForCompositorReadyFrameDelay);
+        kAnimationFrameInterval, kWaitForCompositorReadyFrameDelay);
     EXPECT_NE(nullptr, task_);
   }
 
@@ -81,16 +86,46 @@ class CompositorControllerTest : public ::testing::Test {
         .WillOnce(Return(true));
   }
 
-  void ExpectBeginFrame(const std::string& params = "") {
+  void ExpectVirtualTime(double base, double offset) {
+    auto base_time = base::Time::FromJsTime(base);
+    auto offset_delta = base::TimeDelta::FromMilliseconds(offset);
+    EXPECT_CALL(*virtual_time_controller_, GetVirtualTimeBase())
+        .WillOnce(Return(base_time));
+    EXPECT_CALL(*virtual_time_controller_, GetCurrentVirtualTimeOffset())
+        .WillOnce(Return(offset_delta));
+
+    // Next BeginFrame's time should be the virtual time provided it has
+    // progressed.
+    base::Time virtual_time = base_time + offset_delta;
+    if (virtual_time > next_begin_frame_time_)
+      next_begin_frame_time_ = virtual_time;
+  }
+
+  void ExpectBeginFrame(std::unique_ptr<headless_experimental::ScreenshotParams>
+                            screenshot_params = nullptr) {
     last_command_id_ += 2;
+    base::DictionaryValue params;
+    auto builder =
+        std::move(headless_experimental::BeginFrameParams::Builder()
+                      .SetFrameTime(next_begin_frame_time_.ToJsTime())
+                      .SetInterval(kAnimationFrameInterval.InMillisecondsF()));
+    if (screenshot_params)
+      builder.SetScreenshot(std::move(screenshot_params));
+    // Subsequent BeginFrames should have a later timestamp.
+    next_begin_frame_time_ += base::TimeDelta::FromMicroseconds(1);
+
+    std::string params_json;
+    auto params_value = builder.Build()->Serialize();
+    base::JSONWriter::Write(*params_value, &params_json);
+
     EXPECT_CALL(
         *mock_host_,
         DispatchProtocolMessage(
             &client_,
             base::StringPrintf(
                 "{\"id\":%d,\"method\":\"HeadlessExperimental.beginFrame\","
-                "\"params\":{%s}}",
-                last_command_id_, params.c_str())))
+                "\"params\":%s}",
+                last_command_id_, params_json.c_str())))
         .WillOnce(Return(true));
   }
 
@@ -140,6 +175,8 @@ class CompositorControllerTest : public ::testing::Test {
   std::unique_ptr<CompositorController> controller_;
   int last_command_id_ = -2;
   TestVirtualTimeController::RepeatingTask* task_ = nullptr;
+  base::Time next_begin_frame_time_ =
+      base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(1);
 };
 
 TEST_F(CompositorControllerTest, WaitForCompositorReady) {
@@ -152,6 +189,7 @@ TEST_F(CompositorControllerTest, WaitForCompositorReady) {
   // Sends BeginFrames with delay while they are needed.
   SendNeedsBeginFramesEvent(true);
   EXPECT_TRUE(task_runner_->HasPendingTask());
+  ExpectVirtualTime(0, 0);
   ExpectBeginFrame();
   task_runner_->RunPendingTasks();
 
@@ -160,6 +198,7 @@ TEST_F(CompositorControllerTest, WaitForCompositorReady) {
   EXPECT_TRUE(task_runner_->HasPendingTask());
   EXPECT_EQ(kWaitForCompositorReadyFrameDelay,
             task_runner_->NextPendingTaskDelay());
+  ExpectVirtualTime(0, 0);
   ExpectBeginFrame();
   task_runner_->RunPendingTasks();
 
@@ -170,6 +209,7 @@ TEST_F(CompositorControllerTest, WaitForCompositorReady) {
   EXPECT_TRUE(task_runner_->HasPendingTask());
   EXPECT_EQ(kWaitForCompositorReadyFrameDelay,
             task_runner_->NextPendingTaskDelay());
+  ExpectVirtualTime(0, 0);
   ExpectBeginFrame();
   task_runner_->RunPendingTasks();
 
@@ -183,6 +223,7 @@ TEST_F(CompositorControllerTest, WaitForCompositorReady) {
   // Restarts sending BeginFrames when they are needed again.
   SendNeedsBeginFramesEvent(true);
   EXPECT_TRUE(task_runner_->HasPendingTask());
+  ExpectVirtualTime(0, 0);
   ExpectBeginFrame();
   task_runner_->RunPendingTasks();
 
@@ -211,7 +252,12 @@ TEST_F(CompositorControllerTest, CaptureScreenshot) {
           &done));
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
-  ExpectBeginFrame("\"screenshot\":{\"format\":\"png\",\"quality\":100}");
+  ExpectVirtualTime(0, 0);
+  ExpectBeginFrame(
+      headless_experimental::ScreenshotParams::Builder()
+          .SetFormat(headless_experimental::ScreenshotParamsFormat::PNG)
+          .SetQuality(100)
+          .Build());
   task_runner_->RunPendingTasks();
 
   std::string base64;
@@ -230,6 +276,7 @@ TEST_F(CompositorControllerTest, WaitForMainFrameContentUpdate) {
   // Sends BeginFrames while they are needed.
   SendNeedsBeginFramesEvent(true);
   EXPECT_TRUE(task_runner_->HasPendingTask());
+  ExpectVirtualTime(0, 0);
   ExpectBeginFrame();
   task_runner_->RunPendingTasks();
 
@@ -237,6 +284,7 @@ TEST_F(CompositorControllerTest, WaitForMainFrameContentUpdate) {
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
   EXPECT_EQ(base::TimeDelta(), task_runner_->NextPendingTaskDelay());
+  ExpectVirtualTime(0, 0);
   ExpectBeginFrame();
   task_runner_->RunPendingTasks();
 
@@ -246,6 +294,7 @@ TEST_F(CompositorControllerTest, WaitForMainFrameContentUpdate) {
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
   EXPECT_EQ(base::TimeDelta(), task_runner_->NextPendingTaskDelay());
+  ExpectVirtualTime(0, 0);
   ExpectBeginFrame();
   task_runner_->RunPendingTasks();
 
@@ -259,6 +308,7 @@ TEST_F(CompositorControllerTest, WaitForMainFrameContentUpdate) {
   // Restarts sending BeginFrames when they are needed again.
   SendNeedsBeginFramesEvent(true);
   EXPECT_TRUE(task_runner_->HasPendingTask());
+  ExpectVirtualTime(0, 0);
   ExpectBeginFrame();
   task_runner_->RunPendingTasks();
 
@@ -278,7 +328,9 @@ TEST_F(CompositorControllerTest, SendsAnimationFrames) {
       [](bool* can_continue) { *can_continue = true; }, &can_continue);
 
   // Task doesn't block virtual time request.
-  task_->BudgetRequested(base::TimeDelta(), 100, continue_callback);
+  task_->BudgetRequested(base::TimeDelta(),
+                         base::TimeDelta::FromMilliseconds(100),
+                         continue_callback);
   EXPECT_TRUE(can_continue);
   can_continue = false;
 
@@ -287,12 +339,11 @@ TEST_F(CompositorControllerTest, SendsAnimationFrames) {
   EXPECT_FALSE(task_runner_->HasPendingTask());
 
   // Sends a BeginFrame after interval elapsed.
-  task_->IntervalElapsed(
-      base::TimeDelta::FromMilliseconds(kAnimationFrameIntervalMs),
-      continue_callback);
+  task_->IntervalElapsed(kAnimationFrameInterval, continue_callback);
   EXPECT_FALSE(can_continue);
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
+  ExpectVirtualTime(1000, kAnimationFrameInterval.InMillisecondsF());
   ExpectBeginFrame();
   task_runner_->RunPendingTasks();
 
@@ -303,12 +354,11 @@ TEST_F(CompositorControllerTest, SendsAnimationFrames) {
   can_continue = false;
 
   // Sends another BeginFrame after next interval elapsed.
-  task_->IntervalElapsed(
-      base::TimeDelta::FromMilliseconds(kAnimationFrameIntervalMs),
-      continue_callback);
+  task_->IntervalElapsed(kAnimationFrameInterval, continue_callback);
   EXPECT_FALSE(can_continue);
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
+  ExpectVirtualTime(1000, kAnimationFrameInterval.InMillisecondsF() * 2);
   ExpectBeginFrame();
   task_runner_->RunPendingTasks();
 
@@ -331,9 +381,7 @@ TEST_F(CompositorControllerTest, SkipsAnimationFrameForScreenshots) {
 
   // Doesn't send a BeginFrame after interval elapsed if a screenshot is taken
   // instead.
-  task_->IntervalElapsed(
-      base::TimeDelta::FromMilliseconds(kAnimationFrameIntervalMs),
-      continue_callback);
+  task_->IntervalElapsed(kAnimationFrameInterval, continue_callback);
   EXPECT_FALSE(can_continue);
 
   controller_->CaptureScreenshot(
@@ -341,7 +389,12 @@ TEST_F(CompositorControllerTest, SkipsAnimationFrameForScreenshots) {
       base::Bind([](const std::string&) {}));
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
-  ExpectBeginFrame("\"screenshot\":{\"format\":\"png\",\"quality\":100}");
+  ExpectVirtualTime(0, 0);
+  ExpectBeginFrame(
+      headless_experimental::ScreenshotParams::Builder()
+          .SetFormat(headless_experimental::ScreenshotParamsFormat::PNG)
+          .SetQuality(100)
+          .Build());
   task_runner_->RunPendingTasks();
 
   EXPECT_TRUE(can_continue);
@@ -359,23 +412,21 @@ TEST_F(CompositorControllerTest,
 
   // Doesn't send a BeginFrame after interval elapsed if the budget also
   // expired.
-  task_->IntervalElapsed(
-      base::TimeDelta::FromMilliseconds(kAnimationFrameIntervalMs),
-      continue_callback);
+  task_->IntervalElapsed(kAnimationFrameInterval, continue_callback);
   EXPECT_FALSE(can_continue);
 
-  task_->BudgetExpired(
-      base::TimeDelta::FromMilliseconds(kAnimationFrameIntervalMs));
+  task_->BudgetExpired(kAnimationFrameInterval);
   EXPECT_TRUE(can_continue);
   can_continue = false;
   // Flush cancelled task.
   task_runner_->RunPendingTasks();
 
   // Sends a BeginFrame when more virtual time budget is requested.
+  ExpectVirtualTime(0, 0);
   ExpectBeginFrame();
-  task_->BudgetRequested(
-      base::TimeDelta::FromMilliseconds(kAnimationFrameIntervalMs), 100,
-      continue_callback);
+  task_->BudgetRequested(kAnimationFrameInterval,
+                         base::TimeDelta::FromMilliseconds(100),
+                         continue_callback);
   EXPECT_FALSE(can_continue);
 
   SendBeginFrameReply(false, false, std::string());
@@ -397,13 +448,10 @@ TEST_F(CompositorControllerTest,
 
   // Doesn't send a BeginFrame after interval elapsed if the budget also
   // expired.
-  task_->IntervalElapsed(
-      base::TimeDelta::FromMilliseconds(kAnimationFrameIntervalMs),
-      continue_callback);
+  task_->IntervalElapsed(kAnimationFrameInterval, continue_callback);
   EXPECT_FALSE(can_continue);
 
-  task_->BudgetExpired(
-      base::TimeDelta::FromMilliseconds(kAnimationFrameIntervalMs));
+  task_->BudgetExpired(kAnimationFrameInterval);
   EXPECT_TRUE(can_continue);
   can_continue = false;
   // Flush cancelled task.
@@ -414,13 +462,18 @@ TEST_F(CompositorControllerTest,
       base::Bind([](const std::string&) {}));
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
-  ExpectBeginFrame("\"screenshot\":{\"format\":\"png\",\"quality\":100}");
+  ExpectVirtualTime(0, 0);
+  ExpectBeginFrame(
+      headless_experimental::ScreenshotParams::Builder()
+          .SetFormat(headless_experimental::ScreenshotParamsFormat::PNG)
+          .SetQuality(100)
+          .Build());
   task_runner_->RunPendingTasks();
 
   // Sends a BeginFrame when more virtual time budget is requested.
-  task_->BudgetRequested(
-      base::TimeDelta::FromMilliseconds(kAnimationFrameIntervalMs), 100,
-      continue_callback);
+  task_->BudgetRequested(kAnimationFrameInterval,
+                         base::TimeDelta::FromMilliseconds(100),
+                         continue_callback);
   EXPECT_TRUE(can_continue);
   can_continue = false;
 }
@@ -438,11 +491,10 @@ TEST_F(CompositorControllerTest, WaitUntilIdle) {
   idle = false;
 
   // Send a BeginFrame.
-  task_->IntervalElapsed(
-      base::TimeDelta::FromMilliseconds(kAnimationFrameIntervalMs),
-      base::Bind([]() {}));
+  task_->IntervalElapsed(kAnimationFrameInterval, base::Bind([]() {}));
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
+  ExpectVirtualTime(0, 0);
   ExpectBeginFrame();
   task_runner_->RunPendingTasks();
 

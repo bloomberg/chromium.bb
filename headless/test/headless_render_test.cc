@@ -114,8 +114,8 @@ void HeadlessRenderTest::OnFrameStartedLoading(
   if (state_ == STARTING) {
     state_ = LOADING;
     virtual_time_controller_->GrantVirtualTimeBudget(
-        emulation::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING, 5000,
-        base::Closure(),
+        emulation::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING,
+        base::TimeDelta::FromMilliseconds(5000), base::Closure(),
         base::Bind(&HeadlessRenderTest::HandleVirtualTimeExhausted,
                    weak_ptr_factory_.GetWeakPtr()));
   }

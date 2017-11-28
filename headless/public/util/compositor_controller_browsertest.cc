@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_browser.h"
@@ -22,7 +23,8 @@ namespace headless {
 #if !defined(OS_MACOSX)
 
 namespace {
-static constexpr int kAnimationFrameIntervalMs = 16;
+static constexpr base::TimeDelta kAnimationFrameInterval =
+    base::TimeDelta::FromMilliseconds(16);
 static constexpr base::TimeDelta kWaitForCompositorReadyFrameDelay =
     base::TimeDelta::FromMilliseconds(20);
 }  // namespace
@@ -33,6 +35,7 @@ class CompositorControllerBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     HeadlessAsyncDevTooledBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(cc::switches::kRunAllCompositorStagesBeforeDraw);
+    command_line->AppendSwitch(switches::kDisableNewContentRenderingTimeout);
   }
 
   bool GetEnableBeginFrameControl() override { return true; }
@@ -42,7 +45,7 @@ class CompositorControllerBrowserTest
         base::MakeUnique<VirtualTimeController>(devtools_client_.get());
     compositor_controller_ = base::MakeUnique<CompositorController>(
         browser()->BrowserMainThread(), devtools_client_.get(),
-        virtual_time_controller_.get(), kAnimationFrameIntervalMs,
+        virtual_time_controller_.get(), kAnimationFrameInterval,
         kWaitForCompositorReadyFrameDelay);
 
     compositor_controller_->WaitForCompositorReady(
@@ -69,12 +72,12 @@ class CompositorControllerBrowserTest
 
     virtual_time_controller_->GrantVirtualTimeBudget(
         emulation::VirtualTimePolicy::ADVANCE,
-        kNumFrames * kAnimationFrameIntervalMs, base::Bind([]() {}),
-        base::Bind(&CompositorControllerBrowserTest::OnVirtualTimeBudgetEpired,
+        kNumFrames * kAnimationFrameInterval, base::Bind([]() {}),
+        base::Bind(&CompositorControllerBrowserTest::OnVirtualTimeBudgetExpired,
                    base::Unretained(this)));
   }
 
-  void OnVirtualTimeBudgetEpired() {
+  void OnVirtualTimeBudgetExpired() {
     // Get animation frame count.
     devtools_client_->GetRuntime()->Evaluate(
         "window.rafCount",

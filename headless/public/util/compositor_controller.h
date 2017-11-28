@@ -31,7 +31,7 @@ class HEADLESS_EXPORT CompositorController
   using ScreenshotParams = headless_experimental::ScreenshotParams;
   using ScreenshotParamsFormat = headless_experimental::ScreenshotParamsFormat;
 
-  // |animation_begin_frame_interval_ms| specifies the virtual time between
+  // |animation_begin_frame_interval| specifies the virtual time between
   // individual BeginFrames while virtual time advances.
   // |wait_for_compositor_ready_begin_frame_delay| is the real time delay
   // between BeginFrames that are sent while waiting for the main frame
@@ -40,7 +40,7 @@ class HEADLESS_EXPORT CompositorController
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       HeadlessDevToolsClient* devtools_client,
       VirtualTimeController* virtual_time_controller,
-      int animation_begin_frame_interval_ms,
+      base::TimeDelta animation_begin_frame_interval,
       base::TimeDelta wait_for_compositor_ready_begin_frame_delay);
   ~CompositorController() override;
 
@@ -125,12 +125,11 @@ class HEADLESS_EXPORT CompositorController
   base::Callback<void(std::unique_ptr<BeginFrameResult>)>
       begin_frame_complete_callback_;
   base::CancelableClosure wait_for_compositor_ready_begin_frame_task_;
-  // TODO(eseckler): Port DevTools VirtualTime commands to accept a higher
-  // resolution than milliseconds for this.
-  int animation_begin_frame_interval_ms_;
+  base::TimeDelta animation_begin_frame_interval_;
   base::TimeDelta wait_for_compositor_ready_begin_frame_delay_;
   bool needs_begin_frames_ = false;
   bool main_frame_ready_ = false;
+  base::Time last_begin_frame_time_ = base::Time::UnixEpoch();
   base::WeakPtrFactory<CompositorController> weak_ptr_factory_;
 };
 

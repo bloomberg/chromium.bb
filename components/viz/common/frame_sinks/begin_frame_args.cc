@@ -27,8 +27,8 @@ constexpr uint64_t BeginFrameArgs::kInvalidFrameNumber;
 constexpr uint64_t BeginFrameArgs::kStartingFrameNumber;
 
 BeginFrameArgs::BeginFrameArgs()
-    : frame_time(base::TimeTicks()),
-      deadline(base::TimeTicks()),
+    : frame_time(base::TimeTicks::Min()),
+      deadline(base::TimeTicks::Min()),
       interval(base::TimeDelta::FromMicroseconds(-1)),
       source_id(0),
       sequence_number(kInvalidFrameNumber),
