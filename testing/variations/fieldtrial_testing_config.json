@@ -399,10 +399,15 @@
             ]
         }
     ],
-    "AutofillCreditCardDropdownVariations": [
+    "AutofillCreditCardBankNameDisplay": [
         {
             "platforms": [
-                "android"
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
             ],
             "experiments": [
                 {
