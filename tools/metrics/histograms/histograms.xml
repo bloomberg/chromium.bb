@@ -25384,6 +25384,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.ViewingTaskType" enum="FileManagerTaskType">
+  <owner>nya@chromium.org</owner>
+  <summary>
+    Chrome OS File Browser: The type of the handler to be used to open files.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.VolumeType" enum="FileManagerVolumeType">
   <owner>kinaba@chromium.org</owner>
   <summary>
