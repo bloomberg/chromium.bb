@@ -13,6 +13,8 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 
 import android.app.Activity;
 import android.os.Build;
+import android.os.SystemClock;
+import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -114,13 +116,12 @@ public class WebVrTransitionTest {
 
     /**
      * Tests that scanning the Daydream View NFC tag on supported devices fires the
-     * vrdisplayactivate event.
+     * vrdisplayactivate event and the event allows presentation without a user gesture.
      */
     @Test
-    @MediumTest
+    @LargeTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.CTA,
-            VrActivityRestriction.SupportedActivity.CCT})
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testNfcFiresVrdisplayactivate() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_nfc_fires_vrdisplayactivate"),
@@ -130,6 +131,11 @@ public class WebVrTransitionTest {
         NfcSimUtils.simNfcScan(mVrTestRule.getActivity());
         VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
         VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        // VrCore has a 2000 ms debounce timeout on NFC scans. When run multiple times in different
+        // activities, it is possible for a latter test to be run in the 2 seconds after the
+        // previous test's NFC scan, causing it to fail flakily. So, wait 2 seconds to ensure that
+        // can't happen.
+        SystemClock.sleep(2000);
     }
 
     /**
