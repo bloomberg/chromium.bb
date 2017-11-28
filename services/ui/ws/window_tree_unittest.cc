@@ -309,8 +309,9 @@ TEST_F(WindowTreeTest, EventDispatcherMouseCursorSourceWindowResetOnRemove) {
   EXPECT_EQ(window, wms->event_dispatcher()->mouse_cursor_source_window());
 
   window->parent()->Remove(window);
-  // The remove should reset the mouse_cursor_source_window().
-  EXPECT_FALSE(wms->event_dispatcher()->mouse_cursor_source_window());
+  // The remove should reset the mouse_cursor_source_window(). The important
+  // thing is it changes to something other than |window|.
+  EXPECT_NE(window, wms->event_dispatcher()->mouse_cursor_source_window());
 }
 
 // Verifies SetChildModalParent() works correctly.
