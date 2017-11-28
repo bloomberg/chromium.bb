@@ -36,14 +36,6 @@ using metrics::OmniboxEventProto;
 
 namespace omnibox {
 
-// Feature used to enable the new set of answers in suggest types (currency,
-// dictionary, sports, translation, when is). Note that the state of this
-// Feature is not consulted anywhere in the code. It is only used to force a
-// Finch experiment arm which sends an experiment ID to GWS which triggers
-// serving the new types.
-const base::Feature kNewOmniboxAnswerTypes{"NewOmniboxAnswerTypes",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature used to enable the transmission of entity suggestions from GWS
 // to this client.
 const base::Feature kOmniboxEntitySuggestions{

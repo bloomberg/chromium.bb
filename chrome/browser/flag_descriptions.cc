@@ -861,13 +861,6 @@ const char kNewBookmarkAppsName[] = "The new bookmark app system";
 const char kNewBookmarkAppsDescription[] =
     "Enables the new system for creating bookmark apps.";
 
-const char kNewOmniboxAnswerTypesName[] =
-    "New omnibox answers in suggest types";
-const char kNewOmniboxAnswerTypesDescription[] =
-    "Enables new types of answers in the omnibox suggest drop-down: currency "
-    "conversions, dictionary definitions, sports scores, translations, and "
-    "when is.";
-
 const char kNewRemotePlaybackPipelineName[] =
     "Enable the new remote playback pipeline.";
 const char kNewRemotePlaybackPipelineDescription[] =
