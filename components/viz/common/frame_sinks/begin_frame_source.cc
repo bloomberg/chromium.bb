@@ -45,7 +45,7 @@ const BeginFrameArgs& BeginFrameObserverBase::LastUsedBeginFrameArgs() const {
 
 void BeginFrameObserverBase::OnBeginFrame(const BeginFrameArgs& args) {
   DCHECK(args.IsValid());
-  DCHECK(args.frame_time >= last_begin_frame_args_.frame_time);
+  DCHECK_GE(args.frame_time, last_begin_frame_args_.frame_time);
   DCHECK(args.sequence_number > last_begin_frame_args_.sequence_number ||
          args.source_id != last_begin_frame_args_.source_id)
       << "current " << args.AsValue()->ToString() << ", last "

@@ -863,7 +863,7 @@ void HeadlessDevToolsManagerDelegate::BeginFrame(
   base::TimeDelta interval;
 
   if (const base::Value* frame_time_value = params->FindKey("frameTime")) {
-    frame_time = base::Time::FromDoubleT(frame_time_value->GetDouble());
+    frame_time = base::Time::FromJsTime(frame_time_value->GetDouble());
     base::TimeDelta delta = frame_time - base::Time::UnixEpoch();
     frame_timeticks = base::TimeTicks::UnixEpoch() + delta;
   } else {

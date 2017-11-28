@@ -23,8 +23,7 @@ class HEADLESS_EXPORT VirtualTimeController
                         int max_task_starvation_count = 0);
   ~VirtualTimeController() override;
 
-  // Grants |budget_ms| milliseconds of virtual time by applying the provided
-  // |policy|.
+  // Grants a |budget| of virtual time by applying the provided |policy|.
   //
   // |set_up_complete_callback|, if set, is run after the (initial) policy was
   // applied via DevTools. |budget_expired_callback| will be called when the
@@ -34,7 +33,7 @@ class HEADLESS_EXPORT VirtualTimeController
   // budget_expired_callback was executed.
   virtual void GrantVirtualTimeBudget(
       emulation::VirtualTimePolicy policy,
-      int budget_ms,
+      base::TimeDelta budget,
       const base::Callback<void()>& set_up_complete_callback,
       const base::Callback<void()>& budget_expired_callback);
 
@@ -43,35 +42,48 @@ class HEADLESS_EXPORT VirtualTimeController
     virtual ~RepeatingTask() {}
 
     // Called when the tasks's requested virtual time interval has elapsed.
-    // |virtual_time| is the virtual time duration that has advanced since the
-    // page started loading (millisecond granularity). The task should call
-    // |continue_callback| when it is ready for virtual time to continue
+    // |virtual_time_offset| is the virtual time duration that has advanced
+    // since the page started loading (millisecond granularity). The task should
+    // call |continue_callback| when it is ready for virtual time to continue
     // advancing.
     virtual void IntervalElapsed(
-        const base::TimeDelta& virtual_time,
+        base::TimeDelta virtual_time_offset,
         const base::Callback<void()>& continue_callback) = 0;
 
     // Called when a new virtual time budget grant was requested. The task
     // should call |continue_callback| when it is ready for virtual time to
     // continue advancing.
     virtual void BudgetRequested(
-        const base::TimeDelta& virtual_time,
-        int requested_budget_ms,
+        base::TimeDelta virtual_time_offset,
+        base::TimeDelta requested_budget,
         const base::Callback<void()>& continue_callback) = 0;
 
     // Called when the latest virtual time budget has been used up.
-    virtual void BudgetExpired(const base::TimeDelta& virtual_time) = 0;
+    virtual void BudgetExpired(base::TimeDelta virtual_time_offset) = 0;
   };
 
-  // Interleaves execution of the provided |task| with advancing of virtual
-  // time. The task will be notified whenever another |interval_ms| milliseconds
-  // of virtual time have elapsed, as well as when the last granted budget has
-  // been used up.
+  // Interleaves execution of the provided |task| with progression of virtual
+  // time. The task will be notified whenever another |interval| of virtual time
+  // have elapsed, as well as when the last granted budget has been used up.
   //
   // To ensure that the task is notified of elapsed intervals accurately, it
   // should be added while virtual time is paused.
-  virtual void ScheduleRepeatingTask(RepeatingTask* task, int interval_ms);
+  virtual void ScheduleRepeatingTask(RepeatingTask* task,
+                                     base::TimeDelta interval);
   virtual void CancelRepeatingTask(RepeatingTask* task);
+
+  // Returns the time that virtual time offsets are relative to.
+  virtual base::Time GetVirtualTimeBase() const;
+
+  // Returns the current virtual time offset. Only accurate while virtual time
+  // is paused.
+  virtual base::TimeDelta GetCurrentVirtualTimeOffset() const;
+
+  // Returns the current virtual time stamp. Only accurate while virtual time
+  // is paused.
+  base::Time GetCurrentVirtualTime() const {
+    return GetVirtualTimeBase() + GetCurrentVirtualTimeOffset();
+  }
 
  private:
   struct TaskEntry {
@@ -87,12 +99,12 @@ class HEADLESS_EXPORT VirtualTimeController
 
   void NotifyTasksAndAdvance();
   void NotifyTaskIntervalElapsed(TaskEntry* entry);
-  void NotifyTaskBudgetRequested(TaskEntry* entry, int budget_ms);
+  void NotifyTaskBudgetRequested(TaskEntry* entry, base::TimeDelta budget);
   void TaskReadyToAdvance(TaskEntry* entry);
 
   void DeleteTasksIfRequested();
 
-  void SetVirtualTimePolicy(const base::TimeDelta& next_budget);
+  void SetVirtualTimePolicy(base::TimeDelta next_budget);
   void SetVirtualTimePolicyDone(
       std::unique_ptr<emulation::SetVirtualTimePolicyResult>);
 
@@ -105,10 +117,12 @@ class HEADLESS_EXPORT VirtualTimeController
   base::Callback<void()> budget_expired_callback_;
 
   bool virtual_time_active_ = false;
-  base::TimeDelta total_elapsed_time_;
+  base::TimeDelta total_elapsed_time_offset_;
   base::TimeDelta requested_budget_;
   base::TimeDelta last_used_budget_;
-  base::TimeDelta accumulated_time_;
+  base::TimeDelta accumulated_budget_portion_;
+  // Initial virtual time that virtual time offsets are relative to.
+  base::Time virtual_time_base_;
 
   std::list<TaskEntry> tasks_;
   std::set<RepeatingTask*> tasks_to_delete_;

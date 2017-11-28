@@ -41,7 +41,8 @@ class VirtualTimeControllerTest : public ::testing::Test {
     ASSERT_FALSE(budget_expired_);
 
     controller_->GrantVirtualTimeBudget(
-        emulation::VirtualTimePolicy::ADVANCE, budget_ms,
+        emulation::VirtualTimePolicy::ADVANCE,
+        base::TimeDelta::FromMilliseconds(budget_ms),
         base::Bind(
             [](bool* set_up_complete) {
               EXPECT_FALSE(*set_up_complete);
@@ -118,13 +119,13 @@ namespace {
 class MockTask : public VirtualTimeController::RepeatingTask {
  public:
   MOCK_METHOD2(IntervalElapsed,
-               void(const base::TimeDelta& virtual_time,
+               void(base::TimeDelta virtual_time_offset,
                     const base::Callback<void()>& continue_callback));
   MOCK_METHOD3(BudgetRequested,
-               void(const base::TimeDelta& virtual_time,
-                    int requested_budget_ms,
+               void(base::TimeDelta virtual_time_offset,
+                    base::TimeDelta requested_budget,
                     const base::Callback<void()>& continue_callback));
-  MOCK_METHOD1(BudgetExpired, void(const base::TimeDelta& virtual_time));
+  MOCK_METHOD1(BudgetExpired, void(base::TimeDelta virtual_time_offset));
 };
 
 ACTION_TEMPLATE(RunClosure,
@@ -140,10 +141,11 @@ ACTION_P(RunClosure, closure) {
 
 TEST_F(VirtualTimeControllerTest, InterleavesTasksWithVirtualTime) {
   MockTask task;
-  controller_->ScheduleRepeatingTask(&task, 1000);
+  controller_->ScheduleRepeatingTask(&task,
+                                     base::TimeDelta::FromMilliseconds(1000));
 
-  EXPECT_CALL(task,
-              BudgetRequested(base::TimeDelta::FromMilliseconds(0), 3000, _))
+  EXPECT_CALL(task, BudgetRequested(base::TimeDelta::FromMilliseconds(0),
+                                    base::TimeDelta::FromMilliseconds(3000), _))
       .WillOnce(RunClosure<2>());
   EXPECT_CALL(*mock_host_,
               DispatchProtocolMessage(
@@ -209,10 +211,11 @@ TEST_F(VirtualTimeControllerTest, InterleavesTasksWithVirtualTime) {
 
 TEST_F(VirtualTimeControllerTest, CanceledTask) {
   MockTask task;
-  controller_->ScheduleRepeatingTask(&task, 1000);
+  controller_->ScheduleRepeatingTask(&task,
+                                     base::TimeDelta::FromMilliseconds(1000));
 
-  EXPECT_CALL(task,
-              BudgetRequested(base::TimeDelta::FromMilliseconds(0), 5000, _))
+  EXPECT_CALL(task, BudgetRequested(base::TimeDelta::FromMilliseconds(0),
+                                    base::TimeDelta::FromMilliseconds(5000), _))
       .WillOnce(RunClosure<2>());
   EXPECT_CALL(*mock_host_,
               DispatchProtocolMessage(
@@ -292,14 +295,18 @@ TEST_F(VirtualTimeControllerTest, CanceledTask) {
 TEST_F(VirtualTimeControllerTest, MultipleTasks) {
   MockTask task1;
   MockTask task2;
-  controller_->ScheduleRepeatingTask(&task1, 1000);
-  controller_->ScheduleRepeatingTask(&task2, 1000);
+  controller_->ScheduleRepeatingTask(&task1,
+                                     base::TimeDelta::FromMilliseconds(1000));
+  controller_->ScheduleRepeatingTask(&task2,
+                                     base::TimeDelta::FromMilliseconds(1000));
 
   EXPECT_CALL(task1,
-              BudgetRequested(base::TimeDelta::FromMilliseconds(0), 2000, _))
+              BudgetRequested(base::TimeDelta::FromMilliseconds(0),
+                              base::TimeDelta::FromMilliseconds(2000), _))
       .WillOnce(RunClosure<2>());
   EXPECT_CALL(task2,
-              BudgetRequested(base::TimeDelta::FromMilliseconds(0), 2000, _))
+              BudgetRequested(base::TimeDelta::FromMilliseconds(0),
+                              base::TimeDelta::FromMilliseconds(2000), _))
       .WillOnce(RunClosure<2>());
   // We should only get one call to Emulation.setVirtualTimePolicy despite
   // having two tasks.
@@ -326,7 +333,7 @@ TEST_F(VirtualTimeControllerTest, MultipleTasks) {
 
 class VirtualTimeTask : public VirtualTimeController::RepeatingTask {
  public:
-  using Task = base::Callback<void(const base::TimeDelta& virtual_time)>;
+  using Task = base::Callback<void(base::TimeDelta virtual_time)>;
 
   VirtualTimeTask(VirtualTimeController* controller,
                   Task budget_requested_task,
@@ -338,21 +345,21 @@ class VirtualTimeTask : public VirtualTimeController::RepeatingTask {
         budget_expired_task_(budget_expired_task) {}
 
   void IntervalElapsed(
-      const base::TimeDelta& virtual_time,
+      base::TimeDelta virtual_time,
       const base::Callback<void()>& continue_callback) override {
     interval_elapsed_task_.Run(virtual_time);
     continue_callback.Run();
   }
 
   void BudgetRequested(
-      const base::TimeDelta& virtual_time,
-      int requested_budget_ms,
+      base::TimeDelta virtual_time,
+      base::TimeDelta requested_budget_ms,
       const base::Callback<void()>& continue_callback) override {
     budget_requested_task_.Run(virtual_time);
     continue_callback.Run();
   }
 
-  void BudgetExpired(const base::TimeDelta& virtual_time) override {
+  void BudgetExpired(base::TimeDelta virtual_time) override {
     budget_expired_task_.Run(virtual_time);
   };
 
@@ -368,8 +375,7 @@ TEST_F(VirtualTimeControllerTest, ReentrantTask) {
   VirtualTimeTask task_b(
       controller_.get(),
       base::Bind(
-          [](std::vector<std::string>* log,
-             const base::TimeDelta& virtual_time) {
+          [](std::vector<std::string>* log, base::TimeDelta virtual_time) {
             log->push_back(base::StringPrintf(
                 "B: budget requested @ %d",
                 static_cast<int>(virtual_time.InMilliseconds())));
@@ -377,7 +383,7 @@ TEST_F(VirtualTimeControllerTest, ReentrantTask) {
           &log),
       base::Bind(
           [](std::vector<std::string>* log, VirtualTimeController* controller,
-             VirtualTimeTask* task_b, const base::TimeDelta& virtual_time) {
+             VirtualTimeTask* task_b, base::TimeDelta virtual_time) {
             log->push_back(base::StringPrintf(
                 "B: interval elapsed @ %d",
                 static_cast<int>(virtual_time.InMilliseconds())));
@@ -385,8 +391,7 @@ TEST_F(VirtualTimeControllerTest, ReentrantTask) {
           },
           &log, controller_.get(), &task_b),
       base::Bind(
-          [](std::vector<std::string>* log,
-             const base::TimeDelta& virtual_time) {
+          [](std::vector<std::string>* log, base::TimeDelta virtual_time) {
             log->push_back(base::StringPrintf(
                 "B: budget expired @ %d",
                 static_cast<int>(virtual_time.InMilliseconds())));
@@ -396,8 +401,7 @@ TEST_F(VirtualTimeControllerTest, ReentrantTask) {
   VirtualTimeTask task_a(
       controller_.get(),
       base::Bind(
-          [](std::vector<std::string>* log,
-             const base::TimeDelta& virtual_time) {
+          [](std::vector<std::string>* log, base::TimeDelta virtual_time) {
             log->push_back(base::StringPrintf(
                 "A: budget requested @ %d",
                 static_cast<int>(virtual_time.InMilliseconds())));
@@ -406,24 +410,25 @@ TEST_F(VirtualTimeControllerTest, ReentrantTask) {
       base::Bind(
           [](std::vector<std::string>* log, VirtualTimeController* controller,
              VirtualTimeTask* task_a, VirtualTimeTask* task_b,
-             const base::TimeDelta& virtual_time) {
+             base::TimeDelta virtual_time) {
             log->push_back(base::StringPrintf(
                 "A: interval elapsed @ %d",
                 static_cast<int>(virtual_time.InMilliseconds())));
             controller->CancelRepeatingTask(task_a);
-            controller->ScheduleRepeatingTask(task_b, 1500);
+            controller->ScheduleRepeatingTask(
+                task_b, base::TimeDelta::FromMilliseconds(1500));
           },
           &log, controller_.get(), &task_a, &task_b),
       base::Bind(
-          [](std::vector<std::string>* log,
-             const base::TimeDelta& virtual_time) {
+          [](std::vector<std::string>* log, base::TimeDelta virtual_time) {
             log->push_back(base::StringPrintf(
                 "A: budget expired @ %d",
                 static_cast<int>(virtual_time.InMilliseconds())));
           },
           &log));
 
-  controller_->ScheduleRepeatingTask(&task_a, 1000);
+  controller_->ScheduleRepeatingTask(&task_a,
+                                     base::TimeDelta::FromMilliseconds(1000));
 
   EXPECT_CALL(*mock_host_,
               DispatchProtocolMessage(
