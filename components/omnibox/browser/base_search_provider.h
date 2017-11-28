@@ -102,6 +102,10 @@ class BaseSearchProvider : public AutocompleteProvider {
   typedef std::vector<std::unique_ptr<SuggestionDeletionHandler>>
       SuggestionDeletionHandlers;
 
+  // Returns whether the provided classification indicates some sort of NTP.
+  static bool IsNTPPage(
+      metrics::OmniboxEventProto::PageClassification classification);
+
   // Returns an AutocompleteMatch with the given |autocomplete_provider|
   // for the search |suggestion|, which represents a search via |template_url|.
   // If |template_url| is NULL, returns a match with an invalid destination URL.
@@ -127,15 +131,6 @@ class BaseSearchProvider : public AutocompleteProvider {
       const SearchTermsData& search_terms_data,
       int accepted_suggestion,
       bool append_extra_query_params);
-
-  // Returns whether the requirements for requesting zero suggest results
-  // are met. The requirements are
-  // * The user is enrolled in a zero suggest experiment.
-  // * The user is not on the NTP.
-  // * The user is not in incognito mode. (Incognito disables suggest entirely.)
-  static bool ZeroSuggestEnabled(
-      metrics::OmniboxEventProto::PageClassification page_classification,
-      const AutocompleteProviderClient* client);
 
   // Returns whether we can send the URL of the current page in any suggest
   // requests.  Doing this requires that all the following hold:
