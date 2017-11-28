@@ -31,7 +31,6 @@
 #ifndef WebBlobData_h
 #define WebBlobData_h
 
-#include "WebNonCopyable.h"
 #include "WebString.h"
 #include "WebThreadSafeData.h"
 #include "WebURL.h"
@@ -44,7 +43,7 @@ namespace blink {
 
 class BlobData;
 
-class WebBlobData : public WebNonCopyable {
+class WebBlobData {
  public:
   struct Item {
     enum { kTypeData, kTypeFile, kTypeBlob, kTypeFileSystemURL } type;
@@ -59,6 +58,8 @@ class WebBlobData : public WebNonCopyable {
 
   BLINK_PLATFORM_EXPORT WebBlobData();
   BLINK_PLATFORM_EXPORT ~WebBlobData();
+  WebBlobData(const WebBlobData&) = delete;
+  WebBlobData& operator=(const WebBlobData&) = delete;
 
   bool IsNull() const { return !private_.get(); }
 

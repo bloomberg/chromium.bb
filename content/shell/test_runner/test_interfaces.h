@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/shell/test_runner/mock_web_theme_engine.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 
 namespace blink {
 class WebLocalFrame;

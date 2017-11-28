@@ -26,7 +26,6 @@
 #define WebMediaStream_h
 
 #include "WebCommon.h"
-#include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
 #include "WebVector.h"
 
