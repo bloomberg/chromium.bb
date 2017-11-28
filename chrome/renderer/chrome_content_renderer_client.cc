@@ -61,7 +61,6 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/prerender/prerenderer_client.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
-#include "chrome/renderer/searchbox/search_bouncer.h"
 #include "chrome/renderer/tts_dispatcher.h"
 #include "chrome/renderer/worker_content_settings_client.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
@@ -141,6 +140,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/renderer/sandbox_status_extension_android.h"
 #else
+#include "chrome/renderer/searchbox/search_bouncer.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #endif
@@ -466,7 +466,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
   thread->AddObserver(prerender_dispatcher_.get());
   thread->AddObserver(subresource_filter_ruleset_dealer_.get());
+
+#if !defined(OS_ANDROID)
   thread->AddObserver(SearchBouncer::GetInstance());
+#endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   thread->AddFilter(webrtc_logging_message_filter_.get());
@@ -1172,12 +1175,21 @@ bool ChromeContentRendererClient::ShouldSuppressErrorPage(
       NetErrorHelper::Get(render_frame)->ShouldSuppressErrorPage(url)) {
     return true;
   }
+
   // Do not flash an error page if the Instant new tab page fails to load.
-  return SearchBouncer::GetInstance()->IsNewTabPage(url);
+  bool is_instant_ntp = false;
+#if !defined(OS_ANDROID)
+  is_instant_ntp = SearchBouncer::GetInstance()->IsNewTabPage(url);
+#endif
+  return is_instant_ntp;
 }
 
 bool ChromeContentRendererClient::ShouldTrackUseCounter(const GURL& url) {
-  return !SearchBouncer::GetInstance()->IsNewTabPage(url);
+  bool is_instant_ntp = false;
+#if !defined(OS_ANDROID)
+  is_instant_ntp = SearchBouncer::GetInstance()->IsNewTabPage(url);
+#endif
+  return !is_instant_ntp;
 }
 
 void ChromeContentRendererClient::GetNavigationErrorStrings(
@@ -1255,6 +1267,7 @@ bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
                                              bool* send_referrer) {
   DCHECK(!frame->Parent());
 
+#if !defined(OS_ANDROID)
   // If this is the Instant process, fork all navigations originating from the
   // renderer.  The destination page will then be bucketed back to this Instant
   // process if it is an Instant url, or to another process if not.  Conversely,
@@ -1266,6 +1279,7 @@ bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
     *send_referrer = true;
     return true;
   }
+#endif
 
   // TODO(lukasza): https://crbug.com/650694: For now, we skip the rest for POST
   // submissions.  This is because 1) in M54 there are some remaining issues

@@ -2372,7 +2372,6 @@ test("unit_tests") {
     "../browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_unit_test.mm",
     "../browser/resources_util_unittest.cc",
     "../browser/search/contextual_search_policy_handler_android_unittest.cc",
-    "../browser/search/iframe_source_unittest.cc",
     "../browser/search/thumbnail_source_unittest.cc",
 
     # TODO(hashimoto): those tests should be componentized and moved to
@@ -2494,7 +2493,6 @@ test("unit_tests") {
     "../renderer/page_load_metrics/page_timing_metrics_sender_unittest.cc",
     "../renderer/plugins/plugin_uma_unittest.cc",
     "../renderer/prerender/prerender_dispatcher_unittest.cc",
-    "../renderer/searchbox/search_bouncer_unittest.cc",
     "../renderer/web_apps_unittest.cc",
     "../test/base/chrome_render_view_test.cc",
     "../test/base/chrome_render_view_test.h",
@@ -2749,6 +2747,7 @@ test("unit_tests") {
       "../browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.cc",
       "../browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.h",
       "../browser/safe_browsing/chrome_cleaner/srt_field_trial_win_unittest.cc",
+      "../browser/search/iframe_source_unittest.cc",
       "../browser/search/instant_service_unittest.cc",
       "../browser/search/instant_unittest_base.cc",
       "../browser/search/instant_unittest_base.h",
@@ -2866,6 +2865,7 @@ test("unit_tests") {
       "../common/importer/mock_importer_bridge.cc",
       "../common/importer/mock_importer_bridge.h",
       "../common/multi_process_lock_unittest.cc",
+      "../renderer/searchbox/search_bouncer_unittest.cc",
       "../renderer/searchbox/searchbox_unittest.cc",
       "../test/base/browser_with_test_window_test.cc",
       "../test/base/browser_with_test_window_test.h",
