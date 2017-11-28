@@ -51,6 +51,9 @@ class EditingTestBase : public PageTestBase {
   SelectionInDOMTree SetSelectionText(HTMLElement*,
                                       const std::string& selection_text);
 
+  // Returns selection text for child nodes of BODY with specific |Position|.
+  std::string GetCaretTextFromBody(const Position&) const;
+
   // Returns selection text for child nodes of BODY with specified
   // |SelectionInDOMTree|.
   std::string GetSelectionTextFromBody(const SelectionInDOMTree&) const;

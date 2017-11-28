@@ -391,6 +391,7 @@ jumbo_source_set("unit_tests") {
     "suggestion/TextSuggestionControllerTest.cpp",
     "testing/EditingTestBase.cpp",
     "testing/EditingTestBase.h",
+    "testing/EditingTestBaseTest.cpp",
     "testing/SelectionSample.cpp",
     "testing/SelectionSample.h",
     "testing/SelectionSampleTest.cpp",
