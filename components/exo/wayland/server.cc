@@ -1737,9 +1737,8 @@ void xdg_surface_v6_get_popup(wl_client* client,
   gfx::Point origin = position;
   views::View::ConvertPointToScreen(
       parent->GetWidget()->widget_delegate()->GetContentsView(), &origin);
-  shell_surface->SetParent(parent);
   shell_surface->SetOrigin(origin);
-  shell_surface->SetContainer(ash::kShellWindowId_SystemModalContainer);
+  shell_surface->SetContainer(ash::kShellWindowId_MenuContainer);
   shell_surface->SetBoundsMode(ShellSurface::BoundsMode::FIXED);
   shell_surface->SetActivatable(false);
   shell_surface->SetCanMinimize(false);
