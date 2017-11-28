@@ -51,7 +51,7 @@ cr.define('extensions', function() {
 
       inDevMode: {
         type: Boolean,
-        value: false,
+        value: () => loadTimeData.getBoolean('inDevMode'),
       },
 
       filter: {

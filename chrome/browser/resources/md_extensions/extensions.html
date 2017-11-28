@@ -1,5 +1,6 @@
 <!doctype html>
-<html dir="$i18n{textdirection}" lang="$i18n{language}" class="loading">
+<html dir="$i18n{textdirection}" lang="$i18n{language}"
+    class="loading $i18n{loadTimeClasses}">
 <head>
   <meta charset="utf8">
   <title>$i18n{title}</title>
@@ -16,6 +17,11 @@
     .loading {
       /* --google-blue-700 in disguise. Replaced when manager.html loads. */
       border-top: 56px solid rgb(51, 103, 214);
+    }
+
+    /* Note: .in-dev-mode is applied by i18n{loadTimeClasses}. */
+    .loading.in-dev-mode {
+      border-top-width: 96px;
     }
 
     html,
