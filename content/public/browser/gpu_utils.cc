@@ -118,6 +118,8 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       command_line->HasSwitch(switches::kGLShaderIntermOutput);
   gpu_preferences.emulate_shader_precision =
       command_line->HasSwitch(switches::kEmulateShaderPrecision);
+  gpu_preferences.enable_raster_decoder =
+      command_line->HasSwitch(switches::kEnableRasterDecoder);
   gpu_preferences.enable_gpu_service_logging =
       command_line->HasSwitch(switches::kEnableGPUServiceLogging);
   gpu_preferences.enable_gpu_service_tracing =
