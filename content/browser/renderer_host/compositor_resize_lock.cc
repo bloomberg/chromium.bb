@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/compositor_resize_lock.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/compositor/compositor.h"
@@ -12,7 +13,9 @@ namespace content {
 
 CompositorResizeLock::CompositorResizeLock(CompositorResizeLockClient* client,
                                            const gfx::Size& new_size)
-    : client_(client), expected_size_(new_size) {
+    : client_(client),
+      expected_size_(new_size),
+      acquisition_time_(base::TimeTicks::Now()) {
   TRACE_EVENT_ASYNC_BEGIN2("ui", "CompositorResizeLock", this, "width",
                            expected_size().width(), "height",
                            expected_size().height());
@@ -26,6 +29,9 @@ CompositorResizeLock::~CompositorResizeLock() {
   TRACE_EVENT_ASYNC_END2("ui", "CompositorResizeLock", this, "width",
                          expected_size().width(), "height",
                          expected_size().height());
+
+  UMA_HISTOGRAM_TIMES("UI.CompositorResizeLock.Duration",
+                      base::TimeTicks::Now() - acquisition_time_);
 }
 
 bool CompositorResizeLock::Lock() {

@@ -295,6 +295,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Set to true if the next CompositorFrame will block on a new child surface.
   bool synchronizing_with_child_on_next_frame_ = false;
 
+  // Set to the time the synchronization event began.
+  base::TimeTicks synchronization_start_time_;
+
   // Set to true if this WindowTreeHost is currently holding pointer moves.
   bool holding_pointer_moves_ = false;
 

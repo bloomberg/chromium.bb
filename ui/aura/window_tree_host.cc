@@ -5,6 +5,7 @@
 #include "ui/aura/window_tree_host.h"
 
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/switches.h"
@@ -423,6 +424,7 @@ void WindowTreeHost::OnCompositingStarted(ui::Compositor* compositor,
   if (!synchronizing_with_child_on_next_frame_)
     return;
   synchronizing_with_child_on_next_frame_ = false;
+  synchronization_start_time_ = base::TimeTicks::Now();
   dispatcher_->HoldPointerMoves();
   holding_pointer_moves_ = true;
 }
@@ -432,6 +434,9 @@ void WindowTreeHost::OnCompositingEnded(ui::Compositor* compositor) {
     return;
   dispatcher_->ReleasePointerMoves();
   holding_pointer_moves_ = false;
+  DCHECK(!synchronization_start_time_.is_null());
+  UMA_HISTOGRAM_TIMES("UI.WindowTreeHost.SurfaceSynchronizationDuration",
+                      base::TimeTicks::Now() - synchronization_start_time_);
 }
 
 void WindowTreeHost::OnCompositingLockStateChanged(ui::Compositor* compositor) {

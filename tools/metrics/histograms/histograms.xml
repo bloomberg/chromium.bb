@@ -89280,12 +89280,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Whether a scroll is executed on main thread.</summary>
 </histogram>
 
+<histogram name="UI.CompositorResizeLock.Duration" units="ms">
+  <owner>fsamuel@chromium.org</owner>
+  <summary>
+    The amount of time the CompositorResizeLock was held in milliseconds. This
+    is a measure of jank as UI will not generate new frames as long as the lock
+    is held.
+  </summary>
+</histogram>
+
 <histogram name="UI.DeviceScale" units="%">
   <owner>bsep@chromium.org</owner>
   <summary>
     The device scales available on the system at startup. A system may report
     more than one if it has multiple displays with varying device scales. Only
     logged on Windows.
+  </summary>
+</histogram>
+
+<histogram name="UI.WindowTreeHost.SurfaceSynchronizationDuration" units="ms">
+  <owner>fsamuel@chromium.org</owner>
+  <summary>
+    The amount of time it took for UI's CompositorFrame to activate due to a
+    surface synchronization event. This a measure of jank as UI will not
+    generate new frames as long synchronization is in progress. This metric is
+    similar to UI.CompositorResizeLock.Duration but measures the new
+    synchronization code path.
   </summary>
 </histogram>
 

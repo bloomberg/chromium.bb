@@ -58,6 +58,7 @@ class CONTENT_EXPORT CompositorResizeLock : public ui::CompositorLockClient {
   std::unique_ptr<ui::CompositorLock> compositor_lock_;
   bool unlocked_ = false;
   bool timed_out_ = false;
+  const base::TimeTicks acquisition_time_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorResizeLock);
 };
