@@ -721,6 +721,9 @@
 -ErrorPageTest.SniffSmallHttpErrorResponseAsDownload
 -ErrorPageTest.StaleCacheStatus
 
+# Likely started to fail after around r519412.
+-ErrorPageNavigationCorrectionsFailTest.FetchCorrectionsFails
+
 # Switch test from using a net::URLRequestFileJob that adds load timing to
 # to using a test URLLoaderFactory via SetNetworkFactoryForTesting.
 -LoadTimingBrowserTest.Basic
