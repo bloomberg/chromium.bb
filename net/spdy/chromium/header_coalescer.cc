@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/escape.h"
 #include "net/http/http_log_util.h"
@@ -30,6 +31,10 @@ std::unique_ptr<base::Value> ElideNetLogHeaderCallback(
           capture_mode, header_name.as_string(), header_value.as_string())));
   dict->SetString("error", error_message);
   return std::move(dict);
+}
+
+bool ContainsUppercaseAscii(SpdyStringPiece str) {
+  return std::any_of(str.begin(), str.end(), base::IsAsciiUpper<char>);
 }
 
 }  // namespace
@@ -81,6 +86,13 @@ bool HeaderCoalescer::AddHeader(SpdyStringPiece key, SpdyStringPiece value) {
     net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_INVALID_HEADER,
                       base::Bind(&ElideNetLogHeaderCallback, key, value,
                                  "Invalid character in header name."));
+    return false;
+  }
+
+  if (ContainsUppercaseAscii(key_name)) {
+    net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_INVALID_HEADER,
+                      base::Bind(&ElideNetLogHeaderCallback, key, value,
+                                 "Upper case characters in header name."));
     return false;
   }
 
