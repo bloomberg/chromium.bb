@@ -334,6 +334,16 @@ void WindowManager::OnWmConnected() {
     wayland_server_controller_ = WaylandServerController::CreateIfNecessary();
 }
 
+void WindowManager::OnWmAcceleratedWidgetAvailableForDisplay(
+    int64_t display_id,
+    gfx::AcceleratedWidget widget) {
+  auto* window = Shell::GetRootWindowForDisplayId(display_id);
+  if (window) {
+    auto* host = static_cast<aura::WindowTreeHostMus*>(window->GetHost());
+    host->OverrideAcceleratedWidget(widget);
+  }
+}
+
 void WindowManager::OnWmSetBounds(aura::Window* window,
                                   const gfx::Rect& bounds) {
   // TODO(sky): this indirectly sets bounds, which is against what

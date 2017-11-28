@@ -98,6 +98,9 @@ class TestWM : public service_manager::Service,
     window_manager_client_ = client;
   }
   void OnWmConnected() override {}
+  void OnWmAcceleratedWidgetAvailableForDisplay(
+      int64_t display_id,
+      gfx::AcceleratedWidget widget) override {}
   void OnWmSetBounds(aura::Window* window, const gfx::Rect& bounds) override {
     window->SetBounds(bounds);
   }

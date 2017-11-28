@@ -176,6 +176,17 @@ display::Display WindowTreeHostMus::GetDisplay() const {
   return display;
 }
 
+void WindowTreeHostMus::OverrideAcceleratedWidget(
+    gfx::AcceleratedWidget widget) {
+  bool was_visible = compositor()->IsVisible();
+  if (was_visible)
+    compositor()->SetVisible(false);
+  compositor()->ReleaseAcceleratedWidget();
+  OnAcceleratedWidgetAvailable(widget, GetDisplay().device_scale_factor());
+  if (was_visible)
+    compositor()->SetVisible(true);
+}
+
 std::unique_ptr<DisplayInitParams>
 WindowTreeHostMus::ReleaseDisplayInitParams() {
   return std::move(display_init_params_);
