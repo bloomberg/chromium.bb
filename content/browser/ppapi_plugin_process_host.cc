@@ -22,7 +22,6 @@
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/child_process_messages.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_constants.h"

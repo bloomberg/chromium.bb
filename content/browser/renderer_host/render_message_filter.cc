@@ -41,8 +41,6 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/common/cache_storage/cache_storage_types.h"
-#include "content/common/child_process_host_impl.h"
-#include "content/common/child_process_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/view_messages.h"

@@ -74,7 +74,6 @@ source_set("common") {
     "cache_storage/cache_storage_types.h",
     "child_process_host_impl.cc",
     "child_process_host_impl.h",
-    "child_process_messages.h",
     "clipboard_format.h",
     "common_sandbox_support_linux.cc",
     "content_constants_internal.cc",
