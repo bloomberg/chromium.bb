@@ -199,15 +199,33 @@ void Surface::RequestCopyOfOutput(
 }
 
 void Surface::NotifySurfaceIdAvailable(const SurfaceId& surface_id) {
-  auto it = activation_dependencies_.find(surface_id);
-  // This surface may no longer have blockers if the deadline has passed.
-  if (it == activation_dependencies_.end())
+  auto it = frame_sink_id_dependencies_.find(surface_id.frame_sink_id());
+  if (it == frame_sink_id_dependencies_.end())
     return;
 
-  activation_dependencies_.erase(it);
+  if (surface_id.local_surface_id().local_id() >= it->second) {
+    frame_sink_id_dependencies_.erase(it);
+    surface_manager_->SurfaceDependenciesChanged(this, {},
+                                                 {surface_id.frame_sink_id()});
+  }
+
+  // LocalSurfaceIds of a given FrameSinkId are monotonically increasing in time
+  // so if LocalSurfaceId j arrives then all LocalSurfaceIds i<j will never
+  // arrive and so we just drop these invalid activation dependencies here.
+  // TODO(fsamuel): This is a linear scan which is probably fine today because
+  // a given surface has a small number of dependencies. We might need to
+  // revisit this in the future if the number of dependencies grows
+  // significantly.
+  base::EraseIf(
+      activation_dependencies_, [surface_id](const SurfaceId& dependency) {
+        return dependency.frame_sink_id() == surface_id.frame_sink_id() &&
+               dependency.local_surface_id() <= surface_id.local_surface_id();
+      });
 
   if (!activation_dependencies_.empty())
     return;
+
+  DCHECK(frame_sink_id_dependencies_.empty());
 
   // All blockers have been cleared. The surface can be activated now.
   ActivatePendingFrame();
@@ -223,6 +241,7 @@ void Surface::ActivatePendingFrameForDeadline() {
   // of blockers.
   late_activation_dependencies_ = std::move(activation_dependencies_);
   activation_dependencies_.clear();
+  frame_sink_id_dependencies_.clear();
   ActivatePendingFrame();
 }
 
@@ -291,6 +310,7 @@ void Surface::ActivateFrame(FrameData frame_data) {
 
 void Surface::UpdateActivationDependencies(
     const CompositorFrame& current_frame) {
+  base::flat_map<FrameSinkId, uint32_t> new_frame_sink_id_dependencies;
   base::flat_set<SurfaceId> new_activation_dependencies;
 
   for (const SurfaceId& surface_id :
@@ -298,41 +318,44 @@ void Surface::UpdateActivationDependencies(
     Surface* dependency = surface_manager_->GetSurfaceForId(surface_id);
     // If a activation dependency does not have a corresponding active frame in
     // the display compositor, then it blocks this frame.
-    if (!dependency || !dependency->HasActiveFrame())
+    if (!dependency || !dependency->HasActiveFrame()) {
+      // Record the latest |local_id| this surface is interested in observing
+      // for the provided FrameSinkId.
+      uint32_t& local_id =
+          new_frame_sink_id_dependencies[surface_id.frame_sink_id()];
+      local_id = std::max(local_id, surface_id.local_surface_id().local_id());
       new_activation_dependencies.insert(surface_id);
+    }
   }
 
   // If this Surface has a previous pending frame, then we must determine the
   // changes in dependencies so that we can update the SurfaceDependencyTracker
   // map.
-  base::flat_set<SurfaceId> added_dependencies;
-  base::flat_set<SurfaceId> removed_dependencies;
-  ComputeChangeInDependencies(activation_dependencies_,
-                              new_activation_dependencies, &added_dependencies,
-                              &removed_dependencies);
+  ComputeChangeInDependencies(new_frame_sink_id_dependencies);
+
+  activation_dependencies_ = std::move(new_activation_dependencies);
+  frame_sink_id_dependencies_ = std::move(new_frame_sink_id_dependencies);
+}
+
+void Surface::ComputeChangeInDependencies(
+    const base::flat_map<FrameSinkId, uint32_t>& new_dependencies) {
+  base::flat_set<FrameSinkId> added_dependencies;
+  base::flat_set<FrameSinkId> removed_dependencies;
+
+  for (const auto& kv : frame_sink_id_dependencies_) {
+    if (!new_dependencies.count(kv.first))
+      removed_dependencies.insert(kv.first);
+  }
+
+  for (const auto& kv : new_dependencies) {
+    if (!frame_sink_id_dependencies_.count(kv.first))
+      added_dependencies.insert(kv.first);
+  }
 
   // If there is a change in the dependency set, then inform SurfaceManager.
   if (!added_dependencies.empty() || !removed_dependencies.empty()) {
     surface_manager_->SurfaceDependenciesChanged(this, added_dependencies,
                                                  removed_dependencies);
-  }
-
-  activation_dependencies_ = std::move(new_activation_dependencies);
-}
-
-void Surface::ComputeChangeInDependencies(
-    const base::flat_set<SurfaceId>& existing_dependencies,
-    const base::flat_set<SurfaceId>& new_dependencies,
-    base::flat_set<SurfaceId>* added_dependencies,
-    base::flat_set<SurfaceId>* removed_dependencies) {
-  for (const SurfaceId& surface_id : existing_dependencies) {
-    if (!new_dependencies.count(surface_id))
-      removed_dependencies->insert(surface_id);
-  }
-
-  for (const SurfaceId& surface_id : new_dependencies) {
-    if (!existing_dependencies.count(surface_id))
-      added_dependencies->insert(surface_id);
   }
 }
 

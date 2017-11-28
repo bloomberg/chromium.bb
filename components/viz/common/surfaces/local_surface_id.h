@@ -48,11 +48,6 @@ class VIZ_COMMON_EXPORT LocalSurfaceId {
     return !(*this == other);
   }
 
-  bool operator<(const LocalSurfaceId& other) const {
-    return std::tie(local_id_, nonce_) <
-           std::tie(other.local_id_, other.nonce_);
-  }
-
   size_t hash() const {
     DCHECK(is_valid()) << ToString();
     return base::HashInts(
@@ -65,6 +60,8 @@ class VIZ_COMMON_EXPORT LocalSurfaceId {
   friend struct mojo::StructTraits<mojom::LocalSurfaceIdDataView,
                                    LocalSurfaceId>;
 
+  friend bool operator<(const LocalSurfaceId& lhs, const LocalSurfaceId& rhs);
+
   uint32_t local_id_;
   base::UnguessableToken nonce_;
 };
@@ -72,6 +69,23 @@ class VIZ_COMMON_EXPORT LocalSurfaceId {
 VIZ_COMMON_EXPORT std::ostream& operator<<(
     std::ostream& out,
     const LocalSurfaceId& local_surface_id);
+
+inline bool operator<(const LocalSurfaceId& lhs, const LocalSurfaceId& rhs) {
+  return std::tie(lhs.local_id_, lhs.nonce_) <
+         std::tie(rhs.local_id_, rhs.nonce_);
+}
+
+inline bool operator>(const LocalSurfaceId& lhs, const LocalSurfaceId& rhs) {
+  return operator<(rhs, lhs);
+}
+
+inline bool operator<=(const LocalSurfaceId& lhs, const LocalSurfaceId& rhs) {
+  return !operator>(lhs, rhs);
+}
+
+inline bool operator>=(const LocalSurfaceId& lhs, const LocalSurfaceId& rhs) {
+  return !operator<(lhs, rhs);
+}
 
 struct LocalSurfaceIdHash {
   size_t operator()(const LocalSurfaceId& key) const { return key.hash(); }

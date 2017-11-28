@@ -581,8 +581,8 @@ void SurfaceManager::SurfaceActivated(Surface* surface) {
 
 void SurfaceManager::SurfaceDependenciesChanged(
     Surface* surface,
-    const base::flat_set<SurfaceId>& added_dependencies,
-    const base::flat_set<SurfaceId>& removed_dependencies) {
+    const base::flat_set<FrameSinkId>& added_dependencies,
+    const base::flat_set<FrameSinkId>& removed_dependencies) {
   dependency_tracker_.OnSurfaceDependenciesChanged(surface, added_dependencies,
                                                    removed_dependencies);
 }
