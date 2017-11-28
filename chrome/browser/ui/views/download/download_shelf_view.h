@@ -132,7 +132,7 @@ class DownloadShelfView : public views::AccessiblePaneView,
   SkColor GetTextColorForIconMd();
 
   // The browser for this shelf.
-  Browser* browser_;
+  Browser* const browser_;
 
   // The animation for adding new items to the shelf.
   gfx::SlideAnimation new_item_animation_;

@@ -242,7 +242,7 @@ class BrowserActionsContainer : public views::View,
   ToolbarActionViews toolbar_action_views_;
 
   // The Browser object the container is associated with.
-  Browser* browser_;
+  Browser* const browser_;
 
   // The main container we are serving as overflow for, or NULL if this
   // class is the the main container. See class comments for details on

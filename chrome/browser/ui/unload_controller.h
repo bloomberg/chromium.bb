@@ -133,7 +133,7 @@ class UnloadController : public content::NotificationObserver,
     return !on_close_confirmed_.is_null();
   }
 
-  Browser* browser_;
+  Browser* const browser_;
 
   content::NotificationRegistrar registrar_;
 

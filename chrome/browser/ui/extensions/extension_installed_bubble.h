@@ -108,7 +108,7 @@ class ExtensionInstalledBubble : public BubbleDelegate {
  private:
   // |extension_| is NULL when we are deleted.
   const extensions::Extension* extension_;
-  Browser* browser_;
+  Browser* const browser_;
   const SkBitmap icon_;
   BubbleType type_;
 

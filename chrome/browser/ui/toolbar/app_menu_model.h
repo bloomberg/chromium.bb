@@ -224,7 +224,7 @@ class AppMenuModel : public ui::SimpleMenuModel,
 
   ui::AcceleratorProvider* provider_;  // weak
 
-  Browser* browser_;  // weak
+  Browser* const browser_;  // weak
 
   std::unique_ptr<content::HostZoomMap::Subscription>
       browser_zoom_subscription_;

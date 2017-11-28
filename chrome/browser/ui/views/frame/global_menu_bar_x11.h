@@ -158,7 +158,7 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
   CHROMEG_CALLBACK_1(GlobalMenuBarX11, void, OnCreateProfileItemActivated,
                      DbusmenuMenuitem*, unsigned int);
 
-  Browser* browser_;
+  Browser* const browser_;
   Profile* profile_;
   BrowserView* browser_view_;
   BrowserDesktopWindowTreeHostX11* host_;

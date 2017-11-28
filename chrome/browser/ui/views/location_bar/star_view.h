@@ -35,7 +35,7 @@ class StarView : public BubbleIconView {
   const gfx::VectorIcon& GetVectorIcon() const override;
 
  private:
-  Browser* browser_;
+  Browser* const browser_;
 
   // Observes the BookmarkPromoBubbleView's widget. Used to tell whether the
   // promo is open and gets called back when it closes.

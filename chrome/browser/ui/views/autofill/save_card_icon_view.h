@@ -20,7 +20,7 @@ class SaveCardBubbleControllerImpl;
 // it.
 class SaveCardIconView : public BubbleIconView {
  public:
-  explicit SaveCardIconView(CommandUpdater* command_updater, Browser* browser);
+  SaveCardIconView(CommandUpdater* command_updater, Browser* browser);
   ~SaveCardIconView() override;
 
  protected:
@@ -33,7 +33,7 @@ class SaveCardIconView : public BubbleIconView {
   SaveCardBubbleControllerImpl* GetController() const;
 
   // May be nullptr.
-  Browser* browser_;
+  Browser* const browser_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardIconView);
 };

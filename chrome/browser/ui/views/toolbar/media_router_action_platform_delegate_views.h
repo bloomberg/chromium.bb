@@ -20,7 +20,7 @@ class MediaRouterActionPlatformDelegateViews :
 
  private:
   // The corresponding browser.
-  Browser* browser_;
+  Browser* const browser_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterActionPlatformDelegateViews);
 };

@@ -293,7 +293,7 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   ToolbarActionsBarDelegate* delegate_;
 
   // The associated browser.
-  Browser* browser_;
+  Browser* const browser_;
 
   // The observed toolbar model.
   ToolbarActionsModel* model_;

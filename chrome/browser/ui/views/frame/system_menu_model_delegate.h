@@ -31,8 +31,8 @@ class SystemMenuModelDelegate : public ui::SimpleMenuModel::Delegate {
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
-  ui::AcceleratorProvider* provider_;  // weak
-  Browser* browser_;  // weak
+  ui::AcceleratorProvider* const provider_;  // weak
+  Browser* const browser_;                   // weak
 
   DISALLOW_COPY_AND_ASSIGN(SystemMenuModelDelegate);
 };

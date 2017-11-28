@@ -81,7 +81,7 @@ class BrowserLiveTabContext : public sessions::LiveTabContext {
       SessionID::id_type desired_id);
 
  private:
-  Browser* browser_;
+  Browser* const browser_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserLiveTabContext);
 };

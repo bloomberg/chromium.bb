@@ -182,7 +182,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
   void AddMenuToMaps(views::MenuItemView* menu,
                      const bookmarks::BookmarkNode* node);
 
-  Browser* browser_;
+  Browser* const browser_;
   Profile* profile_;
 
   content::PageNavigator* page_navigator_;

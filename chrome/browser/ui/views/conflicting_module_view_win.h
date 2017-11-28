@@ -42,7 +42,7 @@ class ConflictingModuleView : public views::BubbleDialogDelegateView,
   // EnumerateModulesModel::Observer:
   void OnConflictsAcknowledged() override;
 
-  Browser* browser_;
+  Browser* const browser_;
 
   ScopedObserver<EnumerateModulesModel,
                  EnumerateModulesModel::Observer> observer_;
