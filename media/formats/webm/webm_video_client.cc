@@ -10,12 +10,30 @@
 
 namespace media {
 
+namespace {
+
+// Tries to parse |data| to extract the VP9 Profile ID, or returns Profile 0.
+media::VideoCodecProfile GetVP9CodecProfile(const std::vector<uint8_t>& data) {
+  // VP9 CodecPrivate (http://wiki.webmproject.org/vp9-codecprivate) might have
+  // Profile information in the first field, if present.
+  constexpr uint8_t kVP9ProfileFieldId = 0x01;
+  constexpr uint8_t kVP9ProfileFieldLength = 1;
+  if (data.size() < 3 || data[0] != kVP9ProfileFieldId ||
+      data[1] != kVP9ProfileFieldLength || data[2] > 3) {
+    return VP9PROFILE_PROFILE0;
+  }
+
+  return static_cast<VideoCodecProfile>(
+      static_cast<size_t>(VP9PROFILE_PROFILE0) + data[2]);
+}
+
+}  // namespace
+
 WebMVideoClient::WebMVideoClient(MediaLog* media_log) : media_log_(media_log) {
   Reset();
 }
 
-WebMVideoClient::~WebMVideoClient() {
-}
+WebMVideoClient::~WebMVideoClient() {}
 
 void WebMVideoClient::Reset() {
   pixel_width_ = -1;
@@ -45,9 +63,7 @@ bool WebMVideoClient::InitializeConfig(
     profile = VP8PROFILE_ANY;
   } else if (codec_id == "V_VP9") {
     video_codec = kCodecVP9;
-    // TODO(servolk): Find a way to read actual VP9 profile from WebM.
-    // crbug.com/592074
-    profile = VP9PROFILE_PROFILE0;
+    profile = GetVP9CodecProfile(codec_private);
 #if BUILDFLAG(ENABLE_AV1_DECODER)
   } else if (codec_id == "V_AV1") {
     // TODO(dalecurtis): AV1 profiles are not finalized, this needs updating
