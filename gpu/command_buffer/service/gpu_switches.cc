@@ -73,4 +73,7 @@ const char kEmulateShaderPrecision[] = "emulate-shader-precision";
 // tracking.
 const char kUseCmdDecoder[] = "use-cmd-decoder";
 
+// Use a dedicated RasterInterfaceDecoder instead of generic GLES2Decoder.
+const char kEnableRasterDecoder[] = "enable-raster-decoder";
+
 }  // namespace switches

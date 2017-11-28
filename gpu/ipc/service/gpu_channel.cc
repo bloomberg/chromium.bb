@@ -617,6 +617,10 @@ void GpuChannel::OnCreateCommandBuffer(
     stream_sequences_[stream_id] = sequence_id;
   }
 
+  DVLOG(1) << "Should use raster decoder: "
+           << (gpu_channel_manager_->gpu_preferences().enable_raster_decoder &&
+               init_params.attribs.enable_oop_rasterization);
+
   auto stub = std::make_unique<GpuCommandBufferStub>(
       this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
   auto stub_result =
