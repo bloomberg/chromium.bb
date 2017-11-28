@@ -2,19 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview.ticket_items');
-
-/**
- * Enumeration of the orientations of margins.
- * @enum {string}
- */
-print_preview.ticket_items.CustomMarginsOrientation = {
-  TOP: 'top',
-  RIGHT: 'right',
-  BOTTOM: 'bottom',
-  LEFT: 'left'
-};
-
 cr.define('print_preview.ticket_items', function() {
   'use strict';
 

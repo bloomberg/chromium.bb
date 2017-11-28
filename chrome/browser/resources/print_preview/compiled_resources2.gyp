@@ -25,6 +25,15 @@
         ],
       },
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
-    }
+    },
+    {
+      'target_name': 'print_preview_utils',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        'data/compiled_resources2.gyp:size',
+        'data/compiled_resources2.gyp:coordinate2d'
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
   ],
 }
