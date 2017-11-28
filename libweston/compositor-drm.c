@@ -4788,7 +4788,9 @@ drm_output_pick_crtc(struct drm_output *output, drmModeRes *resources)
 	unsigned j, n = 0;
 	uint32_t crtc_id;
 	int best_crtc_index = -1;
+	int fallback_crtc_index = -1;
 	int i;
+	bool match;
 
 	backend = to_drm_backend(output->base.compositor);
 
@@ -4829,11 +4831,36 @@ drm_output_pick_crtc(struct drm_output *output, drmModeRes *resources)
 				return i;
 		}
 
-		best_crtc_index = i;
+		/* Check if any other head had existing routing to this CRTC.
+		 * If they did, this is not the best CRTC as it might be needed
+		 * for another output we haven't enabled yet. */
+		match = false;
+		wl_list_for_each(base, &backend->compositor->head_list,
+				 compositor_link) {
+			head = to_drm_head(base);
+
+			if (head->base.output == &output->base)
+				continue;
+
+			if (weston_head_is_enabled(&head->base))
+				continue;
+
+			if (head->inherited_crtc_id == crtc_id) {
+				match = true;
+				break;
+			}
+		}
+		if (!match)
+			best_crtc_index = i;
+
+		fallback_crtc_index = i;
 	}
 
 	if (best_crtc_index != -1)
 		return best_crtc_index;
+
+	if (fallback_crtc_index != -1)
+		return fallback_crtc_index;
 
 	/* Likely possible_crtcs was empty due to asking for clones,
 	 * but since the DRM documentation says the kernel lies, let's
