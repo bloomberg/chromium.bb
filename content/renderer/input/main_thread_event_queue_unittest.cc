@@ -189,6 +189,10 @@ class MainThreadEventQueueTest : public testing::Test,
     return queue_->shared_state_.events_;
   }
 
+  bool needs_low_latency_until_pointer_up() {
+    return queue_->needs_low_latency_until_pointer_up_;
+  }
+
   bool last_touch_start_forced_nonblocking_due_to_fling() {
     return queue_->last_touch_start_forced_nonblocking_due_to_fling_;
   }
@@ -1324,6 +1328,80 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchMoveWithTouchEnd) {
             static_cast<const WebTouchEvent&>(
                 handled_tasks_.at(1)->taskAsEvent()->Event())
                 .dispatch_type);
+}
+
+TEST_F(MainThreadEventQueueTest, UnbufferedDispatchTouchEvent) {
+  SyntheticWebTouchEvent kEvents[3];
+  kEvents[0].PressPoint(10, 10);
+  kEvents[1].PressPoint(10, 10);
+  kEvents[1].MovePoint(0, 20, 20);
+  kEvents[2].PressPoint(10, 10);
+  kEvents[2].ReleasePoint(0);
+
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+
+  EXPECT_CALL(renderer_scheduler_,
+              DidHandleInputEventOnMainThread(testing::_, testing::_))
+      .Times(3);
+
+  EXPECT_EQ(WebInputEvent::kBlocking, kEvents[0].dispatch_type);
+  EXPECT_EQ(WebInputEvent::kBlocking, kEvents[1].dispatch_type);
+  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  queue_->RequestUnbufferedInputEvents();
+  EXPECT_EQ(1u, event_queue().size());
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_TRUE(needs_low_latency_until_pointer_up());
+  EXPECT_FALSE(needs_main_frame_);
+
+  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1u, event_queue().size());
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_TRUE(needs_low_latency_until_pointer_up());
+  EXPECT_FALSE(needs_main_frame_);
+
+  HandleEvent(kEvents[2], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1u, event_queue().size());
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_FALSE(needs_low_latency_until_pointer_up());
+  EXPECT_FALSE(needs_main_frame_);
+}
+
+TEST_F(MainThreadEventQueueTest, UnbufferedDispatchMouseEvent) {
+  WebMouseEvent mouse_down = SyntheticWebMouseEventBuilder::Build(
+      WebInputEvent::kMouseDown, 10, 10, 0);
+  WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
+      WebInputEvent::kMouseMove, 10, 10, 0);
+  WebMouseEvent mouse_up =
+      SyntheticWebMouseEventBuilder::Build(WebInputEvent::kMouseUp, 10, 10, 0);
+
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+
+  EXPECT_CALL(renderer_scheduler_,
+              DidHandleInputEventOnMainThread(testing::_, testing::_))
+      .Times(3);
+
+  HandleEvent(mouse_down, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  queue_->RequestUnbufferedInputEvents();
+  EXPECT_EQ(1u, event_queue().size());
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_TRUE(needs_low_latency_until_pointer_up());
+  EXPECT_FALSE(needs_main_frame_);
+
+  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  queue_->RequestUnbufferedInputEvents();
+  EXPECT_EQ(1u, event_queue().size());
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_TRUE(needs_low_latency_until_pointer_up());
+  EXPECT_FALSE(needs_main_frame_);
+
+  HandleEvent(mouse_up, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  queue_->RequestUnbufferedInputEvents();
+  EXPECT_EQ(1u, event_queue().size());
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_FALSE(needs_low_latency_until_pointer_up());
+  EXPECT_FALSE(needs_main_frame_);
 }
 
 }  // namespace content

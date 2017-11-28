@@ -276,6 +276,12 @@ class CORE_EXPORT HTMLCanvasElement final
     gpu_readback_invoked_in_current_frame_ = true;
   }
 
+  bool NeedsUnbufferedInputEvents() const { return needs_unbuffered_input_; }
+
+  void SetNeedsUnbufferedInputEvents(bool value) {
+    needs_unbuffered_input_ = value;
+  }
+
  protected:
   void DidMoveToNewDocument(Document& old_document) override;
 
@@ -330,6 +336,7 @@ class CORE_EXPORT HTMLCanvasElement final
   FloatRect dirty_rect_;
 
   bool origin_clean_;
+  bool needs_unbuffered_input_ = false;
 
   // It prevents HTMLCanvasElement::buffer() from continuously re-attempting to
   // allocate an imageBuffer after the first attempt failed.
