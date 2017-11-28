@@ -282,7 +282,8 @@ void DefaultFrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
   gfx::Rect title_bounds = GetAvailableTitleBounds();
   title_bounds.set_x(view_->GetMirroredXForRect(title_bounds));
   canvas->DrawStringRect(frame_->widget_delegate()->GetWindowTitle(),
-                         GetTitleFontList(), GetTitleColor(), title_bounds);
+                         views::NativeWidgetAura::GetWindowTitleFontList(),
+                         GetTitleColor(), title_bounds);
 }
 
 void DefaultFrameHeader::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
@@ -327,7 +328,8 @@ gfx::Rect DefaultFrameHeader::GetLocalBounds() const {
 gfx::Rect DefaultFrameHeader::GetAvailableTitleBounds() const {
   views::View* left_view = left_header_view_ ? left_header_view_ : back_button_;
   return FrameHeaderUtil::GetAvailableTitleBounds(
-      left_view, caption_button_container_, GetTitleFontList());
+      left_view, caption_button_container_,
+      views::NativeWidgetAura::GetWindowTitleFontList());
 }
 
 bool DefaultFrameHeader::UsesCustomFrameColors() const {
