@@ -5,22 +5,29 @@
 package org.chromium.chrome.browser.preferences.password;
 
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.Espresso;
+import android.support.test.espresso.action.ViewActions;
+import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 
 /**
  * Tests for the "Save Passwords" settings screen.
@@ -29,6 +36,9 @@ import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 public class SavePasswordsPreferencesTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
+
+    @Rule
+    public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     /**
      * Ensure that the on/off switch in "Save Passwords" settings actually enables and disables
@@ -142,5 +152,24 @@ public class SavePasswordsPreferencesTest {
                 Assert.assertFalse(onOffSwitch.isChecked());
             }
         });
+    }
+
+    /**
+     * Ensure that the export menu item is included and hidden behind the overflow menu.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("password-export")
+    public void testExportMenuItem() throws Exception {
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        Espresso.openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        Espresso.onView(ViewMatchers.withText(
+                                R.string.save_password_preferences_export_action_title))
+                .perform(ViewActions.click());
     }
 }

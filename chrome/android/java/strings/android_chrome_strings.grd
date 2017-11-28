@@ -476,6 +476,12 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PASSWORD_GENERATION_POPUP_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the password generation popup is shown.">
         Showing password generation popup
       </message>
+      <message name="IDS_SAVE_PASSWORD_PREFERENCES_EXPORT_ACTION_TITLE" desc="The title of a menu item to trigger exporting passwords from the password settings.">
+        Export passwords...
+      </message>
+      <message name="IDS_SAVE_PASSWORD_PREFERENCES_EXPORT_ACTION_DESCRIPTION" desc="The description of a menu item to trigger exporting passwords from the password settings.">
+        Export passwords stored with Chrome
+      </message>
 
       <!-- Lock Screen Fragment -->
       <message name="IDS_LOCKSCREEN_DESCRIPTION" desc='Text on lockscreen explaining to user that they need to unlock the device to continue setup.'>
