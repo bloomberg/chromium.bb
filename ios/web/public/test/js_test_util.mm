@@ -57,6 +57,7 @@ id ExecuteJavaScript(WKWebView* web_view,
   __block id result;
   __block bool completed = false;
   __block NSError* block_error = nil;
+  SCOPED_TRACE(base::SysNSStringToUTF8(script));
   [web_view evaluateJavaScript:script
              completionHandler:^(id script_result, NSError* script_error) {
                result = [script_result copy];
