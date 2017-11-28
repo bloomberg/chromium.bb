@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/ui_scene_creator.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -992,6 +993,44 @@ TEST_F(UiTest, ExitPresentAndFullscreenOnAppButtonClick) {
   // And also trigger exit fullscreen.
   EXPECT_CALL(*browser_, ExitFullscreen());
   ui_->OnAppButtonClicked();
+}
+
+TEST(UiReticleTest, ReticleRenderedOnPlanarChildren) {
+  UiScene scene;
+  Model model;
+
+  auto reticle = base::MakeUnique<Reticle>(&scene, &model);
+  reticle->set_draw_phase(kPhaseNone);
+  scene.root_element().AddChild(std::move(reticle));
+
+  auto element = base::MakeUnique<UiElement>();
+  UiElement* parent = element.get();
+  parent->set_draw_phase(kPhaseForeground);
+  parent->set_name(k2dBrowsingRoot);
+  scene.root_element().AddChild(std::move(element));
+  model.reticle.target_element_id = parent->id();
+
+  // Add 4 children to the parent:
+  // - Parent (hit element, initially having reticle)
+  //   - Planar
+  //   - Planar but offset (should receive reticle)
+  //   - Parallel
+  //   - Rotated
+  for (int i = 0; i < 4; i++) {
+    element = base::MakeUnique<UiElement>();
+    element->set_draw_phase(kPhaseForeground);
+    parent->AddChild(std::move(element));
+  }
+  parent->children()[1]->SetTranslate(1, 0, 0);
+  parent->children()[2]->SetTranslate(0, 0, -1);
+  parent->children()[3]->SetRotate(1, 0, 0, 1);
+  scene.OnBeginFrame(MsToTicks(0), kForwardVector);
+
+  // Sorted set should have 1 parent, 4 children and 1 reticle.
+  UiScene::Elements sorted = scene.GetVisible2dBrowsingElements();
+  EXPECT_EQ(6u, sorted.size());
+  // Reticle should be after the parent and first two children.
+  EXPECT_EQ(sorted[3]->name(), kReticle);
 }
 
 // This test ensures that the render order matches the expected tree state. All
