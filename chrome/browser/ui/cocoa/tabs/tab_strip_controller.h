@@ -43,7 +43,7 @@ class WebContents;
 - (void)onActivateTabWithContents:(content::WebContents*)contents;
 
 // Stripped down version of TabStripModelObserverBridge:tabChangedWithContents.
-- (void)onTabChanged:(TabStripModelObserver::TabChangeType)change
+- (void)onTabChanged:(TabChangeType)change
         withContents:(content::WebContents*)contents;
 
 // Stripped down version of TabStripModelObserverBridge:tabDetachedWithContents.

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_EXPERIMENTAL_OBSERVER_H_
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_EXPERIMENTAL_OBSERVER_H_
 
-#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/tabs/tab_change_type.h"
 
 class TabDataExperimental;
 
@@ -17,7 +17,8 @@ class TabStripModelExperimentalObserver {
 
   // TODO(brettw) need a way to specify what changed so the tab doesn't need
   // to redraw everything.
-  virtual void TabChanged(const TabDataExperimental* data) = 0;
+  virtual void TabChanged(const TabDataExperimental* data,
+                          TabChangeType change_type) = 0;
 
   // TODO(brettw) Need to add support for multi-selection. We probably don't
   // want to expose a ListSelectionModel here because of the mismatch between

@@ -932,7 +932,7 @@ void TabManager::OnMemoryPressure(
 void TabManager::TabChangedAt(content::WebContents* contents,
                               int index,
                               TabChangeType change_type) {
-  if (change_type != TabChangeType::ALL)
+  if (change_type != TabChangeType::kAll)
     return;
   auto* data = GetWebContentsData(contents);
   bool old_state = data->IsRecentlyAudible();

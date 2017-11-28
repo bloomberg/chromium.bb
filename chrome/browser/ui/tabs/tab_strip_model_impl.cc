@@ -430,9 +430,8 @@ int TabStripModelImpl::GetIndexOfWebContents(
   return kNoTab;
 }
 
-void TabStripModelImpl::UpdateWebContentsStateAt(
-    int index,
-    TabStripModelObserver::TabChangeType change_type) {
+void TabStripModelImpl::UpdateWebContentsStateAt(int index,
+                                                 TabChangeType change_type) {
   DCHECK(ContainsIndex(index));
 
   for (auto& observer : observers())

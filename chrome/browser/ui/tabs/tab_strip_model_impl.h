@@ -62,9 +62,7 @@ class TabStripModelImpl : public TabStripModel {
   content::WebContents* GetWebContentsAt(int index) const override;
   int GetIndexOfWebContents(
       const content::WebContents* contents) const override;
-  void UpdateWebContentsStateAt(
-      int index,
-      TabStripModelObserver::TabChangeType change_type) override;
+  void UpdateWebContentsStateAt(int index, TabChangeType change_type) override;
   void SetTabNeedsAttentionAt(int index, bool attention) override;
   void CloseAllTabs() override;
   bool TabsAreLoading() const override;

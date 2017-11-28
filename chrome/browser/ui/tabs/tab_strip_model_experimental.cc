@@ -296,7 +296,7 @@ void TabStripModelExperimental::InsertWebContentsAt(
       // Promote parent to hub-and-spoke.
       parent->set_type(TabDataExperimental::Type::kHubAndSpoke);
       for (auto& observer : exp_observers_)
-        observer.TabChanged(parent);
+        observer.TabChanged(parent, TabChangeType::kAll);
     }
 
     parent->children_.push_back(std::make_unique<TabDataExperimental>(
@@ -517,11 +517,11 @@ int TabStripModelExperimental::GetIndexOfWebContents(
 
 void TabStripModelExperimental::UpdateWebContentsStateAt(
     int view_index,
-    TabStripModelObserver::TabChangeType change_type) {
+    TabChangeType change_type) {
   ViewIterator found = FindViewIndex(view_index);
   DCHECK(found != end());
   for (auto& observer : exp_observers_)
-    observer.TabChanged(&*found);
+    observer.TabChanged(&*found, change_type);
 }
 
 void TabStripModelExperimental::SetTabNeedsAttentionAt(int index,
@@ -739,7 +739,7 @@ void TabStripModelExperimental::DetachWebContents(
         // a single.
         parent->set_type(TabDataExperimental::Type::kSingle);
         for (auto& observer : exp_observers_)
-          observer.TabChanged(parent);
+          observer.TabChanged(parent, TabChangeType::kAll);
       } else {
         DCHECK(parent->type() == TabDataExperimental::Type::kGroup);
         // TODO(brettw) remove group. Notifications might be tricky.
@@ -752,7 +752,7 @@ void TabStripModelExperimental::DetachWebContents(
     data->contents_ =
         nullptr;  // TODO(brettw) does this delete things properly?
     for (auto& observer : exp_observers_)
-      observer.TabChanged(data);
+      observer.TabChanged(data, TabChangeType::kAll);
   } else {
     // Just remove from tabs.
     tabs_.erase(tabs_.begin() + found.toplevel_index_);

@@ -109,7 +109,7 @@ void TabStripModelObserverBridge::TabReplacedAt(TabStripModel* tab_strip_model,
                         previousContents:old_contents
                                  atIndex:index];
   } else {
-    TabChangedAt(new_contents, index, ALL);
+    TabChangedAt(new_contents, index, TabChangeType::kAll);
   }
 }
 

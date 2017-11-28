@@ -245,9 +245,8 @@ class TabStripModel : public WebContentsCloseDelegate {
 
   // Notify any observers that the WebContents at the specified index has
   // changed in some way. See TabChangeType for details of |change_type|.
-  virtual void UpdateWebContentsStateAt(
-      int index,
-      TabStripModelObserver::TabChangeType change_type) = 0;
+  virtual void UpdateWebContentsStateAt(int index,
+                                        TabChangeType change_type) = 0;
 
   // Cause a tab to display a UI indication to the user that it needs their
   // attention.
