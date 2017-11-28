@@ -65,8 +65,13 @@ error::Error DeleteHelper(GLsizei n,
     // Don't pass service IDs of objects with a client ID of 0.  They are
     // emulated and should not be deleteable
     if (client_id != 0) {
-      service_ids[ii] = id_map->GetServiceIDOrInvalid(client_id);
-      id_map->RemoveClientID(client_id);
+      ServiceType service_id = id_map->GetServiceIDOrInvalid(client_id);
+      // Don't delete the invalid service ID, if bind-generates-resource is
+      // enabled then it may be currently used as a placeholder
+      if (service_id != id_map->invalid_service_id()) {
+        DCHECK(service_id != 0);
+        id_map->RemoveClientID(client_id);
+    }
     }
   }
 
