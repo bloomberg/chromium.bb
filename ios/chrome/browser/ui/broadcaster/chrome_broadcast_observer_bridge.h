@@ -1,0 +1,47 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef IOS_CHROME_BROWSER_UI_BROADCASTER_CHROME_BROADCAST_OBSERVER_BRIDGE_H_
+#define IOS_CHROME_BROWSER_UI_BROADCASTER_CHROME_BROADCAST_OBSERVER_BRIDGE_H_
+
+#import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer.h"
+
+// Interface for C++ objects that care about broadcasted UI state.
+class ChromeBroadcastObserverInterface {
+ public:
+  virtual ~ChromeBroadcastObserverInterface();
+
+  // Invoked by |-broadcastTabStripVisible:|.
+  virtual void OnTabStripVisbibleBroadcasted(bool visible) {}
+
+  // Invoked by |-broadcastContentScrollOffset:|.
+  virtual void OnContentScrollOffsetBroadcasted(CGFloat offset) {}
+
+  // Invoked by |-broadcastScrollViewIsScrolling:|.
+  virtual void OnScrollViewIsScrollingBroadcasted(bool scrolling) {}
+
+  // Invoked by |-broadcastScrollViewIsDragging:|.
+  virtual void OnScrollViewIsDraggingBroadcasted(bool dragging) {}
+
+  // Invoked by |-broadcastToolbarHeight:|.
+  virtual void OnToolbarHeightBroadcasted(CGFloat toolbar_height) {}
+};
+
+// Bridge object that forwards broadcasted UI state to objects that subclass
+// ChromeBroadcastObserverInterface.
+@interface ChromeBroadcastOberverBridge : NSObject<ChromeBroadcastObserver>
+
+// The observer being updated.
+@property(nonatomic, readonly, nonnull)
+    ChromeBroadcastObserverInterface* observer;
+
+// Initializer for a bridge that updates |observer|.
+- (nullable instancetype)initWithObserver:
+    (nonnull ChromeBroadcastObserverInterface*)observer
+    NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)init NS_UNAVAILABLE;
+
+@end
+
+#endif  // IOS_CHROME_BROWSER_UI_BROADCASTER_CHROME_BROADCAST_OBSERVER_BRIDGE_H_
