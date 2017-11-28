@@ -365,6 +365,10 @@ bool GraphicsLayer::PaintWithoutCommit(
   }
 
   GraphicsContext context(GetPaintController(), disabled_mode, nullptr);
+  if (layer_state_) {
+    GetPaintController().UpdateCurrentPaintChunkProperties(WTF::nullopt,
+                                                           layer_state_->state);
+  }
 
   previous_interest_rect_ = *interest_rect;
   client_->PaintContents(this, context, painting_phase_, *interest_rect);

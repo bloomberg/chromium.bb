@@ -114,7 +114,9 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view,
     view->AssertSubtreeClearedPaintInvalidationFlags();
 #endif
   }
+
   frame_view.ClearNeedsPaintPropertyUpdate();
+  CompositingLayerPropertyUpdater::Update(frame_view);
 }
 
 static void UpdateAuxiliaryObjectProperties(const LayoutObject& object,
