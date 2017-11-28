@@ -210,24 +210,29 @@ void AppListPresenterImpl::ScheduleAnimation() {
   views::Widget* widget = view_->GetWidget();
   ui::Layer* layer = GetLayer(widget);
   layer->GetAnimator()->StopAnimating();
-  ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   aura::Window* root_window = widget->GetNativeView()->GetRootWindow();
   const gfx::Vector2d offset =
       presenter_delegate_->GetVisibilityAnimationOffset(root_window);
   base::TimeDelta animation_duration =
       presenter_delegate_->GetVisibilityAnimationDuration(root_window,
                                                           is_visible_);
-  animation.SetTransitionDuration(animation_duration);
   gfx::Rect target_bounds = widget->GetNativeView()->bounds();
-
-  view_->StartCloseAnimation(animation_duration);
   target_bounds.Offset(offset);
-
-  animation.SetAnimationMetricsReporter(
-      state_animation_metrics_reporter_.get());
-
-  animation.AddObserver(this);
   widget->GetNativeView()->SetBounds(target_bounds);
+  gfx::Transform transform;
+  transform.Translate(-offset.x(), -offset.y());
+  layer->SetTransform(transform);
+
+  {
+    ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+    animation.SetTransitionDuration(animation_duration);
+    animation.SetAnimationMetricsReporter(
+        state_animation_metrics_reporter_.get());
+    animation.AddObserver(this);
+
+    layer->SetTransform(gfx::Transform());
+  }
+  view_->StartCloseAnimation(animation_duration);
 }
 
 int64_t AppListPresenterImpl::GetDisplayId() {
