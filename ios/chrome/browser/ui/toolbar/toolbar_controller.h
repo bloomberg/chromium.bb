@@ -37,11 +37,6 @@ class ReadingListModel;
 // components of the toolbar.
 @property(nonatomic, readonly, strong) UIImageView* shadowView;
 
-// |toolsmenuStateProvider| provides information about the
-// presentation state of the tools menu.
-@property(nonatomic, readwrite, weak) id<ToolsMenuPresentationStateProvider>
-    toolsMenuStateProvider;
-
 // Returns the constraint controlling the height of the toolbar. If the
 // constraint does not exist, creates it but does not activate it.
 @property(nonatomic, readonly) NSLayoutConstraint* heightConstraint;

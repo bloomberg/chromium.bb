@@ -121,11 +121,6 @@
   return;
 }
 
-- (void)setToolsMenuStateProvider:
-    (id<ToolsMenuPresentationStateProvider>)provider {
-  return;
-}
-
 - (void)setToolsMenuIsVisibleForToolsMenuButton:(BOOL)isVisible {
   [self.toolbarCoordinator setToolsMenuIsVisibleForToolsMenuButton:isVisible];
 }

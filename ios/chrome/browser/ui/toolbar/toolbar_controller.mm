@@ -120,7 +120,6 @@ using ios::material::TimingFunction;
 @synthesize contentView = contentView_;
 @synthesize backgroundView = backgroundView_;
 @synthesize shadowView = shadowView_;
-@synthesize toolsMenuStateProvider = toolsMenuStateProvider_;
 @synthesize style = style_;
 @synthesize heightConstraint = heightConstraint_;
 @synthesize dispatcher = dispatcher_;
