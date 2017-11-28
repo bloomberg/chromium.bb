@@ -325,21 +325,6 @@ TEST(PermissionsDataTest, GetPermissionMessages_ManyHosts) {
       "Read and change your data on encrypted.google.com and www.google.com"));
 }
 
-TEST(PermissionsDataTest, GetPermissionMessages_Plugins) {
-  scoped_refptr<Extension> extension;
-  extension = LoadManifest("permissions", "plugins.json");
-// We don't parse the plugins key on Chrome OS, so it should not ask for any
-// permissions.
-#if defined(OS_CHROMEOS)
-  EXPECT_TRUE(VerifyNoPermissionMessages(extension->permissions_data()));
-#else
-  EXPECT_TRUE(VerifyOnePermissionMessage(
-      extension->permissions_data(),
-      "Read and change all your data on your computer and the websites you "
-      "visit"));
-#endif
-}
-
 TEST(PermissionsDataTest, ExternalFiles) {
   GURL external_file("externalfile:abc");
   scoped_refptr<const Extension> extension;

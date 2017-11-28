@@ -14395,7 +14395,7 @@ Called by update_net_error_codes.py.-->
   <int value="111" label="kPageCapture"/>
   <int value="112" label="kPointerLock"/>
   <int value="113" label="kPlatformKeys"/>
-  <int value="114" label="kPlugin"/>
+  <int value="114" label="kDeleted_Plugin"/>
   <int value="115" label="kPower"/>
   <int value="116" label="kPreferencesPrivate"/>
   <int value="117" label="kDeleted_PrincipalsPrivate"/>

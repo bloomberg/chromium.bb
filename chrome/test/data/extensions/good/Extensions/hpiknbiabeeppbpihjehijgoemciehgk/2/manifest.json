@@ -3,10 +3,6 @@
   "version": "2",
   "name": "My extension 2",
   "manifest_version": 2,
-  "plugins": [
-    { "path": "content_plugin.dll", "public": true },
-    { "path": "extension_plugin.dll" }
-  ],
   "background": {
     "page": "background.html"
   }

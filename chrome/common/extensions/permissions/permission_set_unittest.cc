@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_test_util.h"
@@ -382,7 +381,6 @@ TEST(PermissionsTest, CreateUnion) {
   EXPECT_TRUE(union_set->Contains(*set1));
   EXPECT_TRUE(union_set->Contains(*set2));
 
-  EXPECT_FALSE(union_set->HasEffectiveFullAccess());
   EXPECT_EQ(expected_apis, union_set->apis());
   EXPECT_EQ(expected_explicit_hosts, union_set->explicit_hosts());
   EXPECT_EQ(expected_scriptable_hosts, union_set->scriptable_hosts());
@@ -392,7 +390,6 @@ TEST(PermissionsTest, CreateUnion) {
   apis2.insert(APIPermission::kTab);
   apis2.insert(APIPermission::kProxy);
   apis2.insert(APIPermission::kClipboardWrite);
-  apis2.insert(APIPermission::kPlugin);
 
   permission = permission_info->CreateAPIPermission();
   {
@@ -406,7 +403,6 @@ TEST(PermissionsTest, CreateUnion) {
   expected_apis.insert(APIPermission::kTab);
   expected_apis.insert(APIPermission::kProxy);
   expected_apis.insert(APIPermission::kClipboardWrite);
-  expected_apis.insert(APIPermission::kPlugin);
 
   permission = permission_info->CreateAPIPermission();
   {
@@ -439,7 +435,6 @@ TEST(PermissionsTest, CreateUnion) {
   EXPECT_TRUE(union_set->Contains(*set1));
   EXPECT_TRUE(union_set->Contains(*set2));
 
-  EXPECT_TRUE(union_set->HasEffectiveFullAccess());
   EXPECT_TRUE(union_set->HasEffectiveAccessToAllHosts());
   EXPECT_EQ(expected_apis, union_set->apis());
   EXPECT_EQ(expected_explicit_hosts, union_set->explicit_hosts());
@@ -501,7 +496,6 @@ TEST(PermissionsTest, CreateIntersection) {
   EXPECT_TRUE(new_set->Contains(*set2));
 
   EXPECT_TRUE(new_set->IsEmpty());
-  EXPECT_FALSE(new_set->HasEffectiveFullAccess());
   EXPECT_EQ(expected_apis, new_set->apis());
   EXPECT_EQ(expected_explicit_hosts, new_set->explicit_hosts());
   EXPECT_EQ(expected_scriptable_hosts, new_set->scriptable_hosts());
@@ -511,7 +505,6 @@ TEST(PermissionsTest, CreateIntersection) {
   apis2.insert(APIPermission::kTab);
   apis2.insert(APIPermission::kProxy);
   apis2.insert(APIPermission::kClipboardWrite);
-  apis2.insert(APIPermission::kPlugin);
   permission = permission_info->CreateAPIPermission();
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
@@ -551,7 +544,6 @@ TEST(PermissionsTest, CreateIntersection) {
   EXPECT_FALSE(new_set->Contains(*set1));
   EXPECT_FALSE(new_set->Contains(*set2));
 
-  EXPECT_FALSE(new_set->HasEffectiveFullAccess());
   EXPECT_FALSE(new_set->HasEffectiveAccessToAllHosts());
   EXPECT_EQ(expected_apis, new_set->apis());
   EXPECT_EQ(expected_explicit_hosts, new_set->explicit_hosts());
@@ -611,7 +603,6 @@ TEST(PermissionsTest, CreateDifference) {
   apis2.insert(APIPermission::kTab);
   apis2.insert(APIPermission::kProxy);
   apis2.insert(APIPermission::kClipboardWrite);
-  apis2.insert(APIPermission::kPlugin);
   permission = permission_info->CreateAPIPermission();
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
@@ -646,7 +637,6 @@ TEST(PermissionsTest, CreateDifference) {
   EXPECT_TRUE(set1->Contains(*new_set));
   EXPECT_FALSE(set2->Contains(*new_set));
 
-  EXPECT_FALSE(new_set->HasEffectiveFullAccess());
   EXPECT_FALSE(new_set->HasEffectiveAccessToAllHosts());
   EXPECT_EQ(expected_apis, new_set->apis());
   EXPECT_EQ(expected_explicit_hosts, new_set->explicit_hosts());
@@ -663,41 +653,43 @@ TEST(PermissionsTest, IsPrivilegeIncrease) {
     const char* base_name;
     bool expect_increase;
   } kTests[] = {
-    { "allhosts1", false },  // all -> all
-    { "allhosts2", false },  // all -> one
-    { "allhosts3", true },  // one -> all
-    { "hosts1", false },  // http://a,http://b -> http://a,http://b
-    { "hosts2", true },  // http://a,http://b -> https://a,http://*.b
-    { "hosts3", false },  // http://a,http://b -> http://a
-    { "hosts4", true },  // http://a -> http://a,http://b
-    { "hosts5", false },  // http://a,b,c -> http://a,b,c + https://a,b,c
-    { "hosts6", false },  // http://a.com -> http://a.com + http://a.co.uk
-    { "permissions1", false },  // tabs -> tabs
-    { "permissions2", true },  // tabs -> tabs,bookmarks
-    // TODO(treib): This is wrong, kAllHosts implies kTabs. crbug.com/512344
-    { "permissions3", true },  // http://*/* -> http://*/*,tabs
-    { "permissions5", true },  // bookmarks -> bookmarks,history
-    { "equivalent_warnings", false },  // tabs --> tabs, webNavigation
-#if !defined(OS_CHROMEOS)  // plugins aren't allowed in ChromeOS
-    { "permissions4", false },  // plugin -> plugin,tabs
-    { "plugin1", false },  // plugin -> plugin
-    { "plugin2", false },  // plugin -> none
-    { "plugin3", true },  // none -> plugin
-#endif
-    { "storage", false },  // none -> storage
-    { "notifications", true },  // none -> notifications
-    { "platformapp1", false },  // host permissions for platform apps
-    { "platformapp2", true },  // API permissions for platform apps
-    { "media_galleries1", true },  // all -> read|all
-    { "media_galleries2", true },  // read|all -> read|delete|copyTo|all
-    { "media_galleries3", true },  // all -> read|delete|all
-    { "media_galleries4", false },  // read|all -> all
-    { "media_galleries5", false },  // read|copyTo|delete|all -> read|all
-    { "media_galleries6", false },  // read|all -> read|all
-    { "media_galleries7", true },  // read|delete|all -> read|copyTo|delete|all
-    { "sockets1", true },  // none -> tcp:*:*
-    { "sockets2", false },  // tcp:*:* -> tcp:*:*
-    { "sockets3", true },  // tcp:a.com:80 -> tcp:*:*
+      {"allhosts1", false},     // all -> all
+      {"allhosts2", false},     // all -> one
+      {"allhosts3", true},      // one -> all
+      {"hosts1", false},        // http://a,http://b -> http://a,http://b
+      {"hosts2", true},         // http://a,http://b -> https://a,http://*.b
+      {"hosts3", false},        // http://a,http://b -> http://a
+      {"hosts4", true},         // http://a -> http://a,http://b
+      {"hosts5", false},        // http://a,b,c -> http://a,b,c + https://a,b,c
+      {"hosts6", false},        // http://a.com -> http://a.com + http://a.co.uk
+      {"permissions1", false},  // tabs -> tabs
+      {"permissions2", true},   // tabs -> tabs,bookmarks
+      // TODO(treib): This is wrong, kAllHosts implies kTabs. crbug.com/512344
+      {"permissions3", true},          // http://*/* -> http://*/*,tabs
+      {"permissions5", true},          // bookmarks -> bookmarks,history
+      {"equivalent_warnings", false},  // tabs --> tabs, webNavigation
+
+      // The plugins manifest key is deprecated and doesn't correspond to any
+      // permissions now.
+      {"permissions4", true},  // plugin -> plugin,tabs
+      {"plugin1", false},      // plugin -> plugin
+      {"plugin2", false},      // plugin -> none
+      {"plugin3", false},      // none -> plugin
+
+      {"storage", false},           // none -> storage
+      {"notifications", true},      // none -> notifications
+      {"platformapp1", false},      // host permissions for platform apps
+      {"platformapp2", true},       // API permissions for platform apps
+      {"media_galleries1", true},   // all -> read|all
+      {"media_galleries2", true},   // read|all -> read|delete|copyTo|all
+      {"media_galleries3", true},   // all -> read|delete|all
+      {"media_galleries4", false},  // read|all -> all
+      {"media_galleries5", false},  // read|copyTo|delete|all -> read|all
+      {"media_galleries6", false},  // read|all -> read|all
+      {"media_galleries7", true},   // read|delete|all -> read|copyTo|delete|all
+      {"sockets1", true},           // none -> tcp:*:*
+      {"sockets2", false},          // tcp:*:* -> tcp:*:*
+      {"sockets3", true},           // tcp:a.com:80 -> tcp:*:*
   };
 
   for (size_t i = 0; i < arraysize(kTests); ++i) {
@@ -1098,21 +1090,6 @@ TEST(PermissionsTest, GetWarningMessages_ManyHosts) {
   EXPECT_TRUE(VerifyOnePermissionMessage(
       extension->permissions_data(),
       "Read and change your data on encrypted.google.com and www.google.com"));
-}
-
-TEST(PermissionsTest, GetWarningMessages_Plugins) {
-  scoped_refptr<Extension> extension;
-  extension = LoadManifest("permissions", "plugins.json");
-// We don't parse the plugins key on Chrome OS, so it should not ask for any
-// permissions.
-#if defined(OS_CHROMEOS)
-  EXPECT_TRUE(VerifyNoPermissionMessages(extension->permissions_data()));
-#else
-  EXPECT_TRUE(VerifyOnePermissionMessage(
-      extension->permissions_data(),
-      "Read and change all your data on your computer and the websites you "
-      "visit"));
-#endif
 }
 
 TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
