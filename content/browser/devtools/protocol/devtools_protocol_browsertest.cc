@@ -153,6 +153,7 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
   };
 
   void RunBeforeUnloadDialog(WebContents* web_contents,
+                             RenderFrameHost* render_frame_host,
                              bool is_reload,
                              DialogClosedCallback callback) override {}
 

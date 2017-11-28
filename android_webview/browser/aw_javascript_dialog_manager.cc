@@ -37,6 +37,7 @@ void AwJavaScriptDialogManager::RunJavaScriptDialog(
 
 void AwJavaScriptDialogManager::RunBeforeUnloadDialog(
     content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     bool is_reload,
     DialogClosedCallback callback) {
   AwContentsClientBridge* bridge =

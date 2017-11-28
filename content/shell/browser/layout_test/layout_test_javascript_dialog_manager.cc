@@ -35,6 +35,7 @@ void LayoutTestJavaScriptDialogManager::RunJavaScriptDialog(
 
 void LayoutTestJavaScriptDialogManager::RunBeforeUnloadDialog(
     WebContents* web_contents,
+    RenderFrameHost* render_frame_host,
     bool is_reload,
     DialogClosedCallback callback) {
   std::move(callback).Run(true, base::string16());

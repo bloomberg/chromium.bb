@@ -1128,6 +1128,7 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
   };
 
   void RunBeforeUnloadDialog(WebContents* web_contents,
+                             RenderFrameHost* render_frame_host,
                              bool is_reload,
                              DialogClosedCallback callback) override {
     std::move(callback).Run(true, base::string16());

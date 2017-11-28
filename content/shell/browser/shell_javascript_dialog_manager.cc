@@ -62,6 +62,7 @@ void ShellJavaScriptDialogManager::RunJavaScriptDialog(
 
 void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
     WebContents* web_contents,
+    RenderFrameHost* render_frame_host,
     bool is_reload,
     DialogClosedCallback callback) {
   // During tests, if the BeforeUnload should not proceed automatically, store

@@ -16,6 +16,7 @@
 
 namespace content {
 
+class RenderFrameHost;
 class WebContents;
 
 // An interface consisting of methods that can be called to produce and manage
@@ -38,6 +39,7 @@ class CONTENT_EXPORT JavaScriptDialogManager {
 
   // Displays a dialog asking the user if they want to leave a page.
   virtual void RunBeforeUnloadDialog(WebContents* web_contents,
+                                     RenderFrameHost* render_frame_host,
                                      bool is_reload,
                                      DialogClosedCallback callback) = 0;
 

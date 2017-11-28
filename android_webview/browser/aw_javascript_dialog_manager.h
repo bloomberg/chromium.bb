@@ -24,6 +24,7 @@ class AwJavaScriptDialogManager : public content::JavaScriptDialogManager {
                            DialogClosedCallback callback,
                            bool* did_suppress_message) override;
   void RunBeforeUnloadDialog(content::WebContents* web_contents,
+                             content::RenderFrameHost* render_frame_host,
                              bool is_reload,
                              DialogClosedCallback callback) override;
   void CancelDialogs(content::WebContents* web_contents,
