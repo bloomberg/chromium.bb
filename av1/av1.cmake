@@ -319,6 +319,12 @@ if (CONFIG_HIGHBITDEPTH)
   set(AOM_AV1_COMMON_INTRIN_SSSE3
       ${AOM_AV1_COMMON_INTRIN_SSSE3}
       "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_ssse3.c")
+
+  if (CONFIG_JNT_COMP)
+    set(AOM_AV1_COMMON_INTRIN_SSE4_1
+        ${AOM_AV1_COMMON_INTRIN_SSE4_1}
+        "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_sse4.c")
+  endif ()
 endif ()
 
 if (CONFIG_JNT_COMP)
