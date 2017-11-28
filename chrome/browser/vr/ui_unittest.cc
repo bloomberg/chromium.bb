@@ -515,7 +515,7 @@ TEST_F(UiTest, BackplaneClickTriggersOnExitPrompt) {
   // This would usually get called by the browser, but since it is mocked we
   // will call it explicitly here and check that the UI responds as we would
   // expect.
-  ui_->SetExitVrPromptEnabled(false, UiUnsupportedMode::kUnhandledPageInfo);
+  ui_->SetExitVrPromptEnabled(false, UiUnsupportedMode::kCount);
   VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
 }
 
