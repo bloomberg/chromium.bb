@@ -328,7 +328,7 @@ const base::Feature kMediaRemoting{"MediaRemoting",
 // of the Media Router dialog with the controller bundled with the WebUI
 // resources.
 const base::Feature kMediaRouterUIRouteController{
-    "MediaRouterUIRouteController", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MediaRouterUIRouteController", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 // Enables or disables modal permission prompts.
