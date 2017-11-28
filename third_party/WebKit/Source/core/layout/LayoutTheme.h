@@ -32,6 +32,7 @@
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 
@@ -163,8 +164,8 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   }
   virtual void PlatformColorsDidChange();
 
-  void SetCaretBlinkInterval(double);
-  virtual double CaretBlinkInterval() const;
+  void SetCaretBlinkInterval(TimeDelta);
+  virtual TimeDelta CaretBlinkInterval() const;
 
   // System fonts and colors for CSS.
   virtual void SystemFont(CSSValueID system_font_id,
@@ -295,7 +296,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 
   Color custom_focus_ring_color_;
   bool has_custom_focus_ring_color_;
-  double caret_blink_interval_ = 0.5;
+  TimeDelta caret_blink_interval_ = TimeDelta::FromMilliseconds(500);
 
   // This color is expected to be drawn on a semi-transparent overlay,
   // making it more transparent than its alpha value indicates.

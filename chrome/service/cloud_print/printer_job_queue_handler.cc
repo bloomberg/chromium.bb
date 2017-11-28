@@ -101,7 +101,6 @@ base::TimeDelta PrinterJobQueueHandler::ComputeBackoffTime(
   base::Time scheduled_retry =
       job_location->second.last_retry_ + backoff_time;
   base::Time now = time_provider_->GetNow();
-  base::TimeDelta time_remaining;
 
   if (scheduled_retry < now) {
     return base::TimeDelta();

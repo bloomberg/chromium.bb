@@ -26,6 +26,10 @@ namespace aura {
 class Window;
 }
 
+namespace base {
+class TimeDelta;
+}
+
 namespace color_utils {
 struct HSL;
 }
@@ -98,7 +102,7 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   virtual SkColor GetActiveSelectionFgColor() const = 0;
   virtual SkColor GetInactiveSelectionBgColor() const = 0;
   virtual SkColor GetInactiveSelectionFgColor() const = 0;
-  virtual double GetCursorBlinkInterval() const = 0;
+  virtual base::TimeDelta GetCursorBlinkInterval() const = 0;
 
   // Returns a NativeTheme that will provide system colors and draw system
   // style widgets.

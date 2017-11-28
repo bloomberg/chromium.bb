@@ -106,8 +106,7 @@ BASE_EXPORT int64_t SaturatedSub(TimeDelta delta, int64_t value);
 
 class BASE_EXPORT TimeDelta {
  public:
-  TimeDelta() : delta_(0) {
-  }
+  constexpr TimeDelta() : delta_(0) {}
 
   // Converts units of time to TimeDeltas.
   static constexpr TimeDelta FromDays(int days);

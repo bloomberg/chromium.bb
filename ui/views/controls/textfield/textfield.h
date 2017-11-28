@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "base/timer/timer.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
@@ -33,6 +33,10 @@
 #include "ui/views/selection_controller_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/word_lookup_client.h"
+
+namespace base {
+class TimeDelta;
+}
 
 namespace views {
 
@@ -52,8 +56,8 @@ class VIEWS_EXPORT Textfield : public View,
   // The textfield's class name.
   static const char kViewClassName[];
 
-  // Returns the text cursor blink time in milliseconds, or 0 for no blinking.
-  static size_t GetCaretBlinkMs();
+  // Returns the text cursor blink time, or 0 for no blinking.
+  static base::TimeDelta GetCaretBlinkInterval();
 
   // Returns the default FontList used by all textfields.
   static const gfx::FontList& GetDefaultFontList();
