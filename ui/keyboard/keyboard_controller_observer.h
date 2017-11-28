@@ -20,8 +20,9 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
  public:
   virtual ~KeyboardControllerObserver() {}
 
-  // DEPRECATED
   // Called when the keyboard bounds or visibility are about to change.
+  // DEPRECATED - please use one of the other more specific methods below. Once
+  // all callers of this method have been migrated, it will be removed.
   virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {}
 
   // Called when the keyboard is shown or closed.
@@ -42,7 +43,7 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
       const gfx::Rect& new_bounds){};
 
   // Called when the keyboard was closed.
-  virtual void OnKeyboardClosed() = 0;
+  virtual void OnKeyboardClosed(){};
 
   // Called when the keyboard has been hidden and the hiding animation finished
   // successfully. This is same as |state| == HIDDEN on OnStateChanged.
