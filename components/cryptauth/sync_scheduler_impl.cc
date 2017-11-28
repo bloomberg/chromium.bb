@@ -177,9 +177,9 @@ base::TimeDelta SyncSchedulerImpl::GetJitteredPeriod() {
 }
 
 base::TimeDelta SyncSchedulerImpl::GetPeriod() {
-  if (strategy_ == Strategy::PERIODIC_REFRESH) {
+  if (strategy_ == Strategy::PERIODIC_REFRESH)
     return refresh_period_;
-  } else if (strategy_ == Strategy::AGGRESSIVE_RECOVERY && failure_count_ > 0) {
+  if (strategy_ == Strategy::AGGRESSIVE_RECOVERY && failure_count_ > 0) {
     // The backoff for each consecutive failure is exponentially doubled until
     // it is equal to the normal refresh period.
     // Note: |backoff_factor| may evaulate to INF if |failure_count_| is large,
@@ -187,11 +187,10 @@ base::TimeDelta SyncSchedulerImpl::GetPeriod() {
     double backoff_factor = pow(2, failure_count_ - 1);
     base::TimeDelta backoff_period = base_recovery_period_ * backoff_factor;
     return backoff_period < refresh_period_ ? backoff_period : refresh_period_;
-  } else {
-    PA_LOG(ERROR) << "Error getting period for strategy: "
-                  << static_cast<int>(strategy_);
-    return base::TimeDelta();
   }
+  PA_LOG(ERROR) << "Error getting period for strategy: "
+                << static_cast<int>(strategy_);
+  return base::TimeDelta();
 }
 
 }  // namespace cryptauth

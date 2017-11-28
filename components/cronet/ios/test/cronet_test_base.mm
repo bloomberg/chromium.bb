@@ -116,9 +116,8 @@
           _semaphore, dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC));
     }
     return request_completed;
-  } else {
-    return dispatch_semaphore_wait(_semaphore, DISPATCH_TIME_FOREVER) == 0;
   }
+  return dispatch_semaphore_wait(_semaphore, DISPATCH_TIME_FOREVER) == 0;
 }
 
 - (void)URLSession:(NSURLSession*)session
@@ -207,22 +206,21 @@ bool CronetTestBase::StartDataTaskAndWaitForCompletion(
 }
 
 ::testing::AssertionResult CronetTestBase::IsResponseSuccessful() {
-  if ([delegate_ error])
+  if ([delegate_ error]) {
     return ::testing::AssertionFailure() << "error in response: " <<
            [[[delegate_ error] description]
                cStringUsingEncoding:NSUTF8StringEncoding];
-  else
-    return ::testing::AssertionSuccess() << "no errors in response";
+  }
+  return ::testing::AssertionSuccess() << "no errors in response";
 }
 
 ::testing::AssertionResult CronetTestBase::IsResponseCanceled() {
   if ([delegate_ error] && [[delegate_ error] code] == NSURLErrorCancelled)
     return ::testing::AssertionSuccess() << "the response is canceled";
-  else
-    return ::testing::AssertionFailure() << "the response is not canceled."
-                                         << " The response error is " <<
-           [[[delegate_ error] description]
-               cStringUsingEncoding:NSUTF8StringEncoding];
+  return ::testing::AssertionFailure() << "the response is not canceled."
+                                       << " The response error is " <<
+         [[[delegate_ error] description]
+             cStringUsingEncoding:NSUTF8StringEncoding];
 }
 
 std::unique_ptr<net::MockCertVerifier> CronetTestBase::CreateMockCertVerifier(

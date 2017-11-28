@@ -103,11 +103,7 @@ void Logger::LogSocketChallengeReplyEvent(int channel_id,
 
 LastError Logger::GetLastError(int channel_id) const {
   const auto it = last_errors_.find(channel_id);
-  if (it != last_errors_.end()) {
-    return it->second;
-  } else {
-    return LastError();
-  }
+  return it != last_errors_.end() ? it->second : LastError();
 }
 
 void Logger::ClearLastError(int channel_id) {
