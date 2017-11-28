@@ -77,6 +77,14 @@ std::string EditingTestBase::GetSelectionTextInFlatTreeFromBody(
                                                      selection);
 }
 
+std::string EditingTestBase::GetCaretTextFromBody(
+    const Position& position) const {
+  DCHECK(position.IsValidFor(GetDocument()))
+      << "A valid position must be provided " << position;
+  return GetSelectionTextFromBody(
+      SelectionInDOMTree::Builder().Collapse(position).Build());
+}
+
 ShadowRoot* EditingTestBase::CreateShadowRootForElementWithIDAndSetInnerHTML(
     TreeScope& scope,
     const char* host_element_id,
