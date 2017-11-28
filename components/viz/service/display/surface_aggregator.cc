@@ -42,6 +42,8 @@ const char kUmaMissingSurface[] =
     "Compositing.SurfaceAggregator.SurfaceDrawQuad.MissingSurface";
 const char kUmaNoActiveFrame[] =
     "Compositing.SurfaceAggregator.SurfaceDrawQuad.NoActiveFrame";
+const char kUmaUsingFallbackSurface[] =
+    "Compositing.SurfaceAggregator.SurfaceDrawQuad.UsingFallbackSurface";
 
 void MoveMatchingRequests(
     RenderPassId render_pass_id,
@@ -244,6 +246,8 @@ void SurfaceAggregator::HandleSurfaceQuad(
         target_transform, clip_rect,
         fallback_frame.metadata.root_background_color, dest_pass);
   }
+
+  ++uma_stats_.using_fallback_surface;
 
   EmitSurfaceContent(fallback_surface, parent_device_scale_factor,
                      surface_quad->shared_quad_state, surface_quad->rect,
@@ -1205,7 +1209,9 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
                              kUmaStatMaxSurfaces);
   UMA_HISTOGRAM_EXACT_LINEAR(kUmaNoActiveFrame, uma_stats_.no_active_frame,
                              kUmaStatMaxSurfaces);
-
+  UMA_HISTOGRAM_EXACT_LINEAR(kUmaUsingFallbackSurface,
+                             uma_stats_.using_fallback_surface,
+                             kUmaStatMaxSurfaces);
   return frame;
 }
 

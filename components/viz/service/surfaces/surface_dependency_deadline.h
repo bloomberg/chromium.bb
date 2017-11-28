@@ -39,9 +39,12 @@ class SurfaceDependencyDeadline : public BeginFrameObserver {
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
  private:
+  void CancelInternal(bool deadline);
+
   SurfaceDeadlineClient* const client_;
   BeginFrameSource* begin_frame_source_ = nullptr;
   base::Optional<uint32_t> number_of_frames_to_deadline_;
+  base::TimeTicks start_time_;
 
   BeginFrameArgs last_begin_frame_args_;
 
