@@ -223,6 +223,8 @@ static const int br_extra_bits[BASE_RANGE_SETS] = {
 };
 #endif
 
+// Note: If BR_MAG_OFFSET changes, the calculation of offset in
+// get_br_ctx_from_count_mag() must be updated.
 #define BR_MAG_OFFSET 1
 // TODO(angiebird): optimize this function by using a table to map from
 // count/mag to ctx
@@ -253,32 +255,18 @@ static INLINE int get_br_count_mag(int *mag, const tran_low_t *tcoeffs, int bwl,
   return count;
 }
 
-static INLINE int get_br_ctx_from_count_mag(int row, int col, int count,
-                                            int mag) {
-  int offset = 0;
-  if (mag <= BR_MAG_OFFSET)
-    offset = 0;
-  else if (mag <= 3)
-    offset = 1;
-  else if (mag <= 5)
-    offset = 2;
-  else
-    offset = 3;
-
-  int ctx = br_level_map[count];
-  ctx += offset * BR_TMP_OFFSET;
-
+static INLINE int get_br_ctx_from_count_mag(const int row, const int col,
+                                            const int count, const int mag) {
   // DC: 0 - 1
-  if (row == 0 && col == 0) return ctx;
-
   // Top row: 2 - 4
-  if (row == 0) return 2 + ctx;
-
   // Left column: 5 - 7
-  if (col == 0) return 5 + ctx;
-
   // others: 8 - 11
-  return 8 + ctx;
+  static const int offset_pos[2][2] = { { 8, 5 }, { 2, 0 } };
+  const int mag_clamp = (mag < 6) ? mag : 6;
+  const int offset = mag_clamp >> 1;
+  const int ctx =
+      br_level_map[count] + offset * BR_TMP_OFFSET + offset_pos[!row][!col];
+  return ctx;
 }
 
 static INLINE int get_br_ctx(const uint8_t *const levels,
