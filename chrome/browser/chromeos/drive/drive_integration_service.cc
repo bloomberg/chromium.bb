@@ -403,6 +403,8 @@ void DriveIntegrationService::RemoveObserver(
 }
 
 void DriveIntegrationService::OnNotificationReceived() {
+  logger_->Log(logging::LOG_INFO,
+               "Received Drive update notification. Will check for update.");
   file_system_->CheckForUpdates();
   drive_app_registry_->Update();
 }
