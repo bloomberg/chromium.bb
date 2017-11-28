@@ -54,13 +54,13 @@ bool ProgrammaticScriptInjector::ExpectsResults() const {
 bool ProgrammaticScriptInjector::ShouldInjectJs(
     UserScript::RunLocation run_location,
     const std::set<std::string>& executing_scripts) const {
-  return GetRunLocation() == run_location && params_->is_javascript;
+  return params_->run_at == run_location && params_->is_javascript;
 }
 
 bool ProgrammaticScriptInjector::ShouldInjectCss(
     UserScript::RunLocation run_location,
     const std::set<std::string>& injected_stylesheets) const {
-  return GetRunLocation() == run_location && !params_->is_javascript;
+  return params_->run_at == run_location && !params_->is_javascript;
 }
 
 PermissionsData::AccessType ProgrammaticScriptInjector::CanExecuteOnFrame(
@@ -100,7 +100,7 @@ std::vector<blink::WebScriptSource> ProgrammaticScriptInjector::GetJsSources(
     UserScript::RunLocation run_location,
     std::set<std::string>* executing_scripts,
     size_t* num_injected_js_scripts) const {
-  DCHECK_EQ(GetRunLocation(), run_location);
+  DCHECK_EQ(params_->run_at, run_location);
   DCHECK(params_->is_javascript);
 
   return std::vector<blink::WebScriptSource>(
@@ -112,7 +112,7 @@ std::vector<blink::WebString> ProgrammaticScriptInjector::GetCssSources(
     UserScript::RunLocation run_location,
     std::set<std::string>* injected_stylesheets,
     size_t* num_injected_stylesheets) const {
-  DCHECK_EQ(GetRunLocation(), run_location);
+  DCHECK_EQ(params_->run_at, run_location);
   DCHECK(!params_->is_javascript);
 
   return std::vector<blink::WebString>(
@@ -162,10 +162,6 @@ bool ProgrammaticScriptInjector::CanShowUrlInError() const {
     return false;
   return extension->permissions_data()->active_permissions().HasAPIPermission(
       APIPermission::kTab);
-}
-
-UserScript::RunLocation ProgrammaticScriptInjector::GetRunLocation() const {
-  return static_cast<UserScript::RunLocation>(params_->run_at);
 }
 
 void ProgrammaticScriptInjector::Finish(const std::string& error,

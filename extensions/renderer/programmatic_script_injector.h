@@ -60,9 +60,6 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   // Whether it is safe to include information about the URL in error messages.
   bool CanShowUrlInError() const;
 
-  // Return the run location for this injector.
-  UserScript::RunLocation GetRunLocation() const;
-
   // Notify the browser that the script was injected (or never will be), and
   // send along any results or errors.
   void Finish(const std::string& error, content::RenderFrame* render_frame);
