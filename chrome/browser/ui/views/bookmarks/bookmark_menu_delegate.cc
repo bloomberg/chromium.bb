@@ -364,7 +364,13 @@ void BookmarkMenuDelegate::BookmarkNodeFaviconChanged(
   if (menu_pair == node_to_menu_map_.end())
     return;  // We're not showing a menu item for the node.
 
-  menu_pair->second->SetIcon(model->GetFavicon(node).AsImageSkia());
+  const gfx::Image& image = model->GetFavicon(node);
+  const gfx::ImageSkia* icon =
+      image.IsEmpty()
+          ? ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                IDR_DEFAULT_FAVICON)
+          : image.ToImageSkia();
+  menu_pair->second->SetIcon(*icon);
 }
 
 void BookmarkMenuDelegate::WillRemoveBookmarks(
