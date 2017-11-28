@@ -456,4 +456,45 @@ SelectionInFlatTree SelectionAdjuster::AdjustSelectionRespectingGranularity(
   return GranularityAdjuster::AdjustSelection(selection, granularity);
 }
 
+class ShadowBoundaryAdjuster final {
+  STATIC_ONLY(ShadowBoundaryAdjuster);
+
+ public:
+  template <typename Strategy>
+  static SelectionTemplate<Strategy> AdjustSelection(
+      const SelectionTemplate<Strategy>& granularity_adjusted_selection) {
+    const EphemeralRangeTemplate<Strategy> expanded_range(
+        granularity_adjusted_selection.ComputeStartPosition(),
+        granularity_adjusted_selection.ComputeEndPosition());
+
+    const EphemeralRangeTemplate<Strategy> shadow_adjusted_range =
+        granularity_adjusted_selection.IsBaseFirst()
+            ? EphemeralRangeTemplate<Strategy>(
+                  expanded_range.StartPosition(),
+                  SelectionAdjuster::
+                      AdjustSelectionEndToAvoidCrossingShadowBoundaries(
+                          expanded_range))
+            : EphemeralRangeTemplate<Strategy>(
+                  SelectionAdjuster::
+                      AdjustSelectionStartToAvoidCrossingShadowBoundaries(
+                          expanded_range),
+                  expanded_range.EndPosition());
+    typename SelectionTemplate<Strategy>::Builder builder;
+    return granularity_adjusted_selection.IsBaseFirst()
+               ? builder.SetAsForwardSelection(shadow_adjusted_range).Build()
+               : builder.SetAsBackwardSelection(shadow_adjusted_range).Build();
+  }
+};
+
+SelectionInDOMTree
+SelectionAdjuster::AdjustSelectionToAvoidCrossingShadowBoundaries(
+    const SelectionInDOMTree& selection) {
+  return ShadowBoundaryAdjuster::AdjustSelection(selection);
+}
+SelectionInFlatTree
+SelectionAdjuster::AdjustSelectionToAvoidCrossingShadowBoundaries(
+    const SelectionInFlatTree& selection) {
+  return ShadowBoundaryAdjuster::AdjustSelection(selection);
+}
+
 }  // namespace blink

@@ -292,33 +292,6 @@ AdjustSelectionToAvoidCrossingEditingBoundaries(
 // TODO(editing-dev): Move this to SelectionAdjuster.
 template <typename Strategy>
 static SelectionTemplate<Strategy>
-AdjustSelectionToAvoidCrossingShadowBoundaries(
-    const SelectionTemplate<Strategy>& granularity_adjusted_selection) {
-  const EphemeralRangeTemplate<Strategy> expanded_range(
-      granularity_adjusted_selection.ComputeStartPosition(),
-      granularity_adjusted_selection.ComputeEndPosition());
-
-  const EphemeralRangeTemplate<Strategy> shadow_adjusted_range =
-      granularity_adjusted_selection.IsBaseFirst()
-          ? EphemeralRangeTemplate<Strategy>(
-                expanded_range.StartPosition(),
-                SelectionAdjuster::
-                    AdjustSelectionEndToAvoidCrossingShadowBoundaries(
-                        expanded_range))
-          : EphemeralRangeTemplate<Strategy>(
-                SelectionAdjuster::
-                    AdjustSelectionStartToAvoidCrossingShadowBoundaries(
-                        expanded_range),
-                expanded_range.EndPosition());
-  typename SelectionTemplate<Strategy>::Builder builder;
-  return granularity_adjusted_selection.IsBaseFirst()
-             ? builder.SetAsForwardSelection(shadow_adjusted_range).Build()
-             : builder.SetAsBackwardSelection(shadow_adjusted_range).Build();
-}
-
-// TODO(editing-dev): Move this to SelectionAdjuster.
-template <typename Strategy>
-static SelectionTemplate<Strategy>
 AdjustSelectionToAvoidCrossingEditingBoundaries(
     const SelectionTemplate<Strategy>& shadow_adjusted_selection) {
   // TODO(editing-dev): Refactor w/o EphemeralRange.
@@ -353,7 +326,7 @@ static SelectionTemplate<Strategy> ComputeVisibleSelection(
       SelectionAdjuster::AdjustSelectionRespectingGranularity(
           canonicalized_selection, granularity);
   const SelectionTemplate<Strategy>& shadow_adjusted_selection =
-      AdjustSelectionToAvoidCrossingShadowBoundaries(
+      SelectionAdjuster::AdjustSelectionToAvoidCrossingShadowBoundaries(
           granularity_adjusted_selection);
   const SelectionTemplate<Strategy>& editing_adjusted_selection =
       AdjustSelectionToAvoidCrossingEditingBoundaries(
