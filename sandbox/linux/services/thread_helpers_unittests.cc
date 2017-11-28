@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_metrics.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -30,7 +31,7 @@ namespace {
 #if !defined(THREAD_SANITIZER)
 
 int GetRaceTestIterations() {
-  if (IsRunningOnValgrind()) {
+  if (RunningOnValgrind()) {
     return 2;
   } else {
     return 1000;

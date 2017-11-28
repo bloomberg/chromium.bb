@@ -27,9 +27,6 @@ bool IsAndroid();
 
 bool IsArchitectureArm();
 
-// Is Valgrind currently being used?
-bool IsRunningOnValgrind();
-
 #if defined(ADDRESS_SANITIZER)
 #define DISABLE_ON_ASAN(test_name) DISABLED_##test_name
 #else

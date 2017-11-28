@@ -693,10 +693,6 @@ bool GetAppOutputWithExitCode(const CommandLine& cl,
 #if defined(OS_LINUX) || defined(OS_NACL_NONSFI) || defined(OS_AIX)
 namespace {
 
-bool IsRunningOnValgrind() {
-  return RUNNING_ON_VALGRIND;
-}
-
 // This function runs on the stack specified on the clone call. It uses longjmp
 // to switch back to the original stack so the child can return from sys_clone.
 int CloneHelper(void* arg) {
@@ -759,7 +755,7 @@ pid_t ForkWithFlags(unsigned long flags, pid_t* ptid, pid_t* ctid) {
   // without CLONE_VM, so we cannot use libc's clone wrapper when running under
   // Valgrind. As a result, the libc pid cache may be incorrect under Valgrind.
   // See crbug.com/442817 for more details.
-  if (IsRunningOnValgrind()) {
+  if (RunningOnValgrind()) {
     // See kernel/fork.c in Linux. There is different ordering of sys_clone
     // parameters depending on CONFIG_CLONE_BACKWARDS* configuration options.
 #if defined(ARCH_CPU_X86_64)

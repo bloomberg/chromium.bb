@@ -17,6 +17,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_util.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/third_party/valgrind/valgrind.h"
 #include "build/build_config.h"
 #include "sandbox/linux/tests/unit_tests.h"
@@ -74,10 +75,6 @@ bool IsArchitectureArm() {
   return false;
 #endif
 }
-
-// TODO(jln): figure out why base/.../dynamic_annotations.h's
-// RunningOnValgrind() cannot link.
-bool IsRunningOnValgrind() { return RUNNING_ON_VALGRIND; }
 
 static const int kExpectedValue = 42;
 static const int kIgnoreThisTest = 43;
@@ -184,7 +181,7 @@ void UnitTests::RunTestInProcess(SandboxTestRunner* test_runner,
 
     // Don't set a timeout if running on Valgrind, since it's generally much
     // slower.
-    if (!IsRunningOnValgrind()) {
+    if (!RunningOnValgrind()) {
 #if !defined(OS_NACL_NONSFI)
       SetProcessTimeout(GetSubProcessTimeoutTimeInSeconds());
 #endif
