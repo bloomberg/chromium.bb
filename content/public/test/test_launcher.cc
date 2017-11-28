@@ -10,6 +10,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind_helpers.h"
@@ -255,6 +256,11 @@ bool WrapperTestLauncherDelegate::GetTests(
   return true;
 }
 
+bool IsPreTestName(const std::string& test_name) {
+  return base::StartsWith(test_name, kPreTestPrefix,
+                          base::CompareCase::SENSITIVE);
+}
+
 bool WrapperTestLauncherDelegate::ShouldRunTest(
     const std::string& test_case_name,
     const std::string& test_name) {
@@ -266,8 +272,7 @@ bool WrapperTestLauncherDelegate::ShouldRunTest(
     return false;
   }
 
-  if (base::StartsWith(test_name, kPreTestPrefix,
-                       base::CompareCase::SENSITIVE)) {
+  if (IsPreTestName(test_name)) {
     // We will actually run PRE_ tests, but to ensure they run on the same shard
     // as dependent tests, handle all these details internally.
     return false;
@@ -295,8 +300,8 @@ size_t WrapperTestLauncherDelegate::RunTests(
   size_t additional_tests_to_run_count = 0;
 
   // Compute dependencies of tests to be run.
-  for (size_t i = 0; i < test_names.size(); i++) {
-    std::string full_name(test_names[i]);
+  for (const std::string& test_name : test_names) {
+    std::string full_name(test_name);
     std::string pre_test_name(GetPreTestName(full_name));
 
     while (base::ContainsKey(all_test_names_, pre_test_name)) {
@@ -313,9 +318,8 @@ size_t WrapperTestLauncherDelegate::RunTests(
     }
   }
 
-  for (size_t i = 0; i < test_names.size(); i++) {
-    std::string full_name(test_names[i]);
-
+  for (const std::string& test_name : test_names) {
+    std::string full_name(test_name);
     // Make sure no PRE_ tests were requested explicitly.
     DCHECK_EQ(full_name, RemoveAnyPrePrefixes(full_name));
 
@@ -349,31 +353,25 @@ size_t WrapperTestLauncherDelegate::RetryTests(
 
   // In the face of PRE_ tests, we need to retry the entire chain of tests,
   // from the very first one.
-  for (size_t i = 0; i < test_names.size(); i++) {
-    std::string test_name(test_names[i]);
-    while (base::ContainsKey(reverse_dependent_test_map_, test_name)) {
-      test_name = reverse_dependent_test_map_[test_name];
-      test_names_set.insert(test_name);
+  for (const std::string& test_name : test_names) {
+    std::string name(test_name);
+    while (base::ContainsKey(reverse_dependent_test_map_, name)) {
+      name = reverse_dependent_test_map_[name];
+      test_names_set.insert(name);
     }
   }
 
   // Discard user data directories from any previous runs. Start with
   // fresh state.
-  for (UserDataDirMap::const_iterator i = user_data_dir_map_.begin();
-       i != user_data_dir_map_.end();
-       ++i) {
+  for (const auto& it : user_data_dir_map_) {
     // Delete temporary directories now to avoid using too much space in /tmp.
-    if (!base::DeleteFile(i->second, true)) {
-      LOG(WARNING) << "Failed to delete " << i->second.value();
+    if (!base::DeleteFile(it.second, true)) {
+      LOG(WARNING) << "Failed to delete " << it.second.value();
     }
   }
   user_data_dir_map_.clear();
 
-  for (std::set<std::string>::const_iterator i = test_names_set.begin();
-       i != test_names_set.end();
-       ++i) {
-    std::string full_name(*i);
-
+  for (const std::string& full_name : test_names_set) {
     // Make sure PRE_ tests and tests that depend on them share the same
     // data directory - based it on the test name without prefixes.
     std::string test_name_no_pre(RemoveAnyPrePrefixes(full_name));
@@ -674,6 +672,11 @@ TestLauncherDelegate* GetCurrentTestLauncherDelegate() {
 
 ContentMainParams* GetContentMainParams() {
   return g_params;
+}
+
+bool IsPreTest() {
+  auto* test = testing::UnitTest::GetInstance();
+  return IsPreTestName(test->current_test_info()->name());
 }
 
 }  // namespace content

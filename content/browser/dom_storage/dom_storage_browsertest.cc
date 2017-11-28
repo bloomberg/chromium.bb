@@ -16,6 +16,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_launcher.h"
 #include "content/shell/browser/shell.h"
 
 namespace content {
@@ -123,9 +124,7 @@ class DOMStorageMigrationBrowserTest : public DOMStorageBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
     // Only enable mojo local storage if this is not a PRE_ test.
-    const testing::TestInfo* test =
-        testing::UnitTest::GetInstance()->current_test_info();
-    if (base::StartsWith(test->name(), "PRE_", base::CompareCase::SENSITIVE))
+    if (IsPreTest())
       command_line->AppendSwitch(switches::kDisableMojoLocalStorage);
   }
 };
