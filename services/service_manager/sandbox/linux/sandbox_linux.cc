@@ -58,14 +58,6 @@ namespace service_manager {
 
 namespace {
 
-struct FDCloser {
-  inline void operator()(int* fd) const {
-    DCHECK(fd);
-    PCHECK(0 == IGNORE_EINTR(close(*fd)));
-    *fd = -1;
-  }
-};
-
 void LogSandboxStarted(const std::string& sandbox_name) {
   const std::string process_type =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
