@@ -45,6 +45,8 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_power_manager_client.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/local_gpu_memory_buffer_manager.h"
 #include "media/capture/video/chromeos/video_capture_device_arc_chromeos.h"
@@ -271,6 +273,7 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
         image_capture_client_(new MockImageCaptureClient()),
 #if defined(OS_CHROMEOS)
         local_gpu_memory_buffer_manager_(new LocalGpuMemoryBufferManager()),
+        dbus_setter_(chromeos::DBusThreadManager::GetSetterForTesting()),
 #endif
         video_capture_device_factory_(VideoCaptureDeviceFactory::CreateFactory(
             base::ThreadTaskRunnerHandle::Get(),
@@ -283,6 +286,10 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
   }
 
   void SetUp() override {
+#if defined(OS_CHROMEOS)
+    dbus_setter_->SetPowerManagerClient(
+        base::MakeUnique<chromeos::FakePowerManagerClient>());
+#endif
 #if defined(OS_ANDROID)
     static_cast<VideoCaptureDeviceFactoryAndroid*>(
         video_capture_device_factory_.get())
@@ -387,6 +394,7 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
 #if defined(OS_CHROMEOS)
   const std::unique_ptr<LocalGpuMemoryBufferManager>
       local_gpu_memory_buffer_manager_;
+  std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter_;
 #endif
   const std::unique_ptr<VideoCaptureDeviceFactory>
       video_capture_device_factory_;
