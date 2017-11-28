@@ -15,6 +15,7 @@
 #include "media/base/overlay_info.h"
 #include "media/base/video_decoder.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
+#include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/mojo_media_client.h"
 
 namespace gpu {
@@ -33,7 +34,7 @@ class VideoFrame;
 
 // Implementation of a mojom::VideoDecoder which runs in the GPU process,
 // and wraps a media::VideoDecoder.
-class MojoVideoDecoderService : public mojom::VideoDecoder {
+class MEDIA_MOJO_EXPORT MojoVideoDecoderService : public mojom::VideoDecoder {
  public:
   explicit MojoVideoDecoderService(
       MojoMediaClient* mojo_media_client,
