@@ -156,7 +156,10 @@ PersistentPagesConsistencyCheckTask::PersistentPagesConsistencyCheckTask(
     : store_(store),
       policy_controller_(policy_controller),
       archives_dir_(archives_dir),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK(store_);
+  DCHECK(policy_controller_);
+}
 
 PersistentPagesConsistencyCheckTask::~PersistentPagesConsistencyCheckTask() {}
 
