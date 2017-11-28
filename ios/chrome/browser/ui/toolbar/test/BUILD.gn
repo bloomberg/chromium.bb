@@ -7,6 +7,10 @@ source_set("test") {
   testonly = true
 
   sources = [
+    "test_toolbar_ui_observer.h",
+    "test_toolbar_ui_observer.mm",
+    "toolbar_broadcast_test_util.h",
+    "toolbar_broadcast_test_util.mm",
     "toolbar_test_navigation_manager.h",
     "toolbar_test_navigation_manager.mm",
     "toolbar_test_web_state.h",
@@ -14,6 +18,11 @@ source_set("test") {
   ]
 
   deps = [
+    "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/broadcaster",
+    "//ios/chrome/browser/ui/toolbar",
+    "//ios/chrome/browser/ui/toolbar:toolbar_ui",
     "//ios/web/public/test/fakes",
+    "//testing/gtest",
   ]
 }
