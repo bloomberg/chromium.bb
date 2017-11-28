@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class LocalFrameView;
 class LayoutObject;
 
 class CompositingLayerPropertyUpdater {
@@ -16,6 +17,7 @@ class CompositingLayerPropertyUpdater {
 
  public:
   static void Update(const LayoutObject&);
+  static void Update(const LocalFrameView&);
 };
 
 }  // namespace blink
