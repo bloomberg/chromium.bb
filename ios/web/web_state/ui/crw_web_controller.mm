@@ -4632,11 +4632,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
       CRWPlaceholderNavigationInfo* placeholderNavigationInfo =
           [CRWPlaceholderNavigationInfo infoForNavigation:navigation];
       if (placeholderNavigationInfo) {
-        web::NavigationItem* item = self.currentNavItem;
-        // The |didFinishNavigation| callback can arrive after another
-        // navigation has started. Abort in this case.
-        if (CreatePlaceholderUrlForUrl(item->GetVirtualURL()) != webViewURL)
-          return;
         [placeholderNavigationInfo runCompletionHandler];
       }
       return;
