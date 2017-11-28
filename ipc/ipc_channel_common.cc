@@ -38,7 +38,8 @@ std::unique_ptr<Channel> Channel::CreateClient(
   DCHECK(channel_handle.is_mojo_channel_handle());
   return ChannelMojo::Create(
       mojo::ScopedMessagePipeHandle(channel_handle.mojo_handle),
-      Channel::MODE_CLIENT, listener, ipc_task_runner);
+      Channel::MODE_CLIENT, listener, ipc_task_runner,
+      base::ThreadTaskRunnerHandle::Get());
 #endif
 }
 
@@ -53,7 +54,8 @@ std::unique_ptr<Channel> Channel::CreateServer(
   DCHECK(channel_handle.is_mojo_channel_handle());
   return ChannelMojo::Create(
       mojo::ScopedMessagePipeHandle(channel_handle.mojo_handle),
-      Channel::MODE_SERVER, listener, ipc_task_runner);
+      Channel::MODE_SERVER, listener, ipc_task_runner,
+      base::ThreadTaskRunnerHandle::Get());
 #endif
 }
 

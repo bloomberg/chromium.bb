@@ -83,7 +83,7 @@ bool FakeSecurityKeyIpcServer::CreateChannel(
               mojo::edk::TransportProtocol::kLegacy,
               mojo::edk::CreateServerHandle(channel_handle, options)))
           .release(),
-      this);
+      this, base::ThreadTaskRunnerHandle::Get());
   EXPECT_NE(nullptr, ipc_channel_);
   return ipc_channel_->Connect();
 }

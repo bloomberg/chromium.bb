@@ -199,7 +199,7 @@ void SecurityKeyIpcClient::ConnectToIpcChannel() {
                                          mojo::edk::TransportProtocol::kLegacy,
                                          std::move(channel_handle_)))
                                      .release(),
-                                 this);
+                                 this, base::ThreadTaskRunnerHandle::Get());
   if (ipc_channel_->Connect()) {
     return;
   }

@@ -113,8 +113,9 @@ void ChildProcessHostImpl::ForceShutdown() {
 void ChildProcessHostImpl::CreateChannelMojo() {
   mojo::MessagePipe pipe;
   BindInterface(IPC::mojom::ChannelBootstrap::Name_, std::move(pipe.handle1));
-  channel_ = IPC::ChannelMojo::Create(std::move(pipe.handle0),
-                                      IPC::Channel::MODE_SERVER, this);
+  channel_ = IPC::ChannelMojo::Create(
+      std::move(pipe.handle0), IPC::Channel::MODE_SERVER, this,
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get());
   DCHECK(channel_);
 
   bool initialized = InitChannel();

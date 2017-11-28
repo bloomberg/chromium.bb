@@ -217,7 +217,8 @@ GpuChannelHost::Listener::Listener(
     : channel_(IPC::ChannelMojo::Create(std::move(handle),
                                         IPC::Channel::MODE_CLIENT,
                                         this,
-                                        io_task_runner)) {
+                                        io_task_runner,
+                                        base::ThreadTaskRunnerHandle::Get())) {
   DCHECK(channel_);
   io_task_runner->PostTask(
       FROM_HERE, base::Bind(&Listener::Connect, base::Unretained(this)));
