@@ -774,6 +774,17 @@ class CORE_EXPORT LocalFrameView final
     return total_property_tree_state_for_contents_.get();
   }
 
+  // The property tree state that should be used for painting scrollbars etc.
+  // for which no content clip or scroll should be applied.
+  PropertyTreeState PreContentClipProperties() const {
+    DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
+    DCHECK(total_property_tree_state_for_contents_);
+    return PropertyTreeState(
+        PreTranslation(),
+        total_property_tree_state_for_contents_->Clip()->Parent(),
+        total_property_tree_state_for_contents_->Effect());
+  }
+
   // Paint properties (e.g., m_preTranslation, etc.) are built from the
   // LocalFrameView's state (e.g., x(), y(), etc.) as well as inherited context.
   // When these inputs change, setNeedsPaintPropertyUpdate will cause a paint

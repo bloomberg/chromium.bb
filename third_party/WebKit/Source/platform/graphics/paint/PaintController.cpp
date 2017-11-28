@@ -507,9 +507,8 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
     properties_before_subsequence =
         new_paint_chunks_.CurrentPaintChunkProperties();
     new_paint_chunks_.ForceNewChunk();
-    UpdateCurrentPaintChunkProperties(
-        cached_chunk->is_cacheable ? &cached_chunk->id : nullptr,
-        cached_chunk->properties);
+    UpdateCurrentPaintChunkProperties(cached_chunk->id,
+                                      cached_chunk->properties);
   } else {
     // Avoid uninitialized variable error on Windows.
     cached_chunk = current_paint_artifact_.PaintChunks().begin();
@@ -528,9 +527,8 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
       ++cached_chunk;
       DCHECK(cached_chunk != current_paint_artifact_.PaintChunks().end());
       new_paint_chunks_.ForceNewChunk();
-      UpdateCurrentPaintChunkProperties(
-          cached_chunk->is_cacheable ? &cached_chunk->id : nullptr,
-          cached_chunk->properties);
+      UpdateCurrentPaintChunkProperties(cached_chunk->id,
+                                        cached_chunk->properties);
     }
 
 #if DCHECK_IS_ON()
@@ -560,7 +558,8 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
     // Restore properties and force new chunk for any trailing display items
     // after the cached subsequence without new properties.
     new_paint_chunks_.ForceNewChunk();
-    UpdateCurrentPaintChunkProperties(nullptr, properties_before_subsequence);
+    UpdateCurrentPaintChunkProperties(WTF::nullopt,
+                                      properties_before_subsequence);
   }
 }
 

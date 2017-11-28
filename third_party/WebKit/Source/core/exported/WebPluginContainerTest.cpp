@@ -1328,7 +1328,7 @@ TEST_F(WebPluginContainerTest, CompositedPluginSPv2) {
                                         EffectPaintPropertyNode::Root());
   PaintChunkProperties properties(property_tree_state);
 
-  paint_controller->UpdateCurrentPaintChunkProperties(nullptr, properties);
+  paint_controller->UpdateCurrentPaintChunkProperties(WTF::nullopt, properties);
   GraphicsContext graphics_context(*paint_controller);
   container->Paint(graphics_context, kGlobalPaintNormalPhase,
                    CullRect(IntRect(10, 10, 400, 300)));

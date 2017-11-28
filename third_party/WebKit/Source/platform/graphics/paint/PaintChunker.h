@@ -34,7 +34,7 @@ class PLATFORM_EXPORT PaintChunker final {
   const PaintChunkProperties& CurrentPaintChunkProperties() const {
     return current_properties_;
   }
-  void UpdateCurrentPaintChunkProperties(const PaintChunk::Id*,
+  void UpdateCurrentPaintChunkProperties(const Optional<PaintChunk::Id>&,
                                          const PaintChunkProperties&);
 
   void ForceNewChunk() { force_new_chunk_ = true; }

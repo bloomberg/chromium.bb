@@ -55,40 +55,26 @@ class SVGTransformContext : public TransformRecorder {
                       const AffineTransform& transform)
       : TransformRecorder(context, object, transform) {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      const auto* object_properties = object.FirstFragment().PaintProperties();
-      if (!object_properties)
+      const auto* properties = object.FirstFragment().PaintProperties();
+      if (!properties)
         return;
+
+      const TransformPaintPropertyNode* transform_node;
       if (object.IsSVGRoot()) {
         // If a transform exists, we can rely on a layer existing to apply it.
-        DCHECK(!object_properties || !object_properties->Transform() ||
-               object.HasLayer());
-        if (object_properties->SvgLocalToBorderBoxTransform()) {
-          DCHECK(object_properties->SvgLocalToBorderBoxTransform()->Matrix() ==
-                 transform.ToTransformationMatrix());
-          auto& paint_controller = context.GetPaintController();
-          PaintChunkProperties properties(
-              paint_controller.CurrentPaintChunkProperties());
-          properties.property_tree_state.SetTransform(
-              object_properties->SvgLocalToBorderBoxTransform());
-          transform_property_scope_.emplace(paint_controller, object,
-                                            properties);
-        }
+        DCHECK(!properties || !properties->Transform() || object.HasLayer());
+        transform_node = properties->SvgLocalToBorderBoxTransform();
       } else {
         DCHECK(object.IsSVG());
         // Should only be used by LayoutSVGRoot.
-        DCHECK(!object_properties->SvgLocalToBorderBoxTransform());
+        DCHECK(!properties->SvgLocalToBorderBoxTransform());
+        transform_node = properties->Transform();
+      }
 
-        if (object_properties->Transform()) {
-          DCHECK(object_properties->Transform()->Matrix() ==
-                 transform.ToTransformationMatrix());
-          auto& paint_controller = context.GetPaintController();
-          PaintChunkProperties properties(
-              paint_controller.CurrentPaintChunkProperties());
-          properties.property_tree_state.SetTransform(
-              object_properties->Transform());
-          transform_property_scope_.emplace(paint_controller, object,
-                                            properties);
-        }
+      if (transform_node) {
+        DCHECK(transform_node->Matrix() == transform.ToTransformationMatrix());
+        transform_property_scope_.emplace(context.GetPaintController(),
+                                          transform_node, object);
       }
     }
   }

@@ -13,13 +13,14 @@ PaintChunker::PaintChunker() : force_new_chunk_(false) {}
 PaintChunker::~PaintChunker() {}
 
 void PaintChunker::UpdateCurrentPaintChunkProperties(
-    const PaintChunk::Id* chunk_id,
+    const Optional<PaintChunk::Id>& chunk_id,
     const PaintChunkProperties& properties) {
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
 
-  current_chunk_id_ = WTF::nullopt;
   if (chunk_id)
     current_chunk_id_.emplace(*chunk_id);
+  else
+    current_chunk_id_ = WTF::nullopt;
   current_properties_ = properties;
 }
 

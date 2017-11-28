@@ -74,7 +74,7 @@ class PLATFORM_EXPORT PaintController {
   // Provide a new set of paint chunk properties to apply to recorded display
   // items, for Slimming Paint v175+.
   void UpdateCurrentPaintChunkProperties(
-      const PaintChunk::Id* id,
+      const Optional<PaintChunk::Id>& id,
       const PaintChunkProperties& properties) {
     new_paint_chunks_.UpdateCurrentPaintChunkProperties(id, properties);
   }

@@ -541,7 +541,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     properties.backface_hidden =
         paint_layer_.GetLayoutObject().HasHiddenBackface();
     scoped_paint_chunk_properties.emplace(context.GetPaintController(),
-                                          paint_layer_, properties);
+                                          properties, paint_layer_);
   }
 
   bool selection_only =
@@ -584,9 +584,10 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       Optional<ScopedPaintChunkProperties> background_chunk_properties;
       if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
         background_chunk_properties.emplace(
-            context.GetPaintController(), paint_layer_,
-            DisplayItem::PaintPhaseToDrawingType(PaintPhase::kBlockBackground),
-            context.GetPaintController().CurrentPaintChunkProperties());
+            context.GetPaintController(),
+            context.GetPaintController().CurrentPaintChunkProperties(),
+            paint_layer_,
+            DisplayItem::PaintPhaseToDrawingType(PaintPhase::kBlockBackground));
       }
       PaintBackgroundForFragments(layer_fragments, context,
                                   local_painting_info, paint_flags);
@@ -602,9 +603,10 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       Optional<ScopedPaintChunkProperties> foreground_chunk_properties;
       if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
         foreground_chunk_properties.emplace(
-            context.GetPaintController(), paint_layer_,
-            DisplayItem::PaintPhaseToDrawingType(PaintPhase::kForeground),
-            context.GetPaintController().CurrentPaintChunkProperties());
+            context.GetPaintController(),
+            context.GetPaintController().CurrentPaintChunkProperties(),
+            paint_layer_,
+            DisplayItem::PaintPhaseToDrawingType(PaintPhase::kForeground));
       }
 
       if (should_paint_own_contents) {
@@ -1211,15 +1213,12 @@ void PaintLayerPainter::PaintMaskForFragments(
 
   Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    const auto* object_paint_properties =
+    const auto* properties =
         paint_layer_.GetLayoutObject().FirstFragment().PaintProperties();
-    DCHECK(object_paint_properties && object_paint_properties->Mask());
-    PaintChunkProperties properties(
-        context.GetPaintController().CurrentPaintChunkProperties());
-    properties.property_tree_state.SetEffect(object_paint_properties->Mask());
+    DCHECK(properties && properties->Mask());
     scoped_paint_chunk_properties.emplace(
-        context.GetPaintController(), paint_layer_,
-        DisplayItem::PaintPhaseToDrawingType(PaintPhase::kMask), properties);
+        context.GetPaintController(), properties->Mask(), paint_layer_,
+        DisplayItem::PaintPhaseToDrawingType(PaintPhase::kMask));
   }
 
   for (auto& fragment : layer_fragments) {
