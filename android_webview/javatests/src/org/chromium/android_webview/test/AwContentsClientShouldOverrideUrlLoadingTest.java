@@ -39,6 +39,7 @@ import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -1033,6 +1034,60 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
     public void testWindowOpenHttpUrlInPopupAddsTrailingSlash() throws Throwable {
         final String popupPath = "http://example.com";
         verifyShouldOverrideUrlLoadingInPopup(popupPath, popupPath + "/");
+    }
+
+    private final static String BAD_SCHEME = "badscheme://";
+
+    // AwContentsClient handling an invalid network scheme
+    private static class BadSchemeClient extends TestAwContentsClient {
+        CountDownLatch mLatch = new CountDownLatch(1);
+
+        @Override
+        public boolean shouldOverrideUrlLoading(AwWebResourceRequest request) {
+            if (request.url.startsWith(BAD_SCHEME)) {
+                mLatch.countDown();
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public void onReceivedError(int errorCode, String description, String failingUrl) {
+            super.onReceivedError(errorCode, description, failingUrl);
+            throw new RuntimeException("we should not receive an error code! " + failingUrl);
+        }
+
+        @Override
+        public void onReceivedError2(AwWebResourceRequest request, AwWebResourceError error) {
+            super.onReceivedError2(request, error);
+            throw new RuntimeException("we should not receive an error code! " + request.url);
+        }
+
+        public void waitForLatch() {
+            try {
+                Assert.assertTrue(mLatch.await(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCalledOnServerRedirectInvalidScheme() throws Throwable {
+        BadSchemeClient client = new BadSchemeClient();
+        setupWithProvidedContentsClient(client);
+
+        final String path1 = "/from.html";
+        final String path2 = BAD_SCHEME + "to.html";
+        final String fromUrl = mWebServer.setRedirect(path1, path2);
+        final String toUrl = mWebServer.setResponse(
+                path2, CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
+        mActivityTestRule.loadUrlAsync(mAwContents, fromUrl);
+        client.waitForLatch();
+        // Wait for an arbitrary amount of time to ensure onReceivedError is never called.
+        Thread.sleep(WAIT_TIMEOUT_MS / 3);
     }
 
     private void verifyShouldOverrideUrlLoadingInPopup(String popupPath) throws Throwable {

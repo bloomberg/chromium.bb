@@ -289,6 +289,17 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       blink::WebMixedContentContextType mixed_content_context_type,
       const ThrottleChecksFinishedCallback& callback);
 
+  // Updates the state of the navigation handle after encountering a server
+  // redirect.
+  void UpdateStateFollowingRedirect(
+      const GURL& new_url,
+      const std::string& new_method,
+      const GURL& new_referrer_url,
+      bool new_is_external_protocol,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
+      net::HttpResponseInfo::ConnectionInfo connection_info,
+      const ThrottleChecksFinishedCallback& callback);
+
   // Called when the URLRequest will be redirected in the network stack.
   // |callback| will be called when all throttles check have completed. This
   // will allow the caller to cancel the navigation or let it proceed.
