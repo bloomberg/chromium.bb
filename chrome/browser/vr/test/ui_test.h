@@ -63,10 +63,6 @@ class UiTest : public testing::Test {
   bool VerifyVisibility(const std::set<UiElementName>& names,
                         bool visible) const;
 
-  // Verify all elements in the set are visible.
-  void VerifyVisible(const std::string& debug_name,
-                     const std::set<UiElementName>& names) const;
-
   // Check that only a specific set of elements is visible, and others are not.
   void VerifyOnlyElementsVisible(const std::string& trace_context,
                                  const std::set<UiElementName>& names) const;

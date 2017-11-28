@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/skia/include/core/SkRRect.h"
@@ -22,7 +23,6 @@ namespace {
 
 static constexpr char kRed[] = "\x1b[31m";
 static constexpr char kGreen[] = "\x1b[32m";
-static constexpr char kYellow[] = "\x1b[33m";
 static constexpr char kBlue[] = "\x1b[34m";
 static constexpr char kCyan[] = "\x1b[36m";
 static constexpr char kReset[] = "\x1b[0m";
@@ -64,6 +64,13 @@ UiElement::UiElement() : id_(AllocateId()) {
 UiElement::~UiElement() {
   animation_player_.set_target(nullptr);
 }
+
+void UiElement::set_name(UiElementName name) {
+  name_ = name;
+  OnSetName();
+}
+
+void UiElement::OnSetName() {}
 
 void UiElement::set_type(UiElementType type) {
   type_ = type;
@@ -341,7 +348,12 @@ bool UiElement::IsWorldPositioned() const {
 }
 
 std::string UiElement::DebugName() const {
-  return UiElementNameToString(name());
+  return base::StringPrintf(
+      "%s%s%s",
+      UiElementNameToString(name() == kNone ? owner_name_for_test() : name())
+          .c_str(),
+      type() == kTypeNone ? "" : ":",
+      type() == kTypeNone ? "" : UiElementTypeToString(type()).c_str());
 }
 
 void UiElement::DumpHierarchy(std::vector<size_t> counts,
@@ -367,16 +379,12 @@ void UiElement::DumpHierarchy(std::vector<size_t> counts,
   }
   *os << kReset;
 
-  if (!IsVisible()) {
-    *os << kYellow << "(h) " << kReset;
+  if (!IsVisible() || draw_phase() == kPhaseNone) {
+    *os << kBlue;
   }
 
-  *os << DebugName();
-  if (type_ != kTypeNone) {
-    *os << ":" << UiElementTypeToString(type_);
-  }
-
-  *os << " " << kCyan << DrawPhaseToString(draw_phase_) << " " << kReset;
+  *os << DebugName() << kReset << " " << kCyan << DrawPhaseToString(draw_phase_)
+      << " " << kReset;
 
   if (draw_phase_ != kPhaseNone && !size().IsEmpty()) {
     *os << kRed << "[" << size().width() << ", " << size().height() << "] "
