@@ -8481,12 +8481,11 @@
       'name': 'ForceBrowserSignin',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.win:62-', 'chrome.linux:62-', 'android:63-'],
+      'supported_on': ['chrome.win:64-', 'android:65-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
       },
-      'future': True,
       'example_value': False,
       'id': 346,
       'caption': '''Enables force sign in for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
