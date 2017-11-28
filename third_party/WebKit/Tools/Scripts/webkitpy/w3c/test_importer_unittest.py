@@ -222,7 +222,6 @@ class TestImporterTest(LoggingTestCase):
         # TODO(robertma): Consider using MockLocalWPT.
         host = MockHost()
         importer = TestImporter(host, wpt_github=MockWPTGitHub(pull_requests=[]))
-        importer.wpt_git = MockGit(cwd='/tmp/wpt', executive=host.executive)
         fake_commit = MockChromiumCommit(
             host, subject='My fake commit',
             patch=(
@@ -234,8 +233,6 @@ class TestImporterTest(LoggingTestCase):
         importer.exportable_but_not_exported_commits = lambda _: [fake_commit]
         applied = importer.apply_exportable_commits_locally(LocalWPT(host))
         self.assertEqual(applied, [fake_commit])
-        # This assertion is implementation details of LocalWPT.apply_patch.
-        # TODO(robertma): Move this to local_wpt_unittest.py.
         self.assertEqual(host.executive.full_calls, [
             MockCall(
                 ['git', 'apply', '-'],
@@ -251,10 +248,11 @@ class TestImporterTest(LoggingTestCase):
                 }),
             MockCall(
                 ['git', 'add', '.'],
-                kwargs={'input': None, 'cwd': '/tmp/wpt', 'env': None})
+                kwargs={'input': None, 'cwd': '/tmp/wpt', 'env': None}),
+            MockCall(
+                ['git', 'commit', '--all', '-F', '-'],
+                kwargs={'cwd': '/tmp/wpt', 'env': None})
         ])
-        self.assertEqual(importer.wpt_git.local_commits(),
-                         [['Applying patch 14fd77e88e42147c57935c49d9e3b2412b8491b7']])
 
     def test_apply_exportable_commits_locally_returns_none_on_failure(self):
         host = MockHost()
@@ -292,8 +290,10 @@ class TestImporterTest(LoggingTestCase):
         host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
         host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo/OWNERS',
                                         'someone@chromium.org\n')
+        git = MockGit(filesystem=host.filesystem, executive=host.executive, platform=host.platform)
+        git.changed_files = lambda: ['third_party/WebKit/LayoutTests/external/wpt/foo/x.html']
+        host.git = lambda: git
         importer = TestImporter(host)
-        importer.chromium_git.changed_files = lambda: ['third_party/WebKit/LayoutTests/external/wpt/foo/x.html']
         self.assertEqual(importer.get_directory_owners(), {('someone@chromium.org',): ['external/wpt/foo']})
 
     def test_get_directory_owners_no_changed_files(self):
@@ -309,8 +309,11 @@ class TestImporterTest(LoggingTestCase):
     def test_commit_changes(self):
         host = MockHost()
         importer = TestImporter(host)
+        importer._has_changes = lambda: True
         importer._commit_changes('dummy message')
-        self.assertEqual(importer.chromium_git.local_commits(), [['dummy message']])
+        self.assertEqual(
+            host.executive.calls,
+            [['git', 'commit', '--all', '-F', '-']])
 
     def test_commit_message(self):
         importer = TestImporter(MockHost())
@@ -469,21 +472,23 @@ class TestImporterTest(LoggingTestCase):
                     '--work',
                     '--tests-root',
                     blink_path + '/LayoutTests/external/wpt',
+                ],
+                [
+                    'git',
+                    'add',
+                    blink_path + '/LayoutTests/external/WPT_BASE_MANIFEST.json',
                 ]
             ])
-        self.assertEqual(importer.chromium_git.added_paths,
-                         {blink_path + '/LayoutTests/external/WPT_BASE_MANIFEST.json'})
 
     def test_only_wpt_manifest_changed(self):
         host = MockHost()
+        git = host.git()
+        git.changed_files = lambda: ['third_party/WebKit/LayoutTests/external/WPT_BASE_MANIFEST.json',
+                                     'third_party/WebKit/LayoutTests/external/wpt/foo/x.html']
         importer = TestImporter(host)
-        importer.chromium_git.changed_files = lambda: [
-            'third_party/WebKit/LayoutTests/external/WPT_BASE_MANIFEST.json',
-            'third_party/WebKit/LayoutTests/external/wpt/foo/x.html']
         self.assertFalse(importer._only_wpt_manifest_changed())
 
-        importer.chromium_git.changed_files = lambda: [
-            'third_party/WebKit/LayoutTests/external/WPT_BASE_MANIFEST.json']
+        git.changed_files = lambda: ['third_party/WebKit/LayoutTests/external/WPT_BASE_MANIFEST.json']
         self.assertTrue(importer._only_wpt_manifest_changed())
 
     def test_delete_orphaned_baselines_basic(self):
