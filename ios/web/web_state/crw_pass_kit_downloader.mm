@@ -6,10 +6,12 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/mac/scoped_block.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "ios/web/public/features.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -97,6 +99,7 @@ class PassKitFetcherDelegate : public URLFetcherDelegate {
 
 - (instancetype)initWithContextGetter:(net::URLRequestContextGetter*)getter
                     completionHandler:(web::PassKitCompletionHandler)handler {
+  DCHECK(!base::FeatureList::IsEnabled(web::features::kNewPassKitDownload));
   self = [super init];
   if (self) {
     DCHECK(getter);
