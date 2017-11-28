@@ -600,7 +600,6 @@ mojom("mojo_bindings") {
     "service_worker/service_worker_fetch_response_callback.mojom",
     "service_worker/service_worker_installed_scripts_manager.mojom",
     "service_worker/service_worker_provider.mojom",
-    "service_worker/service_worker_types.mojom",
     "shared_worker/shared_worker.mojom",
     "shared_worker/shared_worker_client.mojom",
     "shared_worker/shared_worker_connector.mojom",

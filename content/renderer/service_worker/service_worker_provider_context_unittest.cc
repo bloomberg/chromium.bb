@@ -22,6 +22,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
@@ -219,8 +220,8 @@ TEST_F(ServiceWorkerProviderContextTest, CreateForController) {
   // Set up ServiceWorkerProviderContext for ServiceWorkerGlobalScope.
   const int kProviderId = 10;
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      kProviderId, SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER, nullptr, nullptr,
-      nullptr /* loader_factory_getter */);
+      kProviderId, blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+      nullptr, nullptr, nullptr /* loader_factory_getter */);
 
   // The passed references should be adopted and owned by the provider context.
   provider_context->SetRegistrationForServiceWorkerGlobalScope(
@@ -258,7 +259,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     mojom::ServiceWorkerContainerAssociatedRequest container_request =
         mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
     auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-        kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+        kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
         std::move(container_request), nullptr /* host_ptr_info */,
         nullptr /* loader_factory_getter */);
 
@@ -296,7 +297,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     mojom::ServiceWorkerContainerAssociatedRequest container_request =
         mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
     auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-        kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+        kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
         std::move(container_request), std::move(host_ptr_info),
         nullptr /* loader_factory_getter */);
     auto provider_impl = std::make_unique<WebServiceWorkerProviderImpl>(
@@ -330,7 +331,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
   mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+      kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), std::move(host_ptr_info),
       nullptr /* loader_factory_getter */);
   auto provider_impl = std::make_unique<WebServiceWorkerProviderImpl>(
@@ -362,7 +363,7 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
   mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+      kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), std::move(host_ptr_info),
       nullptr /* loader_factory_getter */);
   auto provider_impl = base::MakeUnique<WebServiceWorkerProviderImpl>(
@@ -399,7 +400,7 @@ TEST_F(ServiceWorkerProviderContextTest, CountFeature) {
   mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+      kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), std::move(host_ptr_info),
       nullptr /* loader_factory_getter */);
   auto provider_impl = base::MakeUnique<WebServiceWorkerProviderImpl>(
@@ -428,8 +429,8 @@ TEST_F(ServiceWorkerProviderContextTest,
   // Set up ServiceWorkerProviderContext for ServiceWorkerGlobalScope.
   const int kProviderId = 10;
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      kProviderId, SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER, nullptr, nullptr,
-      nullptr /* loader_factory_getter */);
+      kProviderId, blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+      nullptr, nullptr, nullptr /* loader_factory_getter */);
 
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info =
       CreateServiceWorkerRegistrationObjectInfo();
@@ -479,8 +480,8 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrAdoptRegistration) {
   // Set up ServiceWorkerProviderContext for ServiceWorkerGlobalScope.
   const int kProviderId = 10;
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW, nullptr, nullptr,
-      nullptr /* loader_factory_getter */);
+      kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow, nullptr,
+      nullptr, nullptr /* loader_factory_getter */);
 
   {
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info =

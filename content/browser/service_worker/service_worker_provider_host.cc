@@ -149,7 +149,8 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
       ChildProcessHost::kInvalidUniqueID,
       ServiceWorkerProviderHostInfo(
           NextBrowserProvidedProviderId(), MSG_ROUTING_NONE,
-          SERVICE_WORKER_PROVIDER_FOR_WINDOW, are_ancestors_secure),
+          blink::mojom::ServiceWorkerProviderType::kForWindow,
+          are_ancestors_secure),
       context, nullptr /* dispatcher_host */));
   host->web_contents_getter_ = web_contents_getter;
   return host;
@@ -161,10 +162,10 @@ ServiceWorkerProviderHost::PreCreateForController(
     base::WeakPtr<ServiceWorkerContextCore> context) {
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       ChildProcessHost::kInvalidUniqueID,
-      ServiceWorkerProviderHostInfo(NextBrowserProvidedProviderId(),
-                                    MSG_ROUTING_NONE,
-                                    SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER,
-                                    true /* is_parent_frame_secure */),
+      ServiceWorkerProviderHostInfo(
+          NextBrowserProvidedProviderId(), MSG_ROUTING_NONE,
+          blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+          true /* is_parent_frame_secure */),
       std::move(context), nullptr));
   return host;
 }
@@ -194,9 +195,10 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       allow_association_(true),
       binding_(this),
       interface_provider_binding_(this) {
-  DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, info_.type);
+  DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, info_.type);
 
-  if (info_.type == SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER) {
+  if (info_.type ==
+      blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
     // Actual |render_process_id| will be set after choosing a process for the
     // controller, and |render_thread id| will be set when the service worker
     // context gets started.
@@ -215,7 +217,8 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
   // CompleteStartWorkerPreparation (providers for service workers).
   if (!info_.client_ptr_info.is_valid() && !info_.host_request.is_pending()) {
     DCHECK(IsBrowserSideNavigationEnabled() ||
-           info_.type == SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER);
+           info_.type ==
+               blink::mojom::ServiceWorkerProviderType::kForServiceWorker);
     return;
   }
 
@@ -244,7 +247,7 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
 }
 
 int ServiceWorkerProviderHost::frame_id() const {
-  if (info_.type == SERVICE_WORKER_PROVIDER_FOR_WINDOW)
+  if (info_.type == blink::mojom::ServiceWorkerProviderType::kForWindow)
     return info_.route_id;
   return MSG_ROUTING_NONE;
 }
@@ -345,12 +348,12 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
 
 bool ServiceWorkerProviderHost::IsProviderForClient() const {
   switch (info_.type) {
-    case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
-    case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
+    case blink::mojom::ServiceWorkerProviderType::kForWindow:
+    case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
       return true;
-    case SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER:
+    case blink::mojom::ServiceWorkerProviderType::kForServiceWorker:
       return false;
-    case SERVICE_WORKER_PROVIDER_UNKNOWN:
+    case blink::mojom::ServiceWorkerProviderType::kUnknown:
       NOTREACHED() << info_.type;
   }
   NOTREACHED() << info_.type;
@@ -360,12 +363,12 @@ bool ServiceWorkerProviderHost::IsProviderForClient() const {
 blink::mojom::ServiceWorkerClientType ServiceWorkerProviderHost::client_type()
     const {
   switch (info_.type) {
-    case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
+    case blink::mojom::ServiceWorkerProviderType::kForWindow:
       return blink::mojom::ServiceWorkerClientType::kWindow;
-    case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
+    case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
       return blink::mojom::ServiceWorkerClientType::kSharedWorker;
-    case SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER:
-    case SERVICE_WORKER_PROVIDER_UNKNOWN:
+    case blink::mojom::ServiceWorkerProviderType::kForServiceWorker:
+    case blink::mojom::ServiceWorkerProviderType::kUnknown:
       NOTREACHED() << info_.type;
   }
   NOTREACHED() << info_.type;
@@ -577,7 +580,7 @@ ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(MSG_ROUTING_NONE, info_.route_id);
   DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
-  DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, info_.type);
+  DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, info_.type);
 
   // Clear the controller from the renderer-side provider, since no one knows
   // what's going to happen until after cross-site transfer finishes.
@@ -647,7 +650,7 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
     base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host) {
   CHECK(IsBrowserSideNavigationEnabled());
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
-  DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_WINDOW, info_.type);
+  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, info_.type);
   DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
 
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
@@ -687,7 +690,8 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   DCHECK(context_);
   DCHECK_EQ(kInvalidEmbeddedWorkerThreadId, render_thread_id_);
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
-  DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER, provider_type());
+  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+            provider_type());
   DCHECK(!running_hosted_version_);
 
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);

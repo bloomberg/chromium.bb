@@ -114,9 +114,10 @@ std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
-  ServiceWorkerProviderHostInfo info(provider_id, 1 /* route_id */,
-                                     SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-                                     is_parent_frame_secure);
+  ServiceWorkerProviderHostInfo info(
+      provider_id, 1 /* route_id */,
+      blink::mojom::ServiceWorkerProviderType::kForWindow,
+      is_parent_frame_secure);
   output_endpoint->BindWithProviderHostInfo(&info);
   return ServiceWorkerProviderHost::Create(process_id, std::move(info),
                                            std::move(context), nullptr);
@@ -131,7 +132,8 @@ CreateProviderHostForServiceWorkerContext(
     ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
   ServiceWorkerProviderHostInfo info(
       kInvalidServiceWorkerProviderId, MSG_ROUTING_NONE,
-      SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER, is_parent_frame_secure);
+      blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+      is_parent_frame_secure);
   std::unique_ptr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateForController(std::move(context));
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info =
@@ -147,8 +149,9 @@ std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostWithDispatcherHost(
     int route_id,
     ServiceWorkerDispatcherHost* dispatcher_host,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
-  ServiceWorkerProviderHostInfo info(provider_id, route_id,
-                                     SERVICE_WORKER_PROVIDER_FOR_WINDOW, true);
+  ServiceWorkerProviderHostInfo info(
+      provider_id, route_id,
+      blink::mojom::ServiceWorkerProviderType::kForWindow, true);
   output_endpoint->BindWithProviderHostInfo(&info);
   return ServiceWorkerProviderHost::Create(process_id, std::move(info),
                                            std::move(context),

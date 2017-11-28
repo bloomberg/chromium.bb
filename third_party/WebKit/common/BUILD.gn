@@ -103,6 +103,7 @@ mojom("mojo_platform_bindings") {
     "blob/size_getter.mojom",
     "page/page_visibility_state.mojom",
     "service_worker/service_worker_client.mojom",
+    "service_worker/service_worker_provider_type.mojom",
   ]
 
   public_deps = [

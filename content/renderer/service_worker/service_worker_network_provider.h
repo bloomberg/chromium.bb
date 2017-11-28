@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
+#include "third_party/WebKit/common/service_worker/service_worker_provider_type.mojom.h"
 
 namespace blink {
 class WebLocalFrame;
@@ -114,7 +115,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   // e.g. a frame, provides the loading factory getter for default loaders.
   ServiceWorkerNetworkProvider(
       int route_id,
-      ServiceWorkerProviderType type,
+      blink::mojom::ServiceWorkerProviderType type,
       int provider_id,
       bool is_parent_frame_secure,
       scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter);

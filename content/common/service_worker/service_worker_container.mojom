@@ -5,7 +5,6 @@
 module content.mojom;
 
 import "content/common/service_worker/controller_service_worker.mojom";
-import "content/common/service_worker/service_worker_types.mojom";
 import "mojo/common/string16.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom";

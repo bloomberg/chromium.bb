@@ -5,9 +5,9 @@
 module content.mojom;
 
 import "content/common/service_worker/service_worker_container.mojom";
-import "content/common/service_worker/service_worker_types.mojom";
 import "content/public/common/url_loader_factory.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
+import "third_party/WebKit/common/service_worker/service_worker_provider_type.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the
@@ -42,7 +42,7 @@ struct ServiceWorkerProviderInfoForStartWorker {
 struct ServiceWorkerProviderHostInfo {
   int32 provider_id;
   int32 route_id;
-  ServiceWorkerProviderType type;
+  blink.mojom.ServiceWorkerProviderType type;
   bool is_parent_frame_secure;
   associated ServiceWorkerContainerHost& host_request;
   associated ServiceWorkerContainer client_ptr_info;

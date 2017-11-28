@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "content/common/service_worker/service_worker_provider_struct_traits.h"
-#include "content/common/service_worker/service_worker_types_struct_traits.h"
 
 namespace mojo {
 

@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_handle_reference.h"
@@ -18,6 +17,7 @@
 #include "content/renderer/service_worker/web_service_worker_impl.h"
 #include "content/renderer/service_worker/web_service_worker_registration_impl.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
+#include "third_party/WebKit/common/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
@@ -42,15 +42,15 @@ WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
       weak_factory_(this) {
   DCHECK(context_);
   switch (context_->provider_type()) {
-    case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
+    case blink::mojom::ServiceWorkerProviderType::kForWindow:
       DCHECK(context_->container_host());
       context_->SetWebServiceWorkerProvider(weak_factory_.GetWeakPtr());
       break;
-    case SERVICE_WORKER_PROVIDER_FOR_SERVICE_WORKER:
+    case blink::mojom::ServiceWorkerProviderType::kForServiceWorker:
       // Do nothing.
       break;
-    case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
-    case SERVICE_WORKER_PROVIDER_UNKNOWN:
+    case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
+    case blink::mojom::ServiceWorkerProviderType::kUnknown:
       NOTREACHED() << "Unimplemented type: " << context_->provider_type();
       break;
   }
