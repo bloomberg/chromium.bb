@@ -1004,7 +1004,7 @@ TEST_F(PasswordSyncableServiceAndroidAutofillTest, TwoWayServerAndLocalMerge) {
     const bool local_data_correct = !!combination[1];
 
     for (unsigned val = 0; val < 2 * 2; ++val) {
-      std::vector<unsigned> dates = ExtractTimestamps(i, 2);
+      std::vector<unsigned> dates = ExtractTimestamps(val, 2);
       ASSERT_EQ(2u, dates.size());
 
       const PasswordFormData sync_data = sync_data_correct
