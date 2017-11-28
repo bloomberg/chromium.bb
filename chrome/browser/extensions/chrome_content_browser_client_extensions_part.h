@@ -26,7 +26,9 @@ class ChromeContentBrowserClientExtensionsPart
   ~ChromeContentBrowserClientExtensionsPart() override;
 
   // Corresponds to the ChromeContentBrowserClient function of the same name.
-  static GURL GetEffectiveURL(Profile* profile, const GURL& url);
+  static GURL GetEffectiveURL(Profile* profile,
+                              const GURL& url,
+                              bool is_isolated_origin);
   static bool ShouldUseProcessPerSite(Profile* profile,
                                       const GURL& effective_url);
   static bool DoesSiteRequireDedicatedProcess(
