@@ -735,7 +735,7 @@ void Browser::OnWindowClosing() {
   // pages).
   bool should_quit_if_last_browser =
       browser_shutdown::IsTryingToQuit() ||
-      !KeepAliveRegistry::GetInstance()->IsKeepingAlive();
+      KeepAliveRegistry::GetInstance()->IsKeepingAliveOnlyByBrowserOrigin();
 
   if (should_quit_if_last_browser && ShouldStartShutdown())
     browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);
@@ -2464,8 +2464,20 @@ bool Browser::ShouldHideUIForFullscreen() const {
   return window_ && window_->ShouldHideUIForFullscreen();
 }
 
+bool Browser::IsBrowserClosing() const {
+  const BrowserList::BrowserSet& closing_browsers =
+      BrowserList::GetInstance()->currently_closing_browsers();
+
+  return base::ContainsKey(closing_browsers, this);
+}
+
 bool Browser::ShouldStartShutdown() const {
-  return BrowserList::GetInstance()->size() <= 1;
+  if (IsBrowserClosing())
+    return false;
+
+  const size_t closing_browsers_count =
+      BrowserList::GetInstance()->currently_closing_browsers().size();
+  return BrowserList::GetInstance()->size() == closing_browsers_count + 1u;
 }
 
 bool Browser::MaybeCreateBackgroundContents(

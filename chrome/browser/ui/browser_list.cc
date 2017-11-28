@@ -84,6 +84,7 @@ void BrowserList::RemoveBrowser(Browser* browser) {
   // Remove |browser| from the appropriate list instance.
   BrowserList* browser_list = GetInstance();
   RemoveBrowserFrom(browser, &browser_list->last_active_browsers_);
+  browser_list->currently_closing_browsers_.erase(browser);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_CLOSED,
@@ -253,6 +254,8 @@ void BrowserList::NotifyBrowserNoLongerActive(Browser* browser) {
 
 // static
 void BrowserList::NotifyBrowserCloseStarted(Browser* browser) {
+  GetInstance()->currently_closing_browsers_.insert(browser);
+
   for (chrome::BrowserListObserver& observer : observers_.Get())
     observer.OnBrowserClosing(browser);
 }
