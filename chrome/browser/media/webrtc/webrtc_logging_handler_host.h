@@ -224,7 +224,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   // The render process ID this object belongs to.
-  int render_process_id_;
+  const int render_process_id_;
 
   // The profile associated with our renderer process.
   Profile* const profile_;

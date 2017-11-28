@@ -253,6 +253,7 @@
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/webrtc/webrtc_internals.h"
 #include "content/common/media/aec_dump_messages.h"
+#include "content/public/browser/webrtc_log.h"
 #endif
 
 #if BUILDFLAG(USE_MINIKIN_HYPHENATION)
@@ -3019,8 +3020,11 @@ void RenderProcessHostImpl::Cleanup() {
     return;
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-  if (is_initialized_)
-    ClearWebRtcLogMessageCallback();
+  if (is_initialized_) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&WebRtcLog::ClearLogMessageCallback, GetID()));
+  }
 #endif
 
   if (!keep_alive_start_time_.is_null()) {
@@ -3183,18 +3187,6 @@ void RenderProcessHostImpl::SetEchoCanceller3(bool enable) {
   for (int id : aec_dump_consumers_) {
     Send(new AudioProcessingMsg_EnableAec3(id, enable));
   }
-}
-
-void RenderProcessHostImpl::SetWebRtcLogMessageCallback(
-    base::Callback<void(const std::string&)> callback) {
-  BrowserMainLoop::GetInstance()->media_stream_manager()->
-      RegisterNativeLogCallback(GetID(), callback);
-}
-
-void RenderProcessHostImpl::ClearWebRtcLogMessageCallback() {
-  BrowserMainLoop::GetInstance()
-      ->media_stream_manager()
-      ->UnregisterNativeLogCallback(GetID());
 }
 
 RenderProcessHostImpl::WebRtcStopRtpDumpCallback

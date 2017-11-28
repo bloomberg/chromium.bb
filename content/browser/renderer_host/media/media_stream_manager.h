@@ -251,12 +251,11 @@ class CONTENT_EXPORT MediaStreamManager
           fake_ui_factory);
 
   // Register and unregister a new callback for receiving native log entries.
-  // The registered callback will be invoked on the IO thread.
-  // The registration and unregistration will be done asynchronously so it is
-  // not guaranteed that when the call returns the operation has completed.
-  void RegisterNativeLogCallback(int renderer_host_id,
+  // Called on the IO thread.
+  static void RegisterNativeLogCallback(
+      int renderer_host_id,
       const base::Callback<void(const std::string&)>& callback);
-  void UnregisterNativeLogCallback(int renderer_host_id);
+  static void UnregisterNativeLogCallback(int renderer_host_id);
 
   // Generates a hash of a device's unique ID usable by one
   // particular security origin.
