@@ -729,25 +729,24 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
       nullptr /* value table */
   };
 
-  int interface_mask = GetGTypeInterfaceMask();
-  const char* atk_type_name = GetUniqueAccessibilityGTypeName(interface_mask);
+  const char* atk_type_name = GetUniqueAccessibilityGTypeName(interface_mask_);
   GType type = g_type_from_name(atk_type_name);
   if (type)
     return type;
 
   type = g_type_register_static(AX_PLATFORM_NODE_AURALINUX_TYPE, atk_type_name,
                                 &type_info, GTypeFlags(0));
-  if (interface_mask & (1 << ATK_COMPONENT_INTERFACE))
+  if (interface_mask_ & (1 << ATK_COMPONENT_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_COMPONENT, &ComponentInfo);
-  if (interface_mask & (1 << ATK_ACTION_INTERFACE))
+  if (interface_mask_ & (1 << ATK_ACTION_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_ACTION, &ActionInfo);
-  if (interface_mask & (1 << ATK_DOCUMENT_INTERFACE))
+  if (interface_mask_ & (1 << ATK_DOCUMENT_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_DOCUMENT, &DocumentInfo);
-  if (interface_mask & (1 << ATK_IMAGE_INTERFACE))
+  if (interface_mask_ & (1 << ATK_IMAGE_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_IMAGE, &ImageInfo);
-  if (interface_mask & (1 << ATK_VALUE_INTERFACE))
+  if (interface_mask_ & (1 << ATK_VALUE_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_VALUE, &ValueInfo);
-  if (interface_mask & (1 << ATK_HYPERLINK_INTERFACE))
+  if (interface_mask_ & (1 << ATK_HYPERLINK_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_HYPERLINK_IMPL,
                                 &HyperlinkImplInfo);
 
@@ -756,12 +755,27 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
 
 AtkObject* AXPlatformNodeAuraLinux::CreateAtkObject() {
   EnsureGTypeInit();
+  interface_mask_ = GetGTypeInterfaceMask();
   GType type = GetAccessibilityGType();
   AtkObject* atk_object = static_cast<AtkObject*>(g_object_new(type, nullptr));
 
   atk_object_initialize(atk_object, this);
 
   return ATK_OBJECT(atk_object);
+}
+
+void AXPlatformNodeAuraLinux::DestroyAtkObjects() {
+  if (atk_hyperlink_) {
+    ax_platform_atk_hyperlink_set_object(
+        AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_), nullptr);
+    g_object_unref(atk_hyperlink_);
+    atk_hyperlink_ = nullptr;
+  }
+  if (atk_object_) {
+    ax_platform_node_auralinux_detach(AX_PLATFORM_NODE_AURALINUX(atk_object_));
+    g_object_unref(atk_object_);
+    atk_object_ = nullptr;
+  }
 }
 
 // static
@@ -1001,21 +1015,58 @@ void AXPlatformNodeAuraLinux::GetAtkRelations(AtkRelationSet* atk_relation_set)
 }
 
 AXPlatformNodeAuraLinux::AXPlatformNodeAuraLinux()
-    : atk_object_(nullptr), atk_hyperlink_(nullptr) {}
+    : interface_mask_(0), atk_object_(nullptr), atk_hyperlink_(nullptr) {}
 
 AXPlatformNodeAuraLinux::~AXPlatformNodeAuraLinux() {
-  if (atk_hyperlink_) {
-    ax_platform_atk_hyperlink_set_object(
-        AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_), nullptr);
-    g_object_unref(atk_hyperlink_);
-  }
-  g_object_unref(atk_object_);
+  DestroyAtkObjects();
+}
+
+void AXPlatformNodeAuraLinux::Destroy() {
+  DestroyAtkObjects();
+  AXPlatformNodeBase::Destroy();
 }
 
 void AXPlatformNodeAuraLinux::Init(AXPlatformNodeDelegate* delegate) {
   // Initialize ATK.
   AXPlatformNodeBase::Init(delegate);
-  atk_object_ = CreateAtkObject();
+  DataChanged();
+}
+
+void AXPlatformNodeAuraLinux::DataChanged() {
+  if (atk_object_) {
+    // If the object's role changes and that causes its
+    // interface mask to change, we need to create a new
+    // AtkObject for it.
+    int interface_mask = GetGTypeInterfaceMask();
+    if (interface_mask != interface_mask_)
+      DestroyAtkObjects();
+  }
+
+  if (!atk_object_) {
+    atk_object_ = CreateAtkObject();
+  }
+}
+
+void AXPlatformNodeAuraLinux::AddAccessibilityTreeProperties(
+    base::DictionaryValue* dict) {
+  AtkRole role = GetAtkRole();
+  if (role != ATK_ROLE_UNKNOWN)
+    dict->SetString("role", std::string(atk_role_get_name(role)));
+  const gchar* name = atk_object_get_name(atk_object_);
+  if (name)
+    dict->SetString("name", std::string(name));
+  const gchar* description = atk_object_get_description(atk_object_);
+  if (description)
+    dict->SetString("description", std::string(description));
+
+  AtkStateSet* state_set = atk_object_ref_state_set(atk_object_);
+  auto states = std::make_unique<base::ListValue>();
+  for (int i = ATK_STATE_INVALID; i < ATK_STATE_LAST_DEFINED; i++) {
+    AtkStateType state_type = static_cast<AtkStateType>(i);
+    if (atk_state_set_contains_state(state_set, state_type))
+      states->AppendString(atk_state_type_get_name(state_type));
+  }
+  dict->Set("states", std::move(states));
 }
 
 gfx::NativeViewAccessible AXPlatformNodeAuraLinux::GetNativeViewAccessible() {

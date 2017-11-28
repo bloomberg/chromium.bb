@@ -28,6 +28,7 @@ namespace ui {
 class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
  public:
   AXPlatformNodeAuraLinux();
+  ~AXPlatformNodeAuraLinux() override;
 
   // Set or get the root-level Application object that's the parent of all
   // top-level windows.
@@ -38,6 +39,10 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   // Do asynchronous static initialization.
   AX_EXPORT static void StaticInitialize();
+
+  AX_EXPORT void DataChanged();
+  void Destroy() override;
+  AX_EXPORT void AddAccessibilityTreeProperties(base::DictionaryValue* dict);
 
   AtkRole GetAtkRole();
   void GetAtkState(AtkStateSet* state_set);
@@ -79,8 +84,6 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   int GetIndexInParent() override;
 
  private:
-  ~AXPlatformNodeAuraLinux() override;
-
   enum AtkInterfaces {
     ATK_ACTION_INTERFACE,
     ATK_COMPONENT_INTERFACE,
@@ -98,6 +101,11 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   int GetGTypeInterfaceMask();
   GType GetAccessibilityGType();
   AtkObject* CreateAtkObject();
+  void DestroyAtkObjects();
+
+  // Keep information of latest AtkInterfaces mask to refresh atk object
+  // interfaces accordingly if needed.
+  int interface_mask_;
 
   // We own a reference to these ref-counted objects.
   AtkObject* atk_object_;
