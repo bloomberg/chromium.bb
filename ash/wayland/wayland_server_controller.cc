@@ -57,6 +57,7 @@ WaylandServerController::CreateIfNecessary() {
 WaylandServerController::~WaylandServerController() {
   wayland_watcher_.reset();
   wayland_server_.reset();
+  display_.reset();
   exo::WMHelper::SetInstance(nullptr);
   wm_helper_.reset();
 }
