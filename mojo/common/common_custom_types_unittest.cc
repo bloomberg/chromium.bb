@@ -437,41 +437,6 @@ TEST_F(CommonCustomTypesTest, TextDirection) {
   }
 }
 
-TEST_F(CommonCustomTypesTest, FileError) {
-  using FileErrorTraits =
-      mojo::EnumTraits<common::mojom::FileError, base::File::Error>;
-  base::File::Error ouput_error;
-  for (int i = base::File::FILE_OK; i > base::File::FILE_ERROR_MAX; i--) {
-    const base::File::Error input_error = (base::File::Error)i;
-
-    EXPECT_TRUE(FileErrorTraits::FromMojom(
-        FileErrorTraits::ToMojom(input_error), &ouput_error));
-
-    EXPECT_EQ(input_error, ouput_error);
-  }
-
-  // Testing all values is a good test, but if there was a bug like this:
-  // base::File::FILE_OK → mojom::FileError::kFailed → base::File::FILE_OK
-  // then that approach wouldn't catch it. Also test a small subset of enum
-  // values to ensure they map to the correct value.
-  EXPECT_EQ(mojom::FileError::kOK,
-            FileErrorTraits::ToMojom(base::File::FILE_OK));
-  EXPECT_EQ(mojom::FileError::kFailed,
-            FileErrorTraits::ToMojom(base::File::FILE_ERROR_FAILED));
-  EXPECT_EQ(mojom::FileError::kIO,
-            FileErrorTraits::ToMojom(base::File::FILE_ERROR_IO));
-
-  EXPECT_TRUE(FileErrorTraits::FromMojom(mojom::FileError::kOK, &ouput_error));
-  EXPECT_EQ(base::File::FILE_OK, ouput_error);
-
-  EXPECT_TRUE(
-      FileErrorTraits::FromMojom(mojom::FileError::kFailed, &ouput_error));
-  EXPECT_EQ(base::File::FILE_ERROR_FAILED, ouput_error);
-
-  EXPECT_TRUE(FileErrorTraits::FromMojom(mojom::FileError::kIO, &ouput_error));
-  EXPECT_EQ(base::File::FILE_ERROR_IO, ouput_error);
-}
-
 }  // namespace test
 }  // namespace common
 }  // namespace mojo
