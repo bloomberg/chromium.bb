@@ -7,6 +7,9 @@
 
 #include <stdint.h>
 
+#include <string>
+
+#include "base/debug/stack_trace.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
@@ -170,6 +173,25 @@ class ScopedCrashKeyString {
   CrashKeyType* const crash_key_;
   DISALLOW_COPY_AND_ASSIGN(ScopedCrashKeyString);
 };
+
+namespace internal {
+// Formats a stack trace into a string whose length will not exceed
+// |max_length|. This function ensures no addresses are truncated when
+// being formatted.
+std::string FormatStackTrace(const base::debug::StackTrace& trace,
+                             size_t max_length);
+}  // namespace internal
+
+// Formats a base::debug::StackTrace as a string of space-separated hexadecimal
+// numbers and stores it in a CrashKeyString.
+// TODO(rsesek): When all clients use Crashpad, traces should become a first-
+// class Annotation type rather than being forced through string conversion.
+template <uint32_t Size>
+void SetCrashKeyStringToStackTrace(CrashKeyString<Size>* key,
+                                   const base::debug::StackTrace& trace) {
+  std::string trace_string = internal::FormatStackTrace(trace, Size);
+  key->Set(trace_string);
+}
 
 // Initializes the crash key subsystem if it is required.
 void InitializeCrashKeys();
