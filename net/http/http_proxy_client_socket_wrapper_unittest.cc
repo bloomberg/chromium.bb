@@ -114,6 +114,7 @@ class HttpProxyClientSocketWrapperTest
         &crypto_client_stream_factory_, &random_generator_, &clock_,
         kDefaultMaxPacketSize, /*user_agent_id=*/kUserAgent,
         store_server_configs_in_properties_,
+        /*close_sessions_on_ip_change=*/true,
         /*mark_quic_broken_when_network_blackholes=*/false,
         idle_connection_timeout_seconds_, reduced_ping_timeout_seconds_,
         /*max_time_before_crypto_handshake_seconds=*/
