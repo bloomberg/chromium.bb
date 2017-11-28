@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/test/scoped_feature_list.h"
@@ -26,6 +27,8 @@ ScopedAccountConsistency::ScopedAccountConsistency(
   DCHECK_EQ(AccountConsistencyMethod::kMirror, method);
   return;
 #endif
+
+  signin::SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
 
   if (method == AccountConsistencyMethod::kDisabled) {
     scoped_feature_list_.InitAndDisableFeature(kAccountConsistencyFeature);

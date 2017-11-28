@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/breaking_news/subscription_manager_impl.h"
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/histogram_tester.h"
 #include "build/build_config.h"
@@ -49,6 +50,7 @@ class SubscriptionManagerImplTest : public testing::Test {
         utils_.pref_service()->registry());
     signin::RegisterAccountConsistencyProfilePrefs(
         utils_.pref_service()->registry());
+    signin::SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
   }
 
   scoped_refptr<net::URLRequestContextGetter> GetRequestContext() {

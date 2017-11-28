@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "components/prefs/pref_member.h"
@@ -29,9 +30,10 @@ TEST(ProfileManagementSwitchesTest, GetAccountConsistencyMethodMirror) {
 #else
 
 TEST(ProfileManagementSwitchesTest, GetAccountConsistencyMethod) {
+  SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
   base::MessageLoop loop;
   sync_preferences::TestingPrefServiceSyncable pref_service;
-  signin::RegisterAccountConsistencyProfilePrefs(pref_service.registry());
+  RegisterAccountConsistencyProfilePrefs(pref_service.registry());
   std::unique_ptr<BooleanPrefMember> dice_pref_member =
       CreateDicePrefMember(&pref_service);
 
@@ -79,7 +81,7 @@ TEST(ProfileManagementSwitchesTest, GetAccountConsistencyMethod) {
 TEST(ProfileManagementSwitchesTest, DiceMigration) {
   base::MessageLoop loop;
   sync_preferences::TestingPrefServiceSyncable pref_service;
-  signin::RegisterAccountConsistencyProfilePrefs(pref_service.registry());
+  RegisterAccountConsistencyProfilePrefs(pref_service.registry());
   std::unique_ptr<BooleanPrefMember> dice_pref_member =
       CreateDicePrefMember(&pref_service);
 
@@ -105,6 +107,15 @@ TEST(ProfileManagementSwitchesTest, DiceMigration) {
     EXPECT_EQ(test_case.expect_dice_enabled_for_profile,
               IsDiceEnabled(dice_pref_member.get()));
   }
+}
+
+// Tests that Dice is disabled when site isolation is disabled.
+TEST(ProfileManagementSwitchesTest, GaiaSiteIsolation) {
+  ScopedAccountConsistencyDicePrepareMigration scoped_dice;
+  ASSERT_TRUE(IsDicePrepareMigrationEnabled());
+
+  SetGaiaOriginIsolatedCallback(base::Bind([] { return false; }));
+  EXPECT_FALSE(IsDicePrepareMigrationEnabled());
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 

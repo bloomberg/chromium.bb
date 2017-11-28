@@ -89,6 +89,7 @@ class SigninManagerTest : public testing::Test {
         url_fetcher_factory_(nullptr) {
     test_signin_client_.SetURLRequestContext(
         new net::TestURLRequestContextGetter(loop_.task_runner()));
+    signin::SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
     cookie_manager_service_.Init(&url_fetcher_factory_);
     signin::RegisterAccountConsistencyProfilePrefs(user_prefs_.registry());
     AccountFetcherService::RegisterPrefs(user_prefs_.registry());

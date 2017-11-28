@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/command_line.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -59,6 +59,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
 
   void SetUp() override {
     OSCryptMocker::SetUp();
+    signin::SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
 
     factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_revoke_url(), "",
                              net::HTTP_OK, net::URLRequestStatus::SUCCESS);

@@ -40,6 +40,7 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/variations/variations_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -258,6 +259,9 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     signin::SetDiceAccountReconcilorBlockDelayForTesting(
         kAccountReconcilorDelayMs);
 
+    scoped_site_isolation_.InitAndEnableFeature(
+        features::kSignInProcessIsolation);
+
     // DICE field trial params:
     std::string dice_method_name;
     switch (account_consistency_method_) {
@@ -284,7 +288,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
 
     std::map<std::string, std::string> parameters = {
         {signin::kAccountConsistencyFeatureMethodParameter, dice_method_name}};
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+    scoped_dice_.InitAndEnableFeatureWithParameters(
         signin::kAccountConsistencyFeature, parameters);
   }
 
@@ -497,7 +501,8 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     EXPECT_EQ(count, token_revoked_count_);
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_site_isolation_;
+  base::test::ScopedFeatureList scoped_dice_;
   net::EmbeddedTestServer https_server_;
   AccountConsistencyMethod account_consistency_method_;
   bool token_requested_;
