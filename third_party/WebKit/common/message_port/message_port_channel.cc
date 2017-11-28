@@ -106,9 +106,11 @@ bool MessagePortChannel::GetMojoMessage(mojo::Message* message) {
   return true;
 }
 
-void MessagePortChannel::SetCallback(const base::Closure& callback) {
+void MessagePortChannel::SetCallback(
+    const base::Closure& callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   state_->StopWatching();
-  state_->StartWatching(callback);
+  state_->StartWatching(callback, task_runner);
 }
 
 void MessagePortChannel::ClearCallback() {
@@ -120,11 +122,15 @@ MessagePortChannel::State::State() {}
 MessagePortChannel::State::State(mojo::ScopedMessagePipeHandle handle)
     : handle_(std::move(handle)) {}
 
-void MessagePortChannel::State::StartWatching(const base::Closure& callback) {
+void MessagePortChannel::State::StartWatching(
+    const base::Closure& callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   base::AutoLock lock(lock_);
   DCHECK(!callback_);
   DCHECK(handle_.is_valid());
+  DCHECK(task_runner);
   callback_ = callback;
+  task_runner_ = task_runner;
 
   DCHECK(!watcher_handle_.is_valid());
   MojoResult rv = CreateWatcher(&State::CallOnHandleReady, &watcher_handle_);
@@ -152,6 +158,7 @@ void MessagePortChannel::State::StopWatching() {
     base::AutoLock lock(lock_);
     watcher_handle = std::move(watcher_handle_);
     callback_.Reset();
+    task_runner_ = nullptr;
   }
 }
 
@@ -186,7 +193,7 @@ void MessagePortChannel::State::ArmWatcher() {
 
   if (ready_result == MOJO_RESULT_OK) {
     // The handle is already signaled, so we trigger a callback now.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&State::OnHandleReady, this, MOJO_RESULT_OK));
     return;
   }

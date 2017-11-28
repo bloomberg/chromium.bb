@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/android/string_message_codec.h"
 #include "jni/AppWebMessagePort_jni.h"
 
@@ -121,7 +122,8 @@ void AppWebMessagePort::StartReceivingMessages(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
   channel_.SetCallback(base::Bind(&AppWebMessagePort::OnMessagesAvailable,
-                                  base::Unretained(this)));
+                                  base::Unretained(this)),
+                       base::ThreadTaskRunnerHandle::Get());
 }
 
 AppWebMessagePort::AppWebMessagePort(

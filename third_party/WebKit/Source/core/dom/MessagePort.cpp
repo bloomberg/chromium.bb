@@ -124,8 +124,10 @@ void MessagePort::start() {
     return;
 
   // Note that MessagePortChannel may call this callback on any thread.
-  channel_.SetCallback(ConvertToBaseCallback(CrossThreadBind(
-      &MessagePort::MessageAvailable, WrapCrossThreadWeakPersistent(this))));
+  channel_.SetCallback(
+      ConvertToBaseCallback(CrossThreadBind(
+          &MessagePort::MessageAvailable, WrapCrossThreadWeakPersistent(this))),
+      task_runner_->ToSingleThreadTaskRunner());
   started_ = true;
   MessageAvailable();
 }
