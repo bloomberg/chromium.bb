@@ -327,11 +327,12 @@ WorkerGlobalScope::WorkerGlobalScope(
       font_selector_(OffscreenFontSelector::Create(this)) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
-  SetSecurityOrigin(SecurityOrigin::Create(url_));
+  scoped_refptr<SecurityOrigin> security_origin = SecurityOrigin::Create(url_);
   if (creation_params->starter_origin) {
-    GetSecurityOrigin()->TransferPrivilegesFrom(
+    security_origin->TransferPrivilegesFrom(
         creation_params->starter_origin->CreatePrivilegeData());
   }
+  SetSecurityOrigin(std::move(security_origin));
   ApplyContentSecurityPolicyFromVector(
       *creation_params->content_security_policy_parsed_headers);
   SetWorkerSettings(std::move(creation_params->worker_settings));
