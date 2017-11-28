@@ -791,16 +791,16 @@ public class TabsOpenedFromExternalAppTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags.Add({"enable-spdy-proxy-auth", "data-reduction-proxy-lo-fi=always-on",
-            "enable-data-reduction-proxy-lite-page"})
+    @CommandLineFlags.
+    Add({"enable-spdy-proxy-auth", "enable-features=DataReductionProxyDecidesTransform"})
     public void testLaunchWebLiteURL() throws InterruptedException {
         mActivityTestRule.startMainActivityFromLauncher();
 
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
 
         // Launch a first URL from an app.
-        launchUrlFromExternalApp("http://googleweblight.com/?lite_url=" + url, url,
-                EXTERNAL_APP_1_ID, false, null);
+        launchUrlFromExternalApp(
+                "http://googleweblight.com/i?u=" + url, url, EXTERNAL_APP_1_ID, false, null);
 
         Assert.assertEquals("Selected tab is not on the right URL.", url,
                 mActivityTestRule.getActivity().getActivityTab().getUrl());
@@ -812,10 +812,12 @@ public class TabsOpenedFromExternalAppTest {
      */
     @Test
     @MediumTest
+    @CommandLineFlags.
+    Add({"enable-spdy-proxy-auth", "disable-features=DataReductionProxyDecidesTransform"})
     public void testLaunchWebLiteURLNoPreviews() throws InterruptedException {
         mActivityTestRule.startMainActivityFromLauncher();
 
-        String url = "http://googleweblight.com/?lite_url=chrome/test/data/android/about.html";
+        String url = "http://googleweblight.com/i?u=chrome/test/data/android/about.html";
 
         // Launch a first URL from an app.
         launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, false, null);
