@@ -723,10 +723,6 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
  * This version still takes the minimumRequiredFields parameters. Whereas the
  * C++ version does not.
  *
- * This version recursively scans its child frames. The C++ version does not
- * because it has been converted to do only a single frame for Out Of Process
- * Iframes.
- *
  * @param {number} minimumRequiredFields The minimum number of fields a form
  *     should contain for autofill.
  * @return {Array<AutofillFormData>} The extracted forms.
@@ -736,31 +732,8 @@ __gCrWeb.autofill.extractNewForms = function(minimumRequiredFields) {
   // Protect against custom implementation of Array.toJSON in host pages.
   /** @suppress {checkTypes} */(function() { forms.toJSON = null; })();
 
-  extractFormsAndFormElements_(window, minimumRequiredFields, forms);
-  return forms;
-}
-
-/**
- * A helper function to implement extractNewForms().
- *
- * @param {HTMLFrameElement|Window} frame A window or a frame containing forms
- *     from which the data will be extracted.
- * @param {number} minimumRequiredFields The minimum number of fields a form
- *     should contain for autofill.
- * @param {Array<AutofillFormData>} forms Array to store the data for the forms
- *     found in the frame.
- */
-function extractFormsAndFormElements_(frame, minimumRequiredFields, forms) {
-  if (!frame) {
-    return;
-  }
-  var doc = frame.document;
-  if (!doc) {
-    return;
-  }
-
   /** @type {HTMLCollection} */
-  var webForms = doc.forms;
+  var webForms = document.forms;
 
   var extractMask = __gCrWeb.autofill.EXTRACT_MASK_VALUE |
       __gCrWeb.autofill.EXTRACT_MASK_OPTIONS;
@@ -778,7 +751,7 @@ function extractFormsAndFormElements_(frame, minimumRequiredFields, forms) {
 
     var form = new __gCrWeb['common'].JSONSafeObject;
     if (!__gCrWeb.autofill.webFormElementToFormData(
-        frame, formElement, null, extractMask, form, null /* field */)) {
+        window, formElement, null, extractMask, form, null /* field */)) {
       continue;
     }
 
@@ -795,13 +768,13 @@ function extractFormsAndFormElements_(frame, minimumRequiredFields, forms) {
   // Look for more parseable fields outside of forms.
   var fieldsets = [];
   var unownedControlElements =
-      getUnownedAutofillableFormFieldElements_(doc.all, fieldsets);
+      getUnownedAutofillableFormFieldElements_(document.all, fieldsets);
   var numEditableUnownedElements =
       scanFormControlElements_(unownedControlElements);
   if (numEditableUnownedElements > 0) {
     var unownedForm = new __gCrWeb['common'].JSONSafeObject;
     var hasUnownedForm = unownedFormElementsAndFieldSetsToFormData_(
-        frame, fieldsets, unownedControlElements, extractMask, unownedForm);
+        window, fieldsets, unownedControlElements, extractMask, unownedForm);
     if (hasUnownedForm) {
       numFieldsSeen += unownedForm['fields'].length;
       if (numFieldsSeen <= __gCrWeb.autofill.MAX_PARSEABLE_FIELDS) {
@@ -813,19 +786,7 @@ function extractFormsAndFormElements_(frame, minimumRequiredFields, forms) {
       }
     }
   }
-
-  // Recursively invoke for all iframes.
-  var frames = doc.getElementsByTagName("iframe");
-  for (var i = 0; i < frames.length; i++) {
-    // Check frame origin using only information available to the current frame
-    // (i.e. frames[i].src) to avoid triggering a SecurityError. Skip frames
-    // from different origin since we can't access the DOM elements to autofill.
-    if (!frames[i].src ||
-        __gCrWeb.common.isSameOrigin(frame.location.href, frames[i].src)) {
-      extractFormsAndFormElements_(
-        frames[i].contentWindow, minimumRequiredFields, forms);
-    }
-  }
+  return forms;
 };
 
 /**
