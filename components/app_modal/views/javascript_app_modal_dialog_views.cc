@@ -118,7 +118,8 @@ base::string16 JavaScriptAppModalDialogViews::GetDialogButtonLabel(
           parent_->is_reload() ?
           IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL :
           IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL);
-    } else if (button == ui::DIALOG_BUTTON_CANCEL) {
+    }
+    if (button == ui::DIALOG_BUTTON_CANCEL) {
       return l10n_util::GetStringUTF16(
           parent_->is_reload() ?
           IDS_BEFORERELOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL :

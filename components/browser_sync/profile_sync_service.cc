@@ -1287,18 +1287,18 @@ void ProfileSyncService::OnConfigureStart() {
 ProfileSyncService::SyncStatusSummary
 ProfileSyncService::QuerySyncStatusSummary() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (HasUnrecoverableError()) {
+  if (HasUnrecoverableError())
     return UNRECOVERABLE_ERROR;
-  } else if (!engine_) {
+  if (!engine_)
     return NOT_ENABLED;
-  } else if (engine_ && !IsFirstSetupComplete()) {
+  if (engine_ && !IsFirstSetupComplete())
     return SETUP_INCOMPLETE;
-  } else if (engine_ && IsFirstSetupComplete() && data_type_manager_ &&
-             data_type_manager_->state() == DataTypeManager::STOPPED) {
+  if (engine_ && IsFirstSetupComplete() && data_type_manager_ &&
+      data_type_manager_->state() == DataTypeManager::STOPPED) {
     return DATATYPES_NOT_INITIALIZED;
-  } else if (IsSyncActive()) {
-    return INITIALIZED;
   }
+  if (IsSyncActive())
+    return INITIALIZED;
   return UNKNOWN_ERROR;
 }
 
@@ -1342,12 +1342,11 @@ bool ProfileSyncService::QueryDetailedSyncStatus(SyncEngine::Status* result) {
   if (engine_ && engine_initialized_) {
     *result = engine_->GetDetailedStatus();
     return true;
-  } else {
-    SyncEngine::Status status;
-    status.sync_protocol_error = last_actionable_error_;
-    *result = status;
-    return false;
   }
+  SyncEngine::Status status;
+  status.sync_protocol_error = last_actionable_error_;
+  *result = status;
+  return false;
 }
 
 const AuthError& ProfileSyncService::GetAuthError() const {
@@ -1835,11 +1834,10 @@ bool ProfileSyncService::SetDecryptionPassphrase(
     bool result = crypto_->SetDecryptionPassphrase(passphrase);
     UMA_HISTOGRAM_BOOLEAN("Sync.PassphraseDecryptionSucceeded", result);
     return result;
-  } else {
-    NOTREACHED() << "SetDecryptionPassphrase must not be called when "
-                    "IsPassphraseRequired() is false.";
-    return false;
   }
+  NOTREACHED() << "SetDecryptionPassphrase must not be called when "
+                  "IsPassphraseRequired() is false.";
+  return false;
 }
 
 bool ProfileSyncService::IsEncryptEverythingAllowed() const {
@@ -2271,11 +2269,7 @@ base::FilePath ProfileSyncService::GetDirectoryPathForTest() const {
 
 base::MessageLoop* ProfileSyncService::GetSyncLoopForTest() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (sync_thread_) {
-    return sync_thread_->message_loop();
-  } else {
-    return nullptr;
-  }
+  return sync_thread_ ? sync_thread_->message_loop() : nullptr;
 }
 
 syncer::SyncEncryptionHandler::Observer*
