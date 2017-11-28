@@ -35,6 +35,13 @@ void TestWindowTreeClientSetup::InitForWindowManager(
       test_window_manager_client_.get());
 }
 
+void TestWindowTreeClientSetup::InitWithoutEmbed(
+    WindowTreeClientDelegate* window_tree_delegate) {
+  CommonInit(window_tree_delegate, nullptr);
+  WindowTreeClientPrivate(window_tree_client_.get())
+      .SetTree(window_tree_.get());
+}
+
 std::unique_ptr<WindowTreeClient>
 TestWindowTreeClientSetup::OwnWindowTreeClient() {
   DCHECK(window_tree_client_);

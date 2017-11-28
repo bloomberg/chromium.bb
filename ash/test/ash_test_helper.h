@@ -21,6 +21,9 @@
 namespace aura {
 class Window;
 class WindowTreeClientPrivate;
+namespace test {
+class EnvWindowTreeClientSetter;
+}
 }
 
 namespace display {
@@ -129,6 +132,8 @@ class AshTestHelper {
 
   static Config config_;
 
+  std::unique_ptr<aura::test::EnvWindowTreeClientSetter>
+      env_window_tree_client_setter_;
   AshTestEnvironment* ash_test_environment_;  // Not owned.
   TestShellDelegate* test_shell_delegate_;  // Owned by ash::Shell.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;

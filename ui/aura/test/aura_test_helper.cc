@@ -18,7 +18,9 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
+#include "ui/aura/test/mus/test_window_manager_delegate.h"
 #include "ui/aura/test/mus/test_window_tree.h"
+#include "ui/aura/test/mus/test_window_tree_client_delegate.h"
 #include "ui/aura/test/mus/test_window_tree_client_setup.h"
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/test/test_screen.h"
@@ -94,6 +96,19 @@ void AuraTestHelper::DeleteWindowTreeClient() {
 
 void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
                            ui::ContextFactoryPrivate* context_factory_private) {
+  // |mode_| defaults to LOCAL, but test suites may enable MUS. If this happens
+  // enable mus.
+  if (Env::GetInstanceDontCreate() &&
+      Env::GetInstanceDontCreate()->mode() == Env::Mode::MUS &&
+      mode_ == Mode::LOCAL) {
+    test_window_tree_client_delegate_ =
+        std::make_unique<TestWindowTreeClientDelegate>();
+    test_window_manager_delegate_ =
+        std::make_unique<TestWindowManagerDelegate>();
+    EnableMusWithTestWindowTree(test_window_tree_client_delegate_.get(),
+                                test_window_manager_delegate_.get());
+  }
+
   setup_called_ = true;
 
   if (mode_ != Mode::MUS) {
@@ -121,7 +136,10 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   // Always reset the mode. This really only matters for if Env was created
   // above.
   env_helper.SetMode(env_mode);
-  env_helper.SetWindowTreeClient(window_tree_client_);
+  if (env_mode == Env::Mode::MUS) {
+    env_window_tree_client_setter_ =
+        std::make_unique<EnvWindowTreeClientSetter>(window_tree_client_);
+  }
   // Tests assume they can set the mouse location on Env() and have it reflected
   // in tests.
   env_helper.SetAlwaysUseLastMouseLocation(true);
@@ -175,6 +193,7 @@ void AuraTestHelper::TearDown() {
   g_instance = nullptr;
   teardown_called_ = true;
   parenting_client_.reset();
+  env_window_tree_client_setter_.reset();
   if (mode_ != Mode::MUS && root_window()) {
     client::SetFocusClient(root_window(), nullptr);
     client::SetCaptureClient(root_window(), nullptr);

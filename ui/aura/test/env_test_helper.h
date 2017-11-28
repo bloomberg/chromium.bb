@@ -15,6 +15,23 @@
 namespace aura {
 namespace test {
 
+// Used to set the WindowTreeClient of Env. The constructor installs the
+// supplied WindowTreeClient and the destructor restores the WindowTreeClient
+// to what it previously was.
+class EnvWindowTreeClientSetter {
+ public:
+  explicit EnvWindowTreeClientSetter(WindowTreeClient* client);
+  ~EnvWindowTreeClientSetter();
+
+ private:
+  void SetWindowTreeClient(WindowTreeClient* client);
+
+  WindowTreeClient* supplied_client_;
+  WindowTreeClient* previous_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(EnvWindowTreeClientSetter);
+};
+
 class EnvTestHelper {
  public:
   EnvTestHelper() : EnvTestHelper(Env::GetInstance()) {}
@@ -39,21 +56,14 @@ class EnvTestHelper {
       env_->EnableMusOSExchangeDataProvider();
   }
 
-  WindowTreeClient* GetWindowTreeClient() { return env_->window_tree_client_; }
-
-  // This circumvents the DCHECKs in Env::SetWindowTreeClient() and should
-  // only be used for tests where Env is long lived.
-  void SetWindowTreeClient(WindowTreeClient* window_tree_client) {
-    env_->window_tree_client_ = window_tree_client;
-    env_->in_mus_shutdown_ = window_tree_client ? false : true;
-  }
-
   // Use to force Env::last_mouse_location() to return the value last set.
   // This matters for MUS, which may not return the last explicitly set
   // location.
   void SetAlwaysUseLastMouseLocation(bool value) {
     env_->always_use_last_mouse_location_ = value;
   }
+
+  WindowTreeClient* GetWindowTreeClient() { return env_->window_tree_client_; }
 
  private:
   Env* env_;
