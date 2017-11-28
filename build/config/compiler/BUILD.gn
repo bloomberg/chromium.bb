@@ -551,7 +551,7 @@ config("compiler") {
 
     # Disable optimization for now because they increase binary size by too
     # much.
-    if (is_linux && use_lld) {
+    if (use_lld && (is_android || is_linux)) {
       ldflags += [ "-Wl,--lto-O0" ]
     }
 
@@ -563,24 +563,6 @@ config("compiler") {
     # Work-around for http://openradar.appspot.com/20356002
     if (is_mac) {
       ldflags += [ "-Wl,-all_load" ]
-    }
-
-    # Allows the linker to apply --gc-sections and ICF to the LTO object file.
-    # Also, when targeting ARM, without this flag, LTO produces a .text section
-    # that is larger than the maximum call displacement, preventing the linker
-    # from relocating calls (http://llvm.org/PR22999).
-    if (is_linux) {
-      if (use_lld) {
-        ldflags += [
-          "-Wl,-mllvm,-function-sections",
-          "-Wl,-mllvm,-data-sections",
-        ]
-      } else {
-        ldflags += [
-          "-Wl,-plugin-opt,-function-sections",
-          "-Wl,-plugin-opt,-data-sections",
-        ]
-      }
     }
   }
 
