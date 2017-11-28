@@ -1740,8 +1740,6 @@ if (enable_java_templates) {
   #     (optional).
   #   apk_under_test: For an instrumentation test apk, this is the target of the
   #     tested apk.
-  #   include_all_resources - If true include all resource IDs in all generated
-  #     R.java files.
   #   testonly: Marks this target as "test-only".
   #   write_asset_list: Adds an extra file to the assets, which contains a list of
   #     all other asset files.
@@ -1794,7 +1792,6 @@ if (enable_java_templates) {
 
     # JUnit tests use resource zip files. These must not be put in gen/
     # directory or they will not be available to tester bots.
-    _all_resources_zip_path = "$_base_path.resources.all.zip"
     _jar_path = "$_base_path.jar"
     _lib_dex_path = "$_base_path.dex.jar"
     _rebased_lib_dex_path = rebase_path(_lib_dex_path, root_build_dir)
@@ -2113,19 +2110,29 @@ if (enable_java_templates) {
                              [
                                "alternative_android_sdk_jar",
                                "app_as_shared_lib",
-                               "include_all_resources",
                                "shared_resources",
                                "support_zh_hk",
+                               "aapt_locale_whitelist",
+                               "exclude_xxxhdpi",
+                               "png_to_webp",
+                               "xxxhdpi_whitelist",
                              ])
+      android_manifest = _android_manifest
+      version_code = _version_code
+      version_name = _version_name
+      if (defined(invoker.post_process_package_resources_script)) {
+        post_process_script = invoker.post_process_package_resources_script
+      }
       srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
       r_text_out_path = "${target_gen_dir}/${target_name}_R.txt"
-      android_manifest = _android_manifest
-      all_resources_zip_path = _all_resources_zip_path
       generate_constant_ids = true
       proguard_file = _generated_proguard_config
       if (_enable_multidex) {
         proguard_file_main_dex = _generated_proguard_main_dex_config
       }
+      output = _packaged_resources_path
+      density_splits = _density_splits
+      language_splits = _language_splits
 
       build_config = _build_config
       deps = _deps + [
@@ -2134,34 +2141,6 @@ if (enable_java_templates) {
              ]
     }
     _srcjar_deps += [ ":$_process_resources_target" ]
-    _package_resources_target = "${target_name}__package_resources"
-    package_resources(_package_resources_target) {
-      forward_variables_from(invoker,
-                             [
-                               "aapt_locale_whitelist",
-                               "alternative_android_sdk_jar",
-                               "app_as_shared_lib",
-                               "exclude_xxxhdpi",
-                               "png_to_webp",
-                               "shared_resources",
-                               "support_zh_hk",
-                               "xxxhdpi_whitelist",
-                             ])
-      deps = _deps + [
-               ":$_android_manifest_target",
-               ":$_process_resources_target",
-             ]
-      android_manifest = _android_manifest
-      version_code = _version_code
-      version_name = _version_name
-      if (defined(invoker.post_process_package_resources_script)) {
-        post_process_script = invoker.post_process_package_resources_script
-      }
-      resources_zip = _all_resources_zip_path
-      output = _packaged_resources_path
-      density_splits = _density_splits
-      language_splits = _language_splits
-    }
 
     if (_native_libs_deps != []) {
       _enable_chromium_linker_tests = false
@@ -2520,7 +2499,7 @@ if (enable_java_templates) {
       incremental_deps = _deps + [
                            ":$_android_manifest_target",
                            ":$_build_config_target",
-                           ":$_package_resources_target",
+                           ":$_process_resources_target",
                          ]
 
       # This target generates the input file _all_resources_zip_path.
@@ -2528,7 +2507,7 @@ if (enable_java_templates) {
                ":$_android_manifest_target",
                ":$_build_config_target",
                ":$_final_dex_target_name",
-               ":$_package_resources_target",
+               ":$_process_resources_target",
              ]
 
       if ((_native_libs_deps != [] ||
@@ -2570,7 +2549,7 @@ if (enable_java_templates) {
         ]
       }
 
-      package_resources("${_apk_rule}__process_resources") {
+      process_resources("${_apk_rule}__process_resources") {
         deps = [
           ":${_apk_rule}__generate_manifest",
         ]
