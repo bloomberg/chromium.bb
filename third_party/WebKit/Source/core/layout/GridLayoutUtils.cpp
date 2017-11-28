@@ -8,14 +8,40 @@
 
 namespace blink {
 
+static inline bool MarginStartIsAuto(const LayoutBox& child,
+                                     GridTrackSizingDirection direction) {
+  return direction == kForColumns ? child.StyleRef().MarginStart().IsAuto()
+                                  : child.StyleRef().MarginBefore().IsAuto();
+}
+
+static inline bool MarginEndIsAuto(const LayoutBox& child,
+                                   GridTrackSizingDirection direction) {
+  return direction == kForColumns ? child.StyleRef().MarginEnd().IsAuto()
+                                  : child.StyleRef().MarginAfter().IsAuto();
+}
+
+static bool ChildHasMargin(const LayoutBox& child,
+                           GridTrackSizingDirection direction) {
+  // Length::IsZero returns true for 'auto' margins, which is aligned with the
+  // purpose of this function.
+  if (direction == kForColumns) {
+    return !child.StyleRef().MarginStart().IsZero() ||
+           !child.StyleRef().MarginEnd().IsZero();
+  }
+  return !child.StyleRef().MarginBefore().IsZero() ||
+         !child.StyleRef().MarginAfter().IsZero();
+}
+
 static LayoutUnit ComputeMarginLogicalSizeForChild(
     const LayoutGrid& grid,
     MarginDirection for_direction,
     const LayoutBox& child) {
-  if (!child.StyleRef().HasMargin())
+  bool is_inline_direction = for_direction == kInlineDirection;
+  GridTrackSizingDirection direction =
+      is_inline_direction ? kForColumns : kForRows;
+  if (!ChildHasMargin(child, direction))
     return LayoutUnit();
 
-  bool is_inline_direction = for_direction == kInlineDirection;
   LayoutUnit margin_start;
   LayoutUnit margin_end;
   LayoutUnit logical_size =
@@ -31,7 +57,10 @@ static LayoutUnit ComputeMarginLogicalSizeForChild(
       logical_size, margin_start, margin_end, margin_start_length,
       margin_end_length);
 
-  return margin_start + margin_end;
+  return MarginStartIsAuto(child, direction)
+             ? margin_end
+             : MarginEndIsAuto(child, direction) ? margin_start
+                                                 : margin_start + margin_end;
 }
 
 LayoutUnit GridLayoutUtils::MarginLogicalWidthForChild(const LayoutGrid& grid,
