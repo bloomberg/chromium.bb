@@ -202,6 +202,11 @@ XcursorImageCreate (int width, int height)
 {
     XcursorImage    *image;
 
+    if (width < 0 || height < 0)
+       return NULL;
+    if (width > XCURSOR_IMAGE_MAX_SIZE || height > XCURSOR_IMAGE_MAX_SIZE)
+       return NULL;
+
     image = malloc (sizeof (XcursorImage) +
 		    width * height * sizeof (XcursorPixel));
     if (!image)
@@ -482,7 +487,8 @@ _XcursorReadImage (XcursorFile		*file,
     if (!_XcursorReadUInt (file, &head.delay))
 	return NULL;
     /* sanity check data */
-    if (head.width >= 0x10000 || head.height > 0x10000)
+    if (head.width > XCURSOR_IMAGE_MAX_SIZE  ||
+	head.height > XCURSOR_IMAGE_MAX_SIZE)
 	return NULL;
     if (head.width == 0 || head.height == 0)
 	return NULL;
