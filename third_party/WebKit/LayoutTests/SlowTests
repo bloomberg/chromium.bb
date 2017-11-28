@@ -155,8 +155,8 @@ crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-resources.htm
 crbug.com/451577 [ Win10 ] http/tests/devtools/extensions/extensions-sidebar.html [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/devtools/layers/layer-canvas-log.js [ Slow ]
 crbug.com/667560 [ Mac ] virtual/mojo-loading/http/tests/devtools/layers/layer-canvas-log.js [ Slow ]
-crbug.com/451577 [ Mac ] http/tests/devtools/network/network-domain-filter.html [ Slow ]
-crbug.com/667560 [ Mac ] virtual/mojo-loading/http/tests/devtools/network/network-domain-filter.html [ Slow ]
+crbug.com/451577 [ Mac ] http/tests/devtools/network/network-domain-filter.js [ Slow ]
+crbug.com/667560 [ Mac ] virtual/mojo-loading/http/tests/devtools/network/network-domain-filter.js [ Slow ]
 
 # Random slow tests
 crbug.com/763197 [ Linux Mac ] virtual/gpu-rasterization/images/color-profile-border-radius.html [ Slow ]
