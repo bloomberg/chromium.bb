@@ -1300,6 +1300,16 @@ hooks = [
     ],
   },
 
+  {
+    'name': 'Fuchsia QEMU ensure',
+    'pattern': '.',
+    'condition': 'checkout_fuchsia',
+    'action': ['src/build/cipd/cipd_wrapper.py',
+               '--chromium-root', 'src',
+               '--ensure-file', 'src/build/cipd/fuchsia/qemu.ensure',
+    ],
+  },
+
   # Download and initialize "vpython" VirtualEnv environment packages.
   {
     'name': 'vpython_common',
