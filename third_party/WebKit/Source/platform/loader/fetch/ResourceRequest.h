@@ -76,7 +76,7 @@ struct CrossThreadResourceRequestData;
 // member variable to this class, do not forget to add the corresponding
 // one in CrossThreadResourceRequestData and write copying logic.
 class PLATFORM_EXPORT ResourceRequest final {
-  DISALLOW_NEW();
+  USING_FAST_MALLOC(ResourceRequest);
 
  public:
   enum class RedirectStatus : uint8_t { kFollowedRedirect, kNoRedirect };
@@ -90,8 +90,20 @@ class PLATFORM_EXPORT ResourceRequest final {
   explicit ResourceRequest(const String& url_string);
   explicit ResourceRequest(const KURL&);
   explicit ResourceRequest(CrossThreadResourceRequestData*);
+
+  // TODO(toyoshim): Use std::unique_ptr as much as possible, and hopefully
+  // make ResourceRequest WTF_MAKE_NONCOPYABLE. See crbug.com/787704.
   ResourceRequest(const ResourceRequest&);
   ResourceRequest& operator=(const ResourceRequest&);
+
+  // Constructs a new ResourceRequest for a redirect from this instance.
+  std::unique_ptr<ResourceRequest> CreateRedirectRequest(
+      const KURL& new_url,
+      const AtomicString& new_method,
+      const KURL& new_site_for_cookies,
+      const String& new_referrer,
+      ReferrerPolicy new_referrer_policy,
+      WebURLRequest::ServiceWorkerMode new_sw_mode) const;
 
   // Gets a copy of the data suitable for passing to another thread.
   std::unique_ptr<CrossThreadResourceRequestData> CopyData() const;

@@ -130,6 +130,43 @@ ResourceRequest::ResourceRequest(const ResourceRequest&) = default;
 
 ResourceRequest& ResourceRequest::operator=(const ResourceRequest&) = default;
 
+std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
+    const KURL& new_url,
+    const AtomicString& new_method,
+    const KURL& new_site_for_cookies,
+    const String& new_referrer,
+    ReferrerPolicy new_referrer_policy,
+    WebURLRequest::ServiceWorkerMode service_worker_mode) const {
+  std::unique_ptr<ResourceRequest> request =
+      std::make_unique<ResourceRequest>(new_url);
+  request->SetHTTPMethod(new_method);
+  request->SetSiteForCookies(new_site_for_cookies);
+  String referrer =
+      new_referrer.IsEmpty() ? Referrer::NoReferrer() : String(new_referrer);
+  request->SetHTTPReferrer(
+      Referrer(referrer, static_cast<ReferrerPolicy>(new_referrer_policy)));
+  request->SetServiceWorkerMode(service_worker_mode);
+  request->SetRedirectStatus(RedirectStatus::kFollowedRedirect);
+
+  // Copy from parameters for |this|.
+  request->SetDownloadToFile(DownloadToFile());
+  request->SetUseStreamOnResponse(UseStreamOnResponse());
+  request->SetRequestContext(GetRequestContext());
+  request->SetFrameType(GetFrameType());
+  request->SetShouldResetAppCache(ShouldResetAppCache());
+  request->SetFetchRequestMode(GetFetchRequestMode());
+  request->SetFetchCredentialsMode(GetFetchCredentialsMode());
+  request->SetKeepalive(GetKeepalive());
+  request->SetPriority(Priority());
+
+  if (request->HttpMethod() == HttpMethod())
+    request->SetHTTPBody(HttpBody());
+  request->SetCheckForBrowserSideNavigation(CheckForBrowserSideNavigation());
+  request->SetCORSPreflightPolicy(CORSPreflightPolicy());
+
+  return request;
+}
+
 std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
     const {
   std::unique_ptr<CrossThreadResourceRequestData> data =
