@@ -44,11 +44,12 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
     : public mojom::FrameSinkManagerClient,
       public CompositorFrameSinkSupportManager {
  public:
+  using DisplayHitTestQueryMap =
+      base::flat_map<FrameSinkId, std::unique_ptr<HitTestQuery>>;
+
   HostFrameSinkManager();
   ~HostFrameSinkManager() override;
 
-  using DisplayHitTestQueryMap =
-      base::flat_map<FrameSinkId, std::unique_ptr<HitTestQuery>>;
   const DisplayHitTestQueryMap& display_hit_test_query() const {
     return display_hit_test_query_;
   }
@@ -114,9 +115,10 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void UnregisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
                                     const FrameSinkId& child_frame_sink_id);
 
-  // These two functions should only be used by WindowServer.
+  // These three functions should only be used by WindowServer.
   // TODO(riajiang): Find a better way for HostFrameSinkManager to do the assign
   // and drop instead.
+  void WillAssignTemporaryReferencesExternally();
   void AssignTemporaryReference(const SurfaceId& surface_id,
                                 const FrameSinkId& owner);
   void DropTemporaryReference(const SurfaceId& surface_id);
@@ -226,6 +228,11 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
   // If |frame_sink_manager_ptr_| connection was lost.
   bool connection_was_lost_ = false;
+
+  // If a FrameSinkId owner should be assigned when a new surface is created.
+  // This will be set false if using surface sequences or if temporary
+  // references are being assigned externally.
+  bool assign_temporary_references_ = true;
 
   base::RepeatingClosure connection_lost_callback_;
 

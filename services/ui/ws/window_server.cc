@@ -152,6 +152,8 @@ WindowServer::WindowServer(WindowServerDelegate* delegate, bool should_host_viz)
           std::make_unique<VizHostProxyImpl>(host_frame_sink_manager_.get())),
       video_detector_(host_frame_sink_manager_.get()),
       display_creation_config_(DisplayCreationConfig::UNKNOWN) {
+  if (host_frame_sink_manager_)
+    host_frame_sink_manager_->WillAssignTemporaryReferencesExternally();
   user_id_tracker_.AddObserver(this);
   OnUserIdAdded(user_id_tracker_.active_id());
 }
