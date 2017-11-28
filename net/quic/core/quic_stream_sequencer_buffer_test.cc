@@ -83,6 +83,17 @@ class QuicStreamSequencerBufferTest : public testing::Test {
   string error_details_;
 };
 
+TEST_F(QuicStreamSequencerBufferTest, InitializeWithMaxRecvWindowSize) {
+  if (!FLAGS_quic_reloadable_flag_quic_fix_sequencer_buffer_block_count2) {
+    return;
+  }
+  ResetMaxCapacityBytes(16 * 1024 * 1024);  // 16MB
+  EXPECT_EQ(2 * 1024u,                      // 16MB / 8KB = 2K
+            helper_->block_count());
+  EXPECT_EQ(max_capacity_bytes_, helper_->max_buffer_capacity());
+  EXPECT_TRUE(helper_->CheckInitialState());
+}
+
 TEST_F(QuicStreamSequencerBufferTest, InitializationWithDifferentSizes) {
   const size_t kCapacity = 2 * QuicStreamSequencerBuffer::kBlockSizeBytes;
   ResetMaxCapacityBytes(kCapacity);

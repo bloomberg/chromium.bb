@@ -139,5 +139,8 @@ bool QuicStreamSequencerBufferPeer::IsBufferAllocated() {
   return buffer_->blocks_ != nullptr;
 }
 
+size_t QuicStreamSequencerBufferPeer::block_count() {
+  return buffer_->blocks_count_;
+}
 }  // namespace test
 }  // namespace net
