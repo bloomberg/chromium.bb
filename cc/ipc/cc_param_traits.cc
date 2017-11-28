@@ -293,13 +293,18 @@ bool ParamTraits<sk_sp<SkImageFilter>>::Read(const base::Pickle* m,
   int length = 0;
   if (!iter->ReadData(&data, &length))
     return false;
-  if (length > 0) {
-    SkFlattenable* flattenable = skia::ValidatingDeserializeFlattenable(
-        data, length, SkImageFilter::GetFlattenableType());
-    *r = sk_sp<SkImageFilter>(static_cast<SkImageFilter*>(flattenable));
-  } else {
+
+  if (length <= 0) {
     r->reset();
+    return true;
   }
+
+  SkFlattenable* flattenable = skia::ValidatingDeserializeFlattenable(
+      data, length, SkImageFilter::GetFlattenableType());
+  if (!flattenable)
+    return false;
+
+  *r = sk_sp<SkImageFilter>(static_cast<SkImageFilter*>(flattenable));
   return true;
 }
 

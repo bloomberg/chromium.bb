@@ -239,7 +239,7 @@ class CC_PAINT_EXPORT AlphaThresholdPaintFilter final : public PaintFilter {
 
 class CC_PAINT_EXPORT ImageFilterPaintFilter final : public PaintFilter {
  public:
-  static constexpr Type kType = Type::kImage;
+  static constexpr Type kType = Type::kSkImageFilter;
   const SkImageFilter* sk_filter() const { return sk_filter_.get(); }
 
  private:
