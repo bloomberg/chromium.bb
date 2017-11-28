@@ -45,8 +45,8 @@ TEST_F(IOSChromeStabilityMetricsProviderTest,
 
   EXPECT_EQ(0, system_profile.stability().page_load_count());
   EXPECT_TRUE(histogram_tester_
-                  .GetTotalCountsForPrefix(IOSChromeStabilityMetricsProvider::
-                                               kPageLoadCountMigrationEventKey)
+                  .GetTotalCountsForPrefix(
+                      IOSChromeStabilityMetricsProvider::kPageLoadCountMetric)
                   .empty());
 
   // A load should increment metrics if recording is enabled.
@@ -57,12 +57,8 @@ TEST_F(IOSChromeStabilityMetricsProviderTest,
   provider.ProvideStabilityMetrics(&system_profile);
 
   EXPECT_EQ(1, system_profile.stability().page_load_count());
-  histogram_tester_.ExpectUniqueSample(
-      IOSChromeStabilityMetricsProvider::kPageLoadCountMigrationEventKey,
-      static_cast<base::HistogramBase::Sample>(
-          IOSChromeStabilityMetricsProvider::StabilityMetricEventType::
-              LOADING_STARTED),
-      1);
+  histogram_tester_.ExpectTotalCount(
+      IOSChromeStabilityMetricsProvider::kPageLoadCountLoadingStartedMetric, 1);
 }
 
 TEST_F(IOSChromeStabilityMetricsProviderTest,
@@ -75,9 +71,9 @@ TEST_F(IOSChromeStabilityMetricsProviderTest,
   provider.WebStateDidStartNavigation(kNullWebState, &context);
 
   histogram_tester_.ExpectUniqueSample(
-      IOSChromeStabilityMetricsProvider::kPageLoadCountMigrationEventKey,
+      IOSChromeStabilityMetricsProvider::kPageLoadCountMetric,
       static_cast<base::HistogramBase::Sample>(
-          IOSChromeStabilityMetricsProvider::StabilityMetricEventType::
+          IOSChromeStabilityMetricsProvider::PageLoadCountNavigationType::
               SAME_DOCUMENT_WEB_NAVIGATION),
       1);
 
@@ -97,9 +93,9 @@ TEST_F(IOSChromeStabilityMetricsProviderTest,
   provider.WebStateDidStartNavigation(kNullWebState, &context);
 
   histogram_tester_.ExpectUniqueSample(
-      IOSChromeStabilityMetricsProvider::kPageLoadCountMigrationEventKey,
+      IOSChromeStabilityMetricsProvider::kPageLoadCountMetric,
       static_cast<base::HistogramBase::Sample>(
-          IOSChromeStabilityMetricsProvider::StabilityMetricEventType::
+          IOSChromeStabilityMetricsProvider::PageLoadCountNavigationType::
               CHROME_URL_NAVIGATION),
       1);
 
@@ -119,9 +115,9 @@ TEST_F(IOSChromeStabilityMetricsProviderTest,
   provider.WebStateDidStartNavigation(kNullWebState, &context);
 
   histogram_tester_.ExpectUniqueSample(
-      IOSChromeStabilityMetricsProvider::kPageLoadCountMigrationEventKey,
+      IOSChromeStabilityMetricsProvider::kPageLoadCountMetric,
       static_cast<base::HistogramBase::Sample>(
-          IOSChromeStabilityMetricsProvider::StabilityMetricEventType::
+          IOSChromeStabilityMetricsProvider::PageLoadCountNavigationType::
               CHROME_URL_NAVIGATION),
       1);
 
@@ -137,9 +133,9 @@ TEST_F(IOSChromeStabilityMetricsProviderTest, WebNavigationShouldLogPageLoad) {
   provider.WebStateDidStartNavigation(kNullWebState, &context);
 
   histogram_tester_.ExpectUniqueSample(
-      IOSChromeStabilityMetricsProvider::kPageLoadCountMigrationEventKey,
+      IOSChromeStabilityMetricsProvider::kPageLoadCountMetric,
       static_cast<base::HistogramBase::Sample>(
-          IOSChromeStabilityMetricsProvider::StabilityMetricEventType::
+          IOSChromeStabilityMetricsProvider::PageLoadCountNavigationType::
               PAGE_LOAD_NAVIGATION),
       1);
 
