@@ -568,7 +568,13 @@ void ContentSettingDownloadsImageModel::UpdateFromWebContents(
 
 // Base class ------------------------------------------------------------------
 
-gfx::Image ContentSettingImageModel::GetIcon(SkColor icon_color) const {
+gfx::Image ContentSettingImageModel::GetIcon(SkColor nearby_text_color) const {
+#if defined(OS_MACOSX)
+  SkColor icon_color = nearby_text_color;
+#else
+  SkColor icon_color = color_utils::DeriveDefaultIconColor(nearby_text_color);
+#endif
+
   return gfx::Image(
       gfx::CreateVectorIconWithBadge(*icon_, 16, icon_color, *icon_badge_));
 }
