@@ -761,11 +761,12 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   // Indicates how many times OnAfterUserAction() is called.
   int on_after_user_action_;
 
- private:
   // Position of the mouse for synthetic mouse events.
   gfx::Point mouse_position_;
   ui::ClipboardType copied_to_clipboard_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(TextfieldTest);
 };
 
@@ -2299,6 +2300,29 @@ TEST_F(TextfieldTest, CutCopyPaste) {
   EXPECT_STR_EQ("abc", GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_STR_EQ("abcabcabc", textfield_->text());
   EXPECT_EQ(ui::CLIPBOARD_TYPE_LAST, GetAndResetCopiedToClipboard());
+}
+
+TEST_F(TextfieldTest, CutCopyPasteWithEditCommand) {
+  InitTextfield();
+  // Target the "WIDGET". This means that, on Mac, keystrokes will be sent to a
+  // dummy 'Edit' menu which will dispatch into the responder chain as a "cut:"
+  // selector rather than a keydown. This has no effect on other platforms
+  // (events elsewhere always dispatch via a ui::EventProcessor, which is
+  // responsible for finding targets).
+  event_generator_->set_target(ui::test::EventGenerator::Target::WIDGET);
+
+  SendKeyEvent(ui::VKEY_O, false, false);      // Type "o".
+  SendKeyEvent(ui::VKEY_A, false, true);       // Select it.
+  SendKeyEvent(ui::VKEY_C, false, true);       // Copy it.
+  SendKeyEvent(ui::VKEY_RIGHT, false, false);  // Deselect and navigate to end.
+  EXPECT_STR_EQ("o", textfield_->text());
+  SendKeyEvent(ui::VKEY_V, false, true);  // Paste it.
+  EXPECT_STR_EQ("oo", textfield_->text());
+  SendKeyEvent(ui::VKEY_H, false, false);  // Type "h".
+  EXPECT_STR_EQ("ooh", textfield_->text());
+  SendKeyEvent(ui::VKEY_LEFT, true, false);  // Select "h".
+  SendKeyEvent(ui::VKEY_X, false, true);     // Cut it.
+  EXPECT_STR_EQ("oo", textfield_->text());
 }
 
 TEST_F(TextfieldTest, OvertypeMode) {
