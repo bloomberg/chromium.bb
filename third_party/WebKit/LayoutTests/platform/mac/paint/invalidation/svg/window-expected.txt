@@ -508,7 +508,7 @@
         },
         {
           "object": "LayoutSVGContainer g id='windowTitlebarGroupnavWindow'",
-          "rect": [755, 93, 39, 13],
+          "rect": [756, 94, 37, 11],
           "reason": "appeared"
         },
         {
@@ -528,253 +528,33 @@
         },
         {
           "object": "LayoutSVGPath line",
-          "rect": [614, 82, 14, 14],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [614, 82, 14, 14],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [453, 378, 14, 14],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [453, 378, 14, 14],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [234, 196, 14, 14],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [234, 196, 14, 14],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [781, 93, 14, 13],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [781, 93, 14, 13],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [781, 93, 14, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [781, 93, 14, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [570, 144, 14, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [570, 144, 14, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [754, 101, 14, 5],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [754, 101, 14, 5],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [614, 122, 14, 5],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [426, 387, 14, 5],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [348, 191, 14, 5],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='closeButtonsmallWindow'",
-          "rect": [453, 378, 13, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='closeButton'",
-          "rect": [453, 378, 13, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='closeButtonnestedWindow'",
-          "rect": [375, 183, 13, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [375, 183, 13, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [375, 183, 13, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='closeButton'",
-          "rect": [375, 183, 13, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonstatusWindow'",
-          "rect": [362, 346, 13, 12],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
-          "rect": [362, 346, 13, 12],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
-          "rect": [755, 95, 13, 11],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
-          "rect": [755, 95, 13, 11],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
-          "rect": [755, 95, 13, 11],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
-          "rect": [755, 95, 13, 11],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonbigWindow'",
-          "rect": [544, 146, 13, 11],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
-          "rect": [544, 146, 13, 11],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonsmallWindow'",
-          "rect": [427, 380, 13, 11],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
-          "rect": [427, 380, 13, 11],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtoncolourPickerWindow'",
-          "rect": [208, 198, 13, 11],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
-          "rect": [208, 198, 13, 11],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [208, 204, 13, 6],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [544, 152, 13, 5],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [362, 353, 13, 5],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
-          "rect": [782, 93, 12, 13],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
-          "rect": [782, 93, 12, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='closeButton'",
-          "rect": [782, 93, 12, 13],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='closeButton'",
-          "rect": [782, 93, 12, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='closeButtonbigWindow'",
-          "rect": [571, 144, 12, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='closeButton'",
-          "rect": [571, 144, 12, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='closeButtoncolourPickerWindow'",
-          "rect": [235, 196, 12, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='closeButton'",
-          "rect": [235, 196, 12, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
           "rect": [615, 83, 12, 12],
-          "reason": "full"
+          "reason": "geometry"
         },
         {
-          "object": "LayoutSVGViewportContainer svg id='closeButton'",
+          "object": "LayoutSVGPath line",
           "rect": [615, 83, 12, 12],
-          "reason": "full"
+          "reason": "geometry"
         },
         {
-          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
-          "rect": [615, 116, 12, 11],
-          "reason": "full"
+          "object": "LayoutSVGPath line",
+          "rect": [782, 94, 12, 11],
+          "reason": "geometry"
         },
         {
-          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
-          "rect": [615, 116, 12, 11],
-          "reason": "full"
+          "object": "LayoutSVGPath line",
+          "rect": [782, 94, 12, 11],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [782, 94, 12, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [782, 94, 12, 11],
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -782,13 +562,33 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutSVGContainer use id='minimizeButtonnestedWindow'",
-          "rect": [349, 185, 12, 11],
+          "object": "LayoutSVGPath line",
+          "rect": [571, 145, 12, 11],
           "reason": "appeared"
         },
         {
-          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
-          "rect": [349, 185, 12, 11],
+          "object": "LayoutSVGPath line",
+          "rect": [571, 145, 12, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [235, 197, 12, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [235, 197, 12, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [615, 123, 12, 3],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [349, 192, 12, 3],
           "reason": "appeared"
         },
         {
@@ -852,8 +652,38 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGPath line",
+          "rect": [454, 379, 11, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [454, 379, 11, 11],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGRect rect",
           "rect": [441, 379, 11, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtonnestedWindow'",
+          "rect": [376, 184, 11, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [376, 184, 11, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [376, 184, 11, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='closeButton'",
+          "rect": [376, 184, 11, 11],
           "reason": "appeared"
         },
         {
@@ -877,6 +707,36 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
+          "rect": [756, 95, 11, 10],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
+          "rect": [756, 95, 11, 10],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [756, 95, 11, 10],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [756, 95, 11, 10],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonbigWindow'",
+          "rect": [545, 146, 11, 10],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [545, 146, 11, 10],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGContainer use id='maximizeButtonsmallWindow'",
           "rect": [441, 380, 11, 10],
           "reason": "appeared"
@@ -897,6 +757,86 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGContainer use id='minimizeButtonstatusWindow'",
+          "rect": [363, 346, 11, 10],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [363, 346, 11, 10],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtoncolourPickerWindow'",
+          "rect": [209, 198, 11, 10],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [209, 198, 11, 10],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [545, 153, 11, 3],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [363, 354, 11, 3],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [756, 103, 11, 2],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [756, 103, 11, 2],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [428, 388, 11, 2],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [209, 206, 11, 2],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
+          "rect": [783, 94, 10, 11],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
+          "rect": [783, 94, 10, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='closeButton'",
+          "rect": [783, 94, 10, 11],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='closeButton'",
+          "rect": [783, 94, 10, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtonbigWindow'",
+          "rect": [572, 145, 10, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='closeButton'",
+          "rect": [572, 145, 10, 11],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
           "rect": [616, 100, 10, 10],
           "reason": "full"
@@ -907,13 +847,38 @@
           "reason": "full"
         },
         {
+          "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
+          "rect": [616, 84, 10, 10],
+          "reason": "full"
+        },
+        {
           "object": "LayoutSVGRect rect",
           "rect": [616, 84, 10, 10],
           "reason": "geometry"
         },
         {
+          "object": "LayoutSVGViewportContainer svg id='closeButton'",
+          "rect": [616, 84, 10, 10],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtonsmallWindow'",
+          "rect": [455, 380, 10, 10],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGRect rect",
           "rect": [455, 380, 10, 10],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='closeButton'",
+          "rect": [455, 380, 10, 10],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonsmallWindow'",
+          "rect": [428, 380, 10, 10],
           "reason": "appeared"
         },
         {
@@ -922,7 +887,32 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [428, 380, 10, 10],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonnestedWindow'",
+          "rect": [350, 185, 10, 10],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [350, 185, 10, 10],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtoncolourPickerWindow'",
+          "rect": [236, 198, 10, 10],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGRect rect",
+          "rect": [236, 198, 10, 10],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='closeButton'",
           "rect": [236, 198, 10, 10],
           "reason": "appeared"
         },
@@ -947,9 +937,19 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
+          "rect": [616, 116, 10, 9],
+          "reason": "full"
+        },
+        {
           "object": "LayoutSVGRect rect",
           "rect": [616, 116, 10, 9],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [616, 116, 10, 9],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect",
