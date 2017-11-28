@@ -58,10 +58,12 @@ class MockDelegate : public MockGenericURLRequestJobDelegate {
 class MockFetcher : public URLFetcher {
  public:
   MockFetcher(base::DictionaryValue* fetch_request,
+              std::string* recieved_post_data,
               std::map<std::string, std::string>* json_fetch_reply_map,
               base::Callback<void(const Request*)>* on_request_callback)
       : json_fetch_reply_map_(json_fetch_reply_map),
         fetch_request_(fetch_request),
+        received_post_data_(recieved_post_data),
         on_request_callback_(on_request_callback) {}
 
   ~MockFetcher() override {}
@@ -81,9 +83,9 @@ class MockFetcher : public URLFetcher {
       headers->SetString(it.name(), it.value());
     }
     fetch_request_->Set("headers", std::move(headers));
-    std::string post_data = request->GetPostData();
-    if (!post_data.empty())
-      fetch_request_->SetString("post_data", std::move(post_data));
+    *received_post_data_ = request->GetPostData();
+    if (!received_post_data_->empty() && received_post_data_->size() < 1024)
+      fetch_request_->SetString("post_data", *received_post_data_);
 
     const auto find_it = json_fetch_reply_map_->find(url);
     if (find_it == json_fetch_reply_map_->end()) {
@@ -125,8 +127,9 @@ class MockFetcher : public URLFetcher {
   }
 
  private:
-  std::map<std::string, std::string>* json_fetch_reply_map_;  // NOT OWNED
-  base::DictionaryValue* fetch_request_;                      // NOT OWNED
+  std::map<std::string, std::string>* json_fetch_reply_map_;   // NOT OWNED
+  base::DictionaryValue* fetch_request_;                       // NOT OWNED
+  std::string* received_post_data_;                            // NOT OWNED
   base::Callback<void(const Request*)>* on_request_callback_;  // NOT OWNED
   std::string response_data_;  // Here to ensure the required lifetime.
 };
@@ -136,11 +139,13 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   // Details of the fetch will be stored in |fetch_request|.
   // The fetch response will be created from parsing |json_fetch_reply_map|.
   MockProtocolHandler(base::DictionaryValue* fetch_request,
+                      std::string* recieved_post_data,
                       std::map<std::string, std::string>* json_fetch_reply_map,
                       URLRequestDispatcher* dispatcher,
                       GenericURLRequestJob::Delegate* job_delegate,
                       base::Callback<void(const Request*)>* on_request_callback)
       : fetch_request_(fetch_request),
+        received_post_data_(recieved_post_data),
         json_fetch_reply_map_(json_fetch_reply_map),
         job_delegate_(job_delegate),
         dispatcher_(dispatcher),
@@ -152,13 +157,15 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
       net::NetworkDelegate* network_delegate) const override {
     return new GenericURLRequestJob(
         request, network_delegate, dispatcher_,
-        base::MakeUnique<MockFetcher>(fetch_request_, json_fetch_reply_map_,
+        base::MakeUnique<MockFetcher>(fetch_request_, received_post_data_,
+                                      json_fetch_reply_map_,
                                       on_request_callback_),
         job_delegate_, nullptr);
   }
 
  private:
   base::DictionaryValue* fetch_request_;                       // NOT OWNED
+  std::string* received_post_data_;                            // NOT OWNED
   std::map<std::string, std::string>* json_fetch_reply_map_;   // NOT OWNED
   GenericURLRequestJob::Delegate* job_delegate_;               // NOT OWNED
   URLRequestDispatcher* dispatcher_;                           // NOT OWNED
@@ -171,9 +178,10 @@ class GenericURLRequestJobTest : public testing::Test {
  public:
   GenericURLRequestJobTest() : dispatcher_(message_loop_.task_runner()) {
     url_request_job_factory_.SetProtocolHandler(
-        "https", base::WrapUnique(new MockProtocolHandler(
-                     &fetch_request_, &json_fetch_reply_map_, &dispatcher_,
-                     &job_delegate_, &on_request_callback_)));
+        "https",
+        base::WrapUnique(new MockProtocolHandler(
+            &fetch_request_, &received_post_data_, &json_fetch_reply_map_,
+            &dispatcher_, &job_delegate_, &on_request_callback_)));
     url_request_context_.set_job_factory(&url_request_job_factory_);
     url_request_context_.set_cookie_store(&cookie_store_);
   }
@@ -220,6 +228,7 @@ class GenericURLRequestJobTest : public testing::Test {
 
   MockURLRequestDelegate request_delegate_;
   base::DictionaryValue fetch_request_;  // The request sent to MockFetcher.
+  std::string received_post_data_;       // The POST data (useful if large).
   std::map<std::string, std::string>
       json_fetch_reply_map_;  // Replies to be sent by MockFetcher.
   MockDelegate job_delegate_;
@@ -303,6 +312,44 @@ TEST_F(GenericURLRequestJobTest, BasicPostRequestParams) {
       })";
 
   EXPECT_THAT(fetch_request_, MatchesJson(expected_request_json));
+}
+
+TEST_F(GenericURLRequestJobTest, LargePostData) {
+  json_fetch_reply_map_["https://example.com/"] = R"(
+      {
+        "url": "https://example.com",
+        "data": "Reply",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
+
+  std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
+      GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->SetReferrer("https://referrer.example.com");
+  request->SetExtraRequestHeaderByName("Extra-Header", "Value", true);
+  request->SetExtraRequestHeaderByName("User-Agent", "TestBrowser", true);
+  request->SetExtraRequestHeaderByName("Accept", "text/plain", true);
+  request->set_method("POST");
+
+  std::vector<char> post_data(4000000);
+  for (size_t i = 0; i < post_data.size(); i++)
+    post_data[i] = i & 127;
+
+  request->set_upload(net::ElementsUploadDataStream::CreateWithReader(
+      base::MakeUnique<net::UploadBytesElementReader>(&post_data[0],
+                                                      post_data.size()),
+      0));
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+
+  // Make sure we captured the expected post.
+  for (size_t i = 0; i < received_post_data_.size(); i++) {
+    EXPECT_EQ(static_cast<char>(i & 127), post_data[i]);
+  }
+
+  EXPECT_EQ(post_data.size(), received_post_data_.size());
 }
 
 TEST_F(GenericURLRequestJobTest, BasicRequestProperties) {
@@ -621,6 +668,44 @@ TEST_F(GenericURLRequestJobTest, GetPostDataAsync) {
 
   EXPECT_EQ("payload", post_data);
   EXPECT_EQ(post_data_size, post_data.size());
+}
+
+TEST_F(GenericURLRequestJobTest, LargePostDataNotByteReader) {
+  json_fetch_reply_map_["https://example.com/"] = R"(
+      {
+        "url": "https://example.com",
+        "data": "Reply",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
+
+  std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
+      GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->SetReferrer("https://referrer.example.com");
+  request->SetExtraRequestHeaderByName("Extra-Header", "Value", true);
+  request->SetExtraRequestHeaderByName("User-Agent", "TestBrowser", true);
+  request->SetExtraRequestHeaderByName("Accept", "text/plain", true);
+  request->set_method("POST");
+
+  std::string post_data;
+  post_data.reserve(4000000);
+  for (size_t i = 0; i < post_data.size(); i++)
+    post_data.at(i) = i & 127;
+
+  // TODO(alexclarke) Add a multiple element test too.
+  request->set_upload(net::ElementsUploadDataStream::CreateWithReader(
+      base::MakeUnique<ByteAtATimeUploadElementReader>(post_data), 0));
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+
+  // Make sure we captured the expected post.
+  for (size_t i = 0; i < received_post_data_.size(); i++) {
+    EXPECT_EQ(static_cast<char>(i & 127), post_data[i]);
+  }
+
+  EXPECT_EQ(post_data.size(), received_post_data_.size());
 }
 
 }  // namespace headless
