@@ -14,9 +14,13 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.PasswordUIView.PasswordListObserver;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
@@ -52,6 +56,9 @@ public class SavePasswordsPreferences extends PreferenceFragment
     private static final String PREF_CATEGORY_EXCEPTIONS = "exceptions";
     private static final String PREF_MANAGE_ACCOUNT_LINK = "manage_account_link";
     private static final String PREF_CATEGORY_SAVED_PASSWORDS_NO_TEXT = "saved_passwords_no_text";
+
+    // Name of the feature controlling the password export functionality.
+    private static final String EXPORT_PASSWORDS = "password-export";
 
     private static final int ORDER_SWITCH = 0;
     private static final int ORDER_AUTO_SIGNIN_CHECKBOX = 1;
@@ -89,6 +96,25 @@ public class SavePasswordsPreferences extends PreferenceFragment
         getActivity().setTitle(R.string.prefs_saved_passwords);
         setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getActivity()));
         mPasswordManagerHandler.addObserver(this);
+        if (ChromeFeatureList.isEnabled(EXPORT_PASSWORDS)) {
+            setHasOptionsMenu(true);
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
+        inflater.inflate(R.menu.save_password_preferences_action_bar_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.export_passwords) {
+            // TODO(crbug.com/788701): Trigger the exporting dialogue here.
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     /**
