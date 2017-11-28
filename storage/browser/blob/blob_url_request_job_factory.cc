@@ -81,8 +81,7 @@ BlobProtocolHandler::BlobProtocolHandler(BlobStorageContext* context) {
     context_ = context->AsWeakPtr();
 }
 
-BlobProtocolHandler::~BlobProtocolHandler() {
-}
+BlobProtocolHandler::~BlobProtocolHandler() = default;
 
 net::URLRequestJob* BlobProtocolHandler::MaybeCreateJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {

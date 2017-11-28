@@ -16,7 +16,6 @@ FileSystemInfo::FileSystemInfo(const std::string& name,
     : name(name), root_url(root_url), mount_type(mount_type) {
 }
 
-FileSystemInfo::~FileSystemInfo() {
-}
+FileSystemInfo::~FileSystemInfo() = default;
 
 }  // namespace storage

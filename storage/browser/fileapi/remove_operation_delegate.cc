@@ -20,7 +20,7 @@ RemoveOperationDelegate::RemoveOperationDelegate(
       weak_factory_(this) {
 }
 
-RemoveOperationDelegate::~RemoveOperationDelegate() {}
+RemoveOperationDelegate::~RemoveOperationDelegate() = default;
 
 void RemoveOperationDelegate::Run() {
   operation_runner()->RemoveFile(url_, base::Bind(

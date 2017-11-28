@@ -34,7 +34,7 @@ class PluginPrivateFileSystemBackend::FileSystemIDToPluginMap {
  public:
   explicit FileSystemIDToPluginMap(base::SequencedTaskRunner* task_runner)
       : task_runner_(task_runner) {}
-  ~FileSystemIDToPluginMap() {}
+  ~FileSystemIDToPluginMap() = default;
 
   std::string GetPluginIDForURL(const FileSystemURL& url) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());

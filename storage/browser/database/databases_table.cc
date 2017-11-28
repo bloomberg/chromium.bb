@@ -16,7 +16,7 @@ DatabaseDetails::DatabaseDetails() : estimated_size(0) { }
 
 DatabaseDetails::DatabaseDetails(const DatabaseDetails& other) = default;
 
-DatabaseDetails::~DatabaseDetails() {}
+DatabaseDetails::~DatabaseDetails() = default;
 
 bool DatabasesTable::Init() {
   // 'Databases' schema:

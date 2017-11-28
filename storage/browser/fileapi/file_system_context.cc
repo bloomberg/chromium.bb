@@ -502,8 +502,7 @@ void FileSystemContext::OpenPluginPrivateFileSystem(
       origin_url, type, filesystem_id, plugin_id, mode, std::move(callback));
 }
 
-FileSystemContext::~FileSystemContext() {
-}
+FileSystemContext::~FileSystemContext() = default;
 
 void FileSystemContext::DeleteOnCorrectSequence() const {
   if (!io_task_runner_->RunsTasksInCurrentSequence() &&

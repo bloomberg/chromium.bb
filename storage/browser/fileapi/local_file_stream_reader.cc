@@ -34,8 +34,7 @@ FileStreamReader* FileStreamReader::CreateForLocalFile(
                                    expected_modification_time);
 }
 
-LocalFileStreamReader::~LocalFileStreamReader() {
-}
+LocalFileStreamReader::~LocalFileStreamReader() = default;
 
 int LocalFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
                           const net::CompletionCallback& callback) {

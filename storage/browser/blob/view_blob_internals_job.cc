@@ -148,8 +148,7 @@ ViewBlobInternalsJob::ViewBlobInternalsJob(
       weak_factory_(this) {
 }
 
-ViewBlobInternalsJob::~ViewBlobInternalsJob() {
-}
+ViewBlobInternalsJob::~ViewBlobInternalsJob() = default;
 
 void ViewBlobInternalsJob::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

@@ -117,14 +117,14 @@ void DeleteFiles(std::vector<FileCreationInfo> files) {
 }
 
 struct EmptyFilesResult {
-  EmptyFilesResult() {}
+  EmptyFilesResult() = default;
   EmptyFilesResult(std::vector<FileCreationInfo> files,
                    File::Error file_error,
                    int64_t disk_availability)
       : files(std::move(files)),
         file_error(file_error),
         disk_availability(disk_availability) {}
-  ~EmptyFilesResult() {}
+  ~EmptyFilesResult() = default;
   EmptyFilesResult(EmptyFilesResult&& o) = default;
   EmptyFilesResult& operator=(EmptyFilesResult&& other) = default;
 
@@ -272,7 +272,7 @@ uint64_t GetTotalSizeAndFileSizes(
 
 }  // namespace
 
-FileCreationInfo::FileCreationInfo() {}
+FileCreationInfo::FileCreationInfo() = default;
 FileCreationInfo::~FileCreationInfo() {
   if (file.IsValid()) {
     DCHECK(file_deletion_runner);
@@ -294,7 +294,7 @@ MemoryAllocation::~MemoryAllocation() {
     controller->RevokeMemoryAllocation(item_id, length);
 }
 
-BlobMemoryController::QuotaAllocationTask::~QuotaAllocationTask() {}
+BlobMemoryController::QuotaAllocationTask::~QuotaAllocationTask() = default;
 
 class BlobMemoryController::MemoryQuotaAllocationTask
     : public BlobMemoryController::QuotaAllocationTask {
@@ -399,7 +399,7 @@ class BlobMemoryController::FileQuotaAllocationTask
                    allocation_size_));
     controller_->RecordTracingCounters();
   }
-  ~FileQuotaAllocationTask() override {}
+  ~FileQuotaAllocationTask() override = default;
 
   void RunDoneCallback(std::vector<FileCreationInfo> file_info, bool success) {
     // Make sure we clear the weak pointers we gave to the caller beforehand.
@@ -512,7 +512,7 @@ BlobMemoryController::BlobMemoryController(
                      base::Unretained(this))),
       weak_factory_(this) {}
 
-BlobMemoryController::~BlobMemoryController() {}
+BlobMemoryController::~BlobMemoryController() = default;
 
 void BlobMemoryController::DisableFilePaging(base::File::Error reason) {
   UMA_HISTOGRAM_ENUMERATION("Storage.Blob.PagingDisabled", -reason,

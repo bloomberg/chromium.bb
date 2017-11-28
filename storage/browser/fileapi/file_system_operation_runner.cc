@@ -31,18 +31,18 @@ class FileSystemOperationRunner::BeginOperationScoper
     : public base::SupportsWeakPtr<
           FileSystemOperationRunner::BeginOperationScoper> {
  public:
-  BeginOperationScoper() {}
+  BeginOperationScoper() = default;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BeginOperationScoper);
 };
 
-FileSystemOperationRunner::OperationHandle::OperationHandle() {}
+FileSystemOperationRunner::OperationHandle::OperationHandle() = default;
 FileSystemOperationRunner::OperationHandle::OperationHandle(
     const OperationHandle& other) = default;
-FileSystemOperationRunner::OperationHandle::~OperationHandle() {}
+FileSystemOperationRunner::OperationHandle::~OperationHandle() = default;
 
-FileSystemOperationRunner::~FileSystemOperationRunner() {
-}
+FileSystemOperationRunner::~FileSystemOperationRunner() = default;
 
 void FileSystemOperationRunner::Shutdown() {
   operations_.Clear();

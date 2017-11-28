@@ -65,8 +65,7 @@ FileSystemOperation* FileSystemOperation::Create(
                                      std::move(operation_context));
 }
 
-FileSystemOperationImpl::~FileSystemOperationImpl() {
-}
+FileSystemOperationImpl::~FileSystemOperationImpl() = default;
 
 void FileSystemOperationImpl::CreateFile(const FileSystemURL& url,
                                          bool exclusive,

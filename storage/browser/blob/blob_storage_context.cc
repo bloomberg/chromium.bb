@@ -257,7 +257,7 @@ BlobStorageContext::BlobFlattener::BlobFlattener(
   }
 }
 
-BlobStorageContext::BlobFlattener::~BlobFlattener() {}
+BlobStorageContext::BlobFlattener::~BlobFlattener() = default;
 
 BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
                                          uint64_t slice_offset,
@@ -383,7 +383,7 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
   }
 }
 
-BlobStorageContext::BlobSlice::~BlobSlice() {}
+BlobStorageContext::BlobSlice::~BlobSlice() = default;
 
 BlobStorageContext::BlobStorageContext()
     : memory_controller_(base::FilePath(), scoped_refptr<base::TaskRunner>()),
@@ -395,7 +395,7 @@ BlobStorageContext::BlobStorageContext(
     : memory_controller_(std::move(storage_directory), std::move(file_runner)),
       ptr_factory_(this) {}
 
-BlobStorageContext::~BlobStorageContext() {}
+BlobStorageContext::~BlobStorageContext() = default;
 
 std::unique_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromUUID(
     const std::string& uuid) {

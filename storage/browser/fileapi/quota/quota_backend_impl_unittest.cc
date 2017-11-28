@@ -81,7 +81,7 @@ class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
   void set_quota(int64_t quota) { quota_ = quota; }
 
  protected:
-  ~MockQuotaManagerProxy() override {}
+  ~MockQuotaManagerProxy() override = default;
 
  private:
   int storage_modified_count_;

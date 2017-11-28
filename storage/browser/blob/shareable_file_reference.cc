@@ -24,7 +24,7 @@ class ShareableFileMap {
   typedef FileMap::key_type key_type;
   typedef FileMap::value_type value_type;
 
-  ShareableFileMap() {}
+  ShareableFileMap() = default;
 
   ~ShareableFileMap() = default;
 

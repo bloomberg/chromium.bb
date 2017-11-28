@@ -98,7 +98,7 @@ FileSystemURL GetOtherURL(FileSystemContext* file_system_context,
 
 class DraggedFileUtilTest : public testing::Test {
  public:
-  DraggedFileUtilTest() {}
+  DraggedFileUtilTest() = default;
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());

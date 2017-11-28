@@ -40,8 +40,7 @@ SandboxFileSystemTestHelper::SandboxFileSystemTestHelper()
       file_util_(NULL) {
 }
 
-SandboxFileSystemTestHelper::~SandboxFileSystemTestHelper() {
-}
+SandboxFileSystemTestHelper::~SandboxFileSystemTestHelper() = default;
 
 void SandboxFileSystemTestHelper::SetUp(const base::FilePath& base_dir) {
   SetUp(base_dir, NULL);

@@ -1157,8 +1157,7 @@ QuotaManager::EvictionContext::EvictionContext()
     : evicted_type(kStorageTypeUnknown) {
 }
 
-QuotaManager::EvictionContext::~EvictionContext() {
-}
+QuotaManager::EvictionContext::~EvictionContext() = default;
 
 void QuotaManager::LazyInitialize() {
   DCHECK(io_thread_->BelongsToCurrentThread());

@@ -39,8 +39,7 @@ FileWriterDelegate::FileWriterDelegate(
       io_buffer_(new net::IOBufferWithSize(kReadBufSize)),
       weak_factory_(this) {}
 
-FileWriterDelegate::~FileWriterDelegate() {
-}
+FileWriterDelegate::~FileWriterDelegate() = default;
 
 void FileWriterDelegate::Start(std::unique_ptr<net::URLRequest> request,
                                const DelegateWriteCallback& write_callback) {

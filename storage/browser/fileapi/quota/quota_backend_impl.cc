@@ -32,8 +32,7 @@ QuotaBackendImpl::QuotaBackendImpl(
       weak_ptr_factory_(this) {
 }
 
-QuotaBackendImpl::~QuotaBackendImpl() {
-}
+QuotaBackendImpl::~QuotaBackendImpl() = default;
 
 void QuotaBackendImpl::ReserveQuota(const GURL& origin,
                                     FileSystemType type,
@@ -170,7 +169,6 @@ QuotaBackendImpl::QuotaReservationInfo::QuotaReservationInfo(
     int64_t delta)
     : origin(origin), type(type), delta(delta) {}
 
-QuotaBackendImpl::QuotaReservationInfo::~QuotaReservationInfo() {
-}
+QuotaBackendImpl::QuotaReservationInfo::~QuotaReservationInfo() = default;
 
 }  // namespace storage

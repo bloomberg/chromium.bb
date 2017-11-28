@@ -25,8 +25,8 @@ namespace content {
 
 class TransientFileUtilTest : public testing::Test {
  public:
-  TransientFileUtilTest() {}
-  ~TransientFileUtilTest() override {}
+  TransientFileUtilTest() = default;
+  ~TransientFileUtilTest() override = default;
 
   void SetUp() override {
     file_system_context_ = CreateFileSystemContextForTesting(

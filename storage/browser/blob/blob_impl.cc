@@ -87,7 +87,7 @@ BlobImpl::BlobImpl(std::unique_ptr<BlobDataHandle> handle,
       base::Bind(&BlobImpl::OnConnectionError, base::Unretained(this)));
 }
 
-BlobImpl::~BlobImpl() {}
+BlobImpl::~BlobImpl() = default;
 
 void BlobImpl::OnConnectionError() {
   if (!bindings_.empty())

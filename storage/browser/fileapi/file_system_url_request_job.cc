@@ -69,7 +69,7 @@ FileSystemURLRequestJob::FileSystemURLRequestJob(
       range_parse_result_(net::OK),
       weak_factory_(this) {}
 
-FileSystemURLRequestJob::~FileSystemURLRequestJob() {}
+FileSystemURLRequestJob::~FileSystemURLRequestJob() = default;
 
 void FileSystemURLRequestJob::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

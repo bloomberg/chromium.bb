@@ -23,7 +23,7 @@ namespace content {
 
 class NativeFileUtilTest : public testing::Test {
  public:
-  NativeFileUtilTest() {}
+  NativeFileUtilTest() = default;
 
   void SetUp() override { ASSERT_TRUE(data_dir_.CreateUniqueTempDir()); }
 

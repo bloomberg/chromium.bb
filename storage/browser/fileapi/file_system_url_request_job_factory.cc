@@ -43,7 +43,7 @@ FileSystemProtocolHandler::FileSystemProtocolHandler(
   DCHECK(file_system_context_);
 }
 
-FileSystemProtocolHandler::~FileSystemProtocolHandler() {}
+FileSystemProtocolHandler::~FileSystemProtocolHandler() = default;
 
 net::URLRequestJob* FileSystemProtocolHandler::MaybeCreateJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {

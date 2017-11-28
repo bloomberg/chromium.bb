@@ -6,11 +6,11 @@
 
 namespace storage {
 
-SpecialStoragePolicy::Observer::~Observer() {}
+SpecialStoragePolicy::Observer::~Observer() = default;
 
-SpecialStoragePolicy::SpecialStoragePolicy() {}
+SpecialStoragePolicy::SpecialStoragePolicy() = default;
 
-SpecialStoragePolicy::~SpecialStoragePolicy() {}
+SpecialStoragePolicy::~SpecialStoragePolicy() = default;
 
 void SpecialStoragePolicy::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);

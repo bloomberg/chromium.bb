@@ -32,7 +32,7 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
       : files_(files) {
     file_iter_ = files_.begin();
   }
-  ~SetFileEnumerator() override {}
+  ~SetFileEnumerator() override = default;
 
   // AbstractFileEnumerator overrides.
   base::FilePath Next() override {
@@ -56,7 +56,7 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
 
 //-------------------------------------------------------------------------
 
-DraggedFileUtil::DraggedFileUtil() {}
+DraggedFileUtil::DraggedFileUtil() = default;
 
 base::File::Error DraggedFileUtil::GetFileInfo(
     FileSystemOperationContext* context,

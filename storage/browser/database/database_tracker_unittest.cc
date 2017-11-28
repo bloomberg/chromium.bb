@@ -46,7 +46,7 @@ class TestObserver : public storage::DatabaseTracker::Observer {
         observe_size_changes_(observe_size_changes),
         observe_scheduled_deletions_(observe_scheduled_deletions) {}
 
-  ~TestObserver() override {}
+  ~TestObserver() override = default;
   void OnDatabaseSizeChanged(const std::string& origin_identifier,
                              const base::string16& database_name,
                              int64_t database_size) override {
