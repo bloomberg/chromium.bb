@@ -1,8 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="checkbox_radio_css.html">
+<link rel="import" href="../data/document_info.html">
 <link rel="import" href="number_settings_section.html">
 <link rel="import" href="print_preview_shared_css.html">
+<link rel="import" href="settings_behavior.html">
 
 <dom-module id="print-preview-scaling-settings">
   <template>
@@ -13,7 +15,7 @@
         input-string="{{inputString_}}" input-valid="{{inputValid_}}"
         hint-message="$i18n{scalingInstruction}" class="multirow-controls">
       <div slot="opt-outside-content" id="fit-to-page-container"
-          class="checkbox" hidden$="[[!model.isPdfDocument]]">
+          class="checkbox" hidden$="[[!settings.fitToPage.available]]">
         <label aria-live="polite">
           <input class="checkbox" type="checkbox"
               on-change="onFitToPageChange_">

@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="button_css.html">
+<link rel="import" href="../data/destination.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="throbber_css.html">
 <link rel="import" href="settings_section.html">
@@ -64,13 +65,12 @@
         </div>
         <div class="destination-settings-box" hidden="[[loadingDestination_]]">
           <img class="destination-icon"
-             src="[[model.destinationIcon]]" alt="">
+             src="[[destination.iconUrl]]" alt="">
           <div class="destination-info-wrapper">
-            <div class="destination-name">[[model.destinationId]]</div>
-            <div class="destination-location">
-                [[model.destinationLocation]]</div>
+            <div class="destination-name">[[destination.id]]</div>
+            <div class="destination-location">[[destination.hint]]</div>
             <div class="destination-offline-status">
-                [[model.destinationOfflineStatus]]</div>
+                [[destination.offlineStatusText]]</div>
           </div>
         </div>
         <button>$i18n{changeDestination}</button>

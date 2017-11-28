@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="model.html">
 <link rel="import" href="header.html">
 <link rel="import" href="destination_settings.html">
 <link rel="import" href="pages_settings.html">
@@ -30,7 +31,7 @@
         min-width: 310px;
       }
 
-      #settings {
+      #settings-sections {
         background: #fbfbfb;
         border-top: 1px solid #f3f3f3;
         flex: 1;
@@ -46,25 +47,45 @@
         justify-content: center;
       }
     </style>
+    <print-preview-model id="model" settings="{{settings}}"
+        destination="{{destination}}" document-info="{{documentInfo}}"
+        state="{{state}}"></print-preview-model>
     <div id="sidebar">
-      <print-preview-header model="[[model_]]"></print-preview-header>
-      <div id="settings">
-        <print-preview-destination-settings model="{{model_}}">
+      <print-preview-header destination="[[destination]]" state="[[state]]"
+          settings="[[settings]]"></print-preview-header>
+      <div id="settings-sections">
+        <print-preview-destination-settings destination="[[destination]]">
         </print-preview-destination-settings>
-        <print-preview-pages-settings model="{{model_}}">
+        <print-preview-pages-settings settings="{{settings}}"
+            document-info="[[documentInfo]]"
+            hidden$="[[!settings.pages.available]]">
         </print-preview-pages-settings>
-        <print-preview-copies-settings model="{{model_}}">
+        <print-preview-copies-settings settings="{{settings}}"
+            hidden$="[[!settings.copies.available]]">
         </print-preview-copies-settings>
-        <print-preview-layout-settings></print-preview-layout-settings>
-        <print-preview-color-settings></print-preview-color-settings>
-        <print-preview-media-size-settings></print-preview-media-size-settings>
-        <print-preview-margins-settings></print-preview-margins-settings>
-        <print-preview-dpi-settings></print-preview-dpi-settings>
-        <print-preview-scaling-settings model="{{model_}}">
+        <print-preview-layout-settings settings="{{settings}}"
+            hidden$="[[!settings.layout.available]]">
+        </print-preview-layout-settings>
+        <print-preview-color-settings settings="{{settings}}"
+            hidden$="[[!settings.color.available]]">
+        </print-preview-color-settings>
+        <print-preview-media-size-settings settings="{{settings}}"
+            hidden$="[[!settings.mediaSize.available]]">
+        </print-preview-media-size-settings>
+        <print-preview-margins-settings settings="{{settings}}"
+            hidden$="[[!settings.margins.available]]">
+        </print-preview-margins-settings>
+        <print-preview-dpi-settings settings="{{settings}}"
+            hidden$="[[!settings.dpi.available]]">
+        </print-preview-dpi-settings>
+        <print-preview-scaling-settings settings="{{settings}}"
+            document-info="[[documentInfo]]"
+            hidden$="[[!settings.scaling.available]]">
         </print-preview-scaling-settings>
-        <print-preview-other-options-settings model="{{model_}}">
+        <print-preview-other-options-settings settings="{{settings}}">
         </print-preview-other-options-settings>
-        <print-preview-advanced-options-settings>
+        <print-preview-advanced-options-settings settings="{{settings}}"
+            hidden$="[[!settings.vendorItems.available]]">
         </print-preview-advanced-options-settings>
       </div>
     </div>

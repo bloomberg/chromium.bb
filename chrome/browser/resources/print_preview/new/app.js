@@ -6,30 +6,32 @@ Polymer({
   is: 'print-preview-app',
 
   properties: {
-    /** @private {!print_preview_new.Model} */
-    model_: {
+    /**
+     * Object containing current settings of Print Preview, for use by Polymer
+     * controls.
+     * @type {!Object}
+     */
+    settings: {
       type: Object,
       notify: true,
-      value: {
-        previewLoading: false,
-        previewFailed: false,
-        cloudPrintError: '',
-        privetExtensionError: '',
-        invalidSettings: false,
-        destinationId: 'Foo Printer',
-        destinationLocation: 'ABC-123',
-        destinationOfflineStatus: '',
-        destinationIcon: '../images/1x/printer.png',
-        copies: 1,
-        pageRange: [1, 2, 3, 4, 5],
-        duplex: false,
-        copiesInvalid: false,
-        scalingInvalid: false,
-        pagesInvalid: false,
-        isPdfDocument: true,
-        fitToPageScaling: '94',
-        documentNumPages: 5,
-      },
     },
-  }
+
+    /** @type {print_preview.Destination} */
+    destination: {
+      type: Object,
+      notify: true,
+    },
+
+    /** @type {print_preview.DocumentInfo} */
+    documentInfo: {
+      type: Object,
+      notify: true,
+    },
+
+    /** @type {!print_preview_new.State} */
+    state: {
+      type: Object,
+      notify: true,
+    },
+  },
 });
