@@ -64,6 +64,10 @@ WebContentsViewDelegate* ContentBrowserClient::GetWebContentsViewDelegate(
   return nullptr;
 }
 
+bool ContentBrowserClient::AllowGpuLaunchRetryOnIOThread() {
+  return true;
+}
+
 GURL ContentBrowserClient::GetEffectiveURL(BrowserContext* browser_context,
                                            const GURL& url,
                                            bool is_isolated_origin) {
