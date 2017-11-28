@@ -34,18 +34,6 @@
 
 #define IPC_MESSAGE_START ChildProcessMsgStart
 
-////////////////////////////////////////////////////////////////////////////////
-// Messages sent from the child process to the browser.
-
-#if defined(OS_WIN)
-// Request that the given font be loaded by the host so it's cached by the
-// OS. Please see ChildProcessHost::PreCacheFont for details.
-IPC_SYNC_MESSAGE_CONTROL1_0(ChildProcessHostMsg_PreCacheFont,
-                            LOGFONT /* font data */)
-
-// Release the cached font
-IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ReleaseCachedFonts)
-#endif  // defined(OS_WIN)
 
 
 #endif  // CONTENT_COMMON_CHILD_PROCESS_MESSAGES_H_

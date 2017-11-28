@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
+#include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/public/common/connection_filter.h"
@@ -18,6 +19,10 @@
 #include "device/geolocation/geolocation_config.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+
+#if defined(OS_WIN)
+#include "content/common/font_cache_dispatcher_win.h"
+#endif
 
 namespace content {
 
@@ -28,7 +33,9 @@ class ConnectionFilterImpl : public ConnectionFilter {
   ConnectionFilterImpl()
       : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
     RegisterMainThreadInterface(base::Bind(&device::GeolocationConfig::Create));
-
+#if defined(OS_WIN)
+    registry_.AddInterface(base::Bind(&FontCacheDispatcher::Create));
+#endif
     auto* browser_main_loop = BrowserMainLoop::GetInstance();
     if (browser_main_loop) {
       auto* manager = browser_main_loop->discardable_shared_memory_manager();
