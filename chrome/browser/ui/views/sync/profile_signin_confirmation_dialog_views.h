@@ -66,7 +66,7 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
   void Show(bool prompt_for_new_profile);
 
   // Weak ptr to parent view.
-  Browser* browser_;
+  Browser* const browser_;
 
   // The GAIA username being signed in.
   std::string username_;

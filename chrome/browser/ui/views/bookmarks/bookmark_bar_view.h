@@ -434,7 +434,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   ButtonSeparatorView* bookmarks_separator_view_;
 
-  Browser* browser_;
+  Browser* const browser_;
   BrowserView* browser_view_;
 
   // True if the owning browser is showing an infobar.

@@ -37,7 +37,7 @@ class ExtensionMessageBubbleFactory {
   static void set_override_for_tests(OverrideForTesting override);
 
  private:
-  Browser* browser_;
+  Browser* const browser_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleFactory);
 };

@@ -83,7 +83,7 @@ class BackForwardMenuModel : public ui::MenuModel {
   ui::MenuModelDelegate* GetMenuModelDelegate() const override;
 
  protected:
-   ui::MenuModelDelegate* menu_model_delegate() { return menu_model_delegate_; }
+  ui::MenuModelDelegate* menu_model_delegate() { return menu_model_delegate_; }
 
  private:
   friend class BackFwdMenuModelTest;
@@ -187,7 +187,7 @@ class BackForwardMenuModel : public ui::MenuModel {
   // An index of -1 means no index.
   std::string BuildActionName(const std::string& name, int index) const;
 
-  Browser* browser_;
+  Browser* const browser_;
 
   // The unit tests will provide their own WebContents to use.
   content::WebContents* test_web_contents_;

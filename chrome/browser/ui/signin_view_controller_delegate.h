@@ -106,8 +106,9 @@ class SigninViewControllerDelegate
   bool CanGoBack(content::WebContents* web_ui_web_contents) const;
 
   SigninViewController* signin_view_controller_;  // Not owned.
-  content::WebContents* web_contents_;            // Not owned.
-  Browser* browser_;                              // Not owned.
+  content::WebContents* const web_contents_;      // Not owned.
+  Browser* const browser_;                        // Not owned.
+
   DISALLOW_COPY_AND_ASSIGN(SigninViewControllerDelegate);
 };
 

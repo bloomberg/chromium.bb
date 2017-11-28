@@ -31,7 +31,7 @@ class ChooserBubbleDelegate : public BubbleDelegate {
 
  private:
   const content::RenderFrameHost* const owning_frame_;
-  Browser* browser_;
+  Browser* const browser_;
   // |chooser_controller_| is not owned by this class, it is owned by
   // DeviceChooserContentView[Cocoa].
   // This field only temporarily owns the ChooserController. It is moved

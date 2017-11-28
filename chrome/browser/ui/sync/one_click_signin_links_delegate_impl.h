@@ -23,7 +23,7 @@ class OneClickSigninLinksDelegateImpl : public OneClickSigninLinksDelegate {
   void OnAdvancedLinkClicked() override;
 
   // Browser in which the links should be opened.
-  Browser* browser_;
+  Browser* const browser_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninLinksDelegateImpl);
 };

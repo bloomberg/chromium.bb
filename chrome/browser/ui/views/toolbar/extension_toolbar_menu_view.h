@@ -62,7 +62,7 @@ class ExtensionToolbarMenuView : public views::ScrollView,
   int start_padding() const;
 
   // The associated browser.
-  Browser* browser_;
+  Browser* const browser_;
 
   // The app menu, which may need to be closed after a drag-and-drop.
   AppMenu* app_menu_;

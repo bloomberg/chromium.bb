@@ -69,7 +69,7 @@ class FirstRunBubble : public views::BubbleDialogDelegateView,
   // views::LinkListener overrides:
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  Browser* browser_;
+  Browser* const browser_;
   FirstRunBubbleCloser bubble_closer_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunBubble);

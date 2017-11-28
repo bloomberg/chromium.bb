@@ -358,7 +358,7 @@ class LocationBarView : public LocationBar,
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser
   // window, so this may be NULL.
-  Browser* browser_;
+  Browser* const browser_;
 
   OmniboxViewViews* omnibox_view_ = nullptr;
 

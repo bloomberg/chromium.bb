@@ -117,7 +117,7 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
   // it has one, otherwise NULL).
   ExtensionAction* extension_action_;
 
-  Browser* browser_;
+  Browser* const browser_;
 
   Profile* profile_;
 

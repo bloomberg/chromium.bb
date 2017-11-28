@@ -101,7 +101,7 @@ class FindBarController : public content::NotificationObserver {
   content::WebContents* web_contents_ = nullptr;
 
   // The Browser creating this controller.
-  Browser* browser_;
+  Browser* const browser_;
 
   // The last match count we reported to the user. This is used by
   // UpdateFindBarForCurrentResult to avoid flickering.

@@ -64,7 +64,7 @@ class HostedAppBrowserController {
   // Gets the extension for this controller.
   const Extension* GetExtension() const;
 
-  Browser* browser_;
+  Browser* const browser_;
   const std::string extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppBrowserController);

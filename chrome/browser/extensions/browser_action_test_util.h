@@ -108,7 +108,7 @@ class BrowserActionTestUtil {
   // A private constructor to create an overflow version.
   BrowserActionTestUtil(Browser* browser, BrowserActionTestUtil* main_bar);
 
-  Browser* browser_;  // weak
+  Browser* const browser_;  // weak
 
   // Our test helper, which constructs and owns the views if we don't have a
   // real browser window, or if this is an overflow version.
