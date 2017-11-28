@@ -12,7 +12,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -37,20 +37,19 @@ class CONTENT_EXPORT CBORValue {
     //     (byte-wise) lexical order sorts earlier.
     //
     // See section 6 of https://fidoalliance.org/specs/fido-v2.0-rd-20170927/
-    // fido-client-to-authenticator-protocol-v2.0-rd-20170927.html and
-    // https://tools.ietf.org/html/rfc7049#section-3.9 also.
-    bool operator()(const std::string& a, const std::string& b) const {
+    // fido-client-to-authenticator-protocol-v2.0-rd-20170927.html.
+    //
+    // The sort order defined in
+    // https://tools.ietf.org/html/rfc7049#section-3.9 is similar to the CTAP
+    // order implemented here, but it sorts purely by serialised key and
+    // doesn't specify that major types are compared first. Thus the shortest
+    // key sorts first by the RFC rules (irrespective of the major type), but
+    // may not by CTAP rules.
+    bool operator()(const base::StringPiece& a,
+                    const base::StringPiece& b) const {
       const size_t a_size = a.size();
       const size_t b_size = b.size();
       return std::tie(a_size, a) < std::tie(b_size, b);
-    }
-
-    bool operator()(const char* a, const std::string& b) const {
-      return operator()(std::string(a), b);
-    }
-
-    bool operator()(const std::string& a, const char* b) const {
-      return operator()(a, std::string(b));
     }
 
     using is_transparent = void;
