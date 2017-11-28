@@ -99,7 +99,7 @@ class MEDIA_EXPORT JpegEncodeAccelerator {
   //  called.
   virtual void Encode(scoped_refptr<media::VideoFrame> video_frame,
                       int quality,
-                      BitstreamBuffer* bitstream_buffer) = 0;
+                      const BitstreamBuffer& bitstream_buffer) = 0;
 };
 
 }  // namespace media

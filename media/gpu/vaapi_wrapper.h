@@ -86,6 +86,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Return true when JPEG decode is supported.
   static bool IsJpegDecodeSupported();
 
+  // Return true when JPEG encode is supported.
+  static bool IsJpegEncodeSupported();
+
   // Create |num_surfaces| backing surfaces in driver for VASurfaces of
   // |va_format|, each of size |size|. Returns true when successful, with the
   // created IDs in |va_surfaces| to be managed and later wrapped in
@@ -181,6 +184,14 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // be used as a sync point, i.e. it will have to become idle before starting
   // the download. |sync_surface_id| should be the source surface passed
   // to the encode job.
+  bool DownloadFromCodedBuffer(VABufferID buffer_id,
+                               VASurfaceID sync_surface_id,
+                               uint8_t* target_ptr,
+                               size_t target_size,
+                               size_t* coded_data_size);
+
+  // See DownloadFromCodedBuffer() for details. After downloading, it deletes
+  // the VA buffer with |buffer_id|.
   bool DownloadAndDestroyCodedBuffer(VABufferID buffer_id,
                                      VASurfaceID sync_surface_id,
                                      uint8_t* target_ptr,
