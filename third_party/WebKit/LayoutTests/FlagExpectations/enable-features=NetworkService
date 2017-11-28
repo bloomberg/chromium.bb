@@ -41,7 +41,7 @@ Bug(none) external/wpt/service-workers/service-worker/fetch-response-xhr.https.h
 Bug(none) external/wpt/service-workers/service-worker/import-scripts-resource-map.https.html [ Crash ]
 crbug.com/771118 external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/register-link-header.https.html [ Timeout ]
-Bug(none) external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Timeout ]
+Bug(none) external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Failure Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/shared-worker-controlled.https.html [ Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout Failure ]
 Bug(none) external/wpt/service-workers/service-worker/worker-interception.https.html [ Pass Crash Failure ]
