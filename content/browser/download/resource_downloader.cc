@@ -159,7 +159,8 @@ void ResourceDownloader::Start(
         mojom::kURLLoadOptionSendSSLInfoWithResponse |
             mojom::kURLLoadOptionSniffMimeType,
         *(resource_request_.get()), url_loader_client_.get(),
-        download_url_parameters->GetNetworkTrafficAnnotation());
+        download_url_parameters->GetNetworkTrafficAnnotation(),
+        base::ThreadTaskRunnerHandle::Get());
     url_loader_->SetPriority(net::RequestPriority::IDLE,
                              0 /* intra_priority_value */);
   }
