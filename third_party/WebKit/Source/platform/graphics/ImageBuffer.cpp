@@ -274,14 +274,13 @@ bool ImageBuffer::GetImageData(const IntRect& rect,
                                bool* is_gpu_readback_invoked) const {
   uint8_t bytes_per_pixel = surface_->ColorParams().BytesPerPixel();
   CheckedNumeric<int> data_size = bytes_per_pixel;
-  data_size *= rect.Width();
-  data_size *= rect.Height();
+  data_size *= rect.Size().Area();
   if (!data_size.IsValid() ||
       data_size.ValueOrDie() > v8::TypedArray::kMaxLength)
     return false;
 
   if (!IsSurfaceValid()) {
-    size_t alloc_size_in_bytes = rect.Width() * rect.Height() * bytes_per_pixel;
+    size_t alloc_size_in_bytes = rect.Size().Area() * bytes_per_pixel;
     auto data = WTF::ArrayBufferContents::CreateDataHandle(
         alloc_size_in_bytes, WTF::ArrayBufferContents::kZeroInitialize);
     if (!data)
@@ -304,7 +303,7 @@ bool ImageBuffer::GetImageData(const IntRect& rect,
       || rect.X() < 0 || rect.Y() < 0 ||
       rect.MaxX() > surface_->Size().Width() ||
       rect.MaxY() > surface_->Size().Height();
-  size_t alloc_size_in_bytes = rect.Width() * rect.Height() * bytes_per_pixel;
+  size_t alloc_size_in_bytes = rect.Size().Area() * bytes_per_pixel;
   WTF::ArrayBufferContents::InitializationPolicy initialization_policy =
       may_have_stray_area ? WTF::ArrayBufferContents::kZeroInitialize
                           : WTF::ArrayBufferContents::kDontInitialize;
@@ -323,7 +322,7 @@ bool ImageBuffer::GetImageData(const IntRect& rect,
                                        kUnpremul_SkAlphaType);
   sk_sp<SkImage> sk_image = snapshot->PaintImageForCurrentFrame().GetSkImage();
   bool read_pixels_successful = sk_image->readPixels(
-      info, result.Data(), bytes_per_pixel * rect.Width(), rect.X(), rect.Y());
+      info, result.Data(), info.minRowBytes(), rect.X(), rect.Y());
   DCHECK(read_pixels_successful ||
          !sk_image->bounds().intersect(SkIRect::MakeXYWH(
              rect.X(), rect.Y(), info.width(), info.height())));
@@ -410,6 +409,8 @@ void ImageBuffer::SetSurface(std::unique_ptr<ImageBufferSurface> surface) {
     image = nullptr;
     image = StaticBitmapImage::Create(texture_image->makeNonTextureImage());
   }
+  SkPaint paint;
+  paint.setBlendMode(SkBlendMode::kSrc);
   surface->Canvas()->drawImage(image->PaintImageForCurrentFrame(), 0, 0);
   surface->SetImageBuffer(this);
   surface_ = std::move(surface);
