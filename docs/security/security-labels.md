@@ -32,7 +32,9 @@ that.)
 * **Security_Impact-**{**Head**, **Beta**, **Stable**, **None**}: Designates
 which branch(es) were impacted by the bug. Only apply the label corresponding
 with the earliest affected branch. **None** means that a security bug is in a
-disabled feature, or otherwise doesn't impact Chrome.
+disabled feature, or otherwise doesn't impact Chrome. Note that **Security_Severity**
+should still be set on **Security_Impact-None** issues, as if the feature were enabled or
+the code reachable.
 * **Restrict-View-SecurityTeam** or **Restrict-View-SecurityNotify**: Labels
 that restrict access to the bug for members of security@chromium.org or
 security-notify@chromium.org, respectively. Should a bug ever contain
@@ -56,6 +58,10 @@ This is more fine-grained than the **M-** label. **Release-0-M50** denotes the
 initial release of a M50 to Stable.
 * **CVE-####-####**: For security bugs that get assigned a CVE, we tag the
 appropriate bug(s) with the label for easy searching.
+
+**Type-Bug-Security** bugs should always have **Security_Severity**, 
+**Security_Impact**, **OS**, **Pri**, **M**, **Component**, and an
+**owner** set.
 
 ### OS Labels
 
