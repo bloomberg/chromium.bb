@@ -75,19 +75,22 @@ typedef HRESULT (WINAPI* StartXpsPrintJobProc)(
     IXpsPrintJobStream** document_stream,
     IXpsPrintJobStream** print_ticket_stream);
 
-PTOpenProviderProc g_open_provider_proc = NULL;
-PTGetPrintCapabilitiesProc g_get_print_capabilities_proc = NULL;
-PTConvertDevModeToPrintTicketProc g_convert_devmode_to_print_ticket_proc = NULL;
-PTConvertPrintTicketToDevModeProc g_convert_print_ticket_to_devmode_proc = NULL;
-PTMergeAndValidatePrintTicketProc g_merge_and_validate_print_ticket_proc = NULL;
-PTReleaseMemoryProc g_release_memory_proc = NULL;
-PTCloseProviderProc g_close_provider_proc = NULL;
-StartXpsPrintJobProc g_start_xps_print_job_proc = NULL;
+PTOpenProviderProc g_open_provider_proc = nullptr;
+PTGetPrintCapabilitiesProc g_get_print_capabilities_proc = nullptr;
+PTConvertDevModeToPrintTicketProc g_convert_devmode_to_print_ticket_proc =
+    nullptr;
+PTConvertPrintTicketToDevModeProc g_convert_print_ticket_to_devmode_proc =
+    nullptr;
+PTMergeAndValidatePrintTicketProc g_merge_and_validate_print_ticket_proc =
+    nullptr;
+PTReleaseMemoryProc g_release_memory_proc = nullptr;
+PTCloseProviderProc g_close_provider_proc = nullptr;
+StartXpsPrintJobProc g_start_xps_print_job_proc = nullptr;
 
 HRESULT StreamFromPrintTicket(const std::string& print_ticket,
                               IStream** stream) {
   DCHECK(stream);
-  HRESULT hr = CreateStreamOnHGlobal(NULL, TRUE, stream);
+  HRESULT hr = CreateStreamOnHGlobal(nullptr, TRUE, stream);
   if (FAILED(hr)) {
     return hr;
   }
@@ -132,7 +135,7 @@ bool XPSModule::Init() {
 
 bool XPSModule::InitImpl() {
   HMODULE prntvpt_module = LoadLibrary(L"prntvpt.dll");
-  if (prntvpt_module == NULL)
+  if (!prntvpt_module)
     return false;
   g_open_provider_proc = reinterpret_cast<PTOpenProviderProc>(
       GetProcAddress(prntvpt_module, "PTOpenProvider"));
@@ -265,14 +268,14 @@ ScopedXPSInitializer::ScopedXPSInitializer() : initialized_(false) {
   // crash. To protect ourselves from such drivers we make sure we always have
   // an extra CoInitialize (calls to CoInitialize/CoUninitialize are
   // refcounted).
-  HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+  HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
   // If this succeeded we are done because the PTOpenProvider call will provide
   // the extra refcount on the apartment. If it failed because someone already
   // called CoInitializeEx with COINIT_APARTMENTTHREADED, we try the other model
   // to provide the additional refcount (since we don't know which model buggy
   // printer drivers will use).
   if (!SUCCEEDED(hr))
-    hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+    hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
   DCHECK(SUCCEEDED(hr));
   initialized_ = true;
 }
@@ -290,7 +293,7 @@ bool XPSPrintModule::Init() {
 
 bool XPSPrintModule::InitImpl() {
   HMODULE xpsprint_module = LoadLibrary(L"xpsprint.dll");
-  if (xpsprint_module == NULL)
+  if (!xpsprint_module)
     return false;
   g_start_xps_print_job_proc = reinterpret_cast<StartXpsPrintJobProc>(
       GetProcAddress(xpsprint_module, "StartXpsPrintJob"));
@@ -394,13 +397,13 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
     const base::string16& printer_name,
     const std::string& print_ticket) {
   std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode;
-  printing::ScopedXPSInitializer xps_initializer;
+  ScopedXPSInitializer xps_initializer;
   if (!xps_initializer.initialized()) {
     // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
     return dev_mode;
   }
 
-  printing::ScopedPrinterHandle printer;
+  ScopedPrinterHandle printer;
   if (!printer.OpenPrinter(printer_name.c_str()))
     return dev_mode;
 
@@ -409,22 +412,22 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
   if (FAILED(hr))
     return dev_mode;
 
-  HPTPROVIDER provider = NULL;
-  hr = printing::XPSModule::OpenProvider(printer_name, 1, &provider);
+  HPTPROVIDER provider = nullptr;
+  hr = XPSModule::OpenProvider(printer_name, 1, &provider);
   if (SUCCEEDED(hr)) {
     ULONG size = 0;
-    DEVMODE* dm = NULL;
+    DEVMODE* dm = nullptr;
     // Use kPTJobScope, because kPTDocumentScope breaks duplex.
-    hr = printing::XPSModule::ConvertPrintTicketToDevMode(
+    hr = XPSModule::ConvertPrintTicketToDevMode(
         provider, pt_stream.Get(), kUserDefaultDevmode, kPTJobScope, &size, &dm,
-        NULL);
+        nullptr);
     if (SUCCEEDED(hr)) {
       // Correct DEVMODE using DocumentProperties. See documentation for
       // PTConvertPrintTicketToDevMode.
       dev_mode = CreateDevMode(printer.Get(), dm);
-      printing::XPSModule::ReleaseMemory(dm);
+      XPSModule::ReleaseMemory(dm);
     }
-    printing::XPSModule::CloseProvider(provider);
+    XPSModule::CloseProvider(provider);
   }
   return dev_mode;
 }
@@ -434,7 +437,7 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
     const base::string16& printer_name,
     bool color) {
   std::unique_ptr<DEVMODE, base::FreeDeleter> default_ticket =
-      CreateDevMode(printer, NULL);
+      CreateDevMode(printer, nullptr);
   if (!default_ticket)
     return default_ticket;
 
@@ -457,14 +460,14 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
     return default_ticket;
 
   // Need XPS for this workaround.
-  printing::ScopedXPSInitializer xps_initializer;
+  ScopedXPSInitializer xps_initializer;
   if (!xps_initializer.initialized())
     return default_ticket;
 
   const char* xps_color = color ? kXpsTicketColor : kXpsTicketMonochrome;
   std::string xps_ticket = base::StringPrintf(kXpsTicketTemplate, xps_color);
   std::unique_ptr<DEVMODE, base::FreeDeleter> ticket =
-      printing::XpsTicketToDevMode(printer_name, xps_ticket);
+      XpsTicketToDevMode(printer_name, xps_ticket);
   if (!ticket)
     return default_ticket;
 
@@ -477,8 +480,9 @@ bool PrinterHasValidPaperSize(const wchar_t* name, const wchar_t* port) {
 
 std::unique_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
                                                           DEVMODE* in) {
-  LONG buffer_size = DocumentProperties(
-      NULL, printer, const_cast<wchar_t*>(L""), NULL, NULL, 0);
+  wchar_t* device_name_ptr = const_cast<wchar_t*>(L"");
+  LONG buffer_size = DocumentProperties(nullptr, printer, device_name_ptr,
+                                        nullptr, nullptr, 0);
   if (buffer_size < static_cast<int>(sizeof(DEVMODE)))
     return nullptr;
 
@@ -493,21 +497,21 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
   PrinterInfo5 info_5;
   if (!info_5.Init(printer))
     return nullptr;
-  const wchar_t* name = info_5.get()->pPrinterName;
-  const wchar_t* port = info_5.get()->pPortName;
 
   // Check that valid paper sizes exist; some old drivers return no paper sizes
   // and crash in DocumentProperties if used with Win10. See crbug.com/679160,
   // crbug.com/724595
+  const wchar_t* name = info_5.get()->pPrinterName;
+  const wchar_t* port = info_5.get()->pPortName;
   if (!PrinterHasValidPaperSize(name, port)) {
     return nullptr;
   }
 
-  if (DocumentProperties(
-          NULL, printer, const_cast<wchar_t*>(L""), out.get(), in, flags) !=
-      IDOK) {
+  if (DocumentProperties(nullptr, printer, device_name_ptr, out.get(), in,
+                         flags) != IDOK) {
     return nullptr;
   }
+
   int size = out->dmSize;
   int extra_size = out->dmDriverExtra;
   CHECK_GE(buffer_size, size + extra_size);
@@ -520,13 +524,9 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> PromptDevMode(
     DEVMODE* in,
     HWND window,
     bool* canceled) {
-  LONG buffer_size =
-      DocumentProperties(window,
-                         printer,
-                         const_cast<wchar_t*>(printer_name.c_str()),
-                         NULL,
-                         NULL,
-                         0);
+  wchar_t* printer_name_ptr = const_cast<wchar_t*>(printer_name.c_str());
+  LONG buffer_size = DocumentProperties(window, printer, printer_name_ptr,
+                                        nullptr, nullptr, 0);
   if (buffer_size < static_cast<int>(sizeof(DEVMODE)))
     return std::unique_ptr<DEVMODE, base::FreeDeleter>();
 
@@ -537,16 +537,13 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> PromptDevMode(
   std::unique_ptr<DEVMODE, base::FreeDeleter> out(
       reinterpret_cast<DEVMODE*>(calloc(buffer_size, 1)));
   DWORD flags = (in ? (DM_IN_BUFFER) : 0) | DM_OUT_BUFFER | DM_IN_PROMPT;
-  LONG result = DocumentProperties(window,
-                                   printer,
-                                   const_cast<wchar_t*>(printer_name.c_str()),
-                                   out.get(),
-                                   in,
-                                   flags);
+  LONG result = DocumentProperties(window, printer, printer_name_ptr, out.get(),
+                                   in, flags);
   if (canceled)
     *canceled = (result == IDCANCEL);
   if (result != IDOK)
     return std::unique_ptr<DEVMODE, base::FreeDeleter>();
+
   int size = out->dmSize;
   int extra_size = out->dmDriverExtra;
   CHECK_GE(buffer_size, size + extra_size);

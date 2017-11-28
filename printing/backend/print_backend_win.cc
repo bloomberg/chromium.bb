@@ -30,7 +30,7 @@ namespace {
 HRESULT StreamOnHGlobalToString(IStream* stream, std::string* out) {
   DCHECK(stream);
   DCHECK(out);
-  HGLOBAL hdata = NULL;
+  HGLOBAL hdata = nullptr;
   HRESULT hr = GetHGlobalFromStream(stream, &hdata);
   if (SUCCEEDED(hr)) {
     DCHECK(hdata);
@@ -45,16 +45,18 @@ void GetDeviceCapabilityArray(const wchar_t* printer,
                               const wchar_t* port,
                               WORD id,
                               std::vector<T>* result) {
-  int count = DeviceCapabilities(printer, port, id, NULL, NULL);
+  int count = DeviceCapabilities(printer, port, id, nullptr, nullptr);
   if (count <= 0)
     return;
+
   std::vector<T> tmp;
   tmp.resize(count * 2);
   count = DeviceCapabilities(printer, port, id,
-                             reinterpret_cast<LPTSTR>(tmp.data()), NULL);
+                             reinterpret_cast<LPTSTR>(tmp.data()), nullptr);
   if (count <= 0)
     return;
-  CHECK_LE(count, base::checked_cast<int>(tmp.size()));
+
+  CHECK_LE(static_cast<size_t>(count), tmp.size());
   tmp.resize(count);
   result->swap(tmp);
 }
@@ -105,31 +107,32 @@ void LoadPaper(const wchar_t* printer,
     caps->papers.push_back(paper);
   }
 
-  if (devmode) {
-    // Copy paper with the same ID as default paper.
-    if (devmode->dmFields & DM_PAPERSIZE) {
-      for (size_t i = 0; i < ids.size(); ++i) {
-        if (ids[i] == devmode->dmPaperSize) {
-          DCHECK_EQ(ids.size(), caps->papers.size());
-          caps->default_paper = caps->papers[i];
-          break;
-        }
+  if (!devmode)
+    return;
+
+  // Copy paper with the same ID as default paper.
+  if (devmode->dmFields & DM_PAPERSIZE) {
+    for (size_t i = 0; i < ids.size(); ++i) {
+      if (ids[i] == devmode->dmPaperSize) {
+        DCHECK_EQ(ids.size(), caps->papers.size());
+        caps->default_paper = caps->papers[i];
+        break;
       }
     }
+  }
 
-    gfx::Size default_size;
-    if (devmode->dmFields & DM_PAPERWIDTH)
-      default_size.set_width(devmode->dmPaperWidth * kToUm);
-    if (devmode->dmFields & DM_PAPERLENGTH)
-      default_size.set_height(devmode->dmPaperLength * kToUm);
+  gfx::Size default_size;
+  if (devmode->dmFields & DM_PAPERWIDTH)
+    default_size.set_width(devmode->dmPaperWidth * kToUm);
+  if (devmode->dmFields & DM_PAPERLENGTH)
+    default_size.set_height(devmode->dmPaperLength * kToUm);
 
-    if (!default_size.IsEmpty()) {
-      // Reset default paper if |dmPaperWidth| or |dmPaperLength| does not
-      // match default paper set by.
-      if (default_size != caps->default_paper.size_um)
-        caps->default_paper = PrinterSemanticCapsAndDefaults::Paper();
-      caps->default_paper.size_um = default_size;
-    }
+  if (!default_size.IsEmpty()) {
+    // Reset default paper if |dmPaperWidth| or |dmPaperLength| does not
+    // match default paper set by.
+    if (default_size != caps->default_paper.size_um)
+      caps->default_paper = PrinterSemanticCapsAndDefaults::Paper();
+    caps->default_paper.size_um = default_size;
   }
 }
 
@@ -140,16 +143,16 @@ void LoadDpi(const wchar_t* printer,
   std::vector<POINT> dpis;
   GetDeviceCapabilityArray(printer, port, DC_ENUMRESOLUTIONS, &dpis);
 
-  for (size_t i = 0; i < dpis.size() ; ++i)
+  for (size_t i = 0; i < dpis.size(); ++i)
     caps->dpis.push_back(gfx::Size(dpis[i].x, dpis[i].y));
 
-  if (devmode) {
-    if ((devmode->dmFields & DM_PRINTQUALITY) && devmode->dmPrintQuality > 0) {
-      caps->default_dpi.SetSize(devmode->dmPrintQuality,
-                                devmode->dmPrintQuality);
-      if (devmode->dmFields & DM_YRESOLUTION) {
-        caps->default_dpi.set_height(devmode->dmYResolution);
-      }
+  if (!devmode)
+    return;
+
+  if ((devmode->dmFields & DM_PRINTQUALITY) && devmode->dmPrintQuality > 0) {
+    caps->default_dpi.SetSize(devmode->dmPrintQuality, devmode->dmPrintQuality);
+    if (devmode->dmFields & DM_YRESOLUTION) {
+      caps->default_dpi.set_height(devmode->dmYResolution);
     }
   }
 }
@@ -254,7 +257,7 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
   PrinterSemanticCapsAndDefaults caps;
 
   std::unique_ptr<DEVMODE, base::FreeDeleter> user_settings =
-      CreateDevMode(printer_handle.Get(), NULL);
+      CreateDevMode(printer_handle.Get(), nullptr);
   if (user_settings) {
     if (user_settings->dmFields & DM_COLOR)
       caps.color_default = (user_settings->dmColor == DMCOLOR_COLOR);
@@ -286,18 +289,18 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
   // Get printer capabilities. For more info see here:
   // http://msdn.microsoft.com/en-us/library/windows/desktop/dd183552(v=vs.85).aspx
   caps.color_changeable =
-      (DeviceCapabilities(name, port, DC_COLORDEVICE, NULL, NULL) == 1);
+      (DeviceCapabilities(name, port, DC_COLORDEVICE, nullptr, nullptr) == 1);
   caps.color_model = printing::COLOR;
   caps.bw_model = printing::GRAY;
 
   caps.duplex_capable =
-      (DeviceCapabilities(name, port, DC_DUPLEX, NULL, NULL) == 1);
+      (DeviceCapabilities(name, port, DC_DUPLEX, nullptr, nullptr) == 1);
 
   caps.collate_capable =
-      (DeviceCapabilities(name, port, DC_COLLATE, NULL, NULL) == 1);
+      (DeviceCapabilities(name, port, DC_COLLATE, nullptr, nullptr) == 1);
 
   caps.copies_capable =
-      (DeviceCapabilities(name, port, DC_COPIES, NULL, NULL) > 1);
+      (DeviceCapabilities(name, port, DC_COPIES, nullptr, nullptr) > 1);
 
   LoadPaper(name, port, user_settings.get(), &caps);
   LoadDpi(name, port, user_settings.get(), &caps);
@@ -374,9 +377,8 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
 std::string PrintBackendWin::GetPrinterDriverInfo(
     const std::string& printer_name) {
   ScopedPrinterHandle printer;
-  if (!printer.OpenPrinter(base::UTF8ToWide(printer_name).c_str())) {
+  if (!printer.OpenPrinter(base::UTF8ToWide(printer_name).c_str()))
     return std::string();
-  }
   return GetDriverInfo(printer.Get());
 }
 
@@ -388,7 +390,7 @@ bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {
 // static
 scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
     const base::DictionaryValue* print_backend_settings) {
-  return new PrintBackendWin;
+  return base::MakeRefCounted<PrintBackendWin>();
 }
 
 }  // namespace printing
