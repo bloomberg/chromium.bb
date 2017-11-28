@@ -4439,7 +4439,18 @@ static uint32_t get_block_residue_hash(MACROBLOCK *x, BLOCK_SIZE bsize) {
 
 static void save_tx_rd_info(int n4, uint32_t hash, const MACROBLOCK *const x,
                             const RD_STATS *const rd_stats,
-                            TX_RD_INFO *const tx_rd_info) {
+                            TX_RD_RECORD *tx_rd_record) {
+  int index;
+  if (tx_rd_record->num < RD_RECORD_BUFFER_LEN) {
+    index =
+        (tx_rd_record->index_start + tx_rd_record->num) % RD_RECORD_BUFFER_LEN;
+    ++tx_rd_record->num;
+  } else {
+    index = tx_rd_record->index_start;
+    tx_rd_record->index_start =
+        (tx_rd_record->index_start + 1) % RD_RECORD_BUFFER_LEN;
+  }
+  TX_RD_INFO *const tx_rd_info = &tx_rd_record->tx_rd_info[index];
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   tx_rd_info->hash_value = hash;
@@ -4796,6 +4807,8 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   if (is_inter && cpi->sf.tx_type_search.use_skip_flag_prediction &&
       predict_skip_flag(x, bsize)) {
     set_skip_flag(cpi, x, rd_stats, bsize);
+    // Save the RD search results into tx_rd_record.
+    if (within_border) save_tx_rd_info(n4, hash, x, rd_stats, tx_rd_record);
     return;
   }
 
@@ -4890,19 +4903,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   memcpy(x->blk_skip[0], best_blk_skip, sizeof(best_blk_skip[0]) * n4);
 
   // Save the RD search results into tx_rd_record.
-  if (within_border) {
-    int index;
-    if (tx_rd_record->num < RD_RECORD_BUFFER_LEN) {
-      index = (tx_rd_record->index_start + tx_rd_record->num) %
-              RD_RECORD_BUFFER_LEN;
-      ++tx_rd_record->num;
-    } else {
-      index = tx_rd_record->index_start;
-      tx_rd_record->index_start =
-          (tx_rd_record->index_start + 1) % RD_RECORD_BUFFER_LEN;
-    }
-    save_tx_rd_info(n4, hash, x, rd_stats, &tx_rd_record->tx_rd_info[index]);
-  }
+  if (within_border) save_tx_rd_info(n4, hash, x, rd_stats, tx_rd_record);
 }
 
 static void tx_block_rd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
