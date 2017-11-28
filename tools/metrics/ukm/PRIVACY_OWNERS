@@ -1,8 +1,10 @@
-# UKM metrics require additional considerations from the privacy side, so we use
-# a specific set of reviewers from metrics and privacy team.
+# UKM metrics require additional privacy considerations, so they use
+# a narrower set of reviewers than the rest of metrics codebase.
+#
+# Please make sure that your UKM collection proposal is approved by
+# the privacy team before sending out your CL for review.
+
 asvitkine@chromium.org
 bmcquade@chromium.org
-engedy@chromium.org
 holte@chromium.org
-msramek@chromium.org
 rkaplow@chromium.org
