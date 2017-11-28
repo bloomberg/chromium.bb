@@ -4,7 +4,7 @@
 
 #include "mojo/edk/system/data_pipe_control_message.h"
 
-#include "mojo/edk/embedder/platform_handle_vector.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/node_controller.h"
 #include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/user_message_impl.h"

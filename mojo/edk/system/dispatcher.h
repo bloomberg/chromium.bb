@@ -17,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -199,7 +200,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   // condition.
   virtual bool EndSerialize(void* destination,
                             ports::PortName* ports,
-                            PlatformHandle* handles);
+                            ScopedPlatformHandle* handles);
 
   // Does whatever is necessary to begin transit of the dispatcher.  This
   // should return |true| if transit is OK, or false if the underlying resource
@@ -216,13 +217,14 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   virtual void CancelTransit();
 
   // Deserializes a specific dispatcher type from an incoming message.
-  static scoped_refptr<Dispatcher> Deserialize(Type type,
-                                               const void* bytes,
-                                               size_t num_bytes,
-                                               const ports::PortName* ports,
-                                               size_t num_ports,
-                                               PlatformHandle* platform_handles,
-                                               size_t num_platform_handles);
+  static scoped_refptr<Dispatcher> Deserialize(
+      Type type,
+      const void* bytes,
+      size_t num_bytes,
+      const ports::PortName* ports,
+      size_t num_ports,
+      ScopedPlatformHandle* platform_handles,
+      size_t platform_handle_count);
 
  protected:
   friend class base::RefCountedThreadSafe<Dispatcher>;

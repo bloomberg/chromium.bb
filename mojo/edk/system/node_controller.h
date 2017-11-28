@@ -20,7 +20,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/atomic_flag.h"
