@@ -1316,6 +1316,8 @@ int HttpStreamFactoryImpl::JobController::ReconsiderProxyAfterError(Job* job,
     // Abandon all Jobs and start over.
     job_bound_ = false;
     bound_job_ = nullptr;
+    main_job_is_resumed_ = false;
+    main_job_is_blocked_ = false;
     alternative_job_.reset();
     main_job_.reset();
     next_state_ = STATE_RESOLVE_PROXY_COMPLETE;
