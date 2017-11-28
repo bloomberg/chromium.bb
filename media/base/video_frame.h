@@ -190,7 +190,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
 #if defined(OS_LINUX)
   // Wraps provided dmabufs
-  // (https://www.kernel.org/doc/Documentation/dma-buf-sharing.txt) with a
+  // (https://www.kernel.org/doc/html/latest/driver-api/dma-buf.html) with a
   // VideoFrame. The dmabuf fds are dup()ed on creation, so that the VideoFrame
   // retains a reference to them, and are automatically close()d on destruction,
   // dropping the reference. The caller may safely close() its reference after
