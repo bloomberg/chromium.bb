@@ -10,6 +10,7 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/page_info/page_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -21,6 +22,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/safe_browsing/features.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -123,6 +126,8 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     constexpr char kPasswordReuse[] = "PasswordReuse";
     constexpr char kMixedContentForm[] = "MixedContentForm";
     constexpr char kMixedContent[] = "MixedContent";
+    constexpr char kAllowAllPermissions[] = "AllowAllPermissions";
+    constexpr char kBlockAllPermissions[] = "BlockAllPermissions";
 
     const GURL internal_url("chrome://settings");
     const GURL internal_extension_url("chrome-extension://example");
@@ -133,8 +138,10 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     const GURL http_url("http://example.com");
 
     GURL url = http_url;
-    if (name == kSecure || name == kMixedContentForm || name == kMixedContent)
+    if (name == kSecure || name == kMixedContentForm || name == kMixedContent ||
+        name == kAllowAllPermissions || name == kBlockAllPermissions) {
       url = https_url;
+    }
     if (name == kInternal) {
       url = internal_url;
     } else if (name == kInternalExtension) {
@@ -153,7 +160,8 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     PageInfoUI::IdentityInfo identity;
     if (name == kInsecure) {
       identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_NO_CERT;
-    } else if (name == kSecure) {
+    } else if (name == kSecure || name == kAllowAllPermissions ||
+               name == kBlockAllPermissions) {
       // Generate a valid mock HTTPS identity, with a certificate.
       identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_CERT;
       constexpr char kGoodCertificateFile[] = "ok_cert.pem";
@@ -187,6 +195,29 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
           PageInfo::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT;
       identity.connection_status =
           PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE;
+    }
+
+    if (name == kAllowAllPermissions || name == kBlockAllPermissions) {
+      // Generate a |PermissionInfoList| with every permission allowed/blocked.
+      PermissionInfoList permissions_list;
+      for (ContentSettingsType content_type :
+           PageInfo::GetAllPermissionsForTesting()) {
+        PageInfoUI::PermissionInfo info;
+        info.type = content_type;
+        info.setting = (name == kAllowAllPermissions) ? CONTENT_SETTING_ALLOW
+                                                      : CONTENT_SETTING_BLOCK;
+        info.default_setting =
+            content_settings::ContentSettingsRegistry::GetInstance()
+                ->Get(info.type)
+                ->GetInitialDefaultSetting();
+        info.source = content_settings::SettingSource::SETTING_SOURCE_USER;
+        info.is_incognito = false;
+        permissions_list.push_back(info);
+      }
+
+      ChosenObjectInfoList chosen_object_list;
+      static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble())
+          ->SetPermissionInfo(permissions_list, std::move(chosen_object_list));
     }
 
     if (name != kInsecure && name.find(kInternal) == std::string::npos) {
@@ -420,5 +451,19 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
 // secure, but it uses insecure resources (e.g. images).
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
                        InvokeDialog_MixedContent) {
+  RunDialog();
+}
+
+// Shows the Page Info bubble with all the permissions displayed with 'Allow'
+// set. All permissions will show regardless of its factory default value.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       InvokeDialog_AllowAllPermissions) {
+  RunDialog();
+}
+
+// Shows the Page Info bubble with all the permissions displayed with 'Block'
+// set. All permissions will show regardless of its factory default value.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       InvokeDialog_BlockAllPermissions) {
   RunDialog();
 }
