@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/data_driven_test.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/public/common/content_switches.h"
 #include "url/gurl.h"
 
@@ -122,8 +123,8 @@ class FormStructureBrowserTest
 
 FormStructureBrowserTest::FormStructureBrowserTest()
     : DataDrivenTest(GetTestDataDir()) {
-  feature_list_.InitAndEnableFeature(
-      autofill::kAutofillRationalizeFieldTypePredictions);
+  feature_list_.InitAndDisableFeature(
+      autofill::features::kAutofillEnforceMinRequiredFieldsForUpload);
 }
 
 FormStructureBrowserTest::~FormStructureBrowserTest() {
@@ -166,7 +167,9 @@ std::string FormStructureBrowserTest::FormStructuresToString(
 IN_PROC_BROWSER_TEST_P(FormStructureBrowserTest, DataDrivenHeuristics) {
   // Prints the path of the test to be executed.
   LOG(INFO) << GetParam().MaybeAsASCII();
-  RunOneDataDrivenTest(GetParam(), GetOutputDirectory(kTestName));
+  const bool kIsExpectedToPass = true;
+  RunOneDataDrivenTest(GetParam(), GetOutputDirectory(kTestName),
+                       kIsExpectedToPass);
 }
 
 INSTANTIATE_TEST_CASE_P(AllForms,

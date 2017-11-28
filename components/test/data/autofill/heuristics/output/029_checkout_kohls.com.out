@@ -1,3 +1,5 @@
+UNKNOWN_TYPE | LOGIN<>userid | E-mail Address: |  | LOGIN<>userid_1-default
+UNKNOWN_TYPE | LOGIN<>passwordLogin | Password: |  | LOGIN<>userid_1-default
 NAME_FIRST | BILL_TO_ADDRESS<>firstName | First Name: |  | BILL_TO_ADDRESS<>firstName_1-default
 NAME_LAST | BILL_TO_ADDRESS<>lastName | Last Name: |  | BILL_TO_ADDRESS<>firstName_1-default
 ADDRESS_HOME_LINE1 | BILL_TO_ADDRESS<>address1 | Address: |  | BILL_TO_ADDRESS<>firstName_1-default

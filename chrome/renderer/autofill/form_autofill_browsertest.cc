@@ -12,10 +12,12 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/form_cache.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -29,6 +31,9 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebSelectElement.h"
 
+using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
+using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
+using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
 using base::ASCIIToUTF16;
 using blink::WebDocument;
 using blink::WebElement;
@@ -2631,24 +2636,30 @@ TEST_F(FormAutofillTest, ExtractFormsTooFewFields) {
   WebLocalFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
 
-  FormCache form_cache(web_frame);
-  std::vector<FormData> forms = form_cache.ExtractNewForms();
-  ASSERT_TRUE(forms.empty());
-}
+  // If all minimums are enforced, we ignore this form.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        // Enabled.
+        {kAutofillEnforceMinRequiredFieldsForHeuristics,
+         kAutofillEnforceMinRequiredFieldsForQuery,
+         kAutofillEnforceMinRequiredFieldsForUpload},
+        // Disabled.
+        {});
+    ASSERT_TRUE(FormCache(web_frame).ExtractNewForms().empty());
+  }
 
-// We should not report additional forms for empty forms.
-TEST_F(FormAutofillTest, ExtractFormsSkippedForms) {
-  LoadHTML("<FORM name='TestForm' action='http://cnn.com' method='post'>"
-           "  <INPUT type='text' id='firstname' value='John'/>"
-           "  <INPUT type='text' id='lastname' value='Smith'/>"
-           "</FORM>");
-
-  WebLocalFrame* web_frame = GetMainFrame();
-  ASSERT_NE(nullptr, web_frame);
-
-  FormCache form_cache(web_frame);
-  std::vector<FormData> forms = form_cache.ExtractNewForms();
-  ASSERT_TRUE(forms.empty());
+  // If at least one of the minimums is not enforced, we parse the form.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        // Enabled.
+        {kAutofillEnforceMinRequiredFieldsForHeuristics,
+         kAutofillEnforceMinRequiredFieldsForQuery},
+        // Disabled.
+        {kAutofillEnforceMinRequiredFieldsForUpload});
+    ASSERT_FALSE(FormCache(web_frame).ExtractNewForms().empty());
+  }
 }
 
 // We should not report additional forms for empty forms.
@@ -2678,9 +2689,31 @@ TEST_F(FormAutofillTest, ExtractFormsTooFewFieldsSkipsCheckable) {
   WebLocalFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
 
-  FormCache form_cache(web_frame);
-  std::vector<FormData> forms = form_cache.ExtractNewForms();
-  ASSERT_TRUE(forms.empty());
+  // Without small form support, the form is not parsed.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        // Enabled.
+        {kAutofillEnforceMinRequiredFieldsForHeuristics,
+         kAutofillEnforceMinRequiredFieldsForQuery,
+         kAutofillEnforceMinRequiredFieldsForUpload},
+        // Disabled.
+        {});
+    ASSERT_TRUE(FormCache(web_frame).ExtractNewForms().empty());
+  }
+
+  // With small form support, the form is parsed.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        // Enabled.
+        {},
+        // Disabled.
+        {kAutofillEnforceMinRequiredFieldsForHeuristics,
+         kAutofillEnforceMinRequiredFieldsForQuery,
+         kAutofillEnforceMinRequiredFieldsForUpload});
+    ASSERT_FALSE(FormCache(web_frame).ExtractNewForms().empty());
+  }
 }
 
 TEST_F(FormAutofillTest, WebFormElementToFormDataAutocomplete) {
@@ -4601,30 +4634,42 @@ TEST_F(FormAutofillTest, UnownedFormElementsAndFieldSetsToFormDataWithForm) {
 }
 
 TEST_F(FormAutofillTest, FormCache_ExtractNewForms) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled.
+      {kAutofillEnforceMinRequiredFieldsForHeuristics,
+       kAutofillEnforceMinRequiredFieldsForQuery},
+      // Disabled.
+      {kAutofillEnforceMinRequiredFieldsForUpload});
   struct {
+    const char* description;
     const char* html;
     const bool has_extracted_form;
     const bool is_form_tag;
     const bool is_formless_checkout;
   } test_cases[] = {
       // An empty form should not be extracted
-      {"<FORM name='TestForm' action='http://abc.com' method='post'>"
+      {"Empty Form",
+       "<FORM name='TestForm' action='http://abc.com' method='post'>"
        "</FORM>",
        false, true, false},
       // A form with less than three fields with no autocomplete type(s) should
-      // not be extracted.
-      {"<FORM name='TestForm' action='http://abc.com' method='post'>"
-       "  <INPUT type='name' id='firstname'/>"
+      // be extracted because no minimum is being enforced for upload.
+      {"Small Form no autocomplete",
+       "<FORM name='TestForm' action='http://abc.com' method='post'>"
+       "  <INPUT type='text' id='firstname'/>"
        "</FORM>",
-       false, true, false},
+       true, true, false},
       // A form with less than three fields with at least one autocomplete type
       // should be extracted.
-      {"<FORM name='TestForm' action='http://abc.com' method='post'>"
-       "  <INPUT type='name' id='firstname' autocomplete='given-name'/>"
+      {"Small Form w/ autocomplete",
+       "<FORM name='TestForm' action='http://abc.com' method='post'>"
+       "  <INPUT type='text' id='firstname' autocomplete='given-name'/>"
        "</FORM>",
        true, true, false},
       // A form with three or more fields should be extracted.
-      {"<FORM name='TestForm' action='http://abc.com' method='post'>"
+      {"3 Field Form",
+       "<FORM name='TestForm' action='http://abc.com' method='post'>"
        "  <INPUT type='text' id='firstname'/>"
        "  <INPUT type='text' id='lastname'/>"
        "  <INPUT type='text' id='email'/>"
@@ -4634,21 +4679,25 @@ TEST_F(FormAutofillTest, FormCache_ExtractNewForms) {
       // An input field with an autocomplete attribute outside of a form should
       // be extracted. The is_formless_checkout attribute should
       // then be true.
-      {"<INPUT type='text' id='firstname' autocomplete='given-name'/>"
+      {"Small, formless, with autocomplete",
+       "<INPUT type='text' id='firstname' autocomplete='given-name'/>"
        "<INPUT type='submit' value='Send'/>",
        true, false, false},
-      // An input field without an autocomplete attribute outside of a form
-      // should not be extracted.
-      {"<INPUT type='text' id='firstname'/>"
+      // An input field without an autocomplete attribute outside of a form,
+      // with no checkout hints, should not be extracted.
+      {"Small, formless, no autocomplete",
+       "<INPUT type='text' id='firstname'/>"
        "<INPUT type='submit' value='Send'/>",
        false, false, false},
-      // A form with one field which is password should not be extracted.
-      {"<FORM name='TestForm' action='http://abc.com' method='post'>"
+      // A form with one field which is password gets extracted.
+      {"Password-Only",
+       "<FORM name='TestForm' action='http://abc.com' method='post'>"
        "  <INPUT type='password' id='pw'/>"
        "</FORM>",
-       false, true, false},
+       true, true, false},
       // A form with two fields which are passwords should be extracted.
-      {"<FORM name='TestForm' action='http://abc.com' method='post'>"
+      {"two passwords",
+       "<FORM name='TestForm' action='http://abc.com' method='post'>"
        "  <INPUT type='password' id='pw'/>"
        "  <INPUT type='password' id='new_pw'/>"
        "</FORM>",
@@ -4656,6 +4705,7 @@ TEST_F(FormAutofillTest, FormCache_ExtractNewForms) {
   };
 
   for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case.description);
     LoadHTML(test_case.html);
 
     WebLocalFrame* web_frame = GetMainFrame();

@@ -1,3 +1,4 @@
+UNKNOWN_TYPE | searchPhrase |  |  | searchPhrase_1-default
 UNKNOWN_TYPE | shipto | Select a Saved Shipping Address |  | shipto_1-default
 NAME_FIRST | shippingFirstName | First Name | First Name | shipto_1-default
 NAME_LAST | shippingLastName | Last Name | Last Name | shipto_1-default
@@ -31,3 +32,6 @@ CREDIT_CARD_EXP_MONTH | expmonth |  |  | billingFirstName_1-cc
 CREDIT_CARD_EXP_4_DIGIT_YEAR | expyear |  |  | billingFirstName_1-cc
 CREDIT_CARD_VERIFICATION_CODE | payment_cidnew | CID / Security Code | CID / Security Code | billingFirstName_1-cc
 UNKNOWN_TYPE | makeDefaultCreditCard | Make this my default credit card | true | billingFirstName_1-default
+UNKNOWN_TYPE | giftMessageField |  |  | giftMessageField_1-default
+UNKNOWN_TYPE | giftCardNumberFromBalance | Gift Card Number | Gift Card Number | giftCardNumberFromBalance_1-default
+UNKNOWN_TYPE | giftCardPIN | Gift Card PIN | Gift Card PIN | giftCardNumberFromBalance_1-default

@@ -9,10 +9,12 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "content/public/common/content_switches.h"
@@ -30,6 +32,9 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
+using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
+using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
+using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
 using base::ASCIIToUTF16;
 using blink::WebDocument;
 using blink::WebElement;
@@ -247,7 +252,16 @@ TEST_F(AutofillRendererTest, SendForms) {
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[2]);
 }
 
-TEST_F(AutofillRendererTest, EnsureNoFormSeenIfTooFewFields) {
+TEST_F(AutofillRendererTest, NoSmallFormsWhenMinimumEnforced) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled.
+      {kAutofillEnforceMinRequiredFieldsForHeuristics,
+       kAutofillEnforceMinRequiredFieldsForQuery,
+       kAutofillEnforceMinRequiredFieldsForUpload},
+      // Disabled.
+      {});
+
   LoadHTML("<form method='POST'>"
            "  <input type='text' id='firstname'/>"
            "  <input type='text' id='middlename'/>"
@@ -259,6 +273,29 @@ TEST_F(AutofillRendererTest, EnsureNoFormSeenIfTooFewFields) {
   ASSERT_TRUE(fake_driver_.forms());
   const std::vector<FormData>& forms = *(fake_driver_.forms());
   ASSERT_EQ(0UL, forms.size());
+}
+
+TEST_F(AutofillRendererTest, SmallFormsFoundWhenMinimumNotEnforced) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled.
+      {},
+      // Disabled.
+      {kAutofillEnforceMinRequiredFieldsForHeuristics,
+       kAutofillEnforceMinRequiredFieldsForQuery,
+       kAutofillEnforceMinRequiredFieldsForUpload});
+  LoadHTML(
+      "<form method='POST'>"
+      "  <input type='text' id='firstname'/>"
+      "  <input type='text' id='middlename'/>"
+      "</form>");
+
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  // Verify that "FormsSeen" isn't sent, as there are too few fields.
+  ASSERT_TRUE(fake_driver_.forms());
+  const std::vector<FormData>& forms = *(fake_driver_.forms());
+  ASSERT_EQ(1UL, forms.size());
 }
 
 // Regression test for [ http://crbug.com/346010 ].

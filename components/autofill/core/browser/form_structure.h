@@ -103,14 +103,22 @@ class FormStructure {
   // Returns true if this form matches the structural requirements for Autofill.
   bool ShouldBeParsed() const;
 
-  // Returns true if we should query the crowdsourcing server to determine this
-  // form's field types.  If the form includes author-specified types, this will
+  // Returns true if heuristic autofill type detection should be attempted for
+  // this form.
+  bool ShouldRunHeuristics() const;
+
+  // Returns true if we should query the crowd-sourcing server to determine this
+  // form's field types. If the form includes author-specified types, this will
   // return false unless there are password fields in the form. If there are no
   // password fields the assumption is that the author has expressed their
   // intent and crowdsourced data should not be used to override this. Password
   // fields are different because there is no way to specify password generation
   // directly.
-  bool ShouldBeCrowdsourced() const;
+  bool ShouldBeQueried() const;
+
+  // Returns true if we should upload votes for this form to the crowd-sourcing
+  // server.
+  bool ShouldBeUploaded() const;
 
   // Sets the field types to be those set for |cached_form|.
   void UpdateFromCache(const FormStructure& cached_form,

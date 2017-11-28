@@ -1,3 +1,4 @@
+UNKNOWN_TYPE | q | Search People |  | q_1-default
 UNKNOWN_TYPE | accountType | Personal | 2 | accountType_1-default
 UNKNOWN_TYPE | accountType | Musician | 7 | accountType_1-default
 UNKNOWN_TYPE | accountType | Comedian | 15 | accountType_1-default
@@ -15,3 +16,6 @@ UNKNOWN_TYPE | ddlDay |  |  | accountType_1-default
 UNKNOWN_TYPE | ddlYear |  |  | accountType_1-default
 UNKNOWN_TYPE | rblGender | Male | M | accountType_1-default
 UNKNOWN_TYPE | rblGender | Female | F | accountType_1-default
+UNKNOWN_TYPE | Email | Email |  | Email_1-default
+UNKNOWN_TYPE | Password | Password |  | Email_1-default
+UNKNOWN_TYPE | Remember | Keep me logged in | on | Email_1-default

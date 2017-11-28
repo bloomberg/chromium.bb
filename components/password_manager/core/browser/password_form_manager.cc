@@ -873,8 +873,7 @@ bool PasswordFormManager::UploadPasswordVote(
   // re-uses credentials, a vote about the saved form is sent. If the user saves
   // credentials, the observed and pending forms are the same.
   FormStructure form_structure(form_to_upload.form_data);
-  if (!autofill_manager->ShouldUploadForm(form_structure) ||
-      !form_structure.ShouldBeCrowdsourced()) {
+  if (!autofill_manager->ShouldUploadForm(form_structure)) {
     UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.UploadStarted", false);
     return false;
   }
@@ -1511,8 +1510,9 @@ void PasswordFormManager::SendVotesOnSave() {
           *username_correction_vote_, autofill::USERNAME,
           FormStructure(observed_form_.form_data).FormSignatureAsStr());
     }
-  } else
+  } else {
     SendVoteOnCredentialsReuse(observed_form_, &pending_credentials_);
+  }
 }
 
 void PasswordFormManager::SendSignInVote(const FormData& form_data) {
@@ -1522,7 +1522,7 @@ void PasswordFormManager::SendSignInVote(const FormData& form_data) {
     return;
   std::unique_ptr<FormStructure> form_structure(new FormStructure(form_data));
   form_structure->set_is_signin_upload(true);
-  DCHECK(form_structure->ShouldBeCrowdsourced());
+  DCHECK(form_structure->ShouldBeUploaded());
   DCHECK_EQ(2u, form_structure->field_count());
   form_structure->field(1)->set_possible_types({autofill::PASSWORD});
   autofill_manager->StartUploadProcess(std::move(form_structure),

@@ -1,3 +1,4 @@
+UNKNOWN_TYPE | search_query | Search |  | search_query_1-default
 EMAIL_ADDRESS | FormField[1][1] | * Email Address: |  | FormField[1][1]_1-default
 UNKNOWN_TYPE | FormField[1][2] | * Password: |  | FormField[1][1]_1-default
 UNKNOWN_TYPE | FormField[1][3] | * Confirm Password: |  | FormField[1][1]_1-default

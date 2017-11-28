@@ -1,3 +1,4 @@
+UNKNOWN_TYPE | q | search | enter keyword(s) or item number | q_1-default
 EMAIL_ADDRESS | E1 | Email Address * |  | E1_1-default
 NAME_FIRST | F1 | First Name * |  | E1_1-default
 NAME_LAST | L1 | Last Name * |  | E1_1-default
@@ -22,3 +23,4 @@ ADDRESS_HOME_ZIP | SZ1 | Zip Code * |  | SF1_1-default
 PHONE_HOME_WHOLE_NUMBER | SP2 | Day Phone * |  | SF1_1-default
 PHONE_HOME_WHOLE_NUMBER | SP3 | Evening Phone |  | SF1_1-default
 UNKNOWN_TYPE | sameAsBilling | My Shipping address is same as billing address. | on | SF1_1-default
+UNKNOWN_TYPE | email | ENTER TO WIN A $100 GIFT CARD! | enter email address | email_1-default

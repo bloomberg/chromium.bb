@@ -6,3 +6,4 @@ EMAIL_ADDRESS | /atg/userprofiling/ProfileFormHandler.confirmEmailAddress | * Co
 ADDRESS_HOME_ZIP | /atg/userprofiling/ProfileFormHandler.value.zip | * Zip: |  | /atg/userprofiling/ProfileFormHandler.value.maxPerks_1-default
 UNKNOWN_TYPE | /atg/userprofiling/ProfileFormHandler.value.password | * Password: |  | /atg/userprofiling/ProfileFormHandler.value.maxPerks_1-default
 UNKNOWN_TYPE | /atg/userprofiling/ProfileFormHandler.value.confirmPassword | * Confirm Password: |  | /atg/userprofiling/ProfileFormHandler.value.maxPerks_1-default
+UNKNOWN_TYPE | freeText | Search by Keyword or Item # | Search by Keyword or Item # | freeText_1-default

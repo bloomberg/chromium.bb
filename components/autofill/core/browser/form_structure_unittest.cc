@@ -17,7 +17,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/signatures_util.h"
@@ -26,6 +26,9 @@
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
+using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
+using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
+using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
 
 namespace autofill {
 
@@ -41,6 +44,85 @@ class FormStructureTest : public testing::Test {
   }
 
  protected:
+  void InitFeature(base::test::ScopedFeatureList* feature_list,
+                   const base::Feature& feature,
+                   bool is_enabled) {
+    if (is_enabled)
+      feature_list->InitAndEnableFeature(feature);
+    else
+      feature_list->InitAndDisableFeature(feature);
+  }
+
+  // Single field forms are not parseable iff all of the minimum required field
+  // values are enforced.
+  void CheckFormShouldBeParsed(const char* trace_message,
+                               const FormData form,
+                               bool expected_if_all_enforced,
+                               bool expected_if_not_all_enforced) {
+    SCOPED_TRACE(trace_message);
+    for (bool enforce_min_for_heuristics : {true, false}) {
+      base::test::ScopedFeatureList heuristics, query, upload;
+      InitFeature(&heuristics, kAutofillEnforceMinRequiredFieldsForHeuristics,
+                  enforce_min_for_heuristics);
+      for (bool enforce_min_for_query : {true, false}) {
+        base::test::ScopedFeatureList heuristics, query, upload;
+        InitFeature(&query, kAutofillEnforceMinRequiredFieldsForQuery,
+                    enforce_min_for_query);
+        for (bool enforce_min_for_upload : {true, false}) {
+          base::test::ScopedFeatureList heuristics, query, upload;
+          InitFeature(&upload, kAutofillEnforceMinRequiredFieldsForUpload,
+                      enforce_min_for_upload);
+          bool all_enforced = enforce_min_for_heuristics &&
+                              enforce_min_for_query && enforce_min_for_upload;
+          FormStructure form_structure(form);
+          if (all_enforced) {
+            EXPECT_EQ(expected_if_all_enforced,
+                      form_structure.ShouldBeParsed());
+          } else {
+            EXPECT_EQ(expected_if_not_all_enforced,
+                      form_structure.ShouldBeParsed())
+                << "heuristics:" << enforce_min_for_heuristics << "; "
+                << "query:" << enforce_min_for_query << "; "
+                << "upload:" << enforce_min_for_upload;
+          }
+        }
+      }
+    }
+  }
+
+  bool FormIsAutofillable(const FormData& form, bool enforce_min_fields) {
+    base::test::ScopedFeatureList feature_list;
+    InitFeature(&feature_list, kAutofillEnforceMinRequiredFieldsForHeuristics,
+                enforce_min_fields);
+    FormStructure form_structure(form);
+    form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+    return form_structure.IsAutofillable();
+  }
+
+  bool FormShouldRunHeuristics(const FormData& form, bool enforce_min_fields) {
+    base::test::ScopedFeatureList feature_list;
+    InitFeature(&feature_list, kAutofillEnforceMinRequiredFieldsForHeuristics,
+                enforce_min_fields);
+    FormStructure form_structure(form);
+    return form_structure.ShouldRunHeuristics();
+  }
+
+  bool FormShouldBeQueried(const FormData& form, bool enforce_min_fields) {
+    base::test::ScopedFeatureList feature_list;
+    InitFeature(&feature_list, kAutofillEnforceMinRequiredFieldsForQuery,
+                enforce_min_fields);
+    FormStructure form_structure(form);
+    return form_structure.ShouldBeQueried();
+  }
+
+  bool FormShouldBeUploaded(const FormData& form, bool enforce_min_fields) {
+    base::test::ScopedFeatureList feature_list;
+    InitFeature(&feature_list, kAutofillEnforceMinRequiredFieldsForUpload,
+                enforce_min_fields);
+    FormStructure form_structure(form);
+    return form_structure.ShouldBeUploaded();
+  }
+
   void DisableAutofillMetadataFieldTrial() { field_trial_list_.reset(); }
 
  private:
@@ -151,93 +233,103 @@ TEST_F(FormStructureTest, SourceURL) {
 }
 
 TEST_F(FormStructureTest, IsAutofillable) {
-  std::unique_ptr<FormStructure> form_structure;
   FormData form;
-
-  // We need at least three text fields to be auto-fillable.
   FormFieldData field;
 
+  // Start with a username field. It should be picked up by the password but
+  // not by autofill.
   field.label = ASCIIToUTF16("username");
   field.name = ASCIIToUTF16("username");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
+  // With min required fields enabled.
+  EXPECT_FALSE(FormIsAutofillable(form, true));   // Min enforced.
+  EXPECT_FALSE(FormIsAutofillable(form, false));  // Min not enforced.
+
+  // Add a password field. The form should be picked up by the password but
+  // not by autofill.
   field.label = ASCIIToUTF16("password");
   field.name = ASCIIToUTF16("password");
   field.form_control_type = "password";
   form.fields.push_back(field);
 
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("Submit");
-  field.form_control_type = "submit";
-  form.fields.push_back(field);
+  EXPECT_FALSE(FormIsAutofillable(form, true));   // Min enforced.
+  EXPECT_FALSE(FormIsAutofillable(form, false));  // Min not enforced.
 
-  form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
-  EXPECT_FALSE(form_structure->IsAutofillable());
-
-  // We now have three text fields, but only two auto-fillable fields.
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  // Add an auto-fillable fields. With just one auto-fillable field, this should
+  // be picked up by autofill only if there is no minimum field enforcement.
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullname");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  EXPECT_FALSE(FormIsAutofillable(form, true));  // Min enforced.
+  EXPECT_TRUE(FormIsAutofillable(form, false));  // Min not enforced.
+
+  // Add an auto-fillable fields. With just one auto-fillable field, this should
+  // be picked up by autofill only if there is no minimum field enforcement.
+  field.label = ASCIIToUTF16("Address Line 1");
+  field.name = ASCIIToUTF16("address1");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
-  EXPECT_FALSE(form_structure->IsAutofillable());
+  EXPECT_FALSE(FormIsAutofillable(form, true));  // Min enforced.
+  EXPECT_TRUE(FormIsAutofillable(form, false));  // Min not enforced.
 
-  // We now have three auto-fillable fields.
+  // We now have three auto-fillable fields. It's always autofillable.
   field.label = ASCIIToUTF16("Email");
   field.name = ASCIIToUTF16("email");
   field.form_control_type = "email";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
-  EXPECT_TRUE(form_structure->IsAutofillable());
+  EXPECT_TRUE(FormIsAutofillable(form, true));   // Min enforced.
+  EXPECT_TRUE(FormIsAutofillable(form, false));  // Min not enforced.
 
   // The target cannot include http(s)://*/search...
   form.action = GURL("http://google.com/search?q=hello");
-  form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
-  EXPECT_FALSE(form_structure->IsAutofillable());
+
+  EXPECT_FALSE(FormIsAutofillable(form, true));   // Min enforced.
+  EXPECT_FALSE(FormIsAutofillable(form, false));  // Min not enforced.
 
   // But search can be in the URL.
   form.action = GURL("http://search.com/?q=hello");
-  form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
-  EXPECT_TRUE(form_structure->IsAutofillable());
+
+  EXPECT_TRUE(FormIsAutofillable(form, true));   // Min enforced.
+  EXPECT_TRUE(FormIsAutofillable(form, false));  // Min not enforced.
 }
 
 TEST_F(FormStructureTest, ShouldBeParsed) {
-  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
-  // We need at least three text fields to be parseable.
-  FormFieldData field;
-  field.label = ASCIIToUTF16("username");
-  field.name = ASCIIToUTF16("username");
-  field.form_control_type = "text";
-  form.fields.push_back(field);
-
+  // Start with a single checkable field.
   FormFieldData checkable_field;
   checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
   checkable_field.name = ASCIIToUTF16("radiobtn");
   checkable_field.form_control_type = "radio";
   form.fields.push_back(checkable_field);
 
+  // A form with a single checkable field isn't interesting.
+  CheckFormShouldBeParsed("one checkable", form, false, false);
+
+  // Add a second checkable field.
   checkable_field.name = ASCIIToUTF16("checkbox");
   checkable_field.form_control_type = "checkbox";
   form.fields.push_back(checkable_field);
 
-  // We have only one text field, should not be parsed.
-  form_structure.reset(new FormStructure(form));
-  EXPECT_FALSE(form_structure->ShouldBeParsed());
+  // A form with a only checkable fields isn't interesting.
+  CheckFormShouldBeParsed("two checkable", form, false, false);
+
+  // Add a text field.
+  FormFieldData field;
+  field.label = ASCIIToUTF16("username");
+  field.name = ASCIIToUTF16("username");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  // Single text field forms shouldn't be parsed if all of the minimums are
+  // enforced but should be parsed if ANY of the minimums is not enforced.
+  CheckFormShouldBeParsed("username", form, false, true);
 
   // We now have three text fields, though only two are auto-fillable.
   field.label = ASCIIToUTF16("First Name");
@@ -250,22 +342,16 @@ TEST_F(FormStructureTest, ShouldBeParsed) {
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form));
-  EXPECT_TRUE(form_structure->ShouldBeParsed());
-
-  form_structure.reset(new FormStructure(form));
-  EXPECT_FALSE(form_structure->IsAutofillable());
-  EXPECT_TRUE(form_structure->ShouldBeParsed());
+  // Three text field forms should always be parsed.
+  CheckFormShouldBeParsed("three field", form, true, true);
 
   // The target cannot include http(s)://*/search...
   form.action = GURL("http://google.com/search?q=hello");
-  form_structure.reset(new FormStructure(form));
-  EXPECT_FALSE(form_structure->ShouldBeParsed());
+  CheckFormShouldBeParsed("search path", form, false, false);
 
   // But search can be in the URL.
   form.action = GURL("http://search.com/?q=hello");
-  form_structure.reset(new FormStructure(form));
-  EXPECT_TRUE(form_structure->ShouldBeParsed());
+  CheckFormShouldBeParsed("search domain", form, true, true);
 
   // The form need only have three fields, but at least one must be a text
   // field.
@@ -286,34 +372,30 @@ TEST_F(FormStructureTest, ShouldBeParsed) {
   field.form_control_type = "select-one";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form));
-  EXPECT_TRUE(form_structure->ShouldBeParsed());
-
-  form.fields[0].form_control_type = "select-one";
+  CheckFormShouldBeParsed("text + selects", form, true, true);
 
   // Now, no text fields.
-  form_structure.reset(new FormStructure(form));
-  EXPECT_FALSE(form_structure->ShouldBeParsed());
+  form.fields[0].form_control_type = "select-one";
+  CheckFormShouldBeParsed("only selects", form, false, false);
 
-  // We have only one field, which is password, should not be parsed.
+  // We have only one field, which is password.
   form.fields.clear();
   field.label = ASCIIToUTF16("Password");
   field.name = ASCIIToUTF16("pw");
   field.form_control_type = "password";
   form.fields.push_back(field);
-  form_structure.reset(new FormStructure(form));
-  EXPECT_FALSE(form_structure->ShouldBeParsed());
+  CheckFormShouldBeParsed("password", form, false, true);
 
   // We have two fields, which are passwords, should be parsed.
   field.label = ASCIIToUTF16("New password");
   field.name = ASCIIToUTF16("new_pw");
   field.form_control_type = "password";
   form.fields.push_back(field);
-  form_structure.reset(new FormStructure(form));
-  EXPECT_TRUE(form_structure->ShouldBeParsed());
+  CheckFormShouldBeParsed("new password", form, true, true);
 
   // There are 2 fields, one of which is password, and this is an upload of
-  // a sign-in form submission, should be parsed.
+  // a sign-in form submission, should be parsed. even if all minimums are
+  // enforced.
   form.fields.clear();
   field.name = ASCIIToUTF16("username");
   field.form_control_type = "text";
@@ -321,9 +403,17 @@ TEST_F(FormStructureTest, ShouldBeParsed) {
   field.name = ASCIIToUTF16("pw");
   field.form_control_type = "password";
   form.fields.push_back(field);
-  form_structure.reset(new FormStructure(form));
-  form_structure->set_is_signin_upload(true);
-  EXPECT_TRUE(form_structure->ShouldBeParsed());
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled.
+      {kAutofillEnforceMinRequiredFieldsForHeuristics,
+       kAutofillEnforceMinRequiredFieldsForQuery,
+       kAutofillEnforceMinRequiredFieldsForUpload},
+      // Disabled.
+      {});
+  FormStructure form_structure(form);
+  form_structure.set_is_signin_upload(true);
+  EXPECT_TRUE(form_structure.ShouldBeParsed());
 }
 
 // Tests that ShouldBeParsed returns true for a form containing less than three
@@ -797,7 +887,8 @@ TEST_F(FormStructureTest,
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
   EXPECT_TRUE(form_structure->IsAutofillable());
-  EXPECT_TRUE(form_structure->ShouldBeCrowdsourced());
+  EXPECT_TRUE(form_structure->ShouldBeQueried());
+  EXPECT_TRUE(form_structure->ShouldBeUploaded());
 
   ASSERT_EQ(3U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
@@ -835,7 +926,8 @@ TEST_F(FormStructureTest,
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
   EXPECT_TRUE(form_structure->IsAutofillable());
-  EXPECT_TRUE(form_structure->ShouldBeCrowdsourced());
+  EXPECT_TRUE(form_structure->ShouldBeQueried());
+  EXPECT_TRUE(form_structure->ShouldBeUploaded());
 
   ASSERT_EQ(3U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
@@ -878,7 +970,7 @@ TEST_F(FormStructureTest,
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
   EXPECT_TRUE(form_structure->IsAutofillable());
-  EXPECT_TRUE(form_structure->ShouldBeCrowdsourced());
+  EXPECT_TRUE(form_structure->ShouldBeQueried());
 
   ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
@@ -889,43 +981,82 @@ TEST_F(FormStructureTest,
   EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(3)->heuristic_type());
 }
 
-// Tests the heuristics and server predictions are not run for forms with less
-// than 3 fields.
+// Tests whether the heuristics and server predictions are run for forms with
+// fewer than 3 fields  and no autocomplete attributes.
 TEST_F(FormStructureTest,
        HeuristicsAndServerPredictions_SmallForm_NoAutocompleteAttribute) {
-  std::unique_ptr<FormStructure> form_structure;
   FormData form;
-
   FormFieldData field;
   field.form_control_type = "text";
-
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("firstname");
   form.fields.push_back(field);
-
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("lastname");
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
-  EXPECT_FALSE(form_structure->IsAutofillable());
-  EXPECT_FALSE(form_structure->ShouldBeCrowdsourced());
+  EXPECT_FALSE(FormShouldRunHeuristics(form, true));  // Min enforced.
+  EXPECT_TRUE(FormShouldRunHeuristics(form, false));  // Min not enforced.
 
-  ASSERT_EQ(2U, form_structure->field_count());
-  ASSERT_EQ(0U, form_structure->autofill_count());
+  EXPECT_FALSE(FormShouldBeQueried(form, true));  // Min enforced.
+  EXPECT_TRUE(FormShouldBeQueried(form, false));  // Min not enforced.
 
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(0)->heuristic_type());
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(1)->heuristic_type());
-  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(0)->overall_server_type());
-  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(1)->overall_server_type());
+  // Status Quo (Q3/2017) - Small forms not supported.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        // Enabled.
+        {kAutofillEnforceMinRequiredFieldsForHeuristics,
+         kAutofillEnforceMinRequiredFieldsForQuery,
+         kAutofillEnforceMinRequiredFieldsForUpload},
+        // Disabled.
+        {});
+    FormStructure form_structure(form);
+    form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+    ASSERT_EQ(2U, form_structure.field_count());
+    ASSERT_EQ(0U, form_structure.autofill_count());
+    EXPECT_EQ(UNKNOWN_TYPE, form_structure.field(0)->heuristic_type());
+    EXPECT_EQ(UNKNOWN_TYPE, form_structure.field(1)->heuristic_type());
+    EXPECT_EQ(NO_SERVER_DATA, form_structure.field(0)->overall_server_type());
+    EXPECT_EQ(NO_SERVER_DATA, form_structure.field(1)->overall_server_type());
+    EXPECT_FALSE(form_structure.IsAutofillable());
+  }
+
+  // Default configuration.
+  {
+    FormStructure form_structure(form);
+    form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+    ASSERT_EQ(2U, form_structure.field_count());
+    ASSERT_EQ(0U, form_structure.autofill_count());
+    EXPECT_EQ(UNKNOWN_TYPE, form_structure.field(0)->heuristic_type());
+    EXPECT_EQ(UNKNOWN_TYPE, form_structure.field(1)->heuristic_type());
+    EXPECT_EQ(NO_SERVER_DATA, form_structure.field(0)->overall_server_type());
+    EXPECT_EQ(NO_SERVER_DATA, form_structure.field(1)->overall_server_type());
+    EXPECT_FALSE(form_structure.IsAutofillable());
+  }
+
+  // Enable small form heuristics.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        kAutofillEnforceMinRequiredFieldsForHeuristics);
+    FormStructure form_structure(form);
+    form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+    ASSERT_EQ(2U, form_structure.field_count());
+    ASSERT_EQ(2U, form_structure.autofill_count());
+    EXPECT_EQ(NAME_FIRST, form_structure.field(0)->heuristic_type());
+    EXPECT_EQ(NAME_LAST, form_structure.field(1)->heuristic_type());
+    EXPECT_EQ(NO_SERVER_DATA, form_structure.field(0)->overall_server_type());
+    EXPECT_EQ(NO_SERVER_DATA, form_structure.field(1)->overall_server_type());
+    EXPECT_TRUE(form_structure.IsAutofillable());
+  }
 }
 
 // Tests the heuristics and server predictions are not run for forms with less
-// than 3 fields, even if an autocomplete attribute is specified.
+// than 3 fields, if the minimum fields required feature is enforced, even if an
+// autocomplete attribute is specified.
 TEST_F(FormStructureTest,
        HeuristicsAndServerPredictions_SmallForm_ValidAutocompleteAttribute) {
-  std::unique_ptr<FormStructure> form_structure;
   FormData form;
 
   FormFieldData field;
@@ -942,25 +1073,76 @@ TEST_F(FormStructureTest,
   field.autocomplete_attribute = "";
   form.fields.push_back(field);
 
-  form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
-  EXPECT_FALSE(form_structure->IsAutofillable());
-  EXPECT_FALSE(form_structure->ShouldBeCrowdsourced());
+  EXPECT_FALSE(FormShouldRunHeuristics(form, true));  // Min enforced.
+  EXPECT_TRUE(FormShouldRunHeuristics(form, false));  // Min not enforced.
 
-  ASSERT_EQ(2U, form_structure->field_count());
-  ASSERT_EQ(1U, form_structure->autofill_count());
+  EXPECT_FALSE(FormShouldBeQueried(form, true));  // Min enforced.
+  EXPECT_TRUE(FormShouldBeQueried(form, false));  // Min not enforced.
 
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(0)->heuristic_type());
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(1)->heuristic_type());
-  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(0)->overall_server_type());
-  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(1)->overall_server_type());
+  // Status Quo (Q3/2017) - Small forms not supported.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        // Enabled.
+        {kAutofillEnforceMinRequiredFieldsForHeuristics,
+         kAutofillEnforceMinRequiredFieldsForQuery,
+         kAutofillEnforceMinRequiredFieldsForUpload},
+        // Disabled.
+        {});
+    FormStructure form_structure(form);
+    form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+    ASSERT_EQ(2U, form_structure.field_count());
+    ASSERT_EQ(1U, form_structure.autofill_count());
+    EXPECT_EQ(UNKNOWN_TYPE, form_structure.field(0)->heuristic_type());
+    EXPECT_EQ(UNKNOWN_TYPE, form_structure.field(1)->heuristic_type());
+    EXPECT_EQ(NO_SERVER_DATA, form_structure.field(0)->overall_server_type());
+    EXPECT_EQ(NO_SERVER_DATA, form_structure.field(1)->overall_server_type());
+    EXPECT_FALSE(form_structure.IsAutofillable());
+  }
+
+  // Enable small form heuristics.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        kAutofillEnforceMinRequiredFieldsForHeuristics);
+    FormStructure form_structure(form);
+    form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+    ASSERT_EQ(2U, form_structure.field_count());
+    ASSERT_EQ(2U, form_structure.autofill_count());
+    EXPECT_EQ(NAME_FIRST, form_structure.field(0)->heuristic_type());
+    EXPECT_EQ(NAME_LAST, form_structure.field(1)->heuristic_type());
+    EXPECT_EQ(NO_SERVER_DATA, form_structure.field(0)->overall_server_type());
+    EXPECT_EQ(NO_SERVER_DATA, form_structure.field(1)->overall_server_type());
+    EXPECT_EQ(NAME_FIRST, form_structure.field(0)->Type().GetStorableType());
+    EXPECT_EQ(NAME_LAST, form_structure.field(1)->Type().GetStorableType());
+    EXPECT_TRUE(form_structure.IsAutofillable());
+  }
+
+  // As a side effect of parsing small forms (if any of the heuristics, query,
+  // or upload minimmums are disabled, we'll autofill fields with an
+  // autocomplete attribute, even if its the only field in the form.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        kAutofillEnforceMinRequiredFieldsForUpload);
+    FormData form_copy = form;
+    form_copy.fields.pop_back();
+    FormStructure form_structure(form_copy);
+    form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+    ASSERT_EQ(1U, form_structure.field_count());
+    ASSERT_EQ(1U, form_structure.autofill_count());
+    EXPECT_EQ(UNKNOWN_TYPE, form_structure.field(0)->heuristic_type());
+    EXPECT_EQ(NO_SERVER_DATA, form_structure.field(0)->overall_server_type());
+    EXPECT_EQ(NAME_FIRST, form_structure.field(0)->Type().GetStorableType());
+    EXPECT_TRUE(form_structure.IsAutofillable());
+  }
 }
 
-// Even with an 'autocomplete' attribute set, ShouldBeCrowdsourced() should
+// Even with an 'autocomplete' attribute set, ShouldBeQueried() should
 // return true if the structure contains a password field, since there are
 // no local heuristics to depend upon in this case. Fields will still not be
 // considered autofillable though.
-TEST_F(FormStructureTest, PasswordFormShouldBeCrowdsourced) {
+TEST_F(FormStructureTest, PasswordFormShouldBeQueried) {
   FormData form;
 
   // Start with a regular contact form.
@@ -987,7 +1169,8 @@ TEST_F(FormStructureTest, PasswordFormShouldBeCrowdsourced) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
-  EXPECT_TRUE(form_structure.ShouldBeCrowdsourced());
+  EXPECT_TRUE(form_structure.ShouldBeQueried());
+  EXPECT_TRUE(form_structure.ShouldBeUploaded());
 }
 
 // Verify that we can correctly process sections listed in the |autocomplete|
