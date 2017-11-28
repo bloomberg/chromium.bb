@@ -13,7 +13,6 @@
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/single_thread_task_runner.h"
 #include "content/child/child_process.h"
-#include "content/common/child_process_messages.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"

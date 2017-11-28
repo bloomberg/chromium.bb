@@ -4,12 +4,6 @@
 
 // Multiply-included file, hence no include guard.
 
-#undef CONTENT_COMMON_CHILD_PROCESS_MESSAGES_H_
-#include "content/common/child_process_messages.h"
-#ifndef CONTENT_COMMON_CHILD_PROCESS_MESSAGES_H_
-#error "Failed to include content/common/child_process_messages.h"
-#endif
-
 #include "build/build_config.h"
 #undef CONTENT_COMMON_ACCESSIBILITY_MESSAGES_H_
 #include "content/common/accessibility_messages.h"
