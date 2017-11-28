@@ -44,11 +44,11 @@
 #include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
-#include "content/renderer/service_worker/service_worker_event_timer.h"
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
 #include "content/renderer/service_worker/service_worker_handle_reference.h"
 #include "content/renderer/service_worker/service_worker_network_provider.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
+#include "content/renderer/service_worker/service_worker_timeout_timer.h"
 #include "content/renderer/service_worker/service_worker_type_converters.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
 #include "content/renderer/service_worker/web_service_worker_impl.h"
@@ -305,13 +305,56 @@ void ToWebServiceWorkerResponse(const ServiceWorkerResponse& response,
       blink::WebVector<blink::WebString>(cors_exposed_header_names));
 }
 
-template <typename T, class... TArgs>
-void AbortPendingEventCallbacks(T& callbacks, TArgs... args) {
-  for (typename T::iterator it(&callbacks); !it.IsAtEnd(); it.Advance()) {
-    std::move(*it.GetCurrentValue())
-        .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED, args...,
-             base::Time::Now());
-  }
+// Finds an event callback keyed by |event_id| from |map|, and runs the callback
+// with |args|. Returns true if the callback was found and called, otherwise
+// returns false.
+template <typename MapType, class... Args>
+bool RunEventCallback(MapType* map,
+                      ServiceWorkerTimeoutTimer* timer,
+                      int event_id,
+                      Args... args) {
+  auto iter = map->find(event_id);
+  // The event may have been aborted.
+  if (iter == map->end())
+    return false;
+  std::move(iter->second).Run(args...);
+  map->erase(iter);
+  timer->EndEvent(event_id);
+  return true;
+}
+
+// Creates a callback which takes an |event_id|, which calls the given event's
+// callback with ABORTED status and removes it from |map|.
+template <typename MapType>
+base::OnceCallback<void(int /* event_id */)> CreateAbortCallback(MapType* map) {
+  return base::BindOnce(
+      [](MapType* map, base::Time dispatched_time, int event_id) {
+        auto iter = map->find(event_id);
+        DCHECK(iter != map->end());
+        std::move(iter->second)
+            .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
+                 dispatched_time);
+        map->erase(iter);
+      },
+      map, base::Time::Now());
+}
+
+// Same as CreateAbortCallback() for InstallEvent only.
+// DispatchInstallEventCallback has an additional parameter, so this is
+// separately defined.
+template <typename MapType>
+base::OnceCallback<void(int /* event_id */)> CreateInstallEventAbortCallback(
+    MapType* map) {
+  return base::BindOnce(
+      [](MapType* map, base::Time dispatched_time, int event_id) {
+        auto iter = map->find(event_id);
+        DCHECK(iter != map->end());
+        std::move(iter->second)
+            .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
+                 false /* has_fetch_handler */, dispatched_time);
+        map->erase(iter);
+      },
+      map, base::Time::Now());
 }
 
 void OnResponseBlobDispatchDone(
@@ -332,32 +375,6 @@ struct ServiceWorkerContextClient::WorkerContextData {
       base::IDMap<std::unique_ptr<blink::WebServiceWorkerClientCallbacks>>;
   using SkipWaitingCallbacksMap =
       base::IDMap<std::unique_ptr<blink::WebServiceWorkerSkipWaitingCallbacks>>;
-  using InstallEventCallbacksMap =
-      base::IDMap<std::unique_ptr<DispatchInstallEventCallback>>;
-  using ActivateEventCallbacksMap =
-      base::IDMap<std::unique_ptr<DispatchActivateEventCallback>>;
-  using BackgroundFetchAbortEventCallbacksMap =
-      base::IDMap<std::unique_ptr<DispatchBackgroundFetchAbortEventCallback>>;
-  using BackgroundFetchClickEventCallbacksMap =
-      base::IDMap<std::unique_ptr<DispatchBackgroundFetchClickEventCallback>>;
-  using BackgroundFetchFailEventCallbacksMap =
-      base::IDMap<std::unique_ptr<DispatchBackgroundFetchFailEventCallback>>;
-  using BackgroundFetchedEventCallbacksMap =
-      base::IDMap<std::unique_ptr<DispatchBackgroundFetchedEventCallback>>;
-  using SyncEventCallbacksMap =
-      base::IDMap<std::unique_ptr<DispatchSyncEventCallback>>;
-  using NotificationClickEventCallbacksMap =
-      base::IDMap<std::unique_ptr<DispatchNotificationClickEventCallback>>;
-  using NotificationCloseEventCallbacksMap =
-      base::IDMap<std::unique_ptr<DispatchNotificationCloseEventCallback>>;
-  using PushEventCallbacksMap =
-      base::IDMap<std::unique_ptr<DispatchPushEventCallback>>;
-  using ExtendableMessageEventCallbacksMap =
-      base::IDMap<std::unique_ptr<DispatchExtendableMessageEventCallback>>;
-  using NavigationPreloadRequestsMap =
-      base::IDMap<std::unique_ptr<NavigationPreloadRequest>>;
-  using InstallEventMethodsMap =
-      std::map<int, mojom::ServiceWorkerInstallEventMethodsAssociatedPtr>;
 
   explicit WorkerContextData(ServiceWorkerContextClient* owner)
       : event_dispatcher_binding(owner),
@@ -366,20 +383,6 @@ struct ServiceWorkerContextClient::WorkerContextData {
 
   ~WorkerContextData() {
     DCHECK(thread_checker.CalledOnValidThread());
-
-    AbortPendingEventCallbacks(install_event_callbacks,
-                               false /* has_fetch_handler */);
-    AbortPendingEventCallbacks(activate_event_callbacks);
-    AbortPendingEventCallbacks(background_fetch_abort_event_callbacks);
-    AbortPendingEventCallbacks(background_fetch_click_event_callbacks);
-    AbortPendingEventCallbacks(background_fetch_fail_event_callbacks);
-    AbortPendingEventCallbacks(background_fetched_event_callbacks);
-    AbortPendingEventCallbacks(sync_event_callbacks);
-    AbortPendingEventCallbacks(notification_click_event_callbacks);
-    AbortPendingEventCallbacks(notification_close_event_callbacks);
-    AbortPendingEventCallbacks(push_event_callbacks);
-    AbortPendingEventCallbacks(fetch_event_callbacks);
-    AbortPendingEventCallbacks(message_event_callbacks);
   }
 
   mojo::Binding<mojom::ServiceWorkerEventDispatcher> event_dispatcher_binding;
@@ -397,86 +400,50 @@ struct ServiceWorkerContextClient::WorkerContextData {
   // Pending callbacks for ClaimClients().
   ClaimClientsCallbacksMap claim_clients_callbacks;
 
-  // Pending callbacks for Install Events.
-  InstallEventCallbacksMap install_event_callbacks;
-
-  // Pending callbacks for Activate Events.
-  ActivateEventCallbacksMap activate_event_callbacks;
-
-  // Pending callbacks for Background Fetch Abort Events.
-  BackgroundFetchAbortEventCallbacksMap background_fetch_abort_event_callbacks;
-
-  // Pending callbacks for Background Fetch Click Events.
-  BackgroundFetchClickEventCallbacksMap background_fetch_click_event_callbacks;
-
-  // Pending callbacks for Background Fetch Fail Events.
-  BackgroundFetchFailEventCallbacksMap background_fetch_fail_event_callbacks;
-
-  // Pending callbacks for Background Fetched Events.
-  BackgroundFetchedEventCallbacksMap background_fetched_event_callbacks;
-
-  // Pending callbacks for Background Sync Events.
-  SyncEventCallbacksMap sync_event_callbacks;
-
-  // Pending callbacks for result of AbortPayment.
-  std::map<int /* abort_payment_event_id */,
-           payments::mojom::PaymentHandlerResponseCallbackPtr>
+  // Maps for inflight event callbacks.
+  // These are mapped from an event id issued from ServiceWorkerTimeoutTimer to
+  // the Mojo callback to notify the end of the event.
+  std::map<int, DispatchInstallEventCallback> install_event_callbacks;
+  std::map<int, DispatchActivateEventCallback> activate_event_callbacks;
+  std::map<int, DispatchBackgroundFetchAbortEventCallback>
+      background_fetch_abort_event_callbacks;
+  std::map<int, DispatchBackgroundFetchClickEventCallback>
+      background_fetch_click_event_callbacks;
+  std::map<int, DispatchBackgroundFetchFailEventCallback>
+      background_fetch_fail_event_callbacks;
+  std::map<int, DispatchBackgroundFetchedEventCallback>
+      background_fetched_event_callbacks;
+  std::map<int, DispatchSyncEventCallback> sync_event_callbacks;
+  std::map<int, payments::mojom::PaymentHandlerResponseCallbackPtr>
       abort_payment_result_callbacks;
-
-  // Pending callbacks for AbortPayment Events.
-  std::map<int /* abort_payment_event_id */,
-           DispatchCanMakePaymentEventCallback>
+  std::map<int, DispatchCanMakePaymentEventCallback>
       abort_payment_event_callbacks;
-
-  // Pending callbacks for result of CanMakePayment.
-  std::map<int /* can_make_payment_event_id */,
-           payments::mojom::PaymentHandlerResponseCallbackPtr>
-      can_make_payment_result_callbacks;
-
-  // Pending callbacks for CanMakePayment Events.
-  std::map<int /* can_make_payment_event_id */,
-           DispatchCanMakePaymentEventCallback>
+  std::map<int, DispatchCanMakePaymentEventCallback>
       can_make_payment_event_callbacks;
-
-  // Pending callbacks for Payment App Response.
-  std::map<int /* payment_request_id */,
-           payments::mojom::PaymentHandlerResponseCallbackPtr>
-      payment_response_callbacks;
-
-  // Pending callbacks for Payment Request Events.
-  std::map<int /* payment_request_id */, DispatchPaymentRequestEventCallback>
+  std::map<int, DispatchPaymentRequestEventCallback>
       payment_request_event_callbacks;
+  std::map<int, DispatchNotificationClickEventCallback>
+      notification_click_event_callbacks;
+  std::map<int, DispatchNotificationCloseEventCallback>
+      notification_close_event_callbacks;
+  std::map<int, DispatchPushEventCallback> push_event_callbacks;
+  std::map<int, DispatchFetchEventCallback> fetch_event_callbacks;
+  std::map<int, DispatchExtendableMessageEventCallback> message_event_callbacks;
 
-  // Pending callbacks for Notification Click Events.
-  NotificationClickEventCallbacksMap notification_click_event_callbacks;
-
-  // Pending callbacks for Notification Close Events.
-  NotificationCloseEventCallbacksMap notification_close_event_callbacks;
-
-  // Pending callbacks for Push Events.
-  PushEventCallbacksMap push_event_callbacks;
-
-  // Pending callbacks for Fetch Events.
-  // We use IDMap for minting an id for the event, which is used in
-  // other places too like |fetch_response_callbacks| and
-  // |NavigationPreloadRequest|.
-  base::IDMap<std::unique_ptr<DispatchFetchEventCallback>>
-      fetch_event_callbacks;
-
-  // Pending callbacks for respondWith on each fetch event.
-  std::map<int /* fetch_event_id */,
-           mojom::ServiceWorkerFetchResponseCallbackPtr>
+  // Maps for response callbacks.
+  // These are mapped from an event id to the Mojo interface pointer which is
+  // passed from the relevant DispatchSomeEvent() method.
+  std::map<int, payments::mojom::PaymentHandlerResponseCallbackPtr>
+      can_make_payment_result_callbacks;
+  std::map<int, payments::mojom::PaymentHandlerResponseCallbackPtr>
+      payment_response_callbacks;
+  std::map<int, mojom::ServiceWorkerFetchResponseCallbackPtr>
       fetch_response_callbacks;
+  std::map<int, mojom::ServiceWorkerInstallEventMethodsAssociatedPtr>
+      install_methods_map;
 
-  // Pending callbacks for Extendable Message Events.
-  ExtendableMessageEventCallbacksMap message_event_callbacks;
-
-  // Pending navigation preload requests.
-  NavigationPreloadRequestsMap preload_requests;
-
-  // Maps every install event id with its corresponding
-  // mojom::ServiceWorkerInstallEventMethodsAssociatedPt.
-  InstallEventMethodsMap install_methods_map;
+  // Inflight navigation preload requests.
+  base::IDMap<std::unique_ptr<NavigationPreloadRequest>> preload_requests;
 
   // S13nServiceWorker
   std::unique_ptr<ControllerServiceWorkerImpl> controller_impl;
@@ -484,7 +451,7 @@ struct ServiceWorkerContextClient::WorkerContextData {
   // S13nServiceWorker
   // Timer triggered when the service worker considers it should be stopped or
   // an event should be aborted.
-  std::unique_ptr<ServiceWorkerEventTimer> event_timer;
+  std::unique_ptr<ServiceWorkerTimeoutTimer> timeout_timer;
 
   base::ThreadChecker thread_checker;
   base::WeakPtrFactory<ServiceWorkerContextClient> weak_factory;
@@ -963,104 +930,72 @@ void ServiceWorkerContextClient::DidHandleActivateEvent(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
-  DispatchActivateEventCallback* callback =
-      context_->activate_event_callbacks.Lookup(request_id);
-  DCHECK(callback);
-  DCHECK(*callback);
-  std::move(*callback).Run(status,
-                           base::Time::FromDoubleT(event_dispatch_time));
-  context_->activate_event_callbacks.Remove(request_id);
-  context_->event_timer->EndEvent();
+  RunEventCallback(&context_->activate_event_callbacks,
+                   context_->timeout_timer.get(), request_id, status,
+                   base::Time::FromDoubleT(event_dispatch_time));
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchAbortEvent(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
-  DispatchBackgroundFetchAbortEventCallback* callback =
-      context_->background_fetch_abort_event_callbacks.Lookup(request_id);
-  DCHECK(callback);
-  DCHECK(*callback);
-  std::move(*callback).Run(status,
-                           base::Time::FromDoubleT(event_dispatch_time));
-  context_->background_fetch_abort_event_callbacks.Remove(request_id);
-  context_->event_timer->EndEvent();
+  RunEventCallback(&context_->background_fetch_abort_event_callbacks,
+                   context_->timeout_timer.get(), request_id, status,
+                   base::Time::FromDoubleT(event_dispatch_time));
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchClickEvent(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
-  DispatchBackgroundFetchClickEventCallback* callback =
-      context_->background_fetch_click_event_callbacks.Lookup(request_id);
-  DCHECK(callback);
-  DCHECK(*callback);
-  std::move(*callback).Run(status,
-                           base::Time::FromDoubleT(event_dispatch_time));
-  context_->background_fetch_click_event_callbacks.Remove(request_id);
-  context_->event_timer->EndEvent();
+  RunEventCallback(&context_->background_fetch_click_event_callbacks,
+                   context_->timeout_timer.get(), request_id, status,
+                   base::Time::FromDoubleT(event_dispatch_time));
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchFailEvent(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
-  DispatchBackgroundFetchFailEventCallback* callback =
-      context_->background_fetch_fail_event_callbacks.Lookup(request_id);
-  DCHECK(callback);
-  DCHECK(*callback);
-  std::move(*callback).Run(status,
-                           base::Time::FromDoubleT(event_dispatch_time));
-  context_->background_fetch_fail_event_callbacks.Remove(request_id);
-  context_->event_timer->EndEvent();
+  RunEventCallback(&context_->background_fetch_fail_event_callbacks,
+                   context_->timeout_timer.get(), request_id, status,
+                   base::Time::FromDoubleT(event_dispatch_time));
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchedEvent(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
-  DispatchBackgroundFetchedEventCallback* callback =
-      context_->background_fetched_event_callbacks.Lookup(request_id);
-  DCHECK(callback);
-  DCHECK(*callback);
-  std::move(*callback).Run(status,
-                           base::Time::FromDoubleT(event_dispatch_time));
-  context_->background_fetched_event_callbacks.Remove(request_id);
-  context_->event_timer->EndEvent();
+  RunEventCallback(&context_->background_fetched_event_callbacks,
+                   context_->timeout_timer.get(), request_id, status,
+                   base::Time::FromDoubleT(event_dispatch_time));
 }
 
 void ServiceWorkerContextClient::DidHandleExtendableMessageEvent(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
-  DispatchExtendableMessageEventCallback* callback =
-      context_->message_event_callbacks.Lookup(request_id);
-  DCHECK(callback);
-  DCHECK(*callback);
-  std::move(*callback).Run(status,
-                           base::Time::FromDoubleT(event_dispatch_time));
-  context_->message_event_callbacks.Remove(request_id);
-  context_->event_timer->EndEvent();
+  RunEventCallback(&context_->message_event_callbacks,
+                   context_->timeout_timer.get(), request_id, status,
+                   base::Time::FromDoubleT(event_dispatch_time));
 }
 
 void ServiceWorkerContextClient::DidHandleInstallEvent(
     int event_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
-  DispatchInstallEventCallback* callback =
-      context_->install_event_callbacks.Lookup(event_id);
-  DCHECK(callback);
-  DCHECK(*callback);
-  std::move(*callback).Run(status, proxy_->HasFetchEventHandler(),
-                           base::Time::FromDoubleT(event_dispatch_time));
-  context_->install_event_callbacks.Remove(event_id);
-  context_->install_methods_map.erase(event_id);
-  context_->event_timer->EndEvent();
+  if (RunEventCallback(&context_->install_event_callbacks,
+                       context_->timeout_timer.get(), event_id, status,
+                       proxy_->HasFetchEventHandler(),
+                       base::Time::FromDoubleT(event_dispatch_time))) {
+    context_->install_methods_map.erase(event_id);
+  }
 }
 
 void ServiceWorkerContextClient::RespondToFetchEventWithNoResponse(
     int fetch_event_id,
     double event_dispatch_time) {
+  DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
   const mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
       context_->fetch_response_callbacks[fetch_event_id];
   DCHECK(response_callback.is_bound());
@@ -1072,6 +1007,7 @@ void ServiceWorkerContextClient::RespondToFetchEvent(
     int fetch_event_id,
     const blink::WebServiceWorkerResponse& web_response,
     double event_dispatch_time) {
+  DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
   ServiceWorkerResponse response(
       GetServiceWorkerResponseFromWebResponse(web_response));
   const mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
@@ -1103,6 +1039,7 @@ void ServiceWorkerContextClient::RespondToFetchEventWithResponseStream(
     const blink::WebServiceWorkerResponse& web_response,
     blink::WebServiceWorkerStreamHandle* web_body_as_stream,
     double event_dispatch_time) {
+  DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
   ServiceWorkerResponse response(
       GetServiceWorkerResponseFromWebResponse(web_response));
   const mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
@@ -1124,87 +1061,62 @@ void ServiceWorkerContextClient::RespondToFetchEventWithResponseStream(
 }
 
 void ServiceWorkerContextClient::DidHandleFetchEvent(
-    int fetch_event_id,
+    int event_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
   // events have completed. (crbug.com/736697)
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerContextClient::DidHandleFetchEvent", "event_id",
-               fetch_event_id);
-  DispatchFetchEventCallback* callback =
-      context_->fetch_event_callbacks.Lookup(fetch_event_id);
-  DCHECK(callback);
-  DCHECK(*callback);
-  std::move(*callback).Run(status,
-                           base::Time::FromDoubleT(event_dispatch_time));
-
-  context_->fetch_event_callbacks.Remove(fetch_event_id);
-  context_->event_timer->EndEvent();
+               event_id);
+  if (RunEventCallback(&context_->fetch_event_callbacks,
+                       context_->timeout_timer.get(), event_id, status,
+                       base::Time::FromDoubleT(event_dispatch_time))) {
+    context_->fetch_response_callbacks.erase(event_id);
+  }
 }
 
 void ServiceWorkerContextClient::DidHandleNotificationClickEvent(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
-  DispatchNotificationClickEventCallback* callback =
-      context_->notification_click_event_callbacks.Lookup(request_id);
-  DCHECK(callback);
-  DCHECK(*callback);
-  std::move(*callback).Run(status,
-                           base::Time::FromDoubleT(event_dispatch_time));
-
-  context_->notification_click_event_callbacks.Remove(request_id);
-  context_->event_timer->EndEvent();
+  RunEventCallback(&context_->notification_click_event_callbacks,
+                   context_->timeout_timer.get(), request_id, status,
+                   base::Time::FromDoubleT(event_dispatch_time));
 }
 
 void ServiceWorkerContextClient::DidHandleNotificationCloseEvent(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
-  DispatchNotificationCloseEventCallback* callback =
-      context_->notification_close_event_callbacks.Lookup(request_id);
-  DCHECK(callback);
-  DCHECK(*callback);
-  std::move(*callback).Run(status,
-                           base::Time::FromDoubleT(event_dispatch_time));
-
-  context_->notification_close_event_callbacks.Remove(request_id);
-  context_->event_timer->EndEvent();
+  RunEventCallback(&context_->notification_close_event_callbacks,
+                   context_->timeout_timer.get(), request_id, status,
+                   base::Time::FromDoubleT(event_dispatch_time));
 }
 
 void ServiceWorkerContextClient::DidHandlePushEvent(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
-  DispatchPushEventCallback* callback =
-      context_->push_event_callbacks.Lookup(request_id);
-  DCHECK(callback);
-  DCHECK(*callback);
-  std::move(*callback).Run(status,
-                           base::Time::FromDoubleT(event_dispatch_time));
-  context_->push_event_callbacks.Remove(request_id);
-  context_->event_timer->EndEvent();
+  RunEventCallback(&context_->push_event_callbacks,
+                   context_->timeout_timer.get(), request_id, status,
+                   base::Time::FromDoubleT(event_dispatch_time));
 }
 
 void ServiceWorkerContextClient::DidHandleSyncEvent(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
-  DispatchSyncEventCallback* callback =
-      context_->sync_event_callbacks.Lookup(request_id);
-  DCHECK(callback);
-  DCHECK(*callback);
-  std::move(*callback).Run(status,
-                           base::Time::FromDoubleT(event_dispatch_time));
-  context_->sync_event_callbacks.Remove(request_id);
-  context_->event_timer->EndEvent();
+  RunEventCallback(&context_->sync_event_callbacks,
+                   context_->timeout_timer.get(), request_id, status,
+                   base::Time::FromDoubleT(event_dispatch_time));
 }
 
 void ServiceWorkerContextClient::RespondToAbortPaymentEvent(
     int event_id,
     bool payment_aborted,
     double dispatch_event_time) {
+  DCHECK(base::ContainsKey(context_->abort_payment_result_callbacks, event_id));
   const payments::mojom::PaymentHandlerResponseCallbackPtr& result_callback =
       context_->abort_payment_result_callbacks[event_id];
   result_callback->OnResponseForAbortPayment(
@@ -1216,17 +1128,19 @@ void ServiceWorkerContextClient::DidHandleAbortPaymentEvent(
     int event_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double dispatch_event_time) {
-  DispatchAbortPaymentEventCallback callback =
-      std::move(context_->abort_payment_event_callbacks[event_id]);
-  std::move(callback).Run(status, base::Time::FromDoubleT(dispatch_event_time));
-  context_->abort_payment_event_callbacks.erase(event_id);
-  context_->event_timer->EndEvent();
+  if (RunEventCallback(&context_->abort_payment_event_callbacks,
+                       context_->timeout_timer.get(), event_id, status,
+                       base::Time::FromDoubleT(dispatch_event_time))) {
+    context_->abort_payment_result_callbacks.erase(event_id);
+  }
 }
 
 void ServiceWorkerContextClient::RespondToCanMakePaymentEvent(
     int event_id,
     bool can_make_payment,
     double dispatch_event_time) {
+  DCHECK(
+      base::ContainsKey(context_->can_make_payment_result_callbacks, event_id));
   const payments::mojom::PaymentHandlerResponseCallbackPtr& result_callback =
       context_->can_make_payment_result_callbacks[event_id];
   result_callback->OnResponseForCanMakePayment(
@@ -1238,17 +1152,19 @@ void ServiceWorkerContextClient::DidHandleCanMakePaymentEvent(
     int event_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double dispatch_event_time) {
-  DispatchCanMakePaymentEventCallback callback =
-      std::move(context_->can_make_payment_event_callbacks[event_id]);
-  std::move(callback).Run(status, base::Time::FromDoubleT(dispatch_event_time));
-  context_->can_make_payment_event_callbacks.erase(event_id);
-  context_->event_timer->EndEvent();
+  if (RunEventCallback(&context_->can_make_payment_event_callbacks,
+                       context_->timeout_timer.get(), event_id, status,
+                       base::Time::FromDoubleT(dispatch_event_time))) {
+    context_->can_make_payment_result_callbacks.erase(event_id);
+  }
 }
 
 void ServiceWorkerContextClient::RespondToPaymentRequestEvent(
     int payment_request_id,
     const blink::WebPaymentHandlerResponse& web_response,
     double dispatch_event_time) {
+  DCHECK(base::ContainsKey(context_->payment_response_callbacks,
+                           payment_request_id));
   const payments::mojom::PaymentHandlerResponseCallbackPtr& response_callback =
       context_->payment_response_callbacks[payment_request_id];
   payments::mojom::PaymentHandlerResponsePtr response =
@@ -1264,11 +1180,11 @@ void ServiceWorkerContextClient::DidHandlePaymentRequestEvent(
     int payment_request_id,
     blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
-  DispatchPaymentRequestEventCallback callback =
-      std::move(context_->payment_request_event_callbacks[payment_request_id]);
-  std::move(callback).Run(status, base::Time::FromDoubleT(event_dispatch_time));
-  context_->payment_request_event_callbacks.erase(payment_request_id);
-  context_->event_timer->EndEvent();
+  if (RunEventCallback(&context_->payment_request_event_callbacks,
+                       context_->timeout_timer.get(), payment_request_id,
+                       status, base::Time::FromDoubleT(event_dispatch_time))) {
+    context_->payment_response_callbacks.erase(payment_request_id);
+  }
 }
 
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
@@ -1362,15 +1278,15 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
     DispatchSyncEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchSyncEvent");
-  int request_id = context_->sync_event_callbacks.Add(
-      std::make_unique<DispatchSyncEventCallback>(std::move(callback)));
+  int request_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->sync_event_callbacks));
+  context_->sync_event_callbacks.emplace(request_id, std::move(callback));
 
   // TODO(shimazu): Use typemap when this is moved to blink-side.
   blink::WebServiceWorkerContextProxy::LastChanceOption web_last_chance =
       mojo::ConvertTo<blink::WebServiceWorkerContextProxy::LastChanceOption>(
           last_chance);
 
-  context_->event_timer->StartEvent();
   // TODO(jkarlin): Make this blink::WebString::FromUTF8Lenient once
   // https://crrev.com/1768063002/ lands.
   proxy_->DispatchSyncEvent(request_id, blink::WebString::FromUTF8(tag),
@@ -1378,53 +1294,56 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
 }
 
 void ServiceWorkerContextClient::DispatchAbortPaymentEvent(
-    int event_id,
+    int /* event_id */,  // TODO(shimazu): Remove this.
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     DispatchAbortPaymentEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchAbortPaymentEvent");
-  context_->abort_payment_result_callbacks.insert(
-      std::make_pair(event_id, std::move(response_callback)));
-  context_->abort_payment_event_callbacks.insert(
-      std::make_pair(event_id, std::move(callback)));
-  context_->event_timer->StartEvent();
+  int event_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->abort_payment_event_callbacks));
+  context_->abort_payment_event_callbacks.emplace(event_id,
+                                                  std::move(callback));
+  context_->abort_payment_result_callbacks.emplace(
+      event_id, std::move(response_callback));
   proxy_->DispatchAbortPaymentEvent(event_id);
 }
 
 void ServiceWorkerContextClient::DispatchCanMakePaymentEvent(
-    int event_id,
+    int /* event_id */,  // TODO(shimazu): Remove this.
     payments::mojom::CanMakePaymentEventDataPtr eventData,
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     DispatchCanMakePaymentEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchCanMakePaymentEvent");
-  context_->can_make_payment_result_callbacks.insert(
-      std::make_pair(event_id, std::move(response_callback)));
-  context_->can_make_payment_event_callbacks.insert(
-      std::make_pair(event_id, std::move(callback)));
+  int event_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->can_make_payment_event_callbacks));
+  context_->can_make_payment_event_callbacks.emplace(event_id,
+                                                     std::move(callback));
+  context_->can_make_payment_result_callbacks.emplace(
+      event_id, std::move(response_callback));
 
   blink::WebCanMakePaymentEventData webEventData =
       mojo::ConvertTo<blink::WebCanMakePaymentEventData>(std::move(eventData));
-  context_->event_timer->StartEvent();
   proxy_->DispatchCanMakePaymentEvent(event_id, webEventData);
 }
 
 void ServiceWorkerContextClient::DispatchPaymentRequestEvent(
-    int payment_request_id,
+    int /* payment_request_id */,  // TODO(shimazu): Remove this.
     payments::mojom::PaymentRequestEventDataPtr eventData,
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     DispatchPaymentRequestEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchPaymentRequestEvent");
-  context_->payment_response_callbacks.insert(
-      std::make_pair(payment_request_id, std::move(response_callback)));
-  context_->payment_request_event_callbacks.insert(
-      std::make_pair(payment_request_id, std::move(callback)));
+  int event_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->payment_request_event_callbacks));
+  context_->payment_request_event_callbacks.emplace(event_id,
+                                                    std::move(callback));
+  context_->payment_response_callbacks.emplace(event_id,
+                                               std::move(response_callback));
 
   blink::WebPaymentRequestEventData webEventData =
       mojo::ConvertTo<blink::WebPaymentRequestEventData>(std::move(eventData));
-  context_->event_timer->StartEvent();
-  proxy_->DispatchPaymentRequestEvent(payment_request_id, webEventData);
+  proxy_->DispatchPaymentRequestEvent(event_id, webEventData);
 }
 
 void ServiceWorkerContextClient::Send(IPC::Message* message) {
@@ -1442,8 +1361,8 @@ void ServiceWorkerContextClient::SendWorkerStarted() {
                                   this);
 
   // Start the idle timer.
-  context_->event_timer =
-      std::make_unique<ServiceWorkerEventTimer>(base::BindRepeating(
+  context_->timeout_timer =
+      std::make_unique<ServiceWorkerTimeoutTimer>(base::BindRepeating(
           &ServiceWorkerContextClient::OnIdle, base::Unretained(this)));
 }
 
@@ -1451,9 +1370,9 @@ void ServiceWorkerContextClient::DispatchActivateEvent(
     DispatchActivateEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchActivateEvent");
-  int request_id = context_->activate_event_callbacks.Add(
-      std::make_unique<DispatchActivateEventCallback>(std::move(callback)));
-  context_->event_timer->StartEvent();
+  int request_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->activate_event_callbacks));
+  context_->activate_event_callbacks.emplace(request_id, std::move(callback));
   proxy_->DispatchActivateEvent(request_id);
 }
 
@@ -1462,10 +1381,10 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchAbortEvent(
     DispatchBackgroundFetchAbortEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchBackgroundFetchAbortEvent");
-  int request_id = context_->background_fetch_abort_event_callbacks.Add(
-      std::make_unique<DispatchBackgroundFetchAbortEventCallback>(
-          std::move(callback)));
-  context_->event_timer->StartEvent();
+  int request_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->background_fetch_abort_event_callbacks));
+  context_->background_fetch_abort_event_callbacks.emplace(request_id,
+                                                           std::move(callback));
   proxy_->DispatchBackgroundFetchAbortEvent(
       request_id, blink::WebString::FromUTF8(developer_id));
 }
@@ -1476,16 +1395,15 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchClickEvent(
     DispatchBackgroundFetchClickEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchBackgroundFetchClickEvent");
-  int request_id = context_->background_fetch_click_event_callbacks.Add(
-      std::make_unique<DispatchBackgroundFetchClickEventCallback>(
-          std::move(callback)));
+  int request_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->background_fetch_click_event_callbacks));
+  context_->background_fetch_click_event_callbacks.emplace(request_id,
+                                                           std::move(callback));
 
   // TODO(peter): Use typemap when this is moved to blink-side.
   blink::WebServiceWorkerContextProxy::BackgroundFetchState web_state =
       mojo::ConvertTo<
           blink::WebServiceWorkerContextProxy::BackgroundFetchState>(state);
-
-  context_->event_timer->StartEvent();
   proxy_->DispatchBackgroundFetchClickEvent(
       request_id, blink::WebString::FromUTF8(developer_id), web_state);
 }
@@ -1496,9 +1414,10 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchFailEvent(
     DispatchBackgroundFetchFailEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchBackgroundFetchFailEvent");
-  int request_id = context_->background_fetch_fail_event_callbacks.Add(
-      std::make_unique<DispatchBackgroundFetchFailEventCallback>(
-          std::move(callback)));
+  int request_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->background_fetch_fail_event_callbacks));
+  context_->background_fetch_fail_event_callbacks.emplace(request_id,
+                                                          std::move(callback));
 
   blink::WebVector<blink::WebBackgroundFetchSettledFetch> web_fetches(
       fetches.size());
@@ -1507,7 +1426,6 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchFailEvent(
     ToWebServiceWorkerResponse(fetches[i].response, &web_fetches[i].response);
   }
 
-  context_->event_timer->StartEvent();
   proxy_->DispatchBackgroundFetchFailEvent(
       request_id, blink::WebString::FromUTF8(developer_id), web_fetches);
 }
@@ -1519,9 +1437,10 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchedEvent(
     DispatchBackgroundFetchedEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchBackgroundFetchedEvent");
-  int request_id = context_->background_fetched_event_callbacks.Add(
-      std::make_unique<DispatchBackgroundFetchedEventCallback>(
-          std::move(callback)));
+  int request_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->background_fetched_event_callbacks));
+  context_->background_fetched_event_callbacks.emplace(request_id,
+                                                       std::move(callback));
 
   blink::WebVector<blink::WebBackgroundFetchSettledFetch> web_fetches(
       fetches.size());
@@ -1530,7 +1449,6 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchedEvent(
     ToWebServiceWorkerResponse(fetches[i].response, &web_fetches[i].response);
   }
 
-  context_->event_timer->StartEvent();
   proxy_->DispatchBackgroundFetchedEvent(
       request_id, blink::WebString::FromUTF8(developer_id),
       blink::WebString::FromUTF8(unique_id), web_fetches);
@@ -1542,15 +1460,15 @@ void ServiceWorkerContextClient::DispatchInstallEvent(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchInstallEvent");
 
-  int event_id = context_->install_event_callbacks.Add(
-      std::make_unique<DispatchInstallEventCallback>(std::move(callback)));
+  int event_id = context_->timeout_timer->StartEvent(
+      CreateInstallEventAbortCallback(&context_->install_event_callbacks));
+  context_->install_event_callbacks.emplace(event_id, std::move(callback));
 
   DCHECK(!context_->install_methods_map.count(event_id));
   mojom::ServiceWorkerInstallEventMethodsAssociatedPtr install_methods;
   install_methods.Bind(std::move(client));
-  context_->install_methods_map[event_id] = std::move(install_methods);
+  context_->install_methods_map.emplace(event_id, std::move(install_methods));
 
-  context_->event_timer->StartEvent();
   proxy_->DispatchInstallEvent(event_id);
 }
 
@@ -1559,15 +1477,13 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
     DispatchExtendableMessageEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchExtendableMessageEvent");
-  int request_id = context_->message_event_callbacks.Add(
-      std::make_unique<DispatchExtendableMessageEventCallback>(
-          std::move(callback)));
+  int request_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->message_event_callbacks));
+  context_->message_event_callbacks.emplace(request_id, std::move(callback));
 
   if (event->source.client_info.IsValid()) {
     blink::WebServiceWorkerClientInfo web_client =
         ToWebServiceWorkerClientInfo(event->source.client_info);
-
-    context_->event_timer->StartEvent();
     proxy_->DispatchExtendableMessageEvent(
         request_id, blink::WebString::FromUTF16(event->message),
         event->source_origin,
@@ -1588,8 +1504,6 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
           sender_.get(), main_thread_task_runner_.get());
   scoped_refptr<WebServiceWorkerImpl> worker =
       dispatcher->GetOrCreateServiceWorker(std::move(handle));
-
-  context_->event_timer->StartEvent();
   proxy_->DispatchExtendableMessageEvent(
       request_id, blink::WebString::FromUTF16(event->message),
       event->source_origin,
@@ -1603,23 +1517,22 @@ void ServiceWorkerContextClient::DispatchLegacyFetchEvent(
     mojom::FetchEventPreloadHandlePtr preload_handle,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchLegacyFetchEventCallback callback) {
-  // Register callbacks for notifying about event completion and the response.
-  int fetch_event_id = context_->fetch_event_callbacks.Add(
-      std::make_unique<DispatchFetchEventCallback>(std::move(callback)));
-  context_->fetch_response_callbacks.insert(
-      std::make_pair(fetch_event_id, std::move(response_callback)));
+  int event_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->fetch_event_callbacks));
+  context_->fetch_event_callbacks.emplace(event_id, std::move(callback));
+  context_->fetch_response_callbacks.emplace(event_id,
+                                             std::move(response_callback));
 
   // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
   // events have completed. (crbug.com/736697)
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerContextClient::DispatchFetchEvent", "event_id",
-               fetch_event_id);
+               event_id);
 
   // Set up for navigation preload (FetchEvent#preloadResponse) if needed.
   const bool navigation_preload_sent = !!preload_handle;
   if (navigation_preload_sent) {
-    SetupNavigationPreload(fetch_event_id, request.url,
-                           std::move(preload_handle));
+    SetupNavigationPreload(event_id, request.url, std::move(preload_handle));
   }
 
   // Dispatch the event to the service worker execution context.
@@ -1627,13 +1540,10 @@ void ServiceWorkerContextClient::DispatchLegacyFetchEvent(
       request.fetch_type == ServiceWorkerFetchType::FOREIGN_FETCH;
   blink::WebServiceWorkerRequest web_request;
   ToWebServiceWorkerRequest(request, &web_request);
-
-  context_->event_timer->StartEvent();
   if (foreign_fetch) {
-    proxy_->DispatchForeignFetchEvent(fetch_event_id, web_request);
+    proxy_->DispatchForeignFetchEvent(event_id, web_request);
   } else {
-    proxy_->DispatchFetchEvent(fetch_event_id, web_request,
-                               navigation_preload_sent);
+    proxy_->DispatchFetchEvent(event_id, web_request, navigation_preload_sent);
   }
 }
 
@@ -1643,32 +1553,28 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
     mojom::FetchEventPreloadHandlePtr preload_handle,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
-  // Register callbacks for notifying about event completion and the response.
-  int fetch_event_id = context_->fetch_event_callbacks.Add(
-      std::make_unique<DispatchFetchEventCallback>(std::move(callback)));
-  context_->fetch_response_callbacks.insert(
-      std::make_pair(fetch_event_id, std::move(response_callback)));
+  int event_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->fetch_event_callbacks));
+  context_->fetch_event_callbacks.emplace(event_id, std::move(callback));
+  context_->fetch_response_callbacks.emplace(event_id,
+                                             std::move(response_callback));
 
   // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
   // events have completed. (crbug.com/736697)
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerContextClient::DispatchFetchEvent", "event_id",
-               fetch_event_id);
+               event_id);
 
   // Set up for navigation preload (FetchEvent#preloadResponse) if needed.
   const bool navigation_preload_sent = !!preload_handle;
   if (navigation_preload_sent) {
-    SetupNavigationPreload(fetch_event_id, request.url,
-                           std::move(preload_handle));
+    SetupNavigationPreload(event_id, request.url, std::move(preload_handle));
   }
 
   // Dispatch the event to the service worker execution context.
   blink::WebServiceWorkerRequest web_request;
   ToWebServiceWorkerRequest(request, &web_request);
-
-  context_->event_timer->StartEvent();
-  proxy_->DispatchFetchEvent(fetch_event_id, web_request,
-                             navigation_preload_sent);
+  proxy_->DispatchFetchEvent(event_id, web_request, navigation_preload_sent);
 }
 
 void ServiceWorkerContextClient::DispatchNotificationClickEvent(
@@ -1680,15 +1586,15 @@ void ServiceWorkerContextClient::DispatchNotificationClickEvent(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchNotificationClickEvent");
 
-  int request_id = context_->notification_click_event_callbacks.Add(
-      std::make_unique<DispatchNotificationClickEventCallback>(
-          std::move(callback)));
+  int request_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->notification_click_event_callbacks));
+  context_->notification_click_event_callbacks.emplace(request_id,
+                                                       std::move(callback));
 
   blink::WebString web_reply;
   if (reply)
     web_reply = blink::WebString::FromUTF16(reply.value());
 
-  context_->event_timer->StartEvent();
   proxy_->DispatchNotificationClickEvent(
       request_id, blink::WebString::FromUTF8(notification_id),
       ToWebNotificationData(notification_data), action_index, web_reply);
@@ -1701,11 +1607,10 @@ void ServiceWorkerContextClient::DispatchNotificationCloseEvent(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchNotificationCloseEvent");
 
-  int request_id = context_->notification_close_event_callbacks.Add(
-      std::make_unique<DispatchNotificationCloseEventCallback>(
-          std::move(callback)));
-
-  context_->event_timer->StartEvent();
+  int request_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->notification_close_event_callbacks));
+  context_->notification_close_event_callbacks.emplace(request_id,
+                                                       std::move(callback));
   proxy_->DispatchNotificationCloseEvent(
       request_id, blink::WebString::FromUTF8(notification_id),
       ToWebNotificationData(notification_data));
@@ -1716,15 +1621,15 @@ void ServiceWorkerContextClient::DispatchPushEvent(
     DispatchPushEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchPushEvent");
-  int request_id = context_->push_event_callbacks.Add(
-      std::make_unique<DispatchPushEventCallback>(std::move(callback)));
+
+  int request_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->push_event_callbacks));
+  context_->push_event_callbacks.emplace(request_id, std::move(callback));
 
   // Only set data to be a valid string if the payload had decrypted data.
   blink::WebString data;
   if (!payload.is_null)
     data = blink::WebString::FromUTF8(payload.data);
-
-  context_->event_timer->StartEvent();
   proxy_->DispatchPushEvent(request_id, data);
 }
 
@@ -1954,8 +1859,6 @@ void ServiceWorkerContextClient::SetupNavigationPreload(
 }
 
 void ServiceWorkerContextClient::OnIdle() {
-  if (!ServiceWorkerUtils::IsServicificationEnabled())
-    return;
   // TODO(crbug.com/774374): Ignore events from clients after this point until
   // an event from the browser process or StopWorker() is received.
   (*instance_host_)->RequestTermination();
