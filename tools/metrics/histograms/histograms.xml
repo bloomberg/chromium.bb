@@ -30446,6 +30446,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="IOS.PageLoadCount.Counts"
+    enum="IOSPageLoadCountNavigationType">
+  <owner>danyao@chromium.org</owner>
+  <summary>The number of navigation started events by navigation type.</summary>
+</histogram>
+
+<histogram name="IOS.PageLoadCount.LoadingStarted">
+  <owner>danyao@chromium.org</owner>
+  <summary>
+    The &quot;true&quot; value of this boolean histogram counts the number of
+    page loading started events. The &quot;false&quot; value will never be seen.
+  </summary>
+</histogram>
+
+<histogram name="IOS.PageLoadCountMigration.Counts"
+    enum="IOSPageLoadCountNavigationType">
+  <obsolete>
+    Deprecated 2017-11.
+  </obsolete>
+  <owner>danyao@chromium.org</owner>
+  <summary>
+    Counts different types of navigation and loading events that are relevant to
+    counting page loads.
+  </summary>
+</histogram>
+
 <histogram name="IOS.PageLoadTiming.OmnibarToPageLoaded" units="ms">
   <owner>danyao@chromium.org</owner>
   <summary>
