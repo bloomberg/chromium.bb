@@ -15,11 +15,13 @@
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -146,6 +148,13 @@ void InlineLoginHandler::HandleCompleteLoginMessage(
 
 void InlineLoginHandler::HandleSwitchToFullTabMessage(
     const base::ListValue* args) {
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  if (browser) {
+    // |web_ui| is already presented in a full tab. Ignore this call.
+    return;
+  }
+
   std::string url_str;
   CHECK(args->GetString(0, &url_str));
 
@@ -160,12 +169,17 @@ void InlineLoginHandler::HandleSwitchToFullTabMessage(
       main_frame_url, signin::kSignInPromoQueryKeyShowAccountManagement, "1");
   main_frame_url = net::AppendOrReplaceQueryParameter(
       main_frame_url, signin::kSignInPromoQueryKeyForceKeepData, "1");
+  if (base::FeatureList::IsEnabled(
+          features::kRemoveUsageOfDeprecatedGaiaSigninEndpoint)) {
+    main_frame_url = net::AppendOrReplaceQueryParameter(
+        main_frame_url, signin::kSignInPromoQueryKeyConstrained, "1");
+  } else {
+    main_frame_url = net::AppendOrReplaceQueryParameter(
+        main_frame_url, signin::kSignInPromoQueryKeyConstrained, "0");
+  }
 
-  chrome::NavigateParams params(
-      profile,
-      net::AppendOrReplaceQueryParameter(
-          main_frame_url, signin::kSignInPromoQueryKeyConstrained, "0"),
-      ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  chrome::NavigateParams params(profile, main_frame_url,
+                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   chrome::Navigate(&params);
 
   CloseDialogFromJavascript();
