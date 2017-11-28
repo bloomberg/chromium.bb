@@ -68,7 +68,10 @@ yes_no() {
 # Checks whether a particular package is available in the repos.
 # USAGE: $ package_exists <package name>
 package_exists() {
-  [ ! -z "$(apt-cache search --names-only "$1" | \
+  # 'apt-cache search' takes a regex string, so eg. the +'s in packages like
+  # "libstdc++" need to be escaped.
+  local escaped="$(echo $1 | sed 's/[\~\+\.\:-]/\\&/g')"
+  [ ! -z "$(apt-cache search --names-only "${escaped}" | \
             awk '$1 == "'$1'" { print $1; }')" ]
 }
 
@@ -271,41 +274,84 @@ lib_list="\
 
 # Debugging symbols for all of the run-time libraries
 dbg_list="\
-  libatk1.0-dbg
   libc6-dbg
-  libcairo2-dbg
   libffi6-dbg
-  libfontconfig1-dbg
-  libglib2.0-0-dbg
   libgtk2.0-0-dbg
-  libgtk-3-0-dbg
-  libpango1.0-0-dbg
   libpcre3-dbg
   libpixman-1-0-dbg
   libsqlite3-0-dbg
-  libx11-6-dbg
-  libx11-xcb1-dbg
   libxau6-dbg
   libxcb1-dbg
   libxcomposite1-dbg
-  libxcursor1-dbg
-  libxdamage1-dbg
   libxdmcp6-dbg
   libxext6-dbg
-  libxfixes3-dbg
-  libxi6-dbg
   libxinerama1-dbg
-  libxrandr2-dbg
-  libxrender1-dbg
-  libxtst6-dbg
   zlib1g-dbg
 "
 
-# Find the proper version of libstdc++6-4.x-dbg.
-if [ "x$distro_codename" = "xtrusty" ]; then
-  dbg_list="${dbg_list} libstdc++6-4.8-dbg"
-else
+if package_exists libstdc++6-6-dbg; then
+  dbg_list="${dbg_list} libstdc++6-6-dbg"
+elif package_exists libstdc++6-4.9-dbg; then
   dbg_list="${dbg_list} libstdc++6-4.9-dbg"
+else
+  dbg_list="${dbg_list} libstdc++6-4.8-dbg"
+fi
+if package_exists libgtk-3-0-dbgsym; then
+  lib_list="${lib_list} libgtk-3-0-dbgsym"
+elif package_exists libgtk-3-0-dbg; then
+  lib_list="${lib_list} libgtk-3-0-dbg"
+fi
+if package_exists libatk1.0-0-dbgsym; then
+  lib_list="${lib_list} libatk1.0-0-dbgsym"
+elif package_exists libatk1.0-dbg; then
+  lib_list="${lib_list} libatk1.0-dbg"
+fi
+if package_exists libcairo2-dbgsym; then
+  lib_list="${lib_list} libcairo2-dbgsym"
+elif package_exists libcairo2-dbg; then
+  lib_list="${lib_list} libcairo2-dbg"
+fi
+if package_exists libfontconfig1-dbgsym; then
+  lib_list="${lib_list} libfontconfig1-dbgsym"
+else
+  lib_list="${lib_list} libfontconfig1-dbg"
+fi
+if package_exists libxdamage1-dbgsym; then
+  lib_list="${lib_list} libxdamage1-dbgsym"
+elif package_exists libxdamage1-dbg; then
+  lib_list="${lib_list} libxdamage1-dbg"
+fi
+if package_exists libpango1.0-dev-dbgsym; then
+  lib_list="${lib_list} libpango1.0-dev-dbgsym"
+elif package_exists libpango1.0-0-dbg; then
+  lib_list="${lib_list} libpango1.0-0-dbg"
+fi
+if package_exists libx11-6-dbg; then
+    lib_list="${lib_list} libx11-6-dbg"
+fi
+if package_exists libx11-xcb1-dbg; then
+    lib_list="${lib_list} libx11-xcb1-dbg"
+fi
+if package_exists libxfixes3-dbg; then
+    lib_list="${lib_list} libxfixes3-dbg"
+fi
+if package_exists libxi6-dbg; then
+    lib_list="${lib_list} libxi6-dbg"
+fi
+if package_exists libxrandr2-dbg; then
+    lib_list="${lib_list} libxrandr2-dbg"
+fi
+if package_exists libxrender1-dbg; then
+    lib_list="${lib_list} libxrender1-dbg"
+fi
+if package_exists libxtst6-dbg; then
+    lib_list="${lib_list} libxtst6-dbg"
+fi
+if package_exists libglib2.0-0-dbg; then
+    lib_list="${lib_list} libglib2.0-0-dbg"
+fi
+if package_exists libxcursor1-dbg; then
+    lib_list="${lib_list} libxcursor1-dbg"
 fi
 
 # 32-bit libraries needed e.g. to compile V8 snapshot for Android or armhf
@@ -533,15 +579,6 @@ then
 fi
 if test "$do_inst_syms" = "1"; then
   echo "Including debugging symbols."
-  # Many debug packages are not available in Debian stretch,
-  # so exclude the ones that are missing.
-  available_dbg_packages=""
-  for package in ${dbg_list}; do
-    if package_exists ${package}; then
-      available_dbg_packages="${available_dbg_packages} ${package}"
-    fi
-  done
-  dbg_list="${available_dbg_packages}"
 else
   echo "Skipping debugging symbols."
   dbg_list=
