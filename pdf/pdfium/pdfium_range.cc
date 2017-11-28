@@ -74,13 +74,11 @@ base::string16 PDFiumRange::GetText() const {
   }
 
   if (count > 0) {
-    // Adding +1 to count to account for the string terminator that is included.
-    PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(
-        &rv, count + 1, false);
+    PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(&rv, count,
+                                                                    false);
     unsigned short* data =
         reinterpret_cast<unsigned short*>(api_string_adapter.GetData());
-    int written =
-        FPDFText_GetText(page_->GetTextPage(), index, count + 1, data);
+    int written = FPDFText_GetText(page_->GetTextPage(), index, count, data);
     api_string_adapter.Close(written);
   }
 
