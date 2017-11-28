@@ -15,6 +15,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/search_engines/util.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
+#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -41,6 +42,7 @@
 #import "ios/chrome/browser/ui/voice/text_to_speech_player.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -164,8 +166,15 @@
                         self.browserState)
       toolbarButton:self.toolbarViewController.toolsMenuButton];
 
+  self.mediator.voiceSearchProvider =
+      ios::GetChromeBrowserProvider()->GetVoiceSearchProvider();
   self.mediator.consumer = self.toolbarViewController;
   self.mediator.webStateList = self.webStateList;
+  self.mediator.bookmarkModel =
+      ios::BookmarkModelFactory::GetForBrowserState(self.browserState);
+
+  if (self.delegate)
+    [self startObservingTTSNotifications];
 }
 
 - (void)stop {
