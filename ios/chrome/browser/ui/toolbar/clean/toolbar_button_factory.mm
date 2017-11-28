@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -122,18 +123,15 @@ const int styleCount = 2;
   return tabSwitcherGridButton;
 }
 
-- (ToolbarButton*)toolsMenuToolbarButton {
-  int toolsMenuButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
-      TOOLBAR_IDR_TWO_STATE(TOOLS);
-  ToolbarButton* toolsMenuButton = [ToolbarButton
-      toolbarButtonWithImageForNormalState:NativeImage(
-                                               toolsMenuButtonImages[self.style]
-                                                                    [DEFAULT])
-                  imageForHighlightedState:NativeImage(
-                                               toolsMenuButtonImages[self.style]
-                                                                    [PRESSED])
-                     imageForDisabledState:nil];
-  [toolsMenuButton setImageEdgeInsets:UIEdgeInsetsMakeDirected(0, -3, 0, 0)];
+- (ToolbarToolsMenuButton*)toolsMenuToolbarButton {
+  ToolbarControllerStyle style = self.style == NORMAL
+                                     ? ToolbarControllerStyleLightMode
+                                     : ToolbarControllerStyleIncognitoMode;
+  ToolbarToolsMenuButton* toolsMenuButton =
+      [[ToolbarToolsMenuButton alloc] initWithFrame:CGRectZero
+                                              style:style
+                                              small:YES];
+
   toolsMenuButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_TOOLBAR_SETTINGS);
   return toolsMenuButton;

@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_component_options.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -33,7 +34,7 @@
 @property(nonatomic, strong) ToolbarButton* backButton;
 @property(nonatomic, strong) ToolbarButton* forwardButton;
 @property(nonatomic, strong) ToolbarButton* tabSwitchStripButton;
-@property(nonatomic, strong) ToolbarButton* toolsMenuButton;
+@property(nonatomic, strong, readwrite) ToolbarToolsMenuButton* toolsMenuButton;
 @property(nonatomic, strong) ToolbarButton* shareButton;
 @property(nonatomic, strong) ToolbarButton* reloadButton;
 @property(nonatomic, strong) ToolbarButton* stopButton;
