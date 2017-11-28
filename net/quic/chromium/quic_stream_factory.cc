@@ -660,6 +660,7 @@ QuicStreamFactory::QuicStreamFactory(
     size_t max_packet_length,
     const std::string& user_agent_id,
     bool store_server_configs_in_properties,
+    bool close_sessions_on_ip_change,
     bool mark_quic_broken_when_network_blackholes,
     int idle_connection_timeout_seconds,
     int reduced_ping_timeout_seconds,
@@ -712,6 +713,7 @@ QuicStreamFactory::QuicStreamFactory(
       connect_using_default_network_(
           connect_using_default_network &&
           NetworkChangeNotifier::AreNetworkHandlesSupported()),
+      close_sessions_on_ip_change_(close_sessions_on_ip_change),
       migrate_sessions_on_network_change_v2_(
           migrate_sessions_on_network_change_v2 &&
           NetworkChangeNotifier::AreNetworkHandlesSupported()),
@@ -757,10 +759,18 @@ QuicStreamFactory::QuicStreamFactory(
   // migrate_sessions_on_network_change is set to true.
   if (migrate_sessions_early)
     DCHECK(migrate_sessions_on_network_change);
+  // close_sessions_on_ip_change and migrate_sessions_on_network_change should
+  // never be simultaneously set to true.
+  DCHECK(!(close_sessions_on_ip_change && migrate_sessions_on_network_change));
+  DCHECK(
+      !(close_sessions_on_ip_change && migrate_sessions_on_network_change_v2));
 
-  NetworkChangeNotifier::AddIPAddressObserver(this);
-  if (NetworkChangeNotifier::AreNetworkHandlesSupported())
+  if (close_sessions_on_ip_change_) {
+    NetworkChangeNotifier::AddIPAddressObserver(this);
+  }
+  if (NetworkChangeNotifier::AreNetworkHandlesSupported()) {
     NetworkChangeNotifier::AddNetworkObserver(this);
+  }
 }
 
 QuicStreamFactory::~QuicStreamFactory() {
@@ -774,9 +784,12 @@ QuicStreamFactory::~QuicStreamFactory() {
     active_cert_verifier_jobs_.erase(active_cert_verifier_jobs_.begin());
   if (ssl_config_service_.get())
     ssl_config_service_->RemoveObserver(this);
-  NetworkChangeNotifier::RemoveIPAddressObserver(this);
-  if (NetworkChangeNotifier::AreNetworkHandlesSupported())
+  if (close_sessions_on_ip_change_) {
+    NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  }
+  if (NetworkChangeNotifier::AreNetworkHandlesSupported()) {
     NetworkChangeNotifier::RemoveNetworkObserver(this);
+  }
 }
 
 void QuicStreamFactory::set_require_confirmation(bool require_confirmation) {

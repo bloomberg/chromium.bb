@@ -148,6 +148,8 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     // If true, alt-svc headers advertising QUIC in IETF format will be
     // supported.
     bool support_ietf_format_quic_altsvc;
+    // If true, all QUIC sessions are closed when any local IP address changes.
+    bool quic_close_sessions_on_ip_change;
     // Specifies QUIC idle connection state lifetime.
     int quic_idle_connection_timeout_seconds;
     // Specifies the reduced ping timeout subsequent connections should use when

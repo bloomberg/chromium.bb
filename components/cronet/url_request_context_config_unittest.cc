@@ -47,6 +47,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
       "{\"QUIC\":{\"max_server_configs_stored_in_properties\":2,"
       "\"user_agent_id\":\"Custom QUIC UAID\","
       "\"idle_connection_timeout_seconds\":300,"
+      "\"close_sessions_on_ip_change\":true,"
       "\"race_cert_verification\":true,"
       "\"connection_options\":\"TIME,TBBR,REJ\"},"
       "\"AsyncDNS\":{\"enable\":true},"
@@ -91,6 +92,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   // Check idle_connection_timeout_seconds.
   EXPECT_EQ(300, params->quic_idle_connection_timeout_seconds);
 
+  EXPECT_TRUE(params->quic_close_sessions_on_ip_change);
   EXPECT_FALSE(params->quic_migrate_sessions_on_network_change);
   EXPECT_FALSE(params->quic_migrate_sessions_on_network_change_v2);
 
@@ -156,6 +158,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
 
+  EXPECT_FALSE(params->quic_close_sessions_on_ip_change);
   EXPECT_TRUE(params->quic_migrate_sessions_on_network_change);
   EXPECT_TRUE(params->quic_migrate_sessions_early);
 }

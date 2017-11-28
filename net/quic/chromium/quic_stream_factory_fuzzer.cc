@@ -103,6 +103,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   HttpServerPropertiesImpl http_server_properties;
 
   bool store_server_configs_in_properties = data_provider.ConsumeBool();
+  bool close_sessions_on_ip_change = data_provider.ConsumeBool();
   bool mark_quic_broken_when_network_blackholes = data_provider.ConsumeBool();
   bool connect_using_default_network = data_provider.ConsumeBool();
   bool migrate_sessions_on_network_change = data_provider.ConsumeBool();
@@ -119,6 +120,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (migrate_sessions_early)
     migrate_sessions_on_network_change = true;
 
+  if (migrate_sessions_on_network_change)
+    close_sessions_on_ip_change = false;
+
   std::unique_ptr<QuicStreamFactory> factory =
       std::make_unique<QuicStreamFactory>(
           env->net_log.net_log(), &host_resolver, env->ssl_config_service.get(),
@@ -127,7 +131,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           &env->transport_security_state, env->cert_transparency_verifier.get(),
           nullptr, &env->crypto_client_stream_factory, &env->random_generator,
           &env->clock, kDefaultMaxPacketSize, std::string(),
-          store_server_configs_in_properties,
+          store_server_configs_in_properties, close_sessions_on_ip_change,
           mark_quic_broken_when_network_blackholes,
           kIdleConnectionTimeoutSeconds, kPingTimeoutSecs,
           kMaxTimeForCryptoHandshakeSecs, kInitialIdleTimeoutSecs,

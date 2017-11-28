@@ -174,6 +174,13 @@ net::QuicTagVector GetQuicClientConnectionOptions(
   return net::ParseQuicConnectionOptions(it->second);
 }
 
+bool ShouldQuicCloseSessionsOnIpChange(
+    const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "close_sessions_on_ip_change"),
+      "true");
+}
+
 int GetQuicIdleConnectionTimeoutSeconds(
     const VariationParameters& quic_trial_params) {
   int value;
@@ -324,6 +331,8 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
         GetQuicConnectionOptions(quic_trial_params);
     params->quic_client_connection_options =
         GetQuicClientConnectionOptions(quic_trial_params);
+    params->quic_close_sessions_on_ip_change =
+        ShouldQuicCloseSessionsOnIpChange(quic_trial_params);
     int idle_connection_timeout_seconds =
         GetQuicIdleConnectionTimeoutSeconds(quic_trial_params);
     if (idle_connection_timeout_seconds != 0) {
