@@ -109,16 +109,43 @@ void HeadlessRenderTest::OnLoadEventFired(const page::LoadEventFiredParams&) {
 }
 
 void HeadlessRenderTest::OnFrameStartedLoading(
-    const page::FrameStartedLoadingParams&) {
+    const page::FrameStartedLoadingParams& params) {
   CHECK_NE(INIT, state_);
   if (state_ == STARTING) {
     state_ = LOADING;
+    main_frame_ = params.GetFrameId();
     virtual_time_controller_->GrantVirtualTimeBudget(
         emulation::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING,
         base::TimeDelta::FromMilliseconds(5000), base::Closure(),
         base::Bind(&HeadlessRenderTest::HandleVirtualTimeExhausted,
                    weak_ptr_factory_.GetWeakPtr()));
   }
+
+  auto it = unconfirmed_frame_redirects_.find(params.GetFrameId());
+  if (it != unconfirmed_frame_redirects_.end()) {
+    confirmed_frame_redirects_[params.GetFrameId()].push_back(it->second);
+    unconfirmed_frame_redirects_.erase(it);
+  }
+}
+
+void HeadlessRenderTest::OnFrameScheduledNavigation(
+    const page::FrameScheduledNavigationParams& params) {
+  CHECK(unconfirmed_frame_redirects_.find(params.GetFrameId()) ==
+        unconfirmed_frame_redirects_.end());
+  unconfirmed_frame_redirects_[params.GetFrameId()] =
+      Redirect(params.GetUrl(), params.GetReason());
+}
+
+void HeadlessRenderTest::OnFrameClearedScheduledNavigation(
+    const page::FrameClearedScheduledNavigationParams& params) {
+  auto it = unconfirmed_frame_redirects_.find(params.GetFrameId());
+  if (it != unconfirmed_frame_redirects_.end())
+    unconfirmed_frame_redirects_.erase(it);
+}
+
+void HeadlessRenderTest::OnFrameNavigated(
+    const page::FrameNavigatedParams& params) {
+  frames_[params.GetFrame()->GetId()].push_back(params.GetFrame()->Clone());
 }
 
 void HeadlessRenderTest::OnRequest(const GURL& url,

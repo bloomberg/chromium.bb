@@ -34,6 +34,8 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
                            public page::ExperimentalObserver,
                            public TestInMemoryProtocolHandler::RequestDeferrer {
  public:
+  typedef std::pair<std::string, page::FrameScheduledNavigationReason> Redirect;
+
   void RunDevTooledTest() override;
 
  protected:
@@ -92,9 +94,19 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override;
   void OnFrameStartedLoading(
       const page::FrameStartedLoadingParams& params) override;
+  void OnFrameScheduledNavigation(
+      const page::FrameScheduledNavigationParams& params) override;
+  void OnFrameClearedScheduledNavigation(
+      const page::FrameClearedScheduledNavigationParams& params) override;
+  void OnFrameNavigated(const page::FrameNavigatedParams& params) override;
 
   // TestInMemoryProtocolHandler::RequestDeferrer
   void OnRequest(const GURL& url, base::Closure complete_request) override;
+
+  std::map<std::string, std::vector<Redirect>> confirmed_frame_redirects_;
+  std::map<std::string, Redirect> unconfirmed_frame_redirects_;
+  std::map<std::string, std::vector<std::unique_ptr<page::Frame>>> frames_;
+  std::string main_frame_;
 
  private:
   void HandleVirtualTimeExhausted();

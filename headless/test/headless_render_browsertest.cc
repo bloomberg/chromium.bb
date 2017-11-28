@@ -21,6 +21,9 @@
   class HeadlessRenderBrowserTest##clazz : public clazz {}; \
   HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessRenderBrowserTest##clazz)
 
+// TODO(dats): For some reason we are missing all HTTP redirects.
+#define DISABLE_HTTP_REDIRECTS_CHECKS
+
 namespace headless {
 
 namespace {
@@ -32,6 +35,16 @@ constexpr char TEXT_HTML[] = "text/html";
 using dom_snapshot::GetSnapshotResult;
 using dom_snapshot::DOMNode;
 using dom_snapshot::LayoutTreeNode;
+using net::test_server::HttpRequest;
+using net::test_server::HttpResponse;
+using net::test_server::BasicHttpResponse;
+using net::test_server::RawHttpResponse;
+using page::FrameScheduledNavigationReason;
+using testing::ElementsAre;
+using testing::UnorderedElementsAre;
+using testing::Eq;
+using testing::Ne;
+using testing::StartsWith;
 
 template <typename T, typename V>
 std::vector<T> ElementsView(const std::vector<std::unique_ptr<V>>& elements,
@@ -117,21 +130,27 @@ MATCHER_P(RequestPath, expected, "") {
   return arg.relative_url == expected;
 }
 
-using testing::ElementsAre;
-using testing::Eq;
-using testing::StartsWith;
-using net::test_server::HttpRequest;
-using net::test_server::HttpResponse;
-using net::test_server::BasicHttpResponse;
-using net::test_server::RawHttpResponse;
+MATCHER_P(RedirectUrl, expected, "") {
+  return arg.first == expected;
+}
 
+MATCHER_P(RedirectReason, expected, "") {
+  return arg.second == expected;
+}
+
+const DOMNode* FindTag(const GetSnapshotResult* snapshot, const char* name) {
+  auto tags = FindTags(snapshot, name);
+  if (tags.empty())
+    return nullptr;
+  EXPECT_THAT(tags, ElementsAre(NodeName(name)));
+  return tags[0];
+}
 }  // namespace
 
 class HelloWorldTest : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(SOME_URL, {R"|(
-<!doctype html>
+    GetProtocolHandler()->InsertResponse(SOME_URL, {R"|(<!doctype html>
 <h1>Hello headless world!</h1>
 )|",
                                                     TEXT_HTML});
@@ -146,6 +165,13 @@ class HelloWorldTest : public HeadlessRenderTest {
         FilterDOM(dom_snapshot, IsText),
         ElementsAre(NodeValue("Hello headless world!"), NodeValue("\n")));
     EXPECT_THAT(TextLayout(dom_snapshot), ElementsAre("Hello headless world!"));
+    EXPECT_THAT(GetProtocolHandler()->urls_requested(), ElementsAre(SOME_URL));
+    EXPECT_FALSE(main_frame_.empty());
+    EXPECT_TRUE(unconfirmed_frame_redirects_.empty());
+    EXPECT_TRUE(confirmed_frame_redirects_.empty());
+    EXPECT_THAT(frames_[main_frame_].size(), Eq(1u));
+    const auto& frame = frames_[main_frame_][0];
+    EXPECT_THAT(frame->GetUrl(), Eq(SOME_URL));
   }
 };
 HEADLESS_RENDER_BROWSERTEST(HelloWorldTest);
@@ -187,9 +213,8 @@ class JavaScriptOverrideTitle_JsEnabled : public HeadlessRenderTest {
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
-    auto dom = FindTags(dom_snapshot, "TITLE");
-    ASSERT_THAT(dom, ElementsAre(NodeName("TITLE")));
-    const DOMNode* value = NextNode(dom_snapshot, dom[0]);
+    const DOMNode* value =
+        NextNode(dom_snapshot, FindTag(dom_snapshot, "TITLE"));
     EXPECT_THAT(value, NodeValue("JavaScript is on"));
   }
 };
@@ -204,9 +229,8 @@ class JavaScriptOverrideTitle_JsDisabled
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
-    auto dom = FindTags(dom_snapshot, "TITLE");
-    ASSERT_THAT(dom, ElementsAre(NodeName("TITLE")));
-    const DOMNode* value = NextNode(dom_snapshot, dom[0]);
+    const DOMNode* value =
+        NextNode(dom_snapshot, FindTag(dom_snapshot, "TITLE"));
     EXPECT_THAT(value, NodeValue("JavaScript is off"));
   }
 };
@@ -312,9 +336,7 @@ class DelayedCompletion : public HeadlessRenderTest {
         FindTags(dom_snapshot),
         ElementsAre(NodeName("HTML"), NodeName("HEAD"), NodeName("BODY"),
                     NodeName("SCRIPT"), NodeName("DIV"), NodeName("P")));
-    auto dom = FindTags(dom_snapshot, "P");
-    ASSERT_THAT(dom, ElementsAre(NodeName("P")));
-    const DOMNode* value = NextNode(dom_snapshot, dom[0]);
+    const DOMNode* value = NextNode(dom_snapshot, FindTag(dom_snapshot, "P"));
     EXPECT_THAT(value, NodeValue("delayed text"));
     // The page delays output for 3 seconds. Due to virtual time this should
     // take significantly less actual time.
@@ -382,15 +404,371 @@ class ClientRedirectChain : public HeadlessRenderTest {
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
-    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
-                ElementsAre(SOME_HOST + "/", SOME_HOST + "/1", SOME_HOST + "/2",
-                            SOME_HOST + "/3", SOME_HOST + "/pass"));
-    auto dom = FindTags(dom_snapshot, "TITLE");
-    ASSERT_THAT(dom, ElementsAre(NodeName("TITLE")));
-    const DOMNode* value = NextNode(dom_snapshot, dom[0]);
+    EXPECT_THAT(
+        GetProtocolHandler()->urls_requested(),
+        ElementsAre("http://www.example.com/", "http://www.example.com/1",
+                    "http://www.example.com/2", "http://www.example.com/3",
+                    "http://www.example.com/pass"));
+    const DOMNode* value =
+        NextNode(dom_snapshot, FindTag(dom_snapshot, "TITLE"));
     EXPECT_THAT(value, NodeValue("Pass"));
+    EXPECT_THAT(
+        confirmed_frame_redirects_[main_frame_],
+        ElementsAre(
+            RedirectReason(FrameScheduledNavigationReason::META_TAG_REFRESH),
+            RedirectReason(FrameScheduledNavigationReason::SCRIPT_INITIATED),
+            RedirectReason(FrameScheduledNavigationReason::SCRIPT_INITIATED)));
+    EXPECT_THAT(frames_[main_frame_].size(), Eq(4u));
   }
 };
 HEADLESS_RENDER_BROWSERTEST(ClientRedirectChain);
+
+class ClientRedirectChain_NoJs : public ClientRedirectChain {
+ private:
+  void OverrideWebPreferences(WebPreferences* preferences) override {
+    ClientRedirectChain::OverrideWebPreferences(preferences);
+    preferences->javascript_enabled = false;
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(
+        GetProtocolHandler()->urls_requested(),
+        ElementsAre("http://www.example.com/", "http://www.example.com/1"));
+    const DOMNode* value =
+        NextNode(dom_snapshot, FindTag(dom_snapshot, "TITLE"));
+    EXPECT_THAT(value, NodeValue("Hello, World 1"));
+    EXPECT_THAT(confirmed_frame_redirects_[main_frame_],
+                ElementsAre(RedirectReason(
+                    FrameScheduledNavigationReason::META_TAG_REFRESH)));
+    EXPECT_THAT(frames_[main_frame_].size(), Eq(2u));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(ClientRedirectChain_NoJs);
+
+class ServerRedirectChain : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/",
+        {"(HTTP/1.1 302 Moved\r\nLocation: http://www.example.com/1\r\n\r\n"});
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/1",
+        {"(HTTP/1.1 302 Moved\r\nLocation: http://www.example.com/2\r\n\r\n"});
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/2",
+        {"(HTTP/1.1 302 Moved\r\nLocation: http://www.example.com/3\r\n\r\n"});
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/3",
+        {"(HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<p>Pass</p>"});
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(
+        GetProtocolHandler()->urls_requested(),
+        ElementsAre("http://www.example.com/", "http://www.example.com/1",
+                    "http://www.example.com/2", "http://www.example.com/3"));
+    const DOMNode* value = NextNode(dom_snapshot, FindTag(dom_snapshot, "P"));
+    EXPECT_THAT(value, NodeValue("Pass"));
+#ifndef DISABLE_HTTP_REDIRECTS_CHECKS
+    EXPECT_THAT(
+        confirmed_frame_redirects_[main_frame_],
+        ElementsAre(
+            RedirectReason(FrameScheduledNavigationReason::HTTP_HEADER_REFRESH),
+            RedirectReason(FrameScheduledNavigationReason::HTTP_HEADER_REFRESH),
+            RedirectReason(
+                FrameScheduledNavigationReason::HTTP_HEADER_REFRESH)));
+    EXPECT_THAT(frames_[main_frame_].size(), Eq(4u));
+#endif  // #ifndef DISABLE_HTTP_REDIRECTS_CHECKS
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(ServerRedirectChain);
+
+class ServerRedirectToFailure : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/",
+        {"(HTTP/1.1 302 Moved\r\nLocation: http://www.example.com/1\r\n\r\n"});
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/1", {"(HTTP/1.1 301 Moved\r\nLocation: "
+                                     "http://www.example.com/FAIL\r\n\r\n"});
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(
+        GetProtocolHandler()->urls_requested(),
+        ElementsAre("http://www.example.com/", "http://www.example.com/1",
+                    "http://www.example.com/FAIL"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(ServerRedirectToFailure);
+
+class ServerRedirectRelativeChain : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/",
+        {"(HTTP/1.1 302 Moved\r\nLocation: http://www.mysite.com/1\r\n\r\n"});
+    GetProtocolHandler()->InsertResponse(
+        "http://www.mysite.com/1",
+        {"(HTTP/1.1 301 Moved\r\nLocation: /2\r\n\r\n"});
+    GetProtocolHandler()->InsertResponse(
+        "http://www.mysite.com/2",
+        {"(HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<p>Pass</p>"});
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(
+        GetProtocolHandler()->urls_requested(),
+        ElementsAre("http://www.example.com/", "http://www.mysite.com/1",
+                    "http://www.mysite.com/2"));
+    const DOMNode* value = NextNode(dom_snapshot, FindTag(dom_snapshot, "P"));
+    EXPECT_THAT(value, NodeValue("Pass"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(ServerRedirectRelativeChain);
+
+class MixedRedirectChain : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/",
+                                         {R"|(
+ <html>
+   <head>
+     <meta http-equiv="refresh" content="0; url=http://www.example.com/1"/>
+     <title>Hello, World 0</title>
+   </head>
+   <body>http://www.example.com/</body>
+ </html>
+ )|",
+                                          TEXT_HTML});
+    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
+                                         {R"|(
+ <html>
+   <head>
+     <title>Hello, World 1</title>
+     <script>
+       document.location='http://www.example.com/2';
+     </script>
+   </head>
+   <body>http://www.example.com/1</body>
+ </html>
+ )|",
+                                          TEXT_HTML});
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/2",
+        {"(HTTP/1.1 302 Moved\r\nLocation: 3\r\n\r\n"});
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/3",
+        {"(HTTP/1.1 301 Moved\r\nLocation: http://www.example.com/4\r\n\r\n"});
+    GetProtocolHandler()->InsertResponse("http://www.example.com/4",
+                                         {"<p>Pass</p>", TEXT_HTML});
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(
+        GetProtocolHandler()->urls_requested(),
+        ElementsAre("http://www.example.com/", "http://www.example.com/1",
+                    "http://www.example.com/2", "http://www.example.com/3",
+                    "http://www.example.com/4"));
+    const DOMNode* value = NextNode(dom_snapshot, FindTag(dom_snapshot, "P"));
+    EXPECT_THAT(value, NodeValue("Pass"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(MixedRedirectChain);
+
+class FramesRedirectChain : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/",
+        {"HTTP/1.1 302 Moved\r\nLocation: http://www.example.com/1\r\n\r\n"});
+    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
+                                         {R"|(
+<html>
+ <frameset>
+  <frame src="http://www.example.com/frameA/">
+  <frame src="http://www.example.com/frameB/">
+ </frameset>
+</html>
+)|",
+                                          TEXT_HTML});
+
+    // Frame A
+    GetProtocolHandler()->InsertResponse("http://www.example.com/frameA/",
+                                         {R"|(
+<html>
+ <head>
+  <script>document.location='http://www.example.com/frameA/1'</script>
+ </head>
+ <body>HELLO WORLD 1</body>
+</html>
+)|",
+                                          TEXT_HTML});
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/frameA/1",
+        {"HTTP/1.1 301 Moved\r\nLocation: /frameA/2\r\n\r\n"});
+    GetProtocolHandler()->InsertResponse("http://www.example.com/frameA/2",
+                                         {"<p>FRAME A</p>", TEXT_HTML});
+
+    // Frame B
+    GetProtocolHandler()->InsertResponse("http://www.example.com/frameB/",
+                                         {R"|(
+<html>
+ <head><title>HELLO WORLD 2</title></head>
+ <body>
+  <iframe src="http://www.example.com/iframe/"></iframe>
+ </body>
+</html>
+)|",
+                                          TEXT_HTML});
+    GetProtocolHandler()->InsertResponse("http://www.example.com/iframe/",
+                                         {R"|(
+<html>
+ <head>
+  <script>document.location='http://www.example.com/iframe/1'</script>
+ </head>
+ <body>HELLO WORLD 1</body>
+</html>
+)|",
+                                          TEXT_HTML});
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/iframe/1",
+        {"HTTP/1.1 302 Moved\r\nLocation: /iframe/2\r\n\r\n"});
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/iframe/2",
+        {"HTTP/1.1 301 Moved\r\nLocation: 3\r\n\r\n"});
+    GetProtocolHandler()->InsertResponse("http://www.example.com/iframe/3",
+                                         {"<p>IFRAME B</p>", TEXT_HTML});
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(
+        GetProtocolHandler()->urls_requested(),
+        UnorderedElementsAre(
+            "http://www.example.com/", "http://www.example.com/1",
+            "http://www.example.com/frameA/", "http://www.example.com/frameA/1",
+            "http://www.example.com/frameA/2", "http://www.example.com/frameB/",
+            "http://www.example.com/iframe/", "http://www.example.com/iframe/1",
+            "http://www.example.com/iframe/2",
+            "http://www.example.com/iframe/3"));
+    auto dom = FindTags(dom_snapshot, "P");
+    EXPECT_THAT(dom, ElementsAre(NodeName("P"), NodeName("P")));
+    EXPECT_THAT(NextNode(dom_snapshot, dom[0]), NodeValue("FRAME A"));
+    EXPECT_THAT(NextNode(dom_snapshot, dom[1]), NodeValue("IFRAME B"));
+
+    const page::Frame* main_frame = nullptr;
+    const page::Frame* a_frame = nullptr;
+    const page::Frame* b_frame = nullptr;
+    const page::Frame* i_frame = nullptr;
+    EXPECT_THAT(frames_.size(), Eq(4u));
+    for (const auto& it : frames_) {
+      if (it.second.back()->GetUrl() == "http://www.example.com/1")
+        main_frame = it.second.back().get();
+      else if (it.second.back()->GetUrl() == "http://www.example.com/frameA/2")
+        a_frame = it.second.back().get();
+      else if (it.second.back()->GetUrl() == "http://www.example.com/frameB/")
+        b_frame = it.second.back().get();
+      else if (it.second.back()->GetUrl() == "http://www.example.com/iframe/3")
+        i_frame = it.second.back().get();
+      else
+        ADD_FAILURE() << "Unexpected frame URL: " << it.second.back()->GetUrl();
+    }
+
+#ifndef DISABLE_HTTP_REDIRECTS_CHECKS
+    EXPECT_THAT(frames_[main_frame->GetId()].size(), Eq(2u));
+    EXPECT_THAT(frames_[a_frame->GetId()].size(), Eq(3u));
+    EXPECT_THAT(frames_[b_frame->GetId()].size(), Eq(1u));
+    EXPECT_THAT(frames_[i_frame->GetId()].size(), Eq(4u));
+    EXPECT_THAT(confirmed_frame_redirects_[main_frame->GetId()],
+                ElementsAre(RedirectReason(
+                    FrameScheduledNavigationReason::HTTP_HEADER_REFRESH)));
+    EXPECT_THAT(
+        confirmed_frame_redirects_[a_frame->GetId()],
+        ElementsAre(
+            RedirectReason(FrameScheduledNavigationReason::SCRIPT_INITIATED),
+            RedirectReason(
+                FrameScheduledNavigationReason::HTTP_HEADER_REFRESH)));
+    EXPECT_THAT(
+        confirmed_frame_redirects_[i_frame->GetId()],
+        ElementsAre(
+            RedirectReason(FrameScheduledNavigationReason::SCRIPT_INITIATED),
+            RedirectReason(FrameScheduledNavigationReason::HTTP_HEADER_REFRESH),
+            RedirectReason(
+                FrameScheduledNavigationReason::HTTP_HEADER_REFRESH)));
+#endif  // #ifndef DISABLE_HTTP_REDIRECTS_CHECKS
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(FramesRedirectChain);
+
+class DoubleRedirect : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/",
+                                         {R"|(
+<html>
+  <head>
+    <title>Hello, World 1</title>
+    <script>
+      document.location='http://www.example.com/1';
+      document.location='http://www.example.com/2';
+    </script>
+  </head>
+  <body>http://www.example.com/1</body>
+</html>
+)|",
+                                          TEXT_HTML});
+    GetProtocolHandler()->InsertResponse("http://www.example.com/2",
+                                         {"<p>Pass</p>", TEXT_HTML});
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(
+        GetProtocolHandler()->urls_requested(),
+        ElementsAre("http://www.example.com/", "http://www.example.com/2"));
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
+                NodeValue("Pass"));
+    EXPECT_THAT(confirmed_frame_redirects_[main_frame_],
+                ElementsAre(RedirectReason(
+                    FrameScheduledNavigationReason::SCRIPT_INITIATED)));
+    EXPECT_THAT(frames_[main_frame_].size(), Eq(2u));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(DoubleRedirect);
+
+class RedirectAfterCompletion : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/",
+                                         {R"|(
+<html>
+ <head>
+  <meta http-equiv='refresh' content='120; url=http://www.example.com/1'>
+ </head>
+ <body><p>Pass</p></body>
+</html>
+)|",
+                                          TEXT_HTML});
+    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
+                                         {"<p>Fail</p>", TEXT_HTML});
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+                ElementsAre("http://www.example.com/"));
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
+                NodeValue("Pass"));
+    EXPECT_THAT(confirmed_frame_redirects_[main_frame_], ElementsAre());
+    EXPECT_THAT(frames_[main_frame_].size(), Eq(1u));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(RedirectAfterCompletion);
 
 }  // namespace headless
