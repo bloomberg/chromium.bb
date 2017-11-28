@@ -24,6 +24,7 @@ LocalDataContainer::LocalDataContainer(
     scoped_refptr<BrowsingDataQuotaHelper> quota_helper,
     scoped_refptr<BrowsingDataChannelIDHelper> channel_id_helper,
     scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper,
+    scoped_refptr<BrowsingDataSharedWorkerHelper> shared_worker_helper,
     scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper,
     scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper,
     scoped_refptr<BrowsingDataMediaLicenseHelper> media_license_helper)
@@ -37,6 +38,7 @@ LocalDataContainer::LocalDataContainer(
       quota_helper_(std::move(quota_helper)),
       channel_id_helper_(std::move(channel_id_helper)),
       service_worker_helper_(std::move(service_worker_helper)),
+      shared_worker_helper_(std::move(shared_worker_helper)),
       cache_storage_helper_(std::move(cache_storage_helper)),
       flash_lso_helper_(std::move(flash_lso_helper)),
       media_license_helper_(std::move(media_license_helper)),
@@ -116,6 +118,13 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
     batches_started_++;
     service_worker_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnServiceWorkerModelInfoLoaded,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  if (shared_worker_helper_.get()) {
+    batches_started_++;
+    shared_worker_helper_->StartFetching(
+        base::Bind(&LocalDataContainer::OnSharedWorkerInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -227,6 +236,13 @@ void LocalDataContainer::OnServiceWorkerModelInfoLoaded(
   service_worker_info_list_ = service_worker_info;
   DCHECK(model_);
   model_->PopulateServiceWorkerUsageInfo(this);
+}
+
+void LocalDataContainer::OnSharedWorkerInfoLoaded(
+    const SharedWorkerInfoList& shared_worker_info) {
+  shared_worker_info_list_ = shared_worker_info;
+  DCHECK(model_);
+  model_->PopulateSharedWorkerInfo(this);
 }
 
 void LocalDataContainer::OnCacheStorageModelInfoLoaded(

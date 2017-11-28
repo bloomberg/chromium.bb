@@ -7191,6 +7191,9 @@ I don't think this site should be blocked!
       <message name="IDS_COOKIES_SERVICE_WORKERS" desc="Label for Service Workers (name of an HTML standard)">
         Service Workers
       </message>
+      <message name="IDS_COOKIES_SHARED_WORKERS" desc="Label for Shared Workers (name of an HTML standard)">
+        Shared Workers
+      </message>
       <message name="IDS_COOKIES_CACHE_STORAGE" desc="The text shown when there is Cache Storage (name of a Web standard) in the Cookies table">
         Cache Storage
       </message>

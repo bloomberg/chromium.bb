@@ -170,6 +170,13 @@ class TabSpecificContentSettings
       bool blocked_by_policy_javascript,
       bool blocked_by_policy_cookie);
 
+  // Called when a specific Shared Worker was accessed.
+  static void SharedWorkerAccessed(int render_process_id,
+                                   int render_frame_id,
+                                   const GURL& worker_url,
+                                   const std::string& name,
+                                   bool blocked_by_policy);
+
   // Resets the |content_settings_status_|, except for
   // information which are needed for navigation: CONTENT_SETTINGS_TYPE_COOKIES
   // for cookies and service workers, and CONTENT_SETTINGS_TYPE_JAVASCRIPT for
@@ -329,6 +336,9 @@ class TabSpecificContentSettings
   void OnServiceWorkerAccessed(const GURL& scope,
                                bool blocked_by_policy_javascript,
                                bool blocked_by_policy_cookie);
+  void OnSharedWorkerAccessed(const GURL& worker_url,
+                              const std::string& name,
+                              bool blocked_by_policy);
   void OnWebDatabaseAccessed(const GURL& url,
                              const base::string16& name,
                              const base::string16& display_name,

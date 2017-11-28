@@ -17,6 +17,7 @@
 #include "content/browser/shared_worker/shared_worker_host.h"
 #include "content/common/shared_worker/shared_worker_connector.mojom.h"
 #include "content/common/shared_worker/shared_worker_factory.mojom.h"
+#include "content/public/browser/shared_worker_service.h"
 
 namespace blink {
 class MessagePortChannel;
@@ -26,18 +27,20 @@ namespace content {
 
 class SharedWorkerInstance;
 class SharedWorkerHost;
+class StoragePartition;
 class ResourceContext;
 class WorkerStoragePartitionId;
 
-// The implementation of WorkerService. We try to place workers in an existing
-// renderer process when possible.
-class CONTENT_EXPORT SharedWorkerServiceImpl {
+class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
  public:
-  // Returns the SharedWorkerServiceImpl singleton.
-  static SharedWorkerServiceImpl* GetInstance();
+  // SharedWorkerService implementation.
+  bool TerminateWorker(const GURL& url,
+                       const std::string& name,
+                       StoragePartition* storage_partition,
+                       ResourceContext* resource_context) override;
 
   // Terminates the given worker. Returns true if the process was found.
-  bool TerminateWorker(int process_id, int route_id);
+  bool TerminateWorkerById(int process_id, int route_id);
   void TerminateAllWorkersForTesting(base::OnceClosure callback);
 
   // Creates the worker if necessary or connects to an already existing worker.
@@ -56,12 +59,13 @@ class CONTENT_EXPORT SharedWorkerServiceImpl {
  private:
   friend struct base::DefaultSingletonTraits<SharedWorkerServiceImpl>;
   friend class SharedWorkerServiceImplTest;
+  friend class SharedWorkerService;
 
   using WorkerID = std::pair<int /* process_id */, int /* route_id */>;
   using WorkerHostMap = std::map<WorkerID, std::unique_ptr<SharedWorkerHost>>;
 
   SharedWorkerServiceImpl();
-  ~SharedWorkerServiceImpl();
+  ~SharedWorkerServiceImpl() override;
 
   void ResetForTesting();
 

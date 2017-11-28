@@ -582,6 +582,8 @@ class SiteDataDeleteHelper : public CookiesTreeModel::Observer {
         BrowsingDataQuotaHelper::Create(profile_),
         BrowsingDataChannelIDHelper::Create(profile_->GetRequestContext()),
         new BrowsingDataServiceWorkerHelper(service_worker_context),
+        new BrowsingDataSharedWorkerHelper(storage_partition,
+                                           profile_->GetResourceContext()),
         new BrowsingDataCacheStorageHelper(cache_storage_context), nullptr,
         nullptr);
 

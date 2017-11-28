@@ -15,6 +15,7 @@
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_shared_worker_helper.h"
 #include "chrome/browser/browsing_data/canonical_cookie_hash.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -49,6 +50,9 @@ LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
       service_workers_(new CannedBrowsingDataServiceWorkerHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetServiceWorkerContext())),
+      shared_workers_(new CannedBrowsingDataSharedWorkerHelper(
+          content::BrowserContext::GetDefaultStoragePartition(profile),
+          profile->GetResourceContext())),
       cache_storages_(new CannedBrowsingDataCacheStorageHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetCacheStorageContext())),
@@ -67,6 +71,7 @@ size_t LocalSharedObjectsContainer::GetObjectCount() const {
   count += indexed_dbs()->GetIndexedDBCount();
   count += local_storages()->GetLocalStorageCount();
   count += service_workers()->GetServiceWorkerCount();
+  count += shared_workers()->GetSharedWorkerCount();
   count += cache_storages()->GetCacheStorageCount();
   count += session_storages()->GetLocalStorageCount();
   return count;
@@ -148,6 +153,15 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
       ++count;
   }
 
+  // Count shared workers for the domain of the given |origin|.
+  typedef BrowsingDataSharedWorkerHelper::SharedWorkerInfo SharedWorkerInfo;
+  const std::set<SharedWorkerInfo>& shared_worker_info =
+      shared_workers()->GetSharedWorkerInfo();
+  for (const auto& it : shared_worker_info) {
+    if (SameDomainOrHost(origin, it.worker))
+      ++count;
+  }
+
   // Count cache storages for the domain of the given |origin|.
   typedef CannedBrowsingDataCacheStorageHelper::PendingCacheStorageUsageInfo
       CacheStorageInfo;
@@ -211,6 +225,7 @@ void LocalSharedObjectsContainer::Reset() {
   indexed_dbs_->Reset();
   local_storages_->Reset();
   service_workers_->Reset();
+  shared_workers_->Reset();
   cache_storages_->Reset();
   session_storages_->Reset();
 }
@@ -220,7 +235,7 @@ LocalSharedObjectsContainer::CreateCookiesTreeModel() const {
   LocalDataContainer* container = new LocalDataContainer(
       cookies_, databases_, local_storages_, session_storages_, appcaches_,
       indexed_dbs_, file_systems_, nullptr, channel_ids_, service_workers_,
-      cache_storages_, nullptr, nullptr);
+      shared_workers_, cache_storages_, nullptr, nullptr);
 
   return base::MakeUnique<CookiesTreeModel>(container, nullptr);
 }

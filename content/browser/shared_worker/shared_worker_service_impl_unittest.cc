@@ -92,7 +92,8 @@ class SharedWorkerServiceImplTest : public testing::Test {
   void SetUp() override {}
 
   void TearDown() override {
-    SharedWorkerServiceImpl::GetInstance()->ResetForTesting();
+    static_cast<SharedWorkerServiceImpl*>(SharedWorkerService::GetInstance())
+        ->ResetForTesting();
   }
 
   TestBrowserThreadBundle browser_thread_bundle_;
