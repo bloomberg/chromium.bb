@@ -9,7 +9,5 @@ public_deps = [
   "//mojo/common:struct_traits",
 ]
 
-type_mappings = [
-  "mojo.common.mojom.File=base::File[move_only,nullable_is_same_type]",
-  "mojo.common.mojom.FileError=base::File::Error",
-]
+type_mappings =
+    [ "mojo.common.mojom.File=base::File[move_only,nullable_is_same_type]" ]

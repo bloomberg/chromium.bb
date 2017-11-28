@@ -126,12 +126,6 @@ struct StructTraits<common::mojom::MemoryAllocatorDumpCrossProcessUidDataView,
       base::trace_event::MemoryAllocatorDumpGuid* out);
 };
 
-template <>
-struct EnumTraits<common::mojom::FileError, base::File::Error> {
-  static common::mojom::FileError ToMojom(base::File::Error error);
-  static bool FromMojom(common::mojom::FileError input, base::File::Error* out);
-};
-
 }  // namespace mojo
 
 #endif  // MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_

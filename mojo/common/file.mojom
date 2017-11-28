@@ -4,29 +4,6 @@
 
 module mojo.common.mojom;
 
-// kAccessDenied is returned when a call fails because of a
-// filesystem restriction. kSecurity is returned when a browser
-// policy doesn't allow the operation to be executed.
-enum FileError {
-  kOK,
-  kFailed,
-  kInUse,
-  kExists,
-  kNotFound,
-  kAccessDenied,
-  kTooManyOpened,
-  kNoMemory,
-  kNoSpace,
-  kNotADirectory,
-  kInvalidOperation,
-  kSecurity,
-  kAbort,
-  kNotAFile,
-  kNotEmpty,
-  kInvalidURL,
-  kIO,
-};
-
 // Corresponds to |base::File| in base/files/file.h
 struct File {
   handle fd;
