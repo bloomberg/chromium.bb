@@ -3799,11 +3799,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   _containerView.frame = containerViewFrame;
   DCHECK(!CGRectIsEmpty(_containerView.frame));
 
-  // TODO(crbug.com/691116): Remove this workaround once tests are no longer
-  // dependent upon this accessibility ID.
-  if (!base::ios::IsRunningOnIOS10OrLater())
-    [_containerView setAccessibilityIdentifier:@"Container View"];
-
   [_containerView addGestureRecognizer:[self touchTrackingRecognizer]];
 }
 
