@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/system_logs/single_log_file_log_source.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -98,7 +99,7 @@ class SingleLogFileLogSourceTest : public ::testing::Test {
 
   // Callback for fetching logs from |source_|. Overwrites the previous stored
   // value of |latest_response_|.
-  void OnFileRead(SystemLogsResponse* response) {
+  void OnFileRead(std::unique_ptr<SystemLogsResponse> response) {
     ++num_callback_calls_;
     if (response->empty())
       return;

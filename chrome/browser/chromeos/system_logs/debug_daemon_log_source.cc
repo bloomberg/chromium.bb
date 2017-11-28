@@ -127,7 +127,8 @@ void DebugDaemonLogSource::OnGetUserLogFiles(
     const KeyValueMap& user_log_files) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (succeeded) {
-    SystemLogsResponse* response = new SystemLogsResponse;
+    auto response = std::make_unique<SystemLogsResponse>();
+    SystemLogsResponse* response_ptr = response.get();
 
     const user_manager::UserList& users =
         user_manager::UserManager::Get()->GetLoggedInUsers();
@@ -144,13 +145,15 @@ void DebugDaemonLogSource::OnGetUserLogFiles(
 
     base::PostTaskWithTraitsAndReply(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-        base::Bind(&DebugDaemonLogSource::ReadUserLogFiles, user_log_files,
-                   profile_dirs, response),
-        base::Bind(&DebugDaemonLogSource::MergeUserLogFilesResponse,
-                   weak_ptr_factory_.GetWeakPtr(), base::Owned(response)));
+        base::BindOnce(&DebugDaemonLogSource::ReadUserLogFiles, user_log_files,
+                       profile_dirs, response_ptr),
+        base::BindOnce(&DebugDaemonLogSource::MergeUserLogFilesResponse,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(response)));
   } else {
     (*response_)[kUserLogFileKeyName] = kNotAvailable;
-    callback_.Run(response_.get());
+    auto response = std::make_unique<SystemLogsResponse>();
+    std::swap(response, response_);
+    callback_.Run(std::move(response));
   }
 }
 
@@ -179,11 +182,11 @@ void DebugDaemonLogSource::ReadUserLogFiles(
 }
 
 void DebugDaemonLogSource::MergeUserLogFilesResponse(
-    SystemLogsResponse* response) {
-  for (SystemLogsResponse::const_iterator it = response->begin();
-       it != response->end(); ++it)
-    response_->insert(*it);
-  callback_.Run(response_.get());
+    std::unique_ptr<SystemLogsResponse> response) {
+  response_->insert(response->begin(), response->end());
+  auto response_to_return = std::make_unique<SystemLogsResponse>();
+  std::swap(response_to_return, response_);
+  callback_.Run(std::move(response_to_return));
 }
 
 void DebugDaemonLogSource::RequestCompleted() {

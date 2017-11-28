@@ -21,9 +21,9 @@ class SystemLogsMemoryHandler : public MemoryDetails {
   void OnDetailsAvailable() override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    std::unique_ptr<SystemLogsResponse> response(new SystemLogsResponse);
+    auto response = std::make_unique<SystemLogsResponse>();
     (*response)["mem_usage"] = ToLogString();
-    callback_.Run(response.get());
+    callback_.Run(std::move(response));
   }
 
  private:

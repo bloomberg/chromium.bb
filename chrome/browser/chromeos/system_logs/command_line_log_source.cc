@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -101,11 +102,12 @@ void CommandLineLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  SystemLogsResponse* response = new SystemLogsResponse;
+  auto response = std::make_unique<SystemLogsResponse>();
+  SystemLogsResponse* response_ptr = response.get();
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&ExecuteCommandLines, response),
-      base::Bind(callback, base::Owned(response)));
+      base::BindOnce(&ExecuteCommandLines, response_ptr),
+      base::BindOnce(callback, std::move(response)));
 }
 
 }  // namespace system_logs

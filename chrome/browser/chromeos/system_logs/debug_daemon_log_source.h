@@ -53,7 +53,7 @@ class DebugDaemonLogSource : public SystemLogsSource {
   // Merge the responses from ReadUserLogFiles into the main response dict and
   // invoke the callback_.Run method with the assumption that all other logs
   // have already been collected.
-  void MergeUserLogFilesResponse(SystemLogsResponse* response);
+  void MergeUserLogFilesResponse(std::unique_ptr<SystemLogsResponse> response);
 
   // When all the requests are completed, send one last request to collect the
   // user logs and complete the collection by invoking the callback's Run

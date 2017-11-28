@@ -18,14 +18,14 @@ LsbReleaseLogSource::~LsbReleaseLogSource() {
 
 void LsbReleaseLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(!callback.is_null());
-  std::unique_ptr<SystemLogsResponse> response(new SystemLogsResponse);
+  auto response = std::make_unique<SystemLogsResponse>();
   const base::SysInfo::LsbReleaseMap& lsb_map =
       base::SysInfo::GetLsbReleaseMap();
   for (base::SysInfo::LsbReleaseMap::const_iterator iter = lsb_map.begin();
        iter != lsb_map.end(); ++iter) {
     (*response)[iter->first] = iter->second;
   }
-  callback.Run(response.get());
+  callback.Run(std::move(response));
 }
 
 }  // namespace system_logs

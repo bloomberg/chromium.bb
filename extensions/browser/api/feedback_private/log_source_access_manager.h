@@ -105,11 +105,12 @@ class LogSourceAccessManager {
   //   struct.
   // - response: Contains the result from an operation to fetch from system
   //   log(s).
-  void OnFetchComplete(const std::string& extension_id,
-                       ResourceId resource_id,
-                       bool delete_source,
-                       const ReadLogSourceCallback& callback,
-                       system_logs::SystemLogsResponse* response);
+  void OnFetchComplete(
+      const std::string& extension_id,
+      ResourceId resource_id,
+      bool delete_source,
+      const ReadLogSourceCallback& callback,
+      std::unique_ptr<system_logs::SystemLogsResponse> response);
 
   // Removes an existing log source handle indicated by |id| from
   // |open_handles_|.
