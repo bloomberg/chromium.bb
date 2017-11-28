@@ -24,6 +24,17 @@ constexpr char kRemotePlaybackPresentationUrlScheme[] = "remote-playback";
 constexpr char kLegacyCastPresentationUrlPrefix[] =
     "https://google.com/cast#__castAppId__=";
 
+// Strings used in presentation IDs by the Cast SDK implementation.
+// TODO(takumif): Move them out of media_source_helper, since they are not
+// directly related to MediaSource.
+//
+// This value must be the same as |chrome.cast.AUTO_JOIN_PRESENTATION_ID| in the
+// component extension.
+constexpr char kAutoJoinPresentationId[] = "auto-join";
+// This value must be the same as |chrome.cast.PRESENTATION_ID_PREFIX| in the
+// component extension.
+constexpr char kCastPresentationIdPrefix[] = "cast-session_";
+
 // Helper library for protocol-specific media source object creation.
 // Returns MediaSource URI depending on the type of source.
 MediaSource MediaSourceForTab(int tab_id);

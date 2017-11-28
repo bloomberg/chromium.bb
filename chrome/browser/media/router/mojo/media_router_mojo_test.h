@@ -296,7 +296,7 @@ class MediaRouterMojoTest : public ::testing::Test {
   // Tests that calling MediaRouter methods result in calls to corresponding
   // MediaRouteProvider methods.
   void TestCreateRoute();
-  void TestJoinRoute();
+  void TestJoinRoute(const std::string& presentation_id);
   void TestConnectRouteByRouteId();
   void TestTerminateRoute();
   void TestSendRouteMessage();

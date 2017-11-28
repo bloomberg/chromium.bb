@@ -46,6 +46,11 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   // MediaRouter implementation.
   void OnUserGesture() override;
 
+ protected:
+  // MediaRouterMojoImpl override:
+  base::Optional<mojom::MediaRouteProvider::Id> GetProviderIdForPresentation(
+      const std::string& presentation_id) override;
+
  private:
   friend class MediaRouterDesktopTest;
   friend class MediaRouterDesktopTestTest;

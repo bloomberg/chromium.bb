@@ -258,7 +258,7 @@ void MediaRouterMojoTest::TestCreateRoute() {
   base::RunLoop().RunUntilIdle();
 }
 
-void MediaRouterMojoTest::TestJoinRoute() {
+void MediaRouterMojoTest::TestJoinRoute(const std::string& presentation_id) {
   MediaSource media_source(kSource);
   MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, "",
                             false);
@@ -277,7 +277,7 @@ void MediaRouterMojoTest::TestJoinRoute() {
   // in runnable parameter lists.
   EXPECT_CALL(mock_extension_provider_,
               JoinRouteInternal(
-                  kSource, kPresentationId, url::Origin::Create(GURL(kOrigin)),
+                  kSource, presentation_id, url::Origin::Create(GURL(kOrigin)),
                   kInvalidTabId,
                   base::TimeDelta::FromMilliseconds(kTimeoutMillis), _, _))
       .WillOnce(
@@ -295,7 +295,7 @@ void MediaRouterMojoTest::TestJoinRoute() {
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::BindOnce(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
-  router()->JoinRoute(kSource, kPresentationId,
+  router()->JoinRoute(kSource, presentation_id,
                       url::Origin::Create(GURL(kOrigin)), nullptr,
                       std::move(route_response_callbacks),
                       base::TimeDelta::FromMilliseconds(kTimeoutMillis), false);
