@@ -398,10 +398,11 @@ typedef struct AV1Common {
 #endif
   uint8_t *last_frame_seg_map;
   uint8_t *current_frame_seg_map;
-#if CONFIG_Q_SEGMENTATION
-  uint8_t *q_seg_map;
-#endif
   int seg_map_alloc_size;
+#if CONFIG_SPATIAL_SEGMENTATION
+  int last_active_segid;
+  int preskip_segid;
+#endif
 
   InterpFilter interp_filter;
 

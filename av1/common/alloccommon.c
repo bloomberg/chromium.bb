@@ -53,11 +53,6 @@ static int alloc_seg_map(AV1_COMMON *cm, int rows, int cols) {
   int i;
   int seg_map_size = rows * cols;
 
-#if CONFIG_Q_SEGMENTATION
-  cm->q_seg_map = (uint8_t *)aom_calloc(seg_map_size, 1);
-  if (!cm->q_seg_map) return 1;
-#endif
-
   for (i = 0; i < NUM_PING_PONG_BUFFERS; ++i) {
     cm->seg_map_array[i] = (uint8_t *)aom_calloc(seg_map_size, 1);
     if (cm->seg_map_array[i] == NULL) return 1;
@@ -77,11 +72,6 @@ static int alloc_seg_map(AV1_COMMON *cm, int rows, int cols) {
 
 static void free_seg_map(AV1_COMMON *cm) {
   int i;
-
-#if CONFIG_Q_SEGMENTATION
-  aom_free(cm->q_seg_map);
-  cm->q_seg_map = NULL;
-#endif
 
   for (i = 0; i < NUM_PING_PONG_BUFFERS; ++i) {
     aom_free(cm->seg_map_array[i]);

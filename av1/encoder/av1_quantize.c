@@ -1642,11 +1642,7 @@ void av1_init_quantizer(AV1_COMP *cpi) {
 }
 
 void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
-#if CONFIG_Q_SEGMENTATION
-                               int segment_id, int q_segment_id) {
-#else
                                int segment_id) {
-#endif
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   const QUANTS *const quants = &cpi->quants;
@@ -1663,12 +1659,7 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
                 cm->delta_q_present_flag ? cm->base_qindex + xd->delta_qindex
                                          : cm->base_qindex));
 #endif
-#if CONFIG_Q_SEGMENTATION
-  const int qindex =
-      av1_get_qindex(&cm->seg, segment_id, q_segment_id, current_q_index);
-#else
   const int qindex = av1_get_qindex(&cm->seg, segment_id, current_q_index);
-#endif
   const int rdmult = av1_compute_rd_mult(cpi, qindex + cm->y_dc_delta_q);
 #if CONFIG_AOM_QM
   int minqm = cm->min_qmlevel;
@@ -1766,12 +1757,7 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
 void av1_frame_init_quantizer(AV1_COMP *cpi) {
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-#if CONFIG_Q_SEGMENTATION
-  av1_init_plane_quantizers(cpi, x, xd->mi[0]->mbmi.segment_id,
-                            xd->mi[0]->mbmi.q_segment_id);
-#else
   av1_init_plane_quantizers(cpi, x, xd->mi[0]->mbmi.segment_id);
-#endif
 }
 
 void av1_set_quantizer(AV1_COMMON *cm, int q) {

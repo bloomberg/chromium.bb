@@ -415,14 +415,9 @@ static void set_block_thresholds(const AV1_COMMON *cm, RD_OPT *rd) {
 
   for (segment_id = 0; segment_id < MAX_SEGMENTS; ++segment_id) {
     const int qindex =
-#if CONFIG_Q_SEGMENTATION
-        clamp(
-            av1_get_qindex(&cm->seg, segment_id, segment_id, cm->base_qindex) +
-#else
         clamp(av1_get_qindex(&cm->seg, segment_id, cm->base_qindex) +
-#endif
-                cm->y_dc_delta_q,
-            0, MAXQ);
+                  cm->y_dc_delta_q,
+              0, MAXQ);
     const int q = compute_rd_thresh_factor(qindex, cm->bit_depth);
 
     for (bsize = 0; bsize < BLOCK_SIZES_ALL; ++bsize) {

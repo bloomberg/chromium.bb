@@ -430,25 +430,14 @@ int16_t av1_qindex_from_ac_Q3(int ac_QTX, aom_bit_depth_t bit_depth) {
 #endif  // !CONFIG_DAALA_TX
 
 int av1_get_qindex(const struct segmentation *seg, int segment_id,
-#if CONFIG_Q_SEGMENTATION
-                   int q_segment_id, int base_qindex)
-#else
-                   int base_qindex)
-#endif
-{
+                   int base_qindex) {
   if (segfeature_active(seg, segment_id, SEG_LVL_ALT_Q)) {
     const int data = get_segdata(seg, segment_id, SEG_LVL_ALT_Q);
     const int seg_qindex = base_qindex + data;
     return clamp(seg_qindex, 0, MAXQ);
-  }
-#if CONFIG_Q_SEGMENTATION
-  else if (q_segment_id < seg->q_lvls) {
-    const int seg_qindex = base_qindex + seg->q_delta[q_segment_id];
-    return clamp(seg_qindex, 0, MAXQ);
-  }
-#endif
-  else
+  } else {
     return base_qindex;
+  }
 }
 
 #if CONFIG_AOM_QM

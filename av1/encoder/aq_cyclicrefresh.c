@@ -410,11 +410,7 @@ static void cyclic_refresh_update_map(AV1_COMP *const cpi) {
     int mi_col = sb_col_index * cm->mib_size;
     int qindex_thresh =
         cpi->oxcf.content == AOM_CONTENT_SCREEN
-#if CONFIG_Q_SEGMENTATION
-            ? av1_get_qindex(&cm->seg, CR_SEGMENT_ID_BOOST2, 0, cm->base_qindex)
-#else
             ? av1_get_qindex(&cm->seg, CR_SEGMENT_ID_BOOST2, cm->base_qindex)
-#endif
             : 0;
     assert(mi_row >= 0 && mi_row < cm->mi_rows);
     assert(mi_col >= 0 && mi_col < cm->mi_cols);

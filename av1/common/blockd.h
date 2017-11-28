@@ -278,9 +278,6 @@ typedef struct MB_MODE_INFO {
   int8_t skip_mode;
 #endif  // CONFIG_EXT_SKIP
   int8_t segment_id;
-#if CONFIG_Q_SEGMENTATION
-  int8_t q_segment_id;
-#endif
   int8_t seg_id_predicted;  // valid only when temporal_update is enabled
 
   // Only for INTRA blocks

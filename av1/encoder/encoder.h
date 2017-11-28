@@ -491,9 +491,6 @@ typedef struct AV1_COMP {
 #endif  // CONFIG_FARME_MARKER
 
   uint8_t *segmentation_map;
-#if CONFIG_Q_SEGMENTATION
-  uint8_t *q_seg_encoding_map;  // Must be allocated and set by AQs
-#endif
 
   CYCLIC_REFRESH *cyclic_refresh;
   ActiveMap active_map;

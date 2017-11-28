@@ -1603,9 +1603,10 @@ static const aom_cdf_prob default_seg_tree_cdf[CDF_SIZE(MAX_SEGMENTS)] = {
   AOM_CDF8(4096, 8192, 12288, 16384, 20480, 24576, 28672)
 };
 
-#if CONFIG_Q_SEGMENTATION
+#if CONFIG_SPATIAL_SEGMENTATION
 static const aom_cdf_prob
-    default_q_seg_tree_cdf[Q_SEGMENT_CDF_COUNT][CDF_SIZE(MAX_SEGMENTS)] = {
+    default_spatial_pred_seg_tree_cdf[SPATIAL_PREDICTION_PROBS][CDF_SIZE(
+        MAX_SEGMENTS)] = {
       {
           AOM_CDF8(5622, 7893, 16093, 18233, 27809, 28373, 32533),
       },
@@ -3085,9 +3086,10 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->skip_cdfs, default_skip_cdfs);
   av1_copy(fc->intra_inter_cdf, default_intra_inter_cdf);
   av1_copy(fc->seg.tree_cdf, default_seg_tree_cdf);
-#if CONFIG_Q_SEGMENTATION
-  for (int i = 0; i < Q_SEGMENT_CDF_COUNT; i++)
-    av1_copy(fc->seg.q_seg_cdf[i], default_q_seg_tree_cdf[i]);
+#if CONFIG_SPATIAL_SEGMENTATION
+  for (int i = 0; i < SPATIAL_PREDICTION_PROBS; i++)
+    av1_copy(fc->seg.spatial_pred_seg_cdf[i],
+             default_spatial_pred_seg_tree_cdf[i]);
 #endif
   av1_copy(fc->tx_size_cdf, default_tx_size_cdf);
   av1_copy(fc->delta_q_cdf, default_delta_q_cdf);
