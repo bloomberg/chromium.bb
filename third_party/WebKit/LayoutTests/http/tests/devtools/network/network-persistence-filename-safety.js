@@ -7,7 +7,7 @@
 
   await TestRunner.loadModule('bindings_test_runner');
 
-  var project = await BindingsTestRunner.createOverrideProject('file:///tmp/');
+  var {project} = await BindingsTestRunner.createOverrideProject('file:///tmp/');
   Persistence.networkPersistenceManager.addFileSystemOverridesProject(Persistence.NetworkPersistenceManager.inspectedPageDomain(), project);
   BindingsTestRunner.setOverridesEnabled(true);
 
