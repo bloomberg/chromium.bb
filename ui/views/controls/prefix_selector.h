@@ -59,6 +59,7 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
 
   bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
   void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override;
+  const std::string& GetClientSourceInfo() const override;
 
  private:
   // Invoked when text is typed. Tries to change the selection appropriately.
