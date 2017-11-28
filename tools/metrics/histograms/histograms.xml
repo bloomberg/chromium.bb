@@ -101726,9 +101726,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="JSDialogs.DialogType" separator=".">
-  <suffix name="Alert"/>
-  <suffix name="Confirm"/>
-  <suffix name="Prompt"/>
+  <suffix name="Alert" label="window.alert() dialog"/>
+  <suffix name="Confirm" label="window.confirm() dialog"/>
+  <suffix name="Prompt" label="window.prompt() dialog"/>
+  <suffix name="BeforeUnload" label="dialog caused by window.onbeforeunload"/>
   <affected-histogram name="JSDialogs.DismissalCause"/>
   <affected-histogram name="JSDialogs.IsForemost"/>
   <affected-histogram name="JSDialogs.Scheme"/>

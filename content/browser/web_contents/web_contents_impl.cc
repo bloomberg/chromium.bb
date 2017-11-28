@@ -4716,7 +4716,7 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
 
   if (dialog_manager_) {
     dialog_manager_->RunBeforeUnloadDialog(
-        this, is_reload,
+        this, render_frame_host, is_reload,
         base::BindOnce(&CloseDialogCallbackWrapper::Run, wrapper, false));
   }
 }

@@ -69,6 +69,7 @@ void JavaScriptDialogHelper::RunJavaScriptDialog(
 
 void JavaScriptDialogHelper::RunBeforeUnloadDialog(
     content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     bool is_reload,
     DialogClosedCallback callback) {
   // This is called if the guest has a beforeunload event handler.

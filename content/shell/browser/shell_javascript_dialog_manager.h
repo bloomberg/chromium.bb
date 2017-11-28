@@ -32,6 +32,7 @@ class ShellJavaScriptDialogManager : public JavaScriptDialogManager {
                            bool* did_suppress_message) override;
 
   void RunBeforeUnloadDialog(WebContents* web_contents,
+                             RenderFrameHost* render_frame_host,
                              bool is_reload,
                              DialogClosedCallback callback) override;
 

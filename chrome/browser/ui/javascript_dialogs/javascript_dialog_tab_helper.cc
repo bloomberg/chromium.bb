@@ -204,16 +204,26 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
 
 void JavaScriptDialogTabHelper::RunBeforeUnloadDialog(
     content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     bool is_reload,
     DialogClosedCallback callback) {
+  content::WebContents* parent_web_contents =
+      WebContentsObserver::web_contents();
+  bool foremost = IsWebContentsForemost(parent_web_contents);
+  navigation_metrics::Scheme scheme =
+      navigation_metrics::GetScheme(render_frame_host->GetLastCommittedURL());
+  UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.BeforeUnload", foremost);
+  UMA_HISTOGRAM_ENUMERATION("JSDialogs.Scheme.BeforeUnload", scheme,
+                            navigation_metrics::Scheme::COUNT);
+
   // onbeforeunload dialogs are always handled with an app-modal dialog, because
   // - they are critical to the user not losing data
   // - they can be requested for tabs that are not foremost
   // - they can be requested for many tabs at the same time
   // and therefore auto-dismissal is inappropriate for them.
 
-  return AppModalDialogManager()->RunBeforeUnloadDialog(web_contents, is_reload,
-                                                        std::move(callback));
+  return AppModalDialogManager()->RunBeforeUnloadDialog(
+      web_contents, render_frame_host, is_reload, std::move(callback));
 }
 
 bool JavaScriptDialogTabHelper::HandleJavaScriptDialog(
