@@ -115,7 +115,7 @@ Polymer({
           break;
         case PrinterSetupResult.PRINTER_UNREACHABLE:
           messageText.textContent =
-              loadTimeData.getString('printerAddedPrinterUnreachableMessage');
+              loadTimeData.getString('printerAddedUnreachableMessage');
           break;
         case PrinterSetupResult.DBUS_ERROR:
           // Simply display a generic error message as this error should only
