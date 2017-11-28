@@ -152,8 +152,9 @@ if (is_component_build && is_desktop_linux) {
     sources = [
       "mirclient.cc",
     ]
-    ldflags = [ "-Wl,--version-script=" +
-                rebase_path("//third_party/protobuf/mirclient.map") ]
+    ldflags =
+        [ "-Wl,--version-script=" +
+          rebase_path("//third_party/protobuf/mirclient.map", root_build_dir) ]
     output_extension = "so.9"
   }
 }

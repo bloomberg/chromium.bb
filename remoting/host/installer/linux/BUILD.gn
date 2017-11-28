@@ -7,14 +7,15 @@ import("//remoting/build/config/remoting_build.gni")
 import("//build/config/zip.gni")
 
 build_deb_script = "build_deb.py"
-deb_filename = "$root_build_dir/" + exec_script(build_deb_script,
-                                                [
-                                                  "-p",
-                                                  "-s",
-                                                  rebase_path("//"),
-                                                ],
-                                                "string",
-                                                [ "build-deb.sh" ])
+deb_filename =
+    "$root_build_dir/" + exec_script(build_deb_script,
+                                     [
+                                       "-p",
+                                       "-s",
+                                       rebase_path("//", root_build_dir),
+                                     ],
+                                     "string",
+                                     [ "build-deb.sh" ])
 changes_filename =
     "$root_build_dir/" + get_path_info(deb_filename, "name") + ".changes"
 
@@ -69,9 +70,9 @@ action("remoting_me2me_host_deb_installer") {
   ]
   args = [
     "-s",
-    rebase_path("//"),
+    rebase_path("//", root_build_dir),
     "-o",
-    rebase_path("$root_build_dir"),
+    ".",
   ]
 
   deps = [

@@ -664,7 +664,7 @@ if (is_linux) {
     ]
     grit_flags = [
       "-E",
-      "gen_root=" + rebase_path(root_gen_dir),
+      "gen_root=" + rebase_path(root_gen_dir, root_build_dir),
     ]
     deps = [
       ":js_devtools_bindings_test",
