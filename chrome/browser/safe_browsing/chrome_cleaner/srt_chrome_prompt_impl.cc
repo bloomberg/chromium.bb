@@ -35,12 +35,20 @@ ChromePromptImpl::~ChromePromptImpl() {
 
 void ChromePromptImpl::PromptUser(
     const std::vector<base::FilePath>& files_to_delete,
+    const base::Optional<std::vector<base::string16>>& registry_keys,
     ChromePrompt::PromptUserCallback callback) {
+  using FileCollection = ChromeCleanerScannerResults::FileCollection;
+  using RegistryKeyCollection =
+      ChromeCleanerScannerResults::RegistryKeyCollection;
+
   if (on_prompt_user_) {
+    ChromeCleanerScannerResults scanner_results(
+        FileCollection(files_to_delete.begin(), files_to_delete.end()),
+        registry_keys ? RegistryKeyCollection(registry_keys->begin(),
+                                              registry_keys->end())
+                      : RegistryKeyCollection());
     std::move(on_prompt_user_)
-        .Run(base::MakeUnique<std::set<base::FilePath>>(files_to_delete.begin(),
-                                                        files_to_delete.end()),
-             std::move(callback));
+        .Run(std::move(scanner_results), std::move(callback));
   }
 }
 

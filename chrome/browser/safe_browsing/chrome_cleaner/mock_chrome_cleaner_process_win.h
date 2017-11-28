@@ -43,6 +43,19 @@ class MockChromeCleanerProcess {
     kNumCrashPoints,
   };
 
+  // Indicates if registry keys will be sent from the cleaner process.
+  enum class RegistryKeysReporting {
+    // Simulation of an older cleaner version that doesn't support sending
+    // registry keys.
+    kUnsupported,
+    // Simulation of a cleaner version that supports sending registry keys,
+    // but no registry key to be removed/changed reported.
+    kNotReported,
+    // The cleaner reported registry keys to be removed/changed.
+    kReported,
+    kNumRegistryKeysReporting,
+  };
+
   static constexpr int kInternalTestFailureExitCode = 100001;
   static constexpr int kDeliberateCrashExitCode = 100002;
   static constexpr int kNothingFoundExitCode = 2;
@@ -62,9 +75,14 @@ class MockChromeCleanerProcess {
 
     void AddSwitchesToCommandLine(base::CommandLine* command_line) const;
 
-    void SetDoFindUws(bool do_find_uws);
-    const std::set<base::FilePath>& files_to_delete() const {
+    void SetReportedResults(bool has_files_to_remove,
+                            RegistryKeysReporting registry_keys_reporting);
+
+    const std::vector<base::FilePath>& files_to_delete() const {
       return files_to_delete_;
+    }
+    const base::Optional<std::vector<base::string16>>& registry_keys() const {
+      return registry_keys_;
     }
 
     void set_reboot_required(bool reboot_required) {
@@ -84,13 +102,20 @@ class MockChromeCleanerProcess {
       return expected_user_response_;
     }
 
+    RegistryKeysReporting registry_keys_reporting() const {
+      return registry_keys_reporting_;
+    }
+
     int ExpectedExitCode(chrome_cleaner::mojom::PromptAcceptance
                              received_prompt_acceptance) const;
 
    private:
-    std::set<base::FilePath> files_to_delete_;
+    std::vector<base::FilePath> files_to_delete_;
+    base::Optional<std::vector<base::string16>> registry_keys_;
     bool reboot_required_ = false;
     CrashPoint crash_point_ = CrashPoint::kNone;
+    RegistryKeysReporting registry_keys_reporting_ =
+        RegistryKeysReporting::kUnsupported;
     chrome_cleaner::mojom::PromptAcceptance expected_user_response_ =
         chrome_cleaner::mojom::PromptAcceptance::UNSPECIFIED;
   };

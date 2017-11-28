@@ -31,14 +31,23 @@ struct FilePath {
   array<uint16> value;
 };
 
+struct RegistryKey {
+  // A string formatted for display to the user.
+  // Example: HKCU:32\software\unwanted_software
+  array<uint16> value;
+};
+
 // Service provided by Chrome to prompt the user to start a cleanup if the
 // Chrome Cleanup Tool detects unwanted software on the system.
 interface ChromePrompt {
   // Params:
-  //  - removable_uws_found: list of fully-qualified paths of the files that
-  //                         will be deleted by the Chrome Cleanup Tool.
+  //  - files_to_delete: list of fully-qualified paths of the files that will
+  //        be deleted by the Chrome Cleanup Tool.
+  //  - registry_keys: list of fully-qualified paths of the registry keys that
+  //        will be changed or deleted by the Chrome Cleanup Tool.
   // Returns:
   //  - prompt_acceptance: indicates if the user accepted the prompt.
-  PromptUser(array<FilePath> files_to_delete)
+  PromptUser(array<FilePath> files_to_delete,
+             [MinVersion=1] array<RegistryKey>? registry_keys)
       => (PromptAcceptance prompt_acceptance);
 };

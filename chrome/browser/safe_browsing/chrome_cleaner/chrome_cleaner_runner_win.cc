@@ -204,12 +204,12 @@ void ChromeCleanerRunner::CreateChromePromptImpl(
 }
 
 void ChromeCleanerRunner::OnPromptUser(
-    std::unique_ptr<std::set<base::FilePath>> files_to_delete,
+    ChromeCleanerScannerResults&& scanner_results,
     ChromePrompt::PromptUserCallback prompt_user_callback) {
   if (on_prompt_user_) {
     task_runner_->PostTask(FROM_HERE,
                            base::BindOnce(std::move(on_prompt_user_),
-                                          base::Passed(&files_to_delete),
+                                          base::Passed(&scanner_results),
                                           base::Passed(&prompt_user_callback)));
   }
 }
