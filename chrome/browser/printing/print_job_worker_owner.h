@@ -23,6 +23,7 @@ class PrintSettings;
 class PrintJobWorkerOwner
     : public base::RefCountedThreadSafe<PrintJobWorkerOwner> {
  public:
+  // Can only be called in single-threaded context.
   PrintJobWorkerOwner();
 
   // Finishes the initialization began by PrintJobWorker::GetSettings().
