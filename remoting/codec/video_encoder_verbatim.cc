@@ -23,8 +23,8 @@ static uint8_t* GetPacketOutputBuffer(VideoPacket* packet, size_t size) {
       base::string_as_array(packet->mutable_data()));
 }
 
-VideoEncoderVerbatim::VideoEncoderVerbatim() {}
-VideoEncoderVerbatim::~VideoEncoderVerbatim() {}
+VideoEncoderVerbatim::VideoEncoderVerbatim() = default;
+VideoEncoderVerbatim::~VideoEncoderVerbatim() = default;
 
 std::unique_ptr<VideoPacket> VideoEncoderVerbatim::Encode(
     const webrtc::DesktopFrame& frame) {

@@ -27,7 +27,7 @@ FakeSecurityKeyIpcClient::FakeSecurityKeyIpcClient(
   DCHECK(!channel_event_callback_.is_null());
 }
 
-FakeSecurityKeyIpcClient::~FakeSecurityKeyIpcClient() {}
+FakeSecurityKeyIpcClient::~FakeSecurityKeyIpcClient() = default;
 
 base::WeakPtr<FakeSecurityKeyIpcClient> FakeSecurityKeyIpcClient::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();

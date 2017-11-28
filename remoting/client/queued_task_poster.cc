@@ -16,7 +16,7 @@ QueuedTaskPoster::QueuedTaskPoster(
     : target_task_runner_(target_task_runner),
       weak_factory_(this) {}
 
-QueuedTaskPoster::~QueuedTaskPoster() {}
+QueuedTaskPoster::~QueuedTaskPoster() = default;
 
 void QueuedTaskPoster::AddTask(const base::Closure& closure) {
   if (!source_task_runner_) {

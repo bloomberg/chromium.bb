@@ -17,7 +17,7 @@ int kScrollSpeedPixelsPerSecond = 500;
 ScrollFrameGenerator::ScrollFrameGenerator()
     : base_frame_(LoadDesktopFrameFromPng("test_frame2.png")),
       start_time_(base::TimeTicks::Now()) {}
-ScrollFrameGenerator::~ScrollFrameGenerator() {}
+ScrollFrameGenerator::~ScrollFrameGenerator() = default;
 
 std::unique_ptr<webrtc::DesktopFrame> ScrollFrameGenerator::GenerateFrame(
     webrtc::SharedMemoryFactory* shared_memory_factory) {

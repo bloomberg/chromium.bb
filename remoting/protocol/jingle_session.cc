@@ -107,8 +107,8 @@ int GetSequentialId(const std::string& id) {
 // session due to an unexpected request.
 class JingleSession::OrderedMessageQueue {
  public:
-  OrderedMessageQueue() {}
-  ~OrderedMessageQueue() {}
+  OrderedMessageQueue() = default;
+  ~OrderedMessageQueue() = default;
 
   // Returns the list of messages ordered by their sequential IDs.
   std::vector<PendingMessage> OnIncomingMessage(

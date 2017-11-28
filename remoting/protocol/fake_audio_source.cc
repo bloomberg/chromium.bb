@@ -7,8 +7,8 @@
 namespace remoting {
 namespace protocol {
 
-FakeAudioSource::FakeAudioSource() {}
-FakeAudioSource::~FakeAudioSource() {}
+FakeAudioSource::FakeAudioSource() = default;
+FakeAudioSource::~FakeAudioSource() = default;
 
 bool FakeAudioSource::Start(const PacketCapturedCallback& callback) {
   callback_ = callback;

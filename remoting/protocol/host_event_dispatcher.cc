@@ -20,7 +20,7 @@ HostEventDispatcher::HostEventDispatcher()
     : ChannelDispatcherBase(kEventChannelName),
       event_timestamps_source_(new InputEventTimestampsSourceImpl()) {}
 
-HostEventDispatcher::~HostEventDispatcher() {}
+HostEventDispatcher::~HostEventDispatcher() = default;
 
 void HostEventDispatcher::OnIncomingMessage(
     std::unique_ptr<CompoundBuffer> buffer) {

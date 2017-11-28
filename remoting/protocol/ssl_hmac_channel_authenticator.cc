@@ -52,8 +52,8 @@ namespace {
 // A CertVerifier which rejects every certificate.
 class FailingCertVerifier : public net::CertVerifier {
  public:
-  FailingCertVerifier() {}
-  ~FailingCertVerifier() override {}
+  FailingCertVerifier() = default;
+  ~FailingCertVerifier() override = default;
 
   int Verify(const RequestParams& params,
              net::CRLSet* crl_set,
@@ -87,7 +87,7 @@ class NetStreamSocketAdapter : public net::StreamSocket {
  public:
   NetStreamSocketAdapter(std::unique_ptr<P2PStreamSocket> socket)
       : socket_(std::move(socket)) {}
-  ~NetStreamSocketAdapter() override {}
+  ~NetStreamSocketAdapter() override = default;
 
   int Read(net::IOBuffer* buf, int buf_len,
            const net::CompletionCallback& callback) override {
@@ -168,7 +168,7 @@ class P2PStreamSocketAdapter : public P2PStreamSocket {
                          std::unique_ptr<net::SSLServerContext> server_context)
       : server_context_(std::move(server_context)),
         socket_(std::move(socket)) {}
-  ~P2PStreamSocketAdapter() override {}
+  ~P2PStreamSocketAdapter() override = default;
 
   int Read(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
            const net::CompletionCallback& callback) override {

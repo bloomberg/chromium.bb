@@ -34,7 +34,7 @@ ChromiumUrlRequest::ChromiumUrlRequest(
                              net::LOAD_DO_NOT_SEND_COOKIES);
 }
 
-ChromiumUrlRequest::~ChromiumUrlRequest() {}
+ChromiumUrlRequest::~ChromiumUrlRequest() = default;
 
 void ChromiumUrlRequest::AddHeader(const std::string& value) {
   url_fetcher_->AddExtraRequestHeader(value);
@@ -72,7 +72,7 @@ void ChromiumUrlRequest::OnURLFetchComplete(
 ChromiumUrlRequestFactory::ChromiumUrlRequestFactory(
     scoped_refptr<net::URLRequestContextGetter> url_context)
     : url_context_(url_context) {}
-ChromiumUrlRequestFactory::~ChromiumUrlRequestFactory() {}
+ChromiumUrlRequestFactory::~ChromiumUrlRequestFactory() = default;
 
 std::unique_ptr<UrlRequest> ChromiumUrlRequestFactory::CreateUrlRequest(
     UrlRequest::Type type,

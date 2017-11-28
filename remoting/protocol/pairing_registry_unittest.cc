@@ -30,8 +30,8 @@ using remoting::protocol::PairingRegistry;
 
 class MockPairingRegistryCallbacks {
  public:
-  MockPairingRegistryCallbacks() {}
-  virtual ~MockPairingRegistryCallbacks() {}
+  MockPairingRegistryCallbacks() = default;
+  virtual ~MockPairingRegistryCallbacks() = default;
 
   MOCK_METHOD1(DoneCallback, void(bool));
   MOCK_METHOD1(GetAllPairingsCallbackPtr, void(base::ListValue*));

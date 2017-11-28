@@ -18,7 +18,7 @@ float MAX_ZOOM_LEVEL = 100.f;
 
 DesktopViewport::DesktopViewport() : desktop_to_surface_transform_() {}
 
-DesktopViewport::~DesktopViewport() {}
+DesktopViewport::~DesktopViewport() = default;
 
 void DesktopViewport::SetDesktopSize(int desktop_width, int desktop_height) {
   if (desktop_width == desktop_size_.x && desktop_height == desktop_size_.y) {

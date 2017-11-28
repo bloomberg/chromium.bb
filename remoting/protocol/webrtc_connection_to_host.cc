@@ -24,8 +24,8 @@
 namespace remoting {
 namespace protocol {
 
-WebrtcConnectionToHost::WebrtcConnectionToHost() {}
-WebrtcConnectionToHost::~WebrtcConnectionToHost() {}
+WebrtcConnectionToHost::WebrtcConnectionToHost() = default;
+WebrtcConnectionToHost::~WebrtcConnectionToHost() = default;
 
 void WebrtcConnectionToHost::Connect(
     std::unique_ptr<Session> session,

@@ -56,11 +56,11 @@ class ChromotingTestDriverEnvironmentTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ChromotingTestDriverEnvironmentTest);
 };
 
-ChromotingTestDriverEnvironmentTest::ChromotingTestDriverEnvironmentTest() {
-}
+ChromotingTestDriverEnvironmentTest::ChromotingTestDriverEnvironmentTest() =
+    default;
 
-ChromotingTestDriverEnvironmentTest::~ChromotingTestDriverEnvironmentTest() {
-}
+ChromotingTestDriverEnvironmentTest::~ChromotingTestDriverEnvironmentTest() =
+    default;
 
 void ChromotingTestDriverEnvironmentTest::SetUp() {
   ChromotingTestDriverEnvironment::EnvironmentOptions options;

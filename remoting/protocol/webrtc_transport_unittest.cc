@@ -40,8 +40,8 @@ class TestTransportEventHandler : public WebrtcTransport::EventHandler {
                               std::unique_ptr<MessagePipe> pipe)>
       IncomingChannelCallback;
 
-  TestTransportEventHandler() {}
-  ~TestTransportEventHandler() override {}
+  TestTransportEventHandler() = default;
+  ~TestTransportEventHandler() override = default;
 
   // All callbacks must be set before the test handler is passed to a Transport
   // object.
@@ -95,8 +95,8 @@ class TestTransportEventHandler : public WebrtcTransport::EventHandler {
 
 class TestMessagePipeEventHandler : public MessagePipe::EventHandler {
  public:
-  TestMessagePipeEventHandler() {}
-  ~TestMessagePipeEventHandler() override {}
+  TestMessagePipeEventHandler() = default;
+  ~TestMessagePipeEventHandler() override = default;
 
   void set_open_callback(const base::Closure& callback) {
     open_callback_ = callback;

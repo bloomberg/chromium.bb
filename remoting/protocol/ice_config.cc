@@ -88,9 +88,9 @@ bool AddServerToConfig(std::string url,
 
 }  // namespace
 
-IceConfig::IceConfig() {}
+IceConfig::IceConfig() = default;
 IceConfig::IceConfig(const IceConfig& other) = default;
-IceConfig::~IceConfig() {}
+IceConfig::~IceConfig() = default;
 
 // static
 IceConfig IceConfig::Parse(const base::DictionaryValue& dictionary) {

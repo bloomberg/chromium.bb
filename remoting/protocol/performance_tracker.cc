@@ -92,7 +92,7 @@ PerformanceTracker::PerformanceTracker()
   uma_enum_histogram_updater_ = base::Bind(&UpdateUmaEnumHistogramStub);
 }
 
-PerformanceTracker::~PerformanceTracker() {}
+PerformanceTracker::~PerformanceTracker() = default;
 
 void PerformanceTracker::SetUpdateUmaCallbacks(
     UpdateUmaCustomHistogramCallback update_uma_custom_counts_callback,

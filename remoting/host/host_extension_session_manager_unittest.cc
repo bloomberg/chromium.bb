@@ -25,7 +25,7 @@ class HostExtensionSessionManagerTest : public testing::Test {
     extensions_.push_back(&extension2_);
     extensions_.push_back(&extension3_);
   }
-  ~HostExtensionSessionManagerTest() override {}
+  ~HostExtensionSessionManagerTest() override = default;
 
  protected:
   // Fake HostExtensions for testing.

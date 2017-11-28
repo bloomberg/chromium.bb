@@ -208,10 +208,10 @@ const ChannelConfig& SessionConfig::audio_config() const {
 
 SessionConfig::SessionConfig(Protocol protocol) : protocol_(protocol) {}
 
-CandidateSessionConfig::CandidateSessionConfig() {}
+CandidateSessionConfig::CandidateSessionConfig() = default;
 CandidateSessionConfig::CandidateSessionConfig(
     const CandidateSessionConfig& config) = default;
-CandidateSessionConfig::~CandidateSessionConfig() {}
+CandidateSessionConfig::~CandidateSessionConfig() = default;
 
 bool CandidateSessionConfig::IsSupported(const SessionConfig& config) const {
   switch (config.protocol()) {

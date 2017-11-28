@@ -59,9 +59,9 @@ class SecurityKeyMessageHandlerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SecurityKeyMessageHandlerTest);
 };
 
-SecurityKeyMessageHandlerTest::SecurityKeyMessageHandlerTest() {}
+SecurityKeyMessageHandlerTest::SecurityKeyMessageHandlerTest() = default;
 
-SecurityKeyMessageHandlerTest::~SecurityKeyMessageHandlerTest() {}
+SecurityKeyMessageHandlerTest::~SecurityKeyMessageHandlerTest() = default;
 
 void SecurityKeyMessageHandlerTest::OperationComplete() {
   run_loop_->Quit();

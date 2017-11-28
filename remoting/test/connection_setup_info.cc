@@ -7,14 +7,12 @@
 namespace remoting {
 namespace test {
 
-ConnectionSetupInfo::ConnectionSetupInfo() {
-}
+ConnectionSetupInfo::ConnectionSetupInfo() = default;
 
 ConnectionSetupInfo::ConnectionSetupInfo(const ConnectionSetupInfo& other) =
     default;
 
-ConnectionSetupInfo::~ConnectionSetupInfo() {
-}
+ConnectionSetupInfo::~ConnectionSetupInfo() = default;
 
 }  // namespace test
 }  // namespace remoting

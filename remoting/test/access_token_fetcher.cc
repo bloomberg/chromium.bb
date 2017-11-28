@@ -34,8 +34,7 @@ AccessTokenFetcher::AccessTokenFetcher() {
       kOauthRedirectUrl};
 }
 
-AccessTokenFetcher::~AccessTokenFetcher() {
-}
+AccessTokenFetcher::~AccessTokenFetcher() = default;
 
 void AccessTokenFetcher::GetAccessTokenFromAuthCode(
     const std::string& auth_code,

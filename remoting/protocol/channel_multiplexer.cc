@@ -33,7 +33,7 @@ class PendingPacket {
  public:
   PendingPacket(std::unique_ptr<MultiplexPacket> packet)
       : packet(std::move(packet)) {}
-  ~PendingPacket() {}
+  ~PendingPacket() = default;
 
   bool is_empty() { return pos >= packet->data().size(); }
 

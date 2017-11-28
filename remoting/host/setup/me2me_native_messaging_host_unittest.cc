@@ -188,9 +188,9 @@ class MockDaemonControllerDelegate : public DaemonController::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MockDaemonControllerDelegate);
 };
 
-MockDaemonControllerDelegate::MockDaemonControllerDelegate() {}
+MockDaemonControllerDelegate::MockDaemonControllerDelegate() = default;
 
-MockDaemonControllerDelegate::~MockDaemonControllerDelegate() {}
+MockDaemonControllerDelegate::~MockDaemonControllerDelegate() = default;
 
 DaemonController::State MockDaemonControllerDelegate::GetState() {
   return DaemonController::STATE_STARTED;
@@ -288,9 +288,9 @@ class Me2MeNativeMessagingHostTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(Me2MeNativeMessagingHostTest);
 };
 
-Me2MeNativeMessagingHostTest::Me2MeNativeMessagingHostTest() {}
+Me2MeNativeMessagingHostTest::Me2MeNativeMessagingHostTest() = default;
 
-Me2MeNativeMessagingHostTest::~Me2MeNativeMessagingHostTest() {}
+Me2MeNativeMessagingHostTest::~Me2MeNativeMessagingHostTest() = default;
 
 void Me2MeNativeMessagingHostTest::SetUp() {
   base::File input_read_file;

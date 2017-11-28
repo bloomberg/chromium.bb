@@ -51,8 +51,8 @@ const char kTestPinBad[] = "654321";
 
 class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
  public:
-  NegotiatingAuthenticatorTest() {}
-  ~NegotiatingAuthenticatorTest() override {}
+  NegotiatingAuthenticatorTest() = default;
+  ~NegotiatingAuthenticatorTest() override = default;
 
  protected:
   virtual void InitAuthenticators(const std::string& client_id,

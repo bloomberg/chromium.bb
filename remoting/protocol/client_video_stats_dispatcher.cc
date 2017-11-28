@@ -25,7 +25,7 @@ ClientVideoStatsDispatcher::ClientVideoStatsDispatcher(
     : ChannelDispatcherBase(kVideoStatsChannelNamePrefix + stream_name),
       video_stats_stub_(video_stats_stub) {}
 
-ClientVideoStatsDispatcher::~ClientVideoStatsDispatcher() {}
+ClientVideoStatsDispatcher::~ClientVideoStatsDispatcher() = default;
 
 void ClientVideoStatsDispatcher::OnIncomingMessage(
     std::unique_ptr<CompoundBuffer> message) {

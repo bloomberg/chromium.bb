@@ -41,7 +41,7 @@ FakePortAllocatorSession::FakePortAllocatorSession(
                                 ice_username_fragment,
                                 ice_password) {}
 
-FakePortAllocatorSession::~FakePortAllocatorSession() {}
+FakePortAllocatorSession::~FakePortAllocatorSession() = default;
 
 }  // namespace
 
@@ -58,7 +58,7 @@ FakePortAllocator::FakePortAllocator(
             cricket::PORTALLOCATOR_DISABLE_RELAY);
 }
 
-FakePortAllocator::~FakePortAllocator() {}
+FakePortAllocator::~FakePortAllocator() = default;
 
 cricket::PortAllocatorSession* FakePortAllocator::CreateSessionInternal(
     const std::string& content_name,
@@ -76,7 +76,7 @@ FakePortAllocatorFactory::FakePortAllocatorFactory(
   network_manager_.reset(new FakeNetworkManager(socket_factory_->GetAddress()));
 }
 
-FakePortAllocatorFactory::~FakePortAllocatorFactory() {}
+FakePortAllocatorFactory::~FakePortAllocatorFactory() = default;
 
 std::unique_ptr<cricket::PortAllocator>
 FakePortAllocatorFactory::CreatePortAllocator(

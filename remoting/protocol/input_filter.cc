@@ -14,8 +14,7 @@ InputFilter::InputFilter(InputStub* input_stub)
   : input_stub_(input_stub), enabled_(true) {
 }
 
-InputFilter::~InputFilter() {
-}
+InputFilter::~InputFilter() = default;
 
 void InputFilter::InjectKeyEvent(const KeyEvent& event) {
   if (enabled_ && input_stub_ != nullptr)

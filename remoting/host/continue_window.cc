@@ -16,8 +16,7 @@ const int kSessionDisconnectTimeoutMinutes = 1;
 
 namespace remoting {
 
-ContinueWindow::~ContinueWindow() {
-}
+ContinueWindow::~ContinueWindow() = default;
 
 void ContinueWindow::Start(
     const base::WeakPtr<ClientSessionControl>& client_session_control) {
@@ -57,7 +56,7 @@ void ContinueWindow::DisconnectSession() {
     client_session_control_->DisconnectSession(protocol::MAX_SESSION_LENGTH);
 }
 
-ContinueWindow::ContinueWindow() {}
+ContinueWindow::ContinueWindow() = default;
 
 void ContinueWindow::OnSessionExpired() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -29,7 +29,8 @@ AppRemotingTestDriverEnvironment::EnvironmentOptions::EnvironmentOptions()
       service_environment(kUnknownEnvironment),
       release_hosts_when_done(false) {}
 
-AppRemotingTestDriverEnvironment::EnvironmentOptions::~EnvironmentOptions() {}
+AppRemotingTestDriverEnvironment::EnvironmentOptions::~EnvironmentOptions() =
+    default;
 
 AppRemotingTestDriverEnvironment::AppRemotingTestDriverEnvironment(
     const EnvironmentOptions& options)
@@ -45,7 +46,7 @@ AppRemotingTestDriverEnvironment::AppRemotingTestDriverEnvironment(
   DCHECK(service_environment_ < kUnknownEnvironment);
 }
 
-AppRemotingTestDriverEnvironment::~AppRemotingTestDriverEnvironment() {}
+AppRemotingTestDriverEnvironment::~AppRemotingTestDriverEnvironment() = default;
 
 bool AppRemotingTestDriverEnvironment::Initialize(
     const std::string& auth_code) {

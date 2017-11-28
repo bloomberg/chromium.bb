@@ -85,7 +85,7 @@ It2MeDesktopEnvironmentFactory::It2MeDesktopEnvironmentFactory(
                                      ui_task_runner,
                                      system_input_injector_factory) {}
 
-It2MeDesktopEnvironmentFactory::~It2MeDesktopEnvironmentFactory() {}
+It2MeDesktopEnvironmentFactory::~It2MeDesktopEnvironmentFactory() = default;
 
 std::unique_ptr<DesktopEnvironment> It2MeDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control,

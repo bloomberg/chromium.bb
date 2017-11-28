@@ -132,7 +132,7 @@ It2MeConfirmationDialogProxyTest::It2MeConfirmationDialogProxyTest()
                                                        std::move(dialog)));
 }
 
-It2MeConfirmationDialogProxyTest::~It2MeConfirmationDialogProxyTest() {}
+It2MeConfirmationDialogProxyTest::~It2MeConfirmationDialogProxyTest() = default;
 
 TEST_F(It2MeConfirmationDialogProxyTest, Show) {
   ResultCallbackTarget callback_target(main_task_runner());

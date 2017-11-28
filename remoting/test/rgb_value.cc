@@ -11,7 +11,7 @@ RGBValue::RGBValue() : red(0), green(0), blue(0) {}
 RGBValue::RGBValue(uint8_t r, uint8_t g, uint8_t b)
     : red(r), green(g), blue(b) {}
 
-RGBValue::~RGBValue() {}
+RGBValue::~RGBValue() = default;
 
 }  // namespace test
 }  // namespace remoting

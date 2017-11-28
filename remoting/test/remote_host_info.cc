@@ -18,7 +18,7 @@ namespace test {
 RemoteHostInfo::RemoteHostInfo()
     : remote_host_status(kRemoteHostStatusUnknown) {}
 
-RemoteHostInfo::~RemoteHostInfo() {}
+RemoteHostInfo::~RemoteHostInfo() = default;
 
 bool RemoteHostInfo::IsReadyForConnection() const {
   return remote_host_status == kRemoteHostStatusReady;

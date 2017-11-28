@@ -70,7 +70,7 @@ PortAllocator::PortAllocator(
                network_settings.port_range.max_port);
 }
 
-PortAllocator::~PortAllocator() {}
+PortAllocator::~PortAllocator() = default;
 
 cricket::PortAllocatorSession* PortAllocator::CreateSessionInternal(
     const std::string& content_name,
@@ -94,7 +94,7 @@ PortAllocatorSession::PortAllocatorSession(PortAllocator* allocator,
       transport_context_(allocator->transport_context()),
       weak_factory_(this) {}
 
-PortAllocatorSession::~PortAllocatorSession() {}
+PortAllocatorSession::~PortAllocatorSession() = default;
 
 void PortAllocatorSession::GetPortConfigurations() {
   transport_context_->GetIceConfig(base::Bind(

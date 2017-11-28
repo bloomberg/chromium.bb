@@ -102,7 +102,7 @@ SecurityKeyIpcServerTest::SecurityKeyIpcServerTest()
                  base::Unretained(this)));
 }
 
-SecurityKeyIpcServerTest::~SecurityKeyIpcServerTest() {}
+SecurityKeyIpcServerTest::~SecurityKeyIpcServerTest() = default;
 
 void SecurityKeyIpcServerTest::OperationComplete() {
   run_loop_->Quit();

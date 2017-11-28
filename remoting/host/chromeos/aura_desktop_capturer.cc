@@ -22,7 +22,7 @@ namespace remoting {
 AuraDesktopCapturer::AuraDesktopCapturer()
     : callback_(nullptr), desktop_window_(nullptr), weak_factory_(this) {}
 
-AuraDesktopCapturer::~AuraDesktopCapturer() {}
+AuraDesktopCapturer::~AuraDesktopCapturer() = default;
 
 void AuraDesktopCapturer::Start(webrtc::DesktopCapturer::Callback* callback) {
 #if defined(OS_CHROMEOS)

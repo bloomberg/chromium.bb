@@ -20,7 +20,7 @@ MessageDecoder::MessageDecoder()
       next_payload_known_(false) {
 }
 
-MessageDecoder::~MessageDecoder() {}
+MessageDecoder::~MessageDecoder() = default;
 
 void MessageDecoder::AddData(scoped_refptr<net::IOBuffer> data,
                              int data_size) {

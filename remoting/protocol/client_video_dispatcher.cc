@@ -36,7 +36,7 @@ ClientVideoDispatcher::ClientVideoDispatcher(VideoStub* video_stub,
       client_stub_(client_stub),
       weak_factory_(this) {}
 
-ClientVideoDispatcher::~ClientVideoDispatcher() {}
+ClientVideoDispatcher::~ClientVideoDispatcher() = default;
 
 void ClientVideoDispatcher::OnIncomingMessage(
     std::unique_ptr<CompoundBuffer> message) {

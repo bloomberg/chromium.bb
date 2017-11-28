@@ -61,8 +61,8 @@ AppRemotingReportIssueRequestTest::AppRemotingReportIssueRequestTest()
     : url_fetcher_factory_(nullptr), message_loop_(new base::MessageLoopForIO) {
 }
 
-AppRemotingReportIssueRequestTest::~AppRemotingReportIssueRequestTest() {
-}
+AppRemotingReportIssueRequestTest::~AppRemotingReportIssueRequestTest() =
+    default;
 
 void AppRemotingReportIssueRequestTest::SetUp() {
   run_loop_.reset(new base::RunLoop());

@@ -14,7 +14,7 @@ TextKeyboardInputStrategy::TextKeyboardInputStrategy(
     ClientInputInjector* input_injector)
     : input_injector_(input_injector) {}
 
-TextKeyboardInputStrategy::~TextKeyboardInputStrategy() {}
+TextKeyboardInputStrategy::~TextKeyboardInputStrategy() = default;
 
 // KeyboardInputStrategy
 

@@ -123,7 +123,7 @@ SecurityKeyIpcClientTest::SecurityKeyIpcClientTest()
                      base::Unretained(this),
                      /*failed=*/false)) {}
 
-SecurityKeyIpcClientTest::~SecurityKeyIpcClientTest() {}
+SecurityKeyIpcClientTest::~SecurityKeyIpcClientTest() = default;
 
 void SecurityKeyIpcClientTest::SetUp() {
 #if defined(OS_WIN)

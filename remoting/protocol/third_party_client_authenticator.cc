@@ -26,7 +26,7 @@ ThirdPartyClientAuthenticator::ThirdPartyClientAuthenticator(
       fetch_token_callback_(std::move(fetch_token_callback)),
       weak_factory_(this) {}
 
-ThirdPartyClientAuthenticator::~ThirdPartyClientAuthenticator() {}
+ThirdPartyClientAuthenticator::~ThirdPartyClientAuthenticator() = default;
 
 void ThirdPartyClientAuthenticator::ProcessTokenMessage(
     const buzz::XmlElement* message,

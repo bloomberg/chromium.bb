@@ -21,11 +21,11 @@ namespace test {
 
 ChromotingTestDriverEnvironment* g_chromoting_shared_data = nullptr;
 
-ChromotingTestDriverEnvironment::EnvironmentOptions::EnvironmentOptions() {
-}
+ChromotingTestDriverEnvironment::EnvironmentOptions::EnvironmentOptions() =
+    default;
 
-ChromotingTestDriverEnvironment::EnvironmentOptions::~EnvironmentOptions() {
-}
+ChromotingTestDriverEnvironment::EnvironmentOptions::~EnvironmentOptions() =
+    default;
 
 ChromotingTestDriverEnvironment::ChromotingTestDriverEnvironment(
     const EnvironmentOptions& options)
@@ -39,8 +39,7 @@ ChromotingTestDriverEnvironment::ChromotingTestDriverEnvironment(
   DCHECK(!host_name_.empty());
 }
 
-ChromotingTestDriverEnvironment::~ChromotingTestDriverEnvironment() {
-}
+ChromotingTestDriverEnvironment::~ChromotingTestDriverEnvironment() = default;
 
 bool ChromotingTestDriverEnvironment::Initialize(
     const std::string& auth_code) {

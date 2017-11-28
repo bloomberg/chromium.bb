@@ -48,7 +48,7 @@ class FakeProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
         response_(response) {
   }
 
-  ~FakeProtocolHandler() override {}
+  ~FakeProtocolHandler() override = default;
 
   net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
@@ -71,7 +71,7 @@ class FakeFailingProtocolHandler
       net::Error net_error)
       : failure_phase_(failure_phase), net_error_(net_error) {}
 
-  ~FakeFailingProtocolHandler() override {}
+  ~FakeFailingProtocolHandler() override = default;
 
   net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,

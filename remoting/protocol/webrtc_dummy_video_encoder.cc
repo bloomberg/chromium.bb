@@ -60,7 +60,7 @@ WebrtcDummyVideoEncoder::WebrtcDummyVideoEncoder(
       state_(kUninitialized),
       video_channel_state_observer_(video_channel_state_observer) {}
 
-WebrtcDummyVideoEncoder::~WebrtcDummyVideoEncoder() {}
+WebrtcDummyVideoEncoder::~WebrtcDummyVideoEncoder() = default;
 
 int32_t WebrtcDummyVideoEncoder::InitEncode(
     const webrtc::VideoCodec* codec_settings,

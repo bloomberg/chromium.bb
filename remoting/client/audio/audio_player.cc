@@ -23,7 +23,7 @@ AudioPlayer::AudioPlayer()
       queued_bytes_(0),
       bytes_consumed_(0) {}
 
-AudioPlayer::~AudioPlayer() {}
+AudioPlayer::~AudioPlayer() = default;
 
 void AudioPlayer::ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
                                      const base::Closure& done) {

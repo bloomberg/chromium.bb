@@ -16,38 +16,40 @@
 namespace remoting {
 namespace protocol {
 
-MockAuthenticator::MockAuthenticator() {}
-MockAuthenticator::~MockAuthenticator() {}
+MockAuthenticator::MockAuthenticator() = default;
+MockAuthenticator::~MockAuthenticator() = default;
 
-MockConnectionToClientEventHandler::MockConnectionToClientEventHandler() {}
-MockConnectionToClientEventHandler::~MockConnectionToClientEventHandler() {}
+MockConnectionToClientEventHandler::MockConnectionToClientEventHandler() =
+    default;
+MockConnectionToClientEventHandler::~MockConnectionToClientEventHandler() =
+    default;
 
-MockClipboardStub::MockClipboardStub() {}
-MockClipboardStub::~MockClipboardStub() {}
+MockClipboardStub::MockClipboardStub() = default;
+MockClipboardStub::~MockClipboardStub() = default;
 
-MockInputStub::MockInputStub() {}
-MockInputStub::~MockInputStub() {}
+MockInputStub::MockInputStub() = default;
+MockInputStub::~MockInputStub() = default;
 
-MockHostStub::MockHostStub() {}
-MockHostStub::~MockHostStub() {}
+MockHostStub::MockHostStub() = default;
+MockHostStub::~MockHostStub() = default;
 
-MockClientStub::MockClientStub() {}
-MockClientStub::~MockClientStub() {}
+MockClientStub::MockClientStub() = default;
+MockClientStub::~MockClientStub() = default;
 
-MockCursorShapeStub::MockCursorShapeStub() {}
-MockCursorShapeStub::~MockCursorShapeStub() {}
+MockCursorShapeStub::MockCursorShapeStub() = default;
+MockCursorShapeStub::~MockCursorShapeStub() = default;
 
-MockVideoStub::MockVideoStub() {}
-MockVideoStub::~MockVideoStub() {}
+MockVideoStub::MockVideoStub() = default;
+MockVideoStub::~MockVideoStub() = default;
 
-MockSession::MockSession() {}
-MockSession::~MockSession() {}
+MockSession::MockSession() = default;
+MockSession::~MockSession() = default;
 
-MockSessionManager::MockSessionManager() {}
-MockSessionManager::~MockSessionManager() {}
+MockSessionManager::MockSessionManager() = default;
+MockSessionManager::~MockSessionManager() = default;
 
-MockPairingRegistryDelegate::MockPairingRegistryDelegate() {}
-MockPairingRegistryDelegate::~MockPairingRegistryDelegate() {}
+MockPairingRegistryDelegate::MockPairingRegistryDelegate() = default;
+MockPairingRegistryDelegate::~MockPairingRegistryDelegate() = default;
 
 std::unique_ptr<base::ListValue> MockPairingRegistryDelegate::LoadAll() {
   std::unique_ptr<base::ListValue> result(new base::ListValue());
@@ -88,7 +90,7 @@ SynchronousPairingRegistry::SynchronousPairingRegistry(
     std::unique_ptr<Delegate> delegate)
     : PairingRegistry(base::ThreadTaskRunnerHandle::Get(),
                       std::move(delegate)) {}
-SynchronousPairingRegistry::~SynchronousPairingRegistry() {}
+SynchronousPairingRegistry::~SynchronousPairingRegistry() = default;
 
 void SynchronousPairingRegistry::PostTask(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,

@@ -12,8 +12,8 @@ namespace test {
 using ::testing::_;
 using ::testing::Invoke;
 
-MockAccessTokenFetcher::MockAccessTokenFetcher() {}
-MockAccessTokenFetcher::~MockAccessTokenFetcher() {}
+MockAccessTokenFetcher::MockAccessTokenFetcher() = default;
+MockAccessTokenFetcher::~MockAccessTokenFetcher() = default;
 
 void MockAccessTokenFetcher::SetAccessTokenFetcher(
     std::unique_ptr<AccessTokenFetcher> fetcher) {

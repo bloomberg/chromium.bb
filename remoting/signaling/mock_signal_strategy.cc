@@ -8,7 +8,7 @@ namespace remoting {
 
 MockSignalStrategy::MockSignalStrategy(const SignalingAddress& address)
     : local_address_(address) {}
-MockSignalStrategy::~MockSignalStrategy() {}
+MockSignalStrategy::~MockSignalStrategy() = default;
 
 const SignalingAddress& MockSignalStrategy::GetLocalAddress() const {
   return local_address_;

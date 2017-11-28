@@ -39,7 +39,6 @@ URLRequestContextGetter::GetNetworkTaskRunner() const {
   return network_task_runner_;
 }
 
-URLRequestContextGetter::~URLRequestContextGetter() {
-}
+URLRequestContextGetter::~URLRequestContextGetter() = default;
 
 }  // namespace remoting

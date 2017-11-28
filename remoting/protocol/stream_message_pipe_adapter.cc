@@ -27,7 +27,7 @@ StreamMessagePipeAdapter::StreamMessagePipeAdapter(
   DCHECK(error_callback_);
 }
 
-StreamMessagePipeAdapter::~StreamMessagePipeAdapter() {}
+StreamMessagePipeAdapter::~StreamMessagePipeAdapter() = default;
 
 void StreamMessagePipeAdapter::Start(EventHandler* event_handler) {
   DCHECK(event_handler);
@@ -73,7 +73,8 @@ StreamMessageChannelFactoryAdapter::StreamMessageChannelFactoryAdapter(
     : stream_channel_factory_(stream_channel_factory),
       error_callback_(error_callback) {}
 
-StreamMessageChannelFactoryAdapter::~StreamMessageChannelFactoryAdapter() {}
+StreamMessageChannelFactoryAdapter::~StreamMessageChannelFactoryAdapter() =
+    default;
 
 void StreamMessageChannelFactoryAdapter::CreateChannel(
     const std::string& name,

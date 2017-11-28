@@ -51,7 +51,7 @@ namespace remoting {
 
 X11KeyboardImpl::X11KeyboardImpl(Display* display) : display_(display) {}
 
-X11KeyboardImpl::~X11KeyboardImpl() {}
+X11KeyboardImpl::~X11KeyboardImpl() = default;
 
 std::vector<uint32_t> X11KeyboardImpl::GetUnusedKeycodes() {
   std::vector<uint32_t> unused_keycodes_;

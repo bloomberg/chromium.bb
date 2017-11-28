@@ -63,9 +63,9 @@ Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
   return std::move(result);
 }
 
-Me2MeHostAuthenticatorFactory::Me2MeHostAuthenticatorFactory() {}
+Me2MeHostAuthenticatorFactory::Me2MeHostAuthenticatorFactory() = default;
 
-Me2MeHostAuthenticatorFactory::~Me2MeHostAuthenticatorFactory() {}
+Me2MeHostAuthenticatorFactory::~Me2MeHostAuthenticatorFactory() = default;
 
 std::unique_ptr<Authenticator>
 Me2MeHostAuthenticatorFactory::CreateAuthenticator(

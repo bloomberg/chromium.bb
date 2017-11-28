@@ -22,7 +22,7 @@ FakeSecurityKeyMessageWriter::FakeSecurityKeyMessageWriter(
   DCHECK(!write_callback_.is_null());
 }
 
-FakeSecurityKeyMessageWriter::~FakeSecurityKeyMessageWriter() {}
+FakeSecurityKeyMessageWriter::~FakeSecurityKeyMessageWriter() = default;
 
 base::WeakPtr<FakeSecurityKeyMessageWriter>
 FakeSecurityKeyMessageWriter::AsWeakPtr() {

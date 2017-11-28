@@ -7,8 +7,8 @@
 namespace remoting {
 namespace protocol {
 
-InputEventTimestampsSourceImpl::InputEventTimestampsSourceImpl() {}
-InputEventTimestampsSourceImpl::~InputEventTimestampsSourceImpl() {}
+InputEventTimestampsSourceImpl::InputEventTimestampsSourceImpl() = default;
+InputEventTimestampsSourceImpl::~InputEventTimestampsSourceImpl() = default;
 
 void InputEventTimestampsSourceImpl::OnEventReceived(
     InputEventTimestamps timestamps) {

@@ -16,7 +16,7 @@ FakeOAuthTokenGetter::FakeOAuthTokenGetter(Status status,
                                            const std::string& access_token)
     : status_(status), user_email_(user_email), access_token_(access_token) {}
 
-FakeOAuthTokenGetter::~FakeOAuthTokenGetter() {}
+FakeOAuthTokenGetter::~FakeOAuthTokenGetter() = default;
 
 void FakeOAuthTokenGetter::CallWithToken(const TokenCallback& on_access_token) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

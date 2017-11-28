@@ -84,7 +84,7 @@ std::unique_ptr<VideoDecoderVpx> VideoDecoderVpx::CreateForVP9() {
   return base::WrapUnique(new VideoDecoderVpx(vpx_codec_vp9_dx()));
 }
 
-VideoDecoderVpx::~VideoDecoderVpx() {}
+VideoDecoderVpx::~VideoDecoderVpx() = default;
 
 void VideoDecoderVpx::SetPixelFormat(PixelFormat pixel_format) {
   pixel_format_ = pixel_format;

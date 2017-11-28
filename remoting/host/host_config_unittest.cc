@@ -28,7 +28,7 @@ const char* kTestConfig =
 
 class HostConfigTest : public testing::Test {
  protected:
-  HostConfigTest() {}
+  HostConfigTest() = default;
 
   static void WriteTestFile(const base::FilePath& filename) {
     base::WriteFile(filename, kTestConfig, std::strlen(kTestConfig));

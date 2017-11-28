@@ -20,8 +20,7 @@ ChromotingTestFixture::ChromotingTestFixture()
     : test_chromoting_client_(new TestChromotingClient()) {
 }
 
-ChromotingTestFixture::~ChromotingTestFixture() {
-}
+ChromotingTestFixture::~ChromotingTestFixture() = default;
 
 void ChromotingTestFixture::Disconnect() {
   test_chromoting_client_->EndConnection();

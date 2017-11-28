@@ -17,7 +17,7 @@ namespace protocol {
 
 ClientEventDispatcher::ClientEventDispatcher()
     : ChannelDispatcherBase(kEventChannelName) {}
-ClientEventDispatcher::~ClientEventDispatcher() {}
+ClientEventDispatcher::~ClientEventDispatcher() = default;
 
 void ClientEventDispatcher::InjectKeyEvent(const KeyEvent& event) {
   DCHECK(event.has_usb_keycode());

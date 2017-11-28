@@ -27,7 +27,7 @@ FakeChannelAuthenticator::FakeChannelAuthenticator(bool accept, bool async)
       async_(async),
       weak_factory_(this) {}
 
-FakeChannelAuthenticator::~FakeChannelAuthenticator() {}
+FakeChannelAuthenticator::~FakeChannelAuthenticator() = default;
 
 void FakeChannelAuthenticator::SecureAndAuthenticate(
     std::unique_ptr<P2PStreamSocket> socket,
@@ -89,7 +89,7 @@ void FakeChannelAuthenticator::CallDoneCallback() {
   base::ResetAndReturn(&done_callback_).Run(result_, std::move(socket_));
 }
 
-FakeAuthenticator::Config::Config() {}
+FakeAuthenticator::Config::Config() = default;
 FakeAuthenticator::Config::Config(Action action) : action(action) {}
 FakeAuthenticator::Config::Config(int round_trips, Action action, bool async)
     : round_trips(round_trips), action(action), async(async) {}
@@ -109,7 +109,7 @@ FakeAuthenticator::FakeAuthenticator(Action action)
                         std::string(),
                         std::string()) {}
 
-FakeAuthenticator::~FakeAuthenticator() {}
+FakeAuthenticator::~FakeAuthenticator() = default;
 
 void FakeAuthenticator::set_messages_till_started(int messages) {
   messages_till_started_ = messages;
@@ -233,7 +233,7 @@ FakeHostAuthenticatorFactory::FakeHostAuthenticatorFactory(
     int messages_till_started,
     FakeAuthenticator::Config config)
     : messages_till_started_(messages_till_started), config_(config) {}
-FakeHostAuthenticatorFactory::~FakeHostAuthenticatorFactory() {}
+FakeHostAuthenticatorFactory::~FakeHostAuthenticatorFactory() = default;
 
 std::unique_ptr<Authenticator>
 FakeHostAuthenticatorFactory::CreateAuthenticator(

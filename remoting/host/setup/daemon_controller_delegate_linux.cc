@@ -106,11 +106,9 @@ bool RunHostScript(const std::vector<std::string>& args) {
 
 }  // namespace
 
-DaemonControllerDelegateLinux::DaemonControllerDelegateLinux() {
-}
+DaemonControllerDelegateLinux::DaemonControllerDelegateLinux() = default;
 
-DaemonControllerDelegateLinux::~DaemonControllerDelegateLinux() {
-}
+DaemonControllerDelegateLinux::~DaemonControllerDelegateLinux() = default;
 
 DaemonController::State DaemonControllerDelegateLinux::GetState() {
   base::FilePath script_path;

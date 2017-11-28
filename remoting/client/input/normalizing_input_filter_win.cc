@@ -23,7 +23,7 @@ NormalizingInputFilterWin::NormalizingInputFilterWin(
     protocol::InputStub* input_stub)
     : protocol::InputFilter(input_stub) {}
 
-NormalizingInputFilterWin::~NormalizingInputFilterWin() {}
+NormalizingInputFilterWin::~NormalizingInputFilterWin() = default;
 
 void NormalizingInputFilterWin::InjectKeyEvent(
     const protocol::KeyEvent& event) {

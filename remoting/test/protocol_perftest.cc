@@ -87,8 +87,8 @@ struct NetworkPerformanceParams {
 
 class FakeCursorShapeStub : public protocol::CursorShapeStub {
  public:
-  FakeCursorShapeStub() {}
-  ~FakeCursorShapeStub() override {}
+  FakeCursorShapeStub() = default;
+  ~FakeCursorShapeStub() override = default;
 
   // protocol::CursorShapeStub interface.
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override {}

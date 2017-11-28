@@ -20,7 +20,7 @@ const char kTestAuthKey[] = "test_auth_key";
 
 FakeSession::FakeSession()
     : config_(SessionConfig::ForTest()), jid_(kTestJid), weak_factory_(this) {}
-FakeSession::~FakeSession() {}
+FakeSession::~FakeSession() = default;
 
 void FakeSession::SimulateConnection(FakeSession* peer) {
   peer_ = peer->weak_factory_.GetWeakPtr();

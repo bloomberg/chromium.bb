@@ -15,8 +15,7 @@ ClipboardFilter::ClipboardFilter(ClipboardStub* clipboard_stub)
     : clipboard_stub_(clipboard_stub), enabled_(true) {
 }
 
-ClipboardFilter::~ClipboardFilter() {
-}
+ClipboardFilter::~ClipboardFilter() = default;
 
 void ClipboardFilter::set_clipboard_stub(ClipboardStub* clipboard_stub) {
   clipboard_stub_ = clipboard_stub;

@@ -17,8 +17,7 @@ IpcAudioCapturer::IpcAudioCapturer(
       weak_factory_(this) {
 }
 
-IpcAudioCapturer::~IpcAudioCapturer() {
-}
+IpcAudioCapturer::~IpcAudioCapturer() = default;
 
 bool IpcAudioCapturer::Start(const PacketCapturedCallback& callback) {
   DCHECK(callback_.is_null());

@@ -104,6 +104,6 @@ GlCursorFeedbackTexture::GlCursorFeedbackTexture() {
   FillFeedbackTexture(reinterpret_cast<uint32_t*>(texture_.data()));
 }
 
-GlCursorFeedbackTexture::~GlCursorFeedbackTexture() {}
+GlCursorFeedbackTexture::~GlCursorFeedbackTexture() = default;
 
 }  // namespace remoting

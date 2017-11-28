@@ -12,8 +12,8 @@
 namespace remoting {
 namespace protocol {
 
-ChromiumPortAllocatorFactory::ChromiumPortAllocatorFactory() {}
-ChromiumPortAllocatorFactory::~ChromiumPortAllocatorFactory() {}
+ChromiumPortAllocatorFactory::ChromiumPortAllocatorFactory() = default;
+ChromiumPortAllocatorFactory::~ChromiumPortAllocatorFactory() = default;
 
 std::unique_ptr<cricket::PortAllocator>
 ChromiumPortAllocatorFactory::CreatePortAllocator(

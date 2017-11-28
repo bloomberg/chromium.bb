@@ -41,7 +41,7 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
       client_session_control, desktop_session_connector, options);
 }
 
-IpcDesktopEnvironment::~IpcDesktopEnvironment() {}
+IpcDesktopEnvironment::~IpcDesktopEnvironment() = default;
 
 std::unique_ptr<AudioCapturer> IpcDesktopEnvironment::CreateAudioCapturer() {
   return desktop_session_proxy_->CreateAudioCapturer();
@@ -93,7 +93,7 @@ IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(
       daemon_channel_(daemon_channel),
       connector_factory_(this) {}
 
-IpcDesktopEnvironmentFactory::~IpcDesktopEnvironmentFactory() {}
+IpcDesktopEnvironmentFactory::~IpcDesktopEnvironmentFactory() = default;
 
 std::unique_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control,

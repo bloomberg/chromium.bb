@@ -37,7 +37,8 @@ const int kTestDataSize = kMessages * kMessageSize;
 
 class RateLimiter {
  public:
-  virtual ~RateLimiter() { };
+  virtual ~RateLimiter() = default;
+  ;
   // Returns true if the new packet needs to be dropped, false otherwise.
   virtual bool DropNextPacket() = 0;
 };
@@ -52,7 +53,7 @@ class LeakyBucket : public RateLimiter {
         last_update_(base::TimeTicks::Now()) {
   }
 
-  ~LeakyBucket() override {}
+  ~LeakyBucket() override = default;
 
   bool DropNextPacket() override {
     base::TimeTicks now = base::TimeTicks::Now();
@@ -81,7 +82,7 @@ class FakeSocket : public P2PDatagramSocket {
       : rate_limiter_(NULL),
         latency_ms_(0) {
   }
-  ~FakeSocket() override {}
+  ~FakeSocket() override = default;
 
   void AppendInputPacket(const std::vector<char>& data) {
     if (rate_limiter_ && rate_limiter_->DropNextPacket())
@@ -188,7 +189,7 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
   }
 
  protected:
-  virtual ~TCPChannelTester() {}
+  virtual ~TCPChannelTester() = default;
 
   void Done() {
     done_ = true;

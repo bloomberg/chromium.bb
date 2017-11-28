@@ -41,8 +41,8 @@ std::unique_ptr<AudioPacket> MakeAudioPacket(int channel_count = 2) {
 
 class FakeAudioEncoder : public AudioEncoder {
  public:
-  FakeAudioEncoder() {}
-  ~FakeAudioEncoder() override {}
+  FakeAudioEncoder() = default;
+  ~FakeAudioEncoder() override = default;
 
   std::unique_ptr<AudioPacket> Encode(
       std::unique_ptr<AudioPacket> packet) override {
@@ -61,7 +61,7 @@ class FakeAudioEncoder : public AudioEncoder {
 
 class AudioPumpTest : public testing::Test, public protocol::AudioStub {
  public:
-  AudioPumpTest() {}
+  AudioPumpTest() = default;
 
   void SetUp() override;
   void TearDown() override;

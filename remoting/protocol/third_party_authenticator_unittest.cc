@@ -73,7 +73,7 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
      : token_url_(kTokenUrl),
        token_scope_(kTokenScope) {}
 
-    ~FakeTokenValidator() override {}
+    ~FakeTokenValidator() override = default;
 
     void ValidateThirdPartyToken(
         const std::string& token,
@@ -98,8 +98,8 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
   };
 
  public:
-  ThirdPartyAuthenticatorTest() {}
-  ~ThirdPartyAuthenticatorTest() override {}
+  ThirdPartyAuthenticatorTest() = default;
+  ~ThirdPartyAuthenticatorTest() override = default;
 
  protected:
   void InitAuthenticators() {

@@ -31,8 +31,7 @@ ThirdPartyAuthenticatorBase::ThirdPartyAuthenticatorBase(
       rejection_reason_(INVALID_CREDENTIALS) {
 }
 
-ThirdPartyAuthenticatorBase::~ThirdPartyAuthenticatorBase() {
-}
+ThirdPartyAuthenticatorBase::~ThirdPartyAuthenticatorBase() = default;
 
 bool ThirdPartyAuthenticatorBase::started() const {
   return started_;

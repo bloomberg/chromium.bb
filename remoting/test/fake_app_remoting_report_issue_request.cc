@@ -22,8 +22,8 @@ FakeAppRemotingReportIssueRequest::FakeAppRemotingReportIssueRequest()
     : fail_start_request_(false) {
 }
 
-FakeAppRemotingReportIssueRequest::~FakeAppRemotingReportIssueRequest() {
-}
+FakeAppRemotingReportIssueRequest::~FakeAppRemotingReportIssueRequest() =
+    default;
 
 bool FakeAppRemotingReportIssueRequest::Start(
     const std::string& application_id,

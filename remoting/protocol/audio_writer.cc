@@ -18,7 +18,7 @@ namespace remoting {
 namespace protocol {
 
 AudioWriter::AudioWriter() : ChannelDispatcherBase(kAudioChannelName) {}
-AudioWriter::~AudioWriter() {}
+AudioWriter::~AudioWriter() = default;
 
 void AudioWriter::ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
                                      const base::Closure& done) {
