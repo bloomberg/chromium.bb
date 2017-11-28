@@ -19,16 +19,11 @@
         height: 100%;
       }
 
-      #instructions,
       .shortcut-card {
         margin: 0 auto 16px auto;
         max-width: var(--card-max-width);
         min-width: var(--card-min-width);
         width: 90%;
-      }
-
-      #instructions {
-        @apply --cr-title-text;
       }
 
       .shortcut-card {
@@ -93,7 +88,6 @@
       }
     </style>
     <div id="container">
-      <div id="instructions">$i18n{shortcutInstructions}</div>
       <template is="dom-repeat" items="[[calculateShownItems_(items.*)]]">
         <div class="shortcut-card">
           <div class="card-title">

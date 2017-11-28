@@ -203,17 +203,11 @@
     Type a shortcut
   </message>
 <if expr="is_macosx">
-  <message name="IDS_MD_EXTENSIONS_SHORTCUT_INSTRUCTIONS" desc="Instructions explaining that shortcuts must start with either the Control, Alt, or Command key.">
-    Shortcuts must start with Ctrl, Alt, or Command
-  </message>
   <message name="IDS_MD_EXTENSIONS_INCLUDE_START_MODIFIER" desc="Error message explaining that shortcuts must start with either the Control, Alt, or Command key.">
     Include Ctrl, Alt, or Command
   </message>
 </if>
 <if expr="chromeos">
-  <message name="IDS_MD_EXTENSIONS_SHORTCUT_INSTRUCTIONS" desc="Instructions explaining that shortcuts must start with either the Control, Alt, or Search key.">
-    Shortcuts must start with Ctrl, Alt, or Search
-  </message>
   <message name="IDS_MD_EXTENSIONS_INCLUDE_START_MODIFIER" desc="Error message explaining that shortcuts must start with either the Control, Alt, or Search key.">
     Include Ctrl, Alt, or Search
   </message>
@@ -224,9 +218,6 @@
   </message>
 </if>
 <if expr="not is_macosx and not chromeos">
-  <message name="IDS_MD_EXTENSIONS_SHORTCUT_INSTRUCTIONS" desc="Instructions explaining that shortcuts must start with either the Control key or the Alt key.">
-    Shortcuts must start with either Ctrl or Alt
-  </message>
   <message name="IDS_MD_EXTENSIONS_INCLUDE_START_MODIFIER" desc="Error message explaining that shortcuts must start with either the Control key or the Alt key.">
     Include either Ctrl or Alt
   </message>

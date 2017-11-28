@@ -264,8 +264,6 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MD_EXTENSIONS_SHORTCUT_SCOPE_IN_CHROME);
   source->AddLocalizedString("shortcutTypeAShortcut",
                              IDS_MD_EXTENSIONS_TYPE_A_SHORTCUT);
-  source->AddLocalizedString("shortcutInstructions",
-                             IDS_MD_EXTENSIONS_SHORTCUT_INSTRUCTIONS);
   source->AddLocalizedString("shortcutIncludeStartModifier",
                              IDS_MD_EXTENSIONS_INCLUDE_START_MODIFIER);
   source->AddLocalizedString("shortcutTooManyModifiers",
