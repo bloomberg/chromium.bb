@@ -102,8 +102,8 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // has changed.
   void SurfaceDependenciesChanged(
       Surface* surface,
-      const base::flat_set<SurfaceId>& added_dependencies,
-      const base::flat_set<SurfaceId>& removed_dependencies);
+      const base::flat_set<FrameSinkId>& added_dependencies,
+      const base::flat_set<FrameSinkId>& removed_dependencies);
 
   // Called when |surface| is being destroyed.
   void SurfaceDiscarded(Surface* surface);

@@ -240,10 +240,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   void ActivateFrame(FrameData frame_data);
   void UpdateActivationDependencies(const CompositorFrame& current_frame);
   void ComputeChangeInDependencies(
-      const base::flat_set<SurfaceId>& existing_dependencies,
-      const base::flat_set<SurfaceId>& new_dependencies,
-      base::flat_set<SurfaceId>* added_dependencies,
-      base::flat_set<SurfaceId>* removed_dependencies);
+      const base::flat_map<FrameSinkId, uint32_t>& new_dependencies);
 
   void UnrefFrameResourcesAndRunCallbacks(base::Optional<FrameData> frame_data);
   void ClearCopyRequests();
@@ -269,6 +266,15 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   base::flat_set<SurfaceId> activation_dependencies_;
   base::flat_set<SurfaceId> late_activation_dependencies_;
+
+  // A map from FrameSinkIds of SurfaceIds that this surface depends on for
+  // activation to the latest local_id associated with the given FrameSinkId
+  // that this surface is dependent on. This map is used to determine which
+  // FrameSinkIds this surface would like to observe activations for. Once
+  // the latest activated SurfaceId associated with the given FrameSinkId
+  // passes the local_id in the map, then this surface is no longer interested
+  // in observing activations for that FrameSinkId.
+  base::flat_map<FrameSinkId, uint32_t> frame_sink_id_dependencies_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };
