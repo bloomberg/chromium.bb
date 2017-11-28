@@ -498,7 +498,11 @@
     scrollable,
 
     // A hint to clients that the node is clickable.
-    clickable
+    clickable,
+
+    // Indicates that this node clips its children, i.e. may have
+    // overflow: hidden or clip children by default.
+    clips_children
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXIntListAttribute {

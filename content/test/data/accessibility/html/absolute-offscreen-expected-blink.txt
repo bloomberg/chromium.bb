@@ -1,0 +1,12 @@
+rootWebArea clipsChildren=true
+++genericContainer size=(0, 0)
+++++staticText name='Visible'
+++++++inlineTextBox name='Visible'
+++genericContainer size=(0, 0) clipsChildren=true
+++++staticText offscreen name='Invisible'
+++++++inlineTextBox offscreen name='Invisible'
+++genericContainer clipsChildren=true
+++++genericContainer offscreen
+++++++staticText offscreen name='Invisible'
+++++++++inlineTextBox offscreen name='Invisible'
+<-- End-of-file -->

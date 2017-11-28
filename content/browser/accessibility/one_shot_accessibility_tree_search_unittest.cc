@@ -67,6 +67,7 @@ void MAYBE_OneShotAccessibilityTreeSearchTest::SetUp() {
   root.SetName("Document");
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
   root.location = gfx::RectF(0, 0, 800, 600);
+  root.AddBoolAttribute(ui::AX_ATTR_CLIPS_CHILDREN, true);
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
   root.child_ids.push_back(6);

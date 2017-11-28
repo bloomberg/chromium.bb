@@ -946,6 +946,9 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_CLICKABLE:
         result += " clickable=" + value;
         break;
+      case AX_ATTR_CLIPS_CHILDREN:
+        result += " clips_children=" + value;
+        break;
       case AX_BOOL_ATTRIBUTE_NONE:
         break;
     }

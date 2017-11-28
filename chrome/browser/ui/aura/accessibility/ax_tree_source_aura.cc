@@ -130,6 +130,10 @@ void AXTreeSourceAura::SerializeNode(AXAuraObjWrapper* node,
       int ax_tree_id = rfh->GetAXTreeID();
       out_data->AddIntAttribute(ui::AX_ATTR_CHILD_TREE_ID, ax_tree_id);
     }
+  } else if (out_data->role == ui::AX_ROLE_WINDOW ||
+             out_data->role == ui::AX_ROLE_DIALOG) {
+    // Add clips children flag by default to these roles.
+    out_data->AddBoolAttribute(ui::AX_ATTR_CLIPS_CHILDREN, true);
   }
 }
 

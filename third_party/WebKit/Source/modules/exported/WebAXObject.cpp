@@ -1434,7 +1434,8 @@ void WebAXObject::SetScrollOffset(const WebPoint& offset) const {
 
 void WebAXObject::GetRelativeBounds(WebAXObject& offset_container,
                                     WebFloatRect& bounds_in_container,
-                                    SkMatrix44& container_transform) const {
+                                    SkMatrix44& container_transform,
+                                    bool* clips_children) const {
   if (IsDetached())
     return;
 
@@ -1444,7 +1445,8 @@ void WebAXObject::GetRelativeBounds(WebAXObject& offset_container,
 
   AXObject* container = nullptr;
   FloatRect bounds;
-  private_->GetRelativeBounds(&container, bounds, container_transform);
+  private_->GetRelativeBounds(&container, bounds, container_transform,
+                              clips_children);
   offset_container = WebAXObject(container);
   bounds_in_container = WebFloatRect(bounds);
 }

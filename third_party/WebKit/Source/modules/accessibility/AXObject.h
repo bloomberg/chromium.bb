@@ -659,9 +659,12 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // not null, walk up to its container and offset by the container's offset
   // from origin, the container's scroll position if any, and apply the
   // container's transform.  Do this until you reach the root of the tree.
+  // If the object clips its children, for example by having overflow:hidden,
+  // set |clips_children| to true.
   virtual void GetRelativeBounds(AXObject** out_container,
                                  FloatRect& out_bounds_in_container,
-                                 SkMatrix44& out_container_transform) const;
+                                 SkMatrix44& out_container_transform,
+                                 bool* clips_children = nullptr) const;
 
   // Get the bounds in frame-relative coordinates as a LayoutRect.
   LayoutRect GetBoundsInFrameCoordinates() const;
