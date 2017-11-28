@@ -84,8 +84,7 @@ bool IsValidTabID(SessionID::id_type tab_id) {
 size_t GetMaxTabEntries() {
   size_t max_tab_entries = kDefaultMaxTabEntries;
   std::string variation_value = variations::GetVariationParamValue(
-      chrome::android::ExternalDataUseObserver::
-          kExternalDataUseObserverFieldTrial,
+      android::ExternalDataUseObserver::kExternalDataUseObserverFieldTrial,
       "max_tab_entries");
   if (!variation_value.empty() &&
       base::StringToSizeT(variation_value, &max_tab_entries)) {
@@ -98,8 +97,7 @@ size_t GetMaxTabEntries() {
 size_t GetMaxSessionsPerTab() {
   size_t max_sessions_per_tab = kDefaultMaxSessionsPerTab;
   std::string variation_value = variations::GetVariationParamValue(
-      chrome::android::ExternalDataUseObserver::
-          kExternalDataUseObserverFieldTrial,
+      android::ExternalDataUseObserver::kExternalDataUseObserverFieldTrial,
       "max_sessions_per_tab");
   if (!variation_value.empty() &&
       base::StringToSizeT(variation_value, &max_sessions_per_tab)) {
@@ -111,8 +109,7 @@ size_t GetMaxSessionsPerTab() {
 base::TimeDelta GetClosedTabExpirationDuration() {
   uint32_t duration_seconds = kDefaultClosedTabExpirationDurationSeconds;
   std::string variation_value = variations::GetVariationParamValue(
-      chrome::android::ExternalDataUseObserver::
-          kExternalDataUseObserverFieldTrial,
+      android::ExternalDataUseObserver::kExternalDataUseObserverFieldTrial,
       "closed_tab_expiration_duration_seconds");
   if (!variation_value.empty() &&
       base::StringToUint(variation_value, &duration_seconds)) {
@@ -125,8 +122,7 @@ base::TimeDelta GetClosedTabExpirationDuration() {
 base::TimeDelta GetOpenTabExpirationDuration() {
   uint32_t duration_seconds = kDefaultOpenTabExpirationDurationSeconds;
   std::string variation_value = variations::GetVariationParamValue(
-      chrome::android::ExternalDataUseObserver::
-          kExternalDataUseObserverFieldTrial,
+      android::ExternalDataUseObserver::kExternalDataUseObserverFieldTrial,
       "open_tab_expiration_duration_seconds");
   if (!variation_value.empty() &&
       base::StringToUint(variation_value, &duration_seconds)) {
@@ -138,8 +134,7 @@ base::TimeDelta GetOpenTabExpirationDuration() {
 base::TimeDelta GetDefaultMatchingRuleExpirationDuration() {
   uint32_t duration_seconds = kDefaultMatchingRuleExpirationDurationSeconds;
   std::string variation_value = variations::GetVariationParamValue(
-      chrome::android::ExternalDataUseObserver::
-          kExternalDataUseObserverFieldTrial,
+      android::ExternalDataUseObserver::kExternalDataUseObserverFieldTrial,
       "default_matching_rule_expiration_duration_seconds");
   if (!variation_value.empty() &&
       base::StringToUint(variation_value, &duration_seconds)) {
@@ -150,34 +145,34 @@ base::TimeDelta GetDefaultMatchingRuleExpirationDuration() {
 }
 
 void RecordStartTrackingMetrics(
-    chrome::android::DataUseTabModel::TransitionType transition,
+    android::DataUseTabModel::TransitionType transition,
     bool is_custom_tab_package_match) {
   DataUsageTrackingSessionStartReason start_reason;
   switch (transition) {
-    case chrome::android::DataUseTabModel::TRANSITION_OMNIBOX_SEARCH:
+    case android::DataUseTabModel::TRANSITION_OMNIBOX_SEARCH:
       start_reason = START_REASON_OMNIBOX_SEARCH;
       break;
-    case chrome::android::DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION:
+    case android::DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION:
       start_reason = START_REASON_OMNIBOX_NAVIGATION;
       break;
-    case chrome::android::DataUseTabModel::TRANSITION_BOOKMARK:
+    case android::DataUseTabModel::TRANSITION_BOOKMARK:
       start_reason = START_REASON_BOOKMARK;
       break;
-    case chrome::android::DataUseTabModel::TRANSITION_LINK:
+    case android::DataUseTabModel::TRANSITION_LINK:
       start_reason = START_REASON_LINK;
       break;
-    case chrome::android::DataUseTabModel::TRANSITION_RELOAD:
+    case android::DataUseTabModel::TRANSITION_RELOAD:
       start_reason = START_REASON_RELOAD;
       break;
-    case chrome::android::DataUseTabModel::TRANSITION_CUSTOM_TAB:
+    case android::DataUseTabModel::TRANSITION_CUSTOM_TAB:
       if (!is_custom_tab_package_match)
         return;
       start_reason = START_REASON_CUSTOM_TAB_PACKAGE_MATCH;
       break;
-    case chrome::android::DataUseTabModel::TRANSITION_FORWARD_BACK:
+    case android::DataUseTabModel::TRANSITION_FORWARD_BACK:
       return;
-    case chrome::android::DataUseTabModel::TRANSITION_HISTORY_ITEM:
-    case chrome::android::DataUseTabModel::TRANSITION_FORM_SUBMIT:
+    case android::DataUseTabModel::TRANSITION_HISTORY_ITEM:
+    case android::DataUseTabModel::TRANSITION_FORM_SUBMIT:
       NOTREACHED();
       return;
   }
@@ -186,27 +181,27 @@ void RecordStartTrackingMetrics(
 }
 
 void RecordEndTrackingMetrics(
-    chrome::android::DataUseTabModel::TransitionType transition) {
+    android::DataUseTabModel::TransitionType transition) {
   DataUsageTrackingSessionEndReason end_reason;
   switch (transition) {
-    case chrome::android::DataUseTabModel::TRANSITION_OMNIBOX_SEARCH:
+    case android::DataUseTabModel::TRANSITION_OMNIBOX_SEARCH:
       end_reason = END_REASON_OMNIBOX_SEARCH;
       break;
-    case chrome::android::DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION:
+    case android::DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION:
       end_reason = END_REASON_OMNIBOX_NAVIGATION;
       break;
-    case chrome::android::DataUseTabModel::TRANSITION_BOOKMARK:
+    case android::DataUseTabModel::TRANSITION_BOOKMARK:
       end_reason = END_REASON_BOOKMARK;
       break;
-    case chrome::android::DataUseTabModel::TRANSITION_HISTORY_ITEM:
+    case android::DataUseTabModel::TRANSITION_HISTORY_ITEM:
       end_reason = END_REASON_HISTORY;
       break;
-    case chrome::android::DataUseTabModel::TRANSITION_FORWARD_BACK:
+    case android::DataUseTabModel::TRANSITION_FORWARD_BACK:
       return;
-    case chrome::android::DataUseTabModel::TRANSITION_CUSTOM_TAB:
-    case chrome::android::DataUseTabModel::TRANSITION_FORM_SUBMIT:
-    case chrome::android::DataUseTabModel::TRANSITION_LINK:
-    case chrome::android::DataUseTabModel::TRANSITION_RELOAD:
+    case android::DataUseTabModel::TRANSITION_CUSTOM_TAB:
+    case android::DataUseTabModel::TRANSITION_FORM_SUBMIT:
+    case android::DataUseTabModel::TRANSITION_LINK:
+    case android::DataUseTabModel::TRANSITION_RELOAD:
       NOTREACHED();
       return;
   }
@@ -215,8 +210,6 @@ void RecordEndTrackingMetrics(
 }
 
 }  // namespace
-
-namespace chrome {
 
 namespace android {
 
@@ -617,5 +610,3 @@ void DataUseTabModel::CompactTabEntries() {
 }
 
 }  // namespace android
-
-}  // namespace chrome

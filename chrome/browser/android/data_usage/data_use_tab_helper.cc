@@ -41,8 +41,8 @@ void DataUseTabHelper::DidFinishNavigation(
     return;
 
   // Notify the DataUseUITabModel.
-  chrome::android::DataUseUITabModel* data_use_ui_tab_model =
-      chrome::android::DataUseUITabModelFactory::GetForBrowserContext(
+  android::DataUseUITabModel* data_use_ui_tab_model =
+      android::DataUseUITabModelFactory::GetForBrowserContext(
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   SessionID::id_type tab_id = SessionTabHelper::IdForTab(web_contents());
   if (!data_use_ui_tab_model || tab_id < 0)
@@ -71,8 +71,8 @@ void DataUseTabHelper::FrameDeleted(
     return;
 
   // Notify the DataUseUITabModel.
-  chrome::android::DataUseUITabModel* data_use_ui_tab_model =
-      chrome::android::DataUseUITabModelFactory::GetForBrowserContext(
+  android::DataUseUITabModel* data_use_ui_tab_model =
+      android::DataUseUITabModelFactory::GetForBrowserContext(
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   SessionID::id_type tab_id = SessionTabHelper::IdForTab(web_contents());
   if (data_use_ui_tab_model && tab_id >= 0)

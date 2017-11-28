@@ -24,8 +24,6 @@ namespace data_usage {
 struct DataUse;
 }
 
-namespace chrome {
-
 namespace android {
 
 class DataUseTabModel;
@@ -146,7 +144,5 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
 };
 
 }  // namespace android
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_DATA_USAGE_EXTERNAL_DATA_USE_OBSERVER_H_

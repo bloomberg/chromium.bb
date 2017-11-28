@@ -29,8 +29,6 @@ namespace data_usage {
 struct DataUse;
 }
 
-namespace chrome {
-
 namespace android {
 
 // This class receives data use observations from ExternalDataUseObserver,
@@ -253,7 +251,5 @@ class ExternalDataUseReporter {
 };
 
 }  // namespace android
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_DATA_USAGE_EXTERNAL_DATA_USE_REPORTER_H_

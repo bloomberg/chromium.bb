@@ -33,8 +33,7 @@ const char kSyntheticFieldTrialDisabledGroup[] = "Disabled";
 // Returns the package name of the control app from the field trial.
 const std::string GetControlAppPackageName() {
   return variations::GetVariationParamValue(
-      chrome::android::ExternalDataUseObserver::
-          kExternalDataUseObserverFieldTrial,
+      android::ExternalDataUseObserver::kExternalDataUseObserverFieldTrial,
       "control_app_package_name");
 }
 
@@ -42,8 +41,7 @@ const std::string GetControlAppPackageName() {
 variations::VariationID GetGoogleVariationID() {
   variations::VariationID variation_id;
   std::string variation_value = variations::GetVariationParamValue(
-      chrome::android::ExternalDataUseObserver::
-          kExternalDataUseObserverFieldTrial,
+      android::ExternalDataUseObserver::kExternalDataUseObserverFieldTrial,
       "variation_id");
   if (!variation_value.empty() &&
       base::StringToInt(variation_value, &variation_id)) {
@@ -53,8 +51,6 @@ variations::VariationID GetGoogleVariationID() {
 }
 
 }  // namespace
-
-namespace chrome {
 
 namespace android {
 
@@ -231,5 +227,3 @@ void ExternalDataUseObserverBridge::RegisterGoogleVariationID(
 }
 
 }  // namespace android
-
-}  // namespace chrome

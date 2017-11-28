@@ -13,8 +13,6 @@
 #include "components/data_usage/core/data_use.h"
 #include "components/variations/variations_associated_data.h"
 
-namespace chrome {
-
 namespace android {
 
 namespace {
@@ -331,5 +329,3 @@ size_t ExternalDataUseReporter::DataUseReportKeyHash::operator()(
 }
 
 }  // namespace android
-
-}  // namespace chrome

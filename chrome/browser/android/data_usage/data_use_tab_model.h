@@ -32,8 +32,6 @@ namespace content {
 class NavigationEntry;
 }
 
-namespace chrome {
-
 namespace android {
 
 class DataUseMatcher;
@@ -324,7 +322,5 @@ class DataUseTabModel {
 };
 
 }  // namespace android
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_DATA_USAGE_DATA_USE_TAB_MODEL_H_

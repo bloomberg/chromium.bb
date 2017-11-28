@@ -21,8 +21,6 @@ const char kUMAOldInactiveSessionRemovalDurationHistogram[] =
 
 }  // namespace
 
-namespace chrome {
-
 namespace android {
 
 TabDataUseEntry::TabDataUseEntry(DataUseTabModel* tab_model)
@@ -181,5 +179,3 @@ void TabDataUseEntry::CompactSessionHistory() {
 }
 
 }  // namespace android
-
-}  // namespace chrome

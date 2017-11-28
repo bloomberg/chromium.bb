@@ -477,7 +477,7 @@ void IOThread::Init() {
 
 #if defined(OS_ANDROID)
   globals_->external_data_use_observer =
-      std::make_unique<chrome::android::ExternalDataUseObserver>(
+      std::make_unique<android::ExternalDataUseObserver>(
           globals_->data_use_aggregator.get(),
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
           BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));

@@ -216,7 +216,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   CertificateReportingServiceFactory::GetInstance();
 #if defined(OS_ANDROID)
-  chrome::android::DataUseUITabModelFactory::GetInstance();
+  android::DataUseUITabModelFactory::GetInstance();
 #endif
   ChromeBrowsingDataRemoverDelegateFactory::GetInstance();
 #if !defined(OS_ANDROID)

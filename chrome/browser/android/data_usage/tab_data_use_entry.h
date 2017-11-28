@@ -13,8 +13,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
-namespace chrome {
-
 namespace android {
 
 class DataUseTabModel;
@@ -131,7 +129,5 @@ class TabDataUseEntry {
 };
 
 }  // namespace android
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_DATA_USAGE_TAB_DATA_USE_ENTRY_H_
