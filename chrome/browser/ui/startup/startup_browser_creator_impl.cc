@@ -592,8 +592,10 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
   bool is_post_crash_launch = HasPendingUncleanExit(profile_);
   const auto session_startup_pref =
       StartupBrowserCreator::GetSessionStartupPref(command_line_, profile_);
+  // Both mandatory and recommended startup policies should skip promo pages.
   bool are_startup_urls_managed =
-      session_startup_pref.TypeIsManaged(profile_->GetPrefs());
+      session_startup_pref.TypeIsManaged(profile_->GetPrefs()) ||
+      session_startup_pref.TypeIsRecommended(profile_->GetPrefs());
   StartupTabs tabs = DetermineStartupTabs(
       StartupTabProviderImpl(), cmd_line_tabs, process_startup,
       is_incognito_or_guest, is_post_crash_launch, are_startup_urls_managed);

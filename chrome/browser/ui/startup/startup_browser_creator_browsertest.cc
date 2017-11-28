@@ -143,6 +143,8 @@ Browser* CloseBrowserAndOpenNew(Browser* browser, Profile* profile) {
 
 #endif  // !defined(OS_CHROMEOS)
 
+typedef base::Optional<policy::PolicyLevel> PolicyVariant;
+
 }  // namespace
 
 class StartupBrowserCreatorTest : public ExtensionBrowserTest {
@@ -1303,19 +1305,19 @@ class StartupBrowserCreatorWelcomeBackTest : public InProcessBrowserTest {
   }
 
   void StartBrowser(StartupBrowserCreator::WelcomeBackPage welcome_back_page,
-                    bool are_startup_prefs_mananged) {
+                    PolicyVariant variant) {
     browser_creator_.set_welcome_back_page(welcome_back_page);
 
-    if (are_startup_prefs_mananged) {
+    if (variant) {
       policy::PolicyMap values;
-      values.Set(policy::key::kRestoreOnStartup, policy::POLICY_LEVEL_MANDATORY,
+      values.Set(policy::key::kRestoreOnStartup, variant.value(),
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
                  base::MakeUnique<base::Value>(4), nullptr);
       auto url_list = base::MakeUnique<base::Value>(base::Value::Type::LIST);
       url_list->GetList().push_back(base::Value("http://managed.site.com/"));
-      values.Set(policy::key::kRestoreOnStartupURLs,
-                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-                 policy::POLICY_SOURCE_CLOUD, std::move(url_list), nullptr);
+      values.Set(policy::key::kRestoreOnStartupURLs, variant.value(),
+                 policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
+                 std::move(url_list), nullptr);
       provider_.UpdateChromePolicy(values);
     }
 
@@ -1344,25 +1346,52 @@ class StartupBrowserCreatorWelcomeBackTest : public InProcessBrowserTest {
 };
 
 #if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest, WelcomeBackWin10) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
+                       WelcomeBackWin10NoPolicy) {
   ASSERT_NO_FATAL_FAILURE(StartBrowser(
-      StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10, false));
+      StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10, PolicyVariant()));
   ExpectUrlInBrowserAtPosition(
       StartupTabProviderImpl::GetWin10WelcomePageUrl(false), 0);
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
-                       NoWelcomeBackWin10WithPolicy) {
-  ASSERT_NO_FATAL_FAILURE(StartBrowser(
-      StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10, true));
+                       WelcomeBackWin10MandatoryPolicy) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10,
+                   PolicyVariant(policy::POLICY_LEVEL_MANDATORY)));
+  ExpectUrlInBrowserAtPosition(GURL("http://managed.site.com/"), 0);
+}
+
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
+                       WelcomeBackWin10RecommendedPolicy) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10,
+                   PolicyVariant(policy::POLICY_LEVEL_RECOMMENDED)));
   ExpectUrlInBrowserAtPosition(GURL("http://managed.site.com/"), 0);
 }
 #endif  // defined(OS_WIN)
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
-                       WelcomeBackStandard) {
-  ASSERT_NO_FATAL_FAILURE(StartBrowser(
-      StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard, false));
+                       WelcomeBackStandardNoPolicy) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard,
+                   PolicyVariant()));
   ExpectUrlInBrowserAtPosition(StartupTabProviderImpl::GetWelcomePageUrl(false),
                                0);
+}
+
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
+                       WelcomeBackStandardMandatoryPolicy) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard,
+                   PolicyVariant(policy::POLICY_LEVEL_MANDATORY)));
+  ExpectUrlInBrowserAtPosition(GURL("http://managed.site.com/"), 0);
+}
+
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
+                       WelcomeBackStandardRecommendedPolicy) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard,
+                   PolicyVariant(policy::POLICY_LEVEL_RECOMMENDED)));
+  ExpectUrlInBrowserAtPosition(GURL("http://managed.site.com/"), 0);
 }
