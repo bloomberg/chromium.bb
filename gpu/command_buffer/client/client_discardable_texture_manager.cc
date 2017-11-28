@@ -16,6 +16,9 @@ ClientDiscardableHandle ClientDiscardableTextureManager::InitializeTexture(
          texture_id_to_handle_id_.end());
   ClientDiscardableHandle::Id handle_id =
       discardable_manager_.CreateHandle(command_buffer);
+  if (handle_id.is_null())
+    return ClientDiscardableHandle();
+
   texture_id_to_handle_id_[texture_id] = handle_id;
   return discardable_manager_.GetHandle(handle_id);
 }
