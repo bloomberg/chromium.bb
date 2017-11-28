@@ -265,8 +265,8 @@ AutomationPredicate.linebreak = function(first, second) {
 AutomationPredicate.container = function(node) {
   return AutomationPredicate.match({
     anyRole: [
-      Role.GENERIC_CONTAINER, Role.DOCUMENT, Role.GROUP, Role.LIST_ITEM,
-      Role.TOOLBAR, Role.WINDOW
+      Role.GENERIC_CONTAINER, Role.DOCUMENT, Role.GROUP, Role.LIST,
+      Role.LIST_ITEM, Role.TOOLBAR, Role.WINDOW
     ],
     anyPredicate: [
       AutomationPredicate.landmark, AutomationPredicate.structuralContainer,
