@@ -16,7 +16,6 @@
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
 #include "components/history/core/browser/browsing_history_driver.h"
-#include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/fake_web_history_service.h"
 #include "components/history/core/test/history_service_test_util.h"
@@ -56,23 +55,6 @@ struct TestResult {
 
 // Used to bind a callback.
 void DoNothing(bool ignored) {}
-
-class QuittingHistoryDBTask : public HistoryDBTask {
- public:
-  explicit QuittingHistoryDBTask(base::OnceClosure done_closure)
-      : done_closure_(std::move(done_closure)) {}
-
-  // HistoryDBTask implementation.
-  bool RunOnDBThread(history::HistoryBackend* backend,
-                     history::HistoryDatabase* db) override {
-    return true;
-  }
-  void DoneRunOnMainThread() override { std::move(done_closure_).Run(); }
-
- private:
-  base::OnceClosure done_closure_;
-  DISALLOW_COPY_AND_ASSIGN(QuittingHistoryDBTask);
-};
 
 class TestSyncService : public syncer::FakeSyncService {
  public:
@@ -232,12 +214,7 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
   }
 
   void BlockUntilHistoryProcessesPendingRequests() {
-    base::CancelableTaskTracker tracker;
-    base::RunLoop run_loop;
-    local_history_->ScheduleDBTask(
-        std::make_unique<QuittingHistoryDBTask>(run_loop.QuitWhenIdleClosure()),
-        &tracker);
-    run_loop.Run();
+    history::BlockUntilHistoryProcessesPendingRequests(local_history());
   }
 
   Time OffsetToTime(int64_t hour_offset) {
