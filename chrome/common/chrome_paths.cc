@@ -373,13 +373,6 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("pnacl"));
       break;
 #if defined(WIDEVINE_CDM_AVAILABLE) && BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#if defined(WIDEVINE_CDM_IS_COMPONENT)
-    case chrome::DIR_COMPONENT_WIDEVINE_CDM:
-      if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
-        return false;
-      cur = cur.AppendASCII(kWidevineCdmBaseDirectory);
-      break;
-#endif  // defined(WIDEVINE_CDM_IS_COMPONENT)
     // TODO(xhwang): FILE_WIDEVINE_CDM_ADAPTER has different meanings.
     // In the component case, this is the source adapter. Otherwise, it is the
     // actual Pepper module that gets loaded.
