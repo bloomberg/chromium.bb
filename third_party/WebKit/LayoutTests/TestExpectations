@@ -4065,3 +4065,6 @@ crbug.com/786348 [ Win7 ] virtual/mojo-loading/http/tests/devtools/console/conso
 
 # Sheriff failures 2017-11-21
 crbug.com/786641 [ Win Linux ] virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing-in-worker.html [ Timeout Pass ]
+
+# Sheriff failures 2017-11-28
+crbug.com/789111 http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Failure ]
