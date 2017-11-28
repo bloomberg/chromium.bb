@@ -24,6 +24,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_host.h"
@@ -60,7 +61,6 @@ class ChromeWebStoreProcessTest : public ExtensionBrowserTest {
  public:
   const GURL& gallery_url() { return gallery_url_; }
 
- private:
   // Overrides location of Chrome Web Store gallery to a test controlled URL.
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
@@ -72,11 +72,28 @@ class ChromeWebStoreProcessTest : public ExtensionBrowserTest {
                                     gallery_url_.spec());
   }
 
+ private:
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
   GURL gallery_url_;
+};
+
+class ChromeWebStoreInIsolatedOriginTest : public ChromeWebStoreProcessTest {
+ public:
+  ChromeWebStoreInIsolatedOriginTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ChromeWebStoreProcessTest::SetUpCommandLine(command_line);
+
+    // Mark the Chrome Web Store URL as an isolated origin.
+    command_line->AppendSwitchASCII(::switches::kIsolateOrigins,
+                                    gallery_url().spec());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeWebStoreInIsolatedOriginTest);
 };
 
 }  // namespace
@@ -413,6 +430,31 @@ IN_PROC_BROWSER_TEST_F(ChromeWebStoreProcessTest,
 
   // Verify that Chrome Web Store is isolated in a separate renderer process.
   EXPECT_NE(old_process_host, new_process_host);
+}
+
+// Check that navigations to the Chrome Web Store succeed when the Chrome Web
+// Store URL's origin is set as an isolated origin via the
+// --isolate-origins flag.  See https://crbug.com/788837.
+IN_PROC_BROWSER_TEST_F(ChromeWebStoreInIsolatedOriginTest,
+                       NavigationLoadsChromeWebStore) {
+  // Sanity check that a SiteInstance for a Chrome Web Store URL requires a
+  // dedicated process.
+  content::BrowserContext* context = browser()->profile();
+  scoped_refptr<content::SiteInstance> cws_site_instance =
+      content::SiteInstance::CreateForURL(context, gallery_url());
+  EXPECT_TRUE(cws_site_instance->RequiresDedicatedProcess());
+
+  // Navigate to Chrome Web Store and check that it's loaded successfully.
+  ui_test_utils::NavigateToURL(browser(), gallery_url());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(gallery_url(), web_contents->GetLastCommittedURL());
+
+  // Verify that the Chrome Web Store hosted app is really loaded.
+  content::RenderProcessHost* render_process_host =
+      web_contents->GetMainFrame()->GetProcess();
+  EXPECT_TRUE(extensions::ProcessMap::Get(profile())->Contains(
+      extensions::kWebStoreAppId, render_process_host->GetID()));
 }
 
 // This test verifies that blocked navigations to extensions pages do not

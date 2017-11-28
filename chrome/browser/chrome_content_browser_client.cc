@@ -1151,19 +1151,14 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(
 
   // If the input |url| should be assigned to the Instant renderer, make its
   // effective URL distinct from other URLs on the search provider's domain.
+  // This needs to happen even if |url| corresponds to an isolated origin; see
+  // https://crbug.com/755595.
   if (search::ShouldAssignURLToInstantRenderer(url, profile))
     return search::GetEffectiveURLForInstant(url, profile);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // If |url| has an isolated origin, don't resolve effective URLs
-  // corresponding to extensions, since isolated origins should take precedence
-  // over hosted apps.  Note that for NTP, we do want to resolve the effective
-  // URL above; see https://crbug.com/755595.
-  if (is_isolated_origin)
-    return url;
-
   return ChromeContentBrowserClientExtensionsPart::GetEffectiveURL(
-      profile, url);
+      profile, url, is_isolated_origin);
 #else
   return url;
 #endif
