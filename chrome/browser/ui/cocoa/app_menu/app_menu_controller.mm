@@ -184,6 +184,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   recentTabsMenuModelDelegate_.reset();
   [self setModel:nullptr];
   appMenuModel_.reset();
+  bookmarkMenuBridge_ = nullptr;
   buttonViewController_.reset();
 
   // The observers should most likely already be destroyed (since they're reset
@@ -304,7 +305,6 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 }
 
 - (void)updateBookmarkSubMenu {
-  DCHECK(!bookmarkMenuBridge_);
   NSMenu* bookmarkMenu = [self bookmarkSubMenu];
   if (!bookmarkMenu)
     return;  // Guest profiles have no bookmarks menu.
@@ -317,6 +317,12 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   // which can't be reused across menu invocations.
   bookmarkMenuBridge_ = std::make_unique<BookmarkMenuBridge>(
       [self appMenuModel]->browser()->profile(), bookmarkMenu);
+
+  // Note |bookmarkMenuBridge_| is useless after the menu closes, but it must
+  // exist when (and if) the menu action is sent. Unfortunately, AppKit sends
+  // menu actions after menuDidClose: and NSMenuDidEndTrackingNotification so
+  // |bookmarkMenuBridge_| is going to hang around until updateBookmarkSubMenu
+  // is called again.
 }
 
 - (void)updateBrowserActionsSubmenu {
@@ -394,8 +400,6 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 
 - (void)menuDidClose:(NSMenu*)menu {
   [super menuDidClose:menu];
-
-  bookmarkMenuBridge_ = nullptr;
 
   // We don't need to observe changes to zoom or toolbar size when the menu is
   // closed, since we instantiate it with the proper value and recreate the menu

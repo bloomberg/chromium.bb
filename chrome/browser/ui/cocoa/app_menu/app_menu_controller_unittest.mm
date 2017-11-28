@@ -11,10 +11,13 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -27,6 +30,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/sync/base/sync_prefs.h"
@@ -47,6 +51,25 @@ using testing::_;
 using testing::Invoke;
 using testing::Return;
 
+@implementation AppMenuController (TestingAPI)
+- (BookmarkMenuBridge*)bookmarkMenuBridge {
+  return bookmarkMenuBridge_.get();
+}
+@end
+
+@interface TestBookmarkMenuCocoaController : BookmarkMenuCocoaController
+@property(nonatomic, readonly) const bookmarks::BookmarkNode* lastOpenedNode;
+@end
+
+@implementation TestBookmarkMenuCocoaController {
+  const bookmarks::BookmarkNode* lastOpenedNode_;
+}
+@synthesize lastOpenedNode = lastOpenedNode_;
+- (void)openURLForNode:(const bookmarks::BookmarkNode*)node {
+  lastOpenedNode_ = node;
+}
+@end
+
 namespace {
 
 class MockAppMenuModel : public AppMenuModel {
@@ -63,6 +86,23 @@ class DummyRouter : public sync_sessions::LocalSessionEventRouter {
       sync_sessions::LocalSessionEventHandler* handler) override {}
   void Stop() override {}
 };
+
+class BrowserRemovedObserver : public chrome::BrowserListObserver {
+ public:
+  BrowserRemovedObserver() { BrowserList::AddObserver(this); }
+  ~BrowserRemovedObserver() override { BrowserList::RemoveObserver(this); }
+  void WaitUntilBrowserRemoved() { run_loop_.Run(); }
+  void OnBrowserRemoved(Browser* browser) override { run_loop_.Quit(); }
+
+ private:
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserRemovedObserver);
+};
+
+}  // namespace
+
+namespace test {
 
 class AppMenuControllerTest : public CocoaProfileTest {
  public:
@@ -103,6 +143,17 @@ class AppMenuControllerTest : public CocoaProfileTest {
             new syncer::FakeSyncChangeProcessor),
         std::unique_ptr<syncer::SyncErrorFactory>(
             new syncer::SyncErrorFactoryMock));
+  }
+
+  TestBookmarkMenuCocoaController* SetTestBookmarksMenuDelegate(
+      BookmarkMenuBridge* bridge) {
+    base::scoped_nsobject<TestBookmarkMenuCocoaController> test_controller(
+        [[TestBookmarkMenuCocoaController alloc] initWithBridge:bridge]);
+    bridge->ClearBookmarkMenu();
+    [bridge->BookmarkMenu() setDelegate:test_controller];
+    bridge->controller_ =
+        base::scoped_nsobject<BookmarkMenuCocoaController>(test_controller);
+    return test_controller;
   }
 
   void RegisterRecentTabs(RecentTabsBuilderTestHelper* helper) {
@@ -270,18 +321,51 @@ TEST_F(AppMenuControllerTest, RecentTabDeleteOrder) {
   // If the delete order is wrong then the test will crash on exit.
 }
 
-class BrowserRemovedObserver : public chrome::BrowserListObserver {
- public:
-  BrowserRemovedObserver() { BrowserList::AddObserver(this); }
-  ~BrowserRemovedObserver() override { BrowserList::RemoveObserver(this); }
-  void WaitUntilBrowserRemoved() { run_loop_.Run(); }
-  void OnBrowserRemoved(Browser* browser) override { run_loop_.Quit(); }
+// Simulate opening a bookmark from the bookmark submenu.
+TEST_F(AppMenuControllerTest, OpenBookmark) {
+  // Ensure there's at least one bookmark.
+  bookmarks::BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(profile());
+  ASSERT_TRUE(model);
+  const bookmarks::BookmarkNode* parent = model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* about = model->AddURL(
+      parent, 0, base::ASCIIToUTF16("About"), GURL("chrome://chrome"));
 
- private:
-  base::RunLoop run_loop_;
+  EXPECT_FALSE([controller_ bookmarkMenuBridge]);
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserRemovedObserver);
-};
+  [controller_ menuNeedsUpdate:[controller_ menu]];
+  BookmarkMenuBridge* bridge = [controller_ bookmarkMenuBridge];
+  EXPECT_TRUE(bridge);
+
+  NSMenu* bookmarks_menu =
+      [[[controller_ menu] itemWithTitle:@"Bookmarks"] submenu];
+  EXPECT_TRUE(bookmarks_menu);
+  EXPECT_TRUE([bookmarks_menu delegate]);
+
+  // The bookmark item actions would do Browser::OpenURL(), which will fail in a
+  // unit test. So swap in a test delegate.
+  TestBookmarkMenuCocoaController* test_controller =
+      SetTestBookmarksMenuDelegate(bridge);
+
+  // The fixed items from the default model.
+  EXPECT_EQ(5u, [bookmarks_menu numberOfItems]);
+
+  // When AppKit shows the menu, the bookmark items are added (and a separator).
+  [[bookmarks_menu delegate] menuNeedsUpdate:bookmarks_menu];
+  EXPECT_EQ(7u, [bookmarks_menu numberOfItems]);
+
+  base::scoped_nsobject<NSMenuItem> item(
+      [[bookmarks_menu itemWithTitle:@"About"] retain]);
+  EXPECT_TRUE(item);
+  EXPECT_TRUE([item target]);
+  EXPECT_TRUE([item action]);
+
+  // Simulate how AppKit would click the item (menuDidClose happens first).
+  [controller_ menuDidClose:[controller_ menu]];
+  EXPECT_FALSE([test_controller lastOpenedNode]);
+  [[item target] performSelector:[item action] withObject:item];
+  EXPECT_EQ(about, [test_controller lastOpenedNode]);
+}
 
 // Test that AppMenuController can be destroyed after the Browser.
 // This can happen because the AppMenuController's owner (ToolbarController)
@@ -296,4 +380,4 @@ TEST_F(AppMenuControllerTest, DestroyedAfterBrowser) {
   // |controller_| is released in TearDown().
 }
 
-}  // namespace
+}  // namespace test
