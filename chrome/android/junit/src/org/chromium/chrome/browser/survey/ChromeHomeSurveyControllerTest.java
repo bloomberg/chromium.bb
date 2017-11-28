@@ -59,11 +59,12 @@ public class ChromeHomeSurveyControllerTest {
 
     @Test
     public void testInfoBarDisplayedBefore() {
-        Assert.assertFalse(mController.hasInfoBarBeenDisplayed());
         Assert.assertFalse(mSharedPreferences.contains(
                 ChromeHomeSurveyController.SURVEY_INFO_BAR_DISPLAYED_KEY));
+        Assert.assertFalse(mController.hasInfoBarBeenDisplayed());
         mSharedPreferences.edit()
-                .putBoolean(ChromeHomeSurveyController.SURVEY_INFO_BAR_DISPLAYED_KEY, true)
+                .putLong(ChromeHomeSurveyController.SURVEY_INFO_BAR_DISPLAYED_KEY,
+                        System.currentTimeMillis())
                 .apply();
         Assert.assertTrue(mController.hasInfoBarBeenDisplayed());
     }
@@ -122,5 +123,69 @@ public class ChromeHomeSurveyControllerTest {
         Assert.assertFalse(mController.isValidTabForSurvey(mTab));
         verify(mTab, times(1)).getWebContents();
         verify(mTab, never()).isIncognito();
+    }
+
+    @Test
+    public void testEligibilityRolledYesterday() {
+        mController = new RiggedSurveyController(0, 5, 10);
+        mSharedPreferences.edit().putInt(ChromeHomeSurveyController.DATE_LAST_ROLLED_KEY, 4);
+        Assert.assertTrue(mController.isRandomlySelectedForSurvey());
+    }
+
+    @Test
+    public void testEligibilityRollingTwiceSameDay() {
+        mController = new RiggedSurveyController(0, 5, 10);
+        mSharedPreferences.edit()
+                .putInt(ChromeHomeSurveyController.DATE_LAST_ROLLED_KEY, 5)
+                .apply();
+        Assert.assertFalse(mController.isRandomlySelectedForSurvey());
+    }
+
+    @Test
+    public void testEligibilityFirstTimeRollingQualifies() {
+        mController = new RiggedSurveyController(0, 5, 10);
+        Assert.assertFalse(
+                mSharedPreferences.contains(ChromeHomeSurveyController.DATE_LAST_ROLLED_KEY));
+        Assert.assertTrue(mController.isRandomlySelectedForSurvey());
+        Assert.assertEquals(
+                5, mSharedPreferences.getInt(ChromeHomeSurveyController.DATE_LAST_ROLLED_KEY, -1));
+    }
+
+    @Test
+    public void testEligibilityFirstTimeRollingDoesNotQualify() {
+        mController = new RiggedSurveyController(5, 1, 10);
+        Assert.assertFalse(
+                mSharedPreferences.contains(ChromeHomeSurveyController.DATE_LAST_ROLLED_KEY));
+        Assert.assertFalse(mController.isRandomlySelectedForSurvey());
+        Assert.assertEquals(
+                1, mSharedPreferences.getInt(ChromeHomeSurveyController.DATE_LAST_ROLLED_KEY, -1));
+    }
+
+    class RiggedSurveyController extends ChromeHomeSurveyController {
+        int mRandomNumberToReturn;
+        int mDayOfYear;
+        int mMaxNumber;
+
+        RiggedSurveyController(int randomNumberToReturn, int dayOfYear, int maxNumber) {
+            super();
+            mRandomNumberToReturn = randomNumberToReturn;
+            mDayOfYear = dayOfYear;
+            mMaxNumber = maxNumber;
+        }
+
+        @Override
+        int getRandomNumberUpTo(int max) {
+            return mRandomNumberToReturn;
+        }
+
+        @Override
+        int getDayOfYear() {
+            return mDayOfYear;
+        }
+
+        @Override
+        int getMaxNumber() {
+            return mMaxNumber;
+        }
     }
 }
