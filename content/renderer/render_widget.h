@@ -653,6 +653,10 @@ class CONTENT_EXPORT RenderWidget
   // Called to update whether low latency input mode is enabled or not.
   void SetNeedsLowLatencyInput(bool) override;
 
+  // Requests unbuffered (ie. low latency) input until a pointerup
+  // event occurs.
+  void RequestUnbufferedInputEvents() override;
+
   // Tell the browser about the actions permitted for a new touch point.
   void SetTouchAction(cc::TouchAction touch_action) override;
 

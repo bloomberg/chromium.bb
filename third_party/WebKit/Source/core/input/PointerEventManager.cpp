@@ -166,6 +166,14 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
       !HasPointerEventListener(frame_->GetPage()->GetEventHandlerRegistry()))
     return WebInputEventResult::kNotHandled;
 
+  if (event_type == EventTypeNames::pointerdown) {
+    Node* node = target->ToNode();
+    if (node && IsHTMLCanvasElement(*node) &&
+        ToHTMLCanvasElement(*node).NeedsUnbufferedInputEvents()) {
+      frame_->GetChromeClient().RequestUnbufferedInputEvents(frame_);
+    }
+  }
+
   if (!check_for_listener || target->HasEventListeners(event_type)) {
     UseCounter::Count(frame_, WebFeature::kPointerEventDispatch);
     if (event_type == EventTypeNames::pointerdown)

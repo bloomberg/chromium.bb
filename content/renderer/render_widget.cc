@@ -2424,6 +2424,11 @@ void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {
     input_event_queue_->SetNeedsLowLatency(needs_low_latency);
 }
 
+void RenderWidget::RequestUnbufferedInputEvents() {
+  if (input_event_queue_)
+    input_event_queue_->RequestUnbufferedInputEvents();
+}
+
 void RenderWidget::SetTouchAction(cc::TouchAction touch_action) {
   if (!input_handler_->ProcessTouchAction(touch_action))
     return;

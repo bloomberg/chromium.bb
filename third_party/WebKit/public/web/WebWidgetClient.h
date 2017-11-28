@@ -145,6 +145,10 @@ class WebWidgetClient {
   // Called to update whether low latency input mode is enabled or not.
   virtual void SetNeedsLowLatencyInput(bool) {}
 
+  // Requests unbuffered (ie. low latency) input until a pointerup
+  // event occurs.
+  virtual void RequestUnbufferedInputEvents() {}
+
   // Called during WebWidget::HandleInputEvent for a TouchStart event to inform
   // the embedder of the touch actions that are permitted for this touch.
   virtual void SetTouchAction(WebTouchAction touch_action) {}
