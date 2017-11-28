@@ -38,6 +38,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
@@ -60,10 +61,12 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/insecure_content_renderer.mojom.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -114,6 +117,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/sha2.h"
+#include "extensions/common/extension.h"
 #include "net/base/escape.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -556,14 +560,10 @@ class SSLUITest : public InProcessBrowserTest {
   }
 
   void ProceedThroughInterstitial(WebContents* tab) {
-    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
-    ASSERT_TRUE(interstitial_page);
-    ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
-              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->GetController()));
-    interstitial_page->Proceed();
+    SendInterstitialCommand(tab, security_interstitials::CMD_PROCEED);
     observer.Wait();
   }
 
@@ -1285,6 +1285,59 @@ IN_PROC_BROWSER_TEST_P(SSLUITestTransientAndCommitted,
                                  AuthState::SHOWING_INTERSTITIAL);
 
   ProceedThroughInterstitial(tab);
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+                                 AuthState::NONE);
+  EXPECT_EQ(https_server_expired_.GetURL("/ssl/google.html"),
+            tab->GetVisibleURL());
+}
+
+// Visits a page in an app window with https error and proceed:
+IN_PROC_BROWSER_TEST_P(SSLUITestTransientAndCommitted,
+                       InAppTestHTTPSExpiredCertAndProceed) {
+  auto feature_list = base::MakeUnique<base::test::ScopedFeatureList>();
+  feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
+
+  ASSERT_TRUE(https_server_expired_.Start());
+  Profile* profile = browser()->profile();
+
+  // Install app.
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = https_server_expired_.GetURL("/ssl/google.html");
+  web_app_info.scope = https_server_expired_.GetURL("/ssl/");
+  web_app_info.title = base::UTF8ToUTF16("Test app");
+  web_app_info.description = base::UTF8ToUTF16("Test description");
+
+  const extensions::Extension* app =
+      extensions::browsertest_util::InstallBookmarkApp(profile, web_app_info);
+
+  // Launch app and wait for it to load.
+  ui_test_utils::UrlLoadObserver url_observer(
+      web_app_info.app_url, content::NotificationService::AllSources());
+  Browser* app_browser =
+      extensions::browsertest_util::LaunchAppBrowser(profile, app);
+  url_observer.Wait();
+
+  WebContents* app_tab = app_browser->tab_strip_model()->GetActiveWebContents();
+  WaitForInterstitial(app_tab);
+  CheckAuthenticationBrokenState(app_tab, net::CERT_STATUS_DATE_INVALID,
+                                 AuthState::SHOWING_INTERSTITIAL);
+
+  size_t num_browsers = chrome::GetBrowserCount(profile);
+  EXPECT_EQ(app_browser, chrome::FindLastActive());
+  int num_tabs = browser()->tab_strip_model()->count();
+
+  ProceedThroughInterstitial(app_tab);
+
+  // After proceeding through an interstitial, the app window should be closed,
+  // and a new tab should be opened with the target URL and there should no
+  // longer be an interstitial.
+  EXPECT_EQ(--num_browsers, chrome::GetBrowserCount(profile));
+  EXPECT_EQ(browser(), chrome::FindLastActive());
+  EXPECT_EQ(++num_tabs, browser()->tab_strip_model()->count());
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(tab->GetInterstitialPage());
+
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  AuthState::NONE);
   EXPECT_EQ(https_server_expired_.GetURL("/ssl/google.html"),

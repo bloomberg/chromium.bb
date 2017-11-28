@@ -37,6 +37,13 @@
 #include "base/win/windows_version.h"
 #endif
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
 using content::Referrer;
 
 namespace {
@@ -150,6 +157,18 @@ void SSLErrorControllerClient::GoBack() {
 }
 
 void SSLErrorControllerClient::Proceed() {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Hosted Apps should not be allowed to run if there is a problem with their
+  // certificate. So, when users click proceed on an interstitial, move the tab
+  // to a regular Chrome window and proceed as usual there.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  if (browser &&
+      extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
+          browser)) {
+    chrome::OpenInChrome(browser);
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
   if (!AreCommittedInterstitialsEnabled()) {
     SecurityInterstitialControllerClient::Proceed();
     return;
