@@ -10,6 +10,6 @@ WorkspaceEventHandlerTestHelper::WorkspaceEventHandlerTestHelper(
     WorkspaceEventHandler* handler)
     : handler_(handler) {}
 
-WorkspaceEventHandlerTestHelper::~WorkspaceEventHandlerTestHelper() {}
+WorkspaceEventHandlerTestHelper::~WorkspaceEventHandlerTestHelper() = default;
 
 }  // namespace ash

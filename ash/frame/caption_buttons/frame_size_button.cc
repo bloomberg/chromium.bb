@@ -55,7 +55,7 @@ FrameSizeButton::FrameSizeButton(views::ButtonListener* listener,
       in_snap_mode_(false),
       snap_type_(SNAP_NONE) {}
 
-FrameSizeButton::~FrameSizeButton() {}
+FrameSizeButton::~FrameSizeButton() = default;
 
 bool FrameSizeButton::OnMousePressed(const ui::MouseEvent& event) {
   // The minimize and close buttons are set to snap left and right when snapping

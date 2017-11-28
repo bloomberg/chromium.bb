@@ -46,7 +46,7 @@ ui::TouchscreenDevice GetExternalTouchDevice(int touch_device_id) {
 
 class TouchCalibratorControllerTest : public AshTestBase {
  public:
-  TouchCalibratorControllerTest() {}
+  TouchCalibratorControllerTest() = default;
 
   void TearDown() override {
     // Reset all touch device and touch association.

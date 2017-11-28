@@ -135,7 +135,7 @@ class CancelCastingDialog : public views::DialogDelegateView {
 class PaddingTrayItem : public SystemTrayItem {
  public:
   PaddingTrayItem() : SystemTrayItem(nullptr, UMA_NOT_RECORDED) {}
-  ~PaddingTrayItem() override {}
+  ~PaddingTrayItem() override = default;
 
   // SystemTrayItem:
   views::View* CreateTrayView(LoginStatus status) override {

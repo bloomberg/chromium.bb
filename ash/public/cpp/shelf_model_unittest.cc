@@ -18,7 +18,7 @@ namespace {
 // ShelfModelObserver implementation that tracks what message are invoked.
 class TestShelfModelObserver : public ShelfModelObserver {
  public:
-  TestShelfModelObserver() {}
+  TestShelfModelObserver() = default;
 
   // Returns a string description of the changes that have occurred since this
   // was last invoked. Resets state to initial state.
@@ -59,8 +59,8 @@ class TestShelfModelObserver : public ShelfModelObserver {
 
 class ShelfModelTest : public testing::Test {
  public:
-  ShelfModelTest() {}
-  ~ShelfModelTest() override {}
+  ShelfModelTest() = default;
+  ~ShelfModelTest() override = default;
 
   void SetUp() override {
     model_.reset(new ShelfModel);

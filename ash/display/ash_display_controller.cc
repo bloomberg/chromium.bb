@@ -9,9 +9,9 @@
 
 namespace ash {
 
-AshDisplayController::AshDisplayController() {}
+AshDisplayController::AshDisplayController() = default;
 
-AshDisplayController::~AshDisplayController() {}
+AshDisplayController::~AshDisplayController() = default;
 
 void AshDisplayController::BindRequest(
     mojom::AshDisplayControllerRequest request) {

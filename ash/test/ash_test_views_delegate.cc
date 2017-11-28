@@ -9,9 +9,9 @@
 
 namespace ash {
 
-AshTestViewsDelegate::AshTestViewsDelegate() {}
+AshTestViewsDelegate::AshTestViewsDelegate() = default;
 
-AshTestViewsDelegate::~AshTestViewsDelegate() {}
+AshTestViewsDelegate::~AshTestViewsDelegate() = default;
 
 void AshTestViewsDelegate::OnBeforeWidgetInit(
     views::Widget::InitParams* params,

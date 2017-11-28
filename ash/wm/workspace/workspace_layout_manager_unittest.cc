@@ -73,7 +73,7 @@ class MaximizeDelegateView : public views::WidgetDelegateView {
  public:
   explicit MaximizeDelegateView(const gfx::Rect& initial_bounds)
       : initial_bounds_(initial_bounds) {}
-  ~MaximizeDelegateView() override {}
+  ~MaximizeDelegateView() override = default;
 
   bool GetSavedWindowPlacement(const views::Widget* widget,
                                gfx::Rect* bounds,
@@ -985,7 +985,7 @@ WorkspaceLayoutManager* GetWorkspaceLayoutManager(aura::Window* container) {
 class WorkspaceLayoutManagerBackdropTest : public AshTestBase {
  public:
   WorkspaceLayoutManagerBackdropTest() : default_container_(nullptr) {}
-  ~WorkspaceLayoutManagerBackdropTest() override {}
+  ~WorkspaceLayoutManagerBackdropTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
@@ -1485,7 +1485,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackForArc) {
 class WorkspaceLayoutManagerKeyboardTest : public AshTestBase {
  public:
   WorkspaceLayoutManagerKeyboardTest() : layout_manager_(nullptr) {}
-  ~WorkspaceLayoutManagerKeyboardTest() override {}
+  ~WorkspaceLayoutManagerKeyboardTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
@@ -1688,8 +1688,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitScreenTest) {
 
   class SplitViewTestWindowDelegate : public aura::test::TestWindowDelegate {
    public:
-    SplitViewTestWindowDelegate() {}
-    ~SplitViewTestWindowDelegate() override {}
+    SplitViewTestWindowDelegate() = default;
+    ~SplitViewTestWindowDelegate() override = default;
 
     // aura::test::TestWindowDelegate:
     void OnWindowDestroying(aura::Window* window) override { window->Hide(); }

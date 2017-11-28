@@ -9,7 +9,7 @@ namespace ash {
 UserMetricsRecorderTestAPI::UserMetricsRecorderTestAPI()
     : user_metrics_recorder_(false) {}
 
-UserMetricsRecorderTestAPI::~UserMetricsRecorderTestAPI() {}
+UserMetricsRecorderTestAPI::~UserMetricsRecorderTestAPI() = default;
 
 void UserMetricsRecorderTestAPI::RecordPeriodicMetrics() {
   user_metrics_recorder_.RecordPeriodicMetrics();

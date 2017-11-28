@@ -49,7 +49,7 @@ class IMEDefaultView : public TrayItemMore {
     UpdateLabel(label);
   }
 
-  ~IMEDefaultView() override {}
+  ~IMEDefaultView() override = default;
 
   void UpdateLabel(const base::string16& label) {
     SetLabel(label);
@@ -80,7 +80,7 @@ class IMEDetailedView : public ImeListView {
     DCHECK(ime_controller_);
   }
 
-  ~IMEDetailedView() override {}
+  ~IMEDetailedView() override = default;
 
   views::ImageView* controlled_setting_icon() {
     return controlled_setting_icon_;

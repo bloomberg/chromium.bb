@@ -16,7 +16,7 @@ WorkspaceControllerTestApi::WorkspaceControllerTestApi(
     WorkspaceController* controller)
     : controller_(controller) {}
 
-WorkspaceControllerTestApi::~WorkspaceControllerTestApi() {}
+WorkspaceControllerTestApi::~WorkspaceControllerTestApi() = default;
 
 WorkspaceEventHandler* WorkspaceControllerTestApi::GetEventHandler() {
   return controller_->event_handler_.get();

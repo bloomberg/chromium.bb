@@ -11,7 +11,7 @@ namespace ash {
 
 TrayCastTestAPI::TrayCastTestAPI(TrayCast* tray_cast) : tray_cast_(tray_cast) {}
 
-TrayCastTestAPI::~TrayCastTestAPI() {}
+TrayCastTestAPI::~TrayCastTestAPI() = default;
 
 bool TrayCastTestAPI::IsTrayInitialized() const {
   return tray_cast_->default_ != nullptr;

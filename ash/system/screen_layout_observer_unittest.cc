@@ -63,9 +63,9 @@ class ScreenLayoutObserverTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(ScreenLayoutObserverTest);
 };
 
-ScreenLayoutObserverTest::ScreenLayoutObserverTest() {}
+ScreenLayoutObserverTest::ScreenLayoutObserverTest() = default;
 
-ScreenLayoutObserverTest::~ScreenLayoutObserverTest() {}
+ScreenLayoutObserverTest::~ScreenLayoutObserverTest() = default;
 
 ScreenLayoutObserver* ScreenLayoutObserverTest::GetScreenLayoutObserver() {
   return Shell::Get()->screen_layout_observer();

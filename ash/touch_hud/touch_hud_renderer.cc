@@ -135,7 +135,7 @@ class TouchPointView : public views::View,
 TouchHudRenderer::TouchHudRenderer(views::Widget* parent_widget)
     : parent_widget_(parent_widget) {}
 
-TouchHudRenderer::~TouchHudRenderer() {}
+TouchHudRenderer::~TouchHudRenderer() = default;
 
 void TouchHudRenderer::Clear() {
   for (std::map<int, TouchPointView*>::iterator iter = points_.begin();

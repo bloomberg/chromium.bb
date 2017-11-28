@@ -18,7 +18,7 @@ TouchTransformSetterMus::TouchTransformSetterMus(
   connector->BindInterface(ui::mojom::kServiceName, &touch_device_server_);
 }
 
-TouchTransformSetterMus::~TouchTransformSetterMus() {}
+TouchTransformSetterMus::~TouchTransformSetterMus() = default;
 
 void TouchTransformSetterMus::ConfigureTouchDevices(
     const std::vector<ui::TouchDeviceTransform>& transforms) {

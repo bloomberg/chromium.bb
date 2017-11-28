@@ -23,12 +23,12 @@ SearchBoxModel::SpeechButtonProperty::SpeechButtonProperty(
       off_tooltip(off_tooltip),
       accessible_name(accessible_name) {}
 
-SearchBoxModel::SpeechButtonProperty::~SpeechButtonProperty() {}
+SearchBoxModel::SpeechButtonProperty::~SpeechButtonProperty() = default;
 
 SearchBoxModel::SearchBoxModel()
     : is_voice_query_(false), is_tablet_mode_(false) {}
 
-SearchBoxModel::~SearchBoxModel() {}
+SearchBoxModel::~SearchBoxModel() = default;
 
 void SearchBoxModel::SetSpeechRecognitionButton(
     std::unique_ptr<SearchBoxModel::SpeechButtonProperty> speech_button) {

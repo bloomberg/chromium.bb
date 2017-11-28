@@ -25,7 +25,7 @@ namespace ash {
 
 class WindowAnimationsTest : public AshTestBase {
  public:
-  WindowAnimationsTest() {}
+  WindowAnimationsTest() = default;
 
   void TearDown() override { AshTestBase::TearDown(); }
 

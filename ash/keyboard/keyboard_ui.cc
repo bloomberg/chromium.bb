@@ -61,7 +61,7 @@ class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
   DISALLOW_COPY_AND_ASSIGN(KeyboardUIImpl);
 };
 
-KeyboardUI::~KeyboardUI() {}
+KeyboardUI::~KeyboardUI() = default;
 
 // static
 std::unique_ptr<KeyboardUI> KeyboardUI::Create() {
@@ -76,6 +76,6 @@ void KeyboardUI::RemoveObserver(KeyboardUIObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-KeyboardUI::KeyboardUI() {}
+KeyboardUI::KeyboardUI() = default;
 
 }  // namespace ash

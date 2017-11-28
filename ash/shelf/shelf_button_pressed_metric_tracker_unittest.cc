@@ -52,7 +52,7 @@ DummyEvent::DummyEvent()
     : Event(ui::ET_GESTURE_TAP, base::TimeTicks(), 0),
       unique_id_(next_unique_id_++) {}
 
-DummyEvent::~DummyEvent() {}
+DummyEvent::~DummyEvent() = default;
 
 // Test fixture for the ShelfButtonPressedMetricTracker class. Relies on
 // AshTestBase to initilize the UserMetricsRecorder and it's dependencies.
@@ -96,9 +96,11 @@ const char* ShelfButtonPressedMetricTrackerTest::
         ShelfButtonPressedMetricTracker::
             kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName;
 
-ShelfButtonPressedMetricTrackerTest::ShelfButtonPressedMetricTrackerTest() {}
+ShelfButtonPressedMetricTrackerTest::ShelfButtonPressedMetricTrackerTest() =
+    default;
 
-ShelfButtonPressedMetricTrackerTest::~ShelfButtonPressedMetricTrackerTest() {}
+ShelfButtonPressedMetricTrackerTest::~ShelfButtonPressedMetricTrackerTest() =
+    default;
 
 void ShelfButtonPressedMetricTrackerTest::SetUp() {
   AshTestBase::SetUp();

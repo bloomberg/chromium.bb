@@ -169,7 +169,7 @@ ScreenOrientationControllerTest::ScreenOrientationControllerTest() {
   webview_test_helper_.reset(new views::WebViewTestHelper());
 }
 
-ScreenOrientationControllerTest::~ScreenOrientationControllerTest() {}
+ScreenOrientationControllerTest::~ScreenOrientationControllerTest() = default;
 
 content::WebContents* ScreenOrientationControllerTest::CreateWebContents() {
   return views::ViewsDelegate::GetInstance()->CreateWebContents(

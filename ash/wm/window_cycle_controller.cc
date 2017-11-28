@@ -35,9 +35,9 @@ aura::Window* GetActiveWindow(const WindowCycleList::WindowList& window_list) {
 //////////////////////////////////////////////////////////////////////////////
 // WindowCycleController, public:
 
-WindowCycleController::WindowCycleController() {}
+WindowCycleController::WindowCycleController() = default;
 
-WindowCycleController::~WindowCycleController() {}
+WindowCycleController::~WindowCycleController() = default;
 
 // static
 bool WindowCycleController::CanCycle() {

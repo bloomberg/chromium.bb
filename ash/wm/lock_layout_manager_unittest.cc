@@ -33,7 +33,7 @@ const int kVirtualKeyboardHeight = 100;
 class LoginTestWidgetDelegate : public views::WidgetDelegate {
  public:
   explicit LoginTestWidgetDelegate(views::Widget* widget) : widget_(widget) {}
-  ~LoginTestWidgetDelegate() override {}
+  ~LoginTestWidgetDelegate() override = default;
 
   // Overridden from WidgetDelegate:
   void DeleteDelegate() override { delete this; }

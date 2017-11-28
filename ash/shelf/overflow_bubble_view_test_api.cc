@@ -12,7 +12,7 @@ OverflowBubbleViewTestAPI::OverflowBubbleViewTestAPI(
     OverflowBubbleView* bubble_view)
     : bubble_view_(bubble_view) {}
 
-OverflowBubbleViewTestAPI::~OverflowBubbleViewTestAPI() {}
+OverflowBubbleViewTestAPI::~OverflowBubbleViewTestAPI() = default;
 
 gfx::Size OverflowBubbleViewTestAPI::GetContentsSize() {
   return bubble_view_->shelf_view_->GetPreferredSize();

@@ -43,7 +43,7 @@ const int kSurfaceDamageOutsetDIP = 100;
 }  // namespace
 
 struct FastInkView::Resource {
-  Resource() {}
+  Resource() = default;
   ~Resource() {
     // context_provider might be null in unit tests when ran with --mash
     // TODO(kaznacheev) Have MASH provide a context provider for tests

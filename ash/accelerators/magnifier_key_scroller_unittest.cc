@@ -17,8 +17,8 @@ namespace {
 
 class KeyEventDelegate : public aura::test::TestWindowDelegate {
  public:
-  KeyEventDelegate() {}
-  ~KeyEventDelegate() override {}
+  KeyEventDelegate() = default;
+  ~KeyEventDelegate() override = default;
 
   // ui::EventHandler overrides:
   void OnKeyEvent(ui::KeyEvent* event) override {

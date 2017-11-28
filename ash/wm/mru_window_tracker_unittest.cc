@@ -15,8 +15,8 @@ namespace ash {
 
 class MruWindowTrackerTest : public AshTestBase {
  public:
-  MruWindowTrackerTest() {}
-  ~MruWindowTrackerTest() override {}
+  MruWindowTrackerTest() = default;
+  ~MruWindowTrackerTest() override = default;
 
   std::unique_ptr<aura::Window> CreateTestWindow() {
     return AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));

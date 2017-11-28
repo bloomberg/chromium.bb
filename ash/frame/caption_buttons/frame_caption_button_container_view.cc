@@ -148,7 +148,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   AddChildView(close_button_);
 }
 
-FrameCaptionButtonContainerView::~FrameCaptionButtonContainerView() {}
+FrameCaptionButtonContainerView::~FrameCaptionButtonContainerView() = default;
 
 void FrameCaptionButtonContainerView::TestApi::EndAnimations() {
   container_view_->tablet_mode_animation_->End();

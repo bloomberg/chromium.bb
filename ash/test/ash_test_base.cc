@@ -62,8 +62,8 @@ namespace {
 class AshEventGeneratorDelegate
     : public aura::test::EventGeneratorDelegateAura {
  public:
-  AshEventGeneratorDelegate() {}
-  ~AshEventGeneratorDelegate() override {}
+  AshEventGeneratorDelegate() = default;
+  ~AshEventGeneratorDelegate() override = default;
 
   // aura::test::EventGeneratorDelegateAura overrides:
   aura::WindowTreeHost* GetHostAt(

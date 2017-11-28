@@ -17,7 +17,7 @@ namespace ash {
 SystemGestureEventFilter::SystemGestureEventFilter()
     : overview_gesture_handler_(new OverviewGestureHandler) {}
 
-SystemGestureEventFilter::~SystemGestureEventFilter() {}
+SystemGestureEventFilter::~SystemGestureEventFilter() = default;
 
 void SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED &&

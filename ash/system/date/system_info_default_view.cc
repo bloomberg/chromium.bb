@@ -58,7 +58,7 @@ SystemInfoDefaultView::SystemInfoDefaultView(SystemTrayItem* owner)
     date_view_->SetAction(tray::DateView::DateAction::SHOW_DATE_SETTINGS);
 }
 
-SystemInfoDefaultView::~SystemInfoDefaultView() {}
+SystemInfoDefaultView::~SystemInfoDefaultView() = default;
 
 tray::DateView* SystemInfoDefaultView::GetDateView() {
   return date_view_;

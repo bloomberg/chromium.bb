@@ -22,9 +22,9 @@ const int kLeaveFullScreenAreaHeightInPixel = 2;
 
 }  // namespace
 
-TabletModeEventHandler::TabletModeEventHandler() {}
+TabletModeEventHandler::TabletModeEventHandler() = default;
 
-TabletModeEventHandler::~TabletModeEventHandler() {}
+TabletModeEventHandler::~TabletModeEventHandler() = default;
 
 bool TabletModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
   if (event.type() != ui::ET_TOUCH_PRESSED)

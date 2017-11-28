@@ -130,7 +130,7 @@ class AshRootWindowTransformer : public RootWindowTransformer {
   gfx::Insets GetHostInsets() const override { return host_insets_; }
 
  private:
-  ~AshRootWindowTransformer() override {}
+  ~AshRootWindowTransformer() override = default;
 
   aura::Window* root_window_;
   gfx::Transform transform_;
@@ -208,7 +208,7 @@ class MirrorRootWindowTransformer : public RootWindowTransformer {
   gfx::Insets GetHostInsets() const override { return insets_; }
 
  private:
-  ~MirrorRootWindowTransformer() override {}
+  ~MirrorRootWindowTransformer() override = default;
 
   gfx::Transform transform_;
   gfx::Rect root_bounds_;

@@ -93,7 +93,7 @@ class AshTestContextFactory : public ui::FakeContextFactory {
 
 AshTestSuite::AshTestSuite(int argc, char** argv) : TestSuite(argc, argv) {}
 
-AshTestSuite::~AshTestSuite() {}
+AshTestSuite::~AshTestSuite() = default;
 
 void AshTestSuite::Initialize() {
   base::TestSuite::Initialize();

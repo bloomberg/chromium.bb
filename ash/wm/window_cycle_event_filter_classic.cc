@@ -62,9 +62,10 @@ void WindowCycleEventFilterClassic::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-WindowCycleEventFilterClassic::AltReleaseHandler::AltReleaseHandler() {}
+WindowCycleEventFilterClassic::AltReleaseHandler::AltReleaseHandler() = default;
 
-WindowCycleEventFilterClassic::AltReleaseHandler::~AltReleaseHandler() {}
+WindowCycleEventFilterClassic::AltReleaseHandler::~AltReleaseHandler() =
+    default;
 
 void WindowCycleEventFilterClassic::AltReleaseHandler::OnKeyEvent(
     ui::KeyEvent* event) {

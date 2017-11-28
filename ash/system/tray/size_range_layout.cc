@@ -34,7 +34,7 @@ SizeRangeLayout::SizeRangeLayout(const gfx::Size& min_size,
   SetMaxSize(max_size);
 }
 
-SizeRangeLayout::~SizeRangeLayout() {}
+SizeRangeLayout::~SizeRangeLayout() = default;
 
 void SizeRangeLayout::SetSize(const gfx::Size& size) {
   SetMinSize(size);

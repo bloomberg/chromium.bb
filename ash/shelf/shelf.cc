@@ -70,7 +70,7 @@ Shelf::Shelf() : shelf_locking_manager_(this) {
     bezel_event_handler_ = std::make_unique<ShelfBezelEventHandler>(this);
 }
 
-Shelf::~Shelf() {}
+Shelf::~Shelf() = default;
 
 // static
 Shelf* Shelf::ForWindow(aura::Window* window) {

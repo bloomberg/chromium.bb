@@ -58,7 +58,8 @@ ResolutionChangeNotificationDelegate::ResolutionChangeNotificationDelegate(
   DCHECK(controller_);
 }
 
-ResolutionChangeNotificationDelegate::~ResolutionChangeNotificationDelegate() {}
+ResolutionChangeNotificationDelegate::~ResolutionChangeNotificationDelegate() =
+    default;
 
 void ResolutionChangeNotificationDelegate::Close(bool by_user) {
   if (by_user)
@@ -140,7 +141,7 @@ ResolutionNotificationController::ResolutionChangeInfo::ResolutionChangeInfo(
 }
 
 ResolutionNotificationController::ResolutionChangeInfo::
-    ~ResolutionChangeInfo() {}
+    ~ResolutionChangeInfo() = default;
 
 ResolutionNotificationController::ResolutionNotificationController() {
   Shell::Get()->window_tree_host_manager()->AddObserver(this);

@@ -52,8 +52,8 @@ DEFINE_UI_CLASS_PROPERTY_KEY(NonClientFrameController*,
 // It uses empty insets, doesn't paint anything, and hit tests return HTCAPTION.
 class EmptyDraggableNonClientFrameView : public views::NonClientFrameView {
  public:
-  EmptyDraggableNonClientFrameView() {}
-  ~EmptyDraggableNonClientFrameView() override {}
+  EmptyDraggableNonClientFrameView() = default;
+  ~EmptyDraggableNonClientFrameView() override = default;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override { return bounds(); }
@@ -180,7 +180,7 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
         enable_immersive_(enable_immersive),
         window_style_(window_style),
         window_manager_client_(window_manager_client) {}
-  ~WmNativeWidgetAura() override {}
+  ~WmNativeWidgetAura() override = default;
 
   void SetHeaderHeight(int height) {
     if (custom_frame_view_)
@@ -242,7 +242,7 @@ class ClientViewMus : public views::ClientView {
                 NonClientFrameController* frame_controller)
       : views::ClientView(widget, contents_view),
         frame_controller_(frame_controller) {}
-  ~ClientViewMus() override {}
+  ~ClientViewMus() override = default;
 
   // views::ClientView:
   bool CanClose() override {

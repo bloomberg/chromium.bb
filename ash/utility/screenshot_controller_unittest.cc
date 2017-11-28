@@ -23,8 +23,8 @@ namespace ash {
 
 class ScreenshotControllerTest : public AshTestBase {
  public:
-  ScreenshotControllerTest() {}
-  ~ScreenshotControllerTest() override {}
+  ScreenshotControllerTest() = default;
+  ~ScreenshotControllerTest() override = default;
 
  protected:
   ScreenshotController* screenshot_controller() {

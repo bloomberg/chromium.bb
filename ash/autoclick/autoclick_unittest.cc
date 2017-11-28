@@ -22,7 +22,7 @@ namespace ash {
 class MouseEventCapturer : public ui::EventHandler {
  public:
   MouseEventCapturer() { Reset(); }
-  ~MouseEventCapturer() override {}
+  ~MouseEventCapturer() override = default;
 
   void Reset() { events_.clear(); }
 
@@ -58,8 +58,8 @@ class MouseEventCapturer : public ui::EventHandler {
 
 class AutoclickTest : public AshTestBase {
  public:
-  AutoclickTest() {}
-  ~AutoclickTest() override {}
+  AutoclickTest() = default;
+  ~AutoclickTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

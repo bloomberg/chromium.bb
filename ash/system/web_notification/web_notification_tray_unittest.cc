@@ -90,8 +90,8 @@ class TestItem : public SystemTrayItem {
 
 class WebNotificationTrayTest : public AshTestBase {
  public:
-  WebNotificationTrayTest() {}
-  ~WebNotificationTrayTest() override {}
+  WebNotificationTrayTest() = default;
+  ~WebNotificationTrayTest() override = default;
 
  protected:
   void AddNotification(const std::string& id) {

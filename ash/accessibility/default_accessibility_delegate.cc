@@ -11,9 +11,9 @@
 
 namespace ash {
 
-DefaultAccessibilityDelegate::DefaultAccessibilityDelegate() {}
+DefaultAccessibilityDelegate::DefaultAccessibilityDelegate() = default;
 
-DefaultAccessibilityDelegate::~DefaultAccessibilityDelegate() {}
+DefaultAccessibilityDelegate::~DefaultAccessibilityDelegate() = default;
 
 bool DefaultAccessibilityDelegate::IsSpokenFeedbackEnabled() const {
   return spoken_feedback_enabled_;

@@ -27,7 +27,7 @@ class HighlighterGestureUtilTest : public AshTestBase {
  public:
   HighlighterGestureUtilTest() : points_(base::TimeDelta()) {}
 
-  ~HighlighterGestureUtilTest() override {}
+  ~HighlighterGestureUtilTest() override = default;
 
  protected:
   FastInkPoints points_;

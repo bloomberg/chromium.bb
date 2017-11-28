@@ -59,7 +59,7 @@ class BatteryImageSource : public gfx::CanvasImageSource {
         bg_color_(bg_color),
         fg_color_(fg_color) {}
 
-  ~BatteryImageSource() override {}
+  ~BatteryImageSource() override = default;
 
   // gfx::ImageSkiaSource implementation.
   void Draw(gfx::Canvas* canvas) override {

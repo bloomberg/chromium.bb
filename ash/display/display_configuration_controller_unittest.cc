@@ -26,8 +26,8 @@ display::Display::Rotation GetDisplayRotation(int64_t display_id) {
 
 class DisplayConfigurationControllerSmoothRotationTest : public AshTestBase {
  public:
-  DisplayConfigurationControllerSmoothRotationTest() {}
-  ~DisplayConfigurationControllerSmoothRotationTest() override {}
+  DisplayConfigurationControllerSmoothRotationTest() = default;
+  ~DisplayConfigurationControllerSmoothRotationTest() override = default;
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(

@@ -30,7 +30,7 @@ class LockView : public views::WidgetDelegateView,
             views::MdTextButton::Create(this, base::ASCIIToUTF16("Unlock"))) {
     AddChildView(unlock_button_);
   }
-  ~LockView() override {}
+  ~LockView() override = default;
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override {

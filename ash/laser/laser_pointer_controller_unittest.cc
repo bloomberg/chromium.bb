@@ -16,8 +16,8 @@ namespace {
 
 class LaserPointerControllerTest : public AshTestBase {
  public:
-  LaserPointerControllerTest() {}
-  ~LaserPointerControllerTest() override {}
+  LaserPointerControllerTest() = default;
+  ~LaserPointerControllerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

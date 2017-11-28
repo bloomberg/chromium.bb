@@ -39,7 +39,7 @@ ScaleDetailedView::ScaleDetailedView(SystemTrayItem* owner)
   Layout();
 }
 
-ScaleDetailedView::~ScaleDetailedView() {}
+ScaleDetailedView::~ScaleDetailedView() = default;
 
 HoverHighlightView* ScaleDetailedView::AddScrollListItem(
     const base::string16& text,

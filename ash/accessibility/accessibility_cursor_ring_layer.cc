@@ -37,7 +37,7 @@ AccessibilityCursorRingLayer::AccessibilityCursorRingLayer(
     int blue)
     : FocusRingLayer(delegate), red_(red), green_(green), blue_(blue) {}
 
-AccessibilityCursorRingLayer::~AccessibilityCursorRingLayer() {}
+AccessibilityCursorRingLayer::~AccessibilityCursorRingLayer() = default;
 
 void AccessibilityCursorRingLayer::Set(const gfx::Point& location) {
   location_ = location;

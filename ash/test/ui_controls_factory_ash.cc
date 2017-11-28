@@ -50,8 +50,8 @@ UIControlsAura* GetUIControlsAt(const gfx::Point& point_in_screen) {
 
 class UIControlsAsh : public UIControlsAura {
  public:
-  UIControlsAsh() {}
-  ~UIControlsAsh() override {}
+  UIControlsAsh() = default;
+  ~UIControlsAsh() override = default;
 
   // UIControslAura overrides:
   bool SendKeyPress(gfx::NativeWindow window,

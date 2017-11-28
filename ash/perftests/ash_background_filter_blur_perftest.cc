@@ -20,7 +20,7 @@ namespace {
 class AshBackgroundFilterBlurPerfTest : public AshTestBase {
  public:
   AshBackgroundFilterBlurPerfTest() : timer_(0, base::TimeDelta(), 1) {}
-  ~AshBackgroundFilterBlurPerfTest() override {}
+  ~AshBackgroundFilterBlurPerfTest() override = default;
 
   // AshTestBase:
   void SetUp() override;

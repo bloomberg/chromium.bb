@@ -284,7 +284,7 @@ SplitViewOverviewOverlay::SplitViewOverviewOverlay() {
   widget_->SetContentsView(overlay_view_);
 }
 
-SplitViewOverviewOverlay::~SplitViewOverviewOverlay() {}
+SplitViewOverviewOverlay::~SplitViewOverviewOverlay() = default;
 
 void SplitViewOverviewOverlay::SetIndicatorType(
     IndicatorType indicator_type,

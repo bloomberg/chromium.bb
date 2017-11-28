@@ -135,7 +135,7 @@ class ShieldButton : public views::Button {
       : views::Button(listener) {
     SetAccessibleName(name);
   }
-  ~ShieldButton() override {}
+  ~ShieldButton() override = default;
 
   // When WindowSelectorItem (which is a ButtonListener) is destroyed, its
   // |item_widget_| is allowed to stay around to complete any animations.
@@ -229,7 +229,7 @@ WindowSelectorItem::OverviewCloseButton::OverviewCloseButton(
   SetMinimumImageSize(gfx::Size(kHeaderHeight, kHeaderHeight));
 }
 
-WindowSelectorItem::OverviewCloseButton::~OverviewCloseButton() {}
+WindowSelectorItem::OverviewCloseButton::~OverviewCloseButton() = default;
 
 // A View having rounded top corners and a specified background color which is
 // only painted within the bounds defined by the rounded corners.

@@ -22,7 +22,7 @@ void RunCallback(bool* success, const base::Closure& callback, bool result) {
 class AppLaunchTest : public service_manager::test::ServiceTest {
  public:
   AppLaunchTest() : ServiceTest("mash_unittests") {}
-  ~AppLaunchTest() override {}
+  ~AppLaunchTest() override = default;
 
  private:
   void SetUp() override {

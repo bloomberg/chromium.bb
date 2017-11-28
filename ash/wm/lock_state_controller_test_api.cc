@@ -12,6 +12,6 @@ LockStateControllerTestApi::LockStateControllerTestApi(
   DCHECK(controller);
 }
 
-LockStateControllerTestApi::~LockStateControllerTestApi() {}
+LockStateControllerTestApi::~LockStateControllerTestApi() = default;
 
 }  // namespace ash

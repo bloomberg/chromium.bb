@@ -23,7 +23,7 @@ namespace {
 class TestObserver : public PowerStatus::Observer {
  public:
   TestObserver() : power_changed_count_(0) {}
-  ~TestObserver() override {}
+  ~TestObserver() override = default;
 
   int power_changed_count() const { return power_changed_count_; }
 
@@ -44,7 +44,7 @@ class PowerStatusTest : public testing::Test {
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         power_status_(NULL) {}
-  ~PowerStatusTest() override {}
+  ~PowerStatusTest() override = default;
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();

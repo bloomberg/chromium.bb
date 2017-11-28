@@ -25,7 +25,7 @@ AshWindowTreeHostMus::AshWindowTreeHostMus(
   transformer_helper_->Init();
 }
 
-AshWindowTreeHostMus::~AshWindowTreeHostMus() {}
+AshWindowTreeHostMus::~AshWindowTreeHostMus() = default;
 
 bool AshWindowTreeHostMus::ConfineCursorToRootWindow() {
   gfx::Rect confined_bounds(GetBoundsInPixels().size());

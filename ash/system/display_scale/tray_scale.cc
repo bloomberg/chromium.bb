@@ -27,7 +27,7 @@ bool IsDisplayScaleTrayEnabled() {
 TrayScale::TrayScale(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_NOT_RECORDED) {}
 
-TrayScale::~TrayScale() {}
+TrayScale::~TrayScale() = default;
 
 views::View* TrayScale::CreateDefaultView(LoginStatus status) {
   if (!IsDisplayScaleTrayEnabled())

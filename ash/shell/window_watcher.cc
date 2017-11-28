@@ -33,7 +33,7 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
  public:
   explicit WorkspaceWindowWatcher(WindowWatcher* watcher) : watcher_(watcher) {}
 
-  ~WorkspaceWindowWatcher() override {}
+  ~WorkspaceWindowWatcher() override = default;
 
   void OnWindowAdded(aura::Window* new_window) override {
     new_window->AddObserver(watcher_);

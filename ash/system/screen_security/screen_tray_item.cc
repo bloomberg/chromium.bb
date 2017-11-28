@@ -28,7 +28,7 @@ ScreenTrayView::ScreenTrayView(ScreenTrayItem* screen_tray_item)
   Update();
 }
 
-ScreenTrayView::~ScreenTrayView() {}
+ScreenTrayView::~ScreenTrayView() = default;
 
 void ScreenTrayView::Update() {
   SetVisible(screen_tray_item_->is_started());
@@ -63,7 +63,7 @@ ScreenStatusView::ScreenStatusView(ScreenTrayItem* screen_tray_item,
     UpdateFromScreenTrayItem();
 }
 
-ScreenStatusView::~ScreenStatusView() {}
+ScreenStatusView::~ScreenStatusView() = default;
 
 void ScreenStatusView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
@@ -94,7 +94,7 @@ ScreenNotificationDelegate::ScreenNotificationDelegate(
     ScreenTrayItem* screen_tray)
     : screen_tray_(screen_tray) {}
 
-ScreenNotificationDelegate::~ScreenNotificationDelegate() {}
+ScreenNotificationDelegate::~ScreenNotificationDelegate() = default;
 
 void ScreenNotificationDelegate::ButtonClick(int button_index) {
   DCHECK_EQ(0, button_index);
@@ -111,7 +111,7 @@ ScreenTrayItem::ScreenTrayItem(SystemTray* system_tray, UmaType uma_type)
       is_started_(false),
       stop_callback_(base::Bind(&base::DoNothing)) {}
 
-ScreenTrayItem::~ScreenTrayItem() {}
+ScreenTrayItem::~ScreenTrayItem() = default;
 
 void ScreenTrayItem::Update() {
   if (tray_view_)

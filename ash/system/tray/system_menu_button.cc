@@ -58,7 +58,7 @@ void SystemMenuButton::SetVectorIcon(const gfx::VectorIcon& icon) {
            gfx::CreateVectorIcon(icon, kMenuIconColorDisabled));
 }
 
-SystemMenuButton::~SystemMenuButton() {}
+SystemMenuButton::~SystemMenuButton() = default;
 
 void SystemMenuButton::SetInkDropColor(SkColor color) {
   ink_drop_color_ = color;

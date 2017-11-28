@@ -38,7 +38,7 @@ ExampleBubbleDialogDelegateView::ExampleBubbleDialogDelegateView(
     : BubbleDialogDelegateView(config.anchor_view, config.arrow),
       label_(config.label) {}
 
-ExampleBubbleDialogDelegateView::~ExampleBubbleDialogDelegateView() {}
+ExampleBubbleDialogDelegateView::~ExampleBubbleDialogDelegateView() = default;
 
 void CreatePointyBubble(views::View* anchor_view) {
   BubbleConfig config;

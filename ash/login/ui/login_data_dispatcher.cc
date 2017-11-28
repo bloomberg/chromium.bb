@@ -6,7 +6,7 @@
 
 namespace ash {
 
-LoginDataDispatcher::Observer::~Observer() {}
+LoginDataDispatcher::Observer::~Observer() = default;
 
 void LoginDataDispatcher::Observer::OnUsersChanged(
     const std::vector<mojom::LoginUserInfoPtr>& users) {}

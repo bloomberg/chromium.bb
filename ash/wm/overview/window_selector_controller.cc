@@ -23,7 +23,7 @@
 
 namespace ash {
 
-WindowSelectorController::WindowSelectorController() {}
+WindowSelectorController::WindowSelectorController() = default;
 
 WindowSelectorController::~WindowSelectorController() {
   // Destroy widgets that may be still animating if shell shuts down soon after

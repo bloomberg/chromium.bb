@@ -54,8 +54,8 @@ void SetShelfAutoHideBehaviorPref(int64_t display_id,
 
 class TabletModeWindowManagerTest : public AshTestBase {
  public:
-  TabletModeWindowManagerTest() {}
-  ~TabletModeWindowManagerTest() override {}
+  TabletModeWindowManagerTest() = default;
+  ~TabletModeWindowManagerTest() override = default;
 
   // Initialize parameters for test windows.  If |can_maximize| is not
   // set, |max_size| is the upper limiting size for the window,
@@ -1635,8 +1635,8 @@ namespace {
 
 class TestObserver : public wm::WindowStateObserver {
  public:
-  TestObserver() {}
-  ~TestObserver() override {}
+  TestObserver() = default;
+  ~TestObserver() override = default;
 
   // wm::WindowStateObserver:
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,

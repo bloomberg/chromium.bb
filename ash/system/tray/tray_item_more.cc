@@ -35,7 +35,7 @@ TrayItemMore::TrayItemMore(SystemTrayItem* owner)
   SetInkDropMode(InkDropHostView::InkDropMode::ON);
 }
 
-TrayItemMore::~TrayItemMore() {}
+TrayItemMore::~TrayItemMore() = default;
 
 void TrayItemMore::SetLabel(const base::string16& label) {
   label_->SetText(label);

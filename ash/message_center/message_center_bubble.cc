@@ -47,7 +47,7 @@ ContentsView::ContentsView(MessageCenterBubble* bubble, views::View* contents)
   AddChildView(contents);
 }
 
-ContentsView::~ContentsView() {}
+ContentsView::~ContentsView() = default;
 
 int ContentsView::GetHeightForWidth(int width) const {
   DCHECK_EQ(1, child_count());

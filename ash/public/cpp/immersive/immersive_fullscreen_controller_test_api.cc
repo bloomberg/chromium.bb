@@ -15,7 +15,8 @@ ImmersiveFullscreenControllerTestApi::ImmersiveFullscreenControllerTestApi(
     ImmersiveFullscreenController* controller)
     : immersive_fullscreen_controller_(controller) {}
 
-ImmersiveFullscreenControllerTestApi::~ImmersiveFullscreenControllerTestApi() {}
+ImmersiveFullscreenControllerTestApi::~ImmersiveFullscreenControllerTestApi() =
+    default;
 
 void ImmersiveFullscreenControllerTestApi::SetupForTest() {
   DCHECK(!immersive_fullscreen_controller_->enabled_);

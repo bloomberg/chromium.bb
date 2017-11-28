@@ -205,7 +205,7 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
       original_opacity_(window->layer()->GetTargetOpacity()),
       weak_ptr_factory_(this) {}
 
-ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {}
+ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() = default;
 
 void ScopedTransformOverviewWindow::RestoreWindow() {
   ::wm::SetShadowElevation(window_, original_shadow_elevation_);

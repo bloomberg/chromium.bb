@@ -38,7 +38,7 @@ MenuItemList GetMenuItemsForMojo(ui::MenuModel* model) {
 ShelfItemDelegate::ShelfItemDelegate(const ShelfID& shelf_id)
     : shelf_id_(shelf_id), binding_(this), image_set_by_controller_(false) {}
 
-ShelfItemDelegate::~ShelfItemDelegate() {}
+ShelfItemDelegate::~ShelfItemDelegate() = default;
 
 mojom::ShelfItemDelegatePtr ShelfItemDelegate::CreateInterfacePtrAndBind() {
   mojom::ShelfItemDelegatePtr ptr;

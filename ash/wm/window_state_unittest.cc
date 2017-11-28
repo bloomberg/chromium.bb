@@ -28,7 +28,7 @@ class AlwaysMaximizeTestState : public WindowState::State {
  public:
   explicit AlwaysMaximizeTestState(WindowStateType initial_state_type)
       : state_type_(initial_state_type) {}
-  ~AlwaysMaximizeTestState() override {}
+  ~AlwaysMaximizeTestState() override = default;
 
   // WindowState::State overrides:
   void OnWMEvent(WindowState* window_state, const WMEvent* event) override {

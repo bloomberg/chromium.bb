@@ -29,9 +29,9 @@ const int kAddStationaryPointsDelayMs = 16;
 
 }  // namespace
 
-LaserPointerController::LaserPointerController() {}
+LaserPointerController::LaserPointerController() = default;
 
-LaserPointerController::~LaserPointerController() {}
+LaserPointerController::~LaserPointerController() = default;
 
 void LaserPointerController::SetEnabled(bool enabled) {
   FastInkPointerController::SetEnabled(enabled);

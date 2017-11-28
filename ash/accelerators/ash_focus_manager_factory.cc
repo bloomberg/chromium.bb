@@ -12,8 +12,8 @@
 
 namespace ash {
 
-AshFocusManagerFactory::AshFocusManagerFactory() {}
-AshFocusManagerFactory::~AshFocusManagerFactory() {}
+AshFocusManagerFactory::AshFocusManagerFactory() = default;
+AshFocusManagerFactory::~AshFocusManagerFactory() = default;
 
 std::unique_ptr<views::FocusManager> AshFocusManagerFactory::CreateFocusManager(
     views::Widget* widget,
@@ -22,8 +22,8 @@ std::unique_ptr<views::FocusManager> AshFocusManagerFactory::CreateFocusManager(
       widget, desktop_widget ? nullptr : std::make_unique<Delegate>());
 }
 
-AshFocusManagerFactory::Delegate::Delegate() {}
-AshFocusManagerFactory::Delegate::~Delegate() {}
+AshFocusManagerFactory::Delegate::Delegate() = default;
+AshFocusManagerFactory::Delegate::~Delegate() = default;
 
 bool AshFocusManagerFactory::Delegate::ProcessAccelerator(
     const ui::Accelerator& accelerator) {

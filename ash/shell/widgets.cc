@@ -96,7 +96,7 @@ WidgetsWindow::WidgetsWindow()
   AddChildView(radio_button_selected_disabled_);
 }
 
-WidgetsWindow::~WidgetsWindow() {}
+WidgetsWindow::~WidgetsWindow() = default;
 
 void WidgetsWindow::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(GetLocalBounds(), SK_ColorWHITE);

@@ -60,7 +60,7 @@ LogoutConfirmationDialog::LogoutConfirmationDialog(
       this, &LogoutConfirmationDialog::UpdateLabel);
 }
 
-LogoutConfirmationDialog::~LogoutConfirmationDialog() {}
+LogoutConfirmationDialog::~LogoutConfirmationDialog() = default;
 
 void LogoutConfirmationDialog::Update(base::TimeTicks logout_time) {
   logout_time_ = logout_time;

@@ -34,9 +34,9 @@ class TaskSwitchMetricsRecorderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TaskSwitchMetricsRecorderTest);
 };
 
-TaskSwitchMetricsRecorderTest::TaskSwitchMetricsRecorderTest() {}
+TaskSwitchMetricsRecorderTest::TaskSwitchMetricsRecorderTest() = default;
 
-TaskSwitchMetricsRecorderTest::~TaskSwitchMetricsRecorderTest() {}
+TaskSwitchMetricsRecorderTest::~TaskSwitchMetricsRecorderTest() = default;
 
 void TaskSwitchMetricsRecorderTest::OnTaskSwitch(
     TaskSwitchSource task_switch_source) {

@@ -86,8 +86,8 @@ class MirroringScreenPositionClient
 // capture are dropped.
 class NoneCaptureClient : public aura::client::CaptureClient {
  public:
-  NoneCaptureClient() {}
-  ~NoneCaptureClient() override {}
+  NoneCaptureClient() = default;
+  ~NoneCaptureClient() override = default;
 
  private:
   // aura::client::CaptureClient:
@@ -120,8 +120,8 @@ struct MirrorWindowController::MirroringHostInfo {
   aura::Window* mirror_window = nullptr;
 };
 
-MirrorWindowController::MirroringHostInfo::MirroringHostInfo() {}
-MirrorWindowController::MirroringHostInfo::~MirroringHostInfo() {}
+MirrorWindowController::MirroringHostInfo::MirroringHostInfo() = default;
+MirrorWindowController::MirroringHostInfo::~MirroringHostInfo() = default;
 
 MirrorWindowController::MirrorWindowController()
     : current_event_targeter_src_host_(nullptr),

@@ -10,9 +10,9 @@
 
 namespace ash {
 
-NetworkConnectDelegateMus::NetworkConnectDelegateMus() {}
+NetworkConnectDelegateMus::NetworkConnectDelegateMus() = default;
 
-NetworkConnectDelegateMus::~NetworkConnectDelegateMus() {}
+NetworkConnectDelegateMus::~NetworkConnectDelegateMus() = default;
 
 void NetworkConnectDelegateMus::ShowNetworkConfigure(
     const std::string& network_id) {

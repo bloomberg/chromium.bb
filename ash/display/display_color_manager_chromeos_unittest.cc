@@ -143,7 +143,7 @@ class DisplayColorManagerTest : public testing::Test {
   }
 
   DisplayColorManagerTest() : test_api_(&configurator_) {}
-  ~DisplayColorManagerTest() override {}
+  ~DisplayColorManagerTest() override = default;
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;

@@ -30,9 +30,9 @@ void InitializeMojo() {
 
 }  // namespace
 
-AshInteractiveUITestBase::AshInteractiveUITestBase() {}
+AshInteractiveUITestBase::AshInteractiveUITestBase() = default;
 
-AshInteractiveUITestBase::~AshInteractiveUITestBase() {}
+AshInteractiveUITestBase::~AshInteractiveUITestBase() = default;
 
 void AshInteractiveUITestBase::SetUp() {
   InitializeMojo();

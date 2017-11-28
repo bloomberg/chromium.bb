@@ -61,7 +61,7 @@ class TestLayerDelegate : public ui::LayerDelegate {
 class DragWindowResizerTest : public AshTestBase {
  public:
   DragWindowResizerTest() : transient_child_(nullptr) {}
-  ~DragWindowResizerTest() override {}
+  ~DragWindowResizerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

@@ -278,7 +278,8 @@ class AssistantIconBackground : public ui::Layer, public ui::LayerDelegate {
     for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
       AddPaintLayer(static_cast<PaintedShape>(i));
   }
-  ~AssistantIconBackground() override{};
+  ~AssistantIconBackground() override = default;
+  ;
 
   void MoveLargeShadow(const gfx::PointF& new_center) {
     gfx::Transform transform;
@@ -616,7 +617,7 @@ AssistantOverlay::AssistantOverlay(AppListButton* host_view)
   layer()->Add(icon_layer_.get());
 }
 
-AssistantOverlay::~AssistantOverlay() {}
+AssistantOverlay::~AssistantOverlay() = default;
 
 void AssistantOverlay::StartAnimation(bool show_icon) {
   animation_state_ = AnimationState::STARTING;

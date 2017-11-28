@@ -26,7 +26,7 @@ HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
   SetInkDropMode(InkDropHostView::InkDropMode::ON);
 }
 
-HoverHighlightView::~HoverHighlightView() {}
+HoverHighlightView::~HoverHighlightView() = default;
 
 void HoverHighlightView::AddRightIcon(const gfx::ImageSkia& image,
                                       int icon_size) {

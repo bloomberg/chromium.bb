@@ -70,7 +70,7 @@ StickyKeyOverlayLabel::StickyKeyOverlayLabel(const std::string& key_name)
   SetSubpixelRenderingEnabled(false);
 }
 
-StickyKeyOverlayLabel::~StickyKeyOverlayLabel() {}
+StickyKeyOverlayLabel::~StickyKeyOverlayLabel() = default;
 
 void StickyKeyOverlayLabel::SetKeyState(StickyKeyState state) {
   state_ = state;
@@ -154,7 +154,7 @@ StickyKeysOverlayView::StickyKeysOverlayView() {
   AddKeyLabel(ui::EF_MOD3_DOWN, l10n_util::GetStringUTF8(IDS_ASH_MOD3_KEY));
 }
 
-StickyKeysOverlayView::~StickyKeysOverlayView() {}
+StickyKeysOverlayView::~StickyKeysOverlayView() = default;
 
 void StickyKeysOverlayView::OnPaint(gfx::Canvas* canvas) {
   cc::PaintFlags flags;

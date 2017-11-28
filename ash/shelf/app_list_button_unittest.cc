@@ -35,8 +35,8 @@ ui::GestureEvent CreateGestureEvent(ui::GestureEventDetails details) {
 
 class AppListButtonTest : public AshTestBase {
  public:
-  AppListButtonTest() {}
-  ~AppListButtonTest() override {}
+  AppListButtonTest() = default;
+  ~AppListButtonTest() override = default;
 
   // AshTestBase:
   void SetUp() override {
@@ -128,7 +128,7 @@ TEST_F(AppListButtonTest, SwipeUpToOpenFullscreenAppList) {
 
 class VoiceInteractionAppListButtonTest : public AppListButtonTest {
  public:
-  VoiceInteractionAppListButtonTest() {}
+  VoiceInteractionAppListButtonTest() = default;
 
   // AppListButtonTest:
   void SetUp() override {
@@ -230,7 +230,7 @@ class BackButtonAppListButtonTest : public AppListButtonTest,
                                     public testing::WithParamInterface<bool> {
  public:
   BackButtonAppListButtonTest() : is_rtl_(GetParam()) {}
-  ~BackButtonAppListButtonTest() override {}
+  ~BackButtonAppListButtonTest() override = default;
 
   void SetUp() override {
     if (is_rtl_) {

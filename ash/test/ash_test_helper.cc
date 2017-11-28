@@ -70,7 +70,7 @@ AshTestHelper::AshTestHelper(AshTestEnvironment* ash_test_environment)
   aura::test::InitializeAuraEventGeneratorDelegate();
 }
 
-AshTestHelper::~AshTestHelper() {}
+AshTestHelper::~AshTestHelper() = default;
 
 void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   command_line_ = std::make_unique<base::test::ScopedCommandLine>();

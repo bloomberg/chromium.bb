@@ -19,7 +19,7 @@ TokenizedString::TokenizedString(const base::string16& text) : text_(text) {
   Tokenize();
 }
 
-TokenizedString::~TokenizedString() {}
+TokenizedString::~TokenizedString() = default;
 
 void TokenizedString::Tokenize() {
   BreakIterator break_iter(text_, BreakIterator::BREAK_WORD);

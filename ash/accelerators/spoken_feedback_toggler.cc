@@ -64,6 +64,6 @@ void SpokenFeedbackToggler::OnKeyUnhold(const ui::KeyEvent* event) {
 
 SpokenFeedbackToggler::SpokenFeedbackToggler() : toggled_(false) {}
 
-SpokenFeedbackToggler::~SpokenFeedbackToggler() {}
+SpokenFeedbackToggler::~SpokenFeedbackToggler() = default;
 
 }  // namespace ash

@@ -49,7 +49,7 @@ UnifiedMouseWarpController::UnifiedMouseWarpController()
       update_location_for_test_(false),
       display_boundaries_computed_(false) {}
 
-UnifiedMouseWarpController::~UnifiedMouseWarpController() {}
+UnifiedMouseWarpController::~UnifiedMouseWarpController() = default;
 
 bool UnifiedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
   // Mirroring windows are created asynchronously, so compute the edge

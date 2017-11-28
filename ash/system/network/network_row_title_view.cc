@@ -39,7 +39,7 @@ NetworkRowTitleView::NetworkRowTitleView(int title_message_id)
   AddChildView(subtitle_);
 }
 
-NetworkRowTitleView::~NetworkRowTitleView() {}
+NetworkRowTitleView::~NetworkRowTitleView() = default;
 
 void NetworkRowTitleView::SetSubtitle(int subtitle_message_id) {
   if (subtitle_message_id) {

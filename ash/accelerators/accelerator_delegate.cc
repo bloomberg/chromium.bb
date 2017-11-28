@@ -12,7 +12,7 @@ namespace ash {
 
 AcceleratorDelegate::AcceleratorDelegate() : router_(new AcceleratorRouter) {}
 
-AcceleratorDelegate::~AcceleratorDelegate() {}
+AcceleratorDelegate::~AcceleratorDelegate() = default;
 
 bool AcceleratorDelegate::ProcessAccelerator(
     const ui::KeyEvent& key_event,

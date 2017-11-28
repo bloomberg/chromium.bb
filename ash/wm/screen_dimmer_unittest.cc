@@ -18,8 +18,8 @@ namespace ash {
 
 class ScreenDimmerTest : public AshTestBase {
  public:
-  ScreenDimmerTest() {}
-  ~ScreenDimmerTest() override {}
+  ScreenDimmerTest() = default;
+  ~ScreenDimmerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
@@ -112,8 +112,8 @@ TEST_F(ScreenDimmerTest, DimAtBottom) {
 // See description above TEST_F for details.
 class ScreenDimmerShellDestructionTest : public AshTestBase {
  public:
-  ScreenDimmerShellDestructionTest() {}
-  ~ScreenDimmerShellDestructionTest() override {}
+  ScreenDimmerShellDestructionTest() = default;
+  ~ScreenDimmerShellDestructionTest() override = default;
 
   void TearDown() override {
     ScreenDimmer screen_dimmer(ScreenDimmer::Container::ROOT);

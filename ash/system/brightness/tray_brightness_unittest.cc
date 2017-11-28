@@ -16,8 +16,8 @@ namespace ash {
 
 class TrayBrightnessTest : public AshTestBase {
  public:
-  TrayBrightnessTest() {}
-  ~TrayBrightnessTest() override {}
+  TrayBrightnessTest() = default;
+  ~TrayBrightnessTest() override = default;
 
  protected:
   views::View* CreateDefaultView() {

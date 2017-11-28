@@ -12,8 +12,8 @@
 
 namespace ash {
 
-TestKeyboardUI::TestKeyboardUI() {}
-TestKeyboardUI::~TestKeyboardUI() {}
+TestKeyboardUI::TestKeyboardUI() = default;
+TestKeyboardUI::~TestKeyboardUI() = default;
 
 bool TestKeyboardUI::HasContentsWindow() const {
   return !!keyboard_;

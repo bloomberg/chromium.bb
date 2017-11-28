@@ -82,7 +82,7 @@ ExtendedMouseWarpController::WarpRegion::WarpRegion(
       GetNativeEdgeBounds(b_ash_host, b_indicator_bounds);
 }
 
-ExtendedMouseWarpController::WarpRegion::~WarpRegion() {}
+ExtendedMouseWarpController::WarpRegion::~WarpRegion() = default;
 
 const gfx::Rect&
 ExtendedMouseWarpController::WarpRegion::GetIndicatorBoundsForTest(
@@ -116,7 +116,7 @@ ExtendedMouseWarpController::ExtendedMouseWarpController(
   }
 }
 
-ExtendedMouseWarpController::~ExtendedMouseWarpController() {}
+ExtendedMouseWarpController::~ExtendedMouseWarpController() = default;
 
 bool ExtendedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
   if (display::Screen::GetScreen()->GetNumDisplays() <= 1 || !enabled_)

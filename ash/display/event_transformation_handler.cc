@@ -24,7 +24,7 @@ const float kBoostForNonIntegrated = 1.20f;
 EventTransformationHandler::EventTransformationHandler()
     : transformation_mode_(TRANSFORM_AUTO) {}
 
-EventTransformationHandler::~EventTransformationHandler() {}
+EventTransformationHandler::~EventTransformationHandler() = default;
 
 void EventTransformationHandler::OnScrollEvent(ui::ScrollEvent* event) {
   if (transformation_mode_ == TRANSFORM_NONE)

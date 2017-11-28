@@ -25,7 +25,7 @@ namespace ash {
 ToplevelWindowEventHandler::ToplevelWindowEventHandler()
     : weak_factory_(this) {}
 
-ToplevelWindowEventHandler::~ToplevelWindowEventHandler() {}
+ToplevelWindowEventHandler::~ToplevelWindowEventHandler() = default;
 
 void ToplevelWindowEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   wm_toplevel_window_event_handler_.OnKeyEvent(event);

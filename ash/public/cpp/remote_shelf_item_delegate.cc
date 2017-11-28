@@ -13,7 +13,7 @@ RemoteShelfItemDelegate::RemoteShelfItemDelegate(
     mojom::ShelfItemDelegatePtr delegate)
     : ShelfItemDelegate(shelf_id), delegate_(std::move(delegate)) {}
 
-RemoteShelfItemDelegate::~RemoteShelfItemDelegate() {}
+RemoteShelfItemDelegate::~RemoteShelfItemDelegate() = default;
 
 void RemoteShelfItemDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
                                            int64_t display_id,

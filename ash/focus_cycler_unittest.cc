@@ -57,7 +57,7 @@ class PanedWidgetDelegate : public views::WidgetDelegate {
 
 class FocusCyclerTest : public AshTestBase {
  public:
-  FocusCyclerTest() {}
+  FocusCyclerTest() = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

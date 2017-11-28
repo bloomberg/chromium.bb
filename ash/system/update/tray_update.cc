@@ -115,7 +115,7 @@ class TrayUpdate::UpdateView : public ActionableView {
     SetInkDropMode(InkDropHostView::InkDropMode::ON);
   }
 
-  ~UpdateView() override {}
+  ~UpdateView() override = default;
 
   views::Label* update_label_;
 
@@ -142,7 +142,7 @@ class TrayUpdate::UpdateView : public ActionableView {
 TrayUpdate::TrayUpdate(SystemTray* system_tray)
     : TrayImageItem(system_tray, kSystemTrayUpdateIcon, UMA_UPDATE) {}
 
-TrayUpdate::~TrayUpdate() {}
+TrayUpdate::~TrayUpdate() = default;
 
 bool TrayUpdate::GetInitialVisibility() {
   // If chrome tells ash there is an update available before this item's system

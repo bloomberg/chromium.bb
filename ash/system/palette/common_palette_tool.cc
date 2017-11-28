@@ -44,7 +44,7 @@ void AddHistogramTimes(PaletteToolId id, base::TimeDelta duration) {
 CommonPaletteTool::CommonPaletteTool(Delegate* delegate)
     : PaletteTool(delegate) {}
 
-CommonPaletteTool::~CommonPaletteTool() {}
+CommonPaletteTool::~CommonPaletteTool() = default;
 
 void CommonPaletteTool::OnViewDestroyed() {
   highlight_view_ = nullptr;

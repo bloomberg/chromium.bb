@@ -34,7 +34,7 @@ const char kDualRoleNotificationId[] = "dual-role";
 class DualRoleNotificationDelegate
     : public message_center::NotificationDelegate {
  public:
-  DualRoleNotificationDelegate() {}
+  DualRoleNotificationDelegate() = default;
 
   // Overridden from message_center::NotificationDelegate.
   void Click() override {
@@ -42,7 +42,7 @@ class DualRoleNotificationDelegate
   }
 
  private:
-  ~DualRoleNotificationDelegate() override {}
+  ~DualRoleNotificationDelegate() override = default;
 
   DISALLOW_COPY_AND_ASSIGN(DualRoleNotificationDelegate);
 };

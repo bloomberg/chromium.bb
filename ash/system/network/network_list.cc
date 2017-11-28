@@ -132,7 +132,7 @@ class NetworkListView::SectionHeaderRowView : public views::View,
         network_row_title_view_(nullptr),
         toggle_(nullptr) {}
 
-  ~SectionHeaderRowView() override {}
+  ~SectionHeaderRowView() override = default;
 
   virtual void Init(bool enabled) {
     InitializeLayout();
@@ -442,7 +442,7 @@ class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
       : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_WIFI),
         join_(nullptr) {}
 
-  ~WifiHeaderRowView() override {}
+  ~WifiHeaderRowView() override = default;
 
   void SetToggleState(bool toggle_enabled, bool is_on) override {
     join_->SetEnabled(is_on);

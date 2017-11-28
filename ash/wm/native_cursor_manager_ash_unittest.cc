@@ -25,8 +25,8 @@ namespace {
 // A delegate for recording a mouse event location.
 class MouseEventLocationDelegate : public aura::test::TestWindowDelegate {
  public:
-  MouseEventLocationDelegate() {}
-  ~MouseEventLocationDelegate() override {}
+  MouseEventLocationDelegate() = default;
+  ~MouseEventLocationDelegate() override = default;
 
   gfx::Point GetMouseEventLocationAndReset() {
     gfx::Point p = mouse_event_location_;

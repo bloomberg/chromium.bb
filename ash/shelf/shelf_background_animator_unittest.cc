@@ -37,8 +37,8 @@ SkColor GetBaseColor(SkColor color) {
 // Observer that caches color values for the last observation.
 class TestShelfBackgroundObserver : public ShelfBackgroundAnimatorObserver {
  public:
-  TestShelfBackgroundObserver() {}
-  ~TestShelfBackgroundObserver() override {}
+  TestShelfBackgroundObserver() = default;
+  ~TestShelfBackgroundObserver() override = default;
 
   SkColor background_color() const { return background_color_; }
 
@@ -85,7 +85,7 @@ class ShelfBackgroundAnimatorTestApi {
   explicit ShelfBackgroundAnimatorTestApi(ShelfBackgroundAnimator* animator)
       : animator_(animator) {}
 
-  ~ShelfBackgroundAnimatorTestApi() {}
+  ~ShelfBackgroundAnimatorTestApi() = default;
 
   ShelfBackgroundType previous_background_type() const {
     return animator_->previous_background_type_;
@@ -110,8 +110,8 @@ class ShelfBackgroundAnimatorTestApi {
 
 class ShelfBackgroundAnimatorTest : public testing::Test {
  public:
-  ShelfBackgroundAnimatorTest() {}
-  ~ShelfBackgroundAnimatorTest() override {}
+  ShelfBackgroundAnimatorTest() = default;
+  ~ShelfBackgroundAnimatorTest() override = default;
 
   // testing::Test:
   void SetUp() override;
@@ -315,8 +315,8 @@ TEST_F(ShelfBackgroundAnimatorTest,
 
 class ShelfBackgroundTargetColorTest : public NoSessionAshTestBase {
  public:
-  ShelfBackgroundTargetColorTest() {}
-  ~ShelfBackgroundTargetColorTest() override {}
+  ShelfBackgroundTargetColorTest() = default;
+  ~ShelfBackgroundTargetColorTest() override = default;
 
   // AshTestBase:
   void SetUp() override {

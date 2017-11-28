@@ -51,8 +51,8 @@ class TestVoiceInteractionObserver : public VoiceInteractionObserver {
 
 class VoiceInteractionControllerTest : public AshTestBase {
  public:
-  VoiceInteractionControllerTest() {}
-  ~VoiceInteractionControllerTest() override {}
+  VoiceInteractionControllerTest() = default;
+  ~VoiceInteractionControllerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

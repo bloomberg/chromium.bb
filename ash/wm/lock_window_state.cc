@@ -27,7 +27,7 @@ LockWindowState::LockWindowState(aura::Window* window, bool exclude_shelf)
     : current_state_type_(wm::GetWindowState(window)->GetStateType()),
       exclude_shelf_(exclude_shelf) {}
 
-LockWindowState::~LockWindowState() {}
+LockWindowState::~LockWindowState() = default;
 
 void LockWindowState::OnWMEvent(wm::WindowState* window_state,
                                 const wm::WMEvent* event) {

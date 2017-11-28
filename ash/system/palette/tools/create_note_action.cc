@@ -16,7 +16,7 @@ namespace ash {
 CreateNoteAction::CreateNoteAction(Delegate* delegate)
     : CommonPaletteTool(delegate) {}
 
-CreateNoteAction::~CreateNoteAction() {}
+CreateNoteAction::~CreateNoteAction() = default;
 
 PaletteGroup CreateNoteAction::GetGroup() const {
   return PaletteGroup::ACTION;

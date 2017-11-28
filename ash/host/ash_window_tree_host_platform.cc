@@ -36,7 +36,7 @@ AshWindowTreeHostPlatform::AshWindowTreeHostPlatform()
   transformer_helper_.Init();
 }
 
-AshWindowTreeHostPlatform::~AshWindowTreeHostPlatform() {}
+AshWindowTreeHostPlatform::~AshWindowTreeHostPlatform() = default;
 
 bool AshWindowTreeHostPlatform::ConfineCursorToRootWindow() {
   gfx::Rect confined_bounds(GetBoundsInPixels().size());

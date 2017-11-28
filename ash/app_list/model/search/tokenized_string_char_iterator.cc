@@ -23,7 +23,7 @@ TokenizedStringCharIterator::TokenizedStringCharIterator(
   CreateTokenCharIterator();
 }
 
-TokenizedStringCharIterator::~TokenizedStringCharIterator() {}
+TokenizedStringCharIterator::~TokenizedStringCharIterator() = default;
 
 bool TokenizedStringCharIterator::NextChar() {
   if (current_token_iter_) {

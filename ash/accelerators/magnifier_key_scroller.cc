@@ -83,8 +83,8 @@ void MagnifierKeyScroller::OnKeyUnhold(const ui::KeyEvent* event) {
   controller->SetScrollDirection(MagnificationController::SCROLL_NONE);
 }
 
-MagnifierKeyScroller::MagnifierKeyScroller() {}
+MagnifierKeyScroller::MagnifierKeyScroller() = default;
 
-MagnifierKeyScroller::~MagnifierKeyScroller() {}
+MagnifierKeyScroller::~MagnifierKeyScroller() = default;
 
 }  // namespace ash

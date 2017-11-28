@@ -60,8 +60,8 @@ using aura::test::WindowIsAbove;
 
 class PanelLayoutManagerTest : public AshTestBase {
  public:
-  PanelLayoutManagerTest() {}
-  ~PanelLayoutManagerTest() override {}
+  PanelLayoutManagerTest() = default;
+  ~PanelLayoutManagerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
@@ -265,7 +265,7 @@ class PanelLayoutManagerTextDirectionTest
       public testing::WithParamInterface<bool> {
  public:
   PanelLayoutManagerTextDirectionTest() : is_rtl_(GetParam()) {}
-  virtual ~PanelLayoutManagerTextDirectionTest() {}
+  virtual ~PanelLayoutManagerTextDirectionTest() = default;
 
   void SetUp() override {
     original_locale_ = base::i18n::GetConfiguredLocale();

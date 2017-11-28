@@ -34,7 +34,7 @@ class LockScreenSessionControllerClient : public TestSessionControllerClient {
     InitializeAndBind();
     CreatePredefinedUserSessions(1);
   }
-  ~LockScreenSessionControllerClient() override {}
+  ~LockScreenSessionControllerClient() override = default;
 
   // TestSessionControllerClient:
   void RequestLockScreen() override {
@@ -86,8 +86,8 @@ class LockScreenSessionControllerClient : public TestSessionControllerClient {
 // |AshFocusRules| when locking and unlocking the screen.
 class LockScreenAshFocusRulesTest : public AshTestBase {
  public:
-  LockScreenAshFocusRulesTest() {}
-  ~LockScreenAshFocusRulesTest() override {}
+  LockScreenAshFocusRulesTest() = default;
+  ~LockScreenAshFocusRulesTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

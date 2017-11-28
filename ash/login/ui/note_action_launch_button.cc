@@ -62,7 +62,7 @@ class BubbleLayerDelegate : public views::BasePaintedLayerDelegate {
   BubbleLayerDelegate(SkColor color, int radius)
       : views::BasePaintedLayerDelegate(color), radius_(radius) {}
 
-  ~BubbleLayerDelegate() override {}
+  ~BubbleLayerDelegate() override = default;
 
   // views::BasePaintedLayerDelegate:
   gfx::RectF GetPaintedBounds() const override {

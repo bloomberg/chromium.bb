@@ -42,7 +42,7 @@ OverflowButton::OverflowButton(ShelfView* shelf_view, Shelf* shelf)
   UpdateChevronImage();
 }
 
-OverflowButton::~OverflowButton() {}
+OverflowButton::~OverflowButton() = default;
 
 void OverflowButton::OnShelfAlignmentChanged() {
   UpdateChevronImage();

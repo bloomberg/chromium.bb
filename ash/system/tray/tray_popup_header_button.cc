@@ -50,7 +50,7 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
       bundle.GetImageNamed(disabled_resource_id_hover).ToImageSkia());
 }
 
-TrayPopupHeaderButton::~TrayPopupHeaderButton() {}
+TrayPopupHeaderButton::~TrayPopupHeaderButton() = default;
 
 const char* TrayPopupHeaderButton::GetClassName() const {
   return kViewClassName;

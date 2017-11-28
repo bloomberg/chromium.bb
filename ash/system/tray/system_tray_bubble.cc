@@ -52,7 +52,7 @@ class AnimationObserverDeleteLayer : public ui::ImplicitAnimationObserver {
  public:
   explicit AnimationObserverDeleteLayer(ui::Layer* layer) : layer_(layer) {}
 
-  ~AnimationObserverDeleteLayer() override {}
+  ~AnimationObserverDeleteLayer() override = default;
 
   void OnImplicitAnimationsCompleted() override {
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);

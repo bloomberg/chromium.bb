@@ -36,8 +36,8 @@ display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
 
 class MirrorOnBootTest : public AshTestBase {
  public:
-  MirrorOnBootTest() {}
-  ~MirrorOnBootTest() override {}
+  MirrorOnBootTest() = default;
+  ~MirrorOnBootTest() override = default;
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(

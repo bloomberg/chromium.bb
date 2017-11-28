@@ -21,8 +21,8 @@ namespace {
 
 class HighlighterControllerTest : public AshTestBase {
  public:
-  HighlighterControllerTest() {}
-  ~HighlighterControllerTest() override {}
+  HighlighterControllerTest() = default;
+  ~HighlighterControllerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();

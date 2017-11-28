@@ -41,8 +41,8 @@ namespace ash {
 
 class PaletteTrayTest : public AshTestBase {
  public:
-  PaletteTrayTest() {}
-  ~PaletteTrayTest() override {}
+  PaletteTrayTest() = default;
+  ~PaletteTrayTest() override = default;
 
   // Performs a tap on the palette tray button.
   void PerformTap() {

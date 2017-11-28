@@ -24,7 +24,7 @@ TrayImageItem::TrayImageItem(SystemTray* system_tray,
       icon_color_(kTrayIconColor),
       tray_view_(nullptr) {}
 
-TrayImageItem::~TrayImageItem() {}
+TrayImageItem::~TrayImageItem() = default;
 
 views::View* TrayImageItem::tray_view() {
   return tray_view_;

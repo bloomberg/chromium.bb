@@ -75,7 +75,7 @@ HighlighterView::HighlighterView(base::TimeDelta presentation_delay,
       predicted_points_(base::TimeDelta()),
       presentation_delay_(presentation_delay) {}
 
-HighlighterView::~HighlighterView() {}
+HighlighterView::~HighlighterView() = default;
 
 void HighlighterView::AddNewPoint(const gfx::PointF& point,
                                   const base::TimeTicks& time) {

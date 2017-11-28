@@ -83,9 +83,9 @@ std::pair<int, int> GetTargetColorAlphaValues(
 
 }  // namespace
 
-ShelfBackgroundAnimator::AnimationValues::AnimationValues() {}
+ShelfBackgroundAnimator::AnimationValues::AnimationValues() = default;
 
-ShelfBackgroundAnimator::AnimationValues::~AnimationValues() {}
+ShelfBackgroundAnimator::AnimationValues::~AnimationValues() = default;
 
 void ShelfBackgroundAnimator::AnimationValues::UpdateCurrentValues(double t) {
   current_color_ =
