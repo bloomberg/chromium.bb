@@ -230,6 +230,7 @@ component("capture_lib") {
       "video/chromeos/video_capture_device_factory_chromeos.cc",
     ]
     deps += [
+      "//chromeos:chromeos",
       "//media/capture/video/chromeos/mojo:arc_camera3",
       "//mojo/edk/system",
       "//third_party/libsync",
@@ -307,6 +308,7 @@ test("capture_unittests") {
       "video/chromeos/stream_buffer_manager_unittest.cc",
     ]
     deps += [
+      "//chromeos:chromeos",
       "//media/capture/video/chromeos/mojo:arc_camera3",
       "//mojo/edk/system",
       "//third_party/libdrm",

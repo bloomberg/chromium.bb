@@ -134,8 +134,6 @@ class CameraDeviceDelegateTest : public ::testing::Test {
         new CameraHalDelegate(hal_delegate_thread_.task_runner());
     camera_hal_delegate_->SetCameraModule(
         mock_camera_module_.GetInterfacePtrInfo());
-
-    ResetCaptureClient();
   }
 
   void TearDown() override {
@@ -345,9 +343,13 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     EXPECT_EQ(CameraDeviceContext::State::kStopped, GetState());
   }
 
-  void ResetCaptureClient() {
-    mock_client_ =
+  unittest_internal::MockVideoCaptureClient* ResetDeviceContext() {
+    auto mock_client =
         base::MakeUnique<unittest_internal::MockVideoCaptureClient>();
+    auto* client_ptr = mock_client.get();
+    device_context_ =
+        base::MakeUnique<CameraDeviceContext>(std::move(mock_client));
+    return client_ptr;
   }
 
   void ResetDevice() {
@@ -392,7 +394,7 @@ class CameraDeviceDelegateTest : public ::testing::Test {
 
   base::Thread device_delegate_thread_;
 
-  std::unique_ptr<VideoCaptureDevice::Client> mock_client_;
+  std::unique_ptr<CameraDeviceContext> device_context_;
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -409,9 +411,7 @@ TEST_F(CameraDeviceDelegateTest, AllocateCaptureAndStop) {
   VideoCaptureParams params;
   params.requested_format = kDefaultCaptureFormat;
 
-  auto* mock_client =
-      reinterpret_cast<unittest_internal::MockVideoCaptureClient*>(
-          mock_client_.get());
+  auto* mock_client = ResetDeviceContext();
   mock_client->SetFrameCb(BindToCurrentLoop(base::BindOnce(
       &CameraDeviceDelegateTest::QuitRunLoop, base::Unretained(this))));
   mock_client->SetQuitCb(BindToCurrentLoop(base::BindOnce(
@@ -422,7 +422,7 @@ TEST_F(CameraDeviceDelegateTest, AllocateCaptureAndStop) {
   device_delegate_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&CameraDeviceDelegate::AllocateAndStart,
                             camera_device_delegate_->GetWeakPtr(), params,
-                            base::Passed(&mock_client_)));
+                            base::Unretained(device_context_.get())));
 
   // Wait until a frame is received.  MockVideoCaptureClient calls QuitRunLoop()
   // to stop the run loop.
@@ -444,9 +444,7 @@ TEST_F(CameraDeviceDelegateTest, StopAfterInitialized) {
   VideoCaptureParams params;
   params.requested_format = kDefaultCaptureFormat;
 
-  auto* mock_client =
-      reinterpret_cast<unittest_internal::MockVideoCaptureClient*>(
-          mock_client_.get());
+  auto* mock_client = ResetDeviceContext();
   mock_client->SetQuitCb(BindToCurrentLoop(base::BindOnce(
       &CameraDeviceDelegateTest::QuitRunLoop, base::Unretained(this))));
   SetUpExpectationUntilInitialized();
@@ -454,7 +452,7 @@ TEST_F(CameraDeviceDelegateTest, StopAfterInitialized) {
   device_delegate_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&CameraDeviceDelegate::AllocateAndStart,
                             camera_device_delegate_->GetWeakPtr(), params,
-                            base::Passed(&mock_client_)));
+                            base::Unretained(device_context_.get())));
 
   EXPECT_CALL(mock_camera_device_, DoConfigureStreams(_, _))
       .Times(1)
@@ -488,9 +486,7 @@ TEST_F(CameraDeviceDelegateTest, StopAfterStreamConfigured) {
   VideoCaptureParams params;
   params.requested_format = kDefaultCaptureFormat;
 
-  auto* mock_client =
-      reinterpret_cast<unittest_internal::MockVideoCaptureClient*>(
-          mock_client_.get());
+  auto* mock_client = ResetDeviceContext();
   mock_client->SetQuitCb(BindToCurrentLoop(base::BindOnce(
       &CameraDeviceDelegateTest::QuitRunLoop, base::Unretained(this))));
   SetUpExpectationUntilStreamConfigured();
@@ -498,7 +494,7 @@ TEST_F(CameraDeviceDelegateTest, StopAfterStreamConfigured) {
   device_delegate_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&CameraDeviceDelegate::AllocateAndStart,
                             camera_device_delegate_->GetWeakPtr(), params,
-                            base::Passed(&mock_client_)));
+                            base::Unretained(device_context_.get())));
 
   EXPECT_CALL(mock_camera_device_, DoConstructDefaultRequestSettings(_, _))
       .Times(1)
@@ -530,9 +526,7 @@ TEST_F(CameraDeviceDelegateTest, FailToOpenDevice) {
   VideoCaptureParams params;
   params.requested_format = kDefaultCaptureFormat;
 
-  auto* mock_client =
-      reinterpret_cast<unittest_internal::MockVideoCaptureClient*>(
-          mock_client_.get());
+  auto* mock_client = ResetDeviceContext();
 
   auto stop_on_error = [&]() {
     device_delegate_thread_.task_runner()->PostTask(
@@ -565,7 +559,7 @@ TEST_F(CameraDeviceDelegateTest, FailToOpenDevice) {
   device_delegate_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&CameraDeviceDelegate::AllocateAndStart,
                             camera_device_delegate_->GetWeakPtr(), params,
-                            base::Passed(&mock_client_)));
+                            base::Unretained(device_context_.get())));
 
   // Wait unitl |camera_device_delegate_->StopAndDeAllocate| calls the
   // QuitRunLoop callback.

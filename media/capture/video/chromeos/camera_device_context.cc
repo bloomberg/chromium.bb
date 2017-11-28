@@ -10,6 +10,7 @@ CameraDeviceContext::CameraDeviceContext(
     std::unique_ptr<VideoCaptureDevice::Client> client)
     : state_(State::kStopped), rotation_(0), client_(std::move(client)) {
   DCHECK(client_);
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 CameraDeviceContext::~CameraDeviceContext() {}

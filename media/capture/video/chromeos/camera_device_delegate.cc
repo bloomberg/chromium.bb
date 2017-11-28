@@ -72,11 +72,11 @@ CameraDeviceDelegate::~CameraDeviceDelegate() {}
 
 void CameraDeviceDelegate::AllocateAndStart(
     const VideoCaptureParams& params,
-    std::unique_ptr<VideoCaptureDevice::Client> client) {
+    CameraDeviceContext* device_context) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
   chrome_capture_params_ = params;
-  device_context_.reset(new CameraDeviceContext(std::move(client)));
+  device_context_ = device_context;
   device_context_->SetState(CameraDeviceContext::State::kStarting);
 
   // We need to get the static camera metadata of the camera device first.
@@ -175,7 +175,7 @@ void CameraDeviceDelegate::OnClosed(int32_t result) {
                                  std::string(strerror(result)));
   }
   ResetMojoInterface();
-  device_context_.reset();
+  device_context_ = nullptr;
   std::move(device_close_callback_).Run();
 }
 
@@ -246,7 +246,7 @@ void CameraDeviceDelegate::Initialize() {
   stream_buffer_manager_ = base::MakeUnique<StreamBufferManager>(
       std::move(callback_ops_request),
       base::MakeUnique<StreamCaptureInterfaceImpl>(GetWeakPtr()),
-      device_context_.get(), base::MakeUnique<CameraBufferFactory>(),
+      device_context_, base::MakeUnique<CameraBufferFactory>(),
       ipc_task_runner_);
   device_ops_->Initialize(
       std::move(callback_ops_ptr),

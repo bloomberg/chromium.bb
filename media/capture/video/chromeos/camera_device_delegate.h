@@ -64,7 +64,7 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
 
   // Delegation methods for the VideoCaptureDevice interface.
   void AllocateAndStart(const VideoCaptureParams& params,
-                        std::unique_ptr<VideoCaptureDevice::Client> client);
+                        CameraDeviceContext* device_context);
   void StopAndDeAllocate(base::Closure device_close_callback);
   void TakePhoto(VideoCaptureDevice::TakePhotoCallback callback);
   void GetPhotoState(VideoCaptureDevice::GetPhotoStateCallback callback);
@@ -147,7 +147,7 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
 
   VideoCaptureParams chrome_capture_params_;
 
-  std::unique_ptr<CameraDeviceContext> device_context_;
+  CameraDeviceContext* device_context_;
 
   std::unique_ptr<StreamBufferManager> stream_buffer_manager_;
 

@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "media/capture/video/chromeos/display_rotation_observer.h"
 #include "media/capture/video/chromeos/mojo/arc_camera3.mojom.h"
 #include "media/capture/video/video_capture_device.h"
@@ -24,12 +26,14 @@ class Display;
 namespace media {
 
 class CameraHalDelegate;
+class CameraDeviceContext;
 class CameraDeviceDelegate;
 
 // Implementation of VideoCaptureDevice for ChromeOS with ARC++ camera HALv3.
 class CAPTURE_EXPORT VideoCaptureDeviceArcChromeOS final
     : public VideoCaptureDevice,
-      public DisplayRotationObserver {
+      public DisplayRotationObserver,
+      public chromeos::PowerManagerClient::Observer {
  public:
   VideoCaptureDeviceArcChromeOS(
       scoped_refptr<base::SingleThreadTaskRunner>
@@ -48,7 +52,15 @@ class CAPTURE_EXPORT VideoCaptureDeviceArcChromeOS final
   void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
                        SetPhotoOptionsCallback callback) final;
 
+  // chromeos::PowerManagerClient::Observer callbacks for system suspend and
+  // resume events.
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) final;
+  void SuspendDone(const base::TimeDelta& sleep_duration) final;
+
  private:
+  void OpenDevice();
+  void CloseDevice(base::Closure callback);
+
   // DisplayRotationDelegate implementation.
   void SetDisplayRotation(const display::Display& display) final;
   void SetRotation(int rotation);
@@ -69,6 +81,11 @@ class CAPTURE_EXPORT VideoCaptureDeviceArcChromeOS final
   // |capture_task_runner_|.
   base::Thread camera_device_ipc_thread_;
 
+  VideoCaptureParams capture_params_;
+  // |device_context_| is created and owned by VideoCaptureDeviceArcChromeOS
+  // and is only accessed by |camera_device_delegate_|.
+  std::unique_ptr<CameraDeviceContext> device_context_;
+
   // Internal delegate doing the actual capture setting, buffer allocation and
   // circulation with the camera HAL. Created in AllocateAndStart and deleted in
   // StopAndDeAllocate on |capture_task_runner_|.  All methods of
@@ -81,6 +98,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceArcChromeOS final
   // Whether the incoming frames should rotate when the device rotates.
   const bool rotates_with_device_;
   int rotation_;
+
+  base::WeakPtrFactory<VideoCaptureDeviceArcChromeOS> weak_ptr_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceArcChromeOS);
 };
