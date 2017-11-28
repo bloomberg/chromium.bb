@@ -89416,10 +89416,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="UKM.Sources.SerializedCount">
+<histogram name="UKM.Sources.KeptSourcesCount" units="sources">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Number of unsent UKM sources that were kept in-memory to be potentially
+    transmitted in the next log.
+  </summary>
+</histogram>
+
+<histogram name="UKM.Sources.SerializedCount" units="sources">
   <owner>holte@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <summary>Number of serialized UKM sources when storing a UKM log.</summary>
+</histogram>
+
+<histogram name="UKM.Sources.UnsentSourcesCount" units="sources">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Number of UKM sources that were not sent because they had no associated
+    entries.
+  </summary>
 </histogram>
 
 <histogram name="UKM.UnsentLogs.DroppedSize" units="bytes">

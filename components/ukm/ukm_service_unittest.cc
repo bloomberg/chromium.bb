@@ -10,9 +10,13 @@
 
 #include "base/hash.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/metrics/test_metrics_provider.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/prefs/testing_pref_service.h"
@@ -138,6 +142,10 @@ class UkmServiceTest : public testing::Test {
 
   static SourceId GetWhitelistedSourceId(int64_t id) {
     return ConvertToSourceId(id, SourceIdType::NAVIGATION_ID);
+  }
+
+  static SourceId GetNonWhitelistedSourceId(int64_t id) {
+    return ConvertToSourceId(id, SourceIdType::UKM);
   }
 
  protected:
@@ -627,6 +635,89 @@ TEST_F(UkmServiceTest, SourceURLLength) {
   ASSERT_EQ(1, proto_report.sources_size());
   const Source& proto_source = proto_report.sources(0);
   EXPECT_EQ("URLTooLong", proto_source.url());
+}
+
+TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
+  for (bool restrict_to_whitelisted_source_ids : {true, false}) {
+    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
+    // Set a threshold of number of Sources via Feature Params.
+    ScopedUkmFeatureParams params(
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+        {{"MaxKeptSources", "3"},
+         {"WhitelistEntries", "EntryA,EntryB"},
+         {"RestrictToWhitelistedSourceIds",
+          restrict_to_whitelisted_source_ids ? "true" : "false"}});
+
+    ClearPrefs();
+    UkmService service(&prefs_, &client_);
+    TestRecordingHelper recorder(&service);
+    EXPECT_EQ(0, GetPersistedLogCount());
+    service.Initialize();
+    task_runner_->RunUntilIdle();
+    service.EnableRecording();
+    service.EnableReporting();
+
+    std::vector<SourceId> ids;
+    base::TimeTicks last_time = base::TimeTicks::Now();
+    for (int i = 0; i < 6; ++i) {
+      // Wait until base::TimeTicks::Now() no longer equals |last_time|. This
+      // ensures each source has a unique timestamp to avoid flakes. Should take
+      // between 1-15ms per documented resolution of base::TimeTicks.
+      while (base::TimeTicks::Now() == last_time) {
+        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
+      }
+
+      ids.push_back(GetNonWhitelistedSourceId(i));
+      recorder.UpdateSourceURL(ids.back(), GURL("https://google.com/foobar" +
+                                                base::NumberToString(i)));
+      last_time = base::TimeTicks::Now();
+    }
+
+    // Add whitelisted entries for 0, 2 and non-whitelisted entries for 2, 3.
+    recorder.GetEntryBuilder(ids[0], "EntryA")->AddMetric("Metric", 500);
+    recorder.GetEntryBuilder(ids[2], "EntryB")->AddMetric("Metric", 500);
+    recorder.GetEntryBuilder(ids[2], "EntryC")->AddMetric("Metric", 500);
+    recorder.GetEntryBuilder(ids[3], "EntryC")->AddMetric("Metric", 500);
+
+    service.Flush();
+    EXPECT_EQ(1, GetPersistedLogCount());
+    auto proto_report = GetPersistedReport();
+
+    if (restrict_to_whitelisted_source_ids) {
+      ASSERT_EQ(0, proto_report.sources_size());
+    } else {
+      ASSERT_EQ(2, proto_report.sources_size());
+      EXPECT_EQ(ids[0], proto_report.sources(0).id());
+      EXPECT_EQ("https://google.com/foobar0", proto_report.sources(0).url());
+      EXPECT_EQ(ids[2], proto_report.sources(1).id());
+      EXPECT_EQ("https://google.com/foobar2", proto_report.sources(1).url());
+    }
+
+    // Since MaxKeptSources is 3, only Sources 5, 4, 3 should be retained.
+    // Log entries under 0, 1, 3 and 4. Log them in reverse order - which
+    // shouldn't affect source ordering in the output.
+    //  - Source 0 should not be re-transmitted since it was sent before.
+    //  - Source 1 should not be transmitted due to MaxKeptSources param.
+    //  - Sources 3 and 4 should be transmitted since they were not sent before.
+    recorder.GetEntryBuilder(ids[4], "EntryA")->AddMetric("Metric", 500);
+    recorder.GetEntryBuilder(ids[3], "EntryA")->AddMetric("Metric", 500);
+    recorder.GetEntryBuilder(ids[1], "EntryA")->AddMetric("Metric", 500);
+    recorder.GetEntryBuilder(ids[0], "EntryA")->AddMetric("Metric", 500);
+
+    service.Flush();
+    EXPECT_EQ(2, GetPersistedLogCount());
+    proto_report = GetPersistedReport();
+
+    if (restrict_to_whitelisted_source_ids) {
+      ASSERT_EQ(0, proto_report.sources_size());
+    } else {
+      ASSERT_EQ(2, proto_report.sources_size());
+      EXPECT_EQ(ids[3], proto_report.sources(0).id());
+      EXPECT_EQ("https://google.com/foobar3", proto_report.sources(0).url());
+      EXPECT_EQ(ids[4], proto_report.sources(1).id());
+      EXPECT_EQ("https://google.com/foobar4", proto_report.sources(1).url());
+    }
+  }
 }
 
 }  // namespace ukm
