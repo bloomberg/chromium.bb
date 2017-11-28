@@ -117,18 +117,33 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
 
     blob_requests = results.FindAllPageSpecificValuesNamed(
         'BlobRequest')
+    blob_readers = results.FindAllPageSpecificValuesNamed(
+        'BlobReader')
     self.assertEquals(len(blob_requests), 1)
+    self.assertEquals(len(blob_readers), 1)
     # simple-blob-measure-async.html specifies 6 iterationCount.
     self.assertEquals(len(blob_requests[0].values), 6)
-    self.assertGreater(blob_requests[0].GetRepresentativeNumber(), 0.001)
+    self.assertEquals(len(blob_readers[0].values), 6)
 
-    blob_request_read_raw_data = results.FindAllPageSpecificValuesNamed(
-        'BlobRequest::ReadRawData')
-    self.assertEquals(len(blob_request_read_raw_data), 1)
+    # TODO(mek): Delete non-mojo code paths when blobs are always using mojo.
+    using_mojo = blob_readers[0].GetRepresentativeNumber() > 0.001
+    if using_mojo:
+      self.assertEquals(blob_requests[0].GetRepresentativeNumber(), 0)
+      self.assertGreater(blob_readers[0].GetRepresentativeNumber(), 0.001)
+    else:
+      self.assertGreater(blob_requests[0].GetRepresentativeNumber(), 0.001)
+      self.assertEquals(blob_readers[0].GetRepresentativeNumber(), 0)
+
+    if using_mojo:
+      read_data = results.FindAllPageSpecificValuesNamed(
+          'BlobReader::ReadMore')
+    else:
+      read_data = results.FindAllPageSpecificValuesNamed(
+          'BlobRequest::ReadRawData')
+    self.assertEquals(len(read_data), 1)
     # simple-blob-measure-async.html specifies 6 iterationCount.
-    self.assertEquals(len(blob_request_read_raw_data[0].values), 6)
-    self.assertGreater(
-        blob_request_read_raw_data[0].GetRepresentativeNumber(), 0.001)
+    self.assertEquals(len(read_data[0].values), 6)
+    self.assertGreater(read_data[0].GetRepresentativeNumber(), 0.001)
 
 
 # pylint: disable=protected-access

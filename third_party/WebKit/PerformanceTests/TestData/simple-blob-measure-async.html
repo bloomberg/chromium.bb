@@ -43,7 +43,8 @@ window.onload = function () {
         iterationCount: 6,
         description: "Measures performance of blob read.",
         tracingCategories: 'Blob',
-        traceEventsToMeasure: ['BlobRequest', 'BlobRequest::ReadRawData']
+        traceEventsToMeasure: ['BlobRequest', 'BlobRequest::ReadRawData',
+                               'BlobReader', 'BlobReader::ReadMore']
     });
 };
 </script>

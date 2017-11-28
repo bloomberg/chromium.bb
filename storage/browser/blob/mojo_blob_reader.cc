@@ -4,6 +4,7 @@
 
 #include "storage/browser/blob/mojo_blob_reader.h"
 
+#include "base/trace_event/trace_event.h"
 #include "net/base/io_buffer.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -28,13 +29,17 @@ MojoBlobReader::MojoBlobReader(const BlobDataHandle* handle,
       peer_closed_handle_watcher_(FROM_HERE,
                                   mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       weak_factory_(this) {
+  TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobReader", this, "uuid", handle->uuid());
   DCHECK(delegate_);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&MojoBlobReader::Start, weak_factory_.GetWeakPtr()));
 }
 
-MojoBlobReader::~MojoBlobReader() = default;
+MojoBlobReader::~MojoBlobReader() {
+  TRACE_EVENT_ASYNC_END1("Blob", "BlobReader", this, "bytes_written",
+                         total_written_bytes_);
+}
 
 void MojoBlobReader::Start() {
   if (blob_reader_->net_error()) {
@@ -42,10 +47,13 @@ void MojoBlobReader::Start() {
     return;
   }
 
+  TRACE_EVENT_ASYNC_BEGIN0("Blob", "BlobReader::CountSize", this);
   BlobReader::Status size_status = blob_reader_->CalculateSize(
       base::Bind(&MojoBlobReader::DidCalculateSize, base::Unretained(this)));
   switch (size_status) {
     case BlobReader::Status::NET_ERROR:
+      TRACE_EVENT_ASYNC_END1("Blob", "BlobReader::CountSize", this, "result",
+                             "error");
       NotifyCompletedAndDeleteIfNeeded(blob_reader_->net_error());
       return;
     case BlobReader::Status::IO_PENDING:
@@ -59,6 +67,7 @@ void MojoBlobReader::Start() {
 }
 
 void MojoBlobReader::NotifyCompletedAndDeleteIfNeeded(int result) {
+  blob_reader_ = nullptr;
   if (!notified_completed_) {
     delegate_->OnComplete(static_cast<net::Error>(result),
                           total_written_bytes_);
@@ -72,9 +81,14 @@ void MojoBlobReader::NotifyCompletedAndDeleteIfNeeded(int result) {
 
 void MojoBlobReader::DidCalculateSize(int result) {
   if (result != net::OK) {
+    TRACE_EVENT_ASYNC_END1("Blob", "BlobReader::CountSize", this, "result",
+                           "error");
     NotifyCompletedAndDeleteIfNeeded(result);
     return;
   }
+
+  TRACE_EVENT_ASYNC_END2("Blob", "BlobReader::CountSize", this, "result",
+                         "success", "size", blob_reader_->total_size());
 
   // Apply the range requirement.
   if (!byte_range_.ComputeBounds(blob_reader_->total_size())) {
@@ -154,6 +168,7 @@ void MojoBlobReader::ReadMore() {
     return;
   }
 
+  TRACE_EVENT_ASYNC_BEGIN0("Blob", "BlobReader::ReadMore", this);
   CHECK_GT(static_cast<uint32_t>(std::numeric_limits<int>::max()), num_bytes);
   auto buf =
       base::MakeRefCounted<network::NetToMojoIOBuffer>(pending_write_.get());
@@ -163,6 +178,8 @@ void MojoBlobReader::ReadMore() {
       base::Bind(&MojoBlobReader::DidRead, base::Unretained(this), false));
   switch (read_status) {
     case BlobReader::Status::NET_ERROR:
+      TRACE_EVENT_ASYNC_END1("Blob", "BlobReader::ReadMore", this, "result",
+                             "error");
       NotifyCompletedAndDeleteIfNeeded(blob_reader_->net_error());
       return;
     case BlobReader::Status::IO_PENDING:
@@ -172,6 +189,8 @@ void MojoBlobReader::ReadMore() {
       if (bytes_read > 0) {
         DidRead(true, bytes_read);
       } else {
+        TRACE_EVENT_ASYNC_END1("Blob", "BlobReader::ReadMore", this, "result",
+                               "success");
         writable_handle_watcher_.Cancel();
         pending_write_->Complete(0);
         pending_write_ = nullptr;  // This closes the data pipe.
@@ -183,6 +202,8 @@ void MojoBlobReader::ReadMore() {
 
 void MojoBlobReader::DidRead(bool completed_synchronously, int num_bytes) {
   delegate_->DidRead(num_bytes);
+  TRACE_EVENT_ASYNC_END2("Blob", "BlobReader::ReadMore", this, "result",
+                         "success", "num_bytes", num_bytes);
   response_body_stream_ = pending_write_->Complete(num_bytes);
   total_written_bytes_ += num_bytes;
   pending_write_ = nullptr;
