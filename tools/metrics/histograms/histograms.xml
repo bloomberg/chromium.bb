@@ -60571,6 +60571,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Platform.DetachableBase.AttachedOnBoot" enum="BooleanAttached">
+  <owner>kitching@google.com</owner>
+  <summary>
+    For devices with a detachable base: whether or not the base is connected on
+    boot.  Recorded by upstart task on boot.
+  </summary>
+</histogram>
+
 <histogram name="Platform.DetachableBase.PairResult"
     enum="DetachableBasePairResult">
   <owner>kitching@google.com</owner>

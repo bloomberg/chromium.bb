@@ -3196,6 +3196,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Allowed"/>
 </enum>
 
+<enum name="BooleanAttached">
+  <int value="0" label="Detached"/>
+  <int value="1" label="Attached"/>
+</enum>
+
 <enum name="BooleanAttempted">
   <int value="0" label="Not Attempted"/>
   <int value="1" label="Attempted"/>
