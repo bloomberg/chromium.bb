@@ -1609,8 +1609,16 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FormFillableOnReset) {
 }
 
 // Test Autofill distinguishes a middle initial in a name.
+// Tests using PopulateForm() are flaky on CrOS; see https://crbug.com/516052.
+#if defined(OS_CHROMEOS)
+#define MAYBE_DistinguishMiddleInitialWithinName \
+  DISABLED_DistinguishMiddleInitialWithinName
+#else
+#define MAYBE_DistinguishMiddleInitialWithinName \
+  DistinguishMiddleInitialWithinName
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       DistinguishMiddleInitialWithinName) {
+                       MAYBE_DistinguishMiddleInitialWithinName) {
   CreateTestProfile();
 
   GURL url =
