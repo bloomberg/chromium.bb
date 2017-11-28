@@ -171,17 +171,20 @@ SkImageInfo GetSkImageInfo(const scoped_refptr<StaticBitmapImage>& image) {
 }
 
 // This function results in a readback due to using SkImage::readPixels().
+// Returns transparent black pixels if the input SkImageInfo.bounds() does
+// not intersect with the input image boundaries.
 scoped_refptr<Uint8Array> CopyImageData(
     const scoped_refptr<StaticBitmapImage>& input,
-    const SkImageInfo& info) {
+    const SkImageInfo& info,
+    const unsigned x = 0,
+    const unsigned y = 0) {
   if (info.isEmpty())
     return nullptr;
   sk_sp<SkImage> sk_image = input->PaintImageForCurrentFrame().GetSkImage();
   if (sk_image->bounds().isEmpty())
     return nullptr;
-  unsigned width = static_cast<unsigned>(input->width());
   scoped_refptr<ArrayBuffer> dst_buffer =
-      ArrayBuffer::CreateOrNull(width * input->height(), info.bytesPerPixel());
+      ArrayBuffer::CreateOrNull(info.computeMinByteSize(), 1);
   if (!dst_buffer)
     return nullptr;
   unsigned byte_length = dst_buffer->ByteLength();
@@ -189,8 +192,8 @@ scoped_refptr<Uint8Array> CopyImageData(
       Uint8Array::Create(std::move(dst_buffer), 0, byte_length);
   if (!dst_pixels)
     return nullptr;
-  bool read_pixels_successful = sk_image->readPixels(
-      info, dst_pixels->Data(), width * info.bytesPerPixel(), 0, 0);
+  bool read_pixels_successful =
+      sk_image->readPixels(info, dst_pixels->Data(), info.minRowBytes(), x, y);
   DCHECK(read_pixels_successful);
   if (!read_pixels_successful)
     return nullptr;
@@ -260,7 +263,9 @@ scoped_refptr<StaticBitmapImage> FlipImageVertically(
   SkCanvas* canvas = surface->getCanvas();
   canvas->scale(1, -1);
   canvas->translate(0, -input->height());
-  canvas->drawImage(image.get(), 0, 0);
+  SkPaint paint;
+  paint.setBlendMode(SkBlendMode::kSrc);
+  canvas->drawImage(image.get(), 0, 0, &paint);
   return StaticBitmapImage::Create(surface->makeImageSnapshot(),
                                    input->ContextProviderWrapper());
 }
@@ -548,7 +553,9 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
       sk_sp<SkSurface> surface =
           SkSurface::MakeRaster(GetSkImageInfo(StaticBitmapImage::Create(
               skia_image, image->ContextProviderWrapper())));
-      surface->getCanvas()->drawImage(skia_image.get(), 0, 0);
+      SkPaint paint;
+      paint.setBlendMode(SkBlendMode::kSrc);
+      surface->getCanvas()->drawImage(skia_image.get(), 0, 0, &paint);
       skia_image = surface->makeImageSnapshot();
     }
   }

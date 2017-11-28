@@ -399,9 +399,8 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionImageBitmap) {
 
   std::unique_ptr<uint8_t[]> src_pixel(
       new uint8_t[raster_image_info.bytesPerPixel()]());
-  EXPECT_TRUE(image->readPixels(
-      raster_image_info.makeWH(1, 1), src_pixel.get(),
-      image->width() * raster_image_info.bytesPerPixel(), 5, 5));
+  EXPECT_TRUE(image->readPixels(raster_image_info.makeWH(1, 1), src_pixel.get(),
+                                raster_image_info.minRowBytes(), 5, 5));
 
   ImageResourceContent* source_image_resource =
       ImageResourceContent::CreateLoaded(
