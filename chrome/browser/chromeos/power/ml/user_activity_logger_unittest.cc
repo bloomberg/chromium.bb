@@ -31,6 +31,7 @@ class TestingUserActivityLoggerDelegate : public UserActivityLoggerDelegate {
 
   const std::vector<UserActivityEvent>& events() const { return events_; }
 
+  // UserActivityLoggerDelegate overrides:
   void LogActivity(const UserActivityEvent& event) override {
     events_.push_back(event);
   }
@@ -44,7 +45,6 @@ class TestingUserActivityLoggerDelegate : public UserActivityLoggerDelegate {
 class UserActivityLoggerTest : public testing::Test {
  public:
   UserActivityLoggerTest() : activity_logger_(&delegate_) {}
-
   ~UserActivityLoggerTest() override = default;
 
  protected:
@@ -69,10 +69,11 @@ class UserActivityLoggerTest : public testing::Test {
 // UserActivityEvent.
 TEST_F(UserActivityLoggerTest, LogAfterIdleEvent) {
   // Trigger an idle event.
-  ReportIdleEvent({base::Time::Now()});
+  base::Time now = base::Time::UnixEpoch();
+  ReportIdleEvent({now, now});
   ReportUserActivity(nullptr);
 
-  const auto& events = GetEvents();
+  const std::vector<UserActivityEvent>& events = GetEvents();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -85,7 +86,8 @@ TEST_F(UserActivityLoggerTest, LogAfterIdleEvent) {
 TEST_F(UserActivityLoggerTest, LogBeforeIdleEvent) {
   ReportUserActivity(nullptr);
   // Trigger an idle event.
-  ReportIdleEvent({base::Time::Now()});
+  base::Time now = base::Time::UnixEpoch();
+  ReportIdleEvent({now, now});
 
   EXPECT_EQ(0U, GetEvents().size());
 }
@@ -95,11 +97,12 @@ TEST_F(UserActivityLoggerTest, LogBeforeIdleEvent) {
 TEST_F(UserActivityLoggerTest, LogSecondEvent) {
   ReportUserActivity(nullptr);
   // Trigger an idle event.
-  ReportIdleEvent({base::Time::Now()});
+  base::Time now = base::Time::UnixEpoch();
+  ReportIdleEvent({now, now});
   // Another user event.
   ReportUserActivity(nullptr);
 
-  const auto& events = GetEvents();
+  const std::vector<UserActivityEvent>& events = GetEvents();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -111,16 +114,18 @@ TEST_F(UserActivityLoggerTest, LogSecondEvent) {
 // Log multiple events.
 TEST_F(UserActivityLoggerTest, LogMultipleEvents) {
   // Trigger an idle event.
-  ReportIdleEvent({base::Time::Now()});
+  base::Time now = base::Time::UnixEpoch();
+  ReportIdleEvent({now, now});
   // First user event.
   ReportUserActivity(nullptr);
 
   // Trigger an idle event.
-  ReportIdleEvent({base::Time::Now()});
+  now = base::Time::UnixEpoch();
+  ReportIdleEvent({now, now});
   // Second user event.
   ReportUserActivity(nullptr);
 
-  const auto& events = GetEvents();
+  const std::vector<UserActivityEvent>& events = GetEvents();
   ASSERT_EQ(2U, events.size());
 
   UserActivityEvent::Event expected_event;
