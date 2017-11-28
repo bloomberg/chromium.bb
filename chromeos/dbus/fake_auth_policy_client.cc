@@ -87,36 +87,36 @@ FakeAuthPolicyClient::~FakeAuthPolicyClient() {}
 
 void FakeAuthPolicyClient::Init(dbus::Bus* bus) {}
 
-void FakeAuthPolicyClient::JoinAdDomain(const std::string& machine_name,
-                                        const std::string& user_principal_name,
-                                        int password_fd,
-                                        JoinCallback callback) {
+void FakeAuthPolicyClient::JoinAdDomain(
+    const authpolicy::JoinDomainRequest& request,
+    int password_fd,
+    JoinCallback callback) {
   authpolicy::ErrorType error = authpolicy::ERROR_NONE;
   if (!started_) {
     LOG(ERROR) << "authpolicyd not started";
     error = authpolicy::ERROR_DBUS_FAILURE;
-  } else if (machine_name.size() > kMaxMachineNameLength) {
+  } else if (request.machine_name().size() > kMaxMachineNameLength) {
     error = authpolicy::ERROR_MACHINE_NAME_TOO_LONG;
-  } else if (machine_name.empty() ||
-             machine_name.find_first_of(kInvalidMachineNameCharacters) !=
-                 std::string::npos) {
+  } else if (request.machine_name().empty() ||
+             request.machine_name().find_first_of(
+                 kInvalidMachineNameCharacters) != std::string::npos) {
     error = authpolicy::ERROR_INVALID_MACHINE_NAME;
   } else {
-    std::vector<std::string> parts = base::SplitString(
-        user_principal_name, "@", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<std::string> parts =
+        base::SplitString(request.user_principal_name(), "@",
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (parts.size() != 2 || parts[0].empty() || parts[1].empty()) {
       error = authpolicy::ERROR_PARSE_UPN_FAILED;
     }
   }
   if (error == authpolicy::ERROR_NONE)
-    machine_name_ = machine_name;
+    machine_name_ = request.machine_name();
   PostDelayedClosure(base::BindOnce(std::move(callback), error),
                      dbus_operation_delay_);
 }
 
 void FakeAuthPolicyClient::AuthenticateUser(
-    const std::string& user_principal_name,
-    const std::string& object_guid,
+    const authpolicy::AuthenticateUserRequest& request,
     int password_fd,
     AuthCallback callback) {
   authpolicy::ErrorType error = authpolicy::ERROR_NONE;
@@ -126,10 +126,11 @@ void FakeAuthPolicyClient::AuthenticateUser(
     error = authpolicy::ERROR_DBUS_FAILURE;
   } else {
     if (auth_error_ == authpolicy::ERROR_NONE) {
-      if (object_guid.empty())
-        account_info.set_account_id(base::MD5String(user_principal_name));
+      if (request.account_id().empty())
+        account_info.set_account_id(
+            base::MD5String(request.user_principal_name()));
       else
-        account_info.set_account_id(object_guid);
+        account_info.set_account_id(request.account_id());
     }
     error = auth_error_;
   }

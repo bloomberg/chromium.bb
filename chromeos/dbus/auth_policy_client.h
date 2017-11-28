@@ -41,28 +41,20 @@ class CHROMEOS_EXPORT AuthPolicyClient : public DBusClient {
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static AuthPolicyClient* Create();
 
-  // Calls JoinADDomain. It runs "net ads join ..." which joins machine to
-  // Active directory domain.
-  // |machine_name| is a name for a local machine. |user_principal_name|,
-  // |password_fd| are credentials of the Active directory account which has
-  // right to join the machine to the domain. |password_fd| is a file descriptor
-  // password is read from. The caller should close it after the call.
-  // |callback| is called after getting (or failing to get) D-BUS response.
-  virtual void JoinAdDomain(const std::string& machine_name,
-                            const std::string& user_principal_name,
+  // Calls JoinADDomain to join a machine/device to an Active Directory domain.
+  // Password is read from the |password_fd|. |callback| is called after getting
+  // (or failing to get) D-BUS response.
+  virtual void JoinAdDomain(const authpolicy::JoinDomainRequest& request,
                             int password_fd,
                             JoinCallback callback) = 0;
 
-  // Calls AuthenticateUser. It runs "kinit <user_principal_name> .. " which
-  // does kerberos authentication against Active Directory server. If
-  // |object_guid| is not empty authpolicy service first does ldap search by
-  // that |object_guid| for samAccountName and uses it for kinit. |password_fd|
-  // is similar to the one in the JoinAdDomain. |callback| is called after
-  // getting (or failing to get) D-BUS response.
-  virtual void AuthenticateUser(const std::string& user_principal_name,
-                                const std::string& object_guid,
-                                int password_fd,
-                                AuthCallback callback) = 0;
+  // Calls AuthenticateUser to authenticate a user against Active Directory.
+  // Password is read from the |password_fd|. |callback| is called after getting
+  // (or failing to get) D-BUS response.
+  virtual void AuthenticateUser(
+      const authpolicy::AuthenticateUserRequest& request,
+      int password_fd,
+      AuthCallback callback) = 0;
 
   // Calls GetUserStatus. If Active Directory server is online it fetches
   // ActiveDirectoryUserStatus for the user specified by |object_guid|.

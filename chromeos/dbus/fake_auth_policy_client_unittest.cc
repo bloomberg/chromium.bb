@@ -15,7 +15,7 @@ namespace {
 
 const char kCorrectMachineName[] = "machine_name";
 const char kCorrectUserName[] = "user@realm.com";
-const char kObjectGUID[] = "user-object-guid";
+const char kAccountId[] = "user-account-id";
 
 }  // namespace
 
@@ -25,6 +25,26 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
 
  protected:
   FakeAuthPolicyClient* authpolicy_client() { return &client_; }
+
+  void JoinAdDomain(const std::string& machine_name,
+                    const std::string& username,
+                    AuthPolicyClient::JoinCallback callback) {
+    authpolicy::JoinDomainRequest request;
+    request.set_machine_name(machine_name);
+    request.set_user_principal_name(username);
+    authpolicy_client()->JoinAdDomain(request, /* password_fd */ -1,
+                                      std::move(callback));
+  }
+
+  void AuthenticateUser(const std::string& username,
+                        const std::string& account_id,
+                        AuthPolicyClient::AuthCallback callback) {
+    authpolicy::AuthenticateUserRequest request;
+    request.set_user_principal_name(username);
+    request.set_account_id(account_id);
+    authpolicy_client()->AuthenticateUser(request, /* password_fd */ -1,
+                                          std::move(callback));
+  }
 
  private:
   FakeAuthPolicyClient client_;
@@ -36,31 +56,26 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
 // Tests parsing machine name.
 TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_ParseMachineName) {
   authpolicy_client()->set_started(true);
-  authpolicy_client()->JoinAdDomain("correct_length1", kCorrectUserName,
-                                    /* password_fd */ -1,
-                                    base::Bind([](authpolicy::ErrorType error) {
-                                      EXPECT_EQ(authpolicy::ERROR_NONE, error);
-                                    }));
-  authpolicy_client()->JoinAdDomain(
-      "", kCorrectUserName, /* password_fd */ -1,
-      base::Bind([](authpolicy::ErrorType error) {
-        EXPECT_EQ(authpolicy::ERROR_INVALID_MACHINE_NAME, error);
-      }));
-  authpolicy_client()->JoinAdDomain(
-      "too_long_machine_name", kCorrectUserName, /* password_fd */ -1,
-      base::Bind([](authpolicy::ErrorType error) {
-        EXPECT_EQ(authpolicy::ERROR_MACHINE_NAME_TOO_LONG, error);
-      }));
-  authpolicy_client()->JoinAdDomain(
-      "invalid:name", kCorrectUserName, /* password_fd */ -1,
-      base::Bind([](authpolicy::ErrorType error) {
-        EXPECT_EQ(authpolicy::ERROR_INVALID_MACHINE_NAME, error);
-      }));
-  authpolicy_client()->JoinAdDomain(
-      ">nvalidname", kCorrectUserName, /* password_fd */ -1,
-      base::Bind([](authpolicy::ErrorType error) {
-        EXPECT_EQ(authpolicy::ERROR_INVALID_MACHINE_NAME, error);
-      }));
+  JoinAdDomain("correct_length1", kCorrectUserName,
+               base::Bind([](authpolicy::ErrorType error) {
+                 EXPECT_EQ(authpolicy::ERROR_NONE, error);
+               }));
+  JoinAdDomain("", kCorrectUserName,
+               base::Bind([](authpolicy::ErrorType error) {
+                 EXPECT_EQ(authpolicy::ERROR_INVALID_MACHINE_NAME, error);
+               }));
+  JoinAdDomain("too_long_machine_name", kCorrectUserName,
+               base::Bind([](authpolicy::ErrorType error) {
+                 EXPECT_EQ(authpolicy::ERROR_MACHINE_NAME_TOO_LONG, error);
+               }));
+  JoinAdDomain("invalid:name", kCorrectUserName,
+               base::Bind([](authpolicy::ErrorType error) {
+                 EXPECT_EQ(authpolicy::ERROR_INVALID_MACHINE_NAME, error);
+               }));
+  JoinAdDomain(">nvalidname", kCorrectUserName,
+               base::Bind([](authpolicy::ErrorType error) {
+                 EXPECT_EQ(authpolicy::ERROR_INVALID_MACHINE_NAME, error);
+               }));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -68,63 +83,56 @@ TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_ParseMachineName) {
 // Tests parsing user name.
 TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_ParseUPN) {
   authpolicy_client()->set_started(true);
-  authpolicy_client()->JoinAdDomain(kCorrectMachineName, "user@realm.com",
-                                    /* password_fd */ -1,
-                                    base::Bind([](authpolicy::ErrorType error) {
-                                      EXPECT_EQ(authpolicy::ERROR_NONE, error);
-                                    }));
-  authpolicy_client()->JoinAdDomain(
-      kCorrectMachineName, "user", /* password_fd */ -1,
-      base::Bind([](authpolicy::ErrorType error) {
-        EXPECT_EQ(authpolicy::ERROR_PARSE_UPN_FAILED, error);
-      }));
-  authpolicy_client()->JoinAdDomain(
-      kCorrectMachineName, "", /* password_fd */ -1,
-      base::Bind([](authpolicy::ErrorType error) {
-        EXPECT_EQ(authpolicy::ERROR_PARSE_UPN_FAILED, error);
-      }));
-  authpolicy_client()->JoinAdDomain(
-      kCorrectMachineName, "user@", /* password_fd */ -1,
-      base::Bind([](authpolicy::ErrorType error) {
-        EXPECT_EQ(authpolicy::ERROR_PARSE_UPN_FAILED, error);
-      }));
-  authpolicy_client()->JoinAdDomain(
-      kCorrectMachineName, "@realm", /* password_fd */ -1,
-      base::Bind([](authpolicy::ErrorType error) {
-        EXPECT_EQ(authpolicy::ERROR_PARSE_UPN_FAILED, error);
-      }));
-  authpolicy_client()->JoinAdDomain(
-      kCorrectMachineName, "user@realm@com",
-      /* password_fd */ -1, base::Bind([](authpolicy::ErrorType error) {
-        EXPECT_EQ(authpolicy::ERROR_PARSE_UPN_FAILED, error);
-      }));
+  JoinAdDomain(kCorrectMachineName, "user@realm.com",
+               base::Bind([](authpolicy::ErrorType error) {
+                 EXPECT_EQ(authpolicy::ERROR_NONE, error);
+               }));
+  JoinAdDomain(kCorrectMachineName, "user",
+               base::Bind([](authpolicy::ErrorType error) {
+                 EXPECT_EQ(authpolicy::ERROR_PARSE_UPN_FAILED, error);
+               }));
+  JoinAdDomain(kCorrectMachineName, "",
+               base::Bind([](authpolicy::ErrorType error) {
+                 EXPECT_EQ(authpolicy::ERROR_PARSE_UPN_FAILED, error);
+               }));
+  JoinAdDomain(kCorrectMachineName, "user@",
+               base::Bind([](authpolicy::ErrorType error) {
+                 EXPECT_EQ(authpolicy::ERROR_PARSE_UPN_FAILED, error);
+               }));
+  JoinAdDomain(kCorrectMachineName, "@realm",
+               base::Bind([](authpolicy::ErrorType error) {
+                 EXPECT_EQ(authpolicy::ERROR_PARSE_UPN_FAILED, error);
+               }));
+  JoinAdDomain(kCorrectMachineName, "user@realm@com",
+               base::Bind([](authpolicy::ErrorType error) {
+                 EXPECT_EQ(authpolicy::ERROR_PARSE_UPN_FAILED, error);
+               }));
 
   base::RunLoop().RunUntilIdle();
 }
 
 // Test AuthenticateUser.
-TEST_F(FakeAuthPolicyClientTest, AuthenticateUser_ByObjectGUID) {
+TEST_F(FakeAuthPolicyClientTest, AuthenticateUser_ByAccountId) {
   authpolicy_client()->set_started(true);
-  // Check that objectGUID do not change.
-  authpolicy_client()->AuthenticateUser(
-      kCorrectUserName, kObjectGUID, /* password_fd */ -1,
+  // Check that account_id do not change.
+  AuthenticateUser(
+      kCorrectUserName, kAccountId,
       base::Bind(
           [](authpolicy::ErrorType error,
              const authpolicy::ActiveDirectoryAccountInfo& account_info) {
             EXPECT_EQ(authpolicy::ERROR_NONE, error);
-            EXPECT_EQ(kObjectGUID, account_info.account_id());
+            EXPECT_EQ(kAccountId, account_info.account_id());
           }));
 }
 
 // Tests calls to not started authpolicyd fails.
 TEST_F(FakeAuthPolicyClientTest, NotStartedAuthPolicyService) {
-  authpolicy_client()->JoinAdDomain(
-      kCorrectMachineName, kCorrectUserName,
-      /* password_fd */ -1, base::Bind([](authpolicy::ErrorType error) {
-        EXPECT_EQ(authpolicy::ERROR_DBUS_FAILURE, error);
-      }));
-  authpolicy_client()->AuthenticateUser(
-      kCorrectUserName, std::string() /* object_guid */, /* password_fd */ -1,
+  JoinAdDomain(kCorrectMachineName, kCorrectUserName,
+               base::Bind([](authpolicy::ErrorType error) {
+                 EXPECT_EQ(authpolicy::ERROR_DBUS_FAILURE, error);
+               }));
+  AuthenticateUser(
+      kCorrectUserName, std::string() /* account_id */,
       base::Bind([](authpolicy::ErrorType error,
                     const authpolicy::ActiveDirectoryAccountInfo&) {
         EXPECT_EQ(authpolicy::ERROR_DBUS_FAILURE, error);

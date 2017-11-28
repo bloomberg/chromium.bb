@@ -625,6 +625,7 @@ test("chromeos_unittests") {
   ]
   deps = [
     ":attestation_proto",
+    ":authpolicy_proto",
     ":biod_proto",
     ":cryptohome_proto",
     ":power_manager_proto",
