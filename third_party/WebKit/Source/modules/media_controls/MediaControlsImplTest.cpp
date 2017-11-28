@@ -201,12 +201,12 @@ class MediaControlsImplTest : public PageTestBase,
     GetDocument().GetSettings()->SetMediaDownloadInProductHelpEnabled(
         EnableDownloadInProductHelp());
 
-    GetDocument().write("<video>");
+    GetDocument().write("<video controls>");
     HTMLVideoElement& video =
         ToHTMLVideoElement(*GetDocument().QuerySelector("video"));
     media_controls_ = static_cast<MediaControlsImpl*>(video.GetMediaControls());
 
-    // If scripts are not enabled, controls will always be shown.
+    // Scripts are disabled by default which forces controls to be on.
     GetFrame().GetSettings()->SetScriptEnabled(true);
   }
 
@@ -329,9 +329,6 @@ void MediaControlsImplTest::MouseUpAt(WebFloatPoint pos) {
 }
 
 TEST_F(MediaControlsImplTest, HideAndShow) {
-  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
-                                                     true);
-
   Element* panel = GetElementByShadowPseudoId(MediaControls(),
                                               "-webkit-media-controls-panel");
   ASSERT_NE(nullptr, panel);
@@ -344,9 +341,6 @@ TEST_F(MediaControlsImplTest, HideAndShow) {
 }
 
 TEST_F(MediaControlsImplTest, Reset) {
-  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
-                                                     true);
-
   Element* panel = GetElementByShadowPseudoId(MediaControls(),
                                               "-webkit-media-controls-panel");
   ASSERT_NE(nullptr, panel);
@@ -357,9 +351,6 @@ TEST_F(MediaControlsImplTest, Reset) {
 }
 
 TEST_F(MediaControlsImplTest, HideAndReset) {
-  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
-                                                     true);
-
   Element* panel = GetElementByShadowPseudoId(MediaControls(),
                                               "-webkit-media-controls-panel");
   ASSERT_NE(nullptr, panel);
@@ -383,8 +374,6 @@ TEST_F(MediaControlsImplTest, ResetDoesNotTriggerInitialLayout) {
 
 TEST_F(MediaControlsImplTest, CastButtonRequiresRoute) {
   EnsureSizing();
-  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
-                                                     true);
 
   Element* cast_button = GetElementByShadowPseudoId(
       MediaControls(), "-internal-media-controls-cast-button");
@@ -398,8 +387,6 @@ TEST_F(MediaControlsImplTest, CastButtonRequiresRoute) {
 
 TEST_F(MediaControlsImplTest, CastButtonDisableRemotePlaybackAttr) {
   EnsureSizing();
-  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
-                                                     true);
 
   Element* cast_button = GetElementByShadowPseudoId(
       MediaControls(), "-internal-media-controls-cast-button");
@@ -421,6 +408,9 @@ TEST_F(MediaControlsImplTest, CastButtonDisableRemotePlaybackAttr) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDefault) {
+  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
+                                                     false);
+
   Element* cast_overlay_button = GetElementByShadowPseudoId(
       MediaControls(), "-internal-media-controls-overlay-cast-button");
   ASSERT_NE(nullptr, cast_overlay_button);
@@ -430,6 +420,9 @@ TEST_F(MediaControlsImplTest, CastOverlayDefault) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDisabled) {
+  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
+                                                     false);
+
   ScopedMediaCastOverlayButtonForTest media_cast_overlay_button(false);
 
   Element* cast_overlay_button = GetElementByShadowPseudoId(
@@ -441,6 +434,9 @@ TEST_F(MediaControlsImplTest, CastOverlayDisabled) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDisableRemotePlaybackAttr) {
+  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
+                                                     false);
+
   Element* cast_overlay_button = GetElementByShadowPseudoId(
       MediaControls(), "-internal-media-controls-overlay-cast-button");
   ASSERT_NE(nullptr, cast_overlay_button);
@@ -461,6 +457,9 @@ TEST_F(MediaControlsImplTest, CastOverlayDisableRemotePlaybackAttr) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayMediaControlsDisabled) {
+  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
+                                                     false);
+
   Element* cast_overlay_button = GetElementByShadowPseudoId(
       MediaControls(), "-internal-media-controls-overlay-cast-button");
   ASSERT_NE(nullptr, cast_overlay_button);
@@ -477,6 +476,9 @@ TEST_F(MediaControlsImplTest, CastOverlayMediaControlsDisabled) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDisabledMediaControlsDisabled) {
+  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
+                                                     false);
+
   ScopedMediaCastOverlayButtonForTest media_cast_overlay_button(false);
 
   Element* cast_overlay_button = GetElementByShadowPseudoId(
@@ -989,8 +991,6 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
 
   Element* panel = MediaControls().PanelElement();
 
-  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
-                                                     true);
   MediaControls().MediaElement().SetSrc("http://example.com");
   MediaControls().MediaElement().Play();
 
@@ -1021,8 +1021,6 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
 TEST_F(MediaControlsImplTestWithMockScheduler, CursorHidesWhenControlsHide) {
   EnsureSizing();
 
-  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
-                                                     true);
   MediaControls().MediaElement().SetSrc("http://example.com");
 
   // Cursor is not initially hidden.
@@ -1054,7 +1052,6 @@ TEST_F(MediaControlsImplTest,
 
   HTMLMediaElement* element =
       HTMLVideoElement::Create(page_holder->GetDocument());
-  element->SetBooleanAttribute(HTMLNames::controlsAttr, true);
   page_holder->GetDocument().body()->AppendChild(element);
 
   RemotePlayback* remote_playback =
@@ -1088,7 +1085,6 @@ TEST_F(MediaControlsImplTest,
 
   HTMLMediaElement* element =
       HTMLVideoElement::Create(page_holder->GetDocument());
-  element->SetBooleanAttribute(HTMLNames::controlsAttr, true);
   page_holder->GetDocument().body()->AppendChild(element);
 
   RemotePlayback* remote_playback =
@@ -1207,6 +1203,9 @@ TEST_F(MediaControlsImplTest, OverflowMenuMetricsTimeToDismiss) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDefaultHidesOnTimer) {
+  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
+                                                     false);
+
   Element* cast_overlay_button = GetElementByShadowPseudoId(
       MediaControls(), "-internal-media-controls-overlay-cast-button");
   ASSERT_NE(nullptr, cast_overlay_button);
@@ -1224,6 +1223,9 @@ TEST_F(MediaControlsImplTest, CastOverlayDefaultHidesOnTimer) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayShowsOnSomeEvents) {
+  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
+                                                     false);
+
   Element* cast_overlay_button = GetElementByShadowPseudoId(
       MediaControls(), "-internal-media-controls-overlay-cast-button");
   ASSERT_NE(nullptr, cast_overlay_button);
