@@ -10,9 +10,8 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/chrome_features.h"
@@ -39,6 +38,11 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
 #endif  // defined(OS_CHROMEOS)
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
+#endif
 
 namespace search {
 
@@ -197,6 +201,9 @@ bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
 
 bool IsRenderedInInstantProcess(const content::WebContents* contents,
                                 Profile* profile) {
+#if defined(OS_ANDROID)
+  return false;
+#else
   const content::RenderProcessHost* process_host =
       contents->GetMainFrame()->GetProcess();
   if (!process_host)
@@ -208,6 +215,7 @@ bool IsRenderedInInstantProcess(const content::WebContents* contents,
     return false;
 
   return instant_service->IsInstantProcess(process_host->GetID());
+#endif
 }
 
 bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile) {
