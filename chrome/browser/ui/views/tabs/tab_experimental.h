@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_EXPERIMENTAL_H_
 
 #include "base/macros.h"
+#include "chrome/browser/ui/tabs/tab_change_type.h"
 #include "chrome/browser/ui/tabs/tab_data_experimental.h"
 #include "chrome/browser/ui/views/tabs/tab_experimental_paint.h"
 #include "ui/views/controls/button/button.h"
@@ -59,10 +60,7 @@ class TabExperimental : public views::ButtonListener,
   // everything at once?
   void SetActive(bool active);
   void SetSelected(bool selected);
-
-  // TODO(brettw) need a way to specify what changed so the tab doesn't need
-  // to redraw everything.
-  void DataUpdated();
+  void DataUpdated(TabChangeType change_type);
 
   // Called for group types when layout is done to set the bounds of the
   // first tab. This is used to determine some painting parameters.

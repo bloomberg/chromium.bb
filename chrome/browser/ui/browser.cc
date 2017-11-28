@@ -2128,7 +2128,7 @@ void Browser::ScheduleUIUpdate(WebContents* source,
     // this for any tab so they start & stop quickly.
     tab_strip_model_->UpdateWebContentsStateAt(
         tab_strip_model_->GetIndexOfWebContents(source),
-        TabStripModelObserver::LOADING_ONLY);
+        TabChangeType::kLoadingOnly);
     // The status bubble needs to be updated during INVALIDATE_TYPE_LOAD too,
     // but we do that asynchronously by not stripping INVALIDATE_TYPE_LOAD from
     // changed_flags.
@@ -2141,7 +2141,7 @@ void Browser::ScheduleUIUpdate(WebContents* source,
     // asynchronously.
     tab_strip_model_->UpdateWebContentsStateAt(
         tab_strip_model_->GetIndexOfWebContents(source),
-        TabStripModelObserver::TITLE_NOT_LOADING);
+        TabChangeType::kTitleNotLoading);
   }
 
   // If the only updates were synchronously handled above, we're done.
@@ -2207,7 +2207,7 @@ void Browser::ProcessPendingUIUpdates() {
         (content::INVALIDATE_TYPE_TAB | content::INVALIDATE_TYPE_TITLE)) {
       tab_strip_model_->UpdateWebContentsStateAt(
           tab_strip_model_->GetIndexOfWebContents(contents),
-          TabStripModelObserver::ALL);
+          TabChangeType::kAll);
     }
 
     // Update the bookmark bar. It may happen that the tab is crashed, and if

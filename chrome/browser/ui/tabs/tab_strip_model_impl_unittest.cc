@@ -614,7 +614,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
 
   // Test UpdateWebContentsStateAt
   {
-    tabstrip.UpdateWebContentsStateAt(0, TabStripModelObserver::ALL);
+    tabstrip.UpdateWebContentsStateAt(0, TabChangeType::kAll);
     EXPECT_EQ(1, observer.GetStateCount());
     State s1(contents2, 0, MockTabStripModelObserver::CHANGE);
     EXPECT_TRUE(observer.StateEquals(0, s1));

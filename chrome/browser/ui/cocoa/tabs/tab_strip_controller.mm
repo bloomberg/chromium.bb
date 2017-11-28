@@ -1416,7 +1416,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   // Fake a tab changed notification to force tab titles and favicons to update.
   [self tabChangedWithContents:newContents
                        atIndex:modelIndex
-                    changeType:TabStripModelObserver::ALL];
+                    changeType:TabChangeType::kAll];
 }
 
 // Remove all knowledge about this tab and its associated controller, and remove
@@ -1672,7 +1672,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 // throbber state, not anything else about the (partially) loading tab.
 - (void)tabChangedWithContents:(content::WebContents*)contents
                        atIndex:(NSInteger)modelIndex
-                    changeType:(TabStripModelObserver::TabChangeType)change {
+                    changeType:(TabChangeType)change {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
 
@@ -1681,13 +1681,13 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
   TabController* tabController = [tabArray_ objectAtIndex:index];
 
-  if (change == TabStripModelObserver::TITLE_NOT_LOADING) {
+  if (change == TabChangeType::kTitleNotLoading) {
     [tabController titleChangedNotLoading];
     // We'll receive another notification of the change asynchronously.
     return;
   }
 
-  if (change != TabStripModelObserver::LOADING_ONLY)
+  if (change != TabChangeType::kLoadingOnly)
     [self setTabTitle:tabController withContents:contents];
 
   [self updateIconsForContents:contents atIndex:modelIndex];
