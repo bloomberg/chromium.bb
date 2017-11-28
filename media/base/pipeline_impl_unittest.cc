@@ -56,6 +56,11 @@ ACTION_P(Stop, pipeline) {
   pipeline->Stop();
 }
 
+ACTION_P(PostStop, pipeline) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&Pipeline::Stop, base::Unretained(pipeline)));
+}
+
 ACTION_P2(SetError, renderer_client, status) {
   (*renderer_client)->OnError(status);
 }
@@ -929,7 +934,7 @@ class PipelineTeardownTest : public PipelineImplTest {
       if (stop_or_error == kStop) {
         EXPECT_CALL(*demuxer_, Initialize(_, _, _))
             .WillOnce(
-                DoAll(Stop(pipeline_.get()), PostCallback<1>(PIPELINE_OK)));
+                DoAll(PostStop(pipeline_.get()), PostCallback<1>(PIPELINE_OK)));
         // Note: OnStart callback is not called after pipeline is stopped.
       } else {
         EXPECT_CALL(*demuxer_, Initialize(_, _, _))
@@ -953,7 +958,7 @@ class PipelineTeardownTest : public PipelineImplTest {
       if (stop_or_error == kStop) {
         EXPECT_CALL(*renderer_, Initialize(_, _, _))
             .WillOnce(
-                DoAll(Stop(pipeline_.get()), PostCallback<2>(PIPELINE_OK)));
+                DoAll(PostStop(pipeline_.get()), PostCallback<2>(PIPELINE_OK)));
         // Note: OnStart is not callback after pipeline is stopped.
       } else {
         EXPECT_CALL(*renderer_, Initialize(_, _, _))
@@ -1026,7 +1031,7 @@ class PipelineTeardownTest : public PipelineImplTest {
       if (stop_or_error == kStop) {
         EXPECT_CALL(*demuxer_, Seek(_, _))
             .WillOnce(
-                DoAll(Stop(pipeline_.get()), RunCallback<1>(PIPELINE_OK)));
+                DoAll(PostStop(pipeline_.get()), RunCallback<1>(PIPELINE_OK)));
         // Note: OnSeek callback is not called after pipeline is stopped.
       } else {
         EXPECT_CALL(*demuxer_, Seek(_, _))
@@ -1067,7 +1072,7 @@ class PipelineTeardownTest : public PipelineImplTest {
       if (stop_or_error == kStop) {
         EXPECT_CALL(*demuxer_, Seek(_, _))
             .WillOnce(
-                DoAll(Stop(pipeline_.get()), RunCallback<1>(PIPELINE_OK)));
+                DoAll(PostStop(pipeline_.get()), RunCallback<1>(PIPELINE_OK)));
         // Note: OnResume callback is not called after pipeline is stopped.
       } else {
         EXPECT_CALL(*demuxer_, Seek(_, _))
