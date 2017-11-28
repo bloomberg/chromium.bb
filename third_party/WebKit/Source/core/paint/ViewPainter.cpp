@@ -32,9 +32,7 @@ void ViewPainter::Paint(const PaintInfo& paint_info,
   DCHECK(LayoutPoint(IntPoint(paint_offset.X().ToInt(),
                               paint_offset.Y().ToInt())) == paint_offset);
 
-  const LocalFrameView* frame_view = layout_view_.GetFrameView();
-  if (frame_view->ShouldThrottleRendering())
-    return;
+  DCHECK(!layout_view_.GetFrameView()->ShouldThrottleRendering());
 
   layout_view_.PaintObject(paint_info, paint_offset);
   BlockPainter(layout_view_)
