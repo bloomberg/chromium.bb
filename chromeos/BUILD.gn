@@ -26,6 +26,7 @@ component("chromeos") {
     ":login_manager_proto",
     ":media_perception_proto",
     ":power_manager_proto",
+    ":smbprovider_proto",
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
@@ -206,6 +207,8 @@ component("chromeos") {
     "dbus/fake_shill_service_client.h",
     "dbus/fake_shill_third_party_vpn_driver_client.cc",
     "dbus/fake_shill_third_party_vpn_driver_client.h",
+    "dbus/fake_smb_provider_client.cc",
+    "dbus/fake_smb_provider_client.h",
     "dbus/fake_sms_client.cc",
     "dbus/fake_sms_client.h",
     "dbus/fake_system_clock_client.cc",
@@ -264,6 +267,8 @@ component("chromeos") {
     "dbus/shill_service_client.h",
     "dbus/shill_third_party_vpn_driver_client.cc",
     "dbus/shill_third_party_vpn_driver_client.h",
+    "dbus/smb_provider_client.cc",
+    "dbus/smb_provider_client.h",
     "dbus/sms_client.cc",
     "dbus/sms_client.h",
     "dbus/system_clock_client.cc",
@@ -814,4 +819,12 @@ proto_library("media_perception_proto") {
   ]
 
   proto_out_dir = "chromeos/media_perception"
+}
+
+proto_library("smbprovider_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/smbprovider/directory_entry.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/smbprovider"
 }
