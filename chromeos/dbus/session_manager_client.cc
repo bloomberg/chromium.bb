@@ -1031,8 +1031,10 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
                         bool enable_vendor_privileged,
                         bool native_bridge_experiment,
                         StartArcInstanceCallback callback) override {
-    std::move(callback).Run(StartArcInstanceResult::UNKNOWN_ERROR,
-                            std::string(), base::ScopedFD());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  StartArcInstanceResult::UNKNOWN_ERROR,
+                                  std::string(), base::ScopedFD()));
   }
 
   void SetArcCpuRestriction(
