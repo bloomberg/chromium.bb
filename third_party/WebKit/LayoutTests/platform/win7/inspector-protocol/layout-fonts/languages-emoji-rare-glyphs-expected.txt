@@ -31,4 +31,9 @@
 #egyptian_hieroglyphs:
 "Arial" : 16
 
+ខ្ញុំអាចញុំកញ្ចក់បាន ដោយគ្មានបញ្ហារ
+#khmer:
+"Khmer UI" : 26,
+"Times New Roman" : 1
+
 

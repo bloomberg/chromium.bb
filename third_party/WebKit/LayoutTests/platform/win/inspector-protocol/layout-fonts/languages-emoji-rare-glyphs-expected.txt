@@ -30,4 +30,9 @@
 #egyptian_hieroglyphs:
 "Segoe UI Historic" : 16
 
+ខ្ញុំអាចញុំកញ្ចក់បាន ដោយគ្មានបញ្ហារ
+#khmer:
+"Leelawadee UI" : 26,
+"Times New Roman" : 1
+
 

@@ -21,6 +21,7 @@
             <div lang="ar" id="arabic_pangram">نصٌّ حكيمٌ لهُ سِرٌّ قاطِعٌ وَذُو شَأنٍ عَظيمٍ مكتوبٌ على ثوبٍ أخضرَ ومُغلفٌ بجلدٍ أزرق</div>
             <div id="emoji">🌱🌲🌳🌴🌵🌷🌸🌹🌺🌻🌼💐🌾🌿🍀🍁🍂🍃🍄🌰</div>
             <div id="egyptian_hieroglyphs">𓀀𓀁𓀂𓀃𓀄𓀅𓀆𓀇𓀈𓀉𓀊𓀋𓀌𓀍𓀎𓀏</div>
+            <div lang="km" id="khmer">ខ្ញុំអាចញុំកញ្ចក់បាន ដោយគ្មានបញ្ហារ</div>
         </div>
     </body>
     </html>
