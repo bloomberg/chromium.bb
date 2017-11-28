@@ -228,13 +228,15 @@ void IOSurfaceSetColorSpace(IOSurfaceRef io_surface,
   ICCProfile icc_profile = ICCProfile::FromCacheMac(color_space);
 
   // If that fails, generate parametric data.
-  if (icc_profile.IsValid()) {
+  if (!icc_profile.IsValid()) {
     icc_profile =
         ICCProfile::FromParametricColorSpace(color_space.GetAsFullRangeRGB());
   }
 
+  // If that fails, we can't use this color space.
   if (!icc_profile.IsValid()) {
-    DLOG(ERROR) << "Failed to set color space for IOSurface: no ICC profile.";
+    DLOG(ERROR) << "Failed to set color space for IOSurface: no ICC profile: "
+                << color_space.ToString();
     return;
   }
   std::vector<char> icc_profile_data = icc_profile.GetData();
