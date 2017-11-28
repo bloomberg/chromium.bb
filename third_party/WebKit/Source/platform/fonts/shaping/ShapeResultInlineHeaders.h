@@ -58,12 +58,14 @@ struct ShapeResult::RunInfo {
  public:
   RunInfo(const SimpleFontData* font,
           hb_direction_t dir,
+          CanvasRotationInVertical canvas_rotation,
           hb_script_t script,
           unsigned start_index,
           unsigned num_glyphs,
           unsigned num_characters)
       : font_data_(const_cast<SimpleFontData*>(font)),
         direction_(dir),
+        canvas_rotation_(canvas_rotation),
         script_(script),
         glyph_data_(num_glyphs),
         start_index_(start_index),
@@ -73,6 +75,7 @@ struct ShapeResult::RunInfo {
   RunInfo(const RunInfo& other)
       : font_data_(other.font_data_),
         direction_(other.direction_),
+        canvas_rotation_(other.canvas_rotation_),
         script_(other.script_),
         glyph_data_(other.glyph_data_),
         start_index_(other.start_index_),
@@ -81,6 +84,7 @@ struct ShapeResult::RunInfo {
 
   bool Rtl() const { return HB_DIRECTION_IS_BACKWARD(direction_); }
   bool IsHorizontal() const { return HB_DIRECTION_IS_HORIZONTAL(direction_); }
+  CanvasRotationInVertical CanvasRotation() const { return canvas_rotation_; }
   unsigned NextSafeToBreakOffset(unsigned) const;
   unsigned PreviousSafeToBreakOffset(unsigned) const;
   float XPositionForVisualOffset(unsigned, AdjustMidCluster) const;
@@ -124,9 +128,9 @@ struct ShapeResult::RunInfo {
           });
     }
 
-    auto run = std::make_unique<RunInfo>(font_data_.get(), direction_, script_,
-                                         start_index_ + start, number_of_glyphs,
-                                         number_of_characters);
+    auto run = std::make_unique<RunInfo>(
+        font_data_.get(), direction_, canvas_rotation_, script_,
+        start_index_ + start, number_of_glyphs, number_of_characters);
 
     unsigned sub_glyph_index = 0;
     float total_advance = 0;
@@ -209,6 +213,9 @@ struct ShapeResult::RunInfo {
 
   scoped_refptr<SimpleFontData> font_data_;
   hb_direction_t direction_;
+  // For upright-in-vertical we need to tell the ShapeResultBloberizer to rotate
+  // the canvas back 90deg for this RunInfo.
+  CanvasRotationInVertical canvas_rotation_;
   hb_script_t script_;
   Vector<HarfBuzzRunGlyphData> glyph_data_;
   // List of character indecies before which it's safe to break without

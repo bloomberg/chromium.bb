@@ -56,13 +56,11 @@ const float kEmphasisMarkFontSizeMultiplier = 0.5f;
 
 SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
                                scoped_refptr<CustomFontData> custom_data,
-                               bool is_text_orientation_fallback,
                                bool subpixel_ascent_descent)
     : max_char_width_(-1),
       avg_char_width_(-1),
       platform_data_(platform_data),
       custom_font_data_(std::move(custom_data)),
-      is_text_orientation_fallback_(is_text_orientation_fallback),
       visual_overflow_inflation_for_ascent_(0),
       visual_overflow_inflation_for_descent_(0) {
   PlatformInit(subpixel_ascent_descent);
@@ -203,20 +201,6 @@ bool SimpleFontData::IsSegmented() const {
   return false;
 }
 
-scoped_refptr<SimpleFontData> SimpleFontData::VerticalRightOrientationFontData()
-    const {
-  if (!derived_font_data_)
-    derived_font_data_ = DerivedFontData::Create();
-  if (!derived_font_data_->vertical_right_orientation) {
-    FontPlatformData vertical_right_platform_data(platform_data_);
-    vertical_right_platform_data.SetOrientation(FontOrientation::kHorizontal);
-    derived_font_data_->vertical_right_orientation =
-        Create(vertical_right_platform_data,
-               IsCustomFont() ? CustomFontData::Create() : nullptr, true);
-  }
-  return derived_font_data_->vertical_right_orientation;
-}
-
 scoped_refptr<SimpleFontData> SimpleFontData::SmallCapsFontData(
     const FontDescription& font_description) const {
   if (!derived_font_data_)
@@ -237,13 +221,6 @@ scoped_refptr<SimpleFontData> SimpleFontData::EmphasisMarkFontData(
         CreateScaledFontData(font_description, kEmphasisMarkFontSizeMultiplier);
 
   return derived_font_data_->emphasis_mark;
-}
-
-bool SimpleFontData::IsTextOrientationFallbackOf(
-    const SimpleFontData* font_data) const {
-  if (!IsTextOrientationFallback() || !font_data->derived_font_data_)
-    return false;
-  return font_data->derived_font_data_->vertical_right_orientation == this;
 }
 
 std::unique_ptr<SimpleFontData::DerivedFontData>

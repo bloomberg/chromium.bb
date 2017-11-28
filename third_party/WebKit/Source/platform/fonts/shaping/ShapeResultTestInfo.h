@@ -37,6 +37,11 @@ class PLATFORM_EXPORT ShapeResultBloberizerTestInfo {
     return bloberizer.pending_font_data_;
   }
 
+  static CanvasRotationInVertical PendingBlobRotation(
+      const ShapeResultBloberizer& bloberizer) {
+    return bloberizer.pending_canvas_rotation_;
+  }
+
   static const Vector<Glyph, 1024>& PendingRunGlyphs(
       const ShapeResultBloberizer& bloberizer) {
     return bloberizer.pending_glyphs_;

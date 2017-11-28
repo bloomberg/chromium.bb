@@ -61,7 +61,7 @@ scoped_refptr<SimpleFontData> FontDataCache::Get(const FontPlatformData* platfor
   Cache::iterator result = cache_.find(platform_data);
   if (result == cache_.end()) {
     std::pair<scoped_refptr<SimpleFontData>, unsigned> new_value(
-        SimpleFontData::Create(*platform_data, nullptr, false,
+        SimpleFontData::Create(*platform_data, nullptr,
                                subpixel_ascent_descent),
         should_retain == kRetain ? 1 : 0);
     // The new SimpleFontData takes a copy of the incoming FontPlatformData

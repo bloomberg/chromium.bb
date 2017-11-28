@@ -30,6 +30,7 @@
 
 #include "build/build_config.h"
 #include "platform/PlatformExport.h"
+#include "platform/fonts/CanvasRotationInVertical.h"
 #include "platform/fonts/CustomFontData.h"
 #include "platform/fonts/FontBaseline.h"
 #include "platform/fonts/FontData.h"
@@ -50,10 +51,15 @@ namespace blink {
 // given
 // character.
 struct GlyphData {
-  GlyphData(Glyph g = 0, const SimpleFontData* f = nullptr)
-      : glyph(g), font_data(f) {}
+  STACK_ALLOCATED();
+  GlyphData(
+      Glyph g = 0,
+      const SimpleFontData* f = nullptr,
+      CanvasRotationInVertical rotation = CanvasRotationInVertical::kRegular)
+      : glyph(g), font_data(f), canvas_rotation(rotation) {}
   Glyph glyph;
   const SimpleFontData* font_data;
+  CanvasRotationInVertical canvas_rotation;
 };
 
 class FontDescription;
@@ -64,27 +70,15 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   static scoped_refptr<SimpleFontData> Create(
       const FontPlatformData& platform_data,
       scoped_refptr<CustomFontData> custom_data = nullptr,
-      bool is_text_orientation_fallback = false,
       bool subpixel_ascent_descent = false) {
     return base::AdoptRef(new SimpleFontData(
-        platform_data, std::move(custom_data), is_text_orientation_fallback,
-        subpixel_ascent_descent));
+        platform_data, std::move(custom_data), subpixel_ascent_descent));
   }
 
   const FontPlatformData& PlatformData() const { return platform_data_; }
-  bool UsedVertically() const {
-    return platform_data_.IsVerticalAnyUpright() &&
-           !is_text_orientation_fallback_;
-  }
 
   scoped_refptr<SimpleFontData> SmallCapsFontData(const FontDescription&) const;
   scoped_refptr<SimpleFontData> EmphasisMarkFontData(const FontDescription&) const;
-  scoped_refptr<SimpleFontData> VerticalRightOrientationFontData() const;
-
-  bool IsTextOrientationFallback() const {
-    return is_text_orientation_fallback_;
-  }
-  bool IsTextOrientationFallbackOf(const SimpleFontData*) const;
 
   FontMetrics& GetFontMetrics() { return font_metrics_; }
   const FontMetrics& GetFontMetrics() const { return font_metrics_; }
@@ -152,7 +146,6 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
  protected:
   SimpleFontData(const FontPlatformData&,
                  scoped_refptr<CustomFontData> custom_data,
-                 bool is_text_orientation_fallback = false,
                  bool subpixel_ascent_descent = false);
 
  private:
@@ -185,7 +178,6 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
 
     scoped_refptr<SimpleFontData> small_caps;
     scoped_refptr<SimpleFontData> emphasis_mark;
-    scoped_refptr<SimpleFontData> vertical_right_orientation;
 
    private:
     DerivedFontData() {}
@@ -194,8 +186,6 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   mutable std::unique_ptr<DerivedFontData> derived_font_data_;
 
   scoped_refptr<CustomFontData> custom_font_data_;
-
-  unsigned is_text_orientation_fallback_ : 1;
 
   // These are set to non-zero when ascent or descent is rounded or shifted
   // to be smaller than the actual ascent or descent. When calculating visual
