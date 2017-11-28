@@ -907,8 +907,6 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
                         views::DISTANCE_RELATED_CONTROL_VERTICAL),
                     kMenuEdgeMargin),
         kMenuEdgeMargin);
-    extra_links_layout->set_cross_axis_alignment(
-        views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
     extra_links_view->SetLayoutManager(extra_links_layout);
     views::Label* promo =
         new views::Label(l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_PROMO));
