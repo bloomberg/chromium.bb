@@ -84,7 +84,6 @@ TEST_F(ServerBackedStateKeysBrokerTest, Retry) {
   mocked_main_runner_->RunUntilIdle();
   EXPECT_TRUE(updated_);
 
-  EXPECT_FALSE(broker_.pending());
   EXPECT_FALSE(broker_.available());
   EXPECT_TRUE(broker_.state_keys().empty());
   EXPECT_TRUE(broker_.current_state_key().empty());
