@@ -547,6 +547,8 @@ static void ax_platform_node_auralinux_get_minimum_increment(
   if (!obj)
     return;
 
+  memset(value, 0, sizeof(*value));
+  g_value_init(value, G_TYPE_FLOAT);
   g_value_set_float(value, obj->GetStepAttribute());
 }
 
@@ -1232,7 +1234,7 @@ AtkHyperlink* AXPlatformNodeAuraLinux::GetAtkHyperlink() {
 void AXPlatformNodeAuraLinux::GetFloatAttributeInGValue(AXFloatAttribute attr,
                                                         GValue* value) {
   float float_val;
-  if (GetFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE, &float_val)) {
+  if (GetFloatAttribute(attr, &float_val)) {
     memset(value, 0, sizeof(*value));
     g_value_init(value, G_TYPE_FLOAT);
     g_value_set_float(value, float_val);
