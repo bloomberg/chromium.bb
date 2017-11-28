@@ -8,7 +8,8 @@
 
 namespace base {
 namespace {
-LazyInstance<DefaultTickClock>::Leaky g_instance = LAZY_INSTANCE_INITIALIZER;
+LazyInstance<DefaultTickClock>::Leaky g_default_tick_clock_instance =
+    LAZY_INSTANCE_INITIALIZER;
 }
 
 DefaultTickClock::~DefaultTickClock() {}
@@ -19,7 +20,7 @@ TimeTicks DefaultTickClock::NowTicks() {
 
 // static
 DefaultTickClock* DefaultTickClock::GetInstance() {
-  return g_instance.Pointer();
+  return g_default_tick_clock_instance.Pointer();
 }
 
 }  // namespace base
