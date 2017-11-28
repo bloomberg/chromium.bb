@@ -17935,6 +17935,14 @@ Called by update_net_error_codes.py.-->
   <int value="13" label="RECENT"/>
 </enum>
 
+<enum name="FileManagerTaskType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Browser"/>
+  <int value="2" label="Chrome App"/>
+  <int value="3" label="Drive App"/>
+  <int value="4" label="ARC App"/>
+</enum>
+
 <enum name="FileManagerVolumeType">
   <int value="0" label="Google Drive"/>
   <int value="1" label="Download Folder"/>

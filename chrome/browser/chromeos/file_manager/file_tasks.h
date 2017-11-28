@@ -141,11 +141,16 @@ namespace file_tasks {
 
 // Task types as explained in the comment above. Search for <task-type>.
 enum TaskType {
+  TASK_TYPE_UNKNOWN = 0,  // Used only for handling errors.
   TASK_TYPE_FILE_BROWSER_HANDLER,
   TASK_TYPE_FILE_HANDLER,
   TASK_TYPE_DRIVE_APP,
   TASK_TYPE_ARC_APP,
-  TASK_TYPE_UNKNOWN,  // Used only for handling errors.
+  // The enum values must be kept in sync with FileManagerTaskType in
+  // tools/metrics/histograms/enums.xml. Since enums for histograms are
+  // append-only (for keeping the number consistent across versions), new values
+  // for this enum also has to be always appended at the end (i.e., here).
+  NUM_TASK_TYPE,
 };
 
 // Describes a task.

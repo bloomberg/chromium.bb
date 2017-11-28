@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -77,6 +78,7 @@ std::string TaskTypeToString(TaskType task_type) {
     case TASK_TYPE_ARC_APP:
       return kArcAppTaskType;
     case TASK_TYPE_UNKNOWN:
+    case NUM_TASK_TYPE:
       break;
   }
   NOTREACHED();
@@ -301,6 +303,9 @@ bool ExecuteFileTask(Profile* profile,
                      const TaskDescriptor& task,
                      const std::vector<FileSystemURL>& file_urls,
                      const FileTaskFinishedCallback& done) {
+  UMA_HISTOGRAM_ENUMERATION("FileBrowser.ViewingTaskType", task.task_type,
+                            NUM_TASK_TYPE);
+
   // ARC apps needs mime types for launching. Retrieve them first.
   if (task.task_type == TASK_TYPE_ARC_APP) {
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector =
