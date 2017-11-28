@@ -6,7 +6,7 @@ Message[0]: csp-inline-test.js:3 Refused to execute inline script because it vio
 
 Stack Trace:
 
-    url: http://127.0.0.1:8000/devtools/stacktraces/resources/csp-inline-test.js
+    url: http://127.0.0.1:8000/devtools/csp/resources/csp-inline-test.js
     function: thisTest
     line: 3
 
