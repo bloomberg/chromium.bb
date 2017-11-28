@@ -183,7 +183,7 @@ void AddStandardGpuWhiteList(std::vector<BrokerFilePermission>* permissions) {
 
   // For shared memory.
   permissions->push_back(
-      BrokerFilePermission::ReadWriteCreateUnlinkRecursive(kDevShm));
+      BrokerFilePermission::ReadWriteCreateTemporaryRecursive(kDevShm));
 
   // For DRI cards.
   for (int i = 0; i <= 9; ++i) {
