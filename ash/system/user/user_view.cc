@@ -357,9 +357,8 @@ void UserView::ToggleUserDropdownWidget() {
       color_utils::GetResultingPaintColor(kMenuSeparatorColor, bg_color));
   const int separator_horizontal_padding =
       (kTrayPopupItemMinStartWidth - kTrayItemSize) / 2;
-  separator->SetBorder(
-      views::CreateSolidSidedBorder(0, separator_horizontal_padding, 0,
-                                    separator_horizontal_padding, bg_color));
+  separator->SetBorder(views::CreateEmptyBorder(
+      0, separator_horizontal_padding, 0, separator_horizontal_padding));
   user_dropdown_padding->AddChildView(separator);
 
   // Add other logged in users.
