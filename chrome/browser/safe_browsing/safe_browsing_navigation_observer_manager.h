@@ -31,6 +31,10 @@ class ReferrerChainData : public base::SupportsUserData::Data {
   ~ReferrerChainData() override;
   ReferrerChain* GetReferrerChain();
 
+  // Unique user data key used to get and set referrer chain data in
+  // DownloadItem.
+  static const char kDownloadReferrerChainDataKey[];
+
  private:
   std::unique_ptr<ReferrerChain> referrer_chain_;
 };

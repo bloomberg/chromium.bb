@@ -860,11 +860,14 @@ void CheckClientDownloadRequest::SendRequest() {
   request.set_download_type(type_);
 
   ReferrerChainData* referrer_chain_data = static_cast<ReferrerChainData*>(
-      item_->GetUserData(kDownloadReferrerChainDataKey));
+      item_->GetUserData(ReferrerChainData::kDownloadReferrerChainDataKey));
   if (referrer_chain_data &&
       !referrer_chain_data->GetReferrerChain()->empty()) {
     request.mutable_referrer_chain()->Swap(
         referrer_chain_data->GetReferrerChain());
+    UMA_HISTOGRAM_COUNTS_100(
+        "SafeBrowsing.ReferrerURLChainSize.DownloadAttribution",
+        request.referrer_chain().size());
     if (type_ == ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE)
       SafeBrowsingNavigationObserverManager::SanitizeReferrerChain(
           request.mutable_referrer_chain());
