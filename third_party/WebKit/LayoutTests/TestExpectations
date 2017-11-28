@@ -774,6 +774,9 @@ crbug.com/785571 virtual/mojo-loading/http/tests/devtools/console/console-contex
 
 # ====== DevTools test migration failures until here ======
 
+crbug.com/789225 http/tests/devtools/console/console-focus.js [ Pass Failure ]
+crbug.com/789225 virtual/mojo-loading/http/tests/devtools/console/console-focus.js [ Pass Failure ]
+
 crbug.com/667560 [ Win ] http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Timeout ]
 crbug.com/667560 [ Win ] virtual/mojo-loading/http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Timeout ]
 
