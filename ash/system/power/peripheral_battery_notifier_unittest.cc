@@ -167,7 +167,8 @@ TEST_F(PeripheralBatteryNotifierTest, ExtractBluetoothAddress) {
   EXPECT_TRUE(non_bluetooth_device_info.bluetooth_address.empty());
 }
 
-TEST_F(PeripheralBatteryNotifierTest, DeviceRemove) {
+// TODO(crbug.com/765794): Flaky on ash_unittests --mus.
+TEST_F(PeripheralBatteryNotifierTest, DISABLED_DeviceRemove) {
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
 
