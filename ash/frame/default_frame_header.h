@@ -17,7 +17,6 @@
 #include "ui/gfx/animation/animation_delegate.h"
 
 namespace gfx {
-class FontList;
 class Rect;
 class SlideAnimation;
 }  // namespace gfx
@@ -75,9 +74,6 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
   bool ShouldUseLightImages() const;
 
  protected:
-  // Returns the FontList to use for the title.
-  static const gfx::FontList& GetTitleFontList();
-
   // Paints the title bar, primarily the title string.
   virtual void PaintTitleBar(gfx::Canvas* canvas);
 
