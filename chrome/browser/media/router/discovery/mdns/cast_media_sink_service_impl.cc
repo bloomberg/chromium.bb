@@ -15,6 +15,7 @@
 #include "chrome/common/media_router/discovery/media_sink_service.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "components/cast_channel/cast_channel_enum.h"
+#include "components/cast_channel/cast_channel_util.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/cast_channel/logger.h"
 #include "components/net_log/chrome_net_log.h"
@@ -412,6 +413,9 @@ void CastMediaSinkServiceImpl::OpenChannel(
     std::unique_ptr<net::BackoffEntry> backoff_entry,
     SinkSource sink_source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!cast_channel::IsValidCastIPAddress(ip_endpoint.address()))
+    return;
 
   // Erase the entry from |dial_sink_failure_count_| since the device is now
   // known to be a Cast device.

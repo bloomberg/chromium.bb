@@ -28,10 +28,6 @@ class CastSocketService {
   // Returns a pointer to the Logger member variable.
   scoped_refptr<cast_channel::Logger> GetLogger();
 
-  // Adds |socket| to |sockets_| and returns raw pointer of |socket|. Takes
-  // ownership of |socket|.
-  CastSocket* AddSocket(std::unique_ptr<CastSocket> socket);
-
   // Removes the CastSocket corresponding to |channel_id| from the
   // CastSocketRegistry. Returns nullptr if no such CastSocket exists.
   std::unique_ptr<CastSocket> RemoveSocket(int channel_id);
@@ -42,14 +38,15 @@ class CastSocketService {
 
   CastSocket* GetSocket(const net::IPEndPoint& ip_endpoint) const;
 
-  // Opens cast socket with |ip_endpoint| and invokes |open_cb| when opening
+  // Opens cast socket with |open_params| and invokes |open_cb| when opening
   // operation finishes. If cast socket with |ip_endpoint| already exists,
-  // invoke |open_cb| directly with existing socket's channel ID.
-  // Parameters:
+  // invoke |open_cb| directly with the existing socket.
+  // It is the caller's responsibility to ensure |open_params.ip_address| is
+  // a valid private IP address as determined by |IsValidCastIPAddress()|.
   // |open_params|: Parameters necessary to open a Cast channel.
   // |open_cb|: OnOpenCallback invoked when cast socket is opened.
-  virtual int OpenSocket(const CastSocketOpenParams& open_params,
-                         CastSocket::OnOpenCallback open_cb);
+  virtual void OpenSocket(const CastSocketOpenParams& open_params,
+                          CastSocket::OnOpenCallback open_cb);
 
   // Adds |observer| to socket service. When socket service opens cast socket,
   // it passes |observer| to opened socket.
@@ -70,6 +67,10 @@ class CastSocketService {
 
   CastSocketService();
   virtual ~CastSocketService();
+
+  // Adds |socket| to |sockets_| and returns raw pointer of |socket|. Takes
+  // ownership of |socket|.
+  CastSocket* AddSocket(std::unique_ptr<CastSocket> socket);
 
   // Used to generate CastSocket id.
   static int last_channel_id_;
