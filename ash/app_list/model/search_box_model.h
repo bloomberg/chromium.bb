@@ -5,6 +5,8 @@
 #ifndef ASH_APP_LIST_MODEL_SEARCH_BOX_MODEL_H_
 #define ASH_APP_LIST_MODEL_SEARCH_BOX_MODEL_H_
 
+#include <memory>
+
 #include "ash/app_list/model/app_list_model_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -25,20 +27,13 @@ class APP_LIST_MODEL_EXPORT SearchBoxModel {
  public:
   // The properties of the speech button.
   struct APP_LIST_MODEL_EXPORT SpeechButtonProperty {
-    SpeechButtonProperty(const gfx::ImageSkia& on_icon,
-                         const base::string16& on_tooltip,
-                         const gfx::ImageSkia& off_icon,
-                         const base::string16& off_tooltip,
+    SpeechButtonProperty(const gfx::ImageSkia& icon,
+                         const base::string16& tooltip,
                          const base::string16& accessible_name);
     ~SpeechButtonProperty();
 
-    // The icon/tooltip when the hotword is on.
-    gfx::ImageSkia on_icon;
-    base::string16 on_tooltip;
-
-    // The icon/tooltip when the hotword is off.
-    gfx::ImageSkia off_icon;
-    base::string16 off_tooltip;
+    gfx::ImageSkia icon;
+    base::string16 tooltip;
 
     // The accessibility name of the button.
     base::string16 accessible_name;

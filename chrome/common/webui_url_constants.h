@@ -212,7 +212,6 @@ extern const char kChromeUISysInternalsHost[];
 extern const char kChromeUITermsOemURL[];
 extern const char kChromeUIUserImageHost[];
 extern const char kChromeUIUserImageURL[];
-extern const char kChromeUIVoiceSearchHost[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)

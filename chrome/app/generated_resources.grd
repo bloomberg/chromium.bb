@@ -4799,15 +4799,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Set which search engine is used when searching from the
         <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>omnibox<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
-      <message name="IDS_HOTWORD_GENERIC_ERROR_MESSAGE" desc="The default error message text when no additional details are known.">
-        This feature is temporarily unavailable. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Help<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
-      </message>
-      <message name="IDS_HOTWORD_NACL_DISABLED_ERROR_MESSAGE" desc="The error message text when hotwording fails because NaCl is disabled.">
-        Native Client plugin needs to be enabled to use this feature.
-      </message>
-      <message name="IDS_HOTWORD_MICROPHONE_ERROR_MESSAGE" desc="The error message text when hotwording fails because the microphone isn't working.">
-        Microphone is currently unavailable. <ph name="BEGIN_LINK">&lt;a target="_blank" href="chrome://settings/content#media-stream-settings"&gt;</ph>Manage microphone<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
-      </message>
       <if expr="is_win">
         <!-- Conflicts page -->
         <message name="IDS_CONFLICTS_CHECK_PAGE_TABLE_TITLE_SUFFIX_ONE" desc="What gets appended after the page title if no conflicts were found.">
@@ -5078,16 +5069,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NACL_APP_MISSING_ARCH_MESSAGE" desc="Shown if a Native Client app does not support the current architecture">
         This page uses a Native Client app that doesn't work on your computer.
       </message>
-
-      <!-- chrome://voicesearch strings -->
-      <if expr="chromeos">
-        <message name="IDS_VOICESEARCH_LOADING_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
-          Loading...
-        </message>
-        <message name="IDS_VOICESEARCH_TITLE_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
-          About Voice Search
-        </message>
-      </if>
 
       <!-- About box strings -->
       <if expr="is_win">
@@ -9882,9 +9863,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         <message name="IDS_APP_LIST_START_SPEECH_RECOGNITION" desc="Tooltip text for the button to start the speech recognition.">
           Click to start voice search
         </message>
-        <message name="IDS_APP_LIST_HOTWORD_LISTENING" desc="Tooltip text for the mic button when it waits for the hotword.">
-          Click, or say "Ok Google" to start voice search
-        </message>
         <message name="IDS_SEARCH_BOX_ACCESSIBILITY_NAME" desc="Hint text for the search box in fullscreen app list window with additional instructions to use the arrow keys in Accessibility mode.">
           Search your device, apps, and web. Use the arrow keys to navigate your apps.
         </message>
@@ -9896,9 +9874,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         </message>
         <message name="IDS_SEARCH_BOX_HINT_FULLSCREEN" desc="Hint text for the search box in fullscreen app list window.">
           Search your device, apps, web...
-        </message>
-        <message name="IDS_SEARCH_BOX_HOTWORD_HINT" desc="Hint text for the search box in app list window when the hotword is enabled.">
-          Search, or say "Ok Google"
         </message>
         <if expr="not use_titlecase">
           <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
@@ -10534,115 +10509,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       <!-- Device permissions dialog strings. -->
       <message name="IDS_DEVICE_PERMISSIONS_DIALOG_SELECT" desc="Button confirming the devices selected for access by the app.">
         Select
-      </message>
-
-      <!-- Hotword Audio Verification (opt-in) App strings. -->
-      <message name="IDS_HOTWORD_BROWSER_NAME" desc="Name of the device when we're not running in CrOS">
-        <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chromium</ex></ph> browser
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_CLOSE" desc="Label for the close button for the 'Ok Google' hotword opt-in dialog.">
-        Close
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_CANCEL" desc="Text on the cancel button for the 'Ok Google' hotword opt-in dialog.">
-        CANCEL
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_INTRO_TITLE" desc="Title of the intro page of the 'Ok Google' hotword opt-in dialog.">
-        Voice search at any time
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_INTRO_SUBTITLE" desc="Sub-title of the intro page of the 'Ok Google' hotword opt-in dialog.">
-        Say "Ok Google" when your screen is on and unlocked
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION" desc="Description explaining the steps required to continue through the hotword opt-in process.">
-        To make this happen, you'll need to enable Voice &amp; Audio Activity and train your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> in the following steps.
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION_AUDIO_HISTORY_ENABLED" desc="Description explaining the steps required to continue through the hotword opt-in process.">
-        To make this happen, you'll need to train your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> in the following step.
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_INTRO_START" desc="Text on the start button for the 'Ok Google' hotword opt-in dialog.">
-        Get Started
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_TITLE" desc="Title of the Audio History page of the 'Ok Google' hotword opt-in dialog.">
-        Enable Voice &amp; Audio Activity
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DESCRIPTION_1" desc="Description of the Audio History page of the 'Ok Google' hotword opt-in dialog.">
-        When you use audio activation commands, such as "Ok Google" or touching a microphone icon, your private Voice &amp; Audio Activity stores some voice and other audio to your account. A recording of the following speech/audio, plus a few seconds before, will be stored.
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DESCRIPTION_2" desc="Description of the Audio History page of the 'Ok Google' hotword opt-in dialog.">
-        This helps Google recognize your voice and improve speech and audio recognition in order to give you results faster and with fewer hassles. <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://support.google.com/websearch?p=chromebook_audiohistory"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DESCRIPTION_3" desc="Description of the Audio History page of the 'Ok Google' hotword opt-in dialog.">
-        You can change this setting or <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://history.google.com/history/audio"&gt;</ph>manage your private data<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> whenever you like. Please remember that when Voice &amp; Audio Activity is on, this data may be saved from any of your signed-in devices.
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_AGREE" desc="Text on the agree button for the Audio History section of the 'Ok Google' hotword opt-in dialog.">
-        Enable
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_WAIT" desc="Text displayed when waiting for Audio History setting in the 'Ok Google' hotword opt-in dialog.">
-        Enabling Voice &amp; Audio Activity...
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_ERROR" desc="Text displayed on error setting Audio History and training in the 'Ok Google' hotword opt-in dialog.">
-        Something went wrong. Please try again.
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_TRAINING_TITLE" desc="Title of the voice model training page of the 'Ok Google' hotword opt-in dialog.">
-        Let's train your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_TRAINING_DESCRIPTION" desc="Description on the voice model training page of the 'Ok Google' hotword opt-in dialog.">
-        To help your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> respond to you and for reliable and easy access to voice search, you need to teach Google the sound of your voice.
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_TRAINING_SPEAK" desc="The text describing the action the user should take on the voice model training page of the 'Ok Google' hotword opt-in dialog.">
-        Just say "Ok Google" three times
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_TRAINING_FIRST_PROMPT" desc="The first prompt text on the voice model training page of the 'Ok Google' hotword opt-in dialog.">
-        Say "Ok Google"
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_TRAINING_MIDDLE_PROMPT" desc="The middle prompt text on the voice model training page of the 'Ok Google' hotword opt-in dialog.">
-        Say "Ok Google" again
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_TRAINING_LAST_PROMPT" desc="The last prompt text on the voice model training page of the 'Ok Google' hotword opt-in dialog.">
-        Say "Ok Google" one last time
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_TRAINING_RECORDED" desc="The message displayed when an 'Ok Google' utterance has been completed.">
-        Complete
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_TRAINING_TIMEOUT" desc="The message displayed when an 'Ok Google' training has time out.">
-        Training timed out
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_TRAINING_RETRY" desc="Text on the retry button of the voice model training page of the 'Ok Google' hotword opt-in dialog.">
-        RETRY
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_FINISHED_TITLE" desc="Title of the finished page of the 'Ok Google' hotword opt-in dialog.">
-        You're all set!
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_FINISHED_LIST_INTRO" desc="The text at the beginning of the list describing the Chromebook's new abilities. ">
-        Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> can now:
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_FINISHED_LIST_ITEM_1" desc="The text of the first item in the list of Chromebook abilities. ">
-        Recognize your voice when you say "Ok Google"
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_FINISHED_LIST_ITEM_2" desc="The text of the second item in the list of Chromebook abilities. ">
-        Respond to "Ok Google" when the screen is on and unlocked
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_FINISHED_SETTINGS" desc="The text indicating where the user can change their Chrome settings. ">
-        You can change this at any time in <ph name="BEGIN_LINK">&lt;a target="_blank" href="#" id="settings-link"&gt;</ph>Chrome Settings<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_FINISHED_AUDIO_HISTORY" desc="The text indicating where the user can change their account history. ">
-        Search queries will be tied to your Google Account. You can view and delete them in your <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://www.google.com/settings/accounthistory"&gt;</ph>Account History<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_FINISH" desc="Text on the finish button for the 'Ok Google' hotword opt-in dialog.">
-        OK
-      </message>
-      <message name="IDS_HOTWORD_OPT_IN_FINISHED_WAIT" desc="The text displayed when waiting for the voice model training to complete.">
-        Processing...
-      </message>
-
-      <!-- Hotword Notification -->
-      <message name="IDS_HOTWORD_NOTIFICATION_TITLE" desc="The text displayed as the title for the hotword notification. ">
-        Voice search at any time
-      </message>
-      <message name="IDS_HOTWORD_NOTIFICATION_DESCRIPTION" desc="The text displayed as the description for the hotword notification. ">
-        Enable "Ok Google" to voice search when your screen is on and unlocked
-      </message>
-      <message name="IDS_HOTWORD_NOTIFICATION_BUTTON" desc="The text displayed on the button of the hotword notification. ">
-        Enable "Ok Google"
       </message>
 
       <!-- About device logs UI display strings -->

@@ -5409,6 +5409,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Hotword.HotwordTrigger">
+  <obsolete>
+    Deprecated as of 10/2017. Feature removed with crbug/761426.
+  </obsolete>
   <owner>amistry@chromium.org</owner>
   <owner>rlp@chromium.org</owner>
   <owner>somast@chromium.org</owner>

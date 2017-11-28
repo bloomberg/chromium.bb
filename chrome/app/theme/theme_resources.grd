@@ -48,8 +48,6 @@
       </if>
       <if expr="enable_app_list">
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_TAB_OVERLAY" file="common/app_list_v1_overlay.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_LIST_MIC_HOTWORD_OFF" file="common/app_list_mic_hotword_off.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_LIST_MIC_HOTWORD_ON" file="common/app_list_mic_hotword_on.png" />
       </if>
       <if expr="toolkit_views and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE" file="common/app_window_close.png" />
@@ -200,7 +198,6 @@
         <structure type="chrome_scaled_image" name="IDR_HIDE_PASSWORD" file="cros/hide_password.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_HIDE_PASSWORD_HOVER" file="common/hide_password_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_HOTWORD_NOTIFICATION_ICON" file="common/notification_hotword_icon.png" />
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_ACCOUNT_BUTTON_ERROR" file="legacy/avatar_menu_auth_error.png" />
       </if>

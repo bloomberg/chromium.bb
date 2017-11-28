@@ -102,8 +102,6 @@ const PrefMappingEntry kPrefMapping[] = {
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"hyperlinkAuditingEnabled", prefs::kEnableHyperlinkAuditing,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
-    {"hotwordSearchEnabled", prefs::kHotwordSearchEnabled,
-     APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"networkPredictionEnabled", prefs::kNetworkPredictionOptions,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"passwordSavingEnabled",

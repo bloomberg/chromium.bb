@@ -907,13 +907,6 @@
       'filepath': 'chrome/browser/resources/(md_)?history|'\
                   'chrome/browser/ui/webui/.*history',
     },
-    'hotword': {
-      'filepath': 'chrome/browser/extensions/api/hotword_private/'\
-                  '|chrome/browser/resources/hotword_helper/'\
-                  '|chrome/browser/resources/hotword/'\
-                  '|chrome/browser/search/hotword*'\
-                  '|chrome/test/data/extensions/api_test/hotword_private/',
-    },
     'i18n': {
       'filepath': 'base/i18n/|base/string|l10n|icu|'\
                   'locale_settings|encoding',
@@ -2049,7 +2042,6 @@
     'gpu_passthrough_cmd_decoder': ['cwallez+watch@chromium.org',
                                     'geofflang+watch@chromium.org'],
     'history_ui': ['pam+watch@chromium.org'],
-    'hotword': ['rlp+watch@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
     'importer': ['tfarina@chromium.org'],
     'incident_reporting': ['grt+watch@chromium.org'],

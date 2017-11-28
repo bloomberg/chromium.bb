@@ -148,12 +148,6 @@ extern const char kOutdatedPluginLearnMoreURL[];
 // The URL for the "Learn more" page for the blocked plugin infobar.
 extern const char kBlockedPluginLearnMoreURL[];
 
-// The URL for the "Learn more" page for hotword search voice trigger.
-extern const char kHotwordLearnMoreURL[];
-
-// The URL for managing a user's audio history.
-extern const char kManageAudioHistoryURL[];
-
 // The URL for the "Learn more" page for register protocol handler infobars.
 extern const char kLearnMoreRegisterProtocolHandlerURL[];
 

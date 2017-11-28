@@ -91,7 +91,6 @@
 #include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_factory_impl.h"
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
 #include "chrome/browser/extensions/extension_management.h"
-#include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/ui/bookmarks/enhanced_bookmark_key_service_factory.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
@@ -255,9 +254,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   GoogleURLTrackerFactory::GetInstance();
   HistoryServiceFactory::GetInstance();
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  HotwordServiceFactory::GetInstance();
-#endif
   HostContentSettingsMapFactory::GetInstance();
   InMemoryURLIndexFactory::GetInstance();
   invalidation::ProfileInvalidationProviderFactory::GetInstance();

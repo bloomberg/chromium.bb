@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/font_settings/font_settings_api.h"
 #include "chrome/browser/extensions/api/history/history_api.h"
-#include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_delegate_factory.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
@@ -94,7 +93,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ExtensionWebUIOverrideRegistrar::GetFactoryInstance();
   extensions::FontSettingsAPI::GetFactoryInstance();
   extensions::HistoryAPI::GetFactoryInstance();
-  extensions::HotwordPrivateEventService::GetFactoryInstance();
   extensions::IdentityAPI::GetFactoryInstance();
   extensions::InstallTrackerFactory::GetInstance();
   extensions::InstallVerifierFactory::GetInstance();

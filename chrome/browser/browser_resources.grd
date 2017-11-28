@@ -199,10 +199,6 @@
         <!-- Hangout Services extension, included in Google Chrome builds only. -->
         <include name="IDR_HANGOUT_SERVICES_MANIFEST" file="resources\hangout_services\manifest.json" type="BINDATA" />
       </if>
-      <if expr="enable_hotwording">
-        <include name="IDR_HOTWORD_MANIFEST" file="resources\hotword\manifest.json" type="BINDATA" />
-        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_MANIFEST" file="resources\hotword_audio_verification\manifest.json" type="BINDATA" />
-      </if>
 
       <if expr="not is_android">
         <!-- MD Bookmarks. -->
@@ -375,8 +371,6 @@
         <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_mac.json" type="BINDATA" />
       </if>
       <if expr="chromeos">
-        <include name="IDR_ABOUT_VOICESEARCH_HTML" file="resources\about_voicesearch.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_ABOUT_VOICESEARCH_JS" file="resources\about_voicesearch.js" type="BINDATA" />
         <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_chromeos.json" type="BINDATA" />
       </if>
       <if expr="desktop_linux or (is_android and enable_plugins)">

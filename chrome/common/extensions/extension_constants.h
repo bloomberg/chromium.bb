@@ -115,15 +115,6 @@ extern const char kIdentityApiUiAppId[];
 // The extension id of the Crosh component app for ChromeOS.
 extern const char kCroshBuiltinAppId[];
 
-// The extension id of the hotword audio verification dialogue app.
-extern const char kHotwordAudioVerificationAppId[];
-
-// The extension id of the new (experimental) hotword extension.
-extern const char kHotwordNewExtensionId[];
-
-// The extension id of the hotword shared module.
-extern const char kHotwordSharedModuleId[];
-
 // The extension id of the Text Editor application.
 extern const char kTextEditorAppId[];
 

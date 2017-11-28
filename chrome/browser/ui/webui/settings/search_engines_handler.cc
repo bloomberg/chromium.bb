@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/search_engines_handler.h"
 
+#include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,9 +17,6 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/hotword_audio_history_handler.h"
-#include "chrome/browser/search/hotword_service.h"
-#include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -43,34 +42,8 @@ const char kSearchEngineField[] = "searchEngine";
 const char kKeywordField[] = "keyword";
 const char kQueryUrlField[] = "queryUrl";
 
-// Fields for hotwordUpdateInfo result.
-const char kHotwordSatusAllowed[] = "allowed";
-const char kHotwordSatusEnabled[] = "enabled";
-const char kHotwordStatusAlwaysOn[] = "alwaysOn";
-const char kHotwordSatusErrorMessage[] = "errorMessage";
-const char kHotwordSatusUserUserName[] = "userName";
-const char kHotwordSatusHistoryEnabled[] = "historyEnabled";
-
 // Dummy number used for indicating that a new search engine is added.
 const int kNewSearchEngineIndex = -1;
-
-bool IsGoogleDefaultSearch(Profile* profile) {
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile);
-  if (!template_url_service)
-    return false;
-  const TemplateURL* url_template =
-      template_url_service->GetDefaultSearchProvider();
-  return url_template &&
-         url_template->url_ref().HasGoogleBaseURLs(
-             template_url_service->search_terms_data());
-}
-
-bool GetHotwordAlwaysOn(Profile* profile) {
-  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
-  return signin && signin->IsAuthenticated() &&
-         HotwordServiceFactory::IsAlwaysOnAvailable();
-}
 
 }  // namespace
 
@@ -116,23 +89,10 @@ void SearchEnginesHandler::RegisterMessages() {
       "searchEngineEditCompleted",
       base::Bind(&SearchEnginesHandler::HandleSearchEngineEditCompleted,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getHotwordInfo", base::Bind(&SearchEnginesHandler::HandleGetHotwordInfo,
-                                   base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "setHotwordSearchEnabled",
-      base::Bind(&SearchEnginesHandler::HandleSetHotwordSearchEnabled,
-                 base::Unretained(this)));
 }
 
 void SearchEnginesHandler::OnJavascriptAllowed() {
   list_controller_.table_model()->SetObserver(this);
-  pref_change_registrar_.Add(prefs::kHotwordSearchEnabled,
-                             base::Bind(&SearchEnginesHandler::SendHotwordInfo,
-                                        base::Unretained(this)));
-  pref_change_registrar_.Add(prefs::kHotwordAlwaysOnSearchEnabled,
-                             base::Bind(&SearchEnginesHandler::SendHotwordInfo,
-                                        base::Unretained(this)));
 }
 
 void SearchEnginesHandler::OnJavascriptDisallowed() {
@@ -274,18 +234,6 @@ void SearchEnginesHandler::HandleSetDefaultSearchEngine(
 
   list_controller_.MakeDefaultTemplateURL(index);
 
-  // If the new search engine is not Google, disable hotword search.
-  // TODO(stevenjb): Investigate migrating this logic to
-  // MakeDefaultTemplateURL.
-  if (!IsGoogleDefaultSearch(profile_)) {
-    HotwordService* hotword_service =
-        HotwordServiceFactory::GetForProfile(profile_);
-    if (hotword_service)
-      hotword_service->DisableHotwordPreferences();
-  }
-  // Hotword status may have changed.
-  SendHotwordInfo();
-
   base::RecordAction(base::UserMetricsAction("Options_SearchEngineSetDefault"));
 }
 
@@ -397,139 +345,6 @@ void SearchEnginesHandler::HandleSearchEngineEditCompleted(
     edit_controller_->AcceptAddOrEdit(base::UTF8ToUTF16(search_engine),
                                       base::UTF8ToUTF16(keyword), query_url);
   }
-}
-
-void SearchEnginesHandler::HandleGetHotwordInfo(const base::ListValue* args) {
-  AllowJavascript();
-
-  std::unique_ptr<base::Value> callback_id;
-  if (args) {
-    CHECK_EQ(1U, args->GetSize());
-    const base::Value* id;
-    CHECK(args->Get(0, &id));
-    callback_id = id->CreateDeepCopy();
-  }
-
-  std::unique_ptr<base::DictionaryValue> status = GetHotwordInfo();
-  bool enabled = false;
-  status->GetBoolean(kHotwordSatusEnabled, &enabled);
-  bool always_on = false;
-  status->GetBoolean(kHotwordStatusAlwaysOn, &always_on);
-  if (!enabled || !always_on) {
-    HotwordInfoComplete(callback_id.get(), *status);
-    return;
-  }
-
-  // OnGetHotwordAudioHistoryEnabled will call HotwordInfoComplete().
-  HotwordServiceFactory::GetForProfile(profile_)
-      ->GetAudioHistoryHandler()
-      ->GetAudioHistoryEnabled(
-          base::Bind(&SearchEnginesHandler::OnGetHotwordAudioHistoryEnabled,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback_id),
-                     base::Passed(&status)));
-}
-
-std::unique_ptr<base::DictionaryValue> SearchEnginesHandler::GetHotwordInfo() {
-  auto status = base::MakeUnique<base::DictionaryValue>();
-  if (!IsGoogleDefaultSearch(profile_)) {
-    status->SetBoolean(kHotwordSatusAllowed, false);
-    return status;
-  }
-
-  status->SetBoolean(kHotwordSatusAllowed,
-                     HotwordServiceFactory::IsHotwordAllowed(profile_));
-
-  HotwordServiceFactory::IsServiceAvailable(profile_);  // Update error value.
-  int hotword_error = HotwordServiceFactory::GetCurrentError(profile_);
-  if (hotword_error) {
-    base::string16 hotword_error_message;
-    if (hotword_error != IDS_HOTWORD_GENERIC_ERROR_MESSAGE) {
-      hotword_error_message = l10n_util::GetStringUTF16(hotword_error);
-    } else {
-      hotword_error_message = l10n_util::GetStringFUTF16(
-          hotword_error, base::ASCIIToUTF16(chrome::kHotwordLearnMoreURL));
-    }
-    status->SetString(kHotwordSatusErrorMessage, hotword_error_message);
-  }
-
-  if (!HotwordServiceFactory::GetForProfile(profile_)) {
-    status->SetBoolean(kHotwordSatusEnabled, false);
-    return status;
-  }
-
-  bool always_on = GetHotwordAlwaysOn(profile_);
-  status->SetBoolean(kHotwordStatusAlwaysOn, always_on);
-
-  std::string pref_name = always_on ? prefs::kHotwordAlwaysOnSearchEnabled
-                                    : prefs::kHotwordSearchEnabled;
-  bool enabled = profile_->GetPrefs()->GetBoolean(pref_name);
-  status->SetBoolean(kHotwordSatusEnabled, enabled);
-  if (!enabled)
-    return status;
-
-  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile_);
-  std::string user_display_name =
-      signin ? signin->GetAuthenticatedAccountInfo().email : "";
-  status->SetString(kHotwordSatusUserUserName, user_display_name);
-  return status;
-}
-
-void SearchEnginesHandler::OnGetHotwordAudioHistoryEnabled(
-    std::unique_ptr<base::Value> callback_id,
-    std::unique_ptr<base::DictionaryValue> status,
-    bool success,
-    bool logging_enabled) {
-  if (success)
-    status->SetBoolean(kHotwordSatusHistoryEnabled, logging_enabled);
-  HotwordInfoComplete(callback_id.get(), *status);
-}
-
-void SearchEnginesHandler::HotwordInfoComplete(
-    const base::Value* callback_id,
-    const base::DictionaryValue& status) {
-  if (callback_id)
-    ResolveJavascriptCallback(*callback_id, status);
-  else
-    FireWebUIListener("hotword-info-update", status);
-}
-
-void SearchEnginesHandler::SendHotwordInfo() {
-  HandleGetHotwordInfo(nullptr);
-}
-
-void SearchEnginesHandler::HandleSetHotwordSearchEnabled(
-    const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  bool enabled;
-  CHECK(args->GetBoolean(0, &enabled));
-
-  bool always_on = GetHotwordAlwaysOn(profile_);
-  if (!always_on) {
-    profile_->GetPrefs()->SetBoolean(prefs::kHotwordSearchEnabled, enabled);
-    return;
-  }
-
-  HotwordService* hotword_service =
-      HotwordServiceFactory::GetForProfile(profile_);
-  if (!enabled || !hotword_service) {
-    profile_->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled,
-                                     false);
-    return;
-  }
-
-  bool was_enabled =
-      profile_->GetPrefs()->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled);
-  HotwordService::LaunchMode launch_mode;
-  if (was_enabled) {
-    launch_mode = HotwordService::RETRAIN;
-  } else {
-    bool logging_enabled =
-        profile_->GetPrefs()->GetBoolean(prefs::kHotwordAudioLoggingEnabled);
-    launch_mode = logging_enabled ? HotwordService::HOTWORD_ONLY
-                                  : HotwordService::HOTWORD_AND_AUDIO_HISTORY;
-  }
-  hotword_service->OptIntoHotwording(launch_mode);
-  SendHotwordInfo();
 }
 
 }  // namespace settings

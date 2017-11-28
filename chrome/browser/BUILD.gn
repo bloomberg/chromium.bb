@@ -3366,13 +3366,6 @@ split_static_library("browser") {
       "renderer_context_menu/context_menu_content_type_platform_app.h",
       "renderer_host/chrome_extension_message_filter.cc",
       "renderer_host/chrome_extension_message_filter.h",
-      "search/hotword_audio_history_handler.cc",
-      "search/hotword_audio_history_handler.h",
-      "search/hotword_client.h",
-      "search/hotword_service.cc",
-      "search/hotword_service.h",
-      "search/hotword_service_factory.cc",
-      "search/hotword_service_factory.h",
       "signin/chrome_proximity_auth_client.cc",
       "signin/chrome_proximity_auth_client.h",
       "signin/easy_unlock_app_manager.cc",
@@ -3540,10 +3533,6 @@ split_static_library("browser") {
       "//media/cast:net",
       "//services/device/public/interfaces",
     ]
-  }
-
-  if (enable_hotwording) {
-    defines += [ "ENABLE_HOTWORDING" ]
   }
 
   if (enable_mdns) {

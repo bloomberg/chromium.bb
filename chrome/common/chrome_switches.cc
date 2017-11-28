@@ -311,9 +311,6 @@ const char kEnableDomainReliability[] = "enable-domain-reliability";
 const char kEnableExperimentalFullscreenExitUI[] =
     "enable-experimental-fullscreen-exit-ui";
 
-// Enables experimental hotword features specific to always-on.
-const char kEnableExperimentalHotwordHardware[] = "enable-hotword-hardware";
-
 // Enables logging for extension activity.
 const char kEnableExtensionActivityLogging[] =
     "enable-extension-activity-logging";

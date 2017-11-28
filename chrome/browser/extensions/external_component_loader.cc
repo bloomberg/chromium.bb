@@ -9,8 +9,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/component_extensions_whitelist/whitelist.h"
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/search/hotword_service.h"
-#include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/features.h"
@@ -20,7 +18,6 @@
 #include "extensions/common/manifest.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -37,9 +34,6 @@ void ExternalComponentLoader::StartLoading() {
 #if defined(GOOGLE_CHROME_BUILD)
   AddExternalExtension(extension_misc::kInAppPaymentsSupportAppId, prefs.get());
 #endif  // defined(GOOGLE_CHROME_BUILD)
-
-  if (HotwordServiceFactory::IsHotwordAllowed(profile_))
-    AddExternalExtension(extension_misc::kHotwordSharedModuleId, prefs.get());
 
 #if defined(OS_CHROMEOS)
   {

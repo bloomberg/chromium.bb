@@ -82,62 +82,6 @@
           </template>
         </div>
 
-        <template is="dom-if" if="[[hotwordInfo_.allowed]]">
-          <!-- Hotword (OK Google) -->
-          <settings-toggle-button id="hotwordSearchEnable"
-              class="continuation indented"
-              pref="{{hotwordSearchEnablePref_}}"
-              label="$i18n{searchOkGoogleLabel}"
-              sub-label="[[getHotwordSearchEnableSubLabel_(
-                  hotwordInfo_.alwaysOn)]]"
-              on-change="onHotwordSearchEnableChange_">
-          </settings-toggle-button>
-          <div class="settings-row indented"
-              hidden$="[[!getShowHotwordSearchRetrain_(hotwordInfo_.*)]]">
-            <div class="separator"></div>
-            <paper-button on-tap="onRetrainTap_" class="secondary-button">
-              $i18n{searchOkGoogleRetrain}
-            </paper-button>
-          </div>
-
-          <template is="dom-if"
-              if="[[getShowHotwordError_(hotwordInfo_.*,
-                  hotwordSearchEnablePref_)]]">
-            <div class="settings-box continuation indented">
-              <iron-icon icon="settings:warning"></iron-icon>
-              <div inner-h-t-m-l="[[hotwordInfo_.errorMessage]]"></div>
-            </div>
-          </template>
-
-          <template is="dom-if" if="[[hotwordInfo_.historyEnabled]]">
-            <a class="settings-box two-line continuation indented inherit-color
-                no-outline" tabindex="-1" target="_blank"
-                href="$i18n{manageAudioHistoryUrl}">
-              <div class="start">
-                [[i18n('searchOkGoogleAudioHistoryLabel',
-                       hotwordInfo_.userName)]]
-                <div class="secondary" id="audioHistorySecondary">
-                  $i18n{searchOkGoogleAudioHistorySubtext}
-                </div>
-              </div>
-              <button actionable class="icon-external"
-                  is="paper-icon-button-light"
-                  aria-label$="[[i18n('searchOkGoogleAudioHistoryLabel',
-                                      hotwordInfo_.userName)]]"
-                  aria-describedby="audioHistorySecondary"></button>
-            </a>
-          </template>
-        </template>
-
-<if expr="chromeos">
-        <template is="dom-if"
-            if="[[hotwordSearchEnablePref_.value]]">
-          <div class="start settings-box continuation indented">
-            $i18n{searchOkGoogleDisabled}
-          </div>
-        </template>
-</if>
-
         <!-- Manage search engines -->
         <div id="engines-subpage-trigger" class="settings-box"
             on-tap="onManageSearchEnginesTap_" actionable>

@@ -61,20 +61,6 @@ const extensions::Extension* GetExtension(WebContents* web_contents) {
       web_contents->GetURL());
 }
 
-bool IsWhitelistedExtension(const extensions::Extension* extension) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  static const char* const kExtensionWhitelist[] = {
-    extension_misc::kHotwordNewExtensionId,
-  };
-
-  for (size_t i = 0; i < arraysize(kExtensionWhitelist); ++i) {
-    if (extension->id() == kExtensionWhitelist[i])
-      return true;
-  }
-
-  return false;
-}
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 base::string16 GetTitle(WebContents* web_contents) {
@@ -392,7 +378,7 @@ void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
     // icon.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     const extensions::Extension* extension = GetExtension(web_contents);
-    if (!extension || IsWhitelistedExtension(extension))
+    if (!extension)
       continue;
 #endif
 
