@@ -122,6 +122,10 @@ class V8DesktopBrowsingBenchmark(
              'browse:tools:maps',
              [story.expectations.ALL_MAC],
              'crbug.com/773084')
+        self.DisableStory(
+             'browse:media:imgur',
+             [story.expectations.ALL_LINUX],
+             'crbug.com/788796')
     return StoryExpectations()
 
   def SetExtraBrowserOptions(self, options):
