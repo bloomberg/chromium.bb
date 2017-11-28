@@ -35,6 +35,10 @@ class UkmSource {
   const GURL& initial_url() const { return initial_url_; }
   const GURL& url() const { return url_; }
 
+  // The object creation time. This is for internal purposes only and is not
+  // intended to be anything useful for UKM clients.
+  const base::TimeTicks creation_time() const { return creation_time_; }
+
   // Sets the URL for this source. Should be invoked when a source is
   // initialized.
   void set_url(const GURL& url) { url_ = url; }
@@ -65,6 +69,9 @@ class UkmSource {
   // automatically when the object is created and so represents the state when
   // the metric was created.
   const CustomTabState custom_tab_state_;
+
+  // When this object was created.
+  const base::TimeTicks creation_time_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmSource);
 };
