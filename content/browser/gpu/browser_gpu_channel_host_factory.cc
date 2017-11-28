@@ -29,6 +29,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/constants.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
+#include "ui/base/ui_base_switches_util.h"
 
 namespace content {
 
@@ -266,7 +267,7 @@ BrowserGpuChannelHostFactory::AllocateSharedMemory(size_t size) {
 void BrowserGpuChannelHostFactory::EstablishGpuChannel(
     const gpu::GpuChannelEstablishedCallback& callback) {
 #if defined(USE_AURA)
-  DCHECK(!IsMusHostingViz());
+  DCHECK(!switches::IsMusHostingViz());
 #endif
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (gpu_channel_.get() && gpu_channel_->IsLost()) {

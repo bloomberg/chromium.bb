@@ -10,6 +10,7 @@
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace ui {
 namespace demo {
@@ -30,6 +31,8 @@ class MusDemoTest : public service_manager::test::ServiceTest {
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch("use-test-config");
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kMus, switches::kMusHostVizValue);
     ServiceTest::SetUp();
   }
 

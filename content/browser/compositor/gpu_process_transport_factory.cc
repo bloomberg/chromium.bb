@@ -60,6 +60,7 @@
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
@@ -242,7 +243,7 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     return base::WrapUnique(new viz::SoftwareOutputDevice);
 
 #if defined(USE_AURA)
-  if (IsMusHostingViz()) {
+  if (switches::IsMusHostingViz()) {
     NOTREACHED();
     return nullptr;
   }

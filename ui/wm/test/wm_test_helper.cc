@@ -27,7 +27,8 @@ WMTestHelper::WMTestHelper(const gfx::Size& default_window_size,
                            service_manager::Connector* connector,
                            ui::ContextFactory* context_factory) {
   wm_state_ = std::make_unique<WMState>();
-  aura::Env::GetInstance()->set_context_factory(context_factory);
+  if (context_factory)
+    aura::Env::GetInstance()->set_context_factory(context_factory);
   if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL)
     InitLocalHost(default_window_size);
   else

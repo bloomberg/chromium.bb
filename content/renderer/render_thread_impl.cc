@@ -186,6 +186,7 @@
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_switches.h"
 
@@ -328,16 +329,6 @@ void* CreateHistogram(
 void AddHistogramSample(void* hist, int sample) {
   base::Histogram* histogram = static_cast<base::Histogram*>(hist);
   histogram->Add(sample);
-}
-
-bool IsMusHostingViz() {
-#if BUILDFLAG(ENABLE_MUS)
-  const auto* cmdline = base::CommandLine::ForCurrentProcess();
-  return cmdline->GetSwitchValueASCII(switches::kMus) ==
-         switches::kMusHostVizValue;
-#else
-  return false;
-#endif
 }
 
 class FrameFactoryImpl : public mojom::FrameFactory {
@@ -695,10 +686,11 @@ void RenderThreadImpl::Init(
       base::BindRepeating(&CreateSingleSampleMetricsProvider,
                           message_loop()->task_runner(), GetConnector()));
 
-  gpu_ = ui::Gpu::Create(
-      GetConnector(),
-      IsMusHostingViz() ? ui::mojom::kServiceName : mojom::kBrowserServiceName,
-      GetIOTaskRunner());
+  gpu_ =
+      ui::Gpu::Create(GetConnector(),
+                      switches::IsMusHostingViz() ? ui::mojom::kServiceName
+                                                  : mojom::kBrowserServiceName,
+                      GetIOTaskRunner());
 
   viz::mojom::SharedBitmapAllocationNotifierPtr
       shared_bitmap_allocation_notifier_ptr;
@@ -2031,7 +2023,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   }
 
 #if defined(USE_AURA)
-  if (IsMusHostingViz()) {
+  if (switches::IsMusHostingViz()) {
     if (!RendererWindowTreeClient::Get(routing_id)) {
       callback.Run(nullptr);
       return;

@@ -22,6 +22,8 @@
 #include "content/shell/common/shell_switches.h"
 #include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_features.h"
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
 #include "gin/v8_initializer.h"
@@ -50,6 +52,12 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
  public:
   ContentBrowserTestSuite(int argc, char** argv)
       : ContentTestSuiteBase(argc, argv) {
+#if BUILDFLAG(ENABLE_MUS)
+    // TODO(786453): This should be removed once mus can run without viz.
+    auto* cmd = base::CommandLine::ForCurrentProcess();
+    if (cmd->HasSwitch(switches::kMus))
+      cmd->AppendSwitchASCII(switches::kMus, switches::kMusHostVizValue);
+#endif
   }
   ~ContentBrowserTestSuite() override {}
 

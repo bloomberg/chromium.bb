@@ -297,6 +297,9 @@ bool UtilityProcessHostImpl::StartProcess() {
 #if defined(OS_MACOSX)
       switches::kEnableSandboxLogging,
 #endif
+#if defined(USE_AURA)
+      switches::kMus,
+#endif
       switches::kUseFakeDeviceForMediaStream,
       switches::kUseFileForFakeVideoCapture,
 #if defined(OS_WIN)

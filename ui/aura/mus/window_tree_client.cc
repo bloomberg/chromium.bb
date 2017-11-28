@@ -57,6 +57,7 @@
 #include "ui/aura/window_port_for_shutdown.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
@@ -224,11 +225,15 @@ WindowTreeClient::WindowTreeClient(
       io_task_runner = io_thread_->task_runner();
     }
 
-    gpu_ = ui::Gpu::Create(connector, ui::mojom::kServiceName, io_task_runner);
-    compositor_context_factory_ =
-        std::make_unique<MusContextFactory>(gpu_.get());
-    initial_context_factory_ = Env::GetInstance()->context_factory();
-    Env::GetInstance()->set_context_factory(compositor_context_factory_.get());
+    if (switches::IsMusHostingViz()) {
+      gpu_ =
+          ui::Gpu::Create(connector, ui::mojom::kServiceName, io_task_runner);
+      compositor_context_factory_ =
+          std::make_unique<MusContextFactory>(gpu_.get());
+      initial_context_factory_ = Env::GetInstance()->context_factory();
+      Env::GetInstance()->set_context_factory(
+          compositor_context_factory_.get());
+    }
 
     // WindowServerTest will create more than one WindowTreeClient. We will not
     // create the discardable memory manager for those tests.

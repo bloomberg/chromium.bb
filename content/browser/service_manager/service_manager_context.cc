@@ -24,6 +24,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/mus_util.h"
 #include "content/browser/service_manager/common_browser_interfaces.h"
 #include "content/browser/utility_process_host_impl.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
@@ -65,6 +66,7 @@
 #include "services/video_capture/public/cpp/constants.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/base/ui_features.h"
 
 #if defined(OS_ANDROID)
@@ -250,16 +252,21 @@ std::unique_ptr<service_manager::Service> CreateEmbeddedUIService(
   config.resource_runner = task_runner;
   config.image_cursors_set_weak_ptr = image_cursors_set_weak_ptr;
   config.memory_manager = memory_manager;
+  config.should_host_viz = switches::IsMusHostingViz();
   return base::MakeUnique<ui::Service>(&config);
 }
 
 void RegisterUIServiceInProcessIfNecessary(
     ServiceManagerConnection* connection) {
   // Some tests don't create BrowserMainLoop.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("mus") ||
-      !BrowserMainLoop::GetInstance()) {
+  if (!BrowserMainLoop::GetInstance())
     return;
-  }
+  // Do not embed the UI service when running in mash.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("mash"))
+    return;
+  // Do not embed the UI service if not running with --mus.
+  if (!IsUsingMus())
+    return;
 
   service_manager::EmbeddedServiceInfo info;
   info.factory = base::Bind(
