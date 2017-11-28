@@ -3250,21 +3250,6 @@
             ]
         }
     ],
-    "SafeBrowsingUseLocalBlacklist": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Use3PAPI",
-                    "params": {
-                        "check_local_blacklist": "false"
-                    }
-                }
-            ]
-        }
-    ],
     "SearchEnginePromo": [
         {
             "platforms": [
