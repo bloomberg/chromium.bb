@@ -12,6 +12,7 @@
 #include "services/data_decoder/image_decoder_impl.h"
 #include "services/data_decoder/json_parser_impl.h"
 #include "services/data_decoder/public/interfaces/image_decoder.mojom.h"
+#include "services/data_decoder/xml_parser.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace data_decoder {
@@ -33,6 +34,12 @@ void OnJsonParserRequest(service_manager::ServiceContextRefFactory* ref_factory,
       std::move(request));
 }
 
+void OnXmlParserRequest(service_manager::ServiceContextRefFactory* ref_factory,
+                        mojom::XmlParserRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<XmlParser>(ref_factory->CreateRef()),
+                          std::move(request));
+}
+
 }  // namespace
 
 DataDecoderService::DataDecoderService() : weak_factory_(this) {}
@@ -50,6 +57,7 @@ void DataDecoderService::OnStart() {
   registry_.AddInterface(
       base::Bind(&OnImageDecoderRequest, ref_factory_.get()));
   registry_.AddInterface(base::Bind(&OnJsonParserRequest, ref_factory_.get()));
+  registry_.AddInterface(base::Bind(&OnXmlParserRequest, ref_factory_.get()));
 }
 
 void DataDecoderService::OnBindInterface(

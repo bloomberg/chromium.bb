@@ -8,6 +8,7 @@ mojom("interfaces") {
   sources = [
     "image_decoder.mojom",
     "json_parser.mojom",
+    "xml_parser.mojom",
   ]
 
   public_deps = [

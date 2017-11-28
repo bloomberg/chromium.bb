@@ -5,7 +5,8 @@
     "service_manager:connector": {
       "provides": {
         "image_decoder": [ "data_decoder::mojom::ImageDecoder" ],
-        "json_parser": [ "data_decoder::mojom::JsonParser" ]
+        "json_parser": [ "data_decoder::mojom::JsonParser" ],
+        "xml_parser": [ "data_decoder::mojom::XmlParser" ]
       },
       "requires": {
         "service_manager": [ "service_manager:all_users" ]

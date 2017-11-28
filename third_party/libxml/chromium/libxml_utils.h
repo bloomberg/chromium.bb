@@ -73,8 +73,24 @@ class XmlReader {
   // returns true and |value| is set to "a".
   bool NodeAttribute(const char* name, std::string* value);
 
+  // Sets |content| to the content of the current node if it is a #text/#cdata
+  // node.
+  // Returns true if the current node is a #text/#cdata node, false otherwise.
+  bool GetTextIfTextElement(std::string* content);
+  bool GetTextIfCDataElement(std::string* content);
+
   // Returns true if the node is a closing element (e.g. </foo>).
   bool IsClosingElement();
+
+  // Returns true if the current node is an empty (self-closing) element (e.g.
+  // <foo/>).
+  bool IsEmptyElement();
+
+  // Returns true if the current node is a white-space node.
+  bool IsWhiteSpace();
+
+  // Returns true if the current node is a comment (e.g. <!-- comment -->).
+  bool IsComment();
 
   // Helper functions not provided by libxml ----------------------------------
 
