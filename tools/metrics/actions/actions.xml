@@ -5475,6 +5475,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="InProductHelp.NotifyEvent.IPH_ChromeHomePullToRefresh">
+  <owner>twellington@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <description>
+    The user triggered an event related to the Chrome Home in-product help that
+    is shown after a pull-to-refresh. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
 <action name="InProductHelp.NotifyEvent.IPH_ContextualSearch">
   <obsolete>
     Replaced with InProductHelp.NotifyEvent.IPH_ContextualSearchWebSearch.
@@ -5656,6 +5666,16 @@ should be able to be added at any place in this file.
   <description>
     The user triggered a used event related to the Chrome Home menu header
     in-product help. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action name="InProductHelp.NotifyUsedEvent.IPH_ChromeHomePullToRefresh">
+  <owner>twellington@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <description>
+    The user triggered a used event related to the Chrome Home in-product help
+    that is shown after a pull-to-refresh. See
     //components/feature_engagement/README.md#Configuring-UMA for details.
   </description>
 </action>
@@ -5843,6 +5863,17 @@ should be able to be added at any place in this file.
     The feature engagement tracker tried to determine whether the Chrome Home
     menu header in-product help should be shown to the user. See
     //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action name="InProductHelp.ShouldTriggerHelpUI.IPH_ChromeHomePullToRefresh">
+  <owner>twellington@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether the Chrome Home
+    in-product help that is shown after a pull-to-refresh should be shown to the
+    user. See //components/feature_engagement/README.md#Configuring-UMA for
+    details.
   </description>
 </action>
 
@@ -6071,6 +6102,17 @@ should be able to be added at any place in this file.
 </action>
 
 <action
+    name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_ChromeHomePullToRefresh">
+  <owner>twellington@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <description>
+    A pull-to-refresh that could have triggered the Chrome Home in-product help
+    did not. See //components/feature_engagement/README.md#Configuring-UMA for
+    details.
+  </description>
+</action>
+
+<action
     name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_ContextualSearch">
   <obsolete>
     Replaced with
@@ -6289,6 +6331,16 @@ should be able to be added at any place in this file.
 </action>
 
 <action
+    name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ChromeHomePullToRefresh">
+  <owner>twellington@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <description>
+    A pull-to-refresh triggered the Chrome Home in-product help. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action
     name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ContextualSearch">
   <obsolete>
     Replaced with
@@ -6486,6 +6538,17 @@ should be able to be added at any place in this file.
   <description>
     A user action would have triggered the Chrome Home menu header in-product
     help, but the feature was configured for tracking only. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.WouldHaveTriggered.IPH_ChromeHomePullToRefresh">
+  <owner>twellington@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <description>
+    A pull-to-refresh would have triggered the Chrome Home in-product help, but
+    the feature was configured for tracking only. See
     //components/feature_engagement/README.md#Configuring-UMA for details.
   </description>
 </action>

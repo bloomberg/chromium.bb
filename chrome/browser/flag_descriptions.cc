@@ -1676,6 +1676,11 @@ const char kChromeHomeOptOutSnackbarDescription[] =
     "Show a snackbar prompting users to take a survey the first time they"
     " opt-out of Chrome Home";
 
+const char kChromeHomePersistentIphName[] = "Chrome Home Persistent Iph";
+const char kChromeHomePersistentIphDescription[] =
+    "Wait to dismiss the Chrome Home IPH until the user inteacts with the "
+    "toolbar or a timer expires.";
+
 const char kChromeHomePersonalizedOmniboxSuggestionsName[] =
     "Chrome Home Personalized Omnibox Suggestions";
 const char kChromeHomePersonalizedOmniboxSuggestionsDescription[] =

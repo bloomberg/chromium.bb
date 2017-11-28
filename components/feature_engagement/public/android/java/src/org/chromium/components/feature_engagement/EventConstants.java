@@ -34,6 +34,24 @@ public final class EventConstants {
     public static final String BOTTOM_SHEET_EXPANDED = "bottom_sheet_expanded";
 
     /**
+     * The bottom sheet was expanded by the user swiping on the toolbar.
+     */
+    public static final String BOTTOM_SHEET_EXPANDED_FROM_SWIPE =
+            "bottom_sheet_expanded_from_swipe";
+
+    /**
+     * The bottom sheet was expanded by the user tapping the expand button.
+     */
+    public static final String BOTTOM_SHEET_EXPANDED_FROM_BUTTON =
+            "bottom_sheet_expanded_from_button";
+
+    /**
+     * The user triggered pull to refresh. Used to help determine when to show the Chrome Home
+     * in-product help.
+     */
+    public static final String PULL_TO_REFRESH = "pull_to_refresh";
+
+    /**
      * The user clicked the Chrome Home menu header.
      */
     public static final String CHROME_HOME_MENU_HEADER_CLICKED = "chrome_home_menu_header_clicked";
