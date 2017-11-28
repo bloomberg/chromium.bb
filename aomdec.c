@@ -56,6 +56,8 @@ struct AvxDecInputContext {
   struct WebmInputContext *webm_ctx;
 };
 
+static const arg_def_t help =
+    ARG_DEF(NULL, "help", 0, "Show usage options and exit");
 static const arg_def_t looparg =
     ARG_DEF(NULL, "loops", 1, "Number of times to decode the file");
 static const arg_def_t codecarg = ARG_DEF(NULL, "codec", 1, "Codec to use");
@@ -110,7 +112,8 @@ static const arg_def_t tilec = ARG_DEF(NULL, "tile-column", 1,
                                        "(-1 for all columns)");
 #endif  // CONFIG_EXT_TILE
 
-static const arg_def_t *all_args[] = { &codecarg,
+static const arg_def_t *all_args[] = { &help,
+                                       &codecarg,
                                        &use_yv12,
                                        &use_i420,
                                        &flipuvarg,
@@ -167,36 +170,41 @@ static INLINE int libyuv_scale(aom_image_t *src, aom_image_t *dst,
 }
 #endif
 
-void usage_exit(void) {
-  int i;
+void show_help(FILE *fout, int shorthelp) {
+  fprintf(fout, "Usage: %s <options> filename\n\n", exec_name);
 
-  fprintf(stderr,
-          "Usage: %s <options> filename\n\n"
-          "Options:\n",
-          exec_name);
-  arg_show_usage(stderr, all_args);
-  fprintf(stderr,
+  if (shorthelp) {
+    fprintf(fout, "Use --help to see the full list of options.\n");
+    return;
+  }
+
+  fprintf(fout, "Options:\n");
+  arg_show_usage(fout, all_args);
+  fprintf(fout,
           "\nOutput File Patterns:\n\n"
           "  The -o argument specifies the name of the file(s) to "
           "write to. If the\n  argument does not include any escape "
           "characters, the output will be\n  written to a single file. "
           "Otherwise, the filename will be calculated by\n  expanding "
           "the following escape characters:\n");
-  fprintf(stderr,
+  fprintf(fout,
           "\n\t%%w   - Frame width"
           "\n\t%%h   - Frame height"
           "\n\t%%<n> - Frame number, zero padded to <n> places (1..9)"
           "\n\n  Pattern arguments are only supported in conjunction "
           "with the --yv12 and\n  --i420 options. If the -o option is "
           "not specified, the output will be\n  directed to stdout.\n");
-  fprintf(stderr, "\nIncluded decoders:\n\n");
+  fprintf(fout, "\nIncluded decoders:\n\n");
 
-  for (i = 0; i < get_aom_decoder_count(); ++i) {
+  for (int i = 0; i < get_aom_decoder_count(); ++i) {
     const AvxInterface *const decoder = get_aom_decoder_by_index(i);
-    fprintf(stderr, "    %-6s - %s\n", decoder->name,
+    fprintf(fout, "    %-6s - %s\n", decoder->name,
             aom_codec_iface_name(decoder->codec_interface()));
   }
+}
 
+void usage_exit(void) {
+  show_help(stderr, 1);
   exit(EXIT_FAILURE);
 }
 
@@ -560,7 +568,10 @@ static int main_loop(int argc, const char **argv_) {
     memset(&arg, 0, sizeof(arg));
     arg.argv_step = 1;
 
-    if (arg_match(&arg, &codecarg, argi)) {
+    if (arg_match(&arg, &help, argi)) {
+      show_help(stdout, 0);
+      exit(EXIT_SUCCESS);
+    } else if (arg_match(&arg, &codecarg, argi)) {
       interface = get_aom_decoder_by_name(arg.val);
       if (!interface)
         die("Error: Unrecognized argument (%s) to --codec\n", arg.val);
@@ -640,6 +651,7 @@ static int main_loop(int argc, const char **argv_) {
 
   if (!fn) {
     free(argv);
+    fprintf(stderr, "No input file specified!\n");
     usage_exit();
   }
   /* Open file */

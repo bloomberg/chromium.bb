@@ -126,6 +126,8 @@ static int fourcc_is_ivf(const char detect[4]) {
   return 0;
 }
 
+static const arg_def_t help =
+    ARG_DEF(NULL, "help", 0, "Show usage options and exit");
 static const arg_def_t debugmode =
     ARG_DEF("D", "debug", 0, "Debug mode (makes output deterministic)");
 static const arg_def_t outputfile =
@@ -206,7 +208,8 @@ static const arg_def_t inbitdeptharg =
     ARG_DEF(NULL, "input-bit-depth", 1, "Bit depth of input");
 #endif
 
-static const arg_def_t *main_args[] = { &debugmode,
+static const arg_def_t *main_args[] = { &help,
+                                        &debugmode,
                                         &outputfile,
                                         &codecarg,
                                         &passes,
@@ -671,42 +674,48 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 
 static const arg_def_t *no_args[] = { NULL };
 
-void usage_exit(void) {
-  int i;
-  const int num_encoder = get_aom_encoder_count();
-
-  fprintf(stderr, "Usage: %s <options> -o dst_filename src_filename \n",
+void show_help(FILE *fout, int shorthelp) {
+  fprintf(fout, "Usage: %s <options> -o dst_filename src_filename \n",
           exec_name);
 
-  fprintf(stderr, "\nOptions:\n");
-  arg_show_usage(stderr, main_args);
-  fprintf(stderr, "\nEncoder Global Options:\n");
-  arg_show_usage(stderr, global_args);
-  fprintf(stderr, "\nRate Control Options:\n");
-  arg_show_usage(stderr, rc_args);
-  fprintf(stderr, "\nTwopass Rate Control Options:\n");
-  arg_show_usage(stderr, rc_twopass_args);
-  fprintf(stderr, "\nKeyframe Placement Options:\n");
-  arg_show_usage(stderr, kf_args);
+  if (shorthelp) {
+    fprintf(fout, "Use --help to see the full list of options.\n");
+    return;
+  }
+
+  fprintf(fout, "\nOptions:\n");
+  arg_show_usage(fout, main_args);
+  fprintf(fout, "\nEncoder Global Options:\n");
+  arg_show_usage(fout, global_args);
+  fprintf(fout, "\nRate Control Options:\n");
+  arg_show_usage(fout, rc_args);
+  fprintf(fout, "\nTwopass Rate Control Options:\n");
+  arg_show_usage(fout, rc_twopass_args);
+  fprintf(fout, "\nKeyframe Placement Options:\n");
+  arg_show_usage(fout, kf_args);
 #if CONFIG_AV1_ENCODER
-  fprintf(stderr, "\nAV1 Specific Options:\n");
-  arg_show_usage(stderr, av1_args);
+  fprintf(fout, "\nAV1 Specific Options:\n");
+  arg_show_usage(fout, av1_args);
 #endif
-  fprintf(stderr,
+  fprintf(fout,
           "\nStream timebase (--timebase):\n"
           "  The desired precision of timestamps in the output, expressed\n"
           "  in fractional seconds. Default is 1/1000.\n");
-  fprintf(stderr, "\nIncluded encoders:\n\n");
+  fprintf(fout, "\nIncluded encoders:\n\n");
 
-  for (i = 0; i < num_encoder; ++i) {
+  const int num_encoder = get_aom_encoder_count();
+  for (int i = 0; i < num_encoder; ++i) {
     const AvxInterface *const encoder = get_aom_encoder_by_index(i);
     const char *defstr = (i == (num_encoder - 1)) ? "(default)" : "";
-    fprintf(stderr, "    %-6s - %s %s\n", encoder->name,
+    fprintf(fout, "    %-6s - %s %s\n", encoder->name,
             aom_codec_iface_name(encoder->codec_interface()), defstr);
   }
-  fprintf(stderr, "\n        ");
-  fprintf(stderr, "Use --codec to switch to a non-default encoder.\n\n");
+  fprintf(fout, "\n        ");
+  fprintf(fout, "Use --codec to switch to a non-default encoder.\n\n");
+}
 
+void usage_exit(void) {
+  show_help(stderr, 1);
   exit(EXIT_FAILURE);
 }
 
@@ -792,7 +801,10 @@ static void parse_global_config(struct AvxEncoderConfig *global, char **argv) {
   for (argi = argj = argv; (*argj = *argi); argi += arg.argv_step) {
     arg.argv_step = 1;
 
-    if (arg_match(&arg, &codecarg, argi)) {
+    if (arg_match(&arg, &help, argi)) {
+      show_help(stdout, 0);
+      exit(EXIT_SUCCESS);
+    } else if (arg_match(&arg, &codecarg, argi)) {
       global->codec = get_aom_encoder_by_name(arg.val);
       if (!global->codec)
         die("Error: Unrecognized argument (%s) to --codec\n", arg.val);
@@ -1782,8 +1794,6 @@ int main(int argc, const char **argv_) {
   memset(&input, 0, sizeof(input));
   exec_name = argv_[0];
 
-  if (argc < 3) usage_exit();
-
   /* Setup default input stream settings */
   input.framerate.numerator = 30;
   input.framerate.denominator = 1;
@@ -1796,6 +1806,8 @@ int main(int argc, const char **argv_) {
    */
   argv = argv_dup(argc - 1, argv_ + 1);
   parse_global_config(&global, argv);
+
+  if (argc < 3) usage_exit();
 
   switch (global.color_type) {
     case I420: input.fmt = AOM_IMG_FMT_I420; break;
@@ -1832,7 +1844,10 @@ int main(int argc, const char **argv_) {
   /* Handle non-option arguments */
   input.filename = argv[0];
 
-  if (!input.filename) usage_exit();
+  if (!input.filename) {
+    fprintf(stderr, "No input file specified!\n");
+    usage_exit();
+  }
 
   /* Decide if other chroma subsamplings than 4:2:0 are supported */
   if (global.codec->fourcc == AV1_FOURCC) input.only_i420 = 0;
