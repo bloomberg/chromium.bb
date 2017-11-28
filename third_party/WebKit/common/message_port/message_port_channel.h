@@ -83,7 +83,8 @@ class BLINK_COMMON_EXPORT MessagePortChannel {
   // This callback will be invoked on a background thread when messages are
   // available to be read via GetMessage. It must not synchronously call back
   // into the MessagePortChannel instance.
-  void SetCallback(const base::Closure& callback);
+  void SetCallback(const base::Closure& callback,
+                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Clears any callback specified by a prior call to SetCallback.
   void ClearCallback();
@@ -94,7 +95,8 @@ class BLINK_COMMON_EXPORT MessagePortChannel {
     State();
     explicit State(mojo::ScopedMessagePipeHandle handle);
 
-    void StartWatching(const base::Closure& callback);
+    void StartWatching(const base::Closure& callback,
+                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
     void StopWatching();
 
     mojo::ScopedMessagePipeHandle TakeHandle();
@@ -123,6 +125,8 @@ class BLINK_COMMON_EXPORT MessagePortChannel {
     // Callback to invoke when the State is notified about a change to
     // |handle_|'s signaling state.
     base::Closure callback_;
+
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   };
   mutable scoped_refptr<State> state_;
 };
