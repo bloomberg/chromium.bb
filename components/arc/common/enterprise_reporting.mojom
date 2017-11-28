@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 2
+// Next MinVersion: 3
 module arc.mojom;
 
 // Enumerates the states that management can be in for a user.
@@ -25,10 +25,13 @@ interface EnterpriseReportingHost {
   ReportManagementState@0(ManagementState state);
 };
 
-// Next method ID: 2
+// Next method ID: 3
 interface EnterpriseReportingInstance {
+  // DEPRECATED: Please use Init@2 instead.
+  InitDeprecated@0(EnterpriseReportingHost host_ptr);
+
   // Establishes full-duplex communication with the host.
-  Init@0(EnterpriseReportingHost host_ptr);
+  [MinVersion=2] Init@2(EnterpriseReportingHost host_ptr) => ();
 
   // Requests that a JSON status blob be generated and passed to the
   // host.

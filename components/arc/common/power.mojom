@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next min version: 4
+// Next MinVersion: 5
 
 module arc.mojom;
 
@@ -33,10 +33,13 @@ interface PowerHost {
   [MinVersion=3] OnScreenBrightnessUpdateRequest@3(double percent);
 };
 
-// Next method ID: 5
+// Next method ID: 6
 interface PowerInstance {
+  // DEPRECATED: Please use Init@5 instead.
+  InitDeprecated@0(PowerHost host_ptr);
+
   // Establishes full-duplex communication with the host.
-  Init@0(PowerHost host_ptr);
+  [MinVersion=4] Init@5(PowerHost host_ptr) => ();
 
   // Alerts the instance to a change in interactive state.
   [MinVersion=1] SetInteractive@1(bool enabled);

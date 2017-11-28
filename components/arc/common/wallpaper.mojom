@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 3
+// Next MinVersion: 4
 
 module arc.mojom;
 
 // Handles wallpaper calls from ARC in Chrome.
-// Next method ID:3
+// Next method ID: 3
 interface WallpaperHost {
   // Gets current wallpaper encoded in PNG and send it back to ARC.
   GetWallpaper@0() => (array<uint8> wallpaper);
@@ -21,10 +21,13 @@ interface WallpaperHost {
 };
 
 // Connects with container side to publish wallpaper related intents.
-// Next method ID:3
+// Next method ID: 4
 interface WallpaperInstance {
-  // Establishes communication with the container side.
-  Init@0(WallpaperHost host_ptr);
+  // DEPRECATED: Please use Init@3 instead.
+  InitDeprecated@0(WallpaperHost host_ptr);
+
+  // Establishes full-duplex communication with the host.
+  [MinVersion=3] Init@3(WallpaperHost host_ptr) => ();
 
   // Notifies ArcWallpaperManagerService that wallpaper is changed.
   [MinVersion=1] OnWallpaperChanged@1([MinVersion=2] int32 wallpaper_id);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 13
+// Next MinVersion: 14
 
 module arc.mojom;
 
@@ -46,10 +46,14 @@ struct VoiceInteractionStatus {
 };
 
 // Connects with Android system server.
-// Next method ID: 11
+// Next method ID: 12
 // Deprecated method ID: 4
 interface VoiceInteractionFrameworkInstance {
-  Init@0(VoiceInteractionFrameworkHost host_ptr);
+  // DEPRECATED: Please use Init@11 instead.
+  InitDeprecated@0(VoiceInteractionFrameworkHost host_ptr);
+
+  // Establishes full-duplex communication with the host.
+  [MinVersion=13] Init@11(VoiceInteractionFrameworkHost host_ptr) => ();
 
   // Starts the voice interaction session in container.
   // |homescreen_is_active| is true if the session was invoked when homescreen is active.

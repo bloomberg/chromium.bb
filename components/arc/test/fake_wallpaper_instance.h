@@ -21,7 +21,8 @@ class FakeWallpaperInstance : public mojom::WallpaperInstance {
   const std::vector<int32_t>& changed_ids() const { return changed_ids_; }
 
   // Overridden from mojom::WallpaperInstance
-  void Init(mojom::WallpaperHostPtr host_ptr) override;
+  void InitDeprecated(mojom::WallpaperHostPtr host_ptr) override;
+  void Init(mojom::WallpaperHostPtr host_ptr, InitCallback callback) override;
   void OnWallpaperChanged(int32_t walpaper_id) override;
 
  private:

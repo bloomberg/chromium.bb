@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 4
+// Next MinVersion: 5
 
 module arc.mojom;
 
@@ -24,10 +24,13 @@ interface AudioHost {
   [MinVersion=3] OnSystemVolumeUpdateRequest@1(int32 percent);
 };
 
-// Next method ID: 3
+// Next method ID: 4
 interface AudioInstance {
+  // DEPRECATED: Please use Init@3 instead.
+  [MinVersion=1] InitDeprecated@1(AudioHost host);
+
   // Establishes full-duplex communication with the host.
-  [MinVersion=1] Init@1(AudioHost host);
+  [MinVersion=4] Init@3(AudioHost host) => ();
 
   // Notify plug states of headphone, microphone, etc.  Each switch state is
   // represented by the corresponding bit, if the bit is set then the switch

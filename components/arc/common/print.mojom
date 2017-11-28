@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 1
+// Next MinVersion: 2
 
 module arc.mojom;
 
@@ -11,8 +11,11 @@ interface PrintHost {
   Print@0(handle file);
 };
 
-// Next method ID: 1
+// Next method ID: 2
 interface PrintInstance {
+  // DEPRECATED: Please use Init@1 instead.
+  InitDeprecated@0(PrintHost host_ptr);
+
   // Establishes full-duplex communication with the host.
-  Init@0(PrintHost host_ptr);
+  [MinVersion=1] Init@1(PrintHost host_ptr) => ();
 };

@@ -4,13 +4,25 @@
 
 #include "components/arc/test/fake_wallpaper_instance.h"
 
+#include <utility>
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+
 namespace arc {
 
 FakeWallpaperInstance::FakeWallpaperInstance() = default;
 
 FakeWallpaperInstance::~FakeWallpaperInstance() = default;
 
-void FakeWallpaperInstance::Init(mojom::WallpaperHostPtr host_ptr) {}
+void FakeWallpaperInstance::InitDeprecated(mojom::WallpaperHostPtr host_ptr) {
+  Init(std::move(host_ptr), base::BindOnce(&base::DoNothing));
+}
+
+void FakeWallpaperInstance::Init(mojom::WallpaperHostPtr host_ptr,
+                                 InitCallback callback) {
+  std::move(callback).Run();
+}
 
 void FakeWallpaperInstance::OnWallpaperChanged(int32_t wallpaper_id) {
   changed_ids_.push_back(wallpaper_id);

@@ -5,6 +5,8 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -58,7 +60,14 @@ namespace arc {
 class FakeAuthInstance : public mojom::AuthInstance {
  public:
   // mojom::AuthInstance:
-  void Init(mojom::AuthHostPtr host) override { host_ = std::move(host); }
+  void InitDeprecated(mojom::AuthHostPtr host) override {
+    Init(std::move(host), base::BindOnce(&base::DoNothing));
+  }
+
+  void Init(mojom::AuthHostPtr host, InitCallback callback) override {
+    host_ = std::move(host);
+    std::move(callback).Run();
+  }
 
   void OnAccountInfoReady(mojom::AccountInfoPtr account_info,
                           mojom::ArcSignInStatus status) override {

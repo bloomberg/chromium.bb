@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 9
+// Next MinVersion: 10
 
 module arc.mojom;
 
@@ -212,19 +212,19 @@ struct AccessibilityRangeInfoData {
 // AccessibilityNodeInfo in Android.
 struct AccessibilityNodeInfoData {
   Rect bounds_in_screen;
-  [MinVersion=1]int32 id;
-  [MinVersion=1]map<AccessibilityBooleanProperty, bool>? boolean_properties;
-  [MinVersion=1]map<AccessibilityStringProperty, string>? string_properties;
-  [MinVersion=1]map<AccessibilityIntProperty, int32>? int_properties;
+  [MinVersion=1] int32 id;
+  [MinVersion=1] map<AccessibilityBooleanProperty, bool>? boolean_properties;
+  [MinVersion=1] map<AccessibilityStringProperty, string>? string_properties;
+  [MinVersion=1] map<AccessibilityIntProperty, int32>? int_properties;
   [MinVersion=1]
       map<AccessibilityIntListProperty, array<int32>>? int_list_properties;
-  [MinVersion=3]map<AccessibilityStringListProperty, array<string>>?
+  [MinVersion=3] map<AccessibilityStringListProperty, array<string>>?
       string_list_properties;
-  [MinVersion=5]map<AccessibilityStringProperty, array<SpanEntry>>?
+  [MinVersion=5] map<AccessibilityStringProperty, array<SpanEntry>>?
       spannable_string_properties;
-  [MinVersion=5]AccessibilityCollectionInfoData? collection_info;
-  [MinVersion=5]AccessibilityCollectionItemInfoData? collection_item_info;
-  [MinVersion=5]AccessibilityRangeInfoData? range_info;
+  [MinVersion=5] AccessibilityCollectionInfoData? collection_info;
+  [MinVersion=5] AccessibilityCollectionItemInfoData? collection_item_info;
+  [MinVersion=5] AccessibilityRangeInfoData? range_info;
 };
 
 // Filters the event type (and implicitly the data) sent by the ARC
@@ -241,7 +241,7 @@ enum AccessibilityFilterType {
   ALL,
 
   // Send complete subtrees for root nodes with whitelisted package names.
-  [MinVersion=2]WHITELISTED_PACKAGE_NAME
+  [MinVersion=2] WHITELISTED_PACKAGE_NAME
 };
 
 // AccessibilityEventData is a struct to contain info of
@@ -253,16 +253,16 @@ struct AccessibilityEventData {
   array<AccessibilityNodeInfoData> node_data;
 
   // notification_key is set only for an event on an Android notification.
-  [MinVersion=6]string? notification_key;
+  [MinVersion=6] string? notification_key;
 
   // window_id where this event is dispatched for. While this window_id matches
   // with AccessibilityNodeInfo.getWindowId now, do not expect that it always
   // matches with it.
-  [MinVersion=6]int32 window_id;
+  [MinVersion=6] int32 window_id;
 
   // Task associated with this event (usually the front task when this event
   // gets dispatched).
-  [MinVersion=8]int32 task_id;
+  [MinVersion=8] int32 task_id;
 };
 
 // AccessibilityActionData is a struct to contain info of AccessibilityAction in
@@ -277,7 +277,7 @@ struct AccessibilityActionData {
   int32 custom_action_id;
 
   // window_id where the action is performed on.
-  [MinVersion=6]int32 window_id;
+  [MinVersion=6] int32 window_id;
 };
 
 // Next method ID: 2
@@ -290,28 +290,32 @@ interface AccessibilityHelperHost {
   OnAccessibilityEvent@1(AccessibilityEventData event_data);
 };
 
-// Next method ID: 7
+// Next method ID: 8
 interface AccessibilityHelperInstance {
-  Init@0(AccessibilityHelperHost host);
+  // DEPRECATED: Please use Init@7 instead.
+  InitDeprecated@0(AccessibilityHelperHost host);
+
+  // Establishes full-duplex communication with the host.
+  [MinVersion=9] Init@7(AccessibilityHelperHost host) => ();
 
   PerformActionDeprecated@1(int32 id, AccessibilityActionType action);
 
   // Set a filter on the event types received.
   SetFilter@2(AccessibilityFilterType filter_type);
 
-  [MinVersion=3]PerformActionDeprecated2@3(AccessibilityActionData action_data);
+  [MinVersion=3] PerformActionDeprecated2@3(AccessibilityActionData action_data);
 
   // Perform an action on a node requested by a Chrome client.
-  [MinVersion=4]PerformAction@4(AccessibilityActionData action_data)
+  [MinVersion=4] PerformAction@4(AccessibilityActionData action_data)
       => (bool result);
 
   // Sets the package to use ChromeVox (true) or TalkBack (false). Returns true
   // if the request was processed.
-  [MinVersion=7]SetNativeChromeVoxArcSupportDeprecated@5(
+  [MinVersion=7] SetNativeChromeVoxArcSupportDeprecated@5(
       string package_name, bool enabled) => (bool processed);
 
   // Sets the focused window's package to use ChromeVox (true) or TalkBack
   // (false).
-  [MinVersion=8]SetNativeChromeVoxArcSupportForFocusedWindow@6(
+  [MinVersion=8] SetNativeChromeVoxArcSupportForFocusedWindow@6(
       bool enabled) => (bool processed);
 };

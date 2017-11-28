@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 2
+
 //
 // CertStoreHost is modeled after Android keymaster interface
 // hardware/libhardware/include/hardware/keymaster2.h
@@ -106,10 +108,13 @@ interface CertStoreHost {
   Abort@5(uint64 operation_handle) => (KeymasterError error);
 };
 
-// Next method ID: 3
+// Next method ID: 4
 interface CertStoreInstance {
+  // DEPRECATED: Please use Init@3 instead.
+  InitDeprecated@0(CertStoreHost host_ptr);
+
   // Establishes full-duplex communication with the host.
-  Init@0(CertStoreHost host_ptr);
+  [MinVersion=1] Init@3(CertStoreHost host_ptr) => ();
 
   // Informs the key permissions are changed: only listed packages are allowed
   // to use exposed certificates.
