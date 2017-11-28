@@ -6022,7 +6022,8 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
 
   if (IsSandboxed(kSandboxOrigin)) {
     cookie_url_ = url_;
-    SetSecurityOrigin(SecurityOrigin::CreateUnique());
+    scoped_refptr<SecurityOrigin> security_origin =
+        SecurityOrigin::CreateUnique();
     // If we're supposed to inherit our security origin from our
     // owner, but we're also sandboxed, the only things we inherit are
     // the origin's potential trustworthiness and the ability to
@@ -6032,11 +6033,12 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     Document* owner = initializer.OwnerDocument();
     if (owner) {
       if (owner->GetSecurityOrigin()->IsPotentiallyTrustworthy())
-        GetSecurityOrigin()->SetUniqueOriginIsPotentiallyTrustworthy(true);
+        security_origin->SetUniqueOriginIsPotentiallyTrustworthy(true);
       if (owner->GetSecurityOrigin()->CanLoadLocalResources())
-        GetSecurityOrigin()->GrantLoadLocalResources();
+        security_origin->GrantLoadLocalResources();
       policy_to_inherit = owner->GetContentSecurityPolicy();
     }
+    SetSecurityOrigin(std::move(security_origin));
   } else if (Document* owner = initializer.OwnerDocument()) {
     cookie_url_ = owner->CookieURL();
     // We alias the SecurityOrigins to match Firefox, see Bug 15313
