@@ -38550,9 +38550,11 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SoftwareReporterLogsUploadEnabled">
-  <int value="0" label="Enabled"/>
+  <int value="0" label="SBER Enabled"/>
   <int value="1" label="SBER Disabled"/>
   <int value="2" label="Recently sent logs"/>
+  <int value="3" label="Disabled by user"/>
+  <int value="4" label="Enabled by user"/>
 </enum>
 
 <enum name="SoftwareReporterLogsUploadResult">

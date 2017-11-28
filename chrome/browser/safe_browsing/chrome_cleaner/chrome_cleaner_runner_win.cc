@@ -117,7 +117,7 @@ ChromeCleanerRunner::ChromeCleanerRunner(
   // If set, forward the engine flag from the reporter. Otherwise, set the
   // engine flag explicitly to 1.
   const std::string& reporter_engine =
-      reporter_invocation.command_line.GetSwitchValueASCII(
+      reporter_invocation.command_line().GetSwitchValueASCII(
           chrome_cleaner::kEngineSwitch);
   cleaner_command_line_.AppendSwitchASCII(
       chrome_cleaner::kEngineSwitch,
