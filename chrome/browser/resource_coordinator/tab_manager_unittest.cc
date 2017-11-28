@@ -666,11 +666,18 @@ TEST_F(TabManagerTest, GetUnsortedTabStatsIsInVisibleWindow) {
   tab_strip2.CloseAllTabs();
 }
 
+// Data race on Linux. http://crbug.com/787842
+#if defined(OS_LINUX)
+#define MAYBE_DiscardTabWithNonVisibleTabs DISABLED_DiscardTabWithNonVisibleTabs
+#else
+#define MAYBE_DiscardTabWithNonVisibleTabs DiscardTabWithNonVisibleTabs
+#endif
+
 // Verify that:
 // - On ChromeOS, DiscardTab can discard every tab in a non-visible window, but
 //   cannot discard the active tab in a visible window.
 // - On other platforms, DiscardTab can discard every non-active tab.
-TEST_F(TabManagerTest, DiscardTabWithNonVisibleTabs) {
+TEST_F(TabManagerTest, MAYBE_DiscardTabWithNonVisibleTabs) {
   TabManager tab_manager;
   TabStripDummyDelegate delegate;
 
