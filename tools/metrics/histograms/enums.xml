@@ -2269,6 +2269,12 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="Submitted with unknown card without selecting suggestions (once)"/>
   <int value="23"
       label="Submitted with no card without selecting suggestions (once)"/>
+  <int value="24"
+      label="Submitted with wrong-length card without selecting suggestions
+             (once)"/>
+  <int value="25"
+      label="Submitted with fail-luhn-check card without selecting
+             suggestions (once)"/>
 </enum>
 
 <enum name="AutofillFormSubmittedState">

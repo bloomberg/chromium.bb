@@ -46,13 +46,20 @@ bool IsValidCreditCardExpirationDate(int year,
 bool IsValidCreditCardNumber(const base::string16& text) {
   base::string16 number = CreditCard::StripSeparators(text);
 
+  if (!HasCorrectLength(number))
+    return false;
+
+  return PassesLuhnCheck(number);
+}
+
+bool HasCorrectLength(const base::string16& number) {
   // Credit card numbers are at most 19 digits in length, 12 digits seems to
   // be a fairly safe lower-bound [1].  Specific card issuers have more rigidly
   // defined sizes.
   // (Last updated: May 29, 2017)
   // [1] https://en.wikipedia.org/wiki/Payment_card_number.
   // CardEditor.isCardNumberLengthMaxium() needs to be kept in sync.
-  const char* const type = CreditCard::GetCardNetwork(text);
+  const char* const type = CreditCard::GetCardNetwork(number);
   if (type == kAmericanExpressCard && number.size() != 15)
     return false;
   if (type == kDinersCard && number.size() != 14)
@@ -75,6 +82,10 @@ bool IsValidCreditCardNumber(const base::string16& text) {
   if (type == kGenericCard && (number.size() < 12 || number.size() > 19))
     return false;
 
+  return true;
+}
+
+bool PassesLuhnCheck(base::string16& number) {
   // Use the Luhn formula [3] to validate the number.
   // [3] http://en.wikipedia.org/wiki/Luhn_algorithm
   int sum = 0;
