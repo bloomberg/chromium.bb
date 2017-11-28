@@ -440,6 +440,41 @@ TEST_F(FormStructureTest, ShouldBeParsed_TwoFields_HasAutocomplete) {
   EXPECT_TRUE(form_structure->ShouldBeParsed());
 }
 
+// Tests that ShouldBeParsed returns true for a form containing less than three
+// fields if at least one has an autocomplete attribute.
+TEST_F(FormStructureTest, DetermineHeuristicTypes_AutocompleteFalse) {
+  std::unique_ptr<FormStructure> form_structure;
+  FormData form;
+  FormFieldData field;
+
+  field.label = ASCIIToUTF16("Name");
+  field.name = ASCIIToUTF16("name");
+  field.form_control_type = "text";
+  field.autocomplete_attribute = "false";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "text";
+  field.autocomplete_attribute = "false";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state");
+  field.form_control_type = "select-one";
+  field.autocomplete_attribute = "false";
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes(nullptr);
+  EXPECT_TRUE(form_structure->ShouldBeParsed());
+  EXPECT_EQ(3U, form_structure->autofill_count());
+  EXPECT_EQ(NAME_FULL, form_structure->field(0)->Type().GetStorableType());
+  EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STATE,
+            form_structure->field(2)->Type().GetStorableType());
+}
+
 TEST_F(FormStructureTest, HeuristicsContactInfo) {
   std::unique_ptr<FormStructure> form_structure;
   FormData form;
