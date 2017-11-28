@@ -50,7 +50,6 @@ class BookmarkItemsAdapter
     private final List<List<? extends Object>> mSections;
 
     // The promo header section will always contain 0 or 1 elements.
-    @ViewType
     private final List<Integer> mPromoHeaderSection = new ArrayList<>();
     private final List<BookmarkId> mFolderSection = new ArrayList<>();
     private final List<BookmarkId> mBookmarkSection = new ArrayList<>();

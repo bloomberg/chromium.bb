@@ -95,8 +95,8 @@ DEVICE_PERF_OUTPUT_DIR = (
 
 SCREENSHOTS_DIR = os.path.join(DIR_SOURCE_ROOT, 'out_screenshots')
 
-ANDROID_SDK_VERSION = version_codes.O
-ANDROID_SDK_BUILD_TOOLS_VERSION = '26.0.2'
+ANDROID_SDK_VERSION = version_codes.O_MR1
+ANDROID_SDK_BUILD_TOOLS_VERSION = '27.0.1'
 ANDROID_SDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
                                 'third_party', 'android_tools', 'sdk')
 ANDROID_SDK_TOOLS = os.path.join(ANDROID_SDK_ROOT,

@@ -328,6 +328,16 @@ Still reading?
     <!-- 2 resources used by android webview glue layer, could be refactored -->
     <ignore regexp="android_webview/java/res/drawable-hdpi/ic_play_circle_outline_black_48dp.png"/>
     <ignore regexp="R.string.private_browsing_warning"/>
+    <!-- OMR1 SDK roll mystery. TODO(jbudorick): Remove this after rolling lint. -->
+    <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values/android_chrome_strings.xml"/>
+    <ignore regexp="chrome/android/java/res/layout/location_bar.xml"/>
+    <ignore regexp="chrome/android/java/res/values/colors.xml"/>
+    <ignore regexp="chrome/android/java/res/values/dimens.xml"/>
+    <ignore regexp="chrome/android/java/res/drawable-hdpi/ic_omnibox_magnifier.png"/>
+    <ignore regexp="chrome/android/java/res/drawable-hdpi/omnibox_https_invalid.png"/>
+    <ignore regexp="chrome/android/java/res/drawable-hdpi/omnibox_info.png"/>
+    <ignore regexp="clank/java/clank_strings_grd.resources.zip/values/android_internal_strings.xml"/>
+    <ignore regexp="tools/android/audio_focus_grabber/java/res/drawable-hdpi/notification_icon.png"/>
   </issue>
   <issue id="UseCompoundDrawables">
     <!-- Upscaling 24dp to 48dp doesn't work as expected with a TextView compound drawable. -->
