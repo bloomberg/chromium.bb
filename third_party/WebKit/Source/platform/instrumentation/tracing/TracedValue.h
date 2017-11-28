@@ -5,6 +5,7 @@
 #ifndef TracedValue_h
 #define TracedValue_h
 
+#include "base/macros.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/text/WTFString.h"
@@ -14,8 +15,6 @@ namespace blink {
 // Thin wrapper around base::trace_event::TracedValue.
 class PLATFORM_EXPORT TracedValue final
     : public base::trace_event::ConvertableToTraceFormat {
-  WTF_MAKE_NONCOPYABLE(TracedValue);
-
  public:
   ~TracedValue();
 
@@ -57,6 +56,8 @@ class PLATFORM_EXPORT TracedValue final
       base::trace_event::TraceEventMemoryOverhead*) final;
 
   base::trace_event::TracedValue traced_value_;
+
+  DISALLOW_COPY_AND_ASSIGN(TracedValue);
 };
 
 }  // namespace blink

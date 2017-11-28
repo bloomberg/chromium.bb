@@ -26,6 +26,7 @@
 #ifndef FontFamily_h
 #define FontFamily_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/RefCounted.h"
@@ -39,7 +40,7 @@ class PLATFORM_EXPORT FontFamily {
   DISALLOW_NEW();
 
  public:
-  FontFamily() {}
+  FontFamily() = default;
   ~FontFamily();
 
   void SetFamily(const AtomicString& family) { family_ = family; }
@@ -63,15 +64,15 @@ class PLATFORM_EXPORT FontFamily {
 class PLATFORM_EXPORT SharedFontFamily : public FontFamily,
                                          public RefCounted<SharedFontFamily> {
   USING_FAST_MALLOC(SharedFontFamily);
-  WTF_MAKE_NONCOPYABLE(SharedFontFamily);
-
  public:
   static scoped_refptr<SharedFontFamily> Create() {
     return base::AdoptRef(new SharedFontFamily);
   }
 
  private:
-  SharedFontFamily() {}
+  SharedFontFamily() = default;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedFontFamily);
 };
 
 PLATFORM_EXPORT bool operator==(const FontFamily&, const FontFamily&);

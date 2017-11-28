@@ -5,6 +5,7 @@
 #ifndef PlatformPasswordCredential_h
 #define PlatformPasswordCredential_h
 
+#include "base/macros.h"
 #include "platform/credentialmanager/PlatformCredential.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -14,8 +15,6 @@ namespace blink {
 
 class PLATFORM_EXPORT PlatformPasswordCredential final
     : public PlatformCredential {
-  WTF_MAKE_NONCOPYABLE(PlatformPasswordCredential);
-
  public:
   static PlatformPasswordCredential* Create(const String& id,
                                             const String& password,
@@ -37,6 +36,8 @@ class PLATFORM_EXPORT PlatformPasswordCredential final
   String name_;
   KURL icon_url_;
   String password_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformPasswordCredential);
 };
 
 }  // namespace blink

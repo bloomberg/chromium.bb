@@ -5,6 +5,7 @@
 #ifndef GarbageCollected_h
 #define GarbageCollected_h
 
+#include "base/macros.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
@@ -241,8 +242,6 @@ class GarbageCollected;
 // the garbage collector determines that the object is no longer reachable.
 template <typename T>
 class GarbageCollectedFinalized : public GarbageCollected<T> {
-  WTF_MAKE_NONCOPYABLE(GarbageCollectedFinalized);
-
  protected:
   // finalizeGarbageCollectedObject is called when the object is freed from
   // the heap.  By default finalization means calling the destructor on the
@@ -252,13 +251,15 @@ class GarbageCollectedFinalized : public GarbageCollected<T> {
   // bit long to make name conflicts less likely.
   void FinalizeGarbageCollectedObject() { static_cast<T*>(this)->~T(); }
 
-  GarbageCollectedFinalized() {}
-  ~GarbageCollectedFinalized() {}
+  GarbageCollectedFinalized() = default;
+  ~GarbageCollectedFinalized() = default;
 
   template <typename U>
   friend struct HasFinalizer;
   template <typename U, bool>
   friend struct FinalizerTraitImpl;
+
+  DISALLOW_COPY_AND_ASSIGN(GarbageCollectedFinalized);
 };
 
 template <typename T,

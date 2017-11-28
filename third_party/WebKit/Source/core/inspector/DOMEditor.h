@@ -31,6 +31,7 @@
 #ifndef DOMEditor_h
 #define DOMEditor_h
 
+#include "base/macros.h"
 #include "core/inspector/protocol/Forward.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
@@ -45,8 +46,6 @@ class Node;
 class Text;
 
 class DOMEditor final : public GarbageCollected<DOMEditor> {
-  WTF_MAKE_NONCOPYABLE(DOMEditor);
-
  public:
   explicit DOMEditor(InspectorHistory*);
 
@@ -96,6 +95,8 @@ class DOMEditor final : public GarbageCollected<DOMEditor> {
   class SetNodeValueAction;
 
   Member<InspectorHistory> history_;
+
+  DISALLOW_COPY_AND_ASSIGN(DOMEditor);
 };
 
 }  // namespace blink

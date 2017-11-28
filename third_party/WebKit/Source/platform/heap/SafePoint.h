@@ -5,6 +5,7 @@
 #ifndef SafePoint_h
 #define SafePoint_h
 
+#include "base/macros.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 
@@ -12,7 +13,6 @@ namespace blink {
 
 class SafePointScope final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(SafePointScope);
 
  public:
   explicit SafePointScope(BlinkGC::StackState stack_state,
@@ -30,6 +30,8 @@ class SafePointScope final {
 
  private:
   ThreadState* state_;
+
+  DISALLOW_COPY_AND_ASSIGN(SafePointScope);
 };
 
 }  // namespace blink

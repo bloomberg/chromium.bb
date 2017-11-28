@@ -22,6 +22,7 @@
 #ifndef TextBreakIterator_h
 #define TextBreakIterator_h
 
+#include "base/macros.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/CharacterNames.h"
@@ -303,7 +304,6 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
 
 class PLATFORM_EXPORT NonSharedCharacterBreakIterator final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(NonSharedCharacterBreakIterator);
 
  public:
   explicit NonSharedCharacterBreakIterator(const String&);
@@ -349,6 +349,8 @@ class PLATFORM_EXPORT NonSharedCharacterBreakIterator final {
 
   // For 16 bit strings, we use a TextBreakIterator.
   TextBreakIterator* iterator_;
+
+  DISALLOW_COPY_AND_ASSIGN(NonSharedCharacterBreakIterator);
 };
 
 // Counts the number of grapheme clusters. A surrogate pair or a sequence
