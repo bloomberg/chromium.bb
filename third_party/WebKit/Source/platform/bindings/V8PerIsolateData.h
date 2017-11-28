@@ -306,7 +306,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
   Persistent<ActiveScriptWrappableSet> active_script_wrappables_;
   std::unique_ptr<ScriptWrappableVisitor> script_wrappable_visitor_;
 
-  base::DefaultTickClock clock_;
   RuntimeCallStats runtime_call_stats_;
 };
 

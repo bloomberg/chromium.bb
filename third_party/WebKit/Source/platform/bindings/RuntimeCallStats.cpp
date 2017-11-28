@@ -139,8 +139,8 @@ String RuntimeCallStats::ToString() const {
 
 // static
 void RuntimeCallStats::SetRuntimeCallStatsForTesting() {
-  DEFINE_STATIC_LOCAL(base::DefaultTickClock, s_clock, ());
-  DEFINE_STATIC_LOCAL(RuntimeCallStats, s_rcs_for_testing, (&s_clock));
+  DEFINE_STATIC_LOCAL(RuntimeCallStats, s_rcs_for_testing,
+                      (base::DefaultTickClock::GetInstance()));
   g_runtime_call_stats_for_testing =
       static_cast<RuntimeCallStats*>(&s_rcs_for_testing);
 }
