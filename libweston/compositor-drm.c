@@ -4678,15 +4678,16 @@ drm_output_choose_initial_mode(struct drm_backend *backend,
 }
 
 static int
-connector_get_current_mode(drmModeConnector *connector, int drm_fd,
-			   drmModeModeInfo *mode)
+drm_head_read_current_setup(struct drm_head *head, struct drm_backend *backend)
 {
+	drmModeModeInfo *mode = &head->inherited_mode;
+	int drm_fd = backend->drm.fd;
 	drmModeEncoder *encoder;
 	drmModeCrtc *crtc;
 
 	/* Get the current mode on the crtc that's currently driving
 	 * this connector. */
-	encoder = drmModeGetEncoder(drm_fd, connector->encoder_id);
+	encoder = drmModeGetEncoder(drm_fd, head->connector->encoder_id);
 	memset(mode, 0, sizeof *mode);
 	if (encoder != NULL) {
 		crtc = drmModeGetCrtc(drm_fd, encoder->crtc_id);
@@ -5235,8 +5236,7 @@ drm_head_create(struct drm_backend *backend, uint32_t connector_id,
 	    head->connector->connector_type == DRM_MODE_CONNECTOR_eDP)
 		weston_head_set_internal(&head->base);
 
-	if (connector_get_current_mode(head->connector, backend->drm.fd,
-				       &head->inherited_mode) < 0) {
+	if (drm_head_read_current_setup(head, backend) < 0) {
 		weston_log("Failed to retrieve current mode from connector %d.\n",
 			   head->connector_id);
 		/* Continue, inherited_mode was memset to zero. */
