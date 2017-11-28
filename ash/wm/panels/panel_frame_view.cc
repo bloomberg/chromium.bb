@@ -52,14 +52,14 @@ void PanelFrameView::InitFrameHeader() {
   AddChildView(caption_button_container_);
 
   frame_header_ = std::make_unique<DefaultFrameHeader>(
-      frame_, this, caption_button_container_);
+      frame_, this, caption_button_container_, nullptr);
   GetWidgetWindow()->SetProperty(aura::client::kTopViewColor,
                                  frame_header_->GetInactiveFrameColor());
 
   if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
     window_icon_ = new views::ImageView();
     AddChildView(window_icon_);
-    frame_header_->set_left_header_view(window_icon_);
+    frame_header_->UpdateLeftHeaderView(window_icon_);
   }
 }
 
