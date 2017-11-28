@@ -217,7 +217,7 @@ class NewPaintRangeAndSelectedLayoutObjects {
   DISALLOW_COPY_AND_ASSIGN(NewPaintRangeAndSelectedLayoutObjects);
 };
 
-static void SetShouldInvalidateIfNeeds(LayoutObject* layout_object) {
+static void SetShouldInvalidateIfNeeded(LayoutObject* layout_object) {
   if (layout_object->ShouldInvalidateSelection())
     return;
   layout_object->SetShouldInvalidateSelection();
@@ -283,7 +283,7 @@ static void SetShouldInvalidateSelection(
   // Invalidate new selected LayoutObjects.
   for (LayoutObject* layout_object : new_selected_objects) {
     if (layout_object->GetSelectionState() != SelectionState::kNone) {
-      SetShouldInvalidateIfNeeds(layout_object);
+      SetShouldInvalidateIfNeeded(layout_object);
       old_selected_objects.erase(layout_object);
       continue;
     }
@@ -296,7 +296,7 @@ static void SetShouldInvalidateSelection(
     SetSelectionStateIfNeeded(layout_object, SelectionState::kNone);
     if (layout_object->GetSelectionState() == old_state)
       continue;
-    SetShouldInvalidateIfNeeds(layout_object);
+    SetShouldInvalidateIfNeeded(layout_object);
   }
 }
 
