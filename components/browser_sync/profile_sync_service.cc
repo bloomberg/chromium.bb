@@ -32,7 +32,6 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/reading_list/features/reading_list_enable_flags.h"
 #include "components/signin/core/browser/about_signin_internals.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -1891,13 +1890,8 @@ void ProfileSyncService::GoogleSigninSucceeded(const std::string& account_id,
     is_auth_in_progress_ = true;
   }
 
-  if (signin::IsDicePrepareMigrationEnabled() &&
-      oauth2_token_service_->RefreshTokenIsAvailable(account_id)) {
-    // When Dice is enabled, the refresh token may be available before the user
-    // enables sync. Start sync if the refresh token is already available in the
-    // token service when the authenticated account is set.
+  if (oauth2_token_service_->RefreshTokenIsAvailable(account_id))
     OnRefreshTokenAvailable(account_id);
-  }
 }
 
 void ProfileSyncService::GoogleSignedOut(const std::string& account_id,
