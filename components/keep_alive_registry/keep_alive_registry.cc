@@ -26,6 +26,14 @@ bool KeepAliveRegistry::IsKeepingAlive() const {
   return registered_count_ > 0;
 }
 
+bool KeepAliveRegistry::IsKeepingAliveOnlyByBrowserOrigin() const {
+  for (const auto& value : registered_keep_alives_) {
+    if (value.first != KeepAliveOrigin::BROWSER)
+      return false;
+  }
+  return true;
+}
+
 bool KeepAliveRegistry::IsRestartAllowed() const {
   return registered_count_ == restart_allowed_count_;
 }

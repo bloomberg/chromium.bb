@@ -435,6 +435,7 @@ test("browser_tests") {
       "../browser/banners/app_banner_manager_browsertest.cc",
       "../browser/bitmap_fetcher/bitmap_fetcher_browsertest.cc",
       "../browser/browser_encoding_browsertest.cc",
+      "../browser/browser_shutdown_browsertest.cc",
       "../browser/browsing_data/autofill_counter_browsertest.cc",
       "../browser/browsing_data/browsing_data_cache_storage_helper_browsertest.cc",
       "../browser/browsing_data/browsing_data_database_helper_browsertest.cc",

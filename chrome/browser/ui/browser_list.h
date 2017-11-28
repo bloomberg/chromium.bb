@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_set.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -28,6 +29,7 @@ class BrowserListObserver;
 // Maintains a list of Browser objects.
 class BrowserList {
  public:
+  using BrowserSet = base::flat_set<Browser*>;
   using BrowserVector = std::vector<Browser*>;
   using CloseCallback = base::Callback<void(const base::FilePath&)>;
   using const_iterator = BrowserVector::const_iterator;
@@ -55,6 +57,11 @@ class BrowserList {
   }
   const_reverse_iterator end_last_active() const {
     return last_active_browsers_.rend();
+  }
+
+  // Returns the set of browsers that are currently in the closing state.
+  const BrowserSet& currently_closing_browsers() const {
+    return currently_closing_browsers_;
   }
 
   static BrowserList* GetInstance();
@@ -153,6 +160,8 @@ class BrowserList {
   // A vector of the browsers in this list that have been activated, in the
   // reverse order in which they were last activated.
   BrowserVector last_active_browsers_;
+  // A vector of the browsers that are currently in the closing state.
+  BrowserSet currently_closing_browsers_;
 
   // A list of observers which will be notified of every browser addition and
   // removal across all BrowserLists.

@@ -828,6 +828,10 @@ class Browser : public TabStripModelObserver,
 
   bool ShouldHideUIForFullscreen() const;
 
+  // Indicates if we have called BrowserList::NotifyBrowserCloseStarted for the
+  // browser.
+  bool IsBrowserClosing() const;
+
   // Returns true if we can start the shutdown sequence for the browser, i.e.
   // the last browser window is being closed.
   bool ShouldStartShutdown() const;
