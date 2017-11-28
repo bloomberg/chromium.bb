@@ -86,9 +86,6 @@ _CONFIG = [
             # but still needed for interop with WebKit/common. Note that other
             # STL types such as std::unique_ptr are encouraged.
             'std::.+',
-
-            # Blink uses UKM for logging e.g. always-on leak detection (crbug/757374)
-            'ukm::.+',
         ],
         'disallowed': ['.+'],
     },

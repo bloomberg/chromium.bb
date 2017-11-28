@@ -84,11 +84,14 @@ std::set<ukm::SourceId> TestUkmRecorder::GetSourceIds() const {
 }
 
 const UkmSource* TestUkmRecorder::GetSourceForUrl(const char* url) const {
+  const UkmSource* source = nullptr;
   for (const auto& kv : sources()) {
-    if (kv.second->url() == url)
-      return kv.second.get();
+    if (kv.second->url() == url) {
+      DCHECK_EQ(nullptr, source);
+      source = kv.second.get();
+    }
   }
-  return nullptr;
+  return source;
 }
 
 std::vector<const UkmSource*> TestUkmRecorder::GetSourcesForUrl(
