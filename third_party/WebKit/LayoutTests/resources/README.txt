@@ -1,25 +1,22 @@
-The following files are used to run W3C testharness.js-style tests,
-either authored for Blink or imported from W3C's web-platform-tests.
-These files should not be modified locally, as they are imported.
+The following files are used to run W3C testharness.js-based tests.
+These files should not be modified locally, as they are manually
+synced from LayoutTests/external/wpt/resources (https://crbug.com/685854),
+which is automatically synced with W3C web-platform-tests.
 
-* testharness.js         from testharness.js
-* testharness.css        from testharness.js
-* idlharness.js          from testharness.js
-* WebIDLParser.js        from webidl2.js
-
-NOTE: The 'WebIDLParser.js' file is developed as 'webidl2.js' but
-web-platform-tests's wpt-tools server is configured to serve the
-resource under a different name, which is matched here.
+* testdriver.js
+* testharness.js
+* testharness.css
+* idlharness.js
+* webidl2.js
 
 The following files are native to Blink and can be modified:
 
+* testdriver-vendor.js    automation via Blink internal APIs
 * testharnessreport.js    integration with Blink's test runner
 
 See also:
-* https://www.chromium.org/blink/importing-the-w3c-tests
-* LayoutTests/imported/README
+https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_platform_tests.md
 
 References:
 * web-platform-tests  https://github.com/w3c/web-platform-tests
-* testharness.js      https://github.com/w3c/testharness.js
-* webidl2.js          https://github.com/darobin/webidl2.js
+* webidl2.js          https://github.com/w3c/webidl2.js
