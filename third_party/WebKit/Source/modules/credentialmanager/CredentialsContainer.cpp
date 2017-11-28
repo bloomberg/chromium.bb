@@ -26,7 +26,7 @@
 #include "modules/credentialmanager/CredentialRequestOptions.h"
 #include "modules/credentialmanager/FederatedCredential.h"
 #include "modules/credentialmanager/FederatedCredentialRequestOptions.h"
-#include "modules/credentialmanager/MakeCredentialOptions.h"
+#include "modules/credentialmanager/MakePublicKeyCredentialOptions.h"
 #include "modules/credentialmanager/PasswordCredential.h"
 #include "modules/credentialmanager/PublicKeyCredential.h"
 #include "platform/credentialmanager/PlatformFederatedCredential.h"
@@ -355,6 +355,13 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
 
   if (!CheckBoilerplate(resolver))
     return promise;
+
+  if (!(credential->GetPlatformCredential()->IsFederated() ||
+        credential->GetPlatformCredential()->IsPassword())) {
+    resolver->Reject(DOMException::Create(
+        kNotSupportedError,
+        "Store operation not permitted for PublicKey credentials."));
+  }
 
   if (IsIconURLInsecure(credential)) {
     resolver->Reject(DOMException::Create(kSecurityError,

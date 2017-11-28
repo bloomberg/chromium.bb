@@ -20,7 +20,8 @@ class MODULES_EXPORT AuthenticatorAssertionResponse final
   static AuthenticatorAssertionResponse* Create(
       DOMArrayBuffer* client_data_json,
       DOMArrayBuffer* authenticator_data,
-      DOMArrayBuffer* signature);
+      DOMArrayBuffer* signature,
+      DOMArrayBuffer* user_handle);
 
   virtual ~AuthenticatorAssertionResponse();
 
@@ -30,14 +31,18 @@ class MODULES_EXPORT AuthenticatorAssertionResponse final
 
   DOMArrayBuffer* signature() const { return signature_.Get(); }
 
+  DOMArrayBuffer* userHandle() const { return user_handle_.Get(); }
+
   virtual void Trace(blink::Visitor*);
 
  private:
   explicit AuthenticatorAssertionResponse(DOMArrayBuffer* client_data_json,
                                           DOMArrayBuffer* authenticator_data,
-                                          DOMArrayBuffer* signature);
+                                          DOMArrayBuffer* signature,
+                                          DOMArrayBuffer* user_handle);
   const Member<DOMArrayBuffer> authenticator_data_;
   const Member<DOMArrayBuffer> signature_;
+  const Member<DOMArrayBuffer> user_handle_;
 };
 
 }  // namespace blink

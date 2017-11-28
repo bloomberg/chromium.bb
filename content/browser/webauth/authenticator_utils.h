@@ -13,9 +13,10 @@ namespace content {
 namespace authenticator_utils {
 
 // JSON key values
+constexpr char kTypeKey[] = "type";
 constexpr char kChallengeKey[] = "challenge";
 constexpr char kOriginKey[] = "origin";
-constexpr char kHashAlg[] = "hashAlg";
+constexpr char kHashAlgorithm[] = "hashAlgorithm";
 constexpr char kTokenBindingKey[] = "tokenBinding";
 
 // U2FResponse byte positions

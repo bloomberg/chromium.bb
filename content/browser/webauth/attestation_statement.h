@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_WEBAUTH_ATTESTATION_STATEMENT_H_
 
 #include "base/macros.h"
-#include "content/browser/webauth/attestation_data.h"
 #include "content/browser/webauth/cbor/cbor_values.h"
 
 namespace content {

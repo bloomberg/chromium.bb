@@ -52,27 +52,35 @@ struct AuthenticatorResponse {
   array<uint8> signature;
 };
 
-// Information about the relying party and the account held by the user at
-// that relying party. This information is used by the authenticator to create
-// or retrieve an appropriate public key credential for this account.
-// These fields take arbitrary input.
-struct PublicKeyCredentialEntity {
-  // A unique identifier for the entity. An ASCII serialization of an origin
-  // for a relying party, and an arbitrary string specified by the relying party
-  // for user accounts.
+// Information about the relying party. These fields take arbitrary input.
+struct PublicKeyCredentialRpEntity {
+  // An ASCII serialization of an origin.
   string? id;
 
-  // Friendly name associated with the entity intended for display.
-  // e.g. "Acme Corporation" for a relying party and "john.p.smith@example.com"
-  // or "+14255551234" for a user.
+  // Friendly name associated with the relying party intended for display.
+  // e.g. "Acme Corporation".
   string name;
 
-  // Image associated with the entity.
-  // For example, this could be a user’s avatar or a relying party's logo.
+  // Image associated with the entity. e.g. a relying party's logo.
+  url.mojom.Url? icon;
+};
+
+// Informatiom about the account held by the user. These fields take
+// arbitrary input.
+struct PublicKeyCredentialUserEntity {
+  // Unique identifier for a user account An opaque byte sequence with a
+  // maximum size of 64 bytes.
+  array<uint8> id;
+
+  // Friendly name associated with the entity intended for display.
+  // e.g."john.p.smith@example.com" or "+14255551234" for a user.
+  string name;
+
+  // Image associated with the entity. For example, a user’s avatar.
   url.mojom.Url? icon;
 
   // Contains a friendly name for the user account (e.g., "John P. Smith").
-  string? display_name;
+  string display_name;
 };
 
 // Parameters that are used to generate an appropriate public key credential.
@@ -82,18 +90,17 @@ struct PublicKeyCredentialParameters {
 };
 
 // Parameters passed into calls to MakeCredential.
-struct MakeCredentialOptions {
-  // Relying party information.
-  // Corresponds to |rp| in MakeCredentialOptions.idl.
-  PublicKeyCredentialEntity relying_party;
-
-  // Information about the user.
-  PublicKeyCredentialEntity user;
+struct MakePublicKeyCredentialOptions {
+  // Information about the relying party and user entities, respectively.
+  // Used by the authenticator to create or retrieve an appropriate public key
+  // credential for the requested account.
+  PublicKeyCredentialRpEntity relying_party;
+  PublicKeyCredentialUserEntity user;
 
   // A blob passed from the the relying party server.
   array<uint8> challenge;
 
-  array<PublicKeyCredentialParameters> crypto_parameters;
+  array<PublicKeyCredentialParameters> public_key_parameters;
 
   mojo.common.mojom.TimeDelta adjusted_timeout;
 
@@ -128,8 +135,8 @@ enum AuthenticatorTransport {
 // Interface to direct authenticators to create or use a public key credential.
 interface Authenticator {
   // Gets the credential info for a new public key credential created by an
-  // authenticator for the given |MakeCredentialOptions|
+  // authenticator for the given |MakePublicKeyCredentialOptions|
   // [PublicKeyCredentialInfo] will only be set if status == SUCCESS.
-  MakeCredential(MakeCredentialOptions options)
+  MakeCredential(MakePublicKeyCredentialOptions options)
       => (AuthenticatorStatus status, PublicKeyCredentialInfo? credential);
 };

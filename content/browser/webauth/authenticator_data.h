@@ -15,7 +15,7 @@
 
 namespace content {
 
-class AttestationData;
+class AttestedCredentialData;
 
 // https://www.w3.org/TR/2017/WD-webauthn-20170505/#sec-authenticator-data.
 class CONTENT_EXPORT AuthenticatorData {
@@ -30,14 +30,14 @@ class CONTENT_EXPORT AuthenticatorData {
   AuthenticatorData(std::string relying_party_id,
                     Flags flags,
                     std::vector<uint8_t> counter,
-                    std::unique_ptr<AttestationData> data);
+                    std::unique_ptr<AttestedCredentialData> data);
   virtual ~AuthenticatorData();
 
   static std::unique_ptr<AuthenticatorData> Create(
       std::string client_data_json,
       Flags flags,
       std::vector<uint8_t> counter,
-      std::unique_ptr<AttestationData> data);
+      std::unique_ptr<AttestedCredentialData> data);
 
   // Produces a byte array consisting of:
   // * hash(relying_party_id)
@@ -60,7 +60,7 @@ class CONTENT_EXPORT AuthenticatorData {
 
   // Signature counter, 32-bit unsigned big-endian integer.
   const std::vector<uint8_t> counter_;
-  const std::unique_ptr<AttestationData> attestation_data_;
+  const std::unique_ptr<AttestedCredentialData> attested_data_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorData);
 };

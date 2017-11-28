@@ -89,11 +89,11 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
         "  challenge: new TextEncoder().encode('climb a mountain'),"
         "  rp: { id: '1098237235409872', name: 'Acme' },"
         "  user: { "
-        "    id: '1098237235409872',"
+        "    id: new TextEncoder().encode('1098237235409872'),"
         "    name: 'avery.a.jones@example.com',"
         "    displayName: 'Avery A. Jones', "
         "    icon: 'https://pics.acme.com/00/p/aBjjjpqPb.png'},"
-        "  parameters: [{ type: 'public-key', algorithm: '123'}],"
+        "  pubKeyCredParams: [{ type: 'public-key', alg: '123'}],"
         "  timeout: 60000,"
         "  excludeList: [] }"
         "}).catch(c => window.domAutomationController.send(c.toString()));";

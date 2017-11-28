@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/webauth/attestation_data.h"
+#include "content/browser/webauth/attested_credential_data.h"
 
 #include <utility>
 
@@ -12,7 +12,8 @@
 namespace content {
 
 // static
-std::unique_ptr<AttestationData> AttestationData::CreateFromU2fRegisterResponse(
+std::unique_ptr<AttestedCredentialData>
+AttestedCredentialData::CreateFromU2fRegisterResponse(
     const std::vector<uint8_t>& u2f_data,
     std::vector<uint8_t> aaguid,
     std::unique_ptr<PublicKey> public_key) {
@@ -30,21 +31,22 @@ std::unique_ptr<AttestationData> AttestationData::CreateFromU2fRegisterResponse(
       u2f_data, authenticator_utils::kU2fResponseKeyHandleStartPos,
       base::strict_cast<size_t>(credential_id_length[1]));
 
-  return std::make_unique<AttestationData>(
+  return std::make_unique<AttestedCredentialData>(
       std::move(aaguid), std::move(credential_id_length),
       std::move(credential_id), std::move(public_key));
 }
 
-AttestationData::AttestationData(std::vector<uint8_t> aaguid,
-                                 std::vector<uint8_t> length,
-                                 std::vector<uint8_t> credential_id,
-                                 std::unique_ptr<PublicKey> public_key)
+AttestedCredentialData::AttestedCredentialData(
+    std::vector<uint8_t> aaguid,
+    std::vector<uint8_t> length,
+    std::vector<uint8_t> credential_id,
+    std::unique_ptr<PublicKey> public_key)
     : aaguid_(std::move(aaguid)),
       credential_id_length_(std::move(length)),
       credential_id_(std::move(credential_id)),
       public_key_(std::move(public_key)) {}
 
-std::vector<uint8_t> AttestationData::SerializeAsBytes() {
+std::vector<uint8_t> AttestedCredentialData::SerializeAsBytes() {
   std::vector<uint8_t> attestation_data;
   std::vector<uint8_t> cbor_encoded_key = public_key_->EncodeAsCBOR();
   authenticator_utils::Append(&attestation_data, aaguid_);
@@ -54,6 +56,6 @@ std::vector<uint8_t> AttestationData::SerializeAsBytes() {
   return attestation_data;
 }
 
-AttestationData::~AttestationData() {}
+AttestedCredentialData::~AttestedCredentialData() {}
 
 }  // namespace content

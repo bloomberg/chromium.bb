@@ -4,71 +4,75 @@
 <script src=../resources/webidl2.js></script>
 <script src=../resources/idlharness.js></script>
 <script type="text/plain" id="tested">
-[SecureContext]
+[SecureContext, Exposed=Window]
 interface PublicKeyCredential : Credential {
-    readonly attribute ArrayBuffer           rawId;
-    readonly attribute AuthenticatorResponse response;
+    [SameObject] readonly attribute ArrayBuffer           rawId;
+    [SameObject] readonly attribute AuthenticatorResponse response;
 };
 
 partial dictionary CredentialCreationOptions {
-    MakeCredentialOptions? publicKey;
+    MakePublicKeyCredentialOptions? publicKey;
 };
 
 partial dictionary CredentialRequestOptions {
     PublicKeyCredentialRequestOptions? publicKey;
 };
 
-[SecureContext]
+[SecureContext, Exposed=Window]
 interface AuthenticatorResponse {
-    readonly attribute ArrayBuffer clientDataJSON;
+    [SameObject] readonly attribute ArrayBuffer clientDataJSON;
 };
 
-[SecureContext]
+[SecureContext, Exposed=Window]
 interface AuthenticatorAttestationResponse : AuthenticatorResponse {
-    readonly attribute ArrayBuffer attestationObject;
+    [SameObject] readonly attribute ArrayBuffer attestationObject;
 };
 
-[SecureContext]
+[SecureContext, Exposed=Window]
 interface AuthenticatorAssertionResponse : AuthenticatorResponse {
-    readonly attribute ArrayBuffer      authenticatorData;
-    readonly attribute ArrayBuffer      signature;
+    [SameObject] readonly attribute ArrayBuffer      authenticatorData;
+    [SameObject] readonly attribute ArrayBuffer      signature;
+    [SameObject] readonly attribute ArrayBuffer      userHandle;
 };
-
-typedef long COSEAlgorithmIdentifier;
 
 dictionary PublicKeyCredentialParameters {
     required PublicKeyCredentialType type;
-    required COSEAlgorithmIdentifier algorithm;
+    required COSEAlgorithmIdentifier alg;
 };
 
-dictionary MakeCredentialOptions {
-    required PublicKeyCredentialEntity rp;
+dictionary MakePublicKeyCredentialOptions {
+    required PublicKeyCredentialRpEntity rp;
     required PublicKeyCredentialUserEntity user;
 
     required BufferSource                         challenge;
-    required sequence<PublicKeyCredentialParameters> parameters;
+    required sequence<PublicKeyCredentialParameters> pubKeyCredParams;
 
     unsigned long                        timeout;
-    sequence<PublicKeyCredentialDescriptor> excludeList = [];
+    sequence<PublicKeyCredentialDescriptor> excludeCredentials = [];
     AuthenticatorSelectionCriteria       authenticatorSelection;
 };
 
 dictionary PublicKeyCredentialEntity {
-    DOMString id;
-    DOMString name;
+    required DOMString name;
     USVString icon;
 };
 
+dictionary PublicKeyCredentialRpEntity : PublicKeyCredentialEntity {
+    DOMString      id;
+};
+
 dictionary PublicKeyCredentialUserEntity : PublicKeyCredentialEntity {
-    DOMString displayName;
+    required BufferSource   id;
+    required DOMString displayName;
 };
 
 dictionary AuthenticatorSelectionCriteria {
     Attachment    attachment;
     boolean       requireResidentKey = false;
+    boolean       requireUserVerification = false;
 };
 
-enum Attachment {
+enum AuthenticatorAttachment {
     "platform",
     "cross-platform"
 };
@@ -77,13 +81,14 @@ dictionary PublicKeyCredentialRequestOptions {
     required BufferSource                challenge;
     unsigned long                        timeout;
     USVString                            rpId;
-    sequence<PublicKeyCredentialDescriptor> allowList = [];
+    sequence<PublicKeyCredentialDescriptor> allowCredentials = [];
 };
 
 dictionary CollectedClientData {
+    required DOMString           type;
     required DOMString           challenge;
     required DOMString           origin;
-    required DOMString           hashAlg;
+    required DOMString           hashAlgorithm;
     DOMString                    tokenBindingId;
 };
 
@@ -94,14 +99,16 @@ enum PublicKeyCredentialType {
 dictionary PublicKeyCredentialDescriptor {
     required PublicKeyCredentialType type;
     required BufferSource id;
-    sequence<Transport>   transports;
+    sequence<AuthenticatorTransport>   transports;
 };
 
-enum Transport {
+enum AuthenticatorTransport {
     "usb",
     "nfc",
     "ble"
 };
+
+typedef long COSEAlgorithmIdentifier;
 
 </script>
 <script>

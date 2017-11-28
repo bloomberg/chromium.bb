@@ -11,9 +11,9 @@
 
 namespace blink {
 class ArrayBufferOrArrayBufferView;
-class MakeCredentialOptions;
-class PublicKeyCredentialEntity;
+class MakePublicKeyCredentialOptions;
 class PublicKeyCredentialParameters;
+class PublicKeyCredentialRpEntity;
 class PublicKeyCredentialUserEntity;
 }  // namespace blink
 
@@ -39,17 +39,17 @@ struct TypeConverter<webauth::mojom::blink::AuthenticatorTransport, String> {
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::PublicKeyCredentialEntityPtr,
+struct TypeConverter<webauth::mojom::blink::PublicKeyCredentialUserEntityPtr,
                      blink::PublicKeyCredentialUserEntity> {
-  static webauth::mojom::blink::PublicKeyCredentialEntityPtr Convert(
+  static webauth::mojom::blink::PublicKeyCredentialUserEntityPtr Convert(
       const blink::PublicKeyCredentialUserEntity&);
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::PublicKeyCredentialEntityPtr,
-                     blink::PublicKeyCredentialEntity> {
-  static webauth::mojom::blink::PublicKeyCredentialEntityPtr Convert(
-      const blink::PublicKeyCredentialEntity& rp);
+struct TypeConverter<webauth::mojom::blink::PublicKeyCredentialRpEntityPtr,
+                     blink::PublicKeyCredentialRpEntity> {
+  static webauth::mojom::blink::PublicKeyCredentialRpEntityPtr Convert(
+      const blink::PublicKeyCredentialRpEntity&);
 };
 
 template <>
@@ -60,10 +60,10 @@ struct TypeConverter<webauth::mojom::blink::PublicKeyCredentialParametersPtr,
 };
 
 template <>
-struct TypeConverter<webauth::mojom::blink::MakeCredentialOptionsPtr,
-                     blink::MakeCredentialOptions> {
-  static webauth::mojom::blink::MakeCredentialOptionsPtr Convert(
-      const blink::MakeCredentialOptions&);
+struct TypeConverter<webauth::mojom::blink::MakePublicKeyCredentialOptionsPtr,
+                     blink::MakePublicKeyCredentialOptions> {
+  static webauth::mojom::blink::MakePublicKeyCredentialOptionsPtr Convert(
+      const blink::MakePublicKeyCredentialOptions&);
 };
 
 }  // namespace mojo
