@@ -47,6 +47,9 @@ class TestWindowManagerDelegate : public aura::WindowManagerDelegate {
 
   // WindowManagerDelegate:
   void SetWindowManagerClient(aura::WindowManagerClient* client) override {}
+  void OnWmAcceleratedWidgetAvailableForDisplay(
+      int64_t display_id,
+      gfx::AcceleratedWidget widget) override {}
   void OnWmConnected() override {}
   void OnWmSetBounds(aura::Window* window, const gfx::Rect& bounds) override {}
   bool OnWmSetProperty(

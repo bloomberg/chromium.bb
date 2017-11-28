@@ -1717,7 +1717,10 @@ void WindowTreeClient::OnConnect() {
 void WindowTreeClient::WmOnAcceleratedWidgetForDisplay(
     int64_t display,
     gpu::SurfaceHandle surface_handle) {
-  // TODO(crbug.com/786453): Implement this.
+  if (window_manager_delegate_) {
+    window_manager_delegate_->OnWmAcceleratedWidgetAvailableForDisplay(
+        display, surface_handle);
+  }
 }
 
 void WindowTreeClient::WmNewDisplayAdded(

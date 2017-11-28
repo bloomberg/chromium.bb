@@ -29,7 +29,7 @@ class WindowTreeHostMusDelegate;
 struct DisplayInitParams;
 struct WindowTreeHostMusInitParams;
 
-class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
+class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform {
  public:
   explicit WindowTreeHostMus(WindowTreeHostMusInitParams init_params);
 
@@ -94,6 +94,10 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   void set_display_id(int64_t id) { display_id_ = id; }
   int64_t display_id() const { return display_id_; }
   display::Display GetDisplay() const;
+
+  // Forces WindowTreeHost to re-setup the compositor to use the provided
+  // |widget|.
+  void OverrideAcceleratedWidget(gfx::AcceleratedWidget widget);
 
   // aura::WindowTreeHostPlatform:
   void HideImpl() override;
