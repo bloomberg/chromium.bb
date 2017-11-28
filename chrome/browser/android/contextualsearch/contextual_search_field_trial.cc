@@ -6,8 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/android/chrome_feature_list.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace {
@@ -23,8 +21,6 @@ const char kContextualSearchSendURLDisabledParamName[] = "disable_send_url";
 const char kContextualSearchDecodeMentionsDisabledParamName[] =
     "disable_decode_mentions";
 const char kContextualCardsVersionParamName[] = "contextual_cards_version";
-const char kContextualSearchRankerIntegrationEnabledParamName[] =
-    "enable_ranker_integration";
 
 // The default size of the content surrounding the selection to gather, allowing
 // room for other parameters.
@@ -48,9 +44,7 @@ ContextualSearchFieldTrial::ContextualSearchFieldTrial()
       is_decode_mentions_disabled_cached_(false),
       is_decode_mentions_disabled_(false),
       is_contextual_cards_version_cached_(false),
-      contextual_cards_version_(0),
-      is_ranker_integration_enabled_cached_(false),
-      is_ranker_integration_enabled_(false) {}
+      contextual_cards_version_(0) {}
 
 ContextualSearchFieldTrial::~ContextualSearchFieldTrial() {}
 
@@ -94,15 +88,6 @@ int ContextualSearchFieldTrial::GetContextualCardsVersion() {
   return GetIntParamValueOrDefault(kContextualCardsVersionParamName, 0,
                                    &is_contextual_cards_version_cached_,
                                    &contextual_cards_version_);
-}
-
-bool ContextualSearchFieldTrial::
-    IsRankerIntegrationOrMlTapSuppressionEnabled() {
-  return base::FeatureList::IsEnabled(
-             chrome::android::kContextualSearchMlTapSuppression) ||
-         GetBooleanParam(kContextualSearchRankerIntegrationEnabledParamName,
-                         &is_ranker_integration_enabled_cached_,
-                         &is_ranker_integration_enabled_);
 }
 
 bool ContextualSearchFieldTrial::GetBooleanParam(const std::string& name,
