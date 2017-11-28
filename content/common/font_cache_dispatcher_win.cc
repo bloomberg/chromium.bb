@@ -10,7 +10,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "content/common/child_process_messages.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 namespace {
@@ -131,41 +132,20 @@ class FontCache {
 
 }
 
-FontCacheDispatcher::FontCacheDispatcher()
-    : sender_(NULL) {
-}
-
-bool FontCacheDispatcher::Send(IPC::Message* message) {
-  if (sender_)
-    return sender_->Send(message);
-
-  delete message;
-  return false;
-}
+FontCacheDispatcher::FontCacheDispatcher() {}
 
 FontCacheDispatcher::~FontCacheDispatcher() {
 }
 
-void FontCacheDispatcher::OnFilterAdded(IPC::Channel* channel) {
-  sender_ = channel;
+// static
+void FontCacheDispatcher::Create(
+    mojom::FontCacheWinRequest request,
+    const service_manager::BindSourceInfo& source_info) {
+  mojo::MakeStrongBinding(std::make_unique<FontCacheDispatcher>(),
+                          std::move(request));
 }
 
-bool FontCacheDispatcher::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(FontCacheDispatcher, message)
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_PreCacheFont, OnPreCacheFont)
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ReleaseCachedFonts,
-                        OnReleaseCachedFonts)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void FontCacheDispatcher::OnChannelClosing() {
-  sender_ = NULL;
-}
-
-void FontCacheDispatcher::OnPreCacheFont(const LOGFONT& font) {
+void FontCacheDispatcher::PreCacheFont(const LOGFONT& font) {
   // If a child process is running in a sandbox, GetTextMetrics()
   // can sometimes fail. If a font has not been loaded
   // previously, GetTextMetrics() will try to load the font
@@ -182,7 +162,7 @@ void FontCacheDispatcher::OnPreCacheFont(const LOGFONT& font) {
   FontCache::GetInstance()->PreCacheFont(font, this);
 }
 
-void FontCacheDispatcher::OnReleaseCachedFonts() {
+void FontCacheDispatcher::ReleaseCachedFonts() {
   // Release cached fonts that requested from a pid by decrementing the ref
   // count.  When ref count is zero, the handles are released.
   FontCache::GetInstance()->ReleaseCachedFonts(this);

@@ -614,6 +614,10 @@ mojom("mojo_bindings") {
     "widget.mojom",
   ]
 
+  if (is_win) {
+    sources += [ "font_cache_win.mojom" ]
+  }
+
   import_dirs = [ "//mojo/services" ]
 
   public_deps = [

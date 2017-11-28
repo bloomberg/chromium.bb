@@ -28,6 +28,10 @@ mojom("common_custom_types") {
     "version.mojom",
   ]
 
+  if (is_win) {
+    sources += [ "logfont_win.mojom" ]
+  }
+
   # TODO(crbug.com/699569): Convert to use the new JS bindings.
   js_bindings_mode = "both"
 }
