@@ -2367,6 +2367,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Apps.Window.Type" enum="AppsWindowType">
+  <owner>stevenjb@chromium.org</owner>
+  <summary>
+    The type of app window opened (through the chrome.app.window API).
+  </summary>
+</histogram>
+
 <histogram name="Arc.AndroidBootTime" units="ms">
   <owner>elijahtaylor@google.com</owner>
   <owner>shihuis@google.com</owner>

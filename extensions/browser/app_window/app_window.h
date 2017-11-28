@@ -91,9 +91,11 @@ class AppWindow : public content::WebContentsDelegate,
                   public ExtensionFunctionDispatcher::Delegate,
                   public ExtensionRegistryObserver {
  public:
+  // Enum values should not be changed since they are used by UMA.
   enum WindowType {
-    WINDOW_TYPE_DEFAULT = 1 << 0,   // Default app window.
-    WINDOW_TYPE_PANEL = 1 << 1,     // OS controlled panel window (Ash only).
+    WINDOW_TYPE_DEFAULT = 0,  // Default app window.
+    WINDOW_TYPE_PANEL = 1,    // OS controlled panel window (Ash only).
+    WINDOW_TYPE_COUNT = 2,
   };
 
   enum Frame {
