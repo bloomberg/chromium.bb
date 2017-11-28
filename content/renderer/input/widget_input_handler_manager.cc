@@ -150,17 +150,23 @@ void WidgetInputHandlerManager::DidOverscroll(
     const gfx::Vector2dF& current_fling_velocity,
     const gfx::PointF& causal_event_viewport_point,
     const cc::ScrollBoundaryBehavior& scroll_boundary_behavior) {
+  mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost();
+  if (!host)
+    return;
   ui::DidOverscrollParams params;
   params.accumulated_overscroll = accumulated_overscroll;
   params.latest_overscroll_delta = latest_overscroll_delta;
   params.current_fling_velocity = current_fling_velocity;
   params.causal_event_viewport_point = causal_event_viewport_point;
   params.scroll_boundary_behavior = scroll_boundary_behavior;
-  GetWidgetInputHandlerHost()->DidOverscroll(params);
+  host->DidOverscroll(params);
 }
 
 void WidgetInputHandlerManager::DidStopFlinging() {
-  GetWidgetInputHandlerHost()->DidStopFlinging();
+  mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost();
+  if (!host)
+    return;
+  host->DidStopFlinging();
 }
 
 void WidgetInputHandlerManager::DidAnimateForInput() {
@@ -189,17 +195,22 @@ void WidgetInputHandlerManager::SetWhiteListedTouchAction(
     cc::TouchAction touch_action,
     uint32_t unique_touch_event_id,
     ui::InputHandlerProxy::EventDisposition event_disposition) {
+  mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost();
+  if (!host)
+    return;
   InputEventAckState ack_state = InputEventDispositionToAck(event_disposition);
-  GetWidgetInputHandlerHost()->SetWhiteListedTouchAction(
-      touch_action, unique_touch_event_id, ack_state);
+  host->SetWhiteListedTouchAction(touch_action, unique_touch_event_id,
+                                  ack_state);
 }
 
 void WidgetInputHandlerManager::ProcessTouchAction(
     cc::TouchAction touch_action) {
   // Cancel the touch timeout on TouchActionNone since it is a good hint
   // that author doesn't want scrolling.
-  if (touch_action == cc::TouchAction::kTouchActionNone)
-    GetWidgetInputHandlerHost()->CancelTouchTimeout();
+  if (touch_action == cc::TouchAction::kTouchActionNone) {
+    if (mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost())
+      host->CancelTouchTimeout();
+  }
 }
 
 mojom::WidgetInputHandlerHost*
