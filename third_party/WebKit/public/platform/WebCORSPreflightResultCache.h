@@ -33,7 +33,6 @@
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "public/platform/WebHTTPHeaderMap.h"
 #include "public/platform/WebHTTPHeaderSet.h"
-#include "public/platform/WebNonCopyable.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
@@ -43,9 +42,13 @@ namespace blink {
 
 // Represents an entry of the CORS-preflight cache.
 // See https://fetch.spec.whatwg.org/#concept-cache.
-class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCacheItem
-    : public WebNonCopyable {
+class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCacheItem {
  public:
+  WebCORSPreflightResultCacheItem(const WebCORSPreflightResultCacheItem&) =
+      delete;
+  WebCORSPreflightResultCacheItem& operator=(
+      const WebCORSPreflightResultCacheItem&) = delete;
+
   static std::unique_ptr<WebCORSPreflightResultCacheItem> Create(
       const network::mojom::FetchCredentialsMode,
       const WebHTTPHeaderMap&,
@@ -77,9 +80,12 @@ class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCacheItem
   WebHTTPHeaderSet headers_;
 };
 
-class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCache
-    : public WebNonCopyable {
+class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCache {
  public:
+  WebCORSPreflightResultCache(const WebCORSPreflightResultCache&) = delete;
+  WebCORSPreflightResultCache& operator=(const WebCORSPreflightResultCache&) =
+      delete;
+
   // Returns a WebCORSPreflightResultCache which is shared in the same thread.
   static WebCORSPreflightResultCache& Shared();
 

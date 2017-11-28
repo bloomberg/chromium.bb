@@ -34,7 +34,6 @@
 #include "WebCommon.h"
 #include "WebMediaStreamTrack.h"
 
-#include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
 #if INSIDE_BLINK
 #include "platform/heap/Handle.h"

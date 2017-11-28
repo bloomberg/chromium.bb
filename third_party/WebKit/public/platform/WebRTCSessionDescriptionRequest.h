@@ -32,7 +32,6 @@
 #define WebRTCSessionDescriptionRequest_h
 
 #include "WebCommon.h"
-#include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 

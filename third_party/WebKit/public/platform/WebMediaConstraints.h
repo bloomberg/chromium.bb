@@ -35,7 +35,6 @@
 #include <vector>
 
 #include "WebCommon.h"
-#include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 #include "WebVector.h"
