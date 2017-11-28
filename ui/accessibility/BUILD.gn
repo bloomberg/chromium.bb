@@ -176,6 +176,8 @@ test("accessibility_unittests") {
     "ax_tree_combiner_unittest.cc",
     "ax_tree_serializer_unittest.cc",
     "ax_tree_unittest.cc",
+    "platform/ax_platform_node_unittest.cc",
+    "platform/ax_platform_node_unittest.h",
     "platform/ax_platform_node_win_unittest.cc",
   ]
 
