@@ -208,6 +208,7 @@ source_set("unit_tests") {
     "webm/webm_parser_unittest.cc",
     "webm/webm_stream_parser_unittest.cc",
     "webm/webm_tracks_parser_unittest.cc",
+    "webm/webm_video_client_unittest.cc",
     "webm/webm_webvtt_parser_unittest.cc",
   ]
 
