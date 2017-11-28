@@ -287,7 +287,7 @@ bool CSSPropertyValueSet::ShorthandIsImportant(
     return false;
 
   for (unsigned i = 0; i < shorthand.length(); ++i) {
-    if (!PropertyIsImportant(shorthand.properties()[i]))
+    if (!PropertyIsImportant(shorthand.properties()[i]->PropertyID()))
       return false;
   }
   return true;
@@ -369,8 +369,8 @@ void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
   RemovePropertiesInSet(shorthand.properties(), shorthand.length());
 
   for (unsigned i = 0; i < shorthand.length(); ++i) {
-    property_vector_.push_back(CSSPropertyValue(
-        CSSProperty::Get(shorthand.properties()[i]), value, important));
+    property_vector_.push_back(
+        CSSPropertyValue(*shorthand.properties()[i], value, important));
   }
 }
 
@@ -467,17 +467,17 @@ void MutableCSSPropertyValueSet::Clear() {
   property_vector_.clear();
 }
 
-inline bool ContainsId(const CSSPropertyID* set,
+inline bool ContainsId(const CSSProperty** set,
                        unsigned length,
                        CSSPropertyID id) {
   for (unsigned i = 0; i < length; ++i) {
-    if (set[i] == id)
+    if (set[i]->IDEquals(id))
       return true;
   }
   return false;
 }
 
-bool MutableCSSPropertyValueSet::RemovePropertiesInSet(const CSSPropertyID* set,
+bool MutableCSSPropertyValueSet::RemovePropertiesInSet(const CSSProperty** set,
                                                        unsigned length) {
   if (property_vector_.IsEmpty())
     return false;
@@ -559,14 +559,13 @@ MutableCSSPropertyValueSet* CSSPropertyValueSet::MutableCopy() const {
 }
 
 MutableCSSPropertyValueSet* CSSPropertyValueSet::CopyPropertiesInSet(
-    const Vector<CSSPropertyID>& properties) const {
+    const Vector<const CSSProperty*>& properties) const {
   HeapVector<CSSPropertyValue, 256> list;
   list.ReserveInitialCapacity(properties.size());
   for (unsigned i = 0; i < properties.size(); ++i) {
-    const CSSValue* value = GetPropertyCSSValue(properties[i]);
+    const CSSValue* value = GetPropertyCSSValue(properties[i]->PropertyID());
     if (value) {
-      list.push_back(
-          CSSPropertyValue(CSSProperty::Get(properties[i]), *value, false));
+      list.push_back(CSSPropertyValue(*properties[i], *value, false));
     }
   }
   return MutableCSSPropertyValueSet::Create(list.data(), list.size());

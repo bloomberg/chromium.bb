@@ -97,20 +97,20 @@ bool Background::ParseShorthand(
 
         CSSValue* value = nullptr;
         CSSValue* value_y = nullptr;
-        CSSPropertyID property = shorthand.properties()[i];
-        if (property == CSSPropertyBackgroundRepeatX ||
-            property == CSSPropertyWebkitMaskRepeatX) {
+        const CSSProperty& property = *shorthand.properties()[i];
+        if (property.IDEquals(CSSPropertyBackgroundRepeatX) ||
+            property.IDEquals(CSSPropertyWebkitMaskRepeatX)) {
           CSSPropertyBackgroundUtils::ConsumeRepeatStyleComponent(
               range, value, value_y, implicit);
-        } else if (property == CSSPropertyBackgroundPositionX ||
-                   property == CSSPropertyWebkitMaskPositionX) {
+        } else if (property.IDEquals(CSSPropertyBackgroundPositionX) ||
+                   property.IDEquals(CSSPropertyWebkitMaskPositionX)) {
           if (!CSSPropertyParserHelpers::ConsumePosition(
                   range, context,
                   CSSPropertyParserHelpers::UnitlessQuirk::kForbid,
                   WebFeature::kThreeValuedPositionBackground, value, value_y))
             continue;
-        } else if (property == CSSPropertyBackgroundSize ||
-                   property == CSSPropertyWebkitMaskSize) {
+        } else if (property.IDEquals(CSSPropertyBackgroundSize) ||
+                   property.IDEquals(CSSPropertyWebkitMaskSize)) {
           if (!CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range))
             continue;
           value = CSSPropertyBackgroundUtils::ConsumeBackgroundSize(
@@ -121,17 +121,18 @@ bool Background::ParseShorthand(
           {
             return false;
           }
-        } else if (property == CSSPropertyBackgroundPositionY ||
-                   property == CSSPropertyBackgroundRepeatY ||
-                   property == CSSPropertyWebkitMaskPositionY ||
-                   property == CSSPropertyWebkitMaskRepeatY) {
+        } else if (property.IDEquals(CSSPropertyBackgroundPositionY) ||
+                   property.IDEquals(CSSPropertyBackgroundRepeatY) ||
+                   property.IDEquals(CSSPropertyWebkitMaskPositionY) ||
+                   property.IDEquals(CSSPropertyWebkitMaskRepeatY)) {
           continue;
         } else {
-          value = ConsumeBackgroundComponent(property, range, context);
+          value =
+              ConsumeBackgroundComponent(property.PropertyID(), range, context);
         }
         if (value) {
-          if (property == CSSPropertyBackgroundOrigin ||
-              property == CSSPropertyWebkitMaskOrigin) {
+          if (property.IDEquals(CSSPropertyBackgroundOrigin) ||
+              property.IDEquals(CSSPropertyWebkitMaskOrigin)) {
             origin_value = value;
           }
           parsed_longhand[i] = true;
@@ -150,14 +151,14 @@ bool Background::ParseShorthand(
 
     // TODO(timloh): This will make invalid longhands, see crbug.com/386459
     for (size_t i = 0; i < longhand_count; ++i) {
-      CSSPropertyID property = shorthand.properties()[i];
-      if (property == CSSPropertyBackgroundColor && !range.AtEnd()) {
+      const CSSProperty& property = *shorthand.properties()[i];
+      if (property.IDEquals(CSSPropertyBackgroundColor) && !range.AtEnd()) {
         if (parsed_longhand[i])
           return false;  // Colors are only allowed in the last layer.
         continue;
       }
-      if ((property == CSSPropertyBackgroundClip ||
-           property == CSSPropertyWebkitMaskClip) &&
+      if ((property.IDEquals(CSSPropertyBackgroundClip) ||
+           property.IDEquals(CSSPropertyWebkitMaskClip)) &&
           !parsed_longhand[i] && origin_value) {
         CSSPropertyBackgroundUtils::AddBackgroundValue(longhands[i],
                                                        origin_value);
@@ -173,12 +174,12 @@ bool Background::ParseShorthand(
     return false;
 
   for (size_t i = 0; i < longhand_count; ++i) {
-    CSSPropertyID property = shorthand.properties()[i];
-    if (property == CSSPropertyBackgroundSize && longhands[i] &&
+    const CSSProperty& property = *shorthand.properties()[i];
+    if (property.IDEquals(CSSPropertyBackgroundSize) && longhands[i] &&
         context.UseLegacyBackgroundSizeShorthandBehavior())
       continue;
     CSSPropertyParserHelpers::AddProperty(
-        property, shorthand.id(), *longhands[i], important,
+        property.PropertyID(), shorthand.id(), *longhands[i], important,
         implicit ? CSSPropertyParserHelpers::IsImplicitProperty::kImplicit
                  : CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
         properties);

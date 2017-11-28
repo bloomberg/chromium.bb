@@ -536,8 +536,8 @@ static CSSValueList* ValuesForGridShorthand(
   CSSValueList* list = CSSValueList::CreateSlashSeparated();
   for (size_t i = 0; i < shorthand.length(); ++i) {
     const CSSValue* value = ComputedStyleCSSValueMapping::Get(
-        CSSProperty::Get(shorthand.properties()[i]), style, layout_object,
-        styled_node, allow_visited_style);
+        *shorthand.properties()[i], style, layout_object, styled_node,
+        allow_visited_style);
     DCHECK(value);
     list->Append(*value);
   }
@@ -553,8 +553,8 @@ static CSSValueList* ValuesForShorthandProperty(
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   for (size_t i = 0; i < shorthand.length(); ++i) {
     const CSSValue* value = ComputedStyleCSSValueMapping::Get(
-        CSSProperty::Get(shorthand.properties()[i]), style, layout_object,
-        styled_node, allow_visited_style);
+        *shorthand.properties()[i], style, layout_object, styled_node,
+        allow_visited_style);
     DCHECK(value);
     list->Append(*value);
   }
@@ -579,16 +579,16 @@ static CSSValue* ValuesForFontVariantProperty(const ComputedStyle& style,
     kNoneLigatures,
     kConcatenateNonNormal
   };
+  StylePropertyShorthand shorthand = fontVariantShorthand();
   VariantShorthandCases shorthand_case = kAllNormal;
-  for (size_t i = 0; i < fontVariantShorthand().length(); ++i) {
+  for (size_t i = 0; i < shorthand.length(); ++i) {
     const CSSValue* value = ComputedStyleCSSValueMapping::Get(
-        CSSProperty::Get(fontVariantShorthand().properties()[i]), style,
-        layout_object, styled_node, allow_visited_style);
+        *shorthand.properties()[i], style, layout_object, styled_node,
+        allow_visited_style);
 
     if (shorthand_case == kAllNormal && value->IsIdentifierValue() &&
         ToCSSIdentifierValue(value)->GetValueID() == CSSValueNone &&
-        fontVariantShorthand().properties()[i] ==
-            CSSPropertyFontVariantLigatures) {
+        shorthand.properties()[i]->IDEquals(CSSPropertyFontVariantLigatures)) {
       shorthand_case = kNoneLigatures;
     } else if (!(value->IsIdentifierValue() &&
                  ToCSSIdentifierValue(value)->GetValueID() == CSSValueNormal)) {
@@ -604,10 +604,10 @@ static CSSValue* ValuesForFontVariantProperty(const ComputedStyle& style,
       return CSSIdentifierValue::Create(CSSValueNone);
     case kConcatenateNonNormal: {
       CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-      for (size_t i = 0; i < fontVariantShorthand().length(); ++i) {
+      for (size_t i = 0; i < shorthand.length(); ++i) {
         const CSSValue* value = ComputedStyleCSSValueMapping::Get(
-            CSSProperty::Get(fontVariantShorthand().properties()[i]), style,
-            layout_object, styled_node, allow_visited_style);
+            *shorthand.properties()[i], style, layout_object, styled_node,
+            allow_visited_style);
         DCHECK(value);
         if (value->IsIdentifierValue() &&
             ToCSSIdentifierValue(value)->GetValueID() == CSSValueNone) {
@@ -1713,17 +1713,17 @@ static CSSValueList* ValuesForSidesShorthand(
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   // Assume the properties are in the usual order top, right, bottom, left.
   const CSSValue* top_value = ComputedStyleCSSValueMapping::Get(
-      CSSProperty::Get(shorthand.properties()[0]), style, layout_object,
-      styled_node, allow_visited_style);
+      *shorthand.properties()[0], style, layout_object, styled_node,
+      allow_visited_style);
   const CSSValue* right_value = ComputedStyleCSSValueMapping::Get(
-      CSSProperty::Get(shorthand.properties()[1]), style, layout_object,
-      styled_node, allow_visited_style);
+      *shorthand.properties()[1], style, layout_object, styled_node,
+      allow_visited_style);
   const CSSValue* bottom_value = ComputedStyleCSSValueMapping::Get(
-      CSSProperty::Get(shorthand.properties()[2]), style, layout_object,
-      styled_node, allow_visited_style);
+      *shorthand.properties()[2], style, layout_object, styled_node,
+      allow_visited_style);
   const CSSValue* left_value = ComputedStyleCSSValueMapping::Get(
-      CSSProperty::Get(shorthand.properties()[3]), style, layout_object,
-      styled_node, allow_visited_style);
+      *shorthand.properties()[3], style, layout_object, styled_node,
+      allow_visited_style);
 
   // All 4 properties must be specified.
   if (!top_value || !right_value || !bottom_value || !left_value)
@@ -1751,11 +1751,11 @@ static CSSValuePair* ValuesForInlineBlockShorthand(
     Node* styled_node,
     bool allow_visited_style) {
   const CSSValue* start_value = ComputedStyleCSSValueMapping::Get(
-      CSSProperty::Get(shorthand.properties()[0]), style, layout_object,
-      styled_node, allow_visited_style);
+      *shorthand.properties()[0], style, layout_object, styled_node,
+      allow_visited_style);
   const CSSValue* end_value = ComputedStyleCSSValueMapping::Get(
-      CSSProperty::Get(shorthand.properties()[1]), style, layout_object,
-      styled_node, allow_visited_style);
+      *shorthand.properties()[1], style, layout_object, styled_node,
+      allow_visited_style);
   // Both properties must be specified.
   if (!start_value || !end_value)
     return nullptr;
@@ -2242,9 +2242,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
   const SVGComputedStyle& svg_style = style.SvgStyle();
   const CSSProperty& resolved_property = property.ResolveDirectionAwareProperty(
       style.Direction(), style.GetWritingMode());
-  CSSPropertyID property_id = resolved_property.PropertyID();
-  DCHECK_NE(property_id, CSSPropertyInvalid);
-  switch (property_id) {
+  DCHECK(!resolved_property.IDEquals(CSSPropertyInvalid));
+  switch (resolved_property.PropertyID()) {
     case CSSPropertyBackgroundColor:
       return allow_visited_style
                  ? CSSColorValue::Create(
