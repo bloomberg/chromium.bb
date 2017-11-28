@@ -90,6 +90,12 @@ class ChromeDownloadManagerDelegate
       content::DownloadItem* download,
       content::CheckForFileExistenceCallback callback) override;
   std::string ApplicationClientIdForFileScanning() const override;
+  void CheckDownloadAllowed(
+      const content::ResourceRequestInfo::WebContentsGetter&
+          web_contents_getter,
+      const GURL& url,
+      const std::string& request_method,
+      content::CheckDownloadAllowedCallback check_download_allowed_cb) override;
 
   // Opens a download using the platform handler. DownloadItem::OpenDownload,
   // which ends up being handled by OpenDownload(), will open a download in the
@@ -174,6 +180,11 @@ class ChromeDownloadManagerDelegate
 
   void MaybeSendDangerousDownloadOpenedReport(content::DownloadItem* download,
                                               bool show_download_in_folder);
+
+  void OnCheckDownloadAllowedComplete(
+      content::CheckDownloadAllowedCallback check_download_allowed_cb,
+      bool storage_permission_granted,
+      bool allow);
 
   Profile* profile_;
 

@@ -30,6 +30,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/save_package_file_picker.h"
@@ -208,6 +209,51 @@ const DownloadPathReservationTracker::FilenameConflictAction
 #else
 const DownloadPathReservationTracker::FilenameConflictAction
     kDefaultPlatformConflictAction = DownloadPathReservationTracker::UNIQUIFY;
+#endif
+
+// Invoked when whether download can proceed is determined.
+// Args: whether storage permission is granted and whether the download is
+// allowed.
+using CanDownloadCallback =
+    base::OnceCallback<void(bool /* storage permission granted */,
+                            bool /*allow*/)>;
+
+// Remove this function once DownloadRequestLimiter::Callback() is declared as a
+// OnceCallback
+void CheckDownloadComplete(CanDownloadCallback can_download_cb, bool allow) {
+  std::move(can_download_cb).Run(true, allow);
+}
+
+void CheckCanDownload(
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const GURL& url,
+    const std::string& request_method,
+    CanDownloadCallback can_download_cb) {
+  DownloadRequestLimiter* limiter =
+      g_browser_process->download_request_limiter();
+  if (limiter) {
+    DownloadRequestLimiter::Callback cb =
+        base::Bind(&CheckDownloadComplete, base::Passed(&can_download_cb));
+    limiter->CanDownload(web_contents_getter, url, request_method, cb);
+  }
+}
+
+#if defined(OS_ANDROID)
+// TODOD(qinmin): reuse the similar function defined in
+// DownloadResourceThrottle.
+void OnAcquireFileAccessPermissionDone(
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const GURL& url,
+    const std::string& request_method,
+    CanDownloadCallback can_download_cb,
+    bool granted) {
+  if (granted) {
+    CheckCanDownload(web_contents_getter, url, request_method,
+                     std::move(can_download_cb));
+  } else {
+    std::move(can_download_cb).Run(false, false);
+  }
+}
 #endif
 
 }  // namespace
@@ -981,4 +1027,40 @@ void ChromeDownloadManagerDelegate::MaybeSendDangerousDownloadOpenedReport(
                                                     show_download_in_folder);
   }
 #endif
+}
+
+void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const GURL& url,
+    const std::string& request_method,
+    content::CheckDownloadAllowedCallback check_download_allowed_cb) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  CanDownloadCallback cb = base::BindOnce(
+      &ChromeDownloadManagerDelegate::OnCheckDownloadAllowedComplete,
+      weak_ptr_factory_.GetWeakPtr(), std::move(check_download_allowed_cb));
+#if defined(OS_ANDROID)
+  DownloadControllerBase::Get()->AcquireFileAccessPermission(
+      web_contents_getter,
+      base::Bind(&OnAcquireFileAccessPermissionDone, web_contents_getter, url,
+                 request_method, base::Passed(&cb)));
+#else
+  CheckCanDownload(web_contents_getter, url, request_method, std::move(cb));
+#endif
+}
+
+void ChromeDownloadManagerDelegate::OnCheckDownloadAllowedComplete(
+    content::CheckDownloadAllowedCallback check_download_allowed_cb,
+    bool storage_permission_granted,
+    bool allow) {
+  if (!storage_permission_granted) {
+    // UMA for this will be recorded in MobileDownload.StoragePermission.
+  } else if (allow) {
+    // Presumes all downloads initiated by navigation use this throttle and
+    // nothing else does.
+    RecordDownloadSource(DOWNLOAD_INITIATED_BY_NAVIGATION);
+  } else {
+    RecordDownloadCount(CHROME_DOWNLOAD_COUNT_BLOCKED_BY_THROTTLING);
+  }
+
+  std::move(check_download_allowed_cb).Run(allow);
 }
