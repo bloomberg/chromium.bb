@@ -34,6 +34,7 @@
 #include <memory>
 #include "platform/LayoutUnit.h"
 #include "platform/PlatformExport.h"
+#include "platform/fonts/CanvasRotationInVertical.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/Forward.h"

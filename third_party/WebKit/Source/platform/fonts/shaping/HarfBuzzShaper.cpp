@@ -159,12 +159,14 @@ struct RangeData {
   FeaturesVector font_features;
   Deque<ReshapeQueueItem> reshape_queue;
 
-  hb_direction_t HarfBuzzDirection(const SimpleFontData* font_data) {
+  hb_direction_t HarfBuzzDirection(CanvasRotationInVertical canvas_rotation) {
     FontOrientation orientation = font->GetFontDescription().Orientation();
-    hb_direction_t direction = IsVerticalAnyUpright(orientation) &&
-                                       !font_data->IsTextOrientationFallback()
-                                   ? HB_DIRECTION_TTB
-                                   : HB_DIRECTION_LTR;
+    hb_direction_t direction =
+        IsVerticalAnyUpright(orientation) &&
+                (canvas_rotation ==
+                 CanvasRotationInVertical::kRotateCanvasUpright)
+            ? HB_DIRECTION_TTB
+            : HB_DIRECTION_LTR;
     return text_direction == TextDirection::kRtl
                ? HB_DIRECTION_REVERSE(direction)
                : direction;
@@ -278,19 +280,31 @@ void QueueCharacters(RangeData* range_data,
       kReshapeQueueRange, slice.start_character_index, slice.num_characters));
 }
 
+CanvasRotationInVertical CanvasRotationForRun(
+    FontOrientation font_orientation,
+    OrientationIterator::RenderOrientation render_orientation) {
+  if (font_orientation == FontOrientation::kVerticalUpright ||
+      (font_orientation == FontOrientation::kVerticalMixed &&
+       render_orientation == OrientationIterator::kOrientationKeep))
+    return CanvasRotationInVertical::kRotateCanvasUpright;
+  return CanvasRotationInVertical::kRegular;
+}
+
 }  // namespace
 
 void HarfBuzzShaper::CommitGlyphs(RangeData* range_data,
                                   const SimpleFontData* current_font,
                                   UScriptCode current_run_script,
+                                  CanvasRotationInVertical canvas_rotation,
                                   bool is_last_resort,
                                   const BufferSlice& slice,
                                   ShapeResult* shape_result) const {
-  hb_direction_t direction = range_data->HarfBuzzDirection(current_font);
+  hb_direction_t direction = range_data->HarfBuzzDirection(canvas_rotation);
   // Here we need to specify glyph positions.
   ShapeResult::RunInfo* run = new ShapeResult::RunInfo(
-      current_font, direction, ICUScriptToHBScript(current_run_script),
-      slice.start_character_index, slice.num_glyphs, slice.num_characters);
+      current_font, direction, canvas_rotation,
+      ICUScriptToHBScript(current_run_script), slice.start_character_index,
+      slice.num_glyphs, slice.num_characters);
   shape_result->InsertRun(WTF::WrapUnique(run), slice.start_glyph_index,
                           slice.num_glyphs, range_data->buffer);
   if (is_last_resort)
@@ -303,6 +317,7 @@ void HarfBuzzShaper::ExtractShapeResults(
     const ReshapeQueueItem& current_queue_item,
     const SimpleFontData* current_font,
     UScriptCode current_run_script,
+    CanvasRotationInVertical canvas_rotation,
     bool is_last_resort,
     ShapeResult* shape_result) const {
   enum ClusterResult { kShaped, kNotDef, kUnknown };
@@ -351,7 +366,7 @@ void HarfBuzzShaper::ExtractShapeResults(
           // the glyphs. We also commit when we've reached the last resort
           // font.
           CommitGlyphs(range_data, current_font, current_run_script,
-                       is_last_resort, slice, shape_result);
+                       canvas_rotation, is_last_resort, slice, shape_result);
         }
         last_change_glyph_index = previous_cluster_start_glyph_index;
       }
@@ -385,14 +400,14 @@ void HarfBuzzShaper::ExtractShapeResults(
       slice =
           ComputeSlice(range_data, current_queue_item, glyph_info, num_glyphs,
                        previous_cluster_start_glyph_index, num_glyphs);
-      CommitGlyphs(range_data, current_font, current_run_script, is_last_resort,
-                   slice, shape_result);
+      CommitGlyphs(range_data, current_font, current_run_script,
+                   canvas_rotation, is_last_resort, slice, shape_result);
     } else {
       BufferSlice slice = ComputeSlice(
           range_data, current_queue_item, glyph_info, num_glyphs,
           last_change_glyph_index, previous_cluster_start_glyph_index);
-      CommitGlyphs(range_data, current_font, current_run_script, is_last_resort,
-                   slice, shape_result);
+      CommitGlyphs(range_data, current_font, current_run_script,
+                   canvas_rotation, is_last_resort, slice, shape_result);
       slice =
           ComputeSlice(range_data, current_queue_item, glyph_info, num_glyphs,
                        previous_cluster_start_glyph_index, num_glyphs);
@@ -407,25 +422,10 @@ void HarfBuzzShaper::ExtractShapeResults(
     if (current_cluster_result == kNotDef && !is_last_resort) {
       QueueCharacters(range_data, current_font, font_cycle_queued, slice);
     } else {
-      CommitGlyphs(range_data, current_font, current_run_script, is_last_resort,
-                   slice, shape_result);
+      CommitGlyphs(range_data, current_font, current_run_script,
+                   canvas_rotation, is_last_resort, slice, shape_result);
     }
   }
-}
-
-static inline const SimpleFontData* FontDataAdjustedForOrientation(
-    const SimpleFontData* original_font,
-    FontOrientation run_orientation,
-    OrientationIterator::RenderOrientation render_orientation) {
-  if (!IsVerticalBaseline(run_orientation))
-    return original_font;
-
-  if (run_orientation == FontOrientation::kVerticalRotated ||
-      (run_orientation == FontOrientation::kVerticalMixed &&
-       render_orientation == OrientationIterator::kOrientationRotateSideways))
-    return original_font->VerticalRightOrientationFontData().get();
-
-  return original_font;
 }
 
 bool HarfBuzzShaper::CollectFallbackHintChars(
@@ -751,7 +751,6 @@ void HarfBuzzShaper::ShapeSegment(RangeData* range_data,
       font_description.VariantCaps() != FontDescription::kCapsNormal;
   OpenTypeCapsSupport caps_support;
 
-  FontOrientation orientation = font->GetFontDescription().Orientation();
   scoped_refptr<FontFallbackIterator> fallback_iterator =
       font->CreateFontFallbackIterator(segment.font_fallback_priority);
 
@@ -806,19 +805,11 @@ void HarfBuzzShaper::ShapeSegment(RangeData* range_data,
     }
 
     DCHECK(current_queue_item.num_characters_);
-    const SimpleFontData* smallcaps_adjusted_font =
+    const SimpleFontData* small_caps_adjusted_font =
         needs_caps_handling &&
                 caps_support.NeedsSyntheticFont(small_caps_behavior)
             ? font_data->SmallCapsFontData(font_description).get()
             : font_data;
-
-    // Compatibility with SimpleFontData approach of keeping a flag for
-    // overriding drawing direction.
-    // TODO: crbug.com/506224 This should go away in favor of storing that
-    // information elsewhere, for example in ShapeResult.
-    const SimpleFontData* direction_and_small_caps_adjusted_font =
-        FontDataAdjustedForOrientation(smallcaps_adjusted_font, orientation,
-                                       segment.render_orientation);
 
     CaseMapIntend case_map_intend = CaseMapIntend::kKeepSameCase;
     if (needs_caps_handling)
@@ -836,25 +827,27 @@ void HarfBuzzShaper::ShapeSegment(RangeData* range_data,
         case_map_intend, font_description.LocaleOrDefault(), range_data->buffer,
         text_, text_length_, shape_start, shape_end - shape_start);
 
+    CanvasRotationInVertical canvas_rotation = CanvasRotationForRun(
+        small_caps_adjusted_font->PlatformData().Orientation(),
+        segment.render_orientation);
+
     CapsFeatureSettingsScopedOverlay caps_overlay(
         &range_data->font_features,
         caps_support.FontFeatureToUse(small_caps_behavior));
-    hb_direction_t direction =
-        range_data->HarfBuzzDirection(direction_and_small_caps_adjusted_font);
+    hb_direction_t direction = range_data->HarfBuzzDirection(canvas_rotation);
 
     if (!ShapeRange(range_data->buffer,
                     range_data->font_features.IsEmpty()
                         ? nullptr
                         : range_data->font_features.data(),
-                    range_data->font_features.size(),
-                    direction_and_small_caps_adjusted_font,
+                    range_data->font_features.size(), small_caps_adjusted_font,
                     current_font_data_for_range_set->Ranges(), segment.script,
                     direction, language))
       DLOG(ERROR) << "Shaping range failed.";
 
     ExtractShapeResults(range_data, font_cycle_queued, current_queue_item,
-                        direction_and_small_caps_adjusted_font, segment.script,
-                        !fallback_iterator->HasNext(), result);
+                        small_caps_adjusted_font, segment.script,
+                        canvas_rotation, !fallback_iterator->HasNext(), result);
 
     hb_buffer_reset(range_data->buffer);
   }

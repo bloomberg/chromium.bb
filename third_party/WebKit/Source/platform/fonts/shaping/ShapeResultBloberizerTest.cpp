@@ -85,8 +85,8 @@ TEST_F(ShapeResultBloberizerTest, StoresGlyphsOffsets) {
   scoped_refptr<SimpleFontData> font2 = CreateTestSimpleFontData();
 
   // 2 pending glyphs
-  bloberizer.Add(42, font1.get(), 10);
-  bloberizer.Add(43, font1.get(), 15);
+  bloberizer.Add(42, font1.get(), CanvasRotationInVertical::kRegular, 10);
+  bloberizer.Add(43, font1.get(), CanvasRotationInVertical::kRegular, 15);
 
   EXPECT_EQ(ShapeResultBloberizerTestInfo::PendingRunFontData(bloberizer),
             font1.get());
@@ -111,7 +111,7 @@ TEST_F(ShapeResultBloberizerTest, StoresGlyphsOffsets) {
   EXPECT_EQ(ShapeResultBloberizerTestInfo::CommittedBlobCount(bloberizer), 0ul);
 
   // one more glyph, different font => pending run flush
-  bloberizer.Add(44, font2.get(), 12);
+  bloberizer.Add(44, font2.get(), CanvasRotationInVertical::kRegular, 12);
 
   EXPECT_EQ(ShapeResultBloberizerTestInfo::PendingRunFontData(bloberizer),
             font2.get());
@@ -145,8 +145,10 @@ TEST_F(ShapeResultBloberizerTest, StoresGlyphsVerticalOffsets) {
   scoped_refptr<SimpleFontData> font2 = CreateTestSimpleFontData();
 
   // 2 pending glyphs
-  bloberizer.Add(42, font1.get(), FloatPoint(10, 0));
-  bloberizer.Add(43, font1.get(), FloatPoint(15, 0));
+  bloberizer.Add(42, font1.get(), CanvasRotationInVertical::kRegular,
+                 FloatPoint(10, 0));
+  bloberizer.Add(43, font1.get(), CanvasRotationInVertical::kRegular,
+                 FloatPoint(15, 0));
 
   EXPECT_EQ(ShapeResultBloberizerTestInfo::PendingRunFontData(bloberizer),
             font1.get());
@@ -173,7 +175,8 @@ TEST_F(ShapeResultBloberizerTest, StoresGlyphsVerticalOffsets) {
   EXPECT_EQ(ShapeResultBloberizerTestInfo::CommittedBlobCount(bloberizer), 0ul);
 
   // one more glyph, different font => pending run flush
-  bloberizer.Add(44, font2.get(), FloatPoint(12, 2));
+  bloberizer.Add(44, font2.get(), CanvasRotationInVertical::kRegular,
+                 FloatPoint(12, 2));
 
   EXPECT_EQ(ShapeResultBloberizerTestInfo::PendingRunFontData(bloberizer),
             font2.get());
@@ -204,47 +207,41 @@ TEST_F(ShapeResultBloberizerTest, MixedBlobRotation) {
   Font font;
   ShapeResultBloberizer bloberizer(font, 1);
 
-  // Normal (horizontal) font.
-  scoped_refptr<SimpleFontData> font_normal = CreateTestSimpleFontData();
-  ASSERT_FALSE(font_normal->PlatformData().IsVerticalAnyUpright());
-  ASSERT_EQ(font_normal->UsedVertically(), false);
-
-  // Rotated (vertical upright) font.
-  scoped_refptr<SimpleFontData> font_rotated = CreateTestSimpleFontData(true);
-  ASSERT_TRUE(font_rotated->PlatformData().IsVerticalAnyUpright());
-  ASSERT_EQ(font_rotated->UsedVertically(), true);
+  scoped_refptr<SimpleFontData> test_font = CreateTestSimpleFontData();
 
   struct {
-    const SimpleFontData* font_data;
+    CanvasRotationInVertical canvas_rotation;
     size_t expected_pending_glyphs;
     size_t expected_pending_runs;
     size_t expected_committed_blobs;
   } append_ops[] = {
       // append 2 horizontal glyphs -> these go into the pending glyph buffer
-      {font_normal.get(), 1u, 0u, 0u},
-      {font_normal.get(), 2u, 0u, 0u},
+      {CanvasRotationInVertical::kRegular, 1u, 0u, 0u},
+      {CanvasRotationInVertical::kRegular, 2u, 0u, 0u},
 
       // append 3 vertical rotated glyphs -> push the prev pending (horizontal)
       // glyphs into a new run in the current (horizontal) blob
-      {font_rotated.get(), 1u, 1u, 0u},
-      {font_rotated.get(), 2u, 1u, 0u},
-      {font_rotated.get(), 3u, 1u, 0u},
+      {CanvasRotationInVertical::kRotateCanvasUpright, 1u, 1u, 0u},
+      {CanvasRotationInVertical::kRotateCanvasUpright, 2u, 1u, 0u},
+      {CanvasRotationInVertical::kRotateCanvasUpright, 3u, 1u, 0u},
 
       // append 2 more horizontal glyphs -> flush the current (horizontal) blob,
       // push prev (vertical) pending glyphs into new vertical blob run
-      {font_normal.get(), 1u, 1u, 1u},
-      {font_normal.get(), 2u, 1u, 1u},
+      {CanvasRotationInVertical::kRegular, 1u, 1u, 1u},
+      {CanvasRotationInVertical::kRegular, 2u, 1u, 1u},
 
       // append 1 more vertical glyph -> flush current (vertical) blob, push
       // prev (horizontal) pending glyphs into a new horizontal blob run
-      {font_rotated.get(), 1u, 1u, 2u},
+      {CanvasRotationInVertical::kRotateCanvasUpright, 1u, 1u, 2u},
   };
 
   for (const auto& op : append_ops) {
-    bloberizer.Add(42, op.font_data, FloatPoint());
+    bloberizer.Add(42, test_font.get(), op.canvas_rotation, FloatPoint());
     EXPECT_EQ(
         op.expected_pending_glyphs,
         ShapeResultBloberizerTestInfo::PendingRunGlyphs(bloberizer).size());
+    EXPECT_EQ(op.canvas_rotation,
+              ShapeResultBloberizerTestInfo::PendingBlobRotation(bloberizer));
     EXPECT_EQ(op.expected_pending_runs,
               ShapeResultBloberizerTestInfo::PendingBlobRunCount(bloberizer));
     EXPECT_EQ(op.expected_committed_blobs,

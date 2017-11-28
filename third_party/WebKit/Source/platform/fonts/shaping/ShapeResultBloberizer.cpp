@@ -32,7 +32,7 @@ void ShapeResultBloberizer::CommitPendingRun() {
   if (pending_glyphs_.IsEmpty())
     return;
 
-  const auto pending_rotation = GetBlobRotation(pending_font_data_);
+  const auto pending_rotation = GetBlobRotation(pending_canvas_rotation_);
   if (pending_rotation != builder_rotation_) {
     // The pending run rotation doesn't match the current blob; start a new
     // blob.
@@ -75,14 +75,13 @@ const ShapeResultBloberizer::BlobBuffer& ShapeResultBloberizer::Blobs() {
   return blobs_;
 }
 
+// TODO(drott) crbug.com/788725: Try to merge BlobRotation and
+// CanvasRotationInVertical.
 ShapeResultBloberizer::BlobRotation ShapeResultBloberizer::GetBlobRotation(
-    const SimpleFontData* font_data) {
-  // For vertical upright text we need to compensate the inherited 90deg CW
-  // rotation (using a 90deg CCW rotation).
-  return (font_data->PlatformData().IsVerticalAnyUpright() &&
-          font_data->UsedVertically())
-             ? BlobRotation::kCCWRotation
-             : BlobRotation::kNoRotation;
+    const CanvasRotationInVertical canvas_rotation) {
+  return canvas_rotation == CanvasRotationInVertical::kRegular
+             ? BlobRotation::kNoRotation
+             : BlobRotation::kCCWRotation;
 }
 
 float ShapeResultBloberizer::FillGlyphs(
@@ -189,6 +188,7 @@ template <typename TextContainerType>
 inline void AddGlyphToBloberizer(ShapeResultBloberizer& bloberizer,
                                  float advance,
                                  hb_direction_t direction,
+                                 CanvasRotationInVertical canvas_rotation,
                                  const SimpleFontData* font_data,
                                  const HarfBuzzRunGlyphData& glyph_data,
                                  const TextContainerType& text,
@@ -197,13 +197,14 @@ inline void AddGlyphToBloberizer(ShapeResultBloberizer& bloberizer,
                                 ? FloatPoint(advance, 0)
                                 : FloatPoint(0, advance);
   if (!IsSkipInkException(bloberizer, text, character_index)) {
-    bloberizer.Add(glyph_data.glyph, font_data,
+    bloberizer.Add(glyph_data.glyph, font_data, canvas_rotation,
                    start_offset + glyph_data.offset);
   }
 }
 
 inline void AddEmphasisMark(ShapeResultBloberizer& bloberizer,
                             const GlyphData& emphasis_data,
+                            CanvasRotationInVertical canvas_rotation,
                             FloatPoint glyph_center,
                             float mid_glyph_offset) {
   const SimpleFontData* emphasis_font_data = emphasis_data.font_data;
@@ -211,14 +212,17 @@ inline void AddEmphasisMark(ShapeResultBloberizer& bloberizer,
 
   bool is_vertical =
       emphasis_font_data->PlatformData().IsVerticalAnyUpright() &&
-      emphasis_font_data->UsedVertically();
+      emphasis_data.canvas_rotation ==
+          CanvasRotationInVertical::kRotateCanvasUpright;
 
   if (!is_vertical) {
     bloberizer.Add(emphasis_data.glyph, emphasis_font_data,
+                   CanvasRotationInVertical::kRegular,
                    mid_glyph_offset - glyph_center.X());
   } else {
     bloberizer.Add(
         emphasis_data.glyph, emphasis_font_data,
+        CanvasRotationInVertical::kRotateCanvasUpright,
         FloatPoint(-glyph_center.X(), mid_glyph_offset - glyph_center.Y()));
   }
 }
@@ -264,8 +268,8 @@ float ShapeResultBloberizer::FillGlyphsForResult(const ShapeResult* result,
             uint16_t character_index) -> bool {
 
           AddGlyphToBloberizer(*this, total_advance, run->direction_,
-                               run->font_data_.get(), glyph_data, text,
-                               character_index);
+                               run->canvas_rotation_, run->font_data_.get(),
+                               glyph_data, text, character_index);
           return true;
         });
   }
@@ -324,6 +328,7 @@ float ShapeResultBloberizer::FillFastHorizontalGlyphs(
                               float total_advance) -> bool {
                             DCHECK(!glyph_data.offset.Height());
                             Add(glyph_data.glyph, run->font_data_.get(),
+                                run->CanvasRotation(),
                                 total_advance + glyph_data.offset.Width());
                             return true;
                           });
@@ -387,8 +392,8 @@ float ShapeResultBloberizer::FillTextEmphasisGlyphsForRun(
     if (text.Is8Bit()) {
       float glyph_advance_x = glyph_data.advance;
       if (Character::CanReceiveTextEmphasis(text[current_character_index])) {
-        AddEmphasisMark(*this, emphasis_data, glyph_center,
-                        advance_so_far + glyph_advance_x / 2);
+        AddEmphasisMark(*this, emphasis_data, run->CanvasRotation(),
+                        glyph_center, advance_so_far + glyph_advance_x / 2);
       }
       advance_so_far += glyph_advance_x;
     } else if (is_cluster_end) {
@@ -410,8 +415,8 @@ float ShapeResultBloberizer::FillTextEmphasisGlyphsForRun(
         // Do not put emphasis marks on space, separator, and control
         // characters.
         if (Character::CanReceiveTextEmphasis(text[current_character_index])) {
-          AddEmphasisMark(*this, emphasis_data, glyph_center,
-                          advance_so_far + glyph_advance_x / 2);
+          AddEmphasisMark(*this, emphasis_data, run->CanvasRotation(),
+                          glyph_center, advance_so_far + glyph_advance_x / 2);
         }
         advance_so_far += glyph_advance_x;
       }

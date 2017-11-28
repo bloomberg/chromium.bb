@@ -656,6 +656,7 @@ jumbo_component("platform") {
     "fonts/AlternateFontFamily.h",
     "fonts/BitmapGlyphsBlacklist.cpp",
     "fonts/BitmapGlyphsBlacklist.h",
+    "fonts/CanvasRotationInVertical.h",
     "fonts/CharacterRange.h",
     "fonts/CustomFontData.h",
     "fonts/FallbackListCompositeKey.h",
