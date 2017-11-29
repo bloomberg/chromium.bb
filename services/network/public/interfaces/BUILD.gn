@@ -8,6 +8,7 @@ mojom("interfaces") {
   sources = [
     "cookie_manager.mojom",
     "cors.mojom",
+    "data_pipe_getter.mojom",
     "fetch_api.mojom",
     "http_request_headers.mojom",
     "mutable_network_traffic_annotation_tag.mojom",

@@ -20,8 +20,8 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "services/network/public/interfaces/data_pipe_getter.mojom.h"
 #include "storage/common/storage_common_export.h"
-#include "third_party/WebKit/common/blob/size_getter.mojom.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -67,8 +67,8 @@ class STORAGE_COMMON_EXPORT DataElement {
   const base::File& file() const { return file_; }
   const GURL& filesystem_url() const { return filesystem_url_; }
   const std::string& blob_uuid() const { return blob_uuid_; }
-  const mojo::DataPipeConsumerHandle& data_pipe() const {
-    return data_pipe_.get();
+  const network::mojom::DataPipeGetterPtr& data_pipe() const {
+    return data_pipe_getter_;
   }
   uint64_t offset() const { return offset_; }
   uint64_t length() const { return length_; }
@@ -174,15 +174,14 @@ class STORAGE_COMMON_EXPORT DataElement {
   void SetToDiskCacheEntryRange(uint64_t offset, uint64_t length);
 
   // Sets TYPE_DATA_PIPE data.
-  void SetToDataPipe(mojo::ScopedDataPipeConsumerHandle handle,
-                     blink::mojom::SizeGetterPtr size_getter);
+  void SetToDataPipe(network::mojom::DataPipeGetterPtr data_pipe_getter);
 
   // Takes ownership of the File, if this is of TYPE_RAW_FILE. The file is open
   // for reading (asynchronous reading on Windows).
   base::File ReleaseFile();
 
-  mojo::ScopedDataPipeConsumerHandle ReleaseDataPipe(
-      blink::mojom::SizeGetterPtr* size_getter);
+  // Takes ownership of the DataPipeGetter, if this is of TYPE_DATA_PIPE.
+  network::mojom::DataPipeGetterPtr ReleaseDataPipeGetter();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BlobAsyncTransportStrategyTest, TestInvalidParams);
@@ -194,9 +193,8 @@ class STORAGE_COMMON_EXPORT DataElement {
   base::FilePath path_;  // For TYPE_FILE and TYPE_RAW_FILE.
   base::File file_;      // For TYPE_RAW_FILE.
   GURL filesystem_url_;  // For TYPE_FILE_FILESYSTEM.
-  std::string blob_uuid_;
-  mojo::ScopedDataPipeConsumerHandle data_pipe_;
-  blink::mojom::SizeGetterPtr data_pipe_size_getter_;
+  std::string blob_uuid_;                               // For TYPE_BLOB.
+  network::mojom::DataPipeGetterPtr data_pipe_getter_;  // For TYPE_DATA_PIPE.
   uint64_t offset_;
   uint64_t length_;
   base::Time expected_modification_time_;

@@ -28,6 +28,7 @@
 #include "content/public/common/resource_request_body.h"
 #include "content/public/test/controllable_http_response.h"
 #include "content/public/test/test_url_loader_client.h"
+#include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "net/base/io_buffer.h"
@@ -157,6 +158,28 @@ class MultipleWritesInterceptor : public net::URLRequestInterceptor {
   DISALLOW_COPY_AND_ASSIGN(MultipleWritesInterceptor);
 };
 
+class SimpleDataPipeGetter : public network::mojom::DataPipeGetter {
+ public:
+  SimpleDataPipeGetter(const std::string& str,
+                       network::mojom::DataPipeGetterRequest request)
+      : str_(str), binding_(this, std::move(request)) {}
+  ~SimpleDataPipeGetter() override = default;
+
+  // network::mojom::DataPipeGetter implementation:
+  void Read(mojo::ScopedDataPipeProducerHandle handle,
+            ReadCallback callback) override {
+    bool result = mojo::common::BlockingCopyFromString(str_, handle);
+    ASSERT_TRUE(result);
+    std::move(callback).Run(net::OK, str_.length());
+  }
+
+ private:
+  std::string str_;
+  mojo::Binding<network::mojom::DataPipeGetter> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleDataPipeGetter);
+};
+
 }  // namespace
 
 class URLLoaderTest : public testing::Test {
@@ -209,6 +232,11 @@ class URLLoaderTest : public testing::Test {
                           TRAFFIC_ANNOTATION_FOR_TESTS, 0);
 
     ran_ = true;
+
+    if (expect_redirect_) {
+      client_.RunUntilRedirectReceived();
+      loader->FollowRedirect();
+    }
 
     if (body) {
       client_.RunUntilResponseBodyArrived();
@@ -326,6 +354,10 @@ class URLLoaderTest : public testing::Test {
     DCHECK(!ran_);
     add_custom_accept_header_ = true;
   }
+  void set_expect_redirect() {
+    DCHECK(!ran_);
+    expect_redirect_ = true;
+  }
   void set_resource_type(ResourceType type) {
     DCHECK(!ran_);
     resource_type_ = type;
@@ -419,11 +451,12 @@ class URLLoaderTest : public testing::Test {
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<NetworkContext> context_;
 
-  // Options applied the created request in Load().
+  // Options applied to the created request in Load().
   bool sniff_ = false;
   bool send_ssl_with_response_ = false;
   bool send_ssl_for_cert_error_ = false;
   bool add_custom_accept_header_ = false;
+  bool expect_redirect_ = false;
   ResourceType resource_type_ = RESOURCE_TYPE_MAIN_FRAME;
   scoped_refptr<ResourceRequestBody> request_body_;
 
@@ -1036,7 +1069,41 @@ TEST_F(URLLoaderTest, UploadRawFileWithRange) {
   EXPECT_EQ(expected_body, response_body);
 }
 
-// TODO(mmenke): Test using a data pipe to upload data.
+// Tests a request body with a data pipe element.
+TEST_F(URLLoaderTest, UploadDataPipe) {
+  const std::string kRequestBody = "Request Body";
+
+  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  auto data_pipe_getter = std::make_unique<SimpleDataPipeGetter>(
+      kRequestBody, mojo::MakeRequest(&data_pipe_getter_ptr));
+
+  auto request_body = base::MakeRefCounted<ResourceRequestBody>();
+  request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+  set_request_body(std::move(request_body));
+
+  std::string response_body;
+  EXPECT_EQ(net::OK, Load(test_server()->GetURL("/echo"), &response_body));
+  EXPECT_EQ(kRequestBody, response_body);
+}
+
+// Same as above and tests that the body is sent after a 307 redirect.
+TEST_F(URLLoaderTest, UploadDataPipe_Redirect307) {
+  const std::string kRequestBody = "Request Body";
+
+  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  auto data_pipe_getter = std::make_unique<SimpleDataPipeGetter>(
+      kRequestBody, mojo::MakeRequest(&data_pipe_getter_ptr));
+
+  auto request_body = base::MakeRefCounted<ResourceRequestBody>();
+  request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+  set_request_body(std::move(request_body));
+  set_expect_redirect();
+
+  std::string response_body;
+  EXPECT_EQ(net::OK, Load(test_server()->GetURL("/redirect307-to-echo"),
+                          &response_body));
+  EXPECT_EQ(kRequestBody, response_body);
+}
 
 TEST_F(URLLoaderTest, UploadDoubleRawFile) {
   base::FilePath file_path = GetTestFilePath("simple_page.html");

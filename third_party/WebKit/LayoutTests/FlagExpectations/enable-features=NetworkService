@@ -135,7 +135,6 @@ crbug.com/721408 http/tests/devtools/sources/debugger-async/async-callstack-xhrs
 Bug(none) http/tests/loading/307-after-303-after-post.html [ Failure ]
 Bug(none) http/tests/doc-write-intervention/doc-write-sync-third-party-script-reload.html [ Crash ]
 Bug(none) http/tests/loading/bad-scheme-subframe.html [ Failure ]
-Bug(none) http/tests/local/fileapi/send-sliced-dragged-file.html [ Failure Timeout ]
 Bug(none) http/tests/local/serviceworker/fetch-request-body-file.html [ Crash Timeout ]
 Bug(none) http/tests/media/video-buffered.html [ Timeout ]
 Bug(none) http/tests/misc/embed-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
