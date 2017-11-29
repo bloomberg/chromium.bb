@@ -657,8 +657,8 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_ROUTE_MEDIA:
       RouteMedia(browser_);
       break;
-    case IDC_WINDOW_MUTE_TAB:
-      MuteTab(browser_);
+    case IDC_WINDOW_MUTE_SITE:
+      MuteSite(browser_);
       break;
     case IDC_WINDOW_PIN_TAB:
       PinTab(browser_);
@@ -887,7 +887,7 @@ void BrowserCommandController::InitCommandState() {
       IDC_DISTILL_PAGE, base::CommandLine::ForCurrentProcess()->HasSwitch(
                             switches::kEnableDomDistiller));
 
-  command_updater_.UpdateCommandEnabled(IDC_WINDOW_MUTE_TAB, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_MUTE_SITE, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_PIN_TAB, normal_window);
 
   // Initialize other commands whose state changes based on various conditions.
@@ -965,7 +965,7 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB,
       !browser_->is_app() && CanDuplicateTab(browser_));
-  command_updater_.UpdateCommandEnabled(IDC_WINDOW_MUTE_TAB,
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_MUTE_SITE,
                                         !browser_->is_app());
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_PIN_TAB,
                                         !browser_->is_app());

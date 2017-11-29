@@ -505,7 +505,7 @@ CA
                                     <action selector="commandDispatch:" target="-1" id="AjB-PF-HrG"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="^IDS_MUTE_TAB_MAC" tag="35012" id="WVg-XQ-yLX">
+                            <menuItem title="^IDS_MUTE_SITE_MAC" tag="35012" id="WVg-XQ-yLX">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="commandDispatch:" target="-1" id="LaZ-j6-0bg"/>
