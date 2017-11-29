@@ -41,28 +41,6 @@ void CookieStoreIOSPersistent::SetCookieWithOptionsAsync(
       url, cookie_line, options, WrapSetCallback(std::move(callback)));
 }
 
-void CookieStoreIOSPersistent::SetCookieWithDetailsAsync(
-    const GURL& url,
-    const std::string& name,
-    const std::string& value,
-    const std::string& domain,
-    const std::string& path,
-    base::Time creation_time,
-    base::Time expiration_time,
-    base::Time last_access_time,
-    bool secure,
-    bool http_only,
-    CookieSameSite same_site,
-    CookiePriority priority,
-    SetCookiesCallback callback) {
-  DCHECK(thread_checker().CalledOnValidThread());
-
-  cookie_monster()->SetCookieWithDetailsAsync(
-      url, name, value, domain, path, creation_time, expiration_time,
-      last_access_time, secure, http_only, same_site, priority,
-      WrapSetCallback(std::move(callback)));
-}
-
 void CookieStoreIOSPersistent::SetCanonicalCookieAsync(
     std::unique_ptr<CanonicalCookie> cookie,
     bool secure_source,

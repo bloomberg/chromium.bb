@@ -44,6 +44,7 @@
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -321,10 +322,17 @@ void SetCookieOnIO(net::URLRequestContextGetter* context_getter,
   if (same_site == Network::CookieSameSiteEnum::Strict)
     css = net::CookieSameSite::STRICT_MODE;
 
-  request_context->cookie_store()->SetCookieWithDetailsAsync(
-      url, name, value, normalized_domain, path, base::Time(), expiration_date,
-      base::Time(), secure, http_only, css, net::COOKIE_PRIORITY_DEFAULT,
-      std::move(callback));
+  std::unique_ptr<net::CanonicalCookie> cc(
+      net::CanonicalCookie::CreateSanitizedCookie(
+          url, name, value, normalized_domain, path, base::Time(),
+          expiration_date, base::Time(), secure, http_only, css,
+          net::COOKIE_PRIORITY_DEFAULT));
+  if (!cc) {
+    std::move(callback).Run(false);
+    return;
+  }
+  request_context->cookie_store()->SetCanonicalCookieAsync(
+      std::move(cc), secure, true /*modify_http_only*/, std::move(callback));
 }
 
 void CookiesSetOnIO(std::unique_ptr<SetCookiesCallback> callback,

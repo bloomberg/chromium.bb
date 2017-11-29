@@ -442,31 +442,6 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
 
 // Asynchronous CookieMonster API
 
-void CookieMonster::SetCookieWithDetailsAsync(const GURL& url,
-                                              const std::string& name,
-                                              const std::string& value,
-                                              const std::string& domain,
-                                              const std::string& path,
-                                              Time creation_time,
-                                              Time expiration_time,
-                                              Time last_access_time,
-                                              bool secure,
-                                              bool http_only,
-                                              CookieSameSite same_site,
-                                              CookiePriority priority,
-                                              SetCookiesCallback callback) {
-  DoCookieCallbackForURL(
-      base::BindOnce(
-          // base::Unretained is safe as DoCookieCallbackForURL stores
-          // the callback on |*this|, so the callback will not outlive
-          // the object.
-          &CookieMonster::SetCookieWithDetails, base::Unretained(this), url,
-          name, value, domain, path, creation_time, expiration_time,
-          last_access_time, secure, http_only, same_site, priority,
-          std::move(callback)),
-      url);
-}
-
 void CookieMonster::FlushStore(base::OnceClosure callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -707,64 +682,6 @@ CookieMonster::~CookieMonster() {
     InternalDeleteCookie(current_cookie_it, false /* sync_to_store */,
                          DELETE_COOKIE_DONT_RECORD);
   }
-}
-
-void CookieMonster::SetCookieWithDetails(const GURL& url,
-                                         const std::string& name,
-                                         const std::string& value,
-                                         const std::string& domain,
-                                         const std::string& path,
-                                         base::Time creation_time,
-                                         base::Time expiration_time,
-                                         base::Time last_access_time,
-                                         bool secure,
-                                         bool http_only,
-                                         CookieSameSite same_site,
-                                         CookiePriority priority,
-                                         SetCookiesCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!HasCookieableScheme(url)) {
-    MaybeRunCookieCallback(std::move(callback), false);
-    return;
-  }
-
-  // Validate consistency of passed arguments.
-  if (ParsedCookie::ParseTokenString(name) != name ||
-      ParsedCookie::ParseValueString(value) != value ||
-      ParsedCookie::ParseValueString(domain) != domain ||
-      ParsedCookie::ParseValueString(path) != path) {
-    MaybeRunCookieCallback(std::move(callback), false);
-    return;
-  }
-
-  std::string cookie_domain;
-  if (!cookie_util::GetCookieDomainWithString(url, domain, &cookie_domain)) {
-    MaybeRunCookieCallback(std::move(callback), false);
-    return;
-  }
-
-  std::string cookie_path = CanonicalCookie::CanonPathWithString(url, path);
-  if (!path.empty() && cookie_path != path) {
-    MaybeRunCookieCallback(std::move(callback), false);
-    return;
-  }
-
-  // Canonicalize path again to make sure it escapes characters as needed.
-  url::Component path_component(0, cookie_path.length());
-  url::RawCanonOutputT<char> canon_path;
-  url::Component canon_path_component;
-  url::CanonicalizePath(cookie_path.data(), path_component, &canon_path,
-                        &canon_path_component);
-  cookie_path = std::string(canon_path.data() + canon_path_component.begin,
-                            canon_path_component.len);
-
-  std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
-      name, value, cookie_domain, cookie_path, creation_time, expiration_time,
-      last_access_time, secure, http_only, same_site, priority));
-
-  SetCanonicalCookie(std::move(cc), url.SchemeIsCryptographic(), true,
-                     std::move(callback));
 }
 
 void CookieMonster::GetAllCookies(GetCookieListCallback callback) {

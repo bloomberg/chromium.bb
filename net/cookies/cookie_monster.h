@@ -157,19 +157,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                  const std::string& cookie_line,
                                  const CookieOptions& options,
                                  SetCookiesCallback callback) override;
-  void SetCookieWithDetailsAsync(const GURL& url,
-                                 const std::string& name,
-                                 const std::string& value,
-                                 const std::string& domain,
-                                 const std::string& path,
-                                 base::Time creation_time,
-                                 base::Time expiration_time,
-                                 base::Time last_access_time,
-                                 bool secure,
-                                 bool http_only,
-                                 CookieSameSite same_site,
-                                 CookiePriority priority,
-                                 SetCookiesCallback callback) override;
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
                                bool secure_source,
                                bool modify_http_only,
@@ -404,23 +391,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // Record statistics every kRecordStatisticsIntervalSeconds of uptime.
   static const int kRecordStatisticsIntervalSeconds = 10 * 60;
-
-  // The following are synchronous calls to which the asynchronous methods
-  // delegate either immediately (if the store is loaded) or through a deferred
-  // task (if the store is not yet loaded).
-  void SetCookieWithDetails(const GURL& url,
-                            const std::string& name,
-                            const std::string& value,
-                            const std::string& domain,
-                            const std::string& path,
-                            base::Time creation_time,
-                            base::Time expiration_time,
-                            base::Time last_access_time,
-                            bool secure,
-                            bool http_only,
-                            CookieSameSite same_site,
-                            CookiePriority priority,
-                            SetCookiesCallback callback);
 
   // Sets a canonical cookie, deletes equivalents and performs garbage
   // collection.  |source_secure| indicates if the cookie is being set

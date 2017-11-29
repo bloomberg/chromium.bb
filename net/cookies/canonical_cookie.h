@@ -55,6 +55,24 @@ class NET_EXPORT CanonicalCookie {
       const base::Time& creation_time,
       const CookieOptions& options);
 
+  // Create a canonical cookie based on sanitizing the passed inputs in the
+  // context of the passed URL.  Returns a null unique pointer if the inputs
+  // cannot be sanitized.  If a cookie is created, |cookie->IsCanonical()|
+  // will be true.
+  static std::unique_ptr<CanonicalCookie> CreateSanitizedCookie(
+      const GURL& url,
+      const std::string& name,
+      const std::string& value,
+      const std::string& domain,
+      const std::string& path,
+      base::Time creation_time,
+      base::Time expiration_time,
+      base::Time last_access_time,
+      bool secure,
+      bool http_only,
+      CookieSameSite same_site,
+      CookiePriority priority);
+
   const std::string& Name() const { return name_; }
   const std::string& Value() const { return value_; }
   const std::string& Domain() const { return domain_; }
