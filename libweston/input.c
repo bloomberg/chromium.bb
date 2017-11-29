@@ -2359,10 +2359,6 @@ process_touch_normal(struct weston_touch_device *device,
 
 	switch (touch_type) {
 	case WL_TOUCH_DOWN:
-		weston_compositor_idle_inhibit(ec);
-
-		touch->num_tp++;
-
 		/* the first finger down picks the view, and all further go
 		 * to that view for the remainder of the touch session i.e.
 		 * until all touch points are up again. */
@@ -2400,17 +2396,6 @@ process_touch_normal(struct weston_touch_device *device,
 		grab->interface->motion(grab, time, touch_id, x, y);
 		break;
 	case WL_TOUCH_UP:
-		if (touch->num_tp == 0) {
-			/* This can happen if we start out with one or
-			 * more fingers on the touch screen, in which
-			 * case we didn't get the corresponding down
-			 * event. */
-			weston_log("unmatched touch up event\n");
-			break;
-		}
-		weston_compositor_idle_release(ec);
-		touch->num_tp--;
-
 		grab->interface->up(grab, time, touch_id);
 		if (touch->num_tp == 0)
 			weston_touch_set_focus(touch, NULL);
@@ -2450,11 +2435,38 @@ notify_touch_normalized(struct weston_touch_device *device,
 			const struct weston_point2d_device_normalized *norm,
 			int touch_type)
 {
+	struct weston_seat *seat = device->aggregate->seat;
+	struct weston_touch *touch = device->aggregate;
+
 	if (touch_type != WL_TOUCH_UP) {
 		if (weston_touch_device_can_calibrate(device))
 			assert(norm != NULL);
 		else
 			assert(norm == NULL);
+	}
+
+	/* Update touchpoints count regardless of the current mode. */
+	switch (touch_type) {
+	case WL_TOUCH_DOWN:
+		weston_compositor_idle_inhibit(seat->compositor);
+
+		touch->num_tp++;
+		break;
+	case WL_TOUCH_UP:
+		if (touch->num_tp == 0) {
+			/* This can happen if we start out with one or
+			 * more fingers on the touch screen, in which
+			 * case we didn't get the corresponding down
+			 * event. */
+			weston_log("unmatched touch up event\n");
+			break;
+		}
+		weston_compositor_idle_release(seat->compositor);
+
+		touch->num_tp--;
+		break;
+	default:
+		break;
 	}
 
 	process_touch_normal(device, time, touch_id, x, y, touch_type);
