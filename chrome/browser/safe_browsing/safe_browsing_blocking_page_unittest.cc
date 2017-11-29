@@ -256,32 +256,6 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
       user_response_ = CANCEL;
   }
 
-  void DidNavigateCrossSite(const char* url,
-                            int nav_entry_id,
-                            bool did_create_new_entry) {
-    content::WebContentsTester::For(web_contents())
-        ->TestDidNavigate(pending_main_rfh(), nav_entry_id,
-                          did_create_new_entry, GURL(url),
-                          ui::PAGE_TRANSITION_TYPED);
-  }
-
-  void GoBack(bool is_cross_site) {
-    NavigationEntry* entry =
-        web_contents()->GetController().GetEntryAtOffset(-1);
-    ASSERT_TRUE(entry);
-    web_contents()->GetController().GoBack();
-
-    // The pending RVH should commit for cross-site navigations.
-    content::RenderFrameHost* rfh =
-        is_cross_site ? pending_main_rfh() : web_contents()->GetMainFrame();
-    WebContentsTester::For(web_contents())->TestDidNavigate(
-        rfh,
-        entry->GetUniqueID(),
-        false,
-        entry->GetURL(),
-        ui::PAGE_TRANSITION_TYPED);
-  }
-
   void ShowInterstitial(bool is_subresource, const char* url) {
     security_interstitials::UnsafeResource resource;
     InitResource(&resource, is_subresource, GURL(url));
@@ -320,7 +294,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
       SafeBrowsingBlockingPage* sb_interstitial) {
     // CommandReceived(kTakeMeBackCommand) does a back navigation for
     // subresource interstitials.
-    GoBack(true);
+    NavigationSimulator::GoBack(web_contents());
     // DontProceed() posts a task to update the SafeBrowsingService::Client.
     base::RunLoop().RunUntilIdle();
   }
@@ -667,7 +641,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   // Proceed, then navigate back.
   ProceedThroughInterstitial(sb_interstitial);
   navigation->Commit();
-  GoBack(true);
+  NavigationSimulator::GoBack(web_contents());
 
   // We are back on the good page.
   sb_interstitial = GetSafeBrowsingBlockingPage();
@@ -676,8 +650,9 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   EXPECT_EQ(kGoodURL, controller().GetActiveEntry()->GetURL().spec());
 
   // Navigate forward to the malware URL.
-  web_contents()->GetController().GoForward();
-  int pending_id = controller().GetPendingEntry()->GetUniqueID();
+  auto forward_navigation = NavigationSimulator::CreateHistoryNavigation(
+      1 /* Offset */, web_contents());
+  forward_navigation->Start();
   ShowInterstitial(false, kBadURL);
   sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
@@ -685,9 +660,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   // Let's proceed and make sure everything is OK (bug 17627).
   ProceedThroughInterstitial(sb_interstitial);
   // Commit the navigation.
-  // TODO(ahemery): Remove this and DidNavigateCrossSite function once we are
-  // able to use NavigationSimulator to do back/forward navigations.
-  DidNavigateCrossSite(kBadURL, pending_id, false);
+  forward_navigation->Commit();
   sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_FALSE(sb_interstitial);
   ASSERT_EQ(2, controller().GetEntryCount());
