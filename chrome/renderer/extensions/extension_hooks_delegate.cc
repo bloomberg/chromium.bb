@@ -73,6 +73,20 @@ void GetAliasedFeature(v8::Local<v8::Name> property_name,
       runtime_obj->Get(context, property_name).ToLocalChecked());
 }
 
+// A helper method to throw a deprecation error on access.
+void ThrowDeprecatedAccessError(
+    v8::Local<v8::Name> name,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  static constexpr char kError[] =
+      "extension.sendRequest, extension.onRequest, and "
+      "extension.onRequestExternal are deprecated. Please use "
+      "runtime.sendMessage, runtime.onMessage, and runtime.onMessageExternal "
+      "instead.";
+  v8::Isolate* isolate = info.GetIsolate();
+  isolate->ThrowException(
+      v8::Exception::Error(gin::StringToV8(isolate, kError)));
+}
+
 }  // namespace
 
 ExtensionHooksDelegate::ExtensionHooksDelegate(
@@ -134,7 +148,7 @@ void ExtensionHooksDelegate::InitializeTemplate(
     v8::Isolate* isolate,
     v8::Local<v8::ObjectTemplate> object_template,
     const APITypeReferenceMap& type_refs) {
-  static const char* const kAliases[] = {
+  static constexpr const char* kAliases[] = {
       "connect",   "connectNative",     "sendMessage", "sendNativeMessage",
       "onConnect", "onConnectExternal", "onMessage",   "onMessageExternal",
   };
@@ -145,10 +159,34 @@ void ExtensionHooksDelegate::InitializeTemplate(
   }
 }
 
+void ExtensionHooksDelegate::InitializeInstance(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Object> instance) {
+  // Throw access errors for deprecated sendRequest-related properties. This
+  // isn't terribly efficient, but is only done for certain unpacked extensions
+  // and only if they access the chrome.extension module.
+  if (messaging_util::IsSendRequestDisabled(
+          ScriptContextSet::GetContextByV8Context(context))) {
+    static constexpr const char* kDeprecatedSendRequestProperties[] = {
+        "sendRequest", "onRequest", "onRequestExternal"};
+    for (const char* property : kDeprecatedSendRequestProperties) {
+      v8::Maybe<bool> success = instance->SetAccessor(
+          context, gin::StringToV8(context->GetIsolate(), property),
+          &ThrowDeprecatedAccessError);
+      DCHECK(success.IsJust());
+      DCHECK(success.FromJust());
+    }
+  }
+}
+
 RequestResult ExtensionHooksDelegate::HandleSendRequest(
     ScriptContext* script_context,
     const std::vector<v8::Local<v8::Value>>& arguments) {
   DCHECK_EQ(3u, arguments.size());
+  // This DCHECK() is correct because no context with sendRequest-related
+  // APIs disabled should have scriptable access to a context with them
+  // enabled.
+  DCHECK(!messaging_util::IsSendRequestDisabled(script_context));
 
   std::string target_id;
   std::string error;

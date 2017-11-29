@@ -367,6 +367,8 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
     }
   }
 
+  binding_hooks_->InitializeInstance(context, object);
+
   return object;
 }
 

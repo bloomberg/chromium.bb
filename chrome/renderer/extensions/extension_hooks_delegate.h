@@ -32,6 +32,8 @@ class ExtensionHooksDelegate : public APIBindingHooksDelegate {
   void InitializeTemplate(v8::Isolate* isolate,
                           v8::Local<v8::ObjectTemplate> object_template,
                           const APITypeReferenceMap& type_refs) override;
+  void InitializeInstance(v8::Local<v8::Context> context,
+                          v8::Local<v8::Object> instance) override;
 
  private:
   // Request handlers for the corresponding API methods.

@@ -74,6 +74,7 @@
 #include "extensions/renderer/js_extension_bindings_system.h"
 #include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/messaging_bindings.h"
+#include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/process_info_native_handler.h"
@@ -1343,9 +1344,7 @@ void Dispatcher::RegisterNativeHandlers(
   int manifest_version = extension ? extension->manifest_version() : 1;
   bool is_component_extension =
       extension && Manifest::IsComponentLocation(extension->location());
-  bool send_request_disabled =
-      (extension && Manifest::IsUnpackedLocation(extension->location()) &&
-       BackgroundInfo::HasLazyBackgroundPage(extension));
+  bool send_request_disabled = messaging_util::IsSendRequestDisabled(context);
   module_system->RegisterNativeHandler(
       "process",
       std::unique_ptr<NativeHandler>(new ProcessInfoNativeHandler(

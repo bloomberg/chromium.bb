@@ -35,6 +35,11 @@ void APIBindingHooksTestDelegate::SetTemplateInitializer(
   template_initializer_ = initializer;
 }
 
+void APIBindingHooksTestDelegate::SetInstanceInitializer(
+    const InstanceInitializer& initializer) {
+  instance_initializer_ = initializer;
+}
+
 APIBindingHooks::RequestResult APIBindingHooksTestDelegate::HandleRequest(
     const std::string& method_name,
     const APISignature* signature,
@@ -55,6 +60,13 @@ void APIBindingHooksTestDelegate::InitializeTemplate(
     const APITypeReferenceMap& type_refs) {
   if (template_initializer_)
     template_initializer_.Run(isolate, object_template, type_refs);
+}
+
+void APIBindingHooksTestDelegate::InitializeInstance(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Object> instance) {
+  if (instance_initializer_)
+    instance_initializer_.Run(context, instance);
 }
 
 }  // namespace extensions

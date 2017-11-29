@@ -102,6 +102,10 @@ void MassageSendMessageArguments(
     bool allow_options_argument,
     std::vector<v8::Local<v8::Value>>* arguments_out);
 
+// Returns true if the sendRequest-related properties are disabled for the given
+// |script_context|.
+bool IsSendRequestDisabled(ScriptContext* script_context);
+
 }  // namespace messaging_util
 }  // namespace extensions
 

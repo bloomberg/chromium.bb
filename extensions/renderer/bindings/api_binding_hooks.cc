@@ -348,6 +348,12 @@ void APIBindingHooks::InitializeTemplate(
     delegate_->InitializeTemplate(isolate, object_template, type_refs);
 }
 
+void APIBindingHooks::InitializeInstance(v8::Local<v8::Context> context,
+                                         v8::Local<v8::Object> instance) {
+  if (delegate_)
+    delegate_->InitializeInstance(context, instance);
+}
+
 void APIBindingHooks::SetDelegate(
     std::unique_ptr<APIBindingHooksDelegate> delegate) {
   delegate_ = std::move(delegate);

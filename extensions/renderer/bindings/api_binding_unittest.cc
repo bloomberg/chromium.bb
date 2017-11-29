@@ -1296,6 +1296,55 @@ TEST_F(APIBindingUnittest, HooksTemplateInitializer) {
             GetStringPropertyFromObject(binding_object, context, "oneString"));
 }
 
+TEST_F(APIBindingUnittest, HooksInstanceInitializer) {
+  SetFunctions(kFunctions);
+  static constexpr char kHookedProperty[] = "hookedProperty";
+
+  // Register a hook for the test.oneString method.
+  auto hooks = std::make_unique<APIBindingHooksTestDelegate>();
+  int count = 0;
+  auto hook = [](int* count, v8::Local<v8::Context> context,
+                 v8::Local<v8::Object> object) {
+    v8::Isolate* isolate = context->GetIsolate();
+    // Add a new property only for the first instance.
+    if ((*count)++ == 0) {
+      object
+          ->Set(context, gin::StringToSymbol(isolate, kHookedProperty),
+                gin::ConvertToV8(isolate, 42))
+          .ToChecked();
+    }
+  };
+
+  hooks->SetInstanceInitializer(base::Bind(hook, &count));
+  SetHooksDelegate(std::move(hooks));
+
+  InitializeBinding();
+
+  v8::HandleScope handle_scope(isolate());
+  // Create two instances.
+  v8::Local<v8::Context> context1 = MainContext();
+  v8::Local<v8::Object> binding_object1 = binding()->CreateInstance(context1);
+
+  v8::Local<v8::Context> context2 = AddContext();
+  v8::Local<v8::Object> binding_object2 = binding()->CreateInstance(context2);
+
+  // We should have run the hooks twice (once per instance).
+  EXPECT_EQ(2, count);
+
+  // The extra property should be present on the first binding object, but not
+  // the second.
+  EXPECT_EQ("42", GetStringPropertyFromObject(binding_object1, context1,
+                                              kHookedProperty));
+  EXPECT_EQ("undefined", GetStringPropertyFromObject(binding_object2, context2,
+                                                     kHookedProperty));
+
+  // Sanity check: other values should still be there.
+  EXPECT_EQ("function", GetStringPropertyFromObject(binding_object1, context1,
+                                                    "oneString"));
+  EXPECT_EQ("function", GetStringPropertyFromObject(binding_object2, context1,
+                                                    "oneString"));
+}
+
 // Test that running hooks returning different results correctly sends requests
 // or notifies of silent requests.
 TEST_F(APIBindingUnittest, TestSendingRequestsAndSilentRequestsWithHooks) {
