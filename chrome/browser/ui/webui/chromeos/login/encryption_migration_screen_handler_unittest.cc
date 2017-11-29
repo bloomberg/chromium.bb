@@ -110,6 +110,33 @@ class TestEncryptionMigrationScreenHandler
   int64_t free_disk_space_;
 };
 
+// Fake CryptohomeClient implementation for this test.
+class TestCryptohomeClient : public FakeCryptohomeClient {
+ public:
+  TestCryptohomeClient() = default;
+  ~TestCryptohomeClient() override = default;
+
+  const cryptohome::Identification& id() const { return id_; }
+
+  const cryptohome::MigrateToDircryptoRequest& request() const {
+    return request_;
+  }
+
+  void MigrateToDircrypto(const cryptohome::Identification& id,
+                          const cryptohome::MigrateToDircryptoRequest& request,
+                          VoidDBusMethodCallback callback) override {
+    id_ = id;
+    request_ = request;
+    FakeCryptohomeClient::MigrateToDircrypto(id, request, std::move(callback));
+  }
+
+ private:
+  cryptohome::Identification id_;
+  cryptohome::MigrateToDircryptoRequest request_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCryptohomeClient);
+};
+
 class EncryptionMigrationScreenHandlerTest : public testing::Test {
  public:
   EncryptionMigrationScreenHandlerTest() = default;
@@ -119,7 +146,7 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
     // Set up a MockUserManager.
     MockUserManager* mock_user_manager = new NiceMock<MockUserManager>();
     scoped_user_manager_enabler_ =
-        std::make_unique<user_manager::ScopedUserManager>(
+        base::MakeUnique<user_manager::ScopedUserManager>(
             base::WrapUnique(mock_user_manager));
 
     // This is used by EncryptionMigrationScreenHandler to mount the existing
@@ -136,10 +163,9 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
         mock_async_method_caller_);
 
     // Set up fake DBusThreadManager parts.
-    auto fake_cryptohome_client = base::MakeUnique<FakeCryptohomeClient>();
-    fake_cryptohome_client_ = fake_cryptohome_client.get();
+    fake_cryptohome_client_ = new TestCryptohomeClient();
     DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::move(fake_cryptohome_client));
+        base::WrapUnique<CryptohomeClient>(fake_cryptohome_client_));
 
     DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
         base::MakeUnique<FakePowerManagerClient>());
@@ -179,6 +205,7 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
 
   // Sets up expectation that the existing user home will be mounted for
   // migration using |mock_homedir_methods_|.
+  // TODO(crbug.com/741274): Use the fake when homedir_methods is dead.
   void ExpectMountExistingVault(cryptohome::MountError mount_error) {
     EXPECT_CALL(
         *mock_homedir_methods_,
@@ -195,34 +222,13 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
             })));
   }
 
-  // Sets up expectation that migration will be started on
-  // |mock_homedir_methods_|. If |expect_minimal_migration| is true, verifies
-  // that minimal migration has been requested.
-  void ExpectStartMigration(bool expect_minimal_migration) {
-    EXPECT_CALL(
-        *mock_homedir_methods_,
-        MigrateToDircrypto(cryptohome::Identification(
-                               user_context_.GetAccountId()) /* 0: id */,
-                           _ /* 1: minimal_migration*/, _ /* 2: callback */))
-        .WillOnce(WithArgs<1, 2>(
-            Invoke([expect_minimal_migration](
-                       const cryptohome::MigrateToDircryptoRequest request,
-                       const cryptohome::HomedirMethods::DBusResultCallback&
-                           callback) {
-              EXPECT_EQ(expect_minimal_migration, request.minimal_migration());
-              // Call the callback immediately - actual result is sent later
-              // using DircryptoMigrationProgressHandler.
-              callback.Run(true /* success */);
-            })));
-  }
-
  protected:
   // Must be the first member.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_enabler_;
   cryptohome::MockHomedirMethods* mock_homedir_methods_ = nullptr;
-  FakeCryptohomeClient* fake_cryptohome_client_ = nullptr;
+  TestCryptohomeClient* fake_cryptohome_client_ = nullptr;
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_ = nullptr;
   std::unique_ptr<TestEncryptionMigrationScreenHandler>
       encryption_migration_screen_handler_;
@@ -266,7 +272,6 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
 // Tests handling of a minimal migration run that finishes immediately.
 TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigration) {
   ExpectMountExistingVault(cryptohome::MountError::MOUNT_ERROR_NONE);
-  ExpectStartMigration(true /* minimal_migration */);
   encryption_migration_screen_handler_->SetMode(
       EncryptionMigrationMode::START_MINIMAL_MIGRATION);
   encryption_migration_screen_handler_->SetupInitialView();
@@ -284,6 +289,9 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigration) {
   EXPECT_TRUE(continue_login_callback_called_);
   EXPECT_FALSE(
       encryption_migration_screen_handler_->fake_wake_lock()->HasWakeLock());
+  EXPECT_TRUE(fake_cryptohome_client_->request().minimal_migration());
+  EXPECT_EQ(cryptohome::Identification(user_context_.GetAccountId()),
+            fake_cryptohome_client_->id());
 }
 
 // Tests handling of a resumed minimal migration run. This should behave the
@@ -291,7 +299,6 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigration) {
 // different, but we don't test that at the moment).
 TEST_F(EncryptionMigrationScreenHandlerTest, ResumeMinimalMigration) {
   ExpectMountExistingVault(cryptohome::MountError::MOUNT_ERROR_NONE);
-  ExpectStartMigration(true /* minimal_migration */);
   encryption_migration_screen_handler_->SetMode(
       EncryptionMigrationMode::RESUME_MINIMAL_MIGRATION);
   encryption_migration_screen_handler_->SetupInitialView();
@@ -305,6 +312,9 @@ TEST_F(EncryptionMigrationScreenHandlerTest, ResumeMinimalMigration) {
       0 /* current */, 0 /* total */);
 
   EXPECT_TRUE(continue_login_callback_called_);
+  EXPECT_TRUE(fake_cryptohome_client_->request().minimal_migration());
+  EXPECT_EQ(cryptohome::Identification(user_context_.GetAccountId()),
+            fake_cryptohome_client_->id());
 }
 
 // Tests handling of a minimal migration run that takes a long time to finish.
@@ -312,7 +322,6 @@ TEST_F(EncryptionMigrationScreenHandlerTest, ResumeMinimalMigration) {
 // re-enter their password.
 TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigrationSlow) {
   ExpectMountExistingVault(cryptohome::MountError::MOUNT_ERROR_NONE);
-  ExpectStartMigration(true /* minimal_migration */);
   encryption_migration_screen_handler_->SetMode(
       EncryptionMigrationMode::START_MINIMAL_MIGRATION);
   encryption_migration_screen_handler_->SetupInitialView();
@@ -328,12 +337,14 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigrationSlow) {
       0 /* current */, 0 /* total */);
 
   EXPECT_TRUE(restart_login_callback_called_);
+  EXPECT_TRUE(fake_cryptohome_client_->request().minimal_migration());
+  EXPECT_EQ(cryptohome::Identification(user_context_.GetAccountId()),
+            fake_cryptohome_client_->id());
 }
 
 // Tests handling of a minimal migration run that fails.
 TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigrationFails) {
   ExpectMountExistingVault(cryptohome::MountError::MOUNT_ERROR_NONE);
-  ExpectStartMigration(true /* minimal_migration */);
   encryption_migration_screen_handler_->SetMode(
       EncryptionMigrationMode::START_MINIMAL_MIGRATION);
   encryption_migration_screen_handler_->SetupInitialView();
@@ -353,6 +364,9 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigrationFails) {
       0 /* current */, 0 /* total */);
 
   Mock::VerifyAndClearExpectations(mock_async_method_caller_);
+  EXPECT_TRUE(fake_cryptohome_client_->request().minimal_migration());
+  EXPECT_EQ(cryptohome::Identification(user_context_.GetAccountId()),
+            fake_cryptohome_client_->id());
 }
 
 }  // namespace chromeos
