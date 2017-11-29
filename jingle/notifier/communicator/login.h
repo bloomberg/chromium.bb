@@ -38,8 +38,7 @@ class LoginSettings;
 // to take on the various errors that may occur.
 //
 // TODO(akalin): Make this observe proxy config changes also.
-class Login : public net::NetworkChangeNotifier::IPAddressObserver,
-              public net::NetworkChangeNotifier::ConnectionTypeObserver,
+class Login : public net::NetworkChangeNotifier::NetworkChangeObserver,
               public net::NetworkChangeNotifier::DNSObserver,
               public SingleLoginAttempt::Delegate {
  public:
@@ -82,11 +81,8 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
   // StartConnection()).
   void UpdateXmppSettings(const buzz::XmppClientSettings& user_settings);
 
-  // net::NetworkChangeNotifier::IPAddressObserver implementation.
-  void OnIPAddressChanged() override;
-
-  // net::NetworkChangeNotifier::ConnectionTypeObserver implementation.
-  void OnConnectionTypeChanged(
+  // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // net::NetworkChangeNotifier::DNSObserver implementation.

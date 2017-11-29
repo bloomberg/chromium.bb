@@ -38,15 +38,13 @@ Login::Login(Delegate* delegate,
                       servers,
                       try_ssltcp_first,
                       auth_mechanism) {
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   // TODO(akalin): Add as DNSObserver once bug 130610 is fixed.
   ResetReconnectState();
 }
 
 Login::~Login() {
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void Login::StartConnection() {
@@ -90,14 +88,8 @@ void Login::OnSettingsExhausted() {
   delegate_->OnTransientDisconnection();
 }
 
-void Login::OnIPAddressChanged() {
-  DVLOG(1) << "IP address changed";
-  OnNetworkEvent();
-}
-
-void Login::OnConnectionTypeChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  DVLOG(1) << "Connection type changed";
+void Login::OnNetworkChanged(net::NetworkChangeNotifier::ConnectionType type) {
+  DVLOG(1) << "Network changed";
   OnNetworkEvent();
 }
 
