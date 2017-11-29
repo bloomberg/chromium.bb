@@ -122,8 +122,9 @@ void FileReaderLoaderIPC::Start(ExecutionContext* execution_context,
     return;
   }
 
-  BlobRegistry::RegisterPublicBlobURL(execution_context->GetSecurityOrigin(),
-                                      url_for_reading_, std::move(blob_data));
+  BlobRegistry::RegisterPublicBlobURL(
+      execution_context->GetMutableSecurityOrigin(), url_for_reading_,
+      std::move(blob_data));
   // Construct and load the request.
   ResourceRequest request(url_for_reading_);
   request.SetExternalRequestStateFromRequestorAddressSpace(
