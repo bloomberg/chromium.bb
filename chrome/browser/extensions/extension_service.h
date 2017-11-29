@@ -273,21 +273,20 @@ class ExtensionService
   // Returns true if an uninstall was successfully triggered; this can fail if
   // the extension cannot be uninstalled (such as a policy force-installed
   // extension).
-  virtual bool UninstallExtension(const std::string& extension_id,
-                                  extensions::UninstallReason reason,
-                                  base::string16* error);
+  bool UninstallExtension(const std::string& extension_id,
+                          extensions::UninstallReason reason,
+                          base::string16* error);
 
   // Enables the extension.  If the extension is already enabled, does
   // nothing.
-  virtual void EnableExtension(const std::string& extension_id);
+  void EnableExtension(const std::string& extension_id);
 
   // Disables the extension. If the extension is already disabled, just adds
   // the |disable_reasons| (a bitmask of disable_reason::DisableReason - there
   // can be multiple DisableReasons e.g. when an extension comes in disabled
   // from Sync). If the extension cannot be disabled (due to policy), does
   // nothing.
-  virtual void DisableExtension(const std::string& extension_id,
-                                int disable_reasons);
+  void DisableExtension(const std::string& extension_id, int disable_reasons);
 
   // Disable non-default and non-managed extensions with ids not in
   // |except_ids|. Default extensions are those from the Web Store with
