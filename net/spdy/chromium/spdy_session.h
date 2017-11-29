@@ -18,6 +18,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
@@ -521,11 +522,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ClientPing);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, FailedPing);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, DeleteExpiredPushStreams);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, MetricsCollectionOnPushStreams);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, CancelPushBeforeClaimed);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, CancelPushAfterSessionGoesAway);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, CancelPushAfterExpired);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ClaimPushedStreamBeforeExpires);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ProtocolNegotiation);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, AdjustRecvWindowSize);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, AdjustSendWindowSize);
@@ -591,17 +591,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // an unclaimed pushed stream is claimed.
   class UnclaimedPushedStreamContainer {
    public:
-    struct PushedStreamInfo {
-      PushedStreamInfo() : stream_id(0) {}
-      PushedStreamInfo(SpdyStreamId stream_id, base::TimeTicks creation_time)
-          : stream_id(stream_id), creation_time(creation_time) {}
-      ~PushedStreamInfo() {}
-      size_t EstimateMemoryUsage() const { return 0; }
-
-      SpdyStreamId stream_id;
-      base::TimeTicks creation_time;
-    };
-    using PushedStreamMap = std::map<GURL, PushedStreamInfo>;
+    using PushedStreamMap = std::map<GURL, SpdyStreamId>;
     using iterator = PushedStreamMap::iterator;
     using const_iterator = PushedStreamMap::const_iterator;
 
@@ -619,14 +609,15 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
       return streams_.lower_bound(url);
     }
 
-    size_t erase(const GURL& url);
+    // Return true if there was an element with |url|, which was then erased.
+    bool erase(const GURL& url);
+
+    // Return the iterator following |it|.
     iterator erase(const_iterator it);
 
     // Return true if there was not already an entry with |url|,
     // in which case the insertion was successful.
-    bool insert(const GURL& url,
-                SpdyStreamId stream_id,
-                const base::TimeTicks& creation_time) WARN_UNUSED_RESULT;
+    bool insert(const GURL& url, SpdyStreamId stream_id) WARN_UNUSED_RESULT;
 
     size_t EstimateMemoryUsage() const;
 
@@ -841,8 +832,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void CompleteStreamRequest(
       const base::WeakPtr<SpdyStreamRequest>& pending_request);
 
-  // Remove old unclaimed pushed streams.
-  void DeleteExpiredPushedStreams();
+  // Cancel pushed stream with |stream_id|, if still unclaimed.  Identifying a
+  // pushed stream by GURL instead of stream ID could result in incorrect
+  // behavior if a pushed stream was claimed but later another stream was pushed
+  // for the same GURL.
+  void CancelPushedStreamIfUnclaimed(SpdyStreamId stream_id);
 
   // BufferedSpdyFramerVisitorInterface:
   void OnError(Http2DecoderAdapter::SpdyFramerError spdy_framer_error) override;
@@ -1112,10 +1106,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // This is the length of the last compressed frame.
   size_t last_compressed_frame_len_;
-
-  // This is the next time that unclaimed push streams should be checked for
-  // expirations.
-  base::TimeTicks next_unclaimed_push_stream_sweep_time_;
 
   // Indicate if we have already scheduled a delayed task to check the ping
   // status.
