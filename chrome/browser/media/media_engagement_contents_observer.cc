@@ -108,7 +108,6 @@ void MediaEngagementContentsObserver::WebContentsDestroyed() {
   // Commit a visit if we have not had a playback.
   MaybeCommitPendingData(kVisitEnd);
 
-  RecordUkmMetrics();
   ClearPlayerStates();
   service_->contents_observers_.erase(this);
   delete this;
@@ -120,7 +119,9 @@ void MediaEngagementContentsObserver::ClearPlayerStates() {
   significant_players_.clear();
 }
 
-void MediaEngagementContentsObserver::RecordUkmMetrics() {
+void MediaEngagementContentsObserver::RecordUkmMetrics(
+    int audible_players_count,
+    int significant_players_count) {
   ukm::UkmRecorder* recorder = GetUkmRecorder();
   if (!recorder)
     return;
@@ -133,7 +134,14 @@ void MediaEngagementContentsObserver::RecordUkmMetrics() {
       .SetEngagement_Score(ConvertScoreToPercentage(score.actual_score()))
       .SetPlaybacks_Delta(significant_playback_recorded_)
       .SetEngagement_IsHigh(score.high_score())
+      .SetPlayer_Audible_Delta(audible_players_count)
+      .SetPlayer_Audible_Total(score.audible_playbacks())
+      .SetPlayer_Significant_Delta(significant_players_count)
+      .SetPlayer_Significant_Total(score.significant_playbacks())
+      .SetPlaybacks_SecondsSinceLast(time_since_playback_for_ukm_.InSeconds())
       .Record(recorder);
+
+  time_since_playback_for_ukm_ = base::TimeDelta();
 }
 
 MediaEngagementContentsObserver::PendingCommitState&
@@ -196,13 +204,17 @@ void MediaEngagementContentsObserver::MaybeCommitPendingData(
   DCHECK(trigger != kVisitEnd || audible_players_.empty());
 
   // If we don't have anything to commit then we can stop.
-  if (!pending_data_to_commit_.has_value())
+  if (!pending_data_to_commit_.has_value()) {
+    // If we do not have anything to commit we should still record to UKM.
+    if (trigger == kVisitEnd)
+      RecordUkmMetrics(0, 0);
     return;
+  }
   PendingCommitState& state = pending_data_to_commit_.value();
 
   // If the current origin is not a valid URL then we should just silently reset
   // any pending data.
-  if (!committed_origin_.GetURL().is_valid()) {
+  if (!service_->ShouldRecordEngagement(committed_origin_.GetURL())) {
     pending_data_to_commit_.reset();
     audible_players_.clear();
     return;
@@ -214,8 +226,21 @@ void MediaEngagementContentsObserver::MaybeCommitPendingData(
   if (state.visit)
     score.IncrementVisits();
 
-  if (state.media_playback)
+  if (state.media_playback) {
+    // Media playbacks trigger a commit so we should only increment media
+    // playbacks if a significant media playback has occured.
+    DCHECK_EQ(trigger, kSignificantMediaPlayback);
+    const base::Time old_time = score.last_media_playback_time();
     score.IncrementMediaPlaybacks();
+
+    if (!old_time.is_null()) {
+      // Calculate the time since the last playback and the first significant
+      // playback this visit. If there is no last playback time then we will
+      // record 0.
+      time_since_playback_for_ukm_ =
+          score.last_media_playback_time() - old_time;
+    }
+  }
 
   score.IncrementAudiblePlaybacks(state.audible_players);
   score.IncrementSignificantPlaybacks(state.significant_players);
@@ -223,6 +248,10 @@ void MediaEngagementContentsObserver::MaybeCommitPendingData(
   score.Commit();
 
   pending_data_to_commit_.reset();
+
+  // If the commit trigger was the end then we should record UKM metrics.
+  if (trigger == kVisitEnd)
+    RecordUkmMetrics(state.audible_players, state.significant_players);
 }
 
 void MediaEngagementContentsObserver::DidFinishNavigation(
@@ -243,8 +272,6 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
   // Commit a visit if we have not had a playback before the new origin is
   // updated.
   MaybeCommitPendingData(kVisitEnd);
-
-  RecordUkmMetrics();
 
   committed_origin_ = new_origin;
   significant_playback_recorded_ = false;

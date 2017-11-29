@@ -211,7 +211,8 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   static const int kMaxInsignificantPlaybackReason;
 
   // Record the score and change in score to UKM.
-  void RecordUkmMetrics();
+  void RecordUkmMetrics(int audible_players_count,
+                        int significant_players_count);
 
   // Record the length of an ignored media playback.
   void RecordUkmIgnoredEvent(int length_msec);
@@ -247,6 +248,9 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
 
   // The current UKM source id for |committed_origin_|.
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
+
+  // The time between significant playbacks to be recorded to UKM.
+  base::TimeDelta time_since_playback_for_ukm_;
 
   url::Origin committed_origin_;
 
