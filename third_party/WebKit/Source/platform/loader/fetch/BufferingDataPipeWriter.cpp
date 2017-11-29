@@ -20,7 +20,7 @@ BufferingDataPipeWriter::BufferingDataPipeWriter(
     : handle_(std::move(handle)),
       watcher_(BLINK_FROM_HERE,
                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-               runner->ToSingleThreadTaskRunner()) {
+               runner) {
   watcher_.Watch(
       handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
       MOJO_WATCH_CONDITION_SATISFIED,

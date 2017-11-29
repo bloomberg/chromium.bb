@@ -62,8 +62,7 @@ void WebSocketHandleImpl::Connect(const KURL& url,
   client_ = client;
 
   mojom::blink::WebSocketClientPtr client_proxy;
-  client_binding_.Bind(mojo::MakeRequest(
-      &client_proxy, task_runner->ToSingleThreadTaskRunner()));
+  client_binding_.Bind(mojo::MakeRequest(&client_proxy, task_runner));
 
   // TODO(crbug.com/786608) remove the following CHECKs once bug is solved.
   CHECK(url.IsValid());
