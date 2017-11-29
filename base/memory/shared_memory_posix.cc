@@ -26,6 +26,10 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 
+#if defined(OS_LINUX)
+#include <sys/syscall.h>
+#endif
+
 #if defined(OS_ANDROID)
 #include "base/os_compat_android.h"
 #include "third_party/ashmem/ashmem.h"
@@ -76,6 +80,42 @@ bool SharedMemory::CreateAndMapAnonymous(size_t size) {
 }
 
 #if !defined(OS_ANDROID)
+
+// TODO(crbug.com/789031): Remove #if once all ChromeOS builds support it.
+#if defined(__NR_memfd_create)
+bool CreateMemFDSharedMemory(const SharedMemoryCreateOptions& options,
+                             ScopedFD* fd,
+                             ScopedFD* readonly_fd,
+                             FilePath* path) {
+  static bool try_memfd_create = true;
+  // Avoid sending unnecessary system calls that are not supported.
+  // There's not guarantee of only trying this once, but the result should
+  // always be the same when the memfd_create call is not available.
+  if (!try_memfd_create)
+    return false;
+  fd->reset(syscall(__NR_memfd_create, path->BaseName().value().c_str(), 0));
+  if (!fd->is_valid()) {
+    DPLOG(ERROR) << "memfd(create) failed";
+    if (errno == ENOSYS)
+      try_memfd_create = false;
+    return false;
+  }
+
+  if (options.share_read_only) {
+    // memfd anonymous files do not support dropping write access for a
+    // single fd.
+    int fd_read_only = HANDLE_EINTR(dup(fd->get()));
+    readonly_fd->reset(fd_read_only);
+    if (!readonly_fd->is_valid()) {
+      DPLOG(ERROR) << "memfd(duplicate) failed";
+      fd->reset();
+      return false;
+    }
+  }
+  return true;
+}
+#endif  // defined(__NR_memfd_create)
+
 // Chromium mostly only uses the unique/private shmem as specified by
 // "name == L"". The exception is in the StatsTable.
 // TODO(jrg): there is no way to "clean up" all unused named shmem if
@@ -94,14 +134,17 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   // and be deleted before they ever make it out to disk.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
-  ScopedFILE fp;
   bool fix_size = true;
+  ScopedFD fd;
   ScopedFD readonly_fd;
-
   FilePath path;
   if (options.name_deprecated == nullptr || options.name_deprecated->empty()) {
-    bool result =
-        CreateAnonymousSharedMemory(options, &fp, &readonly_fd, &path);
+    bool result = false;
+#if defined(__NR_memfd_create)
+    result = CreateMemFDSharedMemory(options, &fd, &readonly_fd, &path);
+#endif  // defined(__NR_memfd_create)
+    if (!result)
+      result = CreateAnonymousSharedMemory(options, &fd, &readonly_fd, &path);
     if (!result)
       return false;
   } else {
@@ -113,9 +156,9 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     const mode_t kOwnerOnly = S_IRUSR | S_IWUSR;
 
     // First, try to create the file.
-    int fd = HANDLE_EINTR(
-        open(path.value().c_str(), O_RDWR | O_CREAT | O_EXCL, kOwnerOnly));
-    if (fd == -1 && options.open_existing_deprecated) {
+    fd.reset(HANDLE_EINTR(
+        open(path.value().c_str(), O_RDWR | O_CREAT | O_EXCL, kOwnerOnly)));
+    if (!fd.is_valid() && options.open_existing_deprecated) {
       // If this doesn't work, try and open an existing file in append mode.
       // Opening an existing file in a world writable directory has two main
       // security implications:
@@ -124,12 +167,12 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
       // - Attackers could plant a symbolic link so that an unexpected file
       //   is opened, so O_NOFOLLOW is passed to open().
 #if !defined(OS_AIX)
-      fd = HANDLE_EINTR(
-          open(path.value().c_str(), O_RDWR | O_APPEND | O_NOFOLLOW));
+      fd.reset(HANDLE_EINTR(
+          open(path.value().c_str(), O_RDWR | O_APPEND | O_NOFOLLOW)));
 #else
       // AIX has no 64-bit support for open flags such as -
       //  O_CLOEXEC, O_NOFOLLOW and O_TTY_INIT.
-      fd = HANDLE_EINTR(open(path.value().c_str(), O_RDWR | O_APPEND));
+      fd.reset(HANDLE_EINTR(open(path.value().c_str(), O_RDWR | O_APPEND)));
 #endif
       // Check that the current user owns the file.
       // If uid != euid, then a more complex permission model is used and this
@@ -137,12 +180,12 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
       const uid_t real_uid = getuid();
       const uid_t effective_uid = geteuid();
       struct stat sb;
-      if (fd >= 0 &&
-          (fstat(fd, &sb) != 0 || sb.st_uid != real_uid ||
+      if (fd.is_valid() &&
+          (fstat(fd.get(), &sb) != 0 || sb.st_uid != real_uid ||
            sb.st_uid != effective_uid)) {
         LOG(ERROR) <<
             "Invalid owner when opening existing shared memory file.";
-        close(fd);
+        close(fd.get());
         return false;
       }
 
@@ -155,29 +198,31 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
       readonly_fd.reset(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
       if (!readonly_fd.is_valid()) {
         DPLOG(ERROR) << "open(\"" << path.value() << "\", O_RDONLY) failed";
-        close(fd);
-        fd = -1;
+        close(fd.get());
         return false;
       }
     }
-    if (fd >= 0) {
+    if (fd.is_valid()) {
       // "a+" is always appropriate: if it's a new file, a+ is similar to w+.
-      fp.reset(fdopen(fd, "a+"));
+      if (!fdopen(fd.get(), "a+")) {
+        PLOG(ERROR) << "Creating file stream in " << path.value() << " failed";
+        return false;
+      }
     }
   }
-  if (fp && fix_size) {
+  if (fd.is_valid() && fix_size) {
     // Get current size.
     struct stat stat;
-    if (fstat(fileno(fp.get()), &stat) != 0)
+    if (fstat(fd.get(), &stat) != 0)
       return false;
     const size_t current_size = stat.st_size;
     if (current_size != options.size) {
-      if (HANDLE_EINTR(ftruncate(fileno(fp.get()), options.size)) != 0)
+      if (HANDLE_EINTR(ftruncate(fd.get(), options.size)) != 0)
         return false;
     }
     requested_size_ = options.size;
   }
-  if (fp == nullptr) {
+  if (!fd.is_valid()) {
     PLOG(ERROR) << "Creating shared memory in " << path.value() << " failed";
     FilePath dir = path.DirName();
     if (access(dir.value().c_str(), W_OK | X_OK) < 0) {
@@ -192,7 +237,8 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
 
   int mapped_file = -1;
   int readonly_mapped_file = -1;
-  bool result = PrepareMapFile(std::move(fp), std::move(readonly_fd),
+
+  bool result = PrepareMapFile(std::move(fd), std::move(readonly_fd),
                                &mapped_file, &readonly_mapped_file);
   shm_ = SharedMemoryHandle(base::FileDescriptor(mapped_file, false),
                             options.size, UnguessableToken::Create());
@@ -224,8 +270,8 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
 
   read_only_ = read_only;
 
-  const char *mode = read_only ? "r" : "r+";
-  ScopedFILE fp(base::OpenFile(path, mode));
+  int mode = read_only ? O_RDONLY : O_RDWR;
+  ScopedFD fd(HANDLE_EINTR(open(path.value().c_str(), mode)));
   ScopedFD readonly_fd(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
   if (!readonly_fd.is_valid()) {
     DPLOG(ERROR) << "open(\"" << path.value() << "\", O_RDONLY) failed";
@@ -233,7 +279,7 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
   }
   int mapped_file = -1;
   int readonly_mapped_file = -1;
-  bool result = PrepareMapFile(std::move(fp), std::move(readonly_fd),
+  bool result = PrepareMapFile(std::move(fd), std::move(readonly_fd),
                                &mapped_file, &readonly_mapped_file);
   // This form of sharing shared memory is deprecated. https://crbug.com/345734.
   // However, we can't get rid of it without a significant refactor because its
