@@ -15,8 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol CWVAutofillControllerDelegate;
 
 CWV_EXPORT
-// Exposes features that allow autofilling html forms. Forms maybe include
-// single fields, address forms, or credit card forms.
+// Exposes features that allow autofilling html forms. May include autofilling
+// of single fields, address forms, or credit card forms.
 @interface CWVAutofillController : NSObject
 
 // Delegate to receive autofill callbacks.
@@ -46,6 +46,10 @@ CWV_EXPORT
 // |completionHandler| will only be called on success.
 - (void)fillSuggestion:(CWVAutofillSuggestion*)suggestion
      completionHandler:(nullable void (^)(void))completionHandler;
+
+// Deletes a suggestion from the data store. This suggestion will not be fetched
+// again.
+- (void)removeSuggestion:(CWVAutofillSuggestion*)suggestion;
 
 @end
 
