@@ -1946,6 +1946,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/physicalweb/UrlInfoTest.java",
   "junit/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferencesManagerTest.java",
   "junit/src/org/chromium/chrome/browser/preferences/password/PasswordReauthenticationFragmentTest.java",
+  "junit/src/org/chromium/chrome/browser/signin/SigninPromoUtilTest.java",
   "junit/src/org/chromium/chrome/browser/snackbar/SnackbarCollectionUnitTest.java",
   "junit/src/org/chromium/chrome/browser/suggestions/ImageFetcherTest.java",
   "junit/src/org/chromium/chrome/browser/suggestions/SuggestionsCarouselTest.java",

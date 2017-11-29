@@ -68,7 +68,9 @@ public class ChromePreferenceManager {
 
     public static final String CHROME_HOME_SHARED_PREFERENCES_KEY = "chrome_home_enabled_date";
 
-    private static ChromePreferenceManager sPrefs = new ChromePreferenceManager();
+    private static class LazyHolder {
+        static final ChromePreferenceManager INSTANCE = new ChromePreferenceManager();
+    }
 
     private final SharedPreferences mSharedPreferences;
 
@@ -81,7 +83,7 @@ public class ChromePreferenceManager {
      * @return the ChromePreferenceManager singleton
      */
     public static ChromePreferenceManager getInstance() {
-        return sPrefs;
+        return LazyHolder.INSTANCE;
     }
 
     /**
