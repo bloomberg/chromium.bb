@@ -143,8 +143,11 @@ var MainView = (function() {
 
     stopCapturing: function() {
       g_browser.disable();
-      document.styleSheets[0].insertRule(
-          '.hide-when-not-capturing { display: none; }', 0);
+      var sheet = document.createElement('style');
+      sheet.type = 'text/css';
+      sheet.appendChild(document.createTextNode(
+          '.hide-when-not-capturing { display: none; }'));
+      document.head.appendChild(sheet);
     },
 
     initTabs_: function() {
