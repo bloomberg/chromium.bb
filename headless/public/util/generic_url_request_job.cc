@@ -317,21 +317,6 @@ bool ReadAndAppendBytes(const std::unique_ptr<net::UploadElementReader>& reader,
   // GenericURLRequestJob::GetPostData to use a callback which would let us
   // avoid the nested run loops below.
 
-  // Initialize the reader.
-  {
-    base::Closure quit_closure;
-    int init_result = reader->Init(
-        base::Bind(&CompletionCallback, &init_result, &quit_closure));
-    if (init_result == net::ERR_IO_PENDING) {
-      base::RunLoop nested_run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-      quit_closure = nested_run_loop.QuitClosure();
-      nested_run_loop.Run();
-    }
-
-    if (init_result != net::OK)
-      return false;
-  }
-
   // Read the POST bytes.
   uint64_t size_to_stop_at = post_data.size() + reader->GetContentLength();
   const size_t block_size = 1024;
@@ -358,19 +343,48 @@ bool ReadAndAppendBytes(const std::unique_ptr<net::UploadElementReader>& reader,
 }
 }  // namespace
 
-std::string GenericURLRequestJob::GetPostData() const {
+const std::vector<std::unique_ptr<net::UploadElementReader>>*
+GenericURLRequestJob::GetInitializedReaders() const {
   if (!request_->has_upload())
-    return "";
+    return nullptr;
 
   const net::UploadDataStream* stream = request_->get_upload();
   if (!stream->GetElementReaders())
-    return "";
+    return nullptr;
 
   if (stream->GetElementReaders()->size() == 0)
-    return "";
+    return nullptr;
 
   const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
       stream->GetElementReaders();
+
+  // Initialize the readers, this necessary because some of them will segfault
+  // if you try to call any method without initializing first.
+  for (size_t i = 0; i < readers->size(); ++i) {
+    const std::unique_ptr<net::UploadElementReader>& reader = (*readers)[i];
+    if (!reader)
+      continue;
+
+    base::Closure quit_closure;
+    int init_result = reader->Init(
+        base::Bind(&CompletionCallback, &init_result, &quit_closure));
+    if (init_result == net::ERR_IO_PENDING) {
+      base::RunLoop nested_run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+      quit_closure = nested_run_loop.QuitClosure();
+      nested_run_loop.Run();
+    }
+
+    if (init_result != net::OK)
+      return nullptr;
+  }
+
+  return readers;
+}
+
+std::string GenericURLRequestJob::GetPostData() const {
+  const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
+      GetInitializedReaders();
+
   if (!readers)
     return "";
 
@@ -399,25 +413,17 @@ std::string GenericURLRequestJob::GetPostData() const {
 }
 
 uint64_t GenericURLRequestJob::GetPostDataSize() const {
-  if (!request_->has_upload())
-    return 0;
-
-  const net::UploadDataStream* stream = request_->get_upload();
-  if (!stream->GetElementReaders())
-    return 0;
-
-  if (stream->GetElementReaders()->size() == 0)
-    return 0;
-
   const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
-      stream->GetElementReaders();
+      GetInitializedReaders();
+
   if (!readers)
     return 0;
 
   uint64_t total_content_length = 0;
   for (size_t i = 0; i < readers->size(); ++i) {
     const std::unique_ptr<net::UploadElementReader>& reader = (*readers)[i];
-    total_content_length += reader->GetContentLength();
+    if (reader)
+      total_content_length += reader->GetContentLength();
   }
   return total_content_length;
 }
