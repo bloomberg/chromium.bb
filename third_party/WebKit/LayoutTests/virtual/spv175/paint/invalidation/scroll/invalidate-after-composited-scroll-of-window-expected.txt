@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Tests that invalidation of a div after scrolling invalidates just the div and no other area.'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [8, 4908, 540, 19],
           "reason": "appeared"
         },

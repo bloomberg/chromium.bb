@@ -16,11 +16,6 @@
           "object": "LayoutTableRow TR id='target'",
           "rect": [0, 0, 186, 64],
           "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableRow TR id='target'",
-          "rect": [26, 22, 132, 19],
-          "reason": "disappeared"
         }
       ]
     },

@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutInline SPAN id='outer'",
+          "object": "LayoutBlockFlow (positioned) DIV id='container'",
           "rect": [16, 108, 90, 63],
           "reason": "appeared"
         },

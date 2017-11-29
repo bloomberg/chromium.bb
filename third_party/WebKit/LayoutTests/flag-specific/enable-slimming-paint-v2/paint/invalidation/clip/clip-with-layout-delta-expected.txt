@@ -32,7 +32,7 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [8, 8, 4, 19],
           "reason": "appeared"
         }

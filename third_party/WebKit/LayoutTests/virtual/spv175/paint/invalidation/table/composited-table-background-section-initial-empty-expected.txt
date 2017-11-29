@@ -16,11 +16,6 @@
           "object": "LayoutTableSection TBODY id='target'",
           "rect": [0, 0, 186, 134],
           "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableSection TBODY id='target'",
-          "rect": [26, 24, 134, 85],
-          "reason": "disappeared"
         }
       ]
     },

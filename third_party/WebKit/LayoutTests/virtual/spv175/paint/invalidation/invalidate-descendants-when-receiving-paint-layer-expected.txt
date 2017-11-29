@@ -22,8 +22,8 @@
       "bounds": [784, 52],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='child'",
-          "rect": [1, 1, 100, 51],
+          "object": "LayoutBlockFlow (relative positioned) DIV",
+          "rect": [1, 1, 100, 100],
           "reason": "disappeared"
         }
       ]

@@ -10,6 +10,11 @@
           "object": "LayoutBlockFlow DIV id='test'",
           "rect": [0, 0, 110, 110],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='test'",
+          "rect": [0, 0, 110, 110],
+          "reason": "style change"
         }
       ]
     }

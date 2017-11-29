@@ -7,22 +7,17 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='container'",
-          "rect": [8, 8, 402, 102],
-          "reason": "appeared"
-        },
-        {
           "object": "LayoutMultiColumnFlowThread (anonymous)",
           "rect": [209, 15, 325, 150],
           "reason": "chunk uncacheable"
         },
         {
-          "object": "InlineTextBox '\u00A0'",
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
           "rect": [9, 0, 200, 67],
           "reason": "chunk uncacheable"
         },
         {
-          "object": "InlineTextBox '\u00A0'",
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
           "rect": [9, 0, 200, 67],
           "reason": "chunk uncacheable"
         },

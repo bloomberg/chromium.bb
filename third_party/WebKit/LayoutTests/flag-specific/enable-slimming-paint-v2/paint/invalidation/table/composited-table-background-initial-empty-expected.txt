@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTableRow TR id='target'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [8, 96, 186, 64],
           "reason": "appeared"
         }

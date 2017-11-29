@@ -103,8 +103,10 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
       TestDisplayItem(filler2, kBackgroundType));
 
   auto* container1_layer = ToLayoutBoxModelObject(container1).Layer();
+  auto* content1_layer = ToLayoutBoxModelObject(content1).Layer();
   auto* filler1_layer = ToLayoutBoxModelObject(filler1).Layer();
   auto* container2_layer = ToLayoutBoxModelObject(container2).Layer();
+  auto* content2_layer = ToLayoutBoxModelObject(content2).Layer();
   auto* filler2_layer = ToLayoutBoxModelObject(filler2).Layer();
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
@@ -112,12 +114,14 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
     // |container2|.
     const auto& paint_chunks =
         RootPaintController().GetPaintArtifact().PaintChunks();
-    EXPECT_EQ(5u, paint_chunks.size());
+    EXPECT_EQ(7u, paint_chunks.size());
     EXPECT_EQ(background_chunk_client, &paint_chunks[0].id.client);
     EXPECT_EQ(container1_layer, &paint_chunks[1].id.client);
-    EXPECT_EQ(filler1_layer, &paint_chunks[2].id.client);
-    EXPECT_EQ(container2_layer, &paint_chunks[3].id.client);
-    EXPECT_EQ(filler2_layer, &paint_chunks[4].id.client);
+    EXPECT_EQ(content1_layer, &paint_chunks[2].id.client);
+    EXPECT_EQ(filler1_layer, &paint_chunks[3].id.client);
+    EXPECT_EQ(container2_layer, &paint_chunks[4].id.client);
+    EXPECT_EQ(content2_layer, &paint_chunks[5].id.client);
+    EXPECT_EQ(filler2_layer, &paint_chunks[6].id.client);
   }
 
   ToHTMLElement(content1.GetNode())
@@ -144,12 +148,14 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
     // We should still have the paint chunks forced by the cached subsequences.
     Vector<PaintChunk> paint_chunks =
         RootPaintController().GetPaintArtifact().PaintChunks();
-    EXPECT_EQ(5u, paint_chunks.size());
+    EXPECT_EQ(7u, paint_chunks.size());
     EXPECT_EQ(background_chunk_client, &paint_chunks[0].id.client);
     EXPECT_EQ(container1_layer, &paint_chunks[1].id.client);
-    EXPECT_EQ(filler1_layer, &paint_chunks[2].id.client);
-    EXPECT_EQ(container2_layer, &paint_chunks[3].id.client);
-    EXPECT_EQ(filler2_layer, &paint_chunks[4].id.client);
+    EXPECT_EQ(content1_layer, &paint_chunks[2].id.client);
+    EXPECT_EQ(filler1_layer, &paint_chunks[3].id.client);
+    EXPECT_EQ(container2_layer, &paint_chunks[4].id.client);
+    EXPECT_EQ(content2_layer, &paint_chunks[5].id.client);
+    EXPECT_EQ(filler2_layer, &paint_chunks[6].id.client);
   }
 }
 

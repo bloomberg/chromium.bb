@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGPath path",
-          "rect": [202, 211, 112, 112],
+          "rect": [189, 197, 139, 139],
           "reason": "style change"
         },
         {
           "object": "LayoutSVGRoot svg id='svg-root'",
-          "rect": [202, 211, 112, 112],
+          "rect": [189, 197, 139, 139],
           "reason": "appeared"
         }
       ]

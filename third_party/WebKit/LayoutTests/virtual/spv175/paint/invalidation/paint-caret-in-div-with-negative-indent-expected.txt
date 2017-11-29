@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "Caret",
+          "object": "LayoutBlockFlow HTML",
           "rect": [358, 200, 1, 20],
           "reason": "appeared"
         }

@@ -97,7 +97,7 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow DIV id='target'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [8, 164, 10, 100],
           "reason": "appeared"
         }

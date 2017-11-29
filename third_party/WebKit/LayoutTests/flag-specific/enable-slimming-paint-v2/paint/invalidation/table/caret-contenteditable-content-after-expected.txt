@@ -22,7 +22,7 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow DIV id='editor'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [7, 47, 786, 22],
           "reason": "appeared"
         },

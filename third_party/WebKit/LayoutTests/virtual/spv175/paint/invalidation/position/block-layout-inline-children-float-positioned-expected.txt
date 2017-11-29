@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [309, 37, 292, 19],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
+          "object": "LayoutBlockFlow (positioned) SPAN",
           "rect": [155, 37, 292, 19],
           "reason": "appeared"
         }

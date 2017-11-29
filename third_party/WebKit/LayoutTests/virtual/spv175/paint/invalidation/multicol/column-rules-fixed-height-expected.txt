@@ -12,11 +12,6 @@
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox 'There should be a blue square below. There should also be five vertical red lines.'",
-          "rect": [8, 16, 509, 19],
-          "reason": "appeared"
-        },
-        {
           "object": "LayoutMultiColumnFlowThread (anonymous)",
           "rect": [110, 52, 106, 315],
           "reason": "chunk uncacheable"

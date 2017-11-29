@@ -531,19 +531,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     }
   }
 
-  Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    const auto* local_border_box_properties = paint_layer_.GetLayoutObject()
-                                                  .FirstFragment()
-                                                  .LocalBorderBoxProperties();
-    DCHECK(local_border_box_properties);
-    PaintChunkProperties properties(*local_border_box_properties);
-    properties.backface_hidden =
-        paint_layer_.GetLayoutObject().HasHiddenBackface();
-    scoped_paint_chunk_properties.emplace(context.GetPaintController(),
-                                          properties, paint_layer_);
-  }
-
   bool selection_only =
       local_painting_info.GetGlobalPaintFlags() & kGlobalPaintSelectionOnly;
   {  // Begin block for the lifetime of any filter.
@@ -581,14 +568,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     bool should_paint_overlay_scrollbars = is_painting_overlay_scrollbars;
 
     if (should_paint_background) {
-      Optional<ScopedPaintChunkProperties> background_chunk_properties;
-      if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-        background_chunk_properties.emplace(
-            context.GetPaintController(),
-            context.GetPaintController().CurrentPaintChunkProperties(),
-            paint_layer_,
-            DisplayItem::PaintPhaseToDrawingType(PaintPhase::kBlockBackground));
-      }
       PaintBackgroundForFragments(layer_fragments, context,
                                   local_painting_info, paint_flags);
     }
@@ -599,26 +578,14 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         result = kMayBeClippedByPaintDirtyRect;
     }
 
-    if (should_paint_own_contents || should_paint_self_outline) {
-      Optional<ScopedPaintChunkProperties> foreground_chunk_properties;
-      if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-        foreground_chunk_properties.emplace(
-            context.GetPaintController(),
-            context.GetPaintController().CurrentPaintChunkProperties(),
-            paint_layer_,
-            DisplayItem::PaintPhaseToDrawingType(PaintPhase::kForeground));
-      }
+    if (should_paint_own_contents) {
+      PaintForegroundForFragments(layer_fragments, context, local_painting_info,
+                                  selection_only, paint_flags);
+    }
 
-      if (should_paint_own_contents) {
-        PaintForegroundForFragments(layer_fragments, context,
-                                    local_painting_info, selection_only,
-                                    paint_flags);
-      }
-
-      if (should_paint_self_outline) {
-        PaintSelfOutlineForFragments(layer_fragments, context,
-                                     local_painting_info, paint_flags);
-      }
+    if (should_paint_self_outline) {
+      PaintSelfOutlineForFragments(layer_fragments, context,
+                                   local_painting_info, paint_flags);
     }
 
     if (should_paint_normal_flow_and_pos_z_order_lists) {
@@ -940,6 +907,17 @@ void PaintLayerPainter::PaintOverflowControlsForFragments(
     cache_skipper.emplace(context);
 
   for (auto& fragment : layer_fragments) {
+    Optional<ScopedPaintChunkProperties> fragment_paint_chunk_properties;
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      PaintChunkProperties properties(
+          *fragment.fragment_data->LocalBorderBoxProperties());
+      properties.backface_hidden =
+          paint_layer_.GetLayoutObject().HasHiddenBackface();
+      fragment_paint_chunk_properties.emplace(
+          context.GetPaintController(), properties, paint_layer_,
+          DisplayItem::kScrollOverflowControls);
+    }
+
     // We need to apply the same clips and transforms that
     // paintFragmentWithPhase would have.
     LayoutRect cull_rect = fragment.background_rect.Rect();
@@ -983,20 +961,18 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   DCHECK(paint_layer_.IsSelfPaintingLayer());
 
   Optional<ScopedPaintChunkProperties> fragment_paint_chunk_properties;
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      // We have already created paint chunk properties for the first fragment
-      // in PaintLayerContents().
-      fragment.fragment_data !=
-          &paint_layer_.GetLayoutObject().FirstFragment()) {
-    auto properties =
-        *fragment.fragment_data->GetRarePaintData()->LocalBorderBoxProperties();
-    // Keep the current effect which might have been set by
-    // PaintMaskForFragments().
-    properties.SetEffect(context.GetPaintController()
-                             .CurrentPaintChunkProperties()
-                             .property_tree_state.Effect());
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    PaintChunkProperties chunk_properties(
+        *fragment.fragment_data->LocalBorderBoxProperties());
+    chunk_properties.backface_hidden =
+        paint_layer_.GetLayoutObject().HasHiddenBackface();
+    if (phase == PaintPhase::kMask) {
+      const auto* properties = fragment.fragment_data->PaintProperties();
+      DCHECK(properties && properties->Mask());
+      chunk_properties.property_tree_state.SetEffect(properties->Mask());
+    }
     fragment_paint_chunk_properties.emplace(
-        context.GetPaintController(), properties, paint_layer_,
+        context.GetPaintController(), chunk_properties, paint_layer_,
         DisplayItem::PaintPhaseToDrawingType(phase));
   }
 
@@ -1228,16 +1204,6 @@ void PaintLayerPainter::PaintMaskForFragments(
   Optional<DisplayItemCacheSkipper> cache_skipper;
   if (layer_fragments.size() > 1)
     cache_skipper.emplace(context);
-
-  Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    const auto* properties =
-        paint_layer_.GetLayoutObject().FirstFragment().PaintProperties();
-    DCHECK(properties && properties->Mask());
-    scoped_paint_chunk_properties.emplace(
-        context.GetPaintController(), properties->Mask(), paint_layer_,
-        DisplayItem::PaintPhaseToDrawingType(PaintPhase::kMask));
-  }
 
   for (auto& fragment : layer_fragments) {
     PaintFragmentWithPhase(PaintPhase::kMask, fragment, context,
