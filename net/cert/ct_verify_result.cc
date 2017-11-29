@@ -11,8 +11,8 @@ namespace net {
 namespace ct {
 
 CTVerifyResult::CTVerifyResult()
-    : ct_policies_applied(false),
-      policy_compliance(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS),
+    : policy_compliance(
+          ct::CTPolicyCompliance::CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE),
       policy_compliance_required(false) {}
 
 CTVerifyResult::CTVerifyResult(const CTVerifyResult& other) = default;

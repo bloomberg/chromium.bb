@@ -1447,7 +1447,6 @@ TEST_F(TransportSecurityStateTest, PreloadedExpectStapleIncludeSubdomains) {
 TEST_F(TransportSecurityStateTest, InvalidExpectCTHeader) {
   HostPortPair host_port(kExpectCTStaticHostname, 443);
   SSLInfo ssl_info;
-  ssl_info.ct_compliance_details_available = true;
   ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
   ssl_info.is_issued_by_known_root = true;
@@ -1479,7 +1478,6 @@ TEST_F(TransportSecurityStateTest, InvalidExpectCTHeader) {
 TEST_F(TransportSecurityStateTest, ExpectCTNonPublicRoot) {
   HostPortPair host_port(kExpectCTStaticHostname, 443);
   SSLInfo ssl_info;
-  ssl_info.ct_compliance_details_available = true;
   ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
   ssl_info.is_issued_by_known_root = false;
@@ -1509,9 +1507,8 @@ TEST_F(TransportSecurityStateTest, ExpectCTNonPublicRoot) {
 TEST_F(TransportSecurityStateTest, ExpectCTComplianceNotAvailable) {
   HostPortPair host_port(kExpectCTStaticHostname, 443);
   SSLInfo ssl_info;
-  ssl_info.ct_compliance_details_available = false;
   ssl_info.ct_policy_compliance =
-      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
+      ct::CTPolicyCompliance::CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE;
   ssl_info.is_issued_by_known_root = true;
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -1529,7 +1526,8 @@ TEST_F(TransportSecurityStateTest, ExpectCTComplianceNotAvailable) {
   state.ProcessExpectCTHeader("preload", host_port, ssl_info);
   EXPECT_EQ(0u, reporter.num_failures());
 
-  ssl_info.ct_compliance_details_available = true;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
   state.ProcessExpectCTHeader("preload", host_port, ssl_info);
   EXPECT_EQ(1u, reporter.num_failures());
 }
@@ -1539,7 +1537,6 @@ TEST_F(TransportSecurityStateTest, ExpectCTComplianceNotAvailable) {
 TEST_F(TransportSecurityStateTest, ExpectCTCompliantCert) {
   HostPortPair host_port(kExpectCTStaticHostname, 443);
   SSLInfo ssl_info;
-  ssl_info.ct_compliance_details_available = true;
   ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
   ssl_info.is_issued_by_known_root = true;
@@ -1570,7 +1567,6 @@ TEST_F(TransportSecurityStateTest, ExpectCTCompliantCert) {
 TEST_F(TransportSecurityStateTest, PreloadedExpectCTBuildNotTimely) {
   HostPortPair host_port(kExpectCTStaticHostname, 443);
   SSLInfo ssl_info;
-  ssl_info.ct_compliance_details_available = true;
   ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY;
   ssl_info.is_issued_by_known_root = true;
@@ -1603,7 +1599,6 @@ TEST_F(TransportSecurityStateTest, PreloadedExpectCTBuildNotTimely) {
 TEST_F(TransportSecurityStateTest, DynamicExpectCTBuildNotTimely) {
   HostPortPair host_port("example.test", 443);
   SSLInfo ssl_info;
-  ssl_info.ct_compliance_details_available = true;
   ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY;
   ssl_info.is_issued_by_known_root = true;
@@ -1640,7 +1635,6 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTBuildNotTimely) {
 TEST_F(TransportSecurityStateTest, ExpectCTNotPreloaded) {
   HostPortPair host_port("not-expect-ct-preloaded.test", 443);
   SSLInfo ssl_info;
-  ssl_info.ct_compliance_details_available = true;
   ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
   ssl_info.is_issued_by_known_root = true;
@@ -1670,7 +1664,6 @@ TEST_F(TransportSecurityStateTest, ExpectCTNotPreloaded) {
 TEST_F(TransportSecurityStateTest, ExpectCTReporter) {
   HostPortPair host_port(kExpectCTStaticHostname, 443);
   SSLInfo ssl_info;
-  ssl_info.ct_compliance_details_available = true;
   ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
   ssl_info.is_issued_by_known_root = true;
@@ -1712,7 +1705,6 @@ TEST_F(TransportSecurityStateTest, ExpectCTReporter) {
 TEST_F(TransportSecurityStateTest, RepeatedExpectCTReportsForStaticExpectCT) {
   HostPortPair host_port(kExpectCTStaticHostname, 443);
   SSLInfo ssl_info;
-  ssl_info.ct_compliance_details_available = true;
   ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
   ssl_info.is_issued_by_known_root = true;
@@ -2541,7 +2533,6 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTDeduping) {
   const char kHeader[] = "max-age=123,enforce,report-uri=\"http://foo.test\"";
   SSLInfo ssl;
   ssl.is_issued_by_known_root = true;
-  ssl.ct_compliance_details_available = true;
   ssl.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
 
@@ -2598,7 +2589,6 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTCompliantConnection) {
   const char kHeader[] = "max-age=123,report-uri=\"http://foo.test\"";
   SSLInfo ssl;
   ssl.is_issued_by_known_root = true;
-  ssl.ct_compliance_details_available = true;
   ssl.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
 
@@ -2637,7 +2627,6 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTHeaderProcessingDeduping) {
   const char kHeader[] = "max-age=123,enforce,report-uri=\"http://foo.test\"";
   SSLInfo ssl;
   ssl.is_issued_by_known_root = true;
-  ssl.ct_compliance_details_available = true;
   ssl.ct_policy_compliance = ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 
   base::test::ScopedFeatureList feature_list;
@@ -2680,7 +2669,6 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCT) {
   const char kHeader[] = "max-age=123,enforce,report-uri=\"http://foo.test\"";
   SSLInfo ssl;
   ssl.is_issued_by_known_root = true;
-  ssl.ct_compliance_details_available = true;
   ssl.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
 
@@ -2725,7 +2713,6 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTPrivateRoot) {
   const char kHeader[] = "max-age=123,enforce,report-uri=\"http://foo.test\"";
   SSLInfo ssl;
   ssl.is_issued_by_known_root = false;
-  ssl.ct_compliance_details_available = true;
   ssl.ct_policy_compliance = ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 
   base::test::ScopedFeatureList feature_list;
@@ -2746,8 +2733,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTNoComplianceDetails) {
   const char kHeader[] = "max-age=123,enforce,report-uri=\"http://foo.test\"";
   SSLInfo ssl;
   ssl.is_issued_by_known_root = true;
-  ssl.ct_compliance_details_available = false;
-  ssl.ct_policy_compliance = ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
+  ssl.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE;
 
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -2777,7 +2764,6 @@ TEST_F(TransportSecurityStateTest,
   const char kHeader[] = "max-age=123,enforce,report-uri=\"http://foo.test\"";
   SSLInfo ssl;
   ssl.is_issued_by_known_root = true;
-  ssl.ct_compliance_details_available = true;
   ssl.ct_policy_compliance = ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 
   scoped_refptr<X509Certificate> cert1 =
@@ -3001,7 +2987,6 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTUMA) {
   const char kHistogramName[] = "Net.ExpectCTHeader.ParseSuccess";
   SSLInfo ssl;
   ssl.is_issued_by_known_root = true;
-  ssl.ct_compliance_details_available = true;
   ssl.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
 

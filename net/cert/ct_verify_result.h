@@ -30,13 +30,12 @@ struct NET_EXPORT CTVerifyResult {
   // All SCTs and their statuses
   SignedCertificateTimestampAndStatusList scts;
 
-  // True if any CT policies were applied on this connection.
-  bool ct_policies_applied;
   // The result of evaluating whether the connection complies with the
   // CT certificate policy.
   CTPolicyCompliance policy_compliance;
   // True if the connection was required to comply with the CT certificate
-  // policy. This value is only meaningful if |ct_policies_applied| is true.
+  // policy. This value is not meaningful if |policy_compliance| is
+  // COMPLIANCE_DETAILS_NOT_AVAILABLE.
   bool policy_compliance_required;
 };
 

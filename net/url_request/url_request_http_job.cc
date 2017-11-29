@@ -100,8 +100,10 @@ void LogTrustAnchor(const net::HashValueVector& spki_hashes) {
 // Records per-request histograms relating to Certificate Transparency
 // compliance.
 void RecordCTHistograms(const net::SSLInfo& ssl_info) {
-  if (!ssl_info.ct_compliance_details_available)
+  if (ssl_info.ct_policy_compliance ==
+      net::ct::CTPolicyCompliance::CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE) {
     return;
+  }
   if (!ssl_info.is_issued_by_known_root)
     return;
 
