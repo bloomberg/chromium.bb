@@ -76,6 +76,9 @@ public class ContextualSearchSelectionController {
     // When the last tap gesture happened.
     private long mTapTimeNanoseconds;
 
+    // Whether the selection was empty before the most recent tap gesture.
+    private boolean mWasSelectionEmptyBeforeTap;
+
     // The duration of the last tap gesture in milliseconds, or 0 if not set.
     private int mTapDurationMs = INVALID_DURATION;
 
@@ -100,6 +103,7 @@ public class ContextualSearchSelectionController {
         @Override
         public void onTouchDown() {
             mTapTimeNanoseconds = System.nanoTime();
+            mWasSelectionEmptyBeforeTap = TextUtils.isEmpty(mSelectedText);
         }
     }
 
@@ -361,8 +365,9 @@ public class ContextualSearchSelectionController {
         int adjustedTapsSinceOpen = prefs.getContextualSearchTapCount()
                 - prefs.getContextualSearchTapQuickAnswerCount();
         assert mTapDurationMs != INVALID_DURATION : "mTapDurationMs not set!";
-        TapSuppressionHeuristics tapHeuristics = new TapSuppressionHeuristics(this, mLastTapState,
-                x, y, adjustedTapsSinceOpen, contextualSearchContext, mTapDurationMs);
+        TapSuppressionHeuristics tapHeuristics =
+                new TapSuppressionHeuristics(this, mLastTapState, x, y, adjustedTapsSinceOpen,
+                        contextualSearchContext, mTapDurationMs, mWasSelectionEmptyBeforeTap);
         // TODO(donnd): Move to be called when the panel closes to work with states that change.
         tapHeuristics.logConditionState();
 

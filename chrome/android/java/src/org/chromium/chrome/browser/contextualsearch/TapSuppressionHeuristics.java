@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.support.annotation.Nullable;
+
 /**
  * A set of {@link ContextualSearchHeuristic}s that support experimentation and logging.
  */
@@ -17,16 +19,20 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
      * @param x The x position of the Tap.
      * @param y The y position of the Tap.
      * @param tapsSinceOpen the number of Tap gestures since the last open of the panel.
+     * @param contextualSearchContext The {@link ContextualSearchContext} of this tap.
+     * @param tapDurationMs The duration of this tap in milliseconds.
+     * @param wasSelectionEmptyBeforeTap Whether the selection was empty before this tap.
      */
     TapSuppressionHeuristics(ContextualSearchSelectionController selectionController,
-            ContextualSearchTapState previousTapState, int x, int y, int tapsSinceOpen,
-            ContextualSearchContext contextualSearchContext, int tapDurationMs) {
+            @Nullable ContextualSearchTapState previousTapState, int x, int y, int tapsSinceOpen,
+            ContextualSearchContext contextualSearchContext, int tapDurationMs,
+            boolean wasSelectionEmptyBeforeTap) {
         super();
         mCtrSuppression = new CtrSuppression();
         mHeuristics.add(mCtrSuppression);
         mHeuristics.add(new RecentScrollTapSuppression(selectionController));
-        mHeuristics.add(
-                new TapFarFromPreviousSuppression(selectionController, previousTapState, x, y));
+        mHeuristics.add(new TapFarFromPreviousSuppression(
+                selectionController, previousTapState, x, y, wasSelectionEmptyBeforeTap));
         mHeuristics.add(new TapDurationSuppression(tapDurationMs));
         mHeuristics.add(new TapWordLengthSuppression(contextualSearchContext));
         mHeuristics.add(new TapWordEdgeSuppression(contextualSearchContext));
