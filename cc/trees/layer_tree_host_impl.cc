@@ -166,6 +166,9 @@ DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeDurationHistogramTimer,
                                   "Scheduling.%s.PendingTreeDuration");
 DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeRasterDurationHistogramTimer,
                                   "Scheduling.%s.PendingTreeRasterDuration");
+DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(
+    ImageInvalidationUpdateDurationHistogramTimer,
+    "Scheduling.%s.ImageInvalidationUpdateDuration");
 
 LayerTreeHostImpl::FrameData::FrameData()
     : render_surface_list(nullptr),
@@ -396,15 +399,19 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   // Defer invalidating images until UpdateDrawProperties is performed since
   // that updates whether an image should be animated based on its visibility
   // and the updated data for the image from the main frame.
-  PaintImageIdFlatSet images_to_invalidate =
-      tile_manager_.TakeImagesToInvalidateOnSyncTree();
-  if (image_animation_controller_.has_value()) {
-    const auto& animated_images =
-        image_animation_controller_.value().AnimateForSyncTree(
-            CurrentBeginFrameArgs().frame_time);
-    images_to_invalidate.insert(animated_images.begin(), animated_images.end());
+  {
+    ImageInvalidationUpdateDurationHistogramTimer image_invalidation_timer;
+    PaintImageIdFlatSet images_to_invalidate =
+        tile_manager_.TakeImagesToInvalidateOnSyncTree();
+    if (image_animation_controller_.has_value()) {
+      const auto& animated_images =
+          image_animation_controller_.value().AnimateForSyncTree(
+              CurrentBeginFrameArgs().frame_time);
+      images_to_invalidate.insert(animated_images.begin(),
+                                  animated_images.end());
+    }
+    sync_tree()->InvalidateRegionForImages(images_to_invalidate);
   }
-  sync_tree()->InvalidateRegionForImages(images_to_invalidate);
 
   // Start working on newly created tiles immediately if needed.
   // TODO(vmpstr): Investigate always having PrepareTiles issue
