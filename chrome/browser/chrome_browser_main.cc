@@ -189,21 +189,29 @@
 #include "ui/base/resource/resource_bundle_android.h"
 #else
 #include "chrome/browser/feedback/feedback_profile_observer.h"
+#include "chrome/browser/usb/web_usb_detector.h"
 #endif  // defined(OS_ANDROID)
 
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-#include "chrome/browser/offline_pages/offline_page_info_handler.h"
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#include "chrome/browser/first_run/upgrade_util.h"
 #endif
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "chrome/browser/first_run/upgrade_util_linux.h"
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "chrome/browser/first_run/upgrade_util_linux.h"
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
+#if defined(OS_MACOSX)
+#include <Security/Security.h>
+
+#include "base/mac/scoped_nsautorelease_pool.h"
+#include "chrome/browser/mac/keystone_glue.h"
+#endif  // defined(OS_MACOSX)
 
 // TODO(port): several win-only methods have been pulled out of this, but
 // BrowserMain() as a whole needs to be broken apart so that it's usable by
@@ -227,21 +235,10 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
-#include <Security/Security.h>
-
-#include "base/mac/scoped_nsautorelease_pool.h"
-#include "chrome/browser/mac/keystone_glue.h"
-#endif  // defined(OS_MACOSX)
-
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-#include "chrome/browser/first_run/upgrade_util.h"
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #endif
-
-#if BUILDFLAG(ENABLE_NACL)
-#include "chrome/browser/component_updater/pnacl_component_installer.h"
-#include "components/nacl/browser/nacl_process_host.h"
-#endif  // BUILDFLAG(ENABLE_NACL)
 
 #if BUILDFLAG(ENABLE_BACKGROUND)
 #include "chrome/browser/background/background_mode_manager.h"
@@ -257,6 +254,15 @@
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/components/javascript_dialog_extensions_client/javascript_dialog_extension_client_impl.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if BUILDFLAG(ENABLE_NACL)
+#include "chrome/browser/component_updater/pnacl_component_installer.h"
+#include "components/nacl/browser/nacl_process_host.h"
+#endif  // BUILDFLAG(ENABLE_NACL)
+
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/offline_page_info_handler.h"
+#endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
@@ -274,27 +280,15 @@
 #include "chrome/browser/media/webrtc/webrtc_log_util.h"
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#endif  // defined(USE_AURA)
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/usb/web_usb_detector.h"
+#if BUILDFLAG(ENABLE_VR)
+#include "chrome/browser/vr/service/vr_service_impl.h"
 #endif
 
 #if defined(USE_AURA)
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/runner/common/client_util.h"
-#endif
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
-#endif
-
-#if BUILDFLAG(ENABLE_VR)
-#include "chrome/browser/vr/service/vr_service_impl.h"
+#include "ui/aura/env.h"
 #endif
 
 using content::BrowserThread;
