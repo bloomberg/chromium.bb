@@ -28,7 +28,7 @@ class MetricsProvider;
 // Responsible for managing MetricsService state prefs, specifically the UMA
 // client id and low entropy source. Code outside the metrics directory should
 // not be instantiating or using this class directly.
-class MetricsStateManager {
+class MetricsStateManager final {
  public:
   // A callback that can be invoked to store client info to persistent storage.
   // Storing an empty client_id will resulted in the backup being voided.
@@ -40,7 +40,7 @@ class MetricsStateManager {
   typedef base::Callback<std::unique_ptr<ClientInfo>(void)>
       LoadClientInfoCallback;
 
-  virtual ~MetricsStateManager();
+  ~MetricsStateManager();
 
   std::unique_ptr<MetricsProvider> GetProvider();
 

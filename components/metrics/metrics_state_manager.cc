@@ -5,6 +5,7 @@
 #include "components/metrics/metrics_state_manager.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/guid.h"
@@ -82,7 +83,7 @@ class MetricsStateMetricsProvider : public MetricsProvider {
                               std::string previous_client_id)
       : local_state_(local_state),
         metrics_ids_were_reset_(metrics_ids_were_reset),
-        previous_client_id_(previous_client_id) {}
+        previous_client_id_(std::move(previous_client_id)) {}
 
   // MetricsProvider:
   void ProvideSystemProfileMetrics(
@@ -115,10 +116,10 @@ class MetricsStateMetricsProvider : public MetricsProvider {
   }
 
  private:
-  PrefService* local_state_;
-  bool metrics_ids_were_reset_;
+  PrefService* const local_state_;
+  const bool metrics_ids_were_reset_;
   // |previous_client_id_| is set only (if known) when |metrics_ids_were_reset_|
-  std::string previous_client_id_;
+  const std::string previous_client_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsStateMetricsProvider);
 };

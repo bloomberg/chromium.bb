@@ -103,7 +103,7 @@ class ChromeMetricsServicesManagerClient
   base::ThreadChecker thread_checker_;
 
   // Weak pointer to the local state prefs store.
-  PrefService* local_state_;
+  PrefService* const local_state_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
