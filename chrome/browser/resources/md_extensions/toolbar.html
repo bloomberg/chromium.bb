@@ -14,6 +14,10 @@
   <template>
     <style include="cr-hidden-style paper-button-style">
       :host {
+        /* The constant is the height of the tallest control. */
+        --button-row-height: calc(var(--margin-bottom) + 36px);
+        --drawer-transition: 0.3s cubic-bezier(.25, .1, .25, 1);
+        --margin-bottom: 4px;
         --toolbar-width: 680px;
         --toolbar-color: var(--md-toolbar-color);
       }
@@ -35,11 +39,29 @@
         background: var(--toolbar-color);
         display: flex;
         justify-content: center;
+        position: absolute;
+        top: calc(var(--button-row-height) * -1);
+        transition: top var(--drawer-transition);
         width: 100%;
       }
 
+      #devDrawer[expanded] .dev-controls {
+        top: 0;
+      }
+
+      #devDrawer {
+        height: 0;
+        overflow: hidden;
+        position: relative;
+        transition: height var(--drawer-transition);
+      }
+
+      #devDrawer[expanded] {
+        height: var(--button-row-height);
+      }
+
       #button-strip {
-        margin-bottom: 4px;
+        margin-bottom: var(--margin-bottom);
         /* Prevent selection of the blank space between buttons. */
         user-select: none;
         /* We left-align the text of the left button with the left edge of the
@@ -74,29 +96,31 @@
         show-menu="[[!isGuest]]" show-search="[[!isGuest]]">
       <div class="more-actions" hidden$="[[isGuest]]">
         <span id="devModeLabel">$i18n{toolbarDevMode}</span>
-        <cr-toggle id="dev-mode" on-change="onDevModeChange_"
+        <cr-toggle id="dev-mode" on-change="onDevModeToggleChange_"
             checked="[[inDevMode]]" aria-labelledby="devModeLabel">
         </cr-toggle>
       </div>
     </cr-toolbar>
-    <div class="dev-controls" hidden$="[[!inDevMode]]">
-      <div id="button-strip">
-        <paper-button id="load-unpacked" on-tap="onLoadUnpackedTap_">
-          $i18n{toolbarLoadUnpacked}
-        </paper-button>
-        <paper-button id="pack-extensions" on-tap="onPackTap_">
-          $i18n{toolbarPack}
-        </paper-button>
-        <paper-button id="update-now" on-tap="onUpdateNowTap_"
-            title="$i18n{toolbarUpdateNowTooltip}">
-          $i18n{toolbarUpdateNow}
-        </paper-button>
+    <div id="devDrawer" expanded$="[[expanded_]]">
+      <div class="dev-controls">
+        <div id="button-strip">
+          <paper-button id="load-unpacked" on-tap="onLoadUnpackedTap_">
+            $i18n{toolbarLoadUnpacked}
+          </paper-button>
+          <paper-button id="pack-extensions" on-tap="onPackTap_">
+            $i18n{toolbarPack}
+          </paper-button>
+          <paper-button id="update-now" on-tap="onUpdateNowTap_"
+              title="$i18n{toolbarUpdateNowTooltip}">
+            $i18n{toolbarUpdateNow}
+          </paper-button>
 <if expr="chromeos">
-        <paper-button id="kiosk-extensions" on-tap="onKioskTap_"
-            hidden$="[[!kioskEnabled]]">
-          $i18n{manageKioskApp}
-        </paper-button>
+          <paper-button id="kiosk-extensions" on-tap="onKioskTap_"
+              hidden$="[[!kioskEnabled]]">
+            $i18n{manageKioskApp}
+          </paper-button>
 </if>
+        </div>
       </div>
     </div>
   </template>

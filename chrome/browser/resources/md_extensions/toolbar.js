@@ -35,6 +35,7 @@ cr.define('extensions', function() {
       inDevMode: {
         type: Boolean,
         value: false,
+        observer: 'onInDevModeChanged_',
       },
 
       isGuest: Boolean,
@@ -42,15 +43,45 @@ cr.define('extensions', function() {
       // <if expr="chromeos">
       kioskEnabled: Boolean,
       // </if>
+
+      /** @private */
+      expanded_: {
+        type: Boolean,
+        value: false,
+      },
     },
 
     hostAttributes: {
       role: 'banner',
     },
 
+    /** @override */
+    ready: function() {
+      this.$.devDrawer.addEventListener('transitionend', () => {
+        this.delegate.setProfileInDevMode(this.$['dev-mode'].checked);
+      });
+    },
+
     /** @private */
-    onDevModeChange_: function() {
-      this.delegate.setProfileInDevMode(this.$['dev-mode'].checked);
+    onDevModeToggleChange_: function() {
+      const drawer = this.$.devDrawer;
+      if (drawer.hasAttribute('hidden')) {
+        drawer.removeAttribute('hidden');
+        // Requesting the offsetTop will cause a reflow (to account for hidden).
+        /** @suppress {suspiciousCode} */ drawer.offsetTop;
+      }
+      this.expanded_ = !this.expanded_;
+    },
+
+    /** @private */
+    onInDevModeChanged_: function() {
+      // Set the initial state.
+      this.expanded_ = this.inDevMode;
+      if (this.inDevMode) {
+        this.$.devDrawer.removeAttribute('hidden');
+      } else {
+        this.$.devDrawer.setAttribute('hidden', '');
+      }
     },
 
     /** @private */
