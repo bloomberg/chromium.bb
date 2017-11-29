@@ -105,6 +105,10 @@ void RendererController::OnBecameDominantVisibleContent(bool is_dominant) {
   if (is_dominant_content_ == is_dominant)
     return;
   is_dominant_content_ = is_dominant;
+  // Reset the errors when the media element stops being the dominant visible
+  // content in the tab.
+  if (!is_dominant_content_)
+    encountered_renderer_fatal_error_ = false;
   UpdateAndMaybeSwitch(BECAME_DOMINANT_CONTENT, BECAME_AUXILIARY_CONTENT);
 }
 
@@ -320,7 +324,7 @@ bool RendererController::CanBeRemoting() const {
            state == SharedSession::SESSION_PERMANENTLY_STOPPED;
   }
 
-  if (encountered_renderer_fatal_error_)
+  if (permanently_disable_remoting_)
     return false;
 
   switch (state) {
@@ -369,7 +373,8 @@ void RendererController::UpdateAndMaybeSwitch(StartTrigger start_trigger,
   // remote rendering. However, current technical limitations require encrypted
   // content be remoted without waiting for a user signal.
   if (!is_encrypted_)
-    should_be_remoting &= is_dominant_content_;
+    should_be_remoting &=
+        (is_dominant_content_ && !encountered_renderer_fatal_error_);
 
   if ((remote_rendering_started_ ||
        delayed_start_stability_timer_.IsRunning()) == should_be_remoting)
@@ -449,7 +454,7 @@ void RendererController::OnDelayedStartTimerFired(
              mojom::RemotingSinkVideoCapability::SUPPORT_4K))) {
       VLOG(1) << "Media remoting is not supported: frame_rate = " << frame_rate
               << " resolution = " << pipeline_metadata_.natural_size.ToString();
-      encountered_renderer_fatal_error_ = true;
+      permanently_disable_remoting_ = true;
       return;
     }
   }

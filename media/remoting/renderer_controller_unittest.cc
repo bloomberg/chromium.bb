@@ -404,6 +404,30 @@ TEST_F(RendererControllerTest, StartSuccessWithHighFrameRate) {
   ExpectInRemoting();
 }
 
+TEST_F(RendererControllerTest, PacingTooSlowly) {
+  const scoped_refptr<SharedSession> shared_session =
+      FakeRemoterFactory::CreateSharedSession(false);
+  mojom::RemotingSinkMetadata sink_metadata = GetDefaultSinkMetadata(true);
+  InitializeControllerAndBecomeDominant(
+      shared_session, DefaultMetadata(VideoCodec::kCodecVP8), sink_metadata);
+  RunUntilIdle();
+  ExpectInDelayedStart();
+  DelayedStartEnds(false);
+  RunUntilIdle();
+  ExpectInRemoting();  // All requirements now satisfied.
+  controller_->OnRendererFatalError(StopTrigger::PACING_TOO_SLOWLY);
+  RunUntilIdle();
+  ExpectInLocalRendering();
+  shared_session->OnSinkAvailable(sink_metadata.Clone());
+  RunUntilIdle();
+  controller_->OnBecameDominantVisibleContent(false);
+  RunUntilIdle();
+  ExpectInLocalRendering();
+  controller_->OnBecameDominantVisibleContent(true);
+  RunUntilIdle();
+  ExpectInDelayedStart();  // Try start remoting again.
+}
+
 #endif  // OS_ANDROID
 
 TEST_F(RendererControllerTest, StartFailed) {
