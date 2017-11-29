@@ -97,10 +97,11 @@ jumbo_source_set("loader") {
   ]
 
   public_deps = [
+    "//services/network/public/cpp:cpp",
     "//services/network/public/interfaces",
     "//third_party/WebKit/Source/platform/blob:blob",
     "//third_party/WebKit/Source/platform/network:network",
-    "//third_party/WebKit/public:mojo_bindings_blink",
+    "//third_party/WebKit/public:blink_headers",
   ]
 }
 
@@ -167,8 +168,8 @@ jumbo_source_set("test_support") {
   public_deps = [
     "//net",
     "//skia",
-    "//third_party/WebKit/Source/platform",
     "//third_party/WebKit/Source/platform/blob:generator",
+    "//third_party/WebKit/public:blink_headers",
     "//third_party/icu",
   ]
 }
