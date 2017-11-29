@@ -27,7 +27,7 @@ state of the host to tasks. It is written to by the swarming bot's
 on_before_task() hook in the swarming server's custom bot_config.py.
 """
 
-__version__ = '0.10.1'
+__version__ = '0.10.2'
 
 import argparse
 import base64
@@ -167,6 +167,17 @@ def get_as_zip_package(executable=True):
   return package
 
 
+def _to_str(s):
+  """Downgrades a unicode instance to str. Pass str through as-is."""
+  if isinstance(s, str):
+    return s
+  # This is technically incorrect, especially on Windows. In theory
+  # sys.getfilesystemencoding() should be used to use the right 'ANSI code
+  # page' on Windows, but that causes other problems, as the character set
+  # is very limited.
+  return s.encode('utf-8')
+
+
 def make_temp_dir(prefix, root_dir):
   """Returns a new unique temporary directory."""
   return unicode(tempfile.mkdtemp(prefix=prefix, dir=root_dir))
@@ -294,11 +305,6 @@ def get_command_env(tmp_dir, cipd_info, cwd, env, env_prefixes):
     env: environment variables to use
     env_prefixes: {"ENV_KEY": ['cwd', 'relative', 'paths', 'to', 'prepend']}
   """
-  def to_fs_enc(s):
-    if isinstance(s, str):
-      return s
-    return s.encode(sys.getfilesystemencoding())
-
   out = os.environ.copy()
   for k, v in env.iteritems():
     if not v:
@@ -308,15 +314,15 @@ def get_command_env(tmp_dir, cipd_info, cwd, env, env_prefixes):
 
   if cipd_info:
     bin_dir = os.path.dirname(cipd_info.client.binary_path)
-    out['PATH'] = '%s%s%s' % (to_fs_enc(bin_dir), os.pathsep, out['PATH'])
-    out['CIPD_CACHE_DIR'] = to_fs_enc(cipd_info.cache_dir)
+    out['PATH'] = '%s%s%s' % (_to_str(bin_dir), os.pathsep, out['PATH'])
+    out['CIPD_CACHE_DIR'] = _to_str(cipd_info.cache_dir)
 
   for key, paths in env_prefixes.iteritems():
     paths = [os.path.normpath(os.path.join(cwd, p)) for p in paths]
     cur = out.get(key)
     if cur:
       paths.append(cur)
-    out[key] = os.path.pathsep.join(paths)
+    out[key] = _to_str(os.path.pathsep.join(paths))
 
   # TMPDIR is specified as the POSIX standard envvar for the temp directory.
   #   * mktemp on linux respects $TMPDIR, not $TMP
@@ -327,7 +333,7 @@ def get_command_env(tmp_dir, cipd_info, cwd, env, env_prefixes):
   #   * python respects TMPDIR, TEMP, and TMP (regardless of platform)
   #   * golang respects TMPDIR on linux+mac, TEMP on windows.
   key = {'win32': 'TEMP'}.get(sys.platform, 'TMPDIR')
-  out[key] = to_fs_enc(tmp_dir)
+  out[key] = _to_str(tmp_dir)
 
   return out
 
@@ -1093,6 +1099,8 @@ def parse_args(args):
 
 
 def main(args):
+  # Warning: when --argsfile is used, the strings are unicode instances, when
+  # parsed normally, the strings are str instances.
   (parser, options, args) = parse_args(args)
 
   if not file_path.enable_symlink():
@@ -1138,7 +1146,11 @@ def main(args):
     parser.error(
         '--env required key=value form. value can be skipped to delete '
         'the variable')
-  options.env = {k: v for k, v in (i.split('=', 1) for i in options.env)}
+  # Take the occasion to assert that everything is converted to str instances,
+  # subprocess.Popen doesn't like unicode.
+  options.env = {
+    _to_str(k): _to_str(v) for k, v in (i.split('=', 1) for i in options.env)
+  }
 
   prefixes = {}
   cwd = os.path.realpath(os.getcwd())
@@ -1147,7 +1159,8 @@ def main(args):
       parser.error(
         '--env-prefix %r is malformed, must be in the form `VAR=./path`'
         % item)
-    key, opath = item.split('=', 1)
+    # Downgrade to str as for env above.
+    key, opath = _to_str(item).split('=', 1)
     if os.path.isabs(opath):
       parser.error('--env-prefix %r path is bad, must be relative.' % opath)
     opath = os.path.normpath(opath)
