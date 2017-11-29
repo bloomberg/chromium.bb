@@ -143,8 +143,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(net::TokenBindingParam, net::TB_PARAM_ECDSAP256)
 IPC_ENUM_TRAITS_MAX_VALUE(net::SSLInfo::HandshakeType,
                           net::SSLInfo::HANDSHAKE_FULL)
 IPC_ENUM_TRAITS_MAX_VALUE(
-    net::ct::CertPolicyCompliance,
-    net::ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY)
+    net::ct::CTPolicyCompliance,
+    net::ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY)
 IPC_ENUM_TRAITS_MAX_VALUE(net::OCSPVerifyResult::ResponseStatus,
                           net::OCSPVerifyResult::PARSE_RESPONSE_DATA_ERROR)
 IPC_ENUM_TRAITS_MAX_VALUE(net::OCSPRevocationStatus,

@@ -1448,8 +1448,8 @@ TEST_F(TransportSecurityStateTest, InvalidExpectCTHeader) {
   HostPortPair host_port(kExpectCTStaticHostname, 443);
   SSLInfo ssl_info;
   ssl_info.ct_compliance_details_available = true;
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
   ssl_info.is_issued_by_known_root = true;
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -1480,8 +1480,8 @@ TEST_F(TransportSecurityStateTest, ExpectCTNonPublicRoot) {
   HostPortPair host_port(kExpectCTStaticHostname, 443);
   SSLInfo ssl_info;
   ssl_info.ct_compliance_details_available = true;
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
   ssl_info.is_issued_by_known_root = false;
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -1510,8 +1510,8 @@ TEST_F(TransportSecurityStateTest, ExpectCTComplianceNotAvailable) {
   HostPortPair host_port(kExpectCTStaticHostname, 443);
   SSLInfo ssl_info;
   ssl_info.ct_compliance_details_available = false;
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
   ssl_info.is_issued_by_known_root = true;
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -1540,8 +1540,8 @@ TEST_F(TransportSecurityStateTest, ExpectCTCompliantCert) {
   HostPortPair host_port(kExpectCTStaticHostname, 443);
   SSLInfo ssl_info;
   ssl_info.ct_compliance_details_available = true;
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
   ssl_info.is_issued_by_known_root = true;
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -1559,8 +1559,8 @@ TEST_F(TransportSecurityStateTest, ExpectCTCompliantCert) {
   state.ProcessExpectCTHeader("preload", host_port, ssl_info);
   EXPECT_EQ(0u, reporter.num_failures());
 
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
   state.ProcessExpectCTHeader("preload", host_port, ssl_info);
   EXPECT_EQ(1u, reporter.num_failures());
 }
@@ -1571,8 +1571,8 @@ TEST_F(TransportSecurityStateTest, PreloadedExpectCTBuildNotTimely) {
   HostPortPair host_port(kExpectCTStaticHostname, 443);
   SSLInfo ssl_info;
   ssl_info.ct_compliance_details_available = true;
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY;
   ssl_info.is_issued_by_known_root = true;
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -1592,8 +1592,8 @@ TEST_F(TransportSecurityStateTest, PreloadedExpectCTBuildNotTimely) {
 
   // Sanity-check that the reporter is notified if the build is timely and the
   // connection is not compliant.
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
   state.ProcessExpectCTHeader("preload", host_port, ssl_info);
   EXPECT_EQ(1u, reporter.num_failures());
 }
@@ -1604,8 +1604,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTBuildNotTimely) {
   HostPortPair host_port("example.test", 443);
   SSLInfo ssl_info;
   ssl_info.ct_compliance_details_available = true;
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY;
   ssl_info.is_issued_by_known_root = true;
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -1629,8 +1629,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTBuildNotTimely) {
 
   // Sanity-check that the reporter is notified if the build is timely and the
   // connection is not compliant.
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
   state.ProcessExpectCTHeader(kHeader, host_port, ssl_info);
   EXPECT_EQ(1u, reporter.num_failures());
 }
@@ -1641,8 +1641,8 @@ TEST_F(TransportSecurityStateTest, ExpectCTNotPreloaded) {
   HostPortPair host_port("not-expect-ct-preloaded.test", 443);
   SSLInfo ssl_info;
   ssl_info.ct_compliance_details_available = true;
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
   ssl_info.is_issued_by_known_root = true;
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -1671,8 +1671,8 @@ TEST_F(TransportSecurityStateTest, ExpectCTReporter) {
   HostPortPair host_port(kExpectCTStaticHostname, 443);
   SSLInfo ssl_info;
   ssl_info.ct_compliance_details_available = true;
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
   ssl_info.is_issued_by_known_root = true;
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -1713,8 +1713,8 @@ TEST_F(TransportSecurityStateTest, RepeatedExpectCTReportsForStaticExpectCT) {
   HostPortPair host_port(kExpectCTStaticHostname, 443);
   SSLInfo ssl_info;
   ssl_info.ct_compliance_details_available = true;
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
   ssl_info.is_issued_by_known_root = true;
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -2238,7 +2238,7 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS);
+            ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS);
 
     MockRequireCTDelegate always_require_delegate;
     EXPECT_CALL(always_require_delegate, IsCTRequiredForHost(_))
@@ -2250,28 +2250,28 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+            ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
     EXPECT_EQ(
         TransportSecurityState::CT_REQUIREMENTS_NOT_MET,
         state.CheckCTRequirements(
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS));
+            ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS));
     EXPECT_EQ(
         TransportSecurityState::CT_REQUIREMENTS_MET,
         state.CheckCTRequirements(
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+            ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
     EXPECT_EQ(
         TransportSecurityState::CT_REQUIREMENTS_MET,
         state.CheckCTRequirements(
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY));
+            ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY));
 
     state.SetRequireCTDelegate(nullptr);
     EXPECT_EQ(
@@ -2280,7 +2280,7 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+            ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   }
 
   {
@@ -2290,7 +2290,7 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS);
+            ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS);
 
     MockRequireCTDelegate never_require_delegate;
     EXPECT_CALL(never_require_delegate, IsCTRequiredForHost(_))
@@ -2302,14 +2302,14 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+            ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
     EXPECT_EQ(
         TransportSecurityState::CT_NOT_REQUIRED,
         state.CheckCTRequirements(
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS));
+            ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS));
 
     state.SetRequireCTDelegate(nullptr);
     EXPECT_EQ(
@@ -2318,7 +2318,7 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+            ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   }
 
   {
@@ -2328,7 +2328,7 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS);
+            ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS);
 
     MockRequireCTDelegate default_require_ct_delegate;
     EXPECT_CALL(default_require_ct_delegate, IsCTRequiredForHost(_))
@@ -2340,7 +2340,7 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+            ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
     state.SetRequireCTDelegate(nullptr);
     EXPECT_EQ(
@@ -2349,7 +2349,7 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+            ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   }
 }
 
@@ -2387,7 +2387,7 @@ TEST_F(TransportSecurityStateTest, RequireCTForSymantec) {
           HostPortPair("www.example.com", 443), true, hashes, before_cert.get(),
           before_cert.get(), SignedCertificateTimestampAndStatusList(),
           TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-          ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+          ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
   // ... but certificates issued after 1 June 2016 are required to be...
   EXPECT_EQ(
@@ -2396,28 +2396,28 @@ TEST_F(TransportSecurityStateTest, RequireCTForSymantec) {
           HostPortPair("www.example.com", 443), true, hashes, after_cert.get(),
           after_cert.get(), SignedCertificateTimestampAndStatusList(),
           TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-          ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+          ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   EXPECT_EQ(
       TransportSecurityState::CT_REQUIREMENTS_NOT_MET,
       state.CheckCTRequirements(
           HostPortPair("www.example.com", 443), true, hashes, after_cert.get(),
           after_cert.get(), SignedCertificateTimestampAndStatusList(),
           TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-          ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS));
+          ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS));
   EXPECT_EQ(
       TransportSecurityState::CT_REQUIREMENTS_MET,
       state.CheckCTRequirements(
           HostPortPair("www.example.com", 443), true, hashes, after_cert.get(),
           after_cert.get(), SignedCertificateTimestampAndStatusList(),
           TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-          ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY));
+          ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY));
   EXPECT_EQ(
       TransportSecurityState::CT_REQUIREMENTS_MET,
       state.CheckCTRequirements(
           HostPortPair("www.example.com", 443), true, hashes, after_cert.get(),
           after_cert.get(), SignedCertificateTimestampAndStatusList(),
           TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-          ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+          ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
 
   // ... unless they were issued by an excluded intermediate.
   hashes.push_back(HashValue(google_hash_value));
@@ -2427,14 +2427,14 @@ TEST_F(TransportSecurityStateTest, RequireCTForSymantec) {
           HostPortPair("www.example.com", 443), true, hashes, before_cert.get(),
           before_cert.get(), SignedCertificateTimestampAndStatusList(),
           TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-          ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+          ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   EXPECT_EQ(
       TransportSecurityState::CT_NOT_REQUIRED,
       state.CheckCTRequirements(
           HostPortPair("www.example.com", 443), true, hashes, after_cert.get(),
           after_cert.get(), SignedCertificateTimestampAndStatusList(),
           TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-          ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+          ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
   // And other certificates should remain unaffected.
   SHA256HashValue unrelated_hash_value = {{0x01, 0x02}};
@@ -2447,14 +2447,14 @@ TEST_F(TransportSecurityStateTest, RequireCTForSymantec) {
                 before_cert.get(), before_cert.get(),
                 SignedCertificateTimestampAndStatusList(),
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
             state.CheckCTRequirements(
                 HostPortPair("www.example.com", 443), true, unrelated_hashes,
                 after_cert.get(), after_cert.get(),
                 SignedCertificateTimestampAndStatusList(),
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
   // And the emergency field trial should disable the requirement, if
   // necessary.
@@ -2471,14 +2471,14 @@ TEST_F(TransportSecurityStateTest, RequireCTForSymantec) {
           HostPortPair("www.example.com", 443), true, hashes, before_cert.get(),
           before_cert.get(), SignedCertificateTimestampAndStatusList(),
           TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-          ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+          ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   EXPECT_EQ(
       TransportSecurityState::CT_NOT_REQUIRED,
       state.CheckCTRequirements(
           HostPortPair("www.example.com", 443), true, hashes, after_cert.get(),
           after_cert.get(), SignedCertificateTimestampAndStatusList(),
           TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-          ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+          ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 }
 
 // Tests that dynamic Expect-CT state is cleared from ClearDynamicData().
@@ -2542,8 +2542,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTDeduping) {
   SSLInfo ssl;
   ssl.is_issued_by_known_root = true;
   ssl.ct_compliance_details_available = true;
-  ssl.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+  ssl.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
 
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -2578,7 +2578,7 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTDeduping) {
                 HostPortPair("example.test", 443), true, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   EXPECT_EQ(1u, reporter.num_failures());
 
   // The second time it fails to meet CT requirements, a report should not be
@@ -2588,7 +2588,7 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTDeduping) {
                 HostPortPair("example.test", 443), true, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   EXPECT_EQ(1u, reporter.num_failures());
 }
 
@@ -2599,8 +2599,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTCompliantConnection) {
   SSLInfo ssl;
   ssl.is_issued_by_known_root = true;
   ssl.ct_compliance_details_available = true;
-  ssl.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+  ssl.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
 
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -2627,7 +2627,7 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTCompliantConnection) {
                 HostPortPair("example.test", 443), true, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+                ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
   EXPECT_EQ(0u, reporter.num_failures());
 }
 
@@ -2638,8 +2638,7 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTHeaderProcessingDeduping) {
   SSLInfo ssl;
   ssl.is_issued_by_known_root = true;
   ssl.ct_compliance_details_available = true;
-  ssl.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  ssl.ct_policy_compliance = ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -2682,8 +2681,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCT) {
   SSLInfo ssl;
   ssl.is_issued_by_known_root = true;
   ssl.ct_compliance_details_available = true;
-  ssl.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+  ssl.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
 
   // First test that the header is not processed when the feature is disabled.
   {
@@ -2727,8 +2726,7 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTPrivateRoot) {
   SSLInfo ssl;
   ssl.is_issued_by_known_root = false;
   ssl.ct_compliance_details_available = true;
-  ssl.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  ssl.ct_policy_compliance = ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -2749,8 +2747,7 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTNoComplianceDetails) {
   SSLInfo ssl;
   ssl.is_issued_by_known_root = true;
   ssl.ct_compliance_details_available = false;
-  ssl.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  ssl.ct_policy_compliance = ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -2781,8 +2778,7 @@ TEST_F(TransportSecurityStateTest,
   SSLInfo ssl;
   ssl.is_issued_by_known_root = true;
   ssl.ct_compliance_details_available = true;
-  ssl.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  ssl.ct_policy_compliance = ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 
   scoped_refptr<X509Certificate> cert1 =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
@@ -2856,13 +2852,13 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
                 HostPortPair("example2.test", 443), true, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
             state.CheckCTRequirements(
                 HostPortPair("example2.test", 443), true, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS));
+                ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS));
   EXPECT_EQ(0u, reporter.num_failures());
 
   // A connection to an Expect-CT host should be closed and reported.
@@ -2871,7 +2867,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
                 HostPortPair("example.test", 443), true, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   EXPECT_EQ(1u, reporter.num_failures());
   EXPECT_EQ("example.test", reporter.host_port_pair().host());
   EXPECT_EQ(443, reporter.host_port_pair().port());
@@ -2890,14 +2886,14 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
                 HostPortPair("example.test", 443), true, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+                ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
   EXPECT_EQ(1u, reporter.num_failures());
   EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_MET,
             state.CheckCTRequirements(
                 HostPortPair("example.test", 443), true, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY));
+                ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY));
   EXPECT_EQ(1u, reporter.num_failures());
 
   // A connection to a report-only host should be reported only.
@@ -2906,7 +2902,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
                 HostPortPair("example-report-only.test", 443), true,
                 HashValueVector(), cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS));
+                ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS));
   EXPECT_EQ(2u, reporter.num_failures());
   EXPECT_EQ("example-report-only.test", reporter.host_port_pair().host());
   EXPECT_EQ(443, reporter.host_port_pair().port());
@@ -2923,7 +2919,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
                 HostPortPair("example-enforce-only.test", 443), true,
                 HashValueVector(), cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS));
+                ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS));
   EXPECT_EQ(2u, reporter.num_failures());
 
   // A connection with a private root should be neither enforced nor reported.
@@ -2932,7 +2928,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
                 HostPortPair("example.test", 443), false, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   EXPECT_EQ(2u, reporter.num_failures());
 
   // A connection with DISABLE_EXPECT_CT_REPORTS should not send a report.
@@ -2941,7 +2937,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
                 HostPortPair("example.test", 443), true, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   EXPECT_EQ(2u, reporter.num_failures());
 }
 
@@ -2987,7 +2983,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCTAndDelegate) {
                 HostPortPair("example.test", 443), true, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-                ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
   EXPECT_EQ(1u, reporter.num_failures());
   EXPECT_EQ("example.test", reporter.host_port_pair().host());
   EXPECT_EQ(443, reporter.host_port_pair().port());
@@ -3006,8 +3002,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTUMA) {
   SSLInfo ssl;
   ssl.is_issued_by_known_root = true;
   ssl.ct_compliance_details_available = true;
-  ssl.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+  ssl.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(

@@ -6801,28 +6801,27 @@ class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
   uint32_t num_failures_;
 };
 
-// A CTPolicyEnforcer that returns a default CertPolicyCompliance value
+// A CTPolicyEnforcer that returns a default CTPolicyCompliance value
 // for every certificate.
 class MockCTPolicyEnforcer : public CTPolicyEnforcer {
  public:
   MockCTPolicyEnforcer()
-      : default_result_(
-            ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS) {}
+      : default_result_(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS) {}
   ~MockCTPolicyEnforcer() override {}
 
-  ct::CertPolicyCompliance DoesConformToCertPolicy(
+  ct::CTPolicyCompliance CheckCompliance(
       X509Certificate* cert,
       const SCTList& verified_scts,
       const NetLogWithSource& net_log) override {
     return default_result_;
   }
 
-  void set_default_result(ct::CertPolicyCompliance default_result) {
+  void set_default_result(ct::CTPolicyCompliance default_result) {
     default_result_ = default_result;
   }
 
  private:
-  ct::CertPolicyCompliance default_result_;
+  ct::CTPolicyCompliance default_result_;
 };
 
 // Tests that Expect CT headers for the preload list are processed correctly.
@@ -6855,7 +6854,7 @@ TEST_F(URLRequestTestHTTP, PreloadExpectCTHeader) {
   DoNothingCTVerifier ct_verifier;
   MockCTPolicyEnforcer ct_policy_enforcer;
   ct_policy_enforcer.set_default_result(
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS);
+      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS);
 
   TestNetworkDelegate network_delegate;
   // Use a MockHostResolver (which by default maps all hosts to
@@ -6916,7 +6915,7 @@ TEST_F(URLRequestTestHTTP, ExpectCTHeader) {
   DoNothingCTVerifier ct_verifier;
   MockCTPolicyEnforcer ct_policy_enforcer;
   ct_policy_enforcer.set_default_result(
-      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS);
+      ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS);
 
   TestNetworkDelegate network_delegate;
   // Use a MockHostResolver (which by default maps all hosts to
@@ -6978,7 +6977,7 @@ TEST_F(URLRequestTestHTTP, MultipleExpectCTHeaders) {
   DoNothingCTVerifier ct_verifier;
   MockCTPolicyEnforcer ct_policy_enforcer;
   ct_policy_enforcer.set_default_result(
-      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS);
+      ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS);
 
   TestNetworkDelegate network_delegate;
   // Use a MockHostResolver (which by default maps all hosts to
@@ -10413,11 +10412,11 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
     AllowAnyCertCTPolicyEnforcer() = default;
     ~AllowAnyCertCTPolicyEnforcer() override = default;
 
-    ct::CertPolicyCompliance DoesConformToCertPolicy(
+    ct::CTPolicyCompliance CheckCompliance(
         X509Certificate* cert,
         const SCTList& verified_scts,
         const NetLogWithSource& net_log) override {
-      return ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+      return ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
     }
   };
   // SetupContext configures the URLRequestContext that will be used for making

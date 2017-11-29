@@ -883,15 +883,14 @@ TransportSecurityState::CheckCTRequirements(
     const SignedCertificateTimestampAndStatusList&
         signed_certificate_timestamps,
     const ExpectCTReportStatus report_status,
-    ct::CertPolicyCompliance cert_policy_compliance) {
+    ct::CTPolicyCompliance policy_compliance) {
   using CTRequirementLevel = RequireCTDelegate::CTRequirementLevel;
   std::string hostname = host_port_pair.host();
 
   bool complies =
-      (cert_policy_compliance ==
-           ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS ||
-       cert_policy_compliance ==
-           ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY);
+      (policy_compliance ==
+           ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS ||
+       policy_compliance == ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY);
 
   // Check Expect-CT first so that other CT requirements do not prevent
   // Expect-CT reports from being sent.
@@ -1471,10 +1470,10 @@ void TransportSecurityState::ProcessExpectCTHeader(
       return;
     if (!ssl_info.ct_compliance_details_available)
       return;
-    if (ssl_info.ct_cert_policy_compliance ==
-            ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS ||
-        ssl_info.ct_cert_policy_compliance ==
-            ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY) {
+    if (ssl_info.ct_policy_compliance ==
+            ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS ||
+        ssl_info.ct_policy_compliance ==
+            ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY) {
       return;
     }
     ExpectCTState state;
@@ -1505,8 +1504,8 @@ void TransportSecurityState::ProcessExpectCTHeader(
     return;
   if (!ssl_info.ct_compliance_details_available)
     return;
-  if (ssl_info.ct_cert_policy_compliance !=
-      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS) {
+  if (ssl_info.ct_policy_compliance !=
+      ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS) {
     // If an Expect-CT header is observed over a non-compliant connection, the
     // site owner should be notified about the misconfiguration. If the site was
     // already opted in to Expect-CT, this report would have been sent at
@@ -1514,8 +1513,8 @@ void TransportSecurityState::ProcessExpectCTHeader(
     // however, the lack of CT compliance would not have been evaluated/reported
     // at connection setup time, so it needs to be reported here while
     // processing the header.
-    if (ssl_info.ct_cert_policy_compliance ==
-        ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY) {
+    if (ssl_info.ct_policy_compliance ==
+        ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY) {
       // Only send reports for truly non-compliant connections, not those for
       // which compliance wasn't checked due to an out-of-date build.
       return;

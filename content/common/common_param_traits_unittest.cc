@@ -195,8 +195,8 @@ TEST(IPCMessageTest, SSLInfo) {
           sct, net::ct::SCT_STATUS_LOG_UNKNOWN));
 
   in.ct_compliance_details_available = true;
-  in.ct_cert_policy_compliance =
-      net::ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  in.ct_policy_compliance =
+      net::ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
   in.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
   in.ocsp_result.revocation_status = net::OCSPRevocationStatus::REVOKED;
 
@@ -250,7 +250,7 @@ TEST(IPCMessageTest, SSLInfo) {
 
   ASSERT_EQ(in.ct_compliance_details_available,
             out.ct_compliance_details_available);
-  ASSERT_EQ(in.ct_cert_policy_compliance, out.ct_cert_policy_compliance);
+  ASSERT_EQ(in.ct_policy_compliance, out.ct_policy_compliance);
   ASSERT_EQ(in.ocsp_result, out.ocsp_result);
 }
 

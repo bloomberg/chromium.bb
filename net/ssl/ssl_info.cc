@@ -44,7 +44,7 @@ SSLInfo& SSLInfo::operator=(const SSLInfo& info) {
   pinning_failure_log = info.pinning_failure_log;
   signed_certificate_timestamps = info.signed_certificate_timestamps;
   ct_compliance_details_available = info.ct_compliance_details_available;
-  ct_cert_policy_compliance = info.ct_cert_policy_compliance;
+  ct_policy_compliance = info.ct_policy_compliance;
   ct_policy_compliance_required = info.ct_policy_compliance_required;
   ocsp_result = info.ocsp_result;
   return *this;
@@ -68,8 +68,7 @@ void SSLInfo::Reset() {
   base::STLClearObject(&pinning_failure_log);
   base::STLClearObject(&signed_certificate_timestamps);
   ct_compliance_details_available = false;
-  ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+  ct_policy_compliance = ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
   ct_policy_compliance_required = false;
   ocsp_result = OCSPVerifyResult();
 }
@@ -85,7 +84,7 @@ void SSLInfo::UpdateCertificateTransparencyInfo(
                                        ct_verify_result.scts.end());
 
   ct_compliance_details_available = ct_verify_result.ct_policies_applied;
-  ct_cert_policy_compliance = ct_verify_result.cert_policy_compliance;
+  ct_policy_compliance = ct_verify_result.policy_compliance;
   ct_policy_compliance_required = ct_verify_result.policy_compliance_required;
 }
 

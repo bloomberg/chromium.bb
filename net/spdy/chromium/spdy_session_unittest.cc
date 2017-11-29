@@ -6076,8 +6076,8 @@ TEST(CanPoolTest, CanPoolExpectCT) {
   ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
   ssl_info.unverified_cert = ssl_info.cert;
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
   ssl_info.is_issued_by_known_root = true;
 
   EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, "www.example.org",
@@ -6085,8 +6085,8 @@ TEST(CanPoolTest, CanPoolExpectCT) {
 
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 
   // A different Expect-CT enabled host should not be allowed to pool.
   tss.AddExpectCT("mail.example.org", expiry, true, GURL());
@@ -6182,8 +6182,8 @@ TEST(CanPoolTest, CanNotPoolWithBadCTWhenCTRequired) {
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
   ssl_info.is_issued_by_known_root = true;
   ssl_info.public_key_hashes.push_back(test::GetTestHashValue(1));
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 
   MockRequireCTDelegate require_ct_delegate;
   EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("www.example.org"))
@@ -6208,8 +6208,8 @@ TEST(CanPoolTest, CanPoolWithBadCTWhenCTNotRequired) {
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
   ssl_info.is_issued_by_known_root = true;
   ssl_info.public_key_hashes.push_back(test::GetTestHashValue(1));
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 
   MockRequireCTDelegate require_ct_delegate;
   EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("www.example.org"))
@@ -6234,8 +6234,8 @@ TEST(CanPoolTest, CanPoolWithGoodCTWhenCTRequired) {
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
   ssl_info.is_issued_by_known_root = true;
   ssl_info.public_key_hashes.push_back(test::GetTestHashValue(1));
-  ssl_info.ct_cert_policy_compliance =
-      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+  ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
 
   MockRequireCTDelegate require_ct_delegate;
   EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost("www.example.org"))

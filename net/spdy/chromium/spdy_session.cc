@@ -711,7 +711,7 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
       ssl_info.public_key_hashes, ssl_info.cert.get(),
       ssl_info.unverified_cert.get(), ssl_info.signed_certificate_timestamps,
       TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
-      ssl_info.ct_cert_policy_compliance)) {
+      ssl_info.ct_policy_compliance)) {
     case TransportSecurityState::CT_REQUIREMENTS_NOT_MET:
       return false;
     case TransportSecurityState::CT_REQUIREMENTS_MET:

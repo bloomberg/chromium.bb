@@ -1507,13 +1507,11 @@ int SSLClientSocketImpl::VerifyCT() {
   SCTList verified_scts =
       ct::SCTsMatchingStatus(ct_verify_result_.scts, ct::SCT_STATUS_OK);
 
-  ct_verify_result_.cert_policy_compliance =
-      policy_enforcer_->DoesConformToCertPolicy(
-          server_cert_verify_result_.verified_cert.get(), verified_scts,
-          net_log_);
+  ct_verify_result_.policy_compliance = policy_enforcer_->CheckCompliance(
+      server_cert_verify_result_.verified_cert.get(), verified_scts, net_log_);
   if (server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV) {
-    if (ct_verify_result_.cert_policy_compliance !=
-        ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS) {
+    if (ct_verify_result_.policy_compliance !=
+        ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS) {
       server_cert_verify_result_.cert_status |=
           CERT_STATUS_CT_COMPLIANCE_FAILED;
       server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
@@ -1523,16 +1521,16 @@ int SSLClientSocketImpl::VerifyCT() {
     // distinguish how often EV status is being dropped due to failing CT
     // compliance.
     UMA_HISTOGRAM_ENUMERATION("Net.CertificateTransparency.EVCompliance.SSL",
-                              ct_verify_result_.cert_policy_compliance,
-                              ct::CertPolicyCompliance::CERT_POLICY_MAX);
+                              ct_verify_result_.policy_compliance,
+                              ct::CTPolicyCompliance::CT_POLICY_MAX);
   }
 
   // Record the CT compliance of every connection to get an overall picture of
   // how many connections are CT-compliant.
   UMA_HISTOGRAM_ENUMERATION(
       "Net.CertificateTransparency.ConnectionComplianceStatus.SSL",
-      ct_verify_result_.cert_policy_compliance,
-      ct::CertPolicyCompliance::CERT_POLICY_MAX);
+      ct_verify_result_.policy_compliance,
+      ct::CTPolicyCompliance::CT_POLICY_MAX);
 
   TransportSecurityState::CTRequirementsStatus ct_requirement_status =
       transport_security_state_->CheckCTRequirements(
@@ -1541,7 +1539,7 @@ int SSLClientSocketImpl::VerifyCT() {
           server_cert_verify_result_.verified_cert.get(), server_cert_.get(),
           ct_verify_result_.scts,
           TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-          ct_verify_result_.cert_policy_compliance);
+          ct_verify_result_.policy_compliance);
   if (ct_requirement_status != TransportSecurityState::CT_NOT_REQUIRED) {
     ct_verify_result_.policy_compliance_required = true;
     // Record the CT compliance of connections for which compliance is required;
@@ -1549,8 +1547,8 @@ int SSLClientSocketImpl::VerifyCT() {
     // be serving valid CT information, how many fail to do so?"
     UMA_HISTOGRAM_ENUMERATION(
         "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.SSL",
-        ct_verify_result_.cert_policy_compliance,
-        ct::CertPolicyCompliance::CERT_POLICY_MAX);
+        ct_verify_result_.policy_compliance,
+        ct::CTPolicyCompliance::CT_POLICY_MAX);
   } else {
     ct_verify_result_.policy_compliance_required = false;
   }
