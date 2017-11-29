@@ -7,6 +7,11 @@ import("//build/config/sanitizers/sanitizers.gni")
 
 config("libwebp_config") {
   include_dirs = [ "./src" ]
+  defines = [ "WEBP_EXTERN=extern" ]
+}
+
+config("libwebp_config_internal") {
+  include_dirs = [ "." ]
 }
 
 set_opt_level =
@@ -50,6 +55,7 @@ static_library("libwebp_dec") {
     "src/dec/webpi_dec.h",
   ]
 
+  configs += [ ":libwebp_config_internal" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   if (set_opt_level) {
@@ -73,6 +79,7 @@ static_library("libwebp_demux") {
     "src/demux/demux.c",
   ]
   all_dependent_configs = [ ":libwebp_config" ]
+  configs += [ ":libwebp_config_internal" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
@@ -91,6 +98,7 @@ static_library("libwebp_mux") {
     "src/mux/muxread.c",
   ]
   all_dependent_configs = [ ":libwebp_config" ]
+  configs += [ ":libwebp_config_internal" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
@@ -103,9 +111,6 @@ static_library("libwebp_dsp") {
   sources = [
     "src/dsp/alpha_processing.c",
     "src/dsp/alpha_processing_mips_dsp_r2.c",
-    "src/dsp/argb.c",
-    "src/dsp/argb_mips_dsp_r2.c",
-    "src/dsp/common_sse2.h",
     "src/dsp/cost.c",
     "src/dsp/cost_mips32.c",
     "src/dsp/cost_mips_dsp_r2.c",
@@ -133,11 +138,14 @@ static_library("libwebp_dsp") {
     "src/dsp/lossless_enc_msa.c",
     "src/dsp/lossless_mips_dsp_r2.c",
     "src/dsp/lossless_msa.c",
+    "src/dsp/mips_macro.h",
+    "src/dsp/msa_macro.h",
     "src/dsp/neon.h",
     "src/dsp/rescaler.c",
     "src/dsp/rescaler_mips32.c",
     "src/dsp/rescaler_mips_dsp_r2.c",
     "src/dsp/rescaler_msa.c",
+    "src/dsp/ssim.c",
     "src/dsp/upsampling.c",
     "src/dsp/upsampling_mips_dsp_r2.c",
     "src/dsp/upsampling_msa.c",
@@ -146,6 +154,7 @@ static_library("libwebp_dsp") {
     "src/dsp/yuv_mips32.c",
     "src/dsp/yuv_mips_dsp_r2.c",
   ]
+  configs += [ ":libwebp_config_internal" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   if (set_opt_level) {
@@ -181,6 +190,7 @@ static_library("libwebp_dsp_sse41") {
     "src/dsp/enc_sse41.c",
     "src/dsp/lossless_enc_sse41.c",
   ]
+  configs += [ ":libwebp_config_internal" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   if (set_opt_level) {
@@ -200,7 +210,7 @@ static_library("libwebp_dsp_sse41") {
 static_library("libwebp_dsp_sse2") {
   sources = [
     "src/dsp/alpha_processing_sse2.c",
-    "src/dsp/argb_sse2.c",
+    "src/dsp/common_sse2.h",
     "src/dsp/cost_sse2.c",
     "src/dsp/dec_sse2.c",
     "src/dsp/enc_sse2.c",
@@ -208,9 +218,11 @@ static_library("libwebp_dsp_sse2") {
     "src/dsp/lossless_enc_sse2.c",
     "src/dsp/lossless_sse2.c",
     "src/dsp/rescaler_sse2.c",
+    "src/dsp/ssim_sse2.c",
     "src/dsp/upsampling_sse2.c",
     "src/dsp/yuv_sse2.c",
   ]
+  configs += [ ":libwebp_config_internal" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   if (set_opt_level) {
@@ -238,9 +250,10 @@ if (use_dsp_neon) {
       "src/dsp/lossless_neon.c",
       "src/dsp/rescaler_neon.c",
       "src/dsp/upsampling_neon.c",
+      "src/dsp/yuv_neon.c",
     ]
 
-    include_dirs = [ "." ]
+    configs += [ ":libwebp_config_internal" ]
 
     if (set_opt_level) {
       configs -= [ "//build/config/compiler:default_optimization" ]
@@ -267,6 +280,7 @@ static_library("libwebp_enc") {
   sources = [
     "src/enc/alpha_enc.c",
     "src/enc/analysis_enc.c",
+    "src/enc/backward_references_cost_enc.c",
     "src/enc/backward_references_enc.c",
     "src/enc/backward_references_enc.h",
     "src/enc/config_enc.c",
@@ -295,6 +309,7 @@ static_library("libwebp_enc") {
     "src/enc/vp8li_enc.h",
     "src/enc/webp_enc.c",
   ]
+  configs += [ ":libwebp_config_internal" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   if (set_opt_level) {
@@ -346,6 +361,7 @@ static_library("libwebp_utils") {
     "src/utils/utils.c",
     "src/utils/utils.h",
   ]
+  configs += [ ":libwebp_config_internal" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   if (set_opt_level) {
@@ -393,6 +409,7 @@ if (current_toolchain == host_toolchain) {
       ":libwebp_webp",
     ]
     configs += [ ":libwebp_config" ]
+    configs += [ ":libwebp_config_internal" ]
     visibility = [ ":*" ]
   }
 
@@ -412,6 +429,7 @@ if (current_toolchain == host_toolchain) {
       ":libwebp_webp",
     ]
     configs += [ ":libwebp_config" ]
+    configs += [ ":libwebp_config_internal" ]
     visibility = [ ":*" ]
   }
 
@@ -425,6 +443,8 @@ if (current_toolchain == host_toolchain) {
       "imageio/metadata.h",
       "imageio/pngdec.c",
       "imageio/pngdec.h",
+      "imageio/pnmdec.c",
+      "imageio/pnmdec.h",
       "imageio/tiffdec.c",
       "imageio/tiffdec.h",
       "imageio/webpdec.c",
@@ -433,6 +453,7 @@ if (current_toolchain == host_toolchain) {
       "imageio/wicdec.h",
     ]
     defines = [ "WEBP_HAVE_PNG" ]
+    configs += [ ":libwebp_config_internal" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
     if (set_opt_level) {
@@ -454,6 +475,7 @@ if (current_toolchain == host_toolchain) {
       "imageio/image_enc.c",
       "imageio/image_enc.h",
     ]
+    configs += [ ":libwebp_config_internal" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
     if (set_opt_level) {
@@ -483,6 +505,7 @@ if (current_toolchain == host_toolchain) {
       "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
     ]
+    configs += [ ":libwebp_config_internal" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
     if (set_opt_level) {
@@ -507,6 +530,7 @@ if (current_toolchain == host_toolchain) {
       "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
     ]
+    configs += [ ":libwebp_config_internal" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
     if (set_opt_level) {

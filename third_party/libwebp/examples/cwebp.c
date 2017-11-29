@@ -463,8 +463,9 @@ static int WriteWebPWithMetadata(FILE* const out,
     } else {
       const int is_lossless = !memcmp(webp, "VP8L", kTagSize);
       if (is_lossless) {
-        // Presence of alpha is stored in the 29th bit of VP8L data.
-        if (webp[kChunkHeaderSize + 3] & (1 << 5)) flags |= kAlphaFlag;
+        // Presence of alpha is stored in the 37th bit (29th after the
+        // signature) of VP8L data.
+        if (webp[kChunkHeaderSize + 4] & (1 << 4)) flags |= kAlphaFlag;
       }
       ok = ok && (fwrite(kVP8XHeader, kChunkHeaderSize, 1, out) == 1);
       ok = ok && WriteLE32(out, flags);
@@ -486,10 +487,10 @@ static int WriteWebPWithMetadata(FILE* const out,
       *metadata_written |= METADATA_XMP;
     }
     return ok;
-  } else {
-    // No metadata, just write the original image file.
-    return (fwrite(webp, webp_size, 1, out) == 1);
   }
+
+  // No metadata, just write the original image file.
+  return (fwrite(webp, webp_size, 1, out) == 1);
 }
 
 //------------------------------------------------------------------------------
