@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
 
 #include <algorithm>
+#include <limits>
 #include <numeric>
 #include <string>
 
@@ -347,7 +348,7 @@ void StorageHandler::UpdateAndroidSize() {
   auto* arc_storage_manager =
       arc::ArcStorageManager::GetForBrowserContext(profile);
   if (arc_storage_manager) {
-    success = arc_storage_manager->GetApplicationsSize(base::Bind(
+    success = arc_storage_manager->GetApplicationsSize(base::BindOnce(
         &StorageHandler::OnGetAndroidSize, weak_ptr_factory_.GetWeakPtr()));
   }
   if (!success)

@@ -96,8 +96,8 @@ void ArcProcessTask::StartIconLoading() {
     std::vector<arc::ArcIntentHelperBridge::ActivityName> activities = {
         {package_name_, kEmptyActivityName}};
     result = intent_helper_bridge->GetActivityIcons(
-        activities, base::Bind(&ArcProcessTask::OnIconLoaded,
-                               weak_ptr_factory_.GetWeakPtr()));
+        activities, base::BindOnce(&ArcProcessTask::OnIconLoaded,
+                                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (result == arc::ArcIntentHelperBridge::GetResult::FAILED_ARC_NOT_READY) {

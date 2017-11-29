@@ -38,8 +38,8 @@ class ArcStorageManager : public KeyedService {
 
   // Gets storage usage of all application's APK, data, and cache size.
   using GetApplicationsSizeCallback =
-      base::Callback<void(bool succeeded, mojom::ApplicationsSizePtr)>;
-  bool GetApplicationsSize(const GetApplicationsSizeCallback& callback);
+      base::OnceCallback<void(bool succeeded, mojom::ApplicationsSizePtr)>;
+  bool GetApplicationsSize(GetApplicationsSizeCallback callback);
 
   // Deletes all applications' cache files.
   bool DeleteApplicationsCache(const base::Callback<void()>& callback);

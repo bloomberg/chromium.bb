@@ -40,8 +40,8 @@ class MojoChannelImpl : public ArcBridgeHostImpl::MojoChannel {
 
   ~MojoChannelImpl() override { holder_->SetInstance(nullptr, 0); }
 
-  void set_connection_error_handler(const base::Closure& error_handler) {
-    ptr_.set_connection_error_handler(error_handler);
+  void set_connection_error_handler(base::OnceClosure error_handler) {
+    ptr_.set_connection_error_handler(std::move(error_handler));
   }
 
   void QueryVersion() {
@@ -75,7 +75,7 @@ ArcBridgeHostImpl::ArcBridgeHostImpl(ArcBridgeService* arc_bridge_service,
   DCHECK(arc_bridge_service_);
   DCHECK(instance_.is_bound());
   instance_.set_connection_error_handler(
-      base::Bind(&ArcBridgeHostImpl::OnClosed, base::Unretained(this)));
+      base::BindOnce(&ArcBridgeHostImpl::OnClosed, base::Unretained(this)));
   mojom::ArcBridgeHostPtr host_proxy;
   binding_.Bind(mojo::MakeRequest(&host_proxy));
   instance_->Init(std::move(host_proxy));
@@ -305,7 +305,7 @@ void ArcBridgeHostImpl::OnInstanceReady(
   // Since |channel| is managed by |mojo_channels_|, its lifetime is shorter
   // than |this|. Thus, the connection error handler will be invoked only
   // when |this| is alive and base::Unretained is safe here.
-  channel->set_connection_error_handler(base::Bind(
+  channel->set_connection_error_handler(base::BindOnce(
       &ArcBridgeHostImpl::OnChannelClosed, base::Unretained(this), channel));
 
   // Call QueryVersion so that the version info is properly stored in the
