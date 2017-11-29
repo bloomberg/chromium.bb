@@ -133,6 +133,9 @@
   <message name="IDS_MD_EXTENSIONS_NO_SEARCH_RESULTS" desc="The message shown to the user when a search on the Extensions settings page has no matching results.">
     No search results found
   </message>
+  <message name="IDS_MD_EXTENSIONS_NO_DESCRIPTION" desc="The message shown to the user when an extension does not have any description.">
+    No description provided
+  </message>
   <message name="IDS_MD_EXTENSIONS_PACK_DIALOG_TITLE" desc="The title of the dialog to pack an extension.">
     Pack extension
   </message>
