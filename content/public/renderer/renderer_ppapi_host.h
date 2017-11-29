@@ -83,10 +83,6 @@ class RendererPpapiHost {
   virtual blink::WebPluginContainer* GetContainerForInstance(
       PP_Instance instance) const = 0;
 
-  // Returns the PID of the child process containing the plugin. If running
-  // in-process, this returns base::kNullProcessId.
-  virtual base::ProcessId GetPluginPID() const = 0;
-
   // Returns true if the given instance is considered to be currently
   // processing a user gesture or the plugin module has the "override user
   // gesture" flag set (in which case it can always do things normally

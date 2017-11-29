@@ -36,40 +36,11 @@ class TaskManagerIoThreadHelperTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TaskManagerIoThreadHelperTest);
 };
 
-// Tests that the origin_id is used in the map correctly.
-TEST_F(TaskManagerIoThreadHelperTest, PidData) {
-  base::ScopedMockTimeMessageLoopTaskRunner mock_main_runner;
-
-  BytesTransferredKey key = {123, -1, -1};
-
-  int64_t correct_read_bytes = 0;
-  int64_t correct_sent_bytes = 0;
-
-  int read_bytes_array[] = {200, 400, 800};
-  int sent_bytes_array[] = {100, 123, 234};
-
-  for (int i : read_bytes_array) {
-    TaskManagerIoThreadHelper::OnRawBytesTransferred(key, i, 0);
-    correct_read_bytes += i;
-  }
-  for (int i : sent_bytes_array) {
-    TaskManagerIoThreadHelper::OnRawBytesTransferred(key, 0, i);
-    correct_sent_bytes += i;
-  }
-
-  EXPECT_TRUE(mock_main_runner->HasPendingTask());
-  mock_main_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(mock_main_runner->HasPendingTask());
-  EXPECT_EQ(correct_sent_bytes, returned_map_[key].byte_sent_count);
-  EXPECT_EQ(correct_read_bytes, returned_map_[key].byte_read_count);
-}
-
 // Tests that the |child_id| and |route_id| are used in the map correctly.
 TEST_F(TaskManagerIoThreadHelperTest, ChildRouteData) {
   base::ScopedMockTimeMessageLoopTaskRunner mock_main_runner;
 
-  BytesTransferredKey key = {0, 100, 190};
+  BytesTransferredKey key = {100, 190};
 
   int64_t correct_read_bytes = 0;
   int64_t correct_sent_bytes = 0;
@@ -93,95 +64,6 @@ TEST_F(TaskManagerIoThreadHelperTest, ChildRouteData) {
   EXPECT_EQ(1U, returned_map_.size());
   EXPECT_EQ(correct_sent_bytes, returned_map_[key].byte_sent_count);
   EXPECT_EQ(correct_read_bytes, returned_map_[key].byte_read_count);
-}
-
-// Tests that two distinct |origin_pid| are tracked separately in the unordered
-// map.
-TEST_F(TaskManagerIoThreadHelperTest, TwoPidData) {
-  base::ScopedMockTimeMessageLoopTaskRunner mock_main_runner;
-
-  BytesTransferredKey key1 = {23, -1, -1};
-  BytesTransferredKey key2 = {33, -1, -1};
-
-  int64_t correct_read_bytes1 = 0;
-  int64_t correct_sent_bytes1 = 0;
-
-  int64_t correct_read_bytes2 = 0;
-  int64_t correct_sent_bytes2 = 0;
-
-  int read_bytes_array1[] = {900, 300, 100};
-  int sent_bytes_array1[] = {130, 153, 934};
-
-  int read_bytes_array2[] = {903, 340, 150};
-  int sent_bytes_array2[] = {138, 157, 964};
-
-  for (int i : read_bytes_array1) {
-    TaskManagerIoThreadHelper::OnRawBytesTransferred(key1, i, 0);
-    correct_read_bytes1 += i;
-  }
-  for (int i : sent_bytes_array1) {
-    TaskManagerIoThreadHelper::OnRawBytesTransferred(key1, 0, i);
-    correct_sent_bytes1 += i;
-  }
-
-  for (int i : read_bytes_array2) {
-    TaskManagerIoThreadHelper::OnRawBytesTransferred(key2, i, 0);
-    correct_read_bytes2 += i;
-  }
-  for (int i : sent_bytes_array2) {
-    TaskManagerIoThreadHelper::OnRawBytesTransferred(key2, 0, i);
-    correct_sent_bytes2 += i;
-  }
-
-  mock_main_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  base::RunLoop().RunUntilIdle();
-  const unsigned long number_of_keys = 2;
-  EXPECT_EQ(number_of_keys, returned_map_.size());
-  EXPECT_EQ(correct_sent_bytes1, returned_map_[key1].byte_sent_count);
-  EXPECT_EQ(correct_read_bytes1, returned_map_[key1].byte_read_count);
-  EXPECT_EQ(correct_sent_bytes2, returned_map_[key2].byte_sent_count);
-  EXPECT_EQ(correct_read_bytes2, returned_map_[key2].byte_read_count);
-}
-
-// Tests that two keys with the same |origin_pid| are tracked together in the
-// unordered map.
-TEST_F(TaskManagerIoThreadHelperTest, TwoSamePidData) {
-  base::ScopedMockTimeMessageLoopTaskRunner mock_main_runner;
-
-  BytesTransferredKey key1 = {23, -1, -1};
-  BytesTransferredKey key2 = {23, -1, -1};
-
-  int64_t correct_read_bytes = 0;
-  int64_t correct_sent_bytes = 0;
-
-  int read_bytes_array[] = {900, 300, 100};
-  int sent_bytes_array[] = {130, 153, 934};
-
-  for (int i : read_bytes_array) {
-    TaskManagerIoThreadHelper::OnRawBytesTransferred(key1, i, 0);
-    correct_read_bytes += i;
-  }
-  for (int i : sent_bytes_array) {
-    TaskManagerIoThreadHelper::OnRawBytesTransferred(key1, 0, i);
-    correct_sent_bytes += i;
-  }
-
-  for (int i : read_bytes_array) {
-    TaskManagerIoThreadHelper::OnRawBytesTransferred(key2, i, 0);
-    correct_read_bytes += i;
-  }
-  for (int i : sent_bytes_array) {
-    TaskManagerIoThreadHelper::OnRawBytesTransferred(key2, 0, i);
-    correct_sent_bytes += i;
-  }
-
-  mock_main_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1U, returned_map_.size());
-  EXPECT_EQ(correct_sent_bytes, returned_map_[key1].byte_sent_count);
-  EXPECT_EQ(correct_read_bytes, returned_map_[key1].byte_read_count);
-  EXPECT_EQ(correct_sent_bytes, returned_map_[key2].byte_sent_count);
-  EXPECT_EQ(correct_read_bytes, returned_map_[key2].byte_read_count);
 }
 
 // Tests that two distinct |child_id| and |route_id| pairs are tracked
@@ -189,8 +71,8 @@ TEST_F(TaskManagerIoThreadHelperTest, TwoSamePidData) {
 TEST_F(TaskManagerIoThreadHelperTest, TwoChildRouteData) {
   base::ScopedMockTimeMessageLoopTaskRunner mock_main_runner;
 
-  BytesTransferredKey key1 = {0, 32, 1};
-  BytesTransferredKey key2 = {0, 17, 2};
+  BytesTransferredKey key1 = {32, 1};
+  BytesTransferredKey key2 = {17, 2};
 
   int64_t correct_read_bytes1 = 0;
   int64_t correct_sent_bytes1 = 0;
@@ -239,8 +121,8 @@ TEST_F(TaskManagerIoThreadHelperTest, TwoChildRouteData) {
 TEST_F(TaskManagerIoThreadHelperTest, TwoSameChildRouteData) {
   base::ScopedMockTimeMessageLoopTaskRunner mock_main_runner;
 
-  BytesTransferredKey key1 = {0, 123, 456};
-  BytesTransferredKey key2 = {0, 123, 456};
+  BytesTransferredKey key1 = {123, 456};
+  BytesTransferredKey key2 = {123, 456};
 
   int64_t correct_read_bytes = 0;
   int64_t correct_sent_bytes = 0;
@@ -275,13 +157,11 @@ TEST_F(TaskManagerIoThreadHelperTest, TwoSameChildRouteData) {
   EXPECT_EQ(correct_read_bytes, returned_map_[key2].byte_read_count);
 }
 
-// Tests that the unordered_map can hold both types of key in one map.
-TEST_F(TaskManagerIoThreadHelperTest, OnePidOneChildRouteData) {
+// Tests that the map can handle two child_ids with the same route_id.
+TEST_F(TaskManagerIoThreadHelperTest, SameRouteDifferentProcesses) {
   base::ScopedMockTimeMessageLoopTaskRunner mock_main_runner;
-  // Test the pathological condition of a collision.
-  BytesTransferredKey key1 = {0, 12, 143};
-  BytesTransferredKey key2 = {static_cast<int>(base::HashInts(12, 143)), -1,
-                              -1};
+  BytesTransferredKey key1 = {12, 143};
+  BytesTransferredKey key2 = {13, 143};
 
   int64_t correct_read_bytes1 = 0;
   int64_t correct_sent_bytes1 = 0;
@@ -327,8 +207,8 @@ TEST_F(TaskManagerIoThreadHelperTest, OnePidOneChildRouteData) {
 TEST_F(TaskManagerIoThreadHelperTest, MultipleWavesMixedData) {
   base::ScopedMockTimeMessageLoopTaskRunner mock_main_runner;
 
-  BytesTransferredKey key1 = {0, 12, 143};
-  BytesTransferredKey key2 = {32, -1, -1};
+  BytesTransferredKey key1 = {12, 143};
+  BytesTransferredKey key2 = {-1, -1};
 
   int64_t correct_read_bytes1 = 0;
   int64_t correct_sent_bytes1 = 0;

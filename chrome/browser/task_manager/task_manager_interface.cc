@@ -24,21 +24,21 @@ namespace {
 BytesTransferredKey KeyForRequest(const net::URLRequest& request) {
   // Only net::URLRequestJob instances created by the ResourceDispatcherHost
   // have an associated ResourceRequestInfo and a render frame associated.
-  // All other jobs will have -1 returned for the render process child and
-  // routing ids - the jobs may still match a resource based on their origin id,
-  // otherwise BytesRead() will attribute the activity to the Browser resource.
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(&request);
-  int child_id = -1;
-  int route_id = -1;
 
-  if (info)
-    info->GetAssociatedRenderFrame(&child_id, &route_id);
+  // Requests without ResourceRequestInfo are attributed to the browser process.
+  if (!info)
+    return {content::ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE};
 
-  // Get the origin PID of the request's originator.  This will only be set for
-  // plugins - for renderer or browser initiated requests it will be zero.
-  int origin_pid = info ? info->GetOriginPID() : 0;
-  return {origin_pid, child_id, route_id};
+  // Requests from PPAPI instances are proxied through the renderer, and specify
+  // the plugin_child_id of the plugin process.
+  if (info->GetPluginChildID() != content::ChildProcessHost::kInvalidUniqueID)
+    return {info->GetPluginChildID(), MSG_ROUTING_NONE};
+
+  // Other requests are associated with the child process (and frame, if
+  // originating from a renderer process).
+  return {info->GetChildID(), info->GetRenderFrameID()};
 }
 }  // namespace
 

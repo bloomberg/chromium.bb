@@ -62,7 +62,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       priority_(kResourceLoadPriorityLowest),
       intra_priority_value_(0),
       requestor_id_(0),
-      requestor_process_id_(0),
+      plugin_child_id_(-1),
       app_cache_host_id_(0),
       previews_state_(WebURLRequest::kPreviewsUnspecified),
       request_context_(WebURLRequest::kRequestContextUnspecified),
@@ -106,7 +106,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   SetServiceWorkerMode(data->service_worker_mode_);
   SetShouldResetAppCache(data->should_reset_app_cache_);
   SetRequestorID(data->requestor_id_);
-  SetRequestorProcessID(data->requestor_process_id_);
+  SetPluginChildID(data->plugin_child_id_);
   SetAppCacheHostID(data->app_cache_host_id_);
   SetPreviewsState(data->previews_state_);
   SetRequestContext(data->request_context_);
@@ -193,7 +193,7 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
   data->service_worker_mode_ = service_worker_mode_;
   data->should_reset_app_cache_ = should_reset_app_cache_;
   data->requestor_id_ = requestor_id_;
-  data->requestor_process_id_ = requestor_process_id_;
+  data->plugin_child_id_ = plugin_child_id_;
   data->app_cache_host_id_ = app_cache_host_id_;
   data->previews_state_ = previews_state_;
   data->request_context_ = request_context_;

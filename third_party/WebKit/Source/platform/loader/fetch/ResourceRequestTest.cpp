@@ -39,7 +39,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   original.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kSameOrigin);
   original.SetRequestorID(30);
-  original.SetRequestorProcessID(40);
+  original.SetPluginChildID(40);
   original.SetAppCacheHostID(50);
   original.SetRequestContext(WebURLRequest::kRequestContextAudio);
   original.SetFrameType(WebURLRequest::kFrameTypeNested);
@@ -71,7 +71,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   EXPECT_EQ(network::mojom::FetchCredentialsMode::kSameOrigin,
             original.GetFetchCredentialsMode());
   EXPECT_EQ(30, original.RequestorID());
-  EXPECT_EQ(40, original.RequestorProcessID());
+  EXPECT_EQ(40, original.GetPluginChildID());
   EXPECT_EQ(50, original.AppCacheHostID());
   EXPECT_EQ(WebURLRequest::kRequestContextAudio, original.GetRequestContext());
   EXPECT_EQ(WebURLRequest::kFrameTypeNested, original.GetFrameType());
@@ -105,7 +105,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   EXPECT_EQ(network::mojom::FetchCredentialsMode::kSameOrigin,
             copy1.GetFetchCredentialsMode());
   EXPECT_EQ(30, copy1.RequestorID());
-  EXPECT_EQ(40, copy1.RequestorProcessID());
+  EXPECT_EQ(40, copy1.GetPluginChildID());
   EXPECT_EQ(50, copy1.AppCacheHostID());
   EXPECT_EQ(WebURLRequest::kRequestContextAudio, copy1.GetRequestContext());
   EXPECT_EQ(WebURLRequest::kFrameTypeNested, copy1.GetFrameType());

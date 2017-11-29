@@ -30,9 +30,7 @@ class RenderProcessHostTaskProvider : public TaskProvider,
   ~RenderProcessHostTaskProvider() override;
 
   // task_manager::TaskProvider:
-  Task* GetTaskOfUrlRequest(int origin_pid,
-                            int child_id,
-                            int route_id) override;
+  Task* GetTaskOfUrlRequest(int child_id, int route_id) override;
 
   // content::NotificationObserver:
   void Observe(int type,

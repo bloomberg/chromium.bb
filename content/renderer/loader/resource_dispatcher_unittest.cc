@@ -173,7 +173,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
         shared_memory->handle().Duplicate();
     EXPECT_TRUE(duplicate_handle.IsValid());
     EXPECT_TRUE(dispatcher_->OnMessageReceived(ResourceMsg_SetDataBuffer(
-        request_id, duplicate_handle, shared_memory->requested_size(), 0)));
+        request_id, duplicate_handle, shared_memory->requested_size())));
   }
 
   void NotifyDataReceived(int request_id, const std::string& data) {

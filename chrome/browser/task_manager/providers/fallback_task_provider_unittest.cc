@@ -45,9 +45,7 @@ class FakeTaskProvider : public TaskProvider {
  public:
   FakeTaskProvider() {}
   ~FakeTaskProvider() override {}
-  Task* GetTaskOfUrlRequest(int origin_pid,
-                            int child_id,
-                            int route_id) override {
+  Task* GetTaskOfUrlRequest(int child_id, int route_id) override {
     return nullptr;
   }
 

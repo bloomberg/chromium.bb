@@ -60,7 +60,7 @@ static ResourceRequest CreateResourceRequest(const char* method,
       url::Origin::Create(url);  // ensure initiator is set
   request.referrer_policy = blink::kWebReferrerPolicyDefault;
   request.load_flags = 0;
-  request.origin_pid = 0;
+  request.plugin_child_id = -1;
   request.resource_type = type;
   request.request_context = 0;
   request.appcache_host_id = kAppCacheNoHostId;

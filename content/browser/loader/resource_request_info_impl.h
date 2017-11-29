@@ -50,7 +50,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       scoped_refptr<ResourceRequesterInfo> requester_info,
       int route_id,
       int frame_tree_node_id,
-      int origin_pid,
+      int plugin_child_id,
       int request_id,
       int render_frame_id,
       bool is_main_frame,
@@ -82,7 +82,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int GetChildID() const override;
   int GetRouteID() const override;
   GlobalRequestID GetGlobalRequestID() const override;
-  int GetOriginPID() const override;
+  int GetPluginChildID() const override;
   int GetRenderFrameID() const override;
   int GetFrameTreeNodeId() const override;
   bool IsMainFrame() const override;
@@ -122,7 +122,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   // does not need to be updated.
   void UpdateForTransfer(int route_id,
                          int render_frame_id,
-                         int origin_pid,
                          int request_id,
                          ResourceRequesterInfo* requester_info,
                          mojom::URLLoaderRequest url_loader_request,
@@ -214,7 +213,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   scoped_refptr<ResourceRequesterInfo> requester_info_;
   int route_id_;
   const int frame_tree_node_id_;
-  int origin_pid_;
+  int plugin_child_id_;
   int request_id_;
   int render_frame_id_;
   bool is_main_frame_;

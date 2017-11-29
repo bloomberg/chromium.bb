@@ -120,8 +120,8 @@ class TaskManagerImpl : public TaskManagerInterface,
   void StartUpdating() override;
   void StopUpdating() override;
 
-  // Lookup a task by its pid, child_id and possibly route_id.
-  Task* GetTaskByPidOrRoute(int pid, int child_id, int route_id) const;
+  // Lookup a task by child_id and possibly route_id.
+  Task* GetTaskByRoute(int child_id, int route_id) const;
 
   // Based on |param| the appropriate task will be updated by its network usage.
   // Returns true if it was able to match |param| to an existing task, returns

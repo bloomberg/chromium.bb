@@ -122,7 +122,7 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
       resource_request_info->requester_info(),
       resource_request_info->GetRouteID(),
       resource_request_info->GetFrameTreeNodeId(),
-      resource_request_info->GetOriginPID(),
+      resource_request_info->GetPluginChildID(),
       resource_request_info->GetRequestID(),
       resource_request_info->GetRenderFrameID(),
       resource_request_info->IsMainFrame(),

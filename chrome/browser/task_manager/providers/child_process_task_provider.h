@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/task_manager/providers/task_provider.h"
@@ -32,9 +33,7 @@ class ChildProcessTaskProvider
   ~ChildProcessTaskProvider() override;
 
   // task_manager::TaskProvider:
-  Task* GetTaskOfUrlRequest(int origin_pid,
-                            int child_id,
-                            int route_id) override;
+  Task* GetTaskOfUrlRequest(int child_id, int route_id) override;
 
   // content::BrowserChildProcessObserver:
   void BrowserChildProcessLaunchedAndConnected(
@@ -64,23 +63,16 @@ class ChildProcessTaskProvider
   // observer of its deletion.
   void DeleteTask(base::ProcessHandle handle);
 
-  // A map to track ChildProcessTask's by their handles.
+  // A map to track ChildProcessTasks by their handles.
+  //
+  // This uses handles instead of pids because on windows (where pids and
+  // handles differ), BrowserChildProcessObserver gives us a handle instead of a
+  // pid.
   std::map<base::ProcessHandle, std::unique_ptr<ChildProcessTask>>
       tasks_by_handle_;
 
-  // A map to track ChildProcessTask's by their PIDs.
-  //
-  // Why have both |tasks_by_handle_| and |tasks_by_pid_|? On Windows, where
-  // handles are not the same as PIDs, |DeleteTask| gets only a handle, which
-  // may be closed, making it impossible to query the PID from the handle. So
-  // we need an index on the handle. Meanwhile, we also need an index on the
-  // PID so that we can efficiently implement |GetTaskOfUrlRequest()|, which
-  // gets only a PID.
-  //
-  // TODO(afakhry): Fix this either by keeping the handle open via
-  // |base::Process|, or amending the |BrowserChildProcessObserver| interface to
-  // supply the PID.
-  std::map<base::ProcessId, ChildProcessTask*> tasks_by_pid_;
+  // A map to track ChildProcessTask's by their child process unique ids.
+  base::flat_map<int, ChildProcessTask*> tasks_by_child_id_;
 
   // Always keep this the last member of this class to make sure it's the
   // first thing to be destructed.

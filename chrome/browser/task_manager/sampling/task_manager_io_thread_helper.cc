@@ -18,16 +18,11 @@ TaskManagerIoThreadHelper* g_io_thread_helper = nullptr;
 
 size_t BytesTransferredKey::Hasher::operator()(
     const BytesTransferredKey& key) const {
-  if (key.child_id != -1) {
-    return base::HashInts(key.child_id, key.route_id);
-  } else {
-    return std::hash<int>()(key.origin_pid);
-  }
+  return base::HashInts(key.child_id, key.route_id);
 }
 
 bool BytesTransferredKey::operator==(const BytesTransferredKey& other) const {
-  return origin_pid == other.origin_pid && child_id == other.child_id &&
-         route_id == other.route_id;
+  return child_id == other.child_id && route_id == other.route_id;
 }
 
 IoThreadHelperManager::IoThreadHelperManager(

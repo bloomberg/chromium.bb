@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
@@ -68,9 +69,10 @@ struct CONTENT_EXPORT ResourceRequest {
   // net::URLRequest load flags (0 by default).
   int load_flags = 0;
 
-  // Process ID from which this request originated, or zero if it originated
-  // in the renderer itself.
-  int origin_pid = 0;
+  // If this request originated from a pepper plugin running in a child
+  // process, this identifies which process it came from. Otherwise, it
+  // is zero.
+  int plugin_child_id = ChildProcessHost::kInvalidUniqueID;
 
   // What this resource load is for (main frame, sub-frame, sub-resource,
   // object).

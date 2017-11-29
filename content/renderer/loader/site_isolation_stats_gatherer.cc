@@ -101,17 +101,8 @@ SiteIsolationStatsGatherer::OnReceivedResponse(
     const url::Origin& frame_origin,
     const GURL& response_url,
     ResourceType resource_type,
-    int origin_pid,
     const ResourceResponseInfo& info) {
   if (!g_stats_gathering_enabled)
-    return nullptr;
-
-  // if |origin_pid| is non-zero, it means that this response is for a plugin
-  // spawned from this renderer process. We exclude responses for plugins for
-  // now, but eventually, we're going to make plugin processes directly talk to
-  // the browser process so that we don't apply cross-site document blocking to
-  // them.
-  if (origin_pid)
     return nullptr;
 
   UMA_HISTOGRAM_COUNTS("SiteIsolation.AllResponses", 1);

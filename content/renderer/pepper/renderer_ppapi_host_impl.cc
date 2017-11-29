@@ -177,12 +177,6 @@ blink::WebPluginContainer* RendererPpapiHostImpl::GetContainerForInstance(
   return instance_object->container();
 }
 
-base::ProcessId RendererPpapiHostImpl::GetPluginPID() const {
-  if (dispatcher_)
-    return dispatcher_->peer_pid();
-  return base::kNullProcessId;
-}
-
 bool RendererPpapiHostImpl::HasUserGesture(PP_Instance instance) const {
   PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
   if (!instance_object)
@@ -285,6 +279,10 @@ bool RendererPpapiHostImpl::IsSecureContext(PP_Instance pp_instance) const {
     return false;
   return instance->GetContainer()->GetDocument().IsSecureContext() &&
          content::IsOriginSecure(instance->GetPluginURL());
+}
+
+int RendererPpapiHostImpl::GetPluginChildId() const {
+  return module_->GetPluginChildId();
 }
 
 PepperPluginInstanceImpl* RendererPpapiHostImpl::GetAndValidateInstance(

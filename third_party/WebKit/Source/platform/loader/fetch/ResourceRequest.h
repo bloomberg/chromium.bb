@@ -201,13 +201,13 @@ class PLATFORM_EXPORT ResourceRequest final {
   int RequestorID() const { return requestor_id_; }
   void SetRequestorID(int requestor_id) { requestor_id_ = requestor_id; }
 
-  // The process id of the process from which this request originated. In
-  // the case of out-of-process plugins, this allows to link back the
-  // request to the plugin process (as it is processed through a render
-  // view process).
-  int RequestorProcessID() const { return requestor_process_id_; }
-  void SetRequestorProcessID(int requestor_process_id) {
-    requestor_process_id_ = requestor_process_id;
+  // The unique child id (not PID) of the process from which this request
+  // originated. In the case of out-of-process plugins, this allows to link back
+  // the request to the plugin process (as it is processed through a render view
+  // process).
+  int GetPluginChildID() const { return plugin_child_id_; }
+  void SetPluginChildID(int plugin_child_id) {
+    plugin_child_id_ = plugin_child_id;
   }
 
   // Allows the request to be matched up with its app cache host.
@@ -381,7 +381,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   ResourceLoadPriority priority_;
   int intra_priority_value_;
   int requestor_id_;
-  int requestor_process_id_;
+  int plugin_child_id_;
   int app_cache_host_id_;
   WebURLRequest::PreviewsState previews_state_;
   scoped_refptr<ExtraData> extra_data_;
@@ -444,7 +444,7 @@ struct CrossThreadResourceRequestData {
   ResourceLoadPriority priority_;
   int intra_priority_value_;
   int requestor_id_;
-  int requestor_process_id_;
+  int plugin_child_id_;
   int app_cache_host_id_;
   WebURLRequest::RequestContext request_context_;
   WebURLRequest::FrameType frame_type_;
