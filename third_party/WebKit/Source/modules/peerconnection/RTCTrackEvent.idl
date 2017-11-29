@@ -4,7 +4,6 @@
 
 // https://w3c.github.io/webrtc-pc/#rtctrackevent
 [
-    RuntimeEnabled=RTCRtpSender,
     Constructor(DOMString type, RTCTrackEventInit eventInitDict)
 ] interface RTCTrackEvent : Event {
     readonly attribute RTCRtpReceiver           receiver;
