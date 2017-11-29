@@ -12,7 +12,7 @@ documented all possible values of the node parameter. Also the
 description of decpoint and litdigit was improved
 
 *** lou_maketable
-Numerous bug fixes and performance enhancments thanks to Bert Frees
+Numerous bug fixes and performance enhancements thanks to Bert Frees
 
 *** Code refactoring
 Many global variables have been removed thanks to Bert Frees
@@ -39,7 +39,10 @@ Thanks to Davy Kager building with nmake should work again
 - Improvements to the Mongolian tables thanks to Tsengel Maidar
 
 ** Backwards incompatible changes
-None
+
+- The pass1Only flag has been deprecated. Its use should be avoided,
+and it will be completely removed from the code in the version of
+Liblouis following this version. 
 
 ** New, renamed or removed tables
 *** New

@@ -2864,11 +2864,7 @@ When this bit is set, Only pass 1 of the translation will be run. this
 excludes all rules that use the @code{correct} and @code{multi-pass}
 opcodes as well as some rules using the @code{context} opcode. The flag
 was originally introduced for the benefit of screen reading programs,
-but is now only kept as a debugging tool and for backward
-compatibility. The @code{pass1Only} flag should only be used for
-debugging and with great care, since it will have undecired effects with
-any tables that use the @code{correct}, @code{context} or
-@code{multi-pass} opcodes.
+but has now been deprecated, and will be removed in the near future.
 
 @item partialTrans
 This flag specifies that back-translation input should be treated as an
