@@ -8,10 +8,13 @@ option optimize_for = LITE_RUNTIME;
 
 package metadata_pb;
 
+import "download_source.proto";
+
 // Stores various in-progress metadata related to a download.
 message DownloadEntry {
   optional string guid = 1;
   optional string request_origin = 2;
+  optional DownloadSource download_source = 3;
 }
 
 // Contains a list of entries.
