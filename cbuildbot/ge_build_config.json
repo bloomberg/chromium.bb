@@ -938,18 +938,6 @@
       ]
     },
     {
-      "name": "nefario",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "newbie",
       "configs": [
         {
