@@ -31,7 +31,7 @@
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button.h"
-#include "chrome/browser/ui/views/page_info/chosen_object_row.h"
+#include "chrome/browser/ui/views/page_info/chosen_object_view.h"
 #include "chrome/browser/ui/views/page_info/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/common/url_constants.h"
@@ -873,7 +873,8 @@ void PageInfoBubbleView::SetPermissionInfo(
                              GridLayout::USE_PREF, 0, 0);
   permissions_set->AddPaddingColumn(kFixed, side_margin);
 
-  // |ChosenObjectRow| will layout itself, so just add the missing padding here.
+  // |ChosenObjectView| will layout itself, so just add the missing padding
+  // here.
   constexpr int kChosenObjectSectionId = 1;
   views::ColumnSet* chosen_object_set =
       layout->AddColumnSet(kChosenObjectSectionId);
@@ -920,7 +921,7 @@ void PageInfoBubbleView::SetPermissionInfo(
         1, kChosenObjectSectionId,
         PermissionSelectorRow::MinHeightForPermissionRow() + list_item_padding);
     // The view takes ownership of the object info.
-    auto object_view = std::make_unique<ChosenObjectRow>(std::move(object));
+    auto object_view = std::make_unique<ChosenObjectView>(std::move(object));
     object_view->AddObserver(this);
     layout->AddView(object_view.release());
   }
