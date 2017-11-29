@@ -34,18 +34,17 @@ void av1_convolve_horiz_rs_c(const uint8_t *src, int src_stride, uint8_t *dst,
                              int dst_stride, int w, int h,
                              const int16_t *x_filters, int interp_taps,
                              const int x0_qn, const int x_step_qn) {
-  int x, y;
   src -= interp_taps / 2 - 1;
-  for (y = 0; y < h; ++y) {
+  for (int y = 0; y < h; ++y) {
     int x_qn = x0_qn;
-    for (x = 0; x < w; ++x) {
+    for (int x = 0; x < w; ++x) {
       const uint8_t *const src_x = &src[x_qn >> RS_SCALE_SUBPEL_BITS];
       const int x_filter_idx =
           (x_qn & RS_SCALE_SUBPEL_MASK) >> RS_SCALE_EXTRA_BITS;
       assert(x_filter_idx <= RS_SUBPEL_MASK);
       const int16_t *const x_filter = &x_filters[x_filter_idx * interp_taps];
-      int k, sum = 0;
-      for (k = 0; k < interp_taps; ++k) sum += src_x[k] * x_filter[k];
+      int sum = 0;
+      for (int k = 0; k < interp_taps; ++k) sum += src_x[k] * x_filter[k];
       dst[x] = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
       x_qn += x_step_qn;
     }
@@ -59,18 +58,17 @@ void av1_highbd_convolve_horiz_rs_c(const uint16_t *src, int src_stride,
                                     uint16_t *dst, int dst_stride, int w, int h,
                                     const int16_t *x_filters, int interp_taps,
                                     int x0_qn, int x_step_qn, int bd) {
-  int x, y;
   src -= interp_taps / 2 - 1;
-  for (y = 0; y < h; ++y) {
+  for (int y = 0; y < h; ++y) {
     int x_qn = x0_qn;
-    for (x = 0; x < w; ++x) {
+    for (int x = 0; x < w; ++x) {
       const uint16_t *const src_x = &src[x_qn >> RS_SCALE_SUBPEL_BITS];
       const int x_filter_idx =
           (x_qn & RS_SCALE_SUBPEL_MASK) >> RS_SCALE_EXTRA_BITS;
       assert(x_filter_idx <= RS_SUBPEL_MASK);
       const int16_t *const x_filter = &x_filters[x_filter_idx * interp_taps];
-      int k, sum = 0;
-      for (k = 0; k < interp_taps; ++k) sum += src_x[k] * x_filter[k];
+      int sum = 0;
+      for (int k = 0; k < interp_taps; ++k) sum += src_x[k] * x_filter[k];
       dst[x] = clip_pixel_highbd(ROUND_POWER_OF_TWO(sum, FILTER_BITS), bd);
       x_qn += x_step_qn;
     }
@@ -86,18 +84,17 @@ void av1_convolve_horiz_c(const uint8_t *src, int src_stride, uint8_t *dst,
                           const InterpFilterParams filter_params,
                           const int subpel_x_q4, int x_step_q4,
                           ConvolveParams *conv_params) {
-  int x, y;
   int filter_size = filter_params.taps;
   assert(conv_params->round == CONVOLVE_OPT_ROUND);
   src -= filter_size / 2 - 1;
-  for (y = 0; y < h; ++y) {
+  for (int y = 0; y < h; ++y) {
     int x_q4 = subpel_x_q4;
-    for (x = 0; x < w; ++x) {
+    for (int x = 0; x < w; ++x) {
       const uint8_t *const src_x = &src[x_q4 >> SUBPEL_BITS];
       const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
           filter_params, x_q4 & SUBPEL_MASK);
-      int k, sum = 0;
-      for (k = 0; k < filter_size; ++k) sum += src_x[k] * x_filter[k];
+      int sum = 0;
+      for (int k = 0; k < filter_size; ++k) sum += src_x[k] * x_filter[k];
 
       sum = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
       if (conv_params->do_average)
@@ -117,20 +114,19 @@ void av1_convolve_horiz_scale(const uint8_t *src, int src_stride, uint8_t *dst,
                               const InterpFilterParams filter_params,
                               const int subpel_x_qn, int x_step_qn,
                               ConvolveParams *conv_params) {
-  int x, y;
   int filter_size = filter_params.taps;
   assert(conv_params->round == CONVOLVE_OPT_ROUND);
   src -= filter_size / 2 - 1;
-  for (y = 0; y < h; ++y) {
+  for (int y = 0; y < h; ++y) {
     int x_qn = subpel_x_qn;
-    for (x = 0; x < w; ++x) {
+    for (int x = 0; x < w; ++x) {
       const uint8_t *const src_x = &src[x_qn >> SCALE_SUBPEL_BITS];
       const int x_filter_idx = (x_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS;
       assert(x_filter_idx < SUBPEL_SHIFTS);
       const int16_t *x_filter =
           av1_get_interp_filter_subpel_kernel(filter_params, x_filter_idx);
-      int k, sum = 0;
-      for (k = 0; k < filter_size; ++k) sum += src_x[k] * x_filter[k];
+      int sum = 0;
+      for (int k = 0; k < filter_size; ++k) sum += src_x[k] * x_filter[k];
 
       sum = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
       if (conv_params->do_average)
@@ -150,18 +146,17 @@ void av1_convolve_vert_c(const uint8_t *src, int src_stride, uint8_t *dst,
                          const InterpFilterParams filter_params,
                          const int subpel_y_q4, int y_step_q4,
                          ConvolveParams *conv_params) {
-  int x, y;
   int filter_size = filter_params.taps;
   assert(conv_params->round == CONVOLVE_OPT_ROUND);
   src -= src_stride * (filter_size / 2 - 1);
-  for (x = 0; x < w; ++x) {
+  for (int x = 0; x < w; ++x) {
     int y_q4 = subpel_y_q4;
-    for (y = 0; y < h; ++y) {
+    for (int y = 0; y < h; ++y) {
       const uint8_t *const src_y = &src[(y_q4 >> SUBPEL_BITS) * src_stride];
       const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
           filter_params, y_q4 & SUBPEL_MASK);
-      int k, sum = 0;
-      for (k = 0; k < filter_size; ++k)
+      int sum = 0;
+      for (int k = 0; k < filter_size; ++k)
         sum += src_y[k * src_stride] * y_filter[k];
 
       sum = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
@@ -182,21 +177,20 @@ static void av1_convolve_vert_scale(const uint8_t *src, int src_stride,
                                     const InterpFilterParams filter_params,
                                     const int subpel_y_qn, int y_step_qn,
                                     ConvolveParams *conv_params) {
-  int x, y;
   int filter_size = filter_params.taps;
   assert(conv_params->round == CONVOLVE_OPT_ROUND);
   src -= src_stride * (filter_size / 2 - 1);
-  for (x = 0; x < w; ++x) {
+  for (int x = 0; x < w; ++x) {
     int y_qn = subpel_y_qn;
-    for (y = 0; y < h; ++y) {
+    for (int y = 0; y < h; ++y) {
       const uint8_t *const src_y =
           &src[(y_qn >> SCALE_SUBPEL_BITS) * src_stride];
       const int y_filter_idx = (y_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS;
       assert(y_filter_idx < SUBPEL_SHIFTS);
       const int16_t *y_filter =
           av1_get_interp_filter_subpel_kernel(filter_params, y_filter_idx);
-      int k, sum = 0;
-      for (k = 0; k < filter_size; ++k)
+      int sum = 0;
+      for (int k = 0; k < filter_size; ++k)
         sum += src_y[k * src_stride] * y_filter[k];
 
       sum = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
@@ -217,16 +211,14 @@ static void convolve_copy(const uint8_t *src, int src_stride, uint8_t *dst,
                           ConvolveParams *conv_params) {
   assert(conv_params->round == CONVOLVE_OPT_ROUND);
   if (conv_params->do_average == 0) {
-    int r;
-    for (r = 0; r < h; ++r) {
+    for (int r = 0; r < h; ++r) {
       memcpy(dst, src, w);
       src += src_stride;
       dst += dst_stride;
     }
   } else {
-    int r, c;
-    for (r = 0; r < h; ++r) {
-      for (c = 0; c < w; ++c) {
+    for (int r = 0; r < h; ++r) {
+      for (int c = 0; c < w; ++c) {
         dst[c] = clip_pixel(ROUND_POWER_OF_TWO(dst[c] + src[c], 1));
       }
       src += src_stride;
@@ -371,9 +363,8 @@ void av1_convolve_vert_facade_scale(const uint8_t *src, int src_stride,
 #if CONFIG_CONVOLVE_ROUND
 void av1_convolve_rounding_c(const int32_t *src, int src_stride, uint8_t *dst,
                              int dst_stride, int w, int h, int bits) {
-  int r, c;
-  for (r = 0; r < h; ++r) {
-    for (c = 0; c < w; ++c) {
+  for (int r = 0; r < h; ++r) {
+    for (int c = 0; c < w; ++c) {
       dst[r * dst_stride + c] =
           clip_pixel(ROUND_POWER_OF_TWO(src[r * src_stride + c], bits));
     }
@@ -387,7 +378,6 @@ void av1_convolve_2d_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
                        InterpFilterParams *filter_params_y,
                        const int subpel_x_q4, const int subpel_y_q4,
                        ConvolveParams *conv_params) {
-  int x, y, k;
   uint8_t im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE];
   int im_h = h + filter_params_y->taps - 1;
   int im_stride = w;
@@ -398,10 +388,10 @@ void av1_convolve_2d_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
   const uint8_t *src_horiz = src - fo_vert * src_stride;
   const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_x, subpel_x_q4 & SUBPEL_MASK);
-  for (y = 0; y < im_h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < im_h; ++y) {
+    for (int x = 0; x < w; ++x) {
       int32_t sum = 0;
-      for (k = 0; k < filter_params_x->taps; ++k) {
+      for (int k = 0; k < filter_params_x->taps; ++k) {
         sum += x_filter[k] * src_horiz[y * src_stride + x - fo_horiz + k];
       }
       im_block[y * im_stride + x] =
@@ -413,10 +403,10 @@ void av1_convolve_2d_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
   uint8_t *src_vert = im_block + fo_vert * im_stride;
   const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
-  for (y = 0; y < h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE sum = 0;
-      for (k = 0; k < filter_params_y->taps; ++k) {
+      for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
       }
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
@@ -435,7 +425,6 @@ void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride,
                            InterpFilterParams *filter_params_y,
                            const int subpel_x_q4, const int subpel_y_q4,
                            ConvolveParams *conv_params) {
-  int x, y, k;
   uint8_t im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE];
   int im_h = h + filter_params_y->taps - 1;
   int im_stride = w;
@@ -446,10 +435,10 @@ void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride,
   const uint8_t *src_horiz = src - fo_vert * src_stride;
   const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_x, subpel_x_q4 & SUBPEL_MASK);
-  for (y = 0; y < im_h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < im_h; ++y) {
+    for (int x = 0; x < w; ++x) {
       int32_t sum = 0;
-      for (k = 0; k < filter_params_x->taps; ++k) {
+      for (int k = 0; k < filter_params_x->taps; ++k) {
         sum += x_filter[k] * src_horiz[y * src_stride + x - fo_horiz + k];
       }
       im_block[y * im_stride + x] =
@@ -461,10 +450,10 @@ void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride,
   uint8_t *src_vert = im_block + fo_vert * im_stride;
   const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
-  for (y = 0; y < h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE sum = 0;
-      for (k = 0; k < filter_params_y->taps; ++k) {
+      for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
       }
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
@@ -495,7 +484,6 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
                              const int subpel_x_qn, const int x_step_qn,
                              const int subpel_y_qn, const int y_step_qn,
                              ConvolveParams *conv_params) {
-  int x, y, k;
   uint8_t im_block[(2 * MAX_SB_SIZE + MAX_FILTER_TAP) * MAX_SB_SIZE];
   int im_h = (((h - 1) * y_step_qn + subpel_y_qn) >> SCALE_SUBPEL_BITS) +
              filter_params_y->taps;
@@ -505,16 +493,16 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
 
   // horizontal filter
   const uint8_t *src_horiz = src - fo_vert * src_stride;
-  for (y = 0; y < im_h; ++y) {
+  for (int y = 0; y < im_h; ++y) {
     int x_qn = subpel_x_qn;
-    for (x = 0; x < w; ++x, x_qn += x_step_qn) {
+    for (int x = 0; x < w; ++x, x_qn += x_step_qn) {
       const uint8_t *const src_x = &src_horiz[(x_qn >> SCALE_SUBPEL_BITS)];
       const int x_filter_idx = (x_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS;
       assert(x_filter_idx < SUBPEL_SHIFTS);
       const int16_t *x_filter =
           av1_get_interp_filter_subpel_kernel(*filter_params_x, x_filter_idx);
       int sum = 0;
-      for (k = 0; k < filter_params_x->taps; ++k)
+      for (int k = 0; k < filter_params_x->taps; ++k)
         sum += x_filter[k] * src_x[k - fo_horiz];
       im_block[y * im_stride + x] =
           clip_pixel(ROUND_POWER_OF_TWO(sum, conv_params->round_0));
@@ -524,9 +512,9 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
 
   // vertical filter
   const uint8_t *src_vert = im_block + fo_vert * im_stride;
-  for (x = 0; x < w; ++x) {
+  for (int x = 0; x < w; ++x) {
     int y_qn = subpel_y_qn;
-    for (y = 0; y < h; ++y, y_qn += y_step_qn) {
+    for (int y = 0; y < h; ++y, y_qn += y_step_qn) {
       const uint8_t *const src_y =
           &src_vert[(y_qn >> SCALE_SUBPEL_BITS) * im_stride];
       const int y_filter_idx = (y_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS;
@@ -534,7 +522,7 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
       const int16_t *y_filter =
           av1_get_interp_filter_subpel_kernel(*filter_params_y, y_filter_idx);
       CONV_BUF_TYPE sum = 0;
-      for (k = 0; k < filter_params_y->taps; ++k) {
+      for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_y[(k - fo_vert) * im_stride];
       }
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
@@ -579,7 +567,6 @@ void av1_convolve_2d_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
                        InterpFilterParams *filter_params_y,
                        const int subpel_x_q4, const int subpel_y_q4,
                        ConvolveParams *conv_params) {
-  int x, y, k;
   int32_t im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE];
   int im_h = h + filter_params_y->taps - 1;
   int im_stride = w;
@@ -591,10 +578,10 @@ void av1_convolve_2d_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
   const uint8_t *src_horiz = src - fo_vert * src_stride;
   const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_x, subpel_x_q4 & SUBPEL_MASK);
-  for (y = 0; y < im_h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < im_h; ++y) {
+    for (int x = 0; x < w; ++x) {
       int32_t sum = (1 << (bd + FILTER_BITS - 1));
-      for (k = 0; k < filter_params_x->taps; ++k) {
+      for (int k = 0; k < filter_params_x->taps; ++k) {
         sum += x_filter[k] * src_horiz[y * src_stride + x - fo_horiz + k];
       }
       assert(0 <= sum && sum < (1 << (bd + FILTER_BITS + 1)));
@@ -608,10 +595,10 @@ void av1_convolve_2d_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
   const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
-  for (y = 0; y < h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE sum = 1 << offset_bits;
-      for (k = 0; k < filter_params_y->taps; ++k) {
+      for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
       }
       assert(0 <= sum && sum < (1 << (offset_bits + 2)));
@@ -632,7 +619,6 @@ void av1_convolve_x_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
                       InterpFilterParams *filter_params_y,
                       const int subpel_x_q4, const int subpel_y_q4,
                       ConvolveParams *conv_params) {
-  int x, y, k;
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const int bits = FILTER_BITS - conv_params->round_0 - conv_params->round_1;
   (void)filter_params_x;
@@ -641,10 +627,10 @@ void av1_convolve_x_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
   // vertical filter
   const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
-  for (y = 0; y < h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE res = 0;
-      for (k = 0; k < filter_params_y->taps; ++k) {
+      for (int k = 0; k < filter_params_y->taps; ++k) {
         res += y_filter[k] * src[(y - fo_vert + k) * src_stride + x];
       }
       res *= (1 << bits);
@@ -662,7 +648,6 @@ void av1_convolve_y_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
                       InterpFilterParams *filter_params_y,
                       const int subpel_x_q4, const int subpel_y_q4,
                       ConvolveParams *conv_params) {
-  int x, y, k;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const int bits = FILTER_BITS - conv_params->round_1;
   (void)filter_params_y;
@@ -671,10 +656,10 @@ void av1_convolve_y_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
   // horizontal filter
   const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_x, subpel_x_q4 & SUBPEL_MASK);
-  for (y = 0; y < h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE res = 0;
-      for (k = 0; k < filter_params_x->taps; ++k) {
+      for (int k = 0; k < filter_params_x->taps; ++k) {
         res += x_filter[k] * src[y * src_stride + x - fo_horiz + k];
       }
       res = (1 << bits) * ROUND_POWER_OF_TWO(res, conv_params->round_0);
@@ -694,14 +679,14 @@ void av1_convolve_2d_copy_c(const uint8_t *src, int src_stride,
                             ConvolveParams *conv_params) {
   const int bits =
       FILTER_BITS * 2 - conv_params->round_1 - conv_params->round_0;
-  int x, y;
+
   (void)filter_params_x;
   (void)filter_params_y;
   (void)subpel_x_q4;
   (void)subpel_y_q4;
 
-  for (y = 0; y < h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE res = (1 << bits) * src[y * src_stride + x];
       if (conv_params->do_average)
         dst[y * dst_stride + x] += res;
@@ -718,7 +703,6 @@ void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride,
                            InterpFilterParams *filter_params_y,
                            const int subpel_x_q4, const int subpel_y_q4,
                            ConvolveParams *conv_params) {
-  int x, y, k;
   int32_t im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE];
   int im_h = h + filter_params_y->taps - 1;
   int im_stride = w;
@@ -730,10 +714,10 @@ void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride,
   const uint8_t *src_horiz = src - fo_vert * src_stride;
   const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_x, subpel_x_q4 & SUBPEL_MASK);
-  for (y = 0; y < im_h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < im_h; ++y) {
+    for (int x = 0; x < w; ++x) {
       int32_t sum = (1 << (bd + FILTER_BITS - 1));
-      for (k = 0; k < filter_params_x->taps; ++k) {
+      for (int k = 0; k < filter_params_x->taps; ++k) {
         sum += x_filter[k] * src_horiz[y * src_stride + x - fo_horiz + k];
       }
       assert(0 <= sum && sum < (1 << (bd + FILTER_BITS + 1)));
@@ -747,10 +731,10 @@ void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride,
   const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
-  for (y = 0; y < h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE sum = 1 << offset_bits;
-      for (k = 0; k < filter_params_y->taps; ++k) {
+      for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
       }
       assert(0 <= sum && sum < (1 << (offset_bits + 2)));
@@ -784,7 +768,6 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
                              const int subpel_x_qn, const int x_step_qn,
                              const int subpel_y_qn, const int y_step_qn,
                              ConvolveParams *conv_params) {
-  int x, y, k;
   int32_t im_block[(2 * MAX_SB_SIZE + MAX_FILTER_TAP) * MAX_SB_SIZE];
   int im_h = (((h - 1) * y_step_qn + subpel_y_qn) >> SCALE_SUBPEL_BITS) +
              filter_params_y->taps;
@@ -795,16 +778,16 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
 
   // horizontal filter
   const uint8_t *src_horiz = src - fo_vert * src_stride;
-  for (y = 0; y < im_h; ++y) {
+  for (int y = 0; y < im_h; ++y) {
     int x_qn = subpel_x_qn;
-    for (x = 0; x < w; ++x, x_qn += x_step_qn) {
+    for (int x = 0; x < w; ++x, x_qn += x_step_qn) {
       const uint8_t *const src_x = &src_horiz[(x_qn >> SCALE_SUBPEL_BITS)];
       const int x_filter_idx = (x_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS;
       assert(x_filter_idx < SUBPEL_SHIFTS);
       const int16_t *x_filter =
           av1_get_interp_filter_subpel_kernel(*filter_params_x, x_filter_idx);
       int32_t sum = (1 << (bd + FILTER_BITS - 1));
-      for (k = 0; k < filter_params_x->taps; ++k) {
+      for (int k = 0; k < filter_params_x->taps; ++k) {
         sum += x_filter[k] * src_x[k - fo_horiz];
       }
       assert(0 <= sum && sum < (1 << (bd + FILTER_BITS + 1)));
@@ -817,16 +800,16 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
   // vertical filter
   int32_t *src_vert = im_block + fo_vert * im_stride;
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
-  for (x = 0; x < w; ++x) {
+  for (int x = 0; x < w; ++x) {
     int y_qn = subpel_y_qn;
-    for (y = 0; y < h; ++y, y_qn += y_step_qn) {
+    for (int y = 0; y < h; ++y, y_qn += y_step_qn) {
       const int32_t *src_y = &src_vert[(y_qn >> SCALE_SUBPEL_BITS) * im_stride];
       const int y_filter_idx = (y_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS;
       assert(y_filter_idx < SUBPEL_SHIFTS);
       const int16_t *y_filter =
           av1_get_interp_filter_subpel_kernel(*filter_params_y, y_filter_idx);
       CONV_BUF_TYPE sum = 1 << offset_bits;
-      for (k = 0; k < filter_params_y->taps; ++k) {
+      for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_y[(k - fo_vert) * im_stride];
       }
       assert(0 <= sum && sum < (1 << (offset_bits + 2)));
@@ -978,9 +961,8 @@ void av1_highbd_convolve_rounding_c(const int32_t *src, int src_stride,
                                     uint8_t *dst8, int dst_stride, int w, int h,
                                     int bits, int bd) {
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
-  int r, c;
-  for (r = 0; r < h; ++r) {
-    for (c = 0; c < w; ++c) {
+  for (int r = 0; r < h; ++r) {
+    for (int c = 0; c < w; ++c) {
       dst[r * dst_stride + c] = clip_pixel_highbd(
           ROUND_POWER_OF_TWO(src[r * src_stride + c], bits), bd);
     }
@@ -994,7 +976,6 @@ void av1_highbd_convolve_2d_c(const uint16_t *src, int src_stride,
                               InterpFilterParams *filter_params_y,
                               const int subpel_x_q4, const int subpel_y_q4,
                               ConvolveParams *conv_params, int bd) {
-  int x, y, k;
   uint16_t im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE];
   int im_h = h + filter_params_y->taps - 1;
   int im_stride = w;
@@ -1005,10 +986,10 @@ void av1_highbd_convolve_2d_c(const uint16_t *src, int src_stride,
   const uint16_t *src_horiz = src - fo_vert * src_stride;
   const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_x, subpel_x_q4 & SUBPEL_MASK);
-  for (y = 0; y < im_h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < im_h; ++y) {
+    for (int x = 0; x < w; ++x) {
       int32_t sum = 0;
-      for (k = 0; k < filter_params_x->taps; ++k) {
+      for (int k = 0; k < filter_params_x->taps; ++k) {
         sum += x_filter[k] * src_horiz[y * src_stride + x - fo_horiz + k];
       }
       im_block[y * im_stride + x] =
@@ -1020,10 +1001,10 @@ void av1_highbd_convolve_2d_c(const uint16_t *src, int src_stride,
   uint16_t *src_vert = im_block + fo_vert * im_stride;
   const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
-  for (y = 0; y < h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE sum = 0;
-      for (k = 0; k < filter_params_y->taps; ++k) {
+      for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
       }
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
@@ -1042,7 +1023,6 @@ void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
                                     const int subpel_x_qn, const int x_step_qn,
                                     const int subpel_y_qn, const int y_step_qn,
                                     ConvolveParams *conv_params, int bd) {
-  int x, y, k;
   uint16_t im_block[(2 * MAX_SB_SIZE + MAX_FILTER_TAP) * MAX_SB_SIZE];
   int im_h = (((h - 1) * y_step_qn + subpel_y_qn) >> SCALE_SUBPEL_BITS) +
              filter_params_y->taps;
@@ -1053,16 +1033,16 @@ void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
 
   // horizontal filter
   const uint16_t *src_horiz = src - fo_vert * src_stride;
-  for (y = 0; y < im_h; ++y) {
+  for (int y = 0; y < im_h; ++y) {
     int x_qn = subpel_x_qn;
-    for (x = 0; x < w; ++x, x_qn += x_step_qn) {
+    for (int x = 0; x < w; ++x, x_qn += x_step_qn) {
       const uint16_t *const src_x = &src_horiz[(x_qn >> SCALE_SUBPEL_BITS)];
       const int x_filter_idx = (x_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS;
       assert(x_filter_idx < SUBPEL_SHIFTS);
       const int16_t *x_filter =
           av1_get_interp_filter_subpel_kernel(*filter_params_x, x_filter_idx);
       int sum = 0;
-      for (k = 0; k < filter_params_x->taps; ++k)
+      for (int k = 0; k < filter_params_x->taps; ++k)
         sum += x_filter[k] * src_x[k - fo_horiz];
       im_block[y * im_stride + x] =
           clip_pixel(ROUND_POWER_OF_TWO(sum, conv_params->round_0));
@@ -1072,9 +1052,9 @@ void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
 
   // vertical filter
   uint16_t *src_vert = im_block + fo_vert * im_stride;
-  for (x = 0; x < w; ++x) {
+  for (int x = 0; x < w; ++x) {
     int y_qn = subpel_y_qn;
-    for (y = 0; y < h; ++y, y_qn += y_step_qn) {
+    for (int y = 0; y < h; ++y, y_qn += y_step_qn) {
       const uint16_t *const src_y =
           &src_vert[(y_qn >> SCALE_SUBPEL_BITS) * im_stride];
       const int y_filter_idx = (y_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS;
@@ -1082,7 +1062,7 @@ void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
       const int16_t *y_filter =
           av1_get_interp_filter_subpel_kernel(*filter_params_y, y_filter_idx);
       CONV_BUF_TYPE sum = 0;
-      for (k = 0; k < filter_params_y->taps; ++k) {
+      for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_y[(k - fo_vert) * im_stride];
       }
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
@@ -1103,7 +1083,6 @@ void av1_highbd_convolve_2d_c(const uint16_t *src, int src_stride,
                               InterpFilterParams *filter_params_y,
                               const int subpel_x_q4, const int subpel_y_q4,
                               ConvolveParams *conv_params, int bd) {
-  int x, y, k;
   int32_t im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE];
   int im_h = h + filter_params_y->taps - 1;
   int im_stride = w;
@@ -1114,10 +1093,10 @@ void av1_highbd_convolve_2d_c(const uint16_t *src, int src_stride,
   const uint16_t *src_horiz = src - fo_vert * src_stride;
   const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_x, subpel_x_q4 & SUBPEL_MASK);
-  for (y = 0; y < im_h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < im_h; ++y) {
+    for (int x = 0; x < w; ++x) {
       int32_t sum = (1 << (bd + FILTER_BITS - 1));
-      for (k = 0; k < filter_params_x->taps; ++k) {
+      for (int k = 0; k < filter_params_x->taps; ++k) {
         sum += x_filter[k] * src_horiz[y * src_stride + x - fo_horiz + k];
       }
       assert(0 <= sum && sum < (1 << (bd + FILTER_BITS + 1)));
@@ -1132,10 +1111,10 @@ void av1_highbd_convolve_2d_c(const uint16_t *src, int src_stride,
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
   const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
-  for (y = 0; y < h; ++y) {
-    for (x = 0; x < w; ++x) {
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE sum = 1 << offset_bits;
-      for (k = 0; k < filter_params_y->taps; ++k) {
+      for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
       }
       assert(0 <= sum && sum < (1 << (offset_bits + 2)));
@@ -1157,7 +1136,6 @@ void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
                                     const int subpel_x_qn, const int x_step_qn,
                                     const int subpel_y_qn, const int y_step_qn,
                                     ConvolveParams *conv_params, int bd) {
-  int x, y, k;
   int32_t im_block[(2 * MAX_SB_SIZE + MAX_FILTER_TAP) * MAX_SB_SIZE];
   int im_h = (((h - 1) * y_step_qn + subpel_y_qn) >> SCALE_SUBPEL_BITS) +
              filter_params_y->taps;
@@ -1167,16 +1145,16 @@ void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
 
   // horizontal filter
   const uint16_t *src_horiz = src - fo_vert * src_stride;
-  for (y = 0; y < im_h; ++y) {
+  for (int y = 0; y < im_h; ++y) {
     int x_qn = subpel_x_qn;
-    for (x = 0; x < w; ++x, x_qn += x_step_qn) {
+    for (int x = 0; x < w; ++x, x_qn += x_step_qn) {
       const uint16_t *const src_x = &src_horiz[(x_qn >> SCALE_SUBPEL_BITS)];
       const int x_filter_idx = (x_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS;
       assert(x_filter_idx < SUBPEL_SHIFTS);
       const int16_t *x_filter =
           av1_get_interp_filter_subpel_kernel(*filter_params_x, x_filter_idx);
       int32_t sum = (1 << (bd + FILTER_BITS - 1));
-      for (k = 0; k < filter_params_x->taps; ++k) {
+      for (int k = 0; k < filter_params_x->taps; ++k) {
         sum += x_filter[k] * src_x[k - fo_horiz];
       }
       assert(0 <= sum && sum < (1 << (bd + FILTER_BITS + 1)));
@@ -1189,16 +1167,16 @@ void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
   // vertical filter
   int32_t *src_vert = im_block + fo_vert * im_stride;
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
-  for (x = 0; x < w; ++x) {
+  for (int x = 0; x < w; ++x) {
     int y_qn = subpel_y_qn;
-    for (y = 0; y < h; ++y, y_qn += y_step_qn) {
+    for (int y = 0; y < h; ++y, y_qn += y_step_qn) {
       const int32_t *src_y = &src_vert[(y_qn >> SCALE_SUBPEL_BITS) * im_stride];
       const int y_filter_idx = (y_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS;
       assert(y_filter_idx < SUBPEL_SHIFTS);
       const int16_t *y_filter =
           av1_get_interp_filter_subpel_kernel(*filter_params_y, y_filter_idx);
       CONV_BUF_TYPE sum = 1 << offset_bits;
-      for (k = 0; k < filter_params_y->taps; ++k) {
+      for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_y[(k - fo_vert) * im_stride];
       }
       assert(0 <= sum && sum < (1 << (offset_bits + 2)));
@@ -1553,17 +1531,16 @@ void av1_highbd_convolve_horiz_c(const uint16_t *src, int src_stride,
                                  const InterpFilterParams filter_params,
                                  const int subpel_x_q4, int x_step_q4, int avg,
                                  int bd) {
-  int x, y;
   int filter_size = filter_params.taps;
   src -= filter_size / 2 - 1;
-  for (y = 0; y < h; ++y) {
+  for (int y = 0; y < h; ++y) {
     int x_q4 = subpel_x_q4;
-    for (x = 0; x < w; ++x) {
+    for (int x = 0; x < w; ++x) {
       const uint16_t *const src_x = &src[x_q4 >> SUBPEL_BITS];
       const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
           filter_params, x_q4 & SUBPEL_MASK);
-      int k, sum = 0;
-      for (k = 0; k < filter_size; ++k) sum += src_x[k] * x_filter[k];
+      int sum = 0;
+      for (int k = 0; k < filter_size; ++k) sum += src_x[k] * x_filter[k];
       if (avg)
         dst[x] = ROUND_POWER_OF_TWO(
             dst[x] +
@@ -1582,19 +1559,18 @@ static void av1_highbd_convolve_horiz_scale(
     const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w,
     int h, const InterpFilterParams filter_params, const int subpel_x_qn,
     int x_step_qn, int avg, int bd) {
-  int x, y;
   int filter_size = filter_params.taps;
   src -= filter_size / 2 - 1;
-  for (y = 0; y < h; ++y) {
+  for (int y = 0; y < h; ++y) {
     int x_qn = subpel_x_qn;
-    for (x = 0; x < w; ++x) {
+    for (int x = 0; x < w; ++x) {
       const uint16_t *const src_x = &src[x_qn >> SCALE_SUBPEL_BITS];
       const int x_filter_idx = (x_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS;
       assert(x_filter_idx < SUBPEL_SHIFTS);
       const int16_t *x_filter =
           av1_get_interp_filter_subpel_kernel(filter_params, x_filter_idx);
-      int k, sum = 0;
-      for (k = 0; k < filter_size; ++k) sum += src_x[k] * x_filter[k];
+      int sum = 0;
+      for (int k = 0; k < filter_size; ++k) sum += src_x[k] * x_filter[k];
       if (avg)
         dst[x] = ROUND_POWER_OF_TWO(
             dst[x] +
@@ -1614,18 +1590,17 @@ void av1_highbd_convolve_vert_c(const uint16_t *src, int src_stride,
                                 const InterpFilterParams filter_params,
                                 const int subpel_y_q4, int y_step_q4, int avg,
                                 int bd) {
-  int x, y;
   int filter_size = filter_params.taps;
   src -= src_stride * (filter_size / 2 - 1);
 
-  for (x = 0; x < w; ++x) {
+  for (int x = 0; x < w; ++x) {
     int y_q4 = subpel_y_q4;
-    for (y = 0; y < h; ++y) {
+    for (int y = 0; y < h; ++y) {
       const uint16_t *const src_y = &src[(y_q4 >> SUBPEL_BITS) * src_stride];
       const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
           filter_params, y_q4 & SUBPEL_MASK);
-      int k, sum = 0;
-      for (k = 0; k < filter_size; ++k)
+      int sum = 0;
+      for (int k = 0; k < filter_size; ++k)
         sum += src_y[k * src_stride] * y_filter[k];
       if (avg) {
         dst[y * dst_stride] = ROUND_POWER_OF_TWO(
@@ -1647,21 +1622,20 @@ static void av1_highbd_convolve_vert_scale(
     const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w,
     int h, const InterpFilterParams filter_params, const int subpel_y_qn,
     int y_step_qn, int avg, int bd) {
-  int x, y;
   int filter_size = filter_params.taps;
   src -= src_stride * (filter_size / 2 - 1);
 
-  for (x = 0; x < w; ++x) {
+  for (int x = 0; x < w; ++x) {
     int y_qn = subpel_y_qn;
-    for (y = 0; y < h; ++y) {
+    for (int y = 0; y < h; ++y) {
       const uint16_t *const src_y =
           &src[(y_qn >> SCALE_SUBPEL_BITS) * src_stride];
       const int y_filter_idx = (y_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS;
       assert(y_filter_idx < SUBPEL_SHIFTS);
       const int16_t *y_filter =
           av1_get_interp_filter_subpel_kernel(filter_params, y_filter_idx);
-      int k, sum = 0;
-      for (k = 0; k < filter_size; ++k)
+      int sum = 0;
+      for (int k = 0; k < filter_size; ++k)
         sum += src_y[k * src_stride] * y_filter[k];
       if (avg) {
         dst[y * dst_stride] = ROUND_POWER_OF_TWO(
@@ -1683,16 +1657,14 @@ static void highbd_convolve_copy(const uint16_t *src, int src_stride,
                                  uint16_t *dst, int dst_stride, int w, int h,
                                  int avg, int bd) {
   if (avg == 0) {
-    int r;
-    for (r = 0; r < h; ++r) {
+    for (int r = 0; r < h; ++r) {
       memcpy(dst, src, w * sizeof(*src));
       src += src_stride;
       dst += dst_stride;
     }
   } else {
-    int r, c;
-    for (r = 0; r < h; ++r) {
-      for (c = 0; c < w; ++c) {
+    for (int r = 0; r < h; ++r) {
+      for (int c = 0; c < w; ++c) {
         dst[c] = clip_pixel_highbd(ROUND_POWER_OF_TWO(dst[c] + src[c], 1), bd);
       }
       src += src_stride;
