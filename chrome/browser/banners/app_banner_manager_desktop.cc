@@ -31,7 +31,7 @@ bool AppBannerManagerDesktop::IsEnabled() {
     return false;
 
   return base::FeatureList::IsEnabled(features::kAppBanners) ||
-         base::FeatureList::IsEnabled(features::kExperimentalAppBanners);
+         IsExperimentalAppBannersEnabled();
 }
 
 void AppBannerManagerDesktop::DisableTriggeringForTesting() {
