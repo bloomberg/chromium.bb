@@ -303,11 +303,13 @@ void WebRtcLoggingHandlerHost::GrantLogsDirectoryAccess(
       storage::kFileSystemTypeNativeLocal, std::string(), logs_path,
       &registered_name);
 
-  // Only granting read-only access to reduce contention with webrtcLogging APIs
-  // that modify files in that folder.
+  // Only granting read and delete access to reduce contention with
+  // webrtcLogging APIs that modify files in that folder.
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
   policy->GrantReadFileSystem(render_process_id_, filesystem_id);
+  // Delete is needed to prevent accumulation of files.
+  policy->GrantDeleteFromFileSystem(render_process_id_, filesystem_id);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(callback, filesystem_id, registered_name));

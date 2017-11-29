@@ -71,6 +71,22 @@ function testCanReadFile() {
   });
 }
 
+function testCanRemoveFile() {
+  chrome.webrtcLoggingPrivate.getLogsDirectory(function(directoryEntry) {
+    readFileEntries(directoryEntry, function(entries) {
+      chrome.test.assertEq(1, entries.length);
+      var fileEntry = entries[0];
+      chrome.test.assertTrue(fileEntry.isFile);
+      fileEntry.remove(function() {
+        readFileEntries(directoryEntry, function(entries) {
+          chrome.test.assertEq(0, entries.length);
+          chrome.test.succeed();
+        });
+      });
+    });
+  });
+}
+
 function testCannotWriteToFile() {
   chrome.webrtcLoggingPrivate.getLogsDirectory(function(directoryEntry) {
     readFileEntries(directoryEntry, function(entries) {
@@ -93,10 +109,15 @@ function testCannotWriteToFile() {
 
 var testGroups = {
   'test_without_directory': [
-    testGetsReadOnlyDirectoryEntry, testEmptyDirectory,
+    testGetsReadOnlyDirectoryEntry,
+    testEmptyDirectory,
   ],
   'test_with_file_in_directory': [
-    testGetsReadOnlyDirectoryEntry, testCanReadFile, testCannotWriteToFile,
+    testGetsReadOnlyDirectoryEntry,
+    testCanReadFile,
+    testCannotWriteToFile,
+    // Must be run last, since it deletes the test file.
+    testCanRemoveFile,
   ],
 };
 
