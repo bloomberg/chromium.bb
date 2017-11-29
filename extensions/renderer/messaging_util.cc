@@ -11,6 +11,8 @@
 #include "base/strings/stringprintf.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/renderer/script_context.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
@@ -290,6 +292,12 @@ void MassageSendMessageArguments(
     *arguments_out = {target_id, message, options, response_callback};
   else
     *arguments_out = {target_id, message, response_callback};
+}
+
+bool IsSendRequestDisabled(ScriptContext* script_context) {
+  const Extension* extension = script_context->extension();
+  return extension && Manifest::IsUnpackedLocation(extension->location()) &&
+         BackgroundInfo::HasLazyBackgroundPage(extension);
 }
 
 }  // namespace messaging_util

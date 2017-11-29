@@ -36,6 +36,11 @@ class APIBindingHooksDelegate {
   virtual void InitializeTemplate(v8::Isolate* isolate,
                                   v8::Local<v8::ObjectTemplate> object_template,
                                   const APITypeReferenceMap& type_refs) {}
+
+  // Allows custom implementations to mutate an instance of the API for a
+  // specific context.
+  virtual void InitializeInstance(v8::Local<v8::Context> context,
+                                  v8::Local<v8::Object> instance) {}
 };
 
 }  // namespace extensions

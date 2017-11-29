@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/message_target.h"
 #include "extensions/renderer/messaging_util.h"
@@ -105,6 +106,59 @@ TEST_F(ExtensionHooksDelegateTest, MessagingSanityChecks) {
   // into being the message because that's a required argument.
   tester.TestSendRequest("'hi', function() {}", "\"hi\"", self_target,
                          SendMessageTester::OPEN);
+}
+
+TEST_F(ExtensionHooksDelegateTest, SendRequestDisabled) {
+  // Construct an extension for which sendRequest is disabled (unpacked
+  // extension with an event page).
+  // TODO(devlin): Add a SetBackgroundPage() to ExtensionBuilder?
+  scoped_refptr<Extension> extension =
+      ExtensionBuilder("foo")
+          .MergeManifest(
+              DictionaryBuilder()
+                  .Set("background", DictionaryBuilder()
+                                         .SetBoolean("persistent", false)
+                                         .Set("page", "page.html")
+                                         .Build())
+                  .Build())
+          .SetLocation(Manifest::UNPACKED)
+          .Build();
+  RegisterExtension(extension);
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = AddContext();
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+  bindings_system()->UpdateBindingsForContext(script_context);
+  ASSERT_TRUE(messaging_util::IsSendRequestDisabled(script_context));
+
+  enum AccessBehavior {
+    THROWS,
+    DOESNT_THROW,
+  };
+
+  auto check_access = [context](const char* object, AccessBehavior behavior) {
+    SCOPED_TRACE(object);
+    constexpr char kExpectedError[] =
+        "Uncaught Error: extension.sendRequest, extension.onRequest, and "
+        "extension.onRequestExternal are deprecated. Please use "
+        "runtime.sendMessage, runtime.onMessage, and runtime.onMessageExternal "
+        "instead.";
+    v8::Local<v8::Function> function = FunctionFromString(
+        context, base::StringPrintf("(function() {%s;})", object));
+    if (behavior == THROWS)
+      RunFunctionAndExpectError(function, context, 0, nullptr, kExpectedError);
+    else
+      RunFunction(function, context, 0, nullptr);
+  };
+
+  check_access("chrome.extension.sendRequest", THROWS);
+  check_access("chrome.extension.onRequest", THROWS);
+  check_access("chrome.extension.onRequestExternal", THROWS);
+  check_access("chrome.extension.sendMessage", DOESNT_THROW);
+  check_access("chrome.extension.onMessage", DOESNT_THROW);
+  check_access("chrome.extension.onMessageExternal", DOESNT_THROW);
 }
 
 }  // namespace extensions
