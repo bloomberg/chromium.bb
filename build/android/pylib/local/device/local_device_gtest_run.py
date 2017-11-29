@@ -381,17 +381,28 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
         on_failure=self._env.BlacklistDevice)
     def list_tests(dev):
       timeout = 30
+      retries = 1
       if self._test_instance.wait_for_java_debugger:
         timeout = None
-      raw_test_list = crash_handler.RetryOnSystemCrash(
-          lambda d: self._delegate.Run(
-              None, d, flags='--gtest_list_tests', timeout=timeout),
-          device=dev)
-      tests = gtest_test_instance.ParseGTestListTests(raw_test_list)
-      if not tests:
-        logging.info('No tests found. Output:')
-        for l in raw_test_list:
-          logging.info('  %s', l)
+      # TODO(crbug.com/726880): Remove retries when no longer necessary.
+      for i in range(0, retries+1):
+        raw_test_list = crash_handler.RetryOnSystemCrash(
+            lambda d: self._delegate.Run(
+                None, d, flags='--gtest_list_tests', timeout=timeout),
+            device=dev)
+        tests = gtest_test_instance.ParseGTestListTests(raw_test_list)
+        if not tests:
+          logging.info('No tests found. Output:')
+          for l in raw_test_list:
+            logging.info('  %s', l)
+          logging.info('Logcat:')
+          for line in dev.adb.Logcat(dump=True):
+            logging.info(line)
+          dev.adb.Logcat(clear=True)
+          if i < retries:
+            logging.info('Retrying...')
+        else:
+          break
       return tests
 
     # Query all devices in case one fails.
