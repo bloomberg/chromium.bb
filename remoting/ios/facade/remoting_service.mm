@@ -73,7 +73,6 @@ NSString* const kUserInfo = @"kUserInfo";
     // TODO(yuweih): Maybe better to just cancel the previous request.
     _hostListState = HostListStateNotFetched;
     _lastFetchFailureReason = HostListFetchFailureReasonNoFailure;
-    // TODO(nicholss): This might need a pointer back to the service.
     _clientRuntimeDelegate =
         new remoting::IosClientRuntimeDelegate();
     [self runtime]->SetDelegate(_clientRuntimeDelegate);

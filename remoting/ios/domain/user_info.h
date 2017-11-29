@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 // A detail record for a Remoting User.
-// TODO(nicholss): This is not the final object yet.
 @interface UserInfo : NSObject
 
 @property(nonatomic, copy) NSString* userId;

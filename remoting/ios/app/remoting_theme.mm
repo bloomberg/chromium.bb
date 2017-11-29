@@ -8,10 +8,19 @@
 
 #import "remoting/ios/app/remoting_theme.h"
 
+#import "ios/third_party/material_components_ios/src/components/Dialogs/src/ColorThemer/MDCAlertColorThemer.h"
+#import "ios/third_party/material_components_ios/src/components/Themes/src/MDCColorScheme.h"
+
 #include "remoting/base/string_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 @implementation RemotingTheme
+
++ (void)applyColorSchemes {
+  MDCBasicColorScheme* colorScheme = [[MDCBasicColorScheme alloc]
+      initWithPrimaryColor:RemotingTheme.flatButtonTextColor];
+  [MDCAlertColorThemer applyColorScheme:colorScheme];
+}
 
 #pragma mark - Colors
 

@@ -123,7 +123,6 @@ RemotingAuthenticationStatus oauthStatusToRemotingAuthenticationStatus(
       std::string(base::SysNSStringToUTF8(authorizationCode)),
       base::BindBlockArc(
           ^(const std::string& user_email, const std::string& refresh_token) {
-            // TODO(nicholss): Do something with these new creds.
             VLOG(1) << "New Creds: " << user_email << " " << refresh_token;
             UserInfo* user = [[UserInfo alloc] init];
             user.userEmail = base::SysUTF8ToNSString(user_email);
@@ -161,8 +160,8 @@ RemotingAuthenticationStatus oauthStatusToRemotingAuthenticationStatus(
 }
 
 - (void)callbackWithAccessToken:(AccessTokenCallback)onAccessToken {
-  // TODO(nicholss): Be careful here since a failure to reset onAccessToken
-  // will end up with retain cycle and memory leakage.
+  // Be careful here since a failure to reset onAccessToken will end up with
+  // retain cycle and memory leakage.
   if (_tokenGetter) {
     _tokenGetter->CallWithToken(base::BindBlockArc(
         ^(remoting::OAuthTokenGetter::Status status,
