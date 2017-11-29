@@ -161,7 +161,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Weak pointer to the MetricsStateManager.
-  metrics::MetricsStateManager* metrics_state_manager_;
+  metrics::MetricsStateManager* const metrics_state_manager_;
 
   // The MetricsService that |this| is a client of.
   std::unique_ptr<metrics::MetricsService> metrics_service_;
