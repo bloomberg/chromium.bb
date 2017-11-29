@@ -8,6 +8,8 @@ viz_component("host") {
   defines = [ "VIZ_HOST_IMPLEMENTATION" ]
 
   sources = [
+    "forwarding_compositing_mode_reporter_impl.cc",
+    "forwarding_compositing_mode_reporter_impl.h",
     "hit_test/hit_test_query.cc",
     "hit_test/hit_test_query.h",
     "host_frame_sink_client.h",

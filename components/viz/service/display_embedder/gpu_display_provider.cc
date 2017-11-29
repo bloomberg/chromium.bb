@@ -15,6 +15,7 @@
 #include "components/viz/common/gpu/in_process_context_provider.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
 #include "components/viz/service/display_embedder/display_output_surface.h"
 #include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -43,13 +44,15 @@ namespace viz {
 GpuDisplayProvider::GpuDisplayProvider(
     uint32_t restart_id,
     scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
-    gpu::GpuChannelManager* gpu_channel_manager)
+    gpu::GpuChannelManager* gpu_channel_manager,
+    CompositingModeReporterImpl* compositing_mode_reporter)
     : restart_id_(restart_id),
       gpu_service_(std::move(gpu_service)),
       gpu_memory_buffer_manager_(
           base::MakeUnique<InProcessGpuMemoryBufferManager>(
               gpu_channel_manager)),
       image_factory_(GetImageFactory(gpu_channel_manager)),
+      compositing_mode_reporter_(compositing_mode_reporter),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK_NE(restart_id_, BeginFrameSource::kNotRestartableId);
 }
@@ -65,6 +68,10 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
       base::MakeUnique<DelayBasedBeginFrameSource>(
           base::MakeUnique<DelayBasedTimeSource>(task_runner_.get()),
           restart_id_);
+
+  // TODO(crbug.com/730660): Fallback to software if gpu doesn't work with
+  // compositing_mode_reporter_->SetUsingSoftwareCompositing();
+  (void)compositing_mode_reporter_;
 
   scoped_refptr<InProcessContextProvider> context_provider =
       new InProcessContextProvider(gpu_service_, surface_handle,

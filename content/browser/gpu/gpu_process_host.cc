@@ -739,13 +739,15 @@ void GpuProcessHost::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
 
 void GpuProcessHost::ConnectFrameSinkManager(
     viz::mojom::FrameSinkManagerRequest request,
-    viz::mojom::FrameSinkManagerClientPtr client) {
+    viz::mojom::FrameSinkManagerClientPtrInfo client,
+    viz::mojom::CompositingModeWatcherPtrInfo mode_watcher) {
   TRACE_EVENT0("gpu", "GpuProcessHost::ConnectFrameSinkManager");
   viz::mojom::FrameSinkManagerParamsPtr params =
       viz::mojom::FrameSinkManagerParams::New();
   params->restart_id = host_id_;
   params->frame_sink_manager = std::move(request);
-  params->frame_sink_manager_client = client.PassInterface();
+  params->frame_sink_manager_client = std::move(client);
+  params->compositing_mode_watcher = std::move(mode_watcher);
   gpu_main_ptr_->CreateFrameSinkManager(std::move(params));
 }
 

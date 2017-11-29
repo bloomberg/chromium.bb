@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
 #include "components/viz/service/display_embedder/gpu_display_provider.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
@@ -258,14 +259,23 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
 void VizMainImpl::CreateFrameSinkManagerOnCompositorThread(
     mojom::FrameSinkManagerParamsPtr params) {
   DCHECK(!frame_sink_manager_);
-  mojom::FrameSinkManagerClientPtr client;
-  client.Bind(std::move(params->frame_sink_manager_client));
 
-  display_provider_ = base::MakeUnique<GpuDisplayProvider>(
+  if (params->compositing_mode_watcher) {
+    mojom::CompositingModeWatcherPtr host_mode_watcher(
+        std::move(params->compositing_mode_watcher));
+    compositing_mode_reporter_ =
+        std::make_unique<CompositingModeReporterImpl>();
+    compositing_mode_reporter_->AddCompositingModeWatcher(
+        std::move(host_mode_watcher));
+  }
+
+  display_provider_ = std::make_unique<GpuDisplayProvider>(
       params->restart_id, gpu_command_service_,
-      gpu_service_->gpu_channel_manager());
+      gpu_service_->gpu_channel_manager(), compositing_mode_reporter_.get());
 
-  frame_sink_manager_ = base::MakeUnique<FrameSinkManagerImpl>(
+  mojom::FrameSinkManagerClientPtr client(
+      std::move(params->frame_sink_manager_client));
+  frame_sink_manager_ = std::make_unique<FrameSinkManagerImpl>(
       SurfaceManager::LifetimeType::REFERENCES, display_provider_.get());
   frame_sink_manager_->BindAndSetClient(std::move(params->frame_sink_manager),
                                         nullptr, std::move(client));
@@ -277,6 +287,7 @@ void VizMainImpl::CloseVizMainBindingOnGpuThread(base::WaitableEvent* wait) {
 }
 
 void VizMainImpl::TearDownOnCompositorThread(base::WaitableEvent* wait) {
+  compositing_mode_reporter_.reset();
   frame_sink_manager_.reset();
   display_provider_.reset();
   wait->Signal();

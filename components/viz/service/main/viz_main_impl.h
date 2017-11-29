@@ -28,6 +28,7 @@ class MojoUkmRecorder;
 }
 
 namespace viz {
+class CompositingModeReporterImpl;
 class DisplayProvider;
 class FrameSinkManagerImpl;
 class GpuServiceImpl;
@@ -129,8 +130,10 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
   // FrameSinkManagerParams.
   mojom::FrameSinkManagerParamsPtr pending_frame_sink_manager_params_;
 
-  // Provides mojo interfaces for creating and managing FrameSinks.
+  // Provides mojo interfaces for creating and managing FrameSinks. These live
+  // on the compositor thread.
   std::unique_ptr<FrameSinkManagerImpl> frame_sink_manager_;
+  std::unique_ptr<CompositingModeReporterImpl> compositing_mode_reporter_;
   std::unique_ptr<DisplayProvider> display_provider_;
 
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
