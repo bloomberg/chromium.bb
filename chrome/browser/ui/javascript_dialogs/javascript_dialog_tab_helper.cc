@@ -392,8 +392,13 @@ void JavaScriptDialogTabHelper::SetTabNeedsAttention(bool attention) {
 #if !defined(OS_ANDROID)
   content::WebContents* web_contents = WebContentsObserver::web_contents();
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  TabStripModel* tab_strip_model = browser->tab_strip_model();
+  if (!browser) {
+    // It's possible that the WebContents is no longer in the tab strip. If so,
+    // just give up. https://crbug.com/786178#c7.
+    return;
+  }
 
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
   SetTabNeedsAttentionImpl(
       attention, tab_strip_model,
       tab_strip_model->GetIndexOfWebContents(web_contents));
