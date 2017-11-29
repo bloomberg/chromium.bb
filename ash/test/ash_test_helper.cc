@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <set>
+#include <utility>
 
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -295,10 +296,11 @@ void AshTestHelper::CreateShell() {
   ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
                                        &context_factory_private);
   ShellInitParams init_params;
-  init_params.delegate = test_shell_delegate_;
+  init_params.shell_port = std::make_unique<ash::ShellPortClassic>();
+  init_params.delegate.reset(test_shell_delegate_);
   init_params.context_factory = context_factory;
   init_params.context_factory_private = context_factory_private;
-  Shell::CreateInstance(init_params);
+  Shell::CreateInstance(std::move(init_params));
 }
 
 }  // namespace ash

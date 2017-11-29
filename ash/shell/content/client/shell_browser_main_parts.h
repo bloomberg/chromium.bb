@@ -32,7 +32,6 @@ namespace shell {
 
 class ExampleAppListPresenter;
 class ExampleSessionControllerClient;
-class ShellDelegateImpl;
 class WindowWatcher;
 
 class ShellBrowserMainParts : public content::BrowserMainParts {
@@ -57,7 +56,6 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<content::ShellBrowserContext> browser_context_;
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
   std::unique_ptr<WindowWatcher> window_watcher_;
-  ShellDelegateImpl* delegate_;  // owned by Shell
   std::unique_ptr<wm::WMState> wm_state_;
   std::unique_ptr<ExampleAppListPresenter> example_app_list_presenter_;
   std::unique_ptr<ExampleSessionControllerClient>
