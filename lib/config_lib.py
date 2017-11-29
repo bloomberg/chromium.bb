@@ -592,7 +592,6 @@ class HWTestConfig(object):
   ASYNC_HW_TEST_TIMEOUT = int(250.0 * _MINUTE)
 
   def __init__(self, suite,
-               num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL,
                timeout=SHARED_HW_TEST_TIMEOUT,
                async=False,

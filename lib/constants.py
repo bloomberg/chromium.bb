@@ -634,7 +634,6 @@ CQ_CONFIG_PRE_CQ_CONFIGS = 'pre-cq-configs'
 CQ_CONFIG_PRE_CQ_CONFIGS_REGEX = CQ_CONFIG_PRE_CQ_CONFIGS + ':'
 
 # Define pool of machines for Hardware tests.
-HWTEST_DEFAULT_NUM = 6
 HWTEST_TRYBOT_NUM = 3
 HWTEST_MACH_POOL = 'bvt'
 HWTEST_MACH_POOL_UNI = 'bvt-uni'
