@@ -1845,7 +1845,8 @@ public class BottomSheet
         if (!fromMenu && !showRefreshIph && !showColdStartIph) return;
 
         // Determine which strings to use.
-        boolean showExpandButtonHelpBubble = mDefaultToolbarView.isUsingExpandButton();
+        boolean showExpandButtonHelpBubble =
+                !showRefreshIph && mDefaultToolbarView.isUsingExpandButton();
         View anchorView = showExpandButtonHelpBubble
                 ? mControlContainer.findViewById(R.id.expand_sheet_button)
                 : mControlContainer;
@@ -1853,6 +1854,9 @@ public class BottomSheet
                                       : showExpandButtonHelpBubble
                         ? R.string.bottom_sheet_accessibility_expand_button_help_bubble_message
                         : R.string.bottom_sheet_help_bubble_message;
+        int accessibilityStringId = showRefreshIph
+                ? R.string.bottom_sheet_pull_to_refresh_help_bubble_accessibility_message
+                : stringId;
 
         // Register an overview mode observer so the bubble can be dismissed if overview mode
         // is shown.
@@ -1869,7 +1873,8 @@ public class BottomSheet
                 mFullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
 
         // Create the help bubble and setup dismissal behavior.
-        mHelpBubble = new ViewAnchoredTextBubble(getContext(), anchorView, stringId, stringId);
+        mHelpBubble = new ViewAnchoredTextBubble(
+                getContext(), anchorView, stringId, accessibilityStringId);
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PERSISTENT_IPH)) {
             int dismissTimeout = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
