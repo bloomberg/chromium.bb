@@ -398,7 +398,7 @@ static const GInterfaceInfo ActionInfo = {
 
 // AtkDocument interface.
 
-static const gchar* ax_platform_node_auralinux_get_attribute_value(
+static const gchar* ax_platform_node_auralinux_get_document_attribute_value(
     AtkDocument* atk_doc,
     const gchar* attribute) {
   g_return_val_if_fail(ATK_IS_DOCUMENT(atk_doc), nullptr);
@@ -412,7 +412,7 @@ static const gchar* ax_platform_node_auralinux_get_attribute_value(
   return obj->GetDocumentAttributeValue(attribute);
 }
 
-static AtkAttributeSet* ax_platform_node_auralinux_get_attributes(
+static AtkAttributeSet* ax_platform_node_auralinux_get_document_attributes(
     AtkDocument* atk_doc) {
   g_return_val_if_fail(ATK_IS_DOCUMENT(atk_doc), 0);
 
@@ -427,8 +427,9 @@ static AtkAttributeSet* ax_platform_node_auralinux_get_attributes(
 
 void ax_document_interface_base_init(AtkDocumentIface* iface) {
   iface->get_document_attribute_value =
-      ax_platform_node_auralinux_get_attribute_value;
-  iface->get_document_attributes = ax_platform_node_auralinux_get_attributes;
+      ax_platform_node_auralinux_get_document_attribute_value;
+  iface->get_document_attributes =
+      ax_platform_node_auralinux_get_document_attributes;
 }
 
 static const GInterfaceInfo DocumentInfo = {
