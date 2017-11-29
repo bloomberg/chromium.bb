@@ -1,10 +1,8 @@
 bajones@chromium.org
+billorr@chromium.org
 mthiesse@chromium.org
-kbr@chromium.org
-hendrikw@chromium.org
-girard@chromium.org
 
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
 
-# COMPONENT: UI>Browser>VR
+# COMPONENT: Internals>VR
