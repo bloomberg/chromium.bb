@@ -405,12 +405,7 @@ TEST_F(RenderProcessHostUnitTest, DoNotReuseError) {
 
   // Navigate back and simulate an error. Getting a RenderProcessHost with the
   // REUSE_PENDING_OR_COMMITTED_SITE policy should return a new process.
-  web_contents()->GetController().GoBack();
-  TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
-  if (!IsBrowserSideNavigationEnabled())
-    pending_rfh->SimulateNavigationStart(kUrl1);
-  pending_rfh->SimulateNavigationError(kUrl1, net::ERR_TIMED_OUT);
-  pending_rfh->SimulateNavigationErrorPageCommit();
+  NavigationSimulator::GoBackAndFail(contents(), net::ERR_TIMED_OUT);
   site_instance = SiteInstanceImpl::CreateForURL(browser_context(), kUrl1);
   site_instance->set_process_reuse_policy(
       SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
