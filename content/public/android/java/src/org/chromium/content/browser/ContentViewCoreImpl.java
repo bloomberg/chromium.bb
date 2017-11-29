@@ -1128,8 +1128,8 @@ public class ContentViewCoreImpl
     @CalledByNative
     private void updateFrameInfo(float scrollOffsetX, float scrollOffsetY, float pageScaleFactor,
             float minPageScaleFactor, float maxPageScaleFactor, float contentWidth,
-            float contentHeight, float topBarShownPix, boolean topBarChanged,
-            boolean isMobileOptimizedHint) {
+            float contentHeight, float viewportWidth, float viewportHeight, float topBarShownPix,
+            boolean topBarChanged, boolean isMobileOptimizedHint) {
         TraceEvent.begin("ContentViewCore:updateFrameInfo");
         mIsMobileOptimizedHint = isMobileOptimizedHint;
         final boolean contentSizeChanged = contentWidth != mRenderCoordinates.getContentWidthCss()
@@ -1153,6 +1153,10 @@ public class ContentViewCoreImpl
                     (int) mRenderCoordinates.getScrollXPix(),
                     (int) mRenderCoordinates.getScrollYPix());
         }
+
+        mRenderCoordinates.updateFrameInfo(scrollOffsetX, scrollOffsetY, contentWidth,
+                contentHeight, viewportWidth, viewportHeight, pageScaleFactor, minPageScaleFactor,
+                maxPageScaleFactor, topBarShownPix);
 
         if (scrollChanged || topBarChanged) {
             for (mGestureStateListenersIterator.rewind();

@@ -738,16 +738,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
         return mRenderCoordinates;
     }
 
-    @CalledByNative
-    private void updateFrameInfo(float scrollOffsetX, float scrollOffsetY, float contentWidth,
-            float contentHeight, float viewportWidth, float viewportHeight, float pageScaleFactor,
-            float minPageScaleFactor, float maxPageScaleFactor, float topBarShownPix) {
-        // TODO(jinsukkim): Consider turning this into WebContents UserData on the native side.
-        getRenderCoordinates().updateFrameInfo(scrollOffsetX, scrollOffsetY, contentWidth,
-                contentHeight, viewportWidth, viewportHeight, pageScaleFactor, minPageScaleFactor,
-                maxPageScaleFactor, topBarShownPix);
-    }
-
     // This is static to avoid exposing a public destroy method on the native side of this class.
     private static native void nativeDestroyWebContents(long webContentsAndroidPtr);
 
