@@ -132,6 +132,7 @@ class CONTENT_EXPORT MainThreadEventQueue
   bool enable_non_blocking_due_to_main_thread_responsiveness_flag_;
   base::TimeDelta main_thread_responsiveness_threshold_;
   bool needs_low_latency_;
+  bool allow_raf_aligned_input_;
   bool needs_low_latency_until_pointer_up_ = false;
 
   // Contains data to be shared between main thread and compositor thread.
