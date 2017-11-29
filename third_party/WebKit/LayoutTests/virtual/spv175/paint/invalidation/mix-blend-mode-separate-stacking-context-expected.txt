@@ -7,16 +7,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
-          "rect": [128, 28, 80, 80],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
-          "rect": [28, 28, 80, 80],
-          "reason": "paint property change"
-        },
-        {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [348, 48, 60, 60],
           "reason": "paint property change"
@@ -48,6 +38,11 @@
         },
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
+          "rect": [148, 48, 60, 60],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
           "rect": [128, 28, 60, 60],
           "reason": "paint property change"
         },
@@ -55,6 +50,11 @@
           "object": "LayoutBlockFlow (floating) DIV id='first'",
           "rect": [48, 48, 60, 60],
           "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
+          "rect": [48, 48, 60, 60],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV",

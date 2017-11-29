@@ -7,23 +7,23 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGPath polygon",
-          "rect": [456, 165, 134, 134],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutSVGPath polygon id='t3'",
-          "rect": [319, 165, 134, 134],
+          "rect": [304, 150, 165, 164],
           "reason": "style change"
         },
         {
           "object": "LayoutSVGPath polygon",
-          "rect": [183, 165, 134, 134],
+          "rect": [31, 150, 165, 164],
           "reason": "style change"
         },
         {
           "object": "LayoutSVGPath polygon",
-          "rect": [47, 165, 134, 134],
+          "rect": [441, 150, 164, 164],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon",
+          "rect": [168, 150, 164, 164],
           "reason": "style change"
         }
       ]

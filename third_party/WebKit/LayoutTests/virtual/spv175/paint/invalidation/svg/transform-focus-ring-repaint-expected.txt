@@ -16,6 +16,11 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [0, 0, 402, 542],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "rect": [0, 0, 402, 542],
           "reason": "paint property change"
         },
         {

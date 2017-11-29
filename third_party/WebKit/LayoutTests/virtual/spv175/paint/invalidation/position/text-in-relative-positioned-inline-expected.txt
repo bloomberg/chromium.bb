@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'ab'",
+          "object": "LayoutInline (relative positioned) SPAN id='target'",
           "rect": [8, 8, 200, 100],
           "reason": "disappeared"
         }

@@ -26,6 +26,26 @@ Hi!
           "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 480, 360, 90],
           "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
+          "rect": [425, 980, 21, 19],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
+          "rect": [425, 980, 21, 19],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
+          "rect": [425, 480, 21, 19],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
+          "rect": [425, 480, 21, 19],
+          "reason": "paint property change"
         }
       ]
     }

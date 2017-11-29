@@ -13,7 +13,7 @@
       "backgroundColor": "#FF0000",
       "paintInvalidations": [
         {
-          "object": "LayoutTableCell TD id='target'",
+          "object": "LayoutTableRow TR",
           "rect": [0, 0, 37, 23],
           "reason": "appeared"
         }

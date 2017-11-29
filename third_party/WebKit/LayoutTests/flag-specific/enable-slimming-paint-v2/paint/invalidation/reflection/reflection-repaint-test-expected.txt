@@ -10,6 +10,16 @@
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [22, 50, 226, 167],
           "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [23, 51, 72, 110],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [23, 51, 69, 109],
+          "reason": "paint property change"
         }
       ]
     }

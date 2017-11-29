@@ -17,6 +17,16 @@
           "reason": "paint property change"
         },
         {
+          "object": "LayoutBlockFlow (positioned) DIV class='box reflect-right'",
+          "rect": [380, 267, 286, 59],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='box reflect-left'",
+          "rect": [70, 267, 286, 59],
+          "reason": "paint property change"
+        },
+        {
           "object": "LayoutBlockFlow (positioned) DIV class='box reflect-bottom'",
           "rect": [293, 350, 150, 210],
           "reason": "paint property change"
@@ -24,6 +34,16 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='box reflect-top'",
           "rect": [293, 20, 150, 210],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='box reflect-top'",
+          "rect": [305, 34, 126, 182],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='box reflect-bottom'",
+          "rect": [305, 377, 126, 156],
           "reason": "paint property change"
         }
       ]

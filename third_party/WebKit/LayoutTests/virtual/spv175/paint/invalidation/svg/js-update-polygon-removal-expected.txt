@@ -8,12 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGPath polygon id='polygon'",
-          "rect": [264, 258, 165, 67],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGPath polygon id='polygon'",
-          "rect": [264, 218, 164, 107],
+          "rect": [253, 208, 184, 129],
           "reason": "full"
         }
       ]

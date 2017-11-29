@@ -56,7 +56,8 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
     new_chunk_begin_index = 0;
   } else {
     auto& last_chunk = chunks_.back();
-    if (!force_new_chunk_ && current_properties_ == last_chunk.properties) {
+    if (!force_new_chunk_ && current_properties_ == last_chunk.properties &&
+        (!current_chunk_id_ || current_chunk_id_ == last_chunk.id)) {
       // Continue the current chunk.
       last_chunk.end_index++;
       return false;

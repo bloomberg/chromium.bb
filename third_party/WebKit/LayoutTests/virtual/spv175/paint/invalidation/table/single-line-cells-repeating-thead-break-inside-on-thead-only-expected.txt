@@ -1,0 +1,103 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [1059, 585],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [266, 72, 268, 185],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [266, 72, 268, 185],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [533, 72, 267, 185],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [533, 72, 267, 185],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [8, 72, 259, 185],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [8, 72, 259, 185],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [799, 72, 88, 185],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [799, 72, 88, 185],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [10, 74, 75, 180],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [10, 74, 75, 180],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [533, 74, 63, 180],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [533, 74, 63, 180],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [266, 74, 63, 180],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [266, 74, 63, 180],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [799, 74, 63, 65],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [799, 74, 63, 65],
+          "reason": "chunk uncacheable"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'Col 1'",
+      "reason": "style change"
+    }
+  ]
+}
+

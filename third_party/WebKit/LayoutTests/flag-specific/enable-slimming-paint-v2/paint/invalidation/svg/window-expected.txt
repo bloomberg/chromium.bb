@@ -62,84 +62,29 @@
           "reason": "appeared"
         },
         {
-          "object": "LayoutSVGContainer use id='closeButtonnestedWindow'",
-          "rect": [374, 182, 15, 15],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
-          "rect": [754, 94, 15, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
-          "rect": [754, 94, 15, 13],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonbigWindow'",
-          "rect": [543, 145, 15, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonstatusWindow'",
-          "rect": [361, 345, 15, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtoncolourPickerWindow'",
-          "rect": [207, 197, 15, 13],
-          "reason": "appeared"
-        },
-        {
           "object": "LayoutSVGText text",
           "rect": [615, 153, 14, 81],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
-          "rect": [781, 92, 14, 15],
+          "rect": [615, 83, 12, 12],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
+          "rect": [782, 94, 12, 11],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
-          "rect": [781, 92, 14, 15],
+          "rect": [782, 94, 12, 11],
           "reason": "paint property change"
-        },
-        {
-          "object": "LayoutSVGContainer use id='closeButtonbigWindow'",
-          "rect": [570, 143, 14, 15],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='closeButtoncolourPickerWindow'",
-          "rect": [234, 195, 14, 15],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
-          "rect": [614, 82, 14, 14],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutSVGContainer use id='closeButtonsmallWindow'",
-          "rect": [453, 378, 14, 14],
-          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
-          "rect": [614, 115, 14, 13],
+          "rect": [615, 115, 12, 11],
           "reason": "paint property change"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonsmallWindow'",
-          "rect": [426, 379, 14, 13],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonnestedWindow'",
-          "rect": [348, 184, 14, 13],
-          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
@@ -147,11 +92,31 @@
           "reason": "paint property change"
         },
         {
+          "object": "LayoutSVGContainer use id='closeButtonbigWindow'",
+          "rect": [571, 145, 12, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonnestedWindow'",
+          "rect": [349, 184, 12, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtoncolourPickerWindow'",
+          "rect": [235, 197, 12, 11],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGContainer use id='maximizeButtonstatusWindow'",
           "rect": [376, 345, 11, 12],
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGContainer use id='minimizeButtonstatusWindow'",
+          "rect": [363, 345, 11, 12],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
           "rect": [769, 94, 11, 11],
           "reason": "appeared"
@@ -159,6 +124,16 @@
         {
           "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
           "rect": [769, 94, 11, 11],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
+          "rect": [756, 94, 11, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
+          "rect": [756, 94, 11, 11],
           "reason": "paint property change"
         },
         {
@@ -167,8 +142,28 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGContainer use id='minimizeButtonbigWindow'",
+          "rect": [545, 145, 11, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtonsmallWindow'",
+          "rect": [454, 379, 11, 11],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGContainer use id='maximizeButtonsmallWindow'",
           "rect": [441, 379, 11, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonsmallWindow'",
+          "rect": [428, 379, 11, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtonnestedWindow'",
+          "rect": [376, 184, 11, 11],
           "reason": "appeared"
         },
         {
@@ -179,6 +174,11 @@
         {
           "object": "LayoutSVGContainer use id='maximizeButtoncolourPickerWindow'",
           "rect": [222, 197, 11, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtoncolourPickerWindow'",
+          "rect": [209, 197, 11, 11],
           "reason": "appeared"
         }
       ]

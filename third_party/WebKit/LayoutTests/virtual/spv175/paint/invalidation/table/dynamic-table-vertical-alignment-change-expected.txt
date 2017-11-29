@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (floating) DIV id='target'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [11, 75, 100, 100],
           "reason": "appeared"
         }

@@ -17,6 +17,11 @@
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [0, 0, 1016, 128],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [0, 0, 1016, 128],
+          "reason": "style change"
         }
       ]
     },

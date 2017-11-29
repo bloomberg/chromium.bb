@@ -7,8 +7,13 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
+          "rect": [100, 100, 100, 100],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutBlockFlow HTML",
-          "rect": [8, 8, 192, 192],
+          "rect": [8, 8, 100, 100],
           "reason": "appeared"
         }
       ]

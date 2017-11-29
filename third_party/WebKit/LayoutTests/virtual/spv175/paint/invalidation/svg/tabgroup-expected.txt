@@ -8,37 +8,37 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer g",
-          "rect": [389, 37, 316, 82],
+          "rect": [388, 37, 318, 83],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g",
-          "rect": [262, 278, 303, 303],
+          "rect": [261, 277, 305, 305],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g",
-          "rect": [6, 256, 238, 160],
+          "rect": [5, 255, 240, 162],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath path",
-          "rect": [6, 256, 238, 160],
+          "rect": [5, 255, 240, 162],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath path",
-          "rect": [6, 256, 238, 160],
+          "rect": [5, 255, 240, 162],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath path",
-          "rect": [6, 256, 238, 160],
+          "rect": [5, 255, 240, 162],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g",
-          "rect": [506, 233, 238, 159],
+          "rect": [505, 232, 240, 161],
           "reason": "appeared"
         },
         {
@@ -48,7 +48,7 @@
         },
         {
           "object": "LayoutSVGContainer g id='tabgroupRect'",
-          "rect": [37, 6, 160, 238],
+          "rect": [37, 5, 161, 240],
           "reason": "appeared"
         },
         {

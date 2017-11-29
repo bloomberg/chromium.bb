@@ -7,21 +7,17 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGPath path id='go'",
-          "rect": [89, 94, 108, 108],
-          "reason": "full"
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 8, 100, 100],
+          "reason": "appeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutSVGContainer g",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGPath path id='go'",
-      "reason": "full"
+      "object": "LayoutBlockFlow (floating) DIV id='target'",
+      "reason": "appeared"
     }
   ]
 }

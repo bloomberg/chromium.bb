@@ -7,17 +7,17 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGPath polygon id='polygon'",
-          "rect": [253, 208, 184, 129],
-          "reason": "full"
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 8, 100, 100],
+          "reason": "appeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutSVGPath polygon id='polygon'",
-      "reason": "full"
+      "object": "LayoutBlockFlow (floating) DIV id='target'",
+      "reason": "appeared"
     }
   ]
 }
