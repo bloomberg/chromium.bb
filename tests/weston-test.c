@@ -45,11 +45,15 @@
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"
 
+#define MAX_TOUCH_DEVICES 32
+
 struct weston_test {
 	struct weston_compositor *compositor;
 	struct weston_layer layer;
 	struct weston_process process;
 	struct weston_seat seat;
+	struct weston_touch_device *touch_device[MAX_TOUCH_DEVICES];
+	int nr_touch_devices;
 	bool is_seat_initialized;
 };
 
@@ -77,6 +81,34 @@ test_client_sigchld(struct weston_process *process, int status)
 	wl_display_terminate(test->compositor->wl_display);
 }
 
+static void
+touch_device_add(struct weston_test *test)
+{
+	char buf[128];
+	int i = test->nr_touch_devices;
+
+	assert(i < MAX_TOUCH_DEVICES);
+	assert(!test->touch_device[i]);
+
+	snprintf(buf, sizeof buf, "test-touch-device-%d", i);
+
+	test->touch_device[i] = weston_touch_create_touch_device(
+				test->seat.touch_state, buf, NULL, NULL);
+	test->nr_touch_devices++;
+}
+
+static void
+touch_device_remove(struct weston_test *test)
+{
+	int i = test->nr_touch_devices - 1;
+
+	assert(i >= 0);
+	assert(test->touch_device[i]);
+	weston_touch_device_destroy(test->touch_device[i]);
+	test->touch_device[i] = NULL;
+	--test->nr_touch_devices;
+}
+
 static int
 test_seat_init(struct weston_test *test)
 {
@@ -92,6 +124,7 @@ test_seat_init(struct weston_test *test)
 	if (weston_seat_init_keyboard(&test->seat, NULL) < 0)
 		return -1;
 	weston_seat_init_touch(&test->seat);
+	touch_device_add(test);
 
 	return 0;
 }
@@ -99,6 +132,9 @@ test_seat_init(struct weston_test *test)
 static void
 test_seat_release(struct weston_test *test)
 {
+	while (test->nr_touch_devices > 0)
+		touch_device_remove(test);
+
 	assert(test->is_seat_initialized &&
 	       "Trying to release already released test seat");
 	test->is_seat_initialized = false;
@@ -281,6 +317,7 @@ device_release(struct wl_client *client,
 	} else if (strcmp(device, "keyboard") == 0) {
 		weston_seat_release_keyboard(seat);
 	} else if (strcmp(device, "touch") == 0) {
+		touch_device_remove(test);
 		weston_seat_release_touch(seat);
 	} else if (strcmp(device, "seat") == 0) {
 		test_seat_release(test);
@@ -302,6 +339,7 @@ device_add(struct wl_client *client,
 		weston_seat_init_keyboard(seat, NULL);
 	} else if (strcmp(device, "touch") == 0) {
 		weston_seat_init_touch(seat);
+		touch_device_add(test);
 	} else if (strcmp(device, "seat") == 0) {
 		test_seat_init(test);
 	} else {

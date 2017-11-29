@@ -1,5 +1,7 @@
 /*
  * Copyright © 2013 Intel Corporation
+ * Copyright 2017-2018 Collabora, Ltd.
+ * Copyright 2017-2018 General Electric Company
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -121,6 +123,68 @@ remove_input_resource_from_timestamps(struct wl_resource *input_resource,
 		if (wl_resource_get_user_data(resource) == input_resource)
 			wl_resource_set_user_data(resource, NULL);
 	}
+}
+
+/** Register a touchscreen input device
+ *
+ * \param touch The parent weston_touch that identifies the seat.
+ * \param syspath Unique device name.
+ * \param backend_data Backend private data if necessary.
+ * \param ops Calibration operations, or NULL for not able to run calibration.
+ * \return New touch device, or NULL on failure.
+ */
+WL_EXPORT struct weston_touch_device *
+weston_touch_create_touch_device(struct weston_touch *touch,
+				 const char *syspath,
+				 void *backend_data,
+				 const struct weston_touch_device_ops *ops)
+{
+	struct weston_touch_device *device;
+
+	assert(syspath);
+	if (ops) {
+		assert(ops->get_output);
+		assert(ops->get_calibration_head_name);
+		assert(ops->get_calibration);
+		assert(ops->set_calibration);
+	}
+
+	device = zalloc(sizeof *device);
+	if (!device)
+		return NULL;
+
+	wl_signal_init(&device->destroy_signal);
+
+	device->syspath = strdup(syspath);
+	if (!device->syspath) {
+		free(device);
+		return NULL;
+	}
+
+	device->backend_data = backend_data;
+	device->ops = ops;
+
+	device->aggregate = touch;
+	wl_list_insert(touch->device_list.prev, &device->link);
+
+	return device;
+}
+
+/** Destroy the touch device. */
+WL_EXPORT void
+weston_touch_device_destroy(struct weston_touch_device *device)
+{
+	wl_list_remove(&device->link);
+	wl_signal_emit(&device->destroy_signal, device);
+	free(device->syspath);
+	free(device);
+}
+
+/** Is it possible to run calibration on this touch device? */
+WL_EXPORT bool
+weston_touch_device_can_calibrate(struct weston_touch_device *device)
+{
+	return !!device->ops;
 }
 
 static struct weston_pointer_client *
@@ -1277,6 +1341,7 @@ weston_touch_create(void)
 	if (touch == NULL)
 		return NULL;
 
+	wl_list_init(&touch->device_list);
 	wl_list_init(&touch->resource_list);
 	wl_list_init(&touch->focus_resource_list);
 	wl_list_init(&touch->focus_view_listener.link);
@@ -1296,6 +1361,8 @@ static void
 weston_touch_destroy(struct weston_touch *touch)
 {
 	struct wl_resource *resource;
+
+	assert(wl_list_empty(&touch->device_list));
 
 	wl_resource_for_each(resource, &touch->resource_list) {
 		wl_resource_set_user_data(resource, NULL);

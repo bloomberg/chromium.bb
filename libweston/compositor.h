@@ -454,9 +454,53 @@ struct weston_pointer {
 	struct wl_list timestamps_list;
 };
 
+/** libinput style calibration matrix
+ *
+ * See https://wayland.freedesktop.org/libinput/doc/latest/absolute_axes.html
+ * and libinput_device_config_calibration_set_matrix().
+ */
+struct weston_touch_device_matrix {
+	float m[6];
+};
 
+struct weston_touch_device;
+
+/** Operations for a calibratable touchscreen */
+struct weston_touch_device_ops {
+	/** Get the associated output if existing. */
+	struct weston_output *(*get_output)(struct weston_touch_device *device);
+
+	/** Get the name of the associated head if existing. */
+	const char *
+	(*get_calibration_head_name)(struct weston_touch_device *device);
+
+	/** Retrieve the current calibration matrix. */
+	void (*get_calibration)(struct weston_touch_device *device,
+				struct weston_touch_device_matrix *cal);
+
+	/** Set a new calibration matrix. */
+	void (*set_calibration)(struct weston_touch_device *device,
+				const struct weston_touch_device_matrix *cal);
+};
+
+/** Represents a physical touchscreen input device */
+struct weston_touch_device {
+	char *syspath;			/**< unique name */
+
+	struct weston_touch *aggregate;	/**< weston_touch this is part of */
+	struct wl_list link;		/**< in weston_touch::device_list */
+	struct wl_signal destroy_signal;	/**< destroy notifier */
+
+	void *backend_data;		/**< backend-specific private */
+
+	const struct weston_touch_device_ops *ops;
+};
+
+/** Represents a set of touchscreen devices aggregated under a seat */
 struct weston_touch {
 	struct weston_seat *seat;
+
+	struct wl_list device_list;	/* struct weston_touch_device::link */
 
 	struct wl_list resource_list;
 	struct wl_list focus_resource_list;
@@ -578,6 +622,18 @@ weston_touch_send_motion(struct weston_touch *touch,
 			 wl_fixed_t x, wl_fixed_t y);
 void
 weston_touch_send_frame(struct weston_touch *touch);
+
+struct weston_touch_device *
+weston_touch_create_touch_device(struct weston_touch *touch,
+				 const char *syspath,
+				 void *backend_data,
+				 const struct weston_touch_device_ops *ops);
+
+void
+weston_touch_device_destroy(struct weston_touch_device *device);
+
+bool
+weston_touch_device_can_calibrate(struct weston_touch_device *device);
 
 void
 wl_data_device_set_keyboard_focus(struct weston_seat *seat);

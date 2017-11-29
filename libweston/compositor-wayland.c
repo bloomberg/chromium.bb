@@ -198,6 +198,8 @@ struct wayland_input {
 		} cursor;
 	} parent;
 
+	struct weston_touch_device *touch_device;
+
 	enum weston_key_state_update keyboard_state_update;
 	uint32_t key_serial;
 	uint32_t enter_serial;
@@ -2248,6 +2250,22 @@ static const struct wl_touch_listener touch_listener = {
 };
 
 
+static struct weston_touch_device *
+create_touch_device(struct wayland_input *input)
+{
+	struct weston_touch_device *touch_device;
+	char str[128];
+
+	/* manufacture a unique'ish name */
+	snprintf(str, sizeof str, "wayland-touch[%u]",
+		 wl_proxy_get_id((struct wl_proxy *)input->parent.seat));
+
+	touch_device = weston_touch_create_touch_device(input->base.touch_state,
+							str, NULL, NULL);
+
+	return touch_device;
+}
+
 static void
 input_handle_capabilities(void *data, struct wl_seat *seat,
 		          enum wl_seat_capability caps)
@@ -2289,7 +2307,10 @@ input_handle_capabilities(void *data, struct wl_seat *seat,
 		wl_touch_add_listener(input->parent.touch,
 				      &touch_listener, input);
 		weston_seat_init_touch(&input->base);
+		input->touch_device = create_touch_device(input);
 	} else if (!(caps & WL_SEAT_CAPABILITY_TOUCH) && input->parent.touch) {
+		weston_touch_device_destroy(input->touch_device);
+		input->touch_device = NULL;
 		if (input->seat_version >= WL_TOUCH_RELEASE_SINCE_VERSION)
 			wl_touch_release(input->parent.touch);
 		else
