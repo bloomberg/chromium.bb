@@ -165,10 +165,8 @@ void AwRenderFrameExt::DidCommitProvisionalLoad(
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   content::DocumentState* document_state =
       content::DocumentState::FromDocumentLoader(frame->GetDocumentLoader());
-  if (document_state->can_load_local_resources()) {
-    blink::WebSecurityOrigin origin = frame->GetDocument().GetSecurityOrigin();
-    origin.GrantLoadLocalResources();
-  }
+  if (document_state->can_load_local_resources())
+    frame->GetDocument().GrantLoadLocalResources();
 
   // Clear the cache when we cross site boundaries in the main frame.
   //
