@@ -1675,8 +1675,6 @@ static void av1_highbd_convolve_horiz_facade(
     const uint8_t *src8, int src_stride, uint8_t *dst8, int dst_stride, int w,
     int h, const InterpFilterParams filter_params, const int subpel_x_q4,
     int x_step_q4, int avg, int bd) {
-  uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-  uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   if (filter_params.taps == SUBPEL_TAPS) {
     const int16_t *filter_x =
         av1_get_interp_filter_subpel_kernel(filter_params, subpel_x_q4);
@@ -1687,6 +1685,8 @@ static void av1_highbd_convolve_horiz_facade(
       aom_highbd_convolve8_avg_horiz(src8, src_stride, dst8, dst_stride,
                                      filter_x, x_step_q4, NULL, -1, w, h, bd);
   } else {
+    uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+    uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
     av1_highbd_convolve_horiz(src, src_stride, dst, dst_stride, w, h,
                               filter_params, subpel_x_q4, x_step_q4, avg, bd);
   }
@@ -1709,9 +1709,6 @@ static void av1_highbd_convolve_vert_facade(
     const uint8_t *src8, int src_stride, uint8_t *dst8, int dst_stride, int w,
     int h, const InterpFilterParams filter_params, const int subpel_y_q4,
     int y_step_q4, int avg, int bd) {
-  uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-  uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
-
   if (filter_params.taps == SUBPEL_TAPS) {
     const int16_t *filter_y =
         av1_get_interp_filter_subpel_kernel(filter_params, subpel_y_q4);
@@ -1723,6 +1720,9 @@ static void av1_highbd_convolve_vert_facade(
                                     -1, filter_y, y_step_q4, w, h, bd);
     }
   } else {
+    uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+    uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
+
     av1_highbd_convolve_vert(src, src_stride, dst, dst_stride, w, h,
                              filter_params, subpel_y_q4, y_step_q4, avg, bd);
   }
@@ -1746,8 +1746,6 @@ void av1_highbd_convolve(const uint8_t *src8, int src_stride, uint8_t *dst8,
                          InterpFilters interp_filters, const int subpel_x_q4,
                          int x_step_q4, const int subpel_y_q4, int y_step_q4,
                          int ref_idx, int bd) {
-  uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-  uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   int ignore_horiz = x_step_q4 == SUBPEL_SHIFTS && subpel_x_q4 == 0;
   int ignore_vert = y_step_q4 == SUBPEL_SHIFTS && subpel_y_q4 == 0;
 
@@ -1757,6 +1755,8 @@ void av1_highbd_convolve(const uint8_t *src8, int src_stride, uint8_t *dst8,
   assert(x_step_q4 <= MAX_STEP);
 
   if (ignore_horiz && ignore_vert) {
+    uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+    uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
     highbd_convolve_copy(src, src_stride, dst, dst_stride, w, h, ref_idx, bd);
     return;
   }
@@ -1844,8 +1844,6 @@ void av1_highbd_convolve_scale(const uint8_t *src8, int src_stride,
                                const int subpel_x_qn, int x_step_qn,
                                const int subpel_y_qn, int y_step_qn,
                                int ref_idx, int bd) {
-  uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-  uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   int ignore_horiz = x_step_qn == SCALE_SUBPEL_SHIFTS && subpel_x_qn == 0;
   int ignore_vert = y_step_qn == SCALE_SUBPEL_SHIFTS && subpel_y_qn == 0;
 
@@ -1855,6 +1853,8 @@ void av1_highbd_convolve_scale(const uint8_t *src8, int src_stride,
   assert(x_step_qn <= (MAX_STEP << SCALE_EXTRA_BITS));
 
   if (ignore_horiz && ignore_vert) {
+    uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+    uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
     highbd_convolve_copy(src, src_stride, dst, dst_stride, w, h, ref_idx, bd);
     return;
   }
