@@ -3538,7 +3538,8 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
                             int64_t ref_best_rd) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const TX_SIZE uv_tx_size = av1_get_uv_tx_size(mbmi, &xd->plane[1]);
+  struct macroblockd_plane *const pd = &xd->plane[AOM_PLANE_U];
+  const TX_SIZE uv_tx_size = av1_get_uv_tx_size(mbmi, pd);
   int plane;
   int is_cost_valid = 1;
   av1_init_rd_stats(rd_stats);
@@ -3547,8 +3548,7 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   if (x->skip_chroma_rd) return is_cost_valid;
 
-  bsize = scale_chroma_bsize(bsize, xd->plane[1].subsampling_x,
-                             xd->plane[1].subsampling_y);
+  bsize = scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
 
   if (is_inter_block(mbmi) && is_cost_valid) {
     for (plane = 1; plane < MAX_MB_PLANE; ++plane)
