@@ -223,7 +223,7 @@ static void convolve(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
   // --Require an additional SUBPEL_TAPS rows for the 8-tap filter tails.
   // --((64 - 1) * 32 + 15) >> 4 + 8 = 135.
   uint8_t temp[MAX_EXT_SIZE * MAX_SB_SIZE];
-  int intermediate_height =
+  const int intermediate_height =
       (((h - 1) * y_step_q4 + y0_q4) >> SUBPEL_BITS) + SUBPEL_TAPS;
 
   assert(w <= MAX_SB_SIZE);
@@ -258,7 +258,7 @@ static void convolve_scale_c(const uint8_t *src, ptrdiff_t src_stride,
   // --Require an additional SUBPEL_TAPS rows for the 8-tap filter tails.
   // --((64 - 1) * 32 + 15) >> 4 + 8 = 135.
   uint8_t temp[MAX_EXT_SIZE * MAX_SB_SIZE];
-  int intermediate_height =
+  const int intermediate_height =
       (((h - 1) * y_step_qn + y0_qn) >> SCALE_SUBPEL_BITS) + SUBPEL_TAPS;
 
   assert(w <= MAX_SB_SIZE);
@@ -609,7 +609,7 @@ static void convolve_add_src(const uint8_t *src, ptrdiff_t src_stride,
                              int x_step_q4, const InterpKernel *const y_filters,
                              int y0_q4, int y_step_q4, int w, int h) {
   uint8_t temp[MAX_EXT_SIZE * MAX_SB_SIZE];
-  int intermediate_height =
+  const int intermediate_height =
       (((h - 1) * y_step_q4 + y0_q4) >> SUBPEL_BITS) + SUBPEL_TAPS;
 
   assert(w <= MAX_SB_SIZE);
@@ -727,7 +727,7 @@ static void convolve_add_src_hip(const uint8_t *src, ptrdiff_t src_stride,
                                  const InterpKernel *const y_filters, int y0_q4,
                                  int y_step_q4, int w, int h) {
   uint16_t temp[MAX_EXT_SIZE * MAX_SB_SIZE];
-  int intermediate_height =
+  const int intermediate_height =
       (((h - 1) * y_step_q4 + y0_q4) >> SUBPEL_BITS) + SUBPEL_TAPS;
 
   assert(w <= MAX_SB_SIZE);
@@ -908,7 +908,7 @@ static void highbd_convolve(const uint8_t *src, ptrdiff_t src_stride,
   // --Require an additional SUBPEL_TAPS rows for the 8-tap filter tails.
   // --((64 - 1) * 32 + 15) >> 4 + 8 = 135.
   uint16_t temp[MAX_EXT_SIZE * MAX_SB_SIZE];
-  int intermediate_height =
+  const int intermediate_height =
       (((h - 1) * y_step_q4 + y0_q4) >> SUBPEL_BITS) + SUBPEL_TAPS;
 
   assert(w <= MAX_SB_SIZE);
@@ -1126,7 +1126,7 @@ static void highbd_convolve_add_src(const uint8_t *src, ptrdiff_t src_stride,
   // --Require an additional SUBPEL_TAPS rows for the 8-tap filter tails.
   // --((64 - 1) * 32 + 15) >> 4 + 8 = 135.
   uint16_t temp[MAX_EXT_SIZE * MAX_SB_SIZE];
-  int intermediate_height =
+  const int intermediate_height =
       (((h - 1) * y_step_q4 + y0_q4) >> SUBPEL_BITS) + SUBPEL_TAPS;
 
   assert(w <= MAX_SB_SIZE);
@@ -1226,7 +1226,7 @@ static void highbd_convolve_add_src_hip(
   // --Require an additional SUBPEL_TAPS rows for the 8-tap filter tails.
   // --((64 - 1) * 32 + 15) >> 4 + 8 = 135.
   uint16_t temp[MAX_EXT_SIZE * MAX_SB_SIZE];
-  int intermediate_height =
+  const int intermediate_height =
       (((h - 1) * y_step_q4 + y0_q4) >> SUBPEL_BITS) + SUBPEL_TAPS;
 
   assert(w <= MAX_SB_SIZE);
