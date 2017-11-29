@@ -319,6 +319,14 @@ void ProfilingProcessHost::OnDumpProcessesForTracingCallback(
         kTraceEventArgTypes, nullptr /* arg_values */, &wrapper,
         TRACE_EVENT_FLAG_HAS_ID);
   }
+
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+      ->PostTask(FROM_HERE,
+                 base::Bind(&ProfilingProcessHost::DumpProcessFinishedUIThread,
+                            base::Unretained(this)));
+}
+
+void ProfilingProcessHost::DumpProcessFinishedUIThread() {
   if (dump_process_for_tracing_callback_) {
     std::move(dump_process_for_tracing_callback_).Run();
     dump_process_for_tracing_callback_.Reset();
@@ -457,25 +465,52 @@ void ProfilingProcessHost::RequestProcessReport(std::string trigger_name) {
     return;
   }
 
+  auto finish_report_callback = base::BindOnce(
+      [](std::string trigger_name, bool success, std::string trace) {
+        if (success) {
+          UploadTraceToCrashServer(std::move(trace), std::move(trigger_name));
+        }
+      },
+      std::move(trigger_name));
+  RequestTraceWithHeapDump(std::move(finish_report_callback), false);
+}
+
+void ProfilingProcessHost::RequestTraceWithHeapDump(
+    TraceFinishedCallback callback,
+    bool stop_immediately_after_heap_dump_for_tests) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (!connector_) {
+    DLOG(ERROR)
+        << "Requesting heap dump when profiling process hasn't started.";
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false, std::string()));
+    return;
+  }
+
   bool result = content::TracingController::GetInstance()->StartTracing(
       GetBackgroundTracingConfig(), base::Closure());
-  if (!result)
+  if (!result) {
+    DLOG(ERROR) << "Requesting heap dump when tracing has already started.";
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false, std::string()));
     return;
+  }
 
-  // Once the trace has stopped, upload the log to the crash server.
+  // Once the trace has stopped, run |callback| on the UI thread. At this point,
+  // ownership of |callback| has been transfered to |finish_sink_callback|.
   auto finish_sink_callback = base::Bind(
-      [](std::string trigger_name,
+      [](TraceFinishedCallback callback,
          std::unique_ptr<const base::DictionaryValue> metadata,
          base::RefCountedString* in) {
         std::string result;
         result.swap(in->data());
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::UI)
-            ->PostTask(FROM_HERE, base::BindOnce(&UploadTraceToCrashServer,
-                                                 std::move(result),
-                                                 std::move(trigger_name)));
+            ->PostTask(FROM_HERE, base::BindOnce(std::move(callback), true,
+                                                 std::move(result)));
       },
-      std::move(trigger_name));
+      base::Passed(std::move(callback)));
 
   scoped_refptr<content::TracingController::TraceDataEndpoint> sink =
       content::TracingController::CreateStringEndpoint(
@@ -486,16 +521,18 @@ void ProfilingProcessHost::RequestProcessReport(std::string trigger_name) {
           &content::TracingController::StopTracing),
       base::Unretained(content::TracingController::GetInstance()), sink);
 
-  // Wait 10 seconds, then end the trace.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, std::move(stop_tracing_closure),
-      base::TimeDelta::FromSeconds(10));
-}
-
-void ProfilingProcessHost::SetDumpProcessForTracingCallback(
-    base::OnceClosure callback) {
-  DCHECK(!dump_process_for_tracing_callback_);
-  dump_process_for_tracing_callback_ = std::move(callback);
+  if (stop_immediately_after_heap_dump_for_tests) {
+    // There is no race condition between setting
+    // |dump_process_for_tracing_callback_| and starting tracing, since running
+    // the callback is an asynchronous task executed on the UI thread.
+    DCHECK(!dump_process_for_tracing_callback_);
+    dump_process_for_tracing_callback_ = std::move(stop_tracing_closure);
+  } else {
+    // Wait 10 seconds, then end the trace.
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, std::move(stop_tracing_closure),
+        base::TimeDelta::FromSeconds(10));
+  }
 }
 
 void ProfilingProcessHost::MakeConnector(
