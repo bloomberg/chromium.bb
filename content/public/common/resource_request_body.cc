@@ -81,10 +81,9 @@ void ResourceRequestBody::AppendFileSystemFileRange(
 }
 
 void ResourceRequestBody::AppendDataPipe(
-    mojo::ScopedDataPipeConsumerHandle handle,
-    blink::mojom::SizeGetterPtr size_getter) {
+    network::mojom::DataPipeGetterPtr data_pipe_getter) {
   elements_.push_back(Element());
-  elements_.back().SetToDataPipe(std::move(handle), std::move(size_getter));
+  elements_.back().SetToDataPipe(std::move(data_pipe_getter));
 }
 
 std::vector<base::FilePath> ResourceRequestBody::GetReferencedFiles() const {

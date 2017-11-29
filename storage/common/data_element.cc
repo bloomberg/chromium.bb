@@ -76,22 +76,18 @@ void DataElement::SetToDiskCacheEntryRange(uint64_t offset, uint64_t length) {
   length_ = length;
 }
 
-void DataElement::SetToDataPipe(mojo::ScopedDataPipeConsumerHandle handle,
-                                blink::mojom::SizeGetterPtr size_getter) {
+void DataElement::SetToDataPipe(
+    network::mojom::DataPipeGetterPtr data_pipe_getter) {
   type_ = TYPE_DATA_PIPE;
-  data_pipe_ = std::move(handle);
-  data_pipe_size_getter_ = std::move(size_getter);
+  data_pipe_getter_ = std::move(data_pipe_getter);
 }
 
 base::File DataElement::ReleaseFile() {
   return std::move(file_);
 }
 
-mojo::ScopedDataPipeConsumerHandle DataElement::ReleaseDataPipe(
-    blink::mojom::SizeGetterPtr* size_getter) {
-  if (size_getter)
-    *size_getter = std::move(data_pipe_size_getter_);
-  return std::move(data_pipe_);
+network::mojom::DataPipeGetterPtr DataElement::ReleaseDataPipeGetter() {
+  return std::move(data_pipe_getter_);
 }
 
 void PrintTo(const DataElement& x, std::ostream* os) {

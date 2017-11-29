@@ -2,6 +2,7 @@ include_rules = [
   "+mojo",
   "+net",
   "+services/network/public/cpp",
+  "+services/network/public/interfaces",
   "+sql",
   "+third_party/leveldatabase",
   "+third_party/sqlite",

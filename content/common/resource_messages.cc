@@ -185,11 +185,11 @@ void ParamTraits<storage::DataElement>::Write(base::Pickle* m,
       break;
     }
     case storage::DataElement::TYPE_DATA_PIPE: {
-      blink::mojom::SizeGetterPtr size_getter;
-      WriteParam(
-          m,
-          const_cast<param_type&>(p).ReleaseDataPipe(&size_getter).release());
-      WriteParam(m, size_getter.PassInterface().PassHandle().release());
+      WriteParam(m,
+                 const_cast<network::mojom::DataPipeGetterPtr&>(p.data_pipe())
+                     .PassInterface()
+                     .PassHandle()
+                     .release());
       break;
     }
     case storage::DataElement::TYPE_UNKNOWN: {
@@ -291,17 +291,13 @@ bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
       return false;
     }
     case storage::DataElement::TYPE_DATA_PIPE: {
-      mojo::DataPipeConsumerHandle data_pipe;
-      blink::mojom::SizeGetterPtr size_getter;
-      if (!ReadParam(m, iter, &data_pipe))
-        return false;
+      network::mojom::DataPipeGetterPtr data_pipe_getter;
       mojo::MessagePipeHandle message_pipe;
       if (!ReadParam(m, iter, &message_pipe))
         return false;
-      size_getter.Bind(blink::mojom::SizeGetterPtrInfo(
+      data_pipe_getter.Bind(network::mojom::DataPipeGetterPtrInfo(
           mojo::ScopedMessagePipeHandle(message_pipe), 0u));
-      r->SetToDataPipe(mojo::ScopedDataPipeConsumerHandle(data_pipe),
-                       std::move(size_getter));
+      r->SetToDataPipe(std::move(data_pipe_getter));
       return true;
     }
     case storage::DataElement::TYPE_UNKNOWN: {

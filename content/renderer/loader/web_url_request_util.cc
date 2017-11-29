@@ -16,14 +16,15 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/loader/request_extra_data.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
+#include "services/network/public/interfaces/data_pipe_getter.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/common/blob/blob.mojom.h"
 #include "third_party/WebKit/common/blob/blob_registry.mojom.h"
-#include "third_party/WebKit/common/blob/size_getter.mojom.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -104,77 +105,80 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
   std::string buffer_;
 };
 
-// A helper class which allows a holder of a data pipe for a blob to know how
-// big the blob is. It will stay alive until either the caller gets the length
-// or the size getter pipe is torn down.
-class BlobSizeGetter : public blink::mojom::BlobReaderClient,
-                       public blink::mojom::SizeGetter {
+// Vends data pipes to read a Blob. It stays alive by StrongBinding to the Mojo
+// request.
+class DataPipeGetter : public network::mojom::DataPipeGetter {
  public:
-  BlobSizeGetter(
-      blink::mojom::BlobReaderClientRequest blob_reader_client_request,
-      blink::mojom::SizeGetterRequest size_getter_request)
-      : blob_reader_client_binding_(this), size_getter_binding_(this) {
+  DataPipeGetter(blink::mojom::BlobPtr blob,
+                 network::mojom::DataPipeGetterRequest request) {
     // If a sync XHR is doing the upload, then the main thread will be blocked.
-    // So we must bind these interfaces on a background thread, otherwise the
-    // methods below will never be called and the processes will hang.
+    // So we must bind on a background thread, otherwise the methods below will
+    // never be called and the process will hang.
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         base::CreateSingleThreadTaskRunnerWithTraits(
             {base::TaskPriority::USER_VISIBLE,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
     task_runner->PostTask(
         FROM_HERE,
-        base::BindOnce(&BlobSizeGetter::BindInternal, base::Unretained(this),
-                       std::move(blob_reader_client_request),
-                       std::move(size_getter_request)));
+        base::BindOnce(&DataPipeGetter::BindInternal, base::Unretained(this),
+                       blob.PassInterface(), std::move(request)));
+  }
+  ~DataPipeGetter() override = default;
+
+ private:
+  class BlobReaderClient : public blink::mojom::BlobReaderClient {
+   public:
+    explicit BlobReaderClient(ReadCallback callback)
+        : callback_(std::move(callback)) {
+      DCHECK(!callback_.is_null());
+    }
+    ~BlobReaderClient() override = default;
+
+    // blink::mojom::BlobReaderClient implementation:
+    void OnCalculatedSize(uint64_t total_size,
+                          uint64_t expected_content_size) override {
+      // Check if null since it's conceivable OnComplete() was already called
+      // with error.
+      if (!callback_.is_null())
+        std::move(callback_).Run(net::OK, total_size);
+    }
+    void OnComplete(int32_t status, uint64_t data_length) override {
+      // Check if null since OnCalculatedSize() may have already been called
+      // and an error occurred later.
+      if (!callback_.is_null() && status != net::OK) {
+        // On error, signal failure immediately. On success, OnCalculatedSize()
+        // is guaranteed to be called, and the result will be signaled from
+        // there.
+        std::move(callback_).Run(status, 0);
+      }
+    }
+
+   private:
+    ReadCallback callback_;
+
+    DISALLOW_COPY_AND_ASSIGN(BlobReaderClient);
+  };
+
+  void BindInternal(blink::mojom::BlobPtrInfo blob,
+                    network::mojom::DataPipeGetterRequest request) {
+    mojo::MakeStrongBinding(base::WrapUnique(this), std::move(request));
+    blob_.Bind(std::move(blob));
+  }
+
+  // network::mojom::DataPipeGetter implementation:
+  void Read(mojo::ScopedDataPipeProducerHandle handle,
+            ReadCallback callback) override {
+    blink::mojom::BlobReaderClientPtr blob_reader_client_ptr;
+    mojo::MakeStrongBinding(
+        std::make_unique<BlobReaderClient>(std::move(callback)),
+        mojo::MakeRequest(&blob_reader_client_ptr));
+    blob_->ReadAll(std::move(handle), std::move(blob_reader_client_ptr));
   }
 
  private:
-  ~BlobSizeGetter() override {}
+  blink::mojom::BlobPtr blob_;
 
-  void BindInternal(
-      blink::mojom::BlobReaderClientRequest blob_reader_client_request,
-      blink::mojom::SizeGetterRequest size_getter_request) {
-    blob_reader_client_binding_.Bind(std::move(blob_reader_client_request));
-    size_getter_binding_.Bind(std::move(size_getter_request));
-    size_getter_binding_.set_connection_error_handler(base::BindOnce(
-        &BlobSizeGetter::OnSizeGetterConnectionError, base::Unretained(this)));
-  }
-
-  // blink::mojom::BlobReaderClient implementation:
-  void OnCalculatedSize(uint64_t total_size,
-                        uint64_t expected_content_size) override {
-    size_ = total_size;
-    calculated_size_ = true;
-    if (!callback_.is_null()) {
-      std::move(callback_).Run(total_size);
-      delete this;
-    } else if (!size_getter_binding_.is_bound()) {
-      delete this;
-    }
-  }
-
-  void OnComplete(int32_t status, uint64_t data_length) override {}
-
-  // blink::mojom::SizeGetter implementation:
-  void GetSize(GetSizeCallback callback) override {
-    if (calculated_size_) {
-      std::move(callback).Run(size_);
-      delete this;
-    } else {
-      callback_ = std::move(callback);
-    }
-  }
-
-  void OnSizeGetterConnectionError() {
-    if (calculated_size_)
-      delete this;
-  }
-
-  bool calculated_size_ = false;
-  uint64_t size_ = 0;
-  mojo::Binding<blink::mojom::BlobReaderClient> blob_reader_client_binding_;
-  mojo::Binding<blink::mojom::SizeGetter> size_getter_binding_;
-  GetSizeCallback callback_;
+  DISALLOW_COPY_AND_ASSIGN(DataPipeGetter);
 };
 
 }  // namespace
@@ -474,18 +478,12 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebHTTPBody(
           blob_registry->GetBlobFromUUID(MakeRequest(&blob_ptr),
                                          element.blob_uuid.Utf8());
 
-          blink::mojom::BlobReaderClientPtr blob_reader_client_ptr;
-          blink::mojom::SizeGetterPtr size_getter_ptr;
+          network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
           // Object deletes itself.
-          new BlobSizeGetter(MakeRequest(&blob_reader_client_ptr),
-                             MakeRequest(&size_getter_ptr));
+          new DataPipeGetter(std::move(blob_ptr),
+                             MakeRequest(&data_pipe_getter_ptr));
 
-          mojo::DataPipe data_pipe;
-          request_body->AppendDataPipe(std::move(data_pipe.consumer_handle),
-                                       std::move(size_getter_ptr));
-
-          blob_ptr->ReadAll(std::move(data_pipe.producer_handle),
-                            std::move(blob_reader_client_ptr));
+          request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
         } else {
           request_body->AppendBlob(element.blob_uuid.Utf8());
         }
