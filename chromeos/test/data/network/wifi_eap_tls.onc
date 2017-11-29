@@ -11,6 +11,7 @@
       "ClientCertType": "PKCS11Id",
       "ClientCertPKCS11Id": "1:123456abcdef",
       "SaveCredentials": true,
+      "TLSVersionMax": "1.2",
       "UseSystemCAs": true
     }
   },

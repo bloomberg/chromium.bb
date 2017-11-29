@@ -9,6 +9,7 @@
       "ClientCertPKCS11Id": "1:123456abcdef",
       "Outer": "EAP-TLS",
       "Identity": "my_identity",
+      "TLSVersionMax": "1.2",
       "UseSystemCAs": true,
       "SaveCredentials": true
     }
