@@ -425,8 +425,8 @@ namespace Json {
 class JSON_API Exception : public std::exception {
 public:
   Exception(std::string const& msg);
-  ~Exception() throw();
-  char const* what() const throw();
+  ~Exception();
+  char const* what() const;
 protected:
   std::string msg_;
 };
