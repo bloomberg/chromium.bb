@@ -28,16 +28,15 @@ class FormatDataPackUnittest(unittest.TestCase):
         '\x0a\x00\x3f\x00\x00\x00'          # index entry 10
         '\x00\x00\x3f\x00\x00\x00'          # extra entry for the size of last
         'this is id 4this is id 6')         # data
-    expected_resources = {
-        1: '',
-        4: 'this is id 4',
-        6: 'this is id 6',
-        10: '',
-    }
     expected_data_pack = data_pack.DataPackContents(
-        expected_resources, data_pack.UTF8)
+        {
+            1: '',
+            4: 'this is id 4',
+            6: 'this is id 6',
+            10: '',
+        }, data_pack.UTF8, 4, {}, data_pack.DataPackSizes(9, 30, 0, 24))
     loaded = data_pack.ReadDataPackFromString(expected_data)
-    self.assertEquals(loaded, expected_data_pack)
+    self.assertDictEqual(expected_data_pack.__dict__, loaded.__dict__)
 
   def testReadWriteDataPackV5(self):
     expected_data = (
@@ -51,19 +50,24 @@ class FormatDataPackUnittest(unittest.TestCase):
         '\x00\x00\x40\x00\x00\x00'          # extra entry for the size of last
         '\x0a\x00\x01\x00'                  # alias table
         'this is id 4this is id 6')         # data
-    expected_resources = {
+    input_resources = {
         1: '',
         4: 'this is id 4',
         6: 'this is id 6',
         10: 'this is id 4',
     }
-    data = data_pack.WriteDataPackToString(expected_resources, data_pack.UTF8)
+    data = data_pack.WriteDataPackToString(input_resources, data_pack.UTF8)
     self.assertEquals(data, expected_data)
 
     expected_data_pack = data_pack.DataPackContents(
-        expected_resources, data_pack.UTF8)
+        {
+            1: '',
+            4: input_resources[4],
+            6: input_resources[6],
+            10: input_resources[4],
+        }, data_pack.UTF8, 5, {10: 4}, data_pack.DataPackSizes(12, 24, 4, 24))
     loaded = data_pack.ReadDataPackFromString(expected_data)
-    self.assertEquals(loaded, expected_data_pack)
+    self.assertDictEqual(expected_data_pack.__dict__, loaded.__dict__)
 
   def testRePackUnittest(self):
     expected_with_whitelist = {
@@ -79,8 +83,7 @@ class FormatDataPackUnittest(unittest.TestCase):
               {40: 'Never', 50: 'gonna run around and', 60: 'desert you'},
               {65: 'Close', 70: 'Awww, snap!'}]
     whitelist = [1, 10, 20, 30, 40, 50, 60]
-    inputs = [data_pack.DataPackContents(input, data_pack.UTF8) for input
-              in inputs]
+    inputs = [(i, data_pack.UTF8) for i in inputs]
 
     # RePack using whitelist
     output, _ = data_pack.RePackFromDataPackStrings(
