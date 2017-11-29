@@ -1078,6 +1078,11 @@ tests:
     - ["⠍⠱⠗⠑", "mûre"]
     - ["⠨⠝⠕⠫⠇", "Noël"]
     - ["⠪⠙⠕⠛⠕⠝⠊⠥⠍", "œdogonium"]
+    - ["⠨⠪⠙⠕⠛⠕⠝⠊⠥⠍", "Œdogonium"]
+    - ["⠣⠞⠗⠑", "être"]
+    - ["⠨⠨⠉⠹⠞⠑⠲⠲⠲", "CÔTE..."]
+    - ["⠦⠨⠨⠉⠹⠞⠑⠴⠲", "(CÔTE⠴⠲", {xfail: true}]
+    - ["⠦⠪⠝⠁⠝⠞⠓⠊⠟⠴⠂", "(œnanthique),", {xfail: true}]
   # ⠡ -> fr, ation (terminaison)
     - ["⠡⠆⠞", "fruit"]
     - ["⠉⠈⠙⠊⠕⠡⠿⠟⠢⠉⠑⠍⠮⠴⠑⠂", "cardiofréquencemètre,"]
