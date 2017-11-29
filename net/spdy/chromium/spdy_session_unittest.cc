@@ -896,14 +896,18 @@ TEST_F(SpdySessionTest, ClientPing) {
       base::TimeDelta::FromSeconds(-1));
   session_->set_hung_interval(base::TimeDelta::FromMilliseconds(50));
 
-  session_->SendPrefacePingIfNoneInFlight();
+  session_->MaybeSendPrefacePing();
+
+  EXPECT_EQ(1, session_->pings_in_flight());
+  EXPECT_EQ(2u, session_->next_ping_id());
+  EXPECT_TRUE(session_->check_ping_status_pending());
 
   base::RunLoop().RunUntilIdle();
 
   session_->CheckPingStatus(before_ping_time);
 
   EXPECT_EQ(0, session_->pings_in_flight());
-  EXPECT_GE(session_->next_ping_id(), 1U);
+  EXPECT_EQ(2u, session_->next_ping_id());
   EXPECT_FALSE(session_->check_ping_status_pending());
   EXPECT_GE(session_->last_read_time(), before_ping_time);
 
@@ -1667,7 +1671,7 @@ TEST_F(SpdySessionTest, FailedPing) {
   // Send a PING frame.
   session_->WritePingFrame(1, false);
   EXPECT_LT(0, session_->pings_in_flight());
-  EXPECT_GE(session_->next_ping_id(), 1U);
+  EXPECT_EQ(2u, session_->next_ping_id());
   EXPECT_TRUE(session_->check_ping_status_pending());
 
   // Assert session is not closed.
@@ -1681,11 +1685,99 @@ TEST_F(SpdySessionTest, FailedPing) {
   base::TimeTicks now = base::TimeTicks::Now();
   session_->last_read_time_ = now - base::TimeDelta::FromSeconds(1);
   session_->CheckPingStatus(now);
+  // Set check_ping_status_pending_ so that DCHECK in pending CheckPingStatus()
+  // on message loop does not fail.
+  session_->check_ping_status_pending_ = true;
+  // Execute pending CheckPingStatus() and drain session.
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(session_);
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
   EXPECT_FALSE(spdy_stream1);
+}
+
+// Regression test for https://crbug.com/784975.
+// TODO(bnc): This test sets SpdySession::hung_interval_ to 100 ms instead of
+// mocking time, which makes the test slow.
+TEST_F(SpdySessionTest, WaitingForWrongPing) {
+  session_deps_.enable_ping = true;
+  session_deps_.time_func = TheNearFuture;
+
+  SpdySerializedFrame read_ping(spdy_util_.ConstructSpdyPing(1, true));
+  MockRead reads[] = {CreateMockRead(read_ping, 1),
+                      MockRead(ASYNC, ERR_IO_PENDING, 2),
+                      MockRead(ASYNC, 0, 3)};
+
+  SpdySerializedFrame write_ping0(spdy_util_.ConstructSpdyPing(1, false));
+  MockWrite writes[] = {CreateMockWrite(write_ping0, 0)};
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  // Negative value means a preface ping will always be sent.
+  session_->set_connection_at_risk_of_loss_time(
+      base::TimeDelta::FromSeconds(-1));
+
+  const base::TimeDelta hung_interval = base::TimeDelta::FromMilliseconds(100);
+  session_->set_hung_interval(hung_interval);
+
+  base::WeakPtr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
+                                MEDIUM, NetLogWithSource());
+  ASSERT_TRUE(spdy_stream1);
+  test::StreamDelegateSendImmediate delegate(spdy_stream1, nullptr);
+  spdy_stream1->SetDelegate(&delegate);
+
+  EXPECT_EQ(0, session_->pings_in_flight());
+  EXPECT_EQ(1u, session_->next_ping_id());
+  EXPECT_FALSE(session_->check_ping_status_pending());
+
+  // Send preface ping and post CheckPingStatus() task with delay.
+  session_->MaybeSendPrefacePing();
+
+  EXPECT_EQ(1, session_->pings_in_flight());
+  EXPECT_EQ(2u, session_->next_ping_id());
+  EXPECT_TRUE(session_->check_ping_status_pending());
+
+  // Read PING ACK.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, session_->pings_in_flight());
+  EXPECT_TRUE(session_->check_ping_status_pending());
+
+  // Fast forward mock time and send another preface ping.
+  // This will not post another CheckPingStatus().
+  g_time_delta = base::TimeDelta::FromMilliseconds(150);
+  session_->MaybeSendPrefacePing();
+
+  EXPECT_EQ(0, session_->pings_in_flight());
+  EXPECT_EQ(2u, session_->next_ping_id());
+  EXPECT_TRUE(session_->check_ping_status_pending());
+
+  // Read EOF.
+  data.Resume();
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
+
+  // It is not possible to get the posted CheckPingStatus() to execute, because
+  // current mock time mechanisms are incompatible with RunLoop, and
+  // CheckPingStatus() does not have any side effects (like closing the session)
+  // that could be used to call RunLoop::Quit().
+  // TODO(bnc): Fix once a RunLoop-compatible mock time framework is supported.
+  // See https://crbug.com/708584#c75.
+  EXPECT_TRUE(session_->check_ping_status_pending());
+
+  // Finish going away.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
+  EXPECT_FALSE(session_);
+
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
 }
 
 // Request kInitialMaxConcurrentStreams + 1 streams.  Receive a
