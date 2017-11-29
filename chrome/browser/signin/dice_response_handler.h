@@ -13,11 +13,8 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
-
-namespace signin {
-struct DiceResponseParams;
-}
 
 class AccountTrackerService;
 class GaiaAuthFetcher;
@@ -126,8 +123,9 @@ class DiceResponseHandler : public KeyedService {
       std::unique_ptr<ProcessDiceHeaderDelegate> delegate);
 
   // Process the Dice signout action.
-  void ProcessDiceSignoutHeader(const std::vector<std::string>& gaia_ids,
-                                const std::vector<std::string>& emails);
+  void ProcessDiceSignoutHeader(
+      const std::vector<signin::DiceResponseParams::AccountInfo>&
+          account_infos);
 
   // Called after exchanging an OAuth 2.0 authorization code for a refresh token
   // after DiceAction::SIGNIN.
