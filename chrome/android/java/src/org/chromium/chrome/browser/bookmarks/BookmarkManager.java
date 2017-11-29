@@ -403,9 +403,9 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
 
     @Override
     public void openSearchUI() {
+        setState(BookmarkUIState.createSearchState());
         mSelectableListLayout.onStartSearch();
         mToolbar.showSearchView();
-        setState(BookmarkUIState.createSearchState());
     }
 
     @Override
