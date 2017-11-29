@@ -13,12 +13,14 @@ async_test(function(t) {
     var results = {
         current: 0,
         values: [
-            { time: 0, r: 255, g: 255, b: 0 },
-            { time: 2, r: 0, g: 9, b: 237 },
-            { time: 4, r: 0, g: 32, b: 209 },
-            { time: 6, r: 0, g: 54, b: 182 },
-            { time: 8, r: 0, g: 77, b: 154 },
-            { time: 10, r: 0, g: 97, b: 126 }
+            // Different platforms may take different RGB conversion paths or
+            // have slight rounding differences, so allow multiple values here.
+            { time: 0, r: [255], g: [255], b: [0] },
+            { time: 2, r: [0], g: [3], b: [240, 243]  },
+            { time: 4, r: [0], g: [31], b: [213, 216] },
+            { time: 6, r: [0], g: [48], b: [182, 185] },
+            { time: 8, r: [0], g: [75, 76], b: [153, 155] },
+            { time: 10, r: [0], g: [96, 97], b: [126, 128] }
         ]
     };
 
@@ -46,9 +48,9 @@ async_test(function(t) {
         var g = frame.data[4 * 2 * width + 16 + 1];
         var b = frame.data[4 * 2 * width + 16 + 2];
 
-        assert_equals(r, expected.r);
-        assert_equals(g, expected.g);
-        assert_equals(b, expected.b);
+        assert_true(expected.r.includes(r));
+        assert_true(expected.g.includes(g));
+        assert_true(expected.b.includes(b));
 
         if (++results.current == results.values.length)
             t.done();

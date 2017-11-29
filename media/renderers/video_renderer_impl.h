@@ -139,12 +139,7 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Returns true if the renderer has enough data for playback purposes.
   // Note that having enough data may be due to reaching end of stream.
-  //
-  // |low_latency_frames_required| indicates the required number of frame for
-  // have enough with a low latency playback. By default it's one frame, but
-  // during resume after a Flush() we may wait for 2 frames to ensure we have
-  // effective frames.
-  bool HaveEnoughData_Locked(size_t low_latency_frames_required = 1u) const;
+  bool HaveEnoughData_Locked() const;
   void TransitionToHaveEnough_Locked();
   void TransitionToHaveNothing();
   void TransitionToHaveNothing_Locked();

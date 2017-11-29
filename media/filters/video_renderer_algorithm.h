@@ -100,8 +100,9 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // rendered yet.  If it has been rendered, the new frame will be dropped.
   //
   // EnqueueFrame() will compute the current start time and an estimated end
-  // time of the frame based on previous frames so that EffectiveFramesQueued()
-  // is relatively accurate immediately after this call.
+  // time of the frame based on previous frames or the value of
+  // VideoFrameMetadata::FRAME_DURATION if no previous frames, so that
+  // EffectiveFramesQueued() is relatively accurate immediately after this call.
   void EnqueueFrame(const scoped_refptr<VideoFrame>& frame);
 
   // Removes all frames from the |frame_queue_| and clears predictors.  The
