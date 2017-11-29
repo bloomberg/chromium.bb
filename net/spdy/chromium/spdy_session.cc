@@ -66,8 +66,9 @@ const int kReadBufferSize = 8 * 1024;
 const int kDefaultConnectionAtRiskOfLossSeconds = 10;
 const int kHungIntervalSeconds = 10;
 
-// Minimum seconds that unclaimed pushed streams will be kept in memory.
-const int kMinPushedStreamLifetimeSeconds = 300;
+// Lifetime of unclaimed pushed stream, in seconds: after this period, a pushed
+// stream is cancelled if still not claimed.
+const int kPushedStreamLifetimeSeconds = 300;
 
 // Default initial value for HTTP/2 SETTINGS.
 const uint32_t kDefaultInitialHeaderTableSize = 4096;
@@ -794,9 +795,6 @@ SpdySession::SpdySession(
   net_log_.BeginEvent(
       NetLogEventType::HTTP2_SESSION,
       base::Bind(&NetLogSpdySessionCallback, &host_port_proxy_pair()));
-  next_unclaimed_push_stream_sweep_time_ =
-      time_func_() +
-      base::TimeDelta::FromSeconds(kMinPushedStreamLifetimeSeconds);
 
   DCHECK(base::ContainsKey(initial_settings_, SETTINGS_HEADER_TABLE_SIZE));
   DCHECK(base::ContainsKey(initial_settings_, SETTINGS_MAX_CONCURRENT_STREAMS));
@@ -864,8 +862,7 @@ void SpdySession::CancelPush(const GURL& url) {
   if (unclaimed_it == unclaimed_pushed_streams_.end())
     return;
 
-  SpdyStreamId stream_id = unclaimed_it->second.stream_id;
-
+  const SpdyStreamId stream_id = unclaimed_it->second;
   DCHECK(active_streams_.find(stream_id) != active_streams_.end());
   ResetStream(stream_id, ERROR_CODE_CANCEL, "Cancelled push stream.");
 }
@@ -1385,13 +1382,13 @@ SpdySession::UnclaimedPushedStreamContainer::UnclaimedPushedStreamContainer(
 SpdySession::UnclaimedPushedStreamContainer::~UnclaimedPushedStreamContainer() {
 }
 
-size_t SpdySession::UnclaimedPushedStreamContainer::erase(const GURL& url) {
+bool SpdySession::UnclaimedPushedStreamContainer::erase(const GURL& url) {
   const_iterator it = find(url);
-  if (it != end()) {
-    erase(it);
-    return 1;
-  }
-  return 0;
+  if (it == end())
+    return false;
+
+  erase(it);
+  return true;
 }
 
 SpdySession::UnclaimedPushedStreamContainer::iterator
@@ -1408,12 +1405,9 @@ SpdySession::UnclaimedPushedStreamContainer::erase(const_iterator it) {
 
 bool SpdySession::UnclaimedPushedStreamContainer::insert(
     const GURL& url,
-    SpdyStreamId stream_id,
-    const base::TimeTicks& creation_time) {
+    SpdyStreamId stream_id) {
   DCHECK(spdy_session_->pool_);
-  auto result = streams_.insert(std::make_pair(
-      url, SpdySession::UnclaimedPushedStreamContainer::PushedStreamInfo(
-               stream_id, creation_time)));
+  auto result = streams_.insert(std::make_pair(url, stream_id));
   if (!result.second) {
     // Only one pushed stream is allowed for each URL.
     return false;
@@ -1678,12 +1672,18 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   }
 
   // Insertion fails if there already is a pushed stream with the same path.
-  if (!unclaimed_pushed_streams_.insert(gurl, stream_id, time_func_())) {
+  if (!unclaimed_pushed_streams_.insert(gurl, stream_id)) {
     EnqueueResetStreamFrame(stream_id, request_priority,
                             ERROR_CODE_REFUSED_STREAM,
                             "Duplicate pushed stream with url: " + gurl.spec());
     return;
   }
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&SpdySession::CancelPushedStreamIfUnclaimed, GetWeakPtr(),
+                 stream_id),
+      base::TimeDelta::FromSeconds(kPushedStreamLifetimeSeconds));
 
   auto stream = std::make_unique<SpdyStream>(
       SPDY_PUSH_STREAM, GetWeakPtr(), gurl, request_priority,
@@ -1703,8 +1703,6 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   // PUSH_PROMISE arrives on associated stream.
   associated_it->second->AddRawReceivedBytes(last_compressed_frame_len_);
   last_compressed_frame_len_ = 0;
-
-  DeleteExpiredPushedStreams();
 
   InsertActivatedStream(std::move(stream));
 
@@ -1744,7 +1742,9 @@ void SpdySession::CloseActiveStreamIterator(ActiveStreamMap::iterator it,
   // push is hardly used. Write tests for this and fix this. (See
   // http://crbug.com/261712 .)
   if (owned_stream->type() == SPDY_PUSH_STREAM) {
-    unclaimed_pushed_streams_.erase(owned_stream->url());
+    if (unclaimed_pushed_streams_.erase(owned_stream->url())) {
+      bytes_pushed_and_unclaimed_count_ += owned_stream->recv_bytes();
+    }
     bytes_pushed_count_ += owned_stream->recv_bytes();
     num_pushed_streams_--;
     if (!owned_stream->IsReservedRemote())
@@ -2425,7 +2425,7 @@ SpdyStream* SpdySession::GetActivePushStream(const GURL& url) {
   if (unclaimed_it == unclaimed_pushed_streams_.end())
     return nullptr;
 
-  SpdyStreamId stream_id = unclaimed_it->second.stream_id;
+  const SpdyStreamId stream_id = unclaimed_it->second;
   unclaimed_pushed_streams_.erase(unclaimed_it);
 
   ActiveStreamMap::iterator active_it = active_streams_.find(stream_id);
@@ -2435,9 +2435,9 @@ SpdyStream* SpdySession::GetActivePushStream(const GURL& url) {
   }
 
   SpdyStream* stream = active_it->second;
-  net_log_.AddEvent(NetLogEventType::HTTP2_STREAM_ADOPTED_PUSH_STREAM,
-                    base::Bind(&NetLogSpdyAdoptedPushStreamCallback,
-                               stream->stream_id(), &url));
+  net_log_.AddEvent(
+      NetLogEventType::HTTP2_STREAM_ADOPTED_PUSH_STREAM,
+      base::Bind(&NetLogSpdyAdoptedPushStreamCallback, stream_id, &url));
   return stream;
 }
 
@@ -2583,44 +2583,28 @@ void SpdySession::CompleteStreamRequest(
   }
 }
 
-void SpdySession::DeleteExpiredPushedStreams() {
-  if (unclaimed_pushed_streams_.empty())
+void SpdySession::CancelPushedStreamIfUnclaimed(SpdyStreamId stream_id) {
+  ActiveStreamMap::iterator active_it = active_streams_.find(stream_id);
+  if (active_it == active_streams_.end())
     return;
 
-  // Check that adequate time has elapsed since the last sweep.
-  if (time_func_() < next_unclaimed_push_stream_sweep_time_)
+  // Grab URL for faster lookup in unclaimed_pushed_streams_.
+  const GURL& url = active_it->second->url();
+  UnclaimedPushedStreamContainer::const_iterator unclaimed_it =
+      unclaimed_pushed_streams_.find(url);
+  // Make sure to cancel the correct stream.  It is possible that the pushed
+  // stream |stream_id| is already claimed, and another stream has been pushed
+  // for the same URL.
+  if (unclaimed_it == unclaimed_pushed_streams_.end() ||
+      unclaimed_it->second != stream_id) {
     return;
-
-  // Gather old streams to delete.
-  base::TimeTicks minimum_freshness =
-      time_func_() -
-      base::TimeDelta::FromSeconds(kMinPushedStreamLifetimeSeconds);
-  std::vector<SpdyStreamId> streams_to_close;
-  for (UnclaimedPushedStreamContainer::const_iterator it =
-           unclaimed_pushed_streams_.begin();
-       it != unclaimed_pushed_streams_.end(); ++it) {
-    if (minimum_freshness > it->second.creation_time)
-      streams_to_close.push_back(it->second.stream_id);
   }
 
-  for (std::vector<SpdyStreamId>::const_iterator to_close_it =
-           streams_to_close.begin();
-       to_close_it != streams_to_close.end(); ++to_close_it) {
-    ActiveStreamMap::iterator active_it = active_streams_.find(*to_close_it);
-    if (active_it == active_streams_.end())
-      continue;
-    bytes_pushed_and_unclaimed_count_ += active_it->second->recv_bytes();
-
-    LogAbandonedActiveStream(active_it, ERR_TIMED_OUT);
-    // CloseActiveStreamIterator() will remove the stream from
-    // |unclaimed_pushed_streams_|.
-    ResetStreamIterator(active_it, ERROR_CODE_REFUSED_STREAM,
-                        "Stream not claimed.");
-  }
-
-  next_unclaimed_push_stream_sweep_time_ =
-      time_func_() +
-      base::TimeDelta::FromSeconds(kMinPushedStreamLifetimeSeconds);
+  LogAbandonedActiveStream(active_it, ERR_TIMED_OUT);
+  // CloseActiveStreamIterator() will remove the stream from
+  // |unclaimed_pushed_streams_|.
+  ResetStreamIterator(active_it, ERROR_CODE_REFUSED_STREAM,
+                      "Stream not claimed.");
 }
 
 void SpdySession::OnError(
