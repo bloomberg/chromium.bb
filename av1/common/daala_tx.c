@@ -5922,7 +5922,7 @@ const int OD_DST_8_PERM[8] = { 0, 7, 1, 6, 2, 5, 3, 4 };
    [1] Nussbaumer, Henri J. "Fast Fourier Transform and Convolution Algorithms"
         Springer-Verlag: Berlin, Heidelberg, New York (1981) pages 76-78. */
 static void od_poly_prod_8(od_coeff y[8], const od_coeff x[8]) {
-  /* 21 "muls", 75 adds, 18 shifts */
+  /* 21 "muls", 76 adds, 21 shifts */
   od_coeff q0;
   od_coeff q1;
   od_coeff q2;
@@ -5944,6 +5944,14 @@ static void od_poly_prod_8(od_coeff y[8], const od_coeff x[8]) {
   od_coeff q18;
   od_coeff q19;
   od_coeff q20;
+  od_coeff r0;
+  od_coeff r1;
+  od_coeff r2;
+  od_coeff r3;
+  od_coeff r4;
+  od_coeff r5;
+  od_coeff r6;
+  od_coeff r7;
   od_coeff t0;
   od_coeff t1;
   od_coeff t2;
@@ -6029,8 +6037,20 @@ static void od_poly_prod_8(od_coeff y[8], const od_coeff x[8]) {
   q15 = t5 - t6;
   q16 = t6;
   q17 = t5;
-  q18 = ((q6 + ((t0 + t6 + 1) >> 1)) - (q4 + (t5 >> 1))) >> 1;
-  q19 = ((q7 + ((t5 + t6 + 1) >> 1)) - (q0 + (t3 >> 1))) >> 1;
+  r0 = t2 + t4;
+  r1 = t2 - OD_RSHIFT1(r0);
+  r2 = (r1 - q15 + 1) >> 1;
+  r3 = OD_RSHIFT1(t0);
+  r4 = (r3 - t1 + 1) >> 1;
+  /* q18 = (q6 - q4)/2 + (t0 - q15)/4
+         = (t0 + t2 - t4)/4 - (t1 + t5 - t6)/2 */
+  q18 = r2 + r4;
+  r5 = t5 - (q15 >> 1);
+  r6 = (r0 + t3 + 1) >> 1;
+  r7 = (t7 + r6 + 1) >> 1;
+  /* q19 = (q7 - q0)/2 + (t5 + t6 - t3)/4
+         = (t5 + t6 - t7)/2 - (t2 + t3 + t4)/4 */
+  q19 = r5 - r7;
   q20 = (q18 - q19) >> 1;
   /* Stage 4 */
   q0 = (-5995*q0 + 8192) >> 14;
@@ -6078,12 +6098,12 @@ static void od_poly_prod_8(od_coeff y[8], const od_coeff x[8]) {
   u18 = q12 + u8;
   u19 = u18 + q13;
   u20 = u18 + q14;
-  u21 = u9 << 1;
+  u21 = 2*u9;
   u22 = q15 + u21;
   u23 = q16 - u22;
   u24 = u22 + q17;
-  u25 = u8 << 1;
-  u26 = u25 << 1;
+  u25 = 2*u8;
+  u26 = 2*u25;
   u27 = u25 - u9;
   /* Stage 8 */
   y[0] = u14 + u16 + u20;
