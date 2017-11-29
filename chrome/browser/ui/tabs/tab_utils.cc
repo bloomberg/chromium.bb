@@ -21,6 +21,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
@@ -427,24 +428,40 @@ void SetSitesMuted(const TabStripModel& tab_strip,
   for (int tab_index : indices) {
     content::WebContents* web_contents = tab_strip.GetWebContentsAt(tab_index);
     GURL url = web_contents->GetLastCommittedURL();
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    HostContentSettingsMap* settings =
-        HostContentSettingsMapFactory::GetForProfile(profile);
-    ContentSetting setting =
-        mute ? CONTENT_SETTING_BLOCK : CONTENT_SETTING_ALLOW;
-    if (setting == settings->GetDefaultContentSetting(
-                       CONTENT_SETTINGS_TYPE_SOUND, nullptr)) {
-      setting = CONTENT_SETTING_DEFAULT;
+    if (url.SchemeIs(content::kChromeUIScheme)) {
+      // chrome:// URLs don't have content settings but can be muted, so just
+      // mute the WebContents.
+      SetTabAudioMuted(web_contents, mute,
+                       TabMutedReason::CONTENT_SETTING_CHROME, std::string());
+    } else {
+      Profile* profile =
+          Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      HostContentSettingsMap* settings =
+          HostContentSettingsMapFactory::GetForProfile(profile);
+      ContentSetting setting =
+          mute ? CONTENT_SETTING_BLOCK : CONTENT_SETTING_ALLOW;
+      if (setting == settings->GetDefaultContentSetting(
+                         CONTENT_SETTINGS_TYPE_SOUND, nullptr)) {
+        setting = CONTENT_SETTING_DEFAULT;
+      }
+      settings->SetContentSettingDefaultScope(
+          url, url, CONTENT_SETTINGS_TYPE_SOUND, std::string(), setting);
     }
-    settings->SetContentSettingDefaultScope(
-        url, url, CONTENT_SETTINGS_TYPE_SOUND, std::string(), setting);
   }
 }
 
 bool IsSiteMuted(const TabStripModel& tab_strip, const int index) {
   content::WebContents* web_contents = tab_strip.GetWebContentsAt(index);
   GURL url = web_contents->GetLastCommittedURL();
+
+  // chrome:// URLs don't have content settings but can be muted, so just check
+  // the current muted state and TabMutedReason of the WebContents.
+  if (url.SchemeIs(content::kChromeUIScheme)) {
+    return web_contents->IsAudioMuted() &&
+           GetTabAudioMutedReason(web_contents) ==
+               TabMutedReason::CONTENT_SETTING_CHROME;
+  }
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   HostContentSettingsMap* settings =
