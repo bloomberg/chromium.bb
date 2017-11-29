@@ -20,6 +20,8 @@ suite('Internet', function() {
       internetAddConnectionNotAllowed: 'internetAddConnectionNotAllowed',
       internetAddThirdPartyVPN: 'internetAddThirdPartyVPN',
       internetAddVPN: 'internetAddVPN',
+      internetAddArcVPN: 'internetAddArcVPN',
+      internetAddArcVPNProvider: 'internetAddArcVPNProvider',
       internetAddWiFi: 'internetAddWiFi',
       internetDetailPageTitle: 'internetDetailPageTitle',
       internetKnownNetworksPageTitle: 'internetKnownNetworksPageTitle',
@@ -56,6 +58,10 @@ suite('Internet', function() {
   function setNetworksForTest(networks) {
     api_.resetForTest();
     api_.addNetworksForTest(networks);
+  }
+
+  function setArcVpnProvidersForTest(arcVpnProviders) {
+    cr.webUIListenerCallback('sendArcVpnProviders',arcVpnProviders);
   }
 
   setup(function() {
@@ -277,6 +283,36 @@ suite('Internet', function() {
         assertEquals(2, networkList.networks.length);
         // TODO(stevenjb): Implement fake management API and test third
         // party provider sections.
+      });
+    });
+
+    test('ArcVPNProvider', function() {
+      setArcVpnProvidersForTest([
+        {
+          Packagename: 'vpn.app.pacakge1',
+          ProviderName: 'MyArcVPN1',
+          AppID: 'arcid1',
+          LastLaunchTime: 0
+        },
+        {
+          Packagename: 'vpn.app.pacakge2',
+          ProviderName: 'MyArcVPN2',
+          AppID: 'arcid2',
+          LastLaunchTime: 1
+        }]);
+      return flushAsync().then(() => {
+        var expandAddConnections = internetPage.$$('#expandAddConnections');
+        assertTrue(!!expandAddConnections);
+        assertTrue(!expandAddConnections.expanded);
+        internetPage.addConnectionExpanded_ = true;
+        Polymer.dom.flush();
+        var addArcVpn = internetPage.$$('#addArcVpn');
+        assertTrue(!!addArcVpn);
+        MockInteractions.tap(addArcVpn);
+        Polymer.dom.flush();
+        var subpage = internetPage.$$('settings-internet-subpage');
+        assertTrue(!!subpage);
+        assertEquals(2, subpage.arcVpnProviders.length);
       });
     });
   });

@@ -10,7 +10,8 @@
 Polymer({
   is: 'settings-internet-page',
 
-  behaviors: [I18nBehavior, settings.RouteObserverBehavior],
+  behaviors:
+      [I18nBehavior, settings.RouteObserverBehavior, WebUIListenerBehavior],
 
   properties: {
     /**
@@ -89,6 +90,18 @@ Polymer({
       }
     },
 
+    /**
+     * List of Arc VPN providers.
+     * @type {!Array<!settings.ArcVpnProvider>}
+     * @private
+     */
+    arcVpnProviders_: {
+      type: Array,
+      value: function() {
+        return [];
+      }
+    },
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
@@ -134,6 +147,13 @@ Polymer({
   /** @override */
   created: function() {
     this.browserProxy_ = settings.InternetPageBrowserProxyImpl.getInstance();
+  },
+
+  /** @override */
+  ready: function() {
+    this.browserProxy_.setUpdateArcVpnProvidersCallback(
+        this.onArcVpnProvidersReceived_.bind(this));
+    this.browserProxy_.requestArcVpnProviders();
   },
 
   /** @override */
@@ -291,11 +311,7 @@ Polymer({
    * @private
    */
   onShowNetworks_: function(event) {
-    this.detailType_ = event.detail.Type;
-    var params = new URLSearchParams;
-    params.append('type', event.detail.Type);
-    this.subpageType_ = event.detail.Type;
-    settings.navigateTo(settings.routes.INTERNET_NETWORKS, params);
+    this.showNetworksSubpage_(event.detail.Type);
   },
 
   /**
@@ -384,6 +400,23 @@ Polymer({
   onAddThirdPartyVpnTap_: function(event) {
     var provider = event.model.item;
     this.browserProxy_.addThirdPartyVpn(CrOnc.Type.VPN, provider.ExtensionID);
+  },
+
+  /** @private */
+  onAddArcVpnTap_: function() {
+    this.showNetworksSubpage_(CrOnc.Type.VPN);
+  },
+
+  /**
+   * @param {string} type
+   * @private
+   */
+  showNetworksSubpage_: function(type) {
+    this.detailType_ = type;
+    var params = new URLSearchParams;
+    params.append('type', type);
+    this.subpageType_ = type;
+    settings.navigateTo(settings.routes.INTERNET_NETWORKS, params);
   },
 
   /**
@@ -483,6 +516,29 @@ Polymer({
         break;
       }
     }
+  },
+
+  /**
+   * Compares Arc VPN Providers based on LastlauchTime
+   * @param {!settings.ArcVpnProvider} arcVpnProvider1
+   * @param {!settings.ArcVpnProvider} arcVpnProvider2
+   * @private
+   */
+  compareArcVpnProviders_: function(arcVpnProvider1, arcVpnProvider2) {
+    if (arcVpnProvider1.LastLaunchTime > arcVpnProvider2.LastLaunchTime)
+      return -1;
+    if (arcVpnProvider1.LastLaunchTime < arcVpnProvider2.LastLaunchTime)
+      return 1;
+    return 0;
+  },
+
+  /**
+   * @param {?Array<!settings.ArcVpnProvider>} arcVpnProviders
+   * @private
+   */
+  onArcVpnProvidersReceived_: function(arcVpnProviders) {
+    arcVpnProviders.sort(this.compareArcVpnProviders_);
+    this.arcVpnProviders_ = arcVpnProviders;
   },
 
   /**

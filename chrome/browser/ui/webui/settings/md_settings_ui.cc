@@ -181,7 +181,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       base::MakeUnique<chromeos::settings::StylusHandler>());
   AddSettingsPageUIHandler(
-      base::MakeUnique<chromeos::settings::InternetHandler>());
+      base::MakeUnique<chromeos::settings::InternetHandler>(profile));
 #else
   AddSettingsPageUIHandler(base::MakeUnique<DefaultBrowserHandler>(web_ui));
   AddSettingsPageUIHandler(base::MakeUnique<ManageProfileHandler>(profile));

@@ -5,6 +5,16 @@
 /** @fileoverview A helper object used for Internet page. */
 cr.exportPath('settings');
 
+/**
+ * @typedef {{
+ *   PackageName: string,
+ *   ProviderName: string,
+ *   AppID: string,
+ *   LastLaunchTime: number,
+ * }}
+ */
+settings.ArcVpnProvider;
+
 cr.define('settings', function() {
   /** @interface */
   class InternetPageBrowserProxy {
@@ -20,6 +30,18 @@ cr.define('settings', function() {
      * @param {string} appId
      */
     addThirdPartyVpn(networkType, appId) {}
+
+    /**
+     * Requests Chrome to send list of Arc VPN providers.
+     */
+    requestArcVpnProviders() {}
+
+    /**
+     * |callback| is run when there is update of Arc VPN providers.
+     * Available after |requestArcVpnProviders| has been called.
+     * @param {function(?Array<settings.ArcVpnProvider>):void} callback
+     */
+    setUpdateArcVpnProvidersCallback(callback) {}
   }
 
   /**
@@ -34,6 +56,16 @@ cr.define('settings', function() {
     /** @override */
     addThirdPartyVpn(networkType, appId) {
       chrome.send('addNetwork', [networkType, appId]);
+    }
+
+    /** @override */
+    requestArcVpnProviders() {
+      chrome.send('requestArcVpnProviders');
+    }
+
+    /** @override */
+    setUpdateArcVpnProvidersCallback(callback) {
+      cr.addWebUIListener('sendArcVpnProviders', callback);
     }
   }
 
