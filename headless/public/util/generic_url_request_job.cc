@@ -333,10 +333,10 @@ bool ReadAndAppendBytes(const std::unique_ptr<net::UploadElementReader>& reader,
   }
 
   // Read the POST bytes.
-  uint64_t content_length = reader->GetContentLength();
+  uint64_t size_to_stop_at = post_data.size() + reader->GetContentLength();
   const size_t block_size = 1024;
   scoped_refptr<net::IOBuffer> read_buffer(new net::IOBuffer(block_size));
-  while (post_data.size() < content_length) {
+  while (post_data.size() < size_to_stop_at) {
     base::Closure quit_closure;
     int bytes_read = reader->Read(
         read_buffer.get(), block_size,
@@ -409,10 +409,17 @@ uint64_t GenericURLRequestJob::GetPostDataSize() const {
   if (stream->GetElementReaders()->size() == 0)
     return 0;
 
-  DCHECK_EQ(1u, stream->GetElementReaders()->size());
-  const std::unique_ptr<net::UploadElementReader>& reader =
-      (*stream->GetElementReaders())[0];
-  return reader->GetContentLength();
+  const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
+      stream->GetElementReaders();
+  if (!readers)
+    return 0;
+
+  uint64_t total_content_length = 0;
+  for (size_t i = 0; i < readers->size(); ++i) {
+    const std::unique_ptr<net::UploadElementReader>& reader = (*readers)[i];
+    total_content_length += reader->GetContentLength();
+  }
+  return total_content_length;
 }
 
 }  // namespace headless

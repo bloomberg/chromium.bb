@@ -58,12 +58,12 @@ class MockDelegate : public MockGenericURLRequestJobDelegate {
 class MockFetcher : public URLFetcher {
  public:
   MockFetcher(base::DictionaryValue* fetch_request,
-              std::string* recieved_post_data,
+              std::string* received_post_data,
               std::map<std::string, std::string>* json_fetch_reply_map,
               base::Callback<void(const Request*)>* on_request_callback)
       : json_fetch_reply_map_(json_fetch_reply_map),
         fetch_request_(fetch_request),
-        received_post_data_(recieved_post_data),
+        received_post_data_(received_post_data),
         on_request_callback_(on_request_callback) {}
 
   ~MockFetcher() override = default;
@@ -139,13 +139,13 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   // Details of the fetch will be stored in |fetch_request|.
   // The fetch response will be created from parsing |json_fetch_reply_map|.
   MockProtocolHandler(base::DictionaryValue* fetch_request,
-                      std::string* recieved_post_data,
+                      std::string* received_post_data,
                       std::map<std::string, std::string>* json_fetch_reply_map,
                       URLRequestDispatcher* dispatcher,
                       GenericURLRequestJob::Delegate* job_delegate,
                       base::Callback<void(const Request*)>* on_request_callback)
       : fetch_request_(fetch_request),
-        received_post_data_(recieved_post_data),
+        received_post_data_(received_post_data),
         json_fetch_reply_map_(json_fetch_reply_map),
         job_delegate_(job_delegate),
         dispatcher_(dispatcher),
@@ -694,7 +694,6 @@ TEST_F(GenericURLRequestJobTest, LargePostDataNotByteReader) {
   for (size_t i = 0; i < post_data.size(); i++)
     post_data.at(i) = i & 127;
 
-  // TODO(alexclarke) Add a multiple element test too.
   request->set_upload(net::ElementsUploadDataStream::CreateWithReader(
       base::MakeUnique<ByteAtATimeUploadElementReader>(post_data), 0));
   request->Start();
@@ -706,6 +705,41 @@ TEST_F(GenericURLRequestJobTest, LargePostDataNotByteReader) {
   }
 
   EXPECT_EQ(post_data.size(), received_post_data_.size());
+}
+
+TEST_F(GenericURLRequestJobTest, PostWithMultipleElements) {
+  json_fetch_reply_map_["https://example.com/"] = R"(
+      {
+        "url": "https://example.com",
+        "data": "Reply",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
+
+  std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
+      GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->SetReferrer("https://referrer.example.com");
+  request->SetExtraRequestHeaderByName("Extra-Header", "Value", true);
+  request->SetExtraRequestHeaderByName("User-Agent", "TestBrowser", true);
+  request->SetExtraRequestHeaderByName("Accept", "text/plain", true);
+  request->set_method("POST");
+
+  std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
+  element_readers.push_back(
+      base::MakeUnique<ByteAtATimeUploadElementReader>("Does "));
+  element_readers.push_back(
+      base::MakeUnique<ByteAtATimeUploadElementReader>("this "));
+  element_readers.push_back(
+      base::MakeUnique<ByteAtATimeUploadElementReader>("work?"));
+
+  request->set_upload(base::MakeUnique<net::ElementsUploadDataStream>(
+      std::move(element_readers), 0));
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ("Does this work?", received_post_data_);
 }
 
 }  // namespace headless
