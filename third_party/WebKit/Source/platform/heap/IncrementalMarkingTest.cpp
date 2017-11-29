@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#undef HEAP_INCREMENTAL_MARKING
-#define HEAP_INCREMENTAL_MARKING 1
-
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Heap.h"

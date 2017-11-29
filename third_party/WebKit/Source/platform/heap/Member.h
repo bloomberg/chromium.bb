@@ -5,6 +5,7 @@
 #ifndef Member_h
 #define Member_h
 
+#include "platform/heap/Heap.h"
 #include "platform/heap/HeapPage.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashFunctions.h"
@@ -244,7 +245,6 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
 
  protected:
   ALWAYS_INLINE void WriteBarrier(const T* value) const {
-#if HEAP_INCREMENTAL_MARKING
     if (value) {
       // The following method for retrieving a page works as allocation of
       // mixins on large object pages is prohibited.
@@ -255,7 +255,9 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
             page->IsLargeObjectPage()
                 ? static_cast<LargeObjectPage*>(page)->GetHeapObjectHeader()
                 : static_cast<NormalPage*>(page)->FindHeaderFromAddress(
-                      reinterpret_cast<Address>(const_cast<T*>(value)));
+                      reinterpret_cast<Address>(
+                          const_cast<typename std::remove_const<T>::type*>(
+                              value)));
         if (header->IsMarked())
           return;
 
@@ -266,7 +268,6 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
             ThreadHeap::GcInfo(header->GcInfoIndex())->trace_);
       }
     }
-#endif  // HEAP_INCREMENTAL_MARKING
   }
 };
 
