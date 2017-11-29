@@ -263,6 +263,21 @@ TEST_F(TemplateURLTest, URLRefTestImageURLWithPOST) {
   }
 }
 
+TEST_F(TemplateURLTest, ImageURLWithGetShouldNotCrash) {
+  TemplateURLData data;
+  data.SetURL("http://foo/?q={searchTerms}&t={google:imageThumbnail}");
+  TemplateURL url(data);
+  EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
+  ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
+
+  TemplateURLRef::SearchTermsArgs search_args(ASCIIToUTF16("X"));
+  search_args.image_thumbnail_content = "dummy-image-thumbnail";
+  GURL result(
+      url.url_ref().ReplaceSearchTerms(search_args, search_terms_data_));
+  ASSERT_TRUE(result.is_valid());
+  EXPECT_EQ("http://foo/?q=X&t=dummy-image-thumbnail", result.spec());
+}
+
 // Test that setting the prepopulate ID from TemplateURL causes the stored
 // TemplateURLRef to handle parsing the URL parameters differently.
 TEST_F(TemplateURLTest, SetPrepopulatedAndParse) {
