@@ -26,4 +26,9 @@ std::string AccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
   return std::string();
 }
 
+bool AccountReconcilorDelegate::ShouldRevokeAllSecondaryTokensBeforeReconcile(
+    const std::vector<gaia::ListedAccount>& gaia_accounts) {
+  return false;
+}
+
 }  // namespace signin
