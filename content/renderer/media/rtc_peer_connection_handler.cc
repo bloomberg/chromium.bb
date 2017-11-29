@@ -981,7 +981,10 @@ class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
       base::WeakPtr<RTCPeerConnectionHandler> handler,
       blink::WebRTCVoidRequest web_request,
       base::WeakPtr<PeerConnectionTracker> tracker)
-      : handler_(handler), web_request_(web_request), tracker_(tracker) {}
+      : handler_(handler),
+        main_thread_(base::ThreadTaskRunnerHandle::Get()),
+        web_request_(web_request),
+        tracker_(tracker) {}
 
   void OnSetRemoteDescriptionComplete(
       webrtc::RTCErrorOr<WebRtcSetRemoteDescriptionObserver::States>
@@ -1012,6 +1015,12 @@ class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
           removed_receivers.push_back(it->second.get());
       }
 
+      // Update stream states (which tracks belong to which streams).
+      for (auto& stream_state : GetStreamStates(states, removed_receivers)) {
+        stream_state.stream_ref->adapter().SetTracks(
+            std::move(stream_state.track_refs));
+      }
+
       // Process the addition of remote receivers/tracks.
       for (auto& receiver_state : states.receiver_states) {
         if (ReceiverWasAdded(receiver_state)) {
@@ -1030,12 +1039,38 @@ class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
             "");
       }
     }
-    web_request_.RequestSucceeded();
-    web_request_.Reset();
+    // Resolve the promise in a post to ensure any events scheduled for
+    // dispatching will have fired by the time the promise is resolved.
+    // TODO(hbos): Don't schedule/post to fire events/resolve the promise.
+    // Instead, do it all synchronously. This must happen as the last step
+    // before returning so that all effects of SRD have occurred when the event
+    // executes. https://crbug.com/788558
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl::
+                ResolvePromise,
+            this));
   }
 
  private:
   ~WebRtcSetRemoteDescriptionObserverImpl() override {}
+
+  // Describes which tracks belong to a stream in terms of AdapterRefs.
+  struct StreamState {
+    StreamState(
+        std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> stream_ref)
+        : stream_ref(std::move(stream_ref)) {}
+
+    std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> stream_ref;
+    std::vector<std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>>
+        track_refs;
+  };
+
+  void ResolvePromise() {
+    web_request_.RequestSucceeded();
+    web_request_.Reset();
+  }
 
   bool ReceiverWasAdded(const WebRtcReceiverState& receiver_state) {
     return handler_->rtp_receivers_.find(
@@ -1053,7 +1088,46 @@ class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
     return true;
   }
 
+  // Determines the stream states from the current state of receivers and the
+  // receivers that are about to be removed. Produces a stable order of streams.
+  std::vector<StreamState> GetStreamStates(
+      const WebRtcSetRemoteDescriptionObserver::States& states,
+      const std::vector<RTCRtpReceiver*>& removed_receivers) {
+    std::vector<StreamState> stream_states;
+    // The receiver's track belongs to all of its streams. A stream may be
+    // associated with multiple tracks (multiple receivers).
+    for (auto& receiver_state : states.receiver_states) {
+      for (auto& stream_ref : receiver_state.stream_refs) {
+        auto* stream_state =
+            GetOrAddStreamStateForStream(*stream_ref, &stream_states);
+        stream_state->track_refs.push_back(receiver_state.track_ref->Copy());
+      }
+    }
+    // The track of removed receivers do not belong to any stream. Make sure we
+    // have a stream state for any streams belonging to receivers about to be
+    // removed in case it was the last receiver referencing that stream.
+    for (auto* removed_receiver : removed_receivers)
+      for (auto& stream_ref : removed_receiver->StreamAdapterRefs())
+        GetOrAddStreamStateForStream(*stream_ref, &stream_states);
+    return stream_states;
+  }
+
+  StreamState* GetOrAddStreamStateForStream(
+      const WebRtcMediaStreamAdapterMap::AdapterRef& stream_ref,
+      std::vector<StreamState>* stream_states) {
+    auto* webrtc_stream = stream_ref.adapter().webrtc_stream().get();
+    for (auto& stream_state : *stream_states) {
+      if (stream_state.stream_ref->adapter().webrtc_stream().get() ==
+          webrtc_stream) {
+        return &stream_state;
+      }
+    }
+    stream_states->push_back(StreamState(stream_ref.Copy()));
+    return &stream_states->back();
+  }
+
   base::WeakPtr<RTCPeerConnectionHandler> handler_;
+  scoped_refptr<base::SequencedTaskRunner> main_thread_;
   blink::WebRTCVoidRequest web_request_;
   base::WeakPtr<PeerConnectionTracker> tracker_;
 };
