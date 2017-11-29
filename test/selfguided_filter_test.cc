@@ -19,6 +19,7 @@
 #include "test/register_state_check.h"
 #include "test/util.h"
 
+#include "aom_ports/aom_timer.h"
 #include "av1/common/mv.h"
 #include "av1/common/restoration.h"
 
@@ -226,7 +227,8 @@ class AV1HighbdSelfguidedFilterTest
 
     av1_loop_restoration_precal();
 
-    std::clock_t start = std::clock();
+    aom_usec_timer timer;
+    aom_usec_timer_start(&timer);
     for (i = 0; i < NUM_ITERS; ++i) {
       for (k = 0; k < height; k += pu_height)
         for (j = 0; j < width; j += pu_width) {
@@ -239,11 +241,11 @@ class AV1HighbdSelfguidedFilterTest
               CONVERT_TO_BYTEPTR(output_p), out_stride, tmpbuf, bit_depth, 1);
         }
     }
-    std::clock_t end = std::clock();
-    double elapsed = ((end - start) / (double)CLOCKS_PER_SEC);
+    aom_usec_timer_mark(&timer);
+    double elapsed = static_cast<double>(aom_usec_timer_elapsed(&timer));
 
     printf("%5d %dx%d blocks in %7.3fs = %7.3fus/block\n", NUM_ITERS, width,
-           height, elapsed, elapsed * 1000000. / NUM_ITERS);
+           height, elapsed / 1000000, elapsed / NUM_ITERS);
 
     aom_free(input_);
     aom_free(output_);
