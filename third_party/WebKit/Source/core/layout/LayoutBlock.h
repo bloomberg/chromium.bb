@@ -322,8 +322,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   bool RecalcPositionedDescendantsOverflowAfterStyleChange();
 
  public:
-  virtual bool RecalcChildOverflowAfterStyleChange();
-  bool RecalcOverflowAfterStyleChange();
+  bool RecalcChildOverflowAfterStyleChange();
+  bool RecalcOverflowAfterStyleChange() override;
 
   // An example explaining layout tree structure about first-line style:
   // <style>
