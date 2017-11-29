@@ -413,6 +413,8 @@ mojo.MediaRouteProviderConfig.prototype.enable_cast_discovery;
 mojo.RemotingStopReason = function() {};
 /** @type {!mojo.RemotingStopReason} */
 mojo.RemotingStopReason.ROUTE_TERMINATED;
+/** @type {!mojo.RemotingStopReason} */
+mojo.RemotingStopReason.USER_DISABLED;
 
 
 
