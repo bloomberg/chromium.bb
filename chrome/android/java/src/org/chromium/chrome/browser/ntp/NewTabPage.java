@@ -345,7 +345,7 @@ public class NewTabPage
         eventReporter.onSurfaceOpened();
 
         DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
-                /*isOffRecord=*/false);
+                /*isOffTheRecord=*/false);
 
         RecordHistogram.recordBooleanHistogram(
                 "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());

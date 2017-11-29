@@ -209,7 +209,7 @@ public class SectionList
      */
     public void restoreDismissedSections() {
         mUiDelegate.getSuggestionsSource().restoreDismissedCategories();
-        resetSections(/* allowEmptySections = */ true);
+        resetSections(/* alwaysAllowEmptySections = */ true);
         mUiDelegate.getSuggestionsSource().fetchRemoteSuggestions();
     }
 
