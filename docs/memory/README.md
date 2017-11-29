@@ -1,9 +1,9 @@
 # Memory
 
-Landing page for all things related to memory usage in Chromium.
+Landing page for all things memory-related in Chromium.
 
-The goal is to keep an ever present set of links and references that will
-help people what is actively happening in the memory space. Please keep
+The goal is to keep an up-to-date set of links and references that will
+help people understand what is actively happening in the memory space. Please keep
 this landing page short and action oriented.
 
 That being said, please also send CL with update and changes. This should
@@ -12,19 +12,11 @@ maintain it. :)
 
 ## How is chrome's memory usage doing in the world?
 
-Look at UMA for the Memory.\* UMAs. Confused at which to use? Start with these:
+Look at the UMAs **Memory.{Total,Renderer,Browser,Gpu,Extension}.PrivateMemoryFootprint**.
 
+These metrics are known to lack sufficient context. e.g. How many renderers are open? What site is a renderer hosting? How long has the browser been running?
 
-| name | description | Caveats |
-|------|-------------|---------|
-| Memory.\*.Committed | private, image, and file mapped memory | Windows only. Over penalizes Chrome for mapped images and files |
-| Memory.Experimental.\*.<br />PrivateMemoryFootprint | New metric measuring private anonymous memory usage (swap or ram) by Chrome. | See Consistent Memory  Metrics |
-| --Memory.\*.Large2-- | Measures physical memory usage. | **DO NOT USE THIS METRIC**\* |
-
-\*Do **NOT** use `Memory.\*.Large2` as the `Large2` metrics only
-count the physical ram used. This means the number varies based on the behavior
-of applications other than Chrome making it near meaningless. Yes, they are
-currently in the default finch trials. We're going to fix that.
+Some of these graphs are now available at [go/mem-ukm](http://go/mem-ukm).
 
 
 ## How do developers communicate?
@@ -67,9 +59,12 @@ Second, familiarize yourself with the following:
 ## What are people actively working on?
 | Project | Description |
 |---------|-------------|
-| [Memory Coordinator](https://docs.google.com/document/d/1dkUXXmpJk7xBUeQM-olBpTHJ2MXamDgY_kjNrl9JXMs/edit#heading=h.swke19b7apg5) (including [Purge+Throttle/Suspend](https://docs.google.com/document/d/1EgLimgxWK5DGhptnNVbEGSvVn6Q609ZJaBkLjEPRJvI/edit)) | Centralized policy and coordination of all memory components in Chrome |
+|  [Purge+Throttle/Suspend](https://docs.google.com/document/d/1EgLimgxWK5DGhptnNVbEGSvVn6Q609ZJaBkLjEPRJvI/edit) | Centralized policy and coordination of all memory components in Chrome |
 | [Memory-Infra](/docs/memory-infra/README.md) | Tooling and infrastructure for Memory |
 | [System health benchmarks](https://docs.google.com/document/d/1pEeCnkbtrbsK3uuPA-ftbg4kzM4Bk7a2A9rhRYklmF8/edit?usp=sharing) | Automated tests based on telemetry |
+| [Out of Process Heap Profiling](https://docs.google.com/document/d/1zKNGByeouYz9E719J8dmKNepLLanCNUq310gbzjiHOg/edit#heading=h.aabxwucn5hhp) | Collect heap dumps from the wild |
+| [Always on Document Leak Detector](https://bugs.chromium.org/p/chromium/issues/detail?id=757374) | UMA-based sanity check that DOM objects are not leaking in the wild. |
+| [Real-world leak detector](https://bugs.chromium.org/p/chromium/issues/detail?id=763280) | Runs blink leak detector on top-sites [web-page-replay] on waterfall.
 
 
 ## Key knowledge areas and contacts
@@ -83,6 +78,7 @@ Second, familiarize yourself with the following:
 | Net Stack | mmenke, rsleevi, xunjieli |
 | Renderer Process | haraken, tasak, hajimehoshi, keishi, hiroshige |
 | V8 | hpayer, ulan, verwaest, mlippautz |
+| Out of Process Heap Profiling | erikchen, ajwong, brettw, etienneb
 
 
 ## Other docs
