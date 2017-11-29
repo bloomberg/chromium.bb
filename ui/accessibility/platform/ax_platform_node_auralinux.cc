@@ -288,7 +288,10 @@ static AtkObject* ax_platform_node_auralinux_ref_accessible_at_point(
   if (!obj)
     return nullptr;
 
-  return obj->HitTestSync(x, y, coord_type);
+  AtkObject* result = obj->HitTestSync(x, y, coord_type);
+  if (result)
+    g_object_ref(result);
+  return result;
 }
 
 static gboolean ax_platform_node_auralinux_grab_focus(
