@@ -13,15 +13,10 @@
 
 #include "base/containers/id_map.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "content/common/quota_dispatcher_host.mojom.h"
 #include "content/public/renderer/worker_thread.h"
-#include "storage/common/quota/quota_types.h"
 
 class GURL;
-
-namespace IPC {
-class Message;
-}
 
 namespace blink {
 class WebStorageQuotaCallbacks;
@@ -29,15 +24,15 @@ class WebStorageQuotaCallbacks;
 
 namespace content {
 
-class ThreadSafeSender;
-class QuotaMessageFilter;
-
 // Dispatches and sends quota related messages sent to/from a child
 // process from/to the main browser process.  There is one instance
 // per each thread.  Thread-specific instance can be obtained by
 // ThreadSpecificInstance().
+// TODO(sashab): Change this to be per-execution context instead of per-process.
 class QuotaDispatcher : public WorkerThread::Observer {
  public:
+  // TODO(sashab): Remove this wrapper, using lambdas or just the web callback
+  // itself.
   class Callback {
    public:
     virtual ~Callback() {}
@@ -46,20 +41,15 @@ class QuotaDispatcher : public WorkerThread::Observer {
     virtual void DidFail(storage::QuotaStatusCode status) = 0;
   };
 
-  QuotaDispatcher(ThreadSafeSender* thread_safe_sender,
-                  QuotaMessageFilter* quota_message_filter);
+  explicit QuotaDispatcher(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~QuotaDispatcher() override;
 
-  // |thread_safe_sender| and |quota_message_filter| are used if
-  // calling this leads to construction.
   static QuotaDispatcher* ThreadSpecificInstance(
-      ThreadSafeSender* thread_safe_sender,
-      QuotaMessageFilter* quota_message_filter);
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
 
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
-
-  void OnMessageReceived(const IPC::Message& msg);
 
   void QueryStorageUsageAndQuota(const GURL& gurl,
                                  storage::StorageType type,
@@ -67,7 +57,7 @@ class QuotaDispatcher : public WorkerThread::Observer {
   void RequestStorageQuota(int render_frame_id,
                            const GURL& gurl,
                            storage::StorageType type,
-                           uint64_t requested_size,
+                           int64_t requested_size,
                            std::unique_ptr<Callback> callback);
 
   // Creates a new Callback instance for WebStorageQuotaCallbacks.
@@ -76,18 +66,23 @@ class QuotaDispatcher : public WorkerThread::Observer {
 
  private:
   // Message handlers.
-  void DidQueryStorageUsageAndQuota(int request_id,
+  void DidQueryStorageUsageAndQuota(int64_t request_id,
+                                    storage::QuotaStatusCode status,
                                     int64_t current_usage,
                                     int64_t current_quota);
-  void DidGrantStorageQuota(int request_id,
+  void DidGrantStorageQuota(int64_t request_id,
+                            storage::QuotaStatusCode status,
                             int64_t current_usage,
                             int64_t granted_quota);
   void DidFail(int request_id, storage::QuotaStatusCode error);
 
-  base::IDMap<std::unique_ptr<Callback>> pending_quota_callbacks_;
+  content::mojom::QuotaDispatcherHostPtr quota_host_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-  scoped_refptr<QuotaMessageFilter> quota_message_filter_;
+  // TODO(sashab, nverne): Once default callbacks are available for dropped mojo
+  // callbacks (crbug.com/775358), use them to call DidFail for them in the
+  // destructor and remove this.
+  base::IDMap<std::unique_ptr<Callback>> pending_quota_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaDispatcher);
 };

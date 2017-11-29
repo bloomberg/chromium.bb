@@ -72,7 +72,6 @@
 #include "content/renderer/notifications/notification_manager.h"
 #include "content/renderer/push_messaging/push_provider.h"
 #include "content/renderer/quota_dispatcher.h"
-#include "content/renderer/quota_message_filter.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
 #include "content/renderer/web_database_observer_impl.h"
@@ -294,7 +293,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
                      ->Clone();
     sync_message_filter_ = RenderThreadImpl::current()->sync_message_filter();
     thread_safe_sender_ = RenderThreadImpl::current()->thread_safe_sender();
-    quota_message_filter_ = RenderThreadImpl::current()->quota_message_filter();
     shared_bitmap_manager_ =
         RenderThreadImpl::current()->shared_bitmap_manager();
     blob_registry_.reset(new WebBlobRegistryImpl(
@@ -1369,13 +1367,9 @@ void RendererBlinkPlatformImpl::QueryStorageUsageAndQuota(
     const blink::WebURL& storage_partition,
     blink::WebStorageQuotaType type,
     blink::WebStorageQuotaCallbacks callbacks) {
-  if (!thread_safe_sender_.get() || !quota_message_filter_.get())
-    return;
-  QuotaDispatcher::ThreadSpecificInstance(thread_safe_sender_.get(),
-                                          quota_message_filter_.get())
+  QuotaDispatcher::ThreadSpecificInstance(default_task_runner_)
       ->QueryStorageUsageAndQuota(
-          storage_partition,
-          static_cast<storage::StorageType>(type),
+          storage_partition, static_cast<storage::StorageType>(type),
           QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
 }
 
