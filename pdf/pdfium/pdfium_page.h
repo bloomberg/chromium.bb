@@ -10,6 +10,7 @@
 
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "pdf/pdf_engine.h"
 #include "ppapi/cpp/rect.h"
 #include "third_party/pdfium/public/fpdf_doc.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
@@ -107,6 +108,8 @@ class PDFiumPage {
                         double bottom,
                         int rotation) const;
 
+  const PDFEngine::PageFeatures* GetPageFeatures();
+
   int index() const { return index_; }
   pp::Rect rect() const { return rect_; }
   void set_rect(const pp::Rect& r) { rect_ = r; }
@@ -164,6 +167,7 @@ class PDFiumPage {
   bool calculated_links_;
   std::vector<Link> links_;
   bool available_;
+  PDFEngine::PageFeatures page_features_;
 };
 
 }  // namespace chrome_pdf

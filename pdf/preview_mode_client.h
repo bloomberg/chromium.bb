@@ -39,6 +39,8 @@ class PreviewModeClient : public PDFEngine::Client {
   void UpdateTickMarks(const std::vector<pp::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifySelectedFindResultChanged(int current_find_index) override;
+  void NotifyPageBecameVisible(
+      const PDFEngine::PageFeatures* page_features) override;
   void GetDocumentPassword(
       pp::CompletionCallbackWithOutput<pp::Var> callback) override;
   void Alert(const std::string& message) override;

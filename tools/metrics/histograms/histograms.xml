@@ -59768,6 +59768,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PDF.AnnotationType" enum="ChromePDFViewerAnnotationType">
+  <owner>hnakashima@chromium.org</owner>
+  <summary>
+    Tracks documents opened in the PDF viewer that displayed one or more pages
+    with the given annotation type.
+  </summary>
+</histogram>
+
 <histogram name="PDF.DocumentFeature" enum="PDFFeatures">
   <owner>tsergeant@chromium.org</owner>
   <summary>
