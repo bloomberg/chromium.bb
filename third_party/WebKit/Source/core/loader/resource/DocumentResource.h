@@ -80,17 +80,6 @@ DEFINE_TYPE_CASTS(DocumentResource,
                   resource->GetType() == Resource::kSVGDocument,
                   resource.GetType() == Resource::kSVGDocument);
 
-class CORE_EXPORT DocumentResourceClient : public ResourceClient {
- public:
-  ~DocumentResourceClient() override {}
-  static bool IsExpectedType(ResourceClient* client) {
-    return client->GetResourceClientType() == kDocumentType;
-  }
-  ResourceClientType GetResourceClientType() const final {
-    return kDocumentType;
-  }
-};
-
 }  // namespace blink
 
 #endif  // DocumentResource_h

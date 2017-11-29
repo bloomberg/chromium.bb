@@ -102,7 +102,7 @@ void SVGUseElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_);
   SVGGraphicsElement::Trace(visitor);
   SVGURIReference::Trace(visitor);
-  DocumentResourceClient::Trace(visitor);
+  ResourceClient::Trace(visitor);
 }
 
 #if DCHECK_IS_ON()
