@@ -1,4 +1,4 @@
-table: [tables/unicode.dis, tables/mn-MN.utb]
+table: [tables/unicode.dis, tables/mn-MN-g1.utb]
 tests:
   - # Hello world  
     - Сайн байна уу дэлхий
