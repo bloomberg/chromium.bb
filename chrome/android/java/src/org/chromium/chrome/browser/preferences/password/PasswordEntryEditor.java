@@ -365,8 +365,18 @@ public class PasswordEntryEditor extends Fragment {
                 PASSWORD_ACTION_BOUNDARY);
     }
 
-    private void displayReauthenticationFragment() {
+    /**
+     * Initiates the reauthentication prompt with a given description.
+     *
+     * @param descriptionId The resource ID of the string to be displayed to explain the reason for
+     *                      the reauthentication.
+     */
+    private void displayReauthenticationFragment(int descriptionId) {
         Fragment passwordReauthentication = new PasswordReauthenticationFragment();
+        Bundle args = new Bundle();
+        args.putInt(PasswordReauthenticationFragment.DESCRIPTION_ID, descriptionId);
+        passwordReauthentication.setArguments(args);
+
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(
@@ -391,7 +401,7 @@ public class PasswordEntryEditor extends Fragment {
                     copyPassword();
                 } else {
                     mCopyButtonPressed = true;
-                    displayReauthenticationFragment();
+                    displayReauthenticationFragment(R.string.lockscreen_description_copy);
                 }
             }
         });
@@ -412,7 +422,7 @@ public class PasswordEntryEditor extends Fragment {
                     displayPassword();
                 } else {
                     mViewButtonPressed = true;
-                    displayReauthenticationFragment();
+                    displayReauthenticationFragment(R.string.lockscreen_description_view);
                 }
             }
         });

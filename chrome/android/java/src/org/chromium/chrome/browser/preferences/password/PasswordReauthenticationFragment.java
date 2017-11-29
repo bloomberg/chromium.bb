@@ -14,10 +14,12 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 
-import org.chromium.chrome.R;
-
 /** Show the lock screen confirmation and lock the screen. */
 public class PasswordReauthenticationFragment extends Fragment {
+    // The key for the description argument, which is used to retrieve an explanation of the
+    // reauthentication prompt to the user.
+    public static final String DESCRIPTION_ID = "description";
+
     protected static final int CONFIRM_DEVICE_CREDENTIAL_REQUEST_CODE = 2;
 
     private boolean mPreventLockDevice;
@@ -59,8 +61,13 @@ public class PasswordReauthenticationFragment extends Fragment {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
         KeyguardManager keyguardManager =
                 (KeyguardManager) getActivity().getSystemService(Context.KEYGUARD_SERVICE);
-        Intent intent = keyguardManager.createConfirmDeviceCredentialIntent(
-                null /* title */, getString(R.string.lockscreen_description) /* description */);
+        final int resourceId = getArguments().getInt(DESCRIPTION_ID, 0);
+        // Forgetting to set the DESCRIPTION_ID is an error on the callsite.
+        assert resourceId != 0;
+        // Set title to null to use the system default title which is adapted to the particular type
+        // of device lock which the user set up.
+        Intent intent =
+                keyguardManager.createConfirmDeviceCredentialIntent(null, getString(resourceId));
         if (intent != null) {
             startActivityForResult(intent, CONFIRM_DEVICE_CREDENTIAL_REQUEST_CODE);
             return;
