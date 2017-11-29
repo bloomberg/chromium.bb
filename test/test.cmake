@@ -293,7 +293,8 @@ if (NOT BUILD_SHARED_LIBS)
     set(AOM_UNIT_TEST_COMMON_SOURCES
         ${AOM_UNIT_TEST_COMMON_SOURCES}
         "${AOM_ROOT}/test/binary_codes_test.cc"
-        "${AOM_ROOT}/test/boolcoder_test.cc")
+        "${AOM_ROOT}/test/boolcoder_test.cc"
+        "${AOM_ROOT}/test/ec_test.cc")
 
     if (CONFIG_EXT_TILE)
       set(AOM_UNIT_TEST_COMMON_SOURCES
