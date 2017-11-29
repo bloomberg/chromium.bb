@@ -4065,3 +4065,4 @@ crbug.com/789139 [ Linux ] virtual/mojo-loading/http/tests/devtools/sources/debu
 crbug.com/785179 [ Mac10.11 ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Pass Failure ]
 # Sheriff failures 2017-11-29
 crbug.com/789478 [ Mac ] virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.html [ Pass Failure ]
+crbug.com/789485 [ Linux ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-tap-mouse-events-between-frames.html [ Pass Failure ]
