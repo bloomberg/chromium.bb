@@ -106,6 +106,24 @@ WindowEnumerator::WindowEnumerator(RunType run_type,
       saved_snapshot_(false) {}
 
 void WindowEnumerator::Run() {
+  if (run_type_ == RunType::AFTER_TEST_TIMEOUT && !output_dir_.empty()) {
+    base::FilePath snapshot_file = SaveDesktopSnapshot(output_dir_);
+    if (!snapshot_file.empty()) {
+      saved_snapshot_ = true;
+
+      std::wostringstream sstream;
+      sstream << "Screen snapshot saved to file: \"" << snapshot_file.value()
+              << "\" after timeout of test";
+      if (child_command_line_) {
+        sstream << " process with command line: \""
+                << child_command_line_->GetCommandLineString() << "\".";
+      } else {
+        sstream << ".";
+      }
+      LOG(ERROR) << sstream.str();
+    }
+  }
+
   ::EnumWindows(&OnWindowProc, reinterpret_cast<LPARAM>(this));
 }
 
