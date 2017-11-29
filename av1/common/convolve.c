@@ -1315,14 +1315,13 @@ static void convolve_helper(const uint8_t *src, int src_stride, uint8_t *dst,
     // we do filter with fewer taps first to reduce hardware implementation
     // complexity
     if (filter_params_y.taps < filter_params_x.taps) {
-      int intermediate_width;
-      int temp_stride = max_intermediate_size;
+      const int temp_stride = max_intermediate_size;
       ConvolveParams temp_conv_params;
       temp_conv_params.ref = 0;
       temp_conv_params.do_average = 0;
       temp_conv_params.round = CONVOLVE_OPT_ROUND;
       filter_size = filter_params_x.taps;
-      intermediate_width =
+      const int intermediate_width =
           (((w - 1) * x_step_q4 + subpel_x_q4) >> SUBPEL_BITS) + filter_size;
       assert(intermediate_width <= max_intermediate_size);
 
@@ -1339,14 +1338,13 @@ static void convolve_helper(const uint8_t *src, int src_stride, uint8_t *dst,
     } else
 #endif  // CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
     {
-      int intermediate_height;
-      int temp_stride = MAX_SB_SIZE;
+      const int temp_stride = MAX_SB_SIZE;
       ConvolveParams temp_conv_params;
       temp_conv_params.ref = 0;
       temp_conv_params.do_average = 0;
       temp_conv_params.round = CONVOLVE_OPT_ROUND;
       filter_size = filter_params_y.taps;
-      intermediate_height =
+      const int intermediate_height =
           (((h - 1) * y_step_q4 + subpel_y_q4) >> SUBPEL_BITS) + filter_size;
       assert(intermediate_height <= max_intermediate_size);
       (void)max_intermediate_size;
@@ -1417,14 +1415,13 @@ static void convolve_scale_helper(const uint8_t *src, int src_stride,
     // we do filter with fewer taps first to reduce hardware implementation
     // complexity
     if (filter_params_y.taps < filter_params_x.taps) {
-      int intermediate_width;
-      int temp_stride = max_intermediate_size;
+      const int temp_stride = max_intermediate_size;
       ConvolveParams temp_conv_params;
       temp_conv_params.ref = 0;
       temp_conv_params.do_average = 0;
       temp_conv_params.round = CONVOLVE_OPT_ROUND;
       filter_size = filter_params_x.taps;
-      intermediate_width =
+      const int intermediate_width =
           (((w - 1) * x_step_qn + subpel_x_qn) >> SCALE_SUBPEL_BITS) +
           filter_size;
       assert(intermediate_width <= max_intermediate_size);
@@ -1441,14 +1438,13 @@ static void convolve_scale_helper(const uint8_t *src, int src_stride,
                      conv_params);
     } else {
 #endif  // CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
-      int intermediate_height;
-      int temp_stride = MAX_SB_SIZE;
+      const int temp_stride = MAX_SB_SIZE;
       ConvolveParams temp_conv_params;
       temp_conv_params.ref = 0;
       temp_conv_params.do_average = 0;
       temp_conv_params.round = CONVOLVE_OPT_ROUND;
       filter_size = filter_params_y.taps;
-      intermediate_height =
+      const int intermediate_height =
           (((h - 1) * y_step_qn + subpel_y_qn) >> SCALE_SUBPEL_BITS) +
           filter_size;
       assert(intermediate_height <= max_intermediate_size);
@@ -1791,10 +1787,9 @@ void av1_highbd_convolve(const uint8_t *src8, int src_stride, uint8_t *dst8,
     av1_convolve_filter_params_fixup_1212(&filter_params_x, &filter_params_y);
 
     if (filter_params_y.taps < filter_params_x.taps) {
-      int intermediate_width;
-      int temp_stride = max_intermediate_size;
+      const int temp_stride = max_intermediate_size;
       filter_size = filter_params_x.taps;
-      intermediate_width =
+      const int intermediate_width =
           (((w - 1) * x_step_q4 + subpel_x_q4) >> SUBPEL_BITS) + filter_size;
       assert(intermediate_width <= max_intermediate_size);
 
@@ -1813,11 +1808,10 @@ void av1_highbd_convolve(const uint8_t *src8, int src_stride, uint8_t *dst8,
     } else
 #endif  // CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
     {
-      int intermediate_height;
-      int temp_stride = MAX_SB_SIZE;
+      const int temp_stride = MAX_SB_SIZE;
       filter_size = filter_params_y.taps;
 
-      intermediate_height =
+      const int intermediate_height =
           (((h - 1) * y_step_q4 + subpel_y_q4) >> SUBPEL_BITS) + filter_size;
       assert(intermediate_height <= max_intermediate_size);
       (void)max_intermediate_size;
@@ -1890,10 +1884,9 @@ void av1_highbd_convolve_scale(const uint8_t *src8, int src_stride,
     av1_convolve_filter_params_fixup_1212(&filter_params_x, &filter_params_y);
 
     if (filter_params_y.taps < filter_params_x.taps) {
-      int intermediate_width;
-      int temp_stride = max_intermediate_size;
+      const int temp_stride = max_intermediate_size;
       filter_size = filter_params_x.taps;
-      intermediate_width =
+      const int intermediate_width =
           (((w - 1) * x_step_qn + subpel_x_qn) >> SCALE_SUBPEL_BITS) +
           filter_size;
       assert(intermediate_width <= max_intermediate_size);
@@ -1912,10 +1905,9 @@ void av1_highbd_convolve_scale(const uint8_t *src8, int src_stride,
           filter_params_x, subpel_x_qn, x_step_qn, ref_idx, bd);
     } else {
 #endif  // CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
-      int intermediate_height;
-      int temp_stride = MAX_SB_SIZE;
+      const int temp_stride = MAX_SB_SIZE;
       filter_size = filter_params_y.taps;
-      intermediate_height =
+      const int intermediate_height =
           (((h - 1) * y_step_qn + subpel_y_qn) >> SCALE_SUBPEL_BITS) +
           filter_size;
       assert(intermediate_height <= max_intermediate_size);
