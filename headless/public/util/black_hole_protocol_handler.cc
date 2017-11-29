@@ -34,7 +34,7 @@ BlackHoleRequestJob::BlackHoleRequestJob(net::URLRequest* request,
                                          net::NetworkDelegate* network_delegate)
     : net::URLRequestJob(request, network_delegate), weak_factory_(this) {}
 
-BlackHoleRequestJob::~BlackHoleRequestJob() {}
+BlackHoleRequestJob::~BlackHoleRequestJob() = default;
 
 void BlackHoleRequestJob::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -54,8 +54,8 @@ void BlackHoleRequestJob::Kill() {
 }
 }  // namespace
 
-BlackHoleProtocolHandler::BlackHoleProtocolHandler() {}
-BlackHoleProtocolHandler::~BlackHoleProtocolHandler() {}
+BlackHoleProtocolHandler::BlackHoleProtocolHandler() = default;
+BlackHoleProtocolHandler::~BlackHoleProtocolHandler() = default;
 
 net::URLRequestJob* BlackHoleProtocolHandler::MaybeCreateJob(
     net::URLRequest* request,

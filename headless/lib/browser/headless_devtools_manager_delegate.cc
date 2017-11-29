@@ -313,7 +313,7 @@ HeadlessDevToolsManagerDelegate::HeadlessDevToolsManagerDelegate(
       &HeadlessDevToolsManagerDelegate::BeginFrame, base::Unretained(this));
 }
 
-HeadlessDevToolsManagerDelegate::~HeadlessDevToolsManagerDelegate() {}
+HeadlessDevToolsManagerDelegate::~HeadlessDevToolsManagerDelegate() = default;
 
 bool HeadlessDevToolsManagerDelegate::HandleCommand(
     content::DevToolsAgentHost* agent_host,

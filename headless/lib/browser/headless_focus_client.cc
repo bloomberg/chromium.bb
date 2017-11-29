@@ -12,7 +12,7 @@ namespace headless {
 HeadlessFocusClient::HeadlessFocusClient()
     : focused_window_(NULL), observer_manager_(this) {}
 
-HeadlessFocusClient::~HeadlessFocusClient() {}
+HeadlessFocusClient::~HeadlessFocusClient() = default;
 
 void HeadlessFocusClient::AddObserver(
     aura::client::FocusChangeObserver* observer) {

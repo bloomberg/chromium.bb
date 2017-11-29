@@ -393,7 +393,7 @@ class ProtocolHandlerWithCookies
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   explicit ProtocolHandlerWithCookies(net::CookieList* sent_cookies);
-  ~ProtocolHandlerWithCookies() override {}
+  ~ProtocolHandlerWithCookies() override = default;
 
   net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
@@ -410,7 +410,7 @@ class URLRequestJobWithCookies : public TestURLRequestJob {
   URLRequestJobWithCookies(net::URLRequest* request,
                            net::NetworkDelegate* network_delegate,
                            net::CookieList* sent_cookies);
-  ~URLRequestJobWithCookies() override {}
+  ~URLRequestJobWithCookies() override = default;
 
   // net::URLRequestJob implementation:
   void Start() override;
@@ -674,7 +674,7 @@ class CrashReporterTest : public HeadlessBrowserTest,
                           inspector::ExperimentalObserver {
  public:
   CrashReporterTest() : devtools_client_(HeadlessDevToolsClient::Create()) {}
-  ~CrashReporterTest() override {}
+  ~CrashReporterTest() override = default;
 
   void SetUp() override {
     base::ThreadRestrictions::SetIOAllowed(true);
@@ -784,7 +784,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, PermissionManagerAlwaysASK) {
 
 class HeadlessBrowserTestWithNetLog : public HeadlessBrowserTest {
  public:
-  HeadlessBrowserTestWithNetLog() {}
+  HeadlessBrowserTestWithNetLog() = default;
 
   void SetUp() override {
     base::ThreadRestrictions::SetIOAllowed(true);

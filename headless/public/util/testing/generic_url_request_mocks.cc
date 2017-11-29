@@ -20,7 +20,7 @@ namespace headless {
 MockGenericURLRequestJobDelegate::MockGenericURLRequestJobDelegate()
     : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
-MockGenericURLRequestJobDelegate::~MockGenericURLRequestJobDelegate() {}
+MockGenericURLRequestJobDelegate::~MockGenericURLRequestJobDelegate() = default;
 
 void MockGenericURLRequestJobDelegate::OnResourceLoadFailed(
     const Request* request,
@@ -34,8 +34,8 @@ void MockGenericURLRequestJobDelegate::OnResourceLoadComplete(
     size_t body_size) {}
 
 // MockCookieStore
-MockCookieStore::MockCookieStore() {}
-MockCookieStore::~MockCookieStore() {}
+MockCookieStore::MockCookieStore() = default;
+MockCookieStore::~MockCookieStore() = default;
 
 void MockCookieStore::SetCookieWithOptionsAsync(
     const GURL& url,
@@ -161,8 +161,8 @@ void MockCookieStore::SendCookies(const GURL& url,
 }
 
 // MockURLRequestDelegate
-MockURLRequestDelegate::MockURLRequestDelegate() {}
-MockURLRequestDelegate::~MockURLRequestDelegate() {}
+MockURLRequestDelegate::MockURLRequestDelegate() = default;
+MockURLRequestDelegate::~MockURLRequestDelegate() = default;
 
 void MockURLRequestDelegate::OnResponseStarted(net::URLRequest* request,
                                                int net_error) {}

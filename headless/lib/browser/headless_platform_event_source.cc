@@ -6,8 +6,8 @@
 
 namespace headless {
 
-HeadlessPlatformEventSource::HeadlessPlatformEventSource() {}
+HeadlessPlatformEventSource::HeadlessPlatformEventSource() = default;
 
-HeadlessPlatformEventSource::~HeadlessPlatformEventSource() {}
+HeadlessPlatformEventSource::~HeadlessPlatformEventSource() = default;
 
 }  // namespace headless

@@ -21,7 +21,8 @@ HeadlessRenderFrameControllerImpl::HeadlessRenderFrameControllerImpl(
       base::Unretained(this)));
 }
 
-HeadlessRenderFrameControllerImpl::~HeadlessRenderFrameControllerImpl() {}
+HeadlessRenderFrameControllerImpl::~HeadlessRenderFrameControllerImpl() =
+    default;
 
 void HeadlessRenderFrameControllerImpl::OnRenderFrameControllerRequest(
     HeadlessRenderFrameControllerRequest request) {

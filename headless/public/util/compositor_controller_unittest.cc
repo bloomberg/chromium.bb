@@ -33,7 +33,7 @@ class TestVirtualTimeController : public VirtualTimeController {
  public:
   TestVirtualTimeController(HeadlessDevToolsClient* devtools_client)
       : VirtualTimeController(devtools_client) {}
-  ~TestVirtualTimeController() override {}
+  ~TestVirtualTimeController() override = default;
 
   MOCK_METHOD4(GrantVirtualTimeBudget,
                void(emulation::VirtualTimePolicy policy,

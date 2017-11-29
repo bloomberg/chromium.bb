@@ -11,9 +11,9 @@
 
 namespace headless {
 
-ErrorReporter::ErrorReporter() {}
+ErrorReporter::ErrorReporter() = default;
 
-ErrorReporter::~ErrorReporter() {}
+ErrorReporter::~ErrorReporter() = default;
 
 #if DCHECK_IS_ON()
 void ErrorReporter::Push() {

@@ -8,8 +8,8 @@
 
 namespace headless {
 
-InMemoryProtocolHandler::InMemoryProtocolHandler() {}
-InMemoryProtocolHandler::~InMemoryProtocolHandler() {}
+InMemoryProtocolHandler::InMemoryProtocolHandler() = default;
+InMemoryProtocolHandler::~InMemoryProtocolHandler() = default;
 
 net::URLRequestJob* InMemoryProtocolHandler::MaybeCreateJob(
     net::URLRequest* request,

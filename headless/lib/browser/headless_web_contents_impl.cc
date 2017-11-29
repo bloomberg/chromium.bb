@@ -207,8 +207,8 @@ void CreateTabSocketMojoServiceForContents(
 
 struct HeadlessWebContentsImpl::PendingFrame {
  public:
-  PendingFrame() {}
-  ~PendingFrame() {}
+  PendingFrame() = default;
+  ~PendingFrame() = default;
 
   bool MaybeRunCallback() {
     if (wait_for_copy_result || !display_did_finish_frame)
@@ -709,7 +709,7 @@ HeadlessWebContents* HeadlessWebContents::Builder::Build() {
   return browser_context_->CreateWebContents(this);
 }
 
-HeadlessWebContents::Builder::MojoService::MojoService() {}
+HeadlessWebContents::Builder::MojoService::MojoService() = default;
 
 HeadlessWebContents::Builder::MojoService::MojoService(
     const MojoService& other) = default;
@@ -719,6 +719,6 @@ HeadlessWebContents::Builder::MojoService::MojoService(
     const ServiceFactoryCallback& service_factory)
     : service_name(service_name), service_factory(service_factory) {}
 
-HeadlessWebContents::Builder::MojoService::~MojoService() {}
+HeadlessWebContents::Builder::MojoService::~MojoService() = default;
 
 }  // namespace headless

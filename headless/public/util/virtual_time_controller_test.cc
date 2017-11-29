@@ -34,7 +34,7 @@ class VirtualTimeControllerTest : public ::testing::Test {
     controller_ = base::MakeUnique<VirtualTimeController>(&client_, 0);
   }
 
-  ~VirtualTimeControllerTest() override {}
+  ~VirtualTimeControllerTest() override = default;
 
   void GrantVirtualTimeBudget(int budget_ms) {
     ASSERT_FALSE(set_up_complete_);

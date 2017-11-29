@@ -129,7 +129,7 @@ HeadlessShell::HeadlessShell()
       weak_factory_(this) {
 }
 
-HeadlessShell::~HeadlessShell() {}
+HeadlessShell::~HeadlessShell() = default;
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
 void HeadlessShell::OnStart(HeadlessBrowser* browser) {

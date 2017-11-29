@@ -49,7 +49,7 @@ Options::Options(int argc, const char** argv)
 
 Options::Options(Options&& options) = default;
 
-Options::~Options() {}
+Options::~Options() = default;
 
 Options& Options::operator=(Options&& options) = default;
 
@@ -61,7 +61,7 @@ Builder::Builder(int argc, const char** argv) : options_(argc, argv) {}
 
 Builder::Builder() : options_(0, nullptr) {}
 
-Builder::~Builder() {}
+Builder::~Builder() = default;
 
 Builder& Builder::SetProductNameAndVersion(
     const std::string& product_name_and_version) {

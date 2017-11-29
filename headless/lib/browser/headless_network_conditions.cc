@@ -21,6 +21,6 @@ HeadlessNetworkConditions::HeadlessNetworkConditions(bool offline,
       download_throughput(download_throughput),
       upload_throughput(upload_throughput) {}
 
-HeadlessNetworkConditions::~HeadlessNetworkConditions() {}
+HeadlessNetworkConditions::~HeadlessNetworkConditions() = default;
 
 }  // namespace headless
