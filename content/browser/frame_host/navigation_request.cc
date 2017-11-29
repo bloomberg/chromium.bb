@@ -164,6 +164,11 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   if (embedder_additional_headers)
     headers->MergeFrom(*(embedder_additional_headers.get()));
 
+  // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational
+  // requests, as described in
+  // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
+  headers->SetHeaderIfMissing("Upgrade-Insecure-Requests", "1");
+
   headers->SetHeaderIfMissing(net::HttpRequestHeaders::kUserAgent,
                               user_agent_override.empty()
                                   ? GetContentClient()->GetUserAgent()
@@ -172,11 +177,6 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   // Check whether DevTools wants to override user agent for this request
   // after setting the default user agent, or append throttling control header.
   RenderFrameDevToolsAgentHost::AppendDevToolsHeaders(frame_tree_node, headers);
-
-  // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational
-  // requests, as described in
-  // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
-  headers->AddHeaderFromString("Upgrade-Insecure-Requests: 1");
 
   // Next, set the HTTP Origin if needed.
   if (!NeedsHTTPOrigin(headers, method))
