@@ -23,7 +23,7 @@ class CSSPropertyGridUtils {
   // all grid-related shorthands have their property classes implemented:
   // - TrackListType
   // - ConsumeGridLine
-  enum TrackListType { kGridTemplate, kGridTemplateNoRepeat, kGridAuto };
+  enum class TrackListType { kGridTemplate, kGridTemplateNoRepeat, kGridAuto };
   static CSSValue* ConsumeGridLine(CSSParserTokenRange&);
   static CSSValue* ConsumeGridTrackList(CSSParserTokenRange&,
                                         CSSParserMode,

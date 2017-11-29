@@ -128,7 +128,7 @@ CSSValue* CSSPropertyBackgroundUtils::ConsumePrefixedBackgroundBox(
   if (CSSValue* value = CSSPropertyParserHelpers::ConsumeIdentRange(
           range, CSSValueBorder, CSSValuePaddingBox))
     return value;
-  if (allow_text_value == AllowTextValue::kAllowed &&
+  if (allow_text_value == AllowTextValue::kAllow &&
       range.Peek().Id() == CSSValueText)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   return nullptr;

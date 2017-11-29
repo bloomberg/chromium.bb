@@ -9,12 +9,14 @@
 namespace blink {
 namespace CSSLonghand {
 
+const int kCounterResetDefaultValue = 0;
+
 const CSSValue* CounterReset::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSPropertyCounterUtils::ConsumeCounter(
-      range, CSSPropertyCounterUtils::kResetDefaultValue);
+  return CSSPropertyCounterUtils::ConsumeCounter(range,
+                                                 kCounterResetDefaultValue);
 }
 
 }  // namespace CSSLonghand
