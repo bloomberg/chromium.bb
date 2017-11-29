@@ -1200,8 +1200,6 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
                                    const int subpel_y_q4, int y_step_q4,
                                    int scaled, ConvolveParams *conv_params,
                                    int bd) {
-  (void)x_step_q4;
-  (void)y_step_q4;
   (void)dst;
   (void)dst_stride;
 
