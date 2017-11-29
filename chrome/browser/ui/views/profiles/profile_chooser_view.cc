@@ -168,8 +168,11 @@ views::ImageButton* CreateBackButton(views::ButtonListener* listener) {
 }
 
 BadgedProfilePhoto::BadgeType GetProfileBadgeType(const Profile* profile) {
-  if (!profile->IsSupervised())
-    return BadgedProfilePhoto::BADGE_TYPE_NONE;
+  if (!profile->IsSupervised()) {
+    return signin::IsDiceEnabledForProfile(profile->GetPrefs())
+               ? BadgedProfilePhoto::BADGE_TYPE_SYNC_COMPLETE
+               : BadgedProfilePhoto::BADGE_TYPE_NONE;
+  }
   return profile->IsChild() ? BadgedProfilePhoto::BADGE_TYPE_CHILD
                             : BadgedProfilePhoto::BADGE_TYPE_SUPERVISOR;
 }
@@ -865,9 +868,13 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   // Show the profile name by itself if not signed in or account consistency is
   // disabled. Otherwise, show the email attached to the profile.
   bool show_email = avatar_item.signed_in && !account_consistency_enabled;
-  HoverButton* profile_card =
-      new HoverButton(this, std::move(current_profile_photo), profile_name,
-                      show_email ? avatar_item.username : base::string16());
+  const base::string16 hover_button_title =
+      signin::IsDiceEnabledForProfile(browser_->profile()->GetPrefs())
+          ? l10n_util::GetStringUTF16(IDS_PROFILES_SYNCED_TO_TITLE)
+          : profile_name;
+  HoverButton* profile_card = new HoverButton(
+      this, std::move(current_profile_photo), hover_button_title,
+      show_email ? avatar_item.username : base::string16());
   if (show_email)
     profile_card->SetSubtitleElideBehavior(gfx::ELIDE_EMAIL);
   current_profile_card_ = profile_card;
