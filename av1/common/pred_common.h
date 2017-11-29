@@ -81,11 +81,6 @@ static INLINE int av1_get_pred_context_seg_id(const MACROBLOCKD *xd) {
   return above_sip + left_sip;
 }
 
-static INLINE aom_prob av1_get_pred_prob_seg_id(
-    const struct segmentation_probs *segp, const MACROBLOCKD *xd) {
-  return segp->pred_probs[av1_get_pred_context_seg_id(xd)];
-}
-
 #if CONFIG_JNT_COMP
 static INLINE int get_comp_index_context(const AV1_COMMON *cm,
                                          const MACROBLOCKD *xd) {

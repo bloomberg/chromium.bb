@@ -1196,9 +1196,6 @@ static const aom_prob default_segment_tree_probs[SEG_TREE_PROBS] = {
   128, 128, 128, 128, 128, 128, 128
 };
 // clang-format off
-static const aom_prob default_segment_pred_probs[PREDICTION_PROBS] = {
-  128, 128, 128
-};
 static const aom_cdf_prob
     default_segment_pred_cdf[PREDICTION_PROBS][CDF_SIZE(2)] = {
   { AOM_CDF2(128 * 128) },
@@ -2624,7 +2621,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->wedge_interintra_cdf, default_wedge_interintra_cdf);
   av1_copy(fc->interintra_mode_cdf, default_interintra_mode_cdf);
   av1_copy(fc->seg.tree_probs, default_segment_tree_probs);
-  av1_copy(fc->seg.pred_probs, default_segment_pred_probs);
   av1_copy(fc->seg.pred_cdf, default_segment_pred_cdf);
 #if CONFIG_FILTER_INTRA
   av1_copy(fc->filter_intra_cdfs, default_filter_intra_cdfs);
@@ -2720,16 +2716,11 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
 }
 
 void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
-  int i;
   FRAME_CONTEXT *fc = cm->fc;
   const FRAME_CONTEXT *pre_fc = cm->pre_fc;
   const FRAME_COUNTS *counts = &cm->counts;
 
   if (cm->seg.temporal_update) {
-    for (i = 0; i < PREDICTION_PROBS; i++)
-      fc->seg.pred_probs[i] = av1_mode_mv_merge_probs(pre_fc->seg.pred_probs[i],
-                                                      counts->seg.pred[i]);
-
     aom_tree_merge_probs(av1_segment_tree, pre_fc->seg.tree_probs,
                          counts->seg.tree_mispred, fc->seg.tree_probs);
   } else {
