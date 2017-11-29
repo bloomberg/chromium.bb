@@ -107,8 +107,7 @@ void ReadingListSuggestionsProvider::ClearHistory(
   // Ignored, Reading List does not depend on history.
 }
 
-void ReadingListSuggestionsProvider::ClearCachedSuggestions(Category category) {
-  DCHECK_EQ(category, provided_category_);
+void ReadingListSuggestionsProvider::ClearCachedSuggestions() {
   // Ignored.
 }
 

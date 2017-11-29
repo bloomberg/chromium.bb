@@ -123,9 +123,9 @@ class ContentSuggestionsProvider {
       base::Time end,
       const base::Callback<bool(const GURL& url)>& filter) = 0;
 
-  // Clears all caches for the given category, so that the next fetch starts
-  // from scratch.
-  virtual void ClearCachedSuggestions(Category category) = 0;
+  // Clears suggestions for any non-history related reason (e.g., sign-in status
+  // change, etc.) so that the next fetch starts from scratch.
+  virtual void ClearCachedSuggestions() = 0;
 
   // Called when the sign in state has changed. Should be used instead of
   // directly registering with the SignInManager so that the

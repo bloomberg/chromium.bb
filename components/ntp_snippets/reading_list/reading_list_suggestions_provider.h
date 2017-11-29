@@ -42,7 +42,7 @@ class ReadingListSuggestionsProvider : public ContentSuggestionsProvider,
       base::Time begin,
       base::Time end,
       const base::Callback<bool(const GURL& url)>& filter) override;
-  void ClearCachedSuggestions(Category category) override;
+  void ClearCachedSuggestions() override;
   void GetDismissedSuggestionsForDebugging(
       Category category,
       DismissedSuggestionsCallback callback) override;

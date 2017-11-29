@@ -64,7 +64,7 @@ class MockContentSuggestionsProvider : public ContentSuggestionsProvider {
                void(const Category&,
                     const std::set<std::string>&,
                     FetchDoneCallback*));
-  MOCK_METHOD1(ClearCachedSuggestions, void(Category category));
+  MOCK_METHOD0(ClearCachedSuggestions, void());
   void GetDismissedSuggestionsForDebugging(
       Category category,
       DismissedSuggestionsCallback callback) override;

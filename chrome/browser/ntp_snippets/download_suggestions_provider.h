@@ -71,7 +71,7 @@ class DownloadSuggestionsProvider
       base::Time begin,
       base::Time end,
       const base::Callback<bool(const GURL& url)>& filter) override;
-  void ClearCachedSuggestions(ntp_snippets::Category category) override;
+  void ClearCachedSuggestions() override;
   void GetDismissedSuggestionsForDebugging(
       ntp_snippets::Category category,
       ntp_snippets::DismissedSuggestionsCallback callback) override;

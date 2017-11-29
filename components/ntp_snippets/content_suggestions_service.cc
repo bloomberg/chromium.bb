@@ -324,20 +324,11 @@ void ContentSuggestionsService::ClearHistory(
 
 void ContentSuggestionsService::ClearAllCachedSuggestions() {
   suggestions_by_category_.clear();
-  for (const auto& category_provider_pair : providers_by_category_) {
-    category_provider_pair.second->ClearCachedSuggestions(
-        category_provider_pair.first);
-    for (Observer& observer : observers_) {
-      observer.OnNewSuggestions(category_provider_pair.first);
-    }
+  for (const auto& provider : providers_) {
+    provider->ClearCachedSuggestions();
   }
-}
-
-void ContentSuggestionsService::ClearCachedSuggestions(Category category) {
-  suggestions_by_category_[category].clear();
-  auto iterator = providers_by_category_.find(category);
-  if (iterator != providers_by_category_.end()) {
-    iterator->second->ClearCachedSuggestions(category);
+  for (Observer& observer : observers_) {
+    observer.OnFullRefreshRequired();
   }
 }
 
