@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
@@ -311,24 +310,6 @@ void Gpu::OnEstablishedGpuChannel() {
 
 scoped_refptr<base::SingleThreadTaskRunner> Gpu::GetIOThreadTaskRunner() {
   return io_task_runner_;
-}
-
-std::unique_ptr<base::SharedMemory> Gpu::AllocateSharedMemory(size_t size) {
-  mojo::ScopedSharedBufferHandle handle =
-      mojo::SharedBufferHandle::Create(size);
-  if (!handle.is_valid())
-    return nullptr;
-
-  base::SharedMemoryHandle platform_handle;
-  size_t shared_memory_size;
-  bool readonly;
-  MojoResult result = mojo::UnwrapSharedMemoryHandle(
-      std::move(handle), &platform_handle, &shared_memory_size, &readonly);
-  if (result != MOJO_RESULT_OK)
-    return nullptr;
-  DCHECK_EQ(shared_memory_size, size);
-
-  return std::make_unique<base::SharedMemory>(platform_handle, readonly);
 }
 
 }  // namespace ui

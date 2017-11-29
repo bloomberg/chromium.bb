@@ -75,8 +75,6 @@ class Gpu : public gpu::GpuChannelHostFactory,
 
   // gpu::GpuChannelHostFactory overrides:
   scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
-  std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
-      size_t size) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

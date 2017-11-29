@@ -1,6 +1,7 @@
 include_rules = [
   "+base",
   "+ipc",
+  "+mojo/public",
   "+ui/base",
   "+ui/latency",
 ]

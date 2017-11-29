@@ -33,8 +33,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
 
   // Overridden from gpu::GpuChannelHostFactory:
   scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
-  std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
-      size_t size) override;
 
   gpu::GpuChannelHost* GetGpuChannel();
   int GetGpuChannelId() { return gpu_client_id_; }

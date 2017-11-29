@@ -256,14 +256,6 @@ BrowserGpuChannelHostFactory::GetIOThreadTaskRunner() {
   return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 }
 
-std::unique_ptr<base::SharedMemory>
-BrowserGpuChannelHostFactory::AllocateSharedMemory(size_t size) {
-  std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());
-  if (!shm->CreateAnonymous(size))
-    return std::unique_ptr<base::SharedMemory>();
-  return shm;
-}
-
 void BrowserGpuChannelHostFactory::EstablishGpuChannel(
     const gpu::GpuChannelEstablishedCallback& callback) {
 #if defined(USE_AURA)

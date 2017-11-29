@@ -63,8 +63,6 @@ class GPU_EXPORT GpuChannelHostFactory {
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetIOThreadTaskRunner() = 0;
-  virtual std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
-      size_t size) = 0;
 };
 
 // Encapsulates an IPC channel between the client and one GPU process.
