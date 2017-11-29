@@ -16,7 +16,8 @@ namespace resource_coordinator {
 PageCoordinationUnitImpl::PageCoordinationUnitImpl(
     const CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : CoordinationUnitInterface(id, std::move(service_ref)) {}
+    : CoordinationUnitInterface(id, std::move(service_ref)),
+      was_almost_idle_(false) {}
 
 PageCoordinationUnitImpl::~PageCoordinationUnitImpl() {
   for (auto* child_frame : frame_coordination_units_)
@@ -63,6 +64,27 @@ void PageCoordinationUnitImpl::OnMainFrameNavigationCommitted() {
   SendEvent(mojom::Event::kNavigationCommitted);
 }
 
+bool PageCoordinationUnitImpl::CheckAndUpdateAlmostIdleStateIfNeeded() {
+  auto* main_frame_cu = GetMainFrameCoordinationUnit();
+  if (!main_frame_cu)
+    return false;
+  auto* process_cu = main_frame_cu->GetProcessCoordinationUnit();
+  if (!process_cu)
+    return false;
+  int64_t main_thread_task_load_is_low = 0;
+  int64_t is_network_almost_idle = 0;
+  if (!process_cu->GetProperty(mojom::PropertyType::kMainThreadTaskLoadIsLow,
+                               &main_thread_task_load_is_low) ||
+      !main_frame_cu->GetProperty(mojom::PropertyType::kNetworkAlmostIdle,
+                                  &is_network_almost_idle)) {
+    return false;
+  }
+  bool is_almost_idle = main_thread_task_load_is_low && is_network_almost_idle;
+  if (!was_almost_idle_)
+    was_almost_idle_ = is_almost_idle;
+  return is_almost_idle;
+}
+
 std::set<ProcessCoordinationUnitImpl*>
 PageCoordinationUnitImpl::GetAssociatedProcessCoordinationUnits() const {
   std::set<ProcessCoordinationUnitImpl*> process_cus;
@@ -73,6 +95,10 @@ PageCoordinationUnitImpl::GetAssociatedProcessCoordinationUnits() const {
     }
   }
   return process_cus;
+}
+
+bool PageCoordinationUnitImpl::WasAlmostIdle() const {
+  return was_almost_idle_;
 }
 
 bool PageCoordinationUnitImpl::IsVisible() const {
@@ -126,8 +152,10 @@ base::TimeDelta PageCoordinationUnitImpl::TimeSinceLastVisibilityChange()
 }
 
 void PageCoordinationUnitImpl::OnEventReceived(mojom::Event event) {
-  if (event == mojom::Event::kNavigationCommitted)
+  if (event == mojom::Event::kNavigationCommitted) {
     navigation_committed_time_ = ResourceCoordinatorClock::NowTicks();
+    was_almost_idle_ = false;
+  }
   for (auto& observer : observers())
     observer.OnPageEventReceived(this, event);
 }

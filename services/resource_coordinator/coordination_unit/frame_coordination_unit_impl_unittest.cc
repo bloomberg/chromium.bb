@@ -117,14 +117,6 @@ TEST_F(FrameCoordinationUnitImplTest, RemoveChildFrame) {
   EXPECT_TRUE(!child_frame_cu->GetParentFrameCoordinationUnit());
 }
 
-TEST_F(FrameCoordinationUnitImplTest, IsAlmostIdle) {
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;
-  EXPECT_FALSE(cu_graph.frame->IsAlmostIdle());
-  cu_graph.process->SetMainThreadTaskLoadIsLow(true);
-  cu_graph.frame->SetNetworkAlmostIdle(true);
-  EXPECT_TRUE(cu_graph.frame->IsAlmostIdle());
-}
-
 TEST_F(FrameCoordinationUnitImplTest, LastAudibleTime) {
   MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;
   EXPECT_EQ(base::TimeTicks(), cu_graph.frame->last_audible_time());
