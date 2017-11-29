@@ -33,7 +33,8 @@ class CHROMEOS_EXPORT AuthPolicyClient : public DBusClient {
       base::OnceCallback<void(authpolicy::ErrorType error,
                               const authpolicy::KerberosFiles& kerberos_files)>;
   using JoinCallback = base::OnceCallback<void(authpolicy::ErrorType error)>;
-  using RefreshPolicyCallback = base::OnceCallback<void(bool success)>;
+  using RefreshPolicyCallback =
+      base::OnceCallback<void(authpolicy::ErrorType error)>;
 
   ~AuthPolicyClient() override;
 
