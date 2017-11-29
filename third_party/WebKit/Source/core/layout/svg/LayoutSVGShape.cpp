@@ -56,7 +56,10 @@ LayoutSVGShape::LayoutSVGShape(SVGGeometryElement* node)
       // SVGGeometryElement.
       needs_transform_update_(true),
       // <line> elements have no joins and thus needn't care about miters.
-      affected_by_miter_(!IsSVGLineElement(node)) {}
+      affected_by_miter_(!IsSVGLineElement(node)),
+      // Default to false, since |needs_transform_update_| is true this will be
+      // updated the first time transforms are updated.
+      transform_uses_reference_box_(false) {}
 
 LayoutSVGShape::~LayoutSVGShape() {}
 
@@ -193,14 +196,40 @@ bool LayoutSVGShape::StrokeContains(const FloatPoint& point,
   return ShapeDependentStrokeContains(point);
 }
 
-void LayoutSVGShape::UpdateLocalTransform() {
+static inline bool TransformOriginIsFixed(const ComputedStyle& style) {
+  // If the transform box is view-box and the transform origin is absolute, then
+  // is does not depend on the reference box. For fill-box, the origin will
+  // always move with the bounding box.
+  return style.TransformBox() == ETransformBox::kViewBox &&
+         style.TransformOriginX().GetType() == kFixed &&
+         style.TransformOriginY().GetType() == kFixed;
+}
+
+static inline bool TransformDependsOnReferenceBox(const ComputedStyle& style) {
+  // We're passing kExcludeMotionPath here because we're checking that
+  // explicitly later.
+  if (!TransformOriginIsFixed(style) &&
+      style.RequireTransformOrigin(ComputedStyle::kIncludeTransformOrigin,
+                                   ComputedStyle::kExcludeMotionPath))
+    return true;
+  if (style.Transform().DependsOnBoxSize())
+    return true;
+  if (style.Translate() && style.Translate()->DependsOnBoxSize())
+    return true;
+  if (style.HasOffset())
+    return true;
+  return false;
+}
+
+bool LayoutSVGShape::UpdateLocalTransform() {
   SVGGraphicsElement* graphics_element = ToSVGGraphicsElement(GetElement());
   if (graphics_element->HasTransform(SVGElement::kIncludeMotionTransform)) {
     local_transform_.SetTransform(graphics_element->CalculateTransform(
         SVGElement::kIncludeMotionTransform));
-  } else {
-    local_transform_ = AffineTransform();
+    return TransformDependsOnReferenceBox(StyleRef());
   }
+  local_transform_ = AffineTransform();
+  return false;
 }
 
 void LayoutSVGShape::UpdateLayout() {
@@ -211,6 +240,7 @@ void LayoutSVGShape::UpdateLayout() {
     SVGResourcesCache::ClientLayoutChanged(this);
 
   bool update_parent_boundaries = false;
+  bool bbox_changed = false;
   // UpdateShapeFromElement() also updates the object & stroke bounds - which
   // feeds into the visual rect - so we need to call it for both the
   // shape-update and the bounds-update flag.
@@ -220,6 +250,7 @@ void LayoutSVGShape::UpdateLayout() {
     if (old_object_bounding_box != ObjectBoundingBox()) {
       GetElement()->SetNeedsResizeObserverUpdate();
       SetShouldDoFullPaintInvalidation();
+      bbox_changed = true;
     }
     needs_shape_update_ = false;
 
@@ -230,8 +261,24 @@ void LayoutSVGShape::UpdateLayout() {
     update_parent_boundaries = true;
   }
 
+  // If the transform is relative to the reference box, check relevant
+  // conditions to see if we need to recompute the transform.
+  if (!needs_transform_update_ && transform_uses_reference_box_) {
+    switch (StyleRef().TransformBox()) {
+      case ETransformBox::kViewBox:
+        needs_transform_update_ =
+            SVGLayoutSupport::LayoutSizeOfNearestViewportChanged(this);
+        break;
+      case ETransformBox::kFillBox:
+        needs_transform_update_ = bbox_changed;
+        break;
+    }
+    if (needs_transform_update_)
+      SetNeedsPaintPropertyUpdate();
+  }
+
   if (needs_transform_update_) {
-    UpdateLocalTransform();
+    transform_uses_reference_box_ = UpdateLocalTransform();
     needs_transform_update_ = false;
     update_parent_boundaries = true;
   }
