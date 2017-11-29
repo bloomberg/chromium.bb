@@ -5,33 +5,12 @@
 #include "platform/network/ParsedContentHeaderFieldParameters.h"
 
 #include "platform/network/HeaderFieldTokenizer.h"
+#include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/StringView.h"
 
 namespace blink {
-
-ParsedContentHeaderFieldParameters::ParsedContentHeaderFieldParameters()
-    : is_valid_(false) {}
-
-// static
-ParsedContentHeaderFieldParameters
-ParsedContentHeaderFieldParameters::CreateForTesting(const String& input,
-                                                     Mode mode) {
-  ParsedContentHeaderFieldParameters parameters;
-  parameters.ParseParameters(HeaderFieldTokenizer(input), mode);
-  return parameters;
-}
-
-String ParsedContentHeaderFieldParameters::ParameterValueForName(
-    const String& name) const {
-  if (!name.ContainsOnlyASCII())
-    return String();
-  return parameters_.at(name.LowerASCII());
-}
-
-size_t ParsedContentHeaderFieldParameters::ParameterCount() const {
-  return parameters_.size();
-}
 
 // parameters := *(";" parameter)
 //
@@ -53,17 +32,14 @@ size_t ParsedContentHeaderFieldParameters::ParameterCount() const {
 //               "/" / "[" / "]" / "?" / "="
 //               ; Must be in quoted-string,
 //               ; to use within parameter values
-void ParsedContentHeaderFieldParameters::ParseParameters(
-    HeaderFieldTokenizer tokenizer,
-    Mode mode) {
-  DCHECK(!is_valid_);
-  DCHECK(parameters_.IsEmpty());
-
-  KeyValuePairs map;
+WTF::Optional<ParsedContentHeaderFieldParameters>
+ParsedContentHeaderFieldParameters::Parse(HeaderFieldTokenizer tokenizer,
+                                          Mode mode) {
+  NameValuePairs parameters;
   while (!tokenizer.IsConsumed()) {
     if (!tokenizer.Consume(';')) {
       DVLOG(1) << "Failed to find ';'";
-      return;
+      return WTF::nullopt;
     }
 
     StringView key;
@@ -71,29 +47,50 @@ void ParsedContentHeaderFieldParameters::ParseParameters(
     if (!tokenizer.ConsumeToken(Mode::kNormal, key)) {
       DVLOG(1) << "Invalid content parameter name. (at " << tokenizer.Index()
                << ")";
-      return;
+      return WTF::nullopt;
     }
     if (!tokenizer.Consume('=')) {
       DVLOG(1) << "Failed to find '='";
-      return;
+      return WTF::nullopt;
     }
     if (!tokenizer.ConsumeTokenOrQuotedString(mode, value)) {
       DVLOG(1) << "Invalid content parameter value (at " << tokenizer.Index()
                << ", for '" << key.ToString() << "').";
-      return;
+      return WTF::nullopt;
     }
-    // As |key| is parsed as a token, it consists of ascii characters
-    // and hence we don't need to care about non-ascii lowercasing.
-    DCHECK(key.ToString().ContainsOnlyASCII());
-    String key_string = key.ToString().LowerASCII();
-    if (mode == Mode::kStrict && map.find(key_string) != map.end()) {
-      DVLOG(1) << "Parameter " << key_string << " is defined multiple times.";
-      return;
-    }
-    map.Set(key_string, value);
+    parameters.emplace_back(key.ToString(), value);
   }
-  parameters_ = std::move(map);
-  is_valid_ = true;
+
+  return ParsedContentHeaderFieldParameters(std::move(parameters));
+}
+
+String ParsedContentHeaderFieldParameters::ParameterValueForName(
+    const String& name) const {
+  if (!name.ContainsOnlyASCII())
+    return String();
+  String lower_name = name.LowerASCII();
+
+  for (auto i = rbegin(); i != rend(); ++i) {
+    if (i->name.LowerASCII() == lower_name)
+      return i->value;
+  }
+  return String();
+}
+
+size_t ParsedContentHeaderFieldParameters::ParameterCount() const {
+  return parameters_.size();
+}
+
+bool ParsedContentHeaderFieldParameters::HasDuplicatedNames() const {
+  HashSet<String> names;
+  for (const auto& parameter : parameters_) {
+    const String lowered_name = parameter.name.LowerASCII();
+    if (names.find(lowered_name) != names.end())
+      return true;
+
+    names.insert(lowered_name);
+  }
+  return false;
 }
 
 }  // namespace blink

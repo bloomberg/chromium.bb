@@ -105,7 +105,8 @@ ParsedContentType::ParsedContentType(const String& content_type, Mode mode) {
   builder.Append(subtype);
   mime_type_ = builder.ToString();
 
-  parameters_.ParseParameters(std::move(tokenizer), mode);
+  parameters_ =
+      ParsedContentHeaderFieldParameters::Parse(std::move(tokenizer), mode);
 }
 
 String ParsedContentType::Charset() const {

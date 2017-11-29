@@ -5,6 +5,7 @@
 #ifndef HeaderFieldTokenizer_h
 #define HeaderFieldTokenizer_h
 
+#include "platform/PlatformExport.h"
 #include "platform/network/ParsedContentHeaderFieldParameters.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -12,7 +13,7 @@ namespace blink {
 
 // Parses header fields into tokens, quoted strings and separators.
 // Commonly used by ParsedContent* classes.
-class HeaderFieldTokenizer final {
+class PLATFORM_EXPORT HeaderFieldTokenizer final {
   STACK_ALLOCATED();
 
  public:
