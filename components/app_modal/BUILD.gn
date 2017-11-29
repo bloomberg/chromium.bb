@@ -42,3 +42,17 @@ static_library("app_modal") {
     deps += [ "//ui/views" ]
   }
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "javascript_dialog_manager_unittest.cc",
+  ]
+
+  deps = [
+    ":app_modal",
+    "//base",
+    "//testing/gtest",
+  ]
+}
