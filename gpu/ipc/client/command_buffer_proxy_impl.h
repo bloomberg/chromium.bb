@@ -180,6 +180,8 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   // verify that the context has not been lost.
   bool Send(IPC::Message* msg);
 
+  std::unique_ptr<base::SharedMemory> AllocateAndMapSharedMemory(size_t size);
+
   // Message handlers:
   void OnDestroyed(gpu::error::ContextLostReason reason,
                    gpu::error::Error error);
