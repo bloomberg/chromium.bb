@@ -559,7 +559,7 @@ void
 weston_touch_set_focus(struct weston_touch *touch,
 		       struct weston_view *view);
 void
-weston_touch_start_grab(struct weston_touch *device,
+weston_touch_start_grab(struct weston_touch *touch,
 			struct weston_touch_grab *grab);
 void
 weston_touch_end_grab(struct weston_touch *touch);
