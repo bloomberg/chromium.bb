@@ -19,8 +19,7 @@ namespace dbus {
 // operations (i.e. ExportedObject side).
 class EndToEndSyncTest : public testing::Test {
  public:
-  EndToEndSyncTest() {
-  }
+  EndToEndSyncTest() = default;
 
   void SetUp() override {
     // Start the test service;

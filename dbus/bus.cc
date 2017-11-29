@@ -151,8 +151,7 @@ Bus::Options::Options()
     connection_type(PRIVATE) {
 }
 
-Bus::Options::~Options() {
-}
+Bus::Options::~Options() = default;
 
 Bus::Bus(const Options& options)
     : bus_type_(options.bus_type),

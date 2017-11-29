@@ -12,7 +12,6 @@ MockObjectManager::MockObjectManager(Bus* bus,
     : ObjectManager(bus, service_name, object_path) {
 }
 
-MockObjectManager::~MockObjectManager() {
-}
+MockObjectManager::~MockObjectManager() = default;
 
 }  // namespace dbus

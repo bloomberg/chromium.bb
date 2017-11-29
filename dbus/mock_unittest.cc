@@ -28,8 +28,7 @@ namespace dbus {
 
 class MockTest : public testing::Test {
  public:
-  MockTest() {
-  }
+  MockTest() = default;
 
   void SetUp() override {
     // Create a mock bus.

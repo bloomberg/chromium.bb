@@ -23,7 +23,7 @@ namespace dbus {
 
 PropertyBase::PropertyBase() : property_set_(nullptr), is_valid_(false) {}
 
-PropertyBase::~PropertyBase() {}
+PropertyBase::~PropertyBase() = default;
 
 void PropertyBase::Init(PropertySet* property_set, const std::string& name) {
   DCHECK(!property_set_);
@@ -45,8 +45,7 @@ PropertySet::PropertySet(
       property_changed_callback_(property_changed_callback),
       weak_ptr_factory_(this) {}
 
-PropertySet::~PropertySet() {
-}
+PropertySet::~PropertySet() = default;
 
 void PropertySet::RegisterProperty(const std::string& name,
                                    PropertyBase* property) {

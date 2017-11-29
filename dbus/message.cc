@@ -446,8 +446,7 @@ MessageWriter::MessageWriter(Message* message)
     dbus_message_iter_init_append(message_->raw_message(), &raw_message_iter_);
 }
 
-MessageWriter::~MessageWriter() {
-}
+MessageWriter::~MessageWriter() = default;
 
 void MessageWriter::AppendByte(uint8_t value) {
   AppendBasic(DBUS_TYPE_BYTE, &value);
@@ -716,9 +715,7 @@ MessageReader::MessageReader(Message* message)
     dbus_message_iter_init(message_->raw_message(), &raw_message_iter_);
 }
 
-
-MessageReader::~MessageReader() {
-}
+MessageReader::~MessageReader() = default;
 
 bool MessageReader::HasMoreData() {
   const int dbus_type = dbus_message_iter_get_arg_type(&raw_message_iter_);

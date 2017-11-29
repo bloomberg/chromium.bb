@@ -12,8 +12,7 @@ MockObjectProxy::MockObjectProxy(Bus* bus,
     : ObjectProxy(bus, service_name, object_path, DEFAULT_OPTIONS) {
 }
 
-MockObjectProxy::~MockObjectProxy() {
-}
+MockObjectProxy::~MockObjectProxy() = default;
 
 void MockObjectProxy::CallMethod(MethodCall* method_call,
                                  int timeout_ms,

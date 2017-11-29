@@ -31,7 +31,7 @@ namespace dbus {
 // Property<>.
 class PropertyTest : public testing::Test {
  public:
-  PropertyTest() {}
+  PropertyTest() = default;
 
   struct Properties : public PropertySet {
     Property<std::string> name;
