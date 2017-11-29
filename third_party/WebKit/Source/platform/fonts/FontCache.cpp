@@ -366,8 +366,6 @@ void FontCache::CrashWithFontInfo(const FontDescription* font_description) {
 
   FontDescription font_description_copy = *font_description;
   base::debug::Alias(&font_description_copy);
-  base::debug::Alias(&font_cache);
-  base::debug::Alias(&font_mgr);
   base::debug::Alias(&num_families);
 
   CHECK(false);
