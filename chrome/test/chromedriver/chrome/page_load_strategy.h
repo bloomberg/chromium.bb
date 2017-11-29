@@ -36,6 +36,8 @@ public:
 
   virtual void set_timed_out(bool timed_out) = 0;
 
+  virtual bool IsNonBlocking() const = 0;
+
   // Types of page load strategies.
   static const char kNormal[];
   static const char kNone[];
