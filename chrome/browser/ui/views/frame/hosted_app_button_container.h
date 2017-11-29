@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
@@ -17,7 +18,8 @@ class HostedAppMenuModel;
 class BrowserView;
 
 // A container for hosted app buttons in the title bar.
-class HostedAppButtonContainer : public views::View {
+class HostedAppButtonContainer : public views::View,
+                                 public ContentSettingImageView::Delegate {
  public:
   // |active_icon_color| and |inactive_icon_color| indicate the colors to use
   // for button icons when the window is focused and blurred respectively.
@@ -25,6 +27,9 @@ class HostedAppButtonContainer : public views::View {
                            SkColor active_icon_color,
                            SkColor inactive_icon_color);
   ~HostedAppButtonContainer() override;
+
+  // Updates the visibility of each content setting view.
+  void RefreshContentSettingViews();
 
   // Sets the container to paints its buttons the active/inactive color.
   void SetPaintAsActive(bool active);
@@ -62,6 +67,14 @@ class HostedAppButtonContainer : public views::View {
     DISALLOW_COPY_AND_ASSIGN(AppMenuButton);
   };
 
+  // ContentSettingsImageView::Delegate:
+  content::WebContents* GetContentSettingWebContents() override;
+  ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
+      override;
+
+  // views::View:
+  void ChildVisibilityChanged(views::View* child) override;
+
   // The containing browser view.
   BrowserView* browser_view_;
 
@@ -71,6 +84,7 @@ class HostedAppButtonContainer : public views::View {
 
   // Owned by the views hierarchy.
   AppMenuButton* app_menu_button_;
+  std::vector<ContentSettingImageView*> content_setting_views_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppButtonContainer);
 };

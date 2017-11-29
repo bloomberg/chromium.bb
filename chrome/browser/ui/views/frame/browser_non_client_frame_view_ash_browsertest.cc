@@ -43,7 +43,10 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/base/hit_test.h"
@@ -463,15 +466,20 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeBrowserViewTest,
 // Creates a browser for a bookmark app and verifies the window frame is
 // correct.
 IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, HostedAppFrame) {
+  const GURL kAppStartURL("http://example.org/");
+
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
 
   WebApplicationInfo web_app_info;
-  web_app_info.app_url = GURL("http://example.org/");
+  web_app_info.app_url = kAppStartURL;
   web_app_info.theme_color = SK_ColorBLUE;
 
   const extensions::Extension* app = InstallBookmarkApp(web_app_info);
   Browser* app_browser = LaunchAppBrowser(app);
+  chrome::NavigateParams params(app_browser, kAppStartURL,
+                                ui::PAGE_TRANSITION_LINK);
+  ui_test_utils::NavigateToURL(&params);
 
   BrowserView* browser_view =
       BrowserView::GetBrowserViewForBrowser(app_browser);
@@ -499,6 +507,26 @@ IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, HostedAppFrame) {
                    ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
   menu_button->OnMousePressed(e);
   EXPECT_TRUE(menu_button->menu()->IsShowing());
+
+  // Show a content setting icon.
+  const auto& content_setting_views =
+      frame_view->hosted_app_button_container_->content_setting_views_;
+
+  for (auto* v : content_setting_views)
+    EXPECT_FALSE(v->visible());
+
+  content::RenderFrameHost* frame =
+      app_browser->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::GetForFrame(frame->GetProcess()->GetID(),
+                                              frame->GetRoutingID());
+
+  content_settings->OnGeolocationPermissionSet(kAppStartURL.GetOrigin(), true);
+
+  int visible = std::count_if(
+      content_setting_views.begin(), content_setting_views.end(),
+      [](const ContentSettingImageView* v) { return v->visible(); });
+  EXPECT_EQ(1, visible);
 
   // The app and domain should render next to the window title.
   frame_header->LayoutRenderTexts(gfx::Rect(300, 30), 100, 100);

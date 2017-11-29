@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -224,6 +225,7 @@ void LocationBarView::Init() {
     ContentSettingImageView* image_view =
         new ContentSettingImageView(std::move(model), this, font_list);
     content_setting_views_.push_back(image_view);
+    image_view->set_next_element_interior_padding(kIconInteriorPadding);
     image_view->SetVisible(false);
     AddChildView(image_view);
   }
@@ -656,6 +658,18 @@ WebContents* LocationBarView::GetWebContents() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// LocationBarView, public ContentSettingImageView::Delegate implementation:
+
+content::WebContents* LocationBarView::GetContentSettingWebContents() {
+  return GetToolbarModel()->input_in_progress() ? nullptr : GetWebContents();
+}
+
+ContentSettingBubbleModelDelegate*
+LocationBarView::GetContentSettingBubbleModelDelegate() {
+  return delegate_->GetContentSettingBubbleModelDelegate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private:
 
 int LocationBarView::IncrementalMinimumWidth(views::View* view) const {
@@ -698,13 +712,18 @@ void LocationBarView::RefreshLocationIcon() {
 }
 
 bool LocationBarView::RefreshContentSettingViews() {
+  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
+          browser_)) {
+    // For hosted apps, the location bar is normally hidden and icons appear in
+    // the window frame instead.
+    GetWidget()->non_client_view()->ResetWindowControls();
+  }
+
   bool visibility_changed = false;
-  for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
-       i != content_setting_views_.end(); ++i) {
-    const bool was_visible = (*i)->visible();
-    (*i)->Update(GetToolbarModel()->input_in_progress() ? nullptr
-                                                        : GetWebContents());
-    if (was_visible != (*i)->visible())
+  for (auto* v : content_setting_views_) {
+    const bool was_visible = v->visible();
+    v->Update();
+    if (was_visible != v->visible())
       visibility_changed = true;
   }
   return visibility_changed;

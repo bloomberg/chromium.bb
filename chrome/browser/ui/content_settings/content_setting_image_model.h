@@ -62,7 +62,7 @@ class ContentSettingImageModel {
       content::WebContents* web_contents);
 #endif
 
-  gfx::Image GetIcon(SkColor nearby_text_color) const;
+  gfx::Image GetIcon(SkColor icon_color) const;
 
   // Returns the resource ID of a string to show when the icon appears, or 0 if
   // we don't wish to show anything.
