@@ -180,11 +180,6 @@ class MessageListViewTest : public AshTestBase,
   void ClickOnNotification(const std::string& notification_id) override {}
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override {}
-  std::unique_ptr<ui::MenuModel> CreateMenuModel(
-      const Notification& notification) override {
-    NOTREACHED();
-    return nullptr;
-  }
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override {}
   void ClickOnNotificationButtonWithReply(

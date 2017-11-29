@@ -58,7 +58,7 @@ MessagePopupCollection::MessagePopupCollection(
       latest_toast_entered_(NULL),
       user_is_closing_toasts_by_clicking_(false),
       target_top_edge_(0),
-      context_menu_controller_(new MessageViewContextMenuController(this)),
+      context_menu_controller_(new MessageViewContextMenuController()),
       weak_factory_(this) {
   DCHECK(message_center_);
   defer_timer_.reset(new base::OneShotTimer);
@@ -101,11 +101,6 @@ void MessagePopupCollection::RemoveNotification(
 
     break;
   }
-}
-
-std::unique_ptr<ui::MenuModel> MessagePopupCollection::CreateMenuModel(
-    const Notification& notification) {
-  return tray_->CreateNotificationMenuModel(notification);
 }
 
 void MessagePopupCollection::ClickOnNotificationButton(

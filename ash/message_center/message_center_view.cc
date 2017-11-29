@@ -459,11 +459,6 @@ void MessageCenterView::RemoveNotification(const std::string& notification_id,
   message_center_->RemoveNotification(notification_id, by_user);
 }
 
-std::unique_ptr<ui::MenuModel> MessageCenterView::CreateMenuModel(
-    const message_center::Notification& notification) {
-  return ui_controller_->CreateNotificationMenuModel(notification);
-}
-
 void MessageCenterView::ClickOnNotificationButton(
     const std::string& notification_id,
     int button_index) {

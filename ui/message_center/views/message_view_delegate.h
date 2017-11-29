@@ -12,8 +12,6 @@
 
 namespace message_center {
 
-class Notification;
-
 // Interface used by views to report clicks and other user actions. The views
 // by themselves do not know how to perform those operations, they ask
 // MessageViewDelegate to do them. Implemented by MessageCenterView and
@@ -23,8 +21,6 @@ class MessageViewDelegate {
   virtual void ClickOnNotification(const std::string& notification_id) = 0;
   virtual void RemoveNotification(const std::string& notification_id,
                                   bool by_user) = 0;
-  virtual std::unique_ptr<ui::MenuModel> CreateMenuModel(
-      const Notification& notification) = 0;
   virtual void ClickOnNotificationButton(const std::string& notification_id,
                                          int button_index) = 0;
   virtual void ClickOnNotificationButtonWithReply(

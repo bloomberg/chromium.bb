@@ -103,8 +103,6 @@ class ASH_EXPORT MessageCenterView
   void ClickOnNotification(const std::string& notification_id) override;
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override;
-  std::unique_ptr<ui::MenuModel> CreateMenuModel(
-      const message_center::Notification& notification) override;
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;
   void ClickOnNotificationButtonWithReply(const std::string& notification_id,
@@ -190,8 +188,7 @@ class ASH_EXPORT MessageCenterView
   // Current view mode. During animation, it is the target mode.
   Mode mode_ = Mode::NO_NOTIFICATIONS;
 
-  message_center::MessageViewContextMenuController context_menu_controller_{
-      this};
+  message_center::MessageViewContextMenuController context_menu_controller_;
 
   views::FocusManager* focus_manager_ = nullptr;
 

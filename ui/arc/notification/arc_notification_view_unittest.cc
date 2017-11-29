@@ -110,13 +110,6 @@ class TestMessageViewDelegate : public message_center::MessageViewDelegate {
     removed_ids_.insert(notification_id);
   }
 
-  std::unique_ptr<ui::MenuModel> CreateMenuModel(
-      const message_center::Notification& notification) override {
-    // For this test, this method should not be invoked.
-    NOTREACHED();
-    return nullptr;
-  }
-
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override {
     // For this test, this method should not be invoked.
