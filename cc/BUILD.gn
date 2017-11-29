@@ -755,6 +755,7 @@ cc_test("cc_perftests") {
     "ipc/cc_serialization_perftest.cc",
     "layers/layer_perftest.cc",
     "layers/picture_layer_impl_perftest.cc",
+    "paint/paint_op_perftest.cc",
     "raster/raster_buffer_provider_perftest.cc",
     "raster/task_graph_runner_perftest.cc",
     "raster/texture_compressor_perftest.cc",
