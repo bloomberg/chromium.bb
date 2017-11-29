@@ -307,6 +307,11 @@
    <ph name="LINE_BREAKS">&lt;br/&gt;&lt;br/&gt;</ph>
    Removing your device while it is in use may cause data loss.  Please wait until the operation is over, then eject the device using the Files app.
   </message>
+  <message name="IDS_FILE_BROWSER_UNMOUNT_PROVIDED_FAILED" desc="Title of the error dialog when unmount operation for a volume provided by an extension failed.">
+   <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Cannot unmount volume<ph name="END_BOLD">&lt;/b&gt;</ph>
+   <ph name="LINE_BREAKS">&lt;br/&gt;&lt;br/&gt;</ph>
+   The volume is busy. Please close all the opened files from it, then try again later.
+  </message>
   <message name="IDS_FILE_BROWSER_MOUNT_ARCHIVE" desc="Title of the action for mounting an archive file to work with its contents.">
     Open
   </message>
