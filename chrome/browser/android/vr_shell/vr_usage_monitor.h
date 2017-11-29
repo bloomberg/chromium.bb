@@ -8,16 +8,10 @@
 #include <memory>
 
 #include "base/time/time.h"
+#include "chrome/browser/vr/mode.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace vr_shell {
-
-enum class VRMode {
-  NO_VR = 0,
-  VR_BROWSER = 1,     // VR Shell.
-  VR_FULLSCREEN = 2,  // Cinema mode.
-  WEBVR = 3,
-};
 
 // SessionTimer will monitor the time between calls to StartSession and
 // StopSession.  It will combine multiple segments into a single session if they
@@ -54,7 +48,8 @@ class SessionTimer {
 // This class is not thread-safe and must only be used from the main thread.
 class VrMetricsHelper : public content::WebContentsObserver {
  public:
-  explicit VrMetricsHelper(content::WebContents* contents, VRMode initial_mode);
+  explicit VrMetricsHelper(content::WebContents* contents,
+                           vr::Mode initial_mode);
   ~VrMetricsHelper() override;
 
   void SetWebVREnabled(bool is_webvr_presenting);
@@ -73,7 +68,7 @@ class VrMetricsHelper : public content::WebContentsObserver {
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
 
-  void SetVrMode(VRMode mode);
+  void SetVrMode(vr::Mode mode);
   void UpdateMode();
 
   std::unique_ptr<SessionTimer> mode_video_timer_;
@@ -81,7 +76,7 @@ class VrMetricsHelper : public content::WebContentsObserver {
   std::unique_ptr<SessionTimer> mode_timer_;
   std::unique_ptr<SessionTimer> session_timer_;
 
-  VRMode mode_ = VRMode::NO_VR;
+  vr::Mode mode_ = vr::Mode::kNoVr;
 
   // state that gets translated into vr_mode:
   bool is_fullscreen_ = false;

@@ -10,6 +10,7 @@
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chrome/browser/vr/metrics_helper.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace vr {
@@ -47,6 +48,19 @@ void Assets::LoadWhenComponentReady(OnAssetsLoadedCallback on_loaded) {
                                 std::move(on_loaded)));
 }
 
+MetricsHelper* Assets::GetMetricsHelper() {
+  // If we instantiate metrics_helper_ in the constructor all functions of
+  // MetricsHelper must be called in a valid sequence from the thread the
+  // constructor ran on. However, the assets class can be instantiated from any
+  // thread. To avoid the aforementioned restriction, create metrics_helper_ the
+  // first time it is used and, thus, give the caller control over when the
+  // sequence starts.
+  if (!metrics_helper_) {
+    metrics_helper_ = base::MakeUnique<MetricsHelper>();
+  }
+  return metrics_helper_.get();
+}
+
 // static
 void Assets::LoadAssetsTask(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -76,6 +90,7 @@ Assets::~Assets() = default;
 void Assets::OnComponentReadyInternal(const base::FilePath& install_dir) {
   component_install_dir_ = install_dir;
   component_ready_ = true;
+  GetMetricsHelper()->OnComponentReady();
   if (on_assets_loaded_) {
     LoadWhenComponentReadyInternal(on_assets_loaded_task_runner_,
                                    std::move(on_assets_loaded_));

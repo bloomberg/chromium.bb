@@ -43136,6 +43136,11 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="6" label="L2TP/IPSec Username/Password"/>
 </enum>
 
+<enum name="VRAssetsComponentEnterStatus">
+  <int value="0" label="Component is ready to use"/>
+  <int value="1" label="Component is not ready to use. Reason not known."/>
+</enum>
+
 <enum name="VRSuppressedElement">
   <int value="0" label="File chooser was suppressed in VR"/>
   <int value="1" label="Bluetooth picker was suppressed in VR"/>
