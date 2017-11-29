@@ -118,6 +118,7 @@
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/background_generator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
+#include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/browser_container_view.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
@@ -251,7 +252,6 @@
 using base::UserMetricsAction;
 using bookmarks::BookmarkNode;
 
-class BrowserBookmarkModelBridge;
 class InfoBarContainerDelegateIOS;
 
 namespace {
@@ -383,6 +383,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 @interface BrowserViewController ()<ActivityServicePresentation,
                                     AppRatingPromptDelegate,
+                                    BookmarkModelBridgeObserver,
                                     CaptivePortalDetectorTabHelperDelegate,
                                     CRWNativeContentProvider,
                                     CRWWebStateDelegate,
@@ -520,7 +521,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   NSMutableDictionary* _dominantColorCache;
 
   // Bridge to register for bookmark changes.
-  std::unique_ptr<BrowserBookmarkModelBridge> _bookmarkModelBridge;
+  std::unique_ptr<bookmarks::BookmarkModelBridge> _bookmarkModelBridge;
 
   // Cached pointer to the bookmarks model.
   bookmarks::BookmarkModel* _bookmarkModel;  // weak
@@ -939,65 +940,6 @@ class InfoBarContainerDelegateIOS
   bool DrawInfoBarArrows(int* x) const override { return false; }
 
   __weak BrowserViewController* controller_;
-};
-
-// Called from the BrowserBookmarkModelBridge from C++ -> ObjC.
-@interface BrowserViewController (BookmarkBridgeMethods)
-// If a bookmark matching the currentTab url is added or moved, update the
-// toolbar state so the star highlight is in sync.
-- (void)bookmarkNodeModified:(const BookmarkNode*)node;
-- (void)allBookmarksRemoved;
-@end
-
-// Handle notification that bookmarks has been removed changed so we can update
-// the bookmarked star icon.
-class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
- public:
-  explicit BrowserBookmarkModelBridge(BrowserViewController* owner)
-      : owner_(owner) {}
-
-  ~BrowserBookmarkModelBridge() override {}
-
-  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* parent,
-                           int old_index,
-                           const BookmarkNode* node,
-                           const std::set<GURL>& removed_urls) override {
-    [owner_ bookmarkNodeModified:node];
-  }
-
-  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
-                           bool ids_reassigned) override {}
-
-  void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* old_parent,
-                         int old_index,
-                         const BookmarkNode* new_parent,
-                         int new_index) override {}
-
-  void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
-                         const BookmarkNode* parent,
-                         int index) override {
-    [owner_ bookmarkNodeModified:parent->GetChild(index)];
-  }
-
-  void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
-                           const BookmarkNode* node) override {}
-
-  void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
-                                  const BookmarkNode* node) override {}
-
-  void BookmarkNodeChildrenReordered(bookmarks::BookmarkModel* model,
-                                     const BookmarkNode* node) override {}
-
-  void BookmarkAllUserNodesRemoved(
-      bookmarks::BookmarkModel* model,
-      const std::set<GURL>& removed_urls) override {
-    [owner_ allBookmarksRemoved];
-  }
-
- private:
-  __weak BrowserViewController* owner_;
 };
 
 @implementation BrowserViewController
@@ -1867,8 +1809,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // during testing, so explicitly support this).
   _bookmarkModel = ios::BookmarkModelFactory::GetForBrowserState(_browserState);
   if (_bookmarkModel) {
-    _bookmarkModelBridge.reset(new BrowserBookmarkModelBridge(self));
-    _bookmarkModel->AddObserver(_bookmarkModelBridge.get());
+    _bookmarkModelBridge.reset(
+        new bookmarks::BookmarkModelBridge(self, _bookmarkModel));
   }
 }
 
@@ -2662,8 +2604,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   self.tabStripView = nil;
   _infoBarContainer = nil;
   _readingListMenuNotifier = nil;
-  if (_bookmarkModel)
-    _bookmarkModel->RemoveObserver(_bookmarkModelBridge.get());
+  _bookmarkModelBridge.reset();
   [_model removeObserver:self];
   [[UpgradeCenter sharedInstance] unregisterClient:self];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -5140,22 +5081,43 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return [self hasControllerForURL:url];
 }
 
-#pragma mark - BookmarkBridgeMethods
+// TODO(crbug.com/788705): BVC doesn't need to implement
+// BookmarkModelBridgeObserver once the new toolbar is turned on.
+#pragma mark - BookmarkModelBridgeObserver
 
 // If an added or removed bookmark is the same as the current url, update the
 // toolbar so the star highlight is kept in sync.
-- (void)bookmarkNodeModified:(const BookmarkNode*)node {
-  if ([_model currentTab].webState &&
-      node->url() == [_model currentTab].webState->GetLastCommittedURL()) {
-    [self updateToolbar];
-  }
+- (void)bookmarkNodeChildrenChanged:(const BookmarkNode*)bookmarkNode {
+  [self updateToolbar];
 }
 
 // If all bookmarks are removed, update the toolbar so the star highlight is
 // kept in sync.
-- (void)allBookmarksRemoved {
+- (void)bookmarkModelRemovedAllNodes {
   [self updateToolbar];
 }
+
+// In case we are on a bookmarked page before the model is loaded.
+- (void)bookmarkModelLoaded {
+  [self updateToolbar];
+}
+
+- (void)bookmarkNodeChanged:(const BookmarkNode*)bookmarkNode {
+  // No-op -- required by BookmarkModelBridgeObserver but not used.
+}
+
+- (void)bookmarkNode:(const BookmarkNode*)bookmarkNode
+     movedFromParent:(const BookmarkNode*)oldParent
+            toParent:(const BookmarkNode*)newParent {
+  // No-op -- required by BookmarkModelBridgeObserver but not used.
+}
+
+- (void)bookmarkNodeDeleted:(const BookmarkNode*)node
+                 fromFolder:(const BookmarkNode*)folder {
+  // No-op -- required by BookmarkModelBridgeObserver but not used.
+}
+
+#pragma mark - Alerts
 
 - (void)showErrorAlertWithStringTitle:(NSString*)title
                               message:(NSString*)message {
