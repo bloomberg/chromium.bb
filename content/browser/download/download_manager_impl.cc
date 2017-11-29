@@ -194,8 +194,9 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
     return nullptr;
   }
 
-  ResourceRequestInfo::WebContentsGetter getter = base::Bind(
-      &GetWebContents, request->origin_pid, request->render_frame_id, -1);
+  ResourceRequestInfo::WebContentsGetter getter =
+      base::Bind(&GetWebContents, params->render_process_host_id(),
+                 params->render_frame_host_routing_id(), -1);
   // TODO(qinmin): Check the storage permission before creating the URLLoader.
   // This is already done for context menu download, but it is missing for
   // download service and download resumption.
@@ -223,8 +224,8 @@ void InterceptNavigationResponse(
   GURL url = resource_request->url;
   std::string method = resource_request->method;
   ResourceRequestInfo::WebContentsGetter getter =
-      base::Bind(&GetWebContents, resource_request->origin_pid,
-                 resource_request->render_frame_id, frame_tree_node_id);
+      base::Bind(&GetWebContents, ChildProcessHost::kInvalidUniqueID,
+                 MSG_ROUTING_NONE, frame_tree_node_id);
   std::unique_ptr<ResourceDownloader> resource_downloader =
       ResourceDownloader::CreateWithURLLoader(
           download_manager, std::move(resource_request), getter,
