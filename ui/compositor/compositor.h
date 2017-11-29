@@ -323,6 +323,12 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // the compositor if the enable_external_begin_frames setting is true.
   void OnNeedsExternalBeginFrames(bool needs_begin_frames);
 
+  // This flag is used to force a compositor into software compositing even tho
+  // in general chrome is using gpu compositing. This allows the compositor to
+  // be created without a gpu context, and does not go through the gpu path at
+  // all. This flag can not be used with a compositor that embeds any external
+  // content via a SurfaceLayer, as they would not agree on what compositing
+  // mode to use for resources, but may be used eg for tooltip windows.
   bool force_software_compositor() { return force_software_compositor_; }
 
   // Returns the main thread task runner this compositor uses. Users of the
