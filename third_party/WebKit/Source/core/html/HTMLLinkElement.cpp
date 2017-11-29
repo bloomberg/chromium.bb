@@ -153,12 +153,6 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
       link_ = LinkImport::Create(this);
     } else if (rel_attribute_.IsManifest()) {
       link_ = LinkManifest::Create(this);
-    } else if (rel_attribute_.IsServiceWorker() &&
-               OriginTrials::linkServiceWorkerEnabled(GetExecutionContext())) {
-      if (GetDocument().GetFrame()) {
-        link_ = CoreInitializer::GetInstance().CreateServiceWorkerLinkResource(
-            this);
-      }
     } else {
       LinkStyle* link = LinkStyle::Create(this);
       if (FastHasAttribute(disabledAttr)) {

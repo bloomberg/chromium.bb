@@ -30,7 +30,6 @@
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/resource_context_impl.h"
-#include "content/browser/service_worker/foreign_fetch_request_handler.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream.h"
@@ -423,11 +422,6 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
       std::make_unique<DevToolsURLRequestInterceptor>(browser_context_));
   request_interceptors.push_back(ServiceWorkerRequestHandler::CreateInterceptor(
       browser_context_->GetResourceContext()));
-  if (ForeignFetchRequestHandler::IsForeignFetchEnabled()) {
-    request_interceptors.push_back(
-        ForeignFetchRequestHandler::CreateInterceptor(
-            browser_context_->GetResourceContext()));
-  }
   request_interceptors.push_back(std::make_unique<AppCacheInterceptor>());
 
   // These calls must happen after StoragePartitionImpl::Create().

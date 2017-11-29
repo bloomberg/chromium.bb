@@ -153,16 +153,11 @@ class WebURLRequest {
     kPreviewsStateLast = kPreviewsOff
   };
 
-  // Indicates which service workers will receive fetch events for this request.
+  // Indicates whether service workers will receive fetch events for this
+  // request. Same as ServiceWorkerMode in
+  // content/public/common/service_worker_modes.h.
   enum class ServiceWorkerMode : uint8_t {
-    // Relevant local and foreign service workers will get a fetch or
-    // foreignfetch event for this request.
     kAll,
-    // Only relevant foreign service workers will get a foreignfetch event for
-    // this request.
-    kForeign,
-    // Neither local nor foreign service workers will get events for this
-    // request.
     kNone
   };
 

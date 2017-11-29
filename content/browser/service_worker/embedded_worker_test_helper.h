@@ -233,7 +233,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       mojom::ServiceWorkerEventDispatcher::
           DispatchExtendableMessageEventCallback callback);
   virtual void OnInstallEvent(
-      mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
       mojom::ServiceWorkerEventDispatcher::DispatchInstallEventCallback
           callback);
   virtual void OnFetchEvent(
@@ -341,7 +340,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       mojom::ServiceWorkerEventDispatcher::
           DispatchExtendableMessageEventCallback callback);
   void OnInstallEventStub(
-      mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
       mojom::ServiceWorkerEventDispatcher::DispatchInstallEventCallback
           callback);
   void OnLegacyFetchEventStub(

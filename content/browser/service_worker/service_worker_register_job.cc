@@ -29,39 +29,6 @@
 
 namespace content {
 
-namespace {
-
-class InstallEventMethodsReceiver
-    : public mojom::ServiceWorkerInstallEventMethods {
- public:
-  InstallEventMethodsReceiver(ServiceWorkerVersion* version)
-      : version_(version), install_methods_binding_(this) {}
-  ~InstallEventMethodsReceiver() override {}
-
-  void BindInterface(
-      mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo* ptr_info) {
-    install_methods_binding_.Bind(mojo::MakeRequest(ptr_info));
-  }
-
-  // Implements mojom::ServiceWorkerInstallEventMethod.
-  void RegisterForeignFetchScopes(
-      const std::vector<GURL>& sub_scopes,
-      const std::vector<url::Origin>& origins) override {
-    DCHECK(version_);
-    version_->RegisterForeignFetchScopes(sub_scopes, origins);
-  }
-
- private:
-  ServiceWorkerVersion* version_;
-
-  mojo::AssociatedBinding<mojom::ServiceWorkerInstallEventMethods>
-      install_methods_binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstallEventMethodsReceiver);
-};
-
-}  // namespace
-
 typedef ServiceWorkerRegisterJobBase::RegistrationJobType RegistrationJobType;
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
@@ -465,24 +432,16 @@ void ServiceWorkerRegisterJob::DispatchInstallEvent() {
       base::Bind(&ServiceWorkerRegisterJob::OnInstallFailed,
                  weak_factory_.GetWeakPtr()));
 
-  std::unique_ptr<InstallEventMethodsReceiver> install_methods_receiver =
-      std::make_unique<InstallEventMethodsReceiver>(new_version());
-  mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo ptr_info;
-  install_methods_receiver->BindInterface(&ptr_info);
   new_version()->event_dispatcher()->DispatchInstallEvent(
-      std::move(ptr_info),
       base::BindOnce(&ServiceWorkerRegisterJob::OnInstallFinished,
-                     weak_factory_.GetWeakPtr(), request_id,
-                     base::Passed(&install_methods_receiver)));
+                     weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerRegisterJob::OnInstallFinished(
     int request_id,
-    std::unique_ptr<InstallEventMethodsReceiver> install_methods_receiver,
     blink::mojom::ServiceWorkerEventStatus event_status,
     bool has_fetch_handler,
     base::Time dispatch_event_time) {
-  install_methods_receiver.reset();
   bool succeeded =
       event_status == blink::mojom::ServiceWorkerEventStatus::COMPLETED;
   new_version()->FinishRequest(request_id, succeeded, dispatch_event_time);
@@ -493,9 +452,6 @@ void ServiceWorkerRegisterJob::OnInstallFinished(
   }
 
   ServiceWorkerMetrics::RecordInstallEventStatus(SERVICE_WORKER_OK);
-  ServiceWorkerMetrics::RecordForeignFetchRegistrationCount(
-      new_version()->foreign_fetch_scopes().size(),
-      new_version()->foreign_fetch_origins().size());
 
   SetPhase(STORE);
   DCHECK(!registration()->last_update_check().is_null());

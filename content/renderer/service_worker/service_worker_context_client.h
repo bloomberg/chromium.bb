@@ -113,7 +113,6 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
                          const IPC::Message& message);
 
   // WebServiceWorkerContextClient overrides.
-  blink::WebURL Scope() const override;
   void GetClient(
       const blink::WebString& client_id,
       std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
@@ -249,10 +248,6 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
                        callbacks) override;
   void Claim(std::unique_ptr<blink::WebServiceWorkerClientsClaimCallbacks>
                  callbacks) override;
-  void RegisterForeignFetchScopes(
-      int install_event_id,
-      const blink::WebVector<blink::WebURL>& sub_scopes,
-      const blink::WebVector<blink::WebSecurityOrigin>& origins) override;
 
  private:
   struct WorkerContextData;
@@ -268,7 +263,6 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
 
   // mojom::ServiceWorkerEventDispatcher
   void DispatchInstallEvent(
-      mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
       DispatchInstallEventCallback callback) override;
   void DispatchActivateEvent(DispatchActivateEventCallback callback) override;
   void DispatchBackgroundFetchAbortEvent(

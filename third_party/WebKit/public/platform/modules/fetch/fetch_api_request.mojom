@@ -101,10 +101,10 @@ enum FetchRedirectMode {
   MANUAL,
 };
 
-// Whether this is a regular fetch, or a foreign fetch request.
+// Whether this is a regular fetch, or a foreign fetch request (now removed).
+// TODO(falken): Remove this since it's always FETCH.
 enum ServiceWorkerFetchType {
   FETCH,
-  FOREIGN_FETCH,
 };
 
 struct FetchAPIRequest {

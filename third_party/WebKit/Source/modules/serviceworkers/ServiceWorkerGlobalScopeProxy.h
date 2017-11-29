@@ -109,8 +109,6 @@ class ServiceWorkerGlobalScopeProxy final
   void DispatchFetchEvent(int fetch_event_id,
                           const WebServiceWorkerRequest&,
                           bool navigation_preload_sent) override;
-  void DispatchForeignFetchEvent(int fetch_event_id,
-                                 const WebServiceWorkerRequest&) override;
   void DispatchInstallEvent(int) override;
   void DispatchNotificationClickEvent(int,
                                       const WebString& notification_id,

@@ -48,7 +48,6 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/WebKit/Source/modules/serviceworkers/ExtendableEvent.idl",
     "//third_party/WebKit/Source/modules/serviceworkers/ExtendableMessageEvent.idl",
     "//third_party/WebKit/Source/modules/serviceworkers/FetchEvent.idl",
-    "//third_party/WebKit/Source/modules/serviceworkers/ForeignFetchEvent.idl",
     "//third_party/WebKit/Source/modules/serviceworkers/InstallEvent.idl",
     "//third_party/WebKit/Source/modules/speech/SpeechRecognitionError.idl",
     "//third_party/WebKit/Source/modules/speech/SpeechRecognitionEvent.idl",

@@ -807,10 +807,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     int request_id =
         version_->StartRequest(ServiceWorkerMetrics::EventType::INSTALL,
                                CreateReceiver(BrowserThread::UI, done, result));
-    mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo ptr_info;
-    mojo::MakeRequest(&ptr_info);
     version_->event_dispatcher()->DispatchInstallEvent(
-        std::move(ptr_info),
         base::BindOnce(&self::ReceiveInstallEventOnIOThread,
                        base::Unretained(this), done, result, request_id));
   }

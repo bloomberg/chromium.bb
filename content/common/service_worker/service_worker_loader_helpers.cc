@@ -76,7 +76,6 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
     const ServiceWorkerResponse& response,
     ResourceResponseHead* out_head) {
   out_head->was_fetched_via_service_worker = true;
-  out_head->was_fetched_via_foreign_fetch = false;
   out_head->was_fallback_required_by_service_worker = false;
   out_head->url_list_via_service_worker = response.url_list;
   out_head->response_type_via_service_worker = response.response_type;

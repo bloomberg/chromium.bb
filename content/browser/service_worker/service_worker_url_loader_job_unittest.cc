@@ -475,9 +475,9 @@ std::unique_ptr<ResourceResponseHead> CreateResponseInfoFromServiceWorker() {
 // responding as if a service worker is running in the renderer.
 //
 // ServiceWorkerURLLoaderJobTest is also a ServiceWorkerURLLoaderJob::Delegate.
-// In production code, ServiceWorkerControlleeRequestHandler is the Delegate
-// (for non-"foreign fetch" request interceptions). So this class also basically
-// mocks that part of ServiceWorkerControlleeRequestHandler.
+// In production code, ServiceWorkerControlleeRequestHandler is the Delegate. So
+// this class also basically mocks that part of
+// ServiceWorkerControlleeRequestHandler.
 class ServiceWorkerURLLoaderJobTest
     : public testing::Test,
       public ServiceWorkerURLLoaderJob::Delegate {

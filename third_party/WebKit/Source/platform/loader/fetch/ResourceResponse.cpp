@@ -92,7 +92,6 @@ ResourceResponse::ResourceResponse()
       was_fetched_via_spdy_(false),
       was_fetched_via_proxy_(false),
       was_fetched_via_service_worker_(false),
-      was_fetched_via_foreign_fetch_(false),
       was_fallback_required_by_service_worker_(false),
       did_service_worker_navigation_preload_(false),
       response_type_via_service_worker_(
@@ -133,7 +132,6 @@ ResourceResponse::ResourceResponse(const KURL& url,
       was_fetched_via_spdy_(false),
       was_fetched_via_proxy_(false),
       was_fetched_via_service_worker_(false),
-      was_fetched_via_foreign_fetch_(false),
       was_fallback_required_by_service_worker_(false),
       did_service_worker_navigation_preload_(false),
       response_type_via_service_worker_(
@@ -169,7 +167,6 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
   was_fetched_via_spdy_ = data->was_fetched_via_spdy_;
   was_fetched_via_proxy_ = data->was_fetched_via_proxy_;
   was_fetched_via_service_worker_ = data->was_fetched_via_service_worker_;
-  was_fetched_via_foreign_fetch_ = data->was_fetched_via_foreign_fetch_;
   was_fallback_required_by_service_worker_ =
       data->was_fallback_required_by_service_worker_;
   did_service_worker_navigation_preload_ =
@@ -232,7 +229,6 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::CopyData()
   data->was_fetched_via_spdy_ = was_fetched_via_spdy_;
   data->was_fetched_via_proxy_ = was_fetched_via_proxy_;
   data->was_fetched_via_service_worker_ = was_fetched_via_service_worker_;
-  data->was_fetched_via_foreign_fetch_ = was_fetched_via_foreign_fetch_;
   data->was_fallback_required_by_service_worker_ =
       was_fallback_required_by_service_worker_;
   data->did_service_worker_navigation_preload_ =

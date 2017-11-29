@@ -290,10 +290,6 @@ void WebURLResponse::SetWasFetchedViaServiceWorker(bool value) {
   resource_response_->SetWasFetchedViaServiceWorker(value);
 }
 
-void WebURLResponse::SetWasFetchedViaForeignFetch(bool value) {
-  resource_response_->SetWasFetchedViaForeignFetch(value);
-}
-
 void WebURLResponse::SetWasFallbackRequiredByServiceWorker(bool value) {
   resource_response_->SetWasFallbackRequiredByServiceWorker(value);
 }

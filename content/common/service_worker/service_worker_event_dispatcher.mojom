@@ -61,7 +61,7 @@ struct ExtendableMessageEvent {
 // 'simple events'. ServiceWorkerVersion::CreateSimpleEventCallback can be used
 // to create the callback for these.
 interface ServiceWorkerEventDispatcher {
-  DispatchInstallEvent(associated ServiceWorkerInstallEventMethods method)
+  DispatchInstallEvent()
       => (blink.mojom.ServiceWorkerEventStatus status,
           bool has_fetch_handler,
           mojo.common.mojom.Time dispatch_event_time);
@@ -156,12 +156,4 @@ interface ServiceWorkerEventDispatcher {
   // worker. Unlike the other functions in this interface, Ping() does not
   // dispatch an event.
   Ping() => ();
-};
-
-// This interface is passed from the browser to the renderer with
-// DispatchInstallEvent. The ordering between RegisterForeignFetchScopes and the
-// callback of DispatchInstallEvent should be preserved.
-interface ServiceWorkerInstallEventMethods {
-  RegisterForeignFetchScopes(array<url.mojom.Url> sub_scopes,
-                             array<url.mojom.Origin> origins);
 };

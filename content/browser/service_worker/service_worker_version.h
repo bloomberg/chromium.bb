@@ -168,20 +168,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This also updates |site_for_uma_| when it was Site::OTHER.
   void set_fetch_handler_existence(FetchHandlerExistence existence);
 
-  const std::vector<GURL>& foreign_fetch_scopes() const {
-    return foreign_fetch_scopes_;
-  }
-  void set_foreign_fetch_scopes(const std::vector<GURL>& scopes) {
-    foreign_fetch_scopes_ = scopes;
-  }
-
-  const std::vector<url::Origin>& foreign_fetch_origins() const {
-    return foreign_fetch_origins_;
-  }
-  void set_foreign_fetch_origins(const std::vector<url::Origin>& origins) {
-    foreign_fetch_origins_ = origins;
-  }
-
   base::TimeDelta TimeSinceNoControllees() const {
     return GetTickDuration(no_controllees_time_);
   }
@@ -286,9 +272,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool FinishRequest(int request_id,
                      bool was_handled,
                      base::Time dispatch_event_time);
-
-  void RegisterForeignFetchScopes(const std::vector<GURL>& sub_scopes,
-                                  const std::vector<url::Origin>& origins);
 
   // Finishes an external request that was started by StartExternalRequest().
   // Returns false if there was an error finishing the request: e.g. the request
@@ -465,8 +448,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStallInStoppingTest, DetachThenRestart);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStallInStoppingTest,
                            DetachThenRestartNoCrash);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest,
-                           RegisterForeignFetchScopes);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestNowTimeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestNowTimeoutKill);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestCustomizedTimeout);
@@ -674,8 +655,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const GURL script_url_;
   const url::Origin script_origin_;
   const GURL scope_;
-  std::vector<GURL> foreign_fetch_scopes_;
-  std::vector<url::Origin> foreign_fetch_origins_;
   FetchHandlerExistence fetch_handler_existence_;
   // The source of truth for navigation preload state is the
   // ServiceWorkerRegistration. |navigation_preload_state_| is essentially a

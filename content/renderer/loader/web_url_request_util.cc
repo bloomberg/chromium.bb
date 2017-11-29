@@ -621,8 +621,6 @@ blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
 
 STATIC_ASSERT_ENUM(ServiceWorkerMode::NONE,
                    WebURLRequest::ServiceWorkerMode::kNone);
-STATIC_ASSERT_ENUM(ServiceWorkerMode::FOREIGN,
-                   WebURLRequest::ServiceWorkerMode::kForeign);
 STATIC_ASSERT_ENUM(ServiceWorkerMode::ALL,
                    WebURLRequest::ServiceWorkerMode::kAll);
 

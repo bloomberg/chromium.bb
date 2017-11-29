@@ -81,21 +81,6 @@ const String GetMessageForResponseError(ServiceWorkerResponseError error,
                       "a Response whose \"body\" is locked cannot be used to "
                       "respond to a request.";
       break;
-    case ServiceWorkerResponseError::kNoForeignFetchResponse:
-      error_message =
-          error_message +
-          "an object that was not a ForeignFetchResponse was passed "
-          "to respondWith().";
-      break;
-    case ServiceWorkerResponseError::kForeignFetchHeadersWithoutOrigin:
-      error_message =
-          error_message +
-          "headers were specified for a response without an explicit origin.";
-      break;
-    case ServiceWorkerResponseError::kForeignFetchMismatchedOrigin:
-      error_message = error_message +
-                      "origin in response does not match origin of request.";
-      break;
     case ServiceWorkerResponseError::kRedirectedResponseForNotFollowRequest:
       error_message = error_message +
                       "a redirected response was used for a request whose "

@@ -1089,7 +1089,7 @@ enum WebFeature {
   kSVGSMILPausing = 1506,
   kSVGSMILCurrentTime = 1507,
   kHTMLBodyElementOnSelectionChangeAttribute = 1508,
-  kForeignFetchInterception = 1509,
+  kForeignFetchInterception = 1509,  // Obsolete.
   kUsbGetDevices = 1519,
   kUsbRequestDevice = 1520,
   kUsbDeviceOpen = 1521,

@@ -66,12 +66,6 @@ class WebServiceWorkerContextClient {
  public:
   virtual ~WebServiceWorkerContextClient() {}
 
-  // Returns the scope of the service worker's registration. Currently
-  // only used by InstallEvent#registerForeignFetch().
-  // TODO(falken): Figure out why registerForeignFetch() can't just use
-  // self.registration.scope.
-  virtual WebURL Scope() const { return WebURL(); }
-
   // For Clients#get(id). Requests the embedder to return the specified Client.
   virtual void GetClient(const WebString& client_id,
                          std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
@@ -332,13 +326,6 @@ class WebServiceWorkerContextClient {
   // For Clients#claim().
   virtual void Claim(
       std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>) = 0;
-
-  // Called when the worker wants to register subscopes to handle via foreign
-  // fetch. Will only be called while an install event is in progress.
-  virtual void RegisterForeignFetchScopes(
-      int install_event_id,
-      const WebVector<WebURL>& sub_scopes,
-      const WebVector<WebSecurityOrigin>& origins) = 0;
 };
 
 }  // namespace blink

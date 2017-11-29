@@ -425,10 +425,6 @@
       name: "ForceTallerSelectPopup",
     },
     {
-      name: "ForeignFetch",
-      origin_trial_feature_name: "ForeignFetch",
-    },
-    {
       name: "FractionalMouseEvent",
     },
     {
@@ -539,10 +535,6 @@
     {
       name: "LazyParseCSS",
       status: "experimental",
-    },
-    {
-      name: "LinkServiceWorker",
-      origin_trial_feature_name: "ForeignFetch",
     },
     {
       name: "LoadingWithMojo",

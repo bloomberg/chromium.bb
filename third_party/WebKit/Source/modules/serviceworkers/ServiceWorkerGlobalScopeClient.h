@@ -77,8 +77,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
   void SetCachedMetadata(const WebURL&, const char*, size_t);
   void ClearCachedMetadata(const WebURL&);
 
-  WebURL Scope() const;
-
   void DidHandleActivateEvent(int event_id,
                               mojom::ServiceWorkerEventStatus,
                               double event_dispatch_time);
@@ -152,9 +150,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
   void Navigate(const WebString& client_uuid,
                 const WebURL&,
                 std::unique_ptr<WebServiceWorkerClientCallbacks>);
-  void RegisterForeignFetchScopes(int install_event_id,
-                                  const WebVector<WebURL>& sub_scopes,
-                                  const WebVector<WebSecurityOrigin>&);
 
   static const char* SupplementName();
   static ServiceWorkerGlobalScopeClient* From(ExecutionContext*);

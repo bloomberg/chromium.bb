@@ -382,7 +382,6 @@ void ServiceWorkerURLRequestJob::FallbackToNetwork() {
 
 void ServiceWorkerURLRequestJob::FallbackToNetworkOrRenderer() {
   DCHECK_EQ(ResponseType::NOT_DETERMINED, response_type_);
-  DCHECK_NE(ServiceWorkerFetchType::FOREIGN_FETCH, fetch_type_);
   if (IsFallbackToRendererNeeded()) {
     response_type_ = ResponseType::FALLBACK_TO_RENDERER;
   } else {
@@ -848,9 +847,6 @@ void ServiceWorkerURLRequestJob::FinalizeFallbackToNetwork() {
 }
 
 void ServiceWorkerURLRequestJob::FinalizeFallbackToRenderer() {
-  // TODO(mek): http://crbug.com/604084 Figure out what to do about CORS
-  // preflight and fallbacks for foreign fetch events.
-  DCHECK_NE(fetch_type_, ServiceWorkerFetchType::FOREIGN_FETCH);
   fall_back_required_ = true;
   if (ShouldRecordResult())
     RecordResult(ServiceWorkerMetrics::REQUEST_JOB_FALLBACK_FOR_CORS);
@@ -866,12 +862,7 @@ bool ServiceWorkerURLRequestJob::IsFallbackToRendererNeeded() const {
   // document, we can't simply fallback to the network in the browser process.
   // It is because the CORS preflight logic is implemented in the renderer. So
   // we return a fall_back_required response to the renderer.
-  // If fetch_type is |FOREIGN_FETCH| any required CORS checks will have already
-  // been done in the renderer (and if a preflight was necesary the request
-  // would never have reached foreign fetch), so such requests can always
-  // fallback to the network directly.
   return !IsMainResourceLoad() &&
-         fetch_type_ != ServiceWorkerFetchType::FOREIGN_FETCH &&
          (request_mode_ == network::mojom::FetchRequestMode::kCORS ||
           request_mode_ ==
               network::mojom::FetchRequestMode::kCORSWithForcedPreflight) &&
@@ -934,7 +925,6 @@ void ServiceWorkerURLRequestJob::OnStartCompleted() const {
       ServiceWorkerResponseInfo::ForRequest(request_, true)
           ->OnStartCompleted(
               false /* was_fetched_via_service_worker */,
-              false /* was_fetched_via_foreign_fetch */,
               false /* was_fallback_required */,
               std::vector<GURL>() /* url_list_via_service_worker */,
               network::mojom::FetchResponseType::kDefault,
@@ -953,7 +943,6 @@ void ServiceWorkerURLRequestJob::OnStartCompleted() const {
       ServiceWorkerResponseInfo::ForRequest(request_, true)
           ->OnStartCompleted(
               true /* was_fetched_via_service_worker */,
-              fetch_type_ == ServiceWorkerFetchType::FOREIGN_FETCH,
               fall_back_required_, response_url_list_, fetch_response_type_,
               worker_start_time_, worker_ready_time_,
               response_is_in_cache_storage_, response_cache_storage_cache_name_,
