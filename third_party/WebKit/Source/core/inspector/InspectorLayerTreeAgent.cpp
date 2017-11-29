@@ -333,13 +333,16 @@ void InspectorLayerTreeAgent::BuildLayerIdToNodeIdMap(
     return;
   LocalFrameView* child_frame_view =
       ToLayoutEmbeddedContent(root->GetLayoutObject()).ChildFrameView();
+  if (!child_frame_view)
+    return;
   LayoutViewItem child_layout_view_item = child_frame_view->GetLayoutViewItem();
-  if (!child_layout_view_item.IsNull()) {
-    if (PaintLayerCompositor* child_compositor =
-            child_layout_view_item.Compositor())
-      BuildLayerIdToNodeIdMap(child_compositor->RootLayer(),
-                              layer_id_to_node_id_map);
-  }
+  if (child_layout_view_item.IsNull())
+    return;
+  PaintLayerCompositor* child_compositor = child_layout_view_item.Compositor();
+  if (!child_compositor)
+    return;
+  BuildLayerIdToNodeIdMap(child_compositor->RootLayer(),
+                          layer_id_to_node_id_map);
 }
 
 void InspectorLayerTreeAgent::GatherGraphicsLayers(
