@@ -35,6 +35,7 @@
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffect.h"
+#include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/PendingAnimations.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
@@ -72,12 +73,16 @@ class AnimationAnimationTest : public RenderingTest {
 
   void StartTimeline() { SimulateFrame(0); }
 
+  KeyframeEffectModelBase* MakeEmptyEffectModel() {
+    return StringKeyframeEffectModel::Create(StringKeyframeVector());
+  }
+
   KeyframeEffect* MakeAnimation(double duration = 30,
                                 double playback_rate = 1) {
     Timing timing;
     timing.iteration_duration = duration;
     timing.playback_rate = playback_rate;
-    return KeyframeEffect::Create(nullptr, nullptr, timing);
+    return KeyframeEffect::Create(nullptr, MakeEmptyEffectModel(), timing);
   }
 
   bool SimulateFrame(double time,
@@ -449,7 +454,8 @@ TEST_F(AnimationAnimationTest, FinishRaisesException) {
   Timing timing;
   timing.iteration_duration = 1;
   timing.iteration_count = std::numeric_limits<double>::infinity();
-  animation->setEffect(KeyframeEffect::Create(nullptr, nullptr, timing));
+  animation->setEffect(
+      KeyframeEffect::Create(nullptr, MakeEmptyEffectModel(), timing));
   animation->SetCurrentTimeInternal(10);
 
   DummyExceptionStateForTesting exception_state;
@@ -601,7 +607,7 @@ TEST_F(AnimationAnimationTest, AnimationsReturnTimeToNextEffect) {
   timing.iteration_duration = 1;
   timing.end_delay = 1;
   KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(nullptr, nullptr, timing);
+      KeyframeEffect::Create(nullptr, MakeEmptyEffectModel(), timing);
   animation = timeline->Play(keyframe_effect);
   animation->setStartTime(0, false);
 
@@ -706,7 +712,7 @@ TEST_F(AnimationAnimationTest, AttachedAnimations) {
 
   Timing timing;
   KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(element.Get(), nullptr, timing);
+      KeyframeEffect::Create(element.Get(), MakeEmptyEffectModel(), timing);
   Animation* animation = timeline->Play(keyframe_effect);
   SimulateFrame(0);
   timeline->ServiceAnimations(kTimingUpdateForAnimationFrame);
@@ -816,10 +822,11 @@ TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
   timing.iteration_duration = 30;
   timing.playback_rate = 1;
   KeyframeEffect* keyframe_effect_composited = KeyframeEffect::Create(
-      ToElement(object_composited->GetNode()), nullptr, timing);
+      ToElement(object_composited->GetNode()), MakeEmptyEffectModel(), timing);
   Animation* animation_composited = timeline->Play(keyframe_effect_composited);
-  KeyframeEffect* keyframe_effect_not_composited = KeyframeEffect::Create(
-      ToElement(object_not_composited->GetNode()), nullptr, timing);
+  KeyframeEffect* keyframe_effect_not_composited =
+      KeyframeEffect::Create(ToElement(object_not_composited->GetNode()),
+                             MakeEmptyEffectModel(), timing);
   Animation* animation_not_composited =
       timeline->Play(keyframe_effect_not_composited);
 

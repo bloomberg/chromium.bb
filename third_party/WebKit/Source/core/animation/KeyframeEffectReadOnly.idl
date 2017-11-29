@@ -4,11 +4,14 @@
 
 // https://w3c.github.io/web-animations/#the-keyframeeffect-interfaces
 
+enum CompositeOperation { "replace", "add", "accumulate" };
+
 [
     Constructor(Element? target, (sequence<Dictionary> or Dictionary)? effect, optional (unrestricted double or KeyframeEffectOptions) options),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     RuntimeEnabled=WebAnimationsAPI
 ] interface KeyframeEffectReadOnly : AnimationEffectReadOnly {
+  readonly attribute CompositeOperation composite;
   [CallWith=ScriptState] sequence<object> getKeyframes();
 };

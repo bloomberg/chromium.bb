@@ -3937,9 +3937,12 @@ interface KeyboardEvent : UIEvent
     method initKeyboardEvent
 interface KeyframeEffect : KeyframeEffectReadOnly
     attribute @@toStringTag
+    getter composite
     method constructor
+    setter composite
 interface KeyframeEffectReadOnly : AnimationEffectReadOnly
     attribute @@toStringTag
+    getter composite
     method constructor
     method getKeyframes
 interface LinearAccelerationSensor : Accelerometer

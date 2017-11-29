@@ -36,4 +36,5 @@
     RaisesException=Constructor,
     RuntimeEnabled=WebAnimationsAPI
 ] interface KeyframeEffect : KeyframeEffectReadOnly {
+  inherit attribute CompositeOperation composite;
 };

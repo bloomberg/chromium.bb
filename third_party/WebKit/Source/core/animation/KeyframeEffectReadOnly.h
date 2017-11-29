@@ -9,7 +9,7 @@
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffectReadOnly.h"
 #include "core/animation/CompositorAnimations.h"
-#include "core/animation/EffectModel.h"
+#include "core/animation/KeyframeEffectModel.h"
 
 namespace blink {
 
@@ -31,7 +31,7 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
   enum Priority { kDefaultPriority, kTransitionPriority };
 
   static KeyframeEffectReadOnly* Create(Element*,
-                                        EffectModel*,
+                                        KeyframeEffectModelBase*,
                                         const Timing&,
                                         Priority = kDefaultPriority,
                                         EventDelegate* = nullptr);
@@ -53,12 +53,20 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
   bool IsKeyframeEffectReadOnly() const override { return true; }
 
   // IDL implementation.
+  String composite() const;
   Vector<ScriptValue> getKeyframes(ScriptState*);
 
+  EffectModel::CompositeOperation compositeInternal() const {
+    return model_->Composite();
+  }
+
   bool Affects(const PropertyHandle&) const;
-  const EffectModel* Model() const { return model_.Get(); }
-  EffectModel* Model() { return model_.Get(); }
-  void SetModel(EffectModel* model) { model_ = model; }
+  const KeyframeEffectModelBase* Model() const { return model_.Get(); }
+  KeyframeEffectModelBase* Model() { return model_.Get(); }
+  void SetModel(KeyframeEffectModelBase* model) {
+    DCHECK(model);
+    model_ = model;
+  }
   Priority GetPriority() const { return priority_; }
   Element* Target() const { return target_; }
 
@@ -93,7 +101,7 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
 
  protected:
   KeyframeEffectReadOnly(Element*,
-                         EffectModel*,
+                         KeyframeEffectModelBase*,
                          const Timing&,
                          Priority,
                          EventDelegate*);
@@ -113,7 +121,7 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
 
  private:
   Member<Element> target_;
-  Member<EffectModel> model_;
+  Member<KeyframeEffectModelBase> model_;
   Member<SampledEffect> sampled_effect_;
 
   Priority priority_;

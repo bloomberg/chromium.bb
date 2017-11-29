@@ -47,7 +47,8 @@ class AnimationEffectStackTest : public PageTestBase {
         .sampled_effects_.size();
   }
 
-  EffectModel* MakeEffectModel(CSSPropertyID id, const String& value) {
+  KeyframeEffectModelBase* MakeEffectModel(CSSPropertyID id,
+                                           const String& value) {
     StringKeyframeVector keyframes(2);
     keyframes[0] = StringKeyframe::Create();
     keyframes[0]->SetOffset(0.0);
@@ -60,13 +61,13 @@ class AnimationEffectStackTest : public PageTestBase {
     return StringKeyframeEffectModel::Create(keyframes);
   }
 
-  InertEffect* MakeInertEffect(EffectModel* effect) {
+  InertEffect* MakeInertEffect(KeyframeEffectModelBase* effect) {
     Timing timing;
     timing.fill_mode = Timing::FillMode::BOTH;
     return InertEffect::Create(effect, timing, false, 0);
   }
 
-  KeyframeEffect* MakeKeyframeEffect(EffectModel* effect,
+  KeyframeEffect* MakeKeyframeEffect(KeyframeEffectModelBase* effect,
                                      double duration = 10) {
     Timing timing;
     timing.fill_mode = Timing::FillMode::BOTH;

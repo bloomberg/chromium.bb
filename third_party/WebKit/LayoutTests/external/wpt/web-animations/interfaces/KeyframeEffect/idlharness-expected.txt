@@ -13,13 +13,13 @@ PASS KeyframeEffectReadOnly interface: existence and properties of interface pro
 PASS KeyframeEffectReadOnly interface: existence and properties of interface prototype object's "constructor" property
 FAIL KeyframeEffectReadOnly interface: attribute target assert_true: The prototype object must have a property "target" expected true got false
 FAIL KeyframeEffectReadOnly interface: attribute iterationComposite assert_true: The prototype object must have a property "iterationComposite" expected true got false
-FAIL KeyframeEffectReadOnly interface: attribute composite assert_true: The prototype object must have a property "composite" expected true got false
+PASS KeyframeEffectReadOnly interface: attribute composite
 PASS KeyframeEffectReadOnly interface: operation getKeyframes()
 PASS KeyframeEffectReadOnly must be primary interface of new KeyframeEffectReadOnly(null, null)
 PASS Stringification of new KeyframeEffectReadOnly(null, null)
 FAIL KeyframeEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "target" with the proper type assert_inherits: property "target" not found in prototype chain
 FAIL KeyframeEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "iterationComposite" with the proper type assert_inherits: property "iterationComposite" not found in prototype chain
-FAIL KeyframeEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "composite" with the proper type assert_inherits: property "composite" not found in prototype chain
+PASS KeyframeEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "composite" with the proper type
 PASS KeyframeEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "getKeyframes()" with the proper type
 PASS AnimationEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "timing" with the proper type
 PASS AnimationEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "getComputedTiming()" with the proper type
@@ -30,18 +30,18 @@ PASS KeyframeEffect interface: existence and properties of interface prototype o
 PASS KeyframeEffect interface: existence and properties of interface prototype object's "constructor" property
 FAIL KeyframeEffect interface: attribute target assert_true: The prototype object must have a property "target" expected true got false
 FAIL KeyframeEffect interface: attribute iterationComposite assert_true: The prototype object must have a property "iterationComposite" expected true got false
-FAIL KeyframeEffect interface: attribute composite assert_true: The prototype object must have a property "composite" expected true got false
+PASS KeyframeEffect interface: attribute composite
 FAIL KeyframeEffect interface: operation setKeyframes(object) assert_own_property: interface prototype object missing non-static operation expected property "setKeyframes" missing
 PASS KeyframeEffect must be primary interface of new KeyframeEffect(null, null)
 PASS Stringification of new KeyframeEffect(null, null)
 FAIL KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "target" with the proper type assert_inherits: property "target" not found in prototype chain
 FAIL KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "iterationComposite" with the proper type assert_inherits: property "iterationComposite" not found in prototype chain
-FAIL KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "composite" with the proper type assert_inherits: property "composite" not found in prototype chain
+PASS KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "composite" with the proper type
 FAIL KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "setKeyframes(object)" with the proper type assert_inherits: property "setKeyframes" not found in prototype chain
 FAIL KeyframeEffect interface: calling setKeyframes(object) on new KeyframeEffect(null, null) with too few arguments must throw TypeError assert_inherits: property "setKeyframes" not found in prototype chain
 FAIL KeyframeEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "target" with the proper type assert_inherits: property "target" not found in prototype chain
 FAIL KeyframeEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "iterationComposite" with the proper type assert_inherits: property "iterationComposite" not found in prototype chain
-FAIL KeyframeEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "composite" with the proper type assert_inherits: property "composite" not found in prototype chain
+PASS KeyframeEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "composite" with the proper type
 PASS KeyframeEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "getKeyframes()" with the proper type
 PASS AnimationEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "timing" with the proper type
 PASS AnimationEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "getComputedTiming()" with the proper type

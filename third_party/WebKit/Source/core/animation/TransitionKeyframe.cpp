@@ -34,10 +34,13 @@ void TransitionKeyframe::AddKeyframePropertiesToV8Object(
 scoped_refptr<Keyframe::PropertySpecificKeyframe>
 TransitionKeyframe::CreatePropertySpecificKeyframe(
     const PropertyHandle& property,
+    EffectModel::CompositeOperation effect_composite,
     double offset) const {
   DCHECK(property == property_);
   DCHECK(offset == offset_);
-  return PropertySpecificKeyframe::Create(Offset(), &Easing(), Composite(),
+  EffectModel::CompositeOperation composite =
+      composite_.value_or(effect_composite);
+  return PropertySpecificKeyframe::Create(Offset(), &Easing(), composite,
                                           value_->Clone(), compositor_value_);
 }
 

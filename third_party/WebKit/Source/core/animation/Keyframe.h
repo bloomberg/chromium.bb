@@ -14,6 +14,7 @@
 #include "core/animation/animatable/AnimatableValue.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/RefCounted.h"
 
 namespace blink {
@@ -31,20 +32,19 @@ class V8ObjectBuilder;
 //
 //   * A possibly-null keyframe offset, which represents the keyframe's position
 //     relative to other keyframes in the same effect.
-//   * A possibly-null composite operation, which specifies the operation used
-//     to combine values in this keyframe with an underlying value.
 //   * A non-null timing function, which applies to the period of time between
 //     this keyframe and the next keyframe in the same effect and influences
 //     the interpolation between them.
+//   * An optional keyframe-specific composite operation, which specifies a
+//     specific composite operation used to combine values in this keyframe
+//     with an underlying value. If this is missing, the keyframe effect
+//     composite operation is used instead.
 //
 // For spec details, refer to: http://w3c.github.io/web-animations/#keyframe
 //
 // Implementation-wise the base Keyframe class captures the offset, composite
 // operation, and timing function. It is left to subclasses to define and store
 // the set of (property, value) pairs.
-//
-// TODO(smcgruer): Our implementation does not allow for a null composite
-// operation; by the spec we should allow this and use the effect operation.
 //
 // === PropertySpecificKeyframes ===
 //
@@ -74,7 +74,10 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   void SetComposite(EffectModel::CompositeOperation composite) {
     composite_ = composite;
   }
-  EffectModel::CompositeOperation Composite() const { return composite_; }
+  bool HasComposite() const { return composite_.has_value(); }
+  EffectModel::CompositeOperation Composite() const {
+    return composite_.value();
+  }
 
   // TODO(smcgruer): The keyframe timing function should be immutable.
   void SetEasing(scoped_refptr<TimingFunction> easing) {
@@ -167,13 +170,20 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
 
   // Construct and return a property-specific keyframe for this keyframe.
   //
+  // The 'effect_composite' parameter is the composite operation of the effect
+  // that owns the keyframe. If the keyframe has a keyframe-specific composite
+  // operation it should ignore this value when creating the property specific
+  // keyframe.
+  //
   // The 'offset' parameter is the offset to use in the resultant
   // PropertySpecificKeyframe. For CSS Transitions and CSS Animations, this is
   // the normal offset from the keyframe itself. However in web-animations this
   // will be a computed offset value which may differ from the keyframe offset.
   virtual scoped_refptr<PropertySpecificKeyframe>
-  CreatePropertySpecificKeyframe(const PropertyHandle&,
-                                 double offset) const = 0;
+  CreatePropertySpecificKeyframe(
+      const PropertyHandle&,
+      EffectModel::CompositeOperation effect_composite,
+      double offset) const = 0;
 
   // Comparator function for sorting Keyframes based on their offsets.
   static bool CompareOffsets(const scoped_refptr<Keyframe>&,
@@ -182,10 +192,10 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
  protected:
   Keyframe()
       : offset_(NullValue()),
-        composite_(EffectModel::kCompositeReplace),
+        composite_(),
         easing_(LinearTimingFunction::Shared()) {}
   Keyframe(double offset,
-           EffectModel::CompositeOperation composite,
+           WTF::Optional<EffectModel::CompositeOperation> composite,
            scoped_refptr<TimingFunction> easing)
       : offset_(offset), composite_(composite), easing_(std::move(easing)) {
     if (!easing_)
@@ -193,7 +203,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   }
 
   double offset_;
-  EffectModel::CompositeOperation composite_;
+  WTF::Optional<EffectModel::CompositeOperation> composite_;
   scoped_refptr<TimingFunction> easing_;
   DISALLOW_COPY_AND_ASSIGN(Keyframe);
 };
