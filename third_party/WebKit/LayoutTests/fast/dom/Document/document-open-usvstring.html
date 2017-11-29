@@ -1,0 +1,17 @@
+<!DOCTYPE HTML>
+<title>document.open test for USVString url</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<body>
+<script>
+test(function() {
+    // USVString is equivalent to DOMString except for not allowing unpaired surrogate codepoints.
+    // U+D800 to U+DFFF code point values are reserved as high and low surrogates, so no UTF forms, including UTF-16, can encode these code points.
+    // Unpaired surrogate codepoints present in USVString are converted by the browser to Unicode 'replacement character' U+FFFD.
+    w = document.open("data:text/html,<span>\ud801 is an unpaired surrogate codepoint</span>", "", "");
+    // w should be a window object in case of url as USVString type, otherwise in case of DOMString type
+    // javascript execution stops after throwing syntax error "Unable to open a window with invalid URL".
+    assert_equals(typeof(w), 'object', 'w should be a window object');
+}, "unpaired surrogate codepoint should be replaced with U+FFFD");
+</script>
+</body>
