@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="8">
+  <interface name="zcr_remote_shell_v1" version="9">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -65,6 +65,7 @@
       <entry name="pinned" value="5" summary="pinned window state"/>
       <entry name="trusted_pinned" value="6" summary="trusted pinned window state"/>
       <entry name="moving" value="7" summary="moving window state"/>
+      <entry name="resizing" value="8" summary="resizing window state"/>
     </enum>
 
     <enum name="error">
@@ -180,7 +181,7 @@
     </event>
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="7">
+  <interface name="zcr_remote_surface_v1" version="9">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -571,11 +572,54 @@
 
     <request name="set_window_type" since="7">
       <description summary="set the type of the window">
-        Set the type of window. This is only a hint to the compositor and the
-        compositor is free to ignore it.
+	Set the type of window. This is only a hint to the compositor and the
+	compositor is free to ignore it.
       </description>
       <arg name="type" type="uint" summary="type of the window"/>
     </request>
+
+    <!-- Version 9 additions -->
+
+    <request name="resize" since="9">
+      <description summary="start an interactive resize">
+	Start an interactive, user-driven resize of the surface.
+
+	The compositor responds to this request with a configure event that
+	transitions to the "resizing" state. The client must only initiate
+	resizing after acknowledging the state change. The compositor can assume
+	that subsequent set_window_geometry requests are resizes until the next
+	state transition is acknowledged.
+
+	The compositor may ignore resize requests depending on the state of the
+	surface, e.g. fullscreen or maximized.
+      </description>
+    </request>
+
+    <request name="set_resize_outset" since="9">
+      <description summary="expand input region for resizing">
+	Expand input region of surface with resize outset.
+
+	The compositor clips the input region of each surface to its bounds,
+	unless the client requests a resize outset. In that case, the input
+	region of the root surface is expanded to allow for some leeway around
+	visible bounds when starting a user-driven resize.
+      </description>
+      <arg name="outset" type="int"/>
+    </request>
+
+    <event name="window_geometry_changed" since="9">
+      <description summary="announce window geometry commit">
+	Notify the client of committed window geometry.
+
+	The compositor sends this event when it commits window geometry. The
+	client may use this information to convert coordinates of input events
+	using the latest committed geometry.
+      </description>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </event>
 
   </interface>
 

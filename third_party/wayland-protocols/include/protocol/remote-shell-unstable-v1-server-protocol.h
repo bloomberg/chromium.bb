@@ -195,6 +195,10 @@ enum zcr_remote_shell_v1_state_type {
 	 * moving window state
 	 */
 	ZCR_REMOTE_SHELL_V1_STATE_TYPE_MOVING = 7,
+	/**
+	 * resizing window state
+	 */
+	ZCR_REMOTE_SHELL_V1_STATE_TYPE_RESIZING = 8,
 };
 #endif /* ZCR_REMOTE_SHELL_V1_STATE_TYPE_ENUM */
 
@@ -525,8 +529,8 @@ struct zcr_remote_surface_v1_interface {
 	/**
 	 * suggests the window's background opacity
 	 *
-	 * Suggests the window's background opacity when the shadow is
-	 * requested.
+	 * [Deprecated] Suggests the window's background opacity when the
+	 * shadow is requested.
 	 */
 	void (*set_rectangular_shadow_background_opacity)(struct wl_client *client,
 							  struct wl_resource *resource,
@@ -789,11 +793,45 @@ struct zcr_remote_surface_v1_interface {
 	void (*set_window_type)(struct wl_client *client,
 				struct wl_resource *resource,
 				uint32_t type);
+	/**
+	 * start an interactive resize
+	 *
+	 * Start an interactive, user-driven resize of the surface.
+	 *
+	 * The compositor responds to this request with a configure event
+	 * that transitions to the "resizing" state. The client must only
+	 * initiate resizing after acknowledging the state change. The
+	 * compositor can assume that subsequent set_window_geometry
+	 * requests are resizes until the next state transition is
+	 * acknowledged.
+	 *
+	 * The compositor may ignore resize requests depending on the state
+	 * of the surface, e.g. fullscreen or maximized.
+	 * @since 9
+	 */
+	void (*resize)(struct wl_client *client,
+		       struct wl_resource *resource);
+	/**
+	 * expand input region for resizing
+	 *
+	 * Expand input region of surface with resize outset.
+	 *
+	 * The compositor clips the input region of each surface to its
+	 * bounds, unless the client requests a resize outset. In that
+	 * case, the input region of the root surface is expanded to allow
+	 * for some leeway around visible bounds when starting a
+	 * user-driven resize.
+	 * @since 9
+	 */
+	void (*set_resize_outset)(struct wl_client *client,
+				  struct wl_resource *resource,
+				  int32_t outset);
 };
 
 #define ZCR_REMOTE_SURFACE_V1_CLOSE 0
 #define ZCR_REMOTE_SURFACE_V1_STATE_TYPE_CHANGED 1
 #define ZCR_REMOTE_SURFACE_V1_CONFIGURE 2
+#define ZCR_REMOTE_SURFACE_V1_WINDOW_GEOMETRY_CHANGED 3
 
 /**
  * @ingroup iface_zcr_remote_surface_v1
@@ -807,6 +845,10 @@ struct zcr_remote_surface_v1_interface {
  * @ingroup iface_zcr_remote_surface_v1
  */
 #define ZCR_REMOTE_SURFACE_V1_CONFIGURE_SINCE_VERSION 5
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_WINDOW_GEOMETRY_CHANGED_SINCE_VERSION 9
 
 /**
  * @ingroup iface_zcr_remote_surface_v1
@@ -912,6 +954,14 @@ struct zcr_remote_surface_v1_interface {
  * @ingroup iface_zcr_remote_surface_v1
  */
 #define ZCR_REMOTE_SURFACE_V1_SET_WINDOW_TYPE_SINCE_VERSION 7
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_RESIZE_SINCE_VERSION 9
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_RESIZE_OUTSET_SINCE_VERSION 9
 
 /**
  * @ingroup iface_zcr_remote_surface_v1
@@ -944,6 +994,17 @@ static inline void
 zcr_remote_surface_v1_send_configure(struct wl_resource *resource_, int32_t origin_offset_x, int32_t origin_offset_y, struct wl_array *states, uint32_t serial)
 {
 	wl_resource_post_event(resource_, ZCR_REMOTE_SURFACE_V1_CONFIGURE, origin_offset_x, origin_offset_y, states, serial);
+}
+
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ * Sends an window_geometry_changed event to the client owning the resource.
+ * @param resource_ The client's resource
+ */
+static inline void
+zcr_remote_surface_v1_send_window_geometry_changed(struct wl_resource *resource_, int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	wl_resource_post_event(resource_, ZCR_REMOTE_SURFACE_V1_WINDOW_GEOMETRY_CHANGED, x, y, width, height);
 }
 
 /**

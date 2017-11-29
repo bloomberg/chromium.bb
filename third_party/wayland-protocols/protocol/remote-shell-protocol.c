@@ -70,7 +70,7 @@ static const struct wl_message zcr_remote_shell_v1_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zcr_remote_shell_v1_interface = {
-	"zcr_remote_shell_v1", 8,
+	"zcr_remote_shell_v1", 9,
 	3, zcr_remote_shell_v1_requests,
 	5, zcr_remote_shell_v1_events,
 };
@@ -102,18 +102,21 @@ static const struct wl_message zcr_remote_surface_v1_requests[] = {
 	{ "move", "5", types + 0 },
 	{ "set_orientation", "6i", types + 0 },
 	{ "set_window_type", "7u", types + 0 },
+	{ "resize", "9", types + 0 },
+	{ "set_resize_outset", "9i", types + 0 },
 };
 
 static const struct wl_message zcr_remote_surface_v1_events[] = {
 	{ "close", "", types + 0 },
 	{ "state_type_changed", "u", types + 0 },
 	{ "configure", "5iiau", types + 0 },
+	{ "window_geometry_changed", "9iiii", types + 0 },
 };
 
 WL_EXPORT const struct wl_interface zcr_remote_surface_v1_interface = {
-	"zcr_remote_surface_v1", 7,
-	26, zcr_remote_surface_v1_requests,
-	3, zcr_remote_surface_v1_events,
+	"zcr_remote_surface_v1", 9,
+	28, zcr_remote_surface_v1_requests,
+	4, zcr_remote_surface_v1_events,
 };
 
 static const struct wl_message zcr_notification_surface_v1_requests[] = {
