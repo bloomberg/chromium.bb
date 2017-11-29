@@ -1192,7 +1192,7 @@ if (enable_java_templates) {
       _deps += invoker.deps
     }
     if (defined(invoker.java_files)) {
-      _java_sources_file = "$target_gen_dir/target_name.sources"
+      _java_sources_file = "$target_gen_dir/$target_name.sources"
     }
     write_build_config(_build_config_target_name) {
       forward_variables_from(invoker, [ "classpath_deps" ])
