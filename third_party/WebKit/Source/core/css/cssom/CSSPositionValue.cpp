@@ -10,17 +10,24 @@
 
 namespace blink {
 
+namespace {
+
+bool IsValidCoordinate(CSSNumericValue* v) {
+  return v->Type().MatchesBaseTypePercentage(
+      CSSNumericValueType::BaseType::kLength);
+}
+
+}  // namespace
+
 CSSPositionValue* CSSPositionValue::Create(CSSNumericValue* x,
                                            CSSNumericValue* y,
                                            ExceptionState& exception_state) {
-  if (x->GetType() != CSSStyleValue::StyleValueType::kLengthType &&
-      x->GetType() != CSSStyleValue::StyleValueType::kPercentType) {
+  if (!IsValidCoordinate(x)) {
     exception_state.ThrowTypeError(
         "Must pass length or percentage to x in CSSPositionValue");
     return nullptr;
   }
-  if (y->GetType() != CSSStyleValue::StyleValueType::kLengthType &&
-      y->GetType() != CSSStyleValue::StyleValueType::kPercentType) {
+  if (!IsValidCoordinate(y)) {
     exception_state.ThrowTypeError(
         "Must pass length or percentage to y in CSSPositionValue");
     return nullptr;
@@ -30,8 +37,7 @@ CSSPositionValue* CSSPositionValue::Create(CSSNumericValue* x,
 
 void CSSPositionValue::setX(CSSNumericValue* x,
                             ExceptionState& exception_state) {
-  if (x->GetType() != CSSStyleValue::StyleValueType::kLengthType &&
-      x->GetType() != CSSStyleValue::StyleValueType::kPercentType) {
+  if (!IsValidCoordinate(x)) {
     exception_state.ThrowTypeError(
         "Must pass length or percentage to x in CSSPositionValue");
     return;
@@ -41,8 +47,7 @@ void CSSPositionValue::setX(CSSNumericValue* x,
 
 void CSSPositionValue::setY(CSSNumericValue* y,
                             ExceptionState& exception_state) {
-  if (y->GetType() != CSSStyleValue::StyleValueType::kLengthType &&
-      y->GetType() != CSSStyleValue::StyleValueType::kPercentType) {
+  if (!IsValidCoordinate(y)) {
     exception_state.ThrowTypeError(
         "Must pass length or percentage to y in CSSPositionValue");
     return;
