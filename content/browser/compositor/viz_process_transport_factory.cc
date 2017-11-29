@@ -360,17 +360,22 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
   if (!compositor)
     return;
 
-  if (!gpu_channel_host ||
-      !CreateContextProviders(std::move(gpu_channel_host))) {
-    // TODO(kylechar): Retry ContextProvider creation if it failed.
-    NOTIMPLEMENTED();
-    return;
-  }
-
   // TODO(crbug.com/730660): If is_gpu_compositing_disabled_ then make a
   // software-based CompositorFrameSink.
   // TODO(crbug.com/730660): If compositor->force_software_compositor() then
   // make a software-based CompositorFrameSink.
+  if (is_gpu_compositing_disabled_ || compositor->force_software_compositor())
+    return;
+
+  if (!gpu_channel_host ||
+      !CreateContextProviders(std::move(gpu_channel_host))) {
+    // Retry on failure. If this isn't possible we should hear that we're
+    // falling back to software compositing from the viz process eventually.
+    gpu_channel_establish_factory_->EstablishGpuChannel(
+        base::Bind(&VizProcessTransportFactory::OnEstablishedGpuChannel,
+                   weak_ptr_factory_.GetWeakPtr(), compositor_weak_ptr));
+    return;
+  }
 
   // TODO(crbug.com/776050): Deal with context loss.
 
