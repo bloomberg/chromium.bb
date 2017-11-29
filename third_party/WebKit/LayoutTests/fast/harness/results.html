@@ -265,7 +265,8 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
   <h3>Flagging</h3>
   <p>Tests can be flagged by clicking on that square box on the right hand side. View all flagged tests with "Flagged" filter. "F" is the keyboard shortcut.
   <h3>Bugs</h3>
-  <p>If you are unhappy with results, please file a bug, or fix it <a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/fast/harness/test-expectations.html">here</a>.</p>
+  <p>If you are unhappy with results, please file a bug, or fix it <a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/fast/harness/results.html">here</a>.</p>
+  <p><code>window.localStorage.setItem("testLocationOverride", "file://path/to/your/LayoutTests")</code> is a secret preference to redirect test links to a custom url.</p>
 </div>
 <div id="summary">
   <p><span class="fix-width">Passed</span><span id="summary_passed"></span></p>
@@ -683,7 +684,9 @@ const Report = {
           toolbars.push(new TextResultsToolbar().createDom(test));
           break;
         case "MISSING":
-          toolbars.push(new PlainHtmlToolbar().createDom("Baseline is missing."));
+          toolbars.push(new PlainHtmlToolbar().createDom("Expectations are missing."));
+          toolbars.push(new TextResultsToolbar().createDom(test));
+          toolbars.push(new ImageResultsToolbar().createDom(test));
           break;
         default:
           console.error("unexpected actual", test.actual);
@@ -867,7 +870,7 @@ const Filters = {
       case "TEXT":
       case "IMAGE":
       case "IMAGE+TEXT":
-        if (Filters.containsNoPass(test.expectedMap))
+        if (test.expectedMap.has("FAIL"))
           return false;
         break;
       case "MISSING":
@@ -1371,17 +1374,24 @@ class ImageResultsToolbar extends TXToolbar {
     this.toolbar.showDefault = _ => this.viewOptionsChangeHandler({target: this.toolbar.querySelector(".view-options")});
     this.toolbar.classList.add("image-toolbar");
     this.toolbar.classList.add("tx-toolbar");
-    this.toolbar.innerHTML = `
+    let missing = test.actual == "MISSING";
+    let html = `
       image:
-      <a class="actual" href="${pathParser.resultLink("-actual.png")}" title="Actual result">actual</a>
+      <a class="actual" href="${pathParser.resultLink("-actual.png")}" title="Actual result">actual</a>`;
+    if (!missing)
+      html += `
       <a class="expected" href="${pathParser.resultLink("-expected.png")}" title="Expected result">expected</a>
       <a class="diff" href="${pathParser.resultLink("-diff.png")}" title="Difference">diff</a>
+      `;
+
+    html += `
       <label><select class="view-options">
         <option value="single">Single view</option>
         <option value="animated">Animated view</option>
         <option value="multiple">Side by side view</option>
       </label>
     `;
+    this.toolbar.innerHTML = html;
     this.toolbar.addEventListener("click", ev => {
       if (ev.target.tagName == "A") {
         this.selectAnchor(ev.target);
@@ -1904,11 +1914,12 @@ class TextResultsToolbar extends TXToolbar {
     }).bind(this);
     this.toolbar.classList.add("text-results-toolbar");
     this.toolbar.classList.add("tx-toolbar");
+    let missing = test.actual == "MISSING";
     let html = "text:";
-    if (!test.is_testharness_test)
+    if (!test.is_testharness_test && !missing)
       html += `<a class="pretty" href="${pathParser.resultLink("-pretty-diff.html")}" title="Pretty difference">pretty</a>`;
     html += `<a class="actual" href="${pathParser.resultLink("-actual.txt")}" title="Actual text">actual</a>`;
-    if (!test.is_testharness_test) {
+    if (!test.is_testharness_test && !missing) {
       html += `<a class="expected" href="${pathParser.resultLink("-expected.txt")}" title="Expected result">expected</a><a
         class="diff" href="${pathParser.resultLink("-diff.txt")}" title="Difference">diff</a>`;
     }
