@@ -265,8 +265,7 @@ void DownloadSuggestionsProvider::ClearHistory(
   ClearDismissedSuggestionsForDebugging(provided_category_);
 }
 
-void DownloadSuggestionsProvider::ClearCachedSuggestions(Category category) {
-  DCHECK_EQ(provided_category_, category);
+void DownloadSuggestionsProvider::ClearCachedSuggestions() {
   // Ignored. The internal caches are not stored on disk and they are just
   // partial copies of the data stored at OfflinePage model and DownloadManager.
   // If it is cleared there, it will be cleared in these caches as well.

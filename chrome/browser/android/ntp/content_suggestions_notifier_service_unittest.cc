@@ -119,7 +119,7 @@ class FakeArticleProvider : public ContentSuggestionsProvider {
     NOTIMPLEMENTED();
   }
 
-  void ClearCachedSuggestions(Category category) override { NOTIMPLEMENTED(); }
+  void ClearCachedSuggestions() override { NOTIMPLEMENTED(); }
 
   void GetDismissedSuggestionsForDebugging(
       Category category,

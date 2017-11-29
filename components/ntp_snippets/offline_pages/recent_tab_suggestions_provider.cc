@@ -135,7 +135,7 @@ void RecentTabSuggestionsProvider::ClearHistory(
   FetchRecentTabs();
 }
 
-void RecentTabSuggestionsProvider::ClearCachedSuggestions(Category category) {
+void RecentTabSuggestionsProvider::ClearCachedSuggestions() {
   // Ignored.
 }
 

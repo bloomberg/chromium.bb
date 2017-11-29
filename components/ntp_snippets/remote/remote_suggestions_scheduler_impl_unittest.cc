@@ -133,7 +133,7 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
                     const std::set<std::string>&,
                     FetchDoneCallback*));
   MOCK_METHOD0(ReloadSuggestions, void());
-  MOCK_METHOD1(ClearCachedSuggestions, void(Category));
+  MOCK_METHOD0(ClearCachedSuggestions, void());
   MOCK_METHOD1(ClearDismissedSuggestionsForDebugging, void(Category));
   MOCK_METHOD1(DismissSuggestion, void(const ContentSuggestion::ID&));
   // Gmock cannot mock a method with movable-only type callback
