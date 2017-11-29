@@ -1876,17 +1876,6 @@ void LocalFrameView::ScrollContentsSlowPath() {
     DCHECK(!GetLayoutViewItem().IsNull());
     GetLayoutViewItem().InvalidatePaintRectangle(LayoutRect(update_rect));
   }
-  LayoutEmbeddedContentItem frame_layout_item = frame_->OwnerLayoutItem();
-  if (!frame_layout_item.IsNull()) {
-    if (IsEnclosedInCompositingLayer()) {
-      LayoutRect rect(
-          frame_layout_item.BorderLeft() + frame_layout_item.PaddingLeft(),
-          frame_layout_item.BorderTop() + frame_layout_item.PaddingTop(),
-          LayoutUnit(VisibleWidth()), LayoutUnit(VisibleHeight()));
-      frame_layout_item.InvalidatePaintRectangle(rect);
-      return;
-    }
-  }
 }
 
 void LocalFrameView::RestoreScrollbar() {

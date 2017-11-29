@@ -52,7 +52,6 @@ crbug.com/417782 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot.js [ F
 crbug.com/417782 inspector-protocol/layers/paint-profiler.js [ Crash ]
 crbug.com/417782 inspector-protocol/page/get-layout-metrics.js [ Failure ]
 crbug.com/417782 paint/invalidation/resize-iframe-text.html [ Failure ]
-crbug.com/417782 paint/invalidation/scroll/iframe-scroll-repaint.html [ Failure ]
 crbug.com/417782 paint/invalidation/scroll/overflow-scroll-body-appear.html [ Failure ]
 crbug.com/417782 paint/invalidation/svg/absolute-sized-document-no-scrollbars.svg [ Failure ]
 crbug.com/417782 paint/invalidation/svg/deep-nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Failure ]
