@@ -36,6 +36,7 @@ message State {
     RUNNING = 3;        // Analysis process running and injesting frames.
     SUSPENDED = 4;      // Media analytics process waiting to be started.
     RESTARTING = 5;     // Media analytics process should be restarted.
+    STOPPED = 6;        // Media analytics process should be stopped.
   }
 
   // Note: RUNNING and SUSPENDED are the only two states which should be sent to

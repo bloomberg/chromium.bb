@@ -41,9 +41,11 @@ MediaPerceptionPrivateSetStateFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   if (params->state.status != media_perception::STATUS_RUNNING &&
       params->state.status != media_perception::STATUS_SUSPENDED &&
-      params->state.status != media_perception::STATUS_RESTARTING) {
+      params->state.status != media_perception::STATUS_RESTARTING &&
+      params->state.status != media_perception::STATUS_STOPPED) {
     return RespondNow(
-        Error("Status can only be set to RUNNING, SUSPENDED or RESTARTING."));
+        Error("Status can only be set to RUNNING, SUSPENDED, RESTARTING, or "
+              "STOPPED."));
   }
 
   // Check that device context is only provided with SetState RUNNING.
@@ -95,7 +97,23 @@ MediaPerceptionPrivateSetAnalyticsComponentFunction::
 
 ExtensionFunction::ResponseAction
 MediaPerceptionPrivateSetAnalyticsComponentFunction::Run() {
-  return RespondNow(Error("Not implemented."));
+  std::unique_ptr<media_perception::SetAnalyticsComponent::Params> params =
+      media_perception::SetAnalyticsComponent::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  MediaPerceptionAPIManager* manager =
+      MediaPerceptionAPIManager::Get(browser_context());
+  manager->SetAnalyticsComponent(
+      params->component,
+      base::BindOnce(&MediaPerceptionPrivateSetAnalyticsComponentFunction::
+                         OnAnalyticsComponentSet,
+                     this));
+  return RespondLater();
+}
+
+void MediaPerceptionPrivateSetAnalyticsComponentFunction::
+    OnAnalyticsComponentSet(media_perception::ComponentState component_state) {
+  Respond(OneArgument(component_state.ToValue()));
 }
 
 }  // namespace extensions

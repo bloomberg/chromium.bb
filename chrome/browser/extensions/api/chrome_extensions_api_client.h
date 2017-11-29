@@ -62,6 +62,7 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   FeedbackPrivateDelegate* GetFeedbackPrivateDelegate() override;
 
 #if defined(OS_CHROMEOS)
+  MediaPerceptionAPIDelegate* GetMediaPerceptionAPIDelegate() override;
   NonNativeFileSystemDelegate* GetNonNativeFileSystemDelegate() override;
 
   void SaveImageDataToClipboard(
@@ -81,6 +82,7 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   std::unique_ptr<FeedbackPrivateDelegate> feedback_private_delegate_;
 
 #if defined(OS_CHROMEOS)
+  std::unique_ptr<MediaPerceptionAPIDelegate> media_perception_api_delegate_;
   std::unique_ptr<NonNativeFileSystemDelegate> non_native_file_system_delegate_;
   std::unique_ptr<ClipboardExtensionHelper> clipboard_extension_helper_;
 #endif
