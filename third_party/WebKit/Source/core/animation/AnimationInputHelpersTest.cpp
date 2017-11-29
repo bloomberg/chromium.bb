@@ -8,13 +8,13 @@
 #include "core/animation/PropertyHandle.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/animation/TimingFunction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class AnimationAnimationInputHelpersTest : public ::testing::Test {
+class AnimationAnimationInputHelpersTest : public PageTestBase {
  public:
   CSSPropertyID KeyframeAttributeToCSSProperty(const String& property) {
     return AnimationInputHelpers::KeyframeAttributeToCSSProperty(property,
@@ -68,8 +68,8 @@ class AnimationAnimationInputHelpersTest : public ::testing::Test {
 
  protected:
   void SetUp() override {
-    page_holder = DummyPageHolder::Create();
-    document = &page_holder->GetDocument();
+    PageTestBase::SetUp(IntSize());
+    document = &GetDocument();
   }
 
   void TearDown() override {
@@ -77,7 +77,6 @@ class AnimationAnimationInputHelpersTest : public ::testing::Test {
     ThreadState::Current()->CollectAllGarbage();
   }
 
-  std::unique_ptr<DummyPageHolder> page_holder;
   Persistent<Document> document;
 };
 

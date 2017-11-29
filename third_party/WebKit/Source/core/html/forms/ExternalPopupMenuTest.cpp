@@ -13,7 +13,7 @@
 #include "core/html_names.h"
 #include "core/layout/LayoutMenuList.h"
 #include "core/page/Page.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -25,27 +25,23 @@
 
 namespace blink {
 
-class ExternalPopupMenuDisplayNoneItemsTest : public ::testing::Test {
+class ExternalPopupMenuDisplayNoneItemsTest : public PageTestBase {
  public:
   ExternalPopupMenuDisplayNoneItemsTest() {}
 
  protected:
   void SetUp() override {
-    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-    HTMLSelectElement* element =
-        HTMLSelectElement::Create(dummy_page_holder_->GetDocument());
+    PageTestBase::SetUp();
+    HTMLSelectElement* element = HTMLSelectElement::Create(GetDocument());
     // Set the 4th an 5th items to have "display: none" property
     element->SetInnerHTMLFromString(
         "<option><option><option><option style='display:none;'><option "
         "style='display:none;'><option><option>");
-    dummy_page_holder_->GetDocument().body()->AppendChild(element,
-                                                          ASSERT_NO_EXCEPTION);
+    GetDocument().body()->AppendChild(element, ASSERT_NO_EXCEPTION);
     owner_element_ = element;
-    dummy_page_holder_->GetDocument()
-        .UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
 
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   Persistent<HTMLSelectElement> owner_element_;
 };
 
