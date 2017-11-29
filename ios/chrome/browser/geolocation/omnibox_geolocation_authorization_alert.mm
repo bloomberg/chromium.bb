@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -70,10 +71,10 @@
               }];
   [alert addAction:cancelAction];
 
-  [[[[UIApplication sharedApplication] keyWindow] rootViewController]
-      presentViewController:alert
-                   animated:YES
-                 completion:nil];
+  // TODO(crbug.com/754642): Remove use of TopPresentedViewController().
+  [top_view_controller::TopPresentedViewController() presentViewController:alert
+                                                                  animated:YES
+                                                                completion:nil];
 }
 
 @end
