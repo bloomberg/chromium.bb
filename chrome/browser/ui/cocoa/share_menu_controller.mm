@@ -241,7 +241,7 @@ NSString* const kRemindersSharingServiceName =
 - (NSMenuItem*)menuItemForService:(NSSharingService*)service {
   BOOL isMail = [[service name] isEqual:NSSharingServiceNameComposeEmail];
   NSString* keyEquivalent = isMail ? [self keyEquivalentForMail] : @"";
-  NSString* title = isMail ? l10n_util::GetNSString(IDS_EMAIL_PAGE_LOCATION_MAC)
+  NSString* title = isMail ? l10n_util::GetNSString(IDS_EMAIL_LINK_MAC)
                            : service.menuItemTitle;
   base::scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc]
       initWithTitle:title
