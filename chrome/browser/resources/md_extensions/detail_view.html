@@ -258,7 +258,9 @@
         </div>
         <div class="section continuation block">
           <div class="section-title">$i18n{itemDescriptionLabel}</div>
-          <div class="section-content">[[data.description]]</div>
+          <div class="section-content">
+            [[getDescription_(data.description, '$i18nPolymer{noDescription}')]]
+          </div>
         </div>
         <div class="section block">
           <div class="section-title">$i18n{itemVersion}</div>

@@ -28,6 +28,16 @@ cr.define('extensions', function() {
       inDevMode: Boolean,
     },
 
+    /**
+     * @param {string} description
+     * @param {string} fallback
+     * @return {string}
+     * @private
+     */
+    getDescription_: function(description, fallback) {
+      return description || fallback;
+    },
+
     /** @private */
     onCloseButtonTap_: function() {
       extensions.navigation.navigateTo({page: Page.LIST});
