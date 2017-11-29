@@ -452,11 +452,11 @@ void WebUILoginView::OnVirtualKeyboardStateChanged(bool activated,
 ////////////////////////////////////////////////////////////////////////////////
 // keyboard::KeyboardControllerObserver:
 
-void WebUILoginView::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
+void WebUILoginView::OnKeyboardAvailabilityChanging(const bool is_available) {
   if (!GetOobeUI())
     return;
   CoreOobeView* view = GetOobeUI()->GetCoreOobeView();
-  if (new_bounds.IsEmpty()) {
+  if (!is_available) {
     // Keyboard has been hidden.
     view->ShowControlBar(true);
     view->SetVirtualKeyboardShown(false);
@@ -466,8 +466,6 @@ void WebUILoginView::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
     view->SetVirtualKeyboardShown(true);
   }
 }
-
-void WebUILoginView::OnKeyboardClosed() {}
 
 // WebUILoginView private: -----------------------------------------------------
 
