@@ -4,6 +4,7 @@
 
 #include "chromeos/dbus/fake_upstart_client.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_auth_policy_client.h"
 #include "chromeos/dbus/fake_media_analytics_client.h"
@@ -30,14 +31,17 @@ void FakeUpstartClient::RestartAuthPolicyService() {
   authpolicy_client->set_started(true);
 }
 
-void FakeUpstartClient::StartMediaAnalytics(const UpstartCallback& callback) {
+void FakeUpstartClient::StartMediaAnalytics(
+    const std::vector<std::string>& /* upstart_env */,
+    const UpstartCallback& callback) {
   FakeMediaAnalyticsClient* media_analytics_client =
       static_cast<FakeMediaAnalyticsClient*>(
           DBusThreadManager::Get()->GetMediaAnalyticsClient());
   DLOG_IF(WARNING, media_analytics_client->process_running())
       << "Trying to start media analytics which is already started.";
   media_analytics_client->set_process_running(true);
-  callback.Run(true);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 void FakeUpstartClient::RestartMediaAnalytics(const UpstartCallback& callback) {
@@ -47,7 +51,8 @@ void FakeUpstartClient::RestartMediaAnalytics(const UpstartCallback& callback) {
   media_analytics_client->set_process_running(false);
   media_analytics_client->set_process_running(true);
   media_analytics_client->SetStateSuspended();
-  callback.Run(true);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 void FakeUpstartClient::StopMediaAnalytics() {
@@ -57,6 +62,15 @@ void FakeUpstartClient::StopMediaAnalytics() {
   DLOG_IF(WARNING, !media_analytics_client->process_running())
       << "Trying to stop media analytics which is not started.";
   media_analytics_client->set_process_running(false);
+}
+
+void FakeUpstartClient::StopMediaAnalytics(const UpstartCallback& callback) {
+  FakeMediaAnalyticsClient* media_analytics_client =
+      static_cast<FakeMediaAnalyticsClient*>(
+          DBusThreadManager::Get()->GetMediaAnalyticsClient());
+  media_analytics_client->set_process_running(false);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 }  // namespace chromeos

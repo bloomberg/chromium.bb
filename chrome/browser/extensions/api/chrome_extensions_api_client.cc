@@ -46,6 +46,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/api/file_handlers/non_native_file_system_delegate_chromeos.h"
+#include "chrome/browser/extensions/api/media_perception_private/media_perception_api_delegate_chromeos.h"
 #include "chrome/browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h"
 #include "chrome/browser/extensions/clipboard_extension_helper_chromeos.h"
 #endif
@@ -212,6 +213,15 @@ ChromeExtensionsAPIClient::GetFeedbackPrivateDelegate() {
 }
 
 #if defined(OS_CHROMEOS)
+MediaPerceptionAPIDelegate*
+ChromeExtensionsAPIClient::GetMediaPerceptionAPIDelegate() {
+  if (!media_perception_api_delegate_) {
+    media_perception_api_delegate_ =
+        std::make_unique<MediaPerceptionAPIDelegateChromeOS>();
+  }
+  return media_perception_api_delegate_.get();
+}
+
 NonNativeFileSystemDelegate*
 ChromeExtensionsAPIClient::GetNonNativeFileSystemDelegate() {
   if (!non_native_file_system_delegate_) {

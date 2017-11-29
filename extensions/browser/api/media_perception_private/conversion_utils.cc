@@ -226,6 +226,8 @@ Status StateStatusProtoToIdl(const mri::State& state) {
       return STATUS_SUSPENDED;
     case mri::State::RESTARTING:
       return STATUS_RESTARTING;
+    case mri::State::STOPPED:
+      return STATUS_STOPPED;
     case mri::State::STATUS_UNSPECIFIED:
       return STATUS_NONE;
   }
@@ -245,8 +247,9 @@ mri::State::Status StateStatusIdlToProto(const State& state) {
       return mri::State::SUSPENDED;
     case STATUS_RESTARTING:
       return mri::State::RESTARTING;
-    case STATUS_SERVICE_ERROR:
     case STATUS_STOPPED:  // Process is stopped by MPP.
+      return mri::State::STOPPED;
+    case STATUS_SERVICE_ERROR:
     case STATUS_NONE:
       return mri::State::STATUS_UNSPECIFIED;
   }

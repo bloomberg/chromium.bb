@@ -14,6 +14,10 @@ namespace extensions {
 
 class MediaPerceptionAPIManager : public BrowserContextKeyedAPI {
  public:
+  using APISetAnalyticsComponentCallback = base::OnceCallback<void(
+      extensions::api::media_perception_private::ComponentState
+          component_state)>;
+
   using APIStateCallback = base::Callback<void(
       extensions::api::media_perception_private::State state)>;
 
@@ -32,6 +36,9 @@ class MediaPerceptionAPIManager : public BrowserContextKeyedAPI {
   GetFactoryInstance();
 
   // Public functions for MediaPerceptionPrivateAPI implementation.
+  void SetAnalyticsComponent(
+      const extensions::api::media_perception_private::Component& component,
+      APISetAnalyticsComponentCallback callback);
   void GetState(const APIStateCallback& callback);
   void SetState(const extensions::api::media_perception_private::State& state,
                 const APIStateCallback& callback);
@@ -48,9 +55,11 @@ class MediaPerceptionAPIManager : public BrowserContextKeyedAPI {
     IDLE,
     // The process has been launched via Upstart, but waiting for callback to
     // confirm.
-    LAUNCHING,
+    CHANGING_PROCESS_STATE,
     // The process is running.
-    RUNNING
+    RUNNING,
+    // The process state is unknown, e.g. when a Upstart Stop request fails.
+    UNKNOWN
   };
 
   // Sets the state of the analytics process.
@@ -81,11 +90,25 @@ class MediaPerceptionAPIManager : public BrowserContextKeyedAPI {
   // Callback for Upstart command to restart media analytics process.
   void UpstartRestartCallback(const APIStateCallback& callback, bool succeeded);
 
+  // Callback for Upstart command to stop media analytics process.
+  void UpstartStopCallback(const APIStateCallback& callback, bool succeeded);
+
+  // Callback with the mount point for a loaded component.
+  void LoadComponentCallback(APISetAnalyticsComponentCallback callback,
+                             const std::string& mount_point);
+
+  bool ComponentIsLoaded();
+
   content::BrowserContext* const browser_context_;
 
   // Keeps track of whether the analytics process is running so that it can be
   // started with an Upstart D-Bus method call if necessary.
   AnalyticsProcessState analytics_process_state_;
+
+  // Keeps track of the mount point for the current media analytics process
+  // component from component updater. If this string is not set, no component
+  // is set.
+  std::string mount_point_;
 
   base::WeakPtrFactory<MediaPerceptionAPIManager> weak_ptr_factory_;
 

@@ -133,6 +133,11 @@ ExtensionsAPIClient::GetNonNativeFileSystemDelegate() {
   return nullptr;
 }
 
+MediaPerceptionAPIDelegate*
+ExtensionsAPIClient::GetMediaPerceptionAPIDelegate() {
+  return nullptr;
+}
+
 void ExtensionsAPIClient::SaveImageDataToClipboard(
     const std::vector<char>& image_data,
     api::clipboard::ImageType type,
