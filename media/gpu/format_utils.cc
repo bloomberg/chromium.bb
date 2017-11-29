@@ -15,6 +15,14 @@ VideoPixelFormat GfxBufferFormatToVideoPixelFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRA_8888:
       return PIXEL_FORMAT_ARGB;
 
+    // There is no PIXEL_FORMAT_XBGR which would have been the right mapping.
+    // See ui/ozone drm_util.cc::GetFourCCFormatFromBufferFormat as reference.
+    // But here it is only about indicating to not consider the alpha channel.
+    // Useful for the compositor to avoid drawing behind as mentioned in
+    // https://chromium-review.googlesource.com/590772.
+    case gfx::BufferFormat::RGBX_8888:
+      return PIXEL_FORMAT_XRGB;
+
     case gfx::BufferFormat::YVU_420:
       return PIXEL_FORMAT_YV12;
 
