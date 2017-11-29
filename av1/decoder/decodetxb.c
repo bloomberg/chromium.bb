@@ -171,7 +171,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     const int pos = scan[c];
 #if CONFIG_LV_MAP_MULTI
     const int coeff_ctx =
-        get_nz_map_ctx(levels, c, scan, bwl, height, tx_type, c == *eob - 1);
+        get_nz_map_ctx(levels, c, scan, bwl, height, c == *eob - 1, tx_type);
 #if USE_BASE_EOB_ALPHABET
     aom_cdf_prob *cdf;
     int nsymbs;
