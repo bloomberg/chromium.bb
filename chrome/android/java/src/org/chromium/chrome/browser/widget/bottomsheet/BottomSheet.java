@@ -1316,6 +1316,8 @@ public class BottomSheet
             tracker.notifyEvent(EventConstants.BOTTOM_SHEET_EXPANDED_FROM_SWIPE);
         } else if (reason == StateChangeReason.EXPAND_BUTTON) {
             tracker.notifyEvent(EventConstants.BOTTOM_SHEET_EXPANDED_FROM_BUTTON);
+        } else if (reason == StateChangeReason.OMNIBOX_FOCUS) {
+            tracker.notifyEvent(EventConstants.BOTTOM_SHEET_EXPANDED_FROM_OMNIBOX_FOCUS);
         }
     }
 

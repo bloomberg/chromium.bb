@@ -46,6 +46,12 @@ public final class EventConstants {
             "bottom_sheet_expanded_from_button";
 
     /**
+     * The bottom sheet was expanded by the user focusing the omnibox.
+     */
+    public static final String BOTTOM_SHEET_EXPANDED_FROM_OMNIBOX_FOCUS =
+            "bottom_sheet_expanded_from_omnibox_focus";
+
+    /**
      * The user triggered pull to refresh. Used to help determine when to show the Chrome Home
      * in-product help.
      */
