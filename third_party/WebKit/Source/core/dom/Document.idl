@@ -119,7 +119,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 
     // dynamic markup insertion
     [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException, MeasureAs=DocumentOpen] Document open(optional DOMString type = "text/html", optional DOMString replace = "");
-    [CallWith=(CurrentWindow,EnteredWindow), RaisesException, MeasureAs=DocumentOpen] Window open(DOMString url, DOMString name, DOMString features);
+    [CallWith=(CurrentWindow,EnteredWindow), RaisesException, MeasureAs=DocumentOpen] Window open(USVString url, DOMString name, DOMString features);
     [CEReactions, RaisesException] void close();
     [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void write(DOMString... text);
     [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
