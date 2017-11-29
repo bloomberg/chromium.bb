@@ -139,6 +139,14 @@ punctuation « 2356 # guillemet français ouvrant
 prepunc « 2356	    # guillemet français ouvrant
 punctuation » 2356 # guillemet français fermant
 postpunc » 2356	   # guillemet français fermant
+punctuation [ 45-236  # crochet droit ouvrant
+prepunc [ 45-236  # crochet droit ouvrant
+punctuation ] 356-12	#	crochet droit fermant
+postpunc ] 356-12	#	crochet droit fermant
+punctuation { 6-6-236	#	accolade de gauche
+prepunc { 6-6-236	#	accolade de gauche
+punctuation } 356-3-3	#	accolade de droite
+postpunc } 356-3-3	#	accolade de droite
 
 # guillemets
 punctuation \x00AB 2356     # right-pointing double angle quotation mark
@@ -247,11 +255,6 @@ comp6 $ 45-234
 sign ¥ 45-13456		  # yen
 sign ¤ 6-45					  # symbole monétaire
 sign § 5-1234			  # paragraphe
-
-punctuation [ 45-236  # crochet droit ouvrant
-punctuation ] 356-12	#	crochet droit fermant
-punctuation { 6-6-236	#	accolade de gauche
-punctuation } 356-3-3	#	accolade de droite
 
 sign ^ 4 # accent circonflexe
 noback sign ¹ 4-16  # exposant 1
