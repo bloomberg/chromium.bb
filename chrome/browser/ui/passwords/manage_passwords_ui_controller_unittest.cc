@@ -427,9 +427,12 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSaved) {
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnPasswordSubmitted(std::move(test_form_manager));
 
+  base::HistogramTester histogram_tester;
   controller()->SavePassword(test_local_form().username_value,
                              test_local_form().password_value);
   ExpectIconStateIs(password_manager::ui::MANAGE_STATE);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordSavedWithManualFallback", false, 1);
 }
 
 TEST_F(ManagePasswordsUIControllerTest, PasswordSavedUKMRecording) {
@@ -877,8 +880,11 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordUpdated) {
 
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  base::HistogramTester histogram_tester;
   controller()->UpdatePassword(autofill::PasswordForm());
   ExpectIconStateIs(password_manager::ui::MANAGE_STATE);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordUpdatedWithManualFallback", false, 1);
 }
 
 TEST_F(ManagePasswordsUIControllerTest, SavePendingStatePasswordAutofilled) {
@@ -935,12 +941,17 @@ TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_UseFallback) {
     EXPECT_FALSE(controller()->opened_bubble());
 
     // A user clicks on omnibox icon, opens the bubble and press Save/Update.
+    base::HistogramTester histogram_tester;
     if (is_update) {
       EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
       controller()->UpdatePassword(autofill::PasswordForm());
+      histogram_tester.ExpectUniqueSample(
+          "PasswordManager.PasswordUpdatedWithManualFallback", true, 1);
     } else {
       controller()->SavePassword(test_local_form().username_value,
                                  test_local_form().password_value);
+      histogram_tester.ExpectUniqueSample(
+          "PasswordManager.PasswordSavedWithManualFallback", true, 1);
     }
     ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
     testing::Mock::VerifyAndClearExpectations(controller());

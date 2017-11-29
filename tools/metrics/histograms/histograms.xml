@@ -58883,12 +58883,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.PasswordSavedWithManualFallback"
+    enum="BooleanPasswordSavedWithFallback">
+  <owner>kolos@chromium.org</owner>
+  <summary>
+    Measures whether users save passwords with automatic prompt or manual
+    fallback.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.PasswordSyncState" enum="PasswordSyncState">
   <owner>gcasto@chromium.org</owner>
   <owner>rouslan@chromium.org</owner>
   <summary>
     Whether the passwords are syncing and, if not, then what's causing sync
     failures. Recorded after the first sync attempt either succeeds or fails.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.PasswordUpdatedWithManualFallback"
+    enum="BooleanPasswordSavedWithFallback">
+  <owner>kolos@chromium.org</owner>
+  <summary>
+    Measures whether users update passwords with automatic prompt or manual
+    fallback.
   </summary>
 </histogram>
 

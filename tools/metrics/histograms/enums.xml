@@ -3766,6 +3766,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Panel was open"/>
 </enum>
 
+<enum name="BooleanPasswordSavedWithFallback">
+  <int value="0" label="Automatic prompt"/>
+  <int value="1" label="Manual fallback"/>
+</enum>
+
 <enum name="BooleanPending">
   <int value="0" label="Decided"/>
   <int value="1" label="Pending"/>
