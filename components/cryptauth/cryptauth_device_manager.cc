@@ -325,11 +325,11 @@ std::unique_ptr<SyncSchedulerImpl> CreateSyncScheduler(
 }  // namespace
 
 CryptAuthDeviceManager::CryptAuthDeviceManager(
-    std::unique_ptr<base::Clock> clock,
+    base::Clock* clock,
     std::unique_ptr<CryptAuthClientFactory> client_factory,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service)
-    : clock_(std::move(clock)),
+    : clock_(clock),
       client_factory_(std::move(client_factory)),
       gcm_manager_(gcm_manager),
       pref_service_(pref_service),

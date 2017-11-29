@@ -59,13 +59,12 @@ std::string ForegroundEidGenerator::EidData::DataInHex() const {
 
 ForegroundEidGenerator::ForegroundEidGenerator()
     : ForegroundEidGenerator(base::MakeUnique<RawEidGeneratorImpl>(),
-                             base::MakeUnique<base::DefaultClock>()) {}
+                             base::DefaultClock::GetInstance()) {}
 
 ForegroundEidGenerator::ForegroundEidGenerator(
     std::unique_ptr<RawEidGenerator> raw_eid_generator,
-    std::unique_ptr<base::Clock> clock)
-    : clock_(std::move(clock)),
-      raw_eid_generator_(std::move(raw_eid_generator)) {}
+    base::Clock* clock)
+    : clock_(clock), raw_eid_generator_(std::move(raw_eid_generator)) {}
 
 ForegroundEidGenerator::~ForegroundEidGenerator() {}
 

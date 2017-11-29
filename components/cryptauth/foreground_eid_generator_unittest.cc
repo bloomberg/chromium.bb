@@ -136,24 +136,21 @@ class CryptAuthForegroundEidGeneratorTest : public testing::Test {
   };
 
   void SetUp() override {
-    test_clock_ = new base::SimpleTestClock();
-
     SetTestTime(kDefaultCurrentTime);
 
-    eid_generator_.reset(
-        new ForegroundEidGenerator(base::MakeUnique<TestRawEidGenerator>(),
-                                   base::WrapUnique(test_clock_)));
+    eid_generator_.reset(new ForegroundEidGenerator(
+        base::MakeUnique<TestRawEidGenerator>(), &test_clock_));
   }
 
   // TODO(khorimoto): Is there an easier way to do this?
   void SetTestTime(int64_t timestamp_ms) {
     base::Time time = base::Time::UnixEpoch() +
                       base::TimeDelta::FromMilliseconds(timestamp_ms);
-    test_clock_->SetNow(time);
+    test_clock_.SetNow(time);
   }
 
   std::unique_ptr<ForegroundEidGenerator> eid_generator_;
-  base::SimpleTestClock* test_clock_;
+  base::SimpleTestClock test_clock_;
   std::vector<BeaconSeed> scanning_device_beacon_seeds_;
 };
 
@@ -340,12 +337,11 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
        GenerateBackgroundScanFilter_UsingRealEids) {
-  test_clock_ = new base::SimpleTestClock();
   SetTestTime(kDefaultCurrentTime);
 
   // Use real RawEidGenerator implementation instead of test version.
   eid_generator_.reset(new ForegroundEidGenerator(
-      base::MakeUnique<RawEidGeneratorImpl>(), base::WrapUnique(test_clock_)));
+      base::MakeUnique<RawEidGeneratorImpl>(), &test_clock_));
 
   std::unique_ptr<ForegroundEidGenerator::EidData> data =
       eid_generator_->GenerateBackgroundScanFilter(

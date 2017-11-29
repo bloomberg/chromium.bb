@@ -99,13 +99,13 @@ class MockCryptAuthEnrollerFactory : public CryptAuthEnrollerFactory {
 class TestCryptAuthEnrollmentManager : public CryptAuthEnrollmentManager {
  public:
   TestCryptAuthEnrollmentManager(
-      std::unique_ptr<base::Clock> clock,
+      base::Clock* clock,
       std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
       std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
       const GcmDeviceInfo& device_info,
       CryptAuthGCMManager* gcm_manager,
       PrefService* pref_service)
-      : CryptAuthEnrollmentManager(std::move(clock),
+      : CryptAuthEnrollmentManager(clock,
                                    std::move(enroller_factory),
                                    std::move(secure_message_delegate),
                                    device_info,
@@ -144,11 +144,10 @@ class CryptAuthEnrollmentManagerTest
  protected:
   CryptAuthEnrollmentManagerTest()
       : public_key_(kUserPublicKey),
-        clock_(new base::SimpleTestClock()),
         enroller_factory_(new MockCryptAuthEnrollerFactory()),
         secure_message_delegate_(new FakeSecureMessageDelegate()),
         gcm_manager_(kGCMRegistrationId),
-        enrollment_manager_(base::WrapUnique(clock_),
+        enrollment_manager_(&clock_,
                             base::WrapUnique(enroller_factory_),
                             base::WrapUnique(secure_message_delegate_),
                             device_info_,
@@ -157,7 +156,7 @@ class CryptAuthEnrollmentManagerTest
 
   // testing::Test:
   void SetUp() override {
-    clock_->SetNow(base::Time::FromDoubleT(kInitialTimeNowSeconds));
+    clock_.SetNow(base::Time::FromDoubleT(kInitialTimeNowSeconds));
     enrollment_manager_.AddObserver(this);
 
     private_key_ =
@@ -241,8 +240,7 @@ class CryptAuthEnrollmentManagerTest
   std::string public_key_;
   std::string private_key_;
 
-  // Owned by |enrollment_manager_|.
-  base::SimpleTestClock* clock_;
+  base::SimpleTestClock clock_;
 
   // Owned by |enrollment_manager_|.
   MockCryptAuthEnrollerFactory* enroller_factory_;
@@ -297,15 +295,15 @@ TEST_F(CryptAuthEnrollmentManagerTest, GetEnrollmentState) {
 }
 
 TEST_F(CryptAuthEnrollmentManagerTest, InitWithDefaultPrefs) {
-  std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
-  clock->SetNow(base::Time::FromDoubleT(kInitialTimeNowSeconds));
-  base::TimeDelta elapsed_time = clock->Now() - base::Time::FromDoubleT(0);
+  base::SimpleTestClock clock;
+  clock.SetNow(base::Time::FromDoubleT(kInitialTimeNowSeconds));
+  base::TimeDelta elapsed_time = clock.Now() - base::Time::FromDoubleT(0);
 
   TestingPrefServiceSimple pref_service;
   CryptAuthEnrollmentManager::RegisterPrefs(pref_service.registry());
 
   TestCryptAuthEnrollmentManager enrollment_manager(
-      std::move(clock), base::MakeUnique<MockCryptAuthEnrollerFactory>(),
+      &clock, base::MakeUnique<MockCryptAuthEnrollerFactory>(),
       base::MakeUnique<FakeSecureMessageDelegate>(), device_info_,
       &gcm_manager_, &pref_service);
 
@@ -321,7 +319,7 @@ TEST_F(CryptAuthEnrollmentManagerTest, InitWithDefaultPrefs) {
 TEST_F(CryptAuthEnrollmentManagerTest, InitWithExistingPrefs) {
   EXPECT_CALL(
       *sync_scheduler(),
-      Start(clock_->Now() - base::Time::FromDoubleT(kLastEnrollmentTimeSeconds),
+      Start(clock_.Now() - base::Time::FromDoubleT(kLastEnrollmentTimeSeconds),
             SyncScheduler::Strategy::PERIODIC_REFRESH));
 
   enrollment_manager_.Start();
@@ -336,8 +334,8 @@ TEST_F(CryptAuthEnrollmentManagerTest, InitWithExpiredEnrollment) {
       base::MakeUnique<base::Value>(kLastExpiredEnrollmentTimeSeconds));
 
   EXPECT_CALL(*sync_scheduler(),
-              Start(clock_->Now() - base::Time::FromDoubleT(
-                                        kLastExpiredEnrollmentTimeSeconds),
+              Start(clock_.Now() - base::Time::FromDoubleT(
+                                       kLastExpiredEnrollmentTimeSeconds),
                     SyncScheduler::Strategy::AGGRESSIVE_RECOVERY));
 
   enrollment_manager_.Start();
@@ -356,10 +354,10 @@ TEST_F(CryptAuthEnrollmentManagerTest, ForceEnrollment) {
   auto completion_callback =
       FireSchedulerForEnrollment(INVOCATION_REASON_SERVER_INITIATED);
 
-  clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNow));
+  clock_.SetNow(base::Time::FromDoubleT(kLaterTimeNow));
   EXPECT_CALL(*this, OnEnrollmentFinishedProxy(true));
   completion_callback.Run(true);
-  EXPECT_EQ(clock_->Now(), enrollment_manager_.GetLastEnrollmentTime());
+  EXPECT_EQ(clock_.Now(), enrollment_manager_.GetLastEnrollmentTime());
 }
 
 TEST_F(CryptAuthEnrollmentManagerTest,
@@ -372,7 +370,7 @@ TEST_F(CryptAuthEnrollmentManagerTest,
       .WillByDefault(Return(SyncScheduler::Strategy::PERIODIC_REFRESH));
   auto completion_callback =
       FireSchedulerForEnrollment(INVOCATION_REASON_PERIODIC);
-  clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNow));
+  clock_.SetNow(base::Time::FromDoubleT(kLaterTimeNow));
   EXPECT_CALL(*this, OnEnrollmentFinishedProxy(false));
   completion_callback.Run(false);
   EXPECT_EQ(old_enrollment_time, enrollment_manager_.GetLastEnrollmentTime());
@@ -384,10 +382,10 @@ TEST_F(CryptAuthEnrollmentManagerTest,
       .WillByDefault(Return(SyncScheduler::Strategy::AGGRESSIVE_RECOVERY));
   completion_callback =
       FireSchedulerForEnrollment(INVOCATION_REASON_FAILURE_RECOVERY);
-  clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNow + 30));
+  clock_.SetNow(base::Time::FromDoubleT(kLaterTimeNow + 30));
   EXPECT_CALL(*this, OnEnrollmentFinishedProxy(true));
   completion_callback.Run(true);
-  EXPECT_EQ(clock_->Now(), enrollment_manager_.GetLastEnrollmentTime());
+  EXPECT_EQ(clock_.Now(), enrollment_manager_.GetLastEnrollmentTime());
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kCryptAuthEnrollmentIsRecoveringFromFailure));
 }
@@ -422,10 +420,10 @@ TEST_F(CryptAuthEnrollmentManagerTest,
 
   // Complete CryptAuth enrollment.
   ASSERT_FALSE(enrollment_callback.is_null());
-  clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNow));
+  clock_.SetNow(base::Time::FromDoubleT(kLaterTimeNow));
   EXPECT_CALL(*this, OnEnrollmentFinishedProxy(true));
   enrollment_callback.Run(true);
-  EXPECT_EQ(clock_->Now(), enrollment_manager_.GetLastEnrollmentTime());
+  EXPECT_EQ(clock_.Now(), enrollment_manager_.GetLastEnrollmentTime());
   EXPECT_TRUE(enrollment_manager_.IsEnrollmentValid());
 
   // Check that CryptAuthEnrollmentManager returns the expected key-pair.

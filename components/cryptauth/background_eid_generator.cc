@@ -44,15 +44,14 @@ const BeaconSeed* GetBeaconSeedForTimestamp(
 
 BackgroundEidGenerator::BackgroundEidGenerator()
     : BackgroundEidGenerator(base::MakeUnique<RawEidGeneratorImpl>(),
-                             base::MakeUnique<base::DefaultClock>()) {}
+                             base::DefaultClock::GetInstance()) {}
 
 BackgroundEidGenerator::~BackgroundEidGenerator() {}
 
 BackgroundEidGenerator::BackgroundEidGenerator(
     std::unique_ptr<RawEidGenerator> raw_eid_generator,
-    std::unique_ptr<base::Clock> clock)
-    : raw_eid_generator_(std::move(raw_eid_generator)),
-      clock_(std::move(clock)) {}
+    base::Clock* clock)
+    : raw_eid_generator_(std::move(raw_eid_generator)), clock_(clock) {}
 
 std::vector<DataWithTimestamp> BackgroundEidGenerator::GenerateNearestEids(
     const std::vector<BeaconSeed>& beacon_seeds) const {

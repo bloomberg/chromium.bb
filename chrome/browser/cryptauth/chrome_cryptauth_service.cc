@@ -175,13 +175,13 @@ std::unique_ptr<ChromeCryptAuthService> ChromeCryptAuthService::Create(
 
   std::unique_ptr<cryptauth::CryptAuthDeviceManager> device_manager =
       base::MakeUnique<cryptauth::CryptAuthDeviceManager>(
-          base::MakeUnique<base::DefaultClock>(),
+          base::DefaultClock::GetInstance(),
           CreateCryptAuthClientFactoryImpl(profile), gcm_manager.get(),
           profile->GetPrefs());
 
   std::unique_ptr<cryptauth::CryptAuthEnrollmentManager> enrollment_manager =
       base::MakeUnique<cryptauth::CryptAuthEnrollmentManager>(
-          base::MakeUnique<base::DefaultClock>(),
+          base::DefaultClock::GetInstance(),
           base::MakeUnique<CryptAuthEnrollerFactoryImpl>(profile),
           CreateSecureMessageDelegateImpl(), GetGcmDeviceInfo(),
           gcm_manager.get(), profile->GetPrefs());
