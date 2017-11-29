@@ -245,7 +245,9 @@ typedef struct frame_contexts {
   aom_cdf_prob txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)];
 #if CONFIG_JNT_COMP
   aom_cdf_prob compound_index_cdf[COMP_INDEX_CONTEXTS][CDF_SIZE(2)];
+  aom_cdf_prob comp_group_idx_cdf[COMP_GROUP_IDX_CONTEXTS][CDF_SIZE(2)];
   aom_prob compound_index_probs[COMP_INDEX_CONTEXTS];
+  aom_prob comp_group_idx_probs[COMP_GROUP_IDX_CONTEXTS];
 #endif  // CONFIG_JNT_COMP
 #if CONFIG_EXT_SKIP
   aom_cdf_prob skip_mode_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)];
@@ -395,6 +397,7 @@ typedef struct FRAME_COUNTS {
   unsigned int skip[SKIP_CONTEXTS][2];
 #if CONFIG_JNT_COMP
   unsigned int compound_index[COMP_INDEX_CONTEXTS][2];
+  unsigned int comp_group_idx[COMP_GROUP_IDX_CONTEXTS][2];
 #endif  // CONFIG_JNT_COMP
   unsigned int delta_q[DELTA_Q_PROBS][2];
 #if CONFIG_EXT_DELTA_Q

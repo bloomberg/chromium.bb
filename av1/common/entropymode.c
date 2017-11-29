@@ -1473,8 +1473,19 @@ static const aom_cdf_prob
       { AOM_ICDF(16384), AOM_ICDF(32768), 0 },
       { AOM_ICDF(8192), AOM_ICDF(32768), 0 },
     };
+
+static const aom_cdf_prob
+    default_comp_group_idx_cdfs[COMP_GROUP_IDX_CONTEXTS][CDF_SIZE(2)] = {
+      { AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(16384), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(8192), AOM_ICDF(32768), 0 },
+    };
 static const aom_prob default_compound_idx_probs[COMP_INDEX_CONTEXTS] = {
   192, 128, 64, 192, 128, 64
+};
+
+static const aom_prob default_comp_group_idx_probs[COMP_GROUP_IDX_CONTEXTS] = {
+  192, 128, 64
 };
 #endif  // CONFIG_JNT_COMP
 
@@ -2929,7 +2940,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->txfm_partition_cdf, default_txfm_partition_cdf);
 #if CONFIG_JNT_COMP
   av1_copy(fc->compound_index_cdf, default_compound_idx_cdfs);
+  av1_copy(fc->comp_group_idx_cdf, default_comp_group_idx_cdfs);
   av1_copy(fc->compound_index_probs, default_compound_idx_probs);
+  av1_copy(fc->comp_group_idx_probs, default_comp_group_idx_probs);
 #endif  // CONFIG_JNT_COMP
   av1_copy(fc->newmv_cdf, default_newmv_cdf);
   av1_copy(fc->zeromv_cdf, default_zeromv_cdf);
@@ -3044,6 +3057,9 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   for (i = 0; i < COMP_INDEX_CONTEXTS; ++i)
     fc->compound_index_probs[i] = av1_mode_mv_merge_probs(
         pre_fc->compound_index_probs[i], counts->compound_index[i]);
+  for (i = 0; i < COMP_GROUP_IDX_CONTEXTS; ++i)
+    fc->comp_group_idx_probs[i] = av1_mode_mv_merge_probs(
+        pre_fc->comp_group_idx_probs[i], counts->comp_group_idx[i]);
 #endif  // CONFIG_JNT_COMP
 }
 

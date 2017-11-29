@@ -1856,15 +1856,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   read_ref_frames(cm, xd, r, mbmi->segment_id, mbmi->ref_frame);
   const int is_compound = has_second_ref(mbmi);
 
-#if CONFIG_JNT_COMP
-  if (is_compound) {
-    const int comp_index_ctx = get_comp_index_context(cm, xd);
-    mbmi->compound_idx = aom_read_symbol(
-        r, ec_ctx->compound_index_cdf[comp_index_ctx], 2, ACCT_STR);
-    if (xd->counts)
-      ++xd->counts->compound_index[comp_index_ctx][mbmi->compound_idx];
-  }
-#endif  // CONFIG_JNT_COMP
+#if CONFIG_EXT_SKIP
+// TODO(zoeliu): To work with JNT_COMP
+#endif  // CONFIG_EXT_SKIP
 
   for (int ref = 0; ref < 1 + is_compound; ++ref) {
     MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
@@ -2188,6 +2182,68 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     mbmi->motion_mode = read_motion_mode(cm, xd, mi, r);
 #endif  // CONFIG_EXT_WARPED_MOTION
 
+#if CONFIG_JNT_COMP
+  // init
+  mbmi->comp_group_idx = 1;
+  mbmi->compound_idx = 1;
+  mbmi->interinter_compound_type = COMPOUND_AVERAGE;
+
+  // read idx to indicate current compound inter prediction mode group
+  if (has_second_ref(mbmi)) {
+    const int ctx_comp_group_idx = get_comp_group_idx_context(xd);
+    mbmi->comp_group_idx = aom_read_symbol(
+        r, ec_ctx->comp_group_idx_cdf[ctx_comp_group_idx], 2, ACCT_STR);
+    if (xd->counts)
+      ++xd->counts->comp_group_idx[ctx_comp_group_idx][mbmi->comp_group_idx];
+
+    if (mbmi->comp_group_idx == 0) {
+      const int comp_index_ctx = get_comp_index_context(cm, xd);
+      mbmi->compound_idx = aom_read_symbol(
+          r, ec_ctx->compound_index_cdf[comp_index_ctx], 2, ACCT_STR);
+
+      if (xd->counts)
+        ++xd->counts->compound_index[comp_index_ctx][mbmi->compound_idx];
+
+      if (mbmi->compound_idx) mbmi->interinter_compound_type = COMPOUND_AVERAGE;
+    } else {
+      // compound_segment, wedge
+      mbmi->interinter_compound_type = COMPOUND_AVERAGE;
+      if (cm->reference_mode != SINGLE_REFERENCE &&
+          is_inter_compound_mode(mbmi->mode) &&
+          mbmi->motion_mode == SIMPLE_TRANSLATION
+#if CONFIG_EXT_SKIP
+          && !mbmi->skip_mode
+#endif  // CONFIG_EXT_SKIP
+          && mbmi->comp_group_idx) {
+        if (is_any_masked_compound_used(bsize)) {
+          if (cm->allow_masked_compound) {
+            if (is_interinter_compound_used(COMPOUND_WEDGE, bsize))
+              mbmi->interinter_compound_type =
+                  aom_read_symbol(r, ec_ctx->compound_type_cdf[bsize],
+                                  COMPOUND_TYPES, ACCT_STR);
+            else
+              mbmi->interinter_compound_type = COMPOUND_SEG;
+
+            if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
+              assert(is_interinter_compound_used(COMPOUND_WEDGE, bsize));
+              mbmi->wedge_index =
+                  aom_read_literal(r, get_wedge_bits_lookup(bsize), ACCT_STR);
+              mbmi->wedge_sign = aom_read_bit(r, ACCT_STR);
+            }
+            if (mbmi->interinter_compound_type == COMPOUND_SEG) {
+              mbmi->mask_type =
+                  aom_read_literal(r, MAX_SEG_MASK_BITS, ACCT_STR);
+            }
+          }
+        }
+
+        if (xd->counts)
+          xd->counts
+              ->compound_interinter[bsize][mbmi->interinter_compound_type]++;
+      }
+    }
+  }
+#else  // CONFIG_JNT_COMP
   mbmi->interinter_compound_type = COMPOUND_AVERAGE;
   if (cm->reference_mode != SINGLE_REFERENCE &&
       is_inter_compound_mode(mbmi->mode) &&
@@ -2225,6 +2281,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     if (xd->counts)
       xd->counts->compound_interinter[bsize][mbmi->interinter_compound_type]++;
   }
+#endif  // CONFIG_JNT_COMP
 
   read_mb_interp_filter(cm, xd, mbmi, r);
 

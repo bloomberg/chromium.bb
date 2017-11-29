@@ -641,9 +641,6 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
   const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
   av1_copy_frame_mvs(cm, mi, mi_row, mi_col, x_mis, y_mis);
-
-#if CONFIG_JNT_COMP
-#endif  // CONFIG_JNT_COMP
 }
 
 #if NC_MODE_INFO
@@ -1258,9 +1255,30 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           }
         }
 
+#if CONFIG_JNT_COMP
+        if (has_second_ref(mbmi)) {
+          const int comp_group_idx_ctx = get_comp_group_idx_context(xd);
+          ++counts->comp_group_idx[comp_group_idx_ctx][mbmi->comp_group_idx];
+          if (allow_update_cdf)
+            update_cdf(fc->comp_group_idx_cdf[comp_group_idx_ctx],
+                       mbmi->comp_group_idx, 2);
+
+          if (mbmi->comp_group_idx == 0) {
+            const int comp_index_ctx = get_comp_index_context(cm, xd);
+            ++counts->compound_index[comp_index_ctx][mbmi->compound_idx];
+            if (allow_update_cdf)
+              update_cdf(fc->compound_index_cdf[comp_index_ctx],
+                         mbmi->compound_idx, 2);
+          }
+        }
+#endif  // CONFIG_JNT_COMP
+
         if (cm->reference_mode != SINGLE_REFERENCE &&
-            is_inter_compound_mode(mbmi->mode) &&
-            mbmi->motion_mode == SIMPLE_TRANSLATION) {
+            is_inter_compound_mode(mbmi->mode)
+#if CONFIG_JNT_COMP
+            && mbmi->comp_group_idx
+#endif  // CONFIG_JNT_COMP
+            && mbmi->motion_mode == SIMPLE_TRANSLATION) {
           if (is_interinter_compound_used(COMPOUND_WEDGE, bsize)) {
             counts
                 ->compound_interinter[bsize][mbmi->interinter_compound_type]++;
@@ -1319,16 +1337,6 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           }
         }
       }
-
-#if CONFIG_JNT_COMP
-      if (has_second_ref(mbmi)) {
-        const int comp_index_ctx = get_comp_index_context(cm, xd);
-        ++counts->compound_index[comp_index_ctx][mbmi->compound_idx];
-        if (allow_update_cdf)
-          update_cdf(fc->compound_index_cdf[comp_index_ctx], mbmi->compound_idx,
-                     2);
-      }
-#endif  // CONFIG_JNT_COMP
     }
   }
 }
@@ -1482,6 +1490,15 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         mbmi->curr_delta_lf[lf_id] = xd->prev_delta_lf[lf_id];
 #endif  // CONFIG_LOOPFILTER_LEVEL
       mbmi->current_delta_lf_from_base = xd->prev_delta_lf_from_base;
+    }
+#endif
+#if CONFIG_JNT_COMP
+    if (has_second_ref(mbmi)) {
+      if (mbmi->compound_idx == 0 ||
+          mbmi->interinter_compound_type == COMPOUND_AVERAGE)
+        mbmi->comp_group_idx = 0;
+      else
+        mbmi->comp_group_idx = 1;
     }
 #endif
     update_stats(&cpi->common, tile_data, td, mi_row, mi_col);

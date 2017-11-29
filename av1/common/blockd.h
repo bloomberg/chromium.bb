@@ -367,6 +367,7 @@ typedef struct MB_MODE_INFO {
 
 #if CONFIG_JNT_COMP
   int compound_idx;
+  int comp_group_idx;
 #endif
 } MB_MODE_INFO;
 

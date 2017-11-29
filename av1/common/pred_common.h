@@ -122,6 +122,29 @@ static INLINE int get_comp_index_context(const AV1_COMMON *cm,
 
   return above_ctx + left_ctx + 3 * offset;
 }
+
+static INLINE int get_comp_group_idx_context(const MACROBLOCKD *xd) {
+  const MODE_INFO *const above_mi = xd->above_mi;
+  const MODE_INFO *const left_mi = xd->left_mi;
+  int above_ctx = 0, left_ctx = 0;
+
+  if (above_mi) {
+    const MB_MODE_INFO *above_mbmi = &above_mi->mbmi;
+    if (has_second_ref(above_mbmi))
+      above_ctx = above_mbmi->comp_group_idx;
+    else if (above_mbmi->ref_frame[0] == ALTREF_FRAME)
+      above_ctx = 1;
+  }
+  if (left_mi) {
+    const MB_MODE_INFO *left_mbmi = &left_mi->mbmi;
+    if (has_second_ref(left_mbmi))
+      left_ctx = left_mbmi->comp_group_idx;
+    else if (left_mbmi->ref_frame[0] == ALTREF_FRAME)
+      left_ctx = 1;
+  }
+
+  return above_ctx + left_ctx;
+}
 #endif  // CONFIG_JNT_COMP
 
 static INLINE aom_cdf_prob *av1_get_pred_cdf_seg_id(
