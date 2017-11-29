@@ -5,6 +5,7 @@
 #ifndef StringResource_h
 #define StringResource_h
 
+#include "base/macros.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Threading.h"
@@ -17,7 +18,6 @@ namespace blink {
 // to manage the life-cycle of the underlying buffer of the external string.
 class StringResourceBase {
   USING_FAST_MALLOC(StringResourceBase);
-  WTF_MAKE_NONCOPYABLE(StringResourceBase);
 
  public:
   explicit StringResourceBase(const String& string) : plain_string_(string) {
@@ -83,12 +83,12 @@ class StringResourceBase {
 #if DCHECK_IS_ON()
   WTF::ThreadIdentifier thread_id_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(StringResourceBase);
 };
 
 class StringResource16 final : public StringResourceBase,
                                public v8::String::ExternalStringResource {
-  WTF_MAKE_NONCOPYABLE(StringResource16);
-
  public:
   explicit StringResource16(const String& string) : StringResourceBase(string) {
     DCHECK(!string.Is8Bit());
@@ -104,12 +104,12 @@ class StringResource16 final : public StringResourceBase,
     return reinterpret_cast<const uint16_t*>(
         plain_string_.Impl()->Characters16());
   }
+
+  DISALLOW_COPY_AND_ASSIGN(StringResource16);
 };
 
 class StringResource8 final : public StringResourceBase,
                               public v8::String::ExternalOneByteStringResource {
-  WTF_MAKE_NONCOPYABLE(StringResource8);
-
  public:
   explicit StringResource8(const String& string) : StringResourceBase(string) {
     DCHECK(string.Is8Bit());
@@ -124,6 +124,8 @@ class StringResource8 final : public StringResourceBase,
   const char* data() const override {
     return reinterpret_cast<const char*>(plain_string_.Impl()->Characters8());
   }
+
+  DISALLOW_COPY_AND_ASSIGN(StringResource8);
 };
 
 enum ExternalMode { kExternalize, kDoNotExternalize };

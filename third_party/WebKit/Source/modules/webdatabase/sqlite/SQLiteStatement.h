@@ -26,6 +26,7 @@
 #ifndef SQLiteStatement_h
 #define SQLiteStatement_h
 
+#include "base/macros.h"
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 
 struct sqlite3_stmt;
@@ -35,7 +36,6 @@ namespace blink {
 class SQLValue;
 
 class SQLiteStatement {
-  WTF_MAKE_NONCOPYABLE(SQLiteStatement);
   USING_FAST_MALLOC(SQLiteStatement);
 
  public:
@@ -80,6 +80,8 @@ class SQLiteStatement {
 #if DCHECK_IS_ON()
   bool is_prepared_ = false;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(SQLiteStatement);
 };
 
 }  // namespace blink

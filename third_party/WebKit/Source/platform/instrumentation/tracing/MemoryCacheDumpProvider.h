@@ -5,6 +5,7 @@
 #ifndef MemoryCacheDumpProvider_h
 #define MemoryCacheDumpProvider_h
 
+#include "base/macros.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "platform/PlatformExport.h"
@@ -16,7 +17,7 @@ namespace blink {
 
 class PLATFORM_EXPORT MemoryCacheDumpClient : public GarbageCollectedMixin {
  public:
-  virtual ~MemoryCacheDumpClient() {}
+  virtual ~MemoryCacheDumpClient() = default;
   virtual bool OnMemoryDump(WebMemoryDumpLevelOfDetail,
                             WebProcessMemoryDump*) = 0;
 
@@ -48,7 +49,7 @@ class PLATFORM_EXPORT MemoryCacheDumpProvider final
 
   WeakPersistent<MemoryCacheDumpClient> client_;
 
-  WTF_MAKE_NONCOPYABLE(MemoryCacheDumpProvider);
+  DISALLOW_COPY_AND_ASSIGN(MemoryCacheDumpProvider);
 };
 
 }  // namespace blink

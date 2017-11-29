@@ -25,6 +25,7 @@
 
 #include "platform/Length.h"
 
+#include "base/macros.h"
 #include "platform/CalculationValue.h"
 #include "platform/animation/AnimationUtilities.h"
 #include "platform/wtf/HashMap.h"
@@ -33,7 +34,6 @@ namespace blink {
 
 class CalculationValueHandleMap {
   USING_FAST_MALLOC(CalculationValueHandleMap);
-  WTF_MAKE_NONCOPYABLE(CalculationValueHandleMap);
 
  public:
   CalculationValueHandleMap() : index_(1) {}
@@ -77,6 +77,8 @@ class CalculationValueHandleMap {
  private:
   int index_;
   HashMap<int, scoped_refptr<CalculationValue>> map_;
+
+  DISALLOW_COPY_AND_ASSIGN(CalculationValueHandleMap);
 };
 
 static CalculationValueHandleMap& CalcHandles() {

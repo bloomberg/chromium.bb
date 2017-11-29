@@ -27,6 +27,8 @@
 #define AsyncAudioDecoder_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -46,11 +48,10 @@ class V8DecodeSuccessCallback;
 
 class AsyncAudioDecoder {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(AsyncAudioDecoder);
 
  public:
-  AsyncAudioDecoder(){};
-  ~AsyncAudioDecoder(){};
+  AsyncAudioDecoder() = default;
+  ~AsyncAudioDecoder() = default;
 
   // Must be called on the main thread.  |decodeAsync| and callees must not
   // modify any of the parameters except |audioData|.  They are used to
@@ -77,6 +78,8 @@ class AsyncAudioDecoder {
                              AudioBus*,
                              ScriptPromiseResolver*,
                              BaseAudioContext*);
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncAudioDecoder);
 };
 
 }  // namespace blink

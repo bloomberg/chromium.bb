@@ -20,6 +20,7 @@
 #ifndef FrameTree_h
 #define FrameTree_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/AtomicString.h"
@@ -29,7 +30,6 @@ namespace blink {
 class Frame;
 
 class CORE_EXPORT FrameTree final {
-  WTF_MAKE_NONCOPYABLE(FrameTree);
   DISALLOW_NEW();
 
  public:
@@ -77,6 +77,8 @@ class CORE_EXPORT FrameTree final {
 
   // TODO(andypaicu): remove this once we have gathered the data
   bool experimental_set_nulled_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameTree);
 };
 
 }  // namespace blink

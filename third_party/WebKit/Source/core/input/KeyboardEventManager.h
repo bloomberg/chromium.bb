@@ -5,6 +5,7 @@
 #ifndef KeyboardEventManager_h
 #define KeyboardEventManager_h
 
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -25,8 +26,6 @@ enum class OverrideCapsLockState { kDefault, kOn, kOff };
 
 class CORE_EXPORT KeyboardEventManager
     : public GarbageCollectedFinalized<KeyboardEventManager> {
-  WTF_MAKE_NONCOPYABLE(KeyboardEventManager);
-
  public:
   static const int kAccessKeyModifiers =
 // TODO(crbug.com/618397): Add a settings to control this behavior.
@@ -61,6 +60,8 @@ class CORE_EXPORT KeyboardEventManager
   const Member<LocalFrame> frame_;
 
   Member<ScrollManager> scroll_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyboardEventManager);
 };
 
 }  // namespace blink
