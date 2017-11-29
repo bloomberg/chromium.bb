@@ -127,7 +127,7 @@ class VizProcessTransportFactory : public ui::ContextFactory,
 
   // Finishes creation of LayerTreeFrameSink after GPU channel has been
   // established.
-  void CreateLayerTreeFrameSinkForGpuChannel(
+  void OnEstablishedGpuChannel(
       base::WeakPtr<ui::Compositor> compositor_weak_ptr,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
@@ -136,6 +136,8 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   // nothing. Returns true if ContextProviders exist.
   bool CreateContextProviders(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
+
+  void OnLostMainThreadSharedContext();
 
   gpu::GpuChannelEstablishFactory* const gpu_channel_establish_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> const resize_task_runner_;
@@ -147,6 +149,7 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   viz::ForwardingCompositingModeReporterImpl* const forwarding_mode_reporter_;
 
   base::flat_map<ui::Compositor*, CompositorData> compositor_data_map_;
+  bool is_gpu_compositing_disabled_ = false;
 
   // TODO(kylechar): Call OnContextLost() on observers when GPU crashes.
   base::ObserverList<ui::ContextFactoryObserver> observer_list_;
