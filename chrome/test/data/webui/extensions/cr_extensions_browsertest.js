@@ -203,6 +203,10 @@ TEST_F('CrExtensionsDetailViewTest', 'Layout', function() {
   this.runMochaTest(extension_detail_view_tests.TestNames.Layout);
 });
 
+TEST_F('CrExtensionsDetailViewTest', 'LayoutSource', function() {
+  this.runMochaTest(extension_detail_view_tests.TestNames.LayoutSource);
+});
+
 TEST_F(
     'CrExtensionsDetailViewTest', 'ClickableElements', function() {
       this.runMochaTest(

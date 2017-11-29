@@ -214,8 +214,8 @@ cr.define('extensions', function() {
 
     /** @private */
     computeSourceString_: function() {
-      return extensions.getItemSourceString(
-          extensions.getItemSource(this.data));
+      return this.data.locationText ||
+          extensions.getItemSourceString(extensions.getItemSource(this.data));
     },
 
     /**

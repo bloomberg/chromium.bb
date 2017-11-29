@@ -239,6 +239,12 @@ cr.define('extension_item_tests', function() {
       expectEquals('input', icon.icon);
       extension_test_util.testIcons(item);
 
+      item.set('data.location', 'UNKNOWN');
+      Polymer.dom.flush();
+      expectTrue(extension_test_util.isVisible(item, '#source-indicator'));
+      expectEquals('input', icon.icon);
+      extension_test_util.testIcons(item);
+
       item.set('data.location', 'FROM_STORE');
       item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
       Polymer.dom.flush();
