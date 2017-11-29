@@ -4394,6 +4394,23 @@ drm_output_attach_head(struct weston_output *output_base,
 	return 0;
 }
 
+static void
+drm_output_detach_head(struct weston_output *output_base,
+		       struct weston_head *head_base)
+{
+	struct drm_backend *b = to_drm_backend(output_base->compositor);
+
+	if (!output_base->enabled)
+		return;
+
+	/* Need to go through modeset to drop connectors that should no longer
+	 * be driven. */
+	/* XXX: Ideally we'd do this per-output, not globally. */
+	b->state_invalid = true;
+
+	weston_output_schedule_repaint(output_base);
+}
+
 static int
 parse_gbm_format(const char *s, uint32_t default_value, uint32_t *gbm_format)
 {
@@ -5407,6 +5424,7 @@ drm_output_create(struct weston_compositor *compositor, const char *name)
 	output->base.destroy = drm_output_destroy;
 	output->base.disable = drm_output_disable;
 	output->base.attach_head = drm_output_attach_head;
+	output->base.detach_head = drm_output_detach_head;
 
 	output->destroy_pending = 0;
 	output->disable_pending = 0;
