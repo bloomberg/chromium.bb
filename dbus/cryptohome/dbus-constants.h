@@ -95,8 +95,11 @@ const char kCryptohomeTpmAttestationGetCertificate[] =
 const char kCryptohomeTpmAttestationGetPublicKey[] =
     "TpmAttestationGetPublicKey";
 const char kCryptohomeTpmAttestationRegisterKey[] = "TpmAttestationRegisterKey";
+// TODO(crbug.com/789419): Remove this deprecated API.
 const char kCryptohomeTpmAttestationSignEnterpriseChallenge[] =
     "TpmAttestationSignEnterpriseChallenge";
+const char kCryptohomeTpmAttestationSignEnterpriseVaChallenge[] =
+    "TpmAttestationSignEnterpriseVaChallenge";
 const char kCryptohomeTpmAttestationSignSimpleChallenge[] =
     "TpmAttestationSignSimpleChallenge";
 const char kCryptohomeTpmAttestationGetKeyPayload[] =
