@@ -17,7 +17,7 @@ The following things are extremely effective for improving fuzzer efficiency, so
 *strongly recommend* them for any fuzzer:
 
 * [Seed Corpus](#Seed-Corpus)
-* [Fuzzer Fictionary](#Fuzzer-Dictionary)
+* [Fuzzer Dictionary](#Fuzzer-Dictionary)
 
 There are several metrics you should look at to determine your fuzzer effectiveness:
 
