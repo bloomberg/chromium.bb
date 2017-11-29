@@ -73005,6 +73005,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SBClientDownload.DmgFileArchivedBinariesCount" units="count">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The original number of archived_binaries found in a DMG-like file when it's
+    scanned, if at least one is found.  The actual number sent in the download
+    request may be capped below this value.
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.DmgFileFailureByType"
     enum="SBClientDownloadExtensions">
   <owner>nparker@chromium.org</owner>
@@ -73258,6 +73267,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Records how often different file extensions are downloaded with schemes that
     aren't supported by Safe Browsing (e.g. ftp, gopher, content, cid, etc).
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.ZipFileArchivedBinariesCount" units="count">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The original number of archived_binaries found in a zip-like file when it's
+    scanned, if at least one is found.  The actual number sent in the download
+    request may be capped below this value.
   </summary>
 </histogram>
 

@@ -40,19 +40,26 @@ class CheckClientDownloadRequestTest : public testing::Test {
 TEST_F(CheckClientDownloadRequestTest, CheckLimitArchivedExtensions) {
   CheckClientDownloadRequest::ArchivedBinaries src, dest;
 
-  for (int i = 0; i < 4; i++) {
+  const int max_to_try = 12;
+  for (int i = 0; i < max_to_try; i++) {
     src.Add();
   }
 
-  SetMaxArchivedBinariesToReport(0);
+  // First check against the value set in .asciipb, which is currently 10
+  // If that is raised above |max_to_try|, raise the latter.
   dest.Clear();
   CheckClientDownloadRequest::CopyArchivedBinaries(src, &dest);
-  EXPECT_EQ(dest.size(), 0);
+  EXPECT_EQ(10, dest.size());
 
   SetMaxArchivedBinariesToReport(2);
   dest.Clear();
   CheckClientDownloadRequest::CopyArchivedBinaries(src, &dest);
-  EXPECT_EQ(dest.size(), 2);
+  EXPECT_EQ(2, dest.size());
+
+  SetMaxArchivedBinariesToReport(100000);
+  dest.Clear();
+  CheckClientDownloadRequest::CopyArchivedBinaries(src, &dest);
+  EXPECT_EQ(max_to_try, dest.size());
 }
 
 }  // namespace safe_browsing
