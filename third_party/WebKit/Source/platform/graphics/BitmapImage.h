@@ -43,6 +43,10 @@
 #include "platform/wtf/Time.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace blink {
 
 class PLATFORM_EXPORT BitmapImage final : public Image {
@@ -81,7 +85,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
 
   void SetAnimationPolicy(ImageAnimationPolicy) override;
   ImageAnimationPolicy AnimationPolicy() override { return animation_policy_; }
-  void AdvanceTime(double delta_time_in_seconds) override;
+  void AdvanceTime(TimeDelta) override;
 
   scoped_refptr<Image> ImageForDefaultFrame() override;
 
@@ -107,6 +111,8 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   Optional<size_t> last_num_frames_skipped_for_testing() const {
     return last_num_frames_skipped_;
   }
+
+  void SetTickClockForTesting(base::TickClock* clock) { clock_ = clock; }
 
  protected:
   bool IsSizeAvailable() override;
@@ -167,7 +173,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   // Starts the animation by scheduling a task to advance to the next desired
   // frame, if possible, and catching up any frames if the time to display them
   // is in the past.
-  Optional<size_t> StartAnimationInternal(const double time);
+  Optional<size_t> StartAnimationInternal(TimeTicks);
   void StopAnimation();
   void AdvanceAnimation(TimerBase*);
 
@@ -216,13 +222,15 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
                           // incapable of animation.
   int repetitions_complete_;  // How many repetitions we've finished.
 
-  double desired_frame_start_time_;  // The system time at which we hope to see
-                                     // the next call to startAnimation().
+  TimeTicks desired_frame_start_time_;  // The system time at which we hope to
+                                        // see the next call to
+                                        // startAnimation().
 
   size_t frame_count_;
 
   PaintImage::AnimationSequenceId reset_animation_sequence_id_ = 0;
 
+  base::TickClock* clock_;
   scoped_refptr<WebTaskRunner> task_runner_;
 
   // Value used in UMA tracking for the number of animation frames skipped

@@ -596,7 +596,7 @@ void Internals::advanceTimeForImage(Element* image,
     return;
   }
 
-  image_data->AdvanceTime(delta_time_in_seconds);
+  image_data->AdvanceTime(TimeDelta::FromSecondsD(delta_time_in_seconds));
 }
 
 void Internals::advanceImageAnimation(Element* image,

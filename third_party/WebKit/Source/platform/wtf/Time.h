@@ -82,6 +82,8 @@ class TimeTicks {
     return TimeTicks() + TimeDelta::FromSecondsD(seconds);
   }
 
+  bool is_null() const { return value_.is_null(); }
+
   operator base::TimeTicks() const { return value_; }
 
   TimeTicks& operator=(TimeTicks other) {
