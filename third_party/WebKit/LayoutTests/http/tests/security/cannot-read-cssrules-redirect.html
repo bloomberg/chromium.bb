@@ -1,32 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <link rel="stylesheet"
       href="resources/redir.php?url=http://localhost:8000/security/resources/cssStyle.css">
 <link rel="stylesheet"
       href="http://localhost:8000/security/resources/redir.php?url=http://127.0.0.1:8000/security/resources/cssStyle.css">
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText();
 
-function log(msg) {
-    var div = document.createElement("div");
-    div.textContent = msg;
-    document.getElementById("console").appendChild(div);
-}
+test(() => {
+  var sheet1 = document.styleSheets[0];
+  assert_throws("SecurityError", () => {
+    sheet1.cssRules;
+  });
+  assert_throws("SecurityError", () => {
+    sheet1.rules;
+  });
+}, "Can't access Cross-Origin sheets that were redirected to from Same-Origin");
 
-window.onload = function() {
-    log("Test begins.");
-    log("== Same-Origin to Cross-Origin ==");
-    var sheet1 = document.styleSheets[0];
-    log("cssRules: " + sheet1.cssRules);
-    log("rules: " + sheet1.rules);
-    log("== Cross-Origin to Same-Origin ==");
-    var sheet2 = document.styleSheets[1];
-    log("cssRules: " + sheet2.cssRules);
-    log("rules: " + sheet2.rules);
-    log("Test ends.");
-}
+test(() => {
+  var sheet2 = document.styleSheets[1];
+  assert_not_equals(sheet2.cssRules, null);
+  assert_not_equals(sheet2.rules, null);
+}, "Can access Same-Origin sheets that were redirected to from Cross-Origin");
+
 </script>
 </head>
 <body>
@@ -35,6 +33,5 @@ sheet in the presence of redirects.  For more information on why we block
 this, please see
 <a href="https://bugs.webkit.org/show_bug.cgi?id=20527">https://bugs.webkit.org/show_bug.cgi?id=20527</a>.
 </p>
-<div id="console"></div>
 </body>
 </html>

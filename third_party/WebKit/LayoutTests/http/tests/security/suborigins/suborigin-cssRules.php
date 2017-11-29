@@ -11,11 +11,13 @@ header("Suborigin: foobar");
 <link rel="stylesheet" href="/security/resources/cssStyle.css"></link>
 </head>
 <script>
-window.onload = function() {
+
+test(() => {
   var sheet = document.styleSheets[0];
-  assert_equals(sheet.cssRules, null,
-    'stylesheet rules should not be readable from a suborigin');
-  done();
-};
+  assert_throws("SecurityError", () => {
+    sheet.cssRules;
+  });
+}, "stylesheet rules should not be readable from a suborigin");
+
 </script>
 </html>
