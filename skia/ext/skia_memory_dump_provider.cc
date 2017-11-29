@@ -19,9 +19,9 @@ SkiaMemoryDumpProvider* SkiaMemoryDumpProvider::GetInstance() {
       base::LeakySingletonTraits<SkiaMemoryDumpProvider>>::get();
 }
 
-SkiaMemoryDumpProvider::SkiaMemoryDumpProvider() {}
+SkiaMemoryDumpProvider::SkiaMemoryDumpProvider() = default;
 
-SkiaMemoryDumpProvider::~SkiaMemoryDumpProvider() {}
+SkiaMemoryDumpProvider::~SkiaMemoryDumpProvider() = default;
 
 bool SkiaMemoryDumpProvider::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,

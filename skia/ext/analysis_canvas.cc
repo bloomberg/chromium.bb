@@ -340,7 +340,7 @@ AnalysisCanvas::AnalysisCanvas(int width, int height)
       draw_op_count_(0),
       rejected_op_count_(0) {}
 
-AnalysisCanvas::~AnalysisCanvas() {}
+AnalysisCanvas::~AnalysisCanvas() = default;
 
 bool AnalysisCanvas::GetColorIfSolid(SkColor* color) const {
   if (is_transparent_) {
