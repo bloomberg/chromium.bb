@@ -22,7 +22,8 @@ class WebClipboardImplTest : public ContentBrowserTest {
   ~WebClipboardImplTest() override = default;
 };
 
-IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, PasteRTF) {
+// crbug.com/789428: started to be super flaky on all bots.
+IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, DISABLED_PasteRTF) {
   BrowserTestClipboardScope clipboard;
 
   const std::string rtf_content = "{\\rtf1\\ansi Hello, {\\b world.}}";
