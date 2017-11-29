@@ -26,6 +26,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 // A simple fake implementation of OneGoogleBarFetcher that immediately returns
 // a pre-configured OneGoogleBarData, which is null by default.
