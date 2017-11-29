@@ -306,6 +306,7 @@ chrome.networkingPrivate.ManagedCertificatePattern;
  *   ServerCAPEMs: (!Array<string>|undefined),
  *   ServerCARefs: (!Array<string>|undefined),
  *   SubjectMatch: (string|undefined),
+ *   TLSVersionMax: (string|undefined),
  *   UseProactiveKeyCaching: (boolean|undefined),
  *   UseSystemCAs: (boolean|undefined)
  * }}
@@ -328,6 +329,7 @@ chrome.networkingPrivate.EAPProperties;
  *   ServerCAPEMs: (!chrome.networkingPrivate.ManagedDOMStringList|undefined),
  *   ServerCARefs: (!chrome.networkingPrivate.ManagedDOMStringList|undefined),
  *   SubjectMatch: (!chrome.networkingPrivate.ManagedDOMString|undefined),
+ *   TLSVersionMax: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   UseProactiveKeyCaching: (!chrome.networkingPrivate.ManagedBoolean|undefined),
  *   UseSystemCAs: (!chrome.networkingPrivate.ManagedBoolean|undefined)
  * }}

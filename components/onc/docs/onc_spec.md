@@ -1207,6 +1207,16 @@ type exists to configure the authentication.
     * WiFi only. A substring which a remote RADIUS service certificate subject
       name must contain in order to connect.
 
+* **TLSVersionMax**
+    * (optional) - **string**
+    * Sets the maximum TLS protocol version used by the OS for EAP.
+      This is only needed when connecting to an AP with a buggy TLS
+      implementation, as the protocol will normally auto-negotiate.
+    * Allowed values are:
+        * *1.0*
+        * *1.1*
+        * *1.2*
+
 * **UseSystemCAs**
     * (optional, defaults to *true*) - **boolean**
     * Required server certificate to be signed by "system default certificate

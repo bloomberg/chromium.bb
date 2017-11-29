@@ -242,6 +242,7 @@ namespace networkingPrivate {
     DOMString[]? ServerCAPEMs;
     DOMString[]? ServerCARefs;
     DOMString? SubjectMatch;
+    DOMString? TLSVersionMax;
     boolean? UseProactiveKeyCaching;
     boolean? UseSystemCAs;
   };
@@ -262,6 +263,7 @@ namespace networkingPrivate {
     ManagedDOMStringList? ServerCAPEMs;
     ManagedDOMStringList? ServerCARefs;
     ManagedDOMString? SubjectMatch;
+    ManagedDOMString? TLSVersionMax;
     ManagedBoolean? UseProactiveKeyCaching;
     ManagedBoolean? UseSystemCAs;
   };
