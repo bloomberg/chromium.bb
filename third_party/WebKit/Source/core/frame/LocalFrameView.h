@@ -624,6 +624,9 @@ class CORE_EXPORT LocalFrameView final
   // Methods for converting between this frame and other coordinate spaces.
   // For definitions and an explanation of the varous spaces, please see:
   // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
+  // WARNING: With --root-layer-scrolling, these become ambiguous since content
+  // coordinates mean something different. These will eventually be replaced,
+  // see comments below about writing RLS agnostic conversions.
   IntPoint RootFrameToContents(const IntPoint&) const;
   FloatPoint RootFrameToContents(const FloatPoint&) const;
   LayoutPoint RootFrameToContents(const LayoutPoint&) const;
@@ -649,6 +652,9 @@ class CORE_EXPORT LocalFrameView final
   // frame and so they are affected by scroll offset. Content coordinates are
   // relative to the document's top left corner and thus are not affected by
   // scroll offset.
+  // WARNING: With --root-layer-scrolling, these become ambiguous since content
+  // coordinates mean something different. These will eventually be replaced,
+  // see comments below about writing RLS agnostic conversions.
   IntPoint ContentsToFrame(const IntPoint&) const;
   LayoutPoint ContentsToFrame(const LayoutPoint&) const;
   FloatPoint ContentsToFrame(const FloatPoint&) const;
@@ -665,6 +671,14 @@ class CORE_EXPORT LocalFrameView final
   // event handlers (like Win32).
   Scrollbar* ScrollbarAtFramePoint(const IntPoint&);
 
+  // Converts from/to local "frame" coordinates to the root "frame"
+  // coordinates. Note: with root-layer-scrolls, "frame" coordinates become
+  // equivalent to "absoltue" coordinates since the LayoutView (same size and
+  // origin as the frame) clips and scrolls content below it. Without RLS, the
+  // LayoutView is the size of the entire document and doesn't scroll itself so
+  // "absolute" means "document". To write RLS agnostic-code, use (or add) the
+  // methods below these ones. For details, see:
+  // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
   IntRect ConvertToRootFrame(const IntRect&) const;
   IntPoint ConvertToRootFrame(const IntPoint&) const;
   LayoutPoint ConvertToRootFrame(const LayoutPoint&) const;
@@ -674,6 +688,16 @@ class CORE_EXPORT LocalFrameView final
   LayoutPoint ConvertFromRootFrame(const LayoutPoint&) const;
   IntPoint ConvertSelfToChild(const EmbeddedContentView&,
                               const IntPoint&) const;
+
+  // root-layer-scrolls agnostic conversion functions:
+  // Maps from "absolute" coordinates to root frame coordinates.  TODO(bokan)
+  // This is a temporary shim to hide the difference between root-layer-scrolls
+  // being on and off. Once RLS is turned on, this becomes (and can be replaced
+  // with) ConvertToRootFrame since "frame coordinates" == "absolute
+  // coordinates" in RLS. Without RLS, "absolute coordinates" == "document
+  // coordinates". https://crbug.com/417782.
+  IntRect AbsoluteToRootFrame(const IntRect&) const;
+  IntRect RootFrameToDocument(const IntRect&);
 
   // Handles painting of the contents of the view as well as the scrollbars.
   void Paint(GraphicsContext&,

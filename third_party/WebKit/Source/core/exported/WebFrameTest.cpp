@@ -11292,14 +11292,6 @@ class WebFrameSimTest : public ::testing::WithParamInterface<bool>,
 INSTANTIATE_TEST_CASE_P(All, WebFrameSimTest, ::testing::Bool());
 
 TEST_P(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
-  // TODO(bokan): This test fails with RLS turned on but it shouldn't. This is
-  // due to WebViewImpl::SelectionBound incorrectly returning the caret
-  // location in the document. The conversion methods (e.g. ContentToFrame) in
-  // LocalFrameView as well as LayoutObject::MapLocalToAncestor need to account
-  // for the changed scroller. crbug.com/788248
-  if (GetParam())
-    return;
-
   WebView().Resize(WebSize(500, 300));
   WebView().SetDefaultPageScaleLimits(1.f, 4);
   WebView().EnableFakePageScaleAnimationForTesting(true);
