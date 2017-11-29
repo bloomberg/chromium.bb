@@ -489,6 +489,34 @@ struct weston_touch_device_ops {
 				const struct weston_touch_device_matrix *cal);
 };
 
+enum weston_touch_mode {
+	/** Normal touch event handling */
+	WESTON_TOUCH_MODE_NORMAL,
+
+	/** Prepare moving to WESTON_TOUCH_MODE_CALIB.
+	 *
+	 * Move to WESTON_TOUCH_MODE_CALIB as soon as no touches are down on
+	 * any seat. Until then, all touch events are routed normally.
+	 */
+	WESTON_TOUCH_MODE_PREP_CALIB,
+
+	/** Calibration mode
+	 *
+	 * Only a single weston_touch_device forwards events to the calibrator
+	 * all other touch device cause a calibrator "wrong device" event to
+	 * be sent.
+	 */
+	WESTON_TOUCH_MODE_CALIB,
+
+	/** Prepare moving to WESTON_TOUCH_MODE_NORMAL.
+	 *
+	 * Move to WESTON_TOUCH_MODE_NORMAL as soon as no touches are down on
+	 * any seat. Until then, touch events are routed as in
+	 * WESTON_TOUCH_MODE_CALIB except "wrong device" events are not sent.
+	 */
+	WESTON_TOUCH_MODE_PREP_NORMAL
+};
+
 /** Represents a physical touchscreen input device */
 struct weston_touch_device {
 	char *syspath;			/**< unique name */
@@ -1092,6 +1120,8 @@ struct weston_compositor {
 	 */
 	struct wl_signal heads_changed_signal;
 	struct wl_event_source *heads_changed_source;
+
+	enum weston_touch_mode touch_mode;
 };
 
 struct weston_buffer {
@@ -1572,6 +1602,15 @@ notify_touch_frame(struct weston_touch_device *device);
 
 void
 notify_touch_cancel(struct weston_touch_device *device);
+
+void
+weston_compositor_set_touch_mode_normal(struct weston_compositor *compositor);
+
+void
+weston_compositor_set_touch_mode_calib(struct weston_compositor *compositor);
+
+static inline void
+touch_calibrator_mode_changed(struct weston_compositor *compositor) { /* stub */ }
 
 void
 weston_layer_entry_insert(struct weston_layer_entry *list,

@@ -6334,6 +6334,8 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 
 	ec->activate_serial = 1;
 
+	ec->touch_mode = WESTON_TOUCH_MODE_NORMAL;
+
 	if (!wl_global_create(ec->wl_display, &wl_compositor_interface, 4,
 			      ec, compositor_bind))
 		goto fail;

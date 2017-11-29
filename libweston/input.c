@@ -187,6 +187,12 @@ weston_touch_device_can_calibrate(struct weston_touch_device *device)
 	return !!device->ops;
 }
 
+static enum weston_touch_mode
+weston_touch_device_get_mode(struct weston_touch_device *device)
+{
+	return device->aggregate->seat->compositor->touch_mode;
+}
+
 static struct weston_pointer_client *
 weston_pointer_client_create(struct wl_client *client)
 {
@@ -2403,6 +2409,105 @@ process_touch_normal(struct weston_touch_device *device,
 	}
 }
 
+static enum weston_touch_mode
+get_next_touch_mode(enum weston_touch_mode from)
+{
+	switch (from) {
+	case WESTON_TOUCH_MODE_PREP_NORMAL:
+		return WESTON_TOUCH_MODE_NORMAL;
+
+	case WESTON_TOUCH_MODE_PREP_CALIB:
+		return WESTON_TOUCH_MODE_CALIB;
+
+	case WESTON_TOUCH_MODE_NORMAL:
+	case WESTON_TOUCH_MODE_CALIB:
+		return from;
+	}
+
+	return WESTON_TOUCH_MODE_NORMAL;
+}
+
+/** Global touch mode update
+ *
+ * If no seat has a touch down and the compositor is in a PREP touch mode,
+ * set the compositor to the goal touch mode.
+ *
+ * Calls calibrator if touch mode changed.
+ */
+static void
+weston_compositor_update_touch_mode(struct weston_compositor *compositor)
+{
+	struct weston_seat *seat;
+	struct weston_touch *touch;
+	enum weston_touch_mode goal;
+
+	wl_list_for_each(seat, &compositor->seat_list, link) {
+		touch = weston_seat_get_touch(seat);
+		if (!touch)
+			continue;
+
+		if (touch->num_tp > 0)
+			return;
+	}
+
+	goal = get_next_touch_mode(compositor->touch_mode);
+	if (compositor->touch_mode != goal) {
+		compositor->touch_mode = goal;
+		touch_calibrator_mode_changed(compositor);
+	}
+}
+
+/** Start transition to normal touch event handling
+ *
+ * The touch event mode changes when all touches on all touch devices have
+ * been lifted. If no touches are currently down, the transition is immediate.
+ *
+ * \sa weston_touch_mode
+ */
+void
+weston_compositor_set_touch_mode_normal(struct weston_compositor *compositor)
+{
+	switch (compositor->touch_mode) {
+	case WESTON_TOUCH_MODE_PREP_NORMAL:
+	case WESTON_TOUCH_MODE_NORMAL:
+		return;
+	case WESTON_TOUCH_MODE_PREP_CALIB:
+		compositor->touch_mode = WESTON_TOUCH_MODE_NORMAL;
+		touch_calibrator_mode_changed(compositor);
+		return;
+	case WESTON_TOUCH_MODE_CALIB:
+		compositor->touch_mode = WESTON_TOUCH_MODE_PREP_NORMAL;
+	}
+
+	weston_compositor_update_touch_mode(compositor);
+}
+
+/** Start transition to calibrator touch event handling
+ *
+ * The touch event mode changes when all touches on all touch devices have
+ * been lifted. If no touches are currently down, the transition is immediate.
+ *
+ * \sa weston_touch_mode
+ */
+void
+weston_compositor_set_touch_mode_calib(struct weston_compositor *compositor)
+{
+	switch (compositor->touch_mode) {
+	case WESTON_TOUCH_MODE_PREP_CALIB:
+	case WESTON_TOUCH_MODE_CALIB:
+		assert(0);
+		return;
+	case WESTON_TOUCH_MODE_PREP_NORMAL:
+		compositor->touch_mode = WESTON_TOUCH_MODE_CALIB;
+		touch_calibrator_mode_changed(compositor);
+		return;
+	case WESTON_TOUCH_MODE_NORMAL:
+		compositor->touch_mode = WESTON_TOUCH_MODE_PREP_CALIB;
+	}
+
+	weston_compositor_update_touch_mode(compositor);
+}
+
 /** Feed in touch down, motion, and up events, calibratable device.
  *
  * It assumes always the correct cycle sequence until it gets here: touch_down
@@ -2470,23 +2575,54 @@ notify_touch_normalized(struct weston_touch_device *device,
 		break;
 	}
 
-	process_touch_normal(device, time, touch_id, x, y, touch_type);
+	/* Properly forward the touch event */
+	switch (weston_touch_device_get_mode(device)) {
+	case WESTON_TOUCH_MODE_NORMAL:
+	case WESTON_TOUCH_MODE_PREP_CALIB:
+		process_touch_normal(device, time, touch_id, x, y, touch_type);
+		break;
+	case WESTON_TOUCH_MODE_CALIB:
+	case WESTON_TOUCH_MODE_PREP_NORMAL:
+		break;
+	}
 }
 
 WL_EXPORT void
 notify_touch_frame(struct weston_touch_device *device)
 {
-	struct weston_touch_grab *grab = device->aggregate->grab;
+	struct weston_touch_grab *grab;
 
-	grab->interface->frame(grab);
+	switch (weston_touch_device_get_mode(device)) {
+	case WESTON_TOUCH_MODE_NORMAL:
+	case WESTON_TOUCH_MODE_PREP_CALIB:
+		grab = device->aggregate->grab;
+		grab->interface->frame(grab);
+		break;
+	case WESTON_TOUCH_MODE_CALIB:
+	case WESTON_TOUCH_MODE_PREP_NORMAL:
+		break;
+	}
+
+	weston_compositor_update_touch_mode(device->aggregate->seat->compositor);
 }
 
 WL_EXPORT void
 notify_touch_cancel(struct weston_touch_device *device)
 {
-	struct weston_touch_grab *grab = device->aggregate->grab;
+	struct weston_touch_grab *grab;
 
-	grab->interface->cancel(grab);
+	switch (weston_touch_device_get_mode(device)) {
+	case WESTON_TOUCH_MODE_NORMAL:
+	case WESTON_TOUCH_MODE_PREP_CALIB:
+		grab = device->aggregate->grab;
+		grab->interface->cancel(grab);
+		break;
+	case WESTON_TOUCH_MODE_CALIB:
+	case WESTON_TOUCH_MODE_PREP_NORMAL:
+		break;
+	}
+
+	weston_compositor_update_touch_mode(device->aggregate->seat->compositor);
 }
 
 static int
