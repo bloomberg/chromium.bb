@@ -389,6 +389,21 @@ TEST_F(UiTest, WebVrAutopresented) {
   EXPECT_FALSE(IsVisible(kWebVrUrlToast));
 }
 
+TEST_F(UiTest, WebVrSplashScreenHiddenWhenTimeoutImminent) {
+  CreateSceneForAutoPresentation();
+
+  // Initially, we should only show the splash screen.
+  VerifyOnlyElementsVisible("Initial",
+                            {kSplashScreenText, kSplashScreenBackground});
+
+  ui_->SetWebVrMode(true, false);
+  ui_->OnWebVrTimeoutImminent();
+
+  VerifyOnlyElementsVisible(
+      "Timeout imminent",
+      {kWebVrTimeoutSpinner, kWebVrTimeoutSpinnerBackground});
+}
+
 TEST_F(UiTest, AppButtonClickForAutopresentation) {
   CreateSceneForAutoPresentation();
 

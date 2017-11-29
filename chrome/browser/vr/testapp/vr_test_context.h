@@ -31,6 +31,8 @@ class VrTestContext : public vr::UiBrowserInterface {
   ~VrTestContext() override;
 
   void OnGlInitialized();
+  // TODO(vollick): we should refactor VrShellGl's rendering logic and use it
+  // directly. crbug.com/767282
   void DrawFrame();
   void HandleInput(ui::Event* event);
 

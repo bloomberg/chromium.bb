@@ -55,6 +55,9 @@ struct Model {
   bool browsing_mode() const {
     return !web_vr_mode && !web_vr_show_splash_screen;
   }
+  bool web_vr_has_produced_frames() const {
+    return web_vr_mode && web_vr_timeout_state == kWebVrNoTimeoutPending;
+  }
   WebVrTimeoutState web_vr_timeout_state = kWebVrNoTimeoutPending;
 
   // Controller state.
