@@ -134,6 +134,10 @@ static constexpr float kVoiceSearchCloseButtonHeight =
     kVoiceSearchCloseButtonWidth;
 static constexpr float kVoiceSearchCloseButtonYOffset =
     0.316f * kContentDistance + 0.5f * kVoiceSearchCloseButtonWidth;
+static constexpr float kVoiceSearchRecognitionResultTextHeight =
+    0.026f * kContentDistance;
+static constexpr float kVoiceSearchRecognitionResultTextWidth =
+    0.4f * kContentDistance;
 
 static constexpr float kUnderDevelopmentNoticeFontHeightM =
     0.02f * kUrlBarDistance;
