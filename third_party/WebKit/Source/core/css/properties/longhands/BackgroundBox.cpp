@@ -19,7 +19,7 @@ const CSSValue* BackgroundBox::ParseSingleValue(
   if (local_context.UseAliasParsing()) {
     return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
         CSSPropertyBackgroundUtils::ConsumePrefixedBackgroundBox, range,
-        AllowTextValue::kAllowed);
+        AllowTextValue::kAllow);
   }
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
       CSSPropertyBackgroundUtils::ConsumeBackgroundBox, range);

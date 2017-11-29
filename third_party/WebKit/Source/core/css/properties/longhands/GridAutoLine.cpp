@@ -15,7 +15,7 @@ const CSSValue* GridAutoLine::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return CSSPropertyGridUtils::ConsumeGridTrackList(
-      range, context.Mode(), CSSPropertyGridUtils::kGridAuto);
+      range, context.Mode(), CSSPropertyGridUtils::TrackListType::kGridAuto);
 }
 
 }  // namespace CSSLonghand

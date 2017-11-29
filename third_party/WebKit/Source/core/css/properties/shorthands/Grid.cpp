@@ -108,7 +108,8 @@ bool Grid::ParseShorthand(bool important,
       auto_rows_value = CSSInitialValue::Create();
     } else {
       auto_rows_value = CSSPropertyGridUtils::ConsumeGridTrackList(
-          range, context.Mode(), CSSPropertyGridUtils::kGridAuto);
+          range, context.Mode(),
+          CSSPropertyGridUtils::TrackListType::kGridAuto);
       if (!auto_rows_value)
         return false;
       if (!CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range))
@@ -136,7 +137,8 @@ bool Grid::ParseShorthand(bool important,
       auto_columns_value = CSSInitialValue::Create();
     } else {
       auto_columns_value = CSSPropertyGridUtils::ConsumeGridTrackList(
-          range, context.Mode(), CSSPropertyGridUtils::kGridAuto);
+          range, context.Mode(),
+          CSSPropertyGridUtils::TrackListType::kGridAuto);
       if (!auto_columns_value)
         return false;
     }
