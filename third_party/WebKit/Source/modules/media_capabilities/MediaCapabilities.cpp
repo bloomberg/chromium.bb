@@ -59,8 +59,8 @@ double ComputeFrameRate(const String& fps_str) {
 }
 
 bool IsValidMimeType(const String& content_type, const String& prefix) {
-  ParsedContentType parsed_content_type(content_type,
-                                        ParsedContentType::Mode::kStrict);
+  ParsedContentType parsed_content_type(content_type);
+
   if (!parsed_content_type.IsValid())
     return false;
 
@@ -68,17 +68,15 @@ bool IsValidMimeType(const String& content_type, const String& prefix) {
       !parsed_content_type.MimeType().StartsWith(kApplicationMimeTypePrefix)) {
     return false;
   }
+  const auto& parameters = parsed_content_type.GetParameters();
 
-  if (parsed_content_type.ParameterCount() > 1)
+  if (parameters.ParameterCount() > 1)
     return false;
 
-  if (parsed_content_type.ParameterCount() == 1 &&
-      parsed_content_type.ParameterValueForName(kCodecsMimeTypeParam)
-          .IsNull()) {
-    return false;
-  }
+  if (parameters.ParameterCount() == 0)
+    return true;
 
-  return true;
+  return parameters.begin()->name.LowerASCII() == kCodecsMimeTypeParam;
 }
 
 bool IsValidMediaConfiguration(const MediaConfiguration& configuration) {
@@ -113,9 +111,9 @@ WebAudioConfiguration ToWebAudioConfiguration(
 
   // |contentType| is mandatory.
   DCHECK(configuration.hasContentType());
-  ParsedContentType parsed_content_type(configuration.contentType(),
-                                        ParsedContentType::Mode::kStrict);
+  ParsedContentType parsed_content_type(configuration.contentType());
   DCHECK(parsed_content_type.IsValid());
+  DCHECK(!parsed_content_type.GetParameters().HasDuplicatedNames());
 
   DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
   web_configuration.mime_type = parsed_content_type.MimeType().LowerASCII();
@@ -141,9 +139,9 @@ WebVideoConfiguration ToWebVideoConfiguration(
 
   // All the properties are mandatory.
   DCHECK(configuration.hasContentType());
-  ParsedContentType parsed_content_type(configuration.contentType(),
-                                        ParsedContentType::Mode::kStrict);
+  ParsedContentType parsed_content_type(configuration.contentType());
   DCHECK(parsed_content_type.IsValid());
+  DCHECK(!parsed_content_type.GetParameters().HasDuplicatedNames());
 
   DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
   web_configuration.mime_type = parsed_content_type.MimeType().LowerASCII();
