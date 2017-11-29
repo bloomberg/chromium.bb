@@ -175,7 +175,7 @@ const CGFloat kMDCloseButtonSize = 24;
         [NSView cr_localizedAutoresizingMask:NSViewMinXMargin];
     closeButton.icon = &vector_icons::kClose16Icon;
     [closeButton
-        cr_setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_CLOSE)];
+        cr_setAccessibilityLabel:l10n_util::GetNSString(IDS_HIDE_DOWNLOADS)];
     closeButton.target = self;
     closeButton.action = @selector(handleClose:);
     hoverCloseButton_ = closeButton;

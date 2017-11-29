@@ -1165,11 +1165,17 @@ are declared in build/common.gypi.
 
       <!-- Download Shelf-->
       <if expr="use_titlecase">
+        <message name="IDS_HIDE_DOWNLOADS" desc="Button label for screenreader users, for button at the corner of the download shelf that closes the download shelf (title case)">
+          Close Downloads Bar
+        </message>
         <message name="IDS_SHOW_ALL_DOWNLOADS" desc="Button label shown at the corner of the download shelf that opens the downloads page (title case)">
           Show All
         </message>
       </if>
       <if expr="not use_titlecase">
+        <message name="IDS_HIDE_DOWNLOADS" desc="Button label for screenreader users, for button at the corner of the download shelf that closes the download shelf (sentence case)">
+          Close downloads bar
+        </message>
         <message name="IDS_SHOW_ALL_DOWNLOADS" desc="Button label shown at the corner of the download shelf that opens the downloads page (sentence case)">
           Show all
         </message>
