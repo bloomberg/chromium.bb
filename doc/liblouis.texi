@@ -129,6 +129,7 @@ How to Write Translation Tables
 * Swap Opcodes::
 * The Context and Multipass Opcodes::
 * The correct Opcode::
+* The match Opcode::
 * Miscellaneous Opcodes::
 
 Emphasis Opcodes
@@ -282,6 +283,7 @@ program in which you can test your work.
 * Swap Opcodes::
 * The Context and Multipass Opcodes::
 * The correct Opcode::
+* The match Opcode::
 * Miscellaneous Opcodes::
 @end menu
 
@@ -1641,6 +1643,141 @@ noback correct "\s?" "?" drop space before question mark
 @end example
 
 @end table
+
+@node The match Opcode
+@section The match Opcode
+
+The match opcode is similar the multipass opcodes and can be seen as
+the more low-level and powerful cousin to the @opcoderef{context}.
+
+@strong{Note:} For historical reasons despite being fairly similar in
+syntax and functionality both the @opcoderef{context} and the
+@opcoderef{match} exist and are in use in modern braille tables. But
+in the future they might be merged under some common opcode. For that
+reason consider the match opcode @emph{somewhat experimental}.
+
+@table @code
+@opcode{match, pre-pattern characters post-pattern dots}
+
+This opcode allows for matching a string of characters via @emph{pre}
+and @emph{post patterns}. The patterns are specified using an
+expression syntax somewhat like regular expressions (@pxref{pattern
+expression syntax}). A single hyphen (@samp{-}) by itself means no
+pattern is specified.
+
+The following will replace @samp{xyz} with the dots
+@samp{1346-13456-1356} when it appears in the string @samp{abxyzcd}.
+
+@example
+match ab xyz cd 1346-13456-1356
+@end example
+
+The following will replace @samp{ONE} with @samp{3456-1} when it
+starts the input and is followed by @samp{:}
+
+@example
+match ^ ONE : 3456-1
+@end example
+@end table
+
+@anchor{pattern expression syntax}
+The @code{pre-pattern} and the @code{post-pattern} can contain
+any of the following expressions:
+
+@table @samp
+@item [ ]
+Expression can be any of the characters between the brackets. If only
+one character present then the brackets are not needed unless it is a
+special character, in which it should be escaped with the backslash.
+
+@item .
+Expression can be any character.
+
+@item %[ ]
+Expression is a character with the attributes listed between the
+brackets. If only one character is present then the brackets are not
+needed. The set of attributes are specified as follows:
+
+@table @samp
+@item _
+space
+@item #
+digit
+@item a
+letter
+@item u
+uppercase
+@item l
+lowercase
+@item .
+punctuation
+@item $
+sign
+@end table
+
+@item ^
+Match at the end of input processing (or beginning depending of the
+direction pre or post).
+
+@item $
+Same as @samp{^}.
+@end table
+
+For example the following will replace @samp{bb} with the dots @samp{23} when it
+is between letters.
+
+@example
+match %a bb %a 23
+@end example
+
+The following will replace @samp{con} with the dots @samp{25} when it
+is preceded by a space or beginning of input, and followed by an
+@samp{s} and then any letter.
+
+@example
+match %[^_] con s%a 25
+@end example
+
+Similar to regular expressions the pattern expressions can contain
+grouping, quantifiers and even negation:
+
+@table @samp
+@item ( )
+Expressions between parentheses are grouped together as one
+expression.
+
+@item !
+The following expression is negated.
+
+@item ?
+The previous expression must match zero or one times.
+
+@item *
+The previous expression must match zero or more times.
+
+@item +
+The previous expression must match one or more times.
+
+@item |
+Either the previous or the following expressions must match.
+@end table
+
+For example the following will replace @samp{ing} with the dots
+@samp{346} when it is @emph{not} preceded by a space or beginning of
+input. What follows after the @samp{ing} does not matter, hence the
+@samp{-}.
+
+@example
+!%[^_] ing - 346
+@end example
+
+The following will replace @samp{con} with the dots @samp{25} when it
+is preceded by a space, or beginning of input; then followed by a
+@samp{c} that is followed by any character but @samp{h}.
+
+@example
+match %[^_] con c!h 25
+@end example
 
 @node Miscellaneous Opcodes
 @section Miscellaneous Opcodes
