@@ -29,6 +29,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_auth_policy_client.h"
+#include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
@@ -66,14 +67,15 @@ constexpr char kDifferentNewPassword[] = "different_new_password";
 constexpr char kCloseButtonId[] = "closeButton";
 
 // Used for the callback from FakeAuthPolicy::JoinAdDomain.
-void OnJoinedDomain(authpolicy::ErrorType error) {
+void OnJoinedDomain(base::OnceClosure closure, authpolicy::ErrorType error) {
   EXPECT_EQ(authpolicy::ERROR_NONE, error);
+  std::move(closure).Run();
 }
 
 // Used for the callback from FakeAuthPolicy::RefreshDevicePolicy.
-void OnRefreshedPolicy(const base::Closure& closure, bool status) {
-  ASSERT_TRUE(status);
-  closure.Run();
+void OnRefreshedPolicy(base::OnceClosure closure, authpolicy::ErrorType error) {
+  EXPECT_EQ(authpolicy::ERROR_NONE, error);
+  std::move(closure).Run();
 }
 
 class TestAuthPolicyClient : public FakeAuthPolicyClient {
@@ -121,8 +123,8 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     base::FilePath user_data_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
     chromeos::RegisterStubPathOverrides(user_data_dir);
-    ASSERT_TRUE(AuthPolicyLoginHelper::LockDeviceActiveDirectoryForTesting(
-        test_realm_));
+    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
+        std::make_unique<FakeCryptohomeClient>());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -144,14 +146,23 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
 
   void MarkAsActiveDirectoryEnterprise() {
     StartupUtils::MarkOobeCompleted();
-    base::RunLoop loop;
     AuthPolicyLoginHelper helper;
-    helper.JoinAdDomain(kAdMachineName,
-                        kTestActiveDirectoryUser + ("@" + test_realm_),
-                        "" /* password */, base::BindOnce(&OnJoinedDomain));
-    fake_auth_policy_client()->RefreshDevicePolicy(
-        base::BindOnce(&OnRefreshedPolicy, loop.QuitClosure()));
-    loop.Run();
+    {
+      base::RunLoop loop;
+      helper.JoinAdDomain(kAdMachineName,
+                          kTestActiveDirectoryUser + ("@" + test_realm_),
+                          "" /* password */,
+                          base::BindOnce(&OnJoinedDomain, loop.QuitClosure()));
+      loop.Run();
+    }
+    ASSERT_TRUE(AuthPolicyLoginHelper::LockDeviceActiveDirectoryForTesting(
+        test_realm_));
+    {
+      base::RunLoop loop;
+      fake_auth_policy_client()->RefreshDevicePolicy(
+          base::BindOnce(&OnRefreshedPolicy, loop.QuitClosure()));
+      loop.Run();
+    }
   }
 
   void TriggerPasswordChangeScreen() {

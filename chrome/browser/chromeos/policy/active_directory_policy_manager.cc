@@ -21,6 +21,11 @@ namespace {
 // https://technet.microsoft.com/en-us/library/cc940895.aspx
 constexpr base::TimeDelta kFetchInterval = base::TimeDelta::FromMinutes(90);
 
+void RunRefreshCallback(base::OnceCallback<void(bool success)> callback,
+                        authpolicy::ErrorType error) {
+  std::move(callback).Run(error == authpolicy::ERROR_NONE);
+}
+
 }  // namespace
 
 namespace policy {
@@ -168,9 +173,11 @@ void ActiveDirectoryPolicyManager::DoPolicyFetch(
       thread_manager->GetAuthPolicyClient();
   DCHECK(auth_policy_client);
   if (account_id_ == EmptyAccountId()) {
-    auth_policy_client->RefreshDevicePolicy(std::move(callback));
+    auth_policy_client->RefreshDevicePolicy(
+        base::BindOnce(&RunRefreshCallback, std::move(callback)));
   } else {
-    auth_policy_client->RefreshUserPolicy(account_id_, std::move(callback));
+    auth_policy_client->RefreshUserPolicy(
+        account_id_, base::BindOnce(&RunRefreshCallback, std::move(callback)));
   }
 }
 

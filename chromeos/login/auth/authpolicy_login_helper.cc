@@ -17,6 +17,9 @@ namespace cu = cryptohome_util;
 
 namespace {
 
+constexpr char kAttrMode[] = "enterprise.mode";
+constexpr char kDeviceModeEnterpriseAD[] = "enterprise_ad";
+
 base::ScopedFD GetDataReadPipe(const std::string& data) {
   int pipe_fds[2];
   if (!base::CreateLocalNonBlockingPipe(pipe_fds)) {
@@ -63,6 +66,12 @@ void AuthPolicyLoginHelper::Restart() {
       ->RestartAuthPolicyService();
 }
 
+bool AuthPolicyLoginHelper::IsAdLocked() {
+  std::string mode;
+  return chromeos::cryptohome_util::InstallAttributesGet(kAttrMode, &mode) &&
+         mode == kDeviceModeEnterpriseAD;
+}
+
 // static
 bool AuthPolicyLoginHelper::LockDeviceActiveDirectoryForTesting(
     const std::string& realm) {
@@ -76,6 +85,7 @@ void AuthPolicyLoginHelper::JoinAdDomain(const std::string& machine_name,
                                          const std::string& username,
                                          const std::string& password,
                                          JoinCallback callback) {
+  DCHECK(!IsAdLocked());
   DCHECK(!weak_factory_.HasWeakPtrs()) << "Another operation is in progress";
   authpolicy::JoinDomainRequest request;
   request.set_machine_name(machine_name);
@@ -107,6 +117,28 @@ void AuthPolicyLoginHelper::CancelRequestsAndRestart() {
 
 void AuthPolicyLoginHelper::OnJoinCallback(JoinCallback callback,
                                            authpolicy::ErrorType error) {
+  DCHECK(!IsAdLocked());
+  if (error != authpolicy::ERROR_NONE) {
+    std::move(callback).Run(error);
+    return;
+  }
+  chromeos::DBusThreadManager::Get()
+      ->GetAuthPolicyClient()
+      ->RefreshDevicePolicy(
+          base::BindOnce(&AuthPolicyLoginHelper::OnFirstPolicyRefreshCallback,
+                         weak_factory_.GetWeakPtr(), base::Passed(&callback)));
+}
+
+void AuthPolicyLoginHelper::OnFirstPolicyRefreshCallback(
+    JoinCallback callback,
+    authpolicy::ErrorType error) {
+  DCHECK(!IsAdLocked());
+  // First policy refresh happens before device is locked. So policy store
+  // should not succeed. The error means that authpolicyd cached device policy
+  // and stores it in the next call to RefreshDevicePolicy in STEP_STORE_POLICY.
+  DCHECK(error != authpolicy::ERROR_NONE);
+  if (error == authpolicy::ERROR_DEVICE_POLICY_CACHED_BUT_NOT_SENT)
+    error = authpolicy::ERROR_NONE;
   std::move(callback).Run(error);
 }
 
