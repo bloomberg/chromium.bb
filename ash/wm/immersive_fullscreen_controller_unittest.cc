@@ -757,14 +757,14 @@ TEST_F(ImmersiveFullscreenControllerTest, EventsDoNotLeakToWindowUnderneath) {
 TEST_F(ImmersiveFullscreenControllerTest, WindowStateImmersiveFullscreen) {
   ash::wm::WindowState* window_state = ash::wm::GetWindowState(window());
 
-  EXPECT_FALSE(window_state->in_immersive_fullscreen());
+  EXPECT_FALSE(window_state->IsInImmersiveFullscreen());
   SetEnabled(true);
   ASSERT_TRUE(controller()->IsEnabled());
-  EXPECT_TRUE(window_state->in_immersive_fullscreen());
+  EXPECT_TRUE(window_state->IsInImmersiveFullscreen());
 
   SetEnabled(false);
   ASSERT_FALSE(controller()->IsEnabled());
-  EXPECT_FALSE(window_state->in_immersive_fullscreen());
+  EXPECT_FALSE(window_state->IsInImmersiveFullscreen());
 }
 
 // Test how focus and activation affects whether the top-of-window views are
