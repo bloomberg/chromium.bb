@@ -2975,7 +2975,7 @@ crbug.com/786249 virtual/mojo-loading/http/tests/inspector-protocol/network/resp
 # ====== Begin of display: contents tests ======
 
 crbug.com/657748 external/wpt/css/css-display/display-contents-dynamic-flex-002-inline.html [ Failure ]
-crbug.com/657748 external/wpt/css/css-display/display-contents-dynamic-table-001-inline.html [ Failure ]
+crbug.com/181374 external/wpt/css/css-display/display-contents-dynamic-table-001-inline.html [ Failure ]
 
 # ====== End of display: contents tests ======
 
