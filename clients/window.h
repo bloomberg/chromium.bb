@@ -605,6 +605,10 @@ widget_set_axis_handlers(struct widget *widget,
 			widget_axis_discrete_handler_t axis_discrete_handler);
 
 void
+window_inhibit_redraw(struct window *window);
+void
+window_uninhibit_redraw(struct window *window);
+void
 widget_schedule_redraw(struct widget *widget);
 void
 widget_set_use_cairo(struct widget *widget, int use_cairo);

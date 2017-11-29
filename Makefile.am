@@ -546,6 +546,7 @@ demo_clients =					\
 	weston-fullscreen			\
 	weston-stacking				\
 	weston-calibrator			\
+	weston-touch-calibrator			\
 	weston-scaler
 
 if INSTALL_DEMO_CLIENTS
@@ -785,6 +786,17 @@ weston_calibrator_SOURCES = 				\
 weston_calibrator_LDADD = libtoytoolkit.la
 weston_calibrator_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
+weston_touch_calibrator_SOURCES = 			\
+	clients/touch-calibrator.c			\
+	shared/helpers.h				\
+	shared/matrix.c					\
+	shared/matrix.h
+nodist_weston_touch_calibrator_SOURCES =		\
+	protocol/weston-touch-calibration-protocol.c	\
+	protocol/weston-touch-calibration-client-protocol.h
+weston_touch_calibrator_LDADD = libtoytoolkit.la
+weston_touch_calibrator_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
+
 if BUILD_SUBSURFACES_CLIENT
 demo_clients += weston-subsurfaces
 weston_subsurfaces_SOURCES = 			\
@@ -872,6 +884,8 @@ endif
 BUILT_SOURCES +=					\
 	protocol/weston-screenshooter-protocol.c			\
 	protocol/weston-screenshooter-client-protocol.h			\
+	protocol/weston-touch-calibration-protocol.c			\
+	protocol/weston-touch-calibration-client-protocol.h		\
 	protocol/text-cursor-position-client-protocol.h	\
 	protocol/text-cursor-position-protocol.c	\
 	protocol/text-input-unstable-v1-protocol.c			\

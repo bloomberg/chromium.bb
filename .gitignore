@@ -76,6 +76,7 @@ weston-simple-damage
 weston-smoke
 weston-stacking
 weston-subsurfaces
+weston-touch-calibrator
 weston-transformed
 weston-view
 

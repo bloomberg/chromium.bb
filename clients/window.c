@@ -4220,7 +4220,7 @@ window_get_shadow_margin(struct window *window)
 		return 0;
 }
 
-static void
+void
 window_inhibit_redraw(struct window *window)
 {
 	window->redraw_inhibited = 1;
@@ -4229,7 +4229,7 @@ window_inhibit_redraw(struct window *window)
 	window->redraw_task_scheduled = 0;
 }
 
-static void
+void
 window_uninhibit_redraw(struct window *window)
 {
 	window->redraw_inhibited = 0;
