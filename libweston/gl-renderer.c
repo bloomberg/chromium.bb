@@ -1388,6 +1388,18 @@ gl_renderer_read_pixels(struct weston_output *output,
 	return 0;
 }
 
+static GLenum gl_format_from_internal(GLenum internal_format)
+{
+	switch (internal_format) {
+	case GL_R8_EXT:
+		return GL_RED_EXT;
+	case GL_RG8_EXT:
+		return GL_RG_EXT;
+	default:
+		return internal_format;
+	}
+}
+
 static void
 gl_renderer_flush_damage(struct weston_surface *surface)
 {
@@ -1436,7 +1448,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 				     gs->pitch / gs->hsub[j],
 				     buffer->height / gs->vsub[j],
 				     0,
-				     gs->gl_format[j],
+				     gl_format_from_internal(gs->gl_format[j]),
 				     gs->gl_pixel_type,
 				     data + gs->offset[j]);
 		}
@@ -1458,7 +1470,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 				     gs->pitch / gs->hsub[j],
 				     buffer->height / gs->vsub[j],
 				     0,
-				     gs->gl_format[j],
+				     gl_format_from_internal(gs->gl_format[j]),
 				     gs->gl_pixel_type,
 				     data + gs->offset[j]);
 		}
@@ -1486,7 +1498,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 					r.y1 / gs->vsub[j],
 					(r.x2 - r.x1) / gs->hsub[j],
 					(r.y2 - r.y1) / gs->vsub[j],
-					gs->gl_format[j],
+					gl_format_from_internal(gs->gl_format[j]),
 					gs->gl_pixel_type,
 					data + gs->offset[j]);
 		}
