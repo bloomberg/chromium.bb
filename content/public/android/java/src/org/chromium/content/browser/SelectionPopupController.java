@@ -321,8 +321,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     public void showActionModeOrClearOnFailure() {
         if (!isActionModeSupported() || !hasSelection()) return;
 
-        // Just refresh the view if action mode already exists.
-        if (isActionModeValid()) {
+        // Just refresh non-floating action mode if it already exists to avoid blinking.
+        if (isActionModeValid() && !isFloatingActionMode()) {
             // Try/catch necessary for framework bug, crbug.com/446717.
             try {
                 mActionMode.invalidate();
@@ -332,6 +332,9 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             hideActionMode(false);
             return;
         }
+
+        // Reset overflow menu (see crbug.com/700929).
+        destroyActionModeAndKeepSelection();
 
         assert mWebContents != null;
         ActionMode actionMode = supportsFloatingActionMode()
@@ -479,7 +482,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      * @param hide whether to hide or show the ActionMode.
      */
     private void hideActionMode(boolean hide) {
-        if (!canHideActionMode()) return;
+        if (!isFloatingActionMode()) return;
         if (mHidden == hide) return;
         mHidden = hide;
         if (mHidden) {
@@ -495,13 +498,13 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      * @see ActionMode#hide(long)
      */
     private void hideActionModeTemporarily(long duration) {
-        assert canHideActionMode();
+        assert isFloatingActionMode();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (isActionModeValid()) mActionMode.hide(duration);
         }
     }
 
-    private boolean canHideActionMode() {
+    private boolean isFloatingActionMode() {
         return supportsFloatingActionMode()
                 && isActionModeValid()
                 && mActionMode.getType() == ActionMode.TYPE_FLOATING;
