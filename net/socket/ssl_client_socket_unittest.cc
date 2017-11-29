@@ -867,10 +867,10 @@ class MockCTVerifier : public CTVerifier {
 // A mock CTPolicyEnforcer that returns a custom verification result.
 class MockCTPolicyEnforcer : public CTPolicyEnforcer {
  public:
-  MOCK_METHOD3(DoesConformToCertPolicy,
-               ct::CertPolicyCompliance(X509Certificate* cert,
-                                        const ct::SCTList&,
-                                        const NetLogWithSource&));
+  MOCK_METHOD3(CheckCompliance,
+               ct::CTPolicyCompliance(X509Certificate* cert,
+                                      const ct::SCTList&,
+                                      const NetLogWithSource&));
 };
 
 class MockRequireCTDelegate : public TransportSecurityState::RequireCTDelegate {
@@ -895,9 +895,9 @@ class SSLClientSocketTest : public PlatformTest {
     // Set a dummy session cache shard to enable session caching.
     context_.ssl_session_cache_shard = "shard";
 
-    EXPECT_CALL(*ct_policy_enforcer_, DoesConformToCertPolicy(_, _, _))
+    EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(_, _, _))
         .WillRepeatedly(
-            Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+            Return(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
   }
 
  protected:
@@ -2549,9 +2549,9 @@ TEST_F(SSLClientSocketTest, EVCertStatusMaintainedForCompliantCert) {
   // Emulate compliance of the certificate to the policy.
   MockCTPolicyEnforcer policy_enforcer;
   SetCTPolicyEnforcer(&policy_enforcer);
-  EXPECT_CALL(policy_enforcer, DoesConformToCertPolicy(_, _, _))
+  EXPECT_CALL(policy_enforcer, CheckCompliance(_, _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
@@ -2576,9 +2576,9 @@ TEST_F(SSLClientSocketTest, EVCertStatusRemovedForNonCompliantCert) {
   // Emulate non-compliance of the certificate to the policy.
   MockCTPolicyEnforcer policy_enforcer;
   SetCTPolicyEnforcer(&policy_enforcer);
-  EXPECT_CALL(policy_enforcer, DoesConformToCertPolicy(_, _, _))
+  EXPECT_CALL(policy_enforcer, CheckCompliance(_, _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
@@ -2605,9 +2605,9 @@ TEST_F(SSLClientSocketTest, NonCTCompliantEVHistogram) {
   // Emulate non-compliance of the certificate to the policy.
   MockCTPolicyEnforcer policy_enforcer;
   SetCTPolicyEnforcer(&policy_enforcer);
-  EXPECT_CALL(policy_enforcer, DoesConformToCertPolicy(_, _, _))
+  EXPECT_CALL(policy_enforcer, CheckCompliance(_, _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
@@ -2620,8 +2620,7 @@ TEST_F(SSLClientSocketTest, NonCTCompliantEVHistogram) {
   // The histogram should have been recorded with the CT compliance status.
   histograms.ExpectUniqueSample(
       kHistogramName,
-      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS),
-      1);
+      static_cast<int>(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS), 1);
 }
 
 // Test that when an EV certificate does conform to the CT policy and its EV
@@ -2638,9 +2637,9 @@ TEST_F(SSLClientSocketTest, CTCompliantEVHistogram) {
   // Emulate non-compliance of the certificate to the policy.
   MockCTPolicyEnforcer policy_enforcer;
   SetCTPolicyEnforcer(&policy_enforcer);
-  EXPECT_CALL(policy_enforcer, DoesConformToCertPolicy(_, _, _))
+  EXPECT_CALL(policy_enforcer, CheckCompliance(_, _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
@@ -2653,8 +2652,7 @@ TEST_F(SSLClientSocketTest, CTCompliantEVHistogram) {
   // The histogram should have been recorded with the CT compliance status.
   histograms.ExpectUniqueSample(
       kHistogramName,
-      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS),
-      1);
+      static_cast<int>(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS), 1);
 }
 
 // Test that enabling Signed Certificate Timestamps enables OCSP stapling.
@@ -3500,10 +3498,9 @@ TEST_F(SSLClientSocketTest, CTIsRequired) {
       IsCTRequiredForHost(spawned_test_server()->host_port_pair().host()))
       .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
                                  CTRequirementLevel::REQUIRED));
-  EXPECT_CALL(*ct_policy_enforcer_,
-              DoesConformToCertPolicy(server_cert.get(), _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
   SSLConfig ssl_config;
   int rv;
@@ -3535,10 +3532,9 @@ TEST_F(SSLClientSocketTest, CTComplianceStatusHistogram) {
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Set up CT.
-  EXPECT_CALL(*ct_policy_enforcer_,
-              DoesConformToCertPolicy(server_cert.get(), _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS));
 
   SSLConfig ssl_config;
   int rv;
@@ -3549,8 +3545,7 @@ TEST_F(SSLClientSocketTest, CTComplianceStatusHistogram) {
   // The histogram should have been recorded with the CT compliance status.
   histograms.ExpectUniqueSample(
       kHistogramName,
-      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS),
-      1);
+      static_cast<int>(ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS), 1);
 }
 
 // Test that when CT is required (in this case, by an Expect-CT opt-in) and the
@@ -3586,10 +3581,9 @@ TEST_F(SSLClientSocketTest, CTRequiredHistogramCompliant) {
   MockExpectCTReporter reporter;
   transport_security_state_->SetExpectCTReporter(&reporter);
 
-  EXPECT_CALL(*ct_policy_enforcer_,
-              DoesConformToCertPolicy(server_cert.get(), _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
 
   SSLConfig ssl_config;
   int rv;
@@ -3600,8 +3594,7 @@ TEST_F(SSLClientSocketTest, CTRequiredHistogramCompliant) {
   // The histogram should have been recorded with the CT compliance status.
   histograms.ExpectUniqueSample(
       kHistogramName,
-      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS),
-      1);
+      static_cast<int>(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS), 1);
 }
 
 // Test that when CT is not required and the connection is compliant, the
@@ -3623,10 +3616,9 @@ TEST_F(SSLClientSocketTest, CTNotRequiredHistogram) {
   verify_result.public_key_hashes = MakeHashValueVector(0);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
-  EXPECT_CALL(*ct_policy_enforcer_,
-              DoesConformToCertPolicy(server_cert.get(), _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
 
   SSLConfig ssl_config;
   int rv;
@@ -3672,10 +3664,9 @@ TEST_F(SSLClientSocketTest, CTRequiredHistogramNonCompliant) {
   MockExpectCTReporter reporter;
   transport_security_state_->SetExpectCTReporter(&reporter);
 
-  EXPECT_CALL(*ct_policy_enforcer_,
-              DoesConformToCertPolicy(server_cert.get(), _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
   SSLConfig ssl_config;
   int rv;
@@ -3688,8 +3679,7 @@ TEST_F(SSLClientSocketTest, CTRequiredHistogramNonCompliant) {
   // The histogram should have been recorded with the CT compliance status.
   histograms.ExpectUniqueSample(
       kHistogramName,
-      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS),
-      1);
+      static_cast<int>(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS), 1);
 }
 
 // Test that when CT is required (in this case, by an Expect-CT opt-in) but the
@@ -3714,10 +3704,9 @@ TEST_F(SSLClientSocketTest, CTRequirementsFlagNotMet) {
       spawned_test_server()->host_port_pair().host(), expiry,
       true /* enforce */, GURL());
 
-  EXPECT_CALL(*ct_policy_enforcer_,
-              DoesConformToCertPolicy(server_cert.get(), _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
   SSLConfig ssl_config;
   int rv;
@@ -3749,10 +3738,9 @@ TEST_F(SSLClientSocketTest, CTRequirementsFlagMet) {
       spawned_test_server()->host_port_pair().host(), expiry,
       true /* enforce */, GURL());
 
-  EXPECT_CALL(*ct_policy_enforcer_,
-              DoesConformToCertPolicy(server_cert.get(), _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
 
   SSLConfig ssl_config;
   int rv;
@@ -3790,10 +3778,9 @@ TEST_F(SSLClientSocketTest, CTIsRequiredByExpectCT) {
   MockExpectCTReporter reporter;
   transport_security_state_->SetExpectCTReporter(&reporter);
 
-  EXPECT_CALL(*ct_policy_enforcer_,
-              DoesConformToCertPolicy(server_cert.get(), _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
   SSLConfig ssl_config;
   int rv;
@@ -3814,10 +3801,9 @@ TEST_F(SSLClientSocketTest, CTIsRequiredByExpectCT) {
   EXPECT_EQ(0u, reporter.signed_certificate_timestamps().size());
 
   transport_security_state_->ClearReportCachesForTesting();
-  EXPECT_CALL(*ct_policy_enforcer_,
-              DoesConformToCertPolicy(server_cert.get(), _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS));
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
 
@@ -3835,10 +3821,9 @@ TEST_F(SSLClientSocketTest, CTIsRequiredByExpectCT) {
 
   // If the connection is CT compliant, then there should be no socket error nor
   // a report.
-  EXPECT_CALL(*ct_policy_enforcer_,
-              DoesConformToCertPolicy(server_cert.get(), _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
 
@@ -3848,10 +3833,9 @@ TEST_F(SSLClientSocketTest, CTIsRequiredByExpectCT) {
   EXPECT_TRUE(sock_->IsConnected());
   EXPECT_EQ(2u, reporter.num_failures());
 
-  EXPECT_CALL(*ct_policy_enforcer_,
-              DoesConformToCertPolicy(server_cert.get(), _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY));
+          Return(ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY));
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
 
@@ -3896,10 +3880,9 @@ TEST_F(SSLClientSocketTest, PKPMoreImportantThanCT) {
       IsCTRequiredForHost(spawned_test_server()->host_port_pair().host()))
       .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
                                  CTRequirementLevel::REQUIRED));
-  EXPECT_CALL(*ct_policy_enforcer_,
-              DoesConformToCertPolicy(server_cert.get(), _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
       .WillRepeatedly(
-          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+          Return(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
   SSLConfig ssl_config;
   int rv;

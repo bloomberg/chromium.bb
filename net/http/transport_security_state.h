@@ -27,7 +27,7 @@
 namespace net {
 
 namespace ct {
-enum class CertPolicyCompliance;
+enum class CTPolicyCompliance;
 };
 
 class HostPortPair;
@@ -392,7 +392,7 @@ class NET_EXPORT TransportSecurityState {
   // requirements: that is, if a connection to |host|, using the validated
   // certificate |validated_certificate_chain|, is expected to be accompanied
   // with valid Certificate Transparency information that complies with the
-  // connection's CTPolicyEnforcer and |cert_policy_compliance| indicates that
+  // connection's CTPolicyEnforcer and |policy_compliance| indicates that
   // the connection does not comply.
   //
   // The behavior may be further be altered by setting a RequireCTDelegate
@@ -411,7 +411,7 @@ class NET_EXPORT TransportSecurityState {
       const SignedCertificateTimestampAndStatusList&
           signed_certificate_timestamps,
       const ExpectCTReportStatus report_status,
-      ct::CertPolicyCompliance cert_policy_compliance);
+      ct::CTPolicyCompliance policy_compliance);
 
   // Assign a |Delegate| for persisting the transport security state. If
   // |NULL|, state will not be persisted. The caller retains

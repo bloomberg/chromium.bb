@@ -113,11 +113,11 @@ class DoNothingCTPolicyEnforcer : public net::CTPolicyEnforcer {
   DoNothingCTPolicyEnforcer() = default;
   ~DoNothingCTPolicyEnforcer() override = default;
 
-  net::ct::CertPolicyCompliance DoesConformToCertPolicy(
+  net::ct::CTPolicyCompliance CheckCompliance(
       net::X509Certificate* cert,
       const net::SCTList& verified_scts,
       const net::NetLogWithSource& net_log) override {
-    return net::ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+    return net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
   }
 };
 

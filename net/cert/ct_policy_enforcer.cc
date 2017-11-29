@@ -75,17 +75,17 @@ void RoundedDownMonthDifference(const base::Time& start,
   *rounded_months_difference = month_diff;
 }
 
-const char* CertPolicyComplianceToString(ct::CertPolicyCompliance status) {
+const char* CTPolicyComplianceToString(ct::CTPolicyCompliance status) {
   switch (status) {
-    case ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS:
+    case ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS:
       return "COMPLIES_VIA_SCTS";
-    case ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS:
+    case ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS:
       return "NOT_ENOUGH_SCTS";
-    case ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS:
+    case ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS:
       return "NOT_DIVERSE_SCTS";
-    case ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY:
+    case ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY:
       return "BUILD_NOT_TIMELY";
-    case ct::CertPolicyCompliance::CERT_POLICY_MAX:
+    case ct::CTPolicyCompliance::CT_POLICY_MAX:
       NOTREACHED();
       return "unknown";
   }
@@ -97,25 +97,25 @@ const char* CertPolicyComplianceToString(ct::CertPolicyCompliance status) {
 std::unique_ptr<base::Value> NetLogCertComplianceCheckResultCallback(
     X509Certificate* cert,
     bool build_timely,
-    ct::CertPolicyCompliance compliance,
+    ct::CTPolicyCompliance compliance,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("certificate", NetLogX509CertificateCallback(cert, capture_mode));
   dict->SetBoolean("build_timely", build_timely);
   dict->SetString("ct_compliance_status",
-                  CertPolicyComplianceToString(compliance));
+                  CTPolicyComplianceToString(compliance));
   return std::move(dict);
 }
 
 // Evaluates against the policy specified at
 // https://sites.google.com/a/chromium.org/dev/Home/chromium-security/root-ca-policy/EVCTPlanMay2015edition.pdf?attredirects=0
-ct::CertPolicyCompliance CheckCertPolicyCompliance(
+ct::CTPolicyCompliance CheckCTPolicyCompliance(
     const X509Certificate& cert,
     const ct::SCTList& verified_scts) {
   // Cert is outside the bounds of parsable; reject it.
   if (cert.valid_start().is_null() || cert.valid_expiry().is_null() ||
       cert.valid_start().is_max() || cert.valid_expiry().is_max()) {
-    return ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+    return ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
   }
 
   // Scan for the earliest SCT. This is used to determine whether to enforce
@@ -191,7 +191,7 @@ ct::CertPolicyCompliance CheckCertPolicyCompliance(
   // accomodated.
   if (has_valid_nonembedded_sct && has_valid_google_sct &&
       has_valid_nongoogle_sct) {
-    return ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+    return ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
   }
   // Note: If has_valid_nonembedded_sct was true, but Option 2 isn't met,
   // then the result will be that there weren't diverse enough SCTs, as that
@@ -207,8 +207,8 @@ ct::CertPolicyCompliance CheckCertPolicyCompliance(
     // Option 1, there weren't diverse enough SCTs. Try to signal the error
     // that is most easily fixed.
     return has_valid_nonembedded_sct
-               ? ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS
-               : ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+               ? ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS
+               : ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
   }
 
   // ... AND there is at least one embedded SCT from a Google Log once or
@@ -228,7 +228,7 @@ ct::CertPolicyCompliance CheckCertPolicyCompliance(
       !(has_embedded_google_sct && has_embedded_nongoogle_sct)) {
     // Note: This also covers the case for non-embedded SCTs, as it's only
     // possible to reach here if both sets are not diverse enough.
-    return ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS;
+    return ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
   }
 
   size_t lifetime_in_months = 0;
@@ -262,19 +262,19 @@ ct::CertPolicyCompliance CheckCertPolicyCompliance(
       std::distance(embedded_log_ids.begin(), sorted_end);
 
   if (num_embedded_scts >= num_required_embedded_scts)
-    return ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+    return ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
 
   // Under Option 2, there weren't enough SCTs, and potentially under Option
   // 1, there weren't diverse enough SCTs. Try to signal the error that is
   // most easily fixed.
   return has_valid_nonembedded_sct
-             ? ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS
-             : ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+             ? ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS
+             : ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 }
 
 }  // namespace
 
-ct::CertPolicyCompliance CTPolicyEnforcer::DoesConformToCertPolicy(
+ct::CTPolicyCompliance CTPolicyEnforcer::CheckCompliance(
     X509Certificate* cert,
     const ct::SCTList& verified_scts,
     const NetLogWithSource& net_log) {
@@ -284,11 +284,11 @@ ct::CertPolicyCompliance CTPolicyEnforcer::DoesConformToCertPolicy(
   // needs up-to-date information about logs to consider certificates to
   // be compliant with policy.
   bool build_timely = IsBuildTimely();
-  ct::CertPolicyCompliance compliance;
+  ct::CTPolicyCompliance compliance;
   if (!build_timely) {
-    compliance = ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY;
+    compliance = ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY;
   } else {
-    compliance = CheckCertPolicyCompliance(*cert, verified_scts);
+    compliance = CheckCTPolicyCompliance(*cert, verified_scts);
   }
 
   NetLogParametersCallback net_log_callback =
