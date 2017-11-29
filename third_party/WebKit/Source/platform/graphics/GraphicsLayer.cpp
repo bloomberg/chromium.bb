@@ -280,15 +280,21 @@ IntRect GraphicsLayer::InterestRect() {
 }
 
 void GraphicsLayer::PaintRecursively() {
+  PaintRecursivelyInternal();
+
 #if DCHECK_IS_ON()
   if (VLOG_IS_ON(2)) {
+    static String s_previous_tree;
     LayerTreeFlags flags = VLOG_IS_ON(3) ? 0xffffffff : kOutputAsLayerTree;
-    LOG(ERROR) << "GraphicsLayer::PaintRecursively()\nGraphicsLayer tree:\n"
-               << GetLayerTreeAsTextForTesting(flags).Utf8().data();
+    String new_tree = GetLayerTreeAsTextForTesting(flags);
+    if (new_tree != s_previous_tree) {
+      LOG(ERROR) << "After GraphicsLayer::PaintRecursively()\n"
+                 << "GraphicsLayer tree:\n"
+                 << new_tree.Utf8().data();
+      s_previous_tree = new_tree;
+    }
   }
 #endif
-
-  PaintRecursivelyInternal();
 }
 
 void GraphicsLayer::PaintRecursivelyInternal() {
