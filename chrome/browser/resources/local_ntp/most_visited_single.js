@@ -497,8 +497,9 @@ var renderTile = function(data) {
   var favicon = tile.querySelector('.mv-favicon');
   var fi = document.createElement('img');
   fi.src = data.faviconUrl;
-  // Set the title to empty so screen readers won't say the image name.
+  // Set title and alt to empty so screen readers won't say the image name.
   fi.title = '';
+  fi.alt = '';
   loadedCounter += 1;
   fi.addEventListener('load', countLoad);
   fi.addEventListener('error', countLoad);
