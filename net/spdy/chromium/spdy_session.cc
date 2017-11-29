@@ -943,7 +943,7 @@ std::unique_ptr<SpdySerializedFrame> SpdySession::CreateHeaders(
   CHECK(it != active_streams_.end());
   CHECK_EQ(it->second->stream_id(), stream_id);
 
-  SendPrefacePingIfNoneInFlight();
+  MaybeSendPrefacePing();
 
   DCHECK(buffered_spdy_framer_.get());
   SpdyPriority spdy_priority = ConvertRequestPriorityToSpdyPriority(priority);
@@ -1065,7 +1065,7 @@ std::unique_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(
 
   // Send PrefacePing for DATA_FRAMEs with nonzero payload size.
   if (effective_len > 0)
-    SendPrefacePingIfNoneInFlight();
+    MaybeSendPrefacePing();
 
   // TODO(mbelshe): reduce memory copies here.
   DCHECK(buffered_spdy_framer_.get());
@@ -2253,18 +2253,16 @@ void SpdySession::UpdateStreamsSendWindowSize(int32_t delta_window_size) {
   }
 }
 
-void SpdySession::SendPrefacePingIfNoneInFlight() {
-  if (pings_in_flight_ || !enable_ping_based_connection_checking_)
+void SpdySession::MaybeSendPrefacePing() {
+  if (pings_in_flight_ > 0 || check_ping_status_pending_ ||
+      !enable_ping_based_connection_checking_) {
     return;
+  }
 
-  base::TimeTicks now = time_func_();
-  // If there is no activity in the session, then send a preface-PING.
-  if ((now - last_read_time_) > connection_at_risk_of_loss_time_)
-    SendPrefacePing();
-}
-
-void SpdySession::SendPrefacePing() {
-  WritePingFrame(next_ping_id_, false);
+  // If there has been no read activity in the session for some time,
+  // then send a preface-PING.
+  if (time_func_() > last_read_time_ + connection_at_risk_of_loss_time_)
+    WritePingFrame(next_ping_id_, false);
 }
 
 void SpdySession::SendWindowUpdateFrame(SpdyStreamId stream_id,
@@ -2300,7 +2298,7 @@ void SpdySession::WritePingFrame(SpdyPingId unique_id, bool is_ack) {
         base::Bind(&NetLogSpdyPingCallback, unique_id, is_ack, "sent"));
   }
   if (!is_ack) {
-    next_ping_id_ += 2;
+    ++next_ping_id_;
     ++pings_in_flight_;
     PlanToCheckPingStatus();
     last_ping_sent_time_ = time_func_();
@@ -2320,6 +2318,7 @@ void SpdySession::PlanToCheckPingStatus() {
 
 void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
   CHECK(!in_io_loop_);
+  DCHECK(check_ping_status_pending_);
 
   // Check if we got a response back for all PINGs we had sent.
   if (pings_in_flight_ == 0) {
@@ -2327,17 +2326,16 @@ void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
     return;
   }
 
-  DCHECK(check_ping_status_pending_);
-
-  base::TimeTicks now = time_func_();
-  base::TimeDelta delay = hung_interval_ - (now - last_read_time_);
-
-  if (delay.InMilliseconds() < 0 || last_read_time_ < last_check_time) {
+  const base::TimeTicks now = time_func_();
+  if (now > last_read_time_ + hung_interval_ ||
+      last_read_time_ < last_check_time) {
+    check_ping_status_pending_ = false;
     DoDrainSession(ERR_SPDY_PING_FAILED, "Failed ping.");
     return;
   }
 
   // Check the status of connection after a delay.
+  const base::TimeDelta delay = last_read_time_ + hung_interval_ - now;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&SpdySession::CheckPingStatus,
                             weak_factory_.GetWeakPtr(), now),
@@ -2659,8 +2657,7 @@ void SpdySession::OnPing(SpdyPingId unique_id, bool is_ack) {
   if (pings_in_flight_ > 0)
     return;
 
-  // We will record RTT in histogram when there are no more client sent
-  // pings_in_flight_.
+  // Record RTT in histogram when there are no more pings in flight.
   RecordPingRTTHistogram(time_func_() - last_ping_sent_time_);
 }
 

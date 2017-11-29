@@ -522,6 +522,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ClientPing);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, FailedPing);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, WaitingForWrongPing);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, CancelPushBeforeClaimed);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, CancelPushAfterSessionGoesAway);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, CancelPushAfterExpired);
@@ -740,11 +741,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Adjust the send window size of all ActiveStreams and PendingStreamRequests.
   void UpdateStreamsSendWindowSize(int32_t delta_window_size);
 
-  // Send the PING (preface-PING) frame.
-  void SendPrefacePingIfNoneInFlight();
-
-  // Send PING if there are no PINGs in flight and we haven't heard from server.
-  void SendPrefacePing();
+  // Send PING frame if all previous PING frames have been ACKed,
+  // all posted CheckPingStatus() tasks have been executed,
+  // and too long time has passed since last read from server.
+  void MaybeSendPrefacePing();
 
   // Send a single WINDOW_UPDATE frame.
   void SendWindowUpdateFrame(SpdyStreamId stream_id,
@@ -1107,8 +1107,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // This is the length of the last compressed frame.
   size_t last_compressed_frame_len_;
 
-  // Indicate if we have already scheduled a delayed task to check the ping
-  // status.
+  // True if there is a CheckPingStatus() task posted on the message loop.
   bool check_ping_status_pending_;
 
   // Current send window size.  Zero unless session flow control is turned on.
