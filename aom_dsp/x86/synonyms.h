@@ -27,7 +27,7 @@
 // Loads and stores to do away with the tedium of casting the address
 // to the right type.
 static INLINE __m128i xx_loadl_32(const void *a) {
-  return _mm_castps_si128(_mm_load_ss((const float *)a));
+  return _mm_cvtsi32_si128(*(const uint32_t *)a);
 }
 
 static INLINE __m128i xx_loadl_64(const void *a) {
@@ -43,7 +43,7 @@ static INLINE __m128i xx_loadu_128(const void *a) {
 }
 
 static INLINE void xx_storel_32(void *const a, const __m128i v) {
-  _mm_store_ss((float *)a, _mm_castsi128_ps(v));
+  *(uint32_t *)a = _mm_cvtsi128_si32(v);
 }
 
 static INLINE void xx_storel_64(void *const a, const __m128i v) {
