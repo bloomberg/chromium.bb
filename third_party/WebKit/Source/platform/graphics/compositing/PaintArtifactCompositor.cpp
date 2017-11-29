@@ -769,10 +769,15 @@ void PaintArtifactCompositor::Update(
 
 #if DCHECK_IS_ON()
   if (VLOG_IS_ON(2)) {
+    static String s_previous_output;
     LayerTreeFlags flags = VLOG_IS_ON(3) ? 0xffffffff : 0;
-    LOG(ERROR) << "PaintArtifactCompositor::Update() done\n"
-               << "Composited layers:\n"
-               << LayersAsJSON(flags)->ToPrettyJSONString().Utf8().data();
+    String new_output = LayersAsJSON(flags)->ToPrettyJSONString();
+    if (new_output != s_previous_output) {
+      LOG(ERROR) << "PaintArtifactCompositor::Update() done\n"
+                 << "Composited layers:\n"
+                 << new_output.Utf8().data();
+      s_previous_output = new_output;
+    }
   }
 #endif
 }

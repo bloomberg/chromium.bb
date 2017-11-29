@@ -65,10 +65,16 @@ void PrePaintTreeWalk::Walk(LocalFrameView& root_frame) {
   if (NeedsTreeBuilderContextUpdate(root_frame, initial_context))
     GeometryMapper::ClearCache();
 
+#if DCHECK_IS_ON()
+  bool needed_paint_property_update = root_frame.NeedsPaintPropertyUpdate();
+#endif
+
   Walk(root_frame, initial_context);
   paint_invalidator_.ProcessPendingDelayedPaintInvalidations();
 
 #if DCHECK_IS_ON()
+  if (!needed_paint_property_update)
+    return;
   if (VLOG_IS_ON(2) && root_frame.GetLayoutView()) {
     LOG(ERROR) << "PrePaintTreeWalk::Walk(root_frame_view=" << &root_frame
                << ")\nPaintLayer tree:";
@@ -102,7 +108,7 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view,
 
   if (LayoutView* view = frame_view.GetLayoutView()) {
 #ifndef NDEBUG
-    if (VLOG_IS_ON(3)) {
+    if (VLOG_IS_ON(3) && needs_tree_builder_context_update) {
       LOG(ERROR) << "PrePaintTreeWalk::Walk(frame_view=" << &frame_view
                  << ")\nLayout tree:";
       showLayoutTree(view);
