@@ -40,15 +40,32 @@ ManageAccountsParams::ManageAccountsParams(const ManageAccountsParams&) =
     default;
 
 // Trivial constructors and destructors.
-DiceResponseParams::DiceResponseParams() : user_intention(DiceAction::NONE) {}
+DiceResponseParams::DiceResponseParams() {}
 DiceResponseParams::~DiceResponseParams() {}
-DiceResponseParams::DiceResponseParams(const DiceResponseParams&) = default;
+DiceResponseParams::DiceResponseParams(DiceResponseParams&&) = default;
+DiceResponseParams& DiceResponseParams::operator=(DiceResponseParams&&) =
+    default;
+
+DiceResponseParams::AccountInfo::AccountInfo() {}
+DiceResponseParams::AccountInfo::AccountInfo(const std::string& gaia_id,
+                                             const std::string& email,
+                                             int session_index)
+    : gaia_id(gaia_id), email(email), session_index(session_index) {}
+DiceResponseParams::AccountInfo::~AccountInfo() {}
+DiceResponseParams::AccountInfo::AccountInfo(const AccountInfo&) = default;
+
 DiceResponseParams::SigninInfo::SigninInfo() {}
 DiceResponseParams::SigninInfo::~SigninInfo() {}
 DiceResponseParams::SigninInfo::SigninInfo(const SigninInfo&) = default;
+
 DiceResponseParams::SignoutInfo::SignoutInfo() {}
 DiceResponseParams::SignoutInfo::~SignoutInfo() {}
 DiceResponseParams::SignoutInfo::SignoutInfo(const SignoutInfo&) = default;
+
+DiceResponseParams::EnableSyncInfo::EnableSyncInfo() {}
+DiceResponseParams::EnableSyncInfo::~EnableSyncInfo() {}
+DiceResponseParams::EnableSyncInfo::EnableSyncInfo(const EnableSyncInfo&) =
+    default;
 
 bool SettingsAllowSigninCookies(
     const content_settings::CookieSettings* cookie_settings) {

@@ -225,20 +225,21 @@ void DiceResponseHandler::ProcessDiceHeader(
   DCHECK(signin::IsDiceFixAuthErrorsEnabled());
   DCHECK(delegate);
   switch (dice_params.user_intention) {
-    case signin::DiceAction::SIGNIN:
-      ProcessDiceSigninHeader(
-          dice_params.signin_info.gaia_id, dice_params.signin_info.email,
-          dice_params.signin_info.authorization_code, std::move(delegate));
-      return;
-    case signin::DiceAction::SIGNOUT: {
-      const signin::DiceResponseParams::SignoutInfo& signout_info =
-          dice_params.signout_info;
-      DCHECK_GT(signout_info.gaia_id.size(), 0u);
-      DCHECK_EQ(signout_info.gaia_id.size(), signout_info.email.size());
-      DCHECK_EQ(signout_info.gaia_id.size(), signout_info.session_index.size());
-      ProcessDiceSignoutHeader(signout_info.gaia_id, signout_info.email);
+    case signin::DiceAction::SIGNIN: {
+      const signin::DiceResponseParams::AccountInfo& info =
+          dice_params.signin_info->account_info;
+      ProcessDiceSigninHeader(info.gaia_id, info.email,
+                              dice_params.signin_info->authorization_code,
+                              std::move(delegate));
       return;
     }
+    case signin::DiceAction::ENABLE_SYNC:
+      // TODO
+      return;
+    case signin::DiceAction::SIGNOUT:
+      DCHECK_GT(dice_params.signout_info->account_infos.size(), 0u);
+      ProcessDiceSignoutHeader(dice_params.signout_info->account_infos);
+      return;
     case signin::DiceAction::NONE:
       NOTREACHED() << "Invalid Dice response parameters.";
       return;
@@ -298,9 +299,7 @@ void DiceResponseHandler::ProcessDiceSigninHeader(
 }
 
 void DiceResponseHandler::ProcessDiceSignoutHeader(
-    const std::vector<std::string>& gaia_ids,
-    const std::vector<std::string>& emails) {
-  DCHECK_EQ(gaia_ids.size(), emails.size());
+    const std::vector<signin::DiceResponseParams::AccountInfo>& account_infos) {
   VLOG(1) << "Start processing Dice signout response";
   if (!signin::IsDicePrepareMigrationEnabled()) {
     // Ignore signout responses when using kDiceFixAuthErrors.
@@ -313,10 +312,10 @@ void DiceResponseHandler::ProcessDiceSignoutHeader(
   // complete signout. Otherwise simply revoke the corresponding tokens.
   std::string current_account = signin_manager_->GetAuthenticatedAccountId();
   std::vector<std::string> signed_out_accounts;
-  for (unsigned int i = 0; i < gaia_ids.size(); ++i) {
+  for (const auto& account_info : account_infos) {
     std::string signed_out_account =
-        account_tracker_service_->PickAccountIdForAccount(gaia_ids[i],
-                                                          emails[i]);
+        account_tracker_service_->PickAccountIdForAccount(account_info.gaia_id,
+                                                          account_info.email);
     if (signed_out_account == current_account) {
       // If Dice migration is not complete, the token for the main account must
       // not be deleted when signing out of the web.

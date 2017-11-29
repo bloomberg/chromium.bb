@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
@@ -350,7 +352,7 @@ void ProcessDiceResponseHeaderIfExists(net::URLRequest* request,
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(ProcessDiceHeaderUIThread, params,
+      base::Bind(ProcessDiceHeaderUIThread, base::Passed(std::move(params)),
                  info->GetWebContentsGetterForRequest()));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)

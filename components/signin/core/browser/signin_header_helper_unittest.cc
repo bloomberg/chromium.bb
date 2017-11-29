@@ -332,6 +332,8 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestDrive) {
 TEST_F(SigninHeaderHelperTest, TestDiceInvalidResponseParams) {
   DiceResponseParams params = BuildDiceSigninResponseParams("blah");
   EXPECT_EQ(DiceAction::NONE, params.user_intention);
+  params = BuildDiceSignoutResponseParams("blah");
+  EXPECT_EQ(DiceAction::NONE, params.user_intention);
 }
 
 TEST_F(SigninHeaderHelperTest, TestBuildDiceResponseParams) {
@@ -347,10 +349,24 @@ TEST_F(SigninHeaderHelperTest, TestBuildDiceResponseParams) {
             "action=SIGNIN,id=%s,email=%s,authuser=%i,authorization_code=%s",
             kGaiaID, kEmail, kSessionIndex, kAuthorizationCode));
     EXPECT_EQ(DiceAction::SIGNIN, params.user_intention);
-    EXPECT_EQ(kGaiaID, params.signin_info.gaia_id);
-    EXPECT_EQ(kEmail, params.signin_info.email);
-    EXPECT_EQ(kSessionIndex, params.signin_info.session_index);
-    EXPECT_EQ(kAuthorizationCode, params.signin_info.authorization_code);
+    ASSERT_TRUE(params.signin_info);
+    EXPECT_EQ(kGaiaID, params.signin_info->account_info.gaia_id);
+    EXPECT_EQ(kEmail, params.signin_info->account_info.email);
+    EXPECT_EQ(kSessionIndex, params.signin_info->account_info.session_index);
+    EXPECT_EQ(kAuthorizationCode, params.signin_info->authorization_code);
+  }
+
+  {
+    // EnableSync response.
+    DiceResponseParams params = BuildDiceSigninResponseParams(
+        base::StringPrintf("action=ENABLE_SYNC,id=%s,email=%s,authuser=%i",
+                           kGaiaID, kEmail, kSessionIndex));
+    EXPECT_EQ(DiceAction::ENABLE_SYNC, params.user_intention);
+    ASSERT_TRUE(params.enable_sync_info);
+    EXPECT_EQ(kGaiaID, params.enable_sync_info->account_info.gaia_id);
+    EXPECT_EQ(kEmail, params.enable_sync_info->account_info.email);
+    EXPECT_EQ(kSessionIndex,
+              params.enable_sync_info->account_info.session_index);
   }
 
   {
@@ -361,12 +377,12 @@ TEST_F(SigninHeaderHelperTest, TestBuildDiceResponseParams) {
         base::StringPrintf("email=\"%s\", sessionindex=%i, obfuscatedid=\"%s\"",
                            kEmail, kSessionIndex, kGaiaID));
     ASSERT_EQ(DiceAction::SIGNOUT, params.user_intention);
-    EXPECT_EQ(1u, params.signout_info.gaia_id.size());
-    EXPECT_EQ(1u, params.signout_info.email.size());
-    EXPECT_EQ(1u, params.signout_info.session_index.size());
-    EXPECT_EQ(kGaiaID, params.signout_info.gaia_id[0]);
-    EXPECT_EQ(kEmail, params.signout_info.email[0]);
-    EXPECT_EQ(kSessionIndex, params.signout_info.session_index[0]);
+    ASSERT_TRUE(params.signout_info);
+    EXPECT_EQ(1u, params.signout_info->account_infos.size());
+    EXPECT_EQ(kGaiaID, params.signout_info->account_infos[0].gaia_id);
+    EXPECT_EQ(kEmail, params.signout_info->account_infos[0].email);
+    EXPECT_EQ(kSessionIndex,
+              params.signout_info->account_infos[0].session_index);
   }
 
   {
@@ -380,15 +396,16 @@ TEST_F(SigninHeaderHelperTest, TestBuildDiceResponseParams) {
             "email=\"%s\", sessionindex=%i, obfuscatedid=\"%s\"",
             kEmail, kSessionIndex, kGaiaID, kEmail2, kSessionIndex2, kGaiaID2));
     ASSERT_EQ(DiceAction::SIGNOUT, params.user_intention);
-    EXPECT_EQ(2u, params.signout_info.gaia_id.size());
-    EXPECT_EQ(2u, params.signout_info.email.size());
-    EXPECT_EQ(2u, params.signout_info.session_index.size());
-    EXPECT_EQ(kGaiaID, params.signout_info.gaia_id[0]);
-    EXPECT_EQ(kEmail, params.signout_info.email[0]);
-    EXPECT_EQ(kSessionIndex, params.signout_info.session_index[0]);
-    EXPECT_EQ(kGaiaID2, params.signout_info.gaia_id[1]);
-    EXPECT_EQ(kEmail2, params.signout_info.email[1]);
-    EXPECT_EQ(kSessionIndex2, params.signout_info.session_index[1]);
+    ASSERT_TRUE(params.signout_info);
+    EXPECT_EQ(2u, params.signout_info->account_infos.size());
+    EXPECT_EQ(kGaiaID, params.signout_info->account_infos[0].gaia_id);
+    EXPECT_EQ(kEmail, params.signout_info->account_infos[0].email);
+    EXPECT_EQ(kSessionIndex,
+              params.signout_info->account_infos[0].session_index);
+    EXPECT_EQ(kGaiaID2, params.signout_info->account_infos[1].gaia_id);
+    EXPECT_EQ(kEmail2, params.signout_info->account_infos[1].email);
+    EXPECT_EQ(kSessionIndex2,
+              params.signout_info->account_infos[1].session_index);
   }
 
   {
