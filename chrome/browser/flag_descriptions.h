@@ -75,9 +75,6 @@ extern const char kBleAdvertisingInExtensionsDescription[];
 extern const char kBlockTabUndersName[];
 extern const char kBlockTabUndersDescription[];
 
-extern const char kBrowserSideNavigationName[];
-extern const char kBrowserSideNavigationDescription[];
-
 extern const char kNavigationMojoResponseName[];
 extern const char kNavigationMojoResponseDescription[];
 

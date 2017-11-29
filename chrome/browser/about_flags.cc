@@ -3268,9 +3268,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePictureInPictureDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnablePictureInPicture)},
 #endif  // !defined(OS_ANDROID)
-    {"browser-side-navigation", flag_descriptions::kBrowserSideNavigationName,
-     flag_descriptions::kBrowserSideNavigationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kBrowserSideNavigation)},
     {"navigation-mojo-response", flag_descriptions::kNavigationMojoResponseName,
      flag_descriptions::kNavigationMojoResponseDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kNavigationMojoResponse)},

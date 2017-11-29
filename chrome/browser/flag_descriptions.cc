@@ -81,10 +81,6 @@ const char kBlockTabUndersDescription[] =
     "Blocks tab-unders in Chrome with some native UI to allow the user to "
     "proceed.";
 
-const char kBrowserSideNavigationName[] = "Enable browser side navigation";
-const char kBrowserSideNavigationDescription[] =
-    "Enable browser side navigation (aka PlzNavigate).";
-
 const char kNavigationMojoResponseName[] = "Navigation response using Mojo";
 const char kNavigationMojoResponseDescription[] =
     "Browser side navigation (aka PlzNavigate) is using blob URLs to deliver "
