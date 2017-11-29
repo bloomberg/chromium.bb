@@ -319,8 +319,6 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
 #pragma mark - RemotingSettingsViewControllerDelegate
 
 - (void)setResizeToFit:(BOOL)resizeToFit {
-  // TODO(yuweih): Maybe we add a native screen size mimimum before enabling
-  // this option? This doesn't work well for smaller screens. Ask Jon.
   _settings.shouldResizeHostToFit = resizeToFit;
   [self resizeHostToFitIfNeeded];
 }

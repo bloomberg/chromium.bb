@@ -8,8 +8,6 @@
 
 #import "remoting/ios/app/app_delegate.h"
 
-#import "ios/third_party/material_components_ios/src/components/Dialogs/src/ColorThemer/MDCAlertColorThemer.h"
-#import "ios/third_party/material_components_ios/src/components/Themes/src/MDCColorScheme.h"
 #import "remoting/ios/app/app_view_controller.h"
 #import "remoting/ios/app/first_launch_view_presenter.h"
 #import "remoting/ios/app/help_and_feedback.h"
@@ -32,10 +30,6 @@
 }
 @end
 
-// TODO(nicholss): There is no FAQ page at the moment.
-static NSString* const kFAQsUrl =
-    @"https://support.google.com/chrome/answer/1649523?co=GENIE.Platform%3DiOS";
-
 @implementation AppDelegate
 
 @synthesize window = _window;
@@ -51,17 +45,13 @@ static NSString* const kFAQsUrl =
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
   [self launchRootViewController];
-
-  // TODO(yuweih): Follow up on this to see if it can be removed. There is a bug
-  // where the MDC alert is defaulting to white text on white background.
-  MDCBasicColorScheme* colorScheme = [[MDCBasicColorScheme alloc]
-      initWithPrimaryColor:RemotingTheme.flatButtonTextColor];
-  [MDCAlertColorThemer applyColorScheme:colorScheme];
+  [RemotingTheme applyColorSchemes];
 
   return YES;
 }
 
 #ifndef NDEBUG
+// Used by Chromium debug build to authenticate.
 - (BOOL)application:(UIApplication*)application handleOpenURL:(NSURL*)url {
   DCHECK([RemotingService.instance.authentication
       isKindOfClass:[RemotingOAuthAuthentication class]]);
@@ -125,13 +115,6 @@ static NSString* const kFAQsUrl =
 }
 
 #pragma mark - AppDelegate
-
-- (void)navigateToFAQs:(UINavigationController*)navigationController {
-  WebViewController* viewController =
-      [[WebViewController alloc] initWithUrl:kFAQsUrl
-                                       title:l10n_util::GetNSString(IDS_FAQS)];
-  [navigationController pushViewController:viewController animated:YES];
-}
 
 - (void)navigateToHelpCenter:(UINavigationController*)navigationController {
   [navigationController pushViewController:[[HelpViewController alloc] init]

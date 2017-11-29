@@ -559,16 +559,13 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 }
 
 - (void)didProvidePin:(NSString*)pin createPairing:(BOOL)createPairing {
-  // TODO(nicholss): There is an open question if createPairing is supported on
-  // iOS. Need to fingure this out.
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kHostSessionPinProvided
                     object:self
                   userInfo:@{
                     kHostSessionHostName : _remoteHostName,
                     kHostSessionPin : pin,
-                    kHostSessionCreatePairing :
-                        [NSNumber numberWithBool:createPairing]
+                    kHostSessionCreatePairing : @(createPairing)
                   }];
 }
 

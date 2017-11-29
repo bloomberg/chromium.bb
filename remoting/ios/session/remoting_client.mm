@@ -113,8 +113,7 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
     info.pairing_secret = "";
   }
 
-  // TODO(nicholss): I am not sure about the following fields yet.
-  // info.capabilities =
+  info.capabilities = "";
   if ([RemotingPreferences.instance boolForFlag:RemotingFlagUseWebRTC]) {
     info.flags = "useWebrtc";
     [MDCSnackbarManager

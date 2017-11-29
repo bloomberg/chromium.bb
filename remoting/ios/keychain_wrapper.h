@@ -16,8 +16,6 @@ typedef void (^PairingCredentialsCallback)(NSString* pairingId,
                                            NSString* secret);
 
 // Class to abstract the details from how iOS wants to write to the keychain.
-// TODO(nicholss): This will have to be futher refactored when we integrate
-// with the private Google auth.
 @interface KeychainWrapper : NSObject
 
 // Save a refresh token to the keychain.

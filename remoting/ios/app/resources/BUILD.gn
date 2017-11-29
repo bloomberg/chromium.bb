@@ -43,13 +43,6 @@ imageset("Background") {
   ]
 }
 
-# TODO(yuweih): This target is used to exclude material design imagesets from
-# the internal app's source set, that are already pulled-in by other deps of the
-# internal app. We will need to redesign these once crbug.com/734054 is
-# resolved.
-group("system_icons") {
-}
-
 group("launchscreen_assets") {
   public_deps = [
     ":launchscreen_app_logo",
