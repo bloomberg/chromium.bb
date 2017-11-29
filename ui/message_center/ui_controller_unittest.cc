@@ -248,47 +248,4 @@ TEST_F(UiControllerTest, ShowBubbleFails) {
   ASSERT_FALSE(ui_controller_->message_center_visible());
 }
 
-TEST_F(UiControllerTest, ContextMenuTestWithMessageCenter) {
-  const std::string id1 = "id1";
-  const std::string id2 = "id2";
-  const std::string id3 = "id3";
-  Notification* notification1 = AddNotification(id1);
-
-  base::string16 display_source = ASCIIToUTF16("www.test.org");
-  NotifierId notifier_id = DummyNotifierId();
-
-  NotifierId notifier_id2(NotifierId::APPLICATION, "sample-app");
-  std::unique_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, id2,
-      ASCIIToUTF16("Test Web Notification"),
-      ASCIIToUTF16("Notification message body."), gfx::Image(), display_source,
-      GURL(), notifier_id2, message_center::RichNotificationData(),
-      new TestNotificationDelegate()));
-  message_center_->AddNotification(std::move(notification));
-
-  AddNotification(id3);
-
-  std::unique_ptr<ui::MenuModel> model(
-      ui_controller_->CreateNotificationMenuModel(*notification1));
-#if defined(OS_CHROMEOS)
-  EXPECT_EQ(2, model->GetItemCount());
-
-  // The second item is to open the settings.
-  EXPECT_TRUE(model->IsEnabledAt(0));
-  EXPECT_TRUE(model->IsEnabledAt(1));
-  model->ActivatedAt(1);
-  EXPECT_TRUE(ui_controller_->message_center_visible());
-#else
-  EXPECT_EQ(1, model->GetItemCount());
-#endif
-
-  ui_controller_->HideMessageCenterBubble();
-
-  // The first item is to disable notifications from the notifier id. It also
-  // removes the notification.
-  EXPECT_EQ(3u, message_center_->GetVisibleNotifications().size());
-  model->ActivatedAt(0);
-  EXPECT_EQ(2u, message_center_->GetVisibleNotifications().size());
-}
-
 }  // namespace message_center

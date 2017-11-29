@@ -14,14 +14,9 @@
 #include "ui/message_center/notifier_id.h"
 #include "ui/message_center/ui_delegate.h"
 
-namespace ui {
-class MenuModel;
-}
-
 namespace message_center {
 
 class MessageCenter;
-class Notification;
 
 // Class that observes a MessageCenter and reacts to changes in the list of
 // notifications. Manages the popup and message center bubbles. Tells the
@@ -54,10 +49,6 @@ class MESSAGE_CENTER_EXPORT UiController : public MessageCenterObserver {
 
   // Toggles the visibility of the settings view in the message center bubble.
   void ShowNotifierSettingsBubble();
-
-  // Creates a model for the context menu for a notification card.
-  std::unique_ptr<ui::MenuModel> CreateNotificationMenuModel(
-      const Notification& notification);
 
   bool message_center_visible() { return message_center_visible_; }
   bool popups_visible() { return popups_visible_; }

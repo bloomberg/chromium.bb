@@ -17,82 +17,10 @@
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/ui_delegate.h"
+#include "ui/message_center/views/notification_menu_model.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace message_center {
-
-namespace {
-
-// Menu constants
-const int kTogglePermissionCommand = 0;
-const int kShowSettingsCommand = 1;
-
-// The model of the context menu for a notification card.
-class NotificationMenuModel : public ui::SimpleMenuModel,
-                              public ui::SimpleMenuModel::Delegate {
- public:
-  NotificationMenuModel(UiController* controller,
-                        const Notification& notification);
-  ~NotificationMenuModel() override;
-
-  // Overridden from ui::SimpleMenuModel::Delegate:
-  bool IsCommandIdChecked(int command_id) const override;
-  bool IsCommandIdEnabled(int command_id) const override;
-  void ExecuteCommand(int command_id, int event_flags) override;
-
- private:
-  UiController* controller_;
-  Notification notification_;
-  DISALLOW_COPY_AND_ASSIGN(NotificationMenuModel);
-};
-
-NotificationMenuModel::NotificationMenuModel(UiController* controller,
-                                             const Notification& notification)
-    : ui::SimpleMenuModel(this),
-      controller_(controller),
-      notification_(notification) {
-  DCHECK(!notification.display_source().empty());
-  AddItem(kTogglePermissionCommand,
-          l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_NOTIFIER_DISABLE,
-                                     notification.display_source()));
-
-#if defined(OS_CHROMEOS)
-  // Add settings menu item.
-  AddItem(kShowSettingsCommand,
-          l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS));
-#endif
-}
-
-NotificationMenuModel::~NotificationMenuModel() {}
-
-bool NotificationMenuModel::IsCommandIdChecked(int command_id) const {
-  return false;
-}
-
-bool NotificationMenuModel::IsCommandIdEnabled(int command_id) const {
-  // TODO(estade): commands shouldn't always be enabled. For example, a
-  // notification's enabled state might be controlled by policy. See
-  // http://crbug.com/771269
-  return true;
-}
-
-void NotificationMenuModel::ExecuteCommand(int command_id, int event_flags) {
-  switch (command_id) {
-    case kTogglePermissionCommand:
-      notification_.delegate()->DisableNotification();
-      // TODO(estade): this will not close other open notifications from the
-      // same site.
-      MessageCenter::Get()->RemoveNotification(notification_.id(), false);
-      break;
-    case kShowSettingsCommand:
-      controller_->ShowNotifierSettingsBubble();
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
-}  // namespace
 
 UiController::UiController(UiDelegate* delegate)
     : message_center_(MessageCenter::Get()),
@@ -192,11 +120,6 @@ void UiController::ShowNotifierSettingsBubble() {
   message_center_->SetVisibility(message_center::VISIBILITY_SETTINGS);
 
   NotifyUiControllerChanged();
-}
-
-std::unique_ptr<ui::MenuModel> UiController::CreateNotificationMenuModel(
-    const Notification& notification) {
-  return std::make_unique<NotificationMenuModel>(this, notification);
 }
 
 void UiController::OnNotificationAdded(const std::string& notification_id) {

@@ -97,8 +97,6 @@ class MESSAGE_CENTER_EXPORT ToastContentsView
   void ClickOnNotification(const std::string& notification_id) override;
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override;
-  std::unique_ptr<ui::MenuModel> CreateMenuModel(
-      const Notification& notification) override;
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;
   void ClickOnNotificationButtonWithReply(const std::string& notification_id,
