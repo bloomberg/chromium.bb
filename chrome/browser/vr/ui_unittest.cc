@@ -996,8 +996,8 @@ TEST_F(UiTest, SecondExitPromptTriggersOnExitPrompt) {
   EXPECT_CALL(*browser_,
               OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_NONE,
                                    UiUnsupportedMode::kUnhandledPageInfo));
-  ui_->SetExitVrPromptEnabled(true,
-                              UiUnsupportedMode::kAndroidPermissionNeeded);
+  ui_->SetExitVrPromptEnabled(
+      true, UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission);
 }
 
 TEST_F(UiTest, ExitPresentAndFullscreenOnAppButtonClick) {

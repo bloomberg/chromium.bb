@@ -92826,19 +92826,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="VR.Shell.AudioPermission.ExitVRChoice" enum="BooleanChoice">
-  <owner>bshe@chromium.org</owner>
-  <summary>
-    When audio permission is needed, we show an exit VR prompt. The prompt gives
-    user two choices: CANCEL or CONTINUE. This tracks which choice did user
-    select.
-  </summary>
-</histogram>
-
 <histogram name="VR.Shell.EncounteredSuppressedUI" enum="VRSuppressedElement">
   <owner>asimjour@chromium.org</owner>
   <summary>
-    We must suppress monocularly rendered ui elements in VR. This tracks which
+    We must suppress monocularly rendered ui elements in VR. This records which
     ui element suppressions are encountered in practice.
   </summary>
 </histogram>
@@ -92846,8 +92837,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="VR.Shell.EncounteredUnsupportedMode" enum="VRUnsupportedMode">
   <owner>vollick@chromium.org</owner>
   <summary>
-    We must exit VR mode when browsing in certain situations. This tracks which
+    We must exit VR mode when browsing in certain situations. This records which
     situations are encountered in practice.
+  </summary>
+</histogram>
+
+<histogram name="VR.VoiceSearch.RecordAudioOsPermissionPromptChoice"
+    enum="BooleanChoice">
+  <owner>bshe@chromium.org</owner>
+  <summary>
+    Chrome shows a prompt when the OS's record audio permission is needed for
+    voice search. The prompt gives user two choices: CANCEL or CONTINUE. This
+    records the user's selection.
   </summary>
 </histogram>
 
