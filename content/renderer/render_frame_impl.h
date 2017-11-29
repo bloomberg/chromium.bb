@@ -865,6 +865,7 @@ class CONTENT_EXPORT RenderFrameImpl
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderAccessibilityImplTest,
                            AccessibilityMessagesQueueWhileSwappedOut);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest, LocalChildFrameWasShown);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest, ZoomLimit);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest,
                            TestOverlayRoutingTokenSendsLater);

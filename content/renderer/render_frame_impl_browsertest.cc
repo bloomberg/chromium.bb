@@ -19,6 +19,7 @@
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
+#include "content/renderer/mojo/blink_interface_registry_impl.h"
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -41,6 +42,7 @@ namespace {
 const int32_t kSubframeRouteId = 20;
 const int32_t kSubframeWidgetRouteId = 21;
 const int32_t kFrameProxyRouteId = 22;
+const int32_t kEmbeddedSubframeRouteId = 23;
 }  // namespace
 
 namespace content {
@@ -183,20 +185,45 @@ TEST_F(RenderFrameImplTest, FrameWasShown) {
   EXPECT_TRUE(observer.visible());
 }
 
+// Verify that a local subframe of a frame with a RenderWidget processes a
+// WasShown message.
+TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
+  service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
+  mojo::MakeRequest(&stub_interface_provider);
+
+  // Create and initialize a local child frame of the simulated OOPIF, which
+  // is a grandchild of the remote main frame.
+  RenderFrameImpl* grandchild = RenderFrameImpl::Create(
+      frame()->render_view(), kEmbeddedSubframeRouteId,
+      std::move(stub_interface_provider), base::UnguessableToken::Create());
+  blink::WebLocalFrame* parent_web_frame = frame()->GetWebFrame();
+
+  parent_web_frame->CreateLocalChild(
+      blink::WebTreeScopeType::kDocument, grandchild,
+      grandchild->blink_interface_registry_.get());
+  grandchild->in_frame_tree_ = true;
+  grandchild->Initialize();
+
+  EXPECT_EQ(grandchild->GetRenderWidget(), frame()->GetRenderWidget());
+
+  RenderFrameTestObserver observer(grandchild);
+
+  ViewMsg_WasShown was_shown_message(0, true, ui::LatencyInfo());
+  frame_widget()->OnMessageReceived(was_shown_message);
+
+  EXPECT_FALSE(frame_widget()->is_hidden());
+  EXPECT_TRUE(observer.visible());
+}
+
 // Ensure that a RenderFrameImpl does not crash if the RenderView receives
 // a WasShown message after the frame's widget has been closed.
 TEST_F(RenderFrameImplTest, FrameWasShownAfterWidgetClose) {
-  RenderFrameTestObserver observer(frame());
-
   ViewMsg_Close close_message(0);
   frame_widget()->OnMessageReceived(close_message);
 
   ViewMsg_WasShown was_shown_message(0, true, ui::LatencyInfo());
+  // Test passes if this does not crash.
   static_cast<RenderViewImpl*>(view_)->OnMessageReceived(was_shown_message);
-
-  // This test is primarily checking that this case does not crash, but
-  // observers should still be notified.
-  EXPECT_TRUE(observer.visible());
 }
 
 // Test that LoFi state only updates for new main frame documents. Subframes
