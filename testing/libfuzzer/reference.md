@@ -1,6 +1,6 @@
 # libFuzzer Integration Reference
 
-## Extra sanitizer configuration
+## Additional sanitizer configuration
 
 ### MSan
 
@@ -12,13 +12,12 @@ GYP_DEFINES='use_goma=1 msan=1 use_prebuilt_instrumented_libraries=1' gclient ru
 
 ### UBSan
 
-By default UBSan doesn't crash once undefined behavior has been detected.
-To make it crash the following additional option should be provided:
+By default, UBSan does not crash when undefined behavior is detected.
+To make it crash, the following option needs to be set in environment:
 ```bash
 UBSAN_OPTIONS=halt_on_error=1 ./fuzzer <corpus_directory_or_single_testcase_path>
-
 ```
-Other useful options (used by ClusterFuzz) are:
+Other useful options are (also used by ClusterFuzz):
 ```bash
 UBSAN_OPTIONS=symbolize=1:halt_on_error=1:print_stacktrace=1 ./fuzzer <corpus_directory_or_single_testcase_path>
 ```
@@ -80,11 +79,11 @@ Following arguments are supported:
 
 | Argument | Description |
 |----------|-------------|
-| sources | **required** list of fuzzer test source files. |
+| sources | **required** list of fuzzer test source files |
 | deps | fuzzer dependencies |
 | additional_configs | additional GN configurations to be used for compilation |
 | dict | a dictionary file for the fuzzer |
-| libfuzzer_options | runtime options file for the fuzzer. See [Fuzzer Runtime Options](Fuzzer-Options) |
+| libfuzzer_options | runtime options file for the fuzzer. See [Fuzzer Runtime Options](#Fuzzer-Runtime-Options) |
 
 
 ## Fuzzer Runtime Options
@@ -103,7 +102,7 @@ Most common flags are:
 | max_len | Maximum length of test input. |
 | timeout | Timeout of seconds. Units slower than this value will be reported as bugs. |
 
-A fuller list of options can be found at [libFuzzer Usage] page and by running
+Full list of options can be found at [libFuzzer options] page and by running
 the binary with `-help=1`.
 
 To specify these options for ClusterFuzz, list all parameters in
@@ -119,7 +118,7 @@ fuzzer_test("my_fuzzer") {
 }
 ```
 
-[libFuzzer Usage]: http://llvm.org/docs/LibFuzzer.html#usage
+[libFuzzer options]: http://llvm.org/docs/LibFuzzer.html#options
 [Address Sanitizer]: http://clang.llvm.org/docs/AddressSanitizer.html
 [Memory Sanitizer]: http://clang.llvm.org/docs/MemorySanitizer.html
 [Undefined Behavior Sanitizer]: http://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html

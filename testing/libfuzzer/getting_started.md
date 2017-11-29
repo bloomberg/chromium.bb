@@ -1,7 +1,7 @@
-# Getting Started with libFuzzer in Chrome
+# Getting Started with libFuzzer in Chromium
 
-***
-**Prerequisites:** libFuzzer in Chrome is supported with GN on Linux and Mac only.
+*** note
+**Prerequisites:** libFuzzer in Chromium is supported on Linux and Mac only.
 ***
 
 This document will walk you through:
