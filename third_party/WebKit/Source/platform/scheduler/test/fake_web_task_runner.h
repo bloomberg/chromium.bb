@@ -26,11 +26,11 @@ class FakeWebTaskRunner : public WebTaskRunner {
     SetTime(base::TimeTicks() + base::TimeDelta::FromSecondsD(new_time));
   }
 
+  // base::SingleThreadTaskRunner implementation:
+  bool RunsTasksInCurrentSequence() const override;
+
   // WebTaskRunner implementation:
-  bool RunsTasksInCurrentSequence() override;
   double MonotonicallyIncreasingVirtualTimeSeconds() const override;
-  scoped_refptr<base::SingleThreadTaskRunner> ToSingleThreadTaskRunner()
-      override;
 
   void RunUntilIdle();
   void AdvanceTimeAndRun(base::TimeDelta delta);
@@ -45,6 +45,9 @@ class FakeWebTaskRunner : public WebTaskRunner {
   bool PostDelayedTask(const base::Location& location,
                        base::OnceClosure task,
                        base::TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const base::Location&,
+                                  base::OnceClosure task,
+                                  base::TimeDelta delay) override;
 
  private:
   ~FakeWebTaskRunner() override;
@@ -52,10 +55,8 @@ class FakeWebTaskRunner : public WebTaskRunner {
   class Data;
   class BaseTaskRunner;
   scoped_refptr<Data> data_;
-  scoped_refptr<BaseTaskRunner> base_task_runner_;
 
-  FakeWebTaskRunner(scoped_refptr<Data> data,
-                    scoped_refptr<BaseTaskRunner> base_task_runner);
+  explicit FakeWebTaskRunner(scoped_refptr<Data> data);
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebTaskRunner);
 };

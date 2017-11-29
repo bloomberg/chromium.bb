@@ -63,7 +63,7 @@ V8PerIsolateData::V8PerIsolateData(
     V8ContextSnapshotMode v8_context_snapshot_mode)
     : v8_context_snapshot_mode_(v8_context_snapshot_mode),
       isolate_holder_(
-          task_runner ? task_runner->ToSingleThreadTaskRunner() : nullptr,
+          task_runner,
           gin::IsolateHolder::kSingleThread,
           IsMainThread() ? gin::IsolateHolder::kDisallowAtomicsWait
                          : gin::IsolateHolder::kAllowAtomicsWait,

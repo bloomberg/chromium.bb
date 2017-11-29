@@ -53,12 +53,8 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
 
     scoped_refptr<base::SingleThreadTaskRunner> task_runner;
     auto scheduler = blink::Platform::Current()->CurrentThread()->Scheduler();
-    if (scheduler) {
-      WebTaskRunner* web_task_runner = scheduler->CompositorTaskRunner();
-      if (web_task_runner) {
-        task_runner = web_task_runner->ToSingleThreadTaskRunner();
-      }
-    }
+    if (scheduler)
+      task_runner = scheduler->CompositorTaskRunner();
     viz::mojom::blink::CompositorFrameSinkClientPtr client;
     binding_.Bind(mojo::MakeRequest(&client), task_runner);
     provider->CreateCompositorFrameSink(frame_sink_id_, std::move(client),

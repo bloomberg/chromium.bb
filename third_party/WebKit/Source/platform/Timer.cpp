@@ -89,8 +89,7 @@ void TimerBase::MoveToNewTaskRunner(scoped_refptr<WebTaskRunner> task_runner) {
   DCHECK(task_runner->RunsTasksInCurrentSequence());
 #endif
   // If the underlying task runner stays the same, ignore it.
-  if (web_task_runner_->ToSingleThreadTaskRunner() ==
-      task_runner->ToSingleThreadTaskRunner()) {
+  if (web_task_runner_ == task_runner) {
     return;
   }
 

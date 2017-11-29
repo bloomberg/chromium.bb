@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/callback.h"
+#include "base/single_thread_task_runner.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/RefCounted.h"
@@ -56,21 +57,17 @@ class BLINK_PLATFORM_EXPORT TaskHandle {
 
 // The blink representation of a chromium SingleThreadTaskRunner.
 class BLINK_PLATFORM_EXPORT WebTaskRunner
-    : public ThreadSafeRefCounted<WebTaskRunner> {
+    : public base::SingleThreadTaskRunner {
  public:
-  // Returns true if tasks posted to this TaskRunner are sequenced
-  // with this call.
-  virtual bool RunsTasksInCurrentSequence() = 0;
+  virtual bool PostDelayedTask(const base::Location&,
+                               base::OnceClosure,
+                               base::TimeDelta) = 0;
 
   // Returns a microsecond resolution platform dependant time source.
   // This may represent either the real time, or a virtual time depending on
   // whether or not the WebTaskRunner is associated with a virtual time domain
   // or a real time domain.
   virtual double MonotonicallyIncreasingVirtualTimeSeconds() const = 0;
-
-  // Returns the underlying task runner object.
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-  ToSingleThreadTaskRunner() = 0;
 
   // Helpers for posting bound functions as tasks.
 
@@ -97,10 +94,6 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
   friend ThreadSafeRefCounted<WebTaskRunner>;
   WebTaskRunner() = default;
   virtual ~WebTaskRunner();
-
-  virtual bool PostDelayedTask(const base::Location&,
-                               base::OnceClosure,
-                               base::TimeDelta) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebTaskRunner);

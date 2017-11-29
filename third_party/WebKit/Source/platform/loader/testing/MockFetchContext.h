@@ -93,8 +93,7 @@ class MockFetchContext : public FetchContext {
           Platform::Current()->CreateDefaultURLLoaderFactory();
     }
     WrappedResourceRequest wrapped(request);
-    return url_loader_factory_->CreateURLLoader(
-        wrapped, task_runner->ToSingleThreadTaskRunner());
+    return url_loader_factory_->CreateURLLoader(wrapped, task_runner);
   }
 
   WebFrameScheduler* GetFrameScheduler() override {
