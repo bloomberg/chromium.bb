@@ -495,9 +495,13 @@ bool V4Store::GetNextSmallestUnmergedPrefix(
   for (const auto& iterator_pair : iterator_map) {
     PrefixSize prefix_size = iterator_pair.first;
     HashPrefixes::const_iterator start = iterator_pair.second;
+
+    CHECK(hash_prefix_map.end() != hash_prefix_map.find(prefix_size));
     const HashPrefixes& hash_prefixes = hash_prefix_map.at(prefix_size);
-    if (prefix_size <=
-        static_cast<PrefixSize>(std::distance(start, hash_prefixes.end()))) {
+
+    PrefixSize distance = std::distance(start, hash_prefixes.end());
+    CHECK_EQ(0u, distance % prefix_size);
+    if (prefix_size <= distance) {
       current_hash_prefix = HashPrefix(start, start + prefix_size);
       if (!has_unmerged || *smallest_hash_prefix > current_hash_prefix) {
         has_unmerged = true;
