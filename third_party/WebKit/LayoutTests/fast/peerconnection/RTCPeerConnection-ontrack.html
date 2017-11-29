@@ -8,9 +8,11 @@
 <body>
 <script>
 
+// TODO(hbos): Consider removing this file, it duplicates wpt tests.
+
 promise_test(function() {
   let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection(); 
+  let pc2 = new RTCPeerConnection();
   let eventSequence = [];
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
@@ -26,7 +28,7 @@ promise_test(function() {
       });
       return Promise.all(Resolver.promises(resolvers));
     }).then(function() {
-      let expectedEventSequence = [ 'setRemoteDescription', 'ontrack' ];
+      let expectedEventSequence = [ 'ontrack', 'setRemoteDescription' ];
       assert_array_equals(expectedEventSequence, eventSequence);
     });
 }, 'ontrack fires before negotiation done.');
@@ -49,14 +51,14 @@ promise_test(function() {
       });
       return Promise.all(Resolver.promises(resolvers));
     }).then(function() {
-      let expectedEventSequence = [ 'setRemoteDescription', 'onaddstream' ];
+      let expectedEventSequence = [ 'onaddstream', 'setRemoteDescription' ];
       assert_array_equals(eventSequence, expectedEventSequence);
     });
 }, 'onaddstream fires before negotation done.');
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection(); 
+  let pc2 = new RTCPeerConnection();
   let eventSequence = [];
   return createStreams({audio:true, video:false}, 2)
     .then(function(streams) {
@@ -86,7 +88,7 @@ promise_test(function() {
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection(); 
+  let pc2 = new RTCPeerConnection();
   let eventSequence = [];
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
@@ -116,7 +118,7 @@ promise_test(function() {
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection(); 
+  let pc2 = new RTCPeerConnection();
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
       pc.addStream(streams[0]);
@@ -134,7 +136,7 @@ promise_test(function() {
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection(); 
+  let pc2 = new RTCPeerConnection();
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
       pc.addStream(streams[0]);
@@ -151,7 +153,7 @@ promise_test(function() {
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection(); 
+  let pc2 = new RTCPeerConnection();
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
       pc.addStream(streams[0]);
@@ -167,7 +169,7 @@ promise_test(function() {
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection(); 
+  let pc2 = new RTCPeerConnection();
   let firedForAudioTrack = false;
   let firedForVideoTrack = false;
   return createStreams({audio:true, video:true}, 1)
