@@ -98,6 +98,27 @@ TEST(GIFImageDecoderTest, decodeTwoFrames) {
   EXPECT_EQ(kAnimationLoopInfinite, decoder->RepetitionCount());
 }
 
+TEST(GIFImageDecoderTest, crbug779261) {
+  std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
+  scoped_refptr<SharedBuffer> data =
+      ReadFile(kLayoutTestResourcesDir, "crbug779261.gif");
+  ASSERT_TRUE(data.get());
+  decoder->SetData(data.get(), true);
+
+  for (size_t i = 0; i < decoder->FrameCount(); ++i) {
+    // In crbug.com/779261, an independent, transparent frame following an
+    // opaque frame failed to decode. This image has an opaque frame 0 with
+    // DisposalMethod::kDisposeOverwriteBgcolor, making frame 1, which has
+    // transparency, independent and contain alpha.
+    const bool has_alpha = 0 == i ? false : true;
+    ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(i);
+    EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
+    EXPECT_EQ(has_alpha, frame->HasAlpha());
+  }
+
+  EXPECT_FALSE(decoder->Failed());
+}
+
 TEST(GIFImageDecoderTest, parseAndDecode) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
 
