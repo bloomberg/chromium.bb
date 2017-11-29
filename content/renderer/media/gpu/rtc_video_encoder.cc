@@ -941,4 +941,8 @@ bool RTCVideoEncoder::SupportsNativeHandle() const {
   return true;
 }
 
+const char* RTCVideoEncoder::ImplementationName() const {
+  return "RTCVideoEncoder";
+}
+
 }  // namespace content

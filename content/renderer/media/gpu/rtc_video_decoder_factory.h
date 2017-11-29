@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
-#include "third_party/webrtc/media/engine/webrtcvideodecoderfactory.h"
+#include "third_party/webrtc/api/video_codecs/video_decoder_factory.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 
 namespace webrtc {
@@ -23,7 +23,7 @@ namespace content {
 
 // TODO(wuchengli): add unittest.
 class CONTENT_EXPORT RTCVideoDecoderFactory
-    : public cricket::WebRtcVideoDecoderFactory {
+    : public webrtc::VideoDecoderFactory {
  public:
   explicit RTCVideoDecoderFactory(
       media::GpuVideoAcceleratorFactories* gpu_factories);
@@ -31,12 +31,10 @@ class CONTENT_EXPORT RTCVideoDecoderFactory
 
   // Runs on Chrome_libJingle_WorkerThread. The child thread is blocked while
   // this runs.
-  webrtc::VideoDecoder* CreateVideoDecoder(
-      webrtc::VideoCodecType type) override;
+  std::unique_ptr<webrtc::VideoDecoder> CreateVideoDecoder(
+      const webrtc::SdpVideoFormat& format) override;
 
-  // Runs on Chrome_libJingle_WorkerThread. The child thread is blocked while
-  // this runs.
-  void DestroyVideoDecoder(webrtc::VideoDecoder* decoder) override;
+  std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override;
 
  private:
   media::GpuVideoAcceleratorFactories* gpu_factories_;

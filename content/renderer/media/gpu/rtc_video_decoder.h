@@ -85,6 +85,8 @@ class CONTENT_EXPORT RTCVideoDecoder
   // this runs.
   int32_t Release() override;
 
+  const char* ImplementationName() const override;
+
   // VideoDecodeAccelerator::Client implementation.
   void ProvidePictureBuffers(uint32_t count,
                              media::VideoPixelFormat format,
