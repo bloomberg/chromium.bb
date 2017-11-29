@@ -3282,7 +3282,9 @@ public class AwContents implements SmartClipProvider {
 
         @Override
         public boolean onDragEvent(DragEvent event) {
-            return mWebContents.getEventForwarder().onDragEvent(event, mContainerView);
+            return isDestroyedOrNoOperation(NO_WARN)
+                    ? false
+                    : mWebContents.getEventForwarder().onDragEvent(event, mContainerView);
         }
 
         @Override
