@@ -17,7 +17,7 @@ class TrayNetworkStateObserver : public chromeos::NetworkStateHandlerObserver {
    public:
     // Called when any interesting network changes occur. The frequency of this
     // event is limited to kUpdateFrequencyMs.
-    virtual void NetworkStateChanged() = 0;
+    virtual void NetworkStateChanged(bool notify_a11y) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -36,8 +36,8 @@ class TrayNetworkStateObserver : public chromeos::NetworkStateHandlerObserver {
   void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
 
  private:
-  void SignalUpdate();
-  void SendNetworkStateChanged();
+  void SignalUpdate(bool notify_a11y);
+  void SendNetworkStateChanged(bool notify_a11y);
 
   // Unowned Delegate pointer (must outlive this instance).
   Delegate* delegate_;
