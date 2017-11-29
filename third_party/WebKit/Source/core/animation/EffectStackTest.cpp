@@ -14,19 +14,18 @@
 #include "core/animation/PendingAnimations.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/animation/animatable/AnimatableDouble.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class AnimationEffectStackTest : public ::testing::Test {
+class AnimationEffectStackTest : public PageTestBase {
  protected:
   void SetUp() override {
-    page_holder = DummyPageHolder::Create();
-    document = &page_holder->GetDocument();
-    document->GetAnimationClock().ResetTimeForTesting();
-    timeline = DocumentTimeline::Create(document.Get());
-    element = document->createElement("foo");
+    PageTestBase::SetUp(IntSize());
+    GetDocument().GetAnimationClock().ResetTimeForTesting();
+    timeline = DocumentTimeline::Create(&GetDocument());
+    element = GetDocument().createElement("foo");
   }
 
   Animation* Play(KeyframeEffect* effect, double start_time) {
@@ -37,8 +36,8 @@ class AnimationEffectStackTest : public ::testing::Test {
   }
 
   void UpdateTimeline(double time) {
-    document->GetAnimationClock().UpdateTime(document->Timeline().ZeroTime() +
-                                             time);
+    GetDocument().GetAnimationClock().UpdateTime(
+        GetDocument().Timeline().ZeroTime() + time);
     timeline->ServiceAnimations(kTimingUpdateForAnimationFrame);
   }
 
@@ -79,7 +78,7 @@ class AnimationEffectStackTest : public ::testing::Test {
       const ActiveInterpolationsMap& active_interpolations) {
     const ActiveInterpolations& interpolations =
         active_interpolations.at(PropertyHandle(GetCSSPropertyFontSize()));
-    EnsureInterpolatedValueCached(interpolations, *document, element);
+    EnsureInterpolatedValueCached(interpolations, GetDocument(), element);
 
     const TypedInterpolationValue* typed_value =
         ToInvalidatableInterpolation(*interpolations.at(0))
@@ -94,7 +93,7 @@ class AnimationEffectStackTest : public ::testing::Test {
   double GetZIndexValue(const ActiveInterpolationsMap& active_interpolations) {
     const ActiveInterpolations& interpolations =
         active_interpolations.at(PropertyHandle(GetCSSPropertyZIndex()));
-    EnsureInterpolatedValueCached(interpolations, *document, element);
+    EnsureInterpolatedValueCached(interpolations, GetDocument(), element);
 
     const TypedInterpolationValue* typed_value =
         ToInvalidatableInterpolation(*interpolations.at(0))
@@ -104,8 +103,6 @@ class AnimationEffectStackTest : public ::testing::Test {
     return ToInterpolableNumber(&typed_value->GetInterpolableValue())->Value();
   }
 
-  std::unique_ptr<DummyPageHolder> page_holder;
-  Persistent<Document> document;
   Persistent<DocumentTimeline> timeline;
   Persistent<Element> element;
 };
@@ -172,7 +169,8 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyFontSize, "1px")), 2);
   Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyFontSize, "2px")), 6);
   Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyFontSize, "3px")), 4);
-  document->GetPendingAnimations().Update(Optional<CompositorElementIdSet>());
+  GetDocument().GetPendingAnimations().Update(
+      Optional<CompositorElementIdSet>());
   ActiveInterpolationsMap interpolations;
 
   UpdateTimeline(11);

@@ -14,31 +14,27 @@
 #include "core/dom/ShadowRootInit.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html_names.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class CustomElementUpgradeSorterTest : public ::testing::Test {
+class CustomElementUpgradeSorterTest : public PageTestBase {
  protected:
-  void SetUp() override { page_ = DummyPageHolder::Create(IntSize(1, 1)); }
-
-  void TearDown() override { page_ = nullptr; }
+  void SetUp() override { PageTestBase::SetUp(IntSize(1, 1)); }
 
   Element* CreateElementWithId(const char* local_name, const char* id) {
     NonThrowableExceptionState no_exceptions;
-    Element* element = GetDocument()->createElement(
+    Element* element = GetDocument().createElement(
         local_name, StringOrDictionary(), no_exceptions);
     element->setAttribute(HTMLNames::idAttr, id);
     return element;
   }
 
-  Document* GetDocument() { return &page_->GetDocument(); }
-
   ScriptState* GetScriptState() {
-    return ToScriptStateForMainWorld(&page_->GetFrame());
+    return ToScriptStateForMainWorld(&GetFrame());
   }
 
   ShadowRoot* AttachShadowTo(Element* element) {
@@ -48,15 +44,12 @@ class CustomElementUpgradeSorterTest : public ::testing::Test {
     return element->attachShadow(GetScriptState(), shadow_root_init,
                                  no_exceptions);
   }
-
- private:
-  std::unique_ptr<DummyPageHolder> page_;
 };
 
 TEST_F(CustomElementUpgradeSorterTest, inOtherDocument_notInSet) {
   NonThrowableExceptionState no_exceptions;
   Element* element =
-      GetDocument()->createElement("a-a", StringOrDictionary(), no_exceptions);
+      GetDocument().createElement("a-a", StringOrDictionary(), no_exceptions);
 
   Document* other_document = HTMLDocument::CreateForTest();
   other_document->AppendChild(element);
@@ -67,7 +60,7 @@ TEST_F(CustomElementUpgradeSorterTest, inOtherDocument_notInSet) {
   sorter.Add(element);
 
   HeapVector<Member<Element>> elements;
-  sorter.Sorted(&elements, GetDocument());
+  sorter.Sorted(&elements, &GetDocument());
   EXPECT_EQ(0u, elements.size())
       << "the adopted-away candidate should not have been included";
 }
@@ -75,14 +68,14 @@ TEST_F(CustomElementUpgradeSorterTest, inOtherDocument_notInSet) {
 TEST_F(CustomElementUpgradeSorterTest, oneCandidate) {
   NonThrowableExceptionState no_exceptions;
   Element* element =
-      GetDocument()->createElement("a-a", StringOrDictionary(), no_exceptions);
-  GetDocument()->documentElement()->AppendChild(element);
+      GetDocument().createElement("a-a", StringOrDictionary(), no_exceptions);
+  GetDocument().documentElement()->AppendChild(element);
 
   CustomElementUpgradeSorter sorter;
   sorter.Add(element);
 
   HeapVector<Member<Element>> elements;
-  sorter.Sorted(&elements, GetDocument());
+  sorter.Sorted(&elements, &GetDocument());
   EXPECT_EQ(1u, elements.size())
       << "exactly one candidate should be in the result set";
   EXPECT_TRUE(elements.Contains(element))
@@ -94,9 +87,9 @@ TEST_F(CustomElementUpgradeSorterTest, candidatesInDocumentOrder) {
   Element* b = CreateElementWithId("a-a", "b");
   Element* c = CreateElementWithId("a-a", "c");
 
-  GetDocument()->documentElement()->AppendChild(a);
+  GetDocument().documentElement()->AppendChild(a);
   a->AppendChild(b);
-  GetDocument()->documentElement()->AppendChild(c);
+  GetDocument().documentElement()->AppendChild(c);
 
   CustomElementUpgradeSorter sorter;
   sorter.Add(b);
@@ -104,7 +97,7 @@ TEST_F(CustomElementUpgradeSorterTest, candidatesInDocumentOrder) {
   sorter.Add(c);
 
   HeapVector<Member<Element>> elements;
-  sorter.Sorted(&elements, GetDocument());
+  sorter.Sorted(&elements, &GetDocument());
   EXPECT_EQ(3u, elements.size());
   EXPECT_EQ(a, elements[0].Get());
   EXPECT_EQ(b, elements[1].Get());
@@ -119,7 +112,7 @@ TEST_F(CustomElementUpgradeSorterTest, sorter_ancestorInSet) {
   Element* b = CreateElementWithId("a-a", "b");
   Element* c = CreateElementWithId("a-a", "c");
 
-  GetDocument()->documentElement()->AppendChild(a);
+  GetDocument().documentElement()->AppendChild(a);
   a->AppendChild(b);
   b->AppendChild(c);
 
@@ -128,7 +121,7 @@ TEST_F(CustomElementUpgradeSorterTest, sorter_ancestorInSet) {
   sort.Add(a);
 
   HeapVector<Member<Element>> elements;
-  sort.Sorted(&elements, GetDocument());
+  sort.Sorted(&elements, &GetDocument());
   EXPECT_EQ(2u, elements.size());
   EXPECT_EQ(a, elements[0].Get());
   EXPECT_EQ(c, elements[1].Get());
@@ -142,16 +135,16 @@ TEST_F(CustomElementUpgradeSorterTest, sorter_deepShallow) {
   Element* b = CreateElementWithId("a-a", "b");
   Element* c = CreateElementWithId("a-a", "c");
 
-  GetDocument()->documentElement()->AppendChild(a);
+  GetDocument().documentElement()->AppendChild(a);
   a->AppendChild(b);
-  GetDocument()->documentElement()->AppendChild(c);
+  GetDocument().documentElement()->AppendChild(c);
 
   CustomElementUpgradeSorter sort;
   sort.Add(b);
   sort.Add(c);
 
   HeapVector<Member<Element>> elements;
-  sort.Sorted(&elements, GetDocument());
+  sort.Sorted(&elements, &GetDocument());
   EXPECT_EQ(2u, elements.size());
   EXPECT_EQ(b, elements[0].Get());
   EXPECT_EQ(c, elements[1].Get());
@@ -165,8 +158,8 @@ TEST_F(CustomElementUpgradeSorterTest, sorter_shallowDeep) {
   Element* b = CreateElementWithId("a-a", "b");
   Element* c = CreateElementWithId("a-a", "c");
 
-  GetDocument()->documentElement()->AppendChild(a);
-  GetDocument()->documentElement()->AppendChild(b);
+  GetDocument().documentElement()->AppendChild(a);
+  GetDocument().documentElement()->AppendChild(b);
   b->AppendChild(c);
 
   CustomElementUpgradeSorter sort;
@@ -174,7 +167,7 @@ TEST_F(CustomElementUpgradeSorterTest, sorter_shallowDeep) {
   sort.Add(c);
 
   HeapVector<Member<Element>> elements;
-  sort.Sorted(&elements, GetDocument());
+  sort.Sorted(&elements, &GetDocument());
   EXPECT_EQ(2u, elements.size());
   EXPECT_EQ(a, elements[0].Get());
   EXPECT_EQ(c, elements[1].Get());
@@ -191,7 +184,7 @@ TEST_F(CustomElementUpgradeSorterTest, sorter_shadow) {
   Element* c = CreateElementWithId("a-a", "c");
   Element* d = CreateElementWithId("a-a", "d");
 
-  GetDocument()->documentElement()->AppendChild(a);
+  GetDocument().documentElement()->AppendChild(a);
   ShadowRoot* s = AttachShadowTo(a);
   a->AppendChild(d);
 
@@ -204,7 +197,7 @@ TEST_F(CustomElementUpgradeSorterTest, sorter_shadow) {
   sort.Add(d);
 
   HeapVector<Member<Element>> elements;
-  sort.Sorted(&elements, GetDocument());
+  sort.Sorted(&elements, &GetDocument());
   EXPECT_EQ(3u, elements.size());
   EXPECT_EQ(a, elements[0].Get());
   EXPECT_EQ(c, elements[1].Get());
