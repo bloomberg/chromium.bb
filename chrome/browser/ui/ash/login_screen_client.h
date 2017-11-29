@@ -78,6 +78,9 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
                  bool show_guest);
   void SetPinEnabledForUser(const AccountId& account_id, bool is_enabled);
   void HandleFocusLeavingLockScreenApps(bool reverse);
+  void SetDevChannelInfo(const std::string& os_version_label_text,
+                         const std::string& enterprise_info_text,
+                         const std::string& bluetooth_name);
 
   void SetDelegate(Delegate* delegate);
 

@@ -66,6 +66,14 @@ interface LoginScreen {
   // Requests focus to be handed off to the next suitable widget.
   // |reverse|:   Whether the tab order is reversed.
   HandleFocusLeavingLockScreenApps(bool reverse);
+
+  // Called when the info shown for dev and canary channels are changed.
+  // |os_version_label_text|: The OS version.
+  // |enterprise_info_text|:  The enterprise info.
+  // |bluetooth_name|:        The name of the bluetooth adapter.
+  SetDevChannelInfo(string os_version_label_text,
+                    string enterprise_info_text,
+                    string bluetooth_name);
 };
 
 // Allows ash lock screen to control a client (e.g. Chrome browser). Requests

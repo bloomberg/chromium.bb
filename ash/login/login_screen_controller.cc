@@ -112,6 +112,16 @@ void LoginScreenController::SetPinEnabledForUser(const AccountId& account_id,
     DataDispatcher()->SetPinEnabledForUser(account_id, is_enabled);
 }
 
+void LoginScreenController::SetDevChannelInfo(
+    const std::string& os_version_label_text,
+    const std::string& enterprise_info_text,
+    const std::string& bluetooth_name) {
+  if (DataDispatcher()) {
+    DataDispatcher()->SetDevChannelInfo(os_version_label_text,
+                                        enterprise_info_text, bluetooth_name);
+  }
+}
+
 void LoginScreenController::AuthenticateUser(
     const AccountId& account_id,
     const std::string& password,
