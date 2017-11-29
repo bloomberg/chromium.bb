@@ -558,11 +558,11 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SAFE_BROWSING_SUMMARY" desc="Summary for safe browsing.">
         Protect you and your device from dangerous sites
       </message>
-      <message name="IDS_NETWORK_PREDICTIONS_TITLE" desc="Title of a setting in Chrome settings. Followed by a body that describes what pages are downloaded. If setting is turned on, Chrome will download certain pages to the user’s phone automatically for offline reading. “Download” is a verb, imperative. ">
-        Automatically download pages
+      <message name="IDS_NETWORK_PREDICTIONS_TITLE" desc="Title of a setting in Chrome settings. Followed by a body that describes the setting. If setting is turned on, Chrome will download certain pages to the user’s phone automatically for offline reading. 'predictions' convey the idea that Chrome is using predictive models to figure out pages likely of interest to the user.">
+        Use page predictions
       </message>
-      <message name="IDS_NETWORK_PREDICTIONS_SUMMARY" desc="Body text for the “Automatically download pages” setting in Chrome settings. Describes what happens if the setting is turned on. Load pages refers to how quickly website pages load. Offline reading refers to the ability to access the pages without a network connection.">
-        Load pages more quickly and save popular pages for offline reading
+      <message name="IDS_NETWORK_PREDICTIONS_SUMMARY" desc="Body text for the “Use page predictions” setting in Chrome settings. Describes what happens if the setting is turned on. 'Preload' conveys the idea that Chrome is getting pages for the user without their explicit interaction or consent.">
+        Preload pages for faster loading and offline reading
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_TITLE" desc="Name for the Contextual Search feature, which allows users to search for a term in a web page by tapping on it.">
         Touch to Search
