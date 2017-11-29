@@ -17,12 +17,10 @@ FakeBleConnectionManager::StatusAndRegisteredMessageTypes::
 
 FakeBleConnectionManager::StatusAndRegisteredMessageTypes::
     StatusAndRegisteredMessageTypes(
-        const StatusAndRegisteredMessageTypes& other)
-    : status(other.status),
-      registered_message_types(other.registered_message_types) {}
+        const StatusAndRegisteredMessageTypes& other) = default;
 
 FakeBleConnectionManager::StatusAndRegisteredMessageTypes::
-    ~StatusAndRegisteredMessageTypes() {}
+    ~StatusAndRegisteredMessageTypes() = default;
 
 FakeBleConnectionManager::FakeBleConnectionManager()
     : BleConnectionManager(nullptr,
@@ -32,7 +30,7 @@ FakeBleConnectionManager::FakeBleConnectionManager()
                            nullptr,
                            nullptr) {}
 
-FakeBleConnectionManager::~FakeBleConnectionManager() {}
+FakeBleConnectionManager::~FakeBleConnectionManager() = default;
 
 void FakeBleConnectionManager::SetDeviceStatus(
     const cryptauth::RemoteDevice& remote_device,

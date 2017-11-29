@@ -105,15 +105,10 @@ NetworkConnectionHandlerImpl::ConnectRequest::ConnectRequest(
       success_callback(success),
       error_callback(error) {}
 
-NetworkConnectionHandlerImpl::ConnectRequest::~ConnectRequest() {}
+NetworkConnectionHandlerImpl::ConnectRequest::~ConnectRequest() = default;
 
 NetworkConnectionHandlerImpl::ConnectRequest::ConnectRequest(
-    const ConnectRequest& other)
-    : service_path(other.service_path),
-      profile_path(other.profile_path),
-      connect_state(other.connect_state),
-      success_callback(other.success_callback),
-      error_callback(other.error_callback) {}
+    const ConnectRequest& other) = default;
 
 NetworkConnectionHandlerImpl::NetworkConnectionHandlerImpl()
     : cert_loader_(NULL),

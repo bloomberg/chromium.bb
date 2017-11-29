@@ -21,7 +21,7 @@ const char kAccountId[] = "user-account-id";
 
 class FakeAuthPolicyClientTest : public ::testing::Test {
  public:
-  FakeAuthPolicyClientTest() {}
+  FakeAuthPolicyClientTest() = default;
 
  protected:
   FakeAuthPolicyClient* authpolicy_client() { return &client_; }

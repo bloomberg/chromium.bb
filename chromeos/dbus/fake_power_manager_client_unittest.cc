@@ -22,7 +22,7 @@ const power_manager::PowerSupplyProperties_ExternalPower kInitialExternalPower =
 class TestObserver : public PowerManagerClient::Observer {
  public:
   TestObserver() : num_power_changed_(0) {}
-  ~TestObserver() override {}
+  ~TestObserver() override = default;
 
   const power_manager::PowerSupplyProperties& props() const { return props_; }
   int num_power_changed() const { return num_power_changed_; }

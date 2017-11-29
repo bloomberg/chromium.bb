@@ -61,7 +61,7 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
   TestNetworkConnectionHandler(
       const base::Callback<void(const std::string&)>& disconnect_handler)
       : NetworkConnectionHandler(), disconnect_handler_(disconnect_handler) {}
-  ~TestNetworkConnectionHandler() override {}
+  ~TestNetworkConnectionHandler() override = default;
 
   // NetworkConnectionHandler:
   void DisconnectNetwork(

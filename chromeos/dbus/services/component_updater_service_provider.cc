@@ -22,7 +22,7 @@ ComponentUpdaterServiceProvider::ComponentUpdaterServiceProvider(
     std::unique_ptr<Delegate> delegate)
     : delegate_(std::move(delegate)), weak_ptr_factory_(this) {}
 
-ComponentUpdaterServiceProvider::~ComponentUpdaterServiceProvider() {}
+ComponentUpdaterServiceProvider::~ComponentUpdaterServiceProvider() = default;
 
 void ComponentUpdaterServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {

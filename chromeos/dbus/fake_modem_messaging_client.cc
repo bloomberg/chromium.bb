@@ -14,8 +14,8 @@
 
 namespace chromeos {
 
-FakeModemMessagingClient::FakeModemMessagingClient() {}
-FakeModemMessagingClient::~FakeModemMessagingClient() {}
+FakeModemMessagingClient::FakeModemMessagingClient() = default;
+FakeModemMessagingClient::~FakeModemMessagingClient() = default;
 
 void FakeModemMessagingClient::Init(dbus::Bus* bus) {}
 

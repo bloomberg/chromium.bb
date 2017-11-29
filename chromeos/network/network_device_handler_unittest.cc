@@ -34,7 +34,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
   NetworkDeviceHandlerTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
-  ~NetworkDeviceHandlerTest() override {}
+  ~NetworkDeviceHandlerTest() override = default;
 
   void SetUp() override {
     fake_device_client_ = new FakeShillDeviceClient;

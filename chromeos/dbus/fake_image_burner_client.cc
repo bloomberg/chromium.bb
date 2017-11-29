@@ -8,11 +8,9 @@
 
 namespace chromeos {
 
-FakeImageBurnerClient::FakeImageBurnerClient() {
-}
+FakeImageBurnerClient::FakeImageBurnerClient() = default;
 
-FakeImageBurnerClient::~FakeImageBurnerClient() {
-}
+FakeImageBurnerClient::~FakeImageBurnerClient() = default;
 
 void FakeImageBurnerClient::Init(dbus::Bus* bus) {
 }

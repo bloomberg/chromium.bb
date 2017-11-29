@@ -274,9 +274,9 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
 
 }  // namespace
 
-ShillDeviceClient::ShillDeviceClient() {}
+ShillDeviceClient::ShillDeviceClient() = default;
 
-ShillDeviceClient::~ShillDeviceClient() {}
+ShillDeviceClient::~ShillDeviceClient() = default;
 
 // static
 ShillDeviceClient* ShillDeviceClient::Create() {

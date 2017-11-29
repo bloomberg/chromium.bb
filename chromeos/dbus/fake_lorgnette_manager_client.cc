@@ -14,9 +14,9 @@
 
 namespace chromeos {
 
-FakeLorgnetteManagerClient::FakeLorgnetteManagerClient() {}
+FakeLorgnetteManagerClient::FakeLorgnetteManagerClient() = default;
 
-FakeLorgnetteManagerClient::~FakeLorgnetteManagerClient() {}
+FakeLorgnetteManagerClient::~FakeLorgnetteManagerClient() = default;
 
 void FakeLorgnetteManagerClient::Init(dbus::Bus* bus) {}
 

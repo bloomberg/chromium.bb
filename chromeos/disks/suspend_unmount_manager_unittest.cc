@@ -50,7 +50,7 @@ class SuspendUnmountManagerTest : public testing::Test {
  public:
   SuspendUnmountManagerTest()
       : suspend_unmount_manager_(&disk_mount_manager_, &fake_power_client_) {}
-  ~SuspendUnmountManagerTest() override {}
+  ~SuspendUnmountManagerTest() override = default;
 
  protected:
   FakeDiskMountManager disk_mount_manager_;

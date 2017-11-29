@@ -34,7 +34,7 @@ NetworkConnectionHandlerTetherDelegate::Callbacks::Callbacks(
 NetworkConnectionHandlerTetherDelegate::Callbacks::Callbacks(
     const Callbacks& other) = default;
 
-NetworkConnectionHandlerTetherDelegate::Callbacks::~Callbacks() {}
+NetworkConnectionHandlerTetherDelegate::Callbacks::~Callbacks() = default;
 
 NetworkConnectionHandlerTetherDelegate::NetworkConnectionHandlerTetherDelegate(
     NetworkConnectionHandler* network_connection_handler,

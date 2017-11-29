@@ -52,8 +52,7 @@ CertificateImporterImpl::CertificateImporterImpl(
   CHECK(target_nssdb);
 }
 
-CertificateImporterImpl::~CertificateImporterImpl() {
-}
+CertificateImporterImpl::~CertificateImporterImpl() = default;
 
 void CertificateImporterImpl::ImportCertificates(
     const base::ListValue& certificates,

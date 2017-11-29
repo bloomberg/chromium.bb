@@ -117,7 +117,6 @@ void StubAuthenticator::SetExpectedCredentials(
   expected_user_context_ = user_context;
 }
 
-StubAuthenticator::~StubAuthenticator() {
-}
+StubAuthenticator::~StubAuthenticator() = default;
 
 }  // namespace chromeos

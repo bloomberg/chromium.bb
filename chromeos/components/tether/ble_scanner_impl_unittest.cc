@@ -32,7 +32,7 @@ namespace {
 
 class TestBleScannerObserver final : public BleScanner::Observer {
  public:
-  TestBleScannerObserver() {}
+  TestBleScannerObserver() = default;
 
   std::vector<std::string>& device_addresses() { return device_addresses_; }
 
@@ -165,9 +165,9 @@ class BleScannerImplTest : public testing::Test {
  protected:
   class TestServiceDataProvider : public BleScannerImpl::ServiceDataProvider {
    public:
-    TestServiceDataProvider() {}
+    TestServiceDataProvider() = default;
 
-    ~TestServiceDataProvider() override {}
+    ~TestServiceDataProvider() override = default;
 
     // ServiceDataProvider:
     const std::vector<uint8_t>* GetServiceDataForUUID(

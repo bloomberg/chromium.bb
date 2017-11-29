@@ -339,8 +339,7 @@ class TimezoneSettingsStubImpl : public TimezoneSettingsBaseImpl {
   DISALLOW_COPY_AND_ASSIGN(TimezoneSettingsStubImpl);
 };
 
-TimezoneSettingsBaseImpl::~TimezoneSettingsBaseImpl() {
-}
+TimezoneSettingsBaseImpl::~TimezoneSettingsBaseImpl() = default;
 
 const icu::TimeZone& TimezoneSettingsBaseImpl::GetTimezone() {
   return *timezone_.get();
@@ -470,7 +469,7 @@ TimezoneSettingsStubImpl::TimezoneSettingsStubImpl() {
 namespace chromeos {
 namespace system {
 
-TimezoneSettings::Observer::~Observer() {}
+TimezoneSettings::Observer::~Observer() = default;
 
 // static
 TimezoneSettings* TimezoneSettings::GetInstance() {

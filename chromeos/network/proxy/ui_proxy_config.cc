@@ -21,7 +21,7 @@ UIProxyConfig::UIProxyConfig()
       state(ProxyPrefs::CONFIG_UNSET),
       user_modifiable(true) {}
 
-UIProxyConfig::~UIProxyConfig() {}
+UIProxyConfig::~UIProxyConfig() = default;
 
 void UIProxyConfig::SetPacUrl(const GURL& pac_url) {
   mode = UIProxyConfig::MODE_PAC_SCRIPT;

@@ -31,7 +31,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   LorgnetteManagerClientImpl() :
       lorgnette_daemon_proxy_(NULL), weak_ptr_factory_(this) {}
 
-  ~LorgnetteManagerClientImpl() override {}
+  ~LorgnetteManagerClientImpl() override = default;
 
   void ListScanners(const ListScannersCallback& callback) override {
     dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,
@@ -234,11 +234,9 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   DISALLOW_COPY_AND_ASSIGN(LorgnetteManagerClientImpl);
 };
 
-LorgnetteManagerClient::LorgnetteManagerClient() {
-}
+LorgnetteManagerClient::LorgnetteManagerClient() = default;
 
-LorgnetteManagerClient::~LorgnetteManagerClient() {
-}
+LorgnetteManagerClient::~LorgnetteManagerClient() = default;
 
 // static
 LorgnetteManagerClient* LorgnetteManagerClient::Create() {

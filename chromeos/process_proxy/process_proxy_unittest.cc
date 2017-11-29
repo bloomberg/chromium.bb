@@ -43,8 +43,8 @@ void RunOnTaskRunner(
 
 class TestRunner {
  public:
-  TestRunner() {}
-  virtual ~TestRunner() {}
+  TestRunner() = default;
+  virtual ~TestRunner() = default;
   virtual void SetupExpectations(int terminal_id) = 0;
   virtual void OnSomeRead(int terminal_id,
                           const std::string& type,
@@ -63,7 +63,7 @@ class TestRunner {
 
 class RegistryTestRunner : public TestRunner {
  public:
-  ~RegistryTestRunner() override {}
+  ~RegistryTestRunner() override = default;
 
   void SetupExpectations(int terminal_id) override {
     terminal_id_ = terminal_id;
@@ -141,7 +141,7 @@ class RegistryTestRunner : public TestRunner {
 
 class RegistryNotifiedOnProcessExitTestRunner : public TestRunner {
  public:
-  ~RegistryNotifiedOnProcessExitTestRunner() override {}
+  ~RegistryNotifiedOnProcessExitTestRunner() override = default;
 
   void SetupExpectations(int terminal_id) override {
     output_received_ = false;
@@ -178,8 +178,8 @@ class RegistryNotifiedOnProcessExitTestRunner : public TestRunner {
 
 class ProcessProxyTest : public testing::Test {
  public:
-  ProcessProxyTest() {}
-  ~ProcessProxyTest() override {}
+  ProcessProxyTest() = default;
+  ~ProcessProxyTest() override = default;
 
  protected:
   void InitRegistryTest(base::OnceClosure done_closure) {

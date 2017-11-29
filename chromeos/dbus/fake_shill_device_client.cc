@@ -68,8 +68,7 @@ FakeShillDeviceClient::FakeShillDeviceClient()
       tdls_busy_count_(0),
       weak_ptr_factory_(this) {}
 
-FakeShillDeviceClient::~FakeShillDeviceClient() {
-}
+FakeShillDeviceClient::~FakeShillDeviceClient() = default;
 
 // ShillDeviceClient overrides.
 

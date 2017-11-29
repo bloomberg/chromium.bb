@@ -116,7 +116,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
  public:
   DebugDaemonClientImpl() : debugdaemon_proxy_(NULL), weak_ptr_factory_(this) {}
 
-  ~DebugDaemonClientImpl() override {}
+  ~DebugDaemonClientImpl() override = default;
 
   // DebugDaemonClient override.
   void DumpDebugLogs(bool is_compressed,
@@ -712,11 +712,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   DISALLOW_COPY_AND_ASSIGN(DebugDaemonClientImpl);
 };
 
-DebugDaemonClient::DebugDaemonClient() {
-}
+DebugDaemonClient::DebugDaemonClient() = default;
 
-DebugDaemonClient::~DebugDaemonClient() {
-}
+DebugDaemonClient::~DebugDaemonClient() = default;
 
 // static
 DebugDaemonClient::StopAgentTracingCallback

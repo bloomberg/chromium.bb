@@ -48,7 +48,7 @@ class CrashRecoveryManagerImplTest : public NetworkStateTest {
  protected:
   CrashRecoveryManagerImplTest()
       : test_device_(cryptauth::GenerateTestRemoteDevices(1u)[0]) {}
-  ~CrashRecoveryManagerImplTest() override {}
+  ~CrashRecoveryManagerImplTest() override = default;
 
   void SetUp() override {
     DBusThreadManager::Initialize();

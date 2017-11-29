@@ -101,7 +101,7 @@ class MockBluetoothAdapterWithAdvertisements
   }
 
  protected:
-  ~MockBluetoothAdapterWithAdvertisements() override {}
+  ~MockBluetoothAdapterWithAdvertisements() override = default;
 };
 
 class FakeBluetoothAdvertisement : public device::BluetoothAdvertisement {
@@ -124,7 +124,7 @@ class FakeBluetoothAdvertisement : public device::BluetoothAdvertisement {
   }
 
  private:
-  ~FakeBluetoothAdvertisement() override {}
+  ~FakeBluetoothAdvertisement() override = default;
 
   base::Callback<void(const device::BluetoothAdvertisement::SuccessCallback&,
                       const device::BluetoothAdvertisement::ErrorCallback&)>
@@ -143,7 +143,7 @@ class FakeDiscoverySession : public device::MockBluetoothDiscoverySession {
                const device::BluetoothDiscoverySession::ErrorCallback&)>&
           stop_callback)
       : stop_callback_(stop_callback) {}
-  ~FakeDiscoverySession() override {}
+  ~FakeDiscoverySession() override = default;
 
   // BluetoothDiscoverySession:
   void Stop(const base::Closure& callback,

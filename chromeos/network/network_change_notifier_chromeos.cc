@@ -33,11 +33,9 @@ class NetworkChangeNotifierChromeos::DnsConfigService
   virtual void OnNetworkChange();
 };
 
-NetworkChangeNotifierChromeos::DnsConfigService::DnsConfigService() {
-}
+NetworkChangeNotifierChromeos::DnsConfigService::DnsConfigService() = default;
 
-NetworkChangeNotifierChromeos::DnsConfigService::~DnsConfigService() {
-}
+NetworkChangeNotifierChromeos::DnsConfigService::~DnsConfigService() = default;
 
 bool NetworkChangeNotifierChromeos::DnsConfigService::StartWatching() {
   // DNS config changes are handled and notified by the network state handlers.
@@ -62,8 +60,7 @@ NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
                               weak_ptr_factory_.GetWeakPtr());
 }
 
-NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
-}
+NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() = default;
 
 void NetworkChangeNotifierChromeos::Initialize() {
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);

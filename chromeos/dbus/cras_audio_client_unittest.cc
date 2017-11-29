@@ -84,8 +84,8 @@ const AudioNode kInternalMicV2(true,
 // A mock CrasAudioClient Observer.
 class MockObserver : public CrasAudioClient::Observer {
  public:
-  MockObserver() {}
-  ~MockObserver() override {}
+  MockObserver() = default;
+  ~MockObserver() override = default;
   MOCK_METHOD1(OutputMuteChanged, void(bool mute_on));
   MOCK_METHOD1(InputMuteChanged, void(bool mute_on));
   MOCK_METHOD0(NodesChanged, void());

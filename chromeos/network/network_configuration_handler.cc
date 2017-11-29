@@ -468,8 +468,7 @@ void NetworkConfigurationHandler::OnShuttingDown() {
 NetworkConfigurationHandler::NetworkConfigurationHandler()
     : network_state_handler_(nullptr), weak_ptr_factory_(this) {}
 
-NetworkConfigurationHandler::~NetworkConfigurationHandler() {
-}
+NetworkConfigurationHandler::~NetworkConfigurationHandler() = default;
 
 void NetworkConfigurationHandler::Init(
     NetworkStateHandler* network_state_handler,

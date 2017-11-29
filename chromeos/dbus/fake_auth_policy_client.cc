@@ -81,9 +81,9 @@ void StoreDevicePolicy(
 
 namespace chromeos {
 
-FakeAuthPolicyClient::FakeAuthPolicyClient() {}
+FakeAuthPolicyClient::FakeAuthPolicyClient() = default;
 
-FakeAuthPolicyClient::~FakeAuthPolicyClient() {}
+FakeAuthPolicyClient::~FakeAuthPolicyClient() = default;
 
 void FakeAuthPolicyClient::Init(dbus::Bus* bus) {}
 

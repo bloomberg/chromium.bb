@@ -94,7 +94,7 @@ bool ShouldIncludeNetworkInList(const NetworkState* network_state,
 const char NetworkStateHandler::kDefaultCheckPortalList[] =
     "ethernet,wifi,cellular";
 
-NetworkStateHandler::NetworkStateHandler() {}
+NetworkStateHandler::NetworkStateHandler() = default;
 
 NetworkStateHandler::~NetworkStateHandler() {
   // Normally Shutdown() will get called in ~NetworkHandler, however unit

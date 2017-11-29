@@ -38,7 +38,7 @@ HostScanDevicePrioritizerImpl::HostScanDevicePrioritizerImpl(
     TetherHostResponseRecorder* tether_host_response_recorder)
     : tether_host_response_recorder_(tether_host_response_recorder) {}
 
-HostScanDevicePrioritizerImpl::~HostScanDevicePrioritizerImpl() {}
+HostScanDevicePrioritizerImpl::~HostScanDevicePrioritizerImpl() = default;
 
 void HostScanDevicePrioritizerImpl::SortByHostScanOrder(
     std::vector<cryptauth::RemoteDevice>* remote_devices) const {

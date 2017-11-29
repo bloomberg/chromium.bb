@@ -27,8 +27,7 @@ DeviceState::DeviceState(const std::string& path)
       eap_authentication_completed_(false) {
 }
 
-DeviceState::~DeviceState() {
-}
+DeviceState::~DeviceState() = default;
 
 bool DeviceState::PropertyChanged(const std::string& key,
                                   const base::Value& value) {

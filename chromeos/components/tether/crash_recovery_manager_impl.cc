@@ -40,7 +40,7 @@ void CrashRecoveryManagerImpl::Factory::SetInstanceForTesting(
   factory_instance_ = factory;
 }
 
-CrashRecoveryManagerImpl::Factory::~Factory() {}
+CrashRecoveryManagerImpl::Factory::~Factory() = default;
 
 std::unique_ptr<CrashRecoveryManager>
 CrashRecoveryManagerImpl::Factory::BuildInstance(
@@ -60,7 +60,7 @@ CrashRecoveryManagerImpl::CrashRecoveryManagerImpl(
       host_scan_cache_(host_scan_cache),
       weak_ptr_factory_(this) {}
 
-CrashRecoveryManagerImpl::~CrashRecoveryManagerImpl() {}
+CrashRecoveryManagerImpl::~CrashRecoveryManagerImpl() = default;
 
 void CrashRecoveryManagerImpl::RestorePreCrashStateIfNecessary(
     const base::Closure& on_restoration_finished) {

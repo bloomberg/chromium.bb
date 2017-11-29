@@ -14,11 +14,9 @@
 namespace chromeos {
 namespace onc {
 
-Mapper::Mapper() {
-}
+Mapper::Mapper() = default;
 
-Mapper::~Mapper() {
-}
+Mapper::~Mapper() = default;
 
 std::unique_ptr<base::Value> Mapper::MapValue(
     const OncValueSignature& signature,

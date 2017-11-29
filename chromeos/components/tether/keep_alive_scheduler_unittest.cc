@@ -58,7 +58,7 @@ class FakeKeepAliveOperationFactory final : public KeepAliveOperation::Factory,
  public:
   FakeKeepAliveOperationFactory()
       : num_created_(0), num_deleted_(0), last_created_(nullptr) {}
-  ~FakeKeepAliveOperationFactory() {}
+  ~FakeKeepAliveOperationFactory() = default;
 
   uint32_t num_created() { return num_created_; }
 

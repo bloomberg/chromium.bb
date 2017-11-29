@@ -32,7 +32,7 @@ TetherHostResponseRecorder::TetherHostResponseRecorder(
     PrefService* pref_service)
     : pref_service_(pref_service) {}
 
-TetherHostResponseRecorder::~TetherHostResponseRecorder() {}
+TetherHostResponseRecorder::~TetherHostResponseRecorder() = default;
 
 void TetherHostResponseRecorder::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);

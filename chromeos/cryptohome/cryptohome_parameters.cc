@@ -30,7 +30,7 @@ const std::string GetCryptohomeId(const AccountId& account_id) {
 
 }  //  anonymous namespace
 
-Identification::Identification() {}
+Identification::Identification() = default;
 
 Identification::Identification(const AccountId& account_id)
     : id_(GetCryptohomeId(account_id)) {}
@@ -115,8 +115,7 @@ KeyDefinition::AuthorizationData::AuthorizationData(
 KeyDefinition::AuthorizationData::AuthorizationData(
     const AuthorizationData& other) = default;
 
-KeyDefinition::AuthorizationData::~AuthorizationData() {
-}
+KeyDefinition::AuthorizationData::~AuthorizationData() = default;
 
 bool KeyDefinition::AuthorizationData::operator==(
     const AuthorizationData& other) const {
@@ -129,8 +128,7 @@ bool KeyDefinition::AuthorizationData::operator==(
   return true;
 }
 
-KeyDefinition::ProviderData::ProviderData() {
-}
+KeyDefinition::ProviderData::ProviderData() = default;
 
 KeyDefinition::ProviderData::ProviderData(const std::string& name)
     : name(name) {
@@ -160,8 +158,7 @@ void KeyDefinition::ProviderData::operator=(const ProviderData& other) {
   bytes.reset(other.bytes ? new std::string(*other.bytes) : NULL);
 }
 
-KeyDefinition::ProviderData::~ProviderData() {
-}
+KeyDefinition::ProviderData::~ProviderData() = default;
 
 bool KeyDefinition::ProviderData::operator==(const ProviderData& other) const {
   const bool has_number = number != nullptr;
@@ -192,8 +189,7 @@ KeyDefinition::KeyDefinition(const std::string& secret,
 
 KeyDefinition::KeyDefinition(const KeyDefinition& other) = default;
 
-KeyDefinition::~KeyDefinition() {
-}
+KeyDefinition::~KeyDefinition() = default;
 
 bool KeyDefinition::operator==(const KeyDefinition& other) const {
   if (type != other.type ||

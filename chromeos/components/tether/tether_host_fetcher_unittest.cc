@@ -37,7 +37,7 @@ const char kTestUserPrivateKey[] = "kTestUserPrivateKey";
 
 class MockCryptAuthDeviceManager : public cryptauth::CryptAuthDeviceManager {
  public:
-  ~MockCryptAuthDeviceManager() override {}
+  ~MockCryptAuthDeviceManager() override = default;
 
   MOCK_CONST_METHOD0(GetTetherHosts,
                      std::vector<cryptauth::ExternalDeviceInfo>());
@@ -55,7 +55,7 @@ class MockCryptAuthEnrollmentManager
             cryptauth::GcmDeviceInfo(),
             fake_cryptauth_gcm_manager,
             nullptr /* pref_service */) {}
-  ~MockCryptAuthEnrollmentManager() override {}
+  ~MockCryptAuthEnrollmentManager() override = default;
 
   MOCK_CONST_METHOD0(GetUserPrivateKey, std::string());
 };
@@ -90,7 +90,7 @@ class MockDeviceLoader : public cryptauth::RemoteDeviceLoader {
             "",
             "",
             nullptr) {}
-  ~MockDeviceLoader() override {}
+  ~MockDeviceLoader() override = default;
 
   MOCK_METHOD2(
       Load,

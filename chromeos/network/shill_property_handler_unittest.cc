@@ -166,7 +166,7 @@ class ShillPropertyHandlerTest : public testing::Test {
         device_test_(NULL),
         service_test_(NULL),
         profile_test_(NULL) {}
-  ~ShillPropertyHandlerTest() override {}
+  ~ShillPropertyHandlerTest() override = default;
 
   void SetUp() override {
     // Initialize DBusThreadManager with a stub implementation.

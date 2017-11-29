@@ -36,7 +36,7 @@ class BiodClientImpl : public BiodClient {
  public:
   BiodClientImpl() : weak_ptr_factory_(this) {}
 
-  ~BiodClientImpl() override {}
+  ~BiodClientImpl() override = default;
 
   // BiodClient overrides:
   void AddObserver(Observer* observer) override {
@@ -405,9 +405,9 @@ class BiodClientImpl : public BiodClient {
   DISALLOW_COPY_AND_ASSIGN(BiodClientImpl);
 };
 
-BiodClient::BiodClient() {}
+BiodClient::BiodClient() = default;
 
-BiodClient::~BiodClient() {}
+BiodClient::~BiodClient() = default;
 
 // static
 BiodClient* BiodClient::Create(DBusClientImplementationType type) {

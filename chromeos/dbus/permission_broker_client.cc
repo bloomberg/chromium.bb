@@ -173,9 +173,9 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
   DISALLOW_COPY_AND_ASSIGN(PermissionBrokerClientImpl);
 };
 
-PermissionBrokerClient::PermissionBrokerClient() {}
+PermissionBrokerClient::PermissionBrokerClient() = default;
 
-PermissionBrokerClient::~PermissionBrokerClient() {}
+PermissionBrokerClient::~PermissionBrokerClient() = default;
 
 PermissionBrokerClient* PermissionBrokerClient::Create() {
   return new PermissionBrokerClientImpl();

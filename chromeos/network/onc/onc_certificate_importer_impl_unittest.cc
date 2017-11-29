@@ -28,8 +28,8 @@ namespace onc {
 
 class ONCCertificateImporterImplTest : public testing::Test {
  public:
-  ONCCertificateImporterImplTest() {}
-  ~ONCCertificateImporterImplTest() override {}
+  ONCCertificateImporterImplTest() = default;
+  ~ONCCertificateImporterImplTest() override = default;
 
   void SetUp() override {
     ASSERT_TRUE(public_nssdb_.is_open());

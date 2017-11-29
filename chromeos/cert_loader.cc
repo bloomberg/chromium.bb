@@ -220,8 +220,7 @@ CertLoader::CertLoader() : weak_factory_(this) {
       base::BindRepeating(&CertLoader::CacheUpdated, base::Unretained(this)));
 }
 
-CertLoader::~CertLoader() {
-}
+CertLoader::~CertLoader() = default;
 
 void CertLoader::SetSystemNSSDB(net::NSSCertDatabase* system_slot_database) {
   system_cert_cache_->SetNSSDB(system_slot_database);

@@ -212,7 +212,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
 
  private:
   struct CallbackElement {
-    CallbackElement() {}
+    CallbackElement() = default;
     explicit CallbackElement(const AsyncMethodCaller::Callback& callback)
         : callback(callback),
           task_runner(base::ThreadTaskRunnerHandle::Get()) {}
@@ -221,7 +221,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
   };
 
   struct DataCallbackElement {
-    DataCallbackElement() {}
+    DataCallbackElement() = default;
     explicit DataCallbackElement(
         const AsyncMethodCaller::DataCallback& callback)
         : data_callback(callback),

@@ -12,8 +12,7 @@ Authenticator::Authenticator(AuthStatusConsumer* consumer)
     : consumer_(consumer), authentication_context_(NULL) {
 }
 
-Authenticator::~Authenticator() {
-}
+Authenticator::~Authenticator() = default;
 
 void Authenticator::SetConsumer(AuthStatusConsumer* consumer) {
   consumer_ = consumer;

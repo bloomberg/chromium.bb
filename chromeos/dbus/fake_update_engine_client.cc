@@ -17,8 +17,7 @@ FakeUpdateEngineClient::FakeUpdateEngineClient()
       rollback_call_count_(0),
       can_rollback_call_count_(0) {}
 
-FakeUpdateEngineClient::~FakeUpdateEngineClient() {
-}
+FakeUpdateEngineClient::~FakeUpdateEngineClient() = default;
 
 void FakeUpdateEngineClient::Init(dbus::Bus* bus) {
 }

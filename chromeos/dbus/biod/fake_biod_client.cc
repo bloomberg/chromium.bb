@@ -41,9 +41,9 @@ struct FakeBiodClient::FakeRecord {
   std::vector<std::string> fake_fingerprint;
 };
 
-FakeBiodClient::FakeBiodClient() {}
+FakeBiodClient::FakeBiodClient() = default;
 
-FakeBiodClient::~FakeBiodClient() {}
+FakeBiodClient::~FakeBiodClient() = default;
 
 void FakeBiodClient::SendEnrollScanDone(const std::string& fingerprint,
                                         biod::ScanResult type_result,

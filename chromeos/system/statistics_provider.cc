@@ -422,8 +422,7 @@ StatisticsProviderImpl::StatisticsProviderImpl()
       &GetInitialTimezoneFromRegionalData;
 }
 
-StatisticsProviderImpl::~StatisticsProviderImpl() {
-}
+StatisticsProviderImpl::~StatisticsProviderImpl() = default;
 
 void StatisticsProviderImpl::StartLoadingMachineStatistics(
     bool load_oem_manifest) {

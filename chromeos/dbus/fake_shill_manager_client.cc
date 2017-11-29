@@ -151,7 +151,7 @@ FakeShillManagerClient::FakeShillManagerClient()
   ParseCommandLineSwitch();
 }
 
-FakeShillManagerClient::~FakeShillManagerClient() {}
+FakeShillManagerClient::~FakeShillManagerClient() = default;
 
 // ShillManagerClient overrides.
 

@@ -136,8 +136,7 @@ HostResolverImplChromeOS::HostResolverImplChromeOS(
                  base::ThreadTaskRunnerHandle::Get(), network_state_handler));
 }
 
-HostResolverImplChromeOS::~HostResolverImplChromeOS() {
-}
+HostResolverImplChromeOS::~HostResolverImplChromeOS() = default;
 
 int HostResolverImplChromeOS::Resolve(
     const RequestInfo& info,

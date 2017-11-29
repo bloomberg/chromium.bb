@@ -114,7 +114,7 @@ DBusClientsCommon::DBusClientsCommon(bool use_real_clients) {
   update_engine_client_.reset(UpdateEngineClient::Create(client_impl_type));
 }
 
-DBusClientsCommon::~DBusClientsCommon() {}
+DBusClientsCommon::~DBusClientsCommon() = default;
 
 void DBusClientsCommon::Initialize(dbus::Bus* system_bus) {
   DCHECK(DBusThreadManager::IsInitialized());

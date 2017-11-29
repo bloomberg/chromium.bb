@@ -8,9 +8,9 @@ namespace chromeos {
 
 namespace tether {
 
-TetherComponent::TetherComponent() {}
+TetherComponent::TetherComponent() = default;
 
-TetherComponent::~TetherComponent() {}
+TetherComponent::~TetherComponent() = default;
 
 void TetherComponent::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);

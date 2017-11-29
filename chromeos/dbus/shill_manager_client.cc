@@ -243,9 +243,9 @@ class ShillManagerClientImpl : public ShillManagerClient {
 
 }  // namespace
 
-ShillManagerClient::ShillManagerClient() {}
+ShillManagerClient::ShillManagerClient() = default;
 
-ShillManagerClient::~ShillManagerClient() {}
+ShillManagerClient::~ShillManagerClient() = default;
 
 // static
 ShillManagerClient* ShillManagerClient::Create() {
@@ -253,10 +253,8 @@ ShillManagerClient* ShillManagerClient::Create() {
 }
 
 // ShillManagerClient::VerificationProperties implementation.
-ShillManagerClient::VerificationProperties::VerificationProperties() {
-}
+ShillManagerClient::VerificationProperties::VerificationProperties() = default;
 
-ShillManagerClient::VerificationProperties::~VerificationProperties() {
-}
+ShillManagerClient::VerificationProperties::~VerificationProperties() = default;
 
 }  // namespace chromeos

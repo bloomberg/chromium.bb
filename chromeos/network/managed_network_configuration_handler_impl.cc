@@ -97,7 +97,7 @@ struct ManagedNetworkConfigurationHandlerImpl::Policies {
   base::DictionaryValue global_network_config;
 };
 
-ManagedNetworkConfigurationHandlerImpl::Policies::~Policies() {}
+ManagedNetworkConfigurationHandlerImpl::Policies::~Policies() = default;
 
 void ManagedNetworkConfigurationHandlerImpl::AddObserver(
     NetworkPolicyObserver* observer) {

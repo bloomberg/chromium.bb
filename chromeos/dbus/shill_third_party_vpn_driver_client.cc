@@ -334,11 +334,9 @@ ShillThirdPartyVpnDriverClientImpl::GetHelperInfo(
 
 }  // namespace
 
-ShillThirdPartyVpnDriverClient::ShillThirdPartyVpnDriverClient() {
-}
+ShillThirdPartyVpnDriverClient::ShillThirdPartyVpnDriverClient() = default;
 
-ShillThirdPartyVpnDriverClient::~ShillThirdPartyVpnDriverClient() {
-}
+ShillThirdPartyVpnDriverClient::~ShillThirdPartyVpnDriverClient() = default;
 
 // static
 ShillThirdPartyVpnDriverClient* ShillThirdPartyVpnDriverClient::Create() {

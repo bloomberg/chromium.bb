@@ -34,23 +34,20 @@ WifiAccessPoint::WifiAccessPoint()
 
 WifiAccessPoint::WifiAccessPoint(const WifiAccessPoint& other) = default;
 
-WifiAccessPoint::~WifiAccessPoint() {
-}
+WifiAccessPoint::~WifiAccessPoint() = default;
 
-CellTower::CellTower() {}
+CellTower::CellTower() = default;
 
 CellTower::CellTower(const CellTower& other) = default;
 
-CellTower::~CellTower() {}
+CellTower::~CellTower() = default;
 
-CellularScanResult::CellularScanResult() {
-}
+CellularScanResult::CellularScanResult() = default;
 
 CellularScanResult::CellularScanResult(const CellularScanResult& other) =
     default;
 
-CellularScanResult::~CellularScanResult() {
-}
+CellularScanResult::~CellularScanResult() = default;
 
 namespace network_util {
 

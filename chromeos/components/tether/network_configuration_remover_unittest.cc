@@ -43,7 +43,7 @@ std::string CreateConnectedWifiConfigurationJsonString() {
 class NetworkConfigurationRemoverTest : public NetworkStateTest {
  protected:
   NetworkConfigurationRemoverTest() : NetworkStateTest() {}
-  ~NetworkConfigurationRemoverTest() override {}
+  ~NetworkConfigurationRemoverTest() override = default;
 
   void SetUp() override {
     DBusThreadManager::Initialize();

@@ -6,8 +6,8 @@
 
 namespace chromeos {
 
-MockShillServiceClient::MockShillServiceClient() {}
+MockShillServiceClient::MockShillServiceClient() = default;
 
-MockShillServiceClient::~MockShillServiceClient() {}
+MockShillServiceClient::~MockShillServiceClient() = default;
 
 }  // namespace chromeos

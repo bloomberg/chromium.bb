@@ -81,7 +81,7 @@ class MockTimerFactory : public TimerFactory {
 // status changes and messages received.
 class TestObserver final : public BleConnectionManager::Observer {
  public:
-  TestObserver() {}
+  TestObserver() = default;
 
   // BleConnectionManager::Observer:
   void OnSecureChannelStatusChanged(
@@ -211,7 +211,7 @@ class BleConnectionManagerTest : public testing::Test {
                       cryptauth::CryptAuthService* cryptauth_service)
         : cryptauth::FakeSecureChannel(std::move(connection),
                                        cryptauth_service) {}
-    ~FakeSecureChannel() override {}
+    ~FakeSecureChannel() override = default;
 
     void AddObserver(Observer* observer) override {
       cryptauth::FakeSecureChannel::AddObserver(observer);
@@ -228,7 +228,7 @@ class BleConnectionManagerTest : public testing::Test {
   class FakeSecureChannelFactory final
       : public cryptauth::SecureChannel::Factory {
    public:
-    FakeSecureChannelFactory() {}
+    FakeSecureChannelFactory() = default;
 
     void SetExpectedDeviceAddress(const std::string& expected_device_address) {
       expected_device_address_ = expected_device_address;

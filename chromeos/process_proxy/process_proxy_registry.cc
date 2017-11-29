@@ -34,8 +34,7 @@ static base::LazyInstance<ProcessProxyRegistry>::DestructorAtExit
 
 }  // namespace
 
-ProcessProxyRegistry::ProcessProxyInfo::ProcessProxyInfo() {
-}
+ProcessProxyRegistry::ProcessProxyInfo::ProcessProxyInfo() = default;
 
 ProcessProxyRegistry::ProcessProxyInfo::ProcessProxyInfo(
     const ProcessProxyInfo& other) {
@@ -43,11 +42,9 @@ ProcessProxyRegistry::ProcessProxyInfo::ProcessProxyInfo(
   DCHECK(!other.proxy.get());
 }
 
-ProcessProxyRegistry::ProcessProxyInfo::~ProcessProxyInfo() {
-}
+ProcessProxyRegistry::ProcessProxyInfo::~ProcessProxyInfo() = default;
 
-ProcessProxyRegistry::ProcessProxyRegistry() {
-}
+ProcessProxyRegistry::ProcessProxyRegistry() = default;
 
 ProcessProxyRegistry::~ProcessProxyRegistry() {
   // TODO(tbarzic): Fix issue with ProcessProxyRegistry being destroyed

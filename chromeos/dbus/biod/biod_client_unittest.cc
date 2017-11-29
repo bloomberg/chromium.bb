@@ -60,8 +60,8 @@ void RunResponseCallback(dbus::ObjectProxy::ResponseCallback callback,
 
 class BiodClientTest : public testing::Test {
  public:
-  BiodClientTest() {}
-  ~BiodClientTest() override {}
+  BiodClientTest() = default;
+  ~BiodClientTest() override = default;
 
   void SetUp() override {
     dbus::Bus::Options options;

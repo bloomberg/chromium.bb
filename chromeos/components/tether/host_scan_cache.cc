@@ -8,8 +8,8 @@ namespace chromeos {
 
 namespace tether {
 
-HostScanCache::HostScanCache() {}
-HostScanCache::~HostScanCache() {}
+HostScanCache::HostScanCache() = default;
+HostScanCache::~HostScanCache() = default;
 
 void HostScanCache::AddObserver(HostScanCache::Observer* observer) {
   observer_list_.AddObserver(observer);

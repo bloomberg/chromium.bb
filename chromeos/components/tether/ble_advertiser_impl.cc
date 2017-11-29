@@ -50,7 +50,7 @@ BleAdvertiserImpl::AdvertisementMetadata::AdvertisementMetadata(
     std::unique_ptr<cryptauth::DataWithTimestamp> service_data)
     : device_id(device_id), service_data(std::move(service_data)) {}
 
-BleAdvertiserImpl::AdvertisementMetadata::~AdvertisementMetadata() {}
+BleAdvertiserImpl::AdvertisementMetadata::~AdvertisementMetadata() = default;
 
 BleAdvertiserImpl::BleAdvertiserImpl(
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
@@ -62,7 +62,7 @@ BleAdvertiserImpl::BleAdvertiserImpl(
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {}
 
-BleAdvertiserImpl::~BleAdvertiserImpl() {}
+BleAdvertiserImpl::~BleAdvertiserImpl() = default;
 
 bool BleAdvertiserImpl::StartAdvertisingToDevice(
     const cryptauth::RemoteDevice& remote_device) {

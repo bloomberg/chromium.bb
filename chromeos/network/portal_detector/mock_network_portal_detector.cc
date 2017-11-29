@@ -6,8 +6,8 @@
 
 namespace chromeos {
 
-MockNetworkPortalDetector::MockNetworkPortalDetector() {}
+MockNetworkPortalDetector::MockNetworkPortalDetector() = default;
 
-MockNetworkPortalDetector::~MockNetworkPortalDetector() {}
+MockNetworkPortalDetector::~MockNetworkPortalDetector() = default;
 
 }  // namespace chromeos

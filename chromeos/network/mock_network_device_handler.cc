@@ -6,8 +6,8 @@
 
 namespace chromeos {
 
-MockNetworkDeviceHandler::MockNetworkDeviceHandler() {}
+MockNetworkDeviceHandler::MockNetworkDeviceHandler() = default;
 
-MockNetworkDeviceHandler::~MockNetworkDeviceHandler() {}
+MockNetworkDeviceHandler::~MockNetworkDeviceHandler() = default;
 
 }  // namespace chromeos

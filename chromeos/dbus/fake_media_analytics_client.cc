@@ -15,7 +15,7 @@ FakeMediaAnalyticsClient::FakeMediaAnalyticsClient()
   current_state_.set_status(mri::State::UNINITIALIZED);
 }
 
-FakeMediaAnalyticsClient::~FakeMediaAnalyticsClient() {}
+FakeMediaAnalyticsClient::~FakeMediaAnalyticsClient() = default;
 
 bool FakeMediaAnalyticsClient::FireMediaPerceptionEvent(
     const mri::MediaPerception& media_perception) {

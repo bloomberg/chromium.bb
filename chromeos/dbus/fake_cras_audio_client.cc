@@ -13,8 +13,7 @@ FakeCrasAudioClient::FakeCrasAudioClient()
       active_output_node_id_(0) {
 }
 
-FakeCrasAudioClient::~FakeCrasAudioClient() {
-}
+FakeCrasAudioClient::~FakeCrasAudioClient() = default;
 
 void FakeCrasAudioClient::Init(dbus::Bus* bus) {
   VLOG(1) << "FakeCrasAudioClient is created";

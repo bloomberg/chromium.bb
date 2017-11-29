@@ -34,7 +34,7 @@ class FakeBiodClientTest : public testing::Test {
   FakeBiodClientTest()
       : task_runner_(new base::TestSimpleTaskRunner),
         task_runner_handle_(task_runner_) {}
-  ~FakeBiodClientTest() override {}
+  ~FakeBiodClientTest() override = default;
 
   // Returns the stored records for |user_id|. Verified to work in
   // TestGetRecordsForUser.

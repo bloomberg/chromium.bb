@@ -6,11 +6,9 @@
 
 namespace chromeos {
 
-NetworkStateHandlerObserver::NetworkStateHandlerObserver() {
-}
+NetworkStateHandlerObserver::NetworkStateHandlerObserver() = default;
 
-NetworkStateHandlerObserver::~NetworkStateHandlerObserver() {
-}
+NetworkStateHandlerObserver::~NetworkStateHandlerObserver() = default;
 
 void NetworkStateHandlerObserver::NetworkListChanged() {
 }

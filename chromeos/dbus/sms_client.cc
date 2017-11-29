@@ -102,7 +102,7 @@ class SMSClientImpl : public SMSClient {
  public:
   SMSClientImpl() : bus_(NULL), weak_ptr_factory_(this) {}
 
-  ~SMSClientImpl() override {}
+  ~SMSClientImpl() override = default;
 
   // Calls GetAll method.  |callback| is called after the method call succeeds.
   void GetAll(const std::string& service_name,
@@ -149,10 +149,9 @@ const char SMSClient::kSMSPropertyNumber[] = "Number";
 const char SMSClient::kSMSPropertyText[] = "Text";
 const char SMSClient::kSMSPropertyTimestamp[] = "Timestamp";
 
-SMSClient::SMSClient() {}
+SMSClient::SMSClient() = default;
 
-SMSClient::~SMSClient() {}
-
+SMSClient::~SMSClient() = default;
 
 // static
 SMSClient* SMSClient::Create() {

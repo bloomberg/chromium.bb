@@ -45,7 +45,7 @@ class NetworkCertMigratorTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
             base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
         service_test_(nullptr) {}
-  ~NetworkCertMigratorTest() override {}
+  ~NetworkCertMigratorTest() override = default;
 
   void SetUp() override {
     ASSERT_TRUE(test_system_nssdb_.is_open());

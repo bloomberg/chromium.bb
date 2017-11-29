@@ -96,7 +96,7 @@ class HomedirMethodsImpl : public HomedirMethods {
  public:
   HomedirMethodsImpl() : weak_ptr_factory_(this) {}
 
-  ~HomedirMethodsImpl() override {}
+  ~HomedirMethodsImpl() override = default;
 
   void GetKeyDataEx(const Identification& id,
                     const cryptohome::AuthorizationRequest& auth,

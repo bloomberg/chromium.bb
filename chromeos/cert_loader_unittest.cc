@@ -52,7 +52,7 @@ class TestNSSCertDatabase : public net::NSSCertDatabaseChromeOS {
                       crypto::ScopedPK11Slot private_slot)
       : NSSCertDatabaseChromeOS(std::move(public_slot),
                                 std::move(private_slot)) {}
-  ~TestNSSCertDatabase() override {}
+  ~TestNSSCertDatabase() override = default;
 
   // Make this method visible in the public interface.
   void NotifyObserversCertDBChanged() {
@@ -79,7 +79,7 @@ class CertLoaderTest : public testing::Test,
       : cert_loader_(nullptr),
         certificates_loaded_events_count_(0U) {}
 
-  ~CertLoaderTest() override {}
+  ~CertLoaderTest() override = default;
 
   void SetUp() override {
     ASSERT_TRUE(primary_db_.is_open());

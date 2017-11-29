@@ -17,7 +17,7 @@ namespace attestation {
 
 FakeServerProxy::FakeServerProxy() : result_(true) {}
 
-FakeServerProxy::~FakeServerProxy() {}
+FakeServerProxy::~FakeServerProxy() = default;
 
 void FakeServerProxy::SendEnrollRequest(const std::string& request,
                                         const DataCallback& callback) {
@@ -33,7 +33,7 @@ MockServerProxy::MockServerProxy() {
   DefaultValue<PrivacyCAType>::Set(DEFAULT_PCA);
 }
 
-MockServerProxy::~MockServerProxy() {}
+MockServerProxy::~MockServerProxy() = default;
 
 void MockServerProxy::DeferToFake(bool success) {
   fake_.set_result(success);
@@ -43,14 +43,14 @@ void MockServerProxy::DeferToFake(bool success) {
       .WillByDefault(Invoke(&fake_, &FakeServerProxy::SendCertificateRequest));
 }
 
-MockObserver::MockObserver() {}
+MockObserver::MockObserver() = default;
 
-MockObserver::~MockObserver() {}
+MockObserver::~MockObserver() = default;
 
 MockAttestationFlow::MockAttestationFlow()
     : AttestationFlow(NULL, NULL, std::unique_ptr<ServerProxy>()) {}
 
-MockAttestationFlow::~MockAttestationFlow() {}
+MockAttestationFlow::~MockAttestationFlow() = default;
 
 }  // namespace attestation
 }  // namespace chromeos

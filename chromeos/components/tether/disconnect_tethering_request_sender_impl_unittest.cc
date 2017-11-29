@@ -25,7 +25,7 @@ class FakeDisconnectTetheringOperation : public DisconnectTetheringOperation {
       BleConnectionManager* connection_manager)
       : DisconnectTetheringOperation(device_to_connect, connection_manager) {}
 
-  ~FakeDisconnectTetheringOperation() override {}
+  ~FakeDisconnectTetheringOperation() override = default;
 
   void NotifyFinished(bool success) {
     NotifyObserversOperationFinished(success);
@@ -40,8 +40,8 @@ class FakeDisconnectTetheringOperation : public DisconnectTetheringOperation {
 class FakeDisconnectTetheringOperationFactory
     : public DisconnectTetheringOperation::Factory {
  public:
-  FakeDisconnectTetheringOperationFactory() {}
-  virtual ~FakeDisconnectTetheringOperationFactory() {}
+  FakeDisconnectTetheringOperationFactory() = default;
+  virtual ~FakeDisconnectTetheringOperationFactory() = default;
 
   std::vector<FakeDisconnectTetheringOperation*>& created_operations() {
     return created_operations_;
@@ -69,7 +69,7 @@ class FakeDisconnectTetheringRequestSenderObserver
   FakeDisconnectTetheringRequestSenderObserver()
       : num_no_more_pending_requests_events_(0) {}
 
-  ~FakeDisconnectTetheringRequestSenderObserver() override {}
+  ~FakeDisconnectTetheringRequestSenderObserver() override = default;
 
   void OnPendingDisconnectRequestsComplete() override {
     num_no_more_pending_requests_events_++;
@@ -89,7 +89,7 @@ class DisconnectTetheringRequestSenderTest : public testing::Test {
  public:
   DisconnectTetheringRequestSenderTest()
       : test_devices_(cryptauth::GenerateTestRemoteDevices(2u)) {}
-  ~DisconnectTetheringRequestSenderTest() override {}
+  ~DisconnectTetheringRequestSenderTest() override = default;
 
   void SetUp() override {
     fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();

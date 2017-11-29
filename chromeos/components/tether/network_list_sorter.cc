@@ -61,9 +61,9 @@ bool CompareStates(const std::unique_ptr<ManagedState>& first_state,
 
 }  // namespace
 
-NetworkListSorter::NetworkListSorter() {}
+NetworkListSorter::NetworkListSorter() = default;
 
-NetworkListSorter::~NetworkListSorter() {}
+NetworkListSorter::~NetworkListSorter() = default;
 
 void NetworkListSorter::SortTetherNetworkList(
     NetworkStateHandler::ManagedStateList* tether_networks) const {

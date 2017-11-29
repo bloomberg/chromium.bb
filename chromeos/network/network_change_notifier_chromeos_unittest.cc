@@ -121,7 +121,7 @@ class NetworkChangeNotifierChromeosUpdateTest : public testing::Test {
  protected:
   NetworkChangeNotifierChromeosUpdateTest() : default_network_("") {
   }
-  ~NetworkChangeNotifierChromeosUpdateTest() override {}
+  ~NetworkChangeNotifierChromeosUpdateTest() override = default;
 
   void SetNotifierState(const NotifierState& notifier_state) {
     notifier_.connection_type_ = notifier_state.type;

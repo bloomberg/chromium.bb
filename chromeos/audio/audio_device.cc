@@ -127,7 +127,7 @@ AudioDeviceType AudioDevice::GetAudioType(
     return AUDIO_TYPE_OTHER;
 }
 
-AudioDevice::AudioDevice() {}
+AudioDevice::AudioDevice() = default;
 
 AudioDevice::AudioDevice(const AudioNode& node) {
   is_input = node.is_input;

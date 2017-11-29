@@ -59,7 +59,7 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
  public:
   AuthPolicyClientImpl() : weak_ptr_factory_(this) {}
 
-  ~AuthPolicyClientImpl() override {}
+  ~AuthPolicyClientImpl() override = default;
 
   // AuthPolicyClient override.
   void JoinAdDomain(const authpolicy::JoinDomainRequest& request,
@@ -208,9 +208,9 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
 
 }  // namespace
 
-AuthPolicyClient::AuthPolicyClient() {}
+AuthPolicyClient::AuthPolicyClient() = default;
 
-AuthPolicyClient::~AuthPolicyClient() {}
+AuthPolicyClient::~AuthPolicyClient() = default;
 
 // static
 AuthPolicyClient* AuthPolicyClient::Create() {

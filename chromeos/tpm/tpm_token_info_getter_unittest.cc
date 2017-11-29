@@ -60,7 +60,7 @@ class FakeTaskRunner : public base::TaskRunner {
   bool RunsTasksInCurrentSequence() const override { return true; }
 
  protected:
-  ~FakeTaskRunner() override {}
+  ~FakeTaskRunner() override = default;
 
  private:
   // The vector of delays.
@@ -87,7 +87,7 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
         get_tpm_token_info_not_set_count_(0),
         get_tpm_token_info_succeeded_(false) {}
 
-  ~TestCryptohomeClient() override {}
+  ~TestCryptohomeClient() override = default;
 
   void set_tpm_is_enabled(bool value) {
     tpm_is_enabled_ = value;
@@ -208,8 +208,8 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
 
 class SystemTPMTokenInfoGetterTest : public testing::Test {
  public:
-  SystemTPMTokenInfoGetterTest() {}
-  ~SystemTPMTokenInfoGetterTest() override {}
+  SystemTPMTokenInfoGetterTest() = default;
+  ~SystemTPMTokenInfoGetterTest() override = default;
 
   void SetUp() override {
     cryptohome_client_.reset(new TestCryptohomeClient(EmptyAccountId()));
@@ -234,7 +234,7 @@ class UserTPMTokenInfoGetterTest : public testing::Test {
  public:
   UserTPMTokenInfoGetterTest()
       : account_id_(AccountId::FromUserEmail("user@gmail.com")) {}
-  ~UserTPMTokenInfoGetterTest() override {}
+  ~UserTPMTokenInfoGetterTest() override = default;
 
   void SetUp() override {
     cryptohome_client_.reset(new TestCryptohomeClient(account_id_));

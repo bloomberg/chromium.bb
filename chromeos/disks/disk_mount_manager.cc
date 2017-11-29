@@ -57,8 +57,7 @@ class DiskMountManagerImpl : public DiskMountManager {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  ~DiskMountManagerImpl() override {
-  }
+  ~DiskMountManagerImpl() override = default;
 
   // DiskMountManager override.
   void AddObserver(Observer* observer) override {
@@ -898,7 +897,7 @@ DiskMountManager::Disk::Disk(const std::string& device_path,
 
 DiskMountManager::Disk::Disk(const Disk& other) = default;
 
-DiskMountManager::Disk::~Disk() {}
+DiskMountManager::Disk::~Disk() = default;
 
 void DiskMountManager::Disk::SetMountPath(const std::string& mount_path) {
   mount_path_ = mount_path;

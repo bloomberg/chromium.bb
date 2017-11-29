@@ -15,10 +15,8 @@ const char NetworkDeviceHandler::kErrorPinRequired[] = "pin-required";
 const char NetworkDeviceHandler::kErrorTimeout[] = "timeout";
 const char NetworkDeviceHandler::kErrorUnknown[] = "unknown";
 
-NetworkDeviceHandler::NetworkDeviceHandler() {
-}
+NetworkDeviceHandler::NetworkDeviceHandler() = default;
 
-NetworkDeviceHandler::~NetworkDeviceHandler() {
-}
+NetworkDeviceHandler::~NetworkDeviceHandler() = default;
 
 }  // namespace chromeos

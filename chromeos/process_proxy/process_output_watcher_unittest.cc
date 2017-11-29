@@ -49,7 +49,7 @@ struct TestCase {
 
 class ProcessWatcherExpectations {
  public:
-  ProcessWatcherExpectations() {}
+  ProcessWatcherExpectations() = default;
 
   void SetTestCase(const TestCase& test_case) {
     received_from_out_ = 0;
@@ -101,7 +101,7 @@ class ProcessOutputWatcherTest : public testing::Test {
                                failed_(false) {
   }
 
-  ~ProcessOutputWatcherTest() override {}
+  ~ProcessOutputWatcherTest() override = default;
 
   void TearDown() override {
     if (output_watch_thread_started_)

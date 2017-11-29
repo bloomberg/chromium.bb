@@ -108,7 +108,7 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
     virtual_file_provider_client_.reset(new FakeVirtualFileProviderClient);
 }
 
-DBusClientsBrowser::~DBusClientsBrowser() {}
+DBusClientsBrowser::~DBusClientsBrowser() = default;
 
 void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   DCHECK(DBusThreadManager::IsInitialized());

@@ -169,9 +169,9 @@ ShillIPConfigClientImpl::GetTestInterface() {
 
 }  // namespace
 
-ShillIPConfigClient::ShillIPConfigClient() {}
+ShillIPConfigClient::ShillIPConfigClient() = default;
 
-ShillIPConfigClient::~ShillIPConfigClient() {}
+ShillIPConfigClient::~ShillIPConfigClient() = default;
 
 // static
 ShillIPConfigClient* ShillIPConfigClient::Create() {

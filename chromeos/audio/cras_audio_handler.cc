@@ -72,11 +72,9 @@ bool HasCrasAudioClient() {
 
 }  // namespace
 
-CrasAudioHandler::AudioObserver::AudioObserver() {
-}
+CrasAudioHandler::AudioObserver::AudioObserver() = default;
 
-CrasAudioHandler::AudioObserver::~AudioObserver() {
-}
+CrasAudioHandler::AudioObserver::~AudioObserver() = default;
 
 void CrasAudioHandler::AudioObserver::OnOutputNodeVolumeChanged(
     uint64_t /* node_id */,

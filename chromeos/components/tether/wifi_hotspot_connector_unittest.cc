@@ -61,7 +61,7 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
    public:
     explicit TestNetworkConnect(NetworkStateTest* network_state_test)
         : network_state_test_(network_state_test) {}
-    ~TestNetworkConnect() override {}
+    ~TestNetworkConnect() override = default;
 
     base::DictionaryValue* last_configuration() {
       return last_configuration_.get();
@@ -138,8 +138,8 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
     uint32_t num_disconnection_attempts_ = 0;
   };
 
-  WifiHotspotConnectorTest() {}
-  ~WifiHotspotConnectorTest() override {}
+  WifiHotspotConnectorTest() = default;
+  ~WifiHotspotConnectorTest() override = default;
 
   void SetUp() override {
     other_wifi_service_path_.clear();

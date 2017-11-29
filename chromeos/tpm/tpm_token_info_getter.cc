@@ -56,7 +56,7 @@ std::unique_ptr<TPMTokenInfoGetter> TPMTokenInfoGetter::CreateForSystemToken(
       TYPE_SYSTEM, EmptyAccountId(), cryptohome_client, delayed_task_runner));
 }
 
-TPMTokenInfoGetter::~TPMTokenInfoGetter() {}
+TPMTokenInfoGetter::~TPMTokenInfoGetter() = default;
 
 void TPMTokenInfoGetter::Start(TpmTokenInfoCallback callback) {
   CHECK(state_ == STATE_INITIAL);

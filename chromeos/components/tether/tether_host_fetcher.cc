@@ -26,18 +26,15 @@ TetherHostFetcher::TetherHostFetchRequest::TetherHostFetchRequest(
     : device_id(device_id), single_callback(single_callback) {}
 
 TetherHostFetcher::TetherHostFetchRequest::TetherHostFetchRequest(
-    const TetherHostFetchRequest& other)
-    : device_id(other.device_id),
-      list_callback(other.list_callback),
-      single_callback(other.single_callback) {}
+    const TetherHostFetchRequest& other) = default;
 
-TetherHostFetcher::TetherHostFetchRequest::~TetherHostFetchRequest() {}
+TetherHostFetcher::TetherHostFetchRequest::~TetherHostFetchRequest() = default;
 
 TetherHostFetcher::TetherHostFetcher(
     cryptauth::CryptAuthService* cryptauth_service)
     : cryptauth_service_(cryptauth_service), weak_ptr_factory_(this) {}
 
-TetherHostFetcher::~TetherHostFetcher() {}
+TetherHostFetcher::~TetherHostFetcher() = default;
 
 void TetherHostFetcher::FetchAllTetherHosts(
     const TetherHostListCallback& callback) {

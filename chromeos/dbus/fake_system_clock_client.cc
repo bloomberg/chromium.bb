@@ -8,10 +8,9 @@
 
 namespace chromeos {
 
-FakeSystemClockClient::FakeSystemClockClient() {}
+FakeSystemClockClient::FakeSystemClockClient() = default;
 
-FakeSystemClockClient::~FakeSystemClockClient() {
-}
+FakeSystemClockClient::~FakeSystemClockClient() = default;
 
 void FakeSystemClockClient::NotifyObserversSystemClockUpdated() {
   for (auto& observer : observers_)

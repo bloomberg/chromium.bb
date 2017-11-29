@@ -38,7 +38,7 @@ class FakeTaskRunner : public base::TaskRunner {
   bool RunsTasksInCurrentSequence() const override { return true; }
 
  protected:
-  ~FakeTaskRunner() override {}
+  ~FakeTaskRunner() override = default;
 };
 
 }  // namespace

@@ -41,8 +41,8 @@ std::vector<cryptauth::DataWithTimestamp> GenerateFakeAdvertisements() {
 class FakeErrorTolerantBleAdvertisementFactory
     : public ErrorTolerantBleAdvertisementImpl::Factory {
  public:
-  FakeErrorTolerantBleAdvertisementFactory() {}
-  ~FakeErrorTolerantBleAdvertisementFactory() override {}
+  FakeErrorTolerantBleAdvertisementFactory() = default;
+  ~FakeErrorTolerantBleAdvertisementFactory() override = default;
 
   const std::vector<FakeErrorTolerantBleAdvertisement*>&
   active_advertisements() {
@@ -82,8 +82,8 @@ class FakeErrorTolerantBleAdvertisementFactory
 
 class TestObserver final : public BleAdvertiser::Observer {
  public:
-  TestObserver() {}
-  ~TestObserver() override {}
+  TestObserver() = default;
+  ~TestObserver() override = default;
 
   size_t num_times_all_advertisements_unregistered() {
     return num_times_all_advertisements_unregistered_;
@@ -106,7 +106,7 @@ class DeletingObserver final : public BleAdvertiser::Observer {
     ble_advertiser_->AddObserver(this);
   }
 
-  ~DeletingObserver() override {}
+  ~DeletingObserver() override = default;
 
   // BleAdvertiser::Observer:
   void OnAllAdvertisementsUnregistered() override {

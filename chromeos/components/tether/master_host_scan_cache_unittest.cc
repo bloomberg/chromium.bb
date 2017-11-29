@@ -30,8 +30,8 @@ namespace {
 class FakePersistentHostScanCache : public FakeHostScanCache,
                                     public PersistentHostScanCache {
  public:
-  FakePersistentHostScanCache() {}
-  ~FakePersistentHostScanCache() override {}
+  FakePersistentHostScanCache() = default;
+  ~FakePersistentHostScanCache() override = default;
 
   // PersistentHostScanCache:
   std::unordered_map<std::string, HostScanCacheEntry> GetStoredCacheEntries()
@@ -55,8 +55,8 @@ class ExtendedMockTimer : public base::MockTimer {
 
 class TestTimerFactory : public TimerFactory {
  public:
-  TestTimerFactory() {}
-  ~TestTimerFactory() override {}
+  TestTimerFactory() = default;
+  ~TestTimerFactory() override = default;
 
   std::unordered_map<std::string, ExtendedMockTimer*>&
   tether_network_guid_to_timer_map() {
