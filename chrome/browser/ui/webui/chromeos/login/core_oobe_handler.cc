@@ -481,9 +481,9 @@ void CoreOobeHandler::UpdateKeyboardState() {
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller) {
-    gfx::Rect bounds = keyboard_controller->current_keyboard_bounds();
-    ShowControlBar(bounds.IsEmpty());
-    SetVirtualKeyboardShown(!bounds.IsEmpty());
+    const bool is_keyboard_shown = keyboard_controller->keyboard_visible();
+    ShowControlBar(!is_keyboard_shown);
+    SetVirtualKeyboardShown(is_keyboard_shown);
   }
 }
 
