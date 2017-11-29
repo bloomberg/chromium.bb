@@ -95770,6 +95770,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Audio.TargetJitterBufferDelayMs" units="ms">
+  <owner>hlundin@chromium.org</owner>
+  <summary>
+    The target jitter buffer delay for the receiving side. Sampled once every 10
+    ms per WebRTC receive stream when WebRTC audio is playing.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.AudioCaptureTime" units="ms">
   <obsolete>
     Removed from code 2014/2/25.
