@@ -6,10 +6,19 @@
 #define CHROME_BROWSER_MEDIA_MEDIA_ENGAGEMENT_CONTENTS_OBSERVER_H_
 
 #include "content/public/browser/web_contents_observer.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
+
+namespace base {
+class Clock;
+}  // namespace base
 
 namespace gfx {
 class Size;
 }  // namespace gfx
+
+namespace ukm {
+class UkmRecorder;
+}  // namespace ukm
 
 class MediaEngagementContentsObserverTest;
 class MediaEngagementService;
@@ -49,6 +58,9 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
 
   MediaEngagementContentsObserver(content::WebContents* web_contents,
                                   MediaEngagementService* service);
+
+  // This is the maximum playback time for media to be considered 'short'.
+  static const base::TimeDelta kMaxShortPlaybackTime;
 
   // This enum is used to record a histogram and should not be renumbered.
   enum class InsignificantPlaybackReason {
@@ -105,8 +117,33 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   // significant playback.
   std::set<MediaPlayerId> significant_players_;
 
+  // Measures playback time for a player.
+  class PlaybackTimer {
+   public:
+    explicit PlaybackTimer(base::Clock*);
+
+    void Start();
+    void Stop();
+    bool IsRunning() const;
+    base::TimeDelta Elapsed() const;
+    void Reset();
+
+    DISALLOW_COPY_AND_ASSIGN(PlaybackTimer);
+
+   private:
+    // The clock is owned by |service_| which already owns |this|.
+    base::Clock* clock_;
+
+    base::Optional<base::Time> start_time_;
+    base::TimeDelta recorded_time_;
+  };
+
   // A structure containing all the information we have about a player's state.
   struct PlayerState {
+    explicit PlayerState(base::Clock*);
+    ~PlayerState();
+    PlayerState(PlayerState&&);
+
     base::Optional<bool> muted;
     base::Optional<bool> playing;           // Currently playing.
     base::Optional<bool> significant_size;  // The video track has at least
@@ -122,8 +159,10 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
     // to a histogram.
     bool reasons_recorded = false;
 
-    PlayerState();
-    PlayerState& operator=(const PlayerState&);
+    bool reached_end_of_stream = false;
+    std::unique_ptr<PlaybackTimer> playback_timer;
+
+    DISALLOW_COPY_AND_ASSIGN(PlayerState);
   };
   std::map<MediaPlayerId, PlayerState> player_states_;
   PlayerState& GetPlayerState(const MediaPlayerId& id);
@@ -174,17 +213,29 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   // Record the score and change in score to UKM.
   void RecordUkmMetrics();
 
+  // Record the length of an ignored media playback.
+  void RecordUkmIgnoredEvent(int length_msec);
+  ukm::UkmRecorder* GetUkmRecorder();
+
   bool significant_playback_recorded_ = false;
 
   // Records the engagement score for the current origin to a histogram so we
   // can identify whether the playback would have been blocked.
   void RecordEngagementScoreToHistogramAtPlayback(const MediaPlayerId& id);
 
+  void StashAudiblePlayers();
+
   // Stores pending media engagement data that needs to be committed either
   // after a navigation to another domain, when the observer is destroyed or
-  // when we have had a media playback. A visit is automatically implied. If
-  // the bool is true then a playback will be recorded too.
-  base::Optional<bool> pending_data_to_commit_;
+  // when we have had a media playback.
+  struct PendingCommitState {
+    bool visit = false;
+    bool media_playback = false;
+    int audible_players = 0;
+    int significant_players = 0;
+  };
+  PendingCommitState& GetPendingCommitState();
+  base::Optional<PendingCommitState> pending_data_to_commit_;
 
   // Stores the ids of the players that were audible. The boolean will be true
   // if the player was significant.
@@ -193,6 +244,9 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
 
   // The task runner to use when creating timers. It is used only for testing.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  // The current UKM source id for |committed_origin_|.
+  ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
   url::Origin committed_origin_;
 

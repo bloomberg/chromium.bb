@@ -674,6 +674,22 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Media.Engagement.ShortPlaybackIgnored">
+  <owner>beccahughes@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    The Media Engagement index stores the number of significant media playbacks
+    per origin and the number of audible players. From that we calculate a Media
+    Engagement Score.
+
+    Media with a short playback length is ignored so we are logging any time the
+    player is ignored with the length in msec. This will allow us to identify
+    whether sites are being penalized or there is abuse and allow us to tweak
+    the length considered &quot;short&quot;.
+  </summary>
+  <metric name="Length"/>
+</event>
+
 <event name="Media.Engagement.SessionFinished">
   <owner>beccahughes@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
