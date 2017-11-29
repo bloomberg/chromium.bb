@@ -71,7 +71,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const int seg_eob = av1_get_max_eob(tx_size);
   int c = 0;
-  int update_eob = -1;
+  int num_updates = 0;
   const int16_t *const dequant =
       xd->plane[plane].seg_dequant_QTX[mbmi->segment_id];
   const int shift = av1_get_tx_scale(tx_size);
@@ -83,6 +83,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   uint8_t *const levels = set_levels(levels_buf, width);
   DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
   int8_t signs[MAX_TX_SQUARE];
+  uint16_t update_pos[MAX_TX_SQUARE];
 
   const int all_zero = av1_read_record_bin(
       counts, r, ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2,
@@ -201,8 +202,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       if (level < 3) {
         cul_level += level;
         tcoeffs[pos] = (level * dequant[!!c]) >> shift;
-      } else if (update_eob < 0) {
-        update_eob = c;
+      } else {
+        update_pos[num_updates++] = pos;
       }
     }
 #else
@@ -236,7 +237,9 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       }
       levels[get_paded_idx(pos, bwl)] = k + 1;
       *max_scan_line = AOMMAX(*max_scan_line, pos);
-      if (update_eob < 0 && k == NUM_BASE_LEVELS) update_eob = c;
+      if (k == NUM_BASE_LEVELS) {
+        update_pos[num_updates++] = pos;
+      }
     }
 #else
     // set non-zero coefficient map.
@@ -274,8 +277,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       *level = i + 2;
       if (counts) ++counts->coeff_base[txs_ctx][plane_type][i][ctx][0];
 
-      // update the eob flag for coefficients with magnitude above 1.
-      update_eob = AOMMAX(update_eob, c);
+      update_pos[num_updates++] = pos;
     }
   }
 #endif
@@ -302,15 +304,19 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     if (*sign) tcoeffs[pos] = -tcoeffs[pos];
   }
 
-  if (update_eob >= 0) {
+  if (num_updates) {
     av1_get_br_level_counts(levels, width, height, level_counts);
-    for (c = update_eob; c >= 0; --c) {
-      const int pos = scan[c];
+    for (c = 0; c < num_updates; ++c) {
+      const int pos = update_pos[c];
       uint8_t *const level = &levels[get_paded_idx(pos, bwl)];
       int idx;
       int ctx;
 
+#if USE_CAUSAL_BASE_CTX
+      assert(*level > NUM_BASE_LEVELS);
+#else
       if (*level <= NUM_BASE_LEVELS) continue;
+#endif
 
       ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
 
@@ -324,7 +330,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       }
       if (*level <= NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
         cul_level += *level;
-        tran_low_t t = (*level * dequant[!!c]) >> shift;
+        tran_low_t t = (*level * dequant[!!pos]) >> shift;
         if (signs[pos]) t = -t;
         tcoeffs[pos] = t;
         continue;
@@ -356,7 +362,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
           *level = NUM_BASE_LEVELS + 1 + br_base + br_offset;
           cul_level += *level;
-          tran_low_t t = (*level * dequant[!!c]) >> shift;
+          tran_low_t t = (*level * dequant[!!pos]) >> shift;
           if (signs[pos]) t = -t;
           tcoeffs[pos] = t;
           break;
@@ -371,7 +377,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       // Save golomb in tcoeffs because adding it to level may incur overflow
       tran_low_t t = *level + read_golomb(xd, r, counts);
       cul_level += t;
-      t = (t * dequant[!!c]) >> shift;
+      t = (t * dequant[!!pos]) >> shift;
       if (signs[pos]) t = -t;
       tcoeffs[pos] = t;
     }
