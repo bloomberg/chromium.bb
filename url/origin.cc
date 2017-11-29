@@ -97,8 +97,7 @@ Origin& Origin::operator=(const Origin&) = default;
 Origin::Origin(Origin&&) = default;
 Origin& Origin::operator=(Origin&&) = default;
 
-Origin::~Origin() {
-}
+Origin::~Origin() = default;
 
 // static
 Origin Origin::UnsafelyCreateOriginWithoutNormalization(

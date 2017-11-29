@@ -133,8 +133,7 @@ void GURL::InitializeFromCanonicalSpec() {
 #endif
 }
 
-GURL::~GURL() {
-}
+GURL::~GURL() = default;
 
 GURL& GURL::operator=(const GURL& other) {
   spec_ = other.spec_;
