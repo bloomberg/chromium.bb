@@ -492,10 +492,12 @@ class PinchromeCommand(command.CliCommand):
     git.Commit(overlay, commit_message, amend=True)
 
     # Upload the CLs.
-    git.UploadCL(overlay, OVERLAY_URL, self.options.branch,
-                 skip=self.options.dryrun)
-    git.UploadCL(priv_overlay, PRIV_OVERLAY_URL, self.options.branch,
-                 skip=self.options.dryrun)
+    external_push = git.UploadCL(overlay, OVERLAY_URL, self.options.branch,
+                                 skip=self.options.dryrun)
+    print(external_push.output)
+    internal_push = git.UploadCL(priv_overlay, PRIV_OVERLAY_URL,
+                                 self.options.branch, skip=self.options.dryrun)
+    print(internal_push.output)
 
     print('\n** Both of the changes above need to be submitted for chrome '
           'to be pinned. **\n')

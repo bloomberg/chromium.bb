@@ -1225,7 +1225,8 @@ def UploadCL(git_repo, remote, branch, local_branch='HEAD', draft=False,
     ref = ref + '%'+ ','.join(reviewer_list)
   remote_ref = RemoteRef(remote, ref)
   kwargs.setdefault('capture_output', False)
-  GitPush(git_repo, local_branch, remote_ref, **kwargs)
+  kwargs.setdefault('combine_stdout_stderr', True)
+  return GitPush(git_repo, local_branch, remote_ref, **kwargs)
 
 
 def GitPush(git_repo, refspec, push_to, force=False, retry=True,
@@ -1252,7 +1253,8 @@ def GitPush(git_repo, refspec, push_to, force=False, retry=True,
     logging.info('Would have run "%s"', cmd)
     return
 
-  RunGit(git_repo, cmd, retry=retry, capture_output=capture_output, **kwargs)
+  return RunGit(git_repo, cmd, retry=retry, capture_output=capture_output,
+                **kwargs)
 
 
 # TODO(build): Switch callers of this function to use CreateBranch instead.
