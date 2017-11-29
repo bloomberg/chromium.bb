@@ -254,6 +254,8 @@ cvox.ExtensionBridge.setupBackgroundPort = function() {
       return;
     }
 
+    self.backgroundPort = null;
+    self.connected = false;
     for (var i = 0; i < self.disconnectListeners.length; i++) {
       self.disconnectListeners[i]();
     }
