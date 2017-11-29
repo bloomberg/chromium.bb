@@ -133,7 +133,7 @@ class CORE_EXPORT DataTransfer final : public ScriptWrappable,
   DataObject* GetDataObject() const;
 
   // Clip to the visible area of the visual viewport.
-  static FloatRect ClipByVisualViewport(const FloatRect& rect_in_frame,
+  static FloatRect ClipByVisualViewport(const FloatRect& rect_in_document,
                                         const LocalFrame&);
 
   // Returns the rect with device scale factor and page scale factor applied.

@@ -2187,13 +2187,20 @@ bool WebViewImpl::SelectionBounds(WebRect& anchor_web,
   if (!local_frame)
     return false;
 
+  LocalFrameView* frame_view = local_frame->View();
+  if (!frame_view)
+    return false;
+
   IntRect anchor;
   IntRect focus;
   if (!local_frame->Selection().ComputeAbsoluteBounds(anchor, focus))
     return false;
 
-  anchor_web = local_frame->View()->ContentsToViewport(anchor);
-  focus_web = local_frame->View()->ContentsToViewport(focus);
+  VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
+  anchor_web = visual_viewport.RootFrameToViewport(
+      frame_view->AbsoluteToRootFrame(anchor));
+  focus_web = visual_viewport.RootFrameToViewport(
+      frame_view->AbsoluteToRootFrame(focus));
   return true;
 }
 
@@ -2555,18 +2562,20 @@ void WebViewImpl::ComputeScaleAndScrollForFocusedNode(
     IntPoint& new_scroll,
     bool& need_animation) {
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
+  LocalFrameView* main_frame_view = MainFrameImpl()->GetFrameView();
 
   WebRect caret_in_viewport, unused_end;
   SelectionBounds(caret_in_viewport, unused_end);
 
   // 'caretInDocument' is rect encompassing the blinking cursor relative to the
   // root document.
-  IntRect caret_in_document = MainFrameImpl()->GetFrameView()->FrameToContents(
+  IntRect caret_in_document = main_frame_view->RootFrameToDocument(
       visual_viewport.ViewportToRootFrame(caret_in_viewport));
+
+  LocalFrameView* textbox_view = focused_node->GetDocument().View();
   IntRect textbox_rect_in_document =
-      MainFrameImpl()->GetFrameView()->FrameToContents(
-          focused_node->GetDocument().View()->ContentsToRootFrame(
-              PixelSnappedIntRect(focused_node->Node::BoundingBox())));
+      main_frame_view->RootFrameToDocument(textbox_view->AbsoluteToRootFrame(
+          PixelSnappedIntRect(focused_node->Node::BoundingBox())));
 
   if (!zoom_in_to_legible_scale) {
     new_scale = PageScaleFactor();
