@@ -62,8 +62,17 @@ To update the order files:
     copy \src\tmp\cygprofile_14652.txt chrome\build\chrome_child.x64.orderfile
     ```
 
+1.  Re-build the `chrome` target. This will re-link `chrome.dll` and
+    `chrome_child.dll` using the new order files and surface any link errors if
+    the files are broken.
 
-1.  Repeat the previous steps with a 32-bit build, i.e. passing `target_cpu="x86"` to gn and storing the files as `.x86.orderfile`. 
+    ```shell
+    ninja -C out\instrument chrome
+    ```
+
+
+1.  Repeat the previous steps with a 32-bit build, i.e. passing
+    `target_cpu="x86"` to gn and storing the files as `.x86.orderfile`.
 
 
 1.  Upload the order files to Google Cloud Storage. They will get downloaded
