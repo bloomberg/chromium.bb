@@ -429,8 +429,7 @@ BenchmarkingCanvas::BenchmarkingCanvas(SkCanvas* canvas)
   addCanvas(canvas);
 }
 
-BenchmarkingCanvas::~BenchmarkingCanvas() {
-}
+BenchmarkingCanvas::~BenchmarkingCanvas() = default;
 
 size_t BenchmarkingCanvas::CommandCount() const {
   return op_records_.GetSize();

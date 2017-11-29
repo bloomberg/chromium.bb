@@ -31,7 +31,7 @@ SkiaTraceMemoryDumpImpl::SkiaTraceMemoryDumpImpl(
               ? SkTraceMemoryDump::kLight_LevelOfDetail
               : SkTraceMemoryDump::kObjectsBreakdowns_LevelOfDetail) {}
 
-SkiaTraceMemoryDumpImpl::~SkiaTraceMemoryDumpImpl() {}
+SkiaTraceMemoryDumpImpl::~SkiaTraceMemoryDumpImpl() = default;
 
 void SkiaTraceMemoryDumpImpl::dumpNumericValue(const char* dumpName,
                                                const char* valueName,
