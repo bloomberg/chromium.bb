@@ -1840,6 +1840,10 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="25" label="Kerberos ticket expired while renewing credentials"/>
   <int value="26" label="klist exited with unspecified error"/>
   <int value="27" label="kinit failed because of bad machine name."/>
+  <int value="28" label="New password was rejected during password change."/>
+  <int value="29"
+      label="Could not store device policy since install attributes are not
+             locked yet; stored policy in cache instead."/>
 </enum>
 
 <enum name="AutocheckoutBubble">
