@@ -1043,12 +1043,6 @@ int TabStripImpl::GetBackgroundResourceId(bool* custom_image) const {
   return id;
 }
 
-void TabStripImpl::UpdateTabAccessibilityState(const Tab* tab,
-                                               ui::AXNodeData* node_data) {
-  node_data->AddIntAttribute(ui::AX_ATTR_SET_SIZE, tab_count());
-  node_data->AddIntAttribute(ui::AX_ATTR_POS_IN_SET, GetModelIndexOfTab(tab));
-}
-
 void TabStripImpl::MouseMovedOutOfHost() {
   ResizeLayoutTabs();
   if (reset_to_shrink_on_exit_) {

@@ -78,8 +78,6 @@ class FakeTabController : public TabController {
     *custom_image = false;
     return IDR_THEME_TAB_BACKGROUND;
   }
-  void UpdateTabAccessibilityState(const Tab* tab,
-                                   ui::AXNodeData* node_data) override {}
   base::string16 GetAccessibleTabName(const Tab* tab) const override {
     return base::string16();
   }

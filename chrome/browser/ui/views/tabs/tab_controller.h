@@ -18,7 +18,6 @@ class Point;
 class Size;
 }
 namespace ui {
-struct AXNodeData;
 class ListSelectionModel;
 class LocatedEvent;
 class MouseEvent;
@@ -121,10 +120,6 @@ class TabController {
   // |custom_image| is an outparam set to true if either the tab or the frame
   // background images have been customized; see implementation comments.
   virtual int GetBackgroundResourceId(bool* custom_image) const = 0;
-
-  // Adds private information to the tab's accessibility state.
-  virtual void UpdateTabAccessibilityState(const Tab* tab,
-                                           ui::AXNodeData* node_data) = 0;
 
   // Returns the accessible tab name for this tab.
   virtual base::string16 GetAccessibleTabName(const Tab* tab) const = 0;

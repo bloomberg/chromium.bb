@@ -435,8 +435,8 @@ Output.RULES = {
           @describe_switch_off($name)) $description $state $restriction`
     },
     tab: {
-      speak: `@describe_tab($name) $state $restriction $description
-          $if($setSize, @describe_index($posInSet, $setSize))`,
+      speak: `@describe_tab($name) $description
+          @describe_index($posInSet, $setSize) $state $restriction `,
     },
     table: {
       enter: `@table_summary($name,
