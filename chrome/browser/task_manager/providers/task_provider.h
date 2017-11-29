@@ -25,15 +25,11 @@ class TaskProvider {
   // nullptr will be returned if the desired task does not belong to this
   // provider.
   //
-  // |origin_pid| is the PID of the originating process of the URLRequest, if
-  // the request is sent on behalf of another process. Otherwise it's 0.
   // |child_id| is the unique ID of the host of the child process requestor.
   // |route_id| is the ID of the IPC route for the URLRequest (this identifies
-  // the RenderView or like-thing in the renderer that the request gets routed
-  // to).
-  virtual Task* GetTaskOfUrlRequest(int origin_pid,
-                                    int child_id,
-                                    int route_id) = 0;
+  // the RenderFrame in the renderer that initiated the request). |route_id|
+  // may be ignored if |child_id| is not a renderer process.
+  virtual Task* GetTaskOfUrlRequest(int child_id, int route_id) = 0;
 
   // Set the sole observer of this provider. It's an error to set an observer
   // if there's already one there.

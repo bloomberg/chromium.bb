@@ -39,7 +39,6 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   RenderView* GetRenderViewForInstance(PP_Instance instance) const override;
   blink::WebPluginContainer* GetContainerForInstance(
       PP_Instance instance) const override;
-  base::ProcessId GetPluginPID() const override;
   bool HasUserGesture(PP_Instance instance) const override;
   int GetRoutingIDForWidget(PP_Instance instance) const override;
   gfx::Point PluginPointToRenderFrame(PP_Instance instance,

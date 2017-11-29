@@ -73,7 +73,6 @@ class CONTENT_EXPORT SiteIsolationStatsGatherer {
       const url::Origin& frame_origin,
       const GURL& response_url,
       ResourceType resource_type,
-      int origin_pid,
       const ResourceResponseInfo& info);
 
   // Examines the first chunk of network data in case response_url is registered

@@ -49,14 +49,12 @@ FallbackTaskProvider::FallbackTaskProvider(
 
 FallbackTaskProvider::~FallbackTaskProvider() {}
 
-Task* FallbackTaskProvider::GetTaskOfUrlRequest(int origin_pid,
-                                                int child_id,
-                                                int route_id) {
+Task* FallbackTaskProvider::GetTaskOfUrlRequest(int child_id, int route_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Task* task_of_url_request;
   for (const auto& source : sources_) {
-    task_of_url_request = source->subprovider()->GetTaskOfUrlRequest(
-        origin_pid, child_id, route_id);
+    task_of_url_request =
+        source->subprovider()->GetTaskOfUrlRequest(child_id, route_id);
     if (base::ContainsValue(shown_tasks_, task_of_url_request))
       return task_of_url_request;
   }

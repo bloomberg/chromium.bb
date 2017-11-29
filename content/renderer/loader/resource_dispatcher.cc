@@ -188,8 +188,7 @@ void ResourceDispatcher::OnReceivedResponse(
   request_info->site_isolation_metadata =
       SiteIsolationStatsGatherer::OnReceivedResponse(
           request_info->frame_origin, request_info->response_url,
-          request_info->resource_type, request_info->origin_pid,
-          renderer_response_info);
+          request_info->resource_type, renderer_response_info);
   request_info->peer->OnReceivedResponse(renderer_response_info);
 }
 
@@ -208,8 +207,7 @@ void ResourceDispatcher::OnReceivedCachedMetadata(
 
 void ResourceDispatcher::OnSetDataBuffer(int request_id,
                                          base::SharedMemoryHandle shm_handle,
-                                         int shm_size,
-                                         base::ProcessId renderer_pid) {
+                                         int shm_size) {
   TRACE_EVENT0("loader", "ResourceDispatcher::OnSetDataBuffer");
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
@@ -226,10 +224,6 @@ void ResourceDispatcher::OnSetDataBuffer(int request_id,
 
   bool ok = request_info->buffer->Map(shm_size);
   if (!ok) {
-    // Added to help debug crbug/160401.
-    base::ProcessId renderer_pid_copy = renderer_pid;
-    base::debug::Alias(&renderer_pid_copy);
-
     base::SharedMemoryHandle shm_handle_copy = shm_handle;
     base::debug::Alias(&shm_handle_copy);
 
@@ -484,7 +478,6 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     std::unique_ptr<RequestPeer> peer,
     ResourceType resource_type,
     int render_frame_id,
-    int origin_pid,
     const url::Origin& frame_origin,
     const GURL& request_url,
     const std::string& method,
@@ -493,7 +486,6 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     : peer(std::move(peer)),
       resource_type(resource_type),
       render_frame_id(render_frame_id),
-      origin_pid(origin_pid),
       url(request_url),
       frame_origin(frame_origin),
       response_url(request_url),
@@ -638,8 +630,8 @@ int ResourceDispatcher::StartAsync(
   int request_id = MakeRequestID();
   pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
       std::move(peer), request->resource_type, request->render_frame_id,
-      request->origin_pid, frame_origin, request->url, request->method,
-      request->referrer, request->download_to_file);
+      frame_origin, request->url, request->method, request->referrer,
+      request->download_to_file);
 
   if (resource_scheduling_filter_.get() && loading_task_runner) {
     resource_scheduling_filter_->SetRequestIdTaskRunner(request_id,

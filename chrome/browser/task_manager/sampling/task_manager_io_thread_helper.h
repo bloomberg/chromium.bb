@@ -20,14 +20,10 @@ class URLRequest;
 
 namespace task_manager {
 
-// Identifies the initiator of a network request, either by a (child_id,
-// route_id) tuple, and/or via an OS process id.
+// Identifies the initiator of a network request, by a (child_id,
+// route_id) tuple.
 // BytesTransferredKey supports hashing and may be used as an unordered_map key.
 struct BytesTransferredKey {
-  // The PID of the originating process of the URLRequest, if the request is
-  // sent on behalf of another process. Otherwise it's 0.
-  int origin_pid;
-
   // The unique ID of the host of the child process requester.
   int child_id;
 

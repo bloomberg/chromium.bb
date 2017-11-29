@@ -54,9 +54,9 @@ TEST_F(BrowserProcessTaskProviderTest, GetTaskOfUrlRequest) {
   provider.SetObserver(this);
   EXPECT_NE(nullptr, provided_task_);
 
-  Task* result = provider.GetTaskOfUrlRequest(1, 0, 0);
+  Task* result = provider.GetTaskOfUrlRequest(2, 0);
   EXPECT_EQ(nullptr, result);
-  result = provider.GetTaskOfUrlRequest(0, -1, 0);
+  result = provider.GetTaskOfUrlRequest(-1, 0);
   EXPECT_EQ(provided_task_, result);
 }
 

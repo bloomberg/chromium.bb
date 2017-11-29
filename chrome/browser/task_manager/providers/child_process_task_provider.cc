@@ -49,12 +49,11 @@ ChildProcessTaskProvider::ChildProcessTaskProvider()
 ChildProcessTaskProvider::~ChildProcessTaskProvider() {
 }
 
-Task* ChildProcessTaskProvider::GetTaskOfUrlRequest(int origin_pid,
-                                                    int child_id,
+Task* ChildProcessTaskProvider::GetTaskOfUrlRequest(int child_id,
                                                     int route_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto itr = tasks_by_pid_.find(static_cast<base::ProcessId>(origin_pid));
-  if (itr == tasks_by_pid_.end())
+  auto itr = tasks_by_child_id_.find(child_id);
+  if (itr == tasks_by_child_id_.end())
     return nullptr;
 
   return itr->second;
@@ -78,7 +77,7 @@ void ChildProcessTaskProvider::BrowserChildProcessHostDisconnected(
 void ChildProcessTaskProvider::StartUpdating() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(tasks_by_handle_.empty());
-  DCHECK(tasks_by_pid_.empty());
+  DCHECK(tasks_by_child_id_.empty());
 
   // First, get the pre-existing child processes data.
   BrowserThread::PostTaskAndReplyWithResult(
@@ -104,7 +103,7 @@ void ChildProcessTaskProvider::StopUpdating() {
 
   // Then delete all tasks (if any).
   tasks_by_handle_.clear();
-  tasks_by_pid_.clear();
+  tasks_by_child_id_.clear();
 }
 
 void ChildProcessTaskProvider::ChildProcessDataCollected(
@@ -132,7 +131,7 @@ void ChildProcessTaskProvider::CreateTask(
 
   // Create the task and notify the observer.
   task.reset(new ChildProcessTask(data));
-  tasks_by_pid_[task->process_id()] = task.get();
+  tasks_by_child_id_[task->GetChildProcessUniqueID()] = task.get();
   NotifyObserverTaskAdded(task.get());
 }
 
@@ -153,8 +152,8 @@ void ChildProcessTaskProvider::DeleteTask(base::ProcessHandle handle) {
 
   NotifyObserverTaskRemoved(itr->second.get());
 
-  // Clear from the pid index.
-  tasks_by_pid_.erase(itr->second->process_id());
+  // Clear from the child_id index.
+  tasks_by_child_id_.erase(itr->second->GetChildProcessUniqueID());
 
   // Finally delete the task.
   tasks_by_handle_.erase(itr);

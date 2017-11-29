@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/task_manager/providers/browser_process_task_provider.h"
+#include "content/public/common/child_process_host.h"
 
 namespace task_manager {
 
@@ -12,10 +13,9 @@ BrowserProcessTaskProvider::BrowserProcessTaskProvider() {
 BrowserProcessTaskProvider::~BrowserProcessTaskProvider() {
 }
 
-Task* BrowserProcessTaskProvider::GetTaskOfUrlRequest(int origin_pid,
-                                                      int child_id,
+Task* BrowserProcessTaskProvider::GetTaskOfUrlRequest(int child_id,
                                                       int route_id) {
-  if (origin_pid == 0 && child_id == -1)
+  if (child_id == content::ChildProcessHost::kInvalidUniqueID)
     return &browser_process_task_;
 
   return nullptr;

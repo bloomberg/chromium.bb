@@ -37,8 +37,7 @@ RenderProcessHostTaskProvider::RenderProcessHostTaskProvider()
 
 RenderProcessHostTaskProvider::~RenderProcessHostTaskProvider() {}
 
-Task* RenderProcessHostTaskProvider::GetTaskOfUrlRequest(int origin_pid,
-                                                         int child_id,
+Task* RenderProcessHostTaskProvider::GetTaskOfUrlRequest(int child_id,
                                                          int route_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto itr = tasks_by_rph_id_.find(child_id);

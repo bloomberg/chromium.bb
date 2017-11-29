@@ -254,7 +254,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResourceRequest)
   IPC_STRUCT_TRAITS_MEMBER(visibility_state)
   IPC_STRUCT_TRAITS_MEMBER(headers)
   IPC_STRUCT_TRAITS_MEMBER(load_flags)
-  IPC_STRUCT_TRAITS_MEMBER(origin_pid)
+  IPC_STRUCT_TRAITS_MEMBER(plugin_child_id)
   IPC_STRUCT_TRAITS_MEMBER(resource_type)
   IPC_STRUCT_TRAITS_MEMBER(priority)
   IPC_STRUCT_TRAITS_MEMBER(request_context)
@@ -344,15 +344,10 @@ IPC_MESSAGE_CONTROL3(ResourceMsg_ReceivedRedirect,
 //
 // NOTE: The shared memory handle should already be mapped into the process
 // that receives this message.
-//
-// TODO(darin): The |renderer_pid| parameter is just a temporary parameter,
-// added to help in debugging crbug/160401.
-//
-IPC_MESSAGE_CONTROL4(ResourceMsg_SetDataBuffer,
+IPC_MESSAGE_CONTROL3(ResourceMsg_SetDataBuffer,
                      int /* request_id */,
                      base::SharedMemoryHandle /* shm_handle */,
-                     int /* shm_size */,
-                     base::ProcessId /* renderer_pid */)
+                     int /* shm_size */)
 
 // Sent when some data from a resource request is ready.  The data offset and
 // length specify a byte range into the shared memory buffer provided by the

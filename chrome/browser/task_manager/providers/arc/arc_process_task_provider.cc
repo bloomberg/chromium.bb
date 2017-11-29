@@ -38,9 +38,7 @@ ArcProcessTaskProvider::ArcProcessTaskProvider()
 
 ArcProcessTaskProvider::~ArcProcessTaskProvider() {}
 
-Task* ArcProcessTaskProvider::GetTaskOfUrlRequest(int origin_pid,
-                                                  int child_id,
-                                                  int route_id) {
+Task* ArcProcessTaskProvider::GetTaskOfUrlRequest(int child_id, int route_id) {
   // ARC tasks are not associated with any URL request.
   return nullptr;
 }
