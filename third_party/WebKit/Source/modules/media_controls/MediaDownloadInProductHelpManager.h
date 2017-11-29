@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Heap.h"
@@ -18,8 +19,6 @@ class MediaControlsImpl;
 
 class MODULES_EXPORT MediaDownloadInProductHelpManager final
     : public GarbageCollectedFinalized<MediaDownloadInProductHelpManager> {
-  WTF_MAKE_NONCOPYABLE(MediaDownloadInProductHelpManager);
-
  public:
   explicit MediaDownloadInProductHelpManager(MediaControlsImpl&);
   virtual ~MediaDownloadInProductHelpManager();
@@ -47,6 +46,8 @@ class MODULES_EXPORT MediaDownloadInProductHelpManager final
   IntRect download_button_rect_;
 
   mojom::blink::MediaDownloadInProductHelpPtr media_in_product_help_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaDownloadInProductHelpManager);
 };
 
 }  // namespace blink

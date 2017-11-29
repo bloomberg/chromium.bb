@@ -22,6 +22,7 @@
 #ifndef OverflowModel_h
 #define OverflowModel_h
 
+#include "base/macros.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {
@@ -82,7 +83,6 @@ inline void UniteLayoutOverflowRect(LayoutRect& layout_overflow,
 // invariant.
 
 class SimpleOverflowModel {
-  WTF_MAKE_NONCOPYABLE(SimpleOverflowModel);
   USING_FAST_MALLOC(SimpleOverflowModel);
 
  public:
@@ -110,6 +110,8 @@ class SimpleOverflowModel {
  private:
   LayoutRect layout_overflow_;
   LayoutRect visual_overflow_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleOverflowModel);
 };
 
 // BoxModelOverflow tracks overflows of a LayoutBox. It separates visual
@@ -140,7 +142,6 @@ class SimpleOverflowModel {
 // visual overflow.
 
 class BoxOverflowModel {
-  WTF_MAKE_NONCOPYABLE(BoxOverflowModel);
   USING_FAST_MALLOC(BoxOverflowModel);
 
  public:
@@ -185,6 +186,8 @@ class BoxOverflowModel {
   LayoutRect self_visual_overflow_;
   LayoutRect contents_visual_overflow_;
   LayoutUnit layout_client_after_edge_;
+
+  DISALLOW_COPY_AND_ASSIGN(BoxOverflowModel);
 };
 
 }  // namespace blink

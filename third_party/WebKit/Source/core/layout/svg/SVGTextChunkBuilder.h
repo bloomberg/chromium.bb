@@ -20,6 +20,7 @@
 #ifndef SVGTextChunkBuilder_h
 #define SVGTextChunkBuilder_h
 
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
 
@@ -40,7 +41,6 @@ struct SVGTextFragment;
 
 class SVGTextChunkBuilder {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(SVGTextChunkBuilder);
 
  public:
   SVGTextChunkBuilder();
@@ -64,11 +64,12 @@ class SVGTextChunkBuilder {
   void ProcessTextAnchorCorrection(bool is_vertical_text,
                                    float text_anchor_shift,
                                    Vector<SVGTextFragment>&);
+
+  DISALLOW_COPY_AND_ASSIGN(SVGTextChunkBuilder);
 };
 
 class SVGTextPathChunkBuilder final : public SVGTextChunkBuilder {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(SVGTextPathChunkBuilder);
 
  public:
   SVGTextPathChunkBuilder();
@@ -84,6 +85,8 @@ class SVGTextPathChunkBuilder final : public SVGTextChunkBuilder {
   float total_length_;
   unsigned total_characters_;
   float total_text_anchor_shift_;
+
+  DISALLOW_COPY_AND_ASSIGN(SVGTextPathChunkBuilder);
 };
 
 }  // namespace blink

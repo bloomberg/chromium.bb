@@ -5,6 +5,7 @@
 #ifndef InspectorDOMSnapshotAgent_h
 #define InspectorDOMSnapshotAgent_h
 
+#include "base/macros.h"
 #include "core/CSSPropertyNames.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/DOMSnapshot.h"
@@ -19,8 +20,6 @@ class Node;
 
 class CORE_EXPORT InspectorDOMSnapshotAgent final
     : public InspectorBaseAgent<protocol::DOMSnapshot::Metainfo> {
-  WTF_MAKE_NONCOPYABLE(InspectorDOMSnapshotAgent);
-
  public:
   static InspectorDOMSnapshotAgent* Create(InspectedFrames* inspected_frames) {
     return new InspectorDOMSnapshotAgent(inspected_frames);
@@ -79,6 +78,8 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
       css_property_whitelist_;
 
   Member<InspectedFrames> inspected_frames_;
+
+  DISALLOW_COPY_AND_ASSIGN(InspectorDOMSnapshotAgent);
 };
 
 }  // namespace blink

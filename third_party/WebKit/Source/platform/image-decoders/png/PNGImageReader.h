@@ -26,6 +26,7 @@
 #ifndef PNGImageReader_h
 #define PNGImageReader_h
 
+#include "base/macros.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/image-decoders/ImageFrame.h"
@@ -53,7 +54,6 @@ class SegmentReader;
 
 class PLATFORM_EXPORT PNGImageReader final {
   USING_FAST_MALLOC(PNGImageReader);
-  WTF_MAKE_NONCOPYABLE(PNGImageReader);
 
  public:
   PNGImageReader(PNGImageDecoder*, size_t initial_offset);
@@ -163,6 +163,8 @@ class PLATFORM_EXPORT PNGImageReader final {
     return !frame_info_.IsEmpty() &&
            frame_info_[0].byte_length != kFirstFrameIndicator;
   }
+
+  DISALLOW_COPY_AND_ASSIGN(PNGImageReader);
 };
 
 }  // namespace blink

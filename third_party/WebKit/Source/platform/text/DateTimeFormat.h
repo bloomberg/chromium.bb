@@ -26,6 +26,7 @@
 #ifndef DateTimeFormat_h
 #define DateTimeFormat_h
 
+#include "base/macros.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
@@ -100,13 +101,14 @@ class PLATFORM_EXPORT DateTimeFormat {
 
   class TokenHandler {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(TokenHandler);
 
    public:
-    TokenHandler() {}
-    virtual ~TokenHandler() {}
+    TokenHandler() = default;
+    virtual ~TokenHandler() = default;
     virtual void VisitField(FieldType, int number_of_pattern_characters) = 0;
     virtual void VisitLiteral(const String&) = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(TokenHandler);
   };
 
   // Returns true if succeeded, false if failed.

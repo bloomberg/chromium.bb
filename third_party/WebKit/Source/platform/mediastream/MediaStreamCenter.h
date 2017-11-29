@@ -32,6 +32,8 @@
 #define MediaStreamCenter_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
@@ -51,7 +53,6 @@ class WebMediaStreamCenter;
 class PLATFORM_EXPORT MediaStreamCenter final
     : public WebMediaStreamCenterClient {
   USING_FAST_MALLOC(MediaStreamCenter);
-  WTF_MAKE_NONCOPYABLE(MediaStreamCenter);
 
  public:
   ~MediaStreamCenter() override;
@@ -77,6 +78,8 @@ class PLATFORM_EXPORT MediaStreamCenter final
   MediaStreamCenter();
 
   std::unique_ptr<WebMediaStreamCenter> private_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaStreamCenter);
 };
 
 }  // namespace blink
