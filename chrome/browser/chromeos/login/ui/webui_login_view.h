@@ -152,8 +152,7 @@ class WebUILoginView : public views::View,
                                      aura::Window* root_window) override;
 
   // keyboard::KeyboardControllerObserver:
-  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
-  void OnKeyboardClosed() override;
+  void OnKeyboardAvailabilityChanging(bool is_available) override;
 
   // Overridden from content::WebContentsDelegate.
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
