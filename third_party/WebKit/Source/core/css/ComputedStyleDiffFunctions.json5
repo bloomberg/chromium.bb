@@ -322,14 +322,15 @@
         name: "DiffTransformData",
         fields_to_diff: ["transform", "translate", "rotate",
                     "scale", "offset-path", "offset-rotate", "transform-origin",
-                     "offset-position", "offset-anchor", "offset-distance"],
+                     "offset-position", "offset-anchor", "offset-distance",
+                     "transform-box"],
     },
     {
         name: "UpdatePropertySpecificDifferencesTransform",
         fields_to_diff: ["transform", "translate", "rotate",
                     "scale", "offset-path", "offset-rotate", "transform-origin",
                      "offset-position", "offset-anchor", "offset-distance", 
-                     "perspective", "perspective-origin"],
+                     "perspective", "perspective-origin", "transform-box"],
         methods_to_diff: [
           {
             // It's possible for the old and new style transform data to be equivalent
