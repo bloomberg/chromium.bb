@@ -340,7 +340,8 @@ void ArcSessionRunner::EmitLoginPromptVisibleCalled() {
   // instance may depend on such as cras, EmitLoginPromptVisibleCalled() is the
   // safe place to start a mini instance.
   DCHECK(!arc_session_);
-  RequestStart(ArcInstanceMode::MINI_INSTANCE);
+  if (IsArcAvailable())
+    RequestStart(ArcInstanceMode::MINI_INSTANCE);
 }
 
 }  // namespace arc
