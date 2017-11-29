@@ -263,6 +263,12 @@ void TestWebState::OnDocumentSubmitted(const std::string& form_name,
   }
 }
 
+void TestWebState::OnVisibleSecurityStateChanged() {
+  for (auto& observer : observers_) {
+    observer.DidChangeVisibleSecurityState(this);
+  }
+}
+
 void TestWebState::ShowTransientContentView(CRWContentView* content_view) {
   if (content_view) {
     transient_content_view_ = content_view;

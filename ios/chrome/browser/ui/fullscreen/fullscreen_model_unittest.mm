@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 
+#import "ios/chrome/browser/ui/fullscreen/test/fullscreen_model_test_util.h"
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_model_observer.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "testing/platform_test.h"
@@ -24,57 +25,18 @@ class FullscreenModelTest : public PlatformTest {
     model_.AddObserver(&observer_);
     // Set the toolbar height to kToolbarHeight, and simulate a page load that
     // finishes with a 0.0 y content offset.
-    set_toolbar_height(kToolbarHeight);
+    model_.SetToolbarHeight(kToolbarHeight);
     model_.ResetForNavigation();
-    set_y_content_offset(0.0);
+    model_.SetYContentOffset(0.0);
   }
   ~FullscreenModelTest() override { model_.RemoveObserver(&observer_); }
 
   FullscreenModel& model() { return model_; }
   TestFullscreenModelObserver& observer() { return observer_; }
 
-  // FullscreenModel setters that store values before passing them to the model.
-  CGFloat toolbar_height() const { return toolbar_height_; }
-  void set_toolbar_height(CGFloat toolbar_height) {
-    toolbar_height_ = toolbar_height;
-    model_.SetToolbarHeight(toolbar_height_);
-  }
-  CGFloat y_content_offset() const { return y_content_offset_; }
-  void set_y_content_offset(CGFloat y_content_offset) {
-    y_content_offset_ = y_content_offset;
-    model_.SetYContentOffset(y_content_offset_);
-  }
-
-  // The base offset against which fullscreen is being calculated.
-  CGFloat GetBaseOffsetForProgress(CGFloat progress) {
-    EXPECT_TRUE(model_.has_base_offset());
-    return y_content_offset_ - (1.0 - progress) * toolbar_height_;
-  }
-
-  // Simulates a user scroll event for a scroll of |offset_delta| points.
-  void SimulateUserScrollWithDelta(CGFloat offset_delta) {
-    model_.SetScrollViewIsDragging(true);
-    model_.SetScrollViewIsScrolling(true);
-    set_y_content_offset(y_content_offset() + offset_delta);
-    model_.SetScrollViewIsDragging(false);
-    model_.SetScrollViewIsScrolling(false);
-  }
-
-  // Simulates a user scroll that will result in a progress value of |progress|.
-  void SimulateUserScrollForProgress(CGFloat progress) {
-    ASSERT_GE(progress, 0.0);
-    ASSERT_LE(progress, 1.0);
-    CGFloat final_y_content_offset =
-        toolbar_height_ * (1.0 - progress) +
-        GetBaseOffsetForProgress(observer_.progress());
-    SimulateUserScrollWithDelta(final_y_content_offset - y_content_offset());
-  }
-
  private:
   FullscreenModel model_;
   TestFullscreenModelObserver observer_;
-  CGFloat toolbar_height_ = 0.0;
-  CGFloat y_content_offset_ = 0.0;
 };
 
 // Tests that incremending and decrementing the disabled counter correctly
@@ -104,7 +66,7 @@ TEST_F(FullscreenModelTest, EnableDisable) {
 // pre-scroll state.
 TEST_F(FullscreenModelTest, ResetForNavigation) {
   // Simulate a scroll event and check that progress has been updated.
-  SimulateUserScrollForProgress(0.5);
+  SimulateFullscreenUserScrollForProgress(&model(), 0.5);
   ASSERT_EQ(observer().progress(), 0.5);
   // Call ResetForNavigation() and verify that the base offset is reset and that
   // the toolbar is fully visible.
@@ -126,8 +88,9 @@ TEST_F(FullscreenModelTest, AnimationEnded) {
   // AnimationEndedWithProgress().  After this occurs, the base offset should be
   // updated to a value corresponding with a 0.5 progress value.
   model().SetScrollViewIsDragging(true);
-  EXPECT_EQ(GetBaseOffsetForProgress(kAnimationEndProgress),
-            y_content_offset() - kAnimationEndProgress * kToolbarHeight);
+  EXPECT_EQ(
+      GetFullscreenBaseOffsetForProgress(&model(), kAnimationEndProgress),
+      model().GetYContentOffset() - kAnimationEndProgress * kToolbarHeight);
 }
 
 // Tests that changing the toolbar height fully shows the new toolbar and
@@ -135,26 +98,26 @@ TEST_F(FullscreenModelTest, AnimationEnded) {
 TEST_F(FullscreenModelTest, UpdateToolbarHeight) {
   // Reset the toolbar height and verify that the base offset is reset and that
   // the toolbar is fully visible.
-  set_toolbar_height(2.0 * kToolbarHeight);
+  model().SetToolbarHeight(2.0 * kToolbarHeight);
   EXPECT_FALSE(model().has_base_offset());
   EXPECT_EQ(observer().progress(), 1.0);
   // Simulate a page load to a 0.0 y content offset.
   model().ResetForNavigation();
-  set_y_content_offset(0.0);
+  model().SetYContentOffset(0.0);
   // Simulate a scroll to -kToolbarHeight.  Since toolbar_height() is twice
   // that, this should produce a progress value of 0.5.
-  SimulateUserScrollWithDelta(kToolbarHeight);
-  ASSERT_EQ(y_content_offset(), kToolbarHeight);
+  SimulateFullscreenUserScrollWithDelta(&model(), kToolbarHeight);
+  ASSERT_EQ(model().GetYContentOffset(), kToolbarHeight);
   EXPECT_EQ(observer().progress(), 0.5);
 }
 
 // Tests that updating the y content offset produces the expected progress
 // value.
 TEST_F(FullscreenModelTest, UserScroll) {
-  const CGFloat final_progress = 0.5;
-  SimulateUserScrollForProgress(final_progress);
-  EXPECT_EQ(observer().progress(), final_progress);
-  EXPECT_EQ(y_content_offset(), final_progress * kToolbarHeight);
+  const CGFloat kFinalProgress = 0.5;
+  SimulateFullscreenUserScrollForProgress(&model(), kFinalProgress);
+  EXPECT_EQ(observer().progress(), kFinalProgress);
+  EXPECT_EQ(model().GetYContentOffset(), kFinalProgress * kToolbarHeight);
 }
 
 // Tests that updating the y content offset programmatically (i.e. while the
@@ -164,7 +127,7 @@ TEST_F(FullscreenModelTest, ProgrammaticScroll) {
   // Perform a programmatic scroll that would result in a progress of 0.5, and
   // verify that the initial progress value of 1.0 is maintained.
   const CGFloat kProgress = 0.5;
-  set_y_content_offset(kProgress * kToolbarHeight);
+  model().SetYContentOffset(kProgress * kToolbarHeight);
   EXPECT_EQ(observer().progress(), 1.0);
 }
 

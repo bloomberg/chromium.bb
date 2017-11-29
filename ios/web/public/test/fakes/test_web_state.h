@@ -111,6 +111,7 @@ class TestWebState : public WebState {
   void OnRenderProcessGone();
   void OnFormActivity(const FormActivityParams& params);
   void OnDocumentSubmitted(const std::string& form_name, bool user_initiated);
+  void OnVisibleSecurityStateChanged();
 
  private:
   BrowserState* browser_state_;

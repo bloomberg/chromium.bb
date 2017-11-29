@@ -5,6 +5,8 @@
 source_set("test") {
   testonly = true
   sources = [
+    "fullscreen_model_test_util.h",
+    "fullscreen_model_test_util.mm",
     "test_fullscreen_model_observer.h",
     "test_fullscreen_model_observer.mm",
   ]
@@ -13,5 +15,6 @@ source_set("test") {
 
   deps = [
     "//ios/chrome/browser/ui/fullscreen:new_fullscreen_internal",
+    "//testing/gtest",
   ]
 }
