@@ -2106,6 +2106,29 @@
             ]
         }
     ],
+    "NTPUseGoogleLocalNtp": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "local_ntp_interactive_doodles": "false"
+                    },
+                    "enable_features": [
+                        "DoodlesOnLocalNtp",
+                        "UseGoogleLocalNtp",
+                        "VoiceSearchOnLocalNtp"
+                    ]
+                }
+            ]
+        }
+    ],
     "NetAdaptiveProxyConnectionTimeout": [
         {
             "platforms": [
@@ -4056,24 +4079,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ViewsSimplifiedFullscreenUI"
-                    ]
-                }
-            ]
-        }
-    ],
-    "VoiceSearchOnLocalNtp": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "VoiceSearchOnLocalNtp"
                     ]
                 }
             ]
