@@ -15,6 +15,8 @@ namespace cc {
 Region::Region() {
 }
 
+Region::Region(const SkRegion& region) : skregion_(region) {}
+
 Region::Region(const Region& region)
     : skregion_(region.skregion_) {
 }
@@ -50,6 +52,10 @@ bool Region::IsEmpty() const {
 
 int Region::GetRegionComplexity() const {
   return skregion_.computeRegionComplexity();
+}
+
+void Region::GetBoundaryPath(SkPath* path) const {
+  skregion_.getBoundaryPath(path);
 }
 
 bool Region::Contains(const gfx::Point& point) const {
