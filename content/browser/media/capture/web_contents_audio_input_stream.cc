@@ -15,6 +15,7 @@
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/capture/web_contents_tracker.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
@@ -162,8 +163,12 @@ WebContentsAudioInputStream::Impl::~Impl() {
 
 bool WebContentsAudioInputStream::Impl::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
   DCHECK_EQ(CONSTRUCTED, state_) << "Illegal to Open more than once.";
+
+  // For browser tests, not to start audio track to a fake tab.
+  if (initial_render_process_id_ == DesktopMediaID::kFakeId &&
+      initial_main_render_frame_id_ == DesktopMediaID::kFakeId)
+    return true;
 
   if (!mixer_stream_->Open())
     return false;

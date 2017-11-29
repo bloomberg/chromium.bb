@@ -19,12 +19,14 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/media/capture/cursor_renderer.h"
+#include "content/browser/media/capture/fake_webcontent_capture_machine.h"
 #include "content/browser/media/capture/web_contents_tracker.h"
 #include "content/browser/media/capture/window_activity_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -697,6 +699,23 @@ void WebContentsCaptureMachine::UpdateCaptureSize() {
   oracle_proxy_->UpdateCaptureSize(physical_size_pixels);
 }
 
+std::unique_ptr<media::VideoCaptureMachine> CreateVideoCaptureMachine(
+    int render_process_id,
+    int main_render_frame_id,
+    bool enable_auto_throttling) {
+  std::unique_ptr<media::VideoCaptureMachine> video_capture_machine;
+  if (render_process_id != DesktopMediaID::kFakeId &&
+      main_render_frame_id != DesktopMediaID::kFakeId) {
+    video_capture_machine.reset(new WebContentsCaptureMachine(
+        render_process_id, main_render_frame_id, enable_auto_throttling));
+  } else {  // For browser tests, to create a fake tab capturer.
+    video_capture_machine.reset(
+        new FakeWebContentCaptureMachine(enable_auto_throttling));
+  }
+
+  return video_capture_machine;
+}
+
 }  // namespace
 
 WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
@@ -704,10 +723,9 @@ WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
     int main_render_frame_id,
     bool enable_auto_throttling)
     : core_(new media::ScreenCaptureDeviceCore(
-          std::unique_ptr<media::VideoCaptureMachine>(
-              new WebContentsCaptureMachine(render_process_id,
-                                            main_render_frame_id,
-                                            enable_auto_throttling)))) {}
+          CreateVideoCaptureMachine(render_process_id,
+                                    main_render_frame_id,
+                                    enable_auto_throttling))) {}
 
 WebContentsVideoCaptureDevice::~WebContentsVideoCaptureDevice() {
   DVLOG(2) << "WebContentsVideoCaptureDevice@" << this << " destroying.";
