@@ -83,6 +83,14 @@ void SetShelfAlignmentFromPrefs() {
 
 // Set each Shelf's auto-hide behavior and alignment from the per-display prefs.
 void SetShelfBehaviorsFromPrefs() {
+  // The shelf should always be bottom-aligned and not hidden in tablet mode;
+  // alignment and auto-hide are assigned from prefs when tablet mode is exited.
+  if (Shell::Get()
+          ->tablet_mode_controller()
+          ->IsTabletModeWindowManagerEnabled()) {
+    return;
+  }
+
   SetShelfAutoHideFromPrefs();
   SetShelfAlignmentFromPrefs();
 }

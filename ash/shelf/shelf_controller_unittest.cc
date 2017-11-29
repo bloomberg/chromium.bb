@@ -358,6 +358,13 @@ TEST_F(ShelfControllerPrefsTest, ShelfSettingsInTabletMode) {
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
 
+  // Verify that screen rotation does not change alignment or auto-hide.
+  display_manager()->SetDisplayRotation(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+      display::Display::ROTATE_90, display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+
   // Verify after exiting tablet mode, the shelf alignment and auto hide
   // behavior get their stored pref values.
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
