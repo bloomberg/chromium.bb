@@ -109,7 +109,53 @@ namespace {
 
 using std::vector;
 
-typedef std::multimap<DWORD, CComPtr<IDiaSymbol>> SymbolMultimap;
+// The symbol (among possibly many) selected to represent an rva.
+struct SelectedSymbol {
+  SelectedSymbol(const CComPtr<IDiaSymbol>& symbol, bool is_public)
+      : symbol(symbol), is_public(is_public), is_multiple(false) {}
+
+  // The symbol to use for an rva.
+  CComPtr<IDiaSymbol> symbol;
+  // Whether this is a public or function symbol.
+  bool is_public;
+  // Whether the rva has multiple associated symbols. An rva will correspond to
+  // multiple symbols in the case of linker identical symbol folding.
+  bool is_multiple;
+};
+
+// Maps rva to the symbol to use for that address.
+typedef std::map<DWORD, SelectedSymbol> SymbolMap;
+
+// Record this in the map as the selected symbol for the rva if it satisfies the
+// necessary conditions.
+void MaybeRecordSymbol(DWORD rva,
+                       const CComPtr<IDiaSymbol> symbol,
+                       bool is_public,
+                       SymbolMap* map) {
+  SymbolMap::iterator loc = map->find(rva);
+  if (loc == map->end()) {
+    map->insert(std::make_pair(rva, SelectedSymbol(symbol, is_public)));
+    return;
+  }
+
+  // Prefer function symbols to public symbols.
+  if (is_public && !loc->second.is_public) {
+    return;
+  }
+
+  loc->second.is_multiple = true;
+
+  // Take the 'least' symbol by lexicographical order of the decorated name. We
+  // use the decorated rather than undecorated name because computing the latter
+  // is expensive.
+  BSTR current_name, new_name;
+  loc->second.symbol->get_name(&current_name);
+  symbol->get_name(&new_name);
+  if (wcscmp(new_name, current_name) < 0) {
+    loc->second.symbol = symbol;
+    loc->second.is_public = is_public;
+  }
+}
 
 // A helper class to scope a PLOADED_IMAGE.
 class AutoImage {
@@ -171,19 +217,10 @@ bool CreateDiaDataSourceInstance(CComPtr<IDiaDataSource> &data_source) {
   return false;
 }
 
-// Computing undecorated names for all symbols is expensive, so we compare
-// decorated names.
-bool CompareSymbols(const SymbolMultimap::value_type& a,
-                    const SymbolMultimap::value_type& b) {
-  BSTR a_name, b_name;
-  a.second->get_name(&a_name);
-  b.second->get_name(&b_name);
-  return wcscmp(a_name, b_name) < 0;
-}
-
 }  // namespace
 
-PDBSourceLineWriter::PDBSourceLineWriter() : output_(NULL) {
+PDBSourceLineWriter::PDBSourceLineWriter(bool enable_multiple_field)
+    : enable_multiple_field_(enable_multiple_field), output_(NULL) {
 }
 
 PDBSourceLineWriter::~PDBSourceLineWriter() {
@@ -299,7 +336,8 @@ bool PDBSourceLineWriter::PrintLines(IDiaEnumLineNumbers *lines) {
 }
 
 bool PDBSourceLineWriter::PrintFunction(IDiaSymbol *function,
-                                        IDiaSymbol *block) {
+                                        IDiaSymbol *block,
+                                        bool has_multiple_symbols) {
   // The function format is:
   // FUNC <address> <length> <param_stack_size> <function>
   DWORD rva;
@@ -335,9 +373,10 @@ bool PDBSourceLineWriter::PrintFunction(IDiaSymbol *function,
   MapAddressRange(image_map_, AddressRange(rva, static_cast<DWORD>(length)),
                   &ranges);
   for (size_t i = 0; i < ranges.size(); ++i) {
-    fprintf(output_, "FUNC %lx %lx %x %ws\n",
-            ranges[i].rva, ranges[i].length, stack_param_size,
-            name.m_str);
+    const char* optional_multiple_field =
+      enable_multiple_field_ && has_multiple_symbols ? "m " : "";
+    fprintf(output_, "FUNC %s%lx %lx %x %ws\n", optional_multiple_field,
+            ranges[i].rva, ranges[i].length, stack_param_size, name.m_str);
   }
 
   CComPtr<IDiaEnumLineNumbers> lines;
@@ -415,7 +454,7 @@ bool PDBSourceLineWriter::PrintFunctions() {
   CComPtr<IDiaEnumSymbols> symbols = NULL;
 
   // Find all function symbols first.
-  SymbolMultimap rva_symbols;
+  SymbolMap rva_symbol;
   hr = global->findChildren(SymTagFunction, NULL, nsNone, &symbols);
 
   if (SUCCEEDED(hr)) {
@@ -423,10 +462,8 @@ bool PDBSourceLineWriter::PrintFunctions() {
 
     while (SUCCEEDED(symbols->Next(1, &symbol, &count)) && count == 1) {
       if (SUCCEEDED(symbol->get_relativeVirtualAddress(&rva))) {
-        // Place the symbols into a multimap indexed by rva, so we can choose
-        // the apropriate symbol name to use when multiple symbols share an
-        // address.
-        rva_symbols.insert(std::make_pair(rva, symbol));
+        // Potentially record this as the canonical symbol for this rva.
+        MaybeRecordSymbol(rva, symbol, false, &rva_symbol);
       } else {
         fprintf(stderr, "get_relativeVirtualAddress failed on the symbol\n");
         return false;
@@ -438,9 +475,8 @@ bool PDBSourceLineWriter::PrintFunctions() {
     symbols.Release();
   }
 
-  // Find all public symbols.  Store public symbols that are not also private
-  // symbols for later.
-  std::set<DWORD> public_only_rvas;
+  // Find all public symbols and record public symbols that are not also private
+  // symbols.
   hr = global->findChildren(SymTagPublicSymbol, NULL, nsNone, &symbols);
 
   if (SUCCEEDED(hr)) {
@@ -448,11 +484,8 @@ bool PDBSourceLineWriter::PrintFunctions() {
 
     while (SUCCEEDED(symbols->Next(1, &symbol, &count)) && count == 1) {
       if (SUCCEEDED(symbol->get_relativeVirtualAddress(&rva))) {
-        if (rva_symbols.find(rva) == rva_symbols.end()) {
-          // Keep symbols in rva order.
-          rva_symbols.insert(std::make_pair(rva, symbol));
-          public_only_rvas.insert(rva);
-        }
+        // Potentially record this as the canonical symbol for this rva.
+        MaybeRecordSymbol(rva, symbol, true, &rva_symbol);
       } else {
         fprintf(stderr, "get_relativeVirtualAddress failed on the symbol\n");
         return false;
@@ -464,29 +497,18 @@ bool PDBSourceLineWriter::PrintFunctions() {
     symbols.Release();
   }
 
-  // For each rva, dump one symbol at the address.
-  SymbolMultimap::iterator it = rva_symbols.begin();
-  while (it != rva_symbols.end()) {
-    std::pair<SymbolMultimap::iterator, SymbolMultimap::iterator> symbol_range =
-      rva_symbols.equal_range(it->first);
-    // Find the minimum symbol by name to make the output more consistent
-    // between runs on different releases of the same module, in the case of
-    // multiple symbols sharing an address.
-    SymbolMultimap::iterator least_symbol_iter =
-      std::min_element(symbol_range.first, symbol_range.second, CompareSymbols);
-    CComPtr<IDiaSymbol> symbol = least_symbol_iter->second;
+  // For each rva, dump the selected symbol at the address.
+  SymbolMap::iterator it;
+  for (it = rva_symbol.begin(); it != rva_symbol.end(); ++it) {
+    CComPtr<IDiaSymbol> symbol = it->second.symbol;
     // Only print public symbols if there is no function symbol for the address.
-    if (public_only_rvas.count(it->first) == 0) {
-      if (!PrintFunction(symbol, symbol))
+    if (!it->second.is_public) {
+      if (!PrintFunction(symbol, symbol, it->second.is_multiple))
         return false;
-      symbol.Release();
     } else {
-      if (!PrintCodePublicSymbol(symbol))
+      if (!PrintCodePublicSymbol(symbol, it->second.is_multiple))
         return false;
-      symbol.Release();
     }
-
-    it = symbol_range.second;
   }
 
   // When building with PGO, the compiler can split functions into
@@ -528,7 +550,7 @@ bool PDBSourceLineWriter::PrintFunctions() {
             SUCCEEDED(parent->get_relativeVirtualAddress(&func_rva)) &&
             SUCCEEDED(parent->get_length(&func_length))) {
           if (block_rva < func_rva || block_rva > (func_rva + func_length)) {
-            if (!PrintFunction(parent, block)) {
+            if (!PrintFunction(parent, block, false)) {
               return false;
             }
           }
@@ -845,7 +867,8 @@ bool PDBSourceLineWriter::PrintFrameData() {
   return false;
 }
 
-bool PDBSourceLineWriter::PrintCodePublicSymbol(IDiaSymbol *symbol) {
+bool PDBSourceLineWriter::PrintCodePublicSymbol(IDiaSymbol *symbol,
+                                                bool has_multiple_symbols) {
   BOOL is_code;
   if (FAILED(symbol->get_code(&is_code))) {
     return false;
@@ -868,8 +891,10 @@ bool PDBSourceLineWriter::PrintCodePublicSymbol(IDiaSymbol *symbol) {
   AddressRangeVector ranges;
   MapAddressRange(image_map_, AddressRange(rva, 1), &ranges);
   for (size_t i = 0; i < ranges.size(); ++i) {
-    fprintf(output_, "PUBLIC %lx %x %ws\n", ranges[i].rva,
-            stack_param_size > 0 ? stack_param_size : 0,
+    const char* optional_multiple_field =
+      enable_multiple_field_ && has_multiple_symbols ? "m " : "";
+    fprintf(output_, "PUBLIC %s%lx %x %ws\n", optional_multiple_field,
+            ranges[i].rva, stack_param_size > 0 ? stack_param_size : 0,
             name.m_str);
   }
 

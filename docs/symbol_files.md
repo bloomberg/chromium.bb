@@ -100,11 +100,16 @@ the file; it may contain spaces.
 
 A `FUNC` record describes a source-language function. It has the form:
 
-> `FUNC` _address_ _size_ _parameter\_size_ _name_
+> `FUNC` _[m]_ _address_ _size_ _parameter\_size_ _name_
 
-For example: `FUNC c184 30 0 nsQueryInterfaceWithError::operator()(nsID const&,
+For example: `FUNC m c184 30 0 nsQueryInterfaceWithError::operator()(nsID const&,
 void**) const
 `
+
+The _m_ field is optional. If present it indicates that multiple symbols
+reference this function's instructions. (In which case, only one symbol name is
+mentioned within the breakpad file.) Multiple symbols referencing the same
+instructions may occur due to identical code folding by the linker.
 
 The _address_ and _size_ fields are hexadecimal numbers indicating the start
 address and length in bytes of the machine code instructions the function
@@ -158,15 +163,20 @@ A `PUBLIC` record describes a publicly visible linker symbol, such as that used
 to identify an assembly language entry point or region of memory. It has the
 form:
 
-> PUBLIC _address_ _parameter\_size_ _name_
+> PUBLIC _[m]_ _address_ _parameter\_size_ _name_
 
-For example: `PUBLIC 2160 0 Public2_1
+For example: `PUBLIC m 2160 0 Public2_1
 `
 
 The Breakpad processor essentially treats a `PUBLIC` record as defining a
 function with no line number data and an indeterminate size: the code extends to
 the next address mentioned. If a given address is covered by both a `PUBLIC`
 record and a `FUNC` record, the processor uses the `FUNC` data.
+
+The _m_ field is optional. If present it indicates that multiple symbols
+reference this function's instructions. (In which case, only one symbol name is
+mentioned within the breakpad file.) Multiple symbols referencing the same
+instructions may occur due to identical code folding by the linker.
 
 The _address_ field is a hexadecimal number indicating the symbol's address,
 relative to the module's load address.

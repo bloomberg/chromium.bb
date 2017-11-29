@@ -31,6 +31,7 @@
 // a text-based format that we can use from the minidump processor.
 
 #include <stdio.h>
+#include <wchar.h>
 
 #include <string>
 
@@ -41,12 +42,22 @@ using google_breakpad::PDBSourceLineWriter;
 
 int wmain(int argc, wchar_t **argv) {
   if (argc < 2) {
-    fprintf(stderr, "Usage: %ws <file.[pdb|exe|dll]>\n", argv[0]);
+    fprintf(stderr,
+            "Usage: %ws [--enable_multiple_field] <file.[pdb|exe|dll]>\n",
+            argv[0]);
     return 1;
   }
 
-  PDBSourceLineWriter writer;
-  if (!writer.Open(wstring(argv[1]), PDBSourceLineWriter::ANY_FILE)) {
+  // This is a temporary option to enable writing the optional 'm' field on FUNC
+  // and PUBLIC, denoting multiple symbols for the address. This option will be
+  // removed, with the behavior enabled by default, after all symbol file
+  // readers have had a chance to update.
+  bool enable_multiple_field =
+    (argc >= 3 && wcscmp(L"--enable_multiple_field", argv[1]) == 0);
+
+  PDBSourceLineWriter writer(enable_multiple_field);
+  if (!writer.Open(wstring(argv[enable_multiple_field ? 2 : 1]),
+                   PDBSourceLineWriter::ANY_FILE)) {
     fprintf(stderr, "Open failed\n");
     return 1;
   }
