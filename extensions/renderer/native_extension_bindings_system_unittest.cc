@@ -14,6 +14,7 @@
 #include "extensions/common/value_builder.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/api_invocation_errors.h"
+#include "extensions/renderer/bindings/test_js_runner.h"
 #include "extensions/renderer/message_target.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
@@ -176,9 +177,13 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Events) {
     RunFunctionOnGlobal(add_listeners, context, 0, nullptr);
   }
 
-  bindings_system()->DispatchEventInContext(
-      "idle.onStateChanged", ListValueFromString("['idle']").get(), nullptr,
-      script_context);
+  {
+    TestJSRunner::AllowErrors allow_errors;
+    bindings_system()->DispatchEventInContext(
+        "idle.onStateChanged", ListValueFromString("['idle']").get(), nullptr,
+        script_context);
+  }
+
   EXPECT_EQ("\"idle\"", GetStringPropertyFromObject(context->Global(), context,
                                                     "newState"));
   EXPECT_EQ("true", GetStringPropertyFromObject(context->Global(), context,

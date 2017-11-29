@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "extensions/renderer/bindings/api_binding_hooks_delegate.h"
-#include "extensions/renderer/bindings/api_binding_types.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -25,7 +24,6 @@ class APIBindingHooksTestDelegate : public APIBindingHooksDelegate {
 
   using CustomEventFactory = base::Callback<v8::Local<v8::Value>(
       v8::Local<v8::Context>,
-      const binding::RunJSFunctionSync& run_js,
       const std::string& event_name)>;
 
   using RequestHandler = base::Callback<APIBindingHooks::RequestResult(
@@ -48,7 +46,6 @@ class APIBindingHooksTestDelegate : public APIBindingHooksDelegate {
 
   // APIBindingHooksDelegate:
   bool CreateCustomEvent(v8::Local<v8::Context> context,
-                         const binding::RunJSFunctionSync& run_js_sync,
                          const std::string& event_name,
                          v8::Local<v8::Value>* event_out) override;
   APIBindingHooks::RequestResult HandleRequest(

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "extensions/renderer/bindings/api_binding_types.h"
 #include "extensions/renderer/bindings/argument_spec.h"
 #include "gin/wrappable.h"
 #include "v8/include/v8.h"
@@ -35,7 +34,6 @@ class ContentSetting final : public gin::Wrappable<ContentSetting> {
 
   // Creates a ContentSetting object for the given property.
   static v8::Local<v8::Object> Create(
-      const binding::RunJSFunction& run_js,
       v8::Isolate* isolate,
       const std::string& property_name,
       const base::ListValue* property_values,
@@ -50,8 +48,7 @@ class ContentSetting final : public gin::Wrappable<ContentSetting> {
       v8::Isolate* isolate) override;
 
  private:
-  ContentSetting(const binding::RunJSFunction& run_js,
-                 APIRequestHandler* request_handler,
+  ContentSetting(APIRequestHandler* request_handler,
                  const APITypeReferenceMap* type_refs,
                  const BindingAccessChecker* access_checker,
                  const std::string& pref_name,
@@ -66,8 +63,6 @@ class ContentSetting final : public gin::Wrappable<ContentSetting> {
   // Common function handling endpoint.
   void HandleFunction(const std::string& function_name,
                       gin::Arguments* arguments);
-
-  binding::RunJSFunction run_js_;
 
   APIRequestHandler* request_handler_;
 

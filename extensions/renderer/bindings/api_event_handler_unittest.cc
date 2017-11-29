@@ -14,6 +14,7 @@
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/exception_handler.h"
+#include "extensions/renderer/bindings/test_js_runner.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/public/context_holder.h"
@@ -45,8 +46,6 @@ class APIEventHandlerTest : public APIBindingTest {
   void SetUp() override {
     APIBindingTest::SetUp();
     handler_ = std::make_unique<APIEventHandler>(
-        base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-        base::Bind(&RunFunctionOnGlobalAndReturnHandle),
         base::Bind(&DoNothingOnEventListenersChanged), nullptr);
   }
 
@@ -530,30 +529,13 @@ TEST_F(APIEventHandlerTest, RemovingListenersWhileHandlingEvent) {
 
 // Test an event listener throwing an exception.
 TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
-  // The default test util methods (RunFunction*) assume no errors will ever
-  // be encountered. Instead, use an implementation that allows errors.
-  auto run_js_and_expect_error = [](v8::Local<v8::Function> function,
-                                    v8::Local<v8::Context> context, int argc,
-                                    v8::Local<v8::Value> argv[]) {
-    v8::MaybeLocal<v8::Value> maybe_result =
-        function->Call(context, context->Global(), argc, argv);
-    v8::Global<v8::Value> result;
-    v8::Local<v8::Value> local;
-    if (maybe_result.ToLocal(&local))
-      result.Reset(context->GetIsolate(), local);
-  };
-
   auto log_error =
       [](std::vector<std::string>* errors_out, v8::Local<v8::Context> context,
          const std::string& error) { errors_out->push_back(error); };
 
   std::vector<std::string> logged_errors;
-  ExceptionHandler exception_handler(
-      base::Bind(log_error, &logged_errors),
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  ExceptionHandler exception_handler(base::Bind(log_error, &logged_errors));
   SetHandler(std::make_unique<APIEventHandler>(
-      base::Bind(run_js_and_expect_error),
-      base::Bind(&RunFunctionOnGlobalAndReturnHandle),
       base::Bind(&DoNothingOnEventListenersChanged), &exception_handler));
 
   v8::HandleScope handle_scope(isolate());
@@ -588,7 +570,11 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
 
   std::unique_ptr<base::ListValue> event_args = ListValueFromString("[42]");
   ASSERT_TRUE(event_args);
-  handler()->FireEventInContext(kEventName, context, *event_args, nullptr);
+
+  {
+    TestJSRunner::AllowErrors allow_errors;
+    handler()->FireEventInContext(kEventName, context, *event_args, nullptr);
+  }
 
   // An exception should have been thrown by the first listener and the second
   // listener should have recorded the event arguments.
@@ -605,10 +591,7 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
 // Tests being notified as listeners are added or removed from events.
 TEST_F(APIEventHandlerTest, CallbackNotifications) {
   MockEventChangeHandler change_handler;
-  SetHandler(std::make_unique<APIEventHandler>(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-      base::Bind(&RunFunctionOnGlobalAndReturnHandle), change_handler.Get(),
-      nullptr));
+  SetHandler(std::make_unique<APIEventHandler>(change_handler.Get(), nullptr));
 
   v8::HandleScope handle_scope(isolate());
 
@@ -881,9 +864,7 @@ TEST_F(APIEventHandlerTest, TestCreateCustomEvent) {
   v8::Local<v8::Context> context = MainContext();
 
   MockEventChangeHandler change_handler;
-  APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                          base::Bind(&RunFunctionOnGlobalAndReturnHandle),
-                          change_handler.Get(), nullptr);
+  APIEventHandler handler(change_handler.Get(), nullptr);
 
   v8::Local<v8::Object> event = handler.CreateAnonymousEventInstance(context);
   ASSERT_FALSE(event.IsEmpty());
@@ -930,9 +911,7 @@ TEST_F(APIEventHandlerTest, TestCreateCustomEventWithCyclicDependency) {
   v8::Local<v8::Context> context = MainContext();
 
   MockEventChangeHandler change_handler;
-  APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                          base::Bind(&RunFunctionOnGlobalAndReturnHandle),
-                          change_handler.Get(), nullptr);
+  APIEventHandler handler(change_handler.Get(), nullptr);
 
   v8::Local<v8::Object> event = handler.CreateAnonymousEventInstance(context);
   ASSERT_FALSE(event.IsEmpty());
@@ -957,9 +936,7 @@ TEST_F(APIEventHandlerTest, TestUnmanagedEvents) {
          const base::DictionaryValue* filter, bool was_manual,
          v8::Local<v8::Context> context) { ADD_FAILURE(); };
 
-  APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                          base::Bind(&RunFunctionOnGlobalAndReturnHandle),
-                          base::Bind(fail_on_notified), nullptr);
+  APIEventHandler handler(base::Bind(fail_on_notified), nullptr);
 
   const char kEventName[] = "alpha";
   v8::Local<v8::Object> event = handler.CreateEventInstance(
@@ -1001,9 +978,7 @@ TEST_F(APIEventHandlerTest, TestUnmanagedEvents) {
 // Test callback notifications for events that don't support lazy listeners.
 TEST_F(APIEventHandlerTest, TestEventsWithoutLazyListeners) {
   MockEventChangeHandler change_handler;
-  APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                          base::Bind(&RunFunctionOnGlobalAndReturnHandle),
-                          change_handler.Get(), nullptr);
+  APIEventHandler handler(change_handler.Get(), nullptr);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();

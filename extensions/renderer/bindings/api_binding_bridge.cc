@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
+#include "extensions/renderer/bindings/js_runner.h"
 #include "gin/converter.h"
 #include "gin/object_template_builder.h"
 
@@ -29,11 +30,8 @@ APIBindingBridge::APIBindingBridge(APIBindingHooks* hooks,
                                    v8::Local<v8::Context> context,
                                    v8::Local<v8::Value> api_object,
                                    const std::string& extension_id,
-                                   const std::string& context_type,
-                                   const binding::RunJSFunction& run_js)
-    : extension_id_(extension_id),
-      context_type_(context_type),
-      run_js_(run_js) {
+                                   const std::string& context_type)
+    : extension_id_(extension_id), context_type_(context_type) {
   v8::Isolate* isolate = context->GetIsolate();
   v8::Local<v8::Object> wrapper = GetWrapper(isolate).ToLocalChecked();
   v8::Maybe<bool> result = wrapper->SetPrivate(
@@ -99,7 +97,8 @@ void APIBindingBridge::RegisterCustomHook(v8::Isolate* isolate,
   v8::Local<v8::String> context_type =
       gin::StringToSymbol(isolate, context_type_);
   v8::Local<v8::Value> args[] = {hook_object, extension_id, context_type};
-  run_js_.Run(function, context, arraysize(args), args);
+  JSRunner::Get(context)->RunJSFunction(function, context, arraysize(args),
+                                        args);
 }
 
 }  // namespace extensions

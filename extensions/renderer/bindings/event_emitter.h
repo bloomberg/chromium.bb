@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "extensions/renderer/bindings/api_binding_types.h"
 #include "gin/wrappable.h"
 #include "v8/include/v8.h"
 
@@ -27,8 +26,6 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
  public:
   EventEmitter(bool supports_filters,
                std::unique_ptr<APIEventListeners> listeners,
-               const binding::RunJSFunction& run_js,
-               const binding::RunJSFunctionSync& run_js_sync,
                ExceptionHandler* exception_handler);
   ~EventEmitter() override;
 
@@ -75,9 +72,6 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
   bool supports_filters_ = false;
 
   std::unique_ptr<APIEventListeners> listeners_;
-
-  binding::RunJSFunction run_js_;
-  binding::RunJSFunctionSync run_js_sync_;
 
   // The associated exception handler; guaranteed to outlive this object.
   ExceptionHandler* const exception_handler_;

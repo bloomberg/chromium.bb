@@ -11,6 +11,7 @@
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/api_event_listeners.h"
 #include "extensions/renderer/bindings/exception_handler.h"
+#include "extensions/renderer/bindings/test_js_runner.h"
 #include "gin/handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -33,37 +34,16 @@ TEST_F(EventEmitterUnittest, TestDispatchMethod) {
   auto listeners = std::make_unique<UnfilteredEventListeners>(
       base::Bind(&DoNothingOnListenerChange), binding::kNoListenerMax, true);
 
-  // The test util methods enforce that functions always throw or always don't
-  // throw, but we test listeners that do both. Provide implementations for
-  // running functions that don't enforce throw behavior.
-  auto run_js_sync = [](v8::Local<v8::Function> function,
-                        v8::Local<v8::Context> context, int argc,
-                        v8::Local<v8::Value> argv[]) {
-    v8::Global<v8::Value> global_result;
-    v8::Local<v8::Value> result;
-    if (function->Call(context, context->Global(), argc, argv).ToLocal(&result))
-      global_result.Reset(context->GetIsolate(), result);
-    return global_result;
-  };
-
-  auto run_js = [](v8::Local<v8::Function> function,
-                   v8::Local<v8::Context> context, int argc,
-                   v8::Local<v8::Value> argv[]) {
-    ignore_result(function->Call(context, context->Global(), argc, argv));
-  };
-
   auto log_error = [](std::vector<std::string>* errors,
                       v8::Local<v8::Context> context,
                       const std::string& error) { errors->push_back(error); };
 
   std::vector<std::string> logged_errors;
-  ExceptionHandler exception_handler(base::Bind(log_error, &logged_errors),
-                                     base::Bind(run_js));
+  ExceptionHandler exception_handler(base::Bind(log_error, &logged_errors));
 
   gin::Handle<EventEmitter> event = gin::CreateHandle(
       isolate(),
-      new EventEmitter(false, std::move(listeners), base::Bind(run_js),
-                       base::Bind(run_js_sync), &exception_handler));
+      new EventEmitter(false, std::move(listeners), &exception_handler));
 
   v8::Local<v8::Value> v8_event = event.ToV8();
 
@@ -113,6 +93,7 @@ TEST_F(EventEmitterUnittest, TestDispatchMethod) {
       "  return event.dispatch('arg1', 2);\n"
       "})";
   v8::Local<v8::Value> dispatch_args[] = {v8_event};
+  TestJSRunner::AllowErrors allow_errors;
   v8::Local<v8::Value> dispatch_result =
       RunFunctionOnGlobal(FunctionFromString(context, kDispatch), context,
                           arraysize(dispatch_args), dispatch_args);

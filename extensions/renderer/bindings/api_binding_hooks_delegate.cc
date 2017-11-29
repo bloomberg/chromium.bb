@@ -10,7 +10,6 @@ APIBindingHooksDelegate::~APIBindingHooksDelegate() {}
 
 bool APIBindingHooksDelegate::CreateCustomEvent(
     v8::Local<v8::Context> context,
-    const binding::RunJSFunctionSync& run_js_sync,
     const std::string& event_name,
     v8::Local<v8::Value>* event_out) {
   return false;

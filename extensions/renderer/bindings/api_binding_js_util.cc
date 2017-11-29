@@ -12,6 +12,7 @@
 #include "extensions/renderer/bindings/api_type_reference_map.h"
 #include "extensions/renderer/bindings/declarative_event.h"
 #include "extensions/renderer/bindings/exception_handler.h"
+#include "extensions/renderer/bindings/js_runner.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
 #include "gin/handle.h"
@@ -24,13 +25,11 @@ gin::WrapperInfo APIBindingJSUtil::kWrapperInfo = {gin::kEmbedderNativeGin};
 APIBindingJSUtil::APIBindingJSUtil(APITypeReferenceMap* type_refs,
                                    APIRequestHandler* request_handler,
                                    APIEventHandler* event_handler,
-                                   ExceptionHandler* exception_handler,
-                                   const binding::RunJSFunction& run_js)
+                                   ExceptionHandler* exception_handler)
     : type_refs_(type_refs),
       request_handler_(request_handler),
       event_handler_(event_handler),
-      exception_handler_(exception_handler),
-      run_js_(run_js) {}
+      exception_handler_(exception_handler) {}
 
 APIBindingJSUtil::~APIBindingJSUtil() {}
 
@@ -209,7 +208,7 @@ void APIBindingJSUtil::RunCallbackWithLastError(
   v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
 
   request_handler_->last_error()->SetError(context, error);
-  run_js_.Run(callback, context, 0, nullptr);
+  JSRunner::Get(context)->RunJSFunction(callback, context, 0, nullptr);
 
   bool report_if_unchecked = true;
   request_handler_->last_error()->ClearError(context, report_if_unchecked);

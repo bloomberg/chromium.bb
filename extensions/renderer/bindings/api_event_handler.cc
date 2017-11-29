@@ -17,6 +17,7 @@
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/renderer/bindings/api_event_listeners.h"
 #include "extensions/renderer/bindings/event_emitter.h"
+#include "extensions/renderer/bindings/js_runner.h"
 #include "gin/handle.h"
 #include "gin/per_context_data.h"
 
@@ -107,13 +108,9 @@ void DispatchEvent(const v8::FunctionCallbackInfo<v8::Value>& info) {
 }  // namespace
 
 APIEventHandler::APIEventHandler(
-    const binding::RunJSFunction& call_js,
-    const binding::RunJSFunctionSync& call_js_sync,
     const EventListenersChangedMethod& listeners_changed,
     ExceptionHandler* exception_handler)
-    : call_js_(call_js),
-      call_js_sync_(call_js_sync),
-      listeners_changed_(listeners_changed),
+    : listeners_changed_(listeners_changed),
       exception_handler_(exception_handler) {}
 APIEventHandler::~APIEventHandler() {}
 
@@ -146,10 +143,10 @@ v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
         updated, max_listeners, supports_lazy_listeners);
   }
 
-  gin::Handle<EventEmitter> emitter_handle = gin::CreateHandle(
-      context->GetIsolate(),
-      new EventEmitter(supports_filters, std::move(listeners), call_js_,
-                       call_js_sync_, exception_handler_));
+  gin::Handle<EventEmitter> emitter_handle =
+      gin::CreateHandle(context->GetIsolate(),
+                        new EventEmitter(supports_filters, std::move(listeners),
+                                         exception_handler_));
   CHECK(!emitter_handle.IsEmpty());
   v8::Local<v8::Value> emitter_value = emitter_handle.ToV8();
   CHECK(emitter_value->IsObject());
@@ -170,10 +167,10 @@ v8::Local<v8::Object> APIEventHandler::CreateAnonymousEventInstance(
       std::make_unique<UnfilteredEventListeners>(
           base::Bind(&DoNothingOnListenersChanged), binding::kNoListenerMax,
           false);
-  gin::Handle<EventEmitter> emitter_handle = gin::CreateHandle(
-      context->GetIsolate(),
-      new EventEmitter(supports_filters, std::move(listeners), call_js_,
-                       call_js_sync_, exception_handler_));
+  gin::Handle<EventEmitter> emitter_handle =
+      gin::CreateHandle(context->GetIsolate(),
+                        new EventEmitter(supports_filters, std::move(listeners),
+                                         exception_handler_));
   CHECK(!emitter_handle.IsEmpty());
   v8::Local<v8::Object> emitter_object = emitter_handle.ToV8().As<v8::Object>();
   data->anonymous_emitters.push_back(
@@ -275,7 +272,8 @@ void APIEventHandler::FireEventInContext(
         isolate, &DispatchEvent, gin::StringToSymbol(isolate, event_name));
 
     v8::Local<v8::Value> massager_args[] = {args_array, dispatch_event};
-    call_js_.Run(massager, context, arraysize(massager_args), massager_args);
+    JSRunner::Get(context)->RunJSFunction(
+        massager, context, arraysize(massager_args), massager_args);
   }
 }
 
