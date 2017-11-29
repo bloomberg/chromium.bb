@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/common/resource_type.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "url/gurl.h"
@@ -75,7 +76,8 @@ class CONTENT_EXPORT SSLManager {
   void DidCommitProvisionalLoad(const LoadCommittedDetails& details);
   void DidStartResourceResponse(const GURL& url,
                                 bool has_certificate,
-                                net::CertStatus ssl_cert_status);
+                                net::CertStatus ssl_cert_status,
+                                ResourceType resource_type);
 
   // The following methods are called when a page includes insecure
   // content. These methods update the SSLStatus on the NavigationEntry

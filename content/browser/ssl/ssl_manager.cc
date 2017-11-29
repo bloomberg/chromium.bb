@@ -306,7 +306,8 @@ void SSLManager::OnCertError(std::unique_ptr<SSLErrorHandler> handler) {
 
 void SSLManager::DidStartResourceResponse(const GURL& url,
                                           bool has_certificate,
-                                          net::CertStatus ssl_cert_status) {
+                                          net::CertStatus ssl_cert_status,
+                                          ResourceType resource_type) {
   if (has_certificate && url.SchemeIsCryptographic() &&
       !net::IsCertStatusError(ssl_cert_status)) {
     // If the scheme is https: or wss: *and* the security info for the
@@ -321,6 +322,8 @@ void SSLManager::DidStartResourceResponse(const GURL& url,
       // clear out any exceptions that were made by the user for bad
       // certificates. This intentionally does not apply to cached resources
       // (see https://crbug.com/634553 for an explanation).
+      UMA_HISTOGRAM_BOOLEAN("interstitial.ssl.good_cert_seen_type_is_frame",
+                            IsResourceTypeFrame(resource_type));
       ssl_host_state_delegate_->RevokeUserAllowExceptions(url.host());
     }
   }
