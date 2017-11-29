@@ -102,6 +102,11 @@ void VrTestContext::DrawFrame() {
   ui_->OnProjMatrixChanged(render_info.left_eye_model.proj_matrix);
   ui_->ui_renderer()->Draw(render_info);
 
+  // This is required in order to show the WebVR toasts.
+  if (model_->received_web_vr_frame()) {
+    ui_->ui_renderer()->DrawWebVrOverlayForeground(render_info);
+  }
+
   // TODO(cjgrant): Render viewport-aware elements.
 }
 
@@ -139,6 +144,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
         break;
       case ui::DomCode::US_S:
         ToggleSplashScreen();
+        break;
+      case ui::DomCode::US_R:
+        ui_->OnWebVrFrameAvailable();
         break;
       default:
         break;
@@ -316,7 +324,7 @@ void VrTestContext::CreateFakeOmniboxSuggestions() {
 void VrTestContext::CycleWebVrModes() {
   switch (model_->web_vr_timeout_state) {
     case kWebVrNoTimeoutPending:
-      ui_->SetWebVrMode(true, true);
+      ui_->SetWebVrMode(true, false);
       break;
     case kWebVrAwaitingFirstFrame:
       ui_->OnWebVrTimeoutImminent();

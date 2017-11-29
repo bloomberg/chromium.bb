@@ -222,6 +222,8 @@ void Ui::OnWebVrFrameAvailable() {
 
 void Ui::OnWebVrTimeoutImminent() {
   model_->web_vr_timeout_state = kWebVrTimeoutImminent;
+  // We do not want to simultaneously show the splash screen and the timeout UI.
+  model_->web_vr_show_splash_screen = false;
 }
 
 void Ui::OnWebVrTimedOut() {
