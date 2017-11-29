@@ -48,7 +48,7 @@ void ExitPromptTexture::Draw(SkCanvas* sk_canvas,
   // Prompt text area.
   auto text = l10n_util::GetStringUTF16(content_message_id_);
   gfx::FontList fonts;
-  GetFontList(ToPixels(kFontSizePromptText), text, &fonts);
+  GetDefaultFontList(ToPixels(kFontSizePromptText), text, &fonts);
   gfx::Rect prompt_text_size(size_.width(), 0);
   std::vector<std::unique_ptr<gfx::RenderText>> lines =
       PrepareDrawStringRect(text, fonts, foreground_color(), &prompt_text_size,
@@ -64,7 +64,7 @@ void ExitPromptTexture::Draw(SkCanvas* sk_canvas,
   // TODO(https://crbug.com/787654): Uppercasing should be conditional.
   text = base::i18n::ToUpper(
       l10n_util::GetStringUTF16(IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON));
-  GetFontList(ToPixels(kFontSizePromptButtonText), text, &fonts);
+  GetDefaultFontList(ToPixels(kFontSizePromptButtonText), text, &fonts);
   lines = PrepareDrawStringRect(
       text, fonts, secondary_button_colors_.foreground, &button_text_size,
       kTextAlignmentCenter, kWrappingBehaviorWrap);
@@ -89,7 +89,7 @@ void ExitPromptTexture::Draw(SkCanvas* sk_canvas,
   // Primary button area.
   // TODO(https://crbug.com/787654): Uppercasing should be conditional.
   text = base::i18n::ToUpper(l10n_util::GetStringUTF16(IDS_OK));
-  GetFontList(ToPixels(kFontSizePromptButtonText), text, &fonts);
+  GetDefaultFontList(ToPixels(kFontSizePromptButtonText), text, &fonts);
   button_text_size.set_size(gfx::Size(ToPixels(kButtonWidth), 0));
   lines = PrepareDrawStringRect(text, fonts, primary_button_colors_.foreground,
                                 &button_text_size, kTextAlignmentCenter,
