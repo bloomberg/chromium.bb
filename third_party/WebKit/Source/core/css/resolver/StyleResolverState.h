@@ -191,9 +191,6 @@ class CORE_EXPORT StyleResolverState {
   void SetHasDirAutoAttribute(bool value) { has_dir_auto_attribute_ = value; }
   bool HasDirAutoAttribute() const { return has_dir_auto_attribute_; }
 
-  void SetCustomPropertySetForApplyAtRule(const String&, CSSPropertyValueSet*);
-  CSSPropertyValueSet* CustomPropertySetForApplyAtRule(const String&);
-
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>&
   ParsedPropertiesForPendingSubstitutionCache(
       const CSSPendingSubstitutionValue&) const;
@@ -229,9 +226,6 @@ class CORE_EXPORT StyleResolverState {
   std::unique_ptr<CachedUAStyle> cached_ua_style_;
 
   ElementStyleResources element_style_resources_;
-
-  HeapHashMap<String, Member<CSSPropertyValueSet>>
-      custom_property_sets_for_apply_at_rule_;
 
   mutable HeapHashMap<
       Member<const CSSPendingSubstitutionValue>,

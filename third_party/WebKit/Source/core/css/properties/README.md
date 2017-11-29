@@ -52,11 +52,11 @@ the same name are handled together, but that should not be taken to mean that
 they are the same thing. Fixing this possible source of confusion is an open
 issue crbug.com/752745.
 
-### Variable & ApplyAtRule
+### Variable
 
-Variable and the Apply at-rule are not true CSS properties, but they are treated
-as such in places for convience. They do not appear in CSSProperties.json5; thus
-their property class headers needed to be hand-written & manually added to the
+The Variable rule is not a true CSS property, but is treated
+as such in places for convience. It does not appear in CSSProperties.json5; thus
+its property class header needed to be hand-written & manually added to the
 list of property classes by make_css_property_base.py. Those hand-written
 headers are in this directory.
 
