@@ -223,8 +223,6 @@ class TabStripImpl : public TabStrip,
   SkColor GetToolbarTopSeparatorColor() const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   int GetBackgroundResourceId(bool* custom_image) const override;
-  void UpdateTabAccessibilityState(const Tab* tab,
-                                   ui::AXNodeData* node_data) override;
 
   // MouseWatcherListener overrides:
   void MouseMovedOutOfHost() override;

@@ -866,7 +866,6 @@ void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(controller_->GetAccessibleTabName(this));
   node_data->AddState(ui::AX_STATE_MULTISELECTABLE);
   node_data->AddState(ui::AX_STATE_SELECTABLE);
-  controller_->UpdateTabAccessibilityState(this, node_data);
   if (IsSelected())
     node_data->AddState(ui::AX_STATE_SELECTED);
 }
