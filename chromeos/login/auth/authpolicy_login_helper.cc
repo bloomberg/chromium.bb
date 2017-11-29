@@ -6,11 +6,15 @@
 
 #include "base/files/file_util.h"
 #include "base/task_scheduler/post_task.h"
+#include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart_client.h"
 
 namespace chromeos {
+
+namespace cu = cryptohome_util;
+
 namespace {
 
 base::ScopedFD GetDataReadPipe(const std::string& data) {
@@ -57,6 +61,15 @@ void AuthPolicyLoginHelper::Restart() {
   chromeos::DBusThreadManager::Get()
       ->GetUpstartClient()
       ->RestartAuthPolicyService();
+}
+
+// static
+bool AuthPolicyLoginHelper::LockDeviceActiveDirectoryForTesting(
+    const std::string& realm) {
+  return cu::InstallAttributesSet("enterprise.owned", "true") &&
+         cu::InstallAttributesSet("enterprise.mode", "enterprise_ad") &&
+         cu::InstallAttributesSet("enterprise.realm", realm) &&
+         cu::InstallAttributesFinalize();
 }
 
 void AuthPolicyLoginHelper::JoinAdDomain(const std::string& machine_name,

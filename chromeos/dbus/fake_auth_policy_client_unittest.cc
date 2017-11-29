@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,6 +27,13 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
 
  protected:
   FakeAuthPolicyClient* authpolicy_client() { return &client_; }
+
+  void SetUp() override {
+    ::testing::Test::SetUp();
+    DBusThreadManager::GetSetterForTesting();
+    ASSERT_TRUE(AuthPolicyLoginHelper::LockDeviceActiveDirectoryForTesting(
+        std::string()));
+  }
 
   void JoinAdDomain(const std::string& machine_name,
                     const std::string& username,
