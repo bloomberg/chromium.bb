@@ -13,6 +13,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 
+class SkPath;
+
 namespace base {
 class Value;
 namespace trace_event {
@@ -26,6 +28,7 @@ class SimpleEnclosedRegion;
 class CC_BASE_EXPORT Region {
  public:
   Region();
+  explicit Region(const SkRegion& region);
   Region(const Region& region);
   Region(const gfx::Rect& rect);  // NOLINT(runtime/explicit)
   ~Region();
@@ -37,6 +40,7 @@ class CC_BASE_EXPORT Region {
   void Clear();
   bool IsEmpty() const;
   int GetRegionComplexity() const;
+  void GetBoundaryPath(SkPath* path) const;
 
   bool Contains(const gfx::Point& point) const;
   bool Contains(const gfx::Rect& rect) const;

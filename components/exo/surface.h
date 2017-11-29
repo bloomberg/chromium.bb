@@ -14,12 +14,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "cc/base/region.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/exo/surface_delegate.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
-#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/gfx/geometry/rect.h"
@@ -95,11 +95,11 @@ class Surface final : public ui::PropertyHandler {
   void RequestPresentationCallback(const PresentationCallback& callback);
 
   // This sets the region of the surface that contains opaque content.
-  void SetOpaqueRegion(const SkRegion& region);
+  void SetOpaqueRegion(const cc::Region& region);
 
   // This sets the region of the surface that can receive pointer and touch
   // events.
-  void SetInputRegion(const SkRegion& region);
+  void SetInputRegion(const cc::Region& region);
 
   // This sets the scaling factor used to interpret the contents of the buffer
   // attached to the surface. Note that if the scale is larger than 1, then you
@@ -235,7 +235,7 @@ class Surface final : public ui::PropertyHandler {
   bool FillsBoundsOpaquely() const;
 
   bool HasPendingDamageForTesting(const gfx::Rect& damage) const {
-    return pending_damage_.contains(gfx::RectToSkIRect(damage));
+    return pending_damage_.Contains(damage);
   }
 
  private:
@@ -246,8 +246,8 @@ class Surface final : public ui::PropertyHandler {
     bool operator==(const State& other);
     bool operator!=(const State& other) { return !(*this == other); }
 
-    SkRegion opaque_region;
-    SkRegion input_region;
+    cc::Region opaque_region;
+    cc::Region input_region;
     float buffer_scale = 1.0f;
     Transform buffer_transform = Transform::NORMAL;
     gfx::Size viewport;
@@ -318,11 +318,11 @@ class Surface final : public ui::PropertyHandler {
   BufferAttachment pending_buffer_;
 
   // The damage region to schedule paint for when Commit() is called.
-  SkRegion pending_damage_;
+  cc::Region pending_damage_;
 
   // The damage region which will be used by
   // AppendSurfaceHierarchyContentsToFrame() to generate frame.
-  SkRegion damage_;
+  cc::Region damage_;
 
   // These lists contains the callbacks to notify the client when it is a good
   // time to start producing a new frame. These callbacks move to
