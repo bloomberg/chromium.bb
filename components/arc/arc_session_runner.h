@@ -66,7 +66,8 @@ class ArcSessionRunner : public ArcSession::Observer,
 
   // This is the factory interface to inject ArcSession instance
   // for testing purpose.
-  using ArcSessionFactory = base::Callback<std::unique_ptr<ArcSession>()>;
+  using ArcSessionFactory =
+      base::RepeatingCallback<std::unique_ptr<ArcSession>()>;
 
   explicit ArcSessionRunner(const ArcSessionFactory& factory);
   ~ArcSessionRunner() override;

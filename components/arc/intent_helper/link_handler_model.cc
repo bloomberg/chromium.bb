@@ -118,8 +118,8 @@ void LinkHandlerModel::OnUrlHandlerList(
     }
     const ArcIntentHelperBridge::GetResult result =
         intent_helper_bridge->GetActivityIcons(
-            activities, base::Bind(&LinkHandlerModel::NotifyObserver,
-                                   weak_ptr_factory_.GetWeakPtr()));
+            activities, base::BindOnce(&LinkHandlerModel::NotifyObserver,
+                                       weak_ptr_factory_.GetWeakPtr()));
     icon_info_notified =
         internal::ActivityIconLoader::HasIconsReadyCallbackRun(result);
   }

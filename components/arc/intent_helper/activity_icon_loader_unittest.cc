@@ -118,7 +118,7 @@ TEST(ActivityIconLoaderTest, TestOnIconsResized) {
   ActivityIconLoader loader;
 
   // Call OnIconsResized() and check that the cache is properly updated.
-  loader.OnIconsResizedForTesting(base::Bind(&OnIconsReady0),
+  loader.OnIconsResizedForTesting(base::BindOnce(&OnIconsReady0),
                                   std::move(activity_to_icons));
   EXPECT_EQ(3U, loader.cached_icons_for_testing().size());
   EXPECT_EQ(1U, loader.cached_icons_for_testing().count(
@@ -139,7 +139,7 @@ TEST(ActivityIconLoaderTest, TestOnIconsResized) {
   activity_to_icons->insert(std::make_pair(
       ActivityIconLoader::ActivityName("p2", "a2"),
       ActivityIconLoader::Icons(gfx::Image(), gfx::Image(), nullptr)));
-  loader.OnIconsResizedForTesting(base::Bind(&OnIconsReady3),
+  loader.OnIconsResizedForTesting(base::BindOnce(&OnIconsReady3),
                                   std::move(activity_to_icons));
   EXPECT_EQ(4U, loader.cached_icons_for_testing().size());
   EXPECT_EQ(1U, loader.cached_icons_for_testing().count(

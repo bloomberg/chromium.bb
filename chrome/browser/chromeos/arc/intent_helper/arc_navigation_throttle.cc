@@ -281,9 +281,10 @@ bool ArcNavigationThrottle::FoundPreferredOrVerifiedArcApp(
 
     intent_helper_bridge->GetActivityIcons(
         activities,
-        base::Bind(&ArcNavigationThrottle::AsyncOnAppIconsReceived,
-                   chrome::FindBrowserWithWebContents(handle->GetWebContents()),
-                   base::Passed(&handlers), url));
+        base::BindOnce(
+            &ArcNavigationThrottle::AsyncOnAppIconsReceived,
+            chrome::FindBrowserWithWebContents(handle->GetWebContents()),
+            std::move(handlers), url));
   }
 
   return cancel_navigation;
@@ -479,8 +480,9 @@ void ArcNavigationThrottle::AsyncOnAppCandidatesReceived(
     activities.emplace_back(handler->package_name, handler->activity_name);
 
   intent_helper_bridge->GetActivityIcons(
-      activities, base::Bind(&ArcNavigationThrottle::AsyncOnAppIconsReceived,
-                             browser, base::Passed(&handlers), url));
+      activities,
+      base::BindOnce(&ArcNavigationThrottle::AsyncOnAppIconsReceived, browser,
+                     std::move(handlers), url));
 }
 
 }  // namespace arc

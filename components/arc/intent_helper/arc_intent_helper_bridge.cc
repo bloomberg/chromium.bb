@@ -227,9 +227,9 @@ void ArcIntentHelperBridge::OpenVolumeControl() {
 
 ArcIntentHelperBridge::GetResult ArcIntentHelperBridge::GetActivityIcons(
     const std::vector<ActivityName>& activities,
-    const OnIconsReadyCallback& callback) {
+    OnIconsReadyCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return icon_loader_.GetActivityIcons(activities, callback);
+  return icon_loader_.GetActivityIcons(activities, std::move(callback));
 }
 
 bool ArcIntentHelperBridge::ShouldChromeHandleUrl(const GURL& url) {

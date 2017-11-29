@@ -417,8 +417,8 @@ void OnUrlHandlerList(int render_process_host_id,
     activities.emplace_back(handler->package_name, handler->activity_name);
   }
   intent_helper_bridge->GetActivityIcons(
-      activities, base::Bind(OnAppIconsReceived, render_process_host_id,
-                             routing_id, url, base::Passed(&handlers)));
+      activities, base::BindOnce(OnAppIconsReceived, render_process_host_id,
+                                 routing_id, url, std::move(handlers)));
 }
 
 // Returns true if the |url| is safe to be forwarded to ARC without showing the

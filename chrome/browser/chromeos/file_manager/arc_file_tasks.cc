@@ -116,8 +116,8 @@ void OnArcHandlerList(
     activity_names.emplace_back(handler->package_name, handler->activity_name);
 
   intent_helper_bridge->GetActivityIcons(
-      activity_names, base::Bind(&OnArcIconLoaded, base::Passed(&result_list),
-                                 callback, base::Passed(&handlers_filtered)));
+      activity_names, base::BindOnce(&OnArcIconLoaded, std::move(result_list),
+                                     callback, std::move(handlers_filtered)));
 }
 
 // Called after icon data for ARC apps are loaded. Proceeds to OnArcIconEncoded.
