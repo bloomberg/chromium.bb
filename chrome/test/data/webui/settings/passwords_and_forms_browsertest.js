@@ -191,7 +191,10 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
         passwordManager.lastCallback.addSavedPasswordListChangedListener(list);
         Polymer.dom.flush();
 
-        assertEquals(list, element.$$('#passwordSection').savedPasswords);
+        assertDeepEquals(
+            list,
+            element.$$('#passwordSection')
+                .savedPasswords.map(entry => entry.entry));
 
         // The callback is coming from the manager, so the element shouldn't
         // have additional calls to the manager after the base expectations.

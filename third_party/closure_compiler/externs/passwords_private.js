@@ -114,11 +114,13 @@ chrome.passwordsPrivate.getSavedPasswordList = function(callback) {};
 chrome.passwordsPrivate.getPasswordExceptionList = function(callback) {};
 
 /**
+ * Triggers the Password Manager password import functionality.
  * @see https://developer.chrome.com/extensions/passwordsPrivate#method-importPasswords
  */
 chrome.passwordsPrivate.importPasswords = function() {};
 
 /**
+ * Triggers the Password Manager password export functionality.
  * @see https://developer.chrome.com/extensions/passwordsPrivate#method-exportPasswords
  */
 chrome.passwordsPrivate.exportPasswords = function() {};
