@@ -431,6 +431,14 @@ chrome.automation.AutomationNode.prototype.location;
 chrome.automation.AutomationNode.prototype.boundsForRange = function(startIndex, endIndex) {};
 
 /**
+ * The location (as a bounding box) of this node in global screen coordinates.
+ * This is the same as location but not clipped by ancestors.
+ * @type {(!chrome.automation.Rect|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-unclippedLocation
+ */
+chrome.automation.AutomationNode.prototype.unclippedLocation;
+
+/**
  * The purpose of the node, other than the role, if any.
  * @type {(string|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-description

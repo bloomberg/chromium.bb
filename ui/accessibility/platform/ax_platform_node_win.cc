@@ -3281,6 +3281,9 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
       case AX_ARIA_CURRENT_STATE_LOCATION:
         result.push_back(L"current:location");
         break;
+      case AX_ARIA_CURRENT_STATE_UNCLIPPED_LOCATION:
+        result.push_back(L"current:unclippedLocation");
+        break;
       case AX_ARIA_CURRENT_STATE_DATE:
         result.push_back(L"current:date");
         break;

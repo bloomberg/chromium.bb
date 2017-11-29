@@ -153,8 +153,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // Returns the bounds of this object in coordinates relative to the
   // page (specifically, the top-left corner of the topmost web contents).
   // Optionally updates |offscreen| to be true if the element is offscreen
-  // within its page.
-  gfx::Rect GetPageBoundsRect(bool* offscreen = nullptr) const;
+  // within its page. Clips bounds by default unless |clip_bounds| is false.
+  gfx::Rect GetPageBoundsRect(bool* offscreen = nullptr,
+                              bool clip_bounds = true) const;
 
   // Returns the bounds of the given range in coordinates relative to the
   // top-left corner of the overall web area. Only valid when the
@@ -169,9 +170,11 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // absolute bounds, either in page coordinates (when |frameOnly| is
   // false), or in frame coordinates (when |frameOnly| is true).
   // Updates optional |offscreen| to be true if the node is offscreen.
+  // If |clip_bounds| is set to false, will return unclipped bounds.
   virtual gfx::Rect RelativeToAbsoluteBounds(gfx::RectF bounds,
                                              bool frame_only,
-                                             bool* offscreen = nullptr) const;
+                                             bool* offscreen = nullptr,
+                                             bool clip_bounds = true) const;
 
   // This is to handle the cases such as ARIA textbox, where the value should
   // be calculated from the object's inner text.
