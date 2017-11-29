@@ -116,7 +116,7 @@ void VideoFrameSubmitter::SubmitFrame(
   render_pass->SetNew(1, gfx::Rect(video_frame->coded_size()),
                       gfx::Rect(video_frame->coded_size()), gfx::Transform());
   render_pass->filters = cc::FilterOperations();
-  resource_provider_->AppendQuads(render_pass.get());
+  resource_provider_->AppendQuads(render_pass.get(), video_frame);
   compositor_frame.metadata.begin_frame_ack = begin_frame_ack;
   compositor_frame.metadata.device_scale_factor = 1;
   compositor_frame.metadata.may_contain_video = true;
@@ -129,12 +129,12 @@ void VideoFrameSubmitter::SubmitFrame(
   }
   resource_provider_->PrepareSendToParent(resources,
                                           &compositor_frame.resource_list);
-
   compositor_frame.render_pass_list.push_back(std::move(render_pass));
 
   // TODO(lethalantidote): Address third/fourth arg in SubmitCompositorFrame.
   compositor_frame_sink_->SubmitCompositorFrame(
       current_local_surface_id_, std::move(compositor_frame), nullptr, 0);
+  resource_provider_->ReleaseFrameResources();
 }
 
 void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {

@@ -14,8 +14,12 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/skia_paint_canvas.h"
-#include "cc/resources/resource_provider.h"
+#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource_util.h"
+#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/stream_video_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/video_frame.h"
@@ -187,7 +191,7 @@ VideoFrameExternalResources& VideoFrameExternalResources::operator=(
 
 VideoResourceUpdater::VideoResourceUpdater(
     viz::ContextProvider* context_provider,
-    ResourceProvider* resource_provider,
+    LayerTreeResourceProvider* resource_provider,
     bool use_stream_video_draw_quad)
     : context_provider_(context_provider),
       resource_provider_(resource_provider),
@@ -581,6 +585,209 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
   external_resources.type = VideoFrameExternalResources::YUV_RESOURCE;
   return external_resources;
+}
+
+void VideoResourceUpdater::ObtainFrameResources(
+    scoped_refptr<media::VideoFrame> video_frame) {
+  VideoFrameExternalResources external_resources =
+      CreateExternalResourcesFromVideoFrame(video_frame);
+  frame_resource_type_ = external_resources.type;
+
+  if (external_resources.type ==
+      VideoFrameExternalResources::SOFTWARE_RESOURCE) {
+    DCHECK_GT(external_resources.software_resource, viz::kInvalidResourceId);
+    software_resource_ = external_resources.software_resource;
+    software_release_callback_ =
+        std::move(external_resources.software_release_callback);
+  } else {
+    frame_resource_offset_ = external_resources.offset;
+    frame_resource_multiplier_ = external_resources.multiplier;
+    frame_bits_per_channel_ = external_resources.bits_per_channel;
+
+    DCHECK_EQ(external_resources.resources.size(),
+              external_resources.release_callbacks.size());
+    ResourceProvider::ResourceIdArray resource_ids;
+    resource_ids.reserve(external_resources.resources.size());
+    for (size_t i = 0; i < external_resources.resources.size(); ++i) {
+      unsigned resource_id = resource_provider_->ImportResource(
+          external_resources.resources[i],
+          viz::SingleReleaseCallback::Create(
+              std::move(external_resources.release_callbacks[i])));
+      frame_resources_.push_back(
+          FrameResource(resource_id, external_resources.resources[i].size));
+      resource_ids.push_back(resource_id);
+    }
+  }
+}
+
+void VideoResourceUpdater::ReleaseFrameResources() {
+  if (frame_resource_type_ == VideoFrameExternalResources::SOFTWARE_RESOURCE) {
+    DCHECK_GT(software_resource_, viz::kInvalidResourceId);
+    std::move(software_release_callback_).Run(gpu::SyncToken(), false);
+    software_resource_ = viz::kInvalidResourceId;
+  } else {
+    for (size_t i = 0; i < frame_resources_.size(); ++i)
+      resource_provider_->RemoveImportedResource(frame_resources_[i].id);
+    frame_resources_.clear();
+  }
+}
+
+void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
+                                       scoped_refptr<media::VideoFrame> frame,
+                                       gfx::Transform transform,
+                                       gfx::Size rotated_size,
+                                       gfx::Rect visible_layer_rect,
+                                       gfx::Rect clip_rect,
+                                       bool is_clipped,
+                                       bool contents_opaque,
+                                       float draw_opacity,
+                                       int sorting_context_id,
+                                       gfx::Rect visible_quad_rect) {
+  DCHECK(frame.get());
+
+  viz::SharedQuadState* shared_quad_state =
+      render_pass->CreateAndAppendSharedQuadState();
+  gfx::Rect rotated_size_rect(rotated_size);
+  shared_quad_state->SetAll(
+      transform, rotated_size_rect, visible_layer_rect, clip_rect, is_clipped,
+      contents_opaque, draw_opacity, SkBlendMode::kSrcOver, sorting_context_id);
+
+  gfx::Rect quad_rect(rotated_size);
+  gfx::Rect visible_rect = frame->visible_rect();
+  bool needs_blending = !contents_opaque;
+  gfx::Size coded_size = frame->coded_size();
+
+  const float tex_width_scale =
+      static_cast<float>(visible_rect.width()) / coded_size.width();
+  const float tex_height_scale =
+      static_cast<float>(visible_rect.height()) / coded_size.height();
+
+  switch (frame_resource_type_) {
+    // TODO(danakj): Remove this, hide it in the hardware path.
+    case VideoFrameExternalResources::SOFTWARE_RESOURCE: {
+      DCHECK_EQ(frame_resources_.size(), 0u);
+      DCHECK_GT(software_resource_, viz::kInvalidResourceId);
+      bool premultiplied_alpha = true;
+      gfx::PointF uv_top_left(0.f, 0.f);
+      gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
+      float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
+      bool flipped = false;
+      bool nearest_neighbor = false;
+      auto* texture_quad =
+          render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
+      texture_quad->SetNew(
+          shared_quad_state, quad_rect, visible_quad_rect, needs_blending,
+          software_resource_, premultiplied_alpha, uv_top_left, uv_bottom_right,
+          SK_ColorTRANSPARENT, opacity, flipped, nearest_neighbor, false);
+      for (viz::ResourceId resource_id : texture_quad->resources) {
+        resource_provider_->ValidateResource(resource_id);
+      }
+      break;
+    }
+    case VideoFrameExternalResources::YUV_RESOURCE: {
+      const gfx::Size ya_tex_size = coded_size;
+
+      int u_width = media::VideoFrame::Columns(
+          media::VideoFrame::kUPlane, frame->format(), coded_size.width());
+      int u_height = media::VideoFrame::Rows(
+          media::VideoFrame::kUPlane, frame->format(), coded_size.height());
+      gfx::Size uv_tex_size(u_width, u_height);
+
+      if (frame->HasTextures()) {
+        if (frame->format() == media::PIXEL_FORMAT_NV12) {
+          DCHECK_EQ(2u, frame_resources_.size());
+        } else {
+          DCHECK_EQ(media::PIXEL_FORMAT_I420, frame->format());
+          DCHECK_EQ(3u,
+                    frame_resources_.size());  // Alpha is not supported yet.
+        }
+      } else {
+        DCHECK_GE(frame_resources_.size(), 3u);
+        DCHECK(frame_resources_.size() <= 3 ||
+               ya_tex_size == media::VideoFrame::PlaneSize(
+                                  frame->format(), media::VideoFrame::kAPlane,
+                                  coded_size));
+      }
+
+      // Compute the UV sub-sampling factor based on the ratio between
+      // |ya_tex_size| and |uv_tex_size|.
+      float uv_subsampling_factor_x =
+          static_cast<float>(ya_tex_size.width()) / uv_tex_size.width();
+      float uv_subsampling_factor_y =
+          static_cast<float>(ya_tex_size.height()) / uv_tex_size.height();
+      gfx::RectF ya_tex_coord_rect(visible_rect);
+      gfx::RectF uv_tex_coord_rect(
+          visible_rect.x() / uv_subsampling_factor_x,
+          visible_rect.y() / uv_subsampling_factor_y,
+          visible_rect.width() / uv_subsampling_factor_x,
+          visible_rect.height() / uv_subsampling_factor_y);
+
+      auto* yuv_video_quad =
+          render_pass->CreateAndAppendDrawQuad<viz::YUVVideoDrawQuad>();
+      yuv_video_quad->SetNew(
+          shared_quad_state, quad_rect, visible_quad_rect, needs_blending,
+          ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size, uv_tex_size,
+          frame_resources_[0].id, frame_resources_[1].id,
+          frame_resources_.size() > 2 ? frame_resources_[2].id
+                                      : frame_resources_[1].id,
+          frame_resources_.size() > 3 ? frame_resources_[3].id : 0,
+          frame->ColorSpace(), frame_resource_offset_,
+          frame_resource_multiplier_, frame_bits_per_channel_);
+      yuv_video_quad->require_overlay = frame->metadata()->IsTrue(
+          media::VideoFrameMetadata::REQUIRE_OVERLAY);
+
+      for (viz::ResourceId resource_id : yuv_video_quad->resources) {
+        resource_provider_->ValidateResource(resource_id);
+      }
+      break;
+    }
+    case VideoFrameExternalResources::RGBA_RESOURCE:
+    case VideoFrameExternalResources::RGBA_PREMULTIPLIED_RESOURCE:
+    case VideoFrameExternalResources::RGB_RESOURCE: {
+      DCHECK_EQ(frame_resources_.size(), 1u);
+      if (frame_resources_.size() < 1u)
+        break;
+      bool premultiplied_alpha =
+          frame_resource_type_ ==
+          VideoFrameExternalResources::RGBA_PREMULTIPLIED_RESOURCE;
+      gfx::PointF uv_top_left(0.f, 0.f);
+      gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
+      float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
+      bool flipped = false;
+      bool nearest_neighbor = false;
+      auto* texture_quad =
+          render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
+      texture_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
+                           needs_blending, frame_resources_[0].id,
+                           premultiplied_alpha, uv_top_left, uv_bottom_right,
+                           SK_ColorTRANSPARENT, opacity, flipped,
+                           nearest_neighbor, false);
+      texture_quad->set_resource_size_in_pixels(coded_size);
+      for (viz::ResourceId resource_id : texture_quad->resources) {
+        resource_provider_->ValidateResource(resource_id);
+      }
+      break;
+    }
+    case VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE: {
+      DCHECK_EQ(frame_resources_.size(), 1u);
+      if (frame_resources_.size() < 1u)
+        break;
+      gfx::Transform scale;
+      scale.Scale(tex_width_scale, tex_height_scale);
+      auto* stream_video_quad =
+          render_pass->CreateAndAppendDrawQuad<viz::StreamVideoDrawQuad>();
+      stream_video_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
+                                needs_blending, frame_resources_[0].id,
+                                frame_resources_[0].size_in_pixels, scale);
+      for (viz::ResourceId resource_id : stream_video_quad->resources) {
+        resource_provider_->ValidateResource(resource_id);
+      }
+      break;
+    }
+    case VideoFrameExternalResources::NONE:
+      NOTIMPLEMENTED();
+      break;
+  }
 }
 
 // static

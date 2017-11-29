@@ -1325,7 +1325,7 @@ class VideoGLRendererPixelTest : public cc::GLRendererPixelTest {
     GLRendererPixelTest::SetUp();
     bool use_stream_video_draw_quad = false;
     video_resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
-        output_surface_->context_provider(), resource_provider_.get(),
+        child_context_provider_.get(), child_resource_provider_.get(),
         use_stream_video_draw_quad);
   }
 
