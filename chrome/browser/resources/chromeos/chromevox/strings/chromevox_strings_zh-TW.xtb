@@ -341,7 +341,7 @@
 <translation id="3897092660631435901">選單</translation>
 <translation id="3909320334364316587">上一個第 6 階標題</translation>
 <translation id="3914173277599553213">必要</translation>
-<translation id="3914732343065571127">ChromeVox 參考指令</translation>
+<translation id="3914732343065571127">ChromeVox 指令參考</translation>
 <translation id="3962990492275676168">從目前位置開始朗讀</translation>
 <translation id="4004802134384979325">已勾選</translation>
 <translation id="4006140876663370126">圖片</translation>
@@ -414,7 +414,7 @@
 <translation id="461613135510474570">句子</translation>
 <translation id="463135993322337640">按下 ChromeVox 的 O 鍵、N 鍵，即可瞭解最新功能</translation>
 <translation id="4647836961514597010">顏色選擇器</translation>
-<translation id="4660783501463101648">移除傳統版：現已無法透過鍵盤切換回 ChromeVox 傳統版。</translation>
+<translation id="4660783501463101648">移除傳統模式：現已無法透過鍵盤切換回 ChromeVox 傳統模式。</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">，</translation>
 <translation id="4688873778442829762">格線</translation>
@@ -472,7 +472,7 @@
 <translation id="5098541983634824365">離開網格。</translation>
 <translation id="5102981729317424850">工具列</translation>
 <translation id="5105050547967751155">rq</translation>
-<translation id="5106547198195128110">這個新版本有一些重大異動，說明如下：</translation>
+<translation id="5106547198195128110">這個新版本有一些很棒的變更，說明如下：</translation>
 <translation id="5110983769041734144">沒有上一個表單欄位。</translation>
 <translation id="5111640677200759579">欄標題</translation>
 <translation id="5136967254288895616">沒有上一個連結。</translation>

@@ -73,13 +73,13 @@
 <translation id="3296368748942286671">Continua a eseguire applicazioni in background dopo la chiusura di Chromium</translation>
 <translation id="331951419404882060">Impossibile sincronizzare i dati in Chromium OS a causa di un errore durante l'accesso.</translation>
 <translation id="3474745554856756813">Verranno eliminati <ph name="ITEMS_COUNT" /> elementi da questo dispositivo. Per recuperare i dati in un secondo momento, accedi a Chromium come <ph name="USER_EMAIL" />.</translation>
+<translation id="3479552764303398839">Non adesso</translation>
 <translation id="3509308970982693815">Chiudi tutte le finestre di Chromium e riprova.</translation>
 <translation id="352783484088404971">Rimuovi da Chromium...</translation>
 <translation id="3549345495227188780">Inizia a utilizzare Chromium OS</translation>
 <translation id="3582788516608077514">Aggiornamento di Chromium in corso...</translation>
 <translation id="358997566136285270">Logo di Chromium</translation>
 <translation id="3713809861844741608">Apri link in una nuova &amp;scheda di Chromium</translation>
-<translation id="3738139272394829648">Tocca per cercare</translation>
 <translation id="3762167353400286894">Chromium OS è visualizzato in questa lingua</translation>
 <translation id="378917192836375108">Chromium ti consente di fare clic su un numero di telefono sul Web e di chiamarlo con Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -112,7 +112,6 @@
 <translation id="469338717132742108">Ricevi assistenza per Chromium OS</translation>
 <translation id="4708774505295300557">Qualcuno ha già eseguito l'accesso a Chromium su questo computer come <ph name="ACCOUNT_EMAIL_LAST" />. Crea un nuovo utente Chromium per tenere separate le tue informazioni.</translation>
 <translation id="4714956846925717402">Apri Chromium più velocemente</translation>
-<translation id="4743926867934016338">Accetta e cerca</translation>
 <translation id="4825874709045178029">Per questo sito Chromium ha bisogno dell'autorizzazione ad accedere alla fotocamera.</translation>
 <translation id="4888717733111232871">Regola inbound per consentire il traffico mDNS in Chromium.</translation>
 <translation id="4943838377383847465">Chromium è in modalità background.</translation>
@@ -129,9 +128,6 @@
 <translation id="5466153949126434691">Chromium si aggiorna automaticamente per consentirti di avere sempre la versione più recente. Al termine del download, Chromium si riavvierà e potrai procedere.</translation>
 <translation id="5479196819031988440">Chromium OS non è in grado di aprire la pagina.</translation>
 <translation id="549669000822060376">Attendi mentre Chromium installa gli aggiornamenti di sistema più recenti.</translation>
-<translation id="5524843473235508879">Reindirizzamento bloccato.</translation>
-<translation id="5563479599352954471">Ricerca con un tocco</translation>
-<translation id="5620765574781326016">Leggi gli argomenti sui siti web senza uscire dalla pagina.</translation>
 <translation id="5634636535844844681">Chromium richiede Windows 7 o versioni successive.</translation>
 <translation id="5680901439334282664">accedi a Chromium</translation>
 <translation id="5698481217667032250">Visualizza Chromium in questa lingua</translation>
@@ -173,7 +169,6 @@ Alcune funzioni potrebbero non essere disponibili. Specifica un'altra directory 
 <translation id="6734291798041940871">Chromium è già installato per tutti gli utenti sul computer.</translation>
 <translation id="6810143991807788455">Contribuisci a migliorare Chromium indicando le impostazioni attuali</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">invia una parola e il contesto circostante alla Ricerca Google affinché possano essere restituiti definizioni, immagini e altri risultati di ricerca.</translation>
 <translation id="6893813176749746474">Chromium è stato aggiornato ma non lo utilizzi da almeno 30 giorni.</translation>
 <translation id="6944967875980567883">Moduli caricati in Chromium</translation>
 <translation id="6964305034639999644">Apri link in una finestra di navigazione in inco&amp;gnito di Chromium</translation>
@@ -200,7 +195,6 @@ Per impedire a <ph name="NEW_PROFILE_NAME" /> di accedere al tuo account, assicu
 <ph name="BEGIN_LINK_2" />Ulteriori informazioni<ph name="END_LINK_2" />
 
 Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EMAIL" />.</translation>
-<translation id="7473891865547856676">No grazie</translation>
 <translation id="7483335560992089831">Impossibile installare una versione di Chromium uguale a quella in esecuzione. Chiudi Chromium e riprova.</translation>
 <translation id="7549178288319965365">Informazioni su Chromium OS</translation>
 <translation id="7577193603922410712">È stato appena applicato un aggiornamento di sicurezza speciale per Chromium; è necessario riavviare ora affinché abbia effetto (le schede verranno ripristinate).</translation>

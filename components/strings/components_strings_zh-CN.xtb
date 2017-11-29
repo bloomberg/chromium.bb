@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">撤消顺序调整(&amp;U)</translation>
 <translation id="1126551341858583091">占用的本地存储空间为 <ph name="CRASH_SIZE" />。</translation>
 <translation id="112840717907525620">策略缓存良好</translation>
-<translation id="113188000913989374"><ph name="SITE" /> 显示：</translation>
 <translation id="1132774398110320017">Chrome自动填充设置…</translation>
 <translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN" />；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1151972924205500581">需要密码</translation>
@@ -82,7 +81,7 @@
 
       &lt;p&gt;请在&lt;strong&gt;设置&lt;/strong&gt;应用的&lt;strong&gt;通用&lt;/strong&gt;部分调整日期和时间。&lt;/p&gt;</translation>
 <translation id="1583429793053364125">显示此网页时出了点问题。</translation>
-<translation id="1590457302292452960">生成一个安全系数高的密码…</translation>
+<translation id="1590457302292452960">生成安全系数高的密码…</translation>
 <translation id="1592005682883173041">本地数据访问权限</translation>
 <translation id="1594030484168838125">选择</translation>
 <translation id="1620510694547887537">摄像头</translation>
@@ -611,7 +610,6 @@
 <translation id="552553974213252141">提取的内容是否正确？</translation>
 <translation id="5540224163453853">找不到请求的文章。</translation>
 <translation id="5541546772353173584">添加电子邮件地址</translation>
-<translation id="5544037170328430102"><ph name="SITE" /> 上的嵌入式页面显示：</translation>
 <translation id="5545756402275714221">为您推荐的文章</translation>
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5560088892362098740">到期日期</translation>
@@ -818,7 +816,6 @@
 <translation id="7390545607259442187">确认信用卡</translation>
 <translation id="7400418766976504921">网址</translation>
 <translation id="7419106976560586862">个人资料路径</translation>
-<translation id="7424977062513257142">此网页上的嵌入式页面显示：</translation>
 <translation id="7437289804838430631">添加联系信息</translation>
 <translation id="7441627299479586546">策略主题有误</translation>
 <translation id="7444046173054089907">此网站已被屏蔽</translation>
@@ -998,7 +995,6 @@
 <translation id="884923133447025588">未找到任何吊销机制。</translation>
 <translation id="885730110891505394">与 Google 分享</translation>
 <translation id="8866481888320382733">解析策略设置时出错</translation>
-<translation id="8866959479196209191">此网页显示：</translation>
 <translation id="8870413625673593573">最近关闭的标签页</translation>
 <translation id="8874824191258364635">请输入有效的信用卡号</translation>
 <translation id="8876793034577346603">无法解析网络配置。</translation>

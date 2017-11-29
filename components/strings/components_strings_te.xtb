@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;మళ్లీ క్రమం చేయడాన్ని రద్దు చేయి</translation>
 <translation id="1126551341858583091">స్థానిక నిల్వలో పరిమాణం <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">విధాన కాష్ సరిపోయింది</translation>
-<translation id="113188000913989374"><ph name="SITE" /> ఇలా చెబుతోంది:</translation>
 <translation id="1132774398110320017">Chrome స్వయంపూర్తి సెట్టింగ్‌లు...</translation>
 <translation id="1150979032973867961">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రాన్ని మీ కంప్యూటర్ ఆపరేటింగ్ సిస్టమ్ విశ్వసించలేదు. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కి అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
 <translation id="1151972924205500581">పాస్‌వర్డ్ అవసరం</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">వచనం సరిగ్గా సంగ్రహించబడిందా?</translation>
 <translation id="5540224163453853">అభ్యర్థించిన కథనాన్ని కనుగొనడం సాధ్యపడలేదు.</translation>
 <translation id="5541546772353173584">ఇమెయిల్‌ను జోడించండి</translation>
-<translation id="5544037170328430102"><ph name="SITE" />లో పొందుపరిచిన పేజీ ఇలా చెబుతోంది:</translation>
 <translation id="5545756402275714221">మీ కోసం కథనాలు</translation>
 <translation id="5556459405103347317">రీలోడ్</translation>
 <translation id="5560088892362098740">గడువు ముగింపు తేదీ</translation>
@@ -639,6 +637,7 @@
 <translation id="5675650730144413517">ఈ పేజీ పని చేయడం లేదు</translation>
 <translation id="5685654322157854305">షిప్పింగ్ చిరునామాను జోడించండి</translation>
 <translation id="5689199277474810259">JSONకు ఎగుమతి చేయి</translation>
+<translation id="5689516760719285838">స్థానం</translation>
 <translation id="5710435578057952990">ఈ వెబ్‍‌సైట్ యొక్క గుర్తింపు నిర్థారించబడలేదు.</translation>
 <translation id="5719499550583120431">ప్రీపెయిడ్ కార్డ్‌లు ఆమోదించబడతాయి.</translation>
 <translation id="5720705177508910913">ప్రస్తుత వినియోగదారు</translation>
@@ -821,7 +820,6 @@
 <translation id="7390545607259442187">కార్డ్‌ని నిర్ధారించండి</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">ప్రొఫైల్ మార్గం</translation>
-<translation id="7424977062513257142">ఈ వెబ్‌పేజీలోని పొందుపరిచిన పేజీ ఇలా చెబుతోంది:</translation>
 <translation id="7437289804838430631">సంప్రదింపు సమాచారాన్ని జోడించు</translation>
 <translation id="7441627299479586546">చెల్లని విధాన విషయం</translation>
 <translation id="7444046173054089907">ఈ సైట్ బ్లాక్ చేయబడింది</translation>
@@ -1001,7 +999,6 @@
 <translation id="884923133447025588">ఏ రద్దు విధానం కనుగొనబడలేదు.</translation>
 <translation id="885730110891505394">Googleతో భాగస్వామ్యం</translation>
 <translation id="8866481888320382733">విధాన సెట్టింగ్‌లను అన్వయించడంలో లోపం</translation>
-<translation id="8866959479196209191">ఈ పేజీ ఇలా చెబుతోంది:</translation>
 <translation id="8870413625673593573">ఇటీవల మూసివేసినవి</translation>
 <translation id="8874824191258364635">చెల్లుబాటు అయ్యే కార్డ్ నంబర్‌ను నమోదు చేయండి</translation>
 <translation id="8876793034577346603">నెట్‌వర్క్ కాన్ఫిగరేషన్ అన్వయించబడటంలో విఫలమైంది.</translation>

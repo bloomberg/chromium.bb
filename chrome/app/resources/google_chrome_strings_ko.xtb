@@ -94,12 +94,12 @@
 <translation id="3398288718845740432">Chrome 메뉴에서 숨기기</translation>
 <translation id="3451115285585441894">Chrome에 추가하는 중...</translation>
 <translation id="345171907106878721">Chrome에 본인 추가</translation>
+<translation id="3479552764303398839">나중에</translation>
 <translation id="3612333635265770873">같은 이름의 모듈이 Chrome과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="3622797965165704966">이제 Google 계정으로 공유 컴퓨터에서 Chrome을 손쉽게 사용할 수 있습니다.</translation>
 <translation id="3637702109597584617">Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />서비스 약관<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">항목 1개가 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chrome에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
 <translation id="3735758079232443276">Chrome을 시작하면 표시되는 페이지가 '<ph name="EXTENSION_NAME" />' 확장 프로그램으로 인해 변경되었습니다.</translation>
-<translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome에서 삭제...</translation>
 <translation id="386202838227397562">Chrome 창을 모두 닫고 다시 시도해 보세요.</translation>
@@ -130,7 +130,6 @@
 <translation id="4664415150087723341">Chromium 특별 보안 업데이트를 방금 적용했습니다. 실행하려면 지금 다시 시작하세요. 다시 시작 후 탭은 복원됩니다.</translation>
 <translation id="4700157086864140907">Chrome은 사용자가 브라우저에 입력한 내용을 Google 서버에 보내어 Google 검색에서 사용하는 기술과 동일한 맞춤법 검사 기술을 사용할 수 있게 함으로써 더욱 뛰어난 맞춤법 검사 기능을 제공할 수 있습니다.</translation>
 <translation id="4728575227883772061">확인되지 않은 오류로 설치에 실패했습니다. Chrome이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
-<translation id="4743926867934016338">동의 및 검색</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" />을(를) 사용하려면 Chrome을 다시 시작하세요.</translation>
 <translation id="4754614261631455953">Chrome Canary(mDNS-In)</translation>
 <translation id="4771048833395599659">이 파일은 위험할 수있으므로 Chrome에서 차단했습니다.</translation>
@@ -162,12 +161,9 @@
 Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5453904507266736060">백그라운드에서 Chrome을 실행</translation>
 <translation id="5495581687705680288">Chrome에 로드된 모듈</translation>
-<translation id="5524843473235508879">리디렉션이 차단되었습니다.</translation>
 <translation id="556024056938947818">Chrome에서 비밀번호를 표시하려고 합니다.</translation>
-<translation id="5563479599352954471">터치 한 번으로 검색</translation>
 <translation id="5566025111015594046">Chrome(mDNS-In)</translation>
 <translation id="557283862590186398">Chrome이 이 사이트에서 마이크에 액세스하려면 권한이 필요합니다.</translation>
-<translation id="5620765574781326016">페이지를 나가지 않고 웹사이트에서 주제에 대해 자세히 알아보기</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" />은(는) 위험할 수 있으므로 Chrome에서 차단했습니다.</translation>
 <translation id="573759479754913123">Chrome OS 정보</translation>
 <translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
@@ -203,7 +199,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6697947395630195233">Chrome이 이 사이트와 위치를 공유하려면 내 위치에 액세스하도록 허용해야 합니다.</translation>
 <translation id="683440813066116847">Chrome Canary가 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="686561893457936865">어디에서나 Chrome 사용</translation>
-<translation id="6883876366448858277">단어와 관련 컨텍스트를 Google 검색에 전송하며 정의, 사진, 기타 검색결과를 표시합니다.</translation>
 <translation id="6885412569789873916">Chrome 베타 앱</translation>
 <translation id="6967962315388095737">Chrome 베타에서 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="6970811910055250180">기기를 업데이트하는 중...</translation>
@@ -225,7 +220,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7437998757836447326">Chrome에서 로그아웃</translation>
 <translation id="7459554271817304652">맞춤설정한 브라우저 기능을 웹에 저장하고 모든 컴퓨터의 Chrome에서 액세스할 수 있도록 동기화를 설정합니다.</translation>
 <translation id="7473136999113284234">Chrome은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다.</translation>
-<translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7494905215383356681">Chrome 오픈소스 라이선스</translation>
 <translation id="7535429826459677826">Chrome 개발자</translation>
 <translation id="7552219221109926349">이 언어로 Chrome OS 표시</translation>

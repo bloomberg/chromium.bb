@@ -72,13 +72,13 @@
 <translation id="3296368748942286671">‏ادامه اجرای برنامه‌ها در پس‌زمینه هنگامیکه Chromium بسته می‌شود</translation>
 <translation id="331951419404882060">‏به دلیل وجود خطا در ورود به سیستم، سیستم‌عامل Chromium قادر به همگام‌سازی داده‌های شما نبود.</translation>
 <translation id="3474745554856756813">‏این کار <ph name="ITEMS_COUNT" /> مورد را از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با <ph name="USER_EMAIL" /> به سیستم Chromium وارد شوید.</translation>
+<translation id="3479552764303398839">اکنون نه</translation>
 <translation id="3509308970982693815">‏لطفاً همه پنجره‌های Chromium را ببندید و دوباره سعی کنید.</translation>
 <translation id="352783484088404971">‏حذف از Chromium...</translation>
 <translation id="3549345495227188780">‏شروع به کار با سیستم عامل Chromium</translation>
 <translation id="3582788516608077514">‏در حال به‌روزرسانی Chromium…</translation>
 <translation id="358997566136285270">‏نشان‌واره Chromium</translation>
 <translation id="3713809861844741608">‏باز کردن پیوند در &amp;برگه جدید Chromium</translation>
-<translation id="3738139272394829648">لمس کردن برای جستجو</translation>
 <translation id="3762167353400286894">‏سیستم عامل Chromium به این زبان نشان داده می‌شود</translation>
 <translation id="378917192836375108">‏Chromium به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -111,7 +111,6 @@
 <translation id="469338717132742108">‏دریافت کمک برای سیستم عامل Chromium</translation>
 <translation id="4708774505295300557">‏شخصی قبلاً به‌عنوان <ph name="ACCOUNT_EMAIL_LAST" /> به سیستم Chromium در این رایانه وارد شده است. برای اینکه اطلاعاتتان جدا حفظ شود، لطفاً کاربر Chrome جدیدی ایجاد کنید.</translation>
 <translation id="4714956846925717402">‏دسترسی سریع‌تر به Chromium</translation>
-<translation id="4743926867934016338">پذیرش و جستجو</translation>
 <translation id="4825874709045178029">‏Chromium برای این سایت به مجوز دسترسی به دوربین نیاز دارد.</translation>
 <translation id="4888717733111232871">‏قانون ترافیک ورودی برای Chromium جهت اجازه به ترافیک mDNS.</translation>
 <translation id="4943838377383847465">‏Chromium در حالت پس‌زمینه است.</translation>
@@ -128,9 +127,6 @@
 <translation id="5466153949126434691">‏Chromium به صورت خودکار به‌روزرسانی می‌شود بنابراین همیشه جدیدترین نسخه را دارید. وقتی این بارگیری تمام شد، Chromium دوباره شروع به کار می‌کند و می‌توانید کارتان را ادامه دهید.</translation>
 <translation id="5479196819031988440">‏Chromium OS نمی‌تواند این صفحه را باز کند.</translation>
 <translation id="549669000822060376">‏وقتی Chromium جدیدترین به‌روزرسانی‌های سیستم را نصب می‌کند، لطفاً صبر کنید.</translation>
-<translation id="5524843473235508879">هدایت کردن مسدود شد.</translation>
-<translation id="5563479599352954471">جستجو فقط با یک تماس</translation>
-<translation id="5620765574781326016">بدون اینکه صفحه را ترک کنید، درباره موضوعات در وب‌سایت‌ها اطلاعاتی به دست آورید.</translation>
 <translation id="5634636535844844681">‏Chromium به Windows 7 یا بالاتر نیاز دارد.</translation>
 <translation id="5680901439334282664">‏ورود به سیستم Chromium</translation>
 <translation id="5698481217667032250">‏نمایش Chromium به این زبان</translation>
@@ -172,7 +168,6 @@
 <translation id="6734291798041940871">‏Chromium از قبل برای همه کاربران این رایانه نصب شده است.</translation>
 <translation id="6810143991807788455">‏با گزارش تنظیمات کنونی، به بهتر شدن Chromium کمک کنید</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">‏کلمه و نوشتار اطرافش را به جستجوی Google ارسال می‌کند و معانی، تصاویر و نتایج جستجوی دیگر را برمی‌گرداند.</translation>
 <translation id="6893813176749746474">‏Chromium به‌روز شده است اما حداقل ۳۰ روز از آن استفاده نکرده‌اید.</translation>
 <translation id="6944967875980567883">‏مدول‌ها در Chromium بارگیری شدند</translation>
 <translation id="6964305034639999644">‏باز کردن پیوند در پنجره &amp;ناشناس Chromium</translation>
@@ -198,7 +193,6 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <ph name="BEGIN_LINK_2" />بیشتر بدانید<ph name="END_LINK_2" />
 
 برای دستورالعمل‌های بیشتر، لطفاً رایانامه‌تان (<ph name="ACCOUNT_EMAIL" />) را بررسی کنید.</translation>
-<translation id="7473891865547856676">نه متشکرم</translation>
 <translation id="7483335560992089831">‏نمی‌توانید Chromium دارای نسخه مشابه با نسخه در حال اجرا را نصب کنید. لطفاً Chromium را ببندید و دوباره سعی کنید.</translation>
 <translation id="7549178288319965365">‏درباره سیستم عامل Chromium </translation>
 <translation id="7577193603922410712">‏لحظاتی پیش به‌روزرسانی امنیتی ویژه برای Chromium اعمال شد؛ برای فعال شدن آن باید هم‌اکنون راه‌اندازی مجدد کنید (برگه‌هایتان را بازیابی خواهیم کرد).</translation>

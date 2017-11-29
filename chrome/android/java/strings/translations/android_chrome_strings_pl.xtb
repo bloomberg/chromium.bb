@@ -253,7 +253,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="3414952576877147120">Rozmiar:</translation>
 <translation id="3443221991560634068">Ponownie załaduj bieżącą stronę</translation>
 <translation id="3452612588551937789">Zaloguj się na konto Google, by korzystać z zakładek, haseł, historii i innych ustawień na wszystkich urządzeniach.</translation>
-<translation id="3479552764303398839">Nie teraz</translation>
 <translation id="3487093336331957349">Podpowiadanie stron internetowych i wyszukiwanych słów</translation>
 <translation id="3492207499832628349">Nowa karta incognito</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Dowiedz się więcej<ph name="END_LINK" /> o proponowanej treści</translation>
@@ -315,6 +314,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="3988213473815854515">Lokalizacja jest dozwolona</translation>
 <translation id="3997476611815694295">Nieistotne dane</translation>
 <translation id="4002066346123236978">Tytuł</translation>
+<translation id="4031074602479304239">Chrome uniemożliwił tej stronie przekierowanie Cię na stronę</translation>
 <translation id="4042870126885713738">Pokazuj podpowiedzi, gdy nie można znaleźć adresu internetowego lub nawiązać połączenia</translation>
 <translation id="4046123991198612571">Następny utwór</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -330,7 +330,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4113030288477039509">Zarządzany przez administratora</translation>
 <translation id="4116038641877404294">Pobierz strony, by przeglądać je w trybie offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d zakładka}few{%1$d zakładki}many{%1$d zakładek}other{%1$d zakładki}}</translation>
-<translation id="4165986682804962316">Ustawienia witryn</translation>
+<translation id="4165986682804962316">Ustawienia witryny</translation>
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
 <translation id="4181841719683918333">Języki</translation>
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
@@ -394,7 +394,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4797039098279997504">Kliknij, by wrócić na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Imię i nazwisko na karcie</translation>
 <translation id="4807963036345170158">Oszczędzanie danych jest wyłączone</translation>
-<translation id="4811736444948656478">Panel nawigacji otwarty do połowy wysokości</translation>
+<translation id="4811736444948656478">Panel użytkownika otwarty do połowy wysokości</translation>
 <translation id="4816465935029283692">Typy danych</translation>
 <translation id="4837753911714442426">Otwórz opcje drukowania strony</translation>
 <translation id="4842092870884894799">Pokazuję wyskakujące okienko generowania hasła</translation>
@@ -472,6 +472,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="5512137114520586844">Tym kontem zarządza <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Wyłączone przez administratora tego urządzenia</translation>
 <translation id="5517095782334947753">Masz zakładki, historię, hasła i inne ustawienia z konta <ph name="FROM_ACCOUNT" />.</translation>
+<translation id="5524843473235508879">Przekierowanie zostało zablokowane.</translation>
 <translation id="5527082711130173040">Aby wyszukać urządzenia, Chrome potrzebuje dostępu do lokalizacji. <ph name="BEGIN_LINK1" />Zwiększ uprawnienia<ph name="END_LINK1" />. Dostęp do lokalizacji jest <ph name="BEGIN_LINK2" />wyłączony na tym urządzeniu<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Zamknij karty incognito</translation>
 <translation id="5534640966246046842">Strona została skopiowana</translation>
@@ -498,7 +499,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 
 To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incognito, Twój pracodawca, dostawca usług internetowych czy webmasterzy otwieranych stron mogą dowiedzieć się, co przeglądasz.</translation>
 <translation id="572328651809341494">Ostatnie karty</translation>
-<translation id="572392919096807438">Zapamiętaj moją decyzję</translation>
 <translation id="5726692708398506830">Powiększ całą zawartość strony</translation>
 <translation id="5738816946784116349">Pobrania Chrome</translation>
 <translation id="5748802427693696783">Przełączono na karty standardowe</translation>
@@ -550,7 +550,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="6177111841848151710">Zablokowano dostęp obecnej wyszukiwarce</translation>
 <translation id="6177390657002841081">Włącz Oszczędzanie danych</translation>
 <translation id="6181444274883918285">Dodaj witrynę do wyjątków</translation>
-<translation id="618555311922999635">Panel nawigacji otwarty na całą wysokość</translation>
+<translation id="618555311922999635">Panel użytkownika otwarty na całą wysokość</translation>
 <translation id="6192792657125177640">Wyjątki</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> to nie Ty?</translation>
 <translation id="6232535412751077445">Włączenie opcji „Bez śledzenia” oznacza, że podczas przeglądania będzie wysyłane żądanie. Jego wynik zależy od tego, czy strona na nie odpowie oraz jak zostanie ono zinterpretowane.
@@ -652,7 +652,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7022756207310403729">Otwórz w przeglądarce</translation>
 <translation id="7029809446516969842">Hasła</translation>
 <translation id="7031882061095297553">Synchronizuj z</translation>
-<translation id="704059664004611800">Kliknij, by zobaczyć zakładki i nie tylko</translation>
 <translation id="7053983685419859001">Blokuj</translation>
 <translation id="7062545763355031412">Zaakceptuj i przełącz konta</translation>
 <translation id="7063006564040364415">Nie udało się nawiązać połączenia z serwerem synchronizacji.</translation>
@@ -763,7 +762,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8073388330009372546">Otwórz grafikę w nowej karcie</translation>
 <translation id="8084114998886531721">Zapisane hasło</translation>
 <translation id="8087000398470557479">Treść z <ph name="DOMAIN_NAME" /> dostarczana przez Google.</translation>
-<translation id="8100932616285851614">Zamknięto panel nawigacji</translation>
+<translation id="8100932616285851614">Zamknięto panel użytkownika</translation>
 <translation id="8103578431304235997">Karta incognito</translation>
 <translation id="8116925261070264013">Wyciszone</translation>
 <translation id="813082847718468539">Wyświetl informacje o witrynie</translation>
@@ -781,7 +780,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8310344678080805313">Karty standardowe</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> i więcej stron</translation>
 <translation id="8339163506404995330">Strony, których językiem jest <ph name="LANGUAGE" />, nie będą tłumaczone</translation>
-<translation id="8363501664269050863">Panel nawigacyjny. Przesuń w dół, by go zamknąć.</translation>
+<translation id="8363501664269050863">Panel użytkownika. Przesuń w dół, by go zamknąć.</translation>
 <translation id="8372893542064058268">Zezwalaj na synchronizowanie w tle z określoną stroną.</translation>
 <translation id="8374821112118309944">Musisz zainstalować nowszą wersję TalkBack.</translation>
 <translation id="8393700583063109961">Wyślij wiadomość</translation>

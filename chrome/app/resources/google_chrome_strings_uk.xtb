@@ -90,12 +90,12 @@
 <translation id="3398288718845740432">Сховати в меню Chrome</translation>
 <translation id="3451115285585441894">Додавання в Chrome...</translation>
 <translation id="345171907106878721">Додати себе в Chrome</translation>
+<translation id="3479552764303398839">Не зараз</translation>
 <translation id="3612333635265770873">Відомо, що модуль із такою назвою конфліктує з Google Chrome.</translation>
 <translation id="3622797965165704966">Користуватися Chrome у своєму обліковому записі Google на спільних комп’ютерах стало легше.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Умови використання<ph name="END_TERMS_OF_SERVICE_LINK" /> ОС Google Chrome</translation>
 <translation id="3718181793972440140">1 елемент буде видалено з цього пристрою. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Розширення "<ph name="EXTENSION_NAME" />" змінило сторінку, яка відкривається під час запуску Chrome.</translation>
-<translation id="3738139272394829648">Пошук дотиком</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Видалити з Chrome…</translation>
 <translation id="386202838227397562">Закрийте всі вікна Google Chrome і повторіть спробу.</translation>
@@ -126,7 +126,6 @@
 <translation id="4664415150087723341">Щойно було застосовано спеціальне оновлення для захисту Google Chrome. Щоб воно почало діяти, перезапустіть Google Chrome (ваші вкладки буде відновлено).</translation>
 <translation id="4700157086864140907">Google Chrome може запропонувати кращий спосіб перевірки правопису, надсилаючи введений у веб-переглядачі текст на сервери Google. Це дозволяє використовувати ту саму технологію перевірки правопису, яка використовується в пошуку Google.</translation>
 <translation id="4728575227883772061">Не вдалося здійснити встановлення через невизначену помилку. Якщо наразі Google Chrome запущено, закрийте його та повторіть спробу.</translation>
-<translation id="4743926867934016338">Прийняти й шукати</translation>
 <translation id="4750550185319565338">Перезавантажте Chrome, щоб увімкнути плагін "<ph name="PLUGIN_NAME" />"</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Цей файл може бути небезпечним, тому Chrome заблокував його.</translation>
@@ -145,7 +144,7 @@
 <translation id="5166975452760862670">Для Google Chrome вибрано цю мову</translation>
 <translation id="5170938038195470297">Ваш профіль не можна використати, оскільки його створено в новішій версії Google Chrome. Деякі функції можуть бути недоступними. Укажіть інший каталог профілю чи скористайтеся новішою версією Chrome.</translation>
 <translation id="5193136243808726294">Неможливо відкрити цю сторінку в ОС Google Chrome.</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Загальні положення та умови<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
+<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Умови використання<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (скопійовано в Chrome)</translation>
 <translation id="5251420635869119124">Гості можуть анонімно користуватися Chrome.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome перезапуститься через 1 секунду.}one{Google Chrome перезапуститься через # секунду.}few{Google Chrome перезапуститься через # секунди.}many{Google Chrome перезапуститься через # секунд.}other{Google Chrome перезапуститься через # секунди.}}</translation>
@@ -154,12 +153,9 @@
 <translation id="5430073640787465221">Ваш файл налаштувань пошкоджений або недійсний. Google Chrome не може відновити ваші налаштування.</translation>
 <translation id="5453904507266736060">Дозволити Google Chrome працювати у фоновому режимі</translation>
 <translation id="5495581687705680288">Модулі, завантажені в Google Chrome</translation>
-<translation id="5524843473235508879">Переспрямування заблоковано.</translation>
 <translation id="556024056938947818">Google Chrome намагається показати паролі.</translation>
-<translation id="5563479599352954471">Пошук одним дотиком</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Chrome потрібні дозволи, щоб використовувати мікрофон на цьому сайті.</translation>
-<translation id="5620765574781326016">Дізнавайтеся про теми на веб-сайтах, залишаючись на сторінці.</translation>
 <translation id="565744775970812598">Файл <ph name="FILE_NAME" /> може бути небезпечним, тому Chrome заблокував його.</translation>
 <translation id="573759479754913123">Про ОС Chrome</translation>
 <translation id="5749068826913805084">Щоб завантажувати файли, Chrome потребує доступу до пам’яті.</translation>
@@ -195,11 +191,10 @@
 <translation id="6697947395630195233">Chrome потрібен доступ до місцезнаходження, щоб повідомляти ваші геодані цьому сайту.</translation>
 <translation id="683440813066116847">Вхідне правило для Google Chrome Canary дозволяє трафік mDNS.</translation>
 <translation id="686561893457936865">Використовуйте Chrome на всіх пристроях</translation>
-<translation id="6883876366448858277">надсилає слово та його контекст у Пошук Google і повертає визначення, зображення й інші результати пошуку.</translation>
 <translation id="6885412569789873916">Бета-версія додатків Chrome</translation>
 <translation id="6967962315388095737">Вхідне правило для бета-версії Google Chrome дозволяє трафік mDNS.</translation>
 <translation id="6970811910055250180">Оновлення пристрою...</translation>
-<translation id="6982337800632491844">Перш ніж використовувати цей пристрій, потрібно прочитати й прийняти наведені нижче Загальні положення та умови для <ph name="DOMAIN" />. Ці умови не розширюють, не змінюють і не обмежують Умови використання ОС Google Chrome.</translation>
+<translation id="6982337800632491844">Перш ніж використовувати цей пристрій, потрібно прочитати й прийняти наведені нижче Умови використання сайту <ph name="DOMAIN" />. Ці умови не розширюють, не змінюють і не обмежують Умови використання ОС Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome оновлено, проте ви не користувалися цим веб-переглядачем щонайменше 30 днів.</translation>
 <translation id="7098166902387133879">Google Chrome використовує ваш мікрофон.</translation>
 <translation id="7106741999175697885">Диспетчер завдань - Google Chrome</translation>
@@ -217,7 +212,6 @@
 <translation id="7437998757836447326">Вихід із Chrome</translation>
 <translation id="7459554271817304652">Налаштуйте синхронізацію, щоб зберегти свої персоналізовані функції веб-переглядача в Інтернеті й мати до них доступ із Google Chrome на будь-якому комп’ютері.</translation>
 <translation id="7473136999113284234">Chrome оновлюється автоматично, щоб у вас завжди була найновіша версія.</translation>
-<translation id="7473891865547856676">Ні, дякую</translation>
 <translation id="7494905215383356681">Ліцензії Chrome із відкритим кодом</translation>
 <translation id="7535429826459677826">Версія Google Chrome для розробників</translation>
 <translation id="7552219221109926349">Вибрати цю мову для ОС Chrome</translation>

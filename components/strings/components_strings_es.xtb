@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Deshacer reorganización</translation>
 <translation id="1126551341858583091">El tamaño del almacenamiento local es de <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Caché de política correcta</translation>
-<translation id="113188000913989374"><ph name="SITE" /> dice:</translation>
 <translation id="1132774398110320017">Configuración de la función Autocompletar de Chrome...</translation>
 <translation id="1150979032973867961">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, el sistema operativo de tu ordenador no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="1151972924205500581">Contraseña obligatoria</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">¿Se ha extraído el texto correctamente?</translation>
 <translation id="5540224163453853">No se ha podido encontrar el artículo solicitado.</translation>
 <translation id="5541546772353173584">Añade un correo electrónico</translation>
-<translation id="5544037170328430102">Una página insertada en <ph name="SITE" /> dice:</translation>
 <translation id="5545756402275714221">Artículos recomendados para ti</translation>
 <translation id="5556459405103347317">Volver a cargar</translation>
 <translation id="5560088892362098740">Fecha de caducidad</translation>
@@ -803,7 +801,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> sobre este problema.</translation>
 <translation id="7219179957768738017">La conexión utiliza <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Procesando pago</translation>
-<translation id="724691107663265825">El sitio al que vas a acceder contiene software malicioso</translation>
+<translation id="724691107663265825">El sitio web al que vas a acceder contiene software malicioso</translation>
 <translation id="724975217298816891">Introduce la fecha de caducidad y el código CVC de la tarjeta <ph name="CREDIT_CARD" /> para actualizar sus detalles. Cuando la confirmes, su información se compartirá con este sitio web.</translation>
 <translation id="725866823122871198">No se puede establecer una conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora de tu ordenador (<ph name="DATE_AND_TIME" />) no son correctas.</translation>
 <translation id="7260504762447901703">Revoca el acceso</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Confirmar tarjeta</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Ruta del perfil</translation>
-<translation id="7424977062513257142">Una página insertada en este sitio web dice:</translation>
 <translation id="7437289804838430631">Añade la información de contacto</translation>
 <translation id="7441627299479586546">Asunto de política incorrecto</translation>
 <translation id="7444046173054089907">Este sitio web se ha bloqueado</translation>
@@ -1001,7 +998,6 @@
 <translation id="884923133447025588">No se ha encontrado ningún mecanismo de revocación.</translation>
 <translation id="885730110891505394">Compartir con Google</translation>
 <translation id="8866481888320382733">Error al analizar la configuración de la política</translation>
-<translation id="8866959479196209191">Esta página dice:</translation>
 <translation id="8870413625673593573">Cerrado recientemente</translation>
 <translation id="8874824191258364635">Introduce un número de tarjeta válido</translation>
 <translation id="8876793034577346603">No se ha podido analizar la configuración de red.</translation>
@@ -1014,7 +1010,7 @@
 <translation id="8957210676456822347">Autorización de portal cautivo</translation>
 <translation id="8971063699422889582">El certificado del servidor ha caducado.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
-<translation id="8996941253935762404">El sitio al que vas a acceder contiene programas dañinos</translation>
+<translation id="8996941253935762404">El sitio web al que vas a acceder contiene programas dañinos</translation>
 <translation id="8997023839087525404">El servidor ha mostrado un certificado que no se ha hecho público mediante la Política de Transparencia en los Certificados. Este requisito se aplica a algunos certificados para garantizar que son de confianza y ofrecer protección contra los atacantes.</translation>
 <translation id="9001074447101275817">El proxy <ph name="DOMAIN" /> requiere un nombre de usuario y una contraseña.</translation>
 <translation id="9005998258318286617">Se ha producido un error al cargar el documento PDF.</translation>

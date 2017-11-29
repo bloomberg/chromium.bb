@@ -92,12 +92,12 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3398288718845740432">Chrome'i menüüs peitmine</translation>
 <translation id="3451115285585441894">Chrome'i lisamine ...</translation>
 <translation id="345171907106878721">Lisa Chrome'i</translation>
+<translation id="3479552764303398839">Mitte praegu</translation>
 <translation id="3612333635265770873">Samanimeline moodul on teadaolevalt Google Chrome'iga vastuolus.</translation>
 <translation id="3622797965165704966">Nüüd on Chrome'i lihtsam kasutada Google'i kontoga ja jagatud arvutites.</translation>
 <translation id="3637702109597584617">Google Chrome OS-i <ph name="TERMS_OF_SERVICE_LINK" />teenusetingimused<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">See kustutab seadmest ühe üksuse. Hiljem oma andmete toomiseks logige Chrome'i sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Laiendus „<ph name="EXTENSION_NAME" />” muutis seda, milline leht kuvatakse Chrome'i käivitamisel.</translation>
-<translation id="3738139272394829648">Puudutage otsimiseks</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Eemalda Chrome'ist</translation>
 <translation id="386202838227397562">Sulgege kõik Google Chrome'i aknad ja proovige uuesti.</translation>
@@ -128,7 +128,6 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="4664415150087723341">Äsja rakendati Google Chrome'i spetsiaalne turvavärskendus. Selle jõustamiseks taaskäivitage brauser (teie vahelehed taastatakse).</translation>
 <translation id="4700157086864140907">Google Chrome võib õigekirjakontrolli täiustada, saates brauserisse sisestatud teksti Google'i serveritesse ja võimaldades kasutada sama õigekirjakontrolli tehnoloogiat, mida kasutatakse Google'i otsingus.</translation>
 <translation id="4728575227883772061">Install ebaõnnestus määramata vea tõttu. Kui Google Chrome parasjagu töötab, siis palun sulgege see ja proovige uuesti.</translation>
-<translation id="4743926867934016338">Nõustun, otsi</translation>
 <translation id="4750550185319565338">Taaskäivitage pistikprogrammi <ph name="PLUGIN_NAME" /> lubamiseks Chrome</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Chrome blokeeris faili, kuna see võib olla ohtlik.</translation>
@@ -158,12 +157,9 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="5430073640787465221">Teie eelistuste fail on rikutud või kehtetu. Google Chrome ei saa teie seadeid taastada.</translation>
 <translation id="5453904507266736060">Luba Google Chrome'i töötamine taustal</translation>
 <translation id="5495581687705680288">Google Chrome'i laaditud moodulid</translation>
-<translation id="5524843473235508879">Ümbersuunamine blokeeriti.</translation>
 <translation id="556024056938947818">Google Chrome püüab näidata paroole.</translation>
-<translation id="5563479599352954471">Otsing ühe puudutusega</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Chrome vajab selle saidi puhul luba, et teie mikrofonile juurde pääseda.</translation>
-<translation id="5620765574781326016">Lisateave veebisaitide teemade kohta ilma lehelt lahkumata.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> võib olla ohtlik, mistõttu Chrome blokeeris selle.</translation>
 <translation id="573759479754913123">Teave Chrome OS-i kohta</translation>
 <translation id="5749068826913805084">Chrome vajab failide allalaadimiseks juurdepääsu salvestusruumile.</translation>
@@ -199,7 +195,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="6697947395630195233">Chrome vajab juurdepääsu teie asukohale, et seda selle saidiga jagada.</translation>
 <translation id="683440813066116847">Sissetuleku reegel Google Chrome Canaryle mDNS-liikluse lubamiseks.</translation>
 <translation id="686561893457936865">Võtke Chrome kõikjale kaasa</translation>
-<translation id="6883876366448858277">saadab sõna ja ümbritseva konteksti Google'i otsingule, tagastades definitsioonid, kujutised, otsingutulemused ja muud otsingutulemused.</translation>
 <translation id="6885412569789873916">Chrome'i beetaversiooni rakendused</translation>
 <translation id="6967962315388095737">Sissetuleku reegel Google Chrome'i beetaversioonile mDNS-liikluse lubamiseks.</translation>
 <translation id="6970811910055250180">Teie seadme täiendamine ...</translation>
@@ -221,7 +216,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="7437998757836447326">Chrome'ist väljalogimine</translation>
 <translation id="7459554271817304652">Seadistage sünkroonimine, et salvestada brauseri isikupärastatud funktsioonid veebi, misjuhul pääsete Google Chrome'i kaudu igast arvutist nende juurde.</translation>
 <translation id="7473136999113284234">Chrome teeb värskendused automaatselt, nii et kasutate alati uusimat versiooni.</translation>
-<translation id="7473891865547856676">Tänan, ei</translation>
 <translation id="7494905215383356681">Chrome'i avatud lähtekoodi litsentsid</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Kuva Chrome OS selles keeles</translation>

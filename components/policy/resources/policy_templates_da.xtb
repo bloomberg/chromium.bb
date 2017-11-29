@@ -30,6 +30,7 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 
           Hvis denne indstilling er deaktiveret eller ikke er konfigureret, køres den eksterne hjælpehost i brugerens kontekst, og eksterne brugere kan ikke interagere med vinduer med administratorrettigheder på skrivebordet.</translation>
 <translation id="1096105751829466145">Standardsøgemaskine</translation>
+<translation id="1099282607296956954">Aktivér isolering af websites for alle websites</translation>
 <translation id="1117535567637097036">De protokolhandlere, der er angivet via denne politik, bruges ikke til håndtering af Android-formål.</translation>
 <translation id="1122282995569868661">Viser <ph name="PRODUCT_NAME" />-ikonet på værktøjslinjen</translation>
 <translation id="1128903365609589950">Konfigurerer det indeks, som <ph name="PRODUCT_NAME" /> anvender til at gemme cachelagrede filer på disken.
@@ -686,6 +687,16 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="332771718998993005">Beslut dig for et navn, der angives som en destination for <ph name="PRODUCT_NAME" />.
 
           Hvis denne politik er angivet som en udfyldt streng, anvendes strengen som navnet på destinationen for <ph name="PRODUCT_NAME" />. Hvis ikke, er navnet på destinationen det samme som navnet på enheden. Hvis denne politik ikke er angivet, er navnet på destinationen det samme som navnet på enheden, og enhedsejeren (eller en bruger fra domænet, som administrerer enheden) kan ændre det. Navnet må højst indeholde 24 tegn.</translation>
+<translation id="3356249700768900657">
+      BEMÆRK! Denne politik er eksperimentel og kan ødelægge funktionaliteten.
+      Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få det bedste
+      fra begge verdener (isolering og begrænset indvirkning på brugerne) ved at bruge
+      IsolateOrigins sammen med en liste over de websites, du vil isolere. Denne indstilling,
+      SitePerProcess, isolerer all websites.
+      Hvis politikken er aktiveret, kører hvert website sin egen proces.
+      Hvis politikken er deaktiveret, anvendes processtyringslogikken, som blev brugt før isolering af websites.
+      Hvis politikken ikke konfigureres, kan brugeren ændre denne indstilling.
+      </translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
 <translation id="3395348522300156660">Angiver, hvilke printere en bruger kan anvende..
 
@@ -1039,6 +1050,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
           Du kan se eksempler på mønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Åbn en liste over webadresser</translation>
 <translation id="4680961954980851756">Aktiver AutoFyld</translation>
+<translation id="4722122254122249791">Aktivér isolering af websites for bestemte websites</translation>
 <translation id="4722399051042571387">Hvis den er angivet til falsk, kan brugerne ikke angive pinkoder, der er svage og nemme at gætte.
 
           Eksempler på svage pinkoder: Pinkoder, der kun indeholder ét tal (1111), pinkoder, der stiger med ét tal ad gangen (1234), pinkoder, der falder med ét tal ad gangen (4321), og pinkoder, der er meget almindelige.
@@ -1140,6 +1152,16 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4983201894483989687">Tillad, at der køres forældede plugins</translation>
 <translation id="4988291787868618635">Påkrævet handling for inaktivitetsforsinkelse</translation>
 <translation id="4995548127349206948">Om NTLMv2-godkendelse er aktiveret.</translation>
+<translation id="5027819375434797927">
+      BEMÆRK! Denne politik er eksperimentel og kan ødelægge funktionaliteten.
+      Hvis politikken er aktiveret, kører hvert af de angivne websites
+      på en kommasepareret liste sin egen proces. Dette isolerer også
+      websites, der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives,
+      isoleres https://foo.eksempel.dk/ også som en del af
+      websitet https://eksempel.dk/.
+      Hvis politikken er deaktiveret, anvendes processtyringslogikken, som blev brugt før isolering af websites.
+      Hvis politikken ikke konfigureres, kan brugeren ændre denne indstilling.
+      </translation>
 <translation id="5047604665028708335">Tillad adgang til websites uden for indholdspakker.</translation>
 <translation id="5052081091120171147">Denne politik tvinger import af browserhistorikken fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres der ikke nogen browserdata. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="5056708224511062314">Luppen er deaktiveret</translation>
@@ -1909,39 +1931,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="7841880500990419427">Minimumsversion af TLS som backup</translation>
 <translation id="7842869978353666042">Konfigurer indstillinger for Google Drev</translation>
 <translation id="7843525027689416831">Angiver de markeringer, der skal anvendes for <ph name="PRODUCT_NAME" /> ved opstart. De angivne markeringer anvendes kun på loginskærmen. Markeringer, der angives via denne politik, oveføres ikke til brugersessioner.</translation>
-<translation id="7844537954833753199">Konfigurerer indstillinger for administration af udvidelser for <ph name="PRODUCT_NAME" />.
-
-          Denne politik styrer flere indstillinger, herunder indstillinger, der styres af eksisterende politikker vedrørende udvidelser. Denne politik tilsidesætter eventuelle ældre politikker, hvis begge er indstillet.
-
-          Denne politik knytter et udvidelses-id eller en opdateringswebadresse til dens konfiguration. Med et udvidelses-id bliver konfigurationen udelukkende anvendt på den angivne udvidelse. Der kan indstilles en standardkonfiguration for det særlige id <ph name="DEFAULT_SCOPE" />, som gælder for alle udvidelser, der ikke er indstillet en standardkonfiguration for i denne politik. Med en opdateringswebadresse anvendes konfigurationen på alle udvidelser, hvor den nøjagtige opdateringswebadresse er angivet i denne udvidelses manifestfil som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurationen for hver udvidelse (eller udvidelser med samme opdateringswebadresse) er en anden ordbog, der kan indeholde de felter, der er dokumenteret nedenfor.
-
-          <ph name="INSTALLATION_MODE" />: Tilknytter en streng, der angiver installationstilstanden for udvidelsen. De gyldige strenge er:
-          * <ph name="ALLOWED" />: Tillader, at udvidelsen installeres af brugeren. Dette er standardadfærden.
-          * <ph name="BLOCKED" />: Blokerer for installation af udvidelsen.
-          * <ph name="FORCE_INSTALLED" />: Udvidelsen installeres automatisk og kan ikke fjernes af brugeren.
-          * <ph name="NORMAL_INSTALLED" />: Udvidelsen installeres automatisk, men kan deaktiveres af brugeren.
-
-          <ph name="INSTALLTION_MODE" /> kan også konfigureres for flere udvidelser, bl.a. udvidelsen <ph name="DEFAULT_SCOPE" /> (som standardindstillinger), og for udvidelser med samme opdateringswebadresse. Det er kun værdierne <ph name="ALLOWED" /> og <ph name="BLOCKED" />, der kan bruges i dette tilfælde.
-
-          Hvis denne tilstand indstilles til <ph name="FORCE_INSTALLED" /> eller <ph name="NORMAL_INSTALLED" />, skal der også konfigureres en <ph name="UPDATE_URL" />. Bemærk, at opdateringswebadressen, der er indstillet i denne politik, kun bruges til den første installation. Efterfølgende opdateringer af udvidelsen bruger den opdateringswebadresse, der er angivet i udvidelsens manifestfil. Som nævnt ovenfor skal opdateringswebadressen pege på et Update Manifest XML-dokument.
-
-          <ph name="BLOCKED_PERMISSIONS" />: Tilknytter en liste over strenge, der angiver de blokerede API-tilladelser for udvidelsen. Navnene på tilladelserne er de samme som de tilladelsesstrenge, der er angivet i udvidelsens manifestfil som beskrevet i <ph name="LINK_TO_EXTENSION_DOC3" />. Denne indstilling kan også konfigureres for udvidelsen <ph name="DEFAULT_SCOPE" />. Hvis udvidelsen kræver en tilladelse, der er på blokeringslisten, kan den ikke indlæses. Hvis den indeholder en blokeret tilladelse som valgfrit krav, håndteres den på normal vis, men anmodning om modstridende tilladelser afvises automatisk på kørselstidspunktet.
-
-          <ph name="ALLOWED_PERMISSIONS" />: Svarer til <ph name="BLOCKED_PERMISSIONS" />, men tillader i stedet udtrykkeligt nogle tilladelser, der kan være blokeret af listen med globalt blokerede tilladelser, og som dermed ikke kan konfigureres for udvidelsen <ph name="DEFAULT_SCOPE" />. Bemærk, at denne indstilling ikke automatisk giver tildelte tilladelser til udvidelser.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: Tilknytter en versionsstreng. Formatet for versionsstrengen er det samme som det, der bruges i udvidelsens manifestfil, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC4" />. En udvidelse med en version, der er ældre end den angivne minimumsversion, deaktiveres. Dette gælder også for udvidelser med tvungen installation.
-
-          Følgende indstillinger kan kun bruges til standardkonfigurationen <ph name="DEFAULT_SCOPE" />:
-
-          <ph name="INSTALL_SOURCES" />: Hvert element på listen har et matchmønster, der minder om en udvidelse (<ph name="LINK_TO_MATCH_PATTERNS" />). Brugerne kan nemt at installere elementer fra enhver webadresse, der matcher et element på denne liste. Både placeringen af <ph name="EXTENSION_SUFFIX_WILDCARD" />-filen og siden, hvor downloaden er startet fra (dvs. henvisningsadressen), skal tillades af disse mønstre.
-
-          <ph name="ALLOWED_TYPES" />: Denne indstilling hvidlister de tilladte typer udvidelser/apps, der kan installeres i <ph name="PRODUCT_NAME" />. Værdien er en liste over strenge, hvor hver af disse skal være en af følgende: <ph name="VALID_ALLOWED_TYPES" />. Se udvidelsesdokumentationen for <ph name="PRODUCT_NAME" /> for at få flere oplysninger om disse typer.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Hvis en bruger forsøger at installere en udvidelse, som er blokeret af en politik, viser Chrome Webshop en generisk fejlmeddelelse. Med denne indstilling kan du føje tekst til fejlmeddelelsen. Teksten kan bruges til at lede brugerne til dit supportteam, forklare, hvorfor en bestemt udvidelse er blokeret eller andet. Denne fejlmeddelelse forkortes, hvis den er på mere end 1000 tegn.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Accepterer en liste over hosts, som en udvidelse blokeres fra at interagere med. Dette omfatter indsættelse af javascript, ændring og visning af webRequests/webNavigation samt visning og ændring af cookies. Formatet ligner Match Patterns <ph name="LINK_TO_MATCH_PATTERNS" />, bortset fra at der ikke må defineres nogen stier, f.eks. "*://*.eksempel.dk". Dette understøtter også gældende TLD-jokertegn, f.eks. "*://eksempel.*".
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Accepterer en liste over hosts, som en udvidelse kan interagere med, uanset om de er angivet på <ph name="RUNTIME_BLOCKED_HOSTS" />. Dette er det samme format som <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Hvis den er angivet til SyncDisabled eller ikke er konfigureret, er certifikater i <ph name="PRODUCT_OS_NAME" /> ikke tilgængelige for ARC-apps.
 
       Hvis den er angivet til CopyCaCerts, er alle ONC-installerede CA-certifikater med <ph name="WEB_TRUSTED_BIT" /> tilgængelige for ARC-apps.</translation>
@@ -2020,7 +2009,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 
       Hvis politikken er deaktiveret eller ikke er angivet, fører login til en almindelig profil.</translation>
 <translation id="8158758865057576716">Aktivér oprettelse af roamingkopier til <ph name="PRODUCT_NAME" />-profildata.</translation>
-<translation id="8170878842291747619">Aktiverer den integrerede tjeneste Google Oversæt på <ph name="PRODUCT_NAME" />. Hvis du aktiverer denne indstilling, vil <ph name="PRODUCT_NAME" /> vise en integreret værktøjslinje, der tilbyder at oversætte siden for brugeren, når det er relevant. Hvis du deaktiverer denne indstilling, vil brugerne aldrig se oversættelsesbjælken. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte indstillingen i <ph name="PRODUCT_NAME" />. Hvis denne indstilling ikke angives, kan brugeren vælge, om funktionen skal anvendes eller ej.</translation>
 <translation id="817455428376641507">Giver adgang til de angivne webadresser som undtagelser til sortlisten for webadresser.
 
      Se beskrivelsen af ​politikken for sortlistede webadresser for adgangsformen på denne liste. 

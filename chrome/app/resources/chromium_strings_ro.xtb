@@ -73,13 +73,13 @@
 <translation id="3296368748942286671">Rulați în continuare aplicații de fundal când Chromium este închis</translation>
 <translation id="331951419404882060">Sistemul de operare Chromium nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
 <translation id="3474745554856756813">Astfel, se vor șterge <ph name="ITEMS_COUNT" /> elemente de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chromium ca <ph name="USER_EMAIL" />.</translation>
+<translation id="3479552764303398839">Nu acum</translation>
 <translation id="3509308970982693815">Închideți toate ferestrele Chromium și încercați din nou.</translation>
 <translation id="352783484088404971">Elimină din Chromium...</translation>
 <translation id="3549345495227188780">Noțiuni introductive despre sistemul de operare Chromium</translation>
 <translation id="3582788516608077514">Se actualizează Chromium...</translation>
 <translation id="358997566136285270">Sigla Chromium</translation>
 <translation id="3713809861844741608">Deschide linkul într-o &amp;filă Chromium nouă</translation>
-<translation id="3738139272394829648">Atinge pentru a căuta</translation>
 <translation id="3762167353400286894">Sistemul de operare Chromium este afișat în această limbă</translation>
 <translation id="378917192836375108">Chromium vă permite să dați clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -112,7 +112,6 @@
 <translation id="469338717132742108">Obține ajutor privind sistemul de operare Chromium</translation>
 <translation id="4708774505295300557">Un alt utilizator s-a conectat anterior la Chromium pe acest computer ca <ph name="ACCOUNT_EMAIL_LAST" />. Creează un nou utilizator Chromium pentru a-ți păstra separat datele.</translation>
 <translation id="4714956846925717402">Accesează Chromium mai rapid</translation>
-<translation id="4743926867934016338">Acceptă și caută</translation>
 <translation id="4825874709045178029">Chromium are nevoie de permisiune ca să acceseze camera foto pentru acest site.</translation>
 <translation id="4888717733111232871">Regula de intrare pentru Chromium pentru a permite traficul mDNS.</translation>
 <translation id="4943838377383847465">Chromium este în modul fundal.</translation>
@@ -129,9 +128,6 @@
 <translation id="5466153949126434691">Chromium se actualizează automat, deci ai întotdeauna cea mai recentă versiune. După această descărcare, Chromium va reporni și va fi gata de utilizare.</translation>
 <translation id="5479196819031988440">Sistemul de operare Chromium nu poate deschide pagina.</translation>
 <translation id="549669000822060376">Așteaptă până când Chromium instalează cele mai recente actualizări de sistem.</translation>
-<translation id="5524843473235508879">Redirecționarea a fost blocată.</translation>
-<translation id="5563479599352954471">Caută cu o atingere</translation>
-<translation id="5620765574781326016">Află despre subiectele de pe site-uri fără să părăsești pagina.</translation>
 <translation id="5634636535844844681">Chromium necesită Windows 7 sau o versiune ulterioară.</translation>
 <translation id="5680901439334282664">conectează-te la Chromium</translation>
 <translation id="5698481217667032250">Afișează Chromium în această limbă</translation>
@@ -173,7 +169,6 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="6734291798041940871">Chromium este instalat deja pentru toți utilizatorii de pe computerul tău.</translation>
 <translation id="6810143991807788455">Contribuie la îmbunătățirea browserului Chromium raportând setările actuale</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">trimite un cuvânt și contextul aferent către Căutarea Google, afișând definiții, imagini, rezultate ale căutării.</translation>
 <translation id="6893813176749746474">Chromium a fost actualizat, dar nu l-ați utilizat de cel puțin 30 de zile.</translation>
 <translation id="6944967875980567883">Module încărcate în Chromium</translation>
 <translation id="6964305034639999644">Deschide linkul într-o fereastră Chromium inco&amp;gnito</translation>
@@ -200,7 +195,6 @@ Pentru a împiedica utilizatorul <ph name="NEW_PROFILE_NAME" /> să îți accese
 <ph name="BEGIN_LINK_2" />Află mai multe<ph name="END_LINK_2" />
 
 Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni suplimentare.</translation>
-<translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="7483335560992089831">Nu se poate instala aceeași versiune de Chromium care rulează în prezent. Închideți Chromium și încercați din nou.</translation>
 <translation id="7549178288319965365">Despre sistemul de operare Chromium</translation>
 <translation id="7577193603922410712">Tocmai a fost aplicată o actualizare de securitate specială pentru Chromium; pentru ca aceasta să intre în vigoare, îți recomandăm să repornești acum (filele vor fi restabilite).</translation>

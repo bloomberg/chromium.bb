@@ -149,7 +149,6 @@
 <translation id="453661520163887813"><ph name="TIME" /> tills batteriet är fullt</translation>
 <translation id="4544944664594876241">Kortkommandot för att låsa skärmen har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">ChromeVox har aktiverats</translation>
-<translation id="4729904664295161097">Assistenten är bara tillgänglig för den primära profilen.</translation>
 <translation id="4776917500594043016">Lösenord för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">sök</translation>
 <translation id="4804818685124855865">Koppla från</translation>
@@ -187,7 +186,7 @@
 <translation id="5947494881799873997">Återgå</translation>
 <translation id="595202126637698455">Resultatspårning aktiverat</translation>
 <translation id="5957083217255311415">Mobildata har inaktiverats.</translation>
-<translation id="5958529069007801266">Övervakad användare</translation>
+<translation id="5958529069007801266">Kontrollerad användare</translation>
 <translation id="5977415296283489383">Hörlurar</translation>
 <translation id="5978382165065462689">Dela kontroll över skärmen via Fjärrhjälp.</translation>
 <translation id="5980301590375426705">Avsluta gästsession</translation>

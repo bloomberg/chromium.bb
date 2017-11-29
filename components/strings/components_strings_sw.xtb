@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">Tendua kupanga upya</translation>
 <translation id="1126551341858583091">Ukubwa kwenye nafasi ya hifadhi ya ndani ya kifaa ni <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Akiba ya sera ni SAWA</translation>
-<translation id="113188000913989374"><ph name="SITE" /> unasema:</translation>
 <translation id="1132774398110320017">Mipangilio ya Chrome ya kujaza kiotomatiki...</translation>
 <translation id="1150979032973867961">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama hakiaminiwi na mfumo wa uendeshaji wa kompyuta yako. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
 <translation id="1151972924205500581">Nenosiri linahitajika</translation>
@@ -465,7 +464,7 @@
 <translation id="4325863107915753736">Haikupata makala</translation>
 <translation id="4326324639298822553">Angalia tarehe kuisha kwa muda wa matumizi halafu ujajibu tena</translation>
 <translation id="4331708818696583467">Si Salama</translation>
-<translation id="4346197816712207223">Kadi za Malipo Zinazokubaliwa</translation>
+<translation id="4346197816712207223">Kadi za Mikopo Zinazokubaliwa</translation>
 <translation id="4356973930735388585">Huenda wavamizi walio kwenye tovuti hii wakajaribu kusakinisha programu hatari inayoiba au kufuta maelezo yako yaliyo kwenye kompyuta yako (kwa mfano, picha, manenosiri, ujumbe, na kadi za mikopo).</translation>
 <translation id="4372948949327679948">Thamani <ph name="VALUE_TYPE" /> inayotarajiwa.</translation>
 <translation id="4377125064752653719">Ulijaribu kufikia <ph name="DOMAIN" />, lakini cheti kilichowasilishwa na seva kimebatilishwa na mtoaji wacho. Huku ni kumaanisha kuwa stakabadhi za usalama zilizowasilishwa na seva hii hazifai kuaminiwa kabisa. Huenda ukawa unawasiliana na mshabulizi.</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">Je, maandishi yalitolewa kwa njia sahihi?</translation>
 <translation id="5540224163453853">Haikuweza kupata makala yaliyoitishwa.</translation>
 <translation id="5541546772353173584">Ongeza Anwani ya Barua Pepe</translation>
-<translation id="5544037170328430102">Ukurasa uliopachikwa kwenye <ph name="SITE" /> unasema:</translation>
 <translation id="5545756402275714221">Makala Tunayokupendekezea</translation>
 <translation id="5556459405103347317">Pakia upya</translation>
 <translation id="5560088892362098740">Tarehe ya Mwisho wa Matumizi</translation>
@@ -757,7 +755,7 @@
 <translation id="6753269504797312559">Thamani ya sera</translation>
 <translation id="6757797048963528358">Kifaa chako kiko katika hali tuli.</translation>
 <translation id="6778737459546443941">Mzazi wako bado hajaiidhinisha</translation>
-<translation id="681021252041861472">Sehemu ambayo Sharti Ijazwe</translation>
+<translation id="681021252041861472">Sehemu Hii Sharti Ijazwe</translation>
 <translation id="6810899417690483278">Kitambulisho cha kubadilisha ili kukufaa</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">Imeshindwa kupakia maeneo ya data</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Thibitisha Kadi</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Kijia cha Maelezo mafupi</translation>
-<translation id="7424977062513257142">Ukurasa uliopachikwa kwenye ukurasa huu wa wavuti unasema:</translation>
 <translation id="7437289804838430631">Ongeza Maelezo ya Mawasiliano</translation>
 <translation id="7441627299479586546">Kichwa cha sera kisichofaa</translation>
 <translation id="7444046173054089907">Tovuti hii imezuiwa</translation>
@@ -980,7 +977,7 @@
 </translation>
 <translation id="859285277496340001">Cheti hakibainishi utaratibu wa kuangalia iwapo kimekataliwa.</translation>
 <translation id="8620436878122366504">Wazazi wako bado hawajaiidhinisha</translation>
-<translation id="8625384913736129811">Hifadhi Kadi Hii kwenye Kifaa Hiki</translation>
+<translation id="8625384913736129811">Hifadhi Maelezo ya Kadi Hii kwenye Kifaa Hiki</translation>
 <translation id="8647750283161643317">Rudisha zote katika chaguo-msingi</translation>
 <translation id="8660471606262461360">Kutoka Google Payments</translation>
 <translation id="8688672835843460752">Inapatikana</translation>
@@ -1002,7 +999,6 @@
 <translation id="884923133447025588">Mbinu ya ubatilishaji haikupatikana.</translation>
 <translation id="885730110891505394">Kushiriki kwenye Google</translation>
 <translation id="8866481888320382733">Hitilafu wakati wa kuchanganua mipangilio ya sera</translation>
-<translation id="8866959479196209191">Ukurasa huu unasema:</translation>
 <translation id="8870413625673593573">Zilizofungwa Hivi Karibuni</translation>
 <translation id="8874824191258364635">Andika nambari sahihi ya kadi</translation>
 <translation id="8876793034577346603">Usanidi wa mtandao umekosa kuchanganuliwa.</translation>

@@ -90,12 +90,12 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="3398288718845740432">Esconder no menu do Google Chrome</translation>
 <translation id="3451115285585441894">Adicionando ao Google Chrome...</translation>
 <translation id="345171907106878721">Cadastrar-se no Chrome</translation>
+<translation id="3479552764303398839">Não agora</translation>
 <translation id="3612333635265770873">Um módulo com o mesmo nome é conhecido por entrar em conflito com o Google Chrome.</translation>
 <translation id="3622797965165704966">Agora ficou mais fácil usar o Chrome com sua Conta do Google e em computadores compartilhados.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Termos de Serviço<ph name="END_TERMS_OF_SERVICE_LINK" /> do Google Chrome OS</translation>
 <translation id="3718181793972440140">Essa ação excluirá 1 item desse dispositivo. Para recuperar seus dados mais tarde, faça login no Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">A extensão "<ph name="EXTENSION_NAME" />" alterou a página que é exibida quando você inicia o Chrome.</translation>
-<translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Remover do Chrome</translation>
 <translation id="386202838227397562">Feche todas as janelas do Google Chrome e tente novamente.</translation>
@@ -127,7 +127,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="4664415150087723341">Uma atualização especial de segurança para o Google Chrome acaba de ser aplicada. Para que ela tenha efeito, é necessário reiniciar agora (suas guias serão restauradas).</translation>
 <translation id="4700157086864140907">O Google Chrome pode oferecer verificação ortográfica mais inteligente, enviando as informações que você digita no navegador para os servidores do Google. Isto permite que você utilize a mesma tecnologia de verificação ortográfica utilizada pela pesquisa do Google.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não-especificado. Se o Google Chrome estiver em execução no momento, feche-o e tente novamente.</translation>
-<translation id="4743926867934016338">Aceitar e pesquisar</translation>
 <translation id="4750550185319565338">Reiniciar o Chrome para ativar o plug-in <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Esse arquivo pode ser perigoso, por isso ele foi bloqueado pelo Chrome.</translation>
@@ -155,12 +154,9 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="5430073640787465221">Seu arquivo de preferências está corrompido ou é inválido. O Google Chrome não foi capaz de recuperar suas configurações.</translation>
 <translation id="5453904507266736060">Executar o Google Chrome em segundo plano</translation>
 <translation id="5495581687705680288">Módulos carregados no Google Chrome</translation>
-<translation id="5524843473235508879">Redirecionamento bloqueado.</translation>
 <translation id="556024056938947818">O Google Chrome está tentando mostrar senhas.</translation>
-<translation id="5563479599352954471">Pesquisar com um toque</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">O Chrome precisa de permissão para este site acessar seu microfone.</translation>
-<translation id="5620765574781326016">Saiba mais sobre tópicos em websites sem sair da página.</translation>
 <translation id="565744775970812598">O arquivo <ph name="FILE_NAME" /> pode ser perigoso. Por isso, ele foi bloqueado pelo Chrome.</translation>
 <translation id="573759479754913123">Sobre o Chrome OS</translation>
 <translation id="5749068826913805084">O Chrome precisa de acesso de armazenamento para fazer o download de arquivos.</translation>
@@ -196,7 +192,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="6697947395630195233">O Chrome precisa acessar sua localização para compartilhá-la com este site.</translation>
 <translation id="683440813066116847">Regra interna do Google Chrome Canary para permitir tráfego mDNS.</translation>
 <translation id="686561893457936865">Leve o Chrome para todos os lugares</translation>
-<translation id="6883876366448858277">envia uma palavra e o contexto relacionado para a Pesquisa Google, retornando definições, imagens e outros resultados de pesquisa.</translation>
 <translation id="6885412569789873916">Apps do Chrome Beta</translation>
 <translation id="6967962315388095737">Regra interna do Google Chrome Beta que permite o tráfego mDNS.</translation>
 <translation id="6970811910055250180">Atualizando o dispositivo...</translation>
@@ -218,7 +213,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="7437998757836447326">Sair do Google Chrome</translation>
 <translation id="7459554271817304652">Configure a sincronização para salvar seus recursos de navegador personalizados na web e acessá-los do Google Chrome em qualquer computador.</translation>
 <translation id="7473136999113284234">O Google Chrome é atualizado automaticamente para que você tenha sempre a versão mais recente.</translation>
-<translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7494905215383356681">Licenças de código aberto do Google Chrome</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Exibir o Chrome OS neste idioma</translation>

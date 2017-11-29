@@ -30,6 +30,7 @@ Pokud je nastavena na hodnotu true nebo nastavena není, statistiky hlášeny bu
 
           Pokud je toto nastavení vypnuto nebo není nakonfigurováno, hostitel vzdálené pomoci poběží v kontextu uživatele a vzdálení uživatelé na počítači nebudou moci provádět interakci s okny, která vyžadují zvýšená oprávnění.</translation>
 <translation id="1096105751829466145">Výchozí poskytovatel vyhledávání</translation>
+<translation id="1099282607296956954">Aktivace izolace webů u všech webů</translation>
 <translation id="1117535567637097036">Obslužné nástroje protokolů nastavené pomocí této zásady se nepoužívají při zpracovávání zpráv Intent systému Android.</translation>
 <translation id="1122282995569868661">Zobrazuje ikonu <ph name="PRODUCT_NAME" /> na panelu nástrojů</translation>
 <translation id="1128903365609589950">Slouží ke konfiguraci adresáře, který bude <ph name="PRODUCT_NAME" /> používat k ukládání souborů do mezipaměti na disku.
@@ -699,6 +700,17 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="332771718998993005">Určuje název uváděný jako cíl služby <ph name="PRODUCT_NAME" />.
 
           Je-li tato zásada nastavena na neprázdný řetězec, bude jako název cíle služby <ph name="PRODUCT_NAME" /> použit příslušný řetězec. V opačném případě bude jako název cíle použit název zařízení. Pokud tato zásada není nastavena, bude jako název cíle použit název zařízení a vlastník zařízení (nebo uživatel z domény, která zařízení spravuje) jej bude moci změnit. Název smí mít maximálně 24 znaků.</translation>
+<translation id="3356249700768900657">
+      POZNÁMKA: Tato zásada je experimentální a může narušit fungování!
+      Chcete-li využívat výhody obou možností (izolace a omezení vlivu
+      na uživatele), můžete použít nastavení zásady IsolateOrigins
+      a aplikovat zásadu v kombinaci se seznamem webů, které chcete
+      izolovat. Nastavení SitePerProcess izoluje všechny weby.
+      Pokud je tato zásada povolena, každý web bude spouštěn ve vlastním procesu.
+      Pokud je tato zásada zakázána, bude použita logika správy procesů
+      pro předběžnou izolaci webů.
+      Pokud tato zásada není nakonfigurována, uživatel může toto nastavení změnit.
+      </translation>
 <translation id="3381968327636295719">Používat ve výchozím nastavení hostitelský prohlížeč</translation>
 <translation id="3395348522300156660">Určuje, které tiskárny uživatel může používat.
 
@@ -1063,6 +1075,7 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
           Ukázkové vzory naleznete na stránce https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Otevřít seznam adres URL</translation>
 <translation id="4680961954980851756">Aktivovat Automatické vyplňování</translation>
+<translation id="4722122254122249791">Aktivace izolace webů u určených zdrojů</translation>
 <translation id="4722399051042571387">Pokud je tato zásada nastavena na hodnotu false, uživatelé nebudou moci nastavit PIN, který je slabý a lze jej snadno uhodnout.
 
           Příklady slabých kódů PIN: PIN tvořený pouze jednou opakující se číslicí (1111), PIN se vzestupnou nebo sestupnou řadou číslic (1234 nebo 4321), často používané kódy PIN.
@@ -1154,6 +1167,16 @@ Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření 
 <translation id="4983201894483989687">Povolit spouštění zastaralých pluginů</translation>
 <translation id="4988291787868618635">Akce prováděná po určité době nečinnosti</translation>
 <translation id="4995548127349206948">Povolení nebo zakázání ověření NTLMv2.</translation>
+<translation id="5027819375434797927">
+      POZNÁMKA: Tato zásada je experimentální a může narušit fungování!
+      Pokud je tato zásada povolena, každý z uvedených zdrojů na seznamu
+      odděleném čárkami bude spouštěn ve vlastním procesu. Také budou izolovány
+      zdroje uvedené v subdoménách; např. pokud zadáte web https://example.com/,
+      bude izolována také subdoména https://foo.example.com/, která je jeho součástí.
+      Pokud je tato zásada zakázána, bude použita logika správy procesů
+      pro předběžnou izolaci webů.
+      Pokud tato zásada není nakonfigurována, uživatel může toto nastavení změnit.
+      </translation>
 <translation id="5047604665028708335">Povolit přístup k webům mimo obsahové balíčky</translation>
 <translation id="5052081091120171147">Je-li tato zásada aktivovaná, vynucuje import historie procházení z aktuálního výchozího prohlížeče. Aktivace této zásady má také vliv na dialogové okno importu
      
@@ -1994,39 +2017,6 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 <translation id="7841880500990419427">Nejnižší verze zálohy TLS</translation>
 <translation id="7842869978353666042">Konfigurace možností Disku Google</translation>
 <translation id="7843525027689416831">Udává příznaky, které mají být na prohlížeč <ph name="PRODUCT_NAME" /> použity při spuštění (použijí se pouze na přihlašovací obrazovce). Příznaky nastavené prostřednictvím této zásady nezasahují do uživatelských relací.</translation>
-<translation id="7844537954833753199">Konfiguruje nastavení správy rozšíření prohlížeče <ph name="PRODUCT_NAME" />.
-
-          Tato zásada řídí několik nastavení, včetně těch, která jsou nakonfigurována existujícími zásadami pro rozšíření. Pokud je tato zásada nastavena, přepíše všechny starší nastavené zásady.
-
-          Tato zásada mapuje konfiguraci na ID rozšíření nebo adresu URL. Pokud je definováno ID rozšíření, bude konfigurace použita pouze na konkrétní rozšíření. Pro zvláštní ID <ph name="DEFAULT_SCOPE" /> lze nastavit výchozí konfiguraci. Tato konfigurace bude použita na všechna rozšíření, která nemají v této zásadě nastavenou vlastní konfiguraci. Pokud je definována adresa URL pro aktualizaci, bude konfigurace použita na všechna rozšíření, která mají v manifestu uvedenou přesně tuto adresu URL pro aktualizaci (viz <ph name="LINK_TO_EXTENSION_DOC1" />).
-
-          Konfigurace pro jednotlivá rozšíření (nebo rozšíření se stejnou adresou URL pro aktualizaci) představuje další slovník, který může obsahovat níže popsaná pole.
-
-          <ph name="INSTALLATION_MODE" />: mapuje se na řetězec udávající režim instalace rozšíření. Platné řetězce:
-          * <ph name="ALLOWED" />: umožňuje, aby bylo rozšíření nainstalováno uživatelem. Toto chování je výchozí.
-          * <ph name="BLOCKED" />: blokuje instalaci rozšíření.
-          * <ph name="FORCE_INSTALLED" />: rozšíření je instalováno automaticky a uživatel ho nemůže odstranit.
-          * <ph name="NORMAL_INSTALLED" />: rozšíření je instalováno automaticky, ale uživatel ho může deaktivovat.
-
-          Pole <ph name="INSTALLTION_MODE" /> může být nakonfigurováno i pro několik rozšíření najednou, a to včetně rozšíření <ph name="DEFAULT_SCOPE" /> (jako výchozí nastavení) a rozšíření se stejnou adresou URL pro aktualizaci. V tomto případě lze použít pouze hodnoty <ph name="ALLOWED" /> a <ph name="BLOCKED" />.
-
-          Pokud je režim nastaven na hodnotu <ph name="FORCE_INSTALLED" /> nebo <ph name="NORMAL_INSTALLED" />, musí být nakonfigurována i adresa URL <ph name="UPDATE_URL" />. Adresa URL pro aktualizaci nastavená v této zásadě slouží pouze k počáteční instalaci. Další aktualizace rozšíření budou používat adresu URL pro aktualizaci uvedenou v manifestu rozšíření. Adresa URL pro aktualizaci by měla odkazovat na dokument XML manifestu aktualizace (viz výše).
-
-          <ph name="BLOCKED_PERMISSIONS" />: mapuje se na seznam řetězců, které definují blokovaná oprávnění rozhraní API daného rozšíření. Názvy oprávnění jsou stejné jako řetězce oprávnění deklarované v manifestu rozšíření (viz <ph name="LINK_TO_EXTENSION_DOC3" />). Toto nastavení lze nakonfigurovat také pro rozšíření <ph name="DEFAULT_SCOPE" />. Pokud rozšíření vyžaduje oprávnění, které se nachází na seznamu blokovaných položek, nebude se moci načíst. Pokud je blokované oprávnění vyžadováno volitelně, rozšíření bude spuštěno normálním způsobem, ale žádost o konfliktní oprávnění bude za běhu automaticky zamítnuta.
-
-          <ph name="ALLOWED_PERMISSIONS" />: toto pole je podobné jako pole <ph name="BLOCKED_PERMISSIONS" />, ale na rozdíl od něj explicitně povoluje některá oprávnění, která by mohla být blokována seznamem globálně blokovaných oprávnění. Toto pole proto nelze nakonfigurovat pro rozšíření <ph name="DEFAULT_SCOPE" />. Upozorňujeme, že toto nastavení neposkytuje rozšířením udělená oprávnění automaticky.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: mapuje se na řetězec verze. Formát řetězce verze je stejný jako ten v manifestu rozšíření (viz <ph name="LINK_TO_EXTENSION_DOC4" />). Rozšíření nižší verze, než je stanovená minimální verze, bude deaktivováno. Toto nastavení se vztahuje i na rozšíření, jejichž instalace byla vynucena.
-
-          Následující nastavení lze použít pouze pro výchozí konfiguraci <ph name="DEFAULT_SCOPE" />:
-
-          <ph name="INSTALL_SOURCES" />: každá položka v tomto seznamu představuje vzor podobný jako u rozšíření (<ph name="LINK_TO_MATCH_PATTERNS" />). Uživatelé budou moci jednoduše instalovat položky z jakékoli adresy, která odpovídá položce v tomto seznamu. V těchto vzorech musí být povoleno umístění souboru <ph name="EXTENSION_SUFFIX_WILDCARD" /> i stránka, ze které bude zahájeno stahování (tj. zdroj odkazu).
-
-          <ph name="ALLOWED_TYPES" />: toto nastavení vytvoří seznam povolených rozšíření nebo aplikací, které lze nainstalovat do prohlížeče <ph name="PRODUCT_NAME" />. Hodnota představuje seznam řetězců. Musí se jednat o řetězce z následujícího výčtu: <ph name="VALID_ALLOWED_TYPES" />. Další informace o těchto typech naleznete v dokumentaci k rozšířením prohlížeče <ph name="PRODUCT_NAME" />.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Pokud se uživatel pokusí nainstalovat rozšíření, které je blokováno zásadami, zobrazí Internetový obchod Chrome obecnou chybovou zprávu. Pomocí tohoto nastavení lze k chybové zprávě přidat text. Můžete pomocí něj uživatele nasměrovat na oddělení nápovědy, vysvětlit, proč je konkrétní rozšíření blokováno, nebo poskytnou jiné informace. Pokud tato chybová zpráva bude delší než 1000 znaků, bude oříznuta.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Představuje seznam hostitelů, se kterými rozšíření nebude smět interagovat. Formát se podobá vzorům (<ph name="LINK_TO_MATCH_PATTERNS" />), ale není dovoleno zadávat cesty, například „*://*.example.com“. Jsou podporovány také zástupné znaky pro domény nejvyšší úrovně, například „*://example.*“.
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Představuje seznam hostitelů, se kterými rozšíření může interagovat bez ohledu na to, zda jsou uvedeni v seznamu <ph name="RUNTIME_BLOCKED_HOSTS" />. Formát je stejný jako u seznamu <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Pokud je tato zásada nastavena na hodnotu SyncDisabled nebo není nakonfigurována, certifikáty systému <ph name="PRODUCT_OS_NAME" /> nejsou k dispozici aplikacím ARC.
 
       Pokud je nastavena na hodnotu CopyCaCerts, všechny certifikáty CA nainstalované prostřednictvím ONC s atributem <ph name="WEB_TRUSTED_BIT" /> jsou k dispozici aplikacím ARC.</translation>
@@ -2109,15 +2099,6 @@ Pokud ji ponecháte nenastavenou, režim vysokého kontrastu bude ve výchozím 
 
       Je-li tato zásada deaktivována nebo ponechána nenastavená, budou se používat běžné profily.</translation>
 <translation id="8158758865057576716">Povoluje vytvoření cestovních kopií dat profilu <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8170878842291747619">Aktivuje v aplikaci<ph name="PRODUCT_NAME" /> integrovanou službu Překladač Google.
-
-      Pokud toto nastavení aktivujete, zobrazí aplikace <ph name="PRODUCT_NAME" /> integrovanou lištu nástrojů, která uživateli nabídne překlad stránky (pokud je to na místě).
-
-      Pokud toto nastavení deaktivujete, překladová lišta se uživatelům nezobrazí v žádné situaci.
-
-      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé je v aplikaci <ph name="PRODUCT_NAME" /> nebudou moci změnit ani přepsat.
-
-      Pokud nastavení neupravíte, mohou si uživatelé vybrat, zda bude funkci používat, či nikoliv.</translation>
 <translation id="817455428376641507">Povoluje přístup k adresám URL uvedeným v seznamu, které tedy představují výjimky ze seznamu zakázaných adres URL.
 
       Formát položek v tomto seznamu naleznete v popisu zásady pro vytvoření seznamu zakázaných adres URL.

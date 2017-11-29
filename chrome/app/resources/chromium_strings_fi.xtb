@@ -73,13 +73,13 @@
 <translation id="3296368748942286671">Jätä taustasovellukset käyntiin, kun Chromium suljetaan</translation>
 <translation id="331951419404882060">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja kirjautumisvirheen vuoksi.</translation>
 <translation id="3474745554856756813">Tämä poistaa <ph name="ITEMS_COUNT" /> kohdetta pysyvästi laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä <ph name="USER_EMAIL" />.</translation>
+<translation id="3479552764303398839">Ei nyt</translation>
 <translation id="3509308970982693815">Sulje kaikki Chromium-ikkunat ja yritä uudelleen.</translation>
 <translation id="352783484088404971">Poista Chromiumista…</translation>
 <translation id="3549345495227188780">Aloita Chromium-käyttöjärjestelmän käyttö</translation>
 <translation id="3582788516608077514">Päivitetään Chromiumia...</translation>
 <translation id="358997566136285270">Chromium-logo</translation>
 <translation id="3713809861844741608">Avaa linkki uudella Chromiumin välilehdellä</translation>
-<translation id="3738139272394829648">Koskettamalla hakeminen</translation>
 <translation id="3762167353400286894">Chromium-käyttöjärjestelmä näytetään tällä kielellä.</translation>
 <translation id="378917192836375108">Chromiumin avulla voit soittaa Skypellä puhelinnumeroon klikkaamalla sitä verkossa!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -112,7 +112,6 @@
 <translation id="469338717132742108">Ohjeita Chromium-käyttöjärjestelmän käyttöön</translation>
 <translation id="4708774505295300557">Joku on jo kirjautunut tällä tietokoneella Chromiumiin käyttäjätilillä <ph name="ACCOUNT_EMAIL_LAST" />. Luo uusi Chromium-käyttäjä, jos haluat pitää tiedot erillään.</translation>
 <translation id="4714956846925717402">Avaa Chromium nopeammin</translation>
-<translation id="4743926867934016338">Hyväksy ja hae</translation>
 <translation id="4825874709045178029">Chromium tarvitsee oikeuden käyttää kameraasi tällä sivustolla.</translation>
 <translation id="4888717733111232871">Chromiumin saapuvien yhteyksien sääntö, joka sallii mDNS-liikenteen.</translation>
 <translation id="4943838377383847465">Chromium on käynnissä taustalla</translation>
@@ -129,9 +128,6 @@
 <translation id="5466153949126434691">Chromium päivittyy automaattisesti, joten käytössäsi on aina uusin versio. Kun lataus on valmis, Chromium käynnistyy uudelleen ja voit aloittaa käytön.</translation>
 <translation id="5479196819031988440">Chromium-käyttöjärjestelmä ei voi avata tätä sivua.</translation>
 <translation id="549669000822060376">Odota hetki, Chromium asentaa uusimpia järjestelmäpäivityksiä.</translation>
-<translation id="5524843473235508879">Uudelleenohjaus estetty</translation>
-<translation id="5563479599352954471">Etsi yhdellä kosketuksella</translation>
-<translation id="5620765574781326016">Tutustu verkkosivuston aiheisiin poistumatta sivulta.</translation>
 <translation id="5634636535844844681">Chromium edellyttää Windows 7:ää tai uudempaa versiota.</translation>
 <translation id="5680901439334282664">Kirjaudu sisään Chromiumiin</translation>
 <translation id="5698481217667032250">Näytä Chromium tällä kielellä</translation>
@@ -173,7 +169,6 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="6734291798041940871">Chromium on jo asennettuna kaikille tietokoneen käyttäjille.</translation>
 <translation id="6810143991807788455">Auta parantamaan Chromiumia ilmoittamalla nykyiset asetukset.</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">lähettää sanan ja sen kontekstin Google-hakuun ja palauttaa määritelmiä, kuvia ja muita hakutuloksia.</translation>
 <translation id="6893813176749746474">Chromium on päivitetty, mutta et ole käyttänyt sitä ainakaan 30 päivään.</translation>
 <translation id="6944967875980567883">Chromiumiin ladatut moduulit</translation>
 <translation id="6964305034639999644">Avaa linkki Chromiumin inco&amp;gnito-ikkunassa</translation>
@@ -200,7 +195,6 @@ Jotta <ph name="NEW_PROFILE_NAME" /> ei voi käyttää tiliäsi, lukitse profiil
 <ph name="BEGIN_LINK_2" />Lisätietoja<ph name="END_LINK_2" />
 
 Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />.</translation>
-<translation id="7473891865547856676">Ei kiitos</translation>
 <translation id="7483335560992089831">Chromiumista ei voi asentaa versiota, joka on tällä hetkellä käynnissä. Sulje Chromium ja yritä uudelleen.</translation>
 <translation id="7549178288319965365">Tietoja Chromium-käyttöjärjestelmästä</translation>
 <translation id="7577193603922410712">Chromiumin tärkeä tietoturvapäivitys on asennettu. Käynnistä se uudelleen, niin päivitys otetaan käyttöön (avoimet välilehdet palautetaan).</translation>

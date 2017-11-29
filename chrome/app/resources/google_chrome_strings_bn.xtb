@@ -92,12 +92,12 @@
 <translation id="3398288718845740432">Chromium মেনুর মধ্যে লুকান</translation>
 <translation id="3451115285585441894">Chrome-এ জোড়া হচ্ছে...</translation>
 <translation id="345171907106878721">Chrome এর সাথে নিজেকে যোগ করুন</translation>
+<translation id="3479552764303398839">এখনই নয়</translation>
 <translation id="3612333635265770873">একই নামের একটি মডিউল Google Chrome-এর সাথে বিবাদ করছে বলে জানা গেছে৷</translation>
 <translation id="3622797965165704966">এখন আপনার Google অ্যাকাউন্ট ও শেয়ার করা কম্পিউটারগুলিতে Chrome ব্যবহার করা আরও সহজ৷</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />পরিষেবার শর্তাবলী<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">এটি এই ডিভাইস থেকে ১টি আইটেম মুছে দেবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome এ <ph name="USER_EMAIL" /> হিসেবে প্রবেশ করুন।</translation>
 <translation id="3735758079232443276">আপনি Chrome শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তা "<ph name="EXTENSION_NAME" />" এক্সটেনশান পরিবর্তন করেছে।</translation>
-<translation id="3738139272394829648">স্পর্শের মাধ্যমে অনুসন্ধান</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome থেকে সরান...</translation>
 <translation id="386202838227397562">দয়া করে সকল Google Chrome উইন্ডো বন্ধ করুন ও আবার চেষ্টা করুন৷</translation>
@@ -122,13 +122,12 @@
 <translation id="4480040274068703980">সাইন ইনে ত্রুটির কারণে Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
 <translation id="4561051373932531560">Google Chrome আপনাকে ওয়েবে কোনো ফোন নম্বরে ক্লিক করতে এবং Skype-এর মাধ্যমে সেটিতে কল করতে দেয়!</translation>
 <translation id="4567424176335768812">আপনি <ph name="USER_EMAIL_ADDRESS" /> হিসাবে প্রবেশ করেছেন৷ এখন আপনি আপনার সমস্ত প্রবেশ করা ডিভাইসে আপনার বুকমার্ক, ইতিহাস এবং অন্যান্য সেটিংস অ্যাক্সেস করতে পারেন৷</translation>
-<translation id="4600710005438004015">Chrom লেটেস্ট ভার্সানে আপডেট করা যাচ্ছে না, তাই আপনি নতুন বৈশিষ্ট্য এবং সুরক্ষা সমাধানগুলি পাচ্ছেন না।</translation>
+<translation id="4600710005438004015">Chrom লেটেস্ট ভার্সনে আপডেট করা যাচ্ছে না, তাই আপনি নতুন বৈশিষ্ট্য এবং সুরক্ষা সমাধানগুলি পাচ্ছেন না।</translation>
 <translation id="4631713731678262610">Chromium মেনুর মধ্যে লুকান</translation>
 <translation id="4633000520311261472">Chrome কে আরও নিরাপদ করতে, আমরা কিছু এক্সটেনশান অক্ষম করেছি যা <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> এ তালিকাবদ্ধ করা হয়নি এবং হয়ত আপনাকে না জানিয়ে যোগ করা হয়েছে৷</translation>
 <translation id="4664415150087723341">Google Chrome এর জন্য একটি বিশেষ সুরক্ষা আপডেট এইমাত্র প্রয়োগ করা হয়েছে; এটা কার্যকর করার জন্য (আমরা আপনার ট্যাবগুলি পুনরুদ্ধার করব) আপনার এখনই একে পুনরায় চালু করা উচিত হবে।</translation>
 <translation id="4700157086864140907">Google Chrome আপনি Google সার্ভারগুলিতে ব্রাউজারে কী টাইপ করেন তা পাঠিয়ে আরও স্মার্ট বানান-পরীক্ষণ সরবরাহ করতে পারে এতে আপনাকে Google অনুসন্ধানে ব্যবহৃত একই বানান-পরীক্ষণের প্রযুক্তি ব্যবহার করার অনুমতি দেয়৷</translation>
 <translation id="4728575227883772061">অনির্দিষ্ট ত্রুটির জন্য ইনস্টলেশন ব্যর্থ হয়েছে৷ যদি Google Chrome বর্তমানে চলতে থাকে তবে দয়া করে এটি বন্ধ করে আবার চেষ্টা করুন৷</translation>
-<translation id="4743926867934016338">স্বীকার ও খুঁজুন</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> সক্ষম করার জন্য Chrome আবার চালু করুন</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">এই ফাইলটি বিপজ্জনক হতে পারে, তাই Chrome এটিকে অবরুদ্ধ করেছে।</translation>
@@ -158,12 +157,9 @@
 <translation id="5430073640787465221">আপনার অভিরুচিসমূহ ফাইল দূষিত অথবা অবৈধ৷\n\nGoogle Chrome আপনার সেটিংস পুনরুদ্ধার করতে অক্ষম৷</translation>
 <translation id="5453904507266736060">Google Chrome-কে পশ্চাদপটে চালতে দিন</translation>
 <translation id="5495581687705680288">Google Chrome-এ মডিউলগুলি লোড হয়েছে</translation>
-<translation id="5524843473235508879">রিডাইরেক্ট ব্লক করা হয়েছে।</translation>
 <translation id="556024056938947818">Google Chrome পাসওয়ার্ডগুলি দেখানোর চেষ্টা করছে৷</translation>
-<translation id="5563479599352954471">একবার স্পর্শ করে অনুসন্ধান</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">এই সাইটটির জন্য Chrome কে আপনার মাইক্রোফোনে অ্যাক্সেস দিতে হবে।</translation>
-<translation id="5620765574781326016">পৃষ্ঠা থেকে না বেরিয়েই ওয়েবসাইটের বিষয়বস্তুগুলি সম্বন্ধে জানুন৷</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> বিপজ্জনক হতে পারে, তাই Chrome এটিকে অবরুদ্ধ করেছে।</translation>
 <translation id="573759479754913123">Chrome OS সম্পর্কে </translation>
 <translation id="5749068826913805084">ফাইল ডাউনলোড করতে Chrome এর জন্য সঞ্চয়স্থানের অ্যাক্সেস প্রয়োজন।</translation>
@@ -199,7 +195,6 @@
 <translation id="6697947395630195233">এই সাইটটির সাথে আপনার অবস্থান শেয়ার করার জন্য Chrome কে আপনার অবস্থানের তথ্যে অ্যাক্সেস দিতে হবে।</translation>
 <translation id="683440813066116847">mDNS ট্রাফিকের অনুমতি দিতে Google Chrome Canary এর জন্য ইনবাউন্ড নিয়ম।</translation>
 <translation id="686561893457936865">Chrome কে সর্বত্র নিয়ে চলুন</translation>
-<translation id="6883876366448858277">Google অনুসন্ধানে একটি শব্দ এবং এটির পার্শ্ববর্তী প্রসঙ্গ পাঠায়, সংজ্ঞা, ছবি, অনুসন্ধান ফলাফল, এবং অন্যান্য অনুসন্ধান ফলাফল ফেরত পাঠায়৷</translation>
 <translation id="6885412569789873916">Chrome বিটা অ্যাপ</translation>
 <translation id="6967962315388095737">mDNS ট্রাফিকের অনুমতি দিতে Google Chrome বিটার জন্য ইনবাউন্ড নিয়ম।</translation>
 <translation id="6970811910055250180">আপনার ডিভাইস আপডেট করা হচ্ছে ...</translation>
@@ -221,7 +216,6 @@
 <translation id="7437998757836447326">Chrome থেকে প্রস্থান করুন</translation>
 <translation id="7459554271817304652">ওয়েবে আপনার ব্যক্তিগতকৃত ব্রাউজার বিষয় সংরক্ষণ করতে এবং যেকোন কম্পিউটারে Google Chrome থেকে প্রবেশ করতে সিঙ্ক সেট আপ করুন৷ </translation>
 <translation id="7473136999113284234">Chrome স্বয়ংক্রিয়ভাবে আপডেট হয় তাই আপনি সবসময় নবীনতম সংস্করণটি পান।</translation>
-<translation id="7473891865547856676">না থাক</translation>
 <translation id="7494905215383356681">Chrome মুক্ত উৎসের লাইসেন্সগুলি</translation>
 <translation id="7535429826459677826">Google Chrome ডেভেলপার</translation>
 <translation id="7552219221109926349">এই ভাষায় Chrome OS প্রদর্শন করুন</translation>

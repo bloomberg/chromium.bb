@@ -30,8 +30,8 @@
 <translation id="1201402288615127009">Neste</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox – gir Chrome en stemme</translation>
-<translation id="1225437811932752266">Gratulerer! Du har gått gjennom den grunnleggende informasjonen for bruk av ChromeVox. Merk at du kan åpne kommandomenyen i ChromeVox når som helst ved å trykke på søketasten+punktum. For å finne ut mer om ChromeVox og Chrome OS, ta en titt på artiklene nedenfor.
-Hvis du er ferdig med veiledningen, kan du navigere til Lukk-knappen ved bruk av ChromeVox og klikke på den.</translation>
+<translation id="1225437811932752266">Gratulerer! Du har gått gjennom den grunnleggende informasjonen for å bruke ChromeVox. Husk at du kan åpne kommandomenyen i ChromeVox når som helst ved å trykke på søketasten+punktum. For å finne ut mer om ChromeVox og Chrome OS, les artiklene nedenfor.
+Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til Lukk-knappen og klikke på den.</translation>
 <translation id="1229276918471378188">Forrige hopp</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Neste overskrift på nivå 6</translation>
@@ -171,7 +171,7 @@ Hvis du er ferdig med veiledningen, kan du navigere til Lukk-knappen ved bruk av
 <translation id="2770781857296573485">Kjør gruppeutforsking</translation>
 <translation id="2777845298774924149">Lukket</translation>
 <translation id="2781264313200109999">Begynnelsen av linken</translation>
-<translation id="2784959586797362050">Du kan sende oss tilbakemelding direkte ved å trykke på søketasten+A og så I. Vi ser frem til å høre fra deg.</translation>
+<translation id="2784959586797362050">Du kan sende oss tilbakemelding direkte ved å trykke på søketasten+A og deretter I. Vi ser frem til å høre fra deg.</translation>
 <translation id="2800204403141299078">Det er ingen flere ulike elementer.</translation>
 <translation id="2800780099804980316">Det finnes ikke tidligere overskrifter på nivå 1.</translation>
 <translation id="280499067616661124">Søk på siden med ChromeVox</translation>
@@ -472,7 +472,7 @@ Hvis du er ferdig med veiledningen, kan du navigere til Lukk-knappen ved bruk av
 <translation id="5098541983634824365">Forlater rutenettet.</translation>
 <translation id="5102981729317424850">Verktøyrad</translation>
 <translation id="5105050547967751155">rq</translation>
-<translation id="5106547198195128110">Vi har gjort noen spennende endringer i denne nye utgivelsen – dette er nytt:</translation>
+<translation id="5106547198195128110">Vi har gjort noen spennende endringer i denne nye utgaven – dette er nytt:</translation>
 <translation id="5110983769041734144">Det fins ikke noe foregående skjemafelt.</translation>
 <translation id="5111640677200759579">Kolonneoverskrift</translation>
 <translation id="5136967254288895616">Det finnes ingen tidligere linker.</translation>
@@ -589,7 +589,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="6065293622157674001">Begynnelse på grammatikkfeil</translation>
 <translation id="6082768461603900813">Grunnleggende navigering</translation>
 <translation id="6092707270915298410">Slutten av linken</translation>
-<translation id="6118126368611144850">Android-apper for Chrome. Hvis du har Play Butikk på enheten din, kan du ta en sniktitt på ChromeVox med Android-apper. Prøve den eksperimentelle støtten ved å laste ned Google Chrome Canary fra Play-butikken.</translation>
+<translation id="6118126368611144850">Android-apper for Chrome. Hvis du har Play Butikk på enheten din, kan du ta en sniktitt på ChromeVox med Android-apper. Prøv den eksperimentelle støtten ved å laste ned Google Chrome Canary fra Play-butikken.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Slutten av cellen.</translation>
 <translation id="6122013438240733403">btn</translation>

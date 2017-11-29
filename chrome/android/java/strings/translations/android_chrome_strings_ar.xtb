@@ -253,7 +253,6 @@
 <translation id="3414952576877147120">الحجم:</translation>
 <translation id="3443221991560634068">إعادة تحميل الصفحة الحالية</translation>
 <translation id="3452612588551937789">‏سجّل الدخول إلى حسابك في Google للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على جميع أجهزتك.</translation>
-<translation id="3479552764303398839">ليس الآن</translation>
 <translation id="3487093336331957349">اقتراحات البحث والمواقع</translation>
 <translation id="3492207499832628349">علامة تبويب جديدة للتصفح المتخفي </translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول المحتوى المقترح</translation>
@@ -315,6 +314,7 @@
 <translation id="3988213473815854515">الموقع مسموح به</translation>
 <translation id="3997476611815694295">سعة تخزين غير مهمة</translation>
 <translation id="4002066346123236978">العنوان</translation>
+<translation id="4031074602479304239">‏منع Chrome هذا الموقع من توجيهك إلى</translation>
 <translation id="4042870126885713738">عرض اقتراحات عند تعذر فتح عنوان ويب أو تعذر إجراء اتصال</translation>
 <translation id="4046123991198612571">المقطع الصوتي التالي</translation>
 <translation id="4056223980640387499">بني داكن</translation>
@@ -473,6 +473,7 @@
 <translation id="5512137114520586844">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">تم التعطيل من قبل مشرف هذا الجهاز</translation>
 <translation id="5517095782334947753">تتوفر لديك الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى من <ph name="FROM_ACCOUNT" />.</translation>
+<translation id="5524843473235508879">تم حظر إعادة التوجيه.</translation>
 <translation id="5527082711130173040">‏يحتاج Chrome للوصول إلى الموقع للبحث عن الأجهزة. <ph name="BEGIN_LINK1" />تحديث الأذونات<ph name="END_LINK1" />. الوصول إلى الموقع <ph name="BEGIN_LINK2" />معطل لهذا الجهاز<ph name="END_LINK2" /> أيضًا.</translation>
 <translation id="5530766185686772672">إغلاق علامات تبويب التصفح المتخفي</translation>
 <translation id="5534640966246046842">تم نسخ الموقع</translation>
@@ -499,7 +500,6 @@
           
           لكنك لن تكون غير مرئي، فاستخدام وضع التصفح المتخفي لا يخفي تصفحك عن صاحب العمل أو مزود خدمة الإنترنت أو مواقع الويب التي تزورها.</translation>
 <translation id="572328651809341494">علامات التبويب الأخيرة</translation>
-<translation id="572392919096807438">تذكر قراري</translation>
 <translation id="5726692708398506830">تكبير كل محتويات الصفحة</translation>
 <translation id="5738816946784116349">‏تنزيلات Chrome</translation>
 <translation id="5748802427693696783">تم التبديل إلى علامات التبويب القياسية</translation>
@@ -597,7 +597,7 @@
 <translation id="6566259936974865419">‏لقد وفر Chrome لك <ph name="GIGABYTES" /> غيغابايت</translation>
 <translation id="656628257199996201">ترجمة <ph name="SOURCE_LANGUAGE" /> دائمًا</translation>
 <translation id="6573431926118603307">‏ستظهر هنا علامات التبويب التي فتحتها في Chrome من أجهزتك الأخرى.</translation>
-<translation id="6575643671698722332">أخفقت إعادة التعيين. تأكد من مدى اتصال جهازك وأعد المحاولة.</translation>
+<translation id="6575643671698722332">تعذّرت إعادة التعيين. تأكد من مدى اتصال جهازك وأعد المحاولة.</translation>
 <translation id="6583199322650523874">وضع إشارة مرجعية على الصفحة الحالية</translation>
 <translation id="6593061639179217415">العرض بإصدار سطح المكتب</translation>
 <translation id="6600954340915313787">‏تم النسخ إلى Chrome</translation>
@@ -653,7 +653,6 @@
 <translation id="7022756207310403729">فتح في المتصفح</translation>
 <translation id="7029809446516969842">كلمات المرور</translation>
 <translation id="7031882061095297553">مزامنة لـ</translation>
-<translation id="704059664004611800">انقر للاطلاع على الإشارات المرجعية والمزيد</translation>
 <translation id="7053983685419859001">منع</translation>
 <translation id="7062545763355031412">قبول الحسابات وتبديلها</translation>
 <translation id="7063006564040364415">تعذر الاتصال بخادم المزامنة.</translation>
@@ -758,7 +757,7 @@
 <translation id="805047784848435650">استنادًا إلى سجلّ التصفُّح</translation>
 <translation id="8051695050440594747">هناك <ph name="MEGABYTES" /> ميغابايت متوفرة</translation>
 <translation id="8058746566562539958">‏فتح بعلامة تبويب Chrome جديدة</translation>
-<translation id="8063895661287329888">أخفقت إضافة الإشارة المرجعية.</translation>
+<translation id="8063895661287329888">تعذّرت إضافة الإشارة المرجعية.</translation>
 <translation id="806745655614357130">الحفاظ على البيانات التابعة لي منفصلة</translation>
 <translation id="8068648041423924542">يتعذر تحديد الشهادة.</translation>
 <translation id="8069239273282989646">بعد الضغط</translation>
@@ -783,7 +782,7 @@
 <translation id="8310344678080805313">علامات التبويب القياسية</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ومواقع أخرى</translation>
 <translation id="8339163506404995330">لن تتم ترجمة الصفحات باللغة <ph name="LANGUAGE" /></translation>
-<translation id="8363501664269050863">لوحة التنقل. يمكنك التمرير لأسفل للإغلاق.</translation>
+<translation id="8363501664269050863">لوحة التنقل. يمكنك التمرير للأسفل للإغلاق.</translation>
 <translation id="8372893542064058268">السماح بتشغيل "مزامنة الخلفية" لموقع ويب معين.</translation>
 <translation id="8374821112118309944">‏يلزمك تحديث TalkBack إلى إصدار جديد.</translation>
 <translation id="8393700583063109961">إرسال رسالة</translation>

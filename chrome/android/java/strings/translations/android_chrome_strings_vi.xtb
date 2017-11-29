@@ -253,7 +253,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3414952576877147120">Kích thước:</translation>
 <translation id="3443221991560634068">Tải lại trang hiện tại</translation>
 <translation id="3452612588551937789">Đăng nhập bằng Tài khoản Google để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả thiết bị của bạn.</translation>
-<translation id="3479552764303398839">Không phải bây giờ</translation>
 <translation id="3487093336331957349">Đề xuất về tìm kiếm và trang web</translation>
 <translation id="3492207499832628349">Tab ẩn danh mới</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /> về nội dung được đề xuất</translation>
@@ -315,6 +314,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3988213473815854515">Vị trí được cho phép</translation>
 <translation id="3997476611815694295">Bộ nhớ không quan trọng</translation>
 <translation id="4002066346123236978">Tiêu đề</translation>
+<translation id="4031074602479304239">Chrome đã chặn chuyển hướng từ trang web này đến</translation>
 <translation id="4042870126885713738">Hiển thị các đề xuất khi địa chỉ web không khắc phục được hoặc kết nối không thể được thực hiện</translation>
 <translation id="4046123991198612571">Bản nhạc tiếp theo</translation>
 <translation id="4056223980640387499">Màu nâu đỏ</translation>
@@ -472,6 +472,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="5512137114520586844">Tài khoản này do <ph name="PARENT_NAME" /> quản lý.</translation>
 <translation id="5514904542973294328">Bị quản trị viên của thiết bị này vô hiệu hóa</translation>
 <translation id="5517095782334947753">Bạn có dấu trang, lịch sử, mật khẩu và các cài đặt khác từ <ph name="FROM_ACCOUNT" />.</translation>
+<translation id="5524843473235508879">Đã chặn chuyển hướng.</translation>
 <translation id="5527082711130173040">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. <ph name="BEGIN_LINK1" />Cập nhật quyền<ph name="END_LINK1" />. Tính năng truy cập vị trí cũng bị <ph name="BEGIN_LINK2" />tắt cho thiết bị này<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Đóng tab ẩn danh</translation>
 <translation id="5534640966246046842">Đã sao chép trang web</translation>
@@ -498,7 +499,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 
 Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn thao tác duyệt của bạn khỏi chủ lao động, nhà cung cấp dịch vụ Internet hoặc trang web bạn truy cập.</translation>
 <translation id="572328651809341494">Các tab gần đây</translation>
-<translation id="572392919096807438">Ghi nhớ quyết định của tôi</translation>
 <translation id="5726692708398506830">Phóng to mọi nội dung trên trang</translation>
 <translation id="5738816946784116349">Lượt tải xuống Chrome</translation>
 <translation id="5748802427693696783">Đã chuyển sang tab chuẩn</translation>
@@ -652,7 +652,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7022756207310403729">Mở trong trình duyệt</translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
 <translation id="7031882061095297553">Đồng bộ hóa với</translation>
-<translation id="704059664004611800">Nhấn để xem dấu trang và nội dung khác</translation>
 <translation id="7053983685419859001">Chặn</translation>
 <translation id="7062545763355031412">Chấp nhận và chuyển đổi tài khoản</translation>
 <translation id="7063006564040364415">Không thể kết nối với máy chủ đồng bộ hóa.</translation>
@@ -781,7 +780,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8310344678080805313">Tab chuẩn</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> và các trang web khác</translation>
 <translation id="8339163506404995330">Các trang viết bằng <ph name="LANGUAGE" /> sẽ không được dịch</translation>
-<translation id="8363501664269050863">Bảng điều hướng. Hãy vuốt xuống để đóng.</translation>
+<translation id="8363501664269050863">Bảng điều hướng. Vuốt xuống để đóng.</translation>
 <translation id="8372893542064058268">Cho phép Đồng bộ hóa dưới nền cho trang web cụ thể.</translation>
 <translation id="8374821112118309944">Bạn cần phải cập nhật TalkBack lên phiên bản mới hơn.</translation>
 <translation id="8393700583063109961">Gửi tin nhắn</translation>

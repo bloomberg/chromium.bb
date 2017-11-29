@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;I-undo ang pagbabago sa ayos</translation>
 <translation id="1126551341858583091">Ang laki sa lokal na storage ay <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">OK ang cache ng patakaran</translation>
-<translation id="113188000913989374">Isinasaad ng <ph name="SITE" /> na:</translation>
 <translation id="1132774398110320017">Mga setting ng Autofill ng Chrome...</translation>
 <translation id="1150979032973867961">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; hindi pinagkakatiwalaan ng operating system ng iyong computer ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="1151972924205500581">Kinakailangan ang password</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">Nakuha ba nang tama ang text?</translation>
 <translation id="5540224163453853">Hindi mahanap ang hiniling na artikulo.</translation>
 <translation id="5541546772353173584">Magdagdag ng Email</translation>
-<translation id="5544037170328430102">Isinasaad ng isang naka-embed na page sa <ph name="SITE" /> na:</translation>
 <translation id="5545756402275714221">Mga Artikulo para sa Iyo</translation>
 <translation id="5556459405103347317">I-reload</translation>
 <translation id="5560088892362098740">Petsa ng Pag-expire</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Kumpirmahin ang Card</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Path ng Profile</translation>
-<translation id="7424977062513257142">Isinasaad ng isang naka-embed na page sa webpage na ito na:</translation>
 <translation id="7437289804838430631">Magdagdag ng Impormasyon ng Contact</translation>
 <translation id="7441627299479586546">Maling paksa ng patakaran</translation>
 <translation id="7444046173054089907">Naka-block ang site na ito</translation>
@@ -1001,7 +998,6 @@
 <translation id="884923133447025588">Walang nahanap na mekanismo ng pagpapawalang-bisa.</translation>
 <translation id="885730110891505394">Pagbabahagi sa Google</translation>
 <translation id="8866481888320382733">Error sa pag-parse ng mga setting ng patakaran</translation>
-<translation id="8866959479196209191">Isinasaad ng page na ito na:</translation>
 <translation id="8870413625673593573">Recently Closed</translation>
 <translation id="8874824191258364635">Maglagay ng wastong numero ng card</translation>
 <translation id="8876793034577346603">Nabigong ma-parse ang configuration ng network.</translation>

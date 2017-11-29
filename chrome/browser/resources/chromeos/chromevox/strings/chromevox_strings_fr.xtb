@@ -4,7 +4,7 @@
 <translation id="100812568230599391">Définir le style d'affichage sur "entrelacé".</translation>
 <translation id="1012173283529841972">Élément de liste</translation>
 <translation id="1013742170491673792">recherche</translation>
-<translation id="1022586497894531524">Est-ce la première fois que vous utilisez les commentaires audio de ChromeVox ? Ce didacticiel rapide explique les bases pour vous guider dans vos premiers pas avec ChromeVox.</translation>
+<translation id="1022586497894531524">Est-ce la première fois que vous utilisez les commentaires audio de ChromeVox ? Ce didacticiel rapide explique les bases pour commencer à utiliser ChromeVox.</translation>
 <translation id="1023866615269196768">Cellule fractionnée</translation>
 <translation id="1025074108959230262">Mode permanent désactivé</translation>
 <translation id="1031961866430398710">puis</translation>
@@ -414,7 +414,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="461613135510474570">Navigation par phrase</translation>
 <translation id="463135993322337640">Appuyez sur ChromeVox o, n pour découvrir les nouveautés</translation>
 <translation id="4647836961514597010">Palette couleurs</translation>
-<translation id="4660783501463101648">Version classique supprimée. La touche de basculement du clavier permettant de revenir à la version classique de ChromeVox a été supprimée.</translation>
+<translation id="4660783501463101648">Version classique supprimée. Il est désormais impossible de basculer vers la version classique de ChromeVox par le biais de la touche du clavier initialement prévue à cet effet.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grille</translation>
@@ -472,7 +472,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5098541983634824365">Fermeture de la grille</translation>
 <translation id="5102981729317424850">Barre d'outils</translation>
 <translation id="5105050547967751155">rq</translation>
-<translation id="5106547198195128110">Nous avons apporté des modifications intéressantes dans cette nouvelle version. Voici les nouveautés :</translation>
+<translation id="5106547198195128110">Dans cette nouvelle version, nous avons apporté quelques modifications intéressantes :</translation>
 <translation id="5110983769041734144">Aucun champ de formulaire précédent</translation>
 <translation id="5111640677200759579">En-tête de colonne</translation>
 <translation id="5136967254288895616">Aucun lien précédent</translation>

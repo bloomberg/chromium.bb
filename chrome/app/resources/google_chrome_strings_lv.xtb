@@ -92,12 +92,12 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="3398288718845740432">Paslēpšana Chrome izvēlnē</translation>
 <translation id="3451115285585441894">Notiek pievienošana pārlūkam Chrome...</translation>
 <translation id="345171907106878721">Pievienot savu kontu pārlūkā Chrome</translation>
+<translation id="3479552764303398839">Vēlāk</translation>
 <translation id="3612333635265770873">Ir zināms, ka modulis ar tādu pašu nosaukumu konfliktē ar Google Chrome.</translation>
 <translation id="3622797965165704966">Tagad pārlūkā Chrome ir vieglāk izmantot Google kontu, kā arī ir atvieglota lietošana datoros, ko izmanto vairākas personas.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />pakalpojumu sniegšanas noteikumi<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">Veicot šo darbību, no šīs ierīces tiks dzēsts 1 vienums. Lai vēlāk izgūtu datus, pierakstieties pārlūkā Chrome kā <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Paplašinājums “<ph name="EXTENSION_NAME" />” mainīja iestatījumu, kura lapa tiek parādīta, palaižot pārlūku Chrome.</translation>
-<translation id="3738139272394829648">Meklēšana pieskaroties</translation>
 <translation id="3780814664026482060">Chrome — <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Noņemšana no pārlūka Chrome...</translation>
 <translation id="386202838227397562">Lūdzu, aizveriet visus Google Chrome logus un mēģiniet vēlreiz.</translation>
@@ -128,7 +128,6 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="4664415150087723341">Tikko tika piemērots īpašs Google Chrome drošības atjauninājums. Restartējiet tūlīt, lai tas stātos spēkā (mēs atjaunosim jūsu cilnes).</translation>
 <translation id="4700157086864140907">Google Chrome var efektīvāk labot pareizrakstības kļūdas, nosūtot pārlūkā rakstīto uz Google serveriem un tādējādi ļaujot izmantot to pašu pareizrakstības pārbaudes tehnoloģiju, kas tiek izmantota Google meklēšanā.</translation>
 <translation id="4728575227883772061">Instalācija neizdevās nenoteiktas kļūdas dēļ. Ja Google Chrome pašlaik darbojas, lūdzu, aizveriet to un mēģiniet vēlreiz.</translation>
-<translation id="4743926867934016338">Pieņemt un meklēt</translation>
 <translation id="4750550185319565338">Restartējiet pārlūku Chrome, lai iespējotu spraudni <ph name="PLUGIN_NAME" />.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (ienākošā mDNS datplūsma)</translation>
 <translation id="4771048833395599659">Šis fails var būt bīstams, tāpēc Chrome to bloķēja.</translation>
@@ -158,12 +157,9 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="5430073640787465221">Jūsu preferenču fails ir bojāts vai nederīgs. Google Chrome nespēj atkopt jūsu iestatījumus.</translation>
 <translation id="5453904507266736060">Ļaut Google Chrome darboties fonā</translation>
 <translation id="5495581687705680288">Pārlūkā Google Chrome ielādētie moduļi</translation>
-<translation id="5524843473235508879">Novirzīšana ir bloķēta.</translation>
 <translation id="556024056938947818">Google Chrome mēģina rādīt paroles.</translation>
-<translation id="5563479599352954471">Meklējiet ar vienu pieskārienu</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS ienākošā datplūsma)</translation>
 <translation id="557283862590186398">Pārlūkam Chrome ir nepieciešama atļauja piekļūt jūsu mikrofonam šajā vietnē.</translation>
-<translation id="5620765574781326016">Uzziniet vairāk par vietnēs aprakstītajām tēmām, neaizverot lapu.</translation>
 <translation id="565744775970812598">Fails <ph name="FILE_NAME" /> var būt bīstams, tādēļ Chrome to bloķēja.</translation>
 <translation id="573759479754913123">Par &amp;Chrome OS</translation>
 <translation id="5749068826913805084">Chrome ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
@@ -199,7 +195,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="6697947395630195233">Pārlūkam Chrome ir nepieciešama piekļuve jūsu atrašanās vietas datiem, lai varētu tos kopīgot ar šo vietni.</translation>
 <translation id="683440813066116847">Ienākošo savienojumu kārtula pārlūkam Google Chrome Canary, lai atļautu mDNS datplūsmu.</translation>
 <translation id="686561893457936865">Paņemiet Chrome sev līdzi</translation>
-<translation id="6883876366448858277">nosūta vārdu un tā apkārtējo kontekstu pakalpojumam Google meklēšana, iegūstot definīcijas, attēlus un citus meklēšanas rezultātus.</translation>
 <translation id="6885412569789873916">Chrome Beta lietotnes</translation>
 <translation id="6967962315388095737">Ienākošo savienojumu kārtula pārlūkam Google Chrome Beta, lai atļautu mDNS datplūsmu.</translation>
 <translation id="6970811910055250180">Notiek ierīces atjaunināšana...</translation>
@@ -221,7 +216,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="7437998757836447326">Izrakstīšanās no pārlūka Chrome</translation>
 <translation id="7459554271817304652">Iestatiet sinhronizāciju, lai saglabātu savas personalizētās pārlūka funkcijas tīmeklī un piekļūtu tām no pārlūka Google Chrome jebkurā datorā.</translation>
 <translation id="7473136999113284234">Pārlūks Chrome tiek atjaunināts automātiski, tādēļ jums vienmēr būs pieejama visjaunākā versija.</translation>
-<translation id="7473891865547856676">Nē, paldies!</translation>
 <translation id="7494905215383356681">Chrome atklātā pirmkoda licences</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Rādīt Chrome OS šajā valodā</translation>

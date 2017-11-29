@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Volgorde wijzigen ongedaan maken</translation>
 <translation id="1126551341858583091">De grootte in de lokale opslag is <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Cachegeheugen van beleid is OK</translation>
-<translation id="113188000913989374"><ph name="SITE" /> meldt het volgende:</translation>
 <translation id="1132774398110320017">Instellingen voor automatisch aanvullen in Chrome...</translation>
 <translation id="1150979032973867961">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je computer. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1151972924205500581">Wachtwoord vereist</translation>
@@ -610,7 +609,6 @@
 <translation id="552553974213252141">Is de tekst correct geëxtraheerd?</translation>
 <translation id="5540224163453853">Kan het gevraagde artikel niet vinden.</translation>
 <translation id="5541546772353173584">E-mailadres toevoegen</translation>
-<translation id="5544037170328430102">Een ingesloten pagina op <ph name="SITE" /> meldt het volgende:</translation>
 <translation id="5545756402275714221">Artikelen voor jou</translation>
 <translation id="5556459405103347317">Opnieuw laden</translation>
 <translation id="5560088892362098740">Vervaldatum</translation>
@@ -817,7 +815,6 @@
 <translation id="7390545607259442187">Creditcard bevestigen</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Profielpad</translation>
-<translation id="7424977062513257142">Een ingesloten pagina op deze webpagina meldt het volgende:</translation>
 <translation id="7437289804838430631">Contactgegevens toevoegen</translation>
 <translation id="7441627299479586546">Onjuist beleidsonderwerp</translation>
 <translation id="7444046173054089907">Deze site is geblokkeerd</translation>
@@ -996,7 +993,6 @@
 <translation id="884923133447025588">Geen intrekkingsmechanisme gevonden.</translation>
 <translation id="885730110891505394">Delen met Google</translation>
 <translation id="8866481888320382733">Fout bij het parseren van beleidsinstellingen</translation>
-<translation id="8866959479196209191">Deze pagina meldt het volgende:</translation>
 <translation id="8870413625673593573">Recent gesloten</translation>
 <translation id="8874824191258364635">Geef een geldig kaartnummer op</translation>
 <translation id="8876793034577346603">Netwerkconfiguratie kan niet worden geparseerd.</translation>

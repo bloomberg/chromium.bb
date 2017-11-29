@@ -253,7 +253,6 @@
 <translation id="3414952576877147120">大小：</translation>
 <translation id="3443221991560634068">重新加载当前网页</translation>
 <translation id="3452612588551937789">在任意设备上登录 Google 帐号后，您即可获取自己的书签、历史记录、密码及其他设置。</translation>
-<translation id="3479552764303398839">以后再说</translation>
 <translation id="3487093336331957349">搜索和网站建议</translation>
 <translation id="3492207499832628349">打开新的无痕式标签页</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />推荐内容</translation>
@@ -315,6 +314,7 @@
 <translation id="3988213473815854515">允许访问位置信息</translation>
 <translation id="3997476611815694295">不重要网站的存储数据</translation>
 <translation id="4002066346123236978">标题</translation>
+<translation id="4031074602479304239">Chrome 已阻止此网站将您重定向至</translation>
 <translation id="4042870126885713738">无法解析网址或无法建立连接时显示建议</translation>
 <translation id="4046123991198612571">下一曲</translation>
 <translation id="4056223980640387499">棕色调</translation>
@@ -472,6 +472,7 @@
 <translation id="5512137114520586844">该帐号由 <ph name="PARENT_NAME" /> 管理。</translation>
 <translation id="5514904542973294328">已被此设备的管理员停用</translation>
 <translation id="5517095782334947753">您有来自 <ph name="FROM_ACCOUNT" /> 的书签、历史记录、密码及其他设置。</translation>
+<translation id="5524843473235508879">已阻止重定向。</translation>
 <translation id="5527082711130173040">Chrome 需要拥有位置信息使用权才能扫描设备。请<ph name="BEGIN_LINK1" />更新权限<ph name="END_LINK1" />。<ph name="BEGIN_LINK2" />此设备的位置信息使用权也已被停用<ph name="END_LINK2" />。</translation>
 <translation id="5530766185686772672">关闭隐身标签页</translation>
 <translation id="5534640966246046842">已复制网站</translation>
@@ -498,7 +499,6 @@
 
 但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="572328651809341494">最近打开的标签页</translation>
-<translation id="572392919096807438">记住我的决定</translation>
 <translation id="5726692708398506830">放大网页上的所有内容</translation>
 <translation id="5738816946784116349">Chrome 下载内容</translation>
 <translation id="5748802427693696783">已切换到标准标签页</translation>
@@ -652,7 +652,6 @@
 <translation id="7022756207310403729">在浏览器中打开</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="7031882061095297553">同步到</translation>
-<translation id="704059664004611800">点按即可查看书签及更多内容</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7062545763355031412">接受并切换帐号</translation>
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>

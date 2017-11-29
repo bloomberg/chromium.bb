@@ -73,13 +73,13 @@
 <translation id="3296368748942286671">Να συνεχίζεται η εκτέλεση εφαρμογών παρασκηνίου όταν το Chromium είναι κλειστό</translation>
 <translation id="331951419404882060">Το Chromium OS δεν μπόρεσε να συγχρονίσει τα δεδομένα σας λόγω σφάλματος κατά τη σύνδεση.</translation>
 <translation id="3474745554856756813">Με αυτήν την ενέργεια θα διαγραφούν <ph name="ITEMS_COUNT" /> στοιχεία από αυτήν τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chromium ως <ph name="USER_EMAIL" />.</translation>
+<translation id="3479552764303398839">Όχι τώρα</translation>
 <translation id="3509308970982693815">Κλείστε όλα τα παράθυρα του Chromium και δοκιμάστε ξανά.</translation>
 <translation id="352783484088404971">Κατάργηση από το Chromium…</translation>
 <translation id="3549345495227188780">Έναρξη χρήσης του Chromium OS</translation>
 <translation id="3582788516608077514">Ενημέρωση του Chromium…</translation>
 <translation id="358997566136285270">Λογότυπο Chromium</translation>
 <translation id="3713809861844741608">Άνοιγμα συνδέσμου σε νέα καρτέ&amp;λα Chromium</translation>
-<translation id="3738139272394829648">Αγγίξτε για αναζήτηση</translation>
 <translation id="3762167353400286894">Το Chromium OS εμφανίζεται σε αυτήν τη γλώσσα</translation>
 <translation id="378917192836375108">Το Chromium σάς επιτρέπει να κάνετε κλικ σε έναν τηλεφωνικό αριθμό στον ιστό και να τον καλέσετε με το Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -112,7 +112,6 @@
 <translation id="469338717132742108">Λήψη βοήθειας σχετικά με το Chromium OS</translation>
 <translation id="4708774505295300557">Κάποιο άτομο συνδέθηκε προηγουμένως στο Chromium σε αυτόν τον υπολογιστή ως <ph name="ACCOUNT_EMAIL_LAST" />. Δημιουργήστε έναν νέο χρήστη του Chromium, για να διατηρείτε τις πληροφορίες σας ξεχωριστά.</translation>
 <translation id="4714956846925717402">Μεταβείτε ταχύτερα στο Chromium</translation>
-<translation id="4743926867934016338">Αποδοχή και Αναζήτηση</translation>
 <translation id="4825874709045178029">Το Chromium χρειάζεται άδεια, για να αποκτήσει πρόσβαση στην κάμερα για αυτόν τον ιστότοπο.</translation>
 <translation id="4888717733111232871">Εισερχόμενος κανόνας για το Chromium για να επιτρέπεται η κυκλοφορία του mDNS.</translation>
 <translation id="4943838377383847465">Το Chromium εκτελείται στο παρασκήνιο.</translation>
@@ -129,9 +128,6 @@
 <translation id="5466153949126434691">Το Chromium ενημερώνεται αυτόματα, προκειμένου να έχετε πάντα στη διάθεσή σας τη νεότερη έκδοση. Όταν ολοκληρωθεί αυτή η λήψη, θα γίνει επανεκκίνηση του Chromium και θα είστε έτοιμοι.</translation>
 <translation id="5479196819031988440">Το Chromium OS δεν μπορεί να ανοίξει αυτήν τη σελίδα.</translation>
 <translation id="549669000822060376">Περιμένετε μέχρι να γίνει εγκατάσταση των πιο πρόσφατων ενημερώσεων συστήματος από το Chromium.</translation>
-<translation id="5524843473235508879">Η ανακατεύθυνση αποκλείστηκε.</translation>
-<translation id="5563479599352954471">Αναζήτηση με ένα μόνο άγγιγμα</translation>
-<translation id="5620765574781326016">Μάθετε πληροφορίες σχετικά με θέματα σε ιστότοπους, χωρίς να απομακρυνθείτε από τη σελίδα.</translation>
 <translation id="5634636535844844681">Το Chromium απαιτεί Windows 7 ή νεότερη έκδοση.</translation>
 <translation id="5680901439334282664">σύνδεση στο Chromium</translation>
 <translation id="5698481217667032250">Να εμφανίζεται το Chromium σε αυτήν τη γλώσσα</translation>
@@ -173,7 +169,6 @@
 <translation id="6734291798041940871">Το Chromium είναι ήδη εγκατεστημένο για όλους τους χρήστες στον υπολογιστή σας.</translation>
 <translation id="6810143991807788455">Συμβάλετε στη βελτίωση του Chromium αναφέροντας τις τρέχουσες ρυθμίσεις</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">στέλνει μια λέξη και το συγκείμενό της στην Αναζήτηση Google και φέρνει ως αποτέλεσμα ορισμούς, εικόνες και άλλα αποτελέσματα αναζήτησης.</translation>
 <translation id="6893813176749746474">Το Chromium έχει ενημερωθεί, αλλά δεν το έχετε χρησιμοποιήσει για 30 ημέρες τουλάχιστον.</translation>
 <translation id="6944967875980567883">Στο Chromium φορτώθηκαν λειτουργικές μονάδες</translation>
 <translation id="6964305034639999644">Άνοιγμα συνδέσμου σε Παράθυρο ανών&amp;υμης περιήγησης Chromium</translation>
@@ -200,7 +195,6 @@
 <ph name="BEGIN_LINK_2" />Μάθετε περισσότερα<ph name="END_LINK_2" />
 
 Ελέγξτε το ηλεκτρονικό ταχυδρομείο σας στη διεύθυνση <ph name="ACCOUNT_EMAIL" /> για περαιτέρω οδηγίες.</translation>
-<translation id="7473891865547856676">Όχι, ευχαριστώ</translation>
 <translation id="7483335560992089831">Δεν είναι δυνατή η εγκατάσταση της ίδια έκδοσης του Chromium που εκτελείται αυτήν τη στιγμή. Κλείστε το Chromium και δοκιμάστε ξανά.</translation>
 <translation id="7549178288319965365">Σχετικά με το Chromium OS</translation>
 <translation id="7577193603922410712">Μόλις εφαρμόστηκε μια ειδική ενημέρωση ασφαλείας για το Chromium. Πρέπει να το επανεκκινήσετε τώρα για να τεθεί σε ισχύ (θα γίνει επαναφορά των καρτελών σας).</translation>

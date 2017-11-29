@@ -30,7 +30,7 @@
 <translation id="2168039046890040389">Ukurasa mmoja juu</translation>
 <translation id="2190355936436201913">(tupu)</translation>
 <translation id="219905428774326614">Kifungua Programu, programu zote</translation>
-<translation id="2289052229480071835">Gonga viashirio vya kugusa kwenye skrini yako.</translation>
+<translation id="2289052229480071835">Gusa viashirio vya kugusa kwenye skrini yako.</translation>
 <translation id="2295140143284145483">Utafiti</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Panua arifa</translation>
@@ -74,7 +74,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{Sekunde 1}other{Sekunde #}}</translation>
 <translation id="4971687151119236543">Wimbo wa Awali wa Media</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5046499563572181734">Gonga hapa</translation>
+<translation id="5046499563572181734">Gusa hapa</translation>
 <translation id="5076340679995252485">&amp;Bandika</translation>
 <translation id="5120799197269191491">Utafutaji+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="520299402983819650">PB <ph name="QUANTITY" /></translation>
@@ -143,6 +143,7 @@
 <translation id="8352146631962686268">{YEARS,plural, =1{Mwaka 1}other{Miaka #}}</translation>
 <translation id="8371695176452482769">Ongea sasa</translation>
 <translation id="838869780401515933">chunguza</translation>
+<translation id="8393700583063109961">Tuma ujumbe</translation>
 <translation id="8394908167088220973">Cheza Media/Sitisha</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{Mwaka 1}other{Miaka #}}</translation>

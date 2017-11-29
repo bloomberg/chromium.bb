@@ -11,7 +11,7 @@
 <translation id="2159915644201199628">تعذر فك تشفير الصورة: '<ph name="IMAGE_NAME" />'</translation>
 <translation id="2350172092385603347">‏تم استخدام التعريب، ولكن لم يتم تحديد default_locale في البيان.</translation>
 <translation id="2753617847762399167">مسار غير قانوني (أساسي أو منتسب مع '..'): '<ph name="IMAGE_PATH" />'</translation>
-<translation id="27822970480436970">أخفقت هذه الإضافة في تعديل طلب الشبكة نظرًا لتعارض التعديل مع إضافة أخرى.</translation>
+<translation id="27822970480436970">تعذّرت هذه الإضافة في تعديل طلب الشبكة نظرًا لتعارض التعديل مع إضافة أخرى.</translation>
 <translation id="2857834222104759979">ملف البيان غير صالح.</translation>
 <translation id="2903070246402204397">تم حظر <ph name="EXTENSION_NAME" /> (معرف الإضافة "<ph name="EXTENSION_ID" />") من قِبل المشرف. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">تعذر تثبيت الحزمة: "<ph name="ERROR_CODE" />"</translation>
@@ -48,14 +48,14 @@
 <translation id="7581279002575751816">‏المكونات الإضافية لـ NPAPI غير متوافقة.</translation>
 <translation id="7972881773422714442">الخيارات: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">الكاميرا الأمامية للمستخدم</translation>
-<translation id="8047248493720652249">أخفقت هذه الإضافة في تسمية التنزيل "<ph name="ATTEMPTED_FILENAME" />" نظرًا لأن هناك إضافة أخرى (<ph name="EXTENSION_NAME" />) قد حددت اسم ملف آخر "<ph name="ACTUAL_FILENAME" />".</translation>
+<translation id="8047248493720652249">تعذّرت هذه الإضافة في تسمية التنزيل "<ph name="ATTEMPTED_FILENAME" />" نظرًا لأن هناك إضافة أخرى (<ph name="EXTENSION_NAME" />) قد حددت اسم ملف آخر "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> من <ph name="VENDOR_NAME" /></translation>
-<translation id="8341840687457896278">أخفقت هذه الإضافة في تقديم بيانات الاعتماد لطلب الشبكة، نظرًا لتقديم بيانات اعتماد مختلفة بواسطة إضافة أخرى (<ph name="EXTENSION_NAME" />).</translation>
+<translation id="8341840687457896278">تعذّرت هذه الإضافة في تقديم بيانات الاعتماد لطلب الشبكة، نظرًا لتقديم بيانات اعتماد مختلفة بواسطة إضافة أخرى (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8602184400052594090">ملف البيان مفقود أو غير قابل للقراءة.</translation>
 <translation id="8636666366616799973">الحزمة غير صالحة. التفاصيل: "<ph name="ERROR_MESSAGE" />".</translation>
-<translation id="8670869118777164560">أخفقت الإضافة في إعادة توجيه طلب الشبكة إلى <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> نظرًا لإعادة توجيهها بواسطة إضافة أخرى (<ph name="EXTENSION_NAME" />) إلى <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
+<translation id="8670869118777164560">تعذّرت الإضافة في إعادة توجيه طلب الشبكة إلى <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> نظرًا لإعادة توجيهها بواسطة إضافة أخرى (<ph name="EXTENSION_NAME" />) إلى <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">أداة فك ضغط الإضافات</translation>
 <translation id="8761756413268424715">يطلب تطبيق "<ph name="APP_NAME" />" الدخول إلى جهاز من أجهزتك:</translation>
-<translation id="8825366169884721447">أخفقت الإضافة في تعديل عنوان الطلب "<ph name="HEADER_NAME" />" لأحد طلبات الشبكة نظرًا لتعارض التعديل مع إضافة أخرى (<ph name="EXTENSION_NAME" />).</translation>
-<translation id="9111791539553342076">أخفقت الإضافة في تعديل عنوان الاستجابة "<ph name="HEADER_NAME" />" لأحد طلبات الشبكة نظرًا لتعارض التعديل مع إضافة أخرى (<ph name="EXTENSION_NAME" />).</translation>
+<translation id="8825366169884721447">تعذّرت الإضافة في تعديل عنوان الطلب "<ph name="HEADER_NAME" />" لأحد طلبات الشبكة نظرًا لتعارض التعديل مع إضافة أخرى (<ph name="EXTENSION_NAME" />).</translation>
+<translation id="9111791539553342076">تعذّرت الإضافة في تعديل عنوان الاستجابة "<ph name="HEADER_NAME" />" لأحد طلبات الشبكة نظرًا لتعارض التعديل مع إضافة أخرى (<ph name="EXTENSION_NAME" />).</translation>
 </translationbundle>

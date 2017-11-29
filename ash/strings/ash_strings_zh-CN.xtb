@@ -70,7 +70,7 @@
 <translation id="2597972630681408282">夜间模式：<ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM 卡已被锁定</translation>
 <translation id="2653659639078652383">提交</translation>
-<translation id="2675319268637823299">管理员已禁止 <ph name="USER_EMAIL" /> 参与多帐号登录。
+<translation id="2675319268637823299">管理员已禁止 <ph name="USER_EMAIL" /> 使用多帐号登录功能。
     所有用户都必须先退出帐号才能继续。</translation>
 <translation id="2700058918926273959">会话将在<ph name="SESSION_TIME_REMAINING" />后结束，到时您将自动退出。</translation>
 <translation id="2727977024730340865">已插入低功率充电器；可能无法保证充电成功。</translation>
@@ -149,7 +149,6 @@
 <translation id="453661520163887813"><ph name="TIME" /> 后充满</translation>
 <translation id="4544944664594876241">用于锁定屏幕的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
 <translation id="4659419629803378708">已启用 ChromeVox</translation>
-<translation id="4729904664295161097">智能助理仅适用于主要个人资料。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密码</translation>
 <translation id="479989351350248267">搜索</translation>
 <translation id="4804818685124855865">断开连接</translation>

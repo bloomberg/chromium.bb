@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Hoàn tác sắp xếp lại</translation>
 <translation id="1126551341858583091">Kích thước trên bộ nhớ cục bộ là <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Bộ nhớ cache chính sách OK</translation>
-<translation id="113188000913989374"><ph name="SITE" /> cho biết:</translation>
 <translation id="1132774398110320017">Cài đặt tự động điền trên Chrome...</translation>
 <translation id="1150979032973867961">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành máy tính của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="1151972924205500581">Mật khẩu bắt buộc</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">Văn bản đã được trích xuất chính xác chưa?</translation>
 <translation id="5540224163453853">Không thể tìm thấy bài viết đã yêu cầu.</translation>
 <translation id="5541546772353173584">Thêm email</translation>
-<translation id="5544037170328430102">Trang được nhúng tại <ph name="SITE" /> cho biết:</translation>
 <translation id="5545756402275714221">Tin bài dành cho bạn</translation>
 <translation id="5556459405103347317">Tải lại</translation>
 <translation id="5560088892362098740">Ngày hết hạn</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Xác nhận thẻ</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Đường dẫn cấu hình</translation>
-<translation id="7424977062513257142">Trang được nhúng trên trang web này cho biết:</translation>
 <translation id="7437289804838430631">Thêm thông tin liên hệ</translation>
 <translation id="7441627299479586546">Chủ đề chính sách sai</translation>
 <translation id="7444046173054089907">Trang web này bị chặn</translation>
@@ -1002,7 +999,6 @@
 <translation id="884923133447025588">Không tìm thấy cơ chế thu hồi.</translation>
 <translation id="885730110891505394">Chia sẻ với Google</translation>
 <translation id="8866481888320382733">Lỗi phân tích cú pháp cài đặt chính sách</translation>
-<translation id="8866959479196209191">Trang này cho biết:</translation>
 <translation id="8870413625673593573">Các tab đã Đóng gần đây</translation>
 <translation id="8874824191258364635">Nhập số thẻ hợp lệ</translation>
 <translation id="8876793034577346603">Không thể phân tích cú pháp cấu hình mạng.</translation>

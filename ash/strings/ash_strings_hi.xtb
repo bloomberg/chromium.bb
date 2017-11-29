@@ -149,7 +149,6 @@
 <translation id="453661520163887813">पूरी तरह चार्ज होने में <ph name="TIME" /></translation>
 <translation id="4544944664594876241">स्‍क्रीन को लॉक करने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="4659419629803378708">ChromeVox सक्षम है</translation>
-<translation id="4729904664295161097">Assistant केवल प्राथमिक प्रोफ़ाइल के लिए उपलब्ध है.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> के लिए पासवर्ड</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">डिसकनेक्ट करें</translation>
@@ -283,7 +282,7 @@
 <translation id="8261506727792406068">हटाएं</translation>
 <translation id="8308637677604853869">पिछला मेनू</translation>
 <translation id="8351131234907093545">नोट बनाएं</translation>
-<translation id="8428213095426709021">सेटिंग्स</translation>
+<translation id="8428213095426709021">सेटिंग</translation>
 <translation id="8433186206711564395">नेटवर्क सेटिंग</translation>
 <translation id="8433977262951327081">शेल्फ़ में इनपुट विकल्पों का मेनू बबल दिखाने वाला शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="8452135315243592079">अनुपलब्ध SIM कार्ड</translation>

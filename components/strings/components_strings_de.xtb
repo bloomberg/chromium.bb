@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="1126551341858583091">Die Größe auf dem lokalen Speicher ist <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Richtlinien-Cache einwandfrei</translation>
-<translation id="113188000913989374">Unter <ph name="SITE" /> wird Folgendes angezeigt:</translation>
 <translation id="1132774398110320017">AutoFill-Einstellungen für Chrome...</translation>
 <translation id="1150979032973867961">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Computers als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1151972924205500581">Passwort erforderlich</translation>
@@ -613,7 +612,6 @@
 <translation id="552553974213252141">Wurde der Text korrekt extrahiert?</translation>
 <translation id="5540224163453853">Der gewünschte Artikel wurde nicht gefunden.</translation>
 <translation id="5541546772353173584">E-Mail-Adresse hinzufügen</translation>
-<translation id="5544037170328430102">Auf einer in <ph name="SITE" /> eingebetteten Seite wird Folgendes angezeigt:</translation>
 <translation id="5545756402275714221">Artikel für Sie</translation>
 <translation id="5556459405103347317">Neu laden</translation>
 <translation id="5560088892362098740">Ablaufdatum</translation>
@@ -821,7 +819,6 @@
 <translation id="7390545607259442187">Karte bestätigen</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Profilpfad</translation>
-<translation id="7424977062513257142">Auf einer in dieser Webseite eingebetteten Seite wird Folgendes angezeigt:</translation>
 <translation id="7437289804838430631">Kontaktdaten hinzufügen</translation>
 <translation id="7441627299479586546">Falsche(r) Nutzername/Domain der Richtlinie</translation>
 <translation id="7444046173054089907">Diese Website ist blockiert</translation>
@@ -1001,7 +998,6 @@
 <translation id="884923133447025588">Kein Sperrmechanismus gefunden.</translation>
 <translation id="885730110891505394">Datenfreigabe an Google</translation>
 <translation id="8866481888320382733">Fehler beim Parsen der Richtlinieneinstellungen</translation>
-<translation id="8866959479196209191">Auf dieser Seite wird Folgendes angezeigt:</translation>
 <translation id="8870413625673593573">Kürzlich geschlossen</translation>
 <translation id="8874824191258364635">Geben Sie eine gültige Kartennummer ein</translation>
 <translation id="8876793034577346603">Fehler beim Parsen der Netzwerkkonfiguration</translation>

@@ -92,12 +92,12 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="3398288718845740432">Skryť v Ponuke Chrome</translation>
 <translation id="3451115285585441894">Prebieha pridávanie do prehliadača Chrome...</translation>
 <translation id="345171907106878721">Pridajte si účet do prehliadača Chrome</translation>
+<translation id="3479552764303398839">Teraz nie</translation>
 <translation id="3612333635265770873">Zistilo sa, že modul s rovnakým názvom spôsobuje konflikt s aplikáciou Google Chrome.</translation>
 <translation id="3622797965165704966">Teraz je používanie prehliadača Chrome s účtom Google a na zdieľaných počítačoch oveľa ľahšie.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Zmluvné podmienky<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome OS</translation>
 <translation id="3718181793972440140">Táto akcia odstráni zo zariadenia jednu položku. Ak budete chcieť svoje údaje neskôr opäť načítať, prihláste sa do Chromu ako používateľ <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Rozšírenie „<ph name="EXTENSION_NAME" />“ zmenilo stránku, ktorá sa zobrazí pri spustení prehliadača Chrome.</translation>
-<translation id="3738139272394829648">Vyhľadávanie klepnutím</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Odstrániť z prehliadača Chrome...</translation>
 <translation id="386202838227397562">Zatvorte všetky okná prehliadača Google Chrome a skúste to znova.</translation>
@@ -128,7 +128,6 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="4664415150087723341">Práve bola použitá mimoriadna bezpečnostná aktualizácia pre prehliadač Google Chrome. Zmeny sa prejavia až po jeho reštartovaní (vaše karty sa automaticky obnovia).</translation>
 <translation id="4700157086864140907">Google Chrome vám ponúka inteligentnejšiu kontrolu pravopisu tým, že text zadaný do prehliadača odošle serverom spoločnosti Google. Umožňuje vám tak využiť rovnakú technológiu kontroly pravopisu, aká sa používa vo Vyhľadávaní Google.</translation>
 <translation id="4728575227883772061">Inštalácia zlyhala kvôli neurčenej chybe. Ak je prehliadač Google Chrome momentálne spustený, zatvorte ho a skúste znova.</translation>
-<translation id="4743926867934016338">Prijať a vyhľadať</translation>
 <translation id="4750550185319565338">Ak chcete povoliť doplnok <ph name="PLUGIN_NAME" />, reštartujte Chrome</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Tento súbor môže byť nebezpečný, a preto ho Chrome zablokoval.</translation>
@@ -160,12 +159,9 @@ Niektoré funkcie môžu byť nedostupné. Zadajte iný adresár profilu alebo p
 Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="5453904507266736060">Povoliť prehliadaču Google Chrome spustenie na pozadí</translation>
 <translation id="5495581687705680288">Moduly načítané do prehliadača Google Chrome</translation>
-<translation id="5524843473235508879">Presmerovanie bolo zablokované.</translation>
 <translation id="556024056938947818">Prehliadač Google Chrome sa snaží zobraziť heslá.</translation>
-<translation id="5563479599352954471">Vyhľadávanie jediným klepnutím</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Chrome potrebuje povolenie pre tento web na prístup k vášmu mikrofónu.</translation>
-<translation id="5620765574781326016">Získajte informácie o témach zmienených na stránke bez toho, aby ste danú stránku museli opustiť.</translation>
 <translation id="565744775970812598">Súbor <ph name="FILE_NAME" /> môže byť nebezpečný, a preto ho Chrome zablokoval.</translation>
 <translation id="573759479754913123">Informácie o systéme Chrome OS</translation>
 <translation id="5749068826913805084">Chrome potrebuje na sťahovanie súborov prístup k úložisku.</translation>
@@ -201,7 +197,6 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="6697947395630195233">Chrome potrebuje prístup k vašej polohe, aby ju mohol zdieľať s týmto webom.</translation>
 <translation id="683440813066116847">Pravidlo pre prichádzajúce prenosy pre prehliadač Google Chrome verzie Canary, ktoré povoľuje prenos dát mDNS.</translation>
 <translation id="686561893457936865">Vezmite si Chrome všade</translation>
-<translation id="6883876366448858277">odošle slovo a súvisiaci kontext do Vyhľadávania Google, pričom vráti definície, obrázky, výsledky vyhľadávania a ďalšie podrobnosti.</translation>
 <translation id="6885412569789873916">Aplikácie pre Chrome beta verzie</translation>
 <translation id="6967962315388095737">Pravidlo pre prichádzajúce prenosy pre prehliadač Google Chrome beta verzie, ktoré povoľuje prenos dát mDNS.</translation>
 <translation id="6970811910055250180">Prebieha aktualizácia zariadenia...</translation>
@@ -223,7 +218,6 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7437998757836447326">Odhlásenie z prehliadača Chrome</translation>
 <translation id="7459554271817304652">Ak chcete uložiť svoje prispôsobené funkcie prehliadača na webe a pristupovať k nim z prehliadača Google Chrome v ktoromkoľvek počítači, nastavte synchronizáciu.</translation>
 <translation id="7473136999113284234">Chrome sa aktualizuje automaticky, aby ste mali vždy k dispozícii najnovšiu verziu.</translation>
-<translation id="7473891865547856676">Nie, ďakujem</translation>
 <translation id="7494905215383356681">Licencie open source prehliadača Chrome</translation>
 <translation id="7535429826459677826">Google Chrome verzie pre vývojárov</translation>
 <translation id="7552219221109926349">Zobraziť Chrome OS v tomto jazyku</translation>

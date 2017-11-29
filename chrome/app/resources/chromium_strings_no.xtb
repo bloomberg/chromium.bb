@@ -73,13 +73,13 @@
 <translation id="3296368748942286671">Fortsett å kjøre bakgrunnsprogrammer når Chromium er lukket</translation>
 <translation id="331951419404882060">Chromium OS kunne ikke synkronisere dataene dine på grunn av en feil under pålogging.</translation>
 <translation id="3474745554856756813">Dette sletter <ph name="ITEMS_COUNT" /> elementer fra denne enheten. For å hente dataene dine igjen senere må du logge på Chromium som <ph name="USER_EMAIL" />.</translation>
+<translation id="3479552764303398839">Ikke nå</translation>
 <translation id="3509308970982693815">Lukk alle Chromium-vinduer og prøv på nytt.</translation>
 <translation id="352783484088404971">Fjern fra Chromium</translation>
 <translation id="3549345495227188780">Kom i gang med Chromium OS</translation>
 <translation id="3582788516608077514">Oppdaterer Chromium …</translation>
 <translation id="358997566136285270">Chromium-logo</translation>
 <translation id="3713809861844741608">Åpne linken i en ny fane i Chromium</translation>
-<translation id="3738139272394829648">Trykk for å søke</translation>
 <translation id="3762167353400286894">Chromium OS vises på dette språket</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe til det med Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
@@ -112,7 +112,6 @@
 <translation id="469338717132742108">Få hjelp med Chromium OS</translation>
 <translation id="4708774505295300557">Noen har tidligere logget på Chromium på denne datamaskinen som <ph name="ACCOUNT_EMAIL_LAST" />. Opprett en ny Chromium-bruker for å holde informasjonen din atskilt.</translation>
 <translation id="4714956846925717402">Kom deg raskere til Chromium</translation>
-<translation id="4743926867934016338">Godta og søk</translation>
 <translation id="4825874709045178029">Chromium trenger tilgang til kameraet ditt for dette nettstedet.</translation>
 <translation id="4888717733111232871">Regel om innkommende trafikk for Chromium for å tillate mDNS-trafikk.</translation>
 <translation id="4943838377383847465">Chromium er i bakgrunnsmodus.</translation>
@@ -129,9 +128,6 @@
 <translation id="5466153949126434691">Chromium oppdateres automatisk, sånn at du alltid har den nyeste versjonen. Når denne nedlastingen er fullført, kommer Chromium til å starte på nytt, og du er i gang.</translation>
 <translation id="5479196819031988440">Chromium OS kan ikke åpne denne siden.</translation>
 <translation id="549669000822060376">Vent mens Chromium installerer de nyeste systemoppdateringene.</translation>
-<translation id="5524843473235508879">Viderekobling blokkert.</translation>
-<translation id="5563479599352954471">Søk med ett trykk</translation>
-<translation id="5620765574781326016">Finn ut mer om emner på nettsteder uten å forlate siden.</translation>
 <translation id="5634636535844844681">Chromium krever Windows 7 eller nyere.</translation>
 <translation id="5680901439334282664">logg på Chromium</translation>
 <translation id="5698481217667032250">Vis Chromium på dette språket</translation>
@@ -173,7 +169,6 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="6734291798041940871">Chromium er allerede installert for alle brukerne på datamaskinen din.</translation>
 <translation id="6810143991807788455">Bidra til å gjøre Chromium bedre ved å rapportere inn de gjeldende innstillingene</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">sender et ord og den omkringliggende konteksten til Google Søk. Definisjoner, bilder og andre søkeresultater blir sendt tilbake.</translation>
 <translation id="6893813176749746474">Chromium har blitt oppdatert, men du har ikke brukt den på minst 30 dager.</translation>
 <translation id="6944967875980567883">Moduler lastet inn i Chromium</translation>
 <translation id="6964305034639999644">Åpne linken i et inko&amp;gnitovindu i Chromium</translation>
@@ -200,7 +195,6 @@ Hvis du vil hindre <ph name="NEW_PROFILE_NAME" /> i å få tilgang til kontoen d
 <ph name="BEGIN_LINK_2" />Finn ut mer<ph name="END_LINK_2" />
 
 Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjoner.</translation>
-<translation id="7473891865547856676">Nei takk</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme Chromium-versjonen som kjører. Lukk Chromium og prøv på nytt.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
 <translation id="7577193603922410712">En spesiell sikkerhetsoppdatering for Chromium ble nettopp installert. Du bør starte på nytt nå for at den skal tre i kraft (vi gjenoppretter fanene dine).</translation>

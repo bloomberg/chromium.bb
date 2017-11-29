@@ -90,12 +90,12 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="3398288718845740432">Im Chrome-Menü ausblenden</translation>
 <translation id="3451115285585441894">Wird zu Chrome hinzugefügt...</translation>
 <translation id="345171907106878721">Mich zu Chrome hinzufügen</translation>
+<translation id="3479552764303398839">Jetzt nicht</translation>
 <translation id="3612333635265770873">Es ist bekannt, dass ein Modul mit dem gleichen Namen in Konflikt mit Google Chrome steht.</translation>
 <translation id="3622797965165704966">Sie können Chrome jetzt noch einfacher mit Ihrem Google-Konto und auf gemeinsam genutzten Computern verwenden.</translation>
 <translation id="3637702109597584617">Google Chrome OS – <ph name="TERMS_OF_SERVICE_LINK" />Nutzungsbedingungen<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">Dadurch wird 1 Element von diesem Gerät gelöscht. Wenn Sie Ihre Daten später abrufen möchten, melden Sie sich als <ph name="USER_EMAIL" /> in Chrome an.</translation>
 <translation id="3735758079232443276">Die beim Start von Chrome angezeigte Seite wurde durch die Erweiterung <ph name="EXTENSION_NAME" /> geändert.</translation>
-<translation id="3738139272394829648">Zum Suchen tippen</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Aus Chrome entfernen...</translation>
 <translation id="386202838227397562">Schließen Sie alle Google Chrome-Fenster und versuchen Sie es erneut.</translation>
@@ -126,7 +126,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="4664415150087723341">Soeben wurde ein spezielles Sicherheitsupdate für Google Chrome installiert. Führen Sie einen Neustart durch, damit es wirksam wird. Ihre Tabs werden automatisch wiederhergestellt.</translation>
 <translation id="4700157086864140907">Google Chrome bietet eine intelligentere Rechtschreibprüfung, indem der Browser das, was Sie eingeben, an die Google-Server sendet. So steht Ihnen dieselbe Technologie zur Rechtschreibprüfung zur Verfügung, die bei der Google-Suche zum Einsatz kommt.</translation>
 <translation id="4728575227883772061">Installation aufgrund von unbekanntem Fehler fehlgeschlagen. Falls Google Chrome bereits ausgeführt wird, schließen Sie es und versuchen Sie es erneut.</translation>
-<translation id="4743926867934016338">Akzeptieren und suchen</translation>
 <translation id="4750550185319565338">Chrome neu starten, um <ph name="PLUGIN_NAME" /> zu aktivieren</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Diese Datei ist eventuell schädlich und wurde von Chrome blockiert.</translation>
@@ -154,12 +153,9 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="5430073640787465221">Ihre Einstellungsdatei ist beschädigt oder ungültig. Google Chrome kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="5453904507266736060">Google Chrome im Hintergrund ausführen</translation>
 <translation id="5495581687705680288">Module in Google Chrome geladen</translation>
-<translation id="5524843473235508879">Weiterleitung blockiert.</translation>
 <translation id="556024056938947818">Google Chrome versucht, Passwörter anzuzeigen.</translation>
-<translation id="5563479599352954471">Suchen durch einfaches Tippen</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Chrome benötigt für diese Website die Berechtigung, auf Ihr Mikrofon zuzugreifen.</translation>
-<translation id="5620765574781326016">Erfahren Sie mehr über Website-Themen, ohne die Seite zu verlassen.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ist möglicherweise schädlich und wurde daher von Chrome blockiert.</translation>
 <translation id="573759479754913123">Über Chrome OS</translation>
 <translation id="5749068826913805084">Chrome benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
@@ -195,7 +191,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="6697947395630195233">Chrome benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen.</translation>
 <translation id="683440813066116847">Eingangsregel für die Zulassung von mDNS-Verkehr in Google Chrome Canary</translation>
 <translation id="686561893457936865">Chrome überall mitnehmen</translation>
-<translation id="6883876366448858277">sendet ein Wort und den Kontext an die Google-Suche. Als Ergebnis werden Definitionen, Bilder, Suchergebnisse und andere Details zurückgegeben.</translation>
 <translation id="6885412569789873916">Chrome Beta-Apps</translation>
 <translation id="6967962315388095737">Eingangsregel für die Zulassung von mDNS-Verkehr in Google Chrome Beta.</translation>
 <translation id="6970811910055250180">Ihr Gerät wird aktualisiert...</translation>
@@ -217,7 +212,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7437998757836447326">Von Chrome abmelden</translation>
 <translation id="7459554271817304652">Richten Sie die Synchronisierung ein, um Ihre personalisierten Browserfunktionen online zu speichern und über Google Chrome auf jedem Computer darauf zuzugreifen.</translation>
 <translation id="7473136999113284234">Chrome wird automatisch aktualisiert, sodass Sie immer über die neueste Version verfügen.</translation>
-<translation id="7473891865547856676">Nein danke</translation>
 <translation id="7494905215383356681">Open-Source-Lizenzen für Chrome</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Chrome OS in dieser Sprache anzeigen</translation>

@@ -253,7 +253,6 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="3414952576877147120">Grootte:</translation>
 <translation id="3443221991560634068">De huidige pagina opnieuw laden</translation>
 <translation id="3452612588551937789">Log in met je Google-account om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op al je apparaten te gebruiken.</translation>
-<translation id="3479552764303398839">Niet nu</translation>
 <translation id="3487093336331957349">Zoek- en sitesuggesties</translation>
 <translation id="3492207499832628349">Nieuw incognitotabblad</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /> over voorgestelde content</translation>
@@ -315,6 +314,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="3988213473815854515">Locatie is toegestaan</translation>
 <translation id="3997476611815694295">Onbelangrijke opslag</translation>
 <translation id="4002066346123236978">Titel</translation>
+<translation id="4031074602479304239">Chrome heeft voorkomen dat deze site je omleidde naar</translation>
 <translation id="4042870126885713738">Suggesties weergeven wanneer een webadres onjuist is of er geen verbinding kan worden gemaakt</translation>
 <translation id="4046123991198612571">Volgend nummer</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -472,6 +472,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="5512137114520586844">Dit account wordt beheerd door <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Uitgeschakeld door de beheerder van dit apparaat</translation>
 <translation id="5517095782334947753">Je hebt bladwijzers, geschiedenis, wachtwoorden en andere instellingen van <ph name="FROM_ACCOUNT" />.</translation>
+<translation id="5524843473235508879">Omleiding geblokkeerd.</translation>
 <translation id="5527082711130173040">Chrome heeft locatietoegang nodig om naar apparaten te scannen. <ph name="BEGIN_LINK1" />Rechten updaten<ph name="END_LINK1" />. Locatietoegang is ook <ph name="BEGIN_LINK2" />uitgeschakeld voor dit apparaat<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Incognitotabbladen sluiten</translation>
 <translation id="5534640966246046842">Site gekopieerd</translation>
@@ -498,7 +499,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 
 Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiedenis niet verborgen voor je werkgever, je internetprovider of de websites die je bezoekt.</translation>
 <translation id="572328651809341494">Recent gebruikte tabbladen</translation>
-<translation id="572392919096807438">Mijn keuze onthouden</translation>
 <translation id="5726692708398506830">Alles op de pagina vergroten</translation>
 <translation id="5738816946784116349">Chrome-downloads</translation>
 <translation id="5748802427693696783">Overgeschakeld naar standaardtabbladen</translation>
@@ -652,7 +652,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7022756207310403729">Openen in browser</translation>
 <translation id="7029809446516969842">Wachtwoorden</translation>
 <translation id="7031882061095297553">Synchroniseren met</translation>
-<translation id="704059664004611800">Tik om bladwijzers en meer te bekijken</translation>
 <translation id="7053983685419859001">Blokkeren</translation>
 <translation id="7062545763355031412">Accepteren en account wijzigen</translation>
 <translation id="7063006564040364415">Kan geen verbinding maken met synchronisatieserver.</translation>

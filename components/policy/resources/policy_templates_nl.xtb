@@ -30,6 +30,7 @@
 
           Als deze instelling is uitgeschakeld of niet geconfigureerd, wordt de host voor ondersteuning op afstand uitgevoerd in de context van de gebruiker en kan de externe gebruiker geen vensters met een verhoogde bevoegdheid op de desktop gebruiken.</translation>
 <translation id="1096105751829466145">Standaardzoekprovider</translation>
+<translation id="1099282607296956954">Site-isolatie inschakelen voor elke site</translation>
 <translation id="1117535567637097036">De protocolhandlers die via dit beleid zijn ingesteld, worden niet gebruikt bij de verwerking van Android-intenties.</translation>
 <translation id="1122282995569868661">Hiermee geef je het werkbalkicoon van <ph name="PRODUCT_NAME" /> weer</translation>
 <translation id="1128903365609589950">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_NAME" /> gebruikt om gecachte bestanden op schijf op te slaan.
@@ -716,6 +717,13 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
 <translation id="332771718998993005">De naam bepalen die wordt geadverteerd als een bestemming van <ph name="PRODUCT_NAME" />.
 
           Als dit beleid is ingesteld op een niet-lege tekenreeks, wordt die tekenreeks gebruikt als de naam van de <ph name="PRODUCT_NAME" />-bestemming. Anders wordt de apparaatnaam gebruikt voor de bestemmingsnaam. Als dit beleid niet is ingesteld, is de naam van de bestemming de apparaatnaam en kan de eigenaar van het apparaat (of een gebruiker in het domein dat het apparaat beheert) deze naam wijzigen. De naam mag maximaal 24 tekens lang zijn.</translation>
+<translation id="3356249700768900657">
+      OPMERKING: Dit beleid is experimenteel en kan de functionaliteit verstoren.
+      Je kunt de beleidsinstelling IsolateOrigins bekijken om optimaal gebruik te maken van beide functies (isolatie en beperkte impact voor gebruikers) door IsolateOrigins te gebruiken met een lijst van de sites die je wilt isoleren. Met deze instelling (SitePerProcess) worden alle sites geïsoleerd.
+      Als het beleid is ingeschakeld, wordt elke site uitgevoerd in een eigen proces.
+      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica die voorafgaat aan site-isolatie van kracht.
+      Als het beleid niet is geconfigureerd, kan de gebruiker deze instelling wijzigen.
+      </translation>
 <translation id="3381968327636295719"> gebruiken</translation>
 <translation id="3395348522300156660">Hiermee worden de printers gespecificeerd die een gebruiker kan gebruiken.
 
@@ -1086,6 +1094,7 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
           Ga voor voorbeeldpatronen naar https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Een lijst met URL's openen</translation>
 <translation id="4680961954980851756">Automatisch aanvullen inschakelen</translation>
+<translation id="4722122254122249791">Site-isolatie inschakelen voor gespecificeerde herkomsten</translation>
 <translation id="4722399051042571387">Als dit is ingesteld op 'false' (onwaar), kunnen gebruikers geen pincodes instellen die als zwak worden beschouwd en gemakkelijk kunnen worden geraden.
 
           Enkele voorbeelden van zwakke pincodes: pincodes die slechts één cijfer bevatten (1111), pincodes met een oplopende cijferreeks (1234), pincodes met een aflopende cijferreeks (4321) en pincodes die te algemeen zijn.
@@ -1174,6 +1183,12 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
 <translation id="4983201894483989687">Verouderde plug-ins toestaan die actief zijn</translation>
 <translation id="4988291787868618635">Actie die wordt ondernomen wanneer de inactieve vertraging wordt bereikt</translation>
 <translation id="4995548127349206948">Of NTLMv2-verificatie is ingeschakeld.</translation>
+<translation id="5027819375434797927">
+      OPMERKING: Dit beleid is experimenteel en kan de functionaliteit verstoren.
+      Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten in een door komma's gescheiden lijst uitgevoerd in een eigen proces. Hiermee worden ook herkomsten geïsoleerd die worden benoemd door subdomeinen (als je https://example.com/ specificeert, wordt ook https://foo.example.com/ geïsoleerd als onderdeel van de site https://example.com/).
+      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica die voorafgaat aan site-isolatie van kracht.
+      Als het beleid niet is geconfigureerd, kan de gebruiker deze instelling wijzigen.
+      </translation>
 <translation id="5047604665028708335">Toegang toestaan tot sites die zich niet in de inhoudspakketten bevinden</translation>
 <translation id="5052081091120171147">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de browsergeschiedenis wordt geïmporteerd uit de huidige standaardbrowser. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.
 
@@ -2021,39 +2036,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7841880500990419427">Minimale TLS-versie om op terug te vallen</translation>
 <translation id="7842869978353666042">Opties voor Google Drive configureren</translation>
 <translation id="7843525027689416831">Hiermee worden de markeringen gespecificeerd die bij het starten moeten worden toegepast op <ph name="PRODUCT_NAME" />. De opgegeven markeringen worden alleen toegepast op het inlogscherm. Markeringen die worden ingesteld via dit beleid, worden niet doorgevoerd in gebruikerssessies.</translation>
-<translation id="7844537954833753199">Hiermee worden extensiebeheerinstellingen voor <ph name="PRODUCT_NAME" /> ingesteld.
-
-          Met dit beleid worden meerdere instellingen beheerd, waaronder instellingen die worden beheerd door bestaande, aan extensies gerelateerde beleidsregels. Dit beleid overschrijft alle oudere beleidsregels als beide zijn ingesteld.
-
-          Dit beleid wijst een extensie-ID of update-URL toe aan de configuratie. Bij een extensie-ID wordt de configuratie uitsluitend op de opgegeven extensie toegepast. Er kan een standaardconfiguratie worden ingesteld voor de speciale ID <ph name="DEFAULT_SCOPE" />. Deze wordt vervolgens toegepast op alle extensies waarvoor geen aangepaste configuratie is ingesteld in dit beleid. Bij een update-URL wordt de configuratie toegepast op alle extensies met de exacte update-URL die wordt vermeld in het manifest van deze extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          De configuratie voor elke extensie (of extensies met dezelfde update-URL) is een woordenboek dat de onderstaande velden kan bevatten.
-
-          <ph name="INSTALLATION_MODE" />: Is toegewezen aan een tekenreeks die de installatiemodus voor de extensie aangeeft. De geldige tekenreeksen zijn:
-          * <ph name="ALLOWED" />: Staat toe dat de extensie wordt geïnstalleerd door de gebruiker. Dit is het standaardgedrag.
-          * <ph name="BLOCKED" />: Blokkeert de installatie van de extensie.
-          * <ph name="FORCE_INSTALLED" />: De extensie wordt automatisch geïnstalleerd en kan niet worden verwijderd door de gebruiker.
-          * <ph name="NORMAL_INSTALLED" />: De extensie wordt automatisch geïnstalleerd, maar kan worden uitgeschakeld door de gebruiker.
-
-          De <ph name="INSTALLTION_MODE" /> kan ook worden geconfigureerd voor meerdere extensies, waaronder de extensie <ph name="DEFAULT_SCOPE" /> (als standaardinstellingen) en extensies met dezelfde update-URL. Alleen de waarden <ph name="ALLOWED" /> en <ph name="BLOCKED" /> kunnen in dit geval worden gebruikt.
-
-          Als de modus is ingesteld op <ph name="FORCE_INSTALLED" /> of <ph name="NORMAL_INSTALLED" />, moet er ook een <ph name="UPDATE_URL" /> worden ingesteld. Houd er rekening mee dat de in dit beleid ingestelde update-URL alleen wordt gebruikt voor de eerste installatie. Daaropvolgende updates van de extensie gebruiken de update-URL die in het manifest van de extensie is opgenomen. De update-URL moet naar een XML-document met een updatemanifest verwijzen, zoals hierboven genoemd.
-
-          <ph name="BLOCKED_PERMISSIONS" />: Is toegewezen aan een lijst met tekenreeksen die de geblokkeerde API-machtigingen voor de extensie aangeven. De namen van de machtigingen zijn hetzelfde als de tekenreeksen voor machtigingen die zijn opgenomen in het manifest van de extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC3" />. Deze instelling kan ook worden geconfigureerd voor de extensie <ph name="DEFAULT_SCOPE" />. Als de extensie een machtiging nodig heeft die op de blokkeerlijst staat, kan deze niet worden geladen. Als de extensie een geblokkeerde machtiging bevat als optionele vereiste, wordt deze als gebruikelijk behandeld, maar wordt het aanvragen van conflicterende machtigingen automatisch afgewezen tijdens de uitvoering.
-
-          <ph name="ALLOWED_PERMISSIONS" />: Vergelijkbaar met <ph name="BLOCKED_PERMISSIONS" />, maar in dit geval worden sommige machtigingen expliciet toegestaan die wellicht zijn geblokkeerd via lijsten met algemeen geblokkeerde machtigingen. Deze instelling kan daarom niet worden geconfigureerd voor de extensie <ph name="DEFAULT_SCOPE" />. Houd er rekening mee dat deze instelling niet automatisch verleende machtigingen aan extensies geeft.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: Is toegewezen aan een versietekenreeks. De indeling van de versietekenreeks is hetzelfde als de indeling in het manifest van de extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC4" />. Een extensie met een versie ouder dan de opgegeven minimum versie wordt uitgeschakeld. Dit is ook van toepassing op automatisch geïnstalleerde extensies.
-
-          De volgende instellingen kunnen alleen worden gebruikt voor de standaardconfiguratie <ph name="DEFAULT_SCOPE" />:
-
-          <ph name="INSTALL_SOURCES" />: Elk item in deze lijst is een overeenkomstpatroon voor een extensie (<ph name="LINK_TO_MATCH_PATTERNS" />). Gebruikers kunnen gemakkelijk items installeren vanaf elke URL die overeenkomt met een item in deze lijst. De locatie van het <ph name="EXTENSION_SUFFIX_WILDCARD" />-bestand en de pagina waar de download wordt gestart (dat wil zeggen, de verwijzing), moeten beide zijn toegestaan op basis van deze patronen.
-
-          <ph name="ALLOWED_TYPES" />: Met deze instelling worden de toegestane typen extensies/apps die in <ph name="PRODUCT_NAME" /> kunnen worden geïnstalleerd, op een witte lijst gezet. De waarde is een lijst met tekenreeksen waarbij elke tekenreeks een van de volgende moet zijn: <ph name="VALID_ALLOWED_TYPES" />. Raadpleeg de documentatie over <ph name="PRODUCT_NAME" />-extensies voor meer informatie over deze typen.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Als een gebruiker probeert een extensie te installeren, maar deze wordt geblokkeerd door beleid, geeft de Chrome Web Store een algemene foutmelding weer. Met deze instelling kun je tekst toevoegen aan de foutmelding. Deze tekst kan bijvoorbeeld worden gebruikt om gebruikers door te verwijzen naar je helpdesk of uit te leggen waarom een bepaalde extensie wordt geblokkeerd. De foutmelding wordt afgekapt als deze meer dan 1000 tekens bevat.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Accepteert een lijst met hosts waarmee een extensie geen interactie mag hebben. Dit omvat het invoegen van JavaScript, het aanpassen en bekijken van webRequests/webNavigation en het bekijken en aanpassen van cookies. De indeling is vergelijkbaar met overeenkomstpatronen <ph name="LINK_TO_MATCH_PATTERNS" />, behalve dat er geen paden kunnen worden gedefinieerd (zoals "*://*.example.com"). Dit biedt ook ondersteuning voor effectieve TLD-jokertekens ("*://example.*").
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Accepteert een lijst met hosts waarmee een extensie interactie mag hebben, ongeacht of ze worden vermeld in <ph name="RUNTIME_BLOCKED_HOSTS" />. Dit is dezelfde indeling als <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Als dit is ingesteld op SyncDisabled of niet is geconfigureerd, zijn certificaten van <ph name="PRODUCT_OS_NAME" /> niet beschikbaar voor ARC-apps.
 
       Als dit is ingesteld op CopyCaCerts, zijn alle door ONC geïnstalleerde CA-certificaten met <ph name="WEB_TRUSTED_BIT" /> beschikbaar voor ARC-apps.</translation>
@@ -2137,15 +2119,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als het beleid is uitgeschakeld of niet is ingesteld, leidt inloggen tot het gebruik van gewone profielen.</translation>
 <translation id="8158758865057576716">Het maken van roaming-exemplaren voor <ph name="PRODUCT_NAME" />-profielgegevens inschakelen.</translation>
-<translation id="8170878842291747619">Hiermee wordt de geïntegreerde service Google Translate ingeschakeld in <ph name="PRODUCT_NAME" />.
-
-      Als je deze instelling inschakelt, wordt in <ph name="PRODUCT_NAME" /> een geïntegreerde werkbalk weergegeven waarin de gebruiker wordt gevraagd of deze de pagina wil laten vertalen (indien van toepassing).
-
-      Als je deze instelling uitschakelt, krijgen gebruikers de vertaalbalk nooit te zien.
-
-      Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling niet aanpassen of negeren in <ph name="PRODUCT_NAME" />.
-
-      Als je deze instelling niet instelt, kan de gebruiker ervoor kiezen deze functie wel of niet te gebruiken.</translation>
 <translation id="817455428376641507">Verleent toegang tot de vermelde URL's, ter uitzondering op de zwarte lijst voor URL's.
 
       Bekijk de beschrijving van het beleid voor de zwarte lijst voor URL's voor de notatie van items in deze lijst.

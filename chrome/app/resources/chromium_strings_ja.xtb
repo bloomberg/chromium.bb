@@ -73,13 +73,13 @@
 <translation id="3296368748942286671">Chromium を閉じた際にバックグラウンド アプリの処理を続行する</translation>
 <translation id="331951419404882060">ログイン時にエラーが発生したため、Chromium OS はデータを同期できませんでした。</translation>
 <translation id="3474745554856756813">この端末から <ph name="ITEMS_COUNT" /> 件の項目を削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
+<translation id="3479552764303398839">後で</translation>
 <translation id="3509308970982693815">すべての Chromium ウィンドウを閉じてからもう一度お試しください。</translation>
 <translation id="352783484088404971">Chromium から削除...</translation>
 <translation id="3549345495227188780">Chromium OS のスタート ガイド</translation>
 <translation id="3582788516608077514">Chromium を更新しています...</translation>
 <translation id="358997566136285270">Chromium ロゴ</translation>
 <translation id="3713809861844741608">新しい Chromium タブでリンクを開く(&amp;T)</translation>
-<translation id="3738139272394829648">タップして検索</translation>
 <translation id="3762167353400286894">Chromium OS はこの言語で表示されています</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -112,7 +112,6 @@
 <translation id="469338717132742108">Chromium OS のヘルプを見る</translation>
 <translation id="4708774505295300557">前回このパソコンで別のユーザー（<ph name="ACCOUNT_EMAIL_LAST" />）が Chromium にログインしました。情報を個別に保持するには、新しい Chromium ユーザーを作成してください。</translation>
 <translation id="4714956846925717402">Chromium をより迅速に起動</translation>
-<translation id="4743926867934016338">承諾して検索</translation>
 <translation id="4825874709045178029">このサイトを利用するには、Chromium でカメラの使用を許可する必要があります。</translation>
 <translation id="4888717733111232871">mDNS トラフィックを許可する Chromium のインバウンド ルールです。</translation>
 <translation id="4943838377383847465">Chromium はバックグラウンド モードです。</translation>
@@ -129,9 +128,6 @@
 <translation id="5466153949126434691">Chromium は自動的に更新されるため、常に最新版をご利用になれます。このダウンロードが完了すると、Chromium が再起動し、すぐにお使いいただけます。</translation>
 <translation id="5479196819031988440">Chromium OS ではこのページを開けません。</translation>
 <translation id="549669000822060376">Chromium は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
-<translation id="5524843473235508879">リダイレクトがブロックされました。</translation>
-<translation id="5563479599352954471">ワンタップで検索</translation>
-<translation id="5620765574781326016">ウェブサイト上のトピックについて、ページを移動せずに調べることができます。</translation>
 <translation id="5634636535844844681">Chromium のご利用には Windows 7 以上が必要です。</translation>
 <translation id="5680901439334282664">Chromium にログイン</translation>
 <translation id="5698481217667032250">Chromium をこの言語で表示</translation>
@@ -173,7 +169,6 @@
 <translation id="6734291798041940871">Chromium は既にパソコンのすべてのユーザーに対してインストールされています。</translation>
 <translation id="6810143991807788455">現在の設定を送信して Chromium の品質向上にご協力ください</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">機能は、単語とその周辺のコンテキストを Google 検索に送信し、定義、画像などの検索結果を返します。</translation>
 <translation id="6893813176749746474">Chromium が更新されましたが、30 日以上使用されていません。</translation>
 <translation id="6944967875980567883">Chromium に読み込まれているモジュール</translation>
 <translation id="6964305034639999644">Chromium のシークレット ウインドウでリンクを開く(&amp;G)</translation>
@@ -200,7 +195,6 @@
 <ph name="BEGIN_LINK_2" />詳細<ph name="END_LINK_2" />
 
 詳しくは、<ph name="ACCOUNT_EMAIL" /> 宛にメールをお送りしましたのでご確認ください。</translation>
-<translation id="7473891865547856676">スキップ</translation>
 <translation id="7483335560992089831">実行中の Chromium と同じバージョンをインストールすることはできません。Chromium を閉じてからもう一度お試しください。</translation>
 <translation id="7549178288319965365">Chromium OS について</translation>
 <translation id="7577193603922410712">Chromium の特別なセキュリティ アップデートが適用されました。アップデートを反映するため、今すぐ Chromium を再起動してください（タブは復元されます）。</translation>

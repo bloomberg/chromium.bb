@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;પુનઃક્રમાંકિત કરવું પૂર્વવત્ કરો</translation>
 <translation id="1126551341858583091">સ્થાનિક સ્ટોરેજ પરનું કદ <ph name="CRASH_SIZE" /> છે.</translation>
 <translation id="112840717907525620">નીતિ કેશ ઓકે</translation>
-<translation id="113188000913989374"><ph name="SITE" /> આ કહે છે:</translation>
 <translation id="1132774398110320017">Chrome સ્વતઃભરણ સેટિંગ્સ...</translation>
 <translation id="1150979032973867961">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર તમારા કમ્પ્યુટરની ઑપરેટિંગ સિસ્ટમ દ્વારા વિશ્વસનીય નથી. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="1151972924205500581">પાસવર્ડ આવશ્યક છે</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">શું ટેક્સ્ટ ઠીકથી કાઢી હતી?</translation>
 <translation id="5540224163453853">વિનંતી કરેલ લેખ શોધી શકાયો નથી.</translation>
 <translation id="5541546772353173584">ઇમેઇલ ઍડ્રેસ ઉમેરો</translation>
-<translation id="5544037170328430102"><ph name="SITE" /> પરનું એમ્બેડ કરેલ પૃષ્ઠ આ કહે છે:</translation>
 <translation id="5545756402275714221">તમારા માટે લેખ</translation>
 <translation id="5556459405103347317">ફરિથી લોડ કરો</translation>
 <translation id="5560088892362098740">સમાપ્તિ તારીખ</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">કાર્ડની પુષ્ટિ કરો</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">પ્રોફાઇલ પાથ</translation>
-<translation id="7424977062513257142">આ વેબપૃષ્ઠ પરનું એમ્બેડ કરેલ પૃષ્ઠ આ કહે છે:</translation>
 <translation id="7437289804838430631">સંપર્ક માહિતી ઉમેરો</translation>
 <translation id="7441627299479586546">ખોટો નીતિ વિષય</translation>
 <translation id="7444046173054089907">આ સાઇટ અવરોધિત છે</translation>
@@ -1001,7 +998,6 @@
 <translation id="884923133447025588">રદ કરવાની કોઈ મેકેનિઝમ મળી નથી.</translation>
 <translation id="885730110891505394">Google સાથે શેર કરવું</translation>
 <translation id="8866481888320382733">ભૂલ વિશ્લેષણ નીતિ સેટિંગ્સ</translation>
-<translation id="8866959479196209191">આ પૃષ્ઠ આ કહે છે:</translation>
 <translation id="8870413625673593573">તાજેતરમાં બંધ કરેલા</translation>
 <translation id="8874824191258364635">એક માન્ય કાર્ડ નંબર દાખલ કરો</translation>
 <translation id="8876793034577346603">નેટવર્ક ગોઠવણી વિશ્લેષિત થવામાં નિષ્ફળ થઇ.</translation>

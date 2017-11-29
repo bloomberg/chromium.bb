@@ -30,6 +30,7 @@
 
           Si ce paramètre est désactivé ou non configuré, l'hôte d'assistance à distance est exécuté dans le contexte de l'utilisateur et les utilisateurs distants ne peuvent pas interagir avec des fenêtres élevées sur le Bureau.</translation>
 <translation id="1096105751829466145">Moteur de recherche par défaut</translation>
+<translation id="1099282607296956954">Activer l'isolation des sites pour tous les sites</translation>
 <translation id="1117535567637097036">Les gestionnaires de protocoles définis par cette règle ne sont pas utilisés pour gérer les intents Android.</translation>
 <translation id="1122282995569868661">Affiche l'icône de la barre d'outils <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Cette règle permet de configurer le répertoire utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers mis en cache sur le disque.
@@ -728,6 +729,16 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="332771718998993005">Détermine le nom de la destination <ph name="PRODUCT_NAME" />.
 
           Si cette règle est définie sur une chaîne non vide, cette chaîne devient le nom de la destination <ph name="PRODUCT_NAME" />. Sinon, le nom de la destination est le nom de l'appareil. Si cette règle n'est pas définie, le nom de la destination est celui de l'appareil, et le propriétaire de l'appareil (ou un utilisateur du domaine gérant l'appareil) peut le modifier. Le nom est limité à 24 caractères.</translation>
+<translation id="3356249700768900657">
+      REMARQUE : Il s'agit d'une règle expérimentale qui peut bloquer certaines fonctionnalités.
+      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins pour obtenir
+      le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs, et d'utiliser
+      IsolateOrigins avec une liste des sites que vous souhaitez isoler. Le paramètre
+      SitePerProcess isole tous les sites.
+      Si cette règle est activée, chaque site exécute son propre processus.
+      Si elle est désactivée, la logique préliminaire de gestion du processus d'isolation de site prend effet.
+      Si elle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
+      </translation>
 <translation id="3381968327636295719">Utiliser le navigateur hôte par défaut</translation>
 <translation id="3395348522300156660">Indique les imprimantes qu'un utilisateur peut employer.
 
@@ -1100,6 +1111,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
           Pour voir des exemples de formats, accédez à l'adresse https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Ouvrir une liste d'URL</translation>
 <translation id="4680961954980851756">Activer la saisie automatique</translation>
+<translation id="4722122254122249791">Activer l'isolation des sites pour des origines définies</translation>
 <translation id="4722399051042571387">Si la règle est configurée sur "false", les utilisateurs ne pourront pas définir un code faible et facile à deviner.
 
           Quelques exemples de codes faibles : ceux qui ne contiennent qu'un chiffre (1111), les suites de chiffres croissantes (1234) et décroissantes (4321), et les codes trop communs.
@@ -1201,6 +1213,17 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 <translation id="4983201894483989687">Autoriser l'exécution de plug-ins obsolètes</translation>
 <translation id="4988291787868618635">Action à effectuer au terme du délai d'inactivité</translation>
 <translation id="4995548127349206948">Contrôler l'activation ou la désactivation de l'authentification NTLMv2.</translation>
+<translation id="5027819375434797927">
+      REMARQUE : Il s'agit d'une règle expérimentale qui peut bloquer certaines fonctionnalités.
+      Si cette règle est activée, chacune des origines définies et répertoriées dans
+      une liste d'éléments séparés par des virgules exécute son propre processus. Elle isole également
+      les origines par sous-domaines. Par exemple, si vous indiquez
+      "https://example.com/",
+      https://foo.example.com/ est également isolé en tant que partie du site
+      https://example.com/.
+      Si cette règle est désactivée, la logique préliminaire de gestion du processus d'isolation de site prend effet.
+      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
+      </translation>
 <translation id="5047604665028708335">Autoriser l'accès aux sites en dehors des packs de contenu</translation>
 <translation id="5052081091120171147">Lorsqu'elle est activée, cette règle force l'importation de l'historique de navigation à partir du navigateur par défaut actuel. Si elle est activée, elle affecte également la boîte de dialogue d'importation. 
 
@@ -2053,39 +2076,6 @@ Si cette règle n'est pas configurée, la règle "AllowImages" est utilisée, et
 <translation id="7841880500990419427">Version minimale de TLS à utiliser en remplacement</translation>
 <translation id="7842869978353666042">Configurer les options Google Drive</translation>
 <translation id="7843525027689416831">Spécifie les indicateurs à appliquer à <ph name="PRODUCT_NAME" /> au démarrage. Ceux-ci ne sont appliqués que sur l'écran de connexion. Les indicateurs définis par cette règle ne se propagent pas dans les sessions utilisateur.</translation>
-<translation id="7844537954833753199">Configure les paramètres de gestion d'extension pour <ph name="PRODUCT_NAME" />.
-
-          Cette règle contrôle plusieurs paramètres, y compris ceux contrôlés par des règles associées à une extension. Le cas échéant, elle remplace les anciennes règles.
-
-          Cette règle fait correspondre un ID d'extension ou une URL de mise à jour avec sa configuration. Avec un ID d'extension, la configuration n'est appliquée qu'à l'extension spécifiée. Une configuration par défaut peut être définie pour l'ID spécial <ph name="DEFAULT_SCOPE" />, lequel s'applique à toutes les extensions dépourvues d'une configuration personnalisée dans cette règle. Avec une URL de mise à jour, la configuration est appliquée à l'ensemble des extensions avec l'URL de mise à jour telle qu'elle est indiquée dans le fichier manifeste de cette extension, comme précisé sur la page <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          La configuration de chaque extension (ou des extensions ayant la même URL de mise à jour) constitue un autre dictionnaire pouvant contenir les champs documentés ci-dessous.
-
-          <ph name="INSTALLATION_MODE" /> : mappe vers une chaîne qui indique le mode d'installation de l'extension. Les chaînes valides sont les suivantes :
-          * <ph name="ALLOWED" /> : permet l'installation de l'extension par l'utilisateur. Il s'agit du comportement par défaut.
-          * <ph name="BLOCKED" /> : bloque l'installation de l'extension.
-          * <ph name="FORCE_INSTALLED" /> : l'extension est installée automatiquement et ne peut pas être supprimée par l'utilisateur.
-          * <ph name="NORMAL_INSTALLED" /> : l'extension est installée automatiquement, mais elle peut être désactivée par l'utilisateur.
-
-          Le champ "<ph name="INSTALLTION_MODE" />" peut également être configuré pour plusieurs extensions, dont l'extension <ph name="DEFAULT_SCOPE" /> (comme paramètre par défaut) et les extensions ayant la même URL de mise à jour. Dans ce cas, seules les valeurs <ph name="ALLOWED" /> et <ph name="BLOCKED" /> peuvent être utilisées.
-
-          Si le mode est défini sur "<ph name="FORCE_INSTALLED" />" ou "<ph name="NORMAL_INSTALLED" />", une URL de mise à jour ("<ph name="UPDATE_URL" />") doit également être configurée. Notez que l'URL de mise à jour définie dans cette règle est seulement utilisée pour l'installation initiale ; les mises à jour ultérieures de l'extension utiliseront l'URL qui est indiquée dans le fichier manifeste de l'extension. L'URL de mise à jour doit toujours pointer vers un document XML "Update Manifest", comme précisé ci-dessus.
-
-          <ph name="BLOCKED_PERMISSIONS" /> : mappe vers une liste de chaînes indiquant les autorisations d'API bloquées pour l'extension. Les noms des autorisations sont identiques aux chaînes d'autorisations déclarées dans le fichier manifeste de l'extension, comme indiqué sur la page <ph name="LINK_TO_EXTENSION_DOC3" />. Ce paramètre peut également être configuré pour l'extension "<ph name="DEFAULT_SCOPE" />". Si l'extension nécessite une autorisation qui figure sur la liste de blocage, son chargement n'est pas autorisé. Si elle contient une autorisation bloquée en tant qu'exigence facultative, elle est traitée normalement, mais les autorisations en conflit seront refusées automatiquement au moment de l'exécution.
-
-          <ph name="ALLOWED_PERMISSIONS" /> : semblable à "<ph name="BLOCKED_PERMISSIONS" />", mais autorise explicitement certaines autorisations qui sont peut-être bloquées par une liste de blocage globale ; la configuration étant donc impossible pour l'extension "<ph name="DEFAULT_SCOPE" />". Notez que ce paramètre n'accorde pas automatiquement d'autorisations aux extensions.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" /> : mappe vers une chaîne de version. Le format de cette chaîne de version est identique à celui utilisé dans le fichier manifeste de l'extension, comme indiqué sur la page <ph name="LINK_TO_EXTENSION_DOC4" />. Une extension présentant une version plus ancienne que la version minimale spécifiée sera désactivée. Cela s'applique également aux extensions de type "force-installed".
-
-          Les paramètres suivants ne peuvent être utilisés que pour la configuration "<ph name="DEFAULT_SCOPE" />" par défaut :
-
-          <ph name="INSTALL_SOURCES" /> : chaque élément de cette liste est un schéma de correspondance de style extension (voir <ph name="LINK_TO_MATCH_PATTERNS" />). Les utilisateurs pourront facilement installer des éléments depuis n'importe quelle URL correspondant à un élément de cette liste. L'emplacement du fichier <ph name="EXTENSION_SUFFIX_WILDCARD" /> et la page de téléchargement (page de provenance) doivent tous deux être autorisés par ces schémas.
-
-          <ph name="ALLOWED_TYPES" /> : ce paramètre ajoute à la liste blanche les types d'extensions ou d'applications qui peuvent être installés dans <ph name="PRODUCT_NAME" />. Il s'agit d'une liste de chaînes qui peuvent prendre les valeurs suivantes : <ph name="VALID_ALLOWED_TYPES" />. Pour obtenir davantage d'informations sur ces types, veuillez consulter la documentation relative aux extensions de <ph name="PRODUCT_NAME" />.
-          <ph name="BLOCKED_INSTALL_MESSAGE" /> : si un utilisateur essaie d'installer une extension, mais qu'elle est bloquée par une règle, le Chrome Web Store affiche un message d'erreur générique. Ce paramètre vous permet d'ajouter du texte au message d'erreur. Ceci peut être utilisé pour rediriger les utilisateurs vers votre centre d'assistance, expliquer pourquoi une extension spécifique est bloquée ou pour tout autre message. Ce message d'erreur sera tronqué s'il dépasse 1 000 caractères.
-          <ph name="RUNTIME_BLOCKED_HOSTS" /> : accepte une liste d'hôtes avec lesquels une extension ne pourra pas interagir. Cela inclut l'injection de JavaScript, la modification et l'affichage de webRequests/webNavigation, ainsi que la modification et l'affichage de cookies. Le format est semblable à Match Patterns (<ph name="LINK_TO_MATCH_PATTERNS" />), sauf qu'aucun chemin ne peut être défini. Par exemple : "*://*.example.com". Les caractères génériques TLD (par exemple : "*://example.*") sont également acceptés.
-          <ph name="RUNTIME_ALLOWED_HOSTS" /> : accepte une liste d'hôtes avec lesquels une extension peut interagir, qu'ils soient répertoriés dans <ph name="RUNTIME_BLOCKED_HOSTS" /> ou non. Il s'agit du même format que <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Si la règle est définie sur SyncDisabled ou n'est pas configurée, les certificats <ph name="PRODUCT_OS_NAME" /> ne sont pas disponibles pour les applications ARC.
 
       Si la règle est définie sur CopyCaCerts, tous les certificats CA installés via ONC avec <ph name="WEB_TRUSTED_BIT" /> sont disponibles pour les applications ARC.</translation>
@@ -2169,15 +2159,6 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 
       Si la règle est désactivée ou si elle n'est pas paramétrée, les profils standards sont activés au moment de la connexion.</translation>
 <translation id="8158758865057576716">Permet de créer des copies itinérantes pour les données de profil <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8170878842291747619">Active le service Google Traduction intégré sur <ph name="PRODUCT_NAME" />. 
-
-Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> affichera, le cas échéant, une offre intégrée à la barre d'outils de traduction de la page. 
-
-Si vous le désactivez, les utilisateurs ne verront jamais la barre de traduction. 
-
-Dans les deux cas, les utilisateurs ne peuvent pas le modifier ou le remplacer dans <ph name="PRODUCT_NAME" />. 
-
-Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette fonction ou non.</translation>
 <translation id="817455428376641507">Permet d'accéder aux URL répertoriées comme des exceptions à la liste noire des URL.
 
       Consultez la description des règles de liste noire d'URL pour connaître le format des entrées de cette liste.

@@ -73,13 +73,13 @@
 <translation id="3296368748942286671">Continuar a executar aplicações em segundo plano quando o Chromium está fechado</translation>
 <translation id="331951419404882060">O Chromium não conseguiu sincronizar os dados devido a um erro no início de sessão.</translation>
 <translation id="3474745554856756813">Esta ação elimina <ph name="ITEMS_COUNT" /> itens deste dispositivo. Para recuperar os dados mais tarde, inicie sessão no Chromium como <ph name="USER_EMAIL" />.</translation>
+<translation id="3479552764303398839">Agora não</translation>
 <translation id="3509308970982693815">Feche todas as janelas do Chromium e tente novamente.</translation>
 <translation id="352783484088404971">Remover do Chromium...</translation>
 <translation id="3549345495227188780">Introdução ao SO Chromium</translation>
 <translation id="3582788516608077514">A atualizar o Chromium...</translation>
 <translation id="358997566136285270">Logótipo do Chromium</translation>
 <translation id="3713809861844741608">Abrir link num novo &amp;separador do Chromium</translation>
-<translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3762167353400286894">O SO Chromium é apresentado neste idioma</translation>
 <translation id="378917192836375108">O Chromium permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -112,7 +112,6 @@
 <translation id="469338717132742108">Obter ajuda relacionada com o SO Chromium</translation>
 <translation id="4708774505295300557">Alguém iniciou sessão no Chromium neste computador anteriormente com a conta <ph name="ACCOUNT_EMAIL_LAST" />. Crie um novo utilizador do Chromium para manter as informações em separado.</translation>
 <translation id="4714956846925717402">Aceder mais rapidamente ao Chromium</translation>
-<translation id="4743926867934016338">Aceitar e pesquisar</translation>
 <translation id="4825874709045178029">O Chromium necessita de autorização de acesso à câmara para este site.</translation>
 <translation id="4888717733111232871">Regra de importação para o Chromium permitir o tráfego mDNS.</translation>
 <translation id="4943838377383847465">O Chromium está no modo em segundo plano.</translation>
@@ -129,9 +128,6 @@
 <translation id="5466153949126434691">O Chromium é atualizado automaticamente para que tenha sempre a versão mais recente. Quando a transferência estiver concluída, o Chromium irá reiniciar e o processo estará terminado.</translation>
 <translation id="5479196819031988440">O SO Chromium não consegue abrir esta página.</translation>
 <translation id="549669000822060376">Aguarde até que o Chromium instale as atualizações do sistema mais recentes.</translation>
-<translation id="5524843473235508879">Redirecionamento bloqueado.</translation>
-<translation id="5563479599352954471">Pesquisar com um toque</translation>
-<translation id="5620765574781326016">Saiba mais acerca de tópicos em Sites sem sair da página.</translation>
 <translation id="5634636535844844681">O Chromium requer o Windows 7 ou superior.</translation>
 <translation id="5680901439334282664">inicie sessão no Chromium</translation>
 <translation id="5698481217667032250">Apresentar o Chromium neste idioma</translation>
@@ -173,7 +169,6 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="6734291798041940871">O Chromium já está instalado para todos os utilizadores no seu computador.</translation>
 <translation id="6810143991807788455">Ajude a melhorar o Chromium ao comunicar as definições atuais</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">envia uma palavra e o respetivo contexto circundante à Pesquisa Google, que devolve definições, imagens e outros resultados da pesquisa.</translation>
 <translation id="6893813176749746474">O Chromium foi atualizado, mas já não o utiliza há, pelo menos, 30 dias.</translation>
 <translation id="6944967875980567883">Módulos carregados no Chromium</translation>
 <translation id="6964305034639999644">Abrir link numa janela de nave&amp;gação anónima do Chromium</translation>
@@ -200,7 +195,6 @@ Para evitar que <ph name="NEW_PROFILE_NAME" /> aceda à sua conta, certifique-se
 <ph name="BEGIN_LINK_2" />Saber mais<ph name="END_LINK_2" />
 
 Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" />.</translation>
-<translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7483335560992089831">Não é possível instalar a mesma versão do Chromium que está atualmente em execução. Feche o Chromium e tente novamente.</translation>
 <translation id="7549178288319965365">Acerca do SO Chromium</translation>
 <translation id="7577193603922410712">Acabou de ser instalada uma atualização de segurança especial para o Chromium. Deve reiniciar agora para que tenha efeito (iremos restaurar os seus separadores).</translation>

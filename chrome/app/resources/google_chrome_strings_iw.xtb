@@ -90,12 +90,12 @@
 <translation id="3398288718845740432">‏הסתרה בתפריט Chrome</translation>
 <translation id="3451115285585441894">‏הוספה ל-‏Chrome...</translation>
 <translation id="345171907106878721">‏הוסף את עצמך ל-Chrome</translation>
+<translation id="3479552764303398839">לא עכשיו</translation>
 <translation id="3612333635265770873">‏מודול בעל אותו שם מתנגש עם Google Chrome.</translation>
 <translation id="3622797965165704966">‏קל יותר כעת להשתמש ב-Chrome באמצעות חשבון Google שלך ובמחשבים משותפים.</translation>
 <translation id="3637702109597584617">‏<ph name="TERMS_OF_SERVICE_LINK" />תנאים והגבלות<ph name="END_TERMS_OF_SERVICE_LINK" /> של Google Chrome OS</translation>
 <translation id="3718181793972440140">‏פעולה זו תמחק פריט אחד מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chrome עם <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">‏התוסף "<ph name="EXTENSION_NAME" />" שינה את הדף שמוצג כשאתה מפעיל את Chrome.</translation>
-<translation id="3738139272394829648">גע כדי לחפש</translation>
 <translation id="3780814664026482060">‏Chrome - ‏<ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">‏הסר מ-Chrome...</translation>
 <translation id="386202838227397562">‏סגור את כל החלונות של Google Chrome ונסה שוב.</translation>
@@ -126,7 +126,6 @@
 <translation id="4664415150087723341">‏בוצע עדכון אבטחה מיוחד של Google Chrome. עליך לאתחל עכשיו כדי שהעדכון יופעל (נשחזר את הכרטיסיות שלך).</translation>
 <translation id="4700157086864140907">‏Google Chrome יכול לספק בדיקת איות חכמה יותר על ידי כך שהוא שולח את מה שאתה מקליד בדפדפן לשרתי Google, ומאפשר לך להשתמש באותה טכנולוגיית בדיקת איות ש'חיפוש Google' משתמש בה.</translation>
 <translation id="4728575227883772061">‏ההתקנה נכשלה בשל שגיאה לא צפויה. אם Google Chrome פועל כעת, סגור אותו ונסה שוב.</translation>
-<translation id="4743926867934016338">אשר וחפש</translation>
 <translation id="4750550185319565338">‏הפעל מחדש את Chrome כדי להפעיל את <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">‏גרסה ניסיונית של Google Chrome‏ (mDNS-In)</translation>
 <translation id="4771048833395599659">‏Chrome‏ חסם את הקובץ הזה כי הוא עלול להיות מסוכן.</translation>
@@ -154,12 +153,9 @@
 <translation id="5430073640787465221">‏קובץ ההעדפות שלך פגום או לא חוקי. Google Chrome לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="5453904507266736060">‏אפשר ל-Google Chrome לפעול ברקע</translation>
 <translation id="5495581687705680288">‏מודולים שנטענו ב-Google Chrome</translation>
-<translation id="5524843473235508879">הפניה לכתובת אתר אחרת נחסמה.</translation>
 <translation id="556024056938947818">‏Google Chrome מנסה להציג סיסמאות.</translation>
-<translation id="5563479599352954471">חיפוש בנגיעה אחת</translation>
 <translation id="5566025111015594046">‏Google Chrome‏ (mDNS-In)</translation>
 <translation id="557283862590186398">‏Chrome זקוק להרשאת גישה אל המיקרופון בשביל האתר הזה.</translation>
-<translation id="5620765574781326016">קרא מידע על נושאים באתרים בלי לעזוב את הדף.</translation>
 <translation id="565744775970812598">‏<ph name="FILE_NAME" /> עלול להיות מסוכן, ולכן Chrome חסם אותו.</translation>
 <translation id="573759479754913123">‏מידע על מערכת ההפעלה של Chrome</translation>
 <translation id="5749068826913805084">‏לצורך הורדת קבצים, Chrome זקוק לגישה לאחסון.</translation>
@@ -195,7 +191,6 @@
 <translation id="6697947395630195233">‏Chrome זקוק לגישה אל המיקום שלך כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="683440813066116847">‏כלל נכנס עבור הגרסה הניסיונית של Google Chrome על מנת לאפשר תנועת mDNS.</translation>
 <translation id="686561893457936865">‏לוקחים את Chrome לכל מקום</translation>
-<translation id="6883876366448858277">‏שולח לחיפוש Google מילה יחד עם ההקשר סביבה. מחזיר הגדרות, תמונות, ותוצאות חיפוש נוספות.</translation>
 <translation id="6885412569789873916">‏אפליקציות לגרסת הביטא של Chrome</translation>
 <translation id="6967962315388095737">‏כלל נכנס לגרסת הביטא של Google Chrome כדי לאפשר תנועת mDNS.</translation>
 <translation id="6970811910055250180">מעדכן את המכשיר שלך...</translation>
@@ -217,7 +212,6 @@
 <translation id="7437998757836447326">‏יציאה מ-Chrome</translation>
 <translation id="7459554271817304652">‏הגדר סנכרון כדי לשמור את תכונות הדפדפן המותאמות אישית שלך באינטרנט ולגשת אליהן מ-Google Chrome בכל מחשב.</translation>
 <translation id="7473136999113284234">‏Chrome מתעדכן באופן אוטומטי, כך שתמיד נמצאת ברשותך הגרסה העדכנית ביותר.</translation>
-<translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7494905215383356681">‏רישיונות קוד פתוח של Chrome</translation>
 <translation id="7535429826459677826">‏גרסת הפיתוח של Google Chrome</translation>
 <translation id="7552219221109926349">‏הצג את מערכת ההפעלה של Chrome בשפה זו</translation>

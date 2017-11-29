@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Annuler la réorganisation</translation>
 <translation id="1126551341858583091">La taille sur l'espace de stockage local est de <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Cache de la règle valide.</translation>
-<translation id="113188000913989374"><ph name="SITE" /> indique :</translation>
 <translation id="1132774398110320017">Paramètres de saisie automatique de Chrome…</translation>
 <translation id="1150979032973867961">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre ordinateur. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1151972924205500581">Veuillez saisir un mot de passe</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">Le texte a-t-il été extrait correctement ?</translation>
 <translation id="5540224163453853">Impossible de trouver l'article demandé.</translation>
 <translation id="5541546772353173584">Ajouter une adresse e-mail</translation>
-<translation id="5544037170328430102">Une page intégrée à l'adresse <ph name="SITE" /> indique :</translation>
 <translation id="5545756402275714221">Articles pour vous</translation>
 <translation id="5556459405103347317">Actualiser</translation>
 <translation id="5560088892362098740">Date d'expiration</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Valider la carte</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Chemin d'accès au profil</translation>
-<translation id="7424977062513257142">Une page intégrée à cette page Web indique :</translation>
 <translation id="7437289804838430631">Ajouter des coordonnées</translation>
 <translation id="7441627299479586546">Objet de la règle incorrect.</translation>
 <translation id="7444046173054089907">Ce site est bloqué</translation>
@@ -1001,7 +998,6 @@
 <translation id="884923133447025588">Aucun système de révocation trouvé</translation>
 <translation id="885730110891505394">Partage avec Google</translation>
 <translation id="8866481888320382733">Erreur d'analyse des paramètres de la règle.</translation>
-<translation id="8866959479196209191">Cette page indique :</translation>
 <translation id="8870413625673593573">Récemment fermés</translation>
 <translation id="8874824191258364635">Saisissez un numéro de carte valide</translation>
 <translation id="8876793034577346603">Échec de l'analyse de la configuration du réseau.</translation>

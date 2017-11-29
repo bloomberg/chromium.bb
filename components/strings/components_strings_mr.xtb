@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;पुनर्क्रमित करा पूर्ववत करा</translation>
 <translation id="1126551341858583091">स्थानिक संचयावरील आकार <ph name="CRASH_SIZE" /> आहे.</translation>
 <translation id="112840717907525620">धोरण कॅश   ठीक</translation>
-<translation id="113188000913989374"><ph name="SITE" /> म्हणते:</translation>
 <translation id="1132774398110320017">Chrome स्वयंभरण सेटिंग्ज...</translation>
 <translation id="1150979032973867961">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता प्रमाणपत्र आपल्या संगणकाच्या ऑपरेटिंग प्रणालीद्वारे विश्वसनीय नाही. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते.</translation>
 <translation id="1151972924205500581">पासवर्ड आवश्यक</translation>
@@ -308,7 +307,7 @@
           <ph name="PLATFORM_TEXT" /></translation>
 <translation id="320323717674993345">पेमेंट रद्द करा</translation>
 <translation id="3207960819495026254">बुकमार्क केलेली</translation>
-<translation id="3209375525920864198">कृपया बरोबर सेशन नाव टाका.</translation>
+<translation id="3209375525920864198">कृपया एक वैध सेशन नाव टाका.</translation>
 <translation id="3211223744486044430">पुढील वेळी जलद पेमेंट देण्यासाठी, तुमच्या Google खात्यावर आणि या डीव्हाइसवर हे कार्ड सेव्ह करा.</translation>
 <translation id="3225919329040284222">सर्व्हरने असे प्रमाणपत्र सादर केले आहे जे अंगभूत अपेक्षांशी जुळत नाही. या अपेक्षा आपल्याला संरक्षित करण्यासाठी विशिष्ट, उच्च-सुरक्षिततेच्या वेबसाइटसाठी समाविष्ट केल्या आहेत.</translation>
 <translation id="3226128629678568754">पृष्ठ लोड करण्यास आवश्यक असलेला डेटा पुन्हा सबमिट करण्यासाठी रीलोड बटण दाबा.</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">मजकूर योग्यरितीने काढला होता?</translation>
 <translation id="5540224163453853">विनंती केलेला लेख शोधू शकलो नाही.</translation>
 <translation id="5541546772353173584">ईमेल जोडा</translation>
-<translation id="5544037170328430102"><ph name="SITE" /> वरील एम्बेड केलेले पृष्ठ म्हणते:</translation>
 <translation id="5545756402275714221">तुमच्यासाठी लेख</translation>
 <translation id="5556459405103347317">रीलोड करा</translation>
 <translation id="5560088892362098740">एक्सपायर होण्याची तारीख</translation>
@@ -639,6 +637,7 @@
 <translation id="5675650730144413517">हे पृष्ठ कार्य करीत नाही</translation>
 <translation id="5685654322157854305">पाठवण्याचा पत्ता जोडा</translation>
 <translation id="5689199277474810259">JSON वर निर्यात करा</translation>
+<translation id="5689516760719285838">स्थान</translation>
 <translation id="5710435578057952990">या वेबसाइटची ओळख सत्यापित केली गेली नाही.</translation>
 <translation id="5719499550583120431">प्रीपेड कार्डे स्वीकारली जातात.</translation>
 <translation id="5720705177508910913">वर्तमान वापरकर्ता</translation>
@@ -822,7 +821,6 @@
 <translation id="7390545607259442187">कार्डची पुष्टी करा</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">प्रोफाइल पथ</translation>
-<translation id="7424977062513257142">या वेबपृष्ठावरील एम्बेड केलेले पृष्ठ म्हणते:</translation>
 <translation id="7437289804838430631">संपर्क माहिती जोडा</translation>
 <translation id="7441627299479586546">चुकीचे धोरण विषय</translation>
 <translation id="7444046173054089907">ही साइट अवरोधित केली आहे</translation>
@@ -979,7 +977,7 @@
 <translation id="858637041960032120">फोन नंबर जोडा</translation>
 <translation id="859285277496340001">प्रमाणपत्र निरस्त झाले आहे किंवा नाही हे तपासण्यासाठी प्रणाली निर्दिष्ट करत नाही.</translation>
 <translation id="8620436878122366504">आपल्या पालकांनी अद्याप ती मंजूर केली नाही</translation>
-<translation id="8625384913736129811">हे कार्ड या डिव्हाइसवर सेव्ह करा</translation>
+<translation id="8625384913736129811">या डिव्हाइसवर हे कार्ड सेव्‍ह करा</translation>
 <translation id="8647750283161643317">सर्व डीफॉल्टमध्ये रीसेट करा</translation>
 <translation id="8660471606262461360">Google Payments वरून</translation>
 <translation id="8688672835843460752">उपलब्ध</translation>
@@ -1001,7 +999,6 @@
 <translation id="884923133447025588">कोणतीही निरस्त करण्याची प्रणाली आढळली नाही.</translation>
 <translation id="885730110891505394">Google सह सामायिकरण</translation>
 <translation id="8866481888320382733">धोरण सेटिंग्ज विश्लेषित करताना त्रुटी</translation>
-<translation id="8866959479196209191">हे पृष्ठ म्हणते:</translation>
 <translation id="8870413625673593573">अलीकडे बंद</translation>
 <translation id="8874824191258364635">वैध कार्ड नंबर एंटर करा</translation>
 <translation id="8876793034577346603">विश्लेषण करण्यात नेटवर्क कॉन्फिगरेशन अयशस्वी.</translation>

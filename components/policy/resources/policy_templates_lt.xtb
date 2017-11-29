@@ -30,6 +30,7 @@
 
           Jei šis nustatymas išjungtas arba nesukonfigūruotas, nuotolinės pagalbos prieglobos serveris bus vykdomas naudotojo kontekste ir nuotoliniai naudotojai negalės sąveikauti su pakeltais langais staliniame kompiuteryje.</translation>
 <translation id="1096105751829466145">Numatytasis paieškos teikėjas</translation>
+<translation id="1099282607296956954">Įgalinti visų svetainių atskyrimą</translation>
 <translation id="1117535567637097036">Protokolų doroklės, nustatytos pagal šią politiką, nenaudojamos apdorojant „Android“ tikslus.</translation>
 <translation id="1122282995569868661">Rodoma „<ph name="PRODUCT_NAME" />“ įrankių juostos piktograma</translation>
 <translation id="1128903365609589950">Konfigūruojamas katalogas, kurį „<ph name="PRODUCT_NAME" />“ naudos, kad išsaugotų talpykloje saugomus failus diske.
@@ -720,6 +721,16 @@
 <translation id="332771718998993005">Pavadinimo, reklamuojamo kaip „<ph name="PRODUCT_NAME" />“ paskirties vieta, nustatymas.
 
           Jei ši politika nustatyta kaip ne tuščia eilutė, ta eilutė bus naudojama kaip „<ph name="PRODUCT_NAME" />“ paskirties vietos pavadinimas. Kitu atveju paskirties vietos pavadinimas bus įrenginio pavadinimas. Jei ši politika nenustatyta, paskirties vietos pavadinimas bus įrenginio pavadinimas, o įrenginio savininkas (arba naudotojas iš domeno, kuriame tvarkomas įrenginys) galės jį pakeisti. Pavadinimas ribojamas iki 24 simbolių.</translation>
+<translation id="3356249700768900657">
+      PASTABA. Ši politika yra eksperimentinė ir gali sugadinti kai kurias funkcijas!
+      Jums gali būti naudinga peržiūrėti politikos nustatymą „IsolateOrigins“, kad galėtumėte geriausiai
+      išnaudoti tiek atskyrimą, tiek ribotą įtaką naudotojams, pasitelkdami
+      „IsolateOrigins“ su norimų atskirti svetainių sąrašu. Nustatymu
+      „SitePerProcess“ atskiriamos visos svetainės.
+      Įgalinus politiką kiekviena svetainė vykdys savo procesą.
+      Išjungus politiką įsigalios išankstinio svetainės atskyrimo proceso tvarkymo logika.
+      Jei politika nesukonfigūruota, naudotojas šį nustatymą galės pakeisti.
+      </translation>
 <translation id="3381968327636295719">Pagal numatytuosius nustatymus naudoti prieglobos naršyklę</translation>
 <translation id="3395348522300156660">Nurodomi spausdintuvai, kuriuos gali naudoti naudotojas.
 
@@ -1091,6 +1102,7 @@
           Šablonų pavyzdžių pateikiama apsilankius adresu https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Atidaryti URL sąrašą</translation>
 <translation id="4680961954980851756">Įgalinti automatinį pildymą</translation>
+<translation id="4722122254122249791">Įgalinti konkrečių šaltinių svetainių atskyrimą</translation>
 <translation id="4722399051042571387">Jei ši politika nustatyta į „false“, naudotojai negalės nustatyti PIN kodų, kurie yra nesaugūs ir lengvai atspėjami.
 
           Nesaugių PIN kodų pavyzdžiai: tik iš vieno skaitmens sudaryti PIN kodai (1111), PIN kodai, kurių skaitmenys didėja 1 (1234), PIN kodai, kurių skaitmenys mažėja 1 (4321), ir dažnai naudojami PIN kodai.
@@ -1190,6 +1202,16 @@
 <translation id="4983201894483989687">Leisti paleisti pasenusius papildinius</translation>
 <translation id="4988291787868618635">Veiksmas, kuris bus atliktas, kai bus pasiektas neveikos delsos laikas</translation>
 <translation id="4995548127349206948">Ar įgalintas „NTLMv2“ autentifikavimas.</translation>
+<translation id="5027819375434797927">
+      PASTABA. Ši politika yra eksperimentinė ir gali sugadinti kai kurias funkcijas!
+      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas
+      į kableliais atskirtų verčių sąrašą, vykdys savo procesą. Taip pat bus atskiriami
+      šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/ taip pat
+      bus atskiriamas ir padomenis https://foo.example.com/
+      kaip svetainės https://example.com/ dalis.
+      Išjungus politiką įsigalios išankstinio svetainės atskyrimo proceso tvarkymo logika.
+      Jei politika nesukonfigūruota, naudotojas šį nustatymą galės pakeisti.
+      </translation>
 <translation id="5047604665028708335">Leisti pasiekti svetaines, nesančias turinio paketuose</translation>
 <translation id="5052081091120171147">Pagal šią politiką naršymo istorija priverstinai importuojama iš esamos numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.
 
@@ -2039,39 +2061,6 @@
 <translation id="7841880500990419427">Minimalios versijos numatytasis TLS</translation>
 <translation id="7842869978353666042">„Google“ disko parinkčių konfigūravimas</translation>
 <translation id="7843525027689416831">Nurodomos žymos, kurios turėtų būti pritaikytos, kai paleidžiama „<ph name="PRODUCT_NAME" />“. Nurodytos žymos pritaikomos tik prisijungimo ekrane. Naudojant šią politiką išsiųstos žymos nepertraukia naudotojų sesijų.</translation>
-<translation id="7844537954833753199">Konfigūruojami „<ph name="PRODUCT_NAME" />“ plėtinių valdymo nustatymai.
-
-          Ši politika valdo kelis nustatymus, įskaitant esamos su plėtiniais susijusios politikos valdomus nustatymus. Ši politika nepaisys pasenusios politikos, jei bus nustatytos abi.
-
-          Ši politika susieja plėtinio ID arba naujinio URL su konfigūracija. Naudojant plėtinio ID konfigūracija bus taikoma tik nurodytam plėtiniui. Specialiam ID „<ph name="DEFAULT_SCOPE" />“ galima nustatyti numatytąją konfigūraciją, kuri bus taikoma visiems plėtiniams, kurių tinkinta konfigūracija nenustatyta šioje politikoje. Naudojant naujinio URL konfigūracija bus taikoma visiems plėtiniams su tiksliu naujinio URL, nurodytu šio plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Kiekvieno plėtinio (ar plėtinių su tuo pačiu naujinio URL) konfigūracija sudaro kitą žodyną, į kurį gali būti įtraukti toliau dokumentuojami laukai.
-
-          „<ph name="INSTALLATION_MODE" />“: susieja su eilute, nurodančia plėtinio diegimo režimą. Toliau pateikiamos tinkamos eilutės.
-          * „<ph name="ALLOWED" />“: naudotojui leidžiama įdiegti plėtinį. Tai numatytoji elgsena.
-          * „<ph name="BLOCKED" />“: užblokuoja plėtinio diegimą.
-          * „<ph name="FORCE_INSTALLED" />“: plėtinys automatiškai įdiegiamas ir naudotojas negali jo pašalinti.
-          * „<ph name="NORMAL_INSTALLED" />“: plėtinys automatiškai įdiegiamas, bet naudotojas gali jį išjungti.
-
-          „<ph name="INSTALLTION_MODE" />“ taip pat galima konfigūruoti keliems plėtiniams, įskaitant plėtinį „<ph name="DEFAULT_SCOPE" />“ (kaip numatytuosius nustatymus) ir plėtinius su tuo pačiu naujinio URL. Šiuo atveju galima naudoti tik vertes „<ph name="ALLOWED" />“ ir „<ph name="BLOCKED" />“.
-
-          Jei režimas nustatytas į „<ph name="FORCE_INSTALLED" />“ arba „<ph name="NORMAL_INSTALLED" />“, taip pat reikia sukonfigūruoti „<ph name="UPDATE_URL" />“. Atminkite, kad šioje politikoje nustatytas naujinio URL naudojamas tik diegiant pirmą kartą; vėlesniems plėtinio naujiniams bus naudojamas plėtinio apraše nurodytas naujinio URL. Naujinio URL turėtų nukreipti į naujinio aprašo XML dokumentą, kaip nurodyta anksčiau.
-
-          „<ph name="BLOCKED_PERMISSIONS" />“: susieja su eilučių, nurodančių plėtinio užblokuotus API leidimus, sąrašu. Leidimų pavadinimai tokie pat kaip ir leidimų eilutės, pateiktos plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC3" />. Be to, šį nustatymą galima sukonfigūruoti plėtiniui „<ph name="DEFAULT_SCOPE" />“. Jei plėtiniui reikalingas leidimas, kuris įtrauktas į užblokuotų leidimų sąrašą, jo neleidžiama įkelti. Jei užblokuotas leidimas nurodomas kaip pasirenkamas reikalavimas, jis apdorojamas įprastai, bet vykdant nesuderinamų leidimų užklausos bus automatiškai atmestos.
-
-          „<ph name="ALLOWED_PERMISSIONS" />“: panašu į „<ph name="BLOCKED_PERMISSIONS" />“, bet aiškiai leidžiami keli leidimai, kurie gali būti užblokuoti bendrųjų užblokuotų leidimų sąraše, todėl negalima konfigūruoti plėtiniui „<ph name="DEFAULT_SCOPE" />“. Atminkite, kad nustačius šį nustatymą plėtiniams leidimai nėra automatiškai suteikiami.
-
-          „<ph name="MINIMUM_VERSION_REQUIRED" />“: susiejama su versijos eilute. Versijos eilutės formatas toks pat, kaip ir naudojamas plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC4" />. Plėtinys, kurio versija senesnė nei nurodyta minimali versija, bus išjungtas. Tai taip pat taikoma priverstinai įdiegtiems plėtiniams.
-
-          Toliau nurodytus nustatymus galima naudoti tik numatytajai „<ph name="DEFAULT_SCOPE" />“ konfigūracijai.
-
-          „<ph name="INSTALL_SOURCES" />“: kiekvienas elementas šiame sąraše yra plėtinio stiliaus atitikties šablonas (<ph name="LINK_TO_MATCH_PATTERNS" />). Naudotojai galės lengvai įdiegti elementus iš bet kurio URL, kuris atitinka elementą šiame sąraše. Failo <ph name="EXTENSION_SUFFIX_WILDCARD" /> vieta ir puslapis, iš kurio pradedamas atsisiuntimas (t. y. persiuntimo URL), turi būti leidžiami šiuose šablonuose.
-
-          „<ph name="ALLOWED_TYPES" />“: nustačius šį nustatymą leidžiami plėtinio / programų, kuriuos galima įdiegti „<ph name="PRODUCT_NAME" />“, tipai įtraukiami į baltąjį sąrašą. Vertė – tai eilučių, kurių kiekviena turi būti vienos iš šių verčių: <ph name="VALID_ALLOWED_TYPES" />, sąrašas. Jei reikia daugiau informacijos apie šiuos tipus, žr. „<ph name="PRODUCT_NAME" />“ plėtinių dokumentus.
-          „<ph name="BLOCKED_INSTALL_MESSAGE" />“: jei naudotojas bando įdiegti plėtinį, bet jis blokuojamas atsižvelgiant į politiką, „Chrome“ internetinėje parduotuvėje rodomas bendrosios klaidos pranešimas. Naudojant šį nustatymą galima pridėti teksto prie klaidos pranešimo. Tai gali būti naudojama naudotojams nukreipti į pagalbos centrą, paaiškinti, kodėl tam tikras plėtinys blokuojamas, ir kitais tikslais. Šis klaidos pranešimas bus sutrumpintas, jei bus ilgesnis nei 1 000 simbolių ilgio.
-          „<ph name="RUNTIME_BLOCKED_HOSTS" />“: priimamas prieglobos serverių, su kuriais bus blokuojamos plėtinio sąveikos, sąrašas. Tai apima „javascript“ įtraukimą, „webRequest“ / „webNavigation“ keitimą ir peržiūrą, slapukų peržiūrą ir keitimą. Formatas yra panašus į atitikties šablonus <ph name="LINK_TO_MATCH_PATTERNS" />, išskyrus tai, kad negalima nustatyti jokių kelių, pvz., „*://*.example.com“. aip pat palaikomi veiksmingi TLD pakaitos simboliai, pvz., „*://example.*“.
-          „<ph name="RUNTIME_ALLOWED_HOSTS" />“: priimamas prieglobos serverių, su kuriais plėtinys gali sąveikauti, sąrašas, neatsižvelgiant į tai, ar jie pateikiami sąraše „<ph name="RUNTIME_BLOCKED_HOSTS" />“. Sąrašas pateikiamas tokiu pačiu formatu kaip ir „<ph name="RUNTIME_BLOCKED_HOSTS" />“.
-          </translation>
 <translation id="787125417158068494">Nustačius „SyncDisabled“ arba nesukonfigūravus, <ph name="PRODUCT_OS_NAME" /> sertifikatų nebus galima naudoti ARC programose.
 
       Nustačius „CopyCaCerts“, visi per ONC įdiegti CA sertifikatai su „<ph name="WEB_TRUSTED_BIT" />“ bus prieinami ARC programose.</translation>
@@ -2155,15 +2144,6 @@
 
       Jei politika neįgalinta arba nenustatyta, prisijungiant jungiamasi prie įprastų profilių.</translation>
 <translation id="8158758865057576716">Įgalinti „<ph name="PRODUCT_NAME" />“ profilio duomenų tarptinklinio ryšio kopijų kūrimą.</translation>
-<translation id="8170878842291747619">Įgalinama integruota „Google“ vertėjo paslauga „<ph name="PRODUCT_NAME" />“.
-
-      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ bus rodoma integruota įrankių juosta, kurioje siūloma naudotojui išversti puslapį, kai tai galima.
-
-      Jei neleisite šio nustatymo, naudotojai niekada nematys vertimo juostos.
-
-      Jei įgalinsite šį nustatymą arba jo neleisite, naudotojai negalės jo pakeisti ar panaikinti „<ph name="PRODUCT_NAME" />“.
-
-      Nenustačius šio nustatymo, naudotojas (-a) galės nuspręsti, ar naudoti šią funkciją.</translation>
 <translation id="817455428376641507">Leidžiama prieiga prie pateiktų URL kaip prie juodojo URL sąrašo išimčių.
 
       Žr. juodojo URL sąrašo politiką, joje rasite šio sąrašo įrašų formatus.

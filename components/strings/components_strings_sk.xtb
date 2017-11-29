@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Vrátiť späť zmenu poradia</translation>
 <translation id="1126551341858583091">Veľkosť súboru v lokálnom úložisku je <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Vyrovnávacia pamäť pravidla je v poriadku</translation>
-<translation id="113188000913989374">Web <ph name="SITE" /> hovorí:</translation>
 <translation id="1132774398110320017">Nastavenia Automatického dopĺňania prehliadača Chrome...</translation>
 <translation id="1150979032973867961">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho počítača nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="1151972924205500581">Vyžaduje sa heslo</translation>
@@ -610,7 +609,6 @@
 <translation id="552553974213252141">Bol text vyňatý správne?</translation>
 <translation id="5540224163453853">Požadovaný článok sa nepodarilo nájsť.</translation>
 <translation id="5541546772353173584">Pridanie e-mailu</translation>
-<translation id="5544037170328430102">Vložená stránka na webe <ph name="SITE" /> hovorí:</translation>
 <translation id="5545756402275714221">Články pre vás</translation>
 <translation id="5556459405103347317">Obnoviť</translation>
 <translation id="5560088892362098740">Dátum vypršania platnosti</translation>
@@ -817,7 +815,6 @@
 <translation id="7390545607259442187">Overenie karty</translation>
 <translation id="7400418766976504921">Webová adresa</translation>
 <translation id="7419106976560586862">Cesta profilu</translation>
-<translation id="7424977062513257142">Vložená stránka na tejto webstránke hovorí:</translation>
 <translation id="7437289804838430631">Pridať kontaktné informácie</translation>
 <translation id="7441627299479586546">Chybný predmet pravidla</translation>
 <translation id="7444046173054089907">Tento web je blokovaný</translation>
@@ -997,7 +994,6 @@
 <translation id="884923133447025588">Nenašiel sa žiadny mechanizmus rušenia certifikátov.</translation>
 <translation id="885730110891505394">Zdieľanie s Googlom</translation>
 <translation id="8866481888320382733">Pri analýze nastavení pravidla sa vyskytla chyba</translation>
-<translation id="8866959479196209191">Táto stránka hovorí:</translation>
 <translation id="8870413625673593573">Naposledy zatvorené</translation>
 <translation id="8874824191258364635">Zadajte platné číslo karty</translation>
 <translation id="8876793034577346603">Konfiguráciu siete sa nepodarilo analyzovať.</translation>

@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Anular reordenação</translation>
 <translation id="1126551341858583091">O tamanho no armazenamento local é de <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Cache da política OK</translation>
-<translation id="113188000913989374"><ph name="SITE" /> diz:</translation>
 <translation id="1132774398110320017">Definições de Preenchimento automático do Chrome...</translation>
 <translation id="1150979032973867961">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o sistema operativo do seu computador não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="1151972924205500581">É necessária a palavra-passe</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">O texto foi extraído corretamente?</translation>
 <translation id="5540224163453853">Não foi possível encontrar o artigo solicitado.</translation>
 <translation id="5541546772353173584">Adicionar email</translation>
-<translation id="5544037170328430102">Uma página incorporada em <ph name="SITE" /> diz:</translation>
 <translation id="5545756402275714221">Artigos para si</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5560088892362098740">Data de validade</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Confirmar cartão</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Caminho do Perfil</translation>
-<translation id="7424977062513257142">Uma página incorporada nesta página Web diz:</translation>
 <translation id="7437289804838430631">Adicionar informações de contacto</translation>
 <translation id="7441627299479586546">Assunto da política incorreto</translation>
 <translation id="7444046173054089907">Este site está bloqueado</translation>
@@ -1002,7 +999,6 @@
 <translation id="884923133447025588">Não foi encontrado qualquer mecanismo de revogação.</translation>
 <translation id="885730110891505394">Partilha com a Google</translation>
 <translation id="8866481888320382733">Erro ao analisar as definições da política</translation>
-<translation id="8866959479196209191">Esta página diz:</translation>
 <translation id="8870413625673593573">Fechadas recentemente</translation>
 <translation id="8874824191258364635">Introduza um número de cartão válido</translation>
 <translation id="8876793034577346603">Falha ao analisar a configuração de rede.</translation>

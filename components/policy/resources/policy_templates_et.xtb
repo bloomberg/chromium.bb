@@ -30,6 +30,7 @@
 
           Kui seade on keelatud või seadistamata, käitatakse kaugabi hosti kasutaja kontekstis ja kaugkasutajad ei saa töölaual suhelda administraatoriõigusi nõudvate akendega.</translation>
 <translation id="1096105751829466145">Vaikeotsingupakkuja</translation>
+<translation id="1099282607296956954">Saidi isoleerimise lubamine igal saidil</translation>
 <translation id="1117535567637097036">Selle reegliga määratud protokollitöötlejaid Androidi kavatsuste käsitlemisel ei kasutata.</translation>
 <translation id="1122282995569868661">Kuvatakse teenuse <ph name="PRODUCT_NAME" /> tööriistariba ikoon</translation>
 <translation id="1128903365609589950">Seadistab kataloogi, mida <ph name="PRODUCT_NAME" /> kasutab vahemälus olevate failide kettale salvestamiseks.
@@ -716,6 +717,16 @@
 <translation id="332771718998993005">Määratakse nimi, mida esitatakse teenuse <ph name="PRODUCT_NAME" /> sihtkohana.
 
           Kui selle reegli väärtuseks määratakse mõni täidetud string, kasutatakse seda stringi teenuse <ph name="PRODUCT_NAME" /> sihtkohana. Muul juhul on sihtkoha nimeks seadme nimi. Kui see reegel jäetakse määramata, on sihtkoha nimeks seadme nimi ja seadme omanik (või seadet haldava domeeni kasutaja) saab seda muuta. Nimi tohib olla maksimaalselt 24 tähemärki.</translation>
+<translation id="3356249700768900657">
+      MÄRKUS. See reegel on katseline ja funktsioonid ei pruugi töötada.
+      Soovitame teil vaadata reegli IsolateOrigins seadet, et kasutada
+      nii isoleerimist kui ka piirata mõju kasutajate jaoks, kasutades reeglit
+      IsolateOrigins saitide puhul, mille soovite isoleerida. Seade
+      SitePerProcess isoleerib kõik saidid.
+      Kui reegel on lubatud, käitab iga sait siiski oma protsesse.
+      Kui reegel on keelatud, jõustub saidi isoleerimise eelse protsessihalduse loogika.
+      Kui reegel on seadistamata, saab kasutaja seda seadet muuta.
+      </translation>
 <translation id="3381968327636295719">Kasuta vaikimisi hostbrauserit</translation>
 <translation id="3395348522300156660">Määrab printerid, mida kasutaja saab kasutada.
 
@@ -1081,6 +1092,7 @@
           Vaadake näidismustreid aadressilt http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Ava URL-ide loend</translation>
 <translation id="4680961954980851756">Luba automaatne täitmine</translation>
+<translation id="4722122254122249791">Saidi isoleerimise lubamine konkreetsete lähtekohtade puhul</translation>
 <translation id="4722399051042571387">Kui see on vale, ei saa kasutajad määrata PIN-koode, mis on nõrgad ja hõlpsalt äraarvatavad.
 
           Mõned nõrga PIN-koodi näited: PIN-koodid, mis sisaldavad ainult ühte numbrit (1111); PIN-koodid, milles olevad numbrid suurenevad ühe võrra (1234); PIN-koodid, milles olevad numbrid vähenevad ühe võrra (4321); sageli kasutatavad PIN-koodid.
@@ -1181,6 +1193,16 @@
 <translation id="4983201894483989687">Luba vananenud pistikprogrammide käitamine</translation>
 <translation id="4988291787868618635">Tehtav toiming, kui möödub jõudeoleku viiteaeg</translation>
 <translation id="4995548127349206948">Kas NTLMv2 autentimine on lubatud või mitte.</translation>
+<translation id="5027819375434797927">
+      MÄRKUS. See reegel on katseline ja funktsioonid ei pruugi töötada.
+      Kui reegel on lubatud, käitab iga komadega eraldatud loendis
+      nimetatud lähtekoht oma protsesse. See isoleerib ka
+      alamdomeenide nimetatud lähtekohad; nt määrates aadressi https://example.com/
+      isoleeritakse ka aadress https://foo.example.com/ saidi
+      https://example.com/ osana.
+      Kui reegel on keelatud, jõustub saidi isoleerimise eelse protsessihalduse loogika.
+      Kui reegel on seadistamata, saab kasutaja seda seadet muuta.
+      </translation>
 <translation id="5047604665028708335">Sisupakettidest väljaspool olevatele saitidele juurdepääsu lubamine</translation>
 <translation id="5052081091120171147">Selle reegli lubamisel imporditakse sirvimisajalugu praegusest vaikebrauserist. Lubamisel mõjutab reegel ka importimisdialoogi.
 
@@ -2027,39 +2049,6 @@
 <translation id="7841880500990419427">Minimaalne TLS-i versioon, millele tagasi minna</translation>
 <translation id="7842869978353666042">Google Drive'i valikute seadistamine</translation>
 <translation id="7843525027689416831">Määrab märgistused, mis tuleb rakendada teenuses <ph name="PRODUCT_NAME" /> selle käivitamisel. Määratud märgistused rakendatakse ainult sisselogimisekraanil. Selle reegliga määratud märgistused ei rakendu kasutaja seanssides.</translation>
-<translation id="7844537954833753199">Seadistab brauseri <ph name="PRODUCT_NAME" /> laienduste halduse seaded.
-
-          See reegel juhib mitut seadet, sealhulgas mis tahes olemasoleva laiendustega seotud reegli seadeid. Reegel alistab pärandreeglid, kui mõlemad on määratud.
-
-          Reegel vastendab laienduse ID või värskenduse URL-i seadistusega. Laienduse ID puhul rakendatakse seadistus vaid määratud laiendusele. Saate määrata spetsiaalsele ID-le <ph name="DEFAULT_SCOPE" /> vaikeseadistuse, mis kehtib kõikide laienduste puhul, millele ei ole reeglis määratud kohandatud seadistust. Värskenduse URL-i puhul rakendatakse seadistus kõikidele laiendustele, mille manifestis on märgitud täpselt see värskenduse URL, nagu on kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Iga laienduse – või mitme sama värskenduse URL-iga laienduse – seadistus on eraldi sõnastik, mis võib hõlmata allmärgitud välju.
-
-          <ph name="INSTALLATION_MODE" />: vastendab stringi, mis näitab laienduse installimise režiimi. Lubatud on järgmised stringid.
-          * <ph name="ALLOWED" />: lubab kasutajal laienduse installida. See on vaikekäitumine.
-          * <ph name="BLOCKED" />: blokeerib laienduse installimise.
-          * <ph name="FORCE_INSTALLED" />: laiendus installitakse automaatselt ja kasutaja ei saa seda eemaldada.
-          * <ph name="NORMAL_INSTALLED" />: laiendus installitakse automaatselt, ent kasutaja saab selle keelata.
-
-          Atribuudi <ph name="INSTALLTION_MODE" /> võib seadistada ka mitme laienduse jaoks (sh vaikeseadena laienduse <ph name="DEFAULT_SCOPE" /> jaoks) ning sama värskenduse URL-iga laienduste jaoks. Sel juhul saab kasutada vaid väärtusi <ph name="ALLOWED" /> ja <ph name="BLOCKED" />.
-
-          Kui režiim on seatud väärtusele <ph name="FORCE_INSTALLED" /> või <ph name="NORMAL_INSTALLED" />, tuleb seadistada ka atribuut <ph name="UPDATE_URL" />. Pange tähele, et selles reeglis määratud värskenduse URL-i kasutatakse vaid esmase installimise puhul ja laienduse edasisel värskendamisel kasutatakse laienduse manifestis märgitud värskenduse URL-i. Värskenduse URL peab viitama XML-vormingus värskendusmanifestile, nagu on ülal mainitud.
-
-          <ph name="BLOCKED_PERMISSIONS" />: vastendab stringide loendi, mis viitab laienduse blokeeritud API lubadele. Lubade nimed on samad mis laienduse manifestis märgitud lubade stringidel, nagu on kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC3" />. Seade saab seadistada ka laiendusele <ph name="DEFAULT_SCOPE" />. Kui laiendus vajab blokeeritud loendisse kantud luba, keelatakse selle laadimine. Kui see sisaldab valikulise nõudena blokeeritud luba, käsitletakse seda tavapärasel moel, kuid vastuoluliste lubade taotlused lükatakse käitusajal automaatselt tagasi.
-
-          <ph name="ALLOWED_PERMISSIONS" />: sarnaneb atribuudiga <ph name="BLOCKED_PERMISSIONS" />, kuid lubab selgesõnaliselt teatud load, mis võivad olla globaalse blokeeritud lubade loendis blokeeritud. Seetõttu ei saa seda kasutada laienduse <ph name="DEFAULT_SCOPE" /> puhul. Pange tähele, et seade ei anna laiendustele lube automaatselt. 
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: vastendab versioonistringi. Versioonistringi vorming kattub laienduse manifestis kasutatavaga, nagu on kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC4" />. Laiendused, mille versioon on määratud miinimumversioonist vanem, keelatakse. See kehtib ka sundinstallitud laienduste puhul.
-
-          Järgmisi seadeid saab kasutada vaid vaikeseadistuse <ph name="DEFAULT_SCOPE" /> puhul.
-
-          <ph name="INSTALL_SOURCES" />: iga loendis olev üksus on laiendusstiilis vastendusmuster (<ph name="LINK_TO_MATCH_PATTERNS" />). Kasutajad saavad hõlpsasti installida üksusi mis tahes URL-ilt, mis kattub loendis oleva üksusega. Mustrid peavad lubama nii <ph name="EXTENSION_SUFFIX_WILDCARD" />-faili asukoha kui ka lehe, kust allalaadimine algab (st viitaja).
-
-          <ph name="ALLOWED_TYPES" />: see seade kannab lubatud üksuste loendisse kõik laienduste/rakenduste lubatud tüübid, mida saab installida brauseris <ph name="PRODUCT_NAME" />. Väärtus on stringide loend ja iga stringi tüüp peab olema üks järgmistest: <ph name="VALID_ALLOWED_TYPES" />. Vaadake tüüpide kohta lisateavet brauseri <ph name="PRODUCT_NAME" /> laienduste dokumentidest.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: kui kasutaja üritab installida laienduse, ent see on reegliga blokeeritud, kuvab Chrome'i veebipood üldise veateate. See seade võimaldab teil lisada veateatele teksti. See võimaldab paluda kasutajatel pöörduda tugiteenuse poole, selgitada, miks teatud laiendus on blokeeritud jms. Veateadet kärbitakse, kui see on pikem kui 1000 tähemärki.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: võtab vastu loendi hostidest, millega rakendusel on keelatud suhelda. See hõlmab JavaScripti sisestamist, veebitaotluste / veebinavigeerimise muutmist ja vaatamist ning küpsisefailide muutmist ja vaatamist. Vorming sarnaneb mustrite vastendamisele (<ph name="LINK_TO_MATCH_PATTERNS" />), ent tee ei tohi olla määratud, nt „*://*.example.com”. See toetab ka tõhusat TLD metamärkide kasutamist, nt „*://example.*”.
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: võtab vastu loendi hostidest, millega rakendus tohib suhelda, olenemata sellest, kas need on loetletud loendis <ph name="RUNTIME_BLOCKED_HOSTS" />. Vorming on sama mis atribuudil <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Kui määratud on reegel SyncDisabled või seda ei määrata, pole operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> sertifikaadid ARC-rakenduste jaoks saadaval.
 
       Kui reegliks on määratud CopyCaCerts, on kõik üksusega <ph name="WEB_TRUSTED_BIT" /> ONC installitud CA-sertifikaadid ARC-rakenduste jaoks saadaval.</translation>
@@ -2143,15 +2132,6 @@
 
       Kui keelate reegli või jätate selle määramata, suunatakse kasutaja sisselogimisel tavapärasele profiilile.</translation>
 <translation id="8158758865057576716">Lubatakse teenuse <ph name="PRODUCT_NAME" /> profiiliandmete puhul rändluskoopiate loomine.</translation>
-<translation id="8170878842291747619">Lubab integreeritud Google'i tõlketeenuse rakenduses <ph name="PRODUCT_NAME" />.
-
-      Kui lubate seade, siis kuvab rakendus <ph name="PRODUCT_NAME" /> integreeritud tööriistariba, mille abil saab kasutaja võimaluse korral lehe tõlkida.
-
-      Seade keelamisel ei kuvata kasutajatele tõlkeriba.
-
-      Seade lubamisel või keelamisel ei saa kasutajad seadet rakenduses <ph name="PRODUCT_NAME" /> muuta ega alistada.
-
-      Kui jätate seade määramata, siis saavad kasutajad otsustada, kas nad soovivad funktsiooni kasutada.</translation>
 <translation id="817455428376641507">Lubab juurdepääsu loendis olevatele URL-idele, mis on URL-ide mustas loendis olevate erandid.
 
       Vaadake URL-ide musta loendi reegli kirjeldust, kust leiate selle loendi kirjete vormingu.

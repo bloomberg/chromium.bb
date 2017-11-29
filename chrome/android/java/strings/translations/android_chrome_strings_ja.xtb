@@ -253,7 +253,6 @@
 <translation id="3414952576877147120">サイズ:</translation>
 <translation id="3443221991560634068">現在のページを再読み込みする</translation>
 <translation id="3452612588551937789">Google アカウントでログインすると、どの端末からでも同じブックマーク、履歴、パスワードなどの設定を利用できるようになります。</translation>
-<translation id="3479552764303398839">後で</translation>
 <translation id="3487093336331957349">検索とサイトの候補を表示</translation>
 <translation id="3492207499832628349">新しいシークレット タブ</translation>
 <translation id="3493531032208478708">詳しくは、<ph name="BEGIN_LINK" />おすすめのコンテンツ<ph name="END_LINK" />についての説明をご覧ください</translation>
@@ -315,6 +314,7 @@
 <translation id="3988213473815854515">位置情報は許可</translation>
 <translation id="3997476611815694295">重要度の低いストレージ</translation>
 <translation id="4002066346123236978">タイトル</translation>
+<translation id="4031074602479304239">Chrome で、このサイトから以下のリダイレクト先へのアクセスが中止されました</translation>
 <translation id="4042870126885713738">ウェブアドレスが解決されない場合や接続を確立できない場合にアドバイスを表示します</translation>
 <translation id="4046123991198612571">次のトラック</translation>
 <translation id="4056223980640387499">セピア</translation>
@@ -472,6 +472,7 @@
 <translation id="5512137114520586844">このアカウントは <ph name="PARENT_NAME" /> によって管理されています。</translation>
 <translation id="5514904542973294328">この端末の管理者によって無効にされています</translation>
 <translation id="5517095782334947753"><ph name="FROM_ACCOUNT" /> のブックマーク、履歴、パスワードとその他の設定を使用できます。</translation>
+<translation id="5524843473235508879">リダイレクトがブロックされました。</translation>
 <translation id="5527082711130173040">Chrome ではデバイスをスキャンするために現在地情報にアクセスする必要があります。<ph name="BEGIN_LINK1" />権限を更新<ph name="END_LINK1" />してください。また、現在地情報へのアクセスが<ph name="BEGIN_LINK2" />この端末でオフになっています<ph name="END_LINK2" />。</translation>
 <translation id="5530766185686772672">シークレットタブを閉じる</translation>
 <translation id="5534640966246046842">サイトがコピーされました</translation>
@@ -498,7 +499,6 @@
 
 あらゆる場所に記録が一切残らないわけではありません。シークレット モードを使っても、雇用主、インターネット サービス プロバイダ、訪問先のウェブサイトに閲覧内容が知られる可能性はあります。</translation>
 <translation id="572328651809341494">最近使ったタブ</translation>
-<translation id="572392919096807438">この選択を保存</translation>
 <translation id="5726692708398506830">ページ上のすべての要素を拡大する</translation>
 <translation id="5738816946784116349">Chrome のダウンロード</translation>
 <translation id="5748802427693696783">標準のタブに切り替えました</translation>
@@ -652,7 +652,6 @@
 <translation id="7022756207310403729">ブラウザで開く</translation>
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="7031882061095297553">同期先</translation>
-<translation id="704059664004611800">タップするとブックマークなどが表示されます</translation>
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="7062545763355031412">同意してアカウントを切り替える</translation>
 <translation id="7063006564040364415">同期サーバーに接続できませんでした。</translation>

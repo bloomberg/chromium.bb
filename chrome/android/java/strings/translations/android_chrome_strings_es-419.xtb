@@ -253,7 +253,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="3414952576877147120">Tamaño:</translation>
 <translation id="3443221991560634068">Volver a cargar la página actual</translation>
 <translation id="3452612588551937789">Accede con tu cuenta de Google para obtener tus favoritos, contraseñas, historial y otras opciones de configuración en todos tus dispositivos.</translation>
-<translation id="3479552764303398839">Ahora no</translation>
 <translation id="3487093336331957349">Sugerencias de sitios y de búsqueda</translation>
 <translation id="3492207499832628349">Nueva pestaña de incógnito</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> sobre el contenido sugerido</translation>
@@ -315,6 +314,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="3988213473815854515">Se admite la ubicación.</translation>
 <translation id="3997476611815694295">Almacenamiento no importante</translation>
 <translation id="4002066346123236978">Título</translation>
+<translation id="4031074602479304239">Chrome evitó que este sitio te lleve a</translation>
 <translation id="4042870126885713738">Mostrar sugerencias cuando no se resuelve una dirección web o cuando no se puede establecer una conexión</translation>
 <translation id="4046123991198612571">Siguiente pista</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -472,6 +472,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> administra esta cuenta.</translation>
 <translation id="5514904542973294328">El administrador de este dispositivo inhabilitó esta opción</translation>
 <translation id="5517095782334947753">Tienes favoritos, historial, contraseñas y otras opciones de configuración de <ph name="FROM_ACCOUNT" />.</translation>
+<translation id="5524843473235508879">Se bloqueó el redireccionamiento</translation>
 <translation id="5527082711130173040">Chrome debe acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK1" />Actualiza los permisos<ph name="END_LINK1" />. El acceso a la ubicación también está <ph name="BEGIN_LINK2" />desactivado en este dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Cerrar pest. de incógnito</translation>
 <translation id="5534640966246046842">Se copió el sitio</translation>
@@ -498,7 +499,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 
 Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación de incógnito no oculta tu información de navegación de un empleador, del proveedor de servicios de Internet ni de los sitios web que visitas.</translation>
 <translation id="572328651809341494">Pestañas recientes</translation>
-<translation id="572392919096807438">Recordar mi decisión</translation>
 <translation id="5726692708398506830">Agrandar todos los elementos de la página</translation>
 <translation id="5738816946784116349">Descargas de Chrome</translation>
 <translation id="5748802427693696783">Se seleccionaron las pestañas estándar</translation>
@@ -652,7 +652,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7022756207310403729">Abrir en el navegador</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
 <translation id="7031882061095297553">Sincronizar con</translation>
-<translation id="704059664004611800">Presiona para ver los favoritos y más contenido</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
 <translation id="7063006564040364415">No se pudo establecer conexión con el servidor de sincronización.</translation>

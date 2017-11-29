@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">تراجع عن إعادة الت&amp;رتيب</translation>
 <translation id="1126551341858583091">يمثل الحجم على سعة التخزين المحلية <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">ذاكرة التخزين المؤقت للسياسة بحالة جيدة</translation>
-<translation id="113188000913989374"><ph name="SITE" /> يعرض:</translation>
 <translation id="1132774398110320017">‏إعدادات الملء التلقائي في Chrome...</translation>
 <translation id="1150979032973867961">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثقة من خلال نظام تشغيل الكمبيوتر. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="1151972924205500581">كلمة المرور مطلوبة</translation>
@@ -313,7 +312,7 @@
 <translation id="3225919329040284222">قدم الخادم شهادة لا تتطابق مع التوقعات المضمّنة. تم تضمين هذه التوقعات للحصول على مواقع ويب موثوقة وآمنة جدًا لتوفير الحماية لك.</translation>
 <translation id="3226128629678568754">اضغط على زر إعادة التحميل لإعادة إرسال البيانات المطلوبة لتحميل الصفحة.</translation>
 <translation id="3227137524299004712">الميكروفون</translation>
-<translation id="3228969707346345236">أخفقت الترجمة لأن الصفحة باللغة <ph name="LANGUAGE" /> فعلاً.</translation>
+<translation id="3228969707346345236">تعذّرت الترجمة لأن الصفحة باللغة <ph name="LANGUAGE" /> فعلاً.</translation>
 <translation id="323107829343500871">‏أدخل رمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">الكشف دائمًا عن المحتوى المهم على هذا الموقع</translation>
 <translation id="3254409185687681395">وضع إشارة على هذه الصفحة</translation>
@@ -397,7 +396,7 @@
 <translation id="3739623965217189342">الرابط الذي نسخته</translation>
 <translation id="3744899669254331632">‏لا يمكنك زيارة <ph name="SITE" /> في الوقت الحالي لأن الموقع أرسل اعتمادات مختلطة حيث لا يستطيع Chromium المعالجة. أخطاء الشبكة وهجماتها عادةً ما تكون مؤقتة، لذلك من المحتمل أن تعمل هذه الصفحة في وقت لاحق.</translation>
 <translation id="3748148204939282805">قد يخدعك المهاجمون على <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> لتنفيذ أمور خطيرة، مثل تثبيت البرامج أو نشر معلوماتك الشخصية (على سبيل المثال، كلمات المرور، أو أرقام الهاتف، أو بطاقات الائتمان). <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="375403751935624634">أخفقت الترجمة بسبب حدوث خطأ في الخادم.</translation>
+<translation id="375403751935624634">تعذّرت الترجمة بسبب حدوث خطأ في الخادم.</translation>
 <translation id="3759461132968374835">ليس لديك أي أعطال تم الإبلاغ عنها مؤخرًا. الأعطال التي حدثت عندما تم تعطيل الإبلاغ عن الأعطال لن تظهر هنا.</translation>
 <translation id="3765032636089507299">صفحة التصفح الآمن تحت الإنشاء.</translation>
 <translation id="3778403066972421603">‏هل تريد حفظ هذه البطاقة في حسابك في Google وعلى هذا الجهاز؟</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">هل تم استخراج النص بشكل صحيح؟</translation>
 <translation id="5540224163453853">تعذر العثور على المقالة المطلوبة</translation>
 <translation id="5541546772353173584">إضافة البريد الإلكتروني</translation>
-<translation id="5544037170328430102">صفحة مُضمنة في <ph name="SITE" /> تعرض:</translation>
 <translation id="5545756402275714221">مقالات لك</translation>
 <translation id="5556459405103347317">إعادة تحميل</translation>
 <translation id="5560088892362098740">تاريخ انتهاء الصلاحية</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">التأكد من البطاقة</translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
 <translation id="7419106976560586862">مسار الملف الشخصي</translation>
-<translation id="7424977062513257142">صفحة مُضمنة في صفحة الويب هذه تعرض:</translation>
 <translation id="7437289804838430631">إضافة معلومات الاتصال</translation>
 <translation id="7441627299479586546">موضوع السياسة غير صحيح</translation>
 <translation id="7444046173054089907">تم حظر هذا الموقع</translation>
@@ -949,7 +946,7 @@
 <translation id="8293206222192510085">إضافة إشارة مرجعية</translation>
 <translation id="8294431847097064396">المصدر</translation>
 <translation id="8298115750975731693">‏قد يتتطلب Wi-Fi الذي تستخدمه (<ph name="WIFI_NAME" />) زيارة <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
-<translation id="8308427013383895095">أخفقت الترجمة بسبب حدوث مشكلة في الاتصال بالشبكة.</translation>
+<translation id="8308427013383895095">تعذّرت الترجمة بسبب حدوث مشكلة في الاتصال بالشبكة.</translation>
 <translation id="8311129316111205805">تحميل الجلسة</translation>
 <translation id="8332188693563227489">تم رفض الدخول إلى <ph name="HOST_NAME" />.</translation>
 <translation id="834457929814110454">إذا كنت على دراية بالمخاطر التي تهدد أمانك، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع<ph name="END_LINK" /> قبل أن تتم إزالة البرامج الضارة.</translation>
@@ -973,7 +970,7 @@
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="8543181531796978784">يمكنك <ph name="BEGIN_ERROR_LINK" />الإبلاغ عن اكتشاف مشكلة<ph name="END_ERROR_LINK" /> أو، إذا كنت تدرك المخاطر المتعلقة بالأمان، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع غير الآمن<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">هل هناك أي أسئلة؟ اتصل بالشخص الذي يشرف على ملفك الشخصي.</translation>
-<translation id="8553075262323480129">أخفقت الترجمة لتعذر تحديد لغة الصفحة.</translation>
+<translation id="8553075262323480129">تعذّرت الترجمة لتعذر تحديد لغة الصفحة.</translation>
 <translation id="8559762987265718583">تعذر إنشاء اتصال خاص بـ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> نظرًا لأن التاريخ والوقت للجهاز (<ph name="DATE_AND_TIME" />) غير صحيحين.</translation>
 <translation id="8571890674111243710">جارٍ ترجمة الصفحة إلى <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">إضافة رقم هاتف
@@ -1002,7 +999,6 @@
 <translation id="884923133447025588">لم يتمّ العثور على أي آلبة إبطال.</translation>
 <translation id="885730110891505394">‏مشاركة مع Google</translation>
 <translation id="8866481888320382733">خطأ في إعدادات تحليل السياسة</translation>
-<translation id="8866959479196209191">تعرض هذه الصفحة:</translation>
 <translation id="8870413625673593573">العناصر المغلقة مؤخرًا</translation>
 <translation id="8874824191258364635">أدخِل رقم بطاقة صحيحًا</translation>
 <translation id="8876793034577346603">تعذّر تحليل تهيئة الشبكة</translation>
@@ -1048,7 +1044,7 @@
 <translation id="917450738466192189">شهادة الخادم غير صالحة.</translation>
 <translation id="9183425211371246419">يستخدم <ph name="HOST_NAME" /> بروتوكول غير مدعوم.</translation>
 <translation id="9205078245616868884">يتم تشفير بياناتك باستخدام عبارة مرور المزامنة. أدخلها لبدء المزامنة.</translation>
-<translation id="9207861905230894330">أخفقت إضافة مقالة.</translation>
+<translation id="9207861905230894330">تعذّرت إضافة مقالة.</translation>
 <translation id="9215416866750762878">‏يعمل أحد التطبيقات على منع اتصال Chrome بموقع الويب هذا على نحو آمن</translation>
 <translation id="9219103736887031265">صور</translation>
 <translation id="933612690413056017">لا يوجد اتصال بالإنترنت</translation>

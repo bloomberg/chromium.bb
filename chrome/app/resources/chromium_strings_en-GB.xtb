@@ -75,13 +75,13 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3296368748942286671">Continue running background apps when Chromium is closed</translation>
 <translation id="331951419404882060">Chromium OS could not sync your data due to an error signing in.</translation>
 <translation id="3474745554856756813">This will delete <ph name="ITEMS_COUNT" /> items from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
+<translation id="3479552764303398839">Not now</translation>
 <translation id="3509308970982693815">Please close all Chromium windows and try again.</translation>
 <translation id="352783484088404971">Remove From Chromium...</translation>
 <translation id="3549345495227188780">Get Started with Chromium OS</translation>
 <translation id="3582788516608077514">Updating Chromium ...</translation>
 <translation id="358997566136285270">Chromium logo</translation>
 <translation id="3713809861844741608">Open link in new Chromium &amp;tab</translation>
-<translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3762167353400286894">Chromium OS is displayed in this language</translation>
 <translation id="378917192836375108">Chromium lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -114,7 +114,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="469338717132742108">Get help with Chromium OS</translation>
 <translation id="4708774505295300557">Someone previously signed in to Chromium on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. Please create a new Chromium user to keep your information separate.</translation>
 <translation id="4714956846925717402">Get to Chromium faster</translation>
-<translation id="4743926867934016338">Accept &amp; Search</translation>
 <translation id="4825874709045178029">Chromium needs permission to access your camera for this site.</translation>
 <translation id="4888717733111232871">Inbound rule for Chromium to allow mDNS traffic.</translation>
 <translation id="4943838377383847465">Chromium is in background mode.</translation>
@@ -131,9 +130,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5466153949126434691">Chromium updates automatically so you always have the freshest version. When this download completes, Chromium will restart and you'll be on your way.</translation>
 <translation id="5479196819031988440">Chromium OS can't open this page.</translation>
 <translation id="549669000822060376">Please wait while Chromium installs the latest system updates.</translation>
-<translation id="5524843473235508879">Redirect blocked.</translation>
-<translation id="5563479599352954471">Search with one touch</translation>
-<translation id="5620765574781326016">Learn about topics on websites without leaving the page.</translation>
 <translation id="5634636535844844681">Chromium requires Windows 7 or higher.</translation>
 <translation id="5680901439334282664">sign in to Chromium</translation>
 <translation id="5698481217667032250">Display Chromium in this language</translation>
@@ -175,7 +171,6 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="6734291798041940871">Chromium is already installed for all users on your computer.</translation>
 <translation id="6810143991807788455">Help make Chromium better by reporting the current settings</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">sends a word and its surrounding context to Google Search, returning definitions, pictures and other search results.</translation>
 <translation id="6893813176749746474">Chromium has been updated, but you haven't used it for 30 days or more.</translation>
 <translation id="6944967875980567883">Modules loaded into Chromium</translation>
 <translation id="6964305034639999644">Open link in Chromium inco&amp;gnito window</translation>
@@ -202,7 +197,6 @@ To prevent <ph name="NEW_PROFILE_NAME" /> from accessing your account, make sure
 <ph name="BEGIN_LINK_2" />Learn more<ph name="END_LINK_2" />
 
 Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.</translation>
-<translation id="7473891865547856676">No Thanks</translation>
 <translation id="7483335560992089831">Can not install the same Chromium version that is currently running. Please close Chromium and try again.</translation>
 <translation id="7549178288319965365">About Chromium OS</translation>
 <translation id="7577193603922410712">A special security update for Chromium was just applied; you should restart now for it to take effect (we'll restore your tabs).</translation>

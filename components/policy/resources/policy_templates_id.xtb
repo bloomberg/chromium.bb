@@ -30,6 +30,7 @@
 
           Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, host bantuan jarak jauh akan dijalankan dalam konteks pengguna dan pengguna jarak jauh tidak dapat berinteraksi dengan jendela yang berada jauh di desktop.</translation>
 <translation id="1096105751829466145">Penyedia penelusuran default</translation>
+<translation id="1099282607296956954">Aktifkan Isolasi Situs untuk setiap situs</translation>
 <translation id="1117535567637097036">Penanganan protokol yang disetel melalui kebijakan ini tidak digunakan ketika menangani maksud Android.</translation>
 <translation id="1122282995569868661">Menampilkan ikon toolbar <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Mengonfigurasi direktori yang akan digunakan oleh <ph name="PRODUCT_NAME" /> untuk menyimpan file yang ada dalam cache pada disk.
@@ -688,6 +689,16 @@
 <translation id="332771718998993005">Tentukan nama yang diiklankan sebagai tujuan <ph name="PRODUCT_NAME" />.
 
           Jika kebijakan ini disetel ke string yang tidak kosong, string tersebut akan digunakan sebagai nama tujuan <ph name="PRODUCT_NAME" />. Jika tidak, nama tujuan akan menjadi nama perangkat. Jika kebijakan ini tidak disetel, nama tujuan akan menjadi nama perangkat, dan pemilik perangkat (atau pengguna dari domain yang mengelola perangkat) akan diizinkan untuk mengubahnya. Karakter nama dibatasi hingga 24 karakter.</translation>
+<translation id="3356249700768900657">
+      CATATAN: Kebijakan ini merupakan eksperimental dan mungkin mengganggu fungsi.
+      Anda mungkin ingin melihat setelan kebijakan IsolateOrigins untuk mendapatkan
+      yang terbaik dari kedua kebijakan, isolasi dan dampak terbatas bagi pengguna, dengan
+      menggunakan IsolateOrigins yang berisi daftar situs yang ingin diisolasi. Setelan ini,
+      SitePerProcess, mengisolasi semua situs.
+      Jika kebijakan ini diaktifkan, setiap situs akan dijalankan dalam prosesnya sendiri.
+      Jika kebijakan ini dinonaktifkan, logika manajemen sebelum proses Isolasi Situs akan berlaku
+      Jika kebijakan ini tidak dikonfigurasi, pengguna akan dapat mengubah setelan ini.
+      </translation>
 <translation id="3381968327636295719">Gunakan browser host jika tidak diubah</translation>
 <translation id="3395348522300156660">Menentukan printer yang dapat digunakan pengguna.
 
@@ -1040,6 +1051,7 @@
           Untuk melihat contoh pola, buka https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Buka daftar URL</translation>
 <translation id="4680961954980851756">Aktifkan IsiOtomatis</translation>
+<translation id="4722122254122249791">Aktifkan Isolasi Situs untuk asal yang ditetapkan</translation>
 <translation id="4722399051042571387">Jika "false", pengguna tidak dapat menyetel PIN yang lemah dan mudah ditebak.
 
           Beberapa contoh PIN yang lemah: PIN yang hanya berisi satu digit (1111), berurutan (1234), berurutan terbalik (4321), dan yang umum digunakan.
@@ -1140,6 +1152,16 @@
 <translation id="4983201894483989687">Izinkan menjalankan plugin yang kedaluwarsa</translation>
 <translation id="4988291787868618635">Tindakan yang akan diambil saat penundaan waktu menganggur tercapai</translation>
 <translation id="4995548127349206948">Apakah autentikasi NTLMv2 diaktifkan atau tidak.</translation>
+<translation id="5027819375434797927">
+      CATATAN: Kebijakan ini merupakan eksperimental dan mungkin mengganggu fungsi.
+      Jika kebijakan ini diaktifkan, setiap asal bernama dalam daftar yang dipisahkan koma
+      akan dijalankan dalam prosesnya sendiri. Hal ini juga akan mengisolasi
+      asal yang diberi nama menurut subdomain; mis. menyebutkan https://example.com/ juga
+      akan menyebabkan https://foo.example.com/ diisolasi sebagai bagian dari
+      situs https://example.com/.
+      Jika kebijakan ini dinonaktifkan, logika manajemen sebelum proses Isolasi Situs akan berlaku.
+      Jika kebijakan ini tidak dikonfigurasi, pengguna akan dapat mengubah setelan ini.
+      </translation>
 <translation id="5047604665028708335">Memungkinkan akses ke situs di luar paket konten</translation>
 <translation id="5052081091120171147">Kebijakan ini memaksa histori browseran diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada histori browseran yang diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="5056708224511062314">Lup dinonaktifkan</translation>
@@ -1921,39 +1943,6 @@
 <translation id="7841880500990419427">Versi TLS minimum untuk kembali</translation>
 <translation id="7842869978353666042">Konfigurasi opsi Google Drive</translation>
 <translation id="7843525027689416831">Tentukan tanda yang harus diterapkan ke <ph name="PRODUCT_NAME" /> saat dimulai. Tanda yang ditentukan hanya diterapkan di layar masuk. Tanda yang disetel melalui kebijakan ini tidak diterapkan ke dalam sesi pengguna.</translation>
-<translation id="7844537954833753199">Mengonfigurasi setelan pengelolaan ekstensi untuk <ph name="PRODUCT_NAME" />.
-
-          Kebijakan ini mengontrol beberapa setelan, termasuk setelan yang dikontrol oleh kebijakan terkait ekstensi yang sudah ada mana pun. Kebijakan ini akan menggantikan kebijakan lama apa pun jika keduanya disetel.
-
-          Kebijakan ini memetakan ID ekstensi atau URL update ke konfigurasinya. Dengan ID ekstensi, konfigurasi hanya akan diterapkan ke ekstensi yang ditentukan. Konfigurasi default dapat disetel untuk ID khusus <ph name="DEFAULT_SCOPE" />, yang akan diterapkan ke semua ekstensi yang tidak memiliki konfigurasi kustom, yang disetel dalam kebijakan ini. Dengan URL update, konfigurasi akan diterapkan ke semua ekstensi dengan URL update persis yang dinyatakan dalam manifes ekstensi ini, seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurasi untuk setiap ekstensi (atau ekstensi dengan URL update yang sama) adalah kamus lain yang dapat berisi kolom yang didokumentasikan di bawah.
-
-          <ph name="INSTALLATION_MODE" />: memetakan ke string yang menunjukkan mode penginstalan untuk ekstensi. String yang valid adalah:
-          * <ph name="ALLOWED" />: mengizinkan ekstensi diinstal oleh pengguna. Konfigurasi ini adalah perilaku default.
-          * <ph name="BLOCKED" />: memblokir penginstalan ekstensi.
-          * <ph name="FORCE_INSTALLED" />: ekstensi akan otomatis diinstal dan tidak dapat dihapus oleh pengguna.
-          * <ph name="NORMAL_INSTALLED" />: ekstensi akan otomatis diinstal, tapi dapat dinonaktifkan oleh pengguna.
-
-          <ph name="INSTALLTION_MODE" /> juga dapat dikonfigurasi untuk beberapa ekstensi, termasuk ekstensi <ph name="DEFAULT_SCOPE" /> (sebagai setelan default) dan ekstensi dengan URL update yang sama. Dalam hal ini, hanya nilai <ph name="ALLOWED" /> dan <ph name="BLOCKED" /> yang dapat digunakan.
-
-          Jika mode disetel ke <ph name="FORCE_INSTALLED" /> atau <ph name="NORMAL_INSTALLED" />, <ph name="UPDATE_URL" /> juga harus dikonfigurasi. Perhatikan bahwa URL update yang disetel di dalam kebijakan ini hanya digunakan untuk penginstalan awal; update ekstensi berikutnya akan menggunakan URL update yang ditunjukkan di manifes ekstensi. URL update harus mengarah ke dokumen XML Manifes Update seperti yang dijelaskan di atas.
-
-          <ph name="BLOCKED_PERMISSIONS" />: memetakan ke daftar string yang menunjukkan izin API yang diblokir untuk ekstensi. Nama izin sama dengan string izin yang dinyatakan dalam manifes ekstensi seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC3" />. Setelan ini juga dapat dikonfigurasi untuk ekstensi <ph name="DEFAULT_SCOPE" />. Jika ekstensi mewajibkan izin yang berada di daftar blokir, ekstensi tidak akan diizinkan untuk dimuat. Jika ekstensi berisi izin yang diblokir sebagai persyaratan opsional, ekstensi akan ditangani dengan cara normal, tapi permintaan izin yang menimbulkan bentrok akan ditolak secara otomatis saat waktu proses.
-
-          <ph name="ALLOWED_PERMISSIONS" />: mirip dengan <ph name="BLOCKED_PERMISSIONS" />, namun mengizinkan beberapa izin secara eksplisit yang mungkin diblokir oleh daftar izin yang diblokir secara global, sehingga tidak dapat dikonfigurasi untuk ekstensi <ph name="DEFAULT_SCOPE" />. Perhatikan bahwa setelan ini tidak memberikan izin yang dijamin ke ekstensi secara otomatis.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: memetakan ke string versi. Format string versi sama dengan format yang digunakan dalam manifes ekstensi, seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC4" />. Ekstensi dengan versi yang lebih lama daripada versi minimum yang ditentukan akan dinonaktifkan. Hal ini juga berlaku pada ekstensi yang diinstal paksa.
-
-           Setelan berikut dapat digunakan hanya untuk konfigurasi <ph name="DEFAULT_SCOPE" /> default:
-
-          <ph name="INSTALL_SOURCES" />: Setiap item dalam daftar ini adalah pola pencocokan gaya ekstensi (<ph name="LINK_TO_MATCH_PATTERNS" />). Pengguna dapat dengan mudah menginstal item dari URL apa pun yang cocok dengan item di daftar ini. Lokasi halaman maupun file <ph name="EXTENSION_SUFFIX_WILDCARD" /> tempat download dimulai (yaitu perujuk) harus diizinkan oleh pola ini.
-
-          <ph name="ALLOWED_TYPES" />: Setelan ini memberi akses jenis ekstensi/aplikasi yang diizinkan yang dapat diinstal di <ph name="PRODUCT_NAME" />. Nilainya adalah daftar string, masing-masing terdiri dari: <ph name="VALID_ALLOWED_TYPES" />. Lihat dokumentasi ekstensi <ph name="PRODUCT_NAME" /> untuk informasi selengkapnya tentang jenis ini.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Jika pengguna mencoba menginstal ekstensi namun diblokir oleh kebijakan, Toko Web Chrome akan menampilkan pesan error umum. Setelan ini mengizinkan Anda menambahkan teks ke pesan error. Setelan ini dapat digunakan untuk mengarahkan pengguna ke layanan bantuan, menjelaskan alasan ekstensi tertentu diblokir, atau hal-hal lain. Pesan error ini akan terpotong jika lebih dari 1.000 karakter.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Menerima daftar host yang interaksinya dengan ekstensi akan diblokir. Hal ini termasuk melakukan injeksi JavaScript, mengubah dan melihat webRequests/webNavigation, serta melihat dan mengubah cookie. Formatnya mirip dengan Pola Pencocokan <ph name="LINK_TO_MATCH_PATTERNS" />, kecuali tidak ada path yang dapat ditentukan. Mis. "*://*.example.com". Format ini juga mendukung penulisan karakter pengganti TLD yang efektif, misalnya "*://example.*".
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Menerima daftar host yang dapat berinteraksi dengan ekstensi, terlepas dari apakah host terdaftar di dalam <ph name="RUNTIME_BLOCKED_HOSTS" /> atau tidak. Formatnya sama dengan format <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Jika disetel ke SyncDisabled atau tidak dikonfigurasi, sertifikat <ph name="PRODUCT_OS_NAME" /> tidak tersedia untuk aplikasi ARC.
 
       Jika disetel ke CopyCaCerts, semua sertifikat CA yang memasang ONC dengan <ph name="WEB_TRUSTED_BIT" /> tersedia untuk aplikasi ARC.</translation>
@@ -2032,7 +2021,6 @@
 
       Jika kebijakan ini disetel ke nonaktif atau dibiarkan tidak disetel, proses masuk akan mengarahkan ke profil reguler.</translation>
 <translation id="8158758865057576716">Mengaktifkan pembuatan salinan roaming untuk data profil <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8170878842291747619">Mengaktifkan layanan Google Terjemahan terpadu di <ph name="PRODUCT_NAME" />. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan menunjukkan penawaran bilah alat terpadu untuk menerjemahkan halaman bagi pengguna, bila diperlukan. Jika Anda menonaktifkan setelan ini, pengguna tidak akan melihat bilah terjemahan. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpa setelan ini di <ph name="PRODUCT_NAME" />. Jika setelan ini dibiarkan tidak disetel, pengguna dapat memutuskan untuk menggunakan fungsi ini atau tidak.</translation>
 <translation id="817455428376641507">Memungkinkan akses ke URL yang tercantum, kecuali untuk URL yang masuk dalam daftar hitam.
 
       Lihat deskripsi kebijakan daftar hitam URL untuk format entri daftar ini.

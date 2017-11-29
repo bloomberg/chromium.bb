@@ -90,12 +90,12 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="3398288718845740432">Ukryj w menu Chrome</translation>
 <translation id="3451115285585441894">Dodaję do Chrome...</translation>
 <translation id="345171907106878721">Dodaj siebie do Chrome</translation>
+<translation id="3479552764303398839">Nie teraz</translation>
 <translation id="3612333635265770873">Znane są przypadki konfliktu modułu o takiej nazwie z przeglądarką Google Chrome.</translation>
 <translation id="3622797965165704966">Korzystanie z Chrome na wspólnych komputerach i przy użyciu konta Google jest teraz jeszcze łatwiejsze.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Warunki korzystania<ph name="END_TERMS_OF_SERVICE_LINK" /> z systemu operacyjnego Google Chrome</translation>
 <translation id="3718181793972440140">Spowoduje to usunięcie 1 elementu z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chrome jako <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Rozszerzenie „<ph name="EXTENSION_NAME" />” ustawiło inną stronę wyświetlaną po uruchomieniu Chrome.</translation>
-<translation id="3738139272394829648">Dotknij, by wyszukać</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Usuń z Chrome...</translation>
 <translation id="386202838227397562">Zamknij wszystkie okna przeglądarki Google Chrome i spróbuj ponownie.</translation>
@@ -127,7 +127,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="4664415150087723341">Właśnie została zastosowana specjalna aktualizacja zabezpieczeń Google Chrome. Aby zmiany zostały wprowadzone, uruchom teraz ponownie przeglądarkę (karty zostaną przywrócone).</translation>
 <translation id="4700157086864140907">Google Chrome może lepiej sprawdzać pisownię, przesyłając do serwerów Google tekst, który wpisujesz w przeglądarce. Dzięki temu możesz korzystać z technologii sprawdzania pisowni używanej przez wyszukiwarkę Google.</translation>
 <translation id="4728575227883772061">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Google Chrome jest aktualnie uruchomiony, zamknij aplikację i spróbuj ponownie.</translation>
-<translation id="4743926867934016338">Zaakceptuj i szukaj</translation>
 <translation id="4750550185319565338">Uruchom ponownie Chrome, by włączyć wtyczkę <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Ten plik może być niebezpieczny, dlatego został zablokowany przez Chrome.</translation>
@@ -155,12 +154,9 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="5430073640787465221">Plik ustawień jest uszkodzony lub nieprawidłowy. Google Chrome nie może odzyskać ustawień.</translation>
 <translation id="5453904507266736060">Zezwalaj przeglądarce Google Chrome na działanie w tle</translation>
 <translation id="5495581687705680288">Moduły załadowane do przeglądarki Google Chrome</translation>
-<translation id="5524843473235508879">Przekierowanie zostało zablokowane.</translation>
 <translation id="556024056938947818">Google Chrome próbuje pokazać hasła.</translation>
-<translation id="5563479599352954471">Szukaj jednym kliknięciem</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Chrome potrzebuje uprawnień dostępu do mikrofonu na tej stronie.</translation>
-<translation id="5620765574781326016">Poznaj tematy omawiane w witrynach, nie opuszczając strony.</translation>
 <translation id="565744775970812598">Plik <ph name="FILE_NAME" /> może być niebezpieczny, dlatego został zablokowany przez Chrome.</translation>
 <translation id="573759479754913123">System operacyjny &amp;Chrome – informacje</translation>
 <translation id="5749068826913805084">Chrome musi mieć dostęp do pamięci, by pobierać pliki.</translation>
@@ -196,7 +192,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="6697947395630195233">Chrome musi mieć dostęp do Twojej lokalizacji, by udostępnić ją tej stronie.</translation>
 <translation id="683440813066116847">Reguła dla ruchu przychodzącego w Google Chrome Canary zezwalająca na ruch mDNS.</translation>
 <translation id="686561893457936865">Zabierz Chrome ze sobą</translation>
-<translation id="6883876366448858277">przesyła słowo i jego kontekst do wyszukiwarki Google, by wyświetlić definicje, zdjęcia i inne wyniki wyszukiwania.</translation>
 <translation id="6885412569789873916">Aplikacje do Chrome Beta</translation>
 <translation id="6967962315388095737">Reguła dla ruchu przychodzącego w Google Chrome Beta zezwalająca na ruch mDNS.</translation>
 <translation id="6970811910055250180">Aktualizowanie urządzenia...</translation>
@@ -218,7 +213,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="7437998757836447326">Wyloguj się z Chrome</translation>
 <translation id="7459554271817304652">Skonfiguruj synchronizację, by zapisać w internecie własne funkcje przeglądarki i mieć do nich dostęp w Google Chrome na każdym komputerze.</translation>
 <translation id="7473136999113284234">Chrome aktualizuje się automatycznie, więc zawsze masz najnowszą wersję.</translation>
-<translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7494905215383356681">Licencje oprogramowania typu open source w Chrome</translation>
 <translation id="7535429826459677826">Wersja deweloperska Google Chrome</translation>
 <translation id="7552219221109926349">Wyświetlaj system operacyjny Chrome w tym języku</translation>

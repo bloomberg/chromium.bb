@@ -253,7 +253,6 @@
 <translation id="3414952576877147120">आकार:</translation>
 <translation id="3443221991560634068">वर्तमान पेज फिर से लोड करें</translation>
 <translation id="3452612588551937789">अपने सभी डिवाइस पर अपने बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग प्राप्त करने के लिए अपने Google खाते से प्रवेश करें.</translation>
-<translation id="3479552764303398839">अभी नहीं</translation>
 <translation id="3487093336331957349">खोज और साइट सुझाव</translation>
 <translation id="3492207499832628349">नया गुप्त टैब</translation>
 <translation id="3493531032208478708">सुझाई गई सामग्री के बारे में <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" /></translation>
@@ -315,6 +314,7 @@
 <translation id="3988213473815854515">स्‍थान अनुमत है</translation>
 <translation id="3997476611815694295">महत्वहीन मेमोरी</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
+<translation id="4031074602479304239">Chrome ने इस साइट को रोक दिया ताकि वह आपको दूसरे वेबलिंक पर नहीं ले जाए</translation>
 <translation id="4042870126885713738">किसी वेब पते का समाधान ना होने या कनेक्शन ना हो सकने पर सुझाव दिखाएं</translation>
 <translation id="4046123991198612571">अगला ट्रैक</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -472,6 +472,7 @@
 <translation id="5512137114520586844">यह खाता <ph name="PARENT_NAME" /> द्वारा प्रबंधित है.</translation>
 <translation id="5514904542973294328">इस डिवाइस के व्यवस्थापक ने अक्षम किया है</translation>
 <translation id="5517095782334947753">आपके पास <ph name="FROM_ACCOUNT" /> के बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग हैं.</translation>
+<translation id="5524843473235508879">दूसरे वेबलिंक पर भेजना ब्लॉक किया हुआ है.</translation>
 <translation id="5527082711130173040">डिवाइस स्कैन करने के लिए Chrome को स्थान एक्सेस की आवश्यकता होती है. <ph name="BEGIN_LINK1" />अनुमतियां अपडेट करें<ph name="END_LINK1" />. स्थान एक्सेस <ph name="BEGIN_LINK2" />इस डिवाइस के लिए भी बंद<ph name="END_LINK2" /> है.</translation>
 <translation id="5530766185686772672">गुप्त टैब बंद करें</translation>
 <translation id="5534640966246046842">साइट की कॉपी की गई</translation>
@@ -498,7 +499,6 @@
 
 हालांकि, आप अदृश्य नहीं हैं. गुप्त मोड में जाने से आपके नियोक्ता, आपके इंटरनेट सेवा प्रदाता, या आपके द्वारा देखी जाने वाली वेबसाइटों से आपकी ब्राउज़िंग नहीं छिपती.</translation>
 <translation id="572328651809341494">हाल ही के टैब</translation>
-<translation id="572392919096807438">मेरेे निर्णय को याद रखें</translation>
 <translation id="5726692708398506830">पेज पर सब कुछ बड़ा करें</translation>
 <translation id="5738816946784116349">Chrome डाउनलोड</translation>
 <translation id="5748802427693696783">मानक टैब पर स्विच कर दिया गया</translation>
@@ -652,7 +652,6 @@
 <translation id="7022756207310403729">ब्राउज़र में खोलें</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
 <translation id="7031882061095297553">इसमें समन्वयित करें</translation>
-<translation id="704059664004611800">बुकमार्क आदि देखने के लिए टैप करें</translation>
 <translation id="7053983685419859001">अवरोधित करें</translation>
 <translation id="7062545763355031412">स्वीकार करें और खातों को बदलें</translation>
 <translation id="7063006564040364415">समन्‍वयन सर्वर से कनेक्‍ट नहीं किया जा सका.</translation>
@@ -786,7 +785,7 @@
 <translation id="8374821112118309944">आपको TalkBack को अधिक नए वर्शन से अपडेट करना होगा.</translation>
 <translation id="8393700583063109961">संदेश भेजें</translation>
 <translation id="8413126021676339697">संपूर्ण इतिहास दिखाएं</translation>
-<translation id="8428213095426709021">सेटिंग्स</translation>
+<translation id="8428213095426709021">सेटिंग</translation>
 <translation id="8441146129660941386">पीछे जाएं</translation>
 <translation id="8447861592752582886">डिवाइस अनुमति निरस्त करें</translation>
 <translation id="8487700953926739672">ऑफ़लाइन उपलब्ध है</translation>

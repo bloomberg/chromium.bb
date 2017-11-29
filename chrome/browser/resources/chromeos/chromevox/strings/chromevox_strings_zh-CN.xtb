@@ -4,7 +4,7 @@
 <translation id="100812568230599391">将显示样式更改为交错。</translation>
 <translation id="1012173283529841972">列表项</translation>
 <translation id="1013742170491673792">srched</translation>
-<translation id="1022586497894531524">您是初次使用 ChromeVox 语音反馈功能吗？此教程将简要介绍基本的 ChromeVox 入门知识。</translation>
+<translation id="1022586497894531524">您是初次使用 ChromeVox 语音反馈功能吗？此教程将提供基本的操作说明，协助您开始使用 ChromeVox。</translation>
 <translation id="1023866615269196768">已跨行或跨列。</translation>
 <translation id="1025074108959230262">已停用粘滞模式</translation>
 <translation id="1031961866430398710">再按</translation>
@@ -471,7 +471,7 @@
 <translation id="5098541983634824365">即将离开网格。</translation>
 <translation id="5102981729317424850">工具栏</translation>
 <translation id="5105050547967751155">rq</translation>
-<translation id="5106547198195128110">与以往版本相比，这个新版本中有一些激动人心的不同之处；具体如下所示：</translation>
+<translation id="5106547198195128110">这一新版本中有一些重大变更，具体如下：</translation>
 <translation id="5110983769041734144">不存在上一个表单字段。</translation>
 <translation id="5111640677200759579">列标题</translation>
 <translation id="5136967254288895616">不存在上一个链接。</translation>
@@ -588,7 +588,7 @@
 <translation id="6065293622157674001">语法错误的开头</translation>
 <translation id="6082768461603900813">基本导航操作</translation>
 <translation id="6092707270915298410">链接末尾</translation>
-<translation id="6118126368611144850">适合在 Chrome 中使用的 Android 应用。如果您的设备上安装了 Play 商店，则可以通过 Android 应用抢先体验 ChromeVox。只需从 Play 商店下载 Google Chrome Canary，即可试用实验性支持。</translation>
+<translation id="6118126368611144850">适合在 Chrome 中使用的 Android 应用。如果您的设备上安装了 Play 商店，则可以通过 Android 应用抢先体验 ChromeVox。只需从 Play 商店下载 Google Chrome Canary，即可体验实验功能。</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">单元格结束。</translation>
 <translation id="6122013438240733403">按钮</translation>

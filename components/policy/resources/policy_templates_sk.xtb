@@ -29,6 +29,7 @@
 
           Ak je toto nastavenie zakázané alebo nie je nakonfigurované, hostiteľ vzdialenej pomoci bude spustený v kontexte daného používateľa a vzdialení používatelia nemôžu interagovať s privilegovanými oknami na pracovnej ploche.</translation>
 <translation id="1096105751829466145">Predvolený poskytovateľ vyhľadávania</translation>
+<translation id="1099282607296956954">Povolenie izolácie všetkých webov</translation>
 <translation id="1117535567637097036">Obslužné nástroje protokolov nastavené prostredníctvom tohto pravidla sa nepoužívajú pri spracovávaní intencií Androidu.</translation>
 <translation id="1122282995569868661">Zobrazuje sa ikona panela s nástrojmi funkcie <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Umožňuje nakonfigurovať adresár, ktorý <ph name="PRODUCT_NAME" /> použije na ukladanie súborov vo vyrovnávacej pamäti na disk.
@@ -237,7 +238,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Formát hodnoty zodpovedá názvom časových pásiem v databáze časových pásiem IANA (nájdete ju na adrese https://en.wikipedia.org/wiki/Tz_database). Konkrétne je väčšina časových pásiem vyjadrená vo formáte „kontinent/veľkomesto“ alebo „oceán/veľkomesto“.
 
       Nastavenie tohto pravidla zakáže automatické rozlíšenie časového pásma na základe polohy zariadenia. Prepíše tiež pravidlo SystemTimezoneAutomaticDetection.</translation>
-<translation id="1897365952389968758">Povoliť všetkým webovým stránkam spúšťať jazyk JavaScript</translation>
+<translation id="1897365952389968758">Povoliť všetkým webom spúšťať JavaScript</translation>
 <translation id="193259052151668190">Zoznam povolených odpojiteľných zariadení USB</translation>
 <translation id="1933378685401357864">Obrázok tapety</translation>
 <translation id="1956493342242507974">Konfigurácia správy napájania na prihlasovacej obrazovke systému <ph name="PRODUCT_OS_NAME" />.
@@ -711,6 +712,16 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="332771718998993005">Umožňuje zistiť názov cieľového priečinka funkcie <ph name="PRODUCT_NAME" />.
 
           Ak v tomto pravidle nastavíte reťazec, ktorý nie je prázdny, daný reťazec sa použije ako názov cieľového priečinka funkcie <ph name="PRODUCT_NAME" />. Inak sa ako názov cieľového priečinka použije názov zariadenia. Ak toto pravidlo nenastavíte, názov cieľového priečinka bude názov zariadenia, ktorý bude môcť zmeniť jeho vlastník (alebo používateľ z domény, ktorá ho spravuje). Názov môže mať maximálne 24 znakov.</translation>
+<translation id="3356249700768900657">
+      POZNÁMKA: Toto je experimentálne pravidlo, ktoré môže poškodiť funkčnosť!
+      Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom na používateľov,
+       pozrite si nastavenie pravidla IsolateOrigins. Pravidlo
+      IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Toto
+      nastavenie – SitePerProcess – izoluje všetky weby.
+      Ak toto pravidlo povolíte, všetky weby sa budú spúšťať vo vlastných procesoch.
+      Ak ho zakážete, bude platiť logika správy procesov pre predbežnú izoláciu webov.
+      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
+      </translation>
 <translation id="3381968327636295719">V predvolenom nastavení použiť hosťovský prehliadač</translation>
 <translation id="3395348522300156660">Umožňuje určiť tlačiarne, ktoré má používateľ k dispozícii.
 
@@ -1076,6 +1087,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Príklady vzorov nájdete na adrese http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Otvoriť zoznam webových adries</translation>
 <translation id="4680961954980851756">Zapnúť automatické dopĺňanie</translation>
+<translation id="4722122254122249791">Povolenie izolácie webov pre konkrétne zdroje</translation>
 <translation id="4722399051042571387">Ak je toto nastavenie nakonfigurované na možnosť False, používatelia nebudú môcť nastaviť slabé ani ľahko uhádnuteľné kódy PIN.
 
           Niekoľko príkladov slabých kódov PIN: kódy PIN obsahujúce iba jedno číslo (1111), kódy PIN so vzostupným radom po sebe nasledujúcich čísel (1234), kódy PIN so zostupnými radom po sebe nasledujúcich čísel (4321) a také, ktoré sa bežne používajú.
@@ -1177,6 +1189,16 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="4983201894483989687">Povoliť spúšťanie zastaraných doplnkov</translation>
 <translation id="4988291787868618635">Akcia po určitej dobe nečinnosti</translation>
 <translation id="4995548127349206948">Či je povolené overenie totožnosti NTLMv2</translation>
+<translation id="5027819375434797927">
+      POZNÁMKA: Toto je experimentálne pravidlo, ktoré môže poškodiť funkčnosť!
+      Ak toto pravidlo povolíte, všetky zdroje v zozname
+      s položkami oddelenými čiarkami sa spustia vo vlastnom procese. Zároveň sa tým izolujú
+      zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude
+      aj adresa https://foo.example.com/ ako súčasť webu
+      https://example.com/.
+      Ak toto pravidlo zakážete, bude platiť logika správy procesov pre predbežnú izoláciu webov.
+      Ak ho nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
+      </translation>
 <translation id="5047604665028708335">Povoliť prístup ku stránkam mimo balíkov obsahu</translation>
 <translation id="5052081091120171147">Ak je toto pravidlo povolené, história prehliadania bude importovaná z aktuálneho predvoleného prehliadača. Povolenie tohto pravidla má vplyv aj na dialógové okno importu.
 
@@ -2021,39 +2043,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="7841880500990419427">Minimálna záložná verzia protokolu TLS</translation>
 <translation id="7842869978353666042">Konfigurácia možností služby Disk Google</translation>
 <translation id="7843525027689416831">Určuje príznaky, ktoré sa použijú pri spúšťaní prehliadača <ph name="PRODUCT_NAME" />. Určené príznaky budú použité iba na prihlasovacej obrazovke. Príznaky nastavené prostredníctvom tohto pravidla sa neprenesú do relácií používateľov.</translation>
-<translation id="7844537954833753199">Umožňuje konfigurovať nastavenia správy pre <ph name="PRODUCT_NAME" />.
-
-          Toto pravidlo ovláda viaceré nastavenia, ako aj nastavenia ovládané existujúcimi pravidlami týkajúcimi sa rozšírení. Ak nastavíte obe, toto pravidlo prepíše všetky staré pravidlá.
-
-          Toto pravidlo namapuje identifikátor rozšírenia alebo webovú adresu aktualizácie na svoju konfiguráciu. Keď bude mať k dispozícii identifikátor rozšírenia, konfigurácia sa použije iba pre ním určené rozšírenie. Pre špeciálny identifikátor <ph name="DEFAULT_SCOPE" /> môžete nastaviť predvolenú konfiguráciu, ktorá sa použije pre všetky rozšírenia, pre ktoré ste v rámci tohto pravidla nenastavili vlastnú konfiguráciu. Keď bude mať k dispozícii webovú adresu aktualizácie, konfigurácia sa použije pre všetky rozšírenia s presnou webovou adresou aktualizácie stanovenou v manifeste tohto rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurácia pre jednotlivé rozšírenia (alebo rozšírenia s rovnakou webovou adresou aktualizácie) je ďalší slovník, ktorý môže obsahovať polia uvedené nižšie.
-
-          <ph name="INSTALLATION_MODE" />: spustí mapovanie na reťazec označujúci režim inštalácie daného rozšírenia. Medzi platné reťazce patria:
-          * <ph name="ALLOWED" />: umožňuje používateľovi nainštalovať rozšírenie.
-          * <ph name="BLOCKED" />: zablokuje inštaláciu rozšírenia.
-          * <ph name="FORCE_INSTALLED" />: rozšírenie sa automaticky nainštaluje a používateľ ho nebude môcť odstrániť.
-          * <ph name="NORMAL_INSTALLED" />: rozšírenie sa automaticky nainštaluje, ale používateľ ho bude môcť zakázať.
-
-          Režim <ph name="INSTALLTION_MODE" /> môžete nakonfigurovať aj pre viacero rozšírení, ako aj pre rozšírenie <ph name="DEFAULT_SCOPE" /> (ako predvolené nastavenie) a rozšírenia s rovnakou webovou adresou aktualizácie. V tomto prípade môžete použiť iba hodnoty <ph name="ALLOWED" /> a <ph name="BLOCKED" />.
-
-          Ak režim nastavíte na <ph name="FORCE_INSTALLED" /> alebo <ph name="NORMAL_INSTALLED" />, potom musíte nakonfigurovať aj parameter <ph name="UPDATE_URL" />. Upozorňujeme, že webová adresa aktualizácie nastavená v rámci tohto pravidla sa použije iba pri prvej inštalácii. Následné aktualizácie rozšírenia budú používať webovú adresu aktualizácie uvedenú v manifeste daného rozšírenia. Webová adresa aktualizácie by mala odkazovať na dokument XML manifestu aktualizácie tak, ako je to uvedené vyššie.
-
-          <ph name="BLOCKED_PERMISSIONS" />: spustí mapovanie na zoznam reťazcov označujúci blokované povolenia rozhrania API pre dané rozšírenie. Názvy povolení sú rovnaké ako reťazce povolení uvedené v manifeste daného rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC3" />. Toto nastavenie môžete nakonfigurovať aj pre rozšírenie <ph name="DEFAULT_SCOPE" />. Ak rozšírenie vyžaduje povolenie, ktoré sa nachádza v zozname blokovaných položiek, toto povolenie sa nenačíta. Ak ako nepovinnú požiadavku obsahuje blokované povolenie, bude spracované bežným spôsobom. Ak však vyžiada povolenia, ktoré sú v konflikte, budú automaticky zakázané pri spustení.
-
-          <ph name="ALLOWED_PERMISSIONS" />: je rovnaké nastavenie ako <ph name="BLOCKED_PERMISSIONS" />, ale na rozdiel od neho explicitne povolí niektoré povolenia, ktoré môžu byť blokované globálnym zoznamom blokovaných povolení, a preto ho nie je možné nakonfigurovať pre rozšírenie <ph name="DEFAULT_SCOPE" />. Upozorňujeme, že toto nastavenie neudeľuje rozšíreniam povolenia automaticky.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: spustí mapovanie na reťazec verzie. Formát reťazca verzie je rovnaký ako ten, ktorý bol použitý v manifeste daného rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC4" />. Rozšírenia so staršou verziou ako stanovená minimálna verzia budú zakázané. Platí to aj pre rozšírenia, ktorých inštalácia bola vynútená.
-
-          Nasledujúce nastavenie môžete použiť iba pre predvolenú konfiguráciu <ph name="DEFAULT_SCOPE" />:
-
-          <ph name="INSTALL_SOURCES" />: všetky položky v tomto zozname sú vzory zodpovedajúce typu rozšírenia (<ph name="LINK_TO_MATCH_PATTERNS" />). Používatelia budú môcť poľahky inštalovať položky z ľubovoľnej webovej adresy, ktorá sa bude zhodovať s položkou v tomto zozname. Pomocou týchto vzorov musíte povoliť umiestnenie súboru <ph name="EXTENSION_SUFFIX_WILDCARD" /> a stránku, na ktorej sa spustí sťahovanie (t. j. sprostredkovateľa).
-
-          <ph name="ALLOWED_TYPES" />: toto nastavenie pridá na bielu listinu povolené typy rozšírenia/aplikácií, ktoré je možné nainštalovať v prehliadači <ph name="PRODUCT_NAME" />.  Daná hodnota je zoznam týchto reťazcov: <ph name="VALID_ALLOWED_TYPES" />. Ďalšie informácie o týchto typoch si môžete prečítať v dokumentácii k rozšíreniam prehliadača <ph name="PRODUCT_NAME" />.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Ak sa používateľ pokúsi nainštalovať rozšírenie, ktoré je blokované pravidlami, Internetový obchod Chrome zobrazí všeobecné chybové hlásenie. Toto nastavenie umožňuje k nemu pripojiť text. Môžete to využiť na nasmerovanie používateľov na vašu stránku technickej pomoci, vysvetliť dôvod blokovania konkrétneho rozšírenia a pod. Toto chybové hlásenie musí mať maximálne 1 000 znakov, inak bude skrátené.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: umožní prijať zoznam hostiteľov, s ktorými nebude môcť rozšírenie interagovať. Patria sem vkladanie JavaScriptu, upravovanie alebo zobrazovanie parametrov webRequests / webNavigation, zobrazovanie a upravovanie súborov cookie. Formát je podobný hľadaniu zhôd so vzormi <ph name="LINK_TO_MATCH_PATTERNS" /> , avšak nemôžete definovať žiadne cesty, napr. *://*.príklad.com. Tiež je podporované efektívne používanie zástupných znakov TLD, napr. *://príklad.*.
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Umožňuje prijať zoznam hostiteľov, s ktorými môže rozšírenie interagovať bez ohľadu na to, či sú uvedené v zozname <ph name="RUNTIME_BLOCKED_HOSTS" />. Má rovnaký formát ako <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Ak je pravidlo nastavené na hodnotu SyncDisabled alebo nie je nakonfigurované, certifikáty systému <ph name="PRODUCT_OS_NAME" /> nie sú pre aplikácie ARC k dispozícii.
 
       Ak je nastavené na hodnotu CopyCaCerts, všetky certifikáty CA inštalované s konfiguráciou ONC a parametrom <ph name="WEB_TRUSTED_BIT" /> sú pre aplikácie ARC k dispozícii.</translation>
@@ -2138,15 +2127,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Ak je toto pravidlo zakázané alebo ponechané nenastavené, budú sa používať bežné profily.</translation>
 <translation id="8158758865057576716">Povoľuje vytváranie roamingových kópií údajov profilu <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8170878842291747619">Povoľuje v prehliadači <ph name="PRODUCT_NAME" /> integrovanú službu Prekladač Google.
-
-      Ak toto nastavenie povolíte, prehliadač <ph name="PRODUCT_NAME" /> zobrazí integrovaný panel s nástrojmi ponúkajúci preklad príslušnej stránky tam, kde je to vhodné.
-
-      Ak toto nastavenie zakážete, používateľom sa panel prekladu nezobrazí nikdy.
-
-      Ak toto nastavenie povolíte alebo zakážete, používatelia nebudú môcť toto nastavenie v prehliadači <ph name="PRODUCT_NAME" /> zmeniť ani prepísať.
-
-      Ak je toto nastavenie ponechané nenastavené, používateľ sa môže rozhodnúť, či túto funkciu použiť chce alebo nechce.</translation>
 <translation id="817455428376641507">Umožňuje pristupovať k webovým adresám uvedeným v zozname, ktoré predstavujú výnimky pre zoznam zakázaných webových adries.
 
       Informácie o formáte položiek v zozname nájdete v popise pravidla na zablokovanie webových adries.

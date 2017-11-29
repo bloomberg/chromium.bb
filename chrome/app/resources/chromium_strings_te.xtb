@@ -71,13 +71,13 @@
 <translation id="3296368748942286671">Chromium మూసివేయబడినప్పుడు నేపథ్య అనువర్తనాలను అమలు చేయడాన్ని కొనసాగించు</translation>
 <translation id="331951419404882060">సైన్ ఇన్ చేయడంలో లోపం సంభవించినందున Chromium OS మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
 <translation id="3474745554856756813">ఇది ఈ పరికరం నుండి <ph name="ITEMS_COUNT" /> అంశాలను తొలగిస్తుంది. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromiumకి <ph name="USER_EMAIL" /> వలె సైన్ ఇన్ చేయండి.</translation>
+<translation id="3479552764303398839">ఇప్పుడు కాదు</translation>
 <translation id="3509308970982693815">దయచేసి అన్ని Chromium విండోలను మూసివేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="352783484088404971">Chromium నుండి తీసివేయి...</translation>
 <translation id="3549345495227188780">Chromium OSతో ప్రారంభించండి</translation>
 <translation id="3582788516608077514">Chromiumని నవీకరిస్తోంది...</translation>
 <translation id="358997566136285270">Chromium లోగో</translation>
 <translation id="3713809861844741608">కొత్త Chromium &amp;ట్యాబ్‌లో లింక్‌ని తెరువు</translation>
-<translation id="3738139272394829648">శోధించడానికి తాకండి</translation>
 <translation id="3762167353400286894">Chromium OS ఈ భాషలో ప్రదర్శించబడుతోంది</translation>
 <translation id="378917192836375108">Chromium వెబ్‌లో ఫోన్ నంబర్ క్లిక్ చేయడానికి మరియు Skypeతో కాల్ చేయడానికి మిమ్మల్ని అనుమతిస్తుంది!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -110,7 +110,6 @@
 <translation id="469338717132742108">Chromium OSతో సహాయాన్ని పొందండి</translation>
 <translation id="4708774505295300557">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" /> వలె Chromiumకు సైన్ ఇన్ చేసారు. దయచేసి మీ సమాచారాన్ని విడిగా ఉంచేందుకు కొత్త Chromium వినియోగదారును సృష్టించండి.</translation>
 <translation id="4714956846925717402">Chromiumకి వేగవంతంగా వెళ్లండి</translation>
-<translation id="4743926867934016338">ఆమోదిస్తున్నాను, శోధించు</translation>
 <translation id="4825874709045178029">ఈ సైట్ కోసం మీ కెమెరాని యాక్సెస్ చేయడానికి Chromiumకు అనుమతి అవసరం.</translation>
 <translation id="4888717733111232871">mDNS ట్రాఫిక్‌ను అనుమతించడానికి Chromium ఇన్‌బౌండ్ నియమం.</translation>
 <translation id="4943838377383847465">Chromium నేపథ్య మోడ్‌లో ఉంది.</translation>
@@ -127,9 +126,6 @@
 <translation id="5466153949126434691">Chromium స్వయంచాలకంగా నవీకరించబడుతుంది కనుక మీరు ఎల్లప్పుడూ తాజా సంస్కరణని కలిగి ఉంటారు. ఈ డౌన్‌లోడ్ పూర్తయినప్పుడు, Chromium పునఃప్రారంభించబడుతుంది మరియు మీరు మీ పనిని కొనసాగించవచ్చు.</translation>
 <translation id="5479196819031988440">Chromium OS ఈ పేజీని తెరవలేదు.</translation>
 <translation id="549669000822060376">దయచేసి Chromium తాజా సిస్టమ్ నవీకరణలను ఇన్‌స్టాల్ చేస్తున్నప్పుడు వేచి ఉండండి.</translation>
-<translation id="5524843473235508879">మళ్లింపు బ్లాక్ చేయబడింది.</translation>
-<translation id="5563479599352954471">ఒక టచ్‌తో శోధించండి</translation>
-<translation id="5620765574781326016">పేజీ నుండి నిష్క్రమించకుండానే వెబ్‌సైట్‌ల్లో విషయాల గురించి తెలుసుకోండి.</translation>
 <translation id="5634636535844844681">Chromiumకి Windows 7 లేదా అంతకంటే ఆధునికమైనది ఉండటం ఆవశ్యకం.</translation>
 <translation id="5680901439334282664">Chromiumకి సైన్ ఇన్ చేయండి</translation>
 <translation id="5698481217667032250">Chromiumను ఈ భాషలో ప్రదర్శించు</translation>
@@ -171,7 +167,6 @@
 <translation id="6734291798041940871">మీ కంప్యూటర్‌లోని వినియోగదారులందరికీ Chromium ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది.</translation>
 <translation id="6810143991807788455">ప్రస్తుత సెట్టింగ్‌లను నివేదించడం ద్వారా Chromiumని మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">ఒక పదాన్ని మరియు దాని సంబంధిత సందర్భాన్ని Google శోధనకు పంపుతుంది, ప్రతిస్పందనగా దాని నుండి నిర్వచనాలు, చిత్రాలు మరియు ఇతర శోధన ఫలితాలను అందిస్తుంది.</translation>
 <translation id="6893813176749746474">Chromium నవీకరించబడింది, కానీ మీరు దీన్ని గత 30 రోజులుగా ఉపయోగించలేదు.</translation>
 <translation id="6944967875980567883">మాడ్యూల్‌లు Chromiumలో లోడ్ చేయబడ్డాయి</translation>
 <translation id="6964305034639999644">Chromium అజ్ఞా&amp;త విండోలో లింక్‌ని తెరువు</translation>
@@ -196,7 +191,6 @@
 <ph name="BEGIN_LINK_2" />మరింత తెలుసుకోండి<ph name="END_LINK_2" />
 
 దయచేసి తదుపరి సూచనల కోసం <ph name="ACCOUNT_EMAIL" />లో మీ ఇమెయిల్‌ను చూడండి.</translation>
-<translation id="7473891865547856676">వద్దు, ధన్యవాదాలు</translation>
 <translation id="7483335560992089831">ప్రస్తుతం అమలు చేయబడుతున్న అదే Chromium సంస్కరణని ఇన్‌స్టాల్ చేయలేరు. దయచేసి Chromiumని మూసివేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="7549178288319965365">Chromium OS గురించి</translation>
 <translation id="7577193603922410712">ఇప్పుడే Chromium కోసం ప్రత్యేక భద్రతా నవీకరణ వర్తింపజేయబడింది; అది అమలు కావడం కోసం మీరు దీన్ని ఇప్పుడు పునఃప్రారంభించాలి (మేము మీ ట్యాబ్‌లను పునరుద్ధరిస్తాము).</translation>

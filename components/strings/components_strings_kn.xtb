@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="1126551341858583091">ಸ್ಥಳೀಯ ಸಂಗ್ರಹಣೆಯಲ್ಲಿರುವ ಗಾತ್ರ <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">ನೀತಿಯ ಸಂಗ್ರಹ ಸರಿಯಾಗಿದೆ</translation>
-<translation id="113188000913989374"><ph name="SITE" /> ಹೀಗೆ ಹೇಳುತ್ತದೆ:</translation>
 <translation id="1132774398110320017">Chrome ಸ್ವಯಂತುಂಬುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
 <translation id="1150979032973867961">ಈ ಸರ್ವರ್ <ph name="DOMAIN" /> ಆಗಿದೆ ಎಂಬುದನ್ನು ಸಾಬೀತುಪಡಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ; ಅದರ ಸುರಕ್ಷತಾ ಪ್ರಮಾಣಪತ್ರವು ನಿಮ್ಮ ಸಾಧನದ ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಂ‌ ಪ್ರಕಾರ ವಿಶ್ವಾಸಾರ್ಹವಾಗಿಲ್ಲ. ಇದು ತಪ್ಪು ಕಾನ್ಫಿಗರೇಶನ್‌ನಿಂದ ಅಥವಾ ಆಕ್ರಮಣಕಾರರು ನಿಮ್ಮ ಸಂಪರ್ಕದಲ್ಲಿ ಒಳನುಸುಳಿರುವುದರಿಂದ ಆಗಿರಬಹುದು.</translation>
 <translation id="1151972924205500581">ಪಾಸ್‌ವರ್ಡ್ ಅಗತ್ಯವಿದೆ</translation>
@@ -610,7 +609,6 @@
 <translation id="552553974213252141">ಪಠ್ಯವನ್ನು ಸರಿಯಾಗಿ ಪ್ರತ್ಯೇಕಿಸಲಾಗಿದೆಯೇ?</translation>
 <translation id="5540224163453853">ವಿನಂತಿಸಿದ ಲೇಖನವನ್ನು ಹುಡುಕಲು ಸಾಧವಾಗಲಿಲ್ಲ.</translation>
 <translation id="5541546772353173584">ಇಮೇಲ್ ಸೇರಿಸಿ</translation>
-<translation id="5544037170328430102"><ph name="SITE" /> ನಲ್ಲಿ ಎಂಬೆಡ್ ಮಾಡಲಾದ ಪುಟವು ಹೀಗೆ ಹೇಳುತ್ತದೆ:</translation>
 <translation id="5545756402275714221">ನಿಮಗಾಗಿ ಲೇಖನಗಳು</translation>
 <translation id="5556459405103347317">ಮರುಲೋಡ್‌</translation>
 <translation id="5560088892362098740">ಅವಧಿ ಮುಗಿಯುವ ದಿನಾಂಕ</translation>
@@ -817,7 +815,6 @@
 <translation id="7390545607259442187">ಕಾರ್ಡ್ ಅನ್ನು ದೃಢೀಕರಿಸಿ</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">ಪ್ರೊಫೈಲ್ ಹಾದಿ</translation>
-<translation id="7424977062513257142">ಈ ವೆಬ್‌ಪುಟದಲ್ಲಿ ಎಂಬೆಡ್ ಮಾಡಲಾದ ಪುಟವು ಹೀಗೆ ಹೇಳುತ್ತದೆ:</translation>
 <translation id="7437289804838430631">ಸಂಪರ್ಕ ಮಾಹಿತಿಯನ್ನು ಸೇರಿಸು</translation>
 <translation id="7441627299479586546">ತಪ್ಪಾದ ನೀತಿಯ ವಿಷಯ</translation>
 <translation id="7444046173054089907">ಈ ಸೈಟ್ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
@@ -997,7 +994,6 @@
 <translation id="884923133447025588">ವಿಫಲವಾದ ಕಾರ್ಯತಂತ್ರ ಪತ್ತೆಯಾಗಿಲ್ಲ.</translation>
 <translation id="885730110891505394">Google ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳುವುದು</translation>
 <translation id="8866481888320382733">ನೀತಿಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪಾಸ್ ಮಾಡುವಲ್ಲಿ ದೋಷ</translation>
-<translation id="8866959479196209191">ಈ ಪುಟವು ಹೀಗೆ ಹೇಳುತ್ತದೆ:</translation>
 <translation id="8870413625673593573">ಇತ್ತೀಚೆಗೆ ಮುಚ್ಚಿರುವುದು</translation>
 <translation id="8874824191258364635">ಮಾನ್ಯವಾದ ಕಾರ್ಡ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="8876793034577346603">ಪಾರ್ಸ್ ಮಾಡಬೇಕಾಗಿರುವ ನೆಟ್‌ವರ್ಕ್ ಕಾನ್ಫಿಗರೇಶನ್ ವಿಫಲವಾಗಿದೆ.</translation>

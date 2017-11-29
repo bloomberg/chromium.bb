@@ -71,13 +71,13 @@
 <translation id="3296368748942286671">‏המשך הפעלת יישומים ברקע כאשר Chromium סגור</translation>
 <translation id="331951419404882060">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך עקב שגיאה בתהליך הכניסה.</translation>
 <translation id="3474745554856756813">‏פעולה זו תמחק <ph name="ITEMS_COUNT" /> פריטים מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chromium עם <ph name="USER_EMAIL" />.</translation>
+<translation id="3479552764303398839">לא עכשיו</translation>
 <translation id="3509308970982693815">‏סגור את כל חלונות Chromium ונסה שוב.</translation>
 <translation id="352783484088404971">‏הסר מ-Chromium...</translation>
 <translation id="3549345495227188780">‏תחילת העבודה עם Chromium OS</translation>
 <translation id="3582788516608077514">‏מעדכן את Chromium‏...</translation>
 <translation id="358997566136285270">‏לוגו של Chromium</translation>
 <translation id="3713809861844741608">‏פתח את הקישור ב&amp;כרטיסיית Chromium חדשה</translation>
-<translation id="3738139272394829648">גע כדי לחפש</translation>
 <translation id="3762167353400286894">‏Chromium OS מוצג בשפה זו</translation>
 <translation id="378917192836375108">‏Chromium מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -110,7 +110,6 @@
 <translation id="469338717132742108">‏קבל עזרה בנושא Chromium OS</translation>
 <translation id="4708774505295300557">‏מישהו נכנס בעבר ל-Chromium מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST" />. צור משתמש חדש ל-Chromium כדי לשמור על הפרדת המידע שלך.</translation>
 <translation id="4714956846925717402">‏רוצה להגיע ל-Chromium מהר יותר?</translation>
-<translation id="4743926867934016338">אשר וחפש</translation>
 <translation id="4825874709045178029">‏Chromium זקוק להרשאת גישה אל המצלמה בשביל האתר הזה.</translation>
 <translation id="4888717733111232871">‏כלל נכנס עבור Chromium על מנת לאפשר תנועת mDNS.</translation>
 <translation id="4943838377383847465">‏Chromium נמצא במצב רקע.</translation>
@@ -127,9 +126,6 @@
 <translation id="5466153949126434691">‏Chromium מתעדכן באופן אוטומטי, כך שתמיד ברשותך הגרסה העדכנית ביותר. כשההורדה תסתיים, Chromium יופעל מחדש ותוכל להמשיך.</translation>
 <translation id="5479196819031988440">‏מערכת ההפעלה של Chromium אינה יכול לפתוח את הדף הזה.</translation>
 <translation id="549669000822060376">‏המתן בזמן ש-Chromium מתקין את עדכוני המערכת האחרונים.</translation>
-<translation id="5524843473235508879">הפניה לכתובת אתר אחרת נחסמה.</translation>
-<translation id="5563479599352954471">חיפוש בנגיעה אחת</translation>
-<translation id="5620765574781326016">קרא מידע על נושאים באתרים בלי לעזוב את הדף.</translation>
 <translation id="5634636535844844681">‏כדי להשתמש ב-Chromium יש צורך ב-Windows מגירסה 7 ואילך.</translation>
 <translation id="5680901439334282664">‏היכנס אל Chromium</translation>
 <translation id="5698481217667032250">‏הצג את Chromium בשפה זו</translation>
@@ -171,7 +167,6 @@
 <translation id="6734291798041940871">‏Chromium כבר מותקן במחשב ונגיש לכל המשתמשים.</translation>
 <translation id="6810143991807788455">‏עזור לשפר את Chromium על ידי דיווח ההגדרות הנוכחיות</translation>
 <translation id="6857782730669500492">‏Chromium‏ - <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">‏שולח לחיפוש Google מילה יחד עם ההקשר סביבה. מחזיר הגדרות, תמונות, ותוצאות חיפוש נוספות.</translation>
 <translation id="6893813176749746474">‏Chromium עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="6944967875980567883">‏מודולים שנטענו ב-Chromium</translation>
 <translation id="6964305034639999644">‏פתח את הקישור בחלון &amp;גלישה בסתר של Chromium</translation>
@@ -198,7 +193,6 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <ph name="BEGIN_LINK_2" />למידע נוסף<ph name="END_LINK_2" />
 
 בדוק את האימייל בחשבון <ph name="ACCOUNT_EMAIL" /> לקבלת הנחיות נוספות.</translation>
-<translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7483335560992089831">‏לא ניתן להתקין את אותה גרסת Chromium שפועלת כרגע. סגור את Chromium ונסה שוב.</translation>
 <translation id="7549178288319965365">‏על מערכת ההפעלה של Chromium</translation>
 <translation id="7577193603922410712">‏בוצע עדכון אבטחה מיוחד של Chromium. עליך לאתחל עכשיו כדי שהעדכון יופעל (נשחזר את הכרטיסיות שלך).</translation>

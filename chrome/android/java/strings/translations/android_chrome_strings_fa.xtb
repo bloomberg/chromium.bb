@@ -253,7 +253,6 @@
 <translation id="3414952576877147120">اندازه:</translation>
 <translation id="3443221991560634068">تازه‌سازی صفحه کنونی</translation>
 <translation id="3452612588551937789">‏برای دسترسی به نشانک‌ها، گذرواژه‌ها، سابقه و تنظیمات دیگر در همه دستگاه‌هایتان، به سیستم حساب Google خود وارد شوید.</translation>
-<translation id="3479552764303398839">اکنون نه</translation>
 <translation id="3487093336331957349">پیشنهادهای جستجو و سایت</translation>
 <translation id="3492207499832628349">برگه ناشناس جدید</translation>
 <translation id="3493531032208478708">درباره محتوای پیشنهادی <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
@@ -315,6 +314,7 @@
 <translation id="3988213473815854515">مکان مجاز است</translation>
 <translation id="3997476611815694295">فضای ذخیره غیرمهم</translation>
 <translation id="4002066346123236978">عنوان</translation>
+<translation id="4031074602479304239">‏Chrome مانع هدایت شما توسط این سایت به اینجا شده است</translation>
 <translation id="4042870126885713738">وقتی آدرس وب شناسایی نمی‌شود یا اتصال برقرار نمی‌شود، پیشنهاداتی نشان داده می‌شود</translation>
 <translation id="4046123991198612571">آهنگ بعدی</translation>
 <translation id="4056223980640387499">سپیا</translation>
@@ -472,6 +472,7 @@
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> این حساب را مدیریت می‌کند.</translation>
 <translation id="5514904542973294328">توسط سرپرست این دستگاه غیرفعال شده است</translation>
 <translation id="5517095782334947753">نشانک، سابقه، گذرواژه و تنظیمات دیگری از <ph name="FROM_ACCOUNT" /> دارید.</translation>
+<translation id="5524843473235508879">هدایت کردن مسدود شد.</translation>
 <translation id="5527082711130173040">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. <ph name="BEGIN_LINK1" />به‌روزرسانی مجوزها<ph name="END_LINK1" /> . دسترسی به مکان نیز <ph name="BEGIN_LINK2" />برای این دستگاه خاموش است<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">بستن برگه‌های ناشناس</translation>
 <translation id="5534640966246046842">سایت کپی شد</translation>
@@ -497,7 +498,6 @@
 <translation id="5719837394786370183">صفحاتی که در برگه‌های ناشناس می‌بینید بعد از بستن برگه‌های ناشناس، در سابقه مرور، فضای ذخیره کوکی یا سابقه جستجویتان به‌جا نمی‌مانند. هر فایلی که بارگیری می‌کنید یا نشانک‌هایی که ایجاد می‌کنید، حفظ می‌شوند.
 با این حال، نامرئی نیستید. رفتن به حالت ناشناس، مرورتان را از کارفرما، ارائه‌کننده خدمات اینترنتی یا وب‌سایت‌هایی که بازید می‌کنید، پنهان نمی‌کند.</translation>
 <translation id="572328651809341494">برگه‌های اخیر</translation>
-<translation id="572392919096807438">تصمیم من به یاد سپرده شود</translation>
 <translation id="5726692708398506830">بزرگ‌تر کردن همه‌چیز در صفحه</translation>
 <translation id="5738816946784116349">‏بارگیری‌های Chrome</translation>
 <translation id="5748802427693696783">به برگه‌های استاندارد تغییر یافت</translation>
@@ -651,7 +651,6 @@
 <translation id="7022756207310403729">بازکردن در مرورگر</translation>
 <translation id="7029809446516969842">گذرواژه‌ها</translation>
 <translation id="7031882061095297553">همگام‌سازی در</translation>
-<translation id="704059664004611800">برای دیدن نشانک‌ها و موارد دیگر ضربه بزنید</translation>
 <translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="7062545763355031412">پذیرش و تغییر حساب‌ها</translation>
 <translation id="7063006564040364415">اتصال به سرور همگام‌سازی ممکن نیست.</translation>

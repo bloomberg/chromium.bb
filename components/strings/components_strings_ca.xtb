@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Desfés el canvi d'ordre</translation>
 <translation id="1126551341858583091">La mida de l'emmagatzematge local és de <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">La memòria cau de la política està en bon estat</translation>
-<translation id="113188000913989374"><ph name="SITE" /> diu:</translation>
 <translation id="1132774398110320017">Configuració d'Emplenament automàtic de Chrome...</translation>
 <translation id="1150979032973867961">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el sistema operatiu del vostre ordinador considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="1151972924205500581">Es requereix una contrasenya</translation>
@@ -160,7 +159,7 @@
 <translation id="214556005048008348">Cancel·la el pagament</translation>
 <translation id="2147827593068025794">Sincronització en segon pla</translation>
 <translation id="2148613324460538318">Afegeix una targeta</translation>
-<translation id="2149973817440762519">Edició de l'adreça d'interès</translation>
+<translation id="2149973817440762519">Edita l'adreça d'interès</translation>
 <translation id="2154054054215849342">La sincronització no està disponible per al teu domini</translation>
 <translation id="2154484045852737596">Edita la targeta</translation>
 <translation id="2166049586286450108">Accés complet d'administrador</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">S'ha extret correctament el text?</translation>
 <translation id="5540224163453853">No s'ha pogut trobar l'article sol·licitat.</translation>
 <translation id="5541546772353173584">Afegeix un correu electrònic</translation>
-<translation id="5544037170328430102">Una pàgina inserida a <ph name="SITE" /> diu:</translation>
 <translation id="5545756402275714221">Articles que et poden interessar</translation>
 <translation id="5556459405103347317">Torna a carregar</translation>
 <translation id="5560088892362098740">Data de caducitat</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Confirma la targeta</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Camí del perfil</translation>
-<translation id="7424977062513257142">Una pàgina inserida en aquesta pàgina web diu:</translation>
 <translation id="7437289804838430631">Afegeix informació de contacte</translation>
 <translation id="7441627299479586546">Usuari de la política incorrecte</translation>
 <translation id="7444046173054089907">Aquest lloc està bloquejat</translation>
@@ -1001,7 +998,6 @@
 <translation id="884923133447025588">No s'ha trobat cap mecanisme de revocació.</translation>
 <translation id="885730110891505394">Comparteix informació amb Google</translation>
 <translation id="8866481888320382733">S'ha produït un error en analitzar la configuració de la política</translation>
-<translation id="8866959479196209191">Aquesta pàgina diu:</translation>
 <translation id="8870413625673593573">Tancades recentment</translation>
 <translation id="8874824191258364635">Introdueix un número de targeta vàlid</translation>
 <translation id="8876793034577346603">No s'ha pogut analitzar la configuració de la xarxa.</translation>

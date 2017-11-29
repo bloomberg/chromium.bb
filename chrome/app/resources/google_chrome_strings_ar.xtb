@@ -92,12 +92,12 @@
 <translation id="3398288718845740432">‏الإخفاء في قائمة Chrome</translation>
 <translation id="3451115285585441894">‏جارٍ الإضافة إلى Chrome...</translation>
 <translation id="345171907106878721">‏إضافة نفسك إلى Chrome</translation>
+<translation id="3479552764303398839">ليس الآن</translation>
 <translation id="3612333635265770873">‏هناك وحدة تحمل الاسم نفسه ومعروف أنها تتعارض مع Google Chrome.</translation>
 <translation id="3622797965165704966">‏الآن أصبح استخدام Chrome مع حسابك في Google وفي أجهزة الكمبيوتر المشتركة أكثر سهولة.</translation>
 <translation id="3637702109597584617">‏<ph name="TERMS_OF_SERVICE_LINK" />بنود خدمة<ph name="END_TERMS_OF_SERVICE_LINK" /> نظام التشغيل Google Chrome</translation>
 <translation id="3718181793972440140">‏سيعمل هذا على حذف عنصر واحد من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome كـ <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">‏غيّرت الإضافة "<ph name="EXTENSION_NAME" />" الصفحة التي تظهر عند بدء Chrome.</translation>
-<translation id="3738139272394829648">المس للبحث</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">‏إزالة من Chrome</translation>
 <translation id="386202838227397562">‏يُرجى إغلاق كل نوافذ Google Chrome وإعادة المحاولة.</translation>
@@ -122,13 +122,12 @@
 <translation id="4480040274068703980">‏تعذر على نظام التشغيل Chrome مزامنة البيانات نظرًا لوجود خطأ في تسجيل الدخول.</translation>
 <translation id="4561051373932531560">‏يتيح لك Google Chrome النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
 <translation id="4567424176335768812">لقد سجلت دخولك باعتبارك <ph name="USER_EMAIL_ADDRESS" />. ويُمكنك الآن الاستمتاع بالدخول إلى الإشارات المرجعية، والسجلّ، والإعدادات الأخرى على جميع الأجهزة التي تسجّل الدخول إليها.</translation>
-<translation id="4600710005438004015">‏تعذّر تحديث Chrome إلى آخر إصدار، لذلك قد تفوتك الميزات الجديدة وعمليات إصلاح الأمان.</translation>
+<translation id="4600710005438004015">‏تعذّر تحديث Chrome إلى آخر إصدار، لذلك قد تفوتك الميزات وعمليات إصلاح الأمان الجديدة.</translation>
 <translation id="4631713731678262610">‏الإخفاء في قائمة Chrome</translation>
 <translation id="4633000520311261472">‏لجعل Chrome أكثر أمانًا، تم تعطيل بعض الإضافات غير المدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> والتي ربما تمت إضافتها بدون علمك.</translation>
 <translation id="4664415150087723341">‏تم الآن تطبيق تحديث أمان خاص لـ Google Chrome؛ تجب إعادة التشغيل الآن لتسري التغييرات التي أجريتها (ستتم استعادة علامات التبويب).</translation>
 <translation id="4700157086864140907">‏يمكن أن يقدم Google Chrome تدقيقًا إملائيًا أكثر دقة من خلال إرسال ما تكتبه في المتصفح إلى خوادم Google، مما يتيح لك استخدام تقنية التدقيق الإملائي ذاتها المستخدمة في بحث Google.</translation>
 <translation id="4728575227883772061">‏فشلت عملية التثبيت بسبب خطأ غير محدد. إذا كان Google Chrome في حالة التشغيل حاليًا، يُرجى إغلاقه وإعادة المحاولة.</translation>
-<translation id="4743926867934016338">موافقة وبحث</translation>
 <translation id="4750550185319565338">‏إعادة تشغيل Chrome لتمكين <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">‏قد يكون هذا الملف ضارًا، لذلك فقد حظره Chrome.</translation>
@@ -158,12 +157,9 @@
 <translation id="5430073640787465221">‏ملف التفضيلات تالف أو غير صالح. يتعذر على Google Chrome استرداد إعداداتك.</translation>
 <translation id="5453904507266736060">‏دع Google Chrome يعمل في الخلفية</translation>
 <translation id="5495581687705680288">‏الوحدات المحملة في Google Chrome</translation>
-<translation id="5524843473235508879">تم حظر إعادة التوجيه.</translation>
 <translation id="556024056938947818">‏يحاول Google Chrome إظهار كلمات المرور.</translation>
-<translation id="5563479599352954471">للبحث بلمسة واحدة</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">‏يحتاج Chrome إلى إذن لاستخدام الميكروفون لموقع الويب هذا.</translation>
-<translation id="5620765574781326016">تعرّف على مواضيع على مواقع الويب دون مغادرة الصفحة.</translation>
 <translation id="565744775970812598">‏قد يكون ملف <ph name="FILE_NAME" /> ضارًا، لذلك فقد حظره Chrome.</translation>
 <translation id="573759479754913123">‏حول نظام التشغيل Chrome</translation>
 <translation id="5749068826913805084">‏يحتاج Chrome الوصول إلى سعة التخزين لتنزيل الملفات.</translation>
@@ -199,7 +195,6 @@
 <translation id="6697947395630195233">‏يحتاج Chrome إلى الوصول إلى موقعك الجغرافي لمشاركة موقعك الجغرافي مع موقع الويب هذا.</translation>
 <translation id="683440813066116847">‏قاعدة الوارد إلى Google Chrome Canary للسماح بحركة مرور mDNS.</translation>
 <translation id="686561893457936865">‏إمكانية استخدام Chrome في كل مكان</translation>
-<translation id="6883876366448858277">‏إرسال الكلمة والسياق المحيط بها إلى بحث Google وعرض التعريفات والصور ونتائج البحث الأخرى.</translation>
 <translation id="6885412569789873916">‏تطبيقات الإصدار التجريبي من Chrome</translation>
 <translation id="6967962315388095737">‏قاعدة الوارد إلى الإصدار التجريبي من Google Chrome للسماح بحركة مرور mDNS.</translation>
 <translation id="6970811910055250180">جارٍ تحديث الجهاز...</translation>
@@ -212,7 +207,7 @@
 <translation id="7185038942300673794">‏تمت إضافة <ph name="EXTENSION_NAME" /> إلى Chrome.</translation>
 <translation id="7242029209006116544">‏إنك تسجل الدخول باستخدام حساب مُدار وتمنح المشرف إمكانية التحكم في ملفك الشخصي في Google Chrome. وسيتم ربط بيانات Chrome التابعة لك، مثل التطبيقات والإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى بالمستخدم <ph name="USER_NAME" />. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. ويُمكنك اختيار إنشاء ملف شخصي جديد للإبقاء على بياناتك الحالية في Chrome بشكل مستقل. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">‏سيتوقف هذا الكمبيوتر قريبًا عن استلام تحديثات Google Chrome لأن أنظمة Windows XP وWindows Vista لن تصبح مدعومة بعد الآن.</translation>
-<translation id="7330164299247909639">‏أخفقت شهادة المصادقة. يُرجى تسجيل الدخول إلى Google Chrome مرة أخرى بصفتك <ph name="USER_NAME" /> أو الاتصال بمشرفك لمزيد من المعلومات. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7330164299247909639">‏تعذّرت شهادة المصادقة. يُرجى تسجيل الدخول إلى Google Chrome مرة أخرى بصفتك <ph name="USER_NAME" /> أو الاتصال بمشرفك لمزيد من المعلومات. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">نافذة جديدة</translation>
 <translation id="7369650938475876456">‏استخدام كلمة مرور قوية تم إنشاؤها بواسطة Chrome</translation>
 <translation id="7398801000654795464">‏تم تسجيل دخولك إلى Chrome باعتبارك <ph name="USER_EMAIL_ADDRESS" />. يُرجى استخدام الحساب نفسه لتسجيل الدخول مرة أخرى.</translation>
@@ -221,7 +216,6 @@
 <translation id="7437998757836447326">‏الخروج من Chrome</translation>
 <translation id="7459554271817304652">‏يمكنك إعداد المزامنة لحفظ ميزات المتصفح المخصصة على الويب والدخول إليها من Google Chrome على أي كمبيوتر.</translation>
 <translation id="7473136999113284234">‏يجري تحديث Chrome تلقائيًا بحيث يكون لديك أحدث إصدار.</translation>
-<translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="7494905215383356681">‏تراخيص مفتوحة المصدر لـ Chrome</translation>
 <translation id="7535429826459677826">‏إصدار مطوري البرامج من Google Chrome</translation>
 <translation id="7552219221109926349">‏عرض نظام تشغيل Chrome بهذه اللغة</translation>
@@ -275,7 +269,7 @@
 <translation id="8914504000324227558">‏إعادة تشغيل Chrome</translation>
 <translation id="9026991721384951619">‏تعذر على نظام التشغيل Chrome مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
 <translation id="9067395829937117663">‏يتطلب متصفح Google Chrome نظام التشغيل Windows 7 أو إصدارًا أحدث.</translation>
-<translation id="9084668267983921457">‏أخفقت شهادة المصادقة. يُرجى تسجيل الدخول إلى Google Chrome مرة أخرى أو الاتصال بمشرفك لمزيد من المعلومات. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="9084668267983921457">‏تعذّرت شهادة المصادقة. يُرجى تسجيل الدخول إلى Google Chrome مرة أخرى أو الاتصال بمشرفك لمزيد من المعلومات. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="911206726377975832">هل تريد أيضًا حذف بيانات التصفح؟</translation>
 <translation id="919706545465235479">‏تحديث Chrome لبدء المزامنة</translation>
 <translation id="924447568950697217">‏جعل Chrome المتصفح الافتراضي</translation>

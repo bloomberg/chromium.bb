@@ -30,6 +30,7 @@
 
           Hvis denne innstillingen er slått av eller ikke er angitt, kjøres verten for fjernhjelp i brukerens kontekst. Eksterne brukere kan i så fall ikke kommunisere via uthevede vinduer på skrivebordet.</translation>
 <translation id="1096105751829466145">Standard søkeleverandør</translation>
+<translation id="1099282607296956954">Slå på nettstedsisolering for alle nettsteder</translation>
 <translation id="1117535567637097036">Protokollbehandlere som angis via denne regelen, brukes ikke når Android-intensjoner behandles.</translation>
 <translation id="1122282995569868661">Viser ikonet for <ph name="PRODUCT_NAME" />-verktøylinjen</translation>
 <translation id="1128903365609589950">Konfigurerer katalogen som <ph name="PRODUCT_NAME" /> skal bruke for å lagre bufrede filer på disken.
@@ -697,6 +698,9 @@
 <translation id="332771718998993005">Finn ut hvilket navn som er annonsert som en destinasjon for <ph name="PRODUCT_NAME" />.
 
           Hvis denne innstillingen er satt til en streng som ikke er tom, brukes denne strengen som navnet på destinasjonen for <ph name="PRODUCT_NAME" />. Ellers blir enhetsnavnet angitt som destinasjonsnavnet. Hvis denne innstillingen ikke er satt til noen verdi, blir enhetsnavnet angitt som destinasjonsnavnet, og eieren av enheten (eller en bruker fra domenet som administrerer enheten) kan endre det. Navnet er begrenset til 24 tegn.</translation>
+<translation id="3356249700768900657">
+      MERK: Denne regelen er eksperimentell og kan ødelegge funksjonalitet! Vi anbefaler at du tar en titt på regelen IsolateOrigins, som gir deg det beste av begge verdener. Hvis du bruker IsolateOrigins med en liste over nettsteder du vil isolere, får du både isolering og begrenset innvirkning på brukerne. Denne regelen – SitePerProcess – isolerer alle nettsteder. Hvis regelen er slått på, kjører hvert nettsted sin egen prosess. Hvis regelen er slått av, brukes administrasjonslogikken som er aktiv før prosessen for isolering av nettsteder startes. Hvis regelen ikke er konfigurert, kan brukeren endre denne innstillingen.
+      </translation>
 <translation id="3381968327636295719">Bruk vertsnettleser som standard</translation>
 <translation id="3395348522300156660">Angir skriverne som en bruker kan bruke.
 
@@ -1061,6 +1065,7 @@
           Du finner eksempelmønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Åpne en liste over nettadresser</translation>
 <translation id="4680961954980851756">Aktiver Autofyll</translation>
+<translation id="4722122254122249791">Slå på nettstedsisolering for spesifiserte opprinnelser</translation>
 <translation id="4722399051042571387">Hvis denne regelen er angitt som «false» (usann), kan ikke brukerne angi PIN-koder som er svake og enkle å gjette.
 
           Her er noen eksempler på svake PIN-koder: PIN-koder som bare består av det samme tallet (1111), PIN-koder som består av tall i stigende eller synkende rekkefølge (1234 eller 4321) og vanlig brukte PIN-koder.
@@ -1154,6 +1159,9 @@
 <translation id="4983201894483989687">Tillat kjøring av foreldede programtillegg</translation>
 <translation id="4988291787868618635">Handling som skal utføres når inaktivitetsforsinkelsen blir overskredet</translation>
 <translation id="4995548127349206948">Om NTLMv2-autentisering er aktivert eller ikke.</translation>
+<translation id="5027819375434797927">
+      MERK: Denne regelen er eksperimentell og kan ødelegge funksjonalitet! Hvis regelen er slått på, kjører hver opprinnelse (origin) som er oppført i den kommadelte listen, i sin egen prosess. Dette omfatter også opprinnelser med navn som bruker underdomener. Hvis du for eksempel angir https://example.com/, blir også https://foo.example.com/ isolert, som en del av det samme nettstedet. Hvis regelen er slått av, brukes administrasjonslogikken som er aktiv før prosessen for isolering av nettsteder startes. Hvis regelen ikke er konfigurert, kan brukeren endre denne innstillingen.
+      </translation>
 <translation id="5047604665028708335">Gi tilgang til nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="5052081091120171147">Denne retningslinjen tvinger import av nettleserloggen fra den aktuelle standardnettleseren hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importdialogen. Hvis den er deaktivert, importeres ingen nettleserlogg. Hvis den ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5056708224511062314">Skjermforstørrelse deaktivert</translation>
@@ -1728,7 +1736,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis den ikke er angitt, kan det hende brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importen skje automatisk.</translation>
 <translation id="7003746348783715221">Valg for <ph name="PRODUCT_NAME" /></translation>
-<translation id="7006788746334555276">Innstillinger for innhold</translation>
+<translation id="7006788746334555276">Innholdsinnstillinger</translation>
 <translation id="7007671350884342624">Konfigurerer katalogen som <ph name="PRODUCT_NAME" /> skal bruke til å lagre bufrede filer på disken.
 
       Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen uavhengig av om brukeren har spesifisert flagget «--disk-cache-dir» eller ikke. For å unngå tap av data eller andre uventede feil skal ikke denne regelen settes til rotkatalogen for et volum eller til en katalog som brukes til andre formål, fordi <ph name="PRODUCT_NAME" /> administrerer innholdet.
@@ -1990,39 +1998,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7841880500990419427">Laveste TLS-versjon som kan brukes som reserve</translation>
 <translation id="7842869978353666042">Konfigurer Google Disk-alternativer</translation>
 <translation id="7843525027689416831">Spesifiserer flaggene som skal gjelde for <ph name="PRODUCT_NAME" /> når det startes opp. De spesifiserte flaggene brukes bare på påloggingsskjermen. Flagg som angis via denne regelen, videreføres ikke til brukerøkter.</translation>
-<translation id="7844537954833753199">Konfigurerer innstillingene for administrering av utvidelser for <ph name="PRODUCT_NAME" />.
-
-          Denne regelen bestemmer flere innstillinger, inkludert innstillinger kontrollert av eventuelle eksisterende regler som er relatert til utvidelser. Denne regelen overstyrer eventuelle eldre regler som også er aktive.
-
-          Denne regelen knytter en utvidelses-ID eller en nettadresse for oppdatering til en konfigurasjon. Hvis det brukes en utvidelses-ID, blir konfigurasjonen bare angitt for den spesifiserte utvidelsen. En standard konfigurasjon kan angis for den spesielle ID-en <ph name="DEFAULT_SCOPE" />, som så gjelder for alle utvidelser det ikke er angitt noen tilpasset konfigurasjon for i denne regelen. Hvis det brukes en nettadresse for oppdatering, brukes konfigurasjonen for alle utvidelser med nøyaktig den nettadressen for oppdatering som er oppgitt i utvidelsens manifest, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurasjonen for hver enkelt utvidelse (eller utvidelser med samme nettadresse for oppdatering) er en oppslagsliste som kan inneholde feltene dokumentert nedenfor.
-
-          <ph name="INSTALLATION_MODE" />: knyttes til en streng som indikerer installasjonsmodusen for utvidelsen. De gyldige strengene er
-          * <ph name="ALLOWED" />: tillater at utvidelsen installeres av brukeren (denne funksjonaliteten brukes som standard)
-          * <ph name="BLOCKED" />: blokkerer installasjon av utvidelsen
-          * <ph name="FORCE_INSTALLED" />: gjør at utvidelsen installeres automatisk, men kan ikke fjernes av brukeren
-          * <ph name="NORMAL_INSTALLED" />: gjør at utvidelsen installeres automatisk, men brukeren kan slå den av
-
-          <ph name="INSTALLTION_MODE" /> kan også konfigureres for flere utvidelser, inkludert ved bruk av <ph name="DEFAULT_SCOPE" />-utvidelsen (som standardinnstillinger) samt utvidelser med samme nettadresse for oppdatering. I dette tilfellet kan bare verdiene <ph name="ALLOWED" /> og <ph name="BLOCKED" /> brukes.
-
-          Hvis modusen er angitt som <ph name="FORCE_INSTALLED" /> eller <ph name="NORMAL_INSTALLED" />, må en <ph name="UPDATE_URL" /> konfigureres også. Merk at nettadressen for oppdatering som er angitt i denne regelen, bare brukes for første installasjon – påfølgende oppdateringer av utvidelsen bruker nettadressen for oppdatering som er oppgitt i utvidelsens manifest. Nettadressen for oppdatering skal peke til et oppdateringsmanifest i XML-format som nevnt ovenfor.
-
-          <ph name="BLOCKED_PERMISSIONS" />: knyttes til en liste over strenger som indikerer hvilke API-tillatelser som er blokkert for utvidelsen. Tillatelsesnavnene er identiske med tillatelsesstrengene som oppgis i manifestet for utvidelsen, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC3" />. Denne innstillingen kan også konfigureres for <ph name="DEFAULT_SCOPE" />-utvidelse. Hvis utvidelsen krever en tillatelse som er på blokkeringslisten, får den ikke tillatelse til å kjøre. Hvis utvidelsen inneholder en blokkert tillatelse som en valgfri tillatelse, behandles den som vanlig, men forespørsler om blokkerte tillatelser blir avvist automatisk under kjøring.
-
-          <ph name="ALLOWED_PERMISSIONS" />: ligner på <ph name="BLOCKED_PERMISSIONS" />, men tillater i stedet uttrykkelig noen tillatelser som kan være blokkert av den globale listen for blokkerte tillatelser. Denne innstillingen kan derfor ikke konfigureres for <ph name="DEFAULT_SCOPE" />-utvidelse. Merk at denne innstillingen ikke gir innvilgede tillatelser til utvidelser automatisk.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: knyttes til en versjonsstreng. Formatet for versjonsstrengen er det samme som er brukt i utvidelsesmanifestet, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC4" />. Utvidelser med en versjon som er eldre enn den spesifiserte minimumsversjonen, blir deaktivert. Dette gjelder for utvidelser med tvungen installering (FORCE_INSTALLED) også.
-
-          Følgende innstillinger kan bare brukes for standardkonfigurasjonen <ph name="DEFAULT_SCOPE" />:
-
-          <ph name="INSTALL_SOURCES" />: Hvert element i denne listen er et samsvarsmønster av typen som brukes for utvidelser (<ph name="LINK_TO_MATCH_PATTERNS" />). Brukere kan enkelt installere elementer fra alle nettadresser som samsvarer med et element på denne listen. Både plasseringen av <ph name="EXTENSION_SUFFIX_WILDCARD" />-filen og siden der nedlastingen startes fra (dvs. henvisningsadressen), må samsvare med disse mønstrene.
-
-          <ph name="ALLOWED_TYPES" />: Denne innstillingen er en godkjenningsliste for de tillatte typene utvidelser/apper som kan installeres på <ph name="PRODUCT_NAME" />. Verdien er en liste over strenger, og hver streng må være ett av følgende: <ph name="VALID_ALLOWED_TYPES" />. Slå opp i dokumentasjonen for <ph name="PRODUCT_NAME" />-utvidelser for mer informasjon om disse typene.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Hvis en bruker prøver å installere en utvidelse, men forsøket blir blokkert i henhold til en regel, viser Chrome Nettmarked en generisk feilmelding. Denne innstillingen har støtte for egendefinert tekst for feilmeldingen. Dette kan brukes til å henvise brukere til brukerstøtten din, forklare hvorfor en bestemt utvidelse er blokkert, eller noe annet. Feilmeldingen blir avkortet hvis den er lengre enn 1000 tegn.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Godtar en liste over verter som en utvidelse blir blokkert fra å interagere med. Dette omfatter injisering av JavaScript-kode, endring og åpning av webRequests/webNavigation samt endring og åpning av informasjonskapsler. Dette formatet ligner på Match Patterns (<ph name="LINK_TO_MATCH_PATTERNS" />), bortsett fra at det ikke er nødvendig å angi noen bane etter nettstedsnavnet (for eksempel støttes «*://*.example.com»). Formatet støtter også effektive TLD-jokertegn, for eksempel «*://example.*».
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Godtar en liste over verter som utvidelsen kan interagere med, uansett om de er oppført i <ph name="RUNTIME_BLOCKED_HOSTS" /> eller ikke. Dette er det samme formatet som <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Hvis denne er angitt som SyncDisabled eller ikke er konfigurert, er ikke <ph name="PRODUCT_OS_NAME" />-sertifikater tilgjengelige for ARC-apper.
 
       Hvis denne er angitt som CopyCaCerts, er alle ONC-installerte CA-sertifikater med <ph name="WEB_TRUSTED_BIT" /> tilgjengelige for ARC-apper.</translation>
@@ -2101,15 +2076,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis regelen er slått av eller ikke angitt, aktiveres vanlige profiler ved pålogging.</translation>
 <translation id="8158758865057576716">Slår på oppretting av roamingkopier for <ph name="PRODUCT_NAME" />-profildata.</translation>
-<translation id="8170878842291747619">Aktiverer den integrerte Google Oversetter-tjenesten på <ph name="PRODUCT_NAME" />.
-
-      Hvis du aktiverer denne innstillingen, vil <ph name="PRODUCT_NAME" /> vise en integrert verktøylinje som tilbyr brukeren oversettelse av siden når det er aktuelt.
-
-      Hvis du deaktiverer denne innstillingen, vil brukeren aldri se oversettelseslinjen.
-
-      Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukerne endre eller overstyre denne innstillingen i <ph name="PRODUCT_NAME" />.
-
-      Hvis denne innstillingen ikke angis, kan brukerne selv velge om de vil bruke funksjonen.</translation>
 <translation id="817455428376641507">Gir tilgang til de oppførte nettadressene, som unntak for nettadressene på svartelisten. 
 
       Se beskrivelsen av nettadressesvartelistens retningslinjer for formatet på oppføringer i listen.

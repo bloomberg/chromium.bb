@@ -253,7 +253,6 @@
 <translation id="3414952576877147120">גודל:</translation>
 <translation id="3443221991560634068">טען מחדש את הדף הנוכחי</translation>
 <translation id="3452612588551937789">‏היכנס באמצעות חשבון Google כדי לקבל גישה אל הסימניות, הסיסמאות, ההיסטוריה והגדרות נוספות בכל המכשירים שלך.</translation>
-<translation id="3479552764303398839">לא עכשיו</translation>
 <translation id="3487093336331957349">הצעות למונחי חיפוש ולאתרים</translation>
 <translation id="3492207499832628349">כרטיסייה חדשה לגלישה בסתר</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /> על הצעות לתוכן</translation>
@@ -315,6 +314,7 @@
 <translation id="3988213473815854515">ניתנה הרשאת מיקום</translation>
 <translation id="3997476611815694295">נתונים מאוחסנים לא חשובים</translation>
 <translation id="4002066346123236978">כותרת</translation>
+<translation id="4031074602479304239">‏Chrome מנע מהאתר הזה להעביר אותך אל</translation>
 <translation id="4042870126885713738">הצג הצעות כאשר כתובת אינטרנט אינה מזוהה או כשלא ניתן ליצור חיבור</translation>
 <translation id="4046123991198612571">הרצועה הבאה</translation>
 <translation id="4056223980640387499">חום-ספיה</translation>
@@ -341,7 +341,7 @@
 <translation id="4256782883801055595">רישיונות קוד פתוח</translation>
 <translation id="4259722352634471385">הניווט חסום: <ph name="URL" /></translation>
 <translation id="4262028915562328938">אירעה שגיאת סנכרון, הקש כדי לקבל פרטים.</translation>
-<translation id="4269820728363426813">העתק כתובת של קישור</translation>
+<translation id="4269820728363426813">העתקת כתובת של קישור</translation>
 <translation id="4275663329226226506">מדיה</translation>
 <translation id="4278390842282768270">מותר</translation>
 <translation id="4307992518367153382">היסודות</translation>
@@ -472,6 +472,7 @@
 <translation id="5512137114520586844">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">האפשרות הזו הושבתה על-ידי מנהל המערכת של המכשיר</translation>
 <translation id="5517095782334947753">יש לך סימניות, היסטוריה, סיסמאות והגדרות נוספות מ-<ph name="FROM_ACCOUNT" />.</translation>
+<translation id="5524843473235508879">הפניה לכתובת אתר אחרת נחסמה.</translation>
 <translation id="5527082711130173040">‏כדי לבצע סריקה לאיתור מכשירים, Chrome זקוק לגישה לנתוני מיקום. <ph name="BEGIN_LINK1" />עדכן את ההרשאות<ph name="END_LINK1" />. כמו כן, הגישה למיקום <ph name="BEGIN_LINK2" />כבויה במכשיר הזה<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">סגור כרטיסיות גלישה בסתר</translation>
 <translation id="5534640966246046842">האתר הועתק</translation>
@@ -493,11 +494,11 @@
 <translation id="5676636989614905379">לא ניתן להפעיל את הסרטון ב-<ph name="SCREEN_NAME" /></translation>
 <translation id="5677928146339483299">במצב חסום</translation>
 <translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
+<translation id="5689516760719285838">מיקום</translation>
 <translation id="5719837394786370183">‏דפים שאתה מציג בכרטיסיות גלישה בסתר לא יישמרו בהיסטוריית הדפדפן, אחסון קובצי ה-cookie או היסטוריית החיפושים לאחר שתסגור את כל הכרטיסיות של גלישה בסתר. קבצים שתוריד או סימניות שתיצור יישמרו.
 
 עם זאת, אינך בלתי נראה. מעבר למצב גלישה בסתר אינו מסתיר את הגלישה שלך מהמעסיק, ספק שירות האינטרנט או האתרים שבהם אתה מבקר.</translation>
 <translation id="572328651809341494">כרטיסיות אחרונות</translation>
-<translation id="572392919096807438">זכור את ההחלטה שלי</translation>
 <translation id="5726692708398506830">הגדל את כל מה שמופיע בדף</translation>
 <translation id="5738816946784116349">‏הורדות Chrome</translation>
 <translation id="5748802427693696783">הוחלף לכרטיסיות רגילות</translation>
@@ -651,7 +652,6 @@
 <translation id="7022756207310403729">פתיחה בדפדפן</translation>
 <translation id="7029809446516969842">סיסמאות</translation>
 <translation id="7031882061095297553">סינכרון עם</translation>
-<translation id="704059664004611800">הקש כדי לראות סימניות ועוד</translation>
 <translation id="7053983685419859001">חסום</translation>
 <translation id="7062545763355031412">קבל והחלף חשבונות</translation>
 <translation id="7063006564040364415">לא ניתן היה להתחבר אל שרת הסנכרון.</translation>

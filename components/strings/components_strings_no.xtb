@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Angre omorganiseringen</translation>
 <translation id="1126551341858583091">Størrelsen på den lokale lagringsplassen er <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Bufferen for enhetsinnstillinger er OK</translation>
-<translation id="113188000913989374"><ph name="SITE" /> sier:</translation>
 <translation id="1132774398110320017">Innstillinger for autofyll i Chrome</translation>
 <translation id="1150979032973867961">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av datamaskinens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="1151972924205500581">Passord er påkrevd</translation>
@@ -82,7 +81,7 @@
 
       &lt;p&gt;Juster datoen og klokkeslettet under &lt;strong&gt;Generelt&lt;/strong&gt; i &lt;strong&gt;Innstillinger&lt;/strong&gt;-appen.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Noe gikk galt under åpningen av denne nettsiden.</translation>
-<translation id="1590457302292452960">Generer et sterkt passord</translation>
+<translation id="1590457302292452960">Generer et sterkt passord …</translation>
 <translation id="1592005682883173041">Tilgang til lokale data</translation>
 <translation id="1594030484168838125">Velg</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">Ble tekstutdraget riktig?</translation>
 <translation id="5540224163453853">Den forespurte artikkelen ble ikke funnet.</translation>
 <translation id="5541546772353173584">Legg til e-post</translation>
-<translation id="5544037170328430102">En innebygd side på <ph name="SITE" /> sier:</translation>
 <translation id="5545756402275714221">Artikler for deg</translation>
 <translation id="5556459405103347317">Last inn på nytt</translation>
 <translation id="5560088892362098740">Utløpsdato</translation>
@@ -639,6 +637,7 @@
 <translation id="5675650730144413517">Denne siden fungerer ikke</translation>
 <translation id="5685654322157854305">Legg til leveringsadresse</translation>
 <translation id="5689199277474810259">Eksportér til JSON</translation>
+<translation id="5689516760719285838">Sted</translation>
 <translation id="5710435578057952990">Identiteten til dette nettstedet er ikke verifisert.</translation>
 <translation id="5719499550583120431">Forhåndsbetalte kort godtas.</translation>
 <translation id="5720705177508910913">Gjeldende bruker</translation>
@@ -821,7 +820,6 @@
 <translation id="7390545607259442187">Bekreft kortet</translation>
 <translation id="7400418766976504921">Nettadresse</translation>
 <translation id="7419106976560586862">Profilbane</translation>
-<translation id="7424977062513257142">En innebygd side på denne nettsiden sier:</translation>
 <translation id="7437289804838430631">Legg til kontaktinformasjon</translation>
 <translation id="7441627299479586546">Feil emne for innstillinger</translation>
 <translation id="7444046173054089907">Dette nettstedet er blokkert</translation>
@@ -892,7 +890,7 @@
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Vil du fjerne skjemaforslaget fra Chrome?</translation>
 <translation id="7815407501681723534">Fant <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> for «<ph name="SEARCH_STRING" />»</translation>
-<translation id="7818867226424560206">Administrasjon av regler</translation>
+<translation id="7818867226424560206">Administrasjon av retningslinjer</translation>
 <translation id="782886543891417279">Det kan hende at Wi-Fi-nettverket du bruker (<ph name="WIFI_NAME" />), krever at du besøker en påloggingsside.</translation>
 <translation id="785549533363645510">Du er imidlertid ikke usynlig. Inkognitomodus skjuler ikke surfingen din for arbeidsgiveren din, Internett-leverandøren eller nettstedene du besøker.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
@@ -949,7 +947,7 @@
 <translation id="8294431847097064396">Kilde</translation>
 <translation id="8298115750975731693">Det kan hende at Wi-Fi-nettverket du bruker (<ph name="WIFI_NAME" />), krever at du besøker <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8308427013383895095">Oversettelsen mislyktes på grunn av et problem med nettverksforbindelsen.</translation>
-<translation id="8311129316111205805">Last inn økt</translation>
+<translation id="8311129316111205805">Last inn økten</translation>
 <translation id="8332188693563227489">Forsøket på å koble til <ph name="HOST_NAME" /> ble avvist</translation>
 <translation id="834457929814110454">Hvis du forstår sikkerhetsrisikoen, kan du <ph name="BEGIN_LINK" />gå til det usikre nettstedet<ph name="END_LINK" /> før de farlige programmene er fjernet.</translation>
 <translation id="8349305172487531364">Bokmerkerad</translation>
@@ -1000,7 +998,6 @@
 <translation id="884923133447025588">Finner ingen tilbakekallingsmekanisme.</translation>
 <translation id="885730110891505394">Deling med Google</translation>
 <translation id="8866481888320382733">Analysefeil i angivelsen av enhetrsinnstillinger</translation>
-<translation id="8866959479196209191">Denne siden sier:</translation>
 <translation id="8870413625673593573">Nylig lukket</translation>
 <translation id="8874824191258364635">Angi et gyldig kortnummer</translation>
 <translation id="8876793034577346603">Nettverkskonfigurasjon kunne ikke analyseres.</translation>

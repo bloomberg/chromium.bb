@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Buat asal susun semula</translation>
 <translation id="1126551341858583091">Saiz pada storan setempat ialah <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Cache dasar OK</translation>
-<translation id="113188000913989374"><ph name="SITE" /> menyatakan:</translation>
 <translation id="1132774398110320017">Tetapan Auto Isi Chrome...</translation>
 <translation id="1150979032973867961">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya tidak dipercayai oleh sistem pengendalian komputer anda. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="1151972924205500581">Kata laluan diperlukan</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">Adakah teks diekstrak dengan betul?</translation>
 <translation id="5540224163453853">Tidak menemui artikel yang diminta.</translation>
 <translation id="5541546772353173584">Tambahkan E-mel</translation>
-<translation id="5544037170328430102">Halaman terbenam di <ph name="SITE" /> menyatakan:</translation>
 <translation id="5545756402275714221">Artikel untuk Anda</translation>
 <translation id="5556459405103347317">Muat Semula</translation>
 <translation id="5560088892362098740">Tarikh Tamat Tempoh</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Sahkan Kad</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Laluan Profil</translation>
-<translation id="7424977062513257142">Halaman terbenam pada halaman web ini menyatakan:</translation>
 <translation id="7437289804838430631">Tambahkan Maklumat Hubungan</translation>
 <translation id="7441627299479586546">Subjek dasar salah</translation>
 <translation id="7444046173054089907">Tapak ini disekat</translation>
@@ -1002,7 +999,6 @@
 <translation id="884923133447025588">Tiada mekanisme pembatalan dijumpai.</translation>
 <translation id="885730110891505394">Berkongsi dengan Google</translation>
 <translation id="8866481888320382733">Ralat semasa menghuraikan tetapan dasar</translation>
-<translation id="8866959479196209191">Halaman ini menyatakan:</translation>
 <translation id="8870413625673593573">Ditutup Baru-baru Ini</translation>
 <translation id="8874824191258364635">Masukkan nombor kad yang sah</translation>
 <translation id="8876793034577346603">Konfigurasi rangkaian gagal dihuraikan.</translation>

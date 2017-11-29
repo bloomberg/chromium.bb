@@ -70,8 +70,8 @@
 <translation id="2597972630681408282">নাইট লাইট: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">সিম কার্ড লক করা আছে</translation>
 <translation id="2653659639078652383">জমা</translation>
-<translation id="2675319268637823299">একজন প্রশাসক <ph name="USER_EMAIL" /> এর জন্য একাধিক সাইন ইন অননুমোদিত করেছেন।
-চালিয়ে যাওয়ার জন্য, সমস্ত ব্যবহারকারীদের অবশ্যই সাইন-আউট করতে হবে।</translation>
+<translation id="2675319268637823299">একজন প্রশাসক <ph name="USER_EMAIL" /> এর জন্য একাধিক সাইন-ইন বাতিল করেছেন।
+    চালিয়ে যাওয়ার জন্য, সব ব্যবহারকারীকে অবশ্যই সাইন-আউট করতে হবে।</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷ আপনাকে প্রস্থান করুন করা হবে৷</translation>
 <translation id="2727977024730340865">একটি নিম্ন শক্তির চার্জার প্লাগইন করা হয়েছে৷ বিশ্বস্ত ব্যাটারি চার্জ নাও হতে পারে৷</translation>
 <translation id="2761704814324807722">স্থিতি ট্রে, সময় <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -149,7 +149,6 @@
 <translation id="453661520163887813">সম্পূর্ণ হতে <ph name="TIME" /> বাকি</translation>
 <translation id="4544944664594876241">স্ক্রীন লক করার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="4659419629803378708">ChromeVox সক্ষম করা আছে</translation>
-<translation id="4729904664295161097">সহায়ক শুধুমাত্র প্রাথমিক প্রোফাইলেই ব্যবহার করা যায়।</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />-এর জন্য পাসওয়ার্ড</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">সংযোগ বিচ্ছিন্ন</translation>

@@ -75,13 +75,13 @@
 <translation id="3296368748942286671">જ્યારે Chromium બંધ થાય ત્યારે પૃષ્ઠભૂમિ ઍપ્લિકેશનો ચલાવવાનું ચાલુ રાખો</translation>
 <translation id="331951419404882060">સાઇન ઇનમાં ભૂલ આવવાને કારણે Chromium તમારા ડેટાને સમન્વયિત કરી શક્યું નથી.</translation>
 <translation id="3474745554856756813">આ, <ph name="ITEMS_COUNT" /> આઇટમને આ ઉપકરણમાંથી કાઢી નાખશે. પછીથી તમારો ડેટા પુનઃપ્રાપ્ત કરવા માટે, Chromium માં <ph name="USER_EMAIL" /> તરીકે સાઇન ઇન કરો.</translation>
+<translation id="3479552764303398839">હમણાં નહીં</translation>
 <translation id="3509308970982693815">કૃપા કરીને બધી Chromium વિંડોઝ બંધ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="352783484088404971">Chromium માંથી દૂર કરો...</translation>
 <translation id="3549345495227188780">Chromium OS સાથે પ્રારંભ કરો</translation>
 <translation id="3582788516608077514">Chromium ને અપડેટ કરી રહ્યું છે...</translation>
 <translation id="358997566136285270">Chromium લોગો</translation>
 <translation id="3713809861844741608">નવા Chromium &amp;ટૅબમાં લિંક ખોલો</translation>
-<translation id="3738139272394829648">શોધવા માટે ટચ કરો</translation>
 <translation id="3762167353400286894">આ ભાષામાં Chromium OS પ્રદર્શિત થાય છે</translation>
 <translation id="378917192836375108">Chromium થી તમે વેબ પર એક ફોન નંબર પર ક્લિક કરી શકો છો અને તેને Skype થી કૉલ કરી શકો છો!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -114,7 +114,6 @@
 <translation id="469338717132742108">Chromium OS સાથે સહાય મેળવો</translation>
 <translation id="4708774505295300557">કોઈએ આ કોમ્પ્યુટર પર પહેલા <ph name="ACCOUNT_EMAIL_LAST" /> તરીકે Chromiumમાં સાઇન ઇન કર્યું છે. તમારી માહિતી અલગ રાખવા માટે કૃપા કરીને નવો Chromium વપરાશકર્તા બનાવો.</translation>
 <translation id="4714956846925717402">Chromium પર વધુ ઝડપથી જાઓ</translation>
-<translation id="4743926867934016338">સ્વીકારો અને શોધો</translation>
 <translation id="4825874709045178029">Chromiumને આ સાઇટ માટે તમારા કૅમેરાના ઍક્સેસની પરવાનગીની જરૂર પડે છે.</translation>
 <translation id="4888717733111232871">mDNS ટ્રાફિકને મંજૂરી આપવા Chromium માટે ઇનબાઉન્ડ નિયમ.</translation>
 <translation id="4943838377383847465">Chromium પૃષ્ઠભૂમિ મોડમાં છે.</translation>
@@ -131,9 +130,6 @@
 <translation id="5466153949126434691">Chromium આપમેળે અપડેટ થાય છે જેથી કરીને તમારી પાસે હંમેશા તાજું સંસ્કરણ રહે છે. જ્યારે આ ડાઉનલોડ પૂર્ણ થાય છે, ત્યારે Chromium પુનઃપ્રારંભ થશે અને તમે તમારા માર્ગે હશો.</translation>
 <translation id="5479196819031988440">Chromium OS, આ પૃષ્ઠને ખોલી શકતું નથી.</translation>
 <translation id="549669000822060376">કૃપા કરીને Chromium, નવીનતમ સિસ્ટમ અપડેટ્સ ઇન્સ્ટોલ કરે ત્યાં સુધી રાહ જુઓ.</translation>
-<translation id="5524843473235508879">રીડાયરેક્ટ કરવાનું અવરોધિત.</translation>
-<translation id="5563479599352954471">એક ટચ વડે શોધ કરો</translation>
-<translation id="5620765574781326016">પૃષ્ઠને છોડ્યાં વિના વેબસાઇટ્સ પરના મુદ્દાઓ વિશે જાણો.</translation>
 <translation id="5634636535844844681">Chromium માટે Windows 7 અથવા તે પછીનું સંસ્કરણ આવશ્યક છે.</translation>
 <translation id="5680901439334282664">Chromium માં સાઇન ઇન કરો</translation>
 <translation id="5698481217667032250">આ ભાષામાં Chromium પ્રદર્શિત કરો</translation>
@@ -175,7 +171,6 @@
 <translation id="6734291798041940871">Chromium, તમારા કમ્પ્યુટર પર તમામ વપરાશકર્તાઓ માટે પહેલાંથી ઇન્સ્ટૉલ કરેલ છે.</translation>
 <translation id="6810143991807788455">વર્તમાન સેટિંગ્સની જાણ કરીને Chromium ને વધુ સારું બનાવવામાં સહાય કરો</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">Google શોધ, પરત આવતી વ્યાખ્યાઓ, ચિત્રો અને અન્ય શોધ પરિણામોને એક શબ્દ અને તેની આસપાસનો સંદર્ભ મોકલે છે.</translation>
 <translation id="6893813176749746474">Chromium અપડેટ કરવામાં આવ્યું હતું, પણ તમે તેનો 30 દિવસ સુધી ઉપયોગ કર્યો નથી.</translation>
 <translation id="6944967875980567883">Chromium માં મોડ્યુલ્સ લોડ કર્યા છે</translation>
 <translation id="6964305034639999644">Chromium છુ&amp;પી વિંડોમાં લિંક ખોલો</translation>
@@ -202,7 +197,6 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <ph name="BEGIN_LINK_2" />વધુ જાણો<ph name="END_LINK_2" />
 
 વધુ સૂચનો માટે કૃપા કરીને <ph name="ACCOUNT_EMAIL" /> પર તમારી ઇમેઇલને તપાસો.</translation>
-<translation id="7473891865547856676">નહીં આભાર</translation>
 <translation id="7483335560992089831">હાલમાં ચાલી રહ્યું છે તેના જેવું સમાન Chromium સંસ્કરણ ઇન્સ્ટોલ કરી શકાતું નથી. કૃપા કરીને Chromium ને બંધ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="7549178288319965365">Chromium OS વિશે</translation>
 <translation id="7577193603922410712">Chromium માટેનું વિશિષ્ટ સુરક્ષા અપડેટ હમણાં જ લાગુ થયું; તેને પ્રભાવિત કરવા માટે તમારે અત્યારે પુનઃપ્રારંભ કરવું જોઈએ (અમે તમારા ટૅબ્સ પુનઃસ્થાપિત કરીશું).</translation>

@@ -253,7 +253,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="3414952576877147120">Veľkosť:</translation>
 <translation id="3443221991560634068">Opätovné načítanie aktuálnej stránky</translation>
 <translation id="3452612588551937789">Prihláste sa pomocou účtu Google a získajte záložky, históriu, heslá a ďalšie nastavenia na všetkých svojich zariadeniach.</translation>
-<translation id="3479552764303398839">Teraz nie</translation>
 <translation id="3487093336331957349">Návrhy vyhľadávania a webov</translation>
 <translation id="3492207499832628349">Nová karta inkognito</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /> o návrhoch obsahu</translation>
@@ -315,6 +314,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="3988213473815854515">Poloha je povolená</translation>
 <translation id="3997476611815694295">Nedôležité úložisko</translation>
 <translation id="4002066346123236978">Názov</translation>
+<translation id="4031074602479304239">Chrome zabránil tomuto webu, aby vás presmeroval na adresu</translation>
 <translation id="4042870126885713738">Zobrazte návrhy v prípade, že webovú adresu nie je možné vyhľadať alebo nie je možné nadviazať spojenie</translation>
 <translation id="4046123991198612571">Ďalšia skladba</translation>
 <translation id="4056223980640387499">Sépia</translation>
@@ -472,6 +472,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5512137114520586844">Tento účet je spravovaný používateľom <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Deaktivované správcom tohto zariadenia</translation>
 <translation id="5517095782334947753">Máte záložky, históriu, heslá a ďalšie nastavenia z účtu <ph name="FROM_ACCOUNT" />.</translation>
+<translation id="5524843473235508879">Presmerovanie bolo zablokované.</translation>
 <translation id="5527082711130173040">Na to, aby mohol Chrome hľadať zariadenia, musí mať prístup k polohe. <ph name="BEGIN_LINK1" />Aktualizujte povolenia<ph name="END_LINK1" />. Prístup k polohe je <ph name="BEGIN_LINK2" />vypnutý aj v tomto zariadení<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Zavrieť karty inkognito</translation>
 <translation id="5534640966246046842">Web bol skopírovaný</translation>
@@ -498,7 +499,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 
 Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše prehliadanie pred vaším zamestnávateľom, poskytovateľom internetových služieb či webovými stránkami, ktoré navštívite.</translation>
 <translation id="572328651809341494">Nedávne karty</translation>
-<translation id="572392919096807438">Zapamätať si toto rozhodnutie</translation>
 <translation id="5726692708398506830">Zväčšenie obsahu na stránke</translation>
 <translation id="5738816946784116349">Stiahnutia v Chrome</translation>
 <translation id="5748802427693696783">Prepnuté na štandardné karty</translation>
@@ -652,7 +652,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7022756207310403729">Otvoriť v prehliadači</translation>
 <translation id="7029809446516969842">Heslá</translation>
 <translation id="7031882061095297553">Kam synchronizovať</translation>
-<translation id="704059664004611800">Záložky a ďalšie položky zobrazíte klepnutím</translation>
 <translation id="7053983685419859001">Blokovať</translation>
 <translation id="7062545763355031412">Prijať a prepnúť účty</translation>
 <translation id="7063006564040364415">Nepodarilo sa pripojiť k synchronizačnému serveru.</translation>

@@ -94,12 +94,12 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="3398288718845740432">Ocultar en el menú de Chrome</translation>
 <translation id="3451115285585441894">Añadiendo a Chrome...</translation>
 <translation id="345171907106878721">Añadirte a Chrome</translation>
+<translation id="3479552764303398839">Ahora no</translation>
 <translation id="3612333635265770873">Se ha detectado que un módulo con el mismo nombre provoca un conflicto con Google Chrome.</translation>
 <translation id="3622797965165704966">Ahora es más fácil utilizar Chrome con tu cuenta de Google y en ordenadores compartidos.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Condiciones de Servicio<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome OS</translation>
 <translation id="3718181793972440140">Se eliminará un elemento de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">La extensión <ph name="EXTENSION_NAME" /> ha cambiado la página que se muestra al iniciar Chrome.</translation>
-<translation id="3738139272394829648">Tocar para Buscar</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Desinstalar de Chrome...</translation>
 <translation id="386202838227397562">Cierra todas las ventanas de Google Chrome y vuelve a intentarlo.</translation>
@@ -124,13 +124,12 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="4480040274068703980">Chrome OS no ha podido sincronizar los datos debido a un error de inicio de sesión.</translation>
 <translation id="4561051373932531560">Google Chrome te permite hacer clic en un número de teléfono en la Web y llamar mediante Skype.</translation>
 <translation id="4567424176335768812">Has iniciado sesión como <ph name="USER_EMAIL_ADDRESS" />. Ahora puedes acceder a tus marcadores, a tu historial y a otras opciones en todos los dispositivos en los que hayas iniciado sesión.</translation>
-<translation id="4600710005438004015">No se ha podido actualizar Chrome a la última versión, por lo que no disfrutas de las últimas funciones y correcciones de seguridad.</translation>
+<translation id="4600710005438004015">No se ha podido actualizar Chrome a la versión más reciente, por lo que no disfrutas de las últimas funciones y correcciones de seguridad.</translation>
 <translation id="4631713731678262610">Ocultar en el menú de Chrome</translation>
 <translation id="4633000520311261472">Para aumentar la seguridad de Chrome, hemos inhabilitado algunas extensiones que no figuran en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que podrían haberse añadido sin tu conocimiento.</translation>
 <translation id="4664415150087723341">Se acaba de instalar una actualización de seguridad especial para Google Chrome. Reinicia ahora para que se apliquen los cambios. No te preocupes, restauraremos tus pestañas.</translation>
 <translation id="4700157086864140907">Para que el corrector ortográfico sea más útil, Google Chrome envía lo que escribes en el navegador a los servidores de Google con el fin de poder usar la tecnología de corrección ortográfica de la búsqueda de Google.</translation>
 <translation id="4728575227883772061">Debido a un error desconocido, la instalación no se ha llevado a cabo. Si Google Chrome se está ejecutando, ciérralo y vuelve a intentarlo.</translation>
-<translation id="4743926867934016338">Aceptar y buscar</translation>
 <translation id="4750550185319565338">Reiniciar Chrome para habilitar <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (tráfico mDNS entrante)</translation>
 <translation id="4771048833395599659">Es posible que este archivo sea peligroso, por lo que Chrome lo ha bloqueado.</translation>
@@ -162,12 +161,9 @@ Puede que algunas funciones no estén disponibles. Especifica otro directorio de
 Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="5453904507266736060">Permitir que Google Chrome se ejecute en segundo plano</translation>
 <translation id="5495581687705680288">Módulos cargados en Google Chrome</translation>
-<translation id="5524843473235508879">Redirección bloqueada</translation>
 <translation id="556024056938947818">Google Chrome está intentando mostrar contraseñas.</translation>
-<translation id="5563479599352954471">Buscar con un toque</translation>
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
 <translation id="557283862590186398">Chrome necesita permiso para acceder al micrófono en este sitio web.</translation>
-<translation id="5620765574781326016">Obtén información sobre los temas en sitios web sin salir de la página.</translation>
 <translation id="565744775970812598">Es posible que <ph name="FILE_NAME" /> sea peligroso, por lo que Chrome lo ha bloqueado.</translation>
 <translation id="573759479754913123">Información de Chrome OS</translation>
 <translation id="5749068826913805084">Chrome necesita acceso de almacenamiento para descargar archivos.</translation>
@@ -203,7 +199,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="6697947395630195233">Chrome necesita acceder a tu ubicación para compartirla con este sitio web.</translation>
 <translation id="683440813066116847">Regla entrante para que Google Chrome Canary permita tráfico mDNS.</translation>
 <translation id="686561893457936865">Llévate Chrome a todas partes</translation>
-<translation id="6883876366448858277">envía una palabra y su contexto a la Búsqueda de Google y muestra definiciones, imágenes y otros resultados de búsqueda.</translation>
 <translation id="6885412569789873916">Aplicaciones de Chrome Beta</translation>
 <translation id="6967962315388095737">Regla entrante para que Google Chrome Beta permita tráfico mDNS.</translation>
 <translation id="6970811910055250180">Actualizando el dispositivo...</translation>
@@ -225,7 +220,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7437998757836447326">Cerrar sesión en Chrome</translation>
 <translation id="7459554271817304652">Configura la sincronización para guardar las funciones personalizadas de tu navegador en la Web y acceder a ellas desde Google Chrome en cualquier ordenador.</translation>
 <translation id="7473136999113284234">Chrome se actualiza automáticamente para que siempre dispongas de la última versión.</translation>
-<translation id="7473891865547856676">No, gracias</translation>
 <translation id="7494905215383356681">Licencias de código abierto de Chrome</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Mostrar Chrome OS en este idioma</translation>

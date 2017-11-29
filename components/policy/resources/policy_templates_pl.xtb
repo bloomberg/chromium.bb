@@ -28,6 +28,7 @@
 
           Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, host pomocy zdalnej będzie uruchamiany w kontekście użytkownika, a użytkownicy zdalni nie będą mieć dostępu do okien z podwyższonym poziomem uprawnień na komputerze.</translation>
 <translation id="1096105751829466145">Domyślny dostawca wyszukiwania</translation>
+<translation id="1099282607296956954">Włącz izolację każdej witryny</translation>
 <translation id="1117535567637097036">Moduły obsługi protokołów ustawiane przez tę zasadę nie są używane podczas obsługi intencji Androida.</translation>
 <translation id="1122282995569868661">Pokazuje ikonę paska narzędzi usługi <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Pozwala skonfigurować katalog, w którym przeglądarka <ph name="PRODUCT_NAME" /> będzie przechowywać na dysku urządzenia pliki z pamięci podręcznej.
@@ -687,6 +688,13 @@
 <translation id="332771718998993005">Pozwala określić nazwę używaną jako miejsce docelowe <ph name="PRODUCT_NAME" />.
 
           Jeśli ta zasada jest ustawiona na niepusty ciąg znaków, to jest on nazwą miejsca docelowego <ph name="PRODUCT_NAME" />. W przeciwnym razie nazwą miejsca docelowego jest nazwa urządzenia. Jeśli ta zasada nie jest ustawiona, nazwą miejsca docelowego jest nazwa urządzenia, a właściciel urządzenia (lub użytkownik z domeny zarządzającej urządzeniem) może ją zmienić. Nazwa może mieć maksymalnie 24 znaki.</translation>
+<translation id="3356249700768900657">
+      UWAGA: ta zasada jest eksperymentalna i może zakłócać poprawne działanie innych funkcji.
+Możesz dostosować ustawienie zasady IsolateOrigins, by uzyskać najlepsze rezultaty z użycia obu opcji – izolacji i ograniczonego wpływu na użytkowników. W tym celu dodaj do zasady IsolateOrigins listę witryn, które chcesz izolować. Ustawienie SitePerProcess izoluje wszystkie witryny.
+Jeśli ta zasada jest włączona, każda witryna będzie działać w obrębie własnego procesu.
+Jeśli ta zasada jest wyłączona, działa logika zarządzania procesem sprzed izolacji witryny.
+Jeśli ta zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
+      </translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
 <translation id="3395348522300156660">Określa drukarki, z których może korzystać użytkownik.
 
@@ -1035,6 +1043,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Przykładowe wzorce znajdziesz na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
 <translation id="467449052039111439">Otwórz adresy URL z listy</translation>
 <translation id="4680961954980851756">Włącz autouzupełnianie</translation>
+<translation id="4722122254122249791">Włącz izolację witryn z określonych źródeł</translation>
 <translation id="4722399051042571387">Jeśli to ustawienie jest wyłączone, użytkownicy nie mogą ustawiać kodów PIN, które są słabe i łatwe do odgadnięcia. Słabe kody PIN to na przykład ciągi takich samych cyfr (1111), kolejnych cyfr w porządku rosnącym (1234) lub malejącym (4321) i ciągi często używane. Domyślnie po wpisaniu słabego kodu PIN nie pojawia się komunikat o błędzie, a tylko ostrzeżenie.</translation>
 <translation id="4723829699367336876">Włącz omijanie zapory sieciowej przez klienta dostępu zdalnego</translation>
 <translation id="4725123658714754485">Określa, czy statystyki użytkowania i dane diagnostyczne (w tym raporty o awariach) mają być przesyłane do Google. Jeśli włączysz tę opcję, <ph name="PRODUCT_OS_NAME" /> będzie przesyłać statystyki użytkowania i dane diagnostyczne. Jeśli jej nie włączysz lub nie skonfigurujesz, przesyłanie statystyk i danych diagnostycznych będzie wyłączone.</translation>
@@ -1131,6 +1140,12 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4983201894483989687">Zezwalaj na uruchamianie nieaktualnych wtyczek</translation>
 <translation id="4988291787868618635">Działanie, jakie ma zostać wykonane po osiągnięciu opóźnienia bezczynności</translation>
 <translation id="4995548127349206948">Czy uwierzytelnianie NTLMv2 jest włączone.</translation>
+<translation id="5027819375434797927">
+      Uwaga: ta zasada jest eksperymentalna i może zakłócać poprawne działanie innych funkcji.
+Jeśli ta zasada jest włączona, każde nazwane źródło na liście oddzielonej przecinkami będzie działać w obrębie własnego procesu. Powoduje to też izolację źródeł z nazwami subdomen, np. określenie https://example.com/ spowoduje, że także adres https://foo.example.com/ będzie izolowany jako część witryny https://example.com/.
+Jeśli ta zasada jest wyłączona, działa logika zarządzania procesem sprzed izolacji witryny.
+Jeśli ta zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
+      </translation>
 <translation id="5047604665028708335">Zezwalaj na dostęp do witryn spoza pakietów treści</translation>
 <translation id="5052081091120171147">Po włączeniu tej zasady wymuszany jest import historii przeglądania z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia historia przeglądania nie jest importowana. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować historię lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="5056708224511062314">Lupa wyłączona</translation>
@@ -1901,39 +1916,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="7841880500990419427">Najniższa wersja TLS, która zostanie użyta zastępczo</translation>
 <translation id="7842869978353666042">Skonfiguruj opcje Dysku Google</translation>
 <translation id="7843525027689416831">Określa flagi stosowane przy uruchamianiu <ph name="PRODUCT_NAME" />. Wybrane flagi są używane tylko na ekranie logowania. Flagi ustawiane przez tę zasadę nie przechodzą na sesje użytkownika.</translation>
-<translation id="7844537954833753199">Konfiguruje ustawienia zarządzania rozszerzeniami w <ph name="PRODUCT_NAME" />.
-
-          Ta zasada zarządza wieloma ustawieniami, w tym ustawieniami objętymi istniejącymi zasadami dotyczącymi rozszerzeń. Zastępuje wszelkie poprzednie zasady, jeśli są skonfigurowane.
-
-          Zasada przyporządkowuje identyfikator rozszerzenia lub adres URL aktualizacji do jego konfiguracji. Identyfikator rozszerzenia pozwala stosować daną konfigurację tylko do wskazanego rozszerzenia. W konfiguracji domyślnej występuje identyfikator <ph name="DEFAULT_SCOPE" /> i konfiguracja ta jest stosowana w przypadku wszystkich rozszerzeń, dla których zasada nie określa konfiguracji niestandardowych. W przypadku adresu URL aktualizacji konfiguracja jest stosowana do wszystkich rozszerzeń, w których pliku manifestu podany jest dany adres URL rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC1" />).
-
-          Konfiguracje dla poszczególnych rozszerzeń (lub rozszerzeń z tym samym adresem URL aktualizacji) stanowią kolejny słownik, który może zawierać te pola.
-
-          <ph name="INSTALLATION_MODE" />: przyporządkowuje ciąg wskazujący tryb instalowania rozszerzenia. Poprawne ciągi to:
-          * <ph name="ALLOWED" />: pozwala na instalowanie rozszerzenia przez użytkownika. Jest to działanie domyślne.
-          * <ph name="BLOCKED" />: blokuje możliwość instalowania rozszerzenia.
-          * <ph name="FORCE_INSTALLED" />: rozszerzenie jest instalowane automatycznie, a użytkownik nie może go usunąć.
-          * <ph name="NORMAL_INSTALLED" />: rozszerzenie jest instalowane automatycznie, ale użytkownik może je wyłączyć.
-
-          Ustawienie <ph name="INSTALLTION_MODE" /> można skonfigurować również dla wielu rozszerzeń, w tym dla rozszerzenia <ph name="DEFAULT_SCOPE" /> (jako ustawienia domyślne) oraz rozszerzeń z tym samym adresem URL aktualizacji. W takim przypadku dostępne są tylko wartości <ph name="ALLOWED" /> i <ph name="BLOCKED" />.
-
-          Jeśli wybierzesz tryb <ph name="FORCE_INSTALLED" /> lub <ph name="NORMAL_INSTALLED" />, musisz skonfigurować też <ph name="UPDATE_URL" />. Pamiętaj, że adres URL aktualizacji ustawiony w tej zasadzie jest stosowany tylko przy instalacji początkowej, a kolejne aktualizacje rozszerzenia wykorzystują adres URL aktualizacji podany w pliku manifestu rozszerzenia. Adres URL aktualizacji powinien wskazywać na plik XML z dokumentem manifestu aktualizacji, jak wyżej.
-
-          <ph name="BLOCKED_PERMISSIONS" />: przyporządkowuje listę ciągów wskazujących zablokowane uprawnienia interfejsu API w przypadku danego rozszerzenia. Nazwy uprawnień są identyczne z nazwami ciągów uprawnień podanych w pliku manifestu rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC3" />). To ustawienie można też skonfigurować dla rozszerzenia <ph name="DEFAULT_SCOPE" />. Załadowanie rozszerzenia wymagającego uprawnień, które znajdują się na liście zablokowanych, nie będzie możliwe. Jeśli zablokowane uprawnienia są wymagane opcjonalnie, rozszerzenie będzie traktowane normalnie, ale żądanie uprawnień powodujących konflikt zostanie odrzucone przy uruchomieniu.
-
-          <ph name="ALLOWED_PERMISSIONS" />: działa podobnie jak <ph name="BLOCKED_PERMISSIONS" />, ale umożliwia udzielenie konkretnych uprawnień z globalnej listy zablokowanych, więc nie można skonfigurować go dla rozszerzenia <ph name="DEFAULT_SCOPE" />. Zauważ, że to ustawienie nie powoduje automatycznego przyznawania uprawnień rozszerzeniom.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: przyporządkowuje ciąg wersji. Format ciągu wersji jest taki sam jak w pliku manifestu rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC4" />). Rozszerzenie w wersji starszej niż podana wersja minimalna jest wyłączane. To ustawienie wpływa też na rozszerzenia, których instalacja jest wymuszana.
-
-          Tych ustawień możesz użyć tylko w przypadku domyślnej konfiguracji <ph name="DEFAULT_SCOPE" />:
-
-          <ph name="INSTALL_SOURCES" />: każda pozycja na liście to wzorzec dopasowania stylu rozszerzenia (więcej informacji znajdziesz na <ph name="LINK_TO_MATCH_PATTERNS" />). Użytkownicy mogą łatwo instalować elementy z każdego adresu URL, który pasuje do pozycji na liście. Wzorce muszą zezwalać na dostęp zarówno do lokalizacji pliku <ph name="EXTENSION_SUFFIX_WILDCARD" />, jak i strony, na której rozpoczyna się pobieranie (strony odsyłającej).
-
-          <ph name="ALLOWED_TYPES" />: tworzy białą listę typów rozszerzeń lub aplikacji, których instalacja jest dozwolona w <ph name="PRODUCT_NAME" />. Wartość jest listą ciągów znaków z tego zestawu: <ph name="VALID_ALLOWED_TYPES" />. Więcej informacji o tych typach znajdziesz w dokumentacji rozszerzeń <ph name="PRODUCT_NAME" />.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: jeśli użytkownik próbuje zainstalować rozszerzenie, ale tę czynność blokuje zasada, Chrome Web Store wyświetla ogólny komunikat o błędzie. To ustawienie pozwala dołączyć tekst do komunikatu o błędzie. Można skorzystać z tej możliwości, by przekierować użytkownika do działu pomocy, wytłumaczyć przyczynę blokowania rozszerzenia lub podać inne informacje. Komunikat o błędzie zostanie skrócony, jeśli liczba znaków przekroczy 1000.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: akceptuje listę hostów, z którymi rozszerzenie nie będzie mogło działać. Obejmuje to wstawianie kodu JavaScript, zmienianie i wyświetlanie elementów webRequests/webNavigation, a także wyświetlanie i zmienianie plików cookie. Ten format jest podobny do wzorców dopasowania <ph name="LINK_TO_MATCH_PATTERNS" />, ale nie można zdefiniować w nich ścieżek (np. „*://*.example.com”). Obsługiwane jest wstawianie symboli wieloznacznych także w domenach najwyższego poziomu, np. „*://example.*”.
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: akceptuje listę hostów, z którymi może działać rozszerzenie, niezależnie od tego, czy są wymienione na liście <ph name="RUNTIME_BLOCKED_HOSTS" />. Ma taki sam format jak <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Jeśli ustawisz wartość SyncDisabled lub pozostawisz tę opcję nieskonfigurowaną, certyfikaty <ph name="PRODUCT_OS_NAME" /> nie będą dostępne dla aplikacji ARC.
 
       Jeśli ustawisz wartość CopyCaCerts, dla aplikacji ARC będą dostępne wszystkie certyfikaty CA zainstalowane w ONC z <ph name="WEB_TRUSTED_BIT" />.</translation>
@@ -2012,7 +1994,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 
       Jeśli zasada jest wyłączona lub nie została ustawiona, logowanie prowadzi do zwykłych profili.</translation>
 <translation id="8158758865057576716">Włącz tworzenie przenośnych kopii danych profilu <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8170878842291747619">Włącza zintegrowaną usługę Tłumacz Google w <ph name="PRODUCT_NAME" />. Jeśli włączysz tę opcję, w <ph name="PRODUCT_NAME" /> w razie potrzeby pojawi się zintegrowany pasek narzędzi oferujący możliwość przetłumaczenia strony. Jeśli wyłączysz tę opcję, użytkownicy nie zobaczą paska tłumaczeń. Ustawienie tej opcji zablokuje możliwość jej zmiany przez użytkowników w <ph name="PRODUCT_NAME" />. W przypadku nieokreślenia tego ustawienia użytkownicy mogą zdecydować, czy chcą używać tej funkcji czy nie.</translation>
 <translation id="817455428376641507">Zezwala na otwieranie wymienionych URL-i jako wyjątków względem czarnej listy URL-i.
 
       Format pozycji tej listy znajdziesz w opisie zasady czarnej listy adresów URL.

@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Відмінити перевпорядкування</translation>
 <translation id="1126551341858583091">Обсяг локальної пам’яті – <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Кеш-пам’ять правила не пошкоджено</translation>
-<translation id="113188000913989374">Повідомлення із сайту <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Налаштування автозаповнення Chrome…</translation>
 <translation id="1150979032973867961">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Операційна система вашого комп’ютера не вважає його сертифікат безпеки надійним. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
 <translation id="1151972924205500581">Потрібен пароль</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">Текст отримано правильно?</translation>
 <translation id="5540224163453853">Не вдалося знайти потрібну статтю.</translation>
 <translation id="5541546772353173584">Додайте електронну адресу</translation>
-<translation id="5544037170328430102">Повідомлення з вбудованої сторінки сайту <ph name="SITE" />:</translation>
 <translation id="5545756402275714221">Статті для вас</translation>
 <translation id="5556459405103347317">Перезавантажити</translation>
 <translation id="5560088892362098740">Термін дії</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Підтвердити дані картки</translation>
 <translation id="7400418766976504921">URL-адреса</translation>
 <translation id="7419106976560586862">Шлях до профілю</translation>
-<translation id="7424977062513257142">Повідомлення з вбудованої сторінки на цій веб-сторінці:</translation>
 <translation id="7437289804838430631">Додати контактну інформацію</translation>
 <translation id="7441627299479586546">Неправильна тема правила</translation>
 <translation id="7444046173054089907">Цей сайт заблоковано</translation>
@@ -893,7 +890,7 @@
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Видалити дані для автозаповнення форм із Chrome?</translation>
 <translation id="7815407501681723534">Знайдено результатів за запитом "<ph name="SEARCH_STRING" />": <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /></translation>
-<translation id="7818867226424560206">Керування правилом</translation>
+<translation id="7818867226424560206">Правила</translation>
 <translation id="782886543891417279">Можливо, щоб під’єднатися до цієї мережі Wi-Fi (<ph name="WIFI_NAME" />), потрібно відвідати її сторінку входу.</translation>
 <translation id="785549533363645510">Навіть у режимі анонімного перегляду ваш роботодавець, постачальник послуг Інтернету чи веб-сайти, які ви відвідуєте, можуть бачити, що ви переглядаєте.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
@@ -1002,7 +999,6 @@
 <translation id="884923133447025588">Не знайдено механізм відкликання.</translation>
 <translation id="885730110891505394">Надання інформації службам Google</translation>
 <translation id="8866481888320382733">Помилка аналізу налаштувань правила</translation>
-<translation id="8866959479196209191">Повідомлення з цієї сторінки:</translation>
 <translation id="8870413625673593573">Нещодавно закриті</translation>
 <translation id="8874824191258364635">Введіть дійсний номер картки</translation>
 <translation id="8876793034577346603">Помилка аналізу конфігурації мережі.</translation>

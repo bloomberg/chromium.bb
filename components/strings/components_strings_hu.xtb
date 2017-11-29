@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Átrendezés visszavonása</translation>
 <translation id="1126551341858583091">A helyi tárolóban lévő fájl mérete <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Irányelv-gyorsítótár OK</translation>
-<translation id="113188000913989374">A(z) <ph name="SITE" /> közlendője:</translation>
 <translation id="1132774398110320017">A Chrome Automatikus kitöltési beállításai…</translation>
 <translation id="1150979032973867961">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa az Ön számítógépének operációs rendszere szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="1151972924205500581">Jelszó szükséges</translation>
@@ -612,7 +611,6 @@
 <translation id="552553974213252141">Megfelelően kinyerte a szöveget?</translation>
 <translation id="5540224163453853">A kért cikk nem található.</translation>
 <translation id="5541546772353173584">E-mail-cím hozzáadása</translation>
-<translation id="5544037170328430102">A(z) <ph name="SITE" /> egy beágyazott oldalának közlendője:</translation>
 <translation id="5545756402275714221">Cikkek Önnek</translation>
 <translation id="5556459405103347317">Újratöltés</translation>
 <translation id="5560088892362098740">Lejárati dátum</translation>
@@ -820,7 +818,6 @@
 <translation id="7390545607259442187">Kártya igazolása</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Profil elérési útja</translation>
-<translation id="7424977062513257142">A weboldal egy beágyazott oldalának közlendője:</translation>
 <translation id="7437289804838430631">Kapcsolatfelvételi adatok hozzáadása</translation>
 <translation id="7441627299479586546">Az irányelv tárgya nem megfelelő</translation>
 <translation id="7444046173054089907">Ez a webhely le van tiltva</translation>
@@ -1000,7 +997,6 @@
 <translation id="884923133447025588">Nem található visszavonási mechanizmus.</translation>
 <translation id="885730110891505394">Megosztás a Google-lal</translation>
 <translation id="8866481888320382733">Irányelv-beállítások előfeldolgozási hibája</translation>
-<translation id="8866959479196209191">Az oldal közlendője:</translation>
 <translation id="8870413625673593573">Mostanában bezárt</translation>
 <translation id="8874824191258364635">Érvényes kártyaszámot adjon meg</translation>
 <translation id="8876793034577346603">A hálózati konfiguráció előfeldolgozása sikertelen.</translation>

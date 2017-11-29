@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Cofnij zmianę kolejności</translation>
 <translation id="1126551341858583091">Rozmiar w pamięci lokalnej: <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Pamięć podręczna zasad: OK</translation>
-<translation id="113188000913989374">Komunikat ze strony <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Ustawienia autouzupełniania Chrome...</translation>
 <translation id="1150979032973867961">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego komputera. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="1151972924205500581">Wymagane hasło</translation>
@@ -440,7 +439,7 @@
 <translation id="413544239732274901">Więcej informacji</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Użyj globalnego ustawienia domyślnego (Wykrywaj)</translation>
-<translation id="4165986682804962316">Ustawienia witryn</translation>
+<translation id="4165986682804962316">Ustawienia witryny</translation>
 <translation id="4169947484918424451">Czy Chromium ma zapisać tę kartę?</translation>
 <translation id="4171400957073367226">Nieprawidłowy podpis weryfikujący</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Jeszcze <ph name="ITEM_COUNT" /> element}few{Jeszcze <ph name="ITEM_COUNT" /> elementy}many{Jeszcze <ph name="ITEM_COUNT" /> elementów}other{Jeszcze <ph name="ITEM_COUNT" /> elementu}}</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">Czy tekst został prawidłowo wyodrębniony?</translation>
 <translation id="5540224163453853">Nie udało się znaleźć tego artykułu.</translation>
 <translation id="5541546772353173584">Dodaj adres e-mail</translation>
-<translation id="5544037170328430102">Komunikat z elementu umieszczonego na stronie <ph name="SITE" />:</translation>
 <translation id="5545756402275714221">Artykuły dla Ciebie</translation>
 <translation id="5556459405103347317">Odśwież</translation>
 <translation id="5560088892362098740">Data ważności</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Potwierdź kartę</translation>
 <translation id="7400418766976504921">Adres URL</translation>
 <translation id="7419106976560586862">Ścieżka profilu</translation>
-<translation id="7424977062513257142">Komunikat z elementu umieszczonego na bieżącej stronie internetowej:</translation>
 <translation id="7437289804838430631">Dodaj dane kontaktowe</translation>
 <translation id="7441627299479586546">Nieprawidłowy podmiot zasady</translation>
 <translation id="7444046173054089907">Ta strona jest zablokowana</translation>
@@ -1001,7 +998,6 @@
 <translation id="884923133447025588">Nie znaleziono mechanizmu unieważniania.</translation>
 <translation id="885730110891505394">Udostępnianie Google</translation>
 <translation id="8866481888320382733">Podczas przetwarzania ustawień zasady wystąpił błąd</translation>
-<translation id="8866959479196209191">Komunikat z bieżącej strony:</translation>
 <translation id="8870413625673593573">Ostatnio zamknięte</translation>
 <translation id="8874824191258364635">Wpisz prawidłowy numer karty</translation>
 <translation id="8876793034577346603">Przetwarzanie konfiguracji sieci nie powiodło się.</translation>

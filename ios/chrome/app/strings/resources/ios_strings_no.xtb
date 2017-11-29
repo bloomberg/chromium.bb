@@ -33,7 +33,7 @@
 <translation id="1430915738399379752">Skriv ut</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elementer</translation>
 <translation id="1491277525950327607">Dobbelttrykk for å slå innstillingen av/på</translation>
-<translation id="152234381334907219">Aldri lagrede</translation>
+<translation id="152234381334907219">Aldri lagret</translation>
 <translation id="1540800554400757039">Adresse 1</translation>
 <translation id="1545749641540134597">Skann en QR-kode</translation>
 <translation id="1580783302095112590">E-posten er sendt.</translation>
@@ -307,7 +307,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="6945221475159498467">Velg</translation>
 <translation id="6973630695168034713">Mapper</translation>
 <translation id="7004499039102548441">Nylige faner</translation>
-<translation id="7006788746334555276">Innstillinger for innhold</translation>
+<translation id="7006788746334555276">Innholdsinnstillinger</translation>
 <translation id="7031882061095297553">Synkroniser med</translation>
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="7062545763355031412">Godta og bytt konto</translation>

@@ -90,12 +90,12 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="3398288718845740432">Ascunde în meniul Chrome</translation>
 <translation id="3451115285585441894">Se adaugă la Chrome...</translation>
 <translation id="345171907106878721">Adăugați-vă la Chrome</translation>
+<translation id="3479552764303398839">Nu acum</translation>
 <translation id="3612333635265770873">Un modul cu același nume este cunoscut ca având conflicte cu Google Chrome.</translation>
 <translation id="3622797965165704966">Acum este mai ușor să folosiți Chrome cu Contul Google și pe computerele utilizate în comun.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Termenii și condițiile<ph name="END_TERMS_OF_SERVICE_LINK" /> sistemului de operare Google Chrome</translation>
 <translation id="3718181793972440140">Astfel, se va șterge 1 element de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chrome ca <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Extensia „<ph name="EXTENSION_NAME" />” a modificat ce pagină se afișează când pornești Chrome.</translation>
-<translation id="3738139272394829648">Atinge pentru a căuta</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Elimină din Chrome...</translation>
 <translation id="386202838227397562">Închide toate ferestrele Google Chrome și încearcă din nou.</translation>
@@ -126,7 +126,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="4664415150087723341">Tocmai a fost aplicată o actualizare de securitate specială pentru Google Chrome; pentru ca aceasta să intre în vigoare, îți recomandăm să repornești acum (filele vor fi restabilite).</translation>
 <translation id="4700157086864140907">Google Chrome poate oferi o verificare a ortografiei mai inteligentă prin trimiterea textului introdus în browser la serverele Google, permițându-vă să utilizați aceeași tehnologie de verificare a ortografiei utilizată de Căutare Google.</translation>
 <translation id="4728575227883772061">Instalarea nu a reușit din cauza unei erori necunoscute. Dacă Google Chrome rulează în acest moment, închide-l și încearcă din nou.</translation>
-<translation id="4743926867934016338">Acceptă și caută</translation>
 <translation id="4750550185319565338">Repornește Chrome pentru a activa <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Este posibil ca fișierul să fie periculos, așadar Chrome l-a blocat.</translation>
@@ -154,12 +153,9 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="5430073640787465221">Fișierul dvs. de preferințe este fie deteriorat, fie nevalid. Google Chrome nu poate recupera setările dvs.</translation>
 <translation id="5453904507266736060">Permite Google Chrome să ruleze în fundal</translation>
 <translation id="5495581687705680288">Module încărcate în Google Chrome</translation>
-<translation id="5524843473235508879">Redirecționarea a fost blocată.</translation>
 <translation id="556024056938947818">Google Chrome încearcă să afișeze parolele.</translation>
-<translation id="5563479599352954471">Caută cu o atingere</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Chrome are nevoie de permisiune ca să acceseze microfonul pentru acest site.</translation>
-<translation id="5620765574781326016">Află despre subiectele de pe site-uri fără să părăsești pagina.</translation>
 <translation id="565744775970812598">Este posibil ca <ph name="FILE_NAME" /> să fie periculos, așadar Chrome l-a blocat.</translation>
 <translation id="573759479754913123">Despre sistemul de operare Chrome</translation>
 <translation id="5749068826913805084">Pentru a descărca fișiere, Chrome necesită acces la stocare.</translation>
@@ -195,7 +191,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="6697947395630195233">Chrome are nevoie de acces la locația ta ca să permită accesul la locație pentru acest site.</translation>
 <translation id="683440813066116847">Regula de intrare pentru Google Chrome Canary pentru a permite traficul mDNS.</translation>
 <translation id="686561893457936865">Ia Chrome pretutindeni</translation>
-<translation id="6883876366448858277">trimite un cuvânt și contextul aferent către Căutarea Google, afișând definiții, imagini, rezultate ale căutării.</translation>
 <translation id="6885412569789873916">Aplicații Chrome Beta</translation>
 <translation id="6967962315388095737">Regula de intrare pentru Google Chrome Beta pentru a permite traficul mDNS.</translation>
 <translation id="6970811910055250180">Se actualizează dispozitivul...</translation>
@@ -217,7 +212,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="7437998757836447326">Deconectează-te de la Chrome</translation>
 <translation id="7459554271817304652">Configurați sincronizarea pentru a salva funcțiile personalizate ale browserului pe web și accesați-le din Google Chrome de pe orice computer.</translation>
 <translation id="7473136999113284234">Chrome se actualizează automat, deci vei avea întotdeauna cea mai recentă versiune.</translation>
-<translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="7494905215383356681">Licențe open source pentru Chrome</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Afișează sistemul de operare Chrome în această limbă</translation>

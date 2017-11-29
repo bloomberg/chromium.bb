@@ -71,13 +71,13 @@
 <translation id="3296368748942286671">Да продължават да се изпълняват приложения на заден план, когато Chromium е затворен</translation>
 <translation id="331951419404882060">Chromium OS не можа да синхронизира данните ви поради грешка при влизане в профила.</translation>
 <translation id="3474745554856756813"><ph name="ITEMS_COUNT" /> елемента ще се изтрият от това устройство. За да извлечете данните си по-късно, влезте в Chromium като <ph name="USER_EMAIL" />.</translation>
+<translation id="3479552764303398839">Не сега</translation>
 <translation id="3509308970982693815">Моля, затворете всички прозорци на Chromium и опитайте отново.</translation>
 <translation id="352783484088404971">Премахване от Chromium...</translation>
 <translation id="3549345495227188780">Първи стъпки с Chromium OS</translation>
 <translation id="3582788516608077514">Chromium се актуализира...</translation>
 <translation id="358997566136285270">Лого на Chromium</translation>
 <translation id="3713809861844741608">Отваряне на връзката в нов &amp;раздел на Chromium</translation>
-<translation id="3738139272394829648">Търсене чрез докосване</translation>
 <translation id="3762167353400286894">Chromium OS се показва на този език</translation>
 <translation id="378917192836375108">Chromium ви позволява да кликнете върху телефонен номер в мрежата и да се обадите до него със Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
@@ -110,7 +110,6 @@
 <translation id="469338717132742108">Получаване на помощ за Chromium OS</translation>
 <translation id="4708774505295300557">По-рано някой влезе в Chromium на този компютър като <ph name="ACCOUNT_EMAIL_LAST" />. Моля, създайте нов потребител в браузъра, така че информацията ви да се съхранява отделно.</translation>
 <translation id="4714956846925717402">Стартирайте Chromium по-бързо</translation>
-<translation id="4743926867934016338">Приемане и търсене</translation>
 <translation id="4825874709045178029">Chromium се нуждае от разрешение за достъп до камерата ви за този сайт.</translation>
 <translation id="4888717733111232871">Правило за Chromium за допускане на входящия трафик за mDNS.</translation>
 <translation id="4943838377383847465">Chromium работи на заден план.</translation>
@@ -127,9 +126,6 @@
 <translation id="5466153949126434691">Chromium се актуализира автоматично, така че винаги да имате най-новата версия. Когато това изтегляне завърши, Chromium ще се рестартира и ще можете да започнете работа.</translation>
 <translation id="5479196819031988440">Chromium OS не може да отвори тази страница.</translation>
 <translation id="549669000822060376">Моля, изчакайте, докато Chromium инсталира най-новите системни актуализации.</translation>
-<translation id="5524843473235508879">Блокирано бе пренасочване.</translation>
-<translation id="5563479599352954471">Търсене с едно докосване</translation>
-<translation id="5620765574781326016">Научете за темите в уебсайтовете, без да излизате от страницата.</translation>
 <translation id="5634636535844844681">За Chromium се изисква Windows 7 или по-нова версия.</translation>
 <translation id="5680901439334282664">Влезте в Chromium</translation>
 <translation id="5698481217667032250">Показване на Chromium на този език</translation>
@@ -169,7 +165,6 @@
 <translation id="6734291798041940871">Chromium вече е инсталиран за всички потребители на компютъра ви.</translation>
 <translation id="6810143991807788455">Помогнете за подобряването на Chromium, като подадете сигнал за текущите настройки</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">изпраща дума и текста около нея до Google Търсене, извеждайки определения, снимки и други резултати от търсенето.</translation>
 <translation id="6893813176749746474">Chromium е актуализиран, но не сте го използвали от поне 30 дни.</translation>
 <translation id="6944967875980567883">Модули, заредени в Chromium</translation>
 <translation id="6964305034639999644">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chromium</translation>
@@ -194,7 +189,6 @@
 <ph name="BEGIN_LINK_2" />Научете повече<ph name="END_LINK_2" />
 
 За допълнителни инструкции, моля, проверете електронната си поща на адрес <ph name="ACCOUNT_EMAIL" />.</translation>
-<translation id="7473891865547856676">Не, благодаря</translation>
 <translation id="7483335560992089831">Не може да се инсталира същата версия на Chromium, която се използва понастоящем. Моля, затворете браузъра и опитайте отново.</translation>
 <translation id="7549178288319965365">Всичко за Chromium OS</translation>
 <translation id="7577193603922410712">Току-що бе приложена специална актуализация за сигурност за Chromium. Сега трябва да рестартирате, за да влезе в сила (ще възстановим разделите ви).</translation>

@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">K&amp;umoa uudelleenjärjestely</translation>
 <translation id="1126551341858583091">Paikallisen tallennustilan koko on <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Käytännön välimuisti on OK</translation>
-<translation id="113188000913989374">Viesti osoitteesta <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Chromen automaattisen täytön asetukset…</translation>
 <translation id="1150979032973867961">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; tietokoneesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="1151972924205500581">Salasana vaaditaan</translation>
@@ -309,7 +308,7 @@
       <ph name="PLATFORM_TEXT" /></translation>
 <translation id="320323717674993345">Peruuta maksu</translation>
 <translation id="3207960819495026254">Kirjanmerkeissä</translation>
-<translation id="3209375525920864198">Anna kelvollinen käyttökerran nimi.</translation>
+<translation id="3209375525920864198">Anna kelvollinen istunnon nimi.</translation>
 <translation id="3211223744486044430">Jos haluat maksaa nopeammin seuraavalla kerralla, tallenna tämä kortti Google-tilillesi ja tälle laitteelle.</translation>
 <translation id="3225919329040284222">Palvelin esitti varmenteen, joka ei vastaa sisäänrakennettuja odotuksia. Tietyillä tehokkaasti suojatuilla sivustoilla on odotuksia, joilla suojataan käyttäjiä.</translation>
 <translation id="3226128629678568754">Paina päivityspainiketta, niin sivun lataukseen tarvittavat tiedot lähetetään uudelleen.</translation>
@@ -615,7 +614,6 @@
 <translation id="552553974213252141">Noudettiinko teksti oikein?</translation>
 <translation id="5540224163453853">Pyydettyä artikkelia ei löydy.</translation>
 <translation id="5541546772353173584">Lisää sähköposti</translation>
-<translation id="5544037170328430102">Viesti upotetulta sivulta osoitteessa <ph name="SITE" />:</translation>
 <translation id="5545756402275714221">Sinulle valitut artikkelit</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
 <translation id="5560088892362098740">Viimeinen voimassaolopäivä</translation>
@@ -823,7 +821,6 @@
 <translation id="7390545607259442187">Vahvista kortti</translation>
 <translation id="7400418766976504921">URL-osoite</translation>
 <translation id="7419106976560586862">Profiilin polku</translation>
-<translation id="7424977062513257142">Viesti tälle verkkosivulle upotetulta sivulta:</translation>
 <translation id="7437289804838430631">Lisää yhteystieto</translation>
 <translation id="7441627299479586546">Väärä käytännön aihe</translation>
 <translation id="7444046173054089907">Tämä sivusto on estetty</translation>
@@ -901,7 +898,7 @@
 <translation id="7878176543348854470">Maksu- ja prepaid-kortit hyväksytään.</translation>
 <translation id="7878562273885520351">Salasanasi on saattanut vaarantua.</translation>
 <translation id="7887683347370398519">Tarkista CVC ja yritä uudelleen.</translation>
-<translation id="7893255318348328562">Käyttökerran nimi</translation>
+<translation id="7893255318348328562">Istunnon nimi</translation>
 <translation id="79338296614623784">Anna kelvollinen puhelinnumero.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Palvelimen varmenne ei ole vielä voimassa.</translation>
@@ -951,7 +948,7 @@
 <translation id="8294431847097064396">Lähde</translation>
 <translation id="8298115750975731693">Käyttämäsi Wi-Fi (<ph name="WIFI_NAME" />) saattaa edellyttää vierailua osoitteessa <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8308427013383895095">Käännös epäonnistui, koska verkkoyhteydessä esiintyi ongelmia.</translation>
-<translation id="8311129316111205805">Lataa käyttökerta</translation>
+<translation id="8311129316111205805">Lataa istunto</translation>
 <translation id="8332188693563227489">Sivuston <ph name="HOST_NAME" /> käyttöoikeus evättiin</translation>
 <translation id="834457929814110454">Jos ymmärrät käyntiä koskevat turvallisuusriskit, voit <ph name="BEGIN_LINK" />siirtyä tähän sivustoon<ph name="END_LINK" /> jo ennen haitallisten ohjelmien poistamista.</translation>
 <translation id="8349305172487531364">Kirjanmerkkipalkki</translation>
@@ -1003,7 +1000,6 @@
 <translation id="884923133447025588">Kumoamisjärjestelmää ei löytynyt.</translation>
 <translation id="885730110891505394">Googlen kanssa jakaminen</translation>
 <translation id="8866481888320382733">Virhe jäsennettäessä käytännön asetuksia</translation>
-<translation id="8866959479196209191">Viesti tältä sivulta:</translation>
 <translation id="8870413625673593573">Hiljattain suljetut</translation>
 <translation id="8874824191258364635">Anna kelvollinen kortin numero.</translation>
 <translation id="8876793034577346603">Verkkoasetuksia ei voitu jäsentää.</translation>

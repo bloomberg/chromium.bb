@@ -71,7 +71,7 @@
 <translation id="2617342710774726426">O cartão SIM está bloqueado</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2675319268637823299">Um administrador desativou o login múltiplo para <ph name="USER_EMAIL" />.
-    Todos os usuários devem sair para continuar.</translation>
+    Todos os usuários precisam sair para continuar.</translation>
 <translation id="2700058918926273959">A sessão termina em <ph name="SESSION_TIME_REMAINING" />. Você será desconectado.</translation>
 <translation id="2727977024730340865">Conectado a um carregador de baixa potência. O carregamento da bateria pode não ser confiável.</translation>
 <translation id="2761704814324807722">Bandeja de status, tempo <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -149,7 +149,6 @@
 <translation id="453661520163887813"><ph name="TIME" /> até completar</translation>
 <translation id="4544944664594876241">O atalho para bloquear a tela foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">ChromeVox ativado</translation>
-<translation id="4729904664295161097">O Assistente só está disponível para o perfil principal.</translation>
 <translation id="4776917500594043016">Senha para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">pesquisar</translation>
 <translation id="4804818685124855865">Desconectar</translation>

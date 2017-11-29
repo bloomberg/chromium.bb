@@ -253,7 +253,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="3414952576877147120">Taille :</translation>
 <translation id="3443221991560634068">Actualiser la page active</translation>
 <translation id="3452612588551937789">Connectez-vous à votre compte Google pour synchroniser vos favoris, vos mots de passe, votre historique et d'autres paramètres sur tous vos appareils.</translation>
-<translation id="3479552764303398839">Pas maintenant</translation>
 <translation id="3487093336331957349">Suggestions de recherches et de sites</translation>
 <translation id="3492207499832628349">Nouvel onglet nav. privée</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> sur le contenu suggéré</translation>
@@ -315,6 +314,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3988213473815854515">Position autorisée</translation>
 <translation id="3997476611815694295">Stockage non important</translation>
 <translation id="4002066346123236978">Titre</translation>
+<translation id="4031074602479304239">Chrome a empêché ce site de vous rediriger vers</translation>
 <translation id="4042870126885713738">Afficher d'autres solutions lorsqu'une adresse Web ne peut pas être résolue ou qu'une connexion ne peut pas être établie</translation>
 <translation id="4046123991198612571">Piste suivante</translation>
 <translation id="4056223980640387499">Sépia</translation>
@@ -472,6 +472,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="5512137114520586844">Ce compte est géré par <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Désactivé par l'administrateur de cet appareil</translation>
 <translation id="5517095782334947753">Vous disposez des favoris, de l'historique, des mots de passe et d'autres paramètres du compte <ph name="FROM_ACCOUNT" />.</translation>
+<translation id="5524843473235508879">Redirection bloquée.</translation>
 <translation id="5527082711130173040">Chrome doit avoir accès aux données de localisation pour rechercher des appareils. <ph name="BEGIN_LINK1" />Modifiez les autorisations.<ph name="END_LINK1" /> De plus, l'accès aux données de localisation est <ph name="BEGIN_LINK2" />désactivé pour cet appareil<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Fermer onglets navig. privée</translation>
 <translation id="5534640966246046842">Site copié</translation>
@@ -498,7 +499,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 
 Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation privée n'empêche pas votre employeur, votre fournisseur d'accès à Internet ou les sites Web que vous avez consultés d'avoir accès aux informations relatives à votre navigation.</translation>
 <translation id="572328651809341494">Onglets récents</translation>
-<translation id="572392919096807438">Mémoriser ma décision</translation>
 <translation id="5726692708398506830">Agrandir tous les éléments de la page</translation>
 <translation id="5738816946784116349">Téléchargements Chrome</translation>
 <translation id="5748802427693696783">Onglets standards sélectionnés</translation>
@@ -652,7 +652,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7022756207310403729">Ouvrir dans le navigateur</translation>
 <translation id="7029809446516969842">Mots de passe</translation>
 <translation id="7031882061095297553">Synchroniser avec</translation>
-<translation id="704059664004611800">Appuyer pour afficher les favoris et plus encore</translation>
 <translation id="7053983685419859001">Bloquer</translation>
 <translation id="7062545763355031412">Accepter et changer de compte</translation>
 <translation id="7063006564040364415">Impossible de se connecter au serveur de synchronisation.</translation>
