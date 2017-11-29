@@ -158,7 +158,9 @@ class TestMemoryCoordinatorImpl : public MemoryCoordinatorImpl {
                               std::make_unique<MockMemoryMonitor>()) {
     SetDelegateForTesting(std::make_unique<TestMemoryCoordinatorDelegate>());
     SetPolicyForTesting(std::make_unique<MockMemoryCoordinatorPolicy>(this));
-    SetTickClockForTesting(task_runner->GetMockTickClock());
+
+    clock_ = task_runner->GetMockTickClock();
+    SetTickClockForTesting(clock_.get());
   }
 
   ~TestMemoryCoordinatorImpl() override {}
@@ -203,6 +205,10 @@ class TestMemoryCoordinatorImpl : public MemoryCoordinatorImpl {
     RunUntilIdle();
     return result;
   }
+
+  // TODO(tzik): Remove |clock_| after updating GetMockTickClock to own the
+  // instance.
+  std::unique_ptr<base::TickClock> clock_;
 
   TestBrowserContext browser_context_;
   std::vector<std::unique_ptr<Child>> children_;

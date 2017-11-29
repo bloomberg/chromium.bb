@@ -1281,14 +1281,13 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   base::HistogramTester tester;
 
   MediaSessionUmaHelper* media_session_uma_helper = GetMediaSessionUMAHelper();
-  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
-  clock->SetNowTicks(base::TimeTicks::Now());
-  media_session_uma_helper->SetClockForTest(
-      std::unique_ptr<base::SimpleTestTickClock>(clock));
+  base::SimpleTestTickClock clock;
+  clock.SetNowTicks(base::TimeTicks::Now());
+  media_session_uma_helper->SetClockForTest(&clock);
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
 
-  clock->Advance(base::TimeDelta::FromMilliseconds(1000));
+  clock.Advance(base::TimeDelta::FromMilliseconds(1000));
   media_session_->Stop(MediaSession::SuspendType::UI);
 
   std::unique_ptr<base::HistogramSamples> samples(
@@ -1303,20 +1302,19 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   base::HistogramTester tester;
 
   MediaSessionUmaHelper* media_session_uma_helper = GetMediaSessionUMAHelper();
-  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
-  clock->SetNowTicks(base::TimeTicks::Now());
-  media_session_uma_helper->SetClockForTest(
-      std::unique_ptr<base::SimpleTestTickClock>(clock));
+  base::SimpleTestTickClock clock;
+  clock.SetNowTicks(base::TimeTicks::Now());
+  media_session_uma_helper->SetClockForTest(&clock);
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
 
-  clock->Advance(base::TimeDelta::FromMilliseconds(1000));
+  clock.Advance(base::TimeDelta::FromMilliseconds(1000));
   UISuspend();
 
-  clock->Advance(base::TimeDelta::FromMilliseconds(2000));
+  clock.Advance(base::TimeDelta::FromMilliseconds(2000));
   UIResume();
 
-  clock->Advance(base::TimeDelta::FromMilliseconds(1000));
+  clock.Advance(base::TimeDelta::FromMilliseconds(1000));
   media_session_->Stop(MediaSession::SuspendType::UI);
 
   std::unique_ptr<base::HistogramSamples> samples(
@@ -1331,20 +1329,19 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   base::HistogramTester tester;
 
   MediaSessionUmaHelper* media_session_uma_helper = GetMediaSessionUMAHelper();
-  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
-  clock->SetNowTicks(base::TimeTicks::Now());
-  media_session_uma_helper->SetClockForTest(
-      std::unique_ptr<base::SimpleTestTickClock>(clock));
+  base::SimpleTestTickClock clock;
+  clock.SetNowTicks(base::TimeTicks::Now());
+  media_session_uma_helper->SetClockForTest(&clock);
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
 
-  clock->Advance(base::TimeDelta::FromMilliseconds(1000));
+  clock.Advance(base::TimeDelta::FromMilliseconds(1000));
   SystemSuspend(true);
 
-  clock->Advance(base::TimeDelta::FromMilliseconds(2000));
+  clock.Advance(base::TimeDelta::FromMilliseconds(2000));
   SystemResume();
 
-  clock->Advance(base::TimeDelta::FromMilliseconds(1000));
+  clock.Advance(base::TimeDelta::FromMilliseconds(1000));
   media_session_->Stop(MediaSession::SuspendType::UI);
 
   std::unique_ptr<base::HistogramSamples> samples(
@@ -1359,13 +1356,12 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   base::HistogramTester tester;
 
   MediaSessionUmaHelper* media_session_uma_helper = GetMediaSessionUMAHelper();
-  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
-  clock->SetNowTicks(base::TimeTicks::Now());
-  media_session_uma_helper->SetClockForTest(
-      std::unique_ptr<base::SimpleTestTickClock>(clock));
+  base::SimpleTestTickClock clock;
+  clock.SetNowTicks(base::TimeTicks::Now());
+  media_session_uma_helper->SetClockForTest(&clock);
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
-  clock->Advance(base::TimeDelta::FromMilliseconds(500));
+  clock.Advance(base::TimeDelta::FromMilliseconds(500));
   SystemSuspend(true);
 
   {
@@ -1375,7 +1371,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   }
 
   SystemResume();
-  clock->Advance(base::TimeDelta::FromMilliseconds(5000));
+  clock.Advance(base::TimeDelta::FromMilliseconds(5000));
   UISuspend();
 
   {
@@ -1391,18 +1387,17 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   base::HistogramTester tester;
 
   MediaSessionUmaHelper* media_session_uma_helper = GetMediaSessionUMAHelper();
-  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
-  clock->SetNowTicks(base::TimeTicks::Now());
-  media_session_uma_helper->SetClockForTest(
-      std::unique_ptr<base::SimpleTestTickClock>(clock));
+  base::SimpleTestTickClock clock;
+  clock.SetNowTicks(base::TimeTicks::Now());
+  media_session_uma_helper->SetClockForTest(&clock);
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
-  clock->Advance(base::TimeDelta::FromMilliseconds(500));
+  clock.Advance(base::TimeDelta::FromMilliseconds(500));
   SystemSuspend(true);
   media_session_->Stop(MediaSession::SuspendType::UI);
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
-  clock->Advance(base::TimeDelta::FromMilliseconds(5000));
+  clock.Advance(base::TimeDelta::FromMilliseconds(5000));
   SystemResume();
   media_session_->Stop(MediaSession::SuspendType::UI);
 
@@ -1419,17 +1414,16 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   base::HistogramTester tester;
 
   MediaSessionUmaHelper* media_session_uma_helper = GetMediaSessionUMAHelper();
-  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
-  clock->SetNowTicks(base::TimeTicks::Now());
-  media_session_uma_helper->SetClockForTest(
-      std::unique_ptr<base::SimpleTestTickClock>(clock));
+  base::SimpleTestTickClock clock;
+  clock.SetNowTicks(base::TimeTicks::Now());
+  media_session_uma_helper->SetClockForTest(&clock);
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
-  clock->Advance(base::TimeDelta::FromMilliseconds(10000));
+  clock.Advance(base::TimeDelta::FromMilliseconds(10000));
   RemovePlayer(player_observer.get(), 0);
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
-  clock->Advance(base::TimeDelta::FromMilliseconds(1000));
+  clock.Advance(base::TimeDelta::FromMilliseconds(1000));
   media_session_->Stop(MediaSession::SuspendType::UI);
 
   std::unique_ptr<base::HistogramSamples> samples(

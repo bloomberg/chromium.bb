@@ -14,16 +14,13 @@ namespace content {
 
 class ServiceWorkerLifetimeTrackerTest : public testing::Test {
  public:
-  ServiceWorkerLifetimeTrackerTest()
-      : tick_clock_(new base::SimpleTestTickClock()),
-        tracker_(base::WrapUnique(tick_clock_)) {}
+  ServiceWorkerLifetimeTrackerTest() : tracker_(&tick_clock_) {}
 
-  base::SimpleTestTickClock* tick_clock() { return tick_clock_; }
+  base::SimpleTestTickClock* tick_clock() { return &tick_clock_; }
   ServiceWorkerLifetimeTracker* tracker() { return &tracker_; }
 
  private:
-  // Not owned.
-  base::SimpleTestTickClock* tick_clock_;
+  base::SimpleTestTickClock tick_clock_;
 
   ServiceWorkerLifetimeTracker tracker_;
 };

@@ -93,16 +93,15 @@ TEST_F(HostZoomMapTest, LastModifiedTimestamp) {
   host_zoom_map.SetStoreLastModified(true);
 
   base::Time now = base::Time::Now();
-  auto test_clock = std::make_unique<base::SimpleTestClock>();
-  base::SimpleTestClock* clock = test_clock.get();
-  host_zoom_map.SetClockForTesting(std::move(test_clock));
+  base::SimpleTestClock test_clock;
+  host_zoom_map.SetClockForTesting(&test_clock);
 
-  clock->SetNow(now);
+  test_clock.SetNow(now);
   host_zoom_map.SetZoomLevelForHost("zoomed.com", 1.5);
   host_zoom_map.SetZoomLevelForHost("zoomed2.com", 2.0);
 
   base::Time later = now + base::TimeDelta::FromSeconds(1);
-  clock->SetNow(later);
+  test_clock.SetNow(later);
   host_zoom_map.SetZoomLevelForHost("zoomed2.com", 2.5);
   host_zoom_map.SetZoomLevelForHost("zoomzoom.com", 3);
   host_zoom_map.SetZoomLevelForHostAndScheme("chrome", "login", 3);
@@ -131,14 +130,13 @@ TEST_F(HostZoomMapTest, ClearZoomLevels) {
   HostZoomMapImpl host_zoom_map;
   host_zoom_map.SetStoreLastModified(true);
 
-  auto test_clock = std::make_unique<base::SimpleTestClock>();
-  base::SimpleTestClock* clock = test_clock.get();
-  host_zoom_map.SetClockForTesting(std::move(test_clock));
+  base::SimpleTestClock test_clock;
+  host_zoom_map.SetClockForTesting(&test_clock);
 
   base::Time now = base::Time::Now();
-  clock->SetNow(now - base::TimeDelta::FromHours(3));
+  test_clock.SetNow(now - base::TimeDelta::FromHours(3));
   host_zoom_map.SetZoomLevelForHost("zoomzoom.com", 3.5);
-  clock->SetNow(now - base::TimeDelta::FromHours(1));
+  test_clock.SetNow(now - base::TimeDelta::FromHours(1));
   host_zoom_map.SetZoomLevelForHost("zoom.com", 1.5);
   EXPECT_EQ(2u, host_zoom_map.GetAllZoomLevels().size());
 

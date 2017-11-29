@@ -1870,14 +1870,13 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveZoomLevel) {
 
   EXPECT_EQ(0u, zoom_map->GetAllZoomLevels().size());
 
-  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
-  base::SimpleTestClock* clock = test_clock.get();
-  zoom_map->SetClockForTesting(std::move(test_clock));
+  base::SimpleTestClock test_clock;
+  zoom_map->SetClockForTesting(&test_clock);
 
   base::Time now = base::Time::Now();
   zoom_map->InitializeZoomLevelForHost(kTestRegisterableDomain1, 1.5,
                                        now - base::TimeDelta::FromHours(5));
-  clock->SetNow(now - base::TimeDelta::FromHours(2));
+  test_clock.SetNow(now - base::TimeDelta::FromHours(2));
   zoom_map->SetZoomLevelForHost(kTestRegisterableDomain3, 2.0);
   EXPECT_EQ(2u, zoom_map->GetAllZoomLevels().size());
 
@@ -1889,7 +1888,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveZoomLevel) {
   // Nothing should be deleted as the zoomlevels were created earlier.
   EXPECT_EQ(2u, zoom_map->GetAllZoomLevels().size());
 
-  clock->SetNow(now);
+  test_clock.SetNow(now);
   zoom_map->SetZoomLevelForHost(kTestRegisterableDomain3, 2.0);
 
   // Remove everything changed during the last hour (domain3).

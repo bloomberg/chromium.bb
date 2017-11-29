@@ -306,10 +306,8 @@ class ServiceWorkerVersionTest : public testing::Test {
     EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, status);
   }
 
-  base::SimpleTestTickClock* SetTickClockForTesting() {
-    base::SimpleTestTickClock* tick_clock = new base::SimpleTestTickClock();
-    version_->SetTickClockForTesting(base::WrapUnique(tick_clock));
-    return tick_clock;
+  void SetTickClockForTesting(base::SimpleTestTickClock* tick_clock) {
+    version_->SetTickClockForTesting(tick_clock);
   }
 
   TestBrowserThreadBundle thread_bundle_;
@@ -1095,7 +1093,8 @@ TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   StartWorker(version_.get(), ServiceWorkerMetrics::EventType::SYNC);
 
-  base::SimpleTestTickClock* tick_clock = SetTickClockForTesting();
+  base::SimpleTestTickClock tick_clock;
+  SetTickClockForTesting(&tick_clock);
 
   // Create two requests. One which times out in 10 seconds, one in 20 seconds.
   int timeout_seconds = 10;
@@ -1120,7 +1119,7 @@ TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
   EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, second_status);
 
   // Now advance time until the second task timeout should expire.
-  tick_clock->Advance(base::TimeDelta::FromSeconds(timeout_seconds + 1));
+  tick_clock.Advance(base::TimeDelta::FromSeconds(timeout_seconds + 1));
   version_->timeout_timer_.user_task().Run();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, first_status);
@@ -1130,7 +1129,7 @@ TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 
   // Now advance time until both tasks should be expired.
-  tick_clock->Advance(base::TimeDelta::FromSeconds(timeout_seconds + 1));
+  tick_clock.Advance(base::TimeDelta::FromSeconds(timeout_seconds + 1));
   version_->timeout_timer_.user_task().Run();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, first_status);

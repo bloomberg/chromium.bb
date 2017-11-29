@@ -3669,7 +3669,6 @@ class RenderWidgetHostViewAuraCopyRequestTest
       : callback_count_(0),
         result_(false),
         frame_subscriber_(nullptr),
-        tick_clock_(nullptr),
         view_rect_(100, 100) {}
 
   void CallbackMethod(bool result) {
@@ -3708,9 +3707,7 @@ class RenderWidgetHostViewAuraCopyRequestTest
   }
 
   void InstallFakeTickClock() {
-    // Create a fake tick clock and transfer ownership to the frame host.
-    tick_clock_ = new base::SimpleTestTickClock();
-    view_->GetDelegatedFrameHost()->tick_clock_ = base::WrapUnique(tick_clock_);
+    view_->GetDelegatedFrameHost()->tick_clock_ = &tick_clock_;
   }
 
   void SubmitCompositorFrame() {
@@ -3762,7 +3759,7 @@ class RenderWidgetHostViewAuraCopyRequestTest
   int callback_count_;
   bool result_;
   FakeFrameSubscriber* frame_subscriber_;  // Owned by |view_|.
-  base::SimpleTestTickClock* tick_clock_;  // Owned by DelegatedFrameHost.
+  base::SimpleTestTickClock tick_clock_;
   const gfx::Rect view_rect_;
 
  private:
@@ -3867,13 +3864,13 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, PresentTime) {
 
   // Verify our initial state.
   EXPECT_EQ(base::TimeTicks(), frame_subscriber_->last_present_time());
-  EXPECT_EQ(base::TimeTicks(), tick_clock_->NowTicks());
+  EXPECT_EQ(base::TimeTicks(), tick_clock_.NowTicks());
 
   // Start our fake clock from a non-zero, but not an even multiple of the
   // interval, value to differentiate it from our initialization state.
   const base::TimeDelta kDefaultInterval =
       viz::BeginFrameArgs::DefaultInterval();
-  tick_clock_->Advance(kDefaultInterval / 3);
+  tick_clock_.Advance(kDefaultInterval / 3);
 
   // Swap the first frame without any vsync information.
   ASSERT_EQ(base::TimeTicks(), vsync_timebase());
@@ -3882,7 +3879,7 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, PresentTime) {
   // During this first call, there is no known vsync information, so while the
   // callback should succeed the present time is effectively just current time.
   SubmitCompositorFrameAndRelease();
-  EXPECT_EQ(tick_clock_->NowTicks(), frame_subscriber_->last_present_time());
+  EXPECT_EQ(tick_clock_.NowTicks(), frame_subscriber_->last_present_time());
 
   // Now initialize the vsync parameters with a null timebase, but a known vsync
   // interval; which should give us slightly better frame time estimates.
@@ -3899,7 +3896,7 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, PresentTime) {
 
   // Now initialize the vsync parameters with a valid timebase and a known vsync
   // interval; which should give us the best frame time estimates.
-  const base::TimeTicks kBaseTime = tick_clock_->NowTicks();
+  const base::TimeTicks kBaseTime = tick_clock_.NowTicks();
   OnUpdateVSyncParameters(kBaseTime, kDefaultInterval);
   ASSERT_EQ(kBaseTime, vsync_timebase());
   ASSERT_EQ(kDefaultInterval, vsync_interval());
@@ -3909,7 +3906,7 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, PresentTime) {
   // the vsync timebase.  Advance time by a non integer number of intervals to
   // verify.
   const double kElapsedIntervals = 2.5;
-  tick_clock_->Advance(kDefaultInterval * kElapsedIntervals);
+  tick_clock_.Advance(kDefaultInterval * kElapsedIntervals);
   SubmitCompositorFrameAndRelease();
   EXPECT_EQ(kBaseTime + kDefaultInterval * std::ceil(kElapsedIntervals),
             frame_subscriber_->last_present_time());

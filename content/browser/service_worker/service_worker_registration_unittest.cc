@@ -508,9 +508,9 @@ TEST_F(ServiceWorkerActivationTest, SkipWaitingWithInflightRequest) {
 TEST_F(ServiceWorkerActivationTest, TimeSinceSkipWaiting_Installing) {
   scoped_refptr<ServiceWorkerRegistration> reg = registration();
   scoped_refptr<ServiceWorkerVersion> version = reg->waiting_version();
-  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
-  clock->SetNowTicks(base::TimeTicks::Now());
-  version->SetTickClockForTesting(base::WrapUnique(clock));
+  base::SimpleTestTickClock clock;
+  clock.SetNowTicks(base::TimeTicks::Now());
+  version->SetTickClockForTesting(&clock);
 
   // Reset version to the installing phase.
   reg->UnsetVersion(version.get());
@@ -520,14 +520,14 @@ TEST_F(ServiceWorkerActivationTest, TimeSinceSkipWaiting_Installing) {
   // since the version is not yet installed.
   SimulateSkipWaiting(version.get(), 77 /* dummy request_id */);
   base::RunLoop().RunUntilIdle();
-  clock->Advance(base::TimeDelta::FromSeconds(11));
+  clock.Advance(base::TimeDelta::FromSeconds(11));
   EXPECT_EQ(base::TimeDelta(), version->TimeSinceSkipWaiting());
 
   // Install the version. Now the skip waiting time starts ticking.
   version->SetStatus(ServiceWorkerVersion::INSTALLED);
   reg->SetWaitingVersion(version);
   base::RunLoop().RunUntilIdle();
-  clock->Advance(base::TimeDelta::FromSeconds(33));
+  clock.Advance(base::TimeDelta::FromSeconds(33));
   EXPECT_EQ(base::TimeDelta::FromSeconds(33), version->TimeSinceSkipWaiting());
 
   // Call skipWaiting() again. It doesn't reset the time.
@@ -541,12 +541,12 @@ TEST_F(ServiceWorkerActivationTest, LameDuckTime_SkipWaiting) {
   scoped_refptr<ServiceWorkerRegistration> reg = registration();
   scoped_refptr<ServiceWorkerVersion> version_1 = reg->active_version();
   scoped_refptr<ServiceWorkerVersion> version_2 = reg->waiting_version();
-  base::SimpleTestTickClock* clock_1 = new base::SimpleTestTickClock();
-  base::SimpleTestTickClock* clock_2 = new base::SimpleTestTickClock();
-  clock_1->SetNowTicks(base::TimeTicks::Now());
-  clock_2->SetNowTicks(clock_1->NowTicks());
-  version_1->SetTickClockForTesting(base::WrapUnique(clock_1));
-  version_2->SetTickClockForTesting(base::WrapUnique(clock_2));
+  base::SimpleTestTickClock clock_1;
+  base::SimpleTestTickClock clock_2;
+  clock_1.SetNowTicks(base::TimeTicks::Now());
+  clock_2.SetNowTicks(clock_1.NowTicks());
+  version_1->SetTickClockForTesting(&clock_1);
+  version_2->SetTickClockForTesting(&clock_2);
 
   // Set skip waiting flag. Since there is still an in-flight request,
   // activation should not happen. But the lame duck timer should start.
@@ -557,7 +557,7 @@ TEST_F(ServiceWorkerActivationTest, LameDuckTime_SkipWaiting) {
   EXPECT_TRUE(IsLameDuckTimerRunning());
 
   // Move forward by lame duck time.
-  clock_2->Advance(kMaxLameDuckTime + base::TimeDelta::FromSeconds(1));
+  clock_2.Advance(kMaxLameDuckTime + base::TimeDelta::FromSeconds(1));
 
   // Activation should happen by the lame duck timer.
   RunLameDuckTimer();
@@ -571,12 +571,12 @@ TEST_F(ServiceWorkerActivationTest, LameDuckTime_NoControllee) {
   scoped_refptr<ServiceWorkerRegistration> reg = registration();
   scoped_refptr<ServiceWorkerVersion> version_1 = reg->active_version();
   scoped_refptr<ServiceWorkerVersion> version_2 = reg->waiting_version();
-  base::SimpleTestTickClock* clock_1 = new base::SimpleTestTickClock();
-  base::SimpleTestTickClock* clock_2 = new base::SimpleTestTickClock();
-  clock_1->SetNowTicks(base::TimeTicks::Now());
-  clock_2->SetNowTicks(clock_1->NowTicks());
-  version_1->SetTickClockForTesting(base::WrapUnique(clock_1));
-  version_2->SetTickClockForTesting(base::WrapUnique(clock_2));
+  base::SimpleTestTickClock clock_1;
+  base::SimpleTestTickClock clock_2;
+  clock_1.SetNowTicks(base::TimeTicks::Now());
+  clock_2.SetNowTicks(clock_1.NowTicks());
+  version_1->SetTickClockForTesting(&clock_1);
+  version_2->SetTickClockForTesting(&clock_2);
 
   // Remove the controllee. Since there is still an in-flight request,
   // activation should not happen. But the lame duck timer should start.
@@ -588,7 +588,7 @@ TEST_F(ServiceWorkerActivationTest, LameDuckTime_NoControllee) {
 
   // Move clock forward by a little bit.
   constexpr base::TimeDelta kLittleBit = base::TimeDelta::FromMinutes(1);
-  clock_1->Advance(kLittleBit);
+  clock_1.Advance(kLittleBit);
 
   // Add a controllee again to reset the lame duck period.
   version_1->AddControllee(controllee());
@@ -601,8 +601,8 @@ TEST_F(ServiceWorkerActivationTest, LameDuckTime_NoControllee) {
   EXPECT_TRUE(IsLameDuckTimerRunning());
 
   // Move clock forward to the next lame duck timer tick.
-  clock_1->Advance(kMaxLameDuckTime - kLittleBit +
-                   base::TimeDelta::FromSeconds(1));
+  clock_1.Advance(kMaxLameDuckTime - kLittleBit +
+                  base::TimeDelta::FromSeconds(1));
 
   // Run the lame duck timer. Activation should not yet happen
   // since the lame duck period has not expired.
@@ -612,7 +612,7 @@ TEST_F(ServiceWorkerActivationTest, LameDuckTime_NoControllee) {
   EXPECT_TRUE(IsLameDuckTimerRunning());
 
   // Continue on to the next lame duck timer tick.
-  clock_1->Advance(kMaxLameDuckTime + base::TimeDelta::FromSeconds(1));
+  clock_1.Advance(kMaxLameDuckTime + base::TimeDelta::FromSeconds(1));
 
   // Activation should happen by the lame duck timer.
   RunLameDuckTimer();

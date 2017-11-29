@@ -29,7 +29,7 @@ CursorRenderer::CursorRenderer(gfx::NativeView view,
                                CursorDisplaySetting cursor_display_setting)
     : captured_view_(view),
       cursor_display_setting_(cursor_display_setting),
-      tick_clock_(&default_tick_clock_),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       weak_factory_(this) {
   Clear();
 }

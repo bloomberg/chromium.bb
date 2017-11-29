@@ -19,9 +19,8 @@ class RenderMediaLogTest : public testing::Test {
  public:
   RenderMediaLogTest()
       : log_(GURL("http://foo.com")),
-        tick_clock_(new base::SimpleTestTickClock()),
         task_runner_(new base::TestMockTimeTaskRunner()) {
-    log_.SetTickClockForTesting(std::unique_ptr<base::TickClock>(tick_clock_));
+    log_.SetTickClockForTesting(&tick_clock_);
     log_.SetTaskRunnerForTesting(task_runner_);
   }
 
@@ -36,7 +35,7 @@ class RenderMediaLogTest : public testing::Test {
   }
 
   void Advance(base::TimeDelta delta) {
-    tick_clock_->Advance(delta);
+    tick_clock_.Advance(delta);
     task_runner_->FastForwardBy(delta);
   }
 
@@ -58,8 +57,8 @@ class RenderMediaLogTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
   MockRenderThread render_thread_;
+  base::SimpleTestTickClock tick_clock_;
   RenderMediaLog log_;
-  base::SimpleTestTickClock* tick_clock_;  // Owned by |log_|.
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderMediaLogTest);

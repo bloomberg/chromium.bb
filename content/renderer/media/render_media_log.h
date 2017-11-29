@@ -43,7 +43,7 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
   void RecordRapporWithSecurityOrigin(const std::string& metric) override;
 
   // Will reset |last_ipc_send_time_| with the value of NowTicks().
-  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
+  void SetTickClockForTesting(base::TickClock* tick_clock);
   void SetTaskRunnerForTesting(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
@@ -62,7 +62,7 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
   // sequence for throttled send on |task_runner_| and coherent retrieval by
   // GetErrorMessage().
   mutable base::Lock lock_;
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_;
   base::TimeTicks last_ipc_send_time_;
   std::vector<media::MediaLogEvent> queued_media_events_;
 

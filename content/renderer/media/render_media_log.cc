@@ -42,7 +42,7 @@ namespace content {
 RenderMediaLog::RenderMediaLog(const GURL& security_origin)
     : security_origin_(security_origin),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      tick_clock_(new base::DefaultTickClock()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       last_ipc_send_time_(tick_clock_->NowTicks()),
       ipc_send_pending_(false),
       weak_factory_(this) {
@@ -182,10 +182,9 @@ void RenderMediaLog::SendQueuedMediaEvents() {
   RenderThread::Get()->Send(new ViewHostMsg_MediaLogEvents(events_to_send));
 }
 
-void RenderMediaLog::SetTickClockForTesting(
-    std::unique_ptr<base::TickClock> tick_clock) {
+void RenderMediaLog::SetTickClockForTesting(base::TickClock* tick_clock) {
   base::AutoLock auto_lock(lock_);
-  tick_clock_.swap(tick_clock);
+  tick_clock_ = tick_clock;
   last_ipc_send_time_ = tick_clock_->NowTicks();
 }
 

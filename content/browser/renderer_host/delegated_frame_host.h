@@ -298,7 +298,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   base::TimeDelta vsync_interval_;
 
   // Overridable tick clock used for testing functions using current time.
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_;
 
   // True after a delegated frame has been skipped, until a frame is not
   // skipped.

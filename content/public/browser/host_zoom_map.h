@@ -194,7 +194,7 @@ class HostZoomMap {
   virtual std::unique_ptr<Subscription> AddZoomLevelChangedCallback(
       const ZoomLevelChangedCallback& callback) = 0;
 
-  virtual void SetClockForTesting(std::unique_ptr<base::Clock> clock) = 0;
+  virtual void SetClockForTesting(base::Clock* clock) = 0;
 
  protected:
   virtual ~HostZoomMap() {}

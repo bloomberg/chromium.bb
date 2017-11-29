@@ -261,6 +261,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   }
 
   TestBrowserThreadBundle browser_thread_bundle_;
+  base::SimpleTestTickClock tick_clock_;
   content::MockResourceContext resource_context_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host_;
@@ -413,9 +414,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
   const int ref_count = sender_worker_handle->ref_count();
 
   // Set mock clock on version_ to check timeout behavior.
-  base::SimpleTestTickClock* tick_clock = new base::SimpleTestTickClock();
-  tick_clock->SetNowTicks(base::TimeTicks::Now());
-  version_->SetTickClockForTesting(base::WrapUnique(tick_clock));
+  tick_clock_.SetNowTicks(base::TimeTicks::Now());
+  version_->SetTickClockForTesting(&tick_clock_);
 
   // Make sure worker has a non-zero timeout.
   bool called = false;
@@ -431,7 +431,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
       base::TimeDelta::FromSeconds(10), ServiceWorkerVersion::KILL_ON_TIMEOUT);
 
   // Advance clock by a couple seconds.
-  tick_clock->Advance(base::TimeDelta::FromSeconds(4));
+  tick_clock_.Advance(base::TimeDelta::FromSeconds(4));
   base::TimeDelta remaining_time = version_->remaining_timeout();
   EXPECT_EQ(base::TimeDelta::FromSeconds(6), remaining_time);
 
