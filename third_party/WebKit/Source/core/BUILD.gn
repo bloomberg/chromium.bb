@@ -1314,6 +1314,7 @@ target("jumbo_" + core_link_small_target_type, "core_generated") {
 
   configs += [
     ":core_include_dirs",
+    "//tools/v8_context_snapshot:use_v8_context_snapshot",
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",

@@ -595,6 +595,7 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   // NOTE: Some threads (namely utility threads) don't have a scheduler.
   WebScheduler* scheduler = Platform::Current()->CurrentThread()->Scheduler();
 
+#if defined(USE_V8_CONTEXT_SNAPSHOT)
   V8PerIsolateData::V8ContextSnapshotMode v8_context_snapshot_mode =
       Platform::Current()->IsTakingV8ContextSnapshot()
           ? V8PerIsolateData::V8ContextSnapshotMode::kTakeSnapshot
@@ -605,6 +606,10 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
     v8_context_snapshot_mode =
         V8PerIsolateData::V8ContextSnapshotMode::kDontUseSnapshot;
   }
+#else
+  V8PerIsolateData::V8ContextSnapshotMode v8_context_snapshot_mode =
+      V8PerIsolateData::V8ContextSnapshotMode::kDontUseSnapshot;
+#endif  // USE_V8_CONTEXT_SNAPSHOT
 
   v8::Isolate* isolate = V8PerIsolateData::Initialize(
       scheduler ? scheduler->V8TaskRunner()
