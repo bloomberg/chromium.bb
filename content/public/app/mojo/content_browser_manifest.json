@@ -35,6 +35,7 @@
           "content::mojom::MediaStreamDispatcherHost",
           "content::mojom::MemoryCoordinatorHandle",
           "content::mojom::PushMessaging",
+          "content::mojom::QuotaDispatcherHost",
           "content::mojom::RendererHost",
           "content::mojom::ReportingServiceProxy",
           "content::mojom::ServiceWorkerDispatcherHost",

@@ -123,7 +123,6 @@
 #include "content/renderer/notifications/notification_dispatcher.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/quota_dispatcher.h"
-#include "content/renderer/quota_message_filter.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -711,12 +710,7 @@ void RenderThreadImpl::Init(
   resource_message_filter_ =
       new ChildResourceMessageFilter(resource_dispatcher_.get());
   AddFilter(resource_message_filter_.get());
-  quota_message_filter_ =
-      new QuotaMessageFilter(thread_safe_sender());
-  quota_dispatcher_.reset(new QuotaDispatcher(thread_safe_sender(),
-                                              quota_message_filter_.get()));
-
-  AddFilter(quota_message_filter_->GetFilter());
+  quota_dispatcher_.reset(new QuotaDispatcher(message_loop()->task_runner()));
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   BlinkInterfaceRegistryImpl interface_registry(

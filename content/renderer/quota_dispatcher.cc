@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_local.h"
-#include "content/child/thread_safe_sender.h"
-#include "content/common/quota_messages.h"
-#include "content/renderer/quota_message_filter.h"
+#include "content/public/common/service_names.mojom.h"
+#include "content/public/renderer/render_thread.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaType.h"
 #include "url/gurl.h"
@@ -59,13 +59,27 @@ int CurrentWorkerId() {
   return WorkerThread::GetCurrentId();
 }
 
+void BindConnectorOnMainThread(mojom::QuotaDispatcherHostRequest request) {
+  DCHECK(RenderThread::Get());
+  RenderThread::Get()->GetConnector()->BindInterface(mojom::kBrowserServiceName,
+                                                     std::move(request));
+}
+
 }  // namespace
 
-QuotaDispatcher::QuotaDispatcher(ThreadSafeSender* thread_safe_sender,
-                                 QuotaMessageFilter* quota_message_filter)
-    : thread_safe_sender_(thread_safe_sender),
-      quota_message_filter_(quota_message_filter) {
+QuotaDispatcher::QuotaDispatcher(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
+    : main_thread_task_runner_(main_thread_task_runner) {
   g_quota_dispatcher_tls.Pointer()->Set(this);
+
+  auto request = mojo::MakeRequest(&quota_host_);
+  if (main_thread_task_runner_->BelongsToCurrentThread()) {
+    BindConnectorOnMainThread(std::move(request));
+  } else {
+    main_thread_task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&BindConnectorOnMainThread, std::move(request)));
+  }
 }
 
 QuotaDispatcher::~QuotaDispatcher() {
@@ -80,13 +94,11 @@ QuotaDispatcher::~QuotaDispatcher() {
 }
 
 QuotaDispatcher* QuotaDispatcher::ThreadSpecificInstance(
-    ThreadSafeSender* thread_safe_sender,
-    QuotaMessageFilter* quota_message_filter) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   if (g_quota_dispatcher_tls.Pointer()->Get())
     return g_quota_dispatcher_tls.Pointer()->Get();
 
-  QuotaDispatcher* dispatcher = new QuotaDispatcher(
-      thread_safe_sender, quota_message_filter);
+  QuotaDispatcher* dispatcher = new QuotaDispatcher(task_runner);
   if (WorkerThread::GetCurrentId())
     WorkerThread::AddObserver(dispatcher);
   return dispatcher;
@@ -96,47 +108,31 @@ void QuotaDispatcher::WillStopCurrentWorkerThread() {
   delete this;
 }
 
-void QuotaDispatcher::OnMessageReceived(const IPC::Message& msg) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(QuotaDispatcher, msg)
-    IPC_MESSAGE_HANDLER(QuotaMsg_DidGrantStorageQuota,
-                        DidGrantStorageQuota)
-    IPC_MESSAGE_HANDLER(QuotaMsg_DidQueryStorageUsageAndQuota,
-                        DidQueryStorageUsageAndQuota);
-    IPC_MESSAGE_HANDLER(QuotaMsg_DidFail, DidFail);
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  DCHECK(handled) << "Unhandled message:" << msg.type();
-}
-
 void QuotaDispatcher::QueryStorageUsageAndQuota(
     const GURL& origin_url,
     StorageType type,
     std::unique_ptr<Callback> callback) {
   DCHECK(callback);
-  int request_id = quota_message_filter_->GenerateRequestID(CurrentWorkerId());
-  pending_quota_callbacks_.AddWithID(std::move(callback), request_id);
-  thread_safe_sender_->Send(new QuotaHostMsg_QueryStorageUsageAndQuota(
-      request_id, origin_url, type));
+  int request_id = pending_quota_callbacks_.Add(std::move(callback));
+  quota_host_->QueryStorageUsageAndQuota(
+      origin_url, type,
+      base::BindOnce(&QuotaDispatcher::DidQueryStorageUsageAndQuota,
+                     base::Unretained(this), request_id));
 }
 
 void QuotaDispatcher::RequestStorageQuota(int render_frame_id,
                                           const GURL& origin_url,
                                           StorageType type,
-                                          uint64_t requested_size,
+                                          int64_t requested_size,
                                           std::unique_ptr<Callback> callback) {
   DCHECK(callback);
-  DCHECK(CurrentWorkerId() == 0);
-  int request_id = quota_message_filter_->GenerateRequestID(CurrentWorkerId());
-  pending_quota_callbacks_.AddWithID(std::move(callback), request_id);
-
-  StorageQuotaParams params;
-  params.render_frame_id = render_frame_id;
-  params.request_id = request_id;
-  params.origin_url = origin_url;
-  params.storage_type = type;
-  params.requested_size = requested_size;
-  thread_safe_sender_->Send(new QuotaHostMsg_RequestStorageQuota(params));
+  DCHECK_EQ(CurrentWorkerId(), 0)
+      << "Requests may show permission UI and are not allowed from workers.";
+  int request_id = pending_quota_callbacks_.Add(std::move(callback));
+  quota_host_->RequestStorageQuota(
+      render_frame_id, origin_url, type, requested_size,
+      base::BindOnce(&QuotaDispatcher::DidGrantStorageQuota,
+                     base::Unretained(this), request_id));
 }
 
 // static
@@ -146,18 +142,31 @@ QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(
   return std::make_unique<WebStorageQuotaDispatcherCallback>(callbacks);
 }
 
-void QuotaDispatcher::DidGrantStorageQuota(int request_id,
+void QuotaDispatcher::DidGrantStorageQuota(int64_t request_id,
+                                           storage::QuotaStatusCode status,
                                            int64_t current_usage,
                                            int64_t granted_quota) {
+  if (status != storage::kQuotaStatusOk) {
+    DidFail(request_id, status);
+    return;
+  }
+
   Callback* callback = pending_quota_callbacks_.Lookup(request_id);
   DCHECK(callback);
   callback->DidGrantStorageQuota(current_usage, granted_quota);
   pending_quota_callbacks_.Remove(request_id);
 }
 
-void QuotaDispatcher::DidQueryStorageUsageAndQuota(int request_id,
-                                                   int64_t current_usage,
-                                                   int64_t current_quota) {
+void QuotaDispatcher::DidQueryStorageUsageAndQuota(
+    int64_t request_id,
+    storage::QuotaStatusCode status,
+    int64_t current_usage,
+    int64_t current_quota) {
+  if (status != storage::kQuotaStatusOk) {
+    DidFail(request_id, status);
+    return;
+  }
+
   Callback* callback = pending_quota_callbacks_.Lookup(request_id);
   DCHECK(callback);
   callback->DidQueryStorageUsageAndQuota(current_usage, current_quota);

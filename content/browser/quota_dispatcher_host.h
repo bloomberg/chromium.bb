@@ -7,14 +7,10 @@
 
 #include "base/containers/id_map.h"
 #include "base/macros.h"
+#include "content/common/quota_dispatcher_host.mojom.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "storage/common/quota/quota_types.h"
 
 class GURL;
-
-namespace IPC {
-class Message;
-}
 
 namespace storage {
 class QuotaManager;
@@ -22,29 +18,35 @@ class QuotaManager;
 
 namespace content {
 class QuotaPermissionContext;
-struct StorageQuotaParams;
 
-class QuotaDispatcherHost : public BrowserMessageFilter {
+class QuotaDispatcherHost : public mojom::QuotaDispatcherHost {
  public:
+  static void Create(int process_id,
+                     storage::QuotaManager* quota_manager,
+                     scoped_refptr<QuotaPermissionContext> permission_context,
+                     mojom::QuotaDispatcherHostRequest request);
+
   QuotaDispatcherHost(int process_id,
                       storage::QuotaManager* quota_manager,
-                      QuotaPermissionContext* permission_context);
+                      scoped_refptr<QuotaPermissionContext> permission_context);
 
-  // BrowserMessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override;
-
- protected:
   ~QuotaDispatcherHost() override;
+
+  // content::mojom::QuotaDispatcherHost:
+  void QueryStorageUsageAndQuota(
+      const GURL& origin_url,
+      storage::StorageType storage_type,
+      QueryStorageUsageAndQuotaCallback callback) override;
+  void RequestStorageQuota(int64_t render_frame_id,
+                           const GURL& origin_url,
+                           storage::StorageType storage_type,
+                           uint64_t requested_size,
+                           RequestStorageQuotaCallback callback) override;
 
  private:
   class RequestDispatcher;
   class QueryUsageAndQuotaDispatcher;
   class RequestQuotaDispatcher;
-
-  void OnQueryStorageUsageAndQuota(int request_id,
-                                   const GURL& origin_url,
-                                   storage::StorageType type);
-  void OnRequestStorageQuota(const StorageQuotaParams& params);
 
   // The ID of this process.
   int process_id_;
