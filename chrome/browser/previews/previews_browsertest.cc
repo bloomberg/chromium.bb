@@ -127,7 +127,12 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 #define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
   DISABLED_NoScriptPreviewsEnabledHttpRedirectToHttps
 #else
+// Flaky on win7_chromium_rel_ng. crbug.com/789542
+#if defined(OS_WIN)
+#define MAYBE_NoScriptPreviewsEnabled DISABLED_NoScriptPreviewsEnabled
+#else
 #define MAYBE_NoScriptPreviewsEnabled NoScriptPreviewsEnabled
+#endif
 #define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
   NoScriptPreviewsEnabledHttpRedirectToHttps
 #endif
