@@ -80,6 +80,12 @@ class QuicTextUtilsImpl {
     return base::ToLowerASCII(::base::HexEncode(data.data(), data.size()));
   }
 
+  static std::string Hex(uint32_t v) {
+    std::stringstream ss;
+    ss << std::hex << v;
+    return ss.str();
+  }
+
   // Converts |data| from a hexadecimal ASCII string to a binary string
   // that is |data.length()/2| bytes long.
   static std::string HexDecode(QuicStringPiece data) {
