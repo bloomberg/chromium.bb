@@ -2085,14 +2085,15 @@ TEST_F(SplitViewWindowSelectorTest, DragOverviewWindowToSnap) {
             SplitViewController::LEFT_SNAPPED);
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
 
-  // Drag |window2| selector item to snap to left.
+  // Drag |window2| selector item to attempt to snap to left. Since there is
+  // already one left snapped window, we do not allow |window2| snap to left.
   WindowSelectorItem* selector_item2 =
       GetWindowItemForWindow(grid_index, window2.get());
   DragWindowTo(selector_item2, gfx::Point(0, 0));
 
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::LEFT_SNAPPED);
-  EXPECT_EQ(split_view_controller()->left_window(), window2.get());
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
 
   // Drag |window3| selector item to snap to right.
   WindowSelectorItem* selector_item3 =
