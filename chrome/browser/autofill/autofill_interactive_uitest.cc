@@ -1590,7 +1590,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 #else
 #define MAYBE_FormFillableOnReset FormFillableOnReset
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FormFillableOnReset) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_FormFillableOnReset) {
   CreateTestProfile();
 
   GURL url =
