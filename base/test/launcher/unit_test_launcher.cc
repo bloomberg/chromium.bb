@@ -4,6 +4,10 @@
 
 #include "base/test/launcher/unit_test_launcher.h"
 
+#include <map>
+#include <memory>
+#include <utility>
+
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -223,7 +227,7 @@ int LaunchUnitTestsInternal(const RunTestSuiteCallback& run_test_suite,
     return 0;
   }
 
-  base::TimeTicks start_time(base::TimeTicks::Now());
+  TimeTicks start_time(TimeTicks::Now());
 
   gtest_init.Run();
   TestTimeouts::Initialize();
@@ -247,11 +251,11 @@ int LaunchUnitTestsInternal(const RunTestSuiteCallback& run_test_suite,
   DefaultUnitTestPlatformDelegate platform_delegate;
   UnitTestLauncherDelegate delegate(
       &platform_delegate, batch_limit, use_job_objects);
-  base::TestLauncher launcher(&delegate, parallel_jobs);
+  TestLauncher launcher(&delegate, parallel_jobs);
   bool success = launcher.Run();
 
   fprintf(stdout, "Tests took %" PRId64 " seconds.\n",
-          (base::TimeTicks::Now() - start_time).InSeconds());
+          (TimeTicks::Now() - start_time).InSeconds());
   fflush(stdout);
 
   return (success ? 0 : 1);
@@ -605,7 +609,7 @@ void RunUnitTestsSerially(
   // Create a dedicated temporary directory to store the xml result data
   // per run to ensure clean state and make it possible to launch multiple
   // processes in parallel.
-  base::FilePath output_file;
+  FilePath output_file;
   CHECK(platform_delegate->CreateTemporaryFile(&output_file));
 
   auto observer = std::make_unique<SerialUnitTestProcessLifetimeObserver>(
@@ -635,7 +639,7 @@ void RunUnitTestsBatch(
   // Create a dedicated temporary directory to store the xml result data
   // per run to ensure clean state and make it possible to launch multiple
   // processes in parallel.
-  base::FilePath output_file;
+  FilePath output_file;
   CHECK(platform_delegate->CreateTemporaryFile(&output_file));
 
   auto observer = std::make_unique<ParallelUnitTestProcessLifetimeObserver>(
@@ -650,8 +654,7 @@ void RunUnitTestsBatch(
   // depending on how many tests ran and how many remain.
   // Note: do NOT parse child's stdout to do that, it's known to be
   // unreliable (e.g. buffering issues can mix up the output).
-  base::TimeDelta timeout =
-      test_names.size() * TestTimeouts::test_launcher_timeout();
+  TimeDelta timeout = test_names.size() * TestTimeouts::test_launcher_timeout();
 
   TestLauncher::LaunchOptions options;
   options.flags = launch_flags;

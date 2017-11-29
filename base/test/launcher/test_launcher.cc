@@ -6,7 +6,9 @@
 
 #include <stdio.h>
 
-#include <memory>
+#include <algorithm>
+#include <map>
+#include <utility>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -199,11 +201,9 @@ bool TakeInt32FromEnvironment(const char* const var, int32_t* result) {
 bool UnsetEnvironmentVariableIfExists(const std::string& name) {
   std::unique_ptr<Environment> env(Environment::Create());
   std::string str_val;
-
-  if (!env->GetVar(name.c_str(), &str_val))
+  if (!env->GetVar(name, &str_val))
     return true;
-
-  return env->UnSetVar(name.c_str());
+  return env->UnSetVar(name);
 }
 
 // Returns true if bot mode has been requested, i.e. defaults optimized
@@ -1025,13 +1025,13 @@ void TestLauncher::CombinePositiveTestFilters(
 
 void TestLauncher::RunTests() {
   std::vector<std::string> test_names;
-  for (size_t i = 0; i < tests_.size(); i++) {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  for (const TestIdentifier& test_id : tests_) {
     std::string test_name =
-        FormatFullTestName(tests_[i].test_case_name, tests_[i].test_name);
+        FormatFullTestName(test_id.test_case_name, test_id.test_name);
 
     results_tracker_.AddTest(test_name);
 
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (test_name.find("DISABLED") != std::string::npos) {
       results_tracker_.AddDisabledTest(test_name);
 
@@ -1040,8 +1040,8 @@ void TestLauncher::RunTests() {
         continue;
     }
 
-    if (!launcher_delegate_->ShouldRunTest(tests_[i].test_case_name,
-                                           tests_[i].test_name)) {
+    if (!launcher_delegate_->ShouldRunTest(test_id.test_case_name,
+                                           test_id.test_name)) {
       continue;
     }
 
@@ -1084,7 +1084,7 @@ void TestLauncher::RunTests() {
 
     // Report test locations after applying all filters, so that we report test
     // locations only for those tests that were run as part of this shard.
-    results_tracker_.AddTestLocation(test_name, tests_[i].file, tests_[i].line);
+    results_tracker_.AddTestLocation(test_name, test_id.file, test_id.line);
 
     test_names.push_back(test_name);
   }
