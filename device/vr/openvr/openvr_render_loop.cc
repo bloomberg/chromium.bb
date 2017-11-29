@@ -46,7 +46,8 @@ void OpenVRRenderLoop::SubmitFrameWithTextureHandle(
   texture_helper_.SetSourceTexture(
       base::win::ScopedHandle(reinterpret_cast<HANDLE>(platform_handle.value)));
   texture_helper_.AllocateBackBuffer();
-  if (texture_helper_.CopyTextureToBackBuffer(true)) {
+  bool copy_successful = texture_helper_.CopyTextureToBackBuffer(true);
+  if (copy_successful) {
     vr::Texture_t texture;
     texture.handle = texture_helper_.GetBackbuffer().Get();
     texture.eType = vr::TextureType_DirectX;
@@ -72,11 +73,11 @@ void OpenVRRenderLoop::SubmitFrameWithTextureHandle(
       return;
     }
     vr_compositor_->PostPresentHandoff();
-
-    // Tell WebVR that we are done with the texture.
-    submit_client_->OnSubmitFrameTransferred();
-    submit_client_->OnSubmitFrameRendered();
   }
+
+  // Tell WebVR that we are done with the texture.
+  submit_client_->OnSubmitFrameTransferred(copy_successful);
+  submit_client_->OnSubmitFrameRendered();
 #endif
 }
 

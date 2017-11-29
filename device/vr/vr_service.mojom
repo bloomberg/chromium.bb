@@ -81,8 +81,27 @@ interface VRServiceClient {
                      VRDisplayInfo display_info);
 };
 
+// After submitting a frame, the VRPresentationProvider will notify the client
+// about several stages of the render pipeline.  This allows pipelining
+// efficiency.  Following VRPresentationProvider::Submit*, the submitted frame
+// will be transferred (read from, perhaps copied to another texture), and then
+// rendered (submitted to the underlying VR API).
+// The client lives in the render process, implemented by VRDisplay.
 interface VRSubmitFrameClient {
-  OnSubmitFrameTransferred();
+  // The VRPresentationProvider calls this to indicate that the submitted frame
+  // has been transferred, so the backing data (mailbox or GpuMemoryBuffer) can
+  // be reused or discarded.  Note that this is a convenience/optimization
+  // feature, not a security feature - if a site discards the data early we may
+  // drop a frame, but nothing will otherwise misbehave.
+  // When the frame wasn't successfully transferred, the client should create a
+  // new mailbox/GpuMemoryBuffer rather than reusing an existing one to recover
+  // for subsequent frames.
+  OnSubmitFrameTransferred(bool success);
+
+  // The VRPresentationProvider calls this after the frame was handed off to the
+  // underlying VR API. This allows some pipelining of CPU/GPU work, while
+  // delaying expensive tasks for a subsequent frame until the current frame has
+  // completed.
   OnSubmitFrameRendered();
 };
 

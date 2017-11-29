@@ -133,7 +133,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   void OnPresentChange();
 
   // VRSubmitFrameClient
-  void OnSubmitFrameTransferred() override;
+  void OnSubmitFrameTransferred(bool success) override;
   void OnSubmitFrameRendered() override;
 
   // VRDisplayClient
@@ -215,6 +215,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool pending_previous_frame_render_ = false;
   bool pending_submit_frame_ = false;
   bool pending_present_request_ = false;
+  bool last_transfer_succeeded_ = false;
 
   device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider_;
   device::mojom::blink::VRDisplayHostPtr display_;
