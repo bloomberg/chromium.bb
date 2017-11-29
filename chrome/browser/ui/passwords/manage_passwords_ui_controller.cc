@@ -399,6 +399,8 @@ void ManagePasswordsUIController::SavePassword(const base::string16& username,
   // The maximum possible value is defined by OR-ing these values.
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.EditsInSaveBubble",
                             username_edited + 2 * password_changed, 4);
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.PasswordSavedWithManualFallback",
+                        BubbleIsManualFallbackForSaving());
 
   save_fallback_timer_.Stop();
   SavePasswordInternal();
@@ -411,6 +413,8 @@ void ManagePasswordsUIController::SavePassword(const base::string16& username,
 void ManagePasswordsUIController::UpdatePassword(
     const autofill::PasswordForm& password_form) {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, GetState());
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.PasswordUpdatedWithManualFallback",
+                        BubbleIsManualFallbackForSaving());
   save_fallback_timer_.Stop();
   UpdatePasswordInternal(password_form);
   passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
