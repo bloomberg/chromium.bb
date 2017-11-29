@@ -84,6 +84,10 @@ class ProfilingTestDriver {
   // signal |wait_for_ui_thread_|.
   void CollectResults(bool synchronous);
 
+  void TraceFinished(base::Closure closure,
+                     bool success,
+                     std::string trace_json);
+
   bool ValidateBrowserAllocations(base::Value* dump_json);
   bool ValidateRendererAllocations(base::Value* dump_json);
 
@@ -100,7 +104,7 @@ class ProfilingTestDriver {
   base::PartitionAllocatorGeneric partition_allocator_;
 
   // Contains nothing until |CollectResults| has been called.
-  scoped_refptr<base::RefCountedString> serialized_trace_;
+  std::string serialized_trace_;
 
   // Whether the test was invoked on the ui thread.
   bool running_on_ui_thread_ = true;

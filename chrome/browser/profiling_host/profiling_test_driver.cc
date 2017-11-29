@@ -253,7 +253,7 @@ bool ProfilingTestDriver::RunTest(const Options& options) {
   }
 
   std::unique_ptr<base::Value> dump_json =
-      base::JSONReader::Read(serialized_trace_->data());
+      base::JSONReader::Read(serialized_trace_);
   if (!dump_json) {
     LOG(ERROR) << "Failed to deserialize trace.";
     return false;
@@ -352,42 +352,20 @@ void ProfilingTestDriver::CollectResults(bool synchronous) {
                                         base::Unretained(&wait_for_ui_thread_));
   }
 
-  // Once the ProfilingProcessHost has dumped to the trace, stop the trace and
-  // collate the results into |result|, then quit the nested run loop.
-  auto finish_sink_callback = base::Bind(
-      [](scoped_refptr<base::RefCountedString>* result, base::Closure finished,
-         std::unique_ptr<const base::DictionaryValue> metadata,
-         base::RefCountedString* in) {
-        *result = in;
-        std::move(finished).Run();
-      },
-      &serialized_trace_, std::move(finish_tracing_closure));
-
-  scoped_refptr<content::TracingController::TraceDataEndpoint> sink =
-      content::TracingController::CreateStringEndpoint(
-          std::move(finish_sink_callback));
-  base::OnceClosure stop_tracing_closure = base::BindOnce(
-      base::IgnoreResult<bool (content::TracingController::*)(  // NOLINT
-          const scoped_refptr<content::TracingController::TraceDataEndpoint>&)>(
-          &content::TracingController::StopTracing),
-      base::Unretained(content::TracingController::GetInstance()), sink);
-  base::OnceClosure stop_tracing_ui_thread_closure =
-      base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
-                     base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
-                     std::move(stop_tracing_closure));
-  profiling::ProfilingProcessHost::GetInstance()
-      ->SetDumpProcessForTracingCallback(
-          std::move(stop_tracing_ui_thread_closure));
-
-  // Spin a nested RunLoop until the heap dump has been added to the trace.
-  content::TracingController::GetInstance()->StartTracing(
-      base::trace_event::TraceConfig(
-          base::trace_event::TraceConfigMemoryTestUtil::
-              GetTraceConfig_PeriodicTriggers(100000, 100000)),
-      base::Closure());
+  profiling::ProfilingProcessHost::GetInstance()->RequestTraceWithHeapDump(
+      base::Bind(&ProfilingTestDriver::TraceFinished, base::Unretained(this),
+                 std::move(finish_tracing_closure)),
+      true);
 
   if (synchronous)
     run_loop->Run();
+}
+
+void ProfilingTestDriver::TraceFinished(base::Closure closure,
+                                        bool success,
+                                        std::string trace_json) {
+  serialized_trace_.swap(trace_json);
+  std::move(closure).Run();
 }
 
 bool ProfilingTestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
