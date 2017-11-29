@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.util.UrlUtilities;
 
@@ -350,9 +351,11 @@ public class PartnerBrowserCustomizations {
     @VisibleForTesting
     static boolean isValidHomepage(String url) {
         if (url == null) return false;
-        if (!UrlUtilities.isHttpOrHttps(url)
-                && !UrlConstants.CHROME_SCHEME.equals(Uri.parse(url).getScheme())) {
-            Log.w(TAG, "The scheme in homepage URL \"%s\" is not allowed.", url);
+        if (!UrlUtilities.isHttpOrHttps(url) && !NewTabPage.isNTPUrl(url)) {
+            Log.w(TAG,
+                    "Partner homepage must be HTTP(S) or NewTabPage. "
+                            + "Got invalid URL \"%s\"",
+                    url);
             return false;
         }
         if (url.length() > HOMEPAGE_URL_MAX_LENGTH) {
