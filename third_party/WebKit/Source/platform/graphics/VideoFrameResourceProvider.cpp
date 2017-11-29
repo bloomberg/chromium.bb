@@ -11,7 +11,14 @@
 #include "cc/resources/video_resource_updater.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/yuv_video_draw_quad.h"
+#include "media/base/video_frame.h"
 #include "platform/wtf/WeakPtr.h"
+
+namespace cc {
+class VideoFrameExternalResources;
+}  // namespace cc
 
 namespace blink {
 
@@ -44,36 +51,41 @@ void VideoFrameResourceProvider::Initialize(
   context_provider_ = media_context_provider;
 
   viz::ContextProvider::ScopedContextLock lock(context_provider_);
-  // TODO(lethalantidote): Get real value for delegated_sync_points_required.
   resource_provider_ = std::make_unique<cc::LayerTreeResourceProvider>(
       media_context_provider, shared_bitmap_manager_,
-      gpu_memory_buffer_manager_, false, settings_.resource_settings);
+      gpu_memory_buffer_manager_, true, settings_.resource_settings);
 
   resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
       media_context_provider, resource_provider_.get(),
       settings_.use_stream_video_draw_quad);
 }
 
-void VideoFrameResourceProvider::AppendQuads(viz::RenderPass* render_pass) {
-  gfx::Rect rect(0, 0, 10000, 10000);
-  gfx::Rect visible_rect(0, 0, 10000, 10000);
+void VideoFrameResourceProvider::AppendQuads(
+    viz::RenderPass* render_pass,
+    scoped_refptr<media::VideoFrame> frame) {
+  viz::ContextProvider::ScopedContextLock lock(context_provider_);
+  resource_updater_->ObtainFrameResources(frame);
+  // TODO(lethalantidote) : update with true value;
+  bool contents_opaque = true;
+  gfx::Rect visible_layer_rect = gfx::Rect(frame->coded_size());
+  gfx::Rect clip_rect = gfx::Rect(frame->coded_size());
   bool is_clipped = false;
-  bool are_contents_opaque = true;
-  viz::SharedQuadState* shared_state =
-      render_pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(gfx::Transform(), rect, rect, rect, is_clipped,
-                       are_contents_opaque, 1, SkBlendMode::kSrcOver, 0);
-  viz::SolidColorDrawQuad* solid_color_quad =
-      render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
-  // Fluxuate colors for placeholder testing.
-  static int r = 0;
-  static int g = 0;
-  static int b = 0;
-  r++;
-  g += 2;
-  b += 3;
-  solid_color_quad->SetNew(shared_state, rect, visible_rect,
-                           SkColorSetRGB(r % 255, g % 255, b % 255), false);
+  float draw_opacity = 1.0f;
+  int sorting_context_id = 0;
+
+  // Internal to this compositor frame, this video quad is never occluded,
+  // thus the full quad is visible.
+  gfx::Rect visible_quad_rect = gfx::Rect(frame->coded_size());
+
+  resource_updater_->AppendQuads(
+      render_pass, frame, gfx::Transform(), frame->coded_size(),
+      visible_layer_rect, clip_rect, is_clipped, contents_opaque, draw_opacity,
+      sorting_context_id, visible_quad_rect);
+}
+
+void VideoFrameResourceProvider::ReleaseFrameResources() {
+  viz::ContextProvider::ScopedContextLock lock(context_provider_);
+  resource_updater_->ReleaseFrameResources();
 }
 
 void VideoFrameResourceProvider::PrepareSendToParent(

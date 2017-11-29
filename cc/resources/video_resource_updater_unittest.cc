@@ -100,11 +100,14 @@ class VideoResourceUpdaterTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     shared_bitmap_manager_.reset(new SharedBitmapManagerAllocationCounter());
-    resource_provider3d_ = FakeResourceProvider::Create(
-        context_provider_.get(), shared_bitmap_manager_.get(),
-        high_bit_for_testing_);
-    resource_provider_software_ = FakeResourceProvider::Create(
-        nullptr, shared_bitmap_manager_.get(), high_bit_for_testing_);
+    resource_provider3d_ =
+        FakeResourceProvider::CreateLayerTreeResourceProvider(
+            context_provider_.get(), shared_bitmap_manager_.get(), nullptr,
+            high_bit_for_testing_);
+    resource_provider_software_ =
+        FakeResourceProvider::CreateLayerTreeResourceProvider(
+            nullptr, shared_bitmap_manager_.get(), nullptr,
+            high_bit_for_testing_);
   }
 
   scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame() {
@@ -242,8 +245,8 @@ class VideoResourceUpdaterTest : public testing::Test {
   WebGraphicsContext3DUploadCounter* context3d_;
   scoped_refptr<TestContextProvider> context_provider_;
   std::unique_ptr<SharedBitmapManagerAllocationCounter> shared_bitmap_manager_;
-  std::unique_ptr<ResourceProvider> resource_provider3d_;
-  std::unique_ptr<ResourceProvider> resource_provider_software_;
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider3d_;
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider_software_;
   gpu::SyncToken release_sync_token_;
   bool high_bit_for_testing_ = false;
 };

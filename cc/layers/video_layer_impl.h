@@ -63,23 +63,6 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   media::VideoRotation video_rotation_;
 
   std::unique_ptr<VideoResourceUpdater> updater_;
-  VideoFrameExternalResources::ResourceType frame_resource_type_;
-  float frame_resource_offset_;
-  float frame_resource_multiplier_;
-  uint32_t frame_bits_per_channel_;
-
-  struct FrameResource {
-    FrameResource(viz::ResourceId id, gfx::Size size_in_pixels)
-        : id(id), size_in_pixels(size_in_pixels) {}
-    viz::ResourceId id;
-    gfx::Size size_in_pixels;
-  };
-  std::vector<FrameResource> frame_resources_;
-
-  // TODO(danakj): Remove these, use TransferableResource for software path too.
-  unsigned software_resource_ = viz::kInvalidResourceId;
-  // Called once for software_resource_.
-  viz::ReleaseCallback software_release_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoLayerImpl);
 };
