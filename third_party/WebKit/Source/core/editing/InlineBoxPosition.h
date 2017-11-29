@@ -61,17 +61,15 @@ struct InlineBoxPosition {
   }
 };
 
-CORE_EXPORT InlineBoxPosition ComputeInlineBoxPosition(const Position&,
-                                                       TextAffinity);
 CORE_EXPORT InlineBoxPosition
-ComputeInlineBoxPosition(const Position&,
-                         TextAffinity,
+ComputeInlineBoxPosition(const PositionWithAffinity&);
+CORE_EXPORT InlineBoxPosition
+ComputeInlineBoxPosition(const PositionWithAffinity&,
                          TextDirection primary_direction);
 CORE_EXPORT InlineBoxPosition
-ComputeInlineBoxPosition(const PositionInFlatTree&, TextAffinity);
+ComputeInlineBoxPosition(const PositionInFlatTreeWithAffinity&);
 CORE_EXPORT InlineBoxPosition
-ComputeInlineBoxPosition(const PositionInFlatTree&,
-                         TextAffinity,
+ComputeInlineBoxPosition(const PositionInFlatTreeWithAffinity&,
                          TextDirection primary_direction);
 CORE_EXPORT InlineBoxPosition ComputeInlineBoxPosition(const VisiblePosition&);
 

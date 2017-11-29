@@ -29,8 +29,8 @@ TEST_F(InlineBoxPositionTest, ComputeInlineBoxPositionBidiIsolate) {
   Element* sample = GetDocument().getElementById("sample");
   Node* text = sample->firstChild();
 
-  const InlineBoxPosition& actual =
-      ComputeInlineBoxPosition(Position(text, 0), TextAffinity::kDownstream);
+  const InlineBoxPosition& actual = ComputeInlineBoxPosition(
+      PositionWithAffinity(Position(text, 0), TextAffinity::kDownstream));
   EXPECT_EQ(ToLayoutText(text->GetLayoutObject())->FirstTextBox(),
             actual.inline_box);
 }
@@ -41,8 +41,9 @@ TEST_F(InlineBoxPositionTest, ComputeInlineBoxPositionMixedEditable) {
       "<div contenteditable id=sample>abc<input contenteditable=false></div>");
   Element* const sample = GetDocument().getElementById("sample");
 
-  const InlineBoxPosition& actual = ComputeInlineBoxPosition(
-      Position::LastPositionInNode(*sample), TextAffinity::kDownstream);
+  const InlineBoxPosition& actual =
+      ComputeInlineBoxPosition(PositionWithAffinity(
+          Position::LastPositionInNode(*sample), TextAffinity::kDownstream));
   // Should not be in infinite-loop
   EXPECT_EQ(nullptr, actual.inline_box);
   EXPECT_EQ(0, actual.offset_in_box);
