@@ -11,6 +11,7 @@ PASS Animation interface: attribute startTime
 PASS Animation interface: attribute currentTime
 PASS Animation interface: attribute playbackRate
 PASS Animation interface: attribute playState
+FAIL Animation interface: attribute pending assert_true: The prototype object must have a property "pending" expected true got false
 PASS Animation interface: attribute ready
 PASS Animation interface: attribute finished
 PASS Animation interface: attribute onfinish
@@ -29,6 +30,7 @@ PASS Animation interface: new Animation() must inherit property "startTime" with
 PASS Animation interface: new Animation() must inherit property "currentTime" with the proper type
 PASS Animation interface: new Animation() must inherit property "playbackRate" with the proper type
 PASS Animation interface: new Animation() must inherit property "playState" with the proper type
+FAIL Animation interface: new Animation() must inherit property "pending" with the proper type assert_inherits: property "pending" not found in prototype chain
 PASS Animation interface: new Animation() must inherit property "ready" with the proper type
 PASS Animation interface: new Animation() must inherit property "finished" with the proper type
 PASS Animation interface: new Animation() must inherit property "onfinish" with the proper type

@@ -3548,7 +3548,6 @@ crbug.com/755405 [ Android ] external/wpt/user-timing/invoke_without_parameter.h
 crbug.com/755405 [ Android ] external/wpt/web-animations/animation-model/combining-effects/effect-composition.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/web-animations/animation-model/keyframe-effects/effect-value-context.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/web-animations/interfaces/Animatable/getAnimations.html [ Failure ]
-crbug.com/755405 [ Android ] external/wpt/web-animations/interfaces/Animation/playState.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/web-animations/interfaces/Animation/ready.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/web-animations/interfaces/AnimationEffectTiming/delay.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/web-animations/interfaces/Document/getAnimations.html [ Failure ]
