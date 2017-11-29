@@ -11,8 +11,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
-class Profile;
-
 namespace gfx {
 class ImageSkia;
 }
@@ -34,9 +32,6 @@ class DesktopNotificationBalloon {
                       const message_center::NotifierId& notifier_id);
 
  private:
-  std::string notification_id_;
-  Profile* profile_;
-
   // Counter to provide unique ids to notifications.
   static int id_count_;
 

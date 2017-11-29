@@ -6,16 +6,10 @@
 
 #include <stddef.h>
 
-#include "base/bind.h"
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -24,53 +18,16 @@
 
 namespace {
 
-void CloseBalloon(const std::string& id, ProfileID profile_id) {
-  // The browser process may have gone away during shutting down, in this case
-  // notification_ui_manager() will close the balloon in its destructor.
-  if (!g_browser_process)
-    return;
-
-  g_browser_process->notification_ui_manager()->CancelById(id, profile_id);
-}
-
 // Prefix added to the notification ids.
 const char kNotificationPrefix[] = "desktop_notification_balloon.";
-
-// Timeout for automatically dismissing the notification balloon.
-const size_t kTimeoutSeconds = 6;
-
-class DummyNotificationDelegate : public message_center::NotificationDelegate {
- public:
-  explicit DummyNotificationDelegate(const std::string& id, Profile* profile)
-      : id_(id), profile_(profile) {}
-
-  void Display() override {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&CloseBalloon, id_,
-                   NotificationUIManager::GetProfileID(profile_)),
-        base::TimeDelta::FromSeconds(kTimeoutSeconds));
-  }
-
- private:
-  ~DummyNotificationDelegate() override {}
-
-  std::string id_;
-  Profile* profile_;
-};
 
 }  // anonymous namespace
 
 int DesktopNotificationBalloon::id_count_ = 1;
 
-DesktopNotificationBalloon::DesktopNotificationBalloon() : profile_(NULL) {
-}
+DesktopNotificationBalloon::DesktopNotificationBalloon() {}
 
-DesktopNotificationBalloon::~DesktopNotificationBalloon() {
-  if (!notification_id_.empty())
-    CloseBalloon(notification_id_,
-                 NotificationUIManager::GetProfileID(profile_));
-}
+DesktopNotificationBalloon::~DesktopNotificationBalloon() {}
 
 void DesktopNotificationBalloon::DisplayBalloon(
     const gfx::ImageSkia& icon,
@@ -90,12 +47,9 @@ void DesktopNotificationBalloon::DisplayBalloon(
       kNotificationPrefix + base::IntToString(id_count_++);
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
-      contents, gfx::Image(icon), base::string16(), GURL(), notifier_id,
-      message_center::RichNotificationData(),
-      new DummyNotificationDelegate(notification_id, profile_));
+      contents, gfx::Image(icon), base::string16(), GURL(), notifier_id, {},
+      new message_center::NotificationDelegate());
 
-  g_browser_process->notification_ui_manager()->Add(notification, profile);
-
-  notification_id_ = notification.id();
-  profile_ = profile;
+  NotificationDisplayService::GetForProfile(profile)->Display(
+      NotificationHandler::Type::TRANSIENT, notification);
 }
