@@ -328,7 +328,6 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    @DisabledTest(message = "Flaky. See crbug.com/789532")
     public void testCallCanMakePayment()
             throws InterruptedException, ExecutionException, TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
