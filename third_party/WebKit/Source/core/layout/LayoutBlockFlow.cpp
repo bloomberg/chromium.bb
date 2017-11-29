@@ -4585,9 +4585,11 @@ bool LayoutBlockFlow::RecalcInlineChildrenOverflowAfterStyleChange() {
     LayoutObject* layout_object = walker.Current().GetLayoutObject();
     if (RecalcNormalFlowChildOverflowIfNeeded(layout_object)) {
       children_overflow_changed = true;
-      if (InlineBox* inline_box_wrapper =
-              ToLayoutBlock(layout_object)->InlineBoxWrapper())
-        line_boxes.insert(&inline_box_wrapper->Root());
+      if (layout_object->IsLayoutBlock()) {
+        if (InlineBox* inline_box_wrapper =
+                ToLayoutBlock(layout_object)->InlineBoxWrapper())
+          line_boxes.insert(&inline_box_wrapper->Root());
+      }
     }
   }
 
