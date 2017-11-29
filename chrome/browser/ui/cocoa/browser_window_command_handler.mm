@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
@@ -65,11 +66,13 @@ void UpdateToggleStateWithTag(NSInteger tag, id item, NSWindow* window) {
 
   if (tag == IDC_WINDOW_MUTE_TAB) {
     TabStripModel* model = browser->tab_strip_model();
+    bool will_mute =
+        base::FeatureList::IsEnabled(features::kSoundContentSetting)
+            ? model->WillContextMenuMuteSites(model->active_index())
+            : model->WillContextMenuMute(model->active_index());
     // Menu items may be validated during browser startup, before the
     // TabStripModel has been populated.
-    SetToggleState(
-        !model->empty() && !model->WillContextMenuMute(model->active_index()),
-        item);
+    SetToggleState(!model->empty() && !will_mute, item);
     return;
   }
 
