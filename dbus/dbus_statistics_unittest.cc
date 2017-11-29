@@ -12,8 +12,7 @@ namespace dbus {
 
 class DBusStatisticsTest : public testing::Test {
  public:
-  DBusStatisticsTest() {
-  }
+  DBusStatisticsTest() = default;
 
   void SetUp() override { statistics::Initialize(); }
 

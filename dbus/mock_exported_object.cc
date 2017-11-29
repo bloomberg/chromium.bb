@@ -11,7 +11,6 @@ MockExportedObject::MockExportedObject(Bus* bus,
     : ExportedObject(bus, object_path) {
 }
 
-MockExportedObject::~MockExportedObject() {
-}
+MockExportedObject::~MockExportedObject() = default;
 
 }  // namespace dbus

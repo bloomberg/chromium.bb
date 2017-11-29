@@ -30,7 +30,7 @@ namespace {
 class RunLoopWithExpectedCount {
  public:
   RunLoopWithExpectedCount() : expected_quit_calls_(0), actual_quit_calls_(0) {}
-  ~RunLoopWithExpectedCount() {}
+  ~RunLoopWithExpectedCount() = default;
 
   void Run(int expected_quit_calls) {
     DCHECK_EQ(0, expected_quit_calls_);
