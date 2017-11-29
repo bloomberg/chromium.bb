@@ -75,8 +75,9 @@ class RendererController final : public SharedSession::Client,
 #endif
 
   // Called by CourierRenderer when it encountered a fatal error. This will
-  // cause remoting to shut down and never start back up for the lifetime of
-  // this controller.
+  // cause remoting to shut down. Media remoting might be re-tried after the
+  // media element stops and re-starts being the dominant visible content in the
+  // tab.
   void OnRendererFatalError(StopTrigger stop_trigger);
 
  private:
@@ -161,9 +162,14 @@ class RendererController final : public SharedSession::Client,
   // out-of-memory, insufficient network bandwidth, etc. 2) The receiver may
   // have been unable to play-out the content correctly (e.g., not capable of a
   // high frame rate at a high resolution). 3) An implementation bug. In any
-  // case, once a renderer encounters a fatal error, remoting will be shut down
-  // and never start again for the lifetime of this controller.
+  // case, once a renderer encounters a fatal error, remoting will be shut down.
+  // The value gets reset after the media element stops being the dominant
+  // visible content in the tab.
   bool encountered_renderer_fatal_error_ = false;
+
+  // When this is true, remoting will never start again for the lifetime of this
+  // controller.
+  bool permanently_disable_remoting_ = false;
 
   // This is initially the SharedSession passed to the ctor, and might be
   // replaced with a different instance later if OnSetCdm() is called.
