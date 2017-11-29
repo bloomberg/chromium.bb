@@ -41,7 +41,7 @@
   function dumpInterceptedRequests() {
     return TestRunner.callFunctionInPageAsync('takeInterceptedRequests', [scope]).then((data) => {
       TestRunner.addResult('Intercepted requests:');
-      JSON.parse(data.value).forEach((request) => {
+      JSON.parse(data).forEach((request) => {
         TestRunner.addResult(' url: ' + request.url);
         TestRunner.addResult(' mode: ' + request.mode);
       });
@@ -52,15 +52,15 @@
     TestRunner.addResult('CORS fetch(): ' + index);
     return TestRunner.callFunctionInPageAsync('fetchInIframe', [target + '?type=txt&fetch' + index, frameId])
         .then((data) => {
-          if (data.value !== 'hello') {
-            TestRunner.addResult('fetch response miss match: ' + data.value);
+          if (data !== 'hello') {
+            TestRunner.addResult('fetch response miss match: ' + data);
           }
           TestRunner.addResult('CORS XHR: ' + index);
           return TestRunner.callFunctionInPageAsync('xhrInIframe', [target + '?type=txt&xhr' + index, frameId]);
         })
         .then((data) => {
-          if (data.value !== 'hello') {
-            TestRunner.addResult('XHR response miss match: ' + data.value);
+          if (data !== 'hello') {
+            TestRunner.addResult('XHR response miss match: ' + data);
           }
           TestRunner.addResult('CORS image: ' + index);
           return TestRunner.callFunctionInPageAsync('corsImageInIframe', [target + '?type=img&img' + index, frameId]);

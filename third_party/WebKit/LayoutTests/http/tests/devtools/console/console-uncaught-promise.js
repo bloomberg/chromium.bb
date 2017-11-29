@@ -106,7 +106,7 @@
     TestRunner.evaluateInPage('runNextPromiseTest()', callback);
 
     function callback(result) {
-      if (!result.value)
+      if (!result)
         ConsoleTestRunner.expandConsoleMessages(dump);
     }
   }

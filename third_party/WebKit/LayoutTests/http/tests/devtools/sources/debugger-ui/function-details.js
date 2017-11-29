@@ -117,28 +117,26 @@
     end();
   }
 
-  function performStandardTestCase(pageExpression, next) {
-    TestRunner.evaluateInPage(pageExpression, didEvaluate);
+  async function performStandardTestCase(pageExpression, next) {
+    var remote = await TestRunner.evaluateInPageRemoteObject(pageExpression);
 
-    async function didEvaluate(remote) {
-      TestRunner.addResult(pageExpression + ' type = ' + remote.type);
-      var response =
-          await TestRunner.RuntimeAgent.invoke_getProperties({objectId: remote.objectId, isOwnProperty: false});
+    TestRunner.addResult(pageExpression + ' type = ' + remote.type);
+    var response =
+        await TestRunner.RuntimeAgent.invoke_getProperties({objectId: remote.objectId, isOwnProperty: false});
 
-      var propertiesMap = new Map();
-      for (var prop of response.internalProperties)
-        propertiesMap.set(prop.name, prop);
-      for (var prop of response.result) {
-        if (prop.name === 'name' && prop.value && prop.value.type === 'string')
-          propertiesMap.set('name', prop);
-        if (prop.name === 'displayName' && prop.value && prop.value.type === 'string') {
-          propertiesMap.set('name', prop);
-          break;
-        }
+    var propertiesMap = new Map();
+    for (var prop of response.internalProperties)
+      propertiesMap.set(prop.name, prop);
+    for (var prop of response.result) {
+      if (prop.name === 'name' && prop.value && prop.value.type === 'string')
+        propertiesMap.set('name', prop);
+      if (prop.name === 'displayName' && prop.value && prop.value.type === 'string') {
+        propertiesMap.set('name', prop);
+        break;
       }
-      dumpFunctionDetails(propertiesMap);
-      loadAndDumpScopeObjects(propertiesMap.get('[[Scopes]]'), next);
     }
+    dumpFunctionDetails(propertiesMap);
+    loadAndDumpScopeObjects(propertiesMap.get('[[Scopes]]'), next);
   }
 
   SourcesTestRunner.runDebuggerTestSuite([

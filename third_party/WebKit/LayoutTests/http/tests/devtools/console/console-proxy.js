@@ -41,7 +41,7 @@
   }
 
   function dumpAccessedGetAndExpand(result) {
-    TestRunner.addResult('window.accessedGet = ' + result.value);
+    TestRunner.addResult('window.accessedGet = ' + result);
     ConsoleTestRunner.expandConsoleMessages(dumpExpandedConsoleMessages);
   }
 
@@ -54,7 +54,7 @@
   }
 
   function dumpAccessedGetAndCompleteTest(result) {
-    TestRunner.addResult('window.accessedGet = ' + result.value);
+    TestRunner.addResult('window.accessedGet = ' + result);
     TestRunner.completeTest();
   }
 

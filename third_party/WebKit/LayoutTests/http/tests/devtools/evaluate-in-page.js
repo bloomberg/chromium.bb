@@ -12,7 +12,7 @@
   `);
 
   function callback(result) {
-    TestRunner.addResult('2 + 2 = ' + result.description);
+    TestRunner.addResult('2 + 2 = ' + result);
     TestRunner.completeTest();
   }
   TestRunner.evaluateInPage('sum(2, 2)', callback);

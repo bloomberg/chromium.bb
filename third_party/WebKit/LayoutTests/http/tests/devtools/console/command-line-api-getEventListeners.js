@@ -112,7 +112,7 @@
 
   ConsoleTestRunner.evaluateInConsole('runTestsInPage(getEventListeners)', async function() {
     const output = await TestRunner.evaluateInPageAsync('JSON.stringify(self._output)');
-    TestRunner.addResults(JSON.parse(output.value));
+    TestRunner.addResults(JSON.parse(output));
     TestRunner.completeTest();
   });
 })();

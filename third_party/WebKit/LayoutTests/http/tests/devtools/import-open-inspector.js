@@ -27,7 +27,7 @@
     function checkGreetingSet(next) {
       TestRunner.evaluateInPage('getGreeting()', callback);
       function callback(result) {
-        TestRunner.addResult('Received: ' + result.value);
+        TestRunner.addResult('Received: ' + result);
         next();
       }
     },

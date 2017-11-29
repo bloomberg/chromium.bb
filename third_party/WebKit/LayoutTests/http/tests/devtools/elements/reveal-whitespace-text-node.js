@@ -20,13 +20,11 @@
       }
   `);
 
-  TestRunner.evaluateInPage('whitespaceChild()', childCallback);
+  var childObject = await TestRunner.evaluateInPageRemoteObject('whitespaceChild()');
 
-  function childCallback(childObject) {
-    ElementsTestRunner.firstElementsTreeOutline().addEventListener(
-        Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
-    Common.Revealer.reveal(childObject);
-  }
+  ElementsTestRunner.firstElementsTreeOutline().addEventListener(
+      Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
+  Common.Revealer.reveal(childObject);
 
   function selectedNodeChanged(event) {
     var node = event.data.node;

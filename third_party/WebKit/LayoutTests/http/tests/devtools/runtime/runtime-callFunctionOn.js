@@ -17,7 +17,7 @@
       }
       var result = await TestRunner.RuntimeAgent.callFunctionOn(sum.toString(), obj1.objectId);
 
-      TestRunner.addResult(result.value);
+      TestRunner.addResult(result);
       next();
     },
 
@@ -31,7 +31,7 @@
       var result =
           await TestRunner.RuntimeAgent.callFunctionOn(format.toString(), obj1.objectId, [obj1, obj2, {value: 4}, {}]);
 
-      TestRunner.addResult(result.value);
+      TestRunner.addResult(result);
       next();
     }
   ]);

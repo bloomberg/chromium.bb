@@ -50,7 +50,20 @@ InspectorTest.evaluateInPage = async function(code, callback)
         objectGroup: "console"
     });
     if (!response[Protocol.Error])
-        InspectorTest.safeWrap(callback)(InspectorTest.runtimeModel.createRemoteObject(response.result), response.exceptionDetails);
+        InspectorTest.safeWrap(callback)(response.result.value, response.exceptionDetails);
+}
+
+/**
+ * TestRunner.evaluateInPageRemoteObject inserts sourceURL by inspecting the call stack.
+ */
+InspectorTest.evaluateInPageRemoteObject = async function(code, callback)
+{
+    var response = await InspectorTest.RuntimeAgent.invoke_evaluate({
+        expression: code,
+        objectGroup: "console"
+    });
+    if (!response[Protocol.Error])
+        return InspectorTest.runtimeModel.createRemoteObject(response.result);
 }
 
 InspectorTest.addResult = function(text)
