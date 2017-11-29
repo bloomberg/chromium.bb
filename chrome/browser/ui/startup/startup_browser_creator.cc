@@ -20,6 +20,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/string16.h"
@@ -240,7 +241,8 @@ base::LazyInstance<ProfileLaunchObserver>::DestructorAtExit
 void DumpBrowserHistograms(const base::FilePath& output_file) {
   base::AssertBlockingAllowed();
 
-  std::string output_string(base::StatisticsRecorder::ToJSON(std::string()));
+  std::string output_string(
+      base::StatisticsRecorder::ToJSON(base::JSON_VERBOSITY_LEVEL_FULL));
   base::WriteFile(output_file, output_string.data(),
                   static_cast<int>(output_string.size()));
 }

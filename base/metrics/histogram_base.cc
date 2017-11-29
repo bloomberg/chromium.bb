@@ -108,7 +108,8 @@ bool HistogramBase::ValidateHistogramContents(bool crash_if_invalid,
   return true;
 }
 
-void HistogramBase::WriteJSON(std::string* output) const {
+void HistogramBase::WriteJSON(std::string* output,
+                              JSONVerbosityLevel verbosity_level) const {
   Count count;
   int64_t sum;
   std::unique_ptr<ListValue> buckets(new ListValue());
@@ -123,7 +124,8 @@ void HistogramBase::WriteJSON(std::string* output) const {
   root.SetDouble("sum", static_cast<double>(sum));
   root.SetInteger("flags", flags());
   root.Set("params", std::move(parameters));
-  root.Set("buckets", std::move(buckets));
+  if (verbosity_level != JSON_VERBOSITY_LEVEL_OMIT_BUCKETS)
+    root.Set("buckets", std::move(buckets));
   root.SetInteger("pid", GetUniqueIdForProcess());
   serializer.Serialize(root);
 }

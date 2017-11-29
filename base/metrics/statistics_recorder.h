@@ -110,9 +110,9 @@ class BASE_EXPORT StatisticsRecorder {
   static void WriteHTMLGraph(const std::string& query, std::string* output);
   static void WriteGraph(const std::string& query, std::string* output);
 
-  // Returns the histograms with |query| as a substring as JSON text (an empty
-  // |query| will process all registered histograms).
-  static std::string ToJSON(const std::string& query);
+  // Returns the histograms with |verbosity_level| as the serialization
+  // verbosity.
+  static std::string ToJSON(JSONVerbosityLevel verbosity_level);
 
   // Method for extracting histograms which were marked for use by UMA.
   static void GetHistograms(Histograms* output);

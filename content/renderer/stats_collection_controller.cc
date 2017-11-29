@@ -6,6 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_util.h"
@@ -121,7 +122,7 @@ std::string StatsCollectionController::GetHistogram(
   if (!histogram) {
     output = "{}";
   } else {
-    histogram->WriteJSON(&output);
+    histogram->WriteJSON(&output, base::JSON_VERBOSITY_LEVEL_FULL);
   }
   return output;
 }

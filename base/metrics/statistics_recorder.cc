@@ -204,19 +204,13 @@ void StatisticsRecorder::WriteGraph(const std::string& query,
 }
 
 // static
-std::string StatisticsRecorder::ToJSON(const std::string& query) {
+std::string StatisticsRecorder::ToJSON(JSONVerbosityLevel verbosity_level) {
   if (!IsActive())
     return std::string();
 
   std::string output("{");
-  if (!query.empty()) {
-    output += "\"query\":";
-    EscapeJSONString(query, true, &output);
-    output += ",";
-  }
-
   Histograms snapshot;
-  GetSnapshot(query, &snapshot);
+  GetSnapshot(std::string(), &snapshot);
   output += "\"histograms\":[";
   bool first_histogram = true;
   for (const HistogramBase* histogram : snapshot) {
@@ -225,7 +219,7 @@ std::string StatisticsRecorder::ToJSON(const std::string& query) {
     else
       output += ",";
     std::string json;
-    histogram->WriteJSON(&json);
+    histogram->WriteJSON(&json, verbosity_level);
     output += json;
   }
   output += "]}";
