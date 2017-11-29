@@ -73,28 +73,6 @@ InstallAttributes::GetEnterpriseOwnedInstallAttributesBlobForTesting(
   return install_attrs_proto.SerializeAsString();
 }
 
-// static
-std::string InstallAttributes::
-    GetActiveDirectoryEnterpriseOwnedInstallAttributesBlobForTesting(
-        const std::string& realm) {
-  cryptohome::SerializedInstallAttributes install_attrs_proto;
-  cryptohome::SerializedInstallAttributes::Attribute* attribute = nullptr;
-
-  attribute = install_attrs_proto.add_attributes();
-  attribute->set_name(InstallAttributes::kAttrEnterpriseOwned);
-  attribute->set_value("true");
-
-  attribute = install_attrs_proto.add_attributes();
-  attribute->set_name(InstallAttributes::kAttrEnterpriseMode);
-  attribute->set_value(InstallAttributes::kEnterpriseADDeviceMode);
-
-  attribute = install_attrs_proto.add_attributes();
-  attribute->set_name(InstallAttributes::kAttrEnterpriseRealm);
-  attribute->set_value(realm);
-
-  return install_attrs_proto.SerializeAsString();
-}
-
 InstallAttributes::InstallAttributes(CryptohomeClient* cryptohome_client)
     : cryptohome_client_(cryptohome_client),
       weak_ptr_factory_(this) {

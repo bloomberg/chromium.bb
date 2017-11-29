@@ -49,11 +49,6 @@ class InstallAttributes {
   static std::string GetEnterpriseOwnedInstallAttributesBlobForTesting(
       const std::string& user_name);
 
-  // Return serialized InstallAttributes of an enterprise-owned configuration.
-  static std::string
-  GetActiveDirectoryEnterpriseOwnedInstallAttributesBlobForTesting(
-      const std::string& realm);
-
   explicit InstallAttributes(CryptohomeClient* cryptohome_client);
   ~InstallAttributes();
 

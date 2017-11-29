@@ -37,6 +37,10 @@ class CHROMEOS_EXPORT AuthPolicyLoginHelper {
   // Restarts AuthPolicy service.
   static void Restart();
 
+  // Sets install attributes for Active Directory managed device. Persists it on
+  // disk.
+  static bool LockDeviceActiveDirectoryForTesting(const std::string& realm);
+
   // Packs arguments and calls AuthPolicyClient::JoinAdDomain. Joins machine to
   // Active directory domain. |machine_name| is a name for a local machine.
   // |username|, |password| are credentials of the Active directory account
