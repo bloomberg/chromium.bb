@@ -2082,10 +2082,6 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
     display::Screen::GetScreen()->RemoveObserver(this);
   }
 
-  bool IsMultiDisplaySupported() const {
-    return wl_resource_get_version(remote_shell_resource_) >= 5;
-  }
-
   std::unique_ptr<ShellSurface> CreateShellSurface(
       Surface* surface,
       int container,
@@ -2102,21 +2098,15 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
 
   // Overridden from display::DisplayObserver:
   void OnDisplayAdded(const display::Display& new_display) override {
-    if (IsMultiDisplaySupported())
-      ScheduleSendDisplayMetrics(0);
+    ScheduleSendDisplayMetrics(0);
   }
 
   void OnDisplayRemoved(const display::Display& old_display) override {
-    if (IsMultiDisplaySupported())
-      ScheduleSendDisplayMetrics(0);
+    ScheduleSendDisplayMetrics(0);
   }
 
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override {
-    if (!IsMultiDisplaySupported() &&
-        display::Screen::GetScreen()->GetPrimaryDisplay().id() != display.id())
-      return;
-
     // No need to update when a primary display has changed without bounds
     // change. See WaylandPrimaryDisplayObserver::OnDisplayMetricsChanged
     // for more details.
@@ -2177,37 +2167,23 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
 
     const display::Screen* screen = display::Screen::GetScreen();
 
-    if (IsMultiDisplaySupported()) {
-      for (const auto& display : screen->GetAllDisplays()) {
-        const gfx::Rect& bounds = display.bounds();
-        const gfx::Insets& insets = display.GetWorkAreaInsets();
+    for (const auto& display : screen->GetAllDisplays()) {
+      const gfx::Rect& bounds = display.bounds();
+      const gfx::Insets& insets = display.GetWorkAreaInsets();
 
-        double device_scale_factor =
-            WMHelper::GetInstance()->GetDisplayInfo(display.id())
-                .device_scale_factor();
+      double device_scale_factor = WMHelper::GetInstance()
+                                       ->GetDisplayInfo(display.id())
+                                       .device_scale_factor();
 
-        zcr_remote_shell_v1_send_workspace(
-            remote_shell_resource_, static_cast<uint32_t>(display.id() >> 32),
-            static_cast<uint32_t>(display.id()), bounds.x(), bounds.y(),
-            bounds.width(), bounds.height(), insets.left(), insets.top(),
-            insets.right(), insets.bottom(),
-            DisplayTransform(display.rotation()),
-            wl_fixed_from_double(device_scale_factor), display.IsInternal());
-      }
-
-      zcr_remote_shell_v1_send_configure(remote_shell_resource_, layout_mode_);
+      zcr_remote_shell_v1_send_workspace(
+          remote_shell_resource_, static_cast<uint32_t>(display.id() >> 32),
+          static_cast<uint32_t>(display.id()), bounds.x(), bounds.y(),
+          bounds.width(), bounds.height(), insets.left(), insets.top(),
+          insets.right(), insets.bottom(), DisplayTransform(display.rotation()),
+          wl_fixed_from_double(device_scale_factor), display.IsInternal());
     }
 
-    display::Display primary_display = screen->GetPrimaryDisplay();
-    const gfx::Insets& insets = primary_display.GetWorkAreaInsets();
-
-    zcr_remote_shell_v1_send_configuration_changed(
-        remote_shell_resource_, primary_display.size().width(),
-        primary_display.size().height(),
-        DisplayTransform(primary_display.rotation()),
-        wl_fixed_from_double(primary_display.device_scale_factor()),
-        insets.left(), insets.top(), insets.right(), insets.bottom(),
-        layout_mode_);
+    zcr_remote_shell_v1_send_configure(remote_shell_resource_, layout_mode_);
     wl_client_flush(wl_resource_get_client(remote_shell_resource_));
   }
 
@@ -2360,11 +2336,9 @@ void remote_shell_get_remote_surface(wl_client* client,
   shell_surface->set_state_changed_callback(
       base::Bind(&HandleRemoteSurfaceStateChangedCallback,
                  base::Unretained(remote_surface_resource)));
-  if (shell->IsMultiDisplaySupported()) {
-    shell_surface->set_configure_callback(
-        base::Bind(&HandleRemoteSurfaceConfigureCallback,
-                   base::Unretained(remote_surface_resource)));
-  }
+  shell_surface->set_configure_callback(
+      base::Bind(&HandleRemoteSurfaceConfigureCallback,
+                 base::Unretained(remote_surface_resource)));
 
   SetImplementation(remote_surface_resource, &remote_surface_implementation,
                     std::move(shell_surface));
