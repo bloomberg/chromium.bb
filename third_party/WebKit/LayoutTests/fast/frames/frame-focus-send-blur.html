@@ -25,10 +25,10 @@ window.onload = function()
     
     debug('===> Making a first frame with a focused element inactive by focus() for second frame.');    
     frame2.contentWindow.focus();
-    shouldBe('frame1.contentDocument.activeElement', 'input');
+    shouldBe('frame1.contentDocument.activeElement', 'doc.body');
     debug('===> Making the first frame active again by focus() for first frame.');  
     frame1.contentWindow.focus();
-    shouldBe('frame1.contentDocument.activeElement', 'input');  
+    shouldBe('frame1.contentDocument.activeElement', 'doc.body');
 }
 </script>
 </body>
