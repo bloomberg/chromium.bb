@@ -736,7 +736,7 @@ void LocalFrameClientImpl::ReportLegacySymantecCert(const KURL& url,
                          "SSL certificates that will be "
                          "distrusted in the future. "
                          "Once distrusted, users will be prevented from "
-                         "loading these resources. See"
+                         "loading these resources. See "
                          "https://g.co/chrome/symantecpkicerts for "
                          "more information."));
   } else if (!web_frame_->Client()->OverrideLegacySymantecCertConsoleMessage(
