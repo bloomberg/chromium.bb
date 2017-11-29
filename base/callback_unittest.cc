@@ -25,7 +25,7 @@ struct FakeBindState : internal::BindStateBase {
   FakeBindState() : BindStateBase(&NopInvokeFunc, &Destroy, &IsCancelled) {}
 
  private:
-  ~FakeBindState() {}
+  ~FakeBindState() = default;
   static void Destroy(const internal::BindStateBase* self) {
     delete static_cast<const FakeBindState*>(self);
   }
@@ -41,7 +41,7 @@ class CallbackTest : public ::testing::Test {
   CallbackTest()
       : callback_a_(new FakeBindState()), callback_b_(new FakeBindState()) {}
 
-  ~CallbackTest() override {}
+  ~CallbackTest() override = default;
 
  protected:
   Callback<void()> callback_a_;

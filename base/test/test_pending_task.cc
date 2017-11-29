@@ -36,7 +36,7 @@ bool TestPendingTask::ShouldRunBefore(const TestPendingTask& other) const {
   return GetTimeToRun() < other.GetTimeToRun();
 }
 
-TestPendingTask::~TestPendingTask() {}
+TestPendingTask::~TestPendingTask() = default;
 
 void TestPendingTask::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetInteger("run_at", GetTimeToRun().ToInternalValue());

@@ -6,11 +6,9 @@
 
 namespace base {
 
-MessagePump::MessagePump() {
-}
+MessagePump::MessagePump() = default;
 
-MessagePump::~MessagePump() {
-}
+MessagePump::~MessagePump() = default;
 
 void MessagePump::SetTimerSlack(TimerSlack) {
 }

@@ -33,8 +33,7 @@ PendingTask::PendingTask(const Location& posted_from,
 
 PendingTask::PendingTask(PendingTask&& other) = default;
 
-PendingTask::~PendingTask() {
-}
+PendingTask::~PendingTask() = default;
 
 PendingTask& PendingTask::operator=(PendingTask&& other) = default;
 

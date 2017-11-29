@@ -55,7 +55,7 @@ namespace {
 class MultipleThreadMain : public PlatformThread::Delegate {
  public:
   explicit MultipleThreadMain(int16_t id) : id_(id) {}
-  ~MultipleThreadMain() override {}
+  ~MultipleThreadMain() override = default;
 
   static void CleanUp() {
     SharedMemory memory;

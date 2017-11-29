@@ -58,7 +58,7 @@ const char* ObjectTypeToString(TraceEventMemoryOverhead::ObjectType type) {
 
 TraceEventMemoryOverhead::TraceEventMemoryOverhead() : allocated_objects_() {}
 
-TraceEventMemoryOverhead::~TraceEventMemoryOverhead() {}
+TraceEventMemoryOverhead::~TraceEventMemoryOverhead() = default;
 
 void TraceEventMemoryOverhead::AddInternal(ObjectType object_type,
                                            size_t count,

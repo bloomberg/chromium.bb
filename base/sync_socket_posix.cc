@@ -212,7 +212,7 @@ SyncSocket::Handle SyncSocket::Release() {
   return r;
 }
 
-CancelableSyncSocket::CancelableSyncSocket() {}
+CancelableSyncSocket::CancelableSyncSocket() = default;
 CancelableSyncSocket::CancelableSyncSocket(Handle handle)
     : SyncSocket(handle) {
 }

@@ -99,8 +99,7 @@ void SequencedTaskTracker::WaitForCompletedTasks(int count) {
     task_end_cv_.Wait();
 }
 
-SequencedTaskTracker::~SequencedTaskTracker() {
-}
+SequencedTaskTracker::~SequencedTaskTracker() = default;
 
 void PrintTo(const TaskEvent& event, std::ostream* os) {
   *os << "(i=" << event.i << ", type=";

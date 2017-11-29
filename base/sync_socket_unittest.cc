@@ -30,7 +30,7 @@ class HangingReceiveThread : public DelegateSimpleThread::Delegate {
     thread_.Start();
   }
 
-  ~HangingReceiveThread() override {}
+  ~HangingReceiveThread() override = default;
 
   void Run() override {
     int data = 0;

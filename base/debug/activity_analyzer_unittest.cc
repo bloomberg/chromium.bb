@@ -37,7 +37,7 @@ class TestActivityTracker : public ThreadActivityTracker {
       : ThreadActivityTracker(memset(memory.get(), 0, mem_size), mem_size),
         mem_segment_(std::move(memory)) {}
 
-  ~TestActivityTracker() override {}
+  ~TestActivityTracker() override = default;
 
  private:
   std::unique_ptr<char[]> mem_segment_;
@@ -51,7 +51,7 @@ class ActivityAnalyzerTest : public testing::Test {
   const int kMemorySize = 1 << 20;  // 1MiB
   const int kStackSize  = 1 << 10;  // 1KiB
 
-  ActivityAnalyzerTest() {}
+  ActivityAnalyzerTest() = default;
 
   ~ActivityAnalyzerTest() override {
     GlobalActivityTracker* global_tracker = GlobalActivityTracker::Get();
@@ -119,7 +119,7 @@ class SimpleActivityThread : public SimpleThread {
         exit_(false),
         exit_condition_(&lock_) {}
 
-  ~SimpleActivityThread() override {}
+  ~SimpleActivityThread() override = default;
 
   void Run() override {
     ThreadActivityTracker::ActivityId id =

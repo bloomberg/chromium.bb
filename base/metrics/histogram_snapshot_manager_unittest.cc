@@ -19,7 +19,7 @@ namespace base {
 
 class HistogramFlattenerDeltaRecorder : public HistogramFlattener {
  public:
-  HistogramFlattenerDeltaRecorder() {}
+  HistogramFlattenerDeltaRecorder() = default;
 
   void RecordDelta(const HistogramBase& histogram,
                    const HistogramSamples& snapshot) override {
@@ -59,7 +59,7 @@ class HistogramSnapshotManagerTest : public testing::Test {
       : statistics_recorder_(StatisticsRecorder::CreateTemporaryForTesting()),
         histogram_snapshot_manager_(&histogram_flattener_delta_recorder_) {}
 
-  ~HistogramSnapshotManagerTest() override {}
+  ~HistogramSnapshotManagerTest() override = default;
 
   std::unique_ptr<StatisticsRecorder> statistics_recorder_;
   HistogramFlattenerDeltaRecorder histogram_flattener_delta_recorder_;

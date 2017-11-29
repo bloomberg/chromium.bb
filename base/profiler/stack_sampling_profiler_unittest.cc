@@ -863,7 +863,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopSafely) {
   // Test delegate that counts samples.
   class SampleRecordedCounter : public NativeStackSamplerTestDelegate {
    public:
-    SampleRecordedCounter() {}
+    SampleRecordedCounter() = default;
 
     void OnPreStackWalk() override {
       AutoLock lock(lock_);

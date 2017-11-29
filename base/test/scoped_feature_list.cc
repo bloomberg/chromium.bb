@@ -81,7 +81,7 @@ void OverrideFeatures(const std::string& features,
 
 }  // namespace
 
-ScopedFeatureList::ScopedFeatureList() {}
+ScopedFeatureList::ScopedFeatureList() = default;
 
 ScopedFeatureList::~ScopedFeatureList() {
   if (field_trial_override_)

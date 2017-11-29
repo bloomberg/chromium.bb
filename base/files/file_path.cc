@@ -169,11 +169,9 @@ bool IsEmptyOrSpecialCase(const StringType& path) {
 
 }  // namespace
 
-FilePath::FilePath() {
-}
+FilePath::FilePath() = default;
 
-FilePath::FilePath(const FilePath& that) : path_(that.path_) {
-}
+FilePath::FilePath(const FilePath& that) = default;
 FilePath::FilePath(FilePath&& that) noexcept = default;
 
 FilePath::FilePath(StringPieceType path) {
@@ -183,13 +181,9 @@ FilePath::FilePath(StringPieceType path) {
     path_.erase(nul_pos, StringType::npos);
 }
 
-FilePath::~FilePath() {
-}
+FilePath::~FilePath() = default;
 
-FilePath& FilePath::operator=(const FilePath& that) {
-  path_ = that.path_;
-  return *this;
-}
+FilePath& FilePath::operator=(const FilePath& that) = default;
 
 FilePath& FilePath::operator=(FilePath&& that) = default;
 

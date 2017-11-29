@@ -19,7 +19,7 @@ namespace {
 class SetIntRunner : public DelegateSimpleThread::Delegate {
  public:
   SetIntRunner(int* ptr, int val) : ptr_(ptr), val_(val) { }
-  ~SetIntRunner() override {}
+  ~SetIntRunner() override = default;
 
  private:
   void Run() override { *ptr_ = val_; }
@@ -69,7 +69,7 @@ class ControlledRunner : public DelegateSimpleThread::Delegate {
 class WaitEventRunner : public DelegateSimpleThread::Delegate {
  public:
   explicit WaitEventRunner(WaitableEvent* event) : event_(event) { }
-  ~WaitEventRunner() override {}
+  ~WaitEventRunner() override = default;
 
  private:
   void Run() override {

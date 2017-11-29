@@ -66,8 +66,7 @@ void PrintUsage() {
 
 class NonSfiUnitTestPlatformDelegate : public base::UnitTestPlatformDelegate {
  public:
-  NonSfiUnitTestPlatformDelegate() {
-  }
+  NonSfiUnitTestPlatformDelegate() = default;
 
   bool Init(const std::string& test_binary) {
     base::FilePath dir_exe;

@@ -52,7 +52,7 @@ class TestMemoryPressureMonitor : public MemoryPressureMonitor {
     // function.
     StopObserving();
   }
-  ~TestMemoryPressureMonitor() override {}
+  ~TestMemoryPressureMonitor() override = default;
 
   void SetMemoryInPercentOverride(int percent) {
     memory_in_percent_override_ = percent;

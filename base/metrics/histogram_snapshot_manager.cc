@@ -41,8 +41,7 @@ HistogramSnapshotManager::HistogramSnapshotManager(
   is_active_.store(false, std::memory_order_relaxed);
 }
 
-HistogramSnapshotManager::~HistogramSnapshotManager() {
-}
+HistogramSnapshotManager::~HistogramSnapshotManager() = default;
 
 void HistogramSnapshotManager::PrepareDelta(HistogramBase* histogram) {
   if (!histogram->ValidateHistogramContents(true, 0))

@@ -494,23 +494,18 @@ void TestResultsTracker::PrintTests(InputIterator first,
   fflush(stdout);
 }
 
-
-TestResultsTracker::AggregateTestResult::AggregateTestResult() {
-}
+TestResultsTracker::AggregateTestResult::AggregateTestResult() = default;
 
 TestResultsTracker::AggregateTestResult::AggregateTestResult(
     const AggregateTestResult& other) = default;
 
-TestResultsTracker::AggregateTestResult::~AggregateTestResult() {
-}
+TestResultsTracker::AggregateTestResult::~AggregateTestResult() = default;
 
-TestResultsTracker::PerIterationData::PerIterationData() {
-}
+TestResultsTracker::PerIterationData::PerIterationData() = default;
 
 TestResultsTracker::PerIterationData::PerIterationData(
     const PerIterationData& other) = default;
 
-TestResultsTracker::PerIterationData::~PerIterationData() {
-}
+TestResultsTracker::PerIterationData::~PerIterationData() = default;
 
 }  // namespace base

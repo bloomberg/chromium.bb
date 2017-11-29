@@ -56,8 +56,8 @@ TEST(MockTimerTest, Stops) {
 
 class HasWeakPtr : public base::SupportsWeakPtr<HasWeakPtr> {
  public:
-  HasWeakPtr() {}
-  virtual ~HasWeakPtr() {}
+  HasWeakPtr() = default;
+  virtual ~HasWeakPtr() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HasWeakPtr);

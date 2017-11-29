@@ -48,7 +48,7 @@ class LinuxDistroHelper {
   // The simple state machine goes from:
   // STATE_DID_NOT_CHECK -> STATE_CHECK_STARTED -> STATE_CHECK_FINISHED.
   LinuxDistroHelper() : state_(STATE_DID_NOT_CHECK) {}
-  ~LinuxDistroHelper() {}
+  ~LinuxDistroHelper() = default;
 
   // Retrieve the current state, if we're in STATE_DID_NOT_CHECK,
   // we automatically move to STATE_CHECK_STARTED so nobody else will

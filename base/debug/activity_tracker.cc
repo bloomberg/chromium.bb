@@ -120,8 +120,8 @@ Time WallTimeFromTickTime(int64_t ticks_start, int64_t ticks, Time time_start) {
 
 }  // namespace
 
-OwningProcess::OwningProcess() {}
-OwningProcess::~OwningProcess() {}
+OwningProcess::OwningProcess() = default;
+OwningProcess::~OwningProcess() = default;
 
 void OwningProcess::Release_Initialize(int64_t pid) {
   uint32_t old_id = data_id.load(std::memory_order_acquire);
@@ -185,7 +185,7 @@ ActivityTrackerMemoryAllocator::ActivityTrackerMemoryAllocator(
   DCHECK(allocator);
 }
 
-ActivityTrackerMemoryAllocator::~ActivityTrackerMemoryAllocator() {}
+ActivityTrackerMemoryAllocator::~ActivityTrackerMemoryAllocator() = default;
 
 ActivityTrackerMemoryAllocator::Reference
 ActivityTrackerMemoryAllocator::GetObjectReference() {
@@ -276,9 +276,9 @@ void Activity::FillFrom(Activity* activity,
 #endif
 }
 
-ActivityUserData::TypedValue::TypedValue() {}
+ActivityUserData::TypedValue::TypedValue() = default;
 ActivityUserData::TypedValue::TypedValue(const TypedValue& other) = default;
-ActivityUserData::TypedValue::~TypedValue() {}
+ActivityUserData::TypedValue::~TypedValue() = default;
 
 StringPiece ActivityUserData::TypedValue::Get() const {
   DCHECK_EQ(RAW_VALUE, type_);
@@ -323,13 +323,13 @@ StringPiece ActivityUserData::TypedValue::GetStringReference() const {
 // These are required because std::atomic is (currently) not a POD type and
 // thus clang requires explicit out-of-line constructors and destructors even
 // when they do nothing.
-ActivityUserData::ValueInfo::ValueInfo() {}
+ActivityUserData::ValueInfo::ValueInfo() = default;
 ActivityUserData::ValueInfo::ValueInfo(ValueInfo&&) = default;
-ActivityUserData::ValueInfo::~ValueInfo() {}
-ActivityUserData::MemoryHeader::MemoryHeader() {}
-ActivityUserData::MemoryHeader::~MemoryHeader() {}
-ActivityUserData::FieldHeader::FieldHeader() {}
-ActivityUserData::FieldHeader::~FieldHeader() {}
+ActivityUserData::ValueInfo::~ValueInfo() = default;
+ActivityUserData::MemoryHeader::MemoryHeader() = default;
+ActivityUserData::MemoryHeader::~MemoryHeader() = default;
+ActivityUserData::FieldHeader::FieldHeader() = default;
+ActivityUserData::FieldHeader::~FieldHeader() = default;
 
 ActivityUserData::ActivityUserData() : ActivityUserData(nullptr, 0, -1) {}
 
@@ -362,7 +362,7 @@ ActivityUserData::ActivityUserData(void* memory, size_t size, int64_t pid)
   ImportExistingData();
 }
 
-ActivityUserData::~ActivityUserData() {}
+ActivityUserData::~ActivityUserData() = default;
 
 bool ActivityUserData::CreateSnapshot(Snapshot* output_snapshot) const {
   DCHECK(output_snapshot);
@@ -655,8 +655,8 @@ struct ThreadActivityTracker::Header {
   char thread_name[32];
 };
 
-ThreadActivityTracker::Snapshot::Snapshot() {}
-ThreadActivityTracker::Snapshot::~Snapshot() {}
+ThreadActivityTracker::Snapshot::Snapshot() = default;
+ThreadActivityTracker::Snapshot::~Snapshot() = default;
 
 ThreadActivityTracker::ScopedActivity::ScopedActivity(
     ThreadActivityTracker* tracker,
@@ -758,7 +758,7 @@ ThreadActivityTracker::ThreadActivityTracker(void* base, size_t size)
   }
 }
 
-ThreadActivityTracker::~ThreadActivityTracker() {}
+ThreadActivityTracker::~ThreadActivityTracker() = default;
 
 ThreadActivityTracker::ActivityId ThreadActivityTracker::PushActivity(
     const void* program_counter,
@@ -1082,18 +1082,18 @@ ThreadActivityTracker::CreateUserDataForActivity(
 // of std::atomic because the latter can create global ctors and dtors.
 subtle::AtomicWord GlobalActivityTracker::g_tracker_ = 0;
 
-GlobalActivityTracker::ModuleInfo::ModuleInfo() {}
+GlobalActivityTracker::ModuleInfo::ModuleInfo() = default;
 GlobalActivityTracker::ModuleInfo::ModuleInfo(ModuleInfo&& rhs) = default;
 GlobalActivityTracker::ModuleInfo::ModuleInfo(const ModuleInfo& rhs) = default;
-GlobalActivityTracker::ModuleInfo::~ModuleInfo() {}
+GlobalActivityTracker::ModuleInfo::~ModuleInfo() = default;
 
 GlobalActivityTracker::ModuleInfo& GlobalActivityTracker::ModuleInfo::operator=(
     ModuleInfo&& rhs) = default;
 GlobalActivityTracker::ModuleInfo& GlobalActivityTracker::ModuleInfo::operator=(
     const ModuleInfo& rhs) = default;
 
-GlobalActivityTracker::ModuleInfoRecord::ModuleInfoRecord() {}
-GlobalActivityTracker::ModuleInfoRecord::~ModuleInfoRecord() {}
+GlobalActivityTracker::ModuleInfoRecord::ModuleInfoRecord() = default;
+GlobalActivityTracker::ModuleInfoRecord::~ModuleInfoRecord() = default;
 
 bool GlobalActivityTracker::ModuleInfoRecord::DecodeTo(
     GlobalActivityTracker::ModuleInfo* info,
@@ -1225,7 +1225,7 @@ GlobalActivityTracker::ThreadSafeUserData::ThreadSafeUserData(void* memory,
                                                               int64_t pid)
     : ActivityUserData(memory, size, pid) {}
 
-GlobalActivityTracker::ThreadSafeUserData::~ThreadSafeUserData() {}
+GlobalActivityTracker::ThreadSafeUserData::~ThreadSafeUserData() = default;
 
 void GlobalActivityTracker::ThreadSafeUserData::Set(StringPiece name,
                                                     ValueType type,

@@ -186,7 +186,7 @@ HeapDumpWriter::HeapDumpWriter(StackFrameDeduplicator* stack_frame_deduplicator,
       type_name_deduplicator_(type_name_deduplicator),
       breakdown_threshold_bytes_(breakdown_threshold_bytes) {}
 
-HeapDumpWriter::~HeapDumpWriter() {}
+HeapDumpWriter::~HeapDumpWriter() = default;
 
 bool HeapDumpWriter::AddEntryForBucket(const Bucket& bucket) {
   // The contexts in the bucket are all different, but the [begin, cursor) range

@@ -57,7 +57,7 @@ class ConvertableTraceConfigToTraceFormat
   explicit ConvertableTraceConfigToTraceFormat(const TraceConfig& trace_config)
       : trace_config_(trace_config) {}
 
-  ~ConvertableTraceConfigToTraceFormat() override {}
+  ~ConvertableTraceConfigToTraceFormat() override = default;
 
   void AppendAsTraceFormat(std::string* out) const override {
     out->append(trace_config_.ToString());
@@ -91,12 +91,12 @@ void TraceConfig::ResetMemoryDumpConfig(
   memory_dump_config_ = memory_dump_config;
 }
 
-TraceConfig::MemoryDumpConfig::MemoryDumpConfig() {}
+TraceConfig::MemoryDumpConfig::MemoryDumpConfig() = default;
 
 TraceConfig::MemoryDumpConfig::MemoryDumpConfig(
     const MemoryDumpConfig& other) = default;
 
-TraceConfig::MemoryDumpConfig::~MemoryDumpConfig() {}
+TraceConfig::MemoryDumpConfig::~MemoryDumpConfig() = default;
 
 void TraceConfig::MemoryDumpConfig::Clear() {
   allowed_dump_modes.clear();
@@ -119,7 +119,7 @@ TraceConfig::EventFilterConfig::EventFilterConfig(
     const std::string& predicate_name)
     : predicate_name_(predicate_name) {}
 
-TraceConfig::EventFilterConfig::~EventFilterConfig() {}
+TraceConfig::EventFilterConfig::~EventFilterConfig() = default;
 
 TraceConfig::EventFilterConfig::EventFilterConfig(const EventFilterConfig& tc) {
   *this = tc;
@@ -224,16 +224,9 @@ TraceConfig::TraceConfig(StringPiece config_string) {
     InitializeDefault();
 }
 
-TraceConfig::TraceConfig(const TraceConfig& tc)
-    : record_mode_(tc.record_mode_),
-      enable_systrace_(tc.enable_systrace_),
-      enable_argument_filter_(tc.enable_argument_filter_),
-      category_filter_(tc.category_filter_),
-      memory_dump_config_(tc.memory_dump_config_),
-      event_filters_(tc.event_filters_) {}
+TraceConfig::TraceConfig(const TraceConfig& tc) = default;
 
-TraceConfig::~TraceConfig() {
-}
+TraceConfig::~TraceConfig() = default;
 
 TraceConfig& TraceConfig::operator=(const TraceConfig& rhs) {
   if (this == &rhs)

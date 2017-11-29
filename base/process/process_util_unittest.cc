@@ -1038,7 +1038,7 @@ MULTIPROCESS_TEST_MAIN(process_util_test_die_immediately) {
 class ReadFromPipeDelegate : public base::LaunchOptions::PreExecDelegate {
  public:
   explicit ReadFromPipeDelegate(int fd) : fd_(fd) {}
-  ~ReadFromPipeDelegate() override {}
+  ~ReadFromPipeDelegate() override = default;
   void RunAsyncSafe() override {
     char c;
     RAW_CHECK(HANDLE_EINTR(read(fd_, &c, 1)) == 1);

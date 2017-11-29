@@ -27,8 +27,7 @@ TraceEvent::TraceEvent()
 
 TraceEvent::TraceEvent(TraceEvent&& other) = default;
 
-TraceEvent::~TraceEvent() {
-}
+TraceEvent::~TraceEvent() = default;
 
 TraceEvent& TraceEvent::operator=(TraceEvent&& rhs) = default;
 
@@ -205,8 +204,7 @@ std::unique_ptr<base::Value> TraceEvent::GetKnownArgAsValue(
 QueryNode::QueryNode(const Query& query) : query_(query) {
 }
 
-QueryNode::~QueryNode() {
-}
+QueryNode::~QueryNode() = default;
 
 // Query
 
@@ -227,19 +225,9 @@ Query::Query(TraceEventMember member, const std::string& arg_name)
       is_pattern_(false) {
 }
 
-Query::Query(const Query& query)
-    : type_(query.type_),
-      operator_(query.operator_),
-      left_(query.left_),
-      right_(query.right_),
-      member_(query.member_),
-      number_(query.number_),
-      string_(query.string_),
-      is_pattern_(query.is_pattern_) {
-}
+Query::Query(const Query& query) = default;
 
-Query::~Query() {
-}
+Query::~Query() = default;
 
 Query Query::String(const std::string& str) {
   return Query(str);
@@ -728,8 +716,7 @@ bool ParseEventsFromJson(const std::string& json,
 TraceAnalyzer::TraceAnalyzer()
     : ignore_metadata_events_(false), allow_association_changes_(true) {}
 
-TraceAnalyzer::~TraceAnalyzer() {
-}
+TraceAnalyzer::~TraceAnalyzer() = default;
 
 // static
 TraceAnalyzer* TraceAnalyzer::Create(const std::string& json_events) {

@@ -50,7 +50,7 @@ PersistentSampleMapIterator::PersistentSampleMapIterator(
   SkipEmptyBuckets();
 }
 
-PersistentSampleMapIterator::~PersistentSampleMapIterator() {}
+PersistentSampleMapIterator::~PersistentSampleMapIterator() = default;
 
 bool PersistentSampleMapIterator::Done() const {
   return iter_ == end_;

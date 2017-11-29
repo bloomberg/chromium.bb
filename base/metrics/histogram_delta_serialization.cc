@@ -37,8 +37,7 @@ HistogramDeltaSerialization::HistogramDeltaSerialization(
     const std::string& caller_name)
     : histogram_snapshot_manager_(this), serialized_deltas_(nullptr) {}
 
-HistogramDeltaSerialization::~HistogramDeltaSerialization() {
-}
+HistogramDeltaSerialization::~HistogramDeltaSerialization() = default;
 
 void HistogramDeltaSerialization::PrepareAndSerializeDeltas(
     std::vector<std::string>* serialized_deltas,

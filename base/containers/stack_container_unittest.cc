@@ -107,7 +107,7 @@ template <size_t alignment>
 class AlignedData {
  public:
   AlignedData() { memset(data_, 0, alignment); }
-  ~AlignedData() {}
+  ~AlignedData() = default;
   alignas(alignment) char data_[alignment];
 };
 

@@ -198,7 +198,7 @@ ProcessMemoryDump::ProcessMemoryDump(
           std::move(heap_profiler_serialization_state)),
       dump_args_(dump_args) {}
 
-ProcessMemoryDump::~ProcessMemoryDump() {}
+ProcessMemoryDump::~ProcessMemoryDump() = default;
 ProcessMemoryDump::ProcessMemoryDump(ProcessMemoryDump&& other) = default;
 ProcessMemoryDump& ProcessMemoryDump::operator=(ProcessMemoryDump&& other) =
     default;

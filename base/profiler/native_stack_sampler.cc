@@ -13,11 +13,11 @@ NativeStackSampler::StackBuffer::StackBuffer(size_t buffer_size)
                             sizeof(uintptr_t)]),
       size_(buffer_size) {}
 
-NativeStackSampler::StackBuffer::~StackBuffer() {}
+NativeStackSampler::StackBuffer::~StackBuffer() = default;
 
-NativeStackSampler::NativeStackSampler() {}
+NativeStackSampler::NativeStackSampler() = default;
 
-NativeStackSampler::~NativeStackSampler() {}
+NativeStackSampler::~NativeStackSampler() = default;
 
 std::unique_ptr<NativeStackSampler::StackBuffer>
 NativeStackSampler::CreateStackBuffer() {
@@ -27,8 +27,8 @@ NativeStackSampler::CreateStackBuffer() {
   return std::make_unique<StackBuffer>(size);
 }
 
-NativeStackSamplerTestDelegate::~NativeStackSamplerTestDelegate() {}
+NativeStackSamplerTestDelegate::~NativeStackSamplerTestDelegate() = default;
 
-NativeStackSamplerTestDelegate::NativeStackSamplerTestDelegate() {}
+NativeStackSamplerTestDelegate::NativeStackSamplerTestDelegate() = default;
 
 }  // namespace base

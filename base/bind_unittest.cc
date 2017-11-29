@@ -31,7 +31,7 @@ class IncompleteType;
 
 class NoRef {
  public:
-  NoRef() {}
+  NoRef() = default;
 
   MOCK_METHOD0(VoidMethod0, void());
   MOCK_CONST_METHOD0(VoidConstMethod0, void());
@@ -49,7 +49,7 @@ class NoRef {
 
 class HasRef : public NoRef {
  public:
-  HasRef() {}
+  HasRef() = default;
 
   MOCK_CONST_METHOD0(AddRef, void());
   MOCK_CONST_METHOD0(Release, bool());
@@ -61,7 +61,7 @@ class HasRef : public NoRef {
 
 class HasRefPrivateDtor : public HasRef {
  private:
-  ~HasRefPrivateDtor() {}
+  ~HasRefPrivateDtor() = default;
 };
 
 static const int kParentValue = 1;
@@ -196,11 +196,8 @@ class CopyCounter {
  public:
   CopyCounter(int* copies, int* assigns)
       : counter_(copies, assigns, nullptr, nullptr) {}
-  CopyCounter(const CopyCounter& other) : counter_(other.counter_) {}
-  CopyCounter& operator=(const CopyCounter& other) {
-    counter_ = other.counter_;
-    return *this;
-  }
+  CopyCounter(const CopyCounter& other) = default;
+  CopyCounter& operator=(const CopyCounter& other) = default;
 
   explicit CopyCounter(const DerivedCopyMoveCounter& other) : counter_(other) {}
 
@@ -321,8 +318,7 @@ class BindTest : public ::testing::Test {
     static_func_mock_ptr = &static_func_mock_;
   }
 
-  virtual ~BindTest() {
-  }
+  virtual ~BindTest() = default;
 
   static void VoidFunc0() {
     static_func_mock_ptr->VoidMethod0();

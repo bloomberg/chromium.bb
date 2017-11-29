@@ -152,8 +152,7 @@ DiscardableSharedMemory::DiscardableSharedMemory(
       locked_page_count_(0) {
 }
 
-DiscardableSharedMemory::~DiscardableSharedMemory() {
-}
+DiscardableSharedMemory::~DiscardableSharedMemory() = default;
 
 bool DiscardableSharedMemory::CreateAndMap(size_t size) {
   CheckedNumeric<size_t> checked_size = size;

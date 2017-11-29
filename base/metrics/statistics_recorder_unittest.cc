@@ -42,7 +42,7 @@ class LogStateSaver {
 // Test implementation of RecordHistogramChecker interface.
 class OddRecordHistogramChecker : public base::RecordHistogramChecker {
  public:
-  ~OddRecordHistogramChecker() override {}
+  ~OddRecordHistogramChecker() override = default;
 
   // base::RecordHistogramChecker:
   bool ShouldRecord(uint64_t histogram_hash) const override {

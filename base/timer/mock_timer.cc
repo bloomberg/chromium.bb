@@ -17,8 +17,7 @@ MockTimer::MockTimer(const Location& posted_from,
                      bool is_repeating)
     : Timer(true, is_repeating), delay_(delay), is_running_(false) {}
 
-MockTimer::~MockTimer() {
-}
+MockTimer::~MockTimer() = default;
 
 bool MockTimer::IsRunning() const {
   return is_running_;

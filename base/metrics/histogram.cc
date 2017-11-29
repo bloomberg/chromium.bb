@@ -622,8 +622,7 @@ Histogram::Histogram(const char* name,
       unlogged_samples_->id(), ranges, logged_meta, logged_counts));
 }
 
-Histogram::~Histogram() {
-}
+Histogram::~Histogram() = default;
 
 bool Histogram::PrintEmptyBucket(uint32_t index) const {
   return true;
@@ -878,7 +877,7 @@ class LinearHistogram::Factory : public Histogram::Factory {
   DISALLOW_COPY_AND_ASSIGN(Factory);
 };
 
-LinearHistogram::~LinearHistogram() {}
+LinearHistogram::~LinearHistogram() = default;
 
 HistogramBase* LinearHistogram::FactoryGet(const std::string& name,
                                            Sample minimum,

@@ -443,7 +443,7 @@ namespace {
 
 class unordered_map_add_item : public std::unordered_map<int, int> {
  public:
-  unordered_map_add_item() {}
+  unordered_map_add_item() = default;
   explicit unordered_map_add_item(const std::pair<int, int>& item) {
     insert(item);
   }

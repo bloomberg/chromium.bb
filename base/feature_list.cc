@@ -81,9 +81,9 @@ const Feature kSyzyAsanDCheckIsFatalFeature{"DcheckIsFatal",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(SYZYASAN)
 
-FeatureList::FeatureList() {}
+FeatureList::FeatureList() = default;
 
-FeatureList::~FeatureList() {}
+FeatureList::~FeatureList() = default;
 
 void FeatureList::InitializeFromCommandLine(
     const std::string& enable_features,

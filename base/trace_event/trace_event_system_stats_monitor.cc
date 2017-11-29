@@ -27,8 +27,8 @@ namespace {
 // Holds profiled system stats until the tracing system needs to serialize it.
 class SystemStatsHolder : public base::trace_event::ConvertableToTraceFormat {
  public:
-  SystemStatsHolder() { }
-  ~SystemStatsHolder() override {}
+  SystemStatsHolder() = default;
+  ~SystemStatsHolder() override = default;
 
   // Fills system_metrics_ with profiled system memory and disk stats.
   // Uses the previous stats to compute rates if this is not the first profile.

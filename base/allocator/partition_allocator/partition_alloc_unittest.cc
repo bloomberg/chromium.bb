@@ -103,9 +103,9 @@ const char* type_name = nullptr;
 
 class PartitionAllocTest : public testing::Test {
  protected:
-  PartitionAllocTest() {}
+  PartitionAllocTest() = default;
 
-  ~PartitionAllocTest() override {}
+  ~PartitionAllocTest() override = default;
 
   void SetUp() override {
     allocator.init();

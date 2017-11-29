@@ -69,7 +69,7 @@ const HistogramBase::Sample HistogramBase::kSampleType_MAX = INT_MAX;
 HistogramBase::HistogramBase(const char* name)
     : histogram_name_(name), flags_(kNoFlags) {}
 
-HistogramBase::~HistogramBase() {}
+HistogramBase::~HistogramBase() = default;
 
 void HistogramBase::CheckName(const StringPiece& name) const {
   DCHECK_EQ(StringPiece(histogram_name()), name);

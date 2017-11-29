@@ -86,7 +86,7 @@ class Foo : public RefCounted<Foo> {
  private:
   friend class RefCounted<Foo>;
 
-  ~Foo() {}
+  ~Foo() = default;
 
   int test_count_;
   std::string result_;
@@ -202,7 +202,7 @@ class DummyTaskObserver : public MessageLoop::TaskObserver {
         num_tasks_processed_(0),
         num_tasks_(num_tasks) {}
 
-  ~DummyTaskObserver() override {}
+  ~DummyTaskObserver() override = default;
 
   void WillProcessTask(const PendingTask& pending_task) override {
     num_tasks_started_++;

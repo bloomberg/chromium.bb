@@ -15,7 +15,7 @@ JSONStringValueSerializer::JSONStringValueSerializer(std::string* json_string)
       pretty_print_(false) {
 }
 
-JSONStringValueSerializer::~JSONStringValueSerializer() {}
+JSONStringValueSerializer::~JSONStringValueSerializer() = default;
 
 bool JSONStringValueSerializer::Serialize(const Value& root) {
   return SerializeInternal(root, false);
@@ -45,7 +45,7 @@ JSONStringValueDeserializer::JSONStringValueDeserializer(
     int options)
     : json_string_(json_string), options_(options) {}
 
-JSONStringValueDeserializer::~JSONStringValueDeserializer() {}
+JSONStringValueDeserializer::~JSONStringValueDeserializer() = default;
 
 std::unique_ptr<Value> JSONStringValueDeserializer::Deserialize(
     int* error_code,

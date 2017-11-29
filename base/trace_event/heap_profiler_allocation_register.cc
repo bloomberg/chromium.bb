@@ -91,7 +91,7 @@ AllocationRegister::AllocationRegister(size_t allocation_capacity,
   DCHECK_EQ(index_and_flag.first, kOutOfStorageBacktraceIndex);
 }
 
-AllocationRegister::~AllocationRegister() {}
+AllocationRegister::~AllocationRegister() = default;
 
 bool AllocationRegister::Insert(const void* address,
                                 size_t size,
