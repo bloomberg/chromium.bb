@@ -56,12 +56,18 @@ void VRServiceImpl::SetClient(device::mojom::VRServiceClientPtr service_client,
                               SetClientCallback callback) {
   DCHECK(!client_.get());
   client_ = std::move(service_client);
+  set_client_callback_ = std::move(callback);
 
   // Once a client has been connected AddService will force any VRDisplays to
   // send ConnectDevice to it so that it's populated with the currently active
   // displays. Thereafter it will stay up to date by virtue of listening for new
   // connected events.
-  VRDeviceManager::GetInstance()->AddService(this, std::move(callback));
+  VRDeviceManager::GetInstance()->AddService(this);
+}
+
+void VRServiceImpl::InitializationComplete() {
+  DCHECK(!set_client_callback_.is_null());
+  base::ResetAndReturn(&set_client_callback_).Run();
 }
 
 // Creates a VRDisplayImpl unique to this service so that the associated page
@@ -69,13 +75,20 @@ void VRServiceImpl::SetClient(device::mojom::VRServiceClientPtr service_client,
 void VRServiceImpl::ConnectDevice(device::VRDevice* device) {
   // Client should always be set as this is called through SetClient.
   DCHECK(client_);
-  DCHECK(displays_.count(device) == 0);
+  DCHECK(displays_.find(device) == displays_.end());
   device::mojom::VRDisplayInfoPtr display_info = device->GetVRDisplayInfo();
   DCHECK(display_info);
   if (!display_info)
     return;
   displays_[device] = std::make_unique<VRDisplayHost>(
       device, render_frame_host_, client_.get(), std::move(display_info));
+}
+
+void VRServiceImpl::RemoveDevice(device::VRDevice* device) {
+  DCHECK(client_);
+  auto it = displays_.find(device);
+  DCHECK(it != displays_.end());
+  displays_.erase(it);
 }
 
 void VRServiceImpl::SetListeningForActivate(bool listening) {

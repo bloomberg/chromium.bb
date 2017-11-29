@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "base/callback.h"
+
 namespace device {
 
 class VRDevice;
@@ -16,10 +18,14 @@ class VRDeviceProvider {
   VRDeviceProvider() {}
   virtual ~VRDeviceProvider() {}
 
-  virtual void GetDevices(std::vector<VRDevice*>* devices) = 0;
-
   // If the VR API requires initialization that should happen here.
-  virtual void Initialize() = 0;
+  virtual void Initialize(
+      base::Callback<void(VRDevice*)> add_device_callback,
+      base::Callback<void(VRDevice*)> remove_device_callback,
+      base::OnceClosure initialization_complete) = 0;
+
+  // Returns true if initialization is complete.
+  virtual bool Initialized() = 0;
 };
 
 }  // namespace device

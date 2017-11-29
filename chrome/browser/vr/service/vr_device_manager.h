@@ -18,9 +18,12 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "device/vr/vr_device.h"
-#include "device/vr/vr_device_provider.h"
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+
+namespace device {
+class VRDeviceProvider;
+}
 
 namespace vr {
 
@@ -39,8 +42,7 @@ class VRDeviceManager {
   // Automatically connects all currently available VR devices by querying
   // the device providers and, for each returned device, calling
   // VRServiceImpl::ConnectDevice.
-  void AddService(VRServiceImpl* service,
-                  device::mojom::VRService::SetClientCallback callback);
+  void AddService(VRServiceImpl* service);
   void RemoveService(VRServiceImpl* service);
 
   device::VRDevice* GetDevice(unsigned int index);
@@ -55,6 +57,11 @@ class VRDeviceManager {
 
  private:
   void InitializeProviders();
+  void OnProviderInitialized();
+  bool AreAllProvidersInitialized();
+
+  void AddDevice(device::VRDevice* device);
+  void RemoveDevice(device::VRDevice* device);
 
   ProviderList providers_;
 
@@ -62,7 +69,8 @@ class VRDeviceManager {
   using DeviceMap = std::map<unsigned int, device::VRDevice*>;
   DeviceMap devices_;
 
-  bool vr_initialized_ = false;
+  bool providers_initialized_ = false;
+  size_t num_initialized_providers_ = 0;
 
   std::set<VRServiceImpl*> services_;
 

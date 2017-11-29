@@ -38,12 +38,19 @@ class VRServiceImpl : public device::mojom::VRService,
   void SetClient(device::mojom::VRServiceClientPtr service_client,
                  SetClientCallback callback) override;
 
-  // Tells the render process that a new VR device is available.
+  // Tells the renderer that a new VR device is available.
   void ConnectDevice(device::VRDevice* device);
+
+  // Tells the renderer that a VR device has gone away.
+  void RemoveDevice(device::VRDevice* device);
+
+  void InitializationComplete();
 
  protected:
   // Constructor for tests.
   VRServiceImpl();
+
+  int NumberOfConnectedDisplayHosts() { return displays_.size(); }
 
  private:
   void SetBinding(mojo::StrongBindingPtr<VRService> binding);
@@ -59,6 +66,7 @@ class VRServiceImpl : public device::mojom::VRService,
   void OnWebContentsFocusChanged(content::RenderWidgetHost* host, bool focused);
 
   std::map<device::VRDevice*, std::unique_ptr<VRDisplayHost>> displays_;
+  SetClientCallback set_client_callback_;
   device::mojom::VRServiceClientPtr client_;
   content::RenderFrameHost* render_frame_host_;
   mojo::StrongBindingPtr<VRService> binding_;
