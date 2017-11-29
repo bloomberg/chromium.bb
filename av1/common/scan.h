@@ -39,10 +39,9 @@ extern const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES];
 #define UNI_RECT 1
 #define USE_TOPOLOGICAL_SORT 0
 #define USE_LIMIT_SCAN_DISTANCE 0
-void av1_update_scan_count_facade(AV1_COMMON *cm, int mi_row,
-                                  FRAME_COUNTS *counts, TX_SIZE tx_size,
-                                  TX_TYPE tx_type, const tran_low_t *dqcoeffs,
-                                  int max_scan);
+void av1_update_scan_count_facade(const AV1_COMMON *const cm, MACROBLOCKD *xd,
+                                  int mi_row, TX_SIZE tx_size, TX_TYPE tx_type,
+                                  const tran_low_t *dqcoeffs, int max_scan);
 
 // embed r + c and coeff_idx info with nonzero probabilities. When sorting the
 // nonzero probabilities, if there is a tie, the coefficient with smaller r + c
@@ -70,7 +69,8 @@ void av1_update_scan_order(TX_SIZE tx_size, TX_TYPE tx_type,
 void av1_update_neighbors(TX_SIZE tx_size, const int16_t *scan,
                           const int16_t *iscan, int16_t *neighbors);
 void av1_init_scan_order(AV1_COMMON *cm);
-void av1_adapt_scan_order(AV1_COMMON *cm);
+void av1_adapt_scan_order(AV1_COMMON *cm, FRAME_CONTEXT *ec_ctxs[],
+                          int num_tiles);
 #if USE_2X2_PROB
 void av1_down_sample_scan_count(uint32_t *non_zero_count_ds,
                                 const uint32_t *non_zero_count,

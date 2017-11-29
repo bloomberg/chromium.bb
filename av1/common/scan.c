@@ -5288,8 +5288,8 @@ static int16_t *get_adapt_nb(FRAME_CONTEXT *fc, TX_SIZE tx_size,
   }
 }
 
-static uint32_t *get_non_zero_counts(FRAME_COUNTS *counts, TX_SIZE tx_size,
-                                     TX_TYPE tx_type) {
+static uint32_t *get_non_zero_counts(struct NON_ZERO_COUNT *counts,
+                                     TX_SIZE tx_size, TX_TYPE tx_type) {
   switch (tx_size) {
     case TX_4X4: return counts->non_zero_count_4X4[tx_type];
     case TX_8X8: return counts->non_zero_count_8X8[tx_type];
@@ -5459,9 +5459,10 @@ static void update_scan_prob(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
   FRAME_CONTEXT *pre_fc = cm->pre_fc;
   uint32_t *prev_non_zero_prob = get_non_zero_prob(pre_fc, tx_size, tx_type);
   uint32_t *non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
-  uint32_t *non_zero_count = get_non_zero_counts(&cm->counts, tx_size, tx_type);
+  uint32_t *non_zero_count =
+      get_non_zero_counts(&cm->fc->non_zero_count, tx_size, tx_type);
   const int tx2d_size = tx_size_2d[tx_size];
-  unsigned int block_num = cm->counts.txb_count[tx_size][tx_type];
+  unsigned int block_num = cm->fc->non_zero_count.txb_count[tx_size][tx_type];
 #if USE_2X2_PROB
 #if CONFIG_TX64X64
   DECLARE_ALIGNED(16, uint32_t, non_zero_count_ds[1024]);
@@ -5505,10 +5506,9 @@ static void update_scan_count(int16_t *scan, int max_scan,
   }
 }
 
-void av1_update_scan_count_facade(AV1_COMMON *cm, int mi_row,
-                                  FRAME_COUNTS *counts, TX_SIZE tx_size,
-                                  TX_TYPE tx_type, const tran_low_t *dqcoeffs,
-                                  int max_scan) {
+void av1_update_scan_count_facade(const AV1_COMMON *const cm, MACROBLOCKD *xd,
+                                  int mi_row, TX_SIZE tx_size, TX_TYPE tx_type,
+                                  const tran_low_t *dqcoeffs, int max_scan) {
 #if SUB_FRAME_COUNT
   if (((mi_row >> 5) << 5) + 32 >= cm->mi_rows) return;
 #else
@@ -5516,13 +5516,15 @@ void av1_update_scan_count_facade(AV1_COMMON *cm, int mi_row,
 #endif
 
   if (cm->use_adapt_scan && do_adapt_scan(tx_size, tx_type) && max_scan) {
+    FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
 #if SUB_REGION_COUNT
-    if (counts->txb_count[tx_size][tx_type] >= UINT8_MAX) return;
+    if (ec_ctx->non_zero_count.txb_count[tx_size][tx_type] >= UINT8_MAX) return;
 #endif
     int16_t *scan = get_adapt_scan(cm->fc, tx_size, tx_type);
-    uint32_t *non_zero_count = get_non_zero_counts(counts, tx_size, tx_type);
+    uint32_t *non_zero_count =
+        get_non_zero_counts(&ec_ctx->non_zero_count, tx_size, tx_type);
     update_scan_count(scan, max_scan, dqcoeffs, non_zero_count);
-    ++counts->txb_count[tx_size][tx_type];
+    ++ec_ctx->non_zero_count.txb_count[tx_size][tx_type];
   }
 }
 
@@ -5840,7 +5842,8 @@ void av1_init_scan_order(AV1_COMMON *cm) {
 #if UNI_RECT
 void unify_rect_tx_count(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type) {
   uint32_t tmp_non_zero_counts[MAX_TX_SQUARE] = { 0 };
-  uint32_t *non_zero_count = get_non_zero_counts(&cm->counts, tx_size, tx_type);
+  uint32_t *non_zero_count =
+      get_non_zero_counts(&cm->fc->non_zero_count, tx_size, tx_type);
   int bw = tx_size_wide[tx_size];
   int bh = tx_size_high[tx_size];
   int tx_size_length = bw * bh;
@@ -5854,16 +5857,19 @@ void unify_rect_tx_count(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type) {
 
   bw = tx_size_wide[stx_size];
   bh = tx_size_high[stx_size];
-  non_zero_count = get_non_zero_counts(&cm->counts, stx_size, tx_type);
+  non_zero_count =
+      get_non_zero_counts(&cm->fc->non_zero_count, stx_size, tx_type);
   for (int idy = 0; idy < bh; ++idy)
     for (int idx = 0; idx < bw; ++idx)
       tmp_non_zero_counts[idx * bh + idy] += non_zero_count[idy * bw + idx];
 
-  non_zero_count = get_non_zero_counts(&cm->counts, tx_size, tx_type);
+  non_zero_count =
+      get_non_zero_counts(&cm->fc->non_zero_count, tx_size, tx_type);
   for (int idx = 0; idx < tx_size_length; ++idx)
     non_zero_count[idx] = tmp_non_zero_counts[idx];
 
-  non_zero_count = get_non_zero_counts(&cm->counts, stx_size, tx_type);
+  non_zero_count =
+      get_non_zero_counts(&cm->fc->non_zero_count, stx_size, tx_type);
   for (int idy = 0; idy < bh; ++idy)
     for (int idx = 0; idx < bw; ++idx)
       non_zero_count[idy * bw + idx] = tmp_non_zero_counts[idx * bh + idy];
@@ -5878,7 +5884,8 @@ void unify_rect_tx_count_facade(AV1_COMMON *cm) {
 }
 #endif
 
-void av1_adapt_scan_order(AV1_COMMON *cm) {
+void av1_adapt_scan_order(AV1_COMMON *cm, FRAME_CONTEXT *ec_ctxs[],
+                          int num_tiles) {
   if (cm->use_adapt_scan) {
     TX_SIZE tx_size;
 #if CACHE_SCAN_PROB
@@ -5886,6 +5893,27 @@ void av1_adapt_scan_order(AV1_COMMON *cm) {
 #else   // CACHE_SCAN_PROB
     int use_curr_frame = 1;
 #endif  // CACHE_SCAN_PROB
+
+    for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
+      const int length = tx_size_2d[tx_size];
+      TX_TYPE tx_type;
+      for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
+        if (!do_adapt_scan(tx_size, tx_type)) continue;
+        uint32_t *non_zero_count =
+            get_non_zero_counts(&cm->fc->non_zero_count, tx_size, tx_type);
+        for (int i = 0; i < length; ++i) non_zero_count[i] = 0;
+        cm->fc->non_zero_count.txb_count[tx_size][tx_type] = 0;
+
+        for (int i = 0; i < num_tiles; ++i) {
+          uint32_t *tile_count = get_non_zero_counts(
+              &ec_ctxs[i]->non_zero_count, tx_size, tx_type);
+          for (int idx = 0; idx < length; ++idx)
+            non_zero_count[idx] += tile_count[idx];
+          cm->fc->non_zero_count.txb_count[tx_size][tx_type] +=
+              ec_ctxs[i]->non_zero_count.txb_count[tx_size][tx_type];
+        }
+      }
+    }
 
 #if UNI_RECT
     unify_rect_tx_count_facade(cm);

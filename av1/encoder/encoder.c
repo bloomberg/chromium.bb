@@ -5747,7 +5747,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     av1_average_tile_loopfilter_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
                                      num_bwd_ctxs);
 #if CONFIG_ADAPT_SCAN
-    av1_adapt_scan_order(cm);
+    av1_adapt_scan_order(cm, tile_ctxs, num_bwd_ctxs);
 #endif  // CONFIG_ADAPT_SCAN
   }
 

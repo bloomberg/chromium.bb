@@ -3703,7 +3703,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
       av1_average_tile_loopfilter_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
                                        num_bwd_ctxs);
 #if CONFIG_ADAPT_SCAN
-      av1_adapt_scan_order(cm);
+      av1_adapt_scan_order(cm, tile_ctxs, num_bwd_ctxs);
 #endif  // CONFIG_ADAPT_SCAN
 
       if (!frame_is_intra_only(cm)) {
