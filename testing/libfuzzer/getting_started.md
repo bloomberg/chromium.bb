@@ -1,7 +1,7 @@
 # Getting Started with libFuzzer in Chrome
 
 ***
-**Prerequisites:** libFuzzer in Chrome is supported with GN on Linux and Mac only. 
+**Prerequisites:** libFuzzer in Chrome is supported with GN on Linux and Mac only.
 ***
 
 This document will walk you through:
@@ -59,7 +59,7 @@ tested and in the same directory as your other unit tests. Please do not use
 `testing/libfuzzer/fuzzers` directory, this was a directory used for initial sample fuzzers and
 is no longer recommended for any new fuzzers.
 
-[quic_stream_factory_fuzzer.cc] is a simple example of real-world fuzzer.
+[quic_stream_factory_fuzzer.cc] is a good example of real-world fuzz target.
 
 ## Define GN Target
 
@@ -130,8 +130,8 @@ See [Fuzzer Dictionary] section of efficient fuzzer guide.
  (or takes the longest testcase in a corpus). ClusterFuzz takes
 random value in range from `1` to `10000` for each fuzzing session and passes
 that value to libFuzzers. If corpus contains testcases of size greater than
-`max_len`, libFuzzer will use only first `max_len` bytes of such testcases. 
-See [Maximum Testcase Length] section of efficient fuzzer guide.
+`max_len`, libFuzzer will use only first `max_len` bytes of such testcases.
+See [Maximum Testcase Length] section of the efficient fuzzer guide.
 
 ## Disable noisy error message logging
 
@@ -158,7 +158,8 @@ ClusterFuzz builds and executes all `fuzzer_test` targets in the Chromium
 repository. It is extremely important to submit a fuzzer into Chromium
 repository so that ClusterFuzz can run it at scale. Do not rely on just
 running fuzzing locally in your own environment, as it will catch far less
-issues and needs to run it continuously forever to catch regressions.
+issues. It's crucial to run fuzzers continuously forever for catching
+regressions and improving code coverage over time.
 
 ## Next Steps
 
