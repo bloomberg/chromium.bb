@@ -106,9 +106,6 @@ class WebSecurityOrigin {
   // passwords stored in password manager.
   BLINK_PLATFORM_EXPORT bool CanAccessPasswordManager() const;
 
-  // Allows this WebSecurityOrigin access to local resources.
-  BLINK_PLATFORM_EXPORT void GrantLoadLocalResources() const;
-
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebSecurityOrigin(scoped_refptr<SecurityOrigin>);
   BLINK_PLATFORM_EXPORT WebSecurityOrigin& operator=(
