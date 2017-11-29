@@ -134,9 +134,9 @@ void Ui::SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason) {
     case UiUnsupportedMode::kUnhandledPageInfo:
       model_->active_modal_prompt_type = kModalPromptTypeExitVRForSiteInfo;
       return;
-    case UiUnsupportedMode::kAndroidPermissionNeeded:
+    case UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission:
       model_->active_modal_prompt_type =
-          kModalPromptTypeExitVRForAudioPermission;
+          kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission;
       return;
     case UiUnsupportedMode::kCount:
       NOTREACHED();  // Should never be used as a mode (when |enabled| is true).

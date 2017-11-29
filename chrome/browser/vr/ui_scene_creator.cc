@@ -237,7 +237,9 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
           [](UiElement* e, const ModalPromptType& t) {
             if (t == kModalPromptTypeExitVRForSiteInfo) {
               e->SetVisibleImmediately(false);
-            } else if (t == kModalPromptTypeExitVRForAudioPermission) {
+            } else if (
+                t ==
+                kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission) {
               e->SetOpacity(kModalPromptFadeOpacity);
             } else {
               e->SetVisible(true);
@@ -1229,7 +1231,8 @@ void UiSceneCreator::CreateAudioPermissionPrompt() {
   backplane->SetTransitionedProperties({OPACITY});
   backplane->AddBinding(VR_BIND_FUNC(
       bool, Model, model_,
-      active_modal_prompt_type == kModalPromptTypeExitVRForAudioPermission,
+      active_modal_prompt_type ==
+          kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission,
       UiElement, backplane.get(), SetVisible));
 
   std::unique_ptr<Shadow> shadow = base::MakeUnique<Shadow>();
@@ -1240,14 +1243,14 @@ void UiSceneCreator::CreateAudioPermissionPrompt() {
   std::unique_ptr<AudioPermissionPrompt> prompt =
       base::MakeUnique<AudioPermissionPrompt>(
           1024,
-          base::Bind(&UiBrowserInterface::OnExitVrPromptResult,
-                     base::Unretained(browser_),
-                     ExitVrPromptChoice::CHOICE_EXIT,
-                     UiUnsupportedMode::kAndroidPermissionNeeded),
-          base::Bind(&UiBrowserInterface::OnExitVrPromptResult,
-                     base::Unretained(browser_),
-                     ExitVrPromptChoice::CHOICE_STAY,
-                     UiUnsupportedMode::kAndroidPermissionNeeded));
+          base::Bind(
+              &UiBrowserInterface::OnExitVrPromptResult,
+              base::Unretained(browser_), ExitVrPromptChoice::CHOICE_EXIT,
+              UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission),
+          base::Bind(
+              &UiBrowserInterface::OnExitVrPromptResult,
+              base::Unretained(browser_), ExitVrPromptChoice::CHOICE_STAY,
+              UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission));
   prompt->set_name(kAudioPermissionPrompt);
   prompt->set_draw_phase(kPhaseForeground);
   prompt->SetSize(kAudioPermissionPromptWidth, kAudioPermissionPromptHeight);
