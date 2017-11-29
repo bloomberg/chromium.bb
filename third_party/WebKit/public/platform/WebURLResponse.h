@@ -219,9 +219,6 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT bool WasFetchedViaServiceWorker() const;
   BLINK_PLATFORM_EXPORT void SetWasFetchedViaServiceWorker(bool);
 
-  // Flag whether this request was loaded using a foreign fetch service worker.
-  BLINK_PLATFORM_EXPORT void SetWasFetchedViaForeignFetch(bool);
-
   // Flag whether the fallback request with skip service worker flag was
   // required. See ServiceWorkerResponseInfo::was_fallback_required() for
   // details.

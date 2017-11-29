@@ -2237,9 +2237,7 @@ EVENT_TYPE(SERVICE_WORKER_ERROR_REQUEST_BODY_BLOB_FAILED)
 //
 // The BEGIN phase consists of the following parameters:
 // {
-//   "event_type": A string indicating the type of fetch event. Generally it is
-//   either a fetch or foreignfetch event; fetch events are additionally
-//   categorized by resource type.
+//   "event_type": A string indicating the resource type being fetched.
 // }
 //
 // For the END phase, the following parameters are attached. No parameters are

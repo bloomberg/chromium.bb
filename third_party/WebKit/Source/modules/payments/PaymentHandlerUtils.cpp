@@ -42,9 +42,6 @@ void PaymentHandlerUtils::ReportResponseError(
     case ServiceWorkerResponseError::kResponseTypeOpaqueForClientRequest:
     case ServiceWorkerResponseError::kResponseTypeOpaqueRedirect:
     case ServiceWorkerResponseError::kBodyLocked:
-    case ServiceWorkerResponseError::kNoForeignFetchResponse:
-    case ServiceWorkerResponseError::kForeignFetchHeadersWithoutOrigin:
-    case ServiceWorkerResponseError::kForeignFetchMismatchedOrigin:
     case ServiceWorkerResponseError::kRedirectedResponseForNotFollowRequest:
     case ServiceWorkerResponseError::kDataPipeCreationFailed:
       NOTREACHED();

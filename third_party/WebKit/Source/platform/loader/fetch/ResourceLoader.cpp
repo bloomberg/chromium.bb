@@ -515,20 +515,15 @@ void ResourceLoader::DidReceiveResponse(
       ResourceRequest last_request = resource_->LastResourceRequest();
       DCHECK_EQ(last_request.GetServiceWorkerMode(),
                 WebURLRequest::ServiceWorkerMode::kAll);
-      // This code handles the case when a regular controlling service worker
-      // doesn't handle a cross origin request. When this happens we still want
-      // to give foreign fetch a chance to handle the request, so only skip the
-      // controlling service worker for the fallback request. This is currently
-      // safe because of http://crbug.com/604084 the
-      // wasFallbackRequiredByServiceWorker flag is never set when foreign fetch
-      // handled a request.
+      // This code handles the case when a controlling service worker doesn't
+      // handle a cross origin request.
       if (!Context().ShouldLoadNewResource(resource_type)) {
         // Cancel the request if we should not trigger a reload now.
         HandleError(ResourceError::CancelledError(response.Url()));
         return;
       }
       last_request.SetServiceWorkerMode(
-          WebURLRequest::ServiceWorkerMode::kForeign);
+          WebURLRequest::ServiceWorkerMode::kNone);
       Restart(last_request);
       return;
     }

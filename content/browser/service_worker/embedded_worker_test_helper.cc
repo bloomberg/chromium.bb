@@ -187,11 +187,10 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
   ~MockServiceWorkerEventDispatcher() override {}
 
   void DispatchInstallEvent(
-      mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
       DispatchInstallEventCallback callback) override {
     if (!helper_)
       return;
-    helper_->OnInstallEventStub(std::move(client), std::move(callback));
+    helper_->OnInstallEventStub(std::move(callback));
   }
 
   void DispatchActivateEvent(DispatchActivateEventCallback callback) override {
@@ -642,7 +641,6 @@ void EmbeddedWorkerTestHelper::OnExtendableMessageEvent(
 }
 
 void EmbeddedWorkerTestHelper::OnInstallEvent(
-    mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
     mojom::ServiceWorkerEventDispatcher::DispatchInstallEventCallback
         callback) {
   dispatched_events()->push_back(Event::Install);
@@ -945,13 +943,11 @@ void EmbeddedWorkerTestHelper::OnExtendableMessageEventStub(
 }
 
 void EmbeddedWorkerTestHelper::OnInstallEventStub(
-    mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
     mojom::ServiceWorkerEventDispatcher::DispatchInstallEventCallback
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EmbeddedWorkerTestHelper::OnInstallEvent, AsWeakPtr(),
-                     base::Passed(&client), base::Passed(&callback)));
+      FROM_HERE, base::BindOnce(&EmbeddedWorkerTestHelper::OnInstallEvent,
+                                AsWeakPtr(), std::move(callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEventStub(

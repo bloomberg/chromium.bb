@@ -65,8 +65,6 @@
 #include "content/browser/loader/upload_data_stream_builder.h"
 #include "content/browser/loader/wake_lock_resource_throttle.h"
 #include "content/browser/resource_context_impl.h"
-#include "content/browser/service_worker/foreign_fetch_request_handler.h"
-#include "content/browser/service_worker/link_header_support.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
@@ -645,8 +643,6 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(
     scheduler_->OnReceivedSpdyProxiedHttpResponse(
         info->GetChildID(), info->GetRouteID());
   }
-
-  ProcessRequestForLinkHeaders(request);
 
   if (delegate_)
     delegate_->OnResponseStarted(request, info->GetContext(), response);
@@ -1389,16 +1385,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
         request_data.keepalive, request_data.resource_type,
         request_data.fetch_request_context_type, request_data.fetch_frame_type,
         request_data.request_body);
-
-    ForeignFetchRequestHandler::InitializeHandler(
-        new_request.get(), requester_info->service_worker_context(),
-        blob_context, child_id, request_data.service_worker_provider_id,
-        service_worker_mode, request_data.fetch_request_mode,
-        request_data.fetch_credentials_mode, request_data.fetch_redirect_mode,
-        request_data.fetch_integrity, request_data.keepalive,
-        request_data.resource_type, request_data.fetch_request_context_type,
-        request_data.fetch_frame_type, request_data.request_body,
-        request_data.initiated_in_secure_context);
 
     // Have the appcache associate its extra info with the request.
     AppCacheInterceptor::SetExtraRequestInfo(

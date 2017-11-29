@@ -114,7 +114,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(activate);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(fetch);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(foreignfetch);
 
   void Trace(blink::Visitor*) override;
 

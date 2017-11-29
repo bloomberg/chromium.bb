@@ -289,13 +289,6 @@ void EndNetLogEventWithServiceWorkerStatus(const net::NetLogWithSource& net_log,
                    base::Bind(&NetLogServiceWorkerStatusCallback, status));
 }
 
-ServiceWorkerMetrics::EventType FetchTypeToWaitUntilEventType(
-    ServiceWorkerFetchType type) {
-  if (type == ServiceWorkerFetchType::FOREIGN_FETCH)
-    return ServiceWorkerMetrics::EventType::FOREIGN_FETCH_WAITUNTIL;
-  return ServiceWorkerMetrics::EventType::FETCH_WAITUNTIL;
-}
-
 const net::NetworkTrafficAnnotationTag kNavigationPreloadTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("service_worker_navigation_preload",
                                         R"(
@@ -604,7 +597,7 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
                        std::move(response_callback)),
         *timeout_, ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
     event_finish_id = version_->StartRequestWithCustomTimeout(
-        FetchTypeToWaitUntilEventType(GetFetchType()),
+        ServiceWorkerMetrics::EventType::FETCH_WAITUNTIL,
         base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback), *timeout_,
         ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
   } else {
@@ -614,7 +607,7 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
                        weak_factory_.GetWeakPtr(),
                        std::move(response_callback)));
     event_finish_id = version_->StartRequest(
-        FetchTypeToWaitUntilEventType(GetFetchType()),
+        ServiceWorkerMetrics::EventType::FETCH_WAITUNTIL,
         base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
   }
   response_callback_rawptr->set_fetch_event_id(fetch_event_id);
@@ -871,8 +864,6 @@ ServiceWorkerFetchType ServiceWorkerFetchDispatcher::GetFetchType() const {
 
 ServiceWorkerMetrics::EventType ServiceWorkerFetchDispatcher::GetEventType()
     const {
-  if (GetFetchType() == ServiceWorkerFetchType::FOREIGN_FETCH)
-    return ServiceWorkerMetrics::EventType::FOREIGN_FETCH;
   return ResourceTypeToEventType(resource_type_);
 }
 

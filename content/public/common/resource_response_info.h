@@ -115,9 +115,6 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   // True if the response was fetched by a ServiceWorker.
   bool was_fetched_via_service_worker;
 
-  // True if the response was fetched by a foreign fetch ServiceWorker;
-  bool was_fetched_via_foreign_fetch;
-
   // True when the request whoes mode is |CORS| or |CORS-with-forced-preflight|
   // is sent to a ServiceWorker but FetchEvent.respondWith is not called. So the
   // renderer have to resend the request with skip service worker flag

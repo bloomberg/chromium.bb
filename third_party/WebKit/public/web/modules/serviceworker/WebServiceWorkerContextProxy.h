@@ -95,9 +95,6 @@ class WebServiceWorkerContextProxy {
   virtual void DispatchFetchEvent(int fetch_event_id,
                                   const WebServiceWorkerRequest& web_request,
                                   bool navigation_preload_sent) = 0;
-  virtual void DispatchForeignFetchEvent(
-      int fetch_event_id,
-      const WebServiceWorkerRequest& web_request) = 0;
   virtual void DispatchNotificationClickEvent(int event_id,
                                               const WebString& notification_id,
                                               const WebNotificationData&,

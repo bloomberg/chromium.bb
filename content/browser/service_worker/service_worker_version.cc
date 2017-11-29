@@ -1409,38 +1409,6 @@ void ServiceWorkerVersion::OnPongFromWorker() {
   ping_controller_->OnPongReceived();
 }
 
-void ServiceWorkerVersion::RegisterForeignFetchScopes(
-    const std::vector<GURL>& sub_scopes,
-    const std::vector<url::Origin>& origins) {
-  DCHECK(status() == INSTALLING || status() == REDUNDANT) << status();
-  // Renderer should have already verified all these urls are inside the
-  // worker's scope, but verify again here on the browser process side.
-  GURL origin = scope_.GetOrigin();
-  std::string scope_path = scope_.path();
-  for (const GURL& url : sub_scopes) {
-    if (!url.is_valid() || url.GetOrigin() != origin ||
-        !base::StartsWith(url.path(), scope_path,
-                          base::CompareCase::SENSITIVE)) {
-      DVLOG(1) << "Received unexpected invalid URL from renderer process.";
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::BindOnce(&KillEmbeddedWorkerProcess,
-                                             embedded_worker_->process_id()));
-      return;
-    }
-  }
-  for (const url::Origin& url : origins) {
-    if (url.unique()) {
-      DVLOG(1) << "Received unexpected unique origin from renderer process.";
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::BindOnce(&KillEmbeddedWorkerProcess,
-                                             embedded_worker_->process_id()));
-      return;
-    }
-  }
-  set_foreign_fetch_scopes(sub_scopes);
-  set_foreign_fetch_origins(origins);
-}
-
 void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
     ServiceWorkerMetrics::EventType purpose,
     Status prestart_status,

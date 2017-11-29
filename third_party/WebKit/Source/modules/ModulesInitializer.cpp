@@ -68,7 +68,6 @@
 #include "modules/remoteplayback/RemotePlayback.h"
 #include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
-#include "modules/serviceworkers/ServiceWorkerLinkResource.h"
 #include "modules/speech/SpeechRecognitionClientProxy.h"
 #include "modules/storage/DOMWindowStorageController.h"
 #include "modules/storage/InspectorDOMStorageAgent.h"
@@ -209,11 +208,6 @@ void ModulesInitializer::InitInspectorAgentSession(
     session->Append(InspectorDOMStorageAgent::Create(page));
     session->Append(InspectorCacheStorageAgent::Create(inspected_frames));
   }
-}
-
-LinkResource* ModulesInitializer::CreateServiceWorkerLinkResource(
-    HTMLLinkElement* owner) const {
-  return ServiceWorkerLinkResource::Create(owner);
 }
 
 void ModulesInitializer::OnClearWindowObjectInMainWorld(

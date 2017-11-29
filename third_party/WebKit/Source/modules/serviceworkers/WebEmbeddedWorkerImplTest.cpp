@@ -93,13 +93,6 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
                 std::unique_ptr<WebServiceWorkerClientCallbacks>) override {
     NOTREACHED();
   }
-  void RegisterForeignFetchScopes(
-      int install_event_id,
-      const WebVector<WebURL>& sub_scopes,
-      const WebVector<WebSecurityOrigin>& origins) override {
-    NOTREACHED();
-  }
-
   void WorkerContextDestroyed() override { termination_event_.Signal(); }
 
   void WaitUntilScriptEvaluated() { script_evaluated_event_.Wait(); }

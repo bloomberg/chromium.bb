@@ -227,10 +227,6 @@ class CONTENT_EXPORT ServiceWorkerStorage
       const std::string& key_prefix,
       const GetUserDataForAllRegistrationsCallback& callback);
 
-  // Returns true if any service workers at |origin| have registered for foreign
-  // fetch.
-  bool OriginHasForeignFetchRegistrations(const GURL& origin);
-
   // Deletes the storage and starts over.
   void DeleteAndStartOver(const StatusCallback& callback);
 
@@ -284,7 +280,6 @@ class CONTENT_EXPORT ServiceWorkerStorage
     int64_t next_version_id;
     int64_t next_resource_id;
     std::set<GURL> origins;
-    std::set<GURL> foreign_fetch_origins;
 
     InitialData();
     ~InitialData();
@@ -302,13 +297,10 @@ class CONTENT_EXPORT ServiceWorkerStorage
   };
 
   enum class OriginState {
-    // Other registrations with foreign fetch scopes exist for the origin.
-    KEEP_ALL,
-    // Other registrations exist at this origin, but none of them have foreign
-    // fetch scopes.
-    DELETE_FROM_FOREIGN_FETCH,
-    // No other registrations exist at this origin.
-    DELETE_FROM_ALL
+    // Registrations may exist at this origin. It cannot be deleted.
+    kKeep,
+    // No registrations exist at this origin. It can be deleted.
+    kDelete
   };
 
   typedef std::vector<ServiceWorkerDatabase::RegistrationData> RegistrationList;
@@ -551,7 +543,6 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   // Origins having registations.
   std::set<GURL> registered_origins_;
-  std::set<GURL> foreign_fetch_origins_;
 
   // Pending database tasks waiting for initialization.
   std::vector<base::OnceClosure> pending_tasks_;

@@ -8,7 +8,6 @@
 #include "modules/EventModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
-#include "modules/serviceworkers/ForeignFetchOptions.h"
 
 namespace blink {
 
@@ -24,10 +23,6 @@ class MODULES_EXPORT InstallEvent : public ExtendableEvent {
                               WaitUntilObserver*);
 
   ~InstallEvent() override;
-
-  void registerForeignFetch(ScriptState*,
-                            const ForeignFetchOptions&,
-                            ExceptionState&);
 
   const AtomicString& InterfaceName() const override;
 

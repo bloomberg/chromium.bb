@@ -40,8 +40,8 @@ message ServiceWorkerRegistrationData {
 
   optional uint64 resources_total_size_bytes = 8;
 
-  repeated string foreign_fetch_scope = 9;
-  repeated string foreign_fetch_origin = 10;
+  // repeated string foreign_fetch_scope = 9;  // obsolete
+  // repeated string foreign_fetch_origin = 10; // obsolete
 
   // If the registration data was created by old Chrome (< M56),
   // |origin_trial_tokens| is not set. In this case, we have to start the

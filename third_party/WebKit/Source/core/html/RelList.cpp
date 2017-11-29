@@ -32,10 +32,6 @@ bool RelList::ValidateTokenValue(const AtomicString& token_value,
                                  ExceptionState&) const {
   if (SupportedTokens().Contains(token_value))
     return true;
-  if (OriginTrials::linkServiceWorkerEnabled(
-          GetElement().GetExecutionContext()) &&
-      token_value == "serviceworker")
-    return true;
   if (RuntimeEnabledFeatures::ModulePreloadEnabled() &&
       token_value == "modulepreload")
     return true;

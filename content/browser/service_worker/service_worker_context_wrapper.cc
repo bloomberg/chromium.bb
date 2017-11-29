@@ -802,14 +802,6 @@ void ServiceWorkerContextWrapper::RemoveObserver(
   core_observer_list_->RemoveObserver(observer);
 }
 
-bool ServiceWorkerContextWrapper::OriginHasForeignFetchRegistrations(
-    const GURL& origin) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!context_core_)
-    return false;
-  return context_core_->storage()->OriginHasForeignFetchRegistrations(origin);
-}
-
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
   // Explicitly remove this object as an observer to avoid use-after-frees in
   // tests where this object is not guaranteed to outlive the

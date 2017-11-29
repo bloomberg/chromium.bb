@@ -1124,7 +1124,6 @@ void WebURLLoaderImpl::PopulateURLResponse(const WebURL& url,
       blink::FilePathToWebString(info.download_file_path));
   response->SetWasFetchedViaSPDY(info.was_fetched_via_spdy);
   response->SetWasFetchedViaServiceWorker(info.was_fetched_via_service_worker);
-  response->SetWasFetchedViaForeignFetch(info.was_fetched_via_foreign_fetch);
   response->SetWasFallbackRequiredByServiceWorker(
       info.was_fallback_required_by_service_worker);
   response->SetResponseTypeViaServiceWorker(

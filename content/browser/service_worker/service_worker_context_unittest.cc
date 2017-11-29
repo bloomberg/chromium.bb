@@ -90,7 +90,6 @@ class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
   RejectInstallTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
 
   void OnInstallEvent(
-      mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
       mojom::ServiceWorkerEventDispatcher::DispatchInstallEventCallback
           callback) override {
     dispatched_events()->push_back(Event::Install);

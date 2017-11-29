@@ -22,7 +22,6 @@ ResourceResponseInfo::ResourceResponseInfo()
       was_alternate_protocol_available(false),
       connection_info(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       was_fetched_via_service_worker(false),
-      was_fetched_via_foreign_fetch(false),
       was_fallback_required_by_service_worker(false),
       response_type_via_service_worker(
           network::mojom::FetchResponseType::kDefault),

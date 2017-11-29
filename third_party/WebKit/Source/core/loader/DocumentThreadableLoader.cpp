@@ -324,24 +324,22 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
   // following cases:
   //
   // - When the request is sync or the protocol is unsupported since we can
-  //   assume that any SW is skipped for such requests by content/ code.
-  // - When the ServiceWorkerMode is not kAll, the local SW will be skipped.
-  //   The request can still be intercepted by a foreign SW, but we cannot know
-  //   whether such a foreign fetch interception happens or not at this point.
-  // - If we're not yet controlled by a local SW, then we're sure that this
-  //   request won't be intercepted by a local SW. In case we end up with
+  //   assume that any service worker (SW) is skipped for such requests by
+  //   content/ code.
+  // - When the ServiceWorkerMode is not kAll, any SW will be skipped.
+  // - If we're not yet controlled by a SW, then we're sure that this
+  //   request won't be intercepted by a SW. In case we end up with
   //   sending a CORS preflight request, the actual request to be sent later
   //   may be intercepted. This is taken care of in LoadPreflightRequest() by
   //   setting the ServiceWorkerMode to kNone.
   //
   // From the above analysis, you can see that the request can never be
-  // intercepted by a local SW inside this if-block. It's because:
+  // intercepted by a SW inside this if-block. It's because:
   // - the ServiceWorkerMode needs to be kAll, and
   // - we're controlled by a SW at this point
-  // to allow a local SW to intercept the request. Even when the request gets
-  // issued asnychronously after performing the CORS preflight, it doesn'g get
-  // intercepted since LoadPreflightRequest() sets the flag to kNone in
-  // advance.
+  // to allow a SW to intercept the request. Even when the request gets issued
+  // asynchronously after performing the CORS preflight, it doesn't get
+  // intercepted since LoadPreflightRequest() sets the flag to kNone in advance.
   if (!async_ ||
       new_request.GetServiceWorkerMode() !=
           WebURLRequest::ServiceWorkerMode::kAll ||
@@ -354,16 +352,12 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
 
   if (WebCORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode())) {
     // Save the request to fallback_request_for_service_worker to use when the
-    // local SW doesn't handle (call respondWith()) a CORS enabled request.
+    // service worker doesn't handle (call respondWith()) a CORS enabled
+    // request.
     fallback_request_for_service_worker_ = ResourceRequest(request);
-
-    // We still want to give a foreign SW if any a chance to handle the
-    // request. So, only skip the controlling local SW for the fallback
-    // request. This is currently safe because of http://crbug.com/604084. The
-    // WasFallbackRequiredByServiceWorker() flag is never set when a foreign SW
-    // handled a request.
+    // Skip the service worker for the fallback request.
     fallback_request_for_service_worker_.SetServiceWorkerMode(
-        WebURLRequest::ServiceWorkerMode::kForeign);
+        WebURLRequest::ServiceWorkerMode::kNone);
   }
 
   LoadRequest(new_request, resource_loader_options_);
@@ -950,10 +944,6 @@ void DocumentThreadableLoader::HandleResponseBlinkCORS(
   }
 
   if (response.WasFetchedViaServiceWorker()) {
-    if (response.WasFetchedViaForeignFetch()) {
-      loading_context_->GetFetchContext()->CountUsage(
-          WebFeature::kForeignFetchInterception);
-    }
     if (response.WasFallbackRequiredByServiceWorker()) {
       // At this point we must have m_fallbackRequestForServiceWorker. (For
       // SharedWorker the request won't be CORS or CORS-with-preflight,

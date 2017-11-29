@@ -141,25 +141,6 @@ ServiceWorkerUnregisterJob::UnregistrationCallback SaveUnregistration(
   return base::Bind(&SaveUnregistrationCallback, expected_status, called);
 }
 
-// This is for the test of mojom::ServiceWorkerInstallEventMethods.
-void RegisterForeignFetchScopes(
-    mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client) {
-  GURL valid_scope_1("http://www.example.com/test/subscope");
-  GURL valid_scope_2("http://www.example.com/test/othersubscope");
-  std::vector<GURL> valid_scopes;
-  valid_scopes.push_back(valid_scope_1);
-  valid_scopes.push_back(valid_scope_2);
-
-  std::vector<url::Origin> all_origins;
-  url::Origin valid_origin = url::Origin::Create(GURL("https://chromium.org/"));
-  std::vector<url::Origin> valid_origin_list(1, valid_origin);
-
-  mojom::ServiceWorkerInstallEventMethodsAssociatedPtr install_event_methods;
-  install_event_methods.Bind(std::move(client));
-  install_event_methods->RegisterForeignFetchScopes(valid_scopes,
-                                                    valid_origin_list);
-}
-
 }  // namespace
 
 class ServiceWorkerJobTest : public testing::Test {
@@ -335,46 +316,17 @@ TEST_F(ServiceWorkerJobTest, DifferentMatchDifferentRegistration) {
   ASSERT_NE(registration1, registration2);
 }
 
-class RegisterForeignFetchTestHelper : public EmbeddedWorkerTestHelper {
- public:
-  RegisterForeignFetchTestHelper()
-      : EmbeddedWorkerTestHelper(base::FilePath()) {}
-
-  void OnInstallEvent(
-      mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
-      mojom::ServiceWorkerEventDispatcher::DispatchInstallEventCallback
-          callback) override {
-    RegisterForeignFetchScopes(std::move(client));
-    dispatched_events()->push_back(Event::Install);
-    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            true /* has_fetch_handler */, base::Time::Now());
-  }
-};
-
 // Make sure basic registration is working.
 TEST_F(ServiceWorkerJobTest, Register) {
-  helper_.reset(new RegisterForeignFetchTestHelper);
-
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(GURL("http://www.example.com/"),
                      GURL("http://www.example.com/service_worker.js"));
 
-  ASSERT_NE(scoped_refptr<ServiceWorkerRegistration>(nullptr), registration);
+  EXPECT_TRUE(registration);
   EXPECT_EQ(EmbeddedWorkerTestHelper::Event::Install,
             helper_->dispatched_events()->at(0));
   EXPECT_EQ(EmbeddedWorkerTestHelper::Event::Activate,
             helper_->dispatched_events()->at(1));
-
-  GURL valid_scope_1("http://www.example.com/test/subscope");
-  GURL valid_scope_2("http://www.example.com/test/othersubscope");
-  url::Origin valid_origin = url::Origin::Create(GURL("https://chromium.org/"));
-
-  ServiceWorkerVersion* version_ = registration->active_version();
-  EXPECT_EQ(2u, version_->foreign_fetch_scopes_.size());
-  EXPECT_EQ(valid_scope_1, version_->foreign_fetch_scopes_[0]);
-  EXPECT_EQ(valid_scope_2, version_->foreign_fetch_scopes_[1]);
-  EXPECT_EQ(1u, version_->foreign_fetch_origins_.size());
-  EXPECT_EQ(valid_origin, version_->foreign_fetch_origins_[0]);
 }
 
 // Make sure registrations are cleaned up when they are unregistered.
@@ -1629,7 +1581,6 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
             blink::mojom::ServiceWorkerEventStatus::COMPLETED) {}
 
   void OnInstallEvent(
-      mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
       mojom::ServiceWorkerEventDispatcher::DispatchInstallEventCallback
           callback) override {
     if (!install_callback_.is_null())

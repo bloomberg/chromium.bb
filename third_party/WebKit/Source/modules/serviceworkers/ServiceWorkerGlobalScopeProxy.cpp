@@ -69,7 +69,7 @@
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "modules/serviceworkers/ExtendableMessageEvent.h"
 #include "modules/serviceworkers/FetchEvent.h"
-#include "modules/serviceworkers/ForeignFetchEvent.h"
+#include "modules/serviceworkers/FetchRespondWithObserver.h"
 #include "modules/serviceworkers/InstallEvent.h"
 #include "modules/serviceworkers/ServiceWorkerClient.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
@@ -365,52 +365,6 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadComplete(
   fetch_event->OnNavigationPreloadComplete(
       WorkerGlobalScope(), completion_time, encoded_data_length,
       encoded_body_length, decoded_body_length);
-}
-
-void ServiceWorkerGlobalScopeProxy::DispatchForeignFetchEvent(
-    int fetch_event_id,
-    const WebServiceWorkerRequest& web_request) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
-  if (!OriginTrials::foreignFetchEnabled(WorkerGlobalScope())) {
-    // If origin trial tokens have expired, or are otherwise no longer valid
-    // no events should be dispatched.
-    // TODO(mek): Ideally the browser wouldn't even start the service worker
-    // if its tokens have expired.
-    ServiceWorkerGlobalScopeClient::From(WorkerGlobalScope())
-        ->RespondToFetchEventWithNoResponse(fetch_event_id, WTF::CurrentTime());
-    ServiceWorkerGlobalScopeClient::From(WorkerGlobalScope())
-        ->DidHandleFetchEvent(fetch_event_id,
-                              mojom::ServiceWorkerEventStatus::COMPLETED,
-                              WTF::CurrentTime());
-    return;
-  }
-
-  ScriptState::Scope scope(
-      WorkerGlobalScope()->ScriptController()->GetScriptState());
-  scoped_refptr<SecurityOrigin> origin =
-      SecurityOrigin::Create(web_request.ReferrerUrl());
-  WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
-      WorkerGlobalScope(), WaitUntilObserver::kFetch, fetch_event_id);
-  ForeignFetchRespondWithObserver* respond_with_observer =
-      ForeignFetchRespondWithObserver::Create(
-          WorkerGlobalScope(), fetch_event_id, web_request.Url(),
-          web_request.Mode(), web_request.RedirectMode(),
-          web_request.GetFrameType(), web_request.GetRequestContext(), origin,
-          wait_until_observer);
-  Request* request = Request::Create(
-      WorkerGlobalScope()->ScriptController()->GetScriptState(), web_request);
-  request->getHeaders()->SetGuard(Headers::kImmutableGuard);
-  ForeignFetchEventInit event_init;
-  event_init.setCancelable(true);
-  event_init.setRequest(request);
-  event_init.setOrigin(origin->ToString());
-  ForeignFetchEvent* fetch_event = ForeignFetchEvent::Create(
-      WorkerGlobalScope()->ScriptController()->GetScriptState(),
-      EventTypeNames::foreignfetch, event_init, respond_with_observer,
-      wait_until_observer);
-
-  WorkerGlobalScope()->DispatchExtendableEventWithRespondWith(
-      fetch_event, wait_until_observer, respond_with_observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::DispatchInstallEvent(int event_id) {

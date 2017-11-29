@@ -290,13 +290,6 @@ class PLATFORM_EXPORT ResourceResponse final {
     was_fetched_via_service_worker_ = value;
   }
 
-  bool WasFetchedViaForeignFetch() const {
-    return was_fetched_via_foreign_fetch_;
-  }
-  void SetWasFetchedViaForeignFetch(bool value) {
-    was_fetched_via_foreign_fetch_ = value;
-  }
-
   // See ServiceWorkerResponseInfo::was_fallback_required.
   bool WasFallbackRequiredByServiceWorker() const {
     return was_fallback_required_by_service_worker_;
@@ -460,9 +453,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   // Was the resource fetched over a ServiceWorker.
   bool was_fetched_via_service_worker_ : 1;
 
-  // Was the resource fetched using a foreign fetch service worker.
-  bool was_fetched_via_foreign_fetch_ : 1;
-
   // Was the fallback request with skip service worker flag required.
   bool was_fallback_required_by_service_worker_ : 1;
 
@@ -598,7 +588,6 @@ struct CrossThreadResourceResponseData {
   bool was_fetched_via_spdy_;
   bool was_fetched_via_proxy_;
   bool was_fetched_via_service_worker_;
-  bool was_fetched_via_foreign_fetch_;
   bool was_fallback_required_by_service_worker_;
   network::mojom::FetchResponseType response_type_via_service_worker_;
   Vector<KURL> url_list_via_service_worker_;

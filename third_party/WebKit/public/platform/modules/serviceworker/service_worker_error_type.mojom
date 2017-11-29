@@ -42,9 +42,9 @@ enum ServiceWorkerResponseError {
   kResponseTypeOpaqueForClientRequest = 8,
   kResponseTypeOpaqueRedirect = 9,
   kBodyLocked = 10,
-  kNoForeignFetchResponse = 11,
-  kForeignFetchHeadersWithoutOrigin = 12,
-  kForeignFetchMismatchedOrigin = 13,
+  // kNoForeignFetchResponse = 11,  // obsolete
+  // kForeignFetchHeadersWithoutOrigin = 12,  // obsolete
+  // kForeignFetchMismatchedOrigin = 13,  // obsolete
   kRedirectedResponseForNotFollowRequest = 14,
   kDataPipeCreationFailed = 15,
   // Add a new type here, then update kLast and enums.xml.

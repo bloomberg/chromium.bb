@@ -679,9 +679,6 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT,
             GetUserDataForAllRegistrations(kUserDataKey, &data_list_out));
 
-  EXPECT_FALSE(
-      storage()->OriginHasForeignFetchRegistrations(kScope.GetOrigin()));
-
   // Next available ids should be invalid.
   EXPECT_EQ(blink::mojom::kInvalidServiceWorkerRegistrationId,
             storage()->NewRegistrationId());
@@ -699,9 +696,6 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   const int64_t kResource2Size = 51;
   const int64_t kRegistrationId = 0;
   const int64_t kVersionId = 0;
-  const GURL kForeignFetchScope("http://www.test.not/scope/ff/");
-  const url::Origin kForeignFetchOrigin =
-      url::Origin::Create(GURL("https://example.com/"));
   const base::Time kToday = base::Time::Now();
   const base::Time kYesterday = kToday - base::TimeDelta::FromDays(1);
   std::set<uint32_t> used_features = {124, 901, 1019};
@@ -737,10 +731,6 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_version->script_cache_map()->SetResources(resources);
-  live_version->set_foreign_fetch_scopes(
-      std::vector<GURL>(1, kForeignFetchScope));
-  live_version->set_foreign_fetch_origins(
-      std::vector<url::Origin>(1, kForeignFetchOrigin));
   live_version->set_used_features(used_features);
   live_registration->SetWaitingVersion(live_version);
   live_registration->set_last_update_check(kYesterday);
@@ -833,15 +823,6 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   EXPECT_EQ(kYesterday, found_registration->last_update_check());
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED,
             found_registration->waiting_version()->status());
-  EXPECT_EQ(
-      1u, found_registration->waiting_version()->foreign_fetch_scopes().size());
-  EXPECT_EQ(kForeignFetchScope,
-            found_registration->waiting_version()->foreign_fetch_scopes()[0]);
-  EXPECT_EQ(
-      1u,
-      found_registration->waiting_version()->foreign_fetch_origins().size());
-  EXPECT_EQ(kForeignFetchOrigin,
-            found_registration->waiting_version()->foreign_fetch_origins()[0]);
 
   // Update to active and update the last check time.
   scoped_refptr<ServiceWorkerVersion> temp_version =
@@ -1761,83 +1742,6 @@ class ServiceWorkerStorageDiskTest : public ServiceWorkerStorageTest {
     ServiceWorkerStorageTest::SetUp();
   }
 };
-
-TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
-  LazyInitialize();
-
-  // Registration 1 for http://www.example.com
-  const GURL kScope1("http://www.example.com/scope/");
-  const GURL kScript1("http://www.example.com/script1.js");
-  scoped_refptr<ServiceWorkerRegistration> live_registration1 =
-      CreateLiveRegistrationAndVersion(kScope1, kScript1);
-  const int64_t kRegistrationId1 = live_registration1->id();
-  ServiceWorkerVersion* live_version1 = live_registration1->waiting_version();
-  live_version1->set_foreign_fetch_scopes(std::vector<GURL>(1, kScope1));
-
-  // Registration 2 for http://www.example.com
-  const GURL kScope2("http://www.example.com/scope/foo");
-  const GURL kScript2("http://www.example.com/script2.js");
-  scoped_refptr<ServiceWorkerRegistration> live_registration2 =
-      CreateLiveRegistrationAndVersion(kScope2, kScript2);
-  const int64_t kRegistrationId2 = live_registration2->id();
-  ServiceWorkerVersion* live_version2 = live_registration2->waiting_version();
-  live_version2->set_foreign_fetch_scopes(std::vector<GURL>(1, kScope2));
-
-  // Registration for http://www.test.com
-  const GURL kScope3("http://www.test.com/scope/foobar");
-  const GURL kScript3("http://www.test.com/script3.js");
-  scoped_refptr<ServiceWorkerRegistration> live_registration3 =
-      CreateLiveRegistrationAndVersion(kScope3, kScript3);
-  ServiceWorkerVersion* live_version3 = live_registration3->waiting_version();
-
-  // Neither origin should have registrations before they are stored.
-  const GURL kOrigin1 = kScope1.GetOrigin();
-  const GURL kOrigin2 = kScope3.GetOrigin();
-  EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin1));
-  EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin2));
-
-  // Store all registrations.
-  EXPECT_EQ(SERVICE_WORKER_OK,
-            StoreRegistration(live_registration1, live_version1));
-  EXPECT_EQ(SERVICE_WORKER_OK,
-            StoreRegistration(live_registration2, live_version2));
-  EXPECT_EQ(SERVICE_WORKER_OK,
-            StoreRegistration(live_registration3, live_version3));
-
-  // Now first origin should have foreign fetch registrations, second doesn't.
-  EXPECT_TRUE(storage()->OriginHasForeignFetchRegistrations(kOrigin1));
-  EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin2));
-
-  // Remove one registration at first origin.
-  EXPECT_EQ(SERVICE_WORKER_OK,
-            DeleteRegistration(kRegistrationId1, kScope1.GetOrigin()));
-
-  // First origin should still have a registration left.
-  EXPECT_TRUE(storage()->OriginHasForeignFetchRegistrations(kOrigin1));
-  EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin2));
-
-  // Simulate browser shutdown and restart.
-  live_registration1 = nullptr;
-  live_version1 = nullptr;
-  live_registration2 = nullptr;
-  live_version2 = nullptr;
-  live_registration3 = nullptr;
-  live_version3 = nullptr;
-  InitializeTestHelper();
-  LazyInitialize();
-
-  // First origin should still have a registration left.
-  EXPECT_TRUE(storage()->OriginHasForeignFetchRegistrations(kOrigin1));
-  EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin2));
-
-  // Remove other registration at first origin.
-  EXPECT_EQ(SERVICE_WORKER_OK,
-            DeleteRegistration(kRegistrationId2, kScope2.GetOrigin()));
-
-  // No foreign fetch registrations remain.
-  EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin1));
-  EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin2));
-}
 
 TEST_F(ServiceWorkerStorageTest, OriginTrialsAbsentEntryAndEmptyEntry) {
   const GURL origin1("http://www1.example.com");
