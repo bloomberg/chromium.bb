@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
+#include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "components/prefs/pref_member.h"
 #include "components/security_state/core/security_state.h"
@@ -31,7 +32,6 @@
 
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
-class ContentSettingImageView;
 class FindBarIcon;
 class GURL;
 class IntentPickerView;
@@ -69,7 +69,8 @@ class LocationBarView : public LocationBar,
                         public ChromeOmniboxEditController,
                         public DropdownBarHostDelegate,
                         public zoom::ZoomEventManagerObserver,
-                        public views::ButtonListener {
+                        public views::ButtonListener,
+                        public ContentSettingImageView::Delegate {
  public:
   class Delegate {
    public:
@@ -236,6 +237,11 @@ class LocationBarView : public LocationBar,
   void UpdateWithoutTabRestore() override;
   ToolbarModel* GetToolbarModel() override;
   content::WebContents* GetWebContents() override;
+
+  // ContentSettingImageView::Delegate:
+  content::WebContents* GetContentSettingWebContents() override;
+  ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
+      override;
 
   // ZoomEventManagerObserver:
   // Updates the view for the zoom icon when default zoom levels change.
