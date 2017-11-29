@@ -1527,7 +1527,7 @@
     ],
 
     'release_bot_fuchsia_cast_audio': [
-      'release_bot', 'fuchsia', 'cast', 'cast_audio',
+      'release_bot', 'fuchsia', 'cast', 'cast_audio', 'no_symbols',
     ],
 
     'release_bot_fuchsia_arm64': [
@@ -1535,7 +1535,7 @@
     ],
 
     'release_bot_fuchsia_arm64_cast_audio': [
-      'release_bot', 'fuchsia', 'arm64', 'cast', 'cast_audio',
+      'release_bot', 'fuchsia', 'arm64', 'cast', 'cast_audio', 'no_symbols',
     ],
 
     'release_bot_mac_new_sdk': [
