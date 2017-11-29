@@ -65,9 +65,6 @@ struct CONTENT_EXPORT BackgroundFetchRegistration {
   uint64_t download_total = 0;
   uint64_t downloaded = 0;
   // TODO(crbug.com/699957): Support the `activeFetches` member.
-
-  // TODO(crbug.com/769770): Remove the following deprecated members.
-  std::string title;
 };
 
 // Represents a request/response pair for a settled Background Fetch fetch.

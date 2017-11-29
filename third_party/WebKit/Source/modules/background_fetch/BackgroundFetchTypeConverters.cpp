@@ -21,8 +21,7 @@ TypeConverter<blink::BackgroundFetchRegistration*,
   return new blink::BackgroundFetchRegistration(
       mojoRegistration->developer_id, mojoRegistration->unique_id,
       mojoRegistration->upload_total, mojoRegistration->uploaded,
-      mojoRegistration->download_total, mojoRegistration->downloaded,
-      mojoRegistration->title);
+      mojoRegistration->download_total, mojoRegistration->downloaded);
 }
 
 blink::mojom::blink::BackgroundFetchOptionsPtr TypeConverter<

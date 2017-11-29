@@ -435,7 +435,6 @@ interface BackgroundFetchRegistration : EventTarget
     getter downloaded
     getter id
     getter onprogress
-    getter title
     getter totalDownloadSize
     getter uploadTotal
     getter uploaded

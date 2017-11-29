@@ -21,7 +21,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter downloaded
 [Worker]     getter id
 [Worker]     getter onprogress
-[Worker]     getter title
 [Worker]     getter totalDownloadSize
 [Worker]     getter uploadTotal
 [Worker]     getter uploaded

@@ -69,10 +69,6 @@ struct CONTENT_EXPORT
       const content::BackgroundFetchRegistration& registration) {
     return registration.downloaded;
   }
-  static const std::string& title(
-      const content::BackgroundFetchRegistration& registration) {
-    return registration.title;
-  }
 
   static bool Read(blink::mojom::BackgroundFetchRegistrationDataView data,
                    content::BackgroundFetchRegistration* registration);
