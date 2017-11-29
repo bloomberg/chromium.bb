@@ -49,6 +49,11 @@ class MEDIA_GPU_EXPORT VaapiPictureFactory {
   // or GL_TEXTURE_EXTERNAL_OES on DRM).
   uint32_t GetGLTextureTarget();
 
+  // Buffer format to use for output buffers backing PictureBuffers. This is
+  // the format decoded frames in VASurfaces are converted into.
+  gfx::BufferFormat GetBufferFormatForAllocateMode();
+  gfx::BufferFormat GetBufferFormatForImportMode();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(VaapiPictureFactory);
 };

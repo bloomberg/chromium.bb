@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/gpu/accelerated_video_decoder.h"
+#include "media/gpu/format_utils.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
 #include "media/gpu/vaapi/vaapi_picture_factory.h"
 #include "media/gpu/vaapi_wrapper.h"
@@ -336,6 +337,27 @@ TEST_P(VaapiVideoDecodeAcceleratorTest, SupportedPlatforms) {
             mock_vaapi_picture_factory_->GetVaapiImplementation(
                 gl::kGLImplementationDesktopGL));
 #endif
+}
+
+// Verifies the expected buffer format for each output mode.
+TEST_P(VaapiVideoDecodeAcceleratorTest, PictureBufferFormat) {
+  gfx::BufferFormat allocate_format =
+      mock_vaapi_picture_factory_->GetBufferFormatForAllocateMode();
+  gfx::BufferFormat import_format =
+      mock_vaapi_picture_factory_->GetBufferFormatForImportMode();
+
+#if defined(USE_OZONE)
+  EXPECT_EQ(gfx::BufferFormat::BGRX_8888, allocate_format);
+#else
+  EXPECT_EQ(gfx::BufferFormat::RGBX_8888, allocate_format);
+#endif  // USE_OZONE
+
+  EXPECT_EQ(gfx::BufferFormat::YVU_420, import_format);
+
+  EXPECT_EQ(PIXEL_FORMAT_XRGB,
+            GfxBufferFormatToVideoPixelFormat(allocate_format));
+  EXPECT_EQ(PIXEL_FORMAT_YV12,
+            GfxBufferFormatToVideoPixelFormat(import_format));
 }
 
 INSTANTIATE_TEST_CASE_P(/* No prefix. */,

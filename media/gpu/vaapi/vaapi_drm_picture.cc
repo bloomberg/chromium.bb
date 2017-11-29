@@ -25,6 +25,7 @@ namespace {
 static unsigned BufferFormatToInternalFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::RGBX_8888:
       return GL_RGB;
 
     case gfx::BufferFormat::BGRA_8888:
