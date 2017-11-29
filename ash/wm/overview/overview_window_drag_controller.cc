@@ -166,9 +166,21 @@ void OverviewWindowDragController::UpdatePhantomWindowAndWindowGrid(
   SplitViewController::SnapPosition last_snap_position = snap_position_;
   snap_position_ = GetSnapPosition(location_in_screen);
 
+  // If there is already a snapped window in |snap_position_|, do not allow
+  // another window snap in the same position.
+  SplitViewController::State snapped_state = split_view_controller_->state();
+  if ((snap_position_ == SplitViewController::LEFT &&
+       snapped_state == SplitViewController::LEFT_SNAPPED) ||
+      (snap_position_ == SplitViewController::RIGHT &&
+       snapped_state == SplitViewController::RIGHT_SNAPPED)) {
+    snap_position_ = SplitViewController::NONE;
+    phantom_window_controller_.reset();
+    return;
+  }
+
   // If there is no current snapped window, update the window grid size if the
   // dragged window can be snapped if dropped.
-  if (split_view_controller_->state() == SplitViewController::NO_SNAP &&
+  if (snapped_state == SplitViewController::NO_SNAP &&
       snap_position_ != last_snap_position) {
     // Do not reposition the item that is currently being dragged.
     window_selector_->SetBoundsForWindowGridsInScreenIgnoringWindow(
