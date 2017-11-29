@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -251,6 +253,9 @@ void GLContext::SetCurrent(GLSurface* surface) {
   // to create and make current a context.
   if (!surface && GetGLImplementation() != kGLImplementationMockGL &&
       GetGLImplementation() != kGLImplementationStubGL) {
+    // TODO(sunnyps): Remove after fixing crbug.com/724999.
+    base::debug::SetCrashKeyToStackTrace("gl-context-set-current-stack-trace",
+                                         base::debug::StackTrace());
     SetCurrentGL(nullptr);
   }
 }

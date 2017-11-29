@@ -197,6 +197,9 @@ size_t RegisterChromeCrashKeys() {
     // Temporary for https://crbug.com/685996.
     {kUserCloudPolicyManagerConnectTrace, kMediumSize},
 
+    // TODO(sunnyps): Remove after fixing crbug.com/724999.
+    {"gl-context-set-current-stack-trace", kMediumSize},
+
     // TODO(asvitkine): Remove after fixing https://crbug.com/736675
     {"bad_histogram", kMediumSize},
 

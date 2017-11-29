@@ -78,6 +78,9 @@ size_t RegisterCastCrashKeys() {
       // Temporary for https://crbug.com/685996.
       {"user-cloud-policy-manager-connect-trace", ::crash_keys::kMediumSize},
 
+      // TODO(sunnyps): Remove after fixing crbug.com/724999.
+      {"gl-context-set-current-stack-trace", ::crash_keys::kMediumSize},
+
       // Accessibility keys. Temporary for http://crbug.com/765490.
       {"ax_tree_error", ::crash_keys::kSmallSize},
       {"ax_tree_update", ::crash_keys::kMediumSize},
