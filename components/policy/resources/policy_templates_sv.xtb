@@ -30,6 +30,7 @@
 
           Om inställningen är inaktiverad eller inte konfigurerad körs fjärrhjälpsvärden i användarens kontext och fjärranvändare kan inte interagera med fönster som öppnats med högre behörighet på datorn.</translation>
 <translation id="1096105751829466145">Standardsökleverantör</translation>
+<translation id="1099282607296956954">Aktivera webbplatsisolering för alla webbplatser</translation>
 <translation id="1117535567637097036">Protokollhanterarna som ställs in via den här principen används inte för intent i Android.</translation>
 <translation id="1122282995569868661">Visar ikonen för <ph name="PRODUCT_NAME" /> i verktygsfältet</translation>
 <translation id="1128903365609589950">Konfigurerar den katalog som <ph name="PRODUCT_NAME" /> ska använda för att lagra cachade filer på hårddisken.
@@ -721,6 +722,17 @@
 <translation id="332771718998993005">Ange vilket namn som ska visas som mål för <ph name="PRODUCT_NAME" />.
 
           Om principen är inställd på något annat än en tom sträng används den strängen som namn på målet för <ph name="PRODUCT_NAME" />. I annat fall används enhetens namn som målnamn. Om principen lämnas utan inställning används enhetens namn som målnamn och enhetens ägare (eller en användare på den domän som hanterar enheten) kan ändra det. Namnet får vara högst 24 tecken långt.</translation>
+<translation id="3356249700768900657">
+      OBS! Det här är en experimentell princip som kan göra så att något slutar fungera!
+      Ta gärna en titt på principen IsolateOrigins också – du kan få det bästa av
+      två världar, isolering och begränsad inverkan på användarna, genom att ange
+      en lista med webbplatser som ska isoleras med IsolateOrigins. Med den här
+      inställningen, SitePerProcess, isoleras alla webbplatser.
+      När principen är aktiverad körs varje webbplats som en egen process.
+      När principen inaktiveras gäller den logik för processhantering som
+      användes före webbplatsisoleringen.
+      Om principen inte konfigureras kan användaren ändra inställningen.
+      </translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
 <translation id="3395348522300156660">Anger vilka skrivare som får användas.
 
@@ -1092,6 +1104,7 @@
           Exempel på mönster finns på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Öppna följande sidor</translation>
 <translation id="4680961954980851756">Aktivera Autofyll</translation>
+<translation id="4722122254122249791">Aktivera webbplatsisolering för enskilda ursprung</translation>
 <translation id="4722399051042571387">Om inställningen har konfigurerats som falsk kan inte användare ange pinkoder som är osäkra och lätta att gissa.
 
           Exempel på osäkra pinkoder är pinkoder som genomgående innehåller samma siffra (1111), pinkoder med sifferföljder i stigande (1234) eller fallande (4321) ordning och pinkoder som är vanliga.
@@ -1192,6 +1205,16 @@
 <translation id="4983201894483989687">Tillåt att föråldrade plugin-program körs</translation>
 <translation id="4988291787868618635">Åtgärd som ska vidtas när inaktivitetstiden har gått</translation>
 <translation id="4995548127349206948">Om autentisering med NTLMv2 har aktiverats eller inte</translation>
+<translation id="5027819375434797927">
+      OBS! Det här är en experimentell princip som kan göra så att något slutar fungera!
+      När principen är aktiverad körs varje namngivet ursprung i en
+      kommaavgränsad lista som en egen process. Även underdomäner isoleras:
+      om du anger https://example.com/ kommer även https://foo.example.com/ att
+      isoleras som en del av webbplatsen https://example.com/.
+      När principen inaktiveras gäller den logik för processhantering som
+      användes före webbplatsisoleringen.
+      Om principen inte konfigureras kan användaren ändra inställningen.
+      </translation>
 <translation id="5047604665028708335">Tillåt åtkomst till webbplatser utanför innehållspaket</translation>
 <translation id="5052081091120171147">Om den här policyn är aktiverad gör den att webbhistoriken måste importeras från den nuvarande standardwebbläsaren. Den påverkar då även importfönstret.
 
@@ -1274,9 +1297,9 @@
           Om principen är inställd på falskt kan användarna inte casta till enheten. Om principen är inställd på sant får användarna casta innehåll. Om principen lämnas utan inställning får användarna inte casta till registrerade Chrome OS-enheter, men däremot till enheter som inte är registrerade.</translation>
 <translation id="5330684698007383292">Tillåt att <ph name="PRODUCT_FRAME_NAME" /> hanterar följande innehållstyper</translation>
 <translation id="5365946944967967336">Visa knappen Startsida i verktygsfältet</translation>
-<translation id="5366977351895725771">Om "false" anges inaktiveras alternativet att skapa övervakade användare för den här användaren. Eventuella befintliga övervakade användare är fortfarande tillgängliga.
+<translation id="5366977351895725771">Om "false" anges inaktiveras alternativet att skapa kontrollerade användare för den här användaren. Eventuella befintliga kontrollerade användare är fortfarande tillgängliga.
 
-          Om "true" anges eller ingen konfiguration utförs kan den här användaren skapa och hantera övervakade användare.</translation>
+          Om "true" anges eller ingen konfiguration utförs kan den här användaren skapa och hantera kontrollerade användare.</translation>
 <translation id="5378985487213287085">Policyn gör att du kan ange om webbplatser får visa meddelanden på skrivbordet. Meddelanden på skrivbordet kan vara tillåtet som standard, otillåtet som standard eller så kan användaren tillfrågas varje gång en webbplats försöker visa meddelanden på skrivbordet.
 
           Om policyn inte anges används AskNotifications och användaren kan ändra inställningen.</translation>
@@ -1680,11 +1703,11 @@
 
           Om policyn inte anges används 3 och användaren kan ändra inställningen.</translation>
 <translation id="6641981670621198190">Inaktivera stöd för programmeringsgränssnitt för 3D-grafik</translation>
-<translation id="6647965994887675196">Om "true" anges kan övervakade användare skapas och användas.
+<translation id="6647965994887675196">Om "true" anges kan kontrollerade användare skapas och användas.
 
-          Om "false" anges eller om ingen konfiguration utförs inaktiveras alternativet att skapa övervakade användare och att logga in. Alla befintliga övervakade användare döljs.
+          Om "false" anges eller om ingen konfiguration utförs inaktiveras alternativet att skapa kontrollerade användare och att logga in. Alla befintliga kontrollerade användare döljs.
 
-          OBS! Standardbeteendet skiljer sig åt mellan kund- och företagsenheter: på kundenheter aktiveras övervakade användare som standard men på företagsenheter inaktiveras de som standard.</translation>
+          OBS! Standardbeteendet skiljer sig åt mellan kund- och företagsenheter: på kundenheter aktiveras kontrollerade användare som standard men på företagsenheter inaktiveras de som standard.</translation>
 <translation id="6649397154027560979">Den här principen är föråldrad, använd URLBlacklist i stället.
 
       Inaktiverar de protokollscheman som listas i <ph name="PRODUCT_NAME" />.
@@ -2041,40 +2064,6 @@
 <translation id="7841880500990419427">Lägsta TLS-version som kan användas som alternativ</translation>
 <translation id="7842869978353666042">Konfigurera alternativ för Google Drive</translation>
 <translation id="7843525027689416831">Anger de flaggor som ska användas i <ph name="PRODUCT_NAME" /> vid start. De angivna flaggorna används bara för inloggningsskärmen. Flaggor som angetts via denna princip påverkar inte användarsessioner.</translation>
-<translation id="7844537954833753199">Konfigurerar inställningar för tilläggshantering för <ph name="PRODUCT_NAME" />.
-
-          Principen styr flera inställningar, bland annat inställningar som styrs av befintliga tilläggsrelaterande principer. Principen åsidosätter alla äldre principer om båda är angivna.
-
-          Principen mappar ett tilläggs-id eller en uppdateringsadress till dess konfiguration. Med ett tilläggs-id tillämpas konfigurationen endast på det angivna tillägget. En standardkonfiguration kan anges för det särskilda id:t <ph name="DEFAULT_SCOPE" /> som tillämpas på alla tillägg som inte har en anpassad konfiguration i den här principen. Med en uppdateringsadress tillämpas konfigurationen på alla tillägg med den exakta uppdateringsadressen som angetts i manifestet för tillägget, så som beskrivs på <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurationen för varje tillägg (eller tillägg med samma uppdateringsadress) är en annan ordlista som kan innehålla fälten nedan.
-
-          <ph name="INSTALLATION_MODE" />: mappar till en sträng som anger installationsläget för tillägget. De giltiga strängarna är:
-          * <ph name="ALLOWED" />: tillåter att användaren installerar tillägget. Detta är standardbeteende.
-          * <ph name="BLOCKED" />: blockerar installationen av tillägget.
-          * <ph name="FORCE_INSTALLED" />: tillägget installeras automatiskt och kan inte tas bort av användaren.
-          * <ph name="NORMAL_INSTALLED" />: tillägget installeras automatiskt men kan inaktiveras av användaren.
-
-          <ph name="INSTALLTION_MODE" /> kan även konfigureras för flera tillägg, bland annat tillägget <ph name="DEFAULT_SCOPE" /> (som standardinställningar) och tillägg med samma uppdateringsadress. Endast värdena <ph name="ALLOWED" /> och <ph name="BLOCKED" /> 
-kan användas i det här fallet.
-
-          Om läget är inställt på <ph name="FORCE_INSTALLED" /> eller <ph name="NORMAL_INSTALLED" /> måste även en <ph name="UPDATE_URL" /> konfigureras. Tänk på att uppdateringsadressen som anges i den här principen endast används för den första installationen. Vid senare uppdateringar av tillägget används uppdateringsadressen som anges i tilläggets manifest. Uppdateringsadressen ska peka på ett Update Manifest-dokument i XML-format så som nämnts ovan.
-
-          <ph name="BLOCKED_PERMISSIONS" />: mappar till en lista med strängar som anger de blockerade API-behörigheterna för tillägget. Namnen på behörigheterna är desamma som behörighetssträngarna som deklarerats i manifestet för tillägget som beskrivs på <ph name="LINK_TO_EXTENSION_DOC3" />. Inställningen kan även konfigureras för tillägget <ph name="DEFAULT_SCOPE" />. Om tillägget kräver en behörighet som finns med på blockeringslistan läses den inte in. Om det innehåller en blockerad behörighet som inte är obligatorisk hanteras det som vanligt, men begäran om motstridiga behörigheter nekas automatiskt vid körning.
-
-          <ph name="ALLOWED_PERMISSIONS" />: liknar <ph name="BLOCKED_PERMISSIONS" /> men tillåter uttryckligen vissa behörigheter som kan vara blockerade av en global lista över blockerade behörigheter och kan därmed inte konfigureras för tillägget <ph name="DEFAULT_SCOPE" />. Tänk på att den här inställningen inte automatiskt tilldelar tilläggen beviljade behörigheter.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: mappar till en versionssträng. Formatet för versionssträngen är detsamma som det som används i tilläggets manifest, som beskrivs på <ph name="LINK_TO_EXTENSION_DOC4" />. Ett tillägg med en version som är äldre än den angivna lägsta versionen inaktiveras. Detta gäller även för tillägg som måste installeras. 
-
-          Följande inställningar kan endast användas för standardkonfigurationen <ph name="DEFAULT_SCOPE" />:
-
-          <ph name="INSTALL_SOURCES" />: Varje objekt i listan motsvarar en matchning i form av ett tillägg (<ph name="LINK_TO_MATCH_PATTERNS" />). Användarna kan enkelt installera objekt från alla webbadresser som matchar ett objekt i listan. Både platsen för <ph name="EXTENSION_SUFFIX_WILDCARD" />-filen och sidan där nedladdningen påbörjades (dvs. hänvisningsadressen) måste tillåtas av mönstren.
-
-          <ph name="ALLOWED_TYPES" />: Den här inställningen godkänner de tillåtna typerna med tillägg/appar som kan installeras i <ph name="PRODUCT_NAME" />. Värdet är en lista med strängar där varje måste vara något av följande: <ph name="VALID_ALLOWED_TYPES" />. Mer information om dessa typer finns i dokumentationen för tillägget <ph name="PRODUCT_NAME" />.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Om en användare försöker installera ett tillägg som blockeras av en princip visas ett allmänt felmeddelande i Chrome Webstore. Med den här inställningen kan du lägga till text i felmeddelandet. Du kan till exempel hänvisa användarna till din support, förklara varför ett visst tillägg är blockerat eller annat. Felmeddelandet blir avklippt om det överstiger 1 000 tecken.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Tar emot en lista över värdar som tillägget blockeras från att använda. Detta inkluderar att lägga till JavaScript, ändra och visa webRequests / webNavigation och att visa och ändra cookies. Formatet liknar matchningsmönstren <ph name="LINK_TO_MATCH_PATTERNS" /> förutom att sökvägar, t.ex. *://*.example.com, inte kan användas. Detta stöder även jokertoppdomäner, t.ex. *://example.*.
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Tar emot en lista över värdar som tillägget kan använda oavsett om de finns med på listan över <ph name="RUNTIME_BLOCKED_HOSTS" />. Detta är samma format som <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Om principen är inställd på SyncDisabled eller inte har konfigurerats blir inga certifikat i <ph name="PRODUCT_OS_NAME" /> tillgängliga för ARC-appar.
 
       Om principen är inställd på CopyCaCerts blir alla CA-certifikat som installerats via ONC med <ph name="WEB_TRUSTED_BIT" /> tillgängliga för ARC-appar.</translation>
@@ -2158,15 +2147,6 @@ kan användas i det här fallet.
 
       Om policyn är inaktiverad eller inte inställd aktiveras vanliga profiler vid inloggning.</translation>
 <translation id="8158758865057576716">Aktivera framställningen av roamingkopior för profiluppgifterna för <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8170878842291747619">Policyn aktiverar den integrerade tjänsten Google Översätt i <ph name="PRODUCT_NAME" />.
-
-      Om du aktiverar inställningen visas ett integrerat verktygsfält i <ph name="PRODUCT_NAME" /> där användaren kan välja att få sidan översatt, om det är tillämpligt.
-
-      Om du inaktiverar inställningen kan användarna inte se översättningsfältet.
-
-      Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME" />.
-
-      Om du inte anger inställningen kan användarna välja om de vill använda funktionen eller inte.</translation>
 <translation id="817455428376641507">Tillåter åtkomst till de webbadresser som anges, som undantag till svartlistan för webbadresser.
 
       Formatet för poster i listan beskrivs i policyn för svartlistade webbadresser.

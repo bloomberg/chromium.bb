@@ -249,7 +249,6 @@
 <translation id="138784436342154190">デフォルトの起動ページに戻しますか？</translation>
 <translation id="1389297115360905376">これは <ph name="CHROME_WEB_STORE" /> からのみ追加できます。</translation>
 <translation id="1390548061267426325">通常のタブとして開く</translation>
-<translation id="1391097951247613150">画面がオンでロック解除されている状態で、「OK Google」と話します</translation>
 <translation id="1391807639023934267">ページ読み込みを高速化します。</translation>
 <translation id="1393283411312835250">太陽と雲</translation>
 <translation id="1395262318152388157">シーク スライダー</translation>
@@ -450,13 +449,11 @@
 <translation id="1673103856845176271">セキュリティ上の理由で、ファイルにアクセスできませんでした。</translation>
 <translation id="167832068858235403">音量を下げる</translation>
 <translation id="1679068421605151609">デベロッパー ツール</translation>
-<translation id="1681120471812444678">プリンタを追加するための設定を行う…</translation>
 <translation id="1682548588986054654">新規シークレット ウインドウ</translation>
 <translation id="168991973552362966">近くのプリンタを追加</translation>
 <translation id="1692602667007917253">エラーが発生しました。</translation>
 <translation id="1692799361700686467">複数サイトからの Cookie が許可されました。</translation>
 <translation id="169515659049020177">Shift</translation>
-<translation id="1697532407822776718">設定が完了しました。</translation>
 <translation id="1698122934742150150">現在のシークレット モード セッションのみ</translation>
 <translation id="1700199471143028312">管理者が監視対象ユーザーの作成を許可していません。</translation>
 <translation id="1701062906490865540">このユーザーを削除</translation>
@@ -496,10 +493,8 @@
 <translation id="1763108912552529023">さらに確認</translation>
 <translation id="1764226536771329714">ベータ版</translation>
 <translation id="176587472219019965">新しいウインドウ(&amp;N)</translation>
-<translation id="1766352429832934452">有効（「OK Google」を使用する場合に必要です）</translation>
 <translation id="1768278914020124551">ログイン サーバーへの接続中に問題が発生しました。ネットワーク接続とドメイン名を確認してもう一度お試しください。</translation>
 <translation id="1769104665586091481">新しいウインドウで開く(&amp;W)</translation>
-<translation id="1772267994638363865">これには、音声アクティビティを有効にしてから、次の手順で <ph name="DEVICE_TYPE" /> に音声を認識させる必要があります。</translation>
 <translation id="1773212559869067373">認証証明書がローカルで拒否されました</translation>
 <translation id="177336675152937177">ホストされているアプリ データ</translation>
 <translation id="1774349594977710164">スマートフォンを使って、自動的に同期されている他の <ph name="DEVICE_TYPE" /> のロックも解除することができます。</translation>
@@ -524,7 +519,6 @@
 <translation id="1799071797295057738">拡張機能「<ph name="EXTENSION_NAME" />」を自動的に無効にしました。</translation>
 <translation id="180035236176489073">このファイルにアクセスするには、オンライン接続が必要です。</translation>
 <translation id="1802931390041703523">このページの Flash はブロックされました</translation>
-<translation id="1803545009660609783">再認識</translation>
 <translation id="1805822111539868586">ビューを検証</translation>
 <translation id="1807938677607439181">すべてのファイル</translation>
 <translation id="1809734401532861917">自分のブックマーク、履歴、パスワード、その他の設定を <ph name="USER_EMAIL_ADDRESS" /> に追加します</translation>
@@ -600,11 +594,10 @@
 <translation id="1928202201223835302">以前の PIN を入力</translation>
 <translation id="1929546189971853037">ログインしているすべてのデバイスでの閲覧履歴の読み取り</translation>
 <translation id="1931152874660185993">コンポーネントはインストールされていません。</translation>
-<translation id="1932026958134051332">スイッチアクセスのオプション</translation>
+<translation id="1932026958134051332">スイッチ アクセスのオプション</translation>
 <translation id="1932098463447129402">開始時刻</translation>
 <translation id="1933809209549026293">マウスまたはキーボードを接続してください。Bluetooth デバイスを使用している場合は、ペア設定できる状態であることを確認してください。</translation>
 <translation id="1936157145127842922">フォルダで表示</translation>
-<translation id="1937256809970138538">画面がオンでロック解除された状態で「OK Google」と言います</translation>
 <translation id="1940546824932169984">接続済みの端末</translation>
 <translation id="1942765061641586207">画像解像度</translation>
 <translation id="1944921356641260203">アップデートが見つかりました</translation>
@@ -669,7 +662,6 @@
 <translation id="2071393345806050157">ローカルのログ ファイルがありません。</translation>
 <translation id="2074527029802029717">タブの固定を解除</translation>
 <translation id="2075474481720804517">バッテリー残量: <ph name="BATTERY_PERCENTAGE" />%</translation>
-<translation id="2075594581020578008"><ph name="IDS_SHORT_PRODUCT_NAME" /> ブラウザ</translation>
 <translation id="2076269580855484719">このプラグインを表示しない</translation>
 <translation id="2076672359661571384">中（推奨）</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
@@ -690,7 +682,6 @@
 <translation id="2100273922101894616">自動ログイン</translation>
 <translation id="2101225219012730419">バージョン:</translation>
 <translation id="2101797668776986011">Pepper 3D</translation>
-<translation id="2103164230797186308">この端末のソフトウェア アップデートはご利用いただけなくなりました。アップグレードをご検討ください。</translation>
 <translation id="2105006017282194539">まだ読み込まれていません</translation>
 <translation id="2107494551712864447">指紋の登録</translation>
 <translation id="2111843886872897694">アプリは、関連付けられたホストから提供される必要があります。</translation>
@@ -830,7 +821,6 @@
 <translation id="230927227160767054">このページはサービス ハンドラのインストールを求めています。</translation>
 <translation id="2311496337038385958">録音した年</translation>
 <translation id="2316129865977710310">いいえ</translation>
-<translation id="2317031807364506312">キャンセル</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% 完了</translation>
 <translation id="2318143611928805047">用紙サイズ</translation>
 <translation id="2318817390901984578">Android アプリを使用するには、<ph name="DEVICE_TYPE" /> を充電し、アップデートを行ってください。</translation>
@@ -898,7 +888,6 @@
 <translation id="2435457462613246316">パスワードを表示</translation>
 <translation id="2436186046335138073">すべての <ph name="PROTOCOL" /> リンクを <ph name="HANDLER_HOSTNAME" /> で開きますか？</translation>
 <translation id="2436707352762155834">最小</translation>
-<translation id="2436733981438712345">処理しています...</translation>
 <translation id="2437139306601019091">データ使用量の測定が終了しました</translation>
 <translation id="2440300961915670171"><ph name="REASON" />
 このサイトはブロック不要です。</translation>
@@ -953,7 +942,6 @@
 <translation id="2508428939232952663">Google Play ストア アカウント</translation>
 <translation id="2509495747794740764">倍率は 10～200 の数値で指定してください。</translation>
 <translation id="2515586267016047495">Alt</translation>
-<translation id="251662399991179012"><ph name="DEVICE_TYPE" /> に音声を認識させる</translation>
 <translation id="2517472476991765520">スキャン</translation>
 <translation id="2518024842978892609">ユーザーのクライアント証明書の使用</translation>
 <translation id="2520644704042891903">使用できるソケットを待機しています...</translation>
@@ -1398,7 +1386,6 @@
 <translation id="316307797510303346">このユーザーが <ph name="CUSTODIAN_EMAIL" /> からアクセスするウェブサイトを制御、閲覧する。
     アカウントのログイン情報が古くなっています。</translation>
 <translation id="3165390001037658081">携帯通信会社によってはこの機能を利用できない場合があります。</translation>
-<translation id="3166571619128686629">クリックするか「OK Google」と言って、音声検索を開始します</translation>
 <translation id="3170072451822350649">ログインせずに<ph name="LINK_START" />ゲストとしてブラウジング<ph name="LINK_END" />することもできます。</translation>
 <translation id="3177048931975664371">クリックしてパスワードを隠す</translation>
 <translation id="3177857336576585529"><ph name="SITE_NAME" /> が権限をリクエストしています。</translation>
@@ -1409,7 +1396,6 @@
 <translation id="3184560914950696195">$1 に保存することができません。編集した画像はダウンロード フォルダに保存されます。</translation>
 <translation id="3188465121994729530">移動平均</translation>
 <translation id="3190558889382726167">パスワードを保存しました</translation>
-<translation id="3191308084656429858">{NUM_POPUPS,plural, =1{1 個のポップアップがブロックされています}other{# 個のポップアップがブロックされています}}</translation>
 <translation id="3192947282887913208">音声ファイル</translation>
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" />（<ph name="SERVER_NAME" /> 上）</translation>
 <translation id="3199127022143353223">サーバー</translation>
@@ -1417,7 +1403,6 @@
 <translation id="3202173864863109533">このタブの音声はミュートされています。</translation>
 <translation id="3206175707080061730">「$1」という名前のファイルは既に存在します。置き換えますか？</translation>
 <translation id="3208703785962634733">未確認</translation>
-<translation id="3216508313927987948">これには、次の手順で <ph name="DEVICE_TYPE" /> に音声を認識させる必要があります。</translation>
 <translation id="321799795901478485">Zip アーカイブ ツール</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> コネクタのプロセスで問題が発生しました。再起動しますか？</translation>
 <translation id="3221634914176615296">ファイル アプリでデバイスのコンテンツを検索します。</translation>
@@ -1439,7 +1424,6 @@
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - ネットワーク エラー</translation>
 <translation id="3251759466064201842">&lt;証明書に含まれていません&gt;</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> ファイルのデフォルト アプリを選択:</translation>
-<translation id="3255228561559750854">検索するか OK Google と発声</translation>
 <translation id="3264544094376351444">Sans Serif フォント</translation>
 <translation id="3264547943200567728">Chromebox のネットワークを設定できませんでした</translation>
 <translation id="3265459715026181080">ウインドウを閉じる</translation>
@@ -1513,7 +1497,6 @@
 <translation id="3353984535370177728">アップロードするフォルダを選択</translation>
 <translation id="335581015389089642">スピーチ</translation>
 <translation id="3355936511340229503">接続エラー</translation>
-<translation id="3356580349448036450">完了</translation>
 <translation id="3356797067524893661">設定が完了しました。ハングアウト Meet を使用できます</translation>
 <translation id="3358935496594837302">スマートフォンが見つかりません。使用している Android スマートフォンが対応機種で、電源が入っており、手の届く範囲にあることを確認してください。&lt;a&gt;詳細&lt;/a&gt;</translation>
 <translation id="3359256513598016054">証明書ポリシーの制約</translation>
@@ -1755,7 +1738,6 @@
 <translation id="3727148787322499904">この設定を変更すると、共有しているすべてのネットワークに影響します</translation>
 <translation id="3727187387656390258">ポップアップを検証</translation>
 <translation id="3728067901555601989">OTP:</translation>
-<translation id="3730639321086573427">ローカルの送信先</translation>
 <translation id="3733127536501031542">International Step-UP 対応の SSL サーバー</translation>
 <translation id="3737536731758327622">ダウンロードがここに表示されます</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -1822,7 +1804,6 @@
 <translation id="3815571115159309122"><ph name="FILE_COUNT" /> 件の新しい写真が見つかりました
     <ph name="LINE_BREAK1" />
     <ph name="BEGIN_LINK" />Google ドライブ<ph name="END_LINK" />にバックアップできます</translation>
-<translation id="3816789583333631750">この機能を使用するには、ネイティブ クライアント プラグインを有効にする必要があります。</translation>
 <translation id="3819007103695653773">すべてのサイトに対しバックグラウンドのプッシュ メッセージの送信を許可する</translation>
 <translation id="3819752733757735746">スイッチ アクセス（スイッチ 1 つまたは 2 つでパソコンを制御）</translation>
 <translation id="3819800052061700452">全画面表示(&amp;F)</translation>
@@ -1863,7 +1844,6 @@
 <translation id="3872991219937722530">ディスクの空き領域を確保してください。十分な空き領域がない場合、端末は応答しなくなります。</translation>
 <translation id="3878840326289104869">監視対象ユーザーを作成しています</translation>
 <translation id="3879748587602334249">ダウンロード マネージャ</translation>
-<translation id="388485010393668001">入力できるテキストがあります: <ph name="COMPLETION_TEXT" /></translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> でメモをとる</translation>
 <translation id="3892414795099177503">OpenVPN / L2TP を追加...</translation>
 <translation id="3893536212201235195">ユーザー補助設定の読み取りと変更</translation>
@@ -2098,6 +2078,7 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> 件の新しい写真が見つかりました</translation>
 <translation id="4316850752623536204">デベロッパーのウェブサイト</translation>
+<translation id="4320177379694898372">インターネットに接続されていません</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{ダウンロードを続ける}other{ダウンロードを続ける}}</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4322394346347055525">他のタブをすべて閉じる</translation>
@@ -2162,7 +2143,6 @@
 <translation id="4441548209689510310">スペルチェック オプションを表示</translation>
 <translation id="4442424173763614572">DNS を検索できませんでした</translation>
 <translation id="444267095790823769">保護されたコンテンツの例外</translation>
-<translation id="4442732038333431189"><ph name="USER_EMAIL" /> の音声アクティビティ。</translation>
 <translation id="4443536555189480885">ヘルプ(&amp;H)</translation>
 <translation id="4444304522807523469">USB 接続またはローカル ネットワーク上のドキュメント スキャナーへのアクセス</translation>
 <translation id="4444512841222467874">十分な空き領域がない場合、ユーザーとデータが自動的に削除される可能性があります。</translation>
@@ -2186,7 +2166,6 @@
 <translation id="4482194545587547824">検索やその他の Google サービスをカスタマイズする目的で、Google が閲覧履歴を使用することがあります</translation>
 <translation id="4492190037599258964">「<ph name="SEARCH_STRING" />」の検索結果</translation>
 <translation id="4495419450179050807">このページに表示しない</translation>
-<translation id="4499108478945817980">管理者から Chrome へのログインを要求されています。</translation>
 <translation id="450099669180426158">感嘆符アイコン</translation>
 <translation id="4501530680793980440">削除の確認</translation>
 <translation id="4504940961672722399">この拡張機能を使用するには、このアイコンをクリックするか、<ph name="EXTENSION_SHORTCUT" /> を押します。</translation>
@@ -2205,7 +2184,6 @@
 <translation id="4530494379350999373">発行元:</translation>
 <translation id="4532499992208253975">読み込み中</translation>
 <translation id="4533985347672295764">CPU 時間</translation>
-<translation id="4534799089889278411">新しいタブ、google.co.jp、アプリ ランチャーで「OK Google」と言います。</translation>
 <translation id="4535127706710932914">デフォルトのプロフィール</translation>
 <translation id="4538417792467843292">1 語削除する</translation>
 <translation id="4538684596480161368"><ph name="HOST" /> でサンドボックスの無効化プラグインを常にブロックする</translation>
@@ -2292,7 +2270,6 @@
 <translation id="466506872045057845">サイトの権限はデフォルトに戻ります</translation>
 <translation id="4667176955651319626">サードパーティの Cookie とサイト データをブロックする</translation>
 <translation id="4668721319092543482">クリックして <ph name="PLUGIN_NAME" /> を有効にします</translation>
-<translation id="4669109953235344059">再試行</translation>
 <translation id="4669606053856530811">「<ph name="SOURCE_NAME" />」のメンバーはこれらのアイテムにアクセスできなくなります（ただし個別に共有されている場合はアクセス可能です）。</translation>
 <translation id="4672657274720418656">ページを抽出</translation>
 <translation id="4673442866648850031">タッチペンを取り外したらタッチペン ツールを開く</translation>
@@ -2301,7 +2278,6 @@
 <translation id="4681930562518940301">元の画像を新しいタブで開く(&amp;I)</translation>
 <translation id="4682551433947286597">壁紙はログイン画面に表示されます。</translation>
 <translation id="4684427112815847243">すべてを同期する</translation>
-<translation id="4685045708662437080">音声を登録しておくと、Google ではユーザーの声に反応してより迅速に結果を表示できるようになります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="4689421377817139245">このブックマークは iPhone と同期できます</translation>
 <translation id="4692302215262324251">この <ph name="DEVICE_TYPE" /> は組織の管理対象として登録されました。ドメイン: <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />。
     <ph name="LINE_BREAK_AND_EMPTY_LINE" />
@@ -2627,7 +2603,6 @@
 <translation id="5228076606934445476">デバイスに問題があります。このエラーから回復するには、デバイスを再起動して、もう一度お試しください。</translation>
 <translation id="5229189185761556138">入力方法を管理</translation>
 <translation id="5230516054153933099">ウインドウ</translation>
-<translation id="5232178406098309195">「OK Google」やマイクアイコンのタップといった音声有効化コマンドを使用すると、音声が個人用の音声アクティビティとしてアカウントに保存されます。保存されるのは、コマンドの前の数秒間と、コマンドに続く音声です。</translation>
 <translation id="5233019165164992427">NaCl デバッグ ポート</translation>
 <translation id="5233231016133573565">プロセス ID</translation>
 <translation id="5233638681132016545">新しいタブ</translation>
@@ -2644,7 +2619,6 @@
 <translation id="5250372599208556903"><ph name="SEARCH_ENGINE_NAME" /> は、ユーザーの現在地情報を使用して地域のコンテンツを提供します。この設定は [<ph name="SETTINGS_LINK" />] で変更できます。</translation>
 <translation id="5252456968953390977">ローミング</translation>
 <translation id="5252653240322147470">PIN は <ph name="MAXIMUM" /> 桁未満で指定してください</translation>
-<translation id="5253753933804516447">画面がオンでロック解除された状態のときに、「OK Google」と言って音声検索ができるようにします</translation>
 <translation id="5254368820972107711">削除されるファイルを表示</translation>
 <translation id="52550593576409946">キオスク アプリケーションを起動できませんでした。</translation>
 <translation id="5255315797444241226">入力したパスフレーズが正しくありません。</translation>
@@ -2689,7 +2663,6 @@
 <translation id="5311260548612583999">秘密鍵ファイル（省略可能）:</translation>
 <translation id="5311304534597152726">次のユーザーとしてログイン:</translation>
 <translation id="5315873049536339193">ID</translation>
-<translation id="5316588172263354223">いつでも音声検索が可能</translation>
 <translation id="5316716239522500219">モニターをミラーリングする</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5319359161174645648">Google は Chrome を推奨しています</translation>
@@ -2754,7 +2727,6 @@
 <translation id="5411472733320185105">以下のホストとドメインにはプロキシ設定を使用しない:</translation>
 <translation id="5414566801737831689">アクセスしたウェブサイトのアイコンの読み取り</translation>
 <translation id="5417312524372586921">ブラウザのテーマ</translation>
-<translation id="5417998409611691946"><ph name="DEVICE_TYPE" /> の最新機能:</translation>
 <translation id="5419294236999569767">システムの時刻</translation>
 <translation id="5422221874247253874">アクセス ポイント</translation>
 <translation id="5422781158178868512">外部ストレージ デバイスを認識できませんでした。</translation>
@@ -2964,7 +2936,6 @@
 <translation id="5749861707650047230">{NUM_DOWNLOAD,plural, =1{ダウンロードをキャンセル}other{ダウンロードをキャンセル}}</translation>
 <translation id="5750324801516359607">遠い</translation>
 <translation id="5751545372099101699">シェルフ アイテム 4</translation>
-<translation id="5752162773804266219"><ph name="DEVICE_TYPE" /> に自分の声を反応させたり、音声検索の精度や使い勝手を良くするには、自分の声を Google に認識させる必要があります。</translation>
 <translation id="5752453871435543420">Chrome OS のクラウド バックアップ</translation>
 <translation id="5754903485544371559">アプリケーションに追加...</translation>
 <translation id="5756163054456765343">ヘルプセンター(&amp;E)</translation>
@@ -3125,7 +3096,6 @@
 <translation id="6011449291337289699">サイトデータの削除</translation>
 <translation id="6015796118275082299">年</translation>
 <translation id="6016551720757758985">Powerwash を実行して以前のバージョンに戻すことを確認</translation>
-<translation id="6016809788585079594">最後にもう一度「OK Google」と言ってください</translation>
 <translation id="6016972670657536680">言語とキーボードのボタンを選択します。現在選択している言語は <ph name="LANGUAGE" /> です。</translation>
 <translation id="6017981840202692187">アプリケーションに追加</translation>
 <translation id="6019169947004469866">トリミング</translation>
@@ -3184,7 +3154,6 @@
 <translation id="6105158702728922449">カメラとマイクを使用する</translation>
 <translation id="6105877918873366097">最終アクセス日</translation>
 <translation id="6107012941649240045">発行先</translation>
-<translation id="6107079717483424262">「OK Google」と言ったときにユーザーの声が認識されるようになりました</translation>
 <translation id="6112952769866305444">ユーザー（<ph name="PROFILE_NAME" />、<ph name="USERNAME" />）を編集</translation>
 <translation id="6115424132962100663">前に戻るには |<ph name="SHORTCUT" />| キーを押します</translation>
 <translation id="6116921718742659598">言語と入力の設定を変更</translation>
@@ -3466,7 +3435,6 @@
 <translation id="6547354035488017500">端末の空き領域を 512 MB 以上確保してください。空き領域がこれより少なくなると、端末は応答しなくなります。空き領域を確保するために、端末のストレージからファイルを削除してください。</translation>
 <translation id="6549689063733911810">最近使用したアイテム</translation>
 <translation id="6550675742724504774">オプション</translation>
-<translation id="6551034508248154663">音声アクティビティを有効にしています...</translation>
 <translation id="6551508934388063976">コマンドを使用できません。Ctrl+N を押して新しいウィンドウを開いてください。</translation>
 <translation id="655384502888039633">ユーザー数: <ph name="USER_COUNT" /> 人</translation>
 <translation id="6555432686520421228">すべてのユーザー アカウントを削除し、<ph name="IDS_SHORT_PRODUCT_NAME" /> デバイスを出荷時と同じ状態にリセットします。</translation>
@@ -3536,7 +3504,6 @@
 <translation id="667517062706956822">Google でこのページを <ph name="SOURCE_LANGUAGE" /> から <ph name="TARGET_LANGUAGE" /> に翻訳しますか？</translation>
 <translation id="6675665718701918026">ポインティング デバイスが接続されました</translation>
 <translation id="6677037229676347494">期待される ID は「<ph name="EXPECTED_ID" />」ですが、「<ph name="NEW_ID" />」になっています。</translation>
-<translation id="6678312694238602710">「OK Google」の音声検索は Chrome OS から削除されました</translation>
 <translation id="6678717876183468697">クエリ URL</translation>
 <translation id="6680028776254050810">ユーザーを切り替え</translation>
 <translation id="6680442031740878064">空き容量: <ph name="AVAILABLE_SPACE" /></translation>
@@ -3701,7 +3668,6 @@
 <translation id="6970480684834282392">起動タイプ</translation>
 <translation id="6970856801391541997">指定したページを印刷</translation>
 <translation id="6972180789171089114">音声または動画</translation>
-<translation id="6972754398087986839">開始する</translation>
 <translation id="6973630695168034713">フォルダ</translation>
 <translation id="6974053822202609517">右から左</translation>
 <translation id="6976108581241006975">JavaScript コンソール</translation>
@@ -3739,7 +3705,6 @@
 <translation id="7012372675181957985">Google アカウントでの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> に残ることがあります</translation>
 <translation id="7013485839273047434">他の拡張機能を見る</translation>
 <translation id="7014174261166285193">インストールできませんでした。</translation>
-<translation id="7017004637493394352">もう一度「OK Google」と言ってください</translation>
 <translation id="7017219178341817193">新しいページを追加</translation>
 <translation id="7017354871202642555">ウィンドウが設定されている場合はモードを設定できません。</translation>
 <translation id="7017480957358237747">特定のウェブサイトへのアクセスを許可または禁止する</translation>
@@ -3866,7 +3831,6 @@
 <translation id="7240120331469437312">証明書のサブジェクトの代替名</translation>
 <translation id="7240339475467890413">新しいアクセス ポイントに接続しますか？</translation>
 <translation id="7241389281993241388">クライアント証明書をインポートするには <ph name="TOKEN_NAME" /> にログインしてください。</translation>
-<translation id="7243055093079293866">新しいタブで google.com を開き、「OK Google」と言います</translation>
 <translation id="7243632151880336635">削除してログアウト</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" />x<ph name="HEIGHT" />（最適）</translation>
 <translation id="7246339268451149667">指紋によるロック解除を有効にしますか？</translation>
@@ -3981,7 +3945,6 @@
 <translation id="7433692219247014412">{COUNT,plural, =0{すべてを新しいウィンドウで開く(&amp;N)}=1{新しいウィンドウで開く(&amp;N)}other{すべて（# 件）を新しいウィンドウで開く(&amp;N)}}</translation>
 <translation id="7434509671034404296">開発 / 管理</translation>
 <translation id="7436921188514130341">名前の変更中にエラーが発生しました。</translation>
-<translation id="743823505716061814">検索クエリは Google アカウントに関連付けられます。<ph name="BEGIN_LINK" />アカウント履歴<ph name="END_LINK" />で検索クエリの閲覧と削除ができます。</translation>
 <translation id="7439964298085099379">ハイ コントラスト モードが有効になっています。ハイ コントラスト用拡張機能と暗色系テーマをインストールしますか？</translation>
 <translation id="7441830548568730290">他のユーザー</translation>
 <translation id="7442465037756169001">Hangouts Meet ハードウェアを設定できます。</translation>
@@ -4040,7 +4003,6 @@
 <translation id="7518150891539970662">WebRTC ログ（<ph name="WEBRTC_LOG_COUNT" /> 件）</translation>
 <translation id="7520821146909122639">このページを翻訳しています...</translation>
 <translation id="7521387064766892559">Javascript</translation>
-<translation id="7522255036471229694">「OK Google」と言ってください</translation>
 <translation id="7525067979554623046">作成</translation>
 <translation id="7529411698175791732">インターネット接続を確認してください。問題が解消しない場合は、ログアウトして再度ログインしてみてください。</translation>
 <translation id="7530016656428373557">放電率（ワット）</translation>
@@ -4104,7 +4066,6 @@
 <translation id="7629827748548208700">タブ:<ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">この種類のファイルは常に開く(&amp;A)</translation>
 <translation id="7632948528260659758">次のキオスクアプリを更新できませんでした:</translation>
-<translation id="7634566076839829401">エラーが発生しました。もう一度お試しください。</translation>
 <translation id="7639178625568735185">完了</translation>
 <translation id="763959977925219242">ポップアップがブロックされました</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> では、保存したパスワードを使って対象となるサイトへの自動ログインが行われます。</translation>
@@ -4149,7 +4110,6 @@
 <translation id="7717014941119698257">ダウンロード: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">アップデートを確認</translation>
 <translation id="7719367874908701697">ページのズーム</translation>
-<translation id="7719421816612904796">音声登録がタイムアウトになりました</translation>
 <translation id="771953673318695590">QA</translation>
 <translation id="7720375555307821262">このユーザーを監視するには、<ph name="BEGIN_LINK" />Chrome にログイン<ph name="END_LINK" />します。</translation>
 <translation id="7721179060400456005">ウィンドウを複数のディスプレイで表示できるようにする</translation>
@@ -4252,7 +4212,6 @@
 <translation id="7881969471599061635">字幕を無効にする</translation>
 <translation id="7882358943899516840">プロバイダの種類</translation>
 <translation id="7885253890047913815">最近使用した送信先</translation>
-<translation id="7887192723714330082">画面がオンでロック解除された状態のときに「OK Google」に反応するようになりました</translation>
 <translation id="7887334752153342268">タブを複製</translation>
 <translation id="7887864092952184874">Bluetooth マウスがペア設定されました</translation>
 <translation id="7889966925761734854">シーク再生</translation>
@@ -4384,7 +4343,6 @@
 <translation id="8068253693380742035">タップしてログイン</translation>
 <translation id="8069615408251337349">Google クラウド プリント</translation>
 <translation id="8071432093239591881">画像として印刷する</translation>
-<translation id="8071942001314758122">「OK Google」と 3 回言うだけです</translation>
 <translation id="8072988827236813198">複数のタブを固定</translation>
 <translation id="8074127646604999664">最近閉じたサイトがデータの送受信を完了できるようにする</translation>
 <translation id="8075191520954018715">メモリの状態</translation>
@@ -4587,7 +4545,6 @@
 <translation id="8437331208797669910">ページへのアクセス</translation>
 <translation id="843760761634048214">クレジット カードを保存</translation>
 <translation id="8438328416656800239">スマートなブラウザをぜひご利用ください</translation>
-<translation id="8438601631816548197">音声検索について</translation>
 <translation id="8439506636278576865">この言語のページで翻訳ツールを表示する</translation>
 <translation id="8446884382197647889">詳細</translation>
 <translation id="8449008133205184768">ペーストしてスタイルを合わせる</translation>
@@ -4622,9 +4579,7 @@
 <translation id="8487700953926739672">オフラインでの利用</translation>
 <translation id="8490896350101740396">キオスクアプリ「<ph name="UPDATED_APPS" />」を更新しました。更新処理を完了するためにデバイスを再起動してください。</translation>
 <translation id="8493236660459102203">マイク:</translation>
-<translation id="8495193314787127784">「OK Google」を有効にする</translation>
 <translation id="8496717697661868878">このプラグインを実行する</translation>
-<translation id="8497392509610708671">この設定は <ph name="BEGIN_LINK" />Chrome の設定<ph name="END_LINK" />でいつでも変更できます。</translation>
 <translation id="8498214519255567734">薄明かりの下でも画面を見やすくします</translation>
 <translation id="8503813439785031346">ユーザー名</translation>
 <translation id="8512476990829870887">プロセスを終了</translation>
@@ -4655,7 +4610,6 @@
 <translation id="855773602626431402">このページでのサンドボックスの無効化プラグインの実行がブロックされました。</translation>
 <translation id="8557930019681227453">マニフェスト</translation>
 <translation id="8559694214572302298">イメージ デコーダー</translation>
-<translation id="8559748832541950395">必要なときにいつでも、この設定を変更したり<ph name="BEGIN_LINK" />個人データを管理<ph name="END_LINK" />したりできます。音声アクティビティを有効にしている場合、このデータはログインしているどのデバイスでも保存される可能性があります。</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">アプリのダウングレードが試行されました。</translation>
 <translation id="8569002732135253578">「<ph name="DOCUMENT_NAME" />」の印刷中</translation>
@@ -4670,7 +4624,6 @@
 <translation id="8590375307970699841">自動更新を設定</translation>
 <translation id="8595925260712451473">ここにフィードバックを記入してください。</translation>
 <translation id="8596540852772265699">カスタム ファイル</translation>
-<translation id="8596785155158796745">現在、マイクを使用できません。<ph name="BEGIN_LINK" />マイクを管理<ph name="END_LINK" /></translation>
 <translation id="8597845839771543242">プロパティの書式:</translation>
 <translation id="8598453409908276158">サンドボックスの無効化プラグインがブロックされました</translation>
 <translation id="8598687241883907630">Google アカウントを切断...</translation>
@@ -4842,7 +4795,6 @@
 <translation id="8863753581171631212">新しい <ph name="APP" /> でリンクを開く</translation>
 <translation id="8868245144144497543">作成者</translation>
 <translation id="8868626022555786497">使用中</translation>
-<translation id="8869806297305312746">「OK Google」による音声検索開始を有効にする</translation>
 <translation id="8870318296973696995">ホームページ</translation>
 <translation id="8870413625673593573">最近閉じたタブ</translation>
 <translation id="8871551568777368300">管理者によって固定</translation>
@@ -4927,7 +4879,6 @@
 <translation id="9003704114456258138">周波数</translation>
 <translation id="9004952710076978168">不明なプリンタのメッセージを受け取りました。</translation>
 <translation id="9008201768610948239">無視する</translation>
-<translation id="9009299913548444929">この機能は一時的に使用できません。<ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="9009369504041480176">アップロード中（<ph name="PROGRESS_PERCENT" /> %）...</translation>
 <translation id="9011163749350026987">アイコンを常に表示</translation>
 <translation id="9011178328451474963">最後のタブ</translation>
@@ -5079,7 +5030,6 @@
 <translation id="962802172452141067">ブックマーク フォルダ ツリー</translation>
 <translation id="968174221497644223">アプリケーション キャッシュ</translation>
 <translation id="970047733946999531">{NUM_TABS,plural, =1{1 個のタブ}other{# 個のタブ}}</translation>
-<translation id="970794034573172516">音声アクティビティを有効にする</translation>
 <translation id="971774202801778802">ブックマーク URL</translation>
 <translation id="973473557718930265">終了</translation>
 <translation id="974555521953189084">同期を開始するにはパスワードを入力します</translation>

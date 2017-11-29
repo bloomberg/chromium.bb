@@ -132,7 +132,7 @@
 <translation id="7781829728241885113">I går</translation>
 <translation id="7814458197256864873">&amp;Kopier</translation>
 <translation id="7907591526440419938">Åbn fil</translation>
-<translation id="8106081041558092062">{HOURS,plural, =1{for 1 time siden}one{for # timer siden}other{for # timer siden}}</translation>
+<translation id="8106081041558092062">{HOURS,plural, =1{for 1 time siden}one{for # time siden}other{for # timer siden}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sek. tilbage}one{# sek. tilbage}other{# sek. tilbage}}</translation>
 <translation id="815598010540052116">Scroll Down</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -143,6 +143,7 @@
 <translation id="8352146631962686268">{YEARS,plural, =1{1 år}one{# år}other{# år}}</translation>
 <translation id="8371695176452482769">Indtal nu</translation>
 <translation id="838869780401515933">markér</translation>
+<translation id="8393700583063109961">Send en besked</translation>
 <translation id="8394908167088220973">Medie: Afspil/Pause</translation>
 <translation id="8400147561352026160">Skift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 år}one{# år}other{# år}}</translation>

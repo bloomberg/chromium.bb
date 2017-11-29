@@ -73,13 +73,13 @@
 <translation id="3296368748942286671">在 Chromium 關閉時繼續執行背景應用程式</translation>
 <translation id="331951419404882060">登入時發生錯誤，因此 Chromium 作業系統無法同步處理你的資料。</translation>
 <translation id="3474745554856756813">登出後，系統會將 <ph name="ITEMS_COUNT" /> 個項目從這個裝置上刪除。日後如要重新取得你的資料，請以 <ph name="USER_EMAIL" /> 身分登入 Chromium。</translation>
+<translation id="3479552764303398839">現在不要</translation>
 <translation id="3509308970982693815">請關閉所有 Chromium 視窗，然後再試一次。</translation>
 <translation id="352783484088404971">從 Chromium 中移除...</translation>
 <translation id="3549345495227188780">開始使用 Chromium 作業系統</translation>
 <translation id="3582788516608077514">正在更新 Chromium...</translation>
 <translation id="358997566136285270">Chromium 標誌</translation>
 <translation id="3713809861844741608">在新的 Chromium 分頁中開啟連結(&amp;T)</translation>
-<translation id="3738139272394829648">輕觸搜尋</translation>
 <translation id="3762167353400286894">Chromium 作業系統的介面文字已設為這種語言</translation>
 <translation id="378917192836375108">透過 Chromium，你只要按一下網路上的電話號碼，即可用 Skype 打電話！</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -112,7 +112,6 @@
 <translation id="469338717132742108">前往 Chromium 作業系統說明頁面</translation>
 <translation id="4708774505295300557">先前已有其他使用者使用 <ph name="ACCOUNT_EMAIL_LAST" /> 在這部電腦上登入 Chromium。請建立新的 Chromium 使用者，以便另行保存你的資訊。</translation>
 <translation id="4714956846925717402">更快存取 Chromium</translation>
-<translation id="4743926867934016338">接受並搜尋</translation>
 <translation id="4825874709045178029">Chromium 需要相關權限，才能讓這個網站使用你的攝影機。</translation>
 <translation id="4888717733111232871">允許 mDNS 流量的 Chromium 輸入規則。</translation>
 <translation id="4943838377383847465">Chromium 正在背景模式中執行。</translation>
@@ -129,9 +128,6 @@
 <translation id="5466153949126434691">Chromium 會自動更新，隨時讓你使用最新版本。完成這項下載作業後，Chromium 會重新啟動，自動為你進行更新。</translation>
 <translation id="5479196819031988440">Chromium 作業系統無法開啟這個網頁。</translation>
 <translation id="549669000822060376">請稍候，Chromium 正在安裝最新的系統更新。</translation>
-<translation id="5524843473235508879">已禁止重新導向。</translation>
-<translation id="5563479599352954471">輕觸即可搜尋</translation>
-<translation id="5620765574781326016">不必離開所在頁面即可瞭解網站上有哪些主題。</translation>
 <translation id="5634636535844844681">Chromium 僅支援 Windows 7 以上版本的作業系統。</translation>
 <translation id="5680901439334282664">登入 Chromium</translation>
 <translation id="5698481217667032250">將 Chromium 的介面文字設為這種語言</translation>
@@ -173,7 +169,6 @@
 <translation id="6734291798041940871">電腦上的所有使用者都已經安裝 Chromium 了。</translation>
 <translation id="6810143991807788455">只要回報目前的設定，就能助我們一臂之力，讓 Chromium 更臻完美</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">將特定字詞及其上下文內容傳送至 Google 搜尋，並傳回字詞定義、相關圖片和其他搜尋結果。</translation>
 <translation id="6893813176749746474">Chromium 已更新，但你至少超過 30 天沒有使用 Chromium 了。</translation>
 <translation id="6944967875980567883">已載入 Chromium 的模組</translation>
 <translation id="6964305034639999644">在 Chromium 無痕式視窗中開啟連結(&amp;G)</translation>
@@ -200,7 +195,6 @@ Chromium 無法復原你的設定。</translation>
 <ph name="BEGIN_LINK_2" />瞭解詳情<ph name="END_LINK_2" />
 
 如需進一步的操作說明，請登入您的 <ph name="ACCOUNT_EMAIL" /> 帳戶，查看系統寄給您的電子郵件。</translation>
-<translation id="7473891865547856676">不用了，謝謝</translation>
 <translation id="7483335560992089831">無法安裝這個版本的 Chromium，因為目前正在執行相同版本。請關閉 Chromium，然後再試一次。</translation>
 <translation id="7549178288319965365">關於 Chromium 作業系統</translation>
 <translation id="7577193603922410712">Chromium 剛套用了特殊的安全性更新。建議您立即重新啟動，讓更新生效 (系統會還原您的分頁)。</translation>

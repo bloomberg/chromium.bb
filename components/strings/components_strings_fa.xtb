@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;واگرد ترتیب‌بندی مجدد</translation>
 <translation id="1126551341858583091">اندازه در فضای ذخیره‌سازی محلی <ph name="CRASH_SIZE" /> است.</translation>
 <translation id="112840717907525620">حافظه پنهان خط‌مشی مورد تأیید است</translation>
-<translation id="113188000913989374"><ph name="SITE" /> می‌گوید:</translation>
 <translation id="1132774398110320017">‏تنظیمات تکمیل خودکار Chrome...</translation>
 <translation id="1150979032973867961">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورداعتماد سیستم عامل رایانه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="1151972924205500581">گذرواژه ضروری است</translation>
@@ -529,7 +528,7 @@
 <translation id="4923459931733593730">پرداخت</translation>
 <translation id="4926049483395192435">باید مشخص شود.</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
-<translation id="495170559598752135">عملکردها</translation>
+<translation id="495170559598752135">کنش‌ها</translation>
 <translation id="4958444002117714549">بزرگ کردن فهرست</translation>
 <translation id="4974590756084640048">فعال کردن مجدد اخطارها</translation>
 <translation id="4989542687859782284">دردسترس نیست</translation>
@@ -613,7 +612,6 @@
 <translation id="552553974213252141">آیا نوشتار به درستی استخراج شده است؟</translation>
 <translation id="5540224163453853">مقاله درخواستی یافت نشد.</translation>
 <translation id="5541546772353173584">افزودن رایانامه</translation>
-<translation id="5544037170328430102">صفحه جاسازی‌شده‌ای در <ph name="SITE" /> می‌گوید:</translation>
 <translation id="5545756402275714221">مقاله‌هایی برای شما</translation>
 <translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5560088892362098740">تاریخ انقضا</translation>
@@ -821,7 +819,6 @@
 <translation id="7390545607259442187">تأیید کارت</translation>
 <translation id="7400418766976504921">نشانی وب</translation>
 <translation id="7419106976560586862">مسیر نمایه</translation>
-<translation id="7424977062513257142">صفحه جاسازی‌شده‌ای در این صفحه وب می‌گوید:</translation>
 <translation id="7437289804838430631">افرودن اطلاعات تماس</translation>
 <translation id="7441627299479586546">موضوع خط‌مشی اشتباه است</translation>
 <translation id="7444046173054089907">این سایت مسدود شده است</translation>
@@ -1000,7 +997,6 @@
 <translation id="884923133447025588">هیچ مکانیزم ابطالی یافت نشد.</translation>
 <translation id="885730110891505394">‏اشتراک‌گذاری با Google</translation>
 <translation id="8866481888320382733">خطا در تجزیه تنظیمات خط‌مشی</translation>
-<translation id="8866959479196209191">این صفحه می‌گوید:</translation>
 <translation id="8870413625673593573">اخیراً بسته‌شده</translation>
 <translation id="8874824191258364635">شماره کارت معتبری وارد کنید</translation>
 <translation id="8876793034577346603">پیکربندی شبکه نتوانست تجزیه شود.</translation>

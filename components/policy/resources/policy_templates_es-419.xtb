@@ -30,6 +30,7 @@
 
           Si esta opción de configuración está inhabilitada o no se configura, el host de asistencia remota se ejecutará en el contexto del usuario, y los usuarios remotos no podrán interactuar con las ventanas con permisos elevados en el escritorio.</translation>
 <translation id="1096105751829466145">Proveedor de búsqueda predeterminado</translation>
+<translation id="1099282607296956954">Permite el aislamiento de todos los sitios</translation>
 <translation id="1117535567637097036">Los controladores de protocolo establecidos mediante esta política no se usan cuando se controlan intents en Android.</translation>
 <translation id="1122282995569868661">Muestra el ícono de la barra de herramientas de <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Configura el directorio que <ph name="PRODUCT_NAME" /> usará para almacenar archivos en caché en el disco.
@@ -679,6 +680,17 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="332771718998993005">Determina el nombre anunciado como un destino de <ph name="PRODUCT_NAME" />.
 
           Si esta política se establece con una string no vacía, esa string se usará como el nombre del destino de <ph name="PRODUCT_NAME" />. De lo contrario, el nombre del destino será el nombre del dispositivo. Si esta política no se establece, el nombre del destino será el nombre del dispositivo, y el propietario del dispositivo (o un usuario del dominio que administre el dispositivo) podrá cambiarlo. El nombre tiene un límite máximo de 24 caracteres.</translation>
+<translation id="3356249700768900657">
+      NOTA: Esta política es experimental y es posible que su funcionalidad
+      tenga fallas. Para revisar la configuración de la política IsolateOrigins
+      a fin de aprovechar el aislamiento y reducir el impacto que puedan
+      sufrir los usuarios, utiliza IsolateOrigins con una lista de los sitios que
+      quieras aislar. Esta configuración, SitePerProcess, aísla todos los sitios.
+      Si se habilita la política, cada sitio se ejecutará en su propio proceso.
+      Si se inhabilita, se aplicará la lógica de administración del proceso
+      previo de aislamiento de sitios.
+      Si no se configura, el usuario podrá cambiar esta configuración.
+      </translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de manera predeterminada</translation>
 <translation id="3395348522300156660">Especifica las impresoras que puede utilizar un usuario.
 
@@ -1032,6 +1044,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Para ver ejemplos de patrones, visita https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Abrir una lista de direcciones URL</translation>
 <translation id="4680961954980851756">Habilitar Autocompletar</translation>
+<translation id="4722122254122249791">Permite el aislamiento de sitios específicos</translation>
 <translation id="4722399051042571387">Si esta política es falsa, los usuarios no podrán establecer PIN poco seguros y fáciles de adivinar.
 
           Algunos ejemplos de PIN poco seguros: PIN que contienen un solo dígito (1111), PIN cuyos dígitos aumentan de a 1 (1234), PIN cuyos dígitos decrecen de a 1 (4321) y PIN de uso común.
@@ -1132,6 +1145,18 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4983201894483989687">Permitir la ejecución de complementos desactualizados</translation>
 <translation id="4988291787868618635">Acción que se realiza cuando se alcanza la demora de inactividad</translation>
 <translation id="4995548127349206948">Controla si está habilitada la autenticación NTLMv2.</translation>
+<translation id="5027819375434797927">
+      NOTA: Esta política es experimental, y es posible que su funcionalidad tenga
+      fallas.
+      Si se habilita la política, cada origen designado en una lista separada
+      por comas se ejecutará en su propio proceso. Esta acción también
+      aislará los sitios designados a partir de subdominios; p. ej.,
+      al especificar https://ejemplo.com/, también se aislará
+      https://foo.ejemplo.com/ como parte del sitio https://ejemplo.com/.
+      Si se inhabilita la política, se aplicará la lógica de administración del
+      proceso previo de aislamiento de sitios.
+      Si no se configura, el usuario podrá cambiar esta configuración.
+      </translation>
 <translation id="5047604665028708335">Permite el acceso a sitios fuera de los paquetes de contenido.</translation>
 <translation id="5052081091120171147">Esta política, si se habilita, fuerza la importación del historial de navegación del navegador predeterminado actual. Si se la habilita, esta política también afecta el cuadro de diálogo de importación. Si se la inhabilita, no se importa ningún historial de navegación. Si no se configura, se le puede preguntar al usuario si desea importar el historial de navegación o la importación puede realizarse de forma automática.</translation>
 <translation id="5056708224511062314">La lupa está inhabilitada.</translation>
@@ -1910,39 +1935,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7841880500990419427">Versión mínima de TLS para resguardo</translation>
 <translation id="7842869978353666042">Opciones de configuración de Google Drive</translation>
 <translation id="7843525027689416831">Especifica las marcas que se deben aplicar a <ph name="PRODUCT_NAME" /> cuando se inicia. Las marcas especificadas se aplican solo en la pantalla de acceso. Las marcas establecidas mediante esta política no se propagan a las sesiones de usuario.</translation>
-<translation id="7844537954833753199">Establece la configuración de la administración de extensiones <ph name="PRODUCT_NAME" />.
-
-          Esta política controla diferentes opciones de configuración, incluidas las que controlan las políticas existentes relacionadas con las extensiones. Esta política anulará cualquier política heredada, si ambas están configuradas.
-
-          Esta política asigna un ID de extensión o una URL de actualización a su configuración. Con un ID de extensión, la configuración se aplicará solo a la extensión específica. Se puede establecer una configuración predeterminada para <ph name="DEFAULT_SCOPE" /> del ID especial, que se aplicará a todas las extensiones que no tengan una configuración personalizada establecida en esta política. Con una URL de actualización, la configuración se aplicará a todas las extensiones con la URL de actualización exacta que se indica en el manifiesto de esta extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          La configuración para cada extensión (o extensiones con la misma URL de actualización) es otro diccionario que puede contener los campos que se documentan a continuación.
-
-          <ph name="INSTALLATION_MODE" />: Especifica una string que indica el modo de instalación para la extensión. Las strings válidas son:
-          * <ph name="ALLOWED" />: Permite que el usuario instale la extensión. Este es el comportamiento predeterminado.
-          * <ph name="BLOCKED" />: Bloquea la instalación de la extensión.
-          * <ph name="FORCE_INSTALLED" />: La extensión se instala automáticamente y el usuario no puede quitarla.
-          * <ph name="NORMAL_INSTALLED" />: La extensión se instala automáticamente, pero el usuario puede inhabilitarla.
-
-          El <ph name="INSTALLTION_MODE" /> también se puede configurar para varias extensiones, incluida la extensión <ph name="DEFAULT_SCOPE" /> (como configuración predeterminada) y las extensiones con la misma URL de actualización. En este caso, solo se pueden usar los valores <ph name="ALLOWED" /> y <ph name="BLOCKED" />.
-
-          Si el modo se establece como <ph name="FORCE_INSTALLED" /> o <ph name="NORMAL_INSTALLED" />, también se debe establecer una <ph name="UPDATE_URL" />. Ten en cuenta que el conjunto de URL de actualización que se establece en esta política solo se usa para la primera instalación; las actualizaciones posteriores de la extensión usarán la URL de actualización que se indica en el manifiesto de la extensión. La URL de actualización debe indicar un documento XML de manifiesto de actualización, como se mencionó anteriormente.
-
-          <ph name="BLOCKED_PERMISSIONS" />: Especifica una lista de strings que indica los permisos de API bloqueados para la extensión. Los nombres de los permisos son los mismos que las strings de permisos declaradas en el manifiesto de la extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC3" />. Esta configuración también se puede establecer para la extensión <ph name="DEFAULT_SCOPE" />. Si la extensión requiere un permiso que se encuentra en la lista de elementos bloqueados, no se permitirá la carga. Si contiene un permiso bloqueado como requisito opcional, se ejecutará normalmente, pero la solicitud de los permisos conflictivos se negará automáticamente en el tiempo de ejecución.
-
-          <ph name="ALLOWED_PERMISSIONS" />: Similar a <ph name="BLOCKED_PERMISSIONS" />, pero permite de forma explícita algunos permisos que pueden estar incluidos en la lista de permisos bloqueados global. De esta manera, no se puede configurar para la extensión <ph name="DEFAULT_SCOPE" />. Ten en cuenta que esta configuración no otorga permisos a las extensiones de forma automática.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: Especifica una string de versiones. El formato de la string de versiones es el mismo que se usa en el manifiesto de extensiones, como se describe en <ph name="LINK_TO_EXTENSION_DOC4" />. Se inhabilitará cualquier extensión con una versión anterior a la versión mínima especificada. Esto se aplica también a las extensiones que se instalan a la fuerza.
-
-          Las siguientes opciones solo se pueden usar para la configuración <ph name="DEFAULT_SCOPE" /> predeterminada:
-
-          <ph name="INSTALL_SOURCES" />: Cada elemento de esta lista es un patrón de coincidencia de estilo-extensión (<ph name="LINK_TO_MATCH_PATTERNS" />). Los usuarios podrán instalar elementos fácilmente desde cualquier URL que coincida con un elemento de esta lista. Estos patrones deben permitir tanto la ubicación del archivo de <ph name="EXTENSION_SUFFIX_WILDCARD" /> como la página donde se inicia la descarga (es decir, la URL de referencia).
-
-          <ph name="ALLOWED_TYPES" />: Esta opción indica los tipos permitidos de extensiones o apps que se pueden instalar en <ph name="PRODUCT_NAME" />.  El valor es una lista de strings; cada una de ellas debe ser una de las siguientes: <ph name="VALID_ALLOWED_TYPES" />. Consulta la documentación sobre extensiones de <ph name="PRODUCT_NAME" /> para obtener más información sobre estos tipos.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Si un usuario intenta instalar una extensión, pero está bloqueada por una política, Chrome Webstore muestra un mensaje de error general. Esta opción te permite agregar texto al mensaje de error. Se puede usar para dirigir a los usuarios al servicio de asistencia, explicar por qué una extensión específica está bloqueada o mostrar otro mensaje. Este mensaje se error se mostrará cortado si excede los 1000 caracteres.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Acepta una lista de hosts en los que se bloqueará la interacción con una extensión. Incluye agregar javascript, alterar y ver webRequests/webNavigation, y ver y alterar cookies. Tiene un formato similar al de Match Patterns <ph name="LINK_TO_MATCH_PATTERNS" />, excepto que pueden no definirse rutas (p. ej., "*://*.ejemplo.com"). También es compatible con los comodines TLD efectivos (p. ej., "*://ejemplo.*").
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Acepta una lista de hosts con las que una extensión puede interactuar, más allá de que se indiquen en <ph name="RUNTIME_BLOCKED_HOSTS" />. Tiene el mismo formato que <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Si se establece en SyncDisabled o no se configura, los certificados de <ph name="PRODUCT_OS_NAME" /> no estarán disponibles para las apps de ARC.
 
       Si se establece en CopyCaCerts, todos los certificados de CA de ONC instalado con <ph name="WEB_TRUSTED_BIT" /> estarán disponibles para las apps de ARC.</translation>
@@ -2021,7 +2013,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si esta política se inhabilita o no se establece, el acceso direcciona al usuario a los perfiles normales.</translation>
 <translation id="8158758865057576716">Habilita la creación de las copias de itinerancia para los datos de perfil de <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8170878842291747619">Habilita el servicio integrado de Google Traductor en <ph name="PRODUCT_NAME" />. Si habilitas esta configuración, <ph name="PRODUCT_NAME" /> mostrará una barra de herramientas integrada que ofrece traducir la página para el usuario, cuando corresponda. Si se inhabilita esta configuración, los usuarios no podrán ver la barra de traducción. Si se habilita o inhabilita esta configuración, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME" />. Si esta opción no se configura, el usuario podrá decidir si desea usar esta función o no.</translation>
 <translation id="817455428376641507">Permite el acceso a las URL de la lista, como excepciones a la lista negra de URL.
 
       Consulta la descripción de la política de la lista negra de URL para el formato de entradas de esta lista.

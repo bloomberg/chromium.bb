@@ -73,13 +73,13 @@
 <translation id="3296368748942286671">Lanjutkan aplikasi yang berjalan di latar belakang jika Chromium ditutup</translation>
 <translation id="331951419404882060">Chromium OS tidak dapat menyinkronkan data Anda karena kesalahan saat masuk.</translation>
 <translation id="3474745554856756813">Tindakan ini akan menghapus <ph name="ITEMS_COUNT" /> item dari perangkat. Untuk mengambil data nanti, login ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
+<translation id="3479552764303398839">Jangan sekarang</translation>
 <translation id="3509308970982693815">Tutup semua jendela Chromium dan coba lagi.</translation>
 <translation id="352783484088404971">Buang Dari Chromium...</translation>
 <translation id="3549345495227188780">Memulai dengan Chromium OS</translation>
 <translation id="3582788516608077514">Memperbarui Chromium...</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
 <translation id="3713809861844741608">Buka link di &amp;tab Chromium baru</translation>
-<translation id="3738139272394829648">Sentuh untuk Menelusuri</translation>
 <translation id="3762167353400286894">Chromium OS ditampilkan dalam bahasa ini</translation>
 <translation id="378917192836375108">Chromium memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -112,7 +112,6 @@
 <translation id="469338717132742108">Dapatkan bantuan Chromium OS</translation>
 <translation id="4708774505295300557">Sebelumnya ada seseorang yang masuk ke Chromium di komputer ini sebagai <ph name="ACCOUNT_EMAIL_LAST" />. Buat pengguna Chromium baru agar informasi Anda tetap terpisah.</translation>
 <translation id="4714956846925717402">Buka Chromium lebih cepat</translation>
-<translation id="4743926867934016338">Terima &amp; Telusuri</translation>
 <translation id="4825874709045178029">Chromium memerlukan izin akses ke kamera untuk situs ini.</translation>
 <translation id="4888717733111232871">Inbound rule untuk Chromium guna mengizinkan lalu lintas mDNS.</translation>
 <translation id="4943838377383847465">Chromium berjalan di mode latar belakang.</translation>
@@ -129,9 +128,6 @@
 <translation id="5466153949126434691">Chromium otomatis diperbarui sehingga Anda selalu memiliki versi terbaru. Saat download ini selesai, Chromium akan dimulai ulang dan siap digunakan.</translation>
 <translation id="5479196819031988440">Chromium OS tidak dapat membuka halaman ini.</translation>
 <translation id="549669000822060376">Harap tunggu selagi Chromium memasang pembaruan sistem terkini.</translation>
-<translation id="5524843473235508879">Pengalihan diblokir.</translation>
-<translation id="5563479599352954471">Telusuri dengan satu sentuhan</translation>
-<translation id="5620765574781326016">Pelajari tentang topik di situs web tanpa meninggalkan halaman.</translation>
 <translation id="5634636535844844681">Chromium memerlukan Windows 7 atau lebih tinggi.</translation>
 <translation id="5680901439334282664">masuk ke Chromium</translation>
 <translation id="5698481217667032250">Tampilkan Chromium dalam bahasa ini</translation>
@@ -173,7 +169,6 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="6734291798041940871">Chromium sudah terpasang untuk semua pengguna di komputer Anda.</translation>
 <translation id="6810143991807788455">Bantu menjadikan Chromium lebih baik dengan melaporkan setelan saat ini</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">mengirim kata dan konteks di sekitarnya ke Google Penelusuran, mengembalikan definisi, gambar, hasil penelusuran, dan hasil penelusuran lain.</translation>
 <translation id="6893813176749746474">Chromium telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
 <translation id="6944967875980567883">Modul dimuat ke dalam Chromium</translation>
 <translation id="6964305034639999644">Buka link di jendela sa&amp;maran Chromium</translation>
@@ -200,7 +195,6 @@ Agar <ph name="NEW_PROFILE_NAME" /> tidak dapat mengakses akun Anda, pastikan pr
 <ph name="BEGIN_LINK_2" />Pelajari lebih lanjut<ph name="END_LINK_2" />
 
 Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</translation>
-<translation id="7473891865547856676">Lain Kali</translation>
 <translation id="7483335560992089831">Tidak dapat memasang Chromium versi yang sama dengan yang sedang Anda jalankan. Tutup Chromium dan coba lagi.</translation>
 <translation id="7549178288319965365">Tentang OS Chromium</translation>
 <translation id="7577193603922410712">Pembaruan keamanan khusus untuk Chromium baru saja diterapkan; mulai ulang Chromium sekarang agar pembaruan diterapkan (nanti kami akan memulihkan tab yang Anda buka).</translation>

@@ -30,6 +30,7 @@
 
           If this setting is disabled or not configured, the remote assistance host will run in the user's context and remote users cannot interact with elevated windows on the desktop.</translation>
 <translation id="1096105751829466145">Default search provider</translation>
+<translation id="1099282607296956954">Enable Site Isolation for every site</translation>
 <translation id="1117535567637097036">The protocol handlers set via this policy are not used when handling Android intents.</translation>
 <translation id="1122282995569868661">Shows the <ph name="PRODUCT_NAME" /> toolbar icon</translation>
 <translation id="1128903365609589950">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing cached files on the disk.
@@ -720,6 +721,16 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="332771718998993005">Determine the name advertised as a <ph name="PRODUCT_NAME" /> destination.
 
           If this policy is set to a non-empty string, that string will be used as the name of the <ph name="PRODUCT_NAME" /> destination. Otherwise, the destination name will be the device name. If this policy is not set, the destination name will be the device name, and the owner of the device (or a user from the domain managing the device) will be allowed to change it. The name is limited to 24 characters.</translation>
+<translation id="3356249700768900657">
+      NOTE: This policy is experimental and may break functionality!
+      You might want to look at the IsolateOrigins policy setting to get the
+      best of both worlds, isolation and limited impact for users, by using
+      IsolateOrigins with a list of the sites that you want to isolate. This setting,
+      SitePerProcess, isolates all sites.
+      If the policy is enabled, each site will run in its own process.
+      If the policy is disabled, the pre-Site Isolation process management logic will take effect.
+      If the policy is not configured, the user will be able to change this setting.
+      </translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
 <translation id="3395348522300156660">Specifies the printers which a user can use.
 
@@ -1091,6 +1102,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           For example patterns see https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Open a list of URLs</translation>
 <translation id="4680961954980851756">Enable AutoFill</translation>
+<translation id="4722122254122249791">Enable Site Isolation for specified origins</translation>
 <translation id="4722399051042571387">If false, users will be unable to set PINs which are weak and easy to guess.
 
           Some example weak PINs: PINs containing only one digit (1111), PINs whose digits are increasing by 1 (1234), PINs whose digits are decreasing by 1 (4321) and PINs which are commonly used.
@@ -1191,6 +1203,16 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4983201894483989687">Allow running plug-ins that are outdated</translation>
 <translation id="4988291787868618635">Action to take when the idle delay is reached</translation>
 <translation id="4995548127349206948">Whether NTLMv2 authentication is enabled.</translation>
+<translation id="5027819375434797927">
+      NOTE: This policy is experimental and may break functionality!
+      If the policy is enabled, each of the named origins in a
+      comma-separated list will run in its own process. This will also isolate
+      origins named by subdomains, e.g. specifying https://example.com/ will
+      also cause https://foo.example.com/ to be isolated as part of the
+      https://example.com/ site.
+      If the policy is disabled, the pre-Site Isolation process management logic will take effect.
+      If the policy is not configured, the user will be able to change this setting.
+      </translation>
 <translation id="5047604665028708335">Allow access to sites outside of content packs</translation>
 <translation id="5052081091120171147">This policy forces the browsing history to be imported from the current default browser, if enabled. If enabled, this policy also affects the import dialogue.
 
@@ -2037,39 +2059,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7841880500990419427">Minimum TLS version to fallback to</translation>
 <translation id="7842869978353666042">Configure Google Drive options</translation>
 <translation id="7843525027689416831">Specifies the flags that should be applied to <ph name="PRODUCT_NAME" /> when it starts. The specified flags are applied on the login screen only. Flags that are set via this policy do not propagate into user sessions.</translation>
-<translation id="7844537954833753199">Configures extension management settings for <ph name="PRODUCT_NAME" />.
-
-          This policy controls multiple settings, including settings controlled by any existing extension-related policies. This policy will override any legacy policies if both are set.
-
-          This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID <ph name="DEFAULT_SCOPE" />, which will apply to all extensions that don't have a custom configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          The configuration for each extension (or extensions with same update URL) is another dictionary that can contain the fields documented below.
-
-          <ph name="INSTALLATION_MODE" />: maps to a string indicating the installation mode for the extension. The valid strings are:
-          * <ph name="ALLOWED" />: allows the extension to be installed by the user. This is the default behaviour.
-          * <ph name="BLOCKED" />: blocks installation of the extension.
-          * <ph name="FORCE_INSTALLED" />: the extension is automatically installed and can't be removed by the user.
-          * <ph name="NORMAL_INSTALLED" />: the extension is automatically installed but can be disabled by the user.
-
-          The <ph name="INSTALLTION_MODE" /> can also be configured for multiple extensions as well, including the <ph name="DEFAULT_SCOPE" /> extension (as default settings) and extensions with same update URL. Only the <ph name="ALLOWED" /> and <ph name="BLOCKED" /> values can be used in this case.
-
-          If the mode is set to <ph name="FORCE_INSTALLED" /> or <ph name="NORMAL_INSTALLED" /> then an <ph name="UPDATE_URL" /> must be configured too. Note that the update URL set in this policy is only used for the initial installation; subsequent updates of the extension will use the update URL indicated in the extension's manifest. The update URL should point to an Update Manifest XML document as mentioned above.
-
-          <ph name="BLOCKED_PERMISSIONS" />: maps to a list of strings indicating the blocked API permissions for the extension. The permissions names are same as the permission strings declared in manifest of extension as described at <ph name="LINK_TO_EXTENSION_DOC3" />. This setting also can be configured for <ph name="DEFAULT_SCOPE" /> extension. If the extension requires a permission which is on the blocklist, it will not be allowed to load. If it contains a blocked permission as optional requirement, it will be handled in the normal way, but requesting conflicting permissions will be declined automatically at runtime.
-
-          <ph name="ALLOWED_PERMISSIONS" />: similar to <ph name="BLOCKED_PERMISSIONS" />, but instead explicitly allow some permissions which might be blocked by global blocked permission list, thus can not be configured for <ph name="DEFAULT_SCOPE" /> extension. Note that this setting doesn't give granted permissions to extensions automatically.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: maps to a version string. The format of the version string is the same as the one used in extension manifest, as described at <ph name="LINK_TO_EXTENSION_DOC4" />. An extension with a version older than the specified minimum version will be disabled. This applies to force-installed extensions as well.
-
-          The following settings can be used only for the default <ph name="DEFAULT_SCOPE" /> configuration:
-
-          <ph name="INSTALL_SOURCES" />: Each item in this list is an extension-style match pattern (<ph name="LINK_TO_MATCH_PATTERNS" />). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the <ph name="EXTENSION_SUFFIX_WILDCARD" /> file and the page where the download is started from (i.e.  the referrer) must be allowed by these patterns.
-
-          <ph name="ALLOWED_TYPES" />: This setting whitelists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME" />.  The value is a list of strings, each of which should be one of the following: <ph name="VALID_ALLOWED_TYPES" />. See the <ph name="PRODUCT_NAME" /> extensions documentation for more information on these types.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: If a user tries to install an extension, but it is blocked by policy, the Chrome Webstore displays a generic error message. This setting allows you to append text to the error message. This could be be used to direct users to your help desk, explain why a particular extension is blocked or something else. This error message will be truncated if longer than 1000 characters.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Accepts a list of hosts that an extension will be blocked from interacting with. This includes injecting javascript, altering and viewing webRequests / webNavigation, viewing and altering cookies. The format is similar to Match Patterns <ph name="LINK_TO_MATCH_PATTERNS" /> except no paths may be defined. e.g. '*://*.example.com'. This also supports effective TLD wildcarding e.g. '*://example.*'.
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Accepts a list of hosts that an extension can interact with regardless of whether they are listed in <ph name="RUNTIME_BLOCKED_HOSTS" />. This is the same format as <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">If set to SyncDisabled or not configured, <ph name="PRODUCT_OS_NAME" /> certificates are not available for ARC-apps.
 
       If set to CopyCaCerts, all ONC-installed CA certificates with <ph name="WEB_TRUSTED_BIT" /> are available for ARC-apps.</translation>
@@ -2153,15 +2142,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If the policy is set to disabled or left not set signing in leads to regular profiles.</translation>
 <translation id="8158758865057576716">Enable the creation of roaming copies for <ph name="PRODUCT_NAME" /> profile data.</translation>
-<translation id="8170878842291747619">Enables the integrated Google Translate service on <ph name="PRODUCT_NAME" />.
-
-      If you enable this setting, <ph name="PRODUCT_NAME" /> will show an integrated toolbar offering to translate the page for the user, when appropriate.
-
-      If you disable this setting, users will never see the translation bar.
-
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
-
-      If this setting is left unset the user can decide to use this function or not.</translation>
 <translation id="817455428376641507">Allows access to the listed URLs, as exceptions to the URL blacklist.
 
       See the description of the URL blacklist policy for the format of entries of this list.

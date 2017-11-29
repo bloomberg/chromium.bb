@@ -90,12 +90,12 @@
 <translation id="3398288718845740432">在 Chrome 菜单中隐藏</translation>
 <translation id="3451115285585441894">正在添加到 Chrome 浏览器...</translation>
 <translation id="345171907106878721">将您自己添加到Chrome</translation>
+<translation id="3479552764303398839">以后再说</translation>
 <translation id="3612333635265770873">已发现一个同名的模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="3622797965165704966">现在，无论是通过Google帐号还是在共用的计算机上，您都可以更轻松地使用Chrome。</translation>
 <translation id="3637702109597584617">Google Chrome 操作系统<ph name="TERMS_OF_SERVICE_LINK" />服务条款<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">这会从这台设备上删除 1 项内容。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chrome。</translation>
 <translation id="3735758079232443276">“<ph name="EXTENSION_NAME" />”扩展程序更改了 Chrome 启动后系统显示的页面。</translation>
-<translation id="3738139272394829648">触摸搜索</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">从Chrome中移除…</translation>
 <translation id="386202838227397562">请关闭所有 Google Chrome 浏览器窗口，然后重试。</translation>
@@ -127,7 +127,6 @@
 <translation id="4664415150087723341">系统刚刚为 Google Chrome 应用了一项特殊的安全更新；您应立即重新启动，以使此更新生效（我们会恢复您的标签页）。</translation>
 <translation id="4700157086864140907">Google Chrome会将您在浏览器中输入的内容发送到Google服务器，并使用Google搜索所用的拼写检查技术，因而可为您提供更智能的拼写检查功能。</translation>
 <translation id="4728575227883772061">未知错误导致安装失败。如果 Google Chrome 浏览器正在运行，请将其关闭，然后重试。</translation>
-<translation id="4743926867934016338">接受并搜索</translation>
 <translation id="4750550185319565338">重新启动 Chrome 以启用 <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">此文件可能存在危险，因此 Chrome 已将其拦截。</translation>
@@ -155,12 +154,9 @@
 <translation id="5430073640787465221">您的偏好设置文件已损坏或无效。Google Chrome 浏览器无法恢复您的设置。</translation>
 <translation id="5453904507266736060">让 Google Chrome 浏览器在后台运行</translation>
 <translation id="5495581687705680288">模块已加载到 Google Chrome 浏览器中</translation>
-<translation id="5524843473235508879">已阻止重定向。</translation>
 <translation id="556024056938947818">Google Chrome 正尝试显示密码。</translation>
-<translation id="5563479599352954471">触摸一下即可启动搜索</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Chrome 需要获得相应权限，才能允许此网站使用您的麦克风。</translation>
-<translation id="5620765574781326016">无需离开所在页面，即可了解网站上的主题。</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> 可能存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="573759479754913123">关于 Chrome 操作系统</translation>
 <translation id="5749068826913805084">Chrome 需要具备存储空间使用权限，才能下载文件。</translation>
@@ -196,7 +192,6 @@
 <translation id="6697947395630195233">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站。</translation>
 <translation id="683440813066116847">Google Chrome Canary版的入站规则，允许mDNS流量。</translation>
 <translation id="686561893457936865">随时随地使用 Chrome</translation>
-<translation id="6883876366448858277">将某个字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片及其他搜索结果。</translation>
 <translation id="6885412569789873916">Chrome 测试版应用</translation>
 <translation id="6967962315388095737">Google Chrome 测试版的入站规则，允许 mDNS 流量。</translation>
 <translation id="6970811910055250180">正在更新设备...</translation>
@@ -218,7 +213,6 @@
 <translation id="7437998757836447326">退出 Chrome</translation>
 <translation id="7459554271817304652">您可以设置同步以将个性化浏览器功能保存到网上，以便在任意计算机上的 Google Chrome 浏览器中使用这些功能。</translation>
 <translation id="7473136999113284234">Chrome会自动更新，因此您使用的始终都是最新版本。</translation>
-<translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7494905215383356681">Chrome开放源代码许可</translation>
 <translation id="7535429826459677826">Google Chrome 开发者版</translation>
 <translation id="7552219221109926349">以这种语言显示 Chrome 操作系统</translation>

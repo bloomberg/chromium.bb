@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">復原重新排序(&amp;U)</translation>
 <translation id="1126551341858583091">佔用的本機儲存空間大小：<ph name="CRASH_SIZE" />。</translation>
 <translation id="112840717907525620">政策快取正確</translation>
-<translation id="113188000913989374"><ph name="SITE" /> 顯示：</translation>
 <translation id="1132774398110320017">Chrome 自動填入設定...</translation>
 <translation id="1150979032973867961">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得你電腦作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="1151972924205500581">請輸入密碼</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">擷取的文字是否正確？</translation>
 <translation id="5540224163453853">找不到要求的文章。</translation>
 <translation id="5541546772353173584">新增電子郵件地址</translation>
-<translation id="5544037170328430102"><ph name="SITE" /> 的嵌入式網頁顯示：</translation>
 <translation id="5545756402275714221">為你推薦的報導</translation>
 <translation id="5556459405103347317">重新載入</translation>
 <translation id="5560088892362098740">到期日</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">驗證信用卡</translation>
 <translation id="7400418766976504921">網址</translation>
 <translation id="7419106976560586862">設定檔路徑</translation>
-<translation id="7424977062513257142">這個網頁上的嵌入式網頁顯示：</translation>
 <translation id="7437289804838430631">新增聯絡資訊</translation>
 <translation id="7441627299479586546">政策主體有誤</translation>
 <translation id="7444046173054089907">這個網站遭到封鎖</translation>
@@ -1001,7 +998,6 @@
 <translation id="884923133447025588">未發現撤銷機制。</translation>
 <translation id="885730110891505394">與 Google 分享</translation>
 <translation id="8866481888320382733">解析政策設定時發生錯誤</translation>
-<translation id="8866959479196209191">這個網頁顯示：</translation>
 <translation id="8870413625673593573">最近關閉的分頁</translation>
 <translation id="8874824191258364635">請輸入有效的信用卡號碼</translation>
 <translation id="8876793034577346603">無法解析網路設定。</translation>

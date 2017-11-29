@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">順序変更の取り消し（&amp;U）</translation>
 <translation id="1126551341858583091">ローカル ストレージ上のサイズは <ph name="CRASH_SIZE" /> です。</translation>
 <translation id="112840717907525620">ポリシー キャッシュは正常です</translation>
-<translation id="113188000913989374"><ph name="SITE" /> の内容:</translation>
 <translation id="1132774398110320017">Chrome の自動入力設定...</translation>
 <translation id="1150979032973867961">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のパソコンのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="1151972924205500581">パスワードを入力してください</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">テキストは正しく抽出されましたか？</translation>
 <translation id="5540224163453853">リクエストされた記事が見つかりませんでした。</translation>
 <translation id="5541546772353173584">メールの追加</translation>
-<translation id="5544037170328430102"><ph name="SITE" /> に埋め込まれているページの内容:</translation>
 <translation id="5545756402275714221">おすすめの記事</translation>
 <translation id="5556459405103347317">再読み込み</translation>
 <translation id="5560088892362098740">有効期限</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">カードの確認</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">プロフィール パス</translation>
-<translation id="7424977062513257142">このウェブページに埋め込まれているページの内容:</translation>
 <translation id="7437289804838430631">連絡先情報を追加</translation>
 <translation id="7441627299479586546">ポリシーの対象が間違っています</translation>
 <translation id="7444046173054089907">このサイトはブロックされています</translation>
@@ -1002,7 +999,6 @@
 <translation id="884923133447025588">取り消し機構が見つかりません。</translation>
 <translation id="885730110891505394">Google との共有</translation>
 <translation id="8866481888320382733">ポリシー設定の解析中にエラーが発生しました</translation>
-<translation id="8866959479196209191">このページの内容:</translation>
 <translation id="8870413625673593573">最近閉じたタブ</translation>
 <translation id="8874824191258364635">有効なクレジット カード番号を入力してください</translation>
 <translation id="8876793034577346603">ネットワーク設定を解析できませんでした。</translation>

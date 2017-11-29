@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Опозови промену редоследа</translation>
 <translation id="1126551341858583091">Величина у локалном меморијском простору је <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Кеш смерница је у реду</translation>
-<translation id="113188000913989374"><ph name="SITE" /> каже:</translation>
 <translation id="1132774398110320017">Подешавања Chrome аутоматског попуњавања...</translation>
 <translation id="1150979032973867961">Овај сервер не може да докаже да је <ph name="DOMAIN" />; оперативни систем рачунара нема поверења у његов безбедносни сертификат. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
 <translation id="1151972924205500581">Лозинка је обавезна</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">Да ли је текст правилно издвојен?</translation>
 <translation id="5540224163453853">Нисмо пронашли захтевани чланак.</translation>
 <translation id="5541546772353173584">Додајте имејл</translation>
-<translation id="5544037170328430102">Уграђена страница на <ph name="SITE" /> каже:</translation>
 <translation id="5545756402275714221">Чланци за вас</translation>
 <translation id="5556459405103347317">Учитај поново</translation>
 <translation id="5560088892362098740">Датум истека</translation>
@@ -821,7 +819,6 @@
 <translation id="7390545607259442187">Потврдите картицу</translation>
 <translation id="7400418766976504921">URL адреса</translation>
 <translation id="7419106976560586862">Путања профила</translation>
-<translation id="7424977062513257142">Уграђена страница на овој веб-страници каже:</translation>
 <translation id="7437289804838430631">Додај контакт информације</translation>
 <translation id="7441627299479586546">Погрешан субјекат смерница</translation>
 <translation id="7444046173054089907">Овај сајт је блокиран</translation>
@@ -1001,7 +998,6 @@
 <translation id="884923133447025588">Није пронађен ниједан механизам опозива.</translation>
 <translation id="885730110891505394">Дељење са Google-ом</translation>
 <translation id="8866481888320382733">Грешка при рашчлањивању подешавања смерница</translation>
-<translation id="8866959479196209191">Ова страница каже:</translation>
 <translation id="8870413625673593573">Недавно затворено</translation>
 <translation id="8874824191258364635">Унесите важећи број картице</translation>
 <translation id="8876793034577346603">Рашчлањивање конфигурације мреже није успело.</translation>

@@ -43,7 +43,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="1339428534620983148">Vorherige Tabellenspalte</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1346748346194534595">Rechts</translation>
-<translation id="135978014023467274">Ihre Version wurde auf ChromeVox 63 aktualisiert.</translation>
+<translation id="135978014023467274">ChromeVox wurde auf Version 63 aktualisiert.</translation>
 <translation id="136718599399906424">Nächste Tabellenzeile</translation>
 <translation id="1377925789329510816">Hierbei handelt es sich um die letzte Überschrift. Drücken Sie "Suche + H", um zur ersten Überschrift zu gelangen, oder "Suche + Shift + H", um zur zweiten Überschrift auf dieser Seite zu springen.</translation>
 <translation id="1383876407941801731">Suchen</translation>
@@ -236,7 +236,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3241638166094654466">Zellen in jeder Zeile:</translation>
 <translation id="3286390186030710347">Schieberegler</translation>
 <translation id="3299925995433437805">Kein nächster besuchter Link</translation>
-<translation id="3300348286427369683">Rich-Text-Unterstützung. ChromeVox unterstützt jetzt Rich-Text-Felder, wie beispielsweise Wechselbefehle, Cursor-Routing über eine Braillezeile und die Auswahl von Optionen.</translation>
+<translation id="3300348286427369683">Rich-Text-Unterstützung. ChromeVox unterstützt jetzt Rich-Text-Felder, Befehle für den Wechsel zwischen Elementen, Cursor-Routing über eine Braillezeile, das Erstellen von Auswahlen und mehr.</translation>
 <translation id="3307886118343381874">Zum Ende der Tabelle gehen</translation>
 <translation id="3311969765485641742">Drücken Sie Alt + Shift + A, um die Benachrichtigungen aufzurufen.</translation>
 <translation id="3312997241656799641">Nächster besuchter Link</translation>
@@ -411,7 +411,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4601367666219428522">Tab. <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Nächster Tastenanschlag wird ignoriert.</translation>
 <translation id="461613135510474570">Satz</translation>
-<translation id="463135993322337640">Drücken Sie ChromeVox "O" und "N", um mehr über die neuen Funktionen von ChromeVox zu erfahren</translation>
+<translation id="463135993322337640">Wenn Sie mehr über die neuen Funktionen von ChromeVox erfahren möchten, drücken Sie ChromeVox "O" und "N"</translation>
 <translation id="4647836961514597010">Farbauswahl</translation>
 <translation id="4660783501463101648">Classic wurde entfernt. Die Tastaturschaltfläche für den Wechsel zu ChromeVox Classic wurde entfernt.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -471,7 +471,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="5098541983634824365">Raster wird verlassen.</translation>
 <translation id="5102981729317424850">Symbolleiste</translation>
 <translation id="5105050547967751155">rq</translation>
-<translation id="5106547198195128110">In dieser neuen Version haben wir einige Änderungen vorgenommen:</translation>
+<translation id="5106547198195128110">In dieser neuen Version haben wir einige spannende Änderungen vorgenommen:</translation>
 <translation id="5110983769041734144">Kein vorheriges Formularfeld</translation>
 <translation id="5111640677200759579">Spaltenüberschrift</translation>
 <translation id="5136967254288895616">Kein vorheriger Link</translation>

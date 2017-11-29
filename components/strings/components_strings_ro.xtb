@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Anulați reordonarea</translation>
 <translation id="1126551341858583091">Dimensiunea spațiului de stocare local este <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Memoria cache pentru politică este OK</translation>
-<translation id="113188000913989374"><ph name="SITE" /> afișează mesajul:</translation>
 <translation id="1132774398110320017">Setări de completare automată în Chrome...</translation>
 <translation id="1150979032973867961">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al computerului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="1151972924205500581">Trebuie să introduceți o parolă</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">Textul a fost extras corect?</translation>
 <translation id="5540224163453853">Articolul solicitat nu poate fi găsit.</translation>
 <translation id="5541546772353173584">Adaugă o adresă de e-mail</translation>
-<translation id="5544037170328430102">O pagină încorporată de pe <ph name="SITE" /> afișează mesajul:</translation>
 <translation id="5545756402275714221">Articole pentru tine</translation>
 <translation id="5556459405103347317">Reîncarcă</translation>
 <translation id="5560088892362098740">Data expirării</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Confirmă cardul</translation>
 <translation id="7400418766976504921">Adresă URL</translation>
 <translation id="7419106976560586862">Calea profilului</translation>
-<translation id="7424977062513257142">O pagină încorporată de pe această pagină web afișează mesajul:</translation>
 <translation id="7437289804838430631">Adaugă informații de contact</translation>
 <translation id="7441627299479586546">Subiectul politicii este greșit</translation>
 <translation id="7444046173054089907">Acest site este blocat</translation>
@@ -1002,7 +999,6 @@
 <translation id="884923133447025588">Nu a fost găsit niciun mecanism de revocare.</translation>
 <translation id="885730110891505394">Permiterea accesului pentru Google</translation>
 <translation id="8866481888320382733">Eroare la analizarea setărilor pentru politică</translation>
-<translation id="8866959479196209191">Această pagină afișează mesajul:</translation>
 <translation id="8870413625673593573">Închise recent</translation>
 <translation id="8874824191258364635">Introdu un număr de card valid</translation>
 <translation id="8876793034577346603">Configurația rețelei nu a putut fi analizată.</translation>

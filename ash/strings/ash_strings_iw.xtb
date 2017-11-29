@@ -71,7 +71,7 @@
 <translation id="2617342710774726426">‏כרטיס ה-SIM נעול</translation>
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2675319268637823299">מנהל מערכת ביטל את ההרשאה של <ph name="USER_EMAIL" /> לכניסה עם מספר חשבונות.
-כדי להמשיך, כל המשתמשים חייבים לצאת מהחשבון.</translation>
+    כדי להמשיך, כל המשתמשים חייבים לבצע יציאה.</translation>
 <translation id="2700058918926273959">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING" />. תנותק מהחשבון.</translation>
 <translation id="2727977024730340865">מחובר למטען בעל מתח נמוך. ייתכן שטעינת הסוללה לא תהיה אמינה.</translation>
 <translation id="2761704814324807722">מגש מערכת, שעה <ph name="TIME" />‏, <ph name="BATTERY" /></translation>
@@ -149,7 +149,6 @@
 <translation id="453661520163887813"><ph name="TIME" /> עד למילוי</translation>
 <translation id="4544944664594876241">מקש הקיצור לנעילת המסך השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">‏ChromeVox הופעל</translation>
-<translation id="4729904664295161097">‏Assistant זמין רק לפרופילים ראשיים.</translation>
 <translation id="4776917500594043016">סיסמה עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">נתק</translation>

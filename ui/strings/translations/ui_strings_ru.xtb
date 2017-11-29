@@ -143,6 +143,7 @@
 <translation id="8352146631962686268">{YEARS,plural, =1{1 год}one{# год}few{# года}many{# лет}other{# года}}</translation>
 <translation id="8371695176452482769">Говорите</translation>
 <translation id="838869780401515933">поставить галочку</translation>
+<translation id="8393700583063109961">Отправить сообщение</translation>
 <translation id="8394908167088220973">Воспроизведение/пауза</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 г.}one{# г.}few{# г.}many{# л.}other{# г.}}</translation>

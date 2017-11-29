@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Отменить изменение порядка</translation>
 <translation id="1126551341858583091">Место на карте памяти: <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">В кеше политики ошибок не найдено</translation>
-<translation id="113188000913989374">Подтвердите действие на <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Настройки автозаполнения в Chrome...</translation>
 <translation id="1150979032973867961">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Операционная система компьютера не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="1151972924205500581">Необходимо ввести пароль</translation>
@@ -613,7 +612,6 @@
 <translation id="552553974213252141">Правильно ли извлечен текст?</translation>
 <translation id="5540224163453853">Не удалось найти указанную статью</translation>
 <translation id="5541546772353173584">Добавьте адрес электронной почты</translation>
-<translation id="5544037170328430102">Подтвердите действие на <ph name="SITE" />:</translation>
 <translation id="5545756402275714221">Новости для вас</translation>
 <translation id="5556459405103347317">Перезагрузить</translation>
 <translation id="5560088892362098740">Дата окончания срока действия</translation>
@@ -821,7 +819,6 @@
 <translation id="7390545607259442187">Подтвердите карту</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Путь к профилю</translation>
-<translation id="7424977062513257142">Подтвердите действие:</translation>
 <translation id="7437289804838430631">Добавить контактные данные</translation>
 <translation id="7441627299479586546">Неверный субъект политики</translation>
 <translation id="7444046173054089907">Сайт заблокирован</translation>
@@ -1000,7 +997,6 @@
 <translation id="884923133447025588">Не обнаружен механизм отзыва.</translation>
 <translation id="885730110891505394">Доступ Google</translation>
 <translation id="8866481888320382733">Не удалось выполнить анализ настроек политики</translation>
-<translation id="8866959479196209191">Подтвердите действие:</translation>
 <translation id="8870413625673593573">Недавно закрытые</translation>
 <translation id="8874824191258364635">Введите действительный номер карты.</translation>
 <translation id="8876793034577346603">Не удалось выполнить анализ конфигурации сети.</translation>

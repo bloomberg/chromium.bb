@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Annulla ridisposizione</translation>
 <translation id="1126551341858583091">Le dimensioni nello spazio di archiviazione locale sono pari a <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Cache dei criteri integra</translation>
-<translation id="113188000913989374"><ph name="SITE" /> dice:</translation>
 <translation id="1132774398110320017">Impostazioni di Compilazione automatica Chrome...</translation>
 <translation id="1150979032973867961">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza non è considerato attendibile dal sistema operativo del computer. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="1151972924205500581">Password obbligatoria</translation>
@@ -166,7 +165,7 @@
 <translation id="2166049586286450108">Accesso amministrativo completo</translation>
 <translation id="2166378884831602661">Il sito non può fornire una connessione protetta</translation>
 <translation id="2181821976797666341">Criteri</translation>
-<translation id="2183608646556468874">Numero telefono</translation>
+<translation id="2183608646556468874">Numero di telefono</translation>
 <translation id="2184405333245229118">{COUNT,plural, =1{1 indirizzo}other{# indirizzi}}</translation>
 <translation id="2187317261103489799">Rileva (predefinita)</translation>
 <translation id="2202020181578195191">Inserisci un anno di scadenza valido</translation>
@@ -611,7 +610,6 @@
 <translation id="552553974213252141">Il testo è stato estratto correttamente?</translation>
 <translation id="5540224163453853">Impossibile trovare l'articolo richiesto.</translation>
 <translation id="5541546772353173584">Aggiungi email</translation>
-<translation id="5544037170328430102">Una pagina incorporata in <ph name="SITE" /> dice:</translation>
 <translation id="5545756402275714221">Articoli per te</translation>
 <translation id="5556459405103347317">Ricarica</translation>
 <translation id="5560088892362098740">Data di scadenza</translation>
@@ -636,7 +634,7 @@
 <translation id="5675650730144413517">La pagina non funziona</translation>
 <translation id="5685654322157854305">Aggiungi l'indirizzo di spedizione</translation>
 <translation id="5689199277474810259">Esporta in JSON</translation>
-<translation id="5689516760719285838">Luogo</translation>
+<translation id="5689516760719285838">Posizione</translation>
 <translation id="5710435578057952990">L'identità di questo sito web non è stata verificata.</translation>
 <translation id="5719499550583120431">Le carte prepagate sono accettate.</translation>
 <translation id="5720705177508910913">Utente corrente</translation>
@@ -818,7 +816,6 @@
 <translation id="7390545607259442187">Conferma della carta</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Percorso profilo</translation>
-<translation id="7424977062513257142">Una pagina incorporata in questa pagina web dice:</translation>
 <translation id="7437289804838430631">Aggiungi informazioni di contatto</translation>
 <translation id="7441627299479586546">Oggetto del criterio errato</translation>
 <translation id="7444046173054089907">Questo sito è bloccato</translation>
@@ -975,7 +972,7 @@
 <translation id="858637041960032120">Aggiungi telefono</translation>
 <translation id="859285277496340001">Il certificato non specifica un meccanismo per il controllo della sua revoca.</translation>
 <translation id="8620436878122366504">I tuoi genitori non hanno ancora approvato la richiesta</translation>
-<translation id="8625384913736129811">Salva la carta per questo dispositivo</translation>
+<translation id="8625384913736129811">Salva la carta su questo dispositivo</translation>
 <translation id="8647750283161643317">Ripristina i valori predefiniti per tutto</translation>
 <translation id="8660471606262461360">Da Google Payments</translation>
 <translation id="8688672835843460752">Disponibile</translation>
@@ -997,7 +994,6 @@
 <translation id="884923133447025588">Nessun sistema di revoca trovato.</translation>
 <translation id="885730110891505394">Condivisione con Google</translation>
 <translation id="8866481888320382733">Errore durante l'analisi delle impostazioni criterio</translation>
-<translation id="8866959479196209191">Questa pagina dice:</translation>
 <translation id="8870413625673593573">Chiusi di recente</translation>
 <translation id="8874824191258364635">Inserisci un numero di carta di credito valido</translation>
 <translation id="8876793034577346603">Analisi della configurazione di rete non riuscita.</translation>

@@ -90,12 +90,12 @@
 <translation id="3398288718845740432">Chrome मेनू में छिपाएं</translation>
 <translation id="3451115285585441894">Chrome में जोड़ा जा रहा है...</translation>
 <translation id="345171907106878721">स्वयं को Chrome में जोड़ें</translation>
+<translation id="3479552764303398839">अभी नहीं</translation>
 <translation id="3612333635265770873">इसी नाम के एक मॉड्यूल को Google Chrome का विरोध करने के लिए जाना जाता है.</translation>
 <translation id="3622797965165704966">अब अपने Google खाते के साथ और साझा किए गए कंप्यूटर पर Chrome का उपयोग करना आसान हो गया है.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />सेवा की शर्तें<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">ऐसा करने से इस डिवाइस से 1 आइटम हट जाएगा. बाद में अपना डेटा पाने के लिए, Chrome में <ph name="USER_EMAIL" /> के रूप में प्रवेश करें.</translation>
 <translation id="3735758079232443276">एक्सटेंशन "<ph name="EXTENSION_NAME" />" ने यह बदल दिया है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
-<translation id="3738139272394829648">खोजने के लिए स्पर्श करें</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome से नि‍कालें...</translation>
 <translation id="386202838227397562">कृपया सभी Google Chrome विंडो बंद करें और फिर से प्रयास करें.</translation>
@@ -126,7 +126,6 @@
 <translation id="4664415150087723341">Google Chrome के लिए एक विशेष सुरक्षा अपडेट अभी-अभी लागू किया गया था; उसके प्रभावी होने के लिए आपको अभी पुन: प्रारंभ करना चाहिए (हम आपके टैब पुनर्स्‍थापित कर देंगे).</translation>
 <translation id="4700157086864140907">Google Chrome आपके द्वारा ब्राउज़र में लिखे गए टेक्स्ट को Google सर्वर को भेजकर शानदार वर्तनी-जाँच प्रदान करता है, जो आपको Google खोज द्वारा उपयोग की जाने वाली वर्तनी-जाँच के समान वर्तनी जाँच तकनीक का उपयोग करने की अनुमति देता है.</translation>
 <translation id="4728575227883772061">अनिर्दिष्ट कारण से स्थापना विफल हुई. यदि Google Chrome अभी खुला हुआ है, तो कृपया उसे बंद करें और फिर से प्रयास करें.</translation>
-<translation id="4743926867934016338">स्‍वीकार करें और खोजें</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> सक्षम करने के लिए Chrome फिर से चालू करें</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">यह फ़ाइल खतरनाक हो सकती है, इसलिए Chrome ने इसे अवरुद्ध कर दिया है.</translation>
@@ -156,12 +155,9 @@
 <translation id="5430073640787465221">आपकी प्राथमिकताएं फ़ाइल दूषित या अमान्‍य है. Google Chrome आपकी सेटिंग पुनर्प्राप्त करने में असमर्थ है.</translation>
 <translation id="5453904507266736060">Google Chrome को पृष्ठभूमि में चलने दें</translation>
 <translation id="5495581687705680288">Google Chrome में लोड किए गए मॉड्यूल</translation>
-<translation id="5524843473235508879">दूसरे वेबलिंक पर भेजना ब्लॉक किया हुआ है.</translation>
 <translation id="556024056938947818">Google Chrome पासवर्ड दिखाने का प्रयास कर रहा है.</translation>
-<translation id="5563479599352954471">एकल स्पर्श से खोजें</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Chrome को इस साइट के लिए आपका माइक्रोफ़ोन एक्सेस करने की अनुमति चाहिए.</translation>
-<translation id="5620765574781326016">पेज को छोड़े बिना वेबसाइटों पर दिए गए विषयों के बारे में जानें.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> खरतरनाक हो सकता है, इसलिए Chrome ने उसे अवरोधित कर दिया है.</translation>
 <translation id="573759479754913123">Chrome OS के बारे में</translation>
 <translation id="5749068826913805084">फ़ाइलें डाउनलोड करने के लिए Chrome को मेमोरी ऐक्‍सेस की आवश्‍यकता होगी.</translation>
@@ -197,7 +193,6 @@
 <translation id="6697947395630195233">Chrome को इस साइट से आपका स्थान साझा करने के लिए आपके स्थान का एक्सेस चाहिए.</translation>
 <translation id="683440813066116847">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome Canary के लिए इनबाउंड नियम.</translation>
 <translation id="686561893457936865">Chrome को हर कहीं ले जाएं</translation>
-<translation id="6883876366448858277">Google खोज को कोई शब्‍द या उसके आस-पास का प्रसंग भेजता है, जो परिभाषाएं, चित्र, खोज परिणाम और अन्‍य विवरण लौटाता है.</translation>
 <translation id="6885412569789873916">Chrome बीटा ऐप्लिकेशन</translation>
 <translation id="6967962315388095737">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome बीटा का इनबाउंड नियम.</translation>
 <translation id="6970811910055250180">आपका डिवाइस अपडेट किया जा रहा है...</translation>
@@ -219,7 +214,6 @@
 <translation id="7437998757836447326">Chrome से प्रस्थान करें</translation>
 <translation id="7459554271817304652">वेब पर अपनी व्यक्तिगत ब्राउज़र सुविधाएं सहेजने के लिए समन्‍वयन सेट करें और उन तक किसी भी कंप्‍यूटर पर Google Chrome से पहुंचें.</translation>
 <translation id="7473136999113284234">Chrome अपने आप अपडेट हो जाता है इसलिए आपके पास हमेशा नवीनतम वर्शन रहता है.</translation>
-<translation id="7473891865547856676">जी रहने दें</translation>
 <translation id="7494905215383356681">Chrome ओपन सोर्स लाइसेंस</translation>
 <translation id="7535429826459677826">Google Chrome डेवलपर</translation>
 <translation id="7552219221109926349">Chrome OS इस भाषा में दिखाएं</translation>

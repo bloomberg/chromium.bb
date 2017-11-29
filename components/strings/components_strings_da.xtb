@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Fortryd omarrangering</translation>
 <translation id="1126551341858583091">Størrelsen på den lokale lagerplads er <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Cache for politik er OK</translation>
-<translation id="113188000913989374"><ph name="SITE" /> siger:</translation>
 <translation id="1132774398110320017">Indstillinger for Autofyld i Chrome...</translation>
 <translation id="1150979032973867961">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din computer ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1151972924205500581">En adgangskode er påkrævet</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">Blev teksten trukket korrekt ud?</translation>
 <translation id="5540224163453853">Den anmodede artikel blev ikke fundet.</translation>
 <translation id="5541546772353173584">Tilføj mail</translation>
-<translation id="5544037170328430102">En integreret side på <ph name="SITE" /> siger:</translation>
 <translation id="5545756402275714221">Artikler til dig</translation>
 <translation id="5556459405103347317">Genindlæs</translation>
 <translation id="5560088892362098740">Udløbsdato</translation>
@@ -757,7 +755,7 @@
 <translation id="6753269504797312559">Politikkens værdi</translation>
 <translation id="6757797048963528358">Din enhed gik i dvale.</translation>
 <translation id="6778737459546443941">Din forælder har ikke godkendt det endnu</translation>
-<translation id="681021252041861472">Obligatorisk felt</translation>
+<translation id="681021252041861472">Skal udfyldes</translation>
 <translation id="6810899417690483278">Tilpasnings-id</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">Områdedata kunne ikke indlæses</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Bekræft kort</translation>
 <translation id="7400418766976504921">Webadresse</translation>
 <translation id="7419106976560586862">Profilsti</translation>
-<translation id="7424977062513257142">En integreret side på denne webside siger:</translation>
 <translation id="7437289804838430631">Tilføj kontaktoplysninger</translation>
 <translation id="7441627299479586546">Forkert emne for politik</translation>
 <translation id="7444046173054089907">Dette website er blokeret</translation>
@@ -1002,7 +999,6 @@
 <translation id="884923133447025588">Der blev ikke fundet nogen funktion til tilbagekaldelse.</translation>
 <translation id="885730110891505394">Deling med Google</translation>
 <translation id="8866481888320382733">Der opstod en fejl ved parsing af indstillinger for politik</translation>
-<translation id="8866959479196209191">Denne side siger:</translation>
 <translation id="8870413625673593573">Senest lukkede</translation>
 <translation id="8874824191258364635">Angiv et gyldigt kortnummer</translation>
 <translation id="8876793034577346603">Netværkskonfiguration kunne ikke parses.</translation>

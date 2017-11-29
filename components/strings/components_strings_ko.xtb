@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">재정렬 실행 취소(&amp;U)</translation>
 <translation id="1126551341858583091">로컬 저장소는 <ph name="CRASH_SIZE" />입니다.</translation>
 <translation id="112840717907525620">정책 캐시 확인</translation>
-<translation id="113188000913989374"><ph name="SITE" /> 내용:</translation>
 <translation id="1132774398110320017">Chrome 자동완성 설정...</translation>
 <translation id="1150979032973867961">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 컴퓨터의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1151972924205500581">비밀번호를 입력해야 합니다.</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">텍스트가 올바로 추출되었습니까?</translation>
 <translation id="5540224163453853">요청한 글을 찾지 못했습니다.</translation>
 <translation id="5541546772353173584">이메일 추가</translation>
-<translation id="5544037170328430102"><ph name="SITE" />에 삽입된 페이지 내용:</translation>
 <translation id="5545756402275714221">추천 기사</translation>
 <translation id="5556459405103347317">새로고침</translation>
 <translation id="5560088892362098740">만료일</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">카드 확인</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">프로필 경로</translation>
-<translation id="7424977062513257142">이 웹페이지에 삽입된 페이지 내용:</translation>
 <translation id="7437289804838430631">연락처 정보 추가</translation>
 <translation id="7441627299479586546">잘못된 정책 주체</translation>
 <translation id="7444046173054089907">차단된 사이트</translation>
@@ -979,7 +976,7 @@
 <translation id="858637041960032120">번호 추가</translation>
 <translation id="859285277496340001">인증서는 취소 여부를 확인하는 매커니즘을 지정하지 않습니다.</translation>
 <translation id="8620436878122366504">부모님이 아직 승인하지 않았습니다.</translation>
-<translation id="8625384913736129811">기기에 카드 저장</translation>
+<translation id="8625384913736129811">이 기기에 카드 저장</translation>
 <translation id="8647750283161643317">기본값으로 재설정</translation>
 <translation id="8660471606262461360">출처: Google Payments</translation>
 <translation id="8688672835843460752">사용 가능</translation>
@@ -1001,7 +998,6 @@
 <translation id="884923133447025588">폐기 매커니즘을 찾을 수 없습니다.</translation>
 <translation id="885730110891505394">Google과 공유</translation>
 <translation id="8866481888320382733">정책 설정을 파싱하는 중 오류 발생</translation>
-<translation id="8866959479196209191">이 페이지 내용:</translation>
 <translation id="8870413625673593573">최근에 닫은 탭</translation>
 <translation id="8874824191258364635">올바른 카드 번호를 입력하세요.</translation>
 <translation id="8876793034577346603">네트워크 설정을 파싱하지 못했습니다.</translation>

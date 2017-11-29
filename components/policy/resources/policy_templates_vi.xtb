@@ -30,6 +30,7 @@
 
           Nếu cài đặt này bị tắt hoặc không được định cấu hình, máy chủ hỗ trợ từ xa sẽ chạy trên ngữ cảnh của người dùng và người dùng ở xa không thể tương tác với cửa sổ bật lên trên màn hình.</translation>
 <translation id="1096105751829466145">Nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
+<translation id="1099282607296956954">Bật chính sách Cô lập trang web cho mọi trang web</translation>
 <translation id="1117535567637097036">Trình xử lý giao thức được đặt qua chính sách này không được sử dụng khi xử lý các cơ chế của Android.</translation>
 <translation id="1122282995569868661">Hiển thị biểu tượng thanh công cụ <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Định cấu hình thư mục mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ các tệp được lưu trữ trong bộ nhớ cache trên đĩa.
@@ -718,6 +719,16 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="332771718998993005">Xác định tên được quảng cáo là đích <ph name="PRODUCT_NAME" />.
 
           Nếu bạn đặt chính sách này thành một chuỗi không phải là chuỗi trống, thì chuỗi đó sẽ được sử dụng làm tên của đích <ph name="PRODUCT_NAME" />. Nếu không, tên đích sẽ là tên thiết bị. Nếu bạn không đặt chính sách này, thì tên đích sẽ là tên thiết bị và chủ sở hữu thiết bị (hoặc người dùng từ miền quản lý thiết bị) sẽ được phép thay đổi tên đó. Tên có độ dài tối đa là 24 ký tự.</translation>
+<translation id="3356249700768900657">
+      LƯU Ý: Chính sách này chỉ mang tính thử nghiệm và có thể làm hỏng chức năng!
+      Bạn nên xem cài đặt của chính sách IsolateOrigins để
+      khai thác tối đa cả hai khía cạnh, cách cô lập cũng như cách hạn chế tác động đến người dùng, bằng cách sử dụng
+      IsolateOrigins cùng với danh sách các trang web mà bạn muốn cô lập. Cài đặt này,
+      SitePerProcess, sẽ cô lập mọi trang web.
+      Nếu bạn bật chính sách này, mỗi trang web sẽ chạy theo quy trình riêng.
+      Nếu bạn tắt chính sách này, logic quản lý quy trình Cô lập trước khi khởi chạy trang web sẽ có hiệu lực.
+      Nếu bạn không định cấu hình chính sách này, người dùng sẽ có thể thay đổi cài đặt này.
+      </translation>
 <translation id="3381968327636295719">Sử dụng trình duyệt chính theo mặc định</translation>
 <translation id="3395348522300156660">Chỉ định các máy in mà người dùng có thể sử dụng.
 
@@ -1082,6 +1093,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Để biết các mẫu ví dụ, hãy xem http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Mở một danh sách URL</translation>
 <translation id="4680961954980851756">Bật Tự động điền</translation>
+<translation id="4722122254122249791">Bật chính sách Cô lập trang web cho các nguồn gốc đã xác định</translation>
 <translation id="4722399051042571387">Nếu đặt thành false, người dùng sẽ không thể đặt các mã PIN yếu và dễ đoán.
 
           Một số ví dụ về mã PIN yếu: mã PIN chỉ gồm những chữ số giống nhau (1111), mã PIN có các chữ số tăng 1 đơn vị (1234), mã PIN có các chữ số giảm 1 đơn vị (4321) và các mã PIN phổ dụng.
@@ -1181,6 +1193,16 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4983201894483989687">Cho phép chạy các plugin đã lỗi thời</translation>
 <translation id="4988291787868618635">Hành động cần thực hiện khi đạt tới độ trễ khi không sử dụng</translation>
 <translation id="4995548127349206948">Cho dù có bật xác thực NTLMv2 hay không.</translation>
+<translation id="5027819375434797927">
+      LƯU Ý: Chính sách này chỉ mang tính thử nghiệm và có thể làm hỏng chức năng!
+      Nếu bạn bật chính sách này, mỗi nguồn gốc có tên trong
+      danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Cài đặt này cũng sẽ cô lập
+      các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ
+      khiến cho https://foo.example.com/ bị cô lập vì là một phần của
+      trang web https://example.com/.
+      Nếu bạn tắt chính sách này, logic quản lý quy trình Cô lập trước khi khởi chạy trang web sẽ có hiệu lực.
+      Nếu bạn không định cấu hình chính sách này, người dùng sẽ có thể thay đổi cài đặt này.
+      </translation>
 <translation id="5047604665028708335">Cho phép truy cập vào các trang web nằm ngoài gói nội dung</translation>
 <translation id="5052081091120171147">Chính sách này nếu được bật sẽ buộc lịch sử web phải được nhập từ trình duyệt mặc định hiện tại. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
 
@@ -2017,39 +2039,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7841880500990419427">Phiên bản TLS tối thiểu để dự phòng sang</translation>
 <translation id="7842869978353666042">Định cấu hình tùy chọn Google Drive</translation>
 <translation id="7843525027689416831">Chỉ định cờ sẽ được áp dụng cho <ph name="PRODUCT_NAME" /> khi khởi động. Cờ được chỉ định sẽ chỉ được áp dụng trên màn hình đăng nhập. Các cờ được đặt thông qua chính sách này không truyền sang các phiên của người dùng.</translation>
-<translation id="7844537954833753199">Định cấu hình cài đặt quản lý tiện ích đối với <ph name="PRODUCT_NAME" />.
-
-          Chính sách này kiểm soát nhiều cài đặt, bao gồm cả những cài đặt chịu sự kiểm soát của bất kỳ chính sách hiện có nào liên quan đến tiện ích. Chính sách này sẽ ghi đè bất kỳ chính sách cũ nào nếu đã đặt cả hai.
-
-          Chính sách này ánh xạ một ID tiện ích hoặc URL cập nhật tới cấu hình của chính sách. Với ID tiện ích, cấu hình sẽ chỉ được áp dụng cho tiện ích đã chỉ định. Bạn có thể đặt cấu hình mặc định cho ID đặc biệt <ph name="DEFAULT_SCOPE" />, cấu hình này sẽ áp dụng cho tất cả các tiện ích chưa đặt cấu hình tùy chỉnh trong chính sách này. Với URL cập nhật, cấu hình sẽ được áp dụng cho tất cả tiện ích có URL cập nhật chính xác đã nêu trong tệp kê khai của tiện ích này, như mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Cấu hình cho mỗi tiện ích (hoặc các tiện ích có cùng URL cập nhật) là một từ điển khác có thể chứa các trường được nêu dưới đây.
-
-          <ph name="INSTALLATION_MODE" />: ánh xạ tới một chuỗi cho biết chế độ cài đặt của tiện ích. Các chuỗi hợp lệ là:
-          * <ph name="ALLOWED" />: cho phép người dùng cài đặt tiện ích. Đây là chế độ mặc định.
-          * <ph name="BLOCKED" />: chặn việc cài đặt tiện ích.
-          * <ph name="FORCE_INSTALLED" />: tiện ích tự động được cài đặt và người dùng không thể xóa.
-          * <ph name="NORMAL_INSTALLED" />: tiện ích tự động được cài đặt nhưng người dùng có thể tắt.
-
-          <ph name="INSTALLTION_MODE" /> cũng có thể được định cấu hình cho nhiều tiện ích, bao gồm cả tiện ích <ph name="DEFAULT_SCOPE" /> (giống như cài đặt mặc định) và các tiện ích có cùng URL cập nhật. Chỉ có thể sử dụng các giá trị <ph name="ALLOWED" /> và <ph name="BLOCKED" /> trong trường hợp này.
-
-          Nếu đặt chế độ thành <ph name="FORCE_INSTALLED" /> hoặc <ph name="NORMAL_INSTALLED" /> thì bạn cũng phải định cấu hình <ph name="UPDATE_URL" />. Lưu ý rằng URL cập nhật được đặt trong chính sách này chỉ dùng cho cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL cập nhật nêu trong tệp kê khai của tiện ích. URL cập nhật phải trỏ tới tài liệu XML của Tệp kê khai cập nhật như đề cập ở trên.
-
-          <ph name="BLOCKED_PERMISSIONS" />: ánh xạ tới danh sách các chuỗi cho biết các quyền API bị chặn đối với tiện ích. Tên quyền giống với các chuỗi quyền được khai báo trong tệp kê khai của tiện ích như mô tả tại <ph name="LINK_TO_EXTENSION_DOC3" />. Cài đặt này cũng có thể được định cấu hình cho tiện ích <ph name="DEFAULT_SCOPE" />. Nếu tiện ích yêu cầu quyền có trên danh sách chặn thì quyền đó sẽ không được phép tải. Nếu tiện ích chứa một quyền bị chặn dưới dạng yêu cầu tùy chọn, thì quyền đó sẽ được xử lý theo cách thông thường, nhưng việc yêu cầu các quyền xung đột sẽ tự động bị từ chối vào thời gian chạy.
-
-          <ph name="ALLOWED_PERMISSIONS" />: tương tự như <ph name="BLOCKED_PERMISSIONS" />, nhưng cho phép rõ ràng một số quyền có thể bị chặn theo danh sách quyền bị chặn chung nên không thể định cấu hình cho tiện ích <ph name="DEFAULT_SCOPE" />. Lưu ý rằng cài đặt này không tự động cung cấp quyền đã cấp cho tiện ích.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: ánh xạ tới chuỗi phiên bản. Định dạng của chuỗi phiên bản tương tự như định dạng dùng trong tệp kê khai của tiện ích, như mô tả tại <ph name="LINK_TO_EXTENSION_DOC4" />. Tiện ích có phiên bản cũ hơn phiên bản tối thiểu đã chỉ định sẽ bị tắt. Điều này cũng áp dụng cho các tiện ích bị buộc cài đặt.
-
-          Chỉ có thể sử dụng các cài đặt sau cho cấu hình <ph name="DEFAULT_SCOPE" /> mặc định:
-
-          <ph name="INSTALL_SOURCES" />: Mỗi mục trong danh sách này là mẫu khớp với kiểu của tiện ích (<ph name="LINK_TO_MATCH_PATTERNS" />). Người dùng có thể dễ dàng cài đặt các mục từ URL bất kỳ khớp với một mục trong danh sách này. Cả vị trí của tệp <ph name="EXTENSION_SUFFIX_WILDCARD" /> và trang nơi bắt đầu tải xuống (tức là liên kết giới thiệu) phải được các mẫu này cho phép.
-
-          <ph name="ALLOWED_TYPES" />: Cài đặt này đưa vào danh sách cho phép các loại tiện ích/ứng dụng được phép cài đặt trong <ph name="PRODUCT_NAME" />.  Giá trị là một danh sách chuỗi, mỗi chuỗi phải thuộc một trong số các loại sau: <ph name="VALID_ALLOWED_TYPES" />. Hãy xem tài liệu về tiện ích <ph name="PRODUCT_NAME" /> để biết thêm thông tin về các loại này.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Nếu người dùng cố cài đặt một tiện ích nhưng bị chặn bởi chính sách, thì Cửa hàng Chrome trực tuyến sẽ hiển thị thông báo lỗi chung. Cài đặt này cho phép bạn thêm văn bản vào thông báo lỗi. Thông báo này có thể được dùng để chuyển hướng người dùng đến bộ phận trợ giúp, giải thích nguyên nhân một tiện ích cụ thể bị chặn hoặc cho mục đích khác. Thông báo lỗi này sẽ bị cắt bớt nếu dài hơn 1000 ký tự.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Chấp nhận danh sách các máy chủ mà một tiện ích sẽ bị chặn tương tác. Việc này bao gồm chèn javascript, thay đổi và xem webRequests/webNavigation, xem và thay đổi cookie. Định dạng tương tự như Mẫu khớp <ph name="LINK_TO_MATCH_PATTERNS" /> trừ trường hợp không xác định được đường dẫn, ví dụ: "*://*.example.com". Ngoài ra còn hỗ trợ cả ký tự đại diện cho miền cấp cao nhất (TLD) hiệu quả, ví dụ: "*://example.*".
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Chấp nhận danh sách các máy chủ mà một tiện ích có thể tương tác bất kể các máy chủ đó có tên trong <ph name="RUNTIME_BLOCKED_HOSTS" /> hay không. Định dạng tương tự như <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Nếu được đặt thành SyncDisabled hoặc không được định cấu hình, các chứng chỉ <ph name="PRODUCT_OS_NAME" /> sẽ không khả dụng cho ứng dụng ARC.
 
       Nếu được đặt thành CopyCaCerts, tất cả các chứng chỉ CA đã cài đặt ONC có <ph name="WEB_TRUSTED_BIT" /> sẽ khả dụng cho ứng dụng ARC.</translation>
@@ -2131,15 +2120,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chính sách được đặt ở trạng thái tắt hoặc không được đặt, việc đăng nhập sẽ dẫn tới cấu hình thông thường.</translation>
 <translation id="8158758865057576716">Bật tạo bản sao chuyển vùng cho dữ liệu hồ sơ của <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8170878842291747619">Cho phép dịch vụ Google Dịch tích hợp trên <ph name="PRODUCT_NAME" />.
-
-      Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ hiển thị tùy chọn thanh công cụ được tích hợp để dịch trang cho người dùng khi phù hợp.
-
-      Nếu bạn tắt cài đặt này, người dùng sẽ không bao giờ nhìn thấy thanh dịch.
-
-     Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME" />.
-
-      Nếu không thiết lập cài đặt này, người dùng có thể quyết định có sử dụng chức năng này hay không.</translation>
 <translation id="817455428376641507">Cho phép truy cập vào các URL đã liệt kê, ngoại trừ danh sách đen URL.
 
       Xem mô tả về chính sách danh sách đen URL để biết định dạng của các mục nhập trong danh sách này.

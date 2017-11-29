@@ -236,7 +236,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="3241638166094654466">Celle in ogni riga:</translation>
 <translation id="3286390186030710347">Dispositivo di scorrimento</translation>
 <translation id="3299925995433437805">Nessun link visitato successivo.</translation>
-<translation id="3300348286427369683">Supporto per Rich Text. Adesso ChromeVox supporta campi in formato Rich Text, inclusi i comandi di spostamento, lo spostamento del puntatore nel display braille, la selezione e altro ancora.</translation>
+<translation id="3300348286427369683">Supporto per RTF. Adesso ChromeVox supporta campi in formato Rich text (RTF), inclusi i comandi di spostamento, lo spostamento del puntatore nel display braille, la selezione e altro ancora.</translation>
 <translation id="3307886118343381874">Vai alla fine della tabella</translation>
 <translation id="3311969765485641742">Premi Alt+Maiusc+A per esaminare gli avvisi</translation>
 <translation id="3312997241656799641">Link visitato successivo</translation>
@@ -413,7 +413,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="461613135510474570">Frase</translation>
 <translation id="463135993322337640">Premi i tasti O e N con ChromeVox per scoprire le novità</translation>
 <translation id="4647836961514597010">Selettore colori</translation>
-<translation id="4660783501463101648">Classic rimosso. La funzione di attivazione/disattivazione della tastiera per passare nuovamente a ChromeVox Classic è stata rimossa.</translation>
+<translation id="4660783501463101648">Rimozione di Classic. La funzione di attivazione/disattivazione della tastiera per passare nuovamente a ChromeVox Classic è stata rimossa.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
@@ -433,7 +433,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4827410568042294688">non selezionato</translation>
 <translation id="4842108708071771135">Nessuna citazione lunga successiva.</translation>
 <translation id="4844625982113518938">Premi un tasto qualsiasi per conoscerne il nome. Premi CTRL + W per chiudere la modalità di apprendimento.</translation>
-<translation id="4846428657345567687">Benvenuto in ChromeVox!</translation>
+<translation id="4846428657345567687">Un benvenuto in ChromeVox!</translation>
 <translation id="4846487886195635104">Fine del testo barrato</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Elemento simile precedente.</translation>
@@ -471,7 +471,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="5098541983634824365">Stai uscendo dalla griglia.</translation>
 <translation id="5102981729317424850">Barra degli strumenti</translation>
 <translation id="5105050547967751155">rq</translation>
-<translation id="5106547198195128110">Ci sono numerosi cambiamenti in questa nuova uscita, ecco tutte le novità:</translation>
+<translation id="5106547198195128110">Grandi cambiamenti in questa nuova uscita, ecco tutte le novità:</translation>
 <translation id="5110983769041734144">Nessun campo modulo precedente.</translation>
 <translation id="5111640677200759579">Intestazione di colonna</translation>
 <translation id="5136967254288895616">Nessun link precedente.</translation>
@@ -629,7 +629,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="6493991254603208962">Diminuisci luminosità</translation>
 <translation id="6508059270146105198">Sposta display braille in fondo alla pagina</translation>
 <translation id="6536864053412760904">Token MathML</translation>
-<translation id="6540201937398578274">In ChromeVox il tasto per la ricerca è il tasto di modifica. La maggior parte delle scorciatoie di ChromeVox inizia con il tasto per la ricerca. I tasti freccia vengono utilizzati per gli spostamenti.</translation>
+<translation id="6540201937398578274">In ChromeVox il tasto per la ricerca è il tasto di modifica. La maggior parte delle scorciatoie di ChromeVox inizia premendo il tasto per la ricerca. I tasti freccia vengono utilizzati per gli spostamenti.</translation>
 <translation id="6550720799683018100">Modifica la voce mappa di chiavi corrente scegliendo una delle opzioni riportate di seguito.</translation>
 <translation id="6561818612645211875">Vai all'inizio della riga corrente</translation>
 <translation id="6587021927234520429">Nessuna intestazione livello 4 successiva.</translation>

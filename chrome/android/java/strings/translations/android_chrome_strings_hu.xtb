@@ -253,7 +253,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="3414952576877147120">Méret:</translation>
 <translation id="3443221991560634068">Az aktuális oldal újratöltése</translation>
 <translation id="3452612588551937789">Jelentkezzen be Google-fiókjába, hogy könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérhesse.</translation>
-<translation id="3479552764303398839">Ne most</translation>
 <translation id="3487093336331957349">Keresési és webhelyjavaslatok</translation>
 <translation id="3492207499832628349">Új inkognitólap</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /> a javasolt tartalomról</translation>
@@ -315,6 +314,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="3988213473815854515">Hely engedélyezve</translation>
 <translation id="3997476611815694295">Nem fontos tárhely</translation>
 <translation id="4002066346123236978">Cím</translation>
+<translation id="4031074602479304239">A Chrome megakadályozta, hogy ez a webhely átirányítsa ide:</translation>
 <translation id="4042870126885713738">Javaslatok megjelenítése, ha egy internetcímet nem lehet feloldani, vagy nem lehet kapcsolódni</translation>
 <translation id="4046123991198612571">Következő szám</translation>
 <translation id="4056223980640387499">Szépia</translation>
@@ -472,6 +472,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="5512137114520586844">A fiók kezelője: <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Letiltotta az eszköz rendszergazdája</translation>
 <translation id="5517095782334947753">Vannak könyvjelzői, előzményei, jelszavai és más beállításai a(z) <ph name="FROM_ACCOUNT" /> fiókból.</translation>
+<translation id="5524843473235508879">Átirányítás letiltva.</translation>
 <translation id="5527082711130173040">A Chrome-nak hozzá kell férnie a tartózkodási helyhez, hogy eszközöket kereshessen. <ph name="BEGIN_LINK1" />Frissítse az engedélyeket<ph name="END_LINK1" />. A helyadatokhoz való hozzáférés is <ph name="BEGIN_LINK2" />ki van kapcsolva ezen az eszközön<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Inkognitólapok bezárása</translation>
 <translation id="5534640966246046842">Webhely vágólapra másolva</translation>
@@ -498,7 +499,6 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 
 Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem rejtheti el böngészési tevékenységét munkaadója, internetszolgáltatója vagy a felkeresett webhelyek elől.</translation>
 <translation id="572328651809341494">Nemrég megnyitott lapok</translation>
-<translation id="572392919096807438">Emlékezzen a döntésemre</translation>
 <translation id="5726692708398506830">Minden nagyítása az oldalon</translation>
 <translation id="5738816946784116349">Letöltések a Chrome-ban</translation>
 <translation id="5748802427693696783">Szabványos lapokra váltva</translation>
@@ -652,7 +652,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7022756207310403729">Megnyitás böngészőben</translation>
 <translation id="7029809446516969842">Jelszavak</translation>
 <translation id="7031882061095297553">Szinkronizálás a következőknél</translation>
-<translation id="704059664004611800">Koppintson a könyvjelzők és egyéb tartalmak megtekintéséhez</translation>
 <translation id="7053983685419859001">Letiltás</translation>
 <translation id="7062545763355031412">Elfogadás és fiókváltás</translation>
 <translation id="7063006564040364415">Nem sikerült csatlakozni a szinkronizálószerverhez.</translation>

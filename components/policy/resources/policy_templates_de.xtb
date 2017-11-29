@@ -30,6 +30,7 @@
 
           Ist diese Einstellung deaktiviert oder nicht konfiguriert, läuft der Host für Remote-Unterstützung nur im Nutzerbereich. Remote-Nutzer können nicht mit geöffneten Fenstern auf dem Desktop arbeiten.</translation>
 <translation id="1096105751829466145">Standardsuchmaschine</translation>
+<translation id="1099282607296956954">Website-Isolierung für jede Website aktivieren</translation>
 <translation id="1117535567637097036">Die über diese Richtlinie festgelegten Protokoll-Handler werden bei der Verarbeitung von Android-Intents nicht verwendet.</translation>
 <translation id="1122282995569868661">Zeigt das Toolbar-Symbol für <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Konfiguriert das Verzeichnis, in dem die Cachedateien von <ph name="PRODUCT_NAME" /> auf dem Datenträger gespeichert werden.
@@ -683,6 +684,21 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="332771718998993005">Hiermit wird der Name von <ph name="PRODUCT_NAME" />-Zielen festgelegt.
 
           Wird für diese Richtlinie ein nicht-leerer String definiert, dann wird dieser als Name für das <ph name="PRODUCT_NAME" />-Ziel verwendet. Andernfalls wird der Gerätename als Zielname verwendet. Ist diese Richtlinie nicht definiert, wird der Gerätename als Zielname verwendet und der Geräteeigentümer oder ein Nutzer der Domain, von der das Gerät verwaltet wird, hat die Möglichkeit, den Namen zu ändern. Der Name darf maximal 24 Zeichen enthalten.</translation>
+<translation id="3356249700768900657">
+      HINWEIS: Diese Richtlinie ist experimentell und kann die Funktionalität
+      beeinträchtigen!
+      Sie sollten sich die IsolateOrigins-Richtlinieneinstellung ansehen, um die
+      Auswirkungen auf die Nutzer bei der Isolierung von Websites
+      gering zu halten. Verwenden Sie dazu IsolateOrigins mit einer
+      Liste von Websites, die Sie isolieren möchten. Mit der Einstellung
+      "SitePerProcess" werden alle Websites isoliert.
+      Wenn die Richtlinie aktiviert ist, wird auf jeder Website ein eigener Prozess
+      ausgeführt.
+      Wenn die Richtlinie deaktiviert ist, wird die Prozessverwaltungslogik vor der
+      Website-Isolierung übernommen.
+      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung
+      ändern.
+      </translation>
 <translation id="3381968327636295719">Standardmäßig Host-Browser verwenden</translation>
 <translation id="3395348522300156660">Gibt die Drucker an, die ein Nutzer verwenden kann.
 
@@ -1030,6 +1046,7 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
           Beispielmuster finden Sie unter https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">URL-Liste öffnen</translation>
 <translation id="4680961954980851756">AutoFill aktivieren</translation>
+<translation id="4722122254122249791">Website-Isolierung für angegebene Ursprünge aktivieren</translation>
 <translation id="4722399051042571387">Wenn "false" eingestellt ist, können Nutzer keine schwache PIN festlegen, die leicht zu erraten ist.
 
           Beispiele für schwache PINs: PINs, die nur aus einer Ziffer bestehen (1111), PINs, die eine Zahlenfolge enthalten, bei der die Zahlen stets um 1 erhöht werden (1234), PINs, die eine Zahlenfolge enthalten, bei der die Zahlen stets um 1 verringert werden (4321) und PINs, die häufig genutzt werden.
@@ -1132,6 +1149,19 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="4983201894483989687">Ausführung veralteter Plug-ins zulassen</translation>
 <translation id="4988291787868618635">Auszuführende Aktion bei Erreichen der Inaktivitätsverzögerung</translation>
 <translation id="4995548127349206948">Steuerung der Aktivierung der NTLMv2-Authentifizierung.</translation>
+<translation id="5027819375434797927">
+      HINWEIS: Diese Richtlinie ist experimentell und kann die Funktionalität
+      beeinträchtigen!
+      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in
+      einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt.
+      Dadurch werden auch durch Subdomains benannte Ursprünge isoliert; z. B.
+      wenn Sie https://example.com/ angeben, wird auch
+      https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
+      Wenn die Richtlinie deaktiviert ist, wird die Prozessverwaltungslogik vor der
+      Website-Isolierung übernommen.
+      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung
+      ändern.
+      </translation>
 <translation id="5047604665028708335">Zugriff auf Websites außerhalb von Inhaltspaketen erlauben</translation>
 <translation id="5052081091120171147">Diese Richtlinie erzwingt, sofern aktiv, den Import des Browserverlaufs aus dem aktuellen Standardbrowser. Ist die Richtlinie aktiviert, wirkt sie sich auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import des Browserverlaufs. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="5056708224511062314">Lupe deaktiviert</translation>
@@ -1912,40 +1942,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7841880500990419427">TLS-Mindestversion für Fallback</translation>
 <translation id="7842869978353666042">Optionen von Google Drive konfigurieren</translation>
 <translation id="7843525027689416831">Hiermit werden die Parameter angegeben, die beim Starten von <ph name="PRODUCT_NAME" /> angewendet werden sollen. Diese werden nur auf der Anmeldeseite verwendet. Über diese Richtlinie festgelegte Parameter haben keine Auswirkungen auf Nutzersitzungen.</translation>
-<translation id="7844537954833753199">Konfiguriert die Verwaltungseinstellungen für Erweiterungen für <ph name="PRODUCT_NAME" />.
-
-Mit dieser Richtlinie können Sie mehrere Einstellungen festlegen, zum Beispiel Einstellungen, die von bestehenden auf Erweiterungen bezogenen Richtlinien geregelt werden. Diese Richtlinie überschreibt ältere Richtlinien, wenn beide konfiguriert sind.
-
-Mit dieser Richtlinie wird eine Erweiterungs-ID oder eine Update-URL ihrer Konfiguration zugeordnet. Bei einer Erweiterungs-ID wird die Konfiguration nur auf die angegebene Erweiterung angewendet. Eine Standardkonfiguration kann für die Spezial-ID <ph name="DEFAULT_SCOPE" /> festgelegt werden, die auf alle Erweiterungen angewendet wird, für die keine benutzerdefinierte Konfiguration in dieser Richtlinie konfiguriert ist. Bei einer Update-URL wird die Konfiguration auf alle Erweiterungen mit genau der im Manifest dieser Erweiterung angegebenen Update-URL angewendet, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> erläutert.
-
-
-Bei der Konfiguration für jede Erweiterung (oder Erweiterungen mit der gleichen Update-URL) handelt es sich um ein weiteres Wörterbuch, das die im Folgenden genannten Felder enthalten kann.
-
-<ph name="INSTALLATION_MODE" />: Verweist auf einen String, der den Installationsmodus für die Erweiterung angibt. Folgende Strings sind gültig:
-* <ph name="ALLOWED" />: Lässt die Installation der Erweiterung durch den Nutzer zu. Dies ist das Standardverhalten.
-* <ph name="BLOCKED" />: Blockiert die Installation der Erweiterung.
-* <ph name="FORCE_INSTALLED" />: Die Erweiterung wird automatisch installiert und kann nicht vom Nutzer entfernt werden.
-* <ph name="NORMAL_INSTALLED" />: Die Erweiterung wird automatisch installiert, kann aber vom Nutzer deaktiviert werden.
-
-Das Feld <ph name="INSTALLTION_MODE" /> kann auch für mehrere Erweiterungen konfiguriert werden, einschließlich der Erweiterung <ph name="DEFAULT_SCOPE" /> (als Standardeinstellungen) und Erweiterungen mit der gleichen Update-URL. In diesem Fall können nur die Werte <ph name="ALLOWED" /> und <ph name="BLOCKED" /> verwendet werden.
-
-Wenn der Modus <ph name="FORCE_INSTALLED" /> oder <ph name="NORMAL_INSTALLED" /> festgelegt ist, muss auch <ph name="UPDATE_URL" /> konfiguriert werden. Die in dieser Richtlinie festgelegte Update-URL wird nur für die Erstinstallation verwendet. Bei späteren Aktualisierungen der Erweiterungen wird die im Manifest der Erweiterung angegebene Update-URL verwendet werden. Die Update-URL muss wie oben erwähnt auf ein XML-Dokument zur Aktualisierung eines Manifests verweisen.
-
-<ph name="BLOCKED_PERMISSIONS" />: Verweist auf eine Liste mit Strings, in denen die Berechtigungen für blockierte APIs für die Erweiterung angegeben sind. Die Namen der Berechtigungen sind identisch mit den im Manifest angegebenen Strings der Berechtigung, wie unter <ph name="LINK_TO_EXTENSION_DOC3" /> erläutert. Die Einstellung kann auch für die Erweiterung <ph name="DEFAULT_SCOPE" /> konfiguriert werden. Wenn die Erweiterung eine Berechtigung erfordert, die auf der Sperrliste steht, kann sie nicht geladen werden. Wenn sie eine blockierte Berechtigung als optionale Anforderung enthält, wird sie normal behandelt, allerdings werden Anforderungen in Konflikt stehender Berechtigungen automatisch zur Laufzeit abgelehnt.
-
-<ph name="ALLOWED_PERMISSIONS" />: Ähnlich wie <ph name="BLOCKED_PERMISSIONS" />, nur werden einige Berechtigungen explizit zugelassen, die möglicherweise von der globalen Liste der blockierten Berechtigungen blockiert werden und daher nicht für die Erweiterung <ph name="DEFAULT_SCOPE" /> konfiguriert werden können. Mit dieser Einstellung erhalten Erweiterungen jedoch nicht automatisch gewährte Berechtigungen.
-
-<ph name="MINIMUM_VERSION_REQUIRED" />: Verweist auf einen Versions-String. Das Format dieses Strings ist mit dem im Manifest der Erweiterung verwendeten Format identisch, wie unter <ph name="LINK_TO_EXTENSION_DOC4" /> erläutert. Eine Erweiterung mit einer älteren Version als der angegebenen Mindestversion wird deaktiviert. Dies gilt auch für Erweiterungen, deren Installation erzwungen wurde.
-
-Die folgenden Einstellungen können nur für die Standardkonfiguration von <ph name="DEFAULT_SCOPE" /> verwendet werden:
-
-<ph name="INSTALL_SOURCES" />: Bei den Einträgen in dieser Liste handelt es sich um auf die Erweiterung angepasste Übereinstimmungsmuster (siehe <ph name="LINK_TO_MATCH_PATTERNS" />). Wenn eine URL mit einem Eintrag in dieser Liste übereinstimmt, können Nutzer ihn ganz einfach über diese URL installieren. Sowohl der Speicherort der <ph name="EXTENSION_SUFFIX_WILDCARD" />-Datei als auch die Seite, über die der Download gestartet wird (der Referrer), müssen durch diese Muster zugelassen sein.
-
-<ph name="ALLOWED_TYPES" />: Mit dieser Einstellung werden die zulässigen Typen von Erweiterungen/Apps, die in <ph name="PRODUCT_NAME" /> installiert werden können, auf die weiße Liste gesetzt. Jeder Wert besteht aus einer Liste mit folgenden Strings: <ph name="VALID_ALLOWED_TYPES" />. Weitere Informationen zu diesen Typen finden Sie in der Dokumentation zu den Erweiterungen in <ph name="PRODUCT_NAME" />.
-<ph name="BLOCKED_INSTALL_MESSAGE" />: Wenn der Nutzer versucht, eine Erweiterung zu installieren, die von der Richtlinie blockiert wird, wird im Chrome Web Store eine allgemeine Fehlermeldung angezeigt. Mit dieser Einstellung können Sie den Text der Fehlermeldung ergänzen. So können Sie beispielsweise Nutzer an Ihren Helpdesk verweisen oder eine Erklärung für den Grund der Richtlinienblockierung einfügen. Wenn die Fehlermeldung mehr als 1.000 Zeichen lang ist, wird sie abgeschnitten.
-<ph name="RUNTIME_BLOCKED_HOSTS" />: Lässt eine Liste von Hosts zu, mit denen eine Erweiterung nicht interagieren kann. Dazu gehören das Einfügen von JavaScript, das Ändern oder Aufrufen von webRequests/webNavigation sowie das Aufrufen oder Ändern von Cookies. Das Format ähnelt den Übereinstimmungsmustern (siehe <ph name="LINK_TO_MATCH_PATTERNS" />), allerdings müssen keine Pfade wie "*://*.example.com" angegeben werden. Dadurch werden auch effektive TLD-Platzhalter wie "*://example.*" unterstützt.
-<ph name="RUNTIME_ALLOWED_HOSTS" />: Lässt eine Liste von Hosts zu, mit denen eine Erweiterung interagieren kann, auch wenn diese nicht unter <ph name="RUNTIME_BLOCKED_HOSTS" /> aufgeführt sind. Das Format ist mit <ph name="RUNTIME_BLOCKED_HOSTS" /> identisch.
-          </translation>
 <translation id="787125417158068494"><ph name="PRODUCT_OS_NAME" />-Zertifikate sind nicht für ARC-Apps verfügbar, wenn "SyncDisabled" festgelegt wurde oder die Zertifikate nicht konfiguriert wurden.
 
       Wenn "CopyCaCerts" festgelegt wurde, sind alle über ONC installierten CA-Zertifikate mit <ph name="WEB_TRUSTED_BIT" /> für ARC-Apps verfügbar.</translation>
@@ -2024,7 +2020,6 @@ Die folgenden Einstellungen können nur für die Standardkonfiguration von <ph n
 
       Falls die Richtlinie deaktiviert oder nicht eingestellt wird, werden bei einer Anmeldung reguläre Profile erstellt.</translation>
 <translation id="8158758865057576716">Erstellung von Roaming-Kopien für <ph name="PRODUCT_NAME" />-Profildaten aktivieren.</translation>
-<translation id="8170878842291747619">Aktiviert den integrierten Google Übersetzer-Dienst in <ph name="PRODUCT_NAME" />. Wenn Sie diese Einstellung aktivieren, so wird in <ph name="PRODUCT_NAME" /> eine integrierte Symbolleiste angezeigt, über die Nutzer die Seite bei Bedarf übersetzen lassen können. Sollten Sie diese Einstellung deaktivieren, erscheint die Übersetzungsleiste grundsätzlich nicht. Das Aktivieren und Deaktivieren dieser Einstellung führt dazu, dass Nutzer diese Einstellung in <ph name="PRODUCT_NAME" /> nicht ändern oder außer Kraft setzen können. Wenn die Einstellung nicht konfiguriert ist, so kann der Nutzer entscheiden, ob er die Funktion in Anspruch nehmen möchte.</translation>
 <translation id="817455428376641507">Erlaubt den Zugriff auf die aufgeführten URLs als Ausnahmen von der schwarzen URL-Liste.
 
       Informationen zum Format der Einträge in dieser Liste finden Sie in der Beschreibung der Richtlinie für die schwarze URL-Liste.

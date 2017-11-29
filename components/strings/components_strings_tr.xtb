@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">Sıralama değişikliğini &amp;geri al</translation>
 <translation id="1126551341858583091">Yerel depolama alanındaki boyut <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Politika önbelleği uygun</translation>
-<translation id="113188000913989374"><ph name="SITE" /> web sitesinin mesajı:</translation>
 <translation id="1132774398110320017">Chrome Otomatik Doldurma ayarları...</translation>
 <translation id="1150979032973867961">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Bilgisayarınızın işletim sistemi, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="1151972924205500581">Şifre gerekiyor</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">Metin doğru bir şekilde çıkarıldı mı?</translation>
 <translation id="5540224163453853">İstenen makale bulunamadı.</translation>
 <translation id="5541546772353173584">E-posta Adresi Ekleyin</translation>
-<translation id="5544037170328430102"><ph name="SITE" /> web sitesindeki yerleşik bir sayfanın mesajı:</translation>
 <translation id="5545756402275714221">Sizin için Seçilmiş Makaleler</translation>
 <translation id="5556459405103347317">Yeniden Yükle</translation>
 <translation id="5560088892362098740">Son Kullanma Tarihi</translation>
@@ -639,7 +637,7 @@
 <translation id="5675650730144413517">Bu sayfa çalışmıyor</translation>
 <translation id="5685654322157854305">Gönderim Adresi Ekle</translation>
 <translation id="5689199277474810259">JSON'a aktar</translation>
-<translation id="5689516760719285838">Yer</translation>
+<translation id="5689516760719285838">Konum</translation>
 <translation id="5710435578057952990">Bu web sitesinin kimliği doğrulanmadı.</translation>
 <translation id="5719499550583120431">Ön ödemeli kartlar kabul edilir.</translation>
 <translation id="5720705177508910913">Geçerli kullanıcı</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Kartı Onayla</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Profil Yolu</translation>
-<translation id="7424977062513257142">Bu web sayfasındaki yerleşik bir sayfanın mesajı:</translation>
 <translation id="7437289804838430631">İletişim Bilgisi Ekle</translation>
 <translation id="7441627299479586546">Politika konusu yanlış</translation>
 <translation id="7444046173054089907">Bu site engellenmiş</translation>
@@ -1002,7 +999,6 @@
 <translation id="884923133447025588">İptal mekanizması bulunamadı.</translation>
 <translation id="885730110891505394">Google ile Paylaşma</translation>
 <translation id="8866481888320382733">Politika ayarlarını ayrıştırma hatası</translation>
-<translation id="8866959479196209191">Bu sayfanın mesajı:</translation>
 <translation id="8870413625673593573">Son Kapatılan</translation>
 <translation id="8874824191258364635">Geçerli bir kart numarası girin</translation>
 <translation id="8876793034577346603">Ağ yapılandırması ayrıştırılamadı.</translation>

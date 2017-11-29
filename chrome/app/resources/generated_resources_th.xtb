@@ -249,7 +249,6 @@
 <translation id="138784436342154190">คืนค่าเป็นหน้าเริ่มต้นใช้งานเริ่มต้นไหม</translation>
 <translation id="1389297115360905376">ต้องเพิ่มจาก <ph name="CHROME_WEB_STORE" /> เท่านั้น</translation>
 <translation id="1390548061267426325">เปิดเป็นแท็บทั่วไป</translation>
-<translation id="1391097951247613150">พูดว่า "Ok Google" เมื่อหน้าจอเปิดและปลดล็อกอยู่</translation>
 <translation id="1391807639023934267">โหลดหน้าเว็บได้เร็วขึ้น</translation>
 <translation id="1393283411312835250">ดวงอาทิตย์และเมฆ</translation>
 <translation id="1395262318152388157">แถบเลื่อนเพื่อค้นหา</translation>
@@ -449,13 +448,11 @@
 <translation id="1673103856845176271">ไม่สามารถเข้าถึงไฟล์เนื่องจากเหตุผลด้านความปลอดภัย</translation>
 <translation id="167832068858235403">ลดเสียง</translation>
 <translation id="1679068421605151609">เครื่องมือสำหรับนักพัฒนาซอฟต์แวร์</translation>
-<translation id="1681120471812444678">ตั้งค่าเพื่อเพิ่มเครื่องพิมพ์…</translation>
 <translation id="1682548588986054654">หน้าต่างใหม่ที่ไม่ระบุตัวตน</translation>
 <translation id="168991973552362966">เพิ่มเครื่องพิมพ์ใกล้เคียง</translation>
 <translation id="1692602667007917253">อ๊ะ เกิดข้อผิดพลาดบางอย่าง</translation>
 <translation id="1692799361700686467">อนุญาตคุกกี้จากหลายไซต์</translation>
 <translation id="169515659049020177">Shift</translation>
-<translation id="1697532407822776718">คุณพร้อมแล้ว!</translation>
 <translation id="1698122934742150150">เซสชันไม่ระบุตัวตนปัจจุบันเท่านั้น</translation>
 <translation id="1700199471143028312">ผู้ดูแลระบบของคุณไม่อนุญาตให้คุณสร้างผู้ใช้ภายใต้การดูแล</translation>
 <translation id="1701062906490865540">นำบุคคลนี้ออก</translation>
@@ -495,10 +492,8 @@
 <translation id="1763108912552529023">สำรวจต่อไป</translation>
 <translation id="1764226536771329714">เบต้า</translation>
 <translation id="176587472219019965">&amp;หน้าต่างใหม่</translation>
-<translation id="1766352429832934452">เปิดใช้อยู่ (จำเป็นในการใช้ "Ok Google")</translation>
 <translation id="1768278914020124551">อ๊ะ! เกิดปัญหาในการติดต่อเซิร์ฟเวอร์เข้าสู่ระบบ โปรดตรวจสอบการเชื่อมต่อเครือข่ายและชื่อโดเมนแล้วลองอีกครั้ง</translation>
 <translation id="1769104665586091481">เปิดลิงก์ใน&amp;หน้าต่างใหม่</translation>
-<translation id="1772267994638363865">ในการเริ่มใช้งาน คุณจะต้องเปิดใช้กิจกรรมเสียงพูดและเสียงและฝึกให้ <ph name="DEVICE_TYPE" /> เรียนรู้ตามขั้นตอนต่อไปนี้</translation>
 <translation id="1773212559869067373">ใบรับรองการตรวจสอบสิทธิ์ได้รับการปฏิเสธในท้องถิ่น</translation>
 <translation id="177336675152937177">ข้อมูลแอปที่โฮสต์</translation>
 <translation id="1774349594977710164">โทรศัพท์จะปลดล็อก <ph name="DEVICE_TYPE" /> เครื่องอื่นๆ ด้วย เพราะมีการซิงค์กันโดยอัตโนมัติ</translation>
@@ -523,7 +518,6 @@
 <translation id="1799071797295057738">ระบบจะปิดใช้งานส่วนขยาย "<ph name="EXTENSION_NAME" />" โดยอัตโนมัติ</translation>
 <translation id="180035236176489073">คุณจะต้องออนไลน์เพื่อเข้าถึงไฟล์เหล่านี้</translation>
 <translation id="1802931390041703523">หน้านี้บล็อก Flash</translation>
-<translation id="1803545009660609783">ฝึกใหม่</translation>
 <translation id="1805822111539868586">ตรวจสอบการแสดงผล</translation>
 <translation id="1807938677607439181">ไฟล์ทั้งหมด</translation>
 <translation id="1809734401532861917">เพิ่มบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ ของฉันไปยัง <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -603,7 +597,6 @@
 <translation id="1932098463447129402">หลังจาก</translation>
 <translation id="1933809209549026293">โปรดเชื่อมต่อเมาส์หรือแป้นพิมพ์ หากคุณใช้อุปกรณ์บลูทูธ โปรดตรวจสอบว่าอุปกรณ์พร้อมที่จะจับคู่</translation>
 <translation id="1936157145127842922">แสดงในโฟลเดอร์</translation>
-<translation id="1937256809970138538">พูดว่า "Ok Google" เมื่อหน้าจอเปิดอยู่และไม่ได้ล็อก</translation>
 <translation id="1940546824932169984">อุปกรณ์ที่เชื่อมต่อ</translation>
 <translation id="1942765061641586207">ความละเอียดของรูปภาพ</translation>
 <translation id="1944921356641260203">พบการอัปเดต</translation>
@@ -668,7 +661,6 @@
 <translation id="2071393345806050157">ไม่มีไฟล์บันทึกในเครื่อง</translation>
 <translation id="2074527029802029717">ยกเลิกการตรึงแท็บ</translation>
 <translation id="2075474481720804517">แบตเตอรี่ <ph name="BATTERY_PERCENTAGE" />%</translation>
-<translation id="2075594581020578008">เบราว์เซอร์ <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="2076269580855484719">ซ่อนปลั๊กอินนี้</translation>
 <translation id="2076672359661571384">กลาง (แนะนำ)</translation>
 <translation id="2077129598763517140">ใช้การเร่งฮาร์ดแวร์เมื่อสามารถใช้ได้</translation>
@@ -689,7 +681,6 @@
 <translation id="2100273922101894616">ลงชื่อเข้าใช้อัตโนมัติ</translation>
 <translation id="2101225219012730419">รุ่น:</translation>
 <translation id="2101797668776986011">Pepper 3D</translation>
-<translation id="2103164230797186308">ไม่มีการอัปเดตซอฟต์แวร์สำหรับอุปกรณ์เครื่องนี้อีกแล้ว โปรดพิจารณาการอัปเกรด</translation>
 <translation id="2105006017282194539">ยังไม่ได้โหลด</translation>
 <translation id="2107494551712864447">เพิ่มลายนิ้วมือ</translation>
 <translation id="2111843886872897694">แอปพลิเคชันต้องได้รับบริการจากโฮสต์ที่แอปพลิเคชันนั้นมีผลกระทบ</translation>
@@ -829,7 +820,6 @@
 <translation id="230927227160767054">หน้าเว็บนี้ต้องการติดตั้งเครื่องจัดการบริการ</translation>
 <translation id="2311496337038385958">ปีที่บันทึก</translation>
 <translation id="2316129865977710310">ไม่ ขอบคุณ</translation>
-<translation id="2317031807364506312">ยกเลิก</translation>
 <translation id="2317842250900878657">เสร็จแล้ว <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">ขนาดกระดาษ</translation>
 <translation id="2318817390901984578">หากต้องการใช้แอป Android ให้ชาร์จและอัปเดต <ph name="DEVICE_TYPE" /></translation>
@@ -897,7 +887,6 @@
 <translation id="2435457462613246316">แสดงรหัสผ่าน</translation>
 <translation id="2436186046335138073">อนุญาตให้ <ph name="HANDLER_HOSTNAME" /> เปิดลิงก์ <ph name="PROTOCOL" /> ทั้งหมดไหม</translation>
 <translation id="2436707352762155834">ขั้นต่ำ</translation>
-<translation id="2436733981438712345">กำลังดำเนินการ...</translation>
 <translation id="2437139306601019091">สิ้นสุดการวัดการใช้อินเทอร์เน็ต</translation>
 <translation id="2440300961915670171"><ph name="REASON" />
 ฉันคิดว่าไม่ควรบล็อกไซต์นี้!</translation>
@@ -952,7 +941,6 @@
 <translation id="2508428939232952663">บัญชี Google Play Store</translation>
 <translation id="2509495747794740764">จำนวนขนาดต้องเป็นตัวเลขระหว่าง 10 และ 200</translation>
 <translation id="2515586267016047495">Alt</translation>
-<translation id="251662399991179012">มาฝึกให้ <ph name="DEVICE_TYPE" /> เรียนรู้กัน</translation>
 <translation id="2517472476991765520">สแกน</translation>
 <translation id="2518024842978892609">ใช้ใบรับรองไคลเอ็นต์</translation>
 <translation id="2520644704042891903">กำลังรอ Socket ที่ใช้งานได้...</translation>
@@ -1397,7 +1385,6 @@
 <translation id="316307797510303346">ควบคุมและดูเว็บไซต์ที่บุคคลนี้เข้าชมจาก <ph name="CUSTODIAN_EMAIL" />
     รายละเอียดการลงชื่อเข้าใช้บัญชีของคุณล้าสมัยแล้ว</translation>
 <translation id="3165390001037658081">ผู้ให้บริการบางรายอาจบล็อกฟีเจอร์นี้</translation>
-<translation id="3166571619128686629">คลิกหรือพูดว่า "Ok Google" เพื่อเริ่มค้นหาด้วยเสียง</translation>
 <translation id="3170072451822350649">คุณสามารถข้ามการลงชื่อเข้าใช้และ<ph name="LINK_START" />เรียกดูในฐานะผู้เยี่ยมชม<ph name="LINK_END" />ได้ด้วย</translation>
 <translation id="3177048931975664371">คลิกเพื่อซ่อนรหัสผ่าน</translation>
 <translation id="3177857336576585529"><ph name="SITE_NAME" /> ได้ขอสิทธิ์</translation>
@@ -1408,7 +1395,6 @@
 <translation id="3184560914950696195">ไม่สามารถบันทึกลงใน $1 ภาพที่แก้ไขจะถูกบันทึกไว้ในโฟลเดอร์ "ดาวน์โหลด"</translation>
 <translation id="3188465121994729530">ค่าเฉลี่ยเคลื่อนที่</translation>
 <translation id="3190558889382726167">บันทึกรหัสผ่านแล้ว</translation>
-<translation id="3191308084656429858">{NUM_POPUPS,plural, =1{ป๊อปอัปถูกบล็อก}other{ป๊อปอัป # รายการถูกบล็อก}}</translation>
 <translation id="3192947282887913208">ไฟล์เสียง</translation>
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> ใน <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">เซิร์ฟเวอร์</translation>
@@ -1416,7 +1402,6 @@
 <translation id="3202173864863109533">กำลังปิดเสียงของแท็บนี้อยู่</translation>
 <translation id="3206175707080061730">ไฟล์ชื่อ "$1" มีอยู่แล้ว คุณต้องการแทนที่ไฟล์ดังกล่าวหรือไม่</translation>
 <translation id="3208703785962634733">ยังไม่ยืนยัน</translation>
-<translation id="3216508313927987948">ในการเริ่มใช้งาน คุณจะต้องฝึกให้ <ph name="DEVICE_TYPE" /> เรียนรู้ตามขั้นตอนต่อไปนี้</translation>
 <translation id="321799795901478485">ที่เก็บ ZIP ถาวร</translation>
 <translation id="3220586366024592812">การทำงานของตัวเชื่อมต่อ <ph name="CLOUD_PRINT_NAME" /> ขัดข้อง จะรีสตาร์ทหรือไม่</translation>
 <translation id="3221634914176615296">สำรวจเนื้อหาของอุปกรณ์ในแอป Files</translation>
@@ -1438,7 +1423,6 @@
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - ข้อผิดพลาดของเครือข่าย</translation>
 <translation id="3251759466064201842">&lt;ไม่ใช่ส่วนหนึ่งของใบรับรอง&gt;</translation>
 <translation id="3254434849914415189">เลือกแอปพลิเคชันค่าเริ่มต้นสำหรับไฟล์ <ph name="FILE_TYPE" />:</translation>
-<translation id="3255228561559750854">ค้นหาหรือพูดว่า "Ok Google"</translation>
 <translation id="3264544094376351444">แบบอักษร Sans-Serif</translation>
 <translation id="3264547943200567728">ไม่สามารถตั้งค่าเครือข่าย Chromebox ของคุณได้</translation>
 <translation id="3265459715026181080">ปิดหน้าต่าง</translation>
@@ -1512,7 +1496,6 @@
 <translation id="3353984535370177728">เลือกโฟลเดอร์ที่จะอัปโหลด</translation>
 <translation id="335581015389089642">คำพูด</translation>
 <translation id="3355936511340229503">ข้อผิดพลาดในการเชื่อมต่อ</translation>
-<translation id="3356580349448036450">เสร็จสมบูรณ์</translation>
 <translation id="3356797067524893661">คุณพร้อมที่จะเข้าการประชุม Hangouts แล้ว</translation>
 <translation id="3358935496594837302">ไม่พบโทรศัพท์ของคุณ โปรดตรวจสอบว่าคุณใช้โทรศัพท์ Android ที่เข้ากันได้ซึ่งเปิดอยู่และอยู่ใกล้ๆ มือคุณ &lt;a&gt;เรียนรู้เพิ่มเติม&lt;/a&gt;</translation>
 <translation id="3359256513598016054">ข้อจำกัดนโยบายใบรับรอง</translation>
@@ -1754,7 +1737,6 @@
 <translation id="3727148787322499904">การเปลี่ยนการตั้งค่านี้จะส่งผลกับเครือข่ายที่แชร์ทั้งหมด</translation>
 <translation id="3727187387656390258">ตรวจสอบป๊อปอัป</translation>
 <translation id="3728067901555601989">OTP:</translation>
-<translation id="3730639321086573427">ปลายทางในท้องถิ่น</translation>
 <translation id="3733127536501031542">เซิร์ฟเวอร์ SSL ที่มีการยกระดับความปลอดภัย</translation>
 <translation id="3737536731758327622">การดาวน์โหลดของคุณจะปรากฏที่นี่</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -1821,7 +1803,6 @@
 <translation id="3815571115159309122">พบรูปภาพใหม่ <ph name="FILE_COUNT" /> ภาพ
     <ph name="LINE_BREAK1" />
     พร้อมสำรองข้อมูลไปยัง <ph name="BEGIN_LINK" />Google ไดรฟ์<ph name="END_LINK" /></translation>
-<translation id="3816789583333631750">ต้องเปิดใช้ปลั๊กอิน Native Client เพื่อใช้ฟีเจอร์นี้</translation>
 <translation id="3819007103695653773">อนุญาตให้ทุกไซต์ส่งข้อความพุชในพื้นหลัง</translation>
 <translation id="3819752733757735746">การเข้าถึงด้วยสวิตช์ (ควบคุมคอมพิวเตอร์ด้วยสวิตช์เพียง 1-2 ตัว)</translation>
 <translation id="3819800052061700452">เ&amp;ต็มหน้าจอ</translation>
@@ -1862,7 +1843,6 @@
 <translation id="3872991219937722530">เพิ่มพื้นที่ว่างในดิสก์ มิเช่นนั้นอุปกรณ์จะไม่ตอบสนองต่อการทำงาน</translation>
 <translation id="3878840326289104869">กำลังสร้างผู้ใช้ภายใต้การดูแล</translation>
 <translation id="3879748587602334249">Download Manager</translation>
-<translation id="388485010393668001">มีการเติมข้อความ: <ph name="COMPLETION_TEXT" /></translation>
 <translation id="3888550877729210209">จดโน้ตด้วย <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">เพิ่ม OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">อ่านและเปลี่ยนการตั้งค่าการเข้าถึง</translation>
@@ -2097,6 +2077,7 @@
     <ph name="LINE_BREAK1" />
     พบรูปภาพใหม่ <ph name="FILE_COUNT" /> ภาพ</translation>
 <translation id="4316850752623536204">เว็บไซต์นักพัฒนาซอฟต์แวร์</translation>
+<translation id="4320177379694898372">ไม่มีการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{ดำเนินการดาวน์โหลดต่อ}other{ดำเนินการดาวน์โหลดต่อ}}</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4322394346347055525">ปิดแท็บอื่นๆ</translation>
@@ -2161,7 +2142,6 @@
 <translation id="4441548209689510310">แสดงตัวเลือกการตรวจตัวสะกด</translation>
 <translation id="4442424173763614572">การค้นหา DNS ล้มเหลว</translation>
 <translation id="444267095790823769">ข้อยกเว้นเนื้อหาที่ได้รับการป้องกัน</translation>
-<translation id="4442732038333431189">กิจกรรมเสียงพูดและเสียงสำหรับ <ph name="USER_EMAIL" /></translation>
 <translation id="4443536555189480885">&amp;ความช่วยเหลือ</translation>
 <translation id="4444304522807523469">เข้าถึงเครื่องสแกนเอกสารที่เชื่อมต่อผ่าน USB หรือบนเครือข่าย LAN</translation>
 <translation id="4444512841222467874">หากไม่เพิ่มพื้นที่ว่าง ระบบอาจลบผู้ใช้และข้อมูลโดยอัตโนมัติ</translation>
@@ -2185,7 +2165,6 @@
 <translation id="4482194545587547824">Google อาจใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยน Search และบริการอื่นๆ ของ Google ในแบบของคุณ</translation>
 <translation id="4492190037599258964">ผลการค้นหาคำว่า "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4495419450179050807">ไม่แสดงในหน้านี้อีก</translation>
-<translation id="4499108478945817980">ผู้ดูแลระบบต้องการให้คุณลงชื่อเข้าใช้ Chrome</translation>
 <translation id="450099669180426158">ไอคอนเครื่องหมายอัศเจรีย์</translation>
 <translation id="4501530680793980440">ยืนยันการนำออก</translation>
 <translation id="4504940961672722399">ใช้ส่วนขยายนี้โดยคลิกที่ไอคอนนี้ หรือกด <ph name="EXTENSION_SHORTCUT" /></translation>
@@ -2204,7 +2183,6 @@
 <translation id="4530494379350999373">ต้นทาง</translation>
 <translation id="4532499992208253975">emloading</translation>
 <translation id="4533985347672295764">เวลา CPU</translation>
-<translation id="4534799089889278411">พูดว่า "Ok Google" ในแท็บใหม่, google.com และเครื่องเรียกใช้งานแอป</translation>
 <translation id="4535127706710932914">โปรไฟล์เริ่มต้น</translation>
 <translation id="4538417792467843292">ลบคำ</translation>
 <translation id="4538684596480161368">บล็อกปลั๊กอินที่อยู่นอกแซนด์บ็อกซ์ใน <ph name="HOST" /> เสมอ</translation>
@@ -2291,7 +2269,6 @@
 <translation id="466506872045057845">Chrome จะรีเซ็ตสิทธิ์เป็นค่าเริ่มต้น</translation>
 <translation id="4667176955651319626">บล็อกคุกกี้และข้อมูลไซต์ของบุคคลที่สาม</translation>
 <translation id="4668721319092543482">คลิกเพื่อเปิดใช้ <ph name="PLUGIN_NAME" /></translation>
-<translation id="4669109953235344059">ลองอีกครั้ง</translation>
 <translation id="4669606053856530811">สมาชิกของ "<ph name="SOURCE_NAME" />" จะสูญเสียสิทธิ์เข้าถึง เว้นแต่มีการแชร์รายการเหล่านี้กับสมาชิกดังกล่าว</translation>
 <translation id="4672657274720418656">สกัดหน้า</translation>
 <translation id="4673442866648850031">เปิดเครื่องมือสไตลัสเมื่อมีการถอดสไตลัสออก</translation>
@@ -2300,7 +2277,6 @@
 <translation id="4681930562518940301">เ&amp;ปิดภาพต้นฉบับในแท็บใหม่</translation>
 <translation id="4682551433947286597">วอลเปเปอร์ที่ปรากฏบนหน้าจอการลงชื่อเข้าใช้</translation>
 <translation id="4684427112815847243">ซิงค์ทุกอย่าง</translation>
-<translation id="4685045708662437080">การดำเนินการนี้จะช่วยให้ Google จดจำเสียงพูดของคุณและปรับปรุงการจดจำเสียงพูดและเสียงเพื่อให้คุณได้รับผลลัพธ์ได้รวดเร็วยิ่งขึ้นและมีปัญหาน้อยลง <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="4689421377817139245">ซิงค์บุ๊กมาร์กนี้กับ iPhone ของคุณ</translation>
 <translation id="4692302215262324251">ลงทะเบียน <ph name="DEVICE_TYPE" /> ของคุณสำหรับการจัดการองค์กรโดย <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> เรียบร้อยแล้ว
     <ph name="LINE_BREAK_AND_EMPTY_LINE" />
@@ -2347,7 +2323,7 @@
 <translation id="4759238208242260848">ดาวน์โหลด</translation>
 <translation id="4761104368405085019">ใช้ไมโครโฟนของคุณ</translation>
 <translation id="4762718786438001384">พื้นที่ดิสก์ของอุปกรณ์ใกล้จะเต็มแล้ว</translation>
-<translation id="4763408175235639573">ระบบได้ตั้งค่าคุกกี้ต่อไปนี้เมื่อคุณดูหน้าเว็บนี้</translation>
+<translation id="4763408175235639573">มีการวางคุกกี้ต่อไปนี้เมื่อคุณดูหน้าเว็บนี้</translation>
 <translation id="4763830802490665879">คุกกี้จากหลายๆ ไซต์จะถูกล้างเมื่อออก</translation>
 <translation id="4768332406694066911">คุณมีใบรับรองจากองค์กรเหล่านี้ซึ่งระบุถึงตัวคุณ</translation>
 <translation id="4776917500594043016">รหัสผ่านของ <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -2626,7 +2602,6 @@
 <translation id="5228076606934445476">มีบางอย่างผิดปกติกับอุปกรณ์  ในการกู้คืนจากข้อผิดพลาดนี้ คุณจะต้องรีบูตเครื่องและลองอีกครั้ง</translation>
 <translation id="5229189185761556138">จัดการวิธีป้อนข้อมูล</translation>
 <translation id="5230516054153933099">หน้าต่าง</translation>
-<translation id="5232178406098309195">เมื่อคุณใช้คำสั่งการเปิดใช้งานด้วยเสียง เช่น "Ok Google" หรือการแตะไอคอนไมโครโฟน กิจกรรมเสียงพูดและเสียงส่วนตัวของคุณจะเก็บเสียงพูดและเสียงอื่นๆ ในบัญชี โดยจะเก็บบันทึกเสียงพูด/เสียงที่ตามมา และอีก 2-3 วินาทีก่อนหน้านั้นด้วย</translation>
 <translation id="5233019165164992427">พอร์ตแก้ปัญหา NaCl</translation>
 <translation id="5233231016133573565">รหัสดำเนินการ</translation>
 <translation id="5233638681132016545">แท็บใหม่</translation>
@@ -2643,7 +2618,6 @@
 <translation id="5250372599208556903"><ph name="SEARCH_ENGINE_NAME" /> ใช้ตำแหน่งของคุณเพื่อให้เนื้อหาในเครื่องแก่คุณ โดยคุณสามารถเปลี่ยนได้ใน<ph name="SETTINGS_LINK" /></translation>
 <translation id="5252456968953390977">โรมมิ่ง</translation>
 <translation id="5252653240322147470">PIN ต้องมีน้อยกว่า <ph name="MAXIMUM" /> หลัก</translation>
-<translation id="5253753933804516447">เปิดใช้ "Ok Google" เพื่อค้นหาด้วยเสียงเมื่อหน้าจอเปิดอยู่และไม่ได้ล็อก</translation>
 <translation id="5254368820972107711">แสดงไฟล์ที่จะนำออก</translation>
 <translation id="52550593576409946">ไม่สามารถเรียกใช้แอปพลิเคชันคีออสก์</translation>
 <translation id="5255315797444241226">ข้อความรหัสผ่านที่คุณป้อนไม่ถูกต้อง</translation>
@@ -2688,7 +2662,6 @@
 <translation id="5311260548612583999">ไฟล์กุญแจส่วนตัว (ตัวเลือก):</translation>
 <translation id="5311304534597152726">กำลังลงชื่อเข้าใช้ในชื่อ</translation>
 <translation id="5315873049536339193">ข้อมูลประจำตัว</translation>
-<translation id="5316588172263354223">ค้นหาด้วยเสียงได้ทุกเมื่อ</translation>
 <translation id="5316716239522500219">แสดงผลบนหน้าจอ</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5319359161174645648">Google ขอแนะนำ Chrome</translation>
@@ -2753,7 +2726,6 @@
 <translation id="5411472733320185105">อย่าใช้การตั้งค่าพร็อกซีสำหรับโฮสต์และโดเมนเหล่านี้:</translation>
 <translation id="5414566801737831689">อ่านไอคอนของเว็บไซต์ที่คุณเข้าชม</translation>
 <translation id="5417312524372586921">ธีมของเบราว์เซอร์</translation>
-<translation id="5417998409611691946">ตอนนี้ <ph name="DEVICE_TYPE" /> สามารถทำสิ่งต่อไปนี้ได้:</translation>
 <translation id="5419294236999569767">เวลาระบบ</translation>
 <translation id="5422221874247253874">จุดเข้าใช้งาน</translation>
 <translation id="5422781158178868512">ขออภัย ระบบไม่รู้จักอุปกรณ์จัดเก็บข้อมูลภายนอกของคุณ</translation>
@@ -2963,7 +2935,6 @@
 <translation id="5749861707650047230">{NUM_DOWNLOAD,plural, =1{ยกเลิกการดาวน์โหลด}other{ยกเลิกการดาวน์โหลด}}</translation>
 <translation id="5750324801516359607">ไกล</translation>
 <translation id="5751545372099101699">รายการชั้นวาง 4</translation>
-<translation id="5752162773804266219">ในการช่วยให้ <ph name="DEVICE_TYPE" /> ตอบสนองคุณและเพื่อให้เข้าถึงการค้นหาด้วยเสียงได้ง่ายและเชื่อถือได้ คุณจะต้องฝึกให้ Google เรียนรู้เสียงพูดของคุณ</translation>
 <translation id="5752453871435543420">ข้อมูลสำรองในระบบคลาวด์ของ Chrome OS</translation>
 <translation id="5754903485544371559">เพิ่มลงในแอปพลิเคชัน...</translation>
 <translation id="5756163054456765343">ศู&amp;นย์ช่วยเหลือ</translation>
@@ -3124,7 +3095,6 @@
 <translation id="6011449291337289699">ล้างข้อมูลเว็บไซต์</translation>
 <translation id="6015796118275082299">ปี</translation>
 <translation id="6016551720757758985">ยืนยัน Powerwash และเปลี่ยนกลับเป็นเวอร์ชันก่อนหน้า</translation>
-<translation id="6016809788585079594">พูดว่า "Ok Google" เป็นครั้งสุดท้าย</translation>
 <translation id="6016972670657536680">เลือกปุ่มภาษาและแป้นพิมพ์ ภาษาที่เลือกอยู่ในขณะนี้คือ <ph name="LANGUAGE" /></translation>
 <translation id="6017981840202692187">เพิ่มไปยังแอปพลิเคชัน</translation>
 <translation id="6019169947004469866">ตัด</translation>
@@ -3183,7 +3153,6 @@
 <translation id="6105158702728922449">ใช้กล้องถ่ายรูปและไมโครโฟน</translation>
 <translation id="6105877918873366097">เข้าถึงครั้งสุดท้าย</translation>
 <translation id="6107012941649240045">ออกให้แก่</translation>
-<translation id="6107079717483424262">จดจำเสียงพูดเมื่อคุณพูดว่า "Ok Google"</translation>
 <translation id="6112952769866305444">แก้ไขบุคคล, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
 <translation id="6115424132962100663">กด |<ph name="SHORTCUT" />| เพื่อย้อนกลับ</translation>
 <translation id="6116921718742659598">เปลี่ยนการตั้งค่าภาษาและการป้อนข้อมูล</translation>
@@ -3465,7 +3434,6 @@
 <translation id="6547354035488017500">เพิ่มพื้นที่ว่างบนอุปกรณ์อย่างน้อย 512 MB มิฉะนั้นอุปกรณ์ของคุณอาจไม่ตอบสนอง หากต้องการเพิ่มพื้นที่ว่าง ให้ลบไฟล์ออกจากพื้นที่เก็บข้อมูลของอุปกรณ์</translation>
 <translation id="6549689063733911810">ล่าสุด</translation>
 <translation id="6550675742724504774">ตัวเลือก</translation>
-<translation id="6551034508248154663">กำลังเปิดใช้กิจกรรมเสียงพูดและเสียง...</translation>
 <translation id="6551508934388063976">คำสั่งไม่สามารถใช้งานได้ กด Control-N เพื่อเปิดหน้าต่างใหม่</translation>
 <translation id="655384502888039633">ผู้ใช้ <ph name="USER_COUNT" /> คน</translation>
 <translation id="6555432686520421228">ลบบัญชีผู้ใช้ทั้งหมดและรีเซ็ตอุปกรณ์ <ph name="IDS_SHORT_PRODUCT_NAME" /> ของคุณให้เหมือนใหม่</translation>
@@ -3535,7 +3503,6 @@
 <translation id="667517062706956822">คุณต้องการให้ Google แปลหน้านี้จากภาษา<ph name="SOURCE_LANGUAGE" />เป็นภาษา<ph name="TARGET_LANGUAGE" />ไหม</translation>
 <translation id="6675665718701918026">เชื่อมต่ออุปกรณ์ชี้ตำแหน่งแล้ว</translation>
 <translation id="6677037229676347494">คาดการณ์ ID "<ph name="EXPECTED_ID" />" แต่ ID ที่แจ้งคือ "<ph name="NEW_ID" />"</translation>
-<translation id="6678312694238602710">เรานำการค้นหาด้วยเสียง "Ok Google" ออกจาก Chrome OS แล้ว</translation>
 <translation id="6678717876183468697">URL ของคำค้นหา</translation>
 <translation id="6680028776254050810">สลับผู้ใช้</translation>
 <translation id="6680442031740878064">พร้อมใช้งาน: <ph name="AVAILABLE_SPACE" /></translation>
@@ -3700,7 +3667,6 @@
 <translation id="6970480684834282392">ประเภทการเริ่มต้น</translation>
 <translation id="6970856801391541997">พิมพ์หน้าเว็บที่ระบุ</translation>
 <translation id="6972180789171089114">เสียง/วิดีโอ</translation>
-<translation id="6972754398087986839">เริ่มต้นใช้งาน</translation>
 <translation id="6973630695168034713">โฟลเดอร์</translation>
 <translation id="6974053822202609517">ขวาไปซ้าย</translation>
 <translation id="6976108581241006975">คอนโซล JavaScript</translation>
@@ -3738,7 +3704,6 @@
 <translation id="7012372675181957985">บัญชี Google ของคุณอาจมีประวัติการท่องเว็บในรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7013485839273047434">รับส่วนขยายเพิ่มเติม</translation>
 <translation id="7014174261166285193">การติดตั้งล้มเหลว</translation>
-<translation id="7017004637493394352">พูดว่า "Ok Google" อีกครั้ง</translation>
 <translation id="7017219178341817193">เพิ่มหน้าใหม่</translation>
 <translation id="7017354871202642555">ไม่สามารถกำหนดโหมดได้หลังจากกำหนดหน้าต่างแล้ว</translation>
 <translation id="7017480957358237747">อนุญาตหรือห้ามบางเว็บไซต์</translation>
@@ -3865,7 +3830,6 @@
 <translation id="7240120331469437312">ชื่อสำรองของหัวเรื่องใบรับรอง</translation>
 <translation id="7240339475467890413">เชื่อมต่อกับฮอตสปอตใหม่ใช่ไหม</translation>
 <translation id="7241389281993241388">โปรดลงชื่อเข้าใช้ <ph name="TOKEN_NAME" /> เพื่อนำเข้าใบรับรองไคลเอ็นต์</translation>
-<translation id="7243055093079293866">พูดว่า "Ok Google" ในแท็บใหม่และ google.com</translation>
 <translation id="7243632151880336635">ล้างและออกจากระบบ</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (ดีที่สุด)</translation>
 <translation id="7246339268451149667">หากต้องการเปิดใช้การปลดล็อกด้วยลายนิ้วมือ</translation>
@@ -3978,7 +3942,6 @@
 <translation id="7433692219247014412">{COUNT,plural, =0{เปิดทั้งหมดใน&amp;หน้าต่างใหม่}=1{เปิดใน&amp;หน้าต่างใหม่}other{เปิดทั้งหมด (#) ใน&amp;หน้าต่างใหม่}}</translation>
 <translation id="7434509671034404296">นักพัฒนา</translation>
 <translation id="7436921188514130341">แย่จัง! เกิดข้อผิดพลาดในระหว่างการตั้งชื่อ</translation>
-<translation id="743823505716061814">ระบบจะเชื่อมโยงข้อความค้นหากับบัญชี Google ของคุณ คุณสามารถดูและลบข้อความเหล่านั้นได้ใน<ph name="BEGIN_LINK" />ประวัติบัญชี<ph name="END_LINK" /></translation>
 <translation id="7439964298085099379">คุณเปิดใช้งานโหมดความเปรียบต่างสูงไว้ คุณต้องการติดตั้งส่วนขยายความเปรียบต่างสูงของเราและธีมสีเข้มหรือไม่</translation>
 <translation id="7441830548568730290">ผู้ใช้รายอื่น</translation>
 <translation id="7442465037756169001">พร้อมตั้งค่า Hangouts Meet hardware แล้ว</translation>
@@ -4037,7 +4000,6 @@
 <translation id="7518150891539970662">บันทึก WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7520821146909122639">กำลังแปลหน้านี้...</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7522255036471229694">พูดว่า "Ok Google"</translation>
 <translation id="7525067979554623046">สร้าง</translation>
 <translation id="7529411698175791732">ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตของคุณ หากปัญหายังคงอยู่ ให้ลองออกจากระบบและลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="7530016656428373557">อัตราการใช้ไฟฟ้าเป็นวัตต์</translation>
@@ -4101,7 +4063,6 @@
 <translation id="7629827748548208700">แท็บ: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;เปิดไฟล์ประเภทนี้เสมอ</translation>
 <translation id="7632948528260659758">แอปคีออสก์ต่อไปนี้ไม่สามารถอัปเดตได้:</translation>
-<translation id="7634566076839829401">เกิดข้อผิดพลาดบางอย่าง โปรดลองอีกครั้ง</translation>
 <translation id="7639178625568735185">สำเร็จ!</translation>
 <translation id="763959977925219242">บล็อกป๊อปอัป</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> ลงชื่อเข้าใช้ให้คุณในเว็บไซต์ที่มีสิทธิ์โดยอัตโนมัติด้วยรหัสผ่านที่คุณบันทึกไว้</translation>
@@ -4146,7 +4107,6 @@
 <translation id="7717014941119698257">กำลังดาวน์โหลด: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">ตรวจสอบการอัปเดต</translation>
 <translation id="7719367874908701697">การซูมหน้า</translation>
-<translation id="7719421816612904796">หมดเวลาฝึก</translation>
 <translation id="771953673318695590">QA</translation>
 <translation id="7720375555307821262"><ph name="BEGIN_LINK" />ลงชื่อเข้าใช้ Chrome<ph name="END_LINK" /> เพื่อดูแลบุคคลนี้</translation>
 <translation id="7721179060400456005">อนุญาตให้ขยายการแสดงหน้าต่างไปยังหลายหน้าจอ</translation>
@@ -4249,7 +4209,6 @@
 <translation id="7881969471599061635">ปิดคำบรรยาย</translation>
 <translation id="7882358943899516840">ประเภทผู้ให้บริการ</translation>
 <translation id="7885253890047913815">ปลายทางล่าสุด</translation>
-<translation id="7887192723714330082">ตอบสนองต่อ "Ok Google" เมื่อหน้าจอเปิดอยู่และไม่ได้ล็อก</translation>
 <translation id="7887334752153342268">ทำซ้ำ</translation>
 <translation id="7887864092952184874">จับคู่เมาส์บลูทูธแล้ว</translation>
 <translation id="7889966925761734854">ค้นหา</translation>
@@ -4381,7 +4340,6 @@
 <translation id="8068253693380742035">แตะเพื่อลงชื่อเข้าใช้</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">พิมพ์เป็นรูปภาพ</translation>
-<translation id="8071942001314758122">เพียงพูดว่า "Ok Google" 3 ครั้ง</translation>
 <translation id="8072988827236813198">ตรึงแท็บ</translation>
 <translation id="8074127646604999664">อนุญาตให้เว็บไซต์ที่ปิดล่าสุดดำเนินการส่งและรับข้อมูลต่อจนเสร็จ</translation>
 <translation id="8075191520954018715">สถานะหน่วยความจำ</translation>
@@ -4584,7 +4542,6 @@
 <translation id="8437331208797669910">การเข้าถึงหน้าเว็บ</translation>
 <translation id="843760761634048214">บันทึกบัตรเครดิต</translation>
 <translation id="8438328416656800239">เปลี่ยนเป็นเบราว์เซอร์ที่มีประสิทธิภาพ</translation>
-<translation id="8438601631816548197">เกี่ยวกับค้นหาด้วยเสียง</translation>
 <translation id="8439506636278576865">เสนอที่จะแปลหน้าต่างๆ ที่เป็นภาษานี้</translation>
 <translation id="8446884382197647889">เรียนรู้เพิ่มเติม</translation>
 <translation id="8449008133205184768">วางและจับคู่รูปแบบ</translation>
@@ -4619,9 +4576,7 @@
 <translation id="8487700953926739672">ใช้งานแบบออฟไลน์ได้</translation>
 <translation id="8490896350101740396">แอปคีออสก์ต่อไปนี้ "<ph name="UPDATED_APPS" />" ได้รับการอัปเดตแล้ว โปรดรีบูตอุปกรณ์เพื่อดำเนินการอัปเดตให้เสร็จสมบูรณ์</translation>
 <translation id="8493236660459102203">ไมโครโฟน:</translation>
-<translation id="8495193314787127784">เปิดใช้ "Ok Google"</translation>
 <translation id="8496717697661868878">เรียกใช้ปลั๊กอินนี้</translation>
-<translation id="8497392509610708671">คุณสามารถเปลี่ยนแปลงได้ทุกเมื่อใน<ph name="BEGIN_LINK" />การตั้งค่า Chrome<ph name="END_LINK" /></translation>
 <translation id="8498214519255567734">ช่วยให้มองหรืออ่านหน้าจอในแสงสลัวได้ดีขึ้น</translation>
 <translation id="8503813439785031346">ชื่อผู้ใช้</translation>
 <translation id="8512476990829870887">สิ้นสุดกระบวนการ</translation>
@@ -4652,7 +4607,6 @@
 <translation id="855773602626431402">ปลั๊กอินที่ไม่ได้อยู่ในแซนด์บ็อกซ์ถูกป้องกันไม่ให้ทำงานในหน้าเว็บนี้</translation>
 <translation id="8557930019681227453">ไฟล์ Manifest</translation>
 <translation id="8559694214572302298">ตัวถอดรหัสรูปภาพ</translation>
-<translation id="8559748832541950395">คุณสามารถเปลี่ยนการตั้งค่านี้หรือ<ph name="BEGIN_LINK" />จัดการข้อมูลส่วนตัว<ph name="END_LINK" />ได้ทุกเมื่อที่คุณต้องการ โปรดอย่าลืมว่าเมื่อกิจกรรมเสียงพูดและเสียงเปิดอยู่ อาจมีการบันทึกข้อมูลนี้จากอุปกรณ์ใดก็ตามที่คุณลงชื่อเข้าใช้</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">พยายามปรับลดรุ่นแอปพลิเคชัน</translation>
 <translation id="8569002732135253578">กำลังพิมพ์ <ph name="DOCUMENT_NAME" /></translation>
@@ -4667,7 +4621,6 @@
 <translation id="8590375307970699841">ติดตั้งการอัปเดตอัตโนมัติ</translation>
 <translation id="8595925260712451473">โปรดป้อนความคิดเห็นของคุณที่นี่</translation>
 <translation id="8596540852772265699">ไฟล์ที่กำหนดเอง</translation>
-<translation id="8596785155158796745">ไมโครโฟนไม่พร้อมใช้งานในขณะนี้ <ph name="BEGIN_LINK" />จัดการไมโครโฟน<ph name="END_LINK" /></translation>
 <translation id="8597845839771543242">รูปแบบของคุณสมบัติ:</translation>
 <translation id="8598453409908276158">บล็อกปลั๊กอินที่ไม่ได้อยู่ในแซนด์บ็อกซ์</translation>
 <translation id="8598687241883907630">หยุดเชื่อมต่อบัญชี Google ของคุณ...</translation>
@@ -4839,7 +4792,6 @@
 <translation id="8863753581171631212">เปิดลิงก์ใน <ph name="APP" /> ใหม่</translation>
 <translation id="8868245144144497543">สร้างโดย</translation>
 <translation id="8868626022555786497">ใช้งานอยู่</translation>
-<translation id="8869806297305312746">เปิดใช้ "OK Google" เพื่อเริ่มค้นหาด้วยเสียง</translation>
 <translation id="8870318296973696995">หน้าแรก</translation>
 <translation id="8870413625673593573">เพิ่งปิด</translation>
 <translation id="8871551568777368300">ตรึงโดยผู้ดูแลระบบ</translation>
@@ -4924,7 +4876,6 @@
 <translation id="9003704114456258138">ความถี่</translation>
 <translation id="9004952710076978168">ได้รับการแจ้งเตือนสำหรับเครื่องพิมพ์ที่ไม่รู้จัก</translation>
 <translation id="9008201768610948239">ไม่สนใจ</translation>
-<translation id="9009299913548444929">ฟีเจอร์นี้ไม่พร้อมใช้งานชั่วคราว <ph name="BEGIN_LINK" />ความช่วยเหลือ<ph name="END_LINK" /></translation>
 <translation id="9009369504041480176">กำลังอัปโหลด (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">แสดงไอคอนเสมอ</translation>
 <translation id="9011178328451474963">แท็บสุดท้าย</translation>
@@ -5076,7 +5027,6 @@
 <translation id="962802172452141067">แผนผังของโฟลเดอร์บุ๊กมาร์ก</translation>
 <translation id="968174221497644223">แคชของแอปพลิเคชัน</translation>
 <translation id="970047733946999531">{NUM_TABS,plural, =1{1 แท็บ}other{# แท็บ}}</translation>
-<translation id="970794034573172516">เปิดใช้กิจกรรมเสียงพูดและเสียง</translation>
 <translation id="971774202801778802">URL ของบุ๊กมาร์ก</translation>
 <translation id="973473557718930265">ออก</translation>
 <translation id="974555521953189084">ป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>

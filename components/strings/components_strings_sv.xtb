@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Ångra Ändra ordning</translation>
 <translation id="1126551341858583091">Storleken på det lokala lagringsutrymmet är <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Cacheminnet för policyn är OK</translation>
-<translation id="113188000913989374"><ph name="SITE" /> säger:</translation>
 <translation id="1132774398110320017">Inställningar för Autofyll i Chrome …</translation>
 <translation id="1150979032973867961">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom datorns operativsystem inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="1151972924205500581">Lösenord krävs</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">Extraherades texten korrekt?</translation>
 <translation id="5540224163453853">Det gick inte att hitta den önskade artikeln.</translation>
 <translation id="5541546772353173584">Lägg till e-postadress</translation>
-<translation id="5544037170328430102">På en inbäddad sida på <ph name="SITE" /> står det:</translation>
 <translation id="5545756402275714221">Artiklar för dig</translation>
 <translation id="5556459405103347317">Hämta igen</translation>
 <translation id="5560088892362098740">Sista giltighetsdatum</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Bekräfta kort</translation>
 <translation id="7400418766976504921">Webbadress</translation>
 <translation id="7419106976560586862">Profilsökväg</translation>
-<translation id="7424977062513257142">På en inbäddad sida på den här webbplatsen står det:</translation>
 <translation id="7437289804838430631">Lägg till kontaktuppgifter</translation>
 <translation id="7441627299479586546">Felaktigt policyämne</translation>
 <translation id="7444046173054089907">Webbplatsen är blockerad</translation>
@@ -1002,7 +999,6 @@
 <translation id="884923133447025588">Ingen återkallningsmekanism har hittats.</translation>
 <translation id="885730110891505394">Delar med Google</translation>
 <translation id="8866481888320382733">Det uppstod ett fel när policyinställningarna analyserades</translation>
-<translation id="8866959479196209191">På den här sidan står det:</translation>
 <translation id="8870413625673593573">Nyligen stängda</translation>
 <translation id="8874824191258364635">Ange ett giltigt kortnummer</translation>
 <translation id="8876793034577346603">Det gick inte att tolka nätverkskonfigurationen.</translation>

@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Urungkan pengaturan ulang</translation>
 <translation id="1126551341858583091">Ukuran di penyimpanan lokal adalah <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Cache kebijakan Oke</translation>
-<translation id="113188000913989374"><ph name="SITE" /> menyatakan:</translation>
 <translation id="1132774398110320017">Setelan IsiOtomatis Chrome...</translation>
 <translation id="1150979032973867961">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi komputer Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="1151972924205500581">Sandi wajib ada</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">Apakah teks diekstrak dengan benar?</translation>
 <translation id="5540224163453853">Tidak dapat menemukan artikel yang diminta.</translation>
 <translation id="5541546772353173584">Tambahkan Email</translation>
-<translation id="5544037170328430102">Halaman tersemat di <ph name="SITE" /> menyatakan:</translation>
 <translation id="5545756402275714221">Artikel untuk Anda</translation>
 <translation id="5556459405103347317">Muat ulang</translation>
 <translation id="5560088892362098740">Tanggal Habis Masa Berlaku</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">Konfirmasi Kartu</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Jalur Profil</translation>
-<translation id="7424977062513257142">Halaman tersemat di halaman web ini menyatakan:</translation>
 <translation id="7437289804838430631">Tambahkan Info Kontak</translation>
 <translation id="7441627299479586546">Subjek kebijakan salah</translation>
 <translation id="7444046173054089907">Situs ini diblokir</translation>
@@ -1001,7 +998,6 @@
 <translation id="884923133447025588">Tidak ditemukan mekanisme pembatalan.</translation>
 <translation id="885730110891505394">Berbagi dengan Google</translation>
 <translation id="8866481888320382733">Kesalahan saat menguraikan setelan kebijakan</translation>
-<translation id="8866959479196209191">Halaman ini menyatakan:</translation>
 <translation id="8870413625673593573">Barusan Ditutup</translation>
 <translation id="8874824191258364635">Masukkan nomor kartu yang valid</translation>
 <translation id="8876793034577346603">Konfigurasi jaringan gagal diuraikan.</translation>

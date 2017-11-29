@@ -90,12 +90,12 @@
 <translation id="3398288718845740432">Chrome மெனுவில் மறை</translation>
 <translation id="3451115285585441894">Chrome இல் சேர்க்கிறது...</translation>
 <translation id="345171907106878721">உங்களை Chrome இல் சேர்க்கவும்</translation>
+<translation id="3479552764303398839">இப்பொழுது இல்லை</translation>
 <translation id="3612333635265770873">இதே பெயரைக் கொண்ட தொகுதிக்கூறு, Google Chrome உடன் முரண்பட்டிருப்பதாக அறியப்பட்டுள்ளது.</translation>
 <translation id="3622797965165704966">இப்போது உங்கள் Google கணக்குடனும், பகிரப்பட்ட கணினிகளிலும் Chrome ஐப் பயன்படுத்துவது எளிதானது.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />சேவை விதிமுறைகள்<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">வெளியேறினால், இந்தச் சாதனத்திலிருந்து ஓர் உருப்படி நீக்கப்படும். பின்னர் தரவை மீட்டமைக்க, Chrome இல் <ph name="USER_EMAIL" /> எனும் முகவரியின் மூலம் உள்நுழையவும்.</translation>
 <translation id="3735758079232443276">Chromeஐத் தொடங்கும் போது காண்பிக்கப்படும் பக்கத்தை, "<ph name="EXTENSION_NAME" />" நீட்டிப்பு மாற்றியுள்ளது.</translation>
-<translation id="3738139272394829648">தேடத் தொடவும்</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome இலிருந்து அகற்றுதல்...</translation>
 <translation id="386202838227397562">அனைத்து Google Chrome சாளரங்களையும் மூடி, பின்னர் முயற்சி செய்க.</translation>
@@ -126,7 +126,6 @@
 <translation id="4664415150087723341">Google Chromeக்கான சிறப்பு பாதுகாப்புப் புதுப்பிப்பு சற்றுமுன் பயன்படுத்தப்பட்டது, அது செயல்பட இப்போது மீண்டும் தொடங்கவும் (உங்கள் தாவல்களை மீட்டமைப்போம்).</translation>
 <translation id="4700157086864140907">நீங்கள் உலாவியில் தட்டச்சு செய்ததை Google சேவையகங்களுக்கு அனுப்புவதன் மூலம் Google Chrome விரைவான எழுத்துப்பிழை சரிப்பார்த்தலை வழங்குகிறது, Google தேடலில் பயன்படுத்தப்பட்ட ஒரே மாதிரியான எழுத்துப்பிழை சரிபார்த்தல் தொழில்நுட்பத்தைப் பயன்படுத்த அனுமதிக்கிறது.</translation>
 <translation id="4728575227883772061">குறிப்பிடப்படாத பிழையின் காரணமாக, நிறுவல் தோல்வியடைந்தது. தற்போது  Google Chrome இயக்கத்தில் இருந்தால், அதை மூடிவிட்டு மீண்டும் முயற்சி செய்க.</translation>
-<translation id="4743926867934016338">ஏற்கிறேன் &amp; தேடு</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" />ஐ இயக்க, Chromeஐ மீண்டும் தொடங்குக</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">இந்தக் கோப்பு ஆபத்தானதாக இருக்கக்கூடும் என்பதால், அதை Chrome தடுத்துள்ளது.</translation>
@@ -154,12 +153,9 @@
 <translation id="5430073640787465221">உங்கள் விருப்பத்தேர்வுகளின் கோப்பு சிதைவடைந்துள்ளது அல்லது தவறானது. உங்கள் அமைப்புகளை Google Chrome ஆல் மீட்டெடுக்க முடியவில்லை.</translation>
 <translation id="5453904507266736060">பின்னணியில் Google Chrome ஐ இயக்க அனுமதி</translation>
 <translation id="5495581687705680288">Google Chrome இல் தொகுதிக்கூறுகள் ஏற்றப்பட்டன</translation>
-<translation id="5524843473235508879">திசைதிருப்புவது தடுக்கப்பட்டது.</translation>
 <translation id="556024056938947818">Google Chrome ஆனது கடவுச்சொற்களைக் காட்ட முயற்சிக்கிறது.</translation>
-<translation id="5563479599352954471">ஒரே தொடுதலில் தேடவும்</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">இந்தத் தளத்திற்காக மைக்ரோஃபோனை அணுக, Chromeக்கு அனுமதி தேவை.</translation>
-<translation id="5620765574781326016">பக்கத்தை விட்டு வெளியேறாமலே, இணையதளங்களில் தலைப்புகளைப் பற்றி அறியலாம்.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ஆபத்தானதாக இருக்கலாம் என்பதால் Chrome அதைத் தடுத்துள்ளது.</translation>
 <translation id="573759479754913123">Chrome OS அறிமுகம்</translation>
 <translation id="5749068826913805084">கோப்புகளைப் பதிவிறக்க Chromeக்கு சேமிப்பிட அணுகல் தேவை.</translation>
@@ -195,7 +191,6 @@
 <translation id="6697947395630195233">இந்தத் தளத்துடன் இருப்பிடத்தைப் பகிர, Chromeக்கு உங்கள் இருப்பிடத்திற்கான அணுகல் தேவை.</translation>
 <translation id="683440813066116847">mDNS ட்ராஃபிக்கை அனுமதிப்பதற்கான, Google Chrome Canary க்கான உள்வரும் விதி.</translation>
 <translation id="686561893457936865">Chromeஐ எல்லா இடங்களுக்கும் எடுத்துச் செல்லலாம்</translation>
-<translation id="6883876366448858277">Google தேடலுக்கு வார்த்தையையும் அதனுடன் தொடர்புடைய சூழலையும் அனுப்பி விளக்கங்கள், படங்கள் மற்றும் தேடல் முடிவுகளைப் பெறலாம்.</translation>
 <translation id="6885412569789873916">Chrome பீட்டா பயன்பாடுகள்</translation>
 <translation id="6967962315388095737">mDNS ட்ராஃபிக்கை அனுமதிக்க, Google Chrome பீட்டாவுக்கான உள்வரும் விதி.</translation>
 <translation id="6970811910055250180">உங்கள் சாதனம் புதுப்பிக்கப்படுகிறது...</translation>
@@ -217,7 +212,6 @@
 <translation id="7437998757836447326">Chrome இலிருந்து வெளியேறுதல்</translation>
 <translation id="7459554271817304652">உங்கள் தனிப்பயனாக்கப்பட்ட உலாவி அம்சங்களை வலையில் சேமிக்க, ஒத்திசைவை அமைத்து, எந்த கணினியில் உள்ள Google Chromium இலிருந்தும் அவற்றை அணுகலாம்.</translation>
 <translation id="7473136999113284234">Chrome தானாகவே புதுப்பித்துக்கொள்வதால், எப்போதுமே புதிய பதிப்பைப் பெறுவீர்கள்.</translation>
-<translation id="7473891865547856676">வேண்டாம் நன்றி</translation>
 <translation id="7494905215383356681">Chrome ஓப்பன் சோர்ஸ் உரிமங்கள்</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Chrome OSஐ இந்த மொழியில் காட்டு</translation>

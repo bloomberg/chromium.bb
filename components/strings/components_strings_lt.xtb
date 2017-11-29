@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;Anuliuoti pertvarkymą</translation>
 <translation id="1126551341858583091">Dydis vietinėje saugykloje yra <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Gera politikos talpykla</translation>
-<translation id="113188000913989374"><ph name="SITE" /> sakoma:</translation>
 <translation id="1132774398110320017">„Chrome“ automatinio pildymo nustatymai...</translation>
 <translation id="1150979032973867961">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas kompiuterio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="1151972924205500581">Būtinas slaptažodis</translation>
@@ -615,7 +614,6 @@
 <translation id="552553974213252141">Ar tekstas tinkamai ištrauktas?</translation>
 <translation id="5540224163453853">Nepavyko rasti straipsnio, dėl kurio pateikta užklausa.</translation>
 <translation id="5541546772353173584">El. pašto adreso pridėjimas</translation>
-<translation id="5544037170328430102"><ph name="SITE" /> įterptame puslapyje sakoma:</translation>
 <translation id="5545756402275714221">Jums skirti straipsniai</translation>
 <translation id="5556459405103347317">Įkelti iš naujo</translation>
 <translation id="5560088892362098740">Galiojimo laiko pabaigos data</translation>
@@ -823,7 +821,6 @@
 <translation id="7390545607259442187">Kortelės patvirtinimas</translation>
 <translation id="7400418766976504921">URL adresas</translation>
 <translation id="7419106976560586862">Profilio kelias</translation>
-<translation id="7424977062513257142">Šiame tinklalapyje įterptame puslapyje sakoma:</translation>
 <translation id="7437289804838430631">Pridėti kontaktinę informaciją</translation>
 <translation id="7441627299479586546">Netinkamas politikos objektas</translation>
 <translation id="7444046173054089907">Ši svetainė užblokuota</translation>
@@ -1003,7 +1000,6 @@
 <translation id="884923133447025588">Nerasta atšaukimo mechanizmo.</translation>
 <translation id="885730110891505394">Bendrinimas su „Google“</translation>
 <translation id="8866481888320382733">Analizuojant politikos nustatymus įvyko klaida</translation>
-<translation id="8866959479196209191">Šiame puslapyje sakoma:</translation>
 <translation id="8870413625673593573">Neseniai uždaryta</translation>
 <translation id="8874824191258364635">Įveskite tinkamą kortelės numerį</translation>
 <translation id="8876793034577346603">Analizuojant tinklo konfigūraciją įvyko klaida.</translation>

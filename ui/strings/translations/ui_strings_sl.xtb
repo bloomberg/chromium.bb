@@ -136,6 +136,7 @@
 <translation id="8352146631962686268">{YEARS,plural, =1{1 leto}one{# leto}two{# leti}few{# leta}other{# let}}</translation>
 <translation id="8371695176452482769">Začnite govoriti</translation>
 <translation id="838869780401515933">potrdi</translation>
+<translation id="8393700583063109961">Pošlji sporočilo</translation>
 <translation id="8394908167088220973">Ustavitev/začasna ustavitev</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8602707065186045623">Datoteka <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>

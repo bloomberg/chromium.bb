@@ -30,6 +30,7 @@
 
           Se l'impostazione viene disattivata o non configurata, l'host dell'assistenza remota viene eseguito nel contesto dell'utente e gli utenti remoti non possono interagire con finestre con privilegi più elevati sul desktop.</translation>
 <translation id="1096105751829466145">Provider di ricerca predefinito</translation>
+<translation id="1099282607296956954">Attiva isolamento sito per ogni sito</translation>
 <translation id="1117535567637097036">I gestori di protocollo impostati tramite questa norma non sono utilizzati durante la gestione degli intent di Android.</translation>
 <translation id="1122282995569868661">Mostra l'icona <ph name="PRODUCT_NAME" /> della barra degli strumenti</translation>
 <translation id="1128903365609589950">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per archiviare i file memorizzati nella cache sul disco.
@@ -671,6 +672,13 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="332771718998993005">Consente di stabilire il nome pubblicizzato come destinazione di <ph name="PRODUCT_NAME" />.
 
           Se questa norma viene impostata su una stringa non vuota, tale stringa verrà usata come nome della destinazione di <ph name="PRODUCT_NAME" />. In caso contrario, il nome della destinazione sarà quello del dispositivo. Se questa norma non viene impostata, il nome della destinazione sarà il nome del dispositivo, che il proprietario (o un utente del dominio che gestisce il dispositivo) potrà cambiare. Il nome può essere formato da massimo 24 caratteri.</translation>
+<translation id="3356249700768900657">
+      NOTA: questa norma è sperimentale e potrebbe interrompere la funzionalità.
+      Potresti considerare l'impostazione della norma IsolateOrigins per ottenere sia l'isolamento sia un impatto limitato per gli utenti. Usa IsolateOrigins con un elenco dei siti che vuoi isolare. Questa impostazione, SitePerProcess, isola tutti i siti.
+      Se la norma viene attivata, ogni sito verrà eseguito in un proprio processo.
+      Se la norma viene disattivata, viene applicata la logica della gestione del processo di isolamento per sito.
+      Se la norma non viene configurata, l'utente potrà cambiare questa impostazione.
+      </translation>
 <translation id="3381968327636295719">Utilizza il browser host per impostazione predefinita</translation>
 <translation id="3395348522300156660">Consente di specificare le stampanti utilizzabili dagli utenti.
 
@@ -1011,6 +1019,7 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
           Per avere pattern di esempio, visita il sito https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Apri un elenco di URL</translation>
 <translation id="4680961954980851756">Abilita Compilazione automatica</translation>
+<translation id="4722122254122249791">Attiva isolamento sito per origini specificate</translation>
 <translation id="4722399051042571387">Se questa norma viene impostata su false, gli utenti non potranno impostare PIN non sicuri e facili da intuire.
 
           Ecco alcuni esempi di PIN non sicuri: PIN formati da una sola cifra ripetuta (1111), PIN composti da cifre con incrementi di 1 (1234) o decrementi di 1 (4321) e PIN troppo comuni.
@@ -1111,6 +1120,12 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4983201894483989687">Consenti esecuzione dei plug-in obsoleti</translation>
 <translation id="4988291787868618635">Azione da compiere a raggiungimento ritardo inattività</translation>
 <translation id="4995548127349206948">Se l'autenticazione NTLMv2 è attiva.</translation>
+<translation id="5027819375434797927">
+      NOTA: questa norma è sperimentale e potrebbe interrompere la funzionalità.
+      Se la norma viene attivata, ogni origine indicata in un elenco di valori separati da virgole verrà eseguita in un proprio processo. Verranno inoltre isolate le origini indicate dai sottodomini; ad esempio, se viene specificato il sito https://example.com/ viene isolato anche https://foo.example.com/, perché fa parte del sito https://example.com/.
+      Se la norma viene disattivata, viene applicata la logica della gestione del processo di isolamento per sito.
+      Se la norma non viene configurata, l'utente potrà cambiare questa impostazione.
+      </translation>
 <translation id="5047604665028708335">Consenti l'accesso ai siti non presenti nei pacchetti di contenuti</translation>
 <translation id="5052081091120171147">Se è attiva, questa norma impone l'importazione della cronologia di navigazione dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, la cronologia di navigazione non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="5056708224511062314">Ingrandimento dello schermo disattivato</translation>
@@ -1883,39 +1898,6 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 <translation id="7841880500990419427">Versione TLS minima a cui retrocedere</translation>
 <translation id="7842869978353666042">Configura opzioni di Google Drive</translation>
 <translation id="7843525027689416831">Consente di specificare i contrassegni da applicare all'avvio di <ph name="PRODUCT_NAME" />. I contrassegni specificati vengono applicati soltanto nella schermata di accesso. I contrassegni impostati tramite questa norma non vengono applicati anche alle sessioni utente.</translation>
-<translation id="7844537954833753199">Consente di configurare impostazioni di gestione delle estensioni per <ph name="PRODUCT_NAME" />.
-
-          Questa norma consente di controllare diverse impostazioni, incluse quelle controllate da norme esistenti correlate alle estensioni. Questa norma sostituisce tutte le norme precedenti se vengono impostate entrambe.
-
-          Questa norma consente di mappare un ID estensione o un URL di aggiornamento alla relativa configurazione. Con un ID estensione, la configurazione viene applicata solo all'estensione specificata. È possibile impostare una configurazione predefinita per l'ID speciale <ph name="DEFAULT_SCOPE" />, che verrà applicato a tutte le estensioni per cui non è impostata una configurazione personalizzata in questa norma. Con un URL di aggiornamento, la configurazione verrà applicata a tutte le estensioni con l'esatto URL di aggiornamento indicato nel file manifest dell'estensione, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          La configurazione per ogni estensione (o per estensioni con lo stesso URL di aggiornamento) è un altro dizionario che può contenere i campi documentati di seguito.
-
-          <ph name="INSTALLATION_MODE" />: corrisponde a una stringa indicante la modalità di installazione per l'estensione. Le stringhe valide sono:
-          * <ph name="ALLOWED" />: consente l'installazione dell'estensione da parte dell'utente. È il comportamento predefinito.
-          * <ph name="BLOCKED" />: blocca l'installazione dell'estensione.
-          * <ph name="FORCE_INSTALLED" />: l'estensione viene installata automaticamente e non può essere rimossa dall'utente.
-          * <ph name="NORMAL_INSTALLED" />: l'estensione viene installata automaticamente, ma può essere disattivata dall'utente.
-
-          Il campo <ph name="INSTALLTION_MODE" /> può anche essere configurato per più estensioni, compresa l'estensione <ph name="DEFAULT_SCOPE" /> (come impostazione predefinita) e le estensioni con lo stesso URL di aggiornamento. In questo caso possono essere utilizzati solo i valori <ph name="ALLOWED" /> e <ph name="BLOCKED" />.
-
-          Se la modalità è impostata su <ph name="FORCE_INSTALLED" /> o <ph name="NORMAL_INSTALLED" /> è necessario configurare anche un campo <ph name="UPDATE_URL" />. L'URL di aggiornamento impostato in questa norma viene utilizzato solo per l'installazione iniziale. Per i successivi aggiornamenti dell'estensione verrà utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione L'URL di aggiornamento dovrebbe rimandare a un documento XML Manifest di aggiornamento come descritto in precedenza.
-
-          <ph name="BLOCKED_PERMISSIONS" />: corrisponde a un elenco di stringhe indicanti le autorizzazioni API per l'estensione. I nomi delle autorizzazioni corrispondono alle stringhe di autorizzazione indicate nel file manifest dell'estensione, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC3" />. Questa impostazione può essere configurata anche per l'estensione <ph name="DEFAULT_SCOPE" />. Se per l'estensione è necessaria un'autorizzazione che è presente nell'elenco di quelle bloccate, non potrà essere caricata. Se contiene un'autorizzazione bloccata come requisito opzionale, verrà trattata normalmente, ma la richiesta di autorizzazioni in conflitto verrà declinata automaticamente in fase di runtime.
-
-          <ph name="ALLOWED_PERMISSIONS" />: simile a <ph name="BLOCKED_PERMISSIONS" />, ma, al contrario, consente esplicitamente alcune autorizzazioni che potrebbero essere bloccate da un elenco globale di autorizzazioni bloccate e quindi non possono essere configurate per l'estensione <ph name="DEFAULT_SCOPE" />. Questa impostazione non assegna automaticamente le autorizzazioni concesse alle estensioni.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: corrisponde a una stringa della versione. Il formato della stringa della versione corrisponde a quello utilizzato nel file manifest delle estensioni, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC4" />. Un'estensione con una versione precedente rispetto alla versione minima specificata viene disattivata. Ciò vale anche per le estensioni con installazione imposta.
-
-          Le seguenti impostazioni possono essere utilizzate solo per la configurazione <ph name="DEFAULT_SCOPE" /> predefinita:
-
-          <ph name="INSTALL_SOURCES" />: ogni voce presente in questo elenco è uno schema di corrispondenza in stile di estensione (<ph name="LINK_TO_MATCH_PATTERNS" />). Gli utenti potranno installare facilmente elementi dagli URL corrispondenti a una voce nell'elenco. Questi schemi devono consentire sia la posizione del file <ph name="EXTENSION_SUFFIX_WILDCARD" /> sia la pagina da cui viene avviato il download (il referrer).
-
-          <ph name="ALLOWED_TYPES" />: con questa impostazione vengono autorizzati i tipi consentiti di estensioni/applicazioni che possono essere installati in <ph name="PRODUCT_NAME" />. Il valore è un elenco di stringhe, tra le seguenti: <ph name="VALID_ALLOWED_TYPES" />. Leggere la documentazione sulle estensioni di <ph name="PRODUCT_NAME" /> per ulteriori informazioni su questi tipi.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: se un utente prova a installare un'estensione, ma questa viene bloccata da una norma, il Chrome Webstore mostra un messaggio di errore generico. Questa impostazione ti consente di aggiungere testo al messaggio di errore. In questo modo puoi indirizzare gli utenti al tuo Centro assistenza, spiegare perché una determinata estensione è bloccata o altro ancora. Il messaggio di errore viene troncato se supera i 1000 caratteri di lunghezza.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: accetta un elenco di host verso i quali verrà bloccata l'interazione con l'estensione. Ciò include l'inserimento di JavaScript, l'alterazione e la visualizzazione di webRequests/webNavigation, la visualizzazione e l'alterazione di cookie. Il formato è simile agli schemi di corrispondenza <ph name="LINK_TO_MATCH_PATTERNS" /> ma potrebbe non essere possibile definire dei perscorsi. Ad es. "*://*.example.com". Ciò supporta un efficace inserimento di caratteri jolly TLD come "*://example.*".
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: accetta un elenco di host con i quali un'estensione può interagire, che siano elencati o meno in <ph name="RUNTIME_BLOCKED_HOSTS" />. Questo ha lo stesso formato di <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Se la norma viene impostata su SyncDisabled o non viene configurata, i certificati <ph name="PRODUCT_OS_NAME" /> non saranno disponibili per le app ARC.
 
       Se viene impostata su CopyCaCerts, per le app ARC saranno disponibili tutti i certificati CA installati su ONC con <ph name="WEB_TRUSTED_BIT" />.</translation>
@@ -1992,7 +1974,6 @@ Se la norma non viene configurata, la modalità ad alto contrasto viene inizialm
 
       Se la norma viene disattivata o non viene impostata, l'accesso rimanda a profili normali.</translation>
 <translation id="8158758865057576716">Consente la creazione di copie di roaming per i dati dei profili <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8170878842291747619">Consente di attivare il servizio Google Traduttore integrato su <ph name="PRODUCT_NAME" />. Se attivi questa impostazione, in <ph name="PRODUCT_NAME" /> verrà visualizzata una barra degli strumenti integrata che si offrirà di tradurre la pagina, se opportuno. Se disattivi questa impostazione, gli utenti non troveranno mai la barra di traduzione. Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />. Se questa impostazione non viene configurata, gli utenti potranno decidere se utilizzare o meno questa funzione.</translation>
 <translation id="817455428376641507">Consente l'accesso agli URL elencati, sotto forma di eccezioni alla blacklist di URL.
 
       Consulta la descrizione della norma sulle blacklist di URL per il formato delle voci di questo elenco.

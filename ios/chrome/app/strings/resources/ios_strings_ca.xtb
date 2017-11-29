@@ -66,7 +66,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="2103075008456228677">Obre history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elements desplaçats</translation>
 <translation id="213900355088104901">Per navegar de manera privada, obre una pestanya d'incògnit</translation>
-<translation id="2149973817440762519">Edició de l'adreça d'interès</translation>
+<translation id="2149973817440762519">Edita l'adreça d'interès</translation>
 <translation id="2230173723195178503">La pàgina web s'ha carregat</translation>
 <translation id="2256128224215992540">Suggeriments de cerques i llocs</translation>
 <translation id="2267753748892043616">Afegeix un compte</translation>
@@ -342,7 +342,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7671141431838911305">INSTAL·LA</translation>
-<translation id="7765158879357617694">Desplaça</translation>
+<translation id="7765158879357617694">Mou</translation>
 <translation id="7769602470925380267">Accepta i tanca la sessió</translation>
 <translation id="7772032839648071052">Confirmeu la frase de contrasenya</translation>
 <translation id="780301667611848630">No, gràcies</translation>

@@ -73,13 +73,13 @@
 <translation id="3296368748942286671">Chromium ஐ மூடியபிறகு, பின்புலப் பயன்பாடுகளைத் தொடர்ந்து இயக்கு</translation>
 <translation id="331951419404882060">உள்நுழைவதில் ஏற்பட்ட பிழை காரணமாக உங்கள் தரவை Chromium OS ஆல் ஒத்திசைக்க முடியவில்லை.</translation>
 <translation id="3474745554856756813">வெளியேறினால், இந்தச் சாதனத்திலிருந்து <ph name="ITEMS_COUNT" /> உருப்படிகள் நீக்கப்படும். பின்னர் தரவை மீட்டமைக்க, Chromium இல் <ph name="USER_EMAIL" /> எனும் முகவரியின் மூலம் உள்நுழையவும்.</translation>
+<translation id="3479552764303398839">இப்பொழுது இல்லை</translation>
 <translation id="3509308970982693815">அனைத்து Chromium சாளரங்களையும் மூடி, பின்னர் முயலவும்.</translation>
 <translation id="352783484088404971">Chromium இலிருந்து அகற்று...</translation>
 <translation id="3549345495227188780">Chromium OS பயன்படுத்தி தொடங்குக</translation>
 <translation id="3582788516608077514">Chromium புதுப்பிக்கப்படுகிறது...</translation>
 <translation id="358997566136285270">Chromium லோகோ</translation>
 <translation id="3713809861844741608">புதிய Chromium &amp;தாவலில் இணைப்பைத் திற</translation>
-<translation id="3738139272394829648">தேடத் தொடவும்</translation>
 <translation id="3762167353400286894">Chromium OS இந்த மொழியில் காட்டப்படுகிறது</translation>
 <translation id="378917192836375108">வலையில் ஒரு தொலைபேசி எண்ணைக் கிளிக் செய்து, அதனை Skype மூலமாக அழைப்பதற்கு உங்களை Chromium அனுமதிக்கிறது!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -112,7 +112,6 @@
 <translation id="469338717132742108">Chromium OS தொடர்பான உதவி பெறுக</translation>
 <translation id="4708774505295300557">இதற்கு முன்னர் ஒருவர் இந்தக் கணினியிலுள்ள Chromium இல் <ph name="ACCOUNT_EMAIL_LAST" /> எனும் முகவரியைப் பயன்படுத்தி உள்நுழைந்திருந்தார். உங்கள் தகவலைத் தனிப்பட்டதாக வைத்திருக்க, புதிய Chromium பயனரை உருவாக்கவும்.</translation>
 <translation id="4714956846925717402">Chromiumக்கு விரைவாகச் செல்லவும்</translation>
-<translation id="4743926867934016338">ஏற்கிறேன் &amp; தேடு</translation>
 <translation id="4825874709045178029">இந்தத் தளத்திற்காகக் கேமராவை அணுக, Chromiumக்கு அனுமதி தேவை.</translation>
 <translation id="4888717733111232871">mDNS ட்ராஃபிக்கை அனுமதிப்பதற்கான, Chromium க்கான உள்வரும் விதி.</translation>
 <translation id="4943838377383847465">Chromium பின்புல பயன்முறையில் இயங்குகிறது.</translation>
@@ -129,9 +128,6 @@
 <translation id="5466153949126434691">Chromium தானாகவே புதுப்பித்துக்கொள்வதால், எப்போதுமே புதிய பதிப்பைப் பெறுவீர்கள். இந்தப் பதிவிறக்கம் முடியும்போது, Chromium மறுதொடக்கம் செய்யும், பிறகு உங்கள் பணியைத் தொடரலாம்.</translation>
 <translation id="5479196819031988440">Chromium OS ஆல் இந்தப் பக்கத்தைத் திறக்க முடியாது.</translation>
 <translation id="549669000822060376">சமீபத்திய முறைமை புதுப்பிப்புகளை Chromium நிறுவும் வரை காத்திருக்கவும்.</translation>
-<translation id="5524843473235508879">திசைதிருப்புவது தடுக்கப்பட்டது.</translation>
-<translation id="5563479599352954471">ஒரே தொடுதலில் தேடவும்</translation>
-<translation id="5620765574781326016">பக்கத்தை விட்டு வெளியேறாமலே, இணையதளங்களில் தலைப்புகளைப் பற்றி அறியலாம்.</translation>
 <translation id="5634636535844844681">Windows 7 அல்லது அதற்குப் பிந்தைய பதிப்புகளில் மட்டுமே Chromium இயங்கும்.</translation>
 <translation id="5680901439334282664">Chromium இல் உள்நுழைக</translation>
 <translation id="5698481217667032250">Chromiumஐ இந்த மொழியில் காட்டு</translation>
@@ -173,7 +169,6 @@
 <translation id="6734291798041940871">உங்கள் கணினியில் ஏற்கனவே எல்லாப் பயனர்களுக்கும் Chromium நிறுவப்பட்டுள்ளது.</translation>
 <translation id="6810143991807788455">நடப்பு அமைப்புகள் குறித்து தெரிவிப்பதன் மூலம் Chromiumஐச் சிறந்ததாக்க உதவவும்</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
-<translation id="6883876366448858277">Google தேடலுக்கு வார்த்தையையும் அதனுடன் தொடர்புடைய சூழலையும் அனுப்பி விளக்கங்கள், படங்கள் மற்றும் தேடல் முடிவுகளைப் பெறலாம்.</translation>
 <translation id="6893813176749746474">Chromium புதுப்பிக்கப்பட்டது. ஆனால், அதை நீங்கள் 30 நாட்களாக பயன்படுத்தவில்லை.</translation>
 <translation id="6944967875980567883">Chromium இல் தொகுதிக்கூறுகள் ஏற்றப்பட்டன</translation>
 <translation id="6964305034639999644">Chromium மறை&amp;நிலை சாளரத்தில் இணைப்பைத் திற</translation>
@@ -200,7 +195,6 @@
 <ph name="BEGIN_LINK_2" />மேலும் அறிக<ph name="END_LINK_2" />
 
 தொடர்ச்சியான வழிமுறைகளுக்கு, <ph name="ACCOUNT_EMAIL" /> இல் உங்கள் மின்னஞ்சலைப் பார்க்கவும்.</translation>
-<translation id="7473891865547856676">வேண்டாம் நன்றி</translation>
 <translation id="7483335560992089831">தற்போது இயக்கத்தில் உள்ள அதே பதிப்புள்ள Chromium ஐ நிறுவ முடியாது. Chromium ஐ மூடி, பின்னர் முயலவும்.</translation>
 <translation id="7549178288319965365">Chromium OS அறிமுகம்</translation>
 <translation id="7577193603922410712">Chromiumக்கான சிறப்பு பாதுகாப்புப் புதுப்பிப்பு சற்றுமுன் பயன்படுத்தப்பட்டது, அது செயல்பட இப்போது மீண்டும் தொடங்கவும் (உங்கள் தாவல்களை மீட்டமைப்போம்).</translation>

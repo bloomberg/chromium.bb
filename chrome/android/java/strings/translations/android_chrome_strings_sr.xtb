@@ -253,7 +253,6 @@
 <translation id="3414952576877147120">Величина:</translation>
 <translation id="3443221991560634068">Поновно учитавање актуелне странице</translation>
 <translation id="3452612588551937789">Пријавите се на Google налог да би вам обележивачи, историја, лозинке и друга подешавања били доступни на свим уређајима.</translation>
-<translation id="3479552764303398839">Не сада</translation>
 <translation id="3487093336331957349">Предлози за претрагу и сајтове</translation>
 <translation id="3492207499832628349">Нова картица без архивирања</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /> о предложеном садржају</translation>
@@ -315,6 +314,7 @@
 <translation id="3988213473815854515">Локација је дозвољена</translation>
 <translation id="3997476611815694295">Неважан меморијски простор</translation>
 <translation id="4002066346123236978">Наслов</translation>
+<translation id="4031074602479304239">Chrome је спречио да вас овај сајт одведе на</translation>
 <translation id="4042870126885713738">Приказивање предлога када се веб-адреса не разреши или када није могуће успоставити везу</translation>
 <translation id="4046123991198612571">Следећа песма</translation>
 <translation id="4056223980640387499">Сепија</translation>
@@ -472,6 +472,7 @@
 <translation id="5512137114520586844">Овим налогом управља <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Онемогућио је администратор овог уређаја</translation>
 <translation id="5517095782334947753">Имате обележиваче, лозинке и остала подешавања из <ph name="FROM_ACCOUNT" /> налога.</translation>
+<translation id="5524843473235508879">Преусмеравање је блокирано.</translation>
 <translation id="5527082711130173040">Chrome-у је потребан приступ локацији да би тражио уређаје. <ph name="BEGIN_LINK1" />Ажурирајте дозволе<ph name="END_LINK1" />. Приступ локацији је такође <ph name="BEGIN_LINK2" />искључен за овај уређај<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Затвори картице без архив.</translation>
 <translation id="5534640966246046842">Сајт је копиран</translation>
@@ -498,7 +499,6 @@
 
           Међутим, нисте невидљиви. Прелазак у режим без архивирања не сакрива оно што прегледате од послодавца, добављача интернет услуге или веб-сајтова које посећујете.</translation>
 <translation id="572328651809341494">Недавно коришћене картице</translation>
-<translation id="572392919096807438">Запамти моју одлуку</translation>
 <translation id="5726692708398506830">Увећавање целокупног приказа странице</translation>
 <translation id="5738816946784116349">Chrome преузимања</translation>
 <translation id="5748802427693696783">Пребацили сте на стандардне картице</translation>
@@ -652,7 +652,6 @@
 <translation id="7022756207310403729">Отвори у прегледачу</translation>
 <translation id="7029809446516969842">Лозинке</translation>
 <translation id="7031882061095297553">Синхронизујте са</translation>
-<translation id="704059664004611800">Додирните да бисте видели обележиваче и још много тога</translation>
 <translation id="7053983685419859001">Блокирај</translation>
 <translation id="7062545763355031412">Прихватам, промени налог</translation>
 <translation id="7063006564040364415">Није могуће повезивање са сервером за синхронизацију.</translation>

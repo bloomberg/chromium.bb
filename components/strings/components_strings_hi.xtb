@@ -20,7 +20,6 @@
 <translation id="1113869188872983271">&amp;पुन: क्रमित करना वापस लाएं</translation>
 <translation id="1126551341858583091">स्थानीय जगह का आकार <ph name="CRASH_SIZE" /> है.</translation>
 <translation id="112840717907525620">नीति संचय ठीक है</translation>
-<translation id="113188000913989374"><ph name="SITE" /> का कहना है:</translation>
 <translation id="1132774398110320017">Chrome ऑटोमैटिक भरने वाली सेटिंग...</translation>
 <translation id="1150979032973867961">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके कंप्यूटर के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="1151972924205500581">पासवर्ड आवश्यक</translation>
@@ -614,7 +613,6 @@
 <translation id="552553974213252141">क्या लेख सही तरीके से निकाला गया था?</translation>
 <translation id="5540224163453853">अनुरोध किया गया लेख नहीं ढूंढा जा सका.</translation>
 <translation id="5541546772353173584">ईमेल जोड़ें</translation>
-<translation id="5544037170328430102"><ph name="SITE" /> पर एम्‍बेड किए गए पृष्‍ठ का कहना है:</translation>
 <translation id="5545756402275714221">आपके लिए लेख</translation>
 <translation id="5556459405103347317">पुन: लोड करें</translation>
 <translation id="5560088892362098740">समयसीमा समाप्ति दिनांक</translation>
@@ -822,7 +820,6 @@
 <translation id="7390545607259442187">कार्ड की पुष्टि करें</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">प्रोफ़ाइल पथ</translation>
-<translation id="7424977062513257142">इस वेबपृष्‍ठ पर एम्‍बेड किए गए पृष्‍ठ का कहना है:</translation>
 <translation id="7437289804838430631">संपर्क जानकारी जोड़ें</translation>
 <translation id="7441627299479586546">गलत नीति विषय</translation>
 <translation id="7444046173054089907">यह साइट अवरोधित है</translation>
@@ -859,7 +856,7 @@
 <translation id="7613889955535752492">समय-सीमा समाप्त: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">आपके पास पहले से ऐसा डेटा है, जिसे आपके Google खाते के पासवर्ड के किसी भिन्‍न वर्शन का उपयोग करके एन्क्रिप्ट किया गया है. कृपया उसे नीचे लिखें.</translation>
 <translation id="7637571805876720304">क्रोमियम से क्रेडिट कार्ड निकालें?</translation>
-<translation id="765676359832457558">उन्नत सेटिंग्स छिपाएं...</translation>
+<translation id="765676359832457558">उन्नत सेटिंग छिपाएं...</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7662298039739062396">सेटिंग किसी एक्सटेंशन से नियंत्रित है</translation>
 <translation id="7667346355482952095">वापस लौटा हुआ नीति टोकन खाली है या उसका मिलान वर्तमान टोकन से नहीं होता</translation>
@@ -963,7 +960,7 @@
 <translation id="8412145213513410671">क्रैश (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">आपको वही पासफ़्रेज़ दोबारा दर्ज करना होगा.</translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8428213095426709021">सेटिंग्स</translation>
+<translation id="8428213095426709021">सेटिंग</translation>
 <translation id="8433057134996913067">इससे आप अधिकांश वेबसाइट से प्रस्थान कर जाएंगे.</translation>
 <translation id="8437238597147034694">&amp;ले जाना वापस लाएं</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 क्रेडिट कार्ड}one{# क्रेडिट कार्ड}other{# क्रेडिट कार्ड}}</translation>
@@ -1002,7 +999,6 @@
 <translation id="884923133447025588">कोई निरस्तीकरण प्रक्रिया प्राप्त नहीं हुई.</translation>
 <translation id="885730110891505394">Google के साथ साझा करना</translation>
 <translation id="8866481888320382733">नीति सेटिंग पार्स करने में गड़बड़ी</translation>
-<translation id="8866959479196209191">इस पृष्‍ठ का कहना है:</translation>
 <translation id="8870413625673593573">हाल ही में बंद किए गए</translation>
 <translation id="8874824191258364635">मान्य कार्ड संख्या डालें</translation>
 <translation id="8876793034577346603">नेटवर्क कॉन्फ़िगरेशन पार्स होने में विफल रहा.</translation>

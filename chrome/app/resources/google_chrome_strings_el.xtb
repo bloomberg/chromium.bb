@@ -92,12 +92,12 @@
 <translation id="3398288718845740432">Απόκρυψη στο μενού του Chrome</translation>
 <translation id="3451115285585441894">Προσθήκη στο Chrome...</translation>
 <translation id="345171907106878721">Προσθήκη του εαυτού σας στο Chrome</translation>
+<translation id="3479552764303398839">Όχι τώρα</translation>
 <translation id="3612333635265770873">Έχει διαπιστωθεί ότι μια λειτουργική μονάδα με το ίδιο όνομα βρίσκεται σε διένεξη με το Google Chrome.</translation>
 <translation id="3622797965165704966">Τώρα μπορείτε να χρησιμοποιείτε πιο εύκολα το Chrome με το Λογαριασμό σας Google και σε κοινόχρηστους υπολογιστές.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Όροι Παροχής Υπηρεσιών<ph name="END_TERMS_OF_SERVICE_LINK" /> του Google Chrome OS</translation>
 <translation id="3718181793972440140">Με αυτήν την ενέργεια θα διαγραφεί 1 στοιχείο από αυτήν τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chrome ως <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Η επέκταση <ph name="EXTENSION_NAME" /> άλλαξε τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chrome.</translation>
-<translation id="3738139272394829648">Αγγίξτε για αναζήτηση</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Κατάργηση από το Chrome…</translation>
 <translation id="386202838227397562">Κλείστε όλα τα παράθυρα του Google Chrome και προσπαθήστε ξανά.</translation>
@@ -128,7 +128,6 @@
 <translation id="4664415150087723341">Μόλις εφαρμόστηκε μια ειδική ενημέρωση ασφαλείας για το Google Chrome. Θα πρέπει να το επανεκκινήσετε τώρα για να τεθεί σε ισχύ (θα γίνει επαναφορά των καρτελών σας).</translation>
 <translation id="4700157086864140907">Το Google Chrome μπορεί να παρέχει πιο έξυπνο ορθογραφικό έλεγχο, αποστέλλοντας ό,τι πληκτρολογείτε στο πρόγραμμα περιήγησης, στους διακομιστές της Google, επιτρέποντάς σας να χρησιμοποιείτε την ίδια τεχνολογία ορθογραφικού ελέγχου που χρησιμοποιείται από την αναζήτηση Google.</translation>
 <translation id="4728575227883772061">Η εγκατάσταση απέτυχε λόγω απροσδιόριστου σφάλματος. Αν το Google Chrome εκτελείται αυτήν τη στιγμή, κλείστε το και δοκιμάστε ξανά.</translation>
-<translation id="4743926867934016338">Αποδοχή και Αναζήτηση</translation>
 <translation id="4750550185319565338">Επανεκκίνηση του Chrome για ενεργοποίηση του <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Αυτό το αρχείο ενδέχεται να είναι επικίνδυνο και έχει αποκλειστεί από το Chrome.</translation>
@@ -158,12 +157,9 @@
 <translation id="5430073640787465221">Το αρχείο προτιμήσεών σας είναι κατεστραμμένο ή μη έγκυρο.Το Google Chrome δεν μπορεί να ανακτήσει τις ρυθμίσεις σας.</translation>
 <translation id="5453904507266736060">Να επιτρέπεται στο Google Chrome να εκτελείται στο παρασκήνιο</translation>
 <translation id="5495581687705680288">Στο Google Chrome φορτώθηκαν λειτουργικές μονάδες</translation>
-<translation id="5524843473235508879">Η ανακατεύθυνση αποκλείστηκε.</translation>
 <translation id="556024056938947818">Το Google Chrome επιχειρεί να εμφανίσει κωδικούς πρόσβασης.</translation>
-<translation id="5563479599352954471">Αναζήτηση με ένα μόνο άγγιγμα</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Το Chrome χρειάζεται άδεια, για να αποκτήσει πρόσβαση στο μικρόφωνο για αυτόν τον ιστότοπο.</translation>
-<translation id="5620765574781326016">Μάθετε πληροφορίες σχετικά με θέματα σε ιστότοπους, χωρίς να απομακρυνθείτε από τη σελίδα.</translation>
 <translation id="565744775970812598">Το αρχείο <ph name="FILE_NAME" /> μπορεί να είναι επικίνδυνο, επομένως έχει αποκλειστεί από το Chrome.</translation>
 <translation id="573759479754913123">Σχετικά με το Chrome OS</translation>
 <translation id="5749068826913805084">Το Chrome χρειάζεται πρόσβαση στο χώρο αποθήκευσης για τη λήψη αρχείων.</translation>
@@ -199,7 +195,6 @@
 <translation id="6697947395630195233">Το Chrome χρειάζεται πρόσβαση στην τοποθεσία σας, για να την κοινοποιήσει σε αυτόν τον ιστότοπο.</translation>
 <translation id="683440813066116847">Εισερχόμενος κανόνας για το Google Chrome Canary για να επιτρέπεται η κυκλοφορία του mDNS.</translation>
 <translation id="686561893457936865">Πάρτε το Chrome μαζί σας παντού</translation>
-<translation id="6883876366448858277">στέλνει μια λέξη και το συγκείμενό της στην Αναζήτηση Google και φέρνει ως αποτέλεσμα ορισμούς, εικόνες και άλλα αποτελέσματα αναζήτησης.</translation>
 <translation id="6885412569789873916">Εφαρμογές Chrome Beta</translation>
 <translation id="6967962315388095737">Εισερχόμενος κανόνας για το Google Chrome Beta για να επιτρέπεται η κυκλοφορία του mDNS.</translation>
 <translation id="6970811910055250180">Ενημέρωση της συσκευής σας...</translation>
@@ -221,7 +216,6 @@
 <translation id="7437998757836447326">Αποσύνδεση από το Chrome</translation>
 <translation id="7459554271817304652">Ρυθμίστε τον συγχρονισμό για την αποθήκευση όλων των εξατομικευμένων λειτουργιών του προγράμματος περιήγησής σας στον ιστό και μεταβείτε σε αυτές από το Google Chrome μέσω οποιουδήποτε υπολογιστή.</translation>
 <translation id="7473136999113284234">Το Chrome ενημερώνεται αυτόματα, προκειμένου να έχετε πάντα στη διάθεσή σας τη νεότερη έκδοση.</translation>
-<translation id="7473891865547856676">Όχι, ευχαριστώ</translation>
 <translation id="7494905215383356681">Άδειες λογισμικού ανοικτού κώδικα του Chrome</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Να εμφανίζεται το Chrome OS σε αυτήν τη γλώσσα</translation>

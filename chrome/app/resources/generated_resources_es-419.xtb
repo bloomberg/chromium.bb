@@ -249,7 +249,6 @@
 <translation id="138784436342154190">¿Deseas restaurar la página de inicio predeterminada?</translation>
 <translation id="1389297115360905376">Esto se puede agregar solamente desde <ph name="CHROME_WEB_STORE" />.</translation>
 <translation id="1390548061267426325">Abrir como pestaña normal</translation>
-<translation id="1391097951247613150">Di "Ok Google" cuando la pantalla esté encendida y desbloqueada</translation>
 <translation id="1391807639023934267">Se cargó una página más rápida.</translation>
 <translation id="1393283411312835250">Sol y nubes</translation>
 <translation id="1395262318152388157">Buscar control deslizante</translation>
@@ -446,13 +445,11 @@
 <translation id="1673103856845176271">No se pudo acceder al archivo por razones de seguridad.</translation>
 <translation id="167832068858235403">reducir volumen</translation>
 <translation id="1679068421605151609">Herramientas del programador</translation>
-<translation id="1681120471812444678">Configurar para agregar impresoras…</translation>
 <translation id="1682548588986054654">Nueva ventana de incógnito</translation>
 <translation id="168991973552362966">Agregar una impresora cercana</translation>
 <translation id="1692602667007917253">Se produjo un error.</translation>
 <translation id="1692799361700686467">Las cookies de múltiples sitios están permitidas.</translation>
 <translation id="169515659049020177">Shift</translation>
-<translation id="1697532407822776718">¡Listo!</translation>
 <translation id="1698122934742150150">Solo para la sesión en modo incógnito actual</translation>
 <translation id="1700199471143028312">Tu administrador no te permite crear usuarios supervisados.</translation>
 <translation id="1701062906490865540">Eliminar a esta persona</translation>
@@ -492,10 +489,8 @@
 <translation id="1763108912552529023">Seguir explorando</translation>
 <translation id="1764226536771329714">beta</translation>
 <translation id="176587472219019965">&amp;Nueva ventana</translation>
-<translation id="1766352429832934452">Habilitado (necesario para usar "Ok Google")</translation>
 <translation id="1768278914020124551">Se produjo un error al contactar el servidor de acceso. Comprueba la conexión de tu red y el nombre del dominio; luego, vuelve a intentarlo.</translation>
 <translation id="1769104665586091481">Abrir vínculo en una ventana &amp;nueva</translation>
-<translation id="1772267994638363865">Para que esto suceda, debes habilitar "Actividad de voz y audio", y enseñarle a tu <ph name="DEVICE_TYPE" /> en los siguientes pasos.</translation>
 <translation id="1773212559869067373">Certificado de autenticación rechazado de forma local</translation>
 <translation id="177336675152937177">Datos de aplicaciones alojadas</translation>
 <translation id="1774349594977710164">Tu teléfono también desbloquea tus otros dispositivos <ph name="DEVICE_TYPE" />, debido a que se sincronizan automáticamente.</translation>
@@ -520,7 +515,6 @@
 <translation id="1799071797295057738">La extensión "<ph name="EXTENSION_NAME" />" se inhabilitó automáticamente.</translation>
 <translation id="180035236176489073">Tienes que estar conectado para acceder a estos archivos.</translation>
 <translation id="1802931390041703523">Flash está bloqueado en esta página</translation>
-<translation id="1803545009660609783">Volver a configurar</translation>
 <translation id="1805822111539868586">Analizar vistas</translation>
 <translation id="1807938677607439181">Todos los archivos</translation>
 <translation id="1809734401532861917">Agregar mis favoritos, historial, contraseñas y otras opciones de configuración a <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -600,7 +594,6 @@
 <translation id="1932098463447129402">No antes</translation>
 <translation id="1933809209549026293">Conecta un mouse o un teclado. Si usas un dispositivo Bluetooth, asegúrate de que esté preparado para la sincronización.</translation>
 <translation id="1936157145127842922">Mostrar en carpeta</translation>
-<translation id="1937256809970138538">Di "OK Google" cuando la pantalla se encuentre encendida y desbloqueada.</translation>
 <translation id="1940546824932169984">Dispositivos conectados</translation>
 <translation id="1942765061641586207">Resolución de imagen</translation>
 <translation id="1944921356641260203">Actualización encontrada</translation>
@@ -665,7 +658,6 @@
 <translation id="2071393345806050157">No hay ningún archivo de registro local.</translation>
 <translation id="2074527029802029717">Anular fijación de pestaña</translation>
 <translation id="2075474481720804517"><ph name="BATTERY_PERCENTAGE" />% de batería</translation>
-<translation id="2075594581020578008">Navegador <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="2076269580855484719">Ocultar este complemento</translation>
 <translation id="2076672359661571384">Medio (recomendado)</translation>
 <translation id="2077129598763517140">Usar aceleración de hardware cuando esté disponible</translation>
@@ -686,7 +678,6 @@
 <translation id="2100273922101894616">Acceso automático</translation>
 <translation id="2101225219012730419">Versión:</translation>
 <translation id="2101797668776986011">Pepper 3D</translation>
-<translation id="2103164230797186308">Las actualizaciones de software para este dispositivo ya no están disponibles. Considera actualizar tu dispositivo.</translation>
 <translation id="2105006017282194539">No se cargó todavía</translation>
 <translation id="2107494551712864447">Agregar una huella digital</translation>
 <translation id="2111843886872897694">Las aplicaciones deben proceder del host al que afecten.</translation>
@@ -826,7 +817,6 @@
 <translation id="230927227160767054">Esta página quiere instalar un controlador de servicios.</translation>
 <translation id="2311496337038385958">Año de grabación</translation>
 <translation id="2316129865977710310">No, gracias</translation>
-<translation id="2317031807364506312">CANCELAR</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% listo</translation>
 <translation id="2318143611928805047">Tamaño del papel</translation>
 <translation id="2318817390901984578">Para usar las apps de Android, carga y actualiza tu <ph name="DEVICE_TYPE" />.</translation>
@@ -894,7 +884,6 @@
 <translation id="2435457462613246316">Mostrar contraseña</translation>
 <translation id="2436186046335138073">¿Deseas permitir que <ph name="HANDLER_HOSTNAME" /> abra todos los vínculos de <ph name="PROTOCOL" />?</translation>
 <translation id="2436707352762155834">Mínimo</translation>
-<translation id="2436733981438712345">Procesando...</translation>
 <translation id="2437139306601019091">Se terminó de medir el uso de datos</translation>
 <translation id="2440300961915670171"><ph name="REASON" />
 No creo que este sitio deba estar bloqueado.</translation>
@@ -949,7 +938,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2508428939232952663">Cuenta de Google Play Store</translation>
 <translation id="2509495747794740764">El valor de la escala debe ser un número entre 10 y 200.</translation>
 <translation id="2515586267016047495">Alt</translation>
-<translation id="251662399991179012">Enseñémosle a tu <ph name="DEVICE_TYPE" /></translation>
 <translation id="2517472476991765520">Buscar</translation>
 <translation id="2518024842978892609">Usar los certificados de cliente</translation>
 <translation id="2520644704042891903">Esperando el socket disponible…</translation>
@@ -1394,7 +1382,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="316307797510303346">Puedes controlar y ver los sitios web que esta persona visita desde <ph name="CUSTODIAN_EMAIL" />.
   Tus datos de acceso a la cuenta están desactualizados.</translation>
 <translation id="3165390001037658081">Es posible que algunos proveedores bloqueen esta función.</translation>
-<translation id="3166571619128686629">Haz clic aquí o di "OK Google" para iniciar la búsqueda por voz.</translation>
 <translation id="3170072451822350649">También puedes omitir el acceso y <ph name="LINK_START" />navegar como invitado<ph name="LINK_END" />.</translation>
 <translation id="3177048931975664371">Haz clic para ocultar la contraseña</translation>
 <translation id="3177857336576585529"><ph name="SITE_NAME" /> tiene una solicitud de permiso.</translation>
@@ -1405,7 +1392,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="3184560914950696195">No se puede guardar en $1. Las imágenes editadas se guardarán en la carpeta de descargas.</translation>
 <translation id="3188465121994729530">Promedio móvil</translation>
 <translation id="3190558889382726167">Se guardó la contraseña</translation>
-<translation id="3191308084656429858">{NUM_POPUPS,plural, =1{Se bloqueó una ventana emergente}other{Se bloquearon # ventanas emergentes}}</translation>
 <translation id="3192947282887913208">Archivos de audio</translation>
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> en <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Servidores</translation>
@@ -1413,7 +1399,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="3202173864863109533">El audio de esta pestaña está silenciado.</translation>
 <translation id="3206175707080061730">Ya existe un archivo llamado "$1". ¿Deseas reemplazarlo?</translation>
 <translation id="3208703785962634733">Sin confirmar</translation>
-<translation id="3216508313927987948">Para que esto suceda, debes enseñarle a tu <ph name="DEVICE_TYPE" /> en el siguiente paso.</translation>
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="3220586366024592812">Se ha producido un bloqueo en el proceso del conector de <ph name="CLOUD_PRINT_NAME" />. ¿Deseas reiniciarlo?</translation>
 <translation id="3221634914176615296">Explora el contenido del dispositivo en la aplicación Archivos.</translation>
@@ -1435,7 +1420,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" />: Error de red</translation>
 <translation id="3251759466064201842">&lt;No forma parte de un certificado&gt;</translation>
 <translation id="3254434849914415189">Seleccionar la aplicación predeterminada para los archivos <ph name="FILE_TYPE" />:</translation>
-<translation id="3255228561559750854">Haz una búsqueda o di "OK Google".</translation>
 <translation id="3264544094376351444">Fuente Sans-serif</translation>
 <translation id="3264547943200567728">Error al configurar la red de Chromebox</translation>
 <translation id="3265459715026181080">Cerrar ventana</translation>
@@ -1509,7 +1493,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3353984535370177728">Seleccionar una carpeta para cargar</translation>
 <translation id="335581015389089642">Voz</translation>
 <translation id="3355936511340229503">Error de conexión</translation>
-<translation id="3356580349448036450">Completo</translation>
 <translation id="3356797067524893661">Todo listo para utilizar Meet de Hangouts</translation>
 <translation id="3358935496594837302">No se puede encontrar el teléfono. Asegúrate de que tienes un teléfono Android compatible, y que esté encendido y cerca. &lt;a&gt;Más información&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Restricciones de directivas para certificados</translation>
@@ -1751,7 +1734,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3727148787322499904">Si cambias esta configuración, las redes compartidas se verán afectadas</translation>
 <translation id="3727187387656390258">Inspeccionar ventana emergente</translation>
 <translation id="3728067901555601989">OTP:</translation>
-<translation id="3730639321086573427">Destinos locales</translation>
 <translation id="3733127536501031542">Servidor SLL con suplemento especial</translation>
 <translation id="3737536731758327622">Tus descargas aparecen aquí</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -1818,7 +1800,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3815571115159309122">Se encontraron <ph name="FILE_COUNT" /> fotos nuevas.
     <ph name="LINE_BREAK1" />
     Ya es posible crear una copia de seguridad en <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />.</translation>
-<translation id="3816789583333631750">Para usar esta función, se debe habilitar el complemento Native Client.</translation>
 <translation id="3819007103695653773">Permitir que todos los sitios envíen mensajes de inserción en segundo plano</translation>
 <translation id="3819752733757735746">Accesibilidad mejorada (controlar la computadora con solo uno o dos cambios)</translation>
 <translation id="3819800052061700452">&amp;Pantalla completa</translation>
@@ -1859,7 +1840,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3872991219937722530">Libera espacio en el disco o el dispositivo dejará de funcionar.</translation>
 <translation id="3878840326289104869">Creando usuario supervisado</translation>
 <translation id="3879748587602334249">Administrador de descargas</translation>
-<translation id="388485010393668001">Finalización disponible: <ph name="COMPLETION_TEXT" /></translation>
 <translation id="3888550877729210209">Tomar notas con <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">Agregar OpenVPN/L2TP…</translation>
 <translation id="3893536212201235195">Leer y cambiar la configuración de accesibilidad</translation>
@@ -2094,6 +2074,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
     <ph name="LINE_BREAK1" />
     Se encontraron <ph name="FILE_COUNT" /> fotos nuevas.</translation>
 <translation id="4316850752623536204">Sitio web del programador</translation>
+<translation id="4320177379694898372">Sin conexión a Internet</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{Continuar descarga}other{Continuar descargas}}</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4322394346347055525">Cerrar las demás pestañas</translation>
@@ -2158,7 +2139,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4441548209689510310">Mostrar opciones de corrector ortográfico</translation>
 <translation id="4442424173763614572">Error al buscar DNS</translation>
 <translation id="444267095790823769">Excepciones de contenido protegido</translation>
-<translation id="4442732038333431189">Actividad de audio y voz para <ph name="USER_EMAIL" />.</translation>
 <translation id="4443536555189480885">&amp;Ayuda</translation>
 <translation id="4444304522807523469">Acceder a los escáneres de documentos conectados vía USB o en la red local</translation>
 <translation id="4444512841222467874">Si no liberas espacio, es posible que se quiten usuarios y datos de forma automática.</translation>
@@ -2182,7 +2162,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4482194545587547824">Es posible que Google use tu historial de navegación para personalizar Búsqueda y otros servicios de Google</translation>
 <translation id="4492190037599258964">Resultados de búsqueda de '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4495419450179050807">No mostrar en esta página</translation>
-<translation id="4499108478945817980">El administrador requiere que accedas a tu cuenta en Chrome.</translation>
 <translation id="450099669180426158">Ícono de signo de exclamación</translation>
 <translation id="4501530680793980440">Confirmar eliminación</translation>
 <translation id="4504940961672722399">Para usar esta extensión, haz clic en este ícono o presiona <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -2201,7 +2180,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4530494379350999373">Origen</translation>
 <translation id="4532499992208253975">emloading</translation>
 <translation id="4533985347672295764">Tiempo de CPU</translation>
-<translation id="4534799089889278411">Di "Ok Google" en una nueva pestaña, google.com y el Selector de aplicaciones.</translation>
 <translation id="4535127706710932914">Perfil predeterminado</translation>
 <translation id="4538417792467843292">Eliminar palabra</translation>
 <translation id="4538684596480161368">Siempre bloquear los complementos no incluidos en la zona de pruebas en <ph name="HOST" /></translation>
@@ -2288,7 +2266,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="466506872045057845">Chrome restablecerá los permisos a sus valores predeterminados</translation>
 <translation id="4667176955651319626">Bloquear los datos de sitio y las cookies de terceros</translation>
 <translation id="4668721319092543482">Hacer clic para habilitar <ph name="PLUGIN_NAME" /></translation>
-<translation id="4669109953235344059">VOLVER A INTENTAR</translation>
 <translation id="4669606053856530811">Los miembros de "<ph name="SOURCE_NAME" />" ya no tendrán acceso a estos elementos, a menos que se los comparta con ellos.</translation>
 <translation id="4672657274720418656">Filtrar página</translation>
 <translation id="4673442866648850031">Abrir las herramientas de pluma stylus al quitarla</translation>
@@ -2297,7 +2274,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4681930562518940301">Abrir imagen original en una pestaña nueva</translation>
 <translation id="4682551433947286597">Los fondos de pantalla aparecen en la pantalla de acceso.</translation>
 <translation id="4684427112815847243">Sincronizar todo</translation>
-<translation id="4685045708662437080">Esto ayuda a Google a reconocer tu voz y mejorar el reconocimiento del habla y el audio para dar resultados con mayor rapidez y menos problemas. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="4689421377817139245">Sincronizar este favorito con tu iPhone</translation>
 <translation id="4692302215262324251">El dominio <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> registró tu dispositivo <ph name="DEVICE_TYPE" /> correctamente para la administración empresarial.
     <ph name="LINE_BREAK_AND_EMPTY_LINE" />
@@ -2623,7 +2599,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5228076606934445476">Se produjo un error con el dispositivo. Para solucionar este error, deberás reiniciar el dispositivo y volver a intentarlo.</translation>
 <translation id="5229189185761556138">Administrar métodos de entrada</translation>
 <translation id="5230516054153933099">Ventana</translation>
-<translation id="5232178406098309195">Cuando utilizas los comandos de activación de audio, como "Ok Google" o la opción de tocar el ícono del micrófono, la actividad de voz y audio almacena algo de voz y audio en la cuenta. Se almacenará una grabación de lo próximo que digas o el próximo audio y el sonido de lo que haya unos segundos antes.</translation>
 <translation id="5233019165164992427">Puerto de depuración NaCl</translation>
 <translation id="5233231016133573565">ID de proceso</translation>
 <translation id="5233638681132016545">Nueva pestaña</translation>
@@ -2640,7 +2615,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5250372599208556903"><ph name="SEARCH_ENGINE_NAME" /> usa tu ubicación para proporcionarte contenido local. Puedes cambiar esta configuración en <ph name="SETTINGS_LINK" />.</translation>
 <translation id="5252456968953390977">Itinerancia:</translation>
 <translation id="5252653240322147470">El PIN debe tener <ph name="MAXIMUM" /> dígitos como máximo</translation>
-<translation id="5253753933804516447">Habilitar "OK Google" para la búsqueda por voz cuando la pantalla se encuentre encendida y desbloqueada</translation>
 <translation id="5254368820972107711">Mostrar los archivos que se quitarán</translation>
 <translation id="52550593576409946">No se pudo iniciar la aplicación del kiosco.</translation>
 <translation id="5255315797444241226">La frase de contraseña que ingresaste es incorrecta.</translation>
@@ -2685,7 +2659,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5311260548612583999">Archivo de clave privada (opcional):</translation>
 <translation id="5311304534597152726">Accediendo como</translation>
 <translation id="5315873049536339193">Identidad</translation>
-<translation id="5316588172263354223">Búsqueda por voz en cualquier momento</translation>
 <translation id="5316716239522500219">Reflejar monitores</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5319359161174645648">Google recomienda Chrome</translation>
@@ -2750,7 +2723,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5411472733320185105">No usar la configuración proxy para estos dominios y hosts:</translation>
 <translation id="5414566801737831689">Leer los íconos de los sitios web que visites</translation>
 <translation id="5417312524372586921">Temas del navegador</translation>
-<translation id="5417998409611691946">Ahora tu <ph name="DEVICE_TYPE" /> puede hacer lo siguiente:</translation>
 <translation id="5419294236999569767">Hora del sistema</translation>
 <translation id="5422221874247253874">Punto de acceso</translation>
 <translation id="5422781158178868512">Lo sentimos, tu dispositivo de almacenamiento externo no se reconoció.</translation>
@@ -2960,7 +2932,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5749861707650047230">{NUM_DOWNLOAD,plural, =1{Cancelar descarga}other{Cancelar descargas}}</translation>
 <translation id="5750324801516359607">Lejos</translation>
 <translation id="5751545372099101699">Elemento 4 de la biblioteca</translation>
-<translation id="5752162773804266219">Para ayudar a que tu <ph name="DEVICE_TYPE" /> te responda, y para tener un acceso fácil y confiable a la Búsqueda por voz, debes enseñarle a Google el sonido de tu voz.</translation>
 <translation id="5752453871435543420">Copia de seguridad en la nube del Sistema operativo Chrome</translation>
 <translation id="5754903485544371559">Agregar a la carpeta Aplicaciones…</translation>
 <translation id="5756163054456765343">C&amp;entro de ayuda</translation>
@@ -3121,7 +3092,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="6011449291337289699">Borrar los datos del sitio</translation>
 <translation id="6015796118275082299">Año</translation>
 <translation id="6016551720757758985">Confirmar Powerwash con retorno a la versión anterior</translation>
-<translation id="6016809788585079594">Di "OK Google" por última vez.</translation>
 <translation id="6016972670657536680">Selecciona el botón de idioma y teclado. Actualmente, el idioma seleccionado es <ph name="LANGUAGE" />.</translation>
 <translation id="6017981840202692187">Agregar a la carpeta Aplicaciones</translation>
 <translation id="6019169947004469866">Recortar</translation>
@@ -3180,7 +3150,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="6105158702728922449">Usar tu cámara y micrófono</translation>
 <translation id="6105877918873366097">Último acceso</translation>
 <translation id="6107012941649240045">Emitido a</translation>
-<translation id="6107079717483424262">Reconocer tu voz cuando dices "OK Google"</translation>
 <translation id="6112952769866305444">Editar persona, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
 <translation id="6115424132962100663">Presionar |<ph name="SHORTCUT" />| para volver</translation>
 <translation id="6116921718742659598">Cambiar la configuración de idioma y de entrada de texto</translation>
@@ -3462,7 +3431,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="6547354035488017500">Libera al menos 512 MB de espacio o tu dispositivo dejará de funcionar. Para liberar espacio, borra archivos del almacenamiento del dispositivo.</translation>
 <translation id="6549689063733911810">Recientes</translation>
 <translation id="6550675742724504774">Opciones</translation>
-<translation id="6551034508248154663">Habilitar la actividad de voz y audio…</translation>
 <translation id="6551508934388063976">El comando no está disponible. Presiona Ctrl + N para abrir una ventana nueva.</translation>
 <translation id="655384502888039633"><ph name="USER_COUNT" /> usuarios</translation>
 <translation id="6555432686520421228">Elimina todas las cuentas de usuario y restablece tu dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> como si fuera recién comprado.</translation>
@@ -3532,7 +3500,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="667517062706956822">¿Deseas que Google traduzca esta página de <ph name="SOURCE_LANGUAGE" /> a <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Dispositivo señalador conectado</translation>
 <translation id="6677037229676347494">Se esperaba un ID "<ph name="EXPECTED_ID" />", pero el ID fue "<ph name="NEW_ID" />".</translation>
-<translation id="6678312694238602710">La búsqueda por voz de "Ok Google" se quitó del Sistema operativo Chrome</translation>
 <translation id="6678717876183468697">URL de consulta</translation>
 <translation id="6680028776254050810">Cambiar usuario</translation>
 <translation id="6680442031740878064">Disponible: <ph name="AVAILABLE_SPACE" /></translation>
@@ -3697,7 +3664,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="6970480684834282392">Tipo de inicio</translation>
 <translation id="6970856801391541997">Imprimir páginas específicas</translation>
 <translation id="6972180789171089114">Audio/video</translation>
-<translation id="6972754398087986839">Comenzar</translation>
 <translation id="6973630695168034713">Carpetas</translation>
 <translation id="6974053822202609517">De derecha a izquierda</translation>
 <translation id="6976108581241006975">Consola de JavaScript</translation>
@@ -3735,7 +3701,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7012372675181957985">Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7013485839273047434">Obtener más extensiones</translation>
 <translation id="7014174261166285193">Error de instalación</translation>
-<translation id="7017004637493394352">Di "OK Google" otra vez.</translation>
 <translation id="7017219178341817193">Agregar nueva página</translation>
 <translation id="7017354871202642555">No es posible configurar el modo después de que se ha configurado la ventana.</translation>
 <translation id="7017480957358237747">permitir o prohibir determinados sitios web;</translation>
@@ -3862,7 +3827,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7240120331469437312">Nombre alternativo del sujeto del certificado</translation>
 <translation id="7240339475467890413">¿Deseas conectarte a un nuevo hotspot?</translation>
 <translation id="7241389281993241388">Accede a <ph name="TOKEN_NAME" /> para importar el certificado de cliente.</translation>
-<translation id="7243055093079293866">Di "OK Google" en una nueva pestaña y google.com.</translation>
 <translation id="7243632151880336635">Borrar y salir</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> × <ph name="HEIGHT" /> (la mejor resolución)</translation>
 <translation id="7246339268451149667">¿Deseas habilitar el desbloqueo mediante huella digital?</translation>
@@ -3975,7 +3939,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Abrir todo en una ventana &amp;nueva}=1{Abrir en una ventana &amp;nueva}other{Abrir todo (#) en una ventana &amp;nueva}}</translation>
 <translation id="7434509671034404296">Opciones para desarrolladores</translation>
 <translation id="7436921188514130341">Se produjo un error al cambiar el nombre.</translation>
-<translation id="743823505716061814">Las consultas de búsquedas se vincularán con tu cuenta de Google. Para verlas y eliminarlas, accede al <ph name="BEGIN_LINK" />Historial de la cuenta<ph name="END_LINK" />.</translation>
 <translation id="7439964298085099379">Tienes habilitado el modo de alto contraste. ¿Quieres instalar nuestra extensión de alto contraste y un tema oscuro?</translation>
 <translation id="7441830548568730290">Otros usuarios</translation>
 <translation id="7442465037756169001">El hardware de Hangouts Meet ya está listo para su configuración.</translation>
@@ -4034,7 +3997,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7518150891539970662">Registros de WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7520821146909122639">Se está traduciendo esta página…</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7522255036471229694">Di "OK Google".</translation>
 <translation id="7525067979554623046">Crear</translation>
 <translation id="7529411698175791732">Comprueba tu conexión a Internet. Si el problema persiste, intenta salir de tu cuenta y acceder de nuevo.</translation>
 <translation id="7530016656428373557">Tasa de descarga en vatios</translation>
@@ -4098,7 +4060,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7629827748548208700">Pestaña: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;Abrir siempre archivos de este tipo</translation>
 <translation id="7632948528260659758">No se pudieron actualizar las siguientes aplicaciones de kiosco:</translation>
-<translation id="7634566076839829401">Se produjo un error. Vuelve a intentarlo.</translation>
 <translation id="7639178625568735185">Entendido</translation>
 <translation id="763959977925219242">Se bloquearon ventanas emergentes</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> te permite acceder automáticamente a los sitios aptos con las contraseñas que guardaste.</translation>
@@ -4143,7 +4104,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7717014941119698257">Descargando: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Comprobar actualizaciones</translation>
 <translation id="7719367874908701697">Zoom de página</translation>
-<translation id="7719421816612904796">Se agotó el tiempo de espera para la capacitación.</translation>
 <translation id="771953673318695590">Control de calidad</translation>
 <translation id="7720375555307821262">Para supervisar a esta persona, <ph name="BEGIN_LINK" />accede a Chrome<ph name="END_LINK" />.</translation>
 <translation id="7721179060400456005">Permitir que las ventanas abarquen las pantallas</translation>
@@ -4246,7 +4206,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7881969471599061635">Inhabilitar subtítulos</translation>
 <translation id="7882358943899516840">Tipo de proveedor</translation>
 <translation id="7885253890047913815">Destinos recientes</translation>
-<translation id="7887192723714330082">Responder a "OK Google" cuando la pantalla se encuentre encendida y desbloqueada</translation>
 <translation id="7887334752153342268">Duplicar</translation>
 <translation id="7887864092952184874">Mouse Bluetooth sincronizado</translation>
 <translation id="7889966925761734854">Buscar</translation>
@@ -4378,7 +4337,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8068253693380742035">Tocar para acceder</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Imprimir como imagen</translation>
-<translation id="8071942001314758122">Solo di "OK Google" tres veces.</translation>
 <translation id="8072988827236813198">Marcar pestañas</translation>
 <translation id="8074127646604999664">Permitir que los sitios cerrados recientemente terminen de enviar y recibir datos</translation>
 <translation id="8075191520954018715">Estado de la memoria</translation>
@@ -4582,7 +4540,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8437331208797669910">Acceso a la página</translation>
 <translation id="843760761634048214">Guardar la tarjeta de crédito</translation>
 <translation id="8438328416656800239">Cambia a un navegador inteligente</translation>
-<translation id="8438601631816548197">Acerca de la búsqueda por voz</translation>
 <translation id="8439506636278576865">Ofrecer la traducción de páginas en este idioma</translation>
 <translation id="8446884382197647889">Más información</translation>
 <translation id="8449008133205184768">Pegar con el mismo estilo</translation>
@@ -4617,9 +4574,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8487700953926739672">Disponible sin conexión</translation>
 <translation id="8490896350101740396">Se actualizaron las siguientes aplicaciones de kiosco "<ph name="UPDATED_APPS" />". Reinicia el dispositivo para completar el proceso de actualización.</translation>
 <translation id="8493236660459102203">Micrófono:</translation>
-<translation id="8495193314787127784">Habilitar "OK Google"</translation>
 <translation id="8496717697661868878">Ejecutar este complemento</translation>
-<translation id="8497392509610708671">Puedes cambiar este parámetro en cualquier momento; para ello, accede a la <ph name="BEGIN_LINK" />Configuración de Chrome<ph name="END_LINK" />.</translation>
 <translation id="8498214519255567734">Te permite ver o leer mejor en lugares con luz tenue</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="8512476990829870887">Finalizar proceso</translation>
@@ -4650,7 +4605,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="855773602626431402">Se impidió que un complemento no incluido en la zona de pruebas se ejecutara en la página.</translation>
 <translation id="8557930019681227453">Manifiesto</translation>
 <translation id="8559694214572302298">Decodificador de imágenes</translation>
-<translation id="8559748832541950395">Puedes cambiar esta configuración o <ph name="BEGIN_LINK" />administrar tus datos privados<ph name="END_LINK" /> cuando quieras. Recuerda que si la actividad de voz y audio está activada, estos datos pueden guardarse desde cualquier dispositivo al que se haya accedido.</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Se ha intentado instalar una versión anterior de la aplicación.</translation>
 <translation id="8569002732135253578">Se está imprimiendo <ph name="DOCUMENT_NAME" /> ahora</translation>
@@ -4665,7 +4619,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8590375307970699841">Configurar actualizaciones automáticas</translation>
 <translation id="8595925260712451473">Ingresa tus comentarios aquí.</translation>
 <translation id="8596540852772265699">Archivos personalizados</translation>
-<translation id="8596785155158796745">El micrófono no está disponible en este momento. <ph name="BEGIN_LINK" />Administrar micrófono<ph name="END_LINK" /></translation>
 <translation id="8597845839771543242">Formato de la propiedad:</translation>
 <translation id="8598453409908276158">Se bloquearon complementos no incluidos en la zona de pruebas</translation>
 <translation id="8598687241883907630">Desconecta tu cuenta de Google...</translation>
@@ -4837,7 +4790,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8863753581171631212">Abrir vínculo en una ventana nueva de <ph name="APP" /></translation>
 <translation id="8868245144144497543">Creado por</translation>
 <translation id="8868626022555786497">En uso</translation>
-<translation id="8869806297305312746">Habilitar "OK Google" para iniciar una búsqueda por voz</translation>
 <translation id="8870318296973696995">Página principal</translation>
 <translation id="8870413625673593573">Cerrado recientemente</translation>
 <translation id="8871551568777368300">Fijado por el administrador</translation>
@@ -4922,7 +4874,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="9003704114456258138">Frecuencia</translation>
 <translation id="9004952710076978168">Se ha recibido una notificación de una impresora desconocida.</translation>
 <translation id="9008201768610948239">Ignorar</translation>
-<translation id="9009299913548444929">Esta función no está disponible temporalmente. <ph name="BEGIN_LINK" />Ayuda<ph name="END_LINK" /></translation>
 <translation id="9009369504041480176">Cargando (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">Mostrar siempre el ícono</translation>
 <translation id="9011178328451474963">Última pestaña</translation>
@@ -5074,7 +5025,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="962802172452141067">Árbol de carpetas de favoritos</translation>
 <translation id="968174221497644223">Caché de aplicación</translation>
 <translation id="970047733946999531">{NUM_TABS,plural, =1{1 pestaña}other{# pestañas}}</translation>
-<translation id="970794034573172516">Habilitar actividad de voz y audio</translation>
 <translation id="971774202801778802">URL del marcador</translation>
 <translation id="973473557718930265">Salir</translation>
 <translation id="974555521953189084">Ingresa tu frase de contraseña para iniciar la sincronización</translation>

@@ -30,6 +30,7 @@
 
           Če je ta nastavitev onemogočena ali ni konfigurirana, se gostitelj za oddaljeno pomoč izvaja v uporabnikovem kontekstu in oddaljeni uporabniki ne morejo uporabljati oken s skrbniškimi pravicami na namizju.</translation>
 <translation id="1096105751829466145">Privzeti iskalnik</translation>
+<translation id="1099282607296956954">Omogočanje osamitve spletnega mesta za vsako spletno mesto</translation>
 <translation id="1117535567637097036">Rutine za obravnavo protokolov, nastavljene s tem pravilnikom, se ne uporabljajo pri obravnavi namer za Android.</translation>
 <translation id="1122282995569868661">Prikaže ikono v orodni vrstici za napravo <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih datotek na disk.
@@ -720,6 +721,17 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="332771718998993005">Določanje sporočenega imena cilja za napravo <ph name="PRODUCT_NAME" />.
 
           Če je pravilnik nastavljen na niz, ki ni prazen, je ta niz uporabljen kot ime cilja za napravo <ph name="PRODUCT_NAME" />, sicer pa je ime cilja ime naprave. Če ta pravilnik ni nastavljen, je ime cilja ime naprave in lastnik naprave (ali uporabnik v domeni, ki upravlja napravo) ga sme spremeniti. Ime je omejeno na 24 znakov dolžine.</translation>
+<translation id="3356249700768900657">
+      OPOMBA: Ta pravilnik je poskusen in lahko povzroči nedelovanje funkcije.
+      Oglejte si nastavitev pravilnika IsolateOrigins, če želite izkoristiti
+      prednosti obeh nastavitev, osamitve in omejenega vpliva za uporabnike, tako da uporabite
+      pravilnik IsolateOrigins s seznamom spletnih mest, ki jih želite osamiti. Ta nastavitev,
+      SitePerProcess, osami vsa spletna mesta.
+      Če je pravilnik omogočen, vsako spletno mesto izvaja svoj proces.
+      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov vnaprejšnje
+      osamitve spletnih mest.
+      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
+      </translation>
 <translation id="3381968327636295719">Privzeto uporabi brskalnik gostitelja</translation>
 <translation id="3395348522300156660">Določa tiskalnike, ki jih uporabnik lahko uporablja.
 
@@ -1091,6 +1103,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Primere vzorcev si lahko ogledate na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Odpri seznam URL-jev</translation>
 <translation id="4680961954980851756">Omogoči samodejno izpolnjevanje</translation>
+<translation id="4722122254122249791">Omogočanje osamitve spletnih mest za določene izvore</translation>
 <translation id="4722399051042571387">Če je nastavitev onemogočena, uporabniki ne bodo mogli nastaviti kod PIN, ki so šibke in jih je mogoče preprosto uganiti.
 
           Nekaj primerov šibkih kod PIN: kode, ki vsebujejo samo eno števko (1111), kode, pri katerih se števke povečujejo za številko 1 (1234), kode, pri katerih se števke zmanjšujejo za številko 1 (4321), in kode, ki so preveč pogoste.
@@ -1190,6 +1203,17 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4983201894483989687">Dovoli izvajanje zastarelih vtičnikov</translation>
 <translation id="4988291787868618635">Dejanje, ki naj se izvede, ko preteče časovni zamik nedejavnosti</translation>
 <translation id="4995548127349206948">Ali je omogočeno preverjanje pristnosti NTLMv2.</translation>
+<translation id="5027819375434797927">
+      OPOMBA: Ta pravilnik je poskusen in lahko povzroči nedelovanje funkcije.
+      Če je pravilnik omogočen, bo vsak naveden izvor
+      s seznama, ločenega z vejicami, izvajal svoj proces. S tem bodo osamljeni
+      tudi izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/,
+      bo kot del spletnega mesta https://example.com/ osamljeno tudi
+      spletno mesto https://foo.example.com/.
+      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov vnaprejšnje
+      osamitve spletnih mest.
+      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
+      </translation>
 <translation id="5047604665028708335">Omogoči dostop do spletnih mest zunaj paketov vsebine</translation>
 <translation id="5052081091120171147">Če je ta pravilnik omogočen, se zgodovina brskanja uvozi iz trenutnega privzetega brskalnika. Če je omogočen, ta pravilnik vpliva tudi na pogovorno okno za uvoz.
 
@@ -2037,39 +2061,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7841880500990419427">Najnižja različica TLS-ja za rezervno uporabo</translation>
 <translation id="7842869978353666042">Konfigurira možnosti storitve Google Drive</translation>
 <translation id="7843525027689416831">Določa zastavice, ki naj se uporabijo za <ph name="PRODUCT_NAME" />, ko se zažene. Izbrane zastavice se uporabijo samo na zaslonu za prijavo. Zastavice, nastavljene prek tega pravilnika, se ne prenesejo v uporabniške seje.</translation>
-<translation id="7844537954833753199">Konfigurira nastavitve upravljanja razširitev za brskalnik <ph name="PRODUCT_NAME" />.
-
-          Ta pravilnik nadzira več nastavitev, vključno z nastavitvami, ki jih nadzirajo morebitni obstoječi pravilniki, povezani z razširitvami. Ta pravilnik preglasi morebitne starejše pravilnike, če so nastavljeni oboji.
-
-          Ta pravilnik preslika ID razširitve ali URL za posodobitev v svojo konfiguracijo. Konfiguracija z ID-jem razširitve bo uporabljena samo za določeno razširitev. Za posebni ID <ph name="DEFAULT_SCOPE" /> je mogoče nastaviti privzeto konfiguracijo, ki se bo uporabila za vse razširitve, ki v tem pravilniku nimajo nastavljene konfiguracije po meri. Konfiguracija z URL-jem za posodobitev bo uporabljena za vse razširitve s točno določenim URL-jem za posodobitev, navedenim v manifestu te razširitve, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfiguracija za posamezno razširitev (ali razširitve z istim URL-jem za posodobitev) je drug slovar, ki lahko vsebuje spodaj dokumentirana polja.
-
-          <ph name="INSTALLATION_MODE" />: Preslika v niz, ki navaja način namestitve za razširitev. Veljavni nizi so:
-          * <ph name="ALLOWED" />: Uporabniku dovoli namestitev razširitve. To je privzeto delovanje.
-          * <ph name="BLOCKED" />: Blokira namestitev razširitve.
-          * <ph name="FORCE_INSTALLED" />: Razširitev je samodejno nameščena in je uporabnik ne more odstraniti.
-          * <ph name="NORMAL_INSTALLED" />: Razširitev je samodejno nameščena, vendar jo lahko uporabnik onemogoči.
-
-          Vrednost <ph name="INSTALLTION_MODE" /> je prav tako mogoče konfigurirati za več razširitev, vključno z razširitvijo <ph name="DEFAULT_SCOPE" /> (kot privzeta nastavitev) in razširitvami z istim URL-jem za posodobitev. V tem primeru je mogoče uporabiti samo vrednosti <ph name="ALLOWED" /> in <ph name="BLOCKED" />.
-
-          Če je način nastavljen na vrednost <ph name="FORCE_INSTALLED" /> ali <ph name="NORMAL_INSTALLED" />, mora biti konfigurirana tudi vrednost <ph name="UPDATE_URL" />. URL za posodobitev, nastavljen v tem pravilniku, se uporabi samo pri začetni namestitvi; pri vseh nadaljnjih posodobitvah razširitve je uporabljen URL za posodobitev, naveden v manifestu razširitve. URL za posodobitev mora kazati na dokument XML manifesta za posodobitev, kot je opisano zgoraj.
-
-          <ph name="BLOCKED_PERMISSIONS" />: Preslika v seznam nizov, ki navajajo blokirana dovoljenja za API-je za razširitev. Imena dovoljenj so enaka kot nizi dovoljenj, navedeni v manifestu razširitve, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC3" />. To nastavitev je prav tako mogoče konfigurirati za razširitev <ph name="DEFAULT_SCOPE" />. Če razširitev zahteva dovoljenje s seznama blokiranih, se ne bo smela naložiti. Če razširitev vsebuje blokirano dovoljenje kot izbirno zahtevo, se bo obravnavala običajno, vendar bo pri izvajanju zahtevanje dovoljenj, ki so v sporu, samodejno zavrnjeno.
-
-          <ph name="ALLOWED_PERMISSIONS" />: Podobna vrednosti <ph name="BLOCKED_PERMISSIONS" />, razlikuje pa se po tem, da izrecno dovoljuje nekatera dovoljenja, ki jih globalni seznam blokiranih dovoljenj morda blokira, tako da je ni mogoče konfigurirati za razširitev <ph name="DEFAULT_SCOPE" />. Ta nastavitev razširitvam ne podeljuje odobrenih dovoljenj samodejno.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: Preslika v niz z različico. Oblika niza z različico je enaka obliki niza v manifestu razširitve, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC4" />. Razširitev z različico, starejšo od določene najmanjše različice, bo onemogočena. To velja tudi za vsiljeno nameščene razširitve.
-
-          Te nastavitve je mogoče uporabiti samo za privzeto konfiguracijo <ph name="DEFAULT_SCOPE" />:
-
-          <ph name="INSTALL_SOURCES" />: Vsak element na tem seznamu je vzorec ujemanja v slogu razširitve (<ph name="LINK_TO_MATCH_PATTERNS" />). Uporabniki bodo lahko preprosto namestili elemente s poljubnega URL-ja, ki se ujema z elementom na tem seznamu. Mesto datoteke <ph name="EXTENSION_SUFFIX_WILDCARD" /> in strani, na kateri se prenos začne (tj. napotitelj), morajo dovoljevati vzorci s tega seznama.
-
-          <ph name="ALLOWED_TYPES" />: Ta nastavitev uvršča na seznam dovoljenih dovoljene vrste razširitev/aplikacij, ki jih je mogoče namestiti v brskalniku <ph name="PRODUCT_NAME" />. Vrednost je seznam nizov, od katerih mora biti vsak nekaj od tega: <ph name="VALID_ALLOWED_TYPES" />. Če želite več informacij o teh vrstah, si oglejte dokumentacijo za razširitve za <ph name="PRODUCT_NAME" />.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Če uporabnik poskusi namestiti razširitev, vendar to blokira pravilnik, Spletna trgovina Chrome prikaže splošno sporočilo o napaki. Ta nastavitev omogoča, da sporočilu o napaki dodate besedilo. Z njim lahko usmerite uporabnike na oddelek za pomoč uporabnikom, pojasnite razlog za blokiranje določene razširitve ali naredite kaj drugega. Če je sporočilo o napaki daljše od 1000 znakov, bo odrezano.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Sprejme seznam blokiranih gostiteljev, ki jih razširitev ne bo mogla uporabljati. To vključuje vstavljanje JavaScripta, spreminjanje in ogledovanje spletnih zahtev/spletnega krmarjenja ter ogledovanje in spreminjanje piškotkov. Oblika je podobna vzorcem ujemanja <ph name="LINK_TO_MATCH_PATTERNS" />, pri čemer poti ne smejo biti določene. Primer: »*://*.example.com«. Prav tako je podprta uporaba nadomestnih znakov v krovnih domenah. Primer: »*://example.*«.
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Sprejme seznam gostiteljev, ki jih razširitev lahko uporablja ne glede na to, ali so uvrščene na seznam <ph name="RUNTIME_BLOCKED_HOSTS" />. Oblika je enaka kot pri <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Če je pravilnik nastavljen na »SyncDisabled« ali ni konfiguriran, potrdila sistema <ph name="PRODUCT_OS_NAME" /> niso na voljo za aplikacije ARC.
 
       Če je pravilnik nastavljen na »CopyCaCerts«, so vsa potrdila overitelja potrdil, nameščena s pravilnikom ONC in za katera velja <ph name="WEB_TRUSTED_BIT" />, na voljo za aplikacije ARC.</translation>
@@ -2153,15 +2144,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če je ta pravilnik onemogočen ali ni nastavljen, se pri prijavi uporabijo navadni profili.</translation>
 <translation id="8158758865057576716">Omogočanje ustvarjanja kopij podatkov profila izdelka <ph name="PRODUCT_NAME" /> za gostovanje.</translation>
-<translation id="8170878842291747619">Omogoča integrirano storitev Google Prevajalnik v brskalniku <ph name="PRODUCT_NAME" />.
-
-     Če to nastavitev omogočite, bo <ph name="PRODUCT_NAME" /> prikazal integrirano orodno vrstico z možnostjo prevoda strani za uporabnika, ko bo to primerno.
-
-      Če to nastavitev onemogočite, se uporabnikom vrstica za prevajanje nikoli ne bo prikazala.
-
-      Če to nastavitev omogočite ali onemogočite, jo uporabniki v brskalniku <ph name="PRODUCT_NAME" /> ne morejo spremeniti ali preglasiti.
-
-      Če nastavitev pustite nespremenjeno, se lahko uporabnik odloči, ali bo uporabljal to funkcijo ali ne.</translation>
 <translation id="817455428376641507">Omogoča dostop do navedenih URL-jev kot izjem za seznam blokiranih URL-jev.
 
       Glede oblike vnosov za ta seznam glejte opis pravilnika za blokirane URL-je.

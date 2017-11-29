@@ -30,6 +30,7 @@
 
           如果停用或未配置此设置，远程协助主机则会在用户的环境中运行，而远程用户将无法在桌面上操控提权后的窗口。</translation>
 <translation id="1096105751829466145">默认搜索服务提供商</translation>
+<translation id="1099282607296956954">为所有网站启用网站隔离功能</translation>
 <translation id="1117535567637097036">通过此政策设置的协议处理程序不会被用于处理 Android intent。</translation>
 <translation id="1122282995569868661">显示 <ph name="PRODUCT_NAME" /> 工具栏图标</translation>
 <translation id="1128903365609589950">配置 <ph name="PRODUCT_NAME" /> 在磁盘中存储缓存文件时所使用的目录。
@@ -668,6 +669,13 @@
 <translation id="332771718998993005">将广告中宣传的名称确定为 <ph name="PRODUCT_NAME" /> 目标名称。
 
           如果此政策设为非空字符串，该字符串将被用作 <ph name="PRODUCT_NAME" /> 目标名称。否则，目标名称便是设备名称。如果此政策未设置，则目标名称将是设备名称，且设备所有者（或者该设备的托管网域内的用户）将能更改该名称。该名称的长度不得超过 24 个字符。</translation>
+<translation id="3356249700768900657">
+      请注意：此政策尚处于实验阶段，可能会导致功能中断！
+      若想做到两全其美（既能实现隔离，又能减少给用户带来的影响），您最好先查看一下 IsolateOrigins 政策设置，了解如何使用 IsolateOrigins 政策设置您想隔离的网站列表。SitePerProcess 这项设置会隔离所有网站。
+      如果启用了此政策，每个网站都会在自己的进程中运行。
+      如果停用了此政策，原先的网站隔离进程管理逻辑就会生效。
+      如果未配置此政策，用户将能够更改此设置。
+      </translation>
 <translation id="3381968327636295719">默认情况下托管主机浏览器</translation>
 <translation id="3395348522300156660">指定用户可以使用的打印机。
 
@@ -1012,6 +1020,7 @@
           要查看示例格式，请访问 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="467449052039111439">打开网址列表</translation>
 <translation id="4680961954980851756">启用自动填充</translation>
+<translation id="4722122254122249791">为指定的来源启用网站隔离功能</translation>
 <translation id="4722399051042571387">如果设为 false，用户将无法设置安全系数低且易于猜中的 PIN 码。
 
           一些安全系数低的 PIN 码示例：仅由同一个数字构成的 PIN 码 (1111)、所含数字以 1 为单位递增的 PIN 码 (1234)、所含数字以 1 为单位递减的 PIN 码 (4321)，以及常用的 PIN 码。
@@ -1103,6 +1112,12 @@
 <translation id="4983201894483989687">允许运行过期的插件</translation>
 <translation id="4988291787868618635">闲置延迟时间已过时执行的操作</translation>
 <translation id="4995548127349206948">是否启用 NTLMv2 身份验证。</translation>
+<translation id="5027819375434797927">
+      请注意：此政策尚处于实验阶段，可能会导致功能中断！
+      如果启用了此政策，则相关列表中以逗号分隔的每个指定来源都会在自己的进程中运行。这也会隔离以子网域命名的来源；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
+      如果停用了此政策，原先的网站隔离进程管理逻辑就会生效。
+      如果未配置此政策，用户将能够更改此设置。
+      </translation>
 <translation id="5047604665028708335">允许访问非内容包内的网站</translation>
 <translation id="5052081091120171147">如果启用此政策，就会强制从当前默认浏览器导入浏览记录，还会影响导入对话框。如果停用此政策，就不会导入浏览记录。如果未设置此政策，系统就会询问用户是否导入浏览记录，或者系统自动进行导入。</translation>
 <translation id="5056708224511062314">放大镜已停用</translation>
@@ -1878,39 +1893,6 @@
 <translation id="7841880500990419427">要回退到的最低 TLS 版本</translation>
 <translation id="7842869978353666042">配置 Google 云端硬盘选项</translation>
 <translation id="7843525027689416831">指定应在 <ph name="PRODUCT_NAME" /> 启动时应用于它的选项。指定的选项仅会应用于登录屏幕。通过此政策设置的选项不会反映在用户会话中。</translation>
-<translation id="7844537954833753199">为 <ph name="PRODUCT_NAME" /> 配置扩展程序管理设置。
-
-          此政策可控制多项设置，其中包括由任何现有的扩展程序相关政策控制的设置。此政策将会替换所有旧版政策（如果同时设置了这两种政策的话）。
-
-          此政策可将某个扩展程序 ID 或某个更新网址映射至其配置。对于扩展程序 ID，配置将只会应用于所指定的扩展程序。您可为特殊 ID“<ph name="DEFAULT_SCOPE" />”设置默认配置，该配置将会应用于未在此政策中设置自定义配置的所有扩展程序。对于更新网址，配置则会应用于具有此扩展程序的清单中所注明的确切更新网址的所有扩展程序（如 <ph name="LINK_TO_EXTENSION_DOC1" /> 中所述）。
-
-          每个扩展程序（或具有相同更新网址的扩展程序）的配置都是一个单独的字典条目，其中可以包含下述字段。
-
-          <ph name="INSTALLATION_MODE" />：会映射至一个字符串，该字符串用于指明相应扩展程序的安装模式。有效字符串为：
-          * <ph name="ALLOWED" />：允许用户安装相应扩展程序。这是默认行为。
-          * <ph name="BLOCKED" />：禁止安装相应扩展程序。
-          * <ph name="FORCE_INSTALLED" />：自动安装相应扩展程序，且用户无法将其卸载。
-          * <ph name="NORMAL_INSTALLED" />：自动安装相应扩展程序，但用户可将其停用。
-
-          您也可同时为多个扩展程序配置“<ph name="INSTALLTION_MODE" />”，其中包括“<ph name="DEFAULT_SCOPE" />”扩展程序（以作为默认设置）和具有相同更新网址的扩展程序。在这种情况下，只能使用“<ph name="ALLOWED" />”和“<ph name="BLOCKED" />”这两个值。
-
-          如果此模式设为“<ph name="FORCE_INSTALLED" />”或“<ph name="NORMAL_INSTALLED" />”，那么您还必须配置“<ph name="UPDATE_URL" />”。请注意，此政策中设置的更新网址仅会用于初次安装，相应扩展程序的后续更新将会使用其清单中指定的更新网址。更新网址应指向更新清单 XML 文档（如上所述）。
-
-          <ph name="BLOCKED_PERMISSIONS" />：会映射至一系列字符串，这些字符串用于指明相应扩展程序的已被屏蔽的 API 权限。权限名称与扩展程序清单中声明的权限字符串相同（如 <ph name="LINK_TO_EXTENSION_DOC3" /> 中所述）。您也可为“<ph name="DEFAULT_SCOPE" />”扩展程序配置此设置。如果相应扩展程序请求获得屏蔽名单中的某项权限，它将无法进行加载。如果相应扩展程序包含某项已被屏蔽的权限，而这项权限只是作为可选请求，系统将会按照正常方式予以处理，但如果相应扩展程序请求获得冲突的权限，在运行时将会被系统自动拒绝。
-
-          <ph name="ALLOWED_PERMISSIONS" />：与“<ph name="BLOCKED_PERMISSIONS" />”类似，但该设置会明确允许某些可能已被全局屏蔽权限列表屏蔽的权限，因此您无法为“<ph name="DEFAULT_SCOPE" />”扩展程序配置此设置。请注意，此设置不会自动向扩展程序授予所允许的权限。
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />：会映射至一个版本字符串。版本字符串的格式与扩展程序清单中使用的格式相同（如 <ph name="LINK_TO_EXTENSION_DOC4" /> 中所述）。系统将会停用在版本方面低于所指定的最低版本的扩展程序。此设置也适用于强制安装的扩展程序。
-
-          以下设置仅适用于默认的“<ph name="DEFAULT_SCOPE" />”配置：
-
-          <ph name="INSTALL_SOURCES" />：此列表中的每一项都是一种扩展程序样式的匹配模式（请访问 <ph name="LINK_TO_MATCH_PATTERNS" />）。用户将能够从任何与此列表中的扩展程序匹配的网址上轻松地安装扩展程序。<ph name="EXTENSION_SUFFIX_WILDCARD" /> 文件的位置和下载所始于的网页（即引荐来源网址）都必须由这些模式授权。
-
-          <ph name="ALLOWED_TYPES" />：通过此设置，您可将允许在 <ph name="PRODUCT_NAME" /> 中安装的扩展程序/应用的类型列入白名单。此设置的值是一系列字符串，其中每个字符串都应是以下类型之一：<ph name="VALID_ALLOWED_TYPES" />。要详细了解这些类型，请参阅 <ph name="PRODUCT_NAME" /> 扩展程序文档。
-          <ph name="BLOCKED_INSTALL_MESSAGE" />：如果用户尝试安装的扩展程序已被相关政策屏蔽，Chrome 网上应用店就会显示一条常规的错误消息。此设置可让您向这类错误消息附加文本，以便将用户引导至您的支持部门、解释相应扩展程序为何会被屏蔽，或用于其他用途。如果此类错误消息的长度超过 1000 个字符，则会被截断。
-          <ph name="RUNTIME_BLOCKED_HOSTS" />：此设置的值是一系列主机名称，用于指明相应扩展程序将被禁止与哪些主机交互（包括注入 JavaScript、更改和查看 webRequests / webNavigation，以及查看和更改 Cookie）。格式与匹配模式（请访问 <ph name="LINK_TO_MATCH_PATTERNS" />）类似，但无法指定任何路径（例如“*://*.example.com”）。也支持有效的顶级域名 (TLD) 通配符（例如“*://example.*”）。
-          <ph name="RUNTIME_ALLOWED_HOSTS" />：此设置的值是一系列主机名称，用于指明相应扩展程序可与哪些主机交互，无论它们是否已列在“<ph name="RUNTIME_BLOCKED_HOSTS" />”中。格式与“<ph name="RUNTIME_BLOCKED_HOSTS" />”相同。
-          </translation>
 <translation id="787125417158068494">如果设置为 SyncDisabled 或未配置，ARC 应用便无法使用 <ph name="PRODUCT_OS_NAME" /> 证书。
 
       如果设置为 CopyCaCerts，ARC 应用便可使用所有已安装 ONC 且带有 <ph name="WEB_TRUSTED_BIT" /> 的 CA 证书。</translation>
@@ -1989,7 +1971,6 @@
 
       如果此政策设为停用或未设置，用户登录时系统会使用常规个人资料。</translation>
 <translation id="8158758865057576716">允许创建 <ph name="PRODUCT_NAME" /> 个人资料数据的漫游副本。</translation>
-<translation id="8170878842291747619">在 <ph name="PRODUCT_NAME" />中启用集成的 Google 翻译服务。如果您启用了此设置，<ph name="PRODUCT_NAME" />将显示一个集成的工具栏，以便在合适的情况下帮助用户翻译网页。如果您停用了此设置，系统就不会显示翻译栏。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME" />中更改或替换此设置。如果未进行设置，用户就可以自行决定是否使用此功能。</translation>
 <translation id="817455428376641507">允许访问列出的网址（黑名单中的网址除外）。
 
       有关此列表中条目的格式，请参阅网址黑名单策略的说明。

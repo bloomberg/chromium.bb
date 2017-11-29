@@ -94,12 +94,12 @@
 <translation id="3398288718845740432">Сакриј у Chrome менију</translation>
 <translation id="3451115285585441894">Додавање у Chrome...</translation>
 <translation id="345171907106878721">Додајте себе у Chrome</translation>
+<translation id="3479552764303398839">Не сада</translation>
 <translation id="3612333635265770873">Модул истог назива се већ сукобљавао са Google Chrome прегледачем.</translation>
 <translation id="3622797965165704966">Сада можете лакше да користите Chrome са Google налогом и на дељеним рачунарима.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />Услови коришћења<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">Овим ћете избрисати 1 ставку са овог уређаја. Да бисте касније вратили податке, пријавите се у Chrome као <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Додатак „<ph name="EXTENSION_NAME" />“ је променио страницу која се приказује када покренете Chrome.</translation>
-<translation id="3738139272394829648">Додирни за претрагу</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Уклони из Chrome-а...</translation>
 <translation id="386202838227397562">Затворите све прозоре Google Chrome прегледача и покушајте поново.</translation>
@@ -130,7 +130,6 @@
 <translation id="4664415150087723341">Посебно безбедносно ажурирање за Google Chrome је управо примењено. Сада треба поново да покренете Google Chrome да би ажурирање ступило на снагу (вратићемо картице).</translation>
 <translation id="4700157086864140907">Google Chrome може да пружи паметнију проверу правописа тако што оно што куцате у прегледач шаље Google серверима, што вам омогућава да користите исту технологију провере правописа коју користи Google претрага.</translation>
 <translation id="4728575227883772061">Инсталација није успела због неодређене грешке. Ако је Google Chrome тренутно отворен, затворите га и покушајте поново.</translation>
-<translation id="4743926867934016338">Прихватам, претражи</translation>
 <translation id="4750550185319565338">Поново покрените Chrome да бисте омогућили <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Ова датотека може да буде опасна, па ју је Chrome блокирао.</translation>
@@ -162,12 +161,9 @@
 Google Chrome не може да врати подешавања.</translation>
 <translation id="5453904507266736060">Нека Google Chrome ради у позадини</translation>
 <translation id="5495581687705680288">Модули учитани у Google Chrome</translation>
-<translation id="5524843473235508879">Преусмеравање је блокирано.</translation>
 <translation id="556024056938947818">Google Chrome покушава да прикаже лозинке.</translation>
-<translation id="5563479599352954471">Претражујте једним додиром</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Chrome тражи дозволу да приступи микрофону за овај сајт.</translation>
-<translation id="5620765574781326016">Сазнајте више о темама на веб-сајтовима без напуштања странице.</translation>
 <translation id="565744775970812598">Датотека <ph name="FILE_NAME" /> је можда опасна, па ју је Chrome блокирао.</translation>
 <translation id="573759479754913123">О Chrome ОС-у</translation>
 <translation id="5749068826913805084">Chrome-у је потребан приступ меморијском простору да би преузимао датотеке.</translation>
@@ -203,7 +199,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6697947395630195233">Chrome тражи приступ вашој локацији да бисте је делили са овим сајтом.</translation>
 <translation id="683440813066116847">Правило за долазни саобраћај за Google Chrome Canary да бисте омогућили mDNS саобраћај.</translation>
 <translation id="686561893457936865">Нека Chrome буде увек са вама</translation>
-<translation id="6883876366448858277">шаље реч и околни контекст Google претрази, а приказује дефиниције, слике и друге резултате претраге.</translation>
 <translation id="6885412569789873916">Chrome апликације за бета канал</translation>
 <translation id="6967962315388095737">Правило за долазни саобраћај за Google Chrome бета да бисте омогућили mDNS саобраћај.</translation>
 <translation id="6970811910055250180">Ажурирање уређаја...</translation>
@@ -225,7 +220,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7437998757836447326">Одјављивање из Chrome-а</translation>
 <translation id="7459554271817304652">Подесите Синхронизацију како бисте сачували персонализоване функције прегледача на Веб и приступали им из Google Chrome-а на било ком рачунару.</translation>
 <translation id="7473136999113284234">Chrome се аутоматски ажурира, па увек имате најновију верзију.</translation>
-<translation id="7473891865547856676">Не, хвала</translation>
 <translation id="7494905215383356681">Лиценце отвореног кода за Chrome</translation>
 <translation id="7535429826459677826">Програмерска верзија Google Chrome-а</translation>
 <translation id="7552219221109926349">Приказуј Chrome ОС на овом језику</translation>

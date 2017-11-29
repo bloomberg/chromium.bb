@@ -30,6 +30,7 @@
 
           Kung naka-disable o hindi naka-configure ang setting na ito, ang host ng remote na tulong ay patatakbuhin sa konteksto ng user at hindi magagawa ng mga remote na user na makipag-ugnayan sa mga elevated window sa desktop.</translation>
 <translation id="1096105751829466145">Default na provider ng paghahanap</translation>
+<translation id="1099282607296956954">I-enable ang Paghihiwalay ng Site para sa bawat site</translation>
 <translation id="1117535567637097036">Ang mga tagapangasiwa ng protocol na itinakda sa pamamagitan ng patakarang ito ay hindi ginagamit kapag nangangasiwa ng mga intent sa Android.</translation>
 <translation id="1122282995569868661">Ipinapakita ang icon ng toolbar ng <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Kino-configure ang direktoryong gagamitin ng <ph name="PRODUCT_NAME" /> para sa pag-iimbak ng mga naka-cache na file sa disk.
@@ -715,6 +716,16 @@
 <translation id="332771718998993005">Tinutukoy ang pangalang na-advertise bilang destinasyon ng <ph name="PRODUCT_NAME" />.
 
           Kung nakatakda ang patakarang ito sa isang may lamang string, gagamitin ang string na iyon bilang pangalan ng destinasyon ng <ph name="PRODUCT_NAME" />. Kung hindi, ang pangalan ng device ang magiging pangalan ng destinasyon. Kung hindi nakatakda ang patakarang ito, ang pangalan ng device ang magiging pangalan ng destinasyon, at papayagan ang may-ari ng device (o isang user mula sa domain na namamahala sa device) na palitan ito. Nalilimitahan ang pangalan sa 24 na character.</translation>
+<translation id="3356249700768900657">
+      TANDAAN: Ang patakarang ito ay pang-eksperimento at maaari nitong masira ang paggana!
+      Maaari mong tingnan ang setting ng patakaran ng IsolateOrigins upang parehong
+      masulit ang paghihiwalay at pagkakaroon ng limitadong epekto sa mga user, sa pamamagitan ng paggamit ng
+      IsolateOrigins na may listahan ng mga site na gusto mong ihiwalay. Hinihiwalay ng setting na ito na
+      SitePerProcess ang lahat ng site.
+      Kung naka-enable ang patakaran, magpapatakbo ang bawat site ng sarili nitong proseso.
+      Kung naka-disable ang patakaran, magkakaroon ng bisa ang logic sa pamamahala ng proseso bago ang Paghihiwalay ng Site.
+      Kung hindi naka-configure ang patakaran, mababago ng user ang setting na ito.
+      </translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
 <translation id="3395348522300156660">Tumutukoy sa mga printer na magagamit ng user.
 
@@ -1080,6 +1091,7 @@
           Para sa mga halimbawang pattern, tingnan ang https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Magbukas ng listahan ng mga URL</translation>
 <translation id="4680961954980851756">Paganahin ang AutoFill</translation>
+<translation id="4722122254122249791">I-enable ang Paghihiwalay ng Site para sa mga tinukoy na pinagmulan</translation>
 <translation id="4722399051042571387">Kung false, hindi makakapagtakda ang mga user ng mga madaling mahulaan na PIN.
 
           Ilang halimbawa ng mga madaling mahulaan na PIN: Mga PIN na naglalaman lang ng magkakaparehong digit (1111), mga PIN na sunud-sunod ang bilang pataas (1234), mga PIN na sunud-sunod ang bilang pababa (4321), at mga PIN na karaniwang ginagamit.
@@ -1180,6 +1192,16 @@
 <translation id="4983201894483989687">Payagan ang pagpapatakbo ng mga plugin na wala na sa panahon</translation>
 <translation id="4988291787868618635">Pagkilos na gagawin kapag naabot ang idle delay</translation>
 <translation id="4995548127349206948">Kung naka-enable ang pag-authenticate ng NTLMv2.</translation>
+<translation id="5027819375434797927">
+      TANDAAN: Ang patakarang ito ay pang-eksperimento at maaari nitong masira ang paggana!
+      Kung naka-enable ang patakaran, ang bawat pinagmulan na pinangalanan sa
+      listahan na pinaghihiwalay ng kuwit ay magpapatakbo ng sarili nitong proseso. Ihihiwalay rin nito
+      ang mga pinagmulan na pinangalanan ayon sa mga subdomain; hal. ang pagtukoy sa https://example.com/ ay
+      magreresulta rin sa paghihiwalay sa https://foo.example.com/ bilang bahagi ng site ng
+      https://example.com/.
+      Kung naka-disable ang patakaran, magkakaroon ng bisa ang logic ng pamamahala sa proseso bago ang Paghihiwalay ng Site.
+      Kung hindi naka-configure ang patakaran, mababago ng user ang setting na ito.
+      </translation>
 <translation id="5047604665028708335">Payagan ang access sa mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="5052081091120171147">Pinupwersa ng patakarang ito na ma-import mula sa kasalukuyang default na browser ang kasaysayan ng pagba-browse kung pinagana. Kung pinagana, naaapektuhan rin ng patakarang ito ang dialog ng pag-import.
 
@@ -2028,38 +2050,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7841880500990419427">Minimum na bersyon ng TLB na babalikan</translation>
 <translation id="7842869978353666042">I-configure ang mga pagpipilian sa Google Drive</translation>
 <translation id="7843525027689416831">Tinutukoy ang mga flag na dapat ilapat sa <ph name="PRODUCT_NAME" /> kapag nagsimula ito. Inilalapat ang mga flag sa screen ng pag-log in lang. Ang mga flag na sine-set sa pamamagitan ng patakarang ito ay hindi nalilipat sa mga session ng user.</translation>
-<translation id="7844537954833753199">Nagko-configure ng mga setting ng pamamahala ng extension para sa <ph name="PRODUCT_NAME" />.
-
-          Kinokontrol ng patakarang ito ang maraming setting, kabilang ang mga setting na kinokontrol ng anumang kasalukuyang patakarang nauugnay sa extension. Io-override ng patakarang ito ang anumang legacy na patakaran kung itatakda pareho.
-
-          Minamapa ng patakarang ito ang isang extension ID o URL ng update sa configuration nito. Gamit ang isang extension ID, malalapat lang ang configuration sa tinukoy na extension. Maaaring itakda ang default na configuration para sa special ID <ph name="DEFAULT_SCOPE" />, na ilalapat sa lahat ng extension na walang nakatakdang custom na configuration sa patakarang ito. Gamit ang URL ng update, ilalapat ang configuration sa lahat ng extension na may eksaktong URL ng update na nakasaad sa manifest ng extension na ito, tulad ng inilalarawan sa <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Ang configuration para sa bawat extension (o mga extension na may parehong URL ng update) ay isa pang dictionary na maaaring maglaman ng mga field na nakadokumento sa ibaba.
-
-          <ph name="INSTALLATION_MODE" />: nagmamapa sa string na nagsasaad ng paraan ng pag-install para sa extension. Ang mga valid na string ay:
-          * <ph name="ALLOWED" />: pinapayagan ang extension na ma-install ng user. Ito ang default na gawi.
-          * <ph name="BLOCKED" />: bina-block ang pag-install ng extension.
-          * <ph name="FORCE_INSTALLED" />: awtomatikong naka-install ang extension at hindi maaaring alisin ng user.
-          * <ph name="NORMAL_INSTALLED" />: awtomatikong naka-install ang extension ngunit maaaring i-disable ng user. 
-          Maaari ding i-configure ang <ph name="INSTALLTION_MODE" /> para sa maraming extension, kasama na rin ang extension na <ph name="DEFAULT_SCOPE" /> (bilang mga default na setting) at mga extension na may parehong URL ng update. Ang mga value na <ph name="ALLOWED" /> at <ph name="BLOCKED" /> lang ang maaaring gamitin sa sitwasyong ito.
-
-          Kung nakatakda ang mode sa <ph name="FORCE_INSTALLED" /> o <ph name="NORMAL_INSTALLED" />, dapat ay i-configure din ang <ph name="UPDATE_URL" />. Tandaang ang URL ng update na nakatakda sa patakarang ito ay ginagamit lang sa unang pag-install; gagamitin ng mga susunod na update ng extension ang URL ng update na nakasaad sa manifest ng extension. Dapat humantong ang URL ng update sa Update Manifest XML document tulad ng binabanggit sa itaas. 
-
-          <ph name="BLOCKED_PERMISSIONS" />: nagmamapa sa listahan ng mga string na nagsasaad ng mga naka-block na pahintulot ng API para sa extension. Magkakapareho ang mga pangalan ng pahintulot at ang mga string ng pahintulot na idineklara sa manifest ng extension tulad ng inilalarawan sa <ph name="LINK_TO_EXTENSION_DOC3" />. Maaari ding i-configure ang setting na ito para sa extension na <ph name="DEFAULT_SCOPE" />. Kung nangangailangan ng pahintulot ang extension na nasa blocklist, hindi ito papayagang mag-load. Kung naglalaman ito ng naka-block na pahintulot bilang opsyonal na kinakailangan, pangangasiwaan ito sa normal na paraan, ngunit awtomatikong tatanggihan ang paghiling ng mga salungat na pahintulot sa runtime.
-
-          <ph name="ALLOWED_PERMISSIONS" />: katulad sa <ph name="BLOCKED_PERMISSIONS" />, ngunit sa halip ay tuwirang pinapayagan ang ilang pahintulot na maaaring na-block sa listahan ng naka-block na pahintulot sa buong mundo, kaya hindi maaaring i-configure para sa extension na <ph name="DEFAULT_SCOPE" />. Tandaang hindi awtomatikong nagbibigay ng mga pahintulot sa mga extension ang setting na ito.
-
-          <ph name="MINIMUM_VERSION_REQUIRED" />: nagmamapa sa string ng bersyon. Ang format ng string ng bersyon ay kapareho ng ginagamit sa manifest ng extension, tulad ng inilalarawan sa <ph name="LINK_TO_EXTENSION_DOC4" />. Idi-disable ang extension na may mas lumang bersyon kaysa sa tinukoy na minimum na bersyon. Nalalapat din ito sa mga extension na sapilitang na-install.
-
-          Maaari lang gamitin ang mga sumusunod na setting para sa default na configuration na <ph name="DEFAULT_SCOPE" />:
-
-          <ph name="INSTALL_SOURCES" />: Ang bawat item sa listahang ito ay isang match pattern na uri ng extension (<ph name="LINK_TO_MATCH_PATTERNS" />). Madaling mai-install ng mga user ang mga item mula sa anumang URL na tumutugma sa isang item sa listahang ito. Dapat payagan ng mga pattern na ito ang lokasyon ng file na <ph name="EXTENSION_SUFFIX_WILDCARD" /> at ang page kung saan nagsimula ang pag-download (ibig sabihin, ang referrer).
-
-          <ph name="ALLOWED_TYPES" />: Iwa-whitelist ng setting na ito ang mga pinapayagang uri ng extension/app na maaaring i-install sa <ph name="PRODUCT_NAME" />.  Ang value ay listahan ng mga string, na dapat ay isa sa mga sumusunod: <ph name="VALID_ALLOWED_TYPES" />. Tingnan ang dokumentasyon ng mga extension ng <ph name="PRODUCT_NAME" /> para sa higit pang impormasyon tungkol sa mga ganitong uri.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Kung sinusubukan ng user na mag-install ng extension, ngunit na-block ito ng patakaran, magpapakita ang Chrome Webstore ng pangkalahatang mensahe ng error. Pinapayagan ka ng setting na itong magsama ng text sa mensahe ng error. Magagamit ito upang idirekta ang mga user sa iyong help desk, ipaliwanag kung bakit na-block ang isang partikular na extension, o sa ibang bagay. Puputulin ang mensahe ng error na ito kung lalampas sa 1000 character.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Tumatanggap ng listahan ng mga host na may extension na iba-block sa pakikipag-ugnayan. Kabilang dito ang paglalagay ng javascript, pagbago at pagtingin sa webRequests / webNavigation, pagtingin at pagbago ng cookies. Pareho ang format sa Mga Match Pattern <ph name="LINK_TO_MATCH_PATTERNS" /> ngunit walang maaaring tukuying path. hal. "*://*.example.com". Sinusuportahan din nito ang epektibong pag-wildcard ng TLD hal. "*://example.*".
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Tumatanggap ng listahan ng mga host na may extension na maaaring makipag-ugnayan, nakalista man ang mga ito sa <ph name="RUNTIME_BLOCKED_HOSTS" /> o hindi. Kapareho nito ng format ang <ph name="RUNTIME_BLOCKED_HOSTS" />.
-          </translation>
 <translation id="787125417158068494">Kung nakatakda sa SyncDisabled o hindi naka-configure, hindi available ang mga certificate ng <ph name="PRODUCT_OS_NAME" /> para sa mga ARC app.
 
       Kung nakatakda sa CopyCaCerts, available para sa mga ARC app ang lahat ng CA certificate na may <ph name="WEB_TRUSTED_BIT" /> na na-install ng ONC.</translation>
@@ -2143,15 +2133,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung nakatakda ang patakaran sa naka-disable o hinayaang hindi nakatakda, hahantong ang mga pag-sign in sa mga regular na profile.</translation>
 <translation id="8158758865057576716">I-enable ang paggawa ng mga roaming na kopya para sa data ng profile sa <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8170878842291747619">Pinapagana ang integrated na serbisyo ng Google Translate sa <ph name="PRODUCT_NAME" />.
-
-      Kung pinagana mo ang setting na ito, ipapakita ng <ph name="PRODUCT_NAME" /> ang isang integrated na toolbar na nag-aalok na i-translate ang pahina para sa user, kapag naaangkop.
-
-      Kung hindi mo pinagana ang setting na ito, hindi kailanman makikita ng mga user ang bar ng translation.
-
-      Kung pinagana o hindi mo pinagana ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME" />.
-
-      Kung hinayaang hindi nakatakda ang setting na ito maaaring magpasya ang user na gamitin o hindi ang pagpapaganang ito.</translation>
 <translation id="817455428376641507">Pinapayagan ang access sa mga nakalistang URL, bilang mga pagbubukod sa blacklist ng URL.
 
       Tingnan ang paglalarawan ng patakaran ng blacklist ng URL para sa format ng mga entry ng listahang ito.

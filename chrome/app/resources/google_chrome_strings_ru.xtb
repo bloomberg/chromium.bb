@@ -90,12 +90,12 @@
 <translation id="3398288718845740432">Не показывать в Меню Google Chrome</translation>
 <translation id="3451115285585441894">Установка...</translation>
 <translation id="345171907106878721">Добавить пользователя Chrome</translation>
+<translation id="3479552764303398839">Не сейчас</translation>
 <translation id="3612333635265770873">Известно, что модуль с таким названием конфликтует с Google Chrome.</translation>
 <translation id="3622797965165704966">Теперь с Chrome ещё удобнее работать в аккаунте Google, в том числе на общих компьютерах.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Условия использования<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome OS</translation>
 <translation id="3718181793972440140">С устройства будет удален 1 объект. Чтобы восстановить данные позже, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Расширение "<ph name="EXTENSION_NAME" />" изменило стартовую страницу Chrome.</translation>
-<translation id="3738139272394829648">Быстрый поиск</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Удалить из Chrome</translation>
 <translation id="386202838227397562">Закройте все окна Chrome и повторите попытку снова.</translation>
@@ -126,7 +126,6 @@
 <translation id="4664415150087723341">Установлено специальное обновление системы безопасности. Перезапустите Google Chrome (все вкладки будут восстановлены).</translation>
 <translation id="4700157086864140907">В браузере Chrome для проверки правописания вводимый вами текст передается на серверы Google. Та же технология используется в Google Поиске.</translation>
 <translation id="4728575227883772061">Установка не удалась из-за неизвестной ошибки. Закройте все окна Google Chrome и повторите попытку снова.</translation>
-<translation id="4743926867934016338">Принимаю</translation>
 <translation id="4750550185319565338">Перезапустите Chrome, чтобы включить плагин "<ph name="PLUGIN_NAME" />"</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Chrome заблокировал этот файл как потенциально опасный.</translation>
@@ -154,12 +153,9 @@
 <translation id="5430073640787465221">Файл настроек поврежден или недействителен. Google Chrome не может восстановить ваши параметры.</translation>
 <translation id="5453904507266736060">Разрешить работу Google Chrome в фоновом режиме</translation>
 <translation id="5495581687705680288">Модули, загруженные в Google Chrome</translation>
-<translation id="5524843473235508879">Попытка переадресации заблокирована.</translation>
 <translation id="556024056938947818">Вводимые пароли будут отображаться в Google Chrome.</translation>
-<translation id="5563479599352954471">Поиск в одно касание</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Для этого сайта Chrome запрашивает разрешение на доступ к микрофону.</translation>
-<translation id="5620765574781326016">Теперь искать информацию в Интернете можно с любой страницы.</translation>
 <translation id="565744775970812598">Chrome заблокировал файл <ph name="FILE_NAME" /> как потенциально опасный.</translation>
 <translation id="573759479754913123">О Chrome OS</translation>
 <translation id="5749068826913805084">Для скачивания файлов браузеру Chrome требуется доступ к хранилищу.</translation>
@@ -195,7 +191,6 @@
 <translation id="6697947395630195233">Для этого сайта Chrome запрашивает доступ к данным о вашем местоположении.</translation>
 <translation id="683440813066116847">Разрешить в Google Chrome Canary передачу входящего трафика по протоколу mDNS</translation>
 <translation id="686561893457936865">Chrome всегда под рукой</translation>
-<translation id="6883876366448858277">отправляет слово и окружающий его контекст в Google Поиск; возвращает определения, фотографии, картинки и другие результаты.</translation>
 <translation id="6885412569789873916">Приложения Chrome (бета)</translation>
 <translation id="6967962315388095737">Разрешить в Google Chrome (бета) передачу входящего трафика по протоколу mDNS</translation>
 <translation id="6970811910055250180">Обновление операционной системы…</translation>
@@ -217,7 +212,6 @@
 <translation id="7437998757836447326">Выход из Chrome</translation>
 <translation id="7459554271817304652">Чтобы сохранить персонализированные функции для работы в Интернете и получить доступ к ним из Google Chrome на любом компьютере, необходимо настроить синхронизацию.</translation>
 <translation id="7473136999113284234">Chrome обновляется автоматически, поэтому у вас всегда будет установлена последняя версия.</translation>
-<translation id="7473891865547856676">Пропустить</translation>
 <translation id="7494905215383356681">Лицензии Chrome на ПО с открытым исходным кодом</translation>
 <translation id="7535429826459677826">Google Chrome для разработчиков</translation>
 <translation id="7552219221109926349">Отображать Chrome OS на этом языке</translation>
