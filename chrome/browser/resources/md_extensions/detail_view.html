@@ -87,6 +87,10 @@
         text-decoration: none;
       }
 
+      .three-line {
+        min-height: var(--cr-section-three-line-min-height);
+      }
+
       .section {
         @apply(--cr-section);
       }
@@ -124,11 +128,6 @@
 
       .actionable {
         cursor: pointer;
-      }
-
-      #allow-incognito cr-tooltip-icon {
-        -webkit-margin-start: 20px;
-        display: inline;
       }
 
       .inspectable-view {
@@ -324,17 +323,13 @@
         <template is="dom-if" if="[[shouldShowOptionsSection_(data.*)]]">
           <div id="options-section">
             <template is="dom-if" if="[[data.incognitoAccess.isEnabled]]">
-              <extensions-toggle-row id="allow-incognito"
+              <extensions-toggle-row id="allow-incognito" class="three-line"
                   checked="[[data.incognitoAccess.isActive]]"
                   on-change="onAllowIncognitoChange_">
-                <span>
-                  $i18n{itemAllowIncognito}
-                  <cr-tooltip-icon
-                      icon-class="cr:error-outline"
-                      tooltip-text="$i18n{incognitoInfoWarning}"
-                      on-click="onIconClick_">
-                  </cr-tooltip-icon>
-                </span>
+                <div>
+                  <div>$i18n{itemAllowIncognito}</div>
+                  <div class="section-content">$i18n{incognitoInfoWarning}</div>
+                </div>
               </extensions-toggle-row>
             </template>
             <template is="dom-if" if="[[data.fileAccess.isEnabled]]">
