@@ -849,7 +849,7 @@ void FocusController::FocusDocumentView(Frame* frame, bool notify_embedder) {
     Document* document = focused_frame->GetDocument();
     Element* focused_element = document ? document->FocusedElement() : nullptr;
     if (focused_element)
-      DispatchBlurEvent(*document, *focused_element);
+      document->ClearFocusedElement();
   }
 
   LocalFrame* new_focused_frame =

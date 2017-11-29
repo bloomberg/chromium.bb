@@ -19,7 +19,7 @@ window.onload = function() {
     iframe2.contentWindow.focus();
     // The following check is not important. activeElement is innerInput in Firefox,
     // and is body in IE in this case.
-    shouldBe('doc.activeElement', 'innerInput');
+    shouldBe('doc.activeElement', 'doc.body');
 
     iframe1.contentWindow.focus();
     innerInput.focus();
