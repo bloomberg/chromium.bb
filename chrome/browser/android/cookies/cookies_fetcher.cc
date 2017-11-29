@@ -92,9 +92,11 @@ void CookiesFetcher::OnCookiesFetchFinished(const net::CookieList& cookies) {
   Java_CookiesFetcher_onCookieFetchFinished(env, jobject_, joa);
 }
 
-static void RestoreToCookieJarInternal(net::URLRequestContextGetter* getter,
-                                       const net::CanonicalCookie& cookie) {
+static void RestoreToCookieJarInternal(
+    net::URLRequestContextGetter* getter,
+    std::unique_ptr<net::CanonicalCookie> cookie) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(cookie->IsCanonical());
 
   net::CookieStore* store = getter->GetURLRequestContext()->cookie_store();
 
@@ -105,28 +107,11 @@ static void RestoreToCookieJarInternal(net::URLRequestContextGetter* getter,
 
   base::Callback<void(bool success)> cb;
 
-  // To re-create the original cookie, a domain should only be passed in to
-  // SetCookieWithDetailsAsync if cookie.Domain() has a leading period, to
-  // re-create the original cookie.
-  std::string effective_domain = cookie.Domain();
-  std::string host;
-  if (effective_domain.length() > 1 && effective_domain[0] == '.') {
-    host = effective_domain.substr(1);
-  } else {
-    host = effective_domain;
-    effective_domain = "";
-  }
-
   // Assume HTTPS - since the cookies are being restored from another store,
   // they have already gone through the strict secure check.
-  GURL url(std::string(url::kHttpsScheme) + url::kStandardSchemeSeparator +
-           host + "/");
-
-  store->SetCookieWithDetailsAsync(
-      url, cookie.Name(), cookie.Value(), effective_domain, cookie.Path(),
-      base::Time(), cookie.ExpiryDate(), cookie.LastAccessDate(),
-      cookie.IsSecure(), cookie.IsHttpOnly(), cookie.SameSite(),
-      cookie.Priority(), cb);
+  store->SetCanonicalCookieAsync(std::move(cookie), true /*secure_source*/,
+                                 true /*modify_http_only*/,
+                                 net::CookieStore::SetCookiesCallback());
 }
 
 static void JNI_CookiesFetcher_RestoreCookies(
@@ -152,22 +137,23 @@ static void JNI_CookiesFetcher_RestoreCookies(
   scoped_refptr<net::URLRequestContextGetter> getter(
       profile->GetRequestContext());
 
-  net::CanonicalCookie cookie(
-      base::android::ConvertJavaStringToUTF8(env, name),
-      base::android::ConvertJavaStringToUTF8(env, value),
-      base::android::ConvertJavaStringToUTF8(env, domain),
-      base::android::ConvertJavaStringToUTF8(env, path),
-      base::Time::FromInternalValue(creation),
-      base::Time::FromInternalValue(expiration),
-      base::Time::FromInternalValue(last_access), secure, httponly,
-      static_cast<net::CookieSameSite>(same_site),
-      static_cast<net::CookiePriority>(priority));
+  std::unique_ptr<net::CanonicalCookie> cookie(
+      std::make_unique<net::CanonicalCookie>(
+          base::android::ConvertJavaStringToUTF8(env, name),
+          base::android::ConvertJavaStringToUTF8(env, value),
+          base::android::ConvertJavaStringToUTF8(env, domain),
+          base::android::ConvertJavaStringToUTF8(env, path),
+          base::Time::FromInternalValue(creation),
+          base::Time::FromInternalValue(expiration),
+          base::Time::FromInternalValue(last_access), secure, httponly,
+          static_cast<net::CookieSameSite>(same_site),
+          static_cast<net::CookiePriority>(priority)));
 
   // The rest must be done from the IO thread.
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&RestoreToCookieJarInternal, base::RetainedRef(getter),
-                 cookie));
+      base::BindOnce(&RestoreToCookieJarInternal, base::RetainedRef(getter),
+                     std::move(cookie)));
 }
 
 // JNI functions

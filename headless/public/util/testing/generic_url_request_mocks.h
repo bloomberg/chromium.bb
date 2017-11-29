@@ -50,20 +50,6 @@ class MockCookieStore : public net::CookieStore {
                                  const net::CookieOptions& options,
                                  SetCookiesCallback callback) override;
 
-  void SetCookieWithDetailsAsync(const GURL& url,
-                                 const std::string& name,
-                                 const std::string& value,
-                                 const std::string& domain,
-                                 const std::string& path,
-                                 base::Time creation_time,
-                                 base::Time expiration_time,
-                                 base::Time last_access_time,
-                                 bool secure,
-                                 bool http_only,
-                                 net::CookieSameSite same_site,
-                                 net::CookiePriority priority,
-                                 SetCookiesCallback callback) override;
-
   void SetCanonicalCookieAsync(std::unique_ptr<net::CanonicalCookie> cookie,
                                bool secure_source,
                                bool modify_http_only,

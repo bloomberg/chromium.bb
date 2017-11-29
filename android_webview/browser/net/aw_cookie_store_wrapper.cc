@@ -125,26 +125,6 @@ void SetCookieWithOptionsAsyncOnCookieThread(
                                               std::move(callback));
 }
 
-void SetCookieWithDetailsAsyncOnCookieThread(
-    const GURL& url,
-    const std::string& name,
-    const std::string& value,
-    const std::string& domain,
-    const std::string& path,
-    base::Time creation_time,
-    base::Time expiration_time,
-    base::Time last_access_time,
-    bool secure,
-    bool http_only,
-    net::CookieSameSite same_site,
-    net::CookiePriority priority,
-    net::CookieStore::SetCookiesCallback callback) {
-  GetCookieStore()->SetCookieWithDetailsAsync(
-      url, name, value, domain, path, creation_time, expiration_time,
-      last_access_time, secure, http_only, same_site, priority,
-      std::move(callback));
-}
-
 void SetCanonicalCookieAsyncOnCookieThread(
     std::unique_ptr<net::CanonicalCookie> cookie,
     bool secure_source,
@@ -234,27 +214,6 @@ void AwCookieStoreWrapper::SetCookieWithOptionsAsync(
   PostTaskToCookieStoreTaskRunner(base::BindOnce(
       &SetCookieWithOptionsAsyncOnCookieThread, url, cookie_line, options,
       CreateWrappedCallback<bool>(std::move(callback))));
-}
-
-void AwCookieStoreWrapper::SetCookieWithDetailsAsync(
-    const GURL& url,
-    const std::string& name,
-    const std::string& value,
-    const std::string& domain,
-    const std::string& path,
-    base::Time creation_time,
-    base::Time expiration_time,
-    base::Time last_access_time,
-    bool secure,
-    bool http_only,
-    net::CookieSameSite same_site,
-    net::CookiePriority priority,
-    SetCookiesCallback callback) {
-  DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
-  PostTaskToCookieStoreTaskRunner(base::BindOnce(
-      &SetCookieWithDetailsAsyncOnCookieThread, url, name, value, domain, path,
-      creation_time, expiration_time, last_access_time, secure, http_only,
-      same_site, priority, CreateWrappedCallback<bool>(std::move(callback))));
 }
 
 void AwCookieStoreWrapper::SetCanonicalCookieAsync(

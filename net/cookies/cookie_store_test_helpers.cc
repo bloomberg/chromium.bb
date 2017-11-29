@@ -76,23 +76,6 @@ void DelayedCookieMonster::SetCookieWithOptionsAsync(
       base::TimeDelta::FromMilliseconds(kDelayedTime));
 }
 
-void DelayedCookieMonster::SetCookieWithDetailsAsync(
-    const GURL& url,
-    const std::string& name,
-    const std::string& value,
-    const std::string& domain,
-    const std::string& path,
-    base::Time creation_time,
-    base::Time expiration_time,
-    base::Time last_access_time,
-    bool secure,
-    bool http_only,
-    CookieSameSite same_site,
-    CookiePriority priority,
-    SetCookiesCallback callback) {
-  NOTREACHED();
-}
-
 void DelayedCookieMonster::SetCanonicalCookieAsync(
     std::unique_ptr<CanonicalCookie> cookie,
     bool secure_source,

@@ -250,6 +250,59 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   return cc;
 }
 
+// static
+std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
+    const GURL& url,
+    const std::string& name,
+    const std::string& value,
+    const std::string& domain,
+    const std::string& path,
+    base::Time creation_time,
+    base::Time expiration_time,
+    base::Time last_access_time,
+    bool secure,
+    bool http_only,
+    CookieSameSite same_site,
+    CookiePriority priority) {
+  // Validate consistency of passed arguments.
+  if (ParsedCookie::ParseTokenString(name) != name ||
+      ParsedCookie::ParseValueString(value) != value ||
+      ParsedCookie::ParseValueString(domain) != domain ||
+      ParsedCookie::ParseValueString(path) != path) {
+    return nullptr;
+  }
+
+  std::string cookie_domain;
+  if (!cookie_util::GetCookieDomainWithString(url, domain, &cookie_domain))
+    return nullptr;
+
+  if (secure && !url.SchemeIsCryptographic())
+    return nullptr;
+
+  std::string cookie_path = CanonicalCookie::CanonPathWithString(url, path);
+  if (!path.empty() && cookie_path != path)
+    return nullptr;
+
+  if (!last_access_time.is_null() && creation_time.is_null())
+    return nullptr;
+
+  // Canonicalize path again to make sure it escapes characters as needed.
+  url::Component path_component(0, cookie_path.length());
+  url::RawCanonOutputT<char> canon_path;
+  url::Component canon_path_component;
+  url::CanonicalizePath(cookie_path.data(), path_component, &canon_path,
+                        &canon_path_component);
+  cookie_path = std::string(canon_path.data() + canon_path_component.begin,
+                            canon_path_component.len);
+
+  std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
+      name, value, cookie_domain, cookie_path, creation_time, expiration_time,
+      last_access_time, secure, http_only, same_site, priority));
+  DCHECK(cc->IsCanonical());
+
+  return cc;
+}
+
 bool CanonicalCookie::IsEquivalentForSecureCookieMatching(
     const CanonicalCookie& ecc) const {
   return (name_ == ecc.Name() && (ecc.IsDomainMatch(DomainWithoutDot()) ||

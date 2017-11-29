@@ -109,32 +109,6 @@ class NET_EXPORT CookieStore {
                                          const CookieOptions& options,
                                          SetCookiesCallback callback) = 0;
 
-  // Sets a cookie given explicit user-provided cookie attributes. The cookie
-  // name, value, domain, etc. are each provided as separate strings. This
-  // function expects each attribute to be well-formed. It will check for
-  // disallowed characters (e.g. the ';' character is disallowed within the
-  // cookie value attribute) and will return false without setting the cookie
-  // if such characters are found.
-  //
-  // If |creation_time| is null, it will be set to the time the cookie is set.
-  // If |last_access_time| is null, it be set to |creation_time|.
-  //
-  // If unable to set a cookie, will  invoke |callback| with false.
-  virtual void SetCookieWithDetailsAsync(const GURL& url,
-                                         const std::string& name,
-                                         const std::string& value,
-                                         const std::string& domain,
-                                         const std::string& path,
-                                         base::Time creation_time,
-                                         base::Time expiration_time,
-                                         base::Time last_access_time,
-                                         bool secure,
-                                         bool http_only,
-                                         CookieSameSite same_site,
-                                         CookiePriority priority,
-                                         SetCookiesCallback callback) = 0;
-
-  // TODO(rdsmith): Remove SetCookieWithDetailsAsync in favor of this.
   // Set the cookie on the cookie store.  |cookie.IsCanonical()| must
   // be true.  |secure_source| indicates if the source of the setting
   // may be considered secure (if from a URL, the scheme is
