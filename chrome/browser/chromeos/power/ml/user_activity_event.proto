@@ -62,6 +62,7 @@ message UserActivityEvent {
     optional int32 last_activity_time_sec = 3;
     optional int32 last_user_activity_time_sec = 4;
 
+    // This must match the week range in base::Time::Exploded.
     enum DayOfWeek {
       SUN = 0;
       MON = 1;
