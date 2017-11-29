@@ -41,7 +41,7 @@
 (allow signal (target self))
 
 ; Consumes a subpath and appends it to the user's homedir path.
-(define (user-homedir-path subpath) 
+(define (user-homedir-path subpath)
   (string-append (param homedir-as-literal) subpath))
 
 ; Allow logging for all processes.
@@ -75,7 +75,8 @@
   (path (user-homedir-path "/.CFUserTextEncoding"))
   (path (user-homedir-path "/Library/Preferences/com.apple.universalaccess.plist"))
   (path (user-homedir-path "/Library/Preferences/.GlobalPreferences.plist"))
-  (regex (user-homedir-path #"/Library/Preferences/ByHost/.GlobalPreferences.*")))
+  (regex (user-homedir-path #"/Library/Preferences/ByHost/.GlobalPreferences.*"))
+  (subpath (user-homedir-path "/Library/Fonts")))
 
 ; Reads of /dev devices.
 (allow file-read-data
@@ -133,13 +134,13 @@
   (iokit-registry-entry-class "RootDomainUserClient"))
 
 ; POSIX IPC
-(allow ipc-posix-shm-read-data 
+(allow ipc-posix-shm-read-data
   (ipc-posix-name "apple.cfprefs.317580v1")
   (ipc-posix-name "apple.cfprefs.daemonv1")
   (ipc-posix-name "apple.shm.notification_center"))
 
 ; mach IPC
-(allow mach-lookup 
+(allow mach-lookup
   (global-name "com.apple.distributed_notifications@Uv3")
   (global-name "com.apple.fonts")
   ; crbug.com/756145, crbug.com/786615
@@ -155,6 +156,11 @@
 ; but 10.9 through 10.11 use FontServer.
 (if (< os-version 1012)
   (allow mach-lookup (global-name "com.apple.FontServer")))
+
+; To allow accessing downloaded and other hidden fonts in
+; /System/Library/Asssets/com_apple_MobileAsset_Font*.
+; (https://crbug.com/662686)
+(allow file-read* (extension "com.apple.app-sandbox.read"))
 
 ; sysctl
 (if (= os-version 1009)
