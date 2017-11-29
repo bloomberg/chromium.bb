@@ -2740,15 +2740,15 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     renderer_cmd->AppendSwitch(switches::kDisableDatabases);
   }
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // If gpu compositing is not being used, tell the renderer at startup. This
   // is inherently racey, as it may change while the renderer is being launched,
   // but the renderer will hear about the correct state eventually. This
   // optimizes the common case to avoid wasted work.
-  // Note: There is no ImageTransportFactory with Mash or Viz.
-  // TODO(danakj): Get this info somewhere for viz mode.
-  if (!IsUsingMus() && !browser_cmd.HasSwitch(switches::kEnableViz) &&
-      ImageTransportFactory::GetInstance()->IsGpuCompositingDisabled())
+  // Note: There is no ImageTransportFactory with Mus, but there is also no
+  // software compositing on ChromeOS where Mus is used, so no need to check
+  // this state and forward it.
+  if (ImageTransportFactory::GetInstance()->IsGpuCompositingDisabled())
     renderer_cmd->AppendSwitch(switches::kDisableGpuCompositing);
 #endif
 
