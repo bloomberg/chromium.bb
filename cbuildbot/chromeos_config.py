@@ -1526,8 +1526,8 @@ def GeneralTemplates(site_config, ge_build_config):
           config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
           config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
           config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
-      hw_tests=(hw_test_list.SharedPoolCanary() +
-                hw_test_list.CtsGtsQualTests()),
+      hw_tests=(hw_test_list.CtsGtsQualTests() +
+                hw_test_list.SharedPoolCanary()),
       paygen=True,
       signer_tests=True,
       trybot_list=True,
