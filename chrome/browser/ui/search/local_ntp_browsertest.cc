@@ -29,9 +29,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/web_feature.mojom.h"
+#include "url/gurl.h"
 
 class LocalNTPTest : public InProcessBrowserTest {
  public:
@@ -430,101 +430,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPRTLTest, RightToLeft) {
   ASSERT_TRUE(instant_test_utils::GetStringFromJS(
       active_tab, "document.documentElement.dir", &dir));
   EXPECT_EQ("rtl", dir);
-}
-
-// A test class that sets up a local HTML file as the NTP URL.
-class CustomNTPUrlTest : public LocalNTPTest {
- public:
-  explicit CustomNTPUrlTest(const std::string& ntp_file_path)
-      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS),
-        ntp_file_path_(ntp_file_path) {
-    https_test_server_.ServeFilesFromSourceDirectory(
-        "chrome/test/data/local_ntp");
-  }
-
- private:
-  void SetUpOnMainThread() override {
-    ASSERT_TRUE(https_test_server_.Start());
-    GURL ntp_url = https_test_server_.GetURL(ntp_file_path_);
-    local_ntp_test_utils::SetUserSelectedDefaultSearchProvider(
-        browser()->profile(), https_test_server_.base_url().spec(),
-        ntp_url.spec());
-  }
-
-  net::EmbeddedTestServer https_test_server_;
-  const std::string ntp_file_path_;
-};
-
-// A test class that sets up local_ntp_browsertest.html as the NTP URL. It's
-// mostly a copy of the real local_ntp.html, but it adds some testing JS.
-class LocalNTPJavascriptTest : public CustomNTPUrlTest {
- public:
-  LocalNTPJavascriptTest() : CustomNTPUrlTest("/local_ntp_browsertest.html") {}
-};
-
-// This runs a bunch of pure JS-side tests, i.e. those that don't require any
-// interaction from the native side.
-IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, SimpleJavascriptTests) {
-  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-
-  // Run the tests.
-  bool success = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "!!runSimpleTests('localNtp')", &success));
-  EXPECT_TRUE(success);
-}
-
-// A test class that sets up voice_browsertest.html as the NTP URL. It's
-// mostly a copy of the real local_ntp.html, but it adds some testing JS.
-class LocalNTPVoiceJavascriptTest : public CustomNTPUrlTest {
- public:
-  LocalNTPVoiceJavascriptTest() : CustomNTPUrlTest("/voice_browsertest.html") {}
-};
-
-IN_PROC_BROWSER_TEST_F(LocalNTPVoiceJavascriptTest, MicrophoneTests) {
-  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
-
-  // Run the tests.
-  bool success = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "!!runSimpleTests('microphone')", &success));
-  EXPECT_TRUE(success);
-}
-
-IN_PROC_BROWSER_TEST_F(LocalNTPVoiceJavascriptTest, TextTests) {
-  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
-
-  // Run the tests.
-  bool success = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "!!runSimpleTests('text')", &success));
-  EXPECT_TRUE(success);
-}
-
-IN_PROC_BROWSER_TEST_F(LocalNTPVoiceJavascriptTest, SpeechTests) {
-  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
-
-  // Run the tests.
-  bool success = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "!!runSimpleTests('speech')", &success));
-  EXPECT_TRUE(success);
-}
-
-IN_PROC_BROWSER_TEST_F(LocalNTPVoiceJavascriptTest, ViewTests) {
-  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
-
-  // Run the tests.
-  bool success = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "!!runSimpleTests('view')", &success));
-  EXPECT_TRUE(success);
 }
 
 namespace {

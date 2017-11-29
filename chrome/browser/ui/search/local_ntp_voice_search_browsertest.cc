@@ -23,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 class LocalNTPVoiceSearchSmokeTest : public InProcessBrowserTest {
  public:
