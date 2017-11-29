@@ -37,6 +37,9 @@ class ASH_EXPORT ToastOverlay : public ui::ImplicitAnimationObserver {
     virtual void OnClosed() = 0;
   };
 
+  // Offset of the overlay from the edge of the work area.
+  static constexpr int kOffset = 16;
+
   // Creates the Toast overlay UI. |text| is the message to be shown, and
   // |dismiss_text| is the message for the button to dismiss the toast message.
   // If |dismiss_text| is null, no dismiss button will be shown. If
