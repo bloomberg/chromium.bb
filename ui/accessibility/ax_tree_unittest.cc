@@ -44,6 +44,13 @@ std::string GetBoundsAsString(const AXTree& tree, int32_t id) {
                             bounds.y(), bounds.width(), bounds.height());
 }
 
+std::string GetUnclippedBoundsAsString(const AXTree& tree, int32_t id) {
+  AXNode* node = tree.GetFromId(id);
+  gfx::RectF bounds = tree.GetTreeBounds(node, nullptr, false);
+  return base::StringPrintf("(%.0f, %.0f) size (%.0f x %.0f)", bounds.x(),
+                            bounds.y(), bounds.width(), bounds.height());
+}
+
 bool IsNodeOffscreen(const AXTree& tree, int32_t id) {
   AXNode* node = tree.GetFromId(id);
   bool result = false;
@@ -949,18 +956,21 @@ TEST(AXTreeTest, GetBoundsEmptyBoundsInheritsFromParent) {
   EXPECT_EQ("(0, 0) size (800 x 600)", GetBoundsAsString(tree, 1));
   EXPECT_EQ("(300, 200) size (100 x 100)", GetBoundsAsString(tree, 2));
   EXPECT_EQ("(300, 200) size (100 x 100)", GetBoundsAsString(tree, 3));
+  EXPECT_EQ("(0, 0) size (800 x 600)", GetUnclippedBoundsAsString(tree, 1));
+  EXPECT_EQ("(300, 200) size (100 x 100)", GetUnclippedBoundsAsString(tree, 2));
+  EXPECT_EQ("(300, 200) size (100 x 100)", GetUnclippedBoundsAsString(tree, 3));
   EXPECT_FALSE(IsNodeOffscreen(tree, 1));
   EXPECT_FALSE(IsNodeOffscreen(tree, 2));
   EXPECT_TRUE(IsNodeOffscreen(tree, 3));
 }
 
-TEST(AXTreeTest, DISABLED_GetBoundsCropsChildToRoot) {
+TEST(AXTreeTest, GetBoundsCropsChildToRoot) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(5);
   tree_update.nodes[0].id = 1;
   tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
-  tree_update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
+  tree_update.nodes[0].AddBoolAttribute(ui::AX_ATTR_CLIPS_CHILDREN, true);
   tree_update.nodes[0].child_ids.push_back(2);
   tree_update.nodes[0].child_ids.push_back(3);
   tree_update.nodes[0].child_ids.push_back(4);
@@ -983,6 +993,13 @@ TEST(AXTreeTest, DISABLED_GetBoundsCropsChildToRoot) {
   EXPECT_EQ("(700, 500) size (100 x 100)", GetBoundsAsString(tree, 3));
   EXPECT_EQ("(50, 0) size (150 x 1)", GetBoundsAsString(tree, 4));
   EXPECT_EQ("(50, 599) size (150 x 1)", GetBoundsAsString(tree, 5));
+
+  // Check the unclipped bounds are as expected.
+  EXPECT_EQ("(-100, -100) size (150 x 150)",
+            GetUnclippedBoundsAsString(tree, 2));
+  EXPECT_EQ("(700, 500) size (150 x 150)", GetUnclippedBoundsAsString(tree, 3));
+  EXPECT_EQ("(50, -200) size (150 x 150)", GetUnclippedBoundsAsString(tree, 4));
+  EXPECT_EQ("(50, 700) size (150 x 150)", GetUnclippedBoundsAsString(tree, 5));
 }
 
 TEST(AXTreeTest, GetBoundsSetsOffscreenIfClipsChildren) {

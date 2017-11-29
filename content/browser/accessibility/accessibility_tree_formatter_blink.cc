@@ -151,6 +151,12 @@ void AccessibilityTreeFormatterBlink::AddProperties(
                    node.GetData().transform &&
                    !node.GetData().transform->IsIdentity());
 
+  gfx::Rect unclipped_bounds = node.GetPageBoundsRect(&offscreen, false);
+  dict->SetInteger("unclippedBoundsX", unclipped_bounds.x());
+  dict->SetInteger("unclippedBoundsY", unclipped_bounds.y());
+  dict->SetInteger("unclippedBoundsWidth", unclipped_bounds.width());
+  dict->SetInteger("unclippedBoundsHeight", unclipped_bounds.height());
+
   for (int state_index = ui::AX_STATE_NONE;
        state_index <= ui::AX_STATE_LAST;
        ++state_index) {
@@ -295,6 +301,14 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
   WriteAttribute(false,
                  FormatCoordinates("pageSize",
                                    "pageBoundsWidth", "pageBoundsHeight", dict),
+                 &line);
+  WriteAttribute(false,
+                 FormatCoordinates("unclippedLocation", "unclippedBoundsX",
+                                   "unclippedBoundsY", dict),
+                 &line);
+  WriteAttribute(false,
+                 FormatCoordinates("unclippedSize", "unclippedBoundsWidth",
+                                   "unclippedBoundsHeight", dict),
                  &line);
 
   bool transform;

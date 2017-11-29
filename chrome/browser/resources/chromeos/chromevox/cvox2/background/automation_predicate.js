@@ -250,9 +250,9 @@ AutomationPredicate.group = AutomationPredicate.match({
  * @return {boolean}
  */
 AutomationPredicate.linebreak = function(first, second) {
-  // TODO(dtseng): Use next/previousOnLin once available.
-  var fl = first.location;
-  var sl = second.location;
+  // TODO(dtseng): Use next/previousOnLine once available.
+  var fl = first.unclippedLocation;
+  var sl = second.unclippedLocation;
   return fl.top != sl.top || (fl.top + fl.height != sl.top + sl.height);
 };
 
