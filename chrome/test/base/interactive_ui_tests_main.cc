@@ -98,8 +98,8 @@ class InteractiveUITestLauncherDelegate : public ChromeTestLauncherDelegate {
 
   void OnTestTimedOut(const base::CommandLine& command_line) override {
 #if defined(OS_WIN)
-    // Check for any always-on-top windows present before terminating the test.
-    // Take a snapshot if any are found and attempt to close any that are system
+    // Take a snapshot of the screen and check for any always-on-top windows
+    // present before terminating the test. Attempt to close any that are system
     // dialogs.
     KillAlwaysOnTopWindows(RunType::AFTER_TEST_TIMEOUT, &command_line);
 #endif
