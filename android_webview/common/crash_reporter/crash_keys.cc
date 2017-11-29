@@ -95,6 +95,9 @@ size_t RegisterWebViewCrashKeys() {
       // Temporary for https://crbug.com/685996.
       {"user-cloud-policy-manager-connect-trace", kMediumSize},
 
+      // TODO(sunnyps): Remove after fixing crbug.com/724999.
+      {"gl-context-set-current-stack-trace", kMediumSize},
+
       // Accessibility keys. Temporary for http://crbug.com/765490.
       {"ax_tree_error", kSmallSize},
       {"ax_tree_update", kMediumSize},
