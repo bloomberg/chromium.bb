@@ -25,6 +25,9 @@ NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
 // Key in the NSUserDefaults for a string value that stores the version of the
 // last session.
 NSString* const kLastRanVersion = @"LastRanVersion";
+// Key in the NSUserDefaults for a string value that stores the language of the
+// last session.
+NSString* const kLastRanLanguage = @"LastRanLanguage";
 
 using PreviousSessionInfoTest = PlatformTest;
 
@@ -33,6 +36,7 @@ TEST_F(PreviousSessionInfoTest, InitializationWithEmptyDefaults) {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kDidSeeMemoryWarningShortlyBeforeTerminating];
   [defaults removeObjectForKey:kLastRanVersion];
+  [defaults removeObjectForKey:kLastRanLanguage];
 
   // Instantiate the PreviousSessionInfo sharedInstance.
   PreviousSessionInfo* sharedInstance = [PreviousSessionInfo sharedInstance];
@@ -40,6 +44,39 @@ TEST_F(PreviousSessionInfoTest, InitializationWithEmptyDefaults) {
   // Checks the default values.
   EXPECT_FALSE([sharedInstance didSeeMemoryWarningShortlyBeforeTerminating]);
   EXPECT_TRUE([sharedInstance isFirstSessionAfterUpgrade]);
+  EXPECT_TRUE([sharedInstance isFirstSessionAfterLanguageChange]);
+}
+
+TEST_F(PreviousSessionInfoTest, InitializationWithSameLanguage) {
+  [PreviousSessionInfo resetSharedInstanceForTesting];
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  [defaults removeObjectForKey:kLastRanLanguage];
+
+  // Set the current language as the last ran language.
+  NSString* currentVersion = [[NSLocale preferredLanguages] objectAtIndex:0];
+  [defaults setObject:currentVersion forKey:kLastRanVersion];
+
+  // Instantiate the PreviousSessionInfo sharedInstance.
+  PreviousSessionInfo* sharedInstance = [PreviousSessionInfo sharedInstance];
+
+  // Checks the values.
+  EXPECT_TRUE([sharedInstance isFirstSessionAfterLanguageChange]);
+}
+
+TEST_F(PreviousSessionInfoTest, InitializationWithDifferentLanguage) {
+  [PreviousSessionInfo resetSharedInstanceForTesting];
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  [defaults removeObjectForKey:kLastRanLanguage];
+
+  // Set the current language as the last ran language.
+  NSString* currentVersion = @"Fake Language";
+  [defaults setObject:currentVersion forKey:kLastRanVersion];
+
+  // Instantiate the PreviousSessionInfo sharedInstance.
+  PreviousSessionInfo* sharedInstance = [PreviousSessionInfo sharedInstance];
+
+  // Checks the values.
+  EXPECT_TRUE([sharedInstance isFirstSessionAfterLanguageChange]);
 }
 
 TEST_F(PreviousSessionInfoTest, InitializationWithSameVersionNoMemoryWarning) {
