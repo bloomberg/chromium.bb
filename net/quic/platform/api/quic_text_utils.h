@@ -76,6 +76,10 @@ class QuicTextUtils {
     return QuicTextUtilsImpl::HexEncode(data);
   }
 
+  // This converts a uint32 into an 8-character hexidecimal
+  // representation.  Return value: 8 characters of ASCII string.
+  static std::string Hex(uint32_t v) { return QuicTextUtilsImpl::Hex(v); }
+
   // Converts |data| from a hexadecimal ASCII string to a binary string
   // that is |data.length()/2| bytes long.
   static std::string HexDecode(QuicStringPiece data) {
