@@ -855,8 +855,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
       ptr_ += op->skip;
       op_offset_ += op->skip;
 
-      // Debugging crbug.com/738182.
-      base::debug::Alias(op);
       CHECK_LE(op_offset_, buffer_->used_);
       return *this;
     }
