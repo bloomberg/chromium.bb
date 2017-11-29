@@ -1158,6 +1158,12 @@
         <structure name="IDR_SETTINGS_INTERNET_KNOWN_NETWORKS_PAGE_JS"
                    file="internet_page/internet_known_networks_page.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_INTERNET_PAGE_BROWSER_PROXY_HTML"
+                   file="internet_page/internet_page_browser_proxy.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_INTERNET_PAGE_BROWSER_PROXY_JS"
+                   file="internet_page/internet_page_browser_proxy.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_INTERNET_PAGE_HTML"
                    file="internet_page/internet_page.html"
                    type="chrome_html" />

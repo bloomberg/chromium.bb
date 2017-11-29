@@ -91,6 +91,14 @@ Polymer({
   /** @private {number|null} */
   scanIntervalId_: null,
 
+  /** @private  {settings.InternetPageBrowserProxy} */
+  browserProxy_: null,
+
+  /** @override */
+  created: function() {
+    this.browserProxy_ = settings.InternetPageBrowserProxyImpl.getInstance();
+  },
+
   /** override */
   detached: function() {
     this.stopScanning_();
@@ -347,7 +355,7 @@ Polymer({
    */
   onAddThirdPartyVpnTap_: function(event) {
     var provider = event.model.item;
-    chrome.send('addNetwork', [CrOnc.Type.VPN, provider.ExtensionID]);
+    this.browserProxy_.addThirdPartyVpn(CrOnc.Type.VPN, provider.ExtensionID);
   },
 
   /**
