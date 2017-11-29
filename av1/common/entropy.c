@@ -1599,12 +1599,14 @@ static void av1_average_cdf(aom_cdf_prob *cdf_ptr[], aom_cdf_prob *fc_cdf_ptr,
   }
 }
 
-#define AVERAGE_TILE_CDFS(cname)                            \
-  for (i = 0; i < num_tiles; ++i)                           \
-    cdf_ptr[i] = (aom_cdf_prob *)&ec_ctxs[i]->cname;        \
-  fc_cdf_ptr = (aom_cdf_prob *)&fc->cname;                  \
-  cdf_size = (int)sizeof(fc->cname) / sizeof(aom_cdf_prob); \
-  av1_average_cdf(cdf_ptr, fc_cdf_ptr, cdf_size, num_tiles);
+#define AVERAGE_TILE_CDFS(cname)                               \
+  do {                                                         \
+    for (i = 0; i < num_tiles; ++i)                            \
+      cdf_ptr[i] = (aom_cdf_prob *)&ec_ctxs[i]->cname;         \
+    fc_cdf_ptr = (aom_cdf_prob *)&fc->cname;                   \
+    cdf_size = (int)sizeof(fc->cname) / sizeof(aom_cdf_prob);  \
+    av1_average_cdf(cdf_ptr, fc_cdf_ptr, cdf_size, num_tiles); \
+  } while (0);
 
 void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
                                 aom_cdf_prob *cdf_ptr[], int num_tiles) {
