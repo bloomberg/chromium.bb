@@ -5990,11 +5990,9 @@ static void estimate_ref_frame_costs(
     *comp_mode_p = 128;
   } else {
     int intra_inter_ctx = av1_get_intra_inter_context(xd);
-    aom_prob comp_inter_p = 128;
 
     if (cm->reference_mode == REFERENCE_MODE_SELECT) {
-      comp_inter_p = av1_get_reference_mode_prob(cm, xd);
-      *comp_mode_p = comp_inter_p;
+      *comp_mode_p = av1_get_reference_mode_prob(cm, xd);
     } else {
       *comp_mode_p = 128;
     }
