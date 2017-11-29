@@ -369,13 +369,9 @@ class SSLClientSocketImpl::SSLContext {
   SSLClientSessionCache session_cache_;
 };
 
-// TODO(davidben): Switch from sign_digest to sign.
 const SSL_PRIVATE_KEY_METHOD
     SSLClientSocketImpl::SSLContext::kPrivateKeyMethod = {
-        nullptr /* type (unused) */,
-        nullptr /* max_signature_len (unused) */,
         &SSLClientSocketImpl::SSLContext::PrivateKeySignCallback,
-        nullptr /* sign_digest */,
         nullptr /* decrypt */,
         &SSLClientSocketImpl::SSLContext::PrivateKeyCompleteCallback,
 };
