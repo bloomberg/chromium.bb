@@ -601,6 +601,11 @@
       }
     ]
   },
+  "Android MIPS Builder (dbg)": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "Android WebView L (dbg)": {
     "cts_tests": [
       {
@@ -650,6 +655,16 @@
     ]
   },
   "Android arm64 Builder (dbg)": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
+  "Android x64 Builder (dbg)": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
+  "Android x86 Builder (dbg)": {
     "additional_compile_targets": [
       "all"
     ]
