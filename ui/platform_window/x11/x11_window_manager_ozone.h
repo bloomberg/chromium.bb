@@ -7,27 +7,28 @@
 
 #include "base/macros.h"
 #include "ui/platform_window/x11/x11_window_export.h"
-#include "ui/platform_window/x11/x11_window_ozone.h"
 
 namespace ui {
+
+class X11WindowOzone;
 
 class X11_WINDOW_EXPORT X11WindowManagerOzone {
  public:
   X11WindowManagerOzone();
   ~X11WindowManagerOzone();
 
-  // Tries to set a given XWindow as the recipient for events. It will fail if
-  // there is already another XWindow as recipient.
-  void GrabEvents(XID xwindow);
+  // Tries to set a given X11WindowOzone as the recipient for events. It will
+  // fail if there is already another X11WindowOzone as recipient.
+  void GrabEvents(X11WindowOzone* window);
 
-  // Unsets a given XWindow as the recipient for events.
-  void UngrabEvents(XID xwindow);
+  // Unsets a given X11WindowOzone as the recipient for events.
+  void UngrabEvents(X11WindowOzone* window);
 
-  // Gets the current XWindow recipient of mouse events.
-  XID event_grabber() const { return event_grabber_; }
+  // Gets the current X11WindowOzone recipient of mouse events.
+  X11WindowOzone* event_grabber() const { return event_grabber_; }
 
  private:
-  XID event_grabber_;
+  X11WindowOzone* event_grabber_;
 
   DISALLOW_COPY_AND_ASSIGN(X11WindowManagerOzone);
 };
