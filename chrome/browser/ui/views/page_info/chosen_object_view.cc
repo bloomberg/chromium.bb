@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/page_info/chosen_object_row.h"
+#include "chrome/browser/ui/views/page_info/chosen_object_view.h"
 
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
-#include "chrome/browser/ui/views/page_info/chosen_object_row_observer.h"
+#include "chrome/browser/ui/views/page_info/chosen_object_view_observer.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -19,10 +19,10 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 
-ChosenObjectRow::ChosenObjectRow(
+ChosenObjectView::ChosenObjectView(
     std::unique_ptr<PageInfoUI::ChosenObjectInfo> info)
     : info_(std::move(info)) {
-  // |ChosenObjectRow| layout (fills parent):
+  // |ChosenObjectView| layout (fills parent):
   // *------------------------------------*
   // | Icon | Chosen Object Name      | X |
   // *------------------------------------*
@@ -83,14 +83,14 @@ ChosenObjectRow::ChosenObjectRow(
   layout->AddView(delete_button_);
 }
 
-void ChosenObjectRow::AddObserver(ChosenObjectRowObserver* observer) {
+void ChosenObjectView::AddObserver(ChosenObjectViewObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
-ChosenObjectRow::~ChosenObjectRow() {}
+ChosenObjectView::~ChosenObjectView() {}
 
-void ChosenObjectRow::ButtonPressed(views::Button* sender,
-                                    const ui::Event& event) {
+void ChosenObjectView::ButtonPressed(views::Button* sender,
+                                     const ui::Event& event) {
   // Change the icon to reflect the selected setting.
   const gfx::Image& image = PageInfoUI::GetChosenObjectIcon(*info_, true);
   icon_->SetImage(image.ToImageSkia());
@@ -98,7 +98,7 @@ void ChosenObjectRow::ButtonPressed(views::Button* sender,
   DCHECK(delete_button_->visible());
   delete_button_->SetVisible(false);
 
-  for (ChosenObjectRowObserver& observer : observer_list_) {
+  for (ChosenObjectViewObserver& observer : observer_list_) {
     observer.OnChosenObjectDeleted(*info_);
   }
 }

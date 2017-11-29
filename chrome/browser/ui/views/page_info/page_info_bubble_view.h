@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
-#include "chrome/browser/ui/views/page_info/chosen_object_row_observer.h"
+#include "chrome/browser/ui/views/page_info/chosen_object_view_observer.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row_observer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -52,7 +52,7 @@ class Widget;
 // The views implementation of the page info UI.
 class PageInfoBubbleView : public content::WebContentsObserver,
                            public PermissionSelectorRowObserver,
-                           public ChosenObjectRowObserver,
+                           public ChosenObjectViewObserver,
                            public views::BubbleDialogDelegateView,
                            public views::ButtonListener,
                            public views::LinkListener,
@@ -122,7 +122,7 @@ class PageInfoBubbleView : public content::WebContentsObserver,
   void OnPermissionChanged(
       const PageInfoUI::PermissionInfo& permission) override;
 
-  // ChosenObjectRowObserver implementation.
+  // ChosenObjectViewObserver implementation.
   void OnChosenObjectDeleted(const PageInfoUI::ChosenObjectInfo& info) override;
 
   // views::BubbleDialogDelegateView implementation.
