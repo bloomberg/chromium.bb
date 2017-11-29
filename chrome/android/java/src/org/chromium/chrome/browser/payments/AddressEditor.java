@@ -335,6 +335,10 @@ public class AddressEditor
     public void onSubKeysReceived(String[] adminAreaCodes, String[] adminAreaNames) {
         if (mAdminAreasLoaded) return;
         mAdminAreasLoaded = true;
+        // If the dialog is already dismissed, it doesn't make sense to show it.
+        // This can happen if the dialog is dismissed while we are getting the
+        // subkeys.
+        if (mEditorDialog.isDismissed()) return;
 
         mAddressFields.put(AddressField.ADMIN_AREA,
                 (contains(adminAreaCodes, mProfile.getRegion())
@@ -381,6 +385,7 @@ public class AddressEditor
     private void loadAdminAreasForCountry(String countryCode) {
         // Used to check if the callback is called (for the cancellation).
         mAdminAreasLoaded = false;
+        mEditorDialog.setAsNotDismissed();
 
         // For tests, the time-out is set to 0. In this case, we should not
         // fetch the admin-areas, and show a text-field instead.
