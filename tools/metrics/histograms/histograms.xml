@@ -95528,6 +95528,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Audio.EchoCanceller.Erl" units="dB (shifted)">
+  <owner>gustaf@chromium.org</owner>
+  <summary>
+    This histogram logs the echo return loss achieved by the WebRTC echo
+    canceller as described in ITU G.168. When the echo canceller is being used,
+    one value is logged every 10 seconds per ongoing WebRTC call.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Audio.EchoCanceller.ErlBand0" units="dB (shifted)">
   <owner>peah@chromium.org</owner>
   <summary>
@@ -95541,6 +95550,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     This histogram logs the echo return loss achieved by the WebRTC echo
     canceller between 4 and 8 kHz. A new value is logged every 10 seconds.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Audio.EchoCanceller.Erle" units="dB">
+  <owner>gustaf@chromium.org</owner>
+  <summary>
+    This histogram logs the echo return loss enhancement achieved by the WebRTC
+    echo canceller as described in ITU G.168. When the echo canceller is being
+    used, one value is logged every 10 seconds per ongoing WebRTC call.
   </summary>
 </histogram>
 
@@ -108985,6 +109003,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="On missed cache and intervention triggered"/>
   <affected-histogram name="WebFont.DownloadTime.1.10KBTo50KB"/>
   <affected-histogram name="WebFont.DownloadTime.1.10KBTo50KB"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="WebRTCEchoCancellerEstimate" separator=".">
+  <suffix name="Value" label="The last estimated value of the time interval"/>
+  <suffix name="Max" label="The maximum over the time interval"/>
+  <suffix name="Min" label="The minimum over the time interval"/>
+  <affected-histogram name="WebRTC.Audio.EchoCanceller.Erl"/>
+  <affected-histogram name="WebRTC.Audio.EchoCanceller.Erle"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="WebRTCEchoCancellerStatisticType" separator=".">
