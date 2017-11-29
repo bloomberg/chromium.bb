@@ -22,8 +22,7 @@ class WebClipboardImplTest : public ContentBrowserTest {
   ~WebClipboardImplTest() override = default;
 };
 
-// crbug.com/789428: started to be super flaky on all bots.
-IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, DISABLED_PasteRTF) {
+IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, PasteRTF) {
   BrowserTestClipboardScope clipboard;
 
   const std::string rtf_content = "{\\rtf1\\ansi Hello, {\\b world.}}";
@@ -31,7 +30,8 @@ IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, DISABLED_PasteRTF) {
 
   // paste_listener.html takes RTF from the clipboard and sets the title.
   NavigateToURL(shell(), GetTestUrl(".", "paste_listener.html"));
-  base::RunLoop().RunUntilIdle();
+  FrameFocusedObserver focus_observer(shell()->web_contents()->GetMainFrame());
+  focus_observer.Wait();
 
   const base::string16 expected_title = base::UTF8ToUTF16(rtf_content);
   content::TitleWatcher title_watcher(shell()->web_contents(), expected_title);
