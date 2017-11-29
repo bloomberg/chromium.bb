@@ -53,13 +53,13 @@ std::unique_ptr<SyncScheduler> CreateSyncScheduler(
 }  // namespace
 
 CryptAuthEnrollmentManager::CryptAuthEnrollmentManager(
-    std::unique_ptr<base::Clock> clock,
+    base::Clock* clock,
     std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
     std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
     const GcmDeviceInfo& device_info,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service)
-    : clock_(std::move(clock)),
+    : clock_(clock),
       enroller_factory_(std::move(enroller_factory)),
       secure_message_delegate_(std::move(secure_message_delegate)),
       device_info_(device_info),

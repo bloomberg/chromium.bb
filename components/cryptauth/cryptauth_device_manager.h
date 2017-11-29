@@ -65,7 +65,7 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate,
   // |pref_service|: Stores syncing metadata and unlock key information to
   //                 persist across browser restarts. Must already be registered
   //                 with RegisterPrefs().
-  CryptAuthDeviceManager(std::unique_ptr<base::Clock> clock,
+  CryptAuthDeviceManager(base::Clock* clock,
                          std::unique_ptr<CryptAuthClientFactory> client_factory,
                          CryptAuthGCMManager* gcm_manager,
                          PrefService* pref_service);
@@ -149,7 +149,7 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate,
   void OnGetMyDevicesFailure(const std::string& error);
 
   // Used to determine the time.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // Creates CryptAuthClient instances for each sync attempt.
   std::unique_ptr<CryptAuthClientFactory> client_factory_;

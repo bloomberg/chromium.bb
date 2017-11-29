@@ -105,7 +105,7 @@ class ForegroundEidGenerator {
   };
 
   ForegroundEidGenerator(std::unique_ptr<RawEidGenerator> raw_eid_generator,
-                         std::unique_ptr<base::Clock> clock);
+                         base::Clock* clock);
 
   std::unique_ptr<DataWithTimestamp> GenerateAdvertisement(
       const std::string& advertising_device_public_key,
@@ -148,7 +148,7 @@ class ForegroundEidGenerator {
       const int64_t end_of_period_timestamp_ms,
       const int64_t current_timestamp_ms);
 
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   std::unique_ptr<RawEidGenerator> raw_eid_generator_;
 

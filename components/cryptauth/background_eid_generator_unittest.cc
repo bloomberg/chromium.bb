@@ -91,23 +91,20 @@ class CryptAuthBackgroundEidGeneratorTest : public testing::Test {
   }
 
   void SetUp() override {
-    test_clock_ = new base::SimpleTestClock();
-
     SetTestTime(kCurrentTimeMs);
 
-    eid_generator_.reset(
-        new BackgroundEidGenerator(base::MakeUnique<TestRawEidGenerator>(),
-                                   base::WrapUnique(test_clock_)));
+    eid_generator_.reset(new BackgroundEidGenerator(
+        base::MakeUnique<TestRawEidGenerator>(), &test_clock_));
   }
 
   void SetTestTime(int64_t timestamp_ms) {
     base::Time time = base::Time::UnixEpoch() +
                       base::TimeDelta::FromMilliseconds(timestamp_ms);
-    test_clock_->SetNow(time);
+    test_clock_.SetNow(time);
   }
 
   std::unique_ptr<BackgroundEidGenerator> eid_generator_;
-  base::SimpleTestClock* test_clock_;
+  base::SimpleTestClock test_clock_;
   std::vector<BeaconSeed> beacon_seeds_;
 };
 
