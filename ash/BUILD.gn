@@ -429,6 +429,7 @@ component("ash") {
     "shell_delegate.h",
     "shell_delegate_mus.cc",
     "shell_delegate_mus.h",
+    "shell_init_params.cc",
     "shell_init_params.h",
     "shell_observer.h",
     "shell_port.cc",

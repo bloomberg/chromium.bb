@@ -5,6 +5,7 @@
 #include "ash/shell/content/client/shell_browser_main_parts.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/content/shell_content_state.h"
 #include "ash/login_status.h"
@@ -17,6 +18,7 @@
 #include "ash/shell/window_type_launcher.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/shell_init_params.h"
+#include "ash/shell_port_classic.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -48,8 +50,7 @@ namespace ash {
 namespace shell {
 
 ShellBrowserMainParts::ShellBrowserMainParts(
-    const content::MainFunctionParams& parameters)
-    : BrowserMainParts(), delegate_(nullptr) {}
+    const content::MainFunctionParams& parameters) {}
 
 ShellBrowserMainParts::~ShellBrowserMainParts() = default;
 
@@ -73,7 +74,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   if (!views::ViewsDelegate::GetInstance())
     views_delegate_.reset(new ShellViewsDelegate);
 
-  delegate_ = new ash::shell::ShellDelegateImpl;
   // The global message center state must be initialized absent
   // g_browser_process.
   message_center::MessageCenter::Initialize();
@@ -88,10 +88,11 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       new ShellContentStateImpl(browser_context_.get()));
   ui::MaterialDesignController::Initialize();
   ash::ShellInitParams init_params;
-  init_params.delegate = delegate_;
+  init_params.shell_port = std::make_unique<ash::ShellPortClassic>();
+  init_params.delegate = std::make_unique<ash::shell::ShellDelegateImpl>();
   init_params.context_factory = content::GetContextFactory();
   init_params.context_factory_private = content::GetContextFactoryPrivate();
-  ash::Shell::CreateInstance(init_params);
+  ash::Shell::CreateInstance(std::move(init_params));
 
   // Initialize session controller client and create fake user sessions. The
   // fake user sessions makes ash into the logged in state.
@@ -117,7 +118,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
   window_watcher_.reset();
-  delegate_ = nullptr;
   ash::Shell::DeleteInstance();
   ShellContentState::DestroyInstance();
   // The global message center state must be shutdown absent

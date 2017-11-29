@@ -207,16 +207,16 @@ void WindowManager::CreateShell() {
   DCHECK(!created_shell_);
   created_shell_ = true;
   ShellInitParams init_params;
-  // Shell::CreateInstance() takes ownership of ShellDelegate.
-  init_params.delegate = shell_delegate_ ? shell_delegate_.release()
-                                         : new ShellDelegateMus(connector_);
   if (config_ == Config::MUS) {
-    init_params.shell_port = new ShellPortMus(this);
+    init_params.shell_port = std::make_unique<ShellPortMus>(this);
   } else {
-    init_params.shell_port =
-        new ShellPortMash(this, pointer_watcher_event_router_.get());
+    init_params.shell_port = std::make_unique<ShellPortMash>(
+        this, pointer_watcher_event_router_.get());
   }
-  Shell::CreateInstance(init_params);
+  init_params.delegate = shell_delegate_
+                             ? std::move(shell_delegate_)
+                             : std::make_unique<ShellDelegateMus>(connector_);
+  Shell::CreateInstance(std::move(init_params));
 }
 
 void WindowManager::InitCursorOnKeyList() {
