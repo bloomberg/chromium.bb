@@ -67,7 +67,7 @@ BytesConsumer::Result BlobBytesConsumer::BeginRead(const char** buffer,
       GetError();
     } else {
       BlobRegistry::RegisterPublicBlobURL(
-          GetExecutionContext()->GetSecurityOrigin(), blob_url_,
+          GetExecutionContext()->GetMutableSecurityOrigin(), blob_url_,
           blob_data_handle_);
 
       // m_loader is non-null only in tests.
