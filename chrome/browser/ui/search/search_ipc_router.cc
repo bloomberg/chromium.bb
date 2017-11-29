@@ -16,8 +16,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/child_process_host.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 
 namespace {
 

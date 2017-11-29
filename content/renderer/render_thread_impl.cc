@@ -2162,7 +2162,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       &params));
 }
 
-AssociatedInterfaceRegistry*
+blink::AssociatedInterfaceRegistry*
 RenderThreadImpl::GetAssociatedInterfaceRegistry() {
   return &associated_interfaces_;
 }

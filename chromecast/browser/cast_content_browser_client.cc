@@ -552,7 +552,7 @@ bool CastContentBrowserClient::CanCreateWindow(
 
 void CastContentBrowserClient::ExposeInterfacesToRenderer(
     service_manager::BinderRegistry* registry,
-    content::AssociatedInterfaceRegistry* associated_registry,
+    blink::AssociatedInterfaceRegistry* associated_registry,
     content::RenderProcessHost* render_process_host) {
   registry->AddInterface(
       base::Bind(&media::MediaCapsImpl::AddBinding,

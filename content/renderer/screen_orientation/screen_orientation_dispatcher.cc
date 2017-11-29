@@ -4,8 +4,8 @@
 
 #include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
 
-#include "content/public/common/associated_interface_provider.h"
 #include "content/public/renderer/render_frame.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 
 namespace content {
 

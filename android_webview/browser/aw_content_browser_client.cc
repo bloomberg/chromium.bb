@@ -552,7 +552,7 @@ void AwContentBrowserClient::BindInterfaceRequestFromFrame(
 
 void AwContentBrowserClient::ExposeInterfacesToRenderer(
     service_manager::BinderRegistry* registry,
-    content::AssociatedInterfaceRegistry* associated_registry,
+    blink::AssociatedInterfaceRegistry* associated_registry,
     content::RenderProcessHost* render_process_host) {
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     registry->AddInterface(

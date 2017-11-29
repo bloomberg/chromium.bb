@@ -8,12 +8,15 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 
+namespace blink {
+class AssociatedInterfaceRegistry;
+}
+
 namespace IPC {
 class Message;
 }
 
 namespace content {
-class AssociatedInterfaceRegistry;
 
 // Base class for objects that want to filter control IPC messages and get
 // notified of events.
@@ -24,9 +27,9 @@ class CONTENT_EXPORT RenderThreadObserver {
 
   // Allows handling incoming Mojo requests.
   virtual void RegisterMojoInterfaces(
-      AssociatedInterfaceRegistry* associated_interfaces) {}
+      blink::AssociatedInterfaceRegistry* associated_interfaces) {}
   virtual void UnregisterMojoInterfaces(
-      AssociatedInterfaceRegistry* associated_interfaces) {}
+      blink::AssociatedInterfaceRegistry* associated_interfaces) {}
 
   // Allows filtering of control messages.
   virtual bool OnControlMessageReceived(const IPC::Message& message);

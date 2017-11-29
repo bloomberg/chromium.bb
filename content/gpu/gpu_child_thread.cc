@@ -191,7 +191,8 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   }
 #endif
 
-  AssociatedInterfaceRegistry* associated_registry = &associated_interfaces_;
+  blink::AssociatedInterfaceRegistry* associated_registry =
+      &associated_interfaces_;
   associated_registry->AddInterface(base::Bind(
       &GpuChildThread::CreateVizMainService, base::Unretained(this)));
 

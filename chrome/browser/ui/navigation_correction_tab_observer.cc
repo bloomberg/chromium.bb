@@ -17,8 +17,8 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/associated_interface_provider.h"
 #include "google_apis/google_api_keys.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 
 using content::RenderFrameHost;
 using content::WebContents;

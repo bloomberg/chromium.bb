@@ -48,6 +48,7 @@ class InterfaceProvider;
 
 namespace blink {
 
+class AssociatedInterfaceProvider;
 class Color;
 class ContentSettingsClient;
 class Document;
@@ -229,6 +230,19 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   service_manager::InterfaceProvider& GetInterfaceProvider();
   InterfaceRegistry* GetInterfaceRegistry() { return interface_registry_; }
+
+  // Returns an AssociatedInterfaceProvider the frame can use to request
+  // navigation-associated interfaces from the browser. Messages transmitted
+  // over such interfaces will be dispatched in FIFO order with respect to each
+  // other and messages implementing navigation.
+  //
+  // Carefully consider whether an interface needs to be navigation-associated
+  // before introducing new navigation-associated interfaces.
+  //
+  // Navigation-associated interfaces are currently implemented as
+  // channel-associated interfaces. See
+  // https://chromium.googlesource.com/chromium/src/+/master/ipc#Using-Channel_associated-Interfaces.
+  AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces();
 
   String GetInstrumentationToken() { return instrumentation_token_; }
 

@@ -22,6 +22,8 @@ component("blink_common") {
   defines = [ "BLINK_COMMON_IMPLEMENTATION=1" ]
 
   sources = [
+    "associated_interfaces/associated_interface_provider.h",
+    "associated_interfaces/associated_interface_registry.h",
     "client_hints/client_hints.cc",
     "client_hints/client_hints.h",
     "common_export.h",

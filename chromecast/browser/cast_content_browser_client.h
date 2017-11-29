@@ -162,7 +162,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
                        bool* no_javascript_access) override;
   void ExposeInterfacesToRenderer(
       service_manager::BinderRegistry* registry,
-      content::AssociatedInterfaceRegistry* associated_registry,
+      blink::AssociatedInterfaceRegistry* associated_registry,
       content::RenderProcessHost* render_process_host) override;
   void ExposeInterfacesToMediaService(
       service_manager::BinderRegistry* registry,

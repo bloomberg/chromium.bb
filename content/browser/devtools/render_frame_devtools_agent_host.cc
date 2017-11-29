@@ -46,10 +46,10 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/render_widget_host_view.h"

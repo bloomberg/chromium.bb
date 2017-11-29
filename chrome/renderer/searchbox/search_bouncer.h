@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "chrome/common/search.mojom.h"
-#include "content/public/common/associated_interface_registry.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_registry.h"
 #include "url/gurl.h"
 
 // SearchBouncer tracks a set of URLs which should be transferred back to the
@@ -24,7 +24,7 @@ class SearchBouncer : public content::RenderThreadObserver,
 
   // RenderThreadObserver:
   void RegisterMojoInterfaces(
-      content::AssociatedInterfaceRegistry* associated_interfaces) override;
+      blink::AssociatedInterfaceRegistry* associated_interfaces) override;
 
   // Returns whether a navigation to |url| should bounce back to the browser as
   // a potential Instant url. See search::ShouldAssignURLToInstantRenderer().

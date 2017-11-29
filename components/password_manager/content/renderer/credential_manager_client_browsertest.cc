@@ -13,13 +13,13 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "content/public/common/associated_interface_provider.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerClient.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
@@ -86,7 +86,7 @@ class CredentialManagerClientTest : public content::RenderViewTest {
     content::RenderViewTest::SetUp();
     client_.reset(new CredentialManagerClient(view_));
 
-    content::AssociatedInterfaceProvider* remote_interfaces =
+    blink::AssociatedInterfaceProvider* remote_interfaces =
         view_->GetMainRenderFrame()->GetRemoteAssociatedInterfaces();
     remote_interfaces->OverrideBinderForTesting(
         mojom::CredentialManager::Name_,

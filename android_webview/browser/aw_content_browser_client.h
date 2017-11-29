@@ -143,7 +143,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       mojo::ScopedMessagePipeHandle interface_pipe) override;
   void ExposeInterfacesToRenderer(
       service_manager::BinderRegistry* registry,
-      content::AssociatedInterfaceRegistry* associated_registry,
+      blink::AssociatedInterfaceRegistry* associated_registry,
       content::RenderProcessHost* render_process_host) override;
   std::vector<std::unique_ptr<content::URLLoaderThrottle>>
   CreateURLLoaderThrottles(

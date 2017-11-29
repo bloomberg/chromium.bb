@@ -2995,7 +2995,7 @@ bool ChromeContentBrowserClient::PreSpawnRenderer(
 
 void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
     service_manager::BinderRegistry* registry,
-    content::AssociatedInterfaceRegistry* associated_registry,
+    blink::AssociatedInterfaceRegistry* associated_registry,
     content::RenderProcessHost* render_process_host) {
   // The CacheStatsRecorder is an associated binding, instead of a
   // non-associated one, because the sender (in the renderer process) posts the

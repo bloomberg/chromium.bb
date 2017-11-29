@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_ASSOCIATED_INTERFACE_PROVIDER_IMPL_H_
 #define CONTENT_COMMON_ASSOCIATED_INTERFACE_PROVIDER_IMPL_H_
 
-#include "content/public/common/associated_interface_provider.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 
 #include <stdint.h>
 #include <memory>
@@ -15,7 +15,8 @@
 
 namespace content {
 
-class AssociatedInterfaceProviderImpl : public AssociatedInterfaceProvider {
+class AssociatedInterfaceProviderImpl
+    : public blink::AssociatedInterfaceProvider {
  public:
   // Binds this to a remote mojom::AssociatedInterfaceProvider.
   explicit AssociatedInterfaceProviderImpl(
