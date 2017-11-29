@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/web_client.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
@@ -224,6 +225,7 @@
   [self updateConsumerForWebState:self.webState];
   [self.consumer setIsLoading:self.webState->IsLoading()];
   [self updateBookmarks];
+  [self updateShareMenu];
 }
 
 // Updates the consumer with the new forward and back states.
@@ -242,6 +244,14 @@
     [self.consumer setPageBookmarked:self.bookmarkModel &&
                                      self.bookmarkModel->IsBookmarked(URL)];
   }
+}
+
+// Uodates the Share Menu button of the consumer.
+- (void)updateShareMenu {
+  const GURL& URL = self.webState->GetLastCommittedURL();
+  BOOL shareMenuEnabled =
+      URL.is_valid() && !web::GetWebClient()->IsAppSpecificURL(URL);
+  [self.consumer setShareMenuEnabled:shareMenuEnabled];
 }
 
 #pragma mark - BookmarkModelBridgeObserver

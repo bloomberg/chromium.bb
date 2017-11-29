@@ -461,6 +461,10 @@
   }
 }
 
+- (void)setShareMenuEnabled:(BOOL)enabled {
+  self.shareButton.enabled = enabled;
+}
+
 #pragma mark - ActivityServicePositioner
 
 - (UIView*)shareButtonView {

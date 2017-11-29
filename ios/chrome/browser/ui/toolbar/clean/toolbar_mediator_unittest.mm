@@ -209,6 +209,7 @@ TEST_F(ToolbarMediatorTest, TestToolbarBookmarked) {
 TEST_F(ToolbarMediatorTest, TestToolbarBookmarkedModelSetLast) {
   SetUpBookmarks();
   OCMExpect([consumer_ setPageBookmarked:NO]);
+  OCMExpect([consumer_ setShareMenuEnabled:YES]);
 
   web_state_->SetCurrentURL(GURL(kTestUrl));
   mediator_.webStateList = web_state_list_.get();
@@ -276,6 +277,7 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetup) {
   [[consumer_ verify] setCanGoForward:NO];
   [[consumer_ verify] setCanGoBack:NO];
   [[consumer_ verify] setIsLoading:YES];
+  [[consumer_ verify] setShareMenuEnabled:NO];
 }
 
 // Test the Toolbar Setup gets called when the mediator's WebState and Consumer
@@ -288,6 +290,7 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetupReverse) {
   [[consumer_ verify] setCanGoForward:NO];
   [[consumer_ verify] setCanGoBack:NO];
   [[consumer_ verify] setIsLoading:YES];
+  [[consumer_ verify] setShareMenuEnabled:NO];
 }
 
 // Test the WebstateList related setup gets called when the mediator's WebState
@@ -351,6 +354,7 @@ TEST_F(ToolbarMediatorTest, TestDidLoadPageWithSucess) {
   [[consumer_ verify] setCanGoForward:YES];
   [[consumer_ verify] setCanGoBack:YES];
   [[consumer_ verify] setPageBookmarked:YES];
+  [[consumer_ verify] setShareMenuEnabled:YES];
 }
 
 // Test the Toolbar is updated when the Webstate observer method

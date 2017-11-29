@@ -94,7 +94,7 @@
 #pragma mark - Abstract Toolbar
 
 - (void)setShareButtonEnabled:(BOOL)enabled {
-  return;
+  // No op.
 }
 
 - (void)triggerToolsMenuButtonAnimation {
