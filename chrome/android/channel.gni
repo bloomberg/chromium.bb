@@ -10,5 +10,5 @@ declare_args() {
 
 assert(android_channel == "default" || android_channel == "canary" ||
            android_channel == "dev" || android_channel == "beta" ||
-           android_channel == "stable" || android_channel == "work",
+           android_channel == "stable",
        "Invalid channel: " + android_channel)
