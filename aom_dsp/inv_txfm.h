@@ -39,7 +39,8 @@ static INLINE tran_high_t check_range(tran_high_t input, int bd) {
   // - 8 bit: signed 16 bit integer
   // - 10 bit: signed 18 bit integer
   // - 12 bit: signed 20 bit integer
-  const int32_t int_max = (1 << (7 + bd)) - 1;
+  // - max quantization error = 1828 << (bd - 8)
+  const int32_t int_max = (1 << (7 + bd)) - 1 + (914 << (bd - 7));
   const int32_t int_min = -int_max - 1;
 #endif
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
