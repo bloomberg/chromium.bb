@@ -210,7 +210,8 @@ cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
   // These lists of files must match the content_scripts section in
   // the manifest files.
   if (COMPILED) {
-    listOfFiles = ['chromeVoxChromePageScript.js'];
+    listOfFiles =
+        ['chromeVoxChromePageScript.js', 'chromeVox2ChromePageScript.js'];
   } else {
     listOfFiles = [
       'closure/closure_preinit.js', 'closure/base.js', 'deps.js',
