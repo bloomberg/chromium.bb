@@ -216,7 +216,9 @@ class {{class_name}}_{{method.name}}_ProxyToResponder {
       // Is the Service destroying the callback without running it
       // and without first closing the pipe?
       responder_->DCheckInvalid("The callback passed to "
-          "{{class_name}}::{{method.name}}() was never run.");
+          "{{class_name}}::{{method.name}}() was never run. It should either "
+          "be run before destruction, or else destroyed after first closing "
+          "the pipe.");
     }
 #endif
     // If the Callback was dropped then deleting the responder will close
