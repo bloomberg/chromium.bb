@@ -74458,6 +74458,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Scheduling.ImageInvalidationUpdateDuration"
+    units="microseconds">
+  <owner>khushalsagar@chromium.org</owner>
+  <summary>
+    Duration for updating animated images and invalidating layers for images
+    invalidated on the sync tree in the compositor. This interval is recorded
+    each time the sync tree is updated after a commit or an impl-side
+    invalidation.
+  </summary>
+</histogram>
+
 <histogram name="Scheduling.InvalidationToReadyToActivateDuration2"
     units="microseconds">
   <owner>brianderson@chromium.org</owner>
@@ -99409,6 +99420,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     ordering="prefix">
   <suffix name="Browser"/>
   <suffix name="Renderer"/>
+  <affected-histogram name="Scheduling.ImageInvalidationUpdateDuration"/>
   <affected-histogram name="Scheduling.PendingTreeDuration"/>
   <affected-histogram name="Scheduling.PendingTreeRasterDuration"/>
 </histogram_suffixes>
