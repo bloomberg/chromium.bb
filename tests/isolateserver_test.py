@@ -409,17 +409,12 @@ class StorageTest(TestCase):
   def test_async_push_upload_errors(self):
     chunk = 'data_chunk'
 
-    def _generator():
-      yield chunk
-
     def push_side_effect():
       raise IOError('Nope')
 
-    # TODO(vadimsh): Retrying push when fetching data from a generator is
-    # broken now (it reuses same generator instance when retrying).
     content_sources = (
-        # generator(),
         lambda: [chunk],
+        lambda: [(yield chunk)],
     )
 
     for use_zip in (False, True):

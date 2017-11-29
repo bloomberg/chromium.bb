@@ -598,10 +598,10 @@ class Storage(object):
       self._storage_api.push(item, push_state, content)
       return item
 
-    # If zipping is not required, just start a push task.
+    # If zipping is not required, just start a push task. Don't pass 'content'
+    # so that it can create a new generator when it retries on failures.
     if not self._use_zip:
-      self.net_thread_pool.add_task_with_channel(
-          channel, priority, push, item.content())
+      self.net_thread_pool.add_task_with_channel(channel, priority, push, None)
       return
 
     # If zipping is enabled, zip in a separate thread.
@@ -617,6 +617,9 @@ class Storage(object):
         logging.error('Failed to zip \'%s\': %s', item, exc)
         channel.send_exception()
         return
+      # Pass '[data]' explicitly because the compressed data is not same as the
+      # one provided by 'item'. Since '[data]' is a list, it can safely be
+      # reused during retries.
       self.net_thread_pool.add_task_with_channel(
           channel, priority, push, [data])
     self.cpu_thread_pool.add_task(priority, zip_and_push)

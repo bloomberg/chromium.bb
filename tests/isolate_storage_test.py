@@ -253,6 +253,48 @@ class IsolateStorageTest(auto_stub.TestCase):
     with self.assertRaises(IOError):
       s.push(i, isolate_storage._IsolateServerGrpcPushState(), '1234')
 
+  def testPushRetriesOnGrpcFailure(self):
+    """Push: retry will succeed if the Isolate failure is transient."""
+    class IsFirstWrapper:
+      is_first = True
+
+    def Write(self, requests, timeout=None):
+      del timeout
+      if IsFirstWrapper.is_first:
+        IsFirstWrapper.is_first = False
+        raiseError(isolate_storage.grpc.StatusCode.INTERNAL_ERROR)
+      else:
+        nb = 0
+        for r in requests:
+          nb += len(r.data)
+          self._push_requests.append(r.__deepcopy__())
+        resp = isolate_storage.bytestream_pb2.WriteResponse()
+        resp.committed_size = nb
+        return resp
+
+    self.mock(ByteStreamStubMock, 'Write', Write)
+
+    s = self.get_server()
+    i = isolate_storage.Item(digest='abc123', size=4)
+    self.mock(isolate_storage.Item, 'content',
+              lambda _: [(yield x) for x in ['12', '34']])
+    with self.assertRaises(IOError):
+      s.push(i, isolate_storage._IsolateServerGrpcPushState())
+
+    # The retry should succeed.
+    s.push(i, isolate_storage._IsolateServerGrpcPushState())
+    requests = s._proxy._stub.popPushRequests()
+    self.assertEqual(2, len(requests))
+    m = re.search('client/bob/uploads/.*/blobs/abc123/4',
+                  requests[0].resource_name)
+    self.assertTrue(m)
+    self.assertEqual('12', requests[0].data)
+    self.assertEqual(0, requests[0].write_offset)
+    self.assertFalse(requests[0].finish_write)
+    self.assertEqual('34', requests[1].data)
+    self.assertEqual(2, requests[1].write_offset)
+    self.assertTrue(requests[1].finish_write)
+
 
 if __name__ == '__main__':
   if not isolate_storage.grpc:
