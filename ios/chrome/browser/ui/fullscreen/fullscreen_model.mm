@@ -54,6 +54,10 @@ void FullscreenModel::SetToolbarHeight(CGFloat toolbar_height) {
   ResetForNavigation();
 }
 
+CGFloat FullscreenModel::GetToolbarHeight() const {
+  return toolbar_height_;
+}
+
 void FullscreenModel::SetYContentOffset(CGFloat y_content_offset) {
   y_content_offset_ = y_content_offset;
 
@@ -68,6 +72,10 @@ void FullscreenModel::SetYContentOffset(CGFloat y_content_offset) {
   }
 }
 
+CGFloat FullscreenModel::GetYContentOffset() const {
+  return y_content_offset_;
+}
+
 void FullscreenModel::SetScrollViewIsScrolling(bool scrolling) {
   if (scrolling_ == scrolling)
     return;
@@ -79,6 +87,10 @@ void FullscreenModel::SetScrollViewIsScrolling(bool scrolling) {
   }
 }
 
+bool FullscreenModel::ISScrollViewScrolling() const {
+  return scrolling_;
+}
+
 void FullscreenModel::SetScrollViewIsDragging(bool dragging) {
   if (dragging_ == dragging)
     return;
@@ -88,8 +100,16 @@ void FullscreenModel::SetScrollViewIsDragging(bool dragging) {
     UpdateBaseOffset();
 }
 
+bool FullscreenModel::IsScrollViewDragging() const {
+  return dragging_;
+}
+
 void FullscreenModel::SetBaseOffsetLocked(bool locked) {
   locked_ = locked;
+}
+
+bool FullscreenModel::IsBaseOffsetLocked() const {
+  return locked_;
 }
 
 void FullscreenModel::SetProgress(CGFloat progress) {

@@ -53,26 +53,31 @@ class FullscreenModel {
   // Setter for the toolbar height to use in calculations.  Setting this resets
   // the model to a fully visible state.
   void SetToolbarHeight(CGFloat toolbar_height);
+  CGFloat GetToolbarHeight() const;
 
   // Setter for the current vertical content offset.  Setting this will
   // recalculate the progress value.
   void SetYContentOffset(CGFloat y_content_offset);
+  CGFloat GetYContentOffset() const;
 
   // Setter for whether the scroll view is scrolling.  If a scroll event ends
   // and the progress value is not 0.0 or 1.0, the model will round to the
   // nearest value.
   void SetScrollViewIsScrolling(bool scrolling);
+  bool ISScrollViewScrolling() const;
 
   // Setter for whether the scroll view is being dragged.  Unlocked base offsets
   // will be reset to all y content offset values received while the user is
   // not dragging.
   void SetScrollViewIsDragging(bool dragging);
+  bool IsScrollViewDragging() const;
 
   // Setter for whether the base content offset is locked.  If the base offset
   // is locked, the toolbar's location will be tied with a specific content
   // offset of the scroll view, rather than being able to be shown mid-way
   // through the page.
   void SetBaseOffsetLocked(bool locked);
+  bool IsBaseOffsetLocked() const;
 
  private:
   // Setter for |progress_|.  Notifies observers of the new value if
