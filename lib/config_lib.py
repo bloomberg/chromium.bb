@@ -557,7 +557,6 @@ class HWTestConfig(object):
     priority:  Priority at which tests in the suite will be scheduled in
                the hw lab.
     file_bugs: Should we file bugs if a test fails in a suite run.
-    num: Maximum number of DUTs to use when scheduling tests in the hw lab.
     minimum_duts: minimum number of DUTs required for testing in the hw lab.
     retry: Whether we should retry tests that fail in a suite run.
     max_retries: Integer, maximum job retries allowed at suite level.
@@ -612,7 +611,6 @@ class HWTestConfig(object):
     assert not async or not blocking
     assert not warn_only or not critical
     self.suite = suite
-    self.num = num
     self.pool = pool
     self.timeout = timeout
     self.blocking = blocking
