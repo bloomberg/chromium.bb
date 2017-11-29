@@ -5,28 +5,10 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 
 ** New features
 ** Bug fixes
-** Other changes
-*** Improved documentation
-Bue Vester-Andersen added some notes about back-translation and
-documented all possible values of the node parameter. Also the
-description of decpoint and litdigit was improved
-
-*** lou_maketable
-Numerous bug fixes and performance enhancements thanks to Bert Frees
-
-*** Code refactoring
-Many global variables have been removed thanks to Bert Frees
-
-*** Code formating
-Thanks to clang-format There is now a uniform coding style over the
-whole code base
-
-*** Fix broken NMakefile
-Thanks to Davy Kager building with nmake should work again
-
 ** Braille table improvements
-- Addition of Nemeth and Kangxi radical characters to Chinese braille
-  (zh-tw.ctb) thanks to Bo-Cheng Jhan and 黃偉豪.
+- Addition of Nemeth and Kangxi radical characters and other
+  improvements to Chinese braille (~zh-tw.ctb~) thanks to Bo-Cheng
+  Jhan and 黃偉豪.
 - Improvements to the Spanish chardefs table thanks to Luis Lorente
   Barajas and Simon Aittamaa.
 - New Norwegian 6-dot display braille table for Braillo embossers
@@ -37,12 +19,35 @@ Thanks to Davy Kager building with nmake should work again
   Thibault
 - Improvements to the Hungarian tables thanks to Attila Hammer
 - Improvements to the Mongolian tables thanks to Tsengel Maidar
+- Fix some math signs in Czech Braille (~cs-chardefs.cti~). Thanks to
+  Christian Herden of ViewPlus for reporting this.
+- Updates to the SEB British Braille Tables thanks to Paul Wood
+** Other changes
+*** Improved documentation
+- Bue Vester-Andersen added some notes about back-translation and
+  documented all possible values of the ~mode~ parameter. Also the
+  description of decpoint and litdigit was improved
+- The ~match~ opcode is now documented
+
+*** lou_maketable
+Numerous bug fixes and performance enhancements thanks to Bert Frees
+
+*** Code refactoring
+Many global variables have been removed thanks to Bert Frees
+
+*** Code formatting
+Thanks to clang-format There is now a uniform coding style over the
+whole code base
+
+*** Fix broken NMakefile
+Thanks to Davy Kager building with nmake should work again
+
+** Deprecation notice
+The ~pass1Only~ flag has been deprecated. Its use should be avoided,
+and it will be completely removed from the code in the next version of
+Liblouis.
 
 ** Backwards incompatible changes
-
-- The pass1Only flag has been deprecated. Its use should be avoided,
-and it will be completely removed from the code in the version of
-Liblouis following this version. 
 
 ** New, renamed or removed tables
 *** New
