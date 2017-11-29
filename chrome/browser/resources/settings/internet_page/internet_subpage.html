@@ -102,8 +102,8 @@
             class="no-networks">
         </div>
 
-        <!-- Third party VPNs. -->
         <template is="dom-if" if="[[isEqual_('VPN', deviceState.Type)]]">
+          <!-- Third party VPNs. -->
           <template is="dom-repeat" items="[[thirdPartyVpnProviders]]">
             <div id="[[item.ProviderName]]"
                 class="vpn-header layout horizontal center">
@@ -119,6 +119,26 @@
                 on-selected="onNetworkSelected_">
             </cr-network-list>
             <div hidden$="[[haveThirdPartyVpnNetwork_(thirdPartyVpns_, item)]]"
+                class="no-networks">
+              $i18n{internetNoNetworks}
+            </div>
+          </template>
+          <!-- Arc VPNs. -->
+          <template is="dom-repeat" items="[[arcVpnProviders]]">
+            <div id="[[item.ProviderName]]"
+                class="vpn-header layout horizontal center">
+              <div class="flex">[[item.ProviderName]]</div>
+              <button is="paper-icon-button-light" class="icon-add-circle"
+                  aria-label$="[[getAddArcVpnAllyString_(item)]]"
+                  on-tap="onAddArcVpnTap_" tabindex$="[[tabindex]]">
+              </button>
+            </div>
+            <cr-network-list show-buttons
+                hidden$="[[!haveArcVpnNetwork_(arcVpns_, item)]]"
+                networks="[[getArcVpnNetworks_(arcVpns_, item)]]"
+                on-selected="onNetworkSelected_">
+            </cr-network-list>
+            <div hidden$="[[haveArcVpnNetwork_(arcVpns_, item)]]"
                 class="no-networks">
               $i18n{internetNoNetworks}
             </div>

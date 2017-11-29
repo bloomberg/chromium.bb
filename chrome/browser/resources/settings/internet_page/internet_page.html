@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
@@ -73,6 +74,15 @@
                   </button>
                 </div>
               </template>
+              <template is="dom-if" if="[[arcVpnProviders_.length]]">
+                <div actionable class="list-item" id="addArcVpn"
+                    on-tap="onAddArcVpnTap_">
+                  <div class="start">$i18n{internetAddArcVPN}</div>
+                  <button class="icon-external" is="paper-icon-button-light"
+                      aria-label$="$i18n{internetAddArcVPN}">
+                  </button>
+                </div>
+              </template>
             </div>
           </template>
         </template>
@@ -112,6 +122,7 @@
               tether-device-state="[[get('Tether', deviceStates)]]"
               global-policy="[[globalPolicy_]]"
               third-party-vpn-providers="[[thirdPartyVpnProviders_]]"
+              arc-vpn-providers="[[arcVpnProviders_]]"
               networking-private="[[networkingPrivate]]"
               show-spinner="{{showSpinner_}}">
           </settings-bluetooth-subpage>
