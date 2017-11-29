@@ -233,6 +233,10 @@ public class CustomTabActivity extends ChromeActivity {
     private TabModelObserver mTabModelObserver = new EmptyTabModelObserver() {
         @Override
         public void didAddTab(Tab tab, TabLaunchType type) {
+            // Ensure that the PageLoadMetrics observer is attached in all cases, if in
+            // the future we do not go through initializeMainTab. ObserverList.addObserver
+            // will deduplicate additions, so it is safe to add both here as well as in
+            // initializeMainTab().
             PageLoadMetrics.addObserver(mMetricsObserver);
             tab.addObserver(mTabObserver);
         }
@@ -621,6 +625,9 @@ public class CustomTabActivity extends ChromeActivity {
                 getApplication(), mSession, mIntentDataProvider.isOpenedByChrome());
 
         mMetricsObserver = new PageLoadMetricsObserver(mConnection, mSession, tab);
+        // Immediately add the observer to PageLoadMetrics to catch early events that may
+        // be generated in the middle of tab initialization.
+        PageLoadMetrics.addObserver(mMetricsObserver);
         tab.addObserver(mTabObserver);
 
         prepareTabBackground(tab);

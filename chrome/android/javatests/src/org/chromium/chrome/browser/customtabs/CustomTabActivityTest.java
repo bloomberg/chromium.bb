@@ -1178,16 +1178,20 @@ public class CustomTabActivityTest {
         final AtomicReference<Long> firstContentfulPaintMs = new AtomicReference<>(-1L);
         final AtomicReference<Long> activityStartTimeMs = new AtomicReference<>(-1L);
         final AtomicReference<Long> loadEventStartMs = new AtomicReference<>(-1L);
+        final AtomicReference<Boolean> sawNetworkQualityEstimates = new AtomicReference<>(false);
 
         CustomTabsCallback cb = new CustomTabsCallback() {
             @Override
             public void extraCallback(String callbackName, Bundle args) {
                 Assert.assertEquals(CustomTabsConnection.PAGE_LOAD_METRICS_CALLBACK, callbackName);
 
+                if (-1 != args.getLong(PageLoadMetrics.EFFECTIVE_CONNECTION_TYPE, -1)) {
+                    sawNetworkQualityEstimates.set(true);
+                }
+
                 long navigationStart = args.getLong(PageLoadMetrics.NAVIGATION_START, -1);
                 if (navigationStart == -1) {
-                    // Return if the callback just had network quality information, which
-                    // isn't tested.
+                    // Untested metric callback.
                     return;
                 }
                 long current = SystemClock.uptimeMillis();
@@ -1229,6 +1233,12 @@ public class CustomTabActivityTest {
                 @Override
                 public boolean isSatisfied() {
                     return loadEventStartMs.get() > 0;
+                }
+            });
+            CriteriaHelper.pollInstrumentationThread(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return sawNetworkQualityEstimates.get();
                 }
             });
         } catch (InterruptedException e) {
