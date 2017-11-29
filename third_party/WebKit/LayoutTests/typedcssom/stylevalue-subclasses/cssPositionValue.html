@@ -31,7 +31,7 @@ for (const attr of ['x', 'y']) {
       const position = new CSSPositionValue(CSS.px(0), CSS.px(0));
       assert_throws(new TypeError(), () => position[attr] = value);
       assert_style_value_equals(position[attr], CSS.px(0));
-    }, 'Updating CSSKeywordValue.' + attr + ' with ' + desc + ' throws a TypeError');
+    }, 'Updating CSSPositionValue.' + attr + ' with ' + desc + ' throws a TypeError');
   }
 }
 
@@ -58,7 +58,7 @@ for (const attr of ['x', 'y']) {
       const position = new CSSPositionValue(CSS.px(0), CSS.px(0));
       position[attr] = value;
       assert_style_value_equals(position[attr], value);
-    }, 'CSSKeywordValue.' + attr + ' can be updated to ' + desc);
+    }, 'CSSPositionValue.' + attr + ' can be updated to ' + desc);
   }
 }
 

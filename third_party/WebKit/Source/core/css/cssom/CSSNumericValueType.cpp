@@ -123,8 +123,11 @@ CSSNumericValueType CSSNumericValueType::Multiply(CSSNumericValueType type1,
   else if (type2.HasPercentHint())
     type1.ApplyPercentHint(type2.PercentHint());
 
-  for (unsigned i = 0; i < kNumBaseTypes; ++i)
-    type1.exponents_[i] += type2.exponents_[i];
+  for (unsigned i = 0; i < kNumBaseTypes; ++i) {
+    const auto base_type = static_cast<BaseType>(i);
+    type1.SetExponent(base_type,
+                      type1.Exponent(base_type) + type2.Exponent(base_type));
+  }
 
   error = false;
   return type1;

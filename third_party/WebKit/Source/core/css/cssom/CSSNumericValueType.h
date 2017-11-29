@@ -46,19 +46,54 @@ class CORE_EXPORT CSSNumericValueType {
     return exponents_[static_cast<unsigned>(type)];
   }
 
-  void SetExponent(BaseType type, int value) {
+  void SetExponent(BaseType type, int new_value) {
     DCHECK_LT(type, BaseType::kNumBaseTypes);
-    exponents_[static_cast<unsigned>(type)] = value;
+    int& old_value = exponents_[static_cast<unsigned>(type)];
+    if (old_value == 0 && new_value != 0)
+      num_non_zero_entries_++;
+    else if (old_value != 0 && new_value == 0)
+      num_non_zero_entries_--;
+    old_value = new_value;
   }
 
   bool HasPercentHint() const { return has_percent_hint_; }
   BaseType PercentHint() const { return percent_hint_; }
   void ApplyPercentHint(BaseType hint);
 
+  bool MatchesBaseType(BaseType base_type) const {
+    DCHECK_NE(base_type, BaseType::kPercent);
+    return IsOnlyNonZeroEntry(base_type, 1) && !HasPercentHint();
+  }
+
+  bool MatchesPercentage() const {
+    return IsOnlyNonZeroEntry(BaseType::kPercent, 1);
+  }
+
+  bool MatchesBaseTypePercentage(BaseType base_type) const {
+    DCHECK_NE(base_type, BaseType::kPercent);
+    return IsOnlyNonZeroEntry(base_type, 1) ||
+           IsOnlyNonZeroEntry(BaseType::kPercent, 1);
+  }
+
+  bool MatchesNumber() const {
+    return !HasNonZeroEntries() && !HasPercentHint();
+  }
+
+  bool MatchesNumberPercentage() const {
+    return !HasNonZeroEntries() || IsOnlyNonZeroEntry(BaseType::kPercent, 1);
+  }
+
  private:
+  bool HasNonZeroEntries() const { return num_non_zero_entries_ > 0; }
+  bool IsOnlyNonZeroEntry(BaseType base_type, int value) const {
+    DCHECK_NE(value, 0);
+    return num_non_zero_entries_ == 1 && Exponent(base_type) == value;
+  }
+
   std::array<int, kNumBaseTypes> exponents_{};  // zero-initialize
   BaseType percent_hint_ = BaseType::kPercent;
   bool has_percent_hint_ = false;
+  unsigned num_non_zero_entries_ = 0;
 };
 
 }  // namespace blink

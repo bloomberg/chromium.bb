@@ -202,4 +202,62 @@ TEST(CSSNumericValueType, MultiplyAddsPowersAndSetsPercentHint) {
   EXPECT_EQ(BaseType::kAngle, result.PercentHint());
 }
 
+TEST(CSSNumericValueType, MatchesBaseTypePercentage) {
+  CSSNumericValueType type;
+  EXPECT_FALSE(type.MatchesBaseType(BaseType::kLength));
+  EXPECT_FALSE(type.MatchesBaseTypePercentage(BaseType::kLength));
+
+  type.SetExponent(BaseType::kLength, 1);
+  EXPECT_TRUE(type.MatchesBaseType(BaseType::kLength));
+  EXPECT_TRUE(type.MatchesBaseTypePercentage(BaseType::kLength));
+
+  type.SetExponent(BaseType::kLength, 2);
+  EXPECT_FALSE(type.MatchesBaseType(BaseType::kLength));
+  EXPECT_FALSE(type.MatchesBaseTypePercentage(BaseType::kLength));
+
+  type.SetExponent(BaseType::kLength, 1);
+  EXPECT_TRUE(type.MatchesBaseType(BaseType::kLength));
+  EXPECT_TRUE(type.MatchesBaseTypePercentage(BaseType::kLength));
+
+  type.ApplyPercentHint(BaseType::kLength);
+  EXPECT_FALSE(type.MatchesBaseType(BaseType::kLength));
+  EXPECT_TRUE(type.MatchesBaseTypePercentage(BaseType::kLength));
+}
+
+TEST(CSSNumericValueType, MatchesPercentage) {
+  CSSNumericValueType type;
+  EXPECT_FALSE(type.MatchesPercentage());
+
+  type.SetExponent(BaseType::kPercent, 1);
+  EXPECT_TRUE(type.MatchesPercentage());
+
+  type.SetExponent(BaseType::kPercent, 2);
+  EXPECT_FALSE(type.MatchesPercentage());
+
+  type.ApplyPercentHint(BaseType::kLength);
+  EXPECT_FALSE(type.MatchesPercentage());
+
+  type.SetExponent(BaseType::kLength, 0);
+  type.SetExponent(BaseType::kPercent, 1);
+  EXPECT_TRUE(type.MatchesPercentage());
+}
+
+TEST(CSSNumericValueType, MatchesNumberPercentage) {
+  CSSNumericValueType type;
+  EXPECT_TRUE(type.MatchesNumber());
+  EXPECT_TRUE(type.MatchesNumberPercentage());
+
+  type.SetExponent(BaseType::kLength, 1);
+  EXPECT_FALSE(type.MatchesNumber());
+  EXPECT_FALSE(type.MatchesNumberPercentage());
+
+  type.SetExponent(BaseType::kLength, 0);
+  EXPECT_TRUE(type.MatchesNumber());
+  EXPECT_TRUE(type.MatchesNumberPercentage());
+
+  type.SetExponent(BaseType::kPercent, 1);
+  EXPECT_FALSE(type.MatchesNumber());
+  EXPECT_TRUE(type.MatchesNumberPercentage());
+}
+
 }  // namespace blink
