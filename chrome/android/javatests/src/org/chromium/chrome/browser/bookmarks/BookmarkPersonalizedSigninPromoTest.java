@@ -84,7 +84,6 @@ public class BookmarkPersonalizedSigninPromoTest {
     @Test
     @LargeTest
     @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/776405.
-    @DisabledTest(message = "Flaky. See crbug.com/789531")
     public void testAutoDismissPromo() throws Exception {
         int impressionCap = SigninPromoController.getMaxImpressionsBookmarksForTests();
         for (int impression = 0; impression < impressionCap; impression++) {
