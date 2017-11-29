@@ -64,11 +64,50 @@ PaintTypeface PaintTypeface::FromFamilyNameAndFontStyle(
 }
 
 PaintTypeface::PaintTypeface() = default;
-PaintTypeface::PaintTypeface(const PaintTypeface& other) = default;
+PaintTypeface::PaintTypeface(const PaintTypeface& other) {
+  *this = other;
+}
 PaintTypeface::PaintTypeface(PaintTypeface&& other) = default;
-PaintTypeface::~PaintTypeface() = default;
+PaintTypeface::~PaintTypeface() {
+  // TODO(crbug.com/785682): Debugging possible ref counting issue.
+  if (sk_typeface_) {
+    // We should be a strong owner of this reference. However, to debug a
+    // possible ref counting issue, we also ensured that we're a weak owner of
+    // this as well. This means that we should be able to always acquire a
+    // strong reference (ie the class isn't deleted because we're weak owners,
+    // and it should always succeed because we're strong owners).
+    if (sk_typeface_->try_ref()) {
+      sk_typeface_->unref();
+    } else {
+      CHECK(false) << "SkTypeface ref-counting problem detected.";
+    }
+    sk_typeface_->weak_unref();
+  }
+  // Explicitly delete the typeface so that any crashes resulting from this
+  // would point to this line.
+  sk_typeface_ = nullptr;
+}
 
-PaintTypeface& PaintTypeface::operator=(const PaintTypeface& other) = default;
+PaintTypeface& PaintTypeface::operator=(const PaintTypeface& other) {
+  sk_id_ = other.sk_id_;
+  sk_typeface_ = other.sk_typeface_;
+
+  // TODO(crbug.com/785682): Debugging possible ref counting issue.
+  if (sk_typeface_) {
+    // Since we're copying this object which will do a weak unref in the dtor,
+    // ensure to bump the weak ref one more time.
+    sk_typeface_->weak_ref();
+  }
+
+  type_ = other.type_;
+  font_config_interface_id_ = other.font_config_interface_id_;
+  ttc_index_ = other.ttc_index_;
+  filename_ = other.filename_;
+  family_name_ = other.family_name_;
+  font_style_ = other.font_style_;
+  return *this;
+}
+
 PaintTypeface& PaintTypeface::operator=(PaintTypeface&& other) = default;
 
 void PaintTypeface::CreateSkTypeface() {
@@ -109,6 +148,10 @@ void PaintTypeface::CreateSkTypeface() {
   }
 #endif  // !defined(OS_MACOSX)
   sk_id_ = sk_typeface_ ? sk_typeface_->uniqueID() : 0;
+
+  // TODO(crbug.com/785682): Debugging possible ref counting issue.
+  if (sk_typeface_)
+    sk_typeface_->weak_ref();
 }
 
 }  // namespace cc
