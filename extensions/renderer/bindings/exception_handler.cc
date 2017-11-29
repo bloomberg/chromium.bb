@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
+#include "extensions/renderer/bindings/js_runner.h"
 #include "gin/converter.h"
 #include "gin/per_context_data.h"
 
@@ -44,9 +45,8 @@ ExceptionHandlerPerContextData* GetContextData(v8::Local<v8::Context> context,
 }  // namespace
 
 ExceptionHandler::ExceptionHandler(
-    const binding::AddConsoleError& add_console_error,
-    const binding::RunJSFunction& run_js)
-    : add_console_error_(add_console_error), run_js_(run_js) {}
+    const binding::AddConsoleError& add_console_error)
+    : add_console_error_(add_console_error) {}
 ExceptionHandler::~ExceptionHandler() {}
 
 void ExceptionHandler::HandleException(v8::Local<v8::Context> context,
@@ -93,7 +93,8 @@ void ExceptionHandler::HandleException(v8::Local<v8::Context> context,
     // possible. Handle this gracefully, and log errors normally.
     v8::TryCatch handler_try_catch(isolate);
     handler_try_catch.SetVerbose(true);
-    run_js_.Run(handler, context, arraysize(arguments), arguments);
+    JSRunner::Get(context)->RunJSFunction(handler, context,
+                                          arraysize(arguments), arguments);
   } else {
     add_console_error_.Run(context, full_message);
   }

@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "extensions/renderer/bindings/api_binding_types.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -48,8 +47,7 @@ class APIBindingHooks {
     std::string error;
   };
 
-  APIBindingHooks(const std::string& api_name,
-                  const binding::RunJSFunctionSync& run_js);
+  explicit APIBindingHooks(const std::string& api_name);
   ~APIBindingHooks();
 
   // Looks for any custom hooks associated with the given request, and, if any
@@ -89,11 +87,6 @@ class APIBindingHooks {
 
   // The name of the associated API.
   std::string api_name_;
-
-  // We use synchronous JS execution here because at every point we execute JS,
-  // it's in direct response to JS calling in. There should be no reason that
-  // script is disabled.
-  binding::RunJSFunctionSync run_js_;
 
   std::unique_ptr<APIBindingHooksDelegate> delegate_;
 

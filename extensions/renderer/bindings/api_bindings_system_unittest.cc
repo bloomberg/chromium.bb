@@ -118,8 +118,6 @@ void APIBindingsSystemTest::SetUp() {
   binding::AddConsoleError add_console_error(base::Bind(
       &APIBindingsSystemTest::AddConsoleError, base::Unretained(this)));
   bindings_system_ = std::make_unique<APIBindingsSystem>(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-      base::Bind(&RunFunctionOnGlobalAndReturnHandle),
       base::Bind(&APIBindingsSystemTest::GetAPISchema, base::Unretained(this)),
       base::Bind(&AllowAllAPIs),
       base::Bind(&APIBindingsSystemTest::OnAPIRequest, base::Unretained(this)),
@@ -446,7 +444,6 @@ TEST_F(APIBindingsSystemTest, TestCustomEvent) {
   v8::Local<v8::Context> context = MainContext();
 
   auto create_custom_event = [](v8::Local<v8::Context> context,
-                                const binding::RunJSFunctionSync& run_js,
                                 const std::string& event_name) {
     v8::Isolate* isolate = context->GetIsolate();
     v8::Local<v8::Object> ret = v8::Object::New(isolate);

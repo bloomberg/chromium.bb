@@ -115,6 +115,7 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   void TearDown() override;
   void OnWillDisposeContext(v8::Local<v8::Context> context) override;
   v8::ExtensionConfiguration* GetV8ExtensionConfiguration() override;
+  std::unique_ptr<TestJSRunner::Scope> CreateTestJSRunner() override;
 
   ScriptContext* CreateScriptContext(v8::Local<v8::Context> v8_context,
                                      Extension* extension,

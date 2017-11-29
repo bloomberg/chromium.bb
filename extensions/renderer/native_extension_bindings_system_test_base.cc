@@ -99,6 +99,13 @@ void NativeExtensionBindingsSystemUnittest::OnWillDisposeContext(
   raw_script_contexts_.erase(iter);
 }
 
+std::unique_ptr<TestJSRunner::Scope>
+NativeExtensionBindingsSystemUnittest::CreateTestJSRunner() {
+  // The NativeExtensionBindingsSystem handles setting the JSRunner for each
+  // context, so we don't need to fake one.
+  return nullptr;
+}
+
 void NativeExtensionBindingsSystemUnittest::RegisterExtension(
     scoped_refptr<const Extension> extension) {
   extension_ids_.insert(extension->id());

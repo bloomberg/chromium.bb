@@ -8,10 +8,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/public/common/console_message_level.h"
+#include "extensions/renderer/bindings/api_binding_types.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
 #include "extensions/renderer/bindings/api_signature.h"
 #include "extensions/renderer/bindings/api_type_reference_map.h"
 #include "extensions/renderer/bindings/binding_access_checker.h"
+#include "extensions/renderer/bindings/js_runner.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/script_context_set.h"
 #include "gin/arguments.h"
@@ -32,10 +34,10 @@ bool IsDeprecated(base::StringPiece type) {
   return std::find(std::begin(kDeprecatedTypes), std::end(kDeprecatedTypes),
                    type) != std::end(kDeprecatedTypes);
 }
-}
+
+}  // namespace
 
 v8::Local<v8::Object> ContentSetting::Create(
-    const binding::RunJSFunction& run_js,
     v8::Isolate* isolate,
     const std::string& property_name,
     const base::ListValue* property_values,
@@ -49,19 +51,17 @@ v8::Local<v8::Object> ContentSetting::Create(
   CHECK(property_values->GetDictionary(1u, &value_spec));
 
   gin::Handle<ContentSetting> handle = gin::CreateHandle(
-      isolate, new ContentSetting(run_js, request_handler, type_refs,
-                                  access_checker, pref_name, *value_spec));
+      isolate, new ContentSetting(request_handler, type_refs, access_checker,
+                                  pref_name, *value_spec));
   return handle.ToV8().As<v8::Object>();
 }
 
-ContentSetting::ContentSetting(const binding::RunJSFunction& run_js,
-                               APIRequestHandler* request_handler,
+ContentSetting::ContentSetting(APIRequestHandler* request_handler,
                                const APITypeReferenceMap* type_refs,
                                const BindingAccessChecker* access_checker,
                                const std::string& pref_name,
                                const base::DictionaryValue& set_value_spec)
-    : run_js_(run_js),
-      request_handler_(request_handler),
+    : request_handler_(request_handler),
       type_refs_(type_refs),
       access_checker_(access_checker),
       pref_name_(pref_name),
@@ -167,7 +167,8 @@ void ContentSetting::HandleFunction(const std::string& method_name,
         CHECK(result.ToChecked());
         args.push_back(object);
       }
-      run_js_.Run(callback, context, args.size(), args.data());
+      JSRunner::Get(context)->RunJSFunction(callback, context, args.size(),
+                                            args.data());
     }
     return;
   }

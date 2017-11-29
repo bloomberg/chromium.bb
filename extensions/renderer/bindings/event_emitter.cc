@@ -8,6 +8,7 @@
 
 #include "extensions/renderer/bindings/api_event_listeners.h"
 #include "extensions/renderer/bindings/exception_handler.h"
+#include "extensions/renderer/bindings/js_runner.h"
 #include "gin/data_object_builder.h"
 #include "gin/object_template_builder.h"
 #include "gin/per_context_data.h"
@@ -18,13 +19,9 @@ gin::WrapperInfo EventEmitter::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 EventEmitter::EventEmitter(bool supports_filters,
                            std::unique_ptr<APIEventListeners> listeners,
-                           const binding::RunJSFunction& run_js,
-                           const binding::RunJSFunctionSync& run_js_sync,
                            ExceptionHandler* exception_handler)
     : supports_filters_(supports_filters),
       listeners_(std::move(listeners)),
-      run_js_(run_js),
-      run_js_sync_(run_js_sync),
       exception_handler_(exception_handler) {}
 
 EventEmitter::~EventEmitter() {}
@@ -181,15 +178,16 @@ void EventEmitter::DispatchImpl(
 
   v8::Isolate* isolate = context->GetIsolate();
   v8::TryCatch try_catch(isolate);
+  JSRunner* js_runner = JSRunner::Get(context);
   for (const auto& listener : listeners) {
     if (run_sync) {
       DCHECK(out_values);
-      v8::Global<v8::Value> result =
-          run_js_sync_.Run(listener, context, args->size(), args->data());
+      v8::Global<v8::Value> result = js_runner->RunJSFunctionSync(
+          listener, context, args->size(), args->data());
       if (!result.IsEmpty() && !result.Get(isolate)->IsUndefined())
         out_values->push_back(std::move(result));
     } else {
-      run_js_.Run(listener, context, args->size(), args->data());
+      js_runner->RunJSFunction(listener, context, args->size(), args->data());
     }
 
     if (try_catch.HasCaught()) {

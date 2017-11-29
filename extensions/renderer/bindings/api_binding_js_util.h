@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "extensions/renderer/bindings/api_binding_types.h"
 #include "gin/wrappable.h"
 #include "v8/include/v8.h"
 
@@ -30,8 +29,7 @@ class APIBindingJSUtil final : public gin::Wrappable<APIBindingJSUtil> {
   APIBindingJSUtil(APITypeReferenceMap* type_refs,
                    APIRequestHandler* request_handler,
                    APIEventHandler* event_handler,
-                   ExceptionHandler* exception_handler,
-                   const binding::RunJSFunction& run_js);
+                   ExceptionHandler* exception_handler);
   ~APIBindingJSUtil() override;
 
   static gin::WrapperInfo kWrapperInfo;
@@ -113,8 +111,6 @@ class APIBindingJSUtil final : public gin::Wrappable<APIBindingJSUtil> {
 
   // The exception handler. Guaranteed to outlive this object.
   ExceptionHandler* const exception_handler_;
-
-  binding::RunJSFunction run_js_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingJSUtil);
 };

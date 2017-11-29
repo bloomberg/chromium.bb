@@ -6,7 +6,6 @@
 #define EXTENSIONS_RENDERER_BINDINGS_API_BINDING_HOOKS_DELEGATE_H_
 
 #include "extensions/renderer/bindings/api_binding_hooks.h"
-#include "extensions/renderer/bindings/api_binding_types.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -21,7 +20,6 @@ class APIBindingHooksDelegate {
   // Populates |event_out| and returns true if a custom implementation should
   // be used, otherwise returns false.
   virtual bool CreateCustomEvent(v8::Local<v8::Context> context,
-                                 const binding::RunJSFunctionSync& run_js_sync,
                                  const std::string& event_name,
                                  v8::Local<v8::Value>* event_out);
 

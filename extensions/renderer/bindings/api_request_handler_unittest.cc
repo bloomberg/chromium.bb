@@ -12,6 +12,7 @@
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/exception_handler.h"
+#include "extensions/renderer/bindings/test_js_runner.h"
 #include "gin/converter.h"
 #include "gin/function_template.h"
 #include "gin/public/context_holder.h"
@@ -40,19 +41,9 @@ void DoNothingWithRequest(std::unique_ptr<APIRequestHandler::Request> request,
 
 class APIRequestHandlerTest : public APIBindingTest {
  public:
-  // Runs the given |function|.
-  void RunJS(v8::Local<v8::Function> function,
-             v8::Local<v8::Context> context,
-             int argc,
-             v8::Local<v8::Value> argv[]) {
-    RunFunctionOnGlobal(function, context, argc, argv);
-    did_run_js_ = true;
-  }
-
   std::unique_ptr<APIRequestHandler> CreateRequestHandler() {
     return std::make_unique<APIRequestHandler>(
         base::Bind(&DoNothingWithRequest),
-        base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
         APILastError(APILastError::GetParent(), binding::AddConsoleError()),
         nullptr);
   }
@@ -61,9 +52,17 @@ class APIRequestHandlerTest : public APIBindingTest {
   APIRequestHandlerTest() {}
   ~APIRequestHandlerTest() override {}
 
+  std::unique_ptr<TestJSRunner::Scope> CreateTestJSRunner() override {
+    return std::make_unique<TestJSRunner::Scope>(
+        std::make_unique<TestJSRunner>(base::Bind(
+            &APIRequestHandlerTest::SetDidRunJS, base::Unretained(this))));
+  }
+
   bool did_run_js() const { return did_run_js_; }
 
  private:
+  void SetDidRunJS() { did_run_js_ = true; }
+
   bool did_run_js_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(APIRequestHandlerTest);
@@ -342,7 +341,6 @@ TEST_F(APIRequestHandlerTest, RequestThread) {
 
   APIRequestHandler request_handler(
       base::Bind(on_request, &thread),
-      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
       APILastError(APILastError::GetParent(), binding::AddConsoleError()),
       nullptr);
 
@@ -379,7 +377,6 @@ TEST_F(APIRequestHandlerTest, SettingLastError) {
 
   APIRequestHandler request_handler(
       base::Bind(&DoNothingWithRequest),
-      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
       APILastError(base::Bind(get_parent),
                    base::Bind(log_error, &logged_error)),
       nullptr);
@@ -454,7 +451,6 @@ TEST_F(APIRequestHandlerTest, AddPendingRequest) {
 
   APIRequestHandler request_handler(
       base::Bind(handle_request, &dispatched_request),
-      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
       APILastError(APILastError::GetParent(), binding::AddConsoleError()),
       nullptr);
 
@@ -492,22 +488,12 @@ TEST_F(APIRequestHandlerTest, ThrowExceptionInCallback) {
                               v8::Local<v8::Context> context,
                               const std::string& error) { *error_out = error; };
 
-  // RunFunction* from the test util assert no errors; provide a version that
-  // allows them.
-  auto run_function_and_allow_errors =
-      [](v8::Local<v8::Function> function, v8::Local<v8::Context> context,
-         int argc, v8::Local<v8::Value> argv[]) {
-        ignore_result(function->Call(context, context->Global(), argc, argv));
-      };
-
   base::Optional<std::string> logged_error;
   ExceptionHandler exception_handler(
-      base::Bind(add_console_error, &logged_error),
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+      base::Bind(add_console_error, &logged_error));
 
   APIRequestHandler request_handler(
       base::Bind(&DoNothingWithRequest),
-      base::Bind(run_function_and_allow_errors),
       APILastError(APILastError::GetParent(), binding::AddConsoleError()),
       &exception_handler);
 
@@ -516,7 +502,12 @@ TEST_F(APIRequestHandlerTest, ThrowExceptionInCallback) {
       FunctionFromString(context, "(function() { throw new Error('hello'); })");
   int request_id =
       request_handler.AddPendingRequest(context, callback_throwing_error);
-  request_handler.CompleteRequest(request_id, base::ListValue(), std::string());
+
+  {
+    TestJSRunner::AllowErrors allow_errors;
+    request_handler.CompleteRequest(request_id, base::ListValue(),
+                                    std::string());
+  }
   // |outer_try_catch| should not have caught an error. This is important to not
   // disrupt our bindings code (or other running JS) when asynchronously
   // returning from an API call. Instead, the error should be caught and handled

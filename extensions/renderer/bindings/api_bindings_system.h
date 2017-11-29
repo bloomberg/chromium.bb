@@ -45,8 +45,6 @@ class APIBindingsSystem {
       const BindingAccessChecker* access_checker)>;
 
   APIBindingsSystem(
-      const binding::RunJSFunction& call_js,
-      const binding::RunJSFunctionSync& call_js_sync,
       const GetAPISchemaMethod& get_api_schema,
       const BindingAccessChecker::AvailabilityCallback& is_available,
       const APIRequestHandler::SendRequestMethod& send_request,
@@ -139,10 +137,6 @@ class APIBindingsSystem {
   std::map<std::string, std::unique_ptr<APIBindingHooks>> binding_hooks_;
 
   std::map<std::string, CustomTypeHandler> custom_types_;
-
-  binding::RunJSFunction call_js_;
-
-  binding::RunJSFunctionSync call_js_sync_;
 
   // The method to retrieve the DictionaryValue describing a given extension
   // API. Curried in for testing purposes so we can use fake APIs.

@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/renderer/bindings/exception_handler.h"
+#include "extensions/renderer/bindings/js_runner.h"
 #include "gin/converter.h"
 #include "gin/data_object_builder.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
@@ -43,11 +44,9 @@ APIRequestHandler::PendingRequest& APIRequestHandler::PendingRequest::operator=(
     PendingRequest&&) = default;
 
 APIRequestHandler::APIRequestHandler(const SendRequestMethod& send_request,
-                                     const CallJSFunction& call_js,
                                      APILastError last_error,
                                      ExceptionHandler* exception_handler)
     : send_request_(send_request),
-      call_js_(call_js),
       last_error_(std::move(last_error)),
       exception_handler_(exception_handler) {}
 
@@ -173,8 +172,8 @@ void APIRequestHandler::CompleteRequest(
   v8::TryCatch try_catch(isolate);
   // args.size() is converted to int, but args is controlled by chrome and is
   // never close to std::numeric_limits<int>::max.
-  call_js_.Run(pending_request.callback.Get(isolate), context, args.size(),
-               args.data());
+  JSRunner::Get(context)->RunJSFunction(pending_request.callback.Get(isolate),
+                                        context, args.size(), args.data());
   if (try_catch.HasCaught()) {
     v8::Local<v8::Message> v8_message = try_catch.Message();
     base::Optional<std::string> message;
