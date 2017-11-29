@@ -91,21 +91,6 @@ FrameCoordinationUnitImpl::GetProcessCoordinationUnit() const {
   return process_coordination_unit_;
 }
 
-bool FrameCoordinationUnitImpl::IsAlmostIdle() const {
-  if (!process_coordination_unit_)
-    return false;
-  int64_t main_thread_task_load_is_low = 0;
-  int64_t is_network_almost_idle = 0;
-  if (!process_coordination_unit_->GetProperty(
-          mojom::PropertyType::kMainThreadTaskLoadIsLow,
-          &main_thread_task_load_is_low) ||
-      !GetProperty(mojom::PropertyType::kNetworkAlmostIdle,
-                   &is_network_almost_idle)) {
-    return false;
-  }
-  return main_thread_task_load_is_low && is_network_almost_idle;
-}
-
 bool FrameCoordinationUnitImpl::IsMainFrame() const {
   return !parent_frame_coordination_unit_;
 }

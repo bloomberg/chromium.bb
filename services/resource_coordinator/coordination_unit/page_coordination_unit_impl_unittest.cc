@@ -182,4 +182,28 @@ TEST_F(PageCoordinationUnitImplTest, TimeSinceLastNavigation) {
             cu_graph.page->TimeSinceLastNavigation());
 }
 
+TEST_F(PageCoordinationUnitImplTest, PageAlmostIdle) {
+  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;
+  EXPECT_FALSE(cu_graph.page->WasAlmostIdle());
+  EXPECT_FALSE(cu_graph.page->CheckAndUpdateAlmostIdleStateIfNeeded());
+
+  cu_graph.process->SetMainThreadTaskLoadIsLow(true);
+  cu_graph.frame->SetNetworkAlmostIdle(true);
+  EXPECT_FALSE(cu_graph.page->WasAlmostIdle());
+  EXPECT_TRUE(cu_graph.page->CheckAndUpdateAlmostIdleStateIfNeeded());
+  EXPECT_TRUE(cu_graph.page->WasAlmostIdle());
+
+  cu_graph.process->SetMainThreadTaskLoadIsLow(false);
+  EXPECT_TRUE(cu_graph.page->WasAlmostIdle());
+  EXPECT_FALSE(cu_graph.page->CheckAndUpdateAlmostIdleStateIfNeeded());
+  EXPECT_TRUE(cu_graph.page->WasAlmostIdle());
+
+  cu_graph.page->OnMainFrameNavigationCommitted();
+  EXPECT_FALSE(cu_graph.page->WasAlmostIdle());
+  cu_graph.process->SetMainThreadTaskLoadIsLow(true);
+  EXPECT_FALSE(cu_graph.page->WasAlmostIdle());
+  EXPECT_TRUE(cu_graph.page->CheckAndUpdateAlmostIdleStateIfNeeded());
+  EXPECT_TRUE(cu_graph.page->WasAlmostIdle());
+}
+
 }  // namespace resource_coordinator
