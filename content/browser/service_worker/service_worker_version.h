@@ -407,10 +407,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void SimulatePingTimeoutForTesting();
 
   // Used to allow tests to change time for testing.
-  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
+  void SetTickClockForTesting(base::TickClock* tick_clock);
 
   // Used to allow tests to change wall clock for testing.
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+  void SetClockForTesting(base::Clock* clock);
 
   // Returns true if the service worker has work to do: it has pending
   // requests, in-progress streaming URLRequestJobs, or pending start callbacks.
@@ -772,10 +772,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ServiceWorkerStatusCode start_worker_status_ = SERVICE_WORKER_OK;
 
   // The clock used to vend tick time.
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_;
 
   // The clock used for actual (wall clock) time
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   std::unique_ptr<PingController> ping_controller_;
 

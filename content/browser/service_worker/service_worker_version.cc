@@ -291,8 +291,8 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       binding_(this),
       context_(context),
       script_cache_map_(this, context),
-      tick_clock_(std::make_unique<base::DefaultTickClock>()),
-      clock_(std::make_unique<base::DefaultClock>()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
+      clock_(base::DefaultClock::GetInstance()),
       ping_controller_(new PingController(this)),
       validator_(TrialPolicyImpl::CreateValidatorForPolicy()),
       weak_factory_(this) {
@@ -840,14 +840,12 @@ void ServiceWorkerVersion::SimulatePingTimeoutForTesting() {
   ping_controller_->SimulateTimeoutForTesting();
 }
 
-void ServiceWorkerVersion::SetTickClockForTesting(
-    std::unique_ptr<base::TickClock> tick_clock) {
-  tick_clock_ = std::move(tick_clock);
+void ServiceWorkerVersion::SetTickClockForTesting(base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
 }
 
-void ServiceWorkerVersion::SetClockForTesting(
-    std::unique_ptr<base::Clock> clock) {
-  clock_ = std::move(clock);
+void ServiceWorkerVersion::SetClockForTesting(base::Clock* clock) {
+  clock_ = clock;
 }
 
 const net::HttpResponseInfo*

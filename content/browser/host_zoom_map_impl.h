@@ -95,7 +95,7 @@ class CONTENT_EXPORT HostZoomMapImpl : public HostZoomMap {
 
   void WillCloseRenderView(int render_process_id, int render_view_id);
 
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock) override;
+  void SetClockForTesting(base::Clock* clock) override;
 
  private:
   struct ZoomLevel {
@@ -151,7 +151,7 @@ class CONTENT_EXPORT HostZoomMapImpl : public HostZoomMap {
 
   bool store_last_modified_;
 
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(HostZoomMapImpl);
 };

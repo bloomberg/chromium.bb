@@ -45,8 +45,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   static constexpr const base::TimeDelta kMaxEarliestOriginSweepFromNow =
       base::TimeDelta::FromDays(7);
 
-  IndexedDBFactoryImpl(IndexedDBContextImpl* context,
-                       std::unique_ptr<base::Clock> clock);
+  IndexedDBFactoryImpl(IndexedDBContextImpl* context, base::Clock* clock);
 
   // content::IndexedDBFactory overrides:
   void ReleaseDatabase(const IndexedDBDatabase::Identifier& identifier,
@@ -178,7 +177,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
       backing_stores_with_active_blobs_;
   std::set<url::Origin> backends_opened_since_boot_;
 
-  const std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   base::Time earliest_sweep_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBFactoryImpl);

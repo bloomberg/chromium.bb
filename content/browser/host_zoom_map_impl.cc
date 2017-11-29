@@ -128,7 +128,7 @@ void HostZoomMap::SendErrorPageZoomLevelRefresh(
 HostZoomMapImpl::HostZoomMapImpl()
     : default_zoom_level_(0.0),
       store_last_modified_(false),
-      clock_(std::make_unique<base::DefaultClock>()) {
+      clock_(base::DefaultClock::GetInstance()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -561,8 +561,8 @@ HostZoomMapImpl::~HostZoomMapImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-void HostZoomMapImpl::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
-  clock_ = std::move(clock);
+void HostZoomMapImpl::SetClockForTesting(base::Clock* clock) {
+  clock_ = clock;
 }
 
 }  // namespace content

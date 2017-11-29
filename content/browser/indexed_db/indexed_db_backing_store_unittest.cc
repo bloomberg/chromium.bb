@@ -194,8 +194,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
 class TestIDBFactory : public IndexedDBFactoryImpl {
  public:
   explicit TestIDBFactory(IndexedDBContextImpl* idb_context)
-      : IndexedDBFactoryImpl(idb_context,
-                             std::make_unique<base::DefaultClock>()) {}
+      : IndexedDBFactoryImpl(idb_context, base::DefaultClock::GetInstance()) {}
 
   scoped_refptr<TestableIndexedDBBackingStore> OpenBackingStoreForTest(
       const Origin& origin,

@@ -38,8 +38,7 @@ RendererWebMediaPlayerDelegate::RendererWebMediaPlayerDelegate(
     : RenderFrameObserver(render_frame),
       allow_idle_cleanup_(
           content::GetContentClient()->renderer()->AllowIdleMediaSuspend()),
-      default_tick_clock_(new base::DefaultTickClock()),
-      tick_clock_(default_tick_clock_.get()) {
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
   idle_cleanup_interval_ = base::TimeDelta::FromSeconds(5);
   idle_timeout_ = base::TimeDelta::FromSeconds(15);
 

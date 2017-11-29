@@ -131,7 +131,7 @@ IndexedDBFactory* IndexedDBContextImpl::GetIDBFactory() {
     // detect when dbs are newly created.
     GetOriginSet();
     factory_ =
-        new IndexedDBFactoryImpl(this, std::make_unique<base::DefaultClock>());
+        new IndexedDBFactoryImpl(this, base::DefaultClock::GetInstance());
   }
   return factory_.get();
 }

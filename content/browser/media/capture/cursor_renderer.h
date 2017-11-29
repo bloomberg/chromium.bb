@@ -109,7 +109,6 @@ class CONTENT_EXPORT CursorRenderer {
   CursorDisplaySetting cursor_display_setting_;
 
   // Allows tests to replace the clock.
-  base::DefaultTickClock default_tick_clock_;
   base::TickClock* tick_clock_;
 
   base::WeakPtrFactory<CursorRenderer> weak_factory_;

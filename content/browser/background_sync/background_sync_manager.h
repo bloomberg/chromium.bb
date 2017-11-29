@@ -95,9 +95,9 @@ class CONTENT_EXPORT BackgroundSyncManager
     return network_observer_.get();
   }
 
-  void set_clock(std::unique_ptr<base::Clock> clock) {
+  void set_clock(base::Clock* clock) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    clock_ = std::move(clock);
+    clock_ = clock;
   }
 
   // Called from DevTools
@@ -299,7 +299,7 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   std::unique_ptr<BackgroundSyncNetworkObserver> network_observer_;
 
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   base::WeakPtrFactory<BackgroundSyncManager> weak_ptr_factory_;
 

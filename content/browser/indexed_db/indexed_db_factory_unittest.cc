@@ -43,10 +43,9 @@ namespace {
 class MockIDBFactory : public IndexedDBFactoryImpl {
  public:
   explicit MockIDBFactory(IndexedDBContextImpl* context)
-      : MockIDBFactory(context, std::make_unique<base::DefaultClock>()) {}
-  MockIDBFactory(IndexedDBContextImpl* context,
-                 std::unique_ptr<base::Clock> clock)
-      : IndexedDBFactoryImpl(context, std::move(clock)) {}
+      : MockIDBFactory(context, base::DefaultClock::GetInstance()) {}
+  MockIDBFactory(IndexedDBContextImpl* context, base::Clock* clock)
+      : IndexedDBFactoryImpl(context, clock) {}
   scoped_refptr<IndexedDBBackingStore> TestOpenBackingStore(
       const Origin& origin,
       const base::FilePath& data_directory) {
@@ -186,12 +185,11 @@ TEST_F(IndexedDBFactoryTest, BackingStoreNoSweeping) {
       FROM_HERE,
       base::BindOnce(
           [](IndexedDBContextImpl* context) {
-            base::SimpleTestClock* clock_ptr = new base::SimpleTestClock();
-            clock_ptr->SetNow(base::Time::Now());
+            base::SimpleTestClock clock;
+            clock.SetNow(base::Time::Now());
 
             scoped_refptr<MockIDBFactory> factory =
-                base::MakeRefCounted<MockIDBFactory>(
-                    context, base::WrapUnique(clock_ptr));
+                base::MakeRefCounted<MockIDBFactory>(context, &clock);
 
             const Origin origin = Origin::Create(GURL("http://localhost:81"));
 
@@ -223,8 +221,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreNoSweeping) {
             EXPECT_FALSE(store_ptr->close_timer()->IsRunning());
 
             // Move the clock to start the next sweep.
-            clock_ptr->Advance(
-                IndexedDBFactoryImpl::kMaxEarliestGlobalSweepFromNow);
+            clock.Advance(IndexedDBFactoryImpl::kMaxEarliestGlobalSweepFromNow);
             factory->TestReleaseBackingStore(store_ptr, false);
 
             // Sweep should NOT be occurring.
@@ -247,12 +244,11 @@ TEST_F(IndexedDBFactoryTest, BackingStoreRunPreCloseTasks) {
       FROM_HERE,
       base::BindOnce(
           [](IndexedDBContextImpl* context) {
-            base::SimpleTestClock* clock_ptr = new base::SimpleTestClock();
-            clock_ptr->SetNow(base::Time::Now());
+            base::SimpleTestClock clock;
+            clock.SetNow(base::Time::Now());
 
             scoped_refptr<MockIDBFactory> factory =
-                base::MakeRefCounted<MockIDBFactory>(
-                    context, base::WrapUnique(clock_ptr));
+                base::MakeRefCounted<MockIDBFactory>(context, &clock);
 
             const Origin origin = Origin::Create(GURL("http://localhost:81"));
 
@@ -284,8 +280,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreRunPreCloseTasks) {
             EXPECT_FALSE(store_ptr->close_timer()->IsRunning());
 
             // Move the clock to start the next sweep.
-            clock_ptr->Advance(
-                IndexedDBFactoryImpl::kMaxEarliestGlobalSweepFromNow);
+            clock.Advance(IndexedDBFactoryImpl::kMaxEarliestGlobalSweepFromNow);
             factory->TestReleaseBackingStore(store_ptr, false);
 
             // Sweep should be occuring.
@@ -301,8 +296,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreRunPreCloseTasks) {
 
             // Move clock forward to trigger next sweep, but origin has longer
             // sweep minimum, so nothing happens.
-            clock_ptr->Advance(
-                IndexedDBFactoryImpl::kMaxEarliestGlobalSweepFromNow);
+            clock.Advance(IndexedDBFactoryImpl::kMaxEarliestGlobalSweepFromNow);
 
             factory->TestReleaseBackingStore(store_ptr, false);
             EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
@@ -311,8 +305,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreRunPreCloseTasks) {
             // Reset, and move clock forward so the origin should allow a sweep.
             factory->TestOpenBackingStore(origin, context->data_path());
             EXPECT_EQ(nullptr, store_ptr->pre_close_task_queue());
-            clock_ptr->Advance(
-                IndexedDBFactoryImpl::kMaxEarliestOriginSweepFromNow);
+            clock.Advance(IndexedDBFactoryImpl::kMaxEarliestOriginSweepFromNow);
             factory->TestReleaseBackingStore(store_ptr, false);
 
             // Sweep should be occuring.
@@ -411,7 +404,7 @@ TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
 class DiskFullFactory : public IndexedDBFactoryImpl {
  public:
   explicit DiskFullFactory(IndexedDBContextImpl* context)
-      : IndexedDBFactoryImpl(context, std::make_unique<base::DefaultClock>()) {}
+      : IndexedDBFactoryImpl(context, base::DefaultClock::GetInstance()) {}
 
  private:
   ~DiskFullFactory() override {}

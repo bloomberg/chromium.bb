@@ -53,7 +53,7 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
       client_(client),
       enable_surface_synchronization_(enable_surface_synchronization),
       enable_viz_(enable_viz),
-      tick_clock_(std::make_unique<base::DefaultTickClock>()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       background_color_(SK_ColorRED),
       frame_evictor_(std::make_unique<viz::FrameEvictor>(this)),
       weak_ptr_factory_(this) {

@@ -51,7 +51,7 @@ bool AudioStreamMonitor::StreamID::operator==(const StreamID& other) const {
 
 AudioStreamMonitor::AudioStreamMonitor(WebContents* contents)
     : web_contents_(contents),
-      clock_(&default_tick_clock_),
+      clock_(base::DefaultTickClock::GetInstance()),
       was_recently_audible_(false),
       is_audible_(false) {
   DCHECK(web_contents_);
