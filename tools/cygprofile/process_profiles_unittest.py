@@ -50,6 +50,14 @@ class ProcessProfilesTestCase(unittest.TestCase):
                           'AnAlias': symbol_infos[0],
                           'Another': symbol_infos[2]}, symbol_name_to_primary)
 
+  def testSortedFilenames(self):
+    filenames = ['second-1234-456.txt', 'first-345345-123.txt',
+                 'third.bar.-789.txt']
+    sorted_filenames = process_profiles._SortedFilenames(filenames)
+    self.assertListEqual(
+        ['first-345345-123.txt', 'second-1234-456.txt', 'third.bar.-789.txt'],
+        sorted_filenames)
+
 
 if __name__ == '__main__':
   unittest.main()

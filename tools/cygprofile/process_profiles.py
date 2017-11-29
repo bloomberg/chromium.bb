@@ -7,6 +7,7 @@
 
 import argparse
 import logging
+import operator
 import os
 import sys
 
@@ -15,6 +16,25 @@ _SRC_PATH = os.path.abspath(os.path.join(
 path = os.path.join(_SRC_PATH, 'tools', 'cygprofile')
 sys.path.append(path)
 import symbol_extractor
+
+
+def _SortedFilenames(filenames):
+  """Returns filenames in ascending timestamp order.
+
+  Args:
+    filenames: ([str]) List of filenames, matching.  *-TIMESTAMP.*.
+
+  Returns:
+    [str] Ordered by ascending timestamp.
+  """
+  filename_timestamp = []
+  for filename in filenames:
+    dash_index = filename.rindex('-')
+    dot_index = filename.rindex('.')
+    timestamp = int(filename[dash_index+1:dot_index])
+    filename_timestamp.append((filename, timestamp))
+  filename_timestamp.sort(key=operator.itemgetter(1))
+  return [x[0] for x in filename_timestamp]
 
 
 def MergeDumps(filenames):
@@ -204,6 +224,7 @@ def main():
   args = parser.parse_args()
   logging.info('Merging dumps')
   dumps = args.dumps.split(',')
+  sorted_dumps = _SortedFilenames(dumps)
 
   instrumented_native_lib = os.path.join(args.instrumented_build_dir,
                                          'lib.unstripped', 'libchrome.so')
@@ -211,7 +232,7 @@ def main():
                                     'lib.unstripped', 'libchrome.so')
 
   reached_symbols = GetReachedSymbolsFromDumpsAndMaybeWriteOffsets(
-      dumps, instrumented_native_lib, args.offsets_output)
+      sorted_dumps, instrumented_native_lib, args.offsets_output)
   logging.info('Reached Symbols = %d', len(reached_symbols))
   total_size = sum(s.size for s in reached_symbols)
   logging.info('Total reached size = %d', total_size)
