@@ -24,6 +24,7 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/ui/omnibox/chrome_omnibox_client_ios.h"
+#import "ios/chrome/browser/ui/omnibox/location_bar_view.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_text_field_paste_delegate.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller.h"

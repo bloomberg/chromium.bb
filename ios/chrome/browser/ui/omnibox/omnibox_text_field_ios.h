@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_delegate.h"
 
@@ -16,54 +15,6 @@ typedef enum {
   OMNIBOX_TEXT_FIELD_FADE_STYLE_IN,
   OMNIBOX_TEXT_FIELD_FADE_STYLE_OUT
 } OmniboxTextFieldFadeStyle;
-
-@class OmniboxTextFieldIOS;
-
-@interface LocationBarView : UIView
-
-// Initialize the location bar with the given frame, font, text color, and tint
-// color for omnibox.
-- (instancetype)initWithFrame:(CGRect)frame
-                         font:(UIFont*)font
-                    textColor:(UIColor*)textColor
-                    tintColor:(UIColor*)tintColor NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
-
-- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
-
-// The containted omnibox textfield.
-@property(nonatomic, strong) OmniboxTextFieldIOS* textField;
-
-// The leading button, such as the security status icon.
-@property(nonatomic, strong) UIButton* leadingButton;
-
-// Incognito status of the location bar changes the appearance, such as text
-// and icon colors.
-@property(nonatomic, assign) BOOL incognito;
-
-// Hides and shows the leading button, without animation.
-- (void)setLeadingButtonHidden:(BOOL)hidden;
-// Enables or disables the leading button for user interaction.
-- (void)setLeadingButtonEnabled:(BOOL)enabled;
-
-// Sets the leading button's image by resource id.
-- (void)setPlaceholderImage:(int)imageID;
-
-// Perform an animation of |leadingButton| fading in and sliding in from the
-// leading edge.
-- (void)fadeInLeadingButton;
-// Perform an animation of |leadingButton| sliding out and fading out towards
-// the leading edge.
-- (void)fadeOutLeadingButton;
-
-- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
-    API_AVAILABLE(ios(10.0));
-
-- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator
-    API_AVAILABLE(ios(10.0));
-
-@end
 
 // UITextField subclass to allow for adjusting borders.
 @interface OmniboxTextFieldIOS : UITextField
