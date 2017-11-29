@@ -113,9 +113,6 @@ class NET_EXPORT HttpUtil {
                       std::string::const_iterator* end);
   static base::StringPiece TrimLWS(const base::StringPiece& string);
 
-  // Whether the character is the start of a quotation mark.
-  static bool IsQuote(char c);
-
   // Whether the character is a valid |tchar| as defined in RFC 7230 Sec 3.2.6.
   static bool IsTokenChar(char c);
   // Whether the string is a valid |token| as defined in RFC 7230 Sec 3.2.6.

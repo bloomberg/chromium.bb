@@ -32,13 +32,12 @@ void TrimLWSImplementation(ConstIterator* begin, ConstIterator* end) {
   while (*begin < *end && HttpUtil::IsLWS((*end)[-1]))
     --(*end);
 }
-}  // namespace
 
 // Helpers --------------------------------------------------------------------
 
 // Returns the index of the closing quote of the string, if any.  |start| points
 // at the opening quote.
-static size_t FindStringEnd(const std::string& line, size_t start, char delim) {
+size_t FindStringEnd(const std::string& line, size_t start, char delim) {
   DCHECK_LT(start, line.length());
   DCHECK_EQ(line[start], delim);
   DCHECK((delim == '"') || (delim == '\''));
@@ -51,7 +50,7 @@ static size_t FindStringEnd(const std::string& line, size_t start, char delim) {
   }
   return line.length();
 }
-
+}  // namespace
 
 // HttpUtil -------------------------------------------------------------------
 
@@ -439,12 +438,6 @@ base::StringPiece HttpUtil::TrimLWS(const base::StringPiece& string) {
   return base::StringPiece(begin, end - begin);
 }
 
-bool HttpUtil::IsQuote(char c) {
-  // Single quote mark isn't actually part of quoted-text production,
-  // but apparently some servers rely on this.
-  return c == '"' || c == '\'';
-}
-
 bool HttpUtil::IsTokenChar(char c) {
   return !(c >= 0x7F || c <= 0x20 || c == '(' || c == ')' || c == '<' ||
            c == '>' || c == '@' || c == ',' || c == ';' || c == ':' ||
@@ -477,6 +470,12 @@ bool HttpUtil::IsParmName(std::string::const_iterator begin,
 }
 
 namespace {
+bool IsQuote(char c) {
+  // Single quote mark isn't actually part of quoted-text production,
+  // but apparently some servers rely on this.
+  return c == '"' || c == '\'';
+}
+
 bool UnquoteImpl(std::string::const_iterator begin,
                  std::string::const_iterator end,
                  bool strict_quotes,
@@ -486,7 +485,7 @@ bool UnquoteImpl(std::string::const_iterator begin,
     return false;
 
   // Nothing to unquote.
-  if (!HttpUtil::IsQuote(*begin))
+  if (!IsQuote(*begin))
     return false;
 
   // Anything other than double quotes in strict mode.
@@ -1058,7 +1057,10 @@ bool HttpUtil::NameValuePairsIterator::GetNext() {
 bool HttpUtil::NameValuePairsIterator::IsQuote(char c) const {
   if (strict_quotes_)
     return c == '"';
-  return HttpUtil::IsQuote(c);
+
+  // The call to the file-scoped IsQuote must be qualified to avoid re-entrantly
+  // calling NameValuePairsIterator::IsQuote again.
+  return net::IsQuote(c);
 }
 
 bool HttpUtil::ParseAcceptEncoding(const std::string& accept_encoding,
