@@ -223,6 +223,9 @@ cr.define('extensions', function() {
           return 'communication:business';
         case SourceType.SIDELOADED:
           return 'input';
+        case SourceType.UNKNOWN:
+          // TODO(dpapad): Ask UX for a better icon for this case.
+          return 'input';
         case SourceType.UNPACKED:
           return 'extensions-icons:unpacked';
         case SourceType.WEBSTORE:
@@ -236,6 +239,9 @@ cr.define('extensions', function() {
      * @private
      */
     computeSourceIndicatorText_: function() {
+      if (this.data.locationText)
+        return this.data.locationText;
+
       const sourceType = extensions.getItemSource(this.data);
       return sourceType == SourceType.WEBSTORE ?
           '' :

@@ -7,6 +7,7 @@ cr.define('extension_detail_view_tests', function() {
   /** @enum {string} */
   var TestNames = {
     Layout: 'layout',
+    LayoutSource: 'layout of source section',
     ClickableElements: 'clickable elements',
     Indicator: 'indicator',
     Warnings: 'warnings',
@@ -115,12 +116,33 @@ cr.define('extension_detail_view_tests', function() {
       Polymer.dom.flush();
       expectTrue(testIsVisible('#id-section'));
       expectTrue(testIsVisible('#inspectable-views'));
+    });
 
-      // Test whether the load path is displayed for unpacked extensions.
-      expectFalse(testIsVisible('#load-path'));
+    test(assert(TestNames.LayoutSource), function() {
+      item.set('data.location', 'FROM_STORE');
+      Polymer.dom.flush();
+      assertEquals('Chrome Web Store', item.$.source.textContent.trim());
+      assertFalse(extension_test_util.isVisible(item, '#load-path'));
+
+      item.set('data.location', 'THIRD_PARTY');
+      Polymer.dom.flush();
+      assertEquals('Added by a third-party', item.$.source.textContent.trim());
+      assertFalse(extension_test_util.isVisible(item, '#load-path'));
+
+      item.set('data.location', 'UNPACKED');
       item.set('data.prettifiedPath', 'foo/bar/baz/');
       Polymer.dom.flush();
-      expectTrue(testIsVisible('#load-path'));
+      assertEquals('Unpacked extension', item.$.source.textContent.trim());
+      // Test whether the load path is displayed for unpacked extensions.
+      assertTrue(extension_test_util.isVisible(item, '#load-path'));
+
+      item.set('data.location', 'UNKNOWN');
+      item.set('data.prettifiedPath', '');
+      // |locationText| is expected to always be set if location is UNKNOWN.
+      item.set('data.locationText', 'Foo');
+      Polymer.dom.flush();
+      assertEquals('Foo', item.$.source.textContent.trim());
+      assertFalse(extension_test_util.isVisible(item, '#load-path'));
     });
 
     test(assert(TestNames.ClickableElements), function() {
