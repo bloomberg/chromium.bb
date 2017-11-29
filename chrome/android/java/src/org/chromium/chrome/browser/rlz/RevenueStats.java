@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.rlz;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.chromium.base.ContextUtils;
@@ -38,14 +37,6 @@ public class RevenueStats {
      * Notifies tab creation event.
      */
     public void tabCreated(Tab tab) {}
-
-    protected static boolean getRlzNotified(Context context) {
-        return getRlzNotified(); // TODO(agrieve): Delete once downstream is updated.
-    }
-
-    protected static void setRlzNotified(Context context, boolean notified) {
-        setRlzNotified(notified); // TODO(agrieve): Delete once downstream is updated.
-    }
 
     /**
      * Returns whether the RLZ provider has been notified that the first search has occurred.
