@@ -6644,7 +6644,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Blink.Compositing.UpdateTime" units="microseconds">
   <owner>paint-dev@chromium.org</owner>
   <summary>
-    Time spent updating compositing in the Blink document lifecyce.
+    Time spent updating compositing in the Blink document lifecycle.
   </summary>
 </histogram>
 
