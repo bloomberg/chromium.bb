@@ -151,8 +151,7 @@ SchemeHostPort::SchemeHostPort(const GURL& url) : port_(0) {
   port_ = port;
 }
 
-SchemeHostPort::~SchemeHostPort() {
-}
+SchemeHostPort::~SchemeHostPort() = default;
 
 bool SchemeHostPort::IsInvalid() const {
   return scheme_.empty() && host_.empty() && !port_;
