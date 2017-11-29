@@ -91,6 +91,8 @@ class GitCheckout(Checkout):
 
   def run_git(self, *cmd, **kwargs):
     print 'Running: git %s' % (' '.join(pipes.quote(x) for x in cmd))
+    if self.options.dry_run:
+      return ''
     return git_common.run(*cmd, **kwargs)
 
 
