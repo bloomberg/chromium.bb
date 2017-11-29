@@ -15,7 +15,3 @@ Status NonBlockingNavigationTracker::IsPendingNavigation(
 }
 
 void NonBlockingNavigationTracker::set_timed_out(bool timed_out) {}
-
-bool NonBlockingNavigationTracker::IsNonBlocking() const {
-  return true;
-}

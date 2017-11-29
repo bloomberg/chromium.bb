@@ -79,8 +79,6 @@ _NEGATIVE_FILTER = [
     'MobileEmulationCapabilityTest.testClickElement',
     'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabs',
     'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabsImmediately',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
-    'ChromeDriverTest.testDoesntHangOnFragmentNavigation',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
@@ -2184,9 +2182,8 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     self.assertEquals('none', driver.capabilities['pageLoadStrategy'])
 
     driver.Load(self._http_server.GetUrl() + '/chromedriver/empty.html')
-    start = time.time()
     driver.Load(self._http_server.GetUrl() + '/slow')
-    self.assertTrue(time.time() - start < 2)
+    self.assertFalse('hello' in driver.GetPageSource())
     handler.sent_hello.set()
     self.WaitForCondition(lambda: 'hello' in driver.GetPageSource())
     self.assertTrue('hello' in driver.GetPageSource())

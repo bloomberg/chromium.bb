@@ -47,7 +47,6 @@ class NavigationTracker : public DevToolsEventListener,
                              const Timeout* timeout,
                              bool* is_pending) override;
   void set_timed_out(bool timed_out) override;
-  bool IsNonBlocking() const override;
 
   Status CheckFunctionExists(const Timeout* timeout, bool* exists);
 
