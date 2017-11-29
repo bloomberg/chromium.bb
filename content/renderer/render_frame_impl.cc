@@ -1193,11 +1193,6 @@ void RenderFrameImpl::CreateFrame(
     render_frame->render_widget_ = RenderWidget::CreateForFrame(
         widget_params.routing_id, widget_params.hidden,
         render_frame->render_view_->screen_info(), compositor_deps, web_frame);
-    // TODO(avi): The main frame re-uses the RenderViewImpl as its widget, so
-    // avoid double-registering the frame as an observer.
-    // https://crbug.com/545684
-    if (web_frame->Parent())
-      render_frame->render_widget_->RegisterRenderFrame(render_frame);
   }
 
   render_frame->Initialize();
@@ -1348,8 +1343,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
 
   RenderThread::Get()->AddRoute(routing_id_, this);
 
-  render_view_->RegisterRenderFrame(this);
-
   // Everything below subclasses RenderFrameObserver and is automatically
   // deleted when the RenderFrame gets deleted.
 #if defined(OS_ANDROID)
@@ -1407,13 +1400,14 @@ RenderFrameImpl::~RenderFrameImpl() {
     render_view_->main_render_frame_ = nullptr;
   }
 
-  render_view_->UnregisterRenderFrame(this);
   g_routing_id_frame_map.Get().erase(routing_id_);
   RenderThread::Get()->RemoveRoute(routing_id_);
 }
 
 void RenderFrameImpl::Initialize() {
   is_main_frame_ = !frame_->Parent();
+
+  GetRenderWidget()->RegisterRenderFrame(this);
 
   RenderFrameImpl* parent_frame =
       RenderFrameImpl::FromWebFrame(frame_->Parent());
@@ -3518,10 +3512,9 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
     Send(new FrameHostMsg_Detach(routing_id_));
 
   // Clean up the associated RenderWidget for the frame, if there is one.
-  if (render_widget_) {
-    render_widget_->UnregisterRenderFrame(this);
+  GetRenderWidget()->UnregisterRenderFrame(this);
+  if (render_widget_)
     render_widget_->CloseForFrame();
-  }
 
   // We need to clean up subframes by removing them from the map and deleting
   // the RenderFrameImpl.  In contrast, the main frame is owned by its
