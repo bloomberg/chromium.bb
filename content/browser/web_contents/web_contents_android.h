@@ -248,15 +248,6 @@ class CONTENT_EXPORT WebContentsAndroid
   void SetMediaSession(
       const base::android::ScopedJavaLocalRef<jobject>& j_media_session);
 
-  void UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
-                       float content_width,
-                       float content_height,
-                       const gfx::SizeF& viewport_size,
-                       float page_scale_factor,
-                       float min_page_scale,
-                       float max_page_scale,
-                       const float top_shown_pix);
-
  private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 
