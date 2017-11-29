@@ -431,10 +431,6 @@ static_library("test_support") {
     "//testing/gtest",
   ]
 
-  if (enable_print_preview) {
-    deps += [ "//chrome/service" ]
-  }
-
   if (enable_webrtc) {
     sources += [
       "media/mock_webrtc_logging_message_filter.cc",
