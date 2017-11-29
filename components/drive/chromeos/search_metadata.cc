@@ -320,9 +320,8 @@ bool MatchesType(int options, const ResourceEntry& entry) {
              mime_type == drive::util::kGoogleSpreadsheetMimeType ||
              mime_type == drive::util::kGooglePresentationMimeType ||
              mime_type == drive::util::kGoogleDrawingMimeType;
-    } else {
-      return entry.file_specific_info().cache_state().is_present();
     }
+    return entry.file_specific_info().cache_state().is_present();
   }
 
   return true;
