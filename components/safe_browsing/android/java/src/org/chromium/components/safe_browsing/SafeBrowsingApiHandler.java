@@ -24,8 +24,6 @@ public interface SafeBrowsingApiHandler {
         // Note: |checkDelta| is the time the remote call took in microseconds.
         void onUrlCheckDone(long callbackId, @SafeBrowsingResult int resultStatus, String metadata,
                 long checkDelta);
-        // TODO(csharrison): Temporary to avoid breaking downstream.
-        void onUrlCheckDone(long callbackId, @SafeBrowsingResult int resultStatus, String metadata);
     }
 
     // Possible values for resultStatus. Native side has the same definitions.

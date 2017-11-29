@@ -54,14 +54,6 @@ public final class SafeBrowsingApiBridge {
                             long callbackId, int resultStatus, String metadata, long checkDelta) {
                         nativeOnUrlCheckDone(callbackId, resultStatus, metadata, checkDelta);
                     }
-
-                    // TODO(csharrison): Temporary to avoid breaking downstream. Sending a 0
-                    // checkDelta is fine since the native code doesn't use the value yet.
-                    @Override
-                    public void onUrlCheckDone(long callbackId, int resultStatus, String metadata) {
-                        nativeOnUrlCheckDone(
-                                callbackId, resultStatus, metadata, 0 /* checkDelta */);
-                    }
                 });
         return initSuccesssful ? handler : null;
     }
