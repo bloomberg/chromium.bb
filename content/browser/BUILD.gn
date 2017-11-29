@@ -1815,8 +1815,6 @@ jumbo_source_set("browser") {
       sources += [
         "media/capture/desktop_capture_device.cc",
         "media/capture/desktop_capture_device.h",
-        "media/capture/fake_webcontent_capture_machine.cc",
-        "media/capture/fake_webcontent_capture_machine.h",
       ]
       deps += [ "//third_party/webrtc/modules/desktop_capture" ]
       public_deps += [ "//third_party/webrtc_overrides:init_webrtc" ]
