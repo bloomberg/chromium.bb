@@ -63,11 +63,12 @@ typedef enum OUTPUT_STATUS {
 } OUTPUT_STATUS;
 
 // Returns the number of colors in 'src'.
-int av1_count_colors(const uint8_t *src, int stride, int rows, int cols);
+int av1_count_colors(const uint8_t *src, int stride, int rows, int cols,
+                     int *val_count);
 #if CONFIG_HIGHBITDEPTH
 // Same as av1_count_colors(), but for high-bitdepth mode.
 int av1_count_colors_highbd(const uint8_t *src8, int stride, int rows, int cols,
-                            int bit_depth);
+                            int bit_depth, int *val_count);
 #endif  // CONFIG_HIGHBITDEPTH
 
 void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,

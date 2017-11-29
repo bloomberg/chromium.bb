@@ -3790,13 +3790,15 @@ static int is_screen_content(const uint8_t *src,
   const int limit = 4;
   for (int r = 0; r + blk_h <= height; r += blk_h) {
     for (int c = 0; c + blk_w <= width; c += blk_w) {
+      int count_buf[1 << 12];  // Maximum (1 << 12) color levels.
       const int n_colors =
 #if CONFIG_HIGHBITDEPTH
           use_hbd ? av1_count_colors_highbd(src + r * stride + c, stride, blk_w,
-                                            blk_h, bd)
+                                            blk_h, bd, count_buf)
                   :
 #endif  // CONFIG_HIGHBITDEPTH
-                  av1_count_colors(src + r * stride + c, stride, blk_w, blk_h);
+                  av1_count_colors(src + r * stride + c, stride, blk_w, blk_h,
+                                   count_buf);
       if (n_colors > 1 && n_colors <= limit) counts++;
     }
   }
