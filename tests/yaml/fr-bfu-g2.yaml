@@ -1,7 +1,164 @@
 table: [tables/unicode.dis, tables/fr-bfu-g2.ctb]
 flags: {testmode: forward}
 tests:
-
+  # ⠡ -> fr, ation (terminaison)
+    - ["fruit", "⠡⠆⠞"]
+    - ["cardiofréquencemètre,", "⠉⠈⠙⠊⠕⠡⠿⠟⠢⠉⠑⠍⠮⠴⠑⠂"]
+    - ["admiration.", "⠁⠙⠍⠊⠗⠡⠲"]
+    - ["inflationniste", "⠔⠣⠁⠞⠼⠝⠊⠎⠞⠑"]
+  # ⠣ -> fl, ent (terminaison)
+    - ["fluviomètre", "⠣⠥⠧⠊⠕⠍⠮⠴⠑"]
+    - ["souffler", "⠎⠳⠋⠣⠦"]
+    - ["carrément)", "⠉⠈⠗⠿⠍⠣⠴"]
+    - ["centésimale", "⠉⠢⠞⠿⠎⠊⠍⠁⠇⠑"]
+  # ⠩ -> cl, ait (terminaison)
+    - ["clupéiforme", "⠩⠥⠏⠿⠊⠋⠰⠍⠑"]
+    - ["acyclique", "⠁⠉⠽⠩⠊⠟"]
+    - ["contrefait", "⠒⠴⠑⠋⠩"]
+    - ["contrefaite", "⠒⠴⠑⠋⠌⠞⠑"]
+  # ⠹ -> dr, ant (terminaison)
+    - ["drupacé", "⠹⠥⠏⠁⠉⠿"]
+    - ["androcéphale", "⠂⠹⠕⠉⠿⠏⠓⠁⠇⠑"]
+    - ["aérocontaminant", "⠁⠿⠗⠕⠒⠞⠁⠍⠊⠝⠹"]
+    - ["anéantir", "⠁⠝⠿⠂⠞⠊⠗"]
+  # ⠱ -> es (début et fin)
+    - ["estrogénothérapie", "⠱⠴⠕⠛⠿⠝⠕⠞⠓⠿⠗⠁⠏⠊⠑"]
+    - ["omphalodes", "⠺⠏⠓⠁⠇⠕⠙⠱"]
+    - ["vesce", "⠧⠑⠎⠉⠑"]
+  # ⠫ -> pl
+    - ["plasmaphérèse", "⠫⠁⠎⠍⠁⠏⠓⠿⠗⠮⠎⠑"]
+    - ["polyplacophore", "⠏⠕⠇⠽⠫⠁⠉⠕⠏⠓⠕⠗⠑"]
+  # ⠻ -> gr
+    - ["grisouscope", "⠻⠊⠎⠳⠎⠉⠕⠏⠑"]
+    - ["hexagramme", "⠓⠑⠭⠁⠻⠁⠍⠍⠑"]
+  # ⠳ -> ou
+    - ["outrecuidance", "⠳⠴⠑⠉⠆⠙⠂⠉⠑"]
+    - ["pamplemousse", "⠏⠁⠍⠫⠑⠍⠳⠮⠑"]
+    - ["verrou", "⠧⠦⠗⠳"]
+  # ⠪ -> im (début), ition (terminaison)
+    - ["imparisyllabique", "⠪⠏⠁⠗⠊⠎⠽⠸⠁⠃⠊⠟"]
+    - ["néocimmérien", "⠝⠿⠕⠉⠪⠍⠿⠗⠊⠢"]
+    - ["clim", "⠩⠊⠍"]
+    - ["récognition", "⠗⠿⠉⠕⠶⠪"]
+    - ["auditionner", "⠅⠙⠊⠞⠼⠝⠦"]
+  # ⠼ -> ion
+    - ["pionnier", "⠏⠼⠝⠊⠦"]
+    - ["jonction", "⠚⠬⠉⠞⠼"]
+  # ⠅ -> au
+    - ["aulostomiforme", "⠅⠇⠕⠎⠞⠕⠍⠊⠋⠰⠍⠑"]
+    - ["bicaméraux", "⠃⠊⠉⠁⠍⠿⠗⠅⠭"]
+    - ["bigarreau", "⠃⠊⠛⠈⠗⠑⠅"]
+  # ⠟ -> qu, que (terminaison)
+    - ["quinoléine", "⠟⠊⠝⠕⠇⠿⠊⠝⠑"]
+    - ["réquisition", "⠗⠿⠟⠊⠎⠪"]
+    - ["rembranesque", "⠗⠜⠆⠁⠝⠑⠎⠟"]
+    - ["sacqueboute", "⠎⠁⠉⠟⠑⠃⠳⠞⠑"]
+    - ["quercitron", "⠟⠦⠉⠊⠴⠬"]
+    - ["quetschier", "⠟⠑⠞⠎⠷⠊⠦"]
+  # ⠺ -> om, tt (entre voyelles)
+    - ["omnipotence", "⠺⠝⠊⠏⠕⠞⠢⠉⠑"]
+    - ["réescompte", "⠗⠿⠑⠎⠉⠺⠏⠞⠑"]
+    - ["pronom", "⠖⠝⠺"]
+    - ["rémittence", "⠗⠿⠍⠊⠺⠢⠉⠑"]
+    - ["désembattre", "⠙⠿⠎⠜⠃⠁⠞⠴⠑"]
+    - ["rickettsie", "⠗⠊⠉⠅⠑⠞⠞⠎⠊⠑"]
+  # ⠭ -> ex (devant consonne)
+    - ["exaltone", "⠑⠭⠁⠇⠞⠕⠝⠑"]
+    - ["flexaèdre", "⠣⠑⠭⠁⠮⠹⠑"]
+    - ["géotextile", "⠛⠿⠕⠞⠭⠞⠊⠇⠑"]
+    - ["extemporanée", "⠭⠞⠜⠏⠕⠗⠁⠝⠿⠑"]
+  # ⠵ -> ez (terminaison)
+    - ["brindezingue", "⠆⠔⠙⠑⠵⠔⠛⠥⠑"]
+    - ["chifnez", "⠷⠊⠋⠝⠵"]
+  # ⠮ -> ss
+    - ["strapasser", "⠎⠴⠁⠏⠁⠮⠦"]
+  # ⠾ -> oi
+    - ["sublimatoire", "⠎⠥⠘⠊⠍⠁⠞⠾⠗⠑"]
+    - ["oiseau", "⠾⠎⠑⠅"]
+  # ⠷ -> ch
+    - ["chalicodome", "⠷⠁⠇⠊⠉⠕⠙⠕⠍⠑"]
+    - ["fenchène", "⠋⠢⠷⠮⠝⠑"]
+    - ["sandwich", "⠎⠂⠙⠺⠊⠷"]
+  # ⠯ -> our
+    - ["ourdissage", "⠯⠙⠊⠮⠁⠛⠑"]
+    - ["pompadour", "⠏⠺⠏⠁⠙⠯"]
+  # ⠂ -> an
+    - ["anagallis", "⠁⠝⠁⠛⠁⠸⠊⠎"]
+    - ["badiane", "⠃⠁⠙⠊⠁⠝⠑"]
+    - ["adansonia", "⠁⠙⠂⠎⠕⠝⠊⠁"]
+  # ⠢ -> en
+    - ["encéphalogramme", "⠢⠉⠿⠏⠓⠁⠇⠕⠻⠁⠍⠍⠑"]
+    - ["duplicidenté", "⠙⠥⠫⠊⠉⠊⠙⠢⠞⠿"]
+  # ⠖ -> pro, pr
+    - ["promiscuité", "⠖⠍⠊⠎⠉⠆⠞⠿"]
+    - ["pralin", "⠖⠁⠇⠔"]
+  # ⠒ -> cr, con (devant consonne)
+    - ["crinoïde", "⠒⠊⠝⠕⠻⠙⠑"]
+    - ["dacron", "⠙⠁⠒⠬"]
+  # ⠆ -> br, ui (devant consonne)
+    - ["brachiopode", "⠆⠁⠷⠊⠕⠏⠕⠙⠑"]
+    - ["jusquiame", "⠚⠥⠎⠟⠊⠁⠍⠑"]
+    - ["ingénuité", "⠔⠛⠿⠝⠆⠞⠿"]
+    - ["écuiage", "⠿⠉⠥⠊⠁⠛⠑"]
+  # ⠤ -> com (début mot)
+    - ["combustibilité", "⠤⠃⠥⠎⠞⠊⠃⠇⠞"]
+    - ["fidéicommis", "⠋⠊⠙⠿⠊⠉⠺⠍⠊⠎"]
+  # ⠄ -> re (début mot)
+    - ["resarcir", "⠄⠎⠈⠉⠊⠗"]
+    - ["tablature", "⠞⠁⠘⠁⠞⠥⠗⠑"]
+  # ⠦ -> er
+    - ["eremurus", "⠑⠗⠑⠍⠥⠗⠥⠎"]
+    - ["fullerène", "⠋⠥⠸⠑⠗⠮⠝⠑"]
+    - ["fulminaterie", "⠋⠥⠇⠍⠊⠝⠁⠞⠑⠗⠊⠑"]
+    - ["falerne", "⠋⠁⠇⠦⠝⠑"]
+    - ["felsenmeer", "⠋⠑⠇⠎⠢⠍⠑⠦"]
+  # ⠴ -> tr, trans (début mot)
+    - ["translation", "⠴⠇⠡"]
+    - ["polytransfusé", "⠏⠕⠇⠽⠴⠂⠎⠋⠥⠎⠿"]
+  # ⠶ -> gn
+    - ["gnathostome", "⠶⠁⠞⠓⠕⠎⠞⠕⠍⠑"]
+    - ["magnétique", "⠍⠁⠶⠿⠞⠊⠟"]
+    - ["radar", "⠗⠁⠙⠈"]
+  # ⠈ -> ar
+    - ["arbutoside", "⠈⠃⠥⠞⠕⠎⠊⠙⠑"]
+    - ["balbuzard", "⠃⠁⠇⠃⠥⠵⠈⠙"]
+  # ⠐ -> eu
+    - ["eulécithophore", "⠐⠇⠿⠉⠊⠞⠓⠕⠏⠓⠕⠗⠑"]
+    - ["alleu","⠁⠸⠐"]
+  # ⠠ -> ieu
+    - ["acrimonieux", "⠁⠒⠊⠍⠕⠝⠠⠭"]
+    - ["lieu.", "⠇⠠⠲"]
+  # ⠘ -> bl, able (terminaison)
+    - ["blabère", "⠘⠁⠃⠮⠗⠑"]
+    - ["chavirable", "⠷⠁⠧⠊⠗⠘"]
+  # ⠰ -> or
+    - ["oracle", "⠕⠗⠁⠩⠑"]
+    - ["tadorne", "⠞⠁⠙⠰⠝⠑"]
+  # ⠨ -> eur
+    - ["euribor", "⠐⠗⠊⠃⠰"]
+    - ["hasteur", "⠓⠁⠎⠞⠨"]
+  # ⠸ -> ll, elle (terminaison)
+    - ["embelle", "⠜⠃⠸"]
+    - ["empouilles", "⠜⠏⠳⠊⠸⠱"]
+  # ⠬ -> on
+    - ["ontique", "⠬⠞⠊⠟"]
+    - ["optoélectronique", "⠕⠏⠞⠕⠿⠇⠑⠉⠴⠕⠝⠊⠟"]
+  # ⠌ -> ai
+    - ["aizoacée", "⠌⠵⠕⠁⠉⠿⠑"]
+    - ["ébraisoir", "⠿⠆⠌⠎⠾⠗"]
+  # ⠔ -> in
+    - ["inchoative", "⠔⠷⠕⠁⠞⠊⠧⠑"]
+    - ["inchoative", "⠔⠷⠕⠁⠞⠊⠧⠑"]
+    - ["falcinelle", "⠋⠁⠇⠉⠊⠝⠸"]
+    - ["helminthoïde", "⠓⠑⠇⠍⠔⠞⠓⠕⠻⠙⠑"]
+  # ⠜ -> gl, em
+    - ["gléosporiose", "⠜⠿⠕⠎⠏⠕⠗⠊⠕⠎⠑"]
+    - ["haglure", "⠓⠁⠜⠥⠗⠑"]
+    - ["emsien", "⠜⠎⠊⠢"] 
+  # ⠲ -> ien, dis (début mot)
+    - ["discrétionnairement", "⠲⠒⠿⠞⠼⠝⠌⠗⠑⠍⠣"]
+    - ["eunuchoïdisme", "⠐⠝⠥⠷⠕⠻⠙⠊⠎⠍⠑"]
+  
   # special abbreviations
     - ["absolu", "⠁⠃"]
     - ["absolument", "⠁⠃⠍"]
@@ -914,6 +1071,171 @@ tests:
 table: [tables/unicode.dis, tables/fr-bfu-g2.ctb]
 flags: {testmode: backward}
 tests:
+    - ["⠗⠡⠇⠑", "râle"]
+    - ["⠏⠣⠷⠑", "pêche"]
+    - ["⠩⠇⠑", "île"]
+    - ["⠉⠹⠝⠑", "cône"]
+    - ["⠍⠱⠗⠑", "mûre"]
+    - ["⠨⠝⠕⠫⠇", "Noël"]
+    - ["⠪⠙⠕⠛⠕⠝⠊⠥⠍", "œdogonium"]
+  # ⠡ -> fr, ation (terminaison)
+    - ["⠡⠆⠞", "fruit"]
+    - ["⠉⠈⠙⠊⠕⠡⠿⠟⠢⠉⠑⠍⠮⠴⠑⠂", "cardiofréquencemètre,"]
+    - ["⠁⠙⠍⠊⠗⠡⠲", "admiration."]
+    - ["⠔⠣⠁⠞⠼⠝⠊⠎⠞⠑", "inflationniste"]
+  # ⠣ -> fl, ent (terminaison)
+    - ["⠣⠥⠧⠊⠕⠍⠮⠴⠑", "fluviomètre"]
+    - ["⠎⠳⠋⠣⠦", "souffler"]
+    - ["⠉⠈⠗⠿⠍⠣⠴", "carrément)"]
+    - ["⠉⠢⠞⠿⠎⠊⠍⠁⠇⠑", "centésimale"]
+  # ⠩ -> cl, ait (terminaison)
+    - ["⠩⠥⠏⠿⠊⠋⠰⠍⠑", "clupéiforme"]
+    - ["⠁⠉⠽⠩⠊⠟", "acyclique"]
+    - ["⠒⠴⠑⠋⠩", "contrefait"]
+    - ["⠒⠴⠑⠋⠌⠞⠑", "contrefaite"]
+  # ⠹ -> dr, ant (terminaison)
+    - ["⠹⠥⠏⠁⠉⠿", "drupacé"]
+    - ["⠂⠹⠕⠉⠿⠏⠓⠁⠇⠑", "androcéphale"]
+    - ["⠁⠿⠗⠕⠒⠞⠁⠍⠊⠝⠹", "aérocontaminant"]
+    - ["⠁⠝⠿⠂⠞⠊⠗", "anéantir"]
+  # ⠱ -> es (début et fin)
+    - ["⠱⠴⠕⠛⠿⠝⠕⠞⠓⠿⠗⠁⠏⠊⠑", "estrogénothérapie"]
+    - ["⠺⠏⠓⠁⠇⠕⠙⠱", "omphalodes"]
+    - ["⠧⠑⠎⠉⠑", "vesce"]
+  # ⠫ -> pl
+    - ["⠫⠁⠎⠍⠁⠏⠓⠿⠗⠮⠎⠑", "plasmaphérèse"]
+    - ["⠏⠕⠇⠽⠫⠁⠉⠕⠏⠓⠕⠗⠑", "polyplacophore"]
+  # ⠻ -> gr
+    - ["⠻⠊⠎⠳⠎⠉⠕⠏⠑", "grisouscope"]
+    - ["⠓⠑⠭⠁⠻⠁⠍⠍⠑", "hexagramme"]
+  # ⠳ -> ou
+    - ["⠳⠴⠑⠉⠆⠙⠂⠉⠑", "outrecuidance"]
+    - ["⠏⠁⠍⠫⠑⠍⠳⠮⠑", "pamplemousse"]
+    - ["⠧⠦⠗⠳", "verrou"]
+  # ⠪ -> im (début), ition (terminaison)
+    - ["⠪⠏⠁⠗⠊⠎⠽⠸⠁⠃⠊⠟", "imparisyllabique"]
+    - ["⠝⠿⠕⠉⠪⠍⠿⠗⠊⠢", "néocimmérien"]
+    - ["⠩⠊⠍", "clim"]
+    - ["⠗⠿⠉⠕⠶⠪", "récognition"]
+    - ["⠅⠙⠊⠞⠼⠝⠦", "auditionner"]
+  # ⠼ -> ion
+    - ["⠏⠼⠝⠊⠦", "pionnier"]
+    - ["⠚⠬⠉⠞⠼", "jonction"]
+  # ⠅ -> au
+    - ["⠅⠇⠕⠎⠞⠕⠍⠊⠋⠰⠍⠑", "aulostomiforme"]
+    - ["⠃⠊⠉⠁⠍⠿⠗⠅⠭", "bicaméraux"]
+    - ["⠃⠊⠛⠈⠗⠑⠅", "bigarreau"]
+  # ⠟ -> qu, que (terminaison)
+    - ["⠟⠊⠝⠕⠇⠿⠊⠝⠑", "quinoléine"]
+    - ["⠗⠿⠟⠊⠎⠪", "réquisition"]
+    - ["⠗⠜⠆⠁⠝⠑⠎⠟", "rembranesque"]
+    - ["⠎⠁⠉⠟⠑⠃⠳⠞⠑", "sacqueboute"]
+    - ["⠟⠦⠉⠊⠴⠬", "quercitron"]
+    - ["⠟⠑⠞⠎⠷⠊⠦", "quetschier"]
+  # ⠺ -> om, tt (entre voyelles)
+    - ["⠺⠝⠊⠏⠕⠞⠢⠉⠑", "omnipotence"]
+    - ["⠗⠿⠑⠎⠉⠺⠏⠞⠑", "réescompte"]
+    - ["⠖⠝⠺", "pronom"]
+    - ["⠗⠿⠍⠊⠺⠢⠉⠑", "rémittence"]
+    - ["⠙⠿⠎⠜⠃⠁⠞⠴⠑", "désembattre"]
+    - ["⠗⠊⠉⠅⠑⠞⠞⠎⠊⠑", "rickettsie"]
+  # ⠭ -> ex (devant consonne)
+    - ["⠑⠭⠁⠇⠞⠕⠝⠑", "exaltone"]
+    - ["⠣⠑⠭⠁⠮⠹⠑", "flexaèdre"]
+    - ["⠛⠿⠕⠞⠭⠞⠊⠇⠑", "géotextile"]
+    - ["⠭⠞⠜⠏⠕⠗⠁⠝⠿⠑", "extemporanée"]
+  # ⠵ -> ez (terminaison)
+    - ["⠆⠔⠙⠑⠵⠔⠛⠥⠑", "brindezingue"]
+    - ["⠷⠊⠋⠝⠵", "chifnez"]
+  # ⠮ -> ss
+    - ["⠎⠴⠁⠏⠁⠮⠦", "strapasser"]
+  # ⠾ -> oi
+    - ["⠎⠥⠘⠊⠍⠁⠞⠾⠗⠑", "sublimatoire"]
+    - ["⠾⠎⠑⠅", "oiseau"]
+  # ⠷ -> ch
+    - ["⠷⠁⠇⠊⠉⠕⠙⠕⠍⠑", "chalicodome"]
+    - ["⠋⠢⠷⠮⠝⠑", "fenchène"]
+    - ["⠎⠂⠙⠺⠊⠷", "sandwich"]
+  # ⠯ -> our
+    - ["⠯⠙⠊⠮⠁⠛⠑", "ourdissage"]
+    - ["⠏⠺⠏⠁⠙⠯", "pompadour"]
+  # ⠂ -> an
+    - ["⠁⠝⠁⠛⠁⠸⠊⠎", "anagallis"]
+    - ["⠃⠁⠙⠊⠁⠝⠑", "badiane"]
+    - ["⠁⠙⠂⠎⠕⠝⠊⠁", "adansonia"]
+  # ⠢ -> en
+    - ["⠢⠉⠿⠏⠓⠁⠇⠕⠻⠁⠍⠍⠑", "encéphalogramme"]
+    - ["⠙⠥⠫⠊⠉⠊⠙⠢⠞⠿", "duplicidenté"]
+  # ⠖ -> pro, pr
+    - ["⠖⠍⠊⠎⠉⠆⠞⠿", "promiscuité"]
+    - ["⠖⠁⠇⠔", "pralin"]
+  # ⠒ -> cr, con (devant consonne)
+    - ["⠒⠊⠝⠕⠻⠙⠑", "crinoïde"]
+    - ["⠙⠁⠒⠬", "dacron"]
+  # ⠆ -> br, ui (devant consonne)
+    - ["⠆⠁⠷⠊⠕⠏⠕⠙⠑", "brachiopode"]
+    - ["⠚⠥⠎⠟⠊⠁⠍⠑", "jusquiame"]
+    - ["⠔⠛⠿⠝⠆⠞⠿", "ingénuité"]
+    - ["⠿⠉⠥⠊⠁⠛⠑", "écuiage"]
+  # ⠤ -> com (début mot)
+    - ["⠤⠃⠥⠎⠞⠊⠃⠇⠞", "combustibilité"]
+    - ["⠋⠊⠙⠿⠊⠉⠺⠍⠊⠎", "fidéicommis"]
+  # ⠄ -> re (début mot)
+    - ["⠄⠎⠈⠉⠊⠗", "resarcir"]
+    - ["⠞⠁⠘⠁⠞⠥⠗⠑", "tablature"]
+  # ⠦ -> er
+    - ["⠑⠗⠑⠍⠥⠗⠥⠎", "eremurus"]
+    - ["⠋⠥⠸⠑⠗⠮⠝⠑", "fullerène"]
+    - ["⠋⠥⠇⠍⠊⠝⠁⠞⠑⠗⠊⠑", "fulminaterie"]
+    - ["⠋⠁⠇⠦⠝⠑", "falerne"]
+    - ["⠋⠑⠇⠎⠢⠍⠑⠦", "felsenmeer"]
+  # ⠴ -> tr, trans (début mot)
+    - ["⠴⠇⠡", "translation"]
+    - ["⠏⠕⠇⠽⠴⠂⠎⠋⠥⠎⠿", "polytransfusé"]
+  # ⠶ -> gn
+    - ["⠶⠁⠞⠓⠕⠎⠞⠕⠍⠑", "gnathostome"]
+    - ["⠍⠁⠶⠿⠞⠊⠟", "magnétique"]
+    - ["⠗⠁⠙⠈", "radar"]
+  # ⠈ -> ar
+    - ["⠈⠃⠥⠞⠕⠎⠊⠙⠑", "arbutoside"]
+    - ["⠃⠁⠇⠃⠥⠵⠈⠙", "balbuzard"]
+  # ⠐ -> eu
+    - ["⠐⠇⠿⠉⠊⠞⠓⠕⠏⠓⠕⠗⠑", "eulécithophore"]
+    - ["⠁⠸⠐", "alleu"]
+  # ⠠ -> ieu
+    - ["⠁⠒⠊⠍⠕⠝⠠⠭", "acrimonieux"]
+    - ["⠇⠠⠲", "lieu."]
+  # ⠘ -> bl, able (terminaison)
+    - ["⠘⠁⠃⠮⠗⠑", "blabère"]
+    - ["⠷⠁⠧⠊⠗⠘", "chavirable"]
+  # ⠰ -> or
+    - ["⠕⠗⠁⠩⠑", "oracle"]
+    - ["⠞⠁⠙⠰⠝⠑", "tadorne"]
+  # ⠨ -> eur
+    - ["⠐⠗⠊⠃⠰", "euribor"]
+    - ["⠓⠁⠎⠞⠨", "hasteur"]
+  # ⠸ -> ll, elle (terminaison)
+    - ["⠜⠃⠸", "embelle"]
+    - ["⠜⠏⠳⠊⠸⠱", "empouilles"]
+  # ⠬ -> on
+    - ["⠬⠞⠊⠟", "ontique"]
+    - ["⠕⠏⠞⠕⠿⠇⠑⠉⠴⠕⠝⠊⠟", "optoélectronique"]
+  # ⠌ -> ai
+    - ["⠌⠵⠕⠁⠉⠿⠑", "aizoacée"]
+    - ["⠿⠆⠌⠎⠾⠗", "ébraisoir"]
+  # ⠔ -> in
+    - ["⠔⠷⠕⠁⠞⠊⠧⠑", "inchoative"]
+    - ["⠔⠷⠕⠁⠞⠊⠧⠑", "inchoative"]
+    - ["⠋⠁⠇⠉⠊⠝⠸", "falcinelle"]
+    - ["⠓⠑⠇⠍⠔⠞⠓⠕⠻⠙⠑", "helminthoïde"]
+  # ⠜ -> gl, em
+    - ["⠜⠿⠕⠎⠏⠕⠗⠊⠕⠎⠑", "gléosporiose"]
+    - ["⠓⠁⠜⠥⠗⠑", "haglure"]
+    - ["⠜⠎⠊⠢", "emsien"]
+  # ⠲ -> ien, dis (début mot)
+    - ["⠲⠒⠿⠞⠼⠝⠌⠗⠑⠍⠣", "discrétionnairement"]
+    - ["⠐⠝⠥⠷⠕⠻⠙⠊⠎⠍⠑", "eunuchoïdisme"]
+
   # special abbreviations
     - ["⠁⠃", "absolu"]
     - ["⠁⠃⠍", "absolument"]
