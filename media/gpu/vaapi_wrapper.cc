@@ -33,6 +33,7 @@
 #include "ui/gl/gl_implementation.h"
 
 #if defined(USE_X11)
+#include <va/va_x11.h>
 #include "ui/gfx/x/x11_types.h"  // nogncheck
 #endif
 
