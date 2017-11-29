@@ -171,9 +171,9 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
   int i, final_eob = 0;
   const int cat6_bits = av1_get_cat6_extrabits_size(tx_size, xd->bd);
   int(*head_token_costs)[COEFF_CONTEXTS][TAIL_TOKENS] =
-      mb->token_head_costs[txsize_sqr_map[tx_size]][plane_type][ref];
+      mb->token_head_costs[get_txsize_entropy_ctx(tx_size)][plane_type][ref];
   int(*tail_token_costs)[COEFF_CONTEXTS][TAIL_TOKENS] =
-      mb->token_tail_costs[txsize_sqr_map[tx_size]][plane_type][ref];
+      mb->token_tail_costs[get_txsize_entropy_ctx(tx_size)][plane_type][ref];
 
   const int64_t rdmult = (mb->rdmult * plane_rd_mult[ref][plane_type]) >> 1;
   int64_t rate0, rate1;

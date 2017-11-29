@@ -147,7 +147,7 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
   int16_t eob_pt = get_eob_pos_token(eob, &eob_extra);
   int16_t dummy;
   int16_t max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
-  TX_SIZE txs_ctx = get_txsize_context(tx_size);
+  TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
 
   for (int i = 1; i < max_eob_pt; i++) {
     int eob_pos_ctx = av1_get_eob_pos_ctx(tx_type, i);
@@ -322,7 +322,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                           uint16_t eob, TXB_CTX *txb_ctx) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const PLANE_TYPE plane_type = get_plane_type(plane);
-  const TX_SIZE txs_ctx = get_txsize_context(tx_size);
+  const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
   const TX_TYPE tx_type =
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
@@ -646,7 +646,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
                         int blk_row, int blk_col, int block, TX_SIZE tx_size,
                         TXB_CTX *txb_ctx) {
   MACROBLOCKD *const xd = &x->e_mbd;
-  TX_SIZE txs_ctx = get_txsize_context(tx_size);
+  TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_TYPE tx_type =
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
@@ -2084,7 +2084,7 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
                      TXB_CTX *txb_ctx, int fast_mode) {
   MACROBLOCKD *const xd = &x->e_mbd;
   const PLANE_TYPE plane_type = get_plane_type(plane);
-  const TX_SIZE txs_ctx = get_txsize_context(tx_size);
+  const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
   const TX_TYPE tx_type =
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -2200,7 +2200,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
   const uint8_t allow_update_cdf = args->allow_update_cdf;
 
-  TX_SIZE txsize_ctx = get_txsize_context(tx_size);
+  TX_SIZE txsize_ctx = get_txsize_entropy_ctx(tx_size);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
   memcpy(tcoeff, qcoeff, sizeof(*tcoeff) * seg_eob);

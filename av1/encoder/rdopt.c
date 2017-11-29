@@ -1620,7 +1620,7 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   const uint16_t *band_count = &band_count_table[tx_size][1];
   const int eob = p->eobs[block];
   const tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
-  const TX_SIZE tx_size_ctx = txsize_sqr_map[tx_size];
+  const TX_SIZE tx_size_ctx = get_txsize_entropy_ctx(tx_size);
   uint8_t token_cache[MAX_TX_SQUARE];
   int pt = combine_entropy_contexts(*a, *l);
   int c, cost;
@@ -3852,14 +3852,14 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
 #if CONFIG_LV_MAP
-  TX_SIZE txs_ctx = get_txsize_context(tx_size);
+  TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, pta, ptl, &txb_ctx);
 
   zero_blk_rate = x->coeff_costs[txs_ctx][get_plane_type(plane)]
                       .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
 #else
-  TX_SIZE tx_size_ctx = txsize_sqr_map[tx_size];
+  TX_SIZE tx_size_ctx = get_txsize_entropy_ctx(tx_size);
   int coeff_ctx = get_entropy_context(tx_size, pta, ptl);
   zero_blk_rate =
       x->token_head_costs[tx_size_ctx][pd->plane_type][1][0][coeff_ctx][0];
@@ -4291,7 +4291,7 @@ static void tx_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     ENTROPY_CONTEXT *ta = above_ctx + blk_col;
     ENTROPY_CONTEXT *tl = left_ctx + blk_row;
 #if CONFIG_LV_MAP
-    const TX_SIZE txs_ctx = get_txsize_context(tx_size);
+    const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
     TXB_CTX txb_ctx;
     get_txb_ctx(plane_bsize, tx_size, plane, ta, tl, &txb_ctx);
 
@@ -4299,7 +4299,7 @@ static void tx_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
                                   .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
 #else
     const int coeff_ctx = get_entropy_context(tx_size, ta, tl);
-    const TX_SIZE tx_size_ctx = txsize_sqr_map[tx_size];
+    const TX_SIZE tx_size_ctx = get_txsize_entropy_ctx(tx_size);
     const int zero_blk_rate =
         x->token_head_costs[tx_size_ctx][pd->plane_type][1][0][coeff_ctx][0];
 #endif  // CONFIG_LV_MAP
@@ -4720,7 +4720,7 @@ static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
   (void)cpi;
 
   // Rate.
-  const int tx_size_ctx = txsize_sqr_map[tx_size];
+  const int tx_size_ctx = get_txsize_entropy_ctx(tx_size);
   ENTROPY_CONTEXT ctxa[2 * MAX_MIB_SIZE];
   ENTROPY_CONTEXT ctxl[2 * MAX_MIB_SIZE];
   av1_get_entropy_contexts(bsize, 0, &xd->plane[0], ctxa, ctxl);

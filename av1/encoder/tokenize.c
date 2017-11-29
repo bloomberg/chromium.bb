@@ -430,10 +430,10 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   aom_cdf_prob(
       *const coef_head_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
-      ec_ctx->coef_head_cdfs[txsize_sqr_map[tx_size]][type][ref];
+      ec_ctx->coef_head_cdfs[get_txsize_entropy_ctx(tx_size)][type][ref];
   aom_cdf_prob(
       *const coef_tail_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
-      ec_ctx->coef_tail_cdfs[txsize_sqr_map[tx_size]][type][ref];
+      ec_ctx->coef_tail_cdfs[get_txsize_entropy_ctx(tx_size)][type][ref];
   int8_t eob_val;
   int8_t first_val = 1;
   const int seg_eob = av1_get_tx_eob(&cpi->common.seg, segment_id, tx_size);

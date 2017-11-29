@@ -30,10 +30,6 @@ typedef struct txb_ctx {
   int dc_sign_ctx;
 } TXB_CTX;
 
-static INLINE TX_SIZE get_txsize_context(TX_SIZE tx_size) {
-  return txsize_sqr_up_map[tx_size];
-}
-
 static const int base_level_count_to_index[13] = {
   0, 0, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
 };

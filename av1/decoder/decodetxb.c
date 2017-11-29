@@ -66,7 +66,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #else
   FRAME_COUNTS *const counts = xd->counts;
 #endif
-  const TX_SIZE txs_ctx = get_txsize_context(tx_size);
+  const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
   const PLANE_TYPE plane_type = get_plane_type(plane);
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const int seg_eob = av1_get_max_eob(tx_size);

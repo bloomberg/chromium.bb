@@ -376,6 +376,11 @@ static INLINE aom_prob av1_mode_mv_merge_probs(aom_prob pre_prob,
   return mode_mv_merge_probs(pre_prob, ct);
 }
 
+static INLINE TX_SIZE get_txsize_entropy_ctx(TX_SIZE txsize) {
+  return (TX_SIZE)((txsize_sqr_map[txsize] + txsize_sqr_up_map[txsize] + 1) >>
+                   1);
+}
+
 void av1_average_tile_coef_cdfs(struct frame_contexts *fc,
                                 struct frame_contexts *ec_ctxs[],
                                 aom_cdf_prob *cdf_ptrs[], int num_tiles);
