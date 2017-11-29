@@ -12,6 +12,7 @@ enum RemotingStopReason {
   DATA_SEND_FAILED,  // Failed to consume from a data pipe or send to the sink.
   UNEXPECTED_FAILURE,  // Unexpected failure or inconsistent state encountered.
   SERVICE_GONE,  // Mirror service disconnected.
+  USER_DISABLED,  // Media Remoting was disabled by user.
 };
 
 enum RemotingStartFailReason {

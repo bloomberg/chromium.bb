@@ -367,9 +367,17 @@ void CastRemotingConnector::OnStopped(RemotingStopReason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   VLOG(2) << __func__ << ": reason = " << reason;
 
-  if (!active_bridge_)
-    return;
-  StopRemoting(active_bridge_, reason);
+  if (active_bridge_) {
+    // This call will reset |sink_metadata_| and notify the source that sink is
+    // gone.
+    StopRemoting(active_bridge_, reason);
+  } else if (reason == RemotingStopReason::USER_DISABLED) {
+    // Notify all the sources that the sink is gone. Remoting can only be
+    // started after OnSinkAvailable() is called again.
+    sink_metadata_ = RemotingSinkMetadata();
+    for (RemotingBridge* notifyee : bridges_)
+      notifyee->OnSinkGone();
+  }
 }
 
 void CastRemotingConnector::SendMessageToSink(

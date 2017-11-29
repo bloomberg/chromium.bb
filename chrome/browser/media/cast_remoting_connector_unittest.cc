@@ -189,6 +189,10 @@ class CastRemotingConnectorTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void DisableRemoting() {
+    connector_.OnStopped(RemotingStopReason::USER_DISABLED);
+  }
+
   FakeMediaRouter media_router_;
 
  private:
@@ -283,6 +287,28 @@ TEST_F(CastRemotingConnectorTest, NoConnectedMediaRemoter) {
   RunUntilIdle();
 }
 
+TEST_F(CastRemotingConnectorTest, UserDisableRemoting) {
+  MockRemotingSource source1;
+  RemoterPtr remoter1 = CreateRemoter(&source1);
+  MockRemotingSource source2;
+  RemoterPtr remoter2 = CreateRemoter(&source2);
+
+  std::unique_ptr<MockMediaRemoter> media_remoter =
+      base::MakeUnique<MockMediaRemoter>(&media_router_);
+
+  EXPECT_CALL(source1, OnSinkAvailable(_)).Times(1);
+  EXPECT_CALL(source2, OnSinkAvailable(_)).Times(1);
+  media_remoter->OnSinkAvailable();
+  RunUntilIdle();
+
+  // All sources will get notified that sink is gone when user explicitly
+  // disabled media remoting.
+  EXPECT_CALL(source1, OnSinkGone()).Times(AtLeast(1));
+  EXPECT_CALL(source2, OnSinkGone()).Times(AtLeast(1));
+  DisableRemoting();
+  RunUntilIdle();
+}
+
 namespace {
 
 // The possible ways a remoting session may be terminated in the "full
@@ -292,6 +318,7 @@ enum HowItEnds {
   MOJO_PIPE_CLOSES,   // A Mojo message pipe closes unexpectedly.
   ROUTE_TERMINATES,   // The Media Router UI was used to terminate the route.
   EXTERNAL_FAILURE,   // The sink is cut-off, perhaps due to a network outage.
+  USER_DISABLED,      // Media Remoting was disabled by user.
 };
 
 }  // namespace
@@ -474,11 +501,39 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
 
       break;
     }
+
+    case USER_DISABLED: {
+      // When user explicitly disabled remoting, the active remoting session
+      // will be stopped.
+      EXPECT_CALL(*source, OnSinkGone()).Times(AtLeast(1));
+      EXPECT_CALL(*other_source, OnSinkGone()).Times(0);
+      EXPECT_CALL(*source, OnSinkAvailable(_)).Times(0);
+      EXPECT_CALL(*other_source, OnSinkAvailable(_)).Times(0);
+      EXPECT_CALL(*source, OnStopped(RemotingStopReason::USER_DISABLED))
+          .Times(1);
+      EXPECT_CALL(*media_remoter, Stop(RemotingStopReason::USER_DISABLED))
+          .Times(1);
+      DisableRemoting();
+
+      // All sources will get notified that sink is gone, and no further
+      // remoting sessions can be initiated before user re-enables remoting.
+      RunUntilIdle();
+      EXPECT_CALL(*source, OnSinkGone()).Times(AtLeast(1));
+      EXPECT_CALL(*other_source, OnSinkGone()).Times(AtLeast(1));
+      EXPECT_CALL(*source, OnSinkAvailable(_)).Times(0);
+      EXPECT_CALL(*other_source, OnSinkAvailable(_)).Times(0);
+      media_remoter->OnStopped(RemotingStopReason::USER_DISABLED);
+      RunUntilIdle();
+
+      break;
+    }
   }
 }
 
-INSTANTIATE_TEST_CASE_P(, CastRemotingConnectorFullSessionTest,
+INSTANTIATE_TEST_CASE_P(,
+                        CastRemotingConnectorFullSessionTest,
                         ::testing::Values(SOURCE_TERMINATES,
                                           MOJO_PIPE_CLOSES,
                                           ROUTE_TERMINATES,
-                                          EXTERNAL_FAILURE));
+                                          EXTERNAL_FAILURE,
+                                          USER_DISABLED));
