@@ -2583,6 +2583,8 @@ notify_touch_normalized(struct weston_touch_device *device,
 		break;
 	case WESTON_TOUCH_MODE_CALIB:
 	case WESTON_TOUCH_MODE_PREP_NORMAL:
+		notify_touch_calibrator(device, time, touch_id,
+					norm, touch_type);
 		break;
 	}
 }
@@ -2600,6 +2602,7 @@ notify_touch_frame(struct weston_touch_device *device)
 		break;
 	case WESTON_TOUCH_MODE_CALIB:
 	case WESTON_TOUCH_MODE_PREP_NORMAL:
+		notify_touch_calibrator_frame(device);
 		break;
 	}
 
@@ -2619,6 +2622,7 @@ notify_touch_cancel(struct weston_touch_device *device)
 		break;
 	case WESTON_TOUCH_MODE_CALIB:
 	case WESTON_TOUCH_MODE_PREP_NORMAL:
+		notify_touch_calibrator_cancel(device);
 		break;
 	}
 

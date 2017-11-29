@@ -81,6 +81,7 @@ libweston_@LIBWESTON_MAJOR@_la_SOURCES =			\
 	libweston/input.c				\
 	libweston/data-device.c				\
 	libweston/screenshooter.c			\
+	libweston/touch-calibration.c			\
 	libweston/clipboard.c				\
 	libweston/zoom.c				\
 	libweston/bindings.c				\
