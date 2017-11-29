@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/download/download_manager_service.h"
 
+#include <memory>
+
 #include "base/android/jni_string.h"
 #include "base/location.h"
 #include "base/metrics/field_trial_params.h"
@@ -33,7 +35,7 @@ using base::android::ScopedJavaLocalRef;
 namespace {
 
 // The remaining time for a download item if it cannot be calculated.
-long kUnknownRemainingTime = -1;
+constexpr int64_t kUnknownRemainingTime = -1;
 
 // Finch flag for controlling auto resumption limit.
 int kDefaultAutoResumptionLimit = 5;
@@ -41,18 +43,6 @@ const char kAutoResumptionLimitParamName[] = "AutoResumptionLimit";
 
 bool ShouldShowDownloadItem(content::DownloadItem* item) {
   return !item->IsTemporary() && !item->IsTransient();
-}
-
-void UpdateNotifier(
-    DownloadManagerService* service,
-    content::DownloadManager* manager,
-    std::unique_ptr<download::AllDownloadItemNotifier>& notifier) {
-  if (manager) {
-    if (!notifier || notifier->GetManager() != manager)
-      notifier.reset(new download::AllDownloadItemNotifier(manager, service));
-  } else {
-    notifier.reset(nullptr);
-  }
 }
 
 ScopedJavaLocalRef<jobject> JNI_DownloadManagerService_CreateJavaDownloadItem(
@@ -453,14 +443,21 @@ content::DownloadManager* DownloadManagerService::GetDownloadManager(
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (is_off_the_record)
     profile = profile->GetOffTheRecordProfile();
+
+  auto& notifier =
+      is_off_the_record ? off_the_record_notifier_ : original_notifier_;
   content::DownloadManager* manager =
       content::BrowserContext::GetDownloadManager(profile);
+  if (!manager) {
+    notifier.reset();
+    return nullptr;
+  }
 
   // Update notifiers to monitor any newly created DownloadManagers.
-  UpdateNotifier(
-      this, manager,
-      is_off_the_record ? off_the_record_notifier_ : original_notifier_);
-
+  if (!notifier || notifier->GetManager() != manager) {
+    notifier =
+        std::make_unique<download::AllDownloadItemNotifier>(manager, this);
+  }
   return manager;
 }
 
