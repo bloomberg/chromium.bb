@@ -392,6 +392,7 @@ enum class SnapshotViewOption {
                             tabSwitcherPresentationAnimationDidEnd:self];
                         [self.delegate
                             tabSwitcherPresentationTransitionDidEnd:self];
+                        [_tabSwitcherView wasShown];
                       }];
 }
 
@@ -855,6 +856,7 @@ enum class SnapshotViewOption {
                         [self.animationDelegate
                             tabSwitcherDismissalAnimationDidEnd:self];
                         [self.delegate tabSwitcherDismissTransitionDidEnd:self];
+                        [_tabSwitcherView wasHidden];
                       }];
 }
 

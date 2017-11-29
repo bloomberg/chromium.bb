@@ -225,6 +225,14 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
   }
 }
 
+- (void)wasShown {
+  [_signinPromoViewMediator signinPromoViewVisible];
+}
+
+- (void)wasHidden {
+  [_signinPromoViewMediator signinPromoViewHidden];
+}
+
 #pragma mark - Private
 
 // Creates the sign-in view and its mediator if it doesn't exist.
