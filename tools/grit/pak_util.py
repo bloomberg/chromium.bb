@@ -33,7 +33,7 @@ def _ExtractMain(args):
 
 def _PrintMain(args):
   pak = data_pack.ReadDataPack(args.pak_file)
-  id_map = {id(v): k for k, v in sorted(pak.resources.items(), reverse=True)}
+  output = args.output
   encoding = 'binary'
   if pak.encoding == 1:
     encoding = 'utf-8'
@@ -41,14 +41,21 @@ def _PrintMain(args):
     encoding = 'utf-16'
   else:
     encoding = '?' + str(pak.encoding)
-  print 'Encoding:', encoding
 
-  try_decode = encoding.startswith('utf')
+  output.write('version: {}\n'.format(pak.version))
+  output.write('encoding: {}\n'.format(encoding))
+  output.write('num_resources: {}\n'.format(len(pak.resources)))
+  output.write('num_aliases: {}\n'.format(len(pak.aliases)))
+  breakdown = ', '.join('{}: {}'.format(*x) for x in pak.sizes)
+  output.write('total_size: {} ({})\n'.format(pak.sizes.total, breakdown))
+
+  try_decode = args.decode and encoding.startswith('utf')
   # Print IDs in ascending order, since that's the order in which they appear in
   # the file (order is lost by Python dict).
   for resource_id in sorted(pak.resources):
     data = pak.resources[resource_id]
-    desc = '<binary>'
+    canonical_id = pak.aliases.get(resource_id, resource_id)
+    desc = '<data>'
     if try_decode:
       try:
         desc = unicode(data, encoding)
@@ -58,19 +65,14 @@ def _PrintMain(args):
       except UnicodeDecodeError:
         pass
     sha1 = hashlib.sha1(data).hexdigest()[:10]
-    canonical_id = id_map[id(data)]
-    if resource_id == canonical_id:
-      line = u'Entry(id={}, len={}, sha1={}): {}'.format(
-          resource_id, len(data), sha1, desc)
-    else:
-      line = u'Entry(id={}, alias_of={}): {}'.format(
-          resource_id, canonical_id, desc)
-    print line.encode('utf-8')
+    output.write(
+        u'Entry(id={}, canonical_id={}, size={}, sha1={}): {}\n'.format(
+            resource_id, canonical_id, len(data), sha1, desc).encode('utf-8'))
 
 
 def _ListMain(args):
-  resources, _ = data_pack.ReadDataPack(args.pak_file)
-  for resource_id in sorted(resources.keys()):
+  pak = data_pack.ReadDataPack(args.pak_file)
+  for resource_id in sorted(pak.resources):
     args.output.write('%d\n' % resource_id)
 
 
@@ -99,8 +101,13 @@ def main():
   sub_parser = sub_parsers.add_parser('print',
       help='Prints all pak IDs and contents. Useful for diffing.')
   sub_parser.add_argument('pak_file')
+  sub_parser.add_argument('--output', type=argparse.FileType('w'),
+      default=sys.stdout,
+      help='The resource list path to write (default stdout)')
+  sub_parser.add_argument('--no-decode', dest='decode', action='store_false',
+      default=True, help='Do not print entry data.')
   sub_parser.set_defaults(func=_PrintMain)
-  
+
   sub_parser = sub_parsers.add_parser('list-id',
       help='Outputs all resource IDs to a file.')
   sub_parser.add_argument('pak_file')
