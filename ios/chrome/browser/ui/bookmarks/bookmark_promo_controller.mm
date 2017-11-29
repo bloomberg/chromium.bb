@@ -6,16 +6,12 @@
 
 #include <memory>
 
-#include "base/metrics/user_metrics.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/show_signin_command.h"
-#import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -30,9 +26,6 @@ class SignInObserver;
   ios::ChromeBrowserState* _browserState;
   std::unique_ptr<SignInObserver> _signinObserver;
 }
-
-// Presenter which can show signin UI.
-@property(nonatomic, readonly, weak) id<SigninPresenter> presenter;
 
 // Mediator to use for the sign-in promo view displayed in the bookmark view.
 @property(nonatomic, readwrite, strong)
@@ -76,7 +69,6 @@ class SignInObserver : public SigninManagerBase::Observer {
 
 @synthesize delegate = _delegate;
 @synthesize shouldShowSigninPromo = _shouldShowSigninPromo;
-@synthesize presenter = _presenter;
 @synthesize signinPromoViewMediator = _signinPromoViewMediator;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
@@ -86,7 +78,6 @@ class SignInObserver : public SigninManagerBase::Observer {
   self = [super init];
   if (self) {
     _delegate = delegate;
-    _presenter = presenter;
     // Incognito browserState can go away before this class is released, this
     // code avoids keeping a pointer to it.
     _isIncognito = browserState->IsOffTheRecord();
@@ -100,7 +91,7 @@ class SignInObserver : public SigninManagerBase::Observer {
           initWithBrowserState:_browserState
                    accessPoint:signin_metrics::AccessPoint::
                                    ACCESS_POINT_BOOKMARK_MANAGER
-                     presenter:_presenter];
+                     presenter:presenter];
       _signinPromoViewMediator.consumer = self;
     }
     [self updateShouldShowSigninPromo];
@@ -116,16 +107,6 @@ class SignInObserver : public SigninManagerBase::Observer {
         ios::SigninManagerFactory::GetForBrowserState(_browserState);
     signinManager->RemoveObserver(_signinObserver.get());
   }
-}
-
-- (void)showSignInFromViewController:(UIViewController*)baseViewController {
-  base::RecordAction(
-      base::UserMetricsAction("Signin_Signin_FromBookmarkManager"));
-  ShowSigninCommand* command = [[ShowSigninCommand alloc]
-      initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
-            accessPoint:signin_metrics::AccessPoint::
-                            ACCESS_POINT_BOOKMARK_MANAGER];
-  [self.presenter showSignin:command];
 }
 
 - (void)hidePromoCell {
