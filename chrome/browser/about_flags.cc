@@ -3619,6 +3619,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kAv1Decoder)},
 #endif  // ENABLE_AV1_DECODER
 
+    {"enable-wheel-scroll-latching",
+     flag_descriptions::kEnableTouchpadAndWheelScrollLatchingName,
+     flag_descriptions::kEnableTouchpadAndWheelScrollLatchingDescription,
+     kOsAll, FEATURE_VALUE_TYPE(features::kTouchpadAndWheelScrollLatching)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

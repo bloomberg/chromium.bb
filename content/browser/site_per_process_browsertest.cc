@@ -6224,7 +6224,9 @@ class SitePerProcessMouseWheelBrowserTest : public SitePerProcessBrowserTest {
     // cancellable.
     EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
     EXPECT_EQ("\"wheel: 2\"", reply);
-    if (base::FeatureList::IsEnabled(features::kAsyncWheelEvents)) {
+    if (base::FeatureList::IsEnabled(features::kAsyncWheelEvents) &&
+        base::FeatureList::IsEnabled(
+            features::kTouchpadAndWheelScrollLatching)) {
       EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
       EXPECT_EQ("\"scroll: 2\"", reply);
     }

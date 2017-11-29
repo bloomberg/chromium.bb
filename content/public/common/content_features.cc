@@ -26,7 +26,9 @@ const base::Feature kAllowContentInitiatedDataUrlNavigations{
 const base::Feature kAsmJsToWebAssembly{"AsmJsToWebAssembly",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables async wheel events.
+// Enables async wheel events. Note that this feature depends on
+// TouchpadAndWheelScrollLatching and enabling it when latching is disabled
+// won't have any impacts.
 const base::Feature kAsyncWheelEvents{"AsyncWheelEvents",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 

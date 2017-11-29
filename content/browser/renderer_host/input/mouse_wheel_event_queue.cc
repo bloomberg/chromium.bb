@@ -44,7 +44,8 @@ MouseWheelEventQueue::MouseWheelEventQueue(MouseWheelEventQueueClient* client,
       scroll_in_progress_(false),
       enable_scroll_latching_(enable_scroll_latching),
       enable_async_wheel_events_(
-          base::FeatureList::IsEnabled(features::kAsyncWheelEvents)),
+          base::FeatureList::IsEnabled(features::kAsyncWheelEvents) &&
+          enable_scroll_latching),
       send_wheel_events_async_(false),
       scrolling_device_(blink::kWebGestureDeviceUninitialized) {
   DCHECK(client);
