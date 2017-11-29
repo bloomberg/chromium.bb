@@ -12,8 +12,6 @@
 
 namespace blink {
 
-class WebGraphicsContext3DProviderWrapper;
-
 class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
  public:
   OffscreenCanvasResourceProvider(int width, int height);
@@ -23,9 +21,6 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
   void TransferResource(viz::TransferableResource*);
   void SetTransferableResourceToSharedBitmap(viz::TransferableResource&,
                                              scoped_refptr<StaticBitmapImage>);
-  void SetTransferableResourceToSharedGPUContext(
-      viz::TransferableResource&,
-      scoped_refptr<StaticBitmapImage>);
   void SetTransferableResourceToStaticBitmapImage(
       viz::TransferableResource&,
       scoped_refptr<StaticBitmapImage>);
@@ -48,11 +43,6 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
   struct FrameResource {
     scoped_refptr<StaticBitmapImage> image_;
     std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
-
-    // context_provider_wrapper_ is associated with texture_id_ and image_id.
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
-    GLuint texture_id_ = 0;
-    GLuint image_id_ = 0;
 
     bool spare_lock_ = true;
     gpu::Mailbox mailbox_;
