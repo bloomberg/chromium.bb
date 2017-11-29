@@ -1597,7 +1597,6 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 		}
 		break;
 	case WL_SHM_FORMAT_NV12:
-		gs->shader = &gr->texture_shader_y_xuxv;
 		pitch = wl_shm_buffer_get_stride(shm_buffer);
 		gl_pixel_type = GL_UNSIGNED_BYTE;
 		num_planes = 2;
@@ -1606,9 +1605,11 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 		gs->hsub[1] = 2;
 		gs->vsub[1] = 2;
 		if (gr->has_gl_texture_rg) {
+			gs->shader = &gr->texture_shader_y_uv;
 			gl_format[0] = GL_R8_EXT;
 			gl_format[1] = GL_RG8_EXT;
 		} else {
+			gs->shader = &gr->texture_shader_y_xuxv;
 			gl_format[0] = GL_LUMINANCE;
 			gl_format[1] = GL_LUMINANCE_ALPHA;
 		}
