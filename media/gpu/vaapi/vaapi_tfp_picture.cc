@@ -4,8 +4,6 @@
 
 #include "media/gpu/vaapi/vaapi_tfp_picture.h"
 
-#include <X11/Xlib.h>
-
 #include "media/gpu/va_surface.h"
 #include "media/gpu/vaapi_wrapper.h"
 #include "ui/gfx/x/x11_types.h"
@@ -81,10 +79,10 @@ bool VaapiTFPPicture::Allocate(gfx::BufferFormat format) {
 
   XWindowAttributes win_attr;
   int screen = DefaultScreen(x_display_);
-  XGetWindowAttributes(x_display_, RootWindow(x_display_, screen), &win_attr);
+  XGetWindowAttributes(x_display_, XRootWindow(x_display_, screen), &win_attr);
   // TODO(posciak): pass the depth required by libva, not the RootWindow's
   // depth
-  x_pixmap_ = XCreatePixmap(x_display_, RootWindow(x_display_, screen),
+  x_pixmap_ = XCreatePixmap(x_display_, XRootWindow(x_display_, screen),
                             size_.width(), size_.height(), win_attr.depth);
   if (!x_pixmap_) {
     DLOG(ERROR) << "Failed creating an X Pixmap for TFP";
