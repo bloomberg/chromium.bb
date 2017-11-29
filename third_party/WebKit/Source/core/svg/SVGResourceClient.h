@@ -13,7 +13,7 @@ namespace blink {
 
 class TreeScope;
 
-class CORE_EXPORT SVGResourceClient : public DocumentResourceClient {
+class CORE_EXPORT SVGResourceClient : public ResourceClient {
  public:
   virtual ~SVGResourceClient() {}
 
