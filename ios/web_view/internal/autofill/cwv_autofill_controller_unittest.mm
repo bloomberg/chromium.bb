@@ -218,4 +218,30 @@ TEST_F(CWVAutofillControllerTest, BlurCallback) {
   }
 }
 
+// Tests CWVAutofillController delegate submit callback is invoked.
+TEST_F(CWVAutofillControllerTest, SubmitCallback) {
+  id delegate = OCMProtocolMock(@protocol(CWVAutofillControllerDelegate));
+  autofill_controller_.delegate = delegate;
+
+  // [delegate expect] returns an autoreleased object, but it must be destroyed
+  // before this test exits to avoid holding on to |autofill_controller_|.
+  @autoreleasepool {
+    [[delegate expect] autofillController:autofill_controller_
+                    didSubmitFormWithName:kTestFormName
+                            userInitiated:YES];
+
+    web_state_.OnDocumentSubmitted(base::SysNSStringToUTF8(kTestFormName),
+                                   /*user_initiated=*/true);
+
+    [[delegate expect] autofillController:autofill_controller_
+                    didSubmitFormWithName:kTestFormName
+                            userInitiated:NO];
+
+    web_state_.OnDocumentSubmitted(base::SysNSStringToUTF8(kTestFormName),
+                                   /*user_initiated=*/false);
+
+    [delegate verify];
+  }
+}
+
 }  // namespace ios_web_view
