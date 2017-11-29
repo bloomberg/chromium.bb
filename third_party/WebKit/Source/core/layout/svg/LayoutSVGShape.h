@@ -154,7 +154,7 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   FloatRect StrokeBoundingBox() const final { return stroke_bounding_box_; }
   FloatRect CalculateObjectBoundingBox() const;
   FloatRect CalculateStrokeBoundingBox() const;
-  void UpdateLocalTransform();
+  bool UpdateLocalTransform();
 
  private:
   AffineTransform local_transform_;
@@ -169,6 +169,7 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   bool needs_shape_update_ : 1;
   bool needs_transform_update_ : 1;
   bool affected_by_miter_ : 1;
+  bool transform_uses_reference_box_ : 1;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGShape, IsSVGShape());
