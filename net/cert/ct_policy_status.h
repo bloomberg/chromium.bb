@@ -24,6 +24,9 @@ enum class CTPolicyCompliance {
   // isn't timely and therefore log information might be out of date
   // (for example a log might no longer be considered trustworthy).
   CT_POLICY_BUILD_NOT_TIMELY = 3,
+  // Compliance details for the connection are not available, e.g. because a
+  // resource was loaded from disk cache.
+  CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE = 4,
   CT_POLICY_MAX
 };
 

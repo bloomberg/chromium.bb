@@ -391,7 +391,6 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
   if (enforce_policy_checking_ &&
       (result == OK ||
        (IsCertificateError(result) && IsCertStatusMinorError(cert_status)))) {
-    verify_details_->ct_verify_result.ct_policies_applied = true;
     SCTList verified_scts = ct::SCTsMatchingStatus(
         verify_details_->ct_verify_result.scts, ct::SCT_STATUS_OK);
 

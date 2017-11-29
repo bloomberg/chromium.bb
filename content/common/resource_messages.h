@@ -144,7 +144,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(net::SSLInfo::HandshakeType,
                           net::SSLInfo::HANDSHAKE_FULL)
 IPC_ENUM_TRAITS_MAX_VALUE(
     net::ct::CTPolicyCompliance,
-    net::ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY)
+    net::ct::CTPolicyCompliance::CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE)
 IPC_ENUM_TRAITS_MAX_VALUE(net::OCSPVerifyResult::ResponseStatus,
                           net::OCSPVerifyResult::PARSE_RESPONSE_DATA_ERROR)
 IPC_ENUM_TRAITS_MAX_VALUE(net::OCSPRevocationStatus,

@@ -1502,8 +1502,6 @@ int SSLClientSocketImpl::VerifyCT() {
       server_cert_verify_result_.verified_cert.get(), ocsp_response, sct_list,
       &ct_verify_result_.scts, net_log_);
 
-  ct_verify_result_.ct_policies_applied = true;
-
   SCTList verified_scts =
       ct::SCTsMatchingStatus(ct_verify_result_.scts, ct::SCT_STATUS_OK);
 

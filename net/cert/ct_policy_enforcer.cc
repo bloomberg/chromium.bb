@@ -85,6 +85,7 @@ const char* CTPolicyComplianceToString(ct::CTPolicyCompliance status) {
       return "NOT_DIVERSE_SCTS";
     case ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY:
       return "BUILD_NOT_TIMELY";
+    case ct::CTPolicyCompliance::CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE:
     case ct::CTPolicyCompliance::CT_POLICY_MAX:
       NOTREACHED();
       return "unknown";

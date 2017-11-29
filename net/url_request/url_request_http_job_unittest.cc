@@ -1080,7 +1080,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   ssl_socket_data.ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
   ssl_socket_data.ssl_info.is_issued_by_known_root = true;
-  ssl_socket_data.ssl_info.ct_compliance_details_available = true;
   ssl_socket_data.ssl_info.ct_policy_compliance_required = false;
   ssl_socket_data.ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
@@ -1122,7 +1121,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   ssl_socket_data.ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
   ssl_socket_data.ssl_info.is_issued_by_known_root = false;
-  ssl_socket_data.ssl_info.ct_compliance_details_available = true;
   ssl_socket_data.ssl_info.ct_policy_compliance_required = false;
   ssl_socket_data.ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
@@ -1159,7 +1157,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   ssl_socket_data.ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
   ssl_socket_data.ssl_info.is_issued_by_known_root = true;
-  ssl_socket_data.ssl_info.ct_compliance_details_available = true;
   ssl_socket_data.ssl_info.ct_policy_compliance_required = true;
   ssl_socket_data.ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
@@ -1202,7 +1199,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   ssl_socket_data.ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
   ssl_socket_data.ssl_info.is_issued_by_known_root = true;
-  ssl_socket_data.ssl_info.ct_compliance_details_available = true;
   ssl_socket_data.ssl_info.ct_policy_compliance_required = true;
   ssl_socket_data.ssl_info.ct_policy_compliance =
       ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS;
