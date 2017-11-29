@@ -112,8 +112,7 @@ void PrintUsage() {
 
 class DefaultUnitTestPlatformDelegate : public UnitTestPlatformDelegate {
  public:
-  DefaultUnitTestPlatformDelegate() {
-  }
+  DefaultUnitTestPlatformDelegate() = default;
 
  private:
   // UnitTestPlatformDelegate:

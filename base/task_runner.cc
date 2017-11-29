@@ -51,9 +51,9 @@ bool TaskRunner::PostTaskAndReply(const Location& from_here,
       from_here, std::move(task), std::move(reply));
 }
 
-TaskRunner::TaskRunner() {}
+TaskRunner::TaskRunner() = default;
 
-TaskRunner::~TaskRunner() {}
+TaskRunner::~TaskRunner() = default;
 
 void TaskRunner::OnDestruct() const {
   delete this;

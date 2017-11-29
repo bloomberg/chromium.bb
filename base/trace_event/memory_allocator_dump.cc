@@ -41,8 +41,7 @@ MemoryAllocatorDump::MemoryAllocatorDump(
   DCHECK(absolute_name[0] != '/' && *absolute_name.rbegin() != '/');
 }
 
-MemoryAllocatorDump::~MemoryAllocatorDump() {
-}
+MemoryAllocatorDump::~MemoryAllocatorDump() = default;
 
 void MemoryAllocatorDump::AddScalar(const char* name,
                                     const char* units,

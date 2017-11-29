@@ -36,7 +36,7 @@ namespace {
 // prevents other code that might accidentally use Singleton<string> from
 // getting our internal one.
 struct EmptyStrings {
-  EmptyStrings() {}
+  EmptyStrings() = default;
   const std::string s;
   const string16 s16;
 

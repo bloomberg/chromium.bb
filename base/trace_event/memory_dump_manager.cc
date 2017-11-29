@@ -930,8 +930,8 @@ MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
       MakeUnique<ProcessMemoryDump>(heap_profiler_serialization_state, args);
 }
 
-MemoryDumpManager::ProcessMemoryDumpAsyncState::~ProcessMemoryDumpAsyncState() {
-}
+MemoryDumpManager::ProcessMemoryDumpAsyncState::~ProcessMemoryDumpAsyncState() =
+    default;
 
 }  // namespace trace_event
 }  // namespace base

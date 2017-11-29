@@ -207,9 +207,9 @@ bool PickleIterator::ReadBytes(const char** data, int length) {
   return true;
 }
 
-Pickle::Attachment::Attachment() {}
+Pickle::Attachment::Attachment() = default;
 
-Pickle::Attachment::~Attachment() {}
+Pickle::Attachment::~Attachment() = default;
 
 // Payload is uint32_t aligned.
 

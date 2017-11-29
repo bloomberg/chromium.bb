@@ -9,7 +9,7 @@ namespace base {
 MockEntropyProvider::MockEntropyProvider() : entropy_value_(0.5) {}
 MockEntropyProvider::MockEntropyProvider(double entropy_value)
     : entropy_value_(entropy_value) {}
-MockEntropyProvider::~MockEntropyProvider() {}
+MockEntropyProvider::~MockEntropyProvider() = default;
 
 double MockEntropyProvider::GetEntropyForTrial(
     const std::string& trial_name,

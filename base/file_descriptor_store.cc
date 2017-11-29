@@ -26,7 +26,7 @@ FileDescriptorStore::Descriptor::Descriptor(
     FileDescriptorStore::Descriptor&& other)
     : key(other.key), fd(std::move(other.fd)), region(other.region) {}
 
-FileDescriptorStore::Descriptor::~Descriptor() {}
+FileDescriptorStore::Descriptor::~Descriptor() = default;
 
 // static
 FileDescriptorStore& FileDescriptorStore::GetInstance() {
@@ -66,8 +66,8 @@ void FileDescriptorStore::Set(const std::string& key,
   descriptors_.insert(std::make_pair(key, std::move(descriptor)));
 }
 
-FileDescriptorStore::FileDescriptorStore() {}
+FileDescriptorStore::FileDescriptorStore() = default;
 
-FileDescriptorStore::~FileDescriptorStore() {}
+FileDescriptorStore::~FileDescriptorStore() = default;
 
 }  // namespace base

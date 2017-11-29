@@ -6,9 +6,9 @@
 
 namespace base {
 
-NullTaskRunner::NullTaskRunner() {}
+NullTaskRunner::NullTaskRunner() = default;
 
-NullTaskRunner::~NullTaskRunner() {}
+NullTaskRunner::~NullTaskRunner() = default;
 
 bool NullTaskRunner::PostDelayedTask(const Location& from_here,
                                      OnceClosure task,

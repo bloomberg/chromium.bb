@@ -18,8 +18,7 @@ DeferredSequencedTaskRunner::DeferredTask::DeferredTask()
 DeferredSequencedTaskRunner::DeferredTask::DeferredTask(DeferredTask&& other) =
     default;
 
-DeferredSequencedTaskRunner::DeferredTask::~DeferredTask() {
-}
+DeferredSequencedTaskRunner::DeferredTask::~DeferredTask() = default;
 
 DeferredSequencedTaskRunner::DeferredTask&
 DeferredSequencedTaskRunner::DeferredTask::operator=(DeferredTask&& other) =
@@ -29,8 +28,7 @@ DeferredSequencedTaskRunner::DeferredSequencedTaskRunner(
     scoped_refptr<SequencedTaskRunner> target_task_runner)
     : started_(false), target_task_runner_(std::move(target_task_runner)) {}
 
-DeferredSequencedTaskRunner::~DeferredSequencedTaskRunner() {
-}
+DeferredSequencedTaskRunner::~DeferredSequencedTaskRunner() = default;
 
 bool DeferredSequencedTaskRunner::PostDelayedTask(const Location& from_here,
                                                   OnceClosure task,

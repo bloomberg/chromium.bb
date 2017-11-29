@@ -27,7 +27,7 @@ class WatchdogCounter : public Watchdog {
         alarm_counter_(0) {
   }
 
-  ~WatchdogCounter() override {}
+  ~WatchdogCounter() override = default;
 
   void Alarm() override {
     alarm_counter_++;

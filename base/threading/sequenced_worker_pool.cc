@@ -80,7 +80,7 @@ struct SequencedTask {
         sequence_task_number(0),
         shutdown_behavior(SequencedWorkerPool::BLOCK_SHUTDOWN) {}
 
-  ~SequencedTask() {}
+  ~SequencedTask() = default;
 
   SequencedTask(SequencedTask&&) = default;
   SequencedTask& operator=(SequencedTask&&) = default;
@@ -151,8 +151,7 @@ SequencedWorkerPoolTaskRunner::SequencedWorkerPoolTaskRunner(
     SequencedWorkerPool::WorkerShutdown shutdown_behavior)
     : pool_(std::move(pool)), shutdown_behavior_(shutdown_behavior) {}
 
-SequencedWorkerPoolTaskRunner::~SequencedWorkerPoolTaskRunner() {
-}
+SequencedWorkerPoolTaskRunner::~SequencedWorkerPoolTaskRunner() = default;
 
 bool SequencedWorkerPoolTaskRunner::PostDelayedTask(const Location& from_here,
                                                     OnceClosure task,
@@ -578,8 +577,7 @@ SequencedWorkerPool::Worker::Worker(
   Start();
 }
 
-SequencedWorkerPool::Worker::~Worker() {
-}
+SequencedWorkerPool::Worker::~Worker() = default;
 
 void SequencedWorkerPool::Worker::Run() {
   DCHECK_EQ(AllPoolsState::USE_WORKER_POOL, g_all_pools_state);
@@ -1474,7 +1472,7 @@ SequencedWorkerPool::SequencedWorkerPool(size_t max_threads,
                        task_priority,
                        observer)) {}
 
-SequencedWorkerPool::~SequencedWorkerPool() {}
+SequencedWorkerPool::~SequencedWorkerPool() = default;
 
 void SequencedWorkerPool::OnDestruct() const {
   // Avoid deleting ourselves on a worker thread (which would deadlock).

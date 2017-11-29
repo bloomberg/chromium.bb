@@ -168,7 +168,7 @@ class TestSequencedTaskRunner : public SequencedTaskRunner {
   }
 
  private:
-  ~TestSequencedTaskRunner() override {}
+  ~TestSequencedTaskRunner() override = default;
 
   SequencedWorkerPoolOwner worker_pool_;
   const SequencedWorkerPool::SequenceToken token_;

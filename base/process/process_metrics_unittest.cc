@@ -51,7 +51,7 @@ void BusyWork(std::vector<std::string>* vec) {
 // Exists as a class so it can be a friend of SystemMetrics.
 class SystemMetricsTest : public testing::Test {
  public:
-  SystemMetricsTest() {}
+  SystemMetricsTest() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemMetricsTest);

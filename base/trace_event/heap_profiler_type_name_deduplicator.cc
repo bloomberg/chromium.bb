@@ -24,7 +24,7 @@ TypeNameDeduplicator::TypeNameDeduplicator() {
   type_ids_.insert(std::make_pair(nullptr, 0));
 }
 
-TypeNameDeduplicator::~TypeNameDeduplicator() {}
+TypeNameDeduplicator::~TypeNameDeduplicator() = default;
 
 int TypeNameDeduplicator::Insert(const char* type_name) {
   auto result = type_ids_.insert(std::make_pair(type_name, 0));

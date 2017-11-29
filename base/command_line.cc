@@ -174,21 +174,11 @@ CommandLine::CommandLine(const StringVector& argv)
   InitFromArgv(argv);
 }
 
-CommandLine::CommandLine(const CommandLine& other)
-    : argv_(other.argv_),
-      switches_(other.switches_),
-      begin_args_(other.begin_args_) {
-}
+CommandLine::CommandLine(const CommandLine& other) = default;
 
-CommandLine& CommandLine::operator=(const CommandLine& other) {
-  argv_ = other.argv_;
-  switches_ = other.switches_;
-  begin_args_ = other.begin_args_;
-  return *this;
-}
+CommandLine& CommandLine::operator=(const CommandLine& other) = default;
 
-CommandLine::~CommandLine() {
-}
+CommandLine::~CommandLine() = default;
 
 #if defined(OS_WIN)
 // static

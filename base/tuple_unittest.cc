@@ -16,14 +16,14 @@ void DoAdd(int a, int b, int c, int* res) {
 }
 
 struct Addy {
-  Addy() { }
+  Addy() = default;
   void DoAdd(int a, int b, int c, int d, int* res) {
     *res = a + b + c + d;
   }
 };
 
 struct Addz {
-  Addz() { }
+  Addz() = default;
   void DoAdd(int a, int b, int c, int d, int e, int* res) {
     *res = a + b + c + d + e;
   }
@@ -68,7 +68,7 @@ namespace {
 struct CopyLogger {
   CopyLogger() { ++TimesConstructed; }
   CopyLogger(const CopyLogger& tocopy) { ++TimesConstructed; ++TimesCopied; }
-  ~CopyLogger() { }
+  ~CopyLogger() = default;
 
   static int TimesCopied;
   static int TimesConstructed;

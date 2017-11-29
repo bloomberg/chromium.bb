@@ -50,8 +50,7 @@ CommandLine GetMultiProcessTestChildBaseCommandLine() {
 
 // MultiProcessTest ------------------------------------------------------------
 
-MultiProcessTest::MultiProcessTest() {
-}
+MultiProcessTest::MultiProcessTest() = default;
 
 Process MultiProcessTest::SpawnChild(const std::string& procname) {
   LaunchOptions options;

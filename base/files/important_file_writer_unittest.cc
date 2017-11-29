@@ -114,7 +114,7 @@ WriteCallbacksObserver::GetAndResetObservationState() {
 
 class ImportantFileWriterTest : public testing::Test {
  public:
-  ImportantFileWriterTest() { }
+  ImportantFileWriterTest() = default;
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.GetPath().AppendASCII("test-file");

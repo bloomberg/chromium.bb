@@ -29,7 +29,7 @@ int64_t TimeValToMicroseconds(const struct timeval& tv) {
   return ret;
 }
 
-ProcessMetrics::~ProcessMetrics() { }
+ProcessMetrics::~ProcessMetrics() = default;
 
 #if defined(OS_LINUX)
 static const rlim_t kSystemDefaultMaxFds = 8192;

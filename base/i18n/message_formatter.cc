@@ -48,7 +48,7 @@ MessageArg::MessageArg(double d) : formattable(new icu::Formattable(d)) {}
 MessageArg::MessageArg(const Time& t)
     : formattable(new icu::Formattable(static_cast<UDate>(t.ToJsTime()))) {}
 
-MessageArg::~MessageArg() {}
+MessageArg::~MessageArg() = default;
 
 // Tests if this argument has a value, and if so increments *count.
 bool MessageArg::has_value(int *count) const {

@@ -33,7 +33,7 @@
 
 namespace base {
 
-SharedMemory::SharedMemory() {}
+SharedMemory::SharedMemory() = default;
 
 SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
     : shm_(handle), read_only_(read_only) {}

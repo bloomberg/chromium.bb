@@ -1029,7 +1029,7 @@ SharedPersistentMemoryAllocator::SharedPersistentMemoryAllocator(
           read_only),
       shared_memory_(std::move(memory)) {}
 
-SharedPersistentMemoryAllocator::~SharedPersistentMemoryAllocator() {}
+SharedPersistentMemoryAllocator::~SharedPersistentMemoryAllocator() = default;
 
 // static
 bool SharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(
@@ -1056,7 +1056,7 @@ FilePersistentMemoryAllocator::FilePersistentMemoryAllocator(
           read_only),
       mapped_file_(std::move(file)) {}
 
-FilePersistentMemoryAllocator::~FilePersistentMemoryAllocator() {}
+FilePersistentMemoryAllocator::~FilePersistentMemoryAllocator() = default;
 
 // static
 bool FilePersistentMemoryAllocator::IsFileAcceptable(
@@ -1159,7 +1159,7 @@ DelayedPersistentAllocation::DelayedPersistentAllocation(
   DCHECK(reference_);
 }
 
-DelayedPersistentAllocation::~DelayedPersistentAllocation() {}
+DelayedPersistentAllocation::~DelayedPersistentAllocation() = default;
 
 void* DelayedPersistentAllocation::Get() const {
   // Relaxed operations are acceptable here because it's not protecting the

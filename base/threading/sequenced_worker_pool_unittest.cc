@@ -210,7 +210,7 @@ class TestTracker : public base::RefCountedThreadSafe<TestTracker> {
 
  private:
   friend class base::RefCountedThreadSafe<TestTracker>;
-  ~TestTracker() {}
+  ~TestTracker() = default;
 
   void SignalWorkerDone(int id) {
     {
@@ -1105,9 +1105,9 @@ INSTANTIATE_TEST_CASE_P(
 
 class SequencedWorkerPoolTaskRunnerTestDelegate {
  public:
-  SequencedWorkerPoolTaskRunnerTestDelegate() {}
+  SequencedWorkerPoolTaskRunnerTestDelegate() = default;
 
-  ~SequencedWorkerPoolTaskRunnerTestDelegate() {}
+  ~SequencedWorkerPoolTaskRunnerTestDelegate() = default;
 
   void StartTaskRunner() {
     pool_owner_.reset(
@@ -1140,10 +1140,9 @@ INSTANTIATE_TYPED_TEST_CASE_P(SequencedWorkerPool, TaskRunnerAffinityTest,
 
 class SequencedWorkerPoolTaskRunnerWithShutdownBehaviorTestDelegate {
  public:
-  SequencedWorkerPoolTaskRunnerWithShutdownBehaviorTestDelegate() {}
+  SequencedWorkerPoolTaskRunnerWithShutdownBehaviorTestDelegate() = default;
 
-  ~SequencedWorkerPoolTaskRunnerWithShutdownBehaviorTestDelegate() {
-  }
+  ~SequencedWorkerPoolTaskRunnerWithShutdownBehaviorTestDelegate() = default;
 
   void StartTaskRunner() {
     pool_owner_.reset(
@@ -1180,10 +1179,9 @@ INSTANTIATE_TYPED_TEST_CASE_P(
 
 class SequencedWorkerPoolSequencedTaskRunnerTestDelegate {
  public:
-  SequencedWorkerPoolSequencedTaskRunnerTestDelegate() {}
+  SequencedWorkerPoolSequencedTaskRunnerTestDelegate() = default;
 
-  ~SequencedWorkerPoolSequencedTaskRunnerTestDelegate() {
-  }
+  ~SequencedWorkerPoolSequencedTaskRunnerTestDelegate() = default;
 
   void StartTaskRunner() {
     pool_owner_.reset(new SequencedWorkerPoolOwner(

@@ -54,7 +54,7 @@ class IllegalCharacters {
   friend struct DefaultSingletonTraits<IllegalCharacters>;
 
   IllegalCharacters();
-  ~IllegalCharacters() { }
+  ~IllegalCharacters() = default;
 
   // set of characters considered invalid anywhere inside a filename.
   std::unique_ptr<icu::UnicodeSet> illegal_anywhere_;

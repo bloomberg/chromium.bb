@@ -78,7 +78,7 @@ std::unique_ptr<HistogramBase> SparseHistogram::PersistentCreate(
       new SparseHistogram(allocator, name, meta, logged_meta));
 }
 
-SparseHistogram::~SparseHistogram() {}
+SparseHistogram::~SparseHistogram() = default;
 
 uint64_t SparseHistogram::name_hash() const {
   return unlogged_samples_->id();

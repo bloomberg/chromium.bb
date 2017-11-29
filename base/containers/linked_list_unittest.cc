@@ -28,7 +28,7 @@ class MultipleInheritanceNodeBase {
 class MultipleInheritanceNode : public MultipleInheritanceNodeBase,
                                 public LinkNode<MultipleInheritanceNode> {
  public:
-  MultipleInheritanceNode() {}
+  MultipleInheritanceNode() = default;
 };
 
 // Checks that when iterating |list| (either from head to tail, or from

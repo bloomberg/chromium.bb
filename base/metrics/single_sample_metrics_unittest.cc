@@ -20,7 +20,7 @@ const char kMetricName[] = "Single.Sample.Metric";
 
 class SingleSampleMetricsTest : public testing::Test {
  public:
-  SingleSampleMetricsTest() {}
+  SingleSampleMetricsTest() = default;
 
   ~SingleSampleMetricsTest() override {
     // Ensure we cleanup after ourselves.

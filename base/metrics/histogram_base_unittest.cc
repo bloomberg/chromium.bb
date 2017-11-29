@@ -21,8 +21,7 @@ class HistogramBaseTest : public testing::Test {
     ResetStatisticsRecorder();
   }
 
-  ~HistogramBaseTest() override {
-  }
+  ~HistogramBaseTest() override = default;
 
   void ResetStatisticsRecorder() {
     // It is necessary to fully destruct any existing StatisticsRecorder

@@ -493,7 +493,7 @@ const char kGTestRepeatFlag[] = "gtest_repeat";
 const char kGTestRunDisabledTestsFlag[] = "gtest_also_run_disabled_tests";
 const char kGTestOutputFlag[] = "gtest_output";
 
-TestLauncherDelegate::~TestLauncherDelegate() {}
+TestLauncherDelegate::~TestLauncherDelegate() = default;
 
 TestLauncher::LaunchOptions::LaunchOptions() = default;
 TestLauncher::LaunchOptions::LaunchOptions(const LaunchOptions& other) =
@@ -521,7 +521,7 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
                       &TestLauncher::OnOutputTimeout),
       parallel_jobs_(parallel_jobs) {}
 
-TestLauncher::~TestLauncher() {}
+TestLauncher::~TestLauncher() = default;
 
 bool TestLauncher::Run() {
   if (!Init())

@@ -24,7 +24,7 @@ MessagePumpDefault::MessagePumpDefault()
       event_(WaitableEvent::ResetPolicy::AUTOMATIC,
              WaitableEvent::InitialState::NOT_SIGNALED) {}
 
-MessagePumpDefault::~MessagePumpDefault() {}
+MessagePumpDefault::~MessagePumpDefault() = default;
 
 void MessagePumpDefault::Run(Delegate* delegate) {
   AutoReset<bool> auto_reset_keep_running(&keep_running_, true);

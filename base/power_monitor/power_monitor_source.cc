@@ -9,8 +9,8 @@
 
 namespace base {
 
-PowerMonitorSource::PowerMonitorSource() {}
-PowerMonitorSource::~PowerMonitorSource() {}
+PowerMonitorSource::PowerMonitorSource() = default;
+PowerMonitorSource::~PowerMonitorSource() = default;
 
 bool PowerMonitorSource::IsOnBatteryPower() {
   AutoLock auto_lock(battery_lock_);

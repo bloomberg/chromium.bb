@@ -225,8 +225,7 @@ namespace base {
 Process::Process(ProcessHandle handle) : process_(handle) {
 }
 
-Process::~Process() {
-}
+Process::~Process() = default;
 
 Process::Process(Process&& other) : process_(other.process_) {
   other.Close();

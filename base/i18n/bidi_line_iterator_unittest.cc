@@ -14,7 +14,7 @@ namespace {
 
 class BiDiLineIteratorTest : public testing::TestWithParam<TextDirection> {
  public:
-  BiDiLineIteratorTest() {}
+  BiDiLineIteratorTest() = default;
 
   BiDiLineIterator* iterator() { return &iterator_; }
 

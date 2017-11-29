@@ -114,8 +114,8 @@ void MemoryDumpScheduler::Tick(uint32_t expected_generation) {
       TimeDelta::FromMilliseconds(period_ms_));
 }
 
-MemoryDumpScheduler::Config::Config() {}
-MemoryDumpScheduler::Config::~Config() {}
+MemoryDumpScheduler::Config::Config() = default;
+MemoryDumpScheduler::Config::~Config() = default;
 MemoryDumpScheduler::Config::Config(const MemoryDumpScheduler::Config&) =
     default;
 

@@ -14,7 +14,7 @@ namespace base {
 FuzzedDataProvider::FuzzedDataProvider(const uint8_t* data, size_t size)
     : remaining_data_(reinterpret_cast<const char*>(data), size) {}
 
-FuzzedDataProvider::~FuzzedDataProvider() {}
+FuzzedDataProvider::~FuzzedDataProvider() = default;
 
 std::string FuzzedDataProvider::ConsumeBytes(size_t num_bytes) {
   num_bytes = std::min(num_bytes, remaining_data_.length());

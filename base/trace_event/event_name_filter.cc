@@ -16,7 +16,7 @@ EventNameFilter::EventNameFilter(
     std::unique_ptr<EventNamesWhitelist> event_names_whitelist)
     : event_names_whitelist_(std::move(event_names_whitelist)) {}
 
-EventNameFilter::~EventNameFilter() {}
+EventNameFilter::~EventNameFilter() = default;
 
 bool EventNameFilter::FilterTraceEvent(const TraceEvent& trace_event) const {
   return event_names_whitelist_->count(trace_event.name()) != 0;

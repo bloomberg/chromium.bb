@@ -59,7 +59,7 @@ StackSamplingProfiler::Module::Module(uintptr_t base_address,
                                       const FilePath& filename)
     : base_address(base_address), id(id), filename(filename) {}
 
-StackSamplingProfiler::Module::~Module() {}
+StackSamplingProfiler::Module::~Module() = default;
 
 // StackSamplingProfiler::Frame -----------------------------------------------
 
@@ -67,7 +67,7 @@ StackSamplingProfiler::Frame::Frame(uintptr_t instruction_pointer,
                                     size_t module_index)
     : instruction_pointer(instruction_pointer), module_index(module_index) {}
 
-StackSamplingProfiler::Frame::~Frame() {}
+StackSamplingProfiler::Frame::~Frame() = default;
 
 StackSamplingProfiler::Frame::Frame()
     : instruction_pointer(0), module_index(kUnknownModuleIndex) {
@@ -75,11 +75,11 @@ StackSamplingProfiler::Frame::Frame()
 
 // StackSamplingProfiler::Sample ----------------------------------------------
 
-StackSamplingProfiler::Sample::Sample() {}
+StackSamplingProfiler::Sample::Sample() = default;
 
 StackSamplingProfiler::Sample::Sample(const Sample& sample) = default;
 
-StackSamplingProfiler::Sample::~Sample() {}
+StackSamplingProfiler::Sample::~Sample() = default;
 
 StackSamplingProfiler::Sample::Sample(const Frame& frame) {
   frames.push_back(std::move(frame));
@@ -90,12 +90,12 @@ StackSamplingProfiler::Sample::Sample(const std::vector<Frame>& frames)
 
 // StackSamplingProfiler::CallStackProfile ------------------------------------
 
-StackSamplingProfiler::CallStackProfile::CallStackProfile() {}
+StackSamplingProfiler::CallStackProfile::CallStackProfile() = default;
 
 StackSamplingProfiler::CallStackProfile::CallStackProfile(
     CallStackProfile&& other) = default;
 
-StackSamplingProfiler::CallStackProfile::~CallStackProfile() {}
+StackSamplingProfiler::CallStackProfile::~CallStackProfile() = default;
 
 StackSamplingProfiler::CallStackProfile&
 StackSamplingProfiler::CallStackProfile::operator=(CallStackProfile&& other) =
@@ -151,7 +151,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
           callback(callback),
           finished(finished),
           native_sampler(std::move(sampler)) {}
-    ~CollectionContext() {}
+    ~CollectionContext() = default;
 
     // An identifier for the profiler associated with this collection, used to
     // uniquely identify the collection to outside interests.

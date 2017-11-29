@@ -106,7 +106,8 @@ PersistentSparseHistogramDataManager::PersistentSparseHistogramDataManager(
     PersistentMemoryAllocator* allocator)
     : allocator_(allocator), record_iterator_(allocator) {}
 
-PersistentSparseHistogramDataManager::~PersistentSparseHistogramDataManager() {}
+PersistentSparseHistogramDataManager::~PersistentSparseHistogramDataManager() =
+    default;
 
 PersistentSampleMapRecords*
 PersistentSparseHistogramDataManager::UseSampleMapRecords(uint64_t id,
@@ -189,7 +190,7 @@ PersistentSampleMapRecords::PersistentSampleMapRecords(
     uint64_t sample_map_id)
     : data_manager_(data_manager), sample_map_id_(sample_map_id) {}
 
-PersistentSampleMapRecords::~PersistentSampleMapRecords() {}
+PersistentSampleMapRecords::~PersistentSampleMapRecords() = default;
 
 PersistentSampleMapRecords* PersistentSampleMapRecords::Acquire(
     const void* user) {
@@ -276,7 +277,7 @@ PersistentHistogramAllocator::PersistentHistogramAllocator(
     : memory_allocator_(std::move(memory)),
       sparse_histogram_data_manager_(memory_allocator_.get()) {}
 
-PersistentHistogramAllocator::~PersistentHistogramAllocator() {}
+PersistentHistogramAllocator::~PersistentHistogramAllocator() = default;
 
 std::unique_ptr<HistogramBase> PersistentHistogramAllocator::GetHistogram(
     Reference ref) {
@@ -747,7 +748,7 @@ void PersistentHistogramAllocator::RecordCreateHistogramResult(
     result_histogram->Add(result);
 }
 
-GlobalHistogramAllocator::~GlobalHistogramAllocator() {}
+GlobalHistogramAllocator::~GlobalHistogramAllocator() = default;
 
 // static
 void GlobalHistogramAllocator::CreateWithPersistentMemory(

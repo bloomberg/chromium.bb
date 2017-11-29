@@ -246,7 +246,7 @@ class TraceBufferVector : public TraceBuffer {
 
 TraceBufferChunk::TraceBufferChunk(uint32_t seq) : next_free_(0), seq_(seq) {}
 
-TraceBufferChunk::~TraceBufferChunk() {}
+TraceBufferChunk::~TraceBufferChunk() = default;
 
 void TraceBufferChunk::Reset(uint32_t new_seq) {
   for (size_t i = 0; i < next_free_; ++i)
@@ -312,7 +312,7 @@ void TraceResultBuffer::SimpleOutput::Append(
 
 TraceResultBuffer::TraceResultBuffer() : append_comma_(false) {}
 
-TraceResultBuffer::~TraceResultBuffer() {}
+TraceResultBuffer::~TraceResultBuffer() = default;
 
 void TraceResultBuffer::SetOutputCallback(
     const OutputCallback& json_chunk_callback) {

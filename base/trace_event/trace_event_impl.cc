@@ -55,8 +55,7 @@ TraceEvent::TraceEvent()
   memset(arg_values_, 0, sizeof(arg_values_));
 }
 
-TraceEvent::~TraceEvent() {
-}
+TraceEvent::~TraceEvent() = default;
 
 void TraceEvent::MoveFrom(std::unique_ptr<TraceEvent> other) {
   timestamp_ = other->timestamp_;

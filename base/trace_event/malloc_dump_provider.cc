@@ -191,7 +191,7 @@ MallocDumpProvider* MallocDumpProvider::GetInstance() {
 MallocDumpProvider::MallocDumpProvider()
     : tid_dumping_heap_(kInvalidThreadId) {}
 
-MallocDumpProvider::~MallocDumpProvider() {}
+MallocDumpProvider::~MallocDumpProvider() = default;
 
 // Called at trace dump point time. Creates a snapshot the memory counters for
 // the current process.

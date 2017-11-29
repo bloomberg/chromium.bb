@@ -47,7 +47,7 @@ SampleMapIterator::SampleMapIterator(const SampleToCountMap& sample_counts)
   SkipEmptyBuckets();
 }
 
-SampleMapIterator::~SampleMapIterator() {}
+SampleMapIterator::~SampleMapIterator() = default;
 
 bool SampleMapIterator::Done() const {
   return iter_ == end_;
