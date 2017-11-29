@@ -760,6 +760,27 @@ static const aom_cdf_prob
       { AOM_CDF8(3456, 9067, 14069, 16907, 18817, 21214, 23139) }
     };
 
+#if CONFIG_JNT_COMP
+static const aom_cdf_prob
+    default_compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES - 1)] = {
+      { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
+      { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
+      { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
+      { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
+      { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
+      { AOM_CDF2(16384) },
+#if CONFIG_EXT_PARTITION
+      { AOM_CDF2(16384) },  // 255, 1
+      { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
+#endif  // CONFIG_EXT_PARTITION
+      { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
+      { AOM_CDF2(16384) }, { AOM_CDF2(16384) },  // 208, 1
+      { AOM_CDF2(16384) },
+#if CONFIG_EXT_PARTITION
+      { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
+#endif
+    };
+#else
 static const aom_cdf_prob
     default_compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES)] = {
       { AOM_CDF3(16384, 24576) }, { AOM_CDF3(16384, 24576) },
@@ -782,6 +803,7 @@ static const aom_cdf_prob
       { AOM_CDF3(26624, 26648) }, { AOM_CDF3(26624, 26648) },
 #endif
     };
+#endif  // CONFIG_JNT_COMP
 
 static const aom_cdf_prob default_interintra_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(
     2)] = { { AOM_CDF2(128 * 128) },
@@ -1024,9 +1046,15 @@ const aom_tree_index av1_inter_compound_mode_tree
 };
 
 
+#if CONFIG_JNT_COMP
+const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES - 1)] = {
+  -COMPOUND_WEDGE, -COMPOUND_SEG
+};
+#else
 const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)] = {
   -COMPOUND_AVERAGE, 2, -COMPOUND_WEDGE, -COMPOUND_SEG
 };
+#endif  // CONFIG_JNT_COMP
 /* clang-format on */
 
 static const aom_cdf_prob default_intra_inter_cdf[INTRA_INTER_CONTEXTS]

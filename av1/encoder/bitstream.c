@@ -70,7 +70,11 @@ static INLINE void write_uniform(aom_writer *w, int n, int v) {
 }
 
 static struct av1_token interintra_mode_encodings[INTERINTRA_MODES];
+#if CONFIG_JNT_COMP
+static struct av1_token compound_type_encodings[COMPOUND_TYPES - 1];
+#else
 static struct av1_token compound_type_encodings[COMPOUND_TYPES];
+#endif  // CONFIG_JNT_COMP
 #if CONFIG_LOOP_RESTORATION
 static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
                                              MACROBLOCKD *xd,
@@ -1469,11 +1473,11 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         if (cpi->common.reference_mode != SINGLE_REFERENCE &&
             is_inter_compound_mode(mbmi->mode) &&
             mbmi->motion_mode == SIMPLE_TRANSLATION &&
-            is_any_masked_compound_used(bsize) && cm->allow_masked_compound &&
-            mbmi->comp_group_idx) {
+            is_any_masked_compound_used(bsize) && cm->allow_masked_compound) {
           if (is_interinter_compound_used(COMPOUND_WEDGE, bsize))
-            aom_write_symbol(w, mbmi->interinter_compound_type,
-                             ec_ctx->compound_type_cdf[bsize], COMPOUND_TYPES);
+            aom_write_symbol(w, mbmi->interinter_compound_type - 1,
+                             ec_ctx->compound_type_cdf[bsize],
+                             COMPOUND_TYPES - 1);
 
           if (is_interinter_compound_used(COMPOUND_WEDGE, bsize) &&
               mbmi->interinter_compound_type == COMPOUND_WEDGE) {

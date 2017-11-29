@@ -284,6 +284,10 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
       av1_cost_tokens_from_cdf(x->comp_idx_cost[i], fc->compound_index_cdf[i],
                                NULL);
     }
+    for (i = 0; i < COMP_GROUP_IDX_CONTEXTS; ++i) {
+      av1_cost_tokens_from_cdf(x->comp_group_idx_cost[i],
+                               fc->comp_group_idx_cdf[i], NULL);
+    }
 #endif  // CONFIG_JNT_COMP
   }
 }

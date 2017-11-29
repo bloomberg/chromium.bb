@@ -271,7 +271,11 @@ struct macroblock {
   int drl_mode_cost0[DRL_MODE_CONTEXTS][2];
 
   int inter_compound_mode_cost[INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES];
+#if CONFIG_JNT_COMP
+  int compound_type_cost[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1];
+#else
   int compound_type_cost[BLOCK_SIZES_ALL][COMPOUND_TYPES];
+#endif  // CONFIG_JNT_COMP
   int interintra_cost[BLOCK_SIZE_GROUPS][2];
   int wedge_interintra_cost[BLOCK_SIZES_ALL][2];
   int interintra_mode_cost[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];
@@ -347,6 +351,7 @@ struct macroblock {
 #endif  // CONFIG_DIST_8X8
 #if CONFIG_JNT_COMP
   int comp_idx_cost[COMP_INDEX_CONTEXTS][2];
+  int comp_group_idx_cost[COMP_GROUP_IDX_CONTEXTS][2];
 #endif  // CONFIG_JNT_COMP
 };
 

@@ -2214,13 +2214,13 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_EXT_SKIP
           && !mbmi->skip_mode
 #endif  // CONFIG_EXT_SKIP
-          && mbmi->comp_group_idx) {
+          ) {
         if (is_any_masked_compound_used(bsize)) {
           if (cm->allow_masked_compound) {
             if (is_interinter_compound_used(COMPOUND_WEDGE, bsize))
               mbmi->interinter_compound_type =
-                  aom_read_symbol(r, ec_ctx->compound_type_cdf[bsize],
-                                  COMPOUND_TYPES, ACCT_STR);
+                  1 + aom_read_symbol(r, ec_ctx->compound_type_cdf[bsize],
+                                      COMPOUND_TYPES - 1, ACCT_STR);
             else
               mbmi->interinter_compound_type = COMPOUND_SEG;
 
@@ -2238,8 +2238,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         }
 
         if (xd->counts)
-          xd->counts
-              ->compound_interinter[bsize][mbmi->interinter_compound_type]++;
+          xd->counts->compound_interinter[bsize]
+                                         [mbmi->interinter_compound_type - 1]++;
       }
     }
   }
