@@ -538,6 +538,7 @@ _x86_internal_release_boards = frozenset([
     'falco',
     'falco_li',
     'fizz',
+    'fizz-accelerator',
     'gandof',
     'glados',
     'glimmer',
@@ -677,6 +678,7 @@ _cheets_x86_boards = frozenset([
 ])
 
 _accelerator_boards = frozenset([
+    'fizz-accelerator',
     'guado-accelerator',
 ])
 
@@ -2394,6 +2396,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'capri', # contact:ghines@
       'cobblepot', # contact:jkoleszar@
+      'fizz-accelerator', # contact:perley@
       'gonzo', # contact:icoolidge@
       'guado-accelerator', # contact:perley@ (crbug.com/748635)
       'lasilla-ground', # contact:jemele@
