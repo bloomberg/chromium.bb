@@ -47,27 +47,30 @@ ServiceWorkerTimeoutTimer::ServiceWorkerTimeoutTimer(
 
 ServiceWorkerTimeoutTimer::~ServiceWorkerTimeoutTimer() {
   // Abort all callbacks.
-  for (auto& it : abort_callbacks_)
-    std::move(it.second).Run();
+  for (auto& event : inflight_events_)
+    std::move(event.abort_callback).Run();
 };
 
 int ServiceWorkerTimeoutTimer::StartEvent(
     base::OnceCallback<void(int /* event_id */)> abort_callback) {
   idle_time_ = base::TimeTicks();
   const int event_id = NextEventId();
-
-  DCHECK(!base::ContainsKey(abort_callbacks_, event_id));
-  abort_callbacks_[event_id] =
-      base::BindOnce(std::move(abort_callback), event_id);
-  event_timeout_times_.emplace(tick_clock_->NowTicks() + kEventTimeout,
-                               event_id);
+  std::set<EventInfo>::iterator iter;
+  bool is_inserted;
+  std::tie(iter, is_inserted) = inflight_events_.emplace(
+      event_id, tick_clock_->NowTicks() + kEventTimeout,
+      base::BindOnce(std::move(abort_callback), event_id));
+  DCHECK(is_inserted);
+  id_event_map_.emplace(event_id, iter);
   return event_id;
 }
 
 void ServiceWorkerTimeoutTimer::EndEvent(int event_id) {
-  DCHECK(base::ContainsKey(abort_callbacks_, event_id));
-  abort_callbacks_.erase(event_id);
-  if (abort_callbacks_.empty())
+  auto iter = id_event_map_.find(event_id);
+  DCHECK(iter != id_event_map_.end());
+  inflight_events_.erase(iter->second);
+  id_event_map_.erase(iter);
+  if (inflight_events_.empty())
     idle_time_ = tick_clock_->NowTicks() + kIdleDelay;
 }
 
@@ -78,28 +81,38 @@ void ServiceWorkerTimeoutTimer::UpdateStatus() {
   base::TimeTicks now = tick_clock_->NowTicks();
 
   // Abort all events exceeding |kEventTimeout|.
-  while (!event_timeout_times_.empty()) {
-    const auto& p = event_timeout_times_.front();
-    if (p.first > now)
-      break;
-    int event_id = p.second;
-    event_timeout_times_.pop();
-    // If |event_id| is not found in |abort_callbacks_|, it means the event has
-    // successfully finished.
-    auto iter = abort_callbacks_.find(event_id);
-    if (iter == abort_callbacks_.end())
-      continue;
-    base::OnceClosure callback = std::move(iter->second);
-    abort_callbacks_.erase(iter);
+  auto iter = inflight_events_.begin();
+  while (iter != inflight_events_.end() && iter->expiration_time <= now) {
+    int event_id = iter->id;
+    base::OnceClosure callback = std::move(iter->abort_callback);
+    iter = inflight_events_.erase(iter);
+    id_event_map_.erase(event_id);
     std::move(callback).Run();
   }
 
-  // If |abort_callbacks_| is empty, the worker is now idle.
-  if (abort_callbacks_.empty() && idle_time_.is_null())
+  // If |inflight_events_| is empty, the worker is now idle.
+  if (inflight_events_.empty() && idle_time_.is_null())
     idle_time_ = tick_clock_->NowTicks() + kIdleDelay;
 
   if (!idle_time_.is_null() && idle_time_ < now)
     idle_callback_.Run();
+}
+
+ServiceWorkerTimeoutTimer::EventInfo::EventInfo(
+    int id,
+    base::TimeTicks expiration_time,
+    base::OnceClosure abort_callback)
+    : id(id),
+      expiration_time(expiration_time),
+      abort_callback(std::move(abort_callback)) {}
+
+ServiceWorkerTimeoutTimer::EventInfo::~EventInfo() = default;
+
+bool ServiceWorkerTimeoutTimer::EventInfo::operator<(
+    const EventInfo& other) const {
+  if (expiration_time == other.expiration_time)
+    return id < other.id;
+  return expiration_time < other.expiration_time;
 }
 
 }  // namespace content
