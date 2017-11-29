@@ -676,6 +676,7 @@ RootWindowController::RootWindowController(
       window_tree_host_(ash_host ? ash_host->AsWindowTreeHost()
                                  : window_tree_host),
       shelf_(std::make_unique<Shelf>()),
+      sidebar_(std::make_unique<Sidebar>()),
       lock_screen_action_background_controller_(
           LockScreenActionBackgroundController::Create()) {
   DCHECK((ash_host && !window_tree_host) || (!ash_host && window_tree_host));
@@ -741,6 +742,7 @@ void RootWindowController::InitLayoutManagers() {
   DCHECK(!shelf_->shelf_widget());
   aura::Window* root = GetRootWindow();
   shelf_->CreateShelfWidget(root);
+  sidebar_->SetShelf(shelf_.get());
 
   root_window_layout_manager_ = new wm::RootWindowLayoutManager(root);
   root->SetLayoutManager(root_window_layout_manager_);

@@ -6,6 +6,7 @@
 
 #include "ash/message_center/message_center_style.h"
 #include "ash/message_center/message_center_view.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -29,6 +30,13 @@ namespace ash {
 
 namespace {
 const int kAnimateClearingNextNotificationDelayMS = 40;
+
+int GetMarginBetweenItems() {
+  return switches::IsSidebarEnabled()
+             ? 0
+             : message_center::kMarginBetweenItemsInList;
+}
+
 }  // namespace
 
 MessageListView::MessageListView()
@@ -45,8 +53,7 @@ MessageListView::MessageListView()
 
   SetBackground(
       views::CreateSolidBackground(MessageCenterView::kBackgroundColor));
-  SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(message_center::kMarginBetweenItemsInList)));
+  SetBorder(views::CreateEmptyBorder(gfx::Insets(GetMarginBetweenItems())));
   animator_.AddObserver(this);
 }
 
@@ -67,7 +74,7 @@ void MessageListView::Layout() {
       continue;
     int height = child->GetHeightForWidth(child_area.width());
     child->SetBounds(child_area.x(), top, child_area.width(), height);
-    top += height + message_center::kMarginBetweenItemsInList;
+    top += height + GetMarginBetweenItems();
   }
 }
 
@@ -197,7 +204,7 @@ int MessageListView::GetHeightForWidth(int width) const {
     if (!IsValidChild(child))
       continue;
     height += child->GetHeightForWidth(width) + padding;
-    padding = message_center::kMarginBetweenItemsInList;
+    padding = GetMarginBetweenItems();
   }
 
   return height + GetInsets().height();
@@ -477,7 +484,7 @@ std::vector<int> MessageListView::ComputeRepositionOffsets(
 
 void MessageListView::AnimateNotifications() {
   int target_index = -1;
-  int padding = message_center::kMarginBetweenItemsInList;
+  int padding = GetMarginBetweenItems();
   gfx::Rect child_area = GetContentsBounds();
   if (reposition_top_ >= 0) {
     // Find the target item.
@@ -562,8 +569,7 @@ void MessageListView::AnimateClearingOneNotification() {
 
   // Slide from left to right.
   gfx::Rect new_bounds = child->bounds();
-  new_bounds.set_x(new_bounds.right() +
-                   message_center::kMarginBetweenItemsInList);
+  new_bounds.set_x(new_bounds.right() + GetMarginBetweenItems());
   animator_.AnimateViewTo(child, new_bounds);
 
   // Schedule to start sliding out next notification after a short delay.

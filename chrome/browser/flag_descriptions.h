@@ -52,6 +52,9 @@ extern const char kAllowNaclSocketApiDescription[];
 extern const char kAppBannersName[];
 extern const char kAppBannersDescription[];
 
+extern const char kAshSidebarName[];
+extern const char kAshSidebarDescription[];
+
 extern const char kAsyncImageDecodingName[];
 extern const char kAsyncImageDecodingDescription[];
 

@@ -1955,6 +1955,12 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(extensions::switches::kEnableEmbeddedExtensionOptions)},
 #endif  // ENABLE_EXTENSIONS
 #if !defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
+    {"enable-ash-sidebar", flag_descriptions::kAshSidebarName,
+     flag_descriptions::kAshSidebarDescription, kOsCrOS,
+     ENABLE_DISABLE_VALUE_TYPE(ash::switches::kAshSidebarEnabled,
+                               ash::switches::kAshSidebarDisabled)},
+#endif  // OS_CHROMEOS
     {"enable-message-center-new-style-notification",
      flag_descriptions::kMessageCenterNewStyleNotificationName,
      flag_descriptions::kMessageCenterNewStyleNotificationDescription,
