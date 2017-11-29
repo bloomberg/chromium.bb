@@ -100,6 +100,9 @@ PasswordManager.ExceptionEntry;
 /** @typedef {chrome.passwordsPrivate.PlaintextPasswordEventParameters} */
 PasswordManager.PlaintextPasswordEvent;
 
+/** @typedef {{ entry: !PasswordManager.PasswordUiEntry, password: string }} */
+PasswordManager.UiEntryWithPassword;
+
 /**
  * Implementation that accesses the private API.
  * @implements {PasswordManager}
@@ -234,7 +237,7 @@ Polymer({
 
     /**
      * The model for any password related action menus or dialogs.
-     * @private {?chrome.passwordsPrivate.PasswordUiEntry}
+     * @private {?PasswordListItemElement}
      */
     activePassword: Object,
 
@@ -320,7 +323,12 @@ Polymer({
   attached: function() {
     // Create listener functions.
     var setSavedPasswordsListener = list => {
-      this.savedPasswords = list;
+      this.savedPasswords = list.map(entry => {
+        return {
+          entry: entry,
+          password: '',
+        };
+      });
     };
 
     var setPasswordExceptionsListener = list => {
@@ -377,12 +385,16 @@ Polymer({
     this.showPasswordEditDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
     this.activeDialogAnchor_ = null;
+
+    // Trigger a re-evaluation of the activePassword as the visibility state of
+    // the password might have changed.
+    this.activePassword.notifyPath('item.password');
   },
 
   /**
-   * @param {!Array<!chrome.passwordsPrivate.PasswordUiEntry>} savedPasswords
+   * @param {!Array<!PasswordManager.UiEntryWithPassword>} savedPasswords
    * @param {string} filter
-   * @return {!Array<!chrome.passwordsPrivate.PasswordUiEntry>}
+   * @return {!Array<!PasswordManager.UiEntryWithPassword>}
    * @private
    */
   getFilteredPasswords_: function(savedPasswords, filter) {
@@ -390,7 +402,7 @@ Polymer({
       return savedPasswords;
 
     return savedPasswords.filter(p => {
-      return [p.loginPair.urls.shown, p.loginPair.username].some(
+      return [p.entry.loginPair.urls.shown, p.entry.loginPair.username].some(
           term => term.toLowerCase().includes(filter.toLowerCase()));
     });
   },
@@ -411,7 +423,8 @@ Polymer({
    * @private
    */
   onMenuRemovePasswordTap_: function() {
-    this.passwordManager_.removeSavedPassword(this.activePassword.index);
+    this.passwordManager_.removeSavedPassword(
+        this.activePassword.item.entry.index);
     this.fire('iron-announce', {text: this.$.undoLabel.textContent});
     this.$.undoToast.show();
     /** @type {CrActionMenuElement} */ (this.$.menu).close();
@@ -448,8 +461,7 @@ Polymer({
     var target = /** @type {!HTMLElement} */ (event.detail.target);
 
     this.activePassword =
-        /** @type {!chrome.passwordsPrivate.PasswordUiEntry} */ (
-            event.detail.item);
+        /** @type {!PasswordListItemElement} */ (event.detail.listItem);
     menu.showAt(target);
     this.activeDialogAnchor_ = target;
   },
@@ -510,8 +522,8 @@ Polymer({
    */
   showPassword_: function(event) {
     this.passwordManager_.getPlaintextPassword(
-        /** @type {!number} */ (event.detail.item.index), item => {
-          event.detail.password = item.plaintextPassword;
+        /** @type {!number} */ (event.detail.item.entry.index), item => {
+          event.detail.set('item.password', item.plaintextPassword);
         });
   },
 
