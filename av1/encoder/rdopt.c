@@ -9997,9 +9997,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
               mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
             }
           } else {
-            int_mv this_mv =
-                mbmi_ext->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx]
-                    .this_mv;
+            int_mv this_mv = mbmi_ext
+                                 ->ref_mv_stack[ref_frame_type]
+                                               [mbmi->ref_mv_idx + idx_offset]
+                                 .this_mv;
             clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
                          xd->n8_h << MI_SIZE_LOG2, xd);
             mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
