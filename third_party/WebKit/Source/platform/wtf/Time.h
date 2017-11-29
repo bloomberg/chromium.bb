@@ -54,24 +54,21 @@ WTF_EXPORT TimeFunction SetTimeFunctionsForTesting(TimeFunction);
 // Allows wtf/Time.h to use the same mock time function
 WTF_EXPORT TimeFunction GetTimeFunctionForTesting();
 
-namespace internal {
-
-template <class WrappedTimeType>
-class TimeWrapper {
+class TimeTicks {
  public:
-  TimeWrapper() {}
-  explicit TimeWrapper(WrappedTimeType value) : value_(value) {}
+  TimeTicks() {}
+  TimeTicks(base::TimeTicks value) : value_(value) {}
 
-  static TimeWrapper Now() {
+  static TimeTicks Now() {
     if (WTF::GetTimeFunctionForTesting()) {
       double seconds = (WTF::GetTimeFunctionForTesting())();
-      return TimeWrapper() + TimeDelta::FromSecondsD(seconds);
+      return TimeTicks() + TimeDelta::FromSecondsD(seconds);
     }
-    return TimeWrapper(WrappedTimeType::Now());
+    return TimeTicks(base::TimeTicks::Now());
   }
 
-  static TimeWrapper UnixEpoch() {
-    return TimeWrapper(WrappedTimeType::UnixEpoch());
+  static TimeTicks UnixEpoch() {
+    return TimeTicks(base::TimeTicks::UnixEpoch());
   }
 
   int64_t ToInternalValueForTesting() const { return value_.ToInternalValue(); }
@@ -79,49 +76,47 @@ class TimeWrapper {
   // Only use this conversion when interfacing with legacy code that represents
   // time in double. Converting to double can lead to losing information for
   // large time values.
-  double InSeconds() const { return (value_ - WrappedTimeType()).InSecondsF(); }
+  double InSeconds() const { return (value_ - base::TimeTicks()).InSecondsF(); }
 
-  static TimeWrapper FromSeconds(double seconds) {
-    return TimeWrapper() + TimeDelta::FromSecondsD(seconds);
+  static TimeTicks FromSeconds(double seconds) {
+    return TimeTicks() + TimeDelta::FromSecondsD(seconds);
   }
 
-  TimeWrapper& operator=(TimeWrapper other) {
+  operator base::TimeTicks() const { return value_; }
+
+  TimeTicks& operator=(TimeTicks other) {
     value_ = other.value_;
     return *this;
   }
 
-  TimeDelta operator-(TimeWrapper other) const { return value_ - other.value_; }
+  TimeDelta operator-(TimeTicks other) const { return value_ - other.value_; }
 
-  TimeWrapper operator+(TimeDelta delta) const {
-    return TimeWrapper(value_ + delta);
+  TimeTicks operator+(TimeDelta delta) const {
+    return TimeTicks(value_ + delta);
   }
-  TimeWrapper operator-(TimeDelta delta) const {
-    return TimeWrapper(value_ - delta);
+  TimeTicks operator-(TimeDelta delta) const {
+    return TimeTicks(value_ - delta);
   }
 
-  TimeWrapper& operator+=(TimeDelta delta) {
+  TimeTicks& operator+=(TimeDelta delta) {
     value_ += delta;
     return *this;
   }
-  TimeWrapper& operator-=(TimeDelta delta) {
+  TimeTicks& operator-=(TimeDelta delta) {
     value_ -= delta;
     return *this;
   }
 
-  bool operator==(TimeWrapper other) const { return value_ == other.value_; }
-  bool operator!=(TimeWrapper other) const { return value_ != other.value_; }
-  bool operator<(TimeWrapper other) const { return value_ < other.value_; }
-  bool operator<=(TimeWrapper other) const { return value_ <= other.value_; }
-  bool operator>(TimeWrapper other) const { return value_ > other.value_; }
-  bool operator>=(TimeWrapper other) const { return value_ >= other.value_; }
+  bool operator==(TimeTicks other) const { return value_ == other.value_; }
+  bool operator!=(TimeTicks other) const { return value_ != other.value_; }
+  bool operator<(TimeTicks other) const { return value_ < other.value_; }
+  bool operator<=(TimeTicks other) const { return value_ <= other.value_; }
+  bool operator>(TimeTicks other) const { return value_ > other.value_; }
+  bool operator>=(TimeTicks other) const { return value_ >= other.value_; }
 
  private:
-  WrappedTimeType value_;
+  base::TimeTicks value_;
 };
-
-}  // namespace internal
-
-using TimeTicks = internal::TimeWrapper<base::TimeTicks>;
 
 }  // namespace WTF
 
