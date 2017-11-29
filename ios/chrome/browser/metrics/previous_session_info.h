@@ -26,6 +26,10 @@ extern NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating;
 // Whether the app was updated between the previous and the current session.
 @property(nonatomic, assign, readonly) BOOL isFirstSessionAfterUpgrade;
 
+// Whether the language has been changed between the previous and the current
+// session.
+@property(nonatomic, assign, readonly) BOOL isFirstSessionAfterLanguageChange;
+
 // Singleton PreviousSessionInfo. During the lifetime of the app, the returned
 // object is the same, and describes the previous session, even after a new
 // session has started (by calling beginRecordingCurrentSession).
