@@ -1283,6 +1283,11 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     const AVCodecParameters* codec_parameters = stream->codecpar;
     const AVMediaType codec_type = codec_parameters->codec_type;
     const AVCodecID codec_id = codec_parameters->codec_id;
+    // Skip streams which are not properly detected.
+    if (codec_id == AV_CODEC_ID_NONE) {
+      stream->discard = AVDISCARD_ALL;
+      continue;
+    }
 
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
       // Log the codec detected, whether it is supported or not, and whether or
