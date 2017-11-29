@@ -122,6 +122,8 @@ class SimulatorTestRunnerTest(TestCase):
 
     self.mock(test_runner.find_xcode, 'find_xcode',
               lambda _: {'found': True})
+    self.mock(test_runner.find_xcode, 'get_current_xcode_info', lambda: {
+        'version': 'test version', 'build': 'test build', 'path': 'test/path'})
     self.mock(test_runner, 'install_xcode', install_xcode)
     self.mock(test_runner.subprocess, 'check_output',
               lambda _: 'fake-bundle-id')

@@ -244,6 +244,10 @@ class TestRunner(object):
     elif not find_xcode.find_xcode(xcode_version)['found']:
       raise XcodeVersionNotFoundError(xcode_version)
 
+    xcode_info = find_xcode.get_current_xcode_info()
+    print 'Using Xcode version %s build %s at %s' % (
+      xcode_info['version'], xcode_info['build'], xcode_info['path'])
+
     if not os.path.exists(out_dir):
       os.makedirs(out_dir)
 
