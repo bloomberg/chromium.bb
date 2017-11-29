@@ -34,8 +34,7 @@ namespace {
 // |partition|.
 void DeleteOrigin(Profile* profile,
                   StoragePartition* partition,
-                  const GURL& origin,
-                  const base::Closure& callback) {
+                  const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile);
   DCHECK(partition);
@@ -52,46 +51,36 @@ void DeleteOrigin(Profile* profile,
     // the various URLRequestContexts (http://crbug.com/159193).
     partition->ClearDataForOrigin(
         ~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE,
-        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-        origin,
-        profile->GetRequestContextForExtensions(),
-        callback);
+        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, origin,
+        profile->GetRequestContextForExtensions());
   } else {
     // We don't need to worry about the media request context because that
     // shares the same cookie store as the main request context.
     partition->ClearDataForOrigin(
         ~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE,
-        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-        origin,
-        partition->GetURLRequestContext(),
-        callback);
+        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, origin,
+        partition->GetURLRequestContext());
   }
 }
 
-void OnNeedsToGarbageCollectIsolatedStorage(WeakPtr<ExtensionService> es,
-                                            const base::Closure& callback) {
+void OnNeedsToGarbageCollectIsolatedStorage(WeakPtr<ExtensionService> es) {
   if (es)
     ExtensionPrefs::Get(es->profile())->SetNeedsStorageGarbageCollection(true);
-  callback.Run();
 }
 
 }  // namespace
 
 // static
-void DataDeleter::StartDeleting(Profile* profile,
-                                const Extension* extension,
-                                const base::Closure& callback) {
+void DataDeleter::StartDeleting(Profile* profile, const Extension* extension) {
   DCHECK(profile);
   DCHECK(extension);
 
   if (AppIsolationInfo::HasIsolatedStorage(extension)) {
     BrowserContext::AsyncObliterateStoragePartition(
-        profile,
-        util::GetSiteForExtensionId(extension->id(), profile),
+        profile, util::GetSiteForExtensionId(extension->id(), profile),
         base::Bind(
             &OnNeedsToGarbageCollectIsolatedStorage,
-            ExtensionSystem::Get(profile)->extension_service()->AsWeakPtr(),
-            callback));
+            ExtensionSystem::Get(profile)->extension_service()->AsWeakPtr()));
   } else {
     GURL launch_web_url_origin(
         AppLaunchInfo::GetLaunchWebURL(extension).GetOrigin());
@@ -104,12 +93,9 @@ void DataDeleter::StartDeleting(Profile* profile,
         profile->GetExtensionSpecialStoragePolicy();
     if (storage_policy->NeedsProtection(extension) &&
         !storage_policy->IsStorageProtected(launch_web_url_origin)) {
-      DeleteOrigin(profile,
-                   partition,
-                   launch_web_url_origin,
-                   base::Bind(&base::DoNothing));
+      DeleteOrigin(profile, partition, launch_web_url_origin);
     }
-    DeleteOrigin(profile, partition, extension->url(), callback);
+    DeleteOrigin(profile, partition, extension->url());
   }
 
   // Begin removal of the settings for the current extension.

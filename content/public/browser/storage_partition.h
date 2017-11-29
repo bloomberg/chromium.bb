@@ -120,8 +120,7 @@ class CONTENT_EXPORT StoragePartition {
   // inside this StoragePartition for the given |storage_origin|.
   // Note session dom storage is not cleared even if you specify
   // REMOVE_DATA_MASK_LOCAL_STORAGE.
-  // |callback| is called when data deletion is done or at least the deletion is
-  // scheduled.
+  // No notification is dispatched upon completion.
   //
   // TODO(ajwong): Right now, the embedder may have some
   // URLRequestContextGetter objects that the StoragePartition does not know
@@ -131,8 +130,7 @@ class CONTENT_EXPORT StoragePartition {
   virtual void ClearDataForOrigin(uint32_t remove_mask,
                                   uint32_t quota_storage_remove_mask,
                                   const GURL& storage_origin,
-                                  net::URLRequestContextGetter* rq_context,
-                                  base::OnceClosure callback) = 0;
+                                  net::URLRequestContextGetter* rq_context) = 0;
 
   // A callback type to check if a given origin matches a storage policy.
   // Can be passed empty/null where used, which means the origin will always
