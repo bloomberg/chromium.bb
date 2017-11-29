@@ -815,8 +815,11 @@ void FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
 
     // Append mask layers to the update layer list. They don't have valid
     // visible rects, so need to get added after the above calculation.
-    if (Layer* mask_layer = layer->mask_layer())
-      update_layer_list->push_back(mask_layer);
+    if (Layer* mask_layer = layer->mask_layer()) {
+      // Layers with empty bounds should never be painted, including masks.
+      if (!mask_layer->bounds().IsEmpty())
+        update_layer_list->push_back(mask_layer);
+    }
   }
 }
 

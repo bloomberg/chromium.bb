@@ -8264,5 +8264,82 @@ class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
 // Only multi-thread mode needs to record UKMs.
 MULTI_THREAD_TEST_F(LayerTreeHostTestCheckerboardUkm);
 
+class DontUpdateLayersWithEmptyBounds : public LayerTreeTest {
+ protected:
+  void SetupTree() override {
+    auto root = FakePictureLayer::Create(&root_client_);
+    child_ = FakePictureLayer::Create(&child_client_);
+    mask_ = FakePictureLayer::Create(&mask_client_);
+
+    // Add a lot of draw ops, to make sure the recording source
+    // hits the early out and avoids being detected as solid color even
+    // though it is empty. This ensures we hit later code paths that would
+    // early out if solid color in CanHaveTilings().
+    PaintFlags flags;
+    flags.setColor(SK_ColorRED);
+    for (int i = 0; i < 100; ++i) {
+      child_client_.add_draw_rect(gfx::Rect(3, 3), flags);
+      mask_client_.add_draw_rect(gfx::Rect(2, 2), flags);
+    }
+
+    root_client_.set_bounds(gfx::Size(10, 10));
+    root->SetBounds(gfx::Size(10, 10));
+
+    child_client_.set_bounds(gfx::Size(9, 9));
+    child_->SetBounds(gfx::Size(9, 9));
+    mask_client_.set_bounds(gfx::Size(9, 9));
+    mask_->SetBounds(gfx::Size(9, 9));
+
+    child_->SetMaskLayer(mask_.get());
+    root->AddChild(child_);
+    layer_tree_host()->SetRootLayer(std::move(root));
+    LayerTreeTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        // The child and mask are updated when they have non-empty bounds.
+        EXPECT_EQ(1, child_->update_count());
+        EXPECT_EQ(1, mask_->update_count());
+
+        // The child and mask become empty bounds.
+        child_client_.set_bounds(gfx::Size());
+        child_->SetBounds(gfx::Size());
+        mask_client_.set_bounds(gfx::Size());
+        mask_->SetBounds(gfx::Size());
+        break;
+      case 2: {
+        scoped_refptr<RasterSource> child_raster =
+            child_->GetRecordingSourceForTesting()->CreateRasterSource();
+        EXPECT_FALSE(child_raster->IsSolidColor());
+        scoped_refptr<RasterSource> mask_raster =
+            mask_->GetRecordingSourceForTesting()->CreateRasterSource();
+        EXPECT_FALSE(mask_raster->IsSolidColor());
+      }
+
+        // The child and mask are not updated when they have empty bounds.
+        EXPECT_EQ(1, child_->update_count());
+        EXPECT_EQ(1, mask_->update_count());
+        EndTest();
+        break;
+      default:
+        ADD_FAILURE() << layer_tree_host()->SourceFrameNumber();
+    }
+  }
+
+  void AfterTest() override {}
+
+  scoped_refptr<FakePictureLayer> child_;
+  scoped_refptr<FakePictureLayer> mask_;
+  FakeContentLayerClient root_client_;
+  FakeContentLayerClient child_client_;
+  FakeContentLayerClient mask_client_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(DontUpdateLayersWithEmptyBounds);
+
 }  // namespace
 }  // namespace cc
