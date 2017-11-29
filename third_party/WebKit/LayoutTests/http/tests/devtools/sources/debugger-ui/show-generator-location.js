@@ -35,13 +35,11 @@
 
   var panel = UI.panels.sources;
 
-  function performStandardTestCase(pageExpression, next) {
+  async function performStandardTestCase(pageExpression, next) {
     TestRunner.addSniffer(panel, 'showUISourceCode', showUISourceCodeHook);
-    TestRunner.evaluateInPage(pageExpression, didEvaluate);
+    var remote = await TestRunner.evaluateInPageRemoteObject(pageExpression);
 
-    function didEvaluate(remote) {
-      remote.getOwnPropertiesPromise().then(revealLocation.bind(null, remote));
-    }
+    remote.getOwnPropertiesPromise().then(revealLocation.bind(null, remote));
 
     function revealLocation(remote, properties) {
       var loc;

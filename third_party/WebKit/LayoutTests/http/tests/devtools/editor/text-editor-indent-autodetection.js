@@ -127,7 +127,7 @@ c
     var command = 'codeSnippet(\'' + snippetName + '\');';
     TestRunner.evaluateInPage(command, step2);
     function step2(result) {
-      textEditor.setText(result.value);
+      textEditor.setText(result);
       var indent = textEditor.indent();
       var description = indent === TextUtils.TextUtils.Indent.TabCharacter ? 'Tab' : indent.length + ' spaces';
       TestRunner.addResult('Autodetected indentation for ' + snippetName + ': ' + description);
@@ -137,8 +137,8 @@ c
 
   function onTestNumberReceived(result) {
     var testSuite = [];
-    TestRunner.addResult('Tests number: ' + result.value);
-    for (var i = 1; i <= result.value; ++i)
+    TestRunner.addResult('Tests number: ' + result);
+    for (var i = 1; i <= result; ++i)
       testSuite.push(genericTest.bind(this, 'test' + i));
 
     TestRunner.runTestSuite(testSuite);

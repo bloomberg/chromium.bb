@@ -140,7 +140,7 @@
         TestRunner.evaluateInPagePromise('pseudoIframeVisibility()').then(function(result) {
           TestRunner.addResult('=== Added hide shortcut in frame ===');
           TestRunner.addResult('=== Frame node is hidden ===');
-          TestRunner.addResult('visibility: ' + result.value + ';');
+          TestRunner.addResult('visibility: ' + result + ';');
           next();
         });
       }
@@ -156,7 +156,7 @@
     function callback() {
       var pseudoNodeTypeArg = pseudoNode.pseudoType() ? ('"' + pseudoNode.pseudoType() + '"') : 'undefined';
       TestRunner.evaluateInPagePromise('pseudoVisibility(' + pseudoNodeTypeArg + ')').then(function(result) {
-        TestRunner.addResult('::' + pseudoNode.pseudoType() + ' node visibility: \'' + result.value + '\'');
+        TestRunner.addResult('::' + pseudoNode.pseudoType() + ' node visibility: \'' + result + '\'');
         next();
       });
     }

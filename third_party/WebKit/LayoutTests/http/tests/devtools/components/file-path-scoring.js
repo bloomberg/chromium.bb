@@ -25,7 +25,7 @@
   TestRunner.addResult('Expected score must be equal to the actual score');
 
   function step1(filePaths) {
-    var files = filePaths.value.split(':');
+    var files = filePaths.split(':');
     TestRunner.addResult('Test set size: ' + files.length);
     for (var i = 0; i < TestQueries.length; ++i) {
       runQuery(files, TestQueries[i][0], TestQueries[i][1]);

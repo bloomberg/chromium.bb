@@ -40,7 +40,7 @@ while (sum &gt; 0) {
   textEditor.element.focus();
 
   function step2(result) {
-    var codeLines = result.value;
+    var codeLines = result;
     SourcesTestRunner.typeIn(textEditor, codeLines, step3);
   }
 

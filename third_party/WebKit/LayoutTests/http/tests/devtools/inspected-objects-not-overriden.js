@@ -48,7 +48,7 @@
 
   async function callback() {
     const output = await TestRunner.evaluateInPageAsync('originalJSONStringify(self._output)');
-    TestRunner.addResults(JSON.parse(output.value));
+    TestRunner.addResults(JSON.parse(output));
     TestRunner.completeTest();
   }
 

@@ -26,7 +26,7 @@
   var codeSnippetText;
 
   function onCodeSnippet(result) {
-    codeSnippetText = result.value;
+    codeSnippetText = result;
     TestRunner.runTestSuite(testSuite);
   }
 

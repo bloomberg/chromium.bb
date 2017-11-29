@@ -15,11 +15,9 @@
       </p>
     `);
 
-  TestRunner.evaluateInPage('document', didReceiveDocumentObject);
-  async function didReceiveDocumentObject(remoteObject) {
-    TestRunner.addResult('didReceiveDocumentObject');
-    var nodeId = await TestRunner.DOMAgent.requestNode(remoteObject.objectId);
-    TestRunner.addResult('didRequestNode error = ' + (nodeId ? 'null' : 'error'));
-    TestRunner.completeTest();
-  }
+  var remoteObject = await TestRunner.evaluateInPageRemoteObject('document');
+  TestRunner.addResult('didReceiveDocumentObject');
+  var nodeId = await TestRunner.DOMAgent.requestNode(remoteObject.objectId);
+  TestRunner.addResult('didRequestNode error = ' + (nodeId ? 'null' : 'error'));
+  TestRunner.completeTest();
 })();

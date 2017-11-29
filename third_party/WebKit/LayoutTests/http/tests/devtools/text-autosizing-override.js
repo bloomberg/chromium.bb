@@ -23,7 +23,7 @@
 
   function assertAutosizingResult(expected, callback) {
     function resultCallback(jsonResult) {
-      var result = JSON.parse(jsonResult.value);
+      var result = JSON.parse(jsonResult);
       var actual = result.textHeight > 200;
       TestRunner.addResult(
           'Text ' + (actual ? 'was' : 'was not') + ' autosized. ' + (expected == actual ? 'PASS' : 'FAIL'));

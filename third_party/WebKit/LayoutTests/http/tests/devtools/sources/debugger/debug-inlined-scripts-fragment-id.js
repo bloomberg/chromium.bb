@@ -17,7 +17,7 @@
   }
 
   function step1(loc) {
-    TestRunner.addResult('window.location: ' + loc.description);
+    TestRunner.addResult('window.location: ' + loc);
     SourcesTestRunner.showScriptSource('inline-scripts.html', step2);
   }
 

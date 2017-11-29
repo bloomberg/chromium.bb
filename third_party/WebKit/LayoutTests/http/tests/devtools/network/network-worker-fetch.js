@@ -12,7 +12,7 @@
   NetworkTestRunner.makeFetchInWorker('resource.php', {}, fetchCallback);
 
   function fetchCallback(result) {
-    TestRunner.addResult('Fetch in worker result: ' + result.value);
+    TestRunner.addResult('Fetch in worker result: ' + result);
 
     var requests = NetworkTestRunner.networkRequests();
     requests.forEach((request) => {

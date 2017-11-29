@@ -41,7 +41,7 @@
 
   async function step2() {
     const output = await TestRunner.evaluateInPageAsync('JSON.stringify(self._output)');
-    TestRunner.addResults(JSON.parse(output.value));
+    TestRunner.addResults(JSON.parse(output));
     var request1 = NetworkTestRunner.networkRequests().pop();
     TestRunner.addResult(request1.url());
     TestRunner.addResult('resource.type: ' + request1.resourceType());

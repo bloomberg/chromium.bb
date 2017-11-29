@@ -59,7 +59,7 @@
 
   async function step6() {
     const output = await TestRunner.evaluateInPageAsync('JSON.stringify(self._output)');
-    TestRunner.addResults(JSON.parse(output.value));
+    TestRunner.addResults(JSON.parse(output));
     TestRunner.completeTest();
   }
 })();

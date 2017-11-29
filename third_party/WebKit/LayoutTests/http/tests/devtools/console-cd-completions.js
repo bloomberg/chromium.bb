@@ -131,7 +131,7 @@
   }
 
   function dumpCounter(result) {
-    TestRunner.addResult('window.counter = ' + result.value);
+    TestRunner.addResult('window.counter = ' + result);
     requestMyClassWithMixinCompletions();
   }
 

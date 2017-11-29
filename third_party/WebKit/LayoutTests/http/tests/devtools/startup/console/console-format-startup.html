@@ -300,10 +300,10 @@ function showInspectorAndRunTest()
 }
 </script>
 <script>
-function test() {
+async function test() {
   TestRunner.hideInspectorView();
-  TestRunner.evaluateInPage('globals.length', loopOverGlobals.bind(this, 0));
-
+  var total = await TestRunner.evaluateInPageRemoteObject('globals.length');
+  loopOverGlobals(0, total);
   function loopOverGlobals(current, total) {
     function advance() {
       var next = current + 1;

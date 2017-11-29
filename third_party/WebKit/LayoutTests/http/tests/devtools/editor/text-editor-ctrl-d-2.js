@@ -48,7 +48,7 @@ function submitWord(url) {
   TestRunner.evaluateInPage('codeSnippet();', onCodeSnippet);
 
   function onCodeSnippet(result) {
-    var codeLines = result.value;
+    var codeLines = result;
     textEditor.setText(codeLines);
     TestRunner.runTestSuite(testSuite);
   }

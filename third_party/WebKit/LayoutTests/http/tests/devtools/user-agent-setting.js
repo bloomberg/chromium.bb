@@ -23,7 +23,7 @@
   TestRunner.evaluateInPage('navigator.userAgent', step2);
 
   function step2(result) {
-    TestRunner.addResult(result.value);
+    TestRunner.addResult(result);
     TestRunner.completeTest();
   }
 })();

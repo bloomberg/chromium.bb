@@ -22,11 +22,8 @@
             didEditScriptSource);
       }
 
-      function didEditScriptSource() {
-        TestRunner.evaluateInPage('f()', didEvaluateInPage);
-      }
-
-      function didEvaluateInPage(result) {
+      async function didEditScriptSource() {
+        var result = await TestRunner.evaluateInPageRemoteObject('f()');
         TestRunner.assertEquals(
             'live-edited string', result.description,
             'edited function returns wrong result');
@@ -52,9 +49,12 @@
       SourcesTestRunner.showScriptSource(
           'edit-me-when-paused.js', didShowScriptSource);
 
-      function didShowScriptSource(sourceFrame) {
+      async function didShowScriptSource(sourceFrame) {
         SourcesTestRunner.waitUntilPaused(paused);
-        TestRunner.evaluateInPage('f1()', didEvaluateInPage);
+        var result = await TestRunner.evaluateInPageRemoteObject('f1()');
+        TestRunner.assertEquals(
+            '3', result.description, 'edited function returns wrong result');
+        next();
       }
 
       function paused(callFrames) {
@@ -65,12 +65,6 @@
 
       function didEditScriptSource() {
         SourcesTestRunner.resumeExecution();
-      }
-
-      function didEvaluateInPage(result) {
-        TestRunner.assertEquals(
-            '3', result.description, 'edited function returns wrong result');
-        next();
       }
     },
 
