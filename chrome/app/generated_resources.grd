@@ -8893,8 +8893,8 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_DUPLICATE_TAB_MAC" desc="The Mac menu item for duplicating the selected tab(s).">
           Duplicate Tab
         </message>
-        <message name="IDS_MUTE_TAB_MAC" desc="The Mac menu item for muting the selected tab(s).">
-          Mute Tab
+        <message name="IDS_MUTE_SITE_MAC" desc="The Mac menu item for muting the selected tab(s).">
+          Mute Site
         </message>
         <message name="IDS_PIN_TAB_MAC" desc="The Mac menu item for pinning the selected tab(s).">
           Pin Tab
