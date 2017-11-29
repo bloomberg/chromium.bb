@@ -55,7 +55,7 @@ include_rules = [
   "+services/service_manager/public/cpp",
   "+skia",
   "+storage/common",
-  "+third_party/WebKit/common/page/page_visibility_state.mojom.h",
+  "+third_party/WebKit/common",
   "+third_party/metrics_proto",
   "-components/spellcheck/browser",  # Allow all spellcheck but browser.
 ]

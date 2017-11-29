@@ -69,6 +69,7 @@ namespace mojom {
 enum class WebFeature : int32_t;
 }  // namespace mojom
 
+class AssociatedInterfaceProvider;
 class Document;
 class DocumentLoader;
 class HTMLFormElement;
@@ -349,6 +350,11 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual BlameContext* GetFrameBlameContext() { return nullptr; }
 
   virtual service_manager::InterfaceProvider* GetInterfaceProvider() {
+    return nullptr;
+  }
+
+  virtual AssociatedInterfaceProvider*
+  GetRemoteNavigationAssociatedInterfaces() {
     return nullptr;
   }
 

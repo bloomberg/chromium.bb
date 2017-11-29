@@ -12,7 +12,6 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/manifest.h"
 #include "content/public/test/browser_test_utils.h"
@@ -23,6 +22,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/WebKit/public/platform/modules/manifest/manifest_manager.mojom.h"
 
 namespace content {

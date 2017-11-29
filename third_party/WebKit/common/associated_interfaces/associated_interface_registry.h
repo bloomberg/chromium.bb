@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_ASSOCIATED_INTERFACE_REGISTRY_H_
-#define CONTENT_PUBLIC_COMMON_ASSOCIATED_INTERFACE_REGISTRY_H_
+#ifndef THIRD_PARTY_WEBKIT_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_REGISTRY_H_
+#define THIRD_PARTY_WEBKIT_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_REGISTRY_H_
 
 #include <string>
 
@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
-namespace content {
+namespace blink {
 
 // An AssociatedInterfaceRegistry is a collection of associated interface-
 // binding callbacks mapped by interface name.
@@ -57,6 +57,6 @@ class AssociatedInterfaceRegistry {
   }
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_PUBLIC_COMMON_ASSOCIATED_INTERFACE_REGISTRY_H_
+#endif  // THIRD_PARTY_WEBKIT_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_REGISTRY_H_

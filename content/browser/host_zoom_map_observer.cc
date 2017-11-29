@@ -9,7 +9,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/associated_interface_provider.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 
 namespace content {
 

@@ -16,8 +16,11 @@ class CommandLine;
 class FilePath;
 }
 
-namespace content {
+namespace blink {
 class AssociatedInterfaceRegistry;
+}
+
+namespace content {
 class BrowserContext;
 class BrowserURLHandler;
 class RenderProcessHost;
@@ -71,7 +74,7 @@ class ChromeContentBrowserClientParts {
   // task runner is provided.
   virtual void ExposeInterfacesToRenderer(
       service_manager::BinderRegistry* registry,
-      content::AssociatedInterfaceRegistry* associated_registry,
+      blink::AssociatedInterfaceRegistry* associated_registry,
       content::RenderProcessHost* render_process_host) {}
 };
 

@@ -7,7 +7,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "components/pdf/renderer/pdf_accessibility_tree.h"
-#include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_frame.h"
@@ -23,6 +22,7 @@
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 
 namespace pdf {
 

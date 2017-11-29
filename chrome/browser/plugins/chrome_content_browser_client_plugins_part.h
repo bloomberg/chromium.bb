@@ -46,7 +46,7 @@ class ChromeContentBrowserClientPluginsPart
  private:
   void ExposeInterfacesToRenderer(
       service_manager::BinderRegistry* registry,
-      content::AssociatedInterfaceRegistry* associated_registry,
+      blink::AssociatedInterfaceRegistry* associated_registry,
       content::RenderProcessHost* render_process_host) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClientPluginsPart);

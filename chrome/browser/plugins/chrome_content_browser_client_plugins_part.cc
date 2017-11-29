@@ -13,11 +13,11 @@
 #include "chrome/common/pepper_permission_util.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/associated_interface_registry.h"
 #include "extensions/features/features.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_registry.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
@@ -38,7 +38,7 @@ ChromeContentBrowserClientPluginsPart::
 
 void ChromeContentBrowserClientPluginsPart::ExposeInterfacesToRenderer(
     service_manager::BinderRegistry* registry,
-    content::AssociatedInterfaceRegistry* associated_registry,
+    blink::AssociatedInterfaceRegistry* associated_registry,
     content::RenderProcessHost* host) {
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   host->GetChannel()->AddAssociatedInterfaceForIOThread(base::Bind(

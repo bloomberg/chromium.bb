@@ -108,8 +108,6 @@ source_set("common_sources") {
 
   sources = [
     "appcache_info.h",
-    "associated_interface_provider.h",
-    "associated_interface_registry.h",
     "bind_interface_helpers.h",
     "bindings_policy.h",
     "browser_controls_state.h",

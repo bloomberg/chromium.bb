@@ -1920,7 +1920,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   associated_interfaces_.reset(new AssociatedInterfaceRegistryImpl());
   GetContentClient()->browser()->ExposeInterfacesToRenderer(
       registry.get(), associated_interfaces_.get(), this);
-  AssociatedInterfaceRegistry* associated_registry =
+  blink::AssociatedInterfaceRegistry* associated_registry =
       associated_interfaces_.get();
   associated_registry->AddInterface(base::Bind(
       &RenderProcessHostImpl::BindRouteProvider, base::Unretained(this)));

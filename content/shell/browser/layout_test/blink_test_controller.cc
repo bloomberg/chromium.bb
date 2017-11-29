@@ -49,7 +49,6 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -68,6 +67,7 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "content/shell/test_runner/test_common.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/gfx/codec/png_codec.h"
 
 #if defined(OS_MACOSX)

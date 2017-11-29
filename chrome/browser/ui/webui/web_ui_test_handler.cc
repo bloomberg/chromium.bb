@@ -19,9 +19,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/associated_interface_provider.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 
 using content::RenderViewHost;
 

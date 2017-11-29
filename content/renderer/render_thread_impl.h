@@ -297,7 +297,7 @@ class CONTENT_EXPORT RenderThreadImpl
       const GURL& url,
       const LayerTreeFrameSinkCallback& callback);
 
-  AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
+  blink::AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
 
   std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
       int32_t routing_id,
