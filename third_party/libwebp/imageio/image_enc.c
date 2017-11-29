@@ -361,6 +361,8 @@ int WebPWriteTIFF(FILE* fout, const WebPDecBuffer* const buffer) {
   const uint8_t* rgba = buffer->u.RGBA.rgba;
   const int stride = buffer->u.RGBA.stride;
   const uint8_t bytes_per_px = has_alpha ? 4 : 3;
+  const uint8_t assoc_alpha =
+      WebPIsPremultipliedMode(buffer->colorspace) ? 1 : 2;
   // For non-alpha case, we omit tag 0x152 (ExtraSamples).
   const uint8_t num_ifd_entries = has_alpha ? NUM_IFD_ENTRIES
                                             : NUM_IFD_ENTRIES - 1;
@@ -388,7 +390,8 @@ int WebPWriteTIFF(FILE* fout, const WebPDecBuffer* const buffer) {
         EXTRA_DATA_OFFSET + 8, 0, 0, 0,
     0x1c, 0x01, 3, 0, 1, 0, 0, 0, 1, 0, 0, 0,    // 154: PlanarConfiguration
     0x28, 0x01, 3, 0, 1, 0, 0, 0, 2, 0, 0, 0,    // 166: ResolutionUnit (inch)
-    0x52, 0x01, 3, 0, 1, 0, 0, 0, 1, 0, 0, 0,    // 178: ExtraSamples: rgbA
+    0x52, 0x01, 3, 0, 1, 0, 0, 0,
+        assoc_alpha, 0, 0, 0,                    // 178: ExtraSamples: rgbA/RGBA
     0, 0, 0, 0,                                  // 190: IFD terminator
     // EXTRA_DATA_OFFSET:
     8, 0, 8, 0, 8, 0, 8, 0,      // BitsPerSample
@@ -539,22 +542,24 @@ int WebPWriteYUV(FILE* fout, const WebPDecBuffer* const buffer) {
 // Generic top-level call
 
 int WebPSaveImage(const WebPDecBuffer* const buffer,
-                  WebPOutputFileFormat format, const char* const out_file) {
+                  WebPOutputFileFormat format,
+                  const char* const out_file_name) {
   FILE* fout = NULL;
   int needs_open_file = 1;
-  const int use_stdout = (out_file != NULL) && !strcmp(out_file, "-");
+  const int use_stdout = (out_file_name != NULL) && !strcmp(out_file_name, "-");
   int ok = 1;
 
-  if (buffer == NULL || out_file == NULL) return 0;
+  if (buffer == NULL || out_file_name == NULL) return 0;
 
 #ifdef HAVE_WINCODEC_H
   needs_open_file = (format != PNG);
 #endif
 
   if (needs_open_file) {
-    fout = use_stdout ? ImgIoUtilSetBinaryMode(stdout) : fopen(out_file, "wb");
+    fout = use_stdout ? ImgIoUtilSetBinaryMode(stdout)
+                      : fopen(out_file_name, "wb");
     if (fout == NULL) {
-      fprintf(stderr, "Error opening output file %s\n", out_file);
+      fprintf(stderr, "Error opening output file %s\n", out_file_name);
       return 0;
     }
   }
@@ -563,7 +568,7 @@ int WebPSaveImage(const WebPDecBuffer* const buffer,
       format == RGBA || format == BGRA || format == ARGB ||
       format == rgbA || format == bgrA || format == Argb) {
 #ifdef HAVE_WINCODEC_H
-    ok &= WebPWritePNG(out_file, use_stdout, buffer);
+    ok &= WebPWritePNG(out_file_name, use_stdout, buffer);
 #else
     ok &= WebPWritePNG(fout, buffer);
 #endif

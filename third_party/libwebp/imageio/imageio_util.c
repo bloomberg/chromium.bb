@@ -112,7 +112,7 @@ int ImgIoUtilWriteFile(const char* const file_name,
   if (data == NULL) {
     return 0;
   }
-  out = to_stdout ? stdout : fopen(file_name, "wb");
+  out = to_stdout ? ImgIoUtilSetBinaryMode(stdout) : fopen(file_name, "wb");
   if (out == NULL) {
     fprintf(stderr, "Error! Cannot open output file '%s'\n", file_name);
     return 0;
@@ -137,7 +137,11 @@ void ImgIoUtilCopyPlane(const uint8_t* src, int src_stride,
 
 int ImgIoUtilCheckSizeArgumentsOverflow(uint64_t nmemb, size_t size) {
   const uint64_t total_size = nmemb * size;
-  return (total_size == (size_t)total_size);
+  int ok = (total_size == (size_t)total_size);
+#if defined(WEBP_MAX_IMAGE_SIZE)
+  ok = ok && (total_size <= (uint64_t)WEBP_MAX_IMAGE_SIZE);
+#endif
+  return ok;
 }
 
 // -----------------------------------------------------------------------------
