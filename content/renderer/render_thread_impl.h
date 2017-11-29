@@ -837,7 +837,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // A mojo connection to the CompositingModeReporter service.
   viz::mojom::CompositingModeReporterPtr compositing_mode_reporter_;
   // The class is a CompositingModeWatcher, which is bound to mojo through
-  // this memeber.
+  // this member.
   mojo::Binding<viz::mojom::CompositingModeWatcher>
       compositing_mode_watcher_binding_;
 

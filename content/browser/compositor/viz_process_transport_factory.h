@@ -13,7 +13,9 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "content/browser/compositor/image_transport_factory.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/compositor/compositor.h"
 
@@ -33,6 +35,10 @@ namespace ui {
 class ContextProviderCommandBuffer;
 }
 
+namespace viz {
+class ForwardingCompositingModeReporterImpl;
+}
+
 namespace content {
 
 // A replacement for GpuProcessTransportFactory to be used when running viz. In
@@ -41,11 +47,13 @@ namespace content {
 // compositor must happen over IPC.
 class VizProcessTransportFactory : public ui::ContextFactory,
                                    public ui::ContextFactoryPrivate,
-                                   public ImageTransportFactory {
+                                   public ImageTransportFactory,
+                                   public viz::mojom::CompositingModeWatcher {
  public:
   VizProcessTransportFactory(
       gpu::GpuChannelEstablishFactory* gpu_channel_establish_factory,
-      scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner,
+      viz::ForwardingCompositingModeReporterImpl* forwarding_mode_reporter);
   ~VizProcessTransportFactory() override;
 
   // Connects HostFrameSinkManager to FrameSinkManagerImpl in viz process.
@@ -96,6 +104,9 @@ class VizProcessTransportFactory : public ui::ContextFactory,
                                         bool suspended) override;
 #endif
 
+  // viz::mojom::CompositingModeWatcher implementation.
+  void CompositingModeFallbackToSoftware() override;
+
  private:
   struct CompositorData {
     CompositorData();
@@ -127,8 +138,13 @@ class VizProcessTransportFactory : public ui::ContextFactory,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
 
   gpu::GpuChannelEstablishFactory* const gpu_channel_establish_factory_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> const resize_task_runner_;
+  // Acts as a proxy from the mojo connection to the authoritive
+  // |compositing_mode_reporter_|. This will forward the state on to clients of
+  // the browser process (eg the renderers). Since the browser process is not
+  // restartable, it prevents these clients from having to reconnect to their
+  // CompositingModeReporter.
+  viz::ForwardingCompositingModeReporterImpl* const forwarding_mode_reporter_;
 
   base::flat_map<ui::Compositor*, CompositorData> compositor_data_map_;
 
@@ -142,6 +158,11 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
   const viz::RendererSettings renderer_settings_;
+
+  // The class is a CompositingModeWatcher, which is bound to mojo through
+  // this member.
+  mojo::Binding<viz::mojom::CompositingModeWatcher>
+      compositing_mode_watcher_binding_;
 
   base::WeakPtrFactory<VizProcessTransportFactory> weak_ptr_factory_;
 

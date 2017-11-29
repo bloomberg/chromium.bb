@@ -53,6 +53,7 @@
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/viz/common/switches.h"
+#include "components/viz/host/forwarding_compositing_mode_reporter_impl.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -1277,14 +1278,15 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 #if !defined(OS_ANDROID)
   host_frame_sink_manager_.reset();
   frame_sink_manager_impl_.reset();
-#endif
   compositing_mode_reporter_impl_.reset();
+  forwarding_compositing_mode_reporter_impl_.reset();
+#endif
 
-  // The device monitors are using |system_monitor_| as dependency, so delete
-  // them before |system_monitor_| goes away.
-  // On Mac and windows, the monitor needs to be destroyed on the same thread
-  // as they were created. On Linux, the monitor will be deleted when IO thread
-  // goes away.
+// The device monitors are using |system_monitor_| as dependency, so delete
+// them before |system_monitor_| goes away.
+// On Mac and windows, the monitor needs to be destroyed on the same thread
+// as they were created. On Linux, the monitor will be deleted when IO thread
+// goes away.
 #if defined(OS_WIN)
   system_message_window_.reset();
 #elif defined(OS_MACOSX)
@@ -1422,14 +1424,22 @@ viz::FrameSinkManagerImpl* BrowserMainLoop::GetFrameSinkManager() const {
 
 void BrowserMainLoop::GetCompositingModeReporter(
     viz::mojom::CompositingModeReporterRequest request) {
-  bool use_viz =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViz);
-  if (IsUsingMus() || use_viz) {
-    // TODO(danakj): Support viz/mus.
-  } else {
-    compositing_mode_reporter_bindings_.AddBinding(
-        compositing_mode_reporter_impl_.get(), std::move(request));
+#if defined(OS_ANDROID)
+  // Android doesn't support non-gpu compositing modes, and doesn't make a
+  // CompositingModeReporter.
+  return;
+#else
+  if (IsUsingMus()) {
+    // Mus == ChromeOS, which doesn't support software compositing, so no need
+    // to report compositing mode.
+    return;
   }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViz))
+    forwarding_compositing_mode_reporter_impl_->BindRequest(std::move(request));
+  else
+    compositing_mode_reporter_impl_->BindRequest(std::move(request));
+#endif
 }
 
 void BrowserMainLoop::StopStartupTracingTimer() {
@@ -1487,7 +1497,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   established_gpu_channel = false;
   always_uses_gpu = ShouldStartGpuProcessOnBrowserStartup();
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
-#elif defined(USE_AURA) || defined(OS_MACOSX)
+#else
   established_gpu_channel = true;
   if (parsed_command_line_.HasSwitch(switches::kDisableGpu) ||
       parsed_command_line_.HasSwitch(switches::kDisableGpuCompositing) ||
@@ -1500,8 +1510,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     host_frame_sink_manager_ = std::make_unique<viz::HostFrameSinkManager>();
     BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
     if (parsed_command_line_.HasSwitch(switches::kEnableViz)) {
+      forwarding_compositing_mode_reporter_impl_ =
+          std::make_unique<viz::ForwardingCompositingModeReporterImpl>();
+
       auto transport_factory = std::make_unique<VizProcessTransportFactory>(
-          BrowserGpuChannelHostFactory::instance(), GetResizeTaskRunner());
+          BrowserGpuChannelHostFactory::instance(), GetResizeTaskRunner(),
+          forwarding_compositing_mode_reporter_impl_.get());
       transport_factory->ConnectHostFrameSinkManager();
       ImageTransportFactory::SetFactory(std::move(transport_factory));
     } else {
@@ -1532,7 +1546,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     env_->set_context_factory_private(GetContextFactoryPrivate());
   }
 #endif  // defined(USE_AURA)
-#endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

@@ -11,6 +11,7 @@
           "content::mojom::ChildHistogramFetcherFactory",
           "IPC::mojom::ChannelBootstrap",
           "service_manager::mojom::ServiceFactory",
+          "viz::mojom::CompositingModeReporter",
           "viz::mojom::VizMain"
         ],
         "service_manager:service_factory": [
