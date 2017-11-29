@@ -92851,6 +92851,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="VR.AssetsComponent.ReadyLatency.OnEnter"
+    units="ms">
+  <owner>tiborg@chromium.org</owner>
+  <summary>
+    Duration from entering a VR mode until VR assets component is ready to use.
+  </summary>
+</histogram>
+
+<histogram base="true" name="VR.AssetsComponent.Status.OnEnter"
+    enum="VRAssetsComponentEnterStatus">
+  <owner>tiborg@chromium.org</owner>
+  <summary>Status of the VR assets component when entering a VR mode.</summary>
+</histogram>
+
 <histogram name="VR.Shell.EncounteredSuppressedUI" enum="VRSuppressedElement">
   <owner>asimjour@chromium.org</owner>
   <summary>
@@ -108951,6 +108965,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Vp9.S2"
       label="Video codec: VP9. QP range: 0-255. Spatial layer 2."/>
   <affected-histogram name="WebRTC.Video.Encoded.Qp"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="VR.Mode" separator=".">
+  <affected-histogram name="VR.AssetsComponent.ReadyLatency.OnEnter"/>
+  <suffix name="VR" label="Entered either VR Browsing or WebVR mode."/>
+  <suffix name="VRBrowsing" label="Entered VR Browsing Mode."/>
+  <suffix name="WebVR"
+      label="Entered WebVR mode (also includes splash screen)."/>
+  <affected-histogram name="VR.AssetsComponent.Status.OnEnter"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="VRFreNotCompleteType" separator=".">
