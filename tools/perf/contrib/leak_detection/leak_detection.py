@@ -24,6 +24,9 @@ class _LeakDetectionBase(perf_benchmark.PerfBenchmark):
     tbm_options.AddTimelineBasedMetric('leakDetectionMetric')
     return tbm_options
 
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--js-flags=--expose-gc')
+
 
 @benchmark.Owner(emails=['yuzus@chromium.org'])
 class MemoryLeakDetectionBenchmark(_LeakDetectionBase):
