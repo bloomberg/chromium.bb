@@ -741,12 +741,14 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
             }
           },
           speech_result_parent)));
-  auto speech_result = base::MakeUnique<Text>(512, kSuggestionContentTextHeight,
-                                              kSuggestionTextFieldWidth);
+  auto speech_result =
+      base::MakeUnique<Text>(256, kVoiceSearchRecognitionResultTextHeight,
+                             kVoiceSearchRecognitionResultTextWidth);
   speech_result->set_name(kSpeechRecognitionResultText);
   speech_result->set_draw_phase(kPhaseForeground);
   speech_result->SetTranslate(0.f, kSpeechRecognitionResultTextYOffset, 0.f);
   speech_result->set_hit_testable(false);
+  speech_result->SetSize(kVoiceSearchRecognitionResultTextWidth, 0);
   speech_result->SetTextAlignment(UiTexture::kTextAlignmentCenter);
   BindColor(model_, speech_result.get(), &ColorScheme::prompt_foreground,
             &Text::SetColor);
