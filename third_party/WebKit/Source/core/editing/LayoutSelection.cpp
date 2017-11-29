@@ -190,6 +190,28 @@ void PrintOldSelectedLayoutObjects(
   }
   LOG(INFO) << stream.str();
 }
+
+void PrintSelectionPaintRange(const SelectionPaintRange& paint_range) {
+  std::stringstream stream;
+  stream << std::endl << "layout_objects:" << std::endl;
+  for (LayoutObject* layout_object : paint_range) {
+    PrintLayoutObjectForSelection(stream, layout_object);
+    stream << std::endl;
+  }
+  LOG(INFO) << stream.str();
+}
+
+void PrintSelectionStateInLayoutView(const FrameSelection& selection) {
+  std::stringstream stream;
+  stream << std::endl << "layout_objects:" << std::endl;
+  LayoutView* layout_view = selection.GetDocument().GetLayoutView();
+  for (LayoutObject* layout_object = layout_view; layout_object;
+       layout_object = layout_object->NextInPreOrder()) {
+    PrintLayoutObjectForSelection(stream, layout_object);
+    stream << std::endl;
+  }
+  LOG(INFO) << stream.str();
+}
 #endif
 
 static SelectedLayoutObjects CollectInvalidationSet(
