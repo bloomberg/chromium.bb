@@ -60703,6 +60703,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of a detachable base pair operation.</summary>
 </histogram>
 
+<histogram name="Platform.DetachableBase.PendingRWUpdate"
+    enum="DetachableBasePendingRWUpdate">
+  <owner>kitching@google.com</owner>
+  <summary>
+    Detachable base firmware updates can be configured to only occur on boot. In
+    this mode, any update will be considered &quot;pending&quot; until the
+    system is rebooted, at which point the update may take place.  Every time a
+    detachable base is connected to the system, a metric representing the
+    pending update status is recorded.  Its possible values are as follows: (0)
+    communication error; (1) no update available; (2) critical update available;
+    or (3) non-critical update available.  The definition of
+    &quot;critical&quot; is up to the software performing updates, and would
+    typically be used in the case of a security issue, or broken functionality
+    in a previous firmware version.
+  </summary>
+</histogram>
+
 <histogram name="Platform.DetachableBase.ROUpdateResult"
     enum="DetachableBaseROUpdateResult">
   <owner>kitching@google.com</owner>

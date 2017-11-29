@@ -8369,6 +8369,13 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="NeedInjectEntropy"/>
 </enum>
 
+<enum name="DetachableBasePendingRWUpdate">
+  <int value="0" label="CommunicationError"/>
+  <int value="1" label="NoUpdate"/>
+  <int value="2" label="CriticalUpdate"/>
+  <int value="3" label="NonCriticalUpdate"/>
+</enum>
+
 <enum name="DetachableBaseROUpdateResult">
   <int value="1" label="Succeeded"/>
   <int value="2" label="TransferFailed"/>
