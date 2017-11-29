@@ -51,6 +51,8 @@ ASH_PUBLIC_EXPORT extern const char kAshShelfColorSchemeNormalMuted[];
 ASH_PUBLIC_EXPORT extern const char kAshShelfColorSchemeNormalVibrant[];
 ASH_PUBLIC_EXPORT extern const char kAshShelfColorSchemeDarkMuted[];
 ASH_PUBLIC_EXPORT extern const char kAshShelfColorSchemeDarkVibrant[];
+ASH_PUBLIC_EXPORT extern const char kAshSidebarDisabled[];
+ASH_PUBLIC_EXPORT extern const char kAshSidebarEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAshTouchHud[];
 ASH_PUBLIC_EXPORT extern const char kAuraLegacyPowerButton[];
 ASH_PUBLIC_EXPORT extern const char kForceClamshellPowerButton[];
@@ -66,6 +68,7 @@ ASH_PUBLIC_EXPORT extern const char kTouchscreenUsableWhileScreenOff[];
 ASH_PUBLIC_EXPORT extern const char kUseIMEService[];
 
 ASH_PUBLIC_EXPORT bool IsNightLightEnabled();
+ASH_PUBLIC_EXPORT bool IsSidebarEnabled();
 ASH_PUBLIC_EXPORT bool IsUsingViewsLogin();
 ASH_PUBLIC_EXPORT bool IsUsingWebUiLock();
 

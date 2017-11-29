@@ -142,7 +142,7 @@ bool StatusAreaWidget::ShouldShowShelf() const {
 bool StatusAreaWidget::IsMessageBubbleShown() const {
   return ((system_tray_ && system_tray_->IsSystemBubbleVisible()) ||
           (web_notification_tray_ &&
-           web_notification_tray_->IsMessageCenterBubbleVisible()));
+           web_notification_tray_->IsMessageCenterVisible()));
 }
 
 void StatusAreaWidget::SchedulePaint() {

@@ -10,6 +10,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_bubble.h"
 #include "base/logging.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"

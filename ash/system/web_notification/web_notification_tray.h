@@ -68,7 +68,7 @@ class ASH_EXPORT WebNotificationTray
   bool ShouldBlockShelfAutoHide() const;
 
   // Returns true if the message center bubble is visible.
-  bool IsMessageCenterBubbleVisible() const;
+  bool IsMessageCenterVisible() const;
 
   // Overridden from TrayBackgroundView.
   void UpdateAfterShelfAlignmentChange() override;
@@ -103,6 +103,10 @@ class ASH_EXPORT WebNotificationTray
   void ExecuteCommand(int command_id, int event_flags) override;
 
   message_center::MessageCenter* message_center() const;
+
+  message_center::UiController* message_center_ui_controller() {
+    return message_center_ui_controller_.get();
+  }
 
  private:
   friend class WebNotificationTrayTest;
