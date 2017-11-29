@@ -84,6 +84,10 @@ class AnimationDocumentTimelineTest : public ::testing::Test {
     timeline->ScheduleNextService();
   }
 
+  KeyframeEffectModelBase* CreateEmptyEffectModel() {
+    return StringKeyframeEffectModel::Create(StringKeyframeVector());
+  }
+
   std::unique_ptr<DummyPageHolder> page_holder;
   Persistent<Document> document;
   Persistent<Element> element;
@@ -349,12 +353,10 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRateFastWithOriginTime) {
 TEST_F(AnimationDocumentTimelineTest, PauseForTesting) {
   float seek_time = 1;
   timing.fill_mode = Timing::FillMode::FORWARDS;
-  KeyframeEffect* anim1 = KeyframeEffect::Create(
-      element.Get(), StringKeyframeEffectModel::Create(StringKeyframeVector()),
-      timing);
-  KeyframeEffect* anim2 = KeyframeEffect::Create(
-      element.Get(), StringKeyframeEffectModel::Create(StringKeyframeVector()),
-      timing);
+  KeyframeEffect* anim1 =
+      KeyframeEffect::Create(element.Get(), CreateEmptyEffectModel(), timing);
+  KeyframeEffect* anim2 =
+      KeyframeEffect::Create(element.Get(), CreateEmptyEffectModel(), timing);
   Animation* animation1 = timeline->Play(anim1);
   Animation* animation2 = timeline->Play(anim2);
   timeline->PauseAnimationsForTesting(seek_time);
@@ -368,7 +370,7 @@ TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart) {
   timing.start_delay = 5;
 
   KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(element.Get(), nullptr, timing);
+      KeyframeEffect::Create(element.Get(), CreateEmptyEffectModel(), timing);
 
   timeline->Play(keyframe_effect);
 
@@ -403,7 +405,7 @@ TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref) {
   document = nullptr;
 
   KeyframeEffect* keyframe_effect =
-      KeyframeEffect::Create(nullptr, nullptr, timing);
+      KeyframeEffect::Create(nullptr, CreateEmptyEffectModel(), timing);
   // Test passes if this does not crash.
   timeline->Play(keyframe_effect);
 }

@@ -80,7 +80,11 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
 
   using KeyframeVector = Vector<scoped_refptr<Keyframe>>;
   const KeyframeVector& GetFrames() const { return keyframes_; }
+  bool HasFrames() const { return !keyframes_.IsEmpty(); }
   void SetFrames(KeyframeVector& keyframes);
+
+  CompositeOperation Composite() const { return composite_; }
+  void SetComposite(CompositeOperation composite) { composite_ = composite; }
 
   const PropertySpecificKeyframeVector& GetPropertySpecificKeyframes(
       const PropertyHandle& property) const {
@@ -133,10 +137,12 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   bool IsTransformRelatedEffect() const override;
 
  protected:
-  KeyframeEffectModelBase(scoped_refptr<TimingFunction> default_keyframe_easing)
+  KeyframeEffectModelBase(CompositeOperation composite,
+                          scoped_refptr<TimingFunction> default_keyframe_easing)
       : last_iteration_(0),
         last_fraction_(std::numeric_limits<double>::quiet_NaN()),
         last_iteration_duration_(0),
+        composite_(composite),
         default_keyframe_easing_(std::move(default_keyframe_easing)),
         has_synthetic_keyframes_(false),
         needs_compositor_keyframes_snapshot_(true) {}
@@ -154,6 +160,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   mutable int last_iteration_;
   mutable double last_fraction_;
   mutable double last_iteration_duration_;
+  CompositeOperation composite_;
   scoped_refptr<TimingFunction> default_keyframe_easing_;
 
   mutable bool has_synthetic_keyframes_;
@@ -169,15 +176,17 @@ class KeyframeEffectModel final : public KeyframeEffectModelBase {
   using KeyframeVector = Vector<scoped_refptr<Keyframe>>;
   static KeyframeEffectModel<Keyframe>* Create(
       const KeyframeVector& keyframes,
+      CompositeOperation composite = kCompositeReplace,
       scoped_refptr<TimingFunction> default_keyframe_easing = nullptr) {
-    return new KeyframeEffectModel(keyframes,
+    return new KeyframeEffectModel(keyframes, composite,
                                    std::move(default_keyframe_easing));
   }
 
  private:
   KeyframeEffectModel(const KeyframeVector& keyframes,
+                      CompositeOperation composite,
                       scoped_refptr<TimingFunction> default_keyframe_easing)
-      : KeyframeEffectModelBase(std::move(default_keyframe_easing)) {
+      : KeyframeEffectModelBase(composite, std::move(default_keyframe_easing)) {
     keyframes_.AppendVector(keyframes);
   }
 

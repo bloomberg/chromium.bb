@@ -38,6 +38,10 @@ class KeyframeEffectTest : public ::testing::Test {
 
   Document& GetDocument() const { return page_holder->GetDocument(); }
 
+  KeyframeEffectModelBase* CreateEmptyEffectModel() {
+    return StringKeyframeEffectModel::Create(StringKeyframeVector());
+  }
+
   std::unique_ptr<DummyPageHolder> page_holder;
   Persistent<Element> element;
 };
@@ -117,8 +121,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation) {
   Element* target = animation->Target();
   EXPECT_EQ(*element.Get(), *target);
 
-  const KeyframeVector keyframes =
-      ToKeyframeEffectModelBase(animation->Model())->GetFrames();
+  const KeyframeVector keyframes = animation->Model()->GetFrames();
 
   EXPECT_EQ(0, keyframes[0]->Offset());
   EXPECT_EQ(1, keyframes[1]->Offset());
@@ -138,6 +141,70 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation) {
             keyframes[0]->Easing());
   EXPECT_EQ(*(CubicBezierTimingFunction::Create(1, 1, 0.3, 0.3).get()),
             keyframes[1]->Easing());
+}
+
+TEST_F(AnimationKeyframeEffectV8Test, SetAndRetrieveEffectComposite) {
+  V8TestingScope scope;
+  NonThrowableExceptionState exception_state;
+
+  v8::Local<v8::Object> effect_options = v8::Object::New(scope.GetIsolate());
+  SetV8ObjectPropertyAsString(scope.GetIsolate(), effect_options, "composite",
+                              "add");
+  KeyframeEffectOptions effect_options_dictionary;
+  V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), effect_options,
+                                  effect_options_dictionary, exception_state);
+  EXPECT_FALSE(exception_state.HadException());
+
+  Vector<Dictionary> js_keyframes;
+  KeyframeEffect* effect =
+      CreateAnimation(element.Get(), js_keyframes, effect_options_dictionary);
+  EXPECT_EQ("add", effect->composite());
+
+  effect->setComposite("replace");
+  EXPECT_EQ("replace", effect->composite());
+
+  // TODO(crbug.com/788440): Once accumulate is supported as a composite
+  // property, setting it here should work.
+  effect->setComposite("accumulate");
+  EXPECT_EQ("replace", effect->composite());
+}
+
+TEST_F(AnimationKeyframeEffectV8Test, KeyframeCompositeOverridesEffect) {
+  V8TestingScope scope;
+  NonThrowableExceptionState exception_state;
+
+  v8::Local<v8::Object> effect_options = v8::Object::New(scope.GetIsolate());
+  SetV8ObjectPropertyAsString(scope.GetIsolate(), effect_options, "composite",
+                              "add");
+  KeyframeEffectOptions effect_options_dictionary;
+  V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), effect_options,
+                                  effect_options_dictionary, exception_state);
+  EXPECT_FALSE(exception_state.HadException());
+
+  Vector<Dictionary> js_keyframes;
+  v8::Local<v8::Object> keyframe1 = v8::Object::New(scope.GetIsolate());
+  v8::Local<v8::Object> keyframe2 = v8::Object::New(scope.GetIsolate());
+
+  SetV8ObjectPropertyAsString(scope.GetIsolate(), keyframe1, "width", "100px");
+  SetV8ObjectPropertyAsString(scope.GetIsolate(), keyframe1, "composite",
+                              "replace");
+  SetV8ObjectPropertyAsString(scope.GetIsolate(), keyframe2, "width", "0px");
+
+  js_keyframes.push_back(
+      Dictionary(scope.GetIsolate(), keyframe1, exception_state));
+  js_keyframes.push_back(
+      Dictionary(scope.GetIsolate(), keyframe2, exception_state));
+
+  KeyframeEffect* effect =
+      CreateAnimation(element.Get(), js_keyframes, effect_options_dictionary);
+  EXPECT_EQ("add", effect->composite());
+
+  PropertyHandle property(GetCSSPropertyWidth());
+  const PropertySpecificKeyframeVector& keyframes =
+      effect->Model()->GetPropertySpecificKeyframes(property);
+
+  EXPECT_EQ(EffectModel::kCompositeReplace, keyframes[0]->Composite());
+  EXPECT_EQ(EffectModel::kCompositeAdd, keyframes[1]->Composite());
 }
 
 TEST_F(AnimationKeyframeEffectV8Test, CanSetDuration) {
@@ -326,7 +393,8 @@ TEST_F(KeyframeEffectTest, TimeToEffectChange) {
   timing.start_delay = 100;
   timing.end_delay = 100;
   timing.fill_mode = Timing::FillMode::NONE;
-  KeyframeEffect* animation = KeyframeEffect::Create(nullptr, nullptr, timing);
+  KeyframeEffect* animation =
+      KeyframeEffect::Create(nullptr, CreateEmptyEffectModel(), timing);
   Animation* player = GetDocument().Timeline().Play(animation);
   double inf = std::numeric_limits<double>::infinity();
 
@@ -358,7 +426,8 @@ TEST_F(KeyframeEffectTest, TimeToEffectChangeWithPlaybackRate) {
   timing.end_delay = 100;
   timing.playback_rate = 2;
   timing.fill_mode = Timing::FillMode::NONE;
-  KeyframeEffect* animation = KeyframeEffect::Create(nullptr, nullptr, timing);
+  KeyframeEffect* animation =
+      KeyframeEffect::Create(nullptr, CreateEmptyEffectModel(), timing);
   Animation* player = GetDocument().Timeline().Play(animation);
   double inf = std::numeric_limits<double>::infinity();
 
@@ -390,7 +459,8 @@ TEST_F(KeyframeEffectTest, TimeToEffectChangeWithNegativePlaybackRate) {
   timing.end_delay = 100;
   timing.playback_rate = -2;
   timing.fill_mode = Timing::FillMode::NONE;
-  KeyframeEffect* animation = KeyframeEffect::Create(nullptr, nullptr, timing);
+  KeyframeEffect* animation =
+      KeyframeEffect::Create(nullptr, CreateEmptyEffectModel(), timing);
   Animation* player = GetDocument().Timeline().Play(animation);
   double inf = std::numeric_limits<double>::infinity();
 
@@ -420,7 +490,7 @@ TEST_F(KeyframeEffectTest, ElementDestructorClearsAnimationTarget) {
   Timing timing;
   timing.iteration_duration = 5;
   KeyframeEffect* animation =
-      KeyframeEffect::Create(element.Get(), nullptr, timing);
+      KeyframeEffect::Create(element.Get(), CreateEmptyEffectModel(), timing);
   EXPECT_EQ(element.Get(), animation->Target());
   GetDocument().Timeline().Play(animation);
   page_holder.reset();

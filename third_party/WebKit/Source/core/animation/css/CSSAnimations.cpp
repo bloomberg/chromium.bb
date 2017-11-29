@@ -184,8 +184,8 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   DCHECK(!keyframes.front()->Offset());
   DCHECK_EQ(keyframes.back()->Offset(), 1);
 
-  StringKeyframeEffectModel* model =
-      StringKeyframeEffectModel::Create(keyframes, &keyframes[0]->Easing());
+  StringKeyframeEffectModel* model = StringKeyframeEffectModel::Create(
+      keyframes, EffectModel::kCompositeReplace, &keyframes[0]->Easing());
   if (animation_index > 0 && model->HasSyntheticKeyframes()) {
     UseCounter::Count(element_for_scoping->GetDocument(),
                       WebFeature::kCSSAnimationsStackedNeutralKeyframe);
@@ -565,7 +565,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     TransitionEventDelegate* event_delegate =
         new TransitionEventDelegate(element, property);
 
-    EffectModel* model = inert_animation->Model();
+    KeyframeEffectModelBase* model = inert_animation->Model();
 
     if (retargeted_compositor_transitions.Contains(property)) {
       const std::pair<Member<KeyframeEffectReadOnly>, double>& old_transition =

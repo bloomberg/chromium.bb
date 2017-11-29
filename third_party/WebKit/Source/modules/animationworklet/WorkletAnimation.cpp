@@ -221,9 +221,8 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   // keyframe groups have been created. To ensure this we manually snapshot the
   // frames in the target effect.
   // TODO(smcgruer): This shouldn't be necessary - Animation doesn't do this.
-  ToKeyframeEffectModelBase(target_effect->Model())
-      ->SnapshotAllCompositorKeyframes(target, target.ComputedStyleRef(),
-                                       target.ParentComputedStyle());
+  target_effect->Model()->SnapshotAllCompositorKeyframes(
+      target, target.ComputedStyleRef(), target.ParentComputedStyle());
 
   if (!CheckElementComposited(target)) {
     if (failure_message)

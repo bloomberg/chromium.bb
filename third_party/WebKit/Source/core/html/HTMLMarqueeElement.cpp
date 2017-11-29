@@ -266,7 +266,7 @@ StringKeyframeEffectModel* HTMLMarqueeElement::CreateEffectModel(
 
   return StringKeyframeEffectModel::Create(
       {std::move(keyframe1), std::move(keyframe2)},
-      LinearTimingFunction::Shared());
+      EffectModel::kCompositeReplace, LinearTimingFunction::Shared());
 }
 
 void HTMLMarqueeElement::ContinueAnimation() {

@@ -229,8 +229,8 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
         group = group_iter->value.get();
       }
 
-      group->AppendKeyframe(
-          keyframe->CreatePropertySpecificKeyframe(property, computed_offset));
+      group->AppendKeyframe(keyframe->CreatePropertySpecificKeyframe(
+          property, composite_, computed_offset));
     }
   }
 
