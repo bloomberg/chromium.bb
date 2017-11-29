@@ -8,9 +8,9 @@ namespace chromeos {
 
 namespace tether {
 
-FakeTetherConnector::FakeTetherConnector() {}
+FakeTetherConnector::FakeTetherConnector() = default;
 
-FakeTetherConnector::~FakeTetherConnector() {}
+FakeTetherConnector::~FakeTetherConnector() = default;
 
 void FakeTetherConnector::ConnectToNetwork(
     const std::string& tether_network_guid,

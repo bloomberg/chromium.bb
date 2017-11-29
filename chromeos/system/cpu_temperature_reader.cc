@@ -72,7 +72,7 @@ std::string GetLabelFromPath(const base::FilePath& label_path) {
 
 }  // namespace
 
-CPUTemperatureReader::CPUTemperatureInfo::CPUTemperatureInfo() {}
+CPUTemperatureReader::CPUTemperatureInfo::CPUTemperatureInfo() = default;
 
 CPUTemperatureReader::CPUTemperatureInfo::~CPUTemperatureInfo() = default;
 

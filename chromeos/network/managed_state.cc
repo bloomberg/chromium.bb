@@ -40,8 +40,7 @@ ManagedState::ManagedState(ManagedType type, const std::string& path)
       update_requested_(false) {
 }
 
-ManagedState::~ManagedState() {
-}
+ManagedState::~ManagedState() = default;
 
 std::unique_ptr<ManagedState> ManagedState::Create(ManagedType type,
                                                    const std::string& path) {

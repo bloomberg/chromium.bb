@@ -26,8 +26,7 @@ ServiceProviderTestHelper::ServiceProviderTestHelper() {
     message_loop_.reset(new base::MessageLoop());
 }
 
-ServiceProviderTestHelper::~ServiceProviderTestHelper() {
-}
+ServiceProviderTestHelper::~ServiceProviderTestHelper() = default;
 
 void ServiceProviderTestHelper::SetUp(
     const std::string& service_name,

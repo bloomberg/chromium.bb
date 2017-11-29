@@ -117,7 +117,7 @@ TetherComponentImpl::TetherComponentImpl(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-TetherComponentImpl::~TetherComponentImpl() {}
+TetherComponentImpl::~TetherComponentImpl() = default;
 
 void TetherComponentImpl::RequestShutdown() {
   has_shutdown_been_requested_ = true;

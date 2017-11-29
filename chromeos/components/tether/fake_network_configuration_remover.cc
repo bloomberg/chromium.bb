@@ -13,7 +13,7 @@ FakeNetworkConfigurationRemover::FakeNetworkConfigurationRemover()
           nullptr /* network_state_handler */,
           nullptr /* managed_network_configuration_handler */) {}
 
-FakeNetworkConfigurationRemover::~FakeNetworkConfigurationRemover() {}
+FakeNetworkConfigurationRemover::~FakeNetworkConfigurationRemover() = default;
 
 void FakeNetworkConfigurationRemover::RemoveNetworkConfiguration(
     const std::string& wifi_network_guid) {

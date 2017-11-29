@@ -54,7 +54,7 @@ DisconnectTetheringOperation::DisconnectTetheringOperation(
       has_sent_message_(false),
       clock_(base::MakeUnique<base::DefaultClock>()) {}
 
-DisconnectTetheringOperation::~DisconnectTetheringOperation() {}
+DisconnectTetheringOperation::~DisconnectTetheringOperation() = default;
 
 void DisconnectTetheringOperation::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);

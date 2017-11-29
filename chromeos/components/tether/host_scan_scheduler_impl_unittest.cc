@@ -42,7 +42,7 @@ class FakeHostScanner : public HostScanner {
                     nullptr,
                     nullptr),
         num_scans_started_(0) {}
-  ~FakeHostScanner() override {}
+  ~FakeHostScanner() override = default;
 
   void StartScan() override {
     is_scan_active_ = true;

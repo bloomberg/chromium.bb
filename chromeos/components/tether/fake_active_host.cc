@@ -21,7 +21,7 @@ FakeActiveHost::FakeActiveHost()
       tether_network_guid_(std::string()),
       wifi_network_guid_(std::string()) {}
 
-FakeActiveHost::~FakeActiveHost() {}
+FakeActiveHost::~FakeActiveHost() = default;
 
 void FakeActiveHost::SetActiveHostDisconnected() {
   SetActiveHost(ActiveHost::ActiveHostStatus::DISCONNECTED, "", "", "");

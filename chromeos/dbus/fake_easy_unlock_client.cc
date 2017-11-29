@@ -56,7 +56,7 @@ bool FakeEasyUnlockClient::IsEcP256KeyPair(const std::string& private_key,
 
 FakeEasyUnlockClient::FakeEasyUnlockClient() : generated_keys_count_(0) {}
 
-FakeEasyUnlockClient::~FakeEasyUnlockClient() {}
+FakeEasyUnlockClient::~FakeEasyUnlockClient() = default;
 
 void FakeEasyUnlockClient::Init(dbus::Bus* bus) {}
 

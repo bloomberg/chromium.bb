@@ -26,8 +26,7 @@ FakeExtendedAuthenticator::FakeExtendedAuthenticator(
       expected_user_context_(expected_user_context) {
 }
 
-FakeExtendedAuthenticator::~FakeExtendedAuthenticator() {
-}
+FakeExtendedAuthenticator::~FakeExtendedAuthenticator() = default;
 
 void FakeExtendedAuthenticator::SetConsumer(AuthStatusConsumer* consumer) {
   old_consumer_ = consumer;

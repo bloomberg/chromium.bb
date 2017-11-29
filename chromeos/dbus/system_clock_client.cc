@@ -49,7 +49,7 @@ class SystemClockClientImpl : public SystemClockClient {
         system_clock_proxy_(nullptr),
         weak_ptr_factory_(this) {}
 
-  ~SystemClockClientImpl() override {}
+  ~SystemClockClientImpl() override = default;
 
   void AddObserver(Observer* observer) override {
     observers_.AddObserver(observer);
@@ -189,6 +189,6 @@ SystemClockClient* SystemClockClient::Create() {
   return new SystemClockClientImpl();
 }
 
-SystemClockClient::SystemClockClient() {}
+SystemClockClient::SystemClockClient() = default;
 
 }  // namespace chromeos

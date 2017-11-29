@@ -29,8 +29,7 @@ FakeGsmSMSClient::FakeGsmSMSClient()
   test_messages_.push_back("Test Message 6");
 }
 
-FakeGsmSMSClient::~FakeGsmSMSClient() {
-}
+FakeGsmSMSClient::~FakeGsmSMSClient() = default;
 
 void FakeGsmSMSClient::Init(dbus::Bus* bus) {
 }

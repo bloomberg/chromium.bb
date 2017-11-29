@@ -240,9 +240,9 @@ class GsmSMSClientImpl : public GsmSMSClient {
 ////////////////////////////////////////////////////////////////////////////////
 // GsmSMSClient
 
-GsmSMSClient::GsmSMSClient() {}
+GsmSMSClient::GsmSMSClient() = default;
 
-GsmSMSClient::~GsmSMSClient() {}
+GsmSMSClient::~GsmSMSClient() = default;
 
 // static
 GsmSMSClient* GsmSMSClient::Create() {

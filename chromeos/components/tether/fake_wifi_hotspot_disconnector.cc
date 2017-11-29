@@ -8,9 +8,9 @@ namespace chromeos {
 
 namespace tether {
 
-FakeWifiHotspotDisconnector::FakeWifiHotspotDisconnector() {}
+FakeWifiHotspotDisconnector::FakeWifiHotspotDisconnector() = default;
 
-FakeWifiHotspotDisconnector::~FakeWifiHotspotDisconnector() {}
+FakeWifiHotspotDisconnector::~FakeWifiHotspotDisconnector() = default;
 
 void FakeWifiHotspotDisconnector::DisconnectFromWifiHotspot(
     const std::string& wifi_network_guid,

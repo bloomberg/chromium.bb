@@ -8,9 +8,9 @@ namespace chromeos {
 
 namespace tether {
 
-BleAdvertiser::BleAdvertiser() {}
+BleAdvertiser::BleAdvertiser() = default;
 
-BleAdvertiser::~BleAdvertiser() {}
+BleAdvertiser::~BleAdvertiser() = default;
 
 void BleAdvertiser::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);

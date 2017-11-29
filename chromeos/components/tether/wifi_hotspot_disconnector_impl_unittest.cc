@@ -44,7 +44,7 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
  public:
   explicit TestNetworkConnectionHandler(base::Closure disconnect_callback)
       : disconnect_callback_(disconnect_callback) {}
-  ~TestNetworkConnectionHandler() override {}
+  ~TestNetworkConnectionHandler() override = default;
 
   std::string last_disconnect_service_path() {
     return last_disconnect_service_path_;
@@ -94,8 +94,8 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
 
 class WifiHotspotDisconnectorImplTest : public NetworkStateTest {
  public:
-  WifiHotspotDisconnectorImplTest() {}
-  ~WifiHotspotDisconnectorImplTest() override {}
+  WifiHotspotDisconnectorImplTest() = default;
+  ~WifiHotspotDisconnectorImplTest() override = default;
 
   void SetUp() override {
     DBusThreadManager::Initialize();

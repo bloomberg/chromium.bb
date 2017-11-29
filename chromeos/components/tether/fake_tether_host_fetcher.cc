@@ -22,7 +22,7 @@ FakeTetherHostFetcher::FakeTetherHostFetcher(
     : FakeTetherHostFetcher(std::vector<cryptauth::RemoteDevice>(),
                             synchronously_reply_with_results) {}
 
-FakeTetherHostFetcher::~FakeTetherHostFetcher() {}
+FakeTetherHostFetcher::~FakeTetherHostFetcher() = default;
 
 void FakeTetherHostFetcher::SetTetherHosts(
     const std::vector<cryptauth::RemoteDevice> tether_hosts) {

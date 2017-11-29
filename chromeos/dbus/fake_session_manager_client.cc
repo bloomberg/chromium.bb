@@ -63,8 +63,7 @@ FakeSessionManagerClient::FakeSessionManagerClient()
       arc_available_(false),
       weak_ptr_factory_(this) {}
 
-FakeSessionManagerClient::~FakeSessionManagerClient() {
-}
+FakeSessionManagerClient::~FakeSessionManagerClient() = default;
 
 void FakeSessionManagerClient::Init(dbus::Bus* bus) {
 }

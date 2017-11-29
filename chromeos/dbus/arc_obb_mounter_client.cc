@@ -30,7 +30,7 @@ const char kUnmountObbMethod[] = "UnmountObb";
 class ArcObbMounterClientImpl : public ArcObbMounterClient {
  public:
   ArcObbMounterClientImpl() : weak_ptr_factory_(this) {}
-  ~ArcObbMounterClientImpl() override {}
+  ~ArcObbMounterClientImpl() override = default;
 
   // ArcObbMounterClient override:
   void MountObb(const std::string& obb_file,
@@ -82,9 +82,9 @@ class ArcObbMounterClientImpl : public ArcObbMounterClient {
 
 }  // namespace
 
-ArcObbMounterClient::ArcObbMounterClient() {}
+ArcObbMounterClient::ArcObbMounterClient() = default;
 
-ArcObbMounterClient::~ArcObbMounterClient() {}
+ArcObbMounterClient::~ArcObbMounterClient() = default;
 
 // static
 ArcObbMounterClient* ArcObbMounterClient::Create() {

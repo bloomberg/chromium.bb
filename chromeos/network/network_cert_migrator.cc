@@ -161,8 +161,7 @@ class NetworkCertMigrator::MigrationTask
 
  private:
   friend class base::RefCounted<MigrationTask>;
-  virtual ~MigrationTask() {
-  }
+  virtual ~MigrationTask() = default;
 
   bool CorrespondingCertificateDatabaseLoaded(const NetworkState* network) {
     if (network->IsPrivate())

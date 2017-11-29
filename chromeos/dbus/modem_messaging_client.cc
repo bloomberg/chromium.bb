@@ -43,7 +43,7 @@ class ModemMessagingProxy {
         base::Bind(&ModemMessagingProxy::OnSignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
   }
-  virtual ~ModemMessagingProxy() {}
+  virtual ~ModemMessagingProxy() = default;
 
   // Sets SmsReceived signal handler.
   void SetSmsReceivedHandler(const SmsReceivedHandler& handler) {
@@ -194,10 +194,9 @@ class CHROMEOS_EXPORT ModemMessagingClientImpl : public ModemMessagingClient {
 ////////////////////////////////////////////////////////////////////////////////
 // ModemMessagingClient
 
-ModemMessagingClient::ModemMessagingClient() {}
+ModemMessagingClient::ModemMessagingClient() = default;
 
-ModemMessagingClient::~ModemMessagingClient() {}
-
+ModemMessagingClient::~ModemMessagingClient() = default;
 
 // static
 ModemMessagingClient* ModemMessagingClient::Create() {

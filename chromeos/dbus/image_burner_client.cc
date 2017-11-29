@@ -24,7 +24,7 @@ class ImageBurnerClientImpl : public ImageBurnerClient {
  public:
   ImageBurnerClientImpl() : proxy_(NULL), weak_ptr_factory_(this) {}
 
-  ~ImageBurnerClientImpl() override {}
+  ~ImageBurnerClientImpl() override = default;
 
   // ImageBurnerClient override.
   void BurnImage(const std::string& from_path,
@@ -139,11 +139,9 @@ class ImageBurnerClientImpl : public ImageBurnerClient {
 
 }  // namespace
 
-ImageBurnerClient::ImageBurnerClient() {
-}
+ImageBurnerClient::ImageBurnerClient() = default;
 
-ImageBurnerClient::~ImageBurnerClient() {
-}
+ImageBurnerClient::~ImageBurnerClient() = default;
 
 // static
 ImageBurnerClient* ImageBurnerClient::Create() {

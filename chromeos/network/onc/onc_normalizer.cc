@@ -19,8 +19,7 @@ Normalizer::Normalizer(bool remove_recommended_fields)
     : remove_recommended_fields_(remove_recommended_fields) {
 }
 
-Normalizer::~Normalizer() {
-}
+Normalizer::~Normalizer() = default;
 
 std::unique_ptr<base::DictionaryValue> Normalizer::NormalizeObject(
     const OncValueSignature* object_signature,

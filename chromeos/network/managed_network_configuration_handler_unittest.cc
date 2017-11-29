@@ -191,7 +191,7 @@ class TestNetworkProfileHandler : public NetworkProfileHandler {
   TestNetworkProfileHandler() {
     Init();
   }
-  ~TestNetworkProfileHandler() override {}
+  ~TestNetworkProfileHandler() override = default;
 
   void AddProfileForTest(const NetworkProfile& profile) {
     AddProfile(profile);
@@ -335,7 +335,7 @@ class ManagedNetworkConfigurationHandlerMockTest : public testing::Test {
         mock_profile_client_(NULL),
         mock_service_client_(NULL) {}
 
-  ~ManagedNetworkConfigurationHandlerMockTest() override {}
+  ~ManagedNetworkConfigurationHandlerMockTest() override = default;
 
   void SetUp() override {
     std::unique_ptr<DBusThreadManagerSetter> dbus_setter =

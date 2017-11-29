@@ -88,11 +88,9 @@ class MergeListOfDictionaries {
  public:
   typedef std::vector<const base::DictionaryValue*> DictPtrs;
 
-  MergeListOfDictionaries() {
-  }
+  MergeListOfDictionaries() = default;
 
-  virtual ~MergeListOfDictionaries() {
-  }
+  virtual ~MergeListOfDictionaries() = default;
 
   // For each path in any of the dictionaries |dicts|, the function
   // MergeListOfValues is called with the list of values that are located at
@@ -176,7 +174,7 @@ class MergeSettingsAndPolicies : public MergeListOfDictionaries {
     bool device_editable;
   };
 
-  MergeSettingsAndPolicies() {}
+  MergeSettingsAndPolicies() = default;
 
   // Merge the provided dictionaries. For each path in any of the dictionaries,
   // MergeValues is called. Its results are collected in a new dictionary which
@@ -273,7 +271,7 @@ class MergeSettingsAndPolicies : public MergeListOfDictionaries {
 // MergeSettingsAndPoliciesToEffective.
 class MergeToEffective : public MergeSettingsAndPolicies {
  public:
-  MergeToEffective() {}
+  MergeToEffective() = default;
 
  protected:
   // Merges |values| to the effective value (Mandatory policy overwrites user
@@ -352,7 +350,7 @@ bool AllPresentValuesEqual(const MergeSettingsAndPolicies::ValueParams& values,
 // dictionaries. See the description of MergeSettingsAndPoliciesToAugmented.
 class MergeToAugmented : public MergeToEffective {
  public:
-  MergeToAugmented() {}
+  MergeToAugmented() = default;
 
   DictionaryPtr MergeDictionaries(
       const OncValueSignature& signature,

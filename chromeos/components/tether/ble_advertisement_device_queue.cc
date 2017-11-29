@@ -37,11 +37,11 @@ BleAdvertisementDeviceQueue::PrioritizedDevice::PrioritizedDevice(
     const ConnectionPriority& connection_priority)
     : remote_device(remote_device), connection_priority(connection_priority) {}
 
-BleAdvertisementDeviceQueue::PrioritizedDevice::~PrioritizedDevice() {}
+BleAdvertisementDeviceQueue::PrioritizedDevice::~PrioritizedDevice() = default;
 
-BleAdvertisementDeviceQueue::BleAdvertisementDeviceQueue() {}
+BleAdvertisementDeviceQueue::BleAdvertisementDeviceQueue() = default;
 
-BleAdvertisementDeviceQueue::~BleAdvertisementDeviceQueue() {}
+BleAdvertisementDeviceQueue::~BleAdvertisementDeviceQueue() = default;
 
 bool BleAdvertisementDeviceQueue::SetDevices(
     const std::vector<PrioritizedDevice>& devices) {

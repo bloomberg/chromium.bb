@@ -39,7 +39,7 @@ NetworkIPConfig::NetworkIPConfig(
       name_servers(name_servers) {
 }
 
-NetworkIPConfig::~NetworkIPConfig() {}
+NetworkIPConfig::~NetworkIPConfig() = default;
 
 std::string NetworkIPConfig::ToString() const {
   return std::string("path: ") + device_path

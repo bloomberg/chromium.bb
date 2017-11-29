@@ -85,7 +85,7 @@ const char* kLoginEmail = "hans@my.domain.com";
 
 class StringSubstitutionStub : public StringSubstitution {
  public:
-  StringSubstitutionStub() {}
+  StringSubstitutionStub() = default;
   bool GetSubstitute(const std::string& placeholder,
                      std::string* substitute) const override {
     if (placeholder == ::onc::substitutes::kLoginIDField)

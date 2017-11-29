@@ -148,7 +148,7 @@ class PpdCacheImpl : public PpdCache {
   }
 
  private:
-  ~PpdCacheImpl() override {}
+  ~PpdCacheImpl() override = default;
 
   base::FilePath cache_base_dir_;
   scoped_refptr<base::SequencedTaskRunner> fetch_task_runner_;

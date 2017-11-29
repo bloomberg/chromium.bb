@@ -162,7 +162,7 @@ class TestDelegate : public PowerManagerClient::RenderProcessManagerDelegate {
   explicit TestDelegate(PowerManagerClient* client) : weak_ptr_factory_(this) {
     client->SetRenderProcessManagerDelegate(weak_ptr_factory_.GetWeakPtr());
   }
-  ~TestDelegate() override {}
+  ~TestDelegate() override = default;
 
   int num_suspend_imminent() const { return num_suspend_imminent_; }
   int num_suspend_done() const { return num_suspend_done_; }
@@ -185,8 +185,8 @@ class TestDelegate : public PowerManagerClient::RenderProcessManagerDelegate {
 
 class PowerManagerClientTest : public testing::Test {
  public:
-  PowerManagerClientTest() {}
-  ~PowerManagerClientTest() override {}
+  PowerManagerClientTest() = default;
+  ~PowerManagerClientTest() override = default;
 
   void SetUp() override {
     dbus::Bus::Options options;

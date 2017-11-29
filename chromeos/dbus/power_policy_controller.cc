@@ -313,8 +313,7 @@ PowerPolicyController::WakeLock::WakeLock(Type type,
     : type(type), reason(reason), description(description) {
 }
 
-PowerPolicyController::WakeLock::~WakeLock() {
-}
+PowerPolicyController::WakeLock::~WakeLock() = default;
 
 int PowerPolicyController::AddWakeLockInternal(WakeLock::Type type,
                                                WakeLockReason reason,

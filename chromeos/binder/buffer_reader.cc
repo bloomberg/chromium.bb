@@ -11,7 +11,7 @@ namespace binder {
 BufferReader::BufferReader(const char* data, size_t size)
     : data_(data), size_(size), current_(data) {}
 
-BufferReader::~BufferReader() {}
+BufferReader::~BufferReader() = default;
 
 bool BufferReader::HasMoreData() const {
   return current_ < data_ + size_;

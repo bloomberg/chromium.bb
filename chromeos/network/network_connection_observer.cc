@@ -6,8 +6,7 @@
 
 namespace chromeos {
 
-NetworkConnectionObserver::NetworkConnectionObserver() {
-}
+NetworkConnectionObserver::NetworkConnectionObserver() = default;
 
 void NetworkConnectionObserver::ConnectToNetworkRequested(
     const std::string& service_path) {
@@ -25,7 +24,6 @@ void NetworkConnectionObserver::DisconnectRequested(
     const std::string& service_path) {
 }
 
-NetworkConnectionObserver::~NetworkConnectionObserver() {
-}
+NetworkConnectionObserver::~NetworkConnectionObserver() = default;
 
 }  // namespace chromeos

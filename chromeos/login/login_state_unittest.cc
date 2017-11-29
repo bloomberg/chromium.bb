@@ -22,7 +22,7 @@ class LoginStateTest : public testing::Test,
   LoginStateTest() : logged_in_user_type_(LoginState::LOGGED_IN_USER_NONE),
                      login_state_changes_count_(0) {
   }
-  ~LoginStateTest() override {}
+  ~LoginStateTest() override = default;
 
   // testing::Test
   void SetUp() override {

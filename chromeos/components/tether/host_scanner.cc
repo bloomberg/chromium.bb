@@ -41,7 +41,7 @@ HostScanner::HostScanner(
       clock_(clock),
       weak_ptr_factory_(this) {}
 
-HostScanner::~HostScanner() {}
+HostScanner::~HostScanner() = default;
 
 bool HostScanner::IsScanActive() {
   return is_fetching_hosts_ || host_scanner_operation_;

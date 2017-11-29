@@ -26,8 +26,7 @@ TpmPasswordFetcher::TpmPasswordFetcher(TpmPasswordFetcherDelegate* delegate)
   DCHECK(delegate_);
 }
 
-TpmPasswordFetcher::~TpmPasswordFetcher() {
-}
+TpmPasswordFetcher::~TpmPasswordFetcher() = default;
 
 void TpmPasswordFetcher::Fetch() {
   // Since this method is also called directly.

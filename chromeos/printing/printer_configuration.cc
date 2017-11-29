@@ -60,7 +60,7 @@ Printer::Printer(const Printer& other) = default;
 
 Printer& Printer::operator=(const Printer& other) = default;
 
-Printer::~Printer() {}
+Printer::~Printer() = default;
 
 bool Printer::IsIppEverywhere() const {
   return ppd_reference_.autoconf;

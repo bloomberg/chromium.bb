@@ -49,9 +49,9 @@ NetworkCertificateHandler::Certificate GetCertificate(CERTCertificate* cert,
 
 }  // namespace
 
-NetworkCertificateHandler::Certificate::Certificate() {}
+NetworkCertificateHandler::Certificate::Certificate() = default;
 
-NetworkCertificateHandler::Certificate::~Certificate() {}
+NetworkCertificateHandler::Certificate::~Certificate() = default;
 
 NetworkCertificateHandler::Certificate::Certificate(const Certificate& other) =
     default;

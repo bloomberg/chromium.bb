@@ -25,7 +25,7 @@ class GeolocationHandlerTest : public testing::Test {
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
-  ~GeolocationHandlerTest() override {}
+  ~GeolocationHandlerTest() override = default;
 
   void SetUp() override {
     // Initialize DBusThreadManager with a stub implementation.

@@ -113,7 +113,7 @@ class NetworkConnectImpl : public NetworkConnect {
 NetworkConnectImpl::NetworkConnectImpl(Delegate* delegate)
     : delegate_(delegate), weak_factory_(this) {}
 
-NetworkConnectImpl::~NetworkConnectImpl() {}
+NetworkConnectImpl::~NetworkConnectImpl() = default;
 
 void NetworkConnectImpl::HandleUnconfiguredNetwork(
     const std::string& network_id) {
@@ -583,8 +583,8 @@ NetworkConnect* NetworkConnect::Get() {
   return g_network_connect;
 }
 
-NetworkConnect::NetworkConnect() {}
+NetworkConnect::NetworkConnect() = default;
 
-NetworkConnect::~NetworkConnect() {}
+NetworkConnect::~NetworkConnect() = default;
 
 }  // namespace chromeos

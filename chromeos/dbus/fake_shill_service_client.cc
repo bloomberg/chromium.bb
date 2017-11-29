@@ -52,9 +52,7 @@ int GetInteractiveDelay() {
 FakeShillServiceClient::FakeShillServiceClient() : weak_ptr_factory_(this) {
 }
 
-FakeShillServiceClient::~FakeShillServiceClient() {
-}
-
+FakeShillServiceClient::~FakeShillServiceClient() = default;
 
 // ShillServiceClient overrides.
 

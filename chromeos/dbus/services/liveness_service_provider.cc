@@ -15,7 +15,7 @@ LivenessServiceProvider::LivenessServiceProvider(
     const std::string& service_interface)
     : service_interface_(service_interface), weak_ptr_factory_(this) {}
 
-LivenessServiceProvider::~LivenessServiceProvider() {}
+LivenessServiceProvider::~LivenessServiceProvider() = default;
 
 void LivenessServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {

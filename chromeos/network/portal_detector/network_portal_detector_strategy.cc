@@ -25,7 +25,7 @@ class LoginScreenStrategy : public PortalDetectorStrategy {
 
   explicit LoginScreenStrategy(PortalDetectorStrategy::Delegate* delegate)
       : PortalDetectorStrategy(delegate) {}
-  ~LoginScreenStrategy() override {}
+  ~LoginScreenStrategy() override = default;
 
  protected:
   // PortalDetectorStrategy overrides:
@@ -53,7 +53,7 @@ class ErrorScreenStrategy : public PortalDetectorStrategy {
 
   explicit ErrorScreenStrategy(PortalDetectorStrategy::Delegate* delegate)
       : PortalDetectorStrategy(delegate) {}
-  ~ErrorScreenStrategy() override {}
+  ~ErrorScreenStrategy() override = default;
 
  protected:
   // PortalDetectorStrategy overrides:
@@ -74,7 +74,7 @@ class SessionStrategy : public PortalDetectorStrategy {
 
   explicit SessionStrategy(PortalDetectorStrategy::Delegate* delegate)
       : PortalDetectorStrategy(delegate) {}
-  ~SessionStrategy() override {}
+  ~SessionStrategy() override = default;
 
  protected:
   StrategyId Id() const override { return STRATEGY_ID_SESSION; }
@@ -95,7 +95,7 @@ class SessionStrategy : public PortalDetectorStrategy {
 
 // PortalDetectorStrategy::Delegate --------------------------------------------
 
-PortalDetectorStrategy::Delegate::~Delegate() {}
+PortalDetectorStrategy::Delegate::~Delegate() = default;
 
 // PortalDetectorStrategy -----------------------------------------------------
 
@@ -130,8 +130,7 @@ PortalDetectorStrategy::PortalDetectorStrategy(Delegate* delegate)
   backoff_entry_.reset(new net::BackoffEntry(&policy_, delegate_));
 }
 
-PortalDetectorStrategy::~PortalDetectorStrategy() {
-}
+PortalDetectorStrategy::~PortalDetectorStrategy() = default;
 
 // static
 std::unique_ptr<PortalDetectorStrategy> PortalDetectorStrategy::CreateById(

@@ -17,7 +17,7 @@ FakeBleAdvertiser::FakeBleAdvertiser(
     : automatically_update_active_advertisements_(
           automatically_update_active_advertisements) {}
 
-FakeBleAdvertiser::~FakeBleAdvertiser() {}
+FakeBleAdvertiser::~FakeBleAdvertiser() = default;
 
 void FakeBleAdvertiser::NotifyAllAdvertisementsUnregistered() {
   BleAdvertiser::NotifyAllAdvertisementsUnregistered();

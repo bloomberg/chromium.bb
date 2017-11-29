@@ -41,8 +41,7 @@ DhcpProxyScriptFetcherChromeos::DhcpProxyScriptFetcherChromeos(
     network_handler_task_runner_ = NetworkHandler::Get()->task_runner();
 }
 
-DhcpProxyScriptFetcherChromeos::~DhcpProxyScriptFetcherChromeos() {
-}
+DhcpProxyScriptFetcherChromeos::~DhcpProxyScriptFetcherChromeos() = default;
 
 int DhcpProxyScriptFetcherChromeos::Fetch(
     base::string16* utf16_text,

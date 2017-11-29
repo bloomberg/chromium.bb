@@ -44,7 +44,7 @@ Validator::Validator(bool error_on_unknown_field,
       managed_onc_(managed_onc),
       onc_source_(::onc::ONC_SOURCE_NONE) {}
 
-Validator::~Validator() {}
+Validator::~Validator() = default;
 
 std::unique_ptr<base::DictionaryValue> Validator::ValidateAndRepairObject(
     const OncValueSignature* object_signature,

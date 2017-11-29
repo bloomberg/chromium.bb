@@ -27,8 +27,7 @@ void OnDisplayOwnershipChanged(
 ConsoleServiceProvider::ConsoleServiceProvider(Delegate* delegate)
     : delegate_(delegate), weak_ptr_factory_(this) {}
 
-ConsoleServiceProvider::~ConsoleServiceProvider() {
-}
+ConsoleServiceProvider::~ConsoleServiceProvider() = default;
 
 void ConsoleServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {

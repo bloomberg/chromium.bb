@@ -23,7 +23,7 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
  public:
   MediaAnalyticsClientImpl() : dbus_proxy_(nullptr), weak_ptr_factory_(this) {}
 
-  ~MediaAnalyticsClientImpl() override {}
+  ~MediaAnalyticsClientImpl() override = default;
 
   void SetMediaPerceptionSignalHandler(
       const MediaPerceptionSignalHandler& handler) override {
@@ -186,12 +186,12 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
   DISALLOW_COPY_AND_ASSIGN(MediaAnalyticsClientImpl);
 };
 
-MediaAnalyticsClient::~MediaAnalyticsClient() {}
+MediaAnalyticsClient::~MediaAnalyticsClient() = default;
 
 MediaAnalyticsClient* MediaAnalyticsClient::Create() {
   return new MediaAnalyticsClientImpl;
 }
 
-MediaAnalyticsClient::MediaAnalyticsClient() {}
+MediaAnalyticsClient::MediaAnalyticsClient() = default;
 
 }  // namespace chromeos

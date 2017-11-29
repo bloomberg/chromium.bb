@@ -33,9 +33,9 @@ void CopyDBusMethodCallResult(bool* dest_result, bool src_result) {
   *dest_result = src_result;
 }
 
-TestBiodObserver::TestBiodObserver() {}
+TestBiodObserver::TestBiodObserver() = default;
 
-TestBiodObserver::~TestBiodObserver() {}
+TestBiodObserver::~TestBiodObserver() = default;
 
 int TestBiodObserver::NumEnrollScansReceived() const {
   return num_complete_enroll_scans_received_ +

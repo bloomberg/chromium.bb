@@ -12,7 +12,7 @@
 
 namespace chromeos {
 
-AudioNode::AudioNode() {}
+AudioNode::AudioNode() = default;
 
 AudioNode::AudioNode(bool is_input,
                      uint64_t id,
@@ -37,7 +37,7 @@ AudioNode::AudioNode(bool is_input,
 
 AudioNode::AudioNode(const AudioNode& other) = default;
 
-AudioNode::~AudioNode() {}
+AudioNode::~AudioNode() = default;
 
 std::string AudioNode::ToString() const {
   std::string result;

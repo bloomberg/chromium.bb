@@ -243,8 +243,7 @@ AudioDevicesPrefHandlerImpl::AudioDevicesPrefHandlerImpl(
   LoadDevicesStatePref();
 }
 
-AudioDevicesPrefHandlerImpl::~AudioDevicesPrefHandlerImpl() {
-}
+AudioDevicesPrefHandlerImpl::~AudioDevicesPrefHandlerImpl() = default;
 
 void AudioDevicesPrefHandlerImpl::InitializePrefObservers() {
   pref_change_registrar_.Init(local_state_);

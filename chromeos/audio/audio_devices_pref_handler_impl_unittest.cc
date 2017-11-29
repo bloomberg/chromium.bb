@@ -87,8 +87,8 @@ AudioDevice CreateAudioDevice(const AudioNodeInfo& info, int version) {
 // false -> output_devices
 class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
  public:
-  AudioDevicesPrefHandlerTest() {}
-  ~AudioDevicesPrefHandlerTest() override {}
+  AudioDevicesPrefHandlerTest() = default;
+  ~AudioDevicesPrefHandlerTest() override = default;
 
   void SetUp() override {
     pref_service_.reset(new TestingPrefServiceSimple());

@@ -26,7 +26,7 @@ DisplayPowerServiceProvider::DisplayPowerServiceProvider(
     std::unique_ptr<Delegate> delegate)
     : delegate_(std::move(delegate)), weak_ptr_factory_(this) {}
 
-DisplayPowerServiceProvider::~DisplayPowerServiceProvider() {}
+DisplayPowerServiceProvider::~DisplayPowerServiceProvider() = default;
 
 void DisplayPowerServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {

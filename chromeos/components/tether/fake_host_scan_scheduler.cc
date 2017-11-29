@@ -8,9 +8,9 @@ namespace chromeos {
 
 namespace tether {
 
-FakeHostScanScheduler::FakeHostScanScheduler() {}
+FakeHostScanScheduler::FakeHostScanScheduler() = default;
 
-FakeHostScanScheduler::~FakeHostScanScheduler() {}
+FakeHostScanScheduler::~FakeHostScanScheduler() = default;
 
 void FakeHostScanScheduler::ScheduleScan() {
   ++num_scheduled_scans_;

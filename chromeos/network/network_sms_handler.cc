@@ -43,8 +43,8 @@ const char NetworkSmsHandler::kTimestampKey[] = "timestamp";
 
 class NetworkSmsHandler::NetworkSmsDeviceHandler {
  public:
-  NetworkSmsDeviceHandler() {}
-  virtual ~NetworkSmsDeviceHandler() {}
+  NetworkSmsDeviceHandler() = default;
+  virtual ~NetworkSmsDeviceHandler() = default;
 
   virtual void RequestUpdate() = 0;
 };

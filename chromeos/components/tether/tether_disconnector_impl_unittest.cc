@@ -29,7 +29,7 @@ class TetherDisconnectorImplTest : public testing::Test {
  public:
   TetherDisconnectorImplTest()
       : test_devices_(cryptauth::GenerateTestRemoteDevices(2u)) {}
-  ~TetherDisconnectorImplTest() override {}
+  ~TetherDisconnectorImplTest() override = default;
 
   void SetUp() override {
     fake_active_host_ = base::MakeUnique<FakeActiveHost>();

@@ -29,7 +29,7 @@ const char* const kGuidArray[] = {kGuid0, kGuid1, kGuid2};
 
 class NetworkListSorterTest : public testing::Test {
  protected:
-  NetworkListSorterTest() {}
+  NetworkListSorterTest() = default;
 
   void SetUp() override {
     network_list_sorter_ = base::MakeUnique<NetworkListSorter>();

@@ -20,10 +20,8 @@ scoped_refptr<ExtendedAuthenticator> ExtendedAuthenticator::Create(
   return base::MakeRefCounted<ExtendedAuthenticatorImpl>(consumer);
 }
 
-ExtendedAuthenticator::ExtendedAuthenticator() {
-}
+ExtendedAuthenticator::ExtendedAuthenticator() = default;
 
-ExtendedAuthenticator::~ExtendedAuthenticator() {
-}
+ExtendedAuthenticator::~ExtendedAuthenticator() = default;
 
 }  // namespace chromeos

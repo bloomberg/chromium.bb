@@ -41,7 +41,7 @@ NetworkConfigurationRemover::NetworkConfigurationRemover(
       managed_network_configuration_handler_(
           managed_network_configuration_handler) {}
 
-NetworkConfigurationRemover::~NetworkConfigurationRemover() {}
+NetworkConfigurationRemover::~NetworkConfigurationRemover() = default;
 
 void NetworkConfigurationRemover::RemoveNetworkConfiguration(
     const std::string& wifi_network_guid) {

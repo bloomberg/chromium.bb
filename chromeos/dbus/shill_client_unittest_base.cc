@@ -75,13 +75,11 @@ void ValueMatcher::DescribeNegationTo(::std::ostream* os) const {
   *os << "value does not equal " << expected_value_str;
 }
 
+ShillClientUnittestBase::MockPropertyChangeObserver::
+    MockPropertyChangeObserver() = default;
 
 ShillClientUnittestBase::MockPropertyChangeObserver::
-  MockPropertyChangeObserver() {}
-
-ShillClientUnittestBase::MockPropertyChangeObserver::
-  ~MockPropertyChangeObserver() {}
-
+    ~MockPropertyChangeObserver() = default;
 
 ShillClientUnittestBase::ShillClientUnittestBase(
     const std::string& interface_name,
@@ -91,8 +89,7 @@ ShillClientUnittestBase::ShillClientUnittestBase(
       response_(NULL) {
 }
 
-ShillClientUnittestBase::~ShillClientUnittestBase() {
-}
+ShillClientUnittestBase::~ShillClientUnittestBase() = default;
 
 void ShillClientUnittestBase::SetUp() {
   // Create a mock bus.

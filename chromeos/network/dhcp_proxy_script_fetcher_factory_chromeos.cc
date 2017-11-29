@@ -10,11 +10,11 @@
 
 namespace chromeos {
 
-DhcpProxyScriptFetcherFactoryChromeos::DhcpProxyScriptFetcherFactoryChromeos() {
-}
+DhcpProxyScriptFetcherFactoryChromeos::DhcpProxyScriptFetcherFactoryChromeos() =
+    default;
 
 DhcpProxyScriptFetcherFactoryChromeos::
-    ~DhcpProxyScriptFetcherFactoryChromeos() {}
+    ~DhcpProxyScriptFetcherFactoryChromeos() = default;
 
 std::unique_ptr<net::DhcpProxyScriptFetcher>
 DhcpProxyScriptFetcherFactoryChromeos::Create(

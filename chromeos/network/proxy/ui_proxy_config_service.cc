@@ -90,7 +90,7 @@ UIProxyConfigService::UIProxyConfigService(PrefService* profile_prefs,
                  base::Unretained(this)));
 }
 
-UIProxyConfigService::~UIProxyConfigService() {}
+UIProxyConfigService::~UIProxyConfigService() = default;
 
 void UIProxyConfigService::UpdateFromPrefs(const std::string& network_guid) {
   current_ui_network_guid_ = network_guid;

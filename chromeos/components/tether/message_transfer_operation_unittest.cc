@@ -33,7 +33,7 @@ class TestOperation : public MessageTransferOperation {
   TestOperation(const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
                 BleConnectionManager* connection_manager)
       : MessageTransferOperation(devices_to_connect, connection_manager) {}
-  ~TestOperation() override {}
+  ~TestOperation() override = default;
 
   bool HasDeviceAuthenticated(const cryptauth::RemoteDevice& remote_device) {
     const auto iter = device_map_.find(remote_device);
@@ -96,8 +96,8 @@ class TestOperation : public MessageTransferOperation {
 
  private:
   struct DeviceMapValue {
-    DeviceMapValue() {}
-    ~DeviceMapValue() {}
+    DeviceMapValue() = default;
+    ~DeviceMapValue() = default;
 
     bool has_device_authenticated;
     std::vector<std::shared_ptr<MessageWrapper>> received_messages;
@@ -113,7 +113,7 @@ class TestOperation : public MessageTransferOperation {
 
 class TestTimerFactory : public TimerFactory {
  public:
-  ~TestTimerFactory() override {}
+  ~TestTimerFactory() override = default;
 
   // TimerFactory:
   std::unique_ptr<base::Timer> CreateOneShotTimer() override {

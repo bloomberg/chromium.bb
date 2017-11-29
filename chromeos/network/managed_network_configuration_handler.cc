@@ -12,6 +12,7 @@
 
 namespace chromeos {
 
-ManagedNetworkConfigurationHandler::~ManagedNetworkConfigurationHandler() {}
+ManagedNetworkConfigurationHandler::~ManagedNetworkConfigurationHandler() =
+    default;
 
 }  // namespace chromeos

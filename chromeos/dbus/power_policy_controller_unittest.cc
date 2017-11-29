@@ -17,7 +17,7 @@ class PowerPolicyControllerTest : public testing::Test {
   PowerPolicyControllerTest()
       : fake_power_client_(new FakePowerManagerClient) {}
 
-  ~PowerPolicyControllerTest() override {}
+  ~PowerPolicyControllerTest() override = default;
 
   void SetUp() override {
     PowerPolicyController::Initialize(fake_power_client_.get());

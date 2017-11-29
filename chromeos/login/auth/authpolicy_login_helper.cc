@@ -104,6 +104,6 @@ void AuthPolicyLoginHelper::OnAuthCallback(
   std::move(callback).Run(error, account_info);
 }
 
-AuthPolicyLoginHelper::~AuthPolicyLoginHelper() {}
+AuthPolicyLoginHelper::~AuthPolicyLoginHelper() = default;
 
 }  // namespace chromeos

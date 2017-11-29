@@ -64,7 +64,7 @@ const char NetworkConnectionHandler::kErrorTetherAttemptWithNoDelegate[] =
 NetworkConnectionHandler::NetworkConnectionHandler()
     : tether_delegate_(nullptr), weak_ptr_factory_(this) {}
 
-NetworkConnectionHandler::~NetworkConnectionHandler() {}
+NetworkConnectionHandler::~NetworkConnectionHandler() = default;
 
 void NetworkConnectionHandler::AddObserver(
     NetworkConnectionObserver* observer) {

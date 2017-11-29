@@ -48,7 +48,7 @@ class HostResolverImplChromeOSTest : public testing::Test {
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
-  ~HostResolverImplChromeOSTest() override {}
+  ~HostResolverImplChromeOSTest() override = default;
 
   void SetUp() override {
     DBusThreadManager::Initialize();

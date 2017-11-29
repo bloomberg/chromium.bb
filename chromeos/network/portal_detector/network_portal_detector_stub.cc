@@ -6,9 +6,9 @@
 
 namespace chromeos {
 
-NetworkPortalDetectorStub::NetworkPortalDetectorStub() {}
+NetworkPortalDetectorStub::NetworkPortalDetectorStub() = default;
 
-NetworkPortalDetectorStub::~NetworkPortalDetectorStub() {}
+NetworkPortalDetectorStub::~NetworkPortalDetectorStub() = default;
 
 void NetworkPortalDetectorStub::AddObserver(Observer* observer) {}
 

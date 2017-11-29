@@ -9,22 +9,7 @@ namespace chromeos {
 
 UserContext::UserContext() : account_id_(EmptyAccountId()) {}
 
-UserContext::UserContext(const UserContext& other)
-    : account_id_(other.account_id_),
-      key_(other.key_),
-      auth_code_(other.auth_code_),
-      refresh_token_(other.refresh_token_),
-      access_token_(other.access_token_),
-      user_id_hash_(other.user_id_hash_),
-      is_using_oauth_(other.is_using_oauth_),
-      is_using_pin_(other.is_using_pin_),
-      is_forcing_dircrypto_(other.is_forcing_dircrypto_),
-      auth_flow_(other.auth_flow_),
-      user_type_(other.user_type_),
-      public_session_locale_(other.public_session_locale_),
-      public_session_input_method_(other.public_session_input_method_),
-      device_id_(other.device_id_),
-      gaps_cookie_(other.gaps_cookie_) {}
+UserContext::UserContext(const UserContext& other) = default;
 
 UserContext::UserContext(const AccountId& account_id)
     : account_id_(account_id) {
@@ -40,8 +25,7 @@ UserContext::UserContext(user_manager::UserType user_type,
         user_manager::CanonicalizeUserID(account_id_.GetUserEmail()));
 }
 
-UserContext::~UserContext() {
-}
+UserContext::~UserContext() = default;
 
 bool UserContext::operator==(const UserContext& context) const {
   return context.account_id_ == account_id_ && context.key_ == key_ &&

@@ -50,7 +50,7 @@ KeepAliveOperation::KeepAliveOperation(
       remote_device_(device_to_connect),
       clock_(base::MakeUnique<base::DefaultClock>()) {}
 
-KeepAliveOperation::~KeepAliveOperation() {}
+KeepAliveOperation::~KeepAliveOperation() = default;
 
 void KeepAliveOperation::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);

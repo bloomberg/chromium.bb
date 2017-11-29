@@ -18,7 +18,7 @@ namespace {
 class TestObserver final : public TetherHostResponseRecorder::Observer {
  public:
   TestObserver() : num_callbacks_(0) {}
-  ~TestObserver() {}
+  ~TestObserver() = default;
 
   uint32_t num_callbacks() { return num_callbacks_; }
 

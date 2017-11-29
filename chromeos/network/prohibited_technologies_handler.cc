@@ -11,7 +11,7 @@
 
 namespace chromeos {
 
-ProhibitedTechnologiesHandler::ProhibitedTechnologiesHandler() {}
+ProhibitedTechnologiesHandler::ProhibitedTechnologiesHandler() = default;
 
 ProhibitedTechnologiesHandler::~ProhibitedTechnologiesHandler() {
   if (managed_network_configuration_handler_)

@@ -12,9 +12,9 @@
 
 namespace chromeos {
 
-FakeArcObbMounterClient::FakeArcObbMounterClient() {}
+FakeArcObbMounterClient::FakeArcObbMounterClient() = default;
 
-FakeArcObbMounterClient::~FakeArcObbMounterClient() {}
+FakeArcObbMounterClient::~FakeArcObbMounterClient() = default;
 
 void FakeArcObbMounterClient::Init(dbus::Bus* bus) {}
 

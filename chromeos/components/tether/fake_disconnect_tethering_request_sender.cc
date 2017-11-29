@@ -8,9 +8,11 @@ namespace chromeos {
 
 namespace tether {
 
-FakeDisconnectTetheringRequestSender::FakeDisconnectTetheringRequestSender() {}
+FakeDisconnectTetheringRequestSender::FakeDisconnectTetheringRequestSender() =
+    default;
 
-FakeDisconnectTetheringRequestSender::~FakeDisconnectTetheringRequestSender() {}
+FakeDisconnectTetheringRequestSender::~FakeDisconnectTetheringRequestSender() =
+    default;
 
 void FakeDisconnectTetheringRequestSender::SendDisconnectRequestToDevice(
     const std::string& device_id) {

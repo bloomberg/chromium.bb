@@ -26,8 +26,8 @@ namespace {
 
 class TestTetherComponentObserver : public TetherComponent::Observer {
  public:
-  TestTetherComponentObserver() {}
-  ~TestTetherComponentObserver() override {}
+  TestTetherComponentObserver() = default;
+  ~TestTetherComponentObserver() override = default;
 
   bool shutdown_complete() { return shutdown_complete_; }
 
@@ -45,7 +45,7 @@ class FakeAsynchronousShutdownObjectContainerFactory
       FakeAsynchronousShutdownObjectContainer* fake_asynchronous_container)
       : fake_asynchronous_container_(fake_asynchronous_container) {}
 
-  ~FakeAsynchronousShutdownObjectContainerFactory() override {}
+  ~FakeAsynchronousShutdownObjectContainerFactory() override = default;
 
   // AsynchronousShutdownObjectContainerImpl::Factory:
   std::unique_ptr<AsynchronousShutdownObjectContainer> BuildInstance(
@@ -69,7 +69,7 @@ class FakeSynchronousShutdownObjectContainerFactory
       FakeSynchronousShutdownObjectContainer* fake_synchronous_container)
       : fake_synchronous_container_(fake_synchronous_container) {}
 
-  ~FakeSynchronousShutdownObjectContainerFactory() override {}
+  ~FakeSynchronousShutdownObjectContainerFactory() override = default;
 
   // SynchronousShutdownObjectContainerImpl::Factory:
   std::unique_ptr<SynchronousShutdownObjectContainer> BuildInstance(
@@ -93,7 +93,7 @@ class FakeCrashRecoveryManagerFactory
       FakeCrashRecoveryManager* fake_crash_recovery_manager)
       : fake_crash_recovery_manager_(fake_crash_recovery_manager) {}
 
-  ~FakeCrashRecoveryManagerFactory() override {}
+  ~FakeCrashRecoveryManagerFactory() override = default;
 
   // CrashRecoveryManagerImpl::Factory:
   std::unique_ptr<CrashRecoveryManager> BuildInstance(
@@ -111,8 +111,8 @@ class FakeCrashRecoveryManagerFactory
 
 class TetherComponentImplTest : public testing::Test {
  protected:
-  TetherComponentImplTest() {}
-  ~TetherComponentImplTest() override {}
+  TetherComponentImplTest() = default;
+  ~TetherComponentImplTest() override = default;
 
   void SetUp() override {
     was_synchronous_container_deleted_ = false;

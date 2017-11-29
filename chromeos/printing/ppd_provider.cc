@@ -1227,7 +1227,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   base::WeakPtrFactory<PpdProviderImpl> weak_factory_;
 
  protected:
-  ~PpdProviderImpl() override {}
+  ~PpdProviderImpl() override = default;
 };
 
 }  // namespace

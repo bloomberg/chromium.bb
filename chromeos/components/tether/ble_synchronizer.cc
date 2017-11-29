@@ -28,7 +28,7 @@ BleSynchronizer::BleSynchronizer(
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {}
 
-BleSynchronizer::~BleSynchronizer() {}
+BleSynchronizer::~BleSynchronizer() = default;
 
 void BleSynchronizer::ProcessQueue() {
   if (current_command_ || command_queue().empty())

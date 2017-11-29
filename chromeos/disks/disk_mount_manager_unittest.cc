@@ -183,7 +183,7 @@ enum ObserverEventType {
 struct ObserverEvent {
  public:
   virtual ObserverEventType type() const = 0;
-  virtual ~ObserverEvent() {}
+  virtual ~ObserverEvent() = default;
 };
 
 // Represents an invocation of |DiskMountManager::Observer::OnDeviceEvent()|.
@@ -191,7 +191,7 @@ struct DeviceEvent : public ObserverEvent {
   DiskMountManager::DeviceEvent event;
   std::string device_path;
 
-  DeviceEvent() {}
+  DeviceEvent() = default;
 
   DeviceEvent(DiskMountManager::DeviceEvent event,
               const std::string& device_path)
@@ -241,7 +241,7 @@ struct FormatEvent : public ObserverEvent {
   chromeos::FormatError error_code;
   std::string device_path;
 
-  FormatEvent() {}
+  FormatEvent() = default;
   FormatEvent(DiskMountManager::FormatEvent event,
               chromeos::FormatError error_code,
               const std::string& device_path)
@@ -326,7 +326,7 @@ class MockDiskMountManagerObserver : public DiskMountManager::Observer {
  public:
   explicit MockDiskMountManagerObserver(const DiskMountManager* manager)
       : manager_(manager) {}
-  ~MockDiskMountManagerObserver() override {}
+  ~MockDiskMountManagerObserver() override = default;
 
   // Mock notify methods.
   void OnDeviceEvent(DiskMountManager::DeviceEvent event,
@@ -472,7 +472,7 @@ class DiskMountManagerTest : public testing::Test {
   DiskMountManagerTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
-  ~DiskMountManagerTest() override {}
+  ~DiskMountManagerTest() override = default;
 
   // Sets up test dbus tread manager and disks mount manager.
   // Initializes disk mount manager disks and mount points.

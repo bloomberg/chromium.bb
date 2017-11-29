@@ -8,7 +8,7 @@ namespace binder {
 
 TransactionStatus::TransactionStatus(Status status) : status_(status) {}
 
-TransactionStatus::~TransactionStatus() {}
+TransactionStatus::~TransactionStatus() = default;
 
 uintptr_t TransactionStatus::GetCookie() const {
   return 0;

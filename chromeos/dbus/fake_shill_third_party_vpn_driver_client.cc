@@ -15,11 +15,11 @@
 
 namespace chromeos {
 
-FakeShillThirdPartyVpnDriverClient::FakeShillThirdPartyVpnDriverClient() {
-}
+FakeShillThirdPartyVpnDriverClient::FakeShillThirdPartyVpnDriverClient() =
+    default;
 
-FakeShillThirdPartyVpnDriverClient::~FakeShillThirdPartyVpnDriverClient() {
-}
+FakeShillThirdPartyVpnDriverClient::~FakeShillThirdPartyVpnDriverClient() =
+    default;
 
 void FakeShillThirdPartyVpnDriverClient::Init(dbus::Bus* bus) {
 }

@@ -9,11 +9,9 @@
 
 namespace chromeos {
 
-AudioDevicesPrefHandlerStub::AudioDevicesPrefHandlerStub() {
-}
+AudioDevicesPrefHandlerStub::AudioDevicesPrefHandlerStub() = default;
 
-AudioDevicesPrefHandlerStub::~AudioDevicesPrefHandlerStub() {
-}
+AudioDevicesPrefHandlerStub::~AudioDevicesPrefHandlerStub() = default;
 
 double AudioDevicesPrefHandlerStub::GetOutputVolumeValue(
     const AudioDevice* device) {

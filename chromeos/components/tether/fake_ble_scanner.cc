@@ -16,7 +16,7 @@ FakeBleScanner::FakeBleScanner(bool automatically_update_discovery_session)
     : automatically_update_discovery_session_(
           automatically_update_discovery_session) {}
 
-FakeBleScanner::~FakeBleScanner() {}
+FakeBleScanner::~FakeBleScanner() = default;
 
 void FakeBleScanner::NotifyReceivedAdvertisementFromDevice(
     const cryptauth::RemoteDevice& remote_device,

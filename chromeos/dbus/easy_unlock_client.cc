@@ -45,7 +45,7 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
  public:
   EasyUnlockClientImpl() : proxy_(NULL), weak_ptr_factory_(this) {}
 
-  ~EasyUnlockClientImpl() override {}
+  ~EasyUnlockClientImpl() override = default;
 
   // EasyUnlockClient override.
   void GenerateEcP256KeyPair(const KeyPairCallback& callback) override {
@@ -185,19 +185,21 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
 
 }  // namespace
 
-EasyUnlockClient::CreateSecureMessageOptions::CreateSecureMessageOptions() {}
+EasyUnlockClient::CreateSecureMessageOptions::CreateSecureMessageOptions() =
+    default;
 
-EasyUnlockClient::CreateSecureMessageOptions::~CreateSecureMessageOptions() {}
+EasyUnlockClient::CreateSecureMessageOptions::~CreateSecureMessageOptions() =
+    default;
 
-EasyUnlockClient::UnwrapSecureMessageOptions::UnwrapSecureMessageOptions() {}
+EasyUnlockClient::UnwrapSecureMessageOptions::UnwrapSecureMessageOptions() =
+    default;
 
-EasyUnlockClient::UnwrapSecureMessageOptions::~UnwrapSecureMessageOptions() {}
+EasyUnlockClient::UnwrapSecureMessageOptions::~UnwrapSecureMessageOptions() =
+    default;
 
-EasyUnlockClient::EasyUnlockClient() {
-}
+EasyUnlockClient::EasyUnlockClient() = default;
 
-EasyUnlockClient::~EasyUnlockClient() {
-}
+EasyUnlockClient::~EasyUnlockClient() = default;
 
 // static
 EasyUnlockClient* EasyUnlockClient::Create() {

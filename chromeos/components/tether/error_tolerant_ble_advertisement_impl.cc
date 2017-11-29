@@ -55,7 +55,7 @@ ErrorTolerantBleAdvertisementImpl::Factory::BuildInstance(
       device_id, std::move(advertisement_data), ble_synchronizer);
 }
 
-ErrorTolerantBleAdvertisementImpl::Factory::~Factory() {}
+ErrorTolerantBleAdvertisementImpl::Factory::~Factory() = default;
 
 ErrorTolerantBleAdvertisementImpl::ErrorTolerantBleAdvertisementImpl(
     const std::string& device_id,

@@ -23,8 +23,8 @@ namespace {
 
 class TestObserver : public NetworkSmsHandler::Observer {
  public:
-  TestObserver() {}
-  ~TestObserver() override {}
+  TestObserver() = default;
+  ~TestObserver() override = default;
 
   void MessageReceived(const base::DictionaryValue& message) override {
     std::string text;
@@ -54,7 +54,7 @@ class NetworkSmsHandlerTest : public testing::Test {
   NetworkSmsHandlerTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
-  ~NetworkSmsHandlerTest() override {}
+  ~NetworkSmsHandlerTest() override = default;
 
   void SetUp() override {
     // Append '--sms-test-messages' to the command line to tell

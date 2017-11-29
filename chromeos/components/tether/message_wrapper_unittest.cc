@@ -48,7 +48,7 @@ void VerifyProtoConversion(const google::protobuf::MessageLite* proto,
 
 class MessageWrapperTest : public testing::Test {
  protected:
-  MessageWrapperTest() {}
+  MessageWrapperTest() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MessageWrapperTest);

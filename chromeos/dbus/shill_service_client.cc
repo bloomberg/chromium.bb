@@ -273,9 +273,9 @@ class ShillServiceClientImpl : public ShillServiceClient {
 
 }  // namespace
 
-ShillServiceClient::ShillServiceClient() {}
+ShillServiceClient::ShillServiceClient() = default;
 
-ShillServiceClient::~ShillServiceClient() {}
+ShillServiceClient::~ShillServiceClient() = default;
 
 // static
 ShillServiceClient* ShillServiceClient::Create() {

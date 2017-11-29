@@ -70,8 +70,7 @@ FakeCrosDisksClient::FakeCrosDisksClient()
       rename_call_count_(0),
       rename_success_(true) {}
 
-FakeCrosDisksClient::~FakeCrosDisksClient() {
-}
+FakeCrosDisksClient::~FakeCrosDisksClient() = default;
 
 void FakeCrosDisksClient::Init(dbus::Bus* bus) {
 }
