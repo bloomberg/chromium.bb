@@ -321,29 +321,15 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionState(
     bool value_prop_accepted =
         prefs->GetBoolean(prefs::kArcVoiceInteractionValuePropAccepted);
 
-    // Currerntly we are doing this so that we don't break existing users. Users
-    // before prefs::kVoiceInteractionEnabled and
-    // prefs::kVoiceInteractionContextEnabled are introduced will have default
-    // |false| value. To avoid breaking existing users, if they have already
-    // accepted value prop (prefs::kArcVoiceInteractionValuePropAccepted ==
-    // true), but prefs::kVoiceInteractionEnabled and
-    // prefs::kVoiceInteractionContextEnabled are not set, we set them to true.
-    // prefs::kArcVoiceInteractionValuePropAccepted == true, but
-    // prefs::kVoiceInteractionEnabled and
-    // prefs::kVoiceInteractionContextEnabled are not set, is an invalid state.
-    // TODO(muyuanli): Remove checking whether |voice_interaction_enabled| is
-    // undefined in the future.
     bool enable_voice_interaction =
         value_prop_accepted &&
-        (!prefs->GetUserPrefValue(prefs::kVoiceInteractionEnabled) ||
-         prefs->GetBoolean(prefs::kVoiceInteractionEnabled));
+        prefs->GetBoolean(prefs::kVoiceInteractionEnabled);
     SetVoiceInteractionEnabled(enable_voice_interaction,
                                base::BindOnce(&DoNothing<bool>));
 
     SetVoiceInteractionContextEnabled(
-        (enable_voice_interaction &&
-         (prefs->GetBoolean(prefs::kVoiceInteractionContextEnabled) ||
-          !prefs->GetUserPrefValue(prefs::kVoiceInteractionContextEnabled))));
+        enable_voice_interaction &&
+        prefs->GetBoolean(prefs::kVoiceInteractionContextEnabled));
   }
 
   // If voice session stopped running, we also stop the assist layer session.
