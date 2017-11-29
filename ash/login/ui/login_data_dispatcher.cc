@@ -26,6 +26,11 @@ void LoginDataDispatcher::Observer::OnShowEasyUnlockIcon(
     const AccountId& user,
     const mojom::EasyUnlockIconOptionsPtr& icon) {}
 
+void LoginDataDispatcher::Observer::OnDevChannelInfoChanged(
+    const std::string& os_version_label_text,
+    const std::string& enterprise_info_text,
+    const std::string& bluetooth_name) {}
+
 LoginDataDispatcher::LoginDataDispatcher() = default;
 
 LoginDataDispatcher::~LoginDataDispatcher() = default;
@@ -66,6 +71,16 @@ void LoginDataDispatcher::ShowEasyUnlockIcon(
     const mojom::EasyUnlockIconOptionsPtr& icon) {
   for (auto& observer : observers_)
     observer.OnShowEasyUnlockIcon(user, icon);
+}
+
+void LoginDataDispatcher::SetDevChannelInfo(
+    const std::string& os_version_label_text,
+    const std::string& enterprise_info_text,
+    const std::string& bluetooth_name) {
+  for (auto& observer : observers_) {
+    observer.OnDevChannelInfoChanged(os_version_label_text,
+                                     enterprise_info_text, bluetooth_name);
+  }
 }
 
 }  // namespace ash

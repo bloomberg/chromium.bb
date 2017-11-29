@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/lock_screen_apps/focus_cycler_delegate.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/version_info_updater.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -24,7 +25,8 @@ class UserSelectionScreenProxy;
 class ViewsScreenLocker : public LoginScreenClient::Delegate,
                           public ScreenLocker::Delegate,
                           public PowerManagerClient::Observer,
-                          public lock_screen_apps::FocusCyclerDelegate {
+                          public lock_screen_apps::FocusCyclerDelegate,
+                          public VersionInfoUpdater::Delegate {
  public:
   explicit ViewsScreenLocker(ScreenLocker* screen_locker);
   ~ViewsScreenLocker() override;
@@ -67,9 +69,17 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void UnregisterLockScreenAppFocusHandler() override;
   void HandleLockScreenAppFocusOut(bool reverse) override;
 
+  // VersionInfoUpdater::Delegate:
+  void OnOSVersionLabelTextUpdated(
+      const std::string& os_version_label_text) override;
+  void OnEnterpriseInfoUpdated(const std::string& message_text,
+                               const std::string& asset_id) override;
+  void OnDeviceInfoUpdated(const std::string& bluetooth_name) override;
+
  private:
   void UpdatePinKeyboardState(const AccountId& account_id);
   void OnAllowedInputMethodsChanged();
+  void OnDevChannelInfoUpdated();
 
   std::unique_ptr<UserSelectionScreenProxy> user_selection_screen_proxy_;
   std::unique_ptr<UserSelectionScreen> user_selection_screen_;
@@ -93,6 +103,13 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   // Callback registered as a lock screen apps focus handler - it should be
   // called to hand focus over to lock screen apps.
   LockScreenAppFocusCallback lock_screen_app_focus_handler_;
+
+  // Updates when version info is changed.
+  VersionInfoUpdater version_info_updater_;
+
+  std::string os_version_label_text_;
+  std::string enterprise_info_text_;
+  std::string bluetooth_name_;
 
   base::WeakPtrFactory<ViewsScreenLocker> weak_factory_;
 
