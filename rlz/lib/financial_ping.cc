@@ -242,7 +242,7 @@ class RefCountedWaitableEvent
   }
 
  private:
-  ~RefCountedWaitableEvent() {}
+  ~RefCountedWaitableEvent() = default;
   friend class base::RefCountedThreadSafe<RefCountedWaitableEvent>;
 
   base::WaitableEvent event_;

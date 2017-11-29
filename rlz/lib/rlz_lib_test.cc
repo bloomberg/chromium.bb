@@ -57,8 +57,8 @@ class MachineDealCodeHelper
   }
 
  private:
-  MachineDealCodeHelper() {}
-  ~MachineDealCodeHelper() {}
+  MachineDealCodeHelper() = default;
+  ~MachineDealCodeHelper() = default;
 };
 
 class RlzLibTest : public RlzLibTestBase {
