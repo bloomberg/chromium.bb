@@ -1,10 +1,6 @@
 {
   "objectPaintInvalidations": [
     {
-      "object": "LayoutIFrame IFRAME",
-      "reason": "invalidate paint rectangle"
-    },
-    {
       "object": "LayoutView #document",
       "reason": "subtree"
     },
