@@ -125,19 +125,15 @@ class RendererController final : public SharedSession::Client,
   void WaitForStabilityBeforeStart(StartTrigger start_trigger);
   // Cancel the start of remoting.
   void CancelDelayedStart();
-  // Called when the delayed start ends. |decoded_bytes_before_delay| is the
-  // total number of audio and video bytes decoded before the delayed start
-  // began. |delayed_start_time| is the time that the delayed start began.
+  // Called when the delayed start ends. |decoded_frame_count_before_delay| is
+  // the total number of frames decoded before the delayed start began.
+  // |delayed_start_time| is the time that the delayed start began.
   void OnDelayedStartTimerFired(StartTrigger start_trigger,
-                                size_t decoded_bytes_before_delay,
                                 unsigned decoded_frame_count_before_delay,
                                 base::TimeTicks delayed_start_time);
 
   // Helper to request the media pipeline switch to the remoting renderer.
   void StartRemoting(StartTrigger start_trigger);
-
-  // Callback to get the estimated transmission capacity from Remoter.
-  void OnReceivedTransmissionCapacity(double rate);
 
   // Indicates whether remoting is started.
   bool remote_rendering_started_ = false;
@@ -197,9 +193,6 @@ class RendererController final : public SharedSession::Client,
   base::OneShotTimer delayed_start_stability_timer_;
 
   std::unique_ptr<base::TickClock> clock_;
-
-  // The estimated transmission capacity (bytes/s) from Remoter.
-  double transmission_capacity_ = 0;
 
   base::WeakPtrFactory<RendererController> weak_factory_;
 

@@ -171,23 +171,6 @@ void SessionMetricsRecorder::OnRemotePlaybackDisabled(bool disabled) {
   remote_playback_is_disabled_ = disabled;
 }
 
-void SessionMetricsRecorder::RecordMediaBitrateVersusCapacity(
-    double kilobits_per_second,
-    double capacity) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Media.Remoting.StartMediaBitrate",
-                              kilobits_per_second, 1, 16 * 1024, 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Media.Remoting.TransmissionCapacity", capacity,
-                              1, 16 * 1024, 50);
-  double remaining = capacity - kilobits_per_second;
-  if (remaining >= 0) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Media.Remoting.CapacityOverMediaBitrate",
-                                remaining, 1, 16 * 1024, 50);
-  } else {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Media.Remoting.MediaBitrateOverCapacity",
-                                -remaining, 1, 16 * 1024, 50);
-  }
-}
-
 void SessionMetricsRecorder::RecordAudioConfiguration() {
   UMA_HISTOGRAM_ENUMERATION("Media.Remoting.AudioCodec", last_audio_codec_,
                             kAudioCodecMax + 1);

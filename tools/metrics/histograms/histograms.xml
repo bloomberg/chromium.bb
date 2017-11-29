@@ -34323,6 +34323,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Remoting.CapacityOverMediaBitrate" units="kbps">
+  <obsolete>
+    Deprecated 11/2017 in issue 788940.
+  </obsolete>
   <owner>miu@chromium.org</owner>
   <summary>
     The difference between the estimated transmission capacity and the media
@@ -34331,6 +34334,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Remoting.MediaBitrateOverCapacity" units="kbps">
+  <obsolete>
+    Deprecated 11/2017 in issue 788940.
+  </obsolete>
   <owner>miu@chromium.org</owner>
   <summary>
     The difference between the media bitrate and the estimated transmission
@@ -34388,6 +34394,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Remoting.StartMediaBitrate" units="kbps">
+  <obsolete>
+    Deprecated 11/2017 in issue 788940.
+  </obsolete>
   <owner>miu@chromium.org</owner>
   <summary>
     The estimated content bitrate (including both audio and video) when starting
@@ -34418,6 +34427,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Remoting.TransmissionCapacity" units="kbps">
+  <obsolete>
+    Deprecated 11/2017 in issue 788940.
+  </obsolete>
   <owner>miu@chromium.org</owner>
   <summary>
     The estimated transmission capacity when starting a remoting session.
