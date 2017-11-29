@@ -85,6 +85,48 @@
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/data_usage/data_use_ui_tab_model_factory.h"
+#include "chrome/browser/android/search_permissions/search_permissions_service.h"
+#else
+#include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
+#include "chrome/browser/media/router/media_router_ui_service_factory.h"
+#include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#include "chrome/browser/chromeos/policy/recommendation_restorer_factory.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder_factory.h"
+#include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
+#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
+#include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
+#include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
+#include "chrome/browser/chromeos/tether/tether_service_factory.h"
+#include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
+#else
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
+#endif
+
+#if defined(OS_WIN)
+#include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
+#include "chrome/browser/ui/desktop_ios_promotion/sms_service_factory.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
+#endif
+
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#include "chrome/browser/feature_engagement/bookmark/bookmark_tracker_factory.h"
+#include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker_factory.h"
+#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "apps/browser_context_keyed_service_factories.h"
 #include "chrome/browser/apps/browser_context_keyed_service_factories.h"
@@ -97,20 +139,12 @@
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #endif
 
-#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
+#include "chrome/browser/printing/cloud_print/privet_notifications_factory.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
-#include "chrome/browser/chromeos/policy/recommendation_restorer_factory.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder_factory.h"
-#include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
-#else
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
-#include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -120,43 +154,6 @@
 #include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
 #include "chrome/browser/supervised_user/chromeos/supervised_user_password_service_factory.h"
 #endif
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
-#include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
-#include "chrome/browser/chromeos/tether/tether_service_factory.h"
-#include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/data_usage/data_use_ui_tab_model_factory.h"
-#include "chrome/browser/android/search_permissions/search_permissions_service.h"
-#else
-#include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
-#include "chrome/browser/media/router/media_router_ui_service_factory.h"
-#include "chrome/browser/search/instant_service_factory.h"
-#include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/browser/usb/usb_chooser_context_factory.h"
-#endif
-
-#if defined(OS_WIN)
-#include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
-#include "chrome/browser/ui/desktop_ios_promotion/sms_service_factory.h"
-#endif
-
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/feature_engagement/bookmark/bookmark_tracker_factory.h"
-#include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker_factory.h"
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
-#endif
-
-#if BUILDFLAG(ENABLE_SPELLCHECK)
-#include "chrome/browser/spellchecker/spellcheck_factory.h"
-#endif
-
-#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-#include "chrome/browser/printing/cloud_print/privet_notifications_factory.h"
 #endif
 
 namespace chrome {
