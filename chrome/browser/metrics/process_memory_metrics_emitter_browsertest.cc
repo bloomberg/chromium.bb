@@ -538,13 +538,10 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckPageInfoUkmMetrics(url, true);
 }
 
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
+// Breaks when attempting to add tests for new UKMs: crbug.com/761524
+// Re-enable with crrev.com/c/774120.
 #define MAYBE_FetchAndEmitMetricsWithExtensionsAndHostReuse \
   DISABLED_FetchAndEmitMetricsWithExtensionsAndHostReuse
-#else
-#define MAYBE_FetchAndEmitMetricsWithExtensionsAndHostReuse \
-  FetchAndEmitMetricsWithExtensionsAndHostReuse
-#endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                        MAYBE_FetchAndEmitMetricsWithExtensionsAndHostReuse) {
   // This test does not work with --site-per-process flag since this test
