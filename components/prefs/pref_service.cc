@@ -543,22 +543,14 @@ void PrefService::UpdateCommandLinePrefStore(PrefStore* command_line_store) {
 // PrefService::Preference
 
 PrefService::Preference::Preference(const PrefService* service,
-                                    const std::string& name,
+                                    std::string name,
                                     base::Value::Type type)
-    : name_(name), type_(type), pref_service_(service) {
-  DCHECK(service);
-  // Cache the registration flags at creation time to avoid multiple map lookups
-  // later.
-  registration_flags_ = service->pref_registry_->GetRegistrationFlags(name_);
-}
-
-const std::string PrefService::Preference::name() const {
-  return name_;
-}
-
-base::Value::Type PrefService::Preference::GetType() const {
-  return type_;
-}
+    : name_(std::move(name)),
+      type_(type),
+      // Cache the registration flags at creation time to avoid multiple map
+      // lookups later.
+      registration_flags_(service->pref_registry_->GetRegistrationFlags(name_)),
+      pref_service_(service) {}
 
 const base::Value* PrefService::Preference::GetValue() const {
   const base::Value* result = pref_service_->GetPreferenceValue(name_);
