@@ -41,7 +41,7 @@ class TextInputTexture : public UiTexture {
     gfx::FontList font_list;
     float pixels_per_meter = texture_size.width() / text_width_;
     int pixel_font_height = static_cast<int>(font_height_ * pixels_per_meter);
-    GetFontList(pixel_font_height, text_, &font_list);
+    GetDefaultFontList(pixel_font_height, text_, &font_list);
     gfx::Rect text_bounds(texture_size.width(), pixel_font_height);
     size_ = gfx::SizeF(text_bounds.size());
 

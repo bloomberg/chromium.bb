@@ -237,7 +237,7 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
     DCHECK(!chip_text.empty());
 
     gfx::FontList font_list;
-    if (!GetFontList(pixel_font_height, chip_text, &font_list))
+    if (!GetDefaultFontList(pixel_font_height, chip_text, &font_list))
       failure_callback_.Run(UiUnsupportedMode::kUnhandledCodePoint);
 
     std::unique_ptr<gfx::RenderText> render_text(CreateRenderText());
@@ -299,7 +299,7 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
 
   int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
   gfx::FontList font_list;
-  if (!GetFontList(pixel_font_height, unelided_url, &font_list))
+  if (!GetDefaultFontList(pixel_font_height, unelided_url, &font_list))
     failure_callback_.Run(UiUnsupportedMode::kUnhandledCodePoint);
 
   const base::string16 text = url_formatter::ElideUrlSimple(

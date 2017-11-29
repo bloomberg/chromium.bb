@@ -82,7 +82,7 @@ class TestUrlBarTexture : public UrlBarTexture {
 
     gfx::Size texture_size = GetPreferredTextureSize(kUrlWidthPixels);
     gfx::FontList font_list;
-    if (!GetFontList(texture_size.height(), text, &font_list))
+    if (!GetDefaultFontList(texture_size.height(), text, &font_list))
       return 0;
 
     return font_list.GetFonts().size();

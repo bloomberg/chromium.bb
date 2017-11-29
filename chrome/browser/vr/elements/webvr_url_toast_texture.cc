@@ -115,7 +115,8 @@ void WebVrUrlToastTexture::RenderUrl(const gfx::Size& texture_size,
   }
 
   gfx::FontList font_list;
-  if (!UiTexture::GetFontList(pixel_font_height, formatted_url, &font_list))
+  if (!UiTexture::GetDefaultFontList(pixel_font_height, formatted_url,
+                                     &font_list))
     failure_callback_.Run(UiUnsupportedMode::kUnhandledCodePoint);
 
   std::unique_ptr<gfx::RenderText> render_text(CreateRenderText());

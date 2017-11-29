@@ -82,7 +82,7 @@ void TextTexture::Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) {
   gfx::FontList fonts;
   float pixels_per_meter = texture_size.width() / text_width_;
   int pixel_font_height = static_cast<int>(font_height_ * pixels_per_meter);
-  GetFontList(pixel_font_height, text_, &fonts);
+  GetDefaultFontList(pixel_font_height, text_, &fonts);
   gfx::Rect text_bounds(texture_size.width(), 0);
 
   std::vector<std::unique_ptr<gfx::RenderText>> lines =

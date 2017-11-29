@@ -37,6 +37,8 @@ constexpr float kButtonRadius = 0.0035f;
 
 constexpr float kButtonWidth = 0.162f;
 
+constexpr char kPreferredFontNameForButtons[] = "sans-serif.medium";
+
 }  // namespace
 
 AudioPermissionPromptTexture::AudioPermissionPromptTexture() = default;
@@ -68,7 +70,7 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
   auto text = l10n_util::GetStringUTF16(
       IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_DESCRIPTION);
   gfx::FontList fonts;
-  GetFontList(ToPixels(kFontSizePromptText), text, &fonts);
+  GetDefaultFontList(ToPixels(kFontSizePromptText), text, &fonts);
   gfx::Rect prompt_text_size(size_.width(), 0);
   std::vector<std::unique_ptr<gfx::RenderText>> lines =
       PrepareDrawStringRect(text, fonts, foreground_color(), &prompt_text_size,
@@ -91,7 +93,8 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
   // TODO(https://crbug.com/787654): Uppercasing should be conditional.
   text = base::i18n::ToUpper(l10n_util::GetStringUTF16(
       IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON));
-  GetFontList(ToPixels(kFontSizePromptButtonText), text, &fonts);
+  GetFontList(kPreferredFontNameForButtons, ToPixels(kFontSizePromptButtonText),
+              text, &fonts);
   lines = PrepareDrawStringRect(
       text, fonts, secondary_button_colors_.foreground, &button_text_size,
       kTextAlignmentCenter, kWrappingBehaviorWrap);
@@ -117,7 +120,8 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
   // TODO(https://crbug.com/787654): Uppercasing should be conditional.
   text = base::i18n::ToUpper(l10n_util::GetStringUTF16(
       IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON));
-  GetFontList(ToPixels(kFontSizePromptButtonText), text, &fonts);
+  GetFontList(kPreferredFontNameForButtons, ToPixels(kFontSizePromptButtonText),
+              text, &fonts);
   button_text_size.set_size(gfx::Size(ToPixels(kButtonWidth), 0));
   lines = PrepareDrawStringRect(text, fonts, primary_button_colors_.foreground,
                                 &button_text_size, kTextAlignmentCenter,
