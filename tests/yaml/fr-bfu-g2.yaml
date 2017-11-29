@@ -124,7 +124,7 @@ tests:
     - ["balbuzard", "⠃⠁⠇⠃⠥⠵⠈⠙"]
   # ⠐ -> eu
     - ["eulécithophore", "⠐⠇⠿⠉⠊⠞⠓⠕⠏⠓⠕⠗⠑"]
-    - ["alleu","⠁⠸⠐"]
+    - ["alleu", "⠁⠸⠐"]
   # ⠠ -> ieu
     - ["acrimonieux", "⠁⠒⠊⠍⠕⠝⠠⠭"]
     - ["lieu.", "⠇⠠⠲"]
@@ -1111,7 +1111,7 @@ tests:
   # ⠳ -> ou
     - ["⠳⠴⠑⠉⠆⠙⠂⠉⠑", "outrecuidance"]
     - ["⠏⠁⠍⠫⠑⠍⠳⠮⠑", "pamplemousse"]
-    - ["⠧⠦⠗⠳", "verrou", {xfail: true}]
+    - ["⠧⠦⠗⠳", "verrou"]
   # ⠪ -> im (début), ition (terminaison)
     - ["⠪⠏⠁⠗⠊⠎⠽⠸⠁⠃⠊⠟", "imparisyllabique"]
     - ["⠝⠿⠕⠉⠪⠍⠿⠗⠊⠢", "néocimmérien"]
@@ -1141,7 +1141,7 @@ tests:
     - ["⠗⠊⠉⠅⠑⠞⠞⠎⠊⠑", "rickettsie"]
   # ⠭ -> ex (devant consonne)
     - ["⠑⠭⠁⠇⠞⠕⠝⠑", "exaltone"]
-    - ["⠣⠑⠭⠁⠮⠹⠑", "flexaèdre", {xfail: true}]
+    - ["⠣⠑⠭⠁⠮⠹⠑", "flexaèdre"]
     - ["⠛⠿⠕⠞⠭⠞⠊⠇⠑", "géotextile"]
     - ["⠭⠞⠜⠏⠕⠗⠁⠝⠿⠑", "extemporanée"]
   # ⠵ -> ez (terminaison)
@@ -1193,7 +1193,7 @@ tests:
     - ["⠴⠇⠡", "translation"]
     - ["⠏⠕⠇⠽⠴⠂⠎⠋⠥⠎⠿", "polytransfusé"]
   # ⠶ -> gn
-    - ["⠶⠁⠞⠓⠕⠎⠞⠕⠍⠑", "gnathostome", {xfail: true}]
+    - ["⠶⠁⠞⠓⠕⠎⠞⠕⠍⠑", "gnathostome"]
     - ["⠍⠁⠶⠿⠞⠊⠟", "magnétique"]
     - ["⠗⠁⠙⠈", "radar"]
   # ⠈ -> ar
@@ -1222,7 +1222,7 @@ tests:
     - ["⠕⠏⠞⠕⠿⠇⠑⠉⠴⠕⠝⠊⠟", "optoélectronique"]
   # ⠌ -> ai
     - ["⠌⠵⠕⠁⠉⠿⠑", "aizoacée"]
-    - ["⠿⠆⠌⠎⠾⠗", "ébraisoir", {xfail: true}]
+    - ["⠿⠆⠌⠎⠾⠗", "ébraisoir"]
   # ⠔ -> in
     - ["⠔⠷⠕⠁⠞⠊⠧⠑", "inchoative"]
     - ["⠔⠷⠕⠁⠞⠊⠧⠑", "inchoative"]

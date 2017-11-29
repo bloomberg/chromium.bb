@@ -11,7 +11,7 @@
 #-license: LGPLv2.1
 #-updated: 2017-11-28
 
-#liblouis: Unified French Grade 2 Table
+# liblouis: Unified French Grade 2 Table
 
 # Copyright (C) 1995-2004 by The BRLTTY Team
 # Copyright (C) 2012 Michel Such <michel.such@free.fr>
@@ -109,7 +109,7 @@ nofor endword bler 45-236
 nofor endword bles 45-156
 
 noback before voy always br 23
-nofor before voyabr before voyabr2 begword br 23
+nofor before voyabr before voyabr2 begmidword br 23
 nofor after voyabr before voyabr always br 23
 nofor begmidword brê 23-126
 nofor before conabr always brè 23-2346
@@ -154,6 +154,8 @@ nofor before voyabr2 midword dr 1456
 nofor begword drôl 145-1235-1456-123
 
 nofor after conabr midword êch 126-12356
+nofor before voyabr before voyabr2 midword èdr 2346-1456
+nofor before voyabr before voyabr2 midword ègr 2346-12456
 endword elle 456
 endword elles 456-234
 noback before con always em 345
@@ -168,6 +170,7 @@ endword ents 126-234
 noback before con midword er 236
 noback endword er 236
 nofor midendword er 236
+nofor midendword errou 236-1235-1256
 noback before con begword es 156
 nofor before con begword es 156
 nofor begword esbr 156-23
@@ -1324,6 +1327,7 @@ prfword justement		245-2345-134
 prfword justice		245-14
 prfword justices		245-14-234
 
+nofor word là 123-12356
 word laquelle		123-123-123
 prfword lecture		123-1235
 prfword lectures		123-1235-234
@@ -2108,10 +2112,31 @@ before apost sufword parce\squ 1234-456-12345
 before apost sufword presqu 235-12345
 before apost sufword puisqu 1234-12345
 
+#Mots commençant par "gn" pour éviter confusion avec le guillemet
+nofor begword gnangn 2356-2-2356	gnangnan
+nofor begword gnathost 2356-1-2345-125-135-234-2345	gnathostome
+nofor begword gneis 2356-15-24-234	gneiss
+nofor begword gnèt 2356-2346-2345	gnète
+nofor begword gniar 2356-24-4	gniard
+nofor begword gniôl 2356-24-1456-123	gniôle
+nofor begword gnocch 2356-135-14-12356	gnocchi
+nofor begword gnognot 2356-135-2356-135-2345	gnognote
+nofor begword gnôl 2356-1456-123	gnôle
+nofor word gnome 2356-135-134-15
+nofor word gnomes 2356-135-134-156
+nofor begword gnomi 2356-135-134-24	gnomique
+nofor word gnomon 2356-135-134-346
+nofor word gnomons 2356-135-134-346-234
+nofor begword gnomoni 2356-135-134-135-1345-24	gnomonique
+nofor word gnon 2356-346
+nofor word gnons 2356-346-234
+nofor begword gnoséo 2356-135-234-123456-135	gnoséologie
+nofor before conabr begword gnosti 2356-135-234-2345-24	gnosticisme
+
+
 
 nofor always kh 13-125
 nofor begword klax 13-123-1-1346
-nofor word là 123-12356
 nofor word çà 12346-12356
 nofor begword wh 2456-125
 nofor word € 45-15
@@ -2131,6 +2156,10 @@ nofor postpunc ?" 26-2356
 nofor postpunc ?) 26-356
 nofor postpunc ?] 26-356-12
 nofor postpunc ?} 26-356-3-3
+nofor postpunc !" 235-2356
+nofor postpunc !) 235-356
+nofor postpunc !] 235-356-12
+nofor postpunc !} 235-356-3-3
 
 #Astuce pour différencier "riz" et "riez"
 nofor pass2 @56-1235-24[@1356] @1-1-1-1356
