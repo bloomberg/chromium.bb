@@ -575,25 +575,8 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
       container_builder_.Size().inline_size, ConstraintSpace().Direction());
 
   if (ConstraintSpace().HasBlockFragmentation() &&
-      ShouldBreakBeforeChild(child, physical_fragment,
-                             logical_offset.block_offset)) {
-    // TODO(mstensho): Make sure that we're at a valid point [1] before
-    // breaking. It's not allowed to break between the content edge of a
-    // container and its first child, if they are adjacent. If we're not allowed
-    // to break here, we need to attempt to propagate the break further up the
-    // ancestry.
-    //
-    // [1] https://drafts.csswg.org/css-break/#possible-breaks
-
-    // The remaining part of the fragmentainer (the unusable space for child
-    // content, due to the break) should still be occupied by this container.
-    intrinsic_block_size_ = FragmentainerSpaceAvailable();
-    // Drop the fragment on the floor and retry at the start of the next
-    // fragmentainer.
-    container_builder_.AddBreakBeforeChild(child);
-    container_builder_.SetDidBreak();
+      BreakBeforeChild(child, physical_fragment, logical_offset.block_offset))
     return true;
-  }
 
   intrinsic_block_size_ =
       std::max(intrinsic_block_size_,
@@ -919,25 +902,8 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       CalculateLogicalOffset(fragment, child_data.margins, child_bfc_offset);
 
   if (ConstraintSpace().HasBlockFragmentation() &&
-      ShouldBreakBeforeChild(child, physical_fragment,
-                             logical_offset.block_offset)) {
-    // TODO(mstensho): Make sure that we're at a valid point [1] before
-    // breaking. It's not allowed to break between the content edge of a
-    // container and its first child, if they are adjacent. If we're not allowed
-    // to break here, we need to attempt to propagate the break further up the
-    // ancestry.
-    //
-    // [1] https://drafts.csswg.org/css-break/#possible-breaks
-
-    // The remaining part of the fragmentainer (the unusable space for child
-    // content, due to the break) should still be occupied by this container.
-    intrinsic_block_size_ = FragmentainerSpaceAvailable();
-    // Drop the fragment on the floor and retry at the start of the next
-    // fragmentainer.
-    container_builder_.AddBreakBeforeChild(child);
-    container_builder_.SetDidBreak();
+      BreakBeforeChild(child, physical_fragment, logical_offset.block_offset))
     return true;
-  }
 
   // Only modify intrinsic_block_size_ if the fragment is non-empty block.
   //
@@ -1159,6 +1125,32 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   container_builder_.SetUsedBlockSize(used_block_size + block_size);
   container_builder_.SetBlockSize(block_size);
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
+}
+
+bool NGBlockLayoutAlgorithm::BreakBeforeChild(
+    NGLayoutInputNode child,
+    const NGPhysicalFragment& physical_fragment,
+    LayoutUnit block_offset) {
+  DCHECK(ConstraintSpace().HasBlockFragmentation());
+  if (!ShouldBreakBeforeChild(child, physical_fragment, block_offset))
+    return false;
+
+  // TODO(mstensho): Make sure that we're at a valid point [1] before
+  // breaking. It's not allowed to break between the content edge of a
+  // container and its first child, if they are adjacent. If we're not allowed
+  // to break here, we need to attempt to propagate the break further up the
+  // ancestry.
+  //
+  // [1] https://drafts.csswg.org/css-break/#possible-breaks
+
+  // The remaining part of the fragmentainer (the unusable space for child
+  // content, due to the break) should still be occupied by this container.
+  intrinsic_block_size_ = FragmentainerSpaceAvailable();
+  // Drop the fragment on the floor and retry at the start of the next
+  // fragmentainer.
+  container_builder_.AddBreakBeforeChild(child);
+  container_builder_.SetDidBreak();
+  return true;
 }
 
 bool NGBlockLayoutAlgorithm::ShouldBreakBeforeChild(

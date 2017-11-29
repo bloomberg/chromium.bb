@@ -153,6 +153,12 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // the available space in the current fragmentainer.
   bool IsFragmentainerOutOfSpace() const;
 
+  // Insert a fragmentainer break before the child if necessary.
+  // Return true if a break was inserted, false otherwise.
+  bool BreakBeforeChild(NGLayoutInputNode child,
+                        const NGPhysicalFragment&,
+                        LayoutUnit block_offset);
+
   // Given a child fragment and the corresponding node's style, return true if
   // we need to insert a fragmentainer break in front of it.
   bool ShouldBreakBeforeChild(NGLayoutInputNode child,
