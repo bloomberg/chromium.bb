@@ -705,7 +705,12 @@ be describing additional metrics about the same event.
   <metric name="Engagement.IsHigh"/>
   <metric name="Engagement.Score"/>
   <metric name="Playbacks.Delta"/>
+  <metric name="Playbacks.SecondsSinceLast"/>
   <metric name="Playbacks.Total"/>
+  <metric name="Player.Audible.Delta"/>
+  <metric name="Player.Audible.Total"/>
+  <metric name="Player.Significant.Delta"/>
+  <metric name="Player.Significant.Total"/>
   <metric name="Visits.Total"/>
 </event>
 

@@ -118,6 +118,9 @@ class MediaEngagementScore final {
   void set_visits_with_media_tag(int visits) {
     visits_with_media_tag_ = visits;
   }
+  void set_last_media_playback_time(base::Time new_time) {
+    last_media_playback_time_ = new_time;
+  }
 
  private:
   friend class MediaEngagementServiceTest;

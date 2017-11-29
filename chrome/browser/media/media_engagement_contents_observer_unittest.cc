@@ -171,12 +171,22 @@ class MediaEngagementContentsObserverTest
     EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
   }
 
-  void SetScores(GURL url, int visits, int media_playbacks) {
+  void SetScores(GURL url,
+                 int visits,
+                 int media_playbacks,
+                 int audible_playbacks,
+                 int significant_playbacks) {
     MediaEngagementScore score =
         contents_observer_->service_->CreateEngagementScore(url);
     score.SetVisits(visits);
     score.SetMediaPlaybacks(media_playbacks);
+    score.set_audible_playbacks(audible_playbacks);
+    score.set_significant_playbacks(significant_playbacks);
     score.Commit();
+  }
+
+  void SetScores(GURL url, int visits, int media_playbacks) {
+    SetScores(url, visits, media_playbacks, 0, 0);
   }
 
   void Navigate(GURL url) {
@@ -202,7 +212,12 @@ class MediaEngagementContentsObserverTest
                       int visits_total,
                       int score,
                       int playbacks_delta,
-                      bool high_score) {
+                      bool high_score,
+                      int audible_players_delta,
+                      int audible_players_total,
+                      int significant_players_delta,
+                      int significant_players_total,
+                      int seconds_since_playback) {
     using Entry = ukm::builders::Media_Engagement_SessionFinished;
 
     std::vector<std::pair<const char*, int64_t>> metrics = {
@@ -211,22 +226,17 @@ class MediaEngagementContentsObserverTest
         {Entry::kEngagement_ScoreName, score},
         {Entry::kPlaybacks_DeltaName, playbacks_delta},
         {Entry::kEngagement_IsHighName, high_score},
+        {Entry::kPlayer_Audible_DeltaName, audible_players_delta},
+        {Entry::kPlayer_Audible_TotalName, audible_players_total},
+        {Entry::kPlayer_Significant_DeltaName, significant_players_delta},
+        {Entry::kPlayer_Significant_TotalName, significant_players_total},
+        {Entry::kPlaybacks_SecondsSinceLastName, seconds_since_playback},
     };
 
     const ukm::UkmSource* source =
         test_ukm_recorder_.GetSourceForUrl(url.spec().c_str());
     EXPECT_EQ(url, source->url());
     EXPECT_EQ(1, test_ukm_recorder_.CountEntries(*source, Entry::kEntryName));
-    test_ukm_recorder_.ExpectMetric(*source, Entry::kEntryName,
-                                    Entry::kVisits_TotalName, visits_total);
-    test_ukm_recorder_.ExpectMetric(*source, Entry::kEntryName,
-                                    Entry::kPlaybacks_TotalName,
-                                    playbacks_total);
-    test_ukm_recorder_.ExpectMetric(*source, Entry::kEntryName,
-                                    Entry::kEngagement_ScoreName, score);
-    test_ukm_recorder_.ExpectMetric(*source, Entry::kEntryName,
-                                    Entry::kPlaybacks_DeltaName,
-                                    playbacks_delta);
     test_ukm_recorder_.ExpectEntry(*source, Entry::kEntryName, metrics);
   }
 
@@ -307,6 +317,23 @@ class MediaEngagementContentsObserverTest
   void SimulateLongMediaPlayback(int id) {
     SimulatePlaybackStoppedWithTime(
         id, false, MediaEngagementContentsObserver::kMaxShortPlaybackTime);
+  }
+
+  void SetLastPlaybackTime(GURL url, base::Time new_time) {
+    MediaEngagementScore score = service_->CreateEngagementScore(url);
+    score.set_last_media_playback_time(new_time);
+    score.Commit();
+  }
+
+  void ExpectLastPlaybackTime(GURL url, const base::Time expected_time) {
+    MediaEngagementScore score = service_->CreateEngagementScore(url);
+    EXPECT_EQ(expected_time, score.last_media_playback_time());
+  }
+
+  base::Time Now() const { return test_clock_->Now(); }
+
+  void Advance15Minutes() {
+    test_clock_->Advance(base::TimeDelta::FromMinutes(15));
   }
 
  private:
@@ -736,59 +763,86 @@ TEST_F(MediaEngagementContentsObserverTest, VisibilityNotRequired) {
 
 TEST_F(MediaEngagementContentsObserverTest, RecordUkmMetricsOnDestroy) {
   GURL url("https://www.google.com");
-  SetScores(url, 6, 5);
-  Navigate(url);
-
-  EXPECT_FALSE(WasSignificantPlaybackRecorded());
-  SimulateSignificantVideoPlayer(0);
-  SimulateSignificantPlaybackTimeForPage();
-  ExpectScores(url, 6.0 / 7.0, 7, 6, 0, 0);
-  EXPECT_TRUE(WasSignificantPlaybackRecorded());
-
-  SimulateDestroy();
-  ExpectUkmEntry(url, 6, 7, 86, 1, true);
-}
-
-TEST_F(MediaEngagementContentsObserverTest,
-       RecordUkmMetricsOnDestroy_NoPlaybacks) {
-  GURL url("https://www.google.com");
-  SetScores(url, 6, 5);
-  Navigate(url);
-
-  EXPECT_FALSE(WasSignificantPlaybackRecorded());
-  ExpectScores(url, 5.0 / 6.0, 6, 5, 0, 0);
-
-  SimulateDestroy();
-  ExpectUkmEntry(url, 5, 7, 71, 0, true);
-}
-
-TEST_F(MediaEngagementContentsObserverTest, RecordUkmMetricsOnNavigate) {
-  GURL url("https://www.google.com");
-  SetScores(url, 6, 5);
+  SetScores(url, 6, 5, 3, 1);
   Navigate(url);
 
   EXPECT_FALSE(WasSignificantPlaybackRecorded());
   SimulateSignificantVideoPlayer(0);
   SimulateSignificantPlaybackTimeForPage();
   SimulateSignificantPlaybackTimeForPlayer(0);
+  SimulateSignificantVideoPlayer(1);
+  EXPECT_TRUE(WasSignificantPlaybackRecorded());
+
+  SimulateDestroy();
+  ExpectScores(url, 6.0 / 7.0, 7, 6, 5, 2);
+  ExpectUkmEntry(url, 6, 7, 86, 1, true, 2, 5, 1, 2, 0);
+}
+
+TEST_F(MediaEngagementContentsObserverTest,
+       RecordUkmMetricsOnDestroy_NoPlaybacks) {
+  GURL url("https://www.google.com");
+  SetScores(url, 6, 5, 2, 1);
+  Navigate(url);
+
+  EXPECT_FALSE(WasSignificantPlaybackRecorded());
+
+  SimulateDestroy();
+  ExpectScores(url, 5.0 / 7.0, 7, 5, 2, 1);
+  ExpectUkmEntry(url, 5, 7, 71, 0, true, 0, 2, 0, 1, 0);
+}
+
+TEST_F(MediaEngagementContentsObserverTest, RecordUkmMetricsOnNavigate) {
+  GURL url("https://www.google.com");
+  SetScores(url, 6, 5, 3, 1);
+  Navigate(url);
+
+  EXPECT_FALSE(WasSignificantPlaybackRecorded());
+  SimulateSignificantVideoPlayer(0);
+  SimulateSignificantPlaybackTimeForPage();
+  SimulateSignificantPlaybackTimeForPlayer(0);
+  SimulateSignificantVideoPlayer(1);
   EXPECT_TRUE(WasSignificantPlaybackRecorded());
 
   Navigate(GURL("https://www.example.org"));
-  ExpectScores(url, 6.0 / 7.0, 7, 6, 1, 1);
-  ExpectUkmEntry(url, 6, 7, 86, 1, true);
+  ExpectScores(url, 6.0 / 7.0, 7, 6, 5, 2);
+  ExpectUkmEntry(url, 6, 7, 86, 1, true, 2, 5, 1, 2, 0);
 }
 
 TEST_F(MediaEngagementContentsObserverTest,
        RecordUkmMetricsOnNavigate_NoPlaybacks) {
   GURL url("https://www.google.com");
-  SetScores(url, 9, 2);
+  SetScores(url, 9, 2, 2, 1);
   Navigate(url);
 
   EXPECT_FALSE(WasSignificantPlaybackRecorded());
 
   Navigate(GURL("https://www.example.org"));
-  ExpectScores(url, 2 / 10.0, 10, 2, 0, 0);
-  ExpectUkmEntry(url, 2, 10, 20, 0, false);
+  ExpectScores(url, 2 / 10.0, 10, 2, 2, 1);
+  ExpectUkmEntry(url, 2, 10, 20, 0, false, 0, 2, 0, 1, 0);
+}
+
+TEST_F(MediaEngagementContentsObserverTest,
+       RecordUkmMetrics_MultiplePlaybackTime) {
+  GURL url("https://www.google.com");
+  SetScores(url, 6, 5, 3, 1);
+  Advance15Minutes();
+  SetLastPlaybackTime(url, Now());
+  Navigate(url);
+
+  Advance15Minutes();
+  const base::Time first = Now();
+  SimulateSignificantVideoPlayer(0);
+  SimulateSignificantPlaybackTimeForPage();
+  SimulateSignificantPlaybackTimeForPlayer(0);
+
+  Advance15Minutes();
+  SimulateSignificantVideoPlayer(1);
+  SimulateSignificantPlaybackTimeForPlayer(1);
+
+  SimulateDestroy();
+  ExpectScores(url, 6.0 / 7.0, 7, 6, 5, 3);
+  ExpectLastPlaybackTime(url, first);
+  ExpectUkmEntry(url, 6, 7, 86, 1, true, 2, 5, 2, 3, 900);
 }
 
 TEST_F(MediaEngagementContentsObserverTest, DoNotRecordMetricsOnInternalUrl) {
