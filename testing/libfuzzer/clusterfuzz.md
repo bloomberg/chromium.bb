@@ -1,12 +1,9 @@
 # libFuzzer and ClusterFuzz Integration
 
-*** note
-Most links on this page are private.
-***
-
-ClusterFuzz is a distributed fuzzing infrastructure 
-([go/clusterfuzz](https://goto.google.com/clusterfuzz)) that automatically
+ClusterFuzz is a distributed fuzzing infrastructure that automatically
 executes libFuzzer tests on scale.
+
+Googlers can read more [here](https://goto.google.com/clusterfuzz).
 
 ## Status Links
 
@@ -27,12 +24,11 @@ builds fuzzers with multiple sanitizers and uploads binaries to a special
 GCS bucket. Build bot recipe is defined in [chromium_libfuzzer.py].
 * ClusterFuzz downloads new binaries once a day and runs fuzzers continuously.
 * Fuzzer run logs are uploaded to [ClusterFuzz libFuzzer Logs] GCS bucket.
-* Fuzzing corpus is maintained for each fuzzer in [Corpus GCS Bucket]. Once a day
+* Fuzzing corpus is maintained for each fuzzer in [Corpus GCS Bucket]. Once a day,
 corpus is minimized to reduce number of duplicates and/or reduce effect of 
 parasitic coverage. 
 * [ClusterFuzz Fuzzer Status] displays fuzzer runtime 
-metrics as well as provides links to crashes and coverage reports. The information
-is collected every 30 minutes.
+metrics as well as provides links to crashes and coverage reports.
 
 
 ## Corpus
@@ -49,9 +45,9 @@ A fuzzer has two input corpus directories, seed and general, but its output
 goes into general corpus directory. Seed corpus is read-only.
 
 
-[Buildbot]: https://goto.google.com/libfuzzer-clusterfuzz-buildbot
+[Buildbot]: https://build.chromium.org/p/chromium.fyi/buildslaves/slave43-c1
 [chromium_libfuzzer.py]: https://code.google.com/p/chromium/codesearch#chromium/build/scripts/slave/recipes/chromium_libfuzzer.py
-[ClusterFuzz Fuzzer Status]: https://goto.google.com/libfuzzer-clusterfuzz-status
-[ClusterFuzz libFuzzer Logs]: https://goto.google.com/libfuzzer-clusterfuzz-logs
-[Corpus GCS Bucket]: https://goto.google.com/libfuzzer-clusterfuzz-corpus
+[ClusterFuzz Fuzzer Status]: https://clusterfuzz.com/v2/fuzzer-stats
+[ClusterFuzz libFuzzer Logs]: https://console.cloud.google.com/storage/browser/clusterfuzz-libfuzzer-logs
+[Corpus GCS Bucket]: https://console.cloud.google.com/storage/clusterfuzz-corpus/libfuzzer
 [fuzzer_test.gni]: https://code.google.com/p/chromium/codesearch#chromium/src/testing/libfuzzer/fuzzer_test.gni

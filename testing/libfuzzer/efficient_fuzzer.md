@@ -23,7 +23,7 @@ There are several metrics you should look at to determine your fuzzer effectiven
 
 * [Fuzzer Speed](#Fuzzer-Speed)
 * [Corpus Size](#Corpus-Size)
-* [Coverage](#Coverage)
+* [Code Coverage](#Code-Coverage)
 
 You can collect these metrics manually or take them from [ClusterFuzz status]
 pages after a fuzzer is checked in Chromium repository.
@@ -301,7 +301,7 @@ All other options can be passed using `libfuzzer_options` property.
 
 [AFL]: http://lcamtuf.coredump.cx/afl/
 [ClusterFuzz status]: clusterfuzz.md#Status-Links
-[Corpus GCS Bucket]: https://goto.google.com/libfuzzer-clusterfuzz-corpus
+[Corpus GCS Bucket]: https://console.cloud.google.com/storage/clusterfuzz-corpus/libfuzzer
 [issue 638836]: https://bugs.chromium.org/p/chromium/issues/detail?id=638836
 [coverage script]: https://cs.chromium.org/chromium/src/testing/libfuzzer/coverage.py
 [gsutil]: https://cloud.google.com/storage/docs/gsutil
