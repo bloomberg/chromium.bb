@@ -2371,7 +2371,7 @@
       }
     ]
   },
-  "Chromium Mac 10.9 Goma Canary LocalOutputCache": {
+  "Chromium Mac Goma Canary LocalOutputCache": {
     "additional_compile_targets": [
       "all"
     ],
