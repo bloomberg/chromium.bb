@@ -51,7 +51,7 @@ public class ContextualSuggestionsCardViewHolder extends NewTabPageViewHolder {
         mDisplayStyleObserver =
                 new DisplayStyleObserverAdapter(itemView, uiConfig, this::updateCardWidth);
         mSuggestionsBinder.updateFieldsVisibility(/* showHeadline = */ true,
-                /* showThumbnail = */ true, /* showThumbnailVideoOverlay = */ false);
+                /* showThumbnail = */ true, /* showThumbnailVideoBadge = */ false);
     }
 
     public void onBindViewHolder(SnippetArticle suggestion) {

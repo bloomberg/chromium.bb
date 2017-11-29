@@ -242,7 +242,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         }
 
         if (mSiteSection != null) {
-            mSiteSection.getTileGroup().onSwitchToForeground(/* trackLoadTasks = */ true);
+            mSiteSection.getTileGroup().onSwitchToForeground(/* trackLoadTask = */ true);
         }
     }
 

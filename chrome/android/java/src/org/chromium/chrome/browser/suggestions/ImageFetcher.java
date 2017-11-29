@@ -245,7 +245,7 @@ public class ImageFetcher {
         ensureIconIsAvailable(
                 getSnippetDomain(snippetUri), // Store to the cache for the whole domain.
                 String.format(FAVICON_SERVICE_FORMAT, snippetUri.getHost(), sizePx),
-                /* useLargeIcon = */ false, new FaviconHelper.IconAvailabilityCallback() {
+                /* isLargeIcon = */ false, new FaviconHelper.IconAvailabilityCallback() {
                     @Override
                     public void onIconAvailabilityChecked(boolean newlyAvailable) {
                         if (!newlyAvailable) {
