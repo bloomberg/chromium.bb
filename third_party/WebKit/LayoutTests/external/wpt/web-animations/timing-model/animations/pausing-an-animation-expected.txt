@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL A pending ready promise should be resolved and not replaced when the animation is paused assert_false: No longer pause-pending expected false got undefined
+Harness: the test ran to completion.
+
