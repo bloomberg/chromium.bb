@@ -81,6 +81,9 @@ message FramePerception {
 
   // The list of entities detected for this frame.
   repeated Entity entity = 5;
+
+  // Latency measurement for a list of packet streams in drishti graph.
+  repeated PacketLatency packet_latency = 6;
 }
 
 message Entity {
@@ -93,6 +96,7 @@ message Entity {
     FACE = 1;
     PERSON = 2;
     MOTION_REGION = 3;
+    LABELED_REGION = 4;
   }
 
   optional EntityType type = 2;
@@ -105,6 +109,9 @@ message Entity {
 
   // Perpendicular distance (depth) from the camera plane to the entity.
   optional Distance depth = 5;
+
+  // String label for this entity.
+  optional string label = 6;
 }
 
 message BoundingBox {
@@ -114,6 +121,14 @@ message BoundingBox {
   // Indicates whether or not these coordinates are normalized to values between
   // 0 and 1.
   optional bool normalized = 3 [default = false];
+}
+
+message PacketLatency {
+  // An identifier label for the packet.
+  optional string label = 1;
+
+  // Delay in microseconds with respect to a reference packet.
+  optional uint64 latency_usec = 2;
 }
 
 message Point {

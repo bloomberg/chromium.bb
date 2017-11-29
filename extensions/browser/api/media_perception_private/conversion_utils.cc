@@ -77,6 +77,8 @@ EntityType EntityTypeProtoToIdl(const mri::Entity& entity) {
         return ENTITY_TYPE_PERSON;
       case mri::Entity::MOTION_REGION:
         return ENTITY_TYPE_MOTION_REGION;
+      case mri::Entity::LABELED_REGION:
+        return ENTITY_TYPE_LABELED_REGION;
       case mri::Entity::UNSPECIFIED:
         return ENTITY_TYPE_UNSPECIFIED;
     }
@@ -100,7 +102,27 @@ Entity EntityProtoToIdl(const mri::Entity& entity) {
   if (entity.has_depth())
     entity_result.depth = DistanceProtoToIdl(entity.depth());
 
+  if (entity.has_label())
+    entity_result.entity_label = std::make_unique<std::string>(entity.label());
+
   return entity_result;
+}
+
+PacketLatency PacketLatencyProtoToIdl(
+    const mri::PacketLatency& packet_latency) {
+  PacketLatency packet_latency_result;
+
+  if (packet_latency.has_label()) {
+    packet_latency_result.packet_label =
+        std::make_unique<std::string>(packet_latency.label());
+  }
+
+  if (packet_latency.has_latency_usec()) {
+    packet_latency_result.latency_usec =
+        std::make_unique<int>(packet_latency.latency_usec());
+  }
+
+  return packet_latency_result;
 }
 
 FramePerception FramePerceptionProtoToIdl(
@@ -126,6 +148,14 @@ FramePerception FramePerceptionProtoToIdl(
     frame_perception_result.entities = std::make_unique<std::vector<Entity>>();
     for (const auto& entity : frame_perception.entity())
       frame_perception_result.entities->emplace_back(EntityProtoToIdl(entity));
+  }
+  if (frame_perception.packet_latency_size() > 0) {
+    frame_perception_result.packet_latency =
+        std::make_unique<std::vector<PacketLatency>>();
+    for (const auto& packet_latency : frame_perception.packet_latency()) {
+      frame_perception_result.packet_latency->emplace_back(
+          PacketLatencyProtoToIdl(packet_latency));
+    }
   }
   return frame_perception_result;
 }

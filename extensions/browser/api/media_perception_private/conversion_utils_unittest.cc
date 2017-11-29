@@ -15,6 +15,9 @@ namespace extensions {
 namespace {
 
 const char kTestDeviceContext[] = "Video camera";
+const char kFakePacketLabel1[] = "Packet1";
+const char kFakePacketLabel3[] = "Packet3";
+const char kFakeEntityLabel3[] = "Region3";
 
 void InitializeFakeFramePerception(const int index,
                                    mri::FramePerception* frame_perception) {
@@ -22,6 +25,20 @@ void InitializeFakeFramePerception(const int index,
   frame_perception->set_frame_width_in_px(3);
   frame_perception->set_frame_height_in_px(4);
   frame_perception->set_timestamp(5);
+
+  // Add a couple fake packet latency to the frame perception.
+  mri::PacketLatency* packet_latency_one =
+      frame_perception->add_packet_latency();
+  packet_latency_one->set_label(kFakePacketLabel1);
+  packet_latency_one->set_latency_usec(10011);
+
+  mri::PacketLatency* packet_latency_two =
+      frame_perception->add_packet_latency();
+  packet_latency_two->set_latency_usec(20011);
+
+  mri::PacketLatency* packet_latency_three =
+      frame_perception->add_packet_latency();
+  packet_latency_three->set_label(kFakePacketLabel3);
 
   // Add a couple fake entities to the frame perception. Note: PERSON
   // EntityType is currently unused.
@@ -50,6 +67,10 @@ void InitializeFakeFramePerception(const int index,
   bounding_box_two->mutable_top_left()->set_x(14);
   bounding_box_two->mutable_top_left()->set_y(15);
   bounding_box_two->set_normalized(true);
+
+  mri::Entity* entity_three = frame_perception->add_entity();
+  entity_three->set_type(mri::Entity::LABELED_REGION);
+  entity_three->set_label(kFakeEntityLabel3);
 }
 
 void ValidateFramePerceptionResult(
@@ -64,7 +85,25 @@ void ValidateFramePerceptionResult(
   ASSERT_TRUE(frame_perception_result.timestamp);
   EXPECT_EQ(*frame_perception_result.timestamp, 5);
 
-  ASSERT_EQ(2u, frame_perception_result.entities->size());
+  // Validate packet latency.
+  ASSERT_EQ(3u, frame_perception_result.packet_latency->size());
+  const media_perception::PacketLatency& packet_latency_one =
+      frame_perception_result.packet_latency->at(0);
+  EXPECT_EQ(*packet_latency_one.packet_label, kFakePacketLabel1);
+  EXPECT_EQ(*packet_latency_one.latency_usec, 10011);
+
+  const media_perception::PacketLatency& packet_latency_two =
+      frame_perception_result.packet_latency->at(1);
+  EXPECT_FALSE(packet_latency_two.packet_label);
+  EXPECT_EQ(*packet_latency_two.latency_usec, 20011);
+
+  const media_perception::PacketLatency& packet_latency_three =
+      frame_perception_result.packet_latency->at(2);
+  EXPECT_EQ(*packet_latency_three.packet_label, kFakePacketLabel3);
+  EXPECT_FALSE(packet_latency_three.latency_usec);
+
+  // Validate entities.
+  ASSERT_EQ(3u, frame_perception_result.entities->size());
   const media_perception::Entity& entity_result_one =
       frame_perception_result.entities->at(0);
   ASSERT_TRUE(entity_result_one.id);
@@ -111,6 +150,13 @@ void ValidateFramePerceptionResult(
   EXPECT_EQ(*bounding_box_result_two->top_left->y, 15);
   EXPECT_FALSE(bounding_box_result_two->bottom_right);
   EXPECT_TRUE(*bounding_box_result_two->normalized);
+
+  const media_perception::Entity& entity_result_three =
+      frame_perception_result.entities->at(2);
+  ASSERT_TRUE(entity_result_three.entity_label);
+  EXPECT_EQ(*entity_result_three.entity_label, kFakeEntityLabel3);
+  EXPECT_EQ(entity_result_three.type,
+            media_perception::ENTITY_TYPE_LABELED_REGION);
 }
 
 void InitializeFakeImageFrameData(mri::ImageFrame* image_frame) {
