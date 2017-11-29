@@ -154,17 +154,6 @@ void StyleResolverState::SetTextOrientation(ETextOrientation text_orientation) {
   }
 }
 
-void StyleResolverState::SetCustomPropertySetForApplyAtRule(
-    const String& string,
-    CSSPropertyValueSet* custom_property_set) {
-  custom_property_sets_for_apply_at_rule_.Set(string, custom_property_set);
-}
-
-CSSPropertyValueSet* StyleResolverState::CustomPropertySetForApplyAtRule(
-    const String& string) {
-  return custom_property_sets_for_apply_at_rule_.at(string);
-}
-
 HeapHashMap<CSSPropertyID, Member<const CSSValue>>&
 StyleResolverState::ParsedPropertiesForPendingSubstitutionCache(
     const CSSPendingSubstitutionValue& value) const {
