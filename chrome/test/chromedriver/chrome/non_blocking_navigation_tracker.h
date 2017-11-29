@@ -21,6 +21,7 @@ public:
                              const Timeout* timeout,
                              bool* is_pending) override;
   void set_timed_out(bool timed_out) override;
+  bool IsNonBlocking() const override;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_NON_BLOCKING_NAVIGATION_TRACKER_H_

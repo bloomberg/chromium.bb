@@ -221,6 +221,10 @@ void NavigationTracker::set_timed_out(bool timed_out) {
   timed_out_ = timed_out;
 }
 
+bool NavigationTracker::IsNonBlocking() const {
+  return false;
+}
+
 Status NavigationTracker::OnConnected(DevToolsClient* client) {
   ResetLoadingState(kUnknown);
 
@@ -238,6 +242,24 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       return Status(kUnknownError, "missing or invalid 'frameId'");
     pending_frame_set_.insert(frame_id);
     loading_state_ = kLoading;
+
+    if (browser_info_->major_version >= 64) {
+      // Check if the document is really loading.
+      base::DictionaryValue params;
+      params.SetString("expression", "document.readyState");
+      std::unique_ptr<base::DictionaryValue> result;
+      Status status =
+          client_->SendCommandAndGetResult("Runtime.evaluate", params, &result);
+      std::string value;
+      if (status.IsError() || !result->GetString("result.value", &value)) {
+        LOG(ERROR) << "Unable to retrieve document state " << status.message();
+        return status;
+      }
+      if (value == "complete") {
+        pending_frame_set_.erase(frame_id);
+        loading_state_ = kNotLoading;
+      }
+    }
   } else if (method == "Page.frameStoppedLoading") {
     // Versions of Blink before revision 170248 sent a single
     // Page.frameStoppedLoading event per page, but 170248 and newer revisions
