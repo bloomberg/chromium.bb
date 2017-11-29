@@ -575,7 +575,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                      * @param callback will be called with the value true if initialization is
                      * successful. The callback will be run on the UI thread.
                      */
-                    // TODO(ntfschr): add @Override once next android SDK rolls
+                    @Override
                     public void initSafeBrowsing(Context context, ValueCallback<Boolean> callback) {
                         // clang-format off
                         ThreadUtils.runOnUiThread(() -> AwContentsStatics.initSafeBrowsing(context,
@@ -583,7 +583,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                         // clang-format on
                     }
 
-                    // TODO(ntfschr): add @Override once next android SDK rolls
+                    @Override
                     public void setSafeBrowsingWhitelist(
                             List<String> urls, ValueCallback<Boolean> callback) {
                         // clang-format off
@@ -598,7 +598,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                      * @return the url pointing to a privacy policy document which can be displayed
                      * to users.
                      */
-                    // TODO(ntfschr): add @Override once next android SDK rolls
+                    @Override
                     public Uri getSafeBrowsingPrivacyPolicyUrl() {
                         return AwContentsStatics.getSafeBrowsingPrivacyPolicyUrl();
                     }
