@@ -4781,6 +4781,8 @@ def CMDpresubmit(parser, args):
                     help='Run upload hook instead of the push hook')
   parser.add_option('-f', '--force', action='store_true',
                     help='Run checks even if tree is dirty')
+  parser.add_option('--all', action='store_true',
+                    help='Run checks against all files, not just modified ones')
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
@@ -4796,11 +4798,26 @@ def CMDpresubmit(parser, args):
     # Default to diffing against the common ancestor of the upstream branch.
     base_branch = cl.GetCommonAncestorWithUpstream()
 
+  if options.all:
+    base_change = cl.GetChange(base_branch, None)
+    files = [('M', f) for f in base_change.AllFiles()]
+    change = presubmit_support.GitChange(
+        base_change.Name(),
+        base_change.FullDescriptionText(),
+        base_change.RepositoryRoot(),
+        files,
+        base_change.issue,
+        base_change.patchset,
+        base_change.author_email,
+        base_change._upstream)
+  else:
+    change = cl.GetChange(base_branch, None)
+
   cl.RunHook(
       committing=not options.upload,
       may_prompt=False,
       verbose=options.verbose,
-      change=cl.GetChange(base_branch, None))
+      change=change)
   return 0
 
 
