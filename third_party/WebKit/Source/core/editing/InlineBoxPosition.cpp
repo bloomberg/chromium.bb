@@ -298,8 +298,10 @@ InlineBoxPosition ComputeInlineBoxPositionForBlockFlow(
   const PositionTemplate<Strategy>& downstream_equivalent =
       DownstreamIgnoringEditingBoundaries(position);
   if (downstream_equivalent != position) {
-    return ComputeInlineBoxPosition(downstream_equivalent,
-                                    TextAffinity::kUpstream, primary_direction);
+    return ComputeInlineBoxPosition(
+        PositionWithAffinityTemplate<Strategy>(downstream_equivalent,
+                                               TextAffinity::kUpstream),
+        primary_direction);
   }
   const PositionTemplate<Strategy>& upstream_equivalent =
       UpstreamIgnoringEditingBoundaries(position);
@@ -307,16 +309,17 @@ InlineBoxPosition ComputeInlineBoxPositionForBlockFlow(
       DownstreamIgnoringEditingBoundaries(upstream_equivalent) == position)
     return InlineBoxPosition();
 
-  return ComputeInlineBoxPosition(upstream_equivalent, TextAffinity::kUpstream,
-                                  primary_direction);
+  return ComputeInlineBoxPosition(
+      PositionWithAffinityTemplate<Strategy>(upstream_equivalent,
+                                             TextAffinity::kUpstream),
+      primary_direction);
 }
 
 template <typename Strategy>
 InlineBoxPosition ComputeInlineBoxPositionTemplate(
-    const PositionTemplate<Strategy>& position,
-    TextAffinity affinity,
+    const PositionWithAffinityTemplate<Strategy>& position,
     TextDirection primary_direction) {
-  int caret_offset = position.ComputeEditingOffset();
+  int caret_offset = position.GetPosition().ComputeEditingOffset();
   Node* const anchor_node = position.AnchorNode();
   LayoutObject* layout_object =
       anchor_node->IsShadowRoot()
@@ -327,7 +330,8 @@ InlineBoxPosition ComputeInlineBoxPositionTemplate(
 
   if (layout_object->IsText()) {
     return ComputeInlineBoxPositionForTextNode(
-        ToLayoutText(layout_object), caret_offset, affinity, primary_direction);
+        ToLayoutText(layout_object), caret_offset, position.Affinity(),
+        primary_direction);
   }
 
   if (layout_object->IsAtomicInlineLevel()) {
@@ -339,48 +343,45 @@ InlineBoxPosition ComputeInlineBoxPositionTemplate(
       !CanHaveChildrenForEditing(anchor_node) ||
       !HasRenderedNonAnonymousDescendantsWithHeight(layout_object))
     return InlineBoxPosition();
-  return ComputeInlineBoxPositionForBlockFlow(position, primary_direction);
+  return ComputeInlineBoxPositionForBlockFlow(position.GetPosition(),
+                                              primary_direction);
 }
 
 template <typename Strategy>
 InlineBoxPosition ComputeInlineBoxPositionTemplate(
-    const PositionTemplate<Strategy>& position,
-    TextAffinity affinity) {
+    const PositionWithAffinityTemplate<Strategy>& position) {
   return ComputeInlineBoxPositionTemplate<Strategy>(
-      position, affinity, PrimaryDirectionOf(*position.AnchorNode()));
+      position, PrimaryDirectionOf(*position.AnchorNode()));
 }
 
 }  // namespace
 
-InlineBoxPosition ComputeInlineBoxPosition(const Position& position,
-                                           TextAffinity affinity) {
-  return ComputeInlineBoxPositionTemplate<EditingStrategy>(position, affinity);
+InlineBoxPosition ComputeInlineBoxPosition(
+    const PositionWithAffinity& position) {
+  return ComputeInlineBoxPositionTemplate<EditingStrategy>(position);
 }
 
-InlineBoxPosition ComputeInlineBoxPosition(const PositionInFlatTree& position,
-                                           TextAffinity affinity) {
-  return ComputeInlineBoxPositionTemplate<EditingInFlatTreeStrategy>(position,
-                                                                     affinity);
+InlineBoxPosition ComputeInlineBoxPosition(
+    const PositionInFlatTreeWithAffinity& position) {
+  return ComputeInlineBoxPositionTemplate<EditingInFlatTreeStrategy>(position);
 }
 
 InlineBoxPosition ComputeInlineBoxPosition(const VisiblePosition& position) {
   DCHECK(position.IsValid()) << position;
-  return ComputeInlineBoxPosition(position.DeepEquivalent(),
-                                  position.Affinity());
+  return ComputeInlineBoxPosition(position.ToPositionWithAffinity());
 }
 
-InlineBoxPosition ComputeInlineBoxPosition(const Position& position,
-                                           TextAffinity affinity,
+InlineBoxPosition ComputeInlineBoxPosition(const PositionWithAffinity& position,
                                            TextDirection primary_direction) {
-  return ComputeInlineBoxPositionTemplate<EditingStrategy>(position, affinity,
+  return ComputeInlineBoxPositionTemplate<EditingStrategy>(position,
                                                            primary_direction);
 }
 
-InlineBoxPosition ComputeInlineBoxPosition(const PositionInFlatTree& position,
-                                           TextAffinity affinity,
-                                           TextDirection primary_direction) {
+InlineBoxPosition ComputeInlineBoxPosition(
+    const PositionInFlatTreeWithAffinity& position,
+    TextDirection primary_direction) {
   return ComputeInlineBoxPositionTemplate<EditingInFlatTreeStrategy>(
-      position, affinity, primary_direction);
+      position, primary_direction);
 }
 
 }  // namespace blink
