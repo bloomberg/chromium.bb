@@ -1,8 +1,6 @@
 This is a testharness.js-based test.
-FAIL Origin-clean check in cross-origin CSSOM Stylesheets assert_throws: Cross origin stylesheet.cssRules should throw SecurityError. function "function () {
-                    crossorigin.cssRules;
-                }" did not throw
+PASS Origin-clean check in cross-origin CSSOM Stylesheets
 PASS Origin-clean check in same-origin CSSOM Stylesheets
-FAIL Origin-clean check in data:css CSSOM Stylesheets Cannot read property 'length' of null
+FAIL Origin-clean check in data:css CSSOM Stylesheets Failed to read the 'cssRules' property from 'CSSStyleSheet': Cannot access rules
 Harness: the test ran to completion.
 

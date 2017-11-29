@@ -22,12 +22,12 @@
 
 interface CSSStyleSheet : StyleSheet {
     readonly attribute CSSRule? ownerRule;
-    [SameObject] readonly attribute CSSRuleList cssRules;
+    [SameObject, RaisesException] readonly attribute CSSRuleList cssRules;
     [RaisesException] unsigned long insertRule(DOMString rule, optional unsigned long index = 0);
     [RaisesException] void deleteRule(unsigned long index);
 
     // Non-standard APIs
-    [MeasureAs=CSSStyleSheetRules] readonly attribute CSSRuleList rules;
+    [MeasureAs=CSSStyleSheetRules, RaisesException] readonly attribute CSSRuleList rules;
     [MeasureAs=CSSStyleSheetAddRule, RaisesException] long addRule([Default=Undefined] optional DOMString selector, [Default=Undefined] optional DOMString style, optional unsigned long index);
     [MeasureAs=CSSStyleSheetRemoveRule, RaisesException] void removeRule([Default=Undefined] optional unsigned long index);
 };
