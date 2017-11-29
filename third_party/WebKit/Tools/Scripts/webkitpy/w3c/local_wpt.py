@@ -32,7 +32,7 @@ class LocalWPT(object):
         if self.host.filesystem.exists(self.path):
             _log.info('WPT checkout exists at %s, fetching latest', self.path)
             self.run(['git', 'fetch', 'origin'])
-            self.run(['git', 'checkout', 'origin/master'])
+            self.run(['git', 'reset', '--hard', 'origin/master'])
             return
 
         _log.info('Cloning GitHub w3c/web-platform-tests into %s', self.path)
