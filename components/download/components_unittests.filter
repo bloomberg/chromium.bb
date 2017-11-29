@@ -9,6 +9,7 @@ DownloadServiceEntryUtilsTest.*
 DownloadServiceModelImplTest.*
 DownloadStoreTest.*
 FileMonitorTest.*
+InProgressConversionsTest.*
 NavigationMonitorImplTest.*
 NetworkListenerTest.*
 ProtoConversionsTest.*

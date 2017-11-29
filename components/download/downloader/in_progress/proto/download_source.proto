@@ -1,0 +1,27 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package metadata_pb;
+
+// This should stay in sync with the download::DownloadSource enum in
+// components/download/downloader/in_progress/download_source.h.
+enum DownloadSource {
+  UNKNOWN = 0;
+  NAVIGATION = 1;
+  DRAG_AND_DROP = 2;
+  MANUAL_RESUMPTION = 3;
+  AUTO_RESUMPTION = 4;
+  FROM_RENDERER = 5;
+  EXTENSION_API = 6;
+  EXTENSION_INSTALLER = 7;
+  PLUGIN = 8;
+  PLUGIN_INSTALLER = 9;
+  INTERNAL_API = 10;
+  SAVE_PACKAGE = 11;
+  OFFLINE_PAGE = 12;
+}

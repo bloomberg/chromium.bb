@@ -123,7 +123,8 @@ enum DownloadCountTypes {
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 
-enum DownloadSource {
+// TODO(xingliu): Deprecate this enum.
+enum DownloadTriggerSource {
   // The download was initiated when the SavePackage system rejected
   // a Save Page As ... by returning false from
   // SavePackage::IsSaveableContents().
@@ -205,7 +206,7 @@ enum class ParallelDownloadCreationEvent {
 void RecordDownloadCount(DownloadCountTypes type);
 
 // Record initiation of a download from a specific source.
-void RecordDownloadSource(DownloadSource source);
+void RecordDownloadSource(DownloadTriggerSource source);
 
 // Record COMPLETED_COUNT and how long the download took.
 void RecordDownloadCompleted(const base::TimeTicks& start,

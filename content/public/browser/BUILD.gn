@@ -118,6 +118,7 @@ source_set("browser_sources") {
     "download_request_utils.h",
     "download_save_info.cc",
     "download_save_info.h",
+    "download_source.h",
     "download_url_parameters.cc",
     "download_url_parameters.h",
     "favicon_status.cc",

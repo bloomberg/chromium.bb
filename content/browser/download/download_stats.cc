@@ -273,7 +273,7 @@ void RecordDownloadCount(DownloadCountTypes type) {
       "Download.Counts", type, DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
 }
 
-void RecordDownloadSource(DownloadSource source) {
+void RecordDownloadSource(DownloadTriggerSource source) {
   UMA_HISTOGRAM_ENUMERATION(
       "Download.Sources", source, DOWNLOAD_SOURCE_LAST_ENTRY);
 }

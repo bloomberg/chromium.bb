@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_save_info.h"
+#include "content/public/browser/download_source.h"
 #include "content/public/common/referrer.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -244,6 +245,11 @@ class CONTENT_EXPORT DownloadUrlParameters {
     request_origin_ = origin;
   }
 
+  // Sets the download source, which will be used in metrics recording.
+  void set_download_source(DownloadSource download_source) {
+    download_source_ = download_source;
+  }
+
   const OnStartedCallback& callback() const { return callback_; }
   bool content_initiated() const { return content_initiated_; }
   const std::string& last_modified() const { return last_modified_; }
@@ -301,6 +307,8 @@ class CONTENT_EXPORT DownloadUrlParameters {
     return traffic_annotation_;
   }
 
+  DownloadSource download_source() const { return download_source_; }
+
  private:
   OnStartedCallback callback_;
   bool content_initiated_;
@@ -328,6 +336,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
   std::string request_origin_;
+  DownloadSource download_source_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUrlParameters);
 };

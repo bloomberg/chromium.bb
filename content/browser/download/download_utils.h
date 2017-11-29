@@ -5,7 +5,9 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_UTILS_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_UTILS_H_
 
+#include "components/download/downloader/in_progress/download_source.h"
 #include "content/public/browser/download_interrupt_reasons.h"
+#include "content/public/browser/download_source.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
@@ -47,6 +49,10 @@ HandleSuccessfulServerResponse(const net::HttpResponseHeaders& http_headers,
 CONTENT_EXPORT void HandleResponseHeaders(
     const net::HttpResponseHeaders* headers,
     DownloadCreateInfo* create_info);
+
+// Converts content::DownloadSource to download::DownloadSource.
+CONTENT_EXPORT download::DownloadSource ToDownloadSource(
+    content::DownloadSource download_source);
 
 }  // namespace content
 

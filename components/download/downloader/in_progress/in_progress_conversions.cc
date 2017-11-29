@@ -5,6 +5,7 @@
 #include "components/download/downloader/in_progress/in_progress_conversions.h"
 
 #include <utility>
+#include "base/logging.h"
 
 // TODO(jming): Write unit tests for conversion methods.
 namespace download {
@@ -14,6 +15,7 @@ DownloadEntry InProgressConversions::DownloadEntryFromProto(
   DownloadEntry entry;
   entry.guid = proto.guid();
   entry.request_origin = proto.request_origin();
+  entry.download_source = DownloadSourceFromProto(proto.download_source());
   return entry;
 }
 
@@ -22,7 +24,81 @@ metadata_pb::DownloadEntry InProgressConversions::DownloadEntryToProto(
   metadata_pb::DownloadEntry proto;
   proto.set_guid(entry.guid);
   proto.set_request_origin(entry.request_origin);
+  proto.set_download_source(DownloadSourceToProto(entry.download_source));
   return proto;
+}
+
+// static
+DownloadSource InProgressConversions::DownloadSourceFromProto(
+    metadata_pb::DownloadSource download_source) {
+  switch (download_source) {
+    case metadata_pb::DownloadSource::UNKNOWN:
+      return DownloadSource::UNKNOWN;
+    case metadata_pb::DownloadSource::NAVIGATION:
+      return DownloadSource::NAVIGATION;
+    case metadata_pb::DownloadSource::DRAG_AND_DROP:
+      return DownloadSource::DRAG_AND_DROP;
+    case metadata_pb::DownloadSource::MANUAL_RESUMPTION:
+      return DownloadSource::MANUAL_RESUMPTION;
+    case metadata_pb::DownloadSource::AUTO_RESUMPTION:
+      return DownloadSource::AUTO_RESUMPTION;
+    case metadata_pb::DownloadSource::FROM_RENDERER:
+      return DownloadSource::FROM_RENDERER;
+    case metadata_pb::DownloadSource::EXTENSION_API:
+      return DownloadSource::EXTENSION_API;
+    case metadata_pb::DownloadSource::EXTENSION_INSTALLER:
+      return DownloadSource::EXTENSION_INSTALLER;
+    case metadata_pb::DownloadSource::PLUGIN:
+      return DownloadSource::PLUGIN;
+    case metadata_pb::DownloadSource::PLUGIN_INSTALLER:
+      return DownloadSource::PLUGIN_INSTALLER;
+    case metadata_pb::DownloadSource::INTERNAL_API:
+      return DownloadSource::INTERNAL_API;
+    case metadata_pb::DownloadSource::SAVE_PACKAGE:
+      return DownloadSource::SAVE_PACKAGE;
+    case metadata_pb::DownloadSource::OFFLINE_PAGE:
+      return DownloadSource::OFFLINE_PAGE;
+  }
+  NOTREACHED();
+  return DownloadSource::UNKNOWN;
+}
+
+// static
+metadata_pb::DownloadSource InProgressConversions::DownloadSourceToProto(
+    DownloadSource download_source) {
+  switch (download_source) {
+    case DownloadSource::UNKNOWN:
+      return metadata_pb::DownloadSource::UNKNOWN;
+    case DownloadSource::NAVIGATION:
+      return metadata_pb::DownloadSource::NAVIGATION;
+    case DownloadSource::DRAG_AND_DROP:
+      return metadata_pb::DownloadSource::DRAG_AND_DROP;
+    case DownloadSource::MANUAL_RESUMPTION:
+      return metadata_pb::DownloadSource::MANUAL_RESUMPTION;
+    case DownloadSource::AUTO_RESUMPTION:
+      return metadata_pb::DownloadSource::AUTO_RESUMPTION;
+    case DownloadSource::FROM_RENDERER:
+      return metadata_pb::DownloadSource::FROM_RENDERER;
+    case DownloadSource::EXTENSION_API:
+      return metadata_pb::DownloadSource::EXTENSION_API;
+    case DownloadSource::EXTENSION_INSTALLER:
+      return metadata_pb::DownloadSource::EXTENSION_INSTALLER;
+    case DownloadSource::PLUGIN:
+      return metadata_pb::DownloadSource::PLUGIN;
+    case DownloadSource::PLUGIN_INSTALLER:
+      return metadata_pb::DownloadSource::PLUGIN_INSTALLER;
+    case DownloadSource::INTERNAL_API:
+      return metadata_pb::DownloadSource::INTERNAL_API;
+    case DownloadSource::SAVE_PACKAGE:
+      return metadata_pb::DownloadSource::SAVE_PACKAGE;
+    case DownloadSource::OFFLINE_PAGE:
+      return metadata_pb::DownloadSource::OFFLINE_PAGE;
+    case DownloadSource::COUNT:
+      break;
+  }
+
+  NOTREACHED();
+  return metadata_pb::DownloadSource::UNKNOWN;
 }
 
 std::vector<DownloadEntry> InProgressConversions::DownloadEntriesFromProto(

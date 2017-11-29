@@ -9,5 +9,6 @@ proto_library("proto") {
 
   sources = [
     "download_entry.proto",
+    "download_source.proto",
   ]
 }
