@@ -129,7 +129,7 @@ void CompileFromResponseCallback(
                                  "WebAssembly", "compile");
   ExceptionToRejectPromiseScope reject_promise_scope(args, exception_state);
 
-  ScriptState* script_state = ScriptState::ForRelevantRealm(args);
+  ScriptState* script_state = ScriptState::ForCurrentRealm(args);
   if (!ExecutionContext::From(script_state)) {
     V8SetReturnValue(args, ScriptPromise().V8Value());
     return;
@@ -142,7 +142,7 @@ void CompileFromResponseCallback(
         ScriptPromise::Reject(
             script_state, V8ThrowException::CreateTypeError(
                               script_state->GetIsolate(),
-                              "An argument must be provided, which must be a"
+                              "An argument must be provided, which must be a "
                               "Response or Promise<Response> object"))
             .V8Value());
     return;
@@ -189,7 +189,7 @@ void CompileFromResponseCallback(
 // See https://crbug.com/708238 for tracking avoiding the hand-generated code.
 void WasmCompileStreamingImpl(const v8::FunctionCallbackInfo<v8::Value>& args) {
   v8::Isolate* isolate = args.GetIsolate();
-  ScriptState* script_state = ScriptState::ForRelevantRealm(args);
+  ScriptState* script_state = ScriptState::ForCurrentRealm(args);
 
   v8::Local<v8::Function> compile_callback =
       v8::Function::New(isolate, CompileFromResponseCallback);
