@@ -16,14 +16,14 @@ reached.
 The following things are extremely effective for improving fuzzer efficiency, so we
 *strongly recommend* them for any fuzzer:
 
-* [seed corpus](#Seed-Corpus)
-* [fuzzer dictionary](#Fuzzer-Dictionary)
+* [Seed Corpus](#Seed-Corpus)
+* [Fuzzer Fictionary](#Fuzzer-Dictionary)
 
 There are several metrics you should look at to determine your fuzzer effectiveness:
 
-* [fuzzer speed](#Fuzzer-Speed)
-* [corpus size](#Corpus-Size)
-* [coverage](#Coverage)
+* [Fuzzer Speed](#Fuzzer-Speed)
+* [Corpus Size](#Corpus-Size)
+* [Coverage](#Coverage)
 
 You can collect these metrics manually or take them from [ClusterFuzz status]
 pages after a fuzzer is checked in Chromium repository.
@@ -36,12 +36,12 @@ from scratch, which can take an indefinite amount of time depending of the size
 of inputs.
 
 Seed corpus works especially well for strictly defined file formats and data
-transmission protocols. 
+transmission protocols.
 
 * For file format parsers, add valid files from your test suite.
 * For protocol parsers, add valid raw streams from test suite into separate files.
 
-Other examples include a graphics library seed corpus, which  would be a variety of
+Other examples include a graphics library seed corpus, which would be a variety of
 small PNG/JPG/GIF files.
 
 If you are running the fuzzer locally, you can pass a corpus directory as an argument:
@@ -81,9 +81,10 @@ If you can't store seed corpus in Chromium repository (e.g. it is too large, has
 licensing issues, etc), you can upload the corpus to Google Cloud Storage bucket
 used by ClusterFuzz:
 
-1) go to [Corpus GCS Bucket]
-2) open directory named `<my_fuzzer_name>_static`
-3) upload corpus files into the directory
+1) Go to [Corpus GCS Bucket].
+2) Open directory named `<my_fuzzer_name>_static`. If the directory does not
+exist, please create it.
+3) Upload corpus files into the directory.
 
 Alternative and faster way is to use [gsutil] command line tool:
 ```bash
@@ -190,7 +191,7 @@ very specific usecases and fail to account for unexpected scenarios.
 Prefer to use static initialization and shared resources rather than bringing the
 environment up and down on every single run. Otherwise, it will slow down
 fuzzer speed on every run and its ability to find new interesting inputs.
-Checkout example on [startup initialization] in libFuzzer documentation. 
+Checkout example on [startup initialization] in libFuzzer documentation.
 
 Fuzzers don't have to shutdown gracefully. We either kill them or they crash
 because memory sanitizer tool found a problem. You can skip freeing static
@@ -268,13 +269,13 @@ contain hundreds (if not thousands) of items.
 
 Too small of a corpus size indicates fuzzer is hitting a code barrier and is unable
 to get past it. Common cases of such issues include: checksums, magic numbers,
-etc. The easiest way to diagnose this problem is to generate and analyze a 
+etc. The easiest way to diagnose this problem is to generate and analyze a
 [coverage report](#Coverage). To fix the issue, you can:
 
-* change the code (e.g. disable crc checks while fuzzing).
-* prepare or improve [corpus seed](#Corpus-Seed).
-* prepare or improve [fuzzer dictionary](#Fuzzer-Dictionary).
-* add [custom options](#Custom-Options).
+* Change the code (e.g. disable crc checks while fuzzing).
+* Prepare or improve [seed corpus](#Seed-Corpus).
+* Prepare or improve [fuzzer dictionary](#Fuzzer-Dictionary).
+* Add [custom options](#Custom-Options).
 
 ### Custom Options
 
@@ -304,5 +305,5 @@ All other options can be passed using `libfuzzer_options` property.
 [issue 638836]: https://bugs.chromium.org/p/chromium/issues/detail?id=638836
 [coverage script]: https://cs.chromium.org/chromium/src/testing/libfuzzer/coverage.py
 [gsutil]: https://cloud.google.com/storage/docs/gsutil
-[libFuzzer options]: http://llvm.org/docs/LibFuzzer.html#options
-[startup initialization]: http://llvm.org/docs/LibFuzzer.html#startup-initialization
+[libFuzzer options]: https://llvm.org/docs/LibFuzzer.html#options
+[startup initialization]: https://llvm.org/docs/LibFuzzer.html#startup-initialization
