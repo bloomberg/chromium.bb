@@ -7,9 +7,9 @@
 namespace headless {
 
 HeadlessResourceDispatcherHostDelegate::
-    HeadlessResourceDispatcherHostDelegate() {}
+    HeadlessResourceDispatcherHostDelegate() = default;
 
 HeadlessResourceDispatcherHostDelegate::
-    ~HeadlessResourceDispatcherHostDelegate() {}
+    ~HeadlessResourceDispatcherHostDelegate() = default;
 
 }  // namespace headless

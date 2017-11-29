@@ -519,13 +519,13 @@ HeadlessBrowserContext* HeadlessBrowserContext::Builder::Build() {
   return browser_->CreateBrowserContext(this);
 }
 
-HeadlessBrowserContext::Builder::MojoBindings::MojoBindings() {}
+HeadlessBrowserContext::Builder::MojoBindings::MojoBindings() = default;
 
 HeadlessBrowserContext::Builder::MojoBindings::MojoBindings(
     const std::string& mojom_name,
     const std::string& js_bindings)
     : mojom_name(mojom_name), js_bindings(js_bindings) {}
 
-HeadlessBrowserContext::Builder::MojoBindings::~MojoBindings() {}
+HeadlessBrowserContext::Builder::MojoBindings::~MojoBindings() = default;
 
 }  // namespace headless

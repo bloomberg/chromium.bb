@@ -32,8 +32,8 @@ class HeadlessBrowserImplForTest : public HeadlessBrowserImpl {
 
 class HeadlessTestLauncherDelegate : public content::TestLauncherDelegate {
  public:
-  HeadlessTestLauncherDelegate() {}
-  ~HeadlessTestLauncherDelegate() override {}
+  HeadlessTestLauncherDelegate() = default;
+  ~HeadlessTestLauncherDelegate() override = default;
 
   // content::TestLauncherDelegate implementation:
   int RunTestSuite(int argc, char** argv) override {

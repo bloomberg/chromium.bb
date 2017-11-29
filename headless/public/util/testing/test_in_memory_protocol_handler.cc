@@ -15,7 +15,7 @@ class TestInMemoryProtocolHandler::MockURLFetcher : public URLFetcher {
  public:
   explicit MockURLFetcher(TestInMemoryProtocolHandler* protocol_handler)
       : protocol_handler_(protocol_handler) {}
-  ~MockURLFetcher() override {}
+  ~MockURLFetcher() override = default;
 
   // URLFetcher implementation:
   void StartFetch(const Request* request,
@@ -58,8 +58,8 @@ class TestInMemoryProtocolHandler::MockURLFetcher : public URLFetcher {
 class TestInMemoryProtocolHandler::TestDelegate
     : public GenericURLRequestJob::Delegate {
  public:
-  TestDelegate() {}
-  ~TestDelegate() override {}
+  TestDelegate() = default;
+  ~TestDelegate() override = default;
 
   // GenericURLRequestJob::Delegate implementation:
   void OnResourceLoadFailed(const Request* request, net::Error error) override {
@@ -87,7 +87,7 @@ TestInMemoryProtocolHandler::TestInMemoryProtocolHandler(
       request_deferrer_(request_deferrer),
       io_thread_task_runner_(io_thread_task_runner) {}
 
-TestInMemoryProtocolHandler::~TestInMemoryProtocolHandler() {}
+TestInMemoryProtocolHandler::~TestInMemoryProtocolHandler() = default;
 
 void TestInMemoryProtocolHandler::SetHeadlessBrowserContext(
     HeadlessBrowserContext* headless_browser_context) {

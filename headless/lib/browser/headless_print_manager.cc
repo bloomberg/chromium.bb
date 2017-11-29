@@ -51,7 +51,7 @@ HeadlessPrintManager::HeadlessPrintManager(content::WebContents* web_contents)
   Reset();
 }
 
-HeadlessPrintManager::~HeadlessPrintManager() {}
+HeadlessPrintManager::~HeadlessPrintManager() = default;
 
 // static
 std::string HeadlessPrintManager::PrintResultToString(PrintResult result) {

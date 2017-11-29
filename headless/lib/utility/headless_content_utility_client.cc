@@ -17,7 +17,7 @@ HeadlessContentUtilityClient::HeadlessContentUtilityClient(
     const std::string& user_agent)
     : user_agent_(user_agent) {}
 
-HeadlessContentUtilityClient::~HeadlessContentUtilityClient() {}
+HeadlessContentUtilityClient::~HeadlessContentUtilityClient() = default;
 
 void HeadlessContentUtilityClient::RegisterServices(
     HeadlessContentUtilityClient::StaticServiceMap* services) {

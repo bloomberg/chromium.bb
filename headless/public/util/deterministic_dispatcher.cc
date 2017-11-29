@@ -20,7 +20,7 @@ DeterministicDispatcher::DeterministicDispatcher(
       navigation_in_progress_(false),
       weak_ptr_factory_(this) {}
 
-DeterministicDispatcher::~DeterministicDispatcher() {}
+DeterministicDispatcher::~DeterministicDispatcher() = default;
 
 void DeterministicDispatcher::JobCreated(ManagedDispatchURLRequestJob* job) {
   base::AutoLock lock(lock_);
@@ -144,7 +144,7 @@ void DeterministicDispatcher::NavigationDoneTask() {
 
 DeterministicDispatcher::Request::Request() = default;
 DeterministicDispatcher::Request::Request(Request&&) = default;
-DeterministicDispatcher::Request::~Request() {}
+DeterministicDispatcher::Request::~Request() = default;
 
 DeterministicDispatcher::Request::Request(
     ManagedDispatchURLRequestJob* url_request)

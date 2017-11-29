@@ -16,7 +16,7 @@ TestURLRequestJob::TestURLRequestJob(net::URLRequest* request,
       body_(new net::StringIOBuffer(body)),
       src_buf_(new net::DrainableIOBuffer(body_.get(), body_->size())) {}
 
-TestURLRequestJob::~TestURLRequestJob() {}
+TestURLRequestJob::~TestURLRequestJob() = default;
 
 void TestURLRequestJob::Start() {
   NotifyHeadersComplete();

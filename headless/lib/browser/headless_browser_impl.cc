@@ -77,7 +77,7 @@ HeadlessBrowserImpl::HeadlessBrowserImpl(
       agent_host_(nullptr),
       weak_ptr_factory_(this) {}
 
-HeadlessBrowserImpl::~HeadlessBrowserImpl() {}
+HeadlessBrowserImpl::~HeadlessBrowserImpl() = default;
 
 HeadlessBrowserContext::Builder
 HeadlessBrowserImpl::CreateBrowserContextBuilder() {

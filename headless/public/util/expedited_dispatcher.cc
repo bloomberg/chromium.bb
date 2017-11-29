@@ -16,7 +16,7 @@ ExpeditedDispatcher::ExpeditedDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
     : io_thread_task_runner_(std::move(io_thread_task_runner)) {}
 
-ExpeditedDispatcher::~ExpeditedDispatcher() {}
+ExpeditedDispatcher::~ExpeditedDispatcher() = default;
 
 void ExpeditedDispatcher::JobCreated(ManagedDispatchURLRequestJob*) {}
 
