@@ -109,6 +109,8 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'UnexpectedAlertBehaviorTest.canSpecifyUnhandledAlertBehaviourUsingCapabilities',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=764519
     'FrameSwitchingTest.testShouldBeAbleToClickInAFrameThatRewritesTopWindowLocation',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
+    'PageLoadingTest.testShouldBeAbleToGetAFragmentOnTheCurrentPage',
 ]
 
 _OS_NEGATIVE_FILTER = {}
