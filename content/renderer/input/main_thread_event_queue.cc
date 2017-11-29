@@ -239,6 +239,7 @@ MainThreadEventQueue::MainThreadEventQueue(
           base::FeatureList::IsEnabled(
               features::kMainThreadBusyScrollIntervention)),
       needs_low_latency_(false),
+      allow_raf_aligned_input_(allow_raf_aligned_input),
       main_task_runner_(main_task_runner),
       renderer_scheduler_(renderer_scheduler),
       use_raf_fallback_timer_(true) {
@@ -521,7 +522,8 @@ bool MainThreadEventQueue::IsRafAlignedEvent(
     case blink::WebInputEvent::kMouseMove:
     case blink::WebInputEvent::kMouseWheel:
     case blink::WebInputEvent::kTouchMove:
-      return !needs_low_latency_ && !needs_low_latency_until_pointer_up_;
+      return allow_raf_aligned_input_ && !needs_low_latency_ &&
+             !needs_low_latency_until_pointer_up_;
     default:
       return false;
   }
