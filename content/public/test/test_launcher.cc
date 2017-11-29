@@ -382,12 +382,7 @@ size_t WrapperTestLauncherDelegate::RetryTests(
       user_data_dir_map_[test_name_no_pre] = temp_dir;
     }
 
-    size_t dot_pos = full_name.find('.');
-    CHECK_NE(dot_pos, std::string::npos);
-    std::string test_case_name = full_name.substr(0, dot_pos);
-    std::string test_name = full_name.substr(dot_pos + 1);
-    std::string pre_test_name(
-        test_case_name + "." + kPreTestPrefix + test_name);
+    std::string pre_test_name = GetPreTestName(full_name);
     if (!base::ContainsKey(test_names_set, pre_test_name))
       tests_to_run_now.push_back(full_name);
   }
