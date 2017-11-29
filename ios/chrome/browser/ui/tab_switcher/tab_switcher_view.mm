@@ -130,6 +130,14 @@ const CGFloat kNewTabButtonWidth = 48;
   [UIView commitAnimations];
 }
 
+- (void)wasShown {
+  [self currentPanelWasShown];
+}
+
+- (void)wasHidden {
+  [self panelWasHiddenAtIndex:self.currentPageIndex];
+}
+
 #pragma mark - Private
 
 - (void)selectPanelAtIndex:(NSInteger)index animated:(BOOL)animated {
@@ -320,16 +328,24 @@ const CGFloat kNewTabButtonWidth = 48;
   [self updateOverlayButtonState];
 
   NSInteger panelIndex = [self currentPanelIndex];
-  TabSwitcherPanelOverlayView* overlayView =
-      base::mac::ObjCCast<TabSwitcherPanelOverlayView>(
-          [_panels objectAtIndex:panelIndex]);
-  if (panelIndex != _previousPanelIndex && overlayView &&
-      [overlayView overlayType] ==
-          TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_SIGNED_OUT) {
-    base::RecordAction(
-        base::UserMetricsAction("Signin_Impression_FromTabSwitcher"));
+  if (panelIndex != _previousPanelIndex) {
+    if (_previousPanelIndex != -1)
+      [self panelWasHiddenAtIndex:_previousPanelIndex];
+    [self currentPanelWasShown];
   }
   _previousPanelIndex = panelIndex;
+}
+
+- (void)panelWasHiddenAtIndex:(NSInteger)index {
+  id panel = [_panels objectAtIndex:index];
+  if ([panel respondsToSelector:@selector(wasHidden)])
+    [panel wasHidden];
+}
+
+- (void)currentPanelWasShown {
+  id panel = [_panels objectAtIndex:self.currentPanelIndex];
+  if ([panel respondsToSelector:@selector(wasShown)])
+    [panel wasShown];
 }
 
 #pragma mark - UIScrollViewAccessibilityDelegate

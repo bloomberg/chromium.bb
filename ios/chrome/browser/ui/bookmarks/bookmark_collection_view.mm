@@ -26,9 +26,7 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/sync/synced_sessions_bridge.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_collection_cells.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_collection_view_background.h"
@@ -79,8 +77,7 @@ CGFloat rowHeight = 48.0;
 CGFloat minFaviconSizePt = 16;
 }
 
-@interface BookmarkCollectionView ()<SigninPromoViewConsumer,
-                                     SyncedSessionsObserver,
+@interface BookmarkCollectionView ()<SyncedSessionsObserver,
                                      UICollectionViewDataSource,
                                      UICollectionViewDelegateFlowLayout,
                                      UIGestureRecognizerDelegate> {
@@ -94,9 +91,6 @@ CGFloat minFaviconSizePt = 16;
 
   // True if the loading spinner background is visible.
   BOOL _spinnerVisible;
-
-  // Mediator, helper for the sign-in promo view.
-  SigninPromoViewMediator* _signinPromoViewMediator;
 
   std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
   ios::ChromeBrowserState* _browserState;
@@ -231,7 +225,6 @@ CGFloat minFaviconSizePt = 16;
 }
 
 - (void)dealloc {
-  [_signinPromoViewMediator signinPromoViewRemoved];
   _collectionView.dataSource = nil;
   _collectionView.delegate = nil;
   UIView* moi = _collectionView;
@@ -337,36 +330,53 @@ CGFloat minFaviconSizePt = 16;
   BOOL shouldShowPromo =
       (!self.editing && self.folder &&
        self.folder->type() == BookmarkNode::MOBILE &&
-       [self.delegate bookmarkCollectionViewShouldShowPromoCell:self]) ||
-      (_signinPromoViewMediator && _signinPromoViewMediator.signinInProgress);
+       [self.delegate bookmarkCollectionViewShouldShowPromoCell:self]);
   if (shouldShowPromo == _promoVisible)
     return;
   // This is awful, but until the old code to do the refresh when switching
   // in and out of edit mode is fixed, this is probably the cleanest thing to
   // do.
   _promoVisible = shouldShowPromo;
-  if (!_promoVisible) {
-    _signinPromoViewMediator.consumer = nil;
-    [_signinPromoViewMediator signinPromoViewRemoved];
-    _signinPromoViewMediator = nil;
-  } else {
-    _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
-        initWithBrowserState:_browserState
-                 accessPoint:signin_metrics::AccessPoint::
-                                 ACCESS_POINT_BOOKMARK_MANAGER
-                   presenter:self.presenter];
-    _signinPromoViewMediator.consumer = self;
-    [_signinPromoViewMediator signinPromoViewVisible];
+  if (_promoVisible) {
+    [self.delegate.signinPromoViewMediator signinPromoViewVisible];
+  } else if (![self.delegate
+                     .signinPromoViewMediator isInvalidClosedOrNeverVisible]) {
+    // When the sign-in view is closed, the promo state changes, but
+    // -[SigninPromoViewMediator signinPromoViewHidden] should not be called.
+    [self.delegate.signinPromoViewMediator signinPromoViewHidden];
   }
   [self.collectionView reloadData];
 }
 
+- (void)configureSigninPromoWithConfigurator:
+            (SigninPromoViewConfigurator*)configurator
+                             identityChanged:(BOOL)identityChanged {
+  NSIndexPath* indexPath =
+      [NSIndexPath indexPathForRow:0 inSection:self.promoSection];
+  BookmarkSigninPromoCell* signinPromoCell =
+      static_cast<BookmarkSigninPromoCell*>(
+          [self.collectionView cellForItemAtIndexPath:indexPath]);
+  if (!signinPromoCell)
+    return;
+  // Should always reconfigure the cell size even if it has to be reloaded.
+  // -[BookmarkCollectionView cellSizeForIndexPath:] uses the current
+  // cell to compute its height.
+  [configurator configureSigninPromoView:signinPromoCell.signinPromoView];
+  if (identityChanged) {
+    // The section should be reload to update the cell height.
+    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:self.promoSection];
+    [self.collectionView reloadSections:indexSet];
+  }
+}
+
 - (void)wasShown {
-  [_signinPromoViewMediator signinPromoViewVisible];
+  if (_promoVisible)
+    [self.delegate.signinPromoViewMediator signinPromoViewVisible];
 }
 
 - (void)wasHidden {
-  [_signinPromoViewMediator signinPromoViewHidden];
+  if (![self.delegate.signinPromoViewMediator isInvalidClosedOrNeverVisible])
+    [self.delegate.signinPromoViewMediator signinPromoViewHidden];
 }
 
 #pragma mark - Sections
@@ -739,11 +749,10 @@ CGFloat minFaviconSizePt = 16;
     // the size. There is an issue with iOS 9 to modify the height of the
     // current cell while being asked for its size. This leads to an infinite
     // loop.
-    DCHECK(_signinPromoViewMediator);
     BookmarkSigninPromoCell* cellToMeasureHeight =
         [[BookmarkSigninPromoCell alloc]
             initWithFrame:CGRectMake(0, 0, 1000, 1000)];
-    [[_signinPromoViewMediator createConfigurator]
+    [[self.delegate.signinPromoViewMediator createConfigurator]
         configureSigninPromoView:cellToMeasureHeight.signinPromoView];
     return PreferredCellSizeForWidth(cellToMeasureHeight,
                                      CGRectGetWidth(self.bounds));
@@ -789,9 +798,11 @@ CGFloat minFaviconSizePt = 16;
         dequeueReusableCellWithReuseIdentifier:[BookmarkSigninPromoCell
                                                    reuseIdentifier]
                                   forIndexPath:indexPath];
-    signinPromoCell.signinPromoView.delegate = _signinPromoViewMediator;
-    [[_signinPromoViewMediator createConfigurator]
+    signinPromoCell.signinPromoView.delegate =
+        self.delegate.signinPromoViewMediator;
+    [[self.delegate.signinPromoViewMediator createConfigurator]
         configureSigninPromoView:signinPromoCell.signinPromoView];
+    [self.delegate.signinPromoViewMediator signinPromoViewVisible];
     return signinPromoCell;
   }
   const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
@@ -832,39 +843,6 @@ CGFloat minFaviconSizePt = 16;
 
 - (NSInteger)numberOfSections {
   return self.sectionCount;
-}
-
-#pragma mark - SigninPromoViewConsumer
-
-- (void)configureSigninPromoWithConfigurator:
-            (SigninPromoViewConfigurator*)configurator
-                             identityChanged:(BOOL)identityChanged {
-  DCHECK(_signinPromoViewMediator);
-  NSIndexPath* indexPath =
-      [NSIndexPath indexPathForRow:0 inSection:self.promoSection];
-  BookmarkSigninPromoCell* signinPromoCell =
-      static_cast<BookmarkSigninPromoCell*>(
-          [self.collectionView cellForItemAtIndexPath:indexPath]);
-  if (!signinPromoCell)
-    return;
-  // Should always reconfigure the cell size even if it has to be reloaded.
-  // -[BookmarkCollectionView cellSizeForIndexPath:] uses the current
-  // cell to compute its height.
-  [configurator configureSigninPromoView:signinPromoCell.signinPromoView];
-  if (identityChanged) {
-    // The section should be reload to update the cell height.
-    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:self.promoSection];
-    [self.collectionView reloadSections:indexSet];
-  }
-}
-
-- (void)signinDidFinish {
-  [self promoStateChangedAnimated:NO];
-}
-
-- (void)signinPromoViewMediatorCloseButtonWasTapped:
-    (SigninPromoViewMediator*)mediator {
-  [_delegate bookmarkCollectionViewDismissPromo:self];
 }
 
 #pragma mark - UIScrollViewDelegate

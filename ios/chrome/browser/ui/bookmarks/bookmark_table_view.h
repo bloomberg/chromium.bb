@@ -10,6 +10,8 @@
 
 class GURL;
 @protocol SigninPresenter;
+@class SigninPromoViewConfigurator;
+@class SigninPromoViewMediator;
 
 namespace bookmarks {
 class BookmarkNode;
@@ -24,6 +26,11 @@ class ChromeBrowserState;
 
 // Delegate to handle actions on the table.
 @protocol BookmarkTableViewDelegate<NSObject>
+
+// Returns the SigninPromoViewMediator to use for the sign-in promo view in the
+// bookmark table view.
+@property(nonatomic, readonly) SigninPromoViewMediator* signinPromoViewMediator;
+
 // Tells the delegate that a URL was selected for navigation.
 - (void)bookmarkTableView:(BookmarkTableView*)view
     selectedUrlForNavigation:(const GURL&)url;
@@ -39,9 +46,6 @@ class ChromeBrowserState;
 
 // Returns true if a bookmarks promo cell should be shown.
 - (BOOL)bookmarkTableViewShouldShowPromoCell:(BookmarkTableView*)view;
-
-// Dismisses the promo.
-- (void)bookmarkTableViewDismissPromo:(BookmarkTableView*)view;
 
 // Tells the delegate that nodes were selected in edit mode.
 - (void)bookmarkTableView:(BookmarkTableView*)view
@@ -91,6 +95,12 @@ class ChromeBrowserState;
 
 // Called when something outside the view causes the promo state to change.
 - (void)promoStateChangedAnimated:(BOOL)animated;
+
+// Configures the sign-in promo view using |configurator|, and reloads the table
+// view if |identityChanged| is YES.
+- (void)configureSigninPromoWithConfigurator:
+            (SigninPromoViewConfigurator*)configurator
+                             identityChanged:(BOOL)identityChanged;
 
 // Called when adding a new folder
 - (void)addNewFolder;

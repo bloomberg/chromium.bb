@@ -52,7 +52,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 @interface BookmarkTableView ()<BookmarkModelBridgeObserver,
                                 BookmarkTableCellTitleEditDelegate,
-                                SigninPromoViewConsumer,
                                 SyncedSessionsObserver,
                                 UIGestureRecognizerDelegate,
                                 UITableViewDataSource,
@@ -79,9 +78,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   std::map<IntegerPair, base::CancelableTaskTracker::TaskId> _faviconLoadTasks;
   // Task tracker used for async favicon loads.
   base::CancelableTaskTracker _faviconTaskTracker;
-
-  // Mediator, helper for the sign-in promo view.
-  SigninPromoViewMediator* _signinPromoViewMediator;
 
   // True if the promo is visible.
   BOOL _promoVisible;
@@ -197,7 +193,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 - (void)dealloc {
   [self removeKeyboardObservers];
-  [_signinPromoViewMediator signinPromoViewRemoved];
   _tableView.dataSource = nil;
   _tableView.delegate = nil;
   _faviconTaskTracker.TryCancelAll();
@@ -210,29 +205,44 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   // the permanent nodes.
   BOOL promoVisible =
       ((_currentRootNode == self.bookmarkModel->root_node()) &&
-       [self.delegate bookmarkTableViewShouldShowPromoCell:self]) ||
-      (_signinPromoViewMediator && _signinPromoViewMediator.signinInProgress);
+       [self.delegate bookmarkTableViewShouldShowPromoCell:self]);
 
   if (promoVisible == _promoVisible) {
     return;
   }
 
   _promoVisible = promoVisible;
-
-  if (!promoVisible) {
-    _signinPromoViewMediator.consumer = nil;
-    [_signinPromoViewMediator signinPromoViewRemoved];
-    _signinPromoViewMediator = nil;
-  } else {
-    _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
-        initWithBrowserState:_browserState
-                 accessPoint:signin_metrics::AccessPoint::
-                                 ACCESS_POINT_BOOKMARK_MANAGER
-                   presenter:self.presenter];
-    _signinPromoViewMediator.consumer = self;
-    [_signinPromoViewMediator signinPromoViewVisible];
+  if (_promoVisible) {
+    [self.delegate.signinPromoViewMediator signinPromoViewVisible];
+  } else if (![self.delegate
+                     .signinPromoViewMediator isInvalidClosedOrNeverVisible]) {
+    // When the sign-in view is closed, the promo state changes, but
+    // -[SigninPromoViewMediator signinPromoViewHidden] should not be called.
+    [self.delegate.signinPromoViewMediator signinPromoViewHidden];
   }
   [self.tableView reloadData];
+}
+
+- (void)configureSigninPromoWithConfigurator:
+            (SigninPromoViewConfigurator*)configurator
+                             identityChanged:(BOOL)identityChanged {
+  NSIndexPath* indexPath =
+      [NSIndexPath indexPathForRow:0 inSection:self.promoSection];
+  BookmarkTableSigninPromoCell* signinPromoCell =
+      static_cast<BookmarkTableSigninPromoCell*>(
+          [self.tableView cellForRowAtIndexPath:indexPath]);
+  if (!signinPromoCell) {
+    return;
+  }
+  // Should always reconfigure the cell size even if it has to be reloaded,
+  // to make sure it has the right size to compute the cell size.
+  [configurator configureSigninPromoView:signinPromoCell.signinPromoView];
+  if (identityChanged) {
+    // The section should be reload to update the cell height.
+    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:self.promoSection];
+    [self.tableView reloadSections:indexSet
+                  withRowAnimation:UITableViewRowAnimationNone];
+  }
 }
 
 - (void)addNewFolder {
@@ -342,10 +352,12 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
       signinPromoCell =
           [[BookmarkTableSigninPromoCell alloc] initWithFrame:CGRectZero];
     }
-    signinPromoCell.signinPromoView.delegate = _signinPromoViewMediator;
-    [[_signinPromoViewMediator createConfigurator]
+    signinPromoCell.signinPromoView.delegate =
+        self.delegate.signinPromoViewMediator;
+    [[self.delegate.signinPromoViewMediator createConfigurator]
         configureSigninPromoView:signinPromoCell.signinPromoView];
     signinPromoCell.selectionStyle = UITableViewCellSelectionStyleNone;
+    [self.delegate.signinPromoViewMediator signinPromoViewVisible];
     return signinPromoCell;
   }
 
@@ -475,39 +487,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     _editNodes.erase(node);
     [self.delegate bookmarkTableView:self selectedEditNodes:_editNodes];
   }
-}
-
-#pragma mark - SigninPromoViewConsumer
-
-- (void)configureSigninPromoWithConfigurator:
-            (SigninPromoViewConfigurator*)configurator
-                             identityChanged:(BOOL)identityChanged {
-  DCHECK(_signinPromoViewMediator);
-  NSIndexPath* indexPath =
-      [NSIndexPath indexPathForRow:0 inSection:self.promoSection];
-  BookmarkTableSigninPromoCell* signinPromoCell =
-      static_cast<BookmarkTableSigninPromoCell*>(
-          [self.tableView cellForRowAtIndexPath:indexPath]);
-  if (!signinPromoCell) {
-    return;
-  }
-  // Should always reconfigure the cell size even if it has to be reloaded.
-  [configurator configureSigninPromoView:signinPromoCell.signinPromoView];
-  if (identityChanged) {
-    // The section should be reload to update the cell height.
-    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:self.promoSection];
-    [self.tableView reloadSections:indexSet
-                  withRowAnimation:UITableViewRowAnimationNone];
-  }
-}
-
-- (void)signinDidFinish {
-  [self promoStateChangedAnimated:NO];
-}
-
-- (void)signinPromoViewMediatorCloseButtonWasTapped:
-    (SigninPromoViewMediator*)mediator {
-  [_delegate bookmarkTableViewDismissPromo:self];
 }
 
 #pragma mark - BookmarkModelBridgeObserver Callbacks
