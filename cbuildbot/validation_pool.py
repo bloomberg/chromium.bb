@@ -1294,7 +1294,8 @@ class ValidationPool(object):
     for _ in range(3):
       # try to resync and push.
       try:
-        git.SyncPushBranch(repo, remote_ref.remote, remote_ref.ref)
+        git.SyncPushBranch(repo, remote_ref.remote, remote_ref.ref,
+                           print_cmd=True)
       except cros_build_lib.RunCommandError:
         # TODO(phobbs) parse the sync failure output and find which change was
         # at fault.

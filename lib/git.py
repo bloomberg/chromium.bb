@@ -1278,7 +1278,7 @@ def CreatePushBranch(branch, git_repo, sync=True, remote_push_branch=None):
   RunGit(git_repo, ['checkout', '-B', branch, '-t', remote_push_branch.ref])
 
 
-def SyncPushBranch(git_repo, remote, rebase_target):
+def SyncPushBranch(git_repo, remote, rebase_target, **kwargs):
   """Sync and rebase a local push branch to the latest remote version.
 
   Args:
@@ -1287,6 +1287,7 @@ def SyncPushBranch(git_repo, remote, rebase_target):
     rebase_target: The branch name returned by GetTrackingBranch().  Must
       start with refs/remotes/ (specifically must be a proper remote
       target rather than an ambiguous name).
+    kwargs: Arguments passed through to RunGit.
   """
   if not rebase_target.startswith('refs/remotes/'):
     raise Exception(
@@ -1295,14 +1296,14 @@ def SyncPushBranch(git_repo, remote, rebase_target):
         % (remote, rebase_target))
 
   cmd = ['remote', 'update', remote]
-  RunGit(git_repo, cmd)
+  RunGit(git_repo, cmd, **kwargs)
 
   try:
-    RunGit(git_repo, ['rebase', rebase_target])
+    RunGit(git_repo, ['rebase', rebase_target], **kwargs)
   except cros_build_lib.RunCommandError:
     # Looks like our change conflicts with upstream. Cleanup our failed
     # rebase.
-    RunGit(git_repo, ['rebase', '--abort'], error_code_ok=True)
+    RunGit(git_repo, ['rebase', '--abort'], error_code_ok=True, **kwargs)
     raise
 
 
