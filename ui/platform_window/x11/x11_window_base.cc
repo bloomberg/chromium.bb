@@ -171,7 +171,7 @@ void X11WindowBase::Close() {
 }
 
 void X11WindowBase::SetBounds(const gfx::Rect& bounds) {
-  if (window_mapped_) {
+  if (xwindow_ != None) {
     XWindowChanges changes = {0};
     unsigned value_mask = 0;
 
