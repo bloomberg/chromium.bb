@@ -14,6 +14,7 @@
       "build/android/pylib/.*",
       "build/check_gn_headers.py",
       "build/check_gn_headers_whitelist.txt",
+      "build/cipd/android/android.ensure",
       "build/get_landmines.py",
       "build/gyp_chromium",
       "build/mac_toolchain.py",

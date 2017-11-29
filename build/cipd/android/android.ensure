@@ -21,7 +21,7 @@ chromium/third_party/android_support_test_runner version:0.5-cr0
 # endless merge conflicts
 
 @Subdir third_party/android_system_sdk
-chromium/third_party/android_system_sdk version:0-cr0
+chromium/third_party/android_system_sdk version:27-cr0
 
 # Three unchanging lines
 # avoid the horror that is
