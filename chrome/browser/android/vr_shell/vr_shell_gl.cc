@@ -400,7 +400,7 @@ void VrShellGl::SubmitFrame(int16_t frame_index,
   }
   // Always notify the client that we're done with the mailbox even
   // if we haven't drawn it, so that it's eligible for destruction.
-  submit_client_->OnSubmitFrameTransferred();
+  submit_client_->OnSubmitFrameTransferred(true);
   if (!swapped) {
     // We dropped without drawing, report this as completed rendering
     // now to unblock the client. We're not going to receive it in

@@ -706,7 +706,7 @@ void VRDisplay::submitFrame() {
   if (present_image_needs_copy_) {
 #if defined(OS_WIN)
     TRACE_EVENT0("gpu", "VRDisplay::CopyImage");
-    if (!frame_copier_) {
+    if (!frame_copier_ || !last_transfer_succeeded_) {
       frame_copier_ = std::make_unique<GpuMemoryBufferImageCopy>(context_gl_);
     }
     auto gpu_memory_buffer = frame_copier_->CopyImage(image_ref.get());
@@ -784,9 +784,10 @@ void VRDisplay::submitFrame() {
   rendering_context_->MarkCompositedAndClearBackbufferIfNeeded();
 }
 
-void VRDisplay::OnSubmitFrameTransferred() {
+void VRDisplay::OnSubmitFrameTransferred(bool success) {
   DVLOG(3) << __FUNCTION__;
   pending_submit_frame_ = false;
+  last_transfer_succeeded_ = success;
 }
 
 void VRDisplay::OnSubmitFrameRendered() {
