@@ -538,7 +538,7 @@ InstallableStatusCode AppBannerManager::ShouldShowBannerCode() {
   // requires a user gesture. In contrast, showing of traditional app banners
   // is automatic, so we throttle it if the user has recently ignored or
   // blocked the banner.
-  if (!base::FeatureList::IsEnabled(features::kExperimentalAppBanners)) {
+  if (!IsExperimentalAppBannersEnabled()) {
     base::Time now = GetCurrentTime();
     if (AppBannerSettingsHelper::WasBannerRecentlyBlocked(
             contents, validated_url_, GetAppIdentifier(), now)) {
