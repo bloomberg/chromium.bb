@@ -35,8 +35,6 @@ class V8DetachedContextAgeInGC(perf_benchmark.PerfBenchmark):
 
 
 class _Top25RuntimeStats(perf_benchmark.PerfBenchmark):
-  options = {'pageset_repeat': 3}
-
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(
       '--enable-blink-features=BlinkRuntimeCallStats')
