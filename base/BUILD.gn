@@ -2850,6 +2850,7 @@ if (is_android) {
       "android/library_loader/library_load_from_apk_status_codes.h",
       "android/library_loader/library_loader_hooks.h",
       "memory/memory_pressure_listener.h",
+      "metrics/histogram_base.h",
     ]
   }
 
