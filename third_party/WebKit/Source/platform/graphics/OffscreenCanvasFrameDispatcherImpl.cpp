@@ -201,7 +201,9 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
       // Case 3: canvas is not gpu-accelerated, but compositor is.
       commit_type = kCommitSoftwareCanvasGPUCompositing;
       offscreen_canvas_resource_provider_
-          ->SetTransferableResourceToSharedGPUContext(resource, image);
+          ->SetTransferableResourceToStaticBitmapImage(
+              resource, image->MakeAccelerated(
+                            SharedGpuContext::ContextProviderWrapper()));
     } else {
       // Case 4: both canvas and compositor are not gpu accelerated.
       commit_type = kCommitSoftwareCanvasSoftwareCompositing;

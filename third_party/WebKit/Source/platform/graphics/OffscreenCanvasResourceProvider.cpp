@@ -86,113 +86,6 @@ void OffscreenCanvasResourceProvider::SetTransferableResourceToSharedBitmap(
   resources_.insert(next_resource_id_, std::move(frame_resource));
 }
 
-// TODO(xlai): Handle error cases when, by any reason,
-// OffscreenCanvasResourceProvider fails to get image data.
-void OffscreenCanvasResourceProvider::SetTransferableResourceToSharedGPUContext(
-    viz::TransferableResource& resource,
-    scoped_refptr<StaticBitmapImage> image) {
-  DCHECK(!image->IsTextureBacked());
-
-  // TODO(crbug.com/652707): When committing the first frame, there is no
-  // instance of SharedGpuContext yet, calling SharedGpuContext::gl() will
-  // trigger a creation of an instace, which requires to create a
-  // WebGraphicsContext3DProvider. This process is quite expensive, because
-  // WebGraphicsContext3DProvider can only be constructed on the main thread,
-  // and bind to the worker thread if commit() is called on worker. In the
-  // subsequent frame, we should already have a SharedGpuContext, then getting
-  // the gl interface should not be expensive.
-  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
-      SharedGpuContext::ContextProviderWrapper();
-  if (!context_provider_wrapper)
-    return;
-
-  WebGraphicsContext3DProvider* provider =
-      context_provider_wrapper->ContextProvider();
-  gpu::gles2::GLES2Interface* gl = provider->ContextGL();
-  GrContext* gr = provider->GetGrContext();
-  if (!gr)
-    return;
-
-  std::unique_ptr<FrameResource> frame_resource =
-      CreateOrRecycleFrameResource();
-
-  SkImageInfo info = SkImageInfo::Make(
-      width_, height_, kN32_SkColorType,
-      image->IsPremultiplied() ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
-  if (info.isEmpty())
-    return;
-  sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();
-  if (sk_image->bounds().isEmpty())
-    return;
-  scoped_refptr<ArrayBuffer> dst_buffer =
-      ArrayBuffer::CreateOrNull(width_ * height_, info.bytesPerPixel());
-  // If it fails to create a buffer for copying the pixel data, then exit early.
-  if (!dst_buffer)
-    return;
-  unsigned byte_length = dst_buffer->ByteLength();
-  scoped_refptr<Uint8Array> dst_pixels =
-      Uint8Array::Create(std::move(dst_buffer), 0, byte_length);
-  bool read_pixels_successful =
-      sk_image->readPixels(info, dst_pixels->Data(), info.minRowBytes(), 0, 0);
-  DCHECK(read_pixels_successful);
-  if (!read_pixels_successful)
-    return;
-  DCHECK(frame_resource->context_provider_wrapper_.get() ==
-             context_provider_wrapper.get() ||
-         !frame_resource->context_provider_wrapper_);
-
-  if (frame_resource->texture_id_ == 0u ||
-      !frame_resource->context_provider_wrapper_) {
-    frame_resource->context_provider_wrapper_ = context_provider_wrapper;
-
-    void* src = dst_pixels->Data();
-
-    // The bitmap in |src| uses the skia N32 byte order.
-    constexpr bool bitmap_is_bgra = kN32_SkColorType == kBGRA_8888_SkColorType;
-    bool texture_can_be_bgra =
-        provider->GetCapabilities().texture_format_bgra8888;
-
-    // Convert to RGBA if we can't upload BGRA. This is slow sad times.
-    std::unique_ptr<uint32_t[]> swizzled;
-    if (bitmap_is_bgra && !texture_can_be_bgra) {
-      size_t num_pixels =
-          (base::CheckedNumeric<size_t>(width_) * height_).ValueOrDie();
-      swizzled = std::make_unique<uint32_t[]>(num_pixels);
-      SkSwapRB(swizzled.get(), static_cast<uint32_t*>(src), num_pixels);
-      src = swizzled.get();
-    }
-
-    gl->GenTextures(1, &frame_resource->texture_id_);
-    gl->BindTexture(GL_TEXTURE_2D, frame_resource->texture_id_);
-    GLenum format =
-        bitmap_is_bgra && texture_can_be_bgra ? GL_BGRA_EXT : GL_RGBA;
-    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    gl->TexImage2D(GL_TEXTURE_2D, 0, format, width_, height_, 0, format,
-                   GL_UNSIGNED_BYTE, src);
-
-    swizzled.reset();
-
-    gl->GenMailboxCHROMIUM(frame_resource->mailbox_.name);
-    gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, frame_resource->mailbox_.name);
-  }
-
-  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-  gl->Flush();
-  gpu::SyncToken sync_token;
-  gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-
-  resource.mailbox_holder =
-      gpu::MailboxHolder(frame_resource->mailbox_, sync_token, GL_TEXTURE_2D);
-  resource.read_lock_fences_enabled = false;
-  resource.is_software = false;
-
-  resources_.insert(next_resource_id_, std::move(frame_resource));
-  gr->resetContext(kTextureBinding_GrGLBackendState);
-}
-
 void OffscreenCanvasResourceProvider::
     SetTransferableResourceToStaticBitmapImage(
         viz::TransferableResource& resource,
@@ -207,21 +100,12 @@ void OffscreenCanvasResourceProvider::
 
   std::unique_ptr<FrameResource> frame_resource =
       CreateOrRecycleFrameResource();
-  frame_resource->context_provider_wrapper_ = image->ContextProviderWrapper();
+
   frame_resource->image_ = std::move(image);
   resources_.insert(next_resource_id_, std::move(frame_resource));
 }
 
-OffscreenCanvasResourceProvider::FrameResource::~FrameResource() {
-  if (context_provider_wrapper_) {
-    gpu::gles2::GLES2Interface* gl =
-        context_provider_wrapper_->ContextProvider()->ContextGL();
-    if (texture_id_)
-      gl->DeleteTextures(1, &texture_id_);
-    if (image_id_)
-      gl->DestroyImageCHROMIUM(image_id_);
-  }
-}
+OffscreenCanvasResourceProvider::FrameResource::~FrameResource() {}
 
 void OffscreenCanvasResourceProvider::ReclaimResources(
     const WTF::Vector<viz::ReturnedResource>& resources) {
@@ -232,8 +116,10 @@ void OffscreenCanvasResourceProvider::ReclaimResources(
     if (it == resources_.end())
       continue;
 
-    if (it->value->context_provider_wrapper_ && resource.sync_token.HasData()) {
-      it->value->context_provider_wrapper_->ContextProvider()
+    if (it->value->image_ && it->value->image_->ContextProviderWrapper() &&
+        resource.sync_token.HasData()) {
+      it->value->image_->ContextProviderWrapper()
+          ->ContextProvider()
           ->ContextGL()
           ->WaitSyncTokenCHROMIUM(resource.sync_token.GetConstData());
     }
