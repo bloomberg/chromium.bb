@@ -72761,6 +72761,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SB2.RemoteCall.CheckDelta" units="microseconds">
+  <owner>csharrison@chromium.org</owner>
+  <owner>vakh@chromium.org</owner>
+  <summary>
+    The microseconds between sending the Safe Browsing API call and receiving
+    the response. Logged in java code and does not include any thread hops or
+    extra work. Note that this does include task queue time to respond to the
+    IPC (and that queue time is often non-trivial).
+  </summary>
+</histogram>
+
 <histogram name="SB2.RemoteCall.ChecksPending" units="calls">
   <obsolete>
     Deprecated in M64 (Nov 2017). No longer generated.

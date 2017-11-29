@@ -96,6 +96,7 @@ void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
     jlong check_delta) {
   DCHECK(callback_id);
   TRACE_EVENT0("safe_browsing", "SafeBrowsingApiHandlerBridge::OnUrlCheckDone");
+  UMA_HISTOGRAM_COUNTS_10M("SB2.RemoteCall.CheckDelta", check_delta);
 
   const std::string metadata_str =
       (metadata ? ConvertJavaStringToUTF8(env, metadata) : "");
