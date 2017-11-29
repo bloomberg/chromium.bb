@@ -30338,6 +30338,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="interstitial.ssl.good_cert_seen_type_is_frame" enum="Boolean">
+  <owner>jam@chromium.org</owner>
+  <summary>
+    Whether the resource type for a request that succeeded with a good cert and
+    revoked a certificate exception is for a frame (as opposed to subresource).
+  </summary>
+</histogram>
+
 <histogram name="interstitial.ssl.severity_score.authority_invalid" units="%">
   <obsolete>
     Deprecated Jan 2015 (M42).
