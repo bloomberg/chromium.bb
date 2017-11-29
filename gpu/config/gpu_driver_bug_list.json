@@ -2706,7 +2706,7 @@
       "description": "Direct composition causes slow presents on Intel Sandybridge",
       "cr_bugs": [775898, 785648],
       "os": {
-        "type": "windows"
+        "type": "win"
       },
       "vendor_id": "0x8086",
       "device_id": ["0x0116"],
@@ -2719,7 +2719,7 @@
       "description": "Direct composition causes slow presents on old Nvidia GPUs",
       "cr_bugs": [775898],
       "os": {
-        "type": "windows"
+        "type": "win"
       },
       "vendor_id": "0x10de",
       "device_id": ["0x10d8"],
