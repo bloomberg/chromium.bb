@@ -396,6 +396,15 @@ void TranslateManager::OnTranslateScriptFetchComplete(
 std::string TranslateManager::GetTargetLanguage(
     const TranslatePrefs* prefs,
     language::LanguageModel* language_model) {
+  DCHECK(prefs);
+  const std::string& recent_target = prefs->GetRecentTargetLanguage();
+
+  // If we've recorded the most recent target language, use that.
+  if (base::FeatureList::IsEnabled(kTranslateRecentTarget) &&
+      !recent_target.empty()) {
+    return recent_target;
+  }
+
   if (language_model) {
     // Use the first language from the model that translate supports.
     for (const auto& lang : language_model->GetLanguages()) {
