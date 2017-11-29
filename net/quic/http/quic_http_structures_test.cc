@@ -429,7 +429,8 @@ TEST(QuicHttpPingFieldsTest, Misc) {
   EXPECT_EQ("opaque_bytes=0x3820627974657300", s.str());
 }
 
-TEST(QuicHttpGoAwayFieldsTest, Misc) {
+// Started becoming very flaky on all platforms after around crrev.com/519987.
+TEST(QuicHttpGoAwayFieldsTest, DISABLED_Misc) {
   QuicTestRandom random;
   uint32_t last_stream_id = random.Rand32() & QuicHttpStreamIdMask();
   QuicHttpErrorCode error_code =
