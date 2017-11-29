@@ -130,7 +130,7 @@ class CheckClientDownloadRequest
 
   ClientDownloadRequest_SignatureInfo signature_info_;
   std::unique_ptr<ClientDownloadRequest_ImageHeaders> image_headers_;
-  ArchivedBinaries archived_binary_;
+  ArchivedBinaries archived_binaries_;
   CheckDownloadCallback callback_;
   // Will be NULL if the request has been canceled.
   DownloadProtectionService* service_;

@@ -516,12 +516,16 @@ void CheckClientDownloadRequest::OnZipAnalysisFinished(
   archive_is_valid_ =
       (results.success ? ArchiveValid::VALID : ArchiveValid::INVALID);
   archived_executable_ = results.has_executable;
-  CopyArchivedBinaries(results.archived_binary, &archived_binary_);
+  CopyArchivedBinaries(results.archived_binary, &archived_binaries_);
   DVLOG(1) << "Zip analysis finished for " << item_->GetFullPath().value()
            << ", has_executable=" << results.has_executable
            << ", has_archive=" << results.has_archive
            << ", success=" << results.success;
 
+  if (archived_executable_) {
+    UMA_HISTOGRAM_COUNTS("SBClientDownload.ZipFileArchivedBinariesCount",
+                         results.archived_binary.size());
+  }
   UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileSuccess", results.success);
   UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasExecutable",
                         archived_executable_);
@@ -615,7 +619,8 @@ void CheckClientDownloadRequest::OnDmgAnalysisFinished(
   archive_is_valid_ =
       (results.success ? ArchiveValid::VALID : ArchiveValid::INVALID);
   archived_executable_ = results.has_executable;
-  archived_binary_.CopyFrom(results.archived_binary);
+  CopyArchivedBinaries(results.archived_binary, &archived_binaries_);
+
   DVLOG(1) << "DMG analysis has finished for " << item_->GetFullPath().value()
            << ", has_executable=" << results.has_executable
            << ", success=" << results.success;
@@ -634,6 +639,8 @@ void CheckClientDownloadRequest::OnDmgAnalysisFinished(
   if (archived_executable_) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("SBClientDownload.DmgFileHasExecutableByType",
                                 uma_file_type);
+    UMA_HISTOGRAM_COUNTS("SBClientDownload.DmgFileArchivedBinariesCount",
+                         results.archived_binary.size());
   } else {
     UMA_HISTOGRAM_SPARSE_SLOWLY("SBClientDownload.DmgFileHasNoExecutableByType",
                                 uma_file_type);
@@ -890,8 +897,8 @@ void CheckClientDownloadRequest::SendRequest() {
   request.mutable_signature()->CopyFrom(signature_info_);
   if (image_headers_)
     request.set_allocated_image_headers(image_headers_.release());
-  if (!archived_binary_.empty())
-    request.mutable_archived_binary()->Swap(&archived_binary_);
+  if (!archived_binaries_.empty())
+    request.mutable_archived_binary()->Swap(&archived_binaries_);
   if (!request.SerializeToString(&client_download_request_data_)) {
     FinishRequest(DownloadCheckResult::UNKNOWN, REASON_INVALID_REQUEST_PROTO);
     return;
@@ -910,7 +917,7 @@ void CheckClientDownloadRequest::SendRequest() {
   service_->client_download_request_callbacks_.Notify(item_, &request);
   DVLOG(2) << "Sending a request for URL: " << item_->GetUrlChain().back();
   DVLOG(2) << "Detected " << request.archived_binary().size() << " archived "
-           << "binaries";
+           << "binaries (may be capped)";
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("client_download_request", R"(
           semantics {
