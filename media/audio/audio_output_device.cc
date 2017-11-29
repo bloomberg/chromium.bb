@@ -11,8 +11,10 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
@@ -480,15 +482,6 @@ void AudioOutputDevice::AudioThreadCallback::MapSharedMemory() {
 // Called whenever we receive notifications about pending data.
 void AudioOutputDevice::AudioThreadCallback::Process(uint32_t control_signal) {
   callback_num_++;
-  TRACE_EVENT1("audio", "AudioOutputDevice::FireRenderCallback",
-               "callback_num", callback_num_);
-
-  // When playback starts, we get an immediate callback to Process to make sure
-  // that we have some data, we'll get another one after the device is awake and
-  // ingesting data, which is what we want to track with this trace.
-  if (callback_num_ == 2) {
-    TRACE_EVENT_ASYNC_END0("audio", "StartingPlayback", this);
-  }
 
   // Read and reset the number of frames skipped.
   AudioOutputBuffer* buffer =
@@ -503,8 +496,21 @@ void AudioOutputDevice::AudioThreadCallback::Process(uint32_t control_signal) {
       base::TimeTicks() +
       base::TimeDelta::FromMicroseconds(buffer->params.delay_timestamp);
 
+  TRACE_EVENT2(
+      "audio", "AudioOutputDevice::FireRenderCallback", "callback_num",
+      callback_num_, "delay_info",
+      base::StringPrintf("Timestamp: %" PRId64 "us, Delay: %" PRId64
+                         "us, Skip: %u frames",
+                         (delay_timestamp - base::TimeTicks()).InMicroseconds(),
+                         delay.InMicroseconds(), frames_skipped));
   DVLOG(4) << __func__ << " delay:" << delay << " delay_timestamp:" << delay
            << " frames_skipped:" << frames_skipped;
+
+  // When playback starts, we get an immediate callback to Process to make sure
+  // that we have some data, we'll get another one after the device is awake and
+  // ingesting data, which is what we want to track with this trace.
+  if (callback_num_ == 2)
+    TRACE_EVENT_ASYNC_END0("audio", "StartingPlayback", this);
 
   // Update the audio-delay measurement, inform about the number of skipped
   // frames, and ask client to render audio.  Since |output_bus_| is wrapping
