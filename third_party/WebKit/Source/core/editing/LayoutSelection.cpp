@@ -746,10 +746,12 @@ IntRect LayoutSelection::SelectionBounds() {
 
   // Create a single bounding box rect that encloses the whole selection.
   LayoutRect selected_rect;
-  const SelectedLayoutObjects& current_map =
-      CollectInvalidationSet(paint_range_);
-  for (auto layout_object : current_map)
+  for (LayoutObject* layout_object : paint_range_) {
+    const SelectionState state = layout_object->GetSelectionState();
+    if (state == SelectionState::kContain || state == SelectionState::kNone)
+      continue;
     selected_rect.Unite(SelectionRectForLayoutObject(layout_object));
+  }
 
   return PixelSnappedIntRect(selected_rect);
 }
