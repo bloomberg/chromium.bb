@@ -101,10 +101,16 @@ base::string16 JavaScriptDialogManager::GetTitle(
                                            &name))
     return base::UTF8ToUTF16(name);
 
-  // Otherwise, return the formatted URL. For non-standard URLs such as |data:|,
-  // just say "This page".
+  // Otherwise, return the formatted URL.
+  return GetTitleImpl(web_contents->GetURL(), alerting_frame_url);
+}
+
+// static
+base::string16 JavaScriptDialogManager::GetTitleImpl(
+    const GURL& parent_frame_url,
+    const GURL& alerting_frame_url) {
   bool is_same_origin_as_main_frame =
-      (web_contents->GetURL().GetOrigin() == alerting_frame_url.GetOrigin());
+      (parent_frame_url.GetOrigin() == alerting_frame_url.GetOrigin());
   if (alerting_frame_url.IsStandard() && !alerting_frame_url.SchemeIsFile() &&
       !alerting_frame_url.SchemeIsFileSystem()) {
 #if defined(OS_ANDROID)
