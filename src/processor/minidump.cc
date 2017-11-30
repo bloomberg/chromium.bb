@@ -4904,7 +4904,7 @@ void MinidumpCrashpadInfo::Print() {
          MDGUIDToString(crashpad_info_.report_id).c_str());
   printf("  client_id = %s\n",
          MDGUIDToString(crashpad_info_.client_id).c_str());
-  for (std::map<string, string>::const_iterator iterator =
+  for (std::map<std::string, std::string>::const_iterator iterator =
            simple_annotations_.begin();
        iterator != simple_annotations_.end();
        ++iterator) {
@@ -4928,7 +4928,7 @@ void MinidumpCrashpadInfo::Print() {
              module_crashpad_info_list_annotations_
                  [module_index][annotation_index].c_str());
     }
-    for (std::map<string, string>::const_iterator iterator =
+    for (std::map<std::string, std::string>::const_iterator iterator =
              module_crashpad_info_simple_annotations_[module_index].begin();
          iterator !=
              module_crashpad_info_simple_annotations_[module_index].end();
