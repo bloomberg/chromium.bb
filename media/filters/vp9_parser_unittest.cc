@@ -47,8 +47,8 @@ struct TestParams {
 const struct TestParams kTestParams[] = {
     {"test-25fps.vp9", 0, 8, 320, 240, true, 9, 65, 120,
      Vp9InterpolationFilter::EIGHTTAP, 48, 11},
-    {"crowd-vp9.2.ivf", 2, 10, 256, 144, false, 10, 120, 38,
-     Vp9InterpolationFilter::SWITCHABLE, 45, 10}};
+    {"test-25fps.vp9_2", 2, 10, 320, 240, true, 8, 79, 115,
+     Vp9InterpolationFilter::SWITCHABLE, 46, 10}};
 
 }  // anonymous namespace
 

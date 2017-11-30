@@ -194,6 +194,15 @@ test-25fps.vp9.md5:
   MD5 of RGB thumbnail rendered version of test-25fps.vp9. Written out by
   video_decode_accelerator_unittest.
 
+test-25fps.vp9_2:
+  Similar to test-25fps.vp9, substituting the option "--profile=0" with
+  "--profile=2 --bit-depth=10" to vpxenc. (Note that vpxenc must have been
+  configured with the option --enable-vp9-highbitdepth).
+
+test-25fps.vp9_2.md5:
+  MD5 of RGB thumbnail rendered version of test-25fps.vp9_@. Written out by
+  video_decode_accelerator_unittest.
+
 // VDA test files: bear
 bear.h264:
   Using ffmpeg version 0.8.6-4:0.8.6-0ubuntu0.12.04.1, generated with
@@ -238,10 +247,6 @@ red-green.h264.md5:
   These differ between implementations because color space-converted frames are
   not specified to the last bit and GLES shader/texture filtering
   precision varies.
-
-// VDA test files: crowd-vp9.2
-  VP9 Profile 2 (10 bits per component) version of the "crowd" WebM project test
-  video (https://www.webmproject.org/vp9/levels/#test-bitstreams) in IVF format.
 
 // VEA test files:
 bear_320x192_40frames.yuv
