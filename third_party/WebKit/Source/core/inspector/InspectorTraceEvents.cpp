@@ -392,22 +392,22 @@ const char InspectorScheduleStyleInvalidationTrackingEvent::kRuleSet[] =
 const char* ResourcePriorityString(ResourceLoadPriority priority) {
   const char* priority_string = nullptr;
   switch (priority) {
-    case kResourceLoadPriorityVeryLow:
+    case ResourceLoadPriority::kVeryLow:
       priority_string = "VeryLow";
       break;
-    case kResourceLoadPriorityLow:
+    case ResourceLoadPriority::kLow:
       priority_string = "Low";
       break;
-    case kResourceLoadPriorityMedium:
+    case ResourceLoadPriority::kMedium:
       priority_string = "Medium";
       break;
-    case kResourceLoadPriorityHigh:
+    case ResourceLoadPriority::kHigh:
       priority_string = "High";
       break;
-    case kResourceLoadPriorityVeryHigh:
+    case ResourceLoadPriority::kVeryHigh:
       priority_string = "VeryHigh";
       break;
-    case kResourceLoadPriorityUnresolved:
+    case ResourceLoadPriority::kUnresolved:
       break;
   }
   return priority_string;

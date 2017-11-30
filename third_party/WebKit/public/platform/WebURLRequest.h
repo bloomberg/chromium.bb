@@ -54,13 +54,15 @@ class WebURL;
 
 class WebURLRequest {
  public:
-  enum Priority {
-    kPriorityUnresolved = -1,
-    kPriorityVeryLow,
-    kPriorityLow,
-    kPriorityMedium,
-    kPriorityHigh,
-    kPriorityVeryHigh,
+  enum class Priority {
+    kUnresolved = -1,
+    kVeryLow,
+    kLow,
+    kMedium,
+    kHigh,
+    kVeryHigh,
+    kLowest = kVeryLow,
+    kHighest = kVeryHigh,
   };
 
   // Corresponds to Fetch's "context":

@@ -232,17 +232,17 @@ String MixedContentTypeForContextType(WebMixedContentContextType context_type) {
 
 String ResourcePriorityJSON(ResourceLoadPriority priority) {
   switch (priority) {
-    case kResourceLoadPriorityVeryLow:
+    case ResourceLoadPriority::kVeryLow:
       return protocol::Network::ResourcePriorityEnum::VeryLow;
-    case kResourceLoadPriorityLow:
+    case ResourceLoadPriority::kLow:
       return protocol::Network::ResourcePriorityEnum::Low;
-    case kResourceLoadPriorityMedium:
+    case ResourceLoadPriority::kMedium:
       return protocol::Network::ResourcePriorityEnum::Medium;
-    case kResourceLoadPriorityHigh:
+    case ResourceLoadPriority::kHigh:
       return protocol::Network::ResourcePriorityEnum::High;
-    case kResourceLoadPriorityVeryHigh:
+    case ResourceLoadPriority::kVeryHigh:
       return protocol::Network::ResourcePriorityEnum::VeryHigh;
-    case kResourceLoadPriorityUnresolved:
+    case ResourceLoadPriority::kUnresolved:
       break;
   }
   NOTREACHED();

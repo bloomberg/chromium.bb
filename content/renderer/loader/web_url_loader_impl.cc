@@ -167,22 +167,22 @@ void PopulateURLLoadTiming(const net::LoadTimingInfo& load_timing,
 net::RequestPriority ConvertWebKitPriorityToNetPriority(
     const WebURLRequest::Priority& priority) {
   switch (priority) {
-    case WebURLRequest::kPriorityVeryHigh:
+    case WebURLRequest::Priority::kVeryHigh:
       return net::HIGHEST;
 
-    case WebURLRequest::kPriorityHigh:
+    case WebURLRequest::Priority::kHigh:
       return net::MEDIUM;
 
-    case WebURLRequest::kPriorityMedium:
+    case WebURLRequest::Priority::kMedium:
       return net::LOW;
 
-    case WebURLRequest::kPriorityLow:
+    case WebURLRequest::Priority::kLow:
       return net::LOWEST;
 
-    case WebURLRequest::kPriorityVeryLow:
+    case WebURLRequest::Priority::kVeryLow:
       return net::IDLE;
 
-    case WebURLRequest::kPriorityUnresolved:
+    case WebURLRequest::Priority::kUnresolved:
     default:
       NOTREACHED();
       return net::LOW;

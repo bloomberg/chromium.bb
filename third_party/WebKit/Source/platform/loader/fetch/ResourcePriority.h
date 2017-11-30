@@ -23,14 +23,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ResourceLoadPriority_h
-#define ResourceLoadPriority_h
+#ifndef ResourcePriority_h
+#define ResourcePriority_h
 
-#include "public/platform/WebURLRequest.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 
-using ResourceLoadPriority = WebURLRequest::Priority;
+struct ResourcePriority final {
+  STACK_ALLOCATED();
+
+ public:
+  enum VisibilityStatus {
+    kNotVisible,
+    kVisible,
+  };
+
+  ResourcePriority() : ResourcePriority(kNotVisible, 0) {}
+  ResourcePriority(VisibilityStatus status, int intra_value)
+      : visibility(status), intra_priority_value(intra_value) {}
+
+  VisibilityStatus visibility;
+  int intra_priority_value;
+};
 
 }  // namespace blink
 

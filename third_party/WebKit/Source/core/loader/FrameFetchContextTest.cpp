@@ -1073,8 +1073,8 @@ TEST_F(FrameFetchContextTest, ResourceRequestCachePolicyWhenDetached) {
 TEST_F(FrameFetchContextTest, DispatchDidChangePriorityWhenDetached) {
   dummy_page_holder = nullptr;
 
-  fetch_context->DispatchDidChangeResourcePriority(2, kResourceLoadPriorityLow,
-                                                   3);
+  fetch_context->DispatchDidChangeResourcePriority(
+      2, ResourceLoadPriority::kLow, 3);
   // Should not crash.
 }
 

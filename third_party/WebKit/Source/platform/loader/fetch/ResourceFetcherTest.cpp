@@ -471,7 +471,7 @@ TEST_F(ResourceFetcherTest, SynchronousRequest) {
   fetch_params.MakeSynchronous();
   Resource* resource = RawResource::Fetch(fetch_params, fetcher);
   EXPECT_TRUE(resource->IsLoaded());
-  EXPECT_EQ(kResourceLoadPriorityHighest,
+  EXPECT_EQ(ResourceLoadPriority::kHighest,
             resource->GetResourceRequest().Priority());
 }
 

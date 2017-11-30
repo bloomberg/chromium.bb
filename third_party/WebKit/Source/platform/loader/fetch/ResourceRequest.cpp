@@ -59,7 +59,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       should_reset_app_cache_(false),
       cache_mode_(mojom::FetchCacheMode::kDefault),
       service_worker_mode_(WebURLRequest::ServiceWorkerMode::kAll),
-      priority_(kResourceLoadPriorityLowest),
+      priority_(ResourceLoadPriority::kLowest),
       intra_priority_value_(0),
       requestor_id_(0),
       plugin_child_id_(-1),

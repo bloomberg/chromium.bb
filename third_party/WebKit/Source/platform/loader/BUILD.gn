@@ -65,6 +65,7 @@ jumbo_source_set("loader") {
     "fetch/ResourceLoaderOptions.h",
     "fetch/ResourceLoadingLog.h",
     "fetch/ResourceOwner.h",
+    "fetch/ResourcePriority.h",
     "fetch/ResourceRequest.cpp",
     "fetch/ResourceRequest.h",
     "fetch/ResourceResponse.cpp",

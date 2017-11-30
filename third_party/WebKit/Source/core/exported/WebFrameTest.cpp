@@ -10997,12 +10997,12 @@ TEST_P(ParameterizedWebFrameTest, ChangeResourcePriority) {
   RegisterMockedHttpURLLoad("image_slow_out_of_viewport.pl");
   client.AddExpectedRequest(
       ToKURL("http://internal.test/promote_img_in_viewport_priority.html"),
-      WebURLRequest::kPriorityVeryHigh);
+      WebURLRequest::Priority::kVeryHigh);
   client.AddExpectedRequest(ToKURL("http://internal.test/image_slow.pl"),
-                            WebURLRequest::kPriorityLow);
+                            WebURLRequest::Priority::kLow);
   client.AddExpectedRequest(
       ToKURL("http://internal.test/image_slow_out_of_viewport.pl"),
-      WebURLRequest::kPriorityLow);
+      WebURLRequest::Priority::kLow);
 
   FrameTestHelpers::WebViewHelper helper;
   helper.Initialize(&client);
@@ -11019,7 +11019,8 @@ TEST_P(ParameterizedWebFrameTest, ChangeResourcePriority) {
                         ->AllResources()
                         .at(ToKURL("http://internal.test/image_slow.pl"));
   DCHECK(image);
-  EXPECT_EQ(kResourceLoadPriorityHigh, image->GetResourceRequest().Priority());
+  EXPECT_EQ(ResourceLoadPriority::kHigh,
+            image->GetResourceRequest().Priority());
 
   client.VerifyAllRequests();
 }
@@ -11035,24 +11036,24 @@ TEST_P(ParameterizedWebFrameTest, ScriptPriority) {
   RegisterMockedHttpURLLoad("priorities/injected-async.js");
   RegisterMockedHttpURLLoad("priorities/body.js");
   client.AddExpectedRequest(ToKURL("http://internal.test/script_priority.html"),
-                            WebURLRequest::kPriorityVeryHigh);
+                            WebURLRequest::Priority::kVeryHigh);
   client.AddExpectedRequest(ToKURL("http://internal.test/priorities/defer.js"),
-                            WebURLRequest::kPriorityLow);
+                            WebURLRequest::Priority::kLow);
   client.AddExpectedRequest(ToKURL("http://internal.test/priorities/async.js"),
-                            WebURLRequest::kPriorityLow);
+                            WebURLRequest::Priority::kLow);
   client.AddExpectedRequest(ToKURL("http://internal.test/priorities/head.js"),
-                            WebURLRequest::kPriorityHigh);
+                            WebURLRequest::Priority::kHigh);
   client.AddExpectedRequest(
       ToKURL("http://internal.test/priorities/document-write.js"),
-      WebURLRequest::kPriorityHigh);
+      WebURLRequest::Priority::kHigh);
   client.AddExpectedRequest(
       ToKURL("http://internal.test/priorities/injected.js"),
-      WebURLRequest::kPriorityLow);
+      WebURLRequest::Priority::kLow);
   client.AddExpectedRequest(
       ToKURL("http://internal.test/priorities/injected-async.js"),
-      WebURLRequest::kPriorityLow);
+      WebURLRequest::Priority::kLow);
   client.AddExpectedRequest(ToKURL("http://internal.test/priorities/body.js"),
-                            WebURLRequest::kPriorityHigh);
+                            WebURLRequest::Priority::kHigh);
 
   FrameTestHelpers::WebViewHelper helper;
   helper.InitializeAndLoad(base_url_ + "script_priority.html", &client);

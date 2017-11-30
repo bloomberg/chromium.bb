@@ -114,7 +114,7 @@ TEST_F(PingLoaderTest, LoadImagePriority) {
   const ResourceRequest& request = client_->PingRequest();
   ASSERT_FALSE(request.IsNull());
   ASSERT_EQ(request.Url(), ping_url);
-  EXPECT_EQ(kResourceLoadPriorityVeryLow, request.Priority());
+  EXPECT_EQ(ResourceLoadPriority::kVeryLow, request.Priority());
 }
 
 TEST_F(PingLoaderTest, LinkAuditPingPriority) {
@@ -130,7 +130,7 @@ TEST_F(PingLoaderTest, LinkAuditPingPriority) {
   const ResourceRequest& request = client_->PingRequest();
   ASSERT_FALSE(request.IsNull());
   ASSERT_EQ(request.Url(), ping_url);
-  EXPECT_EQ(kResourceLoadPriorityVeryLow, request.Priority());
+  EXPECT_EQ(ResourceLoadPriority::kVeryLow, request.Priority());
 }
 
 TEST_F(PingLoaderTest, ViolationPriority) {
@@ -146,7 +146,7 @@ TEST_F(PingLoaderTest, ViolationPriority) {
   const ResourceRequest& request = client_->PingRequest();
   ASSERT_FALSE(request.IsNull());
   ASSERT_EQ(request.Url(), ping_url);
-  EXPECT_EQ(kResourceLoadPriorityVeryLow, request.Priority());
+  EXPECT_EQ(ResourceLoadPriority::kVeryLow, request.Priority());
 }
 
 TEST_F(PingLoaderTest, BeaconPriority) {
@@ -162,7 +162,7 @@ TEST_F(PingLoaderTest, BeaconPriority) {
   const ResourceRequest& request = client_->PingRequest();
   ASSERT_FALSE(request.IsNull());
   ASSERT_EQ(request.Url(), ping_url);
-  EXPECT_EQ(kResourceLoadPriorityVeryLow, request.Priority());
+  EXPECT_EQ(ResourceLoadPriority::kVeryLow, request.Priority());
 }
 
 }  // namespace
