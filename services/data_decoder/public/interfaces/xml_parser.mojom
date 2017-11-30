@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Interface used to parse simple XML files.
-//
-// Ignores namespaces, node attributes, comments and white-spaces.
+// Interface used to parse XML files into a base::Value tree.
+// Ignores comments and white-spaces.
 // Note also that the text content of elements is returned as base::Value of
 // type STRING (UTF-8 encoded): no effort is made by the parser to parse numeric
 // values.
@@ -17,7 +16,9 @@ interface XmlParser {
   const string kTypeKey = "type";
   const string kTagKey = "tag";
   const string kTextKey = "text";
+  const string kAttributesKey = "attributes";
   const string kChildrenKey = "children";
+  const string kNamespacesKey = "namespaces";
 
   const string kElementType = "element";
   const string kTextNodeType = "text";
@@ -28,18 +29,16 @@ interface XmlParser {
   //
   // For example the following XML:
   //
-  // <library>
-  //   <book id="k123">
+  // <library xmlns='http://library' xmlns:foo='http://foo.com'>
+  //   <book foo:id="k123">
   //     <author>Isaac Newton</author>
   //     <title><![CDATA[Philosophiae Naturalis Principia Mathematica]]</title>
   //     <price>40.95</price>
   //   </book>
-  //   <book id="k456">
+  //   <book foo:id="k456">
   //     <author>Dr. Seuss</author>
   //     <title>Green Eggs and Ham</title>
-  //     <genre>Kid</genre>
-  //     <kids/>
-  //     <price>4.95</price>
+  //     <foo:price>4.95</price>
   //   </book>
   // </library>
   //
@@ -47,9 +46,11 @@ interface XmlParser {
   //
   // {"type": "element",
   //  "tag": "library",
+  //  "namespaces": {"": "http://library", "foo": "http://foo.com"},
   //  "children": [
   //    {"type": "element",
   //     "tag": "book",
+  //     "attributes": {"foo:id": "k123"},
   //     "children": [
   //       {"type": "element",
   //        "tag": "author",
@@ -65,6 +66,7 @@ interface XmlParser {
   //     ]},
   //     {"type": "element",
   //      "tag": "book",
+  //      "attributes": {"foo:id": "k456"},
   //      "children": [
   //        {"type": "element",
   //         "tag": "author",
@@ -72,9 +74,9 @@ interface XmlParser {
   //         {"type": "element",
   //          "tag": "title",
   //          "children": [{"type": "text", "text": "Green Eggs and Ham"}]},
-  //         {"type": "element", "tag": "kids"},
+  //         {"type": "element", "tag": "foo:kids"},
   //         {"type": "element",
-  //          "tag": "price",
+  //          "tag": "foo:price",
   //          "children": [{"type": "text", "text": "4.95"}],
   //         }
   //       }

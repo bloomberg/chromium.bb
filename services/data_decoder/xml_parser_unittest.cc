@@ -56,7 +56,7 @@ TEST_F(XmlParserTest, ParseBadXml) {
   std::string invalid_xml_strings[] = {"",
                                        "  ",
                                        "Awesome possum",
-                                       "[\"json\", \"or\", \"xml?\"]",
+                                       R"( ["json", "or", "xml?"] )",
                                        "<unbalanced>",
                                        "<hello>bad tag</goodbye>"};
   for (auto& xml : invalid_xml_strings)
@@ -264,6 +264,74 @@ TEST_F(XmlParserTest, JsonInjection) {
         )");
 }
 
+TEST_F(XmlParserTest, ParseAttributes) {
+  TestParseXml("<a b='c'/>",
+               R"( {"type": "element",
+                    "tag": "a",
+                    "attributes": {"b": "c"}} )");
+  // Duplicate attributes are considered an error by libxml.
+  TestParseXml("<a b='c' b='d'/>", "");
+  TestParseXml("<a><b c='d'/></a>",
+               R"( {"type": "element",
+                    "tag": "a",
+                    "children": [
+                      {"type": "element", "tag": "b",
+                       "attributes":{"c": "d"}}]} )");
+  TestParseXml("<hello lang='fr'>bonjour</hello>",
+               R"( {"type": "element", "tag": "hello",
+                    "attributes": {"lang": "fr"},
+                    "children": [{"type": "text", "text": "bonjour"}]
+                   } )");
+  TestParseXml(
+      "<translate lang='fr' id='123'><hello>bonjour</hello></translate>",
+      R"( {"type": "element",
+           "tag": "translate",
+           "attributes": {"lang": "fr", "id": "123"},
+           "children": [
+               {"type": "element", "tag": "hello",
+                "children": [{"type": "text", "text": "bonjour"}]
+               }
+           ]}
+        )");
+}
+
+TEST_F(XmlParserTest, MultipleNamespacesDefined) {
+  TestParseXml(
+      "<a xmlns='http://a' xmlns:foo='http://foo' xmlns:bar='http://bar'></a>",
+      R"( {"type": "element",
+           "tag": "a",
+           "namespaces":{
+             "": "http://a",
+             "foo": "http://foo",
+             "bar": "http://bar"
+          }} )");
+}
+
+TEST_F(XmlParserTest, NamespacesUsed) {
+  TestParseXml(
+      "<foo:a xmlns:foo='http://foo'>"
+      "  <foo:b att1='fooless' foo:att2='fooful'>With foo</foo:b>"
+      "  <b foo:att1='fooful' att2='fooless'>No foo</b>"
+      "</foo:a>",
+      R"(
+       {"type": "element",
+        "tag": "foo:a",
+        "namespaces": {"foo": "http://foo"},
+        "children": [
+          {"type": "element",
+           "tag": "foo:b",
+           "attributes": {"att1": "fooless", "foo:att2": "fooful"},
+           "children": [{"type": "text", "text": "With foo"}]
+          },
+          {"type": "element",
+           "tag": "b",
+           "attributes": {"foo:att1": "fooful", "att2": "fooless"},
+           "children": [{"type": "text", "text": "No foo"}]
+          }
+        ]
+       } )");
+}
+
 TEST_F(XmlParserTest, ParseTypicalXml) {
   constexpr char kXml[] = R"(<?xml version='1.0' encoding='UTF-8'?>
       <!-- This is an XML sample -->
@@ -289,9 +357,14 @@ TEST_F(XmlParserTest, ParseTypicalXml) {
   constexpr char kJson[] = R"(
       {"type": "element",
        "tag": "library",
+       "namespaces": {
+          "": "http://library",
+          "foo": "http://foo.com"
+        },
        "children": [
         {"type": "element",
          "tag": "book",
+         "attributes": {"foo:id": "k123"},
          "children": [
             {"type": "element",
              "tag": "author",
@@ -320,6 +393,7 @@ TEST_F(XmlParserTest, ParseTypicalXml) {
         },
         {"type": "element",
          "tag": "book",
+         "attributes": {"foo:id": "k456"},
          "children": [
            {"type": "element",
             "tag": "author",
@@ -334,7 +408,7 @@ TEST_F(XmlParserTest, ParseTypicalXml) {
             "children": [{"type": "text", "text": "Kid"}]
            },
            {"type": "element",
-            "tag": "kids"
+            "tag": "foo:kids"
            },
            {"type": "element",
             "tag": "price",

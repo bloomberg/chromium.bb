@@ -85,6 +85,11 @@ const base::Value* GetChildren(const base::Value& element) {
 
 }  // namespace
 
+std::string GetXmlQualifiedName(const std::string& name_space,
+                                const std::string& name) {
+  return name_space.empty() ? name : name_space + ":" + name;
+}
+
 void ParseXml(service_manager::Connector* connector,
               const std::string& unsafe_xml,
               XmlParserCallback callback,
@@ -144,6 +149,26 @@ bool GetXmlElementText(const base::Value& element, std::string* text) {
   return true;
 }
 
+bool GetXmlElementNamespacePrefix(const base::Value& element,
+                                  const std::string& namespace_uri,
+                                  std::string* prefix) {
+  prefix->clear();
+  const base::Value* namespaces = element.FindKeyOfType(
+      mojom::XmlParser::kNamespacesKey, base::Value::Type::DICTIONARY);
+  if (!namespaces)
+    return false;
+
+  // The namespaces dictionary is prefix -> URI, so we have to do a reverse
+  // lookup.
+  for (const auto& item : namespaces->DictItems()) {
+    if (item.second.GetString() == namespace_uri) {
+      *prefix = item.first;
+      return true;
+    }
+  }
+  return false;
+}
+
 int GetXmlElementChildrenCount(const base::Value& element,
                                const std::string& name) {
   const base::Value* children = GetChildren(element);
@@ -187,6 +212,24 @@ const base::Value* GetXmlElementChildWithTag(const base::Value& element,
   return nullptr;
 }
 
+bool GetAllXmlElementChildrenWithTag(
+    const base::Value& element,
+    const std::string& tag,
+    std::vector<const base::Value*>* children_out) {
+  const base::Value* children = GetChildren(element);
+  if (!children)
+    return false;
+  bool found = false;
+  for (const base::Value& child : children->GetList()) {
+    DCHECK(child.is_dict());
+    if (IsXmlElementNamed(child, tag)) {
+      found = true;
+      children_out->push_back(&child);
+    }
+  }
+  return found;
+}
+
 const base::Value* FindXmlElementPath(
     const base::Value& element,
     std::initializer_list<base::StringPiece> path,
@@ -216,6 +259,21 @@ const base::Value* FindXmlElementPath(
     cur = new_cur;
   }
   return cur;
+}
+
+std::string GetXmlElementAttribute(const base::Value& element,
+                                   const std::string& element_name) {
+  if (!element.is_dict())
+    return "";
+
+  const base::Value* attributes = element.FindKeyOfType(
+      mojom::XmlParser::kAttributesKey, base::Value::Type::DICTIONARY);
+  if (!attributes)
+    return "";
+
+  const base::Value* value =
+      attributes->FindKeyOfType(element_name, base::Value::Type::STRING);
+  return value ? value->GetString() : "";
 }
 
 }  // namespace data_decoder
