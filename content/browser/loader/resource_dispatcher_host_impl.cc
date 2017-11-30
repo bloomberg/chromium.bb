@@ -996,7 +996,6 @@ void ResourceDispatcherHostImpl::CompleteTransfer(
     // Renderer sent transferred_request_request_id and/or
     // transferred_request_child_id that doesn't correspond to an actually
     // transferring loader on the browser side.
-    base::debug::Alias(pending_loader);
     bad_message::ReceivedBadMessage(requester_info->filter(),
                                     bad_message::RDH_REQUEST_NOT_TRANSFERRING);
     return;
