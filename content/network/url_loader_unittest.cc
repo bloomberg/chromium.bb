@@ -32,6 +32,7 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -180,6 +181,28 @@ class SimpleDataPipeGetter : public network::mojom::DataPipeGetter {
   DISALLOW_COPY_AND_ASSIGN(SimpleDataPipeGetter);
 };
 
+class RequestInterceptor : public net::URLRequestInterceptor {
+ public:
+  using InterceptCallback = base::Callback<void(net::URLRequest*)>;
+
+  explicit RequestInterceptor(const InterceptCallback& callback)
+      : callback_(callback) {}
+  ~RequestInterceptor() override {}
+
+  // URLRequestInterceptor implementation:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    callback_.Run(request);
+    return nullptr;
+  }
+
+ private:
+  InterceptCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestInterceptor);
+};
+
 }  // namespace
 
 class URLLoaderTest : public testing::Test {
@@ -313,6 +336,15 @@ class URLLoaderTest : public testing::Test {
     EXPECT_EQ(net::OK, Load(MultipleWritesInterceptor::GetURL(), &actual_body));
 
     EXPECT_EQ(actual_body, expected_body);
+  }
+
+  // Adds an interceptor that can examine the URLRequest object.
+  void AddRequestObserver(
+      const GURL& url,
+      const RequestInterceptor::InterceptCallback& callback) {
+    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+        url, std::unique_ptr<net::URLRequestInterceptor>(
+                 new RequestInterceptor(callback)));
   }
 
   net::EmbeddedTestServer* test_server() { return &test_server_; }
@@ -983,6 +1015,21 @@ TEST_F(URLLoaderTest, DoNotOverrideAcceptHeader) {
   auto it = sent_request().headers.find("accept");
   ASSERT_NE(it, sent_request().headers.end());
   EXPECT_EQ(it->second, "custom/*");
+}
+
+// Tests that a RESOURCE_TYPE_PREFETCH request sets the LOAD_PREFETCH flag.
+TEST_F(URLLoaderTest, SetPrefetchFlag) {
+  set_resource_type(RESOURCE_TYPE_PREFETCH);
+  GURL url = test_server()->GetURL("/simple_page.html");
+  int load_flags = 0;
+  AddRequestObserver(url, base::Bind(
+                              [](int* load_flags, net::URLRequest* request) {
+                                *load_flags = request->load_flags();
+                              },
+                              &load_flags));
+  EXPECT_EQ(net::OK, Load(url));
+
+  EXPECT_TRUE(load_flags & net::LOAD_PREFETCH);
 }
 
 TEST_F(URLLoaderTest, UploadBytes) {

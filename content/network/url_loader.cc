@@ -22,7 +22,6 @@
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/elements_upload_data_stream.h"
-#include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
@@ -34,28 +33,6 @@ namespace content {
 
 namespace {
 constexpr size_t kDefaultAllocationSize = 512 * 1024;
-
-// TODO: this duplicates ResourceDispatcherHostImpl::BuildLoadFlagsForRequest.
-int BuildLoadFlagsForRequest(const ResourceRequest& request,
-                             bool is_sync_load) {
-  int load_flags = request.load_flags;
-
-  // Although EV status is irrelevant to sub-frames and sub-resources, we have
-  // to perform EV certificate verification on all resources because an HTTP
-  // keep-alive connection created to load a sub-frame or a sub-resource could
-  // be reused to load a main frame.
-  load_flags |= net::LOAD_VERIFY_EV_CERT;
-  if (request.resource_type == RESOURCE_TYPE_MAIN_FRAME) {
-    load_flags |= net::LOAD_MAIN_FRAME_DEPRECATED;
-  } else if (request.resource_type == RESOURCE_TYPE_PREFETCH) {
-    load_flags |= net::LOAD_PREFETCH;
-  }
-
-  if (is_sync_load)
-    load_flags |= net::LOAD_IGNORE_LIMITS;
-
-  return load_flags;
-}
 
 // TODO: this duplicates some of PopulateResourceResponse in
 // content/browser/loader/resource_loader.cc

@@ -728,6 +728,19 @@ TEST_F(ClientCertResourceLoaderTest, StoreAsyncCancel) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Tests that a RESOURCE_TYPE_PREFETCH request sets the LOAD_PREFETCH flag.
+TEST_F(ResourceLoaderTest, PrefetchFlag) {
+  std::unique_ptr<net::URLRequest> request(
+      resource_context_.GetRequestContext()->CreateRequest(
+          test_async_url(), net::DEFAULT_PRIORITY, nullptr /* delegate */,
+          TRAFFIC_ANNOTATION_FOR_TESTS));
+  SetUpResourceLoader(std::move(request), RESOURCE_TYPE_PREFETCH, true);
+
+  loader_->StartRequest();
+  raw_ptr_resource_handler_->WaitUntilResponseComplete();
+  EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
+}
+
 // Test the case the ResourceHandler defers nothing.
 TEST_F(ResourceLoaderTest, SyncResourceHandler) {
   loader_->StartRequest();
