@@ -447,6 +447,8 @@
       <include name="IDR_CRYPTOTOKEN_MANIFEST" file="resources\cryptotoken\manifest.json" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_MANIFEST" file="resources\gaia_auth\manifest.json" type="BINDATA" />
       <if expr="chromeos">
+        <include name="IDR_BLUETOOTH_PAIRING_DIALOG_HTML" file="resources\chromeos\bluetooth_pairing_dialog.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
+        <include name="IDR_BLUETOOTH_PAIRING_DIALOG_JS" file="resources\chromeos\bluetooth_pairing_dialog.js" type="chrome_html" />
         <include name="IDR_CROSH_BUILTIN_MANIFEST" file="resources\chromeos\crosh_builtin\manifest.json" type="BINDATA" />
         <include name="IDR_CRYPTOHOME_HTML" file="resources\chromeos\cryptohome.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_CRYPTOHOME_JS" file="resources\chromeos\cryptohome.js" type="BINDATA" />
@@ -471,9 +473,6 @@
         <include name="IDR_INTERNET_DETAIL_DIALOG_HTML" file="resources\chromeos\internet_detail_dialog.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
         <include name="IDR_INTERNET_DETAIL_DIALOG_JS" file="resources\chromeos\internet_detail_dialog.js" type="chrome_html" />
         <include name="IDR_CERT_MANAGER_DIALOG_HTML" file="resources\chromeos\certificate_manager_dialog.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_BLUETOOTH_PAIR_DEVICE_HTML" file="resources\chromeos\bluetooth_pair_device.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_BLUETOOTH_DIALOG_HOST_HTML" file="resources\chromeos\bluetooth_dialog_host.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
-        <include name="IDR_BLUETOOTH_DIALOG_HOST_JS" file="resources\chromeos\bluetooth_dialog_host.js" type="chrome_html" />
         <include name="IDR_SLOW_HTML" file="resources\chromeos\slow.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_SLOW_JS" file="resources\chromeos\slow.js" type="BINDATA" />
         <include name="IDR_HATS_HTML" file="resources\chromeos\hats\hats.html" flattenhtml="false" type="BINDATA" />

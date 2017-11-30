@@ -36,7 +36,8 @@ Polymer({
       value: chrome.bluetoothPrivate,
     },
 
-    /** Dialog title */
+    noCancel: Boolean,
+
     dialogTitle: String,
 
     /**
