@@ -49,7 +49,7 @@ const char kMimeType[] = "application/pdf";
 
 class MockDownloadTaskObserver : public DownloadTaskObserver {
  public:
-  MOCK_METHOD1(OnDownloadUpdated, void(const DownloadTask* task));
+  MOCK_METHOD1(OnDownloadUpdated, void(DownloadTask* task));
 };
 
 // Mocks DownloadTaskImpl::Delegate's OnTaskUpdated and OnTaskDestroyed methods
