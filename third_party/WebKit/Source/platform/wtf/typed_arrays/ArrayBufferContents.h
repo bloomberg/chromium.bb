@@ -27,10 +27,10 @@
 #ifndef ArrayBufferContents_h
 #define ArrayBufferContents_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/WTF.h"
 #include "platform/wtf/WTFExport.h"
@@ -38,7 +38,6 @@
 namespace WTF {
 
 class WTF_EXPORT ArrayBufferContents {
-  WTF_MAKE_NONCOPYABLE(ArrayBufferContents);
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
@@ -55,7 +54,7 @@ class WTF_EXPORT ArrayBufferContents {
   enum class AllocationKind { kNormal, kReservation };
 
   class DataHandle {
-    WTF_MAKE_NONCOPYABLE(DataHandle);
+    DISALLOW_COPY_AND_ASSIGN(DataHandle);
 
    public:
     DataHandle(void* data, DataDeleter deleter)
@@ -208,7 +207,7 @@ class WTF_EXPORT ArrayBufferContents {
       int64_t diff);
 
   class DataHolder : public ThreadSafeRefCounted<DataHolder> {
-    WTF_MAKE_NONCOPYABLE(DataHolder);
+    DISALLOW_COPY_AND_ASSIGN(DataHolder);
 
    public:
     DataHolder();
@@ -269,6 +268,8 @@ class WTF_EXPORT ArrayBufferContents {
   static AdjustAmountOfExternalAllocatedMemoryFunction
       last_used_adjust_amount_of_external_allocated_memory_function_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(ArrayBufferContents);
 };
 
 }  // namespace WTF

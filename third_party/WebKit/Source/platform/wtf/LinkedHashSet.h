@@ -23,6 +23,7 @@
 #ifndef WTF_LinkedHashSet_h
 #define WTF_LinkedHashSet_h
 
+#include "base/macros.h"
 #include "platform/wtf/AddressSanitizer.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/allocator/PartitionAllocator.h"
@@ -152,7 +153,7 @@ class LinkedHashSetNode : public LinkedHashSetNodeBase {
   ValueArg value_;
 
  private:
-  WTF_MAKE_NONCOPYABLE(LinkedHashSetNode);
+  DISALLOW_COPY_AND_ASSIGN(LinkedHashSetNode);
 };
 
 template <typename ValueArg,

@@ -26,6 +26,8 @@
 
 #include <limits.h>
 #include <string.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "platform/wtf/ASCIICType.h"
@@ -75,8 +77,6 @@ typedef HashMap<unsigned, StringImpl*, AlreadyHashed> StaticStringsTable;
 // You can find documentation about this class in this doc:
 // https://docs.google.com/document/d/1kOCUlJdh2WJMJGDf-WoEQhmnjKLaOYRbiHz5TiGJl14/edit?usp=sharing
 class WTF_EXPORT StringImpl {
-  WTF_MAKE_NONCOPYABLE(StringImpl);
-
  private:
   // StringImpls are allocated out of the WTF buffer partition.
   void* operator new(size_t);
@@ -487,6 +487,8 @@ class WTF_EXPORT StringImpl {
   unsigned is_atomic_ : 1;
   const unsigned is8_bit_ : 1;
   const unsigned is_static_ : 1;
+
+  DISALLOW_COPY_AND_ASSIGN(StringImpl);
 };
 
 template <>

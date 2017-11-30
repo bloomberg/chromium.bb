@@ -28,15 +28,14 @@
 #ifndef Locker_h
 #define Locker_h
 
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace WTF {
 
 template <typename T>
 class Locker final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(Locker);
 
  public:
   Locker(T& lockable) : lockable_(lockable) { lockable_.lock(); }
@@ -44,6 +43,8 @@ class Locker final {
 
  private:
   T& lockable_;
+
+  DISALLOW_COPY_AND_ASSIGN(Locker);
 };
 
 }  // namespace WTF

@@ -21,8 +21,8 @@
 
 #include "platform/wtf/TypeTraits.h"
 
+#include "base/macros.h"
 #include "build/build_config.h"
-#include "platform/wtf/Noncopyable.h"
 
 // No gtest tests; only static_assert checks.
 
@@ -103,7 +103,7 @@ static_assert(std::is_trivially_default_constructible<NestedOwned>::value,
               "NestedOwned should have a trivial default constructor");
 
 class NonCopyableClass {
-  WTF_MAKE_NONCOPYABLE(NonCopyableClass);
+  DISALLOW_COPY_AND_ASSIGN(NonCopyableClass);
 };
 #if 0   // Compilers don't get this "right" yet if using = delete.
 static_assert(!IsTriviallyMoveAssignable<NonCopyableClass>::value, "NonCopyableClass should not be trivially move assignable");

@@ -27,11 +27,12 @@
 #ifndef TextCodecICU_h
 #define TextCodecICU_h
 
+#include <unicode/utypes.h>
+#include <memory>
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "platform/wtf/text/TextCodec.h"
 #include "platform/wtf/text/TextEncoding.h"
-#include <memory>
-#include <unicode/utypes.h>
 
 typedef struct UConverter UConverter;
 
@@ -84,7 +85,6 @@ class TextCodecICU final : public TextCodec {
 };
 
 struct ICUConverterWrapper {
-  WTF_MAKE_NONCOPYABLE(ICUConverterWrapper);
   USING_FAST_MALLOC(ICUConverterWrapper);
 
  public:
@@ -92,6 +92,8 @@ struct ICUConverterWrapper {
   ~ICUConverterWrapper();
 
   UConverter* converter;
+
+  DISALLOW_COPY_AND_ASSIGN(ICUConverterWrapper);
 };
 
 }  // namespace WTF

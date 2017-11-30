@@ -31,9 +31,9 @@
 #ifndef ArrayBufferBuilder_h
 #define ArrayBufferBuilder_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
 #include "platform/wtf/typed_arrays/ArrayBuffer.h"
 
@@ -44,7 +44,6 @@ namespace WTF {
 class WTF_EXPORT ArrayBufferBuilder final {
   // Disallow copying since it's expensive and we don't want code to do it by
   // accident.
-  WTF_MAKE_NONCOPYABLE(ArrayBufferBuilder);
   USING_FAST_MALLOC(ArrayBufferBuilder);
 
  public:
@@ -93,6 +92,8 @@ class WTF_EXPORT ArrayBufferBuilder final {
   unsigned bytes_used_;
   bool variable_capacity_;
   scoped_refptr<ArrayBuffer> buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArrayBufferBuilder);
 };
 
 }  // namespace WTF

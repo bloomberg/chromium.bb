@@ -29,6 +29,7 @@
 #ifndef StringBuffer_h
 #define StringBuffer_h
 
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/StringImpl.h"
@@ -39,7 +40,6 @@ namespace WTF {
 template <typename CharType>
 class StringBuffer {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(StringBuffer);
 
  public:
   StringBuffer() {}
@@ -68,6 +68,8 @@ class StringBuffer {
 
  private:
   scoped_refptr<StringImpl> data_;
+
+  DISALLOW_COPY_AND_ASSIGN(StringBuffer);
 };
 
 template <typename CharType>

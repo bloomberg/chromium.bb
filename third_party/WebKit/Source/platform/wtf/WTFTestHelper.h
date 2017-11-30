@@ -5,6 +5,7 @@
 #ifndef WTF_WTFTestHelper_h
 #define WTF_WTFTestHelper_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/HashSet.h"
@@ -43,8 +44,9 @@ class MoveOnly {
   int Value() const { return i_; }
 
  private:
-  WTF_MAKE_NONCOPYABLE(MoveOnly);
   int i_;
+
+  DISALLOW_COPY_AND_ASSIGN(MoveOnly);
 };
 
 class MoveOnlyHashValue {
