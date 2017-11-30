@@ -4,12 +4,16 @@
 
 #include "services/data_decoder/xml_parser.h"
 
+#include <map>
 #include <utility>
 
 #include "base/values.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
 namespace data_decoder {
+
+using AttributeMap = std::map<std::string, std::string>;
+using NamespaceMap = std::map<std::string, std::string>;
 
 namespace {
 
@@ -49,6 +53,34 @@ base::Value* AddChildToElement(base::Value* element, base::Value child) {
                                base::Value(base::Value::Type::LIST));
   children->GetList().push_back(std::move(child));
   return &children->GetList().back();
+}
+
+void PopulateNamespaces(base::Value* node_value, XmlReader* xml_reader) {
+  DCHECK(node_value->is_dict());
+  NamespaceMap namespaces;
+  if (!xml_reader->GetAllDeclaredNamespaces(&namespaces) || namespaces.empty())
+    return;
+
+  base::Value namespace_dict(base::Value::Type::DICTIONARY);
+  for (auto ns : namespaces)
+    namespace_dict.SetKey(ns.first, base::Value(ns.second));
+
+  node_value->SetKey(mojom::XmlParser::kNamespacesKey,
+                     std::move(namespace_dict));
+}
+
+void PopulateAttributes(base::Value* node_value, XmlReader* xml_reader) {
+  DCHECK(node_value->is_dict());
+  AttributeMap attributes;
+  if (!xml_reader->GetAllNodeAttributes(&attributes) || attributes.empty())
+    return;
+
+  base::Value attribute_dict(base::Value::Type::DICTIONARY);
+  for (auto attribute : attributes)
+    attribute_dict.SetKey(attribute.first, base::Value(attribute.second));
+
+  node_value->SetKey(mojom::XmlParser::kAttributesKey,
+                     std::move(attribute_dict));
 }
 
 }  // namespace
@@ -93,7 +125,9 @@ void XmlParser::Parse(const std::string& xml, ParseCallback callback) {
       new_element = CreateTextNode(text, TextNodeType::kCData);
     } else {
       // Element node.
-      new_element = CreateNewElement(xml_reader.NodeName());
+      new_element = CreateNewElement(xml_reader.NodeFullName());
+      PopulateNamespaces(&new_element, &xml_reader);
+      PopulateAttributes(&new_element, &xml_reader);
       // Self-closing (empty) element have no close tag (or children); don't
       // push them on the element stack.
       push_new_node_to_stack = !xml_reader.IsEmptyElement();

@@ -41,6 +41,8 @@ source_set("cpp") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "test_data_decoder_service.cc",
+    "test_data_decoder_service.h",
     "testing_json_parser.cc",
     "testing_json_parser.h",
   ]
@@ -48,5 +50,7 @@ static_library("test_support") {
   deps = [
     ":cpp",
     "//base",
+    "//services/data_decoder:lib",
+    "//services/service_manager/public/cpp/test:test_support",
   ]
 }
