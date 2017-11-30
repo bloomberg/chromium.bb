@@ -62,15 +62,40 @@ Error FileErrorToNetError(base::File::Error file_error) {
   switch (file_error) {
     case base::File::FILE_OK:
       return OK;
-    case base::File::FILE_ERROR_ACCESS_DENIED:
-      return ERR_ACCESS_DENIED;
-    case base::File::FILE_ERROR_INVALID_URL:
-      return ERR_INVALID_URL;
+    case base::File::FILE_ERROR_EXISTS:
+      return ERR_FILE_EXISTS;
     case base::File::FILE_ERROR_NOT_FOUND:
       return ERR_FILE_NOT_FOUND;
-    default:
+    case base::File::FILE_ERROR_ACCESS_DENIED:
+      return ERR_ACCESS_DENIED;
+    case base::File::FILE_ERROR_NO_MEMORY:
+      return ERR_OUT_OF_MEMORY;
+    case base::File::FILE_ERROR_NO_SPACE:
+      return ERR_FILE_NO_SPACE;
+    case base::File::FILE_ERROR_INVALID_OPERATION:
+      return ERR_INVALID_ARGUMENT;
+    case base::File::FILE_ERROR_ABORT:
+      return ERR_ABORTED;
+    case base::File::FILE_ERROR_INVALID_URL:
+      return ERR_INVALID_URL;
+    case base::File::FILE_ERROR_TOO_MANY_OPENED:
+      return ERR_INSUFFICIENT_RESOURCES;
+    case base::File::FILE_ERROR_SECURITY:
+      return ERR_ACCESS_DENIED;
+    case base::File::FILE_ERROR_MAX:
+      NOTREACHED();
+    // fallthrough
+    case base::File::FILE_ERROR_NOT_A_DIRECTORY:
+    case base::File::FILE_ERROR_NOT_A_FILE:
+    case base::File::FILE_ERROR_NOT_EMPTY:
+    case base::File::FILE_ERROR_IO:
+    case base::File::FILE_ERROR_IN_USE:
+    // No good mappings for these, so just fallthrough to generic fail.
+    case base::File::FILE_ERROR_FAILED:
       return ERR_FAILED;
   }
+  NOTREACHED();
+  return ERR_FAILED;
 }
 
 }  // namespace net
