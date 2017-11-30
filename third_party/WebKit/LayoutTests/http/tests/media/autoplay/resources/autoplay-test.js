@@ -10,10 +10,17 @@ let callback;
 function tearDown(result) {
   // Reset the flag state.
   window.internals.settings.setAutoplayPolicy('no-user-gesture-required');
+  let canAutoplay = true;
+
+  // Ensure that play failed because autoplay was blocked. If playback failed
+  // for another reason then we don't care because autoplay is always checked
+  // first.
+  if (result && result.name == 'NotAllowedError')
+    canAutoplay = false;
 
   receivedResult({
     url: window.location.href,
-    message: result == undefined
+    message: canAutoplay
   });
 }
 
