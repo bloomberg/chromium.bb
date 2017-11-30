@@ -70,7 +70,7 @@ SharedMemoryHandleProvider::GetHandleForInterProcessTransit(bool read_only) {
   }
   return mojo::WrapSharedMemoryHandle(
       base::SharedMemory::DuplicateHandle(shared_memory_->handle()),
-      mapped_size_, read_only_flag_);
+      mapped_size_, read_only);
 }
 
 base::SharedMemoryHandle
