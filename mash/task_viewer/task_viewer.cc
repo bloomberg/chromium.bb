@@ -285,7 +285,7 @@ TaskViewer::TaskViewer() {
   registry_.AddInterface<::mash::mojom::Launchable>(
       base::Bind(&TaskViewer::Create, base::Unretained(this)));
 }
-TaskViewer::~TaskViewer() {}
+TaskViewer::~TaskViewer() = default;
 
 void TaskViewer::RemoveWindow(views::Widget* widget) {
   auto it = std::find(windows_.begin(), windows_.end(), widget);

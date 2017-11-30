@@ -210,7 +210,7 @@ CatalogViewer::CatalogViewer() {
   registry_.AddInterface<mojom::Launchable>(
       base::Bind(&CatalogViewer::Create, base::Unretained(this)));
 }
-CatalogViewer::~CatalogViewer() {}
+CatalogViewer::~CatalogViewer() = default;
 
 void CatalogViewer::RemoveWindow(views::Widget* window) {
   auto it = std::find(windows_.begin(), windows_.end(), window);

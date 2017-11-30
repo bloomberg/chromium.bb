@@ -61,7 +61,7 @@ class WindowDelegateView : public views::WidgetDelegateView {
   explicit WindowDelegateView(uint32_t traits) : traits_(traits) {
     SetBackground(views::CreateSolidBackground(SK_ColorRED));
   }
-  ~WindowDelegateView() override {}
+  ~WindowDelegateView() override = default;
 
   // Creates and shows a window with the specified traits.
   static void Create(uint32_t traits) {
@@ -112,7 +112,7 @@ class ModalWindow : public views::WidgetDelegateView,
     ++g_color_index %= arraysize(g_colors);
     AddChildView(open_button_);
   }
-  ~ModalWindow() override {}
+  ~ModalWindow() override = default;
 
   static void OpenModalWindow(aura::Window* parent, ui::ModalType modal_type) {
     views::Widget* widget = views::Widget::CreateWindowWithParent(
@@ -166,7 +166,7 @@ class NonModalTransient : public views::WidgetDelegateView {
       : color_(g_colors[g_color_index]) {
     ++g_color_index %= arraysize(g_colors);
   }
-  ~NonModalTransient() override {}
+  ~NonModalTransient() override = default;
 
   static void OpenNonModalTransient(aura::Window* parent) {
     views::Widget* widget =
@@ -441,7 +441,7 @@ WindowTypeLauncher::WindowTypeLauncher() {
   registry_.AddInterface<mash::mojom::Launchable>(
       base::Bind(&WindowTypeLauncher::Create, base::Unretained(this)));
 }
-WindowTypeLauncher::~WindowTypeLauncher() {}
+WindowTypeLauncher::~WindowTypeLauncher() = default;
 
 void WindowTypeLauncher::RemoveWindow(views::Widget* window) {
   auto it = std::find(windows_.begin(), windows_.end(), window);

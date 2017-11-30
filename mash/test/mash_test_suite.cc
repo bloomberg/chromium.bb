@@ -29,7 +29,7 @@ namespace test {
 
 MashTestSuite::MashTestSuite(int argc, char** argv) : TestSuite(argc, argv) {}
 
-MashTestSuite::~MashTestSuite() {}
+MashTestSuite::~MashTestSuite() = default;
 
 void MashTestSuite::Initialize() {
   base::TestSuite::Initialize();

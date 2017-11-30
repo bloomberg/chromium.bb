@@ -15,8 +15,8 @@
 namespace mash {
 namespace session {
 
-Session::Session() {}
-Session::~Session() {}
+Session::Session() = default;
+Session::~Session() = default;
 
 void Session::OnStart() {
   StartWindowManager();
