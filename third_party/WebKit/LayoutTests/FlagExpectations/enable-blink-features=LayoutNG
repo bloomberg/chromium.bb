@@ -17,8 +17,11 @@ crbug.com/707656 editing/input/scroll-viewport-page-up-down.html [ Failure Pass 
 crbug.com/707656 editing/undo/undo-indent.html [ Crash Pass ]
 crbug.com/707656 external/wpt/html/editing/editing-0/spelling-and-grammar-checking/spelling-markers-001.html [ Crash Pass ]
 crbug.com/707656 external/wpt/html/editing/focus/processing-model/focus-fixup-rule-one-no-dialogs.html [ Crash Pass ]
+crbug.com/789878 fast/css/first-letter-capitalized-edit-select-crash.html [ Failure ]
 crbug.com/707656 fast/css/readwrite-contenteditable-recalc.html [ Crash Pass ]
+crbug.com/789878 fast/css/readwrite-contenteditable.html [ Failure ]
 crbug.com/707656 fast/inline-block/14498-positionForCoordinates.html [ Failure Pass ]
+crbug.com/789878 fast/inline/inline-focus-ring.html [ Failure ]
 crbug.com/707656 paint/invalidation/remove-anonymous-block-crash.html [ Crash Pass ]
 
 # TextIterator differ in trailing spaces.
