@@ -22,6 +22,7 @@
 #endif
 
 namespace exo {
+class ClientControlledShellSurface;
 class DataDevice;
 class DataDeviceDelegate;
 class FileHelper;
@@ -31,6 +32,7 @@ class SharedMemory;
 class ShellSurface;
 class SubSurface;
 class Surface;
+class XdgShellSurface;
 
 #if defined(USE_OZONE)
 class Buffer;
@@ -67,12 +69,15 @@ class Display {
   // Creates a shell surface for an existing surface.
   std::unique_ptr<ShellSurface> CreateShellSurface(Surface* surface);
 
+  // Creates a xdg shell surface for an existing surface.
+  std::unique_ptr<XdgShellSurface> CreateXdgShellSurface(Surface* surface);
+
   // Creates a remote shell surface for an existing surface using |container|.
   // The surface is scaled by 1 / |default_device_scale_factor|.
-  std::unique_ptr<ShellSurface> CreateRemoteShellSurface(
-      Surface* surface,
-      int container,
-      double default_device_scale_factor);
+  std::unique_ptr<ClientControlledShellSurface>
+  CreateClientControlledShellSurface(Surface* surface,
+                                     int container,
+                                     double default_device_scale_factor);
 
   // Creates a sub-surface for an existing surface. The sub-surface will be
   // a child of |parent|.

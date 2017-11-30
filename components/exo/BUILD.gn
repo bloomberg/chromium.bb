@@ -10,6 +10,8 @@ source_set("exo") {
   sources = [
     "buffer.cc",
     "buffer.h",
+    "client_controlled_shell_surface.cc",
+    "client_controlled_shell_surface.h",
     "data_device.cc",
     "data_device.h",
     "data_device_delegate.h",
@@ -58,6 +60,8 @@ source_set("exo") {
     "touch_delegate.h",
     "wm_helper.cc",
     "wm_helper.h",
+    "xdg_shell_surface.cc",
+    "xdg_shell_surface.h",
   ]
 
   deps = [

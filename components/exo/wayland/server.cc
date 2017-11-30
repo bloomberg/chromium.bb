@@ -54,6 +54,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/exo/buffer.h"
+#include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/data_device.h"
 #include "components/exo/data_device_delegate.h"
 #include "components/exo/data_offer.h"
@@ -81,6 +82,7 @@
 #include "components/exo/touch_delegate.h"
 #include "components/exo/touch_stylus_delegate.h"
 #include "components/exo/wm_helper.h"
+#include "components/exo/xdg_shell_surface.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/class_property.h"
@@ -1409,7 +1411,7 @@ class WaylandToplevel : public aura::WindowObserver {
  public:
   WaylandToplevel(wl_resource* resource, wl_resource* surface_resource)
       : resource_(resource),
-        shell_surface_(GetUserDataAs<ShellSurface>(surface_resource)),
+        shell_surface_(GetUserDataAs<XdgShellSurface>(surface_resource)),
         weak_ptr_factory_(this) {
     shell_surface_->host_window()->AddObserver(this);
     shell_surface_->set_close_callback(
@@ -1528,7 +1530,7 @@ class WaylandToplevel : public aura::WindowObserver {
   }
 
   wl_resource* const resource_;
-  ShellSurface* shell_surface_;
+  XdgShellSurface* shell_surface_;
   base::WeakPtrFactory<WaylandToplevel> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandToplevel);
@@ -1717,7 +1719,7 @@ void xdg_surface_v6_get_popup(wl_client* client,
                               uint32_t id,
                               wl_resource* parent_resource,
                               wl_resource* positioner_resource) {
-  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
+  XdgShellSurface* shell_surface = GetUserDataAs<XdgShellSurface>(resource);
   if (shell_surface->enabled()) {
     wl_resource_post_error(resource, ZXDG_SURFACE_V6_ERROR_ALREADY_CONSTRUCTED,
                            "surface has already been constructed");
@@ -1796,7 +1798,7 @@ void xdg_shell_v6_get_xdg_surface(wl_client* client,
                                   uint32_t id,
                                   wl_resource* surface) {
   std::unique_ptr<ShellSurface> shell_surface =
-      GetUserDataAs<Display>(resource)->CreateShellSurface(
+      GetUserDataAs<Display>(resource)->CreateXdgShellSurface(
           GetUserDataAs<Surface>(surface));
   if (!shell_surface) {
     wl_resource_post_error(resource, ZXDG_SHELL_V6_ERROR_ROLE,
@@ -1862,7 +1864,7 @@ void remote_surface_set_window_geometry(wl_client* client,
 void remote_surface_set_orientation(wl_client* client,
                                     wl_resource* resource,
                                     int32_t orientation) {
-  GetUserDataAs<ShellSurface>(resource)->SetOrientation(
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetOrientation(
       orientation == ZCR_REMOTE_SURFACE_V1_ORIENTATION_PORTRAIT
           ? Orientation::PORTRAIT
           : Orientation::LANDSCAPE);
@@ -1871,7 +1873,8 @@ void remote_surface_set_orientation(wl_client* client,
 void remote_surface_set_scale(wl_client* client,
                               wl_resource* resource,
                               wl_fixed_t scale) {
-  GetUserDataAs<ShellSurface>(resource)->SetScale(wl_fixed_to_double(scale));
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetScale(
+      wl_fixed_to_double(scale));
 }
 
 void remote_surface_set_rectangular_shadow_DEPRECATED(wl_client* client,
@@ -1900,7 +1903,7 @@ void remote_surface_set_title(wl_client* client,
 void remote_surface_set_top_inset(wl_client* client,
                                   wl_resource* resource,
                                   int32_t height) {
-  GetUserDataAs<ShellSurface>(resource)->SetTopInset(height);
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetTopInset(height);
 }
 
 void remote_surface_activate(wl_client* client,
@@ -1933,23 +1936,23 @@ void remote_surface_unfullscreen(wl_client* client, wl_resource* resource) {
 void remote_surface_pin(wl_client* client,
                         wl_resource* resource,
                         int32_t trusted) {
-  GetUserDataAs<ShellSurface>(resource)->SetPinned(
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetPinned(
       trusted ? ash::mojom::WindowPinType::TRUSTED_PINNED
               : ash::mojom::WindowPinType::PINNED);
 }
 
 void remote_surface_unpin(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetPinned(
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetPinned(
       ash::mojom::WindowPinType::NONE);
 }
 
 void remote_surface_set_system_modal(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetSystemModal(true);
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetSystemModal(true);
 }
 
 void remote_surface_unset_system_modal(wl_client* client,
                                        wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetSystemModal(false);
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetSystemModal(false);
 }
 
 void remote_surface_set_rectangular_surface_shadow(wl_client* client,
@@ -1958,25 +1961,26 @@ void remote_surface_set_rectangular_surface_shadow(wl_client* client,
                                                    int32_t y,
                                                    int32_t width,
                                                    int32_t height) {
-  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
+  ClientControlledShellSurface* shell_surface =
+      GetUserDataAs<ClientControlledShellSurface>(resource);
   shell_surface->SetShadowBounds(gfx::Rect(x, y, width, height));
 }
 
 void remote_surface_set_systemui_visibility(wl_client* client,
                                             wl_resource* resource,
                                             uint32_t visibility) {
-  GetUserDataAs<ShellSurface>(resource)->SetSystemUiVisibility(
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetSystemUiVisibility(
       visibility != ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_VISIBLE);
 }
 
 void remote_surface_set_always_on_top(wl_client* client,
                                       wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetAlwaysOnTop(true);
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetAlwaysOnTop(true);
 }
 
 void remote_surface_unset_always_on_top(wl_client* client,
                                         wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetAlwaysOnTop(false);
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetAlwaysOnTop(false);
 }
 
 void remote_surface_ack_configure(wl_client* client,
@@ -2087,8 +2091,8 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
       Surface* surface,
       int container,
       double default_device_scale_factor) {
-    return display_->CreateRemoteShellSurface(surface, container,
-                                              default_device_scale_factor);
+    return display_->CreateClientControlledShellSurface(
+        surface, container, default_device_scale_factor);
   }
 
   std::unique_ptr<NotificationSurface> CreateNotificationSurface(

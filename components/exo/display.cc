@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/data_device.h"
 #include "components/exo/file_helper.h"
 #include "components/exo/notification_surface.h"
@@ -20,6 +21,7 @@
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
+#include "components/exo/xdg_shell_surface.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -138,19 +140,34 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
 std::unique_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
   TRACE_EVENT1("exo", "Display::CreateShellSurface", "surface",
                surface->AsTracedValue());
-
   if (surface->HasSurfaceDelegate()) {
     DLOG(ERROR) << "Surface has already been assigned a role";
     return nullptr;
   }
 
   return std::make_unique<ShellSurface>(
-      surface, nullptr, ShellSurface::BoundsMode::SHELL, gfx::Point(),
+      surface, ShellSurface::BoundsMode::SHELL, gfx::Point(),
       true /* activatable */, false /* can_minimize */,
       ash::kShellWindowId_DefaultContainer);
 }
 
-std::unique_ptr<ShellSurface> Display::CreateRemoteShellSurface(
+std::unique_ptr<XdgShellSurface> Display::CreateXdgShellSurface(
+    Surface* surface) {
+  TRACE_EVENT1("exo", "Display::CreateXdgShellSurface", "surface",
+               surface->AsTracedValue());
+  if (surface->HasSurfaceDelegate()) {
+    DLOG(ERROR) << "Surface has already been assigned a role";
+    return nullptr;
+  }
+
+  return std::make_unique<XdgShellSurface>(
+      surface, ShellSurface::BoundsMode::SHELL, gfx::Point(),
+      true /* activatable */, false /* can_minimize */,
+      ash::kShellWindowId_DefaultContainer);
+}
+
+std::unique_ptr<ClientControlledShellSurface>
+Display::CreateClientControlledShellSurface(
     Surface* surface,
     int container,
     double default_device_scale_factor) {
@@ -165,9 +182,9 @@ std::unique_ptr<ShellSurface> Display::CreateRemoteShellSurface(
   // Remote shell surfaces in system modal container cannot be minimized.
   bool can_minimize = container != ash::kShellWindowId_SystemModalContainer;
 
-  std::unique_ptr<ShellSurface> shell_surface(std::make_unique<ShellSurface>(
-      surface, nullptr, ShellSurface::BoundsMode::CLIENT, gfx::Point(),
-      true /* activatable */, can_minimize, container));
+  std::unique_ptr<ClientControlledShellSurface> shell_surface(
+      std::make_unique<ClientControlledShellSurface>(surface, can_minimize,
+                                                     container));
   DCHECK_GE(default_device_scale_factor, 1.0);
   shell_surface->SetScale(default_device_scale_factor);
   return shell_surface;
