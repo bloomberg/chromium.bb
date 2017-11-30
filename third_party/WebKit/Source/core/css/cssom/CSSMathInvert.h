@@ -56,6 +56,7 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
 
   // From CSSNumericValue
   CSSNumericValue* Invert() final { return value_.Get(); }
+  WTF::Optional<CSSNumericSumValue> SumValue() const final;
 
   Member<CSSNumericValue> value_;
   DISALLOW_COPY_AND_ASSIGN(CSSMathInvert);

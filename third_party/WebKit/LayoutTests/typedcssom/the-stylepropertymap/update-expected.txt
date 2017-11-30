@@ -9,6 +9,6 @@ FAIL Updating a custom property with CSSStyleValue updates its value Cannot read
 PASS Calling StylePropertyMap.update on an empty property model calls update function with null
 PASS Calling StylePropertyMap.update on an existing property calls update function with old value
 PASS Calling StylePropertyMap.update on an existing list-valued property calls update function with first value
-FAIL StylePropertyMap.update is case-insensitive assert_equals: expected 20 but got 10
+FAIL StylePropertyMap.update is case-insensitive assert_approx_equals: expected 20 +/- 0.000001 but got 10
 Harness: the test ran to completion.
 

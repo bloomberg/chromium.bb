@@ -32,6 +32,7 @@ class CORE_EXPORT CSSNumericValueType {
 
   explicit CSSNumericValueType(
       CSSPrimitiveValue::UnitType = CSSPrimitiveValue::UnitType::kNumber);
+  CSSNumericValueType(int exponent, CSSPrimitiveValue::UnitType);
 
   static CSSNumericValueType NegateExponents(CSSNumericValueType);
   static CSSNumericValueType Add(CSSNumericValueType,

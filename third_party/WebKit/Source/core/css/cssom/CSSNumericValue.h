@@ -9,6 +9,7 @@
 #include "bindings/core/v8/double_or_css_numeric_value.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/cssom/CSSNumericSumValue.h"
 #include "core/css/cssom/CSSNumericValueType.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -47,8 +48,9 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
 
   // Internal methods.
   // Converts between compatible types.
-  virtual CSSUnitValue* to(CSSPrimitiveValue::UnitType) const = 0;
+  CSSUnitValue* to(CSSPrimitiveValue::UnitType) const;
   virtual bool IsUnitValue() const = 0;
+  virtual WTF::Optional<CSSNumericSumValue> SumValue() const = 0;
 
   virtual bool Equals(const CSSNumericValue&) const = 0;
   const CSSNumericValueType& Type() const { return type_; }

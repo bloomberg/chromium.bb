@@ -30,6 +30,8 @@ class CORE_EXPORT CSSMathSum final : public CSSMathVariadic {
  private:
   CSSMathSum(CSSNumericArray* values, const CSSNumericValueType& type)
       : CSSMathVariadic(values, type) {}
+
+  WTF::Optional<CSSNumericSumValue> SumValue() const final;
   DISALLOW_COPY_AND_ASSIGN(CSSMathSum);
 };
 

@@ -10,6 +10,8 @@
 
 namespace blink {
 
+struct CSSNumericSumValue;
+
 // Represents the minimum of one or more CSSNumericValues.
 // See CSSMathMin.idl for more information about this class.
 class CORE_EXPORT CSSMathMin final : public CSSMathVariadic {
@@ -30,6 +32,8 @@ class CORE_EXPORT CSSMathMin final : public CSSMathVariadic {
  private:
   CSSMathMin(CSSNumericArray* values, const CSSNumericValueType& type)
       : CSSMathVariadic(values, type) {}
+
+  WTF::Optional<CSSNumericSumValue> SumValue() const final;
   DISALLOW_COPY_AND_ASSIGN(CSSMathMin);
 };
 

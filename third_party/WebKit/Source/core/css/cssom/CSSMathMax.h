@@ -30,6 +30,8 @@ class CORE_EXPORT CSSMathMax final : public CSSMathVariadic {
  private:
   CSSMathMax(CSSNumericArray* values, const CSSNumericValueType& type)
       : CSSMathVariadic(values, type) {}
+
+  WTF::Optional<CSSNumericSumValue> SumValue() const final;
   DISALLOW_COPY_AND_ASSIGN(CSSMathMax);
 };
 

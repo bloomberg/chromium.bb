@@ -7,7 +7,7 @@ function assert_style_value_equals(a, b) {
     case 'CSSKeywordValue':
       return assert_equals(a.value, b.value);
     case 'CSSUnitValue':
-      return assert_equals(a.value, b.value) && assert_equals(a.unit, b.unit);
+      return assert_approx_equals(a.value, b.value, 1e-6) && assert_equals(a.unit, b.unit);
     case 'CSSMathSum':
     case 'CSSMathProduct':
     case 'CSSMathMin':
