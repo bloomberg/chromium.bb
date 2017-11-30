@@ -31,7 +31,8 @@ void NGInlineFragmentIterator::CollectInlineFragments(
     NGPhysicalOffset child_offset = child->Offset() + offset_to_container_box;
 
     if (filter == child->GetLayoutObject()) {
-      results->push_back(Result{child.get(), child_offset});
+      results->push_back(
+          NGPhysicalFragmentWithOffset{child.get(), child_offset});
     }
 
     // Traverse descendants unless the fragment is laid out separately from the
