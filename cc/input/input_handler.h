@@ -185,7 +185,7 @@ class CC_EXPORT InputHandler {
   virtual void PinchGestureBegin() = 0;
   virtual void PinchGestureUpdate(float magnify_delta,
                                   const gfx::Point& anchor) = 0;
-  virtual void PinchGestureEnd() = 0;
+  virtual void PinchGestureEnd(const gfx::Point& anchor, bool snap_to_min) = 0;
 
   // Request another callback to InputHandlerClient::Animate().
   virtual void SetNeedsAnimateInput() = 0;

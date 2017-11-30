@@ -394,7 +394,11 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     case WebInputEvent::kGesturePinchEnd:
       if (gesture_pinch_on_impl_thread_) {
         gesture_pinch_on_impl_thread_ = false;
-        input_handler_->PinchGestureEnd();
+        const WebGestureEvent& gesture_event =
+            static_cast<const WebGestureEvent&>(event);
+        input_handler_->PinchGestureEnd(
+            gfx::Point(gesture_event.x, gesture_event.y),
+            gesture_event.source_device == blink::kWebGestureDeviceTouchpad);
         return DID_HANDLE;
       } else {
         return DID_NOT_HANDLE;
@@ -1246,7 +1250,7 @@ void InputHandlerProxy::SynchronouslyZoomBy(float magnify_delta,
   DCHECK(synchronous_input_handler_);
   input_handler_->PinchGestureBegin();
   input_handler_->PinchGestureUpdate(magnify_delta, anchor);
-  input_handler_->PinchGestureEnd();
+  input_handler_->PinchGestureEnd(anchor, false);
 }
 
 void InputHandlerProxy::HandleOverscroll(

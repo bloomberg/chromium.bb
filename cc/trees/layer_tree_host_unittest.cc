@@ -2769,7 +2769,7 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
     if (!sent_gesture_) {
       host_impl->PinchGestureBegin();
       host_impl->PinchGestureUpdate(2, gfx::Point(100, 100));
-      host_impl->PinchGestureEnd();
+      host_impl->PinchGestureEnd(gfx::Point(100, 100), true);
       sent_gesture_ = true;
     }
   }
@@ -6444,7 +6444,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
         // Pinch zoom in.
         host_impl->PinchGestureBegin();
         host_impl->PinchGestureUpdate(1.5f, gfx::Point(100, 100));
-        host_impl->PinchGestureEnd();
+        host_impl->PinchGestureEnd(gfx::Point(100, 100), true);
         break;
       case 3:
         // Pinch zoom back to 1.f but don't end it.
@@ -6454,7 +6454,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
       case 4:
         // End the pinch, but delay tile production.
         playback_allowed_event_.Reset();
-        host_impl->PinchGestureEnd();
+        host_impl->PinchGestureEnd(gfx::Point(100, 100), true);
         break;
       case 5:
         // Let tiles complete.
@@ -6727,7 +6727,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
         // Pinch zoom in to cause new tiles to be required.
         host_impl->PinchGestureBegin();
         host_impl->PinchGestureUpdate(1.5f, gfx::Point(100, 100));
-        host_impl->PinchGestureEnd();
+        host_impl->PinchGestureEnd(gfx::Point(100, 100), true);
         ++step_;
         break;
       case 2:
@@ -8234,7 +8234,7 @@ class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
 
     // We just drew a frame, stats for it should have been recorded. End the
     // gesture so they are flushed to the recorder.
-    impl->PinchGestureEnd();
+    impl->PinchGestureEnd(gfx::Point(50, 50), false);
 
     // RenewTreePriority will run when the smoothness expiration timer fires.
     // Synthetically do it here so the UkmManager is notified.

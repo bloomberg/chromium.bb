@@ -494,7 +494,7 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
           // Pinch zoom in to change the scale on the active tree.
           impl->PinchGestureBegin();
           impl->PinchGestureUpdate(2.f, gfx::Point(1, 1));
-          impl->PinchGestureEnd();
+          impl->PinchGestureEnd(gfx::Point(1, 1), true);
         } else if (picture->tilings()->num_tilings() == 1) {
           // If the pinch gesture caused a commit we could get here with a
           // pending tree.
