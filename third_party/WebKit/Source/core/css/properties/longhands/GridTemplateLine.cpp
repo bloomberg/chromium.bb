@@ -5,7 +5,7 @@
 #include "core/css/properties/longhands/GridTemplateLine.h"
 
 #include "core/css/parser/CSSParserContext.h"
-#include "core/css/properties/CSSPropertyGridUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {
@@ -15,8 +15,8 @@ const CSSValue* GridTemplateLine::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyGridUtils::ConsumeGridTemplatesRowsOrColumns(
-      range, context.Mode());
+  return CSSParsingUtils::ConsumeGridTemplatesRowsOrColumns(range,
+                                                            context.Mode());
 }
 
 bool GridTemplateLine::IsLayoutDependent(const ComputedStyle* style,

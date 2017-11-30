@@ -4,7 +4,7 @@
 
 #include "core/css/properties/longhands/MaxWidthOrHeight.h"
 
-#include "core/css/properties/CSSPropertyLengthUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -13,7 +13,7 @@ const CSSValue* MaxWidthOrHeight::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyLengthUtils::ConsumeMaxWidthOrHeight(
+  return CSSParsingUtils::ConsumeMaxWidthOrHeight(
       range, context, CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
 }
 

@@ -6,7 +6,7 @@
 
 #include "core/css/CSSValuePair.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyAlignmentUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -28,7 +28,7 @@ const CSSValue* JustifyItems::ParseSingleValue(
     return CSSValuePair::Create(legacy, position_keyword,
                                 CSSValuePair::kDropIdenticalValues);
   }
-  return CSSPropertyAlignmentUtils::ConsumeSelfPositionOverflowPosition(range);
+  return CSSParsingUtils::ConsumeSelfPositionOverflowPosition(range);
 }
 
 }  // namespace CSSLonghand

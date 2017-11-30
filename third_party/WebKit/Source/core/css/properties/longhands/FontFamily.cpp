@@ -5,7 +5,7 @@
 #include "core/css/properties/longhands/FontFamily.h"
 
 #include "core/css/CSSValueList.h"
-#include "core/css/properties/CSSPropertyFontUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -14,7 +14,7 @@ const CSSValue* FontFamily::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSPropertyFontUtils::ConsumeFontFamily(range);
+  return CSSParsingUtils::ConsumeFontFamily(range);
 }
 
 }  // namespace CSSLonghand

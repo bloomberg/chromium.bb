@@ -4,7 +4,7 @@
 
 #include "core/css/properties/longhands/D.h"
 
-#include "core/css/properties/CSSPropertyOffsetPathUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -12,7 +12,7 @@ namespace CSSLonghand {
 const CSSValue* D::ParseSingleValue(CSSParserTokenRange& range,
                                     const CSSParserContext&,
                                     const CSSParserLocalContext&) const {
-  return CSSPropertyOffsetPathUtils::ConsumePathOrNone(range);
+  return CSSParsingUtils::ConsumePathOrNone(range);
 }
 
 }  // namespace CSSLonghand

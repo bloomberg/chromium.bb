@@ -6,7 +6,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/css/parser/CSSParserContext.h"
-#include "core/css/properties/CSSPropertyPositionUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -15,8 +15,7 @@ const CSSValue* WebkitOriginY::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueTop,
-                                                           CSSValueBottom>(
+  return CSSParsingUtils::ConsumePositionLonghand<CSSValueTop, CSSValueBottom>(
       range, context.Mode());
 }
 

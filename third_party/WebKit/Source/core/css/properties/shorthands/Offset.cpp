@@ -8,8 +8,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyOffsetPathUtils.h"
-#include "core/css/properties/CSSPropertyOffsetRotateUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 #include "core/css/properties/Longhand.h"
 #include "platform/runtime_enabled_features.h"
 
@@ -30,14 +29,13 @@ bool Offset::ParseShorthand(
       ToLonghand(GetCSSPropertyOffsetPosition())
           .ParseSingleValue(range, context, CSSParserLocalContext());
   const CSSValue* offset_path =
-      CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range, context);
+      CSSParsingUtils::ConsumeOffsetPath(range, context);
   const CSSValue* offset_distance = nullptr;
   const CSSValue* offset_rotate = nullptr;
   if (offset_path) {
     offset_distance = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
         range, context.Mode(), kValueRangeAll);
-    offset_rotate =
-        CSSPropertyOffsetRotateUtils::ConsumeOffsetRotate(range, context);
+    offset_rotate = CSSParsingUtils::ConsumeOffsetRotate(range, context);
     if (offset_rotate && !offset_distance) {
       offset_distance = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
           range, context.Mode(), kValueRangeAll);

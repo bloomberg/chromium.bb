@@ -7,7 +7,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSParserTokenRange.h"
-#include "core/css/properties/CSSPropertyTransformUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {
@@ -17,8 +17,7 @@ const CSSValue* Transform::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
-  return CSSPropertyTransformUtils::ConsumeTransformList(range, context,
-                                                         local_context);
+  return CSSParsingUtils::ConsumeTransformList(range, context, local_context);
 }
 
 bool Transform::IsLayoutDependent(const ComputedStyle* style,

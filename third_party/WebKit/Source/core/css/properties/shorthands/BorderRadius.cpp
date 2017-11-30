@@ -8,7 +8,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyShapeUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -22,9 +22,9 @@ bool BorderRadius::ParseShorthand(
   CSSValue* horizontal_radii[4] = {nullptr};
   CSSValue* vertical_radii[4] = {nullptr};
 
-  if (!CSSPropertyShapeUtils::ConsumeRadii(horizontal_radii, vertical_radii,
-                                           range, context.Mode(),
-                                           local_context.UseAliasParsing()))
+  if (!CSSParsingUtils::ConsumeRadii(horizontal_radii, vertical_radii, range,
+                                     context.Mode(),
+                                     local_context.UseAliasParsing()))
     return false;
 
   CSSPropertyParserHelpers::AddProperty(

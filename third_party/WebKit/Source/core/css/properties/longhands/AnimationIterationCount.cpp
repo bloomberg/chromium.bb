@@ -6,7 +6,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyAnimationIterationCountUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -16,8 +16,7 @@ const CSSValue* AnimationIterationCount::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSPropertyAnimationIterationCountUtils::ConsumeAnimationIterationCount,
-      range);
+      CSSParsingUtils::ConsumeAnimationIterationCount, range);
 }
 
 }  // namespace CSSLonghand

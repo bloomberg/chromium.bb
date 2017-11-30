@@ -4,7 +4,7 @@
 
 #include "core/css/properties/longhands/WebkitMaskBoxImageOutset.h"
 
-#include "core/css/properties/CSSPropertyBorderImageUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -13,7 +13,7 @@ const CSSValue* WebkitMaskBoxImageOutset::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSPropertyBorderImageUtils::ConsumeBorderImageOutset(range);
+  return CSSParsingUtils::ConsumeBorderImageOutset(range);
 }
 
 }  // namespace CSSLonghand

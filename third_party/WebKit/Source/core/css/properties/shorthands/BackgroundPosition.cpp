@@ -6,7 +6,7 @@
 
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyBackgroundUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -20,7 +20,7 @@ bool BackgroundPosition::ParseShorthand(
   CSSValue* result_x = nullptr;
   CSSValue* result_y = nullptr;
 
-  if (!CSSPropertyBackgroundUtils::ConsumeBackgroundPosition(
+  if (!CSSParsingUtils::ConsumeBackgroundPosition(
           range, context, CSSPropertyParserHelpers::UnitlessQuirk::kAllow,
           result_x, result_y) ||
       !range.AtEnd())

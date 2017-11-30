@@ -7,7 +7,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyShapeUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -24,7 +24,7 @@ const CSSValue* ShapeOutside::ParseSingleValue(
   if (CSSValue* box_value = ConsumeShapeBox(range))
     list->Append(*box_value);
   if (CSSValue* shape_value =
-          CSSPropertyShapeUtils::ConsumeBasicShape(range, context)) {
+          CSSParsingUtils::ConsumeBasicShape(range, context)) {
     list->Append(*shape_value);
     if (list->length() < 2) {
       if (CSSValue* box_value = ConsumeShapeBox(range))

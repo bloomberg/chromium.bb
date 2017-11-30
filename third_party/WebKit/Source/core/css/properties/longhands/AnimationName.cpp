@@ -6,7 +6,7 @@
 
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyAnimationNameUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -17,7 +17,7 @@ const CSSValue* AnimationName::ParseSingleValue(
     const CSSParserLocalContext& local_context) const {
   // Allow quoted name if this is an alias property.
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSPropertyAnimationNameUtils::ConsumeAnimationName, range, context,
+      CSSParsingUtils::ConsumeAnimationName, range, context,
       local_context.UseAliasParsing());
 }
 

@@ -6,8 +6,7 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyAlignmentUtils.h"
-#include "core/css/properties/CSSPropertyPlaceUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -23,8 +22,8 @@ bool PlaceContent::ParseShorthand(
   CSSValue* align_content_value = nullptr;
   CSSValue* justify_content_value = nullptr;
 
-  if (!CSSPropertyPlaceUtils::ConsumePlaceAlignment(
-          range, CSSPropertyAlignmentUtils::ConsumeSimplifiedContentPosition,
+  if (!CSSParsingUtils::ConsumePlaceAlignment(
+          range, CSSParsingUtils::ConsumeSimplifiedContentPosition,
           align_content_value, justify_content_value))
     return false;
 

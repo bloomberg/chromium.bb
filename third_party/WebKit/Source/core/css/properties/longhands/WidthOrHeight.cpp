@@ -5,7 +5,7 @@
 #include "core/css/properties/longhands/WidthOrHeight.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyLengthUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {
@@ -15,7 +15,7 @@ const CSSValue* WidthOrHeight::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyLengthUtils::ConsumeWidthOrHeight(
+  return CSSParsingUtils::ConsumeWidthOrHeight(
       range, context, CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
 }
 

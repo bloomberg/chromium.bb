@@ -4,7 +4,7 @@
 
 #include "core/css/properties/longhands/AlignOrJustifyContent.h"
 
-#include "core/css/properties/CSSPropertyAlignmentUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -13,8 +13,7 @@ const CSSValue* AlignOrJustifyContent::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyAlignmentUtils::ConsumeContentDistributionOverflowPosition(
-      range);
+  return CSSParsingUtils::ConsumeContentDistributionOverflowPosition(range);
 }
 
 }  // namespace CSSLonghand

@@ -6,7 +6,7 @@
 
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyTransitionPropertyUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -16,8 +16,8 @@ const CSSValue* TransitionProperty::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   CSSValueList* list = CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSPropertyTransitionPropertyUtils::ConsumeTransitionProperty, range);
-  if (!list || !CSSPropertyTransitionPropertyUtils::IsValidPropertyList(*list))
+      CSSParsingUtils::ConsumeTransitionProperty, range);
+  if (!list || !CSSParsingUtils::IsValidPropertyList(*list))
     return nullptr;
   return list;
 }

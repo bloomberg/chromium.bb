@@ -4,7 +4,7 @@
 
 #include "core/css/properties/longhands/FontFeatureSettings.h"
 
-#include "core/css/properties/CSSPropertyFontUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -13,7 +13,7 @@ const CSSValue* FontFeatureSettings::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSPropertyFontUtils::ConsumeFontFeatureSettings(range);
+  return CSSParsingUtils::ConsumeFontFeatureSettings(range);
 }
 
 }  // namespace CSSLonghand

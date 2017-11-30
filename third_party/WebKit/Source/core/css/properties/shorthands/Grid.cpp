@@ -8,7 +8,7 @@
 #include "core/css/CSSInitialValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyGridUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {
@@ -52,7 +52,7 @@ bool Grid::ParseShorthand(bool important,
   CSSValue* template_columns = nullptr;
   CSSValue* template_areas = nullptr;
 
-  if (CSSPropertyGridUtils::ConsumeGridTemplateShorthand(
+  if (CSSParsingUtils::ConsumeGridTemplateShorthand(
           important, range, context, template_rows, template_columns,
           template_areas)) {
     DCHECK(template_rows);
@@ -107,23 +107,21 @@ bool Grid::ParseShorthand(bool important,
     if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
       auto_rows_value = CSSInitialValue::Create();
     } else {
-      auto_rows_value = CSSPropertyGridUtils::ConsumeGridTrackList(
-          range, context.Mode(),
-          CSSPropertyGridUtils::TrackListType::kGridAuto);
+      auto_rows_value = CSSParsingUtils::ConsumeGridTrackList(
+          range, context.Mode(), CSSParsingUtils::TrackListType::kGridAuto);
       if (!auto_rows_value)
         return false;
       if (!CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range))
         return false;
     }
-    if (!(template_columns =
-              CSSPropertyGridUtils::ConsumeGridTemplatesRowsOrColumns(
-                  range, context.Mode())))
+    if (!(template_columns = CSSParsingUtils::ConsumeGridTemplatesRowsOrColumns(
+              range, context.Mode())))
       return false;
     template_rows = CSSInitialValue::Create();
     auto_columns_value = CSSInitialValue::Create();
   } else {
     // 3- <grid-template-rows> / [ auto-flow && dense? ] <grid-auto-columns>?
-    template_rows = CSSPropertyGridUtils::ConsumeGridTemplatesRowsOrColumns(
+    template_rows = CSSParsingUtils::ConsumeGridTemplatesRowsOrColumns(
         range, context.Mode());
     if (!template_rows)
       return false;
@@ -136,9 +134,8 @@ bool Grid::ParseShorthand(bool important,
     if (range.AtEnd()) {
       auto_columns_value = CSSInitialValue::Create();
     } else {
-      auto_columns_value = CSSPropertyGridUtils::ConsumeGridTrackList(
-          range, context.Mode(),
-          CSSPropertyGridUtils::TrackListType::kGridAuto);
+      auto_columns_value = CSSParsingUtils::ConsumeGridTrackList(
+          range, context.Mode(), CSSParsingUtils::TrackListType::kGridAuto);
       if (!auto_columns_value)
         return false;
     }
