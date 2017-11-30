@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
+#include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/common/pref_names.h"
@@ -181,9 +182,9 @@ class VolumeManagerTest : public testing::Test {
               file_system_provider_service_.get(),
               base::Bind(&ProfileEnvironment::GetFakeMtpStorageInfo,
                          base::Unretained(this)))) {
-      file_system_provider_service_->SetExtensionFileSystemFactoryForTesting(
-          base::Bind(
-              &chromeos::file_system_provider::FakeProvidedFileSystem::Create));
+      file_system_provider_service_->SetExtensionProviderForTesting(
+          std::make_unique<
+              chromeos::file_system_provider::FakeExtensionProvider>());
     }
 
     Profile* profile() const { return profile_.get(); }

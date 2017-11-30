@@ -27,8 +27,6 @@
 #include "storage/browser/fileapi/watcher_manager.h"
 #include "url/gurl.h"
 
-class Profile;
-
 namespace base {
 class Time;
 }  // namespace base
@@ -167,12 +165,6 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   void Configure(
       const storage::AsyncFileUtil::StatusCallback& callback) override;
   base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
-
-  // Factory callback, to be used in Service::SetFileSystemFactory(). The
-  // |event_router| argument can be NULL.
-  static std::unique_ptr<ProvidedFileSystemInterface> Create(
-      Profile* profile,
-      const ProvidedFileSystemInfo& file_system_info);
 
  private:
   typedef std::map<base::FilePath, linked_ptr<FakeEntry>> Entries;
