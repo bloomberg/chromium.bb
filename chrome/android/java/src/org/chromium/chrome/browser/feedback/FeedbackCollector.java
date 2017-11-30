@@ -92,6 +92,7 @@ public class FeedbackCollector implements Runnable {
         // This is the list of all asynchronous sources of feedback.  Please add new asynchronous
         // entries here.
         sources.add(new ConnectivityFeedbackSource(profile));
+        sources.add(new SystemInfoFeedbackSource());
 
         return sources;
     }
