@@ -694,7 +694,7 @@ public class AndroidScrollIntegrationTest {
         }
     }
 
-    private static class TestGestureStateListener extends GestureStateListener {
+    private static class TestGestureStateListener implements GestureStateListener {
         private CallbackHelper mOnScrollUpdateGestureConsumedHelper = new CallbackHelper();
 
         public CallbackHelper getOnScrollUpdateGestureConsumedHelper() {
