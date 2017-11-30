@@ -124,7 +124,7 @@ U2fApduCommand::U2fApduCommand(uint8_t cla,
       data_(std::move(data)),
       suffix_(std::move(suffix)) {}
 
-U2fApduCommand::~U2fApduCommand() {}
+U2fApduCommand::~U2fApduCommand() = default;
 
 // static
 std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateRegister(

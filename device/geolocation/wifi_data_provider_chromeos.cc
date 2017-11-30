@@ -31,7 +31,7 @@ const int kNoWifiPollingIntervalMilliseconds = 20 * 1000;            // 20s
 WifiDataProviderChromeOs::WifiDataProviderChromeOs()
     : started_(false), is_first_scan_complete_(false) {}
 
-WifiDataProviderChromeOs::~WifiDataProviderChromeOs() {}
+WifiDataProviderChromeOs::~WifiDataProviderChromeOs() = default;
 
 void WifiDataProviderChromeOs::StartDataProvider() {
   DCHECK(CalledOnClientThread());

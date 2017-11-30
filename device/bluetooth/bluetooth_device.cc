@@ -93,7 +93,7 @@ BluetoothDevice::ConnectionInfo::ConnectionInfo(
       transmit_power(transmit_power),
       max_transmit_power(max_transmit_power) {}
 
-BluetoothDevice::ConnectionInfo::~ConnectionInfo() {}
+BluetoothDevice::ConnectionInfo::~ConnectionInfo() = default;
 
 base::string16 BluetoothDevice::GetNameForDisplay() const {
   base::Optional<std::string> name = GetName();

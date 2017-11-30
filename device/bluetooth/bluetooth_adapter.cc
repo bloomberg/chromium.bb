@@ -20,10 +20,8 @@
 
 namespace device {
 
-BluetoothAdapter::ServiceOptions::ServiceOptions() {
-}
-BluetoothAdapter::ServiceOptions::~ServiceOptions() {
-}
+BluetoothAdapter::ServiceOptions::ServiceOptions() = default;
+BluetoothAdapter::ServiceOptions::~ServiceOptions() = default;
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX) && \
     !defined(OS_WIN) && !defined(OS_LINUX)
@@ -287,8 +285,7 @@ void BluetoothAdapter::NotifyGattDescriptorValueChanged(
 BluetoothAdapter::BluetoothAdapter() : weak_ptr_factory_(this) {
 }
 
-BluetoothAdapter::~BluetoothAdapter() {
-}
+BluetoothAdapter::~BluetoothAdapter() = default;
 
 void BluetoothAdapter::OnStartDiscoverySession(
     std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,

@@ -15,8 +15,8 @@ namespace device {
 using testing::Invoke;
 using testing::_;
 
-MockBluetoothAdapter::Observer::Observer() {}
-MockBluetoothAdapter::Observer::~Observer() {}
+MockBluetoothAdapter::Observer::Observer() = default;
+MockBluetoothAdapter::Observer::~Observer() = default;
 
 MockBluetoothAdapter::MockBluetoothAdapter() {
   ON_CALL(*this, AddObserver(_))
@@ -29,7 +29,7 @@ MockBluetoothAdapter::MockBluetoothAdapter() {
       }));
 }
 
-MockBluetoothAdapter::~MockBluetoothAdapter() {}
+MockBluetoothAdapter::~MockBluetoothAdapter() = default;
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 void MockBluetoothAdapter::Shutdown() {

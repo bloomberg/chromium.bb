@@ -63,7 +63,7 @@ BluetoothMediaTransportClient::Properties::Properties(
   RegisterProperty(kVolumeProperty, &volume);
 }
 
-BluetoothMediaTransportClient::Properties::~Properties() {}
+BluetoothMediaTransportClient::Properties::~Properties() = default;
 
 class BluetoothMediaTransportClientImpl
     : public BluetoothMediaTransportClient,
@@ -274,9 +274,9 @@ class BluetoothMediaTransportClientImpl
   DISALLOW_COPY_AND_ASSIGN(BluetoothMediaTransportClientImpl);
 };
 
-BluetoothMediaTransportClient::BluetoothMediaTransportClient() {}
+BluetoothMediaTransportClient::BluetoothMediaTransportClient() = default;
 
-BluetoothMediaTransportClient::~BluetoothMediaTransportClient() {}
+BluetoothMediaTransportClient::~BluetoothMediaTransportClient() = default;
 
 BluetoothMediaTransportClient* BluetoothMediaTransportClient::Create() {
   return new BluetoothMediaTransportClientImpl();

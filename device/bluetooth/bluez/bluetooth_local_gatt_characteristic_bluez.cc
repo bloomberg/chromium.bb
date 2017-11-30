@@ -54,7 +54,7 @@ BluetoothLocalGattCharacteristicBlueZ::BluetoothLocalGattCharacteristicBlueZ(
 }
 
 BluetoothLocalGattCharacteristicBlueZ::
-    ~BluetoothLocalGattCharacteristicBlueZ() {}
+    ~BluetoothLocalGattCharacteristicBlueZ() = default;
 
 device::BluetoothUUID BluetoothLocalGattCharacteristicBlueZ::GetUUID() const {
   return uuid_;

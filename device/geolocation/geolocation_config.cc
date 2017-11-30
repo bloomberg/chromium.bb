@@ -9,9 +9,9 @@
 
 namespace device {
 
-GeolocationConfig::GeolocationConfig() {}
+GeolocationConfig::GeolocationConfig() = default;
 
-GeolocationConfig::~GeolocationConfig() {}
+GeolocationConfig::~GeolocationConfig() = default;
 
 // static
 void GeolocationConfig::Create(

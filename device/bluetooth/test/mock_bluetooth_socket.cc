@@ -6,7 +6,7 @@
 
 namespace device {
 
-MockBluetoothSocket::MockBluetoothSocket() {}
-MockBluetoothSocket::~MockBluetoothSocket() {}
+MockBluetoothSocket::MockBluetoothSocket() = default;
+MockBluetoothSocket::~MockBluetoothSocket() = default;
 
 }  // namespace device

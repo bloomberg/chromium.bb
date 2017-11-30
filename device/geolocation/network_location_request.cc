@@ -114,7 +114,7 @@ NetworkLocationRequest::NetworkLocationRequest(
       api_key_(api_key),
       location_response_callback_(callback) {}
 
-NetworkLocationRequest::~NetworkLocationRequest() {}
+NetworkLocationRequest::~NetworkLocationRequest() = default;
 
 bool NetworkLocationRequest::MakeRequest(
     const WifiData& wifi_data,

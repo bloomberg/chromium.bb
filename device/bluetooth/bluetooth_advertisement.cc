@@ -10,8 +10,7 @@ BluetoothAdvertisement::Data::Data(AdvertisementType type)
     : type_(type), include_tx_power_(false) {
 }
 
-BluetoothAdvertisement::Data::~Data() {
-}
+BluetoothAdvertisement::Data::~Data() = default;
 
 BluetoothAdvertisement::Data::Data()
     : type_(ADVERTISEMENT_TYPE_BROADCAST), include_tx_power_(false) {
@@ -29,9 +28,7 @@ void BluetoothAdvertisement::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-BluetoothAdvertisement::BluetoothAdvertisement() {
-}
-BluetoothAdvertisement::~BluetoothAdvertisement() {
-}
+BluetoothAdvertisement::BluetoothAdvertisement() = default;
+BluetoothAdvertisement::~BluetoothAdvertisement() = default;
 
 }  // namespace device

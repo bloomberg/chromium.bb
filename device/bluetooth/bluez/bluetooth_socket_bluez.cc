@@ -66,14 +66,14 @@ scoped_refptr<BluetoothSocketBlueZ> BluetoothSocketBlueZ::CreateBluetoothSocket(
       new BluetoothSocketBlueZ(ui_task_runner, socket_thread));
 }
 
-BluetoothSocketBlueZ::AcceptRequest::AcceptRequest() {}
+BluetoothSocketBlueZ::AcceptRequest::AcceptRequest() = default;
 
-BluetoothSocketBlueZ::AcceptRequest::~AcceptRequest() {}
+BluetoothSocketBlueZ::AcceptRequest::~AcceptRequest() = default;
 
 BluetoothSocketBlueZ::ConnectionRequest::ConnectionRequest()
     : accepting(false), cancelled(false) {}
 
-BluetoothSocketBlueZ::ConnectionRequest::~ConnectionRequest() {}
+BluetoothSocketBlueZ::ConnectionRequest::~ConnectionRequest() = default;
 
 BluetoothSocketBlueZ::BluetoothSocketBlueZ(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,

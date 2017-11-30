@@ -248,9 +248,9 @@ BluezDBusManager* bluez::BluezDBusManager::Get() {
   return g_bluez_dbus_manager;
 }
 
-BluezDBusManagerSetter::BluezDBusManagerSetter() {}
+BluezDBusManagerSetter::BluezDBusManagerSetter() = default;
 
-BluezDBusManagerSetter::~BluezDBusManagerSetter() {}
+BluezDBusManagerSetter::~BluezDBusManagerSetter() = default;
 
 void BluezDBusManagerSetter::SetBluetoothAdapterClient(
     std::unique_ptr<BluetoothAdapterClient> client) {

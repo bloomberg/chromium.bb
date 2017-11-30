@@ -21,8 +21,8 @@ BluetoothLocalGattDescriptor::Create(
 }
 #endif
 
-BluetoothLocalGattDescriptor::BluetoothLocalGattDescriptor() {}
+BluetoothLocalGattDescriptor::BluetoothLocalGattDescriptor() = default;
 
-BluetoothLocalGattDescriptor::~BluetoothLocalGattDescriptor() {}
+BluetoothLocalGattDescriptor::~BluetoothLocalGattDescriptor() = default;
 
 }  // namespace device

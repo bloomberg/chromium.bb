@@ -18,7 +18,7 @@ using device::BluetoothAdapterFactory;
 FakeBluetooth::FakeBluetooth()
     : global_factory_values_(
           BluetoothAdapterFactory::Get().InitGlobalValuesForTesting()) {}
-FakeBluetooth::~FakeBluetooth() {}
+FakeBluetooth::~FakeBluetooth() = default;
 
 // static
 void FakeBluetooth::Create(mojom::FakeBluetoothRequest request) {

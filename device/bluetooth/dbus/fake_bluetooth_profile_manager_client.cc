@@ -23,9 +23,11 @@ const char FakeBluetoothProfileManagerClient::kRfcommUuid[] =
 const char FakeBluetoothProfileManagerClient::kUnregisterableUuid[] =
     "00000000-0000-0000-0000-000000000000";
 
-FakeBluetoothProfileManagerClient::FakeBluetoothProfileManagerClient() {}
+FakeBluetoothProfileManagerClient::FakeBluetoothProfileManagerClient() =
+    default;
 
-FakeBluetoothProfileManagerClient::~FakeBluetoothProfileManagerClient() {}
+FakeBluetoothProfileManagerClient::~FakeBluetoothProfileManagerClient() =
+    default;
 
 void FakeBluetoothProfileManagerClient::Init(dbus::Bus* bus) {}
 

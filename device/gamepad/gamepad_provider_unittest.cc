@@ -81,7 +81,7 @@ class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
   }
 
  protected:
-  GamepadProviderTest() {}
+  GamepadProviderTest() = default;
 
   std::unique_ptr<GamepadProvider> provider_;
 

@@ -49,7 +49,7 @@ BluetoothLocalGattServiceBlueZ::BluetoothLocalGattServiceBlueZ(
   adapter->AddLocalGattService(base::WrapUnique(this));
 }
 
-BluetoothLocalGattServiceBlueZ::~BluetoothLocalGattServiceBlueZ() {}
+BluetoothLocalGattServiceBlueZ::~BluetoothLocalGattServiceBlueZ() = default;
 
 device::BluetoothUUID BluetoothLocalGattServiceBlueZ::GetUUID() const {
   return uuid_;

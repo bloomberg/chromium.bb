@@ -39,7 +39,7 @@ class U2fDeviceEnumerate {
                                  base::Unretained(this))),
         hid_manager_(hid_manager),
         run_loop_() {}
-  ~U2fDeviceEnumerate() {}
+  ~U2fDeviceEnumerate() = default;
 
   void ReceivedCallback(std::vector<device::mojom::HidDeviceInfoPtr> devices) {
     std::list<std::unique_ptr<U2fHidDevice>> u2f_devices;
@@ -79,7 +79,7 @@ class TestVersionCallback {
         callback_(base::BindOnce(&TestVersionCallback::ReceivedCallback,
                                  base::Unretained(this))),
         run_loop_() {}
-  ~TestVersionCallback() {}
+  ~TestVersionCallback() = default;
 
   void ReceivedCallback(bool success, U2fDevice::ProtocolVersion version) {
     version_ = version;
@@ -108,7 +108,7 @@ class TestDeviceCallback {
         callback_(base::Bind(&TestDeviceCallback::ReceivedCallback,
                              base::Unretained(this))),
         run_loop_() {}
-  ~TestDeviceCallback() {}
+  ~TestDeviceCallback() = default;
 
   void ReceivedCallback(bool success,
                         std::unique_ptr<U2fApduResponse> response) {

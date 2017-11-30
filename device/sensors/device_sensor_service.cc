@@ -20,7 +20,7 @@ DeviceSensorService::DeviceSensorService()
   base::MessageLoop::current()->AddDestructionObserver(this);
 }
 
-DeviceSensorService::~DeviceSensorService() {}
+DeviceSensorService::~DeviceSensorService() = default;
 
 DeviceSensorService* DeviceSensorService::GetInstance() {
   return base::Singleton<DeviceSensorService, base::LeakySingletonTraits<

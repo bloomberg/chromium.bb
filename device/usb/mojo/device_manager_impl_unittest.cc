@@ -51,7 +51,7 @@ ACTION_P2(ExpectGuidAndThen, expected_guid, callback) {
 class USBDeviceManagerImplTest : public testing::Test {
  public:
   USBDeviceManagerImplTest() : message_loop_(new base::MessageLoop) {}
-  ~USBDeviceManagerImplTest() override {}
+  ~USBDeviceManagerImplTest() override = default;
 
  protected:
   UsbDeviceManagerPtr ConnectToDeviceManager() {
@@ -71,7 +71,7 @@ class USBDeviceManagerImplTest : public testing::Test {
 class MockDeviceManagerClient : public mojom::UsbDeviceManagerClient {
  public:
   MockDeviceManagerClient() : binding_(this) {}
-  ~MockDeviceManagerClient() {}
+  ~MockDeviceManagerClient() = default;
 
   UsbDeviceManagerClientPtr CreateInterfacePtrAndBind() {
     UsbDeviceManagerClientPtr client;

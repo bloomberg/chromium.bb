@@ -71,10 +71,8 @@ BluetoothGattDescriptor::CharacteristicAggregateFormatUuid() {
   return g_uuids.Get().uuids_[5];
 }
 
-BluetoothGattDescriptor::BluetoothGattDescriptor() {
-}
+BluetoothGattDescriptor::BluetoothGattDescriptor() = default;
 
-BluetoothGattDescriptor::~BluetoothGattDescriptor() {
-}
+BluetoothGattDescriptor::~BluetoothGattDescriptor() = default;
 
 }  // namespace device

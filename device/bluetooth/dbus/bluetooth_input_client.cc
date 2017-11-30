@@ -25,7 +25,7 @@ BluetoothInputClient::Properties::Properties(
   RegisterProperty(bluetooth_input::kReconnectModeProperty, &reconnect_mode);
 }
 
-BluetoothInputClient::Properties::~Properties() {}
+BluetoothInputClient::Properties::~Properties() = default;
 
 // The BluetoothInputClient implementation used in production.
 class BluetoothInputClientImpl : public BluetoothInputClient,
@@ -118,9 +118,9 @@ class BluetoothInputClientImpl : public BluetoothInputClient,
   DISALLOW_COPY_AND_ASSIGN(BluetoothInputClientImpl);
 };
 
-BluetoothInputClient::BluetoothInputClient() {}
+BluetoothInputClient::BluetoothInputClient() = default;
 
-BluetoothInputClient::~BluetoothInputClient() {}
+BluetoothInputClient::~BluetoothInputClient() = default;
 
 BluetoothInputClient* BluetoothInputClient::Create() {
   return new BluetoothInputClientImpl();

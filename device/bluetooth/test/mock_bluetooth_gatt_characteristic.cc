@@ -32,8 +32,7 @@ MockBluetoothGattCharacteristic::MockBluetoothGattCharacteristic(
       .WillByDefault(Return(std::vector<BluetoothRemoteGattDescriptor*>()));
 }
 
-MockBluetoothGattCharacteristic::~MockBluetoothGattCharacteristic() {
-}
+MockBluetoothGattCharacteristic::~MockBluetoothGattCharacteristic() = default;
 
 void MockBluetoothGattCharacteristic::AddMockDescriptor(
     std::unique_ptr<MockBluetoothGattDescriptor> mock_descriptor) {

@@ -18,6 +18,6 @@ MockBluetoothGattConnection::MockBluetoothGattConnection(
   ON_CALL(*this, IsConnected()).WillByDefault(Return(true));
 }
 
-MockBluetoothGattConnection::~MockBluetoothGattConnection() {}
+MockBluetoothGattConnection::~MockBluetoothGattConnection() = default;
 
 }  // namespace device

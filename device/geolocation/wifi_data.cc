@@ -19,13 +19,13 @@ AccessPointData::AccessPointData()
       channel(std::numeric_limits<int32_t>::min()),
       signal_to_noise(std::numeric_limits<int32_t>::min()) {}
 
-AccessPointData::~AccessPointData() {}
+AccessPointData::~AccessPointData() = default;
 
-WifiData::WifiData() {}
+WifiData::WifiData() = default;
 
 WifiData::WifiData(const WifiData& other) = default;
 
-WifiData::~WifiData() {}
+WifiData::~WifiData() = default;
 
 bool WifiData::DiffersSignificantly(const WifiData& other) const {
   // More than 4 or 50% of access points added or removed is significant.

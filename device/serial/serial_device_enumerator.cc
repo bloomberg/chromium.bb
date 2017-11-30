@@ -6,8 +6,8 @@
 
 namespace device {
 
-SerialDeviceEnumerator::SerialDeviceEnumerator() {}
+SerialDeviceEnumerator::SerialDeviceEnumerator() = default;
 
-SerialDeviceEnumerator::~SerialDeviceEnumerator() {}
+SerialDeviceEnumerator::~SerialDeviceEnumerator() = default;
 
 }  // namespace device

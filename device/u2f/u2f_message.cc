@@ -80,7 +80,7 @@ U2fMessage::U2fMessage(uint32_t channel_id,
   }
 }
 
-U2fMessage::~U2fMessage() {}
+U2fMessage::~U2fMessage() = default;
 
 std::list<std::unique_ptr<U2fPacket>>::const_iterator U2fMessage::begin() {
   return packets_.cbegin();

@@ -72,8 +72,7 @@ BluetoothUUID::BluetoothUUID(const std::string& uuid) {
 BluetoothUUID::BluetoothUUID() : format_(kFormatInvalid) {
 }
 
-BluetoothUUID::~BluetoothUUID() {
-}
+BluetoothUUID::~BluetoothUUID() = default;
 
 bool BluetoothUUID::IsValid() const {
   return format_ != kFormatInvalid;

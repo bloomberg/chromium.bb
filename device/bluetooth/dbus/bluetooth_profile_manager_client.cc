@@ -17,16 +17,16 @@ namespace bluez {
 const char BluetoothProfileManagerClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
 
-BluetoothProfileManagerClient::Options::Options() {}
+BluetoothProfileManagerClient::Options::Options() = default;
 
-BluetoothProfileManagerClient::Options::~Options() {}
+BluetoothProfileManagerClient::Options::~Options() = default;
 
 // The BluetoothProfileManagerClient implementation used in production.
 class BluetoothProfileManagerClientImpl : public BluetoothProfileManagerClient {
  public:
   BluetoothProfileManagerClientImpl() : weak_ptr_factory_(this) {}
 
-  ~BluetoothProfileManagerClientImpl() override {}
+  ~BluetoothProfileManagerClientImpl() override = default;
 
   // BluetoothProfileManagerClient override.
   void RegisterProfile(const dbus::ObjectPath& profile_path,
@@ -224,9 +224,9 @@ class BluetoothProfileManagerClientImpl : public BluetoothProfileManagerClient {
   DISALLOW_COPY_AND_ASSIGN(BluetoothProfileManagerClientImpl);
 };
 
-BluetoothProfileManagerClient::BluetoothProfileManagerClient() {}
+BluetoothProfileManagerClient::BluetoothProfileManagerClient() = default;
 
-BluetoothProfileManagerClient::~BluetoothProfileManagerClient() {}
+BluetoothProfileManagerClient::~BluetoothProfileManagerClient() = default;
 
 BluetoothProfileManagerClient* BluetoothProfileManagerClient::Create() {
   return new BluetoothProfileManagerClientImpl();

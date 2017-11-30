@@ -41,7 +41,7 @@ UsbDeviceLinux::UsbDeviceLinux(const std::string& device_path,
   ActiveConfigurationChanged(active_configuration);
 }
 
-UsbDeviceLinux::~UsbDeviceLinux() {}
+UsbDeviceLinux::~UsbDeviceLinux() = default;
 
 #if defined(OS_CHROMEOS)
 

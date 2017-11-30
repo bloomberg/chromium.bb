@@ -34,8 +34,7 @@ MockBluetoothGattService::MockBluetoothGattService(
           Return(static_cast<BluetoothRemoteGattCharacteristic*>(NULL)));
 }
 
-MockBluetoothGattService::~MockBluetoothGattService() {
-}
+MockBluetoothGattService::~MockBluetoothGattService() = default;
 
 void MockBluetoothGattService::AddMockCharacteristic(
     std::unique_ptr<MockBluetoothGattCharacteristic> mock_characteristic) {

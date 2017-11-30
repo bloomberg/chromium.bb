@@ -97,9 +97,9 @@ void WriteAttribute(dbus::MessageWriter* writer,
 
 }  // namespace
 
-BluetoothAdapterClient::DiscoveryFilter::DiscoveryFilter() {}
+BluetoothAdapterClient::DiscoveryFilter::DiscoveryFilter() = default;
 
-BluetoothAdapterClient::DiscoveryFilter::~DiscoveryFilter() {}
+BluetoothAdapterClient::DiscoveryFilter::~DiscoveryFilter() = default;
 
 void BluetoothAdapterClient::DiscoveryFilter::CopyFrom(
     const DiscoveryFilter& filter) {
@@ -150,7 +150,7 @@ BluetoothAdapterClient::Properties::Properties(
   RegisterProperty(bluetooth_adapter::kModaliasProperty, &modalias);
 }
 
-BluetoothAdapterClient::Properties::~Properties() {}
+BluetoothAdapterClient::Properties::~Properties() = default;
 
 // The BluetoothAdapterClient implementation used in production.
 class BluetoothAdapterClientImpl : public BluetoothAdapterClient,
@@ -495,9 +495,9 @@ class BluetoothAdapterClientImpl : public BluetoothAdapterClient,
   DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterClientImpl);
 };
 
-BluetoothAdapterClient::BluetoothAdapterClient() {}
+BluetoothAdapterClient::BluetoothAdapterClient() = default;
 
-BluetoothAdapterClient::~BluetoothAdapterClient() {}
+BluetoothAdapterClient::~BluetoothAdapterClient() = default;
 
 BluetoothAdapterClient* BluetoothAdapterClient::Create() {
   return new BluetoothAdapterClientImpl;

@@ -24,7 +24,7 @@ GamepadPadStateProvider::GamepadPadStateProvider() {
     ClearPadState(pad_states_.get()[i]);
 }
 
-GamepadPadStateProvider::~GamepadPadStateProvider() {}
+GamepadPadStateProvider::~GamepadPadStateProvider() = default;
 
 PadState* GamepadPadStateProvider::GetPadState(GamepadSource source,
                                                int source_id) {

@@ -293,13 +293,13 @@ BluetoothMediaEndpointServiceProvider::Delegate::TransportProperties::
     : codec(kInvalidCodec), state(kInvalidState) {}
 
 BluetoothMediaEndpointServiceProvider::Delegate::TransportProperties::
-    ~TransportProperties() {}
+    ~TransportProperties() = default;
 
-BluetoothMediaEndpointServiceProvider::BluetoothMediaEndpointServiceProvider() {
-}
+BluetoothMediaEndpointServiceProvider::BluetoothMediaEndpointServiceProvider() =
+    default;
 
 BluetoothMediaEndpointServiceProvider::
-    ~BluetoothMediaEndpointServiceProvider() {}
+    ~BluetoothMediaEndpointServiceProvider() = default;
 
 BluetoothMediaEndpointServiceProvider*
 BluetoothMediaEndpointServiceProvider::Create(

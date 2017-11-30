@@ -8,17 +8,15 @@
 
 namespace device {
 
-ReadOnlyBuffer::~ReadOnlyBuffer() {
-}
+ReadOnlyBuffer::~ReadOnlyBuffer() = default;
 
-WritableBuffer::~WritableBuffer() {
-}
+WritableBuffer::~WritableBuffer() = default;
 
 SendBuffer::SendBuffer(const std::vector<uint8_t>& data,
                        SendCompleteCallback callback)
     : data_(data), callback_(std::move(callback)) {}
 
-SendBuffer::~SendBuffer() {}
+SendBuffer::~SendBuffer() = default;
 
 const uint8_t* SendBuffer::GetData() {
   return data_.data();
@@ -42,7 +40,7 @@ ReceiveBuffer::ReceiveBuffer(scoped_refptr<net::IOBuffer> buffer,
                              ReceiveCompleteCallback callback)
     : buffer_(buffer), size_(size), callback_(std::move(callback)) {}
 
-ReceiveBuffer::~ReceiveBuffer() {}
+ReceiveBuffer::~ReceiveBuffer() = default;
 
 char* ReceiveBuffer::GetData() {
   return buffer_->data();

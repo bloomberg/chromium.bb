@@ -17,8 +17,7 @@ BluetoothDiscoveryFilter::BluetoothDiscoveryFilter(
   SetTransport(transport);
 }
 
-BluetoothDiscoveryFilter::~BluetoothDiscoveryFilter() {
-}
+BluetoothDiscoveryFilter::~BluetoothDiscoveryFilter() = default;
 
 bool BluetoothDiscoveryFilter::GetRSSI(int16_t* out_rssi) const {
   DCHECK(out_rssi);

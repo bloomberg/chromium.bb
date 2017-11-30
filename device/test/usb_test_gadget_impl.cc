@@ -146,7 +146,7 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
       : network_task_runner_(network_task_runner) {}
 
  private:
-  ~URLRequestContextGetter() override {}
+  ~URLRequestContextGetter() override = default;
 
   // net::URLRequestContextGetter implementation
   net::URLRequestContext* GetURLRequestContext() override {
@@ -169,8 +169,8 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
 
 class URLFetcherDelegate : public net::URLFetcherDelegate {
  public:
-  URLFetcherDelegate() {}
-  ~URLFetcherDelegate() override {}
+  URLFetcherDelegate() = default;
+  ~URLFetcherDelegate() override = default;
 
   void WaitForCompletion() { run_loop_.Run(); }
 
@@ -215,7 +215,7 @@ class UsbGadgetFactory : public UsbService::Observer,
     observer_.Add(usb_service_);
   }
 
-  ~UsbGadgetFactory() override {}
+  ~UsbGadgetFactory() override = default;
 
   std::unique_ptr<UsbTestGadget> WaitForDevice() {
     EnumerateDevices();
@@ -412,7 +412,7 @@ class DeviceAddListener : public UsbService::Observer {
         weak_factory_(this) {
     observer_.Add(usb_service_);
   }
-  ~DeviceAddListener() override {}
+  ~DeviceAddListener() override = default;
 
   scoped_refptr<UsbDevice> WaitForAdd() {
     usb_service_->GetDevices(base::Bind(&DeviceAddListener::OnDevicesEnumerated,
@@ -478,7 +478,7 @@ class DeviceRemoveListener : public UsbService::Observer {
         weak_factory_(this) {
     observer_.Add(usb_service_);
   }
-  ~DeviceRemoveListener() override {}
+  ~DeviceRemoveListener() override = default;
 
   void WaitForRemove() {
     usb_service_->GetDevices(

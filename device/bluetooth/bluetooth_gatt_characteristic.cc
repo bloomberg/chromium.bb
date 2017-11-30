@@ -6,8 +6,8 @@
 
 namespace device {
 
-BluetoothGattCharacteristic::BluetoothGattCharacteristic() {}
+BluetoothGattCharacteristic::BluetoothGattCharacteristic() = default;
 
-BluetoothGattCharacteristic::~BluetoothGattCharacteristic() {}
+BluetoothGattCharacteristic::~BluetoothGattCharacteristic() = default;
 
 }  // namespace device

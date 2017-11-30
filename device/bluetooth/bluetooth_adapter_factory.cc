@@ -63,7 +63,7 @@ void RunAdapterCallbacks() {
 
 }  // namespace
 
-BluetoothAdapterFactory::~BluetoothAdapterFactory() {}
+BluetoothAdapterFactory::~BluetoothAdapterFactory() = default;
 
 // static
 BluetoothAdapterFactory& BluetoothAdapterFactory::Get() {
@@ -154,7 +154,8 @@ bool BluetoothAdapterFactory::HasSharedInstanceForTesting() {
 BluetoothAdapterFactory::GlobalValuesForTesting::GlobalValuesForTesting()
     : weak_ptr_factory_(this) {}
 
-BluetoothAdapterFactory::GlobalValuesForTesting::~GlobalValuesForTesting() {}
+BluetoothAdapterFactory::GlobalValuesForTesting::~GlobalValuesForTesting() =
+    default;
 
 base::WeakPtr<BluetoothAdapterFactory::GlobalValuesForTesting>
 BluetoothAdapterFactory::GlobalValuesForTesting::GetWeakPtr() {
@@ -168,6 +169,6 @@ BluetoothAdapterFactory::InitGlobalValuesForTesting() {
   return v;
 }
 
-BluetoothAdapterFactory::BluetoothAdapterFactory() {}
+BluetoothAdapterFactory::BluetoothAdapterFactory() = default;
 
 }  // namespace device

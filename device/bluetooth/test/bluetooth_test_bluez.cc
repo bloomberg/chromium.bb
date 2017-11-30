@@ -60,7 +60,7 @@ dbus::ObjectPath GetDevicePath(BluetoothDevice* device) {
 BluetoothTestBlueZ::BluetoothTestBlueZ()
     : fake_bluetooth_device_client_(nullptr) {}
 
-BluetoothTestBlueZ::~BluetoothTestBlueZ() {}
+BluetoothTestBlueZ::~BluetoothTestBlueZ() = default;
 
 void BluetoothTestBlueZ::SetUp() {
   BluetoothTestBase::SetUp();

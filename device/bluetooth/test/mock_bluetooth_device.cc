@@ -63,7 +63,7 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
       .WillByDefault(testing::Return(false));
 }
 
-MockBluetoothDevice::~MockBluetoothDevice() {}
+MockBluetoothDevice::~MockBluetoothDevice() = default;
 
 void MockBluetoothDevice::AddMockService(
     std::unique_ptr<MockBluetoothGattService> mock_service) {

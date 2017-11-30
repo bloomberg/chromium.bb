@@ -141,7 +141,7 @@ class USBDeviceImplTest : public testing::Test {
         is_device_open_(false),
         allow_reset_(false) {}
 
-  ~USBDeviceImplTest() override {}
+  ~USBDeviceImplTest() override = default;
 
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
 

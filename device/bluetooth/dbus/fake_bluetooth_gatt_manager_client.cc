@@ -88,9 +88,9 @@ bool FakeBluetoothGattManagerClient::VerifyProviderHierarchy(
   return true;
 }
 
-FakeBluetoothGattManagerClient::FakeBluetoothGattManagerClient() {}
+FakeBluetoothGattManagerClient::FakeBluetoothGattManagerClient() = default;
 
-FakeBluetoothGattManagerClient::~FakeBluetoothGattManagerClient() {}
+FakeBluetoothGattManagerClient::~FakeBluetoothGattManagerClient() = default;
 
 // DBusClient override.
 void FakeBluetoothGattManagerClient::Init(dbus::Bus* bus) {}

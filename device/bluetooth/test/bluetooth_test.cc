@@ -62,8 +62,7 @@ const char BluetoothTestBase::kTestUUIDCharacteristicPresentationFormat[] =
 
 BluetoothTestBase::BluetoothTestBase() : weak_factory_(this) {}
 
-BluetoothTestBase::~BluetoothTestBase() {
-}
+BluetoothTestBase::~BluetoothTestBase() = default;
 
 void BluetoothTestBase::StartLowEnergyDiscoverySession() {
   adapter_->StartDiscoverySessionWithFilter(

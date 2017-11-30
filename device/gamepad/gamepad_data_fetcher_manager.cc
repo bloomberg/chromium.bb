@@ -15,7 +15,7 @@ GamepadDataFetcherManager* g_gamepad_data_fetcher_manager = 0;
 
 GamepadDataFetcherManager::GamepadDataFetcherManager() : provider_(nullptr) {}
 
-GamepadDataFetcherManager::~GamepadDataFetcherManager() {}
+GamepadDataFetcherManager::~GamepadDataFetcherManager() = default;
 
 GamepadDataFetcherManager* GamepadDataFetcherManager::GetInstance() {
   if (!g_gamepad_data_fetcher_manager) {

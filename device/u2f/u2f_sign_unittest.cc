@@ -32,7 +32,7 @@ class TestSignCallback {
   TestSignCallback()
       : callback_(base::Bind(&TestSignCallback::ReceivedCallback,
                              base::Unretained(this))) {}
-  ~TestSignCallback() {}
+  ~TestSignCallback() = default;
 
   void ReceivedCallback(U2fReturnCode status_code,
                         const std::vector<uint8_t>& response,

@@ -46,7 +46,8 @@ BluetoothRemoteGattDescriptorBlueZ::BluetoothRemoteGattDescriptorBlueZ(
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
 }
 
-BluetoothRemoteGattDescriptorBlueZ::~BluetoothRemoteGattDescriptorBlueZ() {}
+BluetoothRemoteGattDescriptorBlueZ::~BluetoothRemoteGattDescriptorBlueZ() =
+    default;
 
 device::BluetoothUUID BluetoothRemoteGattDescriptorBlueZ::GetUUID() const {
   bluez::BluetoothGattDescriptorClient::Properties* properties =

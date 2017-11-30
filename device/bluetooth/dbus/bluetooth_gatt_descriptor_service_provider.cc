@@ -11,10 +11,10 @@
 namespace bluez {
 
 BluetoothGattDescriptorServiceProvider::
-    BluetoothGattDescriptorServiceProvider() {}
+    BluetoothGattDescriptorServiceProvider() = default;
 
 BluetoothGattDescriptorServiceProvider::
-    ~BluetoothGattDescriptorServiceProvider() {}
+    ~BluetoothGattDescriptorServiceProvider() = default;
 
 // static
 BluetoothGattDescriptorServiceProvider*

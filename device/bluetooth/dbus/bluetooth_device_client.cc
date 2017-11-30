@@ -210,7 +210,7 @@ BluetoothDeviceClient::Properties::Properties(
                    &advertising_data_flags);
 }
 
-BluetoothDeviceClient::Properties::~Properties() {}
+BluetoothDeviceClient::Properties::~Properties() = default;
 
 // The BluetoothDeviceClient implementation used in production.
 class BluetoothDeviceClientImpl : public BluetoothDeviceClient,
@@ -613,9 +613,9 @@ class BluetoothDeviceClientImpl : public BluetoothDeviceClient,
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceClientImpl);
 };
 
-BluetoothDeviceClient::BluetoothDeviceClient() {}
+BluetoothDeviceClient::BluetoothDeviceClient() = default;
 
-BluetoothDeviceClient::~BluetoothDeviceClient() {}
+BluetoothDeviceClient::~BluetoothDeviceClient() = default;
 
 BluetoothDeviceClient* BluetoothDeviceClient::Create() {
   return new BluetoothDeviceClientImpl();

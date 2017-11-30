@@ -49,6 +49,7 @@ operator=(const BluetoothServiceAttributeValueBlueZ& attribute) {
   return *this;
 }
 
-BluetoothServiceAttributeValueBlueZ::~BluetoothServiceAttributeValueBlueZ() {}
+BluetoothServiceAttributeValueBlueZ::~BluetoothServiceAttributeValueBlueZ() =
+    default;
 
 }  // namespace bluez

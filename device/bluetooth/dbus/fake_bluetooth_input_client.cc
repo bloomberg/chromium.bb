@@ -24,7 +24,7 @@ FakeBluetoothInputClient::Properties::Properties(
           bluetooth_input::kBluetoothInputInterface,
           callback) {}
 
-FakeBluetoothInputClient::Properties::~Properties() {}
+FakeBluetoothInputClient::Properties::~Properties() = default;
 
 void FakeBluetoothInputClient::Properties::Get(
     dbus::PropertyBase* property,
@@ -44,9 +44,9 @@ void FakeBluetoothInputClient::Properties::Set(
   callback.Run(false);
 }
 
-FakeBluetoothInputClient::FakeBluetoothInputClient() {}
+FakeBluetoothInputClient::FakeBluetoothInputClient() = default;
 
-FakeBluetoothInputClient::~FakeBluetoothInputClient() {}
+FakeBluetoothInputClient::~FakeBluetoothInputClient() = default;
 
 void FakeBluetoothInputClient::Init(dbus::Bus* bus) {}
 

@@ -16,8 +16,7 @@ MockBluetoothGattNotifySession::MockBluetoothGattNotifySession(
   ON_CALL(*this, IsActive()).WillByDefault(Return(true));
 }
 
-MockBluetoothGattNotifySession::~MockBluetoothGattNotifySession() {
-}
+MockBluetoothGattNotifySession::~MockBluetoothGattNotifySession() = default;
 
 void MockBluetoothGattNotifySession::StartTestNotifications(
     MockBluetoothAdapter* adapter,

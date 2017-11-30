@@ -9,9 +9,9 @@
 
 namespace device {
 
-BluetoothRemoteGattService::BluetoothRemoteGattService() {}
+BluetoothRemoteGattService::BluetoothRemoteGattService() = default;
 
-BluetoothRemoteGattService::~BluetoothRemoteGattService() {}
+BluetoothRemoteGattService::~BluetoothRemoteGattService() = default;
 
 std::vector<BluetoothRemoteGattCharacteristic*>
 BluetoothRemoteGattService::GetCharacteristicsByUUID(

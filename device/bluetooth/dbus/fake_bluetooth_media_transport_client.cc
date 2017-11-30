@@ -70,7 +70,7 @@ FakeBluetoothMediaTransportClient::Properties::Properties(
           kBluetoothMediaTransportInterface,
           callback) {}
 
-FakeBluetoothMediaTransportClient::Properties::~Properties() {}
+FakeBluetoothMediaTransportClient::Properties::~Properties() = default;
 
 void FakeBluetoothMediaTransportClient::Properties::Get(
     dbus::PropertyBase* property,
@@ -95,11 +95,13 @@ FakeBluetoothMediaTransportClient::Transport::Transport(
     std::unique_ptr<Properties> transport_properties)
     : path(transport_path), properties(std::move(transport_properties)) {}
 
-FakeBluetoothMediaTransportClient::Transport::~Transport() {}
+FakeBluetoothMediaTransportClient::Transport::~Transport() = default;
 
-FakeBluetoothMediaTransportClient::FakeBluetoothMediaTransportClient() {}
+FakeBluetoothMediaTransportClient::FakeBluetoothMediaTransportClient() =
+    default;
 
-FakeBluetoothMediaTransportClient::~FakeBluetoothMediaTransportClient() {}
+FakeBluetoothMediaTransportClient::~FakeBluetoothMediaTransportClient() =
+    default;
 
 // DBusClient override.
 void FakeBluetoothMediaTransportClient::Init(dbus::Bus* bus) {}

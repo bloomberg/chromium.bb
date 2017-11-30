@@ -30,7 +30,7 @@ std::unique_ptr<LocationProvider> GetCustomLocationProviderForTest(
 
 class MockLocationObserver {
  public:
-  virtual ~MockLocationObserver() {}
+  virtual ~MockLocationObserver() = default;
   void InvalidateLastPosition() {
     last_position_.latitude = 100;
     last_position_.error_code = mojom::Geoposition::ErrorCode::NONE;

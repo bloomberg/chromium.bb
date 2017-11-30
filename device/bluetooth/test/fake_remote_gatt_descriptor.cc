@@ -20,7 +20,7 @@ FakeRemoteGattDescriptor::FakeRemoteGattDescriptor(
       characteristic_(characteristic),
       weak_ptr_factory_(this) {}
 
-FakeRemoteGattDescriptor::~FakeRemoteGattDescriptor() {}
+FakeRemoteGattDescriptor::~FakeRemoteGattDescriptor() = default;
 
 void FakeRemoteGattDescriptor::SetNextReadResponse(
     uint16_t gatt_code,
