@@ -384,6 +384,10 @@
       status: "stable",
     },
     {
+      name: "FeaturePolicyAutoplayFeature",
+      status: "experimental"
+    },
+    {
       name: "FeaturePolicyExperimentalFeatures",
     },
     {

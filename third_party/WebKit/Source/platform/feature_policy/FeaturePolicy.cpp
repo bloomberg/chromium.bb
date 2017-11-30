@@ -241,6 +241,9 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                    FeaturePolicyFeature::kSyncScript);
       default_feature_name_map.Set("sync-xhr", FeaturePolicyFeature::kSyncXHR);
     }
+    if (RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled()) {
+      default_feature_name_map.Set("autoplay", FeaturePolicyFeature::kAutoplay);
+    }
   }
   return default_feature_name_map;
 }
