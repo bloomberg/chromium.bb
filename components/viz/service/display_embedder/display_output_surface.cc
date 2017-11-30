@@ -37,6 +37,8 @@ DisplayOutputSurface::DisplayOutputSurface(
   context_provider->SetUpdateVSyncParametersCallback(
       base::Bind(&DisplayOutputSurface::OnVSyncParametersUpdated,
                  weak_ptr_factory_.GetWeakPtr()));
+  context_provider->SetPresentationCallback(base::Bind(
+      &DisplayOutputSurface::OnPresentation, weak_ptr_factory_.GetWeakPtr()));
 }
 
 DisplayOutputSurface::~DisplayOutputSurface() {}
@@ -130,14 +132,15 @@ bool DisplayOutputSurface::HasExternalStencilTest() const {
 
 void DisplayOutputSurface::ApplyExternalStencil() {}
 
-void DisplayOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result) {
-  client_->DidReceiveSwapBuffersAck();
+void DisplayOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result,
+                                                    uint64_t swap_id) {
+  client_->DidReceiveSwapBuffersAck(swap_id);
 }
 
 void DisplayOutputSurface::OnGpuSwapBuffersCompleted(
     const gfx::SwapResponse& response,
     const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
-  DidReceiveSwapBuffersAck(response.result);
+  DidReceiveSwapBuffersAck(response.result, response.swap_id);
   latency_info_cache_.OnSwapBuffersCompleted(response);
 }
 
@@ -150,11 +153,16 @@ void DisplayOutputSurface::LatencyInfoCompleted(
 
 void DisplayOutputSurface::OnVSyncParametersUpdated(base::TimeTicks timebase,
                                                     base::TimeDelta interval) {
-  client_->DidUpdateVSyncParameters(timebase, interval);
   // TODO(brianderson): We should not be receiving 0 intervals.
   synthetic_begin_frame_source_->OnUpdateVSyncParameters(
       timebase,
       interval.is_zero() ? BeginFrameArgs::DefaultInterval() : interval);
+}
+
+void DisplayOutputSurface::OnPresentation(
+    uint64_t swap_id,
+    const gfx::PresentationFeedback& feedback) {
+  client_->DidReceivePresentationFeedback(swap_id, feedback);
 }
 
 }  // namespace viz

@@ -6,7 +6,7 @@
 
 namespace cc {
 
-void FakeOutputSurfaceClient::DidReceiveSwapBuffersAck() {
+void FakeOutputSurfaceClient::DidReceiveSwapBuffersAck(uint64_t swap_id) {
   swap_count_++;
 }
 

@@ -21,7 +21,7 @@ class AwGLSurface : public gl::GLSurface {
   void Destroy() override;
   bool IsOffscreen() override;
   unsigned int GetBackingFramebufferObject() override;
-  gfx::SwapResult SwapBuffers() override;
+  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
   void* GetDisplay() override;

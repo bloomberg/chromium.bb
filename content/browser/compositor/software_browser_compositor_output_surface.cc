@@ -85,18 +85,33 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
                      frame.latency_info));
 
   gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();
-  if (vsync_provider)
-    vsync_provider->GetVSyncParameters(update_vsync_parameters_callback_);
+  if (vsync_provider) {
+    vsync_provider->GetVSyncParameters(
+        base::Bind(&SoftwareBrowserCompositorOutputSurface::UpdateVSyncCallback,
+                   weak_factory_.GetWeakPtr()));
+  }
 
+  ++swap_id_;
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback,
-          weak_factory_.GetWeakPtr()));
+          weak_factory_.GetWeakPtr(), swap_id_));
 }
 
-void SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback() {
-  client_->DidReceiveSwapBuffersAck();
+void SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback(
+    uint64_t swap_id) {
+  client_->DidReceiveSwapBuffersAck(swap_id);
+  client_->DidReceivePresentationFeedback(
+      swap_id,
+      gfx::PresentationFeedback(base::TimeTicks::Now(), refresh_interval_, 0u));
+}
+
+void SoftwareBrowserCompositorOutputSurface::UpdateVSyncCallback(
+    const base::TimeTicks timebase,
+    const base::TimeDelta interval) {
+  refresh_interval_ = interval;
+  update_vsync_parameters_callback_.Run(timebase, interval);
 }
 
 bool SoftwareBrowserCompositorOutputSurface::IsDisplayedAsOverlayPlane() const {

@@ -99,11 +99,12 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   // OutputSurfaceClient implementation.
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
-  void DidReceiveSwapBuffersAck() override;
+  void DidReceiveSwapBuffersAck(uint64_t swap_id) override;
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override;
-  void DidUpdateVSyncParameters(base::TimeTicks timebase,
-                                base::TimeDelta interval) override;
+  void DidReceivePresentationFeedback(
+      uint64_t swap_id,
+      const gfx::PresentationFeedback& feedback) override;
 
   bool has_scheduler() const { return !!scheduler_; }
   DirectRenderer* renderer_for_testing() const { return renderer_.get(); }

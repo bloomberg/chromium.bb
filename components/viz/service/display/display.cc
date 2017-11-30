@@ -33,6 +33,7 @@
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/presentation_feedback.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "cc/output/vulkan_renderer.h"
@@ -404,7 +405,7 @@ bool Display::DrawAndSwap() {
   return true;
 }
 
-void Display::DidReceiveSwapBuffersAck() {
+void Display::DidReceiveSwapBuffersAck(uint64_t swap_id) {
   // TODO(penghuang): Remove it when we can get accurate presentation time from
   // GPU for every SwapBuffers. https://crbug.com/776877
   if (!active_presented_callbacks_.empty() ||
@@ -427,24 +428,24 @@ void Display::DidReceiveTextureInUseResponses(
     renderer_->DidReceiveTextureInUseResponses(responses);
 }
 
-void Display::DidUpdateVSyncParameters(base::TimeTicks timebase,
-                                       base::TimeDelta interval) {
+void Display::DidReceivePresentationFeedback(
+    uint64_t swap_id,
+    const gfx::PresentationFeedback& feedback) {
   // TODO(penghuang): Remove it when we can get accurate presentation time from
   // GPU for every SwapBuffers. https://crbug.com/776877
   base::TimeTicks previous_timebase =
-      timebase - interval * previous_presented_callbacks_.size();
+      feedback.timestamp -
+      feedback.interval * previous_presented_callbacks_.size();
   for (auto& callbacks : previous_presented_callbacks_) {
     for (auto& callback : callbacks)
-      std::move(callback).Run(previous_timebase, interval, 0);
-    previous_timebase += interval;
+      std::move(callback).Run(previous_timebase, feedback.interval, 0);
+    previous_timebase += feedback.interval;
   }
   previous_presented_callbacks_.clear();
 
   for (auto& callback : active_presented_callbacks_) {
-    std::move(callback).Run(timebase, interval,
-                            mojom::kPresentationFlagVSync |
-                                mojom::kPresentationFlagHWClock |
-                                mojom::kPresentationFlagHWCompletion);
+    std::move(callback).Run(feedback.timestamp, feedback.interval,
+                            feedback.flags);
   }
   active_presented_callbacks_.clear();
 }

@@ -45,8 +45,12 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
               ColorSpace color_space,
               bool has_alpha) override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers() override;
-  gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
+  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  gfx::SwapResult PostSubBuffer(int x,
+                                int y,
+                                int width,
+                                int height,
+                                const PresentationCallback& callback) override;
   bool SupportsPostSubBuffer() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;

@@ -57,7 +57,8 @@ bool GbmSurfaceless::Initialize(gl::GLSurfaceFormat format) {
   return true;
 }
 
-gfx::SwapResult GbmSurfaceless::SwapBuffers() {
+gfx::SwapResult GbmSurfaceless::SwapBuffers(
+    const PresentationCallback& callback) {
   NOTREACHED();
   return gfx::SwapResult::SWAP_FAILED;
 }
@@ -88,20 +89,26 @@ bool GbmSurfaceless::SupportsPostSubBuffer() {
   return true;
 }
 
-gfx::SwapResult GbmSurfaceless::PostSubBuffer(int x,
-                                              int y,
-                                              int width,
-                                              int height) {
+gfx::SwapResult GbmSurfaceless::PostSubBuffer(
+    int x,
+    int y,
+    int width,
+    int height,
+    const PresentationCallback& callback) {
   // The actual sub buffer handling is handled at higher layers.
   NOTREACHED();
   return gfx::SwapResult::SWAP_FAILED;
 }
 
-void GbmSurfaceless::SwapBuffersAsync(const SwapCompletionCallback& callback) {
+void GbmSurfaceless::SwapBuffersAsync(
+    const SwapCompletionCallback& completion_callback,
+    const PresentationCallback& presentation_callback) {
+  // TODO(penghuang): Provide useful presentation feedback.
+  // https://crbug.com/776877
   TRACE_EVENT0("drm", "GbmSurfaceless::SwapBuffersAsync");
   // If last swap failed, don't try to schedule new ones.
   if (!last_swap_buffers_result_) {
-    callback.Run(gfx::SwapResult::SWAP_FAILED);
+    completion_callback.Run(gfx::SwapResult::SWAP_FAILED);
     return;
   }
 
@@ -110,8 +117,9 @@ void GbmSurfaceless::SwapBuffersAsync(const SwapCompletionCallback& callback) {
   glFlush();
   unsubmitted_frames_.back()->Flush();
 
-  SwapCompletionCallback surface_swap_callback = base::Bind(
-      &GbmSurfaceless::SwapCompleted, weak_factory_.GetWeakPtr(), callback);
+  SwapCompletionCallback surface_swap_callback =
+      base::Bind(&GbmSurfaceless::SwapCompleted, weak_factory_.GetWeakPtr(),
+                 completion_callback);
 
   PendingFrame* frame = unsubmitted_frames_.back().get();
   frame->callback = surface_swap_callback;
@@ -136,7 +144,7 @@ void GbmSurfaceless::SwapBuffersAsync(const SwapCompletionCallback& callback) {
   // implemented in GL drivers.
   EGLSyncKHR fence = InsertFence(has_implicit_external_sync_);
   if (!fence) {
-    callback.Run(gfx::SwapResult::SWAP_FAILED);
+    completion_callback.Run(gfx::SwapResult::SWAP_FAILED);
     return;
   }
 
@@ -157,9 +165,10 @@ void GbmSurfaceless::PostSubBufferAsync(
     int y,
     int width,
     int height,
-    const SwapCompletionCallback& callback) {
+    const SwapCompletionCallback& completion_callback,
+    const PresentationCallback& presentation_callback) {
   // The actual sub buffer handling is handled at higher layers.
-  SwapBuffersAsync(callback);
+  SwapBuffersAsync(completion_callback, presentation_callback);
 }
 
 EGLConfig GbmSurfaceless::GetConfig() {

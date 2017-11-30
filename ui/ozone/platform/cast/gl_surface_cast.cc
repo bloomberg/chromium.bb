@@ -45,8 +45,9 @@ bool GLSurfaceCast::SupportsSwapBuffersWithBounds() {
   return supports_swap_buffer_with_bounds_;
 }
 
-gfx::SwapResult GLSurfaceCast::SwapBuffers() {
-  gfx::SwapResult result = NativeViewGLSurfaceEGL::SwapBuffers();
+gfx::SwapResult GLSurfaceCast::SwapBuffers(
+    const PresentationCallback& callback) {
+  gfx::SwapResult result = NativeViewGLSurfaceEGL::SwapBuffers(callback);
   if (result == gfx::SwapResult::SWAP_ACK)
     parent_->OnSwapBuffers();
 
@@ -54,7 +55,8 @@ gfx::SwapResult GLSurfaceCast::SwapBuffers() {
 }
 
 gfx::SwapResult GLSurfaceCast::SwapBuffersWithBounds(
-    const std::vector<gfx::Rect>& rects) {
+    const std::vector<gfx::Rect>& rects,
+    const PresentationCallback& callback) {
   DCHECK(supports_swap_buffer_with_bounds_);
 
   // TODO(halliwell): Request new EGL extension so we're not abusing
@@ -67,7 +69,7 @@ gfx::SwapResult GLSurfaceCast::SwapBuffersWithBounds(
     rects_data[i * 4 + 3] = rects[i].height();
   }
   gfx::SwapResult result =
-      NativeViewGLSurfaceEGL::SwapBuffersWithDamage(rects_data);
+      NativeViewGLSurfaceEGL::SwapBuffersWithDamage(rects_data, callback);
   if (result == gfx::SwapResult::SWAP_ACK)
     parent_->OnSwapBuffers();
   return result;

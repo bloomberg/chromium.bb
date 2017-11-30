@@ -297,7 +297,9 @@ bool NativeViewGLSurfaceWGL::IsOffscreen() {
   return false;
 }
 
-gfx::SwapResult NativeViewGLSurfaceWGL::SwapBuffers() {
+gfx::SwapResult NativeViewGLSurfaceWGL::SwapBuffers(
+    const PresentationCallback& callback) {
+  // TODO(penghuang): Provide presentation feedback. https://crbug.com/776877
   TRACE_EVENT2("gpu", "NativeViewGLSurfaceWGL:RealSwapBuffers",
       "width", GetSize().width(),
       "height", GetSize().height());
@@ -397,7 +399,8 @@ bool PbufferGLSurfaceWGL::IsOffscreen() {
   return true;
 }
 
-gfx::SwapResult PbufferGLSurfaceWGL::SwapBuffers() {
+gfx::SwapResult PbufferGLSurfaceWGL::SwapBuffers(
+    const PresentationCallback& callback) {
   NOTREACHED() << "Attempted to call SwapBuffers on a pbuffer.";
   return gfx::SwapResult::SWAP_FAILED;
 }

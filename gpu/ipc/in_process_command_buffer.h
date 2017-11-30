@@ -167,6 +167,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void SetSnapshotRequestedCallback(const base::Closure& callback) override;
   void UpdateVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
+  void BufferPresented(uint64_t swap_id,
+                       const gfx::PresentationFeedback& feedback) override;
 
   void AddFilter(IPC::MessageFilter* message_filter) override;
   int32_t GetRouteID() const override;
@@ -185,9 +187,16 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void SetUpdateVSyncParametersCallback(
       const UpdateVSyncParametersCallback& callback);
 
+  using PresentationCallback =
+      base::Callback<void(uint64_t swap_id,
+                          const gfx::PresentationFeedback& feedback)>;
+  void SetPresentationCallback(const PresentationCallback& callback);
+
   void DidSwapBuffersCompleteOnOriginThread(SwapBuffersCompleteParams params);
   void UpdateVSyncParametersOnOriginThread(base::TimeTicks timebase,
                                            base::TimeDelta interval);
+  void BufferPresentedOnOriginThread(uint64_t swap_id,
+                                     const gfx::PresentationFeedback& feedback);
 
   // Mostly the GpuFeatureInfo from GpuInit will be used to create a gpu thread
   // service. In certain tests GpuInit is not part of the execution path, so
@@ -377,6 +386,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 
   SwapBuffersCompletionCallback swap_buffers_completion_callback_;
   UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;
+  PresentationCallback presentation_callback_;
 
   base::WeakPtr<InProcessCommandBuffer> client_thread_weak_ptr_;
   base::WeakPtr<InProcessCommandBuffer> gpu_thread_weak_ptr_;

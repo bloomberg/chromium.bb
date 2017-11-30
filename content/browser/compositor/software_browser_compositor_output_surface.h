@@ -52,10 +52,14 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   void SetSurfaceSuspendedForRecycle(bool suspended) override;
 #endif
 
-  void SwapBuffersCallback();
+  void SwapBuffersCallback(uint64_t swap_id);
+  void UpdateVSyncCallback(const base::TimeTicks timebase,
+                           const base::TimeDelta interval);
 
   viz::OutputSurfaceClient* client_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  uint64_t swap_id_ = 0;
+  base::TimeDelta refresh_interval_;
   base::WeakPtrFactory<SoftwareBrowserCompositorOutputSurface> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareBrowserCompositorOutputSurface);

@@ -121,7 +121,7 @@ class FakeOutputSurface : public viz::OutputSurface {
   gfx::Rect last_set_draw_rectangle_;
 
  private:
-  void SwapBuffersAck();
+  void SwapBuffersAck(uint64_t swap_id);
 
   base::WeakPtrFactory<FakeOutputSurface> weak_ptr_factory_;
 };

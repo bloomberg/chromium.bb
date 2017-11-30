@@ -11,6 +11,10 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/demo/renderer_base.h"
 
+namespace gfx {
+struct PresentationFeedback;
+}  // namespace gfx
+
 namespace gl {
 class GLContext;
 class GLSurface;
@@ -36,6 +40,8 @@ class GlRenderer : public RendererBase {
   scoped_refptr<gl::GLContext> context_;
 
  private:
+  void OnPresentation(const gfx::PresentationFeedback& feedback);
+
   base::WeakPtrFactory<GlRenderer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GlRenderer);

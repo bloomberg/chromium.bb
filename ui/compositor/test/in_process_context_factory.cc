@@ -32,6 +32,7 @@
 #include "ui/compositor/reflector.h"
 #include "ui/compositor/test/in_process_context_provider.h"
 #include "ui/display/display_switches.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_utils.h"
@@ -104,7 +105,7 @@ class DirectOutputSurface : public viz::OutputSurface {
 
     context_provider_->ContextSupport()->SignalSyncToken(
         sync_token, base::Bind(&DirectOutputSurface::OnSwapBuffersComplete,
-                               weak_ptr_factory_.GetWeakPtr()));
+                               weak_ptr_factory_.GetWeakPtr(), ++swap_id_));
   }
   uint32_t GetFramebufferCopyTextureFormat() override {
     auto* gl = static_cast<InProcessContextProvider*>(context_provider());
@@ -124,9 +125,14 @@ class DirectOutputSurface : public viz::OutputSurface {
   void ApplyExternalStencil() override {}
 
  private:
-  void OnSwapBuffersComplete() { client_->DidReceiveSwapBuffersAck(); }
+  void OnSwapBuffersComplete(uint64_t swap_id) {
+    client_->DidReceiveSwapBuffersAck(swap_id);
+    client_->DidReceivePresentationFeedback(swap_id,
+                                            gfx::PresentationFeedback());
+  }
 
   viz::OutputSurfaceClient* client_ = nullptr;
+  uint64_t swap_id_ = 0;
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectOutputSurface);

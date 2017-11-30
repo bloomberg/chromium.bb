@@ -143,4 +143,8 @@ void InProcessContextProvider::SetUpdateVSyncParametersCallback(
   context_->SetUpdateVSyncParametersCallback(callback);
 }
 
+void InProcessContextProvider::SetPresentationCallback(
+    const gpu::InProcessCommandBuffer::PresentationCallback& callback) {
+  context_->SetPresentationCallback(callback);
+}
 }  // namespace viz

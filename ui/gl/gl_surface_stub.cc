@@ -20,7 +20,8 @@ bool GLSurfaceStub::IsOffscreen() {
   return false;
 }
 
-gfx::SwapResult GLSurfaceStub::SwapBuffers() {
+gfx::SwapResult GLSurfaceStub::SwapBuffers(
+    const PresentationCallback& callback) {
   return gfx::SwapResult::SWAP_ACK;
 }
 

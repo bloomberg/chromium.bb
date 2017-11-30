@@ -73,6 +73,9 @@ class GLInProcessContextImpl
   void SetUpdateVSyncParametersCallback(
       const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
           callback) override;
+  void SetPresentationCallback(
+      const gpu::InProcessCommandBuffer::PresentationCallback& callback)
+      override;
   void SetLock(base::Lock* lock) override;
   gpu::gles2::ContextGroup* ContextGroupForTesting() const override;
 
@@ -128,6 +131,11 @@ void GLInProcessContextImpl::SetUpdateVSyncParametersCallback(
     const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
         callback) {
   command_buffer_->SetUpdateVSyncParametersCallback(callback);
+}
+
+void GLInProcessContextImpl::SetPresentationCallback(
+    const gpu::InProcessCommandBuffer::PresentationCallback& callback) {
+  command_buffer_->SetPresentationCallback(callback);
 }
 
 void GLInProcessContextImpl::SetLock(base::Lock* lock) {
