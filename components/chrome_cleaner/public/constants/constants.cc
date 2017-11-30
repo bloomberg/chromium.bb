@@ -14,7 +14,6 @@ const char kChromePromptSwitch[] = "chrome-prompt";
 const char kChromeSystemInstallSwitch[] = "chrome-system-install";
 const char kChromeVersionSwitch[] = "chrome-version";
 const char kEnableCrashReportingSwitch[] = "enable-crash-reporting";
-const char kEngineExperimentGroupSwitch[] = "engine-experiment-group";
 const char kEngineSwitch[] = "engine";
 const char kExecutionModeSwitch[] = "execution-mode";
 const char kExtendedSafeBrowsingEnabledSwitch[] =
