@@ -32,9 +32,6 @@ class TabActivityWatcher : public TabStripModelObserver,
   // Forces logging even when a timeout would have prevented it.
   void DisableLogTimeoutForTest();
 
-  void SetTabMetricsLoggerForTest(
-      std::unique_ptr<TabMetricsLogger> tab_metrics_logger);
-
   // Returns the single instance, creating it if necessary.
   static TabActivityWatcher* GetInstance();
 
