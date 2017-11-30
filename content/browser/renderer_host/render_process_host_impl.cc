@@ -209,6 +209,7 @@
 #include "third_party/WebKit/public/public_features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -1354,6 +1355,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   AddObserver(indexed_db_factory_.get());
 
   InitializeChannelProxy();
+
+  if (!switches::IsMusHostingViz())
+    gpu_client_.reset(new GpuClient(GetID()));
 }
 
 // static
@@ -1447,6 +1451,9 @@ bool RenderProcessHostImpl::Init() {
   base::FilePath renderer_path = ChildProcessHost::GetChildPath(flags);
   if (renderer_path.empty())
     return false;
+
+  if (gpu_client_)
+    gpu_client_->PreEstablishGpuChannel();
 
   sent_render_process_ready_ = false;
 
@@ -1883,8 +1890,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                  base::WrapRefCounted(
                      storage_partition_impl_->GetBackgroundFetchContext())));
 
-  registry->AddInterface(base::Bind(&RenderProcessHostImpl::CreateMusGpuRequest,
-                                    base::Unretained(this)));
+  if (gpu_client_) {
+    // |gpu_client_| outlives the registry, because its destruction is posted to
+    // IO thread from the destructor of |this|.
+    registry->AddInterface(
+        base::Bind(&GpuClient::Add, base::Unretained(gpu_client_.get())));
+  }
 
   registry->AddInterface(
       base::Bind(
@@ -1989,13 +2000,6 @@ void RenderProcessHostImpl::GetBlobURLLoaderFactory(
   }
   storage_partition_impl_->GetBlobURLLoaderFactory()->HandleRequest(
       std::move(request));
-}
-
-void RenderProcessHostImpl::CreateMusGpuRequest(ui::mojom::GpuRequest request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!gpu_client_)
-    gpu_client_.reset(new GpuClient(GetID()));
-  gpu_client_->Add(std::move(request));
 }
 
 void RenderProcessHostImpl::CreateOffscreenCanvasProvider(
