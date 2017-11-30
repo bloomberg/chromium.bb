@@ -91,6 +91,7 @@ void LogErrorToConsole(content::WebContents* web_contents,
     case WAITING_FOR_MANIFEST:
     case WAITING_FOR_INSTALLABLE_CHECK:
     case WAITING_FOR_NATIVE_DATA:
+    case SHOWING_APP_INSTALLATION_DIALOG:
     case MAX_ERROR_CODE:
       return;
     case RENDERER_EXITING:
