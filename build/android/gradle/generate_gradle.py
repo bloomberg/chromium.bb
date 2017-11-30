@@ -191,7 +191,11 @@ class _ProjectEntry(object):
 
   def GradleSubdir(self):
     """Returns the output subdirectory."""
-    return self.NinjaTarget().replace(':', os.path.sep)
+    ninja_target = self.NinjaTarget()
+    # Support targets at the root level. e.g. //:foo
+    if ninja_target[0] == ':':
+      ninja_target = ninja_target[1:]
+    return ninja_target.replace(':', os.path.sep)
 
   def ProjectName(self):
     """Returns the Gradle project name."""
