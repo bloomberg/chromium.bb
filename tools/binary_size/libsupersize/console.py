@@ -118,8 +118,9 @@ class _Session(object):
     if not first_sym:
       return []
     size_info = self._SizeInfoForSymbol(first_sym)
-    elf_path, tool_prefix = self._ElfPathAndToolPrefixForSymbol(
-        size_info, elf_path)
+    tool_prefix = self._ToolPrefixForSymbol(size_info)
+    elf_path = self._ElfPathForSymbol(
+        size_info, tool_prefix, elf_path)
 
     address, offset, _ = nm.LookupElfRodataInfo(elf_path, tool_prefix)
     adjust = offset - address
@@ -202,7 +203,7 @@ class _Session(object):
                                    format_name='csv')
     _WriteToStream(lines, use_pager=use_pager, to_file=to_file)
 
-  def _ElfPathAndToolPrefixForSymbol(self, size_info, elf_path):
+  def _ToolPrefixForSymbol(self, size_info):
     tool_prefix = self._tool_prefix_finder.Tentative()
     orig_tool_prefix = size_info.metadata.get(models.METADATA_TOOL_PREFIX)
     if orig_tool_prefix:
@@ -215,7 +216,9 @@ class _Session(object):
     assert tool_prefix is not None, (
         'Could not determine --tool-prefix. Possible fixes include setting '
         '--tool-prefix, or setting --output-directory')
+    return tool_prefix
 
+  def _ElfPathForSymbol(self, size_info, tool_prefix, elf_path):
     def build_id_matches(elf_path):
       found_build_id = archive.BuildIdFromElf(elf_path, tool_prefix)
       expected_build_id = size_info.metadata.get(models.METADATA_ELF_BUILD_ID)
@@ -244,7 +247,7 @@ class _Session(object):
 
     for i, elf_path in enumerate(paths_to_try):
       if build_id_matches(elf_path):
-        return elf_path, tool_prefix
+        return elf_path
 
       # Show an error only once all paths are tried.
       if i + 1 == len(paths_to_try):
@@ -296,9 +299,9 @@ class _Session(object):
     assert not symbol.IsDelta(), ('Cannot disasseble a Diff\'ed symbol. Try '
                                   'passing .before_symbol or .after_symbol.')
     size_info = self._SizeInfoForSymbol(symbol)
-
-    elf_path, tool_prefix = self._ElfPathAndToolPrefixForSymbol(
-        size_info, elf_path)
+    tool_prefix = self._ToolPrefixForSymbol(size_info)
+    elf_path = self._ElfPathForSymbol(
+        size_info, tool_prefix, elf_path)
 
     args = [path_util.GetObjDumpPath(tool_prefix), '--disassemble', '--source',
             '--line-numbers', '--demangle',
