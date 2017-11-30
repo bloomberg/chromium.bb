@@ -152,6 +152,10 @@ namespace fileSystemProvider {
     // Whether the file system supports the <code>tag</code> field for observed
     // directories.
     boolean? supportsNotifyTag;
+
+    // Whether the framework should resume the file system at the next sign-in
+    // session. True by default.
+    boolean? persistent;
   };
 
   // Options for the $(ref:unmount) method.

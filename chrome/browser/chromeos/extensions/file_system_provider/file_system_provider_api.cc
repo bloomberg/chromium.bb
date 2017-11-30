@@ -150,6 +150,9 @@ ExtensionFunction::ResponseAction FileSystemProviderMountFunction::Run() {
                                    ? *params->options.opened_files_limit.get()
                                    : 0;
   options.supports_notify_tag = params->options.supports_notify_tag != nullptr;
+  options.persistent = params->options.persistent.get()
+                           ? *params->options.persistent.get()
+                           : true;
 
   const base::File::Error result = service->MountFileSystem(
       ProviderId::CreateFromExtensionId(extension_id()), options);

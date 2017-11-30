@@ -62,6 +62,9 @@ void Registry::RememberFileSystem(
                      base::Value(file_system_info.supports_notify_tag()));
   file_system.SetKey(kPrefKeyOpenedFilesLimit,
                      base::Value(file_system_info.opened_files_limit()));
+  // We don't need to write and read "persistent" field (in MountOptions) to
+  // and from preference because all filesystems which are remembered must be
+  // persistent.
 
   base::Value watchers_value(base::Value::Type::DICTIONARY);
 

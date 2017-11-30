@@ -199,8 +199,10 @@ base::File::Error Service::MountFileSystemInternal(
       provider_id.ToString(), options.file_system_id)] = std::move(file_system);
   mount_point_name_to_key_map_[mount_point_name] =
       FileSystemKey(provider_id.ToString(), options.file_system_id);
-  registry_->RememberFileSystem(file_system_info,
-                                *file_system_ptr->GetWatchers());
+  if (options.persistent) {
+    registry_->RememberFileSystem(file_system_info,
+                                  *file_system_ptr->GetWatchers());
+  }
 
   for (auto& observer : observers_) {
     observer.OnProvidedFileSystemMount(file_system_info, context,
