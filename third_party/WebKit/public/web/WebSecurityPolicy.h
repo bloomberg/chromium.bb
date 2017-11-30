@@ -52,6 +52,10 @@ class WebSecurityPolicy {
   BLINK_EXPORT static void RegisterURLSchemeAsAllowingServiceWorkers(
       const WebString&);
 
+  // Registers an URL scheme as allowing 'wasm-eval' CSP source directive.
+  BLINK_EXPORT static void RegisterURLSchemeAsAllowingWasmEvalCSP(
+      const WebString&);
+
   // Registers an HTTP-like URL scheme that supports the Fetch API.
   BLINK_EXPORT static void RegisterURLSchemeAsSupportingFetchAPI(
       const WebString&);

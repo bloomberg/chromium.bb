@@ -79,6 +79,7 @@ static const MimeInfo kPrimaryMappings[] = {
     // Must precede audio/webm .
     {"video/webm", "webm"},
 
+    {"application/wasm", "wasm"},
     {"application/x-chrome-extension", "crx"},
     {"application/xhtml+xml", "xhtml,xht,xhtm"},
     {"audio/flac", "flac"},

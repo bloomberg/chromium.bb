@@ -27,6 +27,7 @@ SourceListDirective::SourceListDirective(const String& name,
       allow_star_(false),
       allow_inline_(false),
       allow_eval_(false),
+      allow_wasm_eval_(false),
       allow_dynamic_(false),
       allow_hashed_attributes_(false),
       report_sample_(false),
@@ -82,6 +83,10 @@ bool SourceListDirective::AllowEval() const {
   return allow_eval_;
 }
 
+bool SourceListDirective::AllowWasmEval() const {
+  return allow_wasm_eval_;
+}
+
 bool SourceListDirective::AllowDynamic() const {
   return allow_dynamic_;
 }
@@ -105,8 +110,8 @@ bool SourceListDirective::AllowReportSample() const {
 
 bool SourceListDirective::IsNone() const {
   return !list_.size() && !allow_self_ && !allow_star_ && !allow_inline_ &&
-         !allow_hashed_attributes_ && !allow_eval_ && !allow_dynamic_ &&
-         !nonces_.size() && !hashes_.size();
+         !allow_hashed_attributes_ && !allow_eval_ && !allow_wasm_eval_ &&
+         !allow_dynamic_ && !nonces_.size() && !hashes_.size();
 }
 
 uint8_t SourceListDirective::HashAlgorithmsUsed() const {
@@ -198,6 +203,12 @@ bool SourceListDirective::ParseSource(
 
   if (EqualIgnoringASCIICase("'unsafe-eval'", token)) {
     AddSourceUnsafeEval();
+    return true;
+  }
+
+  if (policy_->SupportsWasmEval() &&
+      EqualIgnoringASCIICase("'wasm-eval'", token)) {
+    AddSourceWasmEval();
     return true;
   }
 
@@ -558,6 +569,10 @@ void SourceListDirective::AddSourceUnsafeEval() {
   allow_eval_ = true;
 }
 
+void SourceListDirective::AddSourceWasmEval() {
+  allow_wasm_eval_ = true;
+}
+
 void SourceListDirective::AddSourceStrictDynamic() {
   allow_dynamic_ = true;
 }
@@ -647,6 +662,7 @@ bool SourceListDirective::Subsumes(
 
   bool allow_inline_other = other[0]->allow_inline_;
   bool allow_eval_other = other[0]->allow_eval_;
+  bool allow_wasm_eval_other = other[0]->allow_wasm_eval_;
   bool allow_dynamic_other = other[0]->allow_dynamic_;
   bool allow_hashed_attributes_other = other[0]->allow_hashed_attributes_;
   bool is_hash_or_nonce_present_other = other[0]->IsHashOrNoncePresent();
@@ -658,6 +674,7 @@ bool SourceListDirective::Subsumes(
   for (size_t i = 1; i < other.size(); i++) {
     allow_inline_other = allow_inline_other && other[i]->allow_inline_;
     allow_eval_other = allow_eval_other && other[i]->allow_eval_;
+    allow_wasm_eval_other = allow_wasm_eval_other && other[i]->allow_wasm_eval_;
     allow_dynamic_other = allow_dynamic_other && other[i]->allow_dynamic_;
     allow_hashed_attributes_other =
         allow_hashed_attributes_other && other[i]->allow_hashed_attributes_;
@@ -676,6 +693,8 @@ bool SourceListDirective::Subsumes(
   if (type == ContentSecurityPolicy::DirectiveType::kScriptSrc ||
       type == ContentSecurityPolicy::DirectiveType::kStyleSrc) {
     if (!allow_eval_ && allow_eval_other)
+      return false;
+    if (!allow_wasm_eval_ && allow_wasm_eval_other)
       return false;
     if (!allow_hashed_attributes_ && allow_hashed_attributes_other)
       return false;

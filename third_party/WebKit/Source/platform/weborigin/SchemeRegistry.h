@@ -148,6 +148,10 @@ class PLATFORM_EXPORT SchemeRegistry {
       const String& scheme);
   static bool SchemeShouldBypassSecureContextCheck(const String& scheme);
 
+  // Schemes that can use 'wasm-eval'.
+  static void RegisterURLSchemeAsAllowingWasmEvalCSP(const String& scheme);
+  static bool SchemeSupportsWasmEvalCSP(const String& scheme);
+
  private:
   static const URLSchemesSet& LocalSchemes();
 };
