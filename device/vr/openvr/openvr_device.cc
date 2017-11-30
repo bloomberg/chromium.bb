@@ -6,7 +6,9 @@
 
 #include <math.h>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/math_constants.h"
 #include "build/build_config.h"
 #include "device/vr/openvr/openvr_render_loop.h"
@@ -181,6 +183,25 @@ void OpenVRDevice::OnRequestPresentResult(
     mojom::VRDisplayHost::RequestPresentCallback callback,
     bool result) {
   std::move(callback).Run(result);
+
+  if (result) {
+    using ViewerMap = std::map<std::string, VrViewerType>;
+    CR_DEFINE_STATIC_LOCAL(
+        ViewerMap, viewer_types,
+        ({
+            {"Oculus Rift CV1", VrViewerType::OPENVR_RIFT_CV1},
+            {"Vive MV", VrViewerType::OPENVR_VIVE},
+        }));
+
+    VrViewerType type = VrViewerType::OPENVR_UNKNOWN;
+    std::string model =
+        GetOpenVRString(vr_system_, vr::Prop_ModelNumber_String);
+    auto it = viewer_types.find(model);
+    if (it != viewer_types.end())
+      type = it->second;
+
+    UMA_HISTOGRAM_SPARSE_SLOWLY("VRViewerType", static_cast<int>(type));
+  }
 }
 
 void OpenVRDevice::ExitPresent() {
