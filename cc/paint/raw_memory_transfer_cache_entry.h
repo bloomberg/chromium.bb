@@ -34,7 +34,7 @@ class CC_PAINT_EXPORT ServiceRawMemoryTransferCacheEntry
   ~ServiceRawMemoryTransferCacheEntry() override;
   TransferCacheEntryType Type() const override;
   size_t Size() const override;
-  bool Deserialize(size_t size, uint8_t* data) override;
+  bool Deserialize(GrContext* context, size_t size, uint8_t* data) override;
   const std::vector<uint8_t>& data() { return data_; }
 
  private:

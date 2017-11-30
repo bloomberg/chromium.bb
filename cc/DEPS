@@ -55,6 +55,7 @@ specific_include_rules = {
     "+gpu/command_buffer/client",
     "+gpu/command_buffer/common",
     "+gpu/command_buffer/service",
+    "+gpu/config",
     "+gpu/ipc",
   ],
 }

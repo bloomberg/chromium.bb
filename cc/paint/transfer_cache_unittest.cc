@@ -4,7 +4,10 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
+#include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/paint/raw_memory_transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_entry.h"
 #include "cc/test/test_in_process_context_provider.h"
@@ -15,8 +18,10 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
+#include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "ui/gl/gl_implementation.h"
 
 namespace cc {
@@ -36,6 +41,17 @@ class TransferCacheTest : public testing::Test {
     attribs.sample_buffers = 0;
     attribs.fail_if_major_perf_caveat = false;
     attribs.bind_generates_resource = false;
+    // Enable OOP rasterization.
+    attribs.enable_oop_rasterization = true;
+
+    // Add an OOP rasterization command line flag so that we set
+    // |chromium_raster_transport| features flag.
+    // TODO(vmpstr): Is there a better way to do this?
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableOOPRasterization)) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnableOOPRasterization);
+    }
 
     context_ = gpu::GLInProcessContext::CreateWithoutInit();
     auto result = context_->Initialize(
@@ -44,6 +60,7 @@ class TransferCacheTest : public testing::Test {
         &image_factory_, base::ThreadTaskRunnerHandle::Get());
 
     ASSERT_EQ(result, gpu::ContextResult::kSuccess);
+    ASSERT_TRUE(context_->GetCapabilities().supports_oop_raster);
   }
 
   void TearDown() override { context_.reset(); }
@@ -173,6 +190,51 @@ TEST_F(TransferCacheTest, RawMemoryTransfer) {
   EXPECT_EQ(service_entry->Type(), client_entry.Type());
   const std::vector<uint8_t> service_data =
       static_cast<ServiceRawMemoryTransferCacheEntry*>(service_entry)->data();
+  EXPECT_EQ(data, service_data);
+}
+
+TEST_F(TransferCacheTest, ImageMemoryTransfer) {
+// TODO(ericrk): This test doesn't work on Android. crbug.com/777628
+#if defined(OS_ANDROID)
+  return;
+#endif
+
+  auto* client_cache = ClientTransferCache();
+  auto* service_cache = ServiceTransferCache();
+  auto* gl = Gl();
+  auto* command_buffer = CommandBuffer();
+
+  // Create a 10x10 image.
+  SkImageInfo info = SkImageInfo::MakeN32Premul(10, 10);
+  std::vector<uint8_t> data;
+  data.resize(info.width() * info.height() * 4);
+  for (size_t i = 0; i < data.size(); ++i) {
+    data[i] = i;
+  }
+  SkPixmap pixmap(info, data.data(), info.minRowBytes());
+
+  // Add the entry to the transfer cache
+  ClientImageTransferCacheEntry client_entry(&pixmap, nullptr);
+  gpu::TransferCacheEntryId id =
+      client_cache->CreateCacheEntry(gl, command_buffer, client_entry);
+  EXPECT_FALSE(id.is_null());
+  gpu::ClientDiscardableHandle handle =
+      client_cache->DiscardableManagerForTesting()->GetHandle(id);
+  EXPECT_TRUE(handle.IsLockedForTesting());
+  gl->Finish();
+
+  // Validate service-side data matches.
+  ServiceTransferCacheEntry* service_entry = service_cache->GetEntry(id);
+  EXPECT_EQ(service_entry->Type(), client_entry.Type());
+  sk_sp<SkImage> service_image =
+      static_cast<ServiceImageTransferCacheEntry*>(service_entry)->image();
+  EXPECT_TRUE(service_image->isTextureBacked());
+
+  std::vector<uint8_t> service_data;
+  service_data.resize(data.size());
+  service_image->readPixels(info, service_data.data(), info.minRowBytes(), 0,
+                            0);
+
   EXPECT_EQ(data, service_data);
 }
 

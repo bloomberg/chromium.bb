@@ -32,6 +32,7 @@ class GPU_EXPORT ServiceTransferCache {
   bool CreateLockedEntry(TransferCacheEntryId id,
                          ServiceDiscardableHandle handle,
                          cc::TransferCacheEntryType type,
+                         GrContext* context,
                          uint8_t* data_memory,
                          size_t data_size);
   bool UnlockEntry(TransferCacheEntryId id);

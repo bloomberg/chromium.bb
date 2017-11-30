@@ -42,7 +42,8 @@ size_t ServiceRawMemoryTransferCacheEntry::Size() const {
   return data_.size();
 }
 
-bool ServiceRawMemoryTransferCacheEntry::Deserialize(size_t size,
+bool ServiceRawMemoryTransferCacheEntry::Deserialize(GrContext* context,
+                                                     size_t size,
                                                      uint8_t* data) {
   data_.resize(size);
   memcpy(data_.data(), data, size);
