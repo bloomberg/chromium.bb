@@ -67,7 +67,9 @@ constexpr int kSlideHighlightChangeDurationMs = 150;
 const char Slider::kViewClassName[] = "Slider";
 
 Slider::Slider(SliderListener* listener)
-    : listener_(listener), highlight_animation_(this) {
+    : listener_(listener),
+      highlight_animation_(this),
+      pending_accessibility_value_change_(false) {
   highlight_animation_.SetSlideDuration(kSlideHighlightChangeDurationMs);
   EnableCanvasFlippingForRTLUI(true);
 #if defined(OS_MACOSX)
@@ -152,8 +154,15 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
   } else {
     SchedulePaint();
   }
-  if (accessibility_events_enabled_ && GetWidget())
-    NotifyAccessibilityEvent(ui::AX_EVENT_VALUE_CHANGED, true);
+
+  if (accessibility_events_enabled_) {
+    if (GetWidget() && GetWidget()->IsVisible()) {
+      DCHECK(!pending_accessibility_value_change_);
+      NotifyAccessibilityEvent(ui::AX_EVENT_VALUE_CHANGED, true);
+    } else {
+      pending_accessibility_value_change_ = true;
+    }
+  }
 }
 
 void Slider::PrepareForMove(const int new_x) {
@@ -316,6 +325,24 @@ void Slider::OnFocus() {
 void Slider::OnBlur() {
   View::OnBlur();
   SchedulePaint();
+}
+
+void Slider::VisibilityChanged(View* starting_from, bool is_visible) {
+  if (is_visible)
+    NotifyPendingAccessibilityValueChanged();
+}
+
+void Slider::AddedToWidget() {
+  if (GetWidget()->IsVisible())
+    NotifyPendingAccessibilityValueChanged();
+}
+
+void Slider::NotifyPendingAccessibilityValueChanged() {
+  if (!pending_accessibility_value_change_)
+    return;
+
+  NotifyAccessibilityEvent(ui::AX_EVENT_VALUE_CHANGED, true);
+  pending_accessibility_value_change_ = false;
 }
 
 void Slider::OnGestureEvent(ui::GestureEvent* event) {
