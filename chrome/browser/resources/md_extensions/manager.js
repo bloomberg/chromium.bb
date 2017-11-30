@@ -441,9 +441,6 @@ cr.define('extensions', function() {
       if (fromPage != toPage) {
         /** @type {extensions.ViewManager} */ (this.$.viewManager)
             .switchView(toPage);
-      } else {
-        /** @type {extensions.ViewManager} */ (this.$.viewManager)
-            .animateCurrentView('fade-in');
       }
 
       if (newPage.subpage) {
