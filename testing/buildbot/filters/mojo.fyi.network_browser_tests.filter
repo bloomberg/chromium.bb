@@ -360,7 +360,6 @@
 -DownloadExtensionTest.DownloadsDragFunction
 -DownloadExtensionTest.DownloadsShowDefaultFolderFunction
 -DownloadExtensionTest.DownloadsShowFunction
--DownloadTest.DownloadResourceThrottleCancels
 -LoadImageBrowserTest.LoadImage
 -MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/0
 -NoSessionRestoreTest.CookiesClearedOnBrowserClose

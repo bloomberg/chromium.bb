@@ -1408,10 +1408,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MimeTypesToShowNotDownload) {
 // Verify that when the DownloadResourceThrottle cancels a download, the
 // download never makes it to the downloads system.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
   // Navigate to a page with the same domain as the file to download.  We can't
   // navigate directly to the file we don't want to download because cross-site
   // navigations reset the TabDownloadState.
-  GURL same_site_url(URLRequestMockHTTPJob::GetMockUrl("download_script.html"));
+  GURL same_site_url = embedded_test_server()->GetURL("/download_script.html");
   ui_test_utils::NavigateToURL(browser(), same_site_url);
 
   // Make sure the initial navigation didn't trigger a download.
