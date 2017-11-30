@@ -5,15 +5,12 @@
 package org.chromium.chrome.browser.preferences.password;
 
 import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.KeyguardManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.StringRes;
 import android.text.InputType;
@@ -87,7 +84,6 @@ public class PasswordEntryEditor extends Fragment {
 
     @VisibleForTesting
     public static final String VIEW_PASSWORDS = "view-passwords";
-    private static final int VALID_REAUTHENTICATION_TIME_INTERVAL_MILLIS = 60000;
 
     private ClipboardManager mClipboard;
     private KeyguardManager mKeyguardManager;
@@ -139,7 +135,7 @@ public class PasswordEntryEditor extends Fragment {
             mKeyguardManager =
                     (KeyguardManager) getActivity().getApplicationContext().getSystemService(
                             Context.KEYGUARD_SERVICE);
-            if (isReauthenticationAvailable()) {
+            if (ReauthenticationManager.isReauthenticationApiAvailable()) {
                 hidePassword();
                 hookupPasswordButtons();
             } else {
@@ -188,25 +184,11 @@ public class PasswordEntryEditor extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (authenticationStillValid()) {
+        if (ReauthenticationManager.authenticationStillValid()) {
             if (mViewButtonPressed) displayPassword();
 
             if (mCopyButtonPressed) copyPassword();
         }
-    }
-
-    /**
-     * Verifies if authentication is still valid (the user authenticated less than 60 seconds ago
-     * and the startTime is not equal to 0.
-     */
-    private boolean authenticationStillValid() {
-        return SavePasswordsPreferences.getLastReauthTimeMillis() != 0
-                && System.currentTimeMillis() - SavePasswordsPreferences.getLastReauthTimeMillis()
-                < VALID_REAUTHENTICATION_TIME_INTERVAL_MILLIS;
-    }
-
-    private boolean isReauthenticationAvailable() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 
     private boolean isPasswordSyncingUser() {
@@ -365,26 +347,6 @@ public class PasswordEntryEditor extends Fragment {
                 PASSWORD_ACTION_BOUNDARY);
     }
 
-    /**
-     * Initiates the reauthentication prompt with a given description.
-     *
-     * @param descriptionId The resource ID of the string to be displayed to explain the reason for
-     *                      the reauthentication.
-     */
-    private void displayReauthenticationFragment(int descriptionId) {
-        Fragment passwordReauthentication = new PasswordReauthenticationFragment();
-        Bundle args = new Bundle();
-        args.putInt(PasswordReauthenticationFragment.DESCRIPTION_ID, descriptionId);
-        passwordReauthentication.setArguments(args);
-
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(
-                R.id.password_entry_editor_interactive, passwordReauthentication);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
-    }
-
     private void hookupPasswordButtons() {
         final ImageButton copyPasswordButton =
                 (ImageButton) mView.findViewById(R.id.password_entry_editor_copy_password);
@@ -397,11 +359,13 @@ public class PasswordEntryEditor extends Fragment {
                     Toast.makeText(getActivity().getApplicationContext(),
                                  R.string.password_entry_editor_set_lock_screen, Toast.LENGTH_LONG)
                             .show();
-                } else if (authenticationStillValid()) {
+                } else if (ReauthenticationManager.authenticationStillValid()) {
                     copyPassword();
                 } else {
                     mCopyButtonPressed = true;
-                    displayReauthenticationFragment(R.string.lockscreen_description_copy);
+                    ReauthenticationManager.displayReauthenticationFragment(
+                            R.string.lockscreen_description_copy,
+                            R.id.password_entry_editor_interactive, getFragmentManager());
                 }
             }
         });
@@ -418,11 +382,13 @@ public class PasswordEntryEditor extends Fragment {
                                    & InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD)
                         == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
                     hidePassword();
-                } else if (authenticationStillValid()) {
+                } else if (ReauthenticationManager.authenticationStillValid()) {
                     displayPassword();
                 } else {
                     mViewButtonPressed = true;
-                    displayReauthenticationFragment(R.string.lockscreen_description_view);
+                    ReauthenticationManager.displayReauthenticationFragment(
+                            R.string.lockscreen_description_view,
+                            R.id.password_entry_editor_interactive, getFragmentManager());
                 }
             }
         });

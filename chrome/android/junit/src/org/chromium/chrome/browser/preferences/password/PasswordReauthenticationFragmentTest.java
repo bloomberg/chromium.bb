@@ -41,7 +41,7 @@ public class PasswordReauthenticationFragmentTest {
         Activity testActivity = Robolectric.setupActivity(Activity.class);
         Intent returnIntent = new Intent();
         returnIntent.putExtra("result", "This is the result");
-        mockPasswordReauthentication.preventLockingForTesting(true);
+        PasswordReauthenticationFragment.preventLockingForTesting();
 
         FragmentManager fragmentManager = testActivity.getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();

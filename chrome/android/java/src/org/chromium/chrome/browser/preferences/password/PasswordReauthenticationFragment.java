@@ -22,7 +22,7 @@ public class PasswordReauthenticationFragment extends Fragment {
 
     protected static final int CONFIRM_DEVICE_CREDENTIAL_REQUEST_CODE = 2;
 
-    private boolean mPreventLockDevice;
+    private static boolean sPreventLockDevice = false;
 
     private FragmentManager mFragmentManager;
 
@@ -30,7 +30,7 @@ public class PasswordReauthenticationFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mFragmentManager = getFragmentManager();
-        if (!mPreventLockDevice) {
+        if (!sPreventLockDevice) {
             lockDevice();
         }
     }
@@ -40,7 +40,7 @@ public class PasswordReauthenticationFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CONFIRM_DEVICE_CREDENTIAL_REQUEST_CODE) {
             if (resultCode == getActivity().RESULT_OK) {
-                SavePasswordsPreferences.setLastReauthTimeMillis(System.currentTimeMillis());
+                ReauthenticationManager.setLastReauthTimeMillis(System.currentTimeMillis());
                 mFragmentManager.popBackStack();
             }
         }
@@ -49,8 +49,8 @@ public class PasswordReauthenticationFragment extends Fragment {
     /**
      * Prevent calling the {@link #lockDevice} method in {@link #onCreate}.
      */
-    public void preventLockingForTesting(boolean preventLockDevice) {
-        mPreventLockDevice = preventLockDevice;
+    public static void preventLockingForTesting() {
+        sPreventLockDevice = true;
     }
 
     /**
