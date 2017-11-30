@@ -62,5 +62,5 @@ public interface VrDaydreamApi {
     /**
      * Launch the stereoscopic, 3D VR launcher homescreen.
      */
-    void launchVrHomescreen();
+    boolean launchVrHomescreen();
 }
