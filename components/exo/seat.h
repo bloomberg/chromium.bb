@@ -30,8 +30,9 @@ class Seat : public aura::client::FocusChangeObserver, public ui::EventHandler {
   void AddObserver(SeatObserver* observer);
   void RemoveObserver(SeatObserver* observer);
 
-  // Returns currently focused surface.
-  Surface* GetFocusedSurface();
+  // Returns currently focused surface. This is vertual so that we can override
+  // the behavior for testing.
+  virtual Surface* GetFocusedSurface();
 
   // Returns currently pressed keys.
   const base::flat_set<ui::DomCode>& pressed_keys() const {
