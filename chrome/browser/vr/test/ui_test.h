@@ -91,6 +91,10 @@ class UiTest : public testing::Test {
   // A wrapper to call scene_->OnBeginFrame.
   bool OnBeginFrame() const;
 
+  // Also wraps scene_->OnBeginFrame, but advances the current time by the given
+  // delta before making the call. This is useful for simulating slow frames.
+  bool OnBeginFrame(base::TimeDelta delta);
+
   void GetBackgroundColor(SkColor* background_color) const;
 
   std::unique_ptr<Ui> ui_;
