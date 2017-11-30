@@ -16,9 +16,6 @@
 
 namespace sessions {
 
-// TODO(treib): Remove, not needed anymore. crbug.com/627747
-const char kSearchTermsKey[] = "search_terms";
-
 // The previous referrer policy value corresponding to |Never|.
 const int kObsoleteReferrerPolicyNever = 2;
 
@@ -128,7 +125,6 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
   navigation.transition_type_ = static_cast<ui::PageTransition>(transition);
 
   navigation.timestamp_ = base::Time();
-  navigation.search_terms_ = base::UTF8ToUTF16(sync_data.search_terms());
   if (sync_data.has_favicon_url())
     navigation.favicon_url_ = GURL(sync_data.favicon_url());
 
@@ -213,7 +209,7 @@ enum TypeMask {
 // original_request_url_
 // is_overriding_user_agent_
 // timestamp_
-// search_terms_
+// search_terms_ (removed)
 // http_status_code_
 // referrer_policy_
 // extended_info_map_
@@ -252,7 +248,9 @@ void SerializedNavigationEntry::WriteToPickle(int max_size,
   pickle->WriteBool(is_overriding_user_agent_);
   pickle->WriteInt64(timestamp_.ToInternalValue());
 
-  WriteString16ToPickle(pickle, &bytes_written, max_size, search_terms_);
+  // The |search_terms_| field was removed. Write an empty string to keep
+  // backwards compatibility.
+  WriteString16ToPickle(pickle, &bytes_written, max_size, base::string16());
 
   pickle->WriteInt(http_status_code_);
 
@@ -315,9 +313,10 @@ bool SerializedNavigationEntry::ReadFromPickle(base::PickleIterator* iterator) {
       timestamp_ = base::Time();
     }
 
-    // If the search terms field can't be found, leave it empty.
-    if (!iterator->ReadString16(&search_terms_))
-      search_terms_.clear();
+    // The |search_terms_| field was removed, but it still exists in the binary
+    // format to keep backwards compatibility. Just get rid of it.
+    base::string16 search_terms;
+    ignore_result(iterator->ReadString16(&search_terms));
 
     if (!iterator->ReadInt(&http_status_code_))
       http_status_code_ = 0;
@@ -440,8 +439,6 @@ sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
   // The full-resolution timestamp works as a global ID.
   sync_data.set_global_id(timestamp_.ToInternalValue());
 
-  sync_data.set_search_terms(base::UTF16ToUTF8(search_terms_));
-
   sync_data.set_http_status_code(http_status_code_);
 
   if (favicon_url_.is_valid())
@@ -490,7 +487,6 @@ size_t SerializedNavigationEntry::EstimateMemoryUsage() const {
       EstimateMemoryUsage(title_) +
       EstimateMemoryUsage(encoded_page_state_) +
       EstimateMemoryUsage(original_request_url_) +
-      EstimateMemoryUsage(search_terms_) +
       EstimateMemoryUsage(favicon_url_) +
       EstimateMemoryUsage(redirect_chain_) +
       EstimateMemoryUsage(content_pack_categories_) +
