@@ -26,7 +26,7 @@ class ViewsExamples : public service_manager::Service,
     registry_.AddInterface<mash::mojom::Launchable>(
         base::Bind(&ViewsExamples::Create, base::Unretained(this)));
   }
-  ~ViewsExamples() override {}
+  ~ViewsExamples() override = default;
 
  private:
   // service_manager::Service:

@@ -193,7 +193,7 @@ class SimpleWM::FrameView : public views::WidgetDelegateView,
       : client_window_(client_window) {
     client_window_->AddObserver(this);
   }
-  ~FrameView() override {}
+  ~FrameView() override = default;
 
   void Init() {
     move_event_handler_ =
@@ -258,7 +258,7 @@ class SimpleWM::WorkspaceLayoutManager : public aura::WindowObserver {
  public:
   explicit WorkspaceLayoutManager(aura::Window* window_root)
       : window_root_(window_root) {}
-  ~WorkspaceLayoutManager() override {}
+  ~WorkspaceLayoutManager() override = default;
 
  private:
   // aura::WindowObserver:
@@ -305,7 +305,7 @@ class SimpleWM::DisplayLayoutManager : public aura::LayoutManager {
       : display_root_(display_root),
         window_root_(window_root),
         window_list_view_(window_list_view) {}
-  ~DisplayLayoutManager() override {}
+  ~DisplayLayoutManager() override = default;
 
  private:
   // aura::LayoutManager:
@@ -344,7 +344,7 @@ class SimpleWM::DisplayLayoutManager : public aura::LayoutManager {
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleWM, public:
 
-SimpleWM::SimpleWM() {}
+SimpleWM::SimpleWM() = default;
 
 SimpleWM::~SimpleWM() {
   // WindowTreeHost uses state from WindowTreeClient, so destroy it first.
