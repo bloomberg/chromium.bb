@@ -12,6 +12,10 @@
 
 namespace blink {
 
+// Spec links:
+// [Parsing] https://html.spec.whatwg.org/#parsing-xhtml-documents
+// [Prepare] https://html.spec.whatwg.org/#prepare-a-script
+
 XMLParserScriptRunner::XMLParserScriptRunner(XMLParserScriptRunnerHost* host)
     : host_(host) {}
 
@@ -21,7 +25,6 @@ XMLParserScriptRunner::~XMLParserScriptRunner() {
 
 void XMLParserScriptRunner::Trace(Visitor* visitor) {
   visitor->Trace(parser_blocking_script_);
-  visitor->Trace(script_element_);
   visitor->Trace(host_);
   PendingScriptClient::Trace(visitor);
 }
@@ -41,16 +44,19 @@ void XMLParserScriptRunner::PendingScriptFinished(
 
   pending_script->StopWatchingForLoad();
 
-  ScriptLoader* script_loader = script_element_->Loader();
-  script_element_ = nullptr;
-
+  ScriptLoader* script_loader = pending_script->GetElement()->Loader();
   DCHECK(script_loader);
   CHECK_EQ(script_loader->GetScriptType(), ScriptType::kClassic);
 
+  // [Parsing] 4. Execute the pending parsing-blocking script. [spec text]
   script_loader->ExecuteScriptBlock(pending_script, NullURL());
 
-  script_element_ = nullptr;
+  // [Parsing] 5. There is no longer a pending parsing-blocking script. [spec
+  // text]
+  DCHECK(!parser_blocking_script_);
 
+  // [Parsing] 3. Unblock this instance of the XML parser, such that tasks that
+  // invoke it can again be run. [spec text]
   host_->NotifyScriptExecuted();
 }
 
@@ -68,6 +74,9 @@ void XMLParserScriptRunner::ProcessScriptElement(
   ScriptLoader* script_loader = script_element_base->Loader();
   DCHECK(script_loader);
 
+  // [Parsing] When the element's end tag is subsequently parsed, the user agent
+  // must perform a microtask checkpoint, and then prepare the script element.
+  // [spec text]
   bool success = script_loader->PrepareScript(
       script_start_position, ScriptLoader::kAllowLegacyTypeInTypeAttribute);
 
@@ -83,19 +92,38 @@ void XMLParserScriptRunner::ProcessScriptElement(
   if (!success)
     return;
 
+  // [Parsing] If this causes there to be a pending parsing-blocking script,
+  // then the user agent must run the following steps: [spec text]
   if (script_loader->ReadyToBeParserExecuted()) {
-    // 5th Clause, Step 23 of https://html.spec.whatwg.org/#prepare-a-script
+    // [Prepare] 5th Clause, Step 24.
+    //
+    // [Parsing] 4. Execute the pending parsing-blocking script. [spec text]
+
+    // TODO(hiroshige): XMLParserScriptRunner doesn't check style sheet that
+    // is blocking scripts and thus the script is executed immediately here,
+    // and thus Steps 1-3 are skipped.
     script_loader->ExecuteScriptBlock(script_loader->TakePendingScript(),
                                       document.Url());
   } else if (script_loader->WillBeParserExecuted()) {
-    // 1st/2nd Clauses, Step 23 of
-    // https://html.spec.whatwg.org/#prepare-a-script
+    // [Prepare] 2nd Clause, Step 24:
+    // The element is the pending parsing-blocking script of the Document
+    // of the parser that created the element. (There can only be one such
+    // script per Document at a time.) [spec text]
     parser_blocking_script_ = script_loader->TakePendingScript();
     parser_blocking_script_->MarkParserBlockingLoadStartTime();
-    script_element_ = script_element_base;
+
+    // [Parsing] 1. Block this instance of the XML parser, such that the event
+    // loop will not run tasks that invoke it. [spec text]
+    //
+    // This is done in XMLDocumentParser::EndElementNs().
+
+    // [Parsing] 2. Spin the event loop until the parser's Document has no style
+    // sheet that is blocking scripts and the pending parsing-blocking script's
+    // "ready to be parser-executed" flag is set. [spec text]
+    //
+    // TODO(hiroshige): XMLParserScriptRunner doesn't check style sheet that
+    // is blocking scripts.
     parser_blocking_script_->WatchForLoad(this);
-  } else {
-    script_element_ = nullptr;
   }
 }
 
