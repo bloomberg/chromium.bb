@@ -251,7 +251,7 @@ TEST_P(PerfTest, NSURLSessionReceivesImageLoop) {
 
   // Reject performance data from too many failures.
   if (kUseExternalUrl) {
-    CHECK(failed_iterations < iterations / 2);
+    CHECK_LE(failed_iterations, iterations / 2);
   }
 
   perf_test_results[GetParam()] = {
