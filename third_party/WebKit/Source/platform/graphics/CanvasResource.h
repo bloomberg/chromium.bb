@@ -8,6 +8,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/CanvasColorParams.h"
 #include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
+#include "platform/wtf/RefCounted.h"
 
 #ifndef CanvasResource_h
 #define CanvasResource_h
@@ -22,7 +23,7 @@ namespace blink {
 
 // Generic resource interface, used for locking (RAII) and recycling pixel
 // buffers of any type.
-class PLATFORM_EXPORT CanvasResource {
+class PLATFORM_EXPORT CanvasResource : public WTF::RefCounted<CanvasResource> {
  public:
   virtual ~CanvasResource();
   virtual void Abandon() = 0;
@@ -46,7 +47,7 @@ class PLATFORM_EXPORT CanvasResource {
 // Resource type for skia Bitmaps (RAM and texture backed)
 class PLATFORM_EXPORT CanvasResource_Skia final : public CanvasResource {
  public:
-  static std::unique_ptr<CanvasResource_Skia> Create(
+  static scoped_refptr<CanvasResource_Skia> Create(
       sk_sp<SkImage>,
       WeakPtr<WebGraphicsContext3DProviderWrapper>);
   virtual ~CanvasResource_Skia() { Abandon(); }
@@ -69,7 +70,7 @@ class PLATFORM_EXPORT CanvasResource_Skia final : public CanvasResource {
 class PLATFORM_EXPORT CanvasResource_GpuMemoryBuffer final
     : public CanvasResource {
  public:
-  static std::unique_ptr<CanvasResource_GpuMemoryBuffer> Create(
+  static scoped_refptr<CanvasResource_GpuMemoryBuffer> Create(
       const IntSize&,
       const CanvasColorParams&,
       WeakPtr<WebGraphicsContext3DProviderWrapper>);

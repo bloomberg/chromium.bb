@@ -61,12 +61,12 @@ CanvasResource_Skia::CanvasResource_Skia(
     : CanvasResource(std::move(context_provider_wrapper)),
       image_(std::move(image)) {}
 
-std::unique_ptr<CanvasResource_Skia> CanvasResource_Skia::Create(
+scoped_refptr<CanvasResource_Skia> CanvasResource_Skia::Create(
     sk_sp<SkImage> image,
     WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper) {
-  std::unique_ptr<CanvasResource_Skia> resource =
-      WTF::WrapUnique(new CanvasResource_Skia(
-          std::move(image), std::move(context_provider_wrapper)));
+  scoped_refptr<CanvasResource_Skia> resource =
+      AdoptRef(new CanvasResource_Skia(std::move(image),
+                                       std::move(context_provider_wrapper)));
   if (resource->IsValid())
     return resource;
   return nullptr;
@@ -134,14 +134,14 @@ CanvasResource_GpuMemoryBuffer::CanvasResource_GpuMemoryBuffer(
   gr->resetContext(kTextureBinding_GrGLBackendState);
 }
 
-std::unique_ptr<CanvasResource_GpuMemoryBuffer>
+scoped_refptr<CanvasResource_GpuMemoryBuffer>
 CanvasResource_GpuMemoryBuffer::Create(
     const IntSize& size,
     const CanvasColorParams& color_params,
     WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper) {
-  std::unique_ptr<CanvasResource_GpuMemoryBuffer> resource =
-      WTF::WrapUnique(new CanvasResource_GpuMemoryBuffer(
-          size, color_params, context_provider_wrapper));
+  scoped_refptr<CanvasResource_GpuMemoryBuffer> resource =
+      AdoptRef(new CanvasResource_GpuMemoryBuffer(size, color_params,
+                                                  context_provider_wrapper));
   if (resource->IsValid())
     return resource;
   return nullptr;
