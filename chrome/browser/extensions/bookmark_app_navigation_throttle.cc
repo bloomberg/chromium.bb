@@ -156,6 +156,17 @@ BookmarkAppNavigationThrottle::ProcessNavigation(bool is_redirect) {
     return content::NavigationThrottle::PROCEED;
   }
 
+  int32_t transition_qualifier = PageTransitionGetQualifier(transition_type);
+  if (transition_qualifier & ui::PAGE_TRANSITION_FORWARD_BACK) {
+    DVLOG(1) << "Don't intercept: Forward or back navigation.";
+    return content::NavigationThrottle::PROCEED;
+  }
+
+  if (transition_qualifier & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
+    DVLOG(1) << "Don't intercept: Address bar navigation.";
+    return content::NavigationThrottle::PROCEED;
+  }
+
   scoped_refptr<const Extension> app_for_window = GetAppForWindow();
   scoped_refptr<const Extension> target_app = GetTargetApp();
 
