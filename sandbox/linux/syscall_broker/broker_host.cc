@@ -39,18 +39,12 @@ namespace {
 // process' system calls profile to be able to loosely sandbox it.
 int sys_open(const char* pathname, int flags) {
   // Hardcode mode to rw------- when creating files.
-  int mode;
-  if (flags & O_CREAT) {
-    mode = 0600;
-  } else {
-    mode = 0;
-  }
+  int mode = (flags & O_CREAT) ? 0600 : 0;
   if (RunningOnValgrind()) {
     // Valgrind does not support AT_FDCWD, just use libc's open() in this case.
     return open(pathname, flags, mode);
-  } else {
-    return syscall(__NR_openat, AT_FDCWD, pathname, flags, mode);
   }
+  return syscall(__NR_openat, AT_FDCWD, pathname, flags, mode);
 }
 
 // Open |requested_filename| with |flags| if allowed by our policy.
@@ -110,30 +104,74 @@ void AccessFileForIPC(const BrokerPolicy& policy,
   }
 }
 
+// Perform stat(2) on |requested_filename| and marshal the result to
+// |write_pickle|.
+void StatFileForIPC(const BrokerPolicy& policy,
+                    IPCCommand command_type,
+                    const std::string& requested_filename,
+                    base::Pickle* write_pickle) {
+  DCHECK(write_pickle);
+  DCHECK(command_type == COMMAND_STAT || command_type == COMMAND_STAT64);
+  const char* file_to_access = nullptr;
+  if (!policy.GetFileNameIfAllowedToAccess(requested_filename.c_str(), F_OK,
+                                           &file_to_access)) {
+    write_pickle->WriteInt(-policy.denied_errno());
+    return;
+  }
+  if (command_type == COMMAND_STAT) {
+    struct stat sb;
+    if (stat(file_to_access, &sb) < 0) {
+      write_pickle->WriteInt(-errno);
+      return;
+    }
+    write_pickle->WriteInt(0);
+    write_pickle->WriteData(reinterpret_cast<char*>(&sb), sizeof(sb));
+  } else {
+    struct stat64 sb;
+    if (stat64(file_to_access, &sb) < 0) {
+      write_pickle->WriteInt(-errno);
+      return;
+    }
+    write_pickle->WriteInt(0);
+    write_pickle->WriteData(reinterpret_cast<char*>(&sb), sizeof(sb));
+  }
+}
+
 // Handle a |command_type| request contained in |iter| and send the reply
 // on |reply_ipc|.
-// Currently COMMAND_OPEN and COMMAND_ACCESS are supported.
 bool HandleRemoteCommand(const BrokerPolicy& policy,
                          IPCCommand command_type,
                          int reply_ipc,
                          base::PickleIterator iter) {
-  // Currently all commands have two arguments: filename and flags.
+  // Currently all commands have filename as the first arg.
   std::string requested_filename;
-  int flags = 0;
-  if (!iter.ReadString(&requested_filename) || !iter.ReadInt(&flags))
+  if (!iter.ReadString(&requested_filename))
     return false;
 
   base::Pickle write_pickle;
   std::vector<int> opened_files;
 
   switch (command_type) {
-    case COMMAND_ACCESS:
+    case COMMAND_ACCESS: {
+      int flags = 0;
+      if (!iter.ReadInt(&flags))
+        return false;
       AccessFileForIPC(policy, requested_filename, flags, &write_pickle);
       break;
-    case COMMAND_OPEN:
+    }
+    case COMMAND_OPEN: {
+      int flags = 0;
+      if (!iter.ReadInt(&flags))
+        return false;
       OpenFileForIPC(
           policy, requested_filename, flags, &write_pickle, &opened_files);
       break;
+    }
+    case COMMAND_STAT:
+    case COMMAND_STAT64: {
+      StatFileForIPC(policy, command_type, requested_filename, &write_pickle);
+      break;
+    }
     default:
       LOG(ERROR) << "Invalid IPC command";
       break;
@@ -194,28 +232,13 @@ BrokerHost::RequestStatus BrokerHost::HandleRequest() const {
   base::PickleIterator iter(pickle);
   int command_type;
   if (iter.ReadInt(&command_type)) {
-    bool command_handled = false;
-    // Go through all the possible IPC messages.
-    switch (command_type) {
-      case COMMAND_ACCESS:
-      case COMMAND_OPEN:
-        // We reply on the file descriptor sent to us via the IPC channel.
-        command_handled = HandleRemoteCommand(
-            broker_policy_, static_cast<IPCCommand>(command_type),
-            temporary_ipc.get(), iter);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-
-    if (command_handled) {
-      return RequestStatus::SUCCESS;
-    } else {
+    bool command_handled = HandleRemoteCommand(
+        broker_policy_, static_cast<IPCCommand>(command_type),
+        temporary_ipc.get(), iter);
+    if (!command_handled)
       return RequestStatus::FAILURE;
-    }
 
-    NOTREACHED();
+    return RequestStatus::SUCCESS;
   }
 
   LOG(ERROR) << "Error parsing IPC request";
