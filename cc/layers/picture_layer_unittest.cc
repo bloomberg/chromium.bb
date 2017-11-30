@@ -453,5 +453,61 @@ TEST(PictureLayerTest, ChangingHostsWithCollidingFrames) {
   EXPECT_EQ(gfx::Size(), layer->GetRecordingSourceForTesting()->GetSize());
 }
 
+TEST(PictureLayerTest, RecordingScaleIsCorrectlySet) {
+  gfx::Size layer_bounds(400, 400);
+  float recording_scale = 1.5f;
+
+  FakeContentLayerClient client;
+  client.set_bounds(layer_bounds);
+  // Fill layer with solid color.
+  PaintFlags solid_flags;
+  SkColor solid_color = SkColorSetARGB(255, 12, 23, 34);
+  solid_flags.setColor(solid_color);
+  client.add_draw_rect(
+      gfx::ScaleToEnclosingRect(gfx::Rect(layer_bounds), recording_scale),
+      solid_flags);
+
+  // Add 1 pixel of non solid color.
+  SkColor non_solid_color = SkColorSetARGB(128, 45, 56, 67);
+  PaintFlags non_solid_flags;
+  non_solid_flags.setColor(non_solid_color);
+  client.add_draw_rect(gfx::Rect(std::round(390 * recording_scale),
+                                 std::round(390 * recording_scale), 1, 1),
+                       non_solid_flags);
+
+  std::unique_ptr<FakeRecordingSource> recording_source_owned =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  FakeRecordingSource* recording_source = recording_source_owned.get();
+  scoped_refptr<FakePictureLayer> layer =
+      FakePictureLayer::CreateWithRecordingSource(
+          &client, std::move(recording_source_owned));
+  layer->SetBounds(layer_bounds);
+
+  FakeLayerTreeHostClient host_client;
+  TestTaskGraphRunner task_graph_runner;
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(
+      &host_client, &task_graph_runner, animation_host.get());
+  host->SetRootLayer(layer);
+
+  gfx::Rect invalidation_bounds(layer_bounds);
+  layer->SetIsDrawable(true);
+  layer->SetNeedsDisplayRect(invalidation_bounds);
+  layer->Update();
+
+  // Solid color analysis will return true since the layer tree host has the
+  // recording scale set to its default value of 1. The non solid pixel is
+  // out of bounds for the unscaled layer size in this particular case.
+  EXPECT_TRUE(recording_source->is_solid_color());
+
+  host->SetRecordingScaleFactor(recording_scale);
+  layer->SetNeedsDisplayRect(invalidation_bounds);
+  layer->Update();
+
+  // Once the recording scale is set and propogated to the recording source,
+  // the solid color analysis should work as expected and return false.
+  EXPECT_FALSE(recording_source->is_solid_color());
+}
+
 }  // namespace
 }  // namespace cc

@@ -129,8 +129,7 @@ bool PictureLayer::Update() {
         picture_layer_inputs_.client->GetApproximateUnsharedMemoryUsage();
     recording_source_->UpdateDisplayItemList(
         picture_layer_inputs_.display_list,
-        picture_layer_inputs_.painter_reported_memory_usage);
-    recording_source_->SetRecordingScaleFactor(
+        picture_layer_inputs_.painter_reported_memory_usage,
         layer_tree_host()->recording_scale_factor());
 
     SetNeedsPushProperties();
@@ -173,8 +172,9 @@ sk_sp<SkPicture> PictureLayer::GetPicture() const {
 
   recording_source.UpdateAndExpandInvalidation(
       &recording_invalidation, layer_size, new_recorded_viewport);
-  recording_source.UpdateDisplayItemList(display_list,
-                                         painter_reported_memory_usage);
+  recording_source.UpdateDisplayItemList(
+      display_list, painter_reported_memory_usage,
+      layer_tree_host()->recording_scale_factor());
 
   scoped_refptr<RasterSource> raster_source =
       recording_source.CreateRasterSource();

@@ -4540,7 +4540,8 @@ void GetClientDataAndUpdateInvalidation(RecordingSource* recording_source,
   recording_source->UpdateAndExpandInvalidation(&invalidation, layer_bounds,
                                                 new_recorded_viewport);
   recording_source->UpdateDisplayItemList(display_list,
-                                          painter_reported_memory_usage);
+                                          painter_reported_memory_usage,
+                                          1.f /** recording_scale_factor */);
 }
 
 void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid,
