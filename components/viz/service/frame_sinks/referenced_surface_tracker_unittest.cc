@@ -32,10 +32,10 @@ base::flat_set<SurfaceId> MakeReferenceSet(
   return base::flat_set<SurfaceId>(surface_ids, base::KEEP_FIRST_OF_DUPES);
 }
 
-SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
+SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t parent_id) {
   return SurfaceId(
       frame_sink_id,
-      LocalSurfaceId(local_id, base::UnguessableToken::Deserialize(0, 1u)));
+      LocalSurfaceId(parent_id, base::UnguessableToken::Deserialize(0, 1u)));
 }
 
 }  // namespace

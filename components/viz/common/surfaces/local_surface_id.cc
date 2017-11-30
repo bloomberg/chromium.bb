@@ -9,7 +9,7 @@
 namespace viz {
 
 std::string LocalSurfaceId::ToString() const {
-  return base::StringPrintf("LocalSurfaceId(%d, %s" PRIu64 ")", local_id_,
+  return base::StringPrintf("LocalSurfaceId(%d, %s" PRIu64 ")", parent_id_,
                             nonce_.ToString().c_str());
 }
 

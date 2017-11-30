@@ -9,7 +9,7 @@ import "mojo/common/unguessable_token.mojom";
 struct LocalSurfaceId {
   // An identifier allocated by the client uniquely identifying a surface within
   // a client process.
-  uint32 local_id;
+  uint32 parent_id;
 
   mojo.common.mojom.UnguessableToken nonce;
 };
