@@ -58,6 +58,11 @@ void ExtensionSettingsUIBrowserTest::InstallPlatformApp() {
       test_data_dir_.AppendASCII("platform_apps").AppendASCII("minimal")));
 }
 
+void ExtensionSettingsUIBrowserTest::InstallExtensionWithInPageOptions() {
+  EXPECT_TRUE(
+      InstallExtension(test_data_dir_.AppendASCII("options_page_in_view")));
+}
+
 void ExtensionSettingsUIBrowserTest::AddManagedPolicyProvider() {
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(browser()->profile());

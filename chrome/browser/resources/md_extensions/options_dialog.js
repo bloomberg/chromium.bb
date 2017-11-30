@@ -5,13 +5,6 @@
 cr.define('extensions', function() {
   'use strict';
 
-  const MAX_HEIGHT = 600;
-  const MAX_WIDTH = 600;
-  const MIN_HEIGHT = 300;
-  const MIN_WIDTH = 300;
-  const HEADER_EXTRA_SPACING = 50;  // 40 from x-button + 10 from img margin.
-  const DIALOG_PADDING = 32;        // Padding from cr-dialog's .body styling.
-
   const OptionsDialog = Polymer({
     is: 'extensions-options-dialog',
 
@@ -36,32 +29,22 @@ cr.define('extensions', function() {
         this.extensionOptions_ = document.createElement('ExtensionOptions');
       this.extensionOptions_.extension = this.data_.id;
       this.extensionOptions_.onclose = this.close.bind(this);
-      const bounded = function(min, max, val) {
-        return Math.min(Math.max(min, val), max);
-      };
 
       const onSizeChanged = e => {
-        const minHeaderWidth =
-            this.$$('#icon-and-name-wrapper img').offsetWidth +
-            this.$$('#icon-and-name-wrapper span').offsetWidth +
-            HEADER_EXTRA_SPACING;
-        const minWidth = Math.max(minHeaderWidth, MIN_WIDTH);
-        this.extensionOptions_.style.height =
-            bounded(MIN_HEIGHT, MAX_HEIGHT, e.height) + 'px';
-        this.extensionOptions_.style.width =
-            bounded(minWidth, MAX_WIDTH, e.width) + 'px';
-        this.$.dialog.style.width =
-            (bounded(minWidth, MAX_WIDTH, e.width) + DIALOG_PADDING) + 'px';
+        this.extensionOptions_.style.height = e.height + 'px';
+        this.extensionOptions_.style.width = e.width + 'px';
+
+        if (!this.$$('dialog').open)
+          this.$$('dialog').showModal();
       };
 
       this.extensionOptions_.onpreferredsizechanged = onSizeChanged;
       this.$.body.appendChild(this.extensionOptions_);
-      this.$$('dialog').showModal();
-      onSizeChanged({height: 0, width: 0});
     },
 
     close: function() {
       this.$$('dialog').close();
+      this.extensionOptions_.onpreferredsizechanged = null;
     },
 
     /** @private */

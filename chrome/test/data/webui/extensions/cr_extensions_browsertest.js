@@ -507,8 +507,14 @@ TEST_F('CrExtensionsPackDialogTest', 'PackWarning', function() {
 
 var CrExtensionsOptionsDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
+  testGenPreamble() {
+    GEN('  InstallExtensionWithInPageOptions();');
+  }
+
+  /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '../settings/test_util.js',
       'extension_options_dialog_test.js',
     ]);
   }
