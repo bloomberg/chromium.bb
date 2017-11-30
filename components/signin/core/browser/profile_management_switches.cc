@@ -39,6 +39,7 @@ bool IsDiceEnabledForPrefValue(bool dice_pref_value) {
     case AccountConsistencyMethod::kMirror:
     case AccountConsistencyMethod::kDiceFixAuthErrors:
     case AccountConsistencyMethod::kDicePrepareMigration:
+    case AccountConsistencyMethod::kDicePrepareMigrationChromeSyncEndpoint:
       return false;
     case AccountConsistencyMethod::kDice:
       return true;
@@ -72,6 +73,9 @@ const char kAccountConsistencyFeatureMethodDiceFixAuthErrors[] =
     "dice_fix_auth_errors";
 const char kAccountConsistencyFeatureMethodDicePrepareMigration[] =
     "dice_prepare_migration";
+const char
+    kAccountConsistencyFeatureMethodDicePrepareMigrationChromeSyncEndpoint[] =
+        "dice_prepare_migration_new_endpoint";
 const char kAccountConsistencyFeatureMethodDiceMigration[] = "dice_migration";
 const char kAccountConsistencyFeatureMethodDice[] = "dice";
 
@@ -116,7 +120,11 @@ AccountConsistencyMethod GetAccountConsistencyMethod() {
     return AccountConsistencyMethod::kDiceFixAuthErrors;
   else if (method_value == kAccountConsistencyFeatureMethodDicePrepareMigration)
     return AccountConsistencyMethod::kDicePrepareMigration;
-  else if (method_value == kAccountConsistencyFeatureMethodDiceMigration)
+  else if (
+      method_value ==
+      kAccountConsistencyFeatureMethodDicePrepareMigrationChromeSyncEndpoint) {
+    return AccountConsistencyMethod::kDicePrepareMigrationChromeSyncEndpoint;
+  } else if (method_value == kAccountConsistencyFeatureMethodDiceMigration)
     return AccountConsistencyMethod::kDiceMigration;
   else if (method_value == kAccountConsistencyFeatureMethodDice)
     return AccountConsistencyMethod::kDice;
@@ -134,6 +142,12 @@ bool IsDicePrepareMigrationEnabled() {
   return AccountConsistencyMethodGreaterOrEqual(
       GetAccountConsistencyMethod(),
       AccountConsistencyMethod::kDicePrepareMigration);
+}
+
+bool IsDicePrepareMigrationChromeSyncEndpointEnabled() {
+  return AccountConsistencyMethodGreaterOrEqual(
+      GetAccountConsistencyMethod(),
+      AccountConsistencyMethod::kDicePrepareMigrationChromeSyncEndpoint);
 }
 
 bool IsDiceMigrationEnabled() {

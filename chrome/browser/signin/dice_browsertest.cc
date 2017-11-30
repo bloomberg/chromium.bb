@@ -35,6 +35,7 @@
 #include "components/signin/core/browser/dice_header_helper.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/base/sync_prefs.h"
@@ -229,8 +230,8 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
 
   explicit DiceBrowserTestBase(
       AccountConsistencyMethod account_consistency_method)
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
-        account_consistency_method_(account_consistency_method),
+      : scoped_account_consistency_(account_consistency_method),
+        https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         token_requested_(false),
         refresh_token_available_(false),
         token_revoked_notification_count_(0),
@@ -261,35 +262,6 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
 
     scoped_site_isolation_.InitAndEnableFeature(
         features::kSignInProcessIsolation);
-
-    // DICE field trial params:
-    std::string dice_method_name;
-    switch (account_consistency_method_) {
-      case signin::AccountConsistencyMethod::kDiceFixAuthErrors:
-        dice_method_name =
-            signin::kAccountConsistencyFeatureMethodDiceFixAuthErrors;
-        break;
-      case signin::AccountConsistencyMethod::kDicePrepareMigration:
-        dice_method_name =
-            signin::kAccountConsistencyFeatureMethodDicePrepareMigration;
-        break;
-      case signin::AccountConsistencyMethod::kDiceMigration:
-        dice_method_name =
-            signin::kAccountConsistencyFeatureMethodDiceMigration;
-        break;
-      case signin::AccountConsistencyMethod::kDice:
-        dice_method_name = signin::kAccountConsistencyFeatureMethodDice;
-        break;
-      case signin::AccountConsistencyMethod::kDisabled:
-      case signin::AccountConsistencyMethod::kMirror:
-        NOTREACHED();
-        return;
-    }
-
-    std::map<std::string, std::string> parameters = {
-        {signin::kAccountConsistencyFeatureMethodParameter, dice_method_name}};
-    scoped_dice_.InitAndEnableFeatureWithParameters(
-        signin::kAccountConsistencyFeature, parameters);
   }
 
   // Navigates to the given path on the test server.
@@ -388,9 +360,6 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     // stable state.
     reconcilor->AbortReconcile();
     reconcilor->AddObserver(this);
-
-    ASSERT_EQ(account_consistency_method_,
-              signin::GetAccountConsistencyMethod());
   }
 
   void TearDownOnMainThread() override {
@@ -502,9 +471,8 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   }
 
   base::test::ScopedFeatureList scoped_site_isolation_;
-  base::test::ScopedFeatureList scoped_dice_;
+  signin::ScopedAccountConsistency scoped_account_consistency_;
   net::EmbeddedTestServer https_server_;
-  AccountConsistencyMethod account_consistency_method_;
   bool token_requested_;
   bool refresh_token_available_;
   int token_revoked_notification_count_;
