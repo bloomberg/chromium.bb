@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contextualsearch;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -36,6 +37,7 @@ public class ContextualSearchSelectionController {
         LONG_PRESS
     }
 
+    private static final String TAG = "ContextualSearch";
     private static final String CONTAINS_WORD_PATTERN = "(\\w|\\p{L}|\\p{N})+";
     // A URL is:
     //   1:    scheme://
@@ -119,6 +121,9 @@ public class ContextualSearchSelectionController {
         mHandler = handler;
         mPxToDp = 1.f / mActivity.getResources().getDisplayMetrics().density;
         mContainsWordPattern = Pattern.compile(CONTAINS_WORD_PATTERN);
+        // TODO(donnd): remove when behind-the-flag bug fixed (crbug.com/786589).
+        Log.i(TAG, "Tap suppression enabled: %s",
+                ContextualSearchFieldTrial.isContextualSearchMlTapSuppressionEnabled());
     }
 
     /**
@@ -402,6 +407,8 @@ public class ContextualSearchSelectionController {
         boolean shouldSuppressTapBasedOnRanker = (tapPrediction == AssistRankerPrediction.SUPPRESS)
                 && ContextualSearchFieldTrial.isContextualSearchMlTapSuppressionEnabled();
         if (shouldSuppressTapBasedOnHeuristics || shouldSuppressTapBasedOnRanker) {
+            Log.i(TAG, "Tap suppressed due to Ranker: %s, heuristics: %s",
+                    shouldSuppressTapBasedOnRanker, shouldSuppressTapBasedOnHeuristics);
             mHandler.handleSuppressedTap();
         } else {
             mHandler.handleNonSuppressedTap(mTapTimeNanoseconds);
