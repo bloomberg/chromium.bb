@@ -85,6 +85,9 @@
 #include "inflate.h"
 #include "contrib/optimizations/inffast_chunky.h"
 #include "contrib/optimizations/chunkcopy.h"
+#if defined(USE_ARMV8_CRC32)
+#include "contrib/optimizations/arm/arm_features.h"
+#endif
 
 #ifdef MAKEFIXED
 #  ifndef BUILDFIXED
@@ -201,6 +204,10 @@ int stream_size;
 {
     int ret;
     struct inflate_state FAR *state;
+
+#if defined(USE_ARMV8_CRC32)
+    arm_check_features();
+#endif
 
     if (version == Z_NULL || version[0] != ZLIB_VERSION[0] ||
         stream_size != (int)(sizeof(z_stream)))

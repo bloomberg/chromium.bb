@@ -51,6 +51,9 @@
 #include <assert.h>
 #include "deflate.h"
 #include "x86.h"
+#if defined(USE_ARMV8_CRC32)
+#include "contrib/optimizations/arm/arm_features.h"
+#endif
 
 const char deflate_copyright[] =
    " deflate 1.2.11 Copyright 1995-2017 Jean-loup Gailly and Mark Adler ";
@@ -283,7 +286,11 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
      * output size for (length,distance) codes is <= 24 bits.
      */
 
+#if defined(ADLER32_SIMD_SSE3)
     x86_check_features();
+#elif defined(USE_ARMV8_CRC32)
+    arm_check_features();
+#endif
 
     if (version == Z_NULL || version[0] != my_version[0] ||
         stream_size != sizeof(z_stream)) {
