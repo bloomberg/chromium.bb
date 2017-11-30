@@ -157,10 +157,12 @@ void AppListPresenterImpl::UpdateYPositionAndOpacity(int y_position_in_screen,
 void AppListPresenterImpl::EndDragFromShelf(
     mojom::AppListState app_list_state) {
   if (view_) {
-    if (app_list_state == mojom::AppListState::CLOSED)
+    if (app_list_state == mojom::AppListState::CLOSED ||
+        view_->app_list_state() == AppListViewState::CLOSED) {
       view_->Dismiss();
-    else
+    } else {
       view_->SetState(AppListViewState(app_list_state));
+    }
     view_->SetIsInDrag(false);
     view_->DraggingLayout();
   }
