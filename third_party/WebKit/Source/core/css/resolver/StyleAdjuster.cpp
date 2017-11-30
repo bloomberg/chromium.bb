@@ -54,6 +54,7 @@
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg_names.h"
 #include "platform/Length.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/wtf/Assertions.h"
 
@@ -603,6 +604,15 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     if (!StyleResolver::HasAuthorBackground(state)) {
       style.MutableBackgroundInternal().ClearImage();
     }
+  }
+
+  // TODO(layout-dev): Once LayoutnG handles inline content editable, we should
+  // get rid of following code fragment.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled() &&
+      style.UserModify() != EUserModify::kReadOnly &&
+      style.Display() == EDisplay::kInline &&
+      parent_style.UserModify() == EUserModify::kReadOnly) {
+    style.SetDisplay(EDisplay::kInlineBlock);
   }
 }
 }  // namespace blink
