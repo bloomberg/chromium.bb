@@ -232,7 +232,6 @@ void MailboxManagerSync::ProduceTexture(const Mailbox& mailbox,
       scoped_allow_cross_thread_ref_count_access;
 
   Texture* texture = static_cast<Texture*>(texture_base);
-  DCHECK(texture != nullptr);
 
   TextureToGroupMap::iterator tex_it = texture_to_group_.find(texture);
   TextureGroup* group_for_mailbox = TextureGroup::FromName(mailbox);
