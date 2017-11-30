@@ -9,6 +9,7 @@
 
 #include "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_result_loading.h"
 #import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
+#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 
 @protocol ActivityServicePositioner;
@@ -29,6 +30,7 @@ class WebState;
 // Coordinator to run a toolbar -- a UI element housing controls.
 @interface ToolbarCoordinator : NSObject<OmniboxFocuser,
                                          QRScannerResultLoading,
+                                         ToolsMenuPresentationProvider,
                                          VoiceSearchControllerDelegate>
 
 // Weak reference to ChromeBrowserState;

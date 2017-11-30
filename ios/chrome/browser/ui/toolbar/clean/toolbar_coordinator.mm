@@ -425,6 +425,13 @@
   }
 }
 
+#pragma mark - ToolsMenuPresentationProvider
+
+- (UIButton*)presentingButtonForToolsMenuCoordinator:
+    (ToolsMenuCoordinator*)coordinator {
+  return self.toolbarViewController.toolsMenuButton;
+}
+
 #pragma mark - TTS
 
 // Starts observing the NSNotifications from the Text-To-Speech player.
