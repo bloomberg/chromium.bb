@@ -27,12 +27,14 @@ chrome_ios_eg_test("ios_chrome_integration_egtests") {
     "//ios/chrome/browser/autofill:eg_tests",
     "//ios/chrome/browser/context_menu:eg_tests",
     "//ios/chrome/browser/device_sharing:eg_tests",
+    "//ios/chrome/browser/feature_engagement:eg_tests",
     "//ios/chrome/browser/metrics:eg_tests",
     "//ios/chrome/browser/net:eg_tests",
     "//ios/chrome/browser/ntp_tiles:eg_tests",
     "//ios/chrome/browser/passwords:eg_tests",
   ]
 }
+
 chrome_ios_eg_test("ios_chrome_payments_egtests") {
   deps = [
     ":test_support",
