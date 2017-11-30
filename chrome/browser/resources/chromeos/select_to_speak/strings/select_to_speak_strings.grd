@@ -177,8 +177,11 @@
       <message desc="Label for a pink highlight color in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_COLOR_PINK">
         Pink
       </message>
-      <message desc="Example of a word highlight in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_EXAMPLE">
-        Example highlight
+      <message desc="Example of a word highlight on a dark background in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_DARK">
+        Dark background
+      </message>
+      <message desc="Example of a word highlight on a light background in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_LIGHT">
+        Light background
       </message>
     </messages>
   </release>
