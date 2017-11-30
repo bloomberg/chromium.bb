@@ -15,7 +15,9 @@ import org.chromium.base.annotations.NativeClassQualifiedName;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 // This class serves as a reference test for the bindings generator, and as example documentation
 // for how to use the jni generator.
@@ -143,6 +145,11 @@ class SampleForTests {
     @CalledByNative
     void packagePrivateJavaMethod() {
     }
+
+    // Method signature with generics in params.
+    @CalledByNative
+    public void methodWithGenericParams(
+            Map<String, Map<String, String>> foo, LinkedList<Integer> bar) {}
 
     // Constructors will be exported to C++ as:
     // Java_SampleForTests_Constructor(JNIEnv* env, jint foo, jint bar)

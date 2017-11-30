@@ -301,6 +301,32 @@ static void Java_SampleForTests_packagePrivateJavaMethod(JNIEnv* env, const
 }
 
 static base::subtle::AtomicWord
+    g_org_chromium_example_jni_1generator_SampleForTests_methodWithGenericParams
+    = 0;
+static void Java_SampleForTests_methodWithGenericParams(JNIEnv* env, const
+    base::android::JavaRef<jobject>& obj, const base::android::JavaRef<jobject>&
+    foo,
+    const base::android::JavaRef<jobject>& bar) {
+  CHECK_CLAZZ(env, obj.obj(),
+      org_chromium_example_jni_1generator_SampleForTests_clazz(env));
+  jmethodID method_id =
+      base::android::MethodID::LazyGet<
+      base::android::MethodID::TYPE_INSTANCE>(
+      env, org_chromium_example_jni_1generator_SampleForTests_clazz(env),
+      "methodWithGenericParams",
+"("
+"Ljava/util/Map;"
+"Ljava/util/LinkedList;"
+")"
+"V",
+&g_org_chromium_example_jni_1generator_SampleForTests_methodWithGenericParams);
+
+     env->CallVoidMethod(obj.obj(),
+          method_id, foo.obj(), bar.obj());
+  jni_generator::CheckException(env);
+}
+
+static base::subtle::AtomicWord
     g_org_chromium_example_jni_1generator_SampleForTests_Constructor = 0;
 static base::android::ScopedJavaLocalRef<jobject>
     Java_SampleForTests_Constructor(JNIEnv* env, JniIntWrapper foo,
