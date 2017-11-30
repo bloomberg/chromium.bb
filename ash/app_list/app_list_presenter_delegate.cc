@@ -260,7 +260,7 @@ void AppListPresenterDelegate::OnGestureEvent(ui::GestureEvent* event) {
 // AppListPresenterDelegate, keyboard::KeyboardControllerObserver
 // implementation:
 
-void AppListPresenterDelegate::OnKeyboardBoundsChanging(
+void AppListPresenterDelegate::OnKeyboardWorkspaceOccludedBoundsChanging(
     const gfx::Rect& new_bounds) {
   UpdateBounds();
 }
