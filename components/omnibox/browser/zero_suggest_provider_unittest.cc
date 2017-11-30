@@ -333,6 +333,8 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedNavigateToSearchPage) {
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
   CreatePersonalizedFieldTrial();
+  EXPECT_CALL(*client_.get(), IsAuthenticated())
+      .WillRepeatedly(testing::Return(true));
 
   // Ensure the cache is empty.
   PrefService* prefs = client_->GetPrefs();
@@ -368,6 +370,8 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
   CreatePersonalizedFieldTrial();
+  EXPECT_CALL(*client_.get(), IsAuthenticated())
+      .WillRepeatedly(testing::Return(true));
 
   std::string url("http://www.cnn.com/");
   AutocompleteInput input(base::ASCIIToUTF16(url),
@@ -415,6 +419,8 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   CreatePersonalizedFieldTrial();
+  EXPECT_CALL(*client_.get(), IsAuthenticated())
+      .WillRepeatedly(testing::Return(true));
 
   std::string url("http://www.cnn.com/");
   AutocompleteInput input(base::ASCIIToUTF16(url),

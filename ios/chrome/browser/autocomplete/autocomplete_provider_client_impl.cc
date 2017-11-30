@@ -10,6 +10,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -22,6 +23,7 @@
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 
 AutocompleteProviderClientImpl::AutocompleteProviderClientImpl(
@@ -154,6 +156,12 @@ bool AutocompleteProviderClientImpl::TabSyncEnabledAndUnencrypted() const {
   return syncer::IsTabSyncEnabledAndUnencrypted(
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_),
       browser_state_->GetPrefs());
+}
+
+bool AutocompleteProviderClientImpl::IsAuthenticated() const {
+  SigninManagerBase* signin_manager =
+      ios::SigninManagerFactory::GetForBrowserState(browser_state_);
+  return signin_manager != nullptr && signin_manager->IsAuthenticated();
 }
 
 void AutocompleteProviderClientImpl::Classify(
