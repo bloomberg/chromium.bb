@@ -21,6 +21,7 @@ class RefCountedMemory;
 }
 
 namespace ui {
+class Clipboard;
 class OSExchangeData;
 }
 
@@ -61,6 +62,9 @@ class DataOffer final : public ui::PropertyHandler {
   // the mount point namespace of clinet process.
   void SetDropData(FileHelper* file_helper, const ui::OSExchangeData& data);
 
+  // Sets the clipboard data from |data| to the DataOffer object.
+  void SetClipboardData(FileHelper* file_helper, const ui::Clipboard& data);
+
   // Sets the drag and drop actions which is offered by data source to the
   // DataOffer object.
   void SetSourceActions(const base::flat_set<DndAction>& source_actions);
@@ -71,7 +75,7 @@ class DataOffer final : public ui::PropertyHandler {
   DataOfferDelegate* const delegate_;
 
   // Map between mime type and drop data bytes.
-  base::flat_map<std::string, scoped_refptr<base::RefCountedMemory>> drop_data_;
+  base::flat_map<std::string, scoped_refptr<base::RefCountedMemory>> data_;
   base::flat_set<DndAction> source_actions_;
   DndAction dnd_action_;
   base::ObserverList<DataOfferObserver> observers_;
