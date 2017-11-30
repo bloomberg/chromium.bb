@@ -374,6 +374,10 @@ void WebRuntimeFeatures::EnableRenderingPipelineThrottling(bool enable) {
   RuntimeEnabledFeatures::SetRenderingPipelineThrottlingEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableRequireCSSExtensionForFile(bool enable) {
+  RuntimeEnabledFeatures::SetRequireCSSExtensionForFileEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableResourceLoadScheduler(bool enable) {
   RuntimeEnabledFeatures::SetResourceLoadSchedulerEnabled(enable);
 }

@@ -304,7 +304,7 @@ void CSSPreloaderResourceClient::ScanCSS(
   // augmented to take care of this case without performing an additional
   // copy.
   double start_time = MonotonicallyIncreasingTimeMS();
-  const String& chunk = resource->SheetText();
+  const String& chunk = resource->SheetText(nullptr);
   if (chunk.IsNull())
     return;
   CSSPreloadScanner css_preload_scanner;

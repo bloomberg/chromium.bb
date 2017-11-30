@@ -17101,6 +17101,8 @@ Called by update_net_error_codes.py.-->
   <int value="2253" label="V8RTCPeerConnection_GetReceivers_Method"/>
   <int value="2254" label="V8RTCPeerConnection_AddTrack_Method"/>
   <int value="2255" label="V8RTCPeerConnection_RemoveTrack_Method"/>
+  <int value="2256" label="LocalCSSFile"/>
+  <int value="2257" label="LocalCSSFileExtensionRejected"/>
 </enum>
 
 <enum name="FeedbackSource">

@@ -544,6 +544,11 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                   "PaymentRequest's supportedMethods taking an array",
                   "a single string", M64, "5177301645918208")};
 
+    case WebFeature::kLocalCSSFileExtensionRejected:
+      return {"LocalCSSFileExtensionRejected", M64,
+              String("CSS cannot be loaded from `file:` URLs unless they end "
+                     "in a `.css` file extension.")};
+
     case WebFeature::kWebAudioDezipperGainNodeGain:
       return {"WebAudioDezipperGainNodeGain", Unknown,
               DeprecatedWebAudioDezippering("GainNode.gain")};

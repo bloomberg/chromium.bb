@@ -74,6 +74,7 @@ CONTENT_EXPORT extern const base::Feature kPWAFullCodeCache;
 CONTENT_EXPORT extern const base::Feature kRendererSideResourceScheduler;
 CONTENT_EXPORT extern const base::Feature kRenderingPipelineThrottling;
 CONTENT_EXPORT extern const base::Feature kReportRendererPeakMemoryStats;
+CONTENT_EXPORT extern const base::Feature kRequireCSSExtensionForFile;
 CONTENT_EXPORT extern const base::Feature kResourceLoadScheduler;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
 CONTENT_EXPORT

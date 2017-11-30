@@ -27,6 +27,7 @@
 #include "core/loader/resource/CSSStyleSheetResource.h"
 
 #include "core/css/StyleSheetContents.h"
+#include "core/frame/WebFeature.h"
 #include "core/loader/resource/StyleSheetResourceClient.h"
 #include "platform/SharedBuffer.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -36,6 +37,7 @@
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/network/http_names.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/Time.h"
@@ -124,8 +126,9 @@ void CSSStyleSheetResource::DidAddClient(ResourceClient* c) {
 }
 
 const String CSSStyleSheetResource::SheetText(
+    const CSSParserContext* parser_context,
     MIMETypeCheck mime_type_check) const {
-  if (!CanUseSheet(mime_type_check))
+  if (!CanUseSheet(parser_context, mime_type_check))
     return String();
 
   // Use cached decoded sheet text when available
@@ -194,9 +197,37 @@ void CSSStyleSheetResource::DestroyDecodedDataForFailedRevalidation() {
   DestroyDecodedDataIfPossible();
 }
 
-bool CSSStyleSheetResource::CanUseSheet(MIMETypeCheck mime_type_check) const {
+bool CSSStyleSheetResource::CanUseSheet(const CSSParserContext* parser_context,
+                                        MIMETypeCheck mime_type_check) const {
   if (ErrorOccurred())
     return false;
+
+  // For `file:` URLs, we may need to be a little more strict than the below.
+  // Though we'll likely change this in the future, for the moment we're going
+  // to enforce a file-extension requirement on stylesheets loaded from `file:`
+  // URLs and see how far it gets us.
+  KURL sheet_url = GetResponse().Url();
+  if (sheet_url.IsLocalFile()) {
+    if (parser_context) {
+      parser_context->Count(WebFeature::kLocalCSSFile);
+    }
+    // Grab |sheet_url|'s filename's extension (if present), and check whether
+    // or not it maps to a `text/css` MIME type:
+    String extension;
+    int last_dot = sheet_url.LastPathComponent().ReverseFind('.');
+    if (last_dot != -1)
+      extension = sheet_url.LastPathComponent().Substring(last_dot + 1);
+    if (!EqualIgnoringASCIICase(
+            MIMETypeRegistry::GetMIMETypeForExtension(extension), "text/css")) {
+      if (parser_context) {
+        parser_context->CountDeprecation(
+            WebFeature::kLocalCSSFileExtensionRejected);
+      }
+      if (RuntimeEnabledFeatures::RequireCSSExtensionForFileEnabled()) {
+        return false;
+      }
+    }
+  }
 
   // This check exactly matches Firefox. Note that we grab the Content-Type
   // header directly because we want to see what the value is BEFORE content

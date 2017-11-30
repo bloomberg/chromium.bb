@@ -342,7 +342,7 @@ bool InspectorPageAgent::CachedResourceContent(Resource* cached_resource,
     case Resource::kCSSStyleSheet:
       MaybeEncodeTextContent(
           ToCSSStyleSheetResource(cached_resource)
-              ->SheetText(CSSStyleSheetResource::MIMETypeCheck::kLax),
+              ->SheetText(nullptr, CSSStyleSheetResource::MIMETypeCheck::kLax),
           cached_resource->ResourceBuffer(), result, base64_encoded);
       return true;
     case Resource::kScript:
