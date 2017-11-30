@@ -156,20 +156,6 @@ class WebWidget {
     return false;
   }
 
-  // Returns the text direction at the start and end bounds of the current
-  // selection.  If the selection range is empty, it returns false.
-  virtual bool SelectionTextDirection(WebTextDirection& start,
-                                      WebTextDirection& end) const {
-    return false;
-  }
-
-  // Returns true if the selection range is nonempty and its anchor is first
-  // (i.e its anchor is its start).
-  virtual bool IsSelectionAnchorFirst() const { return false; }
-
-  // Changes the text direction of the selected input node.
-  virtual void SetTextDirection(WebTextDirection) {}
-
   // Returns true if the WebWidget is currently animating a GestureFling.
   virtual bool IsFlinging() const { return false; }
 

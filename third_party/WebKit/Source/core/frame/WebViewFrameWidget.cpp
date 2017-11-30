@@ -132,19 +132,6 @@ bool WebViewFrameWidget::SelectionBounds(WebRect& anchor,
   return web_view_->SelectionBounds(anchor, focus);
 }
 
-bool WebViewFrameWidget::SelectionTextDirection(WebTextDirection& start,
-                                                WebTextDirection& end) const {
-  return web_view_->SelectionTextDirection(start, end);
-}
-
-bool WebViewFrameWidget::IsSelectionAnchorFirst() const {
-  return web_view_->IsSelectionAnchorFirst();
-}
-
-void WebViewFrameWidget::SetTextDirection(WebTextDirection direction) {
-  return web_view_->SetTextDirection(direction);
-}
-
 bool WebViewFrameWidget::IsAcceleratedCompositingActive() const {
   return web_view_->IsAcceleratedCompositingActive();
 }

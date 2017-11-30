@@ -886,6 +886,10 @@ class CONTENT_EXPORT RenderWidget
   // recorded.
   void UpdateURLForCompositorUkm();
 
+  // This method returns the WebLocalFrame which is currently focused and
+  // belongs to the frame tree associated with this RenderWidget.
+  blink::WebLocalFrame* GetFocusedWebLocalFrameInWidget() const;
+
   // Indicates whether this widget has focus.
   bool has_focus_;
 

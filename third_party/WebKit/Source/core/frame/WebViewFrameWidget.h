@@ -69,10 +69,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void MouseCaptureLost() override;
   void SetFocus(bool) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
-  bool SelectionTextDirection(WebTextDirection& start,
-                              WebTextDirection& end) const override;
-  bool IsSelectionAnchorFirst() const override;
-  void SetTextDirection(WebTextDirection) override;
   bool IsAcceleratedCompositingActive() const override;
   bool IsWebView() const override { return false; }
   bool IsPagePopup() const override { return false; }

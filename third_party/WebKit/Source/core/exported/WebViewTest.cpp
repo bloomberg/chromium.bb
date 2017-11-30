@@ -1643,12 +1643,12 @@ TEST_P(WebViewTest, IsSelectionAnchorFirst) {
 
   web_view->SetInitialFocus(false);
   frame->SetEditableSelectionOffsets(4, 10);
-  EXPECT_TRUE(web_view->IsSelectionAnchorFirst());
+  EXPECT_TRUE(frame->IsSelectionAnchorFirst());
   WebRect anchor;
   WebRect focus;
   web_view->SelectionBounds(anchor, focus);
   frame->SelectRange(WebPoint(focus.x, focus.y), WebPoint(anchor.x, anchor.y));
-  EXPECT_FALSE(web_view->IsSelectionAnchorFirst());
+  EXPECT_FALSE(frame->IsSelectionAnchorFirst());
 }
 
 TEST_P(

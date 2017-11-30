@@ -96,10 +96,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void SetFocus(bool enable) override;
   WebColor BackgroundColor() const override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
-  bool SelectionTextDirection(WebTextDirection& start,
-                              WebTextDirection& end) const override;
-  bool IsSelectionAnchorFirst() const override;
-  void SetTextDirection(WebTextDirection) override;
   bool IsAcceleratedCompositingActive() const override;
   void WillCloseLayerTreeView() override;
   bool GetCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
@@ -181,12 +177,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;
 
   PageWidgetEventHandler* GetPageWidgetEventHandler() override;
-
-  // This method returns the focused frame belonging to this WebWidget, that
-  // is, a focused frame with the same local root as the one corresponding
-  // to this widget. It will return nullptr if no frame is focused or, the
-  // focused frame has a different local root.
-  LocalFrame* FocusedLocalFrameInWidget() const;
 
   LocalFrame* FocusedLocalFrameAvailableForIme() const;
 

@@ -137,6 +137,11 @@ class WebFrameWidget : public WebWidget {
   // by the WebFrameWidget.
   virtual void TransferActiveWheelFlingAnimation(
       const WebActiveWheelFlingParameters&) = 0;
+
+  // Returns the currently focused WebLocalFrame (if any) inside this
+  // WebFrameWidget. That is a WebLocalFrame which is focused and shares the
+  // same LocalRoot() as this WebFrameWidget's LocalRoot().
+  virtual WebLocalFrame* FocusedWebLocalFrameInWidget() const = 0;
 };
 
 }  // namespace blink

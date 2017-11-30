@@ -90,9 +90,6 @@ class WebView : protected WebWidget {
   using WebWidget::MouseCaptureLost;
   using WebWidget::SetFocus;
   using WebWidget::SelectionBounds;
-  using WebWidget::SelectionTextDirection;
-  using WebWidget::IsSelectionAnchorFirst;
-  using WebWidget::SetTextDirection;
   using WebWidget::IsAcceleratedCompositingActive;
   using WebWidget::IsWebView;
   using WebWidget::IsPagePopup;

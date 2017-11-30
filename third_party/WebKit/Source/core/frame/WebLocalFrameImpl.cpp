@@ -239,6 +239,7 @@
 #include "public/web/WebRange.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSerializedScriptValue.h"
+#include "public/web/WebTextDirection.h"
 #include "public/web/WebTreeScopeType.h"
 
 namespace blink {
@@ -1063,6 +1064,67 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name,
 bool WebLocalFrameImpl::IsCommandEnabled(const WebString& name) const {
   DCHECK(GetFrame());
   return GetFrame()->GetEditor().CreateCommand(name).IsEnabled();
+}
+
+bool WebLocalFrameImpl::SelectionTextDirection(WebTextDirection& start,
+                                               WebTextDirection& end) const {
+  FrameSelection& selection = frame_->Selection();
+  if (!selection.IsAvailable()) {
+    // plugins/mouse-capture-inside-shadow.html reaches here
+    return false;
+  }
+
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  if (selection.ComputeVisibleSelectionInDOMTree()
+          .ToNormalizedEphemeralRange()
+          .IsNull())
+    return false;
+  start = ToWebTextDirection(PrimaryDirectionOf(
+      *selection.ComputeVisibleSelectionInDOMTree().Start().AnchorNode()));
+  end = ToWebTextDirection(PrimaryDirectionOf(
+      *selection.ComputeVisibleSelectionInDOMTree().End().AnchorNode()));
+  return true;
+}
+
+bool WebLocalFrameImpl::IsSelectionAnchorFirst() const {
+  FrameSelection& selection = frame_->Selection();
+  if (!selection.IsAvailable()) {
+    // plugins/mouse-capture-inside-shadow.html reaches here
+    return false;
+  }
+
+  return selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsBaseFirst();
+}
+
+void WebLocalFrameImpl::SetTextDirection(WebTextDirection direction) {
+  // The Editor::SetBaseWritingDirection() function checks if we can change
+  // the text direction of the selected node and updates its DOM "dir"
+  // attribute and its CSS "direction" property.
+  // So, we just call the function as Safari does.
+  Editor& editor = frame_->GetEditor();
+  if (!editor.CanEdit())
+    return;
+
+  switch (direction) {
+    case kWebTextDirectionDefault:
+      editor.SetBaseWritingDirection(NaturalWritingDirection);
+      break;
+
+    case kWebTextDirectionLeftToRight:
+      editor.SetBaseWritingDirection(LeftToRightWritingDirection);
+      break;
+
+    case kWebTextDirectionRightToLeft:
+      editor.SetBaseWritingDirection(RightToLeftWritingDirection);
+      break;
+
+    default:
+      NOTIMPLEMENTED();
+      break;
+  }
 }
 
 void WebLocalFrameImpl::EnableSpellChecking(bool enable) {
