@@ -29,7 +29,7 @@ class CRWWebViewScrollViewProxyTest : public PlatformTest {
 };
 
 // Tests that the UIScrollViewDelegate is set correctly.
-TEST_F(CRWWebViewScrollViewProxyTest, testDelegate) {
+TEST_F(CRWWebViewScrollViewProxyTest, Delegate) {
   [static_cast<UIScrollView*>([mockScrollView_ expect])
       setDelegate:webViewScrollViewProxy_];
   [webViewScrollViewProxy_ setScrollView:mockScrollView_];
@@ -38,7 +38,7 @@ TEST_F(CRWWebViewScrollViewProxyTest, testDelegate) {
 
 // Tests that setting 2 scroll views consecutively, clears the delegate of the
 // previous scroll view.
-TEST_F(CRWWebViewScrollViewProxyTest, testMultipleScrollView) {
+TEST_F(CRWWebViewScrollViewProxyTest, MultipleScrollView) {
   UIScrollView* mockScrollView1 = [[UIScrollView alloc] init];
   UIScrollView* mockScrollView2 = [[UIScrollView alloc] init];
   [webViewScrollViewProxy_ setScrollView:mockScrollView1];
@@ -50,7 +50,7 @@ TEST_F(CRWWebViewScrollViewProxyTest, testMultipleScrollView) {
 
 // Tests that when releasing a scroll view from the CRWWebViewScrollViewProxy,
 // the UIScrollView's delegate is also cleared.
-TEST_F(CRWWebViewScrollViewProxyTest, testDelegateClearingUp) {
+TEST_F(CRWWebViewScrollViewProxyTest, DelegateClearingUp) {
   UIScrollView* mockScrollView1 = [[UIScrollView alloc] init];
   [webViewScrollViewProxy_ setScrollView:mockScrollView1];
   EXPECT_EQ(webViewScrollViewProxy_, [mockScrollView1 delegate]);
@@ -60,7 +60,7 @@ TEST_F(CRWWebViewScrollViewProxyTest, testDelegateClearingUp) {
 
 // Tests that CRWWebViewScrollViewProxy returns the correct property values from
 // the underlying UIScrollView.
-TEST_F(CRWWebViewScrollViewProxyTest, testScrollViewPresent) {
+TEST_F(CRWWebViewScrollViewProxyTest, ScrollViewPresent) {
   [webViewScrollViewProxy_ setScrollView:mockScrollView_];
   BOOL yes = YES;
   [[[mockScrollView_ stub] andReturnValue:OCMOCK_VALUE(yes)] isZooming];
@@ -125,11 +125,25 @@ TEST_F(CRWWebViewScrollViewProxyTest, testScrollViewPresent) {
 
   [[[mockScrollView_ expect] andReturnValue:@NO] scrollsToTop];
   EXPECT_FALSE([webViewScrollViewProxy_ scrollsToTop]);
+
+  if (@available(iOS 11, *)) {
+    [[[mockScrollView_ expect]
+        andReturnValue:@(UIScrollViewContentInsetAdjustmentAutomatic)]
+        contentInsetAdjustmentBehavior];
+    EXPECT_EQ(UIScrollViewContentInsetAdjustmentAutomatic,
+              [webViewScrollViewProxy_ contentInsetAdjustmentBehavior]);
+
+    [[[mockScrollView_ expect]
+        andReturnValue:@(UIScrollViewContentInsetAdjustmentNever)]
+        contentInsetAdjustmentBehavior];
+    EXPECT_EQ(UIScrollViewContentInsetAdjustmentNever,
+              [webViewScrollViewProxy_ contentInsetAdjustmentBehavior]);
+  }
 }
 
 // Tests that CRWWebViewScrollViewProxy returns the correct property values when
 // there is no underlying UIScrollView.
-TEST_F(CRWWebViewScrollViewProxyTest, testScrollViewAbsent) {
+TEST_F(CRWWebViewScrollViewProxyTest, ScrollViewAbsent) {
   [webViewScrollViewProxy_ setScrollView:nil];
 
   EXPECT_TRUE(CGPointEqualToPoint(CGPointZero,
@@ -145,6 +159,10 @@ TEST_F(CRWWebViewScrollViewProxyTest, testScrollViewAbsent) {
   EXPECT_FALSE([webViewScrollViewProxy_ isDragging]);
   EXPECT_FALSE([webViewScrollViewProxy_ isTracking]);
   EXPECT_FALSE([webViewScrollViewProxy_ scrollsToTop]);
+  if (@available(iOS 11, *)) {
+    EXPECT_EQ(UIScrollViewContentInsetAdjustmentAutomatic,
+              [webViewScrollViewProxy_ contentInsetAdjustmentBehavior]);
+  }
 
   // Make sure setting the properties is fine too.
   // Arbitrary point.
@@ -161,13 +179,13 @@ TEST_F(CRWWebViewScrollViewProxyTest, testScrollViewAbsent) {
 
 // Tests releasing a scroll view when none is owned by the
 // CRWWebViewScrollViewProxy.
-TEST_F(CRWWebViewScrollViewProxyTest, testReleasingAScrollView) {
+TEST_F(CRWWebViewScrollViewProxyTest, ReleasingAScrollView) {
   [webViewScrollViewProxy_ setScrollView:nil];
 }
 
 // Tests that multiple WebViewScrollViewProxies hold onto the same underlying
 // UIScrollView
-TEST_F(CRWWebViewScrollViewProxyTest, testMultipleWebViewScrollViewProxies) {
+TEST_F(CRWWebViewScrollViewProxyTest, MultipleWebViewScrollViewProxies) {
   [webViewScrollViewProxy_ setScrollView:mockScrollView_];
 
   CRWWebViewScrollViewProxy* webViewScrollViewProxy1 =
@@ -188,6 +206,37 @@ TEST_F(CRWWebViewScrollViewProxyTest, testMultipleWebViewScrollViewProxies) {
       CGPointEqualToPoint(point, [webViewScrollViewProxy1 contentOffset]));
   EXPECT_TRUE(
       CGPointEqualToPoint(point, [webViewScrollViewProxy2 contentOffset]));
+}
+
+// Tests that CRWWebViewScrollViewProxy correctly delegates property setters to
+// the underlying UIScrollView.
+TEST_F(CRWWebViewScrollViewProxyTest, ScrollViewSetProperties) {
+  [webViewScrollViewProxy_ setScrollView:mockScrollView_];
+
+  if (@available(iOS 11, *)) {
+    [[mockScrollView_ expect] setContentInsetAdjustmentBehavior:
+                                  UIScrollViewContentInsetAdjustmentNever];
+    [webViewScrollViewProxy_ setContentInsetAdjustmentBehavior:
+                                 UIScrollViewContentInsetAdjustmentNever];
+    [mockScrollView_ verify];
+  }
+}
+
+// Tests that -setContentInsetAdjustmentBehavior: works even if it is called
+// before setting the scroll view.
+TEST_F(CRWWebViewScrollViewProxyTest,
+       SetContentInsetAdjustmentBehaviorBeforeSettingScrollView) {
+  if (@available(iOS 11, *)) {
+    [[mockScrollView_ expect] setContentInsetAdjustmentBehavior:
+                                  UIScrollViewContentInsetAdjustmentNever];
+
+    [webViewScrollViewProxy_ setScrollView:nil];
+    [webViewScrollViewProxy_ setContentInsetAdjustmentBehavior:
+                                 UIScrollViewContentInsetAdjustmentNever];
+    [webViewScrollViewProxy_ setScrollView:mockScrollView_];
+
+    [mockScrollView_ verify];
+  }
 }
 
 }  // namespace

@@ -74,6 +74,17 @@
   _proxy.scrollsToTop = scrollsToTop;
 }
 
+- (UIScrollViewContentInsetAdjustmentBehavior)contentInsetAdjustmentBehavior
+    API_AVAILABLE(ios(11.0)) {
+  return _proxy.contentInsetAdjustmentBehavior;
+}
+
+- (void)setContentInsetAdjustmentBehavior:
+    (UIScrollViewContentInsetAdjustmentBehavior)contentInsetAdjustmentBehavior
+    API_AVAILABLE(ios(11.0)) {
+  _proxy.contentInsetAdjustmentBehavior = contentInsetAdjustmentBehavior;
+}
+
 - (UIPanGestureRecognizer*)panGestureRecognizer {
   return _proxy.panGestureRecognizer;
 }
