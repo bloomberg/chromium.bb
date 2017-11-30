@@ -211,7 +211,7 @@ config("default_cygprofile_instrumentation") {
 
 config("cygprofile_instrumentation") {
   defines = [ "CYGPROFILE_INSTRUMENTATION=1" ]
-  cflags = [ "-finstrument-functions" ]
+  cflags = [ "-finstrument-functions-after-inlining" ]
 }
 
 config("no_cygprofile_instrumentation") {
