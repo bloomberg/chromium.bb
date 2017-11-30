@@ -22,6 +22,10 @@
 #include <sys/utsname.h>
 #endif
 
+#if defined(OS_CHROMEOS)
+#error "Not supported on ChromeOS"
+#endif
+
 namespace {
 // Copied from webkit/glue/user_agent.cc. We don't want to pull in a dependency
 // on webkit/glue which also pulls in the renderer. Also our user-agent is
@@ -30,7 +34,7 @@ namespace {
 std::string BuildOSCpuInfo() {
   std::string os_cpu;
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   int32_t os_major_version = 0;
   int32_t os_minor_version = 0;
   int32_t os_bugfix_version = 0;
@@ -61,12 +65,6 @@ std::string BuildOSCpuInfo() {
       os_minor_version
 #elif defined(OS_MACOSX)
       "Intel Mac OS X %d_%d_%d",
-      os_major_version,
-      os_minor_version,
-      os_bugfix_version
-#elif defined(OS_CHROMEOS)
-      "CrOS %s %d.%d.%d",
-      cputype.c_str(),  // e.g. i686
       os_major_version,
       os_minor_version,
       os_bugfix_version

@@ -8,23 +8,18 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/common/extensions/api/cloud_print_private.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/network_interfaces.h"
 #include "printing/features/features.h"
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
-#endif
-
 namespace extensions {
 
 namespace {
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 const char kErrorIncognito[] = "Cannot access in incognito mode";
-#endif
 
 CloudPrintTestsDelegate* g_instance = nullptr;
 
@@ -51,30 +46,28 @@ CloudPrintPrivateSetupConnectorFunction::
 }
 
 bool CloudPrintPrivateSetupConnectorFunction::RunAsync() {
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   using api::cloud_print_private::SetupConnector::Params;
   std::unique_ptr<Params> params(Params::Create(*args_));
   if (CloudPrintTestsDelegate::Get()) {
     CloudPrintTestsDelegate::Get()->SetupConnector(
         params->user_email, params->robot_email, params->credentials,
         params->user_settings);
-  } else {
-    std::unique_ptr<base::DictionaryValue> user_settings(
-        params->user_settings.ToValue());
-    CloudPrintProxyService* service =
-        CloudPrintProxyServiceFactory::GetForProfile(GetProfile());
-    if (!service) {
-      error_ = kErrorIncognito;
-      return false;
-    }
-    service->EnableForUserWithRobot(params->credentials, params->robot_email,
-                                    params->user_email, *user_settings);
+    SendResponse(true);
+    return true;
   }
+
+  std::unique_ptr<base::DictionaryValue> user_settings(
+      params->user_settings.ToValue());
+  CloudPrintProxyService* service =
+      CloudPrintProxyServiceFactory::GetForProfile(GetProfile());
+  if (!service) {
+    error_ = kErrorIncognito;
+    return false;
+  }
+  service->EnableForUserWithRobot(params->credentials, params->robot_email,
+                                  params->user_email, *user_settings);
   SendResponse(true);
   return true;
-#else
-  return false;
-#endif
 }
 
 CloudPrintPrivateGetHostNameFunction::CloudPrintPrivateGetHostNameFunction() {
@@ -105,23 +98,20 @@ void CloudPrintPrivateGetPrintersFunction::SendResults(
 }
 
 bool CloudPrintPrivateGetPrintersFunction::RunAsync() {
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (CloudPrintTestsDelegate::Get()) {
     SendResults(CloudPrintTestsDelegate::Get()->GetPrinters());
-  } else {
-    CloudPrintProxyService* service =
-        CloudPrintProxyServiceFactory::GetForProfile(GetProfile());
-    if (!service) {
-      error_ = kErrorIncognito;
-      return false;
-    }
-    service->GetPrinters(
-        base::Bind(&CloudPrintPrivateGetPrintersFunction::SendResults, this));
+    return true;
   }
+
+  CloudPrintProxyService* service =
+      CloudPrintProxyServiceFactory::GetForProfile(GetProfile());
+  if (!service) {
+    error_ = kErrorIncognito;
+    return false;
+  }
+  service->GetPrinters(
+      base::Bind(&CloudPrintPrivateGetPrintersFunction::SendResults, this));
   return true;
-#else
-  return false;
-#endif
 }
 
 

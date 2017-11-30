@@ -59,7 +59,7 @@
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
 #include "chrome/browser/service_process/service_process_control.h"
 #endif
 
@@ -156,10 +156,10 @@ bool ShutdownPreThreadsStop() {
   chromeos::BootTimesRecorder::Get()->AddLogoutTimeMarker(
       "BrowserShutdownStarted", false);
 #endif
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
   // Shutdown the IPC channel to the service processes.
   ServiceProcessControl::GetInstance()->Disconnect();
-#endif  // ENABLE_PRINT_PREVIEW
+#endif
 
   // WARNING: During logoff/shutdown (WM_ENDSESSION) we may not have enough
   // time to get here. If you have something that *must* happen on end session,

@@ -409,8 +409,7 @@ static_library("common") {
       "//components/printing/common",
       "//printing",
     ]
-    if (enable_print_preview) {
-      # Full printing support.
+    if (enable_print_preview && !is_chromeos) {
       sources += [
         "service_process_util.cc",
         "service_process_util.h",
@@ -739,12 +738,14 @@ mojom("client_hints_mojom") {
   ]
 }
 
-mojom("service_process_mojom") {
-  sources = [
-    "cloud_print.mojom",
-    "service_process.mojom",
-  ]
-  public_deps = [
-    "//mojo/common:common_custom_types",
-  ]
+if (enable_print_preview && !is_chromeos) {
+  mojom("service_process_mojom") {
+    sources = [
+      "cloud_print.mojom",
+      "service_process.mojom",
+    ]
+    public_deps = [
+      "//mojo/common:common_custom_types",
+    ]
+  }
 }

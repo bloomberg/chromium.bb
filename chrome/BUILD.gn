@@ -1406,7 +1406,7 @@ group("browser_dependencies") {
 
   if (enable_basic_printing || enable_print_preview) {
     public_deps += [ "//printing" ]
-    if (enable_print_preview) {
+    if (enable_print_preview && !is_chromeos) {
       public_deps += [ "//chrome/service" ]
     }
   }
