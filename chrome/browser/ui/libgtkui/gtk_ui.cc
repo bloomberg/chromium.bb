@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/libgtkui/gtk_ui.h"
 
-#include <X11/Xcursor/Xcursor.h>
 #include <dlfcn.h>
 #include <math.h>
 #include <pango/pango.h>
@@ -55,6 +54,7 @@
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/shell_dialogs/select_file_policy.h"
