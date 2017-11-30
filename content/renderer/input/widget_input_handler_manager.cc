@@ -217,8 +217,9 @@ mojom::WidgetInputHandlerHost*
 WidgetInputHandlerManager::GetWidgetInputHandlerHost() {
   if (associated_host_)
     return associated_host_.get()->get();
-  DCHECK(host_);
-  return host_.get()->get();
+  if (host_)
+    return host_.get()->get();
+  return nullptr;
 }
 
 void WidgetInputHandlerManager::ObserveGestureEventOnMainThread(
