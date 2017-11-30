@@ -87,15 +87,13 @@ class FaviconChangeObserver : public bookmarks::BookmarkModelObserver {
   }
   ~FaviconChangeObserver() override { model_->RemoveObserver(this); }
   void WaitForGetFavicon() {
-    DCHECK(!run_loop_.running());
     wait_for_load_ = true;
-    content::RunThisRunLoop(&run_loop_);
+    content::RunMessageLoop();
     ASSERT_TRUE(node_->is_favicon_loaded());
   }
   void WaitForSetFavicon() {
-    DCHECK(!run_loop_.running());
     wait_for_load_ = false;
-    content::RunThisRunLoop(&run_loop_);
+    content::RunMessageLoop();
   }
 
   // bookmarks::BookmarkModelObserver:
@@ -127,9 +125,9 @@ class FaviconChangeObserver : public bookmarks::BookmarkModelObserver {
                                      const BookmarkNode* node) override {}
   void BookmarkNodeFaviconChanged(BookmarkModel* model,
                                   const BookmarkNode* node) override {
-    if (model == model_ && node == node_ && run_loop_.running()) {
+    if (model == model_ && node == node_) {
       if (!wait_for_load_ || (wait_for_load_ && node->is_favicon_loaded()))
-        run_loop_.Quit();
+        base::RunLoop::QuitCurrentWhenIdleDeprecated();
     }
   }
 
@@ -137,7 +135,6 @@ class FaviconChangeObserver : public bookmarks::BookmarkModelObserver {
   BookmarkModel* model_;
   const BookmarkNode* node_;
   bool wait_for_load_;
-  base::RunLoop run_loop_;
   DISALLOW_COPY_AND_ASSIGN(FaviconChangeObserver);
 };
 
