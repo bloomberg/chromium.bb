@@ -101,6 +101,7 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/WebKit/Source/modules/budget",
     "//third_party/WebKit/Source/modules/cachestorage",
     "//third_party/WebKit/Source/modules/canvas",
+    "//third_party/WebKit/Source/modules/clipboard",
     "//third_party/WebKit/Source/modules/cookie_store",
     "//third_party/WebKit/Source/modules/credentialmanager",
     "//third_party/WebKit/Source/modules/crypto",

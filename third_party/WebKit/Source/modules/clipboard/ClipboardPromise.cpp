@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/clipboard/ClipboardPromise.h"
+#include "modules/clipboard/ClipboardPromise.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/clipboard/DataObject.h"

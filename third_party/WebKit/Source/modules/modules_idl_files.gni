@@ -87,6 +87,7 @@ modules_idl_files =
           "canvas/canvas2d/CanvasPattern.idl",
           "canvas/canvas2d/CanvasRenderingContext2D.idl",
           "canvas/canvas2d/Path2D.idl",
+          "clipboard/Clipboard.idl",
           "cookie_store/CookieStore.idl",
           "credentialmanager/AuthenticatorAssertionResponse.idl",
           "credentialmanager/AuthenticatorAttestationResponse.idl",
@@ -636,6 +637,7 @@ modules_dictionary_idl_files =
 modules_dependency_idl_files =
     get_path_info(
         [
+          "animationworklet/WindowAnimationWorklet.idl",
           "app_banner/WindowInstallation.idl",
           "audio_output_devices/HTMLMediaElementAudioOutputDevice.idl",
           "background_fetch/ServiceWorkerGlobalScopeBackgroundFetch.idl",
@@ -651,7 +653,7 @@ modules_dependency_idl_files =
           "cachestorage/WorkerCacheStorage.idl",
           "canvas/htmlcanvas/HTMLCanvasElementModule.idl",
           "canvas/canvas2d/CanvasPath.idl",
-          "animationworklet/WindowAnimationWorklet.idl",
+          "clipboard/NavigatorClipboard.idl",
           "cookie_store/WindowCookieStore.idl",
           "credentialmanager/CredentialUserData.idl",
           "credentialmanager/NavigatorCredentials.idl",
