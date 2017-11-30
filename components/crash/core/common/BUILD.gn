@@ -17,6 +17,8 @@ static_library("crash_key") {
   sources = [
     "crash_key.cc",
     "crash_key.h",
+    "crash_key_base_support.cc",
+    "crash_key_base_support.h",
   ]
 
   deps = [
