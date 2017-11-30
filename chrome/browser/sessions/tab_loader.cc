@@ -63,7 +63,13 @@ void TabLoader::Observe(int type,
 }
 
 void TabLoader::OnPageAlmostIdle(content::WebContents* web_contents) {
-  HandleTabClosedOrLoaded(&web_contents->GetController());
+  auto* controller = &web_contents->GetController();
+  // The |web_contents| is not managed by TabLoader.
+  if (tabs_loading_.find(controller) == tabs_loading_.end() &&
+      !base::ContainsValue(tabs_to_load_, controller)) {
+    return;
+  }
+  HandleTabClosedOrLoaded(controller);
 }
 
 void TabLoader::SetTabLoadingEnabled(bool enable_tab_loading) {
