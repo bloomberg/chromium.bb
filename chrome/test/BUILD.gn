@@ -17,6 +17,7 @@ import("//components/signin/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//extensions/features/features.gni")
 import("//media/media_options.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/features/features.gni")
 import("//remoting/remoting_enable.gni")
 import("//rlz/features/features.gni")
@@ -2055,6 +2056,17 @@ group("angle_perftests") {
   ]
 }
 
+if (is_mac) {
+  mojom("firefox_importer_interface") {
+    sources = [
+      "../utility/importer/firefox_importer_unittest_utils_mac.mojom",
+    ]
+    public_deps = [
+      "//components/autofill/content/common:mojo_types",
+    ]
+  }
+}
+
 test("unit_tests") {
   sources = [
     # enums.xml is analyzed by AboutFlagsHistogramTest, so this
@@ -2877,16 +2889,17 @@ test("unit_tests") {
       "../utility/importer/bookmarks_file_importer_unittest.cc",
       "../utility/importer/edge_database_reader_unittest_win.cc",
       "../utility/importer/firefox_importer_unittest.cc",
-      "../utility/importer/firefox_importer_unittest_messages_internal.h",
       "../utility/importer/firefox_importer_unittest_utils.h",
       "../utility/importer/firefox_importer_unittest_utils_mac.cc",
       "../utility/importer/safari_importer_unittest.mm",
     ]
     deps += [
       "//components/signin/core/browser:signin_features",
-      "//ipc",
       "//third_party/libaddressinput",
     ]
+    if (is_mac) {
+      deps += [ ":firefox_importer_interface" ]
+    }
   }
 
   if (!is_android) {
