@@ -118,6 +118,8 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
 
   // AecDumpMessageFilter::AecDumpDelegate implementation.
   // Called on the main render thread.
+  // TODO(grunell): Remove OnAec3Enable when clients have changed to enable
+  // before creating streams.
   void OnAecDumpFile(const IPC::PlatformFileForTransit& file_handle) override;
   void OnDisableAecDump() override;
   void OnAec3Enable(bool enable) override;

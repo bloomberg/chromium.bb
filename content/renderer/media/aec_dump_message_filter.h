@@ -75,14 +75,14 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
   // Accessed on |io_task_runner_|.
   void OnEnableAecDump(int id, IPC::PlatformFileForTransit file_handle);
   void OnDisableAecDump();
-  void OnEnableAec3(int id, bool enable);
+  void OnEnableAec3(bool enable);
 
   // Accessed on |main_task_runner_|.
   void DoEnableAecDump(int id, IPC::PlatformFileForTransit file_handle);
   void DoDisableAecDump();
   void DoChannelClosingOnDelegates();
   int GetIdForDelegate(AecDumpMessageFilter::AecDumpDelegate* delegate);
-  void DoEnableAec3(int id, bool enable);
+  void DoEnableAec3(bool enable);
 
   // Accessed on |io_task_runner_|.
   IPC::Sender* sender_;
