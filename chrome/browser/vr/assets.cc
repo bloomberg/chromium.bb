@@ -10,6 +10,7 @@
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "chrome/browser/vr/metrics_helper.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -36,8 +37,9 @@ void Assets::OnComponentReady(const base::Version& version,
                               const base::FilePath& install_dir,
                               std::unique_ptr<base::DictionaryValue> manifest) {
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&Assets::OnComponentReadyInternal,
-                                weak_ptr_factory_.GetWeakPtr(), install_dir));
+      FROM_HERE,
+      base::BindOnce(&Assets::OnComponentReadyInternal,
+                     weak_ptr_factory_.GetWeakPtr(), version, install_dir));
 }
 
 void Assets::LoadWhenComponentReady(OnAssetsLoadedCallback on_loaded) {
@@ -64,18 +66,21 @@ MetricsHelper* Assets::GetMetricsHelper() {
 // static
 void Assets::LoadAssetsTask(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const base::Version& component_version,
     const base::FilePath& component_install_dir,
     OnAssetsLoadedCallback on_loaded) {
   std::string environment;
   if (!base::ReadFileToString(
           component_install_dir.Append(kEnvironmentFileName), &environment)) {
     task_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(on_loaded), false, std::string()));
+        FROM_HERE, base::BindOnce(std::move(on_loaded), false, std::string(),
+                                  component_version));
     return;
   }
 
-  task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(on_loaded), true, environment));
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(std::move(on_loaded), true, environment,
+                                       component_version));
 }
 
 Assets::Assets()
@@ -87,10 +92,12 @@ Assets::Assets()
 
 Assets::~Assets() = default;
 
-void Assets::OnComponentReadyInternal(const base::FilePath& install_dir) {
+void Assets::OnComponentReadyInternal(const base::Version& version,
+                                      const base::FilePath& install_dir) {
+  component_version_ = version;
   component_install_dir_ = install_dir;
   component_ready_ = true;
-  GetMetricsHelper()->OnComponentReady();
+  GetMetricsHelper()->OnComponentReady(version);
   if (on_assets_loaded_) {
     LoadWhenComponentReadyInternal(on_assets_loaded_task_runner_,
                                    std::move(on_assets_loaded_));
@@ -104,7 +111,7 @@ void Assets::LoadWhenComponentReadyInternal(
   if (component_ready_) {
     base::PostTaskWithTraits(
         FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
-        base::BindOnce(&Assets::LoadAssetsTask, task_runner,
+        base::BindOnce(&Assets::LoadAssetsTask, task_runner, component_version_,
                        component_install_dir_, std::move(on_loaded)));
   } else {
     on_assets_loaded_ = std::move(on_loaded);

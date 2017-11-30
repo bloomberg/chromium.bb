@@ -41,13 +41,15 @@ class VrGLThread : public base::android::JavaHandlerThread,
   ~VrGLThread() override;
   base::WeakPtr<VrShellGl> GetVrShellGl();
 
-  // vr::GlBrowserInterface implementation (GL calling to VrShell).
+  // GlBrowserInterface implementation (GL calling to VrShell).
   void ContentSurfaceChanged(jobject surface) override;
   void GvrDelegateReady(gvr::ViewerType viewer_type) override;
   void UpdateGamepadData(device::GvrGamepadData) override;
   void ForceExitVr() override;
   void OnContentPaused(bool enabled) override;
   void ToggleCardboardGamepad(bool enabled) override;
+  void OnAssetsLoaded(vr::AssetsLoadStatus status,
+                      const base::Version& component_version) override;
 
   // vr::ContentInputForwarder
   void ForwardEvent(std::unique_ptr<blink::WebInputEvent> event,

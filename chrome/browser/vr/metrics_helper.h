@@ -10,7 +10,13 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chrome/browser/vr/assets_component_update_status.h"
+#include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/mode.h"
+
+namespace base {
+class Version;
+}  // namespace base
 
 namespace vr {
 
@@ -22,9 +28,13 @@ class MetricsHelper {
   MetricsHelper();
   ~MetricsHelper();
 
-  void OnComponentReady();
+  void OnComponentReady(const base::Version& version);
   void OnEnter(Mode mode);
   void OnRegisteredComponent();
+  void OnComponentUpdated(AssetsComponentUpdateStatus status,
+                          const base::Optional<base::Version>& version);
+  void OnAssetsLoaded(AssetsLoadStatus status,
+                      const base::Version& component_version);
 
  private:
   base::Optional<base::Time>& GetEnterTime(Mode mode);

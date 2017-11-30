@@ -32,6 +32,10 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace base {
+class Version;
+}  // namespace base
+
 namespace gl {
 class GLContext;
 class GLFenceEGL;
@@ -172,7 +176,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   void ClosePresentationBindings();
 
-  void OnAssetsLoaded(bool success, std::string environment);
+  void OnAssetsLoaded(bool success,
+                      std::string environment,
+                      const base::Version& component_version);
 
   // samplerExternalOES texture data for WebVR content image.
   int webvr_texture_id_ = 0;

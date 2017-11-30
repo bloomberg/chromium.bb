@@ -19,6 +19,8 @@ static_library("vr_common") {
     "animation_player.h",
     "assets.cc",
     "assets.h",
+    "assets_component_update_status.h",
+    "assets_load_status.h",
     "browser_ui_interface.h",
     "content_input_delegate.cc",
     "content_input_delegate.h",

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
+#include "base/version.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
@@ -131,6 +132,14 @@ void VrGLThread::ToggleCardboardGamepad(bool enabled) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VrShell::ToggleCardboardGamepad, weak_vr_shell_, enabled));
+}
+
+void VrGLThread::OnAssetsLoaded(vr::AssetsLoadStatus status,
+                                const base::Version& component_version) {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VrShell::OnAssetsLoaded, weak_vr_shell_, status,
+                            component_version));
 }
 
 void VrGLThread::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
