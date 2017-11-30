@@ -186,6 +186,11 @@ public final class PrefServiceBridge {
         list.add(exception);
     }
 
+    @CalledByNative
+    private static void copyLanguageList(List<String> list, String[] source) {
+        list.addAll(Arrays.asList(source));
+    }
+
     /**
      * Return the list of android permission strings for a given {@link ContentSettingsType}.  If
      * there is no permissions associated with the content setting, then an empty array is returned.
@@ -905,6 +910,15 @@ public final class PrefServiceBridge {
         nativeSetChromeHomePersonalizedOmniboxSuggestionsEnabled(enabled);
     }
 
+    /**
+     * Return the list of preferred languages strings.
+     */
+    public List<String> getChromeLanguageList() {
+        List<String> list = new ArrayList<>();
+        nativeGetChromeLanguageList(list);
+        return list;
+    }
+
     private native boolean nativeIsContentSettingEnabled(int contentSettingType);
     private native boolean nativeIsContentSettingManaged(int contentSettingType);
     private native void nativeSetContentSettingEnabled(int contentSettingType, boolean allow);
@@ -1075,4 +1089,5 @@ public final class PrefServiceBridge {
     private native String nativeGetLatestVersionWhenClickedUpdateMenuItem();
     private native void nativeSetSupervisedUserId(String supervisedUserId);
     private native void nativeSetChromeHomePersonalizedOmniboxSuggestionsEnabled(boolean enabled);
+    private native void nativeGetChromeLanguageList(List<String> list);
 }

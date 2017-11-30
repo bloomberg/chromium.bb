@@ -959,6 +959,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/datareduction/DataReductionStatsPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/datareduction/DataReductionDataUseItem.java",
   "java/src/org/chromium/chrome/browser/preferences/languages/LanguagesPreferences.java",
+  "java/src/org/chromium/chrome/browser/preferences/languages/LanguageListPreference.java",
+  "java/src/org/chromium/chrome/browser/preferences/languages/LanguageSelectionPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/password/PasswordEntryEditor.java",
   "java/src/org/chromium/chrome/browser/preferences/password/SavePasswordsPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/BandwidthType.java",

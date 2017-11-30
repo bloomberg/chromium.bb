@@ -491,11 +491,6 @@ CHAR-LIMIT guidelines:
         Unlock to view your password
       </message>
 
-      <!-- Languages preferences -->
-      <message name="IDS_PREFS_LANGUAGES" desc="Menu item for Languages, which allows users to manage their languages preferences. [CHAR-LIMIT=32]">
-        Languages
-      </message>
-
       <!-- Homepage preferences -->
       <message name="IDS_OPTIONS_HOMEPAGE_EDIT_TITLE" desc="The title of the screen that allows users to change the URL that opens when they tap on the home page button in the omnibox.">
         Edit home page
@@ -924,6 +919,23 @@ Your Google account may have other forms of browsing history like searches and a
       <!-- Single site settings -->
       <message name="IDS_NO_SAVED_WEBSITE_SETTINGS" desc="Text to display when there are no saved website settings.">
         You have no saved website settings.
+      </message>
+
+      <!-- Languages preferences -->
+      <message name="IDS_PREFS_LANGUAGES" desc="Title for the Languages settings screen that allows users to manage their languages preferences. [CHAR-LIMIT=32]">
+        Languages
+      </message>
+      <message name="IDS_PREFS_ADD_LANGUAGE" desc="Title for the screen that allows users to add languages to their preferred language list. [CHAR-LIMIT=32]">
+        Add language
+      </message>
+      <message name="IDS_LANGUAGES_LIST_PREFS_DESCRIPTION" desc="Description on the Languages settings screen. Appears above a list of one or more languages that the user selects, to tell Chrome which languages they prefer to use to read website content.">
+        Websites will show text in your preferred language, when possible.
+      </message>
+      <message name="IDS_LANGUAGES_OFFER_TRANSLATE_SWITCH" desc="Appears next to the 'offer to translate' switch that controls whether or not Chrome will display the Google Translate UI on web pages that are not in the user's preferred language(s).">
+        Offer to translate pages in other languages
+      </message>
+      <message name="IDS_LANGUAGES_ITEM_OPTION_OFFER_TO_TRANSLATE" desc="Option in language item menu. User can click the 'Offer to translate' option to toggle whether they want Chrome to translate pages in this language. [CHAR-LIMIT=32]">
+        Offer to translate
       </message>
 
       <!-- Location preferences -->
