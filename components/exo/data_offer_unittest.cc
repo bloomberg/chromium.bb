@@ -20,6 +20,7 @@
 #include "components/exo/data_offer_delegate.h"
 #include "components/exo/file_helper.h"
 #include "components/exo/test/exo_test_base.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "url/gurl.h"
 
@@ -84,6 +85,21 @@ void CreatePipe(base::ScopedFD* read_pipe, base::ScopedFD* write_pipe) {
   PCHECK(0 == pipe(raw_pipe));
   read_pipe->reset(raw_pipe[0]);
   write_pipe->reset(raw_pipe[1]);
+}
+
+bool ReadString(base::ScopedFD fd, std::string* out) {
+  std::array<char, 128> buffer;
+  char* it = buffer.begin();
+  while (it != buffer.end()) {
+    int result = read(fd.get(), it, buffer.end() - it);
+    PCHECK(-1 != result);
+    if (result == 0)
+      break;
+    it += result;
+  }
+  *out = std::string(reinterpret_cast<char*>(buffer.data()),
+                     (it - buffer.begin()) / sizeof(char));
+  return true;
 }
 
 bool ReadString16(base::ScopedFD fd, base::string16* out) {
@@ -178,6 +194,31 @@ TEST_F(DataOfferTest, ReceiveUriList) {
   base::string16 result;
   ASSERT_TRUE(ReadString16(std::move(read_pipe), &result));
   EXPECT_EQ(base::ASCIIToUTF16("file:///test/downloads/file"), result);
+}
+
+TEST_F(DataOfferTest, SetClipboardData) {
+  TestDataOfferDelegate delegate;
+  DataOffer data_offer(&delegate);
+
+  TestFileHelper file_helper;
+  {
+    ui::ScopedClipboardWriter writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    writer.WriteText(base::UTF8ToUTF16("Test data"));
+  }
+  data_offer.SetClipboardData(&file_helper,
+                              *ui::Clipboard::GetForCurrentThread());
+
+  EXPECT_EQ(1u, delegate.mime_types().size());
+  EXPECT_EQ("text/plain;charset=utf-8", delegate.mime_types()[0]);
+
+  base::ScopedFD read_pipe;
+  base::ScopedFD write_pipe;
+  CreatePipe(&read_pipe, &write_pipe);
+
+  data_offer.Receive("text/plain;charset=utf-8", std::move(write_pipe));
+  std::string result;
+  ASSERT_TRUE(ReadString(std::move(read_pipe), &result));
+  EXPECT_EQ(std::string("Test data"), result);
 }
 
 }  // namespace

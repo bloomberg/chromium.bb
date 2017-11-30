@@ -196,7 +196,8 @@ Surface* DataDevice::GetEffectiveTargetForEvent(
 
 void DataDevice::SendSelection() {
   DataOffer* data_offer = delegate_->OnDataOffer();
-  // TODO(hirono): Populate clipboard data to data offer.
+  data_offer->SetClipboardData(file_helper_,
+                               *ui::Clipboard::GetForCurrentThread());
   delegate_->OnSelection(*data_offer);
 }
 
