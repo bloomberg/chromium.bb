@@ -69,9 +69,6 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
@@ -122,7 +119,6 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/search/search.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
@@ -965,11 +961,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   // policy. Also checks that default search can be completely disabled.
   const base::string16 kKeyword(base::ASCIIToUTF16("testsearch"));
   const std::string kSearchURL("http://search.example/search?q={searchTerms}");
-  const std::string kInstantURL("http://does/not/exist");
   const std::string kAlternateURL0(
       "http://search.example/search#q={searchTerms}");
   const std::string kAlternateURL1("http://search.example/#q={searchTerms}");
-  const std::string kSearchTermsReplacementKey("zekey");
   const std::string kImageURL("http://test.com/searchbyimage/upload");
   const std::string kImageURLPostParams(
       "image_content=content,image_url=http://test.com/test.png");
@@ -1001,19 +995,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   policies.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                base::MakeUnique<base::Value>(kSearchURL), nullptr);
-  policies.Set(key::kDefaultSearchProviderInstantURL, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::Value>(kInstantURL), nullptr);
   std::unique_ptr<base::ListValue> alternate_urls(new base::ListValue);
   alternate_urls->AppendString(kAlternateURL0);
   alternate_urls->AppendString(kAlternateURL1);
   policies.Set(key::kDefaultSearchProviderAlternateURLs, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::move(alternate_urls), nullptr);
-  policies.Set(key::kDefaultSearchProviderSearchTermsReplacementKey,
-               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::Value>(kSearchTermsReplacementKey),
-               nullptr);
   policies.Set(key::kDefaultSearchProviderImageURL, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                base::MakeUnique<base::Value>(kImageURL), nullptr);
