@@ -78,7 +78,7 @@ class DifferenceEstimator::Subject {
   DISALLOW_COPY_AND_ASSIGN(Subject);
 };
 
-DifferenceEstimator::DifferenceEstimator() {}
+DifferenceEstimator::DifferenceEstimator() = default;
 
 DifferenceEstimator::~DifferenceEstimator() {
   for (size_t i = 0;  i < owned_bases_.size();  ++i)

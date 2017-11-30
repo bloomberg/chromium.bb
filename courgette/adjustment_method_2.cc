@@ -427,7 +427,7 @@ class Shingle {
   // VS2005's implementation of std::set<T>::set() requires T to have a copy
   // constructor.
   //   DISALLOW_COPY_AND_ASSIGN(Shingle);
-  void operator=(const Shingle&);  // Disallow assignment only.
+  void operator=(const Shingle&) = delete;  // Disallow assignment only.
 };
 
 std::string ToString(const Shingle* instance) {
@@ -746,7 +746,7 @@ class VariableQueue {
  public:
   typedef std::pair<int, LabelInfo*> ScoreAndLabel;
 
-  VariableQueue() {}
+  VariableQueue() = default;
 
   bool empty() const { return queue_.empty(); }
 
@@ -1225,7 +1225,7 @@ class AssignmentProblem {
 class Adjuster : public AdjustmentMethod {
  public:
   Adjuster() : prog_(NULL), model_(NULL) {}
-  ~Adjuster() {}
+  ~Adjuster() = default;
 
   bool Adjust(const AssemblyProgram& model, AssemblyProgram* program) {
     VLOG(1) << "Adjuster::Adjust";

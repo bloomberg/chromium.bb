@@ -21,7 +21,7 @@ Element::Element(ExecutableType kind,
     : kind_(kind), ensemble_(ensemble), region_(region) {
 }
 
-Element::~Element() {}
+Element::~Element() = default;
 
 std::string Element::Name() const {
   return ensemble_->name() + "("
