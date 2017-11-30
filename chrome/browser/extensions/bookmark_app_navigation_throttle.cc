@@ -13,6 +13,7 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -116,27 +117,49 @@ const char* BookmarkAppNavigationThrottle::GetNameForLogging() {
 
 content::NavigationThrottle::ThrottleCheckResult
 BookmarkAppNavigationThrottle::WillStartRequest() {
-  return ProcessNavigation();
+  return ProcessNavigation(false /* is_redirect */);
 }
 
 content::NavigationThrottle::ThrottleCheckResult
 BookmarkAppNavigationThrottle::WillRedirectRequest() {
-  return ProcessNavigation();
+  return ProcessNavigation(true /* is_redirect */);
 }
 
 content::NavigationThrottle::ThrottleCheckResult
-BookmarkAppNavigationThrottle::ProcessNavigation() {
+BookmarkAppNavigationThrottle::ProcessNavigation(bool is_redirect) {
   ui::PageTransition transition_type = navigation_handle()->GetPageTransition();
+
+  // When launching an app, if the page redirects to an out-of-scope URL, then
+  // continue the navigation in a regular browser window. (Launching an app
+  // results in an AUTO_BOOKMARK transition).
+  //
+  // Note that for non-redirecting app launches, GetAppForWindow() might return
+  // null, because the navigation's WebContents might not be attached to a
+  // window yet.
+  //
+  // TODO(crbug.com/789051): Possibly fall through to the logic below to
+  // open target in app window, if it belongs to an app.
+  if (is_redirect &&
+      PageTransitionCoreTypeIs(transition_type,
+                               ui::PAGE_TRANSITION_AUTO_BOOKMARK) &&
+      GetAppForWindow() != GetTargetApp()) {
+    DVLOG(1) << "Out-of-scope navigation during launch. Opening in Chrome.";
+    Browser* browser = chrome::FindBrowserWithWebContents(
+        navigation_handle()->GetWebContents());
+    DCHECK(browser);
+    chrome::OpenInChrome(browser);
+  }
+
   if (!(PageTransitionCoreTypeIs(transition_type, ui::PAGE_TRANSITION_LINK))) {
     DVLOG(1) << "Don't intercept: Transition type is "
              << PageTransitionGetCoreTransitionString(transition_type);
     return content::NavigationThrottle::PROCEED;
   }
 
-  auto app_for_window_ref = GetAppForWindow();
-  auto target_app_ref = GetTargetApp();
+  scoped_refptr<const Extension> app_for_window = GetAppForWindow();
+  scoped_refptr<const Extension> target_app = GetTargetApp();
 
-  if (app_for_window_ref == target_app_ref) {
+  if (app_for_window == target_app) {
     DVLOG(1) << "Don't intercept: The target URL is in the same scope as the "
              << "current app.";
     return content::NavigationThrottle::PROCEED;
@@ -149,12 +172,12 @@ BookmarkAppNavigationThrottle::ProcessNavigation() {
   // open a new app window if the Youtube app is installed, but navigating from
   // https://www.google.com/ to https://www.google.com/maps does open a new
   // app window if only the Maps app is installed.
-  if (!app_for_window_ref && target_app_ref == GetAppForCurrentURL()) {
+  if (!app_for_window && target_app == GetAppForCurrentURL()) {
     DVLOG(1) << "Don't intercept: Keep same-app navigations in the browser.";
     return content::NavigationThrottle::PROCEED;
   }
 
-  if (target_app_ref) {
+  if (target_app) {
     auto* prerender_contents = prerender::PrerenderContents::FromWebContents(
         navigation_handle()->GetWebContents());
     if (prerender_contents) {
@@ -164,10 +187,10 @@ BookmarkAppNavigationThrottle::ProcessNavigation() {
       return content::NavigationThrottle::CANCEL_AND_IGNORE;
     }
 
-    return OpenInAppWindowAndCloseTabIfNecessary(target_app_ref);
+    return OpenInAppWindowAndCloseTabIfNecessary(target_app);
   }
 
-  if (app_for_window_ref) {
+  if (app_for_window) {
     // The experience when navigating to an out-of-scope website inside an app
     // window is not great, so we bounce these navigations back to the browser.
     // TODO(crbug.com/774895): Stop bouncing back to the browser once the
