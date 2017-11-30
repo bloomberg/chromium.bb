@@ -21,10 +21,12 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/resource_request_body.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -48,7 +50,50 @@ enum class LinkTarget {
   BLANK,
 };
 
+enum class StartIn {
+  BROWSER,
+  APP,
+};
+
 namespace {
+
+const char kQueryParam[] = "test=";
+const char kQueryParamName[] = "test";
+
+// Subclass of TestNavigationObserver that saves extra information about the
+// navigation and watches all navigations to |target_url|.
+class BookmarkAppNavigationObserver : public content::TestNavigationObserver {
+ public:
+  // Creates an observer that watches navigations to |target_url| on all
+  // existing and newly added WebContents.
+  explicit BookmarkAppNavigationObserver(const GURL& target_url)
+      : content::TestNavigationObserver(target_url),
+        last_navigation_is_post_(false) {
+    WatchExistingWebContents();
+    StartWatchingNewWebContents();
+  }
+
+  bool last_navigation_is_post() const { return last_navigation_is_post_; }
+
+  const scoped_refptr<content::ResourceRequestBody>&
+  last_resource_request_body() const {
+    return last_resource_request_body_;
+  }
+
+ private:
+  void OnDidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    last_navigation_is_post_ = navigation_handle->IsPost();
+    last_resource_request_body_ = navigation_handle->GetResourceRequestBody();
+    content::TestNavigationObserver::OnDidFinishNavigation(navigation_handle);
+  }
+
+  // True if the last navigation was a post.
+  bool last_navigation_is_post_;
+
+  // The request body of the last navigation if it was a post request.
+  scoped_refptr<content::ResourceRequestBody> last_resource_request_body_;
+};
 
 std::string CreateServerRedirect(const GURL& target_url) {
   const char* const kServerRedirectBase = "/server-redirect?";
@@ -127,6 +172,14 @@ void ClickLinkAndWait(content::WebContents* web_contents,
   ClickLinkAndWaitForURL(web_contents, link_url, link_url, target, rel);
 }
 
+// Adds a query parameter to |base_url|.
+GURL AddTestQueryParam(const GURL& base_url) {
+  GURL::Replacements replacements;
+  std::string query(kQueryParam);
+  replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
+  return base_url.ReplaceComponents(replacements);
+}
+
 // Creates a <form> element with a |target_url| action and |method| method. Adds
 // the form to the DOM with a button and clicks the button. Returns once
 // |target_url| has been loaded.
@@ -137,17 +190,22 @@ void ClickLinkAndWait(content::WebContents* web_contents,
 void SubmitFormAndWait(content::WebContents* web_contents,
                        const GURL& target_url,
                        net::URLFetcher::RequestType method) {
+  bool is_post = true;
   if (method == net::URLFetcher::RequestType::GET) {
+    is_post = false;
     ASSERT_TRUE(target_url.has_query());
-    ASSERT_TRUE(target_url.query().empty());
+    ASSERT_EQ(kQueryParam, target_url.query());
   }
 
-  auto observer = GetTestNavigationObserver(target_url);
+  BookmarkAppNavigationObserver observer(target_url);
   std::string script = base::StringPrintf(
       "(() => {"
       "const form = document.createElement('form');"
       "form.action = '%s';"
       "form.method = '%s';"
+      "const input = document.createElement('input');"
+      "input.name = '%s';"
+      "form.appendChild(input);"
       "const button = document.createElement('input');"
       "button.type = 'submit';"
       "form.appendChild(button);"
@@ -155,9 +213,19 @@ void SubmitFormAndWait(content::WebContents* web_contents,
       "button.dispatchEvent(new MouseEvent('click', {'view': window}));"
       "})();",
       target_url.spec().c_str(),
-      method == net::URLFetcher::RequestType::POST ? "post" : "get");
+      method == net::URLFetcher::RequestType::POST ? "post" : "get",
+      kQueryParamName);
   ASSERT_TRUE(content::ExecuteScript(web_contents, script));
-  observer->WaitForNavigationFinished();
+  observer.WaitForNavigationFinished();
+
+  EXPECT_EQ(is_post, observer.last_navigation_is_post());
+  if (is_post) {
+    const std::vector<content::ResourceRequestBody::Element>* elements =
+        observer.last_resource_request_body()->elements();
+    EXPECT_EQ(1u, elements->size());
+    const auto& element = elements->front();
+    EXPECT_EQ(kQueryParam, std::string(element.bytes(), element.length()));
+  }
 }
 
 // Uses |params| to navigate to a URL. Blocks until the URL is loaded.
@@ -293,9 +361,9 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
   // Checks that no new windows are opened after running |action| and that the
   // existing |browser| window is still the active one and navigated to
   // |target_url|. Returns true if there were no errors.
-  bool TestTabActionDoesNotOpenAppWindow(Browser* browser,
-                                         const GURL& target_url,
-                                         const base::Closure& action) {
+  bool TestActionDoesNotOpenAppWindow(Browser* browser,
+                                      const GURL& target_url,
+                                      const base::Closure& action) {
     content::WebContents* initial_tab =
         browser->tab_strip_model()->GetActiveWebContents();
     int num_tabs = browser->tab_strip_model()->count();
@@ -312,12 +380,47 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
     return !HasFailure();
   }
 
+  // Checks that a new foreground tab is opened in an existing browser, that the
+  // new tab's browser is in the foreground, and that |app_browser| didn't
+  // navigate.
+  void TestAppActionOpensForegroundTab(Browser* app_browser,
+                                       const GURL& target_url,
+                                       const base::Closure& action) {
+    size_t num_browsers = chrome::GetBrowserCount(profile());
+    int num_tabs_browser = browser()->tab_strip_model()->count();
+    int num_tabs_app_browser = app_browser->tab_strip_model()->count();
+
+    content::WebContents* app_web_contents =
+        app_browser->tab_strip_model()->GetActiveWebContents();
+    content::WebContents* initial_tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    GURL initial_app_url = app_web_contents->GetLastCommittedURL();
+    GURL initial_tab_url = initial_tab->GetLastCommittedURL();
+
+    action.Run();
+
+    EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
+
+    EXPECT_EQ(browser(), chrome::FindLastActive());
+
+    EXPECT_EQ(++num_tabs_browser, browser()->tab_strip_model()->count());
+    EXPECT_EQ(num_tabs_app_browser, app_browser->tab_strip_model()->count());
+
+    EXPECT_EQ(initial_app_url, app_web_contents->GetLastCommittedURL());
+
+    content::WebContents* new_tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_NE(initial_tab, new_tab);
+    EXPECT_EQ(target_url, new_tab->GetLastCommittedURL());
+  }
+
   // Checks that no new windows are opened after running |action| and that the
   // main browser window is still the active one and navigated to |target_url|.
   // Returns true if there were no errors.
   bool TestTabActionDoesNotOpenAppWindow(const GURL& target_url,
                                          const base::Closure& action) {
-    return TestTabActionDoesNotOpenAppWindow(browser(), target_url, action);
+    return TestActionDoesNotOpenAppWindow(browser(), target_url, action);
   }
 
   // Checks that no new windows are opened after running |action| and that the
@@ -785,37 +888,97 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
                  out_of_scope_url, LinkTarget::SELF, GetParam()));
 }
 
-// Tests that submitting a form using POST does not open a new app window.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
-                       PostFormSubmission) {
+// Set of tests to make sure form submissions have the correct behavior.
+class BookmarkAppNavigationThrottleFormSubmissionBrowserTest
+    : public BookmarkAppNavigationThrottleBrowserTest,
+      public ::testing::WithParamInterface<
+          std::tuple<StartIn,
+                     std::string,
+                     net::URLFetcher::RequestType,
+                     std::string>> {};
+
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    BookmarkAppNavigationThrottleFormSubmissionBrowserTest,
+    testing::Combine(testing::Values(StartIn::BROWSER, StartIn::APP),
+                     testing::Values(kLaunchingPagePath, kAppUrlPath),
+                     testing::Values(net::URLFetcher::RequestType::GET,
+                                     net::URLFetcher::RequestType::POST),
+                     testing::Values(kOutOfScopeUrlPath, kInScopeUrlPath)));
+
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleFormSubmissionBrowserTest,
+                       FormSubmission) {
+  StartIn start_in;
+  std::string start_url_path;
+  net::URLFetcher::RequestType request_type;
+  std::string target_url_path;
+  std::tie(start_in, start_url_path, request_type, target_url_path) =
+      GetParam();
+
   InstallTestBookmarkApp();
-  NavigateToLaunchingPage();
 
-  const GURL in_scope_url =
-      embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath);
-  TestTabActionDoesNotOpenAppWindow(
-      in_scope_url,
+  // Pick where the test should start.
+  Browser* current_browser;
+  if (start_in == StartIn::APP)
+    current_browser = OpenTestBookmarkApp();
+  else
+    current_browser = browser();
+
+  // If in a regular browser window, navigate to the start URL.
+  if (start_in == StartIn::BROWSER) {
+    GURL start_url;
+    if (start_url_path == kLaunchingPagePath)
+      start_url = GetLaunchingPageURL();
+    else
+      start_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+
+    chrome::NavigateParams params(current_browser, start_url,
+                                  ui::PAGE_TRANSITION_TYPED);
+    ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
+        start_url, base::Bind(&NavigateToURLWrapper, &params)));
+  } else if (start_url_path == kLaunchingPagePath) {
+    // Return early here since the app window can't start with an out-of-scope
+    // URL.
+    return;
+  }
+
+  // If the submit method is GET then add an query params.
+  GURL target_url =
+      embedded_test_server()->GetURL(kAppUrlHost, target_url_path);
+  if (request_type == net::URLFetcher::RequestType::GET) {
+    target_url = AddTestQueryParam(target_url);
+  }
+
+  // All form submissions that start in the browser should be kept in the
+  // browser.
+  if (start_in == StartIn::BROWSER) {
+    TestActionDoesNotOpenAppWindow(
+        current_browser, target_url,
+        base::Bind(&SubmitFormAndWait,
+                   current_browser->tab_strip_model()->GetActiveWebContents(),
+                   target_url, request_type));
+    return;
+  }
+
+  // When in an app, in-scope navigations should always be kept in the app
+  // window.
+  if (target_url_path == kInScopeUrlPath) {
+    TestActionDoesNotOpenAppWindow(
+        current_browser, target_url,
+        base::Bind(&SubmitFormAndWait,
+                   current_browser->tab_strip_model()->GetActiveWebContents(),
+                   target_url, request_type));
+    return;
+  }
+
+  // When in an app out-of-scope navigations should always open a new foreground
+  // tab.
+  DCHECK_EQ(target_url_path, kOutOfScopeUrlPath);
+  TestAppActionOpensForegroundTab(
+      current_browser, target_url,
       base::Bind(&SubmitFormAndWait,
-                 browser()->tab_strip_model()->GetActiveWebContents(),
-                 in_scope_url, net::URLFetcher::RequestType::POST));
-}
-
-// Tests that submitting a form using GET does not open a new app window.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
-                       GetFormSubmission) {
-  InstallTestBookmarkApp();
-  NavigateToLaunchingPage();
-
-  GURL::Replacements replacements;
-  replacements.SetQuery("", url::Component(0, 0));
-  const GURL in_scope_form_url = embedded_test_server()
-                                     ->GetURL(kAppUrlHost, kInScopeUrlPath)
-                                     .ReplaceComponents(replacements);
-  TestTabActionDoesNotOpenAppWindow(
-      in_scope_form_url,
-      base::Bind(&SubmitFormAndWait,
-                 browser()->tab_strip_model()->GetActiveWebContents(),
-                 in_scope_form_url, net::URLFetcher::RequestType::GET));
+                 current_browser->tab_strip_model()->GetActiveWebContents(),
+                 target_url, request_type));
 }
 
 // Tests that prerender links don't open the app.
@@ -919,7 +1082,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
   const GURL in_scope_url =
       embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath);
-  TestTabActionDoesNotOpenAppWindow(
+  TestActionDoesNotOpenAppWindow(
       incognito_browser, in_scope_url,
       base::Bind(&ClickLinkAndWait,
                  incognito_browser->tab_strip_model()->GetActiveWebContents(),
@@ -1028,30 +1191,14 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
                        InAppOutOfScopeNavigation) {
   InstallTestBookmarkApp();
   Browser* app_browser = OpenTestBookmarkApp();
-  size_t num_browsers = chrome::GetBrowserCount(profile());
-
-  int num_tabs_browser = browser()->tab_strip_model()->count();
-  int num_tabs_app_browser = app_browser->tab_strip_model()->count();
-
-  content::WebContents* app_web_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
-  GURL initial_url = app_web_contents->GetLastCommittedURL();
 
   const GURL out_of_scope_url =
       embedded_test_server()->GetURL(kAppUrlHost, kOutOfScopeUrlPath);
-  ClickLinkAndWait(app_web_contents, out_of_scope_url, LinkTarget::SELF,
-                   GetParam());
-
-  EXPECT_EQ(browser(), chrome::FindLastActive());
-  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
-  EXPECT_EQ(++num_tabs_browser, browser()->tab_strip_model()->count());
-  EXPECT_EQ(num_tabs_app_browser, app_browser->tab_strip_model()->count());
-
-  EXPECT_EQ(initial_url, app_web_contents->GetLastCommittedURL());
-  EXPECT_EQ(out_of_scope_url, browser()
-                                  ->tab_strip_model()
-                                  ->GetActiveWebContents()
-                                  ->GetLastCommittedURL());
+  TestAppActionOpensForegroundTab(
+      app_browser, out_of_scope_url,
+      base::Bind(&ClickLinkAndWait,
+                 app_browser->tab_strip_model()->GetActiveWebContents(),
+                 out_of_scope_url, LinkTarget::SELF, GetParam()));
 }
 
 INSTANTIATE_TEST_CASE_P(

@@ -285,6 +285,13 @@ bool NavigationHandleImpl::IsPost() {
   return method_ == "POST";
 }
 
+const scoped_refptr<ResourceRequestBody>&
+NavigationHandleImpl::GetResourceRequestBody() {
+  CHECK_NE(INITIAL, state_)
+      << "This accessor should not be called before the request is started.";
+  return resource_request_body_;
+}
+
 const Referrer& NavigationHandleImpl::GetReferrer() {
   CHECK_NE(INITIAL, state_)
       << "This accessor should not be called before the request is started.";

@@ -131,6 +131,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   RenderFrameHostImpl* GetParentFrame() override;
   const base::TimeTicks& NavigationStart() override;
   bool IsPost() override;
+  const scoped_refptr<ResourceRequestBody>& GetResourceRequestBody() override;
   const Referrer& GetReferrer() override;
   bool HasUserGesture() override;
   ui::PageTransition GetPageTransition() override;
@@ -250,13 +251,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // is used during transfer navigations.
   void set_render_frame_host(RenderFrameHostImpl* render_frame_host) {
     render_frame_host_ = render_frame_host;
-  }
-
-  // Returns the POST body associated with this navigation.  This will be
-  // null for GET and/or other non-POST requests (or if a response to a POST
-  // request was a redirect that changed the method to GET - for example 302).
-  const scoped_refptr<ResourceRequestBody>& resource_request_body() const {
-    return resource_request_body_;
   }
 
   // PlzNavigate
