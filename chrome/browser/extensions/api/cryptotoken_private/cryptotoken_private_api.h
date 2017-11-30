@@ -12,10 +12,17 @@
 #include "chrome/common/extensions/api/cryptotoken_private.h"
 #include "extensions/browser/extension_function.h"
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 // Implementations for chrome.cryptotokenPrivate API functions.
 
 namespace extensions {
 namespace api {
+
+void CryptotokenRegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry);
 
 class CryptotokenPrivateCanOriginAssertAppIdFunction
     : public UIThreadExtensionFunction {

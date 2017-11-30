@@ -473,6 +473,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kFullscreenAllowed,
     extensions::pref_names::kAppFullscreenAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kSecurityKeyPermitAttestation,
+    prefs::kSecurityKeyPermitAttestation,
+    base::Value::Type::LIST },
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 #endif  // !defined(OS_MACOSX)
 

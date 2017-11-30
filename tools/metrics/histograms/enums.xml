@@ -12013,6 +12013,7 @@ Called by update_net_error_codes.py.-->
   <int value="399" label="SitePerProcess"/>
   <int value="400" label="UnsafelyTreatInsecureOriginAsSecure"/>
   <int value="401" label="DefaultDownloadDirectory"/>
+  <int value="402" label="SecurityKeyPermitAttestation"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
