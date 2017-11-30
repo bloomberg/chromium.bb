@@ -217,7 +217,8 @@ TEST_P(PerfTest, NSURLSessionReceivesImageLoop) {
     }
 
     if (kUseExternalUrl && success && !first_log) {
-      LOG(INFO) << "Downloaded " << [delegate_ totalBytesReceivedPerTask][task]
+      LOG(INFO) << "Downloaded "
+                << [[delegate_ totalBytesReceivedPerTask][task] intValue]
                 << " bytes on first iteration.";
       first_log = true;
     }
