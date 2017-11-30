@@ -169,7 +169,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   void CreateNewSignedInProfile();
 
   // Opens a browser window for new profile showing the sign-in page.
-  void ShowSigninInNewProfile(Profile* new_profile);
+  void CancelSigninAndStartNewSigninInNewProfile(Profile* new_profile);
 
   // Copies the sign-in credentials to |new_profile| and starts syncing in
   // |new_profile|.

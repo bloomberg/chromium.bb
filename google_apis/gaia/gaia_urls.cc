@@ -22,6 +22,7 @@ const char kClientLoginUrlSuffix[] = "ClientLogin";
 const char kServiceLoginUrlSuffix[] = "ServiceLogin";
 const char kEmbeddedSetupChromeOsUrlSuffixV1[] = "embedded/setup/chromeos";
 const char kEmbeddedSetupChromeOsUrlSuffixV2[] = "embedded/setup/v2/chromeos";
+const char kSigninChromeSyncDice[] = "signin/chrome/sync";
 const char kServiceLoginAuthUrlSuffix[] = "ServiceLoginAuth";
 const char kServiceLogoutUrlSuffix[] = "Logout";
 const char kIssueAuthTokenUrlSuffix[] = "IssueAuthToken";
@@ -102,6 +103,7 @@ GaiaUrls::GaiaUrls() {
       gaia_url_.Resolve(kEmbeddedSetupChromeOsUrlSuffixV1);
   embedded_setup_chromeos_url_v2_ =
       gaia_url_.Resolve(kEmbeddedSetupChromeOsUrlSuffixV2);
+  signin_chrome_sync_dice_ = gaia_url_.Resolve(kSigninChromeSyncDice);
   service_login_auth_url_ = gaia_url_.Resolve(kServiceLoginAuthUrlSuffix);
   service_logout_url_ = gaia_url_.Resolve(kServiceLogoutUrlSuffix);
   issue_auth_token_url_ = gaia_url_.Resolve(kIssueAuthTokenUrlSuffix);
@@ -170,6 +172,9 @@ const GURL& GaiaUrls::embedded_setup_chromeos_url(unsigned version) const {
   return embedded_setup_chromeos_url_v1_;
 }
 
+const GURL& GaiaUrls::signin_chrome_sync_dice() const {
+  return signin_chrome_sync_dice_;
+}
 
 const GURL& GaiaUrls::service_login_auth_url() const {
   return service_login_auth_url_;

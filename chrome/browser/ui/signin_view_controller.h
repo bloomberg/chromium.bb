@@ -41,6 +41,13 @@ class SigninViewController {
                   Browser* browser,
                   signin_metrics::AccessPoint access_point);
 
+  // Shows the DICE-specific sign-in flow: opens a Gaia sign-in webpage in a new
+  // tab attached to |browser|.
+  void ShowDiceSigninTab(profiles::BubbleViewMode mode,
+                         Browser* browser,
+                         signin_metrics::AccessPoint access_point,
+                         const std::string& email);
+
   // Shows the modal sync confirmation dialog as a browser-modal dialog on top
   // of the |browser|'s window.
   void ShowModalSyncConfirmationDialog(Browser* browser);
@@ -77,12 +84,6 @@ class SigninViewController {
   void ShowModalSigninDialog(profiles::BubbleViewMode mode,
                              Browser* browser,
                              signin_metrics::AccessPoint access_point);
-
-  // Shows the DICE-specific sign-in flow: opens a Gaia sign-in webpage in a new
-  // tab attached to |browser|.
-  void ShowDiceSigninTab(profiles::BubbleViewMode mode,
-                         Browser* browser,
-                         signin_metrics::AccessPoint access_point);
 
   // Returns the web contents of the modal dialog.
   content::WebContents* GetModalDialogWebContentsForTesting();
