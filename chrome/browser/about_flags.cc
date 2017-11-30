@@ -353,6 +353,12 @@ const FeatureEntry::FeatureParam kAccountConsistencyDicePrepareMigration[] = {
     {signin::kAccountConsistencyFeatureMethodParameter,
      signin::kAccountConsistencyFeatureMethodDicePrepareMigration}};
 
+const FeatureEntry::FeatureParam
+    kAccountConsistencyDicePrepareMigrationChromeSyncEndpoint[] = {
+        {signin::kAccountConsistencyFeatureMethodParameter,
+         signin::
+             kAccountConsistencyFeatureMethodDicePrepareMigrationChromeSyncEndpoint}};
+
 const FeatureEntry::FeatureParam kAccountConsistencyDiceMigration[] = {
     {signin::kAccountConsistencyFeatureMethodParameter,
      signin::kAccountConsistencyFeatureMethodDiceMigration}};
@@ -373,6 +379,10 @@ const FeatureEntry::FeatureVariation kAccountConsistencyFeatureVariations[] = {
      arraysize(kAccountConsistencyDiceMigration), nullptr /* variation_id */},
     {"Dice (prepare migration)", kAccountConsistencyDicePrepareMigration,
      arraysize(kAccountConsistencyDicePrepareMigration),
+     nullptr /* variation_id */},
+    {"Dice (prepare migration, Chrome sync endpoint)",
+     kAccountConsistencyDicePrepareMigrationChromeSyncEndpoint,
+     arraysize(kAccountConsistencyDicePrepareMigrationChromeSyncEndpoint),
      nullptr /* variation_id */},
     {"Dice (fix auth errors)", kAccountConsistencyDiceFixAuthErrors,
      arraysize(kAccountConsistencyDiceFixAuthErrors),

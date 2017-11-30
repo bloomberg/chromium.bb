@@ -34,6 +34,8 @@ extern const char kAccountConsistencyFeatureMethodParameter[];
 extern const char kAccountConsistencyFeatureMethodMirror[];
 extern const char kAccountConsistencyFeatureMethodDiceFixAuthErrors[];
 extern const char kAccountConsistencyFeatureMethodDicePrepareMigration[];
+extern const char
+    kAccountConsistencyFeatureMethodDicePrepareMigrationChromeSyncEndpoint[];
 extern const char kAccountConsistencyFeatureMethodDiceMigration[];
 extern const char kAccountConsistencyFeatureMethodDice[];
 
@@ -53,6 +55,11 @@ enum class AccountConsistencyMethod : int {
   // Chrome uses the Dice signin flow and silently collects tokens associated
   // with Gaia cookies to prepare for the migration.
   kDicePrepareMigration,
+
+  // Chrome uses the Dice signin flow and silently collects tokens associated
+  // with Gaia cookies to prepare for the migration. Uses the Chrome sync Gaia
+  // endpoint to enable sync.
+  kDicePrepareMigrationChromeSyncEndpoint,
 
   // Account management UI on Gaia webpages is enabled once the accounts become
   // consistent.
@@ -81,6 +88,10 @@ bool IsDiceFixAuthErrorsEnabled();
 // Returns true if the account consistency method is kDicePrepareMigration or
 // greater.
 bool IsDicePrepareMigrationEnabled();
+
+// Returns true if the account consistency method is
+// kDicePrepareMigrationChromeSyncEndpoint or greater.
+bool IsDicePrepareMigrationChromeSyncEndpointEnabled();
 
 // Returns true if Dice account consistency is enabled or if the Dice migration
 // process is in progress (account consistency method is kDice or
