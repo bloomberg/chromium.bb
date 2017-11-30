@@ -224,19 +224,17 @@ h2 {
 }
 
 .experiment-switched .experiment-name::before {
+  -webkit-margin-end: 4px;
+  -webkit-margin-start: -20px;
   color: var(--google-blue-500);
   content: '•';
   display: inline-block;
   font-size: 40px;
   line-height: 0;
-  margin: 0 4px 0 -20px;
   vertical-align: middle;
   width: 16px;
 }
 
-[dir='rtl'] .experiment-switched .experiment-name::before {
-  margin: 0 -20px 0 4px;
-}
 
 .match,
 .referenced h3 {
@@ -336,7 +334,7 @@ h2 {
 }
 
 .tabs li:nth-child(2) .tab-content {
-  margin-left: -100%;
+  -webkit-margin-start: -100%;
 }
 
 .selected .tab-content {
@@ -415,6 +413,14 @@ h2 {
   #experiment-reset-all {
     font-size: 0.8em;
     padding: 2px 8px;
+  }
+
+  #flagsTemplate > .flex-container {
+    flex-direction: column;
+  }
+
+  #version {
+    text-align: initial;
   }
 
   .experiment-restart-button {
@@ -501,11 +507,7 @@ h2 {
 
 @media (max-width: 732px) {
   .experiment-switched .experiment-name::before {
-    margin-left: 0;
-  }
-
-  [dir='rtl'] .experiment-switched .experiment-name::before {
-    margin-right: 0;
+    -webkit-margin-start: 0;
   }
 
   #flagsTemplate {
