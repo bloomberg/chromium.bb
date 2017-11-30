@@ -167,7 +167,7 @@ public class VoiceSuggestionProviderTest {
         List<OmniboxSuggestion> suggestions = createDummySuggestions("a", "b", "c");
         List<OmniboxSuggestion> updatedSuggestions = provider.addVoiceSuggestions(suggestions, 10);
 
-        android.test.MoreAsserts.assertEquals(suggestions.toArray(), updatedSuggestions.toArray());
+        Assert.assertArrayEquals(suggestions.toArray(), updatedSuggestions.toArray());
     }
 
     @Test
