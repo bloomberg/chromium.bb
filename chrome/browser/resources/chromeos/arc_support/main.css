@@ -255,3 +255,10 @@ a:visited {
   color: rgb(66, 133, 244);
   text-decoration: none;
 }
+
+a.invisible-link {
+  display: inline-block;
+  height: 0;
+  width: 0;
+}
+
