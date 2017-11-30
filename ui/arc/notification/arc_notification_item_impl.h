@@ -45,6 +45,7 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
   const gfx::ImageSkia& GetSnapshot() const override;
   mojom::ArcNotificationExpandState GetExpandState() const override;
   mojom::ArcNotificationShownContents GetShownContents() const override;
+  gfx::Rect GetSwipeInputRect() const override;
   const std::string& GetNotificationKey() const override;
   const std::string& GetNotificationId() const override;
   const base::string16& GetAccessibleName() const override;
@@ -64,6 +65,8 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
   // The type of shown content of the latest notification.
   mojom::ArcNotificationShownContents shown_contents_ =
       mojom::ArcNotificationShownContents::CONTENTS_SHOWN;
+  // Rect indicating where Android wants to handle swipe events by itself.
+  gfx::Rect swipe_input_rect_ = gfx::Rect();
   // The reference counter of the window.
   int window_ref_count_ = 0;
   // The accessible name of the latest notification.

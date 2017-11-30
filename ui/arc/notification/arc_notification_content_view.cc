@@ -72,6 +72,12 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
   ~EventForwarder() override = default;
 
  private:
+  // Some swipes are handled by Android alone. We don't want to capture swipe
+  // events if we started a swipe on the chrome side then moved into the Android
+  // swipe region. So, keep track of whether swipe has been 'captured' by
+  // Android.
+  bool swipe_captured_ = false;
+
   // ui::EventHandler
   void OnEvent(ui::Event* event) override {
     // Do not forward event targeted to the floating close button so that
@@ -116,7 +122,30 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
         widget->OnScrollEvent(located_event->AsScrollEvent());
       } else if (located_event->IsGestureEvent() &&
                  event->type() != ui::ET_GESTURE_TAP) {
-        widget->OnGestureEvent(located_event->AsGestureEvent());
+        bool event_for_android_only = false;
+        if ((event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+             event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+             event->type() == ui::ET_GESTURE_SCROLL_END ||
+             event->type() == ui::ET_GESTURE_SWIPE) &&
+            owner_->surface_) {
+          gfx::RectF rect(owner_->item_->GetSwipeInputRect());
+          owner_->surface_->GetContentWindow()->transform().TransformRect(
+              &rect);
+          gfx::Point location = located_event->location();
+          views::View::ConvertPointFromWidget(owner_, &location);
+          bool contains = rect.Contains(gfx::PointF(location));
+
+          if (contains && event->type() == ui::ET_GESTURE_SCROLL_BEGIN)
+            swipe_captured_ = true;
+
+          event_for_android_only = contains && swipe_captured_;
+        }
+
+        if (event->type() == ui::ET_GESTURE_SCROLL_END)
+          swipe_captured_ = false;
+
+        if (!event_for_android_only)
+          widget->OnGestureEvent(located_event->AsGestureEvent());
       }
     }
 

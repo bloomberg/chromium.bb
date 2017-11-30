@@ -106,6 +106,8 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
 
   expand_state_ = data->expand_state;
   shown_contents_ = data->shown_contents;
+  swipe_input_rect_ =
+      data->swipe_input_rect ? *data->swipe_input_rect : gfx::Rect();
 
   notification->set_never_timeout(
       data->remote_input_state ==
@@ -194,6 +196,10 @@ mojom::ArcNotificationExpandState ArcNotificationItemImpl::GetExpandState()
 mojom::ArcNotificationShownContents ArcNotificationItemImpl::GetShownContents()
     const {
   return shown_contents_;
+}
+
+gfx::Rect ArcNotificationItemImpl::GetSwipeInputRect() const {
+  return swipe_input_rect_;
 }
 
 const std::string& ArcNotificationItemImpl::GetNotificationKey() const {
