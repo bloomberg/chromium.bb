@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/i18n/message_formatter.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -85,6 +86,73 @@ constexpr int kExternalInstallLeftColumnWidth = 350;
 // Time delay before the install button is enabled after initial display.
 int g_install_delay_in_ms = 500;
 
+// A custom view to contain the ratings information (stars, ratings count, etc).
+// With screen readers, this will handle conveying the information properly
+// (i.e., "Rated 4.2 stars by 379 reviews" rather than "image image...379").
+class RatingsView : public views::View {
+ public:
+  RatingsView(double rating, int rating_count)
+      : rating_(rating), rating_count_(rating_count) {
+    set_id(ExtensionInstallDialogView::kRatingsViewId);
+    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
+  }
+  ~RatingsView() override {}
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->role = ui::AX_ROLE_STATIC_TEXT;
+    base::string16 accessible_text;
+    if (rating_count_ == 0) {
+      accessible_text = l10n_util::GetStringUTF16(
+          IDS_EXTENSION_PROMPT_NO_RATINGS_ACCESSIBLE_TEXT);
+    } else {
+      accessible_text = base::i18n::MessageFormatter::FormatWithNumberedArgs(
+          l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_RATING_ACCESSIBLE_TEXT),
+          rating_, rating_count_);
+    }
+    node_data->SetName(accessible_text);
+  }
+
+ private:
+  double rating_;
+  int rating_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(RatingsView);
+};
+
+// A custom view for the ratings star image that will be ignored by screen
+// readers (since the RatingsView handles the context).
+class RatingStar : public views::ImageView {
+ public:
+  explicit RatingStar(const gfx::ImageSkia& image) { SetImage(image); }
+  ~RatingStar() override {}
+
+  // views::ImageView:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->role = ui::AX_ROLE_IGNORED;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RatingStar);
+};
+
+// A custom view for the ratings label that will be ignored by screen readers
+// (since the RatingsView handles the context).
+class RatingLabel : public views::Label {
+ public:
+  RatingLabel(const base::string16& text, int text_context)
+      : views::Label(text, text_context, views::style::STYLE_PRIMARY) {}
+  ~RatingLabel() override {}
+
+  // views::Label:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->role = ui::AX_ROLE_IGNORED;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RatingLabel);
+};
+
 // Get the appropriate indentation for an item if its parent is using bullet
 // points. If the parent is using bullets for its items, then a padding of one
 // unit will make the child item (which has no bullet) look like a sibling of
@@ -98,9 +166,7 @@ int GetLeftPaddingForBulletedItems(bool parent_bulleted) {
 
 void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
   views::View* parent = static_cast<views::View*>(data);
-  views::ImageView* image_view = new views::ImageView();
-  image_view->SetImage(*skia_image);
-  parent->AddChildView(image_view);
+  parent->AddChildView(new RatingStar(*skia_image));
 }
 
 // Creates a string for displaying |message| to the user. If it has to look
@@ -238,9 +304,8 @@ void ExtensionInstallDialogView::InitView() {
 
   if (prompt_->has_webstore_data()) {
     layout->StartRow(0, column_set_id);
-    views::View* rating = new views::View();
-    rating->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal));
+    RatingsView* rating =
+        new RatingsView(prompt_->average_rating(), prompt_->rating_count());
     layout->AddView(rating);
     prompt_->AppendRatingStars(AddResourceIcon, rating);
 
@@ -252,8 +317,7 @@ void ExtensionInstallDialogView::InitView() {
       rating_text_context = user_count_text_context = CONTEXT_DEPRECATED_SMALL;
     }
     views::Label* rating_count =
-        new views::Label(prompt_->GetRatingCount(), rating_text_context,
-                         views::style::STYLE_PRIMARY);
+        new RatingLabel(prompt_->GetRatingCount(), rating_text_context);
     // Add some space between the stars and the rating count.
     rating_count->SetBorder(views::CreateEmptyBorder(0, 2, 0, 0));
     rating->AddChildView(rating_count);

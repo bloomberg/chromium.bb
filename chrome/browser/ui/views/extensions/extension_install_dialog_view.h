@@ -39,6 +39,9 @@ class Link;
 class ExtensionInstallDialogView : public views::DialogDelegateView,
                                    public views::LinkListener {
  public:
+  // The views::View::id of the ratings section in the dialog.
+  static const int kRatingsViewId = 1;
+
   ExtensionInstallDialogView(
       Profile* profile,
       content::PageNavigator* navigator,
