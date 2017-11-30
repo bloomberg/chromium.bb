@@ -35,15 +35,35 @@ NetworkProcessPolicy::~NetworkProcessPolicy() {}
 
 ResultExpr NetworkProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
-#if !defined(__aarch64__)
+#if defined(__NR_access)
     case __NR_access:
+#endif
+#if defined(__NR_open)
     case __NR_open:
-#endif  // !defined(__aarch64__)
+#endif
+#if defined(__NR_faccessat)
     case __NR_faccessat:
-    case __NR_openat: {
-      auto* broker_process = SandboxLinux::GetInstance()->broker_process();
-      return Trap(BrokerProcess::SIGSYS_Handler, broker_process);
-    }
+#endif
+#if defined(__NR_openat)
+    case __NR_openat:
+#endif
+#if defined(__NR_stat)
+    case __NR_stat:
+#endif
+#if defined(__NR_stat64)
+    case __NR_stat64:
+#endif
+#if defined(__NR_fstatat)
+    case __NR_fstatat:
+#endif
+#if defined(__NR_newfstatat)
+    case __NR_newfstatat:
+#endif
+#if defined(__NR_rename)
+    case __NR_rename:
+#endif
+      return Trap(BrokerProcess::SIGSYS_Handler,
+                  SandboxLinux::GetInstance()->broker_process());
     default:
       // TODO(tsepez): FIX this.
       return Allow();
