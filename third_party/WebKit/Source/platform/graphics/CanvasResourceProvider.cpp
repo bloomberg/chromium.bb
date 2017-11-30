@@ -86,14 +86,6 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
     ResetSkiaTextureBinding();
   }
 
-  scoped_refptr<StaticBitmapImage> CreateSnapshot() override {
-    sk_sp<SkImage> image = GetSkSurface()->makeImageSnapshot();
-    if (!image)
-      return nullptr;
-    DCHECK(image->isTextureBacked());
-    return StaticBitmapImage::Create(image, ContextProviderWrapper());
-  }
-
   std::unique_ptr<CanvasResource> DoPrepareTransferableResource(
       viz::TransferableResource* out_resource) override {
     DCHECK(GetSkSurface());
@@ -238,13 +230,6 @@ class CanvasResourceProvider_Bitmap final : public CanvasResourceProvider {
   bool CanPrepareTransferableResource() const final { return false; }
 
  private:
-  scoped_refptr<StaticBitmapImage> CreateSnapshot() override {
-    sk_sp<SkImage> image = GetSkSurface()->makeImageSnapshot();
-    if (!image)
-      return nullptr;
-    return StaticBitmapImage::Create(image);
-  }
-
   std::unique_ptr<CanvasResource> DoPrepareTransferableResource(
       viz::TransferableResource* out_resource) final {
     NOTREACHED();  // Not directly compositable.
