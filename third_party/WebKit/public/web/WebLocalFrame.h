@@ -20,6 +20,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "public/platform/site_engagement.mojom-shared.h"
+#include "public/web/WebTextDirection.h"
 #include "public/web/selection_menu_behavior.mojom-shared.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/common/sandbox_flags.h"
@@ -477,6 +478,16 @@ class WebLocalFrame : public WebFrame {
   virtual bool ExecuteCommand(const WebString&) = 0;
   virtual bool ExecuteCommand(const WebString&, const WebString& value) = 0;
   virtual bool IsCommandEnabled(const WebString&) const = 0;
+
+  // Returns the text direction at the start and end bounds of the current
+  // selection.  If the selection range is empty, it returns false.
+  virtual bool SelectionTextDirection(WebTextDirection& start,
+                                      WebTextDirection& end) const = 0;
+  // Returns true if the selection range is nonempty and its anchor is first
+  // (i.e its anchor is its start).
+  virtual bool IsSelectionAnchorFirst() const = 0;
+  // Changes the text direction of the selected input node.
+  virtual void SetTextDirection(WebTextDirection) = 0;
 
   // Selection -----------------------------------------------------------
 

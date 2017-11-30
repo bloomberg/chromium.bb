@@ -593,76 +593,6 @@ bool WebFrameWidgetImpl::SelectionBounds(WebRect& anchor_web,
   return true;
 }
 
-// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
-// code needs to be refactored  (http://crbug.com/629721).
-bool WebFrameWidgetImpl::SelectionTextDirection(WebTextDirection& start,
-                                                WebTextDirection& end) const {
-  const LocalFrame* frame = FocusedLocalFrameInWidget();
-  if (!frame)
-    return false;
-
-  FrameSelection& selection = frame->Selection();
-  if (!selection.IsAvailable())
-    return false;
-
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  if (selection.ComputeVisibleSelectionInDOMTree()
-          .ToNormalizedEphemeralRange()
-          .IsNull())
-    return false;
-  start = ToWebTextDirection(PrimaryDirectionOf(
-      *selection.ComputeVisibleSelectionInDOMTree().Start().AnchorNode()));
-  end = ToWebTextDirection(PrimaryDirectionOf(
-      *selection.ComputeVisibleSelectionInDOMTree().End().AnchorNode()));
-  return true;
-}
-
-// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
-// code needs to be refactored  (http://crbug.com/629721).
-bool WebFrameWidgetImpl::IsSelectionAnchorFirst() const {
-  if (const LocalFrame* frame = FocusedLocalFrameInWidget()) {
-    FrameSelection& selection = frame->Selection();
-    return selection.IsAvailable() &&
-           selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsBaseFirst();
-  }
-  return false;
-}
-
-void WebFrameWidgetImpl::SetTextDirection(WebTextDirection direction) {
-  // The Editor::setBaseWritingDirection() function checks if we can change
-  // the text direction of the selected node and updates its DOM "dir"
-  // attribute and its CSS "direction" property.
-  // So, we just call the function as Safari does.
-  const LocalFrame* focused = FocusedLocalFrameInWidget();
-  if (!focused)
-    return;
-
-  Editor& editor = focused->GetEditor();
-  if (!editor.CanEdit())
-    return;
-
-  switch (direction) {
-    case kWebTextDirectionDefault:
-      editor.SetBaseWritingDirection(NaturalWritingDirection);
-      break;
-
-    case kWebTextDirectionLeftToRight:
-      editor.SetBaseWritingDirection(LeftToRightWritingDirection);
-      break;
-
-    case kWebTextDirectionRightToLeft:
-      editor.SetBaseWritingDirection(RightToLeftWritingDirection);
-      break;
-
-    default:
-      NOTIMPLEMENTED();
-      break;
-  }
-}
-
 bool WebFrameWidgetImpl::IsAcceleratedCompositingActive() const {
   return is_accelerated_compositing_active_;
 }
@@ -1160,13 +1090,6 @@ HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
           doc_point, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   result.SetToShadowHostIfInRestrictedShadowRoot();
   return result;
-}
-
-LocalFrame* WebFrameWidgetImpl::FocusedLocalFrameInWidget() const {
-  LocalFrame* frame = GetPage()->GetFocusController().FocusedFrame();
-  return (frame && frame->LocalFrameRoot() == local_root_->GetFrame())
-             ? frame
-             : nullptr;
 }
 
 LocalFrame* WebFrameWidgetImpl::FocusedLocalFrameAvailableForIme() const {

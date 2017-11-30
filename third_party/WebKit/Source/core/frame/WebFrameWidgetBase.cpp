@@ -27,6 +27,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebGestureCurve.h"
 #include "public/web/WebActiveWheelFlingParameters.h"
+#include "public/web/WebLocalFrame.h"
 #include "public/web/WebWidgetClient.h"
 
 namespace blink {
@@ -499,6 +500,10 @@ void WebFrameWidgetBase::TransferActiveWheelFlingAnimation(
   DCHECK_NE(parameters.source_device, kWebGestureDeviceUninitialized);
   fling_source_device_ = parameters.source_device;
   ScheduleAnimation();
+}
+
+WebLocalFrame* WebFrameWidgetBase::FocusedWebLocalFrameInWidget() const {
+  return WebLocalFrameImpl::FromFrame(FocusedLocalFrameInWidget());
 }
 
 WebGestureEvent WebFrameWidgetBase::CreateGestureScrollEventFromFling(

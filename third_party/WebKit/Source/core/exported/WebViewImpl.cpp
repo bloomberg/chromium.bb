@@ -2223,50 +2223,6 @@ bool WebViewImpl::SelectionBounds(WebRect& anchor_web,
   return true;
 }
 
-// TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
-// well. This code needs to be refactored  (http://crbug.com/629721).
-bool WebViewImpl::SelectionTextDirection(WebTextDirection& start,
-                                         WebTextDirection& end) const {
-  const LocalFrame* frame = FocusedLocalFrameInWidget();
-  if (!frame)
-    return false;
-
-  const FrameSelection& selection = frame->Selection();
-  if (!selection.IsAvailable()) {
-    // plugins/mouse-capture-inside-shadow.html reaches here.
-    return false;
-  }
-
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  if (selection.ComputeVisibleSelectionInDOMTree()
-          .ToNormalizedEphemeralRange()
-          .IsNull())
-    return false;
-  start = ToWebTextDirection(PrimaryDirectionOf(
-      *selection.ComputeVisibleSelectionInDOMTree().Start().AnchorNode()));
-  end = ToWebTextDirection(PrimaryDirectionOf(
-      *selection.ComputeVisibleSelectionInDOMTree().End().AnchorNode()));
-  return true;
-}
-
-// TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
-// well. This code needs to be refactored  (http://crbug.com/629721).
-bool WebViewImpl::IsSelectionAnchorFirst() const {
-  const LocalFrame* frame = FocusedLocalFrameInWidget();
-  if (!frame)
-    return false;
-
-  FrameSelection& selection = frame->Selection();
-  if (!selection.IsAvailable()) {
-    // plugins/mouse-capture-inside-shadow.html reaches here.
-    return false;
-  }
-  return selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsBaseFirst();
-}
-
 WebColor WebViewImpl::BackgroundColor() const {
   if (background_color_override_enabled_)
     return background_color_override_;
@@ -2284,40 +2240,6 @@ WebColor WebViewImpl::BackgroundColor() const {
 
 WebPagePopupImpl* WebViewImpl::GetPagePopup() const {
   return page_popup_.get();
-}
-
-// TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
-// well. This code needs to be refactored  (http://crbug.com/629721).
-void WebViewImpl::SetTextDirection(WebTextDirection direction) {
-  // The Editor::setBaseWritingDirection() function checks if we can change
-  // the text direction of the selected node and updates its DOM "dir"
-  // attribute and its CSS "direction" property.
-  // So, we just call the function as Safari does.
-  const LocalFrame* focused = FocusedLocalFrameInWidget();
-  if (!focused)
-    return;
-
-  Editor& editor = focused->GetEditor();
-  if (!editor.CanEdit())
-    return;
-
-  switch (direction) {
-    case kWebTextDirectionDefault:
-      editor.SetBaseWritingDirection(NaturalWritingDirection);
-      break;
-
-    case kWebTextDirectionLeftToRight:
-      editor.SetBaseWritingDirection(LeftToRightWritingDirection);
-      break;
-
-    case kWebTextDirectionRightToLeft:
-      editor.SetBaseWritingDirection(RightToLeftWritingDirection);
-      break;
-
-    default:
-      NOTIMPLEMENTED();
-      break;
-  }
 }
 
 bool WebViewImpl::IsAcceleratedCompositingActive() const {

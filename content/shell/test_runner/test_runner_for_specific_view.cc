@@ -504,7 +504,7 @@ void TestRunnerForSpecificView::SetTextDirection(
   else
     return;
 
-  web_view()->SetTextDirection(direction);
+  web_view()->FocusedFrame()->SetTextDirection(direction);
 }
 
 void TestRunnerForSpecificView::AddWebPageOverlay() {

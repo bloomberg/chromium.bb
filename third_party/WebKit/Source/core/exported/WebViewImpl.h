@@ -144,10 +144,6 @@ class CORE_EXPORT WebViewImpl final
   WebColor BackgroundColor() const override;
   WebPagePopupImpl* GetPagePopup() const override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
-  bool SelectionTextDirection(WebTextDirection& start,
-                              WebTextDirection& end) const override;
-  bool IsSelectionAnchorFirst() const override;
-  void SetTextDirection(WebTextDirection) override;
   bool IsAcceleratedCompositingActive() const override;
   void WillCloseLayerTreeView() override;
   void DidAcquirePointerLock() override;

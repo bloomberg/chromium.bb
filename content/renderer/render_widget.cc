@@ -1829,9 +1829,8 @@ void RenderWidget::OnRepaint(gfx::Size size_to_paint) {
 }
 
 void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
-  if (!GetWebWidget())
-    return;
-  GetWebWidget()->SetTextDirection(direction);
+  if (auto* frame = GetFocusedWebLocalFrameInWidget())
+    frame->SetTextDirection(direction);
 }
 
 void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
@@ -2198,14 +2197,17 @@ void RenderWidget::UpdateSelectionBounds() {
 #endif
   if (send_ipc) {
     ViewHostMsg_SelectionBounds_Params params;
+    params.is_anchor_first = false;
     GetSelectionBounds(&params.anchor_rect, &params.focus_rect);
     if (selection_anchor_rect_ != params.anchor_rect ||
         selection_focus_rect_ != params.focus_rect) {
       selection_anchor_rect_ = params.anchor_rect;
       selection_focus_rect_ = params.focus_rect;
-      GetWebWidget()->SelectionTextDirection(params.focus_dir,
-                                             params.anchor_dir);
-      params.is_anchor_first = GetWebWidget()->IsSelectionAnchorFirst();
+      if (auto* focused_frame = GetFocusedWebLocalFrameInWidget()) {
+        focused_frame->SelectionTextDirection(params.focus_dir,
+                                              params.anchor_dir);
+        params.is_anchor_first = focused_frame->IsSelectionAnchorFirst();
+      }
       Send(new ViewHostMsg_SelectionBoundsChanged(routing_id_, params));
     }
   }
@@ -2580,6 +2582,13 @@ void RenderWidget::UpdateURLForCompositorUkm() {
     return;
 
   compositor_->SetURLForUkm(render_frame->GetWebFrame()->GetDocument().Url());
+}
+
+blink::WebLocalFrame* RenderWidget::GetFocusedWebLocalFrameInWidget() const {
+  if (!GetWebWidget() || !GetWebWidget()->IsWebFrameWidget())
+    return nullptr;
+  return static_cast<blink::WebFrameWidget*>(GetWebWidget())
+      ->FocusedWebLocalFrameInWidget();
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
