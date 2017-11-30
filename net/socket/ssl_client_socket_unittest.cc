@@ -2594,13 +2594,20 @@ TEST_F(SSLClientSocketTest, EVCertStatusRemovedForNonCompliantCert) {
 // Test that when an EV certificate does not conform to the CT policy and its EV
 // status is removed, the corresponding histogram is recorded correctly.
 TEST_F(SSLClientSocketTest, NonCTCompliantEVHistogram) {
-  const char kHistogramName[] = "Net.CertificateTransparency.EVCompliance.SSL";
+  const char kHistogramName[] = "Net.CertificateTransparency.EVCompliance2.SSL";
   base::HistogramTester histograms;
   SpawnedTestServer::SSLOptions ssl_options;
   ASSERT_TRUE(StartTestServer(ssl_options));
 
-  SSLConfig ssl_config;
-  AddServerCertStatusToSSLConfig(CERT_STATUS_IS_EV, &ssl_config);
+  scoped_refptr<X509Certificate> server_cert =
+      spawned_test_server()->GetCertificate();
+
+  // Certificate is trusted and chains to a public root.
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.verified_cert = server_cert;
+  verify_result.cert_status = CERT_STATUS_IS_EV;
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Emulate non-compliance of the certificate to the policy.
   MockCTPolicyEnforcer policy_enforcer;
@@ -2609,6 +2616,7 @@ TEST_F(SSLClientSocketTest, NonCTCompliantEVHistogram) {
       .WillRepeatedly(
           Return(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
+  SSLConfig ssl_config;
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   EXPECT_THAT(rv, IsOk());
@@ -2626,13 +2634,20 @@ TEST_F(SSLClientSocketTest, NonCTCompliantEVHistogram) {
 // Test that when an EV certificate does conform to the CT policy and its EV
 // status is not removed, the corresponding histogram is recorded correctly.
 TEST_F(SSLClientSocketTest, CTCompliantEVHistogram) {
-  const char kHistogramName[] = "Net.CertificateTransparency.EVCompliance.SSL";
+  const char kHistogramName[] = "Net.CertificateTransparency.EVCompliance2.SSL";
   base::HistogramTester histograms;
   SpawnedTestServer::SSLOptions ssl_options;
   ASSERT_TRUE(StartTestServer(ssl_options));
 
-  SSLConfig ssl_config;
-  AddServerCertStatusToSSLConfig(CERT_STATUS_IS_EV, &ssl_config);
+  scoped_refptr<X509Certificate> server_cert =
+      spawned_test_server()->GetCertificate();
+
+  // Certificate is trusted and chains to a public root.
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.verified_cert = server_cert;
+  verify_result.cert_status = CERT_STATUS_IS_EV;
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Emulate non-compliance of the certificate to the policy.
   MockCTPolicyEnforcer policy_enforcer;
@@ -2641,6 +2656,7 @@ TEST_F(SSLClientSocketTest, CTCompliantEVHistogram) {
       .WillRepeatedly(
           Return(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
 
+  SSLConfig ssl_config;
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   EXPECT_THAT(rv, IsOk());
@@ -3517,7 +3533,7 @@ TEST_F(SSLClientSocketTest, CTIsRequired) {
 // Test that the CT compliance status is recorded in a histogram.
 TEST_F(SSLClientSocketTest, CTComplianceStatusHistogram) {
   const char kHistogramName[] =
-      "Net.CertificateTransparency.ConnectionComplianceStatus.SSL";
+      "Net.CertificateTransparency.ConnectionComplianceStatus2.SSL";
   base::HistogramTester histograms;
 
   SpawnedTestServer::SSLOptions ssl_options;
@@ -3548,12 +3564,44 @@ TEST_F(SSLClientSocketTest, CTComplianceStatusHistogram) {
       static_cast<int>(ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS), 1);
 }
 
+// Test that the CT compliance status histogram is not recorded for
+// locally-installed roots.
+TEST_F(SSLClientSocketTest, CTComplianceStatusHistogramLocalRoot) {
+  const char kHistogramName[] =
+      "Net.CertificateTransparency.ConnectionComplianceStatus2.SSL";
+  base::HistogramTester histograms;
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+  scoped_refptr<X509Certificate> server_cert =
+      spawned_test_server()->GetCertificate();
+
+  // Certificate is trusted but chains to a local root.
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = false;
+  verify_result.verified_cert = server_cert;
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
+
+  // Set up CT.
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
+      .WillRepeatedly(
+          Return(ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS));
+
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+
+  histograms.ExpectTotalCount(kHistogramName, 0);
+}
+
 // Test that when CT is required (in this case, by an Expect-CT opt-in) and the
 // connection is compliant, the histogram for CT-required connections is
 // recorded properly.
 TEST_F(SSLClientSocketTest, CTRequiredHistogramCompliant) {
   const char kHistogramName[] =
-      "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.SSL";
+      "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus2.SSL";
   base::HistogramTester histograms;
 
   base::test::ScopedFeatureList feature_list;
@@ -3601,7 +3649,7 @@ TEST_F(SSLClientSocketTest, CTRequiredHistogramCompliant) {
 // histogram for CT-required connections is not recorded.
 TEST_F(SSLClientSocketTest, CTNotRequiredHistogram) {
   const char kHistogramName[] =
-      "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.SSL";
+      "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus2.SSL";
   base::HistogramTester histograms;
 
   SpawnedTestServer::SSLOptions ssl_options;
@@ -3636,7 +3684,7 @@ TEST_F(SSLClientSocketTest, CTNotRequiredHistogram) {
 // connections.
 TEST_F(SSLClientSocketTest, CTRequiredHistogramNonCompliant) {
   const char kHistogramName[] =
-      "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.SSL";
+      "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus2.SSL";
   base::HistogramTester histograms;
 
   base::test::ScopedFeatureList feature_list;
@@ -3748,6 +3796,49 @@ TEST_F(SSLClientSocketTest, CTRequirementsFlagMet) {
   SSLInfo ssl_info;
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
   EXPECT_TRUE(ssl_info.ct_policy_compliance_required);
+}
+
+// Test that when CT is required (in this case, by a CT delegate), the CT
+// required histogram is not recorded for a locally installed root.
+TEST_F(SSLClientSocketTest, CTRequiredHistogramNonCompliantLocalRoot) {
+  const char kHistogramName[] =
+      "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus2.SSL";
+  base::HistogramTester histograms;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      TransportSecurityState::kDynamicExpectCTFeature);
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+  scoped_refptr<X509Certificate> server_cert =
+      spawned_test_server()->GetCertificate();
+
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = false;
+  verify_result.verified_cert = server_cert;
+  verify_result.public_key_hashes = MakeHashValueVector(0);
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
+
+  // Set up the CT requirement and failure to comply.
+  MockRequireCTDelegate require_ct_delegate;
+  transport_security_state_->SetRequireCTDelegate(&require_ct_delegate);
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_))
+      .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
+                                 CTRequirementLevel::REQUIRED));
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
+      .WillRepeatedly(
+          Return(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
+
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+
+  EXPECT_THAT(rv, IsError(ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+
+  histograms.ExpectTotalCount(kHistogramName, 0);
 }
 
 // Test that when CT is required (in this case, by an Expect-CT opt-in), the
