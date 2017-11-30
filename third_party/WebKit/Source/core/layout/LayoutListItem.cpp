@@ -343,13 +343,22 @@ void LayoutListItem::PositionListMarker() {
     if (need_block_direction_align_)
       AlignMarkerInBlockDirection();
 
+    // We figured out the inline position of the marker before laying out the
+    // line so that floats later in the line don't interfere with it. However
+    // if the line has shifted down then that position will be too far out.
+    // So we always take the lowest value of (1) the position of the marker
+    // if we calculate it now and (2) the inline position we calculated before
+    // laying out the line.
     // TODO(jchaffraix): Propagating the overflow to the line boxes seems
     // pretty wrong (https://crbug.com/554160).
     // FIXME: Need to account for relative positioning in the layout overflow.
     if (Style()->IsLeftToRightDirection()) {
-      marker_logical_left = marker_->LineOffset() - line_offset -
-                            PaddingStart() - BorderStart() +
-                            marker_->MarginStart();
+      LayoutUnit marker_line_offset =
+          std::min(marker_->LineOffset(),
+                   LogicalLeftOffsetForLine(marker_->LogicalTop(),
+                                            kDoNotIndentText, LayoutUnit()));
+      marker_logical_left = marker_line_offset - line_offset - PaddingStart() -
+                            BorderStart() + marker_->MarginStart();
       marker_->InlineBoxWrapper()->MoveInInlineDirection(
           marker_logical_left - marker_old_logical_left);
       for (InlineFlowBox* box = marker_->InlineBoxWrapper()->Parent(); box;
@@ -380,9 +389,12 @@ void LayoutListItem::PositionListMarker() {
           hit_self_painting_layer = true;
       }
     } else {
-      marker_logical_left = marker_->LineOffset() - line_offset +
-                            PaddingStart() + BorderStart() +
-                            marker_->MarginEnd();
+      LayoutUnit marker_line_offset =
+          std::max(marker_->LineOffset(),
+                   LogicalRightOffsetForLine(marker_->LogicalTop(),
+                                             kDoNotIndentText, LayoutUnit()));
+      marker_logical_left = marker_line_offset - line_offset + PaddingStart() +
+                            BorderStart() + marker_->MarginEnd();
       marker_->InlineBoxWrapper()->MoveInInlineDirection(
           marker_logical_left - marker_old_logical_left);
       for (InlineFlowBox* box = marker_->InlineBoxWrapper()->Parent(); box;
