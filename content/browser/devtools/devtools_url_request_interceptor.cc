@@ -210,7 +210,12 @@ void DevToolsURLRequestInterceptor::RemoveFilterEntry(
     const FilterEntry* entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  for (const auto pair : interception_id_to_job_map_) {
+  // NOTE: Calling DevToolsURLInterceptorRequestJob::StopIntercepting can
+  // destruct the jobs which can remove entries in
+  // |interception_id_to_job_map_|, so we make a copy.
+  base::flat_map<std::string, DevToolsURLInterceptorRequestJob*> jobs(
+      interception_id_to_job_map_);
+  for (const auto pair : jobs) {
     if (pair.second->owning_entry_id() == reinterpret_cast<intptr_t>(entry))
       pair.second->StopIntercepting();
   }
