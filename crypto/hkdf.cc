@@ -130,7 +130,6 @@ HKDF::HKDF(base::StringPiece secret,
   }
 }
 
-HKDF::~HKDF() {
-}
+HKDF::~HKDF() = default;
 
 }  // namespace crypto

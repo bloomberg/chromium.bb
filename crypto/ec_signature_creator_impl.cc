@@ -23,7 +23,7 @@ ECSignatureCreatorImpl::ECSignatureCreatorImpl(ECPrivateKey* key)
   EnsureOpenSSLInit();
 }
 
-ECSignatureCreatorImpl::~ECSignatureCreatorImpl() {}
+ECSignatureCreatorImpl::~ECSignatureCreatorImpl() = default;
 
 bool ECSignatureCreatorImpl::Sign(const uint8_t* data,
                                   int data_len,

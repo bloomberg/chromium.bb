@@ -66,9 +66,9 @@ std::unique_ptr<RSAPrivateKey> RSAPrivateKey::CreateFromKey(EVP_PKEY* key) {
   return copy;
 }
 
-RSAPrivateKey::RSAPrivateKey() {}
+RSAPrivateKey::RSAPrivateKey() = default;
 
-RSAPrivateKey::~RSAPrivateKey() {}
+RSAPrivateKey::~RSAPrivateKey() = default;
 
 std::unique_ptr<RSAPrivateKey> RSAPrivateKey::Copy() const {
   std::unique_ptr<RSAPrivateKey> copy(new RSAPrivateKey);

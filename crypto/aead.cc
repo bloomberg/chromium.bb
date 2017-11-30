@@ -24,8 +24,7 @@ Aead::Aead(AeadAlgorithm algorithm) : key_(nullptr) {
   }
 }
 
-Aead::~Aead() {
-}
+Aead::~Aead() = default;
 
 void Aead::Init(const std::string* key) {
   DCHECK(!key_);
