@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/tabs/tab_activity_watcher.h"
 
+#include "base/metrics/field_trial_params.h"
+#include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_metrics_logger_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -20,8 +23,12 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabActivityWatcher::WebContentsData);
 namespace {
 
 // Default time before a tab with the same SourceId can be logged again.
-constexpr base::TimeDelta kPerSourceLogTimeout =
+constexpr base::TimeDelta kDefaultPerSourceLogTimeout =
     base::TimeDelta::FromSeconds(10);
+
+// Fieldtrial param to override the default per-source log timeout above.
+constexpr char kPerSourceLogTimeoutMsecParamName[] =
+    "per_source_log_timeout_msec";
 
 }  // namespace
 
@@ -86,8 +93,11 @@ class TabActivityWatcher::WebContentsData
 
 TabActivityWatcher::TabActivityWatcher()
     : tab_metrics_logger_(std::make_unique<TabMetricsLoggerImpl>()),
-      browser_tab_strip_tracker_(this, this, nullptr),
-      per_source_log_timeout_(kPerSourceLogTimeout) {
+      browser_tab_strip_tracker_(this, this, nullptr) {
+  per_source_log_timeout_ =
+      base::TimeDelta::FromMilliseconds(base::GetFieldTrialParamByFeatureAsInt(
+          features::kTabMetricsLogging, kPerSourceLogTimeoutMsecParamName,
+          kDefaultPerSourceLogTimeout.InMilliseconds()));
   browser_tab_strip_tracker_.Init();
 }
 
