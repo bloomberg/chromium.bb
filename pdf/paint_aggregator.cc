@@ -43,7 +43,7 @@ PaintAggregator::PaintUpdate::~PaintUpdate() = default;
 PaintAggregator::InternalPaintUpdate::InternalPaintUpdate()
     : synthesized_scroll_damage_rect_(false) {}
 
-PaintAggregator::InternalPaintUpdate::~InternalPaintUpdate() {}
+PaintAggregator::InternalPaintUpdate::~InternalPaintUpdate() = default;
 
 pp::Rect PaintAggregator::InternalPaintUpdate::GetScrollDamage() const {
   // Should only be scrolling in one direction at a time.
@@ -81,7 +81,7 @@ pp::Rect PaintAggregator::InternalPaintUpdate::GetScrollDamage() const {
   return scroll_rect.Intersect(damaged_rect);
 }
 
-PaintAggregator::PaintAggregator() {}
+PaintAggregator::PaintAggregator() = default;
 
 bool PaintAggregator::HasPendingUpdate() const {
   return !update_.scroll_rect.IsEmpty() || !update_.paint_rects.empty();

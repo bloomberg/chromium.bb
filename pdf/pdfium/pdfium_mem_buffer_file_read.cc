@@ -17,7 +17,7 @@ PDFiumMemBufferFileRead::PDFiumMemBufferFileRead(const void* data,
   data_ = reinterpret_cast<const unsigned char*>(data);
 }
 
-PDFiumMemBufferFileRead::~PDFiumMemBufferFileRead() {}
+PDFiumMemBufferFileRead::~PDFiumMemBufferFileRead() = default;
 
 int PDFiumMemBufferFileRead::GetBlock(void* param,
                                       unsigned long position,

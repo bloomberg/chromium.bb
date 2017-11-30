@@ -26,7 +26,7 @@ bool g_sdk_initialized_via_pepper = false;
 
 }  // namespace
 
-PDFModule::PDFModule() {}
+PDFModule::PDFModule() = default;
 
 PDFModule::~PDFModule() {
   if (g_sdk_initialized_via_pepper) {

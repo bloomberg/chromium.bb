@@ -52,11 +52,11 @@ bool IsValidContentType(const std::string& type) {
 
 }  // namespace
 
-DocumentLoader::Client::~Client() {}
+DocumentLoader::Client::~Client() = default;
 
-DocumentLoader::Chunk::Chunk() {}
+DocumentLoader::Chunk::Chunk() = default;
 
-DocumentLoader::Chunk::~Chunk() {}
+DocumentLoader::Chunk::~Chunk() = default;
 
 void DocumentLoader::Chunk::Clear() {
   chunk_index = 0;
@@ -67,7 +67,7 @@ void DocumentLoader::Chunk::Clear() {
 DocumentLoader::DocumentLoader(Client* client)
     : client_(client), loader_factory_(this) {}
 
-DocumentLoader::~DocumentLoader() {}
+DocumentLoader::~DocumentLoader() = default;
 
 bool DocumentLoader::Init(std::unique_ptr<URLLoaderWrapper> loader,
                           const std::string& url) {

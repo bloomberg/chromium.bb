@@ -78,10 +78,9 @@ namespace chrome_pdf {
 
 PDFiumPage::LinkTarget::LinkTarget() : page(-1) {}
 
-PDFiumPage::LinkTarget::LinkTarget(const LinkTarget& other)
-    : url(other.url), page(other.page), y_in_pixels(other.y_in_pixels) {}
+PDFiumPage::LinkTarget::LinkTarget(const LinkTarget& other) = default;
 
-PDFiumPage::LinkTarget::~LinkTarget() {}
+PDFiumPage::LinkTarget::~LinkTarget() = default;
 
 PDFiumPage::PDFiumPage(PDFiumEngine* engine,
                        int i,

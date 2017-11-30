@@ -27,7 +27,7 @@ class TestURLLoader : public URLLoaderWrapper {
  public:
   class LoaderData {
    public:
-    LoaderData() {}
+    LoaderData() = default;
     ~LoaderData() {
       // We should call callbacks to prevent memory leaks.
       // The callbacks don't do anything, because the objects that created the
@@ -191,7 +191,7 @@ class TestURLLoader : public URLLoaderWrapper {
 class TestClient : public DocumentLoader::Client {
  public:
   TestClient() { full_page_loader_data()->set_content_type("application/pdf"); }
-  ~TestClient() override {}
+  ~TestClient() override = default;
 
   // DocumentLoader::Client overrides:
   pp::Instance* GetPluginInstance() override { return nullptr; }
@@ -247,7 +247,7 @@ class TestClient : public DocumentLoader::Client {
 
 class MockClient : public TestClient {
  public:
-  MockClient() {}
+  MockClient() = default;
 
   MOCK_METHOD0(OnPendingRequestComplete, void());
   MOCK_METHOD0(OnNewDataReceived, void());

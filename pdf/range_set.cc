@@ -20,23 +20,20 @@ gfx::Range FixDirection(const gfx::Range& range) {
 
 }  // namespace
 
-RangeSet::RangeSet() {}
+RangeSet::RangeSet() = default;
 
 RangeSet::RangeSet(const gfx::Range& range) {
   Union(range);
 }
 
-RangeSet::RangeSet(const RangeSet& range_set) : ranges_(range_set.ranges_) {}
+RangeSet::RangeSet(const RangeSet& range_set) = default;
 
 RangeSet::RangeSet(RangeSet&& range_set)
     : ranges_(std::move(range_set.ranges_)) {}
 
-RangeSet& RangeSet::operator=(const RangeSet& other) {
-  ranges_ = other.ranges_;
-  return *this;
-}
+RangeSet& RangeSet::operator=(const RangeSet& other) = default;
 
-RangeSet::~RangeSet() {}
+RangeSet::~RangeSet() = default;
 
 bool RangeSet::operator==(const RangeSet& other) const {
   return other.ranges_ == ranges_;
