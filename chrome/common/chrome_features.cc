@@ -127,6 +127,12 @@ const base::Feature kTabStripKeyboardFocus{"TabStripKeyboardFocus",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
+#if !defined(OS_ANDROID)
+// Enables logging UKMs for background tab activity by TabActivityWatcher.
+const base::Feature kTabMetricsLogging{"TabMetricsLogging",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
 // Enables Basic/Advanced tabs in ClearBrowsingData.
 const base::Feature kTabsInCbd{"TabsInCBD", base::FEATURE_ENABLED_BY_DEFAULT};
 
