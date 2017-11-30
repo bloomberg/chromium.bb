@@ -55,7 +55,15 @@ static const uint8_t kZigzagScan8x8[64] = {
     12, 19, 26, 33, 40, 48, 41, 34, 27, 20, 13, 6,  7,  14, 21, 28,
     35, 42, 49, 56, 57, 50, 43, 36, 29, 22, 15, 23, 30, 37, 44, 51,
     58, 59, 52, 45, 38, 31, 39, 46, 53, 60, 61, 54, 47, 55, 62, 63};
+
+// Returns the preferred VA_RT_FORMAT for the given |profile|.
+unsigned int GetVaFormatForVideoCodecProfile(VideoCodecProfile profile) {
+  if (profile == VP9PROFILE_PROFILE2 || profile == VP9PROFILE_PROFILE3)
+    return VA_RT_FORMAT_YUV420_10BPP;
+  return VA_RT_FORMAT_YUV420;
 }
+
+}  // namespace
 
 static void ReportToUMA(VAVDADecoderFailure failure) {
   UMA_HISTOGRAM_ENUMERATION("Media.VAVDA.DecoderFailure", failure,
@@ -336,6 +344,7 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       awaiting_va_surfaces_recycle_(false),
       requested_num_pics_(0),
       output_format_(gfx::BufferFormat::BGRX_8888),
+      profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       make_context_current_cb_(make_context_current_cb),
       bind_image_cb_(bind_image_cb),
       weak_this_factory_(this) {
@@ -403,6 +412,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
     VLOGF(1) << "Unsupported profile " << GetProfileName(profile);
     return false;
   }
+  profile_ = profile;
 
   CHECK(decoder_thread_.Start());
   decoder_thread_task_runner_ = decoder_thread_.task_runner();
@@ -769,9 +779,10 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
       << ", requested " << requested_num_pics_ << ")", INVALID_ARGUMENT, );
   DCHECK(requested_pic_size_ == buffers[0].size());
 
+  const unsigned int va_format = GetVaFormatForVideoCodecProfile(profile_);
   std::vector<VASurfaceID> va_surface_ids;
   RETURN_AND_NOTIFY_ON_FAILURE(
-      vaapi_wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, requested_pic_size_,
+      vaapi_wrapper_->CreateSurfaces(va_format, requested_pic_size_,
                                      buffers.size(), &va_surface_ids),
       "Failed creating VA Surfaces", PLATFORM_FAILURE, );
   DCHECK_EQ(va_surface_ids.size(), buffers.size());
@@ -1716,11 +1727,6 @@ bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::SubmitDecode(
   const Vp9FrameHeader* frame_hdr = pic->frame_hdr.get();
   DCHECK(frame_hdr);
 
-  if (frame_hdr->profile != 0) {
-    VLOGF(1) << "Unsupported profile" << frame_hdr->profile;
-    return false;
-  }
-
   pic_param.frame_width = base::checked_cast<uint16_t>(frame_hdr->frame_width);
   pic_param.frame_height =
       base::checked_cast<uint16_t>(frame_hdr->frame_height);
@@ -1780,6 +1786,9 @@ bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::SubmitDecode(
   ARRAY_MEMCPY_CHECKED(pic_param.segment_pred_probs, seg.pred_probs);
 
   pic_param.profile = frame_hdr->profile;
+  pic_param.bit_depth = frame_hdr->bit_depth;
+  DCHECK((pic_param.profile == 0 && pic_param.bit_depth == 8) ||
+         (pic_param.profile == 2 && pic_param.bit_depth == 10));
 
   if (!vaapi_wrapper_->SubmitBuffer(VAPictureParameterBufferType,
                                     sizeof(pic_param), &pic_param))

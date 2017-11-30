@@ -116,11 +116,6 @@ namespace {
 // and not taken from HW documentation.
 const int kMaxEncoderFramerate = 30;
 
-// Config attributes common for both encode and decode.
-static const VAConfigAttrib kCommonVAConfigAttribs[] = {
-    {VAConfigAttribRTFormat, VA_RT_FORMAT_YUV420},
-};
-
 // Attributes required for encode. This only applies to video encode, not JPEG
 // encode.
 static const VAConfigAttrib kVideoEncodeVAConfigAttribs[] = {
@@ -142,7 +137,8 @@ static const struct {
     {VP8PROFILE_ANY, VAProfileVP8Version0_3},
     {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
     {VP9PROFILE_PROFILE1, VAProfileVP9Profile1},
-    // TODO(mcasas): support other VP9 Profiles, https://crbug.com/778093.
+    {VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
+    {VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
 };
 
 // This class is a wrapper around its |va_display_| (and its associated
@@ -314,9 +310,13 @@ static std::vector<VAConfigAttrib> GetRequiredAttribs(
     VaapiWrapper::CodecMode mode,
     VAProfile profile) {
   std::vector<VAConfigAttrib> required_attribs;
-  required_attribs.insert(
-      required_attribs.end(), kCommonVAConfigAttribs,
-      kCommonVAConfigAttribs + arraysize(kCommonVAConfigAttribs));
+  // VAConfigAttribRTFormat is common to both encode and decode |mode|s.
+  if (profile == VAProfileVP9Profile2 || profile == VAProfileVP9Profile3) {
+    required_attribs.push_back(
+        {VAConfigAttribRTFormat, VA_RT_FORMAT_YUV420_10BPP});
+  } else {
+    required_attribs.push_back({VAConfigAttribRTFormat, VA_RT_FORMAT_YUV420});
+  }
   if (mode == VaapiWrapper::kEncode && profile != VAProfileJPEGBaseline) {
     required_attribs.insert(
         required_attribs.end(), kVideoEncodeVAConfigAttribs,
