@@ -170,7 +170,7 @@ class PaymentRequestShippingAddressEditorTest
   }
 
   void SelectCountryInCombobox(const base::string16& country_name) {
-    ResetEventObserver(DialogEvent::EDITOR_VIEW_UPDATED);
+    ResetEventWaiter(DialogEvent::EDITOR_VIEW_UPDATED);
     views::Combobox* country_combobox = static_cast<views::Combobox*>(
         dialog_view()->GetViewByID(EditorViewController::GetInputFieldViewId(
             autofill::ADDRESS_HOME_COUNTRY)));
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
   // We also need to set the state when no region data is provided.
   SetFieldTestValue(autofill::ADDRESS_HOME_STATE);
 
-  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
 
   // Verifying the data is in the DB.
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
@@ -257,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // We also need to set the state when no region data is provided.
   SetFieldTestValue(autofill::ADDRESS_HOME_STATE);
 
-  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
 
   // Verifying the data is in the DB.
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
@@ -303,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
 
   std::string country_code(GetSelectedCountryCode());
 
-  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
 
   // Verifying the data is in the DB.
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
@@ -365,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   for (size_t country_index = 10; country_index < num_countries;
        country_index += num_countries / 10) {
     // The editor updates asynchronously when the country changes.
-    ResetEventObserver(DialogEvent::EDITOR_VIEW_UPDATED);
+    ResetEventWaiter(DialogEvent::EDITOR_VIEW_UPDATED);
 
     views::Combobox* region_combobox = static_cast<views::Combobox*>(
         dialog_view()->GetViewByID(EditorViewController::GetInputFieldViewId(
@@ -457,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // value can be set as the state.
   SetFieldTestValue(autofill::ADDRESS_HOME_STATE);
   SetCommonFields();
-  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
 
   // Verifying the data is in the DB.
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
@@ -490,7 +490,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   OpenShippingAddressEditorScreen();
 
   // The editor updates asynchronously when the regions data load times out.
-  ResetEventObserver(DialogEvent::EDITOR_VIEW_UPDATED);
+  ResetEventWaiter(DialogEvent::EDITOR_VIEW_UPDATED);
   test_region_data_loader_.SendAsynchronousData(
       std::vector<std::pair<std::string, std::string>>());
   WaitForObservedEvent();
@@ -498,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Now any textual value can be set for the ADDRESS_HOME_STATE.
   SetFieldTestValue(autofill::ADDRESS_HOME_STATE);
   SetCommonFields();
-  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
 
   // Verifying the data is in the DB.
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
@@ -543,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   test_region_data_loader_.set_synchronous_callback(true);
   OpenShippingAddressSectionScreen();
 
-  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
                                 DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
 
@@ -564,7 +564,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
   personal_data_manager->AddObserver(&personal_data_observer_);
 
-  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
 
   // Wait until the web database has been updated and the notification sent.
   base::RunLoop data_loop;
@@ -625,7 +625,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   SetRegionDataLoader(&test_region_data_loader_);
   test_region_data_loader_.set_synchronous_callback(true);
   OpenShippingAddressSectionScreen();
-  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
                                 DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
 
@@ -664,7 +664,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   SetEditorTextfieldValue(base::UTF8ToUTF16("+61 2 9374 4000"),
                           autofill::PHONE_HOME_WHOLE_NUMBER);
 
-  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
   ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
 }
 
@@ -710,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   EXPECT_EQ(1, list_view->child_count());
   views::View* edit_button = list_view->child_at(0)->GetViewByID(
       static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
-  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   ClickOnDialogViewAndWait(edit_button);
 
   SelectCountryInCombobox(base::ASCIIToUTF16(kCountryWithoutStates));
@@ -720,7 +720,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   SetEditorTextfieldValue(base::ASCIIToUTF16(kCountryWithoutStatesPhoneNumber),
                           autofill::PHONE_HOME_WHOLE_NUMBER);
 
-  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
 
   // Verifying the data is in the DB.
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
@@ -820,7 +820,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   EXPECT_EQ(base::ASCIIToUTF16("Enter a valid address"),
             static_cast<views::Label*>(error_label)->text());
 
-  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
                                 DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
   std::vector<std::pair<std::string, std::string>> regions1;
@@ -895,7 +895,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   EXPECT_EQ(base::ASCIIToUTF16("Enter a valid address"),
             static_cast<views::Label*>(error_label)->text());
 
-  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
                                 DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
   std::vector<std::pair<std::string, std::string>> regions1;
@@ -945,7 +945,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   EXPECT_EQ(base::ASCIIToUTF16("Enter a valid address"),
             static_cast<views::Label*>(error_label)->text());
 
-  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
                                 DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
   std::vector<std::pair<std::string, std::string>> regions1;
@@ -1000,7 +1000,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   EXPECT_EQ(base::ASCIIToUTF16("Enter a valid address"),
             static_cast<views::Label*>(error_label)->text());
 
-  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
                                 DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
 
@@ -1047,7 +1047,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   EXPECT_EQ(base::ASCIIToUTF16("Enter a valid address"),
             static_cast<views::Label*>(error_label)->text());
 
-  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
                                 DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
 
@@ -1093,7 +1093,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   test_region_data_loader_.SetRegionData(regions);
   OpenShippingAddressSectionScreen();
 
-  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
                                 DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
 
@@ -1125,7 +1125,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   test_region_data_loader_.SetRegionData(regions);
   OpenShippingAddressSectionScreen();
 
-  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
                                 DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
 
@@ -1147,7 +1147,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   InvokePaymentRequestUI();
   OpenShippingAddressSectionScreen();
 
-  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
                                 DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
 

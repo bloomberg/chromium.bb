@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestAutofillInstrumentUseStatsTest,
   // Complete the Payment Request.
   test_clock.SetNow(kSomeLaterDate);
   InvokePaymentRequestUI();
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Check that the usage of the card was recorded.
@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressUseStatsTest, RecordUse) {
   // Complete the Payment Request.
   test_clock.SetNow(kSomeLaterDate);
   InvokePaymentRequestUI();
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Check that the usage of the profile was recorded.
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactAddressUseStatsTest, RecordUse) {
   // Complete the Payment Request.
   test_clock.SetNow(kSomeLaterDate);
   InvokePaymentRequestUI();
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Check that the usage of the profile was recorded.
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestSameShippingAndContactAddressUseStatsTest,
   // Complete the Payment Request.
   test_clock.SetNow(kSomeLaterDate);
   InvokePaymentRequestUI();
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Check that the usage of the profile was only recorded once.

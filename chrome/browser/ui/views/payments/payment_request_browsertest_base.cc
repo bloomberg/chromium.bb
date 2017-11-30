@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/autofill/dialog_event_waiter.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/validating_combobox.h"
@@ -130,103 +131,103 @@ void PaymentRequestBrowserTestBase::SetBrowserWindowInactive() {
 }
 
 void PaymentRequestBrowserTestBase::OnCanMakePaymentCalled() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
 }
 
 void PaymentRequestBrowserTestBase::OnCanMakePaymentReturned() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::CAN_MAKE_PAYMENT_RETURNED);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::CAN_MAKE_PAYMENT_RETURNED);
 }
 
 void PaymentRequestBrowserTestBase::OnNotSupportedError() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::NOT_SUPPORTED_ERROR);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::NOT_SUPPORTED_ERROR);
 }
 
 void PaymentRequestBrowserTestBase::OnConnectionTerminated() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::DIALOG_CLOSED);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::DIALOG_CLOSED);
 }
 
 void PaymentRequestBrowserTestBase::OnAbortCalled() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::ABORT_CALLED);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::ABORT_CALLED);
 }
 
 void PaymentRequestBrowserTestBase::OnDialogOpened() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::DIALOG_OPENED);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::DIALOG_OPENED);
 }
 
 void PaymentRequestBrowserTestBase::OnOrderSummaryOpened() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::ORDER_SUMMARY_OPENED);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::ORDER_SUMMARY_OPENED);
 }
 
 void PaymentRequestBrowserTestBase::OnPaymentMethodOpened() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::PAYMENT_METHOD_OPENED);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::PAYMENT_METHOD_OPENED);
 }
 
 void PaymentRequestBrowserTestBase::OnShippingAddressSectionOpened() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::SHIPPING_ADDRESS_SECTION_OPENED);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::SHIPPING_ADDRESS_SECTION_OPENED);
 }
 
 void PaymentRequestBrowserTestBase::OnShippingOptionSectionOpened() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::SHIPPING_OPTION_SECTION_OPENED);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::SHIPPING_OPTION_SECTION_OPENED);
 }
 
 void PaymentRequestBrowserTestBase::OnCreditCardEditorOpened() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
 }
 
 void PaymentRequestBrowserTestBase::OnShippingAddressEditorOpened() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
 }
 
 void PaymentRequestBrowserTestBase::OnContactInfoEditorOpened() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::CONTACT_INFO_EDITOR_OPENED);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::CONTACT_INFO_EDITOR_OPENED);
 }
 
 void PaymentRequestBrowserTestBase::OnBackNavigation() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::BACK_NAVIGATION);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::BACK_NAVIGATION);
 }
 
 void PaymentRequestBrowserTestBase::OnBackToPaymentSheetNavigation() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
 }
 
 void PaymentRequestBrowserTestBase::OnContactInfoOpened() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::CONTACT_INFO_OPENED);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::CONTACT_INFO_OPENED);
 }
 
 void PaymentRequestBrowserTestBase::OnEditorViewUpdated() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::EDITOR_VIEW_UPDATED);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::EDITOR_VIEW_UPDATED);
 }
 
 void PaymentRequestBrowserTestBase::OnErrorMessageShown() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::ERROR_MESSAGE_SHOWN);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::ERROR_MESSAGE_SHOWN);
 }
 
 void PaymentRequestBrowserTestBase::OnSpecDoneUpdating() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::SPEC_DONE_UPDATING);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::SPEC_DONE_UPDATING);
 }
 
 void PaymentRequestBrowserTestBase::OnCvcPromptShown() {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::CVC_PROMPT_SHOWN);
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::CVC_PROMPT_SHOWN);
 }
 
 void PaymentRequestBrowserTestBase::OnInterfaceRequestFromFrame(
@@ -237,7 +238,7 @@ void PaymentRequestBrowserTestBase::OnInterfaceRequestFromFrame(
 }
 
 void PaymentRequestBrowserTestBase::InvokePaymentRequestUI() {
-  ResetEventObserver(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
 
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
@@ -279,13 +280,13 @@ void PaymentRequestBrowserTestBase::ExpectBodyContains(
 }
 
 void PaymentRequestBrowserTestBase::OpenOrderSummaryScreen() {
-  ResetEventObserver(DialogEvent::ORDER_SUMMARY_OPENED);
+  ResetEventWaiter(DialogEvent::ORDER_SUMMARY_OPENED);
 
   ClickOnDialogViewAndWait(DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION);
 }
 
 void PaymentRequestBrowserTestBase::OpenPaymentMethodScreen() {
-  ResetEventObserver(DialogEvent::PAYMENT_METHOD_OPENED);
+  ResetEventWaiter(DialogEvent::PAYMENT_METHOD_OPENED);
 
   views::View* view = delegate_->dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION));
@@ -300,7 +301,7 @@ void PaymentRequestBrowserTestBase::OpenPaymentMethodScreen() {
 }
 
 void PaymentRequestBrowserTestBase::OpenShippingAddressSectionScreen() {
-  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_SECTION_OPENED);
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_SECTION_OPENED);
 
   views::View* view = delegate_->dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION));
@@ -315,7 +316,7 @@ void PaymentRequestBrowserTestBase::OpenShippingAddressSectionScreen() {
 }
 
 void PaymentRequestBrowserTestBase::OpenShippingOptionSectionScreen() {
-  ResetEventObserver(DialogEvent::SHIPPING_OPTION_SECTION_OPENED);
+  ResetEventWaiter(DialogEvent::SHIPPING_OPTION_SECTION_OPENED);
 
   views::View* view = delegate_->dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION));
@@ -330,7 +331,7 @@ void PaymentRequestBrowserTestBase::OpenShippingOptionSectionScreen() {
 }
 
 void PaymentRequestBrowserTestBase::OpenContactInfoScreen() {
-  ResetEventObserver(DialogEvent::CONTACT_INFO_OPENED);
+  ResetEventWaiter(DialogEvent::CONTACT_INFO_OPENED);
 
   views::View* view = delegate_->dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION));
@@ -344,7 +345,7 @@ void PaymentRequestBrowserTestBase::OpenContactInfoScreen() {
 }
 
 void PaymentRequestBrowserTestBase::OpenCreditCardEditorScreen() {
-  ResetEventObserver(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
+  ResetEventWaiter(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
 
   views::View* view = delegate_->dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_CARD_BUTTON));
@@ -358,7 +359,7 @@ void PaymentRequestBrowserTestBase::OpenCreditCardEditorScreen() {
 }
 
 void PaymentRequestBrowserTestBase::OpenShippingAddressEditorScreen() {
-  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
 
   views::View* view = delegate_->dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_SHIPPING_BUTTON));
@@ -372,7 +373,7 @@ void PaymentRequestBrowserTestBase::OpenShippingAddressEditorScreen() {
 }
 
 void PaymentRequestBrowserTestBase::OpenContactInfoEditorScreen() {
-  ResetEventObserver(DialogEvent::CONTACT_INFO_EDITOR_OPENED);
+  ResetEventWaiter(DialogEvent::CONTACT_INFO_EDITOR_OPENED);
 
   views::View* view = delegate_->dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_CONTACT_BUTTON));
@@ -386,13 +387,13 @@ void PaymentRequestBrowserTestBase::OpenContactInfoEditorScreen() {
 }
 
 void PaymentRequestBrowserTestBase::ClickOnBackArrow() {
-  ResetEventObserver(DialogEvent::BACK_NAVIGATION);
+  ResetEventWaiter(DialogEvent::BACK_NAVIGATION);
 
   ClickOnDialogViewAndWait(DialogViewID::BACK_BUTTON);
 }
 
 void PaymentRequestBrowserTestBase::ClickOnCancel() {
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
 
   ClickOnDialogViewAndWait(DialogViewID::CANCEL_BUTTON, false);
 }
@@ -585,7 +586,7 @@ void PaymentRequestBrowserTestBase::OpenCVCPromptWithCVC(
 void PaymentRequestBrowserTestBase::OpenCVCPromptWithCVC(
     const base::string16& cvc,
     PaymentRequestDialogView* dialog_view) {
-  ResetEventObserver(DialogEvent::CVC_PROMPT_SHOWN);
+  ResetEventWaiter(DialogEvent::CVC_PROMPT_SHOWN);
   ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view);
 
   views::Textfield* cvc_field =
@@ -604,7 +605,7 @@ void PaymentRequestBrowserTestBase::PayWithCreditCardAndWait(
     PaymentRequestDialogView* dialog_view) {
   OpenCVCPromptWithCVC(cvc, dialog_view);
 
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   ClickOnDialogViewAndWait(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON,
                            dialog_view);
 }
@@ -733,44 +734,19 @@ const base::string16& PaymentRequestBrowserTestBase::GetErrorLabelForType(
   return static_cast<views::Label*>(view)->text();
 }
 
-PaymentRequestBrowserTestBase::DialogEventObserver::DialogEventObserver(
-    std::list<PaymentRequestBrowserTestBase::DialogEvent> event_sequence)
-    : events_(std::move(event_sequence)) {}
-PaymentRequestBrowserTestBase::DialogEventObserver::~DialogEventObserver() {}
-
-void PaymentRequestBrowserTestBase::DialogEventObserver::Wait() {
-  if (events_.empty())
-    return;
-
-  DCHECK(!run_loop_.running());
-  run_loop_.Run();
+void PaymentRequestBrowserTestBase::ResetEventWaiter(DialogEvent event) {
+  event_waiter_ = std::make_unique<DialogEventWaiter<DialogEvent>>(
+      std::list<DialogEvent>{event});
 }
 
-void PaymentRequestBrowserTestBase::DialogEventObserver::Observe(
-    PaymentRequestBrowserTestBase::DialogEvent event) {
-  if (events_.empty())
-    return;
-
-  DCHECK_EQ(events_.front(), event);
-  events_.pop_front();
-  // Only quit the loop if no other events are expected.
-  if (events_.empty() && run_loop_.running())
-    run_loop_.Quit();
-}
-
-void PaymentRequestBrowserTestBase::ResetEventObserver(DialogEvent event) {
-  event_observer_ =
-      base::MakeUnique<DialogEventObserver>(std::list<DialogEvent>{event});
-}
-
-void PaymentRequestBrowserTestBase::ResetEventObserverForSequence(
+void PaymentRequestBrowserTestBase::ResetEventWaiterForSequence(
     std::list<DialogEvent> event_sequence) {
-  event_observer_ =
-      base::MakeUnique<DialogEventObserver>(std::move(event_sequence));
+  event_waiter_ = std::make_unique<DialogEventWaiter<DialogEvent>>(
+      std::move(event_sequence));
 }
 
 void PaymentRequestBrowserTestBase::WaitForObservedEvent() {
-  event_observer_->Wait();
+  event_waiter_->Wait();
 }
 
 }  // namespace payments

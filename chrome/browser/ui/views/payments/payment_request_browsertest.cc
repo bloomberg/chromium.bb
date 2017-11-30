@@ -53,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, InactiveBrowserWindow) {
   NavigateTo("/payment_request_no_shipping_test.html");
   SetBrowserWindowInactive();
 
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
 
   EXPECT_TRUE(content::ExecuteScript(
       GetActiveWebContents(),
@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndNavigateTo404) {
   NavigateTo("/payment_request_no_shipping_test.html");
   InvokePaymentRequestUI();
 
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
 
   NavigateTo("/non-existent.html");
 
@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndNavigateToSame) {
   NavigateTo("/payment_request_no_shipping_test.html");
   InvokePaymentRequestUI();
 
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
 
   NavigateTo("/payment_request_no_shipping_test.html");
 
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndReload) {
   NavigateTo("/payment_request_no_shipping_test.html");
   InvokePaymentRequestUI();
 
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
 
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
 
@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndClickCancel) {
   NavigateTo("/payment_request_no_shipping_test.html");
   InvokePaymentRequestUI();
 
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
 
   ClickOnDialogViewAndWait(DialogViewID::CANCEL_BUTTON,
                            /*wait_for_animation=*/false);
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest,
 
   OpenOrderSummaryScreen();
 
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
 
   ClickOnDialogViewAndWait(DialogViewID::CANCEL_BUTTON,
                            /*wait_for_animation=*/false);
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, PayWithVisa) {
 
   InvokePaymentRequestUI();
 
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
 
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, InvalidSSL) {
   card.set_billing_address_id(billing_address.guid());
   AddCreditCard(card);  // Visa.
 
-  ResetEventObserver(DialogEvent::NOT_SUPPORTED_ERROR);
+  ResetEventWaiter(DialogEvent::NOT_SUPPORTED_ERROR);
 
   EXPECT_TRUE(content::ExecuteScript(
       GetActiveWebContents(),
@@ -186,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestAbortTest, OpenThenAbort) {
   NavigateTo("/payment_request_abort_test.html");
   InvokePaymentRequestUI();
 
-  ResetEventObserverForSequence(
+  ResetEventWaiterForSequence(
       {DialogEvent::ABORT_CALLED, DialogEvent::DIALOG_CLOSED});
 
   content::WebContents* web_contents = GetActiveWebContents();
@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestAbortTest,
   InvokePaymentRequestUI();
   OpenCVCPromptWithCVC(base::UTF8ToUTF16("123"));
 
-  ResetEventObserver(DialogEvent::ABORT_CALLED);
+  ResetEventWaiter(DialogEvent::ABORT_CALLED);
 
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
@@ -234,7 +234,7 @@ class PaymentRequestPaymentMethodIdentifierTest
   PaymentRequestPaymentMethodIdentifierTest() {}
 
   void InvokePaymentRequestWithJs(const std::string& js) {
-    ResetEventObserver(DialogEvent::DIALOG_OPENED);
+    ResetEventWaiter(DialogEvent::DIALOG_OPENED);
 
     ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), js));
 

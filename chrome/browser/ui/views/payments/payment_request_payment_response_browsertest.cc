@@ -43,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Complete the Payment Request.
   InvokePaymentRequestUI();
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the card details were sent to the merchant.
@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseShippingAddressTest,
 
   // Complete the Payment Request.
   InvokePaymentRequestUI();
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the shipping address was sent to the merchant.
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseAllContactDetailsTest,
 
   // Complete the Payment Request.
   InvokePaymentRequestUI();
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the contact details were sent to the merchant.
@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseOneContactDetailTest,
 
   // Complete the Payment Request.
   InvokePaymentRequestUI();
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the contact details were sent to the merchant.

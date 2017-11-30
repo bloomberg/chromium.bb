@@ -49,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest,
 
   // Complete the Payment Request.
   InvokePaymentRequestUI();
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Make sure the correct events were logged.
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest,
   NavigateTo("/payment_request_bobpay_test.html");
   base::HistogramTester histogram_tester;
 
-  ResetEventObserver(DialogEvent::NOT_SUPPORTED_ERROR);
+  ResetEventWaiter(DialogEvent::NOT_SUPPORTED_ERROR);
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
       "(function() { document.getElementById('buy').click(); })();";
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
   PaymentRequestDialogView* first_dialog_view = dialog_view();
 
   // Try to show a second request.
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
       "(function() { document.getElementById('showSecondRequest').click(); "
@@ -336,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
   PaymentRequestDialogView* first_dialog_view = dialog_view();
 
   // Try to show a second request.
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_buy_button_js =
       "(function() { document.getElementById('showSecondRequest').click(); "
@@ -441,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerAllSectionStatsTest,
 
   // Complete the Payment Request.
   InvokePaymentRequestUI();
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Expect the appropriate number of suggestions shown to be logged.
@@ -573,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerNoShippingSectionStatsTest,
 
   // Complete the Payment Request.
   InvokePaymentRequestUI();
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Expect the appropriate number of suggestions shown to be logged.
@@ -708,7 +708,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Complete the Payment Request.
   InvokePaymentRequestUI();
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Expect the appropriate number of suggestions shown to be logged.
@@ -830,8 +830,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNotShownTest, OnlyNotShownMetricsLogged) {
   NavigateTo("/payment_request_can_make_payment_metrics_test.html");
   base::HistogramTester histogram_tester;
 
-  ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
-                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
+  ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                               DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
 
   // Initiate a Payment Request without showing it.
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryNoShow();"));
@@ -1045,7 +1045,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, CrossOriginIframe) {
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL iframe_url =
       https_server()->GetURL("b.com", "/payment_request_iframe.html");
-  ResetEventObserver(DialogEvent::DIALOG_OPENED);
+  ResetEventWaiter(DialogEvent::DIALOG_OPENED);
   EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
   WaitForObservedEvent();
 
@@ -1152,7 +1152,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, IframeNavigation_Completed) {
                                   GURL("https://www.example.com")));
 
   // Complete the Payment Request.
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Make sure the correct events were logged.
@@ -1255,7 +1255,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, HistoryPushState_Completed) {
                                      "pushstate_with_favicon_pushed.html\");"));
 
   // Complete the Payment Request.
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Make sure the correct events were logged.
