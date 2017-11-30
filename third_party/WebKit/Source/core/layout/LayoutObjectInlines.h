@@ -32,7 +32,7 @@ inline const ComputedStyle* LayoutObject::Style(bool first_line) const {
 }
 
 inline const ComputedStyle& LayoutObject::StyleRef(bool first_line) const {
-  const ComputedStyle* style = this->Style(first_line);
+  const ComputedStyle* style = Style(first_line);
   DCHECK(style);
   return *style;
 }

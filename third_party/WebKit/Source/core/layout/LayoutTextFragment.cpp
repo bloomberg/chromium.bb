@@ -137,13 +137,13 @@ UChar LayoutTextFragment::PreviousCharacter() const {
 // If this is the layoutObject for a first-letter pseudoNode then we have to
 // look at the node for the remaining text to find our content.
 Text* LayoutTextFragment::AssociatedTextNode() const {
-  Node* node = this->GetFirstLetterPseudoElement();
+  Node* node = GetFirstLetterPseudoElement();
   if (is_remaining_text_layout_object_ || !node) {
     // If we don't have a node, then we aren't part of a first-letter pseudo
     // element, so use the actual node. Likewise, if we have a node, but
     // we're the remainingTextLayoutObject for a pseudo element use the real
     // text node.
-    node = this->GetNode();
+    node = GetNode();
   }
 
   if (!node)

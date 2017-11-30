@@ -620,8 +620,8 @@ void LayoutTable::UpdateLayout() {
       LayoutCaption(*captions_[i], layouter);
     }
 
-    LayoutTableSection* top_section = this->TopSection();
-    LayoutTableSection* bottom_section = this->BottomSection();
+    LayoutTableSection* top_section = TopSection();
+    LayoutTableSection* bottom_section = BottomSection();
 
     // This is the border-before edge of the "table box", relative to the "table
     // wrapper box", i.e. right after all top captions.
@@ -1446,7 +1446,7 @@ LayoutUnit LayoutTable::FirstLineBoxBaseline() const {
 
   RecalcSectionsIfNeeded();
 
-  const LayoutTableSection* top_non_empty_section = this->TopNonEmptySection();
+  const LayoutTableSection* top_non_empty_section = TopNonEmptySection();
   if (!top_non_empty_section)
     return LayoutUnit(-1);
 

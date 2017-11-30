@@ -595,9 +595,8 @@ LayoutRect LayoutReplaced::ComputeObjectFit(
   // intrinsic ratio but no intrinsic size. In order to maintain aspect ratio,
   // the intrinsic size for SVG might be faked from the aspect ratio,
   // see SVGImage::containerSize().
-  LayoutSize intrinsic_size = overridden_intrinsic_size
-                                  ? *overridden_intrinsic_size
-                                  : this->IntrinsicSize();
+  LayoutSize intrinsic_size =
+      overridden_intrinsic_size ? *overridden_intrinsic_size : IntrinsicSize();
   if (!intrinsic_size.Width() || !intrinsic_size.Height())
     return content_rect;
 

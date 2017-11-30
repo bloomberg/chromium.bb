@@ -519,7 +519,7 @@ void LayoutMultiColumnFlowThread::LayoutColumns(
   CalculateColumnHeightAvailable();
 
   if (FragmentationContext* enclosing_fragmentation_context =
-          this->EnclosingFragmentationContext()) {
+          EnclosingFragmentationContext()) {
     block_offset_in_enclosing_fragmentation_context_ =
         MultiColumnBlockFlow()->OffsetFromLogicalTopOfFirstPage();
     block_offset_in_enclosing_fragmentation_context_ +=
@@ -636,7 +636,7 @@ LayoutMultiColumnFlowThread::EnclosingFragmentationContext(
   if (constraint == kIsolateUnbreakableContainers &&
       MultiColumnBlockFlow()->GetPaginationBreakability() == kForbidBreaks)
     return nullptr;
-  if (auto* enclosing_flow_thread = this->EnclosingFlowThread(constraint))
+  if (auto* enclosing_flow_thread = EnclosingFlowThread(constraint))
     return enclosing_flow_thread;
   return View()->FragmentationContext();
 }

@@ -300,7 +300,7 @@ void LayoutImage::ComputeIntrinsicSizingInfo(
   if (intrinsic_sizing_info.size.IsEmpty() &&
       image_resource_->ImageHasRelativeSize()) {
     LayoutObject* containing_block =
-        IsOutOfFlowPositioned() ? Container() : this->ContainingBlock();
+        IsOutOfFlowPositioned() ? Container() : ContainingBlock();
     if (containing_block->IsBox()) {
       LayoutBox* box = ToLayoutBox(containing_block);
       intrinsic_sizing_info.size.SetWidth(

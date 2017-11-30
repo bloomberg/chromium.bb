@@ -508,7 +508,7 @@ void LayoutFrameSet::SetIsResizing(bool is_resizing) {
     if (ancestor->IsFrameSet())
       ToLayoutFrameSet(ancestor)->is_child_resizing_ = is_resizing;
   }
-  if (LocalFrame* frame = this->GetFrame()) {
+  if (LocalFrame* frame = GetFrame()) {
     frame->GetEventHandler().SetResizingFrameSet(is_resizing ? FrameSet()
                                                              : nullptr);
   }

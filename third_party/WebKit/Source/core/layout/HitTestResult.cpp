@@ -157,7 +157,7 @@ void HitTestResult::Trace(blink::Visitor* visitor) {
 PositionWithAffinity HitTestResult::GetPosition() const {
   if (!inner_possibly_pseudo_node_)
     return PositionWithAffinity();
-  LayoutObject* layout_object = this->GetLayoutObject();
+  LayoutObject* layout_object = GetLayoutObject();
   if (!layout_object)
     return PositionWithAffinity();
   if (inner_possibly_pseudo_node_->IsPseudoElement() &&
@@ -275,7 +275,7 @@ String HitTestResult::Title(TextDirection& dir) const {
 }
 
 const AtomicString& HitTestResult::AltDisplayString() const {
-  Node* inner_node_or_image_map_image = this->InnerNodeOrImageMapImage();
+  Node* inner_node_or_image_map_image = InnerNodeOrImageMapImage();
   if (!inner_node_or_image_map_image)
     return g_null_atom;
 
@@ -289,7 +289,7 @@ const AtomicString& HitTestResult::AltDisplayString() const {
 }
 
 Image* HitTestResult::GetImage() const {
-  Node* inner_node_or_image_map_image = this->InnerNodeOrImageMapImage();
+  Node* inner_node_or_image_map_image = InnerNodeOrImageMapImage();
   if (!inner_node_or_image_map_image)
     return nullptr;
 
@@ -314,7 +314,7 @@ IntRect HitTestResult::ImageRect() const {
 }
 
 KURL HitTestResult::AbsoluteImageURL() const {
-  Node* inner_node_or_image_map_image = this->InnerNodeOrImageMapImage();
+  Node* inner_node_or_image_map_image = InnerNodeOrImageMapImage();
   if (!inner_node_or_image_map_image)
     return KURL();
 

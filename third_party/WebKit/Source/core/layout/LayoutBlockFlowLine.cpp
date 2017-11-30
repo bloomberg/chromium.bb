@@ -1597,7 +1597,7 @@ void LayoutBlockFlow::ComputeInlinePreferredLogicalWidths(
   LayoutUnit inline_min;
 
   const ComputedStyle& style_to_use = StyleRef();
-  LayoutBlock* containing_block = this->ContainingBlock();
+  LayoutBlock* containing_block = ContainingBlock();
   LayoutUnit cw =
       containing_block ? containing_block->ContentLogicalWidth() : LayoutUnit();
 
@@ -2651,7 +2651,7 @@ LayoutUnit LayoutBlockFlow::StartAlignedOffsetForLine(
 
 void LayoutBlockFlow::SetShouldDoFullPaintInvalidationForFirstLine() {
   DCHECK(ChildrenInline());
-  if (RootInlineBox* first_root_box = this->FirstRootBox())
+  if (RootInlineBox* first_root_box = FirstRootBox())
     first_root_box->SetShouldDoFullPaintInvalidationRecursively();
 }
 
