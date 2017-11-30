@@ -109,7 +109,7 @@ out:
 	return r;
 }
 
-int amdgpu_parse_asic_ids(struct amdgpu_asic_id **p_asic_id_table)
+void amdgpu_parse_asic_ids(struct amdgpu_asic_id **p_asic_id_table)
 {
 	struct amdgpu_asic_id *asic_id_table;
 	struct amdgpu_asic_id *id;
@@ -126,7 +126,7 @@ int amdgpu_parse_asic_ids(struct amdgpu_asic_id **p_asic_id_table)
 	if (!fp) {
 		fprintf(stderr, "%s: %s\n", AMDGPU_ASIC_ID_TABLE,
 			strerror(errno));
-		return -EINVAL;
+		return;
 	}
 
 	asic_id_table = calloc(table_max_size + 1,
@@ -177,8 +177,6 @@ int amdgpu_parse_asic_ids(struct amdgpu_asic_id **p_asic_id_table)
 				line_num++;
 				continue;
 			}
-			fprintf(stderr, "Invalid format: %s: line %d: %s\n",
-				AMDGPU_ASIC_ID_TABLE, line_num, line);
 			goto free;
 		}
 
@@ -201,6 +199,14 @@ int amdgpu_parse_asic_ids(struct amdgpu_asic_id **p_asic_id_table)
 	memset(id, 0, sizeof(struct amdgpu_asic_id));
 
 free:
+	if (r == -EINVAL) {
+		fprintf(stderr, "Invalid format: %s: line %d: %s\n",
+			AMDGPU_ASIC_ID_TABLE, line_num, line);
+	} else if (r) {
+		fprintf(stderr, "%s: Cannot parse ASIC IDs: %s\n",
+			__func__, strerror(-r));
+	}
+
 	free(line);
 
 	if (r && asic_id_table) {
@@ -215,6 +221,4 @@ close:
 	fclose(fp);
 
 	*p_asic_id_table = asic_id_table;
-
-	return r;
 }

@@ -280,11 +280,7 @@ int amdgpu_device_initialize(int fd,
 	amdgpu_vamgr_init(&dev->vamgr, start, max,
 			  dev->dev_info.virtual_address_alignment);
 
-	r = amdgpu_parse_asic_ids(&dev->asic_ids);
-	if (r) {
-		fprintf(stderr, "%s: Cannot parse ASIC IDs, 0x%x.",
-			__func__, r);
-	}
+	amdgpu_parse_asic_ids(&dev->asic_ids);
 
 	*major_version = dev->major_version;
 	*minor_version = dev->minor_version;

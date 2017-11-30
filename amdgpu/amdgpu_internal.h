@@ -148,7 +148,7 @@ drm_private void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, uint64_t start,
 
 drm_private void amdgpu_vamgr_deinit(struct amdgpu_bo_va_mgr *mgr);
 
-drm_private int amdgpu_parse_asic_ids(struct amdgpu_asic_id **asic_ids);
+drm_private void amdgpu_parse_asic_ids(struct amdgpu_asic_id **asic_ids);
 
 drm_private int amdgpu_query_gpu_info_init(amdgpu_device_handle dev);
 
