@@ -183,10 +183,18 @@
 }
 
 - (void)setConstraints {
+  // Top anchor so Toolbar content never overlaps with the Status Bar.
+  NSLayoutYAxisAnchor* topAnchor;
+  if (@available(iOS 11, *)) {
+    topAnchor = self.view.safeAreaLayoutGuide.topAnchor;
+  } else {
+    topAnchor = self.topLayoutGuide.bottomAnchor;
+  }
+
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
   NSArray* constraints = @[
-    [self.stackView.topAnchor constraintEqualToAnchor:self.view.topAnchor
-                                             constant:kVerticalMargin],
+    [self.stackView.heightAnchor
+        constraintEqualToConstant:kToolbarHeight - 2 * kVerticalMargin],
     [self.stackView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor
                                                 constant:-kVerticalMargin],
     [self.stackView.leadingAnchor
@@ -211,27 +219,11 @@
         constraintEqualToAnchor:self.locationBarContainer.trailingAnchor],
     [self.bookmarkButton.trailingAnchor
         constraintEqualToAnchor:self.voiceSearchButton.leadingAnchor],
+    [self.view.bottomAnchor constraintEqualToAnchor:topAnchor
+                                           constant:kToolbarHeight],
   ];
 
-  // Constraint so Toolbar stackview never overlaps with the Status Bar.
-  NSLayoutYAxisAnchor* topAnchor;
-  if (@available(iOS 11, *)) {
-    topAnchor = self.view.safeAreaLayoutGuide.topAnchor;
-  } else {
-    topAnchor = self.topLayoutGuide.topAnchor;
-  }
-  [self.stackView.topAnchor
-      constraintGreaterThanOrEqualToAnchor:topAnchor
-                                  constant:kVerticalMargin]
-      .active = YES;
-  [self.view.bottomAnchor constraintEqualToAnchor:topAnchor
-                                         constant:kToolbarHeight]
-      .active = YES;
-
-  // Set the constraints priority to UILayoutPriorityDefaultHigh so these are
-  // not broken when the views are hidden or the VC's view size is 0.
-  [self activateConstraints:constraints
-               withPriority:UILayoutPriorityDefaultHigh];
+  [NSLayoutConstraint activateConstraints:constraints];
 }
 
 #pragma mark - Components Setup
@@ -351,10 +343,7 @@
   self.buttonUpdater.forwardButton = self.forwardButton;
   self.buttonUpdater.voiceSearchButton = self.voiceSearchButton;
 
-  // Set the button constraint priority to UILayoutPriorityDefaultHigh so
-  // these are not broken when being hidden by the StackView.
-  [self activateConstraints:buttonConstraints
-               withPriority:UILayoutPriorityDefaultHigh];
+  [NSLayoutConstraint activateConstraints:buttonConstraints];
 }
 
 - (void)setUpLocationBarContainer {
@@ -555,15 +544,6 @@
   }
   [self.bookmarkButton updateHiddenInCurrentSizeClass];
   [self.voiceSearchButton updateHiddenInCurrentSizeClass];
-}
-
-// Sets the priority for an array of constraints and activates them.
-- (void)activateConstraints:(NSArray*)constraintsArray
-               withPriority:(UILayoutPriority)priority {
-  for (NSLayoutConstraint* constraint in constraintsArray) {
-    constraint.priority = priority;
-  }
-  [NSLayoutConstraint activateConstraints:constraintsArray];
 }
 
 #pragma mark - Private
