@@ -118,7 +118,6 @@ class PLATFORM_EXPORT CanvasResourceProvider {
 
  private:
   virtual sk_sp<SkSurface> CreateSkSurface() const = 0;
-  virtual scoped_refptr<StaticBitmapImage> CreateSnapshot() = 0;
   virtual std::unique_ptr<CanvasResource> CreateResource();
   virtual std::unique_ptr<CanvasResource> DoPrepareTransferableResource(
       viz::TransferableResource* out_resource) = 0;
