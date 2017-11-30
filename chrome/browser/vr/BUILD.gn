@@ -231,6 +231,7 @@ test("vr_common_unittests") {
     "elements/scaled_depth_adjuster_unittest.cc",
     "elements/shadow_unittest.cc",
     "elements/spinner_unittest.cc",
+    "elements/text_unittest.cc",
     "elements/throbber_unittest.cc",
     "elements/transient_element_unittest.cc",
     "elements/ui_element_iterator_unittest.cc",

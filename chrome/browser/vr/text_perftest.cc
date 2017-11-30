@@ -33,8 +33,9 @@ class TextPerfTest : public testing::Test {
         base::MakeUnique<GlTestEnvironment>(kPixelHalfScreen);
     provider_ = base::MakeUnique<GaneshSurfaceProvider>();
 
-    text_element_ = base::MakeUnique<Text>(kMaximumTextWidthPixels,
-                                           kFontHeightMeters, kTextWidthMeters);
+    text_element_ =
+        base::MakeUnique<Text>(kMaximumTextWidthPixels, kFontHeightMeters);
+    text_element_->SetSize(kTextWidthMeters, 0);
     text_element_->Initialize(provider_.get());
   }
 
