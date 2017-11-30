@@ -63,7 +63,7 @@ void FrameTreeNodeBlameContext::AsValueInto(
     value->EndDictionary();
   }
 
-  GURL url = current_frame_host->last_committed_url();
+  GURL url = current_frame_host->GetLastCommittedURL();
   if (url.is_valid())
     value->SetString("url", url.spec());
 }

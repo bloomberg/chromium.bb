@@ -314,8 +314,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderFrameHostDelegate* delegate() { return delegate_; }
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
-  const GURL& last_committed_url() const { return last_committed_url_; }
-
   // Allows FrameTreeNode::SetCurrentURL to update this frame's last committed
   // URL.  Do not call this directly, since we rely on SetCurrentURL to track
   // whether a real load has committed or not.

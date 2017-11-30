@@ -2090,7 +2090,7 @@ void NavigationControllerImpl::FindFramesToNavigate(
     if (old_item &&
         new_item->document_sequence_number() ==
             old_item->document_sequence_number() &&
-        !frame->current_frame_host()->last_committed_url().is_empty()) {
+        !frame->current_frame_host()->GetLastCommittedURL().is_empty()) {
       same_document_loads->push_back(std::make_pair(frame, new_item));
 
       // TODO(avi, creis): This is a bug; we should not return here. Rather, we

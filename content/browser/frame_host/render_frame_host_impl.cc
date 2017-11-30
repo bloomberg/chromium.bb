@@ -684,7 +684,7 @@ bool RenderFrameHostImpl::IsCrossProcessSubframe() {
 }
 
 const GURL& RenderFrameHostImpl::GetLastCommittedURL() {
-  return last_committed_url();
+  return last_committed_url_;
 }
 
 const url::Origin& RenderFrameHostImpl::GetLastCommittedOrigin() {
@@ -2663,7 +2663,7 @@ void RenderFrameHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
 
   // TODO(alexmos): See if this can use the last committed origin instead.
   if (enter_fullscreen)
-    delegate_->EnterFullscreenMode(last_committed_url().GetOrigin());
+    delegate_->EnterFullscreenMode(GetLastCommittedURL().GetOrigin());
   else
     delegate_->ExitFullscreenMode(/* will_cause_resize */ true);
 
@@ -2864,8 +2864,8 @@ void RenderFrameHostImpl::CreateNewWindow(
   bool can_create_window =
       IsCurrent() && render_frame_created_ &&
       GetContentClient()->browser()->CanCreateWindow(
-          this, last_committed_url(),
-          frame_tree_node_->frame_tree()->GetMainFrame()->last_committed_url(),
+          this, GetLastCommittedURL(),
+          frame_tree_node_->frame_tree()->GetMainFrame()->GetLastCommittedURL(),
           last_committed_origin_.GetURL(), params->window_container_type,
           params->target_url, params->referrer, params->frame_name,
           params->disposition, *params->features, params->user_gesture,
