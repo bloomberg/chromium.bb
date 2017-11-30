@@ -54,6 +54,21 @@ constexpr base::TimeDelta kThrottlingDelayAfterAudioIsPlayed =
 constexpr base::TimeDelta kQueueingTimeWindowDuration =
     base::TimeDelta::FromSeconds(1);
 
+// Field trial name.
+const char kWakeUpThrottlingTrial[] = "RendererSchedulerWakeUpThrottling";
+const char kWakeUpDurationParam[] = "wake_up_duration_ms";
+
+constexpr base::TimeDelta kDefaultWakeUpDuration = base::TimeDelta();
+
+base::TimeDelta GetWakeUpDuration() {
+  int duration_ms;
+  if (!base::StringToInt(base::GetFieldTrialParamValue(kWakeUpThrottlingTrial,
+                                                       kWakeUpDurationParam),
+                         &duration_ms))
+    return kDefaultWakeUpDuration;
+  return base::TimeDelta::FromMilliseconds(duration_ms);
+}
+
 const char* BackgroundStateToString(bool is_backgrounded) {
   if (is_backgrounded) {
     return "backgrounded";
@@ -2278,7 +2293,7 @@ void RendererSchedulerImpl::AddQueueToWakeUpBudgetPool(
         task_queue_throttler()->CreateWakeUpBudgetPool("renderer_wake_up_pool");
     main_thread_only().wake_up_budget_pool->SetWakeUpRate(1);
     main_thread_only().wake_up_budget_pool->SetWakeUpDuration(
-        base::TimeDelta());
+        GetWakeUpDuration());
   }
   main_thread_only().wake_up_budget_pool->AddQueue(tick_clock()->NowTicks(),
                                                    queue);
