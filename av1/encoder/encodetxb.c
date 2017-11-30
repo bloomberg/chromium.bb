@@ -2471,9 +2471,8 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     }
 
     const int is_inter = is_inter_block(mbmi);
-    const TxSetType tx_set_type =
-        get_ext_tx_set_type(get_min_tx_size(tx_size), mbmi->sb_type, is_inter,
-                            cm->reduced_tx_set_used);
+    const TxSetType tx_set_type = get_ext_tx_set_type(
+        tx_size, mbmi->sb_type, is_inter, cm->reduced_tx_set_used);
     if (!av1_ext_tx_used[tx_set_type][tx_type]) continue;
 
     RD_STATS this_rd_stats;

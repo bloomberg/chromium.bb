@@ -3103,12 +3103,17 @@ static int64_t calc_rd_given_intra_angle(
     const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize, int mode_cost,
     int64_t best_rd_in, int8_t angle_delta, int max_angle_delta, int *rate,
     RD_STATS *rd_stats, int *best_angle_delta, TX_SIZE *best_tx_size,
-    TX_TYPE *best_tx_type, int64_t *best_rd, int64_t *best_model_rd) {
+    TX_TYPE *best_tx_type, int64_t *best_rd, int64_t *best_model_rd,
+    TX_TYPE *best_txk_type) {
   int this_rate;
   RD_STATS tokenonly_rd_stats;
   int64_t this_rd, this_model_rd;
   MB_MODE_INFO *mbmi = &x->e_mbd.mi[0]->mbmi;
   assert(!is_inter_block(mbmi));
+
+#if !CONFIG_TXK_SEL
+  (void)best_txk_type;
+#endif
 
   mbmi->angle_delta[0] = angle_delta;
   this_model_rd = intra_model_yrd(cpi, x, bsize, mode_cost);
@@ -3130,6 +3135,11 @@ static int64_t calc_rd_given_intra_angle(
   this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
 
   if (this_rd < *best_rd) {
+#if CONFIG_TXK_SEL
+    memcpy(best_txk_type, mbmi->txk_type,
+           sizeof(*best_txk_type) *
+               (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+#endif
     *best_rd = this_rd;
     *best_angle_delta = mbmi->angle_delta[0];
     *best_tx_size = mbmi->tx_size;
@@ -3158,6 +3168,11 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   int64_t this_rd, best_rd_in, rd_cost[2 * (MAX_ANGLE_DELTA + 2)];
   TX_SIZE best_tx_size = mic->mbmi.tx_size;
   TX_TYPE best_tx_type = mbmi->tx_type;
+#if CONFIG_TXK_SEL
+  TX_TYPE best_txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+#else
+  TX_TYPE *best_txk_type = NULL;
+#endif
 
   for (i = 0; i < 2 * (MAX_ANGLE_DELTA + 2); ++i) rd_cost[i] = INT64_MAX;
 
@@ -3169,7 +3184,7 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
       this_rd = calc_rd_given_intra_angle(
           cpi, x, bsize, mode_cost, best_rd_in, (1 - 2 * i) * angle_delta,
           MAX_ANGLE_DELTA, rate, rd_stats, &best_angle_delta, &best_tx_size,
-          &best_tx_type, &best_rd, best_model_rd);
+          &best_tx_type, &best_rd, best_model_rd, best_txk_type);
       rd_cost[2 * angle_delta + i] = this_rd;
       if (first_try && this_rd == INT64_MAX) return best_rd;
       first_try = 0;
@@ -3193,7 +3208,7 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
         calc_rd_given_intra_angle(
             cpi, x, bsize, mode_cost, best_rd, (1 - 2 * i) * angle_delta,
             MAX_ANGLE_DELTA, rate, rd_stats, &best_angle_delta, &best_tx_size,
-            &best_tx_type, &best_rd, best_model_rd);
+            &best_tx_type, &best_rd, best_model_rd, best_txk_type);
       }
     }
   }
@@ -3201,6 +3216,11 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   mbmi->tx_size = best_tx_size;
   mbmi->angle_delta[0] = best_angle_delta;
   mbmi->tx_type = best_tx_type;
+#if CONFIG_TXK_SEL
+  memcpy(mbmi->txk_type, best_txk_type,
+         sizeof(*best_txk_type) *
+             (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+#endif
   return best_rd;
 }
 
