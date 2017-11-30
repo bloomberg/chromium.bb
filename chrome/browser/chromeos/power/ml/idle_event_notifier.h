@@ -10,12 +10,14 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
 namespace base {
@@ -73,6 +75,7 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
   };
 
   IdleEventNotifier(PowerManagerClient* power_client,
+                    ui::UserActivityDetector* detector,
                     viz::mojom::VideoDetectorObserverRequest request);
   ~IdleEventNotifier() override;
 
@@ -126,7 +129,12 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
   std::unique_ptr<base::Clock> clock_;
   base::OneShotTimer idle_delay_timer_;
 
-  PowerManagerClient* power_client_;  // not owned.
+  ScopedObserver<chromeos::PowerManagerClient,
+                 chromeos::PowerManagerClient::Observer>
+      power_manager_client_observer_;
+  ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver>
+      user_activity_observer_;
+
   // Last-received external power state. Changes are treated as user activity.
   base::Optional<power_manager::PowerSupplyProperties_ExternalPower>
       external_power_;
