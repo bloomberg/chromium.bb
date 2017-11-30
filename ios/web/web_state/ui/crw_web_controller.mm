@@ -3952,15 +3952,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)webViewWebProcessDidCrash {
-  _webProcessCrashed = YES;
-  _webStateImpl->CancelDialogs();
-  _webStateImpl->OnRenderProcessGone();
   if (@available(iOS 11, *)) {
     // On iOS 11 WKWebView does not repaint after crash and reload. Recreating
     // web view fixes the issue. TODO(crbug.com/770914): Remove this workaround
     // once rdar://35063950 is fixed.
     [self removeWebView];
   }
+  _webProcessCrashed = YES;
+  _webStateImpl->CancelDialogs();
+  _webStateImpl->OnRenderProcessGone();
 }
 
 - (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider {
