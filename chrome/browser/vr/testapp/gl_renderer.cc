@@ -42,7 +42,8 @@ bool GlRenderer::Initialize() {
 void GlRenderer::RenderFrame() {
   context_->MakeCurrent(surface_.get());
   vr_->DrawFrame();
-  PostRenderFrameTask(surface_->SwapBuffers());
+  PostRenderFrameTask(
+      surface_->SwapBuffers(gl::GLSurface::PresentationCallback()));
 }
 
 void GlRenderer::PostRenderFrameTask(gfx::SwapResult result) {
