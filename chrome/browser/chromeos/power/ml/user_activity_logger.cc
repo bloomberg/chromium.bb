@@ -12,15 +12,23 @@ namespace chromeos {
 namespace power {
 namespace ml {
 
+constexpr int kIdleDelaySeconds = 10;
+
 UserActivityLogger::UserActivityLogger(
     UserActivityLoggerDelegate* delegate,
     IdleEventNotifier* idle_event_notifier,
     ui::UserActivityDetector* detector,
-    chromeos::PowerManagerClient* power_manager_client)
+    chromeos::PowerManagerClient* power_manager_client,
+    session_manager::SessionManager* session_manager,
+    viz::mojom::VideoDetectorObserverRequest request)
     : logger_delegate_(delegate),
       idle_event_observer_(this),
       user_activity_observer_(this),
-      power_manager_client_observer_(this) {
+      power_manager_client_observer_(this),
+      session_manager_observer_(this),
+      session_manager_(session_manager),
+      binding_(this, std::move(request)),
+      idle_delay_(base::TimeDelta::FromSeconds(kIdleDelaySeconds)) {
   DCHECK(idle_event_notifier);
   idle_event_observer_.Add(idle_event_notifier);
 
@@ -33,6 +41,9 @@ UserActivityLogger::UserActivityLogger(
   power_manager_client->GetSwitchStates(base::BindOnce(
       &UserActivityLogger::OnReceiveSwitchStates, base::Unretained(this)));
 
+  DCHECK(session_manager);
+  session_manager_observer_.Add(session_manager);
+
   if (chromeos::GetDeviceType() == chromeos::DeviceType::kChromebook) {
     device_type_ = UserActivityEvent::Features::CHROMEBOOK;
   } else {
@@ -42,35 +53,33 @@ UserActivityLogger::UserActivityLogger(
 
 UserActivityLogger::~UserActivityLogger() = default;
 
-// Only log when we observe an idle event.
 void UserActivityLogger::OnUserActivity(const ui::Event* /* event */) {
-  if (!idle_event_observed_)
-    return;
-  UserActivityEvent activity_event;
-
-  UserActivityEvent::Event* event = activity_event.mutable_event();
-  event->set_type(UserActivityEvent::Event::REACTIVATE);
-  event->set_reason(UserActivityEvent::Event::USER_ACTIVITY);
-
-  *activity_event.mutable_features() = features_;
-
-  // Log to metrics.
-  logger_delegate_->LogActivity(activity_event);
-  idle_event_observed_ = false;
+  MaybeLogEvent(UserActivityEvent::Event::REACTIVATE,
+                UserActivityEvent::Event::USER_ACTIVITY);
 }
 
 void UserActivityLogger::LidEventReceived(
     chromeos::PowerManagerClient::LidState state,
     const base::TimeTicks& /* timestamp */) {
   lid_state_ = state;
+  if (lid_state_ == chromeos::PowerManagerClient::LidState::CLOSED) {
+    MaybeLogEvent(UserActivityEvent::Event::OFF,
+                  UserActivityEvent::Event::LID_CLOSED);
+  }
 }
 
-// TODO(renjieliu): Log power changes activity here by checking whether the
-// battery status has changed.
 void UserActivityLogger::PowerChanged(
     const power_manager::PowerSupplyProperties& proto) {
-  on_battery_ = (proto.external_power() ==
-                 power_manager::PowerSupplyProperties::DISCONNECTED);
+  if (external_power_.has_value()) {
+    bool power_source_changed = (*external_power_ != proto.external_power());
+
+    // Only log when power source changed, don't care about percentage change.
+    if (power_source_changed) {
+      MaybeLogEvent(UserActivityEvent::Event::REACTIVATE,
+                    UserActivityEvent::Event::POWER_CHANGED);
+    }
+  }
+  external_power_ = proto.external_power();
 
   if (proto.has_battery_percent()) {
     battery_percent_ = proto.battery_percent();
@@ -83,10 +92,43 @@ void UserActivityLogger::TabletModeEventReceived(
   tablet_mode_ = mode;
 }
 
+void UserActivityLogger::ScreenIdleStateChanged(
+    const power_manager::ScreenIdleState& proto) {
+  if (proto.off()) {
+    screen_idle_timer_.Start(
+        FROM_HERE, idle_delay_,
+        base::Bind(&UserActivityLogger::MaybeLogEvent, base::Unretained(this),
+                   UserActivityEvent::Event::TIMEOUT,
+                   UserActivityEvent::Event::SCREEN_OFF));
+  }
+}
+
+void UserActivityLogger::SuspendDone(
+    const base::TimeDelta& /* sleep_duration */) {
+  MaybeLogEvent(UserActivityEvent::Event::TIMEOUT,
+                UserActivityEvent::Event::IDLE_SLEEP);
+}
+
+void UserActivityLogger::OnVideoActivityStarted() {
+  MaybeLogEvent(UserActivityEvent::Event::REACTIVATE,
+                UserActivityEvent::Event::VIDEO_ACTIVITY);
+}
+
 void UserActivityLogger::OnIdleEventObserved(
     const IdleEventNotifier::ActivityData& activity_data) {
   idle_event_observed_ = true;
   ExtractFeatures(activity_data);
+  // TODO(renjieliu): call get open tab url function here.
+}
+
+void UserActivityLogger::OnSessionStateChanged() {
+  DCHECK(session_manager_);
+  const bool was_locked = screen_is_locked_;
+  screen_is_locked_ = session_manager_->IsScreenLocked();
+  if (!was_locked && screen_is_locked_) {
+    MaybeLogEvent(UserActivityEvent::Event::OFF,
+                  UserActivityEvent::Event::SCREEN_LOCK);
+  }
 }
 
 void UserActivityLogger::OnReceiveSwitchStates(
@@ -106,7 +148,7 @@ void UserActivityLogger::ExtractFeatures(
       (activity_data.last_activity_time -
        activity_data.last_activity_time.LocalMidnight())
           .InSeconds());
-  if (activity_data.last_user_activity_time != base::Time()) {
+  if (!activity_data.last_user_activity_time.is_null()) {
     features_.set_last_user_activity_time_sec(
         (activity_data.last_user_activity_time -
          activity_data.last_user_activity_time.LocalMidnight())
@@ -119,11 +161,11 @@ void UserActivityLogger::ExtractFeatures(
       static_cast<chromeos::power::ml::UserActivityEvent_Features_DayOfWeek>(
           exploded.day_of_week));
 
-  if (activity_data.last_mouse_time != base::Time()) {
+  if (!activity_data.last_mouse_time.is_null()) {
     features_.set_time_since_last_mouse_sec(
         (base::Time::Now() - activity_data.last_mouse_time).InSeconds());
   }
-  if (activity_data.last_key_time != base::Time()) {
+  if (!activity_data.last_key_time.is_null()) {
     features_.set_time_since_last_key_sec(
         (base::Time::Now() - activity_data.last_key_time).InSeconds());
   }
@@ -150,7 +192,34 @@ void UserActivityLogger::ExtractFeatures(
   if (battery_percent_.has_value()) {
     features_.set_battery_percent(*battery_percent_);
   }
-  features_.set_on_battery(on_battery_);
+  if (external_power_.has_value()) {
+    features_.set_on_battery(
+        *external_power_ == power_manager::PowerSupplyProperties::DISCONNECTED);
+  }
+}
+
+void UserActivityLogger::MaybeLogEvent(
+    UserActivityEvent::Event::Type type,
+    UserActivityEvent::Event::Reason reason) {
+  if (!idle_event_observed_)
+    return;
+  screen_idle_timer_.Stop();
+  UserActivityEvent activity_event;
+
+  UserActivityEvent::Event* event = activity_event.mutable_event();
+  event->set_type(type);
+  event->set_reason(reason);
+
+  *activity_event.mutable_features() = features_;
+
+  // Log to metrics.
+  logger_delegate_->LogActivity(activity_event);
+  idle_event_observed_ = false;
+}
+
+void UserActivityLogger::SetTaskRunnerForTesting(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  screen_idle_timer_.SetTaskRunner(task_runner);
 }
 
 }  // namespace ml
