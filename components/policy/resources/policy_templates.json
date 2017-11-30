@@ -3172,7 +3172,7 @@
       'tags': ['website-sharing'],
       'desc': '''Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the terms the user is searching for.
 
-          Google's search URL can be specified as: <ph name="GOOGLE_SEARCH_URL">'{google:baseURL}search?q={searchTerms}&amp;{google:RLZ}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:searchClient}{google:sourceId}{google:instantExtendedEnabledParameter}ie={inputEncoding}'</ph>.
+          Google's search URL can be specified as: <ph name="GOOGLE_SEARCH_URL">'{google:baseURL}search?q={searchTerms}&amp;{google:RLZ}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:searchClient}{google:sourceId}ie={inputEncoding}'</ph>.
 
           This option must be set when the 'DefaultSearchProviderEnabled' policy is enabled and will only be respected if this is the case.''',
     },
@@ -3201,7 +3201,8 @@
       'name': 'DefaultSearchProviderInstantURL',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:10-', 'chrome_os:11-', 'android:30-'],
+      'supported_on': ['chrome.*:10-63', 'chrome_os:11-63', 'android:30-63'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -3285,7 +3286,8 @@
       'name': 'DefaultSearchProviderSearchTermsReplacementKey',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:25-', 'chrome_os:25-', 'android:30-'],
+      'supported_on': ['chrome.*:25-63', 'chrome_os:25-63', 'android:30-63'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -3380,7 +3382,8 @@
       'name': 'DefaultSearchProviderInstantURLPostParams',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:29-', 'chrome_os:29-', 'android:30-'],
+      'supported_on': ['chrome.*:29-63', 'chrome_os:29-63', 'android:30-63'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
