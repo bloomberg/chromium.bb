@@ -47,7 +47,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
   // its ID.
   static int Install(ExecutionContext*,
                      ScheduledAction*,
-                     int timeout,
+                     TimeDelta timeout,
                      bool single_shot);
   static void RemoveByID(ExecutionContext*, int timeout_id);
 
@@ -70,7 +70,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
 
   static DOMTimer* Create(ExecutionContext* context,
                           ScheduledAction* action,
-                          int timeout,
+                          TimeDelta timeout,
                           bool single_shot,
                           int timeout_id) {
     return new DOMTimer(context, action, timeout, single_shot, timeout_id);
@@ -78,7 +78,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
 
   DOMTimer(ExecutionContext*,
            ScheduledAction*,
-           int interval,
+           TimeDelta interval,
            bool single_shot,
            int timeout_id);
   void Fired() override;

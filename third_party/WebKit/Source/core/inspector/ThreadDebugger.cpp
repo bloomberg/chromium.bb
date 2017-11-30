@@ -486,7 +486,7 @@ void ThreadDebugger::startRepeatingTimer(
       new Timer<ThreadDebugger>(this, &ThreadDebugger::OnTimer));
   Timer<ThreadDebugger>* timer_ptr = timer.get();
   timers_.push_back(std::move(timer));
-  timer_ptr->StartRepeating(interval, BLINK_FROM_HERE);
+  timer_ptr->StartRepeating(TimeDelta::FromSecondsD(interval), BLINK_FROM_HERE);
 }
 
 void ThreadDebugger::cancelTimer(void* data) {

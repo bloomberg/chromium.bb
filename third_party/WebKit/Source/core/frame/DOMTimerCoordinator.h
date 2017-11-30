@@ -8,6 +8,7 @@
 #include <memory>
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 
@@ -31,7 +32,7 @@ class DOMTimerCoordinator {
   // Creates and installs a new timer. Returns the assigned ID.
   int InstallNewTimeout(ExecutionContext*,
                         ScheduledAction*,
-                        int timeout,
+                        TimeDelta timeout,
                         bool single_shot);
 
   // Removes and disposes the timer with the specified ID, if any. This may

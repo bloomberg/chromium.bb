@@ -37,18 +37,17 @@
 
 namespace blink {
 
-static const int kMaxIntervalForUserGestureForwarding =
-    1000;  // One second matches Gecko.
+static const TimeDelta kMaxIntervalForUserGestureForwarding =
+    TimeDelta::FromMilliseconds(1000);  // One second matches Gecko.
 static const int kMaxTimerNestingLevel = 5;
-static const double kOneMillisecond = 0.001;
 // Chromium uses a minimum timer interval of 4ms. We'd like to go
 // lower; however, there are poorly coded websites out there which do
 // create CPU-spinning loops.  Using 4ms prevents the CPU from
 // spinning too busily and provides a balance between CPU spinning and
 // the smallest possible interval timer.
-static const double kMinimumInterval = 0.004;
+static constexpr TimeDelta kMinimumInterval = TimeDelta::FromMilliseconds(4);
 
-static inline bool ShouldForwardUserGesture(int interval,
+static inline bool ShouldForwardUserGesture(TimeDelta interval,
                                             int nesting_level,
                                             Document* doc) {
   Frame* frame = doc ? doc->GetFrame() : nullptr;
@@ -61,7 +60,7 @@ static inline bool ShouldForwardUserGesture(int interval,
 
 int DOMTimer::Install(ExecutionContext* context,
                       ScheduledAction* action,
-                      int timeout,
+                      TimeDelta timeout,
                       bool single_shot) {
   int timeout_id = context->Timers()->InstallNewTimeout(context, action,
                                                         timeout, single_shot);
@@ -80,7 +79,7 @@ void DOMTimer::RemoveByID(ExecutionContext* context, int timeout_id) {
 
 DOMTimer::DOMTimer(ExecutionContext* context,
                    ScheduledAction* action,
-                   int interval,
+                   TimeDelta interval,
                    bool single_shot,
                    int timeout_id)
     : PausableTimer(context, TaskType::kJavascriptTimer),
@@ -95,8 +94,8 @@ DOMTimer::DOMTimer(ExecutionContext* context,
     user_gesture_token_ = UserGestureIndicator::CurrentToken();
   }
 
-  double interval_milliseconds =
-      std::max(kOneMillisecond, interval * kOneMillisecond);
+  TimeDelta interval_milliseconds =
+      std::max(TimeDelta::FromMilliseconds(1), interval);
   if (interval_milliseconds < kMinimumInterval &&
       nesting_level_ >= kMaxTimerNestingLevel)
     interval_milliseconds = kMinimumInterval;
@@ -157,10 +156,11 @@ void DOMTimer::Fired() {
 
   // Simple case for non-one-shot timers.
   if (IsActive()) {
-    if (RepeatInterval() && RepeatInterval() < kMinimumInterval) {
+    if (!RepeatIntervalDelta().is_zero() &&
+        RepeatIntervalDelta() < kMinimumInterval) {
       nesting_level_++;
       if (nesting_level_ >= kMaxTimerNestingLevel)
-        AugmentRepeatInterval(kMinimumInterval - RepeatInterval());
+        AugmentRepeatInterval(kMinimumInterval - RepeatIntervalDelta());
     }
 
     // No access to member variables after this point, it can delete the timer.
