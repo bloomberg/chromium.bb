@@ -113,6 +113,10 @@ class AccountTrackerService : public KeyedService {
   // If after the update IsValid() is true, OnAccountUpdated will be fired.
   std::string SeedAccountInfo(AccountInfo info);
 
+  // Sets whether the account is a Unicorn account.
+  void SetIsChildAccount(const std::string& account_id,
+                         const bool& is_child_account);
+
   void RemoveAccount(const std::string& account_id);
 
   AccountIdMigrationState GetMigrationState() const;
@@ -124,8 +128,6 @@ class AccountTrackerService : public KeyedService {
   // Available to be called in tests.
   void SetAccountStateFromUserInfo(const std::string& account_id,
                                    const base::DictionaryValue* user_info);
-  void SetIsChildAccount(const std::string& account_id,
-                         const bool& is_child_account);
 
  private:
   friend class AccountFetcherService;

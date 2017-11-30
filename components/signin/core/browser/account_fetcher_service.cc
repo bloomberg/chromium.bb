@@ -141,6 +141,7 @@ void AccountFetcherService::RefreshAllAccountInfo(bool only_fetch_if_invalid) {
 // dependency on signin_manager which we get around by only allowing a single
 // account. This is possible since we only support a single account to be a
 // child anyway.
+#if defined(OS_ANDROID)
 void AccountFetcherService::UpdateChildInfo() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<std::string> accounts = token_service_->GetAccounts();
@@ -158,6 +159,7 @@ void AccountFetcherService::UpdateChildInfo() {
     ResetChildInfo();
   }
 }
+#endif
 
 void AccountFetcherService::MaybeEnableNetworkFetches() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -168,7 +170,9 @@ void AccountFetcherService::MaybeEnableNetworkFetches() {
     ScheduleNextRefresh();
   }
   RefreshAllAccountInfo(true);
+#if defined(OS_ANDROID)
   UpdateChildInfo();
+#endif
 }
 
 void AccountFetcherService::RefreshAllAccountsAndScheduleNext() {
@@ -316,7 +320,9 @@ void AccountFetcherService::OnRefreshTokenAvailable(
   if (!network_fetches_enabled_)
     return;
   RefreshAccountInfo(account_id, true);
+#if defined(OS_ANDROID)
   UpdateChildInfo();
+#endif
 }
 
 void AccountFetcherService::OnRefreshTokenRevoked(
@@ -330,7 +336,9 @@ void AccountFetcherService::OnRefreshTokenRevoked(
   if (!network_fetches_enabled_)
     return;
   user_info_requests_.erase(account_id);
+#if defined(OS_ANDROID)
   UpdateChildInfo();
+#endif
   account_tracker_service_->StopTrackingAccount(account_id);
 }
 

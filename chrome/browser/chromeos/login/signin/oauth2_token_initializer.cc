@@ -26,11 +26,14 @@ void OAuth2TokenInitializer::Start(const UserContext& user_context,
 }
 
 void OAuth2TokenInitializer::OnOAuth2TokensAvailable(
-    const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens) {
+    const GaiaAuthConsumer::ClientOAuthResult& result) {
   VLOG(1) << "OAuth2 tokens fetched";
   user_context_.SetAuthCode(std::string());
-  user_context_.SetRefreshToken(oauth2_tokens.refresh_token);
-  user_context_.SetAccessToken(oauth2_tokens.access_token);
+  user_context_.SetRefreshToken(result.refresh_token);
+  user_context_.SetAccessToken(result.access_token);
+  if (result.is_child_account) {
+    user_context_.SetUserType(user_manager::USER_TYPE_CHILD);
+  }
   callback_.Run(true, user_context_);
 }
 
