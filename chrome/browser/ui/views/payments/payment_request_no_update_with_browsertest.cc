@@ -18,7 +18,7 @@ class PaymentRequestNoUpdateWithTest : public PaymentRequestBrowserTestBase {
 
   void RunJavaScriptFunctionToOpenPaymentRequestUI(
       const std::string& function_name) {
-    ResetEventObserver(DialogEvent::DIALOG_OPENED);
+    ResetEventWaiter(DialogEvent::DIALOG_OPENED);
 
     content::WebContents* web_contents = GetActiveWebContents();
     ASSERT_TRUE(content::ExecuteScript(web_contents, function_name + "();"));
@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoUpdateWithTest, BuyWithoutListeners) {
   RunJavaScriptFunctionToOpenPaymentRequestUI("buyWithoutListeners");
 
   OpenShippingAddressSectionScreen();
-  ResetEventObserverForSequence(std::list<DialogEvent>{
+  ResetEventWaiterForSequence(std::list<DialogEvent>{
       DialogEvent::SPEC_DONE_UPDATING, DialogEvent::BACK_NAVIGATION});
   ClickOnChildInListViewAndWait(
       /* child_index=*/1, /*total_num_children=*/2,
@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoUpdateWithTest,
   RunJavaScriptFunctionToOpenPaymentRequestUI("buyWithoutCallingUpdateWith");
 
   OpenShippingAddressSectionScreen();
-  ResetEventObserverForSequence(std::list<DialogEvent>{
+  ResetEventWaiterForSequence(std::list<DialogEvent>{
       DialogEvent::SPEC_DONE_UPDATING, DialogEvent::BACK_NAVIGATION});
   ClickOnChildInListViewAndWait(
       /* child_index=*/1, /*total_num_children=*/2,
@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoUpdateWithTest, BuyWithoutPromises) {
   ClickOnBackArrow();
 
   OpenShippingAddressSectionScreen();
-  ResetEventObserverForSequence(std::list<DialogEvent>{
+  ResetEventWaiterForSequence(std::list<DialogEvent>{
       DialogEvent::SPEC_DONE_UPDATING, DialogEvent::BACK_NAVIGATION});
   ClickOnChildInListViewAndWait(
       /* child_index=*/1, /*total_num_children=*/2,

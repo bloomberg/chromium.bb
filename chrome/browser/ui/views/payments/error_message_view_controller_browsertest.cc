@@ -40,12 +40,12 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestErrorMessageTest, CompleteFail) {
   // message should be shown.
   OpenCVCPromptWithCVC(base::ASCIIToUTF16("123"));
 
-  ResetEventObserver(DialogEvent::ERROR_MESSAGE_SHOWN);
+  ResetEventWaiter(DialogEvent::ERROR_MESSAGE_SHOWN);
   ClickOnDialogViewAndWait(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON);
   EXPECT_FALSE(dialog_view()->throbber_overlay_for_testing()->visible());
 
   // The user can only close the dialog at this point.
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   ClickOnDialogViewAndWait(DialogViewID::CANCEL_BUTTON,
                            /*wait_for_animation=*/false);
 }

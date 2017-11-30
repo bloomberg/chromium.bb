@@ -119,8 +119,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, NotSupportedError) {
 
     NavigateTo("/payment_request_bobpay_test.html");
 
-    ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
-                                   DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
+    ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
     ASSERT_TRUE(
         content::ExecuteScript(GetActiveWebContents(), "canMakePayment();"));
     WaitForObservedEvent();
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, NotSupportedError) {
     // SetDownloaderAndIgnorePortInAppScopeForTesting again.
     SetDownloaderAndIgnorePortInAppScopeForTesting();
 
-    ResetEventObserver(DialogEvent::NOT_SUPPORTED_ERROR);
+    ResetEventWaiter(DialogEvent::NOT_SUPPORTED_ERROR);
     ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "buy();"));
     WaitForObservedEvent();
     ExpectBodyContains({"NotSupportedError"});
@@ -142,8 +142,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, NotSupportedError) {
 
     NavigateTo("/payment_request_bobpay_test.html");
 
-    ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
-                                   DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
+    ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
     ASSERT_TRUE(
         content::ExecuteScript(GetActiveWebContents(), "canMakePayment();"));
     WaitForObservedEvent();
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, NotSupportedError) {
     // SetDownloaderAndIgnorePortInAppScopeForTesting again.
     SetDownloaderAndIgnorePortInAppScopeForTesting();
 
-    ResetEventObserver(DialogEvent::NOT_SUPPORTED_ERROR);
+    ResetEventWaiter(DialogEvent::NOT_SUPPORTED_ERROR);
     ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "buy();"));
     WaitForObservedEvent();
     ExpectBodyContains({"NotSupportedError"});
@@ -169,8 +169,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePay) {
 
     NavigateTo("/payment_request_bobpay_test.html");
 
-    ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
-                                   DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
+    ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
     ASSERT_TRUE(
         content::ExecuteScript(GetActiveWebContents(), "canMakePayment();"));
     WaitForObservedEvent();
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePay) {
 
     InvokePaymentRequestUI();
 
-    ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+    ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
     ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view());
     ExpectBodyContains({"https://alicepay.com"});
   }
@@ -193,8 +193,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePay) {
 
     NavigateTo("/payment_request_bobpay_test.html");
 
-    ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
-                                   DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
+    ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
     ASSERT_TRUE(
         content::ExecuteScript(GetActiveWebContents(), "canMakePayment();"));
     WaitForObservedEvent();
@@ -206,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePay) {
 
     InvokePaymentRequestUI();
 
-    ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+    ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
     ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view());
     ExpectBodyContains({"https://alicepay.com"});
   }
@@ -221,8 +221,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, CanNotPayWithBobPay) {
 
     NavigateTo("/payment_request_bobpay_test.html");
 
-    ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
-                                   DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
+    ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
     ASSERT_TRUE(
         content::ExecuteScript(GetActiveWebContents(), "canMakePayment();"));
     WaitForObservedEvent();
@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, CanNotPayWithBobPay) {
     // SetDownloaderAndIgnorePortInAppScopeForTesting again.
     SetDownloaderAndIgnorePortInAppScopeForTesting();
 
-    ResetEventObserver(DialogEvent::NOT_SUPPORTED_ERROR);
+    ResetEventWaiter(DialogEvent::NOT_SUPPORTED_ERROR);
     ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "buy();"));
     WaitForObservedEvent();
     ExpectBodyContains({"NotSupportedError"});
@@ -244,8 +244,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, CanNotPayWithBobPay) {
 
     NavigateTo("/payment_request_bobpay_test.html");
 
-    ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
-                                   DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
+    ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
     ASSERT_TRUE(
         content::ExecuteScript(GetActiveWebContents(), "canMakePayment();"));
     WaitForObservedEvent();
@@ -255,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, CanNotPayWithBobPay) {
     // SetDownloaderAndIgnorePortInAppScopeForTesting again.
     SetDownloaderAndIgnorePortInAppScopeForTesting();
 
-    ResetEventObserver(DialogEvent::NOT_SUPPORTED_ERROR);
+    ResetEventWaiter(DialogEvent::NOT_SUPPORTED_ERROR);
     ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "buy();"));
     WaitForObservedEvent();
     ExpectBodyContains({"NotSupportedError"});
@@ -273,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithBasicCard) {
         "/payment_request_bobpay_and_basic_card_with_modifiers_test.html");
     InvokePaymentRequestUI();
 
-    ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+    ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
     ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view());
     ExpectBodyContains({"basic-card"});
   }
@@ -286,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithBasicCard) {
         "/payment_request_bobpay_and_basic_card_with_modifiers_test.html");
     InvokePaymentRequestUI();
 
-    ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+    ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
     ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view());
     ExpectBodyContains({"basic-card"});
   }

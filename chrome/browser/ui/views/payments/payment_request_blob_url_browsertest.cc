@@ -16,7 +16,7 @@ class PaymentRequestBlobUrlTest : public PaymentRequestBrowserTestBase {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestBlobUrlTest, ConnectionTerminated) {
   NavigateTo("/payment_request_blob_url_test.html");
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   ASSERT_TRUE(content::ExecuteScript(
       GetActiveWebContents(),
       "(function() { document.getElementById('buy').click(); })();"));

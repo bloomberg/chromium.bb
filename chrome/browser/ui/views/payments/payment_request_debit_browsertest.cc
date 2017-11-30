@@ -40,8 +40,8 @@ class PaymentRequestDebitTest : public PaymentRequestBrowserTestBase {
   }
 
   void CallCanMakePayment() {
-    ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
-                                   DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
+    ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
     ASSERT_TRUE(
         content::ExecuteScript(GetActiveWebContents(), "canMakePayment();"));
     WaitForObservedEvent();
@@ -108,13 +108,13 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestDebitTest, PayWithLocalCard) {
 
   // Select the local card and click the "Pay" button.
   OpenPaymentMethodScreen();
-  ResetEventObserver(DialogEvent::BACK_NAVIGATION);
+  ResetEventWaiter(DialogEvent::BACK_NAVIGATION);
   ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
                                 DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW);
   EXPECT_TRUE(IsPayButtonEnabled());
 
   // Type in the CVC number and verify that it's sent to the page.
-  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("012"));
   ExpectBodyContains({"\"cardSecurityCode\": \"012\""});
 }

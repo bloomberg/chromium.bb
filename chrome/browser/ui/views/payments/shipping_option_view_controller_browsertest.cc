@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
                 "To see shipping methods and requirements, select an address"),
             GetLabelText(DialogViewID::SHIPPING_ADDRESS_SECTION_HEADER_LABEL));
 
-  ResetEventObserverForSequence(std::list<DialogEvent>{
+  ResetEventWaiterForSequence(std::list<DialogEvent>{
       DialogEvent::SPEC_DONE_UPDATING, DialogEvent::BACK_NAVIGATION});
   ClickOnChildInListViewAndWait(
       /* child_index=*/0, /*total_num_children=*/2,
@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
 
   // Go to the shipping address screen and select the second address (Canada).
   OpenShippingAddressSectionScreen();
-  ResetEventObserver(DialogEvent::SPEC_DONE_UPDATING);
+  ResetEventWaiter(DialogEvent::SPEC_DONE_UPDATING);
   ClickOnChildInListViewAndWait(
       /* child_index=*/1, /*total_num_children=*/2,
       DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW, false);
