@@ -1,40 +1,40 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(
+      `Verifies that CSSStyleSheetHeader.originalContentProvider() indeed returns original content.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
 <style>
 div { color: red; }
 /*# sourceURL=set-style.css */
 </style>
-
 <style>
 div {}
 /*# sourceURL=set-selector.css */
 </style>
-
 <style>
 @media (all) { }
 /*# sourceURL=set-media.css */
 </style>
-
 <style>
 @keyframes animation { 100% { color: red; } }
 /*# sourceURL=set-keyframe-key.css */
 </style>
-
 <style>
 div {}
 /*# sourceURL=add-rule.css */
 </style>
-
 <style>
 div {}
 /*# sourceURL=set-text.css */
 </style>
+<div id="inspected"></div>
+    `);
 
-<script>
-
-function test() {
   TestRunner.addSniffer(SDK.CSSModel.prototype, '_originalContentRequestedForTest', onOriginalContentRequested, true);
   function onOriginalContentRequested(header) {
     TestRunner.addResult('original content loaded for header: ' + header.sourceURL);
@@ -104,15 +104,4 @@ function test() {
     TestRunner.addResult('== Current ==');
     TestRunner.addResult(contents[1].trim());
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>Verifies that CSSStyleSheetHeader.originalContentProvider() indeed returns original content.</p>
-
-<div id="inspected"></div>
-
-</body>
-</html>
+})();
