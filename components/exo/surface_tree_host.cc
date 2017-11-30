@@ -53,7 +53,7 @@ class CustomWindowTargeter : public aura::WindowTargeter {
       aura::Window::ConvertPointToTarget(window->parent(), window,
                                          &local_point);
     aura::Window::ConvertPointToTarget(window, surface->window(), &local_point);
-    return surface->HitTestRect(gfx::Rect(local_point, gfx::Size(1, 1)));
+    return surface->HitTest(local_point);
   }
 
   ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
@@ -143,17 +143,13 @@ void SurfaceTreeHost::SetRootSurface(Surface* root_surface) {
   }
 }
 
-bool SurfaceTreeHost::HasHitTestMask() const {
-  return root_surface_ ? root_surface_->HasHitTestMask() : false;
+bool SurfaceTreeHost::HasHitTestRegion() const {
+  return root_surface_ && root_surface_->HasHitTestRegion();
 }
 
 void SurfaceTreeHost::GetHitTestMask(gfx::Path* mask) const {
   if (root_surface_)
     root_surface_->GetHitTestMask(mask);
-}
-
-gfx::Rect SurfaceTreeHost::GetHitTestBounds() const {
-  return root_surface_ ? root_surface_->GetHitTestBounds() : gfx::Rect();
 }
 
 gfx::NativeCursor SurfaceTreeHost::GetCursor(const gfx::Point& point) const {

@@ -48,9 +48,7 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   void OnWindowDestroying(aura::Window* window) override {}
   void OnWindowDestroyed(aura::Window* window) override { delete this; }
   void OnWindowTargetVisibilityChanged(bool visible) override {}
-  bool HasHitTestMask() const override {
-    return notification_surface_->HasHitTestMask();
-  }
+  bool HasHitTestMask() const override { return true; }
   void GetHitTestMask(gfx::Path* mask) const override {
     notification_surface_->GetHitTestMask(mask);
   }

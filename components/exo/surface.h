@@ -98,7 +98,7 @@ class Surface final : public ui::PropertyHandler {
   void SetOpaqueRegion(const cc::Region& region);
 
   // This sets the region of the surface that can receive pointer and touch
-  // events.
+  // events. The region is clipped to the surface bounds.
   void SetInputRegion(const cc::Region& region);
 
   // This sets the scaling factor used to interpret the contents of the buffer
@@ -167,17 +167,13 @@ class Surface final : public ui::PropertyHandler {
   // Returns true if surface is in synchronized mode.
   bool IsSynchronized() const;
 
-  // Returns the bounds of the current input region of surface.
-  gfx::Rect GetHitTestBounds() const;
+  // Returns false if the hit test region is empty.
+  bool HasHitTestRegion() const;
 
-  // Returns true if |rect| intersects this surface's bounds.
-  bool HitTestRect(const gfx::Rect& rect) const;
+  // Returns true if |point| is inside the surface.
+  bool HitTest(const gfx::Point& point) const;
 
-  // Returns true if the current input region is different than the surface
-  // bounds.
-  bool HasHitTestMask() const;
-
-  // Returns the current input region of surface in the form of a hit-test mask.
+  // Sets |mask| to the path that delineates the hit test region of the surface.
   void GetHitTestMask(gfx::Path* mask) const;
 
   // Returns the current input region of surface in the form of a set of
@@ -347,6 +343,9 @@ class Surface final : public ui::PropertyHandler {
 
   // This is the state that has been committed.
   State state_;
+
+  // Cumulative input region of surface and its sub-surfaces.
+  cc::Region hit_test_region_;
 
   // The stack of sub-surfaces to take effect when Commit() is called.
   // Bottom-most sub-surface at the front of the list and top-most sub-surface

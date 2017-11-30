@@ -42,14 +42,12 @@ class SurfaceTreeHost : public SurfaceDelegate,
   // the |host_window_|.
   void SetRootSurface(Surface* root_surface);
 
-  // Returns true if hosted surface tree has hittest mask.
-  bool HasHitTestMask() const;
+  // Returns false if the hit test region is empty.
+  bool HasHitTestRegion() const;
 
-  // Returns the hittest mask in |mask| for the hosted surface tree.
+  // Sets |mask| to the path that delineates the hit test region of the hosted
+  // surface tree.
   void GetHitTestMask(gfx::Path* mask) const;
-
-  // Returns the bounds of the current input region of the hosted surface tree.
-  gfx::Rect GetHitTestBounds() const;
 
   // Returns the cursor for the given position. If no cursor provider is
   // registered then CursorType::kNull is returned.

@@ -9,6 +9,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/simple_enclosed_region.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 namespace cc {
 
@@ -35,6 +36,11 @@ const Region& Region::operator=(const gfx::Rect& rect) {
 
 const Region& Region::operator=(const Region& region) {
   skregion_ = region.skregion_;
+  return *this;
+}
+
+const Region& Region::operator+=(const gfx::Vector2d& offset) {
+  skregion_.translate(offset.x(), offset.y());
   return *this;
 }
 
