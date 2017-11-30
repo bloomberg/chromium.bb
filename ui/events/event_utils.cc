@@ -130,4 +130,19 @@ void ComputeEventLatencyOS(const base::NativeEvent& native_event) {
   }
 }
 
+void ConvertEventLocationToTargetWindowLocation(
+    const gfx::Point& target_window_origin,
+    const gfx::Point& current_window_origin,
+    ui::LocatedEvent* located_event) {
+  if (current_window_origin == target_window_origin)
+    return;
+
+  DCHECK(located_event);
+  gfx::Vector2d offset = current_window_origin - target_window_origin;
+  gfx::PointF location_in_pixel_in_host =
+      located_event->location_f() + gfx::Vector2dF(offset);
+  located_event->set_location_f(location_in_pixel_in_host);
+  located_event->set_root_location_f(location_in_pixel_in_host);
+}
+
 }  // namespace ui
