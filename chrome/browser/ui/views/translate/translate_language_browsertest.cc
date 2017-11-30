@@ -41,6 +41,8 @@ namespace {
 
 const base::FilePath::CharType kEnglishTestPath[] =
     FILE_PATH_LITERAL("english_page.html");
+const base::FilePath::CharType kItalianTestPath[] =
+    FILE_PATH_LITERAL("italian_page.html");
 const base::FilePath::CharType kFrenchTestPath[] =
     FILE_PATH_LITERAL("french_page.html");
 
@@ -57,7 +59,7 @@ static const char kTestValidScript[] =
     "          return;"
     "        },"
     "        getDetectedLanguage : function() {"
-    "          return \"fr\";"
+    "          return \"\";"
     "        },"
     "        translatePage : function(originalLang, targetLang,"
     "                                 onTranslateProgress) {"
@@ -88,27 +90,37 @@ class TranslateLanguageBrowserTest : public InProcessBrowserTest {
   void TearDown() override { InProcessBrowserTest::TearDown(); }
 
  protected:
-  void SwitchToIncognitoMode() { browser_ = CreateIncognitoBrowser(); }
+  void InitInIncognitoMode(const bool incognito) {
+    browser_ = incognito ? CreateIncognitoBrowser() : browser();
+  }
 
-  void CheckForTranslateUI(const base::FilePath& path,
-                           bool expect_translate,
-                           const std::string& expected_lang) {
-    // Set browser_ here because |browser_| is not available during the
-    // InProcessBrowserTest parameter initialization phase.
-    if (!browser_) {
-      browser_ = browser();
-    }
-    expected_lang_ = expected_lang;
+  void NavigateToUrl(const base::FilePath::StringPieceType path) {
+    // Close previous Translate bubble, if it exists. This is intended to
+    // prevent a race condition in which the previous page's call to
+    // TranslateBubbleView::WindowClosing doesn't occur until after the new page
+    // has been loaded and translated, thus eroneously clearing the new
+    // translate bubble.
+    // TODO(789593): investigate a more robust fix.
+    TranslateBubbleView::CloseCurrentBubble();
+
+    const GURL url =
+        ui_test_utils::GetTestUrl(base::FilePath(), base::FilePath(path));
+    ui_test_utils::NavigateToURL(browser_, url);
+  }
+
+  void CheckForTranslateUI(const base::FilePath::StringPieceType path,
+                           const bool expect_translate) {
+    CHECK(browser_);
+
     content::WindowedNotificationObserver language_detected_signal(
         chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-        base::Bind(&TranslateLanguageBrowserTest::OnLanguageDetermined,
+        base::Bind(&TranslateLanguageBrowserTest::ValidLanguageDetected,
                    base::Unretained(this)));
-
-    const GURL url = ui_test_utils::GetTestUrl(base::FilePath(), path);
-    ui_test_utils::NavigateToURL(browser_, url);
+    NavigateToUrl(path);
     language_detected_signal.Wait();
+
     TranslateBubbleView* const bubble = TranslateBubbleView::GetCurrentBubble();
-    DCHECK_NE(expect_translate, bubble == nullptr);
+    CHECK_NE(expect_translate, bubble == nullptr);
   }
 
   language::UrlLanguageHistogram* GetUrlLanguageHistogram() {
@@ -121,45 +133,57 @@ class TranslateLanguageBrowserTest : public InProcessBrowserTest {
     return UrlLanguageHistogramFactory::GetForBrowserContext(browser_context);
   }
 
-  void Translate() {
-    EXPECT_EQ(expected_lang_, GetLanguageState().current_language());
+  void SetTargetLanguageByDisplayName(const base::string16& name) {
+    translate::test_utils::SelectTargetLanguageByDisplayName(browser_, name);
+  }
+
+  void Translate(const bool first_translate) {
     content::WindowedNotificationObserver page_translated_signal(
         chrome::NOTIFICATION_PAGE_TRANSLATED,
         content::NotificationService::AllSources());
+
     EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
               GetCurrentModel(browser_)->GetViewState());
+
     translate::test_utils::PressTranslate(browser_);
-    SimulateURLFetch();
+    if (first_translate)
+      SimulateURLFetch();
+
     page_translated_signal.Wait();
     EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE,
               GetCurrentModel(browser_)->GetViewState());
-    EXPECT_EQ("en", GetLanguageState().current_language());
   }
 
-  void Revert() {
-    EXPECT_EQ("en", GetLanguageState().current_language());
-    // Make page |expected_lang_| again!
-    translate::test_utils::PressRevert(browser_);
-    EXPECT_EQ(expected_lang_, GetLanguageState().current_language());
+  void Revert() { translate::test_utils::PressRevert(browser_); }
+
+  translate::LanguageState& GetLanguageState() {
+    auto* const client = ChromeTranslateClient::FromWebContents(
+        browser_->tab_strip_model()->GetActiveWebContents());
+    CHECK(client);
+
+    return client->GetLanguageState();
+  }
+
+  std::unique_ptr<translate::TranslatePrefs> GetTranslatePrefs() {
+    auto* const client = ChromeTranslateClient::FromWebContents(
+        browser_->tab_strip_model()->GetActiveWebContents());
+    CHECK(client);
+
+    return client->GetTranslatePrefs();
   }
 
  private:
   Browser* browser_;
   net::TestURLFetcherFactory url_fetcher_factory_;
-  std::string expected_lang_;
 
-  bool OnLanguageDetermined(const content::NotificationSource& source,
-                            const content::NotificationDetails& details) {
+  // Language detection sometimes fires early with an "und" detected code. This
+  // callback is used to wait until language detection succeeds.
+  bool ValidLanguageDetected(const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
     const std::string& language =
         content::Details<translate::LanguageDetectionDetails>(details)
-            ->cld_language;
-    return language == expected_lang_;
-  }
-
-  translate::LanguageState& GetLanguageState() {
-    auto* const client = ChromeTranslateClient::FromWebContents(
-        browser_->tab_strip_model()->GetActiveWebContents());
-    return client->GetLanguageState();
+            ->adopted_language;
+    return language != "und";
   }
 
   void SimulateURLFetch() {
@@ -177,15 +201,17 @@ class TranslateLanguageBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest, LanguageModelLogSucceed) {
+  InitInIncognitoMode(false);
+
   for (int i = 0; i < 10; ++i) {
-    ASSERT_NO_FATAL_FAILURE(
-        CheckForTranslateUI(base::FilePath(kFrenchTestPath), true, "fr"));
-    ASSERT_NO_FATAL_FAILURE(
-        CheckForTranslateUI(base::FilePath(kEnglishTestPath), false, "en"));
+    ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(kFrenchTestPath, true));
+    EXPECT_EQ("fr", GetLanguageState().current_language());
+    ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(kEnglishTestPath, false));
+    EXPECT_EQ("en", GetLanguageState().current_language());
   }
   // Intentionally visit the french page one more time.
-  ASSERT_NO_FATAL_FAILURE(
-      CheckForTranslateUI(base::FilePath(kFrenchTestPath), true, "fr"));
+  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(kFrenchTestPath, true));
+  EXPECT_EQ("fr", GetLanguageState().current_language());
 
   // We should expect fr and en. fr should be 11 / (11 + 10) = 0.5238.
   const language::UrlLanguageHistogram* const histograms =
@@ -200,12 +226,13 @@ IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest, LanguageModelLogSucceed) {
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest, DontLogInIncognito) {
-  SwitchToIncognitoMode();
+  InitInIncognitoMode(true);
+
   for (int i = 0; i < 10; ++i) {
-    ASSERT_NO_FATAL_FAILURE(
-        CheckForTranslateUI(base::FilePath(kEnglishTestPath), false, "en"));
-    ASSERT_NO_FATAL_FAILURE(
-        CheckForTranslateUI(base::FilePath(kFrenchTestPath), true, "fr"));
+    ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(kEnglishTestPath, false));
+    EXPECT_EQ("en", GetLanguageState().current_language());
+    ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(kFrenchTestPath, true));
+    EXPECT_EQ("fr", GetLanguageState().current_language());
   }
   // We should expect no url language histograms.
   const language::UrlLanguageHistogram* const histograms =
@@ -214,13 +241,58 @@ IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest, DontLogInIncognito) {
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest, TranslateAndRevert) {
+  InitInIncognitoMode(false);
+
   // Visit the french page.
-  ASSERT_NO_FATAL_FAILURE(
-      CheckForTranslateUI(base::FilePath(kFrenchTestPath), true, "fr"));
+  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(kFrenchTestPath, true));
+  EXPECT_EQ("fr", GetLanguageState().current_language());
+
   // Translate the page.
-  ASSERT_NO_FATAL_FAILURE(Translate());
+  ASSERT_NO_FATAL_FAILURE(Translate(true));
+  EXPECT_EQ("en", GetLanguageState().current_language());
+
   // Revert the page.
   ASSERT_NO_FATAL_FAILURE(Revert());
+  EXPECT_EQ("fr", GetLanguageState().current_language());
+}
+
+IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest, RecentTargetLanguage) {
+  base::test::ScopedFeatureList enable_feature;
+  enable_feature.InitAndEnableFeature(translate::kTranslateRecentTarget);
+
+  InitInIncognitoMode(false);
+
+  // Before browsing: set auto translate from French to Chinese.
+  GetTranslatePrefs()->WhitelistLanguagePair("fr", "zh-CN");
+  EXPECT_EQ("", GetTranslatePrefs()->GetRecentTargetLanguage());
+
+  // Load an Italian page and translate to Spanish. After this, Spanish should
+  // be our recent target language.
+  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(kItalianTestPath, true));
+  EXPECT_EQ("it", GetLanguageState().current_language());
+  ASSERT_NO_FATAL_FAILURE(
+      SetTargetLanguageByDisplayName(base::ASCIIToUTF16("Spanish")));
+  ASSERT_NO_FATAL_FAILURE(Translate(true));
+  EXPECT_EQ("es", GetLanguageState().current_language());
+  EXPECT_EQ("es", GetTranslatePrefs()->GetRecentTargetLanguage());
+
+  // Load a French page. This should trigger an auto-translate to Chinese, but
+  // not a recent target update.
+  content::WindowedNotificationObserver page_translated_signal(
+      chrome::NOTIFICATION_PAGE_TRANSLATED,
+      content::NotificationService::AllSources());
+  NavigateToUrl(kFrenchTestPath);
+  page_translated_signal.Wait();
+  EXPECT_EQ("zh-CN", GetLanguageState().current_language());
+  EXPECT_EQ("es", GetTranslatePrefs()->GetRecentTargetLanguage());
+
+  // Load an English page. This should offer to translate to Spanish, since that
+  // is our recent target language.
+  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(kEnglishTestPath, true));
+  EXPECT_EQ("en", GetLanguageState().current_language());
+  ASSERT_NO_FATAL_FAILURE(Translate(false));
+  EXPECT_EQ("es", GetLanguageState().current_language());
+  EXPECT_EQ("es", GetTranslatePrefs()->GetRecentTargetLanguage());
 }
 
 #endif  // defined(USE_AURA)
