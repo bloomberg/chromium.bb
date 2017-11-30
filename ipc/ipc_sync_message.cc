@@ -35,8 +35,7 @@ SyncMessage::SyncMessage(int32_t routing_id,
   WriteSyncHeader(this, header);
 }
 
-SyncMessage::~SyncMessage() {
-}
+SyncMessage::~SyncMessage() = default;
 
 MessageReplyDeserializer* SyncMessage::GetReplyDeserializer() {
   DCHECK(deserializer_.get());

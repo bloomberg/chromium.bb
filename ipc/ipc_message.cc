@@ -44,8 +44,7 @@ namespace IPC {
 
 //------------------------------------------------------------------------------
 
-Message::~Message() {
-}
+Message::~Message() = default;
 
 Message::Message() : base::Pickle(sizeof(Header)) {
   header()->routing = header()->type = 0;
@@ -133,7 +132,7 @@ void Message::set_received_time(int64_t time) const {
 Message::NextMessageInfo::NextMessageInfo()
     : message_size(0), message_found(false), pickle_end(nullptr),
       message_end(nullptr) {}
-Message::NextMessageInfo::~NextMessageInfo() {}
+Message::NextMessageInfo::~NextMessageInfo() = default;
 
 // static
 void Message::FindNext(const char* range_start,

@@ -1079,7 +1079,7 @@ class TestSyncMessageFilter : public SyncMessageFilter {
   }
 
  private:
-  ~TestSyncMessageFilter() override {}
+  ~TestSyncMessageFilter() override = default;
 
   Worker* worker_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

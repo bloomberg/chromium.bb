@@ -121,8 +121,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(SyncSocketServerClient) {
 // a response from the server.
 class SyncSocketClientListener : public IPC::Listener {
  public:
-  SyncSocketClientListener() {
-  }
+  SyncSocketClientListener() = default;
 
   void Init(base::SyncSocket* socket, IPC::Channel* chan) {
     socket_ = socket;

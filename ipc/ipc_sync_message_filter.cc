@@ -147,7 +147,7 @@ SyncMessageFilter::SyncMessageFilter(base::WaitableEvent* shutdown_event)
       listener_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       shutdown_event_(shutdown_event) {}
 
-SyncMessageFilter::~SyncMessageFilter() {}
+SyncMessageFilter::~SyncMessageFilter() = default;
 
 void SyncMessageFilter::SendOnIOThread(Message* message) {
   if (channel_) {

@@ -45,7 +45,6 @@ bool MojoMessageHelper::ReadMessagePipeFrom(
   return true;
 }
 
-MojoMessageHelper::MojoMessageHelper() {
-}
+MojoMessageHelper::MojoMessageHelper() = default;
 
 }  // namespace IPC
