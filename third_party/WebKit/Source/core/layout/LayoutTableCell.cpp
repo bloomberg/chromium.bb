@@ -503,7 +503,7 @@ CSSPropertyID LayoutTableCell::ResolveBorderProperty(
 }
 
 CollapsedBorderValue LayoutTableCell::ComputeCollapsedStartBorder() const {
-  LayoutTable* table = this->Table();
+  LayoutTable* table = Table();
   bool in_start_column = IsInStartColumn();
   LayoutTableCell* cell_preceding =
       in_start_column ? nullptr : table->CellPreceding(*this);
@@ -633,7 +633,7 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedStartBorder() const {
 }
 
 CollapsedBorderValue LayoutTableCell::ComputeCollapsedEndBorder() const {
-  LayoutTable* table = this->Table();
+  LayoutTable* table = Table();
   // Note: We have to use the effective column information instead of whether we
   // have a cell after as a table doesn't have to be regular (any row can have
   // less cells than the total cell count).
@@ -763,7 +763,7 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedEndBorder() const {
 }
 
 CollapsedBorderValue LayoutTableCell::ComputeCollapsedBeforeBorder() const {
-  LayoutTable* table = this->Table();
+  LayoutTable* table = Table();
   LayoutTableCell* cell_above = table->CellAbove(*this);
   // We can use the border shared with |cell_above| if it is valid.
   if (StartsAtSameColumn(cell_above) &&
@@ -894,7 +894,7 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedBeforeBorder() const {
 }
 
 CollapsedBorderValue LayoutTableCell::ComputeCollapsedAfterBorder() const {
-  LayoutTable* table = this->Table();
+  LayoutTable* table = Table();
   LayoutTableCell* cell_below = table->CellBelow(*this);
   // We can use the border shared with |cell_below| if it is valid.
   if (StartsAtSameColumn(cell_below) &&

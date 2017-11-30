@@ -274,8 +274,8 @@ void LayoutRubyRun::GetOverhang(bool first_line,
   start_overhang = 0;
   end_overhang = 0;
 
-  LayoutRubyBase* ruby_base = this->RubyBase();
-  LayoutRubyText* ruby_text = this->RubyText();
+  LayoutRubyBase* ruby_base = RubyBase();
+  LayoutRubyText* ruby_text = RubyText();
 
   if (!ruby_base || !ruby_text)
     return;
@@ -283,7 +283,7 @@ void LayoutRubyRun::GetOverhang(bool first_line,
   if (!ruby_base->FirstRootBox())
     return;
 
-  int logical_width = this->LogicalWidth().ToInt();
+  int logical_width = LogicalWidth().ToInt();
   int logical_left_overhang = std::numeric_limits<int>::max();
   int logical_right_overhang = std::numeric_limits<int>::max();
   for (RootInlineBox* root_inline_box = ruby_base->FirstRootBox();

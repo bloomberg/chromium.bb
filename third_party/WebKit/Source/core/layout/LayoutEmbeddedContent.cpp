@@ -59,7 +59,7 @@ void LayoutEmbeddedContent::Release() {
 
 void LayoutEmbeddedContent::WillBeDestroyed() {
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
-    cache->ChildrenChanged(this->Parent());
+    cache->ChildrenChanged(Parent());
     cache->Remove(this);
   }
 
