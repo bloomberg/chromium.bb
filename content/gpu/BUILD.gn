@@ -120,7 +120,8 @@ target(link_target_type, "gpu_sources") {
     deps += [ "//gpu/vulkan" ]
   }
 
-  if (is_desktop_linux) {
+  # Use DRI on desktop Linux builds.
+  if (is_desktop_linux && (!is_chromecast || is_cast_desktop_build)) {
     configs += [ "//build/config/linux/dri" ]
   }
 }
