@@ -236,7 +236,9 @@ void FeaturePolicy::AddContainerPolicy(
 // each feature (in spec, implemented, etc).
 const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
   CR_DEFINE_STATIC_LOCAL(FeatureList, default_feature_list,
-                         ({{FeaturePolicyFeature::kCamera,
+                         ({{FeaturePolicyFeature::kAutoplay,
+                            FeaturePolicy::FeatureDefault::EnableForSelf},
+                           {FeaturePolicyFeature::kCamera,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
                            {FeaturePolicyFeature::kEncryptedMedia,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
