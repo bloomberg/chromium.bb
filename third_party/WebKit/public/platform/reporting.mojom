@@ -13,7 +13,8 @@ interface ReportingServiceProxy {
   QueueInterventionReport(url.mojom.Url url,
                           string message,
                           string source_file,
-                          int32 line_number);
+                          int32 line_number,
+                          int32 column_number);
 
   // Attempts to queue a Deprecation report using the Reporting API.
   //
@@ -21,7 +22,8 @@ interface ReportingServiceProxy {
   QueueDeprecationReport(url.mojom.Url url,
                          string message,
                          string source_file,
-                         int32 line_number);
+                         int32 line_number,
+                         int32 column_number);
 
   // Attempts to queue a Deprecation report using the Reporting API.
   //
