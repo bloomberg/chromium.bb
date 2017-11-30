@@ -2361,7 +2361,9 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
   for (const auto& result : results) {
     // Need to map the indexes from the page text, which may have generated
     // characters like space etc, to character indices from the page.
-    int temp_start = result.start_index + character_to_start_searching_from;
+    int text_to_start_searching_from = FPDFText_GetTextIndexFromCharIndex(
+        pages_[current_page]->GetTextPage(), character_to_start_searching_from);
+    int temp_start = result.start_index + text_to_start_searching_from;
     int start = FPDFText_GetCharIndexFromTextIndex(
         pages_[current_page]->GetTextPage(), temp_start);
     int end = FPDFText_GetCharIndexFromTextIndex(
