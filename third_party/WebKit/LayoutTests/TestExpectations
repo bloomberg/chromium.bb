@@ -4007,3 +4007,5 @@ crbug.com/789478 [ Mac ] virtual/prefer_compositing_to_lcd_text/scrollbars/custo
 crbug.com/789485 [ Linux ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-tap-mouse-events-between-frames.html [ Pass Failure ]
 crbug.com/789533 virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing.html [ Pass Failure ]
 crbug.com/789707 [ Mac ] editing/selection/4975120.html [ Pass Failure ]
+
+crbug.com/789823 typedcssom/stylevalue-subclasses/numeric-objects/parse.html [ Pass Failure ]
