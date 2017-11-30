@@ -187,7 +187,7 @@ public final class MainActivityTest {
         installBrowser(browserPackageName);
 
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(intentStartUrl));
-        Robolectric.buildActivity(MainActivity.class).withIntent(launchIntent).create();
+        Robolectric.buildActivity(MainActivity.class, launchIntent).create();
 
         Intent startActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
         Assert.assertEquals(

@@ -7,7 +7,7 @@ import("//build/config/android/rules.gni")
 java_group("robolectric_all_java") {
   testonly = true
   deps = [
-    ":android-all-o-preview-4-robolectric-0_java",
+    ":android-all-8.1.0-robolectric-r4402310_java",
     ":robolectric_annotations_java",
     ":robolectric_java",
     ":robolectric_junit_java",
@@ -35,15 +35,20 @@ java_prebuilt("android-all-7.1.0_r7-robolectric-0_java") {
   jar_path = "lib/android-all-7.1.0_r7-robolectric-0.jar"
 }
 
-java_prebuilt("android-all-o-preview-4-robolectric-0_java") {
+java_prebuilt("android-all-8.0.0_r4-robolectric-0_java") {
   testonly = true
-  jar_path = "lib/android-all-o-preview-4-robolectric-0.jar"
+  jar_path = "lib/android-all-8.0.0_r4-robolectric-0.jar"
+}
+
+java_prebuilt("android-all-8.1.0-robolectric-r4402310_java") {
+  testonly = true
+  jar_path = "lib/android-all-8.1.0-robolectric-r4402310.jar"
 }
 
 java_library("robolectric_java") {
   testonly = true
   deps = [
-    ":android-all-o-preview-4-robolectric-0_java",
+    ":android-all-8.1.0-robolectric-r4402310_java",
     ":robolectric_annotations_java",
     ":robolectric_junit_java",
     ":robolectric_resources_java",
@@ -61,6 +66,7 @@ java_library("robolectric_java") {
     ":android-all-4.3_r2-robolectric-0_java",
     ":android-all-5.0.0_r2-robolectric-1_java",
     ":android-all-7.1.0_r7-robolectric-0_java",
+    ":android-all-8.0.0_r4-robolectric-0_java",
   ]
   java_files = [
     "local/robolectric/src/main/java/org/robolectric/internal/dependency/MavenDependencyResolver.java",
@@ -106,7 +112,6 @@ java_library("robolectric_java") {
     "robolectric/robolectric/src/main/java/org/robolectric/internal/dependency/LocalDependencyResolver.java",
     "robolectric/robolectric/src/main/java/org/robolectric/internal/dependency/PropertiesDependencyResolver.java",
     "robolectric/robolectric/src/main/java/org/robolectric/package-info.java",
-    "robolectric/robolectric/src/main/java/org/robolectric/res/builder/DefaultPackageManager.java",
     "robolectric/robolectric/src/main/java/org/robolectric/util/FragmentTestUtil.java",
   ]
   additional_jar_files = [ [
@@ -122,7 +127,7 @@ java_library("robolectric_java") {
 java_library("robolectric_annotations_java") {
   testonly = true
   deps = [
-    ":android-all-o-preview-4-robolectric-0_java",
+    ":android-all-8.1.0-robolectric-r4402310_java",
     ":robolectric_shadowapi_java",
     "//third_party/findbugs:jsr305_java",
     "//third_party/intellij:intellij_annotations_java",
@@ -181,7 +186,7 @@ java_library("robolectric_processor_java") {
 java_library("robolectric_resources_java") {
   testonly = true
   deps = [
-    ":android-all-o-preview-4-robolectric-0_java",
+    ":android-all-8.1.0-robolectric-r4402310_java",
     ":robolectric_annotations_java",
     ":robolectric_utils_java",
     "//third_party/findbugs:jsr305_java",
@@ -227,7 +232,6 @@ java_library("robolectric_resources_java") {
     "robolectric/resources/src/main/java/org/robolectric/res/ResourceTable.java",
     "robolectric/resources/src/main/java/org/robolectric/res/ResourceTableFactory.java",
     "robolectric/resources/src/main/java/org/robolectric/res/ResourceValueConverter.java",
-    "robolectric/resources/src/main/java/org/robolectric/res/RoutingResourceLoader.java",
     "robolectric/resources/src/main/java/org/robolectric/res/RoutingResourceTable.java",
     "robolectric/resources/src/main/java/org/robolectric/res/StartsWithFilter.java",
     "robolectric/resources/src/main/java/org/robolectric/res/StaxArrayLoader.java",
@@ -263,7 +267,6 @@ java_library("robolectric_utils_java") {
     "robolectric/utils/src/main/java/org/robolectric/util/SimpleFuture.java",
     "robolectric/utils/src/main/java/org/robolectric/util/SoftThreadLocal.java",
     "robolectric/utils/src/main/java/org/robolectric/util/Strftime.java",
-    "robolectric/utils/src/main/java/org/robolectric/util/Strings.java",
     "robolectric/utils/src/main/java/org/robolectric/util/TempDirectory.java",
     "robolectric/utils/src/main/java/org/robolectric/util/TestRunnable.java",
     "robolectric/utils/src/main/java/org/robolectric/util/TimeUtils.java",
@@ -668,7 +671,7 @@ java_library("shadows_core_java") {
   ]
 
   deps = [
-    ":android-all-o-preview-4-robolectric-0_java",
+    ":android-all-8.1.0-robolectric-r4402310_java",
     ":robolectric_annotations_java",
     ":robolectric_resources_java",
     ":robolectric_shadowapi_java",
@@ -708,7 +711,7 @@ java_library("shadows_multidex_java") {
 
   classpath_deps = [ ":robolectric_processor_java" ]
   deps = [
-    ":android-all-o-preview-4-robolectric-0_java",
+    ":android-all-8.1.0-robolectric-r4402310_java",
     ":robolectric_annotations_java",
     ":robolectric_shadowapi_java",
     ":robolectric_utils_java",
@@ -742,7 +745,7 @@ java_library("shadows_play_services_java") {
 
   classpath_deps = [ ":robolectric_processor_java" ]
   deps = [
-    ":android-all-o-preview-4-robolectric-0_java",
+    ":android-all-8.1.0-robolectric-r4402310_java",
     ":robolectric_annotations_java",
     ":robolectric_resources_java",
     ":robolectric_shadowapi_java",

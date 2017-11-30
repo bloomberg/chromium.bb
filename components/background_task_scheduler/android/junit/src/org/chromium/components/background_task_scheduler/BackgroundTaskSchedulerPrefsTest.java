@@ -29,38 +29,38 @@ import java.util.concurrent.TimeUnit;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class BackgroundTaskSchedulerPrefsTest {
-    private static final TaskInfo TASK_1 =
-            TaskInfo.createOneOffTask(
-                            TaskIds.TEST, TestBackgroundTask.class, TimeUnit.DAYS.toMillis(1))
-                    .build();
-    private static final TaskInfo TASK_2 =
-            TaskInfo.createOneOffTask(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID,
-                            TestBackgroundTask2.class, TimeUnit.DAYS.toMillis(1))
-                    .build();
-
     /**
      * Dummy extension of the class above to ensure scheduled tasks returned from shared
      * preferences are not missing something.
      */
     static class TestBackgroundTask2 extends TestBackgroundTask {}
 
+    private TaskInfo mTask1;
+    private TaskInfo mTask2;
+
     @Before
     public void setUp() {
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        mTask1 = TaskInfo.createOneOffTask(
+                                 TaskIds.TEST, TestBackgroundTask.class, TimeUnit.DAYS.toMillis(1))
+                         .build();
+        mTask2 = TaskInfo.createOneOffTask(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID,
+                                 TestBackgroundTask2.class, TimeUnit.DAYS.toMillis(1))
+                         .build();
     }
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testAddScheduledTask() {
-        BackgroundTaskSchedulerPrefs.addScheduledTask(TASK_1);
+        BackgroundTaskSchedulerPrefs.addScheduledTask(mTask1);
         assertEquals("We are expecting a single entry.", 1,
                 BackgroundTaskSchedulerPrefs.getScheduledTasks().size());
 
-        BackgroundTaskSchedulerPrefs.addScheduledTask(TASK_1);
+        BackgroundTaskSchedulerPrefs.addScheduledTask(mTask1);
         assertEquals("Still there should be only one entry, as duplicate was added.", 1,
                 BackgroundTaskSchedulerPrefs.getScheduledTasks().size());
 
-        BackgroundTaskSchedulerPrefs.addScheduledTask(TASK_2);
+        BackgroundTaskSchedulerPrefs.addScheduledTask(mTask2);
         assertEquals("There should be 2 tasks in shared prefs.", 2,
                 BackgroundTaskSchedulerPrefs.getScheduledTasks().size());
         TaskInfo task3 = TaskInfo.createOneOffTask(TaskIds.OMAHA_JOB_ID, TestBackgroundTask2.class,
@@ -73,41 +73,41 @@ public class BackgroundTaskSchedulerPrefsTest {
                 BackgroundTaskSchedulerPrefs.getScheduledTasks().size());
 
         Set<String> scheduledTasks = BackgroundTaskSchedulerPrefs.getScheduledTasks();
-        assertTrue("TASK_1 class name in scheduled tasks.",
-                scheduledTasks.contains(TASK_1.getBackgroundTaskClass().getName()));
-        assertTrue("TASK_2 class name in scheduled tasks.",
-                scheduledTasks.contains(TASK_2.getBackgroundTaskClass().getName()));
+        assertTrue("mTask1 class name in scheduled tasks.",
+                scheduledTasks.contains(mTask1.getBackgroundTaskClass().getName()));
+        assertTrue("mTask2 class name in scheduled tasks.",
+                scheduledTasks.contains(mTask2.getBackgroundTaskClass().getName()));
         assertTrue("task3 class name in scheduled tasks.",
                 scheduledTasks.contains(task3.getBackgroundTaskClass().getName()));
 
         Set<Integer> taskIds = BackgroundTaskSchedulerPrefs.getScheduledTaskIds();
-        assertTrue(taskIds.contains(TASK_1.getTaskId()));
-        assertTrue(taskIds.contains(TASK_2.getTaskId()));
+        assertTrue(taskIds.contains(mTask1.getTaskId()));
+        assertTrue(taskIds.contains(mTask2.getTaskId()));
         assertTrue(taskIds.contains(task3.getTaskId()));
     }
 
     @Test
     @Feature("BackgroundTaskScheduler")
     public void testRemoveScheduledTask() {
-        BackgroundTaskSchedulerPrefs.addScheduledTask(TASK_1);
-        BackgroundTaskSchedulerPrefs.addScheduledTask(TASK_2);
-        BackgroundTaskSchedulerPrefs.removeScheduledTask(TASK_1.getTaskId());
+        BackgroundTaskSchedulerPrefs.addScheduledTask(mTask1);
+        BackgroundTaskSchedulerPrefs.addScheduledTask(mTask2);
+        BackgroundTaskSchedulerPrefs.removeScheduledTask(mTask1.getTaskId());
         assertEquals("We are expecting a single entry.", 1,
                 BackgroundTaskSchedulerPrefs.getScheduledTasks().size());
 
-        BackgroundTaskSchedulerPrefs.removeScheduledTask(TASK_1.getTaskId());
+        BackgroundTaskSchedulerPrefs.removeScheduledTask(mTask1.getTaskId());
         assertEquals("Removing a task which is not there does not affect the task set.", 1,
                 BackgroundTaskSchedulerPrefs.getScheduledTasks().size());
 
         Set<String> scheduledTasks = BackgroundTaskSchedulerPrefs.getScheduledTasks();
-        assertFalse("TASK_1 class name is not in scheduled tasks.",
-                scheduledTasks.contains(TASK_1.getBackgroundTaskClass().getName()));
-        assertTrue("TASK_2 class name in scheduled tasks.",
-                scheduledTasks.contains(TASK_2.getBackgroundTaskClass().getName()));
+        assertFalse("mTask1 class name is not in scheduled tasks.",
+                scheduledTasks.contains(mTask1.getBackgroundTaskClass().getName()));
+        assertTrue("mTask2 class name in scheduled tasks.",
+                scheduledTasks.contains(mTask2.getBackgroundTaskClass().getName()));
 
         Set<Integer> taskIds = BackgroundTaskSchedulerPrefs.getScheduledTaskIds();
-        assertFalse(taskIds.contains(TASK_1.getTaskId()));
-        assertTrue(taskIds.contains(TASK_2.getTaskId()));
+        assertFalse(taskIds.contains(mTask1.getTaskId()));
+        assertTrue(taskIds.contains(mTask2.getTaskId()));
     }
 
     @Test
@@ -132,8 +132,8 @@ public class BackgroundTaskSchedulerPrefsTest {
     @Test
     @Feature("BackgroundTaskScheduler")
     public void testRemoveAllTasks() {
-        BackgroundTaskSchedulerPrefs.addScheduledTask(TASK_1);
-        BackgroundTaskSchedulerPrefs.addScheduledTask(TASK_2);
+        BackgroundTaskSchedulerPrefs.addScheduledTask(mTask1);
+        BackgroundTaskSchedulerPrefs.addScheduledTask(mTask2);
         BackgroundTaskSchedulerPrefs.removeAllTasks();
         assertTrue("We are expecting a all tasks to be gone.",
                 BackgroundTaskSchedulerPrefs.getScheduledTasks().isEmpty());
