@@ -11,12 +11,13 @@ static __m128i xx_load_extend_8_32(const void *p) {
   return _mm_cvtepu8_epi32(xx_loadl_32(p));
 }
 
+#if CONFIG_HIGHBITDEPTH
 // Load 4 halfwords from the possibly-misaligned pointer p, extend each
 // halfword to 32-bit precision and return them in an SSE register.
 static __m128i xx_load_extend_16_32(const void *p) {
   return _mm_cvtepu16_epi32(xx_loadl_64(p));
 }
-
+#endif
 // Compute the scan of an SSE register holding 4 32-bit integers. If the
 // register holds x0..x3 then the scan will hold x0, x0+x1, x0+x1+x2,
 // x0+x1+x2+x3
