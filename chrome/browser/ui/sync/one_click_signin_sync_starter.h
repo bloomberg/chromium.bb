@@ -168,6 +168,13 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // in-progress auth credentials currently stored in this object.
   void CreateNewSignedInProfile();
 
+  // Opens a browser window for new profile showing the sign-in page.
+  void ShowSigninInNewProfile(Profile* new_profile);
+
+  // Copies the sign-in credentials to |new_profile| and starts syncing in
+  // |new_profile|.
+  void CopyCredentialsToNewProfileAndFinishSignin(Profile* new_profile);
+
   // Helper function that loads policy with the cached |dm_token_| and
   // |client_id|, then completes the signin process.
   void LoadPolicyWithCachedCredentials();
@@ -200,12 +207,14 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // call FinishProfileSyncServiceSetup() function.
   browser_sync::ProfileSyncService* GetProfileSyncService();
 
+  // Finishes the setup of the profile sync service.
   void FinishProfileSyncServiceSetup();
 
   // Shows the post-signin confirmation bubble. If |custom_message| is empty,
   // the default "You are signed in" message is displayed.
   void DisplayFinalConfirmationBubble(const base::string16& custom_message);
 
+  // Displays the sync confirmation modal dialog.
   void DisplayModalSyncConfirmationWindow();
 
   Profile* profile_;

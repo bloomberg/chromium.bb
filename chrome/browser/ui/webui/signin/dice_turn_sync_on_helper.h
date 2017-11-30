@@ -23,16 +23,6 @@ class DiceTurnSyncOnHelper {
                        signin_metrics::Reason signin_reason,
                        const std::string& account_id);
 
-  // Create a helper that turns sync on for given account (the account is not
-  // yet present in the token service).
-  DiceTurnSyncOnHelper(Profile* profile,
-                       Browser* browser,
-                       signin_metrics::AccessPoint signin_access_point,
-                       signin_metrics::Reason signin_reason,
-                       const std::string& gaia_id,
-                       const std::string& email,
-                       const std::string& refresh_token);
-
   virtual ~DiceTurnSyncOnHelper();
 
  private:
@@ -63,10 +53,6 @@ class DiceTurnSyncOnHelper {
   // Account information.
   const std::string gaia_id_;
   const std::string email_;
-
-  // Refresh token (non-empty when turning on sync for an account that is
-  // *not* yet present in the token service).
-  const std::string refresh_token_;
 
   DISALLOW_COPY_AND_ASSIGN(DiceTurnSyncOnHelper);
 };

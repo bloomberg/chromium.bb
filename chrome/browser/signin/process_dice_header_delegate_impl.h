@@ -20,11 +20,7 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   ~ProcessDiceHeaderDelegateImpl() override = default;
 
   // ProcessDiceHeaderDelegate:
-  void WillStartRefreshTokenFetch(const std::string& gaia_id,
-                                  const std::string& email) override;
-  bool ShouldUpdateCredentials(const std::string& gaia_id,
-                               const std::string& email,
-                               const std::string& refresh_token) override;
+  void EnableSync(const std::string& account_id) override;
 
  private:
   // Returns true if sync should be enabled after the user signs in.

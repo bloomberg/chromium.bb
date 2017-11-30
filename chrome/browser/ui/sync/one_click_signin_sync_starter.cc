@@ -317,55 +317,17 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       break;
     }
     case Profile::CREATE_STATUS_INITIALIZED: {
-      // Wait until the profile is initialized before we transfer credentials.
-      SigninManager* old_signin_manager =
-          SigninManagerFactory::GetForProfile(profile_);
-      SigninManager* new_signin_manager =
-          SigninManagerFactory::GetForProfile(new_profile);
-      DCHECK(!old_signin_manager->GetUsernameForAuthInProgress().empty());
-      DCHECK(!old_signin_manager->IsAuthenticated());
-      DCHECK(!new_signin_manager->IsAuthenticated());
-
-      // Copy credentials from the old profile to the just-created profile,
-      // and switch over to tracking that profile.
-      new_signin_manager->CopyCredentialsFrom(*old_signin_manager);
-      FinishProfileSyncServiceSetup();
-      Initialize(new_profile, nullptr);
-      DCHECK_EQ(profile_, new_profile);
-
-      // We've transferred our credentials to the new profile - notify that
-      // the signin for the original profile was cancelled (must do this after
-      // we have called Initialize() with the new profile, as otherwise this
-      // object will get freed when the signin on the old profile is cancelled.
-      old_signin_manager->SignOutAndRemoveAllAccounts(
-          signin_metrics::TRANSFER_CREDENTIALS,
-          signin_metrics::SignoutDelete::IGNORE_METRIC);
-
-      if (!dm_token_.empty()) {
-        // Load policy for the just-created profile - once policy has finished
-        // loading the signin process will complete.
-        DCHECK(!client_id_.empty());
-        LoadPolicyWithCachedCredentials();
+      if (signin::IsDicePrepareMigrationEnabled()) {
+        // When DICE is enabled, the refresh token is not copied to the new
+        // profile and the user needs to sign in to the new profile in order
+        // to enable sync.
+        CancelSigninAndDelete();
+        ShowSigninInNewProfile(new_profile);
       } else {
-        // No policy to load - simply complete the signin process.
-        SigninManagerFactory::GetForProfile(profile_)->CompletePendingSignin();
+        // Pre-DICE, the refresh token is copied to the new profile and the user
+        // does not need to autehnticate in the new profile.
+        CopyCredentialsToNewProfileAndFinishSignin(new_profile);
       }
-
-      // Unlock the new profile.
-      ProfileAttributesEntry* entry;
-      bool has_entry =
-          g_browser_process->profile_manager()
-              ->GetProfileAttributesStorage()
-              .GetProfileAttributesWithPath(profile_->GetPath(), &entry);
-      DCHECK(has_entry);
-      entry->SetIsSigninRequired(false);
-
-      // Open the profile's first window, after all initialization.
-      profiles::FindOrCreateNewWindowForProfile(
-        new_profile,
-        chrome::startup::IS_PROCESS_STARTUP,
-        chrome::startup::IS_FIRST_RUN,
-        false);
       break;
     }
     case Profile::CREATE_STATUS_REMOTE_FAIL:
@@ -378,10 +340,77 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
   }
 }
 
-void OneClickSigninSyncStarter::CancelSigninAndDelete() {
-  SigninManagerFactory::GetForProfile(profile_)->SignOut(
-      signin_metrics::ABORT_SIGNIN,
+void OneClickSigninSyncStarter::ShowSigninInNewProfile(Profile* new_profile) {
+  profiles::FindOrCreateNewWindowForProfile(
+      new_profile, chrome::startup::IS_PROCESS_STARTUP,
+      chrome::startup::IS_FIRST_RUN, false);
+  Browser* browser = chrome::FindTabbedBrowser(new_profile, false);
+  browser->signin_view_controller()->ShowSignin(
+      profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH, browser,
+      signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE);
+}
+
+void OneClickSigninSyncStarter::CopyCredentialsToNewProfileAndFinishSignin(
+    Profile* new_profile) {
+  // Wait until the profile is initialized before we transfer credentials.
+  SigninManager* old_signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
+  SigninManager* new_signin_manager =
+      SigninManagerFactory::GetForProfile(new_profile);
+  DCHECK(!old_signin_manager->GetUsernameForAuthInProgress().empty());
+  DCHECK(!old_signin_manager->IsAuthenticated());
+  DCHECK(!new_signin_manager->IsAuthenticated());
+
+  // Copy credentials from the old profile to the just-created profile,
+  // and switch over to tracking that profile.
+  new_signin_manager->CopyCredentialsFrom(*old_signin_manager);
+  FinishProfileSyncServiceSetup();
+  Initialize(new_profile, nullptr);
+  DCHECK_EQ(profile_, new_profile);
+
+  // We've transferred our credentials to the new profile - notify that
+  // the signin for the original profile was cancelled (must do this after
+  // we have called Initialize() with the new profile, as otherwise this
+  // object will get freed when the signin on the old profile is cancelled.
+  old_signin_manager->SignOutAndRemoveAllAccounts(
+      signin_metrics::TRANSFER_CREDENTIALS,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
+
+  if (!dm_token_.empty()) {
+    // Load policy for the just-created profile - once policy has finished
+    // loading the signin process will complete.
+    DCHECK(!client_id_.empty());
+    LoadPolicyWithCachedCredentials();
+  } else {
+    // No policy to load - simply complete the signin process.
+    SigninManagerFactory::GetForProfile(profile_)->CompletePendingSignin();
+  }
+
+  // Unlock the new profile.
+  ProfileAttributesEntry* entry;
+  bool has_entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile_->GetPath(), &entry);
+  DCHECK(has_entry);
+  entry->SetIsSigninRequired(false);
+
+  // Open the profile's first window, after all initialization.
+  profiles::FindOrCreateNewWindowForProfile(
+      new_profile, chrome::startup::IS_PROCESS_STARTUP,
+      chrome::startup::IS_FIRST_RUN, false);
+}
+
+void OneClickSigninSyncStarter::CancelSigninAndDelete() {
+  if (signin::IsDicePrepareMigrationEnabled()) {
+    SigninManagerFactory::GetForProfile(profile_)->SignOutAndKeepAllAccounts(
+        signin_metrics::ABORT_SIGNIN,
+        signin_metrics::SignoutDelete::IGNORE_METRIC);
+  } else {
+    SigninManagerFactory::GetForProfile(profile_)->SignOutAndRemoveAllAccounts(
+        signin_metrics::ABORT_SIGNIN,
+        signin_metrics::SignoutDelete::IGNORE_METRIC);
+  }
   // The statement above results in a call to SigninFailed() which will free
   // this object, so do not refer to the OneClickSigninSyncStarter object
   // after this point.

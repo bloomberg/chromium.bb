@@ -165,6 +165,13 @@ void SigninManager::SignOutAndRemoveAllAccounts(
                true /* remove_all_tokens */);
 }
 
+void SigninManager::SignOutAndKeepAllAccounts(
+    signin_metrics::ProfileSignout signout_source_metric,
+    signin_metrics::SignoutDelete signout_delete_metric) {
+  StartSignOut(signout_source_metric, signout_delete_metric,
+               false /* remove_all_tokens */);
+}
+
 void SigninManager::StartSignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric,

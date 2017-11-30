@@ -146,6 +146,11 @@ DiceResponseHandler::DiceTokenFetcher::DiceTokenFetcher(
           base::Bind(&DiceResponseHandler::DiceTokenFetcher::OnTimeout,
                      base::Unretained(this))) {
   DCHECK(dice_response_handler_);
+  // When DICE migration is enabled, Chrome is not using the Gaia chrome sync
+  // endpoint when the user is signing in to Chrome. So the delegate must be
+  // asked to start syncing as soon as the refresh token is received.
+  should_enable_sync_ = signin::GetAccountConsistencyMethod() ==
+                        signin::AccountConsistencyMethod::kDicePrepareMigration;
   if (signin::IsDicePrepareMigrationEnabled()) {
     account_reconcilor_lock_ =
         base::MakeUnique<AccountReconcilor::Lock>(account_reconcilor);
@@ -233,9 +238,12 @@ void DiceResponseHandler::ProcessDiceHeader(
                               std::move(delegate));
       return;
     }
-    case signin::DiceAction::ENABLE_SYNC:
-      // TODO
+    case signin::DiceAction::ENABLE_SYNC: {
+      const signin::DiceResponseParams::AccountInfo& info =
+          dice_params.enable_sync_info->account_info;
+      ProcessEnableSyncHeader(info.gaia_id, info.email, std::move(delegate));
       return;
+    }
     case signin::DiceAction::SIGNOUT:
       DCHECK_GT(dice_params.signout_info->account_infos.size(), 0u);
       ProcessDiceSignoutHeader(dice_params.signout_info->account_infos);
@@ -292,10 +300,30 @@ void DiceResponseHandler::ProcessDiceSigninHeader(
       return;  // There is already a request in flight with the same parameters.
     }
   }
-  delegate->WillStartRefreshTokenFetch(gaia_id, email);
   token_fetchers_.push_back(base::MakeUnique<DiceTokenFetcher>(
       gaia_id, email, authorization_code, signin_client_, account_reconcilor_,
       std::move(delegate), this));
+}
+
+void DiceResponseHandler::ProcessEnableSyncHeader(
+    const std::string& gaia_id,
+    const std::string& email,
+    std::unique_ptr<ProcessDiceHeaderDelegate> delegate) {
+  VLOG(1) << "Start processing Dice enable sync response";
+  for (auto it = token_fetchers_.begin(); it != token_fetchers_.end(); ++it) {
+    DiceTokenFetcher* fetcher = it->get();
+    if (fetcher->gaia_id() == gaia_id) {
+      DCHECK_EQ(fetcher->email(), email);
+      // If there is a fetch in progress for a resfresh token for the given
+      // account, then simply mark it to enable sync after the refresh token is
+      // available.
+      fetcher->set_should_enable_sync(true);
+      return;  // There is already a request in flight with the same parameters.
+    }
+  }
+  std::string account_id =
+      account_tracker_service_->PickAccountIdForAccount(gaia_id, email);
+  delegate->EnableSync(account_id);
 }
 
 void DiceResponseHandler::ProcessDiceSignoutHeader(
@@ -370,14 +398,14 @@ void DiceResponseHandler::OnTokenExchangeSuccess(
     std::unique_ptr<ProcessDiceHeaderDelegate> delegate) {
   if (!CanGetTokenForAccount(gaia_id, email))
     return;
-
   VLOG(1) << "[Dice] OAuth success for email " << email;
+  bool should_enable_sync = token_fetcher->should_enable_sync();
   DeleteTokenFetcher(token_fetcher);
-  if (delegate->ShouldUpdateCredentials(gaia_id, email, refresh_token)) {
-    std::string account_id =
-        account_tracker_service_->SeedAccountInfo(gaia_id, email);
-    token_service_->UpdateCredentials(account_id, refresh_token);
-  }
+  std::string account_id =
+      account_tracker_service_->SeedAccountInfo(gaia_id, email);
+  token_service_->UpdateCredentials(account_id, refresh_token);
+  if (should_enable_sync)
+    delegate->EnableSync(account_id);
 }
 
 void DiceResponseHandler::OnTokenExchangeFailure(
