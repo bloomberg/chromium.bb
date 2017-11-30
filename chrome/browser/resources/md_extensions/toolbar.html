@@ -18,12 +18,10 @@
         --button-row-height: calc(var(--margin-bottom) + 36px);
         --drawer-transition: 0.3s cubic-bezier(.25, .1, .25, 1);
         --margin-bottom: 4px;
-        --toolbar-width: 680px;
         --toolbar-color: var(--md-toolbar-color);
       }
 
       cr-toolbar {
-        --cr-toolbar-field-width: var(--toolbar-width);
         background: var(--toolbar-color);
       }
 
@@ -35,17 +33,7 @@
         --cr-toggle-unchecked-ink-color: white;
       }
 
-      .dev-controls {
-        background: var(--toolbar-color);
-        display: flex;
-        justify-content: center;
-        position: absolute;
-        top: calc(var(--button-row-height) * -1);
-        transition: top var(--drawer-transition);
-        width: 100%;
-      }
-
-      #devDrawer[expanded] .dev-controls {
+      #devDrawer[expanded] #button-strip {
         top: 0;
       }
 
@@ -61,13 +49,17 @@
       }
 
       #button-strip {
+        -webkit-margin-end: auto;
+        -webkit-margin-start: auto;
+        background: var(--toolbar-color);
         margin-bottom: var(--margin-bottom);
+        position: absolute;
+        text-align: center;
+        top: calc(var(--button-row-height) * -1);
+        transition: top var(--drawer-transition);
         /* Prevent selection of the blank space between buttons. */
         user-select: none;
-        /* We left-align the text of the left button with the left edge of the
-           search field. Since the buttons have 12px padding, add 24px to the
-           width of the button strip (12px each side) to make centering easy. */
-        width: calc(var(--toolbar-width) + 2 * 12px);
+        width: 100%;
       }
 
       #button-strip paper-button {
@@ -102,25 +94,23 @@
       </div>
     </cr-toolbar>
     <div id="devDrawer" expanded$="[[expanded_]]">
-      <div class="dev-controls">
-        <div id="button-strip">
-          <paper-button id="load-unpacked" on-tap="onLoadUnpackedTap_">
-            $i18n{toolbarLoadUnpacked}
-          </paper-button>
-          <paper-button id="pack-extensions" on-tap="onPackTap_">
-            $i18n{toolbarPack}
-          </paper-button>
-          <paper-button id="update-now" on-tap="onUpdateNowTap_"
-              title="$i18n{toolbarUpdateNowTooltip}">
-            $i18n{toolbarUpdateNow}
-          </paper-button>
+      <div id="button-strip">
+        <paper-button id="load-unpacked" on-tap="onLoadUnpackedTap_">
+          $i18n{toolbarLoadUnpacked}
+        </paper-button>
+        <paper-button id="pack-extensions" on-tap="onPackTap_">
+          $i18n{toolbarPack}
+        </paper-button>
+        <paper-button id="update-now" on-tap="onUpdateNowTap_"
+            title="$i18n{toolbarUpdateNowTooltip}">
+          $i18n{toolbarUpdateNow}
+        </paper-button>
 <if expr="chromeos">
-          <paper-button id="kiosk-extensions" on-tap="onKioskTap_"
-              hidden$="[[!kioskEnabled]]">
-            $i18n{manageKioskApp}
-          </paper-button>
+        <paper-button id="kiosk-extensions" on-tap="onKioskTap_"
+            hidden$="[[!kioskEnabled]]">
+          $i18n{manageKioskApp}
+        </paper-button>
 </if>
-        </div>
       </div>
     </div>
   </template>
