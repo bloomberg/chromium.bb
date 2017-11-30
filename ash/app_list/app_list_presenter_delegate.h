@@ -65,7 +65,8 @@ class ASH_EXPORT AppListPresenterDelegate
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // KeyboardControllerObserver overrides:
-  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
+  void OnKeyboardWorkspaceOccludedBoundsChanging(
+      const gfx::Rect& new_bounds) override;
   void OnKeyboardClosed() override;
 
   // ShellObserver overrides:
