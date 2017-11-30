@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
@@ -236,6 +237,7 @@ void Gpu::EstablishGpuChannel(
 
 scoped_refptr<gpu::GpuChannelHost> Gpu::EstablishGpuChannelSync(
     bool* connection_error) {
+  TRACE_EVENT0("mus", "Gpu::EstablishGpuChannelSync");
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (connection_error)
     *connection_error = false;
