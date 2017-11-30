@@ -104,17 +104,6 @@ const size_t kSwitchesMaxCount = 15;
 // at most |kSwitchesMaxCount| command line switches.
 extern const char kSwitchFormat[];
 
-#if defined(OS_MACOSX)
-namespace mac {
-
-// Records Cocoa zombie/used-after-freed objects that resulted in a
-// deliberate crash.
-extern const char kZombie[];
-extern const char kZombieTrace[];
-
-}  // namespace mac
-#endif
-
 }  // namespace crash_keys
 
 #endif  // COMPONENTS_CRASH_CORE_COMMON_CRASH_KEYS_H_

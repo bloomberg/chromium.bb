@@ -59,7 +59,6 @@ if (is_mac || is_ios) {
     visibility = [ ":common" ]
 
     sources = [
-      "crash_keys.h",
       "objc_zombie.h",
       "objc_zombie.mm",
     ]
@@ -67,7 +66,7 @@ if (is_mac || is_ios) {
     defines = [ "CRASH_CORE_COMMON_IMPLEMENTATION" ]
 
     deps = [
-      ":crash_key_utils",
+      ":crash_key",
       "//base",
     ]
 

@@ -40,15 +40,6 @@ const char kVariations[] = "variations";
 
 const char kSwitchFormat[] = "switch-%" PRIuS;
 
-#if defined(OS_MACOSX)
-namespace mac {
-
-const char kZombie[] = "zombie";
-const char kZombieTrace[] = "zombie_dealloc_bt";
-
-}  // namespace mac
-#endif
-
 void SetMetricsClientIdFromGUID(const std::string& metrics_client_guid) {
   std::string stripped_guid(metrics_client_guid);
   // Remove all instance of '-' char from the GUID. So BCD-WXY becomes BCDWXY.

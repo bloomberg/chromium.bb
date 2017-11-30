@@ -18,8 +18,6 @@ size_t RegisterChromeIOSCrashKeys() {
       {crash_keys::kMetricsClientId, crash_keys::kSmallSize},
       {crash_keys::kNumVariations, crash_keys::kSmallSize},
       {crash_keys::kVariations, crash_keys::kHugeSize},
-      {crash_keys::mac::kZombie, crash_keys::kMediumSize},
-      {crash_keys::mac::kZombieTrace, crash_keys::kMediumSize},
   };
 
   return base::debug::InitCrashKeys(fixed_keys, arraysize(fixed_keys),
