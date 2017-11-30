@@ -30,6 +30,7 @@ test("cronet_test") {
     "//base",
     "//base:i18n",
     "//components/cronet/ios:cronet_framework+link",
+    "//components/cronet/native:cronet_native_impl_tests",
     "//components/grpc_support:bidirectional_stream_unittest",
     "//components/grpc_support/test:quic_test_server",
     "//net",

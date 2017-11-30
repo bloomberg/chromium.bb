@@ -25,6 +25,8 @@ def _GetPathsToPrepend(input_api):
     input_api.os_path.join(chromium_src_dir, 'tools', 'perf'),
     input_api.os_path.join(chromium_src_dir, 'build', 'android'),
     input_api.os_path.join(chromium_src_dir, 'build', 'android', 'gyp', 'util'),
+    input_api.os_path.join(chromium_src_dir,
+        'mojo', 'public', 'tools', 'bindings', 'pylib'),
     input_api.os_path.join(chromium_src_dir, 'net', 'tools', 'net_docs'),
     input_api.os_path.join(chromium_src_dir, 'tools'),
     input_api.os_path.join(chromium_src_dir, 'third_party'),
