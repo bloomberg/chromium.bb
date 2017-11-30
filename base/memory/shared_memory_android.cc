@@ -25,7 +25,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
 
   // "name" is just a label in ashmem. It is visible in /proc/pid/maps.
   int fd = ashmem_create_region(
-      options.name_deprecated == NULL ? "" : options.name_deprecated->c_str(),
+      options.name_deprecated ? options.name_deprecated->c_str() : "",
       options.size);
   shm_ = SharedMemoryHandle::ImportHandle(fd, options.size);
   if (!shm_.IsValid()) {
