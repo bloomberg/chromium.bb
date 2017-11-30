@@ -1514,17 +1514,21 @@ int SSLClientSocketImpl::VerifyCT() {
     // Record the CT compliance status for connections with EV certificates, to
     // distinguish how often EV status is being dropped due to failing CT
     // compliance.
-    UMA_HISTOGRAM_ENUMERATION("Net.CertificateTransparency.EVCompliance.SSL",
-                              ct_verify_result_.policy_compliance,
-                              ct::CTPolicyCompliance::CT_POLICY_MAX);
+    if (server_cert_verify_result_.is_issued_by_known_root) {
+      UMA_HISTOGRAM_ENUMERATION("Net.CertificateTransparency.EVCompliance2.SSL",
+                                ct_verify_result_.policy_compliance,
+                                ct::CTPolicyCompliance::CT_POLICY_MAX);
+    }
   }
 
   // Record the CT compliance of every connection to get an overall picture of
   // how many connections are CT-compliant.
-  UMA_HISTOGRAM_ENUMERATION(
-      "Net.CertificateTransparency.ConnectionComplianceStatus.SSL",
-      ct_verify_result_.policy_compliance,
-      ct::CTPolicyCompliance::CT_POLICY_MAX);
+  if (server_cert_verify_result_.is_issued_by_known_root) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Net.CertificateTransparency.ConnectionComplianceStatus2.SSL",
+        ct_verify_result_.policy_compliance,
+        ct::CTPolicyCompliance::CT_POLICY_MAX);
+  }
 
   TransportSecurityState::CTRequirementsStatus ct_requirement_status =
       transport_security_state_->CheckCTRequirements(
@@ -1536,13 +1540,16 @@ int SSLClientSocketImpl::VerifyCT() {
           ct_verify_result_.policy_compliance);
   if (ct_requirement_status != TransportSecurityState::CT_NOT_REQUIRED) {
     ct_verify_result_.policy_compliance_required = true;
-    // Record the CT compliance of connections for which compliance is required;
-    // this helps answer the question: "Of all connections that are supposed to
-    // be serving valid CT information, how many fail to do so?"
-    UMA_HISTOGRAM_ENUMERATION(
-        "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.SSL",
-        ct_verify_result_.policy_compliance,
-        ct::CTPolicyCompliance::CT_POLICY_MAX);
+    if (server_cert_verify_result_.is_issued_by_known_root) {
+      // Record the CT compliance of connections for which compliance is
+      // required; this helps answer the question: "Of all connections that are
+      // supposed to be serving valid CT information, how many fail to do so?"
+      UMA_HISTOGRAM_ENUMERATION(
+          "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus2."
+          "SSL",
+          ct_verify_result_.policy_compliance,
+          ct::CTPolicyCompliance::CT_POLICY_MAX);
+    }
   } else {
     ct_verify_result_.policy_compliance_required = false;
   }

@@ -408,18 +408,22 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
       // Record the CT compliance status for connections with EV certificates,
       // to distinguish how often EV status is being dropped due to failing CT
       // compliance.
-      UMA_HISTOGRAM_ENUMERATION(
-          "Net.CertificateTransparency.EVCompliance.QUIC",
-          verify_details_->ct_verify_result.policy_compliance,
-          ct::CTPolicyCompliance::CT_POLICY_MAX);
+      if (verify_details_->cert_verify_result.is_issued_by_known_root) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Net.CertificateTransparency.EVCompliance2.QUIC",
+            verify_details_->ct_verify_result.policy_compliance,
+            ct::CTPolicyCompliance::CT_POLICY_MAX);
+      }
     }
 
     // Record the CT compliance of every connection to get an overall picture of
     // how many connections are CT-compliant.
-    UMA_HISTOGRAM_ENUMERATION(
-        "Net.CertificateTransparency.ConnectionComplianceStatus.QUIC",
-        verify_details_->ct_verify_result.policy_compliance,
-        ct::CTPolicyCompliance::CT_POLICY_MAX);
+    if (verify_details_->cert_verify_result.is_issued_by_known_root) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Net.CertificateTransparency.ConnectionComplianceStatus2.QUIC",
+          verify_details_->ct_verify_result.policy_compliance,
+          ct::CTPolicyCompliance::CT_POLICY_MAX);
+    }
 
     int ct_result = OK;
     TransportSecurityState::CTRequirementsStatus ct_requirement_status =
@@ -433,14 +437,17 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
             verify_details_->ct_verify_result.policy_compliance);
     if (ct_requirement_status != TransportSecurityState::CT_NOT_REQUIRED) {
       verify_details_->ct_verify_result.policy_compliance_required = true;
-      // Record the CT compliance of connections for which compliance is
-      // required; this helps answer the question: "Of all connections that are
-      // supposed to be serving valid CT information, how many fail to do so?"
-      UMA_HISTOGRAM_ENUMERATION(
-          "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus."
-          "QUIC",
-          verify_details_->ct_verify_result.policy_compliance,
-          ct::CTPolicyCompliance::CT_POLICY_MAX);
+      if (verify_details_->cert_verify_result.is_issued_by_known_root) {
+        // Record the CT compliance of connections for which compliance is
+        // required; this helps answer the question: "Of all connections that
+        // are supposed to be serving valid CT information, how many fail to do
+        // so?"
+        UMA_HISTOGRAM_ENUMERATION(
+            "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus2."
+            "QUIC",
+            verify_details_->ct_verify_result.policy_compliance,
+            ct::CTPolicyCompliance::CT_POLICY_MAX);
+      }
     } else {
       verify_details_->ct_verify_result.policy_compliance_required = false;
     }

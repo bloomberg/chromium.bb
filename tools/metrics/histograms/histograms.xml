@@ -40508,6 +40508,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.CertificateTransparency.ConnectionComplianceStatus.QUIC"
     enum="CTComplianceStatus">
+  <obsolete>
+    Deprecated Nov 2017, replaced with
+    Net.CertificateTransparency.ConnectionComplianceStatus2
+  </obsolete>
   <owner>estark@chromium.org</owner>
   <summary>
     The compliance of each QUIC connection with the Certificate Transparency
@@ -40521,6 +40525,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.CertificateTransparency.ConnectionComplianceStatus.SSL"
     enum="CTComplianceStatus">
+  <obsolete>
+    Deprecated Nov 2017, replaced with
+    Net.CertificateTransparency.ConnectionComplianceStatus2
+  </obsolete>
   <owner>estark@chromium.org</owner>
   <summary>
     The compliance of each SSL connection with the Certificate Transparency
@@ -40532,9 +40540,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram
-    name="Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.QUIC"
+<histogram base="true"
+    name="Net.CertificateTransparency.ConnectionComplianceStatus2"
     enum="CTComplianceStatus">
+<!-- Name completed by histogram_suffixes name="CertificateTransparencyProtocol" -->
+
+  <owner>estark@chromium.org</owner>
+  <summary>
+    The compliance of each connection with the Certificate Transparency policy,
+    recorded once on connection setup unless CT evaluation has been disabled for
+    that connection or the certificate is invalid. Connections can be compliant,
+    or they can be non-compliant for one of several reasons (not enough Signed
+    Certificate Timestamps [SCTs], not diverse enough SCTs, or the build was old
+    so CT compliance wasn't checked). Not recorded for certificates that chain
+    to locally-installed roots.
+  </summary>
+</histogram>
+
+<histogram
+    name="Net.CertificateTransparency.CTRequiredConnectionComplianceStatus"
+    enum="CTComplianceStatus">
+  <obsolete>
+    Deprecated Nov 2017, replaced with
+    Net.CertificateTransparency.CTRequiredConnectionComplianceStatus2
+  </obsolete>
   <owner>estark@chromium.org</owner>
   <summary>
     The compliance of each QUIC connection with the Certificate Transparency
@@ -40550,6 +40579,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.SSL"
     enum="CTComplianceStatus">
+  <obsolete>
+    Deprecated Nov 2017, replaced with
+    Net.CertificateTransparency.CTRequiredConnectionComplianceStatus2
+  </obsolete>
   <owner>estark@chromium.org</owner>
   <summary>
     The compliance of each SSL connection with the Certificate Transparency
@@ -40558,7 +40591,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Certificate Authorities, or a site can opt in to having CT be required.)
     Recorded once on connection setup for applicable connections unless CT
     evaluation has been disabled for that connection or the certificate is
-    otherwise invalid.
+    otherwise invalid. Not recorded for certificates that chain to
+    locally-installed roots.
+  </summary>
+</histogram>
+
+<histogram base="true"
+    name="Net.CertificateTransparency.CTRequiredConnectionComplianceStatus2"
+    enum="CTComplianceStatus">
+<!-- Name completed by histogram_suffixes name="CertificateTransparencyProtocol" -->
+
+  <owner>estark@chromium.org</owner>
+  <summary>
+    The compliance of each connection with the Certificate Transparency policy,
+    for connections for which CT compliance is required for the connection to
+    succeed. (For example, CT compliance is required for certain Certificate
+    Authorities, or a site can opt in to having CT be required.) Recorded once
+    on connection setup for applicable connections unless CT evaluation has been
+    disabled for that connection or the certificate is otherwise invalid. Not
+    recorded for certificates that chain to locally-installed roots.
   </summary>
 </histogram>
 
@@ -40598,6 +40649,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.CertificateTransparency.EVCompliance.QUIC"
     enum="CTComplianceStatus">
+  <obsolete>
+    Deprecated Nov 2017, replaced with
+    Net.CertificateTransparency.EVCompliance2.QUIC
+  </obsolete>
   <owner>estark@chromium.org</owner>
   <summary>
     The state of compliance with Certificate Transparency presence requirements
@@ -40609,12 +40664,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.CertificateTransparency.EVCompliance.SSL"
     enum="CTComplianceStatus">
+  <obsolete>
+    Deprecated Nov 2017, replaced with
+    Net.CertificateTransparency.EVCompliance2.SSL
+  </obsolete>
   <owner>estark@chromium.org</owner>
   <summary>
     The state of compliance with Certificate Transparency presence requirements
     for each EV certificate. Recorded once on SSL connection setup when the
     connection uses an EV certificate unless CT evaluation has been disabled for
     that connection or the certificate is invalid.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Net.CertificateTransparency.EVCompliance2"
+    enum="CTComplianceStatus">
+<!-- Name completed by histogram_suffixes name="CertificateTransparencyProtocol" -->
+
+  <owner>estark@chromium.org</owner>
+  <summary>
+    The state of compliance with Certificate Transparency presence requirements
+    for each EV certificate. Recorded once on QUIC connection setup when the
+    connection uses an EV certificate unless CT evaluation has been disabled for
+    that connection or the certificate is invalid. Not recorded for certificates
+    that chain to locally-installed roots.
   </summary>
 </histogram>
 
@@ -99321,6 +99394,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="convertToBlobPromise"
       label="Image formats passed to OffscreenCanvas.convertToBlob (promise)"/>
   <affected-histogram name="Canvas.RequestedImageMimeTypes"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="CertificateTransparencyProtocol" separator=".">
+  <suffix name="QUIC"/>
+  <suffix name="SSL"/>
+  <affected-histogram
+      name="Net.CertificateTransparency.ConnectionComplianceStatus2"/>
+  <affected-histogram
+      name="Net.CertificateTransparency.CTRequiredConnectionComplianceStatus2"/>
+  <affected-histogram name="Net.CertificateTransparency.EVCompliance2"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CertificateTypeAlgorithms" separator=".">
