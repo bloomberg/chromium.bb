@@ -1794,10 +1794,6 @@ external/wpt/css/css-values/ic-unit-002.html [ WontFix ]
 external/wpt/css/css-values/ic-unit-003.html [ WontFix ]
 external/wpt/css/css-values/ic-unit-004.html [ WontFix ]
 
-# https://github.com/w3c/web-platform-tests/issues/8439
-external/wpt/css/css-color/currentcolor-001.html [ WontFix ]
-external/wpt/css/css-color/currentcolor-002.html [ WontFix ]
-
 # lab() and lch() aren't supported.
 external/wpt/css/css-color/lab-001.html [ WontFix ]
 external/wpt/css/css-color/lab-002.html [ WontFix ]
