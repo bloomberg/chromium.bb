@@ -79,14 +79,14 @@ class PaintOpPerfTest : public testing::Test {
 
         remaining_read_bytes -= bytes_read;
         to_read += bytes_read;
-        timer_.NextLap();
       }
 
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
     perf_test::PrintResult(name.c_str(), "", "deserialize",
-                           timer_.LapsPerSecond(), "ops/s", true);
+                           buffer.size() * timer_.LapsPerSecond(), "ops/s",
+                           true);
   }
 
  protected:
