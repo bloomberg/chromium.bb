@@ -4534,12 +4534,12 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
                                              x->tx_size_rd_record_32X32 };
 #endif
   const TX_SIZE max_square_tx_size = max_txsize_lookup[bsize];
-
-  // Hashing is performed only for square TX sizes larger than TX_4X4
-  if (max_square_tx_size < TX_8X8) return 0;
-
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
+
+  // Hashing is performed only for square TX sizes larger than TX_4X4
+  if (max_square_tx_size < TX_8X8 || bw != bh) return 0;
+
   const int diff_stride = bw;
   const struct macroblock_plane *const p = &x->plane[0];
   const int16_t *diff = &p->src_diff[0];
