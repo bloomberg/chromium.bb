@@ -797,6 +797,14 @@ bool BluetoothTaskManagerWin::SearchForGattServiceDevicePaths(
     }
   }
 
+  // Service devices are known and available for enumeration shortly after a
+  // a service is known.  If we are searching for service device paths in that
+  // short window, we won't have a service device path for every service.
+  for (const auto& service_record_state : *service_record_states) {
+    if (service_record_state->path.empty())
+      return false;
+  }
+
   return true;
 }
 

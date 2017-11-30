@@ -281,6 +281,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
 
   // Search for device paths of the GATT services in |*service_record_states|
   // from |device_address|.
+  // Return true if we were able to match all services with a service device
+  // path.
   bool SearchForGattServiceDevicePaths(
       const std::string device_address,
       std::vector<std::unique_ptr<ServiceRecordState>>* service_record_states);
