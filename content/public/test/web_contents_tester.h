@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -28,7 +29,6 @@ class BrowserContext;
 class NavigationData;
 class NavigationHandle;
 class RenderFrameHost;
-class WebContents;
 
 // This interface allows embedders of content/ to write tests that depend on a
 // test version of WebContents.  This interface can be retrieved from any
@@ -66,6 +66,10 @@ class WebContentsTester {
   static WebContents* CreateTestWebContents(
       BrowserContext* browser_context,
       scoped_refptr<SiteInstance> instance);
+
+  // Creates a WebContents enabled for testing with the given params.
+  static WebContents* CreateTestWebContents(
+      const WebContents::CreateParams& params);
 
   // Simulates the appropriate RenderView (pending if any, current otherwise)
   // sending a navigate notification for the NavigationController pending entry.

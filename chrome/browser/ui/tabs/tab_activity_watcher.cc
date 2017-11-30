@@ -98,6 +98,12 @@ class TabActivityWatcher::WebContentsData
     // Reset the per-page data.
     tab_metrics_.page_metrics = {};
   }
+  void DidStopLoading() override {
+    // Log metrics for the tab when it stops loading instead of immediately
+    // after a navigation commits, so we can have some idea of its status and
+    // contents.
+    TabActivityWatcher::GetInstance()->OnDidStopLoading(web_contents());
+  }
   void WasHidden() override {
     TabActivityWatcher::GetInstance()->OnWasHidden(web_contents());
   }
@@ -158,6 +164,14 @@ bool TabActivityWatcher::ShouldTrackBrowser(Browser* browser) {
 void TabActivityWatcher::OnWasHidden(content::WebContents* web_contents) {
   DCHECK(web_contents);
 
+  MaybeLogTab(web_contents);
+}
+
+void TabActivityWatcher::OnDidStopLoading(content::WebContents* web_contents) {
+  // Ignore load events in foreground tabs. The tab state of a foreground tab
+  // will be logged if/when it is backgrounded.
+  if (web_contents->IsVisible())
+    return;
   MaybeLogTab(web_contents);
 }
 

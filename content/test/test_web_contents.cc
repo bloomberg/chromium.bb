@@ -44,8 +44,14 @@ TestWebContents::TestWebContents(BrowserContext* browser_context)
 TestWebContents* TestWebContents::Create(BrowserContext* browser_context,
                                          scoped_refptr<SiteInstance> instance) {
   TestWebContents* test_web_contents = new TestWebContents(browser_context);
-  test_web_contents->Init(
-      WebContents::CreateParams(browser_context, std::move(instance)));
+  test_web_contents->Init(CreateParams(browser_context, std::move(instance)));
+  return test_web_contents;
+}
+
+TestWebContents* TestWebContents::Create(const CreateParams& params) {
+  TestWebContents* test_web_contents =
+      new TestWebContents(params.browser_context);
+  test_web_contents->Init(params);
   return test_web_contents;
 }
 
