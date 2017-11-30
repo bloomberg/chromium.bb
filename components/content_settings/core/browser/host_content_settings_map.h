@@ -295,7 +295,7 @@ class HostContentSettingsMap : public content_settings::Observer,
 
   // Injects a clock into the PrefProvider to allow control over the
   // |last_modified| timestamp.
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+  void SetClockForTesting(base::Clock* clock);
 
   // Returns the provider that contains content settings from user preferences.
   content_settings::PrefProvider* GetPrefProvider() const {
