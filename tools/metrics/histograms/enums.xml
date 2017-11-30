@@ -17097,6 +17097,10 @@ Called by update_net_error_codes.py.-->
   <int value="2249" label="VRGetDisplaysSupportsPresent"/>
   <int value="2250" label="DuplicatedAttribute"/>
   <int value="2251" label="DuplicatedAttributeForExecutedScript"/>
+  <int value="2252" label="V8RTCPeerConnection_GetSenders_Method"/>
+  <int value="2253" label="V8RTCPeerConnection_GetReceivers_Method"/>
+  <int value="2254" label="V8RTCPeerConnection_AddTrack_Method"/>
+  <int value="2255" label="V8RTCPeerConnection_RemoveTrack_Method"/>
 </enum>
 
 <enum name="FeedbackSource">

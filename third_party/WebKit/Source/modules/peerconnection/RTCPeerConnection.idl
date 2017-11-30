@@ -112,13 +112,13 @@ enum RTCIceConnectionState {
 
     // RTP Media API
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-getsenders
-    sequence<RTCRtpSender> getSenders();
+    [Measure] sequence<RTCRtpSender> getSenders();
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-getreceivers
-    sequence<RTCRtpReceiver> getReceivers();
+    [Measure] sequence<RTCRtpReceiver> getReceivers();
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-addtrack
-    [RaisesException] RTCRtpSender addTrack(MediaStreamTrack track, MediaStream... streams);
+    [Measure, RaisesException] RTCRtpSender addTrack(MediaStreamTrack track, MediaStream... streams);
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-removetrack
-    [RaisesException] void removeTrack(RTCRtpSender sender);
+    [Measure, RaisesException] void removeTrack(RTCRtpSender sender);
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-ontrack
     attribute EventHandler ontrack;
 
