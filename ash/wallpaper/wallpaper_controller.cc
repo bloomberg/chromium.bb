@@ -473,7 +473,9 @@ void WallpaperController::OnColorCalculationComplete() {
 }
 
 void WallpaperController::FlushForTesting() {
-  wallpaper_controller_client_.FlushForTesting();
+  if (wallpaper_controller_client_)
+    wallpaper_controller_client_.FlushForTesting();
+  mojo_observers_.FlushForTesting();
 }
 
 void WallpaperController::InstallDesktopController(aura::Window* root_window) {
