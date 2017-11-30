@@ -17,6 +17,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/disabled_test_macros.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -71,6 +72,11 @@ void EnableBadgedReadingListTriggering(
 // Verifies that the Badged Reading List feature shows when triggering
 // conditions are met.
 - (void)testBadgedReadingListFeatureShouldShow {
+// TODO(crbug.com/789943): This test is flaky on devices. Reenable it once it is
+// fixed.
+#if !TARGET_IPHONE_SIMULATOR
+  EARL_GREY_TEST_DISABLED(@"Test disabled on device as it is flaky.");
+#endif
   base::test::ScopedFeatureList scoped_feature_list;
 
   EnableBadgedReadingListTriggering(scoped_feature_list);
