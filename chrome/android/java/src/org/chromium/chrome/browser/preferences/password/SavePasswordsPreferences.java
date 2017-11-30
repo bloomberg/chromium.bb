@@ -75,21 +75,6 @@ public class SavePasswordsPreferences extends PreferenceFragment
     private ChromeBaseCheckBoxPreference mAutoSignInSwitch;
     private TextMessagePreference mEmptyView;
 
-    // Used for verifying if 60 seconds have passed since last authenticating, its value is set in
-    // PasswordReauthentication using System.currentTimeMillis().
-    private static long sLastReauthTimeMillis;
-
-    /**
-     * Stores the timestamp of last reauthentication of the user.
-     */
-    public static void setLastReauthTimeMillis(long value) {
-        sLastReauthTimeMillis = value;
-    }
-
-    public static long getLastReauthTimeMillis() {
-        return sLastReauthTimeMillis;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -137,7 +122,7 @@ public class SavePasswordsPreferences extends PreferenceFragment
     @Override
     public void onDetach() {
         super.onDetach();
-        setLastReauthTimeMillis(0);
+        ReauthenticationManager.setLastReauthTimeMillis(0);
     }
 
     void rebuildPasswordLists() {
