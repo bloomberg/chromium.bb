@@ -12,7 +12,6 @@
 # /etc/init.d/chrome-remote-desktop: Start and stop Chrome Remote Desktop host daemon.
 
 HOST_PATH=/opt/google/chrome-remote-desktop/chrome-remote-desktop
-USER_SESSION_PATH=/opt/google/chrome-remote-desktop/user-session
 
 # Group of users for which Chrome Remote Desktop is enabled. Users are added
 # to that group when they start the host for the first time.
@@ -49,24 +48,12 @@ run_with_timeout() {
 
 # Usage: run_and_ignore_error user action
 # Carries out the specified action, ignoring any errors.
-#   action:
-#     --start is handled specially using the user-session wrapper to start a
-#     clean log-in session. In any other case, the host script is called through
-#     sudo with the specified action flag.
 run_and_ignore_error() {
   user="$1"
   action="$2"
 
   set +e
-  if [ "$action" = "--start" ]; then
-    if [ "$(whoami)" = "root" ]; then
-      "$USER_SESSION_PATH" start --user "$user"
-    else
-      "$USER_SESSION_PATH" start
-    fi
-  else
-    sudo -u "$user" "$HOST_PATH" "$action"
-  fi
+  sudo -u "$user" "$HOST_PATH" "$action"
 }
 
 do_start() {
