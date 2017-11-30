@@ -158,6 +158,9 @@ class WebrtcAudioPrivateSetAudioExperimentsFunction
                              WEBRTC_AUDIO_PRIVATE_SET_AUDIO_EXPERIMENTS);
 
   bool RunAsync() override;
+
+  // Must be called on the UI thread.
+  void FireCallback(bool success, const std::string& error_message);
 };
 
 }  // namespace extensions

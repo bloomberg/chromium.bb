@@ -26,6 +26,9 @@ IPC_MESSAGE_CONTROL2(AecDumpMsg_EnableAecDump,
 // Tell the renderer to disable AEC dump in all consumers.
 IPC_MESSAGE_CONTROL0(AecDumpMsg_DisableAecDump)
 
+// TODO(hlundin): Rename file to reflect expanded use; http://crbug.com/709919.
+IPC_MESSAGE_CONTROL1(AudioProcessingMsg_EnableAec3, bool /* enable */)
+
 // Messages sent from the renderer to the browser.
 
 // Registers a consumer with the browser. The consumer will then get a file
@@ -37,9 +40,7 @@ IPC_MESSAGE_CONTROL1(AecDumpMsg_RegisterAecDumpConsumer,
 IPC_MESSAGE_CONTROL1(AecDumpMsg_UnregisterAecDumpConsumer,
                      int /* id */)
 
-// TODO(hlundin): Rename file to reflect expanded use; http://crbug.com/709919.
-IPC_MESSAGE_CONTROL2(AudioProcessingMsg_EnableAec3,
-                     int /* id */,
-                     bool /* enable */)
+// Response to browser process that AEC3 was enabled.
+IPC_MESSAGE_CONTROL0(AudioProcessingMsg_Aec3Enabled)
 
 #endif  // CONTENT_COMMON_MEDIA_AEC_DUMP_MESSAGES_H_

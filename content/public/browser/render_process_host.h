@@ -273,10 +273,16 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual bool StopWebRTCEventLog() = 0;
 
   // Enables or disables WebRTC's echo canceller AEC3. Disabled implies
-  // selecting the older AEC2.
-  // Note: This will be removed once the AEC3 is fully rolled out and the old
-  // AEC is deprecated.
-  virtual void SetEchoCanceller3(bool enable) = 0;
+  // selecting the older AEC2. The operation is asynchronous, |callback| is run
+  // when done with the boolean indicating if successful and an error message.
+  // The error message is empty if successful.
+  // TODO(crbug.com/696930): Remove once the AEC3 is fully rolled out and the
+  // old AEC is deprecated.
+  virtual void SetEchoCanceller3(
+      bool enable,
+      base::OnceCallback<void(bool /* success */,
+                              const std::string& /* error_message */)>
+          callback) = 0;
 
   using WebRtcRtpPacketCallback =
       base::Callback<void(std::unique_ptr<uint8_t[]> packet_header,

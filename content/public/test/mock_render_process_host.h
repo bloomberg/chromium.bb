@@ -109,7 +109,9 @@ class MockRenderProcessHost : public RenderProcessHost {
   void DisableAudioDebugRecordings() override;
   bool StartWebRTCEventLog(const base::FilePath& file_path) override;
   bool StopWebRTCEventLog() override;
-  void SetEchoCanceller3(bool enable) override;
+  void SetEchoCanceller3(
+      bool enable,
+      base::OnceCallback<void(bool, const std::string&)> callback) override;
   WebRtcStopRtpDumpCallback StartRtpDump(
       bool incoming,
       bool outgoing,

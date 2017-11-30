@@ -36,6 +36,7 @@ namespace webrtcAudioPrivate {
     boolean isDefault;
   };
 
+  callback GenericDoneCallback = void();
   callback GetSinksCallback = void(SinkInfo[] sinkInfo);
   callback SinkIdCallback = void(DOMString sinkId);
 
@@ -75,7 +76,8 @@ namespace webrtcAudioPrivate {
     // |audioExperiments|: The experiments to enable or disable.
     static void setAudioExperiments(RequestInfo request,
                                     DOMString securityOrigin,
-                                    AudioExperiments audioExperiments);
+                                    AudioExperiments audioExperiments,
+                                    GenericDoneCallback callback);
   };
 
   interface Events {

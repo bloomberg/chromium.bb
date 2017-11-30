@@ -114,6 +114,7 @@
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/offscreen_canvas_provider_impl.h"
@@ -2892,6 +2893,7 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
                           OnRegisterAecDumpConsumer)
       IPC_MESSAGE_HANDLER(AecDumpMsg_UnregisterAecDumpConsumer,
                           OnUnregisterAecDumpConsumer)
+      IPC_MESSAGE_HANDLER(AudioProcessingMsg_Aec3Enabled, OnAec3Enabled)
 #endif
     // Adding single handlers for your service here is fine, but once your
     // service needs more than one handler, please extract them into a new
@@ -3176,19 +3178,22 @@ bool RenderProcessHostImpl::StopWebRTCEventLog() {
   return webrtc_eventlog_host_.StopWebRTCEventLog();
 }
 
-void RenderProcessHostImpl::SetEchoCanceller3(bool enable) {
+void RenderProcessHostImpl::SetEchoCanceller3(
+    bool enable,
+    base::OnceCallback<void(bool, const std::string&)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(hlundin) Implement a test to verify that the setting works both with
-  // aec_dump_consumers already registered, and with those registered in the
-  // future. crbug.com/740104
-  override_aec3_ = enable;
+  DCHECK(!callback.is_null());
 
-  // Piggybacking on AEC dumps.
-  // TODO(hlundin): Change name for aec_dump_consumers_;
-  // http://crbug.com/709919.
-  for (int id : aec_dump_consumers_) {
-    Send(new AudioProcessingMsg_EnableAec3(id, enable));
+  if (!aec3_set_callback_.is_null()) {
+    MediaStreamManager::SendMessageToNativeLog("RPHI: Failed to set AEC3");
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(std::move(callback), false,
+                                           "Operation already in progress"));
+    return;
   }
+
+  aec3_set_callback_ = std::move(callback);
+  Send(new AudioProcessingMsg_EnableAec3(enable));
 }
 
 RenderProcessHostImpl::WebRtcStopRtpDumpCallback
@@ -4065,9 +4070,6 @@ void RenderProcessHostImpl::RegisterAecDumpConsumerOnUIThread(int id) {
         WebRTCInternals::GetInstance()->GetAudioDebugRecordingsFilePath());
     EnableAecDumpForId(file_with_extensions, id);
   }
-  if (override_aec3_) {
-    Send(new AudioProcessingMsg_EnableAec3(id, *override_aec3_));
-  }
 }
 
 void RenderProcessHostImpl::UnregisterAecDumpConsumerOnUIThread(int id) {
@@ -4114,6 +4116,15 @@ base::SequencedTaskRunner& RenderProcessHostImpl::GetAecDumpFileTaskRunner() {
              base::TaskPriority::USER_BLOCKING});
   }
   return *audio_debug_recordings_file_task_runner_;
+}
+
+void RenderProcessHostImpl::OnAec3Enabled() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // The callback should be set unless the message from the renderer is
+  // spurious.
+  if (!aec3_set_callback_.is_null())
+    std::move(aec3_set_callback_).Run(true, std::string());
 }
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 

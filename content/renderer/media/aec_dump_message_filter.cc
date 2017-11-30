@@ -136,11 +136,11 @@ void AecDumpMessageFilter::OnDisableAecDump() {
       FROM_HERE, base::BindOnce(&AecDumpMessageFilter::DoDisableAecDump, this));
 }
 
-void AecDumpMessageFilter::OnEnableAec3(int id, bool enable) {
+void AecDumpMessageFilter::OnEnableAec3(bool enable) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&AecDumpMessageFilter::DoEnableAec3, this, id, enable));
+      base::BindOnce(&AecDumpMessageFilter::DoEnableAec3, this, enable));
 }
 
 void AecDumpMessageFilter::DoEnableAecDump(
@@ -186,13 +186,16 @@ int AecDumpMessageFilter::GetIdForDelegate(
   return kInvalidDelegateId;
 }
 
-void AecDumpMessageFilter::DoEnableAec3(int id, bool enable) {
+void AecDumpMessageFilter::DoEnableAec3(bool enable) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  DelegateMap::iterator it = delegates_.find(id);
-  if (it != delegates_.end()) {
-    it->second->OnAec3Enable(enable);
-  }
+  // TODO(grunell): Remove enabling on delegates when clients have changed to
+  // enable before creating streams.
+  for (auto delegate : delegates_)
+    delegate.second->OnAec3Enable(enable);
   override_aec3_ = enable;
+  io_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&AecDumpMessageFilter::Send, this,
+                                new AudioProcessingMsg_Aec3Enabled()));
 }
 
 }  // namespace content
