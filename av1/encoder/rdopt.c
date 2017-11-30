@@ -4729,6 +4729,11 @@ static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
   const int n4 = bsize_to_num_blk(bsize);
   const TX_SIZE tx_size = get_max_rect_tx_size(bsize, is_inter_block(mbmi));
   mbmi->tx_type = DCT_DCT;
+#if CONFIG_TXK_SEL
+  memset(mbmi->txk_type, DCT_DCT,
+         sizeof(mbmi->txk_type[0]) *
+             (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+#endif
   for (int idy = 0; idy < xd->n8_h; ++idy)
     for (int idx = 0; idx < xd->n8_w; ++idx)
       mbmi->inter_tx_size[idy][idx] = tx_size;
