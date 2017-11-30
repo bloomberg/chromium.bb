@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_mach_vm.h"
 #include "base/memory/shared_memory_helper.h"
@@ -29,9 +30,9 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/foundation_util.h"
-#endif  // OS_MACOSX
+#if defined(OS_IOS)
+#error "MacOS only - iOS uses shared_memory_posix.cc"
+#endif
 
 namespace base {
 
@@ -143,7 +144,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   // This function theoretically can block on the disk. Both profiling of real
   // users and local instrumentation shows that this is a real problem.
   // https://code.google.com/p/chromium/issues/detail?id=466437
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  ThreadRestrictions::ScopedAllowIO allow_io;
 
   ScopedFD fd;
   ScopedFD readonly_fd;
@@ -195,14 +196,14 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
     mapped_id_ = shm_.GetGUID();
     SharedMemoryTracker::GetInstance()->IncrementMemoryUsage(*this);
   } else {
-    memory_ = NULL;
+    memory_ = nullptr;
   }
 
   return success;
 }
 
 bool SharedMemory::Unmap() {
-  if (memory_ == NULL)
+  if (!memory_)
     return false;
 
   SharedMemoryTracker::GetInstance()->DecrementMemoryUsage(*this);
@@ -216,7 +217,7 @@ bool SharedMemory::Unmap() {
                          mapped_size_);
       break;
   }
-  memory_ = NULL;
+  memory_ = nullptr;
   mapped_size_ = 0;
   mapped_id_ = UnguessableToken();
   return true;
@@ -252,7 +253,7 @@ SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
   }
 
   DCHECK(shm_.IsValid());
-  base::SharedMemoryHandle new_handle;
+  SharedMemoryHandle new_handle;
   bool success = MakeMachSharedMemoryHandleReadOnly(&new_handle, shm_, memory_);
   if (success)
     new_handle.SetOwnershipPassesToIPC(true);
