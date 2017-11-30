@@ -274,6 +274,10 @@
   return frame;
 }
 
+- (void)setBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
+  [self.toolbarViewController setBackgroundToIncognitoNTPColorWithAlpha:alpha];
+}
+
 #pragma mark - LocationBarDelegate
 
 - (void)loadGURLFromLocationBar:(const GURL&)url

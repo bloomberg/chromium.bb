@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
+#import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
@@ -43,9 +44,13 @@
 @property(nonatomic, strong) ToolbarButton* bookmarkButton;
 @property(nonatomic, assign) BOOL voiceSearchEnabled;
 @property(nonatomic, strong) MDCProgressView* progressBar;
+// Background view, used to display the incognito NTP background color on the
+// toolbar.
+@property(nonatomic, strong) UIView* backgroundView;
 @end
 
 @implementation ToolbarViewController
+@synthesize backgroundView = _backgroundView;
 @synthesize buttonFactory = _buttonFactory;
 @synthesize buttonUpdater = _buttonUpdater;
 @synthesize dispatcher = _dispatcher;
@@ -63,6 +68,21 @@
 @synthesize bookmarkButton = _bookmarkButton;
 @synthesize voiceSearchEnabled = _voiceSearchEnabled;
 @synthesize progressBar = _progressBar;
+
+#pragma mark - Properties accessor
+
+- (UIView*)backgroundView {
+  if (!_backgroundView) {
+    _backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
+    _backgroundView.translatesAutoresizingMaskIntoConstraints = NO;
+    _backgroundView.backgroundColor =
+        [UIColor colorWithWhite:kNTPBackgroundColorBrightnessIncognito
+                          alpha:1.0];
+    [self.view insertSubview:_backgroundView atIndex:0];
+    AddSameConstraints(self.view, _backgroundView);
+  }
+  return _backgroundView;
+}
 
 #pragma mark - Public
 
@@ -98,11 +118,17 @@
   // TODO(crbug.com/785756): Implement this.
 }
 
+- (void)setBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
+  self.backgroundView.alpha = alpha;
+}
+
 #pragma mark - View lifecyle
 
 - (void)viewDidLoad {
+  // The view can be obstructed by the background view.
   self.view.backgroundColor =
       [self.buttonFactory.toolbarConfiguration backgroundColor];
+
   [self setUpToolbarStackView];
   if (self.locationBarView) {
     [self.locationBarContainer addSubview:self.locationBarView];

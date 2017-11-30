@@ -51,6 +51,9 @@
 - (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP;
 // Resets the view after taking a snapshot for a side swipe.
 - (void)resetAfterSideSwipeSnapshot;
+// Sets the background color of the Toolbar to the one of the Incognito NTP,
+// with an |alpha|.
+- (void)setBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha;
 
 @end
 
