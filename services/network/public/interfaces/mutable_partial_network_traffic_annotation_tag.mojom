@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 // This interface defines the required structure to serialize a
-// net::MutableNetworkTrafficAnnotationTag. Please refer to
+// net::MutablePartialNetworkTrafficAnnotationTag. Please refer to
 // '/docs/network_traffic_annotations.md' for more details.
 
 module network.mojom;
 
-struct MutableNetworkTrafficAnnotationTag {
+struct MutablePartialNetworkTrafficAnnotationTag {
   uint32 unique_id_hash_code;
+  uint32 completing_id_hash_code;
 };

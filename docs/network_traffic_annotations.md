@@ -420,3 +420,10 @@ this limitation. It is strongly suggested that mutable annotations would be used
 only if there is no other way around it. Use cases are checked with the
 `traffic_annotation_auditor` to ensure proper values for the mutable
 annotations.
+
+
+## Mojo Interfaces (Advanced)
+
+For serialization of network traffic annotation and partial network traffic
+annotation tags, you can use the mutable mojo interfaces defined in
+`/services/network/public/interfaces`.

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//services/network/public/interfaces/mutable_network_traffic_annotation_tag.mojom"
+public_headers = [ "//net/traffic_annotation/network_traffic_annotation.h" ]
 traits_headers = [ "//services/network/public/cpp/" +
                    "mutable_network_traffic_annotation_tag_struct_traits.h" ]
 deps = [

@@ -207,8 +207,8 @@ NetworkTrafficAnnotationTag BranchedCompleteNetworkTrafficAnnotation(
 // }
 
 // Do not use this unless net-serialization is required.
-// TODO(crbug.com/690323): Add tools to check constructor of this structure is
-// used only in .mojom.cc files.
+// Mojo interfaces for this class and the next one are defined in
+// '/services/network/public/interfaces'.
 struct MutableNetworkTrafficAnnotationTag {
   MutableNetworkTrafficAnnotationTag()
       : unique_id_hash_code(TRAFFIC_ANNOTATION_UNINITIALIZED) {}

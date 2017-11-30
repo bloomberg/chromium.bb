@@ -9,6 +9,7 @@ static_library("cpp") {
     "cors_error_status.cc",
     "cors_error_status.h",
     "mutable_network_traffic_annotation_tag_struct_traits.h",
+    "mutable_partial_network_traffic_annotation_tag_struct_traits.h",
     "net_adapters.cc",
     "net_adapters.h",
     "url_loader_completion_status.cc",
@@ -39,6 +40,8 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "mutable_network_traffic_annotation_tag_struct_traits_unittest.cc",
+    "mutable_partial_network_traffic_annotation_tag_struct_traits_unittest.cc",
     "network_struct_traits_unittest.cc",
   ]
   deps = [
