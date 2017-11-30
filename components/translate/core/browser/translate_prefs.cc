@@ -44,8 +44,6 @@ const char TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage[] =
     "translate_last_denied_time_for_language";
 const char TranslatePrefs::kPrefTranslateTooOftenDeniedForLanguage[] =
     "translate_too_often_denied_for_language";
-const char TranslatePrefs::kPrefTranslateRecentTarget[] =
-    "translate_recent_target";
 
 const char kTranslateUI2016Q2TrialName[] = "TranslateUI2016Q2";
 const char kAlwaysTranslateOfferThreshold[] =
@@ -106,9 +104,6 @@ const base::Feature kTranslateUI2016Q2{"TranslateUI2016Q2",
 
 const base::Feature kImprovedLanguageSettings{
     "ImprovedLanguageSettings", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kTranslateRecentTarget{"TranslateRecentTarget",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 DenialTimeUpdate::DenialTimeUpdate(PrefService* prefs,
                                    const std::string& language,
@@ -751,15 +746,6 @@ bool TranslatePrefs::ShouldAutoTranslate(const std::string& original_language,
   return false;
 }
 
-void TranslatePrefs::SetRecentTargetLanguage(
-    const std::string& target_language) {
-  prefs_->SetString(kPrefTranslateRecentTarget, target_language);
-}
-
-std::string TranslatePrefs::GetRecentTargetLanguage() const {
-  return prefs_->GetString(kPrefTranslateRecentTarget);
-}
-
 // static
 void TranslatePrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -783,8 +769,6 @@ void TranslatePrefs::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(
       kPrefTranslateTooOftenDeniedForLanguage,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(kPrefTranslateRecentTarget, "",
-                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #if defined(OS_ANDROID)
   registry->RegisterDictionaryPref(
       kPrefTranslateAutoAlwaysCount,
