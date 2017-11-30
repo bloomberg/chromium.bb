@@ -275,8 +275,7 @@ LogData::LogData()
 
 LogData::LogData(const LogData& other) = default;
 
-LogData::~LogData() {
-}
+LogData::~LogData() = default;
 
 void ParamTraits<bool>::Log(const param_type& p, std::string* l) {
   l->append(p ? "true" : "false");

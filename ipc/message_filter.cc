@@ -11,7 +11,7 @@
 
 namespace IPC {
 
-MessageFilter::MessageFilter() {}
+MessageFilter::MessageFilter() = default;
 
 void MessageFilter::OnFilterAdded(Channel* channel) {}
 
@@ -32,6 +32,6 @@ bool MessageFilter::GetSupportedMessageClasses(
   return false;
 }
 
-MessageFilter::~MessageFilter() {}
+MessageFilter::~MessageFilter() = default;
 
 }  // namespace IPC

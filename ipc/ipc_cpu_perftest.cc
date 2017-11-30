@@ -26,7 +26,7 @@ namespace IPC {
 namespace {
 
 struct TestParams {
-  TestParams() {}
+  TestParams() = default;
   TestParams(size_t in_message_size,
              size_t in_frames_per_second,
              size_t in_messages_per_frame,

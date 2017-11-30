@@ -50,8 +50,7 @@ ChannelProxy::Context::Context(
   DCHECK(!listener || (ipc_task_runner_.get() != listener_task_runner_.get()));
 }
 
-ChannelProxy::Context::~Context() {
-}
+ChannelProxy::Context::~Context() = default;
 
 void ChannelProxy::Context::ClearIPCTaskRunner() {
   ipc_task_runner_ = NULL;

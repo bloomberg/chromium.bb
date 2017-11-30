@@ -43,8 +43,8 @@ bool ValidMessageClass(int message_class) {
 
 }  // namespace
 
-MessageFilterRouter::MessageFilterRouter() {}
-MessageFilterRouter::~MessageFilterRouter() {}
+MessageFilterRouter::MessageFilterRouter() = default;
+MessageFilterRouter::~MessageFilterRouter() = default;
 
 void MessageFilterRouter::AddFilter(MessageFilter* filter) {
   // Determine if the filter should be applied to all messages, or only

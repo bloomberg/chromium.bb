@@ -34,7 +34,7 @@ class PeerPidReceiver : public IPC::mojom::Channel {
   PeerPidReceiver(IPC::mojom::ChannelAssociatedRequest request,
                   const base::Closure& on_peer_pid_set)
       : binding_(this, std::move(request)), on_peer_pid_set_(on_peer_pid_set) {}
-  ~PeerPidReceiver() override {}
+  ~PeerPidReceiver() override = default;
 
   // mojom::Channel:
   void SetPeerPid(int32_t pid) override {

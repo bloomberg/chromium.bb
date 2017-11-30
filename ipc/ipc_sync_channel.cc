@@ -287,7 +287,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
     sync_dispatch_watcher_->AllowWokenUpBySyncWatchOnSameThread();
   }
 
-  ~ReceivedSyncMsgQueue() {}
+  ~ReceivedSyncMsgQueue() = default;
 
   void OnDispatchEventReady() {
     if (dispatch_flag_) {
@@ -578,8 +578,7 @@ SyncChannel::SyncChannel(
   StartWatching();
 }
 
-SyncChannel::~SyncChannel() {
-}
+SyncChannel::~SyncChannel() = default;
 
 void SyncChannel::SetRestrictDispatchChannelGroup(int group) {
   sync_context()->set_restrict_dispatch_group(group);
