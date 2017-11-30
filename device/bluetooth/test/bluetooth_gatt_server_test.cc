@@ -12,9 +12,9 @@
 
 namespace device {
 
-BluetoothGattServerTest::BluetoothGattServerTest() {}
+BluetoothGattServerTest::BluetoothGattServerTest() = default;
 
-BluetoothGattServerTest::~BluetoothGattServerTest() {}
+BluetoothGattServerTest::~BluetoothGattServerTest() = default;
 
 void BluetoothGattServerTest::StartGattSetup() {
   service_ = BluetoothLocalGattService::Create(

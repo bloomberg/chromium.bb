@@ -23,7 +23,7 @@ struct TestData {
 
 class BasicSeqLockTestThread : public base::PlatformThread::Delegate {
  public:
-  BasicSeqLockTestThread() {}
+  BasicSeqLockTestThread() = default;
 
   void Init(OneWriterSeqLock* seqlock,
             TestData* data,

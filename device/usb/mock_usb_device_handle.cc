@@ -15,7 +15,6 @@ scoped_refptr<UsbDevice> MockUsbDeviceHandle::GetDevice() const {
   return device_;
 }
 
-MockUsbDeviceHandle::~MockUsbDeviceHandle() {
-}
+MockUsbDeviceHandle::~MockUsbDeviceHandle() = default;
 
 }  // namespace device

@@ -37,7 +37,7 @@ namespace device {
 BluetoothSocketNet::WriteRequest::WriteRequest()
     : buffer_size(0) {}
 
-BluetoothSocketNet::WriteRequest::~WriteRequest() {}
+BluetoothSocketNet::WriteRequest::~WriteRequest() = default;
 
 BluetoothSocketNet::BluetoothSocketNet(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,

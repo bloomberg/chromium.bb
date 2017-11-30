@@ -21,8 +21,8 @@ const double kMeanGravity = -9.80665;
 // accelerometer events are provided to the sensor manager.
 class TestSensorManagerChromeOS : public device::SensorManagerChromeOS {
  public:
-  TestSensorManagerChromeOS() {}
-  ~TestSensorManagerChromeOS() override {}
+  TestSensorManagerChromeOS() = default;
+  ~TestSensorManagerChromeOS() override = default;
 
  protected:
   void StartObservingAccelerometer() override {}
@@ -43,7 +43,7 @@ class SensorManagerChromeOSTest : public testing::Test {
     orientation_buffer_.reset(new DeviceOrientationHardwareBuffer);
   }
 
-  ~SensorManagerChromeOSTest() override {}
+  ~SensorManagerChromeOSTest() override = default;
 
   void OnAccelerationIncludingGravity(double x, double y, double z) {
     scoped_refptr<chromeos::AccelerometerUpdate> update(

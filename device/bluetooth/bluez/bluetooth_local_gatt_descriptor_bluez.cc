@@ -50,7 +50,8 @@ BluetoothLocalGattDescriptorBlueZ::BluetoothLocalGattDescriptorBlueZ(
   characteristic->AddDescriptor(base::WrapUnique(this));
 }
 
-BluetoothLocalGattDescriptorBlueZ::~BluetoothLocalGattDescriptorBlueZ() {}
+BluetoothLocalGattDescriptorBlueZ::~BluetoothLocalGattDescriptorBlueZ() =
+    default;
 
 device::BluetoothUUID BluetoothLocalGattDescriptorBlueZ::GetUUID() const {
   return uuid_;

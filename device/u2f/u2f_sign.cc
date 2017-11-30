@@ -22,7 +22,7 @@ U2fSign::U2fSign(const std::vector<std::vector<uint8_t>>& registered_keys,
       app_param_(app_param),
       weak_factory_(this) {}
 
-U2fSign::~U2fSign() {}
+U2fSign::~U2fSign() = default;
 
 // static
 std::unique_ptr<U2fRequest> U2fSign::TrySign(

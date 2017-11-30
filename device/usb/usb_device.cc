@@ -10,7 +10,7 @@
 
 namespace device {
 
-UsbDevice::Observer::~Observer() {}
+UsbDevice::Observer::~Observer() = default;
 
 void UsbDevice::Observer::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {}
 
@@ -49,7 +49,7 @@ UsbDevice::UsbDevice(uint16_t usb_version,
   descriptor_.device_version = device_version;
 }
 
-UsbDevice::~UsbDevice() {}
+UsbDevice::~UsbDevice() = default;
 
 void UsbDevice::CheckUsbAccess(ResultCallback callback) {
   // By default assume that access to the device is allowed. This is implemented

@@ -6,10 +6,8 @@
 
 namespace device {
 
-BluetoothGattService::BluetoothGattService() {
-}
+BluetoothGattService::BluetoothGattService() = default;
 
-BluetoothGattService::~BluetoothGattService() {
-}
+BluetoothGattService::~BluetoothGattService() = default;
 
 }  // namespace device

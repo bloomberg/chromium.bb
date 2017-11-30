@@ -13,7 +13,7 @@ BluetoothGattCharacteristicBlueZ::BluetoothGattCharacteristicBlueZ(
     dbus::ObjectPath object_path)
     : object_path_(object_path), weak_ptr_factory_(this) {}
 
-BluetoothGattCharacteristicBlueZ::~BluetoothGattCharacteristicBlueZ() {}
+BluetoothGattCharacteristicBlueZ::~BluetoothGattCharacteristicBlueZ() = default;
 
 std::string BluetoothGattCharacteristicBlueZ::GetIdentifier() const {
   return object_path_.value();

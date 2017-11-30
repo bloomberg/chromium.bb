@@ -48,7 +48,7 @@ const char BluetoothMediaClient::kBluetoothAudioSinkUUID[] =
 
 BluetoothMediaClient::EndpointProperties::EndpointProperties() : codec(0x00) {}
 
-BluetoothMediaClient::EndpointProperties::~EndpointProperties() {}
+BluetoothMediaClient::EndpointProperties::~EndpointProperties() = default;
 
 class BluetoothMediaClientImpl : public BluetoothMediaClient,
                                  dbus::ObjectManager::Interface {
@@ -217,9 +217,9 @@ class BluetoothMediaClientImpl : public BluetoothMediaClient,
   DISALLOW_COPY_AND_ASSIGN(BluetoothMediaClientImpl);
 };
 
-BluetoothMediaClient::BluetoothMediaClient() {}
+BluetoothMediaClient::BluetoothMediaClient() = default;
 
-BluetoothMediaClient::~BluetoothMediaClient() {}
+BluetoothMediaClient::~BluetoothMediaClient() = default;
 
 BluetoothMediaClient* BluetoothMediaClient::Create() {
   return new BluetoothMediaClientImpl();

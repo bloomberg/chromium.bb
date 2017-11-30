@@ -74,7 +74,7 @@ class WifiDataProviderCommonWithMock : public WifiDataProviderCommon {
   std::unique_ptr<MockPollingPolicy> polling_policy_;
 
  private:
-  ~WifiDataProviderCommonWithMock() override {}
+  ~WifiDataProviderCommonWithMock() override = default;
 
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderCommonWithMock);
 };

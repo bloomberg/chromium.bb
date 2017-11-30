@@ -97,10 +97,10 @@ const std::vector<std::string> FlagsFromPermissions(
 }  // namespace
 
 BluetoothGattApplicationServiceProvider::
-    BluetoothGattApplicationServiceProvider() {}
+    BluetoothGattApplicationServiceProvider() = default;
 
 BluetoothGattApplicationServiceProvider::
-    ~BluetoothGattApplicationServiceProvider() {}
+    ~BluetoothGattApplicationServiceProvider() = default;
 
 void BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
     dbus::Bus* bus,

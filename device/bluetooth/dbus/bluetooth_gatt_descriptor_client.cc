@@ -43,7 +43,7 @@ BluetoothGattDescriptorClient::Properties::Properties(
   RegisterProperty(kValueProperty, &value);
 }
 
-BluetoothGattDescriptorClient::Properties::~Properties() {}
+BluetoothGattDescriptorClient::Properties::~Properties() = default;
 
 // The BluetoothGattDescriptorClient implementation used in production.
 class BluetoothGattDescriptorClientImpl
@@ -252,9 +252,9 @@ class BluetoothGattDescriptorClientImpl
   DISALLOW_COPY_AND_ASSIGN(BluetoothGattDescriptorClientImpl);
 };
 
-BluetoothGattDescriptorClient::BluetoothGattDescriptorClient() {}
+BluetoothGattDescriptorClient::BluetoothGattDescriptorClient() = default;
 
-BluetoothGattDescriptorClient::~BluetoothGattDescriptorClient() {}
+BluetoothGattDescriptorClient::~BluetoothGattDescriptorClient() = default;
 
 // static
 BluetoothGattDescriptorClient* BluetoothGattDescriptorClient::Create() {

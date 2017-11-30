@@ -232,9 +232,9 @@ class BluetoothProfileServiceProviderImpl
   DISALLOW_COPY_AND_ASSIGN(BluetoothProfileServiceProviderImpl);
 };
 
-BluetoothProfileServiceProvider::BluetoothProfileServiceProvider() {}
+BluetoothProfileServiceProvider::BluetoothProfileServiceProvider() = default;
 
-BluetoothProfileServiceProvider::~BluetoothProfileServiceProvider() {}
+BluetoothProfileServiceProvider::~BluetoothProfileServiceProvider() = default;
 
 // static
 BluetoothProfileServiceProvider* BluetoothProfileServiceProvider::Create(

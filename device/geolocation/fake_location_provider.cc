@@ -22,7 +22,7 @@ namespace device {
 FakeLocationProvider::FakeLocationProvider()
     : provider_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
-FakeLocationProvider::~FakeLocationProvider() {}
+FakeLocationProvider::~FakeLocationProvider() = default;
 
 void FakeLocationProvider::HandlePositionChanged(
     const mojom::Geoposition& position) {

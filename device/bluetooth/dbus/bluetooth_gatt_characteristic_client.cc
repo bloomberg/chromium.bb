@@ -38,7 +38,7 @@ BluetoothGattCharacteristicClient::Properties::Properties(
   RegisterProperty(bluetooth_gatt_characteristic::kFlagsProperty, &flags);
 }
 
-BluetoothGattCharacteristicClient::Properties::~Properties() {}
+BluetoothGattCharacteristicClient::Properties::~Properties() = default;
 
 // The BluetoothGattCharacteristicClient implementation used in production.
 class BluetoothGattCharacteristicClientImpl
@@ -295,9 +295,11 @@ class BluetoothGattCharacteristicClientImpl
   DISALLOW_COPY_AND_ASSIGN(BluetoothGattCharacteristicClientImpl);
 };
 
-BluetoothGattCharacteristicClient::BluetoothGattCharacteristicClient() {}
+BluetoothGattCharacteristicClient::BluetoothGattCharacteristicClient() =
+    default;
 
-BluetoothGattCharacteristicClient::~BluetoothGattCharacteristicClient() {}
+BluetoothGattCharacteristicClient::~BluetoothGattCharacteristicClient() =
+    default;
 
 // static
 BluetoothGattCharacteristicClient* BluetoothGattCharacteristicClient::Create() {

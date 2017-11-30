@@ -31,7 +31,7 @@ class TestRegisterCallback {
   TestRegisterCallback()
       : callback_(base::Bind(&TestRegisterCallback::ReceivedCallback,
                              base::Unretained(this))) {}
-  ~TestRegisterCallback() {}
+  ~TestRegisterCallback() = default;
 
   void ReceivedCallback(U2fReturnCode status_code,
                         const std::vector<uint8_t>& response,

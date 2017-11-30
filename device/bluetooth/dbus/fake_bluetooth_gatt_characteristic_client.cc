@@ -28,7 +28,8 @@ FakeBluetoothGattCharacteristicClient::DelayedCallback::DelayedCallback(
     size_t delay)
     : callback_(callback), delay_(delay) {}
 
-FakeBluetoothGattCharacteristicClient::DelayedCallback::~DelayedCallback() {}
+FakeBluetoothGattCharacteristicClient::DelayedCallback::~DelayedCallback() =
+    default;
 
 // static
 const char FakeBluetoothGattCharacteristicClient::
@@ -54,7 +55,7 @@ FakeBluetoothGattCharacteristicClient::Properties::Properties(
           bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
           callback) {}
 
-FakeBluetoothGattCharacteristicClient::Properties::~Properties() {}
+FakeBluetoothGattCharacteristicClient::Properties::~Properties() = default;
 
 void FakeBluetoothGattCharacteristicClient::Properties::Get(
     dbus::PropertyBase* property,

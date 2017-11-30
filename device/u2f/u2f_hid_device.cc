@@ -33,7 +33,7 @@ U2fHidDevice::U2fHidDevice(device::mojom::HidDeviceInfoPtr device_info,
       device_info_(std::move(device_info)),
       weak_factory_(this) {}
 
-U2fHidDevice::~U2fHidDevice() {}
+U2fHidDevice::~U2fHidDevice() = default;
 
 void U2fHidDevice::DeviceTransact(std::unique_ptr<U2fApduCommand> command,
                                   DeviceCallback callback) {

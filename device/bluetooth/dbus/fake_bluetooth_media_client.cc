@@ -32,7 +32,7 @@ FakeBluetoothMediaClient::FakeBluetoothMediaClient()
     : visible_(true),
       object_path_(ObjectPath(FakeBluetoothAdapterClient::kAdapterPath)) {}
 
-FakeBluetoothMediaClient::~FakeBluetoothMediaClient() {}
+FakeBluetoothMediaClient::~FakeBluetoothMediaClient() = default;
 
 void FakeBluetoothMediaClient::Init(dbus::Bus* bus) {}
 

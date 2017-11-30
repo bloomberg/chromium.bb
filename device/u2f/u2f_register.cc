@@ -24,7 +24,7 @@ U2fRegister::U2fRegister(
       registered_keys_(registered_keys),
       weak_factory_(this) {}
 
-U2fRegister::~U2fRegister() {}
+U2fRegister::~U2fRegister() = default;
 
 // static
 std::unique_ptr<U2fRequest> U2fRegister::TryRegistration(

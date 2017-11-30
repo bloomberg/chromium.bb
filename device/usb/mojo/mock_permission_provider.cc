@@ -19,7 +19,7 @@ MockPermissionProvider::MockPermissionProvider() : weak_factory_(this) {
   ON_CALL(*this, HasDevicePermission(_)).WillByDefault(Return(true));
 }
 
-MockPermissionProvider::~MockPermissionProvider() {}
+MockPermissionProvider::~MockPermissionProvider() = default;
 
 base::WeakPtr<PermissionProvider> MockPermissionProvider::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();

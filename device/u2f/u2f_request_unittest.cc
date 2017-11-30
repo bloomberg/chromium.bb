@@ -23,7 +23,7 @@ class FakeU2fRequest : public U2fRequest {
   FakeU2fRequest(std::vector<std::unique_ptr<U2fDiscovery>> discoveries,
                  const ResponseCallback& cb)
       : U2fRequest(std::move(discoveries), cb) {}
-  ~FakeU2fRequest() override {}
+  ~FakeU2fRequest() override = default;
 
   void TryDevice() override {
     cb_.Run(U2fReturnCode::SUCCESS, std::vector<uint8_t>(),

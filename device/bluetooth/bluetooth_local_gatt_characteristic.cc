@@ -22,8 +22,8 @@ BluetoothLocalGattCharacteristic::Create(const BluetoothUUID& uuid,
 }
 #endif
 
-BluetoothLocalGattCharacteristic::BluetoothLocalGattCharacteristic() {}
+BluetoothLocalGattCharacteristic::BluetoothLocalGattCharacteristic() = default;
 
-BluetoothLocalGattCharacteristic::~BluetoothLocalGattCharacteristic() {}
+BluetoothLocalGattCharacteristic::~BluetoothLocalGattCharacteristic() = default;
 
 }  // namespace device

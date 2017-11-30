@@ -78,6 +78,6 @@ BluetoothDBusClientBundle::BluetoothDBusClientBundle(bool use_fakes)
   }
 }
 
-BluetoothDBusClientBundle::~BluetoothDBusClientBundle() {}
+BluetoothDBusClientBundle::~BluetoothDBusClientBundle() = default;
 
 }  // namespace bluez

@@ -17,7 +17,7 @@ TestBluetoothLocalGattServiceDelegate::TestBluetoothLocalGattServiceDelegate()
       expected_descriptor_(nullptr) {}
 
 TestBluetoothLocalGattServiceDelegate::
-    ~TestBluetoothLocalGattServiceDelegate() {}
+    ~TestBluetoothLocalGattServiceDelegate() = default;
 
 void TestBluetoothLocalGattServiceDelegate::OnCharacteristicReadRequest(
     const BluetoothDevice* device,

@@ -10,7 +10,7 @@ namespace device {
 
 class SerialIoHandlerPosixTest : public testing::Test {
  public:
-  SerialIoHandlerPosixTest() {}
+  SerialIoHandlerPosixTest() = default;
 
   void SetUp() override {
     serial_io_handler_posix_ = new SerialIoHandlerPosix(nullptr);

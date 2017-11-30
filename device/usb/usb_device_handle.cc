@@ -6,8 +6,8 @@
 
 namespace device {
 
-UsbDeviceHandle::UsbDeviceHandle() {}
+UsbDeviceHandle::UsbDeviceHandle() = default;
 
-UsbDeviceHandle::~UsbDeviceHandle() {}
+UsbDeviceHandle::~UsbDeviceHandle() = default;
 
 }  // namespace device

@@ -506,9 +506,11 @@ class MediaTransferProtocolDaemonClientImpl
 ////////////////////////////////////////////////////////////////////////////////
 // MediaTransferProtocolDaemonClient
 
-MediaTransferProtocolDaemonClient::MediaTransferProtocolDaemonClient() {}
+MediaTransferProtocolDaemonClient::MediaTransferProtocolDaemonClient() =
+    default;
 
-MediaTransferProtocolDaemonClient::~MediaTransferProtocolDaemonClient() {}
+MediaTransferProtocolDaemonClient::~MediaTransferProtocolDaemonClient() =
+    default;
 
 // static
 std::unique_ptr<MediaTransferProtocolDaemonClient>

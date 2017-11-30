@@ -14,8 +14,8 @@
 
 namespace device {
 
-BluetoothRemoteGattDescriptor::BluetoothRemoteGattDescriptor() {}
+BluetoothRemoteGattDescriptor::BluetoothRemoteGattDescriptor() = default;
 
-BluetoothRemoteGattDescriptor::~BluetoothRemoteGattDescriptor() {}
+BluetoothRemoteGattDescriptor::~BluetoothRemoteGattDescriptor() = default;
 
 }  // namespace device

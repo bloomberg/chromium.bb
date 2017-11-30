@@ -29,7 +29,7 @@
 
 namespace device {
 
-UsbService::Observer::~Observer() {}
+UsbService::Observer::~Observer() = default;
 
 void UsbService::Observer::OnDeviceAdded(scoped_refptr<UsbDevice> device) {
 }

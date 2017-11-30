@@ -21,7 +21,7 @@ MockBluetoothDiscoverySession::MockBluetoothDiscoverySession()
               new testing::NiceMock<MockBluetoothAdapter>()),
           nullptr) {
 }
-MockBluetoothDiscoverySession::~MockBluetoothDiscoverySession() {}
+MockBluetoothDiscoverySession::~MockBluetoothDiscoverySession() = default;
 
 void MockBluetoothDiscoverySession::SetDiscoveryFilter(
     std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,

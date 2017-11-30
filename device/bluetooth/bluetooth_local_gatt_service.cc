@@ -21,8 +21,8 @@ base::WeakPtr<BluetoothLocalGattService> BluetoothLocalGattService::Create(
 }
 #endif
 
-BluetoothLocalGattService::BluetoothLocalGattService() {}
+BluetoothLocalGattService::BluetoothLocalGattService() = default;
 
-BluetoothLocalGattService::~BluetoothLocalGattService() {}
+BluetoothLocalGattService::~BluetoothLocalGattService() = default;
 
 }  // namespace device

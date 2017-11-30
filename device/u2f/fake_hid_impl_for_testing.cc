@@ -11,7 +11,7 @@ bool FakeHidConnection::mock_connection_error_ = false;
 FakeHidConnection::FakeHidConnection(device::mojom::HidDeviceInfoPtr device)
     : device_(std::move(device)) {}
 
-FakeHidConnection::~FakeHidConnection() {}
+FakeHidConnection::~FakeHidConnection() = default;
 
 void FakeHidConnection::Read(ReadCallback callback) {
   std::vector<uint8_t> buffer = {'F', 'a', 'k', 'e', ' ', 'H', 'i', 'd'};
@@ -40,9 +40,9 @@ void FakeHidConnection::SendFeatureReport(uint8_t report_id,
   NOTREACHED();
 }
 
-FakeHidManager::FakeHidManager() {}
+FakeHidManager::FakeHidManager() = default;
 
-FakeHidManager::~FakeHidManager() {}
+FakeHidManager::~FakeHidManager() = default;
 
 void FakeHidManager::AddBinding(mojo::ScopedMessagePipeHandle handle) {
   bindings_.AddBinding(this,

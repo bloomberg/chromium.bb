@@ -53,8 +53,7 @@ DeviceManagerImpl::DeviceManagerImpl(
   observer_.Add(usb_service_);
 }
 
-DeviceManagerImpl::~DeviceManagerImpl() {
-}
+DeviceManagerImpl::~DeviceManagerImpl() = default;
 
 void DeviceManagerImpl::GetDevices(mojom::UsbEnumerationOptionsPtr options,
                                    GetDevicesCallback callback) {

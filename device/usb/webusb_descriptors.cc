@@ -124,7 +124,8 @@ void OnReadBosDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
 WebUsbPlatformCapabilityDescriptor::WebUsbPlatformCapabilityDescriptor()
     : version(0), vendor_code(0) {}
 
-WebUsbPlatformCapabilityDescriptor::~WebUsbPlatformCapabilityDescriptor() {}
+WebUsbPlatformCapabilityDescriptor::~WebUsbPlatformCapabilityDescriptor() =
+    default;
 
 bool WebUsbPlatformCapabilityDescriptor::ParseFromBosDescriptor(
     const std::vector<uint8_t>& bytes) {

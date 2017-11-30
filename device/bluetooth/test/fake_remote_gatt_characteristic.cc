@@ -43,7 +43,7 @@ FakeRemoteGattCharacteristic::FakeRemoteGattCharacteristic(
     properties_ |= PROPERTY_EXTENDED_PROPERTIES;
 }
 
-FakeRemoteGattCharacteristic::~FakeRemoteGattCharacteristic() {}
+FakeRemoteGattCharacteristic::~FakeRemoteGattCharacteristic() = default;
 
 std::string FakeRemoteGattCharacteristic::AddFakeDescriptor(
     const device::BluetoothUUID& descriptor_uuid) {

@@ -42,8 +42,7 @@ namespace device {
 
 class TestBluetoothAdapter : public BluetoothAdapter {
  public:
-  TestBluetoothAdapter() {
-  }
+  TestBluetoothAdapter() = default;
 
   std::string GetAddress() const override { return ""; }
 
@@ -138,7 +137,7 @@ class TestBluetoothAdapter : public BluetoothAdapter {
   }
 
  protected:
-  ~TestBluetoothAdapter() override {}
+  ~TestBluetoothAdapter() override = default;
 
   void AddDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,

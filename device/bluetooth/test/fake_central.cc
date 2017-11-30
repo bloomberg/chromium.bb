@@ -399,7 +399,7 @@ void FakeCentral::RemovePairingDelegateInternal(
   NOTREACHED();
 }
 
-FakeCentral::~FakeCentral() {}
+FakeCentral::~FakeCentral() = default;
 
 FakePeripheral* FakeCentral::GetFakePeripheral(
     const std::string& peripheral_address) const {

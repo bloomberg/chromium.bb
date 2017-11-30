@@ -17,7 +17,7 @@ GamepadSharedBuffer::GamepadSharedBuffer() {
   memset(&(hardware_buffer_->data), 0, sizeof(Gamepads));
 }
 
-GamepadSharedBuffer::~GamepadSharedBuffer() {}
+GamepadSharedBuffer::~GamepadSharedBuffer() = default;
 
 base::SharedMemory* GamepadSharedBuffer::shared_memory() {
   return &shared_memory_;

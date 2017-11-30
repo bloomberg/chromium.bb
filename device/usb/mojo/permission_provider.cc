@@ -7,9 +7,9 @@
 namespace device {
 namespace usb {
 
-PermissionProvider::PermissionProvider() {}
+PermissionProvider::PermissionProvider() = default;
 
-PermissionProvider::~PermissionProvider() {}
+PermissionProvider::~PermissionProvider() = default;
 
 }  // namespace usb
 }  // namespace device

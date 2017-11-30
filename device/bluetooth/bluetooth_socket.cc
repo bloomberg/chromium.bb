@@ -6,6 +6,6 @@
 
 namespace device {
 
-BluetoothSocket::~BluetoothSocket() {}
+BluetoothSocket::~BluetoothSocket() = default;
 
 }  // namespace device

@@ -12,9 +12,9 @@
 
 namespace device {
 
-GeolocationContext::GeolocationContext() {}
+GeolocationContext::GeolocationContext() = default;
 
-GeolocationContext::~GeolocationContext() {}
+GeolocationContext::~GeolocationContext() = default;
 
 // static
 void GeolocationContext::Create(mojom::GeolocationContextRequest request) {

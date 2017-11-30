@@ -27,6 +27,6 @@ U2fApduResponse::U2fApduResponse(std::vector<uint8_t> message,
                                  Status response_status)
     : response_status_(response_status), data_(std::move(message)) {}
 
-U2fApduResponse::~U2fApduResponse() {}
+U2fApduResponse::~U2fApduResponse() = default;
 
 }  // namespace device

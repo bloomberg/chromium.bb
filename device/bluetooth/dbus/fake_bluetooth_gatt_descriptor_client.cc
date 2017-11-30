@@ -31,7 +31,7 @@ FakeBluetoothGattDescriptorClient::Properties::Properties(
           bluetooth_gatt_descriptor::kBluetoothGattDescriptorInterface,
           callback) {}
 
-FakeBluetoothGattDescriptorClient::Properties::~Properties() {}
+FakeBluetoothGattDescriptorClient::Properties::~Properties() = default;
 
 void FakeBluetoothGattDescriptorClient::Properties::Get(
     dbus::PropertyBase* property,
@@ -51,9 +51,9 @@ void FakeBluetoothGattDescriptorClient::Properties::Set(
   callback.Run(false);
 }
 
-FakeBluetoothGattDescriptorClient::DescriptorData::DescriptorData() {}
+FakeBluetoothGattDescriptorClient::DescriptorData::DescriptorData() = default;
 
-FakeBluetoothGattDescriptorClient::DescriptorData::~DescriptorData() {}
+FakeBluetoothGattDescriptorClient::DescriptorData::~DescriptorData() = default;
 
 FakeBluetoothGattDescriptorClient::FakeBluetoothGattDescriptorClient()
     : weak_ptr_factory_(this) {}

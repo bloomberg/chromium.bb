@@ -12,7 +12,7 @@ DiscoverySession::DiscoverySession(
     std::unique_ptr<device::BluetoothDiscoverySession> session)
     : discovery_session_(std::move(session)), weak_ptr_factory_(this) {}
 
-DiscoverySession::~DiscoverySession() {}
+DiscoverySession::~DiscoverySession() = default;
 
 void DiscoverySession::IsActive(IsActiveCallback callback) {
   std::move(callback).Run(discovery_session_->IsActive());

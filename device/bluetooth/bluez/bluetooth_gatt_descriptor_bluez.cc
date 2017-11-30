@@ -12,7 +12,7 @@ BluetoothGattDescriptorBlueZ::BluetoothGattDescriptorBlueZ(
     const dbus::ObjectPath& object_path)
     : object_path_(object_path) {}
 
-BluetoothGattDescriptorBlueZ::~BluetoothGattDescriptorBlueZ() {}
+BluetoothGattDescriptorBlueZ::~BluetoothGattDescriptorBlueZ() = default;
 
 std::string BluetoothGattDescriptorBlueZ::GetIdentifier() const {
   return object_path_.value();

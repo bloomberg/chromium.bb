@@ -15,7 +15,8 @@ BluetoothGattAttributeValueDelegate::BluetoothGattAttributeValueDelegate(
     BluetoothLocalGattServiceBlueZ* service)
     : service_(service) {}
 
-BluetoothGattAttributeValueDelegate::~BluetoothGattAttributeValueDelegate() {}
+BluetoothGattAttributeValueDelegate::~BluetoothGattAttributeValueDelegate() =
+    default;
 
 device::BluetoothDevice* BluetoothGattAttributeValueDelegate::GetDeviceWithPath(
     const dbus::ObjectPath& object_path) {

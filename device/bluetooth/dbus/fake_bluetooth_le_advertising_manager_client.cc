@@ -26,10 +26,10 @@ constexpr uint16_t kMaxIntervalMs = 10240;
 }  // namespace
 
 FakeBluetoothLEAdvertisingManagerClient::
-    FakeBluetoothLEAdvertisingManagerClient() {}
+    FakeBluetoothLEAdvertisingManagerClient() = default;
 
 FakeBluetoothLEAdvertisingManagerClient::
-    ~FakeBluetoothLEAdvertisingManagerClient() {}
+    ~FakeBluetoothLEAdvertisingManagerClient() = default;
 
 void FakeBluetoothLEAdvertisingManagerClient::Init(dbus::Bus* bus) {}
 

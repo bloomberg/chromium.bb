@@ -13,9 +13,9 @@ namespace device {
 U2fPacket::U2fPacket(const std::vector<uint8_t>& data, uint32_t channel_id)
     : data_(data), channel_id_(channel_id) {}
 
-U2fPacket::U2fPacket() {}
+U2fPacket::U2fPacket() = default;
 
-U2fPacket::~U2fPacket() {}
+U2fPacket::~U2fPacket() = default;
 
 std::vector<uint8_t> U2fPacket::GetPacketPayload() const {
   return data_;
@@ -85,7 +85,7 @@ U2fInitPacket::U2fInitPacket(const std::vector<uint8_t>& serialized,
                serialized.begin() + index + data_size);
 }
 
-U2fInitPacket::~U2fInitPacket() {}
+U2fInitPacket::~U2fInitPacket() = default;
 
 // U2F Continuation packet is defined as:
 // Offset Length
@@ -139,6 +139,6 @@ U2fContinuationPacket::U2fContinuationPacket(
                serialized.begin() + index + data_size);
 }
 
-U2fContinuationPacket::~U2fContinuationPacket() {}
+U2fContinuationPacket::~U2fContinuationPacket() = default;
 
 }  // namespace device

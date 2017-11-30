@@ -272,7 +272,7 @@ FakeBluetoothDeviceClient::Properties::Properties(
           bluetooth_device::kBluetoothDeviceInterface,
           callback) {}
 
-FakeBluetoothDeviceClient::Properties::~Properties() {}
+FakeBluetoothDeviceClient::Properties::~Properties() = default;
 
 void FakeBluetoothDeviceClient::Properties::Get(
     dbus::PropertyBase* property,
@@ -297,16 +297,17 @@ void FakeBluetoothDeviceClient::Properties::Set(
   }
 }
 
-FakeBluetoothDeviceClient::SimulatedPairingOptions::SimulatedPairingOptions() {}
+FakeBluetoothDeviceClient::SimulatedPairingOptions::SimulatedPairingOptions() =
+    default;
 
-FakeBluetoothDeviceClient::SimulatedPairingOptions::~SimulatedPairingOptions() {
-}
-
-FakeBluetoothDeviceClient::IncomingDeviceProperties::
-    IncomingDeviceProperties() {}
+FakeBluetoothDeviceClient::SimulatedPairingOptions::~SimulatedPairingOptions() =
+    default;
 
 FakeBluetoothDeviceClient::IncomingDeviceProperties::
-    ~IncomingDeviceProperties() {}
+    IncomingDeviceProperties() = default;
+
+FakeBluetoothDeviceClient::IncomingDeviceProperties::
+    ~IncomingDeviceProperties() = default;
 
 FakeBluetoothDeviceClient::FakeBluetoothDeviceClient()
     : simulation_interval_ms_(kSimulationIntervalMs),
@@ -363,7 +364,7 @@ FakeBluetoothDeviceClient::FakeBluetoothDeviceClient()
   device_list_.push_back(dbus::ObjectPath(kPairedUnconnectableDevicePath));
 }
 
-FakeBluetoothDeviceClient::~FakeBluetoothDeviceClient() {}
+FakeBluetoothDeviceClient::~FakeBluetoothDeviceClient() = default;
 
 void FakeBluetoothDeviceClient::Init(dbus::Bus* bus) {}
 

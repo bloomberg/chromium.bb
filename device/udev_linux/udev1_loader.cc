@@ -8,11 +8,9 @@
 
 namespace device {
 
-Udev1Loader::Udev1Loader() {
-}
+Udev1Loader::Udev1Loader() = default;
 
-Udev1Loader::~Udev1Loader() {
-}
+Udev1Loader::~Udev1Loader() = default;
 
 bool Udev1Loader::Init() {
   if (lib_loader_)

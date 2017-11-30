@@ -35,7 +35,7 @@ FakeBluetoothGattServiceClient::Properties::Properties(
           bluetooth_gatt_service::kBluetoothGattServiceInterface,
           callback) {}
 
-FakeBluetoothGattServiceClient::Properties::~Properties() {}
+FakeBluetoothGattServiceClient::Properties::~Properties() = default;
 
 void FakeBluetoothGattServiceClient::Properties::Get(
     dbus::PropertyBase* property,
@@ -58,7 +58,7 @@ void FakeBluetoothGattServiceClient::Properties::Set(
 FakeBluetoothGattServiceClient::FakeBluetoothGattServiceClient()
     : weak_ptr_factory_(this) {}
 
-FakeBluetoothGattServiceClient::~FakeBluetoothGattServiceClient() {}
+FakeBluetoothGattServiceClient::~FakeBluetoothGattServiceClient() = default;
 
 void FakeBluetoothGattServiceClient::Init(dbus::Bus* bus) {}
 

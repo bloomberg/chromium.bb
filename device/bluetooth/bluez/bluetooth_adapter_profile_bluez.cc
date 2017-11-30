@@ -52,7 +52,7 @@ BluetoothAdapterProfileBlueZ::BluetoothAdapterProfileBlueZ(
   DCHECK(profile_.get());
 }
 
-BluetoothAdapterProfileBlueZ::~BluetoothAdapterProfileBlueZ() {}
+BluetoothAdapterProfileBlueZ::~BluetoothAdapterProfileBlueZ() = default;
 
 bool BluetoothAdapterProfileBlueZ::SetDelegate(
     const dbus::ObjectPath& device_path,

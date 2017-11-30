@@ -66,7 +66,7 @@ DataFetcherSharedMemoryBase::PollingThread::PollingThread(
     DataFetcherSharedMemoryBase* fetcher)
     : base::Thread(name), consumers_bitmask_(0), fetcher_(fetcher) {}
 
-DataFetcherSharedMemoryBase::PollingThread::~PollingThread() {}
+DataFetcherSharedMemoryBase::PollingThread::~PollingThread() = default;
 
 void DataFetcherSharedMemoryBase::PollingThread::AddConsumer(
     ConsumerType consumer_type,

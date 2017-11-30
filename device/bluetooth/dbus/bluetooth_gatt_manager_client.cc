@@ -25,7 +25,7 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
   BluetoothGattManagerClientImpl()
       : object_manager_(nullptr), weak_ptr_factory_(this) {}
 
-  ~BluetoothGattManagerClientImpl() override {}
+  ~BluetoothGattManagerClientImpl() override = default;
 
   // BluetoothGattManagerClient override.
   void RegisterApplication(const dbus::ObjectPath& adapter_object_path,
@@ -129,9 +129,9 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
   DISALLOW_COPY_AND_ASSIGN(BluetoothGattManagerClientImpl);
 };
 
-BluetoothGattManagerClient::BluetoothGattManagerClient() {}
+BluetoothGattManagerClient::BluetoothGattManagerClient() = default;
 
-BluetoothGattManagerClient::~BluetoothGattManagerClient() {}
+BluetoothGattManagerClient::~BluetoothGattManagerClient() = default;
 
 // static
 BluetoothGattManagerClient* BluetoothGattManagerClient::Create() {

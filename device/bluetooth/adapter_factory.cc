@@ -13,7 +13,7 @@
 namespace bluetooth {
 
 AdapterFactory::AdapterFactory() : weak_ptr_factory_(this) {}
-AdapterFactory::~AdapterFactory() {}
+AdapterFactory::~AdapterFactory() = default;
 
 // static
 void AdapterFactory::Create(mojom::AdapterFactoryRequest request) {

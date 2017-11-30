@@ -22,7 +22,7 @@ class BluetoothAgentManagerClientImpl : public BluetoothAgentManagerClient {
  public:
   BluetoothAgentManagerClientImpl() : weak_ptr_factory_(this) {}
 
-  ~BluetoothAgentManagerClientImpl() override {}
+  ~BluetoothAgentManagerClientImpl() override = default;
 
   // BluetoothAgentManagerClient override.
   void RegisterAgent(const dbus::ObjectPath& agent_path,
@@ -127,9 +127,9 @@ class BluetoothAgentManagerClientImpl : public BluetoothAgentManagerClient {
   DISALLOW_COPY_AND_ASSIGN(BluetoothAgentManagerClientImpl);
 };
 
-BluetoothAgentManagerClient::BluetoothAgentManagerClient() {}
+BluetoothAgentManagerClient::BluetoothAgentManagerClient() = default;
 
-BluetoothAgentManagerClient::~BluetoothAgentManagerClient() {}
+BluetoothAgentManagerClient::~BluetoothAgentManagerClient() = default;
 
 BluetoothAgentManagerClient* BluetoothAgentManagerClient::Create() {
   return new BluetoothAgentManagerClientImpl();

@@ -24,7 +24,7 @@ FakePeripheral::FakePeripheral(FakeCentral* fake_central,
       pending_gatt_discovery_(false),
       weak_ptr_factory_(this) {}
 
-FakePeripheral::~FakePeripheral() {}
+FakePeripheral::~FakePeripheral() = default;
 
 void FakePeripheral::SetName(base::Optional<std::string> name) {
   name_ = std::move(name);

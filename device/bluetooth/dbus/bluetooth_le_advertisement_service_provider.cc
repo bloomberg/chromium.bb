@@ -405,10 +405,10 @@ class BluetoothAdvertisementServiceProviderImpl
 };
 
 BluetoothLEAdvertisementServiceProvider::
-    BluetoothLEAdvertisementServiceProvider() {}
+    BluetoothLEAdvertisementServiceProvider() = default;
 
 BluetoothLEAdvertisementServiceProvider::
-    ~BluetoothLEAdvertisementServiceProvider() {}
+    ~BluetoothLEAdvertisementServiceProvider() = default;
 
 // static
 std::unique_ptr<BluetoothLEAdvertisementServiceProvider>

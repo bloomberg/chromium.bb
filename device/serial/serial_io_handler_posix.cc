@@ -294,8 +294,7 @@ SerialIoHandlerPosix::SerialIoHandlerPosix(
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
     : SerialIoHandler(ui_thread_task_runner) {}
 
-SerialIoHandlerPosix::~SerialIoHandlerPosix() {
-}
+SerialIoHandlerPosix::~SerialIoHandlerPosix() = default;
 
 void SerialIoHandlerPosix::AttemptRead(bool within_read) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -34,7 +34,7 @@ namespace {
 
 class GeolocationObserver {
  public:
-  virtual ~GeolocationObserver() {}
+  virtual ~GeolocationObserver() = default;
   virtual void OnLocationUpdate(const mojom::Geoposition& position) = 0;
 };
 
@@ -109,7 +109,7 @@ class GeolocationProviderTest : public testing::Test {
     provider()->SetArbitratorForTesting(base::WrapUnique(arbitrator_));
   }
 
-  ~GeolocationProviderTest() override {}
+  ~GeolocationProviderTest() override = default;
 
   GeolocationProviderImpl* provider() {
     return GeolocationProviderImpl::GetInstance();

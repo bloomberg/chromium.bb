@@ -13,7 +13,7 @@ namespace bluez {
 FakeBluetoothAgentManagerClient::FakeBluetoothAgentManagerClient()
     : service_provider_(NULL) {}
 
-FakeBluetoothAgentManagerClient::~FakeBluetoothAgentManagerClient() {}
+FakeBluetoothAgentManagerClient::~FakeBluetoothAgentManagerClient() = default;
 
 void FakeBluetoothAgentManagerClient::Init(dbus::Bus* bus) {}
 

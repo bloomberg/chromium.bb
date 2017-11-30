@@ -26,7 +26,6 @@ MockBluetoothGattDescriptor::MockBluetoothGattDescriptor(
   ON_CALL(*this, GetPermissions()).WillByDefault(Return(permissions));
 }
 
-MockBluetoothGattDescriptor::~MockBluetoothGattDescriptor() {
-}
+MockBluetoothGattDescriptor::~MockBluetoothGattDescriptor() = default;
 
 }  // namespace device

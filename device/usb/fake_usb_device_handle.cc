@@ -122,6 +122,6 @@ const UsbInterfaceDescriptor* FakeUsbDeviceHandle::FindInterfaceByEndpoint(
   return nullptr;
 }
 
-FakeUsbDeviceHandle::~FakeUsbDeviceHandle() {}
+FakeUsbDeviceHandle::~FakeUsbDeviceHandle() = default;
 
 }  // namespace device

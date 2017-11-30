@@ -10,7 +10,7 @@ namespace device {
 
 MockU2fDevice::MockU2fDevice() : weak_factory_(this) {}
 
-MockU2fDevice::~MockU2fDevice() {}
+MockU2fDevice::~MockU2fDevice() = default;
 
 void MockU2fDevice::TryWink(WinkCallback cb) {
   TryWinkRef(cb);

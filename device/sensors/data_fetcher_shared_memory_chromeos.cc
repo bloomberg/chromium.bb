@@ -8,9 +8,9 @@
 
 namespace device {
 
-DataFetcherSharedMemory::DataFetcherSharedMemory() {}
+DataFetcherSharedMemory::DataFetcherSharedMemory() = default;
 
-DataFetcherSharedMemory::~DataFetcherSharedMemory() {}
+DataFetcherSharedMemory::~DataFetcherSharedMemory() = default;
 
 bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
   DCHECK(buffer);

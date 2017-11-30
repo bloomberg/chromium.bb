@@ -430,9 +430,9 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
   DISALLOW_COPY_AND_ASSIGN(BluetoothAgentServiceProviderImpl);
 };
 
-BluetoothAgentServiceProvider::BluetoothAgentServiceProvider() {}
+BluetoothAgentServiceProvider::BluetoothAgentServiceProvider() = default;
 
-BluetoothAgentServiceProvider::~BluetoothAgentServiceProvider() {}
+BluetoothAgentServiceProvider::~BluetoothAgentServiceProvider() = default;
 
 // static
 BluetoothAgentServiceProvider* BluetoothAgentServiceProvider::Create(

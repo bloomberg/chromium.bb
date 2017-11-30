@@ -33,7 +33,7 @@ LocationArbitrator::LocationArbitrator(
       is_permission_granted_(false),
       is_running_(false) {}
 
-LocationArbitrator::~LocationArbitrator() {}
+LocationArbitrator::~LocationArbitrator() = default;
 
 bool LocationArbitrator::HasPermissionBeenGrantedForTest() const {
   return is_permission_granted_;

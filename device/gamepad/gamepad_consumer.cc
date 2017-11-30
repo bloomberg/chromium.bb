@@ -6,8 +6,8 @@
 
 namespace device {
 
-GamepadConsumer::GamepadConsumer() {}
+GamepadConsumer::GamepadConsumer() = default;
 
-GamepadConsumer::~GamepadConsumer() {}
+GamepadConsumer::~GamepadConsumer() = default;
 
 }  // namespace device

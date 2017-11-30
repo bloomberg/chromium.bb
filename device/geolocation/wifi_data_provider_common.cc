@@ -24,7 +24,7 @@ base::string16 MacAddressAsString16(const uint8_t mac_as_int[6]) {
 WifiDataProviderCommon::WifiDataProviderCommon()
     : is_first_scan_complete_(false), weak_factory_(this) {}
 
-WifiDataProviderCommon::~WifiDataProviderCommon() {}
+WifiDataProviderCommon::~WifiDataProviderCommon() = default;
 
 void WifiDataProviderCommon::StartDataProvider() {
   DCHECK(!wlan_api_);

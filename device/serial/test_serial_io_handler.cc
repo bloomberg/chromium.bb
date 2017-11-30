@@ -121,7 +121,6 @@ void TestSerialIoHandler::ForceSendError(device::mojom::SerialSendError error) {
   WriteCompleted(0, error);
 }
 
-TestSerialIoHandler::~TestSerialIoHandler() {
-}
+TestSerialIoHandler::~TestSerialIoHandler() = default;
 
 }  // namespace device

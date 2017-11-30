@@ -37,7 +37,7 @@ SerialDeviceEnumeratorLinux::SerialDeviceEnumeratorLinux() {
   udev_.reset(udev_new());
 }
 
-SerialDeviceEnumeratorLinux::~SerialDeviceEnumeratorLinux() {}
+SerialDeviceEnumeratorLinux::~SerialDeviceEnumeratorLinux() = default;
 
 std::vector<mojom::SerialDeviceInfoPtr>
 SerialDeviceEnumeratorLinux::GetDevices() {

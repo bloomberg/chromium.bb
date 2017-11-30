@@ -170,7 +170,7 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
 class FakeNonPollingDataFetcher : public FakeDataFetcher {
  public:
   FakeNonPollingDataFetcher() : update_(true) {}
-  ~FakeNonPollingDataFetcher() override {}
+  ~FakeNonPollingDataFetcher() override = default;
 
   bool Start(ConsumerType consumer_type, void* buffer) override {
     Init(consumer_type, buffer);
@@ -229,8 +229,8 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
 
 class FakePollingDataFetcher : public FakeDataFetcher {
  public:
-  FakePollingDataFetcher() {}
-  ~FakePollingDataFetcher() override {}
+  FakePollingDataFetcher() = default;
+  ~FakePollingDataFetcher() override = default;
 
   bool Start(ConsumerType consumer_type, void* buffer) override {
     EXPECT_TRUE(
@@ -296,8 +296,8 @@ class FakePollingDataFetcher : public FakeDataFetcher {
 
 class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
  public:
-  FakeZeroDelayPollingDataFetcher() {}
-  ~FakeZeroDelayPollingDataFetcher() override {}
+  FakeZeroDelayPollingDataFetcher() = default;
+  ~FakeZeroDelayPollingDataFetcher() override = default;
 
   bool Start(ConsumerType consumer_type, void* buffer) override {
     EXPECT_TRUE(

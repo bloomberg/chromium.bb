@@ -213,9 +213,11 @@ class BluetoothAdvertisementManagerClientImpl
   DISALLOW_COPY_AND_ASSIGN(BluetoothAdvertisementManagerClientImpl);
 };
 
-BluetoothLEAdvertisingManagerClient::BluetoothLEAdvertisingManagerClient() {}
+BluetoothLEAdvertisingManagerClient::BluetoothLEAdvertisingManagerClient() =
+    default;
 
-BluetoothLEAdvertisingManagerClient::~BluetoothLEAdvertisingManagerClient() {}
+BluetoothLEAdvertisingManagerClient::~BluetoothLEAdvertisingManagerClient() =
+    default;
 
 BluetoothLEAdvertisingManagerClient*
 BluetoothLEAdvertisingManagerClient::Create() {

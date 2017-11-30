@@ -18,7 +18,7 @@ BluetoothGattServiceBlueZ::BluetoothGattServiceBlueZ(
   DCHECK(adapter_);
 }
 
-BluetoothGattServiceBlueZ::~BluetoothGattServiceBlueZ() {}
+BluetoothGattServiceBlueZ::~BluetoothGattServiceBlueZ() = default;
 
 std::string BluetoothGattServiceBlueZ::GetIdentifier() const {
   return object_path_.value();

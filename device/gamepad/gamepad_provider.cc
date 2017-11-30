@@ -35,7 +35,7 @@ GamepadProvider::ClosureAndThread::ClosureAndThread(
 GamepadProvider::ClosureAndThread::ClosureAndThread(
     const ClosureAndThread& other) = default;
 
-GamepadProvider::ClosureAndThread::~ClosureAndThread() {}
+GamepadProvider::ClosureAndThread::~ClosureAndThread() = default;
 
 GamepadProvider::GamepadProvider(
     GamepadConnectionChangeClient* connection_change_client)

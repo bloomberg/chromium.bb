@@ -68,7 +68,7 @@ int GetDeviceIndexByAddress(const BluetoothAdapter::DeviceList& devices,
 class FakeBluetoothProfileServiceProviderDelegate
     : public bluez::BluetoothProfileServiceProvider::Delegate {
  public:
-  FakeBluetoothProfileServiceProviderDelegate() {}
+  FakeBluetoothProfileServiceProviderDelegate() = default;
 
   // bluez::BluetoothProfileServiceProvider::Delegate:
   void Released() override {}
@@ -100,7 +100,7 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
         authorize_pairing_count_(0),
         last_passkey_(9999999U),
         last_entered_(999U) {}
-  ~TestPairingDelegate() override {}
+  ~TestPairingDelegate() override = default;
 
   void RequestPinCode(BluetoothDevice* device) override {
     ++call_count_;

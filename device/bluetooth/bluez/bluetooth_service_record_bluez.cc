@@ -10,14 +10,14 @@
 
 namespace bluez {
 
-BluetoothServiceRecordBlueZ::BluetoothServiceRecordBlueZ() {}
+BluetoothServiceRecordBlueZ::BluetoothServiceRecordBlueZ() = default;
 
 BluetoothServiceRecordBlueZ::BluetoothServiceRecordBlueZ(
     const BluetoothServiceRecordBlueZ& record) {
   this->attributes_ = record.attributes_;
 }
 
-BluetoothServiceRecordBlueZ::~BluetoothServiceRecordBlueZ() {}
+BluetoothServiceRecordBlueZ::~BluetoothServiceRecordBlueZ() = default;
 
 const std::vector<uint16_t> BluetoothServiceRecordBlueZ::GetAttributeIds()
     const {

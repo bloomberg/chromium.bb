@@ -46,7 +46,7 @@ FakeBluetoothAdapterClient::Properties::Properties(
           bluetooth_adapter::kBluetoothAdapterInterface,
           callback) {}
 
-FakeBluetoothAdapterClient::Properties::~Properties() {}
+FakeBluetoothAdapterClient::Properties::~Properties() = default;
 
 void FakeBluetoothAdapterClient::Properties::Get(
     dbus::PropertyBase* property,
@@ -97,7 +97,7 @@ FakeBluetoothAdapterClient::FakeBluetoothAdapterClient()
   second_properties_->pairable.ReplaceValue(true);
 }
 
-FakeBluetoothAdapterClient::~FakeBluetoothAdapterClient() {}
+FakeBluetoothAdapterClient::~FakeBluetoothAdapterClient() = default;
 
 void FakeBluetoothAdapterClient::Init(dbus::Bus* bus) {}
 

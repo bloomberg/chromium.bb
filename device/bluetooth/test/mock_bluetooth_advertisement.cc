@@ -6,11 +6,9 @@
 
 namespace device {
 
-MockBluetoothAdvertisement::MockBluetoothAdvertisement() {
-}
+MockBluetoothAdvertisement::MockBluetoothAdvertisement() = default;
 
-MockBluetoothAdvertisement::~MockBluetoothAdvertisement() {
-}
+MockBluetoothAdvertisement::~MockBluetoothAdvertisement() = default;
 
 void MockBluetoothAdvertisement::Unregister(
     const SuccessCallback& success_callback,

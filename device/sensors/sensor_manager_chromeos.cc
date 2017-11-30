@@ -15,7 +15,7 @@ namespace device {
 SensorManagerChromeOS::SensorManagerChromeOS()
     : motion_buffer_(nullptr), orientation_buffer_(nullptr) {}
 
-SensorManagerChromeOS::~SensorManagerChromeOS() {}
+SensorManagerChromeOS::~SensorManagerChromeOS() = default;
 
 void SensorManagerChromeOS::StartFetchingDeviceMotionData(
     DeviceMotionHardwareBuffer* buffer) {

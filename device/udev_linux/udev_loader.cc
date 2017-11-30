@@ -39,7 +39,6 @@ UdevLoader* UdevLoader::Get() {
   return NULL;
 }
 
-UdevLoader::~UdevLoader() {
-}
+UdevLoader::~UdevLoader() = default;
 
 }  // namespace device

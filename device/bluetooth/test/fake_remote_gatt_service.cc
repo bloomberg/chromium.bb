@@ -29,7 +29,7 @@ FakeRemoteGattService::FakeRemoteGattService(
       device_(device),
       last_characteristic_id_(0) {}
 
-FakeRemoteGattService::~FakeRemoteGattService() {}
+FakeRemoteGattService::~FakeRemoteGattService() = default;
 
 bool FakeRemoteGattService::AllResponsesConsumed() {
   return std::all_of(

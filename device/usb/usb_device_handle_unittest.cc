@@ -41,7 +41,7 @@ class UsbDeviceHandleTest : public ::testing::Test {
 
 class TestOpenCallback {
  public:
-  TestOpenCallback() {}
+  TestOpenCallback() = default;
 
   scoped_refptr<UsbDeviceHandle> WaitForResult() {
     run_loop_.Run();
@@ -64,7 +64,7 @@ class TestOpenCallback {
 
 class TestResultCallback {
  public:
-  TestResultCallback() {}
+  TestResultCallback() = default;
 
   bool WaitForResult() {
     run_loop_.Run();
@@ -87,7 +87,7 @@ class TestResultCallback {
 
 class TestCompletionCallback {
  public:
-  TestCompletionCallback() {}
+  TestCompletionCallback() = default;
 
   void WaitForResult() { run_loop_.Run(); }
 

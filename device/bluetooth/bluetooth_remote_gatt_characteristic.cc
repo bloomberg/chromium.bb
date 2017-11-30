@@ -49,7 +49,7 @@ BluetoothRemoteGattCharacteristic::NotifySessionCommand::NotifySessionCommand(
     : execute_callback_(execute_callback), cancel_callback_(cancel_callback) {}
 
 BluetoothRemoteGattCharacteristic::NotifySessionCommand::
-    ~NotifySessionCommand() {}
+    ~NotifySessionCommand() = default;
 
 void BluetoothRemoteGattCharacteristic::NotifySessionCommand::Execute() {
   execute_callback_.Run(COMMAND_NONE, RESULT_SUCCESS,

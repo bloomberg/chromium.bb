@@ -86,8 +86,7 @@ MockUsbDevice::MockUsbDevice(
   descriptor_.configurations = configurations;
 }
 
-MockUsbDevice::~MockUsbDevice() {
-}
+MockUsbDevice::~MockUsbDevice() = default;
 
 void MockUsbDevice::AddMockConfig(const UsbConfigDescriptor& config) {
   descriptor_.configurations.push_back(config);

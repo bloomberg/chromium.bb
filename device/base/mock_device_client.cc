@@ -8,9 +8,9 @@
 
 namespace device {
 
-MockDeviceClient::MockDeviceClient() {}
+MockDeviceClient::MockDeviceClient() = default;
 
-MockDeviceClient::~MockDeviceClient() {}
+MockDeviceClient::~MockDeviceClient() = default;
 
 UsbService* MockDeviceClient::GetUsbService() {
   return usb_service();

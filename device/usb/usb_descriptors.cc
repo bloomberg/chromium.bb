@@ -412,12 +412,12 @@ void UsbConfigDescriptor::AssignFirstInterfaceNumbers() {
   }
 }
 
-UsbDeviceDescriptor::UsbDeviceDescriptor() {}
+UsbDeviceDescriptor::UsbDeviceDescriptor() = default;
 
 UsbDeviceDescriptor::UsbDeviceDescriptor(const UsbDeviceDescriptor& other) =
     default;
 
-UsbDeviceDescriptor::~UsbDeviceDescriptor() {}
+UsbDeviceDescriptor::~UsbDeviceDescriptor() = default;
 
 bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
   UsbConfigDescriptor* last_config = nullptr;
