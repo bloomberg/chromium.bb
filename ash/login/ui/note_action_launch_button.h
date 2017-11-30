@@ -6,6 +6,7 @@
 #define ASH_LOGIN_UI_NOTE_ACTION_LAUNCH_BUTTON_H_
 
 #include "ash/ash_export.h"
+#include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/shell.h"
 #include "ash/tray_action/tray_action.h"
@@ -27,7 +28,8 @@ enum class TrayActionState;
 // The button is only visible if the lock screen note taking action is available
 // (the view observes the action availability using login data dispatcher, and
 // updates itself accordingly).
-class ASH_EXPORT NoteActionLaunchButton : public NonAccessibleView {
+class ASH_EXPORT NoteActionLaunchButton : public NonAccessibleView,
+                                          public LoginDataDispatcher::Observer {
  public:
   // Used by tests to get internal implementation details.
   class ASH_EXPORT TestApi {
@@ -47,16 +49,22 @@ class ASH_EXPORT NoteActionLaunchButton : public NonAccessibleView {
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
-  explicit NoteActionLaunchButton(
-      mojom::TrayActionState initial_note_action_state);
+  NoteActionLaunchButton(mojom::TrayActionState initial_note_action_state,
+                         LoginDataDispatcher* login_data_dispatcher);
   ~NoteActionLaunchButton() override;
 
-  // Updates the bubble visibility depending on the note taking action state.
-  void UpdateVisibility(mojom::TrayActionState action_state);
+  // LoginDataDispatcher::Observer
+  void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
 
  private:
   class BackgroundView;
   class ActionButton;
+
+  // Updates the bubble visibility depending on the note taking action state.
+  void UpdateVisibility(mojom::TrayActionState action_state);
+
+  ScopedObserver<LoginDataDispatcher, LoginDataDispatcher::Observer>
+      login_data_observer_;
 
   // The background bubble view.
   BackgroundView* background_ = nullptr;
