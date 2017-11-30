@@ -87,7 +87,7 @@ TaskQueueThrottler::~TaskQueueThrottler() {
   for (const TaskQueueMap::value_type& map_entry : queue_details_) {
     TaskQueue* task_queue = map_entry.first;
     if (IsThrottled(task_queue)) {
-      task_queue->SetTimeDomain(renderer_scheduler_->real_time_domain());
+      task_queue->SetTimeDomain(renderer_scheduler_->GetActiveTimeDomain());
       task_queue->RemoveFence();
     }
     if (map_entry.second.throttling_ref_count != 0)
@@ -151,7 +151,7 @@ void TaskQueueThrottler::DecreaseThrottleRefCount(TaskQueue* task_queue) {
   if (!allow_throttling_)
     return;
 
-  task_queue->SetTimeDomain(renderer_scheduler_->real_time_domain());
+  task_queue->SetTimeDomain(renderer_scheduler_->GetActiveTimeDomain());
   task_queue->RemoveFence();
 }
 
@@ -169,6 +169,11 @@ void TaskQueueThrottler::ShutdownTaskQueue(TaskQueue* task_queue) {
   auto find_it = queue_details_.find(task_queue);
   if (find_it == queue_details_.end())
     return;
+
+  // Reset a time domain reference to a valid domain, otherwise it's possible
+  // to get a stale reference when deleting queue.
+  task_queue->SetTimeDomain(renderer_scheduler_->GetActiveTimeDomain());
+  task_queue->RemoveFence();
 
   std::unordered_set<BudgetPool*> budget_pools = find_it->second.budget_pools;
   for (BudgetPool* budget_pool : budget_pools) {
@@ -534,7 +539,6 @@ void TaskQueueThrottler::DisableThrottling() {
     TaskQueue* queue = map_entry.first;
 
     queue->SetTimeDomain(renderer_scheduler_->GetActiveTimeDomain());
-
     queue->RemoveFence();
   }
 

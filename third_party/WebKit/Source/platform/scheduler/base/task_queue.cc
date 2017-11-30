@@ -27,7 +27,7 @@ TaskQueue::~TaskQueue() {
   if (impl_->IsUnregistered())
     return;
   graceful_queue_shutdown_helper_->GracefullyShutdownTaskQueue(
-      std::move(impl_));
+      TakeTaskQueueImpl());
 }
 
 TaskQueue::Task::Task(TaskQueue::PostedTask task,
@@ -59,7 +59,7 @@ void TaskQueue::ShutdownTaskQueue() {
     return;
   }
   impl_->SetBlameContext(nullptr);
-  task_queue_manager_->UnregisterTaskQueueImpl(std::move(impl_));
+  task_queue_manager_->UnregisterTaskQueueImpl(TakeTaskQueueImpl());
 }
 
 bool TaskQueue::RunsTasksInCurrentSequence() const {
@@ -252,6 +252,15 @@ base::Optional<MoveableAutoLock> TaskQueue::AcquireImplReadLockIfNeeded()
   if (IsOnMainThread())
     return base::nullopt;
   return MoveableAutoLock(impl_lock_);
+}
+
+std::unique_ptr<internal::TaskQueueImpl> TaskQueue::TakeTaskQueueImpl() {
+  DCHECK(impl_);
+  impl_->SetOnTaskStartedHandler(
+      internal::TaskQueueImpl::OnTaskStartedHandler());
+  impl_->SetOnTaskCompletedHandler(
+      internal::TaskQueueImpl::OnTaskCompletedHandler());
+  return std::move(impl_);
 }
 
 }  // namespace scheduler

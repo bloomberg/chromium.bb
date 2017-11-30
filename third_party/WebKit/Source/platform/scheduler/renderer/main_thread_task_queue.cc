@@ -127,11 +127,17 @@ void MainThreadTaskQueue::OnTaskCompleted(const TaskQueue::Task& task,
     renderer_scheduler_->OnTaskCompleted(this, task, start, end);
 }
 
+void MainThreadTaskQueue::DetachFromRendererScheduler() {
+  // Frame has already been detached.
+  if (!renderer_scheduler_)
+    return;
+  renderer_scheduler_->OnShutdownTaskQueue(this);
+  renderer_scheduler_ = nullptr;
+  web_frame_scheduler_ = nullptr;
+}
+
 void MainThreadTaskQueue::ShutdownTaskQueue() {
-  if (renderer_scheduler_) {
-    // RendererScheduler can be null in tests.
-    renderer_scheduler_->OnShutdownTaskQueue(this);
-  }
+  DetachFromRendererScheduler();
   TaskQueue::ShutdownTaskQueue();
 }
 

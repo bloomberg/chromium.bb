@@ -282,6 +282,9 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
   base::Optional<MoveableAutoLock> AcquireImplReadLockIfNeeded() const;
 
+  // Take |impl_| and untie it from the enclosing task queue.
+  std::unique_ptr<internal::TaskQueueImpl> TakeTaskQueueImpl();
+
   // |impl_| can be written to on the main thread but can be read from
   // any thread.
   // |impl_lock_| must be acquired when writing to |impl_| or when accessing

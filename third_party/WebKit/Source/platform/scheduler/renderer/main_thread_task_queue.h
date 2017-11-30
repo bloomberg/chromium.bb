@@ -155,6 +155,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
                        base::TimeTicks start,
                        base::TimeTicks end);
 
+  void DetachFromRendererScheduler();
+
   // Override base method to notify RendererScheduler about shutdown queue.
   void ShutdownTaskQueue() override;
 
