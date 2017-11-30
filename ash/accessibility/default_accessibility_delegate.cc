@@ -124,12 +124,6 @@ bool DefaultAccessibilityDelegate::ShouldToggleSpokenFeedbackViaTouch() {
 void DefaultAccessibilityDelegate::PlaySpokenFeedbackToggleCountdown(
     int tick_count) {}
 
-void DefaultAccessibilityDelegate::PlayEarcon(int sound_key) {}
-
-base::TimeDelta DefaultAccessibilityDelegate::PlayShutdownSound() const {
-  return base::TimeDelta();
-}
-
 void DefaultAccessibilityDelegate::HandleAccessibilityGesture(
     ui::AXGesture gesture) {}
 
