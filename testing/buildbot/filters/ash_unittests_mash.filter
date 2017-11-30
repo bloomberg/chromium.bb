@@ -101,6 +101,7 @@
 -MultiWindowResizeControllerTest.Drag
 -MultiWindowResizeControllerTest.IsOverWindows
 -MultiWindowResizeControllerTest.Three
+-MultiWindowResizeControllerTest.TwoSnappedWindows
 -NativeCursorManagerAshTest.FractionalScale
 -NativeCursorManagerAshTest.LockCursor
 -NativeCursorManagerAshTest.SetCursor
