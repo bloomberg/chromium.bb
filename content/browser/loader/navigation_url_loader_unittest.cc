@@ -224,7 +224,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailedNoCertError) {
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();
   EXPECT_EQ(net::ERR_UNKNOWN_URL_SCHEME, delegate.net_error());
-  EXPECT_FALSE(delegate.ssl_info().has_value());
+  EXPECT_FALSE(delegate.ssl_info().is_valid());
   EXPECT_EQ(1, delegate.on_request_handled_counter());
 }
 
@@ -244,8 +244,8 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertError) {
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();
   ASSERT_EQ(net::ERR_ABORTED, delegate.net_error());
-  net::SSLInfo ssl_info = delegate.ssl_info().value();
-  EXPECT_TRUE(net::MapCertStatusToNetError(ssl_info.is_valid()));
+  net::SSLInfo ssl_info = delegate.ssl_info();
+  EXPECT_TRUE(ssl_info.is_valid());
   EXPECT_TRUE(https_server.GetCertificate()->Equals(ssl_info.cert.get()));
   EXPECT_EQ(net::ERR_CERT_COMMON_NAME_INVALID,
             net::MapCertStatusToNetError(ssl_info.cert_status));
@@ -277,8 +277,8 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertErrorFatal) {
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();
   ASSERT_EQ(net::ERR_ABORTED, delegate.net_error());
-  net::SSLInfo ssl_info = delegate.ssl_info().value();
-  EXPECT_TRUE(net::MapCertStatusToNetError(ssl_info.is_valid()));
+  net::SSLInfo ssl_info = delegate.ssl_info();
+  EXPECT_TRUE(ssl_info.is_valid());
   EXPECT_TRUE(https_server.GetCertificate()->Equals(ssl_info.cert.get()));
   EXPECT_EQ(net::ERR_CERT_COMMON_NAME_INVALID,
             net::MapCertStatusToNetError(ssl_info.cert_status));

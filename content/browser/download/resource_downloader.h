@@ -62,7 +62,7 @@ class ResourceDownloader : public UrlDownloadHandler,
   void StartNavigationInterception(
       const scoped_refptr<ResourceResponse>& response,
       mojo::ScopedDataPipeConsumerHandle consumer_handle,
-      const SSLStatus& ssl_status,
+      net::CertStatus cert_status,
       std::vector<GURL> url_chain);
 
  private:

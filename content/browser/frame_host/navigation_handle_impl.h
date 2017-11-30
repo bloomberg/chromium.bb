@@ -26,14 +26,9 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/restore_type.h"
-#include "content/public/browser/ssl_status.h"
 #include "content/public/common/request_context_type.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "url/gurl.h"
-
-namespace net {
-class SSLInfo;
-}  // namespace net
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
@@ -148,7 +143,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   net::HostPortPair GetSocketAddress() override;
   const net::HttpResponseHeaders* GetResponseHeaders() override;
   net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() override;
-  const base::Optional<net::SSLInfo>& GetSSLInfo() override;
+  const net::SSLInfo& GetSSLInfo() override;
   bool ShouldSSLErrorsBeFatal() override;
   void RegisterThrottleForTesting(
       std::unique_ptr<NavigationThrottle> navigation_throttle) override;
@@ -335,7 +330,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       net::HttpResponseInfo::ConnectionInfo connection_info,
       const net::HostPortPair& socket_address,
-      const SSLStatus& ssl_status,
+      const net::SSLInfo& ssl_info,
       const GlobalRequestID& request_id,
       bool should_replace_current_entry,
       bool is_download,
@@ -371,8 +366,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void set_navigation_data(std::unique_ptr<NavigationData> navigation_data) {
     navigation_data_ = std::move(navigation_data);
   }
-
-  SSLStatus ssl_status() { return ssl_status_; }
 
   // Called when the navigation is transferred to a different renderer.
   void Transfer();
@@ -501,7 +494,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool subframe_entry_committed_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
   net::HttpResponseInfo::ConnectionInfo connection_info_;
-  base::Optional<net::SSLInfo> ssl_info_;
+  net::SSLInfo ssl_info_;
   bool should_ssl_errors_be_fatal_;
 
   // The original url of the navigation. This may differ from |url_| if the
@@ -577,8 +570,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // PlzNavigate
   // Embedder data from the UI thread tied to this navigation.
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
-
-  SSLStatus ssl_status_;
 
   // The unique id to identify this to navigation with.
   int64_t navigation_id_;

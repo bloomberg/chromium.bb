@@ -137,7 +137,7 @@ TEST_P(SSLErrorNavigationThrottleTest, NoSSLInfo) {
       handle_->CallWillFailRequestForTesting(
           base::nullopt, false /* should_ssl_errors_be_fatal */);
 
-  EXPECT_FALSE(handle_->GetSSLInfo().has_value());
+  EXPECT_FALSE(handle_->GetSSLInfo().is_valid());
   EXPECT_EQ(content::NavigationThrottle::PROCEED, result);
 }
 
@@ -155,8 +155,7 @@ TEST_P(SSLErrorNavigationThrottleTest, SSLInfoWithoutCertError) {
       handle_->CallWillFailRequestForTesting(
           ssl_info, false /* should_ssl_errors_be_fatal */);
 
-  ASSERT_TRUE(handle_->GetSSLInfo().has_value());
-  EXPECT_EQ(net::CERT_STATUS_IS_EV, handle_->GetSSLInfo().value().cert_status);
+  EXPECT_EQ(net::CERT_STATUS_IS_EV, handle_->GetSSLInfo().cert_status);
   EXPECT_EQ(content::NavigationThrottle::PROCEED, result);
 }
 

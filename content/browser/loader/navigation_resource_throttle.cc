@@ -145,7 +145,7 @@ void WillProcessResponseOnUIThread(
     scoped_refptr<net::HttpResponseHeaders> headers,
     net::HttpResponseInfo::ConnectionInfo connection_info,
     const net::HostPortPair& socket_address,
-    const SSLStatus& ssl_status,
+    const net::SSLInfo& ssl_info,
     const GlobalRequestID& request_id,
     bool should_replace_current_entry,
     bool is_download,
@@ -170,7 +170,7 @@ void WillProcessResponseOnUIThread(
       RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
   DCHECK(render_frame_host);
   navigation_handle->WillProcessResponse(
-      render_frame_host, headers, connection_info, socket_address, ssl_status,
+      render_frame_host, headers, connection_info, socket_address, ssl_info,
       request_id, should_replace_current_entry, is_download, is_stream,
       transfer_callback, base::Bind(&SendCheckResultToIOThread, callback));
 }
@@ -310,19 +310,13 @@ void NavigationResourceThrottle::WillProcessResponse(bool* defer) {
       base::Bind(&NavigationResourceThrottle::InitiateTransfer,
                  weak_ptr_factory_.GetWeakPtr());
 
-  SSLStatus ssl_status;
-  if (request_->ssl_info().cert.get()) {
-    NavigationResourceHandler::GetSSLStatusForRequest(request_->ssl_info(),
-                                                      &ssl_status);
-  }
-
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&WillProcessResponseOnUIThread, callback,
                      render_process_id, render_frame_id, response_headers,
                      request_->response_info().connection_info,
-                     request_->response_info().socket_address, ssl_status,
-                     info->GetGlobalRequestID(),
+                     request_->response_info().socket_address,
+                     request_->ssl_info(), info->GetGlobalRequestID(),
                      info->should_replace_current_entry(), info->IsDownload(),
                      info->is_stream(), transfer_callback,
                      base::Passed(&cloned_data)));

@@ -733,7 +733,7 @@ void NavigationRequest::OnResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
     std::unique_ptr<StreamHandle> body,
     mojo::ScopedDataPipeConsumerHandle consumer_handle,
-    const SSLStatus& ssl_status,
+    const net::SSLInfo& ssl_info,
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
@@ -810,7 +810,7 @@ void NavigationRequest::OnResponseStarted(
   response_ = response;
   body_ = std::move(body);
   handle_ = std::move(consumer_handle);
-  ssl_status_ = ssl_status;
+  ssl_info_ = ssl_info;
   is_download_ = is_download;
 
   subresource_loader_params_ = std::move(subresource_loader_params);
@@ -847,7 +847,7 @@ void NavigationRequest::OnResponseStarted(
   // Check if the navigation should be allowed to proceed.
   navigation_handle_->WillProcessResponse(
       render_frame_host, response->head.headers.get(),
-      response->head.connection_info, response->head.socket_address, ssl_status,
+      response->head.connection_info, response->head.socket_address, ssl_info_,
       request_id, common_params_.should_replace_current_entry, is_download,
       is_stream, base::Closure(),
       base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,
@@ -1135,7 +1135,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
           BrowserContext::GetDownloadManager(browser_context));
       loader_->InterceptNavigation(
           download_manager->GetNavigationInterceptionCB(
-              response_, std::move(handle_), ssl_status_,
+              response_, std::move(handle_), ssl_info_.cert_status,
               frame_tree_node_->frame_tree_node_id()));
       OnRequestFailed(false, net::ERR_ABORTED, base::nullopt, false);
       return;

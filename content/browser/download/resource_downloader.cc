@@ -186,14 +186,14 @@ void ResourceDownloader::OnURLLoaderStatusChanged(
 void ResourceDownloader::StartNavigationInterception(
     const scoped_refptr<ResourceResponse>& response,
     mojo::ScopedDataPipeConsumerHandle consumer_handle,
-    const SSLStatus& ssl_status,
+    net::CertStatus cert_status,
     std::vector<GURL> url_chain) {
   url_loader_client_ = base::MakeUnique<DownloadResponseHandler>(
       resource_request_.get(), this, std::make_unique<DownloadSaveInfo>(),
       false, false, false, url_chain);
   url_loader_->set_forwarding_client(url_loader_client_.get());
   net::SSLInfo info;
-  info.cert_status = ssl_status.cert_status;
+  info.cert_status = cert_status;
   url_loader_client_->OnReceiveResponse(response->head,
                                         base::Optional<net::SSLInfo>(info),
                                         mojom::DownloadedTempFilePtr());

@@ -12,23 +12,15 @@
 #include "content/browser/loader/layered_resource_handler.h"
 #include "content/public/browser/stream_handle.h"
 
-namespace net {
-class SSLInfo;
-}
-
 namespace content {
 class NavigationURLLoaderImplCore;
 class ResourceController;
 class ResourceDispatcherHostDelegate;
-struct SSLStatus;
 
 // PlzNavigate: The ResourceHandler used with NavigationURLLoaderImplCore to
 // control the flow of navigation requests.
 class NavigationResourceHandler : public LayeredResourceHandler {
  public:
-  static void GetSSLStatusForRequest(const net::SSLInfo& ssl_info,
-                                     SSLStatus* ssl_status);
-
   NavigationResourceHandler(
       net::URLRequest* request,
       std::unique_ptr<ResourceHandler> next_handler,

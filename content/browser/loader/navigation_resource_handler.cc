@@ -18,7 +18,6 @@
 #include "content/browser/streams/stream_context.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
-#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
@@ -41,13 +40,6 @@ bool ShouldSSLErrorsBeFatal(net::URLRequest* request) {
 }  // namespace
 
 namespace content {
-
-void NavigationResourceHandler::GetSSLStatusForRequest(
-    const net::SSLInfo& ssl_info,
-    SSLStatus* ssl_status) {
-  DCHECK(ssl_info.cert);
-  *ssl_status = SSLStatus(ssl_info);
-}
 
 NavigationResourceHandler::NavigationResourceHandler(
     net::URLRequest* request,
@@ -146,13 +138,10 @@ void NavigationResourceHandler::OnResponseStarted(
       cloned_data = navigation_data->Clone();
   }
 
-  SSLStatus ssl_status;
-  if (request()->ssl_info().cert.get())
-    GetSSLStatusForRequest(request()->ssl_info(), &ssl_status);
-
-  core_->NotifyResponseStarted(
-      response, std::move(stream_handle_), ssl_status, std::move(cloned_data),
-      info->GetGlobalRequestID(), info->IsDownload(), info->is_stream());
+  core_->NotifyResponseStarted(response, std::move(stream_handle_),
+                               request()->ssl_info(), std::move(cloned_data),
+                               info->GetGlobalRequestID(), info->IsDownload(),
+                               info->is_stream());
   HoldController(std::move(controller));
   response_ = response;
 }

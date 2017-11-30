@@ -101,7 +101,7 @@ void NavigationURLLoaderImpl::NotifyRequestRedirected(
 void NavigationURLLoaderImpl::NotifyResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
     std::unique_ptr<StreamHandle> body,
-    const SSLStatus& ssl_status,
+    const net::SSLInfo& ssl_info,
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
@@ -109,7 +109,7 @@ void NavigationURLLoaderImpl::NotifyResponseStarted(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   delegate_->OnResponseStarted(response, std::move(body),
-                               mojo::ScopedDataPipeConsumerHandle(), ssl_status,
+                               mojo::ScopedDataPipeConsumerHandle(), ssl_info,
                                std::move(navigation_data), request_id,
                                is_download, is_stream, base::nullopt);
 }

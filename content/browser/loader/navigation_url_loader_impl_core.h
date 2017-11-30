@@ -31,7 +31,6 @@ class ServiceWorkerNavigationHandleCore;
 class StreamHandle;
 struct GlobalRequestID;
 struct ResourceResponse;
-struct SSLStatus;
 
 // The IO-thread counterpart to the NavigationURLLoaderImpl. It lives on the IO
 // thread and is owned by the UI-thread NavigationURLLoaderImpl and the
@@ -76,7 +75,7 @@ class NavigationURLLoaderImplCore
   // Notifies |loader_| on the UI thread that the response started.
   void NotifyResponseStarted(ResourceResponse* response,
                              std::unique_ptr<StreamHandle> body,
-                             const SSLStatus& ssl_status,
+                             const net::SSLInfo& ssl_info,
                              std::unique_ptr<NavigationData> navigation_data,
                              const GlobalRequestID& request_id,
                              bool is_download,

@@ -67,8 +67,7 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
   NavigationURLLoaderDelegate* delegate_;
 
   scoped_refptr<ResourceResponse> response_;
-  base::Optional<net::SSLInfo> ssl_info_;
-  SSLStatus ssl_status_;
+  net::SSLInfo ssl_info_;
 
   // Lives on the IO thread.
   std::unique_ptr<URLLoaderRequestController> request_controller_;

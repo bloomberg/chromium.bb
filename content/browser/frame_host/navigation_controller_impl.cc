@@ -1148,7 +1148,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     new_entry = pending_entry_->Clone();
 
     update_virtual_url = new_entry->update_virtual_url_with_url();
-    new_entry->GetSSL() = handle->ssl_status();
+    new_entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
         handle->GetNetErrorCode() == net::OK) {
@@ -1176,7 +1176,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     // to show chrome://bookmarks/#1 when the bookmarks webui extension changes
     // the URL.
     update_virtual_url = needs_update;
-    new_entry->GetSSL() = handle->ssl_status();
+    new_entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
         handle->GetNetErrorCode() == net::OK) {
@@ -1254,7 +1254,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     // If this is a same document navigation, then there's no SSLStatus in the
     // NavigationHandle so don't overwrite the existing entry's SSLStatus.
     if (!is_same_document)
-      entry->GetSSL() = handle->ssl_status();
+      entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
         handle->GetNetErrorCode() == net::OK) {
@@ -1293,7 +1293,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
       // Only copy in the restore case since this code path can be taken during
       // navigation. See http://crbug.com/727892
       if (was_restored)
-        entry->GetSSL() = handle->ssl_status();
+        entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
     }
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
@@ -1329,7 +1329,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     // If this is a same document navigation, then there's no SSLStatus in the
     // NavigationHandle so don't overwrite the existing entry's SSLStatus.
     if (!is_same_document)
-      entry->GetSSL() = handle->ssl_status();
+      entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
         handle->GetNetErrorCode() == net::OK) {
@@ -1421,7 +1421,7 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   // If a user presses enter in the omnibox and the server redirects, the URL
   // might change (but it's still considered a SAME_PAGE navigation). So we must
   // update the SSL status.
-  existing_entry->GetSSL() = handle->ssl_status();
+  existing_entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
 
   if (existing_entry->GetURL().SchemeIs(url::kHttpsScheme) &&
       !rfh->GetParent() && handle->GetNetErrorCode() == net::OK) {
