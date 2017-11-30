@@ -26,43 +26,18 @@ namespace blink {
 
 namespace {
 
-// TODO(peria): This method is almost a copy of
-// V8PerContext::ConstructorForTypeSlowCase(), so merge with it.
-v8::Local<v8::Function> ConstructPlainType(v8::Isolate* isolate,
-                                           const DOMWrapperWorld& world,
-                                           v8::Local<v8::Context> context,
-                                           const WrapperTypeInfo* type) {
-  v8::Context::Scope scope(context);
-  // We shouldn't reach this point for the types that are implemented in v8 such
-  // as typed arrays and hence don't have domTemplateFunction.
-  DCHECK(type->dom_template_function);
-  v8::Local<v8::FunctionTemplate> interface_template =
-      type->domTemplate(isolate, world);
-  // Getting the function might fail if we're running out of stack or memory.
-  v8::Local<v8::Function> interface_object =
-      interface_template->GetFunction(context).ToLocalChecked();
-
+v8::Local<v8::Function> CreateInterfaceObject(const WrapperTypeInfo* type,
+                                              v8::Local<v8::Context> context,
+                                              const DOMWrapperWorld& world,
+                                              v8::Isolate* isolate) {
+  v8::Local<v8::Function> parent_interface_object;
   if (type->parent_class) {
-    v8::Local<v8::Object> prototype_template =
-        ConstructPlainType(isolate, world, context, type->parent_class);
-    CHECK(interface_object->SetPrototype(context, prototype_template)
-              .ToChecked());
+    parent_interface_object =
+        CreateInterfaceObject(type->parent_class, context, world, isolate);
   }
-
-  v8::Local<v8::Value> prototype_value =
-      interface_object->Get(context, V8AtomicString(isolate, "prototype"))
-          .ToLocalChecked();
-  CHECK(prototype_value->IsObject());
-  v8::Local<v8::Object> prototype_object = prototype_value.As<v8::Object>();
-  if (prototype_object->InternalFieldCount() ==
-          kV8PrototypeInternalFieldcount &&
-      type->wrapper_type_prototype ==
-          WrapperTypeInfo::kWrapperTypeObjectPrototype) {
-    prototype_object->SetAlignedPointerInInternalField(
-        kV8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
-  }
-
-  return interface_object;
+  return V8ObjectConstructor::CreateInterfaceObject(
+      type, context, world, isolate, parent_interface_object,
+      V8ObjectConstructor::CreationMode::kDoNotInstallConditionalFeatures);
 }
 
 // TODO(peria): This method is almost a copy of
@@ -72,10 +47,10 @@ v8::Local<v8::Object> CreatePlainWrapper(v8::Isolate* isolate,
                                          v8::Local<v8::Context> context,
                                          const WrapperTypeInfo* type) {
   CHECK(V8HTMLDocument::wrapperTypeInfo.Equals(type));
-
   v8::Context::Scope scope(context);
+
   v8::Local<v8::Function> interface_object =
-      ConstructPlainType(isolate, world, context, type);
+      CreateInterfaceObject(type, context, world, isolate);
   CHECK(!interface_object.IsEmpty());
   v8::Local<v8::Object> instance_template =
       V8ObjectConstructor::NewInstance(isolate, interface_object)
