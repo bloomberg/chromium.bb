@@ -19,7 +19,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/leak_annotations.h"
 #include "base/environment.h"
 #include "base/file_version_info.h"
@@ -40,8 +39,8 @@
 #include "chrome/browser/conflicts/enumerate_shell_extensions_win.h"
 #include "chrome/browser/net/service_providers_win.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/crash_keys.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/crash/core/common/crash_key.h"
 #include "crypto/sha2.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -432,10 +431,13 @@ void ModuleEnumerator::ReportThirdPartyMetrics() {
   // Indicate the presence of third party modules in crash data. This allows
   // comparing how much third party modules affect crash rates compared to
   // the regular user distribution.
-  base::debug::SetCrashKeyValue(crash_keys::kThirdPartyModulesLoaded,
-                                base::SizeTToString(third_party_loaded));
-  base::debug::SetCrashKeyValue(crash_keys::kThirdPartyModulesNotLoaded,
-                                base::SizeTToString(third_party_not_loaded));
+  static crash_reporter::CrashKeyString<32> third_party_loaded_key(
+      "third-party-modules-loaded");
+  third_party_loaded_key.Set(base::SizeTToString(third_party_loaded));
+
+  static crash_reporter::CrashKeyString<32> third_party_not_loaded_key(
+      "third-party-modules-not-loaded");
+  third_party_not_loaded_key.Set(base::SizeTToString(third_party_not_loaded));
 
   // Report back some metrics regarding third party modules and certificates.
   UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Certificates.Total",

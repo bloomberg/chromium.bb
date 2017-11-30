@@ -81,10 +81,6 @@ extern const char kHungRendererOutstandingEventType[];
 extern const char kHungRendererLastEventType[];
 extern const char kHungRendererReason[];
 
-// Third-party module crash keys are sent only on Windows.
-extern const char kThirdPartyModulesLoaded[];
-extern const char kThirdPartyModulesNotLoaded[];
-
 // Whether the machine is enterprise managed (only sent on Windows).
 extern const char kIsEnterpriseManaged[];
 
