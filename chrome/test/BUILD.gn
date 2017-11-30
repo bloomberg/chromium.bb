@@ -1287,7 +1287,10 @@ test("browser_tests") {
         "//extensions/common/api",
       ]
 
-      data += [ "//extensions/test/data/" ]
+      data += [
+        "//chrome/test/data/extensions/",
+        "//extensions/test/data/",
+      ]
     }
 
     if (use_aura) {

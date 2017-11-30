@@ -38,6 +38,8 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
 
   void InstallPlatformApp();
 
+  void InstallExtensionWithInPageOptions();
+
   void AddManagedPolicyProvider();
 
   void SetAutoConfirmUninstall();
