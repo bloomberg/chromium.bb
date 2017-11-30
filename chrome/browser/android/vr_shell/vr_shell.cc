@@ -223,7 +223,8 @@ void VrShell::SwapContents(
   // tabs. crbug.com/684661
   metrics_helper_ = base::MakeUnique<VrMetricsHelper>(
       GetNonNativePageWebContents(),
-      webvr_mode_ ? vr::Mode::kWebVr : vr::Mode::kVrBrowsingRegular);
+      webvr_mode_ ? vr::Mode::kWebVr : vr::Mode::kVrBrowsingRegular,
+      web_vr_autopresentation_expected_);
 }
 
 void VrShell::SetUiState() {
