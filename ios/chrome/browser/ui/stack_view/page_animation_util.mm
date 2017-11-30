@@ -108,7 +108,7 @@ void AnimateInPaperWithAnimationAndCompletion(UIView* view,
   [parent insertSubview:paper belowSubview:view];
   [paper addSubview:view];
   [paper setBackgroundColor:isOffTheRecord
-                                ? [UIColor colorWithWhite:34 / 255 alpha:1]
+                                ? [UIColor colorWithWhite:34 / 255.0 alpha:1]
                                 : [UIColor whiteColor]];
 
   [CATransaction begin];
