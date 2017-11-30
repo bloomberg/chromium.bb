@@ -6,14 +6,9 @@
 
 #include <sstream>
 
-#include "base/base64.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
-#include "content/public/browser/browser_context.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -24,28 +19,7 @@ const char kNonPersistentNotificationPrefix[] = "n:";
 
 const char kSeparator = '#';
 
-// Computes a hash based on the path in which the |browser_context| is stored.
-// Since we only store the hash, SHA-1 is used to make the probability of
-// collisions negligible.
-std::string ComputeBrowserContextHash(BrowserContext* browser_context) {
-  const base::FilePath path = browser_context->GetPath();
-
-#if defined(OS_WIN)
-  std::string path_hash = base::SHA1HashString(base::WideToUTF8(path.value()));
-#else
-  std::string path_hash = base::SHA1HashString(path.value());
-#endif
-
-  return base::HexEncode(path_hash.c_str(), path_hash.length());
-}
-
 }  // namespace
-
-NotificationIdGenerator::NotificationIdGenerator(
-    BrowserContext* browser_context)
-    : browser_context_(browser_context) {}
-
-NotificationIdGenerator::~NotificationIdGenerator() {}
 
 // static
 bool NotificationIdGenerator::IsPersistentNotification(
@@ -69,8 +43,6 @@ std::string NotificationIdGenerator::GenerateForPersistentNotification(
   std::stringstream stream;
 
   stream << kPersistentNotificationPrefix;
-  stream << ComputeBrowserContextHash(browser_context_);
-  stream << base::IntToString(browser_context_->IsOffTheRecord());
   stream << origin;
 
   stream << base::IntToString(!tag.empty());
@@ -93,8 +65,6 @@ std::string NotificationIdGenerator::GenerateForNonPersistentNotification(
   std::stringstream stream;
 
   stream << kNonPersistentNotificationPrefix;
-  stream << ComputeBrowserContextHash(browser_context_);
-  stream << base::IntToString(browser_context_->IsOffTheRecord());
   stream << origin;
 
   stream << base::IntToString(!tag.empty());
