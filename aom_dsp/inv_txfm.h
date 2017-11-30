@@ -47,7 +47,7 @@ static INLINE tran_high_t check_range(tran_high_t input, int bd) {
   assert(int_min <= input);
   assert(input <= int_max);
 #endif  // CONFIG_COEFFICIENT_RANGE_CHECKING
-  return clamp64(input, int_min, int_max);
+  return (tran_high_t)clamp64(input, int_min, int_max);
 }
 
 #define WRAPLOW(x) ((int32_t)check_range(x, 8))
