@@ -69,12 +69,6 @@ struct amdgpu_va {
 	struct amdgpu_bo_va_mgr *vamgr;
 };
 
-struct amdgpu_asic_id {
-	uint32_t did;
-	uint32_t rid;
-	char *marketing_name;
-};
-
 struct amdgpu_device {
 	atomic_t refcount;
 	int fd;
@@ -82,8 +76,7 @@ struct amdgpu_device {
 	unsigned major_version;
 	unsigned minor_version;
 
-	/** Lookup table of asic device id, revision id and marketing name */
-	struct amdgpu_asic_id *asic_ids;
+	char *marketing_name;
 	/** List of buffer handles. Protected by bo_table_mutex. */
 	struct util_hash_table *bo_handles;
 	/** List of buffer GEM flink names. Protected by bo_table_mutex. */
@@ -148,7 +141,7 @@ drm_private void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, uint64_t start,
 
 drm_private void amdgpu_vamgr_deinit(struct amdgpu_bo_va_mgr *mgr);
 
-drm_private void amdgpu_parse_asic_ids(struct amdgpu_asic_id **asic_ids);
+drm_private void amdgpu_parse_asic_ids(struct amdgpu_device *dev);
 
 drm_private int amdgpu_query_gpu_info_init(amdgpu_device_handle dev);
 

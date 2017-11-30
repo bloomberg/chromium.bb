@@ -31,10 +31,7 @@ AM_CFLAGS = \
 	-I$(top_srcdir)/include/drm
 
 libdrmdatadir = @libdrmdatadir@
-ASIC_ID_TABLE_NUM_ENTRIES := $(shell egrep -ci '^[0-9a-f]{4},.*[0-9a-f]+,' \
-	$(top_srcdir)/data/amdgpu.ids)
-AM_CPPFLAGS = -DAMDGPU_ASIC_ID_TABLE=\"${libdrmdatadir}/amdgpu.ids\" \
-	-DAMDGPU_ASIC_ID_TABLE_NUM_ENTRIES=$(ASIC_ID_TABLE_NUM_ENTRIES)
+AM_CPPFLAGS = -DAMDGPU_ASIC_ID_TABLE=\"${libdrmdatadir}/amdgpu.ids\"
 
 libdrm_amdgpu_la_LTLIBRARIES = libdrm_amdgpu.la
 libdrm_amdgpu_ladir = $(libdir)
