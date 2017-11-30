@@ -40,7 +40,6 @@ ContentSerializedNavigationBuilder::FromNavigationEntry(
   navigation.is_overriding_user_agent_ = entry.GetIsOverridingUserAgent();
   navigation.timestamp_ = entry.GetTimestamp();
   navigation.is_restored_ = entry.IsRestored();
-  entry.GetExtraData(kSearchTermsKey, &navigation.search_terms_);
   if (entry.GetFavicon().valid)
     navigation.favicon_url_ = entry.GetFavicon().url;
   navigation.http_status_code_ = entry.GetHttpStatusCode();
@@ -87,7 +86,6 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
   entry->SetOriginalRequestURL(navigation->original_request_url_);
   entry->SetIsOverridingUserAgent(navigation->is_overriding_user_agent_);
   entry->SetTimestamp(navigation->timestamp_);
-  entry->SetExtraData(kSearchTermsKey, navigation->search_terms_);
   entry->SetHttpStatusCode(navigation->http_status_code_);
   entry->SetRedirectChain(navigation->redirect_chain_);
 

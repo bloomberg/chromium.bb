@@ -40,7 +40,6 @@ sync_pb::TabNavigation MakeSyncDataForTest() {
   sync_data.set_timestamp_msec(syncer::TimeToProtoTime(test_data::kTimestamp));
   sync_data.set_redirect_type(sync_pb::SyncEnums::CLIENT_REDIRECT);
   sync_data.set_navigation_home_page(true);
-  sync_data.set_search_terms(base::UTF16ToUTF8(test_data::kSearchTerms));
   sync_data.set_favicon_url(test_data::kFaviconURL.spec());
   sync_data.set_http_status_code(test_data::kHttpStatusCode);
   // The redirect chain only syncs one way.
@@ -67,7 +66,6 @@ TEST(SerializedNavigationEntryTest, DefaultInitializer) {
   EXPECT_EQ(GURL(), navigation.original_request_url());
   EXPECT_FALSE(navigation.is_overriding_user_agent());
   EXPECT_TRUE(navigation.timestamp().is_null());
-  EXPECT_TRUE(navigation.search_terms().empty());
   EXPECT_FALSE(navigation.favicon_url().is_valid());
   EXPECT_EQ(0, navigation.http_status_code());
   EXPECT_EQ(0U, navigation.redirect_chain().size());
@@ -95,7 +93,6 @@ TEST(SerializedNavigationEntryTest, FromSyncData) {
   EXPECT_EQ(GURL(), navigation.original_request_url());
   EXPECT_FALSE(navigation.is_overriding_user_agent());
   EXPECT_TRUE(navigation.timestamp().is_null());
-  EXPECT_EQ(test_data::kSearchTerms, navigation.search_terms());
   EXPECT_EQ(test_data::kFaviconURL, navigation.favicon_url());
   EXPECT_EQ(test_data::kHttpStatusCode, navigation.http_status_code());
   // The redirect chain only syncs one way.
@@ -129,7 +126,6 @@ TEST(SerializedNavigationEntryTest, Pickle) {
   EXPECT_EQ(test_data::kIsOverridingUserAgent,
             new_navigation.is_overriding_user_agent());
   EXPECT_EQ(test_data::kTimestamp, new_navigation.timestamp());
-  EXPECT_EQ(test_data::kSearchTerms, new_navigation.search_terms());
   EXPECT_EQ(test_data::kHttpStatusCode, new_navigation.http_status_code());
 
   ASSERT_EQ(2U, new_navigation.extended_info_map().size());

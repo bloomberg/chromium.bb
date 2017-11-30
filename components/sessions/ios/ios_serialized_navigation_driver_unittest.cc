@@ -52,7 +52,6 @@ TEST(IOSSerializedNavigationDriverTest, SanitizeWithReferrerPolicyAlways) {
   EXPECT_EQ(test_data::kIsOverridingUserAgent,
             navigation.is_overriding_user_agent());
   EXPECT_EQ(test_data::kTimestamp, navigation.timestamp());
-  EXPECT_EQ(test_data::kSearchTerms, navigation.search_terms());
   EXPECT_EQ(test_data::kFaviconURL, navigation.favicon_url());
   EXPECT_EQ(test_data::kHttpStatusCode, navigation.http_status_code());
 }
@@ -83,7 +82,6 @@ TEST(IOSSerializedNavigationDriverTest, SanitizeWithReferrerPolicyNever) {
   EXPECT_EQ(test_data::kIsOverridingUserAgent,
             navigation.is_overriding_user_agent());
   EXPECT_EQ(test_data::kTimestamp, navigation.timestamp());
-  EXPECT_EQ(test_data::kSearchTerms, navigation.search_terms());
   EXPECT_EQ(test_data::kFaviconURL, navigation.favicon_url());
   EXPECT_EQ(test_data::kHttpStatusCode, navigation.http_status_code());
 

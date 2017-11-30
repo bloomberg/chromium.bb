@@ -32,7 +32,6 @@ const int64_t kPostID = 100;
 const GURL kOriginalRequestURL = GURL("http://www.original-request.com");
 const bool kIsOverridingUserAgent = true;
 const base::Time kTimestamp = syncer::ProtoTimeToTime(100);
-const base::string16 kSearchTerms = base::ASCIIToUTF16("my search terms");
 const GURL kFaviconURL = GURL("http://virtual-url.com/favicon.ico");
 const int kHttpStatusCode = 404;
 const GURL kRedirectURL0 = GURL("http://go/redirect0");
@@ -96,7 +95,6 @@ SerializedNavigationEntryTestHelper::CreateNavigationForTest() {
   navigation.original_request_url_ = test_data::kOriginalRequestURL;
   navigation.is_overriding_user_agent_ = test_data::kIsOverridingUserAgent;
   navigation.timestamp_ = test_data::kTimestamp;
-  navigation.search_terms_ = test_data::kSearchTerms;
   navigation.favicon_url_ = test_data::kFaviconURL;
   navigation.http_status_code_ = test_data::kHttpStatusCode;
   navigation.password_state_ = test_data::kPasswordState;

@@ -40,7 +40,6 @@ extern const int64_t kPostID;
 extern const GURL kOriginalRequestURL;
 extern const bool kIsOverridingUserAgent;
 extern const base::Time kTimestamp;
-extern const base::string16 kSearchTerms;
 extern const GURL kFaviconURL;
 extern const int kHttpStatusCode;
 extern const GURL kRedirectURL0;

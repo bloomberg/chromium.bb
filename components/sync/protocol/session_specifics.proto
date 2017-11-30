@@ -120,7 +120,7 @@ message TabNavigation {
   // probability.
   optional int64 global_id = 15;
   // Search terms extracted from the URL.
-  optional string search_terms = 16;
+  optional string search_terms = 16 [deprecated = true];
   // The favicon url associated with this page.
   optional string favicon_url = 17;
   enum BlockedState {
