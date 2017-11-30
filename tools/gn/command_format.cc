@@ -576,18 +576,45 @@ int Printer::Expr(const ParseNode* root,
     sub2.Print(suffix);
     penalty_next_line += AssessPenalty(sub2.String());
 
-    // If in both cases it was forced past 80col, then we don't break to avoid
+    // Force a list on the RHS that would normally be a single line into
+    // multiline.
+    bool tried_rhs_multiline = false;
+    Printer sub3;
+    InitializeSub(&sub3);
+    int penalty_multiline_rhs_list = std::numeric_limits<int>::max();
+    const ListNode* rhs_list = binop->right()->AsList();
+    if (is_assignment && rhs_list &&
+        !ListWillBeMultiline(rhs_list->contents(), rhs_list->End())) {
+      sub3.Print(" ");
+      sub3.stack_.push_back(IndentState(start_column, false, false));
+      sub3.Sequence(kSequenceStyleList, rhs_list->contents(), rhs_list->End(),
+                    true);
+      sub3.stack_.pop_back();
+      penalty_multiline_rhs_list = AssessPenalty(sub3.String());
+      tried_rhs_multiline = true;
+    }
+
+    // If in all cases it was forced past 80col, then we don't break to avoid
     // breaking after '=' in the case of:
     //   variable = "... very long string ..."
     // as breaking and indenting doesn't make things much more readable, even
-    // though there's less characters past the maximum width.
-    bool exceeds_maximum_either_way = ExceedsMaximumWidth(sub1.String()) &&
-                                      ExceedsMaximumWidth(sub2.String());
+    // though there's fewer characters past the maximum width.
+    bool exceeds_maximum_all_ways =
+        ExceedsMaximumWidth(sub1.String()) &&
+        ExceedsMaximumWidth(sub2.String()) &&
+        (!tried_rhs_multiline || ExceedsMaximumWidth(sub3.String()));
 
     if (penalty_current_line < penalty_next_line ||
-        exceeds_maximum_either_way) {
+        exceeds_maximum_all_ways) {
       Print(" ");
       Expr(binop->right(), prec_right, std::string());
+    } else if (tried_rhs_multiline &&
+               penalty_multiline_rhs_list < penalty_next_line) {
+      // Force a multiline list on the right.
+      Print(" ");
+      stack_.push_back(IndentState(start_column, false, false));
+      Sequence(kSequenceStyleList, rhs_list->contents(), rhs_list->End(), true);
+      stack_.pop_back();
     } else {
       // Otherwise, put first argument and op, and indent next.
       Newline();
