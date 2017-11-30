@@ -90,4 +90,13 @@ TEST_F(TabLoaderTest, UsePageAlmostIdleSignal) {
   EXPECT_TRUE(TabLoader::shared_tab_loader_->loading_enabled_);
   EXPECT_EQ(1u, TabLoader::shared_tab_loader_->tabs_loading_.size());
   EXPECT_EQ(0u, TabLoader::shared_tab_loader_->tabs_to_load_.size());
+
+  // |web_contents3| is not managed by TabLoader, thus it's ignored, and
+  // shouldn't cause loading state change or crash.
+  content::WebContents* web_contents3 =
+      test_web_contents_factory_->CreateWebContents(&testing_profile_);
+  TabLoader::shared_tab_loader_->OnPageAlmostIdle(web_contents3);
+  EXPECT_TRUE(TabLoader::shared_tab_loader_->loading_enabled_);
+  EXPECT_EQ(1u, TabLoader::shared_tab_loader_->tabs_loading_.size());
+  EXPECT_EQ(0u, TabLoader::shared_tab_loader_->tabs_to_load_.size());
 }
