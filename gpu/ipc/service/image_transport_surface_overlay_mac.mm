@@ -268,15 +268,22 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
   return gfx::SwapResult::SWAP_ACK;
 }
 
-gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffers() {
+gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffers(
+    const PresentationCallback& callback) {
+  // TODO(penghuang): Provide useful presentation feedback.
+  // https://crbug.com/776877
   return SwapBuffersInternal(
       gfx::Rect(0, 0, pixel_size_.width(), pixel_size_.height()));
 }
 
-gfx::SwapResult ImageTransportSurfaceOverlayMac::PostSubBuffer(int x,
-                                                               int y,
-                                                               int width,
-                                                               int height) {
+gfx::SwapResult ImageTransportSurfaceOverlayMac::PostSubBuffer(
+    int x,
+    int y,
+    int width,
+    int height,
+    const PresentationCallback& callback) {
+  // TODO(penghuang): Provide useful presentation feedback.
+  // https://crbug.com/776877
   return SwapBuffersInternal(gfx::Rect(x, y, width, height));
 }
 

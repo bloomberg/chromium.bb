@@ -13,34 +13,6 @@ import "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 
-// Bitmask of flags for CompositorFrameSinkClient.DidPresentCompositorFrame
-// The presentation was synchronized to the "vertical retrace" by
-// the display hardware such that tearing does not happen.
-// Relying on user space scheduling is not acceptable for this
-// flag. If presentation is done by a copy to the active
-// frontbuffer, then it must guarantee that tearing cannot
-// happen.
-const uint32 kPresentationFlagVSync = 0x1;
-
-// The display hardware provided measurements that the hardware
-// driver converted into a presentation timestamp. Sampling a
-// clock in user space is not acceptable for this flag.
-const uint32 kPresentationFlagHWClock = 0x2;
-
-// The display hardware signalled that it started using the new
-// image content. The opposite of this is e.g. a timer being used
-// to guess when the display hardware has switched to the new
-// image content.
-const uint32 kPresentationFlagHWCompletion = 0x4;
-
-// The presentation of this update was done zero-copy. This means
-// the frame from the client was given to display hardware as
-// is, without copying it. Compositing with OpenGL counts as
-// copying, even if textured directly from the client buffer.
-// Possible zero-copy cases include direct scanout of a
-// fullscreen frame and a frame on a hardware overlay.
-const uint32 kPresentationFlagZeroCopy = 0x8;
-
 // A CompositorFrameSink is an interface for receiving CompositorFrame
 // structs. A CompositorFrame contains the complete output meant for display.
 // Each time a client has a graphical update, and receives an OnBeginFrame, it
@@ -87,7 +59,7 @@ interface CompositorFrameSinkClient {
   // Notification that a CompositorFrame with given |presentation_token| has
   // been turned into light the first time on display. |time| indicates the
   // presentation time, |refresh| indicates the time till next refresh, |flags|
-  // is a combination of |kPresentationFlag*|.
+  // is a combination of |gfx::PresentationFlags|.
   DidPresentCompositorFrame(uint32 presentation_token,
                             mojo.common.mojom.TimeTicks time,
                             mojo.common.mojom.TimeDelta refresh,

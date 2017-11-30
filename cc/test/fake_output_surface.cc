@@ -10,6 +10,7 @@
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gl/gl_utils.h"
 
 namespace cc {
@@ -49,12 +50,14 @@ void FakeOutputSurface::SwapBuffers(viz::OutputSurfaceFrame frame) {
   ++num_sent_frames_;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeOutputSurface::SwapBuffersAck,
-                                weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&FakeOutputSurface::SwapBuffersAck,
+                     weak_ptr_factory_.GetWeakPtr(), num_sent_frames_));
 }
 
-void FakeOutputSurface::SwapBuffersAck() {
-  client_->DidReceiveSwapBuffersAck();
+void FakeOutputSurface::SwapBuffersAck(uint64_t swap_id) {
+  client_->DidReceiveSwapBuffersAck(swap_id);
+  client_->DidReceivePresentationFeedback(swap_id, gfx::PresentationFeedback());
 }
 
 void FakeOutputSurface::BindFramebuffer() {

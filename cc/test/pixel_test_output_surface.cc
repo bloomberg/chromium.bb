@@ -12,6 +12,7 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_utils.h"
 
@@ -72,11 +73,12 @@ void PixelTestOutputSurface::ApplyExternalStencil() {}
 void PixelTestOutputSurface::SwapBuffers(viz::OutputSurfaceFrame frame) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&PixelTestOutputSurface::SwapBuffersCallback,
-                                weak_ptr_factory_.GetWeakPtr()));
+                                weak_ptr_factory_.GetWeakPtr(), ++swap_id_));
 }
 
-void PixelTestOutputSurface::SwapBuffersCallback() {
-  client_->DidReceiveSwapBuffersAck();
+void PixelTestOutputSurface::SwapBuffersCallback(uint64_t swap_id) {
+  client_->DidReceiveSwapBuffersAck(swap_id);
+  client_->DidReceivePresentationFeedback(swap_id, gfx::PresentationFeedback());
 }
 
 viz::OverlayCandidateValidator*

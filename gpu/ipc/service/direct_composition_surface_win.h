@@ -50,8 +50,12 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
               float scale_factor,
               ColorSpace color_space,
               bool has_alpha) override;
-  gfx::SwapResult SwapBuffers() override;
-  gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
+  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  gfx::SwapResult PostSubBuffer(int x,
+                                int y,
+                                int width,
+                                int height,
+                                const PresentationCallback& callback) override;
   gfx::VSyncProvider* GetVSyncProvider() override;
   bool SetEnableDCLayers(bool enable) override;
   bool FlipsVertically() const override;

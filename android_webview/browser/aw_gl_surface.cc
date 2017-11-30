@@ -23,7 +23,8 @@ unsigned int AwGLSurface::GetBackingFramebufferObject() {
   return ScopedAppGLStateRestore::Current()->framebuffer_binding_ext();
 }
 
-gfx::SwapResult AwGLSurface::SwapBuffers() {
+gfx::SwapResult AwGLSurface::SwapBuffers(const PresentationCallback& callback) {
+  // TODO(penghuang): Provide presentation feedback. https://crbug.com/776877
   return gfx::SwapResult::SWAP_ACK;
 }
 

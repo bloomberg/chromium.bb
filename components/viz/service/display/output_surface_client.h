@@ -14,13 +14,17 @@
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace gfx {
+struct PresentationFeedback;
+}  // namespace gfx
+
 namespace viz {
 
 class VIZ_SERVICE_EXPORT OutputSurfaceClient {
  public:
   // A notification that the swap of the backbuffer to the hardware is complete
   // and is now visible to the user.
-  virtual void DidReceiveSwapBuffersAck() = 0;
+  virtual void DidReceiveSwapBuffersAck(uint64_t swap_id) = 0;
 
   // For surfaceless/ozone implementations to create damage for the next frame.
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) = 0;
@@ -29,9 +33,11 @@ class VIZ_SERVICE_EXPORT OutputSurfaceClient {
   virtual void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) = 0;
 
-  // A notification for updating VSync parameters.
-  virtual void DidUpdateVSyncParameters(base::TimeTicks timebase,
-                                        base::TimeDelta interval) {}
+  // A notification that the presentation feedback for a CompositorFrame with
+  // given |swap_id|. See |gfx::PresentationFeedback| for detail.
+  virtual void DidReceivePresentationFeedback(
+      uint64_t swap_id,
+      const gfx::PresentationFeedback& feedback) {}
 
  protected:
   virtual ~OutputSurfaceClient() {}

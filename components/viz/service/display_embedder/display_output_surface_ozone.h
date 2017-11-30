@@ -60,7 +60,8 @@ class DisplayOutputSurfaceOzone : public DisplayOutputSurface {
   gfx::BufferFormat GetOverlayBufferFormat() const override;
 
   // DisplayOutputSurface:
-  void DidReceiveSwapBuffersAck(gfx::SwapResult result) override;
+  void DidReceiveSwapBuffersAck(gfx::SwapResult result,
+                                uint64_t swap_id) override;
 
   GLHelper gl_helper_;
   std::unique_ptr<BufferQueue> buffer_queue_;

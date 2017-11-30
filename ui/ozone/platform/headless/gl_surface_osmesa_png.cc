@@ -34,7 +34,8 @@ bool GLSurfaceOSMesaPng::IsOffscreen() {
   return false;
 }
 
-gfx::SwapResult GLSurfaceOSMesaPng::SwapBuffers() {
+gfx::SwapResult GLSurfaceOSMesaPng::SwapBuffers(
+    const PresentationCallback& callback) {
   if (!output_path_.empty())
     WriteBufferToPng();
 

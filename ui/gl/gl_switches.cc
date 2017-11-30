@@ -114,6 +114,8 @@ const char kEnableDirectCompositionLayers[] =
 const char kDisableDirectCompositionLayers[] =
     "disable-direct-composition-layers";
 
+// Enables the presentation callback for SwapBuffers, SwapBuffersAsync, etc.
+const char kEnablePresentationCallback[] = "enable-presentation-callback";
 
 // This is the list of switches passed from this file that are passed from the
 // GpuProcessHost to the GPU Process. Add your switch to this list if you need
@@ -133,6 +135,7 @@ const char* const kGLSwitchesCopiedFromGpuProcessHost[] = {
     kEnableSwapBuffersWithBounds,
     kEnableDirectCompositionLayers,
     kDisableDirectCompositionLayers,
+    kEnablePresentationCallback,
 };
 const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
     arraysize(kGLSwitchesCopiedFromGpuProcessHost);

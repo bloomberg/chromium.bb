@@ -17,6 +17,10 @@ namespace viz {
 class CompositorOverlayCandidateValidator;
 }
 
+namespace gfx {
+struct PresentationFeedback;
+}
+
 namespace gpu {
 class CommandBufferProxyImpl;
 struct GpuProcessHostedCALayerTreeParamsMac;
@@ -87,8 +91,8 @@ class GpuBrowserCompositorOutputSurface
       const std::vector<ui::LatencyInfo>& latency_info) override;
 
  protected:
-  void OnVSyncParametersUpdated(base::TimeTicks timebase,
-                                base::TimeDelta interval);
+  void OnPresentation(uint64_t swap_id,
+                      const gfx::PresentationFeedback& feedback);
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
 
   viz::OutputSurfaceClient* client_ = nullptr;

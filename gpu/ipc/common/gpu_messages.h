@@ -35,6 +35,7 @@
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
 #include "url/ipc/url_param_traits.h"
 
@@ -209,6 +210,11 @@ IPC_MESSAGE_ROUTED1(
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_UpdateVSyncParameters,
                     base::TimeTicks /* timebase */,
                     base::TimeDelta /* interval */)
+
+// Tells the browser a buffer has been presented on screen.
+IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_BufferPresented,
+                    uint64_t, /* swap_id */
+                    gfx::PresentationFeedback /* feedback */)
 
 // The receiver will stop processing messages until the Synctoken is signaled.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_WaitSyncToken,

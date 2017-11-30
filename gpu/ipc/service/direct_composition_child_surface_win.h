@@ -29,7 +29,7 @@ class GPU_EXPORT DirectCompositionChildSurfaceWin : public gl::GLSurfaceEGL {
   gfx::Size GetSize() override;
   bool IsOffscreen() override;
   void* GetHandle() override;
-  gfx::SwapResult SwapBuffers() override;
+  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
   bool FlipsVertically() const override;
   bool SupportsPostSubBuffer() override;
   bool OnMakeCurrent(gl::GLContext* context) override;

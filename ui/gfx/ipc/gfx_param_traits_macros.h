@@ -12,6 +12,7 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_ipc_export.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/selection_bound.h"
 #include "ui/gfx/swap_result.h"
 
@@ -69,6 +70,12 @@ IPC_STRUCT_TRAITS_BEGIN(gfx::SwapResponse)
   IPC_STRUCT_TRAITS_MEMBER(result)
   IPC_STRUCT_TRAITS_MEMBER(swap_start)
   IPC_STRUCT_TRAITS_MEMBER(swap_end)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(gfx::PresentationFeedback)
+  IPC_STRUCT_TRAITS_MEMBER(timestamp)
+  IPC_STRUCT_TRAITS_MEMBER(interval)
+  IPC_STRUCT_TRAITS_MEMBER(flags)
 IPC_STRUCT_TRAITS_END()
 
 #undef IPC_MESSAGE_EXPORT

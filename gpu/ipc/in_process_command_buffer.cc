@@ -1080,6 +1080,19 @@ void InProcessCommandBuffer::SetSnapshotRequestedCallback(
   snapshot_requested_callback_ = callback;
 }
 
+void InProcessCommandBuffer::BufferPresented(
+    uint64_t swap_id,
+    const gfx::PresentationFeedback& feedback) {
+  if (!origin_task_runner_) {
+    BufferPresentedOnOriginThread(swap_id, feedback);
+    return;
+  }
+  origin_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&InProcessCommandBuffer::BufferPresentedOnOriginThread,
+                 client_thread_weak_ptr_, swap_id, feedback));
+}
+
 void InProcessCommandBuffer::AddFilter(IPC::MessageFilter* message_filter) {
   NOTREACHED();
 }
@@ -1113,8 +1126,23 @@ void InProcessCommandBuffer::DidSwapBuffersCompleteOnOriginThread(
 void InProcessCommandBuffer::UpdateVSyncParametersOnOriginThread(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
+  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePresentationCallback));
   if (!update_vsync_parameters_completion_callback_.is_null())
     update_vsync_parameters_completion_callback_.Run(timebase, interval);
+}
+
+void InProcessCommandBuffer::BufferPresentedOnOriginThread(
+    uint64_t swap_id,
+    const gfx::PresentationFeedback& feedback) {
+  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePresentationCallback));
+  if (presentation_callback_)
+    presentation_callback_.Run(swap_id, feedback);
+  if (update_vsync_parameters_completion_callback_ &&
+      feedback.timestamp != base::TimeTicks())
+    update_vsync_parameters_completion_callback_.Run(feedback.timestamp,
+                                                     feedback.interval);
 }
 
 void InProcessCommandBuffer::SetSwapBuffersCompletionCallback(
@@ -1125,6 +1153,11 @@ void InProcessCommandBuffer::SetSwapBuffersCompletionCallback(
 void InProcessCommandBuffer::SetUpdateVSyncParametersCallback(
     const UpdateVSyncParametersCallback& callback) {
   update_vsync_parameters_completion_callback_ = callback;
+}
+
+void InProcessCommandBuffer::SetPresentationCallback(
+    const PresentationCallback& callback) {
+  presentation_callback_ = callback;
 }
 
 namespace {

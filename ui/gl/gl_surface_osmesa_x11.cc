@@ -121,7 +121,10 @@ bool GLSurfaceOSMesaX11::IsOffscreen() {
   return false;
 }
 
-gfx::SwapResult GLSurfaceOSMesaX11::SwapBuffers() {
+gfx::SwapResult GLSurfaceOSMesaX11::SwapBuffers(
+    const PresentationCallback& callback) {
+  // TODO(penghuang): Provide useful presentation feedback.
+  // https://crbug.com/776877
   TRACE_EVENT2("gpu", "GLSurfaceOSMesaX11:RealSwapBuffers", "width",
                GetSize().width(), "height", GetSize().height());
 
@@ -150,10 +153,14 @@ bool GLSurfaceOSMesaX11::SupportsPostSubBuffer() {
   return true;
 }
 
-gfx::SwapResult GLSurfaceOSMesaX11::PostSubBuffer(int x,
-                                                  int y,
-                                                  int width,
-                                                  int height) {
+gfx::SwapResult GLSurfaceOSMesaX11::PostSubBuffer(
+    int x,
+    int y,
+    int width,
+    int height,
+    const PresentationCallback& callback) {
+  // TODO(penghuang): Provide useful presentation feedback.
+  // https://crbug.com/776877
   gfx::Size size = GetSize();
 
   // Move (0,0) from lower-left to upper-left

@@ -61,21 +61,26 @@ bool GLSurfaceOSMesaWin::IsOffscreen() {
   return false;
 }
 
-gfx::SwapResult GLSurfaceOSMesaWin::SwapBuffers() {
+gfx::SwapResult GLSurfaceOSMesaWin::SwapBuffers(
+    const PresentationCallback& callback) {
   DCHECK(device_context_);
 
   gfx::Size size = GetSize();
-  return PostSubBuffer(0, 0, size.width(), size.height());
+  return PostSubBuffer(0, 0, size.width(), size.height(), callback);
 }
 
 bool GLSurfaceOSMesaWin::SupportsPostSubBuffer() {
   return true;
 }
 
-gfx::SwapResult GLSurfaceOSMesaWin::PostSubBuffer(int x,
-                                                  int y,
-                                                  int width,
-                                                  int height) {
+gfx::SwapResult GLSurfaceOSMesaWin::PostSubBuffer(
+    int x,
+    int y,
+    int width,
+    int height,
+    const PresentationCallback& callback) {
+  // TODO(penghuang): Provide useful presentation feedback.
+  // https://crbug.com/776877
   DCHECK(device_context_);
 
   gfx::Size size = GetSize();

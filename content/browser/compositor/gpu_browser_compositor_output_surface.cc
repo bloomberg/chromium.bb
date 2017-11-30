@@ -45,6 +45,8 @@ GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() {
       gpu::CommandBufferProxyImpl::SwapBuffersCompletionCallback());
   GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback());
+  GetCommandBufferProxy()->SetPresentationCallback(
+      gpu::CommandBufferProxyImpl::PresentationCallback());
 }
 
 void GpuBrowserCompositorOutputSurface::SetNeedsVSync(bool needs_vsync) {
@@ -58,7 +60,7 @@ void GpuBrowserCompositorOutputSurface::SetNeedsVSync(bool needs_vsync) {
 void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     const gfx::SwapResponse& response,
     const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
-  client_->DidReceiveSwapBuffersAck();
+  client_->DidReceiveSwapBuffersAck(response.swap_id);
   latency_info_cache_.OnSwapBuffersCompleted(response);
 }
 
@@ -89,7 +91,9 @@ void GpuBrowserCompositorOutputSurface::BindToClient(
       base::Bind(&GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted,
                  base::Unretained(this)));
   GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(
-      base::Bind(&GpuBrowserCompositorOutputSurface::OnVSyncParametersUpdated,
+      update_vsync_parameters_callback_);
+  GetCommandBufferProxy()->SetPresentationCallback(
+      base::Bind(&GpuBrowserCompositorOutputSurface::OnPresentation,
                  base::Unretained(this)));
 }
 
@@ -186,12 +190,11 @@ void GpuBrowserCompositorOutputSurface::SetDrawRectangle(
       rect.x(), rect.y(), rect.width(), rect.height());
 }
 
-void GpuBrowserCompositorOutputSurface::OnVSyncParametersUpdated(
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
+void GpuBrowserCompositorOutputSurface::OnPresentation(
+    uint64_t swap_id,
+    const gfx::PresentationFeedback& feedback) {
   DCHECK(client_);
-  client_->DidUpdateVSyncParameters(timebase, interval);
-  update_vsync_parameters_callback_.Run(timebase, interval);
+  client_->DidReceivePresentationFeedback(swap_id, feedback);
 }
 
 gpu::CommandBufferProxyImpl*

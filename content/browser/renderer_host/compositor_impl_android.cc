@@ -352,7 +352,7 @@ class AndroidOutputSurface
   void OnSwapBuffersCompleted(
       const gfx::SwapResponse& response,
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
-    client_->DidReceiveSwapBuffersAck();
+    client_->DidReceiveSwapBuffersAck(response.swap_id);
     swap_buffers_callback_.Run();
     latency_info_cache_.OnSwapBuffersCompleted(response);
   }

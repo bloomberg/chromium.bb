@@ -53,7 +53,8 @@ class DisplayOutputSurface : public OutputSurface,
   OutputSurfaceClient* client() const { return client_; }
 
   // Called when a swap completion is signaled from ImageTransportSurface.
-  virtual void DidReceiveSwapBuffersAck(gfx::SwapResult result);
+  virtual void DidReceiveSwapBuffersAck(gfx::SwapResult result,
+                                        uint64_t swap_id);
 
  private:
   // Called when a swap completion is signaled from ImageTransportSurface.
@@ -62,6 +63,8 @@ class DisplayOutputSurface : public OutputSurface,
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac);
   void OnVSyncParametersUpdated(base::TimeTicks timebase,
                                 base::TimeDelta interval);
+  void OnPresentation(uint64_t swap_id,
+                      const gfx::PresentationFeedback& feedback);
 
   OutputSurfaceClient* client_ = nullptr;
   SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
