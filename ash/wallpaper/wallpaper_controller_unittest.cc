@@ -93,12 +93,14 @@ class TaskObserver : public base::MessageLoop::TaskObserver {
   DISALLOW_COPY_AND_ASSIGN(TaskObserver);
 };
 
+// See content::RunAllTasksUntilIdle().
 void RunAllTasksUntilIdle() {
   while (true) {
-    base::TaskScheduler::GetInstance()->FlushForTesting();
-
     TaskObserver task_observer;
     base::MessageLoop::current()->AddTaskObserver(&task_observer);
+    // May spin message loop.
+    base::TaskScheduler::GetInstance()->FlushForTesting();
+
     base::RunLoop().RunUntilIdle();
     base::MessageLoop::current()->RemoveTaskObserver(&task_observer);
 
@@ -117,13 +119,18 @@ class TestWallpaperObserver : public mojom::WallpaperObserver {
   void OnWallpaperColorsChanged(
       const std::vector<SkColor>& prominent_colors) override {
     ++wallpaper_colors_changed_count_;
+    if (run_loop_)
+      run_loop_->Quit();
   }
 
   int wallpaper_colors_changed_count() const {
     return wallpaper_colors_changed_count_;
   }
 
+  void set_run_loop(base::RunLoop* loop) { run_loop_ = loop; }
+
  private:
+  base::RunLoop* run_loop_ = nullptr;
   int wallpaper_colors_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestWallpaperObserver);
@@ -221,7 +228,6 @@ class WallpaperControllerTest : public AshTestBase {
     const gfx::ImageSkia kImage = CreateImage(10, 10, kCustomWallpaperColor);
     controller_->SetWallpaperImage(
         kImage, CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH));
-    AddCommandLineSwitch(switches::kAshShelfColorEnabled);
     SetSessionState(SessionState::ACTIVE);
 
     EXPECT_TRUE(ShouldCalculateColors());
@@ -230,12 +236,6 @@ class WallpaperControllerTest : public AshTestBase {
   // Convenience function to set the SessionState.
   void SetSessionState(SessionState session_state) {
     GetSessionControllerClient()->SetSessionState(session_state);
-  }
-
-  // Convenience function to modify the kAshShelfColor command line value.
-  void AddCommandLineSwitch(const std::string& value_string) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kAshShelfColor, value_string);
   }
 
   // Helper function to create a |WallpaperInfo| struct with dummy values
@@ -575,18 +575,20 @@ TEST_F(WallpaperControllerTest, MojoWallpaperObserverTest) {
   mojo::AssociatedBinding<mojom::WallpaperObserver> binding(
       &observer, mojo::MakeRequestAssociatedWithDedicatedPipe(&observer_ptr));
   controller_->AddObserver(observer_ptr.PassInterface());
+  controller_->FlushForTesting();
 
-  // Mojo observer will asynchronously receive the observed event, thus a run
-  // loop needs to be spinned.
-  base::RunLoop().RunUntilIdle();
-  // When adding observer, OnWallpaperColorsChanged() is fired so that we start
-  // with count equals 1.
+  // Adding an observer fires OnWallpaperColorsChanged() immediately.
   EXPECT_EQ(1, observer.wallpaper_colors_changed_count());
 
   // Enable shelf coloring will set a customized wallpaper image and change
   // session state to ACTIVE, which will trigger wallpaper colors calculation.
+  base::RunLoop run_loop;
+  observer.set_run_loop(&run_loop);
   EnableShelfColoring();
-  base::RunLoop().RunUntilIdle();
+  // Color calculation may be asynchronous.
+  run_loop.Run();
+  // Mojo methods are called after color calculation finishes.
+  controller_->FlushForTesting();
   EXPECT_EQ(2, observer.wallpaper_colors_changed_count());
 }
 
