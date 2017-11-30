@@ -270,7 +270,7 @@ TEST_F(LayoutSelectionTest,
           .Build());
   // This commit should not crash.
   Selection().CommitAppearanceIfNeeded();
-  TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT(IsLayoutBlockFlow, kContain, NotInvalidate);
   TEST_NEXT("div1", kStartAndEnd, ShouldInvalidate);
   TEST_NEXT(IsLayoutBlockFlow, kNone, NotInvalidate);
@@ -368,7 +368,7 @@ TEST_F(LayoutSelectionTest, FirstLetterUpdateSeletion) {
                                .SetBaseAndExtent({baz, 2}, {baz, 3})
                                .Build());
   Selection().CommitAppearanceIfNeeded();
-  TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
   TEST_NEXT("foo", kNone, ShouldInvalidate);
   // TODO(yoichio): Invalidating next LayoutBlock is flaky but it doesn't
@@ -379,7 +379,7 @@ TEST_F(LayoutSelectionTest, FirstLetterUpdateSeletion) {
   TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
   TEST_NEXT(IsLayoutTextFragmentOf("b"), kNone, ShouldInvalidate);
   TEST_NEXT(IsLayoutTextFragmentOf("ar"), kNone, ShouldInvalidate);
-  TEST_NEXT(IsLayoutBlock, kNone, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT("baz", kStartAndEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
 }
@@ -438,7 +438,7 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_Start) {
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT("foo", kStart, ShouldInvalidate);
   TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
-  TEST_NEXT("bar", kEnd, ShouldInvalidate);
+  TEST_NEXT("bar", kEnd, NotInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
   EXPECT_EQ(2u, Selection().LayoutSelectionStart());
   EXPECT_EQ(1u, Selection().LayoutSelectionEnd());
@@ -474,7 +474,7 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_End) {
   Selection().CommitAppearanceIfNeeded();
   // Only "bar" should be invalidated.
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT("foo", kStart, ShouldInvalidate);
+  TEST_NEXT("foo", kStart, NotInvalidate);
   TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
   TEST_NEXT("bar", kEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
