@@ -123,7 +123,6 @@ WriteResult QuicChromiumPacketWriter::WritePacketToSocketImpl() {
   WriteStatus status = WRITE_STATUS_OK;
   if (rv < 0) {
     if (rv != ERR_IO_PENDING) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.WriteError", -rv);
       status = WRITE_STATUS_ERROR;
     } else {
       status = WRITE_STATUS_BLOCKED;
