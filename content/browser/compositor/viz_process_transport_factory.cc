@@ -322,6 +322,10 @@ void VizProcessTransportFactory::CompositingModeFallbackToSoftware() {
   // gpu compositing isn't being used.
   OnLostMainThreadSharedContext();
 
+  // Drop our reference on the gpu contexts for the compositors.
+  shared_worker_context_provider_ = nullptr;
+  compositor_context_provider_ = nullptr;
+
   // Here we remove the FrameSink from every compositor that needs to fall back
   // to software compositing.
   //
@@ -360,21 +364,20 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
   if (!compositor)
     return;
 
-  // TODO(crbug.com/730660): If is_gpu_compositing_disabled_ then make a
-  // software-based CompositorFrameSink.
-  // TODO(crbug.com/730660): If compositor->force_software_compositor() then
-  // make a software-based CompositorFrameSink.
-  if (is_gpu_compositing_disabled_ || compositor->force_software_compositor())
-    return;
+  bool gpu_compositing =
+      !is_gpu_compositing_disabled_ && !compositor->force_software_compositor();
 
-  if (!gpu_channel_host ||
-      !CreateContextProviders(std::move(gpu_channel_host))) {
-    // Retry on failure. If this isn't possible we should hear that we're
-    // falling back to software compositing from the viz process eventually.
-    gpu_channel_establish_factory_->EstablishGpuChannel(
-        base::Bind(&VizProcessTransportFactory::OnEstablishedGpuChannel,
-                   weak_ptr_factory_.GetWeakPtr(), compositor_weak_ptr));
-    return;
+  // Only try to make contexts for gpu compositing.
+  if (gpu_compositing) {
+    if (!gpu_channel_host ||
+        !CreateContextProviders(std::move(gpu_channel_host))) {
+      // Retry on failure. If this isn't possible we should hear that we're
+      // falling back to software compositing from the viz process eventually.
+      gpu_channel_establish_factory_->EstablishGpuChannel(
+          base::Bind(&VizProcessTransportFactory::OnEstablishedGpuChannel,
+                     weak_ptr_factory_.GetWeakPtr(), compositor_weak_ptr));
+      return;
+    }
   }
 
   // TODO(crbug.com/776050): Deal with context loss.
@@ -414,10 +417,16 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
   params.enable_surface_synchronization =
       features::IsSurfaceSynchronizationEnabled();
 
+  scoped_refptr<ui::ContextProviderCommandBuffer> compositor_context;
+  scoped_refptr<ui::ContextProviderCommandBuffer> worker_context;
+  if (gpu_compositing) {
+    // Only pass the contexts to the compositor if it will use gpu compositing.
+    compositor_context = compositor_context_provider_;
+    worker_context = shared_worker_context_provider_;
+  }
   compositor->SetLayerTreeFrameSink(
       std::make_unique<viz::ClientLayerTreeFrameSink>(
-          compositor_context_provider_, shared_worker_context_provider_,
-          &params));
+          std::move(compositor_context), std::move(worker_context), &params));
 }
 
 bool VizProcessTransportFactory::CreateContextProviders(
