@@ -89,6 +89,10 @@ void UpdatePlaceholderImage(WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
 void OffscreenCanvasFrameDispatcherImpl::PostImageToPlaceholderIfNotBlocked(
     scoped_refptr<StaticBitmapImage> image,
     unsigned resource_id) {
+  if (placeholder_canvas_id_ == kInvalidPlaceholderCanvasId) {
+    offscreen_canvas_resource_provider_->ReclaimResource(resource_id);
+    return;
+  }
   // Determines whether the main thread may be blocked. If unblocked, post the
   // image. Otherwise, save the image and do not post it.
   if (num_unreclaimed_frames_posted_ < kMaxUnreclaimedPlaceholderFrames) {

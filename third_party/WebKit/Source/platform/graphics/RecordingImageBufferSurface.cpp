@@ -119,6 +119,9 @@ void RecordingImageBufferSurface::FallBackToRasterCanvas(
 static RecordingImageBufferSurface::FallbackReason
 SnapshotReasonToFallbackReason(SnapshotReason reason) {
   switch (reason) {
+    case kSnapshotReasonLowLatencyFrame:
+      NOTREACHED();  // Low latency frames should not cause fallbacks
+    // No 'break' on purpose.
     case kSnapshotReasonUnknown:
       return RecordingImageBufferSurface::kFallbackReasonUnknown;
     case kSnapshotReasonGetImageData:

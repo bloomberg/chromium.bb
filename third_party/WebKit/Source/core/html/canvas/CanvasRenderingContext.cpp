@@ -55,6 +55,10 @@ CanvasRenderingContext::CanvasRenderingContext(
     color_params_.SetOpacityMode(kOpaque);
   }
 
+  if (!RuntimeEnabledFeatures::LowLatencyCanvasEnabled() &&
+      creation_attributes_.hasLowLatency())
+    creation_attributes_.setLowLatency(false);
+
   // Make m_creationAttributes reflect the effective colorSpace and pixelFormat
   // rather than the requested one.
   creation_attributes_.setColorSpace(ColorSpaceAsString());

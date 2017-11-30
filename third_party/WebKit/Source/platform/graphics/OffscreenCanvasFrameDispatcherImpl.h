@@ -20,10 +20,14 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl
     : public OffscreenCanvasFrameDispatcher,
       public viz::mojom::blink::CompositorFrameSinkClient {
  public:
+  enum {
+    kInvalidPlaceholderCanvasId = -1,
+  };
+
   OffscreenCanvasFrameDispatcherImpl(OffscreenCanvasFrameDispatcherClient*,
                                      uint32_t client_id,
                                      uint32_t sink_id,
-                                     int canvas_id,
+                                     int placeholder_canvas_id,
                                      int width,
                                      int height);
 

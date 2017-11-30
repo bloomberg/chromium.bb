@@ -57,6 +57,12 @@ class PixelExpectations(GpuTestExpectations):
 
     self.Flaky('Pixel_Video_MP4', ['android', 'nvidia'], bug=716564)
 
+    # TODO(junov); validate new test results
+    self.Fail('Pixel_CanvasLowLatency2D',
+        ['mac', 'linux', 'win', 'android', 'chromeos'], bug=788439)
+    self.Fail('Pixel_CanvasUnacceleratedLowLatency2D',
+        ['mac', 'linux', 'win', 'android', 'chromeos'], bug=788439)
+
     # Flaky for unknown reasons only on macOS. Not planning to investigate
     # further.
     self.Flaky('Pixel_ScissorTestWithPreserveDrawingBuffer', ['mac'],

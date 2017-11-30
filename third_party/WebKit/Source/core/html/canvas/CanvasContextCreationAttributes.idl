@@ -36,6 +36,12 @@ enum CanvasPixelFormat {
 
 [PermissiveDictionaryConversion]
 dictionary CanvasContextCreationAttributes {
+    // This is an experimental feature, but it is not hidden behind a flag in
+    // the bindings because origin trial bindings don't work in extensions.
+    // The trial's runtime flag is instead checked inside
+    // HTMLCanvasElement.getContext().
+    boolean lowLatency = false;
+
     // Canvas 2D attributes
     boolean alpha = true;  // Also used for WebGL.
     [RuntimeEnabled=ExperimentalCanvasFeatures] CanvasColorSpace colorSpace = "srgb";

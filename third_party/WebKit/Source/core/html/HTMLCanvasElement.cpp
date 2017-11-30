@@ -74,6 +74,7 @@
 #include "platform/graphics/CanvasMetrics.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
@@ -317,6 +318,18 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
     DidDraw();
   }
 
+  if (attributes.lowLatency() &&
+      RuntimeEnabledFeatures::LowLatencyCanvasEnabled()) {
+    CreateLayer();
+    SetNeedsUnbufferedInputEvents(true);
+    // TODO: rename to CanvasFrameDispatcherImpl
+    frame_dispatcher_ = std::make_unique<OffscreenCanvasFrameDispatcherImpl>(
+        nullptr, surface_layer_bridge_->GetFrameSinkId().client_id(),
+        surface_layer_bridge_->GetFrameSinkId().sink_id(),
+        OffscreenCanvasFrameDispatcherImpl::kInvalidPlaceholderCanvasId,
+        size_.Width(), size_.Height());
+  }
+
   SetNeedsCompositingUpdate();
 
   return context_.Get();
@@ -372,7 +385,7 @@ void HTMLCanvasElement::DidDraw(const FloatRect& rect) {
     return;
   image_buffer_is_clear_ = false;
   ClearCopiedImage();
-  if (GetLayoutObject())
+  if (GetLayoutObject() && !LowLatencyEnabled())
     GetLayoutObject()->SetMayNeedPaintInvalidation();
   if (Is2d() && context_->ShouldAntialias() && GetPage() &&
       GetPage()->DeviceScaleFactorDeprecated() > 1.0f) {
@@ -391,6 +404,7 @@ void HTMLCanvasElement::DidDraw() {
 }
 
 void HTMLCanvasElement::FinalizeFrame() {
+  TRACE_EVENT0("blink", "HTMLCanvasElement::FinalizeFrame");
   if (GetImageBuffer()) {
     // Compute to determine whether disable accleration is needed
     if (IsAccelerated() &&
@@ -409,7 +423,24 @@ void HTMLCanvasElement::FinalizeFrame() {
       }
     }
 
-    image_buffer_->FinalizeFrame();
+    if (!LowLatencyEnabled())
+      image_buffer_->FinalizeFrame();
+
+    if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
+      // Push a frame
+      double start_time = WTF::MonotonicallyIncreasingTime();
+      scoped_refptr<StaticBitmapImage> image = image_buffer_->NewImageSnapshot(
+          kPreferAcceleration, kSnapshotReasonLowLatencyFrame);
+      FloatRect src_rect(0, 0, Size().Width(), Size().Height());
+      dirty_rect_.Intersect(src_rect);
+      IntRect int_dirty = EnclosingIntRect(dirty_rect_);
+      SkIRect damage_rect = SkIRect::MakeXYWH(
+          int_dirty.X(), int_dirty.Y(), int_dirty.Width(), int_dirty.Height());
+      frame_dispatcher_->DispatchFrame(image, start_time, damage_rect);
+      (void)start_time;
+      (void)damage_rect;
+      dirty_rect_ = FloatRect();
+    }
   }
 
   // If the canvas is visible, notifying listeners is taken
@@ -453,6 +484,10 @@ void HTMLCanvasElement::SetNeedsCompositingUpdate() {
 
 void HTMLCanvasElement::DoDeferredPaintInvalidation() {
   DCHECK(!dirty_rect_.IsEmpty());
+  if (LowLatencyEnabled()) {
+    // Low latency canvas handles dirty propagation in FinalizeFrame();
+    return;
+  }
   LayoutBox* layout_box = GetLayoutBox();
   if (Is2d()) {
     FloatRect src_rect(0, 0, Size().Width(), Size().Height());
@@ -706,6 +741,8 @@ void HTMLCanvasElement::SetSurfaceSize(const IntSize& size) {
   if (Is2d() && context_->isContextLost()) {
     context_->DidSetSurfaceSize();
   }
+  if (frame_dispatcher_)
+    frame_dispatcher_->Reshape(size_.Width(), size_.Height());
 }
 
 const AtomicString HTMLCanvasElement::ImageSourceURL() const {
@@ -912,6 +949,10 @@ bool HTMLCanvasElement::OriginClean() const {
 
 bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   if (context_ && !Is2d())
+    return false;
+
+  // TODO(crbug.com/789232): Make low latency mode work with GPU acceleration
+  if (LowLatencyEnabled())
     return false;
 
   if (RuntimeEnabledFeatures::ForceDisplayList2dCanvasEnabled())
@@ -1123,7 +1164,6 @@ void HTMLCanvasElement::CreateImageBufferInternal(
   DCHECK(surface->IsValid());
   surface->SetCanvasResourceHost(this);
   image_buffer_ = ImageBuffer::Create(std::move(surface));
-
   did_fail_to_create_image_buffer_ = false;
 
   UpdateMemoryUsage();
