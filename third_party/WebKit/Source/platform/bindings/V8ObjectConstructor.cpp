@@ -24,8 +24,10 @@
 
 #include "platform/bindings/V8ObjectConstructor.h"
 
+#include "platform/bindings/OriginTrialFeatures.h"
 #include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/V8Binding.h"
+#include "platform/bindings/V8PerContextData.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 
@@ -58,6 +60,60 @@ void V8ObjectConstructor::IsValidConstructorMode(
     return;
   }
   V8SetReturnValue(info, info.Holder());
+}
+
+v8::Local<v8::Function> V8ObjectConstructor::CreateInterfaceObject(
+    const WrapperTypeInfo* type,
+    v8::Local<v8::Context> context,
+    const DOMWrapperWorld& world,
+    v8::Isolate* isolate,
+    v8::Local<v8::Function> parent_interface,
+    CreationMode creation_mode) {
+  // We shouldn't reach this point for the types that are implemented in v8 such
+  // as typed arrays and hence don't have domTemplateFunction.
+  DCHECK(type->dom_template_function);
+  v8::Local<v8::FunctionTemplate> interface_template =
+      type->domTemplate(isolate, world);
+  // Getting the function might fail if we're running out of stack or memory.
+  v8::Local<v8::Function> interface_object;
+  bool get_interface_object =
+      interface_template->GetFunction(context).ToLocal(&interface_object);
+  CHECK(get_interface_object);
+
+  if (type->parent_class) {
+    DCHECK(!parent_interface.IsEmpty());
+    bool set_parent_interface =
+        interface_object->SetPrototype(context, parent_interface).ToChecked();
+    CHECK(set_parent_interface);
+  }
+
+  v8::Local<v8::Object> prototype_object;
+  if (type->wrapper_type_prototype ==
+      WrapperTypeInfo::kWrapperTypeObjectPrototype) {
+    v8::Local<v8::Value> prototype_value;
+    bool get_prototype_value =
+        interface_object->Get(context, V8AtomicString(isolate, "prototype"))
+            .ToLocal(&prototype_value);
+    CHECK(get_prototype_value);
+    CHECK(prototype_value->IsObject());
+
+    prototype_object = prototype_value.As<v8::Object>();
+    if (prototype_object->InternalFieldCount() ==
+        kV8PrototypeInternalFieldcount) {
+      prototype_object->SetAlignedPointerInInternalField(
+          kV8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
+    }
+  }
+
+  if (creation_mode == CreationMode::kInstallConditionalFeatures) {
+    type->InstallConditionalFeatures(context, world, v8::Local<v8::Object>(),
+                                     prototype_object, interface_object,
+                                     interface_template);
+    InstallOriginTrialFeatures(type, ScriptState::From(context),
+                               prototype_object, interface_object);
+  }
+
+  return interface_object;
 }
 
 }  // namespace blink
