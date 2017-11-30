@@ -91,7 +91,7 @@ class PLATFORM_EXPORT CanvasResourceProvider {
   virtual bool CanPrepareTransferableResource() const = 0;
   uint32_t ContentUniqueID() const;
   void ClearRecycledResources();
-  void RecycleResource(std::unique_ptr<CanvasResource>);
+  void RecycleResource(scoped_refptr<CanvasResource>);
   void SetResourceRecyclingEnabled(bool);
   SkSurface* GetSkSurface() const;
   bool IsGpuContextLost() const;
@@ -106,7 +106,7 @@ class PLATFORM_EXPORT CanvasResourceProvider {
   GLenum GetGLFilter() const;
   bool UseNearestNeighbor() const;
   void ResetSkiaTextureBinding() const;
-  std::unique_ptr<CanvasResource> NewOrRecycledResource();
+  scoped_refptr<CanvasResource> NewOrRecycledResource();
 
   // Called by subclasses when the backing resource has changed and resources
   // are not managed by skia, signaling that a new surface needs to be created.
@@ -118,8 +118,8 @@ class PLATFORM_EXPORT CanvasResourceProvider {
 
  private:
   virtual sk_sp<SkSurface> CreateSkSurface() const = 0;
-  virtual std::unique_ptr<CanvasResource> CreateResource();
-  virtual std::unique_ptr<CanvasResource> DoPrepareTransferableResource(
+  virtual scoped_refptr<CanvasResource> CreateResource();
+  virtual scoped_refptr<CanvasResource> DoPrepareTransferableResource(
       viz::TransferableResource* out_resource) = 0;
 
   WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_;
@@ -129,7 +129,7 @@ class PLATFORM_EXPORT CanvasResourceProvider {
   std::unique_ptr<cc::PaintCanvas> canvas_;
   mutable sk_sp<SkSurface> surface_;  // mutable for lazy init
   std::unique_ptr<SkCanvas> xform_canvas_;
-  WTF::Vector<std::unique_ptr<CanvasResource>> recycled_resources_;
+  WTF::Vector<scoped_refptr<CanvasResource>> recycled_resources_;
   SkFilterQuality filter_quality_;
   bool resource_recycling_enabled_ = true;
 };
