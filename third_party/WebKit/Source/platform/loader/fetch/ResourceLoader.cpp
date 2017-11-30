@@ -665,7 +665,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   // downloadToFile is not supported for synchronous requests.
   DCHECK(!request.DownloadToFile());
   DCHECK(loader_);
-  DCHECK_EQ(request.Priority(), kResourceLoadPriorityHighest);
+  DCHECK_EQ(request.Priority(), ResourceLoadPriority::kHighest);
 
   WrappedResourceRequest request_in(request);
   WebURLResponse response_out;

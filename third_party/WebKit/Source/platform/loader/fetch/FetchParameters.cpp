@@ -121,7 +121,7 @@ void FetchParameters::SetSpeculativePreloadType(
 void FetchParameters::MakeSynchronous() {
   // Synchronous requests should always be max priority, lest they hang the
   // renderer.
-  resource_request_.SetPriority(kResourceLoadPriorityHighest);
+  resource_request_.SetPriority(ResourceLoadPriority::kHighest);
   resource_request_.SetTimeoutInterval(10);
   options_.synchronous_policy = kRequestSynchronously;
 }

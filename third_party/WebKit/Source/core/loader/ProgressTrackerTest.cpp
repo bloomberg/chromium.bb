@@ -49,7 +49,7 @@ class ProgressTrackerTest : public ::testing::Test {
   // emulating payload and load completion.
   void EmulateMainResourceRequestAndResponse() const {
     Progress().ProgressStarted(kFrameLoadTypeStandard);
-    Progress().WillStartLoading(1ul, kResourceLoadPriorityVeryHigh);
+    Progress().WillStartLoading(1ul, ResourceLoadPriority::kVeryHigh);
     EXPECT_EQ(0.0, LastProgress());
     Progress().IncrementProgress(1ul, ResponseHeaders());
     EXPECT_EQ(0.0, LastProgress());
@@ -87,7 +87,7 @@ TEST_F(ProgressTrackerTest, MainResourceOnly) {
 TEST_F(ProgressTrackerTest, WithHighPriorirySubresource) {
   EmulateMainResourceRequestAndResponse();
 
-  Progress().WillStartLoading(2ul, kResourceLoadPriorityHigh);
+  Progress().WillStartLoading(2ul, ResourceLoadPriority::kHigh);
   Progress().IncrementProgress(2ul, ResponseHeaders());
   EXPECT_EQ(0.0, LastProgress());
 
@@ -109,7 +109,7 @@ TEST_F(ProgressTrackerTest, WithHighPriorirySubresource) {
 TEST_F(ProgressTrackerTest, WithMediumPrioritySubresource) {
   EmulateMainResourceRequestAndResponse();
 
-  Progress().WillStartLoading(2ul, kResourceLoadPriorityMedium);
+  Progress().WillStartLoading(2ul, ResourceLoadPriority::kMedium);
   Progress().IncrementProgress(2ul, ResponseHeaders());
   EXPECT_EQ(0.0, LastProgress());
 

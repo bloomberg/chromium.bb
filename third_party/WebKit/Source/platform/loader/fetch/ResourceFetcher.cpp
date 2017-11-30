@@ -114,31 +114,31 @@ ResourceLoadPriority TypeToPriority(Resource::Type type) {
     case Resource::kCSSStyleSheet:
     case Resource::kFont:
       // Also parser-blocking scripts (set explicitly in loadPriority)
-      return kResourceLoadPriorityVeryHigh;
+      return ResourceLoadPriority::kVeryHigh;
     case Resource::kXSLStyleSheet:
       DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     case Resource::kRaw:
     case Resource::kImportResource:
     case Resource::kScript:
       // Also visible resources/images (set explicitly in loadPriority)
-      return kResourceLoadPriorityHigh;
+      return ResourceLoadPriority::kHigh;
     case Resource::kManifest:
     case Resource::kMock:
       // Also late-body scripts discovered by the preload scanner (set
       // explicitly in loadPriority)
-      return kResourceLoadPriorityMedium;
+      return ResourceLoadPriority::kMedium;
     case Resource::kImage:
     case Resource::kTextTrack:
     case Resource::kMedia:
     case Resource::kSVGDocument:
       // Also async scripts (set explicitly in loadPriority)
-      return kResourceLoadPriorityLow;
+      return ResourceLoadPriority::kLow;
     case Resource::kLinkPrefetch:
-      return kResourceLoadPriorityVeryLow;
+      return ResourceLoadPriority::kVeryLow;
   }
 
   NOTREACHED();
-  return kResourceLoadPriorityUnresolved;
+  return ResourceLoadPriority::kUnresolved;
 }
 
 bool ShouldResourceBeAddedToMemoryCache(const FetchParameters& params,
@@ -165,7 +165,7 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
 
   // Visible resources (images in practice) get a boost to High priority.
   if (visibility == ResourcePriority::kVisible)
-    priority = kResourceLoadPriorityHigh;
+    priority = ResourceLoadPriority::kHigh;
 
   // Resources before the first image are considered "early" in the document and
   // resources after the first image are "late" in the document.  Important to
@@ -178,10 +178,10 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
   // A preloaded font should not take precedence over critical CSS or
   // parser-blocking scripts.
   if (type == Resource::kFont && is_link_preload)
-    priority = kResourceLoadPriorityHigh;
+    priority = ResourceLoadPriority::kHigh;
 
   if (FetchParameters::kIdleLoad == defer_option) {
-    priority = kResourceLoadPriorityVeryLow;
+    priority = ResourceLoadPriority::kVeryLow;
   } else if (type == Resource::kScript) {
     // Special handling for scripts.
     // Default/Parser-Blocking/Preload early in document: High (set in
@@ -189,23 +189,23 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     // Async/Defer: Low Priority (applies to both preload and parser-inserted)
     // Preload late in document: Medium
     if (FetchParameters::kLazyLoad == defer_option) {
-      priority = kResourceLoadPriorityLow;
+      priority = ResourceLoadPriority::kLow;
     } else if (speculative_preload_type ==
                    FetchParameters::SpeculativePreloadType::kInDocument &&
                image_fetched_) {
       // Speculative preload is used as a signal for scripts at the bottom of
       // the document.
-      priority = kResourceLoadPriorityMedium;
+      priority = ResourceLoadPriority::kMedium;
     }
   } else if (FetchParameters::kLazyLoad == defer_option) {
-    priority = kResourceLoadPriorityVeryLow;
+    priority = ResourceLoadPriority::kVeryLow;
   } else if (resource_request.GetRequestContext() ==
                  WebURLRequest::kRequestContextBeacon ||
              resource_request.GetRequestContext() ==
                  WebURLRequest::kRequestContextPing ||
              resource_request.GetRequestContext() ==
                  WebURLRequest::kRequestContextCSPReport) {
-    priority = kResourceLoadPriorityVeryLow;
+    priority = ResourceLoadPriority::kVeryLow;
   }
 
   // A manually set priority acts as a floor. This is used to ensure that
@@ -1756,15 +1756,5 @@ void ResourceFetcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(matched_preloads_);
   visitor->Trace(resource_timing_info_map_);
 }
-
-STATIC_ASSERT_ENUM(WebURLRequest::kPriorityUnresolved,
-                   kResourceLoadPriorityUnresolved);
-STATIC_ASSERT_ENUM(WebURLRequest::kPriorityVeryLow,
-                   kResourceLoadPriorityVeryLow);
-STATIC_ASSERT_ENUM(WebURLRequest::kPriorityLow, kResourceLoadPriorityLow);
-STATIC_ASSERT_ENUM(WebURLRequest::kPriorityMedium, kResourceLoadPriorityMedium);
-STATIC_ASSERT_ENUM(WebURLRequest::kPriorityHigh, kResourceLoadPriorityHigh);
-STATIC_ASSERT_ENUM(WebURLRequest::kPriorityVeryHigh,
-                   kResourceLoadPriorityVeryHigh);
 
 }  // namespace blink

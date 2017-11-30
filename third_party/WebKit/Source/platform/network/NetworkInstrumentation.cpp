@@ -49,7 +49,7 @@ std::unique_ptr<TracedValue> ScopedResourceTrackerBeginData(
 std::unique_ptr<TracedValue> ResourcePrioritySetData(
     blink::ResourceLoadPriority priority) {
   std::unique_ptr<TracedValue> data = TracedValue::Create();
-  data->SetInteger("priority", priority);
+  data->SetInteger("priority", static_cast<int>(priority));
   return data;
 }
 
