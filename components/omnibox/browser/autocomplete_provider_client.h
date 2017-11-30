@@ -97,6 +97,9 @@ class AutocompleteProviderClient {
 
   virtual bool TabSyncEnabledAndUnencrypted() const = 0;
 
+  // This function returns true if the user is signed in.
+  virtual bool IsAuthenticated() const = 0;
+
   // Given some string |text| that the user wants to use for navigation,
   // determines how it should be interpreted.
   virtual void Classify(

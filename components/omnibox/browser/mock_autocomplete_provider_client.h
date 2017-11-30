@@ -75,6 +75,7 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
   MOCK_CONST_METHOD0(SearchSuggestEnabled, bool());
   MOCK_CONST_METHOD0(TabSyncEnabledAndUnencrypted, bool());
+  MOCK_CONST_METHOD0(IsAuthenticated, bool());
   MOCK_METHOD6(
       Classify,
       void(const base::string16& text,
