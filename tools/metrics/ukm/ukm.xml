@@ -1452,6 +1452,18 @@ be describing additional metrics about the same event.
       save/update bubble. This is only populated if events happened.
     </summary>
   </metric>
+  <metric name="User.Action.TriggeredManualFallbackForSaving">
+    <summary>
+      Counts how many times the user triggered the manual fallback for password
+      saving. This is only populated if events happened.
+    </summary>
+  </metric>
+  <metric name="User.Action.TriggeredManualFallbackForUpdating">
+    <summary>
+      Counts how many times the user triggered the manual fallback for password
+      updating. This is only populated if events happened.
+    </summary>
+  </metric>
   <metric name="User.ActionSimplified">
     <summary>
       Records what the user does with a form. Recorded values correspond to the

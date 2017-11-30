@@ -452,42 +452,44 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSavedUKMRecording) {
                  << ", change_password = " << test.change_password);
     base::HistogramTester histogram_tester;
     ukm::TestAutoSetUkmRecorder test_ukm_recorder;
-    {
-      // Setup metrics recorder.
-      ukm::SourceId source_id = test_ukm_recorder.GetNewSourceID();
-      auto recorder =
-          base::MakeRefCounted<password_manager::PasswordFormMetricsRecorder>(
-              true /*is_main_frame_secure*/, &test_ukm_recorder, source_id,
-              GURL("http://www.example.com/"));
 
-      // Exercise controller.
-      std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
-          CreateFormManagerWithMetricsRecorder(recorder));
-      test_form_manager->ProvisionallySave(
-          test_local_form(), password_manager::PasswordFormManager::
-                                 IGNORE_OTHER_POSSIBLE_USERNAMES);
-      EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-      controller()->OnPasswordSubmitted(std::move(test_form_manager));
+    // Setup metrics recorder.
+    ukm::SourceId source_id = test_ukm_recorder.GetNewSourceID();
+    auto recorder =
+        base::MakeRefCounted<password_manager::PasswordFormMetricsRecorder>(
+            true /*is_main_frame_secure*/, &test_ukm_recorder, source_id,
+            GURL("http://www.example.com/"));
 
-      controller()->SavePassword(
-          test.edit_username ? base::UTF8ToUTF16("other_username")
-                             : test_local_form().username_value,
-          test.change_password ? base::UTF8ToUTF16("other_pwd")
-                               : test_local_form().password_value);
-      ExpectIconStateIs(password_manager::ui::MANAGE_STATE);
-      EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-      controller()->OnBubbleHidden();
+    // Exercise controller.
+    std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
+        CreateFormManagerWithMetricsRecorder(recorder));
+    test_form_manager->ProvisionallySave(
+        test_local_form(),
+        password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+    controller()->OnPasswordSubmitted(std::move(test_form_manager));
 
-      // Fake navigation so that the old form manager gets destroyed and
-      // reports its metrics.
-      EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-      std::unique_ptr<content::NavigationHandle> navigation_handle =
-          content::NavigationHandle::CreateNavigationHandleForTesting(
-              GURL(), main_rfh(), true);
-      navigation_handle.reset();  // Calls DidFinishNavigation.
+    controller()->SavePassword(
+        test.edit_username ? base::UTF8ToUTF16("other_username")
+                           : test_local_form().username_value,
+        test.change_password ? base::UTF8ToUTF16("other_pwd")
+                             : test_local_form().password_value);
+    ExpectIconStateIs(password_manager::ui::MANAGE_STATE);
 
-      ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
-    }
+    // Fake navigation so that the old form manager gets destroyed and
+    // reports its metrics. Need to close the bubble, otherwise the bubble
+    // state is retained on navigation, and the PasswordFormManager is not
+    // destroyed.
+    EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+    controller()->OnBubbleHidden();
+    EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+    std::unique_ptr<content::NavigationHandle> navigation_handle =
+        content::NavigationHandle::CreateNavigationHandleForTesting(
+            GURL(), main_rfh(), true);
+    navigation_handle.reset();  // Calls DidFinishNavigation.
+
+    recorder = nullptr;
+    ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
 
     // Verify metrics.
     const auto& entries =
@@ -926,14 +928,25 @@ TEST_F(ManagePasswordsUIControllerTest, OpenBubbleTwice) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_UseFallback) {
+  using UkmEntry = ukm::builders::PasswordForm;
   for (bool is_update : {false, true}) {
     SCOPED_TRACE(testing::Message("is_update = ") << is_update);
+    base::HistogramTester histogram_tester;
+    ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+    // Setup metrics recorder.
+    ukm::SourceId source_id = test_ukm_recorder.GetNewSourceID();
+    auto recorder =
+        base::MakeRefCounted<password_manager::PasswordFormMetricsRecorder>(
+            true /*is_main_frame_secure*/, &test_ukm_recorder, source_id,
+            GURL("http://www.example.com/"));
     std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
-        CreateFormManager());
+        CreateFormManagerWithMetricsRecorder(recorder));
+
     test_form_manager->ProvisionallySave(
         test_local_form(),
         password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
-    EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+    EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility()).Times(3);
     controller()->OnShowManualFallbackForSaving(
         std::move(test_form_manager), false /* has_generated_password */,
         is_update);
@@ -943,20 +956,47 @@ TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_UseFallback) {
     EXPECT_FALSE(controller()->opened_bubble());
 
     // A user clicks on omnibox icon, opens the bubble and press Save/Update.
-    base::HistogramTester histogram_tester;
     if (is_update) {
-      EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
       controller()->UpdatePassword(autofill::PasswordForm());
-      histogram_tester.ExpectUniqueSample(
-          "PasswordManager.PasswordUpdatedWithManualFallback", true, 1);
     } else {
       controller()->SavePassword(test_local_form().username_value,
                                  test_local_form().password_value);
+    }
+
+    // Fake navigation so that the old form manager gets destroyed and
+    // reports its metrics. Need to close the bubble, otherwise the bubble
+    // state is retained on navigation, and the PasswordFormManager is not
+    // destroyed.
+    controller()->OnBubbleHidden();
+    std::unique_ptr<content::NavigationHandle> navigation_handle =
+        content::NavigationHandle::CreateNavigationHandleForTesting(
+            GURL(), main_rfh(), true);
+    navigation_handle.reset();  // Calls DidFinishNavigation.
+
+    recorder = nullptr;
+    EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
+
+    // Verify metrics.
+    const auto& entries =
+        test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+    ASSERT_EQ(1u, entries.size());
+    auto* entry = entries[0];
+    test_ukm_recorder.ExpectEntrySourceHasUrl(entry,
+                                              GURL("http://www.example.com/"));
+
+    if (is_update) {
+      histogram_tester.ExpectUniqueSample(
+          "PasswordManager.PasswordUpdatedWithManualFallback", true, 1);
+      test_ukm_recorder.ExpectEntryMetric(
+          entry, UkmEntry::kUser_Action_TriggeredManualFallbackForUpdatingName,
+          1u);
+    } else {
       histogram_tester.ExpectUniqueSample(
           "PasswordManager.PasswordSavedWithManualFallback", true, 1);
+      test_ukm_recorder.ExpectEntryMetric(
+          entry, UkmEntry::kUser_Action_TriggeredManualFallbackForSavingName,
+          1u);
     }
-    ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
-    testing::Mock::VerifyAndClearExpectations(controller());
   }
 }
 
