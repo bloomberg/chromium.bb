@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -40,6 +41,7 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_cookie_changed_subscription.h"
+#include "components/signin/core/browser/signin_features.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/signin_switches.h"
@@ -69,6 +71,7 @@ ChromeSigninClient::ChromeSigninClient(
     : OAuth2TokenService::Consumer("chrome_signin_client"),
       profile_(profile),
       signin_error_controller_(signin_error_controller),
+      account_consistency_mode_manager_(profile),
       weak_ptr_factory_(this) {
   signin_error_controller_->AddObserver(this);
 #if !defined(OS_CHROMEOS)
@@ -461,6 +464,14 @@ void ChromeSigninClient::AfterCredentialsCopied() {
     // the new profile soon.
     should_display_user_manager_ = false;
   }
+}
+
+void ChromeSigninClient::SetReadyForDiceMigration(bool is_ready) {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  account_consistency_mode_manager_.SetReadyForDiceMigration(is_ready);
+#else
+  NOTREACHED();
+#endif
 }
 
 void ChromeSigninClient::OnCloseBrowsersSuccess(

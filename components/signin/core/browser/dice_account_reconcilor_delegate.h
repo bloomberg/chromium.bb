@@ -10,27 +10,15 @@
 #include "base/macros.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
-class PrefService;
+class SigninClient;
 
 namespace signin {
 
 // AccountReconcilorDelegate specialized for Dice.
 class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
  public:
-  DiceAccountReconcilorDelegate(PrefService* user_prefs, bool is_new_profile);
+  DiceAccountReconcilorDelegate(SigninClient* signin_client);
   ~DiceAccountReconcilorDelegate() override {}
-
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
-  // Dice migration methods, public for testing:
-  // Schedules migration to happen at next startup.
-  static void SetDiceMigrationOnStartup(PrefService* prefs, bool migrate);
-  // Returns true if migration can happen on the next startup.
-  bool IsReadyForDiceMigration(bool is_new_profile);
 
   // AccountReconcilorDelegate:
   bool IsReconcileEnabled() const override;
@@ -46,7 +34,7 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
                            bool reconcile_is_noop) override;
 
  private:
-  PrefService* user_prefs_;
+  SigninClient* signin_client_;
 
   // Last known "first account". Used when cookies are lost as a best guess.
   std::string last_known_first_account_;
