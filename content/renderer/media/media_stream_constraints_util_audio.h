@@ -91,7 +91,8 @@ using AudioDeviceCaptureCapabilities =
 // channelCount and groupId. http://crbug.com/731170
 AudioCaptureSettings CONTENT_EXPORT
 SelectSettingsAudioCapture(const AudioDeviceCaptureCapabilities& capabilities,
-                           const blink::WebMediaConstraints& constraints);
+                           const blink::WebMediaConstraints& constraints,
+                           bool should_disable_hardware_noise_suppression);
 
 }  // namespace content
 

@@ -458,7 +458,8 @@ AudioProcessingProperties SelectAudioProcessingProperties(
     const AudioCaptureCandidates& candidates,
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
     const media::AudioParameters& audio_parameters,
-    bool is_device_capture) {
+    bool is_device_capture,
+    bool should_disable_hardware_noise_suppression) {
   DCHECK(!candidates.IsEmpty());
   base::Optional<bool> echo_cancellation =
       SelectOptionalBool(candidates.echo_cancellation_set(),
@@ -480,6 +481,9 @@ AudioProcessingProperties SelectAudioProcessingProperties(
   properties.disable_hw_echo_cancellation =
       (echo_cancellation && !*echo_cancellation) ||
       (goog_echo_cancellation && !*goog_echo_cancellation);
+  properties.disable_hw_noise_suppression =
+      should_disable_hardware_noise_suppression &&
+      !properties.disable_hw_echo_cancellation;
 
   properties.goog_audio_mirroring =
       SelectBool(candidates.goog_audio_mirroring_set(),
@@ -512,7 +516,8 @@ AudioCaptureSettings SelectResult(
     const AudioCaptureCandidates& candidates,
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
     const std::string& default_device_id,
-    const std::string& media_stream_source) {
+    const std::string& media_stream_source,
+    bool should_disable_hardware_noise_suppression) {
   bool is_device_capture = media_stream_source.empty();
   AudioDeviceInfo device_info =
       SelectDevice(candidates.audio_device_set(), basic_constraint_set,
@@ -530,9 +535,9 @@ AudioCaptureSettings SelectResult(
                  basic_constraint_set.render_to_associated_sink, false);
 
   AudioProcessingProperties audio_processing_properties =
-      SelectAudioProcessingProperties(candidates, basic_constraint_set,
-                                      device_info.parameters(),
-                                      is_device_capture);
+      SelectAudioProcessingProperties(
+          candidates, basic_constraint_set, device_info.parameters(),
+          is_device_capture, should_disable_hardware_noise_suppression);
 
   return AudioCaptureSettings(device_info.device_id(), device_info.parameters(),
                               hotword_enabled, disable_local_echo,
@@ -544,7 +549,8 @@ AudioCaptureSettings SelectResult(
 
 AudioCaptureSettings SelectSettingsAudioCapture(
     const AudioDeviceCaptureCapabilities& capabilities,
-    const blink::WebMediaConstraints& constraints) {
+    const blink::WebMediaConstraints& constraints,
+    bool should_disable_hardware_noise_suppression) {
   std::string media_stream_source = GetMediaStreamSource(constraints);
   bool is_device_capture = media_stream_source.empty();
   if (is_device_capture && capabilities.empty())
@@ -571,7 +577,8 @@ AudioCaptureSettings SelectSettingsAudioCapture(
     default_device_id = (*capabilities.begin())->device_id;
 
   return SelectResult(candidates, constraints.Basic(), default_device_id,
-                      media_stream_source);
+                      media_stream_source,
+                      should_disable_hardware_noise_suppression);
 }
 
 }  // namespace content

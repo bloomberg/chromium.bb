@@ -224,7 +224,7 @@ AUAudioInputStream::AUAudioInputStream(
     AudioDeviceID audio_device_id,
     const AudioManager::LogCallback& log_callback)
     : manager_(manager),
-      number_of_frames_(input_params.frames_per_buffer()),
+      input_params_(input_params),
       number_of_frames_provided_(0),
       io_buffer_frame_size_(0),
       sink_(nullptr),
@@ -232,7 +232,7 @@ AUAudioInputStream::AUAudioInputStream(
       input_device_id_(audio_device_id),
       number_of_channels_in_frame_(0),
       fifo_(input_params.channels(),
-            number_of_frames_,
+            input_params.frames_per_buffer(),
             kNumberOfBlocksBufferInFifo),
       got_input_callback_(false),
       input_callback_is_active_(false),
@@ -240,6 +240,7 @@ AUAudioInputStream::AUAudioInputStream(
       buffer_size_was_changed_(false),
       audio_unit_render_has_worked_(false),
       device_listener_is_active_(false),
+      noise_reduction_suppressed_(false),
       last_sample_time_(0.0),
       last_number_of_frames_(0),
       total_lost_frames_(0),
@@ -266,12 +267,13 @@ AUAudioInputStream::AUAudioInputStream(
 
   DVLOG(1) << "ctor";
   DVLOG(1) << "device ID: 0x" << std::hex << audio_device_id;
-  DVLOG(1) << "buffer size : " << number_of_frames_;
+  DVLOG(1) << "buffer size : " << input_params.frames_per_buffer();
   DVLOG(1) << "channels : " << input_params.channels();
   DVLOG(1) << "desired output format: " << format_;
 
   // Derive size (in bytes) of the buffers that we will render to.
-  UInt32 data_byte_size = number_of_frames_ * format_.mBytesPerFrame;
+  UInt32 data_byte_size =
+      input_params.frames_per_buffer() * format_.mBytesPerFrame;
   DVLOG(1) << "size of data buffer in bytes : " << data_byte_size;
 
   // Allocate AudioBuffers to be used as storage for the received audio.
@@ -434,7 +436,7 @@ bool AUAudioInputStream::Open() {
   // the UMA stats tied to the Media.Audio.InputStartupSuccessMac record.
   size_t io_buffer_frame_size = 0;
   if (!manager_->MaybeChangeBufferSize(
-          input_device_id_, audio_unit_, 1, number_of_frames_,
+          input_device_id_, audio_unit_, 1, input_params_.frames_per_buffer(),
           &buffer_size_was_changed_, &io_buffer_frame_size)) {
     result = kAudioUnitErr_FormatNotSupported;
     HandleError(result);
@@ -446,16 +448,17 @@ bool AUAudioInputStream::Open() {
   DCHECK(!io_buffer_frame_size_);
   io_buffer_frame_size_ = io_buffer_frame_size;
 
-  // If |number_of_frames_| is out of range, the closest valid buffer size will
-  // be set instead. Check the current setting and log a warning for a non
-  // perfect match. Any such mismatch will be compensated for in
+  // If the requested number of frames is out of range, the closest valid buffer
+  // size will be set instead. Check the current setting and log a warning for a
+  // non perfect match. Any such mismatch will be compensated for in
   // OnDataIsAvailable().
   UInt32 buffer_frame_size = 0;
   UInt32 property_size = sizeof(buffer_frame_size);
   result = AudioUnitGetProperty(
       audio_unit_, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global,
       0, &buffer_frame_size, &property_size);
-  LOG_IF(WARNING, buffer_frame_size != number_of_frames_)
+  LOG_IF(WARNING, buffer_frame_size !=
+                      static_cast<UInt32>(input_params_.frames_per_buffer()))
       << "AUHAL is using best match of IO buffer size: " << buffer_frame_size;
 
   // Channel mapping should be supported but add a warning just in case.
@@ -523,6 +526,11 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
   sink_ = callback;
   last_success_time_ = base::TimeTicks::Now();
   audio_unit_render_has_worked_ = false;
+  if (!(input_params_.effects() & AudioParameters::NOISE_SUPPRESSION) &&
+      manager_->DeviceSupportsAmbientNoiseReduction(input_device_id_)) {
+    noise_reduction_suppressed_ =
+        manager_->SuppressNoiseReduction(input_device_id_);
+  }
   StartAgc();
   OSStatus result = AudioOutputUnitStart(audio_unit_);
   OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
@@ -550,6 +558,10 @@ void AUAudioInputStream::Stop() {
   deferred_start_cb_.Cancel();
   DVLOG(1) << "Stop";
   StopAgc();
+  if (noise_reduction_suppressed_) {
+    manager_->UnsuppressNoiseReduction(input_device_id_);
+    noise_reduction_suppressed_ = false;
+  }
   if (input_callback_timer_ != nullptr) {
     input_callback_timer_->Stop();
     input_callback_timer_.reset();
@@ -586,7 +598,9 @@ void AUAudioInputStream::Close() {
 
   // It is valid to call Close() before calling open or Start().
   // It is also valid to call Close() after Start() has been called.
-  Stop();
+  if (IsRunning()) {
+    Stop();
+  }
 
   // Uninitialize and dispose the audio unit.
   CloseAudioUnit();
@@ -900,7 +914,9 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
   // TODO(grunell): We'll only care about the first buffer size change, any
   // further changes will be ignored. This is in line with output side stats.
   // It would be nice to have all changes reflected in UMA stats.
-  if (number_of_frames != number_of_frames_ && number_of_frames_provided_ == 0)
+  if (number_of_frames !=
+          static_cast<UInt32>(input_params_.frames_per_buffer()) &&
+      number_of_frames_provided_ == 0)
     number_of_frames_provided_ = number_of_frames;
 
   base::TimeTicks capture_time = GetCaptureTime(time_stamp);
@@ -927,7 +943,7 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
     // typically one block.
     const int blocks =
         static_cast<int>((number_of_frames - fifo_.GetUnfilledFrames()) /
-                         number_of_frames_) +
+                         input_params_.frames_per_buffer()) +
         1;
     DLOG(WARNING) << "Increasing FIFO capacity by " << blocks << " blocks";
     TRACE_EVENT_INSTANT1("audio", "Increasing FIFO capacity",
@@ -945,7 +961,8 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
   // Consume and deliver the data when the FIFO has a block of available data.
   while (fifo_.available_blocks()) {
     const AudioBus* audio_bus = fifo_.Consume();
-    DCHECK_EQ(audio_bus->frames(), static_cast<int>(number_of_frames_));
+    DCHECK_EQ(audio_bus->frames(),
+              static_cast<int>(input_params_.frames_per_buffer()));
 
     sink_->OnData(audio_bus, capture_time, normalized_volume);
 
@@ -1182,18 +1199,19 @@ void AUAudioInputStream::AddHistogramsForFailedStartup() {
                             manager_->low_latency_input_streams());
   UMA_HISTOGRAM_COUNTS_1000("Media.Audio.NumberOfBasicInputStreamsMac",
                             manager_->basic_input_streams());
-  // |number_of_frames_| is set at construction and corresponds to the
-  // requested (by the client) number of audio frames per I/O buffer connected
-  // to the selected input device. Ideally, this size will be the same as the
-  // native I/O buffer size given by |io_buffer_frame_size_|.
+  // |input_params_.frames_per_buffer()| is set at construction and corresponds
+  // to the requested (by the client) number of audio frames per I/O buffer
+  // connected to the selected input device. Ideally, this size will be the same
+  // as the native I/O buffer size given by |io_buffer_frame_size_|.
   UMA_HISTOGRAM_SPARSE_SLOWLY("Media.Audio.RequestedInputBufferFrameSizeMac",
-                              number_of_frames_);
-  DVLOG(1) << "number_of_frames_: " << number_of_frames_;
-  // This value indicates the number of frames in the IO buffers connected
-  // to the selected input device. It has been set by the audio manger in
-  // Open() and can be the same as |number_of_frames_|, which is the desired
-  // buffer size. These two values might differ if other streams are using the
-  // same device and any of these streams have asked for a smaller buffer size.
+                              input_params_.frames_per_buffer());
+  DVLOG(1) << "number_of_frames_: " << input_params_.frames_per_buffer();
+  // This value indicates the number of frames in the IO buffers connected to
+  // the selected input device. It has been set by the audio manger in Open()
+  // and can be the same as |input_params_.frames_per_buffer()|, which is the
+  // desired buffer size. These two values might differ if other streams are
+  // using the same device and any of these streams have asked for a smaller
+  // buffer size.
   UMA_HISTOGRAM_SPARSE_SLOWLY("Media.Audio.ActualInputBufferFrameSizeMac",
                               io_buffer_frame_size_);
   DVLOG(1) << "io_buffer_frame_size_: " << io_buffer_frame_size_;

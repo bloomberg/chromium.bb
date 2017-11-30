@@ -106,7 +106,7 @@ class MediaStreamConstraintsUtilAudioTest
   AudioCaptureSettings SelectSettings() {
     blink::WebMediaConstraints constraints =
         constraint_factory_.CreateWebMediaConstraints();
-    return SelectSettingsAudioCapture(capabilities_, constraints);
+    return SelectSettingsAudioCapture(capabilities_, constraints, false);
   }
 
   // When googExperimentalEchoCancellation is not explicitly set, its default
@@ -958,7 +958,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, NoDevicesNoConstraints) {
 
   AudioDeviceCaptureCapabilities capabilities;
   auto result = SelectSettingsAudioCapture(
-      capabilities, constraint_factory_.CreateWebMediaConstraints());
+      capabilities, constraint_factory_.CreateWebMediaConstraints(), false);
   EXPECT_FALSE(result.HasValue());
   EXPECT_TRUE(std::string(result.failed_constraint_name()).empty());
 }
@@ -971,7 +971,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, NoDevicesWithConstraints) {
   AudioDeviceCaptureCapabilities capabilities;
   constraint_factory_.basic().sample_size.SetExact(16);
   auto result = SelectSettingsAudioCapture(
-      capabilities, constraint_factory_.CreateWebMediaConstraints());
+      capabilities, constraint_factory_.CreateWebMediaConstraints(), false);
   EXPECT_FALSE(result.HasValue());
   EXPECT_TRUE(std::string(result.failed_constraint_name()).empty());
 }

@@ -92,15 +92,30 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
       device().session_id, device().matched_output.sample_rate(),
       device().matched_output.frames_per_buffer(), device().input.effects()));
 
+  MediaStreamDevice modified_device(device());
+  bool device_is_modified = false;
+
   // Disable HW echo cancellation if constraints explicitly specified no
   // echo cancellation.
   if (audio_processing_properties_.disable_hw_echo_cancellation &&
       (device().input.effects() & media::AudioParameters::ECHO_CANCELLER)) {
-    MediaStreamDevice modified_device(device());
     modified_device.input.set_effects(modified_device.input.effects() &
                                       ~media::AudioParameters::ECHO_CANCELLER);
-    SetDevice(modified_device);
+    device_is_modified = true;
   }
+
+  // Disable noise suppression on the device if the properties explicitly
+  // specify to do so.
+  if (audio_processing_properties_.disable_hw_noise_suppression &&
+      (device().input.effects() & media::AudioParameters::NOISE_SUPPRESSION)) {
+    modified_device.input.set_effects(
+        modified_device.input.effects() &
+        ~media::AudioParameters::NOISE_SUPPRESSION);
+    device_is_modified = true;
+  }
+
+  if (device_is_modified)
+    SetDevice(modified_device);
 
   // Create the MediaStreamAudioProcessor, bound to the WebRTC audio device
   // module.
