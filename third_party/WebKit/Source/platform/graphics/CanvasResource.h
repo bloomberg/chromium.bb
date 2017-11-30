@@ -32,6 +32,7 @@ class PLATFORM_EXPORT CanvasResource : public WTF::RefCounted<CanvasResource> {
   virtual GLuint TextureId() const = 0;
   gpu::gles2::GLES2Interface* ContextGL() const;
   const gpu::Mailbox& GpuMailbox();
+  bool HasGpuMailbox() const;
   void SetSyncTokenForRelease(const gpu::SyncToken&);
   void WaitSyncTokenBeforeRelease();
 
@@ -74,7 +75,7 @@ class PLATFORM_EXPORT CanvasResource_GpuMemoryBuffer final
       const IntSize&,
       const CanvasColorParams&,
       WeakPtr<WebGraphicsContext3DProviderWrapper>);
-  virtual ~CanvasResource_GpuMemoryBuffer() { Abandon(); }
+  virtual ~CanvasResource_GpuMemoryBuffer();
   bool IsRecycleable() const final { return IsValid(); }
   bool IsValid() const { return context_provider_wrapper_ && image_id_; }
   void Abandon() final;

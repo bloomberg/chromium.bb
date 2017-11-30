@@ -40,6 +40,10 @@ const gpu::Mailbox& CanvasResource::GpuMailbox() {
   return gpu_mailbox_;
 }
 
+bool CanvasResource::HasGpuMailbox() const {
+  return !gpu_mailbox_.IsZero();
+}
+
 void CanvasResource::SetSyncTokenForRelease(const gpu::SyncToken& token) {
   sync_token_for_release_ = token;
 }
@@ -82,6 +86,13 @@ bool CanvasResource_Skia::IsValid() const {
 
 void CanvasResource_Skia::Abandon() {
   WaitSyncTokenBeforeRelease();
+  auto gl = ContextGL();
+  if (gl && HasGpuMailbox()) {
+    DCHECK(image_->isTextureBacked());
+    // To avoid leaking Mailbox records, we must disassociate the mailbox
+    // before image_ goes out of scope because skia might recycle the texture.
+    gl->ProduceTextureDirectCHROMIUM(0, GL_TEXTURE_2D, GpuMailbox().name);
+  }
   image_ = nullptr;
   context_provider_wrapper_ = nullptr;
 }
@@ -132,6 +143,10 @@ CanvasResource_GpuMemoryBuffer::CanvasResource_GpuMemoryBuffer(
   gl->BindTexture(target, texture_id_);
   gl->BindTexImage2DCHROMIUM(target, image_id_);
   gr->resetContext(kTextureBinding_GrGLBackendState);
+}
+
+CanvasResource_GpuMemoryBuffer::~CanvasResource_GpuMemoryBuffer() {
+  Abandon();
 }
 
 scoped_refptr<CanvasResource_GpuMemoryBuffer>
