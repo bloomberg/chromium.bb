@@ -4033,3 +4033,4 @@ crbug.com/789533 virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing.html 
 crbug.com/789707 [ Mac ] editing/selection/4975120.html [ Pass Failure ]
 # Sheriff failures 2017-11-30
 crbug.com/789485 [ Win ] virtual/scroll_customization/fast/events/touch/gesture/gesture-tap-mouse-events-between-frames.html [ Pass Failure ]
+crbug.com/789921 [ Win7 ] media/video-controls-overflow-menu-last-button-visible.html [ Pass Failure ]
