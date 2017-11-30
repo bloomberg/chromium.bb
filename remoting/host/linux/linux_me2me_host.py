@@ -827,9 +827,11 @@ def parse_config_arg(args):
     return (None, list(args))
 
 
-def get_daemon_proc(config_file):
+def get_daemon_proc(config_file, require_child_process=False):
   """Checks if there is already an instance of this script running against
-  |config_file|, and returns a psutil.Process instance for it.
+  |config_file|, and returns a psutil.Process instance for it. If
+  |require_child_process| is true, only check for an instance with the
+  --child-process flag specified.
 
   If a process is found without --config in the command line, get_daemon_proc
   will fall back to the old behavior of checking whether the script path matches
@@ -840,8 +842,17 @@ def get_daemon_proc(config_file):
     is not running.
   """
 
+  # Note: When making changes to how instances are detected, it is imperative
+  # that this function retains the ability to find older versions. Otherwise,
+  # upgrades can leave the user with two running sessions, with confusing
+  # results.
+
   uid = os.getuid()
   this_pid = os.getpid()
+
+  # This function should return the process with the --child-process flag if it
+  # exists. If there's only a process without, it might be a legacy process.
+  non_child_process = None
 
   # Support new & old psutil API. This is the right way to check, according to
   # http://grodola.blogspot.com/2014/01/psutil-20-porting.html
@@ -868,21 +879,23 @@ def get_daemon_proc(config_file):
         continue
       if (os.path.basename(cmdline[0]).startswith('python') and
           os.path.basename(cmdline[1]) == os.path.basename(sys.argv[0]) and
-          "--start" in cmdline and "--child-process" in cmdline):
+          "--start" in cmdline):
         process_config = parse_config_arg(cmdline[2:])[0]
-        if process_config is None:
-          # Fall back to old behavior if there is no --config argument
-          # TODO(rkjnsn): Consider removing this fallback once sufficient time
-          # has passed.
-          if cmdline[1] == sys.argv[0]:
+
+        # Fall back to old behavior if there is no --config argument
+        # TODO(rkjnsn): Consider removing this fallback once sufficient time
+        # has passed.
+        if process_config == config_file or (process_config is None and
+                                             cmdline[1] == sys.argv[0]):
+          if "--child-process" in cmdline:
             return process
-        elif process_config == config_file:
-          return process
+          else:
+            non_child_process = process
 
     except (psutil.NoSuchProcess, psutil.AccessDenied):
       continue
 
-  return None
+  return non_child_process if not require_child_process else None
 
 
 def choose_x_session():
@@ -1506,7 +1519,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
 
   # Determine whether a desktop is already active for the specified host
   # configuration.
-  if get_daemon_proc(config_file) is not None:
+  if get_daemon_proc(config_file, options.child_process) is not None:
     # Debian policy requires that services should "start" cleanly and return 0
     # if they are already running.
     if options.child_process:
