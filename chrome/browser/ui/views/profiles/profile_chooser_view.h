@@ -172,13 +172,8 @@ class ProfileChooserView : public content::WebContentsDelegate,
   AccountButtonIndexes delete_account_button_map_;
   AccountButtonIndexes reauth_account_button_map_;
 
-  // Buttons in the signin/sync error header on top of the desktop user menu.
-  views::LabelButton* sync_error_signin_button_;
-  views::LabelButton* sync_error_passphrase_button_;
-  views::LabelButton* sync_error_upgrade_button_;
-  views::LabelButton* sync_error_signin_again_button_;
-  views::LabelButton* sync_error_signout_button_;
-  views::LabelButton* sync_error_settings_unconfirmed_button_;
+  // Button in the signin/sync error header on top of the desktop user menu.
+  views::LabelButton* sync_error_button_;
 
   // Links and buttons displayed in the active profile card.
   views::Link* manage_accounts_link_;
