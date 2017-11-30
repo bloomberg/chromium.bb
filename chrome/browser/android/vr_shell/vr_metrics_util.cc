@@ -47,15 +47,16 @@ void VrMetricsUtil::LogGvrVersionForVrViewerType(
   }
 
   switch (GetVrViewerType(viewer_type)) {
-    case ViewerType::CARDBOARD:
+    case device::VrViewerType::GVR_CARDBOARD:
       UMA_HISTOGRAM_SPARSE_SLOWLY("VRRuntimeVersion.GVR.Cardboard",
                                   encoded_version);
       break;
-    case ViewerType::DAYDREAM:
+    case device::VrViewerType::GVR_DAYDREAM:
       UMA_HISTOGRAM_SPARSE_SLOWLY("VRRuntimeVersion.GVR.Daydream",
                                   encoded_version);
       break;
     default:
+      NOTREACHED();
       UMA_HISTOGRAM_SPARSE_SLOWLY("VRRuntimeVersion.GVR.Unknown",
                                   encoded_version);
       break;
@@ -65,20 +66,20 @@ void VrMetricsUtil::LogGvrVersionForVrViewerType(
 }
 
 void VrMetricsUtil::LogVrViewerType(gvr::ViewerType viewer_type) {
-  UMA_HISTOGRAM_ENUMERATION("VRViewerType",
-                            static_cast<int>(GetVrViewerType(viewer_type)),
-                            static_cast<int>(ViewerType::VIEWER_TYPE_MAX));
+  UMA_HISTOGRAM_SPARSE_SLOWLY("VRViewerType",
+                              static_cast<int>(GetVrViewerType(viewer_type)));
 }
 
-ViewerType VrMetricsUtil::GetVrViewerType(gvr::ViewerType viewer_type) {
+device::VrViewerType VrMetricsUtil::GetVrViewerType(
+    gvr::ViewerType viewer_type) {
   switch (viewer_type) {
     case gvr::ViewerType::GVR_VIEWER_TYPE_DAYDREAM:
-      return ViewerType::DAYDREAM;
+      return device::VrViewerType::GVR_DAYDREAM;
     case gvr::ViewerType::GVR_VIEWER_TYPE_CARDBOARD:
-      return ViewerType::CARDBOARD;
+      return device::VrViewerType::GVR_CARDBOARD;
     default:
       NOTREACHED();
-      return ViewerType::UNKNOWN_TYPE;
+      return device::VrViewerType::GVR_UNKNOWN;
   }
 }
 
