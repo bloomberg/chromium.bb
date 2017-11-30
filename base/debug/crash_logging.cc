@@ -21,6 +21,8 @@ namespace debug {
 
 namespace {
 
+CrashKeyImplementation* g_crash_key_impl = nullptr;
+
 // Global map of crash key names to registration entries.
 typedef std::unordered_map<base::StringPiece, CrashKey, base::StringPieceHash>
     CrashKeyMap;
@@ -48,6 +50,33 @@ size_t NumChunksForLength(size_t length) {
 const size_t kLargestValueAllowed = 2048;
 
 }  // namespace
+
+CrashKeyString* AllocateCrashKeyString(const char name[],
+                                       CrashKeySize value_length) {
+  if (!g_crash_key_impl)
+    return nullptr;
+
+  return g_crash_key_impl->Allocate(name, value_length);
+}
+
+void SetCrashKeyString(CrashKeyString* crash_key, base::StringPiece value) {
+  if (!g_crash_key_impl || !crash_key)
+    return;
+
+  g_crash_key_impl->Set(crash_key, value);
+}
+
+void ClearCrashKeyString(CrashKeyString* crash_key) {
+  if (!g_crash_key_impl || !crash_key)
+    return;
+
+  g_crash_key_impl->Clear(crash_key);
+}
+
+void SetCrashKeyImplementation(std::unique_ptr<CrashKeyImplementation> impl) {
+  delete g_crash_key_impl;
+  g_crash_key_impl = impl.release();
+}
 
 void SetCrashKeyValue(const base::StringPiece& key,
                       const base::StringPiece& value) {
