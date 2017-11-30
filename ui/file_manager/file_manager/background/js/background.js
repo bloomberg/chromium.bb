@@ -162,16 +162,42 @@ FileBrowserBackgroundImpl.prototype.handleViewEvent_ =
               var volume = volumeManager.volumeInfoList.findByDevicePath(
                   event.devicePath);
               if (volume) {
-                this.navigateToVolume_(volume, event.filePath);
+                this.navigateToVolumeRoot_(volume, event.filePath);
               } else {
                 console.error('Got view event with invalid volume id.');
               }
             } else if (event.volumeId) {
-              this.navigateToVolumeWhenReady_(event.volumeId, event.filePath);
+              if (event.type === VolumeManagerCommon.VOLUME_ALREADY_MOUNTED)
+                this.navigateToVolumeInFocusedWindowWhenReady_(
+                    event.volumeId, event.filePath);
+              else
+                this.navigateToVolumeWhenReady_(event.volumeId, event.filePath);
             } else {
               console.error('Got view event with no actionable destination.');
             }
           }).bind(this));
+};
+
+/**
+ * Retrieves the root file entry of the volume on the requested device.
+ *
+ * @param {!string} volumeId ID of the volume to navigate to.
+ * @return {!Promise<VolumeInfo>}
+ * @private
+ */
+FileBrowserBackgroundImpl.prototype.retrieveVolumeInfo_ = function(volumeId) {
+  return volumeManagerFactory.getInstance().then(
+      (/**
+        * @param {!VolumeManager} volumeManager
+        */
+       function(volumeManager) {
+         return volumeManager.volumeInfoList.whenVolumeInfoReady(volumeId)
+             .catch(function(e) {
+               console.error(
+                   'Unable to find volume for id: ' + volumeId +
+                   '. Error: ' + e.message);
+             });
+       }).bind(this));
 };
 
 /**
@@ -181,28 +207,47 @@ FileBrowserBackgroundImpl.prototype.handleViewEvent_ =
  * @param {!string=} opt_directoryPath Optional path to be opened.
  * @private
  */
-FileBrowserBackgroundImpl.prototype.navigateToVolumeWhenReady_ =
+FileBrowserBackgroundImpl.prototype.navigateToVolumeWhenReady_ = function(
+    volumeId, opt_directoryPath) {
+  this.retrieveVolumeInfo_(volumeId).then(function(volume) {
+    this.navigateToVolumeRoot_(volume, opt_directoryPath);
+  }.bind(this));
+};
+
+/**
+ * Opens the volume root (or opt directoryPath) in the main UI of the focused
+ * window.
+ *
+ * @param {!string} volumeId ID of the volume to navigate to.
+ * @param {!string=} opt_directoryPath Optional path to be opened.
+ * @private
+ */
+FileBrowserBackgroundImpl.prototype.navigateToVolumeInFocusedWindowWhenReady_ =
     function(volumeId, opt_directoryPath) {
-  volumeManagerFactory.getInstance()
-      .then(
-          (/**
-           * Retrieves the root file entry of the volume on the requested
-           * device.
-           * @param {!VolumeManager} volumeManager
-           */
-          function(volumeManager) {
-            volumeManager.volumeInfoList.whenVolumeInfoReady(volumeId)
-                .then(
-                    function(volume) {
-                      this.navigateToVolume_(volume, opt_directoryPath);
-                    }.bind(this))
-                .catch(
-                    function(e) {
-                      console.error(
-                          'Unable to find volume for id: ' + volumeId +
-                          '. Error: ' + e.message);
-                    });
-          }).bind(this));
+  this.retrieveVolumeInfo_(volumeId).then(function(volume) {
+    this.navigateToVolumeInFocusedWindow_(volume, opt_directoryPath);
+  }.bind(this));
+};
+
+/**
+ * If a path was specified, retrieve that directory entry,
+ * otherwise return the root entry of the volume.
+ *
+ * @param {!VolumeInfo} volume
+ * @param {string=} opt_directoryPath Optional directory path to be opened.
+ * @return {!Promise<!DirectoryEntry>}
+ * @private
+ */
+FileBrowserBackgroundImpl.prototype.retrieveEntryInVolume_ = function(
+    volume, opt_directoryPath) {
+  return volume.resolveDisplayRoot().then(function(root) {
+    if (opt_directoryPath) {
+      return new Promise(
+          root.getDirectory.bind(root, opt_directoryPath, {create: false}));
+    } else {
+      return Promise.resolve(root);
+    }
+  });
 };
 
 /**
@@ -212,25 +257,9 @@ FileBrowserBackgroundImpl.prototype.navigateToVolumeWhenReady_ =
  * @param {string=} opt_directoryPath Optional directory path to be opened.
  * @private
  */
-FileBrowserBackgroundImpl.prototype.navigateToVolume_ =
-    function(volume, opt_directoryPath) {
-  volume.resolveDisplayRoot()
-      .then(
-          /**
-           * If a path was specified, retrieve that directory entry,
-           * otherwise just return the unmodified root entry.
-           * @param {DirectoryEntry} root
-           * @return {!Promise<DirectoryEntry>}
-           */
-          function(root) {
-            if (opt_directoryPath) {
-              return new Promise(
-                  root.getDirectory.bind(
-                      root, opt_directoryPath, {create: false}));
-            } else {
-              return Promise.resolve(root);
-            }
-          })
+FileBrowserBackgroundImpl.prototype.navigateToVolumeRoot_ = function(
+    volume, opt_directoryPath) {
+  this.retrieveEntryInVolume_(volume, opt_directoryPath)
       .then(
           /**
            * Launches app opened on {@code directory}.
@@ -239,9 +268,28 @@ FileBrowserBackgroundImpl.prototype.navigateToVolume_ =
           function(directory) {
             launcher.launchFileManager(
                 {currentDirectoryURL: directory.toURL()},
-                /* App ID */ undefined,
-                LaunchType.FOCUS_SAME_OR_CREATE);
+                /* App ID */ undefined, LaunchType.FOCUS_SAME_OR_CREATE);
           });
+};
+
+/**
+ * Opens the volume root (or opt directoryPath) in main UI of the focused
+ * window.
+ *
+ * @param {!VolumeInfo} volume
+ * @param {string=} opt_directoryPath Optional directory path to be opened.
+ * @private
+ */
+FileBrowserBackgroundImpl.prototype.navigateToVolumeInFocusedWindow_ = function(
+    volume, opt_directoryPath) {
+  this.retrieveEntryInVolume_(volume, opt_directoryPath)
+      .then(function(directoryEntry) {
+        if (directoryEntry)
+          volumeManagerFactory.getInstance().then(function(volumeManager) {
+            volumeManager.dispatchEvent(
+                VolumeManagerCommon.createArchiveOpenedEvent(directoryEntry));
+          }.bind(this));
+      });
 };
 
 /**
