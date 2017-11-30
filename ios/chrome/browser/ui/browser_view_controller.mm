@@ -73,7 +73,9 @@
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #include "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
+#include "ios/chrome/browser/infobars/infobar_container_delegate_ios.h"
 #include "ios/chrome/browser/infobars/infobar_container_ios.h"
+#import "ios/chrome/browser/infobars/infobar_container_state_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_container_view.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/language/url_language_histogram_factory.h"
@@ -389,6 +391,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     CRWWebStateDelegate,
                                     DialogPresenterDelegate,
                                     LegacyFullscreenControllerDelegate,
+                                    InfobarContainerStateDelegate,
                                     KeyCommandsPlumbing,
                                     NetExportTabHelperDelegate,
                                     ManageAccountsDelegate,
@@ -794,8 +797,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
                       selectText:(BOOL)selectText
                      shouldFocus:(BOOL)shouldFocus;
 
-// The infobar state (typically height) has changed.
-- (void)infoBarContainerStateChanged:(bool)is_animating;
 // Adds a CardView on top of the contentArea either taking the size of the full
 // screen or just the size of the space under the header.
 // Returns the CardView that was added.
@@ -899,48 +900,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // Adds the given url to the reading list.
 - (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title;
 @end
-
-class InfoBarContainerDelegateIOS
-    : public infobars::InfoBarContainer::Delegate {
- public:
-  explicit InfoBarContainerDelegateIOS(BrowserViewController* controller)
-      : controller_(controller) {}
-
-  ~InfoBarContainerDelegateIOS() override {}
-
- private:
-  SkColor GetInfoBarSeparatorColor() const override {
-    NOTIMPLEMENTED();
-    return SK_ColorBLACK;
-  }
-
-  int ArrowTargetHeightForInfoBar(
-      size_t index,
-      const gfx::SlideAnimation& animation) const override {
-    return 0;
-  }
-
-  void ComputeInfoBarElementSizes(const gfx::SlideAnimation& animation,
-                                  int arrow_target_height,
-                                  int bar_target_height,
-                                  int* arrow_height,
-                                  int* arrow_half_width,
-                                  int* bar_height) const override {
-    DCHECK_NE(-1, bar_target_height)
-        << "Infobars don't have a default height on iOS";
-    *arrow_height = 0;
-    *arrow_half_width = 0;
-    *bar_height = animation.CurrentValueBetween(0, bar_target_height);
-  }
-
-  void InfoBarContainerStateChanged(bool is_animating) override {
-    [controller_ infoBarContainerStateChanged:is_animating];
-  }
-
-  bool DrawInfoBarArrows(int* x) const override { return false; }
-
-  __weak BrowserViewController* controller_;
-};
 
 @implementation BrowserViewController
 
@@ -1368,7 +1327,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // This reinitializes the toolbar, including updating the Overlay View,
   // if there is one.
   [self updateToolbar];
-  [self infoBarContainerStateChanged:false];
+  [self infoBarContainerStateDidChangeAnimated:NO];
 }
 
 - (BOOL)prefersStatusBarHidden {
@@ -1550,6 +1509,20 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [super presentViewController:viewControllerToPresent
                       animated:flag
                     completion:finalCompletionHandler];
+}
+
+- (BOOL)shouldAutorotate {
+  if (_voiceSearchController && _voiceSearchController->IsVisible()) {
+    // Don't rotate if a voice search is being presented or dismissed.  Once the
+    // transition animations finish, only the Voice Search UIViewController's
+    // |-shouldAutorotate| will be called.
+    return NO;
+  } else if (_sideSwipeController && ![_sideSwipeController shouldAutorotate]) {
+    // Don't auto rotate if side swipe controller view says not to.
+    return NO;
+  } else {
+    return [super shouldAutorotate];
+  }
 }
 
 #pragma mark - Notification handling
@@ -4949,10 +4922,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
+#pragma mark - InfobarContainerStateDelegate
 
-#pragma mark - InfoBarControllerDelegate
-
-- (void)infoBarContainerStateChanged:(bool)isAnimating {
+- (void)infoBarContainerStateDidChangeAnimated:(BOOL)animated {
   InfoBarContainerView* infoBarContainerView = _infoBarContainer->view();
   DCHECK(infoBarContainerView);
   CGRect containerFrame = infoBarContainerView.frame;
@@ -4972,19 +4944,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
       }];
 }
 
-- (BOOL)shouldAutorotate {
-  if (_voiceSearchController && _voiceSearchController->IsVisible()) {
-    // Don't rotate if a voice search is being presented or dismissed.  Once the
-    // transition animations finish, only the Voice Search UIViewController's
-    // |-shouldAutorotate| will be called.
-    return NO;
-  } else if (_sideSwipeController && ![_sideSwipeController shouldAutorotate]) {
-    // Don't auto rotate if side swipe controller view says not to.
-    return NO;
-  } else {
-    return [super shouldAutorotate];
-  }
-}
+#pragma mark - UIGestureRecognizerDelegate
 
 // Always return yes, as this tap should work with various recognizers,
 // including UITextTapRecognizer, UILongPressGestureRecognizer,
