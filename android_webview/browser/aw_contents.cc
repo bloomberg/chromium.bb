@@ -67,6 +67,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -1331,6 +1332,29 @@ void AwContents::RenderViewHostChanged(content::RenderViewHost* old_host,
   // new compositor is constructed.
   browser_view_renderer_.SetActiveCompositorID(
       CompositorID(process_id, routing_id));
+}
+
+void AwContents::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // If this request was blocked in any way, broadcast an error.
+  net::Error error_code = navigation_handle->GetNetErrorCode();
+  if (error_code != net::ERR_BLOCKED_BY_CLIENT &&
+      error_code != net::ERR_BLOCKED_BY_ADMINISTRATOR &&
+      error_code != net::ERR_ABORTED) {
+    return;
+  }
+  AwContentsClientBridge* client =
+      AwContentsClientBridge::FromWebContents(web_contents_.get());
+  if (!client)
+    return;
+
+  AwWebResourceRequest request(navigation_handle->GetURL().spec(),
+                               navigation_handle->IsPost() ? "POST" : "GET",
+                               navigation_handle->IsInMainFrame(),
+                               navigation_handle->HasUserGesture(),
+                               net::HttpRequestHeaders());
+
+  client->OnReceivedError(request, error_code, false);
 }
 
 void AwContents::DidAttachInterstitialPage() {
