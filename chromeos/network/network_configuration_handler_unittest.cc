@@ -263,25 +263,6 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     GetShillProfileClient()->AddProfile("profile1", "abcde");
     GetShillProfileClient()->AddProfile("profile2", "vwxyz");
 
-    // Set current enabled service. This needs to be done before AddService
-    // below.
-    // This is because;
-    // - NetworkState looks at kProfileProperty obtained from
-    //   ShillServiceClient.
-    // - FakeShillProfileClient::AddEntry does not set it to the ShillService.
-    // - FakeShillServiceClient::AddService sets it, if there is already tied
-    //   to a profile (via FakeShillProfileClient::AddEntry or AddService).
-    // So, AddEntry called below is too late, but AddEntry requires the
-    // properties, which is created via FakeShillServiceClient::AddService.
-    // So, here we call AddEntry twice, before and after
-    // FakeShillServiceClient::AddService.
-    // TODO(hidehiko): Introduce AddServiceToProfile to FakeShillProfileClient,
-    // and get rid of this call.
-    // cf)
-    // https://chromium-review.googlesource.com/c/chromium/src/+/763832/1/chromeos/network/network_configuration_handler_unittest.cc#266
-    GetShillProfileClient()->AddEntry("profile2", "/service/2",
-                                      base::DictionaryValue());
-
     // Create two services.
     GetShillServiceClient()->AddService(
         "/service/1", std::string() /* guid */, std::string() /* name */,
@@ -289,6 +270,9 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     GetShillServiceClient()->AddService(
         "/service/2", std::string() /* guid */, std::string() /* name */,
         "wifi", std::string() /* state */, true /* visible */);
+
+    // Register "/service/2" to "profile2".
+    GetShillProfileClient()->AddService("profile2", "/service/2");
 
     // Tie profiles and services.
     const base::DictionaryValue* service_properties_1 =

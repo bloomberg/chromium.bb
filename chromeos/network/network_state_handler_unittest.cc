@@ -27,7 +27,6 @@
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/tether_constants.h"
 #include "dbus/object_path.h"
@@ -1585,11 +1584,12 @@ TEST_F(NetworkStateHandlerTest, NetworkGuidInProfile) {
   const std::string wifi_path = "/service/wifi_with_guid";
   const bool is_service_configured = true;
 
+  profile_test_->AddProfile(profile, std::string() /* userhash */);
+
   // Add a network to the default Profile with a specified GUID.
   AddService(wifi_path, kWifiGuid1, kWifiName1, shill::kTypeWifi,
              shill::kStateOnline);
-  profile_test_->AddProfile(profile, "" /* userhash */);
-  EXPECT_TRUE(profile_test_->AddService(profile, wifi_path));
+  ASSERT_TRUE(profile_test_->AddService(profile, wifi_path));
   UpdateManagerProperties();
 
   // Verify that a NetworkState exists with a matching GUID.
@@ -1606,8 +1606,9 @@ TEST_F(NetworkStateHandlerTest, NetworkGuidInProfile) {
 
   // Add the service (simulating a network coming back in range) and verify that
   // the NetworkState was created with the same GUID.
-  AddService(wifi_path, "" /* guid */, kWifiName1, shill::kTypeWifi,
+  AddService(wifi_path, std::string() /* guid */, kWifiName1, shill::kTypeWifi,
              shill::kStateOnline);
+  profile_test_->UpdateService(profile, wifi_path);
   UpdateManagerProperties();
   network = network_state_handler_->GetNetworkStateFromServicePath(
       wifi_path, is_service_configured);
