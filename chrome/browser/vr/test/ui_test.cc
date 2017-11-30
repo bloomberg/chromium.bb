@@ -117,8 +117,8 @@ void UiTest::VerifyOnlyElementsVisible(
       continue;
     }
     SCOPED_TRACE(element.DebugName());
-    bool should_be_visibile = (names.find(name) != names.end());
-    EXPECT_EQ(WillElementBeVisible(&element), should_be_visibile);
+    bool should_be_visible = (names.find(name) != names.end());
+    EXPECT_EQ(WillElementBeVisible(&element), should_be_visible);
   }
 }
 
@@ -210,6 +210,11 @@ bool UiTest::RunFor(base::TimeDelta delta) {
 
 bool UiTest::OnBeginFrame() const {
   return scene_->OnBeginFrame(current_time_, kForwardVector);
+}
+
+bool UiTest::OnBeginFrame(base::TimeDelta delta) {
+  current_time_ += delta;
+  return OnBeginFrame();
 }
 
 void UiTest::GetBackgroundColor(SkColor* background_color) const {

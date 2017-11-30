@@ -188,6 +188,7 @@ void UiElement::SetVisible(bool visible) {
 
 void UiElement::SetVisibleImmediately(bool visible) {
   opacity_ = visible ? opacity_when_visible_ : 0.0;
+  animation_player_.RemoveAnimations(OPACITY);
 }
 
 bool UiElement::IsVisible() const {

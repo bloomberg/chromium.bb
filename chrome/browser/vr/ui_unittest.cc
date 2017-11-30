@@ -364,19 +364,17 @@ TEST_F(UiTest, WebVrAutopresented) {
   CreateSceneForAutoPresentation();
 
   // Initially, we should only show the splash screen.
-  auto initial_elements = std::set<UiElementName>();
-  initial_elements.insert(kSplashScreenText);
-  initial_elements.insert(kSplashScreenBackground);
-  VerifyOnlyElementsVisible("Initial", initial_elements);
+  VerifyOnlyElementsVisible("Initial",
+                            {kSplashScreenText, kSplashScreenBackground});
 
   // Enter WebVR with autopresentation.
   ui_->SetWebVrMode(true, false);
-  model_->web_vr_timeout_state = kWebVrNoTimeoutPending;
+  ui_->OnWebVrFrameAvailable();
+
   // The splash screen should go away.
   RunFor(
       MsToDelta(1000 * (kSplashScreenMinDurationSeconds + kSmallDelaySeconds)));
-  VerifyOnlyElementsVisible("Autopresented",
-                            std::set<UiElementName>{kWebVrUrlToast});
+  VerifyOnlyElementsVisible("Autopresented", {kWebVrUrlToast});
 
   // Make sure the transient URL bar times out.
   RunFor(MsToDelta(1000 * (kWebVrUrlToastTimeoutSeconds + kSmallDelaySeconds)));
@@ -1132,6 +1130,32 @@ TEST_F(UiTest, ReticleStackingWithControllerElements) {
   EXPECT_EQ(element->DebugName(), sorted.back()->DebugName());
   EXPECT_EQ(scene_->GetUiElementByName(kLaser)->draw_phase(),
             element->draw_phase());
+}
+
+// Tests that transient elements will show, even if there is a long delay
+// between when they are asked to appear and when we issue the first frame with
+// them visible.
+TEST_F(UiTest, TransientToastsWithDelayedFirstFrame) {
+  CreateSceneForAutoPresentation();
+
+  // Initially, we should only show the splash screen.
+  VerifyOnlyElementsVisible("Initial",
+                            {kSplashScreenText, kSplashScreenBackground});
+
+  // Enter WebVR with autopresentation.
+  ui_->SetWebVrMode(true, false);
+  EXPECT_TRUE(RunFor(MsToDelta(2000)));
+  ui_->OnWebVrTimeoutImminent();
+  EXPECT_TRUE(RunFor(MsToDelta(3000)));
+  ui_->OnWebVrTimedOut();
+  EXPECT_TRUE(RunFor(MsToDelta(5000)));
+  ui_->OnWebVrFrameAvailable();
+  OnBeginFrame();
+
+  // If we advance far beyond the timeout for our first frame and our logic was
+  // naive, we would start to hide the transient element.
+  OnBeginFrame(MsToDelta(40000));
+  VerifyOnlyElementsVisible("Autopresented", {kWebVrUrlToast});
 }
 
 }  // namespace vr
