@@ -1770,6 +1770,10 @@ enum WebFeature {
   kVRGetDisplaysSupportsPresent = 2249,
   kDuplicatedAttribute = 2250,
   kDuplicatedAttributeForExecutedScript = 2251,
+  kV8RTCPeerConnection_GetSenders_Method = 2252,
+  kV8RTCPeerConnection_GetReceivers_Method = 2253,
+  kV8RTCPeerConnection_AddTrack_Method = 2254,
+  kV8RTCPeerConnection_RemoveTrack_Method = 2255,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
