@@ -147,10 +147,6 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
   if (validated_url_.is_empty())
     validated_url_ = validated_url;
 
-  // Any existing binding is invalid when we request a new banner.
-  if (binding_.is_bound())
-    binding_.Close();
-
   UpdateState(State::FETCHING_MANIFEST);
   manager_->GetData(
       ParamsToGetManifest(),
@@ -177,10 +173,8 @@ void AppBannerManager::SendBannerDismissed() {
   if (event_.is_bound())
     event_->BannerDismissed();
 
-  if (IsExperimentalAppBannersEnabled()) {
-    ResetBindings();
-    SendBannerPromptRequest();  // Reprompt.
-  }
+  if (IsExperimentalAppBannersEnabled())
+    SendBannerPromptRequest();
 }
 
 base::WeakPtr<AppBannerManager> AppBannerManager::GetWeakPtr() {
@@ -380,6 +374,9 @@ void AppBannerManager::SendBannerPromptRequest() {
 
   UpdateState(State::SENDING_EVENT);
   TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_CREATED);
+
+  // Any existing binding is invalid when we send a new beforeinstallprompt.
+  ResetBindings();
 
   web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
       mojo::MakeRequest(&controller_));
