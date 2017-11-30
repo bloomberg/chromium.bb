@@ -65,6 +65,11 @@ bool ShellVirtualKeyboardDelegate::SetVirtualKeyboardMode(int mode_enum) {
   return false;
 }
 
+bool ShellVirtualKeyboardDelegate::SetDraggableArea(
+    const api::virtual_keyboard_private::Bounds& rect) {
+  return false;
+}
+
 bool ShellVirtualKeyboardDelegate::SetRequestedKeyboardState(int state_enum) {
   return false;
 }

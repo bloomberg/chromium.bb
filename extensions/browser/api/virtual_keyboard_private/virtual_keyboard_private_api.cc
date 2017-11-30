@@ -24,6 +24,8 @@ const char kNotYetImplementedError[] =
     "API is not implemented on this platform.";
 const char kVirtualKeyboardNotEnabled[] =
     "The virtual keyboard is not enabled.";
+const char kSetDraggableAreaFailed[] =
+    "Setting draggable area of virtual keyboard failed.";
 const char kUnknownError[] = "Unknown error.";
 
 namespace keyboard = api::virtual_keyboard_private;
@@ -130,6 +132,16 @@ ExtensionFunction::ResponseAction VirtualKeyboardPrivateSetModeFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   if (!delegate()->SetVirtualKeyboardMode(params->mode))
     return RespondNow(Error(kVirtualKeyboardNotEnabled));
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+VirtualKeyboardPrivateSetDraggableAreaFunction::Run() {
+  std::unique_ptr<keyboard::SetDraggableArea::Params> params =
+      keyboard::SetDraggableArea::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  if (!delegate()->SetDraggableArea(params->bounds))
+    return RespondNow(Error(kSetDraggableAreaFailed));
   return RespondNow(NoArguments());
 }
 

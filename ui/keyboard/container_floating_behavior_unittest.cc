@@ -7,6 +7,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 namespace keyboard {
 
@@ -81,6 +83,15 @@ TEST(ContainerFloatingBehaviorTest, DontSaveCoordinatesUntilKeyboardMoved) {
   // without being adjusted.
   result = floating_behavior.AdjustSetBoundsRequest(workspace, center);
   ASSERT_EQ(center, result);
+}
+
+TEST(ContainerFloatingBehaviorTest, SetDraggableArea) {
+  ContainerFloatingBehavior floating_behavior(nullptr);
+  ASSERT_FALSE(
+      floating_behavior.IsDragHandle(gfx::Vector2d(2, 2), gfx::Size(600, 600)));
+  floating_behavior.SetDraggableArea(gfx::Rect(0, 0, 10, 10));
+  ASSERT_TRUE(
+      floating_behavior.IsDragHandle(gfx::Vector2d(2, 2), gfx::Size(600, 600)));
 }
 
 }  // namespace keyboard

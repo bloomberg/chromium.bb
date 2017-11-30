@@ -203,6 +203,18 @@
         ]
       },
       {
+        "name": "setDraggableArea",
+        "type": "function",
+        "description": "Sets the virtual keyboard draggable area bounds.",
+        "parameters": [
+          {
+            "$ref": "Bounds",
+            "name": "bounds",
+            "description": "The value of draggable rect area of floating keyboard."
+          }
+        ]
+      },
+      {
         "name": "setKeyboardState",
         "type": "function",
         "description": "Requests the virtual keyboard to change state.",

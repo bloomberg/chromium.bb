@@ -758,4 +758,11 @@ void KeyboardController::SetContainerType(const ContainerType type) {
   }
 }
 
+bool KeyboardController::SetDraggableArea(const gfx::Rect& rect) {
+  if (container_behavior_) {
+    return container_behavior_->SetDraggableArea(rect);
+  }
+  return false;
+}
+
 }  // namespace keyboard
