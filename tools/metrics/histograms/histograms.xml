@@ -93011,15 +93011,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="VR.SessionTime.DLA" units="ms">
-  <owner>ymalik@chromium.org</owner>
-  <summary>
-    The duration of a single VR session initiated via a deep-linked WebVR app.
-    Logged when a new disjoint session has begun, or when the session has ended
-    in a non-continuable way.
-  </summary>
-</histogram>
-
 <histogram name="VR.Shell.EncounteredSuppressedUI" enum="VRSuppressedElement">
   <owner>asimjour@chromium.org</owner>
   <summary>
@@ -93093,6 +93084,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The duration of the VR session.  Logged when a new disjoint session has
     begun, or when the session has ended in a non-continuable way.
+  </summary>
+</histogram>
+
+<histogram name="VRSessionTimeFromDLA" units="ms">
+  <owner>ymalik@chromium.org</owner>
+  <summary>
+    The duration of a single VR session initiated via a deep-linked WebVR app.
+    Logged when a new disjoint session has begun, or when the session has ended
+    in a non-continuable way.
   </summary>
 </histogram>
 
@@ -109166,8 +109166,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="WebVR"
       label="The session is restricted to the period that browser is
              displaying WebVR contents."/>
-  <affected-histogram name="VR.SessionTime.DLA"/>
   <affected-histogram name="VRSessionTime"/>
+  <affected-histogram name="VRSessionTimeFromDLA"/>
   <affected-histogram name="VRSessionVideoTime"/>
 </histogram_suffixes>
 

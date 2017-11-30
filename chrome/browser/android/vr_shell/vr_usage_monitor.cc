@@ -56,6 +56,7 @@ enum SessionEventName {
 };
 
 const char* HistogramNameFromSessionType(SessionEventName name) {
+  // TODO(crbug.com/790682): Migrate all of these to the "VR." namespace.
   static constexpr char kVrSession[] = "VRSessionTime";
   static constexpr char kWebVr[] = "VRSessionTime.WebVR";
   static constexpr char kBrowser[] = "VRSessionTime.Browser";
@@ -64,10 +65,10 @@ const char* HistogramNameFromSessionType(SessionEventName name) {
   static constexpr char kWebVrVideo[] = "VRSessionVideoTime.WebVR";
   static constexpr char kBrowserVideo[] = "VRSessionVideoTime.Browser";
   static constexpr char kFullscreenVideo[] = "VRSessionVideoTime.Fullscreen";
-  static constexpr char kVrSessionDla[] = "VR.SessionTime.DLA";
-  static constexpr char kWebVrDla[] = "VR.SessionTime.DLA.WebVR";
-  static constexpr char kBrowserDla[] = "VR.SessionTime.DLA.Browser";
-  static constexpr char kFullscreenDla[] = "VR.SessionTime.DLA.Fullscreen";
+  static constexpr char kVrSessionDla[] = "VRSessionTimeFromDLA";
+  static constexpr char kWebVrDla[] = "VRSessionTimeFromDLA.WebVR";
+  static constexpr char kBrowserDla[] = "VRSessionTimeFromDLA.Browser";
+  static constexpr char kFullscreenDla[] = "VRSessionTimeFromDLA.Fullscreen";
 
   switch (name) {
     case MODE_FULLSCREEN:
