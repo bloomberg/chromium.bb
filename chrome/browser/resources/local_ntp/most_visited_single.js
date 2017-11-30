@@ -223,41 +223,8 @@ var showTiles = function(info) {
  * @param {object} info Data received in the message.
  */
 var updateTheme = function(info) {
-  var themeStyle = [];
-
-  if (info.isThemeDark) {
-    themeStyle.push(
-        '.mv-tile, .mv-empty-tile { ' +
-        'background: rgb(51,51,51); }');
-    themeStyle.push(
-        '.mv-thumb.failed-img { ' +
-        'background-color: #555; }');
-    themeStyle.push(
-        '.mv-thumb.failed-img::after { ' +
-        'border-color: #333; }');
-    themeStyle.push(
-        '.mv-x { ' +
-        'background: linear-gradient(to left, ' +
-        'rgb(51,51,51) 60%, transparent); }');
-    themeStyle.push(
-        'html[dir=rtl] .mv-x { ' +
-        'background: linear-gradient(to right, ' +
-        'rgb(51,51,51) 60%, transparent); }');
-    themeStyle.push(
-        '.mv-x::after { ' +
-        'background-color: rgba(255,255,255,0.7); }');
-    themeStyle.push(
-        '.mv-x:hover::after { ' +
-        'background-color: #fff; }');
-    themeStyle.push(
-        '.mv-x:active::after { ' +
-        'background-color: rgba(255,255,255,0.5); }');
-  }
-  if (info.tileTitleColor) {
-    themeStyle.push('body { color: ' + info.tileTitleColor + '; }');
-  }
-
-  document.querySelector('#custom-theme').textContent = themeStyle.join('\n');
+  document.body.style.setProperty('--tile-title-color', info.tileTitleColor);
+  document.body.classList.toggle('dark-theme', info.isThemeDark);
 };
 
 
