@@ -5,7 +5,7 @@
 #include "core/css/properties/longhands/MinBlockSizeOrMinLogicalHeight.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyLengthUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -14,7 +14,7 @@ const CSSValue* MinBlockSizeOrMinLogicalHeight::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyLengthUtils::ConsumeWidthOrHeight(range, context);
+  return CSSParsingUtils::ConsumeWidthOrHeight(range, context);
 }
 
 }  // namespace CSSLonghand

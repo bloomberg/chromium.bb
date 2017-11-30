@@ -6,7 +6,7 @@
 
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyMarginUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 
@@ -17,7 +17,7 @@ const CSSValue* MarginBottom::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyMarginUtils::ConsumeMarginOrOffset(
+  return CSSParsingUtils::ConsumeMarginOrOffset(
       range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
 }
 

@@ -8,7 +8,7 @@
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyWebkitBorderWidthUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -24,8 +24,7 @@ const CSSValue* BorderWidthSide::ParseSingleValue(
   CSSPropertyParserHelpers::UnitlessQuirk unitless =
       allow_quirky_lengths ? CSSPropertyParserHelpers::UnitlessQuirk::kAllow
                            : CSSPropertyParserHelpers::UnitlessQuirk::kForbid;
-  return CSSPropertyWebkitBorderWidthUtils::ConsumeBorderWidth(
-      range, context.Mode(), unitless);
+  return CSSParsingUtils::ConsumeBorderWidth(range, context.Mode(), unitless);
 }
 
 }  // namespace CSSLonghand

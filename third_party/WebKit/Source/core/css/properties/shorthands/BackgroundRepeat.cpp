@@ -8,7 +8,7 @@
 #include "core/css/CSSInitialValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyBackgroundUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -22,8 +22,8 @@ bool BackgroundRepeat::ParseShorthand(
   CSSValue* result_x = nullptr;
   CSSValue* result_y = nullptr;
   bool implicit = false;
-  if (!CSSPropertyBackgroundUtils::ConsumeRepeatStyle(range, result_x, result_y,
-                                                      implicit) ||
+  if (!CSSParsingUtils::ConsumeRepeatStyle(range, result_x, result_y,
+                                           implicit) ||
       !range.AtEnd())
     return false;
 

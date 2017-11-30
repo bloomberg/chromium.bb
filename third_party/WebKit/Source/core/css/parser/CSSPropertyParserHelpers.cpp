@@ -23,9 +23,8 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserLocalContext.h"
+#include "core/css/properties/CSSParsingUtils.h"
 #include "core/css/properties/CSSProperty.h"
-#include "core/css/properties/CSSPropertyBoxShadowUtils.h"
-#include "core/css/properties/CSSPropertyTransformUtils.h"
 #include "core/css/properties/Longhand.h"
 #include "core/frame/UseCounter.h"
 #include "platform/runtime_enabled_features.h"
@@ -89,8 +88,8 @@ CSSFunctionValue* ConsumeFilterFunction(CSSParserTokenRange& range,
   CSSValue* parsed_value = nullptr;
 
   if (filter_type == CSSValueDropShadow) {
-    parsed_value = CSSPropertyBoxShadowUtils::ParseSingleShadow(
-        args, context.Mode(), AllowInsetAndSpread::kForbid);
+    parsed_value = CSSParsingUtils::ParseSingleShadow(
+        args, context.Mode(), CSSParsingUtils::AllowInsetAndSpread::kForbid);
   } else {
     if (args.AtEnd()) {
       context.Count(WebFeature::kCSSFilterFunctionNoArguments);
@@ -1566,8 +1565,8 @@ void AddProperty(CSSPropertyID resolved_property,
 
 CSSValue* ConsumeTransformList(CSSParserTokenRange& range,
                                const CSSParserContext& context) {
-  return CSSPropertyTransformUtils::ConsumeTransformList(
-      range, context, CSSParserLocalContext());
+  return CSSParsingUtils::ConsumeTransformList(range, context,
+                                               CSSParserLocalContext());
 }
 
 CSSValue* ConsumeFilterFunctionList(CSSParserTokenRange& range,

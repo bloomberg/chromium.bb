@@ -6,7 +6,7 @@
 
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyGridUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {
@@ -21,7 +21,7 @@ bool GridTemplate::ParseShorthand(
   CSSValue* template_rows = nullptr;
   CSSValue* template_columns = nullptr;
   CSSValue* template_areas = nullptr;
-  if (!CSSPropertyGridUtils::ConsumeGridTemplateShorthand(
+  if (!CSSParsingUtils::ConsumeGridTemplateShorthand(
           important, range, context, template_rows, template_columns,
           template_areas))
     return false;

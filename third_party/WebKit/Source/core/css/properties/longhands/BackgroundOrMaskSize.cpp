@@ -7,7 +7,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyBackgroundUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -17,9 +17,10 @@ const CSSValue* BackgroundOrMaskSize::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSPropertyBackgroundUtils::ConsumeBackgroundSize, range, context.Mode(),
-      local_context.UseAliasParsing() ? ParsingStyle::kLegacy
-                                      : ParsingStyle::kNotLegacy);
+      CSSParsingUtils::ConsumeBackgroundSize, range, context.Mode(),
+      local_context.UseAliasParsing()
+          ? CSSParsingUtils::ParsingStyle::kLegacy
+          : CSSParsingUtils::ParsingStyle::kNotLegacy);
 }
 
 }  // namespace CSSLonghand

@@ -16,8 +16,8 @@
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/CSSVariableParser.h"
+#include "core/css/properties/CSSParsingUtils.h"
 #include "core/css/properties/CSSProperty.h"
-#include "core/css/properties/CSSPropertyFontUtils.h"
 #include "core/css/properties/Shorthand.h"
 #include "platform/runtime_enabled_features.h"
 
@@ -251,7 +251,7 @@ static CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
       return ConsumeIdent(range);
     }
     CSSIdentifierValue* font_variant =
-        CSSPropertyFontUtils::ConsumeFontVariantCSS21(range);
+        CSSParsingUtils::ConsumeFontVariantCSS21(range);
     if (font_variant)
       values->Append(*font_variant);
   } while (ConsumeCommaIncludingWhitespace(range));
@@ -321,7 +321,7 @@ static CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
         arg.Value().ToString(), should_check_content_security_policy);
   }
   if (args.Peek().GetType() == kIdentToken) {
-    String family_name = CSSPropertyFontUtils::ConcatenateFamilyName(args);
+    String family_name = CSSParsingUtils::ConcatenateFamilyName(args);
     if (!args.AtEnd())
       return nullptr;
     return CSSFontFaceSrcValue::CreateLocal(
@@ -352,9 +352,9 @@ bool CSSPropertyParser::ParseFontFaceDescriptor(CSSPropertyID prop_id) {
   CSSValue* parsed_value = nullptr;
   switch (prop_id) {
     case CSSPropertyFontFamily:
-      if (CSSPropertyFontUtils::ConsumeGenericFamily(range_))
+      if (CSSParsingUtils::ConsumeGenericFamily(range_))
         return false;
-      parsed_value = CSSPropertyFontUtils::ConsumeFamilyName(range_);
+      parsed_value = CSSParsingUtils::ConsumeFamilyName(range_);
       break;
     case CSSPropertySrc:  // This is a list of urls or local references.
       parsed_value = ConsumeFontFaceSrc(range_, context_);
@@ -366,22 +366,22 @@ bool CSSPropertyParser::ParseFontFaceDescriptor(CSSPropertyID prop_id) {
       parsed_value = ConsumeFontDisplay(range_);
       break;
     case CSSPropertyFontStretch:
-      parsed_value = CSSPropertyFontUtils::ConsumeFontStretch(
-          range_, kCSSFontFaceRuleMode);
+      parsed_value =
+          CSSParsingUtils::ConsumeFontStretch(range_, kCSSFontFaceRuleMode);
       break;
     case CSSPropertyFontStyle:
       parsed_value =
-          CSSPropertyFontUtils::ConsumeFontStyle(range_, kCSSFontFaceRuleMode);
+          CSSParsingUtils::ConsumeFontStyle(range_, kCSSFontFaceRuleMode);
       break;
     case CSSPropertyFontVariant:
       parsed_value = ConsumeFontVariantList(range_);
       break;
     case CSSPropertyFontWeight:
       parsed_value =
-          CSSPropertyFontUtils::ConsumeFontWeight(range_, kCSSFontFaceRuleMode);
+          CSSParsingUtils::ConsumeFontWeight(range_, kCSSFontFaceRuleMode);
       break;
     case CSSPropertyFontFeatureSettings:
-      parsed_value = CSSPropertyFontUtils::ConsumeFontFeatureSettings(range_);
+      parsed_value = CSSParsingUtils::ConsumeFontFeatureSettings(range_);
       break;
     default:
       break;

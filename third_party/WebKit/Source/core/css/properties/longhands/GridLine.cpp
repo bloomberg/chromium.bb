@@ -4,7 +4,7 @@
 
 #include "core/css/properties/longhands/GridLine.h"
 
-#include "core/css/properties/CSSPropertyGridUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -12,7 +12,7 @@ namespace CSSLonghand {
 const CSSValue* GridLine::ParseSingleValue(CSSParserTokenRange& range,
                                            const CSSParserContext&,
                                            const CSSParserLocalContext&) const {
-  return CSSPropertyGridUtils::ConsumeGridLine(range);
+  return CSSParsingUtils::ConsumeGridLine(range);
 }
 
 }  // namespace CSSLonghand

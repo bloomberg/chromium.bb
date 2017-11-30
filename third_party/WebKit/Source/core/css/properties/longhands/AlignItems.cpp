@@ -5,7 +5,7 @@
 #include "core/css/properties/longhands/AlignItems.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyAlignmentUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -17,7 +17,7 @@ const CSSValue* AlignItems::ParseSingleValue(
   // align-items property does not allow the 'auto' value.
   if (CSSPropertyParserHelpers::IdentMatches<CSSValueAuto>(range.Peek().Id()))
     return nullptr;
-  return CSSPropertyAlignmentUtils::ConsumeSelfPositionOverflowPosition(range);
+  return CSSParsingUtils::ConsumeSelfPositionOverflowPosition(range);
 }
 
 }  // namespace CSSLonghand

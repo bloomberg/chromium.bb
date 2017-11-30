@@ -5,7 +5,7 @@
 #include "core/css/properties/longhands/TextShadow.h"
 
 #include "core/css/parser/CSSParserContext.h"
-#include "core/css/properties/CSSPropertyBoxShadowUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -14,8 +14,8 @@ const CSSValue* TextShadow::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyBoxShadowUtils::ConsumeShadow(range, context.Mode(),
-                                                  AllowInsetAndSpread::kForbid);
+  return CSSParsingUtils::ConsumeShadow(
+      range, context.Mode(), CSSParsingUtils::AllowInsetAndSpread::kForbid);
 }
 
 }  // namespace CSSLonghand

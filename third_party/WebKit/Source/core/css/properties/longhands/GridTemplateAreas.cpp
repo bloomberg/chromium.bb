@@ -9,7 +9,7 @@
 #include "core/css/parser/CSSParserToken.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyGridUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 #include "core/style/GridArea.h"
 
 namespace blink {
@@ -27,7 +27,7 @@ const CSSValue* GridTemplateAreas::ParseSingleValue(
   size_t column_count = 0;
 
   while (range.Peek().GetType() == kStringToken) {
-    if (!CSSPropertyGridUtils::ParseGridTemplateAreasRow(
+    if (!CSSParsingUtils::ParseGridTemplateAreasRow(
             range.ConsumeIncludingWhitespace().Value().ToString(),
             grid_area_map, row_count, column_count))
       return nullptr;

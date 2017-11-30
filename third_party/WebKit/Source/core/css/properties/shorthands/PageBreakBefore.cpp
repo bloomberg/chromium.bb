@@ -5,7 +5,7 @@
 #include "core/css/properties/shorthands/PageBreakBefore.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyLegacyBreakUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -17,7 +17,7 @@ bool PageBreakBefore::ParseShorthand(
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValueID value;
-  if (!CSSPropertyLegacyBreakUtils::ConsumeFromPageBreakBetween(range, value)) {
+  if (!CSSParsingUtils::ConsumeFromPageBreakBetween(range, value)) {
     return false;
   }
 

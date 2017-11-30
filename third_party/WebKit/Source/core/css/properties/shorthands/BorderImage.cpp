@@ -7,7 +7,7 @@
 #include "core/css/CSSInitialValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyBorderImageUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -24,9 +24,9 @@ bool BorderImage::ParseShorthand(
   CSSValue* outset = nullptr;
   CSSValue* repeat = nullptr;
 
-  if (!CSSPropertyBorderImageUtils::ConsumeBorderImageComponents(
+  if (!CSSParsingUtils::ConsumeBorderImageComponents(
           range, context, source, slice, width, outset, repeat,
-          DefaultFill::kNoFill)) {
+          CSSParsingUtils::DefaultFill::kNoFill)) {
     return false;
   }
 

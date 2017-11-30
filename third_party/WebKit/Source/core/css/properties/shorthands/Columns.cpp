@@ -7,7 +7,7 @@
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyColumnUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -20,11 +20,10 @@ bool Columns::ParseShorthand(
     HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValue* column_width = nullptr;
   CSSValue* column_count = nullptr;
-  if (!CSSPropertyColumnUtils::ConsumeColumnWidthOrCount(range, column_width,
-                                                         column_count))
+  if (!CSSParsingUtils::ConsumeColumnWidthOrCount(range, column_width,
+                                                  column_count))
     return false;
-  CSSPropertyColumnUtils::ConsumeColumnWidthOrCount(range, column_width,
-                                                    column_count);
+  CSSParsingUtils::ConsumeColumnWidthOrCount(range, column_width, column_count);
   if (!range.AtEnd())
     return false;
   if (!column_width)

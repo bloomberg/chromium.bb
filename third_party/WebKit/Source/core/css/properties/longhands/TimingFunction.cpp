@@ -5,7 +5,7 @@
 #include "core/css/properties/longhands/TimingFunction.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyAnimationTimingFunctionUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -15,8 +15,7 @@ const CSSValue* TimingFunction::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSPropertyAnimationTimingFunctionUtils::ConsumeAnimationTimingFunction,
-      range);
+      CSSParsingUtils::ConsumeAnimationTimingFunction, range);
 }
 
 }  // namespace CSSLonghand

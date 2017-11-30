@@ -6,7 +6,7 @@
 
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyPositionUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -16,8 +16,7 @@ const CSSValue* PositionX::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueLeft,
-                                                        CSSValueRight>,
+      CSSParsingUtils::ConsumePositionLonghand<CSSValueLeft, CSSValueRight>,
       range, context.Mode());
 }
 

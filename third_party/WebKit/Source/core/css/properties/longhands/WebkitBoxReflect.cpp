@@ -8,7 +8,7 @@
 #include "core/css/CSSReflectValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyBorderImageUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace {
@@ -33,8 +33,7 @@ CSSValue* ConsumeReflect(CSSParserTokenRange& range,
 
   CSSValue* mask = nullptr;
   if (!range.AtEnd()) {
-    mask =
-        CSSPropertyBorderImageUtils::ConsumeWebkitBorderImage(range, context);
+    mask = CSSParsingUtils::ConsumeWebkitBorderImage(range, context);
     if (!mask)
       return nullptr;
   }

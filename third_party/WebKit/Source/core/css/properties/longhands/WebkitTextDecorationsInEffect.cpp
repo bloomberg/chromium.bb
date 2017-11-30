@@ -4,7 +4,7 @@
 
 #include "core/css/properties/longhands/WebkitTextDecorationsInEffect.h"
 
-#include "core/css/properties/CSSPropertyTextDecorationLineUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -13,7 +13,7 @@ const CSSValue* WebkitTextDecorationsInEffect::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSPropertyTextDecorationLineUtils::ConsumeTextDecorationLine(range);
+  return CSSParsingUtils::ConsumeTextDecorationLine(range);
 }
 
 }  // namespace CSSLonghand

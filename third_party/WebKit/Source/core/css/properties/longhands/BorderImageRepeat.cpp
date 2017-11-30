@@ -4,7 +4,7 @@
 
 #include "core/css/properties/longhands/BorderImageRepeat.h"
 
-#include "core/css/properties/CSSPropertyBorderImageUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -13,7 +13,7 @@ const CSSValue* BorderImageRepeat::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSPropertyBorderImageUtils::ConsumeBorderImageRepeat(range);
+  return CSSParsingUtils::ConsumeBorderImageRepeat(range);
 }
 
 }  // namespace CSSLonghand

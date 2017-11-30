@@ -6,7 +6,7 @@
 
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyBackgroundUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -18,11 +18,11 @@ const CSSValue* BackgroundBox::ParseSingleValue(
   // This is legacy behavior that does not match spec, see crbug.com/604023
   if (local_context.UseAliasParsing()) {
     return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-        CSSPropertyBackgroundUtils::ConsumePrefixedBackgroundBox, range,
-        AllowTextValue::kAllow);
+        CSSParsingUtils::ConsumePrefixedBackgroundBox, range,
+        CSSParsingUtils::AllowTextValue::kAllow);
   }
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSPropertyBackgroundUtils::ConsumeBackgroundBox, range);
+      CSSParsingUtils::ConsumeBackgroundBox, range);
 }
 
 }  // namespace CSSLonghand

@@ -11,7 +11,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyFontUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 #include "core/layout/LayoutTheme.h"
 
 namespace blink {
@@ -105,8 +105,7 @@ bool ConsumeFont(bool important,
     CSSValueID id = range.Peek().Id();
     if (!font_style && (id == CSSValueNormal || id == CSSValueItalic ||
                         id == CSSValueOblique)) {
-      font_style =
-          CSSPropertyFontUtils::ConsumeFontStyle(range, context.Mode());
+      font_style = CSSParsingUtils::ConsumeFontStyle(range, context.Mode());
       continue;
     }
     if (!font_variant_caps &&
@@ -114,13 +113,12 @@ bool ConsumeFont(bool important,
       // Font variant in the shorthand is particular, it only accepts normal or
       // small-caps.
       // See https://drafts.csswg.org/css-fonts/#propdef-font
-      font_variant_caps = CSSPropertyFontUtils::ConsumeFontVariantCSS21(range);
+      font_variant_caps = CSSParsingUtils::ConsumeFontVariantCSS21(range);
       if (font_variant_caps)
         continue;
     }
     if (!font_weight) {
-      font_weight =
-          CSSPropertyFontUtils::ConsumeFontWeight(range, context.Mode());
+      font_weight = CSSParsingUtils::ConsumeFontWeight(range, context.Mode());
       if (font_weight)
         continue;
     }
@@ -132,8 +130,7 @@ bool ConsumeFont(bool important,
     // shorthand, compare: [ [ <‘font-style’> || <font-variant-css21> ||
     // <‘font-weight’> || <font-stretch-css3> ]?
     if (font_stretch ||
-        !(font_stretch =
-              CSSPropertyFontUtils::ConsumeFontStretchKeywordOnly(range)))
+        !(font_stretch = CSSParsingUtils::ConsumeFontStretchKeywordOnly(range)))
       break;
   }
 
@@ -177,8 +174,7 @@ bool ConsumeFont(bool important,
       properties);
 
   // Now a font size _must_ come.
-  CSSValue* font_size =
-      CSSPropertyFontUtils::ConsumeFontSize(range, context.Mode());
+  CSSValue* font_size = CSSParsingUtils::ConsumeFontSize(range, context.Mode());
   if (!font_size || range.AtEnd())
     return false;
 
@@ -188,7 +184,7 @@ bool ConsumeFont(bool important,
 
   if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
     CSSValue* line_height =
-        CSSPropertyFontUtils::ConsumeLineHeight(range, context.Mode());
+        CSSParsingUtils::ConsumeLineHeight(range, context.Mode());
     if (!line_height)
       return false;
     CSSPropertyParserHelpers::AddProperty(
@@ -202,8 +198,7 @@ bool ConsumeFont(bool important,
   }
 
   // Font family must come now.
-  CSSValue* parsed_family_value =
-      CSSPropertyFontUtils::ConsumeFontFamily(range);
+  CSSValue* parsed_family_value = CSSParsingUtils::ConsumeFontFamily(range);
   if (!parsed_family_value)
     return false;
 

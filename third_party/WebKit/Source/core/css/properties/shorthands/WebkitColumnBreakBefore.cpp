@@ -5,7 +5,7 @@
 #include "core/css/properties/shorthands/WebkitColumnBreakBefore.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyLegacyBreakUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -17,8 +17,7 @@ bool WebkitColumnBreakBefore::ParseShorthand(
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValueID value;
-  if (!CSSPropertyLegacyBreakUtils::ConsumeFromColumnBreakBetween(range,
-                                                                  value)) {
+  if (!CSSParsingUtils::ConsumeFromColumnBreakBetween(range, value)) {
     return false;
   }
 

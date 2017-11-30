@@ -6,7 +6,7 @@
 
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyBackgroundUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -16,8 +16,8 @@ const CSSValue* WebkitMaskClip::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSPropertyBackgroundUtils::ConsumePrefixedBackgroundBox, range,
-      AllowTextValue::kAllow);
+      CSSParsingUtils::ConsumePrefixedBackgroundBox, range,
+      CSSParsingUtils::AllowTextValue::kAllow);
 }
 
 }  // namespace CSSLonghand

@@ -6,7 +6,7 @@
 
 #include "core/css/CSSURIValue.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyShapeUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -18,7 +18,7 @@ const CSSValue* ClipPath::ParseSingleValue(CSSParserTokenRange& range,
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   if (CSSURIValue* url = CSSPropertyParserHelpers::ConsumeUrl(range, &context))
     return url;
-  return CSSPropertyShapeUtils::ConsumeBasicShape(range, context);
+  return CSSParsingUtils::ConsumeBasicShape(range, context);
 }
 
 }  // namespace CSSLonghand

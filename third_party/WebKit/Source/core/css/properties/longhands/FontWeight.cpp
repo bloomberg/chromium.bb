@@ -5,7 +5,7 @@
 #include "core/css/properties/longhands/FontWeight.h"
 
 #include "core/css/parser/CSSParserContext.h"
-#include "core/css/properties/CSSPropertyFontUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -14,7 +14,7 @@ const CSSValue* FontWeight::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyFontUtils::ConsumeFontWeight(range, context.Mode());
+  return CSSParsingUtils::ConsumeFontWeight(range, context.Mode());
 }
 
 }  // namespace CSSLonghand

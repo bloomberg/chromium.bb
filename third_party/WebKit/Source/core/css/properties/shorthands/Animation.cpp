@@ -9,10 +9,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyAnimationIterationCountUtils.h"
-#include "core/css/properties/CSSPropertyAnimationNameUtils.h"
-#include "core/css/properties/CSSPropertyAnimationTimingFunctionUtils.h"
-#include "core/css/properties/CSSPropertyAnimationUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace {
@@ -37,17 +34,15 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
           CSSValueNone, CSSValueForwards, CSSValueBackwards, CSSValueBoth>(
           range);
     case CSSPropertyAnimationIterationCount:
-      return CSSPropertyAnimationIterationCountUtils::
-          ConsumeAnimationIterationCount(range);
+      return CSSParsingUtils::ConsumeAnimationIterationCount(range);
     case CSSPropertyAnimationName:
-      return CSSPropertyAnimationNameUtils::ConsumeAnimationName(
-          range, context, use_legacy_parsing);
+      return CSSParsingUtils::ConsumeAnimationName(range, context,
+                                                   use_legacy_parsing);
     case CSSPropertyAnimationPlayState:
       return CSSPropertyParserHelpers::ConsumeIdent<CSSValueRunning,
                                                     CSSValuePaused>(range);
     case CSSPropertyAnimationTimingFunction:
-      return CSSPropertyAnimationTimingFunctionUtils::
-          ConsumeAnimationTimingFunction(range);
+      return CSSParsingUtils::ConsumeAnimationTimingFunction(range);
     default:
       NOTREACHED();
       return nullptr;
@@ -66,9 +61,9 @@ bool Animation::ParseShorthand(
   const StylePropertyShorthand shorthand = animationShorthandForParsing();
   const unsigned longhand_count = shorthand.length();
 
-  HeapVector<Member<CSSValueList>, kMaxNumAnimationLonghands> longhands(
-      longhand_count);
-  if (!CSSPropertyAnimationUtils::ConsumeAnimationShorthand(
+  HeapVector<Member<CSSValueList>, CSSParsingUtils::kMaxNumAnimationLonghands>
+      longhands(longhand_count);
+  if (!CSSParsingUtils::ConsumeAnimationShorthand(
           shorthand, longhands, ConsumeAnimationValue, range, context,
           local_context.UseAliasParsing())) {
     return false;

@@ -4,7 +4,7 @@
 
 #include "core/css/properties/longhands/MaskSourceType.h"
 
-#include "core/css/properties/CSSPropertyBackgroundUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -14,7 +14,7 @@ const CSSValue* MaskSourceType::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSPropertyBackgroundUtils::ConsumeMaskSourceType, range);
+      CSSParsingUtils::ConsumeMaskSourceType, range);
 }
 
 }  // namespace CSSLonghand

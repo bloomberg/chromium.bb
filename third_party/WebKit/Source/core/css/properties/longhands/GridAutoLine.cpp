@@ -5,7 +5,7 @@
 #include "core/css/properties/longhands/GridAutoLine.h"
 
 #include "core/css/parser/CSSParserContext.h"
-#include "core/css/properties/CSSPropertyGridUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -14,8 +14,8 @@ const CSSValue* GridAutoLine::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyGridUtils::ConsumeGridTrackList(
-      range, context.Mode(), CSSPropertyGridUtils::TrackListType::kGridAuto);
+  return CSSParsingUtils::ConsumeGridTrackList(
+      range, context.Mode(), CSSParsingUtils::TrackListType::kGridAuto);
 }
 
 }  // namespace CSSLonghand

@@ -4,7 +4,7 @@
 
 #include "core/css/properties/longhands/ColumnCount.h"
 
-#include "core/css/properties/CSSPropertyColumnUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -13,7 +13,7 @@ const CSSValue* ColumnCount::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyColumnUtils::ConsumeColumnCount(range);
+  return CSSParsingUtils::ConsumeColumnCount(range);
 }
 
 }  // namespace CSSLonghand

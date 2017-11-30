@@ -4,7 +4,7 @@
 
 #include "core/css/properties/longhands/OffsetRotate.h"
 
-#include "core/css/properties/CSSPropertyOffsetRotateUtils.h"
+#include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -13,7 +13,7 @@ const CSSValue* OffsetRotate::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyOffsetRotateUtils::ConsumeOffsetRotate(range, context);
+  return CSSParsingUtils::ConsumeOffsetRotate(range, context);
 }
 
 }  // namespace CSSLonghand
