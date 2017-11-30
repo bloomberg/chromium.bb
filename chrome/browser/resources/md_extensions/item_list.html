@@ -47,9 +47,9 @@
       }
 
       #app-title {
-        @apply(--cr-title-text);
-        margin-bottom: 6px;
-        margin-top: 20px;
+        @apply(--cr-section-text);
+        margin-bottom: 12px;
+        margin-top: 21px;
       }
     </style>
     <div id="container">
@@ -69,7 +69,7 @@
       <div class="items-container" hidden="[[!shownExtensionsCount_]]">
         <!-- Render only a few items first, to improve initial render time, then
           render the remaining items on a different frame. Value of 3 was chosen
-          by experimentation, and it is a good tradeoff between initial render
+          by experimentation, and it is a good trade-off between initial render
           time and total render time. -->
         <template is="dom-repeat" items="[[extensions]]" initial-count="3"
             filter="[[computeFilter_(filter)]]"
@@ -83,7 +83,7 @@
       <div hidden="[[!shownAppsCount_]]">
         <!-- app-title needs to left-align with the grid content below, and
              the easiest way to achieve this is to make it a grid as well. -->
-        <h1 id="app-title" class="items-container">$i18n{appsTitle}</h1>
+        <h2 id="app-title" class="items-container">$i18n{appsTitle}</h2>
         <div class="items-container">
           <template is="dom-repeat" items="[[apps]]" initial-count="3"
               filter="[[computeFilter_(filter)]]"
