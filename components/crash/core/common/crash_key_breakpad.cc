@@ -11,7 +11,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "components/crash/core/common/crash_key_base_support.h"
 #include "components/crash/core/common/crash_key_internal.h"
 
 #if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
@@ -100,7 +99,6 @@ bool CrashKeyStringImpl::is_set() const {
 void InitializeCrashKeys() {
   if (!internal::g_storage) {
     internal::g_storage = new internal::TransitionalCrashKeyStorage();
-    InitializeCrashKeyBaseSupport();
   }
 }
 
