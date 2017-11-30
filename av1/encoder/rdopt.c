@@ -5373,8 +5373,11 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
 
   for (int plane = 0; plane < CFL_PRED_PLANES; plane++) {
     for (int pn_sign = CFL_SIGN_NEG; pn_sign < CFL_SIGNS; pn_sign++) {
+      int progress = 0;
       for (int c = 0; c < CFL_ALPHABET_SIZE; c++) {
+        int flag = 0;
         RD_STATS rd_stats;
+        if (c > 2 && progress < c) break;
         av1_init_rd_stats(&rd_stats);
         for (int i = 0; i < CFL_SIGNS; i++) {
           const int joint_sign = PLANE_SIGN_TO_JOINT_SIGN(plane, pn_sign, i);
@@ -5394,12 +5397,14 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
 #if CONFIG_DEBUG
           best_rate_uv[joint_sign][plane] = rd_stats.rate;
 #endif  // CONFIG_DEBUG
+          flag = 2;
           if (best_rd_uv[joint_sign][!plane] == INT64_MAX) continue;
           this_rd += mode_rd + best_rd_uv[joint_sign][!plane];
           if (this_rd >= best_rd) continue;
           best_rd = this_rd;
           best_joint_sign = joint_sign;
         }
+        progress += flag;
       }
     }
   }
