@@ -122,6 +122,9 @@ int main() {
   int bar = base::android::Java_SampleForTests_javaMethod(
       env, my_java_object, 1, 2);
 
+  base::android::Java_SampleForTests_methodWithGenericParams(
+      env, my_java_object, nullptr, nullptr);
+
   // This is how you call a java constructor method from C++.
   ScopedJavaLocalRef<jobject> my_created_object =
       base::android::Java_SampleForTests_Constructor(env, 1, 2);

@@ -233,6 +233,25 @@ def GetParamsInStub(native):
                          for param in native.params])
 
 
+def _StripGenerics(value):
+  """Strips Java generics from a string."""
+  nest_level = 0  # How deeply we are nested inside the generics.
+  start_index = 0  # Starting index of the last non-generic region.
+  out = []
+
+  for i, c in enumerate(value):
+    if c == '<':
+      if nest_level == 0:
+        out.append(value[start_index:i])
+      nest_level += 1
+    elif c == '>':
+      start_index = i + 1
+      nest_level -= 1
+  out.append(value[start_index:])
+
+  return ''.join(out)
+
+
 class JniParams(object):
   """Get JNI related parameters."""
 
@@ -399,8 +418,9 @@ class JniParams(object):
     if not params:
       return []
     ret = []
-    for p in [p.strip() for p in params.split(',')]:
-      items = p.split(' ')
+    params = _StripGenerics(params)
+    for p in params.split(','):
+      items = p.split()
 
       # Remove @Annotations from parameters.
       while items[0].startswith('@'):
