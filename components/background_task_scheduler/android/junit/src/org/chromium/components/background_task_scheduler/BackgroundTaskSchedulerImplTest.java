@@ -42,16 +42,13 @@ import java.util.concurrent.TimeUnit;
 @Config(manifest = Config.NONE,
         shadows = {ShadowGcmNetworkManager.class, ShadowGoogleApiAvailability.class})
 public class BackgroundTaskSchedulerImplTest {
-    private static final TaskInfo TASK =
-            TaskInfo.createOneOffTask(
-                            TaskIds.TEST, TestBackgroundTask.class, TimeUnit.DAYS.toMillis(1))
-                    .build();
-
     @Mock
     private BackgroundTaskSchedulerDelegate mDelegate;
     @Mock
     private BackgroundTaskSchedulerUma mBackgroundTaskSchedulerUma;
     private ShadowGcmNetworkManager mGcmNetworkManager;
+
+    private TaskInfo mTask;
 
     @Before
     public void setUp() {
@@ -67,17 +64,21 @@ public class BackgroundTaskSchedulerImplTest {
                 .setIsGooglePlayServicesAvailable(ConnectionResult.SUCCESS);
         mGcmNetworkManager = (ShadowGcmNetworkManager) Shadow.extract(
                 GcmNetworkManager.getInstance(ContextUtils.getApplicationContext()));
+
+        mTask = TaskInfo.createOneOffTask(
+                                TaskIds.TEST, TestBackgroundTask.class, TimeUnit.DAYS.toMillis(1))
+                        .build();
     }
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testScheduleTaskSuccessful() {
-        doReturn(true).when(mDelegate).schedule(eq(RuntimeEnvironment.application), eq(TASK));
+        doReturn(true).when(mDelegate).schedule(eq(RuntimeEnvironment.application), eq(mTask));
         BackgroundTaskSchedulerFactory.getScheduler().schedule(
-                RuntimeEnvironment.application, TASK);
+                RuntimeEnvironment.application, mTask);
         assertTrue(BackgroundTaskSchedulerPrefs.getScheduledTasks().contains(
-                TASK.getBackgroundTaskClass().getName()));
-        verify(mDelegate, times(1)).schedule(eq(RuntimeEnvironment.application), eq(TASK));
+                mTask.getBackgroundTaskClass().getName()));
+        verify(mDelegate, times(1)).schedule(eq(RuntimeEnvironment.application), eq(mTask));
         verify(mBackgroundTaskSchedulerUma, times(1))
                 .reportTaskScheduled(eq(TaskIds.TEST), eq(true));
     }
@@ -85,31 +86,31 @@ public class BackgroundTaskSchedulerImplTest {
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testScheduleTaskFailed() {
-        doReturn(false).when(mDelegate).schedule(eq(RuntimeEnvironment.application), eq(TASK));
+        doReturn(false).when(mDelegate).schedule(eq(RuntimeEnvironment.application), eq(mTask));
         BackgroundTaskSchedulerFactory.getScheduler().schedule(
-                RuntimeEnvironment.application, TASK);
+                RuntimeEnvironment.application, mTask);
         assertFalse(BackgroundTaskSchedulerPrefs.getScheduledTasks().contains(
-                TASK.getBackgroundTaskClass().getName()));
-        verify(mDelegate, times(1)).schedule(eq(RuntimeEnvironment.application), eq(TASK));
+                mTask.getBackgroundTaskClass().getName()));
+        verify(mDelegate, times(1)).schedule(eq(RuntimeEnvironment.application), eq(mTask));
     }
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testCancel() {
-        BackgroundTaskSchedulerPrefs.addScheduledTask(TASK);
+        BackgroundTaskSchedulerPrefs.addScheduledTask(mTask);
 
         doNothing().when(mDelegate).cancel(eq(RuntimeEnvironment.application), eq(TaskIds.TEST));
         BackgroundTaskSchedulerFactory.getScheduler().cancel(
                 RuntimeEnvironment.application, TaskIds.TEST);
         assertFalse(BackgroundTaskSchedulerPrefs.getScheduledTasks().contains(
-                TASK.getBackgroundTaskClass().getName()));
+                mTask.getBackgroundTaskClass().getName()));
         verify(mDelegate, times(1)).cancel(eq(RuntimeEnvironment.application), eq(TaskIds.TEST));
     }
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
     public void testRescheduleTasks() {
-        BackgroundTaskSchedulerPrefs.addScheduledTask(TASK);
+        BackgroundTaskSchedulerPrefs.addScheduledTask(mTask);
 
         assertEquals(0, TestBackgroundTask.getRescheduleCalls());
         assertFalse(BackgroundTaskSchedulerPrefs.getScheduledTasks().isEmpty());
@@ -123,7 +124,7 @@ public class BackgroundTaskSchedulerImplTest {
     @Feature({"BackgroundTaskScheduler"})
     public void testCheckForOSUpgrade_PreMToMPlus() {
         BackgroundTaskSchedulerPrefs.setLastSdkVersion(Build.VERSION_CODES.LOLLIPOP);
-        BackgroundTaskSchedulerPrefs.addScheduledTask(TASK);
+        BackgroundTaskSchedulerPrefs.addScheduledTask(mTask);
         ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.M);
 
         BackgroundTaskSchedulerFactory.getScheduler().checkForOSUpgrade(
@@ -131,7 +132,7 @@ public class BackgroundTaskSchedulerImplTest {
 
         assertEquals(Build.VERSION_CODES.M, BackgroundTaskSchedulerPrefs.getLastSdkVersion());
         assertTrue(mGcmNetworkManager.getCanceledTaskTags().contains(
-                Integer.toString(TASK.getTaskId())));
+                Integer.toString(mTask.getTaskId())));
         assertEquals(1, TestBackgroundTask.getRescheduleCalls());
     }
 
@@ -140,7 +141,7 @@ public class BackgroundTaskSchedulerImplTest {
     @Feature({"BackgroundTaskScheduler"})
     public void testCheckForOSUpgrade_PreMToPreM() {
         BackgroundTaskSchedulerPrefs.setLastSdkVersion(Build.VERSION_CODES.KITKAT);
-        BackgroundTaskSchedulerPrefs.addScheduledTask(TASK);
+        BackgroundTaskSchedulerPrefs.addScheduledTask(mTask);
         ReflectionHelpers.setStaticField(
                 Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.LOLLIPOP);
 
@@ -157,7 +158,7 @@ public class BackgroundTaskSchedulerImplTest {
     @Feature({"BackgroundTaskScheduler"})
     public void testCheckForOSUpgrade_MPlusToMPlus() {
         BackgroundTaskSchedulerPrefs.setLastSdkVersion(Build.VERSION_CODES.M);
-        BackgroundTaskSchedulerPrefs.addScheduledTask(TASK);
+        BackgroundTaskSchedulerPrefs.addScheduledTask(mTask);
         ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.N);
 
         BackgroundTaskSchedulerFactory.getScheduler().checkForOSUpgrade(
