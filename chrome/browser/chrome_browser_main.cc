@@ -1154,20 +1154,19 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   SetupFieldTrials();
 
   // Add Site Isolation switches as dictated by policy.
-  // TODO(https://crbug.com/760761): Could clean this up by saving
-  // `g_browser_process->local_state()` as a local.
   auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (g_browser_process->local_state()->GetBoolean(prefs::kSitePerProcess) &&
+  auto* local_state = g_browser_process->local_state();
+  if (local_state->GetBoolean(prefs::kSitePerProcess) &&
       !command_line->HasSwitch(switches::kSitePerProcess)) {
     command_line->AppendSwitch(switches::kSitePerProcess);
   }
-  // We don't check for `HasSwitch` here, because don't want the command-line
+  // We don't check for `HasSwitch` here, because we don't want the command-line
   // switch to take precedence over enterprise policy. (This behavior is in
   // harmony with other enterprise policy settings.)
-  if (g_browser_process->local_state()->HasPrefPath(prefs::kIsolateOrigins)) {
+  if (local_state->HasPrefPath(prefs::kIsolateOrigins)) {
     command_line->AppendSwitchASCII(
         switches::kIsolateOrigins,
-        g_browser_process->local_state()->GetString(prefs::kIsolateOrigins));
+        local_state->GetString(prefs::kIsolateOrigins));
   }
 
   // ChromeOS needs ui::ResourceBundle::InitSharedInstance to be called before

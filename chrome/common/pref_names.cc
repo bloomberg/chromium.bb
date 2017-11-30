@@ -2527,8 +2527,8 @@ const char kTabStatsDailySample[] = "tab_stats.last_daily_sample";
 const char kUnsafelyTreatInsecureOriginAsSecure[] =
     "unsafely_treat_insecure_origin_as_secure";
 
-// Boolean that specifies opting into --isolate-origins=... (selective Site
-// Isolation).
+// A list of origins (URLs) that specifies opting into --isolate-origins=...
+// (selective Site Isolation).
 const char kIsolateOrigins[] = "site_isolation.isolate_origins";
 
 // Boolean that specifies opting into --site-per-process (full Site Isolation).
