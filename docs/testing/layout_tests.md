@@ -399,8 +399,26 @@ machine?
 * If none of that helps, and you have access to the bot itself, you may have to
   log in there and see if you can reproduce the problem manually.
 
-### Debugging Inspector Tests
+### Debugging DevTools Tests
 
+* Add `debug_devtools=true` to args.gn and compile: `ninja -C out/Default devtools_frontend_resources`
+  > Debug DevTools lets you avoid having to recompile after every change to the DevTools front-end.
+* Do one of the following:
+    * Option A) Run from the chromium/src folder:
+      `blink/tools/run_layout_tests.sh
+      --additional-driver-flag='--debug-devtools'
+      --additional-driver-flag='--remote-debugging-port=9222'
+      --time-out-ms=6000000`
+    * Option B) If you need to debug an http/tests/inspector test, start httpd
+      as described above. Then, run content_shell:
+      `out/Default/content_shell --debug-devtools --remote-debugging-port=9222 --run-layout-test
+      http://127.0.0.1:8000/path/to/test.html`
+* Open `http://localhost:9222` in a stable/beta/canary Chrome, click the single
+  link to open the devtools with the test loaded.
+* In the loaded devtools, set any required breakpoints and execute `test()` in
+  the console to actually start the test.
+
+NOTE: If the test is an html file, this means it's a legacy test so you need to add:
 * Add `window.debugTest = true;` to your test code as follows:
 
   ```javascript
@@ -408,24 +426,7 @@ machine?
   function test() {
     /* TEST CODE */
   }
-  ```
-
-* Do one of the following:
-    * Option A) Run from the chromium/src folder:
-      `blink/tools/run_layout_tests.sh
-      --additional_driver_flag='--remote-debugging-port=9222'
-      --time-out-ms=6000000`
-    * Option B) If you need to debug an http/tests/inspector test, start httpd
-      as described above. Then, run content_shell:
-      `out/Default/content_shell --remote-debugging-port=9222 --run-layout-test
-      http://127.0.0.1:8000/path/to/test.html`
-* Open `http://localhost:9222` in a stable/beta/canary Chrome, click the single
-  link to open the devtools with the test loaded.
-* You may need to replace devtools.html with inspector.html in your URL (or you
-  can use local chrome inspection of content_shell from `chrome://inspect`
-  instead)
-* In the loaded devtools, set any required breakpoints and execute `test()` in
-  the console to actually start the test.
+  ```  
 
 ## Bisecting Regressions
 
