@@ -950,33 +950,27 @@ TEST(JourneyLoggerTest,
   logger.SetEventOccurred(JourneyLogger::EVENT_PAY_CLICKED);
   logger.SetAborted(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
+  int64_t expected_step_metric =
+      JourneyLogger::EVENT_SHOWN | JourneyLogger::EVENT_PAY_CLICKED |
+      JourneyLogger::EVENT_REQUEST_SHIPPING |
+      JourneyLogger::EVENT_REQUEST_PAYER_EMAIL |
+      JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
+      JourneyLogger::EVENT_USER_ABORTED |
+      JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT |
+      JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS;
+
   // Make sure the UKM was logged correctly.
-  ASSERT_EQ(1U, ukm_recorder.sources_count());
-  const ukm::UkmSource* source = ukm_recorder.GetSourceForUrl(test_url);
-  ASSERT_NE(nullptr, source);
-
-  ASSERT_EQ(1U, ukm_recorder.entries_count());
-  const ukm::mojom::UkmEntry* entry = ukm_recorder.GetEntry(0);
-  EXPECT_EQ(source->id(), entry->source_id);
-  EXPECT_EQ(base::HashMetricName(UkmEntry::kEntryName), entry->event_hash);
-
-  const ukm::mojom::UkmMetric* status_metric =
-      ukm::TestUkmRecorder::FindMetric(entry, UkmEntry::kCompletionStatusName);
-  ASSERT_NE(nullptr, status_metric);
-  EXPECT_EQ(JourneyLogger::COMPLETION_STATUS_USER_ABORTED,
-            status_metric->value);
-
-  const ukm::mojom::UkmMetric* step_metric =
-      ukm::TestUkmRecorder::FindMetric(entry, UkmEntry::kEventsName);
-  ASSERT_NE(nullptr, step_metric);
-  EXPECT_EQ(JourneyLogger::EVENT_SHOWN | JourneyLogger::EVENT_PAY_CLICKED |
-                JourneyLogger::EVENT_REQUEST_SHIPPING |
-                JourneyLogger::EVENT_REQUEST_PAYER_EMAIL |
-                JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
-                JourneyLogger::EVENT_USER_ABORTED |
-                JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT |
-                JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS,
-            step_metric->value);
+  auto entries = ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* const entry : entries) {
+    ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(test_url));
+    EXPECT_EQ(2U, entry->metrics.size());
+    ukm_recorder.ExpectEntryMetric(
+        entry, UkmEntry::kCompletionStatusName,
+        JourneyLogger::COMPLETION_STATUS_USER_ABORTED);
+    ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kEventsName,
+                                   expected_step_metric);
+  }
 }
 
 // Tests that the Payment Request UKMs are logged correctly when the user
@@ -1004,31 +998,25 @@ TEST(JourneyLoggerTest,
   logger.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
   logger.SetCompleted();
 
+  int64_t expected_step_metric =
+      JourneyLogger::EVENT_SHOWN | JourneyLogger::EVENT_REQUEST_SHIPPING |
+      JourneyLogger::EVENT_REQUEST_PAYER_EMAIL |
+      JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
+      JourneyLogger::EVENT_COMPLETED |
+      JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT |
+      JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS;
+
   // Make sure the UKM was logged correctly.
-  ASSERT_EQ(1U, ukm_recorder.sources_count());
-  const ukm::UkmSource* source = ukm_recorder.GetSourceForUrl(test_url);
-  ASSERT_NE(nullptr, source);
-
-  ASSERT_EQ(1U, ukm_recorder.entries_count());
-  const ukm::mojom::UkmEntry* entry = ukm_recorder.GetEntry(0);
-  EXPECT_EQ(source->id(), entry->source_id);
-  EXPECT_EQ(base::HashMetricName(UkmEntry::kEntryName), entry->event_hash);
-
-  const ukm::mojom::UkmMetric* status_metric =
-      ukm::TestUkmRecorder::FindMetric(entry, UkmEntry::kCompletionStatusName);
-  ASSERT_NE(nullptr, status_metric);
-  EXPECT_EQ(JourneyLogger::COMPLETION_STATUS_COMPLETED, status_metric->value);
-
-  const ukm::mojom::UkmMetric* step_metric =
-      ukm::TestUkmRecorder::FindMetric(entry, UkmEntry::kEventsName);
-  ASSERT_NE(nullptr, step_metric);
-  EXPECT_EQ(JourneyLogger::EVENT_SHOWN | JourneyLogger::EVENT_REQUEST_SHIPPING |
-                JourneyLogger::EVENT_REQUEST_PAYER_EMAIL |
-                JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
-                JourneyLogger::EVENT_COMPLETED |
-                JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT |
-                JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS,
-            step_metric->value);
+  auto entries = ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* const entry : entries) {
+    ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(test_url));
+    EXPECT_EQ(2U, entry->metrics.size());
+    ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kCompletionStatusName,
+                                   JourneyLogger::COMPLETION_STATUS_COMPLETED);
+    ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kEventsName,
+                                   expected_step_metric);
+  }
 }
 
 }  // namespace payments

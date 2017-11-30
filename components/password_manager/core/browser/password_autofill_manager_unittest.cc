@@ -1181,16 +1181,18 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
     manager.reset();
     autofill_client.reset();
     client.reset();
-    const ukm::UkmSource* source =
-        test_ukm_recorder.GetSourceForUrl(kMainFrameUrl);
-    ASSERT_TRUE(source);
 
-    test_ukm_recorder.ExpectMetric(
-        *source, "PageWithPassword", password_manager::kUkmPageLevelUserAction,
-        static_cast<int64_t>(
-            password_manager::PasswordManagerMetricsRecorder::
-                PageLevelUserAction::kShowAllPasswordsWhileSomeAreSuggested));
-
+    const auto& entries =
+        test_ukm_recorder.GetEntriesByName("PageWithPassword");
+    EXPECT_EQ(1u, entries.size());
+    for (const auto* entry : entries) {
+      test_ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(kMainFrameUrl));
+      test_ukm_recorder.ExpectEntryMetric(
+          entry, password_manager::kUkmPageLevelUserAction,
+          static_cast<int64_t>(
+              password_manager::PasswordManagerMetricsRecorder::
+                  PageLevelUserAction::kShowAllPasswordsWhileSomeAreSuggested));
+    }
   } else {
     EXPECT_THAT(histograms.GetAllSamples(kShownContextHistogram),
                 testing::IsEmpty());
@@ -1268,15 +1270,18 @@ TEST_F(PasswordAutofillManagerTest, ShowStandaloneShowAllPasswords) {
     manager.reset();
     autofill_client.reset();
     client.reset();
-    const ukm::UkmSource* source =
-        test_ukm_recorder.GetSourceForUrl(kMainFrameUrl);
-    ASSERT_TRUE(source);
 
-    test_ukm_recorder.ExpectMetric(
-        *source, "PageWithPassword", password_manager::kUkmPageLevelUserAction,
-        static_cast<int64_t>(
-            password_manager::PasswordManagerMetricsRecorder::
-                PageLevelUserAction::kShowAllPasswordsWhileNoneAreSuggested));
+    const auto& entries =
+        test_ukm_recorder.GetEntriesByName("PageWithPassword");
+    EXPECT_EQ(1u, entries.size());
+    for (const auto* entry : entries) {
+      test_ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(kMainFrameUrl));
+      test_ukm_recorder.ExpectEntryMetric(
+          entry, password_manager::kUkmPageLevelUserAction,
+          static_cast<int64_t>(
+              password_manager::PasswordManagerMetricsRecorder::
+                  PageLevelUserAction::kShowAllPasswordsWhileNoneAreSuggested));
+    }
   } else {
     EXPECT_THAT(histograms.GetAllSamples(kShownContextHistogram),
                 testing::IsEmpty());

@@ -9,85 +9,73 @@
 
 namespace cc {
 namespace {
+
+const char kTestUrl1[] = "chrome://test";
+const char kTestUrl2[] = "chrome://test2";
+
 const char kUserInteraction[] = "Compositor.UserInteraction";
 const char kCheckerboardArea[] = "CheckerboardedContentArea";
 const char kCheckerboardAreaRatio[] = "CheckerboardedContentAreaRatio";
 const char kMissingTiles[] = "NumMissingTiles";
 
-class UkmRecorderForTest : public ukm::TestUkmRecorder {
- public:
-  UkmRecorderForTest() = default;
-  ~UkmRecorderForTest() override {
-    ExpectMetrics(*source_, kUserInteraction, kCheckerboardArea,
-                  expected_final_checkerboard_);
-    ExpectMetrics(*source_, kUserInteraction, kMissingTiles,
-                  expected_final_missing_tiles_);
-    ExpectMetrics(*source_, kUserInteraction, kCheckerboardAreaRatio,
-                  expected_final_checkerboard_ratio_);
-  }
-
-  std::vector<int64_t> expected_final_checkerboard_;
-  std::vector<int64_t> expected_final_missing_tiles_;
-  std::vector<int64_t> expected_final_checkerboard_ratio_;
-  ukm::UkmSource* source_ = nullptr;
-};
-
 class UkmManagerTest : public testing::Test {
  public:
-  UkmManagerTest() : manager_(std::make_unique<UkmRecorderForTest>()) {
-    UpdateURL(GURL("chrome://test"));
-  }
-
-  void TearDown() override { ukm_source_ = nullptr; }
-
-  UkmRecorderForTest* recorder() {
-    return static_cast<UkmRecorderForTest*>(manager_.recorder_for_testing());
+  UkmManagerTest() {
+    auto recorder = std::make_unique<ukm::TestUkmRecorder>();
+    test_ukm_recorder_ = recorder.get();
+    manager_ = std::make_unique<UkmManager>(std::move(recorder));
+    manager_->SetSourceURL(GURL(kTestUrl1));
   }
 
  protected:
-  void UpdateURL(const GURL& url) {
-    manager_.SetSourceURL(url);
-    ukm_source_ = const_cast<ukm::UkmSource*>(recorder()->GetSourceForUrl(url));
-  }
-
-  UkmManager manager_;
-  ukm::UkmSource* ukm_source_ = nullptr;
+  ukm::TestUkmRecorder* test_ukm_recorder_;
+  std::unique_ptr<UkmManager> manager_;
 };
 
 TEST_F(UkmManagerTest, Basic) {
-  manager_.SetUserInteractionInProgress(true);
-  manager_.AddCheckerboardStatsForFrame(5, 1, 10);
-  manager_.AddCheckerboardStatsForFrame(15, 3, 30);
-  manager_.SetUserInteractionInProgress(false);
+  manager_->SetUserInteractionInProgress(true);
+  manager_->AddCheckerboardStatsForFrame(5, 1, 10);
+  manager_->AddCheckerboardStatsForFrame(15, 3, 30);
+  manager_->SetUserInteractionInProgress(false);
 
   // We should see a single entry for the interaction above.
-  EXPECT_EQ(recorder()->entries_count(), 1u);
-  EXPECT_TRUE(recorder()->HasEntry(*ukm_source_, kUserInteraction));
-  recorder()->ExpectMetric(*ukm_source_, kUserInteraction, kCheckerboardArea,
-                           10);
-  recorder()->ExpectMetric(*ukm_source_, kUserInteraction, kMissingTiles, 2);
-  recorder()->ExpectMetric(*ukm_source_, kUserInteraction,
-                           kCheckerboardAreaRatio, 50);
+  const auto& entries = test_ukm_recorder_->GetEntriesByName(kUserInteraction);
+  ukm::SourceId original_id = ukm::kInvalidSourceId;
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    original_id = entry->source_id;
+    EXPECT_NE(ukm::kInvalidSourceId, entry->source_id);
+    test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, GURL(kTestUrl1));
+    test_ukm_recorder_->ExpectEntryMetric(entry, kCheckerboardArea, 10);
+    test_ukm_recorder_->ExpectEntryMetric(entry, kMissingTiles, 2);
+    test_ukm_recorder_->ExpectEntryMetric(entry, kCheckerboardAreaRatio, 50);
+  }
+  test_ukm_recorder_->Purge();
 
   // Try pushing some stats while no user interaction is happening. No entries
   // should be pushed.
-  manager_.AddCheckerboardStatsForFrame(6, 1, 10);
-  manager_.AddCheckerboardStatsForFrame(99, 3, 100);
-  EXPECT_EQ(recorder()->entries_count(), 1u);
-  manager_.SetUserInteractionInProgress(true);
-  EXPECT_EQ(recorder()->entries_count(), 1u);
+  manager_->AddCheckerboardStatsForFrame(6, 1, 10);
+  manager_->AddCheckerboardStatsForFrame(99, 3, 100);
+  EXPECT_EQ(0u, test_ukm_recorder_->entries_count());
+  manager_->SetUserInteractionInProgress(true);
+  EXPECT_EQ(0u, test_ukm_recorder_->entries_count());
 
   // Record a few entries and change the source before the interaction ends. The
   // stats collected up till this point should be recorded before the source is
   // swapped.
-  manager_.AddCheckerboardStatsForFrame(10, 1, 100);
-  manager_.AddCheckerboardStatsForFrame(30, 5, 100);
-  recorder()->expected_final_checkerboard_ = {10, 20};
-  recorder()->expected_final_missing_tiles_ = {2, 3};
-  recorder()->expected_final_checkerboard_ratio_ = {50, 20};
-  recorder()->source_ = ukm_source_;
+  manager_->AddCheckerboardStatsForFrame(10, 1, 100);
+  manager_->AddCheckerboardStatsForFrame(30, 5, 100);
 
-  UpdateURL(GURL("chrome://test2"));
+  manager_->SetSourceURL(GURL(kTestUrl2));
+
+  const auto& entries2 = test_ukm_recorder_->GetEntriesByName(kUserInteraction);
+  EXPECT_EQ(1u, entries2.size());
+  for (const auto* entry : entries2) {
+    EXPECT_EQ(original_id, entry->source_id);
+    test_ukm_recorder_->ExpectEntryMetric(entry, kCheckerboardArea, 20);
+    test_ukm_recorder_->ExpectEntryMetric(entry, kMissingTiles, 3);
+    test_ukm_recorder_->ExpectEntryMetric(entry, kCheckerboardAreaRatio, 20);
+  }
 }
 
 }  // namespace

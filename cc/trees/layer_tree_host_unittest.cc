@@ -8242,14 +8242,15 @@ class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
 
     auto* recorder = static_cast<ukm::TestUkmRecorder*>(
         impl->ukm_manager()->recorder_for_testing());
-    auto* source = recorder->GetSourceForUrl(url_);
-    ASSERT_TRUE(source);
 
-    EXPECT_EQ(recorder->entries_count(), 1u);
-    recorder->ExpectMetric(*source, kUserInteraction, kCheckerboardArea, 0);
-    recorder->ExpectMetric(*source, kUserInteraction, kMissingTiles, 0);
-    recorder->ExpectMetric(*source, kUserInteraction, kCheckerboardAreaRatio,
-                           0);
+    const auto& entries = recorder->GetEntriesByName(kUserInteraction);
+    EXPECT_EQ(1u, entries.size());
+    for (const auto* entry : entries) {
+      recorder->ExpectEntrySourceHasUrl(entry, url_);
+      recorder->ExpectEntryMetric(entry, kCheckerboardArea, 0);
+      recorder->ExpectEntryMetric(entry, kMissingTiles, 0);
+      recorder->ExpectEntryMetric(entry, kCheckerboardAreaRatio, 0);
+    }
 
     EndTest();
   }

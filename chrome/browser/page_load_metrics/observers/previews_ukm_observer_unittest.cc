@@ -18,6 +18,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
 #include "content/public/test/web_contents_tester.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace previews {
 
@@ -85,22 +86,25 @@ class PreviewsUKMObserverTest
                    bool client_lofi_expected,
                    bool lite_page_expected,
                    bool opt_out_expected) {
-    const ukm::UkmSource* source =
-        test_ukm_recorder().GetSourceForUrl(kDefaultTestUrl);
+    using UkmEntry = ukm::builders::Previews;
+    auto entries = test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
     if (!server_lofi_expected && !client_lofi_expected && !lite_page_expected &&
         !opt_out_expected) {
-      EXPECT_EQ(0u, test_ukm_recorder().entries_count());
+      EXPECT_EQ(0u, entries.size());
       return;
     }
-
-    EXPECT_EQ(server_lofi_expected, test_ukm_recorder().HasMetric(
-                                        *source, "Previews", "server_lofi"));
-    EXPECT_EQ(client_lofi_expected, test_ukm_recorder().HasMetric(
-                                        *source, "Previews", "client_lofi"));
-    EXPECT_EQ(lite_page_expected,
-              test_ukm_recorder().HasMetric(*source, "Previews", "lite_page"));
-    EXPECT_EQ(opt_out_expected,
-              test_ukm_recorder().HasMetric(*source, "Previews", "opt_out"));
+    EXPECT_EQ(1u, entries.size());
+    for (const auto* const entry : entries) {
+      test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kDefaultTestUrl));
+      EXPECT_EQ(server_lofi_expected, test_ukm_recorder().EntryHasMetric(
+                                          entry, UkmEntry::kserver_lofiName));
+      EXPECT_EQ(client_lofi_expected, test_ukm_recorder().EntryHasMetric(
+                                          entry, UkmEntry::kclient_lofiName));
+      EXPECT_EQ(lite_page_expected, test_ukm_recorder().EntryHasMetric(
+                                        entry, UkmEntry::klite_pageName));
+      EXPECT_EQ(opt_out_expected, test_ukm_recorder().EntryHasMetric(
+                                      entry, UkmEntry::kopt_outName));
+    }
   }
 
  protected:

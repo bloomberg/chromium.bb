@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/ukm/ukm_source.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -1064,12 +1065,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, CrossOriginIframe) {
 
   // Important: Even though the Payment Request is in the iframe, no UKM was
   // logged for the iframe URL, only for the main frame.
-  std::vector<const ukm::UkmSource*> sources =
-      test_ukm_recorder_->GetSourcesForUrl(iframe_url.spec().c_str());
-  EXPECT_TRUE(sources.empty());
-
-  sources = test_ukm_recorder_->GetSourcesForUrl(main_frame_url.spec().c_str());
-  EXPECT_FALSE(sources.empty());
+  for (const auto& kv : test_ukm_recorder_->GetSources()) {
+    EXPECT_NE(iframe_url, kv.second->url());
+  }
 
   // Make sure the UKM was logged correctly.
   auto entries = test_ukm_recorder_->GetEntriesByName(

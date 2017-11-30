@@ -111,14 +111,15 @@ class WatchTimeRecorderTest : public testing::Test {
       return;
     }
 
-    ASSERT_EQ(1u, test_recorder_->sources_count());
-
-    const auto* source = test_recorder_->GetSourceForUrl(kTestOrigin);
-    ASSERT_TRUE(source);
-
-    for (auto key : keys) {
-      test_recorder_->ExpectMetric(*source, UkmEntry::kEntryName, key.data(),
-                                   value.InMilliseconds());
+    const auto& entries =
+        test_recorder_->GetEntriesByName(UkmEntry::kEntryName);
+    EXPECT_EQ(1u, entries.size());
+    for (const auto* entry : entries) {
+      test_recorder_->ExpectEntrySourceHasUrl(entry, GURL(kTestOrigin));
+      for (auto key : keys) {
+        test_recorder_->ExpectEntryMetric(entry, key.data(),
+                                          value.InMilliseconds());
+      }
     }
   }
 
@@ -239,9 +240,9 @@ TEST_F(WatchTimeRecorderTest, TestRebufferingMetrics) {
 }
 
 #define EXPECT_UKM(name, value) \
-  test_recorder_->ExpectMetric(*source, UkmEntry::kEntryName, name, value)
+  test_recorder_->ExpectEntryMetric(entry, name, value)
 #define EXPECT_NO_UKM(name) \
-  EXPECT_FALSE(test_recorder_->HasMetric(*source, UkmEntry::kEntryName, name))
+  EXPECT_FALSE(test_recorder_->EntryHasMetric(entry, name))
 
 TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
   mojom::PlaybackPropertiesPtr properties = mojom::PlaybackProperties::New(
@@ -255,33 +256,35 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
   wtr_.reset();
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(1u, test_recorder_->sources_count());
-  auto* source = test_recorder_->GetSourceForUrl(kTestOrigin);
-  ASSERT_TRUE(source);
+  const auto& entries = test_recorder_->GetEntriesByName(UkmEntry::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_recorder_->ExpectEntrySourceHasUrl(entry, GURL(kTestOrigin));
 
-  EXPECT_UKM(UkmEntry::kWatchTimeName, kWatchTime.InMilliseconds());
-  EXPECT_UKM(UkmEntry::kIsBackgroundName, false);
-  EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
-  EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
-  EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);
-  EXPECT_UKM(UkmEntry::kHasVideoName, properties->has_video);
-  EXPECT_UKM(UkmEntry::kIsEMEName, properties->is_eme);
-  EXPECT_UKM(UkmEntry::kIsMSEName, properties->is_mse);
-  EXPECT_UKM(UkmEntry::kLastPipelineStatusName, PIPELINE_OK);
-  EXPECT_UKM(UkmEntry::kRebuffersCountName, 0);
-  EXPECT_UKM(UkmEntry::kVideoNaturalWidthName,
-             properties->natural_size.width());
-  EXPECT_UKM(UkmEntry::kVideoNaturalHeightName,
-             properties->natural_size.height());
+    EXPECT_UKM(UkmEntry::kWatchTimeName, kWatchTime.InMilliseconds());
+    EXPECT_UKM(UkmEntry::kIsBackgroundName, false);
+    EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
+    EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
+    EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);
+    EXPECT_UKM(UkmEntry::kHasVideoName, properties->has_video);
+    EXPECT_UKM(UkmEntry::kIsEMEName, properties->is_eme);
+    EXPECT_UKM(UkmEntry::kIsMSEName, properties->is_mse);
+    EXPECT_UKM(UkmEntry::kLastPipelineStatusName, PIPELINE_OK);
+    EXPECT_UKM(UkmEntry::kRebuffersCountName, 0);
+    EXPECT_UKM(UkmEntry::kVideoNaturalWidthName,
+               properties->natural_size.width());
+    EXPECT_UKM(UkmEntry::kVideoNaturalHeightName,
+               properties->natural_size.height());
 
-  EXPECT_NO_UKM(UkmEntry::kMeanTimeBetweenRebuffersName);
-  EXPECT_NO_UKM(UkmEntry::kWatchTime_ACName);
-  EXPECT_NO_UKM(UkmEntry::kWatchTime_BatteryName);
-  EXPECT_NO_UKM(UkmEntry::kWatchTime_NativeControlsOnName);
-  EXPECT_NO_UKM(UkmEntry::kWatchTime_NativeControlsOffName);
-  EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayFullscreenName);
-  EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayInlineName);
-  EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayPictureInPictureName);
+    EXPECT_NO_UKM(UkmEntry::kMeanTimeBetweenRebuffersName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_ACName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_BatteryName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_NativeControlsOnName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_NativeControlsOffName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayFullscreenName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayInlineName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayPictureInPictureName);
+  }
 }
 
 TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
@@ -316,39 +319,40 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
   wtr_.reset();
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(1u, test_recorder_->sources_count());
-  auto* source = test_recorder_->GetSourceForUrl(kTestOrigin);
-  ASSERT_TRUE(source);
+  const auto& entries = test_recorder_->GetEntriesByName(UkmEntry::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_recorder_->ExpectEntrySourceHasUrl(entry, GURL(kTestOrigin));
+    EXPECT_UKM(UkmEntry::kWatchTimeName, kWatchTime2.InMilliseconds());
+    EXPECT_UKM(UkmEntry::kWatchTime_ACName, kWatchTime.InMilliseconds());
+    EXPECT_UKM(UkmEntry::kWatchTime_BatteryName, kWatchTime.InMilliseconds());
+    EXPECT_UKM(UkmEntry::kWatchTime_NativeControlsOnName,
+               kWatchTime.InMilliseconds());
+    EXPECT_UKM(UkmEntry::kWatchTime_NativeControlsOffName,
+               kWatchTime.InMilliseconds());
+    EXPECT_UKM(UkmEntry::kWatchTime_DisplayFullscreenName,
+               kWatchTime3.InMilliseconds());
+    EXPECT_UKM(UkmEntry::kWatchTime_DisplayInlineName,
+               kWatchTime3.InMilliseconds());
+    EXPECT_UKM(UkmEntry::kWatchTime_DisplayPictureInPictureName,
+               kWatchTime3.InMilliseconds());
+    EXPECT_UKM(UkmEntry::kMeanTimeBetweenRebuffersName,
+               kWatchTime2.InMilliseconds() / 3);
 
-  EXPECT_UKM(UkmEntry::kWatchTimeName, kWatchTime2.InMilliseconds());
-  EXPECT_UKM(UkmEntry::kWatchTime_ACName, kWatchTime.InMilliseconds());
-  EXPECT_UKM(UkmEntry::kWatchTime_BatteryName, kWatchTime.InMilliseconds());
-  EXPECT_UKM(UkmEntry::kWatchTime_NativeControlsOnName,
-             kWatchTime.InMilliseconds());
-  EXPECT_UKM(UkmEntry::kWatchTime_NativeControlsOffName,
-             kWatchTime.InMilliseconds());
-  EXPECT_UKM(UkmEntry::kWatchTime_DisplayFullscreenName,
-             kWatchTime3.InMilliseconds());
-  EXPECT_UKM(UkmEntry::kWatchTime_DisplayInlineName,
-             kWatchTime3.InMilliseconds());
-  EXPECT_UKM(UkmEntry::kWatchTime_DisplayPictureInPictureName,
-             kWatchTime3.InMilliseconds());
-  EXPECT_UKM(UkmEntry::kMeanTimeBetweenRebuffersName,
-             kWatchTime2.InMilliseconds() / 3);
-
-  EXPECT_UKM(UkmEntry::kIsBackgroundName, false);
-  EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
-  EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
-  EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);
-  EXPECT_UKM(UkmEntry::kHasVideoName, properties->has_video);
-  EXPECT_UKM(UkmEntry::kIsEMEName, properties->is_eme);
-  EXPECT_UKM(UkmEntry::kIsMSEName, properties->is_mse);
-  EXPECT_UKM(UkmEntry::kLastPipelineStatusName, PIPELINE_ERROR_DECODE);
-  EXPECT_UKM(UkmEntry::kRebuffersCountName, 3);
-  EXPECT_UKM(UkmEntry::kVideoNaturalWidthName,
-             properties->natural_size.width());
-  EXPECT_UKM(UkmEntry::kVideoNaturalHeightName,
-             properties->natural_size.height());
+    EXPECT_UKM(UkmEntry::kIsBackgroundName, false);
+    EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
+    EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
+    EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);
+    EXPECT_UKM(UkmEntry::kHasVideoName, properties->has_video);
+    EXPECT_UKM(UkmEntry::kIsEMEName, properties->is_eme);
+    EXPECT_UKM(UkmEntry::kIsMSEName, properties->is_mse);
+    EXPECT_UKM(UkmEntry::kLastPipelineStatusName, PIPELINE_ERROR_DECODE);
+    EXPECT_UKM(UkmEntry::kRebuffersCountName, 3);
+    EXPECT_UKM(UkmEntry::kVideoNaturalWidthName,
+               properties->natural_size.width());
+    EXPECT_UKM(UkmEntry::kVideoNaturalHeightName,
+               properties->natural_size.height());
+  }
 }
 
 TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoBackground) {
@@ -363,33 +367,35 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoBackground) {
   wtr_.reset();
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(1u, test_recorder_->sources_count());
-  auto* source = test_recorder_->GetSourceForUrl(kTestOrigin);
-  ASSERT_TRUE(source);
+  const auto& entries = test_recorder_->GetEntriesByName(UkmEntry::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_recorder_->ExpectEntrySourceHasUrl(entry, GURL(kTestOrigin));
 
-  EXPECT_UKM(UkmEntry::kWatchTimeName, kWatchTime.InMilliseconds());
-  EXPECT_UKM(UkmEntry::kIsBackgroundName, true);
-  EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
-  EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
-  EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);
-  EXPECT_UKM(UkmEntry::kHasVideoName, properties->has_video);
-  EXPECT_UKM(UkmEntry::kIsEMEName, properties->is_eme);
-  EXPECT_UKM(UkmEntry::kIsMSEName, properties->is_mse);
-  EXPECT_UKM(UkmEntry::kLastPipelineStatusName, PIPELINE_OK);
-  EXPECT_UKM(UkmEntry::kRebuffersCountName, 0);
-  EXPECT_UKM(UkmEntry::kVideoNaturalWidthName,
-             properties->natural_size.width());
-  EXPECT_UKM(UkmEntry::kVideoNaturalHeightName,
-             properties->natural_size.height());
+    EXPECT_UKM(UkmEntry::kWatchTimeName, kWatchTime.InMilliseconds());
+    EXPECT_UKM(UkmEntry::kIsBackgroundName, true);
+    EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
+    EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
+    EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);
+    EXPECT_UKM(UkmEntry::kHasVideoName, properties->has_video);
+    EXPECT_UKM(UkmEntry::kIsEMEName, properties->is_eme);
+    EXPECT_UKM(UkmEntry::kIsMSEName, properties->is_mse);
+    EXPECT_UKM(UkmEntry::kLastPipelineStatusName, PIPELINE_OK);
+    EXPECT_UKM(UkmEntry::kRebuffersCountName, 0);
+    EXPECT_UKM(UkmEntry::kVideoNaturalWidthName,
+               properties->natural_size.width());
+    EXPECT_UKM(UkmEntry::kVideoNaturalHeightName,
+               properties->natural_size.height());
 
-  EXPECT_NO_UKM(UkmEntry::kMeanTimeBetweenRebuffersName);
-  EXPECT_NO_UKM(UkmEntry::kWatchTime_ACName);
-  EXPECT_NO_UKM(UkmEntry::kWatchTime_BatteryName);
-  EXPECT_NO_UKM(UkmEntry::kWatchTime_NativeControlsOnName);
-  EXPECT_NO_UKM(UkmEntry::kWatchTime_NativeControlsOffName);
-  EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayFullscreenName);
-  EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayInlineName);
-  EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayPictureInPictureName);
+    EXPECT_NO_UKM(UkmEntry::kMeanTimeBetweenRebuffersName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_ACName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_BatteryName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_NativeControlsOnName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_NativeControlsOffName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayFullscreenName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayInlineName);
+    EXPECT_NO_UKM(UkmEntry::kWatchTime_DisplayPictureInPictureName);
+  }
 }
 #undef EXPECT_UKM
 #undef EXPECT_NO_UKM

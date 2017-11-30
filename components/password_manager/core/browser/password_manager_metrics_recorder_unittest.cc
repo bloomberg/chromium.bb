@@ -40,10 +40,14 @@ TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordField) {
         CreateMetricsRecorder(&test_ukm_recorder));
     recorder.RecordUserModifiedPasswordField();
   }
-  const ukm::UkmSource* source = test_ukm_recorder.GetSourceForUrl(kTestUrl);
-  ASSERT_TRUE(source);
-  test_ukm_recorder.ExpectMetric(*source, "PageWithPassword",
-                                 kUkmUserModifiedPasswordField, 1);
+
+  const auto& entries = test_ukm_recorder.GetEntriesByName("PageWithPassword");
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(kTestUrl));
+    test_ukm_recorder.ExpectEntryMetric(entry, kUkmUserModifiedPasswordField,
+                                        1);
+  }
 }
 
 TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldMultipleTimes) {
@@ -56,10 +60,13 @@ TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldMultipleTimes) {
     recorder.RecordUserModifiedPasswordField();
     recorder.RecordUserModifiedPasswordField();
   }
-  const ukm::UkmSource* source = test_ukm_recorder.GetSourceForUrl(kTestUrl);
-  ASSERT_TRUE(source);
-  test_ukm_recorder.ExpectMetric(*source, "PageWithPassword",
-                                 kUkmUserModifiedPasswordField, 1);
+  const auto& entries = test_ukm_recorder.GetEntriesByName("PageWithPassword");
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(kTestUrl));
+    test_ukm_recorder.ExpectEntryMetric(entry, kUkmUserModifiedPasswordField,
+                                        1);
+  }
 }
 
 TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldNotCalled) {
@@ -69,11 +76,13 @@ TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldNotCalled) {
     PasswordManagerMetricsRecorder recorder(
         CreateMetricsRecorder(&test_ukm_recorder));
   }
-  const ukm::UkmSource* source = test_ukm_recorder.GetSourceForUrl(kTestUrl);
-  ASSERT_TRUE(source);
-  EXPECT_THAT(test_ukm_recorder.GetMetrics(*source, "PageWithPassword",
-                                           kUkmUserModifiedPasswordField),
-              Not(Contains(1)));
+  const auto& entries = test_ukm_recorder.GetEntriesByName("PageWithPassword");
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(kTestUrl));
+    EXPECT_FALSE(
+        test_ukm_recorder.EntryHasMetric(entry, kUkmUserModifiedPasswordField));
+  }
 }
 
 }  // namespace password_manager

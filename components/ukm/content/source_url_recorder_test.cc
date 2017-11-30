@@ -29,11 +29,13 @@ class SourceUrlRecorderWebContentsObserverTest
 TEST_F(SourceUrlRecorderWebContentsObserverTest, Basic) {
   GURL url("https://www.example.com/");
   NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(), url);
-  EXPECT_EQ(1ul, test_ukm_recorder_.sources_count());
-  const ukm::UkmSource* ukm_source = test_ukm_recorder_.GetSourceForUrl(url);
-  ASSERT_NE(nullptr, ukm_source);
-  EXPECT_EQ(url, ukm_source->url());
-  EXPECT_TRUE(ukm_source->initial_url().is_empty());
+
+  const auto& sources = test_ukm_recorder_.GetSources();
+  EXPECT_EQ(1ul, sources.size());
+  for (const auto& kv : sources) {
+    EXPECT_EQ(url, kv.second->url());
+    EXPECT_TRUE(kv.second->initial_url().is_empty());
+  }
 }
 
 TEST_F(SourceUrlRecorderWebContentsObserverTest, InitialUrl) {
@@ -44,12 +46,12 @@ TEST_F(SourceUrlRecorderWebContentsObserverTest, InitialUrl) {
   simulator->Start();
   simulator->Redirect(final_url);
   simulator->Commit();
-  EXPECT_EQ(1ul, test_ukm_recorder_.sources_count());
-  const ukm::UkmSource* ukm_source =
-      test_ukm_recorder_.GetSourceForUrl(final_url);
-  ASSERT_NE(nullptr, ukm_source);
-  EXPECT_EQ(final_url, ukm_source->url());
-  EXPECT_EQ(initial_url, ukm_source->initial_url());
+  const auto& sources = test_ukm_recorder_.GetSources();
+  EXPECT_EQ(1ul, sources.size());
+  for (const auto& kv : sources) {
+    EXPECT_EQ(final_url, kv.second->url());
+    EXPECT_EQ(initial_url, kv.second->initial_url());
+  }
 }
 
 TEST_F(SourceUrlRecorderWebContentsObserverTest, IgnoreUnsupportedScheme) {
@@ -66,9 +68,13 @@ TEST_F(SourceUrlRecorderWebContentsObserverTest, IgnoreUrlInSubframe) {
   NavigationSimulator::NavigateAndCommitFromDocument(
       sub_frame_url,
       content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe"));
-  EXPECT_EQ(1ul, test_ukm_recorder_.sources_count());
-  EXPECT_NE(nullptr, test_ukm_recorder_.GetSourceForUrl(main_frame_url));
-  EXPECT_EQ(nullptr, test_ukm_recorder_.GetSourceForUrl(sub_frame_url));
+
+  const auto& sources = test_ukm_recorder_.GetSources();
+  EXPECT_EQ(1ul, sources.size());
+  for (const auto& kv : sources) {
+    EXPECT_EQ(main_frame_url, kv.second->url());
+    EXPECT_TRUE(kv.second->initial_url().is_empty());
+  }
 }
 
 TEST_F(SourceUrlRecorderWebContentsObserverTest, IgnoreSameDocumentNavigation) {
@@ -77,11 +83,13 @@ TEST_F(SourceUrlRecorderWebContentsObserverTest, IgnoreSameDocumentNavigation) {
   NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(), url);
   NavigationSimulator::CreateRendererInitiated(same_document_url, main_rfh())
       ->CommitSameDocument();
+
   EXPECT_EQ(same_document_url, web_contents()->GetLastCommittedURL());
-  EXPECT_EQ(1ul, test_ukm_recorder_.sources_count());
-  EXPECT_EQ(nullptr, test_ukm_recorder_.GetSourceForUrl(same_document_url));
-  const ukm::UkmSource* ukm_source = test_ukm_recorder_.GetSourceForUrl(url);
-  ASSERT_NE(nullptr, ukm_source);
-  EXPECT_EQ(url, ukm_source->url());
-  EXPECT_TRUE(ukm_source->initial_url().is_empty());
+
+  const auto& sources = test_ukm_recorder_.GetSources();
+  EXPECT_EQ(1ul, sources.size());
+  for (const auto& kv : sources) {
+    EXPECT_EQ(url, kv.second->url());
+    EXPECT_TRUE(kv.second->initial_url().is_empty());
+  }
 }

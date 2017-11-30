@@ -759,30 +759,6 @@ class PasswordFormManagerTest : public testing::Test {
         client()->mock_driver()->mock_autofill_download_manager());
   }
 
-  // Returns the sample values of |metric_value| in events named |event_name|.
-  std::vector<int64_t> GetAllUkmSamples(
-      const ukm::TestAutoSetUkmRecorder& test_ukm_recorder,
-      base::StringPiece event_name,
-      base::StringPiece metric_name) {
-    std::vector<int64_t> values;
-    const ukm::UkmSource* source =
-        test_ukm_recorder.GetSourceForSourceId(client()->GetUkmSourceId());
-    if (!source)
-      return values;
-
-    for (size_t i = 0; i < test_ukm_recorder.entries_count(); ++i) {
-      const ukm::mojom::UkmEntry* entry = test_ukm_recorder.GetEntry(i);
-      if (entry->event_hash != base::HashMetricName(event_name))
-        continue;
-
-      for (const ukm::mojom::UkmMetricPtr& metric : entry->metrics) {
-        if (metric->metric_hash == base::HashMetricName(metric_name))
-          values.push_back(metric->value);
-      }
-    }
-    return values;
-  }
-
   PasswordForm* observed_form() { return &observed_form_; }
   PasswordForm* saved_match() { return &saved_match_; }
   PasswordForm* psl_saved_match() { return &psl_saved_match_; }
@@ -3888,27 +3864,29 @@ TEST_F(PasswordFormManagerTest, SuppressedFormsHistograms) {
           ::testing::ElementsAre(
               base::Bucket(test_case.expected_histogram_sample_generated, 1)));
       EXPECT_THAT(
-          GetAllUkmSamples(
-              test_ukm_recorder, "PasswordForm",
-              "SuppressedAccount.Generated." +
-                  std::string(suppression_params.expected_histogram_suffix)),
-          ::testing::ElementsAre(
-              test_case.expected_histogram_sample_generated /
-              PasswordFormMetricsRecorder::kMaxNumActionsTakenNew));
-      EXPECT_THAT(
           histogram_tester.GetAllSamples(
               "PasswordManager.SuppressedAccount.Manual." +
               std::string(suppression_params.expected_histogram_suffix)),
           ::testing::ElementsAre(
               base::Bucket(test_case.expected_histogram_sample_manual, 1)));
-      EXPECT_THAT(
-          GetAllUkmSamples(
-              test_ukm_recorder, "PasswordForm",
-              "SuppressedAccount.Manual." +
-                  std::string(suppression_params.expected_histogram_suffix)),
-          ::testing::ElementsAre(
-              test_case.expected_histogram_sample_manual /
-              PasswordFormMetricsRecorder::kMaxNumActionsTakenNew));
+
+      auto entries = test_ukm_recorder.GetEntriesByName(
+          ukm::builders::PasswordForm::kEntryName);
+      EXPECT_EQ(1u, entries.size());
+      for (const auto* const entry : entries) {
+        test_ukm_recorder.ExpectEntryMetric(
+            entry,
+            "SuppressedAccount.Generated." +
+                std::string(suppression_params.expected_histogram_suffix),
+            test_case.expected_histogram_sample_generated /
+                PasswordFormMetricsRecorder::kMaxNumActionsTakenNew);
+        test_ukm_recorder.ExpectEntryMetric(
+            entry,
+            "SuppressedAccount.Manual." +
+                std::string(suppression_params.expected_histogram_suffix),
+            test_case.expected_histogram_sample_manual /
+                PasswordFormMetricsRecorder::kMaxNumActionsTakenNew);
+      }
     }
   }
 }
@@ -4086,13 +4064,15 @@ TEST_F(PasswordFormManagerTest, TestUkmForFilling) {
       fetcher.SetNonFederated(fetched_forms, 0u);
     }
 
-    const auto* source =
-        test_ukm_recorder.GetSourceForUrl(form_to_fill.origin.spec().c_str());
-    ASSERT_TRUE(source);
-    test_ukm_recorder.ExpectMetric(
-        *source, ukm::builders::PasswordForm::kEntryName,
-        ukm::builders::PasswordForm::kManagerFill_ActionName,
-        test.expected_event);
+    auto entries = test_ukm_recorder.GetEntriesByName(
+        ukm::builders::PasswordForm::kEntryName);
+    EXPECT_EQ(1u, entries.size());
+    for (const auto* const entry : entries) {
+      test_ukm_recorder.ExpectEntrySourceHasUrl(entry, form_to_fill.origin);
+      test_ukm_recorder.ExpectEntryMetric(
+          entry, ukm::builders::PasswordForm::kManagerFill_ActionName,
+          test.expected_event);
+    }
   }
 }
 TEST_F(PasswordFormManagerTest,

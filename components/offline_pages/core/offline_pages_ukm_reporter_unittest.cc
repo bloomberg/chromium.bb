@@ -29,16 +29,17 @@ TEST_F(OfflinePagesUkmReporterTest, RecordOfflinePageVisit) {
 
   reporter.ReportUrlOfflineRequest(gurl, false);
 
-  EXPECT_EQ(1U, test_recorder()->sources_count());
-  const ukm::UkmSource* found_source =
-      test_recorder()->GetSourceForUrl(kVisitedUrl);
-  EXPECT_NE(nullptr, found_source);
-
-  test_recorder()->ExpectMetric(
-      *found_source, ukm::builders::OfflinePages_SavePageRequested::kEntryName,
-      ukm::builders::OfflinePages_SavePageRequested::
-          kRequestedFromForegroundName,
-      0);
+  const auto& entries = test_recorder()->GetEntriesByName(
+      ukm::builders::OfflinePages_SavePageRequested::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_recorder()->ExpectEntrySourceHasUrl(entry, gurl);
+    test_recorder()->ExpectEntryMetric(
+        entry,
+        ukm::builders::OfflinePages_SavePageRequested::
+            kRequestedFromForegroundName,
+        0);
+  }
 }
 
 }  // namespace offline_pages

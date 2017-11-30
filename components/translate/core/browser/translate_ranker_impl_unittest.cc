@@ -21,6 +21,7 @@
 #include "components/ukm/ukm_source.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/translate_event.pb.h"
 #include "third_party/metrics_proto/ukm/source.pb.h"
@@ -368,13 +369,21 @@ TEST_F(TranslateRankerImplTest, RecordAndFlushEvents) {
   ranker->FlushTranslateEvents(&flushed_events);
   EXPECT_EQ(0U, flushed_events.size());
 
-  ASSERT_EQ(2U, GetTestUkmRecorder()->sources_count());
-  EXPECT_EQ(
-      url0.spec(),
-      GetTestUkmRecorder()->GetSourceForUrl(url0.spec().c_str())->url().spec());
-  EXPECT_EQ(
-      url1.spec(),
-      GetTestUkmRecorder()->GetSourceForUrl(url1.spec().c_str())->url().spec());
+  const auto& entries = GetTestUkmRecorder()->GetEntriesByName(
+      ukm::builders::Translate::kEntryName);
+  EXPECT_EQ(2u, entries.size());
+  bool has_url0 = false;
+  bool has_url1 = false;
+  for (const auto* entry : entries) {
+    const ukm::UkmSource* source =
+        GetTestUkmRecorder()->GetSourceForSourceId(entry->source_id);
+    if (source && source->url() == url0)
+      has_url0 = true;
+    else if (source && source->url() == url1)
+      has_url1 = true;
+  }
+  EXPECT_TRUE(has_url0);
+  EXPECT_TRUE(has_url1);
 }
 
 TEST_F(TranslateRankerImplTest, EnableLogging) {
