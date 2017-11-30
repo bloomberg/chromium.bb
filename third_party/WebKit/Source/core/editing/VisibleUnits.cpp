@@ -735,7 +735,7 @@ LocalCaretRect LocalSelectionRectOfPositionTemplate(
   if (rect.IsEmpty())
     return LocalCaretRect();
 
-  InlineBox* const box = box_position.inline_box;
+  const InlineBox* const box = box_position.inline_box;
   if (layout_object->Style()->IsHorizontalWritingMode()) {
     return LocalCaretRect(
         layout_object,
