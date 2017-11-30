@@ -157,11 +157,19 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 #endif
 #if CONFIG_AOM_QM
   int seg_id = xd->mi[0]->mbmi.segment_id;
+  const TX_SIZE qm_tx_size =
+#if CONFIG_TX64X64
+      tx_size == TX_64X64 || tx_size == TX_64X32 || tx_size == TX_32X64
+          ? TX_32X32
+          :
+#endif  // CONFIG_TX64X64
+          tx_size;
   // Use a flat matrix (i.e. no weighting) for 1D and Identity transforms
-  const qm_val_t *iqmatrix = IS_2D_TRANSFORM(tx_type)
-                                 ? pd->seg_iqmatrix[seg_id][tx_size]
-                                 : cm->giqmatrix[NUM_QM_LEVELS - 1][0][tx_size];
-#endif
+  const qm_val_t *iqmatrix =
+      IS_2D_TRANSFORM(tx_type)
+          ? pd->seg_iqmatrix[seg_id][qm_tx_size]
+          : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
+#endif  // CONFIG_AOM_QM
 #if CONFIG_NEW_QUANT
   int dq = get_dq_profile_from_ctx(mb->qindex, ctx, ref, plane_type);
   const dequant_val_type_nuq *dequant_val = p->dequant_val_nuq_QTX[dq];
@@ -233,17 +241,13 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       const int64_t d0 = (int64_t)dx0 * dx0;
 #endif
       const int x_a = x - 2 * sz - 1;
-      int dqv;
+      int dqv = dequant_ptr[rc != 0];
 #if CONFIG_AOM_QM
-      int iwt;
-      dqv = dequant_ptr[rc != 0];
       if (iqmatrix != NULL) {
-        iwt = iqmatrix[rc];
+        const qm_val_t iwt = iqmatrix[rc];
         dqv = ((iwt * (int)dqv) + (1 << (AOM_QM_BITS - 1))) >> AOM_QM_BITS;
       }
-#else
-      dqv = dequant_ptr[rc != 0];
-#endif
+#endif  // CONFIG_AOM_QM
 
 #if CONFIG_DAALA_TX
       int dx = dqcoeff[rc] - coeff[rc];
@@ -524,7 +528,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
       IS_2D_TRANSFORM(tx_type)
           ? pd->seg_iqmatrix[seg_id][qm_tx_size]
           : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
-#endif
+#endif  // CONFIG_AOM_QM
 
   TxfmParam txfm_param;
 
