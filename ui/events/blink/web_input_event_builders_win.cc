@@ -4,6 +4,8 @@
 
 #include "ui/events/blink/web_input_event_builders_win.h"
 
+#include <windowsx.h>
+
 #include "ui/display/win/screen_win.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event_utils.h"
@@ -111,8 +113,7 @@ WebMouseEvent WebMouseEventBuilder::Build(
   result.button = button;
 
   // set position fields:
-  result.SetPositionInWidget(static_cast<short>(LOWORD(lparam)),
-                             static_cast<short>(HIWORD(lparam)));
+  result.SetPositionInWidget(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
 
   POINT global_point = {result.PositionInWidget().x,
                         result.PositionInWidget().y};
@@ -227,8 +228,7 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
     // Non-synthesized event; we can just read data off the event.
     key_state = GET_KEYSTATE_WPARAM(wparam);
 
-    result.SetPositionInScreen(static_cast<short>(LOWORD(lparam)),
-                               static_cast<short>(HIWORD(lparam)));
+    result.SetPositionInScreen(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
 
     // Currently we leave hasPreciseScrollingDeltas false, even for trackpad
     // scrolls that generate WM_MOUSEWHEEL, since we don't have a good way to
