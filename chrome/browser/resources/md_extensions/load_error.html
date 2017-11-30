@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="code_section.html">
 
 <dom-module id="extensions-load-error">
@@ -38,10 +39,12 @@
         </extensions-code-section>
       </div>
       <div slot="button-container">
+        <paper-spinner active="[[retrying_]]"></paper-spinner>
         <paper-button class="cancel-button" on-tap="close">
           $i18n{loadErrorCancel}
         </paper-button>
-        <paper-button class="action-button" on-tap="onRetryTap_">
+        <paper-button class="action-button" disabled="[[retrying_]]"
+            on-tap="onRetryTap_">
           $i18n{loadErrorRetry}
         </paper-button>
       </div>
