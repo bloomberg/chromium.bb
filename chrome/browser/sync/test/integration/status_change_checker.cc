@@ -8,7 +8,9 @@
 #include "base/run_loop.h"
 #include "base/timer/timer.h"
 
-StatusChangeChecker::StatusChangeChecker() : timed_out_(false) {}
+StatusChangeChecker::StatusChangeChecker()
+    : run_loop_(base::RunLoop::Type::kNestableTasksAllowed),
+      timed_out_(false) {}
 
 StatusChangeChecker::~StatusChangeChecker() {}
 
@@ -30,18 +32,9 @@ base::TimeDelta StatusChangeChecker::GetTimeoutDuration() {
   return base::TimeDelta::FromSeconds(45);
 }
 
-void StatusChangeChecker::StartBlockingWait() {
-  base::OneShotTimer timer;
-  timer.Start(FROM_HERE,
-              GetTimeoutDuration(),
-              base::Bind(&StatusChangeChecker::OnTimeout,
-                         base::Unretained(this)));
-
-  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).Run();
-}
-
 void StatusChangeChecker::StopWaiting() {
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  if (run_loop_.running())
+    run_loop_.Quit();
 }
 
 void StatusChangeChecker::CheckExitCondition() {
@@ -50,6 +43,17 @@ void StatusChangeChecker::CheckExitCondition() {
     DVLOG(1) << "Await -> Condition met: " << GetDebugMessage();
     StopWaiting();
   }
+}
+
+void StatusChangeChecker::StartBlockingWait() {
+  DCHECK(!run_loop_.running());
+
+  base::OneShotTimer timer;
+  timer.Start(
+      FROM_HERE, GetTimeoutDuration(),
+      base::Bind(&StatusChangeChecker::OnTimeout, base::Unretained(this)));
+
+  run_loop_.Run();
 }
 
 void StatusChangeChecker::OnTimeout() {
