@@ -148,17 +148,21 @@ void PerformanceMonitor::UpdateTaskAttribution(ExecutionContext* context) {
   if (!context || !context->IsDocument())
     return;
 
-  LocalFrame* frame_context = ToDocument(context)->GetFrame();
-  if (frame_context && local_root_ == &(frame_context->LocalFrameRoot()))
-    task_should_be_reported_ = true;
+  UpdateTaskShouldBeReported(ToDocument(context)->GetFrame());
   if (!task_execution_context_)
     task_execution_context_ = context;
   else if (task_execution_context_ != context)
     task_has_multiple_contexts_ = true;
 }
 
+void PerformanceMonitor::UpdateTaskShouldBeReported(LocalFrame* frame) {
+  if (frame && local_root_ == &(frame->LocalFrameRoot()))
+    task_should_be_reported_ = true;
+}
+
 void PerformanceMonitor::Will(const probe::RecalculateStyle& probe) {
-  task_should_be_reported_ = true;
+  UpdateTaskShouldBeReported(probe.document ? probe.document->GetFrame()
+                                            : nullptr);
   if (enabled_ && thresholds_[kLongLayout] && script_depth_)
     probe.CaptureStartTime();
 }
@@ -169,8 +173,9 @@ void PerformanceMonitor::Did(const probe::RecalculateStyle& probe) {
 }
 
 void PerformanceMonitor::Will(const probe::UpdateLayout& probe) {
+  UpdateTaskShouldBeReported(probe.document ? probe.document->GetFrame()
+                                            : nullptr);
   ++layout_depth_;
-  task_should_be_reported_ = true;
   if (!enabled_)
     return;
   if (layout_depth_ > 1 || !script_depth_ || !thresholds_[kLongLayout])

@@ -6,6 +6,7 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"
+#include "core/probe/CoreProbes.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,6 +46,16 @@ class PerformanceMonitorTest : public ::testing::Test {
   }
   void UpdateTaskAttribution(ExecutionContext* execution_context) {
     monitor_->UpdateTaskAttribution(execution_context);
+  }
+  void RecalculateStyle(Document* document) {
+    probe::RecalculateStyle probe(document);
+    monitor_->Will(probe);
+    monitor_->Did(probe);
+  }
+  void UpdateLayout(Document* document) {
+    probe::UpdateLayout probe(document);
+    monitor_->Will(probe);
+    monitor_->Did(probe);
   }
   bool TaskShouldBeReported() { return monitor_->task_should_be_reported_; }
 
@@ -154,6 +165,46 @@ TEST_F(PerformanceMonitorTest, TaskWithLocalRoot) {
   DidProcessTask(1234.5678, 2345.6789);
   EXPECT_TRUE(TaskShouldBeReported());
   EXPECT_EQ(2, NumUniqueFrameContextsSeen());
+}
+
+TEST_F(PerformanceMonitorTest, RecalculateStyleWithDocument) {
+  WillProcessTask(1234.5678);
+  RecalculateStyle(&another_page_holder_->GetDocument());
+  DidProcessTask(1234.5678, 2345.6789);
+  // Task from unrelated context should not be reported.
+  EXPECT_FALSE(TaskShouldBeReported());
+
+  WillProcessTask(3234.5678);
+  RecalculateStyle(&page_holder_->GetDocument());
+  DidProcessTask(3234.5678, 4345.6789);
+  EXPECT_TRUE(TaskShouldBeReported());
+
+  WillProcessTask(3234.5678);
+  RecalculateStyle(&another_page_holder_->GetDocument());
+  RecalculateStyle(&page_holder_->GetDocument());
+  DidProcessTask(3234.5678, 4345.6789);
+  // This task involves the current context, so it should be reported.
+  EXPECT_TRUE(TaskShouldBeReported());
+}
+
+TEST_F(PerformanceMonitorTest, UpdateLayoutWithDocument) {
+  WillProcessTask(1234.5678);
+  UpdateLayout(&another_page_holder_->GetDocument());
+  DidProcessTask(1234.5678, 2345.6789);
+  // Task from unrelated context should not be reported.
+  EXPECT_FALSE(TaskShouldBeReported());
+
+  WillProcessTask(3234.5678);
+  UpdateLayout(&page_holder_->GetDocument());
+  DidProcessTask(3234.5678, 4345.6789);
+  EXPECT_TRUE(TaskShouldBeReported());
+
+  WillProcessTask(3234.5678);
+  UpdateLayout(&another_page_holder_->GetDocument());
+  UpdateLayout(&page_holder_->GetDocument());
+  DidProcessTask(3234.5678, 4345.6789);
+  // This task involves the current context, so it should be reported.
+  EXPECT_TRUE(TaskShouldBeReported());
 }
 
 }  // namespace blink
