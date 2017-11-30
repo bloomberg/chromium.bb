@@ -18,7 +18,7 @@
   }
 
   function didEditScriptSource() {
-    UI.panels.sources.sourcesView().currentUISourceCode().requestOriginalContent().then(gotOriginalContent);
+    WorkspaceDiff.workspaceDiff().requestOriginalContentForUISourceCode(UI.panels.sources.sourcesView().currentUISourceCode()).then(gotOriginalContent);
   }
 
   function gotOriginalContent(originalContent) {
