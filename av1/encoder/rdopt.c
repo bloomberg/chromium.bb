@@ -4751,8 +4751,16 @@ static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
   ENTROPY_CONTEXT ctxa[2 * MAX_MIB_SIZE];
   ENTROPY_CONTEXT ctxl[2 * MAX_MIB_SIZE];
   av1_get_entropy_contexts(bsize, 0, &xd->plane[0], ctxa, ctxl);
+#if CONFIG_LV_MAP
+  TXB_CTX txb_ctx;
+  // Because plane is 0, plane_bsize equal to bsize
+  get_txb_ctx(bsize, tx_size, 0, ctxa, ctxl, &txb_ctx);
+  int rate = x->coeff_costs[tx_size_ctx][PLANE_TYPE_Y]
+                 .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
+#else
   int coeff_ctx = get_entropy_context(tx_size, ctxa, ctxl);
   int rate = x->token_head_costs[tx_size_ctx][PLANE_TYPE_Y][1][0][coeff_ctx][0];
+#endif
   if (tx_size > TX_4X4) {
     int ctx = txfm_partition_context(
         xd->above_txfm_context, xd->left_txfm_context, mbmi->sb_type, tx_size);
