@@ -122,6 +122,11 @@ BookmarkAppNavigationThrottle::WillRedirectRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 BookmarkAppNavigationThrottle::ProcessNavigation(bool is_redirect) {
+  if (navigation_handle()->WasStartedFromContextMenu()) {
+    DVLOG(1) << "Don't intercept: Navigation started from the context menu.";
+    return content::NavigationThrottle::PROCEED;
+  }
+
   ui::PageTransition transition_type = navigation_handle()->GetPageTransition();
 
   // When launching an app, if the page redirects to an out-of-scope URL, then
