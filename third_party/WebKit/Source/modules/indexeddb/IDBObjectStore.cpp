@@ -529,8 +529,8 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
   IDBRequest* request = IDBRequest::Create(
       script_state, source, transaction_.Get(), std::move(metrics));
 
-  value_wrapper.ExtractBlobDataHandles(request->transit_blob_handles());
   value_wrapper.WrapIfBiggerThan(IDBValueWrapper::kWrapThreshold);
+  value_wrapper.ExtractBlobDataHandles(request->transit_blob_handles());
 
   BackendDB()->Put(
       transaction_->Id(), Id(), WebData(value_wrapper.ExtractWireBytes()),
