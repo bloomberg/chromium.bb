@@ -13,6 +13,7 @@
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
+#include "ios/chrome/browser/ssl/captive_portal_metrics.h"
 #include "ios/chrome/browser/ssl/ios_captive_portal_blocking_page.h"
 #include "ios/chrome/browser/ssl/ios_ssl_blocking_page.h"
 #include "ios/web/public/browser_state.h"
@@ -25,16 +26,6 @@
 #endif
 
 DEFINE_WEB_STATE_USER_DATA_KEY(IOSSSLErrorHandler);
-
-// Enum used to record the captive portal detection result.
-enum class CaptivePortalStatus {
-  UNKNOWN = 0,
-  OFFLINE = 1,
-  ONLINE = 2,
-  PORTAL = 3,
-  PROXY_AUTH_REQUIRED = 4,
-  COUNT
-};
 
 const char kSessionDetectionResultHistogram[] =
     "CaptivePortal.Session.DetectionResult";

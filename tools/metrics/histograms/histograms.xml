@@ -8424,6 +8424,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="CaptivePortal.Session.SecureConnectionFailed"
+    enum="CaptivePortalStatus">
+  <owner>michaeldo@chromium.org</owner>
+  <summary>
+    The result of captive portal detection attempts performed in user session.
+    Detection result is recorded when portal detection is completed for a failed
+    secure connection.
+  </summary>
+</histogram>
+
+<histogram name="CaptivePortal.Session.TimeoutDetectionResult"
+    enum="CaptivePortalStatus">
+  <owner>michaeldo@chromium.org</owner>
+  <summary>
+    The result of captive portal detection attempts performed in user session.
+    Detection result is recorded when portal detection is completed for a
+    request which timed out or which is likely to timeout.
+  </summary>
+</histogram>
+
 <histogram name="Cast.Channel.Certificate" enum="CastCertificateStatus">
   <owner>ryanchung@google.com</owner>
   <summary>
