@@ -30,4 +30,9 @@ WebContents* WebContentsTester::CreateTestWebContents(
 }
 
 // static
+WebContents* WebContentsTester::CreateTestWebContents(
+    const WebContents::CreateParams& params) {
+  return TestWebContents::Create(params);
+}
+
 }  // namespace content

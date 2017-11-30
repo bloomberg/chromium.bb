@@ -46,6 +46,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   static TestWebContents* Create(BrowserContext* browser_context,
                                  scoped_refptr<SiteInstance> instance);
+  static TestWebContents* Create(const CreateParams& params);
 
   // WebContentsImpl overrides (returning the same values, but in Test* types)
   TestRenderFrameHost* GetMainFrame() const override;
