@@ -105,10 +105,11 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
     }
 
     @Override
-    public void launchVrHomescreen() {
+    public boolean launchVrHomescreen() {
         DaydreamApi daydreamApi = DaydreamApi.create(mContext);
-        if (daydreamApi == null) return;
+        if (daydreamApi == null) return false;
         daydreamApi.launchVrHomescreen();
         daydreamApi.close();
+        return true;
     }
 }
