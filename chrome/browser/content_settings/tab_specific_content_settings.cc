@@ -52,6 +52,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "storage/common/fileapi/file_system_types.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 using content::NavigationController;
@@ -232,16 +233,19 @@ void TabSpecificContentSettings::ServiceWorkerAccessed(
 }
 
 // static
-void TabSpecificContentSettings::SharedWorkerAccessed(int render_process_id,
-                                                      int render_frame_id,
-                                                      const GURL& worker_url,
-                                                      const std::string& name,
-                                                      bool blocked_by_policy) {
+void TabSpecificContentSettings::SharedWorkerAccessed(
+    int render_process_id,
+    int render_frame_id,
+    const GURL& worker_url,
+    const std::string& name,
+    const url::Origin& constructor_origin,
+    bool blocked_by_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabSpecificContentSettings* settings =
       GetForFrame(render_process_id, render_frame_id);
   if (settings)
-    settings->OnSharedWorkerAccessed(worker_url, name, blocked_by_policy);
+    settings->OnSharedWorkerAccessed(worker_url, name, constructor_origin,
+                                     blocked_by_policy);
 }
 
 bool TabSpecificContentSettings::IsContentBlocked(
@@ -501,15 +505,16 @@ void TabSpecificContentSettings::OnServiceWorkerAccessed(
 void TabSpecificContentSettings::OnSharedWorkerAccessed(
     const GURL& worker_url,
     const std::string& name,
+    const url::Origin& constructor_origin,
     bool blocked_by_policy) {
   DCHECK(worker_url.is_valid());
   if (blocked_by_policy) {
-    blocked_local_shared_objects_.shared_workers()->AddSharedWorker(worker_url,
-                                                                    name);
+    blocked_local_shared_objects_.shared_workers()->AddSharedWorker(
+        worker_url, name, constructor_origin);
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
-    allowed_local_shared_objects_.shared_workers()->AddSharedWorker(worker_url,
-                                                                    name);
+    allowed_local_shared_objects_.shared_workers()->AddSharedWorker(
+        worker_url, name, constructor_origin);
     OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 }

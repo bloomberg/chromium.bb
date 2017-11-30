@@ -32,7 +32,9 @@ class MockBrowsingDataSharedWorkerHelper
 
   // BrowsingDataSharedWorkerHelper methods.
   void StartFetching(FetchCallback callback) override;
-  void DeleteSharedWorker(const GURL& worker, const std::string& name) override;
+  void DeleteSharedWorker(const GURL& worker,
+                          const std::string& name,
+                          const url::Origin& constructor_origin) override;
 
  private:
   ~MockBrowsingDataSharedWorkerHelper() override;

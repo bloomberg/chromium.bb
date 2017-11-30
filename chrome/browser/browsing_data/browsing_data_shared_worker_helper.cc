@@ -15,8 +15,9 @@
 
 BrowsingDataSharedWorkerHelper::SharedWorkerInfo::SharedWorkerInfo(
     const GURL& worker,
-    const std::string& name)
-    : worker(worker), name(name) {}
+    const std::string& name,
+    const url::Origin& constructor_origin)
+    : worker(worker), name(name), constructor_origin(constructor_origin) {}
 
 BrowsingDataSharedWorkerHelper::SharedWorkerInfo::SharedWorkerInfo(
     const SharedWorkerInfo& other) = default;
@@ -25,7 +26,8 @@ BrowsingDataSharedWorkerHelper::SharedWorkerInfo::~SharedWorkerInfo() = default;
 
 bool BrowsingDataSharedWorkerHelper::SharedWorkerInfo::operator<(
     const SharedWorkerInfo& other) const {
-  return std::tie(worker, name) < std::tie(other.worker, other.name);
+  return std::tie(worker, name, constructor_origin) <
+         std::tie(other.worker, other.name, other.constructor_origin);
 }
 
 BrowsingDataSharedWorkerHelper::BrowsingDataSharedWorkerHelper(
@@ -48,10 +50,11 @@ void BrowsingDataSharedWorkerHelper::StartFetching(FetchCallback callback) {
 }
 void BrowsingDataSharedWorkerHelper::DeleteSharedWorker(
     const GURL& worker,
-    const std::string& name) {
+    const std::string& name,
+    const url::Origin& constructor_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::SharedWorkerService::GetInstance()->TerminateWorker(
-      worker, name, storage_partition_, resource_context_);
+      worker, name, constructor_origin, storage_partition_, resource_context_);
 }
 
 CannedBrowsingDataSharedWorkerHelper::CannedBrowsingDataSharedWorkerHelper(
@@ -64,11 +67,13 @@ CannedBrowsingDataSharedWorkerHelper::~CannedBrowsingDataSharedWorkerHelper() =
 
 void CannedBrowsingDataSharedWorkerHelper::AddSharedWorker(
     const GURL& worker,
-    const std::string& name) {
+    const std::string& name,
+    const url::Origin& constructor_origin) {
   if (!BrowsingDataHelper::HasWebScheme(worker))
     return;  // Non-websafe state is not considered browsing data.
 
-  pending_shared_worker_info_.insert(SharedWorkerInfo(worker, name));
+  pending_shared_worker_info_.insert(
+      SharedWorkerInfo(worker, name, constructor_origin));
 }
 
 void CannedBrowsingDataSharedWorkerHelper::Reset() {
@@ -102,11 +107,14 @@ void CannedBrowsingDataSharedWorkerHelper::StartFetching(
 
 void CannedBrowsingDataSharedWorkerHelper::DeleteSharedWorker(
     const GURL& worker,
-    const std::string& name) {
+    const std::string& name,
+    const url::Origin& constructor_origin) {
   for (auto it = pending_shared_worker_info_.begin();
        it != pending_shared_worker_info_.end();) {
-    if (it->worker == worker && it->name == name) {
-      BrowsingDataSharedWorkerHelper::DeleteSharedWorker(it->worker, it->name);
+    if (it->worker == worker && it->name == name &&
+        it->constructor_origin == constructor_origin) {
+      BrowsingDataSharedWorkerHelper::DeleteSharedWorker(
+          it->worker, it->name, it->constructor_origin);
       it = pending_shared_worker_info_.erase(it);
     } else {
       ++it;

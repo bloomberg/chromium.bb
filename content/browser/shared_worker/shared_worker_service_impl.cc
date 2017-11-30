@@ -26,6 +26,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
+#include "url/origin.h"
 
 namespace content {
 namespace {
@@ -59,6 +60,7 @@ void SharedWorkerServiceImpl::ResetForTesting() {
 bool SharedWorkerServiceImpl::TerminateWorker(
     const GURL& url,
     const std::string& name,
+    const url::Origin& constructor_origin,
     StoragePartition* storage_partition,
     ResourceContext* resource_context) {
   StoragePartitionImpl* storage_partition_impl =
@@ -76,7 +78,8 @@ bool SharedWorkerServiceImpl::TerminateWorker(
   for (const auto& iter : worker_hosts_) {
     SharedWorkerHost* host = iter.second.get();
     if (host->IsAvailable() &&
-        host->instance()->Matches(url, name, partition_id, resource_context)) {
+        host->instance()->Matches(url, name, constructor_origin, partition_id,
+                                  resource_context)) {
       host->TerminateWorker();
       return true;
     }
@@ -120,28 +123,32 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     const WorkerStoragePartitionId& partition_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (RenderFrameHost::FromID(process_id, frame_id)) {
-    RenderFrameHost* main_frame =
-        RenderFrameHostImpl::FromID(process_id, frame_id)
-            ->frame_tree_node()
-            ->frame_tree()
-            ->GetMainFrame();
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(process_id, frame_id);
+  if (!render_frame_host) {
+    // TODO(nhiroki): Support the case where the requester is a worker (i.e.,
+    // nested worker) (https://crbug.com/31666).
+    client->OnScriptLoadFailed();
+    return;
+  }
 
-    if (!GetContentClient()->browser()->AllowSharedWorker(
-            info->url, main_frame->GetLastCommittedURL(), info->name,
-            WebContentsImpl::FromRenderFrameHostID(process_id, frame_id)
-                ->GetBrowserContext(),
-            process_id, frame_id)) {
-      client->OnScriptLoadFailed();
-      return;
-    }
+  RenderFrameHost* main_frame =
+      render_frame_host->frame_tree_node()->frame_tree()->GetMainFrame();
+  if (!GetContentClient()->browser()->AllowSharedWorker(
+          info->url, main_frame->GetLastCommittedURL(), info->name,
+          render_frame_host->GetLastCommittedOrigin(),
+          WebContentsImpl::FromRenderFrameHostID(process_id, frame_id)
+              ->GetBrowserContext(),
+          process_id, frame_id)) {
+    client->OnScriptLoadFailed();
+    return;
   }
 
   auto instance = std::make_unique<SharedWorkerInstance>(
-      info->url, info->name, info->content_security_policy,
-      info->content_security_policy_type, info->creation_address_space,
-      resource_context, partition_id, creation_context_type,
-      base::UnguessableToken::Create());
+      info->url, info->name, render_frame_host->GetLastCommittedOrigin(),
+      info->content_security_policy, info->content_security_policy_type,
+      info->creation_address_space, resource_context, partition_id,
+      creation_context_type, base::UnguessableToken::Create());
 
   SharedWorkerHost* host = FindAvailableSharedWorkerHost(*instance);
   if (host) {

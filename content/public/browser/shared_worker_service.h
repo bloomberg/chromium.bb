@@ -5,6 +5,10 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SHARED_WORKER_SERVICE_H_
 #define CONTENT_PUBLIC_BROWSER_SHARED_WORKER_SERVICE_H_
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace content {
 
 class ResourceContext;
@@ -18,10 +22,12 @@ class CONTENT_EXPORT SharedWorkerService {
  public:
   static SharedWorkerService* GetInstance();
 
-  // Terminates the given shared worker identified by its name and the URL of
-  // its main script resource. Returns true on success.
+  // Terminates the given shared worker identified by its name, the URL of
+  // its main script resource, and the constructor origin. Returns true on
+  // success.
   virtual bool TerminateWorker(const GURL& url,
                                const std::string& name,
+                               const url::Origin& constructor_origin,
                                StoragePartition* storage_partition,
                                ResourceContext* resource_context) = 0;
 

@@ -10,6 +10,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -25,13 +26,14 @@ class CannedBrowsingDataSharedWorkerHelperTest : public testing::Test {
 TEST_F(CannedBrowsingDataSharedWorkerHelperTest, Empty) {
   const GURL worker("https://host1:1/worker.js");
   std::string name("test");
+  const url::Origin constructor_origin = url::Origin::Create(worker);
 
   auto helper = base::MakeRefCounted<CannedBrowsingDataSharedWorkerHelper>(
       content::BrowserContext::GetDefaultStoragePartition(profile()),
       profile()->GetResourceContext());
 
   EXPECT_TRUE(helper->empty());
-  helper->AddSharedWorker(worker, name);
+  helper->AddSharedWorker(worker, name, constructor_origin);
   EXPECT_FALSE(helper->empty());
   helper->Reset();
   EXPECT_TRUE(helper->empty());
@@ -40,18 +42,20 @@ TEST_F(CannedBrowsingDataSharedWorkerHelperTest, Empty) {
 TEST_F(CannedBrowsingDataSharedWorkerHelperTest, Delete) {
   const GURL worker1("http://host1:9000/worker.js");
   std::string name1("name");
+  const url::Origin constructor_origin1 = url::Origin::Create(worker1);
   const GURL worker2("https://example.com/worker.js");
   std::string name2("name");
+  const url::Origin constructor_origin2 = url::Origin::Create(worker2);
 
   auto helper = base::MakeRefCounted<CannedBrowsingDataSharedWorkerHelper>(
       content::BrowserContext::GetDefaultStoragePartition(profile()),
       profile()->GetResourceContext());
 
   EXPECT_TRUE(helper->empty());
-  helper->AddSharedWorker(worker1, name1);
-  helper->AddSharedWorker(worker2, name2);
+  helper->AddSharedWorker(worker1, name1, constructor_origin1);
+  helper->AddSharedWorker(worker2, name2, constructor_origin2);
   EXPECT_EQ(2u, helper->GetSharedWorkerCount());
-  helper->DeleteSharedWorker(worker2, name2);
+  helper->DeleteSharedWorker(worker2, name2, constructor_origin2);
   EXPECT_EQ(1u, helper->GetSharedWorkerCount());
 }
 
@@ -59,15 +63,17 @@ TEST_F(CannedBrowsingDataSharedWorkerHelperTest, IgnoreExtensionsAndDevTools) {
   const GURL worker1("chrome-extension://abcdefghijklmnopqrstuvwxyz/worker.js");
   const GURL worker2("chrome-devtools://abcdefghijklmnopqrstuvwxyz/worker.js");
   std::string name("name");
+  const url::Origin constructor_origin1 = url::Origin::Create(worker1);
+  const url::Origin constructor_origin2 = url::Origin::Create(worker2);
 
   auto helper = base::MakeRefCounted<CannedBrowsingDataSharedWorkerHelper>(
       content::BrowserContext::GetDefaultStoragePartition(profile()),
       profile()->GetResourceContext());
 
   EXPECT_TRUE(helper->empty());
-  helper->AddSharedWorker(worker1, name);
+  helper->AddSharedWorker(worker1, name, constructor_origin1);
   EXPECT_TRUE(helper->empty());
-  helper->AddSharedWorker(worker2, name);
+  helper->AddSharedWorker(worker2, name, constructor_origin2);
   EXPECT_TRUE(helper->empty());
 }
 
