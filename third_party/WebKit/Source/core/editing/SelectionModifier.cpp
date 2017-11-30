@@ -105,8 +105,8 @@ TextDirection SelectionModifier::DirectionOfEnclosingBlock() const {
 }
 
 static TextDirection DirectionOf(const VisibleSelection& visible_selection) {
-  InlineBox* start_box = nullptr;
-  InlineBox* end_box = nullptr;
+  const InlineBox* start_box = nullptr;
+  const InlineBox* end_box = nullptr;
   // Cache the VisiblePositions because visibleStart() and visibleEnd()
   // can cause layout, which has the potential to invalidate lineboxes.
   const VisiblePosition& start_position = visible_selection.VisibleStart();

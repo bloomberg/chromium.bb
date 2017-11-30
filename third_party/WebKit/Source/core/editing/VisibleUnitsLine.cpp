@@ -679,7 +679,7 @@ VisiblePosition PreviousLinePosition(const VisiblePosition& visible_position,
     return VisiblePosition();
 
   RootInlineBox* root = nullptr;
-  InlineBox* box = ComputeInlineBoxPosition(visible_position).inline_box;
+  const InlineBox* box = ComputeInlineBoxPosition(visible_position).inline_box;
   if (box) {
     root = box->Root().PrevRootBox();
     // We want to skip zero height boxes.
@@ -740,7 +740,7 @@ VisiblePosition NextLinePosition(const VisiblePosition& visible_position,
     return VisiblePosition();
 
   RootInlineBox* root = nullptr;
-  InlineBox* box = ComputeInlineBoxPosition(visible_position).inline_box;
+  const InlineBox* box = ComputeInlineBoxPosition(visible_position).inline_box;
   if (box) {
     root = box->Root().NextRootBox();
     // We want to skip zero height boxes.
