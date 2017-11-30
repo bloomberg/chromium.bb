@@ -26,6 +26,7 @@
 @property(nonatomic, assign) UIEdgeInsets contentInset;
 @property(nonatomic, readonly, getter=isDecelerating) BOOL decelerating;
 @property(nonatomic, readonly, getter=isDragging) BOOL dragging;
+@property(nonatomic, readonly, getter=isTracking) BOOL tracking;
 @property(nonatomic, readonly) BOOL isZooming;
 @property(nonatomic, readonly) CGFloat zoomScale;
 @property(nonatomic, assign) UIEdgeInsets scrollIndicatorInsets;

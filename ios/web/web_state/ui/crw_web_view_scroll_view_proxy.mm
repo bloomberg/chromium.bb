@@ -101,6 +101,10 @@
   return [_scrollView isDragging];
 }
 
+- (BOOL)isTracking {
+  return [_scrollView isTracking];
+}
+
 - (BOOL)isZooming {
   return [_scrollView isZooming];
 }
