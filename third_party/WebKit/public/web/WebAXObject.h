@@ -251,6 +251,7 @@ class WebAXObject {
   BLINK_EXPORT bool ValueForRange(float* out_value) const;
   BLINK_EXPORT bool MaxValueForRange(float* out_value) const;
   BLINK_EXPORT bool MinValueForRange(float* out_value) const;
+  BLINK_EXPORT bool StepValueForRange(float* out_value) const;
 
   BLINK_EXPORT WebNode GetNode() const;
   BLINK_EXPORT WebDocument GetDocument() const;

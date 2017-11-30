@@ -551,9 +551,7 @@ static void ax_platform_node_auralinux_get_minimum_increment(
   if (!obj)
     return;
 
-  memset(value, 0, sizeof(*value));
-  g_value_init(value, G_TYPE_FLOAT);
-  g_value_set_float(value, obj->GetStepAttribute());
+  obj->GetFloatAttributeInGValue(ui::AX_ATTR_STEP_VALUE_FOR_RANGE, value);
 }
 
 static void ax_value_interface_base_init(AtkValueIface* iface) {
@@ -1202,15 +1200,6 @@ AtkAttributeSet* AXPlatformNodeAuraLinux::GetDocumentAttributes() const {
   }
 
   return attribute_set;
-}
-
-//
-// AtkValue helpers
-//
-
-float AXPlatformNodeAuraLinux::GetStepAttribute() {
-  // TODO(jose.dapena): Get Correct value of Step attribute.
-  return 1.0;
 }
 
 //

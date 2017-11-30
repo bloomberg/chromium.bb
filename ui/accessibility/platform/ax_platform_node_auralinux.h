@@ -66,9 +66,6 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   const gchar* GetDocumentAttributeValue(const gchar* attribute) const;
   AtkAttributeSet* GetDocumentAttributes() const;
 
-  // AtkValue helpers
-  float GetStepAttribute();
-
   // AtkHyperlink helpers
   AtkHyperlink* GetAtkHyperlink();
 

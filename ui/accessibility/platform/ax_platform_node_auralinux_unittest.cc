@@ -414,6 +414,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueGetMinimumIncrement) {
   AXNodeData root;
   root.id = 1;
   root.role = AX_ROLE_SLIDER;
+  root.AddFloatAttribute(AX_ATTR_STEP_VALUE_FOR_RANGE, 5.0);
   Init(root);
 
   AtkObject* root_obj(GetRootAtkObject());
@@ -425,8 +426,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueGetMinimumIncrement) {
   atk_value_get_minimum_increment(ATK_VALUE(root_obj), &increment);
 
   EXPECT_EQ(G_TYPE_FLOAT, G_VALUE_TYPE(&increment));
-  // This is hardcoded, still not implemented properly.
-  EXPECT_EQ(1.0, g_value_get_float(&increment));
+  EXPECT_EQ(5.0, g_value_get_float(&increment));
 
   g_value_unset(&increment);
   g_object_unref(root_obj);

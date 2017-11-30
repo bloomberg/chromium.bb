@@ -555,6 +555,7 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetProperty("intValue", &WebAXObjectProxy::IntValue)
       .SetProperty("minValue", &WebAXObjectProxy::MinValue)
       .SetProperty("maxValue", &WebAXObjectProxy::MaxValue)
+      .SetProperty("stepValue", &WebAXObjectProxy::StepValue)
       .SetProperty("valueDescription", &WebAXObjectProxy::ValueDescription)
       .SetProperty("childrenCount", &WebAXObjectProxy::ChildrenCount)
       .SetProperty("selectionAnchorObject",
@@ -824,6 +825,13 @@ int WebAXObjectProxy::MaxValue() {
   float max_value = 0.0f;
   accessibility_object_.MaxValueForRange(&max_value);
   return max_value;
+}
+
+int WebAXObjectProxy::StepValue() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  float step_value = 0.0f;
+  accessibility_object_.StepValueForRange(&step_value);
+  return step_value;
 }
 
 std::string WebAXObjectProxy::ValueDescription() {
