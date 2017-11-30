@@ -96,7 +96,7 @@ GL_EXPORT const char* GetGLImplementationName(GLImplementation implementation);
 GL_EXPORT void AddGLNativeLibrary(base::NativeLibrary library);
 
 // Unloads all native libraries.
-GL_EXPORT void UnloadGLNativeLibraries();
+GL_EXPORT void UnloadGLNativeLibraries(bool due_to_fallback);
 
 // Set an additional function that will be called to find GL entry points.
 // Exported so that tests may set the function used in the mock implementation.

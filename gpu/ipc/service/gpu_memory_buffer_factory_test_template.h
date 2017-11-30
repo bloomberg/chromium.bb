@@ -34,7 +34,7 @@ class GpuMemoryBufferFactoryTest : public testing::Test {
         switches::kUseGpuInTests));
     gl::GLSurfaceTestSupport::InitializeOneOff();
   }
-  void TearDown() override { gl::init::ShutdownGL(); }
+  void TearDown() override { gl::init::ShutdownGL(false); }
 #endif
 
  protected:

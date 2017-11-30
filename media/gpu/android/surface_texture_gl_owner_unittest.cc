@@ -57,7 +57,7 @@ class SurfaceTextureGLOwnerTest : public testing::Test {
     context_ = nullptr;
     share_group_ = nullptr;
     surface_ = nullptr;
-    gl::init::ShutdownGL();
+    gl::init::ShutdownGL(false);
   }
 
   scoped_refptr<SurfaceTextureGLOwner> surface_texture_;

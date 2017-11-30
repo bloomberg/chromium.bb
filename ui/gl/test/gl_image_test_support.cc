@@ -41,7 +41,7 @@ void GLImageTestSupport::InitializeGL() {
 
 // static
 void GLImageTestSupport::CleanupGL() {
-  init::ShutdownGL();
+  init::ShutdownGL(false);
 }
 
 // static

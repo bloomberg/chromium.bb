@@ -50,11 +50,24 @@ LibraryArray* g_libraries;
 PROTECTED_MEMORY_SECTION base::ProtectedMemory<GLGetProcAddressProc>
     g_get_proc_address;
 
-void CleanupNativeLibraries(void* unused) {
+void CleanupNativeLibraries(void* due_to_fallback) {
   if (g_libraries) {
     // We do not call base::UnloadNativeLibrary() for these libraries as
     // unloading libGL without closing X display is not allowed. See
     // crbug.com/250813 for details.
+    bool unload_libraries = false;
+#if defined(OS_WIN)
+    // However during fallback from ANGLE to SwiftShader ANGLE library needs to
+    // be unloaded, otherwise software SwiftShader loading will fail. See
+    // crbug.com/760063 for details.
+    unload_libraries = due_to_fallback &&
+                       *static_cast<bool*>(due_to_fallback) &&
+                       GetGLImplementation() == kGLImplementationEGLGLES2;
+#endif
+    if (unload_libraries) {
+      for (auto* library : *g_libraries)
+        base::UnloadNativeLibrary(library);
+    }
     delete g_libraries;
     g_libraries = NULL;
   }
@@ -151,8 +164,8 @@ void AddGLNativeLibrary(base::NativeLibrary library) {
   g_libraries->push_back(library);
 }
 
-void UnloadGLNativeLibraries() {
-  CleanupNativeLibraries(NULL);
+void UnloadGLNativeLibraries(bool due_to_fallback) {
+  CleanupNativeLibraries(&due_to_fallback);
 }
 
 void SetGLGetProcAddressProc(GLGetProcAddressProc proc) {

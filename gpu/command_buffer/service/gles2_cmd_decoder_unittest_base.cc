@@ -589,7 +589,7 @@ void GLES2DecoderTestBase::ResetDecoder() {
   command_buffer_service_.reset();
   ::gl::MockGLInterface::SetGLInterface(NULL);
   gl_.reset();
-  gl::init::ShutdownGL();
+  gl::init::ShutdownGL(false);
 }
 
 void GLES2DecoderTestBase::TearDown() {
@@ -2341,7 +2341,7 @@ void GLES2DecoderPassthroughTestBase::TearDown() {
   decoder_.reset();
   group_ = nullptr;
   command_buffer_service_.reset();
-  gl::init::ShutdownGL();
+  gl::init::ShutdownGL(false);
 }
 
 void GLES2DecoderPassthroughTestBase::SetBucketData(uint32_t bucket_id,
