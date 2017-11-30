@@ -232,7 +232,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       if (quic_args->GetBoolean(kQuicStoreServerConfigsInProperties,
                                 &quic_store_server_configs_in_properties)) {
         session_params->quic_max_server_configs_stored_in_properties =
-            net::kMaxQuicServersToPersist;
+            net::kDefaultMaxQuicServerEntries;
       }
 
       int quic_max_server_configs_stored_in_properties = 0;

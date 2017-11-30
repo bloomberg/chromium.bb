@@ -1103,7 +1103,7 @@ TEST_P(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
   ASSERT_TRUE(server_value->GetAsDictionary(&server_dict));
 
   const url::SchemeHostPort server("https", "example.com", 443);
-  AlternativeServiceMap alternative_service_map(/*max_size=*/5);
+  AlternativeServiceMap alternative_service_map;
   EXPECT_TRUE(http_server_props_manager_->AddToAlternativeServiceMap(
       server, *server_dict, &alternative_service_map));
 
@@ -1152,7 +1152,7 @@ TEST_P(HttpServerPropertiesManagerTest, DoNotLoadAltSvcForInsecureOrigins) {
   ASSERT_TRUE(server_value->GetAsDictionary(&server_dict));
 
   const url::SchemeHostPort server("http", "example.com", 80);
-  AlternativeServiceMap alternative_service_map(/*max_size=*/5);
+  AlternativeServiceMap alternative_service_map;
   EXPECT_FALSE(http_server_props_manager_->AddToAlternativeServiceMap(
       server, *server_dict, &alternative_service_map));
 
@@ -1262,7 +1262,7 @@ TEST_P(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
                                            std::move(alternative_service_list));
 
   const url::SchemeHostPort server("https", "example.com", 443);
-  AlternativeServiceMap alternative_service_map(/*max_size=*/5);
+  AlternativeServiceMap alternative_service_map;
   ASSERT_TRUE(http_server_props_manager_->AddToAlternativeServiceMap(
       server, server_pref_dict, &alternative_service_map));
 
@@ -1377,7 +1377,7 @@ TEST_P(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
   ASSERT_TRUE(server_value->GetAsDictionary(&server_dict));
 
   const url::SchemeHostPort server("https", "example.com", 443);
-  AlternativeServiceMap alternative_service_map(/*max_size=*/5);
+  AlternativeServiceMap alternative_service_map;
   EXPECT_TRUE(http_server_props_manager_->AddToAlternativeServiceMap(
       server, *server_dict, &alternative_service_map));
 

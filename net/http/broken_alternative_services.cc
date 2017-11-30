@@ -34,8 +34,6 @@ BrokenAlternativeServices::BrokenAlternativeServices(Delegate* delegate,
                                                      base::TickClock* clock)
     : delegate_(delegate),
       clock_(clock),
-      recently_broken_alternative_services_(
-          RecentlyBrokenAlternativeServices::NO_AUTO_EVICT),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(clock_);
@@ -99,8 +97,11 @@ bool BrokenAlternativeServices::IsAlternativeServiceBroken(
 
 bool BrokenAlternativeServices::WasAlternativeServiceRecentlyBroken(
     const AlternativeService& alternative_service) {
+  DCHECK(!alternative_service.host.empty());
   return recently_broken_alternative_services_.Get(alternative_service) !=
-         recently_broken_alternative_services_.end();
+             recently_broken_alternative_services_.end() ||
+         broken_alternative_service_map_.find(alternative_service) !=
+             broken_alternative_service_map_.end();
 }
 
 void BrokenAlternativeServices::ConfirmAlternativeService(
@@ -269,8 +270,10 @@ void BrokenAlternativeServices ::
     ScheduleBrokenAlternateProtocolMappingsExpiration() {
   DCHECK(!broken_alternative_service_list_.empty());
   base::TimeTicks now = clock_->NowTicks();
-  base::TimeTicks when = broken_alternative_service_list_.front().second;
-  base::TimeDelta delay = when > now ? when - now : base::TimeDelta();
+  base::TimeTicks next_expiration =
+      broken_alternative_service_list_.front().second;
+  base::TimeDelta delay =
+      next_expiration > now ? next_expiration - now : base::TimeDelta();
   expiration_timer_.Stop();
   expiration_timer_.Start(
       FROM_HERE, delay,

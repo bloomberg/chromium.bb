@@ -560,7 +560,7 @@ class QuicStreamFactoryTestBase {
     EXPECT_EQ(2U, http_server_properties_.alternative_service_map().size());
 
     http_server_properties_.SetMaxServerConfigsStoredInProperties(
-        kMaxQuicServersToPersist);
+        kDefaultMaxQuicServerEntries);
 
     QuicServerId quic_server_id(kDefaultServerHostName, 443,
                                 PRIVACY_MODE_DISABLED);

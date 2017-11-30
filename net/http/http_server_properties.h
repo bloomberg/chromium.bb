@@ -241,23 +241,62 @@ struct NET_EXPORT ServerNetworkStats {
 
 typedef std::vector<AlternativeService> AlternativeServiceVector;
 typedef std::vector<AlternativeServiceInfo> AlternativeServiceInfoVector;
-// Flattened representation of servers (scheme, host, port) that either support
-// or not support SPDY protocol.
-typedef base::MRUCache<std::string, bool> SpdyServersMap;
-typedef base::MRUCache<url::SchemeHostPort, AlternativeServiceInfoVector>
-    AlternativeServiceMap;
-// Pairs of broken alternative services and when their brokenness expires.
+
+// Stores broken alternative services and when their brokenness expires.
 typedef std::list<std::pair<AlternativeService, base::TimeTicks>>
     BrokenAlternativeServiceList;
-// Map to the number of times each alternative service has been marked broken.
-typedef base::MRUCache<AlternativeService, int>
-    RecentlyBrokenAlternativeServices;
-typedef base::MRUCache<url::SchemeHostPort, ServerNetworkStats>
-    ServerNetworkStatsMap;
-typedef base::MRUCache<QuicServerId, std::string> QuicServerInfoMap;
 
-// Persist 5 QUIC Servers. This is mainly used by cronet.
-const int kMaxQuicServersToPersist = 5;
+// Store at most 300 MRU SupportsSpdyServerHostPortPairs in memory and disk.
+const int kMaxSupportsSpdyServerEntries = 300;
+
+// Store at most 200 MRU AlternateProtocolHostPortPairs in memory and disk.
+const int kMaxAlternateProtocolEntries = 200;
+
+// Store at most 200 MRU ServerNetworkStats in memory and disk.
+const int kMaxServerNetworkStatsEntries = 200;
+
+// Store at most 200 MRU RecentlyBrokenAlternativeServices in memory and disk.
+const int kMaxRecentlyBrokenAlternativeServiceEntries = 200;
+
+// Store at most 5 MRU QUIC servers by default. This is mainly used by cronet.
+const int kDefaultMaxQuicServerEntries = 5;
+
+// Stores flattened representation of servers (scheme, host, port) and whether
+// or not they support SPDY.
+class SpdyServersMap : public base::MRUCache<std::string, bool> {
+ public:
+  SpdyServersMap()
+      : base::MRUCache<std::string, bool>(kMaxSupportsSpdyServerEntries) {}
+};
+
+class AlternativeServiceMap
+    : public base::MRUCache<url::SchemeHostPort, AlternativeServiceInfoVector> {
+ public:
+  AlternativeServiceMap()
+      : base::MRUCache<url::SchemeHostPort, AlternativeServiceInfoVector>(
+            kMaxAlternateProtocolEntries) {}
+};
+
+class ServerNetworkStatsMap
+    : public base::MRUCache<url::SchemeHostPort, ServerNetworkStats> {
+ public:
+  ServerNetworkStatsMap()
+      : base::MRUCache<url::SchemeHostPort, ServerNetworkStats>(
+            kMaxServerNetworkStatsEntries) {}
+};
+
+// Stores how many times an alternative service has been marked broken.
+class RecentlyBrokenAlternativeServices
+    : public base::MRUCache<AlternativeService, int> {
+ public:
+  RecentlyBrokenAlternativeServices()
+      : base::MRUCache<AlternativeService, int>(
+            kMaxRecentlyBrokenAlternativeServiceEntries) {}
+};
+
+// Max number of quic servers to store is not hardcoded and can be set.
+// Because of this, QuicServerInfoMap will not be a subclass of MRUCache.
+typedef base::MRUCache<QuicServerId, std::string> QuicServerInfoMap;
 
 extern const char kAlternativeServiceHeader[];
 
