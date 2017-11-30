@@ -31,19 +31,18 @@ base::AtomicSequenceNumber g_next_transfer_buffer_id;
 }  // namespace
 
 GpuChannelHost::GpuChannelHost(
-    GpuChannelHostFactory* factory,
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread,
     int channel_id,
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info,
     mojo::ScopedMessagePipeHandle handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
-    : factory_(factory),
+    : io_thread_(std::move(io_thread)),
       channel_id_(channel_id),
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
-      listener_(
-          new Listener(std::move(handle), factory_->GetIOThreadTaskRunner()),
-          base::OnTaskRunnerDeleter(factory_->GetIOThreadTaskRunner())),
+      listener_(new Listener(std::move(handle), io_thread_),
+                base::OnTaskRunnerDeleter(io_thread_)),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   next_image_id_.GetNext();
   next_route_id_.GetNext();
@@ -56,19 +55,17 @@ bool GpuChannelHost::Send(IPC::Message* msg) {
 
   auto message = base::WrapUnique(msg);
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      factory_->GetIOThreadTaskRunner();
-  DCHECK(!io_task_runner->BelongsToCurrentThread());
+  DCHECK(!io_thread_->BelongsToCurrentThread());
 
   // The GPU process never sends synchronous IPCs so clear the unblock flag to
   // preserve order.
   message->set_unblock(false);
 
   if (!message->is_sync()) {
-    io_task_runner->PostTask(FROM_HERE,
-                             base::BindOnce(&Listener::SendMessage,
-                                            base::Unretained(listener_.get()),
-                                            std::move(message), nullptr));
+    io_thread_->PostTask(FROM_HERE,
+                         base::BindOnce(&Listener::SendMessage,
+                                        base::Unretained(listener_.get()),
+                                        std::move(message), nullptr));
     return true;
   }
 
@@ -80,7 +77,7 @@ bool GpuChannelHost::Send(IPC::Message* msg) {
 
   IPC::PendingSyncMsg pending_sync(IPC::SyncMessage::GetMessageId(*message),
                                    deserializer.get(), &done_event);
-  io_task_runner->PostTask(
+  io_thread_->PostTask(
       FROM_HERE,
       base::BindOnce(&Listener::SendMessage, base::Unretained(listener_.get()),
                      std::move(message), &pending_sync));
@@ -144,7 +141,7 @@ void GpuChannelHost::InternalFlush(uint32_t flush_id) {
 }
 
 void GpuChannelHost::DestroyChannel() {
-  factory_->GetIOThreadTaskRunner()->PostTask(
+  io_thread_->PostTask(
       FROM_HERE,
       base::BindOnce(&Listener::Close, base::Unretained(listener_.get())));
 }
@@ -159,20 +156,16 @@ void GpuChannelHost::AddRouteWithTaskRunner(
     int route_id,
     base::WeakPtr<IPC::Listener> listener,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      factory_->GetIOThreadTaskRunner();
-  io_task_runner->PostTask(
-      FROM_HERE, base::Bind(&GpuChannelHost::Listener::AddRoute,
-                            base::Unretained(listener_.get()), route_id,
-                            listener, task_runner));
+  io_thread_->PostTask(FROM_HERE,
+                       base::Bind(&GpuChannelHost::Listener::AddRoute,
+                                  base::Unretained(listener_.get()), route_id,
+                                  listener, task_runner));
 }
 
 void GpuChannelHost::RemoveRoute(int route_id) {
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      factory_->GetIOThreadTaskRunner();
-  io_task_runner->PostTask(
-      FROM_HERE, base::Bind(&GpuChannelHost::Listener::RemoveRoute,
-                            base::Unretained(listener_.get()), route_id));
+  io_thread_->PostTask(FROM_HERE,
+                       base::Bind(&GpuChannelHost::Listener::RemoveRoute,
+                                  base::Unretained(listener_.get()), route_id));
 }
 
 base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(

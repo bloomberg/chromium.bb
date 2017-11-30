@@ -57,14 +57,6 @@ class GPU_EXPORT GpuChannelEstablishFactory {
   virtual GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
 };
 
-class GPU_EXPORT GpuChannelHostFactory {
- public:
-  virtual ~GpuChannelHostFactory() {}
-
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-  GetIOThreadTaskRunner() = 0;
-};
-
 // Encapsulates an IPC channel between the client and one GPU process.
 // On the GPU process side there's a corresponding GpuChannel.
 // Every method can be called on any thread with a message loop, except for the
@@ -73,7 +65,7 @@ class GPU_EXPORT GpuChannelHost
     : public IPC::Sender,
       public base::RefCountedThreadSafe<GpuChannelHost> {
  public:
-  GpuChannelHost(GpuChannelHostFactory* factory,
+  GpuChannelHost(scoped_refptr<base::SingleThreadTaskRunner> io_thread,
                  int channel_id,
                  const gpu::GPUInfo& gpu_info,
                  const gpu::GpuFeatureInfo& gpu_feature_info,
@@ -128,8 +120,6 @@ class GPU_EXPORT GpuChannelHost
 
   // Remove the message route associated with |route_id|.
   void RemoveRoute(int route_id);
-
-  GpuChannelHostFactory* factory() const { return factory_; }
 
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() const {
     return gpu_memory_buffer_manager_;
@@ -223,7 +213,7 @@ class GPU_EXPORT GpuChannelHost
   // - |next_image_id_|, atomic type
   // - |next_route_id_|, atomic type
   // - |flush_list_| and |*_flush_id_| protected by |context_lock_|
-  GpuChannelHostFactory* const factory_;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
 
   const int channel_id_;
   const gpu::GPUInfo gpu_info_;
