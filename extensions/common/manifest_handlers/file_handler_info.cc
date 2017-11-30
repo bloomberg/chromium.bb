@@ -125,7 +125,7 @@ bool LoadFileHandler(const std::string& handler_id,
       if (!mime_types->GetString(i, &type)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidFileHandlerTypeElement, handler_id,
-            base::SizeTToString(i));
+            base::NumberToString(i));
         return false;
       }
       handler.types.insert(type);
@@ -138,7 +138,7 @@ bool LoadFileHandler(const std::string& handler_id,
       if (!file_extensions->GetString(i, &file_extension)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidFileHandlerExtensionElement, handler_id,
-            base::SizeTToString(i));
+            base::NumberToString(i));
         return false;
       }
       handler.extensions.insert(file_extension);

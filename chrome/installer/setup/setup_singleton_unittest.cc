@@ -48,7 +48,7 @@ base::CommandLine GetDummyCommandLine() {
 }
 
 base::string16 HashFilePath(const base::FilePath& path) {
-  return base::SizeTToString16(
+  return base::NumberToString16(
       std::hash<base::FilePath::StringType>()(path.value()));
 }
 

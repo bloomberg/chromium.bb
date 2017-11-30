@@ -298,7 +298,7 @@ void OrderedSimpleTaskRunner::AsValueInto(
 
   state->SetBoolean("advance_now", advance_now_);
   state->SetBoolean("inside_run_tasks_until", inside_run_tasks_until_);
-  state->SetString("max_tasks", base::SizeTToString(max_tasks_));
+  state->SetString("max_tasks", base::NumberToString(max_tasks_));
 }
 
 base::Callback<bool(void)> OrderedSimpleTaskRunner::TaskRunCountBelow(

@@ -600,7 +600,7 @@ base::FilePath FileNetLogObserver::FileWriter::GetEventFilePath(
   DCHECK_LT(index, total_num_event_files_);
   DCHECK(IsBounded());
   return GetInprogressDirectory().AppendASCII(
-      "event_file_" + base::SizeTToString(index) + ".json");
+      "event_file_" + base::NumberToString(index) + ".json");
 }
 
 base::FilePath FileNetLogObserver::FileWriter::GetConstantsFilePath() const {

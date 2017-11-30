@@ -45,7 +45,7 @@ TestRulesetPublisher::TestRulesetPublisher() = default;
 TestRulesetPublisher::~TestRulesetPublisher() = default;
 
 void TestRulesetPublisher::SetRuleset(const TestRuleset& unindexed_ruleset) {
-  const std::string& test_ruleset_content_version(base::SizeTToString(
+  const std::string& test_ruleset_content_version(base::NumberToString(
       base::Hash(std::string(unindexed_ruleset.contents.begin(),
                              unindexed_ruleset.contents.end()))));
   subresource_filter::UnindexedRulesetInfo unindexed_ruleset_info;

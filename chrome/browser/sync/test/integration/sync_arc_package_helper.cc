@@ -24,7 +24,7 @@ namespace arc {
 namespace {
 
 std::string GetTestPackageName(size_t id) {
-  return "testarcpackage" + base::SizeTToString(id);
+  return "testarcpackage" + base::NumberToString(id);
 }
 
 }  // namespace

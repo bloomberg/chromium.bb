@@ -572,7 +572,7 @@ TEST_F(AutofillFieldFillerTest, FillSelectControlByValue) {
   // Set semantically empty contents for each option, so that only the values
   // can be used for matching.
   for (size_t i = 0; i < field.option_contents.size(); ++i)
-    field.option_contents[i] = base::SizeTToString16(i);
+    field.option_contents[i] = base::NumberToString16(i);
 
   address()->SetRawInfo(NAME_FIRST, ASCIIToUTF16("Meenie"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
@@ -591,7 +591,7 @@ TEST_F(AutofillFieldFillerTest, FillSelectControlByContents) {
   // Set semantically empty values for each option, so that only the contents
   // can be used for matching.
   for (size_t i = 0; i < field.option_values.size(); ++i)
-    field.option_values[i] = base::SizeTToString16(i);
+    field.option_values[i] = base::NumberToString16(i);
 
   address()->SetRawInfo(NAME_FIRST, ASCIIToUTF16("Miney"));
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);

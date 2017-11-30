@@ -78,7 +78,7 @@ bool SandboxedPageHandler::Parse(Extension* extension, base::string16* error) {
     std::string relative_path;
     if (!list_value->GetString(i, &relative_path)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidSandboxedPage, base::SizeTToString(i));
+          errors::kInvalidSandboxedPage, base::NumberToString(i));
       return false;
     }
     URLPattern pattern(URLPattern::SCHEME_EXTENSION);

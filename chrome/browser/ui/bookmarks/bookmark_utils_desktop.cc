@@ -102,7 +102,7 @@ bool ShouldOpenAll(gfx::NativeWindow parent,
   return ShowQuestionMessageBox(
              parent, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
              l10n_util::GetStringFUTF16(IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
-                                        base::SizeTToString16(child_count))) ==
+                                        base::NumberToString16(child_count))) ==
          MESSAGE_BOX_RESULT_YES;
 }
 #endif
@@ -122,7 +122,7 @@ int ChildURLCountTotal(const BookmarkNode* node) {
 #if !defined(OS_ANDROID)
 // Returns in |urls|, the url and title pairs for each open tab in browser.
 void GetURLsForOpenTabs(Browser* browser,
-                        std::vector<std::pair<GURL, base::string16> >* urls) {
+                        std::vector<std::pair<GURL, base::string16>>* urls) {
   for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
     std::pair<GURL, base::string16> entry;
     GetURLAndTitleToBookmark(browser->tab_strip_model()->GetWebContentsAt(i),

@@ -755,7 +755,7 @@ size_t AppendDataInBuilder(BlobDataBuilder* builder,
   }
   if (index % 5 != 0) {
     builder->AppendFile(
-        base::FilePath::FromUTF8Unsafe(base::SizeTToString(index)), 0ul, 20ul,
+        base::FilePath::FromUTF8Unsafe(base::NumberToString(index)), 0ul, 20ul,
         base::Time::Max());
     size += 20u;
   }
@@ -785,7 +785,7 @@ void PopulateDataInBuilder(BlobDataBuilder* builder,
     scoped_refptr<ShareableFileReference> file_ref =
         ShareableFileReference::GetOrCreate(
             base::FilePath::FromUTF8Unsafe(
-                base::SizeTToString(index + kTotalRawBlobs)),
+                base::NumberToString(index + kTotalRawBlobs)),
             ShareableFileReference::DONT_DELETE_ON_FINAL_RELEASE, file_runner);
     builder->PopulateFutureFile(0, file_ref, base::Time::Max());
   }
@@ -809,7 +809,7 @@ TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
   std::vector<std::unique_ptr<BlobDataBuilder>> builders;
   std::vector<size_t> sizes;
   for (size_t i = 0; i < kTotalRawBlobs; i++) {
-    builders.emplace_back(new BlobDataBuilder(base::SizeTToString(i)));
+    builders.emplace_back(new BlobDataBuilder(base::NumberToString(i)));
     auto& builder = *builders.back();
     size_t size = AppendDataInBuilder(&builder, i, entry.get());
     EXPECT_NE(0u, size);
@@ -818,11 +818,11 @@ TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
 
   for (size_t i = 0; i < kTotalSlicedBlobs; i++) {
     builders.emplace_back(
-        new BlobDataBuilder(base::SizeTToString(i + kTotalRawBlobs)));
+        new BlobDataBuilder(base::NumberToString(i + kTotalRawBlobs)));
     size_t source_size = sizes[i];
     size_t offset = source_size == 1 ? 0 : i % (source_size - 1);
     size_t size = (i % (source_size - offset)) + 1;
-    builders.back()->AppendBlob(base::SizeTToString(i), offset, size);
+    builders.back()->AppendBlob(base::NumberToString(i), offset, size);
   }
 
   size_t total_finished_blobs = 0;
@@ -858,7 +858,7 @@ TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
       if (DoesBuilderHaveFutureData(i) && !populated[i] &&
           statuses[i] == BlobStatus::PENDING_TRANSPORT) {
         PopulateDataInBuilder(builder, i, file_runner_.get());
-        context_->NotifyTransportComplete(base::SizeTToString(i));
+        context_->NotifyTransportComplete(base::NumberToString(i));
         populated[i] = true;
       }
     }

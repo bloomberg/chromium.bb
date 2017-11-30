@@ -3675,7 +3675,7 @@ TEST_F(HistoryBackendTest, ExpireHistory) {
   // Insert 4 entries into the database.
   HistoryAddPageArgs args[4];
   for (size_t i = 0; i < arraysize(args); ++i) {
-    args[i].url = GURL("http://example" + base::SizeTToString(i) + ".com");
+    args[i].url = GURL("http://example" + base::NumberToString(i) + ".com");
     args[i].time = reference_time + base::TimeDelta::FromDays(i);
     backend_->AddPage(args[i]);
   }
@@ -4059,7 +4059,7 @@ TEST_F(HistoryBackendTest, QueryMostVisitedURLs) {
 
   for (size_t i = 0; i < pages.size(); ++i) {
     HistoryAddPageArgs args;
-    args.url = GURL("http://example" + base::SizeTToString(i + 1) + ".com");
+    args.url = GURL("http://example" + base::NumberToString(i + 1) + ".com");
     args.time = base::Time::Now() - base::TimeDelta::FromDays(i + 1);
     args.transition = pages[i].first;
     args.consider_for_ntp_most_visited = pages[i].second;

@@ -170,12 +170,12 @@ class PreviewsBlackListTest : public testing::Test {
 
   void SetHostHistoryParam(size_t host_history) {
     params_["per_host_max_stored_history_length"] =
-        base::SizeTToString(host_history);
+        base::NumberToString(host_history);
   }
 
   void SetHostIndifferentHistoryParam(size_t host_indifferent_history) {
     params_["host_indifferent_max_stored_history_length"] =
-        base::SizeTToString(host_indifferent_history);
+        base::NumberToString(host_indifferent_history);
   }
 
   void SetHostThresholdParam(int per_host_threshold) {

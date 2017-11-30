@@ -175,8 +175,8 @@ std::string PreloadedStateGenerator::Generate(
   ReplaceTag("HUFFMAN_TREE", FormatVectorAsArray(huffman_tree), &output);
   ReplaceTag("HSTS_TRIE", FormatVectorAsArray(new_writer.bytes()), &output);
 
-  ReplaceTag("HSTS_TRIE_BITS", base::SizeTToString(new_length), &output);
-  ReplaceTag("HSTS_TRIE_ROOT", base::SizeTToString(root_position), &output);
+  ReplaceTag("HSTS_TRIE_BITS", base::NumberToString(new_length), &output);
+  ReplaceTag("HSTS_TRIE_ROOT", base::NumberToString(root_position), &output);
 
   return output;
 }

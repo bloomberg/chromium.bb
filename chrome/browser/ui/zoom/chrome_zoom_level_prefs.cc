@@ -35,7 +35,7 @@ namespace {
 
 std::string GetHash(const base::FilePath& relative_path) {
   size_t int_key = BASE_HASH_NAMESPACE::hash<base::FilePath>()(relative_path);
-  return base::SizeTToString(int_key);
+  return base::NumberToString(int_key);
 }
 
 std::string GetPartitionKey(const base::FilePath& relative_path) {
@@ -209,7 +209,7 @@ void ChromeZoomLevelPrefs::MigrateOldZoomPreferences(
   // ones (above), so that the precedence is: new settings, libc++
   // settings, libstdc++ settings.
   if (GetLibstdcppHashBytesFunction()) {
-    MigrateOldZoomPreferencesForKeys(base::SizeTToString(LibstdcppHashString(
+    MigrateOldZoomPreferencesForKeys(base::NumberToString(LibstdcppHashString(
                                          partition_relative_path.value())),
                                      GetPartitionKey(partition_relative_path));
   }

@@ -269,7 +269,7 @@ bool ExtractKeyIdsFromKeyIdsInitData(const std::string& input,
       error_message->assign("'");
       error_message->append(kKeyIdsTag);
       error_message->append("'[");
-      error_message->append(base::SizeTToString(i));
+      error_message->append(base::NumberToString(i));
       error_message->append("] is not string.");
       return false;
     }
@@ -283,7 +283,7 @@ bool ExtractKeyIdsFromKeyIdsInitData(const std::string& input,
       error_message->assign("'");
       error_message->append(kKeyIdsTag);
       error_message->append("'[");
-      error_message->append(base::SizeTToString(i));
+      error_message->append(base::NumberToString(i));
       error_message->append("] is not valid base64url encoded. Value: ");
       error_message->append(ShortenTo64Characters(encoded_key_id));
       return false;

@@ -605,7 +605,7 @@ class NotificationPlatformBridgeLinuxImpl
         // FDO notification buttons can contain either an icon or a label,
         // but not both, and the type of all buttons must be the same (all
         // labels or all icons), so always use labels.
-        const std::string id = base::SizeTToString(data->action_end++);
+        const std::string id = base::NumberToString(data->action_end++);
         const std::string label = base::UTF16ToUTF8(button_info.title);
         actions.push_back(id);
         actions.push_back(label);

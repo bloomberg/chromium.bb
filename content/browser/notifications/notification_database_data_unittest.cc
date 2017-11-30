@@ -64,11 +64,11 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   for (size_t i = 0; i < blink::kWebNotificationMaxActions; i++) {
     PlatformNotificationAction notification_action;
     notification_action.type = kNotificationActionType;
-    notification_action.action = base::SizeTToString(i);
-    notification_action.title = base::SizeTToString16(i);
+    notification_action.action = base::NumberToString(i);
+    notification_action.title = base::NumberToString16(i);
     notification_action.icon = GURL(kNotificationActionIconUrl);
     notification_action.placeholder =
-        base::NullableString16(base::SizeTToString16(i), false);
+        base::NullableString16(base::NumberToString16(i), false);
     notification_data.actions.push_back(notification_action);
   }
 

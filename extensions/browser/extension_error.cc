@@ -117,14 +117,12 @@ std::string RuntimeError::GetDebugString() const {
          "\n  Stack Trace: ";
   for (StackTrace::const_iterator iter = stack_trace_.begin();
        iter != stack_trace_.end(); ++iter) {
-    // The "NL" comments are to force clang-format to choose the right layout.
     result += "\n    {";
-    result +=
-        "\n      Line:     " + base::SizeTToString(iter->line_number) +    // NL
-        "\n      Column:   " + base::SizeTToString(iter->column_number) +  // NL
-        "\n      URL:      " + base::UTF16ToUTF8(iter->source) +           // NL
-        "\n      Function: " + base::UTF16ToUTF8(iter->function) +         // NL
-        "\n    }";                                                         // NL
+    result += "\n      Line:     " + base::NumberToString(iter->line_number) +
+              "\n      Column:   " + base::NumberToString(iter->column_number) +
+              "\n      URL:      " + base::UTF16ToUTF8(iter->source) +
+              "\n      Function: " + base::UTF16ToUTF8(iter->function) +
+              "\n    }";
   }
   return result;
 }

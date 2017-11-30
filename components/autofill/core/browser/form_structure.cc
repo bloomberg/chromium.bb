@@ -337,7 +337,7 @@ FormStructure::FormStructure(const FormData& form)
     // guaranteed to avoid collisions.
     base::string16 unique_name =
         field.name + base::ASCIIToUTF16("_") +
-        base::SizeTToString16(++unique_names[field.name]);
+        base::NumberToString16(++unique_names[field.name]);
     fields_.push_back(std::make_unique<AutofillField>(field, unique_name));
   }
 

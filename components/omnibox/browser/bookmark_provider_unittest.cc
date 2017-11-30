@@ -94,8 +94,8 @@ std::string TestBookmarkPositionsAsString(
        i != positions.end(); ++i) {
     if (i != positions.begin())
       position_string += ", ";
-    position_string += "{" + base::SizeTToString(i->begin) + ", " +
-        base::SizeTToString(i->end) + "}";
+    position_string += "{" + base::NumberToString(i->begin) + ", " +
+                       base::NumberToString(i->end) + "}";
   }
   position_string += "}\n";
   return position_string;
@@ -374,7 +374,7 @@ TEST_F(BookmarkProviderTest, Rankings) {
         continue;
       EXPECT_EQ(query_data[i].matches[j],
                 base::UTF16ToUTF8(matches[j].description))
-          << "    Mismatch at [" << base::SizeTToString(j) << "] for query '"
+          << "    Mismatch at [" << base::NumberToString(j) << "] for query '"
           << query_data[i].query << "'.";
     }
   }

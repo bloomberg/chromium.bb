@@ -582,7 +582,7 @@ void WebRtcTestBase::CreateAndAddStreams(content::WebContents* tab,
   EXPECT_EQ(
       "ok-streams-created-and-added",
       ExecuteJavascript(
-          "createAndAddStreams(" + base::SizeTToString(count) + ")", tab));
+          "createAndAddStreams(" + base::NumberToString(count) + ")", tab));
 }
 
 void WebRtcTestBase::VerifyRtpSenders(
@@ -590,7 +590,7 @@ void WebRtcTestBase::VerifyRtpSenders(
     base::Optional<size_t> expected_num_tracks) const {
   std::string javascript =
       expected_num_tracks ? "verifyRtpSenders(" +
-                                base::SizeTToString(*expected_num_tracks) + ")"
+                                base::NumberToString(*expected_num_tracks) + ")"
                           : "verifyRtpSenders()";
   EXPECT_EQ("ok-senders-verified", ExecuteJavascript(javascript, tab));
 }
@@ -600,7 +600,7 @@ void WebRtcTestBase::VerifyRtpReceivers(
     base::Optional<size_t> expected_num_tracks) const {
   std::string javascript =
       expected_num_tracks ? "verifyRtpReceivers(" +
-                                base::SizeTToString(*expected_num_tracks) + ")"
+                                base::NumberToString(*expected_num_tracks) + ")"
                           : "verifyRtpReceivers()";
   EXPECT_EQ("ok-receivers-verified", ExecuteJavascript(javascript, tab));
 }

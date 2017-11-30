@@ -730,7 +730,7 @@ TEST_F(PersistentTabRestoreServiceTest, PruneEntries) {
     SerializedNavigationEntry navigation =
         SerializedNavigationEntryTestHelper::CreateNavigation(
             base::StringPrintf("http://%d", static_cast<int>(i)),
-            base::SizeTToString(i));
+            base::NumberToString(i));
 
     auto tab = base::MakeUnique<Tab>();
     tab->navigations.push_back(navigation);

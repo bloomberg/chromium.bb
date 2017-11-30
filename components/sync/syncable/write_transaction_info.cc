@@ -38,7 +38,7 @@ std::unique_ptr<base::DictionaryValue> WriteTransactionInfo::ToValue(
     mutations_value = EntryKernelMutationMapToValue(mutations.Get());
   } else {
     mutations_value = std::make_unique<base::Value>(
-        base::SizeTToString(mutations_size) + " mutations");
+        base::NumberToString(mutations_size) + " mutations");
   }
   dict->Set("mutations", std::move(mutations_value));
   return dict;

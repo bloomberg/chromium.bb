@@ -137,7 +137,7 @@ bool BackgroundInfo::LoadBackgroundScripts(const Extension* extension,
     std::string script;
     if (!background_scripts->GetString(i, &script)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidBackgroundScript, base::SizeTToString(i));
+          errors::kInvalidBackgroundScript, base::NumberToString(i));
       return false;
     }
     background_scripts_.push_back(script);

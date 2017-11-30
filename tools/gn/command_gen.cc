@@ -462,12 +462,12 @@ int RunGen(const std::vector<std::string>& args) {
     for (const auto& rules : write_info.rules)
       targets_collected += rules.second.size();
 
-    std::string stats = "Made " + base::SizeTToString(targets_collected) +
-        " targets from " +
+    std::string stats =
+        "Made " + base::NumberToString(targets_collected) + " targets from " +
         base::IntToString(
             setup->scheduler().input_file_manager()->GetInputFileCount()) +
-        " files in " +
-        base::Int64ToString(elapsed_time.InMilliseconds()) + "ms\n";
+        " files in " + base::Int64ToString(elapsed_time.InMilliseconds()) +
+        "ms\n";
     OutputString(stats);
   }
 

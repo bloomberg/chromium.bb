@@ -1142,7 +1142,7 @@ TEST_F(DriveApiRequestsTest, UploadNewFileRequest) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadNewFilePath, upload_url.path());
   EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);
-  EXPECT_EQ(base::SizeTToString(kTestContent.size()),
+  EXPECT_EQ(base::NumberToString(kTestContent.size()),
             http_request_.headers["X-Upload-Content-Length"]);
 
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -1187,9 +1187,8 @@ TEST_F(DriveApiRequestsTest, UploadNewFileRequest) {
   // Request should go to the upload URL.
   EXPECT_EQ(upload_url.path(), http_request_.relative_url);
   // Content-Range header should be added.
-  EXPECT_EQ("bytes 0-" +
-            base::SizeTToString(kTestContent.size() - 1) + "/" +
-            base::SizeTToString(kTestContent.size()),
+  EXPECT_EQ("bytes 0-" + base::NumberToString(kTestContent.size() - 1) + "/" +
+                base::NumberToString(kTestContent.size()),
             http_request_.headers["Content-Range"]);
   // The upload content should be set in the HTTP request.
   EXPECT_TRUE(http_request_.has_content);
@@ -1318,7 +1317,7 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadNewFilePath, upload_url.path());
   EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);
-  EXPECT_EQ(base::SizeTToString(kTestContent.size()),
+  EXPECT_EQ(base::NumberToString(kTestContent.size()),
             http_request_.headers["X-Upload-Content-Length"]);
 
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -1357,7 +1356,7 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
     // Request should go to the upload URL.
     EXPECT_EQ(upload_url.path(), http_request_.relative_url);
     // Content-Range header should be added.
-    EXPECT_EQ("bytes */" + base::SizeTToString(kTestContent.size()),
+    EXPECT_EQ("bytes */" + base::NumberToString(kTestContent.size()),
               http_request_.headers["Content-Range"]);
     EXPECT_TRUE(http_request_.has_content);
     EXPECT_TRUE(http_request_.content.empty());
@@ -1399,10 +1398,9 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
     // Request should go to the upload URL.
     EXPECT_EQ(upload_url.path(), http_request_.relative_url);
     // Content-Range header should be added.
-    EXPECT_EQ("bytes " +
-              base::SizeTToString(start_position) + "-" +
-              base::SizeTToString(end_position - 1) + "/" +
-              base::SizeTToString(kTestContent.size()),
+    EXPECT_EQ("bytes " + base::NumberToString(start_position) + "-" +
+                  base::NumberToString(end_position - 1) + "/" +
+                  base::NumberToString(kTestContent.size()),
               http_request_.headers["Content-Range"]);
     // The upload content should be set in the HTTP request.
     EXPECT_TRUE(http_request_.has_content);
@@ -1442,7 +1440,7 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
     // Request should go to the upload URL.
     EXPECT_EQ(upload_url.path(), http_request_.relative_url);
     // Content-Range header should be added.
-    EXPECT_EQ("bytes */" + base::SizeTToString(kTestContent.size()),
+    EXPECT_EQ("bytes */" + base::NumberToString(kTestContent.size()),
               http_request_.headers["Content-Range"]);
     EXPECT_TRUE(http_request_.has_content);
     EXPECT_TRUE(http_request_.content.empty());
@@ -1497,7 +1495,7 @@ TEST_F(DriveApiRequestsTest, UploadNewFileWithMetadataRequest) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadNewFilePath, upload_url.path());
   EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);
-  EXPECT_EQ(base::SizeTToString(kTestContent.size()),
+  EXPECT_EQ(base::NumberToString(kTestContent.size()),
             http_request_.headers["X-Upload-Content-Length"]);
 
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -1546,7 +1544,7 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequest) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadExistingFilePath, upload_url.path());
   EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);
-  EXPECT_EQ(base::SizeTToString(kTestContent.size()),
+  EXPECT_EQ(base::NumberToString(kTestContent.size()),
             http_request_.headers["X-Upload-Content-Length"]);
   EXPECT_EQ("*", http_request_.headers["If-Match"]);
 
@@ -1586,9 +1584,8 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequest) {
   // Request should go to the upload URL.
   EXPECT_EQ(upload_url.path(), http_request_.relative_url);
   // Content-Range header should be added.
-  EXPECT_EQ("bytes 0-" +
-            base::SizeTToString(kTestContent.size() - 1) + "/" +
-            base::SizeTToString(kTestContent.size()),
+  EXPECT_EQ("bytes 0-" + base::NumberToString(kTestContent.size() - 1) + "/" +
+                base::NumberToString(kTestContent.size()),
             http_request_.headers["Content-Range"]);
   // The upload content should be set in the HTTP request.
   EXPECT_TRUE(http_request_.has_content);
@@ -1632,7 +1629,7 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETag) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadExistingFilePath, upload_url.path());
   EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);
-  EXPECT_EQ(base::SizeTToString(kTestContent.size()),
+  EXPECT_EQ(base::NumberToString(kTestContent.size()),
             http_request_.headers["X-Upload-Content-Length"]);
   EXPECT_EQ(kTestETag, http_request_.headers["If-Match"]);
 
@@ -1668,9 +1665,8 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETag) {
   // Request should go to the upload URL.
   EXPECT_EQ(upload_url.path(), http_request_.relative_url);
   // Content-Range header should be added.
-  EXPECT_EQ("bytes 0-" +
-            base::SizeTToString(kTestContent.size() - 1) + "/" +
-            base::SizeTToString(kTestContent.size()),
+  EXPECT_EQ("bytes 0-" + base::NumberToString(kTestContent.size() - 1) + "/" +
+                base::NumberToString(kTestContent.size()),
             http_request_.headers["Content-Range"]);
   // The upload content should be set in the HTTP request.
   EXPECT_TRUE(http_request_.has_content);
@@ -1716,7 +1712,7 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETagConflicting) {
 
   EXPECT_EQ(HTTP_PRECONDITION, error);
   EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);
-  EXPECT_EQ(base::SizeTToString(kTestContent.size()),
+  EXPECT_EQ(base::NumberToString(kTestContent.size()),
             http_request_.headers["X-Upload-Content-Length"]);
   EXPECT_EQ("Conflicting-etag", http_request_.headers["If-Match"]);
 
@@ -1759,7 +1755,7 @@ TEST_F(DriveApiRequestsTest,
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadExistingFilePath, upload_url.path());
   EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);
-  EXPECT_EQ(base::SizeTToString(kTestContent.size()),
+  EXPECT_EQ(base::NumberToString(kTestContent.size()),
             http_request_.headers["X-Upload-Content-Length"]);
   EXPECT_EQ(kTestETag, http_request_.headers["If-Match"]);
 
@@ -1800,9 +1796,8 @@ TEST_F(DriveApiRequestsTest,
   // Request should go to the upload URL.
   EXPECT_EQ(upload_url.path(), http_request_.relative_url);
   // Content-Range header should be added.
-  EXPECT_EQ("bytes 0-" +
-            base::SizeTToString(kTestContent.size() - 1) + "/" +
-            base::SizeTToString(kTestContent.size()),
+  EXPECT_EQ("bytes 0-" + base::NumberToString(kTestContent.size() - 1) + "/" +
+                base::NumberToString(kTestContent.size()),
             http_request_.headers["Content-Range"]);
   // The upload content should be set in the HTTP request.
   EXPECT_TRUE(http_request_.has_content);
@@ -1861,7 +1856,7 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileWithMetadataRequest) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadExistingFilePath, upload_url.path());
   EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);
-  EXPECT_EQ(base::SizeTToString(kTestContent.size()),
+  EXPECT_EQ(base::NumberToString(kTestContent.size()),
             http_request_.headers["X-Upload-Content-Length"]);
   EXPECT_EQ(kTestETag, http_request_.headers["If-Match"]);
 

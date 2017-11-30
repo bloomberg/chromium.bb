@@ -91,12 +91,6 @@ inline std::string Uint64ToString(uint64_t value) {
 inline string16 Uint64ToString16(uint64_t value) {
   return NumberToString16(value);
 }
-inline std::string SizeTToString(size_t value) {
-  return NumberToString(value);
-}
-inline string16 SizeTToString16(size_t value) {
-  return NumberToString16(value);
-}
 inline std::string DoubleToString(double value) {
   return NumberToString(value);
 }

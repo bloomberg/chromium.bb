@@ -714,7 +714,7 @@ void TextRunHarfBuzz::GetClusterAt(size_t pos,
   if (!success) {
     std::string glyph_to_char_string;
     for (size_t i = 0; i < glyph_count && i < glyph_to_char.size(); ++i) {
-      glyph_to_char_string += base::SizeTToString(i) + "->" +
+      glyph_to_char_string += base::NumberToString(i) + "->" +
                               base::UintToString(glyph_to_char[i]) + ", ";
     }
     LOG(ERROR) << " TextRunHarfBuzz error, please report at crbug.com/724880:"

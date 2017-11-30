@@ -488,14 +488,14 @@ void SearchProviderTest::CheckMatches(const std::string& description,
   SCOPED_TRACE(description);
   // Ensure that the returned matches equal the expectations.
   for (; i < matches.size(); ++i) {
-    SCOPED_TRACE(" Case # " + base::SizeTToString(i));
+    SCOPED_TRACE(" Case # " + base::NumberToString(i));
     EXPECT_EQ(ASCIIToUTF16(expected_matches[i].contents), matches[i].contents);
     EXPECT_EQ(expected_matches[i].allowed_to_be_default_match,
               matches[i].allowed_to_be_default_match);
   }
   // Ensure that no expected matches are missing.
   for (; i < num_expected_matches; ++i) {
-    SCOPED_TRACE(" Case # " + base::SizeTToString(i));
+    SCOPED_TRACE(" Case # " + base::NumberToString(i));
     EXPECT_EQ(kNotApplicable, expected_matches[i].contents);
   }
 }
@@ -1976,7 +1976,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     }
     // Ensure that no expected matches are missing.
     for (; j < arraysize(cases[i].matches); ++j) {
-      SCOPED_TRACE(" Case # " + base::SizeTToString(i));
+      SCOPED_TRACE(" Case # " + base::NumberToString(i));
       EXPECT_EQ(kNotApplicable, cases[i].matches[j].contents);
     }
   }
@@ -2879,7 +2879,7 @@ TEST_F(SearchProviderTest, ParseEntitySuggestion) {
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {
       const Match& match = cases[i].matches[j];
-      SCOPED_TRACE(" and match index: " + base::SizeTToString(j));
+      SCOPED_TRACE(" and match index: " + base::NumberToString(j));
       EXPECT_EQ(match.contents,
                 base::UTF16ToUTF8(matches[j].contents));
       EXPECT_EQ(match.description,
@@ -2892,7 +2892,7 @@ TEST_F(SearchProviderTest, ParseEntitySuggestion) {
     }
     // Ensure that no expected matches are missing.
     for (; j < arraysize(cases[i].matches); ++j) {
-      SCOPED_TRACE(" and match index: " + base::SizeTToString(j));
+      SCOPED_TRACE(" and match index: " + base::NumberToString(j));
       EXPECT_EQ(cases[i].matches[j].contents, kNotApplicable);
       EXPECT_EQ(cases[i].matches[j].description, kNotApplicable);
       EXPECT_EQ(cases[i].matches[j].query_params, kNotApplicable);
@@ -3098,18 +3098,18 @@ TEST_F(SearchProviderTest, XSSIGuardedJSONParsing_ValidResponses) {
     ASSERT_FALSE(matches.empty());
     EXPECT_GE(matches[0].relevance, 1300);
 
-    SCOPED_TRACE("for case: " + base::SizeTToString(i));
+    SCOPED_TRACE("for case: " + base::NumberToString(i));
     ASSERT_LE(matches.size(), arraysize(cases[i].matches));
     size_t j = 0;
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {
-      SCOPED_TRACE("and match: " + base::SizeTToString(j));
+      SCOPED_TRACE("and match: " + base::NumberToString(j));
       EXPECT_EQ(cases[i].matches[j].contents,
                 base::UTF16ToUTF8(matches[j].contents));
       EXPECT_EQ(cases[i].matches[j].type, matches[j].type);
     }
     for (; j < arraysize(cases[i].matches); ++j) {
-      SCOPED_TRACE("and match: " + base::SizeTToString(j));
+      SCOPED_TRACE("and match: " + base::NumberToString(j));
       EXPECT_EQ(cases[i].matches[j].contents, kNotApplicable);
       EXPECT_EQ(cases[i].matches[j].type, AutocompleteMatchType::NUM_TYPES);
     }
@@ -3206,7 +3206,7 @@ TEST_F(SearchProviderTest, ParseDeletionUrl) {
 
        for (size_t j = 0; j < matches.size(); ++j) {
          const Match& match = cases[i].matches[j];
-         SCOPED_TRACE(" and match index: " + base::SizeTToString(j));
+         SCOPED_TRACE(" and match index: " + base::NumberToString(j));
          EXPECT_EQ(match.contents, base::UTF16ToUTF8(matches[j].contents));
          EXPECT_EQ(match.deletion_url, matches[j].GetAdditionalInfo(
              "deletion_url"));

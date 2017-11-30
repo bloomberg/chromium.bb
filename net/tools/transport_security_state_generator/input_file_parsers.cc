@@ -333,7 +333,7 @@ bool ParseJSON(base::StringPiece json,
   for (size_t i = 0; i < preload_entries->GetSize(); ++i) {
     const base::DictionaryValue* parsed = nullptr;
     if (!preload_entries->GetDictionary(i, &parsed)) {
-      LOG(ERROR) << "Could not parse entry " << base::SizeTToString(i)
+      LOG(ERROR) << "Could not parse entry " << base::NumberToString(i)
                  << " in the input JSON";
       return false;
     }
@@ -343,12 +343,12 @@ bool ParseJSON(base::StringPiece json,
 
     if (!parsed->GetString(kNameJSONKey, &entry->hostname)) {
       LOG(ERROR) << "Could not extract the hostname for entry "
-                 << base::SizeTToString(i) << " from the input JSON";
+                 << base::NumberToString(i) << " from the input JSON";
       return false;
     }
 
     if (entry->hostname.empty()) {
-      LOG(ERROR) << "The hostname for entry " << base::SizeTToString(i)
+      LOG(ERROR) << "The hostname for entry " << base::NumberToString(i)
                  << " is empty";
       return false;
     }
@@ -403,7 +403,7 @@ bool ParseJSON(base::StringPiece json,
   for (size_t i = 0; i < pinsets_list->GetSize(); ++i) {
     const base::DictionaryValue* parsed = nullptr;
     if (!pinsets_list->GetDictionary(i, &parsed)) {
-      LOG(ERROR) << "Could not parse pinset " << base::SizeTToString(i)
+      LOG(ERROR) << "Could not parse pinset " << base::NumberToString(i)
                  << " in the input JSON";
       return false;
     }
@@ -411,7 +411,7 @@ bool ParseJSON(base::StringPiece json,
     std::string name;
     if (!parsed->GetString("name", &name)) {
       LOG(ERROR) << "Could not extract the name for pinset "
-                 << base::SizeTToString(i) << " from the input JSON";
+                 << base::NumberToString(i) << " from the input JSON";
       return false;
     }
 

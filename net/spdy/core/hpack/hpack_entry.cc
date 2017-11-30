@@ -77,7 +77,7 @@ size_t HpackEntry::Size() const {
 SpdyString HpackEntry::GetDebugString() const {
   return "{ name: \"" + SpdyString(name_ref_) + "\", value: \"" +
          SpdyString(value_ref_) +
-         "\", index: " + base::SizeTToString(insertion_index_) +
+         "\", index: " + base::NumberToString(insertion_index_) +
          (IsStatic() ? " static" : (IsLookup() ? " lookup" : " dynamic")) +
          " }";
 }

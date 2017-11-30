@@ -63,7 +63,7 @@ bool LoadGlobsHelper(const base::DictionaryValue* content_script,
     if (!list->GetString(i, &glob)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidGlob, base::IntToString(content_script_index),
-          globs_property_name, base::SizeTToString(i));
+          globs_property_name, base::NumberToString(i));
       return false;
     }
 
@@ -148,7 +148,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
     if (!matches->GetString(j, &match_str)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidMatch, base::IntToString(definition_index),
-          base::SizeTToString(j), errors::kExpectString);
+          base::NumberToString(j), errors::kExpectString);
       return std::unique_ptr<UserScript>();
     }
 
@@ -159,7 +159,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
     if (parse_result != URLPattern::PARSE_SUCCESS) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidMatch, base::IntToString(definition_index),
-          base::SizeTToString(j),
+          base::NumberToString(j),
           URLPattern::GetParseResultString(parse_result));
       return std::unique_ptr<UserScript>();
     }
@@ -202,7 +202,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
       if (!exclude_matches->GetString(j, &match_str)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidExcludeMatch, base::IntToString(definition_index),
-            base::SizeTToString(j), errors::kExpectString);
+            base::NumberToString(j), errors::kExpectString);
         return std::unique_ptr<UserScript>();
       }
 
@@ -214,7 +214,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
       if (parse_result != URLPattern::PARSE_SUCCESS) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidExcludeMatch, base::IntToString(definition_index),
-            base::SizeTToString(j),
+            base::NumberToString(j),
             URLPattern::GetParseResultString(parse_result));
         return std::unique_ptr<UserScript>();
       }
@@ -270,7 +270,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
       if (!js->Get(script_index, &value) || !value->GetAsString(&relative)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidJs, base::IntToString(definition_index),
-            base::SizeTToString(script_index));
+            base::NumberToString(script_index));
         return std::unique_ptr<UserScript>();
       }
       GURL url = extension->GetResourceURL(relative);
@@ -289,7 +289,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
       if (!css->Get(script_index, &value) || !value->GetAsString(&relative)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidCss, base::IntToString(definition_index),
-            base::SizeTToString(script_index));
+            base::NumberToString(script_index));
         return std::unique_ptr<UserScript>();
       }
       GURL url = extension->GetResourceURL(relative);
@@ -399,7 +399,7 @@ bool ContentScriptsHandler::Parse(Extension* extension, base::string16* error) {
     const base::DictionaryValue* script_dict = NULL;
     if (!scripts_list->GetDictionary(i, &script_dict)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidContentScript, base::SizeTToString(i));
+          errors::kInvalidContentScript, base::NumberToString(i));
       return false;
     }
 

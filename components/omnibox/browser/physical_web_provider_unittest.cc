@@ -116,7 +116,7 @@ class PhysicalWebProviderTest : public testing::Test {
       size_t metadata_count) {
     auto metadata_list = base::MakeUnique<physical_web::MetadataList>();
     for (size_t i = 0; i < metadata_count; ++i) {
-      std::string item_id = base::SizeTToString(i);
+      std::string item_id = base::NumberToString(i);
       std::string url = "https://example.com/" + item_id;
       metadata_list->emplace_back();
       auto& metadata_item = metadata_list->back();

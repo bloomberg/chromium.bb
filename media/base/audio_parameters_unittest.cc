@@ -201,8 +201,8 @@ TEST(AudioParameters, Compare) {
 
   for (size_t i = 0; i < arraysize(values); ++i) {
     for (size_t j = 0; j < arraysize(values); ++j) {
-      SCOPED_TRACE("i=" + base::SizeTToString(i) + " j=" +
-                   base::SizeTToString(j));
+      SCOPED_TRACE("i=" + base::NumberToString(i) +
+                   " j=" + base::NumberToString(j));
       EXPECT_EQ(i < j, values[i] < values[j]);
     }
 

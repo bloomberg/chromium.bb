@@ -73,7 +73,7 @@ bool AppIsolationHandler::Parse(Extension* extension, base::string16* error) {
     std::string isolation_string;
     if (!isolation_list->GetString(i, &isolation_string)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          manifest_errors::kInvalidIsolationValue, base::SizeTToString(i));
+          manifest_errors::kInvalidIsolationValue, base::NumberToString(i));
       return false;
     }
 

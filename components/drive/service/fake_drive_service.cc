@@ -417,7 +417,7 @@ void FakeDriveService::GetTeamDriveListInternal(
   if (next_start_offset < team_drive_value_.size()) {
     // Embed next start offset to next page token to be read in
     // GetRemainingTeamDriveList next time.
-    result->set_next_page_token(base::SizeTToString(next_start_offset));
+    result->set_next_page_token(base::NumberToString(next_start_offset));
   }
   for (size_t i = start_offset;
        i < std::min(next_start_offset, team_drive_value_.size()); ++i) {

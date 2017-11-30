@@ -453,7 +453,8 @@ void WebRtcTextLogHandler::LogInitialInfoOnIOThread(
       "Audio manager: %s", media::AudioManager::Get()->GetName()));
 
   // Network interfaces
-  LogToCircularBuffer("Discovered " + base::SizeTToString(network_list.size()) +
+  LogToCircularBuffer("Discovered " +
+                      base::NumberToString(network_list.size()) +
                       " network interfaces:");
   for (const auto& network : network_list) {
     LogToCircularBuffer(
