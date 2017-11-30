@@ -62,6 +62,10 @@
   return _proxy.dragging;
 }
 
+- (BOOL)isTracking {
+  return _proxy.tracking;
+}
+
 - (BOOL)scrollsToTop {
   return _proxy.scrollsToTop;
 }

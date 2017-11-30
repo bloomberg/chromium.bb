@@ -30,6 +30,7 @@ CWV_EXPORT
 @property(nonatomic, weak) id<CWVScrollViewDelegate> delegate;
 @property(nonatomic, readonly, getter=isDecelerating) BOOL decelerating;
 @property(nonatomic, readonly, getter=isDragging) BOOL dragging;
+@property(nonatomic, readonly, getter=isTracking) BOOL tracking;
 @property(nonatomic) BOOL scrollsToTop;
 @property(nonatomic, readonly) UIPanGestureRecognizer* panGestureRecognizer;
 
