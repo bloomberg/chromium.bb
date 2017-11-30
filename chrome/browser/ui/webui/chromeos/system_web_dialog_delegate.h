@@ -31,6 +31,9 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const override;
   void GetDialogSize(gfx::Size* size) const override;
+  void OnDialogShown(content::WebUI* webui,
+                     content::RenderViewHost* render_view_host) override;
+  // Note: deletes |this|.
   void OnDialogClosed(const std::string& json_retval) override;
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override;
@@ -40,9 +43,16 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   // shell container.
   void ShowSystemDialog();
 
+  content::WebUI* GetWebUIForTest() { return webui_; }
+
+  // Width is consistent with the Settings UI.
+  static constexpr int kDialogWidth = 512;
+  static constexpr int kDialogHeight = 480;
+
  private:
   GURL gurl_;
   base::string16 title_;
+  content::WebUI* webui_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemWebDialogDelegate);
 };

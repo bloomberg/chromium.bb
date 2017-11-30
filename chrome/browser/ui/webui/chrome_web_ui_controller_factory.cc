@@ -133,7 +133,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
-#include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_ui.h"
+#include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/certificate_manager_dialog_ui.h"
 #include "chrome/browser/ui/webui/chromeos/cryptohome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/drive_internals_ui.h"
@@ -434,7 +434,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
 #if defined(OS_CHROMEOS)
   if (url.host_piece() == chrome::kChromeUIBluetoothPairingHost)
-    return &NewWebUI<chromeos::BluetoothPairingUI>;
+    return &NewWebUI<chromeos::BluetoothPairingDialogUI>;
   if (url.host_piece() == chrome::kChromeUICertificateManagerHost)
     return &NewWebUI<chromeos::CertificateManagerDialogUI>;
   if (url.host_piece() == chrome::kChromeUICryptohomeHost)

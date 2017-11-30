@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -31,6 +30,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/url_constants.h"
@@ -61,10 +61,8 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-using chromeos::BluetoothPairingDialog;
 using chromeos::DBusThreadManager;
 using chromeos::UpdateEngineClient;
-using device::BluetoothDevice;
 using session_manager::SessionState;
 using session_manager::SessionManager;
 using views::Widget;
@@ -228,16 +226,15 @@ void SystemTrayClient::ShowBluetoothPairingDialog(
     const base::string16& name_for_display,
     bool paired,
     bool connected) {
-  std::string canonical_address = BluetoothDevice::CanonicalizeAddress(address);
+  std::string canonical_address =
+      device::BluetoothDevice::CanonicalizeAddress(address);
   if (canonical_address.empty())  // Address was invalid.
     return;
 
   base::RecordAction(
       base::UserMetricsAction("StatusArea_Bluetooth_Connect_Unknown"));
-  BluetoothPairingDialog* dialog = new BluetoothPairingDialog(
+  chromeos::BluetoothPairingDialog::ShowDialog(
       canonical_address, name_for_display, paired, connected);
-  // The dialog deletes itself on close.
-  dialog->ShowInContainer(GetDialogParentContainerId());
 }
 
 void SystemTrayClient::ShowDateSettings() {

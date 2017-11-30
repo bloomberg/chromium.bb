@@ -33,6 +33,12 @@
           height: 100%;
           width: 100%;
         }
+
+        dialog [slot=body] {
+          /* This should match or exceed SystemWebDialogDelegate::kDialogHeight
+             to ensure the content is stretched to fit. */
+          height: 480px;
+        }
       </style>
 
       <dialog is="cr-dialog" id="dialog" no-cancel>
@@ -54,15 +60,15 @@
           </paper-button>
           <paper-button class="action-button" on-tap="onConnectTap_"
               disabled="[[!enableConnect_]]">
-          $i18n{networkButtonConnect}
-        </paper-button>
-      </div>
-    </dialog>
-  </template>
-  <script src="internet_config_dialog.js"></script>
-</dom-module>
+            $i18n{networkButtonConnect}
+          </paper-button>
+        </div>
+      </dialog>
+    </template>
+    <script src="internet_config_dialog.js"></script>
+  </dom-module>
 
-<internet-config-dialog></internet-config-dialog>
+  <internet-config-dialog></internet-config-dialog>
 
 </body>
 

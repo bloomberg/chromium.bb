@@ -12,7 +12,7 @@
  */
 
 Polymer({
-  is: 'bluetooth-dialog-host',
+  is: 'bluetooth-pairing-dialog',
 
   behaviors: [I18nBehavior],
 

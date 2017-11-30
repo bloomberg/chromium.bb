@@ -22,6 +22,9 @@ namespace chromeos {
 
 namespace {
 
+// Matches the width of the Settings content.
+constexpr int kInternetDetailDialogWidth = 640;
+
 int s_internet_detail_dialog_count = 0;
 
 void AddInternetStrings(content::WebUIDataSource* html_source) {
@@ -57,10 +60,12 @@ base::string16 GetNetworkName(const NetworkState& network) {
 
 }  // namespace
 
+// static
 bool InternetDetailDialog::IsShown() {
   return s_internet_detail_dialog_count > 0;
 }
 
+// static
 void InternetDetailDialog::ShowDialog(const std::string& network_id) {
   auto* network_state_handler = NetworkHandler::Get()->network_state_handler();
   const NetworkState* network;
@@ -85,6 +90,11 @@ InternetDetailDialog::InternetDetailDialog(const NetworkState& network)
 
 InternetDetailDialog::~InternetDetailDialog() {
   --s_internet_detail_dialog_count;
+}
+
+void InternetDetailDialog::GetDialogSize(gfx::Size* size) const {
+  size->SetSize(kInternetDetailDialogWidth,
+                SystemWebDialogDelegate::kDialogHeight);
 }
 
 std::string InternetDetailDialog::GetDialogArgs() const {

@@ -7,19 +7,18 @@
  * @extends {testing.Test}
  * @constructor
  */
-function BluetoothPairingUITest() {
-}
+function BluetoothPairingDialogTest() {}
 
-BluetoothPairingUITest.prototype = {
+BluetoothPairingDialogTest.prototype = {
   __proto__: testing.Test.prototype,
 
   /** @override */
-  typedefCppFixture: 'BluetoothPairingUITest',
+  typedefCppFixture: 'BluetoothPairingDialogTest',
 
   /** @override */
   testGenCppIncludes: function() {
     GEN('#include "chrome/browser/ui/webui/chromeos/' +
-        'bluetooth_pairing_ui_browsertest-inl.h"');
+        'bluetooth_pairing_dialog_browsertest-inl.h"');
   },
 
   /** @override */
@@ -28,6 +27,6 @@ BluetoothPairingUITest.prototype = {
   },
 };
 
-TEST_F('BluetoothPairingUITest', 'Basic', function() {
+TEST_F('BluetoothPairingDialogTest', 'Basic', function() {
   assertEquals('chrome://bluetooth-pairing/', document.location.href);
 });
