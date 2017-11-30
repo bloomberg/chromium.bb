@@ -82,9 +82,9 @@ struct UrlWithMimeType {
   string mime_type;
 };
 
-// Describes a specific page in chrome://settings.
+// Describes a specific page in chrome://, about:blank, about:downloads and about:history.
 [Extensible]
-enum SettingsPage {
+enum ChromePage {
   MULTIDEVICE,
   MAIN,
   POWER,
@@ -92,9 +92,34 @@ enum SettingsPage {
   DATETIME,
   DISPLAY,
   WIFI,
-  LANGUAGE,
+  LANGUAGES,
   PRIVACY,
   HELP,
+  ACCOUNTS,
+  APPEARANCE,
+  AUTOFILL,
+  BLUETOOTHDEVICES,
+  CHANGEPICTURE,
+  CLEARBROWSERDATA,
+  CLOUDPRINTERS,
+  CUPSPRINTERS,
+  DOWNLOADS,
+  KEYBOARDOVERLAY,
+  LOCKSCREEN,
+  MANAGEACCESSIBILITY,
+  NETWORKSTYPEVPN,
+  ONSTARTUP,
+  PASSWORDS,
+  POINTEROVERLAY,
+  RESET,
+  SEARCH,
+  STORAGE,
+  SYNCSETUP,
+  ABOUTBLANK,
+  ABOUTDOWNLOADS,
+  ABOUTHISTORY,
+
+  LAST = ABOUTHISTORY,
 };
 
 // Handles intents from ARC in Chrome.
@@ -126,8 +151,8 @@ interface IntentHelperHost {
   // Opens the volume control.
   [MinVersion=16] OpenVolumeControl@6();
 
-  // Opens the specified settings page in the Chrome browser.
-  [MinVersion=17] OnOpenChromeSettings@7([MinVersion=18] SettingsPage page);
+  // Opens the specified Chrome page in the Chrome browser.
+  [MinVersion=17] OnOpenChromePage@7([MinVersion=18] ChromePage page);
 };
 
 // Sends intents to ARC on behalf of Chrome.
