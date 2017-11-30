@@ -24,6 +24,8 @@ cc_component("paint") {
     "image_id.h",
     "image_provider.cc",
     "image_provider.h",
+    "image_transfer_cache_entry.cc",
+    "image_transfer_cache_entry.h",
     "paint_canvas.h",
     "paint_export.h",
     "paint_filter.cc",

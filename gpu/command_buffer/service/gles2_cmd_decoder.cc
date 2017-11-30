@@ -20430,6 +20430,10 @@ error::Error GLES2DecoderImpl::HandleCreateTransferCacheEntryCHROMIUM(
   GLuint data_shm_offset = c.data_shm_offset;
   GLuint data_size = c.data_size;
 
+  if (!supports_oop_raster_)
+    return error::kInvalidArguments;
+  DCHECK(gr_context_);
+
   // Validate the type we are about to create.
   cc::TransferCacheEntryType type;
   if (!cc::ServiceTransferCacheEntry::SafeConvertToType(c.type, &type))
@@ -20449,7 +20453,7 @@ error::Error GLES2DecoderImpl::HandleCreateTransferCacheEntryCHROMIUM(
                                   handle_shm_id);
 
   if (!GetContextGroup()->transfer_cache()->CreateLockedEntry(
-          handle_id, handle, type, data_memory, data_size))
+          handle_id, handle, type, gr_context_.get(), data_memory, data_size))
     return error::kInvalidArguments;
 
   return error::kNoError;

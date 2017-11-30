@@ -42,6 +42,7 @@ ServiceTransferCache::~ServiceTransferCache() = default;
 bool ServiceTransferCache::CreateLockedEntry(TransferCacheEntryId id,
                                              ServiceDiscardableHandle handle,
                                              cc::TransferCacheEntryType type,
+                                             GrContext* context,
                                              uint8_t* data_memory,
                                              size_t data_size) {
   auto found = entries_.Peek(id);
@@ -54,7 +55,7 @@ bool ServiceTransferCache::CreateLockedEntry(TransferCacheEntryId id,
   if (!entry)
     return false;
 
-  entry->Deserialize(data_size, data_memory);
+  entry->Deserialize(context, data_size, data_memory);
   total_size_ += entry->Size();
   entries_.Put(id, CacheEntryInternal(handle, std::move(entry)));
   EnforceLimits();

@@ -38,7 +38,7 @@ void PaintOpWriter::WriteSimple(const T& val) {
 
 void PaintOpWriter::WriteFlattenable(const SkFlattenable* val) {
   if (!val) {
-    Write(static_cast<size_t>(0u));
+    WriteSize(static_cast<size_t>(0u));
     return;
   }
 
@@ -48,13 +48,13 @@ void PaintOpWriter::WriteFlattenable(const SkFlattenable* val) {
   sk_sp<SkData> data(
       SkValidatingSerializeFlattenable(const_cast<SkFlattenable*>(val)));
 
-  Write(data->size());
+  WriteSize(data->size());
   if (!data->isEmpty())
     WriteData(data->size(), data->data());
 }
 
-void PaintOpWriter::Write(size_t data) {
-  WriteSimple(data);
+void PaintOpWriter::WriteSize(size_t size) {
+  WriteSimple(size);
 }
 
 void PaintOpWriter::Write(SkScalar data) {
@@ -62,6 +62,18 @@ void PaintOpWriter::Write(SkScalar data) {
 }
 
 void PaintOpWriter::Write(uint8_t data) {
+  WriteSimple(data);
+}
+
+void PaintOpWriter::Write(uint32_t data) {
+  WriteSimple(data);
+}
+
+void PaintOpWriter::Write(uint64_t data) {
+  WriteSimple(data);
+}
+
+void PaintOpWriter::Write(int32_t data) {
   WriteSimple(data);
 }
 
@@ -116,12 +128,12 @@ void PaintOpWriter::Write(const PaintImage& image,
 
 void PaintOpWriter::Write(const sk_sp<SkData>& data) {
   if (data.get() && data->size()) {
-    Write(data->size());
+    WriteSize(data->size());
     WriteData(data->size(), data->data());
   } else {
     // Differentiate between nullptr and valid but zero size.  It's not clear
     // that this happens in practice, but seems better to be consistent.
-    Write(static_cast<size_t>(0));
+    WriteSize(static_cast<size_t>(0));
     Write(!!data.get());
   }
 }
@@ -224,6 +236,10 @@ void PaintOpWriter::Write(const PaintShader* shader) {
             shader->positions_.data());
   // Explicitly don't write the cached_shader_ because that can be regenerated
   // using other fields.
+}
+
+void PaintOpWriter::Write(SkColorType color_type) {
+  WriteSimple(static_cast<uint32_t>(color_type));
 }
 
 void PaintOpWriter::WriteData(size_t bytes, const void* input) {

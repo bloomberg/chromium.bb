@@ -9,6 +9,8 @@
 
 #include "cc/paint/paint_export.h"
 
+class GrContext;
+
 namespace cc {
 
 // To add a new transfer cache entry type:
@@ -17,10 +19,11 @@ namespace cc {
 //    your new type.
 //  - Update ServiceTransferCacheEntry::Create and ServiceTransferCacheEntry::
 //    DeduceType in transfer_cache_entry.cc.
-enum class TransferCacheEntryType : uint32_t {
+enum class TransferCacheEntryType {
   kRawMemory,
+  kImage,
   // Add new entries above this line, make sure to update kLast.
-  kLast = kRawMemory,
+  kLast = kImage,
 };
 
 // An interface used on the client to serialize a transfer cache entry
@@ -49,7 +52,7 @@ class CC_PAINT_EXPORT ServiceTransferCacheEntry {
   virtual ~ServiceTransferCacheEntry() {}
   virtual TransferCacheEntryType Type() const = 0;
   virtual size_t Size() const = 0;
-  virtual bool Deserialize(size_t size, uint8_t* data) = 0;
+  virtual bool Deserialize(GrContext* context, size_t size, uint8_t* data) = 0;
 };
 
 };  // namespace cc
