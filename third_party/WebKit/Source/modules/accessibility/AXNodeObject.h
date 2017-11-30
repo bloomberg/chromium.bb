@@ -151,6 +151,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool ValueForRange(float* out_value) const override;
   bool MaxValueForRange(float* out_value) const override;
   bool MinValueForRange(float* out_value) const override;
+  bool StepValueForRange(float* out_value) const override;
   String StringValue() const override;
 
   // ARIA attributes.
@@ -232,7 +233,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                                AXRelatedObjectVector*,
                                NameSources*,
                                bool* found_text_alternative) const;
-  float StepValueForRange() const;
   bool IsDescendantOfElementType(HashSet<QualifiedName>& tag_names) const;
   String PlaceholderFromNativeAttribute() const;
 };

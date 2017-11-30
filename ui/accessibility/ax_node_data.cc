@@ -905,6 +905,9 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_MIN_VALUE_FOR_RANGE:
         result += " min_value=" + value;
         break;
+      case AX_ATTR_STEP_VALUE_FOR_RANGE:
+        result += " step_value=" + value;
+        break;
       case AX_ATTR_FONT_SIZE:
         result += " font_size=" + value;
         break;

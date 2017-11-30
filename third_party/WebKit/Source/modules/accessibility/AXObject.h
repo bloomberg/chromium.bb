@@ -602,6 +602,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool ValueForRange(float* out_value) const { return false; }
   virtual bool MaxValueForRange(float* out_value) const { return false; }
   virtual bool MinValueForRange(float* out_value) const { return false; }
+  virtual bool StepValueForRange(float* out_value) const { return false; }
   virtual String StringValue() const { return String(); }
   virtual AXRestriction Restriction() const;
 

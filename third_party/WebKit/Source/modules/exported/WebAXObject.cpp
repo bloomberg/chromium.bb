@@ -986,6 +986,13 @@ bool WebAXObject::MinValueForRange(float* out_value) const {
   return private_->MinValueForRange(out_value);
 }
 
+bool WebAXObject::StepValueForRange(float* out_value) const {
+  if (IsDetached())
+    return false;
+
+  return private_->StepValueForRange(out_value);
+}
+
 WebNode WebAXObject::GetNode() const {
   if (IsDetached())
     return WebNode();

@@ -466,6 +466,7 @@
     value_for_range,
     min_value_for_range,
     max_value_for_range,
+    step_value_for_range,
 
     // Text attributes.
     // Font size is in pixels.

@@ -70,6 +70,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   int IntValue();
   int MinValue();
   int MaxValue();
+  int StepValue();
   std::string ValueDescription();
   int ChildrenCount();
 

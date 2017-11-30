@@ -720,6 +720,11 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       if (src.MinValueForRange(&min_value)) {
         dst->AddFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE, min_value);
       }
+
+      float step_value;
+      if (src.StepValueForRange(&step_value)) {
+        dst->AddFloatAttribute(ui::AX_ATTR_STEP_VALUE_FOR_RANGE, step_value);
+      }
     }
 
     if (dst->role == ui::AX_ROLE_DIALOG ||

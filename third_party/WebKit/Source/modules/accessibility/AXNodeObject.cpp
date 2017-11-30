@@ -100,7 +100,8 @@ void AXNodeObject::AlterSliderValue(bool increase) {
   if (!ValueForRange(&value))
     return;
 
-  float step = StepValueForRange();
+  float step;
+  StepValueForRange(&step);
 
   value += increase ? step : -step;
 
@@ -1597,13 +1598,26 @@ bool AXNodeObject::MinValueForRange(float* out_value) const {
   return false;
 }
 
-float AXNodeObject::StepValueForRange() const {
-  if (!IsNativeSlider())
-    return 0.0;
+bool AXNodeObject::StepValueForRange(float* out_value) const {
+  if (IsNativeSlider()) {
+    Decimal step =
+        ToHTMLInputElement(*GetNode()).CreateStepRange(kRejectAny).Step();
+    *out_value = step.ToString().ToFloat();
+    return true;
+  }
 
-  Decimal step =
-      ToHTMLInputElement(*GetNode()).CreateStepRange(kRejectAny).Step();
-  return step.ToString().ToFloat();
+  switch (AriaRoleAttribute()) {
+    case kScrollBarRole:
+    case kSplitterRole:
+    case kSliderRole: {
+      *out_value = 0.0f;
+      return true;
+    }
+    default:
+      break;
+  }
+
+  return false;
 }
 
 String AXNodeObject::StringValue() const {
