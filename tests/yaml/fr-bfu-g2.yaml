@@ -148,7 +148,6 @@ tests:
     - ["ébraisoir", "⠿⠆⠌⠎⠾⠗"]
   # ⠔ -> in
     - ["inchoative", "⠔⠷⠕⠁⠞⠊⠧⠑"]
-    - ["inchoative", "⠔⠷⠕⠁⠞⠊⠧⠑"]
     - ["falcinelle", "⠋⠁⠇⠉⠊⠝⠸"]
     - ["helminthoïde", "⠓⠑⠇⠍⠔⠞⠓⠕⠻⠙⠑"]
   # ⠜ -> gl, em
@@ -1071,6 +1070,10 @@ tests:
 table: [tables/unicode.dis, tables/fr-bfu-g2.ctb]
 flags: {testmode: backward}
 tests:
+    - ["⠠⠡ ⠠⠣ ⠠⠩ ⠠⠹ ⠠⠱ ⠠⠫ ⠠⠻ ⠠⠳ ⠠⠪ ⠠⠼ ⠠⠹⠣ ⠠⠡⠣⠩⠹", "1 2 3 4 5 6 7 8 9 0 42 1234"]
+    - ["⠠⠖ ⠠⠶ ⠠⠖⠡ ⠐⠿ ⠨⠁⠓⠖ ⠨⠑⠓⠖ ⠨⠕⠓⠖", "+ = +1 & Ah! Eh! Oh!", {xfail: true}]
+    - ['⠠⠶⠹⠣', '=42', {xfail: true}]
+    - ['⠖⠠⠡⠹', '!14', {xfail: true}]
     - ["⠗⠡⠇⠑", "râle"]
     - ["⠏⠣⠷⠑", "pêche"]
     - ["⠩⠇⠑", "île"]
@@ -1081,8 +1084,8 @@ tests:
     - ["⠨⠪⠙⠕⠛⠕⠝⠊⠥⠍", "Œdogonium"]
     - ["⠣⠞⠗⠑", "être"]
     - ["⠨⠨⠉⠹⠞⠑⠲⠲⠲", "CÔTE..."]
-    - ["⠦⠨⠨⠉⠹⠞⠑⠴⠲", "(CÔTE⠴⠲", {xfail: true}]
-    - ["⠦⠪⠝⠁⠝⠞⠓⠊⠟⠴⠂", "(œnanthique),", {xfail: true}]
+    - ["⠦⠨⠨⠉⠹⠞⠑⠴⠲", "(CÔTE)."]
+    - ["⠦⠪⠝⠁⠝⠞⠓⠊⠟⠴⠂", "(œnanthique),"]
   # ⠡ -> fr, ation (terminaison)
     - ["⠡⠆⠞", "fruit"]
     - ["⠉⠈⠙⠊⠕⠡⠿⠟⠢⠉⠑⠍⠮⠴⠑⠂", "cardiofréquencemètre,"]
@@ -1229,7 +1232,6 @@ tests:
     - ["⠌⠵⠕⠁⠉⠿⠑", "aizoacée"]
     - ["⠿⠆⠌⠎⠾⠗", "ébraisoir"]
   # ⠔ -> in
-    - ["⠔⠷⠕⠁⠞⠊⠧⠑", "inchoative"]
     - ["⠔⠷⠕⠁⠞⠊⠧⠑", "inchoative"]
     - ["⠋⠁⠇⠉⠊⠝⠸", "falcinelle"]
     - ["⠓⠑⠇⠍⠔⠞⠓⠕⠻⠙⠑", "helminthoïde"]

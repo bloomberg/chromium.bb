@@ -56,16 +56,16 @@ class apost '\X2019\X0092
 
 #For backtranslation, we need a class that contains consonnants + contractions that begin by a consonnant.
 class conabr bcçdfghjklmnpqrstvwxzBCÇDFGHJKLMNPQRSTVWXZ;àî:ô"ï¸ë!)
+class bmpabr bmnpBMNP;!6
 
 #For backtranslation, we need a class that contains vowels + contractions that begin by a vowel, excluding those which have similar dot patterns to digits.
-class voyabr aeiouyéàèùAEIOUYÉÀÈÙ^k@?(´¨xz⠠●0ùw
-class voyabr2 0âêîôûëïüœ./,
+class voyabr aeiouyéàèùAEIOUYÉÀÈÙ^k@?(´¨xz⠠0ùw
+class voyabr2 0âêîôûëïüœ./,●
 
 #punctuation ' 56		so the line below compiles
 letsign 56
 noletsignafter '.\X2019\X0092
 hyphen - 36
-
 
 ###
 ### 1. Assemblages de lettres représentés par un seul symbole,
@@ -126,18 +126,19 @@ noback before voy always cl 146
 nofor before voyabr begmidword cl 146
 nofor always clai 146-34
 nofor before conabr always clan 146-2
+nofor before conabr begword clin 146-35
 nofor before conabr begmidword clien 146-256
 nofor before voyabr2 midword cl 146
 
 before con begword com 36
-nofor before con before conabr begword com 36
+nofor before conabr begword com 36
 noback before con always con 25
 nofor before conabr begmidword con 25
 nofor before voyabr begmidword confl 25-126
 nofor before voyabr begmidword confr 25-16
 prfword cons	14-346-234
 noback before voy always cr 25
-nofor before voyabr begmidword cr 25
+nofor before voyabr before voyabr2 begmidword cr 25
 nofor always crai 25-34
 nofor before conabr begmidword cran 25-2
 nofor always crou 25-1256
@@ -148,7 +149,9 @@ nofor before conabr begword dis 256
 noback before voy always dr 1456
 nofor before voyabr begmidword dr 1456
 nofor always drai 1456-34
+nofor before voyabr2 midword dr 3456
 nofor begmidword drui 1456-23
+nofor before conabr begword drin 1456-35
 nofor before conabr always dran 1456-2
 nofor before voyabr2 midword dr 1456
 nofor begword drôl 145-1235-1456-123
@@ -159,9 +162,10 @@ nofor before voyabr before voyabr2 midword ègr 2346-12456
 endword elle 456
 endword elles 456-234
 noback before con always em 345
-nofor before con before conabr always em 345
+nofor before conabr always em 345
 nofor before voyabr before voyabr2 always embl 345-45
 nofor before voyabr always embr 345-23
+nofor begword œn 246-1345
 noback before con always en 26
 nofor begmidword en 26
 noback endword en 26
@@ -188,7 +192,7 @@ nofor before voyabr before voyabr2 always eur 5-1235
 nofor always eut 5-2345
 noback before con always eur 46
 nofor before conabr midword eur 46
-nofor before punctuation always eur 46
+#nofor endword always eur 46
 endword eur 46
 noback before con always ex 1346
 nofor before conabr always ex 1346
@@ -197,6 +201,7 @@ endword ez 1356
 noback before voy always fl 126
 nofor before voyabr begmidword fl 126
 nofor always flai 126-34
+nofor before conabr always flin 126-35
 nofor begmidword flui 126-23
 nofor before conabr always flan 126-2
 nofor before voyabr2 midword fl 126
@@ -206,6 +211,7 @@ nofor before voyabr begmidword fr 16
 nofor always frai 16-34
 nofor begmidword frui 16-23
 nofor before conabr always fran 16-2
+nofor before conabr begword frin 16-35
 nofor before voyabr2 midword fl 126
 nofor always frou 16-1256
 nofor always frêl 16-126-123
@@ -223,6 +229,7 @@ noback before voy always gr 12456
 nofor before voyabr begmidword gr 12456
 nofor always grai 12456-34
 nofor before conabr always gran 14526-2
+nofor before conabr begword grin 12456-35
 nofor before voyabr2 midword gr 12456
 nofor always grâc 12456-16-14
 nofor always grê 12456-126
@@ -235,10 +242,7 @@ nofor endword ieu 6
 nofor before punctuation always ieu 6
 nofor before con midword ieu 6
 before bmp begmidword im 246
-nofor always imbl 246-45
-nofor always imbr 246-23
-nofor always impl 246-1246
-nofor always impr 246-235
+nofor before bmpabr begmidword im 246
 
 begword  in 35
 noback before con always in 35
@@ -265,7 +269,7 @@ nofor midendword llou 456-1256
 
 partword oi 23456
 noback before con always om 2456
-nofor before conabr always om 2456
+nofor before bmpabr always om 2456
 nofor before voyabr before voyabr2 always ombr 2456-23
 endword om 2456
 noback before con always on 346
@@ -299,7 +303,7 @@ nofor before voyabr2 midword pl 1246
 noback before voy always pr 235
 nofor before voyabr always pr 235
 noback before con always pro 235
-nofor before con before conabr always pro 235
+nofor before conabr always pro 235
 nofor always probl 235-45
 
 always qu 12345
@@ -307,9 +311,10 @@ endword que 12345
 endword ques 12345-234
 
 noback before con begword re 3
-nofor before con before conabr begword re 3
+nofor before conabr begword re 3
 nofor begword refr 3-16
 nofor begword refl 3-126
+nofor begword ress 3-2346
 before con begword rem 1235-345
 
 noback before voy after voy always ss 2346
@@ -2160,6 +2165,29 @@ nofor postpunc !" 235-2356
 nofor postpunc !) 235-356
 nofor postpunc !] 235-356-12
 nofor postpunc !} 235-356-3-3
+nofor postpunc ), 356-2
+nofor postpunc ); 356-23
+nofor postpunc ). 356-256
+nofor postpunc )? 356-26
+nofor postpunc )! 356-235
+nofor postpunc ", 2356-2
+nofor postpunc "; 2356-23
+nofor postpunc ". 2356-235
+nofor postpunc "? 2356-26
+nofor postpunc "! 2356-235
+
+word " 56-2356
+word \x00ab 56-2356
+word \x00bb 56-2356
+
+word = 6-2356
+word + 6-235
+word / 6-34
+word * 6-35
+begword + 6-235
+word - 56-36
+word ? 56-26
+word ! 56-235
 
 #Astuce pour différencier "riz" et "riez"
 nofor pass2 @56-1235-24[@1356] @1-1-1-1356
