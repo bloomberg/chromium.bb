@@ -688,8 +688,8 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration() {
   // cache the composited bounds for this layer.
   UpdateCompositedBounds();
 
-  PaintLayerCompositor* compositor = this->Compositor();
-  LayoutObject& layout_object = this->GetLayoutObject();
+  PaintLayerCompositor* compositor = Compositor();
+  LayoutObject& layout_object = GetLayoutObject();
   const ComputedStyle& style = layout_object.StyleRef();
 
   bool layer_config_changed = false;
@@ -712,7 +712,7 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration() {
   if (owning_layer_.NeedsCompositedScrolling())
     needs_descendants_clipping_layer = false;
 
-  const PaintLayer* scroll_parent = this->ScrollParent();
+  const PaintLayer* scroll_parent = ScrollParent();
 
   // This is required because compositing layers are parented according to the
   // z-order hierarchy, yet clipping goes down the layoutObject hierarchy. Thus,
@@ -1970,7 +1970,7 @@ void CompositedLayerMapping::UpdateDrawsContent() {
 }
 
 void CompositedLayerMapping::UpdateChildrenTransform() {
-  if (GraphicsLayer* child_transform_layer = this->ChildTransformLayer()) {
+  if (GraphicsLayer* child_transform_layer = ChildTransformLayer()) {
     child_transform_layer->SetTransform(OwningLayer().PerspectiveTransform());
     child_transform_layer->SetTransformOrigin(
         OwningLayer().PerspectiveOrigin());
@@ -2785,7 +2785,7 @@ bool CompositedLayerMapping::ContainsPaintedContent() const {
   if (GetLayoutObject().IsImage() && IsDirectlyCompositedImage())
     return false;
 
-  LayoutObject& layout_object = this->GetLayoutObject();
+  LayoutObject& layout_object = GetLayoutObject();
   // FIXME: we could optimize cases where the image, video or canvas is known to
   // fill the border box entirely, and set background color on the layer in that
   // case, instead of allocating backing store and painting.

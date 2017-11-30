@@ -1504,10 +1504,10 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
   const IntRect border_box =
       Box().PixelSnappedBorderBoxRect(layer_.SubpixelAccumulation());
 
-  if (Scrollbar* vertical_scrollbar = this->VerticalScrollbar())
+  if (Scrollbar* vertical_scrollbar = VerticalScrollbar())
     vertical_scrollbar->SetFrameRect(RectForVerticalScrollbar(border_box));
 
-  if (Scrollbar* horizontal_scrollbar = this->HorizontalScrollbar())
+  if (Scrollbar* horizontal_scrollbar = HorizontalScrollbar())
     horizontal_scrollbar->SetFrameRect(RectForHorizontalScrollbar(border_box));
 
   const IntRect& scroll_corner = ScrollCornerRect();

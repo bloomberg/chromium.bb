@@ -248,7 +248,7 @@ void PaintLayer::ContentChanged(ContentChangeType change_type) {
   }
 
   if (CompositedLayerMapping* composited_layer_mapping =
-          this->GetCompositedLayerMapping())
+          GetCompositedLayerMapping())
     composited_layer_mapping->ContentChanged(change_type);
 }
 
@@ -395,7 +395,7 @@ void PaintLayer::UpdateLayerPositionsAfterOverflowScroll() {
 }
 
 void PaintLayer::UpdateTransformationMatrix() {
-  if (TransformationMatrix* transform = this->Transform()) {
+  if (TransformationMatrix* transform = Transform()) {
     LayoutBox* box = GetLayoutBox();
     DCHECK(box);
     transform->MakeIdentity();
@@ -494,14 +494,14 @@ const PaintLayer* PaintLayer::RenderingContextRoot() const {
 }
 
 TransformationMatrix PaintLayer::CurrentTransform() const {
-  if (TransformationMatrix* transform = this->Transform())
+  if (TransformationMatrix* transform = Transform())
     return *transform;
   return TransformationMatrix();
 }
 
 TransformationMatrix PaintLayer::RenderableTransform(
     GlobalPaintFlags global_paint_flags) const {
-  TransformationMatrix* transform = this->Transform();
+  TransformationMatrix* transform = Transform();
   if (!transform)
     return TransformationMatrix();
 
@@ -826,7 +826,7 @@ void PaintLayer::UpdateLayerPosition() {
     }
   }
 
-  if (PaintLayer* containing_layer = this->ContainingLayer()) {
+  if (PaintLayer* containing_layer = ContainingLayer()) {
     if (containing_layer->GetLayoutObject().HasOverflowClip()) {
       // Subtract our container's scroll offset.
       IntSize offset =
@@ -917,7 +917,7 @@ PaintLayer* PaintLayer::ContainingLayer(const PaintLayer* ancestor,
   if (skipped_ancestor)
     *skipped_ancestor = false;
 
-  LayoutObject& layout_object = this->GetLayoutObject();
+  LayoutObject& layout_object = GetLayoutObject();
   if (layout_object.IsOutOfFlowPositioned()) {
     auto can_contain_this_layer =
         layout_object.IsFixedPositioned()
@@ -2619,7 +2619,7 @@ void PaintLayer::ExpandRectForStackingChildren(
       const_cast<PaintLayer*>(this)->StackingNode());
 #endif
 
-  PaintLayerStackingNodeIterator iterator(*this->StackingNode(), kAllChildren);
+  PaintLayerStackingNodeIterator iterator(*StackingNode(), kAllChildren);
   while (PaintLayerStackingNode* node = iterator.Next()) {
     // Here we exclude both directly composited layers and squashing layers
     // because those Layers don't paint into the graphics layer
@@ -2801,7 +2801,7 @@ void PaintLayer::EnsureCompositedLayerMapping() {
   rare_data_->composited_layer_mapping->SetNeedsGraphicsLayerUpdate(
       kGraphicsLayerUpdateSubtree);
 
-  if (PaintLayerResourceInfo* resource_info = this->ResourceInfo())
+  if (PaintLayerResourceInfo* resource_info = ResourceInfo())
     resource_info->InvalidateFilterChain();
 }
 
@@ -2823,13 +2823,13 @@ void PaintLayer::ClearCompositedLayerMapping(bool layer_being_destroyed) {
   if (layer_being_destroyed)
     return;
 
-  if (PaintLayerResourceInfo* resource_info = this->ResourceInfo())
+  if (PaintLayerResourceInfo* resource_info = ResourceInfo())
     resource_info->InvalidateFilterChain();
 }
 
 void PaintLayer::SetGroupedMapping(CompositedLayerMapping* grouped_mapping,
                                    SetGroupMappingOptions options) {
-  CompositedLayerMapping* old_grouped_mapping = this->GroupedMapping();
+  CompositedLayerMapping* old_grouped_mapping = GroupedMapping();
   if (grouped_mapping == old_grouped_mapping)
     return;
 
@@ -2991,7 +2991,7 @@ bool PaintLayer::ShouldBeSelfPaintingLayer() const {
 
 void PaintLayer::UpdateSelfPaintingLayer() {
   bool is_self_painting_layer = ShouldBeSelfPaintingLayer();
-  if (this->IsSelfPaintingLayer() == is_self_painting_layer)
+  if (IsSelfPaintingLayer() == is_self_painting_layer)
     return;
 
   // Invalidate the old subsequences which may no longer contain some
@@ -3001,7 +3001,7 @@ void PaintLayer::UpdateSelfPaintingLayer() {
   self_painting_status_changed_ = true;
   SetNeedsRepaint();
 
-  if (PaintLayer* parent = this->Parent()) {
+  if (PaintLayer* parent = Parent()) {
     parent->DirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
     if (PaintLayer* enclosing_self_painting_layer =
@@ -3063,7 +3063,7 @@ void PaintLayer::UpdateFilters(const ComputedStyle* old_style,
     new_style.Filter().AddClient(&EnsureResourceInfo());
   if (had_resource_info && old_style)
     old_style->Filter().RemoveClient(ResourceInfo());
-  if (PaintLayerResourceInfo* resource_info = this->ResourceInfo())
+  if (PaintLayerResourceInfo* resource_info = ResourceInfo())
     resource_info->InvalidateFilterChain();
 }
 
@@ -3185,7 +3185,7 @@ PaintLayerClipper PaintLayer::Clipper(
 }
 
 bool PaintLayer::ScrollsOverflow() const {
-  if (PaintLayerScrollableArea* scrollable_area = this->GetScrollableArea())
+  if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea())
     return scrollable_area->ScrollsOverflow();
 
   return false;
@@ -3267,7 +3267,7 @@ FilterEffect* PaintLayer::LastFilterEffect() const {
   // TODO(chrishtr): ensure (and assert) that compositing is clean here.
   if (!PaintsWithFilters())
     return nullptr;
-  PaintLayerResourceInfo* resource_info = this->ResourceInfo();
+  PaintLayerResourceInfo* resource_info = ResourceInfo();
   DCHECK(resource_info);
 
   if (resource_info->LastEffect())

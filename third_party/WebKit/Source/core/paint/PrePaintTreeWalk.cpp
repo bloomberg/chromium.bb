@@ -93,7 +93,7 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view,
   }
 
   bool needs_tree_builder_context_update =
-      this->NeedsTreeBuilderContextUpdate(frame_view, parent_context);
+      NeedsTreeBuilderContextUpdate(frame_view, parent_context);
   PrePaintTreeWalkContext context(parent_context,
                                   needs_tree_builder_context_update);
   // ancestorOverflowLayer does not cross frame boundaries.
@@ -226,7 +226,7 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object,
                             const PrePaintTreeWalkContext& parent_context) {
   // Early out from the tree walk if possible.
   bool needs_tree_builder_context_update =
-      this->NeedsTreeBuilderContextUpdate(object, parent_context);
+      NeedsTreeBuilderContextUpdate(object, parent_context);
   if (!needs_tree_builder_context_update &&
       !object.ShouldCheckForPaintInvalidation())
     return;

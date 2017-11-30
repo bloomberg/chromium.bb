@@ -238,7 +238,7 @@ void PaintLayerStackingNode::StyleDidChange(const ComputedStyle* old_style) {
       old_style ? old_style->IsStackingContext() : false;
   int old_z_index = old_style ? old_style->ZIndex() : 0;
 
-  bool is_stacking_context = this->IsStackingContext();
+  bool is_stacking_context = IsStackingContext();
   bool should_be_stacked = GetLayoutObject().StyleRef().IsStacked();
   if (is_stacking_context == was_stacking_context &&
       is_stacked_ == should_be_stacked && old_z_index == ZIndex())
