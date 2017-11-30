@@ -69,10 +69,18 @@ bool WebRequestHooks::CreateCustomEvent(
       extra_parameters_spec,
       // opt_eventOptions and opt_webViewInstanceId are ignored.
   };
-  *event_out =
-      JSRunner::Get(context)
-          ->RunJSFunctionSync(get_event, context, arraysize(args), args)
-          .Get(isolate);
+
+  v8::TryCatch try_catch(isolate);
+  v8::Local<v8::Value> event;
+  if (!JSRunner::Get(context)
+           ->RunJSFunctionSync(get_event, context, arraysize(args), args)
+           .ToLocal(&event)) {
+    // TODO(devlin): Do we care about the error? In theory, this should never
+    // happen, so probably not.
+    event = v8::Undefined(isolate);
+  }
+
+  *event_out = event;
   return true;
 }
 

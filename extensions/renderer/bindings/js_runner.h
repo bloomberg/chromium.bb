@@ -33,15 +33,10 @@ class JSRunner {
                              int argc,
                              v8::Local<v8::Value> argv[]) = 0;
 
-  // Executes the given |function| synchronously and returns the result. Note
-  // this should only be called if you're certain that script is not currently
-  // suspended in this context; if execution is suspended, this will fail a
-  // CHECK. We use a Global instead of a Local because certain implementations
-  // need to create a persistent handle in order to prevent immediate
-  // destruction of the locals.
-  // TODO(devlin): if we could, using Local here with an EscapableHandleScope
-  // would be preferable.
-  virtual v8::Global<v8::Value> RunJSFunctionSync(
+  // Executes the given |function| synchronously and returns the result. This
+  // should *only* be called in direct response to script running, since it
+  // bypasses script suspension.
+  virtual v8::MaybeLocal<v8::Value> RunJSFunctionSync(
       v8::Local<v8::Function> function,
       v8::Local<v8::Context> context,
       int argc,
