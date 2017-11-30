@@ -644,10 +644,12 @@ RenderThreadImpl::RenderThreadImpl(
 RenderThreadImpl::RenderThreadImpl(
     std::unique_ptr<base::MessageLoop> main_message_loop,
     std::unique_ptr<blink::scheduler::RendererScheduler> scheduler)
-    : ChildThreadImpl(Options::Builder()
-                          .AutoStartServiceManagerConnection(false)
-                          .ConnectToBrowser(true)
-                          .Build()),
+    : ChildThreadImpl(
+          Options::Builder()
+              .AutoStartServiceManagerConnection(false)
+              .ConnectToBrowser(true)
+              .IPCTaskRunner(scheduler ? scheduler->IPCTaskRunner() : nullptr)
+              .Build()),
       renderer_scheduler_(std::move(scheduler)),
       main_message_loop_(std::move(main_message_loop)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
