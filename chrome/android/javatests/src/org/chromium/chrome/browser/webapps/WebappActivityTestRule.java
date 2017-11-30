@@ -17,6 +17,7 @@ import org.junit.Rule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -111,14 +112,39 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
         Statement webappTestRuleStatement = new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                // Register the webapp so when the data storage is opened, the test doesn't crash.
-                WebappRegistry.refreshSharedPrefsForTesting();
-                TestFetchStorageCallback callback = new TestFetchStorageCallback();
-                WebappRegistry.getInstance().register(WEBAPP_ID, callback);
+                // We run the WebappRegistry calls on the UI thread to prevent
+                // ConcurrentModificationExceptions caused by multiple threads iterating and
+                // modifying its hashmap at the same time.
+                final TestFetchStorageCallback callback = new TestFetchStorageCallback();
+                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Register the webapp so when the data storage is opened, the test doesn't
+                        // crash.
+                        WebappRegistry.refreshSharedPrefsForTesting();
+                        WebappRegistry.getInstance().register(WEBAPP_ID, callback);
+                    }
+                });
+
+                // Running this on the UI thread causes issues, so can't group everything into one
+                // runnable.
                 callback.waitForCallback(0);
-                callback.getStorage().updateFromShortcutIntent(createIntent());
+
+                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.getStorage().updateFromShortcutIntent(createIntent());
+                    }
+                });
+
                 base.evaluate();
-                WebappRegistry.getInstance().clearForTesting();
+
+                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                    @Override
+                    public void run() {
+                        WebappRegistry.getInstance().clearForTesting();
+                    }
+                });
             }
         };
 
