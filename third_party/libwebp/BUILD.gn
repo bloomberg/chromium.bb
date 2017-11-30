@@ -12,6 +12,10 @@ config("libwebp_config") {
 
 config("libwebp_config_internal") {
   include_dirs = [ "." ]
+  defines = [
+    "WEBP_NEAR_LOSSLESS=0",
+    "WEBP_DISABLE_STATS",
+  ]
 }
 
 set_opt_level =
