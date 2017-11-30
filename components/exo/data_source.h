@@ -46,8 +46,16 @@ class DataSource {
   void ReadData(ReadDataCallback callback);
 
  private:
+  void OnDataRead(ReadDataCallback callback, const std::vector<uint8_t>&);
+
   DataSourceDelegate* const delegate_;
   base::ObserverList<DataSourceObserver> observers_;
+
+  // Mime types which has been offered.
+  std::set<std::string> mime_types_;
+  bool cancelled_;
+
+  base::WeakPtrFactory<DataSource> read_data_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DataSource);
 };
