@@ -66,6 +66,12 @@ CSSNumericValueType::CSSNumericValueType(CSSPrimitiveValue::UnitType unit) {
     SetExponent(UnitTypeToBaseType(unit), 1);
 }
 
+CSSNumericValueType::CSSNumericValueType(int exponent,
+                                         CSSPrimitiveValue::UnitType unit) {
+  if (unit != CSSPrimitiveValue::UnitType::kNumber)
+    SetExponent(UnitTypeToBaseType(unit), exponent);
+}
+
 CSSNumericValueType CSSNumericValueType::NegateExponents(
     CSSNumericValueType type) {
   std::for_each(type.exponents_.begin(), type.exponents_.end(),

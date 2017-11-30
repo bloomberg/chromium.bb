@@ -98,23 +98,35 @@ CSSNumericValue* CSSNumericValue::FromNumberish(const CSSNumberish& value) {
 
 CSSNumericValue* CSSNumericValue::to(const String& unit_string,
                                      ExceptionState& exception_state) {
-  CSSPrimitiveValue::UnitType unit = UnitFromName(unit_string);
-  if (!IsValidUnit(unit)) {
+  CSSPrimitiveValue::UnitType target_unit = UnitFromName(unit_string);
+  if (!IsValidUnit(target_unit)) {
     exception_state.ThrowDOMException(kSyntaxError,
                                       "Invalid unit for conversion");
     return nullptr;
   }
-  if (!IsUnitValue()) {
-    exception_state.ThrowTypeError(
-        "Conversion of CSSCalcValue is not supported yet");
-    return nullptr;
-  }
-  CSSUnitValue* result = ToCSSUnitValue(this)->to(unit);
+
+  CSSNumericValue* result = to(target_unit);
   if (!result) {
-    exception_state.ThrowTypeError("Incompatible units for conversion");
+    exception_state.ThrowTypeError("Cannot convert to " + unit_string);
     return nullptr;
   }
+
   return result;
+}
+
+CSSUnitValue* CSSNumericValue::to(CSSPrimitiveValue::UnitType unit) const {
+  const auto sum = SumValue();
+  if (!sum || sum->terms.size() != 1)
+    return nullptr;
+
+  const auto& term = sum->terms[0];
+  if (term.units.size() == 0)
+    return CSSUnitValue::Create(term.value)->ConvertTo(unit);
+  if (term.units.size() == 1 && term.units.begin()->value == 1) {
+    return CSSUnitValue::Create(term.value, term.units.begin()->key)
+        ->ConvertTo(unit);
+  }
+  return nullptr;
 }
 
 CSSNumericValue* CSSNumericValue::add(
