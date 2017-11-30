@@ -65,21 +65,21 @@ void PhysicalDevicesEnumerated(base::Closure quit_closure,
   quit_closure.Run();
 }
 
-class MockMediaDevicesListener : public ::mojom::MediaDevicesListener {
+class MockMediaDevicesListener : public blink::mojom::MediaDevicesListener {
  public:
   MockMediaDevicesListener() : binding_(this) {}
 
   MOCK_METHOD3(OnDevicesChanged,
                void(MediaDeviceType, uint32_t, const MediaDeviceInfoArray&));
 
-  ::mojom::MediaDevicesListenerPtr CreateInterfacePtrAndBind() {
-    ::mojom::MediaDevicesListenerPtr listener;
+  blink::mojom::MediaDevicesListenerPtr CreateInterfacePtrAndBind() {
+    blink::mojom::MediaDevicesListenerPtr listener;
     binding_.Bind(mojo::MakeRequest(&listener));
     return listener;
   }
 
  private:
-  mojo::Binding<::mojom::MediaDevicesListener> binding_;
+  mojo::Binding<blink::mojom::MediaDevicesListener> binding_;
 };
 
 }  // namespace
@@ -170,7 +170,7 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
   MOCK_METHOD0(MockAvailableVideoInputDeviceFormatsCallback, void());
 
   void VideoInputCapabilitiesCallback(
-      std::vector<::mojom::VideoInputDeviceCapabilitiesPtr> capabilities) {
+      std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr> capabilities) {
     MockVideoInputCapabilitiesCallback();
     std::string expected_first_device_id =
         GetHMACForMediaDeviceID(browser_context_->GetMediaDeviceIDSalt(),
@@ -189,13 +189,13 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
   }
 
   void VideoInputCapabilitiesUniqueOriginCallback(
-      std::vector<::mojom::VideoInputDeviceCapabilitiesPtr> capabilities) {
+      std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr> capabilities) {
     MockVideoInputCapabilitiesCallback();
     EXPECT_EQ(0U, capabilities.size());
   }
 
   void AudioInputCapabilitiesCallback(
-      std::vector<::mojom::AudioInputDeviceCapabilitiesPtr> capabilities) {
+      std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr> capabilities) {
     MockAudioInputCapabilitiesCallback();
     // MediaDevicesManager always returns 3 fake audio input devices.
     const size_t kNumExpectedEntries = 3;

@@ -394,7 +394,7 @@ void UserMediaProcessor::SetupAudioInput() {
 
 void UserMediaProcessor::SelectAudioSettings(
     const blink::WebUserMediaRequest& web_request,
-    std::vector<::mojom::AudioInputDeviceCapabilitiesPtr>
+    std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>
         audio_input_capabilities) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The frame might reload or |web_request| might be cancelled while
@@ -470,7 +470,7 @@ void UserMediaProcessor::SetupVideoInput() {
 
 void UserMediaProcessor::SelectVideoDeviceSettings(
     const blink::WebUserMediaRequest& web_request,
-    std::vector<::mojom::VideoInputDeviceCapabilitiesPtr>
+    std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
         video_input_capabilities) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The frame might reload or |web_request| might be cancelled while
@@ -1189,7 +1189,7 @@ UserMediaProcessor::GetMediaStreamDispatcherHost() {
   return dispatcher_host_;
 }
 
-const ::mojom::MediaDevicesDispatcherHostPtr&
+const blink::mojom::MediaDevicesDispatcherHostPtr&
 UserMediaProcessor::GetMediaDevicesDispatcher() {
   return media_devices_dispatcher_cb_.Run();
 }

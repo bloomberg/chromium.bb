@@ -111,11 +111,11 @@ void MediaDevicesEventDispatcher::OnDestruct() {
 }
 
 void MediaDevicesEventDispatcher::SetMediaDevicesDispatcherForTesting(
-    ::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher) {
+    blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher) {
   media_devices_dispatcher_ = std::move(media_devices_dispatcher);
 }
 
-const ::mojom::MediaDevicesDispatcherHostPtr&
+const blink::mojom::MediaDevicesDispatcherHostPtr&
 MediaDevicesEventDispatcher::GetMediaDevicesDispatcher() {
   if (!media_devices_dispatcher_) {
     render_frame()->GetRemoteInterfaces()->GetInterface(

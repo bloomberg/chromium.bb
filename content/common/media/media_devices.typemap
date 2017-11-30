@@ -2,13 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//content/common/media/media_devices.mojom"
+mojom = "//third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom"
 public_headers = [ "//content/common/media/media_devices.h" ]
 traits_headers = [ "//content/common/media/media_devices_param_traits.h" ]
-deps = [
-  "//content:export",
-]
 type_mappings = [
-  "mojom.MediaDeviceType=::content::MediaDeviceType",
-  "mojom.MediaDeviceInfo=::content::MediaDeviceInfo",
+  "blink.mojom.MediaDeviceType=content::MediaDeviceType",
+  "blink.mojom.MediaDeviceInfo=content::MediaDeviceInfo",
 ]

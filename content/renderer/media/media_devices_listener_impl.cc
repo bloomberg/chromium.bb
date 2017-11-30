@@ -16,7 +16,7 @@ namespace content {
 // static
 void MediaDevicesListenerImpl::Create(
     int render_frame_id,
-    ::mojom::MediaDevicesListenerRequest request) {
+    blink::mojom::MediaDevicesListenerRequest request) {
   mojo::MakeStrongBinding(
       std::make_unique<MediaDevicesListenerImpl>(render_frame_id),
       std::move(request));

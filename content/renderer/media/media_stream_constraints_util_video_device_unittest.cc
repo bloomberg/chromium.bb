@@ -70,10 +70,10 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
  public:
   void SetUp() override {
     // Default device. It is default because it is the first in the enumeration.
-    ::mojom::VideoInputDeviceCapabilitiesPtr device =
-        ::mojom::VideoInputDeviceCapabilities::New();
+    blink::mojom::VideoInputDeviceCapabilitiesPtr device =
+        blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID1;
-    device->facing_mode = ::mojom::FacingMode::NONE;
+    device->facing_mode = blink::mojom::FacingMode::NONE;
     device->formats = {
         media::VideoCaptureFormat(gfx::Size(200, 200), 40.0f,
                                   media::PIXEL_FORMAT_I420),
@@ -86,9 +86,9 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A low-resolution device.
-    device = ::mojom::VideoInputDeviceCapabilities::New();
+    device = blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID2;
-    device->facing_mode = ::mojom::FacingMode::ENVIRONMENT;
+    device->facing_mode = blink::mojom::FacingMode::ENVIRONMENT;
     device->formats = {
         media::VideoCaptureFormat(gfx::Size(40, 30), 20.0f,
                                   media::PIXEL_FORMAT_I420),
@@ -106,9 +106,9 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A high-resolution device.
-    device = ::mojom::VideoInputDeviceCapabilities::New();
+    device = blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID3;
-    device->facing_mode = ::mojom::FacingMode::USER;
+    device->facing_mode = blink::mojom::FacingMode::USER;
     device->formats = {
         media::VideoCaptureFormat(gfx::Size(600, 400), 10.0f,
                                   media::PIXEL_FORMAT_I420),
@@ -137,18 +137,18 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A depth capture device.
-    device = ::mojom::VideoInputDeviceCapabilities::New();
+    device = blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID4;
-    device->facing_mode = ::mojom::FacingMode::ENVIRONMENT;
+    device->facing_mode = blink::mojom::FacingMode::ENVIRONMENT;
     device->formats = {media::VideoCaptureFormat(gfx::Size(640, 480), 30.0f,
                                                  media::PIXEL_FORMAT_Y16)};
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A device that reports invalid frame rates. These devices exist and should
     // be supported if no constraints are placed on the frame rate.
-    device = ::mojom::VideoInputDeviceCapabilities::New();
+    device = blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID5;
-    device->facing_mode = ::mojom::FacingMode::NONE;
+    device->facing_mode = blink::mojom::FacingMode::NONE;
     device->formats = {
         media::VideoCaptureFormat(
             gfx::Size(MediaStreamVideoSource::kDefaultWidth,
@@ -188,10 +188,10 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
   }
 
   VideoDeviceCaptureCapabilities capabilities_;
-  const mojom::VideoInputDeviceCapabilities* default_device_;
-  const mojom::VideoInputDeviceCapabilities* low_res_device_;
-  const mojom::VideoInputDeviceCapabilities* high_res_device_;
-  const mojom::VideoInputDeviceCapabilities* invalid_frame_rate_device_;
+  const blink::mojom::VideoInputDeviceCapabilities* default_device_;
+  const blink::mojom::VideoInputDeviceCapabilities* low_res_device_;
+  const blink::mojom::VideoInputDeviceCapabilities* high_res_device_;
+  const blink::mojom::VideoInputDeviceCapabilities* invalid_frame_rate_device_;
   // Closest formats to the default settings.
   const media::VideoCaptureFormat* default_closest_format_;
   const media::VideoCaptureFormat* low_res_closest_format_;
@@ -382,10 +382,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // Manually adding device capabilities because VideoDeviceCaptureCapabilities
   // is move only.
   VideoDeviceCaptureCapabilities capabilities;
-  ::mojom::VideoInputDeviceCapabilitiesPtr device =
-      ::mojom::VideoInputDeviceCapabilities::New();
+  blink::mojom::VideoInputDeviceCapabilitiesPtr device =
+      blink::mojom::VideoInputDeviceCapabilities::New();
   device->device_id = kDeviceID1;
-  device->facing_mode = ::mojom::FacingMode::NONE;
+  device->facing_mode = blink::mojom::FacingMode::NONE;
   device->formats = {
       media::VideoCaptureFormat(gfx::Size(200, 200), 40.0f,
                                 media::PIXEL_FORMAT_I420),
@@ -445,7 +445,8 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryFacingMode) {
   // Only the low-res device supports environment facing mode. Should select
   // default settings for everything else.
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
-  EXPECT_EQ(::mojom::FacingMode::ENVIRONMENT, low_res_device_->facing_mode);
+  EXPECT_EQ(blink::mojom::FacingMode::ENVIRONMENT,
+            low_res_device_->facing_mode);
   EXPECT_EQ(*low_res_closest_format_, result.Format());
   EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
             result.PowerLineFrequency());
@@ -458,7 +459,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryFacingMode) {
   // Only the high-res device supports user facing mode. Should select default
   // settings for everything else.
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
-  EXPECT_EQ(::mojom::FacingMode::USER, high_res_device_->facing_mode);
+  EXPECT_EQ(blink::mojom::FacingMode::USER, high_res_device_->facing_mode);
   EXPECT_EQ(*high_res_closest_format_, result.Format());
   EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
             result.PowerLineFrequency());

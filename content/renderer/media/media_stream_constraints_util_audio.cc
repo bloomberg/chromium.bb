@@ -20,13 +20,13 @@ namespace content {
 
 namespace {
 
-// This class has the same data as ::mojom::AudioInputDeviceCapabilities, but
-// adds extra operations to simplify access to device parameters.
+// This class has the same data as blink::mojom::AudioInputDeviceCapabilities,
+// but adds extra operations to simplify access to device parameters.
 class AudioDeviceInfo {
  public:
   // This constructor is intended for device capture.
   explicit AudioDeviceInfo(
-      const ::mojom::AudioInputDeviceCapabilitiesPtr& device_info)
+      const blink::mojom::AudioInputDeviceCapabilitiesPtr& device_info)
       : device_id_(device_info->device_id),
         parameters_(device_info->parameters) {
     DCHECK(parameters_.IsValid());

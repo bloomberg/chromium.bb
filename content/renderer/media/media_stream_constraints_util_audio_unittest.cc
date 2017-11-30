@@ -8,12 +8,12 @@
 #include <string>
 #include <utility>
 
-#include "content/common/media/media_devices.mojom.h"
 #include "content/common/media/media_stream_controls.h"
 #include "content/renderer/media/mock_constraint_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 
 namespace content {
 
@@ -59,8 +59,8 @@ class MediaStreamConstraintsUtilAudioTest
     if (!IsDeviceCapture())
       return;
 
-    ::mojom::AudioInputDeviceCapabilitiesPtr device =
-        ::mojom::AudioInputDeviceCapabilities::New();
+    blink::mojom::AudioInputDeviceCapabilitiesPtr device =
+        blink::mojom::AudioInputDeviceCapabilities::New();
     device->device_id = "default_device";
     device->parameters = media::AudioParameters(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
@@ -68,7 +68,7 @@ class MediaStreamConstraintsUtilAudioTest
         media::AudioParameters::kAudioCDSampleRate, 16, 1000);
     capabilities_.push_back(std::move(device));
 
-    device = ::mojom::AudioInputDeviceCapabilities::New();
+    device = blink::mojom::AudioInputDeviceCapabilities::New();
     device->device_id = "hw_echo_canceller_device";
     device->parameters = media::AudioParameters(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
@@ -77,7 +77,7 @@ class MediaStreamConstraintsUtilAudioTest
     device->parameters.set_effects(media::AudioParameters::ECHO_CANCELLER);
     capabilities_.push_back(std::move(device));
 
-    device = ::mojom::AudioInputDeviceCapabilities::New();
+    device = blink::mojom::AudioInputDeviceCapabilities::New();
     device->device_id = "geometry device";
     device->parameters = media::AudioParameters(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
@@ -270,8 +270,9 @@ class MediaStreamConstraintsUtilAudioTest
     }
   }
 
-  void CheckDevice(const mojom::AudioInputDeviceCapabilities& expected_device,
-                   const AudioCaptureSettings& result) {
+  void CheckDevice(
+      const blink::mojom::AudioInputDeviceCapabilities& expected_device,
+      const AudioCaptureSettings& result) {
     EXPECT_EQ(expected_device.device_id, result.device_id());
     EXPECT_EQ(expected_device.parameters.sample_rate(),
               result.device_parameters().sample_rate());
@@ -306,10 +307,10 @@ class MediaStreamConstraintsUtilAudioTest
 
   MockConstraintFactory constraint_factory_;
   AudioDeviceCaptureCapabilities capabilities_;
-  const mojom::AudioInputDeviceCapabilities* default_device_ = nullptr;
-  const mojom::AudioInputDeviceCapabilities* hw_echo_canceller_device_ =
+  const blink::mojom::AudioInputDeviceCapabilities* default_device_ = nullptr;
+  const blink::mojom::AudioInputDeviceCapabilities* hw_echo_canceller_device_ =
       nullptr;
-  const mojom::AudioInputDeviceCapabilities* geometry_device_ = nullptr;
+  const blink::mojom::AudioInputDeviceCapabilities* geometry_device_ = nullptr;
   const std::vector<media::Point> kMicPositions = {{8, 8, 8}, {4, 4, 4}};
 };
 

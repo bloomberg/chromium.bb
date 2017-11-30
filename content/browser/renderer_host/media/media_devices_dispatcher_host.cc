@@ -73,31 +73,31 @@ MediaDeviceInfoArray TranslateMediaDeviceInfoArray(
   return result;
 }
 
-::mojom::FacingMode ToFacingMode(media::VideoFacingMode facing_mode) {
+blink::mojom::FacingMode ToFacingMode(media::VideoFacingMode facing_mode) {
   switch (facing_mode) {
     case media::MEDIA_VIDEO_FACING_NONE:
-      return ::mojom::FacingMode::NONE;
+      return blink::mojom::FacingMode::NONE;
     case media::MEDIA_VIDEO_FACING_USER:
-      return ::mojom::FacingMode::USER;
+      return blink::mojom::FacingMode::USER;
     case media::MEDIA_VIDEO_FACING_ENVIRONMENT:
-      return ::mojom::FacingMode::ENVIRONMENT;
+      return blink::mojom::FacingMode::ENVIRONMENT;
     default:
       NOTREACHED();
-      return ::mojom::FacingMode::NONE;
+      return blink::mojom::FacingMode::NONE;
   }
 }
 
-std::vector<::mojom::AudioInputDeviceCapabilitiesPtr>
+std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>
 ToVectorAudioInputDeviceCapabilitiesPtr(
-    const std::vector<::mojom::AudioInputDeviceCapabilities>&
+    const std::vector<blink::mojom::AudioInputDeviceCapabilities>&
         capabilities_vector,
     const url::Origin& security_origin,
     const std::string& salt) {
-  std::vector<::mojom::AudioInputDeviceCapabilitiesPtr> result;
+  std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr> result;
   result.reserve(capabilities_vector.size());
   for (auto& capabilities : capabilities_vector) {
-    ::mojom::AudioInputDeviceCapabilitiesPtr capabilities_ptr =
-        ::mojom::AudioInputDeviceCapabilities::New();
+    blink::mojom::AudioInputDeviceCapabilitiesPtr capabilities_ptr =
+        blink::mojom::AudioInputDeviceCapabilities::New();
     capabilities_ptr->device_id =
         GetHMACForMediaDeviceID(salt, security_origin, capabilities.device_id);
     capabilities_ptr->parameters = capabilities.parameters;
@@ -113,7 +113,7 @@ void MediaDevicesDispatcherHost::Create(
     int render_process_id,
     int render_frame_id,
     MediaStreamManager* media_stream_manager,
-    ::mojom::MediaDevicesDispatcherHostRequest request) {
+    blink::mojom::MediaDevicesDispatcherHostRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   mojo::MakeStrongBinding(
       std::make_unique<MediaDevicesDispatcherHost>(
@@ -281,7 +281,7 @@ void MediaDevicesDispatcherHost::NotifyDeviceChangeOnUIThread(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsValidMediaDeviceType(type));
 
-  ::mojom::MediaDevicesListenerPtr media_devices_listener;
+  blink::mojom::MediaDevicesListenerPtr media_devices_listener;
   if (device_change_listener_) {
     media_devices_listener = std::move(device_change_listener_);
   } else {
@@ -318,7 +318,7 @@ void MediaDevicesDispatcherHost::SetPermissionChecker(
 }
 
 void MediaDevicesDispatcherHost::SetDeviceChangeListenerForTesting(
-    ::mojom::MediaDevicesListenerPtr listener) {
+    blink::mojom::MediaDevicesListenerPtr listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   device_change_listener_ = std::move(listener);
 }
@@ -405,13 +405,13 @@ void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
     const std::string& default_device_id,
     const media::VideoCaptureDeviceDescriptors& device_descriptors) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::vector<::mojom::VideoInputDeviceCapabilitiesPtr>
+  std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
       video_input_capabilities;
   for (const auto& descriptor : device_descriptors) {
     std::string hmac_device_id = GetHMACForMediaDeviceID(
         device_id_salt, security_origin, descriptor.device_id);
-    ::mojom::VideoInputDeviceCapabilitiesPtr capabilities =
-        ::mojom::VideoInputDeviceCapabilities::New();
+    blink::mojom::VideoInputDeviceCapabilitiesPtr capabilities =
+        blink::mojom::VideoInputDeviceCapabilities::New();
     capabilities->device_id = std::move(hmac_device_id);
     capabilities->formats =
         GetVideoInputFormats(descriptor.device_id, true /* try_in_use_first */);
@@ -422,9 +422,9 @@ void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
     // TODO(guidou): Remove this code once the |facing| field is supported
     // on Android. See http://crbug.com/672856.
     if (descriptor.GetNameAndModel().find("front") != std::string::npos)
-      capabilities->facing_mode = ::mojom::FacingMode::USER;
+      capabilities->facing_mode = blink::mojom::FacingMode::USER;
     else if (descriptor.GetNameAndModel().find("back") != std::string::npos)
-      capabilities->facing_mode = ::mojom::FacingMode::ENVIRONMENT;
+      capabilities->facing_mode = blink::mojom::FacingMode::ENVIRONMENT;
 #endif
     if (descriptor.device_id == default_device_id) {
       video_input_capabilities.insert(video_input_capabilities.begin(),
@@ -568,7 +568,7 @@ void MediaDevicesDispatcherHost::GotAudioInputEnumeration(
   DCHECK(current_audio_input_capabilities_.empty());
   DCHECK_EQ(num_pending_audio_input_parameters_, 0U);
   for (const auto& device_info : enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
-    ::mojom::AudioInputDeviceCapabilities capabilities(
+    blink::mojom::AudioInputDeviceCapabilities capabilities(
         device_info.device_id,
         media::AudioParameters::UnavailableDeviceParams());
     if (device_info.device_id == default_device_id)

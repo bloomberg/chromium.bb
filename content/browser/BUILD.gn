@@ -194,6 +194,7 @@ jumbo_source_set("browser") {
     ":accessibility_flags",
     "//ipc",
     "//media/mojo/interfaces:remoting",
+    "//third_party/WebKit/public:media_devices_mojo_bindings",
     "//third_party/WebKit/public:offscreen_canvas_mojo_bindings",
     "//third_party/leveldatabase",
   ]

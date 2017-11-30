@@ -25,22 +25,22 @@
 namespace content {
 namespace {
 
-::mojom::FacingMode GetMojoFacingMode(
+blink::mojom::FacingMode GetMojoFacingMode(
     const blink::WebMediaStreamTrack::FacingMode facing_mode) {
   switch (facing_mode) {
     case blink::WebMediaStreamTrack::FacingMode::kUser:
-      return ::mojom::FacingMode::USER;
+      return blink::mojom::FacingMode::USER;
     case blink::WebMediaStreamTrack::FacingMode::kEnvironment:
-      return ::mojom::FacingMode::ENVIRONMENT;
+      return blink::mojom::FacingMode::ENVIRONMENT;
     case blink::WebMediaStreamTrack::FacingMode::kLeft:
-      return ::mojom::FacingMode::LEFT;
+      return blink::mojom::FacingMode::LEFT;
     case blink::WebMediaStreamTrack::FacingMode::kRight:
-      return ::mojom::FacingMode::RIGHT;
+      return blink::mojom::FacingMode::RIGHT;
     case blink::WebMediaStreamTrack::FacingMode::kNone:
-      return ::mojom::FacingMode::NONE;
+      return blink::mojom::FacingMode::NONE;
   }
   NOTREACHED();
-  return ::mojom::FacingMode::NONE;
+  return blink::mojom::FacingMode::NONE;
 }
 
 void RequestFailed(blink::WebApplyConstraintsRequest request,
@@ -238,8 +238,8 @@ VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
   DCHECK(request_completed_cb_);
   DCHECK_GT(formats.size(), 0U);
 
-  ::mojom::VideoInputDeviceCapabilitiesPtr device_capabilities =
-      ::mojom::VideoInputDeviceCapabilities::New();
+  blink::mojom::VideoInputDeviceCapabilitiesPtr device_capabilities =
+      blink::mojom::VideoInputDeviceCapabilities::New();
   device_capabilities->device_id =
       current_request_.Track().Source().Id().Ascii();
   device_capabilities->facing_mode =
@@ -340,7 +340,7 @@ void ApplyConstraintsProcessor::CleanupRequest(
   video_source_ = nullptr;
 }
 
-const ::mojom::MediaDevicesDispatcherHostPtr&
+const blink::mojom::MediaDevicesDispatcherHostPtr&
 ApplyConstraintsProcessor::GetMediaDevicesDispatcher() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return media_devices_dispatcher_cb_.Run();

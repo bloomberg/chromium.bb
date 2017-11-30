@@ -282,7 +282,7 @@ PepperMediaDeviceManager::GetMediaStreamDeviceObserver() const {
   return observer;
 }
 
-const ::mojom::MediaDevicesDispatcherHostPtr&
+const blink::mojom::MediaDevicesDispatcherHostPtr&
 PepperMediaDeviceManager::GetMediaDevicesDispatcher() {
   if (!media_devices_dispatcher_) {
     CHECK(render_frame());

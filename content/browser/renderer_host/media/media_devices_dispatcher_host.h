@@ -15,18 +15,18 @@
 #include "content/browser/media/media_devices_util.h"
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_devices.mojom.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
+#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 #include "url/origin.h"
 
-using ::mojom::MediaDeviceType;
+using blink::mojom::MediaDeviceType;
 
 namespace content {
 
 class MediaStreamManager;
 
 class CONTENT_EXPORT MediaDevicesDispatcherHost
-    : public ::mojom::MediaDevicesDispatcherHost,
+    : public blink::mojom::MediaDevicesDispatcherHost,
       public MediaDeviceChangeSubscriber {
  public:
   MediaDevicesDispatcherHost(int render_process_id,
@@ -37,9 +37,9 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   static void Create(int render_process_id,
                      int render_frame_id,
                      MediaStreamManager* media_stream_manager,
-                     ::mojom::MediaDevicesDispatcherHostRequest request);
+                     blink::mojom::MediaDevicesDispatcherHostRequest request);
 
-  // ::mojom::MediaDevicesDispatcherHost implementation.
+  // blink::mojom::MediaDevicesDispatcherHost implementation.
   void EnumerateDevices(bool request_audio_input,
                         bool request_video_input,
                         bool request_audio_output,
@@ -67,7 +67,7 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
       std::unique_ptr<MediaDevicesPermissionChecker> permission_checker);
 
   void SetDeviceChangeListenerForTesting(
-      ::mojom::MediaDevicesListenerPtr listener);
+      blink::mojom::MediaDevicesListenerPtr listener);
 
   void set_salt_and_origin_callback_for_testing(
       MediaDeviceSaltAndOriginCallback callback) {
@@ -175,14 +175,14 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   std::vector<uint32_t> device_change_subscriptions_[NUM_MEDIA_DEVICE_TYPES];
 
   // This field can only be accessed on the UI thread.
-  ::mojom::MediaDevicesListenerPtr device_change_listener_;
+  blink::mojom::MediaDevicesListenerPtr device_change_listener_;
 
   struct AudioInputCapabilitiesRequest;
   // Queued requests for audio-input capabilities.
   std::vector<AudioInputCapabilitiesRequest>
       pending_audio_input_capabilities_requests_;
   size_t num_pending_audio_input_parameters_;
-  std::vector<::mojom::AudioInputDeviceCapabilities>
+  std::vector<blink::mojom::AudioInputDeviceCapabilities>
       current_audio_input_capabilities_;
 
   // Callback used to obtain the current device ID salt and security origin.

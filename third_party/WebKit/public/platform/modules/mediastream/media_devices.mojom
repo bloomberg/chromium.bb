@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojom;
+module blink.mojom;
 
 import "media/capture/mojo/video_capture_types.mojom";
 import "media/mojo/interfaces/audio_parameters.mojom";
