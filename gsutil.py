@@ -156,7 +156,7 @@ def parse_args():
   bin_dir = os.environ.get('DEPOT_TOOLS_GSUTIL_BIN_DIR', DEFAULT_BIN_DIR)
 
   parser = argparse.ArgumentParser()
-  parser.add_argument('--force-version', default='4.13')
+  parser.add_argument('--force-version', default='4.28')
   parser.add_argument('--clean', action='store_true',
       help='Clear any existing gsutil package, forcing a new download.')
   parser.add_argument('--fallback', default=DEFAULT_FALLBACK_GSUTIL)
