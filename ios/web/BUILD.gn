@@ -169,6 +169,7 @@ test("ios_web_unittests") {
     ":ios_web_webui_unittests",
     "//ios/testing:http_server_bundle_data",
     "//ios/web/download:download_unittests",
+    "//ios/web/interstitials:interstitials_unittests",
   ]
 
   assert_no_deps = ios_assert_no_deps

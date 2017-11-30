@@ -3792,7 +3792,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
         }
       }));
 
-  _webStateImpl->DidChangeVisibleSecurityState();
   [self loadCancelled];
 }
 

@@ -25,3 +25,26 @@ source_set("interstitials") {
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
+
+source_set("interstitials_unittests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  deps = [
+    ":interstitials",
+    "//base",
+    "//ios/testing:ios_test_support",
+    "//ios/testing:ocmock_support",
+    "//ios/web",
+    "//ios/web/navigation:core",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
+    "//ios/web/test/fakes",
+    "//ios/web/web_state:web_state_impl_header",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  sources = [
+    "html_web_interstitial_unittest.mm",
+  ]
+}

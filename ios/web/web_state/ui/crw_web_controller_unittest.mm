@@ -194,9 +194,6 @@ class CRWWebControllerTest : public WebTestWithWebController {
 // Tests that AllowCertificateError is called with correct arguments if
 // WKWebView fails to load a page with bad SSL cert.
 TEST_F(CRWWebControllerTest, SslCertError) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_change_visible_security_state_info());
-
   // Last arguments passed to AllowCertificateError must be in default state.
   ASSERT_FALSE(GetWebClient()->last_cert_error_code());
   ASSERT_FALSE(GetWebClient()->last_cert_error_ssl_info().is_valid());
@@ -234,11 +231,6 @@ TEST_F(CRWWebControllerTest, SslCertError) {
             GetWebClient()->last_cert_error_ssl_info().cert_status);
   EXPECT_EQ(url, GetWebClient()->last_cert_error_request_url());
   EXPECT_FALSE(GetWebClient()->last_cert_error_overridable());
-
-  // Verify that |DidChangeVisibleSecurityState| was called.
-  ASSERT_TRUE(observer.did_change_visible_security_state_info());
-  EXPECT_EQ(web_state(),
-            observer.did_change_visible_security_state_info()->web_state);
 }
 
 // Test fixture to test |WebState::SetShouldSuppressDialogs|.

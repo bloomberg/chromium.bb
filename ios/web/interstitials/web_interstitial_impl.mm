@@ -52,6 +52,8 @@ void WebInterstitialImpl::Show() {
 
     // Give delegates a chance to set some states on the navigation item.
     GetDelegate()->OverrideItem(navigation_manager_->GetTransientItem());
+
+    web_state_->DidChangeVisibleSecurityState();
   }
 }
 
