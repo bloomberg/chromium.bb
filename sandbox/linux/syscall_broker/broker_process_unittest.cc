@@ -661,6 +661,72 @@ TEST(BrokerProcess, CreateFile) {
   }
 }
 
-}  // namespace syscall_broker
+TEST(BrokerProcess, StatFile) {
+  ScopedTemporaryFile tmp_file;
+  EXPECT_EQ(12, write(tmp_file.fd(), "blahblahblah", 12));
 
+  std::string temp_str = tmp_file.full_file_name();
+  const char* tempfile_name = temp_str.c_str();
+  const char* nonesuch_name = "/mbogo/nonesuch";
+  const bool fast_check_in_client = false;
+  struct stat sb;
+  {
+    // Nonexistent file with no permissions to see file.
+    std::vector<BrokerFilePermission> permissions;
+    BrokerProcess open_broker(EPERM, permissions, fast_check_in_client);
+    ASSERT_TRUE(open_broker.Init(base::Bind(&NoOpCallback)));
+
+    memset(&sb, 0, sizeof(sb));
+    EXPECT_EQ(-EPERM, open_broker.Stat(nonesuch_name, &sb));
+  }
+  {
+    // Actual file with no permission to see file.
+    std::vector<BrokerFilePermission> permissions;
+    BrokerProcess open_broker(EPERM, permissions, fast_check_in_client);
+    ASSERT_TRUE(open_broker.Init(base::Bind(&NoOpCallback)));
+
+    memset(&sb, 0, sizeof(sb));
+    EXPECT_EQ(-EPERM, open_broker.Stat(tempfile_name, &sb));
+  }
+  {
+    // Nonexistent file with permissions to see file.
+    std::vector<BrokerFilePermission> permissions;
+    permissions.push_back(BrokerFilePermission::ReadOnly(nonesuch_name));
+    BrokerProcess open_broker(EPERM, permissions, fast_check_in_client);
+    ASSERT_TRUE(open_broker.Init(base::Bind(&NoOpCallback)));
+
+    memset(&sb, 0, sizeof(sb));
+    EXPECT_EQ(-ENOENT, open_broker.Stat(nonesuch_name, &sb));
+  }
+  {
+    // Actual file with permissions to see file.
+    std::vector<BrokerFilePermission> permissions;
+    permissions.push_back(BrokerFilePermission::ReadOnly(tempfile_name));
+    BrokerProcess open_broker(EPERM, permissions, fast_check_in_client);
+    ASSERT_TRUE(open_broker.Init(base::Bind(&NoOpCallback)));
+
+    memset(&sb, 0, sizeof(sb));
+    EXPECT_EQ(0, open_broker.Stat(tempfile_name, &sb));
+
+    // Following fields may never be consistent but should be non-zero.
+    // Don't trust the platform to define fields with any particular sign.
+    EXPECT_NE(0u, static_cast<unsigned int>(sb.st_dev));
+    EXPECT_NE(0u, static_cast<unsigned int>(sb.st_ino));
+    EXPECT_NE(0u, static_cast<unsigned int>(sb.st_mode));
+    EXPECT_NE(0u, static_cast<unsigned int>(sb.st_uid));
+    EXPECT_NE(0u, static_cast<unsigned int>(sb.st_gid));
+    EXPECT_NE(0u, static_cast<unsigned int>(sb.st_blksize));
+    EXPECT_NE(0u, static_cast<unsigned int>(sb.st_blocks));
+
+    // Wrote 12 bytes above which should fit in one block.
+    EXPECT_EQ(12, sb.st_size);
+
+    // Can't go backwards in time, 1500000000 was some time ago.
+    EXPECT_LT(1500000000u, static_cast<unsigned int>(sb.st_atime));
+    EXPECT_LT(1500000000u, static_cast<unsigned int>(sb.st_mtime));
+    EXPECT_LT(1500000000u, static_cast<unsigned int>(sb.st_ctime));
+  }
+}
+
+}  // namespace syscall_broker
 }  // namespace sandbox

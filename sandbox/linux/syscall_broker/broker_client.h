@@ -5,6 +5,10 @@
 #ifndef SANDBOX_LINUX_SYSCALL_BROKER_BROKER_CLIENT_H_
 #define SANDBOX_LINUX_SYSCALL_BROKER_BROKER_CLIENT_H_
 
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "base/macros.h"
 #include "sandbox/linux/syscall_broker/broker_channel.h"
 #include "sandbox/linux/syscall_broker/broker_common.h"
@@ -42,6 +46,7 @@ class BrokerClient {
   // It's similar to the access() system call and will return -errno on errors.
   // This is async signal safe.
   int Access(const char* pathname, int mode) const;
+
   // Can be used in place of open().
   // The implementation only supports certain white listed flags and will
   // return -EPERM on other flags.
@@ -49,10 +54,25 @@ class BrokerClient {
   // This is async signal safe.
   int Open(const char* pathname, int flags) const;
 
+  // Can be used in place of stat()/stat64().
+  // It's similar to the stat() system call and will return -errno on errors.
+  // This is async signal safe.
+  int Stat(const char* pathname, struct stat* sb);
+  int Stat64(const char* pathname, struct stat64* sb);
+
   // Get the file descriptor used for IPC. This is used for tests.
   int GetIPCDescriptor() const { return ipc_channel_.get(); }
 
  private:
+  int PathAndFlagsSyscall(IPCCommand syscall_type,
+                          const char* pathname,
+                          int flags) const;
+
+  int StatFamilySyscall(IPCCommand syscall_type,
+                        const char* pathname,
+                        void* result_ptr,
+                        size_t expected_result_size) const;
+
   const BrokerPolicy& broker_policy_;
   const BrokerChannel::EndPoint ipc_channel_;
   const bool fast_check_in_client_;  // Whether to forward a request that we
@@ -60,10 +80,6 @@ class BrokerClient {
                                      // for tests).
   const bool quiet_failures_for_tests_;  // Disable certain error message when
                                          // testing for failures.
-
-  int PathAndFlagsSyscall(IPCCommand syscall_type,
-                          const char* pathname,
-                          int flags) const;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerClient);
 };

@@ -74,6 +74,11 @@ class SANDBOX_EXPORT BrokerProcess {
   // It's similar to the open() system call and will return -errno on errors.
   int Open(const char* pathname, int flags) const;
 
+  // Can be used in place of stat()/stat64(). Will be async signal safe.
+  // It's similar to the stat() system call and will return -errno on errors.
+  int Stat(const char* pathname, struct stat* sb) const;
+  int Stat64(const char* pathname, struct stat64* sb) const;
+
   int broker_pid() const { return broker_pid_; }
 
   // Handler to be used with a bpf_dsl Trap() function to forward system calls
