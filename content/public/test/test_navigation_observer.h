@@ -15,6 +15,7 @@
 #include "url/gurl.h"
 
 namespace content {
+class NavigationHandle;
 class WebContents;
 
 // For browser_tests, which run on the UI thread, run a second
@@ -71,6 +72,10 @@ class TestNavigationObserver {
   // Register this TestNavigationObserver as an observer of the |web_contents|.
   void RegisterAsObserver(WebContents* web_contents);
 
+  // Protected so that subclasses can retrieve extra information from the
+  // |navigation_handle|.
+  virtual void OnDidFinishNavigation(NavigationHandle* navigation_handle);
+
  private:
   class TestWebContentsObserver;
 
@@ -92,9 +97,6 @@ class TestNavigationObserver {
   void OnDidStartLoading(WebContents* web_contents);
   void OnDidStopLoading(WebContents* web_contents);
   void OnDidStartNavigation();
-  void OnDidFinishNavigation(bool is_error_page,
-                             const GURL& url,
-                             net::Error error_code);
   void EventTriggered();
 
   // The event that once triggered will quit the run loop.

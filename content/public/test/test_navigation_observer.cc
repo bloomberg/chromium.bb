@@ -55,9 +55,7 @@ class TestNavigationObserver::TestWebContentsObserver
     if (!navigation_handle->HasCommitted())
       return;
 
-    parent_->OnDidFinishNavigation(navigation_handle->IsErrorPage(),
-                                   navigation_handle->GetURL(),
-                                   navigation_handle->GetNetErrorCode());
+    parent_->OnDidFinishNavigation(navigation_handle);
   }
 
   TestNavigationObserver* parent_;
@@ -184,12 +182,11 @@ void TestNavigationObserver::OnDidStartNavigation() {
   last_navigation_succeeded_ = false;
 }
 
-void TestNavigationObserver::OnDidFinishNavigation(bool is_error_page,
-                                                   const GURL& url,
-                                                   net::Error error_code) {
-  last_navigation_url_ = url;
-  last_navigation_succeeded_ = !is_error_page;
-  last_net_error_code_ = error_code;
+void TestNavigationObserver::OnDidFinishNavigation(
+    NavigationHandle* navigation_handle) {
+  last_navigation_url_ = navigation_handle->GetURL();
+  last_navigation_succeeded_ = !navigation_handle->IsErrorPage();
+  last_net_error_code_ = navigation_handle->GetNetErrorCode();
 
   if (wait_event_ == WaitEvent::kNavigationFinished)
     EventTriggered();

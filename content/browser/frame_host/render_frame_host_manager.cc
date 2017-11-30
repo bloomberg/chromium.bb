@@ -413,7 +413,7 @@ void RenderFrameHostManager::OnCrossSiteResponse(
           referrer, page_transition, global_request_id,
           should_replace_current_entry,
           transfer_navigation_handle_->IsPost() ? "POST" : "GET",
-          transfer_navigation_handle_->resource_request_body(), extra_headers);
+          transfer_navigation_handle_->GetResourceRequestBody(), extra_headers);
 
   // If the navigation continued, the NavigationHandle should have been
   // transfered to a RenderFrameHost. In the other cases, it should be cleared.

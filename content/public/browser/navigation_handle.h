@@ -13,6 +13,7 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/resource_request_body.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_info.h"
@@ -132,6 +133,12 @@ class CONTENT_EXPORT NavigationHandle {
   // schemes like data: or file:).  Therefore //content public API exposes only
   // |bool IsPost()| as opposed to |const std::string& GetMethod()| method.
   virtual bool IsPost() = 0;
+
+  // Returns the POST body associated with this navigation. This will be null
+  // for GET and/or other non-POST requests (or if a response to a POST request
+  // was a redirect that changed the method to GET - for example 302).
+  virtual const scoped_refptr<ResourceRequestBody>&
+  GetResourceRequestBody() = 0;
 
   // Returns a sanitized version of the referrer for this request.
   virtual const Referrer& GetReferrer() = 0;
