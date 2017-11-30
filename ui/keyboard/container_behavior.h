@@ -78,6 +78,9 @@ class KEYBOARD_EXPORT ContainerBehavior {
   // Any region of the screen that is occluded by the keyboard should cause the
   // workspace to change its layout.
   virtual bool BoundsAffectWorkspaceLayout() const = 0;
+
+  // Sets floating keyboard drggable rect.
+  virtual bool SetDraggableArea(const gfx::Rect& rect) = 0;
 };
 
 }  // namespace keyboard

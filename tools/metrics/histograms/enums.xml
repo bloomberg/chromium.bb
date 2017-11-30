@@ -14116,6 +14116,7 @@ Called by update_net_error_codes.py.-->
   <int value="1200" label="MEDIAPERCEPTIONPRIVATE_SETANALYTICSCOMPONENT"/>
   <int value="1201" label="ACCESSIBILITY_PRIVATE_SETHIGHLIGHTS"/>
   <int value="1202" label="WEBRTCLOGGINGPRIVATE_GETLOGSDIRECTORY"/>
+  <int value="1203" label="VIRTUALKEYBOARDPRIVATE_SETDRAGGABLEAREA"/>
 </enum>
 
 <enum name="ExtensionIconState">

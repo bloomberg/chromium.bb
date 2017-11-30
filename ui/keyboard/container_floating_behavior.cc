@@ -164,7 +164,7 @@ void ContainerFloatingBehavior::SavePosition(const gfx::Point& position) {
 bool ContainerFloatingBehavior::IsDragHandle(
     const gfx::Vector2d& offset,
     const gfx::Size& keyboard_size) const {
-  return false;
+  return draggable_area_.Contains(offset.x(), offset.y());
 }
 
 void ContainerFloatingBehavior::HandlePointerEvent(
@@ -238,6 +238,11 @@ bool ContainerFloatingBehavior::BoundsObscureUsableRegion() const {
 
 bool ContainerFloatingBehavior::BoundsAffectWorkspaceLayout() const {
   return false;
+}
+
+bool ContainerFloatingBehavior::SetDraggableArea(const gfx::Rect& rect) {
+  draggable_area_ = rect;
+  return true;
 }
 
 }  //  namespace keyboard

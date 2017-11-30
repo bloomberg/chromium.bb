@@ -172,6 +172,16 @@ bool ChromeVirtualKeyboardDelegate::SetVirtualKeyboardMode(int mode_enum) {
   return true;
 }
 
+bool ChromeVirtualKeyboardDelegate::SetDraggableArea(
+    const api::virtual_keyboard_private::Bounds& rect) {
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
+  if (!controller)
+    return false;
+  return controller->SetDraggableArea(
+      gfx::Rect(rect.top, rect.left, rect.width, rect.height));
+}
+
 bool ChromeVirtualKeyboardDelegate::SetRequestedKeyboardState(int state_enum) {
   keyboard::KeyboardState keyboard_state = getKeyboardStateEnum(
       static_cast<keyboard_api::KeyboardState>(state_enum));

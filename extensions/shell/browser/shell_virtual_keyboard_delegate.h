@@ -36,6 +36,8 @@ class ShellVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
   bool ShowLanguageSettings() override;
   bool IsLanguageSettingsEnabled() override;
   bool SetVirtualKeyboardMode(int mode_enum) override;
+  bool SetDraggableArea(
+      const api::virtual_keyboard_private::Bounds& rect) override;
   bool SetRequestedKeyboardState(int state_enum) override;
 
   api::virtual_keyboard::FeatureRestrictions RestrictFeatures(
