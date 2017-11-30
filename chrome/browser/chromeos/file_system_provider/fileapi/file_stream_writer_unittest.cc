@@ -16,6 +16,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
@@ -73,8 +74,8 @@ class FileSystemProviderFileStreamWriter : public testing::Test {
     profile_ = profile_manager_->CreateTestingProfile("testing-profile");
 
     Service* service = Service::Get(profile_);  // Owned by its factory.
-    service->SetExtensionFileSystemFactoryForTesting(
-        base::Bind(&FakeProvidedFileSystem::Create));
+    service->SetExtensionProviderForTesting(
+        std::make_unique<FakeExtensionProvider>());
 
     const base::File::Error result = service->MountFileSystem(
         kProviderId, MountOptions(kFileSystemId, "Testing File System"));

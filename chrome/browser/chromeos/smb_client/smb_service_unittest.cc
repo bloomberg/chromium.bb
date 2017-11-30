@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_registry.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
@@ -46,8 +47,8 @@ class SmbServiceTest : public testing::Test {
         std::make_unique<extensions::ExtensionRegistry>(profile_);
     fsp_service_ = std::make_unique<file_system_provider::Service>(
         profile_, extension_registry_.get());
-    fsp_service_->SetExtensionFileSystemFactoryForTesting(
-        base::Bind(&file_system_provider::FakeProvidedFileSystem::Create));
+    fsp_service_->SetExtensionProviderForTesting(
+        std::make_unique<file_system_provider::FakeExtensionProvider>());
 
     fsp_service_->SetRegistryForTesting(
         std::make_unique<file_system_provider::FakeRegistry>());

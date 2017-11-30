@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
+#include "chrome/browser/chromeos/file_system_provider/provider_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/registry.h"
 #include "chrome/browser/chromeos/file_system_provider/registry_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
@@ -35,15 +36,6 @@ namespace {
 // Maximum number of file systems to be mounted in the same time, per profile.
 const size_t kMaxFileSystems = 16;
 
-// Default factory for provided file systems. |profile| must not be NULL.
-std::unique_ptr<ProvidedFileSystemInterface> CreateProvidedFileSystem(
-    Profile* profile,
-    const ProvidedFileSystemInfo& file_system_info) {
-  DCHECK(profile);
-  return base::MakeUnique<ThrottledFileSystem>(
-      base::MakeUnique<ProvidedFileSystem>(profile, file_system_info));
-}
-
 }  // namespace
 
 ProvidingExtensionInfo::ProvidingExtensionInfo() {
@@ -56,8 +48,9 @@ Service::Service(Profile* profile,
                  extensions::ExtensionRegistry* extension_registry)
     : profile_(profile),
       extension_registry_(extension_registry),
-      extension_file_system_factory_(base::Bind(&CreateProvidedFileSystem)),
       registry_(new Registry(profile)),
+      extension_provider_(
+          std::make_unique<ExtensionProvider>(ExtensionProvider())),
       weak_ptr_factory_(this) {
   extension_registry_->AddObserver(this);
 }
@@ -101,10 +94,10 @@ void Service::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void Service::SetExtensionFileSystemFactoryForTesting(
-    const FileSystemFactoryCallback& factory_callback) {
-  DCHECK(!factory_callback.is_null());
-  extension_file_system_factory_ = factory_callback;
+void Service::SetExtensionProviderForTesting(
+    std::unique_ptr<ProviderInterface> provider) {
+  DCHECK(provider);
+  extension_provider_ = std::move(provider);
 }
 
 void Service::SetRegistryForTesting(
@@ -132,9 +125,9 @@ base::File::Error Service::MountFileSystemInternal(
 
   ProvidingExtensionInfo provider_info;
   // TODO(mtomasz): Set up a testing extension in unit tests.
-  // TODO(baileyberro): Change to Providers with GetCapabilites &
-  // CreateFileSystem
-  GetProvidingExtensionInfo(provider_id.GetIdUnsafe(), &provider_info);
+  ProviderInterface* provider = GetProvider(provider_id);
+  Capabilities capabilities;
+  provider->GetCapabilities(profile_, provider_id, capabilities);
   // Store the file system descriptor. Use the mount point name as the file
   // system provider file system id.
   // Examples:
@@ -147,10 +140,8 @@ base::File::Error Service::MountFileSystemInternal(
   //   watchable = true
   //   source = SOURCE_FILE
   ProvidedFileSystemInfo file_system_info(
-      provider_id, options, mount_path,
-      provider_info.capabilities.configurable(),
-      provider_info.capabilities.watchable(),
-      provider_info.capabilities.source());
+      provider_id, options, mount_path, capabilities.configurable,
+      capabilities.watchable, capabilities.source);
 
   // If already exists a file system provided by the same extension with this
   // id, then abort.
@@ -189,10 +180,8 @@ base::File::Error Service::MountFileSystemInternal(
     return base::File::FILE_ERROR_INVALID_OPERATION;
   }
 
-  Service::FileSystemFactoryCallback factory =
-      GetFileSystemFactory(file_system_info.provider_id());
   std::unique_ptr<ProvidedFileSystemInterface> file_system =
-      factory.Run(profile_, file_system_info);
+      provider->CreateProvidedFileSystem(profile_, file_system_info);
   DCHECK(file_system);
   ProvidedFileSystemInterface* file_system_ptr = file_system.get();
   file_system_map_[FileSystemKey(
@@ -338,6 +327,8 @@ std::vector<ProvidingExtensionInfo> Service::GetProvidingExtensionInfoList()
   return result;
 }
 
+// TODO(mtomasz): Refactor providers into per-filesystem, enabling this code
+// duplication to be removed.
 bool Service::GetProvidingExtensionInfo(const std::string& extension_id,
                                         ProvidingExtensionInfo* result) const {
   DCHECK(result);
@@ -466,26 +457,23 @@ void Service::OnWatcherListChanged(
   registry_->RememberFileSystem(file_system_info, watchers);
 }
 
-void Service::RegisterFileSystemFactory(
+void Service::RegisterNativeProvider(
     const ProviderId& provider_id,
-    FileSystemFactoryCallback file_system_factory) {
+    std::unique_ptr<ProviderInterface> provider) {
   DCHECK_EQ(ProviderId::NATIVE, provider_id.GetType());
-  native_file_system_factory_map_[provider_id.GetNativeId()] =
-      file_system_factory;
+  native_provider_map_[provider_id.GetNativeId()] = std::move(provider);
 }
 
-Service::FileSystemFactoryCallback Service::GetFileSystemFactory(
-    const ProviderId& provider_id) {
+ProviderInterface* Service::GetProvider(const ProviderId& provider_id) {
   DCHECK_NE(ProviderId::INVALID, provider_id.GetType());
 
   if (provider_id.GetType() == ProviderId::EXTENSION)
-    return extension_file_system_factory_;
+    return extension_provider_.get();
 
-  auto it = native_file_system_factory_map_.find(provider_id.GetNativeId());
+  auto it = native_provider_map_.find(provider_id.GetNativeId());
+  DCHECK(it != native_provider_map_.end());
 
-  DCHECK(it != native_file_system_factory_map_.end());
-
-  return it->second;
+  return it->second.get();
 }
 
 }  // namespace file_system_provider

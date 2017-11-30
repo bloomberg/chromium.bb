@@ -9,6 +9,7 @@
 
 #include "base/files/file.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
@@ -76,8 +77,8 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
     user_manager_->AddUser(
         AccountId::FromUserEmail(profile_->GetProfileUserName()));
     file_system_provider_service_ = Service::Get(profile_);
-    file_system_provider_service_->SetExtensionFileSystemFactoryForTesting(
-        base::Bind(&FakeProvidedFileSystem::Create));
+    file_system_provider_service_->SetExtensionProviderForTesting(
+        std::make_unique<FakeExtensionProvider>());
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

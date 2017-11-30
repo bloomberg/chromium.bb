@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_registry.h"
 #include "chrome/browser/chromeos/file_system_provider/logging_observer.h"
@@ -69,22 +70,39 @@ scoped_refptr<extensions::Extension> CreateFakeExtension(
 
 }  // namespace
 
-class FileSystemProviderServiceTest : public testing::Test {
+class FakeDefaultExtensionProvider : public FakeExtensionProvider {
  public:
-  std::unique_ptr<ProvidedFileSystemInterface> CreateDefaultFakeFileSystem(
+  std::unique_ptr<ProvidedFileSystemInterface> CreateProvidedFileSystem(
       Profile* profile,
-      const ProvidedFileSystemInfo& file_system_info) {
-    called_default_factory_ = true;
-    return base::MakeUnique<FakeProvidedFileSystem>(file_system_info);
+      const ProvidedFileSystemInfo& file_system_info) override {
+    called_default_factory = true;
+    return std::make_unique<FakeProvidedFileSystem>(file_system_info);
   }
 
-  std::unique_ptr<ProvidedFileSystemInterface> CreateCustomFakeFileSystem(
-      Profile* profile,
-      const ProvidedFileSystemInfo& file_system_info) {
-    called_custom_factory_ = true;
-    return base::MakeUnique<FakeProvidedFileSystem>(file_system_info);
-  }
+  static bool called_default_factory;
+};
+bool FakeDefaultExtensionProvider::called_default_factory = false;
 
+class FakeNativeProvider : public ProviderInterface {
+ public:
+  // ProviderInterface overrides
+  std::unique_ptr<ProvidedFileSystemInterface> CreateProvidedFileSystem(
+      Profile* profile,
+      const ProvidedFileSystemInfo& file_system_info) override {
+    called_custom_factory = true;
+    return std::make_unique<FakeProvidedFileSystem>(file_system_info);
+  }
+  bool GetCapabilities(Profile* profile,
+                       const ProviderId& provider_id,
+                       Capabilities& result) override {
+    result = Capabilities(false, false, false, extensions::SOURCE_NETWORK);
+    return true;
+  }
+  static bool called_custom_factory;
+};
+bool FakeNativeProvider::called_custom_factory = false;
+
+class FileSystemProviderServiceTest : public testing::Test {
  protected:
   FileSystemProviderServiceTest() : profile_(NULL) {}
 
@@ -103,8 +121,10 @@ class FileSystemProviderServiceTest : public testing::Test {
     extension_registry_.reset(new extensions::ExtensionRegistry(profile_));
 
     service_.reset(new Service(profile_, extension_registry_.get()));
-    service_->SetExtensionFileSystemFactoryForTesting(
-        base::Bind(&FakeProvidedFileSystem::Create));
+
+    service_->SetExtensionProviderForTesting(
+        std::make_unique<FakeExtensionProvider>());
+
     extension_ = CreateFakeExtension(kProviderId.GetExtensionId());
 
     registry_ = new FakeRegistry;
@@ -114,8 +134,6 @@ class FileSystemProviderServiceTest : public testing::Test {
     fake_watcher_.entry_path = base::FilePath(FILE_PATH_LITERAL("/a/b/c"));
     fake_watcher_.recursive = true;
     fake_watcher_.last_tag = "hello-world";
-    called_default_factory_ = false;
-    called_custom_factory_ = false;
   }
 
   void TearDown() override {
@@ -136,30 +154,26 @@ class FileSystemProviderServiceTest : public testing::Test {
   bool called_custom_factory_;
 };
 
-TEST_F(FileSystemProviderServiceTest, RegisterFileSystemFactory) {
-  service_->RegisterFileSystemFactory(
-      kCustomProviderId,
-      base::Bind(&FileSystemProviderServiceTest::CreateCustomFakeFileSystem,
-                 base::Unretained(this)));
-  service_->SetExtensionFileSystemFactoryForTesting(
-      base::Bind(&FileSystemProviderServiceTest::CreateDefaultFakeFileSystem,
-                 base::Unretained(this)));
+TEST_F(FileSystemProviderServiceTest, RegisterFileSystemProvider) {
+  service_->RegisterNativeProvider(kCustomProviderId,
+                                   std::make_unique<FakeNativeProvider>());
+  service_->SetExtensionProviderForTesting(
+      std::make_unique<FakeDefaultExtensionProvider>());
 
-  EXPECT_FALSE(FileSystemProviderServiceTest::called_default_factory_);
+  FakeNativeProvider::called_custom_factory = false;
+  FakeDefaultExtensionProvider::called_default_factory = false;
 
   EXPECT_EQ(base::File::FILE_OK,
             service_->MountFileSystem(
                 kProviderId, MountOptions(kFileSystemId, kDisplayName)));
 
-  EXPECT_TRUE(FileSystemProviderServiceTest::called_default_factory_);
-
-  EXPECT_FALSE(FileSystemProviderServiceTest::called_custom_factory_);
+  EXPECT_TRUE(FakeDefaultExtensionProvider::called_default_factory);
 
   EXPECT_EQ(base::File::FILE_OK,
             service_->MountFileSystem(
                 kCustomProviderId, MountOptions(kFileSystemId, kDisplayName)));
 
-  EXPECT_TRUE(FileSystemProviderServiceTest::called_custom_factory_);
+  EXPECT_TRUE(FakeNativeProvider::called_custom_factory);
 }
 
 TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
