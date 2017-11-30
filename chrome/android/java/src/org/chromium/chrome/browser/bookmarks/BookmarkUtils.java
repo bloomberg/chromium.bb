@@ -248,6 +248,8 @@ public class BookmarkUtils {
         RecordUserAction.record("MobileBookmarkManagerEntryOpened");
         RecordHistogram.recordEnumeratedHistogram(
                 "Stars.LaunchLocation", launchLocation, BookmarkLaunchLocation.COUNT);
+        RecordHistogram.recordEnumeratedHistogram(
+                "Bookmarks.OpenBookmarkType", bookmarkId.getType(), BookmarkType.LAST + 1);
 
         if (DeviceFormFactor.isTablet()) {
             // For tablets, the bookmark manager is open in a tab in the ChromeActivity. Use
