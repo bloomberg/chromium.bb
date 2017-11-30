@@ -106,11 +106,11 @@
 }
 
 - (void)setBackgroundAlpha:(CGFloat)alpha {
-  return;
+  [self.toolbarCoordinator setBackgroundToIncognitoNTPColorWithAlpha:1 - alpha];
 }
 
 - (void)setTabCount:(NSInteger)tabCount {
-  return;
+  // No op.
 }
 
 - (void)activateFakeSafeAreaInsets:(UIEdgeInsets)fakeSafeAreaInsets {
