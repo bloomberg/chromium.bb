@@ -2634,7 +2634,9 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
         ref_best_rd = AOMMIN(rd, ref_best_rd);
         if (rd < best_rd) {
 #if CONFIG_TXK_SEL
-          memcpy(best_txk_type, mbmi->txk_type, sizeof(best_txk_type[0]) * 256);
+          memcpy(best_txk_type, mbmi->txk_type,
+                 sizeof(best_txk_type[0]) * MAX_SB_SQUARE /
+                     (TX_SIZE_W_MIN * TX_SIZE_H_MIN));
 #endif
           best_tx_type = tx_type;
           best_tx_size = rect_tx_size;
