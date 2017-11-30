@@ -7,6 +7,7 @@
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/main/transitions/bvc_container_to_tab_switcher_animator.h"
 #import "ios/chrome/browser/ui/main/transitions/tab_switcher_to_bvc_container_animator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -138,8 +139,19 @@
 
     // Add the new tab switcher as a child VC.
     [self addChildViewController:tabSwitcher];
-    tabSwitcher.view.frame = self.view.bounds;
+    tabSwitcher.view.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:tabSwitcher.view];
+
+    [NSLayoutConstraint activateConstraints:@[
+      [tabSwitcher.view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+      [tabSwitcher.view.bottomAnchor
+          constraintEqualToAnchor:self.view.bottomAnchor],
+      [tabSwitcher.view.leadingAnchor
+          constraintEqualToAnchor:self.view.leadingAnchor],
+      [tabSwitcher.view.trailingAnchor
+          constraintEqualToAnchor:self.view.trailingAnchor],
+    ]];
+
     [tabSwitcher didMoveToParentViewController:self];
     self.tabSwitcher = tabSwitcher;
   }
@@ -147,6 +159,9 @@
   // If a BVC is currently being presented, dismiss it.  This will trigger any
   // necessary animations.
   if (self.bvcContainer) {
+    // Pre-size the tab switcher's view if necessary.
+    [self.tabSwitcher
+        prepareForDisplayAtSize:self.bvcContainer.view.bounds.size];
     self.bvcContainer.transitioningDelegate = self;
     self.bvcContainer = nil;
     BOOL animated = !self.animationsDisabledForTesting;

@@ -34,14 +34,8 @@ bool IsHighResScreen() {
 
 bool IsPortrait() {
   UIInterfaceOrientation orient = GetInterfaceOrientation();
-// If building with an SDK prior to iOS 8 don't worry about
-// UIInterfaceOrientationUnknown because it wasn't defined.
-#if !defined(__IPHONE_8_0) || __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
-  return UIInterfaceOrientationIsPortrait(orient);
-#else
   return UIInterfaceOrientationIsPortrait(orient) ||
          orient == UIInterfaceOrientationUnknown;
-#endif  // SDK
 }
 
 bool IsLandscape() {

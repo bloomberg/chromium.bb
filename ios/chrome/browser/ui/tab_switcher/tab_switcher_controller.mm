@@ -424,6 +424,10 @@ enum class SnapshotViewOption {
   return static_cast<id<ApplicationCommands, BrowserCommands>>(_dispatcher);
 }
 
+- (void)prepareForDisplayAtSize:(CGSize)size {
+  // No-op.
+}
+
 #pragma mark - BrowserCommands
 
 - (void)openNewTab:(OpenNewTabCommand*)command {
