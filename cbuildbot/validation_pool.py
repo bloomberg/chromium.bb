@@ -1305,7 +1305,7 @@ class ValidationPool(object):
         break
 
       try:
-        git.GitPush(repo, 'HEAD', push_to, skip=self.dryrun)
+        git.GitPush(repo, 'HEAD', push_to, skip=self.dryrun, print_cmd=True)
         return {}
       except cros_build_lib.RunCommandError:
         logging.warn('git push failed for %s:%s; was a change chumped in the '
