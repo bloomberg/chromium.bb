@@ -11,7 +11,7 @@ PDFiumMemBufferFileWrite::PDFiumMemBufferFileWrite() {
   WriteBlock = &WriteBlockImpl;
 }
 
-PDFiumMemBufferFileWrite::~PDFiumMemBufferFileWrite() {}
+PDFiumMemBufferFileWrite::~PDFiumMemBufferFileWrite() = default;
 
 int PDFiumMemBufferFileWrite::WriteBlockImpl(FPDF_FILEWRITE* this_file_write,
                                              const void* data,

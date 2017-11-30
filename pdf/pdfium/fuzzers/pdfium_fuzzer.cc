@@ -7,7 +7,7 @@
 class PDFiumFuzzer : public PDFiumFuzzerHelper {
  public:
   PDFiumFuzzer() : PDFiumFuzzerHelper() {}
-  ~PDFiumFuzzer() override {}
+  ~PDFiumFuzzer() override = default;
 
   int GetFormCallbackVersion() const override { return 1; }
 };

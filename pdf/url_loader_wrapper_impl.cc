@@ -100,7 +100,7 @@ class URLLoaderWrapperImpl::ReadStarter : public Timer {
  public:
   explicit ReadStarter(URLLoaderWrapperImpl* owner)
       : Timer(kReadDelayMs), owner_(owner) {}
-  ~ReadStarter() override {}
+  ~ReadStarter() override = default;
 
   // Timer overrides:
   void OnTimer() override { owner_->ReadResponseBodyImpl(); }

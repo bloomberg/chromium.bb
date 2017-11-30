@@ -110,9 +110,9 @@ std::string ProgramPath() {
 
 }  // namespace
 
-PDFiumFuzzerHelper::PDFiumFuzzerHelper() {}
+PDFiumFuzzerHelper::PDFiumFuzzerHelper() = default;
 
-PDFiumFuzzerHelper::~PDFiumFuzzerHelper() {}
+PDFiumFuzzerHelper::~PDFiumFuzzerHelper() = default;
 
 bool PDFiumFuzzerHelper::OnFormFillEnvLoaded(FPDF_DOCUMENT doc) {
   return true;

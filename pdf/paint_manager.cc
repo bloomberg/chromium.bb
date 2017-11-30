@@ -48,7 +48,7 @@ PaintManager::PaintManager(pp::Instance* instance,
   DCHECK(client);
 }
 
-PaintManager::~PaintManager() {}
+PaintManager::~PaintManager() = default;
 
 // static
 pp::Size PaintManager::GetNewContextSize(const pp::Size& current_context_size,

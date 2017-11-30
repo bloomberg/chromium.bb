@@ -102,7 +102,7 @@ ShadowMatrix::ShadowMatrix(uint32_t depth, double factor, uint32_t background)
   }
 }
 
-ShadowMatrix::~ShadowMatrix() {}
+ShadowMatrix::~ShadowMatrix() = default;
 
 namespace {
 

@@ -14,7 +14,7 @@ Timer::Timer(int delay_in_milliseconds)
   PostCallback();
 }
 
-Timer::~Timer() {}
+Timer::~Timer() = default;
 
 void Timer::PostCallback() {
   pp::CompletionCallback callback =
