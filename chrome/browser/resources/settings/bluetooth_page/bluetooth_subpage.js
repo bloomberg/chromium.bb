@@ -3,6 +3,12 @@
 // found in the LICENSE file.
 
 /**
+ * Maximum number of bluetooth devices shown in bluetooth subpage.
+ * @const {number}
+ */
+var MAX_NUMBER_DEVICE_SHOWN = 50;
+
+/**
  * @fileoverview
  * 'settings-bluetooth-subpage' is the settings subpage for managing bluetooth
  *  properties and devices.
@@ -128,6 +134,15 @@ Polymer({
       type: Object,
       value: chrome.bluetoothPrivate,
     },
+
+    /**
+     * Update frequency of the bluetooth list.
+     * @type {number}
+     */
+    listUpdateFrequencyMs: {
+      type: Number,
+      value: 1000,
+    },
   },
 
   observers: [
@@ -136,11 +151,25 @@ Polymer({
   ],
 
   /**
-   * Listener for chrome.bluetooth.onBluetoothDeviceAdded/Changed events.
+   * Timer ID for bluetooth list update.
+   * @type {number|undefined}
+   * @private
+   */
+  updateTimerId_: undefined,
+
+  /**
+   * Listener for chrome.bluetooth.onBluetoothDeviceChanged events.
    * @type {?function(!chrome.bluetooth.Device)}
    * @private
    */
   bluetoothDeviceUpdatedListener_: null,
+
+  /**
+   * Listener for chrome.bluetooth.onBluetoothDeviceAdded events.
+   * @type {?function(!chrome.bluetooth.Device)}
+   * @private
+   */
+  bluetoothDeviceAddedListener_: null,
 
   /**
    * Listener for chrome.bluetooth.onBluetoothDeviceRemoved events.
@@ -154,10 +183,13 @@ Polymer({
     this.bluetoothDeviceUpdatedListener_ =
         this.bluetoothDeviceUpdatedListener_ ||
         this.onBluetoothDeviceUpdated_.bind(this);
-    this.bluetooth.onDeviceAdded.addListener(
-        this.bluetoothDeviceUpdatedListener_);
     this.bluetooth.onDeviceChanged.addListener(
         this.bluetoothDeviceUpdatedListener_);
+
+    this.bluetoothDeviceAddedListener_ = this.bluetoothDeviceAddedListener_ ||
+        this.onBluetoothDeviceAdded_.bind(this);
+    this.bluetooth.onDeviceAdded.addListener(
+        this.bluetoothDeviceAddedListener_);
 
     this.bluetoothDeviceRemovedListener_ =
         this.bluetoothDeviceRemovedListener_ ||
@@ -169,7 +201,7 @@ Polymer({
   /** @override */
   detached: function() {
     this.bluetooth.onDeviceAdded.removeListener(
-        assert(this.bluetoothDeviceUpdatedListener_));
+        assert(this.bluetoothDeviceAddedListener_));
     this.bluetooth.onDeviceChanged.removeListener(
         assert(this.bluetoothDeviceUpdatedListener_));
     this.bluetooth.onDeviceRemoved.removeListener(
@@ -204,7 +236,7 @@ Polymer({
       return !!device.paired || !!device.connecting;
     });
     this.unpairedDeviceList_ = this.deviceList_.filter(function(device) {
-      return !device.paired;
+      return !device.paired && !device.connecting;
     });
     this.updateScrollableContents();
     this.restoreScroll(this.$.unpairedDevices);
@@ -243,13 +275,11 @@ Polymer({
       this.deviceList_ = [];
       return;
     }
-    this.bluetooth.getDevices(devices => {
-      this.deviceList_ = devices;
-    });
+    this.requestListUpdate_();
   },
 
   /**
-   * Process bluetooth.onDeviceAdded and onDeviceChanged events.
+   * Process onDeviceChanged events.
    * @param {!chrome.bluetooth.Device} device
    * @private
    */
@@ -262,11 +292,17 @@ Polymer({
     var index = this.deviceList_.findIndex(function(device) {
       return device.address == address;
     });
-    if (index >= 0) {
+    if (index >= 0)
       this.set('deviceList_.' + index, device);
-      return;
-    }
-    this.push('deviceList_', device);
+  },
+
+  /**
+   * Process bluetooth.onDeviceAdded events.
+   * @param {!chrome.bluetooth.Device} device
+   * @private
+   */
+  onBluetoothDeviceAdded_: function(device) {
+    this.requestListUpdate_();
   },
 
   /**
@@ -452,5 +488,78 @@ Polymer({
     var device = this.$$('#unpairedContainer bluetooth-device-list-item');
     if (device)
       device.focus();
+  },
+
+  /**
+   * Requests update for bluetooth list.
+   * @private
+   */
+  requestListUpdate_: function() {
+    if (this.deviceList_.length == 0) {
+      // Update immediately for the initial device list.
+      this.bluetooth.getDevices(devices => {
+        this.populateDeviceList_(devices);
+      });
+      return;
+    }
+
+    // Return here because an update is already queued.
+    if (this.updateTimerId_ !== undefined)
+      return;
+
+    // Call bluetooth.getDevices once per listUpdateFrequencyMs.
+    this.updateTimerId_ = window.setTimeout(() => {
+      if (settings.getCurrentRoute() != settings.routes.BLUETOOTH_DEVICES) {
+        this.stopListUpdate_();
+        return;
+      }
+
+      this.bluetooth.getDevices(devices => {
+        this.populateDeviceList_(devices);
+      });
+      this.updateTimerId_ = undefined;
+    }, this.listUpdateFrequencyMs);
+  },
+
+  /**
+   * Stops update for bluetooth list.
+   * @private
+   */
+  stopListUpdate_: function() {
+    if (this.updateTimerId_ !== undefined) {
+      window.clearTimeout(this.updateTimerId_);
+      this.updateTimerId_ = undefined;
+    }
+  },
+
+  /**
+   * Populate the device list from chrome.bluetooth.getDevices
+   * Limit the device number to MAX_NUMBER_DEVICE_SHOWN and
+   * prioritize paired/connecting devices over other devices.
+   * @param {!Array<!chrome.bluetooth.Device|undefined>} devices
+   * @private
+   */
+  populateDeviceList_: function(devices) {
+    var tempList = [];
+    var i;
+    for (i = 0; i < devices.length; i++) {
+      if (tempList.length == MAX_NUMBER_DEVICE_SHOWN)
+        break;
+
+      if (!!devices[i].paired || !!devices[i].connecting) {
+        tempList.push(devices[i]);
+        devices[i] = undefined;
+      }
+    }
+
+    for (i = 0; i < devices.length; i++) {
+      if (tempList.length == MAX_NUMBER_DEVICE_SHOWN)
+        break;
+
+      if (devices[i] !== undefined)
+        tempList.push(devices[i]);
+    }
+
+    this.deviceList_ = tempList;
   },
 });
