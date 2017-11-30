@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 401
+#   For your editing convenience: highest ID currently used: 402
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -4700,6 +4700,27 @@
       If you disable this setting, whenever the user performs an action which would provoke a file selection dialog (like importing bookmarks, uploading files, saving links, etc.) a message is displayed instead and the user is assumed to have clicked Cancel on the file selection dialog.
 
       If this setting is not set, users can open file selection dialogs as normal.''',
+    },
+    {
+      'name': 'SecurityKeyPermitAttestation',
+      'tags': ['website-sharing'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:65-', 'chrome_os:65-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://example.com'],
+      'id': 402,
+      'caption': '''URLs/domains automatically permitted direct Security Key attestation''',
+      'tags': [],
+      'desc': '''Specifies URLs and domains for which no prompt will be shown when attestation certificates from Security Keys are requested. Additionally, a signal will be sent to the Security Key indicating that individual attestation may be used. Without this, users will be prompted in Chrome 65+ when sites request attestation of Security Keys.
+
+      URLs (like https://example.com/some/path) will only match as U2F appIDs. Domains (like example.com) only match as webauthn RP IDs. Thus, to cover both U2F and webauthn APIs for a given site, both the appID URL and domain would need to be listed.''',
     },
     {
       'name': 'GCFUserDataDir',

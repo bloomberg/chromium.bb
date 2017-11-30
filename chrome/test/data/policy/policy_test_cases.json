@@ -1770,6 +1770,14 @@
     ]
   },
 
+  "SecurityKeyPermitAttestation": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "SecurityKeyPermitAttestation": ["https://example.com", "example.net"] },
+    "pref_mappings": [
+      { "pref": "securitykey.permit_attestation" }
+    ]
+  },
+
   "ImportBookmarks": {
     "os": ["win", "mac", "linux"],
     "can_be_recommended": true,

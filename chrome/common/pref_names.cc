@@ -2249,6 +2249,10 @@ const char kCloudPolicyOverridesMachinePolicy[] = "policy.cloud_override";
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Policy that indicates how to handle animated images.
 const char kAnimationPolicy[] = "settings.a11y.animation_policy";
+
+// A list of URLs (for U2F) or domains (for webauthn) that automatically permit
+// direct attestation of a Security Key.
+const char kSecurityKeyPermitAttestation[] = "securitykey.permit_attestation";
 #endif
 
 const char kBackgroundTracingLastUpload[] = "background_tracing.last_upload";

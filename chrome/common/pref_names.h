@@ -803,6 +803,7 @@ extern const char kRestartInBackground[];
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 extern const char kAnimationPolicy[];
+extern const char kSecurityKeyPermitAttestation[];
 #endif
 
 extern const char kBackgroundTracingLastUpload[];

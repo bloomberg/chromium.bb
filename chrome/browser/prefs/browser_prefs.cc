@@ -130,6 +130,7 @@
 #include "chrome/browser/apps/shortcut_manager.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/cryptotoken_private/cryptotoken_private_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -503,6 +504,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ExtensionWebUI::RegisterProfilePrefs(registry);
   RegisterAnimationPolicyPrefs(registry);
   ToolbarActionsBar::RegisterProfilePrefs(registry);
+  extensions::api::CryptotokenRegisterProfilePrefs(registry);
   extensions::ActivityLog::RegisterProfilePrefs(registry);
   extensions::AudioAPI::RegisterUserPrefs(registry);
   extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
