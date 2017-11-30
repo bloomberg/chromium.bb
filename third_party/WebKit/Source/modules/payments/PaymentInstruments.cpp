@@ -34,8 +34,7 @@ bool rejectError(ScriptPromiseResolver* resolver,
           DOMException::Create(kNotSupportedError, "Not implemented yet"));
       return true;
     case payments::mojom::blink::PaymentHandlerStatus::NOT_FOUND:
-      resolver->Reject(DOMException::Create(kNotFoundError,
-                                            "There is no stored instrument"));
+      resolver->Resolve();
       return true;
     case payments::mojom::blink::PaymentHandlerStatus::NO_ACTIVE_WORKER:
       resolver->Reject(
