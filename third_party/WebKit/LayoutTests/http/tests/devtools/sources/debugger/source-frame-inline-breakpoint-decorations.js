@@ -13,6 +13,18 @@
               .then(() => console.log(239));
           return p;
       }
+
+      // some comment.
+
+
+      // another comment.
+
+
+
+
+      function boo() {
+        return 42;
+      }
       //# sourceURL=foo.js
     `);
 
@@ -112,6 +124,20 @@
         SourcesTestRunner.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 11, 0, next);
         SourcesTestRunner.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 12, 0, next);
       }
+    },
+
+    async function testAddRemoveBreakpointInLineWithoutBreakableLocations(next) {
+      let javaScriptSourceFrame = await SourcesTestRunner.showScriptSourcePromise('foo.js');
+
+      TestRunner.addResult('Setting breakpoint');
+      await SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 16, '', true)
+      await waitAndDumpDecorations(javaScriptSourceFrame);
+
+      TestRunner.addResult('Toggle breakpoint');
+      let decorationsPromise = waitAndDumpDecorations(javaScriptSourceFrame);
+      SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 25);
+      await decorationsPromise;
+      next();
     }
   ]);
 })();

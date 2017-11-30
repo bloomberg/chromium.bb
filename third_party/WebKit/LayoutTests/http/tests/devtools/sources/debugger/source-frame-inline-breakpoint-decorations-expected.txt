@@ -59,3 +59,10 @@ breakpoint at 12
   inline breakpoint at (12, 42) disabled
 Click by first inline breakpoints
 
+Running: testAddRemoveBreakpointInLineWithoutBreakableLocations
+Setting breakpoint
+breakpoint at 25
+  inline breakpoint at (25, 8)
+  inline breakpoint at (25, 18) disabled
+Toggle breakpoint
+
