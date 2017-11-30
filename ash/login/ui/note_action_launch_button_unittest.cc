@@ -67,7 +67,6 @@ class NoteActionLaunchButtonTest : public LoginTestBase {
   }
 
  private:
-  std::unique_ptr<LoginDataDispatcher> data_dispatcher_;
   TestTrayActionClient tray_action_client_;
 
   DISALLOW_COPY_AND_ASSIGN(NoteActionLaunchButtonTest);
@@ -77,7 +76,7 @@ class NoteActionLaunchButtonTest : public LoginTestBase {
 // is not enabled.
 TEST_F(NoteActionLaunchButtonTest, VisibilityActionNotAvailable) {
   auto note_action_button = std::make_unique<NoteActionLaunchButton>(
-      mojom::TrayActionState::kNotAvailable, data_dispatcher());
+      mojom::TrayActionState::kNotAvailable);
   EXPECT_FALSE(note_action_button->visible());
 }
 
@@ -85,7 +84,7 @@ TEST_F(NoteActionLaunchButtonTest, VisibilityActionNotAvailable) {
 // taking is available.
 TEST_F(NoteActionLaunchButtonTest, VisibilityActionAvailable) {
   auto note_action_button = std::make_unique<NoteActionLaunchButton>(
-      mojom::TrayActionState::kAvailable, data_dispatcher());
+      mojom::TrayActionState::kAvailable);
   NoteActionLaunchButton::TestApi test_api(note_action_button.get());
 
   EXPECT_TRUE(note_action_button->visible());
@@ -96,50 +95,11 @@ TEST_F(NoteActionLaunchButtonTest, VisibilityActionAvailable) {
   EXPECT_TRUE(test_api.BackgroundView()->visible());
 }
 
-// Test goes through different lock screen note state changes and tests that
-// the note action visibility is updated accordingly.
-TEST_F(NoteActionLaunchButtonTest, StateChanges) {
-  auto* note_action_button = new NoteActionLaunchButton(
-      mojom::TrayActionState::kAvailable, data_dispatcher());
-  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(
-      login_layout_util::WrapViewForPreferredSize(note_action_button));
-  NoteActionLaunchButton::TestApi test_api(note_action_button);
-
-  // In kAvailable state, the action button should be visible.
-  EXPECT_TRUE(note_action_button->visible());
-  EXPECT_TRUE(test_api.ActionButtonView()->visible());
-  EXPECT_TRUE(test_api.BackgroundView()->visible());
-  EXPECT_EQ(gfx::Rect(gfx::Point(),
-                      gfx::Size(kLargeButtonRadiusDp, kLargeButtonRadiusDp)),
-            note_action_button->GetBoundsInScreen());
-
-  // In kLaunching state, the action button should not be visible.
-  data_dispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kLaunching);
-  EXPECT_FALSE(note_action_button->visible());
-
-  // In kActive state, the action button should not be visible.
-  data_dispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kActive);
-  EXPECT_FALSE(note_action_button->visible());
-
-  // When moved back to kAvailable state, the action button should become
-  // visible again.
-  data_dispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kAvailable);
-  EXPECT_TRUE(note_action_button->visible());
-  EXPECT_EQ(gfx::Rect(gfx::Point(),
-                      gfx::Size(kLargeButtonRadiusDp, kLargeButtonRadiusDp)),
-            note_action_button->GetBoundsInScreen());
-
-  // In kNotAvailable state, the action button should not be visible.
-  data_dispatcher()->SetLockScreenNoteState(
-      mojom::TrayActionState::kNotAvailable);
-  EXPECT_FALSE(note_action_button->visible());
-}
-
 // Tests that clicking Enter while lock screen action button is focused requests
 // a new note action.
 TEST_F(NoteActionLaunchButtonTest, KeyboardTest) {
-  auto* note_action_button = new NoteActionLaunchButton(
-      mojom::TrayActionState::kAvailable, data_dispatcher());
+  auto* note_action_button =
+      new NoteActionLaunchButton(mojom::TrayActionState::kAvailable);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(
       login_layout_util::WrapViewForPreferredSize(note_action_button));
   NoteActionLaunchButton::TestApi test_api(note_action_button);
@@ -163,8 +123,8 @@ TEST_F(NoteActionLaunchButtonTest, KeyboardTest) {
 // bounds). The test verifies clicking the button within the button's hit area
 // requests a new note action.
 TEST_F(NoteActionLaunchButtonTest, ClickTest) {
-  auto* note_action_button = new NoteActionLaunchButton(
-      mojom::TrayActionState::kAvailable, data_dispatcher());
+  auto* note_action_button =
+      new NoteActionLaunchButton(mojom::TrayActionState::kAvailable);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(
       login_layout_util::WrapViewForPreferredSize(note_action_button));
 
@@ -275,8 +235,8 @@ TEST_F(NoteActionLaunchButtonTest, ClickTest) {
 
 // Tests tap gesture in and outside of the note action launch button.
 TEST_F(NoteActionLaunchButtonTest, TapTest) {
-  auto* note_action_button = new NoteActionLaunchButton(
-      mojom::TrayActionState::kAvailable, data_dispatcher());
+  auto* note_action_button =
+      new NoteActionLaunchButton(mojom::TrayActionState::kAvailable);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(
       login_layout_util::WrapViewForPreferredSize(note_action_button));
 
@@ -310,8 +270,8 @@ TEST_F(NoteActionLaunchButtonTest, TapTest) {
 // Verifies that only a fling from the button's actionable area to bottom right
 // direction generate an action request.
 TEST_F(NoteActionLaunchButtonTest, FlingGesture) {
-  auto* note_action_button = new NoteActionLaunchButton(
-      mojom::TrayActionState::kAvailable, data_dispatcher());
+  auto* note_action_button =
+      new NoteActionLaunchButton(mojom::TrayActionState::kAvailable);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(
       login_layout_util::WrapViewForPreferredSize(note_action_button));
 
@@ -364,8 +324,8 @@ TEST_F(NoteActionLaunchButtonTest, FlingGesture) {
 // Generates multi-finger fling in the direction that would be accepted for
 // single finger fling, and verifies no action is requested.
 TEST_F(NoteActionLaunchButtonTest, MultiFingerFling) {
-  auto* note_action_button = new NoteActionLaunchButton(
-      mojom::TrayActionState::kAvailable, data_dispatcher());
+  auto* note_action_button =
+      new NoteActionLaunchButton(mojom::TrayActionState::kAvailable);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(
       login_layout_util::WrapViewForPreferredSize(note_action_button));
 

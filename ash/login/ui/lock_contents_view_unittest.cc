@@ -246,6 +246,39 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryAuthUser) {
   }
 }
 
+// Test goes through different lock screen note state changes and tests that
+// the note action visibility is updated accordingly.
+TEST_F(LockContentsViewUnitTest, NoteActionButtonVisibilityChanges) {
+  auto* contents = new LockContentsView(mojom::TrayActionState::kAvailable,
+                                        data_dispatcher());
+  SetUserCount(1);
+  SetWidget(CreateWidgetWithContent(contents));
+
+  LockContentsView::TestApi test_api(contents);
+  views::View* note_action_button = test_api.note_action();
+
+  // In kAvailable state, the note action button should be visible.
+  EXPECT_TRUE(note_action_button->visible());
+
+  // In kLaunching state, the note action button should not be visible.
+  data_dispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kLaunching);
+  EXPECT_FALSE(note_action_button->visible());
+
+  // In kActive state, the note action button should not be visible.
+  data_dispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kActive);
+  EXPECT_FALSE(note_action_button->visible());
+
+  // When moved back to kAvailable state, the note action button should become
+  // visible again.
+  data_dispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kAvailable);
+  EXPECT_TRUE(note_action_button->visible());
+
+  // In kNotAvailable state, the note action button should not be visible.
+  data_dispatcher()->SetLockScreenNoteState(
+      mojom::TrayActionState::kNotAvailable);
+  EXPECT_FALSE(note_action_button->visible());
+}
+
 // Verifies note action view bounds.
 TEST_F(LockContentsViewUnitTest, NoteActionButtonBounds) {
   auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
@@ -289,7 +322,7 @@ TEST_F(LockContentsViewUnitTest, NoteActionButtonBoundsInitiallyAvailable) {
 
   LockContentsView::TestApi test_api(contents);
 
-  // Verify the note action button is visible and positioned in the top rigth
+  // Verify the note action button is visible and positioned in the top right
   // corner of the screen.
   EXPECT_TRUE(test_api.note_action()->visible());
   gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
@@ -303,6 +336,39 @@ TEST_F(LockContentsViewUnitTest, NoteActionButtonBoundsInitiallyAvailable) {
   data_dispatcher()->SetLockScreenNoteState(
       mojom::TrayActionState::kNotAvailable);
   EXPECT_FALSE(test_api.note_action()->visible());
+}
+
+// Verifies the dev channel info view bounds.
+TEST_F(LockContentsViewUnitTest, DevChannelInfoViewBounds) {
+  auto* contents = new LockContentsView(mojom::TrayActionState::kAvailable,
+                                        data_dispatcher());
+  SetUserCount(1);
+
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
+  LockContentsView::TestApi test_api(contents);
+  // Verify that the dev channel info view is hidden by default.
+  EXPECT_FALSE(test_api.dev_channel_info()->visible());
+
+  // Verify that the dev channel info view becomes visible and it doesn't block
+  // the note action button.
+  data_dispatcher()->SetDevChannelInfo("Best version ever", "Asset ID: 6666",
+                                       "Bluetooth adapter");
+  EXPECT_TRUE(test_api.dev_channel_info()->visible());
+  EXPECT_TRUE(test_api.note_action()->visible());
+  gfx::Size note_action_size = test_api.note_action()->GetPreferredSize();
+  EXPECT_GE(widget_bounds.right() -
+                test_api.dev_channel_info()->GetBoundsInScreen().right(),
+            note_action_size.width());
+
+  // Verify that if the note action is disabled, the dev channel info view moves
+  // to the right to fill the empty space.
+  data_dispatcher()->SetLockScreenNoteState(
+      mojom::TrayActionState::kNotAvailable);
+  EXPECT_FALSE(test_api.note_action()->visible());
+  EXPECT_LT(widget_bounds.right() -
+                test_api.dev_channel_info()->GetBoundsInScreen().right(),
+            note_action_size.width());
 }
 
 // Verifies the easy unlock tooltip is automatically displayed when requested.
