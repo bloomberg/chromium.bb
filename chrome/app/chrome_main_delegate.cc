@@ -303,7 +303,7 @@ void AdjustLinuxOOMScore(const std::string& process_type) {
 // and resources loaded.
 bool SubprocessNeedsResourceBundle(const std::string& process_type) {
   return
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_LINUX)
       // The zygote process opens the resources for the renderers.
       process_type == switches::kZygoteProcess ||
 #endif
