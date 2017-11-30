@@ -14,6 +14,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/session_manager_types.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/image_button.h"
 
@@ -23,6 +24,7 @@ namespace {
 
 constexpr char kUser1Email[] = "user1@palettewelcome.com";
 constexpr char kUser2Email[] = "user2@palettewelcome.com";
+constexpr char kGuestEmail[] = "guest@palettewelcome.com";
 
 }  // namespace
 
@@ -147,6 +149,36 @@ TEST_F(PaletteWelcomeBubbleTest, BubbleShownForSecondUser) {
       user2_pref_service()->GetBoolean(prefs::kShownPaletteWelcomeBubble));
   welcome_bubble_->ShowIfNeeded(false /* shown_by_stylus */);
   EXPECT_TRUE(welcome_bubble_->bubble_shown());
+}
+
+TEST_F(PaletteWelcomeBubbleTest, BubbleNotShownInactiveSession) {
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
+  welcome_bubble_->ShowIfNeeded(false /* shown_by_stylus */);
+  EXPECT_FALSE(welcome_bubble_->bubble_shown());
+}
+
+class PaletteWelcomeBubbleGuestModeTest : public AshTestBase {
+ public:
+  PaletteWelcomeBubbleGuestModeTest() = default;
+  ~PaletteWelcomeBubbleGuestModeTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    AshTestBase::SetUp();
+    GetSessionControllerClient()->AddUserSession(kGuestEmail,
+                                                 user_manager::USER_TYPE_GUEST);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaletteWelcomeBubbleGuestModeTest);
+};
+
+TEST_F(PaletteWelcomeBubbleGuestModeTest, BubbleNotShownForGuest) {
+  auto welcome_bubble = std::make_unique<PaletteWelcomeBubble>(
+      StatusAreaWidgetTestHelper::GetStatusAreaWidget()->palette_tray());
+  welcome_bubble->ShowIfNeeded(false /* shown_by_stylus */);
+  EXPECT_FALSE(welcome_bubble->bubble_shown());
 }
 
 }  // namespace ash
