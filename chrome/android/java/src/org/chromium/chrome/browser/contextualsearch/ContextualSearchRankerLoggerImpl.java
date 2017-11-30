@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.WebContents;
 
@@ -85,6 +86,8 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
      * ML data to Ranker.
      */
     public ContextualSearchRankerLoggerImpl() {
+        // TODO(donnd): remove when behind-the-flag bug fixed (crbug.com/786589).
+        Log.i(TAG, "Consructing ContextualSearchRankerLoggerImpl, enabled: %s", isEnabled());
         if (isEnabled()) mNativePointer = nativeInit();
     }
 
