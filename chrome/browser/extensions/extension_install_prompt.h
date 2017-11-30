@@ -173,6 +173,9 @@ class ExtensionInstallPrompt {
     const gfx::Image& icon() const { return icon_; }
     void set_icon(const gfx::Image& icon) { icon_ = icon; }
 
+    double average_rating() const { return average_rating_; }
+    int rating_count() const { return rating_count_; }
+
     bool has_webstore_data() const { return has_webstore_data_; }
 
    private:
