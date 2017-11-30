@@ -735,6 +735,11 @@ ScriptLoader::ExecuteScriptResult ScriptLoader::DoExecuteScript(
   DCHECK(already_started_);
   CHECK_EQ(script->GetScriptType(), GetScriptType());
 
+  if (element_->ElementHasDuplicateAttributes()) {
+    UseCounter::Count(element_->GetDocument(),
+                      WebFeature::kDuplicatedAttributeForExecutedScript);
+  }
+
   Document* element_document = &(element_->GetDocument());
   Document* context_document = element_document->ContextDocument();
   if (!context_document)

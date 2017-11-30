@@ -1768,6 +1768,8 @@ enum WebFeature {
   kWindowOpenRealmMismatch = 2247,
   kGridRowTrackPercentIndefiniteHeight = 2248,
   kVRGetDisplaysSupportsPresent = 2249,
+  kDuplicatedAttribute = 2250,
+  kDuplicatedAttributeForExecutedScript = 2251,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

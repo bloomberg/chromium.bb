@@ -42,6 +42,7 @@ class MockScriptElementBase
   MOCK_CONST_METHOD0(IsConnected, bool());
   MOCK_CONST_METHOD0(HasChildren, bool());
   MOCK_CONST_METHOD0(GetNonceForElement, const AtomicString&());
+  MOCK_CONST_METHOD0(ElementHasDuplicateAttributes, bool());
   MOCK_CONST_METHOD0(InitiatorName, AtomicString());
   MOCK_METHOD4(AllowInlineScriptForCSP,
                bool(const AtomicString&,
