@@ -329,6 +329,15 @@ are declared in build/common.gypi.
       <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL" desc="The name of the 'Right to Left' item from the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
         Right to Left
       </message>
+      <!-- Search strings are only used in webui, so no mobile. -->
+      <if expr="not is_android">
+        <message name="IDS_SEARCH_RESULTS" desc="Message announced to screenreader users when searching completes and results are showing.">
+          Search results for '<ph name="SEARCH_TEXT">$1<ex>cookies</ex></ph>'
+        </message>
+        <message name="IDS_SEARCH_NO_RESULTS" desc="Text description of a search that has no results.">
+          No search results found
+        </message>
+      </if>
 
        <!-- content area context menus. Android does not use it -->
       <if expr="not is_android">
@@ -1556,12 +1565,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       <message name="IDS_DOWNLOAD_CLEAR_SEARCH"
                desc="Tooltip text for the button that clears the search term on the downloads page.">
         Clear search
-      </message>
-      <message name="IDS_DOWNLOAD_SEARCHRESULTSFOR" desc="Format string for search results">
-        Search results for '<ph name="SEARCH_STRING">$1</ph>'
-      </message>
-      <message name="IDS_DOWNLOAD_NO_SEARCH_RESULTS" desc="A message shown for when a search yield no results (no matching downloads).">
-        No search results found
       </message>
       <message name="IDS_MD_DOWNLOAD_NO_DOWNLOADS" desc="A message shown when the user has no downloads to show on chrome://downloads.">
         Files you download appear here

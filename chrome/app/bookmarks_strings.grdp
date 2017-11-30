@@ -463,9 +463,6 @@
   <message name="IDS_MD_BOOKMARK_MANAGER_MORE_ACTIONS_AX_LABEL" desc="Spoken text for the button in the bookmark manager which shows an action menu for a bookmark, with actions like 'Edit' or 'Delete'">
     More actions for <ph name="BOOKMARK_NAME">$1<ex>Bookmark X</ex></ph>
   </message>
-  <message name="IDS_MD_BOOKMARK_MANAGER_NO_SEARCH_RESULTS" desc="Text on the bookmarks list that indicates that no bookmarks or folders match the search.">
-    No search results found
-  </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_OPEN_DIALOG_TITLE" desc="Title of the dialog confirming whether a large number of bookmarks should be opened.">
     Open selected items
   </message>
@@ -474,9 +471,6 @@
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_ITEMS_SELECTED" desc="Label displayed in bookmark manager toolbar telling the user how many items they have selected.">
     <ph name="NUMBER_OF_ITEMS_SELECTED">$1</ph> selected
-  </message>
-  <message name="IDS_MD_BOOKMARK_MANAGER_SEARCH_RESULTS" desc="Message announced by screenreaders when search results are found.">
-    Search results for '<ph name="SEARCH_STRING">$1<ex>reading</ex></ph>'
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_SIDEBAR_AX_LABEL" desc="Message announced by screenreaders for the bookmark manager sidebar.">
     Bookmark folder tree

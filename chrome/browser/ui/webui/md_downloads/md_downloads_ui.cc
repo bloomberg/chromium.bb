@@ -42,7 +42,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadsHost);
 
   source->AddLocalizedString("title", IDS_DOWNLOAD_TITLE);
-  source->AddLocalizedString("searchResultsFor", IDS_DOWNLOAD_SEARCHRESULTSFOR);
+  source->AddLocalizedString("searchResultsFor", IDS_SEARCH_RESULTS);
   source->AddLocalizedString("downloads", IDS_DOWNLOAD_TITLE);
 
   source->AddLocalizedString("clearAll", IDS_DOWNLOAD_LINK_CLEAR_ALL);
@@ -55,8 +55,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
 
   // No results message that shows instead of the downloads list.
   source->AddLocalizedString("noDownloads", IDS_MD_DOWNLOAD_NO_DOWNLOADS);
-  source->AddLocalizedString("noSearchResults",
-                             IDS_DOWNLOAD_NO_SEARCH_RESULTS);
+  source->AddLocalizedString("noSearchResults", IDS_SEARCH_NO_RESULTS);
 
   // Status.
   source->AddLocalizedString("statusCancelled", IDS_DOWNLOAD_TAB_CANCELLED);
