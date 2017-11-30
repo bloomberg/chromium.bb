@@ -332,6 +332,20 @@ FileTasks.recordViewingFileTypeUMA_ = function(entries) {
 };
 
 /**
+ * Records trial of opening file grouped by root types.
+ *
+ * @param {?VolumeManagerCommon.RootType} rootType The type of the root where
+ *     entries are being opened.
+ * @private
+ */
+FileTasks.recordViewingRootTypeUMA_ = function(rootType) {
+  if (rootType !== null) {
+    metrics.recordEnum(
+        'ViewingRootType', rootType, VolumeManagerCommon.RootTypesForUMA);
+  }
+};
+
+/**
  * Returns true if the taskId is for an internal task.
  *
  * @param {string} taskId Task identifier.
@@ -473,6 +487,8 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
  */
 FileTasks.prototype.executeDefault = function(opt_callback) {
   FileTasks.recordViewingFileTypeUMA_(this.entries_);
+  FileTasks.recordViewingRootTypeUMA_(
+      this.directoryModel_.getCurrentRootType());
   this.executeDefaultInternal_(opt_callback);
 };
 
@@ -607,6 +623,8 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
  */
 FileTasks.prototype.execute = function(taskId) {
   FileTasks.recordViewingFileTypeUMA_(this.entries_);
+  FileTasks.recordViewingRootTypeUMA_(
+      this.directoryModel_.getCurrentRootType());
   this.executeInternal_(taskId);
 };
 

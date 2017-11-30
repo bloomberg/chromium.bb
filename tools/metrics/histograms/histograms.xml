@@ -25423,6 +25423,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.ViewingRootType" enum="FileManagerRootType">
+  <owner>nya@chromium.org</owner>
+  <summary>
+    Chrome OS File Browser: The locations (root types) of files which are opened
+    in stand-alone mode. This does not include files opened in file picker mode.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.ViewingTaskType" enum="FileManagerTaskType">
   <owner>nya@chromium.org</owner>
   <summary>
