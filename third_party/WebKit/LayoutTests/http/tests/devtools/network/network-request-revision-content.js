@@ -36,7 +36,7 @@
     if (!uiSourceCode)
       return;
     uiSourceCode.addRevision('');
-    uiSourceCode.history()[0].requestContent().then(step3);
+    uiSourceCode.requestContent().then(step3);
   }
 
   function step3(content) {
