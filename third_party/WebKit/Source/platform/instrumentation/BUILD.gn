@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("instrumentation") {
+import("//build/config/jumbo.gni")
+
+jumbo_source_set("instrumentation") {
   sources = [
     "PlatformInstrumentation.cpp",
     "PlatformInstrumentation.h",
@@ -39,7 +41,7 @@ source_set("instrumentation") {
   ]
 }
 
-source_set("unit_tests") {
+jumbo_source_set("unit_tests") {
   testonly = true
 
   sources = [
