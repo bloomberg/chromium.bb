@@ -253,7 +253,6 @@ using blink::WebView;
 using blink::WebWidget;
 using blink::WebWindowFeatures;
 using blink::WebRuntimeFeatures;
-using base::Time;
 using base::TimeDelta;
 
 
