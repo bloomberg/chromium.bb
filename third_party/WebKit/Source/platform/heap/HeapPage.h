@@ -825,6 +825,8 @@ class PLATFORM_EXPORT BaseArena {
   virtual void Verify(){};
 
  protected:
+  bool SweepingCompleted() const { return !first_unswept_page_; }
+
   BasePage* first_page_;
   BasePage* first_unswept_page_;
 

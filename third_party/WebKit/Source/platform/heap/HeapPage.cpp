@@ -110,13 +110,13 @@ BaseArena::BaseArena(ThreadState* state, int index)
 
 BaseArena::~BaseArena() {
   DCHECK(!first_page_);
-  DCHECK(!first_unswept_page_);
+  DCHECK(SweepingCompleted());
 }
 
 void BaseArena::RemoveAllPages() {
   ClearFreeLists();
 
-  DCHECK(!first_unswept_page_);
+  DCHECK(SweepingCompleted());
   while (first_page_) {
     BasePage* page = first_page_;
     page->Unlink(&first_page_);
@@ -180,7 +180,7 @@ void BaseArena::MakeConsistentForGC() {
   }
 
   // We should not start a new GC until we finish sweeping in the current GC.
-  CHECK(!first_unswept_page_);
+  CHECK(SweepingCompleted());
 
   HeapCompact* heap_compactor = GetThreadState()->Heap().Compaction();
   if (!heap_compactor->IsCompactingArena(ArenaIndex()))
@@ -210,12 +210,12 @@ void BaseArena::MakeConsistentForMutator() {
     page->MarkAsSwept();
   }
   if (previous_page) {
-    DCHECK(first_unswept_page_);
+    DCHECK(!SweepingCompleted());
     previous_page->next_ = first_page_;
     first_page_ = first_unswept_page_;
     first_unswept_page_ = nullptr;
   }
-  DCHECK(!first_unswept_page_);
+  DCHECK(SweepingCompleted());
 
   Verify();
 }
@@ -224,7 +224,7 @@ size_t BaseArena::ObjectPayloadSizeForTesting() {
 #if DCHECK_IS_ON()
   DCHECK(IsConsistentForGC());
 #endif
-  DCHECK(!first_unswept_page_);
+  DCHECK(SweepingCompleted());
 
   size_t object_payload_size = 0;
   for (BasePage* page = first_page_; page; page = page->Next())
@@ -234,7 +234,7 @@ size_t BaseArena::ObjectPayloadSizeForTesting() {
 
 void BaseArena::PrepareForSweep() {
   DCHECK(GetThreadState()->IsInGC());
-  DCHECK(!first_unswept_page_);
+  DCHECK(SweepingCompleted());
 
   // Move all pages to a list of unswept pages.
   first_unswept_page_ = first_page_;
@@ -250,7 +250,7 @@ void BaseArena::PoisonArena() {
 
 Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
   // If there are no pages to be swept, return immediately.
-  if (!first_unswept_page_)
+  if (SweepingCompleted())
     return nullptr;
 
   CHECK(GetThreadState()->IsSweepingInProgress());
@@ -310,7 +310,7 @@ bool BaseArena::LazySweepWithDeadline(double deadline_seconds) {
     normal_arena->SetIsLazySweeping(true);
   }
   int page_count = 1;
-  while (first_unswept_page_) {
+  while (!SweepingCompleted()) {
     SweepUnsweptPage();
     if (page_count % kDeadlineCheckInterval == 0) {
       if (deadline_seconds <= MonotonicallyIncreasingTime()) {
@@ -318,7 +318,7 @@ bool BaseArena::LazySweepWithDeadline(double deadline_seconds) {
         ThreadHeap::ReportMemoryUsageForTracing();
         if (normal_arena)
           normal_arena->SetIsLazySweeping(false);
-        return !first_unswept_page_;
+        return SweepingCompleted();
       }
     }
     page_count++;
@@ -334,7 +334,7 @@ void BaseArena::CompleteSweep() {
   DCHECK(GetThreadState()->SweepForbidden());
   DCHECK(ScriptForbiddenScope::IsScriptForbidden());
 
-  while (first_unswept_page_) {
+  while (!SweepingCompleted()) {
     SweepUnsweptPage();
   }
   ThreadHeap::ReportMemoryUsageForTracing();
@@ -415,13 +415,13 @@ bool BaseArena::WillObjectBeLazilySwept(BasePage* page,
 }
 
 void BaseArena::EnableIncrementalMarkingBarrier() {
-  DCHECK(!first_unswept_page_);
+  DCHECK(SweepingCompleted());
   for (BasePage* page = first_page_; page; page = page->Next())
     page->SetIncrementalMarking(true);
 }
 
 void BaseArena::DisableIncrementalMarkingBarrier() {
-  DCHECK(!first_unswept_page_);
+  DCHECK(SweepingCompleted());
   for (BasePage* page = first_page_; page; page = page->Next())
     page->SetIncrementalMarking(false);
 }
@@ -463,7 +463,7 @@ void NormalPageArena::SweepAndCompact() {
   if (!heap.Compaction()->IsCompactingArena(ArenaIndex()))
     return;
 
-  if (!first_unswept_page_) {
+  if (SweepingCompleted()) {
     heap.Compaction()->FinishedArenaCompaction(this, 0, 0);
     return;
   }
@@ -496,7 +496,7 @@ void NormalPageArena::SweepAndCompact() {
   NormalPage::CompactionContext context;
   context.compacted_pages_ = &first_page_;
 
-  while (first_unswept_page_) {
+  while (!SweepingCompleted()) {
     BasePage* page = first_unswept_page_;
     if (page->IsEmpty()) {
       page->Unlink(&first_unswept_page_);
@@ -864,7 +864,7 @@ Address NormalPageArena::LazySweepPages(size_t allocation_size,
   DCHECK(!HasCurrentAllocationArea());
   AutoReset<bool> is_lazy_sweeping(&is_lazy_sweeping_, true);
   Address result = nullptr;
-  while (first_unswept_page_) {
+  while (!SweepingCompleted()) {
     BasePage* page = first_unswept_page_;
     if (page->IsEmpty()) {
       page->Unlink(&first_unswept_page_);
@@ -1106,7 +1106,7 @@ Address LargeObjectArena::LazySweepPages(size_t allocation_size,
                                          size_t gc_info_index) {
   Address result = nullptr;
   size_t swept_size = 0;
-  while (first_unswept_page_) {
+  while (!SweepingCompleted()) {
     BasePage* page = first_unswept_page_;
     if (page->IsEmpty()) {
       swept_size += static_cast<LargeObjectPage*>(page)->PayloadSize();
