@@ -242,8 +242,26 @@
   [self.toolbarViewController.toolsMenuButton triggerAnimation];
 }
 
+- (void)setBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
+  [self.toolbarViewController setBackgroundToIncognitoNTPColorWithAlpha:alpha];
+}
+
 - (void)showPrerenderingAnimation {
   [self.toolbarViewController showPrerenderingAnimation];
+}
+
+- (CGRect)visibleOmniboxFrame {
+  return [self.toolbarViewController visibleOmniboxFrame];
+}
+
+- (BOOL)isOmniboxFirstResponder {
+  return [_locationBarView.textField isFirstResponder];
+}
+
+- (BOOL)showingOmniboxPopup {
+  OmniboxViewIOS* omniboxViewIOS =
+      static_cast<OmniboxViewIOS*>(_locationBar.get()->GetLocationEntry());
+  return omniboxViewIOS->IsPopupOpen();
 }
 
 // TODO(crbug.com/786940): This protocol should move to the ViewController
@@ -276,10 +294,6 @@
     frame.size.height = CGRectGetMaxY([parent bounds]) - frame.origin.y;
   }
   return frame;
-}
-
-- (void)setBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
-  [self.toolbarViewController setBackgroundToIncognitoNTPColorWithAlpha:alpha];
 }
 
 #pragma mark - LocationBarDelegate

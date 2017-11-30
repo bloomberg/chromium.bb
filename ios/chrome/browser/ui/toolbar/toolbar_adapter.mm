@@ -72,15 +72,15 @@
 }
 
 - (CGRect)visibleOmniboxFrame {
-  return CGRectZero;
+  return [self.toolbarCoordinator visibleOmniboxFrame];
 }
 
 - (BOOL)isOmniboxFirstResponder {
-  return NO;
+  return [self.toolbarCoordinator isOmniboxFirstResponder];
 }
 
 - (BOOL)showingOmniboxPopup {
-  return NO;
+  return [self.toolbarCoordinator showingOmniboxPopup];
 }
 
 - (void)updateToolbarForSideSwipeSnapshot:(Tab*)tab {
