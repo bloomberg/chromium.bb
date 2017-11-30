@@ -64,8 +64,8 @@ bool ProviderId::operator==(const ProviderId& other) const {
 MountOptions::MountOptions()
     : writable(false),
       supports_notify_tag(false),
-      opened_files_limit(0) {
-}
+      opened_files_limit(0),
+      persistent(true) {}
 
 MountOptions::MountOptions(const std::string& file_system_id,
                            const std::string& display_name)
@@ -73,16 +73,17 @@ MountOptions::MountOptions(const std::string& file_system_id,
       display_name(display_name),
       writable(false),
       supports_notify_tag(false),
-      opened_files_limit(0) {
-}
+      opened_files_limit(0),
+      persistent(true) {}
+
+MountOptions::MountOptions(const MountOptions& source) = default;
 
 ProvidedFileSystemInfo::ProvidedFileSystemInfo()
     : writable_(false),
       supports_notify_tag_(false),
       configurable_(false),
       watchable_(false),
-      source_(extensions::SOURCE_FILE) {
-}
+      source_(extensions::SOURCE_FILE) {}
 
 ProvidedFileSystemInfo::ProvidedFileSystemInfo(
     const ProviderId& provider_id,

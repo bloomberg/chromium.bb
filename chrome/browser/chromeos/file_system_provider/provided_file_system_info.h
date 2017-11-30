@@ -21,11 +21,14 @@ struct MountOptions {
   MountOptions(const std::string& file_system_id,
                const std::string& display_name);
 
+  MountOptions(const MountOptions& source);
+
   std::string file_system_id;
   std::string display_name;
   bool writable;
   bool supports_notify_tag;
   int opened_files_limit;
+  bool persistent;
 };
 
 class ProviderId {

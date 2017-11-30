@@ -402,6 +402,24 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   service_->RemoveObserver(&observer);
 }
 
+TEST_F(FileSystemProviderServiceTest, DoNotRememberNonPersistent) {
+  LoggingObserver observer;
+  service_->AddObserver(&observer);
+
+  EXPECT_FALSE(registry_->file_system_info());
+  EXPECT_FALSE(registry_->watchers());
+
+  MountOptions options(kFileSystemId, kDisplayName);
+  options.persistent = false;
+  EXPECT_EQ(base::File::FILE_OK,
+            service_->MountFileSystem(kProviderId, options));
+  EXPECT_EQ(1u, observer.mounts.size());
+
+  EXPECT_FALSE(registry_->file_system_info());
+
+  service_->RemoveObserver(&observer);
+}
+
 TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnMount) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
