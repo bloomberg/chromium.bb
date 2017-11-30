@@ -30,6 +30,11 @@ constexpr const char* kDebugUserNames[] = {
     "Debbie Craig",     "Stella Wong",  "Stephanie Wade",
 };
 
+constexpr const char kDebugOsVersion[] =
+    "Chromium 64.0.3279.0 (Platform 10146.0.0 dev-channel peppy test)";
+constexpr const char kDebugEnterpriseInfo[] = "Asset ID: 1111";
+constexpr const char kDebugBluetoothName[] = "Bluetooth adapter";
+
 // Additional state for a user that the debug UI needs to reference.
 struct UserMetadata {
   explicit UserMetadata(const mojom::UserInfoPtr& user_info)
@@ -177,6 +182,16 @@ class LockDebugView::DebugDataDispatcherTransformer
     debug_dispatcher_.SetLockScreenNoteState(lock_screen_note_state_);
   }
 
+  void ToggleLockScreenDevChannelInfo() {
+    show_dev_channel_info_ = !show_dev_channel_info_;
+    if (show_dev_channel_info_) {
+      debug_dispatcher_.SetDevChannelInfo(kDebugOsVersion, kDebugEnterpriseInfo,
+                                          kDebugBluetoothName);
+    } else {
+      debug_dispatcher_.SetDevChannelInfo("", "", "");
+    }
+  }
+
   // LoginDataDispatcher::Observer:
   void OnUsersChanged(
       const std::vector<mojom::LoginUserInfoPtr>& users) override {
@@ -236,6 +251,9 @@ class LockDebugView::DebugDataDispatcherTransformer
   // The current lock screen note action state.
   mojom::TrayActionState lock_screen_note_state_;
 
+  // If the dev channel info is being shown.
+  bool show_dev_channel_info_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(DebugDataDispatcherTransformer);
 };
 
@@ -266,6 +284,7 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
 
   toggle_blur_ = AddButton("Blur");
   toggle_note_action_ = AddButton("Toggle note action");
+  toggle_dev_channel_info_ = AddButton("Toggle dev channel info");
   toggle_caps_lock_ = AddButton("Toggle caps lock");
   add_user_ = AddButton("Add user");
   remove_user_ = AddButton("Remove user");
@@ -294,6 +313,12 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   // Enable or disable note action.
   if (sender == toggle_note_action_) {
     debug_data_dispatcher_->ToggleLockScreenNoteButton();
+    return;
+  }
+
+  // Enable or disable dev channel info.
+  if (sender == toggle_dev_channel_info_) {
+    debug_data_dispatcher_->ToggleLockScreenDevChannelInfo();
     return;
   }
 
