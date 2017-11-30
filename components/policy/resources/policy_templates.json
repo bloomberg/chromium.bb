@@ -3558,6 +3558,8 @@
 
           Click to play allows the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin to run but the user must click on the placeholder to start its execution.
 
+          Automatic playback is only allowed for domains explictly listed in the <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME">PluginsAllowedForUrls</ph> policy. If you want to enabled automatic playback for all sites consider adding http://* and https://* to this list.
+
           If this policy is left not set, the user will be able to change this setting manually.''',
     },
     {
