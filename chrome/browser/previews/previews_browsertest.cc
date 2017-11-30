@@ -122,17 +122,13 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 
 // Previews InfoBar (which these tests triggers) does not work on Mac.
 // See crbug.com/782322 for detail.
-#if defined(OS_MACOSX)
+// Also occasional flakes on win7 (crbug.com/789542).
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_NoScriptPreviewsEnabled DISABLED_NoScriptPreviewsEnabled
 #define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
   DISABLED_NoScriptPreviewsEnabledHttpRedirectToHttps
 #else
-// Flaky on win7_chromium_rel_ng. crbug.com/789542
-#if defined(OS_WIN)
-#define MAYBE_NoScriptPreviewsEnabled DISABLED_NoScriptPreviewsEnabled
-#else
 #define MAYBE_NoScriptPreviewsEnabled NoScriptPreviewsEnabled
-#endif
 #define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
   NoScriptPreviewsEnabledHttpRedirectToHttps
 #endif
@@ -198,7 +194,8 @@ class PreviewsOptimizationGuideBrowserTest : public PreviewsBrowserTest {
 
 // Previews InfoBar (which this test triggers) does not work on Mac.
 // See crbug.com/782322 for detail.
-#if defined(OS_MACOSX)
+// Also occasional flakes on win7 (crbug.com/789948).
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_NoScriptPreviewsEnabledByWhitelist \
   DISABLED_NoScriptPreviewsEnabledByWhitelist
 #else
