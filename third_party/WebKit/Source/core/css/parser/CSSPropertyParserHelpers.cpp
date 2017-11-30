@@ -190,8 +190,10 @@ class CalcParser {
       : source_range_(range), range_(range) {
     const CSSParserToken& token = range.Peek();
     if (token.FunctionId() == CSSValueCalc ||
-        token.FunctionId() == CSSValueWebkitCalc)
-      calc_value_ = CSSCalcValue::Create(ConsumeFunction(range_), value_range);
+        token.FunctionId() == CSSValueWebkitCalc) {
+      calc_value_ =
+          CSSCalcValue::CreateSimplified(ConsumeFunction(range_), value_range);
+    }
   }
 
   const CSSCalcValue* Value() const { return calc_value_.Get(); }

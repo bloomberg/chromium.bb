@@ -5,6 +5,7 @@
 #include "core/css/cssom/CSSNumericValue.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/cssom/CSSMathInvert.h"
 #include "core/css/cssom/CSSMathMax.h"
@@ -13,6 +14,8 @@
 #include "core/css/cssom/CSSMathProduct.h"
 #include "core/css/cssom/CSSMathSum.h"
 #include "core/css/cssom/CSSUnitValue.h"
+#include "core/css/parser/CSSParserTokenStream.h"
+#include "core/css/parser/CSSTokenizer.h"
 
 namespace blink {
 
@@ -50,6 +53,90 @@ CSSUnitValue* MaybeSimplifyAsUnitValue(const CSSNumericValueVector& values,
   return CSSUnitValue::Create(final_value, first_unit_value->GetInternalUnit());
 }
 
+CalcOperator CanonicalOperator(CalcOperator op) {
+  if (op == kCalcAdd || op == kCalcSubtract)
+    return kCalcAdd;
+  return kCalcMultiply;
+}
+
+bool CanCombineNodes(const CSSCalcExpressionNode& root,
+                     const CSSCalcExpressionNode& node) {
+  DCHECK_EQ(root.GetType(), CSSCalcExpressionNode::kCssCalcBinaryOperation);
+  if (node.GetType() == CSSCalcExpressionNode::kCssCalcPrimitiveValue)
+    return false;
+  return !node.IsNestedCalc() && CanonicalOperator(root.OperatorType()) ==
+                                     CanonicalOperator(node.OperatorType());
+}
+
+CSSNumericValue* NegateOrInvertIfRequired(CalcOperator parent_op,
+                                          CSSNumericValue* value) {
+  DCHECK(value);
+  if (parent_op == kCalcSubtract)
+    return CSSMathNegate::Create(value);
+  if (parent_op == kCalcDivide)
+    return CSSMathInvert::Create(value);
+  return value;
+}
+
+CSSNumericValue* CalcToNumericValue(const CSSCalcExpressionNode& root) {
+  if (root.GetType() == CSSCalcExpressionNode::kCssCalcPrimitiveValue) {
+    auto* value = CSSUnitValue::Create(root.DoubleValue());
+    DCHECK(value);
+
+    // For cases like calc(1), we need to wrap the value in a CSSMathSum
+    if (!root.IsNestedCalc())
+      return value;
+
+    CSSNumericValueVector values;
+    values.push_back(value);
+    return CSSMathSum::Create(std::move(values));
+  }
+
+  // When the node is a binary operator, we return either a CSSMathSum or a
+  // CSSMathProduct.
+  DCHECK_EQ(root.GetType(), CSSCalcExpressionNode::kCssCalcBinaryOperation);
+  CSSNumericValueVector values;
+
+  // For cases like calc(1 + 2 + 3), the calc expression tree looks like:
+  //       +
+  //      / \
+  //     +   3
+  //    / \
+  //   1   2
+  //
+  // But we want to produce a CSSMathValue tree that looks like:
+  //       +
+  //      /|\
+  //     1 2 3
+  //
+  // So when the left child has the same operator as its parent, we can combine
+  // the two nodes. We keep moving down the left side of the tree as long as the
+  // current node and the root can be combined, collecting the right child of
+  // the nodes that we encounter.
+  const CSSCalcExpressionNode* cur_node = &root;
+  do {
+    DCHECK(cur_node->LeftExpressionNode());
+    DCHECK(cur_node->RightExpressionNode());
+
+    const auto& value = CalcToNumericValue(*cur_node->RightExpressionNode());
+
+    // If the current node is a '-' or '/', it's really just a '+' or '*' with
+    // the right child negated or inverted, respectively.
+    values.push_back(NegateOrInvertIfRequired(cur_node->OperatorType(), value));
+    cur_node = cur_node->LeftExpressionNode();
+  } while (CanCombineNodes(root, *cur_node));
+
+  DCHECK(cur_node);
+  values.push_back(CalcToNumericValue(*cur_node));
+
+  // Our algorithm collects the children in reverse order, so we have to reverse
+  // the values.
+  std::reverse(values.begin(), values.end());
+  if (root.OperatorType() == kCalcAdd || root.OperatorType() == kCalcSubtract)
+    return CSSMathSum::Create(std::move(values));
+  return CSSMathProduct::Create(std::move(values));
+}
+
 }  // namespace
 
 bool CSSNumericValue::IsValidUnit(CSSPrimitiveValue::UnitType unit) {
@@ -74,8 +161,39 @@ CSSPrimitiveValue::UnitType CSSNumericValue::UnitFromName(const String& name) {
 }
 
 CSSNumericValue* CSSNumericValue::parse(const String& css_text,
-                                        ExceptionState&) {
-  // TODO(meade): Implement
+                                        ExceptionState& exception_state) {
+  CSSTokenizer tokenizer(css_text);
+  CSSParserTokenStream stream(tokenizer);
+  auto range = stream.ConsumeUntilPeekedTypeIs<>();
+  if (!stream.AtEnd()) {
+    exception_state.ThrowDOMException(kSyntaxError, "Invalid math expression");
+    return nullptr;
+  }
+
+  switch (range.Peek().GetType()) {
+    case kNumberToken:
+    case kPercentageToken:
+    case kDimensionToken: {
+      const auto token = range.Consume();
+      if (!range.AtEnd())
+        break;
+      return CSSUnitValue::Create(token.NumericValue(), token.GetUnitType());
+    }
+    case kFunctionToken:
+      if (range.Peek().FunctionId() == CSSValueCalc ||
+          range.Peek().FunctionId() == CSSValueWebkitCalc) {
+        CSSCalcValue* calc_value = CSSCalcValue::Create(range, kValueRangeAll);
+        if (!calc_value)
+          break;
+
+        DCHECK(calc_value->ExpressionNode());
+        return CalcToNumericValue(*calc_value->ExpressionNode());
+      }
+    default:
+      break;
+  }
+
+  exception_state.ThrowDOMException(kSyntaxError, "Invalid math expression");
   return nullptr;
 }
 
