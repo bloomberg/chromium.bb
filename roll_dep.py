@@ -152,7 +152,10 @@ def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit,
       # Keep the first N log entries.
       logs = ''.join(logs.splitlines(True)[:log_limit]) + '(...)\n'
     log_section += logs
-  log_section += '\n\nCreated with:\n  roll-dep %s\n' % deps_dir
+  log_section += '\n\nCreated with:\n  roll-dep ' + deps_dir
+  if key:
+    log_section += ' ' + key
+  log_section += '\n'
 
   reviewer = 'R=%s\n' % ','.join(reviewers) if reviewers else ''
   bug = 'BUG=%s\n' % bug if bug else ''
