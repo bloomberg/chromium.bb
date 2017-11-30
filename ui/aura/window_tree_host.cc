@@ -8,7 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "components/viz/common/switches.h"
+#include "components/viz/common/features.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
@@ -284,8 +284,7 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
       Env::GetInstance()->context_factory_private();
   bool enable_surface_synchronization =
       aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSurfaceSynchronization);
+      features::IsSurfaceSynchronizationEnabled();
   compositor_.reset(new ui::Compositor(
       (!context_factory_private || frame_sink_id.is_valid())
           ? frame_sink_id

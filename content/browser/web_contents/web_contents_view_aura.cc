@@ -15,7 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/viz/common/switches.h"
+#include "components/viz/common/features.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/download/drag_download_util.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
@@ -543,10 +543,7 @@ WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
       completed_overscroll_gesture_(OVERSCROLL_NONE),
       navigation_overlay_(nullptr),
       init_rwhv_with_null_parent_for_testing_(false) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  enable_surface_synchronization_ =
-      command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
+  enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
 }
 
 void WebContentsViewAura::SetDelegateForTesting(

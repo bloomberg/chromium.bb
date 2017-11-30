@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/viz/common/switches.h"
+#include "components/viz/common/features.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -109,9 +109,20 @@ class ConstrainedWebDialogBrowserTest : public InProcessBrowserTest {
 class ConstrainedWebDialogSurfaceSynchronizationBrowserTest
     : public ConstrainedWebDialogBrowserTest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableSurfaceSynchronization);
+  ConstrainedWebDialogSurfaceSynchronizationBrowserTest() = default;
+  ~ConstrainedWebDialogSurfaceSynchronizationBrowserTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kEnableSurfaceSynchronization);
+    ConstrainedWebDialogBrowserTest::SetUp();
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(
+      ConstrainedWebDialogSurfaceSynchronizationBrowserTest);
 };
 
 // Tests that opening/closing the constrained window won't crash it.

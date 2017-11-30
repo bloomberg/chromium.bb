@@ -34,6 +34,8 @@ viz_component("common") {
   sources = [
     "display/renderer_settings.cc",
     "display/renderer_settings.h",
+    "features.cc",
+    "features.h",
     "frame_sinks/begin_frame_args.cc",
     "frame_sinks/begin_frame_args.h",
     "frame_sinks/begin_frame_source.cc",

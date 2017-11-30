@@ -18,8 +18,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "components/viz/common/switches.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/view_messages.h"
@@ -101,10 +101,7 @@ BrowserPlugin::BrowserPlugin(
   if (delegate_)
     delegate_->SetElementInstanceID(browser_plugin_instance_id_);
 
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  enable_surface_synchronization_ =
-      command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
+  enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
 }
 
 BrowserPlugin::~BrowserPlugin() {
