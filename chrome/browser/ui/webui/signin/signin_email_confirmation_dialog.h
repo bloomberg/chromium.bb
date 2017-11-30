@@ -16,10 +16,10 @@
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 class Profile;
-class WebUIMessageHandler;
 
 namespace content {
 class WebContents;
+class WebUIMessageHandler;
 }
 
 // A tab-modal dialog to ask the user to confirm his email before signing in.
