@@ -158,6 +158,7 @@ src:*chrome/browser/password_manager/native_backend_libsecret*
 
 src:*content/browser/accessibility/browser_accessibility_auralinux.cc
 src:*ui/accessibility/platform/ax_platform_node_auralinux.cc
+src:*ui/accessibility/platform/ax_platform_atk_hyperlink.cc
 
 src:*chrome/browser/ui/zoom/chrome_zoom_level_prefs.cc
 src:*third_party/webrtc/modules/desktop_capture/x11/x_server_pixel_buffer.cc
