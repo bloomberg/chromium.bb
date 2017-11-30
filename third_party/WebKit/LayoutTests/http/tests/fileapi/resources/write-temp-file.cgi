@@ -71,25 +71,8 @@ autoflush STDOUT 1;
 autoflush STDERR 1;
 print "content-type: text/plain; charset=utf-8\n\n";
 
-# Finding a suitable system temporary directory should be as simple as
-# $system_tmpdir = tmpdir() but Win32 Perl CGIs got unusable
-# values. Tracked in https://crbug.com/786152
-
-# Find the logical equivalent of /tmp - however extra contortions are
-# needed on Win32 under Apache with an unpopulated environment to
-# avoid choosing the root directory of the active drive by default.
-my $local_appdata_temp = tmpdir();
-if ($win32) {
-  my $local_appdata = Win32::GetFolderPath(Win32::CSIDL_LOCAL_APPDATA());
-  if (($local_appdata ne '') && -d "$local_appdata\\Temp") {
-    $local_appdata_temp = "$local_appdata\\Temp";
-  }
-}
-
-# This fallback order works well on fairly sane "vanilla" Win32, OS X
-# and Linux Apache configurations with mod_perl.
-my $system_tmpdir =
-  $ENV{TMPDIR} || $ENV{TEMP} || $ENV{TMP} || $local_appdata_temp;
+# tmpdir() does not read environment variables in taint mode.
+my $system_tmpdir = $ENV{TMPDIR} || $ENV{TEMP} || tmpdir();
 $system_tmpdir =~ /\A([^\0- ]*)\z/s
   or die "untaint failed: $!";
 $system_tmpdir = $1;
@@ -107,6 +90,11 @@ $basename =~ /\A([^\0- ]*)\z/s
   or die "untaint failed: $!";
 $basename = $1;
 my $data = decode utf8 => $req->url_param('data');
+
+# The system temporary directory must already exist.
+if (!-d $system_tmpdir) {
+  die(encode utf8 => "Can't create $basename: missing $system_tmpdir");
+}
 
 # Create a random-named subdirectory of the system temporary directory
 # to hold the newly-created test file. The X's will be replaced with

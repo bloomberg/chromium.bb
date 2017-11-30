@@ -40,6 +40,7 @@ import optparse
 import os
 import re
 import sys
+import tempfile
 
 from webkitpy.common import exit_codes
 from webkitpy.common import find_files
@@ -1112,7 +1113,12 @@ class Port(object):
             'UBSAN_OPTIONS',
             'VALGRIND_LIB',
             'VALGRIND_LIB_INNER',
+            'TMPDIR',
         ]
+        if 'TMPDIR' not in self.host.environ:
+            self.host.environ['TMPDIR'] = tempfile.gettempdir()
+        # CGIs are run directory-relative so they need an absolute TMPDIR
+        self.host.environ['TMPDIR'] = self._filesystem.abspath(self.host.environ['TMPDIR'])
         if self.host.platform.is_linux() or self.host.platform.is_freebsd():
             variables_to_copy += [
                 'XAUTHORITY',

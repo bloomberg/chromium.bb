@@ -30,6 +30,7 @@
 
 import errno
 import logging
+import tempfile
 
 # The _winreg library is only available on Windows.
 # https://docs.python.org/2/library/_winreg.html
@@ -133,6 +134,12 @@ class WinPort(base.Port):
 
     def setup_environ_for_server(self):
         # A few extra environment variables are required for Apache on Windows.
+        if 'TEMP' not in self.host.environ:
+            self.host.environ['TEMP'] = tempfile.gettempdir()
+        # CGIs are run directory-relative so they need an absolute TEMP
+        self.host.environ['TEMP'] = self._filesystem.abspath(self.host.environ['TEMP'])
+        # Make TMP an alias for TEMP
+        self.host.environ['TMP'] = self.host.environ['TEMP']
         env = super(WinPort, self).setup_environ_for_server()
         apache_envvars = ['SYSTEMDRIVE', 'SYSTEMROOT', 'TEMP', 'TMP']
         for key, value in self.host.environ.copy().items():
