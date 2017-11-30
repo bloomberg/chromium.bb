@@ -19,7 +19,15 @@ import oauth2client.client
 
 from googleapiclient import errors
 from infra_libs.ts_mon.common import http_metrics
-from oauth2client import util
+
+# TODO(nxia): crbug.com/790760 upgrade oauth2client to 4.1.2.
+oauth2client_util_imported = False
+try:
+  from oauth2client import util
+  oauth2client_util_imported = True
+except ImportError:
+  pass
+
 
 DEFAULT_SCOPES = ['email']
 
@@ -189,7 +197,8 @@ class DelegateServiceAccountCredentials(
       project: The cloud project to which service_account_email belongs.  The
         default of '-' makes the IAM API figure it out for us.
     """
-
+    if not oauth2client_util_imported:
+      raise AssertionError('Failed to import oauth2client.util.')
     super(DelegateServiceAccountCredentials, self).__init__(None)
     self._service_account_email = service_account_email
     self._scopes = util.scopes_to_string(scopes)
