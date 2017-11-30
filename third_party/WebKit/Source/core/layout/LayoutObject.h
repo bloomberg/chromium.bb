@@ -72,6 +72,7 @@ class LayoutFlowThread;
 class LayoutGeometryMap;
 class LayoutMultiColumnSpannerPlaceholder;
 class LayoutView;
+class NGPhysicalBoxFragment;
 class ObjectPaintProperties;
 class PaintLayer;
 class PseudoStyleRequest;
@@ -309,6 +310,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Returns |EnclosingBox()| if it's a LayoutNGBlockFlow, or nullptr otherwise.
   LayoutBlockFlow* EnclosingNGBlockFlow() const;
+
+  // Returns |NGPhysicalBoxFragment| for |EnclosingNGBlockFlow()| or nullptr
+  // otherwise.
+  const NGPhysicalBoxFragment* EnclosingBlockFlowFragment() const;
 
   // Function to return our enclosing flow thread if we are contained inside
   // one. This function follows the containing block chain.
