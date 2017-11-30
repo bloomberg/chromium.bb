@@ -23,6 +23,7 @@ include_rules = [
   "+base/sequence_checker.h",
   "+base/single_thread_task_runner.h",
   "+base/strings/string_number_conversions.h",
+  "+base/synchronization/atomic_flag.h",
   "+base/synchronization/lock.h",
   "+base/test_time_source.h",
   "+base/threading/platform_thread.h",

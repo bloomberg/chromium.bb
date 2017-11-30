@@ -43,7 +43,9 @@ void WebThreadImplForWorkerScheduler::Init() {
 }
 
 WebThreadImplForWorkerScheduler::~WebThreadImplForWorkerScheduler() {
-  if (worker_scheduler_) {
+  // We want to avoid blocking main thread when the thread was already
+  // shut down, but calling ShutdownOnThread twice does not cause any problems.
+  if (!was_shutdown_on_thread_.IsSet()) {
     base::WaitableEvent completion(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -76,6 +78,8 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
 
 void WebThreadImplForWorkerScheduler::ShutdownOnThread(
     base::WaitableEvent* completion) {
+  was_shutdown_on_thread_.Set();
+
   task_queue_ = nullptr;
   idle_task_runner_ = nullptr;
   web_scheduler_ = nullptr;
