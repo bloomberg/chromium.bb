@@ -78,11 +78,11 @@ void WebSocketFrameHeader::CopyFrom(const WebSocketFrameHeader& source) {
 WebSocketFrame::WebSocketFrame(WebSocketFrameHeader::OpCode opcode)
     : header(opcode) {}
 
-WebSocketFrame::~WebSocketFrame() {}
+WebSocketFrame::~WebSocketFrame() = default;
 
 WebSocketFrameChunk::WebSocketFrameChunk() : final_chunk(false) {}
 
-WebSocketFrameChunk::~WebSocketFrameChunk() {}
+WebSocketFrameChunk::~WebSocketFrameChunk() = default;
 
 int GetWebSocketFrameHeaderSize(const WebSocketFrameHeader& header) {
   int extended_length_size = 0;

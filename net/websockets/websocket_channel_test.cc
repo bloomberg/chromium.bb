@@ -155,7 +155,7 @@ typedef StrictMock< MockFunction<void(int)> > Checkpoint;  // NOLINT
 // This mock is for testing expectations about how the EventInterface is used.
 class MockWebSocketEventInterface : public WebSocketEventInterface {
  public:
-  MockWebSocketEventInterface() {}
+  MockWebSocketEventInterface() = default;
 
   ChannelState OnDataFrame(bool fin,
                            WebSocketMessageType type,
@@ -255,7 +255,7 @@ class FakeWebSocketEventInterface : public WebSocketEventInterface {
 class FakeWebSocketStream : public WebSocketStream {
  public:
   // Constructs with empty protocol and extensions.
-  FakeWebSocketStream() {}
+  FakeWebSocketStream() = default;
 
   // Constructs with specified protocol and extensions.
   FakeWebSocketStream(const std::string& protocol,
@@ -3416,7 +3416,7 @@ TEST_F(WebSocketChannelStreamTest, ProtocolError) {
 // Set the closing handshake timeout to a very tiny value before connecting.
 class WebSocketChannelStreamTimeoutTest : public WebSocketChannelStreamTest {
  protected:
-  WebSocketChannelStreamTimeoutTest() {}
+  WebSocketChannelStreamTimeoutTest() = default;
 
   void CreateChannelAndConnectSuccessfully() override {
     set_stream(std::move(mock_stream_));

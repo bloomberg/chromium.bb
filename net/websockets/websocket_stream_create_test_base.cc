@@ -98,8 +98,7 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
 WebSocketStreamCreateTestBase::WebSocketStreamCreateTestBase()
     : has_failed_(false), ssl_fatal_(false), url_request_(nullptr) {}
 
-WebSocketStreamCreateTestBase::~WebSocketStreamCreateTestBase() {
-}
+WebSocketStreamCreateTestBase::~WebSocketStreamCreateTestBase() = default;
 
 void WebSocketStreamCreateTestBase::CreateAndConnectStream(
     const GURL& socket_url,

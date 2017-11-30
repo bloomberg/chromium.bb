@@ -105,8 +105,7 @@ WebSocketMockClientSocketFactoryMaker::WebSocketMockClientSocketFactoryMaker()
 }
 
 WebSocketMockClientSocketFactoryMaker::
-    ~WebSocketMockClientSocketFactoryMaker() {
-}
+    ~WebSocketMockClientSocketFactoryMaker() = default;
 
 MockClientSocketFactory* WebSocketMockClientSocketFactoryMaker::factory() {
   return &detail_->factory;
@@ -157,7 +156,8 @@ WebSocketTestURLRequestContextHost::WebSocketTestURLRequestContextHost()
   url_request_context_.set_client_socket_factory(maker_.factory());
 }
 
-WebSocketTestURLRequestContextHost::~WebSocketTestURLRequestContextHost() {}
+WebSocketTestURLRequestContextHost::~WebSocketTestURLRequestContextHost() =
+    default;
 
 void WebSocketTestURLRequestContextHost::AddRawExpectations(
     std::unique_ptr<SequencedSocketData> socket_data) {

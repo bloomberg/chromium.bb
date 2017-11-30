@@ -207,7 +207,7 @@ void ConnectTestingEventInterface::QuitNestedEventLoop() {
 // OnResolveProxy callback and records the information passed to it.
 class TestProxyDelegateWithProxyInfo : public ProxyDelegate {
  public:
-  TestProxyDelegateWithProxyInfo() {}
+  TestProxyDelegateWithProxyInfo() = default;
 
   struct ResolvedProxyInfo {
     GURL url;

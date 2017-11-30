@@ -42,7 +42,7 @@ WebSocketFrameParser::WebSocketFrameParser()
             '\0');
 }
 
-WebSocketFrameParser::~WebSocketFrameParser() {}
+WebSocketFrameParser::~WebSocketFrameParser() = default;
 
 bool WebSocketFrameParser::Decode(
     const char* data,

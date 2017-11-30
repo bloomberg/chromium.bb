@@ -63,7 +63,7 @@ class MockClientSocketHandleFactory {
 
 class TestConnectDelegate : public WebSocketStream::ConnectDelegate {
  public:
-  ~TestConnectDelegate() override {}
+  ~TestConnectDelegate() override = default;
 
   void OnCreateRequest(URLRequest* request) override {}
   void OnSuccess(std::unique_ptr<WebSocketStream> stream) override {}

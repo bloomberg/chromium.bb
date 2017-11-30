@@ -26,7 +26,7 @@ class ShrinkableIOBufferWithSize : public IOBufferWithSize {
   }
 
  private:
-  ~ShrinkableIOBufferWithSize() override {}
+  ~ShrinkableIOBufferWithSize() override = default;
 };
 
 }  // namespace
@@ -171,7 +171,7 @@ WebSocketInflater::OutputBuffer::OutputBuffer(size_t capacity)
       head_(0),
       tail_(0) {}
 
-WebSocketInflater::OutputBuffer::~OutputBuffer() {}
+WebSocketInflater::OutputBuffer::~OutputBuffer() = default;
 
 size_t WebSocketInflater::OutputBuffer::Size() const {
   return (tail_ + buffer_.size() - head_) % buffer_.size();
@@ -221,7 +221,7 @@ void WebSocketInflater::OutputBuffer::AdvanceTail(size_t advance) {
 WebSocketInflater::InputQueue::InputQueue(size_t capacity)
     : capacity_(capacity), head_of_first_buffer_(0), tail_of_last_buffer_(0) {}
 
-WebSocketInflater::InputQueue::~InputQueue() {}
+WebSocketInflater::InputQueue::~InputQueue() = default;
 
 std::pair<char*, size_t> WebSocketInflater::InputQueue::Top() {
   DCHECK(!IsEmpty());

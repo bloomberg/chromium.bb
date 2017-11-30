@@ -28,7 +28,7 @@ bool WebSocketExtension::Parameter::Equals(const Parameter& other) const {
   return name_ == other.name_ && value_ == other.value_;
 }
 
-WebSocketExtension::WebSocketExtension() {}
+WebSocketExtension::WebSocketExtension() = default;
 
 WebSocketExtension::WebSocketExtension(const std::string& name)
     : name_(name) {}
@@ -36,7 +36,7 @@ WebSocketExtension::WebSocketExtension(const std::string& name)
 WebSocketExtension::WebSocketExtension(const WebSocketExtension& other) =
     default;
 
-WebSocketExtension::~WebSocketExtension() {}
+WebSocketExtension::~WebSocketExtension() = default;
 
 bool WebSocketExtension::Equals(const WebSocketExtension& other) const {
   if (name_ != other.name_) return false;

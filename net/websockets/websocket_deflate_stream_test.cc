@@ -228,7 +228,7 @@ class WebSocketDeflateStreamTest : public ::testing::Test {
   WebSocketDeflateStreamTest()
       : mock_stream_(NULL),
         predictor_(NULL) {}
-  ~WebSocketDeflateStreamTest() override {}
+  ~WebSocketDeflateStreamTest() override = default;
 
   void SetUp() override {
     Initialize(WebSocketDeflater::TAKE_OVER_CONTEXT, kWindowBits);
@@ -263,8 +263,8 @@ class WebSocketDeflateStreamTest : public ::testing::Test {
 class WebSocketDeflateStreamWithDoNotTakeOverContextTest
     : public WebSocketDeflateStreamTest {
  public:
-  WebSocketDeflateStreamWithDoNotTakeOverContextTest() {}
-  ~WebSocketDeflateStreamWithDoNotTakeOverContextTest() override {}
+  WebSocketDeflateStreamWithDoNotTakeOverContextTest() = default;
+  ~WebSocketDeflateStreamWithDoNotTakeOverContextTest() override = default;
 
   void SetUp() override {
     Initialize(WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT, kWindowBits);
@@ -274,8 +274,8 @@ class WebSocketDeflateStreamWithDoNotTakeOverContextTest
 class WebSocketDeflateStreamWithClientWindowBitsTest
     : public WebSocketDeflateStreamTest {
  public:
-  WebSocketDeflateStreamWithClientWindowBitsTest() {}
-  ~WebSocketDeflateStreamWithClientWindowBitsTest() override {}
+  WebSocketDeflateStreamWithClientWindowBitsTest() = default;
+  ~WebSocketDeflateStreamWithClientWindowBitsTest() override = default;
 
   // Overridden to postpone the call to Initialize().
   void SetUp() override {}

@@ -307,7 +307,7 @@ WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
   DCHECK(request);
 }
 
-WebSocketBasicHandshakeStream::~WebSocketBasicHandshakeStream() {}
+WebSocketBasicHandshakeStream::~WebSocketBasicHandshakeStream() = default;
 
 int WebSocketBasicHandshakeStream::InitializeStream(
     const HttpRequestInfo* request_info,

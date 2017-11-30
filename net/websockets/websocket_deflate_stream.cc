@@ -60,7 +60,7 @@ WebSocketDeflateStream::WebSocketDeflateStream(
   inflater_.Initialize(kWindowBits);
 }
 
-WebSocketDeflateStream::~WebSocketDeflateStream() {}
+WebSocketDeflateStream::~WebSocketDeflateStream() = default;
 
 int WebSocketDeflateStream::ReadFrames(
     std::vector<std::unique_ptr<WebSocketFrame>>* frames,
