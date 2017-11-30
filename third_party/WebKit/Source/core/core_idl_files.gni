@@ -628,6 +628,7 @@ core_testing_dictionary_idl_files =
                     "testing/InternalDictionary.idl",
                     "testing/InternalDictionaryDerived.idl",
                     "testing/InternalDictionaryDerivedDerived.idl",
+                    "testing/OriginTrialsTestDictionary.idl",
                   ],
                   "abspath")
 

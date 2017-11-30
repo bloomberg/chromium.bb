@@ -67,6 +67,16 @@ def secure_context_if(code, secure_context_test, test_result=None):
     return generate_indented_conditional(code, 'executionContext && (%s)' % secure_context_test)
 
 
+# [OriginTrialEnabled]
+def origin_trial_enabled_if(code, origin_trial_function_name, execution_context=None):
+    if not origin_trial_function_name:
+        return code
+
+    function = v8_utilities.origin_trial_function_call(
+        origin_trial_function_name, execution_context)
+    return generate_indented_conditional(code, function)
+
+
 # [RuntimeEnabled]
 def runtime_enabled_if(code, name):
     if not name:
@@ -89,6 +99,7 @@ def initialize_jinja_env(cache_dir):
         'exposed': exposed_if,
         'format_blink_cpp_source_code': format_blink_cpp_source_code,
         'format_remove_duplicates': format_remove_duplicates,
+        'origin_trial_enabled': origin_trial_enabled_if,
         'runtime_enabled': runtime_enabled_if,
         'runtime_enabled_function': v8_utilities.runtime_enabled_function,
         'secure_context': secure_context_if})

@@ -12,6 +12,36 @@ expect_member = (member_name, get_value_func) => {
     'Member should return boolean value');
 }
 
+// Verify that the given member exists on the returned dictionary, and returns
+// an actual value (i.e. not undefined).
+expect_dictionary_member = (dictionary_member_name) => {
+  var testObject = window.internals.originTrialsTest();
+  var dictionary = testObject.getDictionaryMethod();
+  assert_exists(dictionary, dictionary_member_name);
+  assert_true(dictionary[dictionary_member_name],
+    'Dictionary member ' + dictionary_member_name + ' should return boolean value');
+}
+
+// Verify that the given member is accessed as part of dictionary input to a
+// method
+expect_input_dictionary_member = (dictionary_member_name) => {
+  var testObject = window.internals.originTrialsTest();
+
+  // Test via a getter in the object to see if the member is accessed
+  var memberAccessed = false;
+  try {
+    var dictionary = Object.defineProperty({}, dictionary_member_name, {
+      get: function() {
+        memberAccessed = true;
+      }
+    });
+    testObject.checkDictionaryMethod(dictionary);
+  } catch (e) {}
+
+  assert_true(memberAccessed,
+    'Dictionary member ' + dictionary_member_name + ' should be accessed by method');
+}
+
 // Verify that the given static member exists, and returns an actual value
 // (i.e. not undefined).
 expect_static_member = (member_name, get_value_func) => {
@@ -35,7 +65,7 @@ expect_constant = (constant_name, constant_value, get_value_func) => {
     'Constant should not be modifiable');
 }
 
-// Verify that given static member does not exist, and does not provide a value
+// Verify that given member does not exist, and does not provide a value
 // (i.e. is undefined).
 expect_member_fails = (member_name) => {
   var testObject = window.internals.originTrialsTest();
@@ -44,7 +74,38 @@ expect_member_fails = (member_name) => {
   assert_equals(testObject[member_name], undefined);
 }
 
-// Verify that given member does not exist, and does not provide a value
+// Verify that the given member does not exist on the returned dictionary, and
+// does not provide a value (i.e. is undefined).
+expect_dictionary_member_fails = (dictionary_member_name) => {
+  var testObject = window.internals.originTrialsTest();
+  var dictionary = testObject.getDictionaryMethod();
+  assert_false(dictionary_member_name in dictionary);
+  assert_not_exists(dictionary, dictionary_member_name);
+  assert_equals(dictionary[dictionary_member_name], undefined,
+    'Dictionary member ' + dictionary_member_name + ' should not have a value');
+}
+
+// Verify that the given member is not accessed as part of dictionary input to a
+// method
+expect_input_dictionary_member_fails = (dictionary_member_name) => {
+  var testObject = window.internals.originTrialsTest();
+
+  // Test via a getter in the object to see if the member is accessed
+  var memberAccessed = false;
+  try {
+    var dictionary = Object.defineProperty({}, dictionary_member_name, {
+      get: function() {
+        memberAccessed = true;
+      }
+    });
+    testObject.checkDictionaryMethod(dictionary);
+  } catch (e) {}
+
+  assert_false(memberAccessed,
+    'Dictionary member ' + dictionary_member_name + ' should not be accessed by method');
+}
+
+// Verify that given static member does not exist, and does not provide a value
 // (i.e. is undefined).
 expect_static_member_fails = (member_name) => {
   var testObject = window.internals.originTrialsTest();
@@ -63,12 +124,6 @@ expect_failure = (skip_worker) => {
       assert_throws("NotSupportedError", () => { testObject.throwingAttribute; },
           'Accessing attribute should throw error');
     }, 'Accessing attribute should throw error');
-
-  test(() => {
-      expect_member('unconditionalAttribute', (testObject) => {
-          return testObject.unconditionalAttribute;
-        });
-    }, 'Attribute should exist and return value, with trial disabled');
 
   test(() => {
       expect_member_fails('normalAttribute');
@@ -146,6 +201,14 @@ expect_always_bindings = (insecure_context, opt_description_suffix) => {
           return testObject.UNCONDITIONAL_CONSTANT;
         });
     }, 'Constant should exist on interface and return value, regardless of trial' + description_suffix);
+
+  test(() => {
+      expect_dictionary_member('unconditionalBool');
+    }, 'Dictionary output from method should return member value, regardless of trial' + description_suffix);
+
+  test(() => {
+      expect_input_dictionary_member('unconditionalBool');
+    }, 'Method with input dictionary should access member value, regardless of trial' + description_suffix);
 
   if (insecure_context) {
     test(() => {
@@ -251,6 +314,14 @@ expect_success_bindings = (insecure_context) => {
         });
     }, 'Static method should exist and return value');
 
+  test(() => {
+      expect_dictionary_member('normalBool');
+    }, 'Dictionary output from method should return member value');
+
+  test(() => {
+      expect_input_dictionary_member('normalBool');
+    }, 'Method with input dictionary should access member value');
+
   // Tests for [OriginTrialEnabled] on partial interfaces
   test(() => {
       expect_member('normalAttributePartial', (testObject) => {
@@ -350,6 +421,14 @@ expect_failure_bindings_impl = (insecure_context, description_suffix) => {
   test(() => {
       expect_static_member_fails('staticMethod');
     }, 'Static method should not exist, with trial disabled');
+
+  test(() => {
+      expect_dictionary_member_fails('normalBool');
+    }, 'Dictionary output from method should not return member value, with trial disabled');
+
+  test(() => {
+      expect_input_dictionary_member_fails('normalBool');
+    }, 'Method with input dictionary should not access member value, with trial disabled');
 
 
   // Tests for combination of [OriginTrialEnabled] and [SecureContext]

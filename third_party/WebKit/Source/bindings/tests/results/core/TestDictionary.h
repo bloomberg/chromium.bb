@@ -177,6 +177,20 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   void setObjectOrNullMember(ScriptValue);
   void setObjectOrNullMemberToNull();
 
+  bool hasOriginTrialMember() const { return has_origin_trial_member_; }
+  bool originTrialMember() const {
+    DCHECK(has_origin_trial_member_);
+    return origin_trial_member_;
+  }
+  inline void setOriginTrialMember(bool);
+
+  bool hasOriginTrialSecondMember() const { return has_origin_trial_second_member_; }
+  bool originTrialSecondMember() const {
+    DCHECK(has_origin_trial_second_member_);
+    return origin_trial_second_member_;
+  }
+  inline void setOriginTrialSecondMember(bool);
+
   bool hasOtherDoubleOrStringMember() const { return !other_double_or_string_member_.IsNull(); }
   const DoubleOrString& otherDoubleOrStringMember() const {
     return other_double_or_string_member_;
@@ -203,6 +217,13 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
     return runtime_member_;
   }
   inline void setRuntimeMember(bool);
+
+  bool hasRuntimeSecondMember() const { return has_runtime_second_member_; }
+  bool runtimeSecondMember() const {
+    DCHECK(has_runtime_second_member_);
+    return runtime_second_member_;
+  }
+  inline void setRuntimeSecondMember(bool);
 
   bool hasStringMember() const { return !string_member_.IsNull(); }
   const String& stringMember() const {
@@ -325,9 +346,12 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool has_internal_dictionary_sequence_member_ = false;
   bool has_is_public_ = false;
   bool has_long_member_ = false;
+  bool has_origin_trial_member_ = false;
+  bool has_origin_trial_second_member_ = false;
   bool has_record_member_ = false;
   bool has_restricted_double_member_ = false;
   bool has_runtime_member_ = false;
+  bool has_runtime_second_member_ = false;
   bool has_string_sequence_member_ = false;
   bool has_test_interface_garbage_collected_sequence_member_ = false;
   bool has_test_interface_sequence_member_ = false;
@@ -356,10 +380,13 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   int32_t long_member_;
   ScriptValue object_member_;
   ScriptValue object_or_null_member_;
+  bool origin_trial_member_;
+  bool origin_trial_second_member_;
   DoubleOrString other_double_or_string_member_;
   Vector<std::pair<String, int8_t>> record_member_;
   double restricted_double_member_;
   bool runtime_member_;
+  bool runtime_second_member_;
   String string_member_;
   String string_or_null_member_;
   Vector<String> string_sequence_member_;
@@ -432,6 +459,16 @@ void TestDictionary::setLongMember(int32_t value) {
   has_long_member_ = true;
 }
 
+void TestDictionary::setOriginTrialMember(bool value) {
+  origin_trial_member_ = value;
+  has_origin_trial_member_ = true;
+}
+
+void TestDictionary::setOriginTrialSecondMember(bool value) {
+  origin_trial_second_member_ = value;
+  has_origin_trial_second_member_ = true;
+}
+
 void TestDictionary::setRestrictedDoubleMember(double value) {
   restricted_double_member_ = value;
   has_restricted_double_member_ = true;
@@ -440,6 +477,11 @@ void TestDictionary::setRestrictedDoubleMember(double value) {
 void TestDictionary::setRuntimeMember(bool value) {
   runtime_member_ = value;
   has_runtime_member_ = true;
+}
+
+void TestDictionary::setRuntimeSecondMember(bool value) {
+  runtime_second_member_ = value;
+  has_runtime_second_member_ = true;
 }
 
 void TestDictionary::setStringMember(const String& value) {

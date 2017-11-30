@@ -74,9 +74,17 @@ def dictionary_context(dictionary, interfaces_info):
             includes.add('platform/runtime_enabled_features.h')
             break
 
+    has_origin_trial_members = False
+    for member in members:
+        if member['origin_trial_enabled_function']:
+            has_origin_trial_members = True
+            includes.add('core/origin_trials/origin_trials.h')
+            break
+
     cpp_class = v8_utilities.cpp_name(dictionary)
     context = {
         'cpp_class': cpp_class,
+        'has_origin_trial_members': has_origin_trial_members,
         'header_includes': set(DICTIONARY_H_INCLUDES),
         'members': members,
         'required_member_names': sorted([member.name
@@ -143,6 +151,7 @@ def member_context(dictionary, member):
         'is_object': unwrapped_idl_type.name == 'Object' or is_deprecated_dictionary,
         'is_required': member.is_required,
         'name': member.name,
+        'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(member),  # [OriginTrialEnabled]
         'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(member),  # [RuntimeEnabled]
         'setter_name': setter_name_for_dictionary_member(member),
         'null_setter_name': null_setter_name_for_dictionary_member(member),
