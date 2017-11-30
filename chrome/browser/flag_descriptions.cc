@@ -871,6 +871,11 @@ const char kNewRemotePlaybackPipelineName[] =
 const char kNewRemotePlaybackPipelineDescription[] =
     "Enable the new pipeline for playing media element remotely via "
     "RemotePlayback API or native controls.";
+const char kUseSurfaceLayerForVideoName[] =
+    "Enable the use of SurfaceLayer objects for videos.";
+const char kUseSurfaceLayerForVideoDescription[] =
+    "Enable compositing onto a Surface instead of a VideoLayer "
+    "for videos.";
 
 const char kNewUsbBackendName[] = "Enable new USB backend";
 const char kNewUsbBackendDescription[] =

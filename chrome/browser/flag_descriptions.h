@@ -547,6 +547,9 @@ extern const char kNewBookmarkAppsDescription[];
 extern const char kNewRemotePlaybackPipelineName[];
 extern const char kNewRemotePlaybackPipelineDescription[];
 
+extern const char kUseSurfaceLayerForVideoName[];
+extern const char kUseSurfaceLayerForVideoDescription[];
+
 extern const char kNewUsbBackendName[];
 extern const char kNewUsbBackendDescription[];
 
