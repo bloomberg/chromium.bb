@@ -437,6 +437,33 @@ _BANNED_CPP_FUNCTIONS = (
       True,
       (),
     ),
+    (
+      r'/\bbase::Bind\(',
+      (
+          'Please consider using base::Bind{Once,Repeating} instead '
+          'of base::Bind. (crbug/714018)',
+      ),
+      False,
+      (),
+    ),
+    (
+      r'/\bbase::Callback<',
+      (
+          'Please consider using base::{Once,Repeating}Callback instead '
+          'of base::Callback. (crbug/714018)',
+      ),
+      False,
+      (),
+    ),
+    (
+      r'/\bbase::Closure\b',
+      (
+          'Please consider using base::{Once,Repeating}Closure instead '
+          'of base::Closure. (crbug/714018)',
+      ),
+      False,
+      (),
+    ),
 )
 
 
