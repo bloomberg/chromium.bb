@@ -334,12 +334,14 @@ viz_source_set("perf_tests") {
   testonly = true
   sources = [
     "display/bsp_tree_perftest.cc",
+    "display/display_perftest.cc",
     "display/surface_aggregator_perftest.cc",
   ]
 
   deps = [
     ":service",
     "//base",
+    "//base/test:test_support",
     "//cc",
     "//cc:test_support",
     "//cc/base",
