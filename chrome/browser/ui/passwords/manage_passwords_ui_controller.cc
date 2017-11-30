@@ -401,6 +401,11 @@ void ManagePasswordsUIController::SavePassword(const base::string16& username,
                             username_edited + 2 * password_changed, 4);
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.PasswordSavedWithManualFallback",
                         BubbleIsManualFallbackForSaving());
+  if (GetPasswordFormMetricsRecorder() && BubbleIsManualFallbackForSaving()) {
+    GetPasswordFormMetricsRecorder()->RecordDetailedUserAction(
+        password_manager::PasswordFormMetricsRecorder::DetailedUserAction::
+            kTriggeredManualFallbackForSaving);
+  }
 
   save_fallback_timer_.Stop();
   SavePasswordInternal();
@@ -415,6 +420,12 @@ void ManagePasswordsUIController::UpdatePassword(
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, GetState());
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.PasswordUpdatedWithManualFallback",
                         BubbleIsManualFallbackForSaving());
+  if (GetPasswordFormMetricsRecorder() && BubbleIsManualFallbackForSaving()) {
+    GetPasswordFormMetricsRecorder()->RecordDetailedUserAction(
+        password_manager::PasswordFormMetricsRecorder::DetailedUserAction::
+            kTriggeredManualFallbackForUpdating);
+  }
+
   save_fallback_timer_.Stop();
   UpdatePasswordInternal(password_form);
   passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
