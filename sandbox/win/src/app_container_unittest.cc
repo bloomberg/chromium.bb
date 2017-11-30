@@ -65,6 +65,21 @@ bool ValidSecurityCapabilities(PSECURITY_CAPABILITIES security_capabilities,
   return true;
 }
 
+bool CompareSidVectors(const std::vector<Sid>& left,
+                       const std::vector<Sid>& right) {
+  if (left.size() != right.size())
+    return false;
+  auto left_interator = left.cbegin();
+  auto right_interator = right.cbegin();
+  while (left_interator != left.cend()) {
+    if (!::EqualSid(left_interator->GetPSID(), right_interator->GetPSID()))
+      return false;
+    ++left_interator;
+    ++right_interator;
+  }
+  return true;
+}
+
 bool GetProfilePath(const std::wstring& package_name,
                     base::FilePath* profile_path) {
   base::FilePath local_app_data;
@@ -324,6 +339,44 @@ TEST(AppContainerTest, AccessCheckRegistry) {
   ASSERT_TRUE(access_status);
   ASSERT_EQ(DWORD{KEY_QUERY_VALUE}, granted_access);
   RegDeleteKey(HKEY_CURRENT_USER, package_name.c_str());
+}
+
+TEST(AppContainerTest, ImpersonationCapabilities) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  std::wstring package_name = GenerateRandomPackageName();
+  scoped_refptr<AppContainerProfile> profile =
+      AppContainerProfile::Open(package_name.c_str());
+  ASSERT_NE(nullptr, profile.get());
+
+  std::vector<Sid> capabilities;
+  std::vector<Sid> impersonation_capabilities;
+
+  ASSERT_TRUE(profile->AddCapability(kInternetClient));
+  capabilities.push_back(Sid::FromKnownCapability(kInternetClient));
+  impersonation_capabilities.push_back(
+      Sid::FromKnownCapability(kInternetClient));
+
+  ASSERT_TRUE(CompareSidVectors(profile->GetCapabilities(), capabilities));
+  ASSERT_TRUE(CompareSidVectors(profile->GetImpersonationCapabilities(),
+                                impersonation_capabilities));
+
+  ASSERT_TRUE(profile->AddImpersonationCapability(kPrivateNetworkClientServer));
+  impersonation_capabilities.push_back(
+      Sid::FromKnownCapability(kPrivateNetworkClientServer));
+  // No support for named capabilities prior to Win10.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    ASSERT_TRUE(profile->AddImpersonationCapability(L"FakeCapability"));
+    impersonation_capabilities.push_back(
+        Sid::FromNamedCapability(L"FakeCapability"));
+  }
+  Sid sid_sddl = Sid::FromSddlString(L"S-1-15-3-1");
+  ASSERT_TRUE(profile->AddImpersonationCapability(sid_sddl));
+  impersonation_capabilities.push_back(sid_sddl);
+  ASSERT_TRUE(CompareSidVectors(profile->GetCapabilities(), capabilities));
+  ASSERT_TRUE(CompareSidVectors(profile->GetImpersonationCapabilities(),
+                                impersonation_capabilities));
 }
 
 }  // namespace sandbox

@@ -63,12 +63,26 @@ class AppContainerProfile {
   // Adds a capability from a SID
   bool AddCapability(const Sid& capability_sid);
 
+  // Adds an impersonation capability by name to this profile.
+  bool AddImpersonationCapability(const wchar_t* capability_name);
+  // Adds an impersonation capability from a known list.
+  bool AddImpersonationCapability(WellKnownCapabilities capability);
+  // Adds an impersonation capability from a SID
+  bool AddImpersonationCapability(const Sid& capability_sid);
+
   // Enable Low Privilege AC.
   void SetEnableLowPrivilegeAppContainer(bool enable);
   bool GetEnableLowPrivilegeAppContainer();
 
-  // Get a allocated SecurityCapabilities object for this App Container.
+  // Get an allocated SecurityCapabilities object for this App Container.
   std::unique_ptr<SecurityCapabilities> GetSecurityCapabilities();
+
+  // Get a vector of capabilities.
+  const std::vector<Sid>& GetCapabilities();
+
+  // Get a vector of impersonation only capabilities. Used if the process needs
+  // a more privileged token to start.
+  const std::vector<Sid>& GetImpersonationCapabilities();
 
   // Creates a new AppContainerProfile object. This will create a new profile
   // if it doesn't already exist. The profile must be deleted manually using
@@ -90,12 +104,14 @@ class AppContainerProfile {
   ~AppContainerProfile();
 
   bool BuildLowBoxToken(base::win::ScopedHandle* token);
+  bool AddCapability(const Sid& capability_sid, bool impersonation_only);
 
   // Standard object-lifetime reference counter.
   volatile LONG ref_count_;
   Sid package_sid_;
   bool enable_low_privilege_app_container_;
   std::vector<Sid> capabilities_;
+  std::vector<Sid> impersonation_capabilities_;
 
   DISALLOW_COPY_AND_ASSIGN(AppContainerProfile);
 };
