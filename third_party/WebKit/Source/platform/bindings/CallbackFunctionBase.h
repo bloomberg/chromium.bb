@@ -75,11 +75,24 @@ class CallbackFunctionBase::Persistent
     if (raw)
       function_.Reset(raw->GetIsolate(), raw->callback_function_.Get());
   }
-  Persistent(const Persistent& other)
-      : Parent(other), function_(other.function_) {}
+  Persistent(const Persistent& other) : Parent(other) {
+    if (other)
+      function_.Reset(other->GetIsolate(), other.function_);
+  }
   ~Persistent() = default;
 
-  Persistent& operator=(const Persistent& other) = default;
+  Persistent& operator=(const Persistent& other) {
+    if (this == &other)
+      return *this;
+
+    if (other) {
+      Parent::operator=(other);
+      function_.Reset(other->GetIsolate(), other.function_);
+    } else {
+      Clear();
+    }
+    return *this;
+  }
 
   void Clear() {
     Parent::Clear();
@@ -87,8 +100,7 @@ class CallbackFunctionBase::Persistent
   }
 
  private:
-  v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>>
-      function_;
+  v8::Persistent<v8::Function> function_;
 };
 
 template <typename T>
