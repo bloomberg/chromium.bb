@@ -114,9 +114,8 @@ TEST(ComInitCheckHook, ExternallyHooked) {
                 reinterpret_cast<void*>(co_create_instance_address),
                 reinterpret_cast<const void*>(&jmp_byte), sizeof(jmp_byte)));
 
-  // This line shouldn't crash if a hook is already in place.
-  // TODO(robliao): Make it crash after resolving http://crbug.com/737090.
-  { ComInitCheckHook com_check_hook; }
+  // Externally patched instances should crash so we catch these cases on bots.
+  EXPECT_DCHECK_DEATH({ ComInitCheckHook com_check_hook; });
 
   // If this call fails, really bad things are going to happen to other tests
   // so CHECK here.
