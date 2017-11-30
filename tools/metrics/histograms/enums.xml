@@ -25929,6 +25929,7 @@ from previous Chrome versions.
   <int value="2093235103" label="default-tile-width"/>
   <int value="2097048479" label="disable-auto-hiding-toolbar-threshold"/>
   <int value="2098714203" label="enable-generic-sensors"/>
+  <int value="2098907258" label="UseSurfaceLayerForVideo:disabled"/>
   <int value="2101151142" label="disable-direct-write"/>
   <int value="2104788328" label="use-winrt-midi-api"/>
   <int value="2119964154" label="enable-download-resumption"/>
@@ -25942,6 +25943,7 @@ from previous Chrome versions.
   <int value="2129929643" label="enable-use-zoom-for-dsf"/>
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>
   <int value="2137599770" label="enable-win32k-renderer-lockdown"/>
+  <int value="2139048614" label="UseSurfaceLayerForVideo:enabled"/>
   <int value="2141463681" label="enable-offer-upload-credit-cards"/>
   <int value="2142979536" label="EnableManualFallbacksFilling:disabled"/>
 </enum>

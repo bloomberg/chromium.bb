@@ -2754,6 +2754,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewRemotePlaybackPipelineName,
      flag_descriptions::kNewRemotePlaybackPipelineDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kNewRemotePlaybackPipeline)},
+    {"enable-surfaces-for-videos",
+     flag_descriptions::kUseSurfaceLayerForVideoName,
+     flag_descriptions::kUseSurfaceLayerForVideoDescription, kOsAll,
+     FEATURE_VALUE_TYPE(media::kUseSurfaceLayerForVideo)},
 #if defined(OS_CHROMEOS)
     {"quick-unlock-pin", flag_descriptions::kQuickUnlockPinName,
      flag_descriptions::kQuickUnlockPinDescription, kOsCrOS,
