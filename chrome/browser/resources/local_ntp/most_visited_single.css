@@ -3,15 +3,19 @@
  * found in the LICENSE file. */
 
 html {
+  /* Constants. */
   --tile-height: 128px;
   --tile-margin: 16px;
   --tile-width: 154px;
   --title-height: 32px;
+
+  /* May be overridden by themes (on the body element). */
+  --tile-title-color: #323232;
 }
 
 body {
   background: none transparent;
-  color: #323232;
+  color: var(--tile-title-color);
   margin: 0;
   overflow: hidden;
   padding: 0;
@@ -136,6 +140,11 @@ a:visited {
   background: rgb(245,245,245);
 }
 
+body.dark-theme .mv-tile,
+body.dark-theme .mv-empty-tile {
+  background: rgb(51,51,51);
+}
+
 .mv-tile {
   box-shadow: 0 2px 2px 0 rgba(0,0,0,0.16), 0 0 0 1px rgba(0,0,0,0.08);
   cursor: pointer;
@@ -223,6 +232,10 @@ html[dir=rtl] .mv-title[style*='direction: rtl'] {
   background-color: rgb(245,245,245);
 }
 
+body.dark-theme .mv-thumb.failed-img {
+  background-color: #555;
+}
+
 /* We use ::after without content to provide an aditional element on top of the
  * thumbnail. */
 .mv-thumb.failed-img::after {
@@ -233,6 +246,10 @@ html[dir=rtl] .mv-title[style*='direction: rtl'] {
   height: 0;
   margin: 39px 66px;
   width: 0;
+}
+
+body.dark-theme .mv-thumb.failed-img::after {
+  border-color: #333;
 }
 
 .mv-x {
@@ -246,6 +263,10 @@ html[dir=rtl] .mv-title[style*='direction: rtl'] {
   right: 0;
   transition: opacity 150ms;
   width: 40px;
+}
+
+body.dark-theme .mv-x {
+  background: linear-gradient(to left, rgb(51,51,51) 60%, transparent);
 }
 
 /* We use ::after without content to provide the masked X element. The "bottom"
@@ -269,10 +290,18 @@ html[dir=rtl] .mv-title[style*='direction: rtl'] {
   width: var(--title-height);
 }
 
+body.dark-theme .mv-x.mv-x::after {
+  background-color: rgba(255,255,255,0.7);
+}
+
 html[dir=rtl] .mv-x {
   background: linear-gradient(to right, rgb(250,250,250) 60%, transparent);
   left: -1px;
   right: auto;
+}
+
+body.dark-theme body.dark-theme .mv-x {
+  background: linear-gradient(to right, rgb(51,51,51) 60%, transparent);
 }
 
 html[dir=rtl] .mv-x::after {
@@ -284,8 +313,16 @@ html[dir=rtl] .mv-x::after {
   background-color: rgb(90,90,90);
 }
 
+body.dark-theme .mv-x:hover::after {
+  background-color: #fff;
+}
+
 .mv-x:active::after {
   background-color: rgb(66,133,244);
+}
+
+body.dark-theme .mv-x:active::after {
+  background-color: rgba(255,255,255,0.5);
 }
 
 .mv-tile:hover .mv-x,
