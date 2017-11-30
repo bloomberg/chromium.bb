@@ -198,12 +198,6 @@ bool NearlyIntegral(float value) {
   return fabs(value - floorf(value)) < std::numeric_limits<float>::epsilon();
 }
 
-InterpolationQuality LimitInterpolationQuality(
-    const GraphicsContext& context,
-    InterpolationQuality resampling) {
-  return std::min(resampling, context.ImageInterpolationQuality());
-}
-
 InterpolationQuality ComputeInterpolationQuality(float src_width,
                                                  float src_height,
                                                  float dest_width,
@@ -285,8 +279,8 @@ InterpolationQuality ComputeInterpolationQuality(float src_width,
   if (!is_data_complete)
     return kInterpolationLow;
 
-  // Everything else gets resampled at high quality.
-  return kInterpolationHigh;
+  // Everything else gets resampled at default quality.
+  return kInterpolationDefault;
 }
 
 int ClampedAlphaForBlending(float alpha) {

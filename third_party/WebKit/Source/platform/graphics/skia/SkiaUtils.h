@@ -46,8 +46,6 @@
 
 namespace blink {
 
-class GraphicsContext;
-
 /**** constants ****/
 
 enum {
@@ -110,9 +108,6 @@ inline WindRule SkFillTypeToWindRule(SkPath::FillType fill_type) {
 SkMatrix PLATFORM_EXPORT AffineTransformToSkMatrix(const AffineTransform&);
 
 bool NearlyIntegral(float value);
-
-InterpolationQuality LimitInterpolationQuality(const GraphicsContext&,
-                                               InterpolationQuality resampling);
 
 InterpolationQuality ComputeInterpolationQuality(float src_width,
                                                  float src_height,

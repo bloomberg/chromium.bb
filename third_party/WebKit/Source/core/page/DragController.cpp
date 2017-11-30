@@ -1054,7 +1054,7 @@ static std::unique_ptr<DragImage> DragImageForImage(
       element->EnsureComputedStyle()->ImageRendering() ==
               EImageRendering::kPixelated
           ? kInterpolationNone
-          : kInterpolationHigh;
+          : kInterpolationDefault;
   RespectImageOrientationEnum should_respect_image_orientation =
       LayoutObject::ShouldRespectImageOrientation(element->GetLayoutObject());
   ImageOrientation orientation;
