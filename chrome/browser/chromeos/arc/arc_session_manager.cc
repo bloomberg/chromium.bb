@@ -584,15 +584,15 @@ bool ArcSessionManager::RequestEnableImpl() {
 
   PrefService* const prefs = profile_->GetPrefs();
 
-  // If it is marked that sign in has been successfully done, if ARC has been
-  // set up to always start, then directly start ARC.
+  // If it is marked that sign in has been successfully done or if Play Store is
+  // not available, then directly start ARC with skipping Play Store ToS.
   // For Kiosk mode, skip ToS because it is very likely that near the device
   // there will be no one who is eligible to accept them.
   // If opt-in verification is disabled, skip negotiation, too. This is for
   // testing purpose.
-  const bool start_arc_directly = prefs->GetBoolean(prefs::kArcSignedIn) ||
-                                  ShouldArcAlwaysStart() || IsArcKioskMode() ||
-                                  IsArcOptInVerificationDisabled();
+  const bool start_arc_directly =
+      prefs->GetBoolean(prefs::kArcSignedIn) || !arc::IsPlayStoreAvailable() ||
+      IsArcKioskMode() || IsArcOptInVerificationDisabled();
 
   // When ARC is blocked because of filesystem compatibility, do not proceed
   // to starting ARC nor follow further state transitions.

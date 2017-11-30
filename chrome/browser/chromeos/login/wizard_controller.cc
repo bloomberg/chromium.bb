@@ -881,7 +881,7 @@ void WizardController::OnVoiceInteractionValuePropSkipped() {
 void WizardController::OnVoiceInteractionValuePropAccepted() {
   const Profile* profile = ProfileManager::GetActiveUserProfile();
   if (is_in_session_oobe_ && !arc::IsArcPlayStoreEnabledForProfile(profile) &&
-      !arc::ShouldArcAlwaysStart()) {
+      arc::IsPlayStoreAvailable()) {
     ShowArcTermsOfServiceScreen();
     return;
   }
@@ -1620,6 +1620,13 @@ bool WizardController::ShouldShowArcTerms() const {
     VLOG(1) << "Skip ARC Terms of Service screen because ARC is disabled.";
     return false;
   }
+
+  if (!arc::IsPlayStoreAvailable()) {
+    VLOG(1) << "Skip ARC Terms of Service screen because Play Store is not "
+               "available on the device.";
+    return false;
+  }
+
   if (arc::IsActiveDirectoryUserForProfile(profile)) {
     VLOG(1) << "Skip ARC Terms of Service screen because it does not apply to "
                "Active Directory users.";

@@ -591,7 +591,7 @@ class ArcSessionManagerArcAlwaysStartTest : public ArcSessionManagerTest {
   ArcSessionManagerArcAlwaysStartTest() = default;
 
   void SetUp() override {
-    SetArcAlwaysStartForTesting(true);
+    SetArcAlwaysStartForTesting(false);
     ArcSessionManagerTest::SetUp();
   }
 
