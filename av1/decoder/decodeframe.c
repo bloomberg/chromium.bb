@@ -3614,6 +3614,26 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
                    data_end, startTile, endTile);
 #endif
 
+#if CONFIG_MONO_VIDEO
+  // If the bit stream is monochrome, set the U and V buffers to a constant.
+  if (cm->seq_params.monochrome) {
+#if CONFIG_HIGHBITDEPTH
+    const int bytes_per_sample = cm->use_highbitdepth ? 2 : 1;
+#else
+    const int bytes_per_sample = 1;
+#endif
+
+    YV12_BUFFER_CONFIG *cur_buf = (YV12_BUFFER_CONFIG *)xd->cur_buf;
+
+    for (int buf_idx = 1; buf_idx <= 2; buf_idx++) {
+      for (int row_idx = 0; row_idx < cur_buf->crop_heights[1]; row_idx++) {
+        memset(&cur_buf->buffers[buf_idx][row_idx * cur_buf->uv_stride], 1 << 7,
+               cur_buf->crop_widths[1] * bytes_per_sample);
+      }
+    }
+  }
+#endif
+
   if (endTile != cm->tile_rows * cm->tile_cols - 1) {
     return;
   }
