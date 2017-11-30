@@ -669,9 +669,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   // Navigate the browser to a page in a new tab.
-  GURL url = embedded_test_server()->GetURL(
-                 "/cross-site/a.com/iframe_cross_site.html");
   const std::string kHost = "a.com";
+  GURL url = embedded_test_server()->GetURL(kHost, "/iframe_cross_site.html");
   chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   ui_test_utils::NavigateToURL(&params);
