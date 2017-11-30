@@ -168,8 +168,6 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   int ydec[3];
   int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
   int nplanes = av1_num_planes(cm);
-  int chroma_cdef = xd->plane[1].subsampling_x == xd->plane[1].subsampling_y &&
-                    xd->plane[2].subsampling_x == xd->plane[2].subsampling_y;
   const int nvfb = (cm->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
   const int nhfb = (cm->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
   av1_setup_dst_planes(xd->plane, cm->sb_size, frame, 0, 0);
@@ -182,7 +180,6 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     ydec[pli] = xd->plane[pli].subsampling_y;
     mi_wide_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_x;
     mi_high_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_y;
-    if (xdec[pli] != ydec[pli]) nplanes = 1;
   }
   const int stride = (cm->mi_cols << MI_SIZE_LOG2) + 2 * CDEF_HBORDER;
   for (int pli = 0; pli < nplanes; pli++) {
@@ -295,10 +292,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
         int vsize = nvb << mi_high_l2[pli];
 
         if (pli) {
-          if (chroma_cdef)
-            level = uv_level;
-          else
-            level = 0;
+          level = uv_level;
           sec_strength = uv_sec_strength;
         }
 

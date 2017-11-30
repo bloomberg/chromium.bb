@@ -330,8 +330,6 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   DECLARE_ALIGNED(32, uint16_t, inbuf[CDEF_INBUF_SIZE]);
   uint16_t *in;
   DECLARE_ALIGNED(32, uint16_t, tmp_dst[1 << (MAX_SB_SIZE_LOG2 * 2)]);
-  int chroma_cdef = xd->plane[1].subsampling_x == xd->plane[1].subsampling_y &&
-                    xd->plane[2].subsampling_x == xd->plane[2].subsampling_y;
   quantizer =
       av1_ac_quant_Q3(cm->base_qindex, 0, cm->bit_depth) >> (cm->bit_depth - 8);
   lambda = .12 * quantizer * quantizer / 256.;
@@ -440,7 +438,6 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
           int sec_strength;
           threshold = gi / CDEF_SEC_STRENGTHS;
           if (fast) threshold = priconv[threshold];
-          if (pli > 0 && !chroma_cdef) threshold = 0;
           /* We avoid filtering the pixels for which some of the pixels to
              average
              are outside the frame. We could change the filter instead, but it
@@ -452,40 +449,35 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
           int xsize = (nhb << mi_wide_l2[pli]) +
                       CDEF_HBORDER * (fbc != nhfb - 1) + xoff;
           sec_strength = gi % CDEF_SEC_STRENGTHS;
-          if (pli && !chroma_cdef) {
-            curr_mse = 0;
-          } else {
 #if CONFIG_CDEF_SINGLEPASS
+          copy_sb16_16(&in[(-yoff * CDEF_BSTRIDE - xoff)], CDEF_BSTRIDE,
+                       src[pli],
+                       (fbr * MI_SIZE_64X64 << mi_high_l2[pli]) - yoff,
+                       (fbc * MI_SIZE_64X64 << mi_wide_l2[pli]) - xoff,
+                       stride[pli], ysize, xsize);
+          cdef_filter_fb(NULL, tmp_dst, CDEF_BSTRIDE, in, xdec[pli], ydec[pli],
+                         dir, &dirinit, var, pli, dlist, cdef_count, threshold,
+                         sec_strength + (sec_strength == 3), pri_damping,
+                         sec_damping, coeff_shift);
+#else
+          if (sec_strength == 0)
             copy_sb16_16(&in[(-yoff * CDEF_BSTRIDE - xoff)], CDEF_BSTRIDE,
                          src[pli],
                          (fbr * MI_SIZE_64X64 << mi_high_l2[pli]) - yoff,
                          (fbc * MI_SIZE_64X64 << mi_wide_l2[pli]) - xoff,
                          stride[pli], ysize, xsize);
-            cdef_filter_fb(NULL, tmp_dst, CDEF_BSTRIDE, in, xdec[pli],
-                           ydec[pli], dir, &dirinit, var, pli, dlist,
-                           cdef_count, threshold,
-                           sec_strength + (sec_strength == 3), pri_damping,
-                           sec_damping, coeff_shift);
-#else
-            if (sec_strength == 0)
-              copy_sb16_16(&in[(-yoff * CDEF_BSTRIDE - xoff)], CDEF_BSTRIDE,
-                           src[pli],
-                           (fbr * MI_SIZE_64X64 << mi_high_l2[pli]) - yoff,
-                           (fbc * MI_SIZE_64X64 << mi_wide_l2[pli]) - xoff,
-                           stride[pli], ysize, xsize);
-            cdef_filter_fb(sec_strength ? NULL : (uint8_t *)in, CDEF_BSTRIDE,
-                           tmp_dst, in, xdec[pli], ydec[pli], dir, &dirinit,
-                           var, pli, dlist, cdef_count, threshold,
-                           sec_strength + (sec_strength == 3), sec_damping,
-                           pri_damping, coeff_shift, sec_strength != 0, 1);
+          cdef_filter_fb(sec_strength ? NULL : (uint8_t *)in, CDEF_BSTRIDE,
+                         tmp_dst, in, xdec[pli], ydec[pli], dir, &dirinit, var,
+                         pli, dlist, cdef_count, threshold,
+                         sec_strength + (sec_strength == 3), sec_damping,
+                         pri_damping, coeff_shift, sec_strength != 0, 1);
 #endif
-            curr_mse = compute_cdef_dist(
-                ref_coeff[pli] +
-                    (fbr * MI_SIZE_64X64 << mi_high_l2[pli]) * stride[pli] +
-                    (fbc * MI_SIZE_64X64 << mi_wide_l2[pli]),
-                stride[pli], tmp_dst, dlist, cdef_count, bsize[pli],
-                coeff_shift, pli);
-          }
+          curr_mse = compute_cdef_dist(
+              ref_coeff[pli] +
+                  (fbr * MI_SIZE_64X64 << mi_high_l2[pli]) * stride[pli] +
+                  (fbc * MI_SIZE_64X64 << mi_wide_l2[pli]),
+              stride[pli], tmp_dst, dlist, cdef_count, bsize[pli], coeff_shift,
+              pli);
           if (pli < 2)
             mse[pli][sb_count][gi] = curr_mse;
           else

@@ -149,8 +149,8 @@ void cdef_filter_block_c(uint8_t *dst8, uint16_t *dst16, int dstride,
   const int s = CDEF_BSTRIDE;
   const int *pri_taps = cdef_pri_taps[(pri_strength >> coeff_shift) & 1];
   const int *sec_taps = cdef_sec_taps[(pri_strength >> coeff_shift) & 1];
-  for (i = 0; i < 4 << (bsize == BLOCK_8X8); i++) {
-    for (j = 0; j < 4 << (bsize == BLOCK_8X8); j++) {
+  for (i = 0; i < 4 << (bsize == BLOCK_8X8 || bsize == BLOCK_4X8); i++) {
+    for (j = 0; j < 4 << (bsize == BLOCK_8X8 || bsize == BLOCK_8X4); j++) {
       int16_t sum = 0;
       int16_t y;
       int16_t x = in[i * s + j];
@@ -455,9 +455,18 @@ void cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride, uint16_t *in,
         if (dirinit) *dirinit = 1;
       }
     }
-    // Only run dering for non-zero threshold (which is always the case for
-    // 4:2:2 or 4:4:0). If we don't dering, we still need to eventually write
-    // something out in y[] later.
+    if (pli == 1 && xdec != ydec) {
+      for (bi = 0; bi < cdef_count; bi++) {
+        static const int conv422[8] = { 7, 0, 2, 4, 5, 6, 6, 6 };
+        static const int conv440[8] = { 1, 2, 2, 2, 3, 4, 6, 0 };
+        by = dlist[bi].by;
+        bx = dlist[bi].bx;
+        dir[by][bx] = (xdec ? conv422 : conv440)[dir[by][bx]];
+      }
+    }
+
+    // Only run dering for non-zero threshold. If we don't dering, we
+    // still need to eventually write something out in y[] later.
     if (threshold != 0) {
       assert(bsize == BLOCK_8X8 || bsize == BLOCK_4X4);
       for (bi = 0; bi < cdef_count; bi++) {
@@ -545,8 +554,16 @@ void cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride, uint16_t *in,
       if (dirinit) *dirinit = 1;
     }
   }
+  if (pli == 1 && xdec != ydec) {
+    for (bi = 0; bi < cdef_count; bi++) {
+      static const int conv422[8] = { 7, 0, 2, 4, 5, 6, 6, 6 };
+      static const int conv440[8] = { 1, 2, 2, 2, 3, 4, 6, 0 };
+      by = dlist[bi].by;
+      bx = dlist[bi].bx;
+      dir[by][bx] = (xdec ? conv422 : conv440)[dir[by][bx]];
+    }
+  }
 
-  assert(bsize == BLOCK_8X8 || bsize == BLOCK_4X4);
   for (bi = 0; bi < cdef_count; bi++) {
     int t = dlist[bi].skip ? 0 : pri_strength;
     int s = dlist[bi].skip ? 0 : sec_strength;

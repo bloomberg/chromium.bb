@@ -306,6 +306,8 @@ INSTANTIATE_TEST_CASE_P(
     SSE2, CDEFBlockTest,
     ::testing::Values(
         make_tuple(&cdef_filter_block_sse2, &cdef_filter_block_c, BLOCK_4X4),
+        make_tuple(&cdef_filter_block_sse2, &cdef_filter_block_c, BLOCK_8X4),
+        make_tuple(&cdef_filter_block_sse2, &cdef_filter_block_c, BLOCK_4X8),
         make_tuple(&cdef_filter_block_sse2, &cdef_filter_block_c, BLOCK_8X8)));
 INSTANTIATE_TEST_CASE_P(SSE2, CDEFFindDirTest,
                         ::testing::Values(make_tuple(&cdef_find_dir_sse2,
@@ -315,6 +317,8 @@ INSTANTIATE_TEST_CASE_P(SSE2, CDEFFindDirTest,
 INSTANTIATE_TEST_CASE_P(
     SSSE3, CDEFBlockTest,
     ::testing::Values(
+        make_tuple(&cdef_filter_block_ssse3, &cdef_filter_block_c, BLOCK_4X4),
+        make_tuple(&cdef_filter_block_ssse3, &cdef_filter_block_c, BLOCK_8X4),
         make_tuple(&cdef_filter_block_ssse3, &cdef_filter_block_c, BLOCK_4X4),
         make_tuple(&cdef_filter_block_ssse3, &cdef_filter_block_c, BLOCK_8X8)));
 INSTANTIATE_TEST_CASE_P(SSSE3, CDEFFindDirTest,
@@ -339,6 +343,8 @@ INSTANTIATE_TEST_CASE_P(
     AVX2, CDEFBlockTest,
     ::testing::Values(
         make_tuple(&cdef_filter_block_avx2, &cdef_filter_block_c, BLOCK_4X4),
+        make_tuple(&cdef_filter_block_avx2, &cdef_filter_block_c, BLOCK_8X4),
+        make_tuple(&cdef_filter_block_avx2, &cdef_filter_block_c, BLOCK_4X8),
         make_tuple(&cdef_filter_block_avx2, &cdef_filter_block_c, BLOCK_8X8)));
 INSTANTIATE_TEST_CASE_P(AVX2, CDEFFindDirTest,
                         ::testing::Values(make_tuple(&cdef_find_dir_avx2,
@@ -362,6 +368,8 @@ INSTANTIATE_TEST_CASE_P(
     SSE2, CDEFSpeedTest,
     ::testing::Values(
         make_tuple(&cdef_filter_block_sse2, &cdef_filter_block_c, BLOCK_4X4),
+        make_tuple(&cdef_filter_block_sse2, &cdef_filter_block_c, BLOCK_8X4),
+        make_tuple(&cdef_filter_block_sse2, &cdef_filter_block_c, BLOCK_4X8),
         make_tuple(&cdef_filter_block_sse2, &cdef_filter_block_c, BLOCK_8X8)));
 INSTANTIATE_TEST_CASE_P(SSE2, CDEFFindDirSpeedTest,
                         ::testing::Values(make_tuple(&cdef_find_dir_sse2,
@@ -373,6 +381,8 @@ INSTANTIATE_TEST_CASE_P(
     SSSE3, CDEFSpeedTest,
     ::testing::Values(
         make_tuple(&cdef_filter_block_ssse3, &cdef_filter_block_c, BLOCK_4X4),
+        make_tuple(&cdef_filter_block_ssse3, &cdef_filter_block_c, BLOCK_8X4),
+        make_tuple(&cdef_filter_block_ssse3, &cdef_filter_block_c, BLOCK_4X8),
         make_tuple(&cdef_filter_block_ssse3, &cdef_filter_block_c, BLOCK_8X8)));
 INSTANTIATE_TEST_CASE_P(SSSE3, CDEFFindDirSpeedTest,
                         ::testing::Values(make_tuple(&cdef_find_dir_ssse3,
@@ -382,10 +392,12 @@ INSTANTIATE_TEST_CASE_P(SSSE3, CDEFFindDirSpeedTest,
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(
     SSE4_1, CDEFSpeedTest,
-    ::testing::Values(make_tuple(&cdef_filter_block_sse4_1,
-                                 &cdef_filter_block_c, BLOCK_4X4),
-                      make_tuple(&cdef_filter_block_sse4_1,
-                                 &cdef_filter_block_c, BLOCK_8X8)));
+    ::testing::Values(
+        make_tuple(&cdef_filter_block_sse4_1, &cdef_filter_block_c, BLOCK_4X4),
+        make_tuple(&cdef_filter_block_sse4_1, &cdef_filter_block_c, BLOCK_8X4),
+        make_tuple(&cdef_filter_block_sse4_1, &cdef_filter_block_c, BLOCK_4X8),
+        make_tuple(&cdef_filter_block_sse4_1, &cdef_filter_block_c,
+                   BLOCK_8X8)));
 INSTANTIATE_TEST_CASE_P(SSE4_1, CDEFFindDirSpeedTest,
                         ::testing::Values(make_tuple(&cdef_find_dir_sse4_1,
                                                      &cdef_find_dir_c)));
@@ -396,6 +408,8 @@ INSTANTIATE_TEST_CASE_P(
     AVX2, CDEFSpeedTest,
     ::testing::Values(
         make_tuple(&cdef_filter_block_avx2, &cdef_filter_block_c, BLOCK_4X4),
+        make_tuple(&cdef_filter_block_avx2, &cdef_filter_block_c, BLOCK_8X4),
+        make_tuple(&cdef_filter_block_avx2, &cdef_filter_block_c, BLOCK_4X8),
         make_tuple(&cdef_filter_block_avx2, &cdef_filter_block_c, BLOCK_8X8)));
 INSTANTIATE_TEST_CASE_P(AVX2, CDEFFindDirSpeedTest,
                         ::testing::Values(make_tuple(&cdef_find_dir_avx2,
@@ -407,6 +421,8 @@ INSTANTIATE_TEST_CASE_P(
     NEON, CDEFSpeedTest,
     ::testing::Values(
         make_tuple(&cdef_filter_block_neon, &cdef_filter_block_c, BLOCK_4X4),
+        make_tuple(&cdef_filter_block_neon, &cdef_filter_block_c, BLOCK_8X4),
+        make_tuple(&cdef_filter_block_neon, &cdef_filter_block_c, BLOCK_4X8),
         make_tuple(&cdef_filter_block_neon, &cdef_filter_block_c, BLOCK_8X8)));
 INSTANTIATE_TEST_CASE_P(NEON, CDEFFindDirSpeedTest,
                         ::testing::Values(make_tuple(&cdef_find_dir_neon,

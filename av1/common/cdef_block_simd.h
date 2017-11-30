@@ -1029,16 +1029,56 @@ void SIMD_FUNC(cdef_filter_block)(uint8_t *dst8, uint16_t *dst16, int dstride,
                                   int sec_strength, int dir, int pri_damping,
                                   int sec_damping, int bsize, int max,
                                   int coeff_shift) {
-  if (dst8)
-    (bsize == BLOCK_8X8 ? SIMD_FUNC(cdef_filter_block_8x8_8)
-                        : SIMD_FUNC(cdef_filter_block_4x4_8))(
-        dst8, dstride, in, pri_strength, sec_strength, dir, pri_damping,
-        sec_damping, max, coeff_shift);
-  else
-    (bsize == BLOCK_8X8 ? SIMD_FUNC(cdef_filter_block_8x8_16)
-                        : SIMD_FUNC(cdef_filter_block_4x4_16))(
-        dst16, dstride, in, pri_strength, sec_strength, dir, pri_damping,
-        sec_damping, max, coeff_shift);
+  if (dst8) {
+    if (bsize == BLOCK_8X8) {
+      SIMD_FUNC(cdef_filter_block_8x8_8)
+      (dst8, dstride, in, pri_strength, sec_strength, dir, pri_damping,
+       sec_damping, max, coeff_shift);
+    } else if (bsize == BLOCK_4X8) {
+      SIMD_FUNC(cdef_filter_block_4x4_8)
+      (dst8, dstride, in, pri_strength, sec_strength, dir, pri_damping,
+       sec_damping, max, coeff_shift);
+      SIMD_FUNC(cdef_filter_block_4x4_8)
+      (dst8 + 4 * dstride, dstride, in + 4 * CDEF_BSTRIDE, pri_strength,
+       sec_strength, dir, pri_damping, sec_damping, max, coeff_shift);
+    } else if (bsize == BLOCK_8X4) {
+      SIMD_FUNC(cdef_filter_block_4x4_8)
+      (dst8, dstride, in, pri_strength, sec_strength, dir, pri_damping,
+       sec_damping, max, coeff_shift);
+      SIMD_FUNC(cdef_filter_block_4x4_8)
+      (dst8 + 4, dstride, in + 4, pri_strength, sec_strength, dir, pri_damping,
+       sec_damping, max, coeff_shift);
+    } else {
+      SIMD_FUNC(cdef_filter_block_4x4_8)
+      (dst8, dstride, in, pri_strength, sec_strength, dir, pri_damping,
+       sec_damping, max, coeff_shift);
+    }
+  } else {
+    if (bsize == BLOCK_8X8) {
+      SIMD_FUNC(cdef_filter_block_8x8_16)
+      (dst16, dstride, in, pri_strength, sec_strength, dir, pri_damping,
+       sec_damping, max, coeff_shift);
+    } else if (bsize == BLOCK_4X8) {
+      SIMD_FUNC(cdef_filter_block_4x4_16)
+      (dst16, dstride, in, pri_strength, sec_strength, dir, pri_damping,
+       sec_damping, max, coeff_shift);
+      SIMD_FUNC(cdef_filter_block_4x4_16)
+      (dst16 + 4 * dstride, dstride, in + 4 * CDEF_BSTRIDE, pri_strength,
+       sec_strength, dir, pri_damping, sec_damping, max, coeff_shift);
+    } else if (bsize == BLOCK_8X4) {
+      SIMD_FUNC(cdef_filter_block_4x4_16)
+      (dst16, dstride, in, pri_strength, sec_strength, dir, pri_damping,
+       sec_damping, max, coeff_shift);
+      SIMD_FUNC(cdef_filter_block_4x4_16)
+      (dst16 + 4, dstride, in + 4, pri_strength, sec_strength, dir, pri_damping,
+       sec_damping, max, coeff_shift);
+    } else {
+      assert(bsize == BLOCK_4X4);
+      SIMD_FUNC(cdef_filter_block_4x4_16)
+      (dst16, dstride, in, pri_strength, sec_strength, dir, pri_damping,
+       sec_damping, max, coeff_shift);
+    }
+  }
 }
 
 #else
