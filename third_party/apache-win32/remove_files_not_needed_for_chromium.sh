@@ -33,6 +33,7 @@ find . \! \( \
     -path ./modules/mod_authz_host.so -o \
     -path ./modules/mod_autoindex.so -o \
     -path ./modules/mod_cgi.so -o \
+    -path ./modules/mod_env.so -o \
     -path ./modules/mod_headers.so -o \
     -path ./modules/mod_log_config.so -o \
     -path ./modules/mod_mime.so -o \
