@@ -61,10 +61,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   void SetQuicServerInfoMap(
       std::unique_ptr<QuicServerInfoMap> quic_server_info_map);
 
-  // Get the list of servers (host/port) that support SPDY. The max_size is the
-  // number of MRU servers that support SPDY that are to be returned.
-  void GetSpdyServerList(std::vector<std::string>* spdy_servers,
-                         size_t max_size) const;
+  const SpdyServersMap& spdy_servers_map() const;
 
   void SetBrokenAndRecentlyBrokenAlternativeServices(
       std::unique_ptr<BrokenAlternativeServiceList>
