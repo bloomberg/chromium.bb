@@ -250,7 +250,7 @@ StringKeyframeEffectModel* HTMLMarqueeElement::CreateEffectModel(
   MutableCSSPropertyValueSet::SetResult set_result;
 
   SecureContextMode secure_context_mode =
-      mover_->GetDocument().SecureContextMode();
+      mover_->GetDocument().GetSecureContextMode();
 
   scoped_refptr<StringKeyframe> keyframe1 = StringKeyframe::Create();
   set_result = keyframe1->SetCSSPropertyValue(

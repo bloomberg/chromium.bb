@@ -279,7 +279,7 @@ static bool ExecuteApplyStyle(LocalFrame& frame,
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(property_id, property_value, /* important */ false,
-                     frame.GetDocument()->SecureContextMode());
+                     frame.GetDocument()->GetSecureContextMode());
   return ApplyCommandToFrame(frame, source, input_type, style);
 }
 
@@ -329,7 +329,7 @@ static bool ExecuteToggleStyleInList(LocalFrame& frame,
   MutableCSSPropertyValueSet* new_mutable_style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   new_mutable_style->SetProperty(property_id, new_style, /* important */ false,
-                                 frame.GetDocument()->SecureContextMode());
+                                 frame.GetDocument()->GetSecureContextMode());
   return ApplyCommandToFrame(frame, source, input_type, new_mutable_style);
 }
 
@@ -353,7 +353,7 @@ static bool ExecuteToggleStyle(LocalFrame& frame,
 
   EditingStyle* style =
       EditingStyle::Create(property_id, style_is_present ? off_value : on_value,
-                           frame.GetDocument()->SecureContextMode());
+                           frame.GetDocument()->GetSecureContextMode());
   return ApplyCommandToFrame(frame, source, input_type, style->Style());
 }
 
@@ -365,7 +365,7 @@ static bool ExecuteApplyParagraphStyle(LocalFrame& frame,
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(property_id, property_value, /* important */ false,
-                     frame.GetDocument()->SecureContextMode());
+                     frame.GetDocument()->GetSecureContextMode());
   // FIXME: We don't call shouldApplyStyle when the source is DOM; is there a
   // good reason for that?
   switch (source) {

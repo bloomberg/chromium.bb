@@ -294,8 +294,9 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
     return;
   }
 
-  CSSParser::ParseValue(style, CSSPropertyFont, new_font, true,
-                        Host()->GetTopExecutionContext()->SecureContextMode());
+  CSSParser::ParseValue(
+      style, CSSPropertyFont, new_font, true,
+      Host()->GetTopExecutionContext()->GetSecureContextMode());
 
   FontDescription desc =
       FontStyleResolver::ComputeFont(*style, Host()->GetFontSelector());

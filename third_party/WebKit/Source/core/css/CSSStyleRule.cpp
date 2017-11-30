@@ -69,7 +69,7 @@ String CSSStyleRule::selectorText() const {
 void CSSStyleRule::setSelectorText(const ExecutionContext* execution_context,
                                    const String& selector_text) {
   const CSSParserContext* context = CSSParserContext::Create(
-      ParserContext(execution_context->SecureContextMode()), nullptr);
+      ParserContext(execution_context->GetSecureContextMode()), nullptr);
   CSSSelectorList selector_list = CSSParser::ParseSelector(
       context, parentStyleSheet() ? parentStyleSheet()->Contents() : nullptr,
       selector_text);

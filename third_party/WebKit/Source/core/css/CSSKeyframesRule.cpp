@@ -102,7 +102,7 @@ void CSSKeyframesRule::appendRule(const ExecutionContext* execution_context,
 
   CSSStyleSheet* style_sheet = parentStyleSheet();
   CSSParserContext* context = CSSParserContext::CreateWithStyleSheet(
-      ParserContext(execution_context->SecureContextMode()), style_sheet);
+      ParserContext(execution_context->GetSecureContextMode()), style_sheet);
   StyleRuleKeyframe* keyframe =
       CSSParser::ParseKeyframeRule(context, rule_text);
   if (!keyframe)

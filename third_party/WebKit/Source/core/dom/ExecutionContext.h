@@ -179,7 +179,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual bool IsSecureContext(String& error_message) const = 0;
   virtual bool IsSecureContext() const;
 
-  SecureContextMode SecureContextMode() const {
+  SecureContextMode GetSecureContextMode() const {
     return IsSecureContext() ? SecureContextMode::kSecureContext
                              : SecureContextMode::kInsecureContext;
   }

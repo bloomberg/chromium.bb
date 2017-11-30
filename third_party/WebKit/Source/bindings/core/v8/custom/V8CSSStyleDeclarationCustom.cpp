@@ -231,7 +231,7 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(
       info.GetIsolate(), ExceptionState::kSetterContext, "CSSStyleDeclaration",
       getPropertyName(resolveCSSPropertyID(unresolved_property)));
   impl->SetPropertyInternal(unresolved_property, String(), property_value,
-                            false, execution_context->SecureContextMode(),
+                            false, execution_context->GetSecureContextMode(),
                             exception_state);
 
   V8SetReturnValue(info, value);

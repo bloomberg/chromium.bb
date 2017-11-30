@@ -50,7 +50,7 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
                    const String& value,
                    ExceptionState& exception_state) {
     SetPropertyInternal(CSSPropertyFloat, String(), value, false,
-                        execution_context->SecureContextMode(),
+                        execution_context->GetSecureContextMode(),
                         exception_state);
   }
   virtual String cssText() const = 0;

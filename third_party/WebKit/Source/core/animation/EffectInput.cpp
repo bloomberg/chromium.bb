@@ -92,11 +92,11 @@ void SetKeyframeValue(Element& element,
             ? keyframe.SetCSSPropertyValue(
                   AtomicString(property),
                   element.GetDocument().GetPropertyRegistry(), value,
-                  element.GetDocument().SecureContextMode(),
+                  element.GetDocument().GetSecureContextMode(),
                   style_sheet_contents)
             : keyframe.SetCSSPropertyValue(
                   css_property, value,
-                  element.GetDocument().SecureContextMode(),
+                  element.GetDocument().GetSecureContextMode(),
                   style_sheet_contents);
     if (!set_result.did_parse && execution_context) {
       Document& document = ToDocument(*execution_context);
@@ -113,7 +113,7 @@ void SetKeyframeValue(Element& element,
                                                                       element);
   if (css_property != CSSPropertyInvalid) {
     keyframe.SetPresentationAttributeValue(
-        css_property, value, element.GetDocument().SecureContextMode(),
+        css_property, value, element.GetDocument().GetSecureContextMode(),
         style_sheet_contents);
     return;
   }

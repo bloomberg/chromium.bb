@@ -51,7 +51,7 @@ bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
     bool is_animation_tainted = false;
     return CSSParser::ParseValueForCustomProperty(
                dummy_style, "--valid", nullptr, value, false,
-               execution_context->SecureContextMode(), nullptr,
+               execution_context->GetSecureContextMode(), nullptr,
                is_animation_tainted)
         .did_parse;
   }
@@ -65,14 +65,14 @@ bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
   MutableCSSPropertyValueSet* dummy_style =
       MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
   return CSSParser::ParseValue(dummy_style, unresolved_property, value, false,
-                               execution_context->SecureContextMode())
+                               execution_context->GetSecureContextMode())
       .did_parse;
 }
 
 bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
                             const String& condition_text) {
   return CSSParser::ParseSupportsCondition(
-      condition_text, execution_context->SecureContextMode());
+      condition_text, execution_context->GetSecureContextMode());
 }
 
 String DOMWindowCSS::escape(const String& ident) {

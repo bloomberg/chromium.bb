@@ -243,7 +243,7 @@ void HTMLElementEquivalent::AddToStyle(Element* element,
                                        EditingStyle* style) const {
   style->SetProperty(property_id_, identifier_value_->CssText(),
                      /* important */ false,
-                     element->GetDocument().SecureContextMode());
+                     element->GetDocument().GetSecureContextMode());
 }
 
 class HTMLTextDecorationEquivalent final : public HTMLElementEquivalent {
@@ -348,7 +348,7 @@ void HTMLAttributeEquivalent::AddToStyle(Element* element,
                                          EditingStyle* style) const {
   if (const CSSValue* value = AttributeValueAsCSSValue(element)) {
     style->SetProperty(property_id_, value->CssText(), /* important */ false,
-                       element->GetDocument().SecureContextMode());
+                       element->GetDocument().GetSecureContextMode());
   }
 }
 
@@ -362,7 +362,7 @@ const CSSValue* HTMLAttributeEquivalent::AttributeValueAsCSSValue(
   MutableCSSPropertyValueSet* dummy_style = nullptr;
   dummy_style = MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   dummy_style->SetProperty(property_id_, value, /* important */ false,
-                           element->GetDocument().SecureContextMode());
+                           element->GetDocument().GetSecureContextMode());
   return dummy_style->GetPropertyCSSValue(property_id_);
 }
 
@@ -508,13 +508,13 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
             EditingStyleUtilities::BackgroundColorValueInEffect(node)) {
       mutable_style_->SetProperty(CSSPropertyBackgroundColor, value->CssText(),
                                   /* important */ false,
-                                  node->GetDocument().SecureContextMode());
+                                  node->GetDocument().GetSecureContextMode());
     }
     if (const CSSValue* value = computed_style_at_position->GetPropertyCSSValue(
             GetCSSPropertyWebkitTextDecorationsInEffect())) {
       mutable_style_->SetProperty(CSSPropertyTextDecoration, value->CssText(),
                                   /* important */ false,
-                                  node->GetDocument().SecureContextMode());
+                                  node->GetDocument().GetSecureContextMode());
     }
   }
 
@@ -534,13 +534,13 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
           CSSPrimitiveValue::Create(computed_style->SpecifiedFontSize(),
                                     CSSPrimitiveValue::UnitType::kPixels)
               ->CssText(),
-          /* important */ false, node->GetDocument().SecureContextMode());
+          /* important */ false, node->GetDocument().GetSecureContextMode());
     }
 
     RemoveInheritedColorsIfNeeded(computed_style);
-    ReplaceFontSizeByKeywordIfPossible(computed_style,
-                                       node->GetDocument().SecureContextMode(),
-                                       computed_style_at_position);
+    ReplaceFontSizeByKeywordIfPossible(
+        computed_style, node->GetDocument().GetSecureContextMode(),
+        computed_style_at_position);
   }
 
   is_monospace_font_ = computed_style_at_position->IsMonospaceFont();
@@ -929,7 +929,7 @@ bool EditingStyle::ConflictsWithInlineStyleOfElement(
             CSSPropertyTextDecorationLine,
             inline_style->GetPropertyValue(CSSPropertyTextDecorationLine),
             inline_style->PropertyIsImportant(CSSPropertyTextDecorationLine),
-            element->GetDocument().SecureContextMode());
+            element->GetDocument().GetSecureContextMode());
       }
       continue;
     }
@@ -946,7 +946,7 @@ bool EditingStyle::ConflictsWithInlineStyleOfElement(
         extracted_style->SetProperty(
             property_id, inline_style->GetPropertyValue(property_id),
             inline_style->PropertyIsImportant(property_id),
-            element->GetDocument().SecureContextMode());
+            element->GetDocument().GetSecureContextMode());
       }
     }
 
@@ -959,7 +959,7 @@ bool EditingStyle::ConflictsWithInlineStyleOfElement(
       extracted_style->SetProperty(
           property_id, inline_style->GetPropertyValue(property_id),
           inline_style->PropertyIsImportant(property_id),
-          element->GetDocument().SecureContextMode());
+          element->GetDocument().GetSecureContextMode());
     }
   }
 
@@ -1106,7 +1106,7 @@ bool EditingStyle::StyleIsPresentInComputedStyleOfNode(Node* node) const {
   return !mutable_style_ ||
          GetPropertiesNotIn(mutable_style_.Get(),
                             CSSComputedStyleDeclaration::Create(node),
-                            node->GetDocument().SecureContextMode())
+                            node->GetDocument().GetSecureContextMode())
              ->IsEmpty();
 }
 
@@ -1451,7 +1451,7 @@ void EditingStyle::RemoveStyleFromRulesAndContext(Element* element,
   DCHECK(element->GetDocument().IsActive());
 
   SecureContextMode secure_context_mode =
-      element->GetDocument().SecureContextMode();
+      element->GetDocument().GetSecureContextMode();
 
   // 1. Remove style from matched rules because style remain without repeating
   // it in inline style declaration
@@ -1599,11 +1599,11 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
   CSSComputedStyleDeclaration* computed_style = EnsureComputedStyle(position);
   // FIXME: take care of background-color in effect
   MutableCSSPropertyValueSet* mutable_style = GetPropertiesNotIn(
-      style->Style(), computed_style, document->SecureContextMode());
+      style->Style(), computed_style, document->GetSecureContextMode());
   DCHECK(mutable_style);
 
   ReconcileTextDecorationProperties(mutable_style,
-                                    document->SecureContextMode());
+                                    document->GetSecureContextMode());
   if (!document->GetFrame()->GetEditor().ShouldStyleWithCSS())
     ExtractTextStyles(document, mutable_style,
                       computed_style->IsMonospaceFont());
@@ -1622,7 +1622,7 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
     mutable_style->SetProperty(
         CSSPropertyDirection,
         style->Style()->GetPropertyValue(CSSPropertyDirection),
-        /* important */ false, document->SecureContextMode());
+        /* important */ false, document->GetSecureContextMode());
   }
 
   // Save the result for later
@@ -1696,7 +1696,7 @@ void StyleChange::ExtractTextStyles(Document* document,
     // If trimTextDecorations, delete underline and line-through
     SetTextDecorationProperty(style, new_text_decoration,
                               CSSPropertyTextDecorationLine,
-                              document->SecureContextMode());
+                              document->GetSecureContextMode());
   }
 
   int vertical_align = GetIdentifierValue(style, CSSPropertyVerticalAlign);

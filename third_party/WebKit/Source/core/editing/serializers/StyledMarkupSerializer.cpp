@@ -263,7 +263,7 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
               "url('" + fully_selected_root->getAttribute(backgroundAttr) +
                   "')",
               /* important */ false,
-              fully_selected_root->GetDocument().SecureContextMode());
+              fully_selected_root->GetDocument().GetSecureContextMode());
         }
 
         if (fully_selected_root_style->Style()) {
