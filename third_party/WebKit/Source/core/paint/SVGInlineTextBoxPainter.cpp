@@ -127,7 +127,7 @@ void SVGInlineTextBoxPainter::PaintTextFragments(
   bool has_visible_stroke = svg_style.HasVisibleStroke();
 
   const ComputedStyle* selection_style = &style;
-  bool should_paint_selection = this->ShouldPaintSelection(paint_info);
+  bool should_paint_selection = ShouldPaintSelection(paint_info);
   if (should_paint_selection) {
     selection_style =
         parent_layout_object.GetCachedPseudoStyle(kPseudoIdSelection);

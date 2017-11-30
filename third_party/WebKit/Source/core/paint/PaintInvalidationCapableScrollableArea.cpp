@@ -190,12 +190,12 @@ void PaintInvalidationCapableScrollableArea::
           ScrollCornerNeedsPaintInvalidation(), box,
           paint_invalidation_container)) {
     SetScrollCornerAndResizerVisualRect(scroll_corner_and_resizer_visual_rect);
-    if (LayoutScrollbarPart* scroll_corner = this->ScrollCorner()) {
+    if (LayoutScrollbarPart* scroll_corner = ScrollCorner()) {
       ObjectPaintInvalidator(*scroll_corner)
           .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
               PaintInvalidationReason::kScrollControl);
     }
-    if (LayoutScrollbarPart* resizer = this->Resizer()) {
+    if (LayoutScrollbarPart* resizer = Resizer()) {
       ObjectPaintInvalidator(*resizer)
           .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
               PaintInvalidationReason::kScrollControl);
@@ -247,11 +247,11 @@ void PaintInvalidationCapableScrollableArea::
   // their visual rect to the visual rect of the backing.
   const auto* layer = LayerForScrollCorner();
   auto custom_visual_rect = layer ? layer->VisualRect() : rect;
-  if (LayoutScrollbarPart* scroll_corner = this->ScrollCorner()) {
+  if (LayoutScrollbarPart* scroll_corner = ScrollCorner()) {
     scroll_corner->GetMutableForPainting().FirstFragment().SetVisualRect(
         custom_visual_rect);
   }
-  if (LayoutScrollbarPart* resizer = this->Resizer()) {
+  if (LayoutScrollbarPart* resizer = Resizer()) {
     resizer->GetMutableForPainting().FirstFragment().SetVisualRect(
         custom_visual_rect);
   }
