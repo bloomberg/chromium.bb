@@ -24,6 +24,8 @@ SelectToSpeakOptionsPage.prototype = {
     this.syncSelectControlToPref_('rate', 'rate');
     this.syncCheckboxControlToPref_('wordHighlight', 'wordHighlight');
     this.setUpHighlightListener_();
+    chrome.metricsPrivate.recordUserAction(
+        'Accessibility.CrosSelectToSpeak.LoadSettings');
   },
 
   /**

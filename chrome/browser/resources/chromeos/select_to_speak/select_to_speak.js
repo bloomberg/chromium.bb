@@ -110,8 +110,6 @@ function getNodeState(node) {
  * Regular expression to find the start of the next word after a word boundary.
  * We cannot use \b\W to find the next word because it does not match many
  * unicode characters.
- * TODO: Extract word boundaries from the Accessibility node and use that
- * instead.
  * @type {RegExp}
  */
 const WORD_START_REGEXP = /\b\S/;
@@ -120,8 +118,6 @@ const WORD_START_REGEXP = /\b\S/;
  * Regular expression to find the end of the next word, which is followed by
  * whitespace. We cannot use \w\b to find the end of the previous word because
  * \w does not know about many unicode characters.
- * TODO: Extract word boundaries from the Accessibility node and use that
- * instead.
  * @type {RegExp}
  */
 const WORD_END_REGEXP = /\S\s/;
@@ -447,6 +443,7 @@ SelectToSpeak.prototype = {
       if (!findAllMatching(root, rect, nodes) && focusedNode)
         findAllMatching(focusedNode.root, rect, nodes);
       this.startSpeechQueue_(nodes);
+      this.recordStartEvent_();
     }.bind(this));
   },
 
@@ -487,7 +484,7 @@ SelectToSpeak.prototype = {
         this.keysPressedTogether_.has(evt.keyCode) &&
         this.keysPressedTogether_.size == 1) {
       this.trackingMouse_ = false;
-      this.stopAll_();
+      chrome.tts.isSpeaking(this.cancelIfSpeaking_.bind(this));
     }
 
     this.keysCurrentlyDown_.delete(evt.keyCode);
@@ -661,6 +658,34 @@ SelectToSpeak.prototype = {
 
       chrome.tts.speak(textToSpeak || '', options);
     }
+  },
+
+  /**
+   * Cancels the current speech queue if speech is in progress.
+   */
+  cancelIfSpeaking_: function(speaking) {
+    if (speaking) {
+      this.stopAll_();
+      this.recordCancelEvent_();
+    }
+  },
+
+  /**
+   * Records an event that Select-to-Speak has begun speaking.
+   */
+  recordStartEvent_: function() {
+    // TODO(katie): Add tracking for speech rate, how STS was activated,
+    // whether word highlighting is on or off (as histograms?).
+    chrome.metricsPrivate.recordUserAction(
+        'Accessibility.CrosSelectToSpeak.StartSpeech');
+  },
+
+  /**
+   * Records an event that Select-to-Speak speech has been canceled.
+   */
+  recordCancelEvent_: function() {
+    chrome.metricsPrivate.recordUserAction(
+        'Accessibility.CrosSelectToSpeak.CancelSpeech');
   },
 
   /**
