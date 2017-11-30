@@ -882,34 +882,6 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest, CreateZeroRttPost) {
-  Initialize();
-  factory_->set_require_confirmation(false);
-  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-
-  MockQuicData socket_data;
-  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddSocketDataToFactory(socket_factory_.get());
-
-  crypto_client_stream_factory_.set_handshake_mode(
-      MockCryptoClientStream::ZERO_RTT);
-  host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
-                                           "192.168.0.1", "");
-
-  QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(
-      OK, request.Request(host_port_pair_, version_, privacy_mode_,
-                          DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
-                          net_log_, &net_error_details_, callback_.callback()));
-
-  std::unique_ptr<HttpStream> stream = CreateStream(&request);
-  EXPECT_TRUE(stream.get());
-  EXPECT_TRUE(socket_data.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
-}
-
 TEST_P(QuicStreamFactoryTest, DefaultInitialRtt) {
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
