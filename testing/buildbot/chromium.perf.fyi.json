@@ -173,7 +173,7 @@
         "isolate_name": "telemetry_perf_tests",
         "merge": {
           "args": [],
-          "script": "//tools/perf/core/merge_script.py"
+          "script": "//tools/perf/upload_perf_results.py"
         },
         "name": "benchmark1 smoothness.maps",
         "override_compile_targets": [
@@ -205,7 +205,7 @@
         "isolate_name": "telemetry_perf_tests",
         "merge": {
           "args": [],
-          "script": "//tools/perf/core/merge_script.py"
+          "script": "//tools/perf/upload_perf_results.py"
         },
         "name": "benchmark2 blink_perf.css",
         "override_compile_targets": [
