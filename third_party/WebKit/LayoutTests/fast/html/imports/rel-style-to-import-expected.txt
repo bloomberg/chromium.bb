@@ -1,3 +1,4 @@
+CONSOLE WARNING: CSS cannot be loaded from `file:` URLs unless they end in a `.css` file extension.
 Updating attribute value shouldn't result import loading.
 Before update:
 PASS target.sheet is non-null.

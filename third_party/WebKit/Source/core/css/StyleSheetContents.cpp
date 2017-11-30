@@ -357,7 +357,8 @@ void StyleSheetContents::ParseAuthorStyleSheet(
       IsQuirksModeBehavior(parser_context_->Mode()) && is_same_origin_request
           ? CSSStyleSheetResource::MIMETypeCheck::kLax
           : CSSStyleSheetResource::MIMETypeCheck::kStrict;
-  String sheet_text = cached_style_sheet->SheetText(mime_type_check);
+  String sheet_text =
+      cached_style_sheet->SheetText(parser_context_, mime_type_check);
 
   const ResourceResponse& response = cached_style_sheet->GetResponse();
   source_map_url_ = response.HttpHeaderField(HTTPNames::SourceMap);

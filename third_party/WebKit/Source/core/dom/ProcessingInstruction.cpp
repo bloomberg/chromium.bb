@@ -220,7 +220,7 @@ void ProcessingInstruction::SetCSSStyleSheet(
   // We don't need the cross-origin security check here because we are
   // getting the sheet text in "strict" mode. This enforces a valid CSS MIME
   // type.
-  ParseStyleSheet(sheet->SheetText());
+  ParseStyleSheet(sheet->SheetText(parser_context));
 }
 
 void ProcessingInstruction::SetXSLStyleSheet(const String& href,

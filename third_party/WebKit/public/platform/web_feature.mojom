@@ -1774,6 +1774,8 @@ enum WebFeature {
   kV8RTCPeerConnection_GetReceivers_Method = 2253,
   kV8RTCPeerConnection_AddTrack_Method = 2254,
   kV8RTCPeerConnection_RemoveTrack_Method = 2255,
+  kLocalCSSFile = 2256,
+  kLocalCSSFileExtensionRejected = 2257,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
