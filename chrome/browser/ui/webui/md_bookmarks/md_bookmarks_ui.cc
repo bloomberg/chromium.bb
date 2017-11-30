@@ -89,8 +89,7 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
                      IDS_MD_BOOKMARK_MANAGER_MORE_ACTIONS);
   AddLocalizedString(source, "moreActionsButtonAxLabel",
                      IDS_MD_BOOKMARK_MANAGER_MORE_ACTIONS_AX_LABEL);
-  AddLocalizedString(source, "noSearchResults",
-                     IDS_MD_BOOKMARK_MANAGER_NO_SEARCH_RESULTS);
+  AddLocalizedString(source, "noSearchResults", IDS_SEARCH_NO_RESULTS);
   AddLocalizedString(source, "openDialogBody",
                      IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL);
   AddLocalizedString(source, "openDialogConfirm",
@@ -109,8 +108,7 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
                      IDS_MD_BOOKMARK_MANAGER_SIDEBAR_NODE_COLLAPSE_AX_LABEL);
   AddLocalizedString(source, "sidebarNodeExpandAxLabel",
                      IDS_MD_BOOKMARK_MANAGER_SIDEBAR_NODE_EXPAND_AX_LABEL);
-  AddLocalizedString(source, "searchResults",
-                     IDS_MD_BOOKMARK_MANAGER_SEARCH_RESULTS);
+  AddLocalizedString(source, "searchResults", IDS_SEARCH_RESULTS);
   AddLocalizedString(source, "saveEdit", IDS_SAVE);
   AddLocalizedString(source, "title", IDS_MD_BOOKMARK_MANAGER_TITLE);
   AddLocalizedString(source, "toastFolderSorted",

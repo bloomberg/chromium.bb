@@ -130,12 +130,6 @@
   <message name="IDS_MD_EXTENSIONS_NO_INSTALLED_ITEMS" desc="The message shown to the user on the Extensions settings page when there are no extensions or apps installed.">
     Find extensions and apps in the <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://chrome.google.com/webstore/category/extensions"&gt;</ph>Chrome Web Store<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
-  <message name="IDS_MD_EXTENSIONS_NO_SEARCH_RESULTS" desc="The message shown to the user when a search on the Extensions settings page has no matching results.">
-    No search results found
-  </message>
-  <message name="IDS_MD_EXTENSIONS_SEARCH_RESULTS" desc="The accessibility message announced to screen readers when there are results on a search for extensions.">
-    Search results for '<ph name="SEARCH_TEXT">$1<ex>cookies</ex></ph>'
-  </message>
   <message name="IDS_MD_EXTENSIONS_NO_DESCRIPTION" desc="The message shown to the user when an extension does not have any description.">
     No description provided
   </message>
