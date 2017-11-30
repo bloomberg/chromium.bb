@@ -339,6 +339,8 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
           google_util::AppendGoogleLocaleParam(
               GURL(extension_urls::GetWebstoreExtensionsCategoryURL()),
               g_browser_process->GetApplicationLocale()).spec()));
+  source->AddString("installWarnings",
+                    l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALL_WARNINGS));
 
   source->AddBoolean(kInDevModeKey, in_dev_mode);
   source->AddString(kLoadTimeClassesKey, GetLoadTimeClasses(in_dev_mode));
