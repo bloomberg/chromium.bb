@@ -2397,7 +2397,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMaterialDesignBookmarks)},
     {"enable-md-incognito-ntp",
      flag_descriptions::kMaterialDesignIncognitoNTPName,
-     flag_descriptions::kMaterialDesignIncognitoNTPDescription, kOsAll,
+     flag_descriptions::kMaterialDesignIncognitoNTPDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kMaterialDesignIncognitoNTP)},
     {"safe-search-url-reporting",
      flag_descriptions::kSafeSearchUrlReportingName,

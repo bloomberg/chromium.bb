@@ -11,7 +11,6 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
-#include "chrome/common/chrome_features.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 
@@ -70,8 +69,6 @@ const SkColor kDefaultColorNTPLink = SkColorSetRGB(0x06, 0x37, 0x74);
 // Then new MD Incognito NTP uses a slightly different shade of black.
 // TODO(msramek): Remove the old entry when the new NTP fully launches.
 const SkColor kDefaultColorNTPBackgroundIncognito =
-    SkColorSetRGB(0x32, 0x32, 0x32);
-const SkColor kDefaultColorNTPBackgroundIncognitoMD =
     SkColorSetRGB(0x30, 0x30, 0x30);
 
 const SkColor kDefaultColorNTPHeader = SkColorSetRGB(0x96, 0x96, 0x96);
@@ -243,9 +240,7 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     case COLOR_NTP_BACKGROUND:
       if (!incognito)
         return kDefaultColorNTPBackground;
-      return base::FeatureList::IsEnabled(features::kMaterialDesignIncognitoNTP)
-                 ? kDefaultColorNTPBackgroundIncognitoMD
-                 : kDefaultColorNTPBackgroundIncognito;
+      return kDefaultColorNTPBackgroundIncognito;
     case COLOR_NTP_TEXT:
       return kDefaultColorNTPText;
     case COLOR_NTP_LINK:
