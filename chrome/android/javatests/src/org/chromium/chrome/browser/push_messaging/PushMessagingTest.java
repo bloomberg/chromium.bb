@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
-import android.test.MoreAsserts;
 import android.util.Pair;
 
 import org.junit.After;
@@ -29,6 +28,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Matchers;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -264,7 +264,8 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
         // After grace runs out a default notification will be shown.
         sendPushAndWaitForCallback(appIdAndSenderId);
         NotificationEntry notificationEntry = mNotificationTestRule.waitForNotification();
-        MoreAsserts.assertContainsRegex("user_visible_auto_notification", notificationEntry.tag);
+        Assert.assertThat(
+                notificationEntry.tag, Matchers.containsString("user_visible_auto_notification"));
 
         // When another push does show a notification, the default notification is automatically
         // dismissed (an additional mutation) so there is only one left in the end.

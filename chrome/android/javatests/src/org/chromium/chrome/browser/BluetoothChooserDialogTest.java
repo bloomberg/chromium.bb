@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.support.test.filters.LargeTest;
-import android.test.MoreAsserts;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -304,7 +303,7 @@ public class BluetoothChooserDialogTest {
                 () -> errorView.getClickableSpans()[0].onClick(errorView));
 
         // Permission was requested.
-        MoreAsserts.assertEquals(permissionDelegate.mPermissionsRequested,
+        Assert.assertArrayEquals(permissionDelegate.mPermissionsRequested,
                 new String[] {Manifest.permission.ACCESS_COARSE_LOCATION});
         Assert.assertNotNull(permissionDelegate.mCallback);
         // Grant permission.

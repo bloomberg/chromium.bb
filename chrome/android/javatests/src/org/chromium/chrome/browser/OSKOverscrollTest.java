@@ -6,7 +6,6 @@ package org.chromium.chrome.browser;
 
 import android.graphics.Rect;
 import android.support.test.filters.MediumTest;
-import android.test.MoreAsserts;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -96,7 +95,7 @@ public class OSKOverscrollTest {
         try {
             String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(
                     webContents, "window.visualViewport.height");
-            MoreAsserts.assertNotEqual(jsonText.trim().toLowerCase(Locale.US), "null");
+            Assert.assertNotEquals(jsonText.trim().toLowerCase(Locale.US), "null");
             return Integer.parseInt(jsonText);
         } catch (Exception ex) {
             Assert.fail(ex.toString());
