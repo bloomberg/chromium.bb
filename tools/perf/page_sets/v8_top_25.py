@@ -104,6 +104,7 @@ class V8Top25Story(page_cycler_story.PageCyclerStory):
         # to calculate the interactive time correctly.
         action_runner.Wait(20)
     else:
+        action_runner.Wait(2)
         self.remaining_warmups -= 1
 
 class V8Top25StorySet(story.StorySet):
