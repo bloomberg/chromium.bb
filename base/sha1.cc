@@ -195,9 +195,9 @@ void SecureHashAlgorithm::Process() {
   cursor = 0;
 }
 
-std::string SHA1HashString(const std::string& str) {
+std::string SHA1HashString(base::StringPiece str) {
   char hash[SecureHashAlgorithm::kDigestSizeBytes];
-  SHA1HashBytes(reinterpret_cast<const unsigned char*>(str.c_str()),
+  SHA1HashBytes(reinterpret_cast<const unsigned char*>(str.data()),
                 str.length(), reinterpret_cast<unsigned char*>(hash));
   return std::string(hash, SecureHashAlgorithm::kDigestSizeBytes);
 }
