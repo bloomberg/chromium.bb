@@ -514,6 +514,9 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
     }
 #endif
     frame_worker_data->pbi->allow_lowbitdepth = ctx->cfg.allow_lowbitdepth;
+#if CONFIG_MONO_VIDEO
+    frame_worker_data->pbi->monochrome = ctx->cfg.monochrome;
+#endif
 
     // If decoding in serial mode, FrameWorker thread could create tile worker
     // thread or loopfilter thread.

@@ -3607,8 +3607,9 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 #endif
 
 #if CONFIG_MONO_VIDEO
-  // If the bit stream is monochrome, set the U and V buffers to a constant.
-  if (cm->seq_params.monochrome) {
+  // If the bit stream is monochrome, or the decoder is set to force a
+  // monochrome output, set the U and V buffers to a constant.
+  if (pbi->monochrome || cm->seq_params.monochrome) {
 #if CONFIG_HIGHBITDEPTH
     const int bytes_per_sample = cm->use_highbitdepth ? 2 : 1;
 #else

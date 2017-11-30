@@ -81,6 +81,9 @@ typedef struct AV1Decoder {
   void *decrypt_state;
 
   int allow_lowbitdepth;
+#if CONFIG_MONO_VIDEO
+  int monochrome;
+#endif
   int max_threads;
   int inv_tile_order;
   int need_resync;   // wait for key/intra-only frame.

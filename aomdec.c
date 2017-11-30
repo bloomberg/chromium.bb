@@ -69,6 +69,10 @@ static const arg_def_t flipuvarg =
     ARG_DEF(NULL, "flipuv", 0, "Flip the chroma planes in the output");
 static const arg_def_t rawvideo =
     ARG_DEF(NULL, "rawvideo", 0, "Output raw YUV frames");
+#if CONFIG_MONO_VIDEO
+static const arg_def_t monochrome = ARG_DEF(
+    NULL, "monochrome", 0, "Force monochrome output (constant chroma planes)");
+#endif
 static const arg_def_t noblitarg =
     ARG_DEF(NULL, "noblit", 0, "Don't process the decoded frames");
 static const arg_def_t progressarg =
@@ -118,6 +122,9 @@ static const arg_def_t *all_args[] = { &help,
                                        &use_i420,
                                        &flipuvarg,
                                        &rawvideo,
+#if CONFIG_MONO_VIDEO
+                                       &monochrome,
+#endif
                                        &noblitarg,
                                        &progressarg,
                                        &limitarg,
@@ -289,8 +296,8 @@ static void update_image_md5(const aom_image_t *img, const int planes[3],
   }
 }
 
-static void write_image_file(const aom_image_t *img, const int planes[3],
-                             FILE *file) {
+static void write_image_file(const aom_image_t *img, const int *planes,
+                             const int num_planes, FILE *file) {
   int i, y;
 #if CONFIG_HIGHBITDEPTH
   const int bytes_per_sample = ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
@@ -298,7 +305,7 @@ static void write_image_file(const aom_image_t *img, const int planes[3],
   const int bytes_per_sample = 1;
 #endif
 
-  for (i = 0; i < 3; ++i) {
+  for (i = 0; i < num_planes; ++i) {
     const int plane = planes[i];
     const unsigned char *buf = img->planes[plane];
     const int stride = img->stride[plane];
@@ -523,7 +530,10 @@ static int main_loop(int argc, const char **argv_) {
   int use_y4m = 1;
   int opt_yv12 = 0;
   int opt_i420 = 0;
-  aom_codec_dec_cfg_t cfg = { 0, 0, 0, CONFIG_LOWBITDEPTH };
+#if CONFIG_MONO_VIDEO
+  int opt_rawvideo = 0;
+#endif
+  aom_codec_dec_cfg_t cfg = { 0, 0, 0, CONFIG_LOWBITDEPTH, 0 };
 #if CONFIG_HIGHBITDEPTH
   unsigned int output_bit_depth = 0;
 #endif
@@ -589,6 +599,11 @@ static int main_loop(int argc, const char **argv_) {
       opt_i420 = 1;
     } else if (arg_match(&arg, &rawvideo, argi)) {
       use_y4m = 0;
+#if CONFIG_MONO_VIDEO
+      opt_rawvideo = 1;
+    } else if (arg_match(&arg, &monochrome, argi)) {
+      cfg.monochrome = 1;
+#endif
     } else if (arg_match(&arg, &flipuvarg, argi)) {
       flipuv = 1;
     } else if (arg_match(&arg, &noblitarg, argi)) {
@@ -931,6 +946,12 @@ static int main_loop(int argc, const char **argv_) {
       aom_input_ctx.height = img->d_h;
 #endif  // CONFIG_EXT_TILE
 
+#if CONFIG_MONO_VIDEO
+      int num_planes = (opt_rawvideo && cfg.monochrome) ? 1 : 3;
+#else
+      int num_planes = 3;
+#endif
+
       if (single_file) {
         if (use_y4m) {
           char y4m_buf[Y4M_BUFFER_SIZE] = { 0 };
@@ -984,7 +1005,7 @@ static int main_loop(int argc, const char **argv_) {
         if (do_md5) {
           update_image_md5(img, planes, &md5_ctx);
         } else {
-          write_image_file(img, planes, outfile);
+          write_image_file(img, planes, num_planes, outfile);
         }
       } else {
         generate_filename(outfile_pattern, outfile_name, PATH_MAX, img->d_w,
@@ -996,7 +1017,7 @@ static int main_loop(int argc, const char **argv_) {
           print_md5(md5_digest, outfile_name);
         } else {
           outfile = open_outfile(outfile_name);
-          write_image_file(img, planes, outfile);
+          write_image_file(img, planes, num_planes, outfile);
           fclose(outfile);
         }
       }
