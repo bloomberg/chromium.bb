@@ -200,8 +200,6 @@ external/wpt/FileAPI/fileReader.html
 external/wpt/FileAPI/reading-data-section/FileReader-event-handler-attributes.html
 external/wpt/FileAPI/reading-data-section/filereader_readAsText.html
 external/wpt/fullscreen/api/element-request-fullscreen-not-allowed.html
-external/wpt/fullscreen/api/element-request-fullscreen-top-manual.html
-external/wpt/fullscreen/model/remove-parent-manual.html
 external/wpt/gamepad/idlharness.html
 external/wpt/html/browsers/browsing-the-web/scroll-to-fragid/001.html
 external/wpt/html/browsers/history/the-history-interface/history_back.html
@@ -211,7 +209,6 @@ external/wpt/html/browsers/history/the-history-interface/history_replacestate_no
 external/wpt/html/browsers/offline/application-cache-api/api_update_error.html
 external/wpt/html/browsers/offline/introduction-4/event_cached.html
 external/wpt/html/browsers/the-window-object/named-access-on-the-window-object/window-null-names.html
-external/wpt/html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-statusbar-manual.html
 external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin.html
 external/wpt/html/dom/documents/dom-tree-accessors/Document.getElementsByClassName-null-undef.html
 external/wpt/html/dom/documents/dom-tree-accessors/document.getElementsByName/document.getElementsByName-same.html
