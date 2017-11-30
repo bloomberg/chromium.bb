@@ -19,6 +19,8 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/protected_memory.h"
+#include "base/memory/protected_memory_cfi.h"
 #include "base/memory/ptr_util.h"
 #include "base/nix/mime_util_xdg.h"
 #include "base/nix/xdg_util.h"
@@ -402,6 +404,12 @@ SkColor GetToolbarTopSeparatorColor(SkColor header_fg,
 }
 #endif
 
+using GdkSetAllowedBackendsFn = void (*)(const gchar*);
+// Place this function pointers in read-only memory after being resolved to
+// prevent it being tampered with. See crbug.com/771365 for details.
+PROTECTED_MEMORY_SECTION base::ProtectedMemory<GdkSetAllowedBackendsFn>
+    g_gdk_set_allowed_backends;
+
 }  // namespace
 
 GtkUi::GtkUi() : middle_click_action_(GetDefaultMiddleClickAction()) {
@@ -410,13 +418,14 @@ GtkUi::GtkUi() : middle_click_action_(GetDefaultMiddleClickAction()) {
   // the use of X11 (eg. X11InputMethodContextImplGtk) and will crash under
   // other backends.
   // TODO(thomasanderson): Change this logic once Wayland support is added.
-  static auto* _gdk_set_allowed_backends =
+  static base::ProtectedMemory<GdkSetAllowedBackendsFn>::Initializer init(
+      &g_gdk_set_allowed_backends,
       reinterpret_cast<void (*)(const gchar*)>(
-          dlsym(GetGdkSharedLibrary(), "gdk_set_allowed_backends"));
+          dlsym(GetGdkSharedLibrary(), "gdk_set_allowed_backends")));
   if (GtkVersionCheck(3, 10))
-    DCHECK(_gdk_set_allowed_backends);
-  if (_gdk_set_allowed_backends)
-    _gdk_set_allowed_backends("x11");
+    DCHECK(*g_gdk_set_allowed_backends);
+  if (*g_gdk_set_allowed_backends)
+    base::UnsanitizedCfiCall(g_gdk_set_allowed_backends)("x11");
 #endif
 #if GTK_MAJOR_VERSION >= 3
   // Avoid GTK initializing atk-bridge, and let AuraLinux implementation
