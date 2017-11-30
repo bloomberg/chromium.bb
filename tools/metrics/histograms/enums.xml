@@ -43170,6 +43170,29 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="1" label="Component is not ready to use. Reason not known."/>
 </enum>
 
+<enum name="VRAssetsComponentUpdateStatus">
+  <int value="1"
+      label="Failed to verify component (component version not known)."/>
+  <int value="2"
+      label="Component not compatible with Chrome (component version not
+             known)."/>
+  <int value="1000"
+      label="Successfully updated component (component version 0.1)."/>
+  <int value="1001"
+      label="Failed to verify component (component version 0.1)."/>
+  <int value="1002"
+      label="Component not compatible with Chrome (component version 0.1)."/>
+</enum>
+
+<enum name="VRAssetsLoadStatus">
+  <int value="1000"
+      label="Successfully loaded assets (component version 0.1)."/>
+  <int value="1001"
+      label="Failed to load assets from disk (component version 0.1)."/>
+  <int value="1002"
+      label="Assets have an invalid content (component version 0.1)."/>
+</enum>
+
 <enum name="VRSuppressedElement">
   <int value="0" label="File chooser was suppressed in VR"/>
   <int value="1" label="Bluetooth picker was suppressed in VR"/>

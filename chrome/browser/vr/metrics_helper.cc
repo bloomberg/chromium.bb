@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/version.h"
 #include "net/base/network_change_notifier.h"
 
 namespace vr {
@@ -20,6 +21,8 @@ constexpr char kLatencyVrBrowsing[] =
     "VR.AssetsComponent.ReadyLatency.OnEnter.VRBrowsing";
 constexpr char kLatencyWebVr[] =
     "VR.AssetsComponent.ReadyLatency.OnEnter.WebVR";
+constexpr char kComponentUpdateStatus[] = "VR.AssetsComponent.UpdateStatus";
+constexpr char kAssetsLoadStatus[] = "VR.AssetsComponent.LoadStatus";
 constexpr char kDataConnectionRegisterComponent[] =
     "VR.DataConnection.OnRegisterAssetsComponent";
 constexpr char kDataConnectionVr[] = "VR.DataConnection.OnEnter.VR";
@@ -101,6 +104,17 @@ void LogConnectionType(Mode mode,
   }
 }
 
+uint32_t EncodeVersionStatus(const base::Optional<base::Version>& version,
+                             int status) {
+  if (!version) {
+    // Component version 0.0 is invalid. Thus, use it for when version is not
+    // available.
+    return status;
+  }
+  return version->components()[0] * 1000 * 1000 +
+         version->components()[1] * 1000 + status;
+}
+
 }  // namespace
 
 MetricsHelper::MetricsHelper() {
@@ -111,12 +125,13 @@ MetricsHelper::~MetricsHelper() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void MetricsHelper::OnComponentReady() {
+void MetricsHelper::OnComponentReady(const base::Version& version) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   component_ready_ = true;
   auto now = base::Time::Now();
   LogLatencyIfWaited(Mode::kVrBrowsing, now);
   LogLatencyIfWaited(Mode::kWebVr, now);
+  OnComponentUpdated(AssetsComponentUpdateStatus::kSuccess, version);
 }
 
 void MetricsHelper::OnEnter(Mode mode) {
@@ -141,6 +156,23 @@ void MetricsHelper::OnRegisteredComponent() {
       kDataConnectionRegisterComponent,
       net::NetworkChangeNotifier::GetConnectionType(),
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
+}
+
+void MetricsHelper::OnComponentUpdated(
+    AssetsComponentUpdateStatus status,
+    const base::Optional<base::Version>& version) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      kComponentUpdateStatus,
+      EncodeVersionStatus(version, static_cast<int>(status)));
+}
+
+void MetricsHelper::OnAssetsLoaded(AssetsLoadStatus status,
+                                   const base::Version& component_version) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      kAssetsLoadStatus,
+      EncodeVersionStatus(component_version, static_cast<int>(status)));
 }
 
 base::Optional<base::Time>& MetricsHelper::GetEnterTime(Mode mode) {

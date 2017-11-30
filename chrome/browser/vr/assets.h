@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/version.h"
 
 namespace base {
 class DictionaryValue;
@@ -34,7 +35,9 @@ struct AssetsSingletonTrait;
 // performed on a worker thread.
 class Assets {
  public:
-  typedef base::OnceCallback<void(bool success, std::string environment)>
+  typedef base::OnceCallback<void(bool success,
+                                  std::string environment,
+                                  const base::Version& component_version)>
       OnAssetsLoadedCallback;
 
   // Returns the single assets instance and creates it on first call.
@@ -54,17 +57,20 @@ class Assets {
  private:
   static void LoadAssetsTask(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const base::Version& component_version,
       const base::FilePath& component_install_dir,
       OnAssetsLoadedCallback on_loaded);
 
   Assets();
   ~Assets();
-  void OnComponentReadyInternal(const base::FilePath& install_dir);
+  void OnComponentReadyInternal(const base::Version& version,
+                                const base::FilePath& install_dir);
   void LoadWhenComponentReadyInternal(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       OnAssetsLoadedCallback on_loaded);
 
   bool component_ready_ = false;
+  base::Version component_version_;
   base::FilePath component_install_dir_;
   OnAssetsLoadedCallback on_assets_loaded_;
   scoped_refptr<base::SingleThreadTaskRunner> on_assets_loaded_task_runner_;

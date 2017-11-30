@@ -92954,6 +92954,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="VR.AssetsComponent.LoadStatus" enum="VRAssetsLoadStatus">
+  <owner>tiborg@chromium.org</owner>
+  <summary>
+    The component version and status of loading the VR assets. The value is
+    encoded as (XXX)(YYY)(SSS) where XXX is the major component version, YYY the
+    minor component version and SSS the status. See
+    //chrome/browser/vr/assets_load_status.h for possible status values.
+  </summary>
+</histogram>
+
 <histogram base="true" name="VR.AssetsComponent.ReadyLatency.OnEnter"
     units="ms">
   <owner>tiborg@chromium.org</owner>
@@ -92966,6 +92976,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="VRAssetsComponentEnterStatus">
   <owner>tiborg@chromium.org</owner>
   <summary>Status of the VR assets component when entering a VR mode.</summary>
+</histogram>
+
+<histogram name="VR.AssetsComponent.UpdateStatus"
+    enum="VRAssetsComponentUpdateStatus">
+  <owner>tiborg@chromium.org</owner>
+  <summary>
+    The version and update status of the VR assets component. The value is
+    encoded as (XXX)(YYY)(SSS) where XXX is the major version, YYY the minor
+    version and SSS the status. See
+    //chrome/browser/vr/assets_component_update_status.h for possible status
+    values.
+  </summary>
 </histogram>
 
 <histogram base="true" name="VR.DataConnection.OnEnter"

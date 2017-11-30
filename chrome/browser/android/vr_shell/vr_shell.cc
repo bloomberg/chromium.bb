@@ -952,6 +952,12 @@ void VrShell::OnVoiceResults(const base::string16& result) {
           env, autocomplete_controller_->GetUrlFromVoiceInput(result).spec()));
 }
 
+void VrShell::OnAssetsLoaded(vr::AssetsLoadStatus status,
+                             const base::Version& component_version) {
+  vr::Assets::GetInstance()->GetMetricsHelper()->OnAssetsLoaded(
+      status, component_version);
+}
+
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------

@@ -65,14 +65,23 @@ bool VrAssetsComponentInstallerTraits::VerifyInstallation(
     const base::FilePath& install_dir) const {
   auto* version_value = manifest.FindKey("version");
   if (!version_value || !version_value->is_string()) {
+    vr::Assets::GetInstance()->GetMetricsHelper()->OnComponentUpdated(
+        vr::AssetsComponentUpdateStatus::kInvalid, base::nullopt);
     return false;
   }
 
   auto version_string = version_value->GetString();
   base::Version version(version_string);
   if (!version.IsValid() || version.components().size() != 2 ||
-      version.components()[0] != vr::kCompatibleMajorVrAssetsComponentVersion ||
       !base::PathExists(install_dir)) {
+    vr::Assets::GetInstance()->GetMetricsHelper()->OnComponentUpdated(
+        vr::AssetsComponentUpdateStatus::kInvalid, base::nullopt);
+    return false;
+  }
+
+  if (version.components()[0] != vr::kCompatibleMajorVrAssetsComponentVersion) {
+    vr::Assets::GetInstance()->GetMetricsHelper()->OnComponentUpdated(
+        vr::AssetsComponentUpdateStatus::kIncompatible, version);
     return false;
   }
 

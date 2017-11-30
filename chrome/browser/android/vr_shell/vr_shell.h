@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
+#include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/exit_vr_prompt_choice.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/ui.h"
@@ -25,6 +26,10 @@
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/vr_service.mojom.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
+
+namespace base {
+class Version;
+}  // namespace base
 
 namespace blink {
 class WebInputEvent;
@@ -209,6 +214,9 @@ class VrShell : device::GvrGamepadDataProvider,
   bool ShouldDisplayURL() const override;
 
   void OnVoiceResults(const base::string16& result) override;
+
+  void OnAssetsLoaded(vr::AssetsLoadStatus status,
+                      const base::Version& component_version);
 
  private:
   ~VrShell() override;
