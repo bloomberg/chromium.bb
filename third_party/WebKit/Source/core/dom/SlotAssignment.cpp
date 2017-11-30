@@ -200,16 +200,10 @@ void SlotAssignment::ResolveAssignmentNg() {
     slot->ClearAssignedNodes();
 
   for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
-    if (!child.IsSlotable()) {
-      // TODO(hayato): Avoid LazyReattach
-      child.LazyReattachIfAttached();
+    if (!child.IsSlotable())
       continue;
-    }
-    if (HTMLSlotElement* slot = FindSlotByName(child.SlotName())) {
+    if (HTMLSlotElement* slot = FindSlotByName(child.SlotName()))
       slot->AppendAssignedNode(child);
-      // TODO(hayato): Avoid LazyReattach
-      child.LazyReattachIfAttached();
-    }
   }
 }
 

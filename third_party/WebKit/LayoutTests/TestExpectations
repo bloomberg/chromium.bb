@@ -676,7 +676,6 @@ crbug.com/714962 virtual/layout_ng_paint/fast/inline/styledEmptyInlinesWithBRs.h
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/HTMLSlotElement-interface.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/MouseEvent-prototype-offsetX-offsetY.html [ Failure ]
 crbug.com/788608 virtual/incremental-shadow-dom/external/wpt/shadow-dom/leaktests/html-collection.html [ Failure Crash ]
-crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/slotchange-event.html [ Failure Crash ]
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/slots-fallback-in-document.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/slots-fallback.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/slots.html [ Failure ]
