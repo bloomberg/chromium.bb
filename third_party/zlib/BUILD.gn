@@ -6,6 +6,9 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 if (current_cpu == "arm" || current_cpu == "arm64") {
   import("//build/config/arm.gni")
+  if (!is_ios) {
+    import("//build/config/android/config.gni")
+  }
 }
 
 config("zlib_config") {
@@ -26,6 +29,21 @@ config("zlib_adler32_simd_config") {
     if (arm_use_neon) {
       defines = [ "ADLER32_SIMD_NEON" ]
     }
+  }
+}
+
+config("zlib_arm_crc32_config") {
+  defines = []
+  if (current_cpu == "arm" || current_cpu == "arm64") {
+    if (!is_ios && !is_chromeos) {
+      defines += [ "USE_ARMV8_CRC32" ]
+    }
+  }
+
+  if (is_android) {
+    defines += [ "ARMV8_OS_ANDROID" ]
+  } else if (is_linux || is_chromeos) {
+    defines += [ "ARMV8_OS_LINUX" ]
   }
 }
 
@@ -86,6 +104,43 @@ static_library("zlib_x86_simd") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
 
+static_library("zlib_arm_crc32") {
+  # It seems that ChromeOS has a wrapper script messing with compiler flags.
+  if (!is_ios && !is_chromeos &&
+      (current_cpu == "arm" || current_cpu == "arm64")) {
+    sources = []
+    include_dirs = [ "." ]
+    deps = []
+    if (is_android) {
+      if (defined(android_ndk_root) && android_ndk_root != "") {
+        deps += [ "//third_party/android_tools:cpu_features" ]
+      }
+    }
+
+    sources += [
+      "contrib/optimizations/arm/arm_features.c",
+      "contrib/optimizations/arm/arm_features.h",
+      "contrib/optimizations/arm/armv8_crc32.c",
+      "contrib/optimizations/arm/armv8_crc32.h",
+    ]
+
+    if (!is_win || is_clang) {
+      cflags_c = [ "-march=armv8-a+crc" ]
+    }
+  } else {
+    # It seems that we still need some code to be build, so
+    # we avoid using a stub.
+    sources = [
+      "contrib/optimizations/arm/arm_features.c",
+      "contrib/optimizations/arm/arm_features.h",
+    ]
+  }
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+  public_configs = [ ":zlib_arm_crc32_config" ]
+}
+
 config("zlib_warnings") {
   if (is_clang && !is_ios && (current_cpu == "x86" || current_cpu == "x64")) {
     cflags = [ "-Wno-incompatible-pointer-types" ]
@@ -93,6 +148,9 @@ config("zlib_warnings") {
 }
 
 static_library("zlib") {
+  defines = []
+  deps = []
+
   if (!is_win) {
     # Don't stomp on "libzlib" on other platforms.
     output_name = "chrome_zlib"
@@ -142,9 +200,6 @@ static_library("zlib") {
     }
   }
 
-  defines = []
-  deps = []
-
   if (!is_ios && (current_cpu == "x86" || current_cpu == "x64")) {
     sources += [ "x86.c" ]
 
@@ -154,6 +209,11 @@ static_library("zlib") {
   if (current_cpu == "arm" || current_cpu == "arm64") {
     if (arm_use_neon) {
       deps += [ ":zlib_adler32_simd" ]
+
+      # Apple devices lack ARMv8 crc32 instruction.
+      if (!is_ios) {
+        deps += [ ":zlib_arm_crc32" ]
+      }
     }
   }
 
