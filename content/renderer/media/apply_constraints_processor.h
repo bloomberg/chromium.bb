@@ -10,9 +10,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_devices.mojom.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "media/capture/video_capture_types.h"
+#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 #include "third_party/WebKit/public/web/WebApplyConstraintsRequest.h"
 
 namespace blink {
@@ -30,8 +30,8 @@ class MediaStreamVideoTrack;
 // render thread. There should be only one ApplyConstraintsProcessor per frame.
 class CONTENT_EXPORT ApplyConstraintsProcessor {
  public:
-  using MediaDevicesDispatcherCallback =
-      base::RepeatingCallback<const ::mojom::MediaDevicesDispatcherHostPtr&()>;
+  using MediaDevicesDispatcherCallback = base::RepeatingCallback<
+      const blink::mojom::MediaDevicesDispatcherHostPtr&()>;
   ApplyConstraintsProcessor(
       MediaDevicesDispatcherCallback media_devices_dispatcher_cb);
   ~ApplyConstraintsProcessor();
@@ -65,7 +65,8 @@ class CONTENT_EXPORT ApplyConstraintsProcessor {
   void ApplyConstraintsFailed(const char* failed_constraint_name);
   void CannotApplyConstraints(const blink::WebString& message);
   void CleanupRequest(base::OnceClosure web_request_callback);
-  const ::mojom::MediaDevicesDispatcherHostPtr& GetMediaDevicesDispatcher();
+  const blink::mojom::MediaDevicesDispatcherHostPtr&
+  GetMediaDevicesDispatcher();
 
   // ApplyConstraints requests are processed sequentially. |current_request_|
   // contains the request currently being processed, if any.

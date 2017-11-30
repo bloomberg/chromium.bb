@@ -15,11 +15,11 @@
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.h"
-#include "content/common/media/media_devices.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/media_devices_event_dispatcher.h"
 #include "content/renderer/media/user_media_processor.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 #include "third_party/WebKit/public/web/WebApplyConstraintsRequest.h"
 #include "third_party/WebKit/public/web/WebMediaDeviceChangeObserver.h"
 #include "third_party/WebKit/public/web/WebMediaDevicesRequest.h"
@@ -75,7 +75,7 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   void WillCommitProvisionalLoad() override;
 
   void SetMediaDevicesDispatcherForTesting(
-      ::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher);
+      blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher);
 
  protected:
   // This method is virtual for test purposes. A test can override it to
@@ -136,7 +136,8 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   void DevicesChanged(MediaDeviceType device_type,
                       const MediaDeviceInfoArray& device_infos);
 
-  const ::mojom::MediaDevicesDispatcherHostPtr& GetMediaDevicesDispatcher();
+  const blink::mojom::MediaDevicesDispatcherHostPtr&
+  GetMediaDevicesDispatcher();
 
   // |user_media_processor_| is a unique_ptr for testing purposes.
   std::unique_ptr<UserMediaProcessor> user_media_processor_;
@@ -144,7 +145,7 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   // problems in builds that do not include WebRTC.
   std::unique_ptr<ApplyConstraintsProcessor> apply_constraints_processor_;
 
-  ::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
+  blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
 
   // UserMedia requests are processed sequentially. |is_processing_request_|
   // is a flag that indicates if a request is being processed at a given time,

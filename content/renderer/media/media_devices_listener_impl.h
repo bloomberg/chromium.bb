@@ -9,21 +9,21 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.h"
-#include "content/common/media/media_devices.mojom.h"
+#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 
 namespace content {
 
 // This class implements a Mojo object that receives notifications about changes
 // in the set of media devices for a given frame.
 class CONTENT_EXPORT MediaDevicesListenerImpl
-    : public ::mojom::MediaDevicesListener {
+    : public blink::mojom::MediaDevicesListener {
  public:
   static void Create(int render_frame_id,
-                     ::mojom::MediaDevicesListenerRequest request);
+                     blink::mojom::MediaDevicesListenerRequest request);
   explicit MediaDevicesListenerImpl(int render_frame_id);
   ~MediaDevicesListenerImpl() override;
 
-  // ::mojom::MediaDevicesListener implementation.
+  // blink::mojom::MediaDevicesListener implementation.
   void OnDevicesChanged(MediaDeviceType type,
                         uint32_t subscription_id,
                         const MediaDeviceInfoArray& device_infos) override;

@@ -9,11 +9,11 @@
 
 #include "base/logging.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_devices.mojom.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/video_track_adapter.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
+#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 #include "third_party/webrtc/api/optional.h"
 
 namespace content {

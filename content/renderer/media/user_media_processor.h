@@ -15,11 +15,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_devices.mojom.h"
 #include "content/common/media/media_stream.mojom.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/media/media_stream_source.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 #include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 
 namespace base {
@@ -64,8 +64,8 @@ struct UserMediaRequest {
 class CONTENT_EXPORT UserMediaProcessor
     : public MediaStreamDispatcherEventHandler {
  public:
-  using MediaDevicesDispatcherCallback =
-      base::RepeatingCallback<const ::mojom::MediaDevicesDispatcherHostPtr&()>;
+  using MediaDevicesDispatcherCallback = base::RepeatingCallback<
+      const blink::mojom::MediaDevicesDispatcherHostPtr&()>;
   // |render_frame| and |dependency_factory| must outlive this instance.
   UserMediaProcessor(
       RenderFrame* render_frame,
@@ -243,17 +243,19 @@ class CONTENT_EXPORT UserMediaProcessor
                        bool notify_dispatcher);
 
   const mojom::MediaStreamDispatcherHostPtr& GetMediaStreamDispatcherHost();
-  const ::mojom::MediaDevicesDispatcherHostPtr& GetMediaDevicesDispatcher();
+  const blink::mojom::MediaDevicesDispatcherHostPtr&
+  GetMediaDevicesDispatcher();
 
   void SetupAudioInput();
-  void SelectAudioSettings(const blink::WebUserMediaRequest& web_request,
-                           std::vector<::mojom::AudioInputDeviceCapabilitiesPtr>
-                               audio_input_capabilities);
+  void SelectAudioSettings(
+      const blink::WebUserMediaRequest& web_request,
+      std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>
+          audio_input_capabilities);
 
   void SetupVideoInput();
   void SelectVideoDeviceSettings(
       const blink::WebUserMediaRequest& web_request,
-      std::vector<::mojom::VideoInputDeviceCapabilitiesPtr>
+      std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
           video_input_capabilities);
   void FinalizeSelectVideoDeviceSettings(
       const blink::WebUserMediaRequest& web_request,

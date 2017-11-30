@@ -151,7 +151,7 @@ const char kFakeVideoInputDeviceId2[] = "fake_video_input 2";
 const char kFakeAudioOutputDeviceId1[] = "fake_audio_output 1";
 
 class MockMediaDevicesDispatcherHost
-    : public ::mojom::MediaDevicesDispatcherHost {
+    : public blink::mojom::MediaDevicesDispatcherHost {
  public:
   MockMediaDevicesDispatcherHost() {}
   void EnumerateDevices(bool request_audio_input,
@@ -180,10 +180,10 @@ class MockMediaDevicesDispatcherHost
 
   void GetVideoInputCapabilities(
       GetVideoInputCapabilitiesCallback client_callback) override {
-    ::mojom::VideoInputDeviceCapabilitiesPtr device =
-        ::mojom::VideoInputDeviceCapabilities::New();
+    blink::mojom::VideoInputDeviceCapabilitiesPtr device =
+        blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kFakeVideoInputDeviceId1;
-    device->facing_mode = ::mojom::FacingMode::USER;
+    device->facing_mode = blink::mojom::FacingMode::USER;
     if (!video_source_ || !video_source_->IsRunning() ||
         !video_source_->GetCurrentFormat()) {
       device->formats.push_back(media::VideoCaptureFormat(
@@ -195,12 +195,12 @@ class MockMediaDevicesDispatcherHost
     } else {
       device->formats.push_back(*video_source_->GetCurrentFormat());
     }
-    std::vector<::mojom::VideoInputDeviceCapabilitiesPtr> result;
+    std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr> result;
     result.push_back(std::move(device));
 
-    device = ::mojom::VideoInputDeviceCapabilities::New();
+    device = blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kFakeVideoInputDeviceId2;
-    device->facing_mode = ::mojom::FacingMode::ENVIRONMENT;
+    device->facing_mode = blink::mojom::FacingMode::ENVIRONMENT;
     device->formats.push_back(media::VideoCaptureFormat(
         gfx::Size(640, 480), 30.0f, media::PIXEL_FORMAT_I420));
     result.push_back(std::move(device));
@@ -210,19 +210,19 @@ class MockMediaDevicesDispatcherHost
 
   void GetAudioInputCapabilities(
       GetAudioInputCapabilitiesCallback client_callback) override {
-    std::vector<::mojom::AudioInputDeviceCapabilitiesPtr> result;
-    ::mojom::AudioInputDeviceCapabilitiesPtr device =
-        ::mojom::AudioInputDeviceCapabilities::New();
+    std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr> result;
+    blink::mojom::AudioInputDeviceCapabilitiesPtr device =
+        blink::mojom::AudioInputDeviceCapabilities::New();
     device->device_id = media::AudioDeviceDescription::kDefaultDeviceId;
     device->parameters = audio_parameters_;
     result.push_back(std::move(device));
 
-    device = ::mojom::AudioInputDeviceCapabilities::New();
+    device = blink::mojom::AudioInputDeviceCapabilities::New();
     device->device_id = kFakeAudioInputDeviceId1;
     device->parameters = audio_parameters_;
     result.push_back(std::move(device));
 
-    device = ::mojom::AudioInputDeviceCapabilities::New();
+    device = blink::mojom::AudioInputDeviceCapabilities::New();
     device->device_id = kFakeAudioInputDeviceId2;
     device->parameters = audio_parameters_;
     result.push_back(std::move(device));
@@ -290,7 +290,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   UserMediaProcessorUnderTest(
       PeerConnectionDependencyFactory* dependency_factory,
       std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
-      ::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher,
+      blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher,
       RequestState* state)
       : UserMediaProcessor(
             nullptr,
@@ -304,7 +304,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
         media_devices_dispatcher_(std::move(media_devices_dispatcher)),
         state_(state) {}
 
-  const ::mojom::MediaDevicesDispatcherHostPtr& media_devices_dispatcher()
+  const blink::mojom::MediaDevicesDispatcherHostPtr& media_devices_dispatcher()
       const {
     return media_devices_dispatcher_;
   }
@@ -398,7 +398,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   }
 
   PeerConnectionDependencyFactory* factory_;
-  ::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
+  blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
   MockMediaStreamVideoCapturerSource* video_source_ = nullptr;
   bool create_source_that_fails_ = false;
   blink::WebMediaStream last_generated_stream_;
@@ -465,7 +465,7 @@ class UserMediaClientImplTest : public ::testing::Test {
 
     msd_observer_ = new MediaStreamDeviceObserver(nullptr);
 
-    ::mojom::MediaDevicesDispatcherHostPtr user_media_processor_host_proxy;
+    blink::mojom::MediaDevicesDispatcherHostPtr user_media_processor_host_proxy;
     binding_user_media_processor_.Bind(
         mojo::MakeRequest(&user_media_processor_host_proxy));
     user_media_processor_ = new UserMediaProcessorUnderTest(
@@ -478,7 +478,7 @@ class UserMediaClientImplTest : public ::testing::Test {
 
     user_media_client_impl_ = std::make_unique<UserMediaClientImplUnderTest>(
         user_media_processor_, &state_);
-    ::mojom::MediaDevicesDispatcherHostPtr user_media_client_host_proxy;
+    blink::mojom::MediaDevicesDispatcherHostPtr user_media_client_host_proxy;
     binding_user_media_client_.Bind(
         mojo::MakeRequest(&user_media_client_host_proxy));
     user_media_client_impl_->SetMediaDevicesDispatcherForTesting(
@@ -486,7 +486,7 @@ class UserMediaClientImplTest : public ::testing::Test {
 
     base::WeakPtr<MediaDevicesEventDispatcher> event_dispatcher =
         MediaDevicesEventDispatcher::GetForRenderFrame(nullptr);
-    ::mojom::MediaDevicesDispatcherHostPtr event_dispatcher_host_proxy;
+    blink::mojom::MediaDevicesDispatcherHostPtr event_dispatcher_host_proxy;
     binding_event_dispatcher_.Bind(
         mojo::MakeRequest(&event_dispatcher_host_proxy));
     event_dispatcher->SetMediaDevicesDispatcherForTesting(
@@ -611,10 +611,12 @@ class UserMediaClientImplTest : public ::testing::Test {
       nullptr;  // Owned by |used_media_processor_|.
   MockMojoMediaStreamDispatcherHost mock_dispatcher_host_;
   MockMediaDevicesDispatcherHost media_devices_dispatcher_;
-  mojo::Binding<::mojom::MediaDevicesDispatcherHost>
+  mojo::Binding<blink::mojom::MediaDevicesDispatcherHost>
       binding_user_media_processor_;
-  mojo::Binding<::mojom::MediaDevicesDispatcherHost> binding_user_media_client_;
-  mojo::Binding<::mojom::MediaDevicesDispatcherHost> binding_event_dispatcher_;
+  mojo::Binding<blink::mojom::MediaDevicesDispatcherHost>
+      binding_user_media_client_;
+  mojo::Binding<blink::mojom::MediaDevicesDispatcherHost>
+      binding_event_dispatcher_;
 
   UserMediaProcessorUnderTest* user_media_processor_ =
       nullptr;  // Owned by |user_media_client_impl_|

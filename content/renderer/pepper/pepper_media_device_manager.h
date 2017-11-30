@@ -12,12 +12,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/media/media_devices.h"
-#include "content/common/media/media_devices.mojom.h"
 #include "content/common/media/media_stream.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
 #include "ppapi/c/pp_instance.h"
+#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 
 namespace content {
 class MediaStreamDeviceObserver;
@@ -89,7 +89,8 @@ class PepperMediaDeviceManager
 
   const mojom::MediaStreamDispatcherHostPtr& GetMediaStreamDispatcherHost();
   MediaStreamDeviceObserver* GetMediaStreamDeviceObserver() const;
-  const ::mojom::MediaDevicesDispatcherHostPtr& GetMediaDevicesDispatcher();
+  const blink::mojom::MediaDevicesDispatcherHostPtr&
+  GetMediaDevicesDispatcher();
 
   int next_id_;
 
@@ -97,7 +98,7 @@ class PepperMediaDeviceManager
   OpenCallbackMap open_callbacks_;
 
   mojom::MediaStreamDispatcherHostPtr dispatcher_host_;
-  ::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
+  blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperMediaDeviceManager);
 };

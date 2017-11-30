@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "content/common/content_export.h"
-#include "content/common/media/media_devices.mojom.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
+#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 
 namespace blink {
 class WebMediaConstraints;
@@ -19,7 +19,7 @@ class WebMediaConstraints;
 namespace content {
 
 using AudioDeviceCaptureCapabilities =
-    std::vector<::mojom::AudioInputDeviceCapabilitiesPtr>;
+    std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>;
 
 // This function implements the SelectSettings algorithm for audio tracks as
 // described in https://w3c.github.io/mediacapture-main/#dfn-selectsettings

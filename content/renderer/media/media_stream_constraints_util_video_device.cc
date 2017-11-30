@@ -33,15 +33,15 @@ const double kMinSourceAspectRatio = 0.05;
 const char kVideoKindColor[] = "color";
 const char kVideoKindDepth[] = "depth";
 
-blink::WebString ToWebString(::mojom::FacingMode facing_mode) {
+blink::WebString ToWebString(blink::mojom::FacingMode facing_mode) {
   switch (facing_mode) {
-    case ::mojom::FacingMode::USER:
+    case blink::mojom::FacingMode::USER:
       return blink::WebString::FromASCII("user");
-    case ::mojom::FacingMode::ENVIRONMENT:
+    case blink::mojom::FacingMode::ENVIRONMENT:
       return blink::WebString::FromASCII("environment");
-    case ::mojom::FacingMode::LEFT:
+    case blink::mojom::FacingMode::LEFT:
       return blink::WebString::FromASCII("left");
-    case ::mojom::FacingMode::RIGHT:
+    case blink::mojom::FacingMode::RIGHT:
       return blink::WebString::FromASCII("right");
     default:
       return blink::WebString::FromASCII("");
@@ -52,7 +52,7 @@ struct Candidate {
  public:
   Candidate(const std::string& device_id,
             const media::VideoCaptureFormat& format,
-            ::mojom::FacingMode facing_mode,
+            blink::mojom::FacingMode facing_mode,
             media::PowerLineFrequency power_line_frequency,
             const base::Optional<bool>& noise_reduction)
       : device_id_(device_id),
@@ -77,7 +77,7 @@ struct Candidate {
   // Accessors.
   const media::VideoCaptureFormat& format() const { return format_; }
   const std::string& device_id() const { return device_id_; }
-  ::mojom::FacingMode facing_mode() const { return facing_mode_; }
+  blink::mojom::FacingMode facing_mode() const { return facing_mode_; }
   media::PowerLineFrequency power_line_frequency() const {
     return power_line_frequency_;
   }
@@ -88,7 +88,7 @@ struct Candidate {
  private:
   std::string device_id_;
   media::VideoCaptureFormat format_;
-  ::mojom::FacingMode facing_mode_;
+  blink::mojom::FacingMode facing_mode_;
   media::PowerLineFrequency power_line_frequency_;
   base::Optional<bool> noise_reduction_;
 };
@@ -433,7 +433,7 @@ double NoiseReductionConstraintSourceDistance(
 // characteristics that have a fixed value.
 double DeviceSourceDistance(
     const std::string& device_id,
-    ::mojom::FacingMode facing_mode,
+    blink::mojom::FacingMode facing_mode,
     const blink::WebMediaTrackConstraintSet& constraint_set,
     const char** failed_constraint_name) {
   return StringConstraintSourceDistance(blink::WebString::FromASCII(device_id),
