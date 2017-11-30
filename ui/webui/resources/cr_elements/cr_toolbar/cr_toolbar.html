@@ -155,7 +155,8 @@
           spinner-active="[[spinnerActive]]"
           showing-search="{{showingSearch_}}">
       </cr-toolbar-search-field>
-      <iron-media-query query="(max-width: 900px)" query-matches="{{narrow}}">
+      <iron-media-query query="(max-width: [[narrowThreshold]]px)"
+          query-matches="{{narrow}}">
       </iron-media-query>
     </div>
 
