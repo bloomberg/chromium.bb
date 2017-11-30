@@ -3,6 +3,8 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="item.html">
 
 <dom-module id="extensions-item-list">
@@ -72,7 +74,7 @@
           by experimentation, and it is a good trade-off between initial render
           time and total render time. -->
         <template is="dom-repeat" items="[[extensions]]" initial-count="3"
-            filter="[[computeFilter_(filter)]]"
+            filter="[[computedFilter_]]"
             rendered-item-count="{{shownExtensionsCount_::dom-change}}"
             notify-dom-change>
           <extensions-item id="[[item.id]]" data="[[item]]"
@@ -86,7 +88,7 @@
         <h2 id="app-title" class="items-container">$i18n{appsTitle}</h2>
         <div class="items-container">
           <template is="dom-repeat" items="[[apps]]" initial-count="3"
-              filter="[[computeFilter_(filter)]]"
+              filter="[[computedFilter_]]"
               rendered-item-count="{{shownAppsCount_::dom-change}}"
               notify-dom-change>
             <extensions-item id="[[item.id]]" data="[[item]]"

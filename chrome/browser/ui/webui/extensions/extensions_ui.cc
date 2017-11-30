@@ -146,6 +146,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
   source->AddLocalizedString("noDescription", IDS_MD_EXTENSIONS_NO_DESCRIPTION);
   source->AddLocalizedString("noSearchResults",
                              IDS_MD_EXTENSIONS_NO_SEARCH_RESULTS);
+  source->AddLocalizedString("searchResults", IDS_MD_EXTENSIONS_SEARCH_RESULTS);
   source->AddLocalizedString("dropToInstall",
                              IDS_EXTENSIONS_INSTALL_DROP_TARGET);
   source->AddLocalizedString("errorsPageHeading",

@@ -6,7 +6,7 @@ cr.define('extensions', function() {
   const ItemList = Polymer({
     is: 'extensions-item-list',
 
-    behaviors: [CrContainerShadowBehavior],
+    behaviors: [CrContainerShadowBehavior, I18nBehavior],
 
     properties: {
       /** @type {!Array<!chrome.developerPrivate.ExtensionInfo>} */
@@ -25,7 +25,16 @@ cr.define('extensions', function() {
 
       isGuest: Boolean,
 
-      filter: String,
+      filter: {
+        type: String,
+      },
+
+      /** @private */
+      computedFilter_: {
+        type: String,
+        computed: 'computeFilter_(filter)',
+        observer: 'announceSearchResults_',
+      },
 
       /** @private */
       shownExtensionsCount_: {
@@ -80,6 +89,20 @@ cr.define('extensions', function() {
     shouldShowEmptySearchMessage_: function() {
       return !this.isGuest && !this.shouldShowEmptyItemsMessage_() &&
           this.shownAppsCount_ === 0 && this.shownExtensionsCount_ === 0;
+    },
+
+    /** @private */
+    announceSearchResults_: function() {
+      if (this.computedFilter_) {
+        Polymer.IronA11yAnnouncer.requestAvailability();
+        this.async(() => {  // Async to allow list to update.
+          this.fire('iron-announce', {
+            text: this.shouldShowEmptySearchMessage_() ?
+                this.i18n('noSearchResults') :
+                this.i18n('searchResults', this.filter),
+          });
+        });
+      }
     },
   });
 
