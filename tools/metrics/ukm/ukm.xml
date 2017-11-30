@@ -2072,10 +2072,25 @@ be describing additional metrics about the same event.
       Boolean value indicating whether the tab is pinned in the tabstrip.
     </summary>
   </metric>
+  <metric name="KeyEventCount">
+    <summary>
+      Number of key events that were sent to the page.
+    </summary>
+  </metric>
+  <metric name="MouseEventCount">
+    <summary>
+      Number of mouse events that were sent to the page.
+    </summary>
+  </metric>
   <metric name="SiteEngagementScore">
     <summary>
       Site engagement score in the range [0, 100], rounded down to a multiple of
       10 to limit granularity.
+    </summary>
+  </metric>
+  <metric name="TouchEventCount">
+    <summary>
+      Number of touch events that were sent to the page.
     </summary>
   </metric>
 </event>

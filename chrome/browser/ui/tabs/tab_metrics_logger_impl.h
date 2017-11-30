@@ -18,7 +18,7 @@ class TabMetricsLoggerImpl : public TabMetricsLogger {
 
   // TabMetricsLogger:
   void LogBackgroundTab(ukm::SourceId ukm_source_id,
-                        content::WebContents* web_contents) override;
+                        const TabMetrics& tab_metrics) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabMetricsLoggerImpl);
