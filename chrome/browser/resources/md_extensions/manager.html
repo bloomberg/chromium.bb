@@ -112,8 +112,7 @@
     </template>
 <if expr="chromeos">
     <template is="dom-if" if="[[showKioskDialog_]]" restamp>
-      <extensions-kiosk-dialog id="kiosk-dialog"
-          on-load-error="onLoadError_" on-close="onKioskDialogClose_">
+      <extensions-kiosk-dialog id="kiosk-dialog" on-close="onKioskDialogClose_">
       </extensions-kiosk-dialog>
     </template>
 </if>
