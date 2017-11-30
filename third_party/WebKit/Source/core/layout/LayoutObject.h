@@ -385,7 +385,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // time there'll be no anonymous objects to generate.
   //
   // The following invariants are true on the input:
-  // - |newChild->node()| is a child of |this->node()|, if |this| is not
+  // - |newChild->node()| is a child of |node()|, if |this| is not
   //   anonymous. If |this| is anonymous, the invariant holds with the
   //   enclosing non-anonymous LayoutObject.
   // - |beforeChild->node()| (if |beforeChild| is provided and not anonymous)

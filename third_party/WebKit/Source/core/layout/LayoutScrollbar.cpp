@@ -65,10 +65,10 @@ LayoutScrollbar::LayoutScrollbar(ScrollableArea* scrollable_area,
   if (LayoutScrollbarPart* part = parts_.at(kScrollbarBGPart)) {
     part->UpdateLayout();
     rect.SetSize(FlooredIntSize(part->Size()));
-  } else if (this->Orientation() == kHorizontalScrollbar) {
-    rect.SetWidth(this->Width());
+  } else if (Orientation() == kHorizontalScrollbar) {
+    rect.SetWidth(Width());
   } else {
-    rect.SetHeight(this->Height());
+    rect.SetHeight(Height());
   }
 
   SetFrameRect(rect);

@@ -208,9 +208,9 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
         marker_container->MutableStyleRef().SetLogicalHeight(Length(0, kFixed));
       marker_container->AddChild(marker_,
                                  FirstNonMarkerChild(marker_container));
-      this->AddChild(marker_container, before_child);
+      AddChild(marker_container, before_child);
     } else {
-      this->AddChild(marker_, before_child);
+      AddChild(marker_, before_child);
     }
 
     marker_->UpdateMarginsAndContent();

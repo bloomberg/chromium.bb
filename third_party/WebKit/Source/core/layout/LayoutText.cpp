@@ -421,7 +421,7 @@ void LayoutText::Quads(Vector<FloatQuad>& quads,
 
 void LayoutText::AbsoluteQuads(Vector<FloatQuad>& quads,
                                MapCoordinatesFlags mode) const {
-  this->Quads(quads, kNoClipping, kAbsoluteQuads, mode);
+  Quads(quads, kNoClipping, kAbsoluteQuads, mode);
 }
 
 void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
@@ -439,10 +439,8 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
   start = std::min(start, static_cast<unsigned>(INT_MAX));
   end = std::min(end, static_cast<unsigned>(INT_MAX));
 
-  const unsigned caret_min_offset =
-      static_cast<unsigned>(this->CaretMinOffset());
-  const unsigned caret_max_offset =
-      static_cast<unsigned>(this->CaretMaxOffset());
+  const unsigned caret_min_offset = static_cast<unsigned>(CaretMinOffset());
+  const unsigned caret_max_offset = static_cast<unsigned>(CaretMaxOffset());
 
   // Narrows |start| and |end| into |caretMinOffset| and |careMaxOffset|
   // to ignore unrendered leading and trailing whitespaces.
@@ -485,7 +483,7 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
 FloatRect LayoutText::LocalBoundingBoxRectForAccessibility() const {
   FloatRect result;
   Vector<FloatQuad> quads;
-  this->Quads(quads, LayoutText::kClipToEllipsis, LayoutText::kLocalQuads);
+  Quads(quads, LayoutText::kClipToEllipsis, LayoutText::kLocalQuads);
   for (const FloatQuad& quad : quads)
     result.Unite(quad.BoundingBox());
   return result;
@@ -1449,7 +1447,7 @@ void LayoutText::SetSelectionState(SelectionState state) {
   LayoutObject::SetSelectionState(state);
 
   // The containing block can be null in case of an orphaned tree.
-  LayoutBlock* containing_block = this->ContainingBlock();
+  LayoutBlock* containing_block = ContainingBlock();
   if (containing_block && !containing_block->IsLayoutView())
     containing_block->SetSelectionState(state);
 }

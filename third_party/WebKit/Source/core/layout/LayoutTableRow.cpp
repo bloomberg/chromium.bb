@@ -66,7 +66,7 @@ void LayoutTableRow::StyleDidChange(StyleDifference diff,
 
   if (!Parent())
     return;
-  LayoutTable* table = this->Table();
+  LayoutTable* table = Table();
   if (!table)
     return;
 

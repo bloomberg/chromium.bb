@@ -94,7 +94,7 @@ void LayoutBoxModelObject::SetSelectionState(SelectionState state) {
   // FIXME: We should consider whether it is OK propagating to ancestor
   // LayoutInlines. This is a workaround for http://webkit.org/b/32123
   // The containing block can be null in case of an orphaned tree.
-  LayoutBlock* containing_block = this->ContainingBlock();
+  LayoutBlock* containing_block = ContainingBlock();
   if (containing_block && !containing_block->IsLayoutView())
     containing_block->SetSelectionState(state);
 }
@@ -208,9 +208,9 @@ void LayoutBoxModelObject::WillBeDestroyed() {
   DCHECK(!Continuation());
 
   if (IsPositioned()) {
-    // Don't use this->view() because the document's layoutView has been set to
+    // Don't use view() because the document's layoutView has been set to
     // 0 during destruction.
-    if (LocalFrame* frame = this->GetFrame()) {
+    if (LocalFrame* frame = GetFrame()) {
       if (LocalFrameView* frame_view = frame->View()) {
         if (Style()->HasViewportConstrainedPosition() ||
             Style()->HasStickyConstrainedPosition())
@@ -634,7 +634,7 @@ void LayoutBoxModelObject::AbsoluteQuads(Vector<FloatQuad>& quads,
 
   // Iterate over continuations, avoiding recursion in case there are
   // many of them. See crbug.com/653767.
-  for (const LayoutBoxModelObject* continuation_object = this->Continuation();
+  for (const LayoutBoxModelObject* continuation_object = Continuation();
        continuation_object;
        continuation_object = continuation_object->Continuation()) {
     DCHECK(continuation_object->IsLayoutInline() ||
@@ -723,7 +723,7 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
   DCHECK(IsRelPositioned());
   LayoutSize offset = AccumulateInFlowPositionOffsets();
 
-  LayoutBlock* containing_block = this->ContainingBlock();
+  LayoutBlock* containing_block = ContainingBlock();
 
   // Objects that shrink to avoid floats normally use available line width when
   // computing containing block width. However in the case of relative
@@ -825,7 +825,7 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
 
   StickyPositionScrollingConstraints constraints;
   FloatSize skipped_containers_offset;
-  LayoutBlock* containing_block = this->ContainingBlock();
+  LayoutBlock* containing_block = ContainingBlock();
   // The location container for boxes is not always the containing block.
   LayoutObject* location_container =
       IsLayoutInline() || IsTableCell()
@@ -1290,7 +1290,7 @@ const LayoutObject* LayoutBoxModelObject::PushMappingToContainer(
   DCHECK_NE(ancestor_to_stop_at, this);
 
   AncestorSkipInfo skip_info(ancestor_to_stop_at);
-  LayoutObject* container = this->Container(&skip_info);
+  LayoutObject* container = Container(&skip_info);
   if (!container)
     return nullptr;
 

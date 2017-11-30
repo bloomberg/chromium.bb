@@ -116,7 +116,7 @@ void LayoutTableSection::StyleDidChange(StyleDifference diff,
   if (!old_style)
     return;
 
-  LayoutTable* table = this->Table();
+  LayoutTable* table = Table();
   if (!table)
     return;
 
@@ -1414,7 +1414,7 @@ void LayoutTableSection::ComputeOverflowFromDescendants() {
   }
 
 #if DCHECK_IS_ON()
-  DCHECK_EQ(has_overflowing_cell, this->HasOverflowingCell());
+  DCHECK_EQ(has_overflowing_cell, HasOverflowingCell());
 #endif
 }
 

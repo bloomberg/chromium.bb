@@ -862,7 +862,7 @@ FloatSize LayoutView::ViewportSizeForViewportUnits() const {
 void LayoutView::WillBeDestroyed() {
   // TODO(wangxianzhu): This is a workaround of crbug.com/570706.
   // Should find and fix the root cause.
-  if (PaintLayer* layer = this->Layer())
+  if (PaintLayer* layer = Layer())
     layer->SetNeedsRepaint();
   LayoutBlockFlow::WillBeDestroyed();
   compositor_.reset();

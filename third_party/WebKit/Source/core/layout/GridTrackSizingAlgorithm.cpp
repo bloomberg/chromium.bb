@@ -500,7 +500,7 @@ bool IndefiniteSizeStrategy::RecomputeUsedFlexFractionIfNeeded(
   if (Direction() == kForColumns)
     return false;
 
-  const LayoutGrid* layout_grid = this->GetLayoutGrid();
+  const LayoutGrid* layout_grid = GetLayoutGrid();
   LayoutUnit min_size = layout_grid->ComputeContentLogicalHeight(
       kMinSize, layout_grid->StyleRef().LogicalMinHeight(), LayoutUnit(-1));
   LayoutUnit max_size = layout_grid->ComputeContentLogicalHeight(
@@ -1359,9 +1359,8 @@ void GridTrackSizingAlgorithm::StretchFlexibleTracks(
     if (LayoutUnit increment = increments[i++])
       track.SetBaseSize(track.BaseSize() + increment);
   }
-  if (this->FreeSpace(direction_)) {
-    SetFreeSpace(direction_,
-                 this->FreeSpace(direction_).value() - total_growth);
+  if (FreeSpace(direction_)) {
+    SetFreeSpace(direction_, FreeSpace(direction_).value() - total_growth);
   }
   max_content_size_ += total_growth;
 }

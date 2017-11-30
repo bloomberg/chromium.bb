@@ -314,7 +314,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   }
 
   void EnsureCols(unsigned row_index, unsigned num_cols) {
-    if (num_cols > this->NumCols(row_index))
+    if (num_cols > NumCols(row_index))
       grid_[row_index].grid_cells.Grow(num_cols);
   }
 

@@ -134,7 +134,7 @@ void LayoutBlock::WillBeDestroyed() {
   if (!DocumentBeingDestroyed() && Parent())
     Parent()->DirtyLinesFromChangedChild(this);
 
-  if (LocalFrame* frame = this->GetFrame()) {
+  if (LocalFrame* frame = GetFrame()) {
     frame->Selection().LayoutBlockWillBeDestroyed(*this);
     frame->GetPage()->GetDragCaret().LayoutBlockWillBeDestroyed(*this);
   }
@@ -583,7 +583,7 @@ void LayoutBlock::UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
   // determine this, so that we can avoid the relayout.
   bool has_relative_logical_height =
       child.HasRelativeLogicalHeight() ||
-      (child.IsAnonymous() && this->HasRelativeLogicalHeight()) ||
+      (child.IsAnonymous() && HasRelativeLogicalHeight()) ||
       child.StretchesToViewport();
   if (relayout_children || (has_relative_logical_height && !IsLayoutView()) ||
       (height_available_to_children_changed_ &&
@@ -1445,7 +1445,7 @@ void LayoutBlock::ComputeBlockPreferredLogicalWidths(
   bool nowrap = style_to_use.WhiteSpace() == EWhiteSpace::kNowrap;
 
   LayoutObject* child = FirstChild();
-  LayoutBlock* containing_block = this->ContainingBlock();
+  LayoutBlock* containing_block = ContainingBlock();
   LayoutUnit float_left_width, float_right_width;
   while (child) {
     // Positioned children don't affect the min/max width. Spanners only affect
@@ -1865,8 +1865,7 @@ void LayoutBlock::AddOutlineRects(
       !HasOverflowClip() && !HasControlClip()) {
     AddOutlineRectsForNormalChildren(rects, additional_offset,
                                      include_block_overflows);
-    if (TrackedLayoutBoxListHashSet* positioned_objects =
-            this->PositionedObjects()) {
+    if (TrackedLayoutBoxListHashSet* positioned_objects = PositionedObjects()) {
       for (auto* box : *positioned_objects)
         AddOutlineRectsForDescendant(*box, rects, additional_offset,
                                      include_block_overflows);
