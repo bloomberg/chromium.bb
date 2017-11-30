@@ -3974,6 +3974,21 @@
             ]
         }
     ],
+    "UserActivityEventLogging": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "UserActivityEventLogging",
+                    "enable_features": [
+                        "UserActivityEventLogging"
+                    ]
+                }
+            ]
+        }
+    ],
     "V8AsmJSToWasm": [
         {
             "platforms": [
