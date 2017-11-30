@@ -571,7 +571,7 @@ class GraphAdjuster : public AdjustmentMethod {
       : prog_(NULL),
         model_(NULL),
         debug_label_index_gen_(0) {}
-  ~GraphAdjuster() {}
+  ~GraphAdjuster() = default;
 
   bool Adjust(const AssemblyProgram& model, AssemblyProgram* program) {
     VLOG(1) << "GraphAdjuster::Adjust";

@@ -83,7 +83,7 @@ class BufferedFileReader : public courgette::BasicBuffer {
     if (!buffer_.Initialize(file_name))
       Problem("Can't read %s file.", kind);
   }
-  ~BufferedFileReader() override {}
+  ~BufferedFileReader() override = default;
 
   // courgette::BasicBuffer:
   const uint8_t* data() const override { return buffer_.data(); }

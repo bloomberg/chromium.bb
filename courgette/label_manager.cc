@@ -32,7 +32,7 @@ LabelManager::SimpleIndexAssigner::SimpleIndexAssigner(LabelVector* labels)
   VLOG(1) << used << " of " << labels_->size() << " labels pre-assigned.";
 }
 
-LabelManager::SimpleIndexAssigner::~SimpleIndexAssigner() {}
+LabelManager::SimpleIndexAssigner::~SimpleIndexAssigner() = default;
 
 void LabelManager::SimpleIndexAssigner::DoForwardFill() {
   size_t count = 0;
@@ -91,9 +91,9 @@ void LabelManager::SimpleIndexAssigner::DoInFill() {
   VLOG(1) << "  infill " << count;
 }
 
-LabelManager::LabelManager() {}
+LabelManager::LabelManager() = default;
 
-LabelManager::~LabelManager() {}
+LabelManager::~LabelManager() = default;
 
 // static
 int LabelManager::GetLabelIndexBound(const LabelVector& labels) {

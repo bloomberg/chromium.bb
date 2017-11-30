@@ -27,7 +27,7 @@ class TestDisassemblerElf32X86 : public DisassemblerElf32X86 {
  public:
   TestDisassemblerElf32X86(const uint8_t* start, size_t length)
       : DisassemblerElf32X86(start, length) {}
-  ~TestDisassemblerElf32X86() override {}
+  ~TestDisassemblerElf32X86() override = default;
 
   void TestSectionHeaderFileOffsetOrder() {
     std::vector<FileOffset> file_offsets;

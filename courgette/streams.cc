@@ -230,9 +230,7 @@ SourceStreamSet::SourceStreamSet()
     : count_(kMaxStreams) {
 }
 
-SourceStreamSet::~SourceStreamSet() {
-}
-
+SourceStreamSet::~SourceStreamSet() = default;
 
 // Initializes from |source|.
 // The stream set for N streams is serialized as a header
@@ -322,8 +320,7 @@ SinkStreamSet::SinkStreamSet()
   : count_(kMaxStreams) {
 }
 
-SinkStreamSet::~SinkStreamSet() {
-}
+SinkStreamSet::~SinkStreamSet() = default;
 
 void SinkStreamSet::Init(size_t stream_index_limit) {
   count_ = stream_index_limit;

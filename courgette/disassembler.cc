@@ -40,7 +40,7 @@ Disassembler::Disassembler(const uint8_t* start, size_t length)
   end_ = start_ + length_;
 }
 
-Disassembler::~Disassembler() {}
+Disassembler::~Disassembler() = default;
 
 const uint8_t* Disassembler::FileOffsetToPointer(FileOffset file_offset) const {
   CHECK_LE(file_offset, static_cast<FileOffset>(end_ - start_));

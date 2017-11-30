@@ -184,8 +184,8 @@ class InstructionStoreReceptor : public InstructionReceptor {
 // Constructor is here rather than in the header. Although the constructor
 // appears to do nothing it is fact quite large because of the implicit calls to
 // field constructors. Ditto for the destructor.
-EncodedProgram::EncodedProgram() {}
-EncodedProgram::~EncodedProgram() {}
+EncodedProgram::EncodedProgram() = default;
+EncodedProgram::~EncodedProgram() = default;
 
 CheckBool EncodedProgram::ImportLabels(
     const LabelManager& abs32_label_manager,
