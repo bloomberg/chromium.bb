@@ -12,9 +12,7 @@
 #include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
 #include "platform/scheduler/child/worker_scheduler.h"
-#include "platform/scheduler/util/task_duration_metric_reporter.h"
 #include "platform/scheduler/util/thread_load_tracker.h"
-#include "platform/scheduler/util/thread_type.h"
 
 namespace blink {
 namespace scheduler {
@@ -29,24 +27,18 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
       std::unique_ptr<TaskQueueManager> task_queue_manager);
   ~WorkerSchedulerImpl() override;
 
-  // ChildScheduler implementation:
+  // WorkerScheduler implementation:
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
+  scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
-  bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
+  bool ShouldYieldForHighPriorityWork() override;
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
-  void Shutdown() override;
-
-  // WorkerScheduler implementation:
-  scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() override;
   void Init() override;
-  void OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
-                       const TaskQueue::Task& task,
-                       base::TimeTicks start,
-                       base::TimeTicks end) override;
+  void Shutdown() override;
 
   // TaskTimeObserver implementation:
   void WillProcessTask(double start_time) override;
@@ -73,7 +65,6 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   ThreadLoadTracker load_tracker_;
   bool initialized_;
   base::TimeTicks thread_start_time_;
-  TaskDurationMetricReporter<ThreadType> worker_thread_task_duration_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerSchedulerImpl);
 };

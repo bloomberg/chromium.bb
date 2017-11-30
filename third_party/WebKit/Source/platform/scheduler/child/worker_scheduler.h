@@ -33,11 +33,6 @@ class PLATFORM_EXPORT WorkerScheduler : public ChildScheduler {
   // initialization needed such as initializing idle period detection.
   virtual void Init() = 0;
 
-  virtual void OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
-                               const TaskQueue::Task& task,
-                               base::TimeTicks start,
-                               base::TimeTicks end) = 0;
-
   scoped_refptr<WorkerTaskQueue> CreateTaskRunner();
 
  protected:
