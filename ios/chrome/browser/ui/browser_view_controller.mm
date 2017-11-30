@@ -4320,6 +4320,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   BOOL offTheRecord = self.isOffTheRecord;
   ProceduralBlock oldForegroundTabWasAddedCompletionBlock =
       self.foregroundTabWasAddedCompletionBlock;
+  __weak BrowserViewController* weakSelf = self;
   self.foregroundTabWasAddedCompletionBlock = ^{
     if (oldForegroundTabWasAddedCompletionBlock) {
       oldForegroundTabWasAddedCompletionBlock();
@@ -4331,6 +4332,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
                           timeDelta);
     } else {
       UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewTabPresentationDuration", timeDelta);
+    }
+    if (command.shouldFocusOmnibox) {
+      [weakSelf focusOmnibox];
     }
   };
 

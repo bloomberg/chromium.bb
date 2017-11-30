@@ -62,11 +62,16 @@
 
   // New tab blocks.
   void (^newTab)() = ^{
-    [weakDispatcher openNewTab:[OpenNewTabCommand command]];
+    OpenNewTabCommand* newTabCommand = [OpenNewTabCommand command];
+    newTabCommand.shouldFocusOmnibox = YES;
+    [weakDispatcher openNewTab:newTabCommand];
   };
 
   void (^newIncognitoTab)() = ^{
-    [weakDispatcher openNewTab:[OpenNewTabCommand incognitoTabCommand]];
+    OpenNewTabCommand* newIncognitoTabCommand =
+        [OpenNewTabCommand incognitoTabCommand];
+    newIncognitoTabCommand.shouldFocusOmnibox = YES;
+    [weakDispatcher openNewTab:newIncognitoTabCommand];
   };
 
   const int browseLeftDescriptionID = useRTLLayout

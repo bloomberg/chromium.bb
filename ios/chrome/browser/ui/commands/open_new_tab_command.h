@@ -41,8 +41,10 @@
 // Whether the new tab command was initiated by the user (e.g. by tapping the
 // new tab button in the tools menu) or not (e.g. opening a new tab via a
 // Javascript action). Defaults to |YES|.
-@property(nonatomic, readwrite, assign, getter=isUserInitiated)
-    BOOL userInitiated;
+@property(nonatomic, assign, getter=isUserInitiated) BOOL userInitiated;
+
+// Whether the new tab command should also trigger the omnibox to be focused.
+@property(nonatomic, assign) BOOL shouldFocusOmnibox;
 
 @end
 

@@ -13,6 +13,7 @@
 @synthesize incognito = _incognito;
 @synthesize originPoint = _originPoint;
 @synthesize userInitiated = _userInitiated;
+@synthesize shouldFocusOmnibox = _shouldFocusOmnibox;
 
 - (instancetype)initWithIncognito:(BOOL)incognito
                       originPoint:(CGPoint)originPoint {
