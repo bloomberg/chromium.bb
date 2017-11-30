@@ -8,10 +8,8 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/printing/print_job_worker_owner.h"
-#include "printing/print_job_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -69,6 +67,7 @@ class PrinterQuery : public PrintJobWorkerOwner {
   bool is_valid() const;
 
  private:
+  // Refcounted class.
   ~PrinterQuery() override;
 
   // Lazy create the worker thread. There is one worker thread per print job.
@@ -83,13 +82,13 @@ class PrinterQuery : public PrintJobWorkerOwner {
   PrintSettings settings_;
 
   // Is the Print... dialog box currently shown.
-  bool is_print_dialog_box_shown_;
+  bool is_print_dialog_box_shown_ = false;
 
   // Cookie that make this instance unique.
   int cookie_;
 
   // Results from the last GetSettingsDone() callback.
-  PrintingContext::Result last_status_;
+  PrintingContext::Result last_status_ = PrintingContext::FAILED;
 
   // Callback waiting to be run.
   base::OnceClosure callback_;
