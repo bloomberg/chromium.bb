@@ -10649,7 +10649,7 @@
       'name': 'IsolateOrigins',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:64-', 'chrome_os:64-'],
+      'supported_on': ['chrome.*:63-', 'chrome_os:63-'],
       'device_only': False,
       'features': {
         'dynamic_refresh': False,
@@ -10674,7 +10674,7 @@
       'name': 'SitePerProcess',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:64-', 'chrome_os:64-'],
+      'supported_on': ['chrome.*:63-', 'chrome_os:63-'],
       'device_only': False,
       'features': {
         'dynamic_refresh': False,
