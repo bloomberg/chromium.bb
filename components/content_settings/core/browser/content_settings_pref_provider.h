@@ -61,7 +61,7 @@ class PrefProvider : public UserModifiableProvider {
 
   ContentSettingsPref* GetPref(ContentSettingsType type) const;
 
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+  void SetClockForTesting(base::Clock* clock);
 
  private:
   friend class DeadlockCheckerObserver;  // For testing.
@@ -88,7 +88,7 @@ class PrefProvider : public UserModifiableProvider {
 
   base::ThreadChecker thread_checker_;
 
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefProvider);
 };

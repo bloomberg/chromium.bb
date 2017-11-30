@@ -559,12 +559,11 @@ TEST_F(PrefProviderTest, LastModified) {
   // Create a  provider and set a few settings.
   PrefProvider provider(&prefs, false /* incognito */,
                         true /* store_last_modified */);
-  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
-  test_clock->SetNow(base::Time::Now());
-  base::SimpleTestClock* clock = test_clock.get();
-  provider.SetClockForTesting(std::move(test_clock));
+  base::SimpleTestClock test_clock;
+  test_clock.SetNow(base::Time::Now());
+  provider.SetClockForTesting(&test_clock);
 
-  base::Time t1 = clock->Now();
+  base::Time t1 = test_clock.Now();
 
   provider.SetWebsiteSetting(pattern_1, ContentSettingsPattern::Wildcard(),
                              CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
@@ -573,8 +572,8 @@ TEST_F(PrefProviderTest, LastModified) {
                              CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
                              value->DeepCopy());
   // Make sure that the timestamps for pattern_1 and patter_2 are before |t2|.
-  clock->Advance(base::TimeDelta::FromSeconds(1));
-  base::Time t2 = clock->Now();
+  test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  base::Time t2 = test_clock.Now();
 
   base::Time last_modified = provider.GetWebsiteSettingLastModified(
       pattern_1, ContentSettingsPattern::Wildcard(),
