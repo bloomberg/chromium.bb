@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -493,6 +494,72 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 
   ASSERT_TRUE(ui::PageTransitionCoreTypeIs(
       observer.transition_type(), ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
+}
+
+// Tests that pasting an in-scope URL into the address bar and navigating to it,
+// does not open an app window.
+// https://crbug.com/782004
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+                       LinkNavigationFromAddressBar) {
+  InstallTestBookmarkApp();
+
+  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  // Fake a navigation with a TRANSITION_LINK core type and a
+  // TRANSITION_FROM_ADDRESS_BAR qualifier. This matches the transition that
+  // results from pasting a URL into the address and navigating to it.
+  chrome::NavigateParams params(
+      browser(), app_url,
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
+  ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
+      app_url, base::Bind(&NavigateToURLWrapper, &params)));
+}
+
+// Tests that going back to an in-scope URL does not open a new app window.
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+                       BackNavigation) {
+  InstallTestBookmarkApp();
+
+  // Navigate to the app's URL.
+  {
+    const GURL app_url =
+        embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+    chrome::NavigateParams params(browser(), app_url,
+                                  ui::PAGE_TRANSITION_TYPED);
+    ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
+        app_url, base::Bind(&NavigateToURLWrapper, &params)));
+  }
+
+  // Navigate to an in-scope URL to generate a link navigation that didn't
+  // get intercepted. The navigation won't get intercepted because the target
+  // URL is in-scope of the app for the current URL.
+  const GURL in_scope_url =
+      embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath);
+  ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
+      in_scope_url,
+      base::Bind(&ClickLinkAndWait,
+                 browser()->tab_strip_model()->GetActiveWebContents(),
+                 in_scope_url, LinkTarget::SELF, "" /* rel */)));
+
+  // Navigate to an out-of-scope URL.
+  {
+    const GURL out_of_scope_url =
+        embedded_test_server()->GetURL(kAppUrlHost, kOutOfScopeUrlPath);
+    chrome::NavigateParams params(browser(), out_of_scope_url,
+                                  ui::PAGE_TRANSITION_TYPED);
+    ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
+        out_of_scope_url, base::Bind(&NavigateToURLWrapper, &params)));
+  }
+
+  TestTabActionDoesNotOpenAppWindow(
+      in_scope_url,
+      base::Bind(
+          [](content::WebContents* web_contents, const GURL& in_scope_url) {
+            auto observer = GetTestNavigationObserver(in_scope_url);
+            web_contents->GetController().GoBack();
+            observer->WaitForNavigationFinished();
+          },
+          browser()->tab_strip_model()->GetActiveWebContents(), in_scope_url));
 }
 
 // Tests that clicking a link to an app that launches in a tab does not open a
