@@ -62,6 +62,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
       const PaintInfo&);
   bool IntersectsPaintRect(const PaintInfo&, const LayoutPoint&) const;
 
+  void PaintWithAdjustedOffset(PaintInfo&, const LayoutPoint&);
   void PaintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
   void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
                                             const LayoutPoint&,

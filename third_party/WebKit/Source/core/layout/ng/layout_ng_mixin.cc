@@ -152,8 +152,7 @@ void LayoutNGMixin<Base>::Paint(const PaintInfo& paint_info,
                                 const LayoutPoint& paint_offset) const {
   if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled() &&
       PaintFragment())
-    NGBlockFlowPainter(*this).Paint(paint_info,
-                                    paint_offset + Base::Location());
+    NGBlockFlowPainter(*this).Paint(paint_info, paint_offset);
   else
     LayoutBlockFlow::Paint(paint_info, paint_offset);
 }
