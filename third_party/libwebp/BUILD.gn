@@ -16,6 +16,9 @@ config("libwebp_config_internal") {
     "WEBP_NEAR_LOSSLESS=0",
     "WEBP_DISABLE_STATS",
   ]
+  if (!is_ios) {
+    defines += [ "WEBP_REDUCE_CSP" ]
+  }
 }
 
 set_opt_level =
