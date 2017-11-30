@@ -272,6 +272,10 @@ extern const base::Feature kSysInternals;
 extern const base::Feature kSyzyasanDeferredFree;
 #endif
 
+#if !defined(OS_ANDROID)
+extern const base::Feature kTabMetricsLogging;
+#endif
+
 extern const base::Feature kTabsInCbd;
 
 extern const base::Feature kTopSitesFromSiteEngagement;
