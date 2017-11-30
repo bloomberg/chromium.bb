@@ -185,11 +185,11 @@ Status WebViewImpl::Load(const std::string& url, const Timeout* timeout) {
     return Status(kUnknownError, "unsupported protocol");
   base::DictionaryValue params;
   params.SetString("url", url);
-  if (browser_info_->major_version >= 64 &&
+  if (browser_info_->major_version >= 63 &&
       navigation_tracker_->IsNonBlocking()) {
     // With non-bloakcing navigation tracker, the previous navigation might
     // still be in progress, and this can cause the new navigate command to be
-    // ignored on Chrome v64 and above. Stop previous navigation first.
+    // ignored on Chrome v63 and above. Stop previous navigation first.
     client_->SendCommand("Page.stopLoading", base::DictionaryValue());
     // Use SendCommandAndIgnoreResponse to ensure no blocking occurs.
     return client_->SendCommandAndIgnoreResponse("Page.navigate", params);
@@ -516,7 +516,7 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
   if (status.code() == kTimeout && stop_load_on_timeout) {
     VLOG(0) << "Timed out. Stopping navigation...";
     navigation_tracker_->set_timed_out(true);
-    if (browser_info_->major_version >= 64) {
+    if (browser_info_->major_version >= 63) {
       client_->SendCommand("Page.stopLoading", base::DictionaryValue());
     } else {
       std::unique_ptr<base::Value> unused_value;
