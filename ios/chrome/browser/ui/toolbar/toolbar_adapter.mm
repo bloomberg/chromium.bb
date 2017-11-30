@@ -183,4 +183,12 @@
       anchorPointForToolsMenuButton:direction];
 }
 
+#pragma mark - ToolsMenuPresentationProvider
+
+- (UIButton*)presentingButtonForToolsMenuCoordinator:
+    (ToolsMenuCoordinator*)coordinator {
+  return [self.toolbarCoordinator
+      presentingButtonForToolsMenuCoordinator:coordinator];
+}
+
 @end

@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/abstract_web_toolbar.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
+#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_state_provider.h"
 
 @protocol ActivityServicePositioner;
@@ -35,7 +36,8 @@
                   VoiceSearchControllerDelegate,
                   ActivityServicePositioner,
                   QRScannerResultLoading,
-                  BubbleViewAnchorPointProvider>
+                  BubbleViewAnchorPointProvider,
+                  ToolsMenuPresentationProvider>
 
 - (void)setToolsMenuIsVisibleForToolsMenuButton:(BOOL)isVisible;
 - (void)start;

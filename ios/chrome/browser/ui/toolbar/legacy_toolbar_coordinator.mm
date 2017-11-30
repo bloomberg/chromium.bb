@@ -89,11 +89,7 @@
   _toolbarController = toolbarController;
   // ToolbarController needs to know about whether the tools menu is presented
   // or not, and does so by storing a reference to the coordinator to query.
-  if ([_toolbarController
-          conformsToProtocol:@protocol(ToolsMenuPresentationProvider)]) {
-    _toolsMenuCoordinator.presentationProvider =
-        (id<ToolsMenuPresentationProvider>)_toolbarController;
-  }
+  _toolsMenuCoordinator.presentationProvider = _toolbarController;
   [toolbarController start];
 }
 
