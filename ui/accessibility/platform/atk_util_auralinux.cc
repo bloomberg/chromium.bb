@@ -110,13 +110,24 @@ bool AtkUtilAuraLinux::ShouldEnableAccessibility() {
 }
 
 void AtkUtilAuraLinux::InitializeAsync() {
+  static bool initialized = false;
+
+  if (initialized || !ShouldEnableAccessibility())
+    return;
+
+  initialized = true;
+
   // Register our util class.
   g_type_class_unref(g_type_class_ref(ATK_UTIL_AURALINUX_TYPE));
 
-  if (!ShouldEnableAccessibility())
-    return;
-
   PlatformInitializeAsync();
+}
+
+void AtkUtilAuraLinux::InitializeForTesting() {
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  env->SetVar(kAccessibilityEnabled, "1");
+
+  InitializeAsync();
 }
 
 }  // namespace ui
