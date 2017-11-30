@@ -16,6 +16,11 @@ class UserActivityLoggerDelegate {
  public:
   virtual ~UserActivityLoggerDelegate() = default;
 
+  // Get source IDs of all open tabs' URLs. This method should be called when
+  // user activity logger runs feature extraction to collect source IDs of all
+  // open tabs' URLs.
+  virtual void UpdateOpenTabsURLs() = 0;
+
   // Log user activity event.
   virtual void LogActivity(const UserActivityEvent& event) = 0;
 };

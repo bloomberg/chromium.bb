@@ -1952,4 +1952,90 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="UserActivity">
+  <owner>jiameng@chromium.org</owner>
+  <summary>
+    Collects user activity events after staying idle for a short period of time.
+  </summary>
+  <metric name="BatteryPercent">
+    <summary>
+      Percentage of battery, bucketed to 5 percents, i.e. [0, 5%) is mapped to
+      0, [5%, 10%) is mapped to 5 etc.
+    </summary>
+  </metric>
+  <metric name="DeviceMode">
+    <summary>
+      An enum representing the mode of the device, defined in
+      |chromeos::power::ml::UserActivityEvent::Feature::DeviceMode|
+    </summary>
+  </metric>
+  <metric name="DeviceType">
+    <summary>
+      An enum representing the type of the device, defined in
+      |chromeos::power::ml::UserActivityEvent::Feature::DeviceType|
+    </summary>
+  </metric>
+  <metric name="EventReason">
+    <summary>
+      An enum representing the reason of the event, defined in
+      |chromeos::power::ml::UserActivityEvent::Event::Reason|.
+    </summary>
+  </metric>
+  <metric name="EventType">
+    <summary>
+      An enum representing the type of the event, defined in
+      |chromeos::power::ml::UserActivityEvent::Event::Type|.
+    </summary>
+  </metric>
+  <metric name="LastActivityDay">
+    <summary>
+      An enum representing the last activity day of the week, defined in
+      |chromeos::power::ml::UserActivityEvent::Feature::DayOfWeek|.
+    </summary>
+  </metric>
+  <metric name="LastActivityTime">
+    <summary>
+      Last activity time as hours since midnight in the local time zone.
+    </summary>
+  </metric>
+  <metric name="LastUserActivityTime">
+    <summary>
+      Last user activity time as hours since midnight in the local time zone.
+    </summary>
+  </metric>
+  <metric name="OnBattery">
+    <summary>
+      Boolean value to represent whether the device is currently on battery
+      power.
+    </summary>
+  </metric>
+  <metric name="RecentTimeActive">
+    <summary>
+      Duration of activity in seconds up to last activity.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastKey">
+    <summary>
+      Time from last key event in seconds.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastMouse">
+    <summary>
+      Time from last mouse or touch event in seconds.
+    </summary>
+  </metric>
+</event>
+
+<event name="UserActivityId">
+  <owner>jiameng@chromium.org</owner>
+  <summary>
+    Records an activity that happened while a page was open.
+  </summary>
+  <metric name="ActivityId">
+    <summary>
+      The ID of the activity that happened while a page was open.
+    </summary>
+  </metric>
+</event>
+
 </ukm-configuration>

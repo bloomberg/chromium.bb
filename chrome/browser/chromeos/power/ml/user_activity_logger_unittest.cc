@@ -42,6 +42,7 @@ class TestingUserActivityLoggerDelegate : public UserActivityLoggerDelegate {
   void LogActivity(const UserActivityEvent& event) override {
     events_.push_back(event);
   }
+  void UpdateOpenTabsURLs() override {}
 
  private:
   std::vector<UserActivityEvent> events_;
