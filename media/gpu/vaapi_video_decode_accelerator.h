@@ -306,6 +306,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   size_t requested_num_pics_;
   gfx::Size requested_pic_size_;
   gfx::BufferFormat output_format_;
+  VideoCodecProfile profile_;
 
   // Callback to make GL context current.
   MakeGLContextCurrentCallback make_context_current_cb_;
