@@ -1,4 +1,2 @@
-dalecurtis@chromium.org
-ddorwin@chromium.org
-wolenetz@chromium.org
-xhwang@chromium.org
+# COMPONENT: Internals>Media>FFmpeg
+file://../../media/OWNERS
