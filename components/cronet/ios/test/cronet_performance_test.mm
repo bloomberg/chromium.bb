@@ -32,7 +32,7 @@ struct PerfResult {
   NSTimeInterval total;
   NSTimeInterval mean;
   NSTimeInterval max;
-  int total_bytes_downloaded;
+  int64_t total_bytes_downloaded;
   int failed_requests;
   int total_requests;
 };
