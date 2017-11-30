@@ -66,7 +66,7 @@ class IdleEventNotifierTest : public testing::Test {
         scoped_context_(task_runner_.get()) {
     viz::mojom::VideoDetectorObserverPtr observer;
     idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
-        &power_client_, mojo::MakeRequest(&observer));
+        &power_client_, &user_activity_detector_, mojo::MakeRequest(&observer));
     idle_event_notifier_->SetClockForTesting(task_runner_->GetMockClock());
     idle_event_notifier_->AddObserver(&test_observer_);
     ac_power_.set_external_power(
@@ -113,7 +113,8 @@ TEST_F(IdleEventNotifierTest, CheckInitialValues) {
 TEST_F(IdleEventNotifierTest, LidOpenEventReceived) {
   base::Time now = task_runner_->Now();
   idle_event_notifier_->LidEventReceived(
-      chromeos::PowerManagerClient::LidState::OPEN, base::TimeTicks::Now());
+      chromeos::PowerManagerClient::LidState::OPEN,
+      base::TimeTicks::UnixEpoch());
   IdleEventNotifier::ActivityData data(now, now);
   data.last_user_activity_time = now;
   FastForwardAndCheckResults(1, data);
@@ -122,7 +123,8 @@ TEST_F(IdleEventNotifierTest, LidOpenEventReceived) {
 // Lid-closed event will not trigger any future idle event to be generated.
 TEST_F(IdleEventNotifierTest, LidClosedEventReceived) {
   idle_event_notifier_->LidEventReceived(
-      chromeos::PowerManagerClient::LidState::CLOSED, base::TimeTicks::Now());
+      chromeos::PowerManagerClient::LidState::CLOSED,
+      base::TimeTicks::UnixEpoch());
   FastForwardAndCheckResults(0, {});
 }
 
@@ -168,7 +170,8 @@ TEST_F(IdleEventNotifierTest, PowerSourceChanged) {
 // SuspendImminent will not trigger any future idle event.
 TEST_F(IdleEventNotifierTest, SuspendImminent) {
   idle_event_notifier_->LidEventReceived(
-      chromeos::PowerManagerClient::LidState::OPEN, base::TimeTicks::Now());
+      chromeos::PowerManagerClient::LidState::OPEN,
+      base::TimeTicks::UnixEpoch());
   idle_event_notifier_->SuspendImminent(
       power_manager::SuspendImminent_Reason_LID_CLOSED);
   FastForwardAndCheckResults(0, {});

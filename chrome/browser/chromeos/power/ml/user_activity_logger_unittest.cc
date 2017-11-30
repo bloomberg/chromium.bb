@@ -59,7 +59,8 @@ class UserActivityLoggerTest : public testing::Test {
     fake_power_manager_client_.Init(nullptr);
     viz::mojom::VideoDetectorObserverPtr observer;
     idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
-        &fake_power_manager_client_, mojo::MakeRequest(&observer));
+        &fake_power_manager_client_, &user_activity_detector_,
+        mojo::MakeRequest(&observer));
     activity_logger_ = std::make_unique<UserActivityLogger>(
         &delegate_, idle_event_notifier_.get(), &user_activity_detector_,
         &fake_power_manager_client_, &session_manager_,
@@ -79,7 +80,7 @@ class UserActivityLoggerTest : public testing::Test {
   }
 
   void ReportLidEvent(chromeos::PowerManagerClient::LidState state) {
-    fake_power_manager_client_.SetLidState(state, base::TimeTicks::Now());
+    fake_power_manager_client_.SetLidState(state, base::TimeTicks::UnixEpoch());
   }
 
   void ReportPowerChangeEvent(
@@ -92,7 +93,8 @@ class UserActivityLoggerTest : public testing::Test {
   }
 
   void ReportTabletModeEvent(chromeos::PowerManagerClient::TabletMode mode) {
-    fake_power_manager_client_.SetTabletMode(mode, base::TimeTicks::Now());
+    fake_power_manager_client_.SetTabletMode(mode,
+                                             base::TimeTicks::UnixEpoch());
   }
 
   void ReportVideoStart() { activity_logger_->OnVideoActivityStarted(); }

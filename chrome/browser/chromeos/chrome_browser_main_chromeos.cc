@@ -85,6 +85,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/power/freezer_cgroup_process_manager.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
+#include "chrome/browser/chromeos/power/ml/user_activity_logging_controller.h"
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
 #include "chrome/browser/chromeos/power/power_prefs.h"
@@ -1095,6 +1096,11 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
     night_light_client_->Start();
   }
 
+  if (base::FeatureList::IsEnabled(features::kUserActivityEventLogging)) {
+    user_activity_logging_controller_ =
+        std::make_unique<power::ml::UserActivityLoggingController>();
+  }
+
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
 
@@ -1153,6 +1159,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   keyboard_event_rewriters_.reset();
   low_disk_notification_.reset();
   chrome_launcher_controller_initializer_.reset();
+  user_activity_logging_controller_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();

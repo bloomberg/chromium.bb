@@ -9,7 +9,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
-#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 
@@ -32,24 +31,20 @@ IdleEventNotifier::ActivityData::ActivityData(const ActivityData& input_data) {
 }
 
 IdleEventNotifier::IdleEventNotifier(
-    PowerManagerClient* power_client,
+    PowerManagerClient* power_manager_client,
+    ui::UserActivityDetector* detector,
     viz::mojom::VideoDetectorObserverRequest request)
     : clock_(std::make_unique<base::DefaultClock>()),
-      power_client_(power_client),
+      power_manager_client_observer_(this),
+      user_activity_observer_(this),
       binding_(this, std::move(request)) {
-  DCHECK(power_client_);
-  power_client_->AddObserver(this);
-  ui::UserActivityDetector* detector = ui::UserActivityDetector::Get();
+  DCHECK(power_manager_client);
+  power_manager_client_observer_.Add(power_manager_client);
   DCHECK(detector);
-  detector->AddObserver(this);
+  user_activity_observer_.Add(detector);
 }
 
-IdleEventNotifier::~IdleEventNotifier() {
-  power_client_->RemoveObserver(this);
-  ui::UserActivityDetector* detector = ui::UserActivityDetector::Get();
-  DCHECK(detector);
-  detector->RemoveObserver(this);
-}
+IdleEventNotifier::~IdleEventNotifier() = default;
 
 void IdleEventNotifier::SetClockForTesting(
     std::unique_ptr<base::Clock> test_clock) {

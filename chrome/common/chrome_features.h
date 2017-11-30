@@ -278,6 +278,10 @@ extern const base::Feature kTopSitesFromSiteEngagement;
 
 extern const base::Feature kUseGoogleLocalNtp;
 
+#if defined(OS_CHROMEOS)
+extern const base::Feature kUserActivityEventLogging;
+#endif
+
 #if !defined(OS_ANDROID)
 extern const base::Feature kVoiceSearchOnLocalNtp;
 #endif
