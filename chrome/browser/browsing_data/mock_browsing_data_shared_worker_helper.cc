@@ -28,8 +28,9 @@ void MockBrowsingDataSharedWorkerHelper::StartFetching(FetchCallback callback) {
 
 void MockBrowsingDataSharedWorkerHelper::DeleteSharedWorker(
     const GURL& worker,
-    const std::string& name) {
-  SharedWorkerInfo key(worker, name);
+    const std::string& name,
+    const url::Origin& constructor_origin) {
+  SharedWorkerInfo key(worker, name, constructor_origin);
   ASSERT_TRUE(base::ContainsKey(workers_, key));
   workers_[key] = false;
 }
@@ -37,13 +38,15 @@ void MockBrowsingDataSharedWorkerHelper::DeleteSharedWorker(
 void MockBrowsingDataSharedWorkerHelper::AddSharedWorkerSamples() {
   GURL worker1("https://sharedworkerhost1:1/app/worker.js");
   std::string name1("my worker");
+  url::Origin constructor_origin1 = url::Origin::Create(worker1);
   GURL worker2("https://sharedworkerhost2:2/worker.js");
   std::string name2("another worker");
+  url::Origin constructor_origin2 = url::Origin::Create(worker2);
 
-  response_.push_back({worker1, name1});
-  response_.push_back({worker2, name2});
-  workers_[{worker1, name1}] = true;
-  workers_[{worker2, name2}] = true;
+  response_.push_back({worker1, name1, constructor_origin1});
+  response_.push_back({worker2, name2, constructor_origin2});
+  workers_[{worker1, name1, constructor_origin1}] = true;
+  workers_[{worker2, name2, constructor_origin2}] = true;
 }
 
 void MockBrowsingDataSharedWorkerHelper::Notify() {

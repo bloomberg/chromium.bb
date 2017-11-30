@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 class StoragePartition;
@@ -29,7 +30,9 @@ class BrowsingDataSharedWorkerHelper
  public:
   // Contains information about a Shared Worker.
   struct SharedWorkerInfo {
-    SharedWorkerInfo(const GURL& worker, const std::string& name);
+    SharedWorkerInfo(const GURL& worker,
+                     const std::string& name,
+                     const url::Origin& constructor_origin);
     SharedWorkerInfo(const SharedWorkerInfo& other);
     ~SharedWorkerInfo();
 
@@ -37,6 +40,7 @@ class BrowsingDataSharedWorkerHelper
 
     GURL worker;
     std::string name;
+    url::Origin constructor_origin;
   };
 
   using FetchCallback =
@@ -51,7 +55,9 @@ class BrowsingDataSharedWorkerHelper
   virtual void StartFetching(FetchCallback callback);
 
   // Requests the given Shared Worker to be deleted.
-  virtual void DeleteSharedWorker(const GURL& worker, const std::string& name);
+  virtual void DeleteSharedWorker(const GURL& worker,
+                                  const std::string& name,
+                                  const url::Origin& constructor_origin);
 
  protected:
   virtual ~BrowsingDataSharedWorkerHelper();
@@ -77,7 +83,9 @@ class CannedBrowsingDataSharedWorkerHelper
 
   // Adds Shared Worker to the set of canned Shared Workers that is returned by
   // this helper.
-  void AddSharedWorker(const GURL& worker, const std::string& name);
+  void AddSharedWorker(const GURL& worker,
+                       const std::string& name,
+                       const url::Origin& constructor_origin);
 
   // Clears the list of canned Shared Workers.
   void Reset();
@@ -94,7 +102,9 @@ class CannedBrowsingDataSharedWorkerHelper
 
   // BrowsingDataSharedWorkerHelper methods.
   void StartFetching(FetchCallback callback) override;
-  void DeleteSharedWorker(const GURL& worker, const std::string& name) override;
+  void DeleteSharedWorker(const GURL& worker,
+                          const std::string& name,
+                          const url::Origin& constructor_origin) override;
 
  private:
   ~CannedBrowsingDataSharedWorkerHelper() override;

@@ -36,6 +36,10 @@ namespace net {
 class CookieOptions;
 }
 
+namespace url {
+class Origin;
+}  // namespace url
+
 // TODO(msramek): Media is storing their state in TabSpecificContentSettings:
 // |microphone_camera_state_| without being tied to a single content setting.
 // This state is not ideal, potential solution is to save this information via
@@ -175,6 +179,7 @@ class TabSpecificContentSettings
                                    int render_frame_id,
                                    const GURL& worker_url,
                                    const std::string& name,
+                                   const url::Origin& constructor_origin,
                                    bool blocked_by_policy);
 
   // Resets the |content_settings_status_|, except for
@@ -338,6 +343,7 @@ class TabSpecificContentSettings
                                bool blocked_by_policy_cookie);
   void OnSharedWorkerAccessed(const GURL& worker_url,
                               const std::string& name,
+                              const url::Origin& constructor_origin,
                               bool blocked_by_policy);
   void OnWebDatabaseAccessed(const GURL& url,
                              const base::string16& name,

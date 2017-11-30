@@ -174,6 +174,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool AllowSharedWorker(const GURL& worker_url,
                          const GURL& main_frame_url,
                          const std::string& name,
+                         const url::Origin& constructor_origin,
                          content::BrowserContext* context,
                          int render_process_id,
                          int render_frame_id) override;
