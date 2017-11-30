@@ -31,6 +31,9 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+// TODO(maroun): Protect with macro for Android only everything that is related
+// to child account info fetching.
+
 class AccountFetcherService : public KeyedService,
                               public OAuth2TokenService::Observer {
  public:

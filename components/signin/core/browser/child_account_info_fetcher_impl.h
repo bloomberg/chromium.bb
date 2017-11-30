@@ -16,6 +16,8 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
 
+// TODO(maroun): Remove this file.
+
 class GaiaAuthFetcher;
 
 class ChildAccountInfoFetcherImpl : public ChildAccountInfoFetcher,
