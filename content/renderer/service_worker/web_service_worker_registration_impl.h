@@ -65,12 +65,6 @@ class ServiceWorkerProviderContext;
 // is ready to be destroyed. If there was no ServiceWorkerRegistrationObjectInfo
 // inflight, the browser process destroys the Mojo connection to this instance,
 // which finally destroys it.
-//
-// Another destruction scenario is that the browser process destroys the
-// ServiceWorkerRegistrationObject Mojo connection while some
-// WebServiceWorkerRegistration::Handles are still held by Blink. In such a case
-// this instance will finally be destroyed after all Blink destroys all the
-// WebServiceWorkerRegistration::Handles.
 class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
     : public blink::mojom::ServiceWorkerRegistrationObject,
       public blink::WebServiceWorkerRegistration,
@@ -156,13 +150,9 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   //   When all references to |this| have been released by Blink,
   //   DetachAndMaybeDestroy() will be triggered to change |state_| from
   //   |kAttachedAndBound| to |kDetached|.
-  // -     |kAttachedAndBound| --> |kUnbound|
-  //   When |binding_| Mojo connection gets broken, OnConnectionError() will be
-  //   triggered to change |state_| from |kAttachedAndBound| to |kUnbound|.
-  // -     {|kUnbound|, |kDetached|} --> |kDead|
-  //   But if DetachAndMaybeDestroy() saw that |state_| is already |kUnbound| or
-  //   OnConnectionError() saw that |state_| is already |kDetached|, they will
-  //   just set |state_| to |kDead| and delete |this| immediately.
+  // -     |kDetached| --> |kDead|
+  //   OnConnectionError() will set |state_| to |kDead| and delete |this|
+  //   immediately.
   // -     |kDetached| --> |kAttachedAndBound|
   //   When |this| is in |kDetached| state, if an inflight
   //   ServiceWorkerRegistrationObjectInfo for the same JavaScript registration
@@ -171,7 +161,6 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   enum class LifecycleState {
     kInitial,
     kAttachedAndBound,
-    kUnbound,
     kDetached,
     kDead
   };

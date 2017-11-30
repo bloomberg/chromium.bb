@@ -23,9 +23,10 @@ class ServiceWorkerVersion;
 
 // ServiceWorkerRegistrationObjectHost has a 1:1 correspondence to
 // WebServiceWorkerRegistration in the renderer process.
-// The host stays alive while the WebServiceWorkerRegistration is alive, and
-// also initiates destruction of the WebServiceWorkerRegistration once detected
-// that it's no longer needed. See the class documentation in
+// The host manages its own lifetime. It stays alive while the
+// WebServiceWorkerRegistration is alive, and destroys itself when it detects
+// that it's no longer needed. It also initiates destruction of the
+// WebServiceWorkerRegistration. See the class documentation in
 // WebServiceWorkerRegistrationImpl for details.
 //
 // Has a reference to the corresponding ServiceWorkerRegistration in order to
@@ -36,7 +37,7 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
  public:
   ServiceWorkerRegistrationObjectHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
-      ServiceWorkerProviderHost* provider_host,
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       scoped_refptr<ServiceWorkerRegistration> registration);
   ~ServiceWorkerRegistrationObjectHost() override;
 
@@ -46,6 +47,10 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   ServiceWorkerRegistration* registration() { return registration_.get(); }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, RegisterDuplicateScript);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
+                           RegisterWithoutLiveSWRegistration);
+
   // ServiceWorkerRegistration::Listener overrides.
   void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
@@ -106,9 +111,7 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
                                              const char* error_prefix,
                                              Args... args);
 
-  // |provider_host_| is valid throughout lifetime of |this| because it owns
-  // |this|.
-  ServiceWorkerProviderHost* provider_host_;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerRegistrationObjectHost>
       bindings_;
