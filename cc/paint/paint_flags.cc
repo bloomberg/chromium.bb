@@ -155,13 +155,13 @@ bool PaintFlags::operator==(const PaintFlags& other) const {
   // Can't just ToSkPaint and operator== here as SkPaint does pointer
   // comparisons on all the ref'd skia objects on the SkPaint, which
   // is not true after serialization.
-  if (getTextSize() != other.getTextSize())
+  if (!PaintOp::AreEqualEvenIfNaN(getTextSize(), other.getTextSize()))
     return false;
   if (getColor() != other.getColor())
     return false;
-  if (getStrokeWidth() != other.getStrokeWidth())
+  if (!PaintOp::AreEqualEvenIfNaN(getStrokeWidth(), other.getStrokeWidth()))
     return false;
-  if (getStrokeMiter() != other.getStrokeMiter())
+  if (!PaintOp::AreEqualEvenIfNaN(getStrokeMiter(), other.getStrokeMiter()))
     return false;
   if (getBlendMode() != other.getBlendMode())
     return false;
