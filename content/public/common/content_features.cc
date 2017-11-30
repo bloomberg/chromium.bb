@@ -420,6 +420,13 @@ const base::Feature kWebUsb{"WebUSB", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kImageCaptureAPI{"ImageCaptureAPI",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Alternative to switches::kIsolateOrigins, for turning on origin isolation.
+// List of origins to isolate has to be specified via
+// kIsolateOriginsFieldTrialParamName.
+const base::Feature kIsolateOrigins{"IsolateOrigins",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
+
 const base::Feature kKeepAliveRendererForKeepaliveRequests{
     "KeepAliveRendererForKeepaliveRequests", base::FEATURE_ENABLED_BY_DEFAULT};
 

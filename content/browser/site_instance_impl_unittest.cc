@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/command_line.h"
@@ -47,7 +48,7 @@ const char kPrivilegedScheme[] = "privileged";
 
 class SiteInstanceTestBrowserClient : public TestContentBrowserClient {
  public:
-  explicit SiteInstanceTestBrowserClient()
+  SiteInstanceTestBrowserClient()
       : privileged_process_id_(-1),
         site_instance_delete_count_(0),
         browsing_instance_delete_count_(0) {
@@ -896,7 +897,7 @@ TEST_F(SiteInstanceTest, IsolatedOrigins) {
   EXPECT_FALSE(policy->IsIsolatedOrigin(url::Origin::Create(isolated_foo_url)));
   EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, foo_url, isolated_foo_url));
 
-  policy->AddIsolatedOrigin(url::Origin::Create(isolated_foo_url));
+  policy->AddIsolatedOrigins({url::Origin::Create(isolated_foo_url)});
   EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin::Create(isolated_foo_url)));
   EXPECT_FALSE(policy->IsIsolatedOrigin(url::Origin::Create(foo_url)));
   EXPECT_FALSE(
@@ -908,7 +909,7 @@ TEST_F(SiteInstanceTest, IsolatedOrigins) {
   EXPECT_FALSE(policy->IsIsolatedOrigin(
       url::Origin::Create(GURL("http://isolated.foo.com:12345"))));
 
-  policy->AddIsolatedOrigin(url::Origin::Create(isolated_bar_url));
+  policy->AddIsolatedOrigins({url::Origin::Create(isolated_bar_url)});
   EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin::Create(isolated_bar_url)));
 
   // IsSameWebSite should compare origins rather than sites if either URL is an
@@ -998,7 +999,7 @@ TEST_F(SiteInstanceTest, SubdomainOnIsolatedSite) {
   GURL foo_isolated_url("http://foo.isolated.com");
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  policy->AddIsolatedOrigin(url::Origin::Create(isolated_url));
+  policy->AddIsolatedOrigins({url::Origin::Create(isolated_url)});
 
   EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin::Create(isolated_url)));
   EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin::Create(foo_isolated_url)));
@@ -1032,7 +1033,7 @@ TEST_F(SiteInstanceTest, SubdomainOnIsolatedSite) {
 
   // Don't try to match subdomains on IP addresses.
   GURL isolated_ip("http://127.0.0.1");
-  policy->AddIsolatedOrigin(url::Origin::Create(isolated_ip));
+  policy->AddIsolatedOrigins({url::Origin::Create(isolated_ip)});
   EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin::Create(isolated_ip)));
   EXPECT_FALSE(policy->IsIsolatedOrigin(
       url::Origin::Create(GURL("http://42.127.0.0.1"))));
@@ -1048,7 +1049,7 @@ TEST_F(SiteInstanceTest, SubdomainOnIsolatedOrigin) {
   GURL baz_isolated_foo_url("http://baz.isolated.foo.com");
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  policy->AddIsolatedOrigin(url::Origin::Create(isolated_foo_url));
+  policy->AddIsolatedOrigins({url::Origin::Create(isolated_foo_url)});
 
   EXPECT_FALSE(policy->IsIsolatedOrigin(url::Origin::Create(foo_url)));
   EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin::Create(isolated_foo_url)));
@@ -1102,8 +1103,8 @@ TEST_F(SiteInstanceTest, MultipleIsolatedOriginsWithCommonSite) {
   GURL qux_baz_bar_foo_url("http://qux.baz.bar.foo.com");
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  policy->AddIsolatedOrigin(url::Origin::Create(foo_url));
-  policy->AddIsolatedOrigin(url::Origin::Create(baz_bar_foo_url));
+  policy->AddIsolatedOrigins(
+      {url::Origin::Create(foo_url), url::Origin::Create(baz_bar_foo_url)});
 
   EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin::Create(foo_url)));
   EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin::Create(bar_foo_url)));
