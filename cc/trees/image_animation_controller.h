@@ -117,6 +117,7 @@ class CC_EXPORT ImageAnimationController {
     void AddDriver(AnimationDriver* driver);
     void RemoveDriver(AnimationDriver* driver);
     void UpdateStateFromDrivers();
+    bool has_drivers() const { return !drivers_.empty(); }
 
     size_t pending_index() const { return pending_index_; }
     size_t active_index() const { return active_index_; }
@@ -223,8 +224,8 @@ class CC_EXPORT ImageAnimationController {
   using AnimationStateMap = base::flat_map<PaintImage::Id, AnimationState>;
   AnimationStateMap animation_state_map_;
 
-  // The set of currently active animations.
-  PaintImageIdFlatSet active_animations_;
+  // The set of animations with registered drivers.
+  PaintImageIdFlatSet registered_animations_;
 
   // The set of images that were animated and invalidated on the last sync tree.
   PaintImageIdFlatSet images_animated_on_sync_tree_;

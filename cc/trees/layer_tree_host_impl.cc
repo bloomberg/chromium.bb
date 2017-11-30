@@ -385,7 +385,11 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
 
   // We need an update immediately post-commit to have the opportunity to create
   // tilings.
-  sync_tree()->UpdateDrawProperties();
+  // We can avoid updating the ImageAnimationController during this
+  // DrawProperties update since it will be done when we animate the controller
+  // below.
+  bool update_image_animation_controller = false;
+  sync_tree()->UpdateDrawProperties(update_image_animation_controller);
   // Because invalidations may be coming from the main thread, it's
   // safe to do an update for lcd text at this point and see if lcd text needs
   // to be disabled on any layers.

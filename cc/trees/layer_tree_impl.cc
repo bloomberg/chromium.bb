@@ -986,7 +986,8 @@ void LayerTreeImpl::SetElementIdsForTesting() {
   }
 }
 
-bool LayerTreeImpl::UpdateDrawProperties() {
+bool LayerTreeImpl::UpdateDrawProperties(
+    bool update_image_animation_controller) {
   if (!needs_update_draw_properties_)
     return true;
 
@@ -1121,9 +1122,9 @@ bool LayerTreeImpl::UpdateDrawProperties() {
                      "layers_updated_count", layers_updated_count);
   }
 
-  if (image_animation_controller()) {
+  if (update_image_animation_controller && image_animation_controller()) {
     image_animation_controller()->UpdateStateFromDrivers(
-        host_impl_->CurrentBeginFrameArgs().frame_time);
+        CurrentBeginFrameArgs().frame_time);
   }
 
   DCHECK(!needs_update_draw_properties_)
