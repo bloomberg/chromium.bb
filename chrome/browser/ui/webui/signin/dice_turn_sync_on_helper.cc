@@ -52,29 +52,6 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
   Initialize();
 }
 
-DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
-    Profile* profile,
-    Browser* browser,
-    signin_metrics::AccessPoint signin_access_point,
-    signin_metrics::Reason signin_reason,
-    const std::string& gaia_id,
-    const std::string& email,
-    const std::string& refresh_token)
-    : profile_(profile),
-      browser_(browser),
-      signin_access_point_(signin_access_point),
-      signin_reason_(signin_reason),
-      gaia_id_(gaia_id),
-      email_(email),
-      refresh_token_(refresh_token) {
-  DCHECK(profile_);
-  DCHECK(browser_);
-  DCHECK(!gaia_id_.empty());
-  DCHECK(!email_.empty());
-  DCHECK(!refresh_token_.empty());
-  Initialize();
-}
-
 DiceTurnSyncOnHelper::~DiceTurnSyncOnHelper() {}
 
 void DiceTurnSyncOnHelper::Initialize() {
@@ -83,10 +60,6 @@ void DiceTurnSyncOnHelper::Initialize() {
 
   // Force sign-in uses the modal sign-in flow.
   DCHECK(!signin_util::IsForceSigninEnabled());
-
-  // One initial sign-in goes throught the DiceTurnSyncOnHelper.
-  DCHECK_EQ(signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-            signin_reason_);
 
   if (!HandleCanOfferSigninError() && !HandleCrossAccountError()) {
     CreateSyncStarter(OneClickSigninSyncStarter::CURRENT_PROFILE);
@@ -154,8 +127,8 @@ void DiceTurnSyncOnHelper::CreateSyncStarter(
     OneClickSigninSyncStarter::ProfileMode profile_mode) {
   // OneClickSigninSyncStarter will delete itself once the job is done.
   new OneClickSigninSyncStarter(
-      profile_, browser_, gaia_id_, email_, "", refresh_token_,
-      signin_access_point_, signin_reason_, profile_mode,
+      profile_, browser_, gaia_id_, email_, "", "", signin_access_point_,
+      signin_reason_, profile_mode,
       OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST,
       OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN,
       OneClickSigninSyncStarter::Callback());

@@ -32,16 +32,10 @@ class ProcessDiceHeaderDelegate {
  public:
   virtual ~ProcessDiceHeaderDelegate() = default;
 
-  // Called before starting to fetch a refresh token.
-  virtual void WillStartRefreshTokenFetch(const std::string& gaia_id,
-                                          const std::string& email) = 0;
-
-  // Called after the refresh token was fetched.
-  // If this returns true, then the credentials for the account will be updated
-  // in the token service.
-  virtual bool ShouldUpdateCredentials(const std::string& gaia_id,
-                                       const std::string& email,
-                                       const std::string& refresh_token) = 0;
+  // Asks the delegate to enable sync for the |account_id|.
+  // Called after the account was seeded in the account tracker service and
+  // after the refresh token was fetched and updated in the token service.
+  virtual void EnableSync(const std::string& account_id) = 0;
 };
 
 // Processes the Dice responses from Gaia.
@@ -83,6 +77,10 @@ class DiceResponseHandler : public KeyedService {
     const std::string& authorization_code() const {
       return authorization_code_;
     }
+    bool should_enable_sync() const { return should_enable_sync_; }
+    void set_should_enable_sync(bool should_enable_sync) {
+      should_enable_sync_ = should_enable_sync;
+    }
 
    private:
     // Called by |timeout_closure_| when the request times out.
@@ -102,6 +100,7 @@ class DiceResponseHandler : public KeyedService {
     std::unique_ptr<ProcessDiceHeaderDelegate> delegate_;
     DiceResponseHandler* dice_response_handler_;
     base::CancelableClosure timeout_closure_;
+    bool should_enable_sync_;
     std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
 
     DISALLOW_COPY_AND_ASSIGN(DiceTokenFetcher);
@@ -120,6 +119,12 @@ class DiceResponseHandler : public KeyedService {
       const std::string& gaia_id,
       const std::string& email,
       const std::string& authorization_code,
+      std::unique_ptr<ProcessDiceHeaderDelegate> delegate);
+
+  // Process the Dice enable sync action.
+  void ProcessEnableSyncHeader(
+      const std::string& gaia_id,
+      const std::string& email,
       std::unique_ptr<ProcessDiceHeaderDelegate> delegate);
 
   // Process the Dice signout action.

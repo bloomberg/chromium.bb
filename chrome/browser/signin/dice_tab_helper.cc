@@ -8,6 +8,7 @@
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "content/public/browser/navigation_handle.h"
 #include "google_apis/gaia/gaia_urls.h"
 
@@ -39,6 +40,13 @@ void DiceTabHelper::SetSigninReason(signin_metrics::Reason reason) {
 
 void DiceTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (signin::GetAccountConsistencyMethod() !=
+      signin::AccountConsistencyMethod::kDicePrepareMigration) {
+    // Chrome relies on a Gaia signal to enable Chrome sync for all DICE methods
+    // different than prepare migration.
+    return;
+  }
+
   if (!should_start_sync_after_web_signin_)
     return;
 

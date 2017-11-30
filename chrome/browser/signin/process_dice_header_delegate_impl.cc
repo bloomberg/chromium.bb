@@ -47,18 +47,11 @@ ProcessDiceHeaderDelegateImpl::ProcessDiceHeaderDelegateImpl(
     : content::WebContentsObserver(web_contents),
       profile_(GetProfileForContents(web_contents)) {
   DCHECK(profile_);
-}
-
-void ProcessDiceHeaderDelegateImpl::WillStartRefreshTokenFetch(
-    const std::string& gaia_id,
-    const std::string& email) {
-  if (!web_contents())
-    return;
 
   if (!signin::IsDicePrepareMigrationEnabled())
     return;
 
-  DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents());
+  DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents);
   if (tab_helper) {
     should_start_sync_ = tab_helper->should_start_sync_after_web_signin();
     signin_access_point_ = tab_helper->signin_access_point();
@@ -88,13 +81,10 @@ bool ProcessDiceHeaderDelegateImpl::ShouldEnableSync() {
   return true;
 }
 
-bool ProcessDiceHeaderDelegateImpl::ShouldUpdateCredentials(
-    const std::string& gaia_id,
-    const std::string& email,
-    const std::string& refresh_token) {
+void ProcessDiceHeaderDelegateImpl::EnableSync(const std::string& account_id) {
   if (!ShouldEnableSync()) {
     // No special treatment is needed if the user is not enabling sync.
-    return true;
+    return;
   }
 
   content::WebContents* web_contents = this->web_contents();
@@ -110,10 +100,5 @@ bool ProcessDiceHeaderDelegateImpl::ShouldUpdateCredentials(
   // enabling sync).
   VLOG(1) << "Start sync after web sign-in.";
   new DiceTurnSyncOnHelper(profile_, browser, signin_access_point_,
-                           signin_reason_, gaia_id, email, refresh_token);
-
-  // Avoid updating the credentials when the user is turning on sync as in
-  // some special cases the refresh token may actually need to be copied to
-  // a new profile.
-  return false;
+                           signin_reason_, account_id);
 }
