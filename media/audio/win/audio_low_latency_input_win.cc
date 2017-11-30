@@ -12,7 +12,6 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/audio_device_description.h"
@@ -28,9 +27,7 @@
 using base::win::ScopedCOMInitializer;
 
 namespace media {
-
 namespace {
-
 bool IsSupportedFormatForConversion(const WAVEFORMATEX& format) {
   if (format.nSamplesPerSec < limits::kMinSampleRate ||
       format.nSamplesPerSec > limits::kMaxSampleRate) {
@@ -53,18 +50,14 @@ bool IsSupportedFormatForConversion(const WAVEFORMATEX& format) {
 
   return true;
 }
-
 }  // namespace
 
-WASAPIAudioInputStream::WASAPIAudioInputStream(
-    AudioManagerWin* manager,
-    const AudioParameters& params,
-    const std::string& device_id,
-    const AudioManager::LogCallback& log_callback)
-    : manager_(manager), device_id_(device_id), log_callback_(log_callback) {
+WASAPIAudioInputStream::WASAPIAudioInputStream(AudioManagerWin* manager,
+                                               const AudioParameters& params,
+                                               const std::string& device_id)
+    : manager_(manager), device_id_(device_id) {
   DCHECK(manager_);
   DCHECK(!device_id_.empty());
-  DCHECK(!log_callback_.is_null());
 
   // Load the Avrt DLL if not already loaded. Required to support MMCSS.
   bool avrt_init = avrt::Initialize();
@@ -109,17 +102,15 @@ bool WASAPIAudioInputStream::Open() {
   DCHECK_EQ(OPEN_RESULT_OK, open_result_);
 
   // Verify that we are not already opened.
-  if (opened_) {
-    log_callback_.Run("WASAPIAIS::Open: already open");
+  if (opened_)
     return false;
-  }
 
   // Obtain a reference to the IMMDevice interface of the capturing
   // device with the specified unique identifier or role which was
   // set at construction.
   HRESULT hr = SetCaptureDevice();
   if (FAILED(hr)) {
-    ReportOpenResult(hr);
+    ReportOpenResult();
     return false;
   }
 
@@ -129,7 +120,7 @@ bool WASAPIAudioInputStream::Open() {
                                   NULL, &audio_client_);
   if (FAILED(hr)) {
     open_result_ = OPEN_RESULT_ACTIVATION_FAILED;
-    ReportOpenResult(hr);
+    ReportOpenResult();
     return false;
   }
 
@@ -142,10 +133,9 @@ bool WASAPIAudioInputStream::Open() {
 
   // Verify that the selected audio endpoint supports the specified format
   // set during construction.
-  hr = S_OK;
-  if (!DesiredFormatIsSupported(&hr)) {
+  if (!DesiredFormatIsSupported()) {
     open_result_ = OPEN_RESULT_FORMAT_NOT_SUPPORTED;
-    ReportOpenResult(hr);
+    ReportOpenResult();
     return false;
   }
 
@@ -154,7 +144,7 @@ bool WASAPIAudioInputStream::Open() {
   hr = InitializeAudioEngine();
   if (SUCCEEDED(hr) && converter_)
     open_result_ = OPEN_RESULT_OK_WITH_RESAMPLING;
-  ReportOpenResult(hr);  // Report before we assign a value to |opened_|.
+  ReportOpenResult();  // Report before we assign a value to |opened_|.
   opened_ = SUCCEEDED(hr);
 
   return opened_;
@@ -201,20 +191,10 @@ void WASAPIAudioInputStream::Start(AudioInputCallback* callback) {
 
   // Start streaming data between the endpoint buffer and the audio engine.
   HRESULT hr = audio_client_->Start();
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to start input streaming.";
-    log_callback_.Run(base::StringPrintf(
-        "WASAPIAIS::Start: Failed to start audio client, hresult = %#lx", hr));
-  }
+  DLOG_IF(ERROR, FAILED(hr)) << "Failed to start input streaming.";
 
-  if (SUCCEEDED(hr) && audio_render_client_for_loopback_.Get()) {
+  if (SUCCEEDED(hr) && audio_render_client_for_loopback_.Get())
     hr = audio_render_client_for_loopback_->Start();
-    if (FAILED(hr))
-      log_callback_.Run(base::StringPrintf(
-          "WASAPIAIS::Start: Failed to start render client for loopback, "
-          "hresult = %#lx",
-          hr));
-  }
 
   started_ = SUCCEEDED(hr);
 }
@@ -630,24 +610,23 @@ HRESULT WASAPIAudioInputStream::GetAudioEngineStreamFormat() {
   return hr;
 }
 
-bool WASAPIAudioInputStream::DesiredFormatIsSupported(HRESULT* hr) {
+bool WASAPIAudioInputStream::DesiredFormatIsSupported() {
   // An application that uses WASAPI to manage shared-mode streams can rely
   // on the audio engine to perform only limited format conversions. The audio
   // engine can convert between a standard PCM sample size used by the
   // application and the floating-point samples that the engine uses for its
   // internal processing. However, the format for an application stream
   // typically must have the same number of channels and the same sample
-  // rate as the stream format used by the device.
+  // rate as the stream format used byfCHANNEL_LAYOUT_UNSUPPORTED the device.
   // Many audio devices support both PCM and non-PCM stream formats. However,
   // the audio engine can mix only PCM streams.
   base::win::ScopedCoMem<WAVEFORMATEX> closest_match;
-  HRESULT hresult = audio_client_->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED,
-                                                     &format_, &closest_match);
-  DLOG_IF(ERROR, hresult == S_FALSE)
+  HRESULT hr = audio_client_->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED,
+                                                &format_, &closest_match);
+  DLOG_IF(ERROR, hr == S_FALSE)
       << "Format is not supported but a closest match exists.";
 
-  if (hresult == S_FALSE &&
-      IsSupportedFormatForConversion(*closest_match.get())) {
+  if (hr == S_FALSE && IsSupportedFormatForConversion(*closest_match.get())) {
     DVLOG(1) << "Audio capture data conversion needed.";
     // Ideally, we want a 1:1 ratio between the buffers we get and the buffers
     // we give to OnData so that each buffer we receive from the OS can be
@@ -702,15 +681,10 @@ bool WASAPIAudioInputStream::DesiredFormatIsSupported(HRESULT* hr) {
         << "Audio capture data conversion: Need to inject fifo";
 
     // Indicate that we're good to go with a close match.
-    hresult = S_OK;
+    hr = S_OK;
   }
 
-  // At this point, |hresult| == S_OK if the desired format is supported. If
-  // |hresult| == S_FALSE, the OS supports a closest match but we don't support
-  // conversion to it. Thus, SUCCEEDED() or FAILED() can't be used to determine
-  // if the desired format is supported.
-  *hr = hresult;
-  return (hresult == S_OK);
+  return (hr == S_OK);
 }
 
 HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
@@ -846,16 +820,10 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   return hr;
 }
 
-void WASAPIAudioInputStream::ReportOpenResult(HRESULT hr) const {
+void WASAPIAudioInputStream::ReportOpenResult() const {
   DCHECK(!opened_);  // This method must be called before we set this flag.
   UMA_HISTOGRAM_ENUMERATION("Media.Audio.Capture.Win.Open", open_result_,
                             OPEN_RESULT_MAX + 1);
-  if (open_result_ != OPEN_RESULT_OK &&
-      open_result_ != OPEN_RESULT_OK_WITH_RESAMPLING) {
-    log_callback_.Run(base::StringPrintf(
-        "WASAPIAIS::Open: failed, result = %d, hresult = %#lx", open_result_,
-        hr));
-  }
 }
 
 double WASAPIAudioInputStream::ProvideInput(AudioBus* audio_bus,

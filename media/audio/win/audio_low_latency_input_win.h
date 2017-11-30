@@ -75,7 +75,6 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
 #include "media/audio/agc_audio_stream.h"
-#include "media/audio/audio_manager.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
@@ -96,8 +95,7 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // the audio manager who is creating this object.
   WASAPIAudioInputStream(AudioManagerWin* manager,
                          const AudioParameters& params,
-                         const std::string& device_id,
-                         const AudioManager::LogCallback& log_callback);
+                         const std::string& device_id);
 
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioInputStream::Close().
@@ -125,13 +123,9 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // The Open() method is divided into these sub methods.
   HRESULT SetCaptureDevice();
   HRESULT GetAudioEngineStreamFormat();
-  // Returns whether the desired format is supported or not and writes the
-  // result of a failing system call to |*hr|, or S_OK if successful. If this
-  // function returns false with |*hr| == S_FALSE, the OS supports a closest
-  // match but we don't support conversion to it.
-  bool DesiredFormatIsSupported(HRESULT* hr);
+  bool DesiredFormatIsSupported();
   HRESULT InitializeAudioEngine();
-  void ReportOpenResult(HRESULT hr) const;
+  void ReportOpenResult() const;
 
   // AudioConverter::InputCallback implementation.
   double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
@@ -251,9 +245,6 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   std::unique_ptr<AudioConverter> converter_;
   std::unique_ptr<AudioBus> convert_bus_;
   bool imperfect_buffer_size_conversion_ = false;
-
-  // Callback to send log messages.
-  AudioManager::LogCallback log_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
