@@ -118,10 +118,11 @@ PERF_TEST_PATH_PREFIX = '/all-perf-tests'
 LAYOUT_TEST_PATH_PREFIX = '/all-tests'
 
 # All ports the Android forwarder to forward.
-# 8000, 8080 and 8443 are for http/https tests.
-# 8880 and 9323 are for websocket tests
-# (see http_server.py, apache_http_server.py and websocket_server.py).
-FORWARD_PORTS = '8000 8080 8443 8880 9323'
+# 8000, 8080 and 8443 are for http/https tests;
+# 8880 is for websocket tests (see apache_http.py and pywebsocket.py).
+# 8001, 8081 and 8444 are for http/https WPT;
+# 9001 and 9444 are for websocket WPT (see wptserve.py).
+FORWARD_PORTS = '8000 8001 8080 8081 8443 8444 8880 9001 9444'
 
 # We start netcat processes for each of the three stdio streams. In doing so,
 # we attempt to use ports starting from 10201. This starting value is
