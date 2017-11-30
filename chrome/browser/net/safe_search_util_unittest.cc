@@ -117,6 +117,9 @@ TEST_F(SafeSearchUtilTest, AddGoogleSafeSearchParams) {
   CheckAddedParameters("http://google.de/?q=goog&safe=off&ssui=off",
                        "q=goog&" + kBothParameters);
 
+  CheckAddedParameters("http://google.de/?q=&tbs=rimg:",
+                       "q=&tbs=rimg:&" + kBothParameters);
+
   // Test various combinations where we should not add anything.
   CheckAddedParameters("http://google.com/?q=goog&" + kSsuiParameter + "&" +
                        kSafeParameter,
