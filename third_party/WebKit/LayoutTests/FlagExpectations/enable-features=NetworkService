@@ -100,7 +100,6 @@ crbug.com/721408 http/tests/devtools/network/load-resource-for-frontend.js [ Fai
 crbug.com/721408 http/tests/devtools/network/long-script-content.js  [ Crash ]
 crbug.com/721408 http/tests/devtools/network/network-datareceived.js [ Failure ]
 crbug.com/721408 http/tests/devtools/network/network-datasaver-warning.js [ Failure ]
-crbug.com/721408 http/tests/devtools/network/waterfall-images.html [ Failure ]
 crbug.com/721408 http/tests/devtools/persistence/persistence-tabbed-editor-tabs-order.js [ Crash ]
 crbug.com/721408 http/tests/inspector-protocol/network-data-length.js [ Failure ]
 crbug.com/721408 http/tests/inspector-protocol/network/basic-request-interception-ignores-hash.js [ Timeout ]
