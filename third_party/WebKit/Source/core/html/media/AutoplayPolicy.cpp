@@ -16,6 +16,7 @@
 #include "platform/wtf/Assertions.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/web/WebSettings.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
 
 namespace blink {
 
@@ -61,6 +62,27 @@ bool ComputeLockPendingUserGestureRequired(const Document& document) {
   return true;
 }
 
+// Return true if any frame between |frame| and the root has been activated in
+// either the current or previous navigation. If the
+// FeaturePolicyAutoplayFeature flag is disabled then it will stop at the
+// current frame.
+bool HasBeenActivated(const Frame& frame) {
+  // Check if the current frame has received a user activation.
+  if (frame.HasBeenActivated() ||
+      frame.HasReceivedUserGestureBeforeNavigation()) {
+    return true;
+  }
+
+  // If feature policy is disabled then do not traverse the tree.
+  if (!RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled())
+    return false;
+
+  // If there is a parent check if the parent has received a
+  // user gesture.
+  const Frame* parent = frame.Tree().Parent();
+  return parent && HasBeenActivated(*parent);
+}
+
 }  // anonymous namespace
 
 // static
@@ -84,8 +106,14 @@ AutoplayPolicy::Type AutoplayPolicy::GetAutoplayPolicyForDocument(
 bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
   if (!document.GetFrame())
     return false;
-  return document.GetFrame()->HasBeenActivated() ||
-         document.GetFrame()->HasReceivedUserGestureBeforeNavigation();
+
+  // Check feature policy to see if autoplay is enabled.
+  if (RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled() &&
+      !document.GetFrame()->IsFeatureEnabled(FeaturePolicyFeature::kAutoplay)) {
+    return false;
+  }
+
+  return HasBeenActivated(*document.GetFrame());
 }
 
 AutoplayPolicy::AutoplayPolicy(HTMLMediaElement* element)
