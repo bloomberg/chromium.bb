@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/managed_state.h"
 #include "chromeos/network/network_handler.h"
@@ -422,7 +423,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // * Visible non-wifi networks
   // * Visible wifi networks
   // * Hidden (wifi) networks
-  void SortNetworkList();
+  // If |ensure_cellular| is true, call EnsureCellularNetwork (which may
+  // remove a network from the list).
+  void SortNetworkList(bool ensure_cellular);
 
   // Updates UMA stats. Called once after all requested networks are updated.
   void UpdateNetworkStats();
@@ -555,6 +558,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // Ensure that Shutdown() gets called exactly once.
   bool did_shutdown_ = false;
+
+  // Ensure that we do not delete any networks while notifying observers.
+  bool notifying_network_observers_ = false;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateHandler);
 };
