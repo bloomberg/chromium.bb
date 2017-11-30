@@ -4,7 +4,6 @@
 
 #include "components/crash/core/common/crash_key.h"
 
-#include "base/debug/crash_logging.h"
 #include "base/debug/stack_trace.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,21 +76,6 @@ TEST_F(CrashKeyStringTest, SetStackTrace) {
   SetCrashKeyStringToStackTrace(&key, base::debug::StackTrace());
 
   EXPECT_TRUE(key.is_set());
-}
-
-TEST_F(CrashKeyStringTest, BaseSupport) {
-  static base::debug::CrashKeyString* crash_key =
-      base::debug::AllocateCrashKeyString("base-support",
-                                          base::debug::CrashKeySize::Size64);
-
-  EXPECT_TRUE(crash_key);
-
-  base::debug::SetCrashKeyString(crash_key, "this is a test");
-
-  base::debug::ClearCrashKeyString(crash_key);
-
-  base::debug::SetCrashKeyString(crash_key, std::string(128, 'b'));
-  base::debug::SetCrashKeyString(crash_key, std::string(64, 'a'));
 }
 
 }  // namespace
