@@ -62,7 +62,7 @@ function getMockFileManager() {
       getVolumeInfo: function() {
         return {
           volumeType: VolumeManagerCommon.VolumeType.DRIVE
-        }
+        };
       }
     },
     ui: {
@@ -71,7 +71,11 @@ function getMockFileManager() {
       }
     },
     metadataModel: {},
-    directoryModel: {}
+    directoryModel: {
+      getCurrentRootType: function() {
+        return null;
+      }
+    }
   };
 }
 
@@ -297,7 +301,7 @@ function testOpenTaskPicker(callback) {
 
 function testOpenWithMostRecentlyExecuted(callback) {
   const latestTaskId = 'handler-extension-most-recently-executed|app|any';
-  const oldTaskId = 'handler-extension-executed-before|app|any'
+  const oldTaskId = 'handler-extension-executed-before|app|any';
   window.chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {
     setTimeout(
         callback.bind(
