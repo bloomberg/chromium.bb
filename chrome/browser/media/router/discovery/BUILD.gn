@@ -13,7 +13,6 @@ static_library("discovery") {
     "//chrome/app:generated_resources",
     "//chrome/common:constants",
     "//chrome/common/media_router:router",
-    "//chrome/common/media_router/mojo:dial_utility_interfaces",
     "//components/cast_channel",
     "//components/version_info",
     "//content/public/browser",

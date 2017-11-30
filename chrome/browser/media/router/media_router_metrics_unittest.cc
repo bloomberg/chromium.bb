@@ -19,6 +19,8 @@ using testing::ElementsAre;
 
 namespace media_router {
 
+using DialParsingError = SafeDialDeviceDescriptionParser::ParsingError;
+
 TEST(MediaRouterMetricsTest, RecordMediaRouterDialogOrigin) {
   base::HistogramTester tester;
   const MediaRouterDialogOpenOrigin origin1 =
@@ -120,12 +122,9 @@ TEST(MediaRouterMetricsTest, RecordMediaRouterCastingSource) {
 
 TEST(MediaRouterMetricsTest, RecordDialDeviceDescriptionParsingError) {
   base::HistogramTester tester;
-  const chrome::mojom::DialParsingError action1 =
-      chrome::mojom::DialParsingError::MISSING_UNIQUE_ID;
-  const chrome::mojom::DialParsingError action2 =
-      chrome::mojom::DialParsingError::MISSING_FRIENDLY_NAME;
-  const chrome::mojom::DialParsingError action3 =
-      chrome::mojom::DialParsingError::MISSING_APP_URL;
+  const DialParsingError action1 = DialParsingError::kMissingUniqueId;
+  const DialParsingError action2 = DialParsingError::kMissingFriendlyName;
+  const DialParsingError action3 = DialParsingError::kMissingAppUrl;
 
   tester.ExpectTotalCount(MediaRouterMetrics::kHistogramDialParsingError, 0);
   MediaRouterMetrics::RecordDialParsingError(action3);

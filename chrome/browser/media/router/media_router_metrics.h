@@ -9,8 +9,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/media/router/discovery/dial/safe_dial_device_description_parser.h"
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
-#include "chrome/common/media_router/mojo/dial_device_description_parser.mojom.h"
 #include "media/base/container_names.h"
 
 class GURL;
@@ -125,7 +125,7 @@ class MediaRouterMetrics {
 
   // Records why DIAL device description resolution failed.
   static void RecordDialParsingError(
-      chrome::mojom::DialParsingError parsing_error);
+      SafeDialDeviceDescriptionParser::ParsingError parsing_error);
 
   // Records the type of Presentation URL used by a web page.
   static void RecordPresentationUrlType(const GURL& url);

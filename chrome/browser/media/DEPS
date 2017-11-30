@@ -4,5 +4,8 @@ include_rules = [
   "+media/cast",
   "+media/media_features.h",
   "+media/mojo/interfaces",
+  # safe_dial_device_description_parser_unittest.cc needs DataDecoderService.
+  "+services/data_decoder/data_decoder_service.h",
+  "+services/data_decoder/public",
   "+services/device/public/interfaces",
 ]

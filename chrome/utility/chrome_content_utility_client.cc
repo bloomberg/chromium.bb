@@ -38,7 +38,6 @@
 #include "chrome/common/resource_usage_reporter.mojom.h"
 #include "chrome/utility/importer/profile_import_impl.h"
 #include "chrome/utility/importer/profile_import_service.h"
-#include "chrome/utility/media_router/dial_device_description_parser_impl.h"
 #include "content/public/network/url_request_context_builder_mojo.h"
 #include "net/proxy/proxy_resolver_v8.h"
 #include "services/proxy_resolver/proxy_resolver_service.h"  // nogncheck
@@ -167,9 +166,6 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
 #if !defined(OS_ANDROID)
     registry->AddInterface(base::Bind(CreateResourceUsageReporter),
                            base::ThreadTaskRunnerHandle::Get());
-    registry->AddInterface(
-        base::Bind(&media_router::DialDeviceDescriptionParserImpl::Create),
-        base::ThreadTaskRunnerHandle::Get());
 #endif  // !defined(OS_ANDROID)
   }
 

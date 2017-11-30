@@ -6,6 +6,7 @@
 
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/common/service_manager_connection.h"
 
 using content::BrowserThread;
 
@@ -28,7 +29,8 @@ void DialMediaSinkServiceProxy::Start() {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&DialMediaSinkServiceProxy::StartOnIOThread, this));
+      base::BindOnce(&DialMediaSinkServiceProxy::StartOnIOThread, this,
+                     CreateConnector()));
 }
 
 void DialMediaSinkServiceProxy::Stop() {
@@ -79,11 +81,22 @@ void DialMediaSinkServiceProxy::SetDialMediaSinkServiceForTest(
   dial_media_sink_service_ = std::move(dial_media_sink_service);
 }
 
-void DialMediaSinkServiceProxy::StartOnIOThread() {
+std::unique_ptr<service_manager::Connector>
+DialMediaSinkServiceProxy::CreateConnector() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Clone the connector so it can be used on the IO thread.
+  return content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->Clone();
+}
+
+void DialMediaSinkServiceProxy::StartOnIOThread(
+    std::unique_ptr<service_manager::Connector> connector) {
   if (!dial_media_sink_service_) {
     // Need to explicitly delete |dial_media_sink_service_| outside dtor to
     // avoid circular dependency.
-    dial_media_sink_service_ = base::MakeUnique<DialMediaSinkServiceImpl>(
+    dial_media_sink_service_ = std::make_unique<DialMediaSinkServiceImpl>(
+        std::move(connector),
         base::Bind(&DialMediaSinkServiceProxy::OnSinksDiscoveredOnIOThread,
                    this),
         request_context_.get());

@@ -3,12 +3,16 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_proxy.h"
+
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,7 +28,9 @@ class MockDialMediaSinkServiceImpl : public DialMediaSinkServiceImpl {
       const MediaSinkService::OnSinksDiscoveredCallback&
           sink_discovery_callback,
       net::URLRequestContextGetter* request_context)
-      : DialMediaSinkServiceImpl(sink_discovery_callback, request_context) {}
+      : DialMediaSinkServiceImpl(/*connector=*/nullptr,
+                                 sink_discovery_callback,
+                                 request_context) {}
   ~MockDialMediaSinkServiceImpl() override {}
 
   MOCK_METHOD0(Start, void());
@@ -35,11 +41,34 @@ class MockDialMediaSinkServiceImpl : public DialMediaSinkServiceImpl {
   }
 };
 
+class TestDialMediaSinkServiceProxy : public DialMediaSinkServiceProxy {
+ public:
+  TestDialMediaSinkServiceProxy(
+      const MediaSinkService::OnSinksDiscoveredCallback& callback,
+      content::BrowserContext* context)
+      : DialMediaSinkServiceProxy(callback, context),
+        connector_factory_(std::make_unique<service_manager::Service>()) {}
+
+ protected:
+  ~TestDialMediaSinkServiceProxy() override = default;
+
+  std::unique_ptr<service_manager::Connector> CreateConnector() override {
+    // We just need to return a valid connector here. It will be cloned but not
+    // used.
+    return connector_factory_.CreateConnector();
+  }
+
+ private:
+  service_manager::TestConnectorFactory connector_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDialMediaSinkServiceProxy);
+};
+
 class DialMediaSinkServiceProxyTest : public ::testing::Test {
  public:
   DialMediaSinkServiceProxyTest()
-      : proxy_(new DialMediaSinkServiceProxy(mock_sink_discovered_cb_.Get(),
-                                             &profile_)) {
+      : proxy_(new TestDialMediaSinkServiceProxy(mock_sink_discovered_cb_.Get(),
+                                                 &profile_)) {
     std::unique_ptr<MockDialMediaSinkServiceImpl> mock_dial_media_sink_service =
         base::MakeUnique<MockDialMediaSinkServiceImpl>(
             base::Bind(&DialMediaSinkServiceProxy::OnSinksDiscoveredOnIOThread,
