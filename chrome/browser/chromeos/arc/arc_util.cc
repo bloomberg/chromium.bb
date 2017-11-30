@@ -406,6 +406,10 @@ bool IsActiveDirectoryUserForProfile(const Profile* profile) {
 }
 
 bool IsArcOobeOptInActive() {
+  // No OOBE is expected in case Play Store is not available.
+  if (!IsPlayStoreAvailable())
+    return false;
+
   // Check if Chrome OS OOBE or OPA OptIn flow is currently showing.
   // TODO(b/65861628): Rename the method since it is no longer accurate.
   // Redesign the OptIn flow since there is no longer reason to have two
@@ -436,6 +440,7 @@ bool IsArcOobeOptInActive() {
           chromeos::switches::kEnableArcOOBEOptIn)) {
     return false;
   }
+
   return true;
 }
 
