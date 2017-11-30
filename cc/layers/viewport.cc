@@ -212,7 +212,28 @@ void Viewport::PinchUpdate(float magnify_delta, const gfx::Point& anchor) {
   Pan(move);
 }
 
-void Viewport::PinchEnd() {
+void Viewport::PinchEnd(const gfx::Point& anchor, bool snap_to_min) {
+  if (snap_to_min) {
+    LayerTreeImpl* active_tree = host_impl_->active_tree();
+    const float kMaxZoomForSnapToMin = 1.05f;
+    const base::TimeDelta kSnapToMinZoomAnimationDuration =
+        base::TimeDelta::FromMilliseconds(200);
+    float page_scale = active_tree->current_page_scale_factor();
+    float min_scale = active_tree->min_page_scale_factor();
+
+    // If the page is close to minimum scale at pinch end, snap to minimum.
+    if (page_scale < min_scale * kMaxZoomForSnapToMin) {
+      gfx::PointF adjusted_anchor =
+          gfx::PointF(anchor + pinch_anchor_adjustment_);
+      adjusted_anchor =
+          gfx::ScalePoint(adjusted_anchor, min_scale / page_scale);
+      adjusted_anchor += ScrollOffsetToVector2dF(TotalScrollOffset());
+      host_impl_->StartPageScaleAnimation(
+          ToRoundedVector2d(adjusted_anchor.OffsetFromOrigin()), true,
+          min_scale, kSnapToMinZoomAnimationDuration);
+    }
+  }
+
   pinch_anchor_adjustment_ = gfx::Vector2d();
   pinch_zoom_active_ = false;
 }

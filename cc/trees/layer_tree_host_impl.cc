@@ -552,7 +552,7 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
     return;
 
   gfx::ScrollOffset scroll_total = active_tree_->TotalScrollOffset();
-  gfx::SizeF scaled_scrollable_size = active_tree_->ScrollableSize();
+  gfx::SizeF scrollable_size = active_tree_->ScrollableSize();
   gfx::SizeF viewport_size =
       gfx::SizeF(active_tree_->InnerViewportContainerLayer()->bounds());
 
@@ -560,7 +560,7 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
   page_scale_animation_ =
       PageScaleAnimation::Create(ScrollOffsetToVector2dF(scroll_total),
                                  active_tree_->current_page_scale_factor(),
-                                 viewport_size, scaled_scrollable_size);
+                                 viewport_size, scrollable_size);
 
   if (anchor_point) {
     gfx::Vector2dF anchor(target_offset);
@@ -3879,13 +3879,14 @@ void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
   UpdateRootLayerStateForSynchronousInputHandler();
 }
 
-void LayerTreeHostImpl::PinchGestureEnd() {
+void LayerTreeHostImpl::PinchGestureEnd(const gfx::Point& anchor,
+                                        bool snap_to_min) {
   pinch_gesture_active_ = false;
   if (pinch_gesture_end_should_clear_scrolling_node_) {
     pinch_gesture_end_should_clear_scrolling_node_ = false;
     ClearCurrentlyScrollingNode();
   }
-  viewport()->PinchEnd();
+  viewport()->PinchEnd(anchor, snap_to_min);
   browser_controls_offset_manager_->PinchEnd();
   client_->SetNeedsCommitOnImplThread();
   // When a pinch ends, we may be displaying content cached at incorrect scales,

@@ -63,7 +63,7 @@ class CC_EXPORT Viewport {
                                 base::TimeDelta delayed_by);
 
   void PinchUpdate(float magnify_delta, const gfx::Point& anchor);
-  void PinchEnd();
+  void PinchEnd(const gfx::Point& anchor, bool snap_to_min);
 
   // Returns the "representative" viewport layer. That is, the one that's set
   // as the currently scrolling layer when the viewport scrolls and the one used
