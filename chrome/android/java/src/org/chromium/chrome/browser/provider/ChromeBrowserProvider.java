@@ -44,7 +44,6 @@ import org.chromium.content.browser.BrowserStartupController;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * This class provides access to user data stored in Chrome, such as bookmarks, most visited pages,
@@ -300,7 +299,7 @@ public class ChromeBrowserProvider extends ContentProvider {
     private Cursor getBookmarkHistorySuggestions(String selection, String[] selectionArgs,
             String sortOrder, boolean excludeHistory) {
         boolean matchTitles = false;
-        Vector<String> args = new Vector<String>();
+        List<String> args = new ArrayList<String>();
         String like = selectionArgs[0] + "%";
         if (selectionArgs[0].startsWith(UrlConstants.HTTP_SCHEME)
                 || selectionArgs[0].startsWith(UrlConstants.FILE_SCHEME)) {

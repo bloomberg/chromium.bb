@@ -30,7 +30,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.browser.test.CommandLineInitRule;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests for IntentHandler.
@@ -95,7 +96,7 @@ public class IntentHandlerTest {
     private Intent mIntent;
 
     private void processUrls(String[] urls, boolean isValid) {
-        Vector<String> failedTests = new Vector<String>();
+        List<String> failedTests = new ArrayList<String>();
 
         for (String url : urls) {
             mIntent.setData(Uri.parse(url));
@@ -157,7 +158,7 @@ public class IntentHandlerTest {
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testRejectedGoogleChromeSchemeUrls() {
-        Vector<String> failedTests = new Vector<String>();
+        List<String> failedTests = new ArrayList<String>();
 
         for (String url : REJECTED_GOOGLECHROME_URLS) {
             mIntent.setData(Uri.parse(url));
