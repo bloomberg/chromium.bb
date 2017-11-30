@@ -56,10 +56,10 @@
 #include "components/viz/client/client_shared_bitmap_manager.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/local_surface_id_provider.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
-#include "components/viz/common/switches.h"
 #include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/child/runtime_features.h"
 #include "content/child/thread_safe_sender.h"
@@ -2004,7 +2004,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       *base::CommandLine::ForCurrentProcess();
   viz::ClientLayerTreeFrameSink::InitParams params;
   params.enable_surface_synchronization =
-      command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
+      features::IsSurfaceSynchronizationEnabled();
   params.local_surface_id_provider =
       std::make_unique<RendererLocalSurfaceIdProvider>();
 

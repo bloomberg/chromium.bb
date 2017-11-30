@@ -51,7 +51,7 @@
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
-#include "components/viz/common/switches.h"
+#include "components/viz/common/features.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/interstitial_page.h"
@@ -905,11 +905,22 @@ class WebViewDPITest : public WebViewTest {
 INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewDPITest, testing::Bool());
 
 class WebViewSurfaceSynchronizationTest : public WebViewTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebViewTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableSurfaceSynchronization);
+ public:
+  WebViewSurfaceSynchronizationTest() = default;
+  ~WebViewSurfaceSynchronizationTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kEnableSurfaceSynchronization);
+    WebViewTestBase::SetUp();
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewSurfaceSynchronizationTest);
 };
+
 INSTANTIATE_TEST_CASE_P(WebViewTests,
                         WebViewSurfaceSynchronizationTest,
                         testing::Bool());

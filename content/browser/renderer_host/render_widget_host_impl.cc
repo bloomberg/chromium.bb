@@ -30,6 +30,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -398,10 +399,10 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                    weak_factory_.GetWeakPtr())));
   }
 
+  enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
+
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  enable_surface_synchronization_ =
-      command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
   enable_viz_ = command_line.HasSwitch(switches::kEnableViz);
 
   delegate_->RenderWidgetCreated(this);

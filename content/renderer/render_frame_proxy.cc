@@ -10,7 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "components/viz/common/switches.h"
+#include "components/viz/common/features.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
@@ -219,10 +219,7 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
       g_frame_map.Get().insert(std::make_pair(web_frame_, this));
   CHECK(result.second) << "Inserted a duplicate item.";
 
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  enable_surface_synchronization_ =
-      command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
+  enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
 
   compositing_helper_.reset(
       ChildFrameCompositingHelper::CreateForRenderFrameProxy(this));
