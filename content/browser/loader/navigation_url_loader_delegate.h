@@ -24,7 +24,6 @@ class NavigationData;
 class StreamHandle;
 struct GlobalRequestID;
 struct ResourceResponse;
-struct SSLStatus;
 struct SubresourceLoaderParams;
 
 // PlzNavigate: The delegate interface to NavigationURLLoader.
@@ -49,7 +48,7 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
       const scoped_refptr<ResourceResponse>& response,
       std::unique_ptr<StreamHandle> body_stream,
       mojo::ScopedDataPipeConsumerHandle consumer_handle,
-      const SSLStatus& ssl_status,
+      const net::SSLInfo& ssl_info,
       std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& request_id,
       bool is_download,

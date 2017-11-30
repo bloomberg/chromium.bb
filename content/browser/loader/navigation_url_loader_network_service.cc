@@ -682,10 +682,9 @@ void NavigationURLLoaderNetworkService::OnReceiveResponse(
   // TODO(scottmg): This needs to do more of what
   // NavigationResourceHandler::OnResponseStarted() does. Or maybe in
   // OnStartLoadingResponseBody().
-  if (ssl_info && ssl_info->cert)
-    NavigationResourceHandler::GetSSLStatusForRequest(*ssl_info, &ssl_status_);
   response_ = std::move(response);
-  ssl_info_ = ssl_info;
+  if (ssl_info.has_value())
+    ssl_info_ = ssl_info.value();
 }
 
 void NavigationURLLoaderNetworkService::OnReceiveRedirect(
@@ -707,7 +706,7 @@ void NavigationURLLoaderNetworkService::OnStartLoadingResponseBody(
   // delegate until PlzNavigate has shipped and we can be comfortable fully
   // switching to the data pipe.
   delegate_->OnResponseStarted(
-      response_, nullptr, std::move(body), ssl_status_,
+      response_, nullptr, std::move(body), ssl_info_,
       std::unique_ptr<NavigationData>(), GlobalRequestID(-1, g_next_request_id),
       IsDownload(), false /* is_stream */,
       request_controller_->TakeSubresourceLoaderParams());
@@ -725,10 +724,8 @@ void NavigationURLLoaderNetworkService::OnComplete(
   // TODO(https://crbug.com/757633): Pass real values in the case of cert
   // errors.
   bool should_ssl_errors_be_fatal = true;
-  ssl_info_ = status.ssl_info;
-
   delegate_->OnRequestFailed(status.exists_in_cache, status.error_code,
-                             ssl_info_, should_ssl_errors_be_fatal);
+                             status.ssl_info, should_ssl_errors_be_fatal);
 }
 
 bool NavigationURLLoaderNetworkService::IsDownload() const {

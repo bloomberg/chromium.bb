@@ -172,7 +172,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     test_handle_->WillProcessResponse(
         main_test_rfh(), scoped_refptr<net::HttpResponseHeaders>(),
         net::HttpResponseInfo::CONNECTION_INFO_QUIC_35, net::HostPortPair(),
-        SSLStatus(), GlobalRequestID(), false, false, false, base::Closure(),
+        net::SSLInfo(), GlobalRequestID(), false, false, false, base::Closure(),
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }
@@ -1143,8 +1143,8 @@ TEST_F(NavigationHandleImplTest, DeletionByNavigationThrottle) {
 }
 
 // Checks that data from the SSLInfo passed into SimulateWillStartRequest() is
-// stored on the handle's SSLStatus.
-TEST_F(NavigationHandleImplTest, WillFailRequestSetsSSLStatus) {
+// stored on the handle.
+TEST_F(NavigationHandleImplTest, WillFailRequestSetsSSLInfo) {
   uint16_t cipher_suite = 0xc02f;  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
   int connection_status = 0;
   net::SSLConnectionStatusSetCipherSuite(cipher_suite, &connection_status);
@@ -1158,8 +1158,8 @@ TEST_F(NavigationHandleImplTest, WillFailRequestSetsSSLStatus) {
   SimulateWillFailRequest(net::ERR_CERT_DATE_INVALID, ssl_info);
 
   EXPECT_EQ(net::CERT_STATUS_AUTHORITY_INVALID,
-            test_handle()->ssl_status().cert_status);
-  EXPECT_EQ(connection_status, test_handle()->ssl_status().connection_status);
+            test_handle()->GetSSLInfo().cert_status);
+  EXPECT_EQ(connection_status, test_handle()->GetSSLInfo().connection_status);
 }
 
 }  // namespace content

@@ -238,9 +238,10 @@ class CONTENT_EXPORT NavigationHandle {
   // encountering a server redirect).
   virtual net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() = 0;
 
-  // Returns the SSLInfo for a request that failed due to a certificate error.
-  // In the case of other request failures, returns base::nullopt.
-  virtual const base::Optional<net::SSLInfo>& GetSSLInfo() = 0;
+  // Returns the SSLInfo for a request that succeeded or failed due to a
+  // certificate error. In the case of other request failures or of a non-secure
+  // scheme, returns an empty object.
+  virtual const net::SSLInfo& GetSSLInfo() = 0;
 
   // Whether the failure for a certificate error should be fatal.
   virtual bool ShouldSSLErrorsBeFatal() = 0;

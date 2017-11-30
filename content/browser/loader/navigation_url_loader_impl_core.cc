@@ -116,7 +116,7 @@ void NavigationURLLoaderImplCore::NotifyRequestRedirected(
 void NavigationURLLoaderImplCore::NotifyResponseStarted(
     ResourceResponse* response,
     std::unique_ptr<StreamHandle> body,
-    const SSLStatus& ssl_status,
+    const net::SSLInfo& ssl_info,
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
@@ -138,7 +138,7 @@ void NavigationURLLoaderImplCore::NotifyResponseStarted(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&NavigationURLLoaderImpl::NotifyResponseStarted, loader_,
-                     response->DeepCopy(), base::Passed(&body), ssl_status,
+                     response->DeepCopy(), base::Passed(&body), ssl_info,
                      base::Passed(&navigation_data), request_id, is_download,
                      is_stream));
 }

@@ -343,7 +343,7 @@ NavigationHandleImpl::GetConnectionInfo() {
   return connection_info_;
 }
 
-const base::Optional<net::SSLInfo>& NavigationHandleImpl::GetSSLInfo() {
+const net::SSLInfo& NavigationHandleImpl::GetSSLInfo() {
   return ssl_info_;
 }
 
@@ -474,7 +474,7 @@ NavigationHandleImpl::CallWillProcessResponseForTesting(
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
   WillProcessResponse(static_cast<RenderFrameHostImpl*>(render_frame_host),
                       headers, net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
-                      net::HostPortPair(), SSLStatus(), GlobalRequestID(),
+                      net::HostPortPair(), net::SSLInfo(), GlobalRequestID(),
                       false, false, false, base::Closure(),
                       base::Bind(&UpdateThrottleCheckResult, &result));
 
@@ -718,14 +718,11 @@ void NavigationHandleImpl::WillFailRequest(
     const ThrottleChecksFinishedCallback& callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "WillFailRequest");
-
-  ssl_info_ = ssl_info;
+  if (ssl_info.has_value())
+    ssl_info_ = ssl_info.value();
   should_ssl_errors_be_fatal_ = should_ssl_errors_be_fatal;
   complete_callback_ = callback;
   state_ = WILL_FAIL_REQUEST;
-
-  if (ssl_info.has_value())
-    ssl_status_ = SSLStatus(ssl_info.value());
 
   // Notify each throttle of the request.
   base::Closure on_defer_callback_copy = on_defer_callback_for_testing_;
@@ -748,7 +745,7 @@ void NavigationHandleImpl::WillProcessResponse(
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     net::HttpResponseInfo::ConnectionInfo connection_info,
     const net::HostPortPair& socket_address,
-    const SSLStatus& ssl_status,
+    const net::SSLInfo& ssl_info,
     const GlobalRequestID& request_id,
     bool should_replace_current_entry,
     bool is_download,
@@ -767,7 +764,7 @@ void NavigationHandleImpl::WillProcessResponse(
   is_download_ = is_download;
   is_stream_ = is_stream;
   state_ = WILL_PROCESS_RESPONSE;
-  ssl_status_ = ssl_status;
+  ssl_info_ = ssl_info;
   socket_address_ = socket_address;
   complete_callback_ = callback;
   transfer_callback_ = transfer_callback;

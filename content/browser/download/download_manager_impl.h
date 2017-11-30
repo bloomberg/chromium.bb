@@ -147,7 +147,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   NavigationURLLoader::NavigationInterceptionCB GetNavigationInterceptionCB(
       const scoped_refptr<ResourceResponse>& response,
       mojo::ScopedDataPipeConsumerHandle consumer_handle,
-      const SSLStatus& ssl_status,
+      net::CertStatus cert_status,
       int frame_tree_node_id);
 
   // Checks if a download is allowed, |on_download_allowed_cb| is called if

@@ -33,11 +33,8 @@ SSLErrorNavigationThrottle::WillFailRequest() {
   DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kCommittedInterstitials));
   content::NavigationHandle* handle = navigation_handle();
-  if (!handle->GetSSLInfo().has_value()) {
-    return content::NavigationThrottle::PROCEED;
-  }
-
-  int cert_status = handle->GetSSLInfo().value().cert_status;
+  // If there was no certificate error, SSLInfo will be empty.
+  int cert_status = handle->GetSSLInfo().cert_status;
   if (!net::IsCertStatusError(cert_status) ||
       net::IsCertStatusMinorError(cert_status)) {
     return content::NavigationThrottle::PROCEED;
@@ -51,9 +48,8 @@ SSLErrorNavigationThrottle::WillFailRequest() {
       FROM_HERE,
       base::BindOnce(
           std::move(handle_ssl_error_callback_), handle->GetWebContents(),
-          net::MapCertStatusToNetError(cert_status),
-          handle->GetSSLInfo().value(), handle->GetURL(),
-          handle->ShouldSSLErrorsBeFatal(), false,
+          net::MapCertStatusToNetError(cert_status), handle->GetSSLInfo(),
+          handle->GetURL(), handle->ShouldSSLErrorsBeFatal(), false,
           std::move(ssl_cert_reporter_),
           base::Callback<void(content::CertificateRequestResultType)>(),
           base::BindOnce(&SSLErrorNavigationThrottle::ShowInterstitial,
@@ -68,7 +64,7 @@ void SSLErrorNavigationThrottle::ShowInterstitial(
         blocking_page) {
   content::NavigationHandle* handle = navigation_handle();
   int net_error =
-      net::MapCertStatusToNetError(handle->GetSSLInfo().value().cert_status);
+      net::MapCertStatusToNetError(handle->GetSSLInfo().cert_status);
 
   // Get the error page content before giving up ownership of |blocking_page|.
   std::string error_page_content = blocking_page->GetHTMLContents();

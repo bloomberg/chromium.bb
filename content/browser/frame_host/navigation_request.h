@@ -222,7 +222,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   void OnResponseStarted(const scoped_refptr<ResourceResponse>& response,
                          std::unique_ptr<StreamHandle> body,
                          mojo::ScopedDataPipeConsumerHandle consumer_handle,
-                         const SSLStatus& ssl_status,
+                         const net::SSLInfo& ssl_info,
                          std::unique_ptr<NavigationData> navigation_data,
                          const GlobalRequestID& request_id,
                          bool is_download,
@@ -352,7 +352,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   scoped_refptr<ResourceResponse> response_;
   std::unique_ptr<StreamHandle> body_;
   mojo::ScopedDataPipeConsumerHandle handle_;
-  SSLStatus ssl_status_;
+  net::SSLInfo ssl_info_;
   bool is_download_;
 
   // Holds information for the navigation while the WillFailRequest
