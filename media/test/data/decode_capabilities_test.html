@@ -30,15 +30,14 @@
     }
   }
 
-  function testVideoDecodeContentType(contentType) {
+  function testVideoConfig(queryType, contentType) {
     // Clear previous test result from title.
     document.title = '';
 
     log("Testing video content type: " + contentType);
 
     const configuration = {
-      // TODO(chcunningham): Add tests for type: "media-source".
-      type : 'file',
+      type : queryType,
       video : {
         contentType : contentType,
 
@@ -53,15 +52,14 @@
     runTest(configuration);
   }
 
-  function testAudioDecodeContentType(contentType) {
+  function testAudioConfig(queryType, contentType) {
     // Clear previous test result from title.
     document.title = '';
 
     log("Testing audio content type: " + contentType);
 
     const configuration = {
-      // TODO(chcunningham): Add tests for type: "media-source".
-      type : 'file',
+      type : queryType,
       audio : {
         contentType : contentType
       }
