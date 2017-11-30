@@ -9,19 +9,19 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/printing/print_job_worker.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace printing {
 
 PrinterQuery::PrinterQuery(int render_process_id, int render_frame_id)
-    : worker_(new PrintJobWorker(render_process_id, render_frame_id, this)),
-      is_print_dialog_box_shown_(false),
-      cookie_(PrintSettings::NewCookie()),
-      last_status_(PrintingContext::FAILED) {
-  DCHECK(base::MessageLoopForIO::IsCurrent());
+    : worker_(std::make_unique<PrintJobWorker>(render_process_id,
+                                               render_frame_id,
+                                               this)),
+      cookie_(PrintSettings::NewCookie()) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
 PrinterQuery::~PrinterQuery() {
@@ -43,7 +43,7 @@ void PrinterQuery::GetSettingsDone(const PrintSettings& new_settings,
     cookie_ = 0;
   }
 
-  if (!callback_.is_null()) {
+  if (callback_) {
     // This may cause reentrancy like to call StopWorker().
     std::move(callback_).Run();
   }
@@ -51,7 +51,7 @@ void PrinterQuery::GetSettingsDone(const PrintSettings& new_settings,
 
 std::unique_ptr<PrintJobWorker> PrinterQuery::DetachWorker(
     PrintJobWorkerOwner* new_owner) {
-  DCHECK(callback_.is_null());
+  DCHECK(!callback_);
   DCHECK(worker_);
 
   worker_->SetNewOwner(new_owner);
@@ -100,7 +100,7 @@ void PrinterQuery::SetSettings(
 }
 
 void PrinterQuery::StartWorker(base::OnceClosure callback) {
-  DCHECK(callback_.is_null());
+  DCHECK(!callback_);
   DCHECK(worker_);
 
   // Lazily create the worker thread. There is one worker thread per print job.
