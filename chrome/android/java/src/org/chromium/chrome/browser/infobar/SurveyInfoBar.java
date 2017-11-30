@@ -13,6 +13,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.survey.SurveyController;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -74,14 +75,28 @@ public class SurveyInfoBar extends InfoBar {
 
     @Override
     protected void createCompactLayoutContent(InfoBarCompactLayout layout) {
+        Tab tab = nativeGetTab(getNativeInfoBarPtr());
+        tab.addObserver(new EmptyTabObserver() {
+            @Override
+            public void onHidden(Tab tab) {
+                mDelegate.onSurveyInfoBarTabHidden();
+                closeInfoBar();
+                tab.removeObserver(this);
+            }
+
+            @Override
+            public void onInteractabilityChanged(boolean isInteractable) {
+                mDelegate.onSurveyInfoBarTabInteractabilityChanged(isInteractable);
+            }
+        });
+
         NoUnderlineClickableSpan clickableSpan = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View widget) {
                 mDelegate.onSurveyTriggered();
 
                 SurveyController.getInstance().showSurveyIfAvailable(
-                        nativeGetTab(getNativeInfoBarPtr()).getActivity(), mSiteId,
-                        mShowAsBottomSheet, mDisplayLogoResId);
+                        tab.getActivity(), mSiteId, mShowAsBottomSheet, mDisplayLogoResId);
                 onCloseButtonClicked();
             }
         };
@@ -95,6 +110,14 @@ public class SurveyInfoBar extends InfoBar {
         prompt.setGravity(Gravity.CENTER_VERTICAL);
         ApiCompatibilityUtils.setTextAppearance(prompt, R.style.BlackTitle1);
         layout.addContent(prompt, 1f);
+    }
+
+    /**
+     * Closes the infobar without calling the {@link SurveyInfoBarDelegate}'s onSurveyInfoBarClosed.
+     */
+    private void closeInfoBar() {
+        // TODO(mdjones): add a proper close method to programatically close the infobar.
+        super.onCloseButtonClicked();
     }
 
     @Override
