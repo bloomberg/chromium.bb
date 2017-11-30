@@ -27,8 +27,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/platform_test.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 
 class AppControllerTest : public PlatformTest {
  protected:

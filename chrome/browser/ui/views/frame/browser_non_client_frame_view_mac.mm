@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
-#include "chrome/grit/theme_resources.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"

@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/feature_promos/incognito_window_promo_bubble_view.h"
 #include "chrome/browser/ui/webui/settings/settings_clear_browsing_data_handler.h"
-#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/feature_engagement/public/event_constants.h"

@@ -18,7 +18,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

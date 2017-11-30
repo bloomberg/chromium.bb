@@ -6,7 +6,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/variations/variations_associated_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"

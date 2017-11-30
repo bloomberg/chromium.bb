@@ -47,7 +47,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/grit/generated_resources.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
@@ -58,7 +57,6 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace shell_integration {
 

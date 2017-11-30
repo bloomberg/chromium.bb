@@ -27,7 +27,6 @@
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"

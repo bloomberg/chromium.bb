@@ -27,7 +27,6 @@
 #include "components/user_manager/user.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "net/base/data_url.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 

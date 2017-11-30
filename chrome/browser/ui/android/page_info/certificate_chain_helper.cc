@@ -12,7 +12,6 @@
 #include "jni/CertificateChainHelper_jni.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;

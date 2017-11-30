@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/cocoa/autofill/password_generation_popup_view_bridge.h"
 #include "chrome/browser/ui/cocoa/chrome_style.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
