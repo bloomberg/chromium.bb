@@ -108,7 +108,7 @@ bool ParseChildPermissions(const std::string& base_name,
         if (error) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
               errors::kInvalidPermission,
-              base_name + '.' + base::SizeTToString(i));
+              base_name + '.' + base::NumberToString(i));
           return false;
         }
         LOG(WARNING) << "Permission is not a string.";
@@ -155,7 +155,7 @@ bool APIPermissionSet::ParseFromJSON(
       if (!permissions->GetDictionary(i, &dict) || dict->size() != 1) {
         if (error) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidPermission, base::SizeTToString(i));
+              errors::kInvalidPermission, base::NumberToString(i));
           return false;
         }
         LOG(WARNING) << "Permission is not a string or single key dict.";

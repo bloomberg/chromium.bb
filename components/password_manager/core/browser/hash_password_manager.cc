@@ -87,7 +87,7 @@ std::string HashPasswordManager::CreateRandomSalt() {
 
 std::string HashPasswordManager::LengthAndSaltToString(const std::string& salt,
                                                        size_t password_length) {
-  return base::SizeTToString(password_length) + kSeparator + salt;
+  return base::NumberToString(password_length) + kSeparator + salt;
 }
 
 void HashPasswordManager::StringToLengthAndSalt(const std::string& s,

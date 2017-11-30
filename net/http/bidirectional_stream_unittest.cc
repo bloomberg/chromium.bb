@@ -475,7 +475,7 @@ TEST_F(BidirectionalStreamTest, SimplePostRequest) {
   request_info->method = "POST";
   request_info->url = default_url_;
   request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
-                                        base::SizeTToString(kBodyDataSize));
+                                        base::NumberToString(kBodyDataSize));
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   std::unique_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
@@ -694,8 +694,9 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
   request_info->method = "POST";
   request_info->url = default_url_;
   request_info->priority = LOWEST;
-  request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
-                                        base::SizeTToString(kBodyDataSize * 3));
+  request_info->extra_headers.SetHeader(
+      net::HttpRequestHeaders::kContentLength,
+      base::NumberToString(kBodyDataSize * 3));
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   MockTimer* timer = new MockTimer();
@@ -837,8 +838,9 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
   request_info->method = "POST";
   request_info->url = default_url_;
   request_info->priority = LOWEST;
-  request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
-                                        base::SizeTToString(kBodyDataSize * 3));
+  request_info->extra_headers.SetHeader(
+      net::HttpRequestHeaders::kContentLength,
+      base::NumberToString(kBodyDataSize * 3));
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   MockTimer* timer = new MockTimer();
@@ -927,8 +929,9 @@ TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
   request_info->method = "POST";
   request_info->url = default_url_;
   request_info->priority = LOWEST;
-  request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
-                                        base::SizeTToString(kBodyDataSize * 1));
+  request_info->extra_headers.SetHeader(
+      net::HttpRequestHeaders::kContentLength,
+      base::NumberToString(kBodyDataSize * 1));
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   MockTimer* timer = new MockTimer();
@@ -1234,8 +1237,9 @@ TEST_F(BidirectionalStreamTest, DeleteStreamAfterSendData) {
   request_info->method = "POST";
   request_info->url = default_url_;
   request_info->priority = LOWEST;
-  request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
-                                        base::SizeTToString(kBodyDataSize * 3));
+  request_info->extra_headers.SetHeader(
+      net::HttpRequestHeaders::kContentLength,
+      base::NumberToString(kBodyDataSize * 3));
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   std::unique_ptr<TestDelegateBase> delegate(
@@ -1295,8 +1299,9 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringReadData) {
   request_info->method = "POST";
   request_info->url = default_url_;
   request_info->priority = LOWEST;
-  request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
-                                        base::SizeTToString(kBodyDataSize * 3));
+  request_info->extra_headers.SetHeader(
+      net::HttpRequestHeaders::kContentLength,
+      base::NumberToString(kBodyDataSize * 3));
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   std::unique_ptr<TestDelegateBase> delegate(
@@ -1353,8 +1358,9 @@ TEST_F(BidirectionalStreamTest, PropagateProtocolError) {
       new BidirectionalStreamRequestInfo);
   request_info->method = "POST";
   request_info->url = default_url_;
-  request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
-                                        base::SizeTToString(kBodyDataSize * 3));
+  request_info->extra_headers.SetHeader(
+      net::HttpRequestHeaders::kContentLength,
+      base::NumberToString(kBodyDataSize * 3));
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   std::unique_ptr<TestDelegateBase> delegate(

@@ -250,9 +250,9 @@ bool AccessorNode::ComputeAndValidateListIndex(Scope* scope,
   size_t index_sizet = static_cast<size_t>(index_int);
   if (index_sizet >= max_len) {
     *err = Err(index_->GetRange(), "Array subscript out of range.",
-        "You gave me " + base::Int64ToString(index_int) +
-        " but I was expecting something from 0 to " +
-        base::SizeTToString(max_len) + ", inclusive.");
+               "You gave me " + base::Int64ToString(index_int) +
+                   " but I was expecting something from 0 to " +
+                   base::NumberToString(max_len) + ", inclusive.");
     return false;
   }
 

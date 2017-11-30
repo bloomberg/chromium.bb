@@ -63,7 +63,7 @@ bool NaClModulesHandler::Parse(Extension* extension, base::string16* error) {
     std::string path_str;
     if (!module_value->GetString(keys::kNaClModulesPath, &path_str)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidNaClModulesPath, base::SizeTToString(i));
+          errors::kInvalidNaClModulesPath, base::NumberToString(i));
       return false;
     }
 
@@ -71,7 +71,7 @@ bool NaClModulesHandler::Parse(Extension* extension, base::string16* error) {
     std::string mime_type;
     if (!module_value->GetString(keys::kNaClModulesMIMEType, &mime_type)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidNaClModulesMIMEType, base::SizeTToString(i));
+          errors::kInvalidNaClModulesMIMEType, base::NumberToString(i));
       return false;
     }
 

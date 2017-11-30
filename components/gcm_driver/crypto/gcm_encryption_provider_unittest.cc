@@ -517,7 +517,7 @@ void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
                             &encoded_key);
 
       std::stringstream encryption_header;
-      encryption_header << "rs=" << base::SizeTToString(record_size) << ";";
+      encryption_header << "rs=" << base::NumberToString(record_size) << ";";
       encryption_header << "salt=" << encoded_salt;
 
       message.data["encryption"] = encryption_header.str();

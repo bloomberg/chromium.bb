@@ -320,7 +320,7 @@ TEST_F(SSLClientSessionCacheTest, Expiration) {
   for (size_t i = 0; i < kNumEntries - 1; i++) {
     bssl::UniquePtr<SSL_SESSION> session =
         MakeTestSession(clock->Now(), kTimeout);
-    cache.Insert(base::SizeTToString(i), session.get());
+    cache.Insert(base::NumberToString(i), session.get());
   }
   EXPECT_EQ(kNumEntries - 1, cache.size());
 
@@ -347,7 +347,7 @@ TEST_F(SSLClientSessionCacheTest, Expiration) {
   EXPECT_EQ(session.get(), cache.Lookup("key").get());
   for (size_t i = 0; i < kNumEntries - 1; i++) {
     SCOPED_TRACE(i);
-    EXPECT_EQ(nullptr, cache.Lookup(base::SizeTToString(i)));
+    EXPECT_EQ(nullptr, cache.Lookup(base::NumberToString(i)));
   }
 }
 

@@ -54,7 +54,7 @@ std::unique_ptr<SetupSingleton> SetupSingleton::Acquire(
   DCHECK(installer_state);
 
   const base::string16 sync_primitive_name_suffix(
-      base::SizeTToString16(std::hash<base::FilePath::StringType>()(
+      base::NumberToString16(std::hash<base::FilePath::StringType>()(
           installer_state->target_path().value())));
 
   base::win::ScopedHandle setup_mutex(::CreateMutex(

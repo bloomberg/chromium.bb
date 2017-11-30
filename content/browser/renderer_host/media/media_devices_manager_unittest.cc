@@ -58,8 +58,8 @@ class MockAudioManager : public media::FakeAudioManager {
     DCHECK(device_names->empty());
     for (size_t i = 0; i < num_input_devices_; i++) {
       device_names->push_back(media::AudioDeviceName(
-          std::string("fake_device_name_") + base::SizeTToString(i),
-          std::string("fake_device_id_") + base::SizeTToString(i)));
+          std::string("fake_device_name_") + base::NumberToString(i),
+          std::string("fake_device_id_") + base::NumberToString(i)));
     }
     MockGetAudioInputDeviceNames(device_names);
   }
@@ -69,8 +69,8 @@ class MockAudioManager : public media::FakeAudioManager {
     DCHECK(device_names->empty());
     for (size_t i = 0; i < num_output_devices_; i++) {
       device_names->push_back(media::AudioDeviceName(
-          std::string("fake_device_name_") + base::SizeTToString(i),
-          std::string("fake_device_id_") + base::SizeTToString(i)));
+          std::string("fake_device_name_") + base::NumberToString(i),
+          std::string("fake_device_id_") + base::NumberToString(i)));
     }
     MockGetAudioOutputDeviceNames(device_names);
   }

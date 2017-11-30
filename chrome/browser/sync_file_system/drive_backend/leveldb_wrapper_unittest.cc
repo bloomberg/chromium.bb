@@ -49,7 +49,7 @@ class LevelDBWrapperTest : public testing::Test {
     const char* keys[] = {"ab", "a", "d", "bb", "d"};
     for (size_t i = 0; i < arraysize(keys); ++i) {
       leveldb::Status status =
-          db->Put(leveldb::WriteOptions(), keys[i], base::SizeTToString(i));
+          db->Put(leveldb::WriteOptions(), keys[i], base::NumberToString(i));
       ASSERT_TRUE(status.ok());
     }
   }

@@ -178,7 +178,7 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRows) {
   std::string test_host_c = "host_c.com";
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   size_t row_limit = 2;
-  std::string row_limit_string = base::SizeTToString(row_limit);
+  std::string row_limit_string = base::NumberToString(row_limit);
   command_line->AppendSwitchASCII("previews-max-opt-out-rows",
                                   row_limit_string);
   std::unique_ptr<PreviewsTypeList> enabled_previews(new PreviewsTypeList);
@@ -244,7 +244,7 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRowsPerHost) {
   std::string test_host = "host.com";
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   size_t row_limit = 2;
-  std::string row_limit_string = base::SizeTToString(row_limit);
+  std::string row_limit_string = base::NumberToString(row_limit);
   command_line->AppendSwitchASCII("previews-max-opt-out-rows-per-host",
                                   row_limit_string);
   std::unique_ptr<PreviewsTypeList> enabled_previews(new PreviewsTypeList);

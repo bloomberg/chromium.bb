@@ -165,12 +165,12 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
 
     for (size_t i = 0; i < kNumDaysInHistory; ++i) {
       original_daily_content_length_list->Set(
-          i, base::MakeUnique<base::Value>(base::SizeTToString(i)));
+          i, base::MakeUnique<base::Value>(base::NumberToString(i)));
     }
 
     received_daily_content_length_list->Clear();
     for (size_t i = 0; i < kNumDaysInHistory / 2; ++i) {
-      received_daily_content_length_list->AppendString(base::SizeTToString(i));
+      received_daily_content_length_list->AppendString(base::NumberToString(i));
     }
   }
 

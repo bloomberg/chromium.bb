@@ -63,7 +63,7 @@ std::string HandleToString(HANDLE handle) {
   // A HANDLE is a void* pointer, which is the same size as a size_t,
   // so we can use reinterpret_cast<> on it.
   size_t integer_handle = reinterpret_cast<size_t>(handle);
-  return base::SizeTToString(integer_handle);
+  return base::NumberToString(integer_handle);
 }
 
 MULTIPROCESS_TEST_MAIN(VerifyParentHandle) {

@@ -433,11 +433,11 @@ void ModuleEnumerator::ReportThirdPartyMetrics() {
   // the regular user distribution.
   static crash_reporter::CrashKeyString<32> third_party_loaded_key(
       "third-party-modules-loaded");
-  third_party_loaded_key.Set(base::SizeTToString(third_party_loaded));
+  third_party_loaded_key.Set(base::NumberToString(third_party_loaded));
 
   static crash_reporter::CrashKeyString<32> third_party_not_loaded_key(
       "third-party-modules-not-loaded");
-  third_party_not_loaded_key.Set(base::SizeTToString(third_party_not_loaded));
+  third_party_not_loaded_key.Set(base::NumberToString(third_party_not_loaded));
 
   // Report back some metrics regarding third party modules and certificates.
   UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Certificates.Total",

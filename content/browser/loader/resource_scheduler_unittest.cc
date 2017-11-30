@@ -416,7 +416,7 @@ class ResourceSchedulerTest : public testing::Test {
     params["MaxEffectiveConnectionType"] = max_ect_string;
     for (size_t bdp_range_index = 1; bdp_range_index <= num_bdp_ranges;
          bdp_range_index++) {
-      std::string index_str = base::SizeTToString(bdp_range_index);
+      std::string index_str = base::NumberToString(bdp_range_index);
       params["MaxBDPKbits" + index_str] = index_str + "00";
       params["MaxDelayableRequests" + index_str] = index_str + "0";
     }

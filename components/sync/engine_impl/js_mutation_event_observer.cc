@@ -67,7 +67,7 @@ void JsMutationEventObserver::OnChangesApplied(
     changes_value = std::move(changes_list);
   } else {
     changes_value = std::make_unique<base::Value>(
-        base::SizeTToString(changes_size) + " changes");
+        base::NumberToString(changes_size) + " changes");
   }
   details.Set("changes", std::move(changes_value));
   HandleJsEvent(FROM_HERE, "onChangesApplied", JsEventDetails(&details));

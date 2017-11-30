@@ -59,7 +59,7 @@ class CertErrorParams1SizeT : public CertErrorParams {
       : name_(name), value_(value) {}
 
   std::string ToDebugString() const override {
-    return name_ + std::string(": ") + base::SizeTToString(value_);
+    return name_ + std::string(": ") + base::NumberToString(value_);
   }
 
  private:
@@ -80,8 +80,8 @@ class CertErrorParams2SizeT : public CertErrorParams {
       : name1_(name1), value1_(value1), name2_(name2), value2_(value2) {}
 
   std::string ToDebugString() const override {
-    return name1_ + std::string(": ") + base::SizeTToString(value1_) + "\n" +
-           name2_ + std::string(": ") + base::SizeTToString(value2_);
+    return name1_ + std::string(": ") + base::NumberToString(value1_) + "\n" +
+           name2_ + std::string(": ") + base::NumberToString(value2_);
   }
 
  private:

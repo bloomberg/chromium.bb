@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertQueue) {
   const size_t num_dialogs = 3;
   size_t call_count = 0;
   for (size_t i = 0; i != num_dialogs; ++i) {
-    const std::string dialog_name = "Dialog #" + base::SizeTToString(i) + ".";
+    const std::string dialog_name = "Dialog #" + base::NumberToString(i) + ".";
     host->host_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("alert('" + dialog_name + "');"),
         base::Bind(&CheckAlertResult, dialog_name,
@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ConfirmQueue) {
   size_t call_count = 0;
   for (size_t i = 0; i != num_accepted_dialogs; ++i) {
     const std::string dialog_name =
-        "Accepted dialog #" + base::SizeTToString(i) + ".";
+        "Accepted dialog #" + base::NumberToString(i) + ".";
     host->host_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("confirm('" + dialog_name + "');"),
         base::Bind(&CheckConfirmResult, dialog_name, true,
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ConfirmQueue) {
   }
   for (size_t i = 0; i != num_cancelled_dialogs; ++i) {
     const std::string dialog_name =
-        "Cancelled dialog #" + base::SizeTToString(i) + ".";
+        "Cancelled dialog #" + base::NumberToString(i) + ".";
     host->host_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("confirm('" + dialog_name + "');"),
         base::Bind(&CheckConfirmResult, dialog_name, false,

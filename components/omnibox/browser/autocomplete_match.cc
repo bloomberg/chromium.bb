@@ -340,7 +340,7 @@ std::string AutocompleteMatch::ClassificationsToString(
     if (i)
       serialized_classifications += ',';
     serialized_classifications +=
-        base::SizeTToString(classifications[i].offset) + ',' +
+        base::NumberToString(classifications[i].offset) + ',' +
         base::IntToString(classifications[i].style);
   }
   return serialized_classifications;

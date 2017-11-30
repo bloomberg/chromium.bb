@@ -241,7 +241,7 @@ TEST_F(SearchHistoryTest, PromoteSecondary) {
 
 TEST_F(SearchHistoryTest, MaxPrimary) {
   for (size_t i = 0; i < kMaxPrimary; ++i) {
-    std::string query = base::SizeTToString(i);
+    std::string query = base::NumberToString(i);
     history()->AddLaunchEvent(query, "app");
   }
   EXPECT_EQ(kMaxPrimary, associations().size());
@@ -275,7 +275,7 @@ TEST_F(SearchHistoryTest, MaxSecondary) {
   const char kQuery[] = "query";
   history()->AddLaunchEvent(kQuery, "primary");
   for (size_t i = 0; i < kMaxSecondary; ++i) {
-    std::string result_id = base::SizeTToString(i);
+    std::string result_id = base::NumberToString(i);
     history()->AddLaunchEvent(kQuery, result_id);
   }
 

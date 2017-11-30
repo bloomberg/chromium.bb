@@ -358,7 +358,7 @@ void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
 
   base::debug::SetCrashKeyValue(
       crash_keys::kViewCount,
-      base::SizeTToString(content::RenderView::GetRenderViewCount()));
+      base::NumberToString(content::RenderView::GetRenderViewCount()));
 
 #if !defined(OS_ANDROID)
   if ((render_frame()->GetEnabledBindings() &

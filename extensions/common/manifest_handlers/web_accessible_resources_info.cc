@@ -78,7 +78,7 @@ bool WebAccessibleResourcesHandler::Parse(Extension* extension,
     std::string relative_path;
     if (!list_value->GetString(i, &relative_path)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidWebAccessibleResource, base::SizeTToString(i));
+          errors::kInvalidWebAccessibleResource, base::NumberToString(i));
       return false;
     }
     URLPattern pattern(URLPattern::SCHEME_EXTENSION);

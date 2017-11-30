@@ -36,7 +36,7 @@ bool ParamTraits<network_hints::LookupRequest>::Read(
 void ParamTraits<network_hints::LookupRequest>::Log(
     const network_hints::LookupRequest& p, std::string* l) {
   l->append("<network_hints::LookupRequest: ");
-  l->append(base::SizeTToString(p.hostname_list.size()));
+  l->append(base::NumberToString(p.hostname_list.size()));
   l->append(" hostnames>");
 }
 

@@ -299,7 +299,7 @@ TEST_F(BidirectionalStreamSpdyImplTest, SimplePostRequest) {
   request_info.method = "POST";
   request_info.url = default_url_;
   request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
-                                       base::SizeTToString(kBodyDataSize));
+                                       base::NumberToString(kBodyDataSize));
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   auto delegate = std::make_unique<TestDelegateBase>(
@@ -399,7 +399,7 @@ TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterStreamFailed) {
   request_info.method = "POST";
   request_info.url = default_url_;
   request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
-                                       base::SizeTToString(kBodyDataSize * 3));
+                                       base::NumberToString(kBodyDataSize * 3));
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   auto delegate = std::make_unique<TestDelegateBase>(
@@ -450,7 +450,7 @@ TEST_P(BidirectionalStreamSpdyImplTest, RstWithNoErrorBeforeSendIsComplete) {
   request_info.method = "POST";
   request_info.url = default_url_;
   request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
-                                       base::SizeTToString(kBodyDataSize * 3));
+                                       base::NumberToString(kBodyDataSize * 3));
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   auto delegate = std::make_unique<TestDelegateBase>(

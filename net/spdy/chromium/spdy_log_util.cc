@@ -18,7 +18,7 @@ SpdyString ElideGoAwayDebugDataForNetLog(NetLogCaptureMode capture_mode,
     return debug_data.as_string();
   }
 
-  return SpdyString("[") + base::SizeTToString(debug_data.size()) +
+  return SpdyString("[") + base::NumberToString(debug_data.size()) +
          SpdyString(" bytes were stripped]");
 }
 

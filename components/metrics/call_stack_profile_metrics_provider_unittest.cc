@@ -185,7 +185,7 @@ void CallStackProfileMetricsProviderTest::VerifyProfileProto(
     ASSERT_TRUE(proto_sample.has_count());
     EXPECT_EQ(expected.samples[s].entry_repeats, proto_sample.count());
     for (int e = 0; e < expected.samples[s].entry_count; ++e) {
-      SCOPED_TRACE("entry " + base::SizeTToString(e));
+      SCOPED_TRACE("entry " + base::NumberToString(e));
       const CallStackProfile::Entry& entry = proto_sample.entry().Get(e);
       if (expected.samples[s].entries[e].module_index >= 0) {
         ASSERT_TRUE(entry.has_module_id_index());
@@ -349,7 +349,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
   ASSERT_EQ(static_cast<int>(arraysize(expected_proto_profiles)),
             uma_proto.sampled_profile().size());
   for (size_t p = 0; p < arraysize(expected_proto_profiles); ++p) {
-    SCOPED_TRACE("profile " + base::SizeTToString(p));
+    SCOPED_TRACE("profile " + base::NumberToString(p));
     VerifyProfileProto(expected_proto_profiles[p],
                        uma_proto.sampled_profile().Get(p));
   }
@@ -433,7 +433,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
   ASSERT_EQ(static_cast<int>(arraysize(expected_proto_profiles)),
             uma_proto.sampled_profile().size());
   for (size_t p = 0; p < arraysize(expected_proto_profiles); ++p) {
-    SCOPED_TRACE("profile " + base::SizeTToString(p));
+    SCOPED_TRACE("profile " + base::NumberToString(p));
     VerifyProfileProto(expected_proto_profiles[p],
                        uma_proto.sampled_profile().Get(p));
   }
@@ -519,7 +519,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
   ASSERT_EQ(static_cast<int>(arraysize(expected_proto_profiles)),
             uma_proto.sampled_profile().size());
   for (size_t p = 0; p < arraysize(expected_proto_profiles); ++p) {
-    SCOPED_TRACE("profile " + base::SizeTToString(p));
+    SCOPED_TRACE("profile " + base::NumberToString(p));
     VerifyProfileProto(expected_proto_profiles[p],
                        uma_proto.sampled_profile().Get(p));
   }
@@ -563,7 +563,7 @@ TEST_F(CallStackProfileMetricsProviderTest, UnknownModule) {
   ASSERT_EQ(static_cast<int>(arraysize(expected_proto_profiles)),
             uma_proto.sampled_profile().size());
   for (size_t p = 0; p < arraysize(expected_proto_profiles); ++p) {
-    SCOPED_TRACE("profile " + base::SizeTToString(p));
+    SCOPED_TRACE("profile " + base::NumberToString(p));
     VerifyProfileProto(expected_proto_profiles[p],
                        uma_proto.sampled_profile().Get(p));
   }
@@ -830,7 +830,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MAYBE_PeriodicProfiles) {
   expected_proto_profiles[0].duration_ms = profile_duration_ms;
 
   for (size_t p = 0; p < arraysize(expected_proto_profiles); ++p) {
-    SCOPED_TRACE("profile " + base::SizeTToString(p));
+    SCOPED_TRACE("profile " + base::NumberToString(p));
     VerifyProfileProto(expected_proto_profiles[p],
                        uma_proto.sampled_profile().Get(p));
     EXPECT_EQ(SampledProfile::PERIODIC_COLLECTION,
@@ -1025,7 +1025,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MAYBE_PeriodicProfileMerging) {
       uma_proto.sampled_profile(2).call_stack_profile().profile_duration_ms();
 
   for (size_t p = 0; p < arraysize(expected_proto_profiles); ++p) {
-    SCOPED_TRACE("profile " + base::SizeTToString(p));
+    SCOPED_TRACE("profile " + base::NumberToString(p));
     VerifyProfileProto(expected_proto_profiles[p],
                        uma_proto.sampled_profile().Get(p));
     if (p == 0) {
