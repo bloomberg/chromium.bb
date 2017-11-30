@@ -232,8 +232,8 @@ BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
     base::FilePath cache_dir =
         GetContentClient()->browser()->GetShaderDiskCacheDirectory();
     if (!cache_dir.empty()) {
-      GetIOThreadTaskRunner()->PostTask(
-          FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           base::BindOnce(
               &BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO,
               gpu_client_id_, cache_dir));
@@ -249,11 +249,6 @@ BrowserGpuChannelHostFactory::~BrowserGpuChannelHostFactory() {
     gpu_channel_->DestroyChannel();
     gpu_channel_ = nullptr;
   }
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-BrowserGpuChannelHostFactory::GetIOThreadTaskRunner() {
-  return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 }
 
 void BrowserGpuChannelHostFactory::EstablishGpuChannel(
@@ -324,7 +319,8 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
   } else {
     GetContentClient()->SetGpuInfo(pending_request_->gpu_info());
     gpu_channel_ = base::MakeRefCounted<gpu::GpuChannelHost>(
-        this, gpu_client_id_, pending_request_->gpu_info(),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+        gpu_client_id_, pending_request_->gpu_info(),
         pending_request_->gpu_feature_info(), std::move(handle),
         gpu_memory_buffer_manager_.get());
   }

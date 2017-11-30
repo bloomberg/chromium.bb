@@ -295,8 +295,8 @@ void Gpu::OnEstablishedGpuChannel() {
   if (pending_request_->client_id() &&
       pending_request_->channel_handle().is_valid()) {
     gpu_channel_ = base::MakeRefCounted<gpu::GpuChannelHost>(
-        this, pending_request_->client_id(), pending_request_->gpu_info(),
-        pending_request_->gpu_feature_info(),
+        io_task_runner_, pending_request_->client_id(),
+        pending_request_->gpu_info(), pending_request_->gpu_feature_info(),
         std::move(pending_request_->channel_handle()),
         gpu_memory_buffer_manager_.get());
   }
@@ -306,10 +306,6 @@ void Gpu::OnEstablishedGpuChannel() {
   callbacks.swap(establish_callbacks_);
   for (const auto& callback : callbacks)
     callback.Run(gpu_channel_);
-}
-
-scoped_refptr<base::SingleThreadTaskRunner> Gpu::GetIOThreadTaskRunner() {
-  return io_task_runner_;
 }
 
 }  // namespace ui

@@ -22,8 +22,7 @@ class Connector;
 
 namespace ui {
 
-class Gpu : public gpu::GpuChannelHostFactory,
-            public gpu::GpuChannelEstablishFactory {
+class Gpu : public gpu::GpuChannelEstablishFactory {
  public:
   // The Gpu has to be initialized in the main thread before establishing
   // the gpu channel.
@@ -72,9 +71,6 @@ class Gpu : public gpu::GpuChannelHostFactory,
   // Handles results of request to establish a gpu channel in
   // |pending_request_|.
   void OnEstablishedGpuChannel();
-
-  // gpu::GpuChannelHostFactory overrides:
-  scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

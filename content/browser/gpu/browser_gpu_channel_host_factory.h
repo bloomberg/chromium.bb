@@ -24,15 +24,11 @@ namespace content {
 class BrowserGpuMemoryBufferManager;
 
 class CONTENT_EXPORT BrowserGpuChannelHostFactory
-    : public gpu::GpuChannelHostFactory,
-      public gpu::GpuChannelEstablishFactory {
+    : public gpu::GpuChannelEstablishFactory {
  public:
   static void Initialize(bool establish_gpu_channel);
   static void Terminate();
   static BrowserGpuChannelHostFactory* instance() { return instance_; }
-
-  // Overridden from gpu::GpuChannelHostFactory:
-  scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
 
   gpu::GpuChannelHost* GetGpuChannel();
   int GetGpuChannelId() { return gpu_client_id_; }
