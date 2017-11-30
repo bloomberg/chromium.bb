@@ -4,13 +4,9 @@
 
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 
-#include <memory>
-
-#undef FocusIn
-#undef FocusOut
-#undef RootWindow
 #include <algorithm>
 #include <map>
+#include <memory>
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"

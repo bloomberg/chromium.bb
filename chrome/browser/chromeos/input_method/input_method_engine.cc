@@ -4,13 +4,9 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 
+#include <map>
 #include <memory>
 #include <utility>
-
-#undef FocusIn
-#undef FocusOut
-#undef RootWindow
-#include <map>
 
 #include "ash/shell.h"
 #include "base/logging.h"

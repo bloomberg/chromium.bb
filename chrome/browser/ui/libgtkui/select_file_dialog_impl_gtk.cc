@@ -16,9 +16,6 @@
 #include <set>
 #include <vector>
 
-// Xlib defines RootWindow
-#undef RootWindow
-
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"

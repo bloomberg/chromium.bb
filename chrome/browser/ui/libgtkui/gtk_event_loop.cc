@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/libgtkui/gtk_event_loop.h"
 
+#include "ui/gfx/x/x11.h"
+
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
-#include <X11/X.h>
 
 #include "base/memory/singleton.h"
 #include "ui/events/platform/x11/x11_event_source.h"

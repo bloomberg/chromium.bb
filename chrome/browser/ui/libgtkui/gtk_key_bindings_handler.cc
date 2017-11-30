@@ -5,9 +5,7 @@
 #include "chrome/browser/ui/libgtkui/gtk_key_bindings_handler.h"
 
 #include <gdk/gdkkeysyms.h>
-#include <X11/Xlib.h>
 #include <stddef.h>
-#include <X11/XKBlib.h>
 
 #include <string>
 
@@ -19,6 +17,7 @@
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
+#include "ui/gfx/x/x11.h"
 
 using ui::TextEditCommand;
 
