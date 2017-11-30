@@ -51,12 +51,14 @@ SiteInstanceImpl::~SiteInstanceImpl() {
     browsing_instance_->UnregisterSiteInstance(this);
 }
 
+// static
 scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::Create(
     BrowserContext* browser_context) {
   return base::WrapRefCounted(
       new SiteInstanceImpl(new BrowsingInstance(browser_context)));
 }
 
+// static
 scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForURL(
     BrowserContext* browser_context,
     const GURL& url) {
@@ -64,6 +66,18 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForURL(
   scoped_refptr<BrowsingInstance> instance(
       new BrowsingInstance(browser_context));
   return instance->GetSiteInstanceForURL(url);
+}
+
+// static
+bool SiteInstanceImpl::ShouldAssignSiteForURL(const GURL& url) {
+  // about:blank should not "use up" a new SiteInstance.  The SiteInstance can
+  // still be used for a normal web site.
+  if (url == url::kAboutBlankURL)
+    return false;
+
+  // The embedder will then have the opportunity to determine if the URL
+  // should "use up" the SiteInstance.
+  return GetContentClient()->browser()->ShouldAssignSiteForURL(url);
 }
 
 int32_t SiteInstanceImpl::GetId() {
@@ -294,6 +308,11 @@ scoped_refptr<SiteInstance> SiteInstance::CreateForURL(
 }
 
 // static
+bool SiteInstance::ShouldAssignSiteForURL(const GURL& url) {
+  return SiteInstanceImpl::ShouldAssignSiteForURL(url);
+}
+
+// static
 bool SiteInstance::IsSameWebSite(BrowserContext* browser_context,
                                  const GURL& real_src_url,
                                  const GURL& real_dest_url) {
@@ -470,18 +489,6 @@ bool SiteInstanceImpl::ShouldLockToOrigin(BrowserContext* browser_context,
   }
 
   return true;
-}
-
-// static
-bool SiteInstanceImpl::ShouldAssignSiteForURL(const GURL& url) {
-  // about:blank should not "use up" a new SiteInstance.  The SiteInstance can
-  // still be used for a normal web site.
-  if (url == url::kAboutBlankURL)
-    return false;
-
-  // The embedder will then have the opportunity to determine if the URL
-  // should "use up" the SiteInstance.
-  return GetContentClient()->browser()->ShouldAssignSiteForURL(url);
 }
 
 void SiteInstanceImpl::RenderProcessHostDestroyed(RenderProcessHost* host) {

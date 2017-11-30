@@ -37,6 +37,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   static scoped_refptr<SiteInstanceImpl> CreateForURL(
       BrowserContext* browser_context,
       const GURL& url);
+  static bool ShouldAssignSiteForURL(const GURL& url);
 
   // SiteInstance interface overrides.
   int32_t GetId() override;
@@ -175,10 +176,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   static bool ShouldLockToOrigin(BrowserContext* browser_context,
                                  RenderProcessHost* host,
                                  GURL site_url);
-
-  // Determine if a URL should "use up" a site.  URLs such as about:blank or
-  // chrome-native:// leave the site unassigned.
-  static bool ShouldAssignSiteForURL(const GURL& url);
 
  private:
   friend class BrowsingInstance;

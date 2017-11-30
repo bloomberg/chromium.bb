@@ -152,6 +152,10 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
       content::BrowserContext* browser_context,
       const GURL& url);
 
+  // Determine if a URL should "use up" a site.  URLs such as about:blank or
+  // chrome-native:// leave the site unassigned.
+  static bool ShouldAssignSiteForURL(const GURL& url);
+
   // Return whether both URLs are part of the same web site, for the purpose of
   // assigning them to processes accordingly.  The decision is currently based
   // on the registered domain of the URLs (google.com, bbc.co.uk), as well as

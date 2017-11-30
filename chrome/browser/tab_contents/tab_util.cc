@@ -51,16 +51,21 @@ scoped_refptr<SiteInstance> GetSiteInstanceForNewTab(Profile* profile,
     return SiteInstance::CreateForURL(profile, url);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-   if (extensions::ExtensionRegistry::Get(
-       profile)->enabled_extensions().GetHostedAppByURL(url))
-     return SiteInstance::CreateForURL(profile, url);
+  if (extensions::ExtensionRegistry::Get(profile)
+          ->enabled_extensions()
+          .GetHostedAppByURL(url))
+    return SiteInstance::CreateForURL(profile, url);
 #endif
 
   // We used to share the SiteInstance for same-site links opened in new tabs,
   // to leverage the in-memory cache and reduce process creation.  It now
   // appears that it is more useful to have such links open in a new process,
   // so we create new tabs in a new BrowsingInstance.
-   return nullptr;
+  // Create a new SiteInstance for the |url| unless it is not desirable.
+  if (!SiteInstance::ShouldAssignSiteForURL(url))
+    return nullptr;
+
+  return SiteInstance::CreateForURL(profile, url);
 }
 
 }  // namespace tab_util

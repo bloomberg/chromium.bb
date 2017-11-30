@@ -201,15 +201,21 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, TestViewFrameSource) {
             new_web_contents->GetTitle());
 }
 
-// Tests that verify that ctrl-click results 1) open up in a new renderer
-// process (https://crbug.com/23815) and 2) are in a new browsing instance (e.g.
-// cannot find the opener's window by name - https://crbug.com/658386).
-class CtrlClickShouldEndUpInNewProcessTest
-    : public ChromeNavigationBrowserTest {
+// Base class for ctrl+click tests, which contains all the common functionality
+// independent from which process the navigation happens in. Each subclass
+// defines its own expectations depending on the conditions of the test.
+class CtrlClickProcessTest : public ChromeNavigationBrowserTest {
  protected:
+  virtual void VerifyProcessExpectations(
+      content::WebContents* main_contents,
+      content::WebContents* new_contents) = 0;
+  virtual void VerifyBrowsingInstanceExpectations(
+      content::WebContents* main_contents,
+      content::WebContents* new_contents) = 0;
+
   // Simulates ctrl-clicking an anchor with the given id in |main_contents|.
-  // Verifies that the new contents are in a separate process and separate
-  // browsing instance from |main_contents|.  Returns contents of the newly
+  // Verifies that the new contents are in the correct process and separate
+  // BrowsingInstance from |main_contents|.  Returns contents of the newly
   // opened tab.
   content::WebContents* SimulateCtrlClick(content::WebContents* main_contents,
                                           const char* id_of_anchor_to_click) {
@@ -232,26 +238,16 @@ class CtrlClickShouldEndUpInNewProcessTest
       new_contents = new_tab_observer.GetWebContents();
     }
 
-    // Verify that the new tab has the right contents and is in the right, new
-    // place in the tab strip.
+    // Verify that the new tab has the right contents and is in the tab strip.
     EXPECT_TRUE(WaitForLoadStop(new_contents));
-    int last_tab_index = browser()->tab_strip_model()->count() - 1;
     EXPECT_LT(1, browser()->tab_strip_model()->count());  // More than 1 tab?
-    EXPECT_EQ(new_contents,
-              browser()->tab_strip_model()->GetWebContentsAt(last_tab_index));
+    CHECK_NE(TabStripModel::kNoTab,
+             browser()->tab_strip_model()->GetIndexOfWebContents(new_contents));
     GURL expected_url(embedded_test_server()->GetURL("/title1.html"));
     EXPECT_EQ(expected_url, new_contents->GetLastCommittedURL());
 
-    // Verify that the new tab is in a different process, SiteInstance and
-    // BrowsingInstance from the old contents.
-    EXPECT_NE(main_contents->GetMainFrame()->GetProcess(),
-              new_contents->GetMainFrame()->GetProcess());
-    EXPECT_NE(main_contents->GetMainFrame()->GetSiteInstance(),
-              new_contents->GetMainFrame()->GetSiteInstance());
-    EXPECT_FALSE(main_contents->GetSiteInstance()->IsRelatedSiteInstance(
-        new_contents->GetSiteInstance()));
+    VerifyProcessExpectations(main_contents, new_contents);
 
-    // Verify that the new BrowsingInstance can't see windows from the old one.
     {
       // Double-check that main_contents has expected window.name set.
       // This is a sanity check of test setup; this is not a product test.
@@ -268,16 +264,7 @@ class CtrlClickShouldEndUpInNewProcessTest
           &window_opener_cast_to_bool));
       EXPECT_FALSE(window_opener_cast_to_bool);
 
-      // Verify that the new contents cannot find the old contents via
-      // window.open. (i.e. window.open should open a new window, rather than
-      // returning a reference to main_contents / old window).
-      std::string location_of_opened_window;
-      EXPECT_TRUE(ExecuteScriptAndExtractString(
-          new_contents,
-          "w = window.open('', 'main_contents');"
-          "window.domAutomationController.send(w.location.href);",
-          &location_of_opened_window));
-      EXPECT_EQ(url::kAboutBlankURL, location_of_opened_window);
+      VerifyBrowsingInstanceExpectations(main_contents, new_contents);
     }
 
     return new_contents;
@@ -297,20 +284,50 @@ class CtrlClickShouldEndUpInNewProcessTest
     EXPECT_EQ(main_url, main_contents->GetLastCommittedURL());
 
     // Test what happens after ctrl-click.  SimulateCtrlClick will verify
-    // that |new_contents1| is in a separate process and browsing instance
-    // from |main_contents|.
+    // that |new_contents1| is in the correct process and separate
+    // BrowsingInstance from |main_contents|.
     content::WebContents* new_contents1 =
         SimulateCtrlClick(main_contents, id_of_anchor_to_click);
 
-    // Test that each subsequent ctrl-click also gets a new process.
+    // Test that each subsequent ctrl-click also gets the correct process.
     content::WebContents* new_contents2 =
         SimulateCtrlClick(main_contents, id_of_anchor_to_click);
-    EXPECT_NE(new_contents1->GetMainFrame()->GetProcess(),
-              new_contents2->GetMainFrame()->GetProcess());
-    EXPECT_NE(new_contents1->GetMainFrame()->GetSiteInstance(),
-              new_contents2->GetMainFrame()->GetSiteInstance());
     EXPECT_FALSE(new_contents1->GetSiteInstance()->IsRelatedSiteInstance(
         new_contents2->GetSiteInstance()));
+    VerifyProcessExpectations(new_contents1, new_contents2);
+  }
+};
+
+// Tests that verify that ctrl-click results 1) open up in a new renderer
+// process (https://crbug.com/23815) and 2) are in a new BrowsingInstance (e.g.
+// cannot find the opener's window by name - https://crbug.com/658386).
+class CtrlClickShouldEndUpInNewProcessTest : public CtrlClickProcessTest {
+ protected:
+  void VerifyProcessExpectations(content::WebContents* main_contents,
+                                 content::WebContents* new_contents) override {
+    // Verify that the two WebContents are in a different process, SiteInstance
+    // and BrowsingInstance from the old contents.
+    EXPECT_NE(main_contents->GetMainFrame()->GetProcess(),
+              new_contents->GetMainFrame()->GetProcess());
+    EXPECT_NE(main_contents->GetMainFrame()->GetSiteInstance(),
+              new_contents->GetMainFrame()->GetSiteInstance());
+    EXPECT_FALSE(main_contents->GetSiteInstance()->IsRelatedSiteInstance(
+        new_contents->GetSiteInstance()));
+  }
+
+  void VerifyBrowsingInstanceExpectations(
+      content::WebContents* main_contents,
+      content::WebContents* new_contents) override {
+    // Verify that the new contents cannot find the old contents via
+    // window.open. (i.e. window.open should open a new window, rather than
+    // returning a reference to main_contents / old window).
+    std::string location_of_opened_window;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        new_contents,
+        "w = window.open('', 'main_contents');"
+        "window.domAutomationController.send(w.location.href);",
+        &location_of_opened_window));
+    EXPECT_EQ(url::kAboutBlankURL, location_of_opened_window);
   }
 };
 
@@ -323,6 +340,64 @@ IN_PROC_BROWSER_TEST_F(CtrlClickShouldEndUpInNewProcessTest, BlankTarget) {
 }
 
 IN_PROC_BROWSER_TEST_F(CtrlClickShouldEndUpInNewProcessTest, SubframeTarget) {
+  TestCtrlClick("test-anchor-with-subframe-target");
+}
+
+// Similar to the tests above, but verifies that the new WebContents ends up in
+// the same process as the opener when it is exceeding the process limit.
+// See https://crbug.com/774723.
+class CtrlClickShouldEndUpInSameProcessTest : public CtrlClickProcessTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    CtrlClickProcessTest::SetUpCommandLine(command_line);
+    content::IsolateAllSitesForTesting(command_line);
+    content::RenderProcessHost::SetMaxRendererProcessCount(1);
+  }
+
+  void SetUpOnMainThread() override {
+    CtrlClickProcessTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
+ protected:
+  void VerifyProcessExpectations(content::WebContents* contents1,
+                                 content::WebContents* contents2) override {
+    // Verify that the two WebContents are in the same process, though different
+    // SiteInstance and BrowsingInstance from the old contents.
+    EXPECT_EQ(contents1->GetMainFrame()->GetProcess(),
+              contents2->GetMainFrame()->GetProcess());
+    EXPECT_EQ(contents1->GetMainFrame()->GetSiteInstance()->GetSiteURL(),
+              contents2->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+    EXPECT_FALSE(contents1->GetSiteInstance()->IsRelatedSiteInstance(
+        contents2->GetSiteInstance()));
+  }
+
+  void VerifyBrowsingInstanceExpectations(
+      content::WebContents* main_contents,
+      content::WebContents* new_contents) override {
+    // Since the two WebContents are in the same process, they can find each
+    // other through window.open() using the window.name. See
+    // https://crbug.com/718489.
+    std::string location_of_opened_window;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        new_contents,
+        "w = window.open('', 'main_contents');"
+        "window.domAutomationController.send(w.location.href);",
+        &location_of_opened_window));
+    EXPECT_EQ(main_contents->GetLastCommittedURL(),
+              GURL(location_of_opened_window));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(CtrlClickShouldEndUpInSameProcessTest, NoTarget) {
+  TestCtrlClick("test-anchor-no-target");
+}
+
+IN_PROC_BROWSER_TEST_F(CtrlClickShouldEndUpInSameProcessTest, BlankTarget) {
+  TestCtrlClick("test-anchor-with-blank-target");
+}
+
+IN_PROC_BROWSER_TEST_F(CtrlClickShouldEndUpInSameProcessTest, SubframeTarget) {
   TestCtrlClick("test-anchor-with-subframe-target");
 }
 
