@@ -706,6 +706,16 @@ LayoutBlockFlow* LayoutObject::EnclosingNGBlockFlow() const {
   return box->IsLayoutNGMixin() ? ToLayoutBlockFlow(box) : nullptr;
 }
 
+const NGPhysicalBoxFragment* LayoutObject::EnclosingBlockFlowFragment() const {
+  DCHECK(IsInline() || IsText());
+  LayoutBlockFlow* const block_flow = EnclosingNGBlockFlow();
+  if (!block_flow || !block_flow->HasNGInlineNodeData())
+    return nullptr;
+  // TODO(kojii): CurrentFragment isn't always available after layout clean.
+  // Investigate why.
+  return block_flow->CurrentFragment();
+}
+
 LayoutBox* LayoutObject::EnclosingScrollableBox() const {
   for (LayoutObject* ancestor = Parent(); ancestor;
        ancestor = ancestor->Parent()) {
