@@ -11,11 +11,12 @@
 namespace blink {
 
 class Element;
-class ScriptElementBase;
 class XMLParserScriptRunnerHost;
 
 // XMLParserScriptRunner implements the interaction between an XML parser
 // (XMLDocumentParser) and <script> elements and their loading/execution.
+//
+// https://html.spec.whatwg.org/#parsing-xhtml-documents
 class XMLParserScriptRunner final
     : public GarbageCollectedFinalized<XMLParserScriptRunner>,
       public PendingScriptClient {
@@ -40,8 +41,6 @@ class XMLParserScriptRunner final
 
   // from PendingScriptClient
   void PendingScriptFinished(PendingScript*) override;
-
-  Member<ScriptElementBase> script_element_;
 
   // https://html.spec.whatwg.org/#pending-parsing-blocking-script
   // TODO(crbug/717643): Support module scripts, and turn this into
