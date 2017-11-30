@@ -90,9 +90,6 @@ class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
   virtual CSSPrimitiveValue::UnitType TypeWithCalcResolved() const = 0;
   bool IsInteger() const { return is_integer_; }
 
-  bool IsNestedCalc() const { return is_nested_calc_; }
-  void SetIsNestedCalc() { is_nested_calc_ = true; }
-
   virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
@@ -103,13 +100,11 @@ class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
 
   CalculationCategory category_;
   bool is_integer_;
-  bool is_nested_calc_ = false;
 };
 
 class CORE_EXPORT CSSCalcValue : public GarbageCollected<CSSCalcValue> {
  public:
   static CSSCalcValue* Create(const CSSParserTokenRange&, ValueRange);
-  static CSSCalcValue* CreateSimplified(const CSSParserTokenRange&, ValueRange);
   static CSSCalcValue* Create(CSSCalcExpressionNode*,
                               ValueRange = kValueRangeAll);
 
