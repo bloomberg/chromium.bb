@@ -7,9 +7,9 @@
 #include <stddef.h>
 
 #include <memory>
+#include <set>
 #include <string>
 
-#include "ash/app_list/model/app_list_item.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
+#include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -40,14 +41,12 @@ using extensions::ExtensionSystem;
 
 namespace {
 
-// Get a string of all apps in |model| joined with ','.
-std::string GetModelContent(app_list::AppListModel* model) {
-  std::string content;
-  for (size_t i = 0; i < model->top_level_item_list()->item_count(); ++i) {
-    if (i > 0)
-      content += ',';
-    content += model->top_level_item_list()->item_at(i)->name();
-  }
+// Get a set of all apps in |model|.
+std::set<std::string> GetModelContent(
+    app_list::AppListModelUpdater* model_updater) {
+  std::set<std::string> content;
+  for (size_t i = 0; i < model_updater->ItemCount(); ++i)
+    content.insert(model_updater->ItemAt(i)->name());
   return content;
 }
 
@@ -72,7 +71,6 @@ scoped_refptr<extensions::Extension> MakeApp(const std::string& name,
   return app;
 }
 
-const char kDefaultApps[] = "Packaged App 1,Packaged App 2,Hosted App";
 const size_t kDefaultAppCount = 3u;
 
 }  // namespace
@@ -85,6 +83,7 @@ class ExtensionAppModelBuilderTest : public AppListTestBase {
   void SetUp() override {
     AppListTestBase::SetUp();
 
+    default_apps_ = {"Packaged App 1", "Packaged App 2", "Hosted App"};
     CreateBuilder();
   }
 
@@ -95,21 +94,22 @@ class ExtensionAppModelBuilderTest : public AppListTestBase {
   void CreateBuilder() {
     ResetBuilder();  // Destroy any existing builder in the correct order.
 
-    model_.reset(new app_list::AppListModel);
-    controller_.reset(new test::TestAppListControllerDelegate);
-    builder_.reset(new ExtensionAppModelBuilder(controller_.get()));
-    builder_->InitializeWithProfile(profile_.get(), model_.get());
+    model_updater_ = std::make_unique<app_list::FakeAppListModelUpdater>();
+    controller_ = std::make_unique<test::TestAppListControllerDelegate>();
+    builder_ = std::make_unique<ExtensionAppModelBuilder>(controller_.get());
+    builder_->Initialize(nullptr, profile_.get(), model_updater_.get());
   }
 
   void ResetBuilder() {
     builder_.reset();
     controller_.reset();
-    model_.reset();
+    model_updater_.reset();
   }
 
-  std::unique_ptr<app_list::AppListModel> model_;
+  std::unique_ptr<app_list::FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<test::TestAppListControllerDelegate> controller_;
   std::unique_ptr<ExtensionAppModelBuilder> builder_;
+  std::set<std::string> default_apps_;
 
   base::ScopedTempDir second_profile_temp_dir_;
 
@@ -119,8 +119,8 @@ class ExtensionAppModelBuilderTest : public AppListTestBase {
 
 TEST_F(ExtensionAppModelBuilderTest, Build) {
   // The apps list would have 3 extension apps in the profile.
-  EXPECT_EQ(kDefaultAppCount, model_->top_level_item_list()->item_count());
-  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
+  EXPECT_EQ(kDefaultAppCount, model_updater_->ItemCount());
+  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 }
 
 TEST_F(ExtensionAppModelBuilderTest, HideWebStore) {
@@ -140,50 +140,50 @@ TEST_F(ExtensionAppModelBuilderTest, HideWebStore) {
               std::string(extension_misc::kEnterpriseWebStoreAppId));
   service_->AddExtension(enterprise_store.get());
 
-  // Web stores should be present in the AppListModel.
-  app_list::AppListModel model1;
+  // Web stores should be present in the model.
+  app_list::FakeAppListModelUpdater model_updater1;
   ExtensionAppModelBuilder builder1(controller_.get());
-  builder1.InitializeWithProfile(profile_.get(), &model1);
-  EXPECT_TRUE(model1.FindItem(store->id()));
-  EXPECT_TRUE(model1.FindItem(enterprise_store->id()));
+  builder1.Initialize(nullptr, profile_.get(), &model_updater1);
+  EXPECT_TRUE(model_updater1.FindItem(store->id()));
+  EXPECT_TRUE(model_updater1.FindItem(enterprise_store->id()));
 
   // Activate the HideWebStoreIcon policy.
   profile_->GetPrefs()->SetBoolean(prefs::kHideWebStoreIcon, true);
 
   // Now the web stores should not be present anymore.
-  EXPECT_FALSE(model1.FindItem(store->id()));
-  EXPECT_FALSE(model1.FindItem(enterprise_store->id()));
+  EXPECT_FALSE(model_updater1.FindItem(store->id()));
+  EXPECT_FALSE(model_updater1.FindItem(enterprise_store->id()));
 
-  // Build a new AppListModel; web stores should NOT be present.
-  app_list::AppListModel model2;
+  // Build a new model; web stores should NOT be present.
+  app_list::FakeAppListModelUpdater model_updater2;
   ExtensionAppModelBuilder builder2(controller_.get());
-  builder2.InitializeWithProfile(profile_.get(), &model2);
-  EXPECT_FALSE(model2.FindItem(store->id()));
-  EXPECT_FALSE(model2.FindItem(enterprise_store->id()));
+  builder2.Initialize(nullptr, profile_.get(), &model_updater2);
+  EXPECT_FALSE(model_updater2.FindItem(store->id()));
+  EXPECT_FALSE(model_updater2.FindItem(enterprise_store->id()));
 
   // Deactivate the HideWebStoreIcon policy again.
   profile_->GetPrefs()->SetBoolean(prefs::kHideWebStoreIcon, false);
 
   // Now the web stores should have appeared.
-  EXPECT_TRUE(model2.FindItem(store->id()));
-  EXPECT_TRUE(model2.FindItem(enterprise_store->id()));
+  EXPECT_TRUE(model_updater2.FindItem(store->id()));
+  EXPECT_TRUE(model_updater2.FindItem(enterprise_store->id()));
 }
 
 TEST_F(ExtensionAppModelBuilderTest, DisableAndEnable) {
   service_->DisableExtension(kHostedAppId,
                              extensions::disable_reason::DISABLE_USER_ACTION);
-  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
+  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 
   service_->EnableExtension(kHostedAppId);
-  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
+  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 }
 
 TEST_F(ExtensionAppModelBuilderTest, Uninstall) {
   service_->UninstallExtension(kPackagedApp2Id,
                                extensions::UNINSTALL_REASON_FOR_TESTING,
                                NULL);
-  EXPECT_EQ(std::string("Packaged App 1,Hosted App"),
-            GetModelContent(model_.get()));
+  EXPECT_EQ(std::set<std::string>({"Packaged App 1", "Hosted App"}),
+            GetModelContent(model_updater_.get()));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -197,14 +197,14 @@ TEST_F(ExtensionAppModelBuilderTest, UninstallTerminatedApp) {
   service_->UninstallExtension(kPackagedApp2Id,
                                extensions::UNINSTALL_REASON_FOR_TESTING,
                                NULL);
-  EXPECT_EQ(std::string("Packaged App 1,Hosted App"),
-            GetModelContent(model_.get()));
+  EXPECT_EQ(std::set<std::string>({"Packaged App 1", "Hosted App"}),
+            GetModelContent(model_updater_.get()));
 
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ExtensionAppModelBuilderTest, Reinstall) {
-  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
+  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 
   // Install kPackagedApp1Id again should not create a new entry.
   extensions::InstallTracker* tracker =
@@ -213,7 +213,7 @@ TEST_F(ExtensionAppModelBuilderTest, Reinstall) {
       kPackagedApp1Id, "", gfx::ImageSkia(), true, true);
   tracker->OnBeginExtensionInstall(params);
 
-  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
+  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 }
 
 TEST_F(ExtensionAppModelBuilderTest, OrdinalPrefsChange) {
@@ -224,7 +224,7 @@ TEST_F(ExtensionAppModelBuilderTest, OrdinalPrefsChange) {
   sorting->SetPageOrdinal(kHostedAppId, package_app_page.CreateBefore());
   // Old behavior: This would be "Hosted App,Packaged App 1,Packaged App 2"
   // New behavior: Sorting order doesn't change.
-  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
+  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 
   syncer::StringOrdinal app1_ordinal =
       sorting->GetAppLaunchOrdinal(kPackagedApp1Id);
@@ -235,7 +235,7 @@ TEST_F(ExtensionAppModelBuilderTest, OrdinalPrefsChange) {
                                app1_ordinal.CreateBetween(app2_ordinal));
   // Old behavior: This would be "Packaged App 1,Hosted App,Packaged App 2"
   // New behavior: Sorting order doesn't change.
-  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
+  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 }
 
 TEST_F(ExtensionAppModelBuilderTest, OnExtensionMoved) {
@@ -246,17 +246,17 @@ TEST_F(ExtensionAppModelBuilderTest, OnExtensionMoved) {
   sorting->OnExtensionMoved(kHostedAppId, kPackagedApp1Id, kPackagedApp2Id);
   // Old behavior: This would be "Packaged App 1,Hosted App,Packaged App 2"
   // New behavior: Sorting order doesn't change.
-  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
+  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 
   sorting->OnExtensionMoved(kHostedAppId, kPackagedApp2Id, std::string());
   // Old behavior: This would be restored to the default order.
   // New behavior: Sorting order still doesn't change.
-  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
+  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 
   sorting->OnExtensionMoved(kHostedAppId, std::string(), kPackagedApp1Id);
   // Old behavior: This would be "Hosted App,Packaged App 1,Packaged App 2"
   // New behavior: Sorting order doesn't change.
-  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
+  EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 }
 
 TEST_F(ExtensionAppModelBuilderTest, InvalidOrdinal) {
@@ -273,29 +273,6 @@ TEST_F(ExtensionAppModelBuilderTest, InvalidOrdinal) {
 
   // This should not assert or crash.
   CreateBuilder();
-}
-
-TEST_F(ExtensionAppModelBuilderTest, OrdinalConfilicts) {
-  // Creates conflict ordinals for app1 and app2.
-  syncer::StringOrdinal conflict_ordinal =
-      syncer::StringOrdinal::CreateInitialOrdinal();
-
-  AppSorting* sorting = ExtensionSystem::Get(profile_.get())->app_sorting();
-  sorting->SetPageOrdinal(kHostedAppId, conflict_ordinal);
-  sorting->SetAppLaunchOrdinal(kHostedAppId, conflict_ordinal);
-
-  sorting->SetPageOrdinal(kPackagedApp1Id, conflict_ordinal);
-  sorting->SetAppLaunchOrdinal(kPackagedApp1Id, conflict_ordinal);
-
-  sorting->SetPageOrdinal(kPackagedApp2Id, conflict_ordinal);
-  sorting->SetAppLaunchOrdinal(kPackagedApp2Id, conflict_ordinal);
-
-  // This should not assert or crash.
-  CreateBuilder();
-
-  // By default, conflicted items are sorted by their app ids (= order added).
-  EXPECT_EQ(std::string("Hosted App,Packaged App 1,Packaged App 2"),
-            GetModelContent(model_.get()));
 }
 
 // This test adds a bookmark app to the app list.
@@ -321,6 +298,8 @@ TEST_F(ExtensionAppModelBuilderTest, BookmarkApp) {
   EXPECT_TRUE(err.empty());
 
   service_->AddExtension(bookmark_app.get());
-  EXPECT_EQ(kDefaultAppCount + 1, model_->top_level_item_list()->item_count());
-  EXPECT_NE(std::string::npos, GetModelContent(model_.get()).find(kAppName));
+  EXPECT_EQ(kDefaultAppCount + 1, model_updater_->ItemCount());
+  const std::set<std::string> result_set =
+      GetModelContent(model_updater_.get());
+  EXPECT_NE(result_set.end(), result_set.find(kAppName));
 }

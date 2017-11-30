@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -66,8 +67,6 @@ class AppSearchProviderTest : public AppListTestBase {
 
     model_.reset(new app_list::AppListModel);
     controller_.reset(new ::test::TestAppListControllerDelegate);
-    builder_.reset(new ExtensionAppModelBuilder(controller_.get()));
-    builder_->InitializeWithProfile(profile_.get(), model_.get());
   }
 
   void CreateSearch() {
@@ -147,7 +146,6 @@ class AppSearchProviderTest : public AppListTestBase {
  private:
   std::unique_ptr<app_list::AppListModel> model_;
   std::unique_ptr<AppSearchProvider> app_search_;
-  std::unique_ptr<ExtensionAppModelBuilder> builder_;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;
   ArcAppTest arc_test_;
 
@@ -284,7 +282,6 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
 TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
   CreateSearch();
 
-  const char kFolderId[] = "folder1";
   extensions::ExtensionPrefs* prefs =
       extensions::ExtensionPrefs::Get(profile_.get());
 
@@ -293,24 +290,6 @@ TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
   prefs->SetLastLaunchTime(kHostedAppId, base::Time::Now());
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(0));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(0));
-  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
-
-  // Switching the app list order should not change the query result.
-  model()->SetItemPosition(
-      model()->FindItem(kPackagedApp2Id),
-      model()->FindItem(kPackagedApp1Id)->position().CreateBefore());
-  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
-
-  // Moving an app into a folder should not deprioritize it.
-  model()->AddItem(std::unique_ptr<AppListFolderItem>(
-      new AppListFolderItem(kFolderId, AppListFolderItem::FOLDER_TYPE_NORMAL)));
-  model()->MoveItemToFolder(model()->FindItem(kPackagedApp1Id), kFolderId);
-  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
-
-  // The position of the folder shouldn't matter.
-  model()->SetItemPosition(
-      model()->FindItem(kFolderId),
-      model()->FindItem(kPackagedApp2Id)->position().CreateBefore());
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
 }
 

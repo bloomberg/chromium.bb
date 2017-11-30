@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/app_list/model/app_list_model.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -40,6 +39,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
+#include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/test/base/testing_profile.h"
@@ -221,23 +221,23 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   void CreateBuilder() {
     ResetBuilder();  // Destroy any existing builder in the correct order.
 
-    model_.reset(new app_list::AppListModel);
-    controller_.reset(new test::TestAppListControllerDelegate);
-    builder_.reset(new ArcAppModelBuilder(controller_.get()));
-    builder_->InitializeWithProfile(profile_.get(), model_.get());
+    model_updater_ = std::make_unique<app_list::FakeAppListModelUpdater>();
+    controller_ = std::make_unique<test::TestAppListControllerDelegate>();
+    builder_ = std::make_unique<ArcAppModelBuilder>(controller_.get());
+    builder_->Initialize(nullptr, profile_.get(), model_updater_.get());
   }
 
   void ResetBuilder() {
     builder_.reset();
     controller_.reset();
-    model_.reset();
+    model_updater_.reset();
   }
 
   size_t GetArcItemCount() const {
     size_t arc_count = 0;
-    const size_t count = model_->top_level_item_list()->item_count();
+    const size_t count = model_updater_->ItemCount();
     for (size_t i = 0; i < count; ++i) {
-      app_list::AppListItem* item = model_->top_level_item_list()->item_at(i);
+      app_list::AppListItem* item = model_updater_->ItemAt(i);
       if (item->GetItemType() == ArcAppItem::kItemType)
         ++arc_count;
     }
@@ -246,10 +246,10 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
 
   ArcAppItem* GetArcItem(size_t index) const {
     size_t arc_count = 0;
-    const size_t count = model_->top_level_item_list()->item_count();
+    const size_t count = model_updater_->ItemCount();
     ArcAppItem* arc_item = nullptr;
     for (size_t i = 0; i < count; ++i) {
-      app_list::AppListItem* item = model_->top_level_item_list()->item_at(i);
+      app_list::AppListItem* item = model_updater_->ItemAt(i);
       if (item->GetItemType() == ArcAppItem::kItemType) {
         if (arc_count++ == index) {
           arc_item = reinterpret_cast<ArcAppItem*>(item);
@@ -463,7 +463,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
 
  private:
   ArcAppTest arc_test_;
-  std::unique_ptr<app_list::AppListModel> model_;
+  std::unique_ptr<app_list::FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<test::TestAppListControllerDelegate> controller_;
   std::unique_ptr<ArcAppModelBuilder> builder_;
 

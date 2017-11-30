@@ -8,34 +8,22 @@
 #include <vector>
 
 #include "ash/app_list/model/app_list_item.h"
-#include "ash/app_list/model/app_list_model.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
 AppListModelBuilder::AppListModelBuilder(AppListControllerDelegate* controller,
                                          const char* item_type)
-    : controller_(controller),
-      item_type_(item_type) {
-}
+    : controller_(controller), item_type_(item_type) {}
 
 AppListModelBuilder::~AppListModelBuilder() {
 }
 
-void AppListModelBuilder::InitializeWithService(
+void AppListModelBuilder::Initialize(
     app_list::AppListSyncableService* service,
-    app_list::AppListModel* model) {
-  DCHECK(!service_ && !profile_);
-  model_ = model;
+    Profile* profile,
+    app_list::AppListModelUpdater* model_updater) {
+  DCHECK(!service_ && !profile_ && !model_updater_);
   service_ = service;
-  profile_ = service->profile();
-
-  BuildModel();
-}
-
-void AppListModelBuilder::InitializeWithProfile(Profile* profile,
-                                                app_list::AppListModel* model) {
-  DCHECK(!service_ && !profile_);
-  model_ = model;
   profile_ = profile;
+  model_updater_ = model_updater;
 
   BuildModel();
 }
@@ -46,7 +34,7 @@ void AppListModelBuilder::InsertApp(
     service_->AddItem(std::move(app));
     return;
   }
-  model_->AddItem(std::move(app));
+  model_updater_->AddItem(std::move(app));
 }
 
 void AppListModelBuilder::RemoveApp(const std::string& id,
@@ -55,16 +43,16 @@ void AppListModelBuilder::RemoveApp(const std::string& id,
     service_->RemoveUninstalledItem(id);
     return;
   }
-  model_->DeleteUninstalledItem(id);
+  model_updater_->RemoveUninstalledItem(id);
 }
 
 const app_list::AppListSyncableService::SyncItem*
-    AppListModelBuilder::GetSyncItem(const std::string& id) {
+AppListModelBuilder::GetSyncItem(const std::string& id) {
   return service_ ? service_->GetSyncItem(id) : nullptr;
 }
 
 app_list::AppListItem* AppListModelBuilder::GetAppItem(const std::string& id) {
-  app_list::AppListItem* item = model_->FindItem(id);
+  app_list::AppListItem* item = model_updater_->FindItem(id);
   if (item && item->GetItemType() != item_type_) {
     VLOG(2) << "App Item matching id: " << id
             << " has incorrect type: '" << item->GetItemType() << "'";

@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/drive/drive_app_uninstall_sync_service.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/model/string_ordinal.h"
 #include "components/sync/model/sync_change.h"
@@ -150,6 +151,7 @@ class AppListSyncableService : public syncer::SyncableService,
 
  private:
   class ModelObserver;
+  class ModelUpdater;
 
   // KeyedService
   void Shutdown() override;
@@ -265,6 +267,7 @@ class AppListSyncableService : public syncer::SyncableService,
   Profile* profile_;
   extensions::ExtensionSystem* extension_system_;
   std::unique_ptr<AppListModel> model_;
+  std::unique_ptr<ModelUpdater> model_updater_;
   std::unique_ptr<ModelObserver> model_observer_;
   std::unique_ptr<ExtensionAppModelBuilder> apps_builder_;
   std::unique_ptr<ArcAppModelBuilder> arc_apps_builder_;

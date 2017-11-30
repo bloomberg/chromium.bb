@@ -15,8 +15,6 @@ namespace switches {
 APP_LIST_EXPORT extern const char kCustomLauncherPage[];
 APP_LIST_EXPORT extern const char kDisableAppListDismissOnBlur[];
 APP_LIST_EXPORT extern const char kEnableAppList[];
-APP_LIST_EXPORT extern const char kEnableSyncAppList[];
-APP_LIST_EXPORT extern const char kDisableSyncAppList[];
 APP_LIST_EXPORT extern const char kEnableDriveSearchInChromeLauncher[];
 APP_LIST_EXPORT extern const char kDisableDriveSearchInChromeLauncher[];
 APP_LIST_EXPORT extern const char kResetAppListInstallState[];
