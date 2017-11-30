@@ -1339,7 +1339,7 @@ using ios::material::TimingFunction;
 
 - (void)updateToolbarAlphaForFrame:(CGRect)frame {
   // Don't update the toolbar buttons if we are animating for a transition.
-  if (self.view.animatingTransition)
+  if (self.view.animatingTransition || [self isOmniboxFirstResponder])
     return;
 
   CGFloat distanceOffscreen =
