@@ -35,6 +35,21 @@ package power_manager;
 //    work that was done in response to the SuspendImminent signal.
 // 7. Before the client exits, it calls UnregisterSuspendDelayRequest with a
 //    UnregisterSuspendDelayRequest message containing its delay ID.
+//
+// Note that the original suspend request may be aborted before all clients have
+// reported readiness; this can happen if a user closes and then quickly opens
+// the lid, for instance. In this case, powerd will emit SuspendDone and return
+// to normal unsuspended behavior without waiting for clients to report
+// readiness. It's unnecessary for clients to report readiness for the original
+// |suspend_id| after a SuspendDone containing the same ID has been received.
+//
+// Clients that start asynchronous operations in response to SuspendImminent
+// should take this possibility into account. One approach is to queue the
+// "undo" operation when SuspendDone is received so it will run after the
+// original operation completes. Note that a second SuspendImminent signal may
+// be emitted before the original operation has completed; in this case, the
+// client may wish to unqueue the undo operation and instead report readiness
+// for the second, current |suspend_id| once the original operation completes.
 message SuspendImminent {
   // Next ID to use: 2
 
