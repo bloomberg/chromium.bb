@@ -170,6 +170,13 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
  private:
   friend class test::QuicStreamSequencerBufferPeer;
 
+  // Copies |data| to blocks_, sets |bytes_copy|. Returns true if the copy is
+  // successful. Otherwise, sets |error_details| and returns false.
+  bool CopyStreamData(QuicStreamOffset offset,
+                      QuicStringPiece data,
+                      size_t* bytes_copy,
+                      std::string* error_details);
+
   // Dispose the given buffer block.
   // After calling this method, blocks_[index] is set to nullptr
   // in order to indicate that no memory set is allocated for that block.

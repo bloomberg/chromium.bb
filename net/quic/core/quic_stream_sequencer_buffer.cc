@@ -168,8 +168,28 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
     return QUIC_TOO_MANY_FRAME_GAPS;
   }
 
-  size_t total_written = 0;
-  size_t source_remaining = size;
+  if (!CopyStreamData(offset, data, bytes_buffered, error_details)) {
+    return QUIC_STREAM_SEQUENCER_INVALID_STATE;
+  }
+
+  DCHECK_GT(*bytes_buffered, 0u);
+  UpdateGapList(current_gap, starting_offset, *bytes_buffered);
+
+  frame_arrival_time_map_.insert(
+      std::make_pair(starting_offset, FrameInfo(size, timestamp)));
+  num_bytes_buffered_ += *bytes_buffered;
+  return QUIC_NO_ERROR;
+}
+
+bool QuicStreamSequencerBuffer::CopyStreamData(QuicStreamOffset offset,
+                                               QuicStringPiece data,
+                                               size_t* bytes_copy,
+                                               string* error_details) {
+  *bytes_copy = 0;
+  size_t source_remaining = data.size();
+  if (source_remaining == 0) {
+    return true;
+  }
   const char* source = data.data();
   // Write data block by block. If corresponding block has not created yet,
   // create it first.
@@ -201,12 +221,12 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
           "write offset = ",
           offset, " write_block_num = ", write_block_num,
           " blocks_count_ = ", blocks_count_);
-      return QUIC_STREAM_SEQUENCER_INVALID_STATE;
+      return false;
     }
     if (blocks_ == nullptr) {
       *error_details =
           "QuicStreamSequencerBuffer error: OnStreamData() blocks_ is null";
-      return QUIC_STREAM_SEQUENCER_INVALID_STATE;
+      return false;
     }
     if (blocks_[write_block_num] == nullptr) {
       // TODO(danzh): Investigate if using a freelist would improve performance.
@@ -228,23 +248,15 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
           " Writing at offset ", offset, " Gaps: ", GapsDebugString(),
           " Remaining frames: ", ReceivedFramesDebugString(),
           " total_bytes_read_ = ", total_bytes_read_);
-      return QUIC_STREAM_SEQUENCER_INVALID_STATE;
+      return false;
     }
     memcpy(dest, source, bytes_to_copy);
     source += bytes_to_copy;
     source_remaining -= bytes_to_copy;
     offset += bytes_to_copy;
-    total_written += bytes_to_copy;
+    *bytes_copy += bytes_to_copy;
   }
-
-  DCHECK_GT(total_written, 0u);
-  *bytes_buffered = total_written;
-  UpdateGapList(current_gap, starting_offset, total_written);
-
-  frame_arrival_time_map_.insert(
-      std::make_pair(starting_offset, FrameInfo(size, timestamp)));
-  num_bytes_buffered_ += total_written;
-  return QUIC_NO_ERROR;
+  return true;
 }
 
 inline void QuicStreamSequencerBuffer::UpdateGapList(

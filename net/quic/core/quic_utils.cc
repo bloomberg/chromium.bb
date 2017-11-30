@@ -243,10 +243,10 @@ void QuicUtils::CopyToBuffer(const struct iovec* iov,
     // Prefetch 2 cachelines worth of data to get the prefetcher started; leave
     // it to the hardware prefetcher after that.
     // TODO(ckrasic) - investigate what to do about prefetch directives.
-    // prefetch(next_base, PREFETCH_HINT_T0);
+    // ::base::PrefetchT0(next_base);
     if (iov[iovnum + 1].iov_len >= 64) {
       // TODO(ckrasic) - investigate what to do about prefetch directives.
-      // prefetch(next_base + ABSL_CACHELINE_SIZE, PREFETCH_HINT_T0);
+      // ::base::PrefetchT0(next_base + ABSL_CACHELINE_SIZE);
     }
   }
 

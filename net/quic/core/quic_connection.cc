@@ -355,11 +355,8 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
     ack_mode_ = ACK_DECIMATION_WITH_REORDERING;
     ack_decimation_delay_ = kShortAckDecimationDelay;
   }
-  if (FLAGS_quic_reloadable_flag_quic_ack_decimation) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_ack_decimation);
-    if (config.HasClientSentConnectionOption(kAKDU, perspective_)) {
-      unlimited_ack_decimation_ = true;
-    }
+  if (config.HasClientSentConnectionOption(kAKDU, perspective_)) {
+    unlimited_ack_decimation_ = true;
   }
   if (config.HasClientSentConnectionOption(k5RTO, perspective_)) {
     close_connection_after_five_rtos_ = true;

@@ -1098,7 +1098,6 @@ TEST_F(BbrSenderTest, SimpleCompetition) {
 
 // Test that BBR can resume bandwidth from cached network parameters.
 TEST_F(BbrSenderTest, ResumeConnectionState) {
-  FLAGS_quic_reloadable_flag_quic_bbr_bandwidth_resumption = true;
   CreateDefaultSetup();
 
   sender_->AdjustNetworkParameters(kTestLinkBandwidth, kTestRtt);
