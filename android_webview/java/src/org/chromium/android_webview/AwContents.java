@@ -681,7 +681,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     //--------------------------------------------------------------------------------------------
-    private class AwGestureStateListener extends GestureStateListener {
+    private class AwGestureStateListener implements GestureStateListener {
         @Override
         public void onPinchStarted() {
             // While it's possible to re-layout the view during a pinch gesture, the effect is very
