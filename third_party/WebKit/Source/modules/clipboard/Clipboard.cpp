@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/clipboard/Clipboard.h"
+#include "modules/clipboard/Clipboard.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/clipboard/ClipboardPromise.h"
+#include "modules/clipboard/ClipboardPromise.h"
 
 namespace blink {
 

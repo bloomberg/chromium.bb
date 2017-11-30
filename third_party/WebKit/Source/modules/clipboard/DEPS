@@ -1,0 +1,8 @@
+include_rules = [
+    "+core/clipboard",
+    "-modules",
+    "+modules/EventModules.h",
+    "+modules/ModulesExport.h",
+    "+modules/clipboard",
+    "+modules/permissions",
+]
