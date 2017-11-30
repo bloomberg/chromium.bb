@@ -355,6 +355,12 @@ void MutationObserver::DeliverMutations() {
 
   std::sort(observers.begin(), observers.end(), ObserverLessThan());
   for (const auto& observer : observers) {
+    if (!observer->GetExecutionContext()) {
+      // The observer's execution context is already gone, as active observers
+      // intentionally do not hold their execution context. Do nothing then.
+      continue;
+    }
+
     if (observer->ShouldBeSuspended())
       SuspendedMutationObservers().insert(observer);
     else
