@@ -7,7 +7,6 @@ FAIL Gyroscope: sensor.start() returns undefined assert_equals: Expected activat
 FAIL Gyroscope: no exception is thrown when calling start() on already started sensor assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
 FAIL Gyroscope: sensor.stop() returns undefined assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
 FAIL Gyroscope: no exception is thrown when calling stop() on already stopped sensor assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
-PASS Gyroscope: throw a 'SecurityError' when constructing sensor object within iframe
 FAIL Gyroscope: sensor readings can not be fired on the background tab assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
 Harness: the test ran to completion.
 
