@@ -43,7 +43,7 @@ stop
 skipWaiting
 Received
 Clients
-http://127.0.0.1:8000/devtools/service-workers/service-workers-redundant.html
+http://127.0.0.1:8000/devtools/resources/inspected-page.html
 focus
 Push
  
@@ -75,34 +75,6 @@ stop
 Clients
 Push
  
-Test
- 
-push
- 
-message
- 
-from
- 
-DevTools
-.
-Push
-Sync
-Sync
-============================
-DevTools frontend is reopened.
-==== ServiceWorkersView ====
-127.0.0.1/devtools/service-workers/resources/service-worker-redundant-scope
-Update
-Unregister
-Source
-changing-worker.php
-Received
-Status
-#N activated and is running
-stop
-Clients
-Push
-xxxxxxxxxx
 Test
  
 push
