@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -55,6 +58,9 @@ class IsolatedOriginTest : public ContentBrowserTest {
                               "document.body.appendChild(link);"
                               "link.click();"));
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IsolatedOriginTest);
 };
 
 // Check that navigating a main frame from an non-isolated origin to an
@@ -897,6 +903,8 @@ class StoragePartitonInterceptor
   // Keep a pointer to the original implementation of the service, so all
   // calls can be forwarded to it.
   mojom::StoragePartitionService* storage_partition_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(StoragePartitonInterceptor);
 };
 
 void CreateTestStoragePartitionService(
@@ -928,6 +936,30 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, LocalStorageOriginEnforcement) {
   ignore_result(ExecuteScript(shell()->web_contents()->GetMainFrame(),
                               "localStorage.length;"));
   crash_observer.Wait();
+}
+
+class IsolatedOriginFieldTrialTest : public ContentBrowserTest {
+ public:
+  IsolatedOriginFieldTrialTest() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kIsolateOrigins,
+        {{features::kIsolateOriginsFieldTrialParamName,
+          "https://field.trial.com/,https://bar.com/"}});
+  }
+  ~IsolatedOriginFieldTrialTest() override {}
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(IsolatedOriginFieldTrialTest);
+};
+
+IN_PROC_BROWSER_TEST_F(IsolatedOriginFieldTrialTest, Test) {
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  EXPECT_TRUE(policy->IsIsolatedOrigin(
+      url::Origin::Create(GURL("https://field.trial.com/"))));
+  EXPECT_TRUE(
+      policy->IsIsolatedOrigin(url::Origin::Create(GURL("https://bar.com/"))));
 }
 
 }  // namespace content

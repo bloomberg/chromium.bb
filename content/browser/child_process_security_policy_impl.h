@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -208,7 +209,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Returns true if sending system exclusive messages is allowed.
   bool CanSendMidiSysExMessage(int child_id);
 
-  // Add an origin to the list of origins that require process isolation.
+  // Add |origins| to the list of origins that require process isolation.
   // When making process model decisions for such origins, the full
   // scheme+host+port tuple rather than scheme and eTLD+1 will be used.
   // SiteInstances for these origins will also use the full origin as site URL.
@@ -218,7 +219,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // isolated origin, then https://bar.isolated.foo.com will be considered part
   // of the site for https://isolated.foo.com.
   //
-  // Note that |origin| must not be unique.  URLs that render with
+  // Note that origins from |origins| must not be unique - URLs that render with
   // unique origins, such as data: URLs, are not supported.  Suborigins (see
   // https://w3c.github.io/webappsec-suborigins/ -- not to be confused with
   // subdomains) and non-standard schemes are also not supported.  Sandboxed
@@ -228,13 +229,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // origin opens an about:blank popup, it will stay in the isolated origin's
   // process. Nested URLs (filesystem: and blob:) retain process isolation
   // behavior of their inner origin.
-  void AddIsolatedOrigin(const url::Origin& origin);
-
-  // Register a set of isolated origins as specified on the command line with
-  // the --isolate-origins flag.  |origin_list| is the flag's value, which
-  // contains the list of comma-separated scheme-host-port origins. See
-  // AddIsolatedOrigin for definition of an isolated origin.
-  void AddIsolatedOriginsFromCommandLine(const std::string& origin_list);
+  //
+  // Note that it is okay if |origins| contains duplicates - the set of origins
+  // will be deduplicated inside the method.
+  void AddIsolatedOrigins(std::vector<url::Origin> origins);
 
   // Check whether |origin| requires origin-wide process isolation.
   //
@@ -287,8 +285,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyInProcessBrowserTest,
                            NoLeak);
   FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest, FilePermissions);
-  FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest,
-                           IsolateOriginsFromCommandLine);
+  FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest, AddIsolatedOrigins);
 
   class SecurityState;
 
@@ -377,7 +374,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // when making process model decisions, rather than the origin's scheme and
   // eTLD+1. Each of these origins requires a dedicated process.  This set is
   // protected by |lock_|.
-  std::set<url::Origin> isolated_origins_;
+  base::flat_set<url::Origin> isolated_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessSecurityPolicyImpl);
 };

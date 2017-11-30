@@ -6,6 +6,8 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
+#include "base/test/mock_log.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_content_browser_client.h"
@@ -13,6 +15,7 @@
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/common/fileapi/file_system_types.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -972,32 +975,59 @@ TEST_F(ChildProcessSecurityPolicyTest, OriginGranting) {
 
   p->Remove(kRendererID);
 }
+// Verifies ChildProcessSecurityPolicyImpl::AddIsolatedOrigins method.
+TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
+  url::Origin foo = url::Origin::Create(GURL("https://foo.com/"));
+  url::Origin bar = url::Origin::Create(GURL("https://bar.com/"));
+  url::Origin baz = url::Origin::Create(GURL("https://baz.com/"));
+  url::Origin foobar = url::Origin::Create(GURL("https://foobar.com/"));
+  url::Origin baz_http_8000 = url::Origin::Create(GURL("http://baz.com:8000/"));
+  url::Origin baz_https_8000 =
+      url::Origin::Create(GURL("https://baz.com:8000/"));
+  url::Origin invalid_etld = url::Origin::Create(GURL("https://gov/"));
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
-// Verifies parsing logic that extracts origins from --isolate-origins.
-TEST_F(ChildProcessSecurityPolicyTest, IsolateOriginsFromCommandLine) {
-  // Invalid and unique origins are not permitted.
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  policy->AddIsolatedOriginsFromCommandLine("foo");
-  policy->AddIsolatedOriginsFromCommandLine("");
-  policy->AddIsolatedOriginsFromCommandLine("about:blank");
-  EXPECT_EQ(0U, policy->isolated_origins_.size());
+  // Initially there should be no isolated origins.
+  EXPECT_THAT(p->isolated_origins_, testing::IsEmpty());
 
-  policy->AddIsolatedOriginsFromCommandLine("http://isolated.foo.com");
-  EXPECT_EQ(1U, policy->isolated_origins_.size());
-  EXPECT_TRUE(policy->IsIsolatedOrigin(
-      url::Origin::Create(GURL("http://isolated.foo.com"))));
+  // Verify deduplication of the argument.
+  p->AddIsolatedOrigins({foo, bar, bar});
+  EXPECT_THAT(p->isolated_origins_, testing::UnorderedElementsAre(foo, bar));
 
-  policy->AddIsolatedOriginsFromCommandLine(
-      "http://a.com,https://b.com,,https://c.com:8000");
-  EXPECT_EQ(4U, policy->isolated_origins_.size());
-  EXPECT_TRUE(policy->IsIsolatedOrigin(
-      url::Origin::Create(GURL("http://isolated.foo.com"))));
-  EXPECT_TRUE(
-      policy->IsIsolatedOrigin(url::Origin::Create(GURL("http://a.com"))));
-  EXPECT_TRUE(
-      policy->IsIsolatedOrigin(url::Origin::Create(GURL("https://b.com"))));
-  EXPECT_TRUE(policy->IsIsolatedOrigin(
-      url::Origin::Create(GURL("https://c.com:8000"))));
+  // Verify that the old set is extended (not replaced).
+  p->AddIsolatedOrigins({baz});
+  EXPECT_THAT(p->isolated_origins_,
+              testing::UnorderedElementsAre(foo, bar, baz));
+
+  // Verify deduplication against the old set.
+  p->AddIsolatedOrigins({foo});
+  EXPECT_THAT(p->isolated_origins_,
+              testing::UnorderedElementsAre(foo, bar, baz));
+
+  // Verify deduplication considers scheme and port differences.
+  p->AddIsolatedOrigins({baz, baz_http_8000, baz_https_8000});
+  EXPECT_THAT(p->isolated_origins_,
+              testing::UnorderedElementsAre(foo, bar, baz, baz_http_8000,
+                                            baz_https_8000));
+
+  // Verify that adding an origin that is invalid for isolation will 1) log a
+  // warning and 2) won't CHECK or crash the browser process, 3) will not add
+  // the invalid origin, but will add the remaining origins passed to
+  // AddIsolatedOrigins.
+  {
+    base::test::MockLog mock_log;
+    EXPECT_CALL(mock_log,
+                Log(::logging::LOG_ERROR, testing::_, testing::_, testing::_,
+                    testing::HasSubstr(invalid_etld.Serialize())))
+        .Times(1);
+
+    mock_log.StartCapturingLogs();
+    p->AddIsolatedOrigins({foobar, invalid_etld});
+    EXPECT_THAT(p->isolated_origins_,
+                testing::UnorderedElementsAre(foo, bar, baz, baz_http_8000,
+                                              baz_https_8000, foobar));
+  }
 }
 
 }  // namespace content
