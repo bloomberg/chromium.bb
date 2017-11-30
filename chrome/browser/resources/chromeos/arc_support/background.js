@@ -810,6 +810,9 @@ chrome.app.runtime.onLaunched.addListener(function() {
     appWindow.contentWindow.cr.ui.overlay.globalInitialization();
     overlay.addEventListener('cancelOverlay', hideOverlay);
 
+    focusManager = new appWindow.contentWindow.ArcOptInFocusManager();
+    focusManager.initialize();
+
     connectPort();
   };
 

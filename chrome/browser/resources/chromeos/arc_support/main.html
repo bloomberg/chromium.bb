@@ -69,6 +69,8 @@
   <script src="chrome://resources/js/cr/ui/bubble_button.js"></script>
   <script src="chrome://resources/js/cr/ui/controlled_indicator.js"></script>
   <script src="chrome://resources/js/cr/ui/overlay.js"></script>
+  <script src="chrome://resources/js/cr/ui/focus_manager.js"></script>
+  <script src="arc_optin_focus_manager.js"></script>
   <script src="progressbar.js"></script>
 </head>
 <body>
@@ -205,7 +207,7 @@
     </div>
   </div>
   <div id="overlay-container" class="overlay" hidden>
-    <div class="page">
+    <div class="page" id="overlay-page">
       <div class="close-button"></div>
       <div class="content-area">
         <span id="overlay-text-content"></span>
@@ -222,6 +224,7 @@
         </div>
       </div>
     </div>
+    <a href="#" class="invisible-link"></a>
   </div>
 </body>
 </html>
