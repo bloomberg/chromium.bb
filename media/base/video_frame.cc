@@ -1211,12 +1211,11 @@ void VideoFrame::AllocateMemory(bool zero_initialize_memory) {
     strides_[0] = row_bytes(0);
   } else {
     for (size_t plane = 0; plane < NumPlanes(format_); ++plane) {
-      // The *2 in alignment for height is because some formats (e.g. h264)
-      // allow interlaced coding, and then the size needs to be a multiple of
-      // two macroblocks (vertically). See
-      // libavcodec/utils.c:avcodec_align_dimensions2().
-      const size_t height = RoundUp(rows(plane), kFrameSizeAlignment * 2);
-      strides_[plane] = RoundUp(row_bytes(plane), kFrameSizeAlignment);
+      // These values were chosen to mirror ffmpeg's get_video_buffer().
+      // TODO(dalecurtis): This should be configurable; eventually ffmpeg wants
+      // us to use av_cpu_max_align(), but... for now, they just hard-code 32.
+      const size_t height = RoundUp(rows(plane), kFrameAddressAlignment);
+      strides_[plane] = RoundUp(row_bytes(plane), kFrameAddressAlignment);
       offset[plane] = data_size;
       data_size += height * strides_[plane];
     }
