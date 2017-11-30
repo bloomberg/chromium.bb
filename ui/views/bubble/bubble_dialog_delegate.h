@@ -9,10 +9,15 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
+
+#if defined(OS_MACOSX)
+#include "ui/base/cocoa/bubble_closer.h"
+#endif
 
 namespace gfx {
 class Rect;
@@ -158,6 +163,9 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // Handles widget visibility changes.
   void HandleVisibilityChanged(Widget* widget, bool visible);
 
+  // Called when a deactivation is detected.
+  void OnDeactivate();
+
   // A flag controlling bubble closure on deactivation.
   bool close_on_deactivate_;
 
@@ -199,6 +207,13 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   // Parent native window of the bubble.
   gfx::NativeView parent_window_;
+
+#if defined(OS_MACOSX)
+  // Special handler for close_on_deactivate() on Mac. Window (de)activation is
+  // suppressed by the WindowServer when clicking rapidly, so the bubble must
+  // monitor clicks as well for the desired behavior.
+  std::unique_ptr<ui::BubbleCloser> mac_bubble_closer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(BubbleDialogDelegateView);
 };

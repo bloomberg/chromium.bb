@@ -10,10 +10,10 @@
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/test/menu_test_observer.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#import "ui/base/test/menu_test_observer.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 @interface ReloadButton (TestForwardDeclares)

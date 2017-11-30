@@ -7,7 +7,7 @@
 #import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/clickhold_button_cell.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/test/menu_test_observer.h"
+#import "ui/base/test/menu_test_observer.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 
 namespace {

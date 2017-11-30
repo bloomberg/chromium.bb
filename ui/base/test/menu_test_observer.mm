@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/test/menu_test_observer.h"
+#import "ui/base/test/menu_test_observer.h"
 
 #include "base/logging.h"
 #import "base/mac/objc_release_properties.h"
