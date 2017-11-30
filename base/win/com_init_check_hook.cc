@@ -149,11 +149,11 @@ class HookManager {
                           co_create_instance_padded_address_);
       return;
     } else if (format == HotpatchPlaceholderFormat::EXTERNALLY_PATCHED) {
-      // TODO(robliao): Make this crash after resolving http://crbug.com/737090.
       hotpatch_placeholder_format_ = format;
-      DLOG(WARNING)
-          << "CoCreateInstance appears to be previously patched. Skipping. ("
-          << FirstSevenBytesToString(co_create_instance_padded_address_) << ")";
+      NOTREACHED() << "CoCreateInstance appears to be previously patched. ("
+                   << FirstSevenBytesToString(
+                          co_create_instance_padded_address_)
+                   << ")";
       return;
     }
 
