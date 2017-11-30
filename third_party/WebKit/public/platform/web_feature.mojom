@@ -1767,6 +1767,7 @@ enum WebFeature {
   kHTMLAnchorElementDownloadInSandboxWithoutUserGesture = 2246,
   kWindowOpenRealmMismatch = 2247,
   kGridRowTrackPercentIndefiniteHeight = 2248,
+  kVRGetDisplaysSupportsPresent = 2249,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
