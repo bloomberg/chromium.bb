@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/memory_usage_estimator.h"
 
 namespace base {
 
@@ -619,6 +620,21 @@ bool operator>=(const Value& lhs, const Value& rhs) {
 bool Value::Equals(const Value* other) const {
   DCHECK(other);
   return *this == *other;
+}
+
+size_t Value::EstimateMemoryUsage() const {
+  switch (type_) {
+    case Type::STRING:
+      return base::trace_event::EstimateMemoryUsage(string_value_);
+    case Type::BINARY:
+      return base::trace_event::EstimateMemoryUsage(binary_value_);
+    case Type::DICTIONARY:
+      return base::trace_event::EstimateMemoryUsage(dict_);
+    case Type::LIST:
+      return base::trace_event::EstimateMemoryUsage(list_);
+    default:
+      return 0;
+  }
 }
 
 void Value::InternalMoveConstructFrom(Value&& that) {
