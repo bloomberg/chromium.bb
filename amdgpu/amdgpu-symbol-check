@@ -29,6 +29,7 @@ amdgpu_cs_chunk_fence_info_to_data
 amdgpu_cs_chunk_fence_to_dep
 amdgpu_cs_create_semaphore
 amdgpu_cs_create_syncobj
+amdgpu_cs_create_syncobj2
 amdgpu_cs_ctx_create
 amdgpu_cs_ctx_create2
 amdgpu_cs_ctx_free
