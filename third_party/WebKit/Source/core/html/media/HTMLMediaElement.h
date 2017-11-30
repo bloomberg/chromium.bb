@@ -570,7 +570,7 @@ class CORE_EXPORT HTMLMediaElement
   double duration_;
 
   // The last time a timeupdate event was sent (wall clock).
-  double last_time_update_event_wall_time_;
+  TimeTicks last_time_update_event_wall_time_;
 
   // The last time a timeupdate event was sent in movie time.
   double last_time_update_event_media_time_;

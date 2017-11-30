@@ -289,7 +289,7 @@ std::unique_ptr<TracedValue> Data(unsigned long identifier,
 namespace InspectorTimerInstallEvent {
 std::unique_ptr<TracedValue> Data(ExecutionContext*,
                                   int timer_id,
-                                  int timeout,
+                                  TimeDelta timeout,
                                   bool single_shot);
 }
 

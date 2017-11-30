@@ -40,7 +40,7 @@ class TimedCanvasDrawListener final
   // Implementation of TimerFiredFunction.
   void RequestFrameTimerFired(TimerBase*);
 
-  double frame_interval_;
+  TimeDelta frame_interval_;
   TaskRunnerTimer<TimedCanvasDrawListener> request_frame_timer_;
 };
 

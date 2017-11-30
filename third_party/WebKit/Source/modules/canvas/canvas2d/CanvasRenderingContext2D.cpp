@@ -71,7 +71,8 @@
 
 namespace blink {
 
-static const double kTryRestoreContextInterval = 0.5;
+static const TimeDelta kTryRestoreContextInterval =
+    TimeDelta::FromMilliseconds(500);
 static const unsigned kMaxTryRestoreContextAttempts = 4;
 
 static bool ContextLostRestoredEventsEnabled() {

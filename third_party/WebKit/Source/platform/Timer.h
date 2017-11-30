@@ -63,9 +63,7 @@ class PLATFORM_EXPORT TimerBase {
                       const WebTraceLocation& caller) {
     Start(repeat_interval, repeat_interval, caller);
   }
-  void StartRepeating(double repeat_interval, const WebTraceLocation& caller) {
-    StartRepeating(TimeDelta::FromSecondsD(repeat_interval), caller);
-  }
+
   void StartOneShot(TimeDelta interval, const WebTraceLocation& caller) {
     Start(interval, TimeDelta(), caller);
   }

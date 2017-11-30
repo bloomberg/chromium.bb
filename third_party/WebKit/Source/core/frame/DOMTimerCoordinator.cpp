@@ -19,7 +19,7 @@ DOMTimerCoordinator::DOMTimerCoordinator(
 
 int DOMTimerCoordinator::InstallNewTimeout(ExecutionContext* context,
                                            ScheduledAction* action,
-                                           int timeout,
+                                           TimeDelta timeout,
                                            bool single_shot) {
   // FIXME: DOMTimers depends heavily on ExecutionContext. Decouple them.
   DCHECK_EQ(context->Timers(), this);

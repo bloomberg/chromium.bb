@@ -94,7 +94,8 @@ int setTimeout(ScriptState* script_state,
   }
   ScheduledAction* action = ScheduledAction::Create(
       script_state, execution_context, handler, arguments);
-  return DOMTimer::Install(execution_context, action, timeout, true);
+  return DOMTimer::Install(execution_context, action,
+                           TimeDelta::FromMilliseconds(timeout), true);
 }
 
 int setTimeout(ScriptState* script_state,
@@ -116,7 +117,8 @@ int setTimeout(ScriptState* script_state,
   }
   ScheduledAction* action =
       ScheduledAction::Create(script_state, execution_context, handler);
-  return DOMTimer::Install(execution_context, action, timeout, true);
+  return DOMTimer::Install(execution_context, action,
+                           TimeDelta::FromMilliseconds(timeout), true);
 }
 
 int setInterval(ScriptState* script_state,
@@ -129,7 +131,8 @@ int setInterval(ScriptState* script_state,
     return 0;
   ScheduledAction* action = ScheduledAction::Create(
       script_state, execution_context, handler, arguments);
-  return DOMTimer::Install(execution_context, action, timeout, false);
+  return DOMTimer::Install(execution_context, action,
+                           TimeDelta::FromMilliseconds(timeout), false);
 }
 
 int setInterval(ScriptState* script_state,
@@ -146,7 +149,8 @@ int setInterval(ScriptState* script_state,
     return 0;
   ScheduledAction* action =
       ScheduledAction::Create(script_state, execution_context, handler);
-  return DOMTimer::Install(execution_context, action, timeout, false);
+  return DOMTimer::Install(execution_context, action,
+                           TimeDelta::FromMilliseconds(timeout), false);
 }
 
 void clearTimeout(EventTarget& event_target, int timeout_id) {
