@@ -89,8 +89,6 @@ static_library("extensions") {
     "api/chrome_device_permissions_prompt.h",
     "api/chrome_extensions_api_client.cc",
     "api/chrome_extensions_api_client.h",
-    "api/cloud_print_private/cloud_print_private_api.cc",
-    "api/cloud_print_private/cloud_print_private_api.h",
     "api/command_line_private/command_line_private_api.cc",
     "api/command_line_private/command_line_private_api.h",
     "api/commands/command_service.cc",
@@ -491,7 +489,6 @@ static_library("extensions") {
     "chrome_extensions_interface_registration.cc",
     "chrome_extensions_interface_registration.h",
     "chrome_kiosk_delegate.h",
-    "chrome_kiosk_delegate_chromeos.cc",
     "chrome_process_manager_delegate.cc",
     "chrome_process_manager_delegate.h",
     "chrome_url_request_util.cc",
@@ -914,10 +911,6 @@ static_library("extensions") {
     "//url",
   ]
 
-  if (!is_chromeos) {
-    sources += [ "chrome_kiosk_delegate.cc" ]
-  }
-
   if (is_chromeos) {
     sources += [
       "api/certificate_provider/certificate_provider_api.cc",
@@ -960,6 +953,7 @@ static_library("extensions") {
       "api/webstore_widget_private/app_installer.h",
       "api/webstore_widget_private/webstore_widget_private_api.cc",
       "api/webstore_widget_private/webstore_widget_private_api.h",
+      "chrome_kiosk_delegate_chromeos.cc",
       "updater/chromeos_extension_cache_delegate.cc",
       "updater/chromeos_extension_cache_delegate.h",
       "updater/extension_cache_delegate.cc",
@@ -1007,6 +1001,7 @@ static_library("extensions") {
       "api/messaging/native_process_launcher.h",
       "api/messaging/native_process_launcher_posix.cc",
       "api/messaging/native_process_launcher_win.cc",
+      "chrome_kiosk_delegate.cc",
       "default_apps.cc",
       "default_apps.h",
     ]
@@ -1113,6 +1108,13 @@ static_library("extensions") {
       "../apps/drive/drive_service_bridge.h",
       "api/launcher_page/launcher_page_api.cc",
       "api/launcher_page/launcher_page_api.h",
+    ]
+  }
+
+  if (enable_print_preview && !is_chromeos) {
+    sources += [
+      "api/cloud_print_private/cloud_print_private_api.cc",
+      "api/cloud_print_private/cloud_print_private_api.h",
     ]
   }
 

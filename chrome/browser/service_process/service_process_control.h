@@ -24,6 +24,10 @@
 #include "chrome/common/service_process.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
+#if defined(OS_CHROMEOS)
+#error "Not supported on ChromeOS"
+#endif
+
 namespace base {
 class CommandLine;
 }

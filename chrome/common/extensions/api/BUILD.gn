@@ -25,7 +25,6 @@ schema_sources = [
   "braille_display_private.idl",
   "browser.idl",
   "chrome_web_view_internal.json",
-  "cloud_print_private.json",
   "command_line_private.json",
   "content_settings.json",
   "context_menus_internal.json",
@@ -120,21 +119,28 @@ if (is_chromeos) {
 } else if (is_linux || is_win) {
   schema_sources += [ "input_ime.json" ]
 }
+
+if (enable_app_list) {
+  schema_sources += [
+    # TODO(tapted): Move this into chromeos_schema_files.
+    "launcher_page.idl",
+  ]
+}
+
+if (enable_print_preview && !is_chromeos) {
+  schema_sources += [ "cloud_print_private.json" ]
+}
+
 if (enable_service_discovery) {
   schema_sources += [ "mdns.idl" ]
 }
+
 if (enable_webrtc) {
   schema_sources += [
     "cast_streaming_receiver_session.idl",
     "cast_streaming_rtp_stream.idl",
     "cast_streaming_session.idl",
     "cast_streaming_udp_transport.idl",
-  ]
-}
-if (enable_app_list) {
-  schema_sources += [
-    # TODO(tapted): Move this into chromeos_schema_files.
-    "launcher_page.idl",
   ]
 }
 

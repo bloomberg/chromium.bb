@@ -12,9 +12,15 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "chrome/common/cloud_print.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "printing/features/features.h"
+
+#if !BUILDFLAG(ENABLE_PRINT_PREVIEW) || defined(OS_CHROMEOS)
+#error "Print Preview must be enabled / Not supported on ChromeOS"
+#endif
 
 class Profile;
 class ServiceProcessControl;

@@ -5,6 +5,8 @@
 import("//build/config/features.gni")
 import("//printing/features/features.gni")
 
+assert(!is_chromeos)
+
 static_library("service") {
   sources = [
     "cloud_print/cdd_conversion_win.cc",
@@ -71,7 +73,7 @@ static_library("service") {
     "//chrome/common:service_process_mojom",
   ]
 
-  if (use_cups && !is_chromeos) {
+  if (use_cups) {
     sources += [ "cloud_print/print_system_cups.cc" ]
     configs += [ "//printing:cups" ]
   } else if (is_win) {
@@ -79,7 +81,5 @@ static_library("service") {
       "service_utility_process_host.cc",
       "service_utility_process_host.h",
     ]
-  } else {
-    sources += [ "cloud_print/print_system_dummy.cc" ]
   }
 }

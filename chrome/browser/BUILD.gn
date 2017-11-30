@@ -3227,10 +3227,6 @@ split_static_library("browser") {
       sources += [
         "printing/background_printing_manager.cc",
         "printing/background_printing_manager.h",
-        "printing/cloud_print/cloud_print_proxy_service.cc",
-        "printing/cloud_print/cloud_print_proxy_service.h",
-        "printing/cloud_print/cloud_print_proxy_service_factory.cc",
-        "printing/cloud_print/cloud_print_proxy_service_factory.h",
         "printing/print_dialog_cloud.cc",
         "printing/print_dialog_cloud.h",
         "printing/print_dialog_cloud_posix.cc",
@@ -3253,11 +3249,20 @@ split_static_library("browser") {
         "printing/printer_manager_dialog_win.cc",
         "printing/pwg_raster_converter.cc",
         "printing/pwg_raster_converter.h",
-        "service_process/service_process_control.cc",
-        "service_process/service_process_control.h",
-        "service_process/service_process_control_mac.mm",
       ]
-      public_deps += [ "//chrome/common:service_process_mojom" ]
+
+      if (!is_chromeos) {
+        sources += [
+          "printing/cloud_print/cloud_print_proxy_service.cc",
+          "printing/cloud_print/cloud_print_proxy_service.h",
+          "printing/cloud_print/cloud_print_proxy_service_factory.cc",
+          "printing/cloud_print/cloud_print_proxy_service_factory.h",
+          "service_process/service_process_control.cc",
+          "service_process/service_process_control.h",
+          "service_process/service_process_control_mac.mm",
+        ]
+        public_deps += [ "//chrome/common:service_process_mojom" ]
+      }
     } else {
       # Partial-only printing support.
       sources += [

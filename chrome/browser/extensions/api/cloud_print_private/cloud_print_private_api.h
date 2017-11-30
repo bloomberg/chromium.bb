@@ -8,7 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "printing/features/features.h"
+
+#if !BUILDFLAG(ENABLE_PRINT_PREVIEW) || defined(OS_CHROMEOS)
+#error "Print Preview must be enabled / Not supported on ChromeOS"
+#endif
 
 namespace extensions {
 
