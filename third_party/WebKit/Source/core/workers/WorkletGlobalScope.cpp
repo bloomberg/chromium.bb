@@ -42,7 +42,7 @@ WorkletGlobalScope::WorkletGlobalScope(
   SetSecurityOrigin(SecurityOrigin::CreateUnique());
 
   // Step 5: "Let inheritedReferrerPolicy be outsideSettings's referrer policy."
-  // TODO(nhiroki): Set the referrer policy (https://crbug.com/773921).
+  SetReferrerPolicy(creation_params->referrer_policy);
 }
 
 WorkletGlobalScope::~WorkletGlobalScope() = default;
