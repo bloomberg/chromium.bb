@@ -486,9 +486,11 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
 
   layout->StartRow(1, 0);
   layout->AddView(sub_view);
-  Layout();
-  if (GetBubbleFrameView())
+  if (GetBubbleFrameView()) {
     SizeToContents();
+    // SizeToContents() will perform a layout, but only if the size changed.
+    Layout();
+  }
   if (view_to_focus)
     view_to_focus->RequestFocus();
 }
@@ -919,6 +921,11 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
         new views::Label(l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_PROMO));
     promo->SetMultiLine(true);
     promo->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+    // Provide a hint to the layout manager by giving the promo text a maximum
+    // width. This ensures it has the correct number of lines when determining
+    // the initial Widget size.
+    promo->SetMaximumWidth(kFixedMenuWidth);
     extra_links_view->AddChildView(promo);
 
     signin_current_profile_button_ =
