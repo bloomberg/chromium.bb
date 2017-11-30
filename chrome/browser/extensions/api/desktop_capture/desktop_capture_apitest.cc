@@ -24,6 +24,7 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 
 using content::DesktopMediaID;
+using content::WebContentsMediaCaptureId;
 
 namespace extensions {
 
@@ -34,7 +35,7 @@ struct TestFlags {
   bool expect_windows;
   bool expect_tabs;
   bool expect_audio;
-  content::DesktopMediaID selected_source;
+  DesktopMediaID selected_source;
   bool cancelled;
 
   // Following flags are set by FakeDesktopMediaPicker when it's created and
@@ -42,6 +43,15 @@ struct TestFlags {
   bool picker_created;
   bool picker_deleted;
 };
+
+DesktopMediaID MakeFakeWebContentsMediaId(bool audio_share) {
+  DesktopMediaID media_id(DesktopMediaID::TYPE_WEB_CONTENTS,
+                          DesktopMediaID::kNullId,
+                          WebContentsMediaCaptureId(DesktopMediaID::kFakeId,
+                                                    DesktopMediaID::kFakeId));
+  media_id.audio_share = audio_share;
+  return media_id;
+}
 
 class FakeDesktopMediaPicker : public DesktopMediaPicker {
  public:
@@ -187,61 +197,51 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
   // chrome/test/data/extensions/api_test/desktop_capture/test.js .
   TestFlags test_flags[] = {
       // pickerUiCanceled()
-      {true, true, false, false, content::DesktopMediaID()},
+      {true, true, false, false, DesktopMediaID()},
       // chooseMedia()
       {true, true, false, false,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
-                               content::DesktopMediaID::kNullId)},
+       DesktopMediaID(DesktopMediaID::TYPE_SCREEN, DesktopMediaID::kNullId)},
       // screensOnly()
-      {true, false, false, false, content::DesktopMediaID()},
+      {true, false, false, false, DesktopMediaID()},
       // WindowsOnly()
-      {false, true, false, false, content::DesktopMediaID()},
+      {false, true, false, false, DesktopMediaID()},
       // tabOnly()
-      {false, false, true, false, content::DesktopMediaID()},
+      {false, false, true, false, DesktopMediaID()},
       // audioShareNoApproval()
       {true, true, true, true,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_WEB_CONTENTS, 123,
-                               false)},
+       DesktopMediaID(DesktopMediaID::TYPE_WEB_CONTENTS, 123, false)},
       // audioShareApproval()
       {true, true, true, true,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_WEB_CONTENTS, 123,
-                               true)},
+       DesktopMediaID(DesktopMediaID::TYPE_WEB_CONTENTS, 123, true)},
       // chooseMediaAndGetStream()
       {true, true, false, false,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
-                               webrtc::kFullDesktopScreenId)},
+       DesktopMediaID(DesktopMediaID::TYPE_SCREEN,
+                      webrtc::kFullDesktopScreenId)},
       // chooseMediaAndTryGetStreamWithInvalidId()
       {true, true, false, false,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
-                               webrtc::kFullDesktopScreenId)},
+       DesktopMediaID(DesktopMediaID::TYPE_SCREEN,
+                      webrtc::kFullDesktopScreenId)},
       // cancelDialog()
-      {true, true, false, false, content::DesktopMediaID(), true},
-
-      // Some test cases below are commented out because getUserMedia will fail
-      // due to the fake source id currently.
-      // TODO(braveyao): get these cases working again. http://crbug.com/699201
-
+      {true, true, false, false, DesktopMediaID(), true},
       // tabShareWithAudioGetStream()
-      //{false, false, true, true,
-      // content::DesktopMediaID(content::DesktopMediaID::TYPE_WEB_CONTENTS, 0,
-      //                         true)},
+      {false, false, true, true, MakeFakeWebContentsMediaId(true)},
       // windowShareWithAudioGetStream()
-      //{false, true, false, true,
-      //content::DesktopMediaID(content::DesktopMediaID::TYPE_WINDOW, 0, true)},
+      {false, true, false, true,
+       DesktopMediaID(DesktopMediaID::TYPE_WINDOW, DesktopMediaID::kFakeId,
+                      true)},
       // screenShareWithAudioGetStream()
       {true, false, false, true,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
-                               webrtc::kFullDesktopScreenId, true)},
+       DesktopMediaID(DesktopMediaID::TYPE_SCREEN, webrtc::kFullDesktopScreenId,
+                      true)},
       // tabShareWithoutAudioGetStream()
-      //{false, false, true, true,
-      //content::DesktopMediaID(content::DesktopMediaID::TYPE_WEB_CONTENTS, 0)},
+      {false, false, true, true, MakeFakeWebContentsMediaId(false)},
       // windowShareWithoutAudioGetStream()
-      //{false, true, false, true,
-      // content::DesktopMediaID(content::DesktopMediaID::TYPE_WINDOW, 0)},
+      {false, true, false, true,
+       DesktopMediaID(DesktopMediaID::TYPE_WINDOW, DesktopMediaID::kFakeId)},
       // screenShareWithoutAudioGetStream()
       {true, false, false, true,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
-                               webrtc::kFullDesktopScreenId)},
+       DesktopMediaID(DesktopMediaID::TYPE_SCREEN,
+                      webrtc::kFullDesktopScreenId)},
   };
   picker_factory_.SetTestFlags(test_flags, arraysize(test_flags));
   ASSERT_TRUE(RunExtensionTest("desktop_capture")) << message_;
@@ -268,14 +268,11 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, DISABLED_Delegation) {
 
   TestFlags test_flags[] = {
       {true, true, false, false,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
-                               content::DesktopMediaID::kNullId)},
+       DesktopMediaID(DesktopMediaID::TYPE_SCREEN, DesktopMediaID::kNullId)},
       {true, true, false, false,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
-                               content::DesktopMediaID::kNullId)},
+       DesktopMediaID(DesktopMediaID::TYPE_SCREEN, DesktopMediaID::kNullId)},
       {true, true, false, false,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
-                               content::DesktopMediaID::kNullId),
+       DesktopMediaID(DesktopMediaID::TYPE_SCREEN, DesktopMediaID::kNullId),
        true},
   };
   picker_factory_.SetTestFlags(test_flags, arraysize(test_flags));
