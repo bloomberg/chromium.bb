@@ -330,8 +330,13 @@ std::unique_ptr<Vector<double>> CSSParserImpl::ParseKeyframeKeyList(
 bool CSSParserImpl::SupportsDeclaration(CSSParserTokenRange& range) {
   DCHECK(parsed_properties_.IsEmpty());
   // Even though we might use an observer here, this is just to test if we
-  // successfully parse the range, so we can pass RangeOffset::Ignore() here.
+  // successfully parse the range, so we can pass RangeOffset::Ignore() here
+  // and temporarily remove the observer.
+  CSSParserObserver* observer_copy = observer_;
+  observer_ = nullptr;
   ConsumeDeclaration(range, RangeOffset::Ignore(), StyleRule::kStyle);
+  observer_ = observer_copy;
+
   bool result = !parsed_properties_.IsEmpty();
   parsed_properties_.clear();
   return result;

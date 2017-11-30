@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<!-- Test for crbug.com/789263 -->
+<style>
+** { }
+@supports (display: flex) { }
+</style>
+<script src="../../../inspector/inspector-test.js"></script>
+<script>
+function test() {
+  TestRunner.completeTest();
+}
+</script>
+<body onload="runTest()">
+  This test passes if it doesn't crash.
+</body>
