@@ -62,4 +62,7 @@ class Wasm(perf_benchmark.PerfBenchmark):
         self.DisableStory(
             'WasmTanks', [story.expectations.ALL_ANDROID],
             'Unity WebGL in not supported on mobile')
+        self.DisableStory(
+            'WasmSpaceBuggy', [story.expectations.ANDROID_ONE,
+                story.expectations.ANDROID_WEBVIEW], 'crbug.com/788976')
     return StoryExpectations()
