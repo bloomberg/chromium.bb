@@ -55,8 +55,7 @@ Encryptor::Counter::Counter(base::StringPiece counter) {
   memcpy(&counter_, counter.data(), sizeof(counter_));
 }
 
-Encryptor::Counter::~Counter() {
-}
+Encryptor::Counter::~Counter() = default;
 
 bool Encryptor::Counter::Increment() {
   uint64_t low_num = base::NetToHost64(counter_.components64[1]);
@@ -87,8 +86,7 @@ size_t Encryptor::Counter::GetLengthInBytes() const {
 
 Encryptor::Encryptor() : key_(nullptr), mode_(CBC) {}
 
-Encryptor::~Encryptor() {
-}
+Encryptor::~Encryptor() = default;
 
 bool Encryptor::Init(const SymmetricKey* key, Mode mode, base::StringPiece iv) {
   DCHECK(key);

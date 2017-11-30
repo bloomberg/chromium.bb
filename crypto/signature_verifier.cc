@@ -37,9 +37,9 @@ struct SignatureVerifier::VerifyContext {
   bssl::ScopedEVP_MD_CTX ctx;
 };
 
-SignatureVerifier::SignatureVerifier() {}
+SignatureVerifier::SignatureVerifier() = default;
 
-SignatureVerifier::~SignatureVerifier() {}
+SignatureVerifier::~SignatureVerifier() = default;
 
 bool SignatureVerifier::VerifyInit(SignatureAlgorithm signature_algorithm,
                                    const uint8_t* signature,

@@ -21,7 +21,7 @@
 
 namespace crypto {
 
-ECPrivateKey::~ECPrivateKey() {}
+ECPrivateKey::~ECPrivateKey() = default;
 
 // static
 std::unique_ptr<ECPrivateKey> ECPrivateKey::Create() {
@@ -173,6 +173,6 @@ bool ECPrivateKey::ExportRawPublicKey(std::string* output) const {
   return true;
 }
 
-ECPrivateKey::ECPrivateKey() {}
+ECPrivateKey::ECPrivateKey() = default;
 
 }  // namespace crypto
