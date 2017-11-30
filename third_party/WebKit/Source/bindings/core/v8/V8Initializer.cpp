@@ -369,6 +369,34 @@ static bool CodeGenerationCheckCallbackInMainThread(
   return false;
 }
 
+static bool WasmCodeGenerationCheckCallbackInMainThread(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::String> source) {
+  if (ExecutionContext* execution_context = ToExecutionContext(context)) {
+    if (ContentSecurityPolicy* policy =
+            ToDocument(execution_context)->GetContentSecurityPolicy()) {
+      v8::String::Value source_str(source);
+      UChar snippet[ContentSecurityPolicy::kMaxSampleLength + 1];
+      size_t len = std::min((sizeof(snippet) / sizeof(UChar)) - 1,
+                            static_cast<size_t>(source_str.length()));
+      memcpy(snippet, *source_str, len * sizeof(UChar));
+      snippet[len] = 0;
+      // Wasm code generation is allowed if we have either the wasm-eval
+      // directive or the unsafe-eval directive. However, we only recognize
+      // wasm-eval for certain schemes
+      return policy->AllowWasmEval(ScriptState::From(context),
+                                   SecurityViolationReportingPolicy::kReport,
+                                   ContentSecurityPolicy::kWillThrowException,
+                                   snippet) ||
+             policy->AllowEval(ScriptState::From(context),
+                               SecurityViolationReportingPolicy::kReport,
+                               ContentSecurityPolicy::kWillThrowException,
+                               snippet);
+    }
+  }
+  return false;
+}
+
 v8::Local<v8::Value> NewRangeException(v8::Isolate* isolate,
                                        const char* message) {
   return v8::Exception::RangeError(
@@ -629,6 +657,8 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
       FailedAccessCheckCallbackInMainThread);
   isolate->SetAllowCodeGenerationFromStringsCallback(
       CodeGenerationCheckCallbackInMainThread);
+  isolate->SetAllowWasmCodeGenerationCallback(
+      WasmCodeGenerationCheckCallbackInMainThread);
   if (RuntimeEnabledFeatures::V8IdleTasksEnabled()) {
     V8PerIsolateData::EnableIdleTasks(
         isolate, std::make_unique<V8IdleTaskRunner>(scheduler));

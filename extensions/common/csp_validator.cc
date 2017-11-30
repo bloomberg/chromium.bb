@@ -205,12 +205,13 @@ std::string GetSecureDirectiveValues(
 
     // We might need to relax this whitelist over time.
     if (source_lower == "'self'" || source_lower == "'none'" ||
-        source_lower == "http://127.0.0.1" || source_lower == "blob:" ||
-        source_lower == "filesystem:" || source_lower == "http://localhost" ||
-        base::StartsWith(source_lower, "http://127.0.0.1:",
-                         base::CompareCase::SENSITIVE) ||
-        base::StartsWith(source_lower, "http://localhost:",
-                         base::CompareCase::SENSITIVE) ||
+        source_lower == "'wasm-eval'" || source_lower == "http://127.0.0.1" ||
+        source_lower == "blob:" || source_lower == "filesystem:" ||
+        source_lower == "http://localhost" ||
+        base::StartsWith(source_lower,
+                         "http://127.0.0.1:", base::CompareCase::SENSITIVE) ||
+        base::StartsWith(source_lower,
+                         "http://localhost:", base::CompareCase::SENSITIVE) ||
         isNonWildcardTLD(source_lower, "https://", true) ||
         isNonWildcardTLD(source_lower, "chrome://", false) ||
         isNonWildcardTLD(source_lower,

@@ -40,6 +40,7 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
                   ResourceRequest::RedirectStatus::kNoRedirect) const;
   bool AllowInline() const;
   bool AllowEval() const;
+  bool AllowWasmEval() const;
   bool AllowDynamic() const;
   bool AllowNonce(const String& nonce) const;
   bool AllowHash(const CSPHashValue&) const;
@@ -99,6 +100,7 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   void AddSourceStar();
   void AddSourceUnsafeInline();
   void AddSourceUnsafeEval();
+  void AddSourceWasmEval();
   void AddSourceStrictDynamic();
   void AddSourceUnsafeHashedAttributes();
   void AddReportSample();
@@ -128,6 +130,7 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   bool allow_star_;
   bool allow_inline_;
   bool allow_eval_;
+  bool allow_wasm_eval_;
   bool allow_dynamic_;
   bool allow_hashed_attributes_;
   bool report_sample_;

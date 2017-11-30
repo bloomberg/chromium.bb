@@ -37,6 +37,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/Location.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/CSPDirectiveList.h"
 #include "core/frame/csp/CSPSource.h"
@@ -261,6 +262,9 @@ void ContentSecurityPolicy::CopyPluginTypesFrom(
 
 void ContentSecurityPolicy::DidReceiveHeaders(
     const ContentSecurityPolicyResponseHeaders& headers) {
+  if (headers.ShouldParseWasmEval()) {
+    supports_wasm_eval_ = true;
+  }
   if (!headers.ContentSecurityPolicy().IsEmpty())
     AddAndReportPolicyFromHeaderValue(headers.ContentSecurityPolicy(),
                                       kContentSecurityPolicyHeaderTypeEnforce,
@@ -584,6 +588,19 @@ bool ContentSecurityPolicy::AllowEval(
   for (const auto& policy : policies_) {
     is_allowed &= policy->AllowEval(script_state, reporting_policy,
                                     exception_status, script_content);
+  }
+  return is_allowed;
+}
+
+bool ContentSecurityPolicy::AllowWasmEval(
+    ScriptState* script_state,
+    SecurityViolationReportingPolicy reporting_policy,
+    ContentSecurityPolicy::ExceptionStatus exception_status,
+    const String& script_content) const {
+  bool is_allowed = true;
+  for (const auto& policy : policies_) {
+    is_allowed &= policy->AllowWasmEval(script_state, reporting_policy,
+                                        exception_status, script_content);
   }
   return is_allowed;
 }

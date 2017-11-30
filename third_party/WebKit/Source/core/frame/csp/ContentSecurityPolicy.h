@@ -180,6 +180,10 @@ class CORE_EXPORT ContentSecurityPolicy
                  SecurityViolationReportingPolicy,
                  ExceptionStatus,
                  const String& script_content) const;
+  bool AllowWasmEval(ScriptState*,
+                     SecurityViolationReportingPolicy,
+                     ExceptionStatus,
+                     const String& script_content) const;
   bool AllowPluginType(const String& type,
                        const String& type_attribute,
                        const KURL&,
@@ -431,6 +435,9 @@ class CORE_EXPORT ContentSecurityPolicy
 
   static bool IsValidCSPAttr(const String& attr);
 
+  // Returns the 'wasm-eval' source is supported.
+  bool SupportsWasmEval() const { return supports_wasm_eval_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceInline);
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceSinglePolicy);
@@ -497,6 +504,8 @@ class CORE_EXPORT ContentSecurityPolicy
 
   Member<CSPSource> self_source_;
   String self_protocol_;
+
+  bool supports_wasm_eval_ = false;
 };
 
 }  // namespace blink

@@ -28,18 +28,24 @@
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/http_names.h"
+#include "platform/weborigin/SchemeRegistry.h"
 
 namespace blink {
 
 ContentSecurityPolicyResponseHeaders::ContentSecurityPolicyResponseHeaders(
     const ResourceResponse& response)
-    : ContentSecurityPolicyResponseHeaders(response.HttpHeaderFields()) {}
+    : ContentSecurityPolicyResponseHeaders(
+          response.HttpHeaderFields(),
+          SchemeRegistry::SchemeSupportsWasmEvalCSP(
+              response.Url().Protocol())) {}
 
 ContentSecurityPolicyResponseHeaders::ContentSecurityPolicyResponseHeaders(
-    const HTTPHeaderMap& headers)
+    const HTTPHeaderMap& headers,
+    bool should_parse_wasm_eval)
     : content_security_policy_(headers.Get(HTTPNames::Content_Security_Policy)),
       content_security_policy_report_only_(
-          headers.Get(HTTPNames::Content_Security_Policy_Report_Only)) {}
+          headers.Get(HTTPNames::Content_Security_Policy_Report_Only)),
+      should_parse_wasm_eval_(should_parse_wasm_eval) {}
 
 ContentSecurityPolicyResponseHeaders
 ContentSecurityPolicyResponseHeaders::IsolatedCopy() const {

@@ -50,6 +50,11 @@ void WebSecurityPolicy::RegisterURLSchemeAsAllowingServiceWorkers(
   SchemeRegistry::RegisterURLSchemeAsAllowingServiceWorkers(scheme);
 }
 
+void WebSecurityPolicy::RegisterURLSchemeAsAllowingWasmEvalCSP(
+    const WebString& scheme) {
+  SchemeRegistry::RegisterURLSchemeAsAllowingWasmEvalCSP(scheme);
+}
+
 void WebSecurityPolicy::RegisterURLSchemeAsSupportingFetchAPI(
     const WebString& scheme) {
   SchemeRegistry::RegisterURLSchemeAsSupportingFetchAPI(scheme);

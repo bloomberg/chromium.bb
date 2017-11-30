@@ -40,7 +40,9 @@ class PLATFORM_EXPORT ContentSecurityPolicyResponseHeaders final {
  public:
   ContentSecurityPolicyResponseHeaders() {}
   explicit ContentSecurityPolicyResponseHeaders(const ResourceResponse&);
-  explicit ContentSecurityPolicyResponseHeaders(const HTTPHeaderMap&);
+  explicit ContentSecurityPolicyResponseHeaders(
+      const HTTPHeaderMap&,
+      bool should_parse_wasm_eval = false);
 
   const String& ContentSecurityPolicy() const {
     return content_security_policy_;
@@ -51,9 +53,13 @@ class PLATFORM_EXPORT ContentSecurityPolicyResponseHeaders final {
 
   ContentSecurityPolicyResponseHeaders IsolatedCopy() const;
 
+  bool ShouldParseWasmEval() const { return should_parse_wasm_eval_; }
+
  private:
   String content_security_policy_;
   String content_security_policy_report_only_;
+
+  const bool should_parse_wasm_eval_ = false;
 };
 
 template <>
