@@ -108,6 +108,14 @@ cr.define('extensions', function() {
      * @private
      */
     shouldShowErrorsButton_: function() {
+      // When the error console is disabled (happens when
+      // --disable-error-console command line flag is used or when in the
+      // Stable/Beta channel), |installWarnings| is populated.
+      if (this.data.installWarnings && this.data.installWarnings.length > 0)
+        return true;
+
+      // When error console is enabled |installedWarnings| is not populated.
+      // Instead |manifestErrors| and |runtimeErrors| are used.
       return this.data.manifestErrors.length > 0 ||
           this.data.runtimeErrors.length > 0;
     },
@@ -125,6 +133,11 @@ cr.define('extensions', function() {
 
     /** @private */
     onErrorsTap_: function() {
+      if (this.data.installWarnings && this.data.installWarnings.length > 0) {
+        this.fire('show-install-warnings', this.data.installWarnings);
+        return;
+      }
+
       extensions.navigation.navigateTo(
           {page: Page.ERRORS, extensionId: this.data.id});
     },

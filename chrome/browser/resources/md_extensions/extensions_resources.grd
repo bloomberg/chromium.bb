@@ -87,6 +87,12 @@
       <structure name="IDR_MD_EXTENSIONS_ICONS_HTML"
                  file="icons.html"
                  type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_INSTALL_WARNINGS_DIALOG_HTML"
+                 file="install_warnings_dialog.html"
+                 type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_INSTALL_WARNINGS_DIALOG_JS"
+                 file="install_warnings_dialog.js"
+                 type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_ITEM_HTML"
                  file="item.html"
                  type="chrome_html" />
