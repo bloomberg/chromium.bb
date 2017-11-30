@@ -71,6 +71,7 @@
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/streams/stream_registry.h"
+#include "content/common/loader_util.h"
 #include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/resource_messages.h"
 #include "content/common/site_isolation_policy.h"
@@ -2623,28 +2624,6 @@ void ResourceDispatcherHostImpl::UnregisterResourceMessageDelegate(
     delete it->second;
     delegate_map_.erase(it);
   }
-}
-
-int ResourceDispatcherHostImpl::BuildLoadFlagsForRequest(
-    const ResourceRequest& request_data,
-    bool is_sync_load) {
-  int load_flags = request_data.load_flags;
-
-  // Although EV status is irrelevant to sub-frames and sub-resources, we have
-  // to perform EV certificate verification on all resources because an HTTP
-  // keep-alive connection created to load a sub-frame or a sub-resource could
-  // be reused to load a main frame.
-  load_flags |= net::LOAD_VERIFY_EV_CERT;
-  if (request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME) {
-    load_flags |= net::LOAD_MAIN_FRAME_DEPRECATED;
-  } else if (request_data.resource_type == RESOURCE_TYPE_PREFETCH) {
-    load_flags |= net::LOAD_PREFETCH;
-  }
-
-  if (is_sync_load)
-    load_flags |= net::LOAD_IGNORE_LIMITS;
-
-  return load_flags;
 }
 
 bool ResourceDispatcherHostImpl::ShouldServiceRequest(

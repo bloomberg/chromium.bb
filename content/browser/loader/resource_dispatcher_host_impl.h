@@ -695,9 +695,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void UnregisterResourceMessageDelegate(const GlobalRequestID& id,
                                          ResourceMessageDelegate* delegate);
 
-  int BuildLoadFlagsForRequest(const ResourceRequest& request_data,
-                               bool is_sync_load);
-
   // Consults the RendererSecurity policy to determine whether the
   // ResourceDispatcherHostImpl should service this request.  A request might
   // be disallowed if the renderer is not authorized to retrieve the request
