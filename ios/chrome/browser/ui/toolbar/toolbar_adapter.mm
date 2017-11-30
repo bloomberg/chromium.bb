@@ -64,11 +64,11 @@
 }
 
 - (void)showPrerenderingAnimation {
-  return;
+  [self.toolbarCoordinator showPrerenderingAnimation];
 }
 
 - (void)currentPageLoadStarted {
-  return;
+  // No op, the mediator is taking care of this.
 }
 
 - (CGRect)visibleOmniboxFrame {
