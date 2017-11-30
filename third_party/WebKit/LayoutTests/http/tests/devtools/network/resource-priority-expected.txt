@@ -1,6 +1,4 @@
-CONSOLE WARNING: line 29: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
 Tests resource priorities.
-
 
 sendSyncScriptRequest
 Request: empty-script.js?sync priority: High

@@ -1,16 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/network-test.js"></script>
-<script>
-function attachIframe()
-{
-    var frame = document.createElement("iframe");
-    frame.src = "resources/memory-cached-resource.html";
-    document.body.appendChild(frame);
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that memory-cached resources are correctly reported.\n`);
+  await TestRunner.loadModule('network_test_runner');
+  await TestRunner.showPanel('network');
+  await TestRunner.navigatePromise(`resources/memory-cached-resource.html`);
+
   var finished = false;
   TestRunner.NetworkAgent.setCacheDisabled(true).then(step1);
 
@@ -25,7 +22,7 @@ function test() {
   }
 
   function step2() {
-    TestRunner.evaluateInPage('attachIframe()');
+    TestRunner.addIframe('memory-cached-resource.html');
   }
 
   function onRequest() {
@@ -43,11 +40,4 @@ function test() {
   function step4() {
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
- <p>Tests that memory-cached resources are correctly reported.</p>
- <img src="resources/abe.png">
-</body>
-</html>
+})();
