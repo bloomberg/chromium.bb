@@ -288,9 +288,8 @@ void FakeShillServiceClient::AddService(const std::string& service_path,
                                         const std::string& type,
                                         const std::string& state,
                                         bool visible) {
-  AddServiceWithIPConfig(service_path, guid, name,
-                         type, state, "" /* ipconfig_path */,
-                         visible);
+  AddServiceWithIPConfig(service_path, guid, name, type, state,
+                         std::string() /* ipconfig_path */, visible);
 }
 
 void FakeShillServiceClient::AddServiceWithIPConfig(
@@ -304,17 +303,8 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
   base::DictionaryValue* properties = SetServiceProperties(
       service_path, guid, name, type, state, visible);
 
-  std::string profile_path;
-  if (properties->GetStringWithoutPathExpansion(shill::kProfileProperty,
-                                                &profile_path) &&
-      !profile_path.empty()) {
-    DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface()->
-        UpdateService(profile_path, service_path);
-  }
-
-  if (!ipconfig_path.empty()) {
+  if (!ipconfig_path.empty())
     properties->SetKey(shill::kIPConfigProperty, base::Value(ipconfig_path));
-  }
 
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
       AddManagerService(service_path, true);
@@ -331,22 +321,20 @@ base::DictionaryValue* FakeShillServiceClient::SetServiceProperties(
       GetModifiableServiceProperties(service_path, true);
   connect_behavior_.erase(service_path);
 
-  std::string profile_path;
-  base::DictionaryValue profile_properties;
-  if (DBusThreadManager::Get()
-          ->GetShillProfileClient()
-          ->GetTestInterface()
-          ->GetService(service_path, &profile_path, &profile_properties)) {
-    properties->SetKey(shill::kProfileProperty, base::Value(profile_path));
-  }
-
   // If |guid| is provided, set Service.GUID to that. Otherwise if a GUID is
   // stored in a profile entry, use that. Otherwise leave it blank. Shill does
   // not enforce a valid guid, we do that at the NetworkStateHandler layer.
   std::string guid_to_set = guid;
   if (guid_to_set.empty()) {
-    profile_properties.GetStringWithoutPathExpansion(shill::kGuidProperty,
-                                                     &guid_to_set);
+    std::string profile_path;
+    base::DictionaryValue profile_properties;
+    if (DBusThreadManager::Get()
+            ->GetShillProfileClient()
+            ->GetTestInterface()
+            ->GetService(service_path, &profile_path, &profile_properties)) {
+      profile_properties.GetStringWithoutPathExpansion(shill::kGuidProperty,
+                                                       &guid_to_set);
+    }
   }
   if (!guid_to_set.empty()) {
     properties->SetKey(shill::kGuidProperty, base::Value(guid_to_set));
