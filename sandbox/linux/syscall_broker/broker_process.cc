@@ -124,6 +124,11 @@ int BrokerProcess::Stat64(const char* pathname, struct stat64* sb) const {
   return broker_client_->Stat64(pathname, sb);
 }
 
+int BrokerProcess::Rename(const char* oldpath, const char* newpath) const {
+  RAW_CHECK(initialized_);
+  return broker_client_->Rename(oldpath, newpath);
+}
+
 #if defined(MEMORY_SANITIZER)
 #define BROKER_UNPOISON_STRING(x) __msan_unpoison_string(x)
 #else
@@ -190,6 +195,34 @@ intptr_t BrokerProcess::SIGSYS_Handler(const sandbox::arch_seccomp_data& args,
         return -EINVAL;
       return broker_process->Stat(reinterpret_cast<const char*>(args.args[1]),
                                   reinterpret_cast<struct stat*>(args.args[2]));
+#endif
+#if defined(__NR_rename)
+    case __NR_rename:
+      return broker_process->Rename(
+          reinterpret_cast<const char*>(args.args[0]),
+          reinterpret_cast<const char*>(args.args[1]));
+#endif
+#if defined(__NR_renameat)
+    case __NR_renameat:
+      if (static_cast<int>(args.args[0]) != AT_FDCWD ||
+          static_cast<int>(args.args[2]) != AT_FDCWD) {
+        return -EPERM;
+      }
+      return broker_process->Rename(
+          reinterpret_cast<const char*>(args.args[1]),
+          reinterpret_cast<const char*>(args.args[3]));
+#endif
+#if defined(__NR_renameat2)
+    case __NR_renameat2:
+      if (static_cast<int>(args.args[0]) != AT_FDCWD ||
+          static_cast<int>(args.args[2]) != AT_FDCWD) {
+        return -EPERM;
+      }
+      if (static_cast<int>(args.args[4]) != 0)
+        return -EINVAL;
+      return broker_process->Rename(
+          reinterpret_cast<const char*>(args.args[1]),
+          reinterpret_cast<const char*>(args.args[3]));
 #endif
     default:
       RAW_CHECK(false);
