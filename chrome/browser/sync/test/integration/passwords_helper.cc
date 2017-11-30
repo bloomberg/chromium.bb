@@ -49,15 +49,19 @@ class PasswordStoreConsumerHelper
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<PasswordForm>> results) override {
     result_.swap(results);
-    // Quit the message loop to wake up passwords_helper::GetLogins.
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    // TODO(crbug.com/789950): Replace with Quit(), which as of today
+    // apparently causes a flaky DCHECK failure.
+    run_loop_.QuitWhenIdle();
   }
 
-  std::vector<std::unique_ptr<PasswordForm>> result() {
+  std::vector<std::unique_ptr<PasswordForm>> WaitForResult() {
+    DCHECK(!run_loop_.running());
+    content::RunThisRunLoop(&run_loop_);
     return std::move(result_);
   }
 
  private:
+  base::RunLoop run_loop_;
   std::vector<std::unique_ptr<PasswordForm>> result_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreConsumerHelper);
@@ -101,8 +105,7 @@ std::vector<std::unique_ptr<PasswordForm>> GetLogins(PasswordStore* store) {
       PasswordForm::SCHEME_HTML, kFakeSignonRealm, GURL()};
   PasswordStoreConsumerHelper consumer;
   store->GetLogins(matcher_form, &consumer);
-  content::RunMessageLoop();
-  return consumer.result();
+  return consumer.WaitForResult();
 }
 
 void RemoveLogin(PasswordStore* store, const PasswordForm& form) {
