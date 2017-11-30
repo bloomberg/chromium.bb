@@ -127,10 +127,10 @@ class MODULES_EXPORT IDBValueWrapper {
   static constexpr const char* kWrapMimeType =
       "application/vnd.blink-idb-value-wrapper";
 
- private:
-  // Used to serialize the wrapped value.
+  // Used to serialize the wrapped value. Exposed for testing.
   static void WriteVarint(unsigned value, Vector<char>& output);
 
+ private:
   scoped_refptr<SerializedScriptValue> serialized_value_;
   scoped_refptr<BlobDataHandle> wrapper_handle_;
   Vector<WebBlobInfo> blob_info_;
@@ -188,6 +188,9 @@ class MODULES_EXPORT IDBValueUnwrapper {
   scoped_refptr<BlobDataHandle> WrapperBlobHandle();
 
  private:
+  // Only present in tests.
+  friend class IDBValueUnwrapperReadVarintTestHelper;
+
   // Used to deserialize the wrapped value.
   bool ReadVarint(unsigned& value);
 
