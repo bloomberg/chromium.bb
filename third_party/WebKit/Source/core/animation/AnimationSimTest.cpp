@@ -67,7 +67,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   // target.animate({'--x': '100%'}, 1000);
   scoped_refptr<StringKeyframe> keyframe = StringKeyframe::Create();
   keyframe->SetCSSPropertyValue("--x", GetDocument().GetPropertyRegistry(),
-                                "100%", GetDocument().SecureContextMode(),
+                                "100%", GetDocument().GetSecureContextMode(),
                                 GetDocument().ElementSheet().Contents());
   StringKeyframeVector keyframes;
   keyframes.push_back(std::move(keyframe));
@@ -88,7 +88,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   // target.animate({'--x': '100%'}, 1000);
   keyframe = StringKeyframe::Create();
   keyframe->SetCSSPropertyValue("--x", GetDocument().GetPropertyRegistry(),
-                                "100%", GetDocument().SecureContextMode(),
+                                "100%", GetDocument().GetSecureContextMode(),
                                 GetDocument().ElementSheet().Contents());
   keyframes.clear();
   keyframes.push_back(std::move(keyframe));

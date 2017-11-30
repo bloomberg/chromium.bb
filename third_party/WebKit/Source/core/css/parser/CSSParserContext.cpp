@@ -28,7 +28,7 @@ CSSParserContext* CSSParserContext::Create(const ExecutionContext& context) {
 
   return new CSSParserContext(
       context.Url(), WTF::TextEncoding(), kHTMLStandardMode, kHTMLStandardMode,
-      kDynamicProfile, referrer, true, false, context.SecureContextMode(),
+      kDynamicProfile, referrer, true, false, context.GetSecureContextMode(),
       policy_disposition,
       context.IsDocument() ? &ToDocument(context) : nullptr);
 }
@@ -133,7 +133,7 @@ CSSParserContext* CSSParserContext::Create(
   return new CSSParserContext(
       base_url_override, charset, mode, match_mode, profile, referrer,
       document.IsHTMLDocument(), use_legacy_background_size_shorthand_behavior,
-      document.SecureContextMode(), policy_disposition, &document);
+      document.GetSecureContextMode(), policy_disposition, &document);
 }
 
 CSSParserContext::CSSParserContext(

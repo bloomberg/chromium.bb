@@ -145,7 +145,7 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
   MutableCSSPropertyValueSet* parsed_style =
       MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
   CSSParser::ParseValue(parsed_style, CSSPropertyFont, font_string, true,
-                        GetDocument()->SecureContextMode());
+                        GetDocument()->GetSecureContextMode());
   if (parsed_style->IsEmpty())
     return false;
 

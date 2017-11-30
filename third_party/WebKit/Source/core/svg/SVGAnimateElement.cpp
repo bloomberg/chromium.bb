@@ -503,7 +503,7 @@ void SVGAnimateElement::ApplyResultsToTarget() {
     if (property_set
             ->SetProperty(
                 css_property_id_, animated_value_->ValueAsString(), false,
-                targetElement()->GetDocument().SecureContextMode(), nullptr)
+                targetElement()->GetDocument().GetSecureContextMode(), nullptr)
             .did_change) {
       targetElement()->SetNeedsStyleRecalc(
           kLocalStyleChange,

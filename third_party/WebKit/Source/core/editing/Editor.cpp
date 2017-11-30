@@ -869,7 +869,7 @@ void Editor::ApplyParagraphStyleToSelection(CSSPropertyValueSet* style,
 bool Editor::SelectionStartHasStyle(CSSPropertyID property_id,
                                     const String& value) const {
   const SecureContextMode secure_context_mode =
-      frame_->GetDocument()->SecureContextMode();
+      frame_->GetDocument()->GetSecureContextMode();
 
   EditingStyle* style_to_check =
       EditingStyle::Create(property_id, value, secure_context_mode);
@@ -884,7 +884,7 @@ bool Editor::SelectionStartHasStyle(CSSPropertyID property_id,
 EditingTriState Editor::SelectionHasStyle(CSSPropertyID property_id,
                                           const String& value) const {
   const SecureContextMode secure_context_mode =
-      frame_->GetDocument()->SecureContextMode();
+      frame_->GetDocument()->GetSecureContextMode();
 
   return EditingStyle::Create(property_id, value, secure_context_mode)
       ->TriStateOfStyle(
@@ -1393,7 +1393,7 @@ void Editor::SetBaseWritingDirection(WritingDirection direction) {
       direction == LeftToRightWritingDirection
           ? "ltr"
           : direction == RightToLeftWritingDirection ? "rtl" : "inherit",
-      /* important */ false, GetFrame().GetDocument()->SecureContextMode());
+      /* important */ false, GetFrame().GetDocument()->GetSecureContextMode());
   ApplyParagraphStyleToSelection(
       style, InputEvent::InputType::kFormatSetBlockTextDirection);
 }

@@ -470,7 +470,7 @@ void DOMMatrixReadOnly::SetMatrixValueFromString(
 
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyTransform, string,
-      StrictCSSParserContext(execution_context->SecureContextMode()));
+      StrictCSSParserContext(execution_context->GetSecureContextMode()));
 
   if (!value || value->IsCSSWideKeyword()) {
     exception_state.ThrowDOMException(
