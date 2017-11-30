@@ -448,6 +448,13 @@ def origin_trial_feature_name(definition_or_member):
     return extended_attributes.get('OriginTrialEnabled') or extended_attributes.get('FeaturePolicy')
 
 
+def origin_trial_function_call(function_name, execution_context=None):
+    """Returns a function call to determine if an origin trial is enabled."""
+    return '{function}({context})'.format(
+        function=function_name,
+        context=execution_context if execution_context else "execution_context")
+
+
 # [ContextEnabled]
 def context_enabled_feature_name(definition_or_member):
     return definition_or_member.extended_attributes.get('ContextEnabled')
