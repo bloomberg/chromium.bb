@@ -22,6 +22,10 @@ class TracedValue;
 }
 }
 
+namespace gfx {
+class Vector2d;
+}
+
 namespace cc {
 class SimpleEnclosedRegion;
 
@@ -35,6 +39,7 @@ class CC_BASE_EXPORT Region {
 
   const Region& operator=(const gfx::Rect& rect);
   const Region& operator=(const Region& region);
+  const Region& operator+=(const gfx::Vector2d& offset);
 
   void Swap(Region* region);
   void Clear();
@@ -101,6 +106,12 @@ inline bool operator==(const Region& a, const Region& b) {
 
 inline bool operator!=(const Region& a, const Region& b) {
   return !(a == b);
+}
+
+inline Region operator+(const Region& a, const gfx::Vector2d& b) {
+  Region result = a;
+  result += b;
+  return result;
 }
 
 inline Region SubtractRegions(const Region& a, const Region& b) {

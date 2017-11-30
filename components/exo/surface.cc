@@ -134,7 +134,7 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   void OnWindowDestroying(aura::Window* window) override {}
   void OnWindowDestroyed(aura::Window* window) override { delete this; }
   void OnWindowTargetVisibilityChanged(bool visible) override {}
-  bool HasHitTestMask() const override { return surface_->HasHitTestMask(); }
+  bool HasHitTestMask() const override { return true; }
   void GetHitTestMask(gfx::Path* mask) const override {
     surface_->GetHitTestMask(mask);
   }
@@ -170,17 +170,13 @@ class CustomWindowTargeter : public aura::WindowTargeter {
     if (window->parent())
       aura::Window::ConvertPointToTarget(window->parent(), window,
                                          &local_point);
-    return surface->HitTestRect(gfx::Rect(local_point, gfx::Size(1, 1)));
+    return surface->HitTest(local_point);
   }
 
   std::unique_ptr<HitTestRects> GetExtraHitTestShapeRects(
       aura::Window* window) const override {
     Surface* surface = Surface::AsSurface(window);
-    if (!surface)
-      return nullptr;
-    if (!surface->HasHitTestMask())
-      return nullptr;
-    return surface->GetHitTestShapeRects();
+    return surface ? surface->GetHitTestShapeRects() : nullptr;
   }
 
  private:
@@ -531,16 +527,18 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
   }
 
   surface_hierarchy_content_bounds_ = gfx::Rect(content_size_);
+  hit_test_region_ = state_.input_region;
+  hit_test_region_.Intersect(surface_hierarchy_content_bounds_);
 
   for (const auto& sub_surface_entry : base::Reversed(sub_surfaces_)) {
     auto* sub_surface = sub_surface_entry.first;
-    gfx::Point origin = sub_surface_entry.second;
+    gfx::Vector2d offset = sub_surface_entry.second.OffsetFromOrigin();
     // Synchronously commit all pending state of the sub-surface and its
     // descendants.
     sub_surface->CommitSurfaceHierarchy(synchronized);
     surface_hierarchy_content_bounds_.Union(
-        sub_surface->surface_hierarchy_content_bounds() +
-        origin.OffsetFromOrigin());
+        sub_surface->surface_hierarchy_content_bounds() + offset);
+    hit_test_region_.Union(sub_surface->hit_test_region_ + offset);
   }
 }
 
@@ -590,31 +588,25 @@ bool Surface::IsSynchronized() const {
   return delegate_ ? delegate_->IsSurfaceSynchronized() : false;
 }
 
-gfx::Rect Surface::GetHitTestBounds() const {
-  gfx::Rect bounds(content_size_);
-  bounds.Intersect(state_.input_region.bounds());
-  return bounds;
+bool Surface::HasHitTestRegion() const {
+  return !hit_test_region_.IsEmpty();
 }
 
-bool Surface::HitTestRect(const gfx::Rect& rect) const {
-  if (HasHitTestMask())
-    return state_.input_region.Intersects(rect);
-
-  return rect.Intersects(gfx::Rect(content_size_));
-}
-
-bool Surface::HasHitTestMask() const {
-  return !state_.input_region.Contains(gfx::Rect(content_size_));
+bool Surface::HitTest(const gfx::Point& point) const {
+  return hit_test_region_.Contains(point);
 }
 
 void Surface::GetHitTestMask(gfx::Path* mask) const {
-  state_.input_region.GetBoundaryPath(mask);
+  hit_test_region_.GetBoundaryPath(mask);
 }
 
 std::unique_ptr<aura::WindowTargeter::HitTestRects>
 Surface::GetHitTestShapeRects() const {
+  if (hit_test_region_.IsEmpty())
+    return nullptr;
+
   auto rects = std::make_unique<aura::WindowTargeter::HitTestRects>();
-  for (cc::Region::Iterator it(state_.input_region); it.has_rect(); it.next())
+  for (cc::Region::Iterator it(hit_test_region_); it.has_rect(); it.next())
     rects->push_back(it.rect());
   return rects;
 }

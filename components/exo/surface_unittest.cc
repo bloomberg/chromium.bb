@@ -256,17 +256,22 @@ TEST_P(SurfaceTest, SetInputRegion) {
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
   surface->Attach(buffer.get());
   surface->Commit();
-  EXPECT_FALSE(surface->HasHitTestMask());
+
+  {
+    // Default input region should match surface bounds.
+    auto rects = surface->GetHitTestShapeRects();
+    ASSERT_TRUE(rects);
+    ASSERT_EQ(1u, rects->size());
+    ASSERT_EQ(gfx::Rect(512, 512), (*rects)[0]);
+  }
 
   {
     // Setting a non-empty input region should succeed.
     surface->SetInputRegion(gfx::Rect(256, 256));
     surface->Commit();
-    std::unique_ptr<std::vector<gfx::Rect>> rects =
-        surface->GetHitTestShapeRects();
 
-    // The input region doesn't contain the surface, so we need hit test mask.
-    EXPECT_TRUE(surface->HasHitTestMask());
+    auto rects = surface->GetHitTestShapeRects();
+    ASSERT_TRUE(rects);
     ASSERT_EQ(1u, rects->size());
     ASSERT_EQ(gfx::Rect(256, 256), (*rects)[0]);
   }
@@ -276,19 +281,7 @@ TEST_P(SurfaceTest, SetInputRegion) {
     surface->SetInputRegion(gfx::Rect());
     surface->Commit();
 
-    // The input region doesn't contain the surface, so we need hit test mask.
-    EXPECT_TRUE(surface->HasHitTestMask());
-    auto rects = surface->GetHitTestShapeRects();
-    EXPECT_TRUE(rects->empty());
-  }
-
-  {
-    // Setting an input region which contains the surface.
-    surface->SetInputRegion(gfx::Rect(512, 512));
-    surface->Commit();
-
-    // The input region contains the surface, so we don't need hit test mask.
-    EXPECT_FALSE(surface->HasHitTestMask());
+    EXPECT_FALSE(surface->GetHitTestShapeRects());
   }
 
   {
@@ -301,15 +294,47 @@ TEST_P(SurfaceTest, SetInputRegion) {
     surface->SetInputRegion(region);
     surface->Commit();
 
-    // The input region doesn't contain the surface, so we need hit test mask.
-    EXPECT_TRUE(surface->HasHitTestMask());
-
     auto rects = surface->GetHitTestShapeRects();
+    ASSERT_TRUE(rects);
     ASSERT_EQ(10u, rects->size());
     cc::Region result;
     for (const auto& r : *rects)
       result.Union(r);
     ASSERT_EQ(result, region);
+  }
+
+  {
+    // Input region should be clipped to surface bounds.
+    surface->SetInputRegion(gfx::Rect(-50, -50, 1000, 100));
+    surface->Commit();
+
+    auto rects = surface->GetHitTestShapeRects();
+    ASSERT_TRUE(rects);
+    ASSERT_EQ(1u, rects->size());
+    ASSERT_EQ(gfx::Rect(512, 50), (*rects)[0]);
+  }
+
+  {
+    // Hit test region should accumulate input regions of sub-surfaces.
+    gfx::Rect input_rect(50, 50, 100, 100);
+    surface->SetInputRegion(input_rect);
+
+    gfx::Rect child_input_rect(-50, -50, 1000, 100);
+    auto child_buffer = std::make_unique<Buffer>(
+        exo_test_helper()->CreateGpuMemoryBuffer(child_input_rect.size()));
+    auto child_surface = std::make_unique<Surface>();
+    auto sub_surface =
+        std::make_unique<SubSurface>(child_surface.get(), surface.get());
+    sub_surface->SetPosition(child_input_rect.origin());
+    child_surface->Attach(child_buffer.get());
+    child_surface->Commit();
+    surface->Commit();
+
+    auto rects = surface->GetHitTestShapeRects();
+    ASSERT_TRUE(rects);
+    ASSERT_EQ(2u, rects->size());
+    cc::Region result = cc::UnionRegions((*rects)[0], (*rects)[1]);
+    ASSERT_EQ(cc::UnionRegions(input_rect, child_input_rect), result);
   }
 }
 
