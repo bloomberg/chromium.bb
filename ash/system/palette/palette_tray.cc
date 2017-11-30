@@ -218,13 +218,14 @@ void PaletteTray::OnActiveUserPrefServiceChanged(PrefService* pref_service) {
   // external stylus, but only if the device has seen a stylus before (avoid
   // showing the bubble if the device has never and may never be used with
   // stylus).
-  if (HasSeenStylus() && !stylus_utils::HasInternalStylus()) {
+  if (HasSeenStylus() && !stylus_utils::HasInternalStylus())
     welcome_bubble_->ShowIfNeeded(false /* shown_by_stylus */);
-  }
 }
 
 void PaletteTray::OnSessionStateChanged(session_manager::SessionState state) {
   UpdateIconVisibility();
+  if (HasSeenStylus() && !stylus_utils::HasInternalStylus())
+    welcome_bubble_->ShowIfNeeded(false /* shown_by_stylus */);
 }
 
 void PaletteTray::OnLockStateChanged(bool locked) {

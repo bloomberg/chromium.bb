@@ -133,7 +133,19 @@ void PaletteWelcomeBubble::OnActiveUserPrefServiceChanged(
 }
 
 void PaletteWelcomeBubble::ShowIfNeeded(bool shown_by_stylus) {
-  DCHECK(active_user_pref_service_);
+  if (!active_user_pref_service_)
+    return;
+
+  if (Shell::Get()->session_controller()->GetSessionState() !=
+      session_manager::SessionState::ACTIVE) {
+    return;
+  }
+
+  base::Optional<user_manager::UserType> user_type =
+      Shell::Get()->session_controller()->GetUserType();
+  if (user_type && *user_type == user_manager::USER_TYPE_GUEST)
+    return;
+
   if (!active_user_pref_service_->GetBoolean(
           prefs::kShownPaletteWelcomeBubble) &&
       !bubble_shown()) {
