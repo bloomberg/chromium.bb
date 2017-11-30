@@ -37,22 +37,8 @@ const int kMissingVersion = 0;
 // The version number of persisted http_server_properties.
 const int kVersionNumber = 5;
 
-// Persist 200 MRU AlternateProtocolHostPortPairs.
-const int kMaxAlternateProtocolHostsToPersist = 200;
-
-// Persist 300 MRU SupportsSpdyServerHostPortPairs.
-const int kMaxSupportsSpdyServerHostsToPersist = 300;
-
-// Persist 200 ServerNetworkStats.
-const int kMaxServerNetworkStatsHostsToPersist = 200;
-
-// TODO (wangyix): update values for how many broken alt svcs to persist after
-// looking at histograms showing how many are persisted in the real world.
-const int kMaxBrokenAlternativeServicesToPersist =
-    std::numeric_limits<int>::max();
-
-const int kMaxRecentlyBrokenAlternativeServicesToPersist =
-    std::numeric_limits<int>::max();
+// Persist at most 200 currently-broken alternative services to disk.
+const int kMaxBrokenAlternativeServicesToPersist = 200;
 
 const char kVersionKey[] = "version";
 const char kServersKey[] = "servers";
@@ -507,14 +493,15 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefs() {
   ReadSupportsQuic(*http_server_properties_dict, addr.get());
 
   // String is "scheme://host:port" tuple of spdy server.
-  std::unique_ptr<SpdyServersMap> spdy_servers_map(
-      new SpdyServersMap(SpdyServersMap::NO_AUTO_EVICT));
-  std::unique_ptr<AlternativeServiceMap> alternative_service_map(
-      new AlternativeServiceMap(kMaxAlternateProtocolHostsToPersist));
-  std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map(
-      new ServerNetworkStatsMap(kMaxServerNetworkStatsHostsToPersist));
-  std::unique_ptr<QuicServerInfoMap> quic_server_info_map(
-      new QuicServerInfoMap(QuicServerInfoMap::NO_AUTO_EVICT));
+  std::unique_ptr<SpdyServersMap> spdy_servers_map =
+      std::make_unique<SpdyServersMap>();
+  std::unique_ptr<AlternativeServiceMap> alternative_service_map =
+      std::make_unique<AlternativeServiceMap>();
+  std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map =
+      std::make_unique<ServerNetworkStatsMap>();
+  std::unique_ptr<QuicServerInfoMap> quic_server_info_map =
+      std::make_unique<QuicServerInfoMap>(
+          max_server_configs_stored_in_properties());
 
   if (version < 4) {
     if (!AddServersData(*servers_dict, spdy_servers_map.get(),
@@ -558,8 +545,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefs() {
     broken_alternative_service_list =
         std::make_unique<BrokenAlternativeServiceList>();
     recently_broken_alternative_services =
-        std::make_unique<RecentlyBrokenAlternativeServices>(
-            RecentlyBrokenAlternativeServices::NO_AUTO_EVICT);
+        std::make_unique<RecentlyBrokenAlternativeServices>();
 
     // Iterate list in reverse-MRU order
     for (base::ListValue::const_iterator it = broken_alt_svc_list->end();
@@ -1000,11 +986,8 @@ void HttpServerPropertiesManager::UpdatePrefsFromCache() {
   // Add SPDY servers to |server_pref_map|.
   const SpdyServersMap& spdy_servers_map =
       http_server_properties_impl_->spdy_servers_map();
-  size_t count = 0;
   for (SpdyServersMap::const_reverse_iterator it = spdy_servers_map.rbegin();
-       it != spdy_servers_map.rend() &&
-       count < kMaxSupportsSpdyServerHostsToPersist;
-       ++it) {
+       it != spdy_servers_map.rend(); ++it) {
     // Only add servers that support SPDY.
     if (!it->second)
       continue;
@@ -1012,7 +995,6 @@ void HttpServerPropertiesManager::UpdatePrefsFromCache() {
     url::SchemeHostPort server(GURL(it->first));
     auto map_it = server_pref_map.Put(server, ServerPref());
     map_it->second.supports_spdy = true;
-    ++count;
   }
 
   // Add alternative service info to |server_pref_map|.
@@ -1023,12 +1005,9 @@ void HttpServerPropertiesManager::UpdatePrefsFromCache() {
   typedef std::map<std::string, bool> CanonicalHostPersistedMap;
   CanonicalHostPersistedMap persisted_map;
   const base::Time now = base::Time::Now();
-  count = 0;
   for (AlternativeServiceMap::const_reverse_iterator it =
            alternative_service_map.rbegin();
-       it != alternative_service_map.rend() &&
-       count < kMaxAlternateProtocolHostsToPersist;
-       ++it) {
+       it != alternative_service_map.rend(); ++it) {
     const url::SchemeHostPort& server = it->first;
     AlternativeServiceInfoVector notbroken_alternative_service_info_vector;
     for (const AlternativeServiceInfo& alternative_service_info : it->second) {
@@ -1059,18 +1038,14 @@ void HttpServerPropertiesManager::UpdatePrefsFromCache() {
       map_it = server_pref_map.Put(server, ServerPref());
     map_it->second.alternative_service_info_vector =
         std::move(notbroken_alternative_service_info_vector);
-    ++count;
   }
 
   // Add server network stats to |server_pref_map|.
   const ServerNetworkStatsMap& server_network_stats_map =
       http_server_properties_impl_->server_network_stats_map();
-  count = 0;
-  for (ServerNetworkStatsMap::const_reverse_iterator
-           it = server_network_stats_map.rbegin();
-       it != server_network_stats_map.rend() &&
-       count < kMaxServerNetworkStatsHostsToPersist;
-       ++it, ++count) {
+  for (ServerNetworkStatsMap::const_reverse_iterator it =
+           server_network_stats_map.rbegin();
+       it != server_network_stats_map.rend(); ++it) {
     const url::SchemeHostPort& server = it->first;
     auto map_it = server_pref_map.Get(server);
     if (map_it == server_pref_map.end())
@@ -1121,14 +1096,12 @@ void HttpServerPropertiesManager::UpdatePrefsFromCache() {
 
   SaveQuicServerInfoMapToServerPrefs(
       http_server_properties_impl_->quic_server_info_map(),
-      http_server_properties_impl_->max_server_configs_stored_in_properties(),
       &http_server_properties_dict);
 
   SaveBrokenAlternativeServicesToPrefs(
       http_server_properties_impl_->broken_alternative_service_list(),
       kMaxBrokenAlternativeServicesToPersist,
       http_server_properties_impl_->recently_broken_alternative_services(),
-      kMaxRecentlyBrokenAlternativeServicesToPersist,
       &http_server_properties_dict);
 
   setting_prefs_ = true;
@@ -1204,15 +1177,13 @@ void HttpServerPropertiesManager::SaveNetworkStatsToServerPrefs(
 
 void HttpServerPropertiesManager::SaveQuicServerInfoMapToServerPrefs(
     const QuicServerInfoMap& quic_server_info_map,
-    size_t max_count,
     base::DictionaryValue* http_server_properties_dict) {
   if (quic_server_info_map.empty())
     return;
   auto quic_servers_dict = std::make_unique<base::DictionaryValue>();
-  size_t count = 0;
-  for (QuicServerInfoMap::const_reverse_iterator
-           it = quic_server_info_map.rbegin();
-       it != quic_server_info_map.rend() && count < max_count; ++it, ++count) {
+  for (QuicServerInfoMap::const_reverse_iterator it =
+           quic_server_info_map.rbegin();
+       it != quic_server_info_map.rend(); ++it) {
     const QuicServerId& server_id = it->first;
     auto quic_server_pref_dict = std::make_unique<base::DictionaryValue>();
     quic_server_pref_dict->SetKey(kServerInfoKey, base::Value(it->second));
@@ -1225,10 +1196,9 @@ void HttpServerPropertiesManager::SaveQuicServerInfoMapToServerPrefs(
 
 void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
     const BrokenAlternativeServiceList& broken_alternative_service_list,
-    size_t max_broken_count,
+    size_t max_broken_alternative_services,
     const RecentlyBrokenAlternativeServices&
         recently_broken_alternative_services,
-    size_t max_recently_broken_count,
     base::DictionaryValue* http_server_properties_dict) {
   if (broken_alternative_service_list.empty() &&
       recently_broken_alternative_services.empty())
@@ -1245,11 +1215,8 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
       json_list_index_map;
 
   if (!recently_broken_alternative_services.empty()) {
-    size_t count = 0;
     for (auto it = recently_broken_alternative_services.rbegin();
-         it != recently_broken_alternative_services.rend() &&
-         count < max_recently_broken_count;
-         ++it, ++count) {
+         it != recently_broken_alternative_services.rend(); ++it) {
       const AlternativeService& alt_service = it->first;
       int broken_count = it->second;
       base::DictionaryValue entry_dict;
@@ -1266,7 +1233,7 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
     size_t count = 0;
     for (auto it = broken_alternative_service_list.begin();
          it != broken_alternative_service_list.end() &&
-         count < max_broken_count;
+         count < max_broken_alternative_services;
          ++it, ++count) {
       const AlternativeService& alt_service = it->first;
       base::TimeTicks expiration_time_ticks = it->second;

@@ -342,8 +342,7 @@ TEST_F(BrokenAlternativeServicesTest, SetBrokenAlternativeServices) {
       {alternative_service1, broken_services_clock_->NowTicks() + delay1});
 
   std::unique_ptr<RecentlyBrokenAlternativeServices> recently_broken_map =
-      std::make_unique<RecentlyBrokenAlternativeServices>(
-          RecentlyBrokenAlternativeServices::NO_AUTO_EVICT);
+      std::make_unique<RecentlyBrokenAlternativeServices>();
   recently_broken_map->Put(alternative_service1, 1);
   recently_broken_map->Put(alternative_service2, 2);
 
@@ -419,8 +418,7 @@ TEST_F(BrokenAlternativeServicesTest,
        broken_services_clock_->NowTicks() + base::TimeDelta::FromMinutes(1)});
 
   std::unique_ptr<RecentlyBrokenAlternativeServices> recently_broken_map =
-      std::make_unique<RecentlyBrokenAlternativeServices>(
-          RecentlyBrokenAlternativeServices::NO_AUTO_EVICT);
+      std::make_unique<RecentlyBrokenAlternativeServices>();
   recently_broken_map->Put(alternative_service1, 1);
   recently_broken_map->Put(alternative_service3, 1);
 
@@ -571,8 +569,7 @@ TEST_F(BrokenAlternativeServicesTest, Clear) {
        broken_services_clock_->NowTicks() + base::TimeDelta::FromMinutes(1)});
 
   std::unique_ptr<RecentlyBrokenAlternativeServices> recently_broken_map =
-      std::make_unique<RecentlyBrokenAlternativeServices>(
-          RecentlyBrokenAlternativeServices::NO_AUTO_EVICT);
+      std::make_unique<RecentlyBrokenAlternativeServices>();
   recently_broken_map->Put(alternative_service2, 2);
 
   broken_services_.SetBrokenAndRecentlyBrokenAlternativeServices(
