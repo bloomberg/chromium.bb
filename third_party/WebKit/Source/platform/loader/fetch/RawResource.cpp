@@ -125,14 +125,11 @@ RawResource::RawResource(const ResourceRequest& resource_request,
     : Resource(resource_request, type, options) {}
 
 void RawResource::AppendData(const char* data, size_t length) {
-  Resource::AppendData(data, length);
-
   if (data_pipe_writer_) {
+    DCHECK_EQ(kDoNotBufferData, GetDataBufferingPolicy());
     data_pipe_writer_->Write(data, length);
   } else {
-    ResourceClientWalker<RawResourceClient> w(Clients());
-    while (RawResourceClient* c = w.Next())
-      c->DataReceived(this, data, length);
+    Resource::AppendData(data, length);
   }
 }
 
@@ -155,18 +152,6 @@ void RawResource::DidAddClient(ResourceClient* c) {
   if (!GetResponse().IsNull()) {
     client->ResponseReceived(this, GetResponse(),
                              std::move(data_consumer_handle_));
-  }
-  if (!HasClient(c))
-    return;
-  if (scoped_refptr<SharedBuffer> data = Data()) {
-    data->ForEachSegment([this, &client](const char* segment,
-                                         size_t segment_size,
-                                         size_t segment_offset) -> bool {
-      client->DataReceived(this, segment, segment_size);
-
-      // Stop pushing data if the client removed itself.
-      return HasClient(client);
-    });
   }
   if (!HasClient(c))
     return;
@@ -210,8 +195,6 @@ void RawResource::ResponseReceived(
       GetMemoryCache()->Remove(this);
   }
 
-  bool is_successful_revalidation =
-      IsCacheValidator() && response.HttpStatusCode() == 304;
   Resource::ResponseReceived(response, nullptr);
 
   DCHECK(!handle || !data_consumer_handle_);
@@ -223,15 +206,6 @@ void RawResource::ResponseReceived(
     // |handle| is cleared when passed, but it's not a problem because |handle|
     // is null when there are two or more clients, as asserted.
     c->ResponseReceived(this, this->GetResponse(), std::move(handle));
-  }
-
-  // If we successfully revalidated, we won't get appendData() calls. Forward
-  // the data to clients now instead. Note: |m_data| can be null when no data is
-  // appended to the original resource.
-  if (is_successful_revalidation && Data()) {
-    ResourceClientWalker<RawResourceClient> w(Clients());
-    while (RawResourceClient* c = w.Next())
-      c->DataReceived(this, Data()->Data(), Data()->size());
   }
 }
 

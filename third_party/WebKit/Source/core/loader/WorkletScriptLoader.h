@@ -21,7 +21,7 @@ class ScriptSourceCode;
 // TODO(nhiroki): Switch to module script loading (https://crbug.com/627945)
 class CORE_EXPORT WorkletScriptLoader final
     : public GarbageCollectedFinalized<WorkletScriptLoader>,
-      public ResourceOwner<ScriptResource, ScriptResourceClient> {
+      public ResourceOwner<ScriptResource> {
   USING_GARBAGE_COLLECTED_MIXIN(WorkletScriptLoader);
   WTF_MAKE_NONCOPYABLE(WorkletScriptLoader);
 

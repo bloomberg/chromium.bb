@@ -40,11 +40,22 @@ class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
     kBaseResourceType,
     kFontType,
     kStyleSheetType,
-    kRawResourceType,
-    kScriptType
+    kRawResourceType
   };
 
   virtual ~ResourceClient() {}
+
+  // DataReceived() is called each time a chunk of data is received.
+  // For cache hits, the data is replayed before NotifyFinished() is called.
+  // For successful revalidation responses, the data is NOT replayed, because
+  // the Resource may not be in an entirely consistent state in the middle of
+  // completing the revalidation, when DataReceived() would have to be called.
+  // Some RawResourceClients depends on receiving all bytes via DataReceived(),
+  // but RawResources forbid revalidation attempts, so they still are guaranteed
+  // to get all data via DataReceived().
+  virtual void DataReceived(Resource*,
+                            const char* /* data */,
+                            size_t /* length */) {}
   virtual void NotifyFinished(Resource*) {}
 
   static bool IsExpectedType(ResourceClient*) { return true; }
