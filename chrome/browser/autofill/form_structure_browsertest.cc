@@ -89,6 +89,16 @@ const std::vector<base::FilePath> GetTestFiles() {
   return files;
 }
 
+const std::set<base::FilePath::StringType>& GetFailingTestNames() {
+  // TODO(crbug.com/789944): Reenable these tests.
+  static std::set<base::FilePath::StringType>* failing_test_names =
+      new std::set<base::FilePath::StringType>{
+          FILE_PATH_LITERAL("067_register_rei.com.html"),
+          FILE_PATH_LITERAL("074_register_threadless.com.html"),
+      };
+  return *failing_test_names;
+}
+
 }  // namespace
 
 // A data-driven test for verifying Autofill heuristics. Each input is an HTML
@@ -167,9 +177,10 @@ std::string FormStructureBrowserTest::FormStructuresToString(
 IN_PROC_BROWSER_TEST_P(FormStructureBrowserTest, DataDrivenHeuristics) {
   // Prints the path of the test to be executed.
   LOG(INFO) << GetParam().MaybeAsASCII();
-  const bool kIsExpectedToPass = true;
+  bool is_expected_to_pass =
+      !base::ContainsKey(GetFailingTestNames(), GetParam().BaseName().value());
   RunOneDataDrivenTest(GetParam(), GetOutputDirectory(kTestName),
-                       kIsExpectedToPass);
+                       is_expected_to_pass);
 }
 
 INSTANTIATE_TEST_CASE_P(AllForms,

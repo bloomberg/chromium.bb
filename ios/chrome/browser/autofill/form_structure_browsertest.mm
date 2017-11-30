@@ -83,9 +83,8 @@ const std::vector<base::FilePath> GetTestFiles() {
 }
 
 const std::set<std::string>& GetFailingTestNames() {
-  static std::set<std::string>* failing_test_names = new std::set<std::string>{
-      "067_register_rei.com.html", "074_register_threadless.com.html",
-  };
+  static std::set<std::string>* failing_test_names =
+      new std::set<std::string>{};
   return *failing_test_names;
 }
 
