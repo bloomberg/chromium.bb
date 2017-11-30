@@ -38,6 +38,10 @@ class CORE_EXPORT SelectionAdjuster final {
       const SelectionInDOMTree&);
   static SelectionInFlatTree AdjustSelectionToAvoidCrossingShadowBoundaries(
       const SelectionInFlatTree&);
+  static SelectionInDOMTree AdjustSelectionToAvoidCrossingEditingBoundaries(
+      const SelectionInDOMTree&);
+  static SelectionInFlatTree AdjustSelectionToAvoidCrossingEditingBoundaries(
+      const SelectionInFlatTree&);
 };
 
 }  // namespace blink
