@@ -18,6 +18,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/version.h"
 #include "chrome/browser/vr/assets.h"
+#include "chrome/browser/vr/metrics_helper.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/component_updater/component_updater_paths.h"
 
@@ -115,6 +116,7 @@ void RegisterVrAssetsComponent(ComponentUpdateService* cus) {
       new VrAssetsComponentInstallerTraits());
   auto installer = base::MakeRefCounted<ComponentInstaller>(std::move(policy));
   installer->Register(cus, base::Closure());
+  vr::Assets::GetInstance()->GetMetricsHelper()->OnRegisteredComponent();
   VLOG(1) << "Registered VR assets component";
 }
 

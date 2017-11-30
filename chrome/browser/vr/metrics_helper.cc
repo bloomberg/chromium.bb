@@ -6,23 +6,30 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "net/base/network_change_notifier.h"
 
 namespace vr {
 
 namespace {
 
-static constexpr char kStatusVr[] = "VR.AssetsComponent.Status.OnEnter.VR";
-static constexpr char kStatusVrBrowsing[] =
+constexpr char kStatusVr[] = "VR.AssetsComponent.Status.OnEnter.VR";
+constexpr char kStatusVrBrowsing[] =
     "VR.AssetsComponent.Status.OnEnter.VRBrowsing";
-static constexpr char kStatusWebVr[] =
-    "VR.AssetsComponent.Status.OnEnter.WebVR";
-static constexpr char kLatencyVrBrowsing[] =
+constexpr char kStatusWebVr[] = "VR.AssetsComponent.Status.OnEnter.WebVR";
+constexpr char kLatencyVrBrowsing[] =
     "VR.AssetsComponent.ReadyLatency.OnEnter.VRBrowsing";
-static constexpr char kLatencyWebVr[] =
+constexpr char kLatencyWebVr[] =
     "VR.AssetsComponent.ReadyLatency.OnEnter.WebVR";
-static const auto kMinLatency = base::TimeDelta::FromMilliseconds(500);
-static const auto kMaxLatency = base::TimeDelta::FromHours(1);
-static constexpr size_t kLatencyBucketCount = 100;
+constexpr char kDataConnectionRegisterComponent[] =
+    "VR.DataConnection.OnRegisterAssetsComponent";
+constexpr char kDataConnectionVr[] = "VR.DataConnection.OnEnter.VR";
+constexpr char kDataConnectionVrBrowsing[] =
+    "VR.DataConnection.OnEnter.VRBrowsing";
+constexpr char kDataConnectionWebVr[] = "VR.DataConnection.OnEnter.WebVR";
+
+const auto kMinLatency = base::TimeDelta::FromMilliseconds(500);
+const auto kMaxLatency = base::TimeDelta::FromHours(1);
+constexpr size_t kLatencyBucketCount = 100;
 
 // Ensure that this stays in sync with VRAssetsComponentEnterStatus in
 // enums.xml.
@@ -34,7 +41,7 @@ enum class AssetsComponentEnterStatus : int {
   kCount,
 };
 
-static void LogStatus(Mode mode, AssetsComponentEnterStatus status) {
+void LogStatus(Mode mode, AssetsComponentEnterStatus status) {
   switch (mode) {
     case Mode::kVr:
       UMA_HISTOGRAM_ENUMERATION(kStatusVr, status,
@@ -54,7 +61,7 @@ static void LogStatus(Mode mode, AssetsComponentEnterStatus status) {
   }
 }
 
-static void LogLatency(Mode mode, const base::TimeDelta& latency) {
+void LogLatency(Mode mode, const base::TimeDelta& latency) {
   switch (mode) {
     case Mode::kVrBrowsing:
       UMA_HISTOGRAM_CUSTOM_TIMES(kLatencyVrBrowsing, latency, kMinLatency,
@@ -63,6 +70,30 @@ static void LogLatency(Mode mode, const base::TimeDelta& latency) {
     case Mode::kWebVr:
       UMA_HISTOGRAM_CUSTOM_TIMES(kLatencyWebVr, latency, kMinLatency,
                                  kMaxLatency, kLatencyBucketCount);
+      return;
+    default:
+      NOTIMPLEMENTED();
+      return;
+  }
+}
+
+void LogConnectionType(Mode mode,
+                       net::NetworkChangeNotifier::ConnectionType type) {
+  switch (mode) {
+    case Mode::kVr:
+      UMA_HISTOGRAM_ENUMERATION(
+          kDataConnectionVr, type,
+          net::NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
+      return;
+    case Mode::kVrBrowsing:
+      UMA_HISTOGRAM_ENUMERATION(
+          kDataConnectionVrBrowsing, type,
+          net::NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
+      return;
+    case Mode::kWebVr:
+      UMA_HISTOGRAM_ENUMERATION(
+          kDataConnectionWebVr, type,
+          net::NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
       return;
     default:
       NOTIMPLEMENTED();
@@ -90,6 +121,7 @@ void MetricsHelper::OnComponentReady() {
 
 void MetricsHelper::OnEnter(Mode mode) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  LogConnectionType(mode, net::NetworkChangeNotifier::GetConnectionType());
   auto& enter_time = GetEnterTime(mode);
   if (enter_time) {
     // While we are stopping the time between entering and component readiness
@@ -102,6 +134,13 @@ void MetricsHelper::OnEnter(Mode mode) {
   if (!component_ready_) {
     enter_time = base::Time::Now();
   }
+}
+
+void MetricsHelper::OnRegisteredComponent() {
+  UMA_HISTOGRAM_ENUMERATION(
+      kDataConnectionRegisterComponent,
+      net::NetworkChangeNotifier::GetConnectionType(),
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
 }
 
 base::Optional<base::Time>& MetricsHelper::GetEnterTime(Mode mode) {
