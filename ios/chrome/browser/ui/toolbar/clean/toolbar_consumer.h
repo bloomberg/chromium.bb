@@ -14,7 +14,7 @@
 // Updates the toolbar with the current back navigation state.
 - (void)setCanGoBack:(BOOL)canGoBack;
 // Updates the toolbar with the current loading state.
-- (void)setIsLoading:(BOOL)isLoading;
+- (void)setLoadingState:(BOOL)loading;
 // Updates the toolbar with the current progress of the loading WebState.
 - (void)setLoadingProgressFraction:(double)progress;
 // Updates the toolbar with the current number of total tabs.

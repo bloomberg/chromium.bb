@@ -243,7 +243,7 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetupWithNoWebstate) {
 
   [[consumer_ reject] setCanGoForward:NO];
   [[consumer_ reject] setCanGoBack:NO];
-  [[consumer_ reject] setIsLoading:YES];
+  [[consumer_ reject] setLoadingState:YES];
 }
 
 // Test no setup is being done on the Toolbar if there's no active Webstate.
@@ -255,7 +255,7 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetupWithNoActiveWebstate) {
 
   [[consumer_ reject] setCanGoForward:NO];
   [[consumer_ reject] setCanGoBack:NO];
-  [[consumer_ reject] setIsLoading:YES];
+  [[consumer_ reject] setLoadingState:YES];
   [[consumer_ reject] setPageBookmarked:NO];
 }
 
@@ -276,7 +276,7 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetup) {
 
   [[consumer_ verify] setCanGoForward:NO];
   [[consumer_ verify] setCanGoBack:NO];
-  [[consumer_ verify] setIsLoading:YES];
+  [[consumer_ verify] setLoadingState:YES];
   [[consumer_ verify] setShareMenuEnabled:NO];
 }
 
@@ -289,7 +289,7 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetupReverse) {
 
   [[consumer_ verify] setCanGoForward:NO];
   [[consumer_ verify] setCanGoBack:NO];
-  [[consumer_ verify] setIsLoading:YES];
+  [[consumer_ verify] setLoadingState:YES];
   [[consumer_ verify] setShareMenuEnabled:NO];
 }
 
@@ -322,7 +322,7 @@ TEST_F(ToolbarMediatorTest, TestDidStartLoading) {
   mediator_.consumer = consumer_;
 
   web_state_->SetLoading(true);
-  [[consumer_ verify] setIsLoading:YES];
+  [[consumer_ verify] setLoadingState:YES];
 }
 
 // Test the Toolbar is updated when the Webstate observer method DidStopLoading
@@ -333,7 +333,7 @@ TEST_F(ToolbarMediatorTest, TestDidStopLoading) {
   mediator_.consumer = consumer_;
 
   web_state_->SetLoading(false);
-  [[consumer_ verify] setIsLoading:NO];
+  [[consumer_ verify] setLoadingState:NO];
 }
 
 // Test the Toolbar is updated when the Webstate observer method

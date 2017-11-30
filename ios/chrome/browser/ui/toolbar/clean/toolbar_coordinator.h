@@ -73,6 +73,8 @@ class WebState;
 // Sets the background color of the Toolbar to the one of the Incognito NTP,
 // with an |alpha|.
 - (void)setBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha;
+// Briefly animate the progress bar when a pre-rendered tab is displayed.
+- (void)showPrerenderingAnimation;
 
 @end
 

@@ -104,7 +104,7 @@
 
 - (void)webStateDidStopLoading:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
-  [self.consumer setIsLoading:self.webState->IsLoading()];
+  [self.consumer setLoadingState:self.webState->IsLoading()];
 }
 
 - (void)webState:(web::WebState*)webState
@@ -223,7 +223,7 @@
   DCHECK(self.webState);
   DCHECK(self.consumer);
   [self updateConsumerForWebState:self.webState];
-  [self.consumer setIsLoading:self.webState->IsLoading()];
+  [self.consumer setLoadingState:self.webState->IsLoading()];
   [self updateBookmarks];
   [self updateShareMenu];
 }

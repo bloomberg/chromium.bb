@@ -47,6 +47,8 @@
 // Background view, used to display the incognito NTP background color on the
 // toolbar.
 @property(nonatomic, strong) UIView* backgroundView;
+// Whether a page is loading.
+@property(nonatomic, assign, getter=isLoading) BOOL loading;
 @end
 
 @implementation ToolbarViewController
@@ -56,6 +58,7 @@
 @synthesize dispatcher = _dispatcher;
 @synthesize locationBarView = _locationBarView;
 @synthesize stackView = _stackView;
+@synthesize loading = _loading;
 @synthesize locationBarContainer = _locationBarContainer;
 @synthesize backButton = _backButton;
 @synthesize forwardButton = _forwardButton;
@@ -120,6 +123,16 @@
 
 - (void)setBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
   self.backgroundView.alpha = alpha;
+}
+
+- (void)showPrerenderingAnimation {
+  __weak ToolbarViewController* weakSelf = self;
+  [self.progressBar setProgress:0];
+  [self.progressBar setHidden:NO
+                     animated:YES
+                   completion:^(BOOL finished) {
+                     [weakSelf stopProgressBar];
+                   }];
 }
 
 #pragma mark - View lifecyle
@@ -426,10 +439,16 @@
   self.backButton.enabled = canGoBack;
 }
 
-- (void)setIsLoading:(BOOL)isLoading {
-  self.reloadButton.hiddenInCurrentState = isLoading;
-  self.stopButton.hiddenInCurrentState = !isLoading;
-  [self.progressBar setHidden:!isLoading animated:YES completion:nil];
+- (void)setLoadingState:(BOOL)loading {
+  _loading = loading;
+  self.reloadButton.hiddenInCurrentState = loading;
+  self.stopButton.hiddenInCurrentState = !loading;
+  if (!loading) {
+    [self stopProgressBar];
+  } else {
+    [self.progressBar setProgress:0];
+    [self.progressBar setHidden:NO animated:YES completion:nil];
+  }
 }
 
 - (void)setLoadingProgressFraction:(double)progress {
@@ -539,6 +558,20 @@
 }
 
 #pragma mark - Private
+
+// Sets the progress of the progressBar to 1 then hides it.
+- (void)stopProgressBar {
+  __weak MDCProgressView* weakProgressBar = self.progressBar;
+  __weak ToolbarViewController* weakSelf = self;
+  [self.progressBar
+      setProgress:1
+         animated:YES
+       completion:^(BOOL finished) {
+         if (!weakSelf.loading) {
+           [weakProgressBar setHidden:YES animated:YES completion:nil];
+         }
+       }];
+}
 
 // TODO(crbug.com/789104): Use named layout guide instead of passing the view.
 // Target of the voice search button.
