@@ -21,29 +21,25 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/importer/firefox_importer_utils.h"
+#include "chrome/utility/importer/firefox_importer_unittest_utils_mac.mojom.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/mojo_channel_switches.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_listener.h"
-#include "ipc/ipc_message.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/incoming_broker_client_invitation.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/multiprocess_func_list.h"
-
-#define IPC_MESSAGE_IMPL
-#include "chrome/utility/importer/firefox_importer_unittest_messages_internal.h"
 
 namespace {
 
-const char kMojoChannelToken[] = "mojo-channel-token";
+constexpr char kMojoChannelToken[] = "mojo-channel-token";
 
 // Launch the child process:
 // |nss_path| - path to the NSS directory holding the decryption libraries.
 // |mojo_handle| - platform handle for Mojo transport.
-// |mojo_channel_token| - token for creating the IPC channel over Mojo.
+// |mojo_channel_token| - token for creating the Mojo pipe.
 base::Process LaunchNSSDecrypterChildProcess(
     const base::FilePath& nss_path,
     mojo::edk::ScopedPlatformHandle mojo_handle,
@@ -64,76 +60,121 @@ base::Process LaunchNSSDecrypterChildProcess(
   return base::LaunchProcess(cl.argv(), options);
 }
 
+//---------------------------- Child Process -----------------------
+
+// Class to listen on the client side of the mojo pipe, it calls through
+// to the NSSDecryptor and sends back a reply.
+class FFDecryptorClientListener
+    : public firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptor {
+ public:
+  explicit FFDecryptorClientListener(
+      firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorRequest
+          request)
+      : binding_(this, std::move(request)) {}
+
+  void SetQuitClosure(base::Closure quit_closure) {
+    binding_.set_connection_error_handler(std::move(quit_closure));
+  }
+
+  void Init(const base::FilePath& dll_path,
+            const base::FilePath& db_path,
+            InitCallback callback) override {
+    std::move(callback).Run(decryptor_.Init(dll_path, db_path));
+  }
+
+  void Decrypt(const std::string& crypt, DecryptCallback callback) override {
+    base::string16 unencrypted_str = decryptor_.Decrypt(crypt);
+    std::move(callback).Run(unencrypted_str);
+  }
+
+  void ParseSignons(const base::FilePath& sqlite_file,
+                    ParseSignonsCallback callback) override {
+    std::vector<autofill::PasswordForm> forms;
+    decryptor_.ReadAndParseSignons(sqlite_file, &forms);
+    std::move(callback).Run(forms);
+  }
+
+ private:
+  NSSDecryptor decryptor_;
+  mojo::Binding<FirefoxDecryptor> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(FFDecryptorClientListener);
+};
+
 }  // namespace
 
 //----------------------- Server --------------------
 
-// Class to communicate on the server side of the IPC Channel.
-// Method calls are sent over IPC and replies are read back into class
+// Class to communicate on the server side of the mojo pipe.
+// Method calls are sent over mojo and replies are read back into class
 // variables.
 // This class needs to be called on a single thread.
-class FFDecryptorServerChannelListener : public IPC::Listener {
+class FFDecryptorServerChannelListener {
  public:
-  FFDecryptorServerChannelListener()
-      : got_result(false), sender_(NULL) {}
+  explicit FFDecryptorServerChannelListener(
+      firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorPtr decryptor)
+      : decryptor_(std::move(decryptor)) {}
 
-  void SetSender(IPC::Sender* sender) {
-    sender_ = sender;
+  void InitDecryptor(const base::FilePath& dll_path,
+                     const base::FilePath& db_path) {
+    base::RunLoop run_loop;
+    got_result_ = false;
+    decryptor_->Init(
+        dll_path, db_path,
+        base::BindOnce(&FFDecryptorServerChannelListener::InitDecryptorReply,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
   }
 
-  void OnInitDecryptorResponse(bool result) {
-    DCHECK(!got_result);
-    result_bool = result;
-    got_result = true;
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  void Decrypt(const std::string& crypt) {
+    base::RunLoop run_loop;
+    got_result_ = false;
+    decryptor_->Decrypt(
+        crypt, base::BindOnce(&FFDecryptorServerChannelListener::DecryptReply,
+                              base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
   }
 
-  void OnDecryptedTextResponse(const base::string16& decrypted_text) {
-    DCHECK(!got_result);
-    result_string = decrypted_text;
-    got_result = true;
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  void ParseSignons(const base::FilePath& signons_path) {
+    base::RunLoop run_loop;
+    got_result_ = false;
+    decryptor_->ParseSignons(
+        signons_path,
+        base::BindOnce(&FFDecryptorServerChannelListener::ParseSignonsReply,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
   }
 
-  void OnParseSignonsResponse(
-      const std::vector<autofill::PasswordForm>& parsed_vector) {
-    DCHECK(!got_result);
-    result_vector = parsed_vector;
-    got_result = true;
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  }
-
-  void QuitClient() {
-    if (sender_)
-      sender_->Send(new Msg_Decryptor_Quit());
-  }
-
-  bool OnMessageReceived(const IPC::Message& msg) override {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(FFDecryptorServerChannelListener, msg)
-      IPC_MESSAGE_HANDLER(Msg_Decryptor_InitReturnCode, OnInitDecryptorResponse)
-      IPC_MESSAGE_HANDLER(Msg_Decryptor_Response, OnDecryptedTextResponse)
-      IPC_MESSAGE_HANDLER(Msg_ParseSignons_Response, OnParseSignonsResponse)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
-  // If an error occured, just kill the message Loop.
-  void OnChannelError() override {
-    got_result = false;
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  }
-
-  // Results of IPC calls.
-  base::string16 result_string;
-  std::vector<autofill::PasswordForm> result_vector;
-  bool result_bool;
-  // True if IPC call succeeded and data in above variables is valid.
-  bool got_result;
+  // Results of the calls.
+  base::string16 result_string_;
+  std::vector<autofill::PasswordForm> result_vector_;
+  bool result_bool_;
+  // True if mojo call succeeded and data in above variables is valid.
+  bool got_result_;
 
  private:
-  IPC::Sender* sender_;  // weak
+  void InitDecryptorReply(base::Closure quit_closure, bool result) {
+    result_bool_ = result;
+    got_result_ = true;
+    quit_closure.Run();
+  }
+
+  void DecryptReply(base::Closure quit_closure, const base::string16& text) {
+    result_string_ = text;
+    got_result_ = true;
+    quit_closure.Run();
+  }
+
+  void ParseSignonsReply(base::Closure quit_closure,
+                         const std::vector<autofill::PasswordForm>& forms) {
+    result_vector_ = forms;
+    got_result_ = true;
+    quit_closure.Run();
+  }
+
+  firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorPtr decryptor_;
+
+  DISALLOW_COPY_AND_ASSIGN(FFDecryptorServerChannelListener);
 };
 
 FFUnitTestDecryptorProxy::FFUnitTestDecryptorProxy() {
@@ -141,21 +182,19 @@ FFUnitTestDecryptorProxy::FFUnitTestDecryptorProxy() {
 
 bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   // Create a new message loop and spawn the child process.
-  message_loop_.reset(new base::MessageLoopForIO());
+  message_loop_ = std::make_unique<base::MessageLoopForIO>();
 
-  listener_.reset(new FFDecryptorServerChannelListener());
-
-  // Set up IPC channel using ChannelMojo.
   mojo::edk::OutgoingBrokerClientInvitation invitation;
   std::string token = mojo::edk::GenerateRandomToken();
   mojo::ScopedMessagePipeHandle parent_pipe =
       invitation.AttachMessagePipe(token);
-  channel_ = IPC::Channel::CreateServer(parent_pipe.release(), listener_.get(),
-                                        base::ThreadTaskRunnerHandle::Get());
-  CHECK(channel_->Connect());
-  listener_->SetSender(channel_.get());
+  firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorPtr decryptor(
+      firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorPtrInfo(
+          std::move(parent_pipe), 0));
+  listener_ =
+      std::make_unique<FFDecryptorServerChannelListener>(std::move(decryptor));
 
-  // Spawn child and set up sync IPC connection.
+  // Spawn child and set up mojo connection.
   mojo::edk::PlatformChannelPair channel_pair;
   child_process_ = LaunchNSSDecrypterChildProcess(
       nss_path, channel_pair.PassClientHandle(), token);
@@ -169,8 +208,7 @@ bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
 }
 
 FFUnitTestDecryptorProxy::~FFUnitTestDecryptorProxy() {
-  listener_->QuitClient();
-  channel_->Close();
+  listener_.reset();
 
   if (child_process_.IsValid()) {
     int exit_code;
@@ -179,108 +217,32 @@ FFUnitTestDecryptorProxy::~FFUnitTestDecryptorProxy() {
   }
 }
 
-// Spin until either a client response arrives or a timeout occurs.
-void FFUnitTestDecryptorProxy::WaitForClientResponse() {
-  // What we're trying to do here is to wait for an RPC message to go over the
-  // wire and the client to reply.  If the client does not reply by a given
-  // timeout we kill the message loop.
-  // This relies on the IPC listener class to quit the message loop itself when
-  // a message comes in.
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitWhenIdleClosure(),
-      TestTimeouts::action_max_timeout());
-  run_loop.Run();
-}
-
 bool FFUnitTestDecryptorProxy::DecryptorInit(const base::FilePath& dll_path,
                                              const base::FilePath& db_path) {
-  channel_->Send(new Msg_Decryptor_Init(dll_path, db_path));
-  WaitForClientResponse();
-  if (listener_->got_result) {
-    listener_->got_result = false;
-    return listener_->result_bool;
-  }
+  listener_->InitDecryptor(dll_path, db_path);
+  if (listener_->got_result_)
+    return listener_->result_bool_;
   return false;
 }
 
 base::string16 FFUnitTestDecryptorProxy::Decrypt(const std::string& crypt) {
-  channel_->Send(new Msg_Decrypt(crypt));
-  WaitForClientResponse();
-  if (listener_->got_result) {
-    listener_->got_result = false;
-    return listener_->result_string;
-  }
+  listener_->Decrypt(crypt);
+  if (listener_->got_result_)
+    return listener_->result_string_;
   return base::string16();
 }
 
 std::vector<autofill::PasswordForm> FFUnitTestDecryptorProxy::ParseSignons(
     const base::FilePath& signons_path) {
-  channel_->Send(new Msg_ParseSignons(signons_path));
-  WaitForClientResponse();
-  if (listener_->got_result) {
-    listener_->got_result = false;
-    return listener_->result_vector;
-  }
+  listener_->ParseSignons(signons_path);
+  if (listener_->got_result_)
+    return listener_->result_vector_;
   return std::vector<autofill::PasswordForm>();
 }
-
-//---------------------------- Child Process -----------------------
-
-// Class to listen on the client side of the ipc channel, it calls through
-// to the NSSDecryptor and sends back a reply.
-class FFDecryptorClientChannelListener : public IPC::Listener {
- public:
-  FFDecryptorClientChannelListener()
-      : sender_(NULL) {}
-
-  void SetSender(IPC::Sender* sender) {
-    sender_ = sender;
-  }
-
-  void OnDecryptor_Init(base::FilePath dll_path, base::FilePath db_path) {
-    bool ret = decryptor_.Init(dll_path, db_path);
-    sender_->Send(new Msg_Decryptor_InitReturnCode(ret));
-  }
-
-  void OnDecrypt(const std::string& crypt) {
-    base::string16 unencrypted_str = decryptor_.Decrypt(crypt);
-    sender_->Send(new Msg_Decryptor_Response(unencrypted_str));
-  }
-
-  void OnParseSignons(base::FilePath signons_path) {
-    std::vector<autofill::PasswordForm> forms;
-    decryptor_.ReadAndParseSignons(signons_path, &forms);
-    sender_->Send(new Msg_ParseSignons_Response(forms));
-  }
-
-  void OnQuitRequest() { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }
-
-  bool OnMessageReceived(const IPC::Message& msg) override {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(FFDecryptorClientChannelListener, msg)
-      IPC_MESSAGE_HANDLER(Msg_Decryptor_Init, OnDecryptor_Init)
-      IPC_MESSAGE_HANDLER(Msg_Decrypt, OnDecrypt)
-      IPC_MESSAGE_HANDLER(Msg_ParseSignons, OnParseSignons)
-      IPC_MESSAGE_HANDLER(Msg_Decryptor_Quit, OnQuitRequest)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
-  void OnChannelError() override {
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  }
-
- private:
-  NSSDecryptor decryptor_;
-  IPC::Sender* sender_;
-};
 
 // Entry function in child process.
 MULTIPROCESS_TEST_MAIN(NSSDecrypterChildProcess) {
   base::MessageLoopForIO main_message_loop;
-  FFDecryptorClientChannelListener listener;
 
   auto invitation = mojo::edk::IncomingBrokerClientInvitation::Accept(
       mojo::edk::ConnectionParams(
@@ -291,13 +253,12 @@ MULTIPROCESS_TEST_MAIN(NSSDecrypterChildProcess) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           kMojoChannelToken));
 
-  std::unique_ptr<IPC::Channel> channel = IPC::Channel::CreateClient(
-      mojo_handle.release(), &listener, base::ThreadTaskRunnerHandle::Get());
-  CHECK(channel->Connect());
-  listener.SetSender(channel.get());
-
-  // run message loop
-  base::RunLoop().Run();
+  firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorRequest request(
+      std::move(mojo_handle));
+  FFDecryptorClientListener listener(std::move(request));
+  base::RunLoop run_loop;
+  listener.SetQuitClosure(run_loop.QuitClosure());
+  run_loop.Run();
 
   return 0;
 }

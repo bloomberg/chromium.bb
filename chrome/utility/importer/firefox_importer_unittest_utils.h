@@ -20,21 +20,10 @@ namespace base {
 class MessageLoopForIO;
 }
 
-namespace IPC {
-class Channel;
-}  // namespace IPC
-
 // On OS X NSSDecryptor needs to run in a separate process. To allow us to use
 // the same unit test on all platforms we use a proxy class which spawns a
 // child process to do decryption on OS X, and calls through directly
 // to NSSDecryptor on other platforms.
-// On OS X:
-// 2 IPC messages are sent for every method of NSSDecryptor, one containing the
-// input arguments sent from Server->Child and one coming back containing
-// the return argument e.g.
-//
-// -> Msg_Decryptor_Init(dll_path, db_path)
-// <- Msg_Decryptor_InitReturnCode(bool)
 class FFUnitTestDecryptorProxy {
  public:
   FFUnitTestDecryptorProxy();
@@ -53,12 +42,7 @@ class FFUnitTestDecryptorProxy {
 
  private:
 #if defined(OS_MACOSX)
-  // Blocks until either a timeout is reached, or until the client process
-  // responds to an IPC message.
-  void WaitForClientResponse();
-
   base::Process child_process_;
-  std::unique_ptr<IPC::Channel> channel_;
   std::unique_ptr<FFDecryptorServerChannelListener> listener_;
   std::unique_ptr<base::MessageLoopForIO> message_loop_;
 #else

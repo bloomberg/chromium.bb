@@ -4,8 +4,8 @@ isherman@chromium.org
 # For NSS logic.
 per-file nss_*=engedy@chromium.org
 
-per-file *_messages*.h=set noparent
-per-file *_messages*.h=file://ipc/SECURITY_OWNERS
+per-file *.mojom=set noparent
+per-file *.mojom=file://ipc/SECURITY_OWNERS
 
 per-file profile_import_manifest.json=set noparent
 per-file profile_import_manifest.json=file://ipc/SECURITY_OWNERS
