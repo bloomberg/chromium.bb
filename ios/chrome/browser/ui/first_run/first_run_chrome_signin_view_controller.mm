@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
-#import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -33,22 +32,26 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
     @"SkipButtonAccessibilityIdentifier";
 
 @interface FirstRunChromeSigninViewController ()<
-    ChromeSigninViewControllerDelegate,
-    SyncPresenter> {
+    ChromeSigninViewControllerDelegate> {
   __weak TabModel* _tabModel;
   FirstRunConfiguration* _firstRunConfig;
   __weak ChromeIdentity* _identity;
   BOOL _hasRecordedSigninStarted;
 }
 
+// Presenter for showing sync-related UI.
+@property(nonatomic, readonly, weak) id<SyncPresenter> presenter;
+
 @end
 
 @implementation FirstRunChromeSigninViewController
+@synthesize presenter = _presenter;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                             tabModel:(TabModel*)tabModel
                       firstRunConfig:(FirstRunConfiguration*)firstRunConfig
                       signInIdentity:(ChromeIdentity*)identity
+                           presenter:(id<SyncPresenter>)presenter
                           dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super
        initWithBrowserState:browserState
@@ -61,6 +64,7 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
     _tabModel = tabModel;
     _firstRunConfig = firstRunConfig;
     _identity = identity;
+    _presenter = presenter;
     self.delegate = self;
   }
   return self;
@@ -102,7 +106,7 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 - (void)finishFirstRunAndDismissWithCompletion:(ProceduralBlock)completion {
   DCHECK(self.presentingViewController);
   FinishFirstRun(self.browserState, [_tabModel currentTab], _firstRunConfig,
-                 self /* id<SyncPresenter> */);
+                 self.presenter);
   [self.presentingViewController dismissViewControllerAnimated:YES
                                                     completion:^{
                                                       FirstRunDismissed();
@@ -180,26 +184,6 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 - (NSString*)skipSigninButtonTitle {
   return l10n_util::GetNSString(
       IDS_IOS_FIRSTRUN_ACCOUNT_CONSISTENCY_SKIP_BUTTON);
-}
-
-#pragma mark - SyncPresenter
-
-- (void)showReauthenticateSignin {
-  [self.dispatcher
-              showSignin:
-                  [[ShowSigninCommand alloc]
-                      initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
-                            accessPoint:signin_metrics::AccessPoint::
-                                            ACCESS_POINT_UNKNOWN]
-      baseViewController:self];
-}
-
-- (void)showSyncSettings {
-  [self.dispatcher showSyncSettingsFromViewController:self];
-}
-
-- (void)showSyncPassphraseSettings {
-  [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
 }
 
 @end

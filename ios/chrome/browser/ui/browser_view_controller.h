@@ -10,6 +10,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/ios/block_types.h"
+#import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_delegate.h"
@@ -33,7 +34,8 @@ class ChromeBrowserState;
 
 // The top-level view controller for the browser UI. Manages other controllers
 // which implement the interface.
-@interface BrowserViewController : UIViewController<ToolbarOwner,
+@interface BrowserViewController : UIViewController<SyncPresenter,
+                                                    ToolbarOwner,
                                                     UrlLoader,
                                                     VoiceSearchPresenter,
                                                     WebToolbarDelegate>

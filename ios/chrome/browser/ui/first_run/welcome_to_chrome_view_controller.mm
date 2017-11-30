@@ -55,6 +55,9 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 // The animation which occurs at launch has run.
 @property(nonatomic, assign) BOOL ranLaunchAnimation;
 
+// Presenter for showing sync-related UI.
+@property(nonatomic, readonly, weak) id<SyncPresenter> presenter;
+
 @property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
 
 @end
@@ -62,6 +65,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 @implementation WelcomeToChromeViewController
 
 @synthesize ranLaunchAnimation = _ranLaunchAnimation;
+@synthesize presenter = _presenter;
 @synthesize dispatcher = _dispatcher;
 
 + (BOOL)defaultStatsCheckboxValue {
@@ -78,6 +82,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                             tabModel:(TabModel*)tabModel
+                           presenter:(id<SyncPresenter>)presenter
                           dispatcher:(id<ApplicationCommands>)dispatcher {
   DCHECK(browserState);
   DCHECK(tabModel);
@@ -85,6 +90,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
   if (self) {
     browserState_ = browserState;
     tabModel_ = tabModel;
+    _presenter = presenter;
     _dispatcher = dispatcher;
   }
   return self;
@@ -173,6 +179,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
                       tabModel:tabModel_
                 firstRunConfig:firstRunConfig
                 signInIdentity:nil
+                     presenter:self.presenter
                     dispatcher:self.dispatcher];
 
   CATransition* transition = [CATransition animation];

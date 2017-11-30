@@ -167,7 +167,6 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_legacy_coordinator.h"
-#import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
@@ -409,7 +408,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     SnapshotOverlayProvider,
                                     StoreKitLauncher,
                                     SigninPresenter,
-                                    SyncPresenter,
                                     TabDialogDelegate,
                                     TabHeadersDelegate,
                                     TabHistoryPresentation,

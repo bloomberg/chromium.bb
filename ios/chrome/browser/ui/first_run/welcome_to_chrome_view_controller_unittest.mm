@@ -44,6 +44,7 @@ class WelcomeToChromeViewControllerTest : public PlatformTest {
     controller_ = [[WelcomeToChromeViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()
                     tabModel:tabModel
+                   presenter:nil
                   dispatcher:nil];
     [controller_ loadView];
   }
