@@ -1125,6 +1125,25 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Accessibility.CrosSelectToSpeak.CancelSpeech">
+  <owner>katie@chromium.org</owner>
+  <description>
+    A Chrome OS user manually cancels Select To Speak while it is speaking.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSelectToSpeak.LoadSettings">
+  <owner>katie@chromium.org</owner>
+  <description>
+    A Chrome OS user loads the Select To Speak settings page.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSelectToSpeak.StartSpeech">
+  <owner>katie@chromium.org</owner>
+  <description>A Chrome OS user manually starts Select To Speak.</description>
+</action>
+
 <action name="Accessibility.TwoFingersHeldGeneratedSpokenFeedbackCountdown">
   <owner>dmazzoni@chromium.org</owner>
   <description>
