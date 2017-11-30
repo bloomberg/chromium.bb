@@ -152,6 +152,14 @@ void LoginScreenClient::HandleFocusLeavingLockScreenApps(bool reverse) {
   login_screen_->HandleFocusLeavingLockScreenApps(reverse);
 }
 
+void LoginScreenClient::SetDevChannelInfo(
+    const std::string& os_version_label_text,
+    const std::string& enterprise_info_text,
+    const std::string& bluetooth_name) {
+  login_screen_->SetDevChannelInfo(os_version_label_text, enterprise_info_text,
+                                   bluetooth_name);
+}
+
 void LoginScreenClient::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }

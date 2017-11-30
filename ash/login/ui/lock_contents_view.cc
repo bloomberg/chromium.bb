@@ -35,6 +35,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/focus/focus_search.h"
@@ -180,6 +181,18 @@ void MakeSectionBold(views::StyledLabel* label,
   add_style(regular_style, *bold_start + bold_length + 1, text.length());
 }
 
+// Helper function to create a label for the dev channel info view.
+views::Label* CreateInfoLabel() {
+  views::Label* label = new views::Label();
+  label->SetAutoColorReadabilityEnabled(false);
+  label->SetEnabledColor(SK_ColorWHITE);
+  label->SetFontList(views::Label::GetDefaultFontList().Derive(
+      -1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
+  label->SetSubpixelRenderingEnabled(false);
+
+  return label;
+}
+
 }  // namespace
 
 LockContentsView::TestApi::TestApi(LockContentsView* view) : view_(view) {}
@@ -205,6 +218,10 @@ views::View* LockContentsView::TestApi::note_action() const {
 
 LoginBubble* LockContentsView::TestApi::tooltip_bubble() const {
   return view_->tooltip_bubble_.get();
+}
+
+views::View* LockContentsView::TestApi::dev_channel_info() const {
+  return view_->dev_channel_info_;
 }
 
 LockContentsView::UserState::UserState(AccountId account_id)
@@ -238,9 +255,25 @@ LockContentsView::LockContentsView(
   main_view_ = new NonAccessibleView();
   AddChildView(main_view_);
 
-  note_action_ =
-      new NoteActionLaunchButton(initial_note_action_state, data_dispatcher_);
-  AddChildView(note_action_);
+  // The top header view.
+  top_header_ = new views::View();
+  auto* top_header_layout = new views::BoxLayout(views::BoxLayout::kHorizontal);
+  top_header_layout->set_main_axis_alignment(
+      views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  top_header_->SetLayoutManager(top_header_layout);
+  AddChildView(top_header_);
+
+  dev_channel_info_ = new views::View();
+  auto* dev_channel_info_layout =
+      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(5, 8));
+  dev_channel_info_layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_END);
+  dev_channel_info_->SetLayoutManager(dev_channel_info_layout);
+  dev_channel_info_->SetVisible(false);
+  top_header_->AddChildView(dev_channel_info_);
+
+  note_action_ = new NoteActionLaunchButton(initial_note_action_state);
+  top_header_->AddChildView(note_action_);
 
   OnLockScreenNoteStateChanged(initial_note_action_state);
 }
@@ -262,14 +295,7 @@ LockContentsView::~LockContentsView() {
 
 void LockContentsView::Layout() {
   View::Layout();
-
-  // Layout note action in the top right corner - the action origin is offset
-  // to the left from the contents view top right corner by the width of the
-  // action view.
-  note_action_->SizeToPreferredSize();
-  gfx::Size action_size = note_action_->GetPreferredSize();
-  note_action_->SetPosition(GetLocalBounds().top_right() -
-                            gfx::Vector2d(action_size.width(), 0));
+  LayoutTopHeader();
 
   if (scroller_)
     scroller_->ClipHeightTo(size().height(), size().height());
@@ -406,11 +432,45 @@ void LockContentsView::OnLockScreenNoteStateChanged(
     mojom::TrayActionState state) {
   bool old_lock_screen_apps_active = lock_screen_apps_active_;
   lock_screen_apps_active_ = state == mojom::TrayActionState::kActive;
+  note_action_->UpdateVisibility(state);
+  LayoutTopHeader();
 
   // If lock screen apps just got deactivated - request focus for primary auth,
   // which should focus the password field.
   if (old_lock_screen_apps_active && !lock_screen_apps_active_ && primary_auth_)
     primary_auth_->RequestFocus();
+}
+
+void LockContentsView::OnDevChannelInfoChanged(
+    const std::string& os_version_label_text,
+    const std::string& enterprise_info_text,
+    const std::string& bluetooth_name) {
+  DCHECK(!os_version_label_text.empty() || !enterprise_info_text.empty() ||
+         !bluetooth_name.empty());
+
+  if (!dev_channel_info_->visible()) {
+    // Initialize the dev channel info view.
+    dev_channel_info_->SetVisible(true);
+    for (int i = 0; i < 3; ++i)
+      dev_channel_info_->AddChildView(CreateInfoLabel());
+  }
+
+  views::Label* version_label =
+      static_cast<views::Label*>(dev_channel_info_->child_at(0));
+  version_label->SetVisible(!os_version_label_text.empty());
+  version_label->SetText(base::UTF8ToUTF16(os_version_label_text));
+
+  views::Label* enterprise_label =
+      static_cast<views::Label*>(dev_channel_info_->child_at(1));
+  enterprise_label->SetVisible(!enterprise_info_text.empty());
+  enterprise_label->SetText(base::UTF8ToUTF16(enterprise_info_text));
+
+  views::Label* bluetooth_label =
+      static_cast<views::Label*>(dev_channel_info_->child_at(2));
+  bluetooth_label->SetVisible(!bluetooth_name.empty());
+  bluetooth_label->SetText(base::UTF8ToUTF16(bluetooth_name));
+
+  LayoutTopHeader();
 }
 
 void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
@@ -591,6 +651,21 @@ void LockContentsView::DoLayout() {
   SetPreferredSize(display.size());
   SizeToPreferredSize();
   Layout();
+}
+
+void LockContentsView::LayoutTopHeader() {
+  int preferred_width = dev_channel_info_->GetPreferredSize().width() +
+                        note_action_->GetPreferredSize().width();
+  int preferred_height =
+      std::max(dev_channel_info_->GetPreferredSize().height(),
+               note_action_->GetPreferredSize().height());
+  top_header_->SetPreferredSize(gfx::Size(preferred_width, preferred_height));
+  top_header_->SizeToPreferredSize();
+  top_header_->Layout();
+  // Position the top header - the origin is offset to the left from the top
+  // right corner of the entire view by the width of this top header view.
+  top_header_->SetPosition(GetLocalBounds().top_right() -
+                           gfx::Vector2d(preferred_width, 0));
 }
 
 views::View* LockContentsView::MakeOrientationViewWithWidths(int landscape,

@@ -54,6 +54,9 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void SetPinEnabledForUser(const AccountId& account_id,
                             bool is_enabled) override;
   void HandleFocusLeavingLockScreenApps(bool reverse) override;
+  void SetDevChannelInfo(const std::string& os_version_label_text,
+                         const std::string& enterprise_info_text,
+                         const std::string& bluetooth_name) override;
 
   // Wrappers around the mojom::LoginScreenClient interface. Hash the password
   // and send AuthenticateUser request to LoginScreenClient.

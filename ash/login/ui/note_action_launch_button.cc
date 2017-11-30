@@ -342,11 +342,7 @@ const views::View* NoteActionLaunchButton::TestApi::BackgroundView() const {
 }
 
 NoteActionLaunchButton::NoteActionLaunchButton(
-    mojom::TrayActionState initial_note_action_state,
-    LoginDataDispatcher* login_data_dispatcher)
-    : login_data_observer_(this) {
-  login_data_observer_.Add(login_data_dispatcher);
-
+    mojom::TrayActionState initial_note_action_state) {
   SetLayoutManager(new views::FillLayout());
 
   background_ = new BackgroundView();
@@ -359,11 +355,6 @@ NoteActionLaunchButton::NoteActionLaunchButton(
 }
 
 NoteActionLaunchButton::~NoteActionLaunchButton() = default;
-
-void NoteActionLaunchButton::OnLockScreenNoteStateChanged(
-    mojom::TrayActionState state) {
-  UpdateVisibility(state);
-}
 
 void NoteActionLaunchButton::UpdateVisibility(
     mojom::TrayActionState action_state) {

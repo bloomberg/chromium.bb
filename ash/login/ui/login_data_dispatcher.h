@@ -57,6 +57,12 @@ class ASH_EXPORT LoginDataDispatcher {
     virtual void OnShowEasyUnlockIcon(
         const AccountId& user,
         const mojom::EasyUnlockIconOptionsPtr& icon);
+
+    // Called when the info shown for dev and canary channels are changed.
+    virtual void OnDevChannelInfoChanged(
+        const std::string& os_version_label_text,
+        const std::string& enterprise_info_text,
+        const std::string& bluetooth_name);
   };
 
   LoginDataDispatcher();
@@ -71,6 +77,9 @@ class ASH_EXPORT LoginDataDispatcher {
   void SetLockScreenNoteState(mojom::TrayActionState state);
   void ShowEasyUnlockIcon(const AccountId& user,
                           const mojom::EasyUnlockIconOptionsPtr& icon);
+  void SetDevChannelInfo(const std::string& os_version_label_text,
+                         const std::string& enterprise_info_text,
+                         const std::string& bluetooth_name);
 
  private:
   base::ObserverList<Observer> observers_;
