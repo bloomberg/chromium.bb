@@ -20,15 +20,12 @@ import tarfile
 import time
 import uuid
 
-import elfinfo
-
 
 DIR_SOURCE_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 SDK_ROOT = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'fuchsia-sdk')
 QEMU_ROOT = os.path.join(DIR_SOURCE_ROOT, 'third_party',
                          'qemu-' + platform.machine())
-SYMBOLIZATION_TIMEOUT_SECS = 10
 
 # The guest will get 192.168.3.9 from DHCP, while the host will be
 # accessible as 192.168.3.2 .
@@ -138,30 +135,36 @@ def _ExpandDirectories(file_mapping, mapper):
   return expanded
 
 
-def _StripBinary(dry_run, bin_path):
-  """Creates a stripped copy of the executable at |bin_path| and returns the
-  path to the stripped copy."""
-  strip_path = bin_path + '.bootfs_stripped'
-  if dry_run:
-    print "Strip", bin_path, " to ", strip_path
-  else:
-    info = elfinfo.get_elf_info(bin_path)
-    info.strip(strip_path)
-  return strip_path
-
-
-def _StripBinaries(dry_run, file_mapping, target_cpu):
-  """Updates the supplied manifest |file_mapping|, by stripping any executables
-  and updating their entries to point to the stripped location. Returns a
-  mapping from target executables to their un-stripped paths, for use during
-  symbolization."""
+def _GetSymbolsMapping(dry_run, file_mapping, output_directory):
+  """For each stripped executable or dynamic library in |file_mapping|, looks
+  for an unstripped version in [exe|lib].unstripped under |output_directory|.
+  Returns a map from target filenames to un-stripped binary, if available, or
+  to the run-time binary otherwise."""
   symbols_mapping = {}
   for target, source in file_mapping.iteritems():
     with open(source, 'rb') as f:
       file_tag = f.read(4)
-    if file_tag == '\x7fELF':
+    if file_tag != '\x7fELF':
+      continue
+
+    # TODO(wez): Rather than bake-in assumptions about the naming of unstripped
+    # binaries, once we have ELF Build-Id values in the stack printout we should
+    # just scan the two directories to populate an Id->path mapping.
+    binary_name = os.path.basename(source)
+    exe_unstripped_path = os.path.join(
+        output_directory, 'exe.unstripped', binary_name)
+    lib_unstripped_path = os.path.join(
+        output_directory, 'lib.unstripped', binary_name)
+    if os.path.exists(exe_unstripped_path):
+      symbols_mapping[target] = exe_unstripped_path
+    elif os.path.exists(lib_unstripped_path):
+      symbols_mapping[target] = lib_unstripped_path
+    else:
       symbols_mapping[target] = source
-      file_mapping[target] = _StripBinary(dry_run, source)
+
+    if dry_run:
+      print 'Symbols:', binary_name, '->', symbols_mapping[target]
+
   return symbols_mapping
 
 
@@ -400,8 +403,9 @@ def _BuildBootfsManifest(image_creation_data):
       file_mapping,
       lambda x: _MakeTargetImageName(DIR_SOURCE_ROOT, icd.output_directory, x))
 
-  # Strip any binaries in the file list, and generate a manifest mapping.
-  symbols_mapping = _StripBinaries(icd.dry_run, file_mapping, icd.target_cpu)
+  # Determine the locations of unstripped versions of each binary, if any.
+  symbols_mapping = _GetSymbolsMapping(
+      icd.dry_run, file_mapping, icd.output_directory)
 
   return file_mapping, symbols_mapping
 
@@ -492,7 +496,7 @@ def _SymbolizeEntries(entries):
   return results
 
 
-def _FindDebugBinary(entry, file_mapping):
+def _LookupDebugBinary(entry, file_mapping):
   """Looks up the binary listed in |entry| in the |file_mapping|, and returns
   the corresponding host-side binary's filename, or None."""
   binary = entry['binary']
@@ -531,7 +535,7 @@ def _SymbolizeBacktrace(backtrace, file_mapping):
   # the path to the debug symbols for that binary, if any.
   batches = {}
   for entry in backtrace:
-    debug_binary = _FindDebugBinary(entry, file_mapping)
+    debug_binary = _LookupDebugBinary(entry, file_mapping)
     if debug_binary:
       entry['debug_binary'] = debug_binary
     batches.setdefault(debug_binary, []).append(entry)
