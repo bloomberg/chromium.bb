@@ -35853,6 +35853,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="25" label="Unthrottled"/>
 </enum>
 
+<enum name="RendererSchedulerThreadType">
+  <int value="0" label="MainThread"/>
+  <int value="1" label="WorkerThread"/>
+  <int value="2" label="CompositorThread"/>
+</enum>
+
 <enum name="RendererType">
   <int value="1" label="Normal renderer"/>
   <int value="2" label="Extension renderer"/>

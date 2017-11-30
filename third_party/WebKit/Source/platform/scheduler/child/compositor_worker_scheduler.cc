@@ -19,15 +19,29 @@ namespace scheduler {
 
 CompositorWorkerScheduler::CompositorWorkerScheduler(
     base::Thread* thread,
-    std::unique_ptr<WorkerSchedulerHelper> scheduler_helper)
-    : WorkerScheduler(std::move(scheduler_helper)), thread_(thread) {}
+    std::unique_ptr<TaskQueueManager> task_queue_manager)
+    : WorkerScheduler(
+          std::make_unique<WorkerSchedulerHelper>(std::move(task_queue_manager),
+                                                  this)),
+      thread_(thread),
+      compositor_thread_task_duration_reporter_(
+          "RendererScheduler.TaskDurationPerThreadType") {}
 
 CompositorWorkerScheduler::~CompositorWorkerScheduler() {}
 
-void CompositorWorkerScheduler::Init() {}
-
 scoped_refptr<WorkerTaskQueue> CompositorWorkerScheduler::DefaultTaskQueue() {
   return helper_->DefaultWorkerTaskQueue();
+}
+
+void CompositorWorkerScheduler::Init() {}
+
+void CompositorWorkerScheduler::OnTaskCompleted(
+    WorkerTaskQueue* worker_task_queue,
+    const TaskQueue::Task& task,
+    base::TimeTicks start,
+    base::TimeTicks end) {
+  compositor_thread_task_duration_reporter_.RecordTask(
+      ThreadType::kCompositorThread, end - start);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

@@ -69448,6 +69448,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.TaskDurationPerThreadType"
+    enum="RendererSchedulerThreadType" units="ms">
+  <owner>altimin@chromium.org</owner>
+  <owner>lpy@chromium.org</owner>
+  <summary>
+    Total duration of renderer tasks split by per thread type. Used to compare
+    CPU usage of tasks from different threads. Reported each time when task is
+    completed and current accumulated duration is longer than 1ms.
+
+    Note that this metric discards tasks longer than 30 seconds because they are
+    considered to be a result of measurement glitch.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.TaskQueueManager.DelayedTaskLateness"
     units="ms">
   <obsolete>
