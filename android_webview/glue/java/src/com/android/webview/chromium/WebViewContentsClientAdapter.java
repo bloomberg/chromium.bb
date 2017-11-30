@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.webkit.ClientCertRequest;
 import android.webkit.ConsoleMessage;
 import android.webkit.DownloadListener;
@@ -950,8 +951,14 @@ class WebViewContentsClientAdapter extends AwContentsClient {
             Log.w(TAG, "Unable to create JsDialog without an Activity");
             return false;
         }
-        new JsDialogHelper(res, jsDialogType, defaultValue, message, url)
-            .showDialog(activityContext);
+        try {
+            new JsDialogHelper(res, jsDialogType, defaultValue, message, url)
+                    .showDialog(activityContext);
+        } catch (WindowManager.BadTokenException e) {
+            Log.w(TAG,
+                    "Unable to create JsDialog. Has this WebView outlived the Activity it was created with?");
+            return false;
+        }
         return true;
     }
 
