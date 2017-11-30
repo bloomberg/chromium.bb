@@ -1,14 +1,13 @@
-Tests that the styleSheetAdded and styleSheetRemoved events are reported into the frontend. Bug 105828.
+Tests that the styleSheetAdded and styleSheetRemoved events are reported into the frontend. Bug 105828. https://bugs.webkit.org/show_bug.cgi?id=105828
 
-Text
 2 headers known:
+    URL=.../devtools/elements/styles/resources/stylesheet-tracking-main.html
+    origin=regular
+    isInline=true
+    hasSourceURL=false
     URL=.../devtools/elements/styles/resources/stylesheet-tracking.css
     origin=regular
     isInline=false
-    hasSourceURL=false
-    URL=.../devtools/elements/styles/stylesheet-tracking.html
-    origin=regular
-    isInline=true
     hasSourceURL=false
 === Adding iframe... ===
 Stylesheets added:

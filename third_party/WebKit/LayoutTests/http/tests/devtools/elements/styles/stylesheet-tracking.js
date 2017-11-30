@@ -1,71 +1,69 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<link rel="stylesheet" href="../styles/resources/stylesheet-tracking.css" />
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<style>
-html {
-    font-size: 12px;
-}
-</style>
+(async function() {
+  TestRunner.addResult(
+      `Tests that the styleSheetAdded and styleSheetRemoved events are reported into the frontend. Bug 105828. https://bugs.webkit.org/show_bug.cgi?id=105828\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.navigatePromise('resources/stylesheet-tracking-main.html');
+  await TestRunner.addStylesheetTag('stylesheet-tracking.css');
+  await TestRunner.evaluateInPagePromise(`
+      function addStyleSheet()
+      {
+          var styleElement = document.createElement("style");
+          styleElement.id = "style";
+          styleElement.type = "text/css";
+          styleElement.textContent = "@import url(\\"stylesheet-tracking-import.css\\");\\na { color: green; }"
+          document.head.appendChild(styleElement);
+      }
 
-<script>
+      function removeImport()
+      {
+          document.getElementById("style").sheet.deleteRule(0);
+      }
 
-function addStyleSheet()
-{
-    var styleElement = document.createElement("style");
-    styleElement.id = "style";
-    styleElement.type = "text/css";
-    styleElement.textContent = "@import url(\"resources/stylesheet-tracking-import.css\");\na { color: green; }"
-    document.head.appendChild(styleElement);
-}
+      function removeStyleSheet()
+      {
+          document.head.removeChild(document.getElementById("style"));
+      }
 
-function removeImport()
-{
-    document.getElementById("style").sheet.deleteRule(0);
-}
+      function loadIframe()
+      {
+          var iframe = document.createElement("iframe");
+          iframe.setAttribute("seamless", "seamless");
+          iframe.src = "stylesheet-tracking-iframe.html";
+          document.body.appendChild(iframe);
+      }
 
-function removeStyleSheet()
-{
-    document.head.removeChild(document.getElementById("style"));
-}
+      function iframe()
+      {
+          return document.getElementsByTagName("iframe")[0];
+      }
 
-function loadIframe()
-{
-    var iframe = document.createElement("iframe");
-    iframe.setAttribute("seamless", "seamless");
-    iframe.src = "resources/stylesheet-tracking-iframe.html";
-    document.body.appendChild(iframe);
-}
+      function addIframeStyleSheets()
+      {
+          iframe().contentWindow.postMessage("addStyleSheets", "*");
+      }
 
-function iframe()
-{
-    return document.getElementsByTagName("iframe")[0];
-}
+      function navigateIframe()
+      {
+          iframe().src = iframe().src;
+      }
 
-function addIframeStyleSheets()
-{
-    iframe().contentWindow.postMessage("addStyleSheets", "*");
-}
+      function removeIframeStyleSheets()
+      {
+          iframe().contentWindow.postMessage("removeStyleSheets", "*");
+      }
 
-function navigateIframe()
-{
-    iframe().src = iframe().src;
-}
+      function removeIframe()
+      {
+          var element = iframe();
+          element.parentElement.removeChild(element);
+      }
+  `);
 
-function removeIframeStyleSheets()
-{
-    iframe().contentWindow.postMessage("removeStyleSheets", "*");
-}
-
-function removeIframe()
-{
-    var element = iframe();
-    element.parentElement.removeChild(element);
-}
-
-function test() {
   var inspectedNode;
 
   TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded, null);
@@ -228,16 +226,4 @@ function test() {
       return url;
     return '.../' + url.substr(lastIndex);
   }
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that the styleSheetAdded and styleSheetRemoved events are reported into the frontend. <a href="https://bugs.webkit.org/show_bug.cgi?id=105828">Bug 105828</a>.
-</p>
-
-<div id="inspected">Text</div>
-
-</body>
-</html>
+})();
