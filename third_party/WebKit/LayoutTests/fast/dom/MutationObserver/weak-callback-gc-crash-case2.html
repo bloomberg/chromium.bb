@@ -1,0 +1,38 @@
+<!-- https://crbug.com/788495 -->
+
+<div id="observation-target">This test passes if it does not crash.</div>
+
+<iframe id="child-frame" src="#load-the-same-document-page"></iframe>
+
+<script>
+if (window.testRunner) {
+  testRunner.waitUntilDone();
+  testRunner.dumpAsText();
+}
+
+var mutationObserver;
+let childFrame = document.getElementById('child-frame');
+
+document.addEventListener('DOMContentLoaded', onContentLoaded, false);
+
+function onContentLoaded() {
+  mutationObserver = new MutationObserver(() => {});
+  mutationObserver.observe(document.getElementById('observation-target'),
+                           {attributes: true});
+
+  setTimeout(attemptToCauseCrash, /* Needs enough time */ 100);
+}
+
+function attemptToCauseCrash() {
+  doc1 = document.implementation.createDocument('http://www.w3.org/1999/xhtml', 'html');
+  doc1.adoptNode(childFrame.contentDocument.documentElement);
+
+  doc2 = document.implementation.createDocument('http://www.w3.org/1999/xhtml', 'html');
+  doc2.documentElement.appendChild(childFrame);
+  doc2.documentElement.parentNode.removeChild(doc2.documentElement);
+
+  gc();
+
+  setTimeout(() => testRunner.notifyDone(), 0);
+}
+</script>
