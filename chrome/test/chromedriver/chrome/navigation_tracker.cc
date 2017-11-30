@@ -10,6 +10,7 @@
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/net/timeout.h"
 
 namespace {
 
@@ -243,7 +244,7 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     pending_frame_set_.insert(frame_id);
     loading_state_ = kLoading;
 
-    if (browser_info_->major_version >= 64) {
+    if (browser_info_->major_version >= 63) {
       // Check if the document is really loading.
       base::DictionaryValue params;
       params.SetString("expression", "document.readyState");
@@ -427,8 +428,11 @@ Status NavigationTracker::OnCommandSuccess(
     const std::string& method,
     const base::DictionaryValue& result,
     const Timeout& command_timeout) {
+  // Check for start of navigation. In some case response to navigate is delayed
+  // until after the command has already timed out, in which case it has already
+  // been cancelled or will be cancelled soon, and should be ignored.
   if ((method == "Page.navigate" || method == "Page.navigateToHistoryEntry") &&
-      loading_state_ != kLoading) {
+      loading_state_ != kLoading && !command_timeout.IsExpired()) {
     // At this point the browser has initiated the navigation, but besides that,
     // it is unknown what will happen.
     //

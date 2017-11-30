@@ -113,6 +113,14 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'PageLoadingTest.testShouldBeAbleToGetAFragmentOnTheCurrentPage',
 ]
 
+_REVISION_NEGATIVE_FILTER['63'] = (
+    _REVISION_NEGATIVE_FILTER['HEAD'] + [
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
+        'MiscTest.testStimulatesStrangeOnloadInteractionInFirefox',
+	'PageLoadingTest.testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
+    ]
+)
+
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=373
