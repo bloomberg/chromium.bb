@@ -4,12 +4,17 @@
 
 #include "components/exo/test/exo_test_helper.h"
 
+#include <memory>
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "components/exo/buffer.h"
-#include "components/exo/shell_surface.h"
+#include "components/exo/client_controlled_shell_surface.h"
+#include "components/exo/display.h"
 #include "components/exo/surface.h"
+#include "components/exo/wm_helper.h"
+#include "components/exo/xdg_shell_surface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "ui/aura/env.h"
 #include "ui/compositor/compositor.h"
@@ -26,9 +31,9 @@ ExoTestWindow::ExoTestWindow(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_buffer,
   surface_.reset(new Surface());
   int container = is_modal ? ash::kShellWindowId_SystemModalContainer
                            : ash::kShellWindowId_DefaultContainer;
-  shell_surface_.reset(new ShellSurface(surface_.get(), nullptr,
-                                        ShellSurface::BoundsMode::SHELL,
-                                        gfx::Point(), true, false, container));
+  shell_surface_ = std::make_unique<ShellSurface>(
+      surface_.get(), ShellSurface::BoundsMode::SHELL, gfx::Point(), true,
+      false, container);
 
   buffer_.reset(new Buffer(std::move(gpu_buffer)));
   surface_->Attach(buffer_.get());
@@ -73,6 +78,16 @@ ExoTestWindow ExoTestHelper::CreateWindow(int width,
                                           bool is_modal) {
   return ExoTestWindow(CreateGpuMemoryBuffer(gfx::Size(width, height)),
                        is_modal);
+}
+
+std::unique_ptr<ClientControlledShellSurface>
+ExoTestHelper::CreateClientControlledShellSurface(Surface* surface,
+                                                  bool is_modal) {
+  int container = is_modal ? ash::kShellWindowId_SystemModalContainer
+                           : ash::kShellWindowId_DefaultContainer;
+  return Display().CreateClientControlledShellSurface(
+      surface, container,
+      WMHelper::GetInstance()->GetDefaultDeviceScaleFactor());
 }
 
 }  // namespace test

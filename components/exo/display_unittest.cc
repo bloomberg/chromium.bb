@@ -5,6 +5,7 @@
 #include "components/exo/display.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "components/exo/buffer.h"
+#include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/data_device.h"
 #include "components/exo/data_device_delegate.h"
 #include "components/exo/file_helper.h"
@@ -114,7 +115,7 @@ TEST_F(DisplayTest, CreateShellSurface) {
   EXPECT_TRUE(shell_surface2);
 }
 
-TEST_F(DisplayTest, CreateRemoteShellSurface) {
+TEST_F(DisplayTest, CreateClientControlledShellSurface) {
   std::unique_ptr<Display> display(new Display);
 
   // Create two surfaces.
@@ -125,16 +126,16 @@ TEST_F(DisplayTest, CreateRemoteShellSurface) {
 
   // Create a remote shell surface for surface1.
   std::unique_ptr<ShellSurface> shell_surface1 =
-      display->CreateRemoteShellSurface(
+      display->CreateClientControlledShellSurface(
           surface1.get(), ash::kShellWindowId_SystemModalContainer,
           2.0 /* default_scale_factor */);
   EXPECT_TRUE(shell_surface1);
 
   // Create a remote shell surface for surface2.
   std::unique_ptr<ShellSurface> shell_surface2 =
-      display->CreateRemoteShellSurface(surface2.get(),
-                                        ash::kShellWindowId_DefaultContainer,
-                                        1.0 /* default_scale_factor */);
+      display->CreateClientControlledShellSurface(
+          surface2.get(), ash::kShellWindowId_DefaultContainer,
+          1.0 /* default_scale_factor */);
   EXPECT_TRUE(shell_surface2);
 }
 

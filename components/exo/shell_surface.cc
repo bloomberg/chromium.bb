@@ -54,12 +54,6 @@ DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
 // Application Id set by the client.
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kApplicationIdKey, nullptr);
 
-// Maximum amount of time to wait for contents that match the display's
-// orientation in tablet mode.
-// TODO(oshima): Looks like android is generating unnecessary frames.
-// Fix it on Android side and reduce the timeout.
-constexpr int kOrientationLockTimeoutMs = 2500;
-
 // Maximum amount of time to wait for contents after a change to maximize,
 // fullscreen or pinned state.
 constexpr int kMaximizedOrFullscreenOrPinnedLockTimeoutMs = 100;
@@ -158,22 +152,6 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
 };
 
-// Minimal WindowResizer that unlike DefaultWindowResizer does not handle
-// dragging and resizing windows.
-class CustomWindowResizer : public ash::WindowResizer {
- public:
-  explicit CustomWindowResizer(ash::wm::WindowState* window_state)
-      : WindowResizer(window_state) {}
-
-  // Overridden from ash::WindowResizer:
-  void Drag(const gfx::Point& location, int event_flags) override {}
-  void CompleteDrag() override {}
-  void RevertDrag() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CustomWindowResizer);
-};
-
 class ShellSurfaceWidget : public views::Widget {
  public:
   explicit ShellSurfaceWidget(ShellSurface* shell_surface)
@@ -194,12 +172,6 @@ class ShellSurfaceWidget : public views::Widget {
   DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWidget);
 };
 
-Orientation SizeToOrientation(const gfx::Size& size) {
-  DCHECK_NE(size.width(), size.height());
-  return size.width() > size.height() ? Orientation::LANDSCAPE
-                                      : Orientation::PORTRAIT;
-}
-
 }  // namespace
 
 // Surface state associated with each configure request.
@@ -214,27 +186,6 @@ struct ShellSurface::Config {
   gfx::Vector2d origin_offset;
   int resize_component;
   std::unique_ptr<ui::CompositorLock> compositor_lock;
-};
-
-// Helper class used to coalesce a number of changes into one "configure"
-// callback. Callbacks are suppressed while an instance of this class is
-// instantiated and instead called when the instance is destroyed.
-// If |force_configure_| is true ShellSurface::Configure() will be called
-// even if no changes to shell surface took place during the lifetime of the
-// ScopedConfigure instance.
-class ShellSurface::ScopedConfigure {
- public:
-  ScopedConfigure(ShellSurface* shell_surface, bool force_configure);
-  ~ScopedConfigure();
-
-  void set_needs_configure() { needs_configure_ = true; }
-
- private:
-  ShellSurface* const shell_surface_;
-  const bool force_configure_;
-  bool needs_configure_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedConfigure);
 };
 
 // Helper class used to temporarily disable animations. Restores the
@@ -316,36 +267,26 @@ ShellSurface::ScopedAnimationsDisabled::~ScopedAnimationsDisabled() {
 // ShellSurface, public:
 
 ShellSurface::ShellSurface(Surface* surface,
-                           ShellSurface* parent,
                            BoundsMode bounds_mode,
                            const gfx::Point& origin,
                            bool activatable,
                            bool can_minimize,
                            int container)
     : SurfaceTreeHost("ExoShellSurfaceHost"),
-      widget_(nullptr),
-      parent_(parent ? parent->GetWidget()->GetNativeWindow() : nullptr),
       bounds_mode_(bounds_mode),
-      primary_display_id_(
-          display::Screen::GetScreen()->GetPrimaryDisplay().id()),
       origin_(origin),
+      container_(container),
       activatable_(activatable),
-      can_minimize_(can_minimize),
-      container_(container) {
+      can_minimize_(can_minimize) {
   WMHelper::GetInstance()->AddActivationObserver(this);
-  WMHelper::GetInstance()->AddDisplayConfigurationObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
   surface->AddSurfaceObserver(this);
   SetRootSurface(surface);
   host_window()->Show();
   set_owned_by_client();
-  if (parent_)
-    parent_->AddObserver(this);
 }
 
 ShellSurface::ShellSurface(Surface* surface)
     : ShellSurface(surface,
-                   nullptr,
                    BoundsMode::SHELL,
                    gfx::Point(),
                    true,
@@ -369,8 +310,6 @@ ShellSurface::~ShellSurface() {
       widget_->Hide();
     widget_->CloseNow();
   }
-  WMHelper::GetInstance()->RemoveDisplayConfigurationObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
   if (parent_)
     parent_->RemoveObserver(this);
   if (root_surface())
@@ -483,40 +422,6 @@ void ShellSurface::SetFullscreen(bool fullscreen) {
   widget_->SetFullscreen(fullscreen);
 }
 
-void ShellSurface::SetPinned(ash::mojom::WindowPinType type) {
-  TRACE_EVENT1("exo", "ShellSurface::SetPinned", "type",
-               static_cast<int>(type));
-
-  if (!widget_)
-    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
-
-  // Note: This will ask client to configure its surface even if pinned
-  // state doesn't change.
-  ScopedConfigure scoped_configure(this, true);
-  widget_->GetNativeWindow()->SetProperty(ash::kWindowPinTypeKey, type);
-}
-
-void ShellSurface::SetSystemUiVisibility(bool autohide) {
-  TRACE_EVENT1("exo", "ShellSurface::SetSystemUiVisibility", "autohide",
-               autohide);
-
-  if (!widget_)
-    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
-
-  ash::wm::SetAutoHideShelf(widget_->GetNativeWindow(), autohide);
-}
-
-void ShellSurface::SetAlwaysOnTop(bool always_on_top) {
-  TRACE_EVENT1("exo", "ShellSurface::SetAlwaysOnTop", "always_on_top",
-               always_on_top);
-
-  if (!widget_)
-    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
-
-  widget_->GetNativeWindow()->SetProperty(aura::client::kAlwaysOnTopKey,
-                                          always_on_top);
-}
-
 void ShellSurface::SetTitle(const base::string16& title) {
   TRACE_EVENT1("exo", "ShellSurface::SetTitle", "title",
                base::UTF16ToUTF8(title));
@@ -550,7 +455,8 @@ void ShellSurface::SetSystemModal(bool system_modal) {
   if (system_modal == system_modal_)
     return;
 
-  bool non_system_modal_window_was_active = !system_modal_ && widget_ && widget_->IsActive();
+  bool non_system_modal_window_was_active =
+      !system_modal_ && widget_ && widget_->IsActive();
 
   system_modal_ = system_modal;
 
@@ -571,6 +477,10 @@ void ShellSurface::UpdateSystemModal() {
   widget_->GetNativeWindow()->SetProperty(
       aura::client::kModalKey,
       system_modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_NONE);
+}
+
+float ShellSurface::GetScale() const {
+  return 1.f;
 }
 
 // static
@@ -600,11 +510,12 @@ void ShellSurface::Move() {
 
   switch (bounds_mode_) {
     case BoundsMode::SHELL:
-    case BoundsMode::CLIENT:
       AttemptToStartDrag(HTCAPTION);
       return;
     case BoundsMode::FIXED:
       return;
+    case BoundsMode::CLIENT:
+      break;
   }
 
   NOTREACHED();
@@ -645,40 +556,6 @@ void ShellSurface::SetGeometry(const gfx::Rect& geometry) {
   pending_geometry_ = geometry;
 }
 
-void ShellSurface::SetOrientation(Orientation orientation) {
-  TRACE_EVENT1("exo", "ShellSurface::SetOrientation", "orientation",
-               orientation == Orientation::PORTRAIT ? "portrait" : "landscape");
-  pending_orientation_ = orientation;
-}
-
-void ShellSurface::SetShadowBounds(const gfx::Rect& bounds) {
-  TRACE_EVENT1("exo", "ShellSurface::SetShadowBounds", "bounds",
-               bounds.ToString());
-  auto shadow_bounds =
-      bounds.IsEmpty() ? base::nullopt : base::make_optional(bounds);
-  if (shadow_bounds_ != shadow_bounds) {
-    shadow_bounds_ = shadow_bounds;
-    shadow_bounds_changed_ = true;
-  }
-}
-
-void ShellSurface::SetScale(double scale) {
-  TRACE_EVENT1("exo", "ShellSurface::SetScale", "scale", scale);
-
-  if (scale <= 0.0) {
-    DLOG(WARNING) << "Surface scale must be greater than 0";
-    return;
-  }
-
-  pending_scale_ = scale;
-}
-
-void ShellSurface::SetTopInset(int height) {
-  TRACE_EVENT1("exo", "ShellSurface::SetTopInset", "height", height);
-
-  pending_top_inset_height_ = height;
-}
-
 void ShellSurface::SetOrigin(const gfx::Point& origin) {
   TRACE_EVENT1("exo", "ShellSurface::SetOrigin", "origin", origin.ToString());
 
@@ -708,13 +585,6 @@ void ShellSurface::SetMinimumSize(const gfx::Size& size) {
   TRACE_EVENT1("exo", "ShellSurface::SetMinimumSize", "size", size.ToString());
 
   pending_minimum_size_ = size;
-}
-
-void ShellSurface::SetBoundsMode(BoundsMode mode) {
-  TRACE_EVENT1("exo", "ShellSurface::SetBoundsMode", "mode",
-               static_cast<int>(mode));
-
-  bounds_mode_ = mode;
 }
 
 void ShellSurface::SetCanMinimize(bool can_minimize) {
@@ -792,13 +662,6 @@ void ShellSurface::OnSurfaceCommit() {
     UpdateWidgetBounds();
     UpdateShadow();
 
-    // Apply new top inset height.
-    if (pending_top_inset_height_ != top_inset_height_) {
-      widget_->GetNativeWindow()->SetProperty(aura::client::kTopViewInset,
-                                              pending_top_inset_height_);
-      top_inset_height_ = pending_top_inset_height_;
-    }
-
     // System modal container is used by clients to implement overlay
     // windows using a single ShellSurface instance.  If hit-test
     // region is empty, then it is non interactive window and won't be
@@ -825,15 +688,6 @@ void ShellSurface::OnSurfaceCommit() {
 
     UpdateSurfaceBounds();
 
-    // Update surface scale.
-    if (pending_scale_ != scale_) {
-      gfx::Transform transform;
-      DCHECK_NE(pending_scale_, 0.0);
-      transform.Scale(1.0 / pending_scale_, 1.0 / pending_scale_);
-      host_window()->SetTransform(transform);
-      scale_ = pending_scale_;
-    }
-
     // Show widget if needed.
     if (pending_show_widget_) {
       DCHECK(!widget_->IsClosed());
@@ -843,11 +697,6 @@ void ShellSurface::OnSurfaceCommit() {
       if (container_ == ash::kShellWindowId_SystemModalContainer)
         UpdateSystemModal();
     }
-    orientation_ = pending_orientation_;
-    if (expected_orientation_ == orientation_)
-      orientation_compositor_lock_.reset();
-  } else {
-    orientation_compositor_lock_.reset();
   }
 }
 
@@ -926,21 +775,6 @@ gfx::ImageSkia ShellSurface::GetWindowIcon() {
   return icon_;
 }
 
-void ShellSurface::SaveWindowPlacement(const gfx::Rect& bounds,
-                                       ui::WindowShowState show_state) {
-  if (bounds_mode_ != BoundsMode::CLIENT)
-    WidgetDelegate::SaveWindowPlacement(bounds, show_state);
-}
-
-bool ShellSurface::GetSavedWindowPlacement(
-    const views::Widget* widget,
-    gfx::Rect* bounds,
-    ui::WindowShowState* show_state) const {
-  if (bounds_mode_ != BoundsMode::CLIENT)
-    return WidgetDelegate::GetSavedWindowPlacement(widget, bounds, show_state);
-  return false;
-}
-
 void ShellSurface::WindowClosing() {
   if (resizer_)
     EndDrag(true /* revert */);
@@ -980,8 +814,9 @@ void ShellSurface::GetWidgetHitTestMask(gfx::Path* mask) const {
 
   gfx::Point origin = host_window()->bounds().origin();
   SkMatrix matrix;
+  float scale = GetScale();
   matrix.setScaleTranslate(
-      SkFloatToScalar(1.0f / scale_), SkFloatToScalar(1.0f / scale_),
+      SkFloatToScalar(1.0f / scale), SkFloatToScalar(1.0f / scale),
       SkIntToScalar(origin.x()), SkIntToScalar(origin.y()));
   mask->transform(matrix);
 }
@@ -1067,11 +902,7 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
                                          const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds,
                                          ui::PropertyChangeReason reason) {
-  // TODO(domlaskowski): For BoundsMode::CLIENT, the configure callback does not
-  // yet support resizing. See crbug.com/699746.
-  if (bounds_mode_ == BoundsMode::CLIENT)
-    return;
-
+  DCHECK_NE(bounds_mode_, BoundsMode::CLIENT);
   if (!widget_ || !root_surface() || ignore_window_bounds_changes_)
     return;
 
@@ -1090,8 +921,6 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
 
     // The shadow size may be updated to match the widget. Change it back
     // to the shadow content size.
-    // TODO(oshima): When the window reiszing is enabled, we may want to
-    // implement shadow management here instead of using shadow controller.
     UpdateShadow();
 
     Configure();
@@ -1126,39 +955,6 @@ void ShellSurface::OnWindowActivated(ActivationReason reason,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ash::WindowTreeHostManager::Observer overrides:
-
-void ShellSurface::OnDisplayConfigurationChanged() {
-  if (bounds_mode_ != BoundsMode::CLIENT)
-    return;
-
-  const display::Screen* screen = display::Screen::GetScreen();
-  int64_t primary_display_id = screen->GetPrimaryDisplay().id();
-  if (primary_display_id == primary_display_id_)
-    return;
-
-  display::Display old_primary_display;
-  if (screen->GetDisplayWithDisplayId(primary_display_id_,
-                                      &old_primary_display)) {
-    // Give the client a chance to adjust window positions before switching to
-    // the new coordinate system. Retain the old origin by reverting the origin
-    // delta until the next configure is acknowledged.
-    gfx::Vector2d delta = gfx::Point() - old_primary_display.bounds().origin();
-    origin_offset_ -= delta;
-    pending_origin_offset_accumulator_ += delta;
-
-    if (widget_) {
-      UpdateWidgetBounds();
-      UpdateShadow();
-    }
-
-    Configure();
-  }
-
-  primary_display_id_ = primary_display_id;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ui::EventHandler overrides:
 
 void ShellSurface::OnKeyEvent(ui::KeyEvent* event) {
@@ -1174,31 +970,6 @@ void ShellSurface::OnKeyEvent(ui::KeyEvent* event) {
       event->key_code() == ui::VKEY_ESCAPE) {
     EndDrag(true /* revert */);
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// display::DisplayObserver overrides:
-
-void ShellSurface::OnDisplayMetricsChanged(const display::Display& new_display,
-                                           uint32_t changed_metrics) {
-  if (!widget_ || !widget_->IsActive() || bounds_mode_ != BoundsMode::CLIENT ||
-      !WMHelper::GetInstance()->IsTabletModeWindowManagerEnabled()) {
-    return;
-  }
-
-  const display::Screen* screen = display::Screen::GetScreen();
-  display::Display current_display =
-      screen->GetDisplayNearestWindow(widget_->GetNativeWindow());
-  if (current_display.id() != new_display.id() ||
-      !(changed_metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION)) {
-    return;
-  }
-
-  Orientation target_orientation = SizeToOrientation(new_display.size());
-  if (orientation_ == target_orientation)
-    return;
-  expected_orientation_ = target_orientation;
-  EnsureCompositorIsLockedForOrientationChange();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1316,13 +1087,6 @@ bool ShellSurface::AcceleratorPressed(const ui::Accelerator& accelerator) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ui::CompositorLockClient overrides:
-
-void ShellSurface::CompositorLockTimedOut() {
-  orientation_compositor_lock_.reset();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, private:
 
 void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
@@ -1348,7 +1112,6 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
     activatable &= HasHitTestRegion();
   params.activatable = activatable ? views::Widget::InitParams::ACTIVATABLE_YES
                                    : views::Widget::InitParams::ACTIVATABLE_NO;
-
   // Note: NativeWidget owns this widget.
   widget_ = new ShellSurfaceWidget(this);
   widget_->Init(params);
@@ -1371,9 +1134,7 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
   window_state->AddObserver(this);
 
-  // Allow the client to request bounds that do not fill the entire work area
-  // when maximized, or the entire display when fullscreen.
-  window_state->set_allow_set_bounds_direct(bounds_mode_ == BoundsMode::CLIENT);
+  InitializeWindowState(window_state);
 
   // Notify client of initial state if different than normal.
   if (window_state->GetStateType() != ash::mojom::WindowStateType::NORMAL &&
@@ -1381,11 +1142,6 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
     state_changed_callback_.Run(ash::mojom::WindowStateType::NORMAL,
                                 window_state->GetStateType());
   }
-
-  // Disable movement if bounds are controlled by the client or fixed.
-  bool movement_disabled = bounds_mode_ != BoundsMode::SHELL;
-  widget_->set_movement_disabled(movement_disabled);
-  window_state->set_ignore_keyboard_bounds_change(movement_disabled);
 
   // AutoHide shelf in fullscreen state.
   window_state->SetHideShelfWhenFullscreen(false);
@@ -1486,74 +1242,59 @@ void ShellSurface::AttemptToStartDrag(int component) {
   if (!window || window->HasCapture())
     return;
 
-  if (bounds_mode_ == BoundsMode::SHELL) {
-    // Set the cursor before calling CreateWindowResizer(), as that will
-    // eventually call LockCursor() and prevent the cursor from changing.
-    aura::client::CursorClient* cursor_client =
-        aura::client::GetCursorClient(window->GetRootWindow());
-    if (!cursor_client)
-      return;
+  DCHECK_EQ(bounds_mode_, BoundsMode::SHELL);
 
-    switch (component) {
-      case HTCAPTION:
-        cursor_client->SetCursor(ui::CursorType::kPointer);
-        break;
-      case HTTOP:
-        cursor_client->SetCursor(ui::CursorType::kNorthResize);
-        break;
-      case HTTOPRIGHT:
-        cursor_client->SetCursor(ui::CursorType::kNorthEastResize);
-        break;
-      case HTRIGHT:
-        cursor_client->SetCursor(ui::CursorType::kEastResize);
-        break;
-      case HTBOTTOMRIGHT:
-        cursor_client->SetCursor(ui::CursorType::kSouthEastResize);
-        break;
-      case HTBOTTOM:
-        cursor_client->SetCursor(ui::CursorType::kSouthResize);
-        break;
-      case HTBOTTOMLEFT:
-        cursor_client->SetCursor(ui::CursorType::kSouthWestResize);
-        break;
-      case HTLEFT:
-        cursor_client->SetCursor(ui::CursorType::kWestResize);
-        break;
-      case HTTOPLEFT:
-        cursor_client->SetCursor(ui::CursorType::kNorthWestResize);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+  // Set the cursor before calling CreateWindowResizer(), as that will
+  // eventually call LockCursor() and prevent the cursor from changing.
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(window->GetRootWindow());
+  if (!cursor_client)
+    return;
 
-    resizer_ = ash::CreateWindowResizer(window, GetMouseLocation(), component,
-                                        wm::WINDOW_MOVE_SOURCE_MOUSE);
-    if (!resizer_)
-      return;
-
-    // Apply pending origin offsets and resize direction before starting a
-    // new resize operation. These can still be pending if the client has
-    // acknowledged the configure request but not yet called Commit().
-    origin_offset_ += pending_origin_offset_;
-    pending_origin_offset_ = gfx::Vector2d();
-    resize_component_ = pending_resize_component_;
-  } else {
-    DCHECK(bounds_mode_ == BoundsMode::CLIENT);
-
-    ash::wm::WindowState* window_state =
-        ash::wm::GetWindowState(widget_->GetNativeWindow());
-    DCHECK(!window_state->drag_details());
-    DCHECK(component == HTCAPTION);
-    window_state->CreateDragDetails(GetMouseLocation(), component,
-                                    wm::WINDOW_MOVE_SOURCE_MOUSE);
-
-    // Chained with a CustomWindowResizer, DragWindowResizer does not handle
-    // dragging. It only renders phantom windows and moves the window to the
-    // target root window when dragging ends.
-    resizer_.reset(ash::DragWindowResizer::Create(
-        new CustomWindowResizer(window_state), window_state));
+  switch (component) {
+    case HTCAPTION:
+      cursor_client->SetCursor(ui::CursorType::kPointer);
+      break;
+    case HTTOP:
+      cursor_client->SetCursor(ui::CursorType::kNorthResize);
+      break;
+    case HTTOPRIGHT:
+      cursor_client->SetCursor(ui::CursorType::kNorthEastResize);
+      break;
+    case HTRIGHT:
+      cursor_client->SetCursor(ui::CursorType::kEastResize);
+      break;
+    case HTBOTTOMRIGHT:
+      cursor_client->SetCursor(ui::CursorType::kSouthEastResize);
+      break;
+    case HTBOTTOM:
+      cursor_client->SetCursor(ui::CursorType::kSouthResize);
+      break;
+    case HTBOTTOMLEFT:
+      cursor_client->SetCursor(ui::CursorType::kSouthWestResize);
+      break;
+    case HTLEFT:
+      cursor_client->SetCursor(ui::CursorType::kWestResize);
+      break;
+    case HTTOPLEFT:
+      cursor_client->SetCursor(ui::CursorType::kNorthWestResize);
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
+
+  resizer_ = ash::CreateWindowResizer(window, GetMouseLocation(), component,
+                                      wm::WINDOW_MOVE_SOURCE_MOUSE);
+  if (!resizer_)
+    return;
+
+  // Apply pending origin offsets and resize direction before starting a
+  // new resize operation. These can still be pending if the client has
+  // acknowledged the configure request but not yet called Commit().
+  origin_offset_ += pending_origin_offset_;
+  pending_origin_offset_ = gfx::Vector2d();
+  resize_component_ = pending_resize_component_;
 
   WMHelper::GetInstance()->AddPreTargetHandler(this);
   window->SetCapture();
@@ -1754,7 +1495,8 @@ void ShellSurface::UpdateShadow() {
     if (shadow_bounds_->IsEmpty()) {
       shadow_bounds = gfx::Rect(window->bounds().size());
     } else {
-      shadow_bounds = gfx::ScaleToEnclosedRect(*shadow_bounds_, 1.f / scale_);
+      shadow_bounds =
+          gfx::ScaleToEnclosedRect(*shadow_bounds_, 1.f / GetScale());
 
       // Convert from screen to display coordinates.
       shadow_bounds -= origin_offset_;
@@ -1781,16 +1523,6 @@ void ShellSurface::UpdateShadow() {
 }
 
 void ShellSurface::UpdateBackdrop() {
-  aura::Window* window = widget_->GetNativeWindow();
-  // Enable the black backdrop layer behind the window if the window
-  // is in immersive fullscreen, maximized, yet the window can control
-  // the bounds of the window in fullscreen/tablet mode (thus the
-  // background can be visible).
-  bool enable_backdrop =
-      (widget_->IsFullscreen() || widget_->IsMaximized()) &&
-      ash::wm::GetWindowState(window)->allow_set_bounds_direct();
-  if (window->GetProperty(aura::client::kHasBackdrop) != enable_backdrop)
-    window->SetProperty(aura::client::kHasBackdrop, enable_backdrop);
 }
 
 gfx::Point ShellSurface::GetMouseLocation() const {
@@ -1802,13 +1534,14 @@ gfx::Point ShellSurface::GetMouseLocation() const {
   return location;
 }
 
-void ShellSurface::EnsureCompositorIsLockedForOrientationChange() {
-  if (!orientation_compositor_lock_) {
-    ui::Compositor* compositor =
-      widget_->GetNativeWindow()->layer()->GetCompositor();
-    orientation_compositor_lock_ = compositor->GetCompositorLock(
-        this, base::TimeDelta::FromMilliseconds(kOrientationLockTimeoutMs));
-  }
+void ShellSurface::InitializeWindowState(ash::wm::WindowState* window_state) {
+  // Allow the client to request bounds that do not fill the entire work area
+  // when maximized, or the entire display when fullscreen.
+  window_state->set_allow_set_bounds_direct(false);
+  // Disable movement if bounds are controlled by the client or fixed.
+  bool movement_disabled = bounds_mode_ != BoundsMode::SHELL;
+  widget_->set_movement_disabled(movement_disabled);
+  window_state->set_ignore_keyboard_bounds_change(movement_disabled);
 }
 
 }  // namespace exo
