@@ -75,7 +75,7 @@ void LayoutInline::WillBeDestroyed() {
   // The reason we don't destroy it before anonymous children is that they may
   // have continuations of their own that are anonymous children of our
   // continuation.
-  LayoutBoxModelObject* continuation = this->Continuation();
+  LayoutBoxModelObject* continuation = Continuation();
   if (continuation) {
     continuation->Destroy();
     SetContinuation(nullptr);
@@ -110,7 +110,7 @@ void LayoutInline::WillBeDestroyed() {
 }
 
 LayoutInline* LayoutInline::InlineElementContinuation() const {
-  LayoutBoxModelObject* continuation = this->Continuation();
+  LayoutBoxModelObject* continuation = Continuation();
   if (!continuation || continuation->IsInline())
     return ToLayoutInline(continuation);
   return ToLayoutBlockFlow(continuation)->InlineElementContinuation();
@@ -765,7 +765,7 @@ void LayoutInline::AbsoluteRects(Vector<IntRect>& rects,
   if (rects.IsEmpty())
     context(LayoutRect());
 
-  if (const LayoutBoxModelObject* continuation = this->Continuation()) {
+  if (const LayoutBoxModelObject* continuation = Continuation()) {
     if (continuation->IsBox()) {
       const LayoutBox* box = ToLayoutBox(continuation);
       continuation->AbsoluteRects(
@@ -921,7 +921,7 @@ PositionWithAffinity LayoutInline::PositionForPoint(const LayoutPoint& point) {
 
   // If there are continuations, test them first because our containing block
   // will not check them.
-  LayoutBoxModelObject* continuation = this->Continuation();
+  LayoutBoxModelObject* continuation = Continuation();
   while (continuation) {
     if (continuation->IsInline() || continuation->SlowFirstChild())
       return continuation->PositionForPoint(point);
@@ -1206,7 +1206,7 @@ bool LayoutInline::MapToVisualRectInAncestorSpaceInternal(
   if (ancestor == this)
     return true;
 
-  LayoutObject* container = this->Container();
+  LayoutObject* container = Container();
   DCHECK_EQ(container, Parent());
   if (!container)
     return true;
@@ -1246,7 +1246,7 @@ bool LayoutInline::MapToVisualRectInAncestorSpaceInternal(
 
 LayoutSize LayoutInline::OffsetFromContainer(
     const LayoutObject* container) const {
-  DCHECK_EQ(container, this->Container());
+  DCHECK_EQ(container, Container());
 
   LayoutSize offset;
   if (IsInFlowPositioned())
@@ -1490,7 +1490,7 @@ void LayoutInline::AddOutlineRectsForContinuations(
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
     IncludeBlockVisualOverflowOrNot include_block_overflows) const {
-  if (LayoutBoxModelObject* continuation = this->Continuation()) {
+  if (LayoutBoxModelObject* continuation = Continuation()) {
     if (continuation->IsInline())
       continuation->AddOutlineRects(
           rects,

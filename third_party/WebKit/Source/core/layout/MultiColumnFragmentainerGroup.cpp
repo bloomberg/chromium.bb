@@ -575,9 +575,9 @@ void MultiColumnFragmentainerGroup::ColumnIntervalForBlockRangeInFlowThread(
     unsigned& first_column,
     unsigned& last_column) const {
   logical_top_in_flow_thread =
-      std::max(logical_top_in_flow_thread, this->LogicalTopInFlowThread());
-  logical_bottom_in_flow_thread = std::min(logical_bottom_in_flow_thread,
-                                           this->LogicalBottomInFlowThread());
+      std::max(logical_top_in_flow_thread, LogicalTopInFlowThread());
+  logical_bottom_in_flow_thread =
+      std::min(logical_bottom_in_flow_thread, LogicalBottomInFlowThread());
   first_column = ColumnIndexAtOffset(logical_top_in_flow_thread,
                                      LayoutBox::kAssociateWithLatterPage);
   if (logical_bottom_in_flow_thread <= logical_top_in_flow_thread) {
