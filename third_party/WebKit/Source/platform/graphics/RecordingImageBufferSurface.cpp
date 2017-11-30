@@ -263,7 +263,8 @@ void RecordingImageBufferSurface::WillOverwriteCanvas() {
   previous_frame_.reset();
   previous_frame_has_expensive_op_ = false;
   previous_frame_pixel_count_ = 0;
-  if (did_record_draw_commands_in_current_frame_) {
+
+  if (did_record_draw_commands_in_current_frame_ && !fallback_surface_) {
     // Discard previous draw commands
     current_frame_->finishRecordingAsPicture();
     InitializeCurrentFrame();

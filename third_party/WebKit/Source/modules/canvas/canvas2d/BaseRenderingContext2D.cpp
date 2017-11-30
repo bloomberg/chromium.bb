@@ -1823,7 +1823,7 @@ void BaseRenderingContext2D::CheckOverdraw(
     CanvasRenderingContext2DState::ImageType image_type,
     DrawType draw_type) {
   PaintCanvas* c = DrawingCanvas();
-  if (!c || !GetImageBuffer()->IsRecording())
+  if (!c)
     return;
 
   SkRect device_rect;

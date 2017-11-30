@@ -283,19 +283,15 @@ class FakeAcceleratedImageBufferSurface
 
 //============================================================================
 
-class MockImageBufferSurfaceForOverwriteTesting
-    : public UnacceleratedImageBufferSurface {
+class MockImageBufferSurfaceForOverwriteTesting : public Canvas2DLayerBridge {
  public:
   MockImageBufferSurfaceForOverwriteTesting(const IntSize& size,
                                             CanvasColorParams color_params)
-      : UnacceleratedImageBufferSurface(size,
-                                        kInitializeImagePixels,
-                                        color_params) {}
+      : Canvas2DLayerBridge(size,
+                            0,
+                            Canvas2DLayerBridge::kDisableAcceleration,
+                            color_params) {}
   ~MockImageBufferSurfaceForOverwriteTesting() override {}
-  bool IsRecording() const override {
-    return true;
-  }  // otherwise overwrites are not tracked
-
   MOCK_METHOD0(WillOverwriteCanvas, void());
 };
 
