@@ -7,12 +7,14 @@
 
 #include "components/crash/core/common/crash_key.h"
 
+#include "components/crash/core/common/crash_key_base_support.h"
 #include "third_party/crashpad/crashpad/client/annotation_list.h"
 
 namespace crash_reporter {
 
 void InitializeCrashKeys() {
   crashpad::AnnotationList::Register();
+  InitializeCrashKeyBaseSupport();
 }
 
 }  // namespace crash_reporter
