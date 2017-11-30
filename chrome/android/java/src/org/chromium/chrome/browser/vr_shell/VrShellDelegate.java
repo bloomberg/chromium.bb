@@ -1173,8 +1173,29 @@ public class VrShellDelegate
     protected void onResume() {
         if (DEBUG_LOGS) Log.i(TAG, "onResume");
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) return;
-        // Startup animation will be cancelled in onActivityShown.
-        if (mNeedsAnimationCancel) return;
+        if (mNeedsAnimationCancel) {
+            // At least on some devices, like the Samsung S8+, a Window animation is run after our
+            // Activity is shown that fades between a stale screenshot from before pausing to the
+            // currently rendered content. It's impossible to cancel window animations, and in order
+            // to modify the animation we would need to set up the desired animations before
+            // calling setContentView, which we can't do because it would affect non-VR usage.
+            // To work around this, we keep the stay_hidden animation active until the window
+            // animation of the stale screenshot finishes and our black overlay is shown. We then
+            // cancel the stay_hidden animation, revealing our black overlay, which we then replace
+            // with VR UI.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
+            // Just in case any platforms/users modify the window animation scale, we'll multiply
+            // our wait time by that scale value.
+            float scale = Settings.Global.getFloat(
+                    mActivity.getContentResolver(), Settings.Global.WINDOW_ANIMATION_SCALE, 1.0f);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    cancelStartupAnimationIfNeeded();
+                }
+            }, (long) (WINDOW_FADE_ANIMATION_DURATION_MS * scale));
+            return;
+        }
 
         mPaused = false;
 
@@ -1256,29 +1277,6 @@ public class VrShellDelegate
     // will usually be), so make sure anything we do here can happen before or after
     // onResume.
     private void onActivityShown() {
-        if (mNeedsAnimationCancel) {
-            // At least on some devices, like the Samsung S8+, a Window animation is run after our
-            // Activity is shown that fades between a stale screenshot from before pausing to the
-            // currently rendered content. It's impossible to cancel window animations, and in order
-            // to modify the animation we would need to set up the desired animations before
-            // calling setContentView, which we can't do because it would affect non-VR usage.
-            // To work around this, we keep the stay_hidden animation active until the window
-            // animation of the stale screenshot finishes and our black overlay is shown. We then
-            // cancel the stay_hidden animation, revealing our black overlay, which we then replace
-            // with VR UI.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
-            // Just in case any platforms/users modify the window animation scale, we'll multiply
-            // our wait time by that scale value.
-            float scale = Settings.Global.getFloat(
-                    mActivity.getContentResolver(), Settings.Global.WINDOW_ANIMATION_SCALE, 1.0f);
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    cancelStartupAnimationIfNeeded();
-                }
-            }, (long) (WINDOW_FADE_ANIMATION_DURATION_MS * scale));
-            return;
-        }
         mVisible = true;
 
         // Only resume VrShell once we're visible so that we don't start rendering before being
