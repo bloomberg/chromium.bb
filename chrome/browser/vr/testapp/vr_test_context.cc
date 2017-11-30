@@ -374,7 +374,8 @@ gfx::Transform VrTestContext::ViewProjectionMatrix() const {
 
 void VrTestContext::SetVoiceSearchActive(bool active) {
   if (!voice_search_enabled_) {
-    OnUnsupportedMode(UiUnsupportedMode::kAndroidPermissionNeeded);
+    OnUnsupportedMode(
+        UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission);
     return;
   }
   ui_->SetSpeechRecognitionEnabled(active);
@@ -396,7 +397,7 @@ void VrTestContext::ExitCct() {}
 
 void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
   if (mode == UiUnsupportedMode::kUnhandledPageInfo ||
-      mode == UiUnsupportedMode::kAndroidPermissionNeeded) {
+      mode == UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission) {
     ui_->SetExitVrPromptEnabled(true, mode);
   }
 }
@@ -404,7 +405,7 @@ void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
 void VrTestContext::OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
                                          vr::UiUnsupportedMode reason) {
   LOG(ERROR) << "exit prompt result: " << choice;
-  if (reason == UiUnsupportedMode::kAndroidPermissionNeeded &&
+  if (reason == UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission &&
       choice == CHOICE_EXIT) {
     voice_search_enabled_ = true;
   }
