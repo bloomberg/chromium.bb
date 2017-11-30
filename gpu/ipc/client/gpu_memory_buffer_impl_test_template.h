@@ -44,7 +44,7 @@ class GpuMemoryBufferImplTest : public testing::Test {
 #if defined(OS_WIN)
   // Overridden from testing::Test:
   void SetUp() override { gl::GLSurfaceTestSupport::InitializeOneOff(); }
-  void TearDown() override { gl::init::ShutdownGL(); }
+  void TearDown() override { gl::init::ShutdownGL(false); }
 #endif
 
  private:

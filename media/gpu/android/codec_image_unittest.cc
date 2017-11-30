@@ -67,7 +67,7 @@ class CodecImageTest : public testing::Test {
     context_ = nullptr;
     share_group_ = nullptr;
     surface_ = nullptr;
-    gl::init::ShutdownGL();
+    gl::init::ShutdownGL(false);
     wrapper_->TakeCodecSurfacePair();
   }
 

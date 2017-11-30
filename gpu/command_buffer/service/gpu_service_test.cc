@@ -49,7 +49,7 @@ void GpuServiceTest::TearDown() {
   surface_ = nullptr;
   ::gl::MockGLInterface::SetGLInterface(NULL);
   gl_.reset();
-  gl::init::ShutdownGL();
+  gl::init::ShutdownGL(false);
   ran_teardown_ = true;
 
   testing::Test::TearDown();

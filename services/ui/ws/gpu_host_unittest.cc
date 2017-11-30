@@ -116,7 +116,7 @@ void GpuHostTest::SetUp() {
 
 void GpuHostTest::TearDown() {
   gpu_host_ = nullptr;
-  gl::init::ShutdownGL();
+  gl::init::ShutdownGL(false);
   testing::Test::TearDown();
 }
 

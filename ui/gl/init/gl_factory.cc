@@ -80,7 +80,7 @@ bool InitializeGLOneOffImplementation(GLImplementation impl,
   bool initialized =
       InitializeStaticGLBindings(impl) && InitializeGLOneOffPlatform();
   if (!initialized && fallback_to_software_gl) {
-    ShutdownGL();
+    ShutdownGL(true);
     initialized = InitializeStaticGLBindings(GetSoftwareGLImplementation()) &&
                   InitializeGLOneOffPlatform();
   }
@@ -89,7 +89,7 @@ bool InitializeGLOneOffImplementation(GLImplementation impl,
   }
 
   if (!initialized)
-    ShutdownGL();
+    ShutdownGL(false);
 
   if (initialized) {
     DVLOG(1) << "Using " << GetGLImplementationName(GetGLImplementation())
@@ -102,11 +102,11 @@ bool InitializeGLOneOffImplementation(GLImplementation impl,
   return initialized;
 }
 
-void ShutdownGL() {
+void ShutdownGL(bool due_to_fallback) {
   ShutdownGLPlatform();
 
+  UnloadGLNativeLibraries(due_to_fallback);
   SetGLImplementation(kGLImplementationNone);
-  UnloadGLNativeLibraries();
 }
 
 scoped_refptr<GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {

@@ -101,7 +101,7 @@ GpuChannelTestCommon::~GpuChannelTestCommon() {
   task_runner_->ClearPendingTasks();
   io_task_runner_->ClearPendingTasks();
 
-  gl::init::ShutdownGL();
+  gl::init::ShutdownGL(false);
 }
 
 GpuChannel* GpuChannelTestCommon::CreateChannel(int32_t client_id,

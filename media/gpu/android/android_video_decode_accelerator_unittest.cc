@@ -115,7 +115,7 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     codec_allocator_ = nullptr;
     context_ = nullptr;
     surface_ = nullptr;
-    gl::init::ShutdownGL();
+    gl::init::ShutdownGL(false);
   }
 
   // Create and initialize AVDA with |config_|, and return the result.
