@@ -7,6 +7,7 @@
 module arc.mojom;
 
 import "bitmap.mojom";
+import "gfx.mojom";
 
 // These values must be matched with the NOTIFICATION_EVENT_* constants in
 // com.android.server.ArcNotificationListenerService.
@@ -128,6 +129,12 @@ struct ArcNotificationData {
   ArcNotificationShownContents shown_contents;
   [MinVersion=12]
   ArcNotificationRemoteInputState remote_input_state;
+  // Indicates a rect for which Android wants to handle swipe events for by
+  // itself. The coordinates in this Rect are in Android pixels and represent
+  // a sub-rectangle of the notification, with the origin being the top left
+  // of the notification.
+  [MinVersion=14]
+  Rect? swipe_input_rect;
 };
 
 [MinVersion=2]
