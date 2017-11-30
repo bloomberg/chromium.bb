@@ -133,7 +133,7 @@ class DependentIOBuffer : public WrappedIOBuffer {
       : WrappedIOBuffer(buffer->data() + offset), buffer_(std::move(buffer)) {}
 
  private:
-  ~DependentIOBuffer() override {}
+  ~DependentIOBuffer() override = default;
   scoped_refptr<net::IOBuffer> buffer_;
 };
 
@@ -304,7 +304,8 @@ WebSocketChannel::HandshakeNotificationSender::HandshakeNotificationSender(
     WebSocketChannel* channel)
     : owner_(channel) {}
 
-WebSocketChannel::HandshakeNotificationSender::~HandshakeNotificationSender() {}
+WebSocketChannel::HandshakeNotificationSender::~HandshakeNotificationSender() =
+    default;
 
 void WebSocketChannel::HandshakeNotificationSender::Send(
     base::WeakPtr<HandshakeNotificationSender> sender) {

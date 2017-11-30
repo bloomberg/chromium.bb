@@ -14,6 +14,6 @@ WebSocketHandshakeRequestInfo::WebSocketHandshakeRequestInfo(
     base::Time request_time)
     : url(url), request_time(request_time) {}
 
-WebSocketHandshakeRequestInfo::~WebSocketHandshakeRequestInfo() {}
+WebSocketHandshakeRequestInfo::~WebSocketHandshakeRequestInfo() = default;
 
 }  // namespace net

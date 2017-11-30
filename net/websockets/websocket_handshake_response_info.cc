@@ -25,6 +25,6 @@ WebSocketHandshakeResponseInfo::WebSocketHandshakeResponseInfo(
       headers(headers),
       response_time(response_time) {}
 
-WebSocketHandshakeResponseInfo::~WebSocketHandshakeResponseInfo() {}
+WebSocketHandshakeResponseInfo::~WebSocketHandshakeResponseInfo() = default;
 
 }  // namespace net

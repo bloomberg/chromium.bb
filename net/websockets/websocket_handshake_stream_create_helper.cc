@@ -23,7 +23,8 @@ WebSocketHandshakeStreamCreateHelper::WebSocketHandshakeStreamCreateHelper(
   DCHECK(connect_delegate_);
 }
 
-WebSocketHandshakeStreamCreateHelper::~WebSocketHandshakeStreamCreateHelper() {}
+WebSocketHandshakeStreamCreateHelper::~WebSocketHandshakeStreamCreateHelper() =
+    default;
 
 std::unique_ptr<WebSocketHandshakeStreamBase>
 WebSocketHandshakeStreamCreateHelper::CreateBasicStream(
