@@ -233,11 +233,15 @@ class MediaEngagementContentsObserverTest
         {Entry::kPlaybacks_SecondsSinceLastName, seconds_since_playback},
     };
 
-    const ukm::UkmSource* source =
-        test_ukm_recorder_.GetSourceForUrl(url.spec().c_str());
-    EXPECT_EQ(url, source->url());
-    EXPECT_EQ(1, test_ukm_recorder_.CountEntries(*source, Entry::kEntryName));
-    test_ukm_recorder_.ExpectEntry(*source, Entry::kEntryName, metrics);
+    auto entries = test_ukm_recorder_.GetEntriesByName(Entry::kEntryName);
+    EXPECT_EQ(1u, entries.size());
+    for (const auto* const entry : entries) {
+      test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, url);
+      for (const auto& metric : metrics) {
+        test_ukm_recorder_.ExpectEntryMetric(entry, metric.first,
+                                             metric.second);
+      }
+    }
   }
 
   void ExpectUkmIgnoredEntries(GURL url, std::vector<int64_t> entries) {

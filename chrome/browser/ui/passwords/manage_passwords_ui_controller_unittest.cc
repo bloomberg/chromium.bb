@@ -490,28 +490,30 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSavedUKMRecording) {
     }
 
     // Verify metrics.
-    const ukm::UkmSource* source =
-        test_ukm_recorder.GetSourceForUrl("http://www.example.com/");
-    ASSERT_TRUE(source);
+    const auto& entries =
+        test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+    EXPECT_EQ(1u, entries.size());
+    for (const auto* entry : entries) {
+      test_ukm_recorder.ExpectEntrySourceHasUrl(
+          entry, GURL("http://www.example.com/"));
 
-    if (test.edit_username) {
-      test_ukm_recorder.ExpectMetric(
-          *source, UkmEntry::kEntryName,
-          UkmEntry::kUser_Action_EditedUsernameInBubbleName, 1u);
-    } else {
-      EXPECT_FALSE(test_ukm_recorder.HasMetric(
-          *source, UkmEntry::kEntryName,
-          UkmEntry::kUser_Action_EditedUsernameInBubbleName));
-    }
+      if (test.edit_username) {
+        test_ukm_recorder.ExpectEntryMetric(
+            entry, UkmEntry::kUser_Action_EditedUsernameInBubbleName, 1u);
+      } else {
+        EXPECT_FALSE(test_ukm_recorder.EntryHasMetric(
+            entry, UkmEntry::kUser_Action_EditedUsernameInBubbleName));
+      }
 
-    if (test.change_password) {
-      test_ukm_recorder.ExpectMetric(
-          *source, UkmEntry::kEntryName,
-          UkmEntry::kUser_Action_SelectedDifferentPasswordInBubbleName, 1u);
-    } else {
-      EXPECT_FALSE(test_ukm_recorder.HasMetric(
-          *source, UkmEntry::kEntryName,
-          UkmEntry::kUser_Action_SelectedDifferentPasswordInBubbleName));
+      if (test.change_password) {
+        test_ukm_recorder.ExpectEntryMetric(
+            entry, UkmEntry::kUser_Action_SelectedDifferentPasswordInBubbleName,
+            1u);
+      } else {
+        EXPECT_FALSE(test_ukm_recorder.EntryHasMetric(
+            entry,
+            UkmEntry::kUser_Action_SelectedDifferentPasswordInBubbleName));
+      }
     }
 
     histogram_tester.ExpectUniqueSample("PasswordManager.EditsInSaveBubble",

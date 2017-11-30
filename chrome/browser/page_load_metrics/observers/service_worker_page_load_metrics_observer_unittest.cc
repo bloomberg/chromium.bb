@@ -206,11 +206,12 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorker) {
   histogram_tester().ExpectTotalCount(
       internal::kHistogramServiceWorkerParseStartForwardBackNoStore, 0);
 
-  EXPECT_EQ(1ul, test_ukm_recorder().entries_count());
-  const ukm::UkmSource* source =
-      test_ukm_recorder().GetSourceForUrl(kDefaultTestUrl);
-  EXPECT_TRUE(
-      test_ukm_recorder().HasEntry(*source, internal::kUkmServiceWorkerName));
+  const auto& entries =
+      test_ukm_recorder().GetEntriesByName(internal::kUkmServiceWorkerName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kDefaultTestUrl));
+  }
 
   AssertNoInboxHistogramsLogged();
   AssertNoSearchHistogramsLogged();
@@ -257,11 +258,12 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorkerBackground) {
   // histogram_tester().ExpectTotalCount(
   //     internal::kBackgroundHistogramServiceWorkerParseStart, 1);
 
-  EXPECT_EQ(1ul, test_ukm_recorder().entries_count());
-  const ukm::UkmSource* source =
-      test_ukm_recorder().GetSourceForUrl(kDefaultTestUrl);
-  EXPECT_TRUE(
-      test_ukm_recorder().HasEntry(*source, internal::kUkmServiceWorkerName));
+  const auto& entries =
+      test_ukm_recorder().GetEntriesByName(internal::kUkmServiceWorkerName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kDefaultTestUrl));
+  }
 
   AssertNoInboxHistogramsLogged();
   AssertNoSearchHistogramsLogged();

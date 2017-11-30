@@ -143,43 +143,18 @@ class RenderWidgetHostLatencyTrackerTest
     }
   }
 
-  ::testing::AssertionResult AssertUkmReported(const char* event_name,
-                                               const char* metric_name) {
+  void ExpectUkmReported(const char* event_name,
+                         const char* metric_name,
+                         size_t expected_count) {
     const ukm::TestUkmRecorder* ukm_recoder =
         test_browser_client_.GetTestUkmRecorder();
 
-    size_t actual_event_count = 0;
-    for (size_t i = 0; i < ukm_recoder->entries_count(); ++i) {
-      const ukm::mojom::UkmEntry* entry = ukm_recoder->GetEntry(i);
-      if (entry->event_hash != base::HashMetricName(event_name))
-        continue;
-
-      const ukm::UkmSource* source =
-          ukm_recoder->GetSourceForSourceId(entry->source_id);
-      if (!source)
-        return ::testing::AssertionFailure() << "Source should not be null";
-
-      if (actual_event_count >= 1)
-        break;
-
-      if (GURL(kUrl) != source->url())
-        return ::testing::AssertionFailure() << "Incorrect URL is reported.";
-
-      actual_event_count++;
-      if (entry->metrics.size() != 1)
-        return ::testing::AssertionFailure()
-               << event_name << " entry expected only 1 metric but got "
-               << entry->metrics.size();
-
-      if (entry->metrics[0]->metric_hash != base::HashMetricName(metric_name))
-        return ::testing::AssertionFailure()
-               << "Expected a metric named " << metric_name;
+    auto entries = ukm_recoder->GetEntriesByName(event_name);
+    EXPECT_EQ(expected_count, entries.size());
+    for (const auto* const entry : entries) {
+      ukm_recoder->ExpectEntrySourceHasUrl(entry, GURL(kUrl));
+      EXPECT_TRUE(ukm_recoder->EntryHasMetric(entry, metric_name));
     }
-    if (actual_event_count != 1)
-      return ::testing::AssertionFailure()
-             << event_name << " expected " << 1 << " entry but got "
-             << actual_event_count;
-    return ::testing::AssertionSuccess();
   }
 
   ::testing::AssertionResult HistogramSizeEq(const char* histogram_name,
@@ -314,8 +289,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
 
       // UKM metrics.
       total_ukm_entry_count++;
-      EXPECT_TRUE(AssertUkmReported("Event.ScrollBegin.Wheel",
-                                    "TimeToScrollUpdateSwapBegin"));
+      ExpectUkmReported("Event.ScrollBegin.Wheel",
+                        "TimeToScrollUpdateSwapBegin", total_ukm_entry_count);
       // Rappor metrics.
       EXPECT_TRUE(
           RapporSampleAssert("Event.Latency.ScrollUpdate.Touch."
@@ -397,11 +372,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
           0));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollUpdate.Wheel.GpuSwap2", 0));
-
-      ukm::TestUkmRecorder* test_ukm_recorder =
-          test_browser_client_.GetTestUkmRecorder();
-      EXPECT_EQ(1U, test_ukm_recorder->sources_count());
-      EXPECT_EQ(total_ukm_entry_count, test_ukm_recorder->entries_count());
     }
   }
 }
@@ -435,8 +405,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
 
       // UKM metrics.
       total_ukm_entry_count++;
-      EXPECT_TRUE(AssertUkmReported("Event.ScrollUpdate.Wheel",
-                                    "TimeToScrollUpdateSwapBegin"));
+      ExpectUkmReported("Event.ScrollUpdate.Wheel",
+                        "TimeToScrollUpdateSwapBegin", total_ukm_entry_count);
       // Rappor metrics.
       EXPECT_TRUE(
           RapporSampleAssert("Event.Latency.ScrollUpdate.Touch."
@@ -574,8 +544,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
 
     // UKM metrics.
     total_ukm_entry_count++;
-    EXPECT_TRUE(AssertUkmReported("Event.ScrollBegin.Touch",
-                                  "TimeToScrollUpdateSwapBegin"));
+    ExpectUkmReported("Event.ScrollBegin.Touch", "TimeToScrollUpdateSwapBegin",
+                      total_ukm_entry_count);
     // Rappor metrics.
     EXPECT_TRUE(
         RapporSampleAssert("Event.Latency.ScrollUpdate.Touch."
@@ -641,11 +611,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
         "Event.Latency.ScrollUpdate.Touch.BrowserNotifiedToBeforeGpuSwap2", 0));
     EXPECT_TRUE(
         HistogramSizeEq("Event.Latency.ScrollUpdate.Touch.GpuSwap2", 0));
-
-    ukm::TestUkmRecorder* test_ukm_recorder =
-        test_browser_client_.GetTestUkmRecorder();
-    EXPECT_EQ(1U, test_ukm_recorder->sources_count());
-    EXPECT_EQ(total_ukm_entry_count, test_ukm_recorder->entries_count());
   }
 }
 
@@ -702,8 +667,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
 
     // UKM metrics.
     total_ukm_entry_count++;
-    EXPECT_TRUE(AssertUkmReported("Event.ScrollUpdate.Touch",
-                                  "TimeToScrollUpdateSwapBegin"));
+    ExpectUkmReported("Event.ScrollUpdate.Touch", "TimeToScrollUpdateSwapBegin",
+                      total_ukm_entry_count);
 
     // Rappor metrics.
     EXPECT_TRUE(
@@ -767,11 +732,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
         "Event.Latency.ScrollUpdate.Touch.BrowserNotifiedToBeforeGpuSwap2", 1));
     EXPECT_TRUE(
         HistogramSizeEq("Event.Latency.ScrollUpdate.Touch.GpuSwap2", 1));
-
-    ukm::TestUkmRecorder* test_ukm_recorder =
-        test_browser_client_.GetTestUkmRecorder();
-    EXPECT_EQ(1U, test_ukm_recorder->sources_count());
-    EXPECT_EQ(total_ukm_entry_count, test_ukm_recorder->entries_count());
   }
 }
 
