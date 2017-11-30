@@ -286,4 +286,8 @@ void NGPhysicalFragment::ShowFragmentTree() const {
 }
 #endif  // !NDEBUG
 
+NGPhysicalOffsetRect NGPhysicalFragmentWithOffset::RectInContainerBox() const {
+  return {offset_to_container_box, fragment->Size()};
+}
+
 }  // namespace blink
