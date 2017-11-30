@@ -25,6 +25,7 @@
 
 #if defined(OS_WIN)
 
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/DoublyLinkedList.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -46,7 +47,6 @@ static Mutex& DestructorsMutex() {
 class PlatformThreadSpecificKey
     : public DoublyLinkedListNode<PlatformThreadSpecificKey> {
   USING_FAST_MALLOC(PlatformThreadSpecificKey);
-  WTF_MAKE_NONCOPYABLE(PlatformThreadSpecificKey);
 
  public:
   friend class DoublyLinkedListNode<PlatformThreadSpecificKey>;
@@ -72,6 +72,8 @@ class PlatformThreadSpecificKey
   DWORD tls_key_;
   PlatformThreadSpecificKey* prev_;
   PlatformThreadSpecificKey* next_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformThreadSpecificKey);
 };
 
 long& TlsKeyCount() {

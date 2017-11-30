@@ -40,6 +40,7 @@
 #include "platform/heap/Visitor.h"
 #include "platform/heap/VisitorImpl.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 
 #if defined(LEAK_SANITIZER)
 #include "platform/wtf/LeakAnnotations.h"

@@ -4,11 +4,13 @@
 #ifndef TerminatedArray_h
 #define TerminatedArray_h
 
+#include <memory>
+
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/VectorTraits.h"
 #include "platform/wtf/allocator/Partitions.h"
-#include <memory>
 
 namespace WTF {
 
@@ -19,7 +21,6 @@ namespace WTF {
 template <typename T>
 class TerminatedArray {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(TerminatedArray);
 
  public:
   // When TerminatedArray::Allocator implementations grow the backing
@@ -117,6 +118,8 @@ class TerminatedArray {
 
   template <typename, template <typename> class>
   friend class TerminatedArrayBuilder;
+
+  DISALLOW_COPY_AND_ASSIGN(TerminatedArray);
 };
 
 }  // namespace WTF

@@ -27,6 +27,7 @@
 #ifndef StringBuilder_h
 #define StringBuilder_h
 
+#include "base/macros.h"
 #include "platform/wtf/WTFExport.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/StringView.h"
@@ -35,8 +36,6 @@
 namespace WTF {
 
 class WTF_EXPORT StringBuilder {
-  WTF_MAKE_NONCOPYABLE(StringBuilder);
-
  public:
   StringBuilder() : buffer_(nullptr), length_(0), is8_bit_(true) {}
 
@@ -223,6 +222,8 @@ class WTF_EXPORT StringBuilder {
   };
   unsigned length_;
   bool is8_bit_;
+
+  DISALLOW_COPY_AND_ASSIGN(StringBuilder);
 };
 
 template <typename CharType>

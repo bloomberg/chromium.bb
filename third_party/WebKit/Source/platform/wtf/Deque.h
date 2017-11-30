@@ -34,6 +34,8 @@
 // Deque doesn't actually use Vector.
 
 #include <iterator>
+
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
 
@@ -163,8 +165,6 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
   friend class DequeIteratorBase<T, inlineCapacity, Allocator>;
 
   class BackingBuffer : public VectorBuffer<T, INLINE_CAPACITY, Allocator> {
-    WTF_MAKE_NONCOPYABLE(BackingBuffer);
-
    private:
     using Base = VectorBuffer<T, INLINE_CAPACITY, Allocator>;
     using Base::size_;
@@ -174,6 +174,8 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
     explicit BackingBuffer(size_t capacity) : Base(capacity) {}
 
     void SetSize(size_t size) { size_ = size; }
+
+    DISALLOW_COPY_AND_ASSIGN(BackingBuffer);
   };
 
   typedef VectorTypeOperations<T> TypeOperations;

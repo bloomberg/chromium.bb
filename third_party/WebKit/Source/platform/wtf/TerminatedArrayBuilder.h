@@ -4,6 +4,7 @@
 #ifndef TerminatedArrayBuilder_h
 #define TerminatedArrayBuilder_h
 
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
 
 namespace WTF {
@@ -11,7 +12,6 @@ namespace WTF {
 template <typename T, template <typename> class ArrayType = TerminatedArray>
 class TerminatedArrayBuilder {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(TerminatedArrayBuilder);
 
  public:
   explicit TerminatedArrayBuilder(
@@ -69,6 +69,8 @@ class TerminatedArrayBuilder {
   typename ArrayType<T>::Allocator::Ptr array_;
   size_t count_;
   size_t capacity_;
+
+  DISALLOW_COPY_AND_ASSIGN(TerminatedArrayBuilder);
 };
 
 }  // namespace WTF

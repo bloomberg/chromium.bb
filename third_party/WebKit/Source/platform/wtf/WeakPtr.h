@@ -26,9 +26,9 @@
 #ifndef WTF_WeakPtr_h
 #define WTF_WeakPtr_h
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace WTF {
 
@@ -37,7 +37,6 @@ using WeakPtr = base::WeakPtr<T>;
 
 template <typename T>
 class WeakPtrFactory {
-  WTF_MAKE_NONCOPYABLE(WeakPtrFactory<T>);
   USING_FAST_MALLOC(WeakPtrFactory);
 
  public:
@@ -51,6 +50,8 @@ class WeakPtrFactory {
 
  private:
   base::WeakPtrFactory<T> factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(WeakPtrFactory<T>);
 };
 
 }  // namespace WTF

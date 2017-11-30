@@ -69,7 +69,6 @@ The below is a list of major libraries. For a complete list, look at
 
 * **Miscellaneous**
 
-  [Noncopyable.h] (`WTF_MAKE_NONCOPYABLE`),
   [StdLibExtras.h] (`DEFINE_STATIC_LOCAL` etc.),
   [Time.h],
   [CryptographicallyRandomNumber.h],

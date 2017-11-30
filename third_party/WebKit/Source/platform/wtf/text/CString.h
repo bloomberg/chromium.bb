@@ -28,9 +28,10 @@
 #define CString_h
 
 #include <string.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/WTFExport.h"
 #include "platform/wtf/allocator/PartitionAllocator.h"
@@ -42,8 +43,6 @@ namespace WTF {
 // sequence of bytes. The data is always allocated 1 longer than length() and is
 // null terminated.
 class WTF_EXPORT CStringImpl : public RefCounted<CStringImpl> {
-  WTF_MAKE_NONCOPYABLE(CStringImpl);
-
  public:
   // CStringImpls are allocated out of the WTF buffer partition.
   void* operator new(size_t, void* ptr) { return ptr; }
@@ -59,6 +58,8 @@ class WTF_EXPORT CStringImpl : public RefCounted<CStringImpl> {
   explicit CStringImpl(size_t length) : length_(length) {}
 
   const unsigned length_;
+
+  DISALLOW_COPY_AND_ASSIGN(CStringImpl);
 };
 
 // A container for an immutable ref-counted null-terminated char array. This is

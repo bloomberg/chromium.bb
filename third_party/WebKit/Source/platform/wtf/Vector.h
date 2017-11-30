@@ -26,13 +26,14 @@
 #include <initializer_list>
 #include <iterator>
 #include <utility>
+
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "platform/wtf/Alignment.h"
 #include "platform/wtf/ConditionalDestructor.h"
 #include "platform/wtf/ContainerAnnotations.h"
 #include "platform/wtf/Forward.h"  // For default Vector template parameters.
 #include "platform/wtf/HashTableDeletedValueType.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/NotFound.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/VectorTraits.h"
@@ -363,7 +364,6 @@ struct VectorTypeOperations {
 
 template <typename T, bool hasInlineCapacity, typename Allocator>
 class VectorBufferBase {
-  WTF_MAKE_NONCOPYABLE(VectorBufferBase);
   DISALLOW_NEW();
 
  public:
@@ -447,6 +447,8 @@ class VectorBufferBase {
   T* buffer_;
   unsigned capacity_;
   unsigned size_;
+
+  DISALLOW_COPY_AND_ASSIGN(VectorBufferBase);
 };
 
 template <typename T,
@@ -546,8 +548,6 @@ class VectorBuffer<T, 0, Allocator>
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
-  WTF_MAKE_NONCOPYABLE(VectorBuffer);
-
  private:
   using Base = VectorBufferBase<T, true, Allocator>;
 
@@ -840,6 +840,8 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
   AlignedBuffer<kInlineBufferSize, WTF_ALIGN_OF(T)> inline_buffer_;
   template <typename U, size_t inlineBuffer, typename V>
   friend class Deque;
+
+  DISALLOW_COPY_AND_ASSIGN(VectorBuffer);
 };
 
 //

@@ -26,6 +26,7 @@
 #ifndef DoublyLinkedList_h
 #define DoublyLinkedList_h
 
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
 
 namespace WTF {
@@ -72,7 +73,6 @@ inline T* DoublyLinkedListNode<T>::Next() const {
 template <typename T, typename PointerType = T*>
 class DoublyLinkedList {
   USING_FAST_MALLOC(DoublyLinkedList);
-  WTF_MAKE_NONCOPYABLE(DoublyLinkedList);
 
  public:
   DoublyLinkedList();
@@ -93,6 +93,8 @@ class DoublyLinkedList {
  protected:
   PointerType head_;
   PointerType tail_;
+
+  DISALLOW_COPY_AND_ASSIGN(DoublyLinkedList);
 };
 
 template <typename T, typename PointerType>

@@ -26,12 +26,12 @@
 #ifndef PrintStream_h
 #define PrintStream_h
 
+#include <stdarg.h>
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Compiler.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/WTFExport.h"
-#include <stdarg.h>
 
 namespace WTF {
 
@@ -40,7 +40,6 @@ class String;
 
 class WTF_EXPORT PrintStream {
   USING_FAST_MALLOC(PrintStream);
-  WTF_MAKE_NONCOPYABLE(PrintStream);
 
  public:
   PrintStream();
@@ -63,6 +62,8 @@ class WTF_EXPORT PrintStream {
     Print(value1);
     Print(values...);
   }
+
+  DISALLOW_COPY_AND_ASSIGN(PrintStream);
 };
 
 WTF_EXPORT void PrintInternal(PrintStream&, const char*);

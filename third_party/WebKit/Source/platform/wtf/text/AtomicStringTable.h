@@ -5,6 +5,7 @@
 #ifndef WTF_AtomicStringTable_h
 #define WTF_AtomicStringTable_h
 
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/WTFExport.h"
@@ -18,7 +19,6 @@ namespace WTF {
 // not thread safe and each WTFThreadData has one.
 class WTF_EXPORT AtomicStringTable final {
   USING_FAST_MALLOC(AtomicStringTable);
-  WTF_MAKE_NONCOPYABLE(AtomicStringTable);
 
  public:
   AtomicStringTable();
@@ -55,6 +55,8 @@ class WTF_EXPORT AtomicStringTable final {
   inline scoped_refptr<StringImpl> AddToStringTable(const T& value);
 
   HashSet<StringImpl*> table_;
+
+  DISALLOW_COPY_AND_ASSIGN(AtomicStringTable);
 };
 
 }  // namespace WTF

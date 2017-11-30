@@ -7,7 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
-#include "platform/wtf/Noncopyable.h"
+#include "base/macros.h"
 #include "platform/wtf/WTFExport.h"
 
 namespace WTF {
@@ -28,8 +28,6 @@ namespace WTF {
 // code. Please do not remove it.
 //
 class WTF_EXPORT ScopedLogger {
-  WTF_MAKE_NONCOPYABLE(ScopedLogger);
-
  public:
   // The first message is passed to the constructor.  Additional messages for
   // the same scope can be added with log(). If condition is false, produce no
@@ -56,6 +54,8 @@ class WTF_EXPORT ScopedLogger {
   bool multiline_;  // The ')' will go on the same line if there is only one
                     // entry.
   static PrintFunctionPtr print_func_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedLogger);
 };
 
 #define WTF_CREATE_SCOPED_LOGGER(name, ...) \

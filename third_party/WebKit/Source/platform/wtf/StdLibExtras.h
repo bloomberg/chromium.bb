@@ -27,11 +27,12 @@
 #define WTF_StdLibExtras_h
 
 #include <cstddef>
+
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/LeakAnnotations.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/TypeTraits.h"
 
 #if DCHECK_IS_ON()
@@ -76,8 +77,6 @@ namespace WTF {
 
 template <typename Type>
 class StaticSingleton final {
-  WTF_MAKE_NONCOPYABLE(StaticSingleton);
-
  public:
   template <typename T,
             bool = WTF::IsGarbageCollectedType<T>::value &&
@@ -175,6 +174,8 @@ class StaticSingleton final {
   bool safely_initialized_;
   ThreadIdentifier thread_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(StaticSingleton);
 };
 
 }  // namespace WTF

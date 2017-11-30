@@ -28,10 +28,11 @@
 #define WTFThreadData_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/ThreadSpecific.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/WTFExport.h"
@@ -44,7 +45,6 @@ struct ICUConverterWrapper;
 
 class WTF_EXPORT WTFThreadData {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  WTF_MAKE_NONCOPYABLE(WTFThreadData);
 
  public:
   WTFThreadData();
@@ -75,6 +75,8 @@ class WTF_EXPORT WTFThreadData {
 
   static ThreadSpecific<WTFThreadData>* static_data_;
   friend WTFThreadData& WtfThreadData();
+
+  DISALLOW_COPY_AND_ASSIGN(WTFThreadData);
 };
 
 inline WTFThreadData& WtfThreadData() {

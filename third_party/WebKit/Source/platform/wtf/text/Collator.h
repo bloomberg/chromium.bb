@@ -29,18 +29,16 @@
 #ifndef WTF_Collator_h
 #define WTF_Collator_h
 
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/WTFExport.h"
 #include "platform/wtf/text/Unicode.h"
-#include <memory>
 
 struct UCollator;
 
 namespace WTF {
 
 class WTF_EXPORT Collator {
-  WTF_MAKE_NONCOPYABLE(Collator);
   USING_FAST_MALLOC(Collator);
 
  public:
@@ -69,6 +67,8 @@ class WTF_EXPORT Collator {
   char* locale_;
   char equivalent_locale_[kUlocFullnameCapacity];
   bool lower_first_;
+
+  DISALLOW_COPY_AND_ASSIGN(Collator);
 };
 
 }  // namespace WTF

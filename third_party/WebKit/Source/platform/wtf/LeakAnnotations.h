@@ -35,7 +35,7 @@
 // This file defines macros for working with LeakSanitizer, allowing memory
 // and allocations to be registered as exempted from LSan consideration.
 
-#include "platform/wtf/Noncopyable.h"
+#include "base/macros.h"
 #if defined(LEAK_SANITIZER)
 #include "platform/wtf/AddressSanitizer.h"
 #include "platform/wtf/TypeTraits.h"
@@ -45,12 +45,12 @@ namespace WTF {
 
 #if defined(LEAK_SANITIZER)
 class LeakSanitizerDisabler {
-  WTF_MAKE_NONCOPYABLE(LeakSanitizerDisabler);
-
  public:
   LeakSanitizerDisabler() { __lsan_disable(); }
 
   ~LeakSanitizerDisabler() { __lsan_enable(); }
+
+  DISALLOW_COPY_AND_ASSIGN(LeakSanitizerDisabler);
 };
 
 // WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE: all allocations made in the
