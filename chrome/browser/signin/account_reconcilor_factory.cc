@@ -60,36 +60,28 @@ KeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(
   return reconcilor;
 }
 
-void AccountReconcilorFactory::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  signin::DiceAccountReconcilorDelegate::RegisterProfilePrefs(registry);
-#endif
-}
-
 // static
 std::unique_ptr<signin::AccountReconcilorDelegate>
 AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
-  std::unique_ptr<signin::AccountReconcilorDelegate> delegate;
   switch (signin::GetAccountConsistencyMethod()) {
     case signin::AccountConsistencyMethod::kMirror:
-      delegate = std::make_unique<signin::MirrorAccountReconcilorDelegate>(
+      return std::make_unique<signin::MirrorAccountReconcilorDelegate>(
           SigninManagerFactory::GetForProfile(profile));
-      break;
     case signin::AccountConsistencyMethod::kDisabled:
     case signin::AccountConsistencyMethod::kDiceFixAuthErrors:
-      delegate = std::make_unique<signin::AccountReconcilorDelegate>();
-      break;
+      return std::make_unique<signin::AccountReconcilorDelegate>();
     case signin::AccountConsistencyMethod::kDicePrepareMigration:
     case signin::AccountConsistencyMethod::kDiceMigration:
     case signin::AccountConsistencyMethod::kDice:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-      delegate = std::make_unique<signin::DiceAccountReconcilorDelegate>(
-          profile->GetPrefs(), profile->IsNewProfile());
+      return std::make_unique<signin::DiceAccountReconcilorDelegate>(
+          ChromeSigninClientFactory::GetForProfile(profile));
 #else
       NOTREACHED();
+      return nullptr;
 #endif
-      break;
   }
-  return delegate;
+
+  NOTREACHED();
+  return nullptr;
 }

@@ -48,6 +48,22 @@ using FakeSigninManagerForTesting = FakeSigninManagerBase;
 using FakeSigninManagerForTesting = FakeSigninManager;
 #endif
 
+// TestSigninClient keeping track of the dice migration.
+class DiceTestSigninClient : public TestSigninClient {
+ public:
+  DiceTestSigninClient(PrefService* prefs) : TestSigninClient(prefs) {}
+
+  void SetReadyForDiceMigration(bool ready) override {
+    is_ready_for_dice_migration_ = ready;
+  }
+
+  bool is_ready_for_dice_migration() { return is_ready_for_dice_migration_; }
+
+ private:
+  bool is_ready_for_dice_migration_ = false;
+  DISALLOW_COPY_AND_ASSIGN(DiceTestSigninClient);
+};
+
 // gmock does not allow mocking classes with move-only parameters, preventing
 // from mocking the AccountReconcilor class directly (because of the
 // unique_ptr<AccountReconcilorDelegate> parameter).
@@ -88,7 +104,7 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
       case signin::AccountConsistencyMethod::kDice:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
         return std::make_unique<signin::DiceAccountReconcilorDelegate>(
-            signin_client->GetPrefs(), false);
+            signin_client);
 #else
         NOTREACHED();
         return nullptr;
@@ -139,7 +155,7 @@ class AccountReconcilorTest : public ::testing::Test {
     return static_cast<FakeOAuth2TokenServiceDelegate*>(
         token_service_.GetDelegate());
   }
-  TestSigninClient* test_signin_client() { return &test_signin_client_; }
+  DiceTestSigninClient* test_signin_client() { return &test_signin_client_; }
   AccountTrackerService* account_tracker() { return &account_tracker_; }
   FakeGaiaCookieManagerService* cookie_manager_service() {
     return &cookie_manager_service_;
@@ -184,7 +200,7 @@ class AccountReconcilorTest : public ::testing::Test {
   std::unique_ptr<signin::ScopedAccountConsistency> scoped_account_consistency_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   FakeProfileOAuth2TokenService token_service_;
-  TestSigninClient test_signin_client_;
+  DiceTestSigninClient test_signin_client_;
   AccountTrackerService account_tracker_;
   FakeGaiaCookieManagerService cookie_manager_service_;
   FakeSigninManagerForTesting signin_manager_;
@@ -215,10 +231,6 @@ AccountReconcilorTest::AccountReconcilorTest()
   AccountTrackerService::RegisterPrefs(pref_service_.registry());
   SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterPrefs(pref_service_.registry());
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  signin::DiceAccountReconcilorDelegate::RegisterProfilePrefs(
-      pref_service_.registry());
-#endif
   get_check_connection_info_url_ =
       GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(
           GaiaConstants::kChromeSource);
@@ -927,13 +939,9 @@ TEST_F(AccountReconcilorTest, DiceMigrationAfterNoop) {
   cookie_manager_service()->SetListAccountsResponseOneAccount("user@gmail.com",
                                                               "12345");
   AccountReconcilor* reconcilor = GetMockReconcilor();
-  signin::DiceAccountReconcilorDelegate* dice_delegate =
-      static_cast<signin::DiceAccountReconcilorDelegate*>(
-          reconcilor->delegate_.get());
-
   // Dice is not enabled by default.
   ASSERT_FALSE(signin::IsDiceEnabledForProfile(pref_service()));
-  EXPECT_FALSE(dice_delegate->IsAccountConsistencyEnforced());
+  EXPECT_FALSE(reconcilor->delegate_->IsAccountConsistencyEnforced());
 
   // No-op reconcile.
   EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(testing::_)).Times(0);
@@ -945,10 +953,7 @@ TEST_F(AccountReconcilorTest, DiceMigrationAfterNoop) {
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
 
   // Migration will happen on next startup.
-  EXPECT_TRUE(
-      dice_delegate->IsReadyForDiceMigration(false /* is_new_profile */));
-  EXPECT_FALSE(signin::IsDiceEnabledForProfile(pref_service()));
-  EXPECT_FALSE(reconcilor->delegate_->IsAccountConsistencyEnforced());
+  EXPECT_TRUE(test_signin_client()->is_ready_for_dice_migration());
 }
 
 // Tests that the Dice migration does not happen after a busy reconcile.
@@ -961,13 +966,10 @@ TEST_F(AccountReconcilorTest, DiceNoMigrationAfterReconcile) {
       ConnectProfileToAccount("12345", "user@gmail.com");
   cookie_manager_service()->SetListAccountsResponseNoAccounts();
   AccountReconcilor* reconcilor = GetMockReconcilor();
-  signin::DiceAccountReconcilorDelegate* dice_delegate =
-      static_cast<signin::DiceAccountReconcilorDelegate*>(
-          reconcilor->delegate_.get());
 
   // Dice is not enabled by default.
   ASSERT_FALSE(signin::IsDiceEnabledForProfile(pref_service()));
-  EXPECT_FALSE(dice_delegate->IsAccountConsistencyEnforced());
+  EXPECT_FALSE(reconcilor->delegate_->IsAccountConsistencyEnforced());
 
   // Busy reconcile.
   EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
@@ -980,10 +982,7 @@ TEST_F(AccountReconcilorTest, DiceNoMigrationAfterReconcile) {
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
 
   // Migration did not happen.
-  EXPECT_FALSE(
-      dice_delegate->IsReadyForDiceMigration(false /* is_new_profile */));
-  EXPECT_FALSE(signin::IsDiceEnabledForProfile(pref_service()));
-  EXPECT_FALSE(dice_delegate->IsAccountConsistencyEnforced());
+  EXPECT_FALSE(test_signin_client()->is_ready_for_dice_migration());
 }
 
 // Tests that secondary refresh tokens are cleared when cookie is empty during
@@ -1005,9 +1004,6 @@ TEST_F(AccountReconcilorTest, MigrationClearSecondaryTokens) {
   // Reconcile should revoke the secondary account.
   AccountReconcilor* reconcilor = GetMockReconcilor();
   EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id_1));
-  signin::DiceAccountReconcilorDelegate* dice_delegate =
-      static_cast<signin::DiceAccountReconcilorDelegate*>(
-          reconcilor->delegate_.get());
   reconcilor->StartReconcile();
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
   base::RunLoop().RunUntilIdle();
@@ -1020,8 +1016,7 @@ TEST_F(AccountReconcilorTest, MigrationClearSecondaryTokens) {
   EXPECT_FALSE(token_service()->RefreshTokenIsAvailable(account_id_2));
 
   // Profile was not migrated.
-  EXPECT_FALSE(
-      dice_delegate->IsReadyForDiceMigration(false /* is_new_profile */));
+  EXPECT_FALSE(test_signin_client()->is_ready_for_dice_migration());
 }
 
 // Tests that all refresh tokens are cleared when cookie is empty during
@@ -1043,9 +1038,6 @@ TEST_F(AccountReconcilorTest, MigrationClearAllTokens) {
 
   // Reconcile should revoke the secondary account.
   AccountReconcilor* reconcilor = GetMockReconcilor();
-  signin::DiceAccountReconcilorDelegate* dice_delegate =
-      static_cast<signin::DiceAccountReconcilorDelegate*>(
-          reconcilor->delegate_.get());
   reconcilor->StartReconcile();
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
   base::RunLoop().RunUntilIdle();
@@ -1057,8 +1049,7 @@ TEST_F(AccountReconcilorTest, MigrationClearAllTokens) {
 
   // Profile is now ready for migration on next startup.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(
-      dice_delegate->IsReadyForDiceMigration(false /* is_new_profile */));
+  EXPECT_TRUE(test_signin_client()->is_ready_for_dice_migration());
 }
 
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)

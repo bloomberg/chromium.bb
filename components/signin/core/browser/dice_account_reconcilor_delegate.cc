@@ -9,73 +9,15 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/signin_client.h"
 
 namespace signin {
 
-namespace {
-
-// Preference indicating that the Dice migration should happen at the next
-// Chrome startup.
-const char kDiceMigrationOnStartupPref[] =
-    "signin.AccountReconcilor.kDiceMigrationOnStartup";
-
-const char kDiceMigrationStatusHistogram[] = "Signin.DiceMigrationStatus";
-
-// Used for UMA histogram kDiceMigrationStatusHistogram.
-// Do not remove or re-order values.
-enum class DiceMigrationStatus {
-  kEnabled,
-  kDisabledReadyForMigration,
-  kDisabledNotReadyForMigration,
-
-  // This is the last value. New values should be inserted above.
-  kDiceMigrationStatusCount
-};
-
-}  // namespace
-
 DiceAccountReconcilorDelegate::DiceAccountReconcilorDelegate(
-    PrefService* user_prefs,
-    bool is_new_profile)
-    : user_prefs_(user_prefs) {
-  DCHECK(user_prefs_);
-  bool is_ready_for_dice = IsReadyForDiceMigration(is_new_profile);
-  if (is_ready_for_dice && IsDiceMigrationEnabled()) {
-    if (!IsDiceEnabledForProfile(user_prefs_))
-      VLOG(1) << "Profile is migrating to Dice";
-    MigrateProfileToDice(user_prefs_);
-    DCHECK(IsDiceEnabledForProfile(user_prefs_));
-  }
-  UMA_HISTOGRAM_ENUMERATION(
-      kDiceMigrationStatusHistogram,
-      IsDiceEnabledForProfile(user_prefs_)
-          ? DiceMigrationStatus::kEnabled
-          : (is_ready_for_dice
-                 ? DiceMigrationStatus::kDisabledReadyForMigration
-                 : DiceMigrationStatus::kDisabledNotReadyForMigration),
-      DiceMigrationStatus::kDiceMigrationStatusCount);
-}
-
-// static
-void DiceAccountReconcilorDelegate::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(kDiceMigrationOnStartupPref, false);
-}
-
-// static
-void DiceAccountReconcilorDelegate::SetDiceMigrationOnStartup(
-    PrefService* prefs,
-    bool migrate) {
-  VLOG(1) << "Dice migration on next startup: " << migrate;
-  prefs->SetBoolean(kDiceMigrationOnStartupPref, migrate);
-}
-
-bool DiceAccountReconcilorDelegate::IsReadyForDiceMigration(
-    bool is_new_profile) {
-  return is_new_profile || user_prefs_->GetBoolean(kDiceMigrationOnStartupPref);
+    SigninClient* signin_client)
+    : signin_client_(signin_client) {
+  DCHECK(signin_client_);
 }
 
 bool DiceAccountReconcilorDelegate::IsReconcileEnabled() const {
@@ -83,7 +25,7 @@ bool DiceAccountReconcilorDelegate::IsReconcileEnabled() const {
 }
 
 bool DiceAccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
-  return IsDiceEnabledForProfile(user_prefs_);
+  return IsDiceEnabledForProfile(signin_client_->GetPrefs());
 }
 
 // - On first execution, the candidates are examined in this order:
@@ -161,7 +103,8 @@ bool DiceAccountReconcilorDelegate::
   // During the Dice migration step, before Dice is actually enabled, chrome
   // tokens must be cleared when the cookies are cleared.
   return signin::IsDicePrepareMigrationEnabled() &&
-         !signin::IsDiceEnabledForProfile(user_prefs_) && gaia_accounts.empty();
+         !signin::IsDiceEnabledForProfile(signin_client_->GetPrefs()) &&
+         gaia_accounts.empty();
 }
 
 void DiceAccountReconcilorDelegate::OnReconcileFinished(
@@ -171,7 +114,7 @@ void DiceAccountReconcilorDelegate::OnReconcileFinished(
 
   // Migration happens on startup if the last reconcile was a no-op.
   if (IsDicePrepareMigrationEnabled())
-    SetDiceMigrationOnStartup(user_prefs_, reconcile_is_noop);
+    signin_client_->SetReadyForDiceMigration(reconcile_is_noop);
 }
 
 }  // namespace signin

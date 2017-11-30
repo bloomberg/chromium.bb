@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -132,6 +133,9 @@ class SigninClient : public KeyedService {
 
   // Called once the credentials has been copied to another SigninManager.
   virtual void AfterCredentialsCopied() {}
+
+  // Schedules migration to happen at next startup.
+  virtual void SetReadyForDiceMigration(bool is_ready) {}
 
  protected:
   // Returns device id that is scoped to single signin.

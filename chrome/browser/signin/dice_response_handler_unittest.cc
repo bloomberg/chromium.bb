@@ -129,15 +129,13 @@ class DiceResponseHandlerTest : public testing::Test,
     loop_.SetTaskRunner(task_runner_);
     DCHECK_EQ(task_runner_, base::ThreadTaskRunnerHandle::Get());
     signin_client_.SetURLRequestContext(request_context_getter_.get());
-    signin::DiceAccountReconcilorDelegate::RegisterProfilePrefs(
-        pref_service_.registry());
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     SigninManager::RegisterProfilePrefs(pref_service_.registry());
     signin::RegisterAccountConsistencyProfilePrefs(pref_service_.registry());
     signin::SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
     auto account_reconcilor_delegate =
         std::make_unique<signin::DiceAccountReconcilorDelegate>(
-            &pref_service_, false /* is_new_profile */);
+            &signin_client_);
     account_reconcilor_ = std::make_unique<AccountReconcilor>(
         &token_service_, &signin_manager_, &signin_client_, nullptr,
         std::move(account_reconcilor_delegate));
