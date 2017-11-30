@@ -1713,10 +1713,10 @@ void WebViewImpl::DidUpdateBrowserControls() {
   }
 }
 
-void WebViewImpl::SetScrollBoundaryBehavior(
-    const WebScrollBoundaryBehavior& scroll_boundary_behavior) {
+void WebViewImpl::SetOverscrollBehavior(
+    const WebOverscrollBehavior& overscroll_behavior) {
   if (layer_tree_view_)
-    layer_tree_view_->SetScrollBoundaryBehavior(scroll_boundary_behavior);
+    layer_tree_view_->SetOverscrollBehavior(overscroll_behavior);
 }
 
 BrowserControls& WebViewImpl::GetBrowserControls() {

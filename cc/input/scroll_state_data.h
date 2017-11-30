@@ -58,7 +58,7 @@ class CC_EXPORT ScrollStateData {
   bool caused_scroll_x;
   bool caused_scroll_y;
 
-  // Track if the scroll_chain has been cut by scroll_boundary_behavior, in
+  // Track if the scroll_chain has been cut by overscroll_behavior, in
   // order to properly handle overscroll-effects.
   // TODO(sunyunjia): overscroll should be handled at the top of scroll_chain,
   // as implemented at blink side. This field should be removed after it's

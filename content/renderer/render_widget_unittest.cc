@@ -42,7 +42,7 @@ bool operator==(const ui::DidOverscrollParams& lhs,
          lhs.latest_overscroll_delta == rhs.latest_overscroll_delta &&
          lhs.current_fling_velocity == rhs.current_fling_velocity &&
          lhs.causal_event_viewport_point == rhs.causal_event_viewport_point &&
-         lhs.scroll_boundary_behavior == rhs.scroll_boundary_behavior;
+         lhs.overscroll_behavior == rhs.overscroll_behavior;
 }
 
 }  // namespace ui
@@ -181,7 +181,7 @@ class InteractiveRenderWidget : public RenderWidget {
                     blink::WebFloatPoint(event.x, event.y),
                     blink::WebFloatSize(event.data.scroll_update.velocity_x,
                                         event.data.scroll_update.velocity_y),
-                    blink::WebScrollBoundaryBehavior());
+                    blink::WebOverscrollBehavior());
       return true;
     }
 
@@ -286,7 +286,7 @@ TEST_F(RenderWidgetUnittest, FlingOverscroll) {
   widget()->DidOverscroll(blink::WebFloatSize(10, 5), blink::WebFloatSize(5, 5),
                           blink::WebFloatPoint(1, 1),
                           blink::WebFloatSize(10, 5),
-                          blink::WebScrollBoundaryBehavior());
+                          blink::WebOverscrollBehavior());
   base::RunLoop().RunUntilIdle();
 }
 

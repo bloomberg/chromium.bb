@@ -47,7 +47,7 @@
 #include "public/platform/WebDragOperation.h"
 #include "public/platform/WebEventListenerProperties.h"
 #include "public/platform/WebFocusType.h"
-#include "public/platform/WebScrollBoundaryBehavior.h"
+#include "public/platform/WebOverscrollBehavior.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CreateWindow
@@ -143,7 +143,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
                              const FloatSize& accumulated_overscroll,
                              const FloatPoint& position_in_viewport,
                              const FloatSize& velocity_in_viewport,
-                             const WebScrollBoundaryBehavior&) = 0;
+                             const WebOverscrollBehavior&) = 0;
 
   virtual bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                                     const String& source) = 0;
@@ -330,7 +330,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
 
   virtual void DidUpdateBrowserControls() const {}
 
-  virtual void SetScrollBoundaryBehavior(const WebScrollBoundaryBehavior&) {}
+  virtual void SetOverscrollBehavior(const WebOverscrollBehavior&) {}
 
   virtual void RegisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
   virtual void UnregisterPopupOpeningObserver(PopupOpeningObserver*) = 0;

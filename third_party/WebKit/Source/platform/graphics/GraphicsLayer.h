@@ -50,7 +50,7 @@
 #include "public/platform/WebContentLayerClient.h"
 #include "public/platform/WebImageLayer.h"
 #include "public/platform/WebLayerStickyPositionConstraint.h"
-#include "public/platform/WebScrollBoundaryBehavior.h"
+#include "public/platform/WebOverscrollBehavior.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -279,7 +279,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   void SetHasWillChangeTransformHint(bool);
 
-  void SetScrollBoundaryBehavior(const WebScrollBoundaryBehavior&);
+  void SetOverscrollBehavior(const WebOverscrollBehavior&);
   void SetIsResizedByBrowserControls(bool);
 
   void SetLayerState(PropertyTreeState&&, const IntPoint& layer_offset);

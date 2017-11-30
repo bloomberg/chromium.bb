@@ -66,8 +66,7 @@ Layer::Inputs::Inputs(int layer_id)
       trilinear_filtering(false),
       hide_layer_and_subtree(false),
       client(nullptr),
-      scroll_boundary_behavior(
-          ScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeAuto) {}
+      overscroll_behavior(OverscrollBehavior::kOverscrollBehaviorTypeAuto) {}
 
 Layer::Inputs::~Inputs() {}
 
@@ -307,18 +306,18 @@ void Layer::SetBounds(const gfx::Size& size) {
   SetNeedsCommit();
 }
 
-void Layer::SetScrollBoundaryBehavior(const ScrollBoundaryBehavior& behavior) {
+void Layer::SetOverscrollBehavior(const OverscrollBehavior& behavior) {
   DCHECK(IsPropertyChangeAllowed());
-  if (scroll_boundary_behavior() == behavior)
+  if (overscroll_behavior() == behavior)
     return;
-  inputs_.scroll_boundary_behavior = behavior;
+  inputs_.overscroll_behavior = behavior;
   if (!layer_tree_host_)
     return;
 
   if (scrollable()) {
     auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
     if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
-      scroll_node->scroll_boundary_behavior = behavior;
+      scroll_node->overscroll_behavior = behavior;
     else
       SetPropertyTreesNeedRebuild();
   }

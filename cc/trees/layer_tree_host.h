@@ -61,7 +61,7 @@ class MutatorEvents;
 class MutatorHost;
 struct PendingPageScaleAnimation;
 class RenderingStatsInstrumentation;
-struct ScrollBoundaryBehavior;
+struct OverscrollBehavior;
 class TaskGraphRunner;
 class UIResourceManager;
 class UkmRecorderFactory;
@@ -299,8 +299,7 @@ class CC_EXPORT LayerTreeHost : public viz::SurfaceReferenceOwner,
                                 float bottom_height,
                                 bool shrink);
   void SetBrowserControlsShownRatio(float ratio);
-  void SetScrollBoundaryBehavior(
-      const ScrollBoundaryBehavior& scroll_boundary_behavior);
+  void SetOverscrollBehavior(const OverscrollBehavior& overscroll_behavior);
 
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float min_page_scale_factor,
@@ -612,7 +611,7 @@ class CC_EXPORT LayerTreeHost : public viz::SurfaceReferenceOwner,
   float top_controls_height_ = 0.f;
   float top_controls_shown_ratio_ = 0.f;
   bool browser_controls_shrink_blink_size_ = false;
-  ScrollBoundaryBehavior scroll_boundary_behavior_;
+  OverscrollBehavior overscroll_behavior_;
 
   float bottom_controls_height_ = 0.f;
 

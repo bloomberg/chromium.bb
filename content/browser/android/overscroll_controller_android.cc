@@ -228,9 +228,9 @@ void OverscrollControllerAndroid::OnOverscrolled(
     return;
 
   if (refresh_effect_) {
-    if (params.scroll_boundary_behavior.y !=
-        cc::ScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
-            kScrollBoundaryBehaviorTypeAuto)
+    if (params.overscroll_behavior.y !=
+        cc::OverscrollBehavior::OverscrollBehaviorType::
+            kOverscrollBehaviorTypeAuto)
       refresh_effect_->Reset();
     else
       refresh_effect_->OnOverscrolled();
@@ -255,17 +255,17 @@ void OverscrollControllerAndroid::OnOverscrolled(
   gfx::Vector2dF overscroll_location = gfx::ScaleVector2d(
       params.causal_event_viewport_point.OffsetFromOrigin(), scale_factor);
 
-  if (params.scroll_boundary_behavior.x ==
-      cc::ScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
-          kScrollBoundaryBehaviorTypeNone) {
+  if (params.overscroll_behavior.x ==
+      cc::OverscrollBehavior::OverscrollBehaviorType::
+          kOverscrollBehaviorTypeNone) {
     accumulated_overscroll.set_x(0);
     latest_overscroll_delta.set_x(0);
     current_fling_velocity.set_x(0);
   }
 
-  if (params.scroll_boundary_behavior.y ==
-      cc::ScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
-          kScrollBoundaryBehaviorTypeNone) {
+  if (params.overscroll_behavior.y ==
+      cc::OverscrollBehavior::OverscrollBehaviorType::
+          kOverscrollBehaviorTypeNone) {
     accumulated_overscroll.set_y(0);
     latest_overscroll_delta.set_y(0);
     current_fling_velocity.set_y(0);

@@ -167,7 +167,7 @@ enum RecognitionState {
   BOOL firstScrollUnconsumed_;
 
   // Whether the renderer disables the overscroll effect, e.g. by
-  // CSSScrollBoundaryBehavior.
+  // CSSOverscrollBehavior.
   BOOL rendererDisabledOverscroll_;
 
   // Whether we have received a gesture scroll begin and are awiting on the
@@ -196,7 +196,7 @@ enum RecognitionState {
 // This is called whenever an overscroll event is generated on the renderer
 // side. This is called before InputEventAck. For an overscroll event, the
 // ack_result of "unconsumed" will trigger the swipe navigation. However, the
-// renderer can plumb the value of scroll_boundary_behavior by DidOverscroll,
+// renderer can plumb the value of overscroll_behavior by DidOverscroll,
 // to prevent the swipe navigation before the ack_result arrives.
 // This code makes the assumption that the DidOverscroll() event arrives
 // before InputEventAcks of GestureScrollUpdate/GestureScrollEnd

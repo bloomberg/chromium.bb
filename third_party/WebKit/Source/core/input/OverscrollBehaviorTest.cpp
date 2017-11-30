@@ -168,7 +168,7 @@ TEST_F(OverscrollBehaviorTest, ContainOnYAllowsPropagationsOnX) {
   ASSERT_EQ(outer->scrollTop(), 200);
 }
 
-TEST_F(OverscrollBehaviorTest, ContainOnYAPreventsDiagonalPropagations) {
+TEST_F(OverscrollBehaviorTest, ContainOnYPreventsDiagonalPropagations) {
   SetInnerOverscrollBehavior(EOverscrollBehavior::kAuto,
                              EOverscrollBehavior::kContain);
   Scroll(-100.0, -100.0);

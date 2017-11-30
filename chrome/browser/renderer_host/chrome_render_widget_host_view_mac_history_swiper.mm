@@ -153,10 +153,9 @@ BOOL forceMagicMouse = NO;
 }
 
 - (void)onOverscrolled:(const ui::DidOverscrollParams&)params {
-  rendererDisabledOverscroll_ =
-      params.scroll_boundary_behavior.x !=
-      cc::ScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
-          kScrollBoundaryBehaviorTypeAuto;
+  rendererDisabledOverscroll_ = params.overscroll_behavior.x !=
+                                cc::OverscrollBehavior::OverscrollBehaviorType::
+                                    kOverscrollBehaviorTypeAuto;
 }
 
 - (void)beginGestureWithEvent:(NSEvent*)event {

@@ -34,9 +34,9 @@
 #include "WebFloatPoint.h"
 #include "WebFloatPoint3D.h"
 #include "WebFloatSize.h"
+#include "WebOverscrollBehavior.h"
 #include "WebPoint.h"
 #include "WebRect.h"
-#include "WebScrollBoundaryBehavior.h"
 #include "WebSize.h"
 #include "WebString.h"
 #include "WebTouchInfo.h"
@@ -232,7 +232,7 @@ class WebLayer {
   // scroll should be propagated to its ancestors at the beginning of the
   // scroll, and whether the overscroll should cause UI affordance such as
   // glow/bounce etc.
-  virtual void SetScrollBoundaryBehavior(const WebScrollBoundaryBehavior&) = 0;
+  virtual void SetOverscrollBehavior(const WebOverscrollBehavior&) = 0;
 
   // Sets the cc-side layer client.
   virtual void SetLayerClient(cc::LayerClient*) = 0;

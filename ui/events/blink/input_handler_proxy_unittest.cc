@@ -313,13 +313,12 @@ class MockInputHandlerProxyClient
         blink::WebFloatSize(cumulative_scroll.width, cumulative_scroll.height));
   }
 
-  MOCK_METHOD5(
-      DidOverscroll,
-      void(const gfx::Vector2dF& accumulated_overscroll,
-           const gfx::Vector2dF& latest_overscroll_delta,
-           const gfx::Vector2dF& current_fling_velocity,
-           const gfx::PointF& causal_event_viewport_point,
-           const cc::ScrollBoundaryBehavior& scroll_boundary_behavior));
+  MOCK_METHOD5(DidOverscroll,
+               void(const gfx::Vector2dF& accumulated_overscroll,
+                    const gfx::Vector2dF& latest_overscroll_delta,
+                    const gfx::Vector2dF& current_fling_velocity,
+                    const gfx::PointF& causal_event_viewport_point,
+                    const cc::OverscrollBehavior& overscroll_behavior));
   void DidStopFlinging() override {}
   void DidAnimateForInput() override {}
   MOCK_METHOD3(SetWhiteListedTouchAction,
@@ -2263,7 +2262,7 @@ void InputHandlerProxyTest::GestureFlingStopsAtContentEdge() {
       DidOverscroll(overscroll.accumulated_root_overscroll,
                     overscroll.unused_scroll_delta,
                     testing::Property(&gfx::Vector2dF::y, testing::Lt(0)),
-                    testing::_, overscroll.scroll_boundary_behavior));
+                    testing::_, overscroll.overscroll_behavior));
   if (!touchpad_and_wheel_scroll_latching_enabled_)
     EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
@@ -2427,7 +2426,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
       DidOverscroll(overscroll.accumulated_root_overscroll,
                     overscroll.unused_scroll_delta,
                     testing::Property(&gfx::Vector2dF::y, testing::Lt(0)),
-                    testing::_, overscroll.scroll_boundary_behavior));
+                    testing::_, overscroll.overscroll_behavior));
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   time += base::TimeDelta::FromMilliseconds(10);
   Animate(time);
@@ -2455,7 +2454,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
       DidOverscroll(overscroll.accumulated_root_overscroll,
                     overscroll.unused_scroll_delta,
                     testing::Property(&gfx::Vector2dF::x, testing::Lt(0)),
-                    testing::_, overscroll.scroll_boundary_behavior));
+                    testing::_, overscroll.overscroll_behavior));
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   time += base::TimeDelta::FromMilliseconds(10);
   Animate(time);

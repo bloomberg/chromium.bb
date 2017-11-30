@@ -57,7 +57,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager
       const gfx::Vector2dF& latest_overscroll_delta,
       const gfx::Vector2dF& current_fling_velocity,
       const gfx::PointF& causal_event_viewport_point,
-      const cc::ScrollBoundaryBehavior& scroll_boundary_behavior) override;
+      const cc::OverscrollBehavior& overscroll_behavior) override;
   void DidStopFlinging() override;
   void DidAnimateForInput() override;
   void GenerateScrollBeginAndSendToMainThread(

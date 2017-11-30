@@ -1048,13 +1048,12 @@ static inline bool UserScrollableVertical(LayerImpl* layer) {
   return layer->test_properties()->user_scrollable_vertical;
 }
 
-static inline ScrollBoundaryBehavior GetScrollBoundaryBehavior(Layer* layer) {
-  return layer->scroll_boundary_behavior();
+static inline OverscrollBehavior GetOverscrollBehavior(Layer* layer) {
+  return layer->overscroll_behavior();
 }
 
-static inline ScrollBoundaryBehavior GetScrollBoundaryBehavior(
-    LayerImpl* layer) {
-  return layer->test_properties()->scroll_boundary_behavior;
+static inline OverscrollBehavior GetOverscrollBehavior(LayerImpl* layer) {
+  return layer->test_properties()->overscroll_behavior;
 }
 
 template <typename LayerType>
@@ -1114,7 +1113,7 @@ void PropertyTreeBuilderContext<LayerType>::AddScrollNodeIfNeeded(
     node.user_scrollable_vertical = UserScrollableVertical(layer);
     node.element_id = layer->element_id();
     node.transform_id = data_for_children->transform_tree_parent;
-    node.scroll_boundary_behavior = GetScrollBoundaryBehavior(layer);
+    node.overscroll_behavior = GetOverscrollBehavior(layer);
 
     node_id = scroll_tree_.Insert(node, parent_id);
     data_for_children->scroll_tree_parent = node_id;

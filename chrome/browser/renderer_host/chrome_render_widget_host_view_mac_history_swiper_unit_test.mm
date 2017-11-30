@@ -99,7 +99,7 @@ class MacHistorySwiperTest : public CocoaTest {
   void momentumMoveGestureAtPoint(NSPoint point);
   void endGestureAtPoint(NSPoint point);
   void rendererACKForBeganEvent();
-  void onOverscrolled(cc::ScrollBoundaryBehavior::ScrollBoundaryBehaviorType);
+  void onOverscrolled(cc::OverscrollBehavior::OverscrollBehaviorType);
 
   // These methods send a single type of event.
   void sendBeginGestureEventInMiddle();
@@ -202,9 +202,9 @@ void MacHistorySwiperTest::endGestureAtPoint(NSPoint point) {
 }
 
 void MacHistorySwiperTest::onOverscrolled(
-    cc::ScrollBoundaryBehavior::ScrollBoundaryBehaviorType behavior) {
+    cc::OverscrollBehavior::OverscrollBehaviorType behavior) {
   ui::DidOverscrollParams params;
-  params.scroll_boundary_behavior.x = behavior;
+  params.overscroll_behavior.x = behavior;
   [historySwiper_ onOverscrolled:params];
 }
 
@@ -558,7 +558,7 @@ TEST_F(MacHistorySwiperTest, MagicMouseStateResetsCorrectly) {
 
 // With scroll-boundary-behavior value as contain, the page should not navigate,
 // nor should the history overlay appear.
-TEST_F(MacHistorySwiperTest, ScrollBoundaryBehaviorContainPreventsNavigation) {
+TEST_F(MacHistorySwiperTest, OverscrollBehaviorContainPreventsNavigation) {
   // These tests require 10.7+ APIs.
   if (![NSEvent
           respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
@@ -570,8 +570,8 @@ TEST_F(MacHistorySwiperTest, ScrollBoundaryBehaviorContainPreventsNavigation) {
   EXPECT_EQ(begin_count_, 0);
   EXPECT_EQ(end_count_, 0);
 
-  onOverscrolled(cc::ScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
-                     kScrollBoundaryBehaviorTypeContain);
+  onOverscrolled(cc::OverscrollBehavior::OverscrollBehaviorType::
+                     kOverscrollBehaviorTypeContain);
   moveGestureAtPoint(makePoint(0.2, 0.5));
   EXPECT_EQ(begin_count_, 0);
   EXPECT_EQ(end_count_, 0);
@@ -587,15 +587,15 @@ TEST_F(MacHistorySwiperTest, ScrollBoundaryBehaviorContainPreventsNavigation) {
 
 // With scroll-boundary-behavior value as none, the page should not navigate,
 // nor should the history overlay appear.
-TEST_F(MacHistorySwiperTest, ScrollBoundaryBehaviorNonePreventsNavigation) {
+TEST_F(MacHistorySwiperTest, OverscrollBehaviorNonePreventsNavigation) {
   startGestureInMiddle();
   moveGestureInMiddle();
 
   EXPECT_EQ(begin_count_, 0);
   EXPECT_EQ(end_count_, 0);
 
-  onOverscrolled(cc::ScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
-                     kScrollBoundaryBehaviorTypeNone);
+  onOverscrolled(cc::OverscrollBehavior::OverscrollBehaviorType::
+                     kOverscrollBehaviorTypeNone);
   moveGestureAtPoint(makePoint(0.2, 0.5));
   EXPECT_EQ(begin_count_, 0);
   EXPECT_EQ(end_count_, 0);

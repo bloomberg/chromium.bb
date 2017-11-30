@@ -40,7 +40,7 @@ class UI_ANDROID_EXPORT OverscrollRefresh {
 
   // Scroll ack listener. The effect will only be activated if |can_navigate|
   // is true which happens when the scroll update is not consumed and the
-  // scroll_boundary_behavior on y axis is 'auto'.
+  // overscroll_behavior on y axis is 'auto'.
   // This method is made virtual for mocking.
   virtual void OnOverscrolled();
 

@@ -5,7 +5,7 @@
 #ifndef UI_EVENTS_BLINK_DID_OVERSCROLL_PARAMS_H_
 #define UI_EVENTS_BLINK_DID_OVERSCROLL_PARAMS_H_
 
-#include "cc/input/scroll_boundary_behavior.h"
+#include "cc/input/overscroll_behavior.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -18,7 +18,7 @@ struct DidOverscrollParams {
   gfx::Vector2dF latest_overscroll_delta;
   gfx::Vector2dF current_fling_velocity;
   gfx::PointF causal_event_viewport_point;
-  cc::ScrollBoundaryBehavior scroll_boundary_behavior;
+  cc::OverscrollBehavior overscroll_behavior;
 };
 
 }  // namespace ui

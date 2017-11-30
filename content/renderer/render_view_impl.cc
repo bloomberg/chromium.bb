@@ -1708,7 +1708,7 @@ void RenderViewImpl::DidOverscroll(
     const blink::WebFloatSize& accumulatedOverscroll,
     const blink::WebFloatPoint& positionInViewport,
     const blink::WebFloatSize& velocityInViewport,
-    const blink::WebScrollBoundaryBehavior& behavior) {
+    const blink::WebOverscrollBehavior& behavior) {
   RenderWidget::DidOverscroll(overscrollDelta, accumulatedOverscroll,
                               positionInViewport, velocityInViewport, behavior);
 }

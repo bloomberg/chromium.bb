@@ -40,7 +40,7 @@ using blink::WebVector;
 using blink::WebRect;
 using blink::WebSize;
 using blink::WebColor;
-using blink::WebScrollBoundaryBehavior;
+using blink::WebOverscrollBehavior;
 
 namespace cc_blink {
 
@@ -513,10 +513,9 @@ void WebLayerImpl::ShowScrollbars() {
   layer_->ShowScrollbars();
 }
 
-void WebLayerImpl::SetScrollBoundaryBehavior(
-    const blink::WebScrollBoundaryBehavior& behavior) {
-  layer_->SetScrollBoundaryBehavior(
-      static_cast<cc::ScrollBoundaryBehavior>(behavior));
+void WebLayerImpl::SetOverscrollBehavior(
+    const blink::WebOverscrollBehavior& behavior) {
+  layer_->SetOverscrollBehavior(static_cast<cc::OverscrollBehavior>(behavior));
 }
 
 }  // namespace cc_blink
