@@ -3172,6 +3172,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Open in incognito tab"/>
 </enum>
 
+<enum name="BookmarkType">
+  <int value="0" label="Normal"/>
+  <int value="1" label="Partner"/>
+</enum>
+
 <enum name="Boolean">
   <int value="0" label="False"/>
   <int value="1" label="True"/>
