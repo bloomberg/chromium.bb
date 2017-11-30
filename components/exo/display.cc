@@ -209,7 +209,7 @@ std::unique_ptr<NotificationSurface> Display::CreateNotificationSurface(
 
 std::unique_ptr<DataDevice> Display::CreateDataDevice(
     DataDeviceDelegate* delegate) {
-  return std::make_unique<DataDevice>(delegate, file_helper_.get());
+  return std::make_unique<DataDevice>(delegate, &seat_, file_helper_.get());
 }
 
 }  // namespace exo
