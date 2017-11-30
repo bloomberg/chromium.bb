@@ -10,7 +10,6 @@
 #include <functional>
 #include <map>
 #include <memory>
-#include <queue>
 #include <set>
 #include <string>
 #include <utility>
@@ -463,11 +462,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
                 const base::TimeTicks& expiration,
                 TimeoutBehavior timeout_behavior);
     ~RequestInfo();
-    bool operator>(const RequestInfo& other) const;
-    int id;
-    ServiceWorkerMetrics::EventType event_type;
-    base::TimeTicks expiration;
-    TimeoutBehavior timeout_behavior;
+    // Compares |expiration|, or |id| if |expiration| is the same.
+    bool operator<(const RequestInfo& other) const;
+
+    const int id;
+    const ServiceWorkerMetrics::EventType event_type;
+    const base::TimeTicks expiration;
+    const TimeoutBehavior timeout_behavior;
   };
 
   struct PendingRequest {
@@ -481,13 +482,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
     base::Time start_time;
     base::TimeTicks start_time_ticks;
     ServiceWorkerMetrics::EventType event_type;
+    // Points to this request's entry in |request_timeouts_|.
+    std::set<RequestInfo>::iterator timeout_iter;
   };
 
   using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
-  using RequestInfoPriorityQueue =
-      std::priority_queue<RequestInfo,
-                          std::vector<RequestInfo>,
-                          std::greater<RequestInfo>>;
 
   // The timeout timer interval.
   static constexpr base::TimeDelta kTimeoutTimerDelay =
@@ -673,6 +672,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // fetch, sync, etc. events.
   base::IDMap<std::unique_ptr<PendingRequest>> pending_requests_;
 
+  // Keeps track of in-flight requests for timeout purposes. Requests are sorted
+  // by their expiration time (soonest to expire at the beginning of the
+  // set). The timeout timer periodically checks |request_timeouts_| for entries
+  // that should time out.
+  std::set<RequestInfo> request_timeouts_;
+
   // Container for pending external requests for this service worker.
   // (key, value): (request uuid, request id).
   using RequestUUIDToRequestIDMap = std::map<std::string, int>;
@@ -722,13 +727,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // currently existing requests, but also takes into account the former
   // expiration times of finished requests.
   base::TimeTicks max_request_expiration_time_;
-
-  // Keeps track of requests for timeout purposes. Requests are sorted by
-  // their expiration time (soonest to expire on top of the priority queue). The
-  // timeout timer periodically checks |timeout_queue_| for entries that should
-  // time out or have already been fulfilled (i.e., removed from
-  // |pending_requests_|).
-  RequestInfoPriorityQueue timeout_queue_;
 
   bool skip_waiting_ = false;
   bool skip_recording_startup_time_ = false;

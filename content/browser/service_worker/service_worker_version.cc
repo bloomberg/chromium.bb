@@ -575,16 +575,23 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
       << "Event of type " << static_cast<int>(event_type)
       << " can only be dispatched to an active worker: " << status();
 
-  int request_id = pending_requests_.Add(
+  auto request =
       std::make_unique<PendingRequest>(std::move(error_callback), clock_->Now(),
-                                       tick_clock_->NowTicks(), event_type));
+                                       tick_clock_->NowTicks(), event_type);
+  PendingRequest* request_rawptr = request.get();
+  int request_id = pending_requests_.Add(std::move(request));
   TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker", "ServiceWorkerVersion::Request",
-                           pending_requests_.Lookup(request_id), "Request id",
-                           request_id, "Event type",
+                           request_rawptr, "Request id", request_id,
+                           "Event type",
                            ServiceWorkerMetrics::EventTypeToString(event_type));
+
   base::TimeTicks expiration_time = tick_clock_->NowTicks() + timeout;
-  timeout_queue_.push(
-      RequestInfo(request_id, event_type, expiration_time, timeout_behavior));
+  bool is_inserted = false;
+  std::set<RequestInfo>::iterator iter;
+  std::tie(iter, is_inserted) = request_timeouts_.emplace(
+      request_id, event_type, expiration_time, timeout_behavior);
+  DCHECK(is_inserted);
+  request_rawptr->timeout_iter = iter;
   if (expiration_time > max_request_expiration_time_)
     max_request_expiration_time_ = expiration_time;
   return request_id;
@@ -626,6 +633,7 @@ bool ServiceWorkerVersion::FinishRequest(int request_id,
   RestartTick(&idle_time_);
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
                          request, "Handled", was_handled);
+  request_timeouts_.erase(request->timeout_iter);
   pending_requests_.Remove(request_id);
   if (!HasWork()) {
     for (auto& observer : listeners_)
@@ -866,9 +874,11 @@ ServiceWorkerVersion::RequestInfo::RequestInfo(
 ServiceWorkerVersion::RequestInfo::~RequestInfo() {
 }
 
-bool ServiceWorkerVersion::RequestInfo::operator>(
+bool ServiceWorkerVersion::RequestInfo::operator<(
     const RequestInfo& other) const {
-  return expiration > other.expiration;
+  if (expiration == other.expiration)
+    return id < other.id;
+  return expiration < other.expiration;
 }
 
 ServiceWorkerVersion::PendingRequest::PendingRequest(
@@ -1649,8 +1659,9 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
 
   // Requests have not finished before their expiration.
   bool stop_for_timeout = false;
-  while (!timeout_queue_.empty()) {
-    RequestInfo info = timeout_queue_.top();
+  auto timeout_iter = request_timeouts_.begin();
+  while (timeout_iter != request_timeouts_.end()) {
+    const RequestInfo& info = *timeout_iter;
     if (!RequestExpired(info.expiration))
       break;
     if (MaybeTimeOutRequest(info)) {
@@ -1658,7 +1669,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
           stop_for_timeout || info.timeout_behavior == KILL_ON_TIMEOUT;
       ServiceWorkerMetrics::RecordEventTimeout(info.event_type);
     }
-    timeout_queue_.pop();
+    timeout_iter = request_timeouts_.erase(timeout_iter);
   }
   if (stop_for_timeout && running_status() != EmbeddedWorkerStatus::STOPPING)
     embedded_worker_->Stop();
@@ -1788,14 +1799,18 @@ bool ServiceWorkerVersion::MaybeTimeOutRequest(const RequestInfo& info) {
 
 void ServiceWorkerVersion::SetAllRequestExpirations(
     const base::TimeTicks& expiration) {
-  RequestInfoPriorityQueue new_requests;
-  while (!timeout_queue_.empty()) {
-    RequestInfo info = timeout_queue_.top();
-    info.expiration = expiration;
-    new_requests.push(info);
-    timeout_queue_.pop();
+  std::set<RequestInfo> new_timeouts;
+  for (const auto& info : request_timeouts_) {
+    bool is_inserted = false;
+    std::set<RequestInfo>::iterator iter;
+    std::tie(iter, is_inserted) = new_timeouts.emplace(
+        info.id, info.event_type, expiration, info.timeout_behavior);
+    DCHECK(is_inserted);
+    PendingRequest* request = pending_requests_.Lookup(info.id);
+    DCHECK(request);
+    request->timeout_iter = iter;
   }
-  timeout_queue_ = new_requests;
+  request_timeouts_.swap(new_timeouts);
 }
 
 ServiceWorkerStatusCode ServiceWorkerVersion::DeduceStartWorkerFailureReason(
