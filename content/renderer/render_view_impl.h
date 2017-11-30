@@ -263,7 +263,7 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
                      const blink::WebFloatSize& accumulatedOverscroll,
                      const blink::WebFloatPoint& positionInViewport,
                      const blink::WebFloatSize& velocityInViewport,
-                     const blink::WebScrollBoundaryBehavior& behavior) override;
+                     const blink::WebOverscrollBehavior& behavior) override;
   void HasTouchEventHandlers(bool has_handlers) override;
   blink::WebScreenInfo GetScreenInfo() override;
   void SetToolTipText(const blink::WebString&,

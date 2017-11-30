@@ -7,7 +7,7 @@
 
 #include "platform/geometry/FloatSize.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebScrollBoundaryBehavior.h"
+#include "public/platform/WebOverscrollBehavior.h"
 
 namespace blink {
 
@@ -39,7 +39,7 @@ class OverscrollController : public GarbageCollected<OverscrollController> {
                         const FloatPoint& position_in_root_frame,
                         const FloatSize& velocity_in_root_frame);
 
-  void SetScrollBoundaryBehavior(const WebScrollBoundaryBehavior&);
+  void SetOverscrollBehavior(const WebOverscrollBehavior&);
 
   void Trace(blink::Visitor*);
 
@@ -51,7 +51,7 @@ class OverscrollController : public GarbageCollected<OverscrollController> {
 
   FloatSize accumulated_root_overscroll_;
 
-  WebScrollBoundaryBehavior scroll_boundary_behavior_;
+  WebOverscrollBehavior overscroll_behavior_;
 };
 
 }  // namespace blink

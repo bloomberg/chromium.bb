@@ -10076,7 +10076,7 @@ class OverscrollWebViewClient : public FrameTestHelpers::TestWebViewClient {
                     const WebFloatSize&,
                     const WebFloatPoint&,
                     const WebFloatSize&,
-                    const WebScrollBoundaryBehavior&));
+                    const WebOverscrollBehavior&));
 };
 
 typedef std::pair<bool, blink::WebGestureDevice> WebFrameOverscrollTestParam;
@@ -10154,19 +10154,19 @@ TEST_P(WebFrameOverscrollTest,
   ScrollBegin(&web_view_helper, -300, -316);
   EXPECT_CALL(client, DidOverscroll(WebFloatSize(8, 16), WebFloatSize(8, 16),
                                     WebFloatPoint(100, 100), WebFloatSize(),
-                                    WebScrollBoundaryBehavior()));
+                                    WebOverscrollBehavior()));
   ScrollUpdate(&web_view_helper, -308, -316);
   Mock::VerifyAndClearExpectations(&client);
 
   EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 13), WebFloatSize(8, 29),
                                     WebFloatPoint(100, 100), WebFloatSize(),
-                                    WebScrollBoundaryBehavior()));
+                                    WebOverscrollBehavior()));
   ScrollUpdate(&web_view_helper, 0, -13);
   Mock::VerifyAndClearExpectations(&client);
 
   EXPECT_CALL(client, DidOverscroll(WebFloatSize(20, 13), WebFloatSize(28, 42),
                                     WebFloatPoint(100, 100), WebFloatSize(),
-                                    WebScrollBoundaryBehavior()));
+                                    WebOverscrollBehavior()));
   ScrollUpdate(&web_view_helper, -20, -13);
   Mock::VerifyAndClearExpectations(&client);
 
@@ -10183,7 +10183,7 @@ TEST_P(WebFrameOverscrollTest,
   EXPECT_CALL(client,
               DidOverscroll(WebFloatSize(0, -701), WebFloatSize(0, -701),
                             WebFloatPoint(100, 100), WebFloatSize(),
-                            WebScrollBoundaryBehavior()));
+                            WebOverscrollBehavior()));
   ScrollUpdate(&web_view_helper, 0, 1000);
   Mock::VerifyAndClearExpectations(&client);
 
@@ -10216,7 +10216,7 @@ TEST_P(WebFrameOverscrollTest,
   // Now On Scrolling DIV, scroll is bubbled and root layer is over-scrolled.
   EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 100), WebFloatSize(0, 100),
                                     WebFloatPoint(100, 100), WebFloatSize(),
-                                    WebScrollBoundaryBehavior()));
+                                    WebOverscrollBehavior()));
   ScrollUpdate(&web_view_helper, 0, -100);
   ScrollUpdate(&web_view_helper, 0, -100);
   Mock::VerifyAndClearExpectations(&client);
@@ -10226,7 +10226,7 @@ TEST_P(WebFrameOverscrollTest,
   // the bug, crbug.com/589320.
   // Page scrolls vertically, but over-scrolls horizontally.
   // EXPECT_CALL(client, didOverscroll(WebFloatSize(-100, 0), WebFloatSize(-100,
-  // 0), WebFloatPoint(100, 100), WebFloatSize(), WebScrollBoundaryBehavior()));
+  // 0), WebFloatPoint(100, 100), WebFloatSize(), WebOverscrollBehavior()));
   // ScrollUpdate(&webViewHelper, 100, 50);
   // Mock::VerifyAndClearExpectations(&client);
 
@@ -10238,7 +10238,7 @@ TEST_P(WebFrameOverscrollTest,
   // Page scrolls horizontally, but over-scrolls vertically.
   // EXPECT_CALL(client, didOverscroll(WebFloatSize(0, 100), WebFloatSize(0,
   // 100), WebFloatPoint(100, 100), WebFloatSize(),
-  // WebScrollBoundaryBehavior()));
+  // WebOverscrollBehavior()));
   // ScrollUpdate(&webViewHelper, -100, -100);
   // Mock::VerifyAndClearExpectations(&client);
 }
@@ -10265,7 +10265,7 @@ TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerDivOverScroll) {
   // Now On Scrolling DIV, scroll is bubbled and root layer is over-scrolled.
   EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 50), WebFloatSize(0, 50),
                                     WebFloatPoint(100, 100), WebFloatSize(),
-                                    WebScrollBoundaryBehavior()));
+                                    WebOverscrollBehavior()));
   ScrollUpdate(&web_view_helper, 0, -150);
   Mock::VerifyAndClearExpectations(&client);
 }
@@ -10299,7 +10299,7 @@ TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerIFrameOverScroll) {
   // Now On Scrolling IFrame, scroll is bubbled and root layer is over-scrolled.
   EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 50), WebFloatSize(0, 50),
                                     WebFloatPoint(100, 100), WebFloatSize(),
-                                    WebScrollBoundaryBehavior()));
+                                    WebOverscrollBehavior()));
   ScrollUpdate(&web_view_helper, 0, -150);
   Mock::VerifyAndClearExpectations(&client);
 
@@ -10322,27 +10322,27 @@ TEST_P(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled) {
   ScrollBegin(&web_view_helper, 0, 30);
   EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, -30), WebFloatSize(0, -30),
                                     WebFloatPoint(99, 99), WebFloatSize(),
-                                    WebScrollBoundaryBehavior()));
+                                    WebOverscrollBehavior()));
   ScrollUpdate(&web_view_helper, 0, 30);
   Mock::VerifyAndClearExpectations(&client);
 
   EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, -30), WebFloatSize(0, -60),
                                     WebFloatPoint(99, 99), WebFloatSize(),
-                                    WebScrollBoundaryBehavior()));
+                                    WebOverscrollBehavior()));
   ScrollUpdate(&web_view_helper, 0, 30);
   Mock::VerifyAndClearExpectations(&client);
 
   EXPECT_CALL(client,
               DidOverscroll(WebFloatSize(-30, -30), WebFloatSize(-30, -90),
                             WebFloatPoint(99, 99), WebFloatSize(),
-                            WebScrollBoundaryBehavior()));
+                            WebOverscrollBehavior()));
   ScrollUpdate(&web_view_helper, 30, 30);
   Mock::VerifyAndClearExpectations(&client);
 
   EXPECT_CALL(client,
               DidOverscroll(WebFloatSize(-30, 0), WebFloatSize(-60, -90),
                             WebFloatPoint(99, 99), WebFloatSize(),
-                            WebScrollBoundaryBehavior()));
+                            WebOverscrollBehavior()));
   ScrollUpdate(&web_view_helper, 30, 0);
   Mock::VerifyAndClearExpectations(&client);
 
@@ -10365,21 +10365,21 @@ TEST_P(WebFrameOverscrollTest, NoOverscrollForSmallvalues) {
   EXPECT_CALL(client,
               DidOverscroll(WebFloatSize(-10, -10), WebFloatSize(-10, -10),
                             WebFloatPoint(100, 100), WebFloatSize(),
-                            WebScrollBoundaryBehavior()));
+                            WebOverscrollBehavior()));
   ScrollUpdate(&web_view_helper, 10, 10);
   Mock::VerifyAndClearExpectations(&client);
 
   EXPECT_CALL(client,
               DidOverscroll(WebFloatSize(0, -0.10), WebFloatSize(-10, -10.10),
                             WebFloatPoint(100, 100), WebFloatSize(),
-                            WebScrollBoundaryBehavior()));
+                            WebOverscrollBehavior()));
   ScrollUpdate(&web_view_helper, 0, 0.10);
   Mock::VerifyAndClearExpectations(&client);
 
   EXPECT_CALL(client, DidOverscroll(WebFloatSize(-0.10, 0),
                                     WebFloatSize(-10.10, -10.10),
                                     WebFloatPoint(100, 100), WebFloatSize(),
-                                    WebScrollBoundaryBehavior()));
+                                    WebOverscrollBehavior()));
   ScrollUpdate(&web_view_helper, 0.10, 0);
   Mock::VerifyAndClearExpectations(&client);
 
@@ -10414,7 +10414,7 @@ TEST_P(WebFrameOverscrollTest, NoOverscrollForSmallvalues) {
   Mock::VerifyAndClearExpectations(&client);
 }
 
-TEST_P(WebFrameOverscrollTest, ScrollBoundaryBehaviorAffectsDidOverscroll) {
+TEST_P(WebFrameOverscrollTest, OverscrollBehaviorAffectsDidOverscroll) {
   OverscrollWebViewClient client;
   RegisterMockedHttpURLLoad("overscroll/overscroll.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
@@ -10430,13 +10430,12 @@ TEST_P(WebFrameOverscrollTest, ScrollBoundaryBehaviorAffectsDidOverscroll) {
                                 "'overscroll-behavior: auto;'")));
 
   ScrollBegin(&web_view_helper, 100, 116);
-  EXPECT_CALL(
-      client,
-      DidOverscroll(WebFloatSize(-100, -100), WebFloatSize(-100, -100),
-                    WebFloatPoint(100, 100), WebFloatSize(),
-                    WebScrollBoundaryBehavior(
-                        WebScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
-                            kScrollBoundaryBehaviorTypeAuto)));
+  EXPECT_CALL(client,
+              DidOverscroll(WebFloatSize(-100, -100), WebFloatSize(-100, -100),
+                            WebFloatPoint(100, 100), WebFloatSize(),
+                            WebOverscrollBehavior(
+                                WebOverscrollBehavior::OverscrollBehaviorType::
+                                    kOverscrollBehaviorTypeAuto)));
   ScrollUpdate(&web_view_helper, 100, 100);
   Mock::VerifyAndClearExpectations(&client);
 
@@ -10445,13 +10444,12 @@ TEST_P(WebFrameOverscrollTest, ScrollBoundaryBehaviorAffectsDidOverscroll) {
                                 "'overscroll-behavior: contain;'")));
 
   ScrollBegin(&web_view_helper, 100, 116);
-  EXPECT_CALL(
-      client,
-      DidOverscroll(WebFloatSize(-100, -100), WebFloatSize(-200, -200),
-                    WebFloatPoint(100, 100), WebFloatSize(),
-                    WebScrollBoundaryBehavior(
-                        WebScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
-                            kScrollBoundaryBehaviorTypeContain)));
+  EXPECT_CALL(client,
+              DidOverscroll(WebFloatSize(-100, -100), WebFloatSize(-200, -200),
+                            WebFloatPoint(100, 100), WebFloatSize(),
+                            WebOverscrollBehavior(
+                                WebOverscrollBehavior::OverscrollBehaviorType::
+                                    kOverscrollBehaviorTypeContain)));
   ScrollUpdate(&web_view_helper, 100, 100);
   Mock::VerifyAndClearExpectations(&client);
 
@@ -10460,18 +10458,17 @@ TEST_P(WebFrameOverscrollTest, ScrollBoundaryBehaviorAffectsDidOverscroll) {
                                 "'overscroll-behavior: none;'")));
 
   ScrollBegin(&web_view_helper, 100, 116);
-  EXPECT_CALL(
-      client,
-      DidOverscroll(WebFloatSize(-100, -100), WebFloatSize(-300, -300),
-                    WebFloatPoint(100, 100), WebFloatSize(),
-                    WebScrollBoundaryBehavior(
-                        WebScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
-                            kScrollBoundaryBehaviorTypeNone)));
+  EXPECT_CALL(client,
+              DidOverscroll(WebFloatSize(-100, -100), WebFloatSize(-300, -300),
+                            WebFloatPoint(100, 100), WebFloatSize(),
+                            WebOverscrollBehavior(
+                                WebOverscrollBehavior::OverscrollBehaviorType::
+                                    kOverscrollBehaviorTypeNone)));
   ScrollUpdate(&web_view_helper, 100, 100);
   Mock::VerifyAndClearExpectations(&client);
 }
 
-TEST_P(WebFrameOverscrollTest, OnlyMainFrameScrollBoundaryBehaviorHasEffect) {
+TEST_P(WebFrameOverscrollTest, OnlyMainFrameOverscrollBehaviorHasEffect) {
   OverscrollWebViewClient client;
   RegisterMockedHttpURLLoad("overscroll/iframe-overscroll.html");
   RegisterMockedHttpURLLoad("overscroll/scrollable-iframe.html");
@@ -10493,13 +10490,12 @@ TEST_P(WebFrameOverscrollTest, OnlyMainFrameScrollBoundaryBehaviorHasEffect) {
                                 "'overscroll-behavior: none;'")));
 
   ScrollBegin(&web_view_helper, 100, 116);
-  EXPECT_CALL(
-      client,
-      DidOverscroll(WebFloatSize(-100, -100), WebFloatSize(-100, -100),
-                    WebFloatPoint(100, 100), WebFloatSize(),
-                    WebScrollBoundaryBehavior(
-                        WebScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
-                            kScrollBoundaryBehaviorTypeAuto)));
+  EXPECT_CALL(client,
+              DidOverscroll(WebFloatSize(-100, -100), WebFloatSize(-100, -100),
+                            WebFloatPoint(100, 100), WebFloatSize(),
+                            WebOverscrollBehavior(
+                                WebOverscrollBehavior::OverscrollBehaviorType::
+                                    kOverscrollBehaviorTypeAuto)));
   ScrollUpdate(&web_view_helper, 100, 100);
   Mock::VerifyAndClearExpectations(&client);
 
@@ -10507,13 +10503,12 @@ TEST_P(WebFrameOverscrollTest, OnlyMainFrameScrollBoundaryBehaviorHasEffect) {
       WebScriptSource(WebString("document.body.style="
                                 "'overscroll-behavior: contain;'")));
 
-  EXPECT_CALL(
-      client,
-      DidOverscroll(WebFloatSize(-100, -100), WebFloatSize(-200, -200),
-                    WebFloatPoint(100, 100), WebFloatSize(),
-                    WebScrollBoundaryBehavior(
-                        WebScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
-                            kScrollBoundaryBehaviorTypeContain)));
+  EXPECT_CALL(client,
+              DidOverscroll(WebFloatSize(-100, -100), WebFloatSize(-200, -200),
+                            WebFloatPoint(100, 100), WebFloatSize(),
+                            WebOverscrollBehavior(
+                                WebOverscrollBehavior::OverscrollBehaviorType::
+                                    kOverscrollBehaviorTypeContain)));
   ScrollUpdate(&web_view_helper, 100, 100);
   Mock::VerifyAndClearExpectations(&client);
 }

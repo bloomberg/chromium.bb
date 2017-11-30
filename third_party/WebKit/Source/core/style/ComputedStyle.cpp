@@ -63,7 +63,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/SaturatedArithmetic.h"
 #include "platform/wtf/SizeAssertions.h"
-#include "public/platform/WebScrollBoundaryBehavior.h"
+#include "public/platform/WebOverscrollBehavior.h"
 
 namespace blink {
 
@@ -2067,12 +2067,11 @@ bool ComputedStyle::ShadowListHasCurrentColor(const ShadowList* shadow_list) {
   return false;
 }
 
-STATIC_ASSERT_ENUM(WebScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeAuto,
-                   EScrollBoundaryBehavior::kAuto);
-STATIC_ASSERT_ENUM(
-    WebScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeContain,
-    EScrollBoundaryBehavior::kContain);
-STATIC_ASSERT_ENUM(WebScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeNone,
-                   EScrollBoundaryBehavior::kNone);
+STATIC_ASSERT_ENUM(WebOverscrollBehavior::kOverscrollBehaviorTypeAuto,
+                   EOverscrollBehavior::kAuto);
+STATIC_ASSERT_ENUM(WebOverscrollBehavior::kOverscrollBehaviorTypeContain,
+                   EOverscrollBehavior::kContain);
+STATIC_ASSERT_ENUM(WebOverscrollBehavior::kOverscrollBehaviorTypeNone,
+                   EOverscrollBehavior::kNone);
 
 }  // namespace blink

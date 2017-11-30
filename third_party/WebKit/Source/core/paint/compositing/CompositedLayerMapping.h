@@ -424,7 +424,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void UpdateDrawsContent();
   void UpdateChildrenTransform();
   void UpdateCompositedBounds();
-  void UpdateScrollBoundaryBehavior();
+  void UpdateOverscrollBehavior();
   void RegisterScrollingLayers();
 
   // Also sets subpixelAccumulation on the layer.

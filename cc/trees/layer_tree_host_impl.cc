@@ -3200,12 +3200,10 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
 }
 
 static bool CanPropagate(ScrollNode* scroll_node, float x, float y) {
-  return (x == 0 ||
-          scroll_node->scroll_boundary_behavior.x ==
-              ScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeAuto) &&
-         (y == 0 ||
-          scroll_node->scroll_boundary_behavior.y ==
-              ScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeAuto);
+  return (x == 0 || scroll_node->overscroll_behavior.x ==
+                        OverscrollBehavior::kOverscrollBehaviorTypeAuto) &&
+         (y == 0 || scroll_node->overscroll_behavior.y ==
+                        OverscrollBehavior::kOverscrollBehaviorTypeAuto);
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
@@ -3705,12 +3703,11 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   scroll_result.did_overscroll_root = !unused_root_delta.IsZero();
   scroll_result.accumulated_root_overscroll = accumulated_root_overscroll_;
   scroll_result.unused_scroll_delta = unused_root_delta;
-  scroll_result.scroll_boundary_behavior =
+  scroll_result.overscroll_behavior =
       scroll_state->is_scroll_chain_cut()
-          ? ScrollBoundaryBehavior(
-                ScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
-                    kScrollBoundaryBehaviorTypeNone)
-          : active_tree()->scroll_boundary_behavior();
+          ? OverscrollBehavior(OverscrollBehavior::OverscrollBehaviorType::
+                                   kOverscrollBehaviorTypeNone)
+          : active_tree()->overscroll_behavior();
 
   if (scroll_result.did_scroll) {
     // Scrolling can change the root scroll offset, so inform the synchronous

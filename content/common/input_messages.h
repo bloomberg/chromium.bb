@@ -10,7 +10,7 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "cc/input/scroll_boundary_behavior.h"
+#include "cc/input/overscroll_behavior.h"
 #include "cc/input/touch_action.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
@@ -84,19 +84,18 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTouchPoint::State,
                           blink::WebTouchPoint::State::kStateMax)
 IPC_ENUM_TRAITS_MAX_VALUE(
-    cc::ScrollBoundaryBehavior::ScrollBoundaryBehaviorType,
-    cc::ScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
-        kScrollBoundaryBehaviorTypeMax)
+    cc::OverscrollBehavior::OverscrollBehaviorType,
+    cc::OverscrollBehavior::OverscrollBehaviorType::kOverscrollBehaviorTypeMax)
 
 IPC_STRUCT_TRAITS_BEGIN(ui::DidOverscrollParams)
   IPC_STRUCT_TRAITS_MEMBER(accumulated_overscroll)
   IPC_STRUCT_TRAITS_MEMBER(latest_overscroll_delta)
   IPC_STRUCT_TRAITS_MEMBER(current_fling_velocity)
   IPC_STRUCT_TRAITS_MEMBER(causal_event_viewport_point)
-  IPC_STRUCT_TRAITS_MEMBER(scroll_boundary_behavior)
+  IPC_STRUCT_TRAITS_MEMBER(overscroll_behavior)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::ScrollBoundaryBehavior)
+IPC_STRUCT_TRAITS_BEGIN(cc::OverscrollBehavior)
   IPC_STRUCT_TRAITS_MEMBER(x)
   IPC_STRUCT_TRAITS_MEMBER(y)
 IPC_STRUCT_TRAITS_END()

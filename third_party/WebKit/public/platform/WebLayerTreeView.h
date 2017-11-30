@@ -33,7 +33,7 @@
 #include "WebEventListenerProperties.h"
 #include "WebFloatPoint.h"
 #include "WebImageLayer.h"
-#include "WebScrollBoundaryBehavior.h"
+#include "WebOverscrollBehavior.h"
 #include "WebSize.h"
 #include "base/callback.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -137,7 +137,7 @@ class WebLayerTreeView {
 
   // Set the browser's behavior when overscroll happens, e.g. whether to glow
   // or navigate.
-  virtual void SetScrollBoundaryBehavior(const WebScrollBoundaryBehavior&) {}
+  virtual void SetOverscrollBehavior(const WebOverscrollBehavior&) {}
 
   // Flow control and scheduling ---------------------------------------
 

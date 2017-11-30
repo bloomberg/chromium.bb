@@ -149,7 +149,7 @@ void WidgetInputHandlerManager::DidOverscroll(
     const gfx::Vector2dF& latest_overscroll_delta,
     const gfx::Vector2dF& current_fling_velocity,
     const gfx::PointF& causal_event_viewport_point,
-    const cc::ScrollBoundaryBehavior& scroll_boundary_behavior) {
+    const cc::OverscrollBehavior& overscroll_behavior) {
   mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost();
   if (!host)
     return;
@@ -158,7 +158,7 @@ void WidgetInputHandlerManager::DidOverscroll(
   params.latest_overscroll_delta = latest_overscroll_delta;
   params.current_fling_velocity = current_fling_velocity;
   params.causal_event_viewport_point = causal_event_viewport_point;
-  params.scroll_boundary_behavior = scroll_boundary_behavior;
+  params.overscroll_behavior = overscroll_behavior;
   host->DidOverscroll(params);
 }
 

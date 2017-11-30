@@ -88,10 +88,10 @@ static bool CanPropagate(const ScrollState& scroll_state,
 
   return (scroll_state.deltaXHint() == 0 ||
           element.GetComputedStyle()->OverscrollBehaviorX() ==
-              EScrollBoundaryBehavior::kAuto) &&
+              EOverscrollBehavior::kAuto) &&
          (scroll_state.deltaYHint() == 0 ||
           element.GetComputedStyle()->OverscrollBehaviorY() ==
-              EScrollBoundaryBehavior::kAuto);
+              EOverscrollBehavior::kAuto);
 }
 
 void ScrollManager::RecomputeScrollChain(const Node& start_node,

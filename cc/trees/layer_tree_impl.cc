@@ -426,7 +426,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->set_bottom_controls_height(bottom_controls_height_);
   target_tree->PushBrowserControls(nullptr);
 
-  target_tree->set_scroll_boundary_behavior(scroll_boundary_behavior_);
+  target_tree->set_overscroll_behavior(overscroll_behavior_);
 
   // The page scale factor update can affect scrolling which requires that
   // these ids are set, so this must be before PushPageScaleFactorAndLimits.
@@ -820,9 +820,9 @@ void LayerTreeImpl::set_bottom_controls_height(float bottom_controls_height) {
     host_impl_->UpdateViewportContainerSizes();
 }
 
-void LayerTreeImpl::set_scroll_boundary_behavior(
-    const ScrollBoundaryBehavior& behavior) {
-  scroll_boundary_behavior_ = behavior;
+void LayerTreeImpl::set_overscroll_behavior(
+    const OverscrollBehavior& behavior) {
+  overscroll_behavior_ = behavior;
 }
 
 bool LayerTreeImpl::ClampBrowserControlsShownRatio() {

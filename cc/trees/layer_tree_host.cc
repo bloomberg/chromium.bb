@@ -33,8 +33,8 @@
 #include "cc/base/math_util.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/input/layer_selection_bound.h"
+#include "cc/input/overscroll_behavior.h"
 #include "cc/input/page_scale_animation.h"
-#include "cc/input/scroll_boundary_behavior.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
@@ -1044,11 +1044,10 @@ void LayerTreeHost::SetBrowserControlsShownRatio(float ratio) {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetScrollBoundaryBehavior(
-    const ScrollBoundaryBehavior& behavior) {
-  if (scroll_boundary_behavior_ == behavior)
+void LayerTreeHost::SetOverscrollBehavior(const OverscrollBehavior& behavior) {
+  if (overscroll_behavior_ == behavior)
     return;
-  scroll_boundary_behavior_ = behavior;
+  overscroll_behavior_ = behavior;
   SetNeedsCommit();
 }
 
@@ -1303,7 +1302,7 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
       browser_controls_shrink_blink_size_);
   tree_impl->set_top_controls_height(top_controls_height_);
   tree_impl->set_bottom_controls_height(bottom_controls_height_);
-  tree_impl->set_scroll_boundary_behavior(scroll_boundary_behavior_);
+  tree_impl->set_overscroll_behavior(overscroll_behavior_);
   tree_impl->PushBrowserControlsFromMainThread(top_controls_shown_ratio_);
   tree_impl->elastic_overscroll()->PushMainToPending(elastic_overscroll_);
   if (tree_impl->IsActiveTree())

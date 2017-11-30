@@ -131,7 +131,7 @@
 
     // - runtime_flag
     // The name of the flag on RuntimeEnabledFeatures
-    // (e.g. "CSSScrollBoundaryBehavior") that conditionally enables the
+    // (e.g. "CSSOverscrollBehavior") that conditionally enables the
     // property.
     // This doesn't currently work with alias_for.
     runtime_flag: {
@@ -2289,20 +2289,20 @@
     {
       name: "overscroll-behavior-x",
       property_class: "OverscrollBehaviorXOrY",
-      runtime_flag: "CSSScrollBoundaryBehavior",
+      runtime_flag: "CSSOverscrollBehavior",
       field_template: "keyword",
       keywords: ["auto", "contain", "none"],
       default_value: "auto",
-      type_name: "EScrollBoundaryBehavior",
+      type_name: "EOverscrollBehavior",
     },
     {
       name: "overscroll-behavior-y",
       property_class: "OverscrollBehaviorXOrY",
-      runtime_flag: "CSSScrollBoundaryBehavior",
+      runtime_flag: "CSSOverscrollBehavior",
       field_template: "keyword",
       keywords: ["auto", "contain", "none"],
       default_value: "auto",
-      type_name: "EScrollBoundaryBehavior",
+      type_name: "EOverscrollBehavior",
     },
     {
       name: "scroll-snap-type",
@@ -4309,7 +4309,7 @@
       longhands: ["overscroll-behavior-x", "overscroll-behavior-y"],
       property_class: true,
       property_methods: ["ParseShorthand"],
-      runtime_flag: "CSSScrollBoundaryBehavior",
+      runtime_flag: "CSSOverscrollBehavior",
     },
     {
       name: "padding",

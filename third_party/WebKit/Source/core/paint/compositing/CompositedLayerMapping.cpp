@@ -81,7 +81,7 @@
 #include "platform/wtf/Time.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebLayerStickyPositionConstraint.h"
-#include "public/platform/WebScrollBoundaryBehavior.h"
+#include "public/platform/WebOverscrollBehavior.h"
 
 namespace blink {
 
@@ -1224,24 +1224,22 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
   UpdateShouldFlattenTransform();
   UpdateChildrenTransform();
   UpdateScrollParent(ScrollParent());
-  UpdateScrollBoundaryBehavior();
+  UpdateOverscrollBehavior();
   RegisterScrollingLayers();
 
   UpdateCompositingReasons();
 }
 
-void CompositedLayerMapping::UpdateScrollBoundaryBehavior() {
-  EScrollBoundaryBehavior behavior_x =
+void CompositedLayerMapping::UpdateOverscrollBehavior() {
+  EOverscrollBehavior behavior_x =
       GetLayoutObject().StyleRef().OverscrollBehaviorX();
-  EScrollBoundaryBehavior behavior_y =
+  EOverscrollBehavior behavior_y =
       GetLayoutObject().StyleRef().OverscrollBehaviorY();
   if (scrolling_contents_layer_) {
-    scrolling_contents_layer_->SetScrollBoundaryBehavior(
-        WebScrollBoundaryBehavior(
-            static_cast<WebScrollBoundaryBehavior::ScrollBoundaryBehaviorType>(
-                behavior_x),
-            static_cast<WebScrollBoundaryBehavior::ScrollBoundaryBehaviorType>(
-                behavior_y)));
+    scrolling_contents_layer_->SetOverscrollBehavior(WebOverscrollBehavior(
+        static_cast<WebOverscrollBehavior::OverscrollBehaviorType>(behavior_x),
+        static_cast<WebOverscrollBehavior::OverscrollBehaviorType>(
+            behavior_y)));
   }
 }
 

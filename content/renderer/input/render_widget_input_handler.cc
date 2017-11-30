@@ -48,7 +48,7 @@ using blink::WebInputEventResult;
 using blink::WebKeyboardEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
-using blink::WebScrollBoundaryBehavior;
+using blink::WebOverscrollBehavior;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 using ui::DidOverscrollParams;
@@ -375,7 +375,7 @@ void RenderWidgetInputHandler::DidOverscrollFromBlink(
     const WebFloatSize& accumulatedOverscroll,
     const WebFloatPoint& position,
     const WebFloatSize& velocity,
-    const WebScrollBoundaryBehavior& behavior) {
+    const WebOverscrollBehavior& behavior) {
   std::unique_ptr<DidOverscrollParams> params(new DidOverscrollParams());
   params->accumulated_overscroll = gfx::Vector2dF(
       accumulatedOverscroll.width, accumulatedOverscroll.height);
@@ -384,7 +384,7 @@ void RenderWidgetInputHandler::DidOverscrollFromBlink(
   params->current_fling_velocity =
       gfx::Vector2dF(velocity.width, velocity.height);
   params->causal_event_viewport_point = gfx::PointF(position.x, position.y);
-  params->scroll_boundary_behavior = behavior;
+  params->overscroll_behavior = behavior;
 
   // If we're currently handling an event, stash the overscroll data such that
   // it can be bundled in the event ack.

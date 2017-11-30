@@ -7,7 +7,7 @@
 
 #include "cc/base/region.h"
 #include "cc/cc_export.h"
-#include "cc/input/scroll_boundary_behavior.h"
+#include "cc/input/overscroll_behavior.h"
 #include "cc/paint/filter_operations.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -57,7 +57,7 @@ struct CC_EXPORT ScrollNode {
   ElementId element_id;
   int transform_id;
 
-  ScrollBoundaryBehavior scroll_boundary_behavior;
+  OverscrollBehavior overscroll_behavior;
 
   bool operator==(const ScrollNode& other) const;
   void AsValueInto(base::trace_event::TracedValue* value) const;

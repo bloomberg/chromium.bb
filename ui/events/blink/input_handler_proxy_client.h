@@ -50,7 +50,7 @@ class InputHandlerProxyClient {
       const gfx::Vector2dF& latest_overscroll_delta,
       const gfx::Vector2dF& current_fling_velocity,
       const gfx::PointF& causal_event_viewport_point,
-      const cc::ScrollBoundaryBehavior& scroll_boundary_behavior) = 0;
+      const cc::OverscrollBehavior& overscroll_behavior) = 0;
 
   virtual void DidStopFlinging() = 0;
 

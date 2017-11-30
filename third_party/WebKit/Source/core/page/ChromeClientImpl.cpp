@@ -281,12 +281,11 @@ Page* ChromeClientImpl::CreateWindow(LocalFrame* frame,
   return new_view->GetPage();
 }
 
-void ChromeClientImpl::DidOverscroll(
-    const FloatSize& overscroll_delta,
-    const FloatSize& accumulated_overscroll,
-    const FloatPoint& position_in_viewport,
-    const FloatSize& velocity_in_viewport,
-    const WebScrollBoundaryBehavior& behavior) {
+void ChromeClientImpl::DidOverscroll(const FloatSize& overscroll_delta,
+                                     const FloatSize& accumulated_overscroll,
+                                     const FloatPoint& position_in_viewport,
+                                     const FloatSize& velocity_in_viewport,
+                                     const WebOverscrollBehavior& behavior) {
   if (!web_view_->Client())
     return;
 
@@ -1078,9 +1077,9 @@ void ChromeClientImpl::DidUpdateBrowserControls() const {
   web_view_->DidUpdateBrowserControls();
 }
 
-void ChromeClientImpl::SetScrollBoundaryBehavior(
-    const WebScrollBoundaryBehavior& scroll_boundary_behavior) {
-  web_view_->SetScrollBoundaryBehavior(scroll_boundary_behavior);
+void ChromeClientImpl::SetOverscrollBehavior(
+    const WebOverscrollBehavior& overscroll_behavior) {
+  web_view_->SetOverscrollBehavior(overscroll_behavior);
 }
 
 void ChromeClientImpl::RegisterPopupOpeningObserver(
