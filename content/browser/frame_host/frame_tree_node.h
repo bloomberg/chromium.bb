@@ -150,7 +150,7 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Returns the URL of the last committed page in the current frame.
   const GURL& current_url() const {
-    return current_frame_host()->last_committed_url();
+    return current_frame_host()->GetLastCommittedURL();
   }
 
   // Sets the last committed URL for this frame and updates
