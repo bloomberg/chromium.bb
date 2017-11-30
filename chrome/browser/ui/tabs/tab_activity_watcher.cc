@@ -13,10 +13,13 @@
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabActivityWatcher::WebContentsData);
 
@@ -37,7 +40,8 @@ constexpr char kPerSourceLogTimeoutMsecParamName[] =
 // per-WebContents data that TabActivityWatcher uses to log the tab.
 class TabActivityWatcher::WebContentsData
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<WebContentsData> {
+      public content::WebContentsUserData<WebContentsData>,
+      public content::RenderWidgetHost::InputEventObserver {
  public:
   ~WebContentsData() override = default;
 
@@ -48,6 +52,10 @@ class TabActivityWatcher::WebContentsData
 
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
 
+  const TabMetricsLogger::TabMetrics& tab_metrics() const {
+    return tab_metrics_;
+  }
+
   base::TimeTicks last_log_time_for_source() const {
     return last_log_time_for_source_;
   }
@@ -56,9 +64,18 @@ class TabActivityWatcher::WebContentsData
   friend class content::WebContentsUserData<WebContentsData>;
 
   explicit WebContentsData(content::WebContents* web_contents)
-      : WebContentsObserver(web_contents) {}
+      : WebContentsObserver(web_contents) {
+    tab_metrics_.web_contents = web_contents;
+    web_contents->GetRenderViewHost()->GetWidget()->AddInputEventObserver(this);
+  }
 
   // content::WebContentsObserver:
+  void RenderViewHostChanged(content::RenderViewHost* old_host,
+                             content::RenderViewHost* new_host) override {
+    if (old_host != nullptr)
+      old_host->GetWidget()->RemoveInputEventObserver(this);
+    new_host->GetWidget()->AddInputEventObserver(this);
+  }
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
     if (!navigation_handle->HasCommitted() ||
@@ -77,9 +94,22 @@ class TabActivityWatcher::WebContentsData
 
     // Clear the per-SourceId last log time.
     last_log_time_for_source_ = base::TimeTicks();
+
+    // Reset the per-page data.
+    tab_metrics_.page_metrics = {};
   }
   void WasHidden() override {
     TabActivityWatcher::GetInstance()->OnWasHidden(web_contents());
+  }
+
+  // content::RenderWidgetHost::InputEventObserver:
+  void OnInputEvent(const blink::WebInputEvent& event) override {
+    if (blink::WebInputEvent::IsMouseEventType(event.GetType()))
+      tab_metrics_.page_metrics.mouse_event_count++;
+    else if (blink::WebInputEvent::IsKeyboardEventType(event.GetType()))
+      tab_metrics_.page_metrics.key_event_count++;
+    else if (blink::WebInputEvent::IsTouchEventType(event.GetType()))
+      tab_metrics_.page_metrics.touch_event_count++;
   }
 
   // Updated when a navigation is finished.
@@ -87,6 +117,9 @@ class TabActivityWatcher::WebContentsData
 
   // Used to throttle event logging per SourceId.
   base::TimeTicks last_log_time_for_source_;
+
+  // Stores current stats for the tab.
+  TabMetricsLogger::TabMetrics tab_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
@@ -146,7 +179,8 @@ void TabActivityWatcher::MaybeLogTab(content::WebContents* web_contents) {
   }
 
   ukm::SourceId ukm_source_id = web_contents_data->ukm_source_id();
-  tab_metrics_logger_->LogBackgroundTab(ukm_source_id, web_contents);
+  tab_metrics_logger_->LogBackgroundTab(ukm_source_id,
+                                        web_contents_data->tab_metrics());
   web_contents_data->DidLog(now);
 }
 
