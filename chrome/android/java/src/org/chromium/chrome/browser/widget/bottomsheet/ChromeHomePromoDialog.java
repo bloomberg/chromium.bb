@@ -106,7 +106,9 @@ public class ChromeHomePromoDialog extends PromoDialog {
                 ? R.string.chrome_home_promo_dialog_message_accessibility
                 : R.string.chrome_home_promo_dialog_message;
 
-        if (FeatureUtilities.isChromeHomeEnabled()) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO_INFO_ONLY)) {
+            params.primaryButtonStringResource = R.string.ok;
+        } else if (FeatureUtilities.isChromeHomeEnabled()) {
             params.primaryButtonStringResource = R.string.ok;
             params.secondaryButtonStringResource = R.string.chrome_home_promo_dialog_turn_off;
         } else {
@@ -192,6 +194,10 @@ public class ChromeHomePromoDialog extends PromoDialog {
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
+        // If the dialog is info-only, do not record any metrics since there were no provided
+        // options.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO_INFO_ONLY)) return;
+
         // If the state of Chrome Home changed while this dialog was opened, do nothing. This can
         // happen in multi-window if this dialog is shown in both windows.
         if (mChromeHomeEnabledOnShow != FeatureUtilities.isChromeHomeEnabled()) return;
