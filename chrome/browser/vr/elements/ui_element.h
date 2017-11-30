@@ -207,6 +207,7 @@ class UiElement : public cc::AnimationTarget {
 
   gfx::SizeF size() const;
   void SetSize(float width, float hight);
+  virtual void OnSetSize(gfx::SizeF size);
 
   gfx::PointF local_origin() const { return local_origin_; }
 

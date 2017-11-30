@@ -57,8 +57,6 @@ class TexturedElement : public UiElement {
   bool PrepareToDraw() final;
 
  private:
-  bool UpdateTexture();
-
   gfx::Size texture_size_;
   GLuint texture_handle_ = 0;
   int maximum_width_;

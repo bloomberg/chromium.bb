@@ -86,15 +86,16 @@ void OnSuggestionModelAdded(UiScene* scene,
   icon->set_draw_phase(kPhaseForeground);
   VectorIcon* p_icon = icon.get();
 
-  auto content_text = base::MakeUnique<Text>(512, kSuggestionContentTextHeight,
-                                             kSuggestionTextFieldWidth);
+  auto content_text = base::MakeUnique<Text>(512, kSuggestionContentTextHeight);
   content_text->set_draw_phase(kPhaseForeground);
   content_text->SetVisible(true);
+  content_text->SetSize(kSuggestionTextFieldWidth, 0);
   content_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
   Text* p_content_text = content_text.get();
 
-  auto description_text = base::MakeUnique<Text>(
-      512, kSuggestionDescriptionTextHeight, kSuggestionTextFieldWidth);
+  auto description_text =
+      base::MakeUnique<Text>(512, kSuggestionDescriptionTextHeight);
+  description_text->SetSize(kSuggestionTextFieldWidth, 0);
   description_text->set_draw_phase(kPhaseForeground);
   description_text->SetVisible(true);
   description_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
@@ -452,8 +453,7 @@ void UiSceneCreator::CreateSplashScreenForDirectWebVrLaunch() {
                        std::move(transient_parent));
 
   // Add "Powered by Chrome" text.
-  auto text = base::MakeUnique<Text>(512, kSplashScreenTextFontHeightM,
-                                     kSplashScreenTextWidthM);
+  auto text = base::MakeUnique<Text>(512, kSplashScreenTextFontHeightM);
   BindColor(model_, text.get(), &ColorScheme::splash_screen_text_color,
             &Text::SetColor);
   text->SetText(l10n_util::GetStringUTF16(IDS_VR_POWERED_BY_CHROME_MESSAGE));
@@ -533,9 +533,9 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
   timeout_icon->SetSize(kTimeoutMessageIconWidthDMM,
                         kTimeoutMessageIconHeightDMM);
 
-  auto timeout_text = Create<Text>(
-      kWebVrTimeoutMessageText, kPhaseOverlayForeground, 512,
-      kTimeoutMessageTextFontHeightDMM, kTimeoutMessageTextWidthDMM);
+  auto timeout_text =
+      Create<Text>(kWebVrTimeoutMessageText, kPhaseOverlayForeground, 512,
+                   kTimeoutMessageTextFontHeightDMM);
   timeout_text->SetText(
       l10n_util::GetStringUTF16(IDS_VR_WEB_VR_TIMEOUT_MESSAGE));
   timeout_text->SetColor(model_->color_scheme().timeout_message_foreground);
@@ -563,9 +563,9 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
   BindButtonColors(model_, button.get(), &ColorScheme::button_colors,
                    &Button::SetButtonColors);
 
-  auto timeout_button_text = Create<Text>(
-      kWebVrTimeoutMessageButtonText, kPhaseOverlayForeground, 512,
-      kTimeoutMessageTextFontHeightDMM, kTimeoutButtonTextWidthDMM);
+  auto timeout_button_text =
+      Create<Text>(kWebVrTimeoutMessageButtonText, kPhaseOverlayForeground, 512,
+                   kTimeoutMessageTextFontHeightDMM);
 
   // Disk-style button text is not uppercase. See crbug.com/787654.
   timeout_button_text->SetText(
@@ -588,8 +588,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
 }
 
 void UiSceneCreator::CreateUnderDevelopmentNotice() {
-  auto text = base::MakeUnique<Text>(512, kUnderDevelopmentNoticeFontHeightM,
-                                     kUnderDevelopmentNoticeWidthM);
+  auto text = base::MakeUnique<Text>(512, kUnderDevelopmentNoticeFontHeightM);
   BindColor(model_, text.get(), &ColorScheme::world_background_text,
             &Text::SetColor);
   text->SetText(l10n_util::GetStringUTF16(IDS_VR_UNDER_DEVELOPMENT_NOTICE));
@@ -742,14 +741,14 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
           },
           speech_result_parent)));
   auto speech_result =
-      base::MakeUnique<Text>(256, kVoiceSearchRecognitionResultTextHeight,
-                             kVoiceSearchRecognitionResultTextWidth);
+      base::MakeUnique<Text>(256, kVoiceSearchRecognitionResultTextHeight);
   speech_result->set_name(kSpeechRecognitionResultText);
   speech_result->set_draw_phase(kPhaseForeground);
   speech_result->SetTranslate(0.f, kSpeechRecognitionResultTextYOffset, 0.f);
   speech_result->set_hit_testable(false);
   speech_result->SetSize(kVoiceSearchRecognitionResultTextWidth, 0);
   speech_result->SetTextAlignment(UiTexture::kTextAlignmentCenter);
+  speech_result->SetSize(kSuggestionTextFieldWidth, 0);
   BindColor(model_, speech_result.get(), &ColorScheme::prompt_foreground,
             &Text::SetColor);
   speech_result->AddBinding(VR_BIND_FUNC(base::string16, Model, model_,
