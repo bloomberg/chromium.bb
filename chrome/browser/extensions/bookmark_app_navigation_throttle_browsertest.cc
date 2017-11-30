@@ -643,6 +643,49 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
                          ->GetLastCommittedURL());
 }
 
+// Tests that an app that immediately redirects to an out-of-scope URL opens a
+// new foreground tab.
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+                       ImmediateOutOfScopeRedirect) {
+  size_t num_browsers = chrome::GetBrowserCount(profile());
+  int num_tabs_browser = browser()->tab_strip_model()->count();
+
+  content::WebContents* initial_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  GURL initial_url = initial_tab->GetLastCommittedURL();
+
+  // Install and launch an App that immediately redirects to an out-of-scope
+  // URL i.e. the launching page URL.
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = embedded_test_server()->GetURL(
+      kAppUrlHost, CreateServerRedirect(GetLaunchingPageURL()));
+  web_app_info.scope = embedded_test_server()->GetURL(kAppUrlHost, "/");
+  web_app_info.title = base::UTF8ToUTF16("Redirecting Test app");
+  web_app_info.description = base::UTF8ToUTF16("Test description");
+  web_app_info.open_as_window = true;
+
+  const Extension* redirecting_app = InstallBookmarkApp(web_app_info);
+
+  auto observer = GetTestNavigationObserver(GetLaunchingPageURL());
+  LaunchAppBrowser(redirecting_app);
+  observer->WaitForNavigationFinished();
+
+  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
+
+  EXPECT_EQ(browser(), chrome::FindLastActive());
+  EXPECT_EQ(++num_tabs_browser, browser()->tab_strip_model()->count());
+
+  EXPECT_EQ(initial_url, initial_tab->GetLastCommittedURL());
+
+  content::WebContents* new_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(initial_tab, new_tab);
+  EXPECT_EQ(GetLaunchingPageURL(), new_tab->GetLastCommittedURL());
+}
+
 // Tests that clicking a link with target="_self" to a URL in the Web App's
 // scope opens a new browser window.
 IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
