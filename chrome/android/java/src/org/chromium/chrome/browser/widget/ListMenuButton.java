@@ -5,13 +5,17 @@
 package org.chromium.chrome.browser.widget;
 
 import android.content.Context;
+import android.content.res.TypedArray;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListPopupWindow;
+import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /**
@@ -20,21 +24,34 @@ import org.chromium.chrome.R;
  * results.
  */
 public class ListMenuButton extends TintedImageButton {
+    private final static int INVALID_RES_ID = 0;
+
     /** A class that represents a single item in the popup menu. */
     public static class Item {
         private final String mTextString;
         private final @StringRes int mTextId;
+        private final @DrawableRes int mEndIconId;
         private final boolean mEnabled;
 
         /**
-         * Creates a new {@link Item}.
-         * @param textId  The string resource id for the text to show for this item.
-         * @param enabled Whether or not this item should be enabled.
+         * Creates a new {@link Item} without an end icon.
          */
         public Item(Context context, @StringRes int textId, boolean enabled) {
+            this(context, textId, INVALID_RES_ID, enabled);
+        }
+
+        /**
+         * Creates a new {@link Item}.
+         * @param textId The string resource id for the text to show for this item.
+         * @param endIconId The optional drawable resource id to display at the end of the item.
+         * @param enabled Whether or not this item should be enabled.
+         */
+        public Item(Context context, @StringRes int textId, @DrawableRes int endIconId,
+                boolean enabled) {
             mTextString = context.getString(textId);
             mTextId = textId;
             mEnabled = enabled;
+            mEndIconId = endIconId;
         }
 
         @Override
@@ -50,6 +67,10 @@ public class ListMenuButton extends TintedImageButton {
         /** @return The string resource id this {@link Item} will show. */
         public @StringRes int getTextId() {
             return mTextId;
+        }
+
+        public @DrawableRes int getEndIconId() {
+            return mEndIconId;
         }
     }
 
@@ -69,6 +90,8 @@ public class ListMenuButton extends TintedImageButton {
         void onItemSelected(Item item);
     }
 
+    private final int mMenuWidth;
+
     private ListPopupWindow mPopupMenu;
     private Delegate mDelegate;
 
@@ -79,6 +102,10 @@ public class ListMenuButton extends TintedImageButton {
      */
     public ListMenuButton(Context context, AttributeSet attrs) {
         super(context, attrs);
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ListMenuButton);
+        mMenuWidth = a.getDimensionPixelSize(R.styleable.ListMenuButton_menuWidth,
+                getResources().getDimensionPixelSize(R.dimen.list_menu_width));
+        a.recycle();
     }
 
     /**
@@ -141,15 +168,20 @@ public class ListMenuButton extends TintedImageButton {
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 view.setEnabled(isEnabled(position));
+
+                // Set the compound drawable at the end for items with a valid endIconId,
+                // otherwise clear the compoud drawable if the endIconId is 0.
+                ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        (TextView) view, 0, 0, items[position].getEndIconId(), 0);
+
                 return view;
             }
         });
         mPopupMenu.setAnchorView(this);
-        // This may need to be an attribute and/or parameter in the future to allow different lists
-        // to customize the width of the popup menu.  For now relying on a constant is fine.
-        mPopupMenu.setWidth(getResources().getDimensionPixelSize(R.dimen.list_menu_width));
+        mPopupMenu.setWidth(mMenuWidth);
         mPopupMenu.setVerticalOffset(-getHeight());
         mPopupMenu.setModal(true);
+
         mPopupMenu.setOnItemClickListener((parent, view, position, id) -> {
             if (mDelegate != null) mDelegate.onItemSelected(items[position]);
 
