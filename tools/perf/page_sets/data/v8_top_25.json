@@ -1,5 +1,32 @@
 {
     "archives": {
+        "AdsAMPAds": {
+            "DEFAULT": "v8_top_25_001.wprgo"
+        },
+        "AdsAdSenseAsyncAds": {
+            "DEFAULT": "v8_top_25_001.wprgo"
+        },
+        "AdsAsyncAdSenseImage": {
+            "DEFAULT": "v8_top_25_001.wprgo"
+        },
+        "AdsDoubleClickAsyncAds": {
+            "DEFAULT": "v8_top_25_001.wprgo"
+        },
+        "AdsMultipleAdSlots": {
+            "DEFAULT": "v8_top_25_001.wprgo"
+        },
+        "AdsOnScreenDetection": {
+            "DEFAULT": "v8_top_25_001.wprgo"
+        },
+        "AdsSyncAdSenseImage": {
+            "DEFAULT": "v8_top_25_001.wprgo"
+        },
+        "AdsSyncLoadAsyncRenderAdSenseImage": {
+            "DEFAULT": "v8_top_25_001.wprgo"
+        },
+        "AdsViewOptimizedRendering": {
+            "DEFAULT": "v8_top_25_001.wprgo"
+        },
         "http://edition.cnn.com": {
             "DEFAULT": "v8_top_25_000.wprgo"
         },
