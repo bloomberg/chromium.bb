@@ -82,6 +82,11 @@ GURL GetReauthURLWithEmailForDialog(signin_metrics::AccessPoint access_point,
                                     signin_metrics::Reason reason,
                                     const std::string& email);
 
+// Returns the URL to be used to add an account when DICE is enabled.
+// If email is not empty, then it will pass email as hint to the page so that it
+// will be autofilled by Gaia.
+GURL GetSigninURLForDice(Profile* profile, const std::string& email);
+
 // Gets the partition URL for the embedded sign in frame/webview.
 GURL GetSigninPartitionURL();
 

@@ -14,6 +14,7 @@
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -32,6 +33,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 
@@ -270,6 +272,24 @@ GURL GetReauthURLWithEmailForDialog(signin_metrics::AccessPoint access_point,
                                     const std::string& email) {
   return GetReauthURL(access_point, reason, email, true /* auto_close */,
                       true /* is_constrained */);
+}
+
+GURL GetSigninURLForDice(Profile* profile, const std::string& email) {
+  GURL url;
+  if (signin::GetAccountConsistencyMethod() ==
+      signin::AccountConsistencyMethod::kDicePrepareMigration) {
+    // Add account does not support an email hint, so the email will not be
+    // autofilled when the Dice prepare migration is enabled.
+    url = GaiaUrls::GetInstance()->add_account_url();
+  } else {
+    url = GaiaUrls::GetInstance()->signin_chrome_sync_dice();
+    if (!email.empty())
+      url = net::AppendQueryParameter(url, "email_hint", email);
+  }
+  // Pass www.gooogle.com as the continue URL as otherwise Gaia navigates to
+  // myaccount which may be very confusing for the user.
+  return net::AppendQueryParameter(
+      url, "continue", UIThreadSearchTermsData(profile).GoogleBaseURLValue());
 }
 
 GURL GetSigninPartitionURL() {

@@ -19,9 +19,6 @@ DiceTabHelper::DiceTabHelper(content::WebContents* web_contents)
       signin_access_point_(signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN),
       signin_reason_(signin_metrics::Reason::REASON_UNKNOWN_REASON),
       should_start_sync_after_web_signin_(true) {
-  DCHECK_EQ(signin_util::GetGaiaAddAccountUrlForDice(
-                chrome::FindBrowserWithWebContents(web_contents)->profile()),
-            web_contents->GetVisibleURL());
 }
 
 DiceTabHelper::~DiceTabHelper() {}
