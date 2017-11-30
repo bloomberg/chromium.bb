@@ -61,18 +61,6 @@ ScriptResource::ScriptResource(
 
 ScriptResource::~ScriptResource() {}
 
-void ScriptResource::DidAddClient(ResourceClient* client) {
-  DCHECK(ScriptResourceClient::IsExpectedType(client));
-  Resource::DidAddClient(client);
-}
-
-void ScriptResource::AppendData(const char* data, size_t length) {
-  Resource::AppendData(data, length);
-  ResourceClientWalker<ScriptResourceClient> walker(Clients());
-  while (ScriptResourceClient* client = walker.Next())
-    client->NotifyAppendData(this);
-}
-
 void ScriptResource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
                                   WebProcessMemoryDump* memory_dump) const {
   Resource::OnMemoryDump(level_of_detail, memory_dump);

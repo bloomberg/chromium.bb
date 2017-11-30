@@ -108,10 +108,10 @@ class CORE_EXPORT ClassicPendingScript final
 
   void CheckState() const override;
 
-  // ScriptResourceClient
+  // ResourceClient
   void NotifyFinished(Resource*) override;
   String DebugName() const override { return "PendingScript"; }
-  void NotifyAppendData(ScriptResource*) override;
+  void DataReceived(Resource*, const char*, size_t) override;
 
   // MemoryCoordinatorClient
   void OnPurgeMemory() override;

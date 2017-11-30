@@ -159,9 +159,6 @@ class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
                                 const ResourceResponse&,
                                 std::unique_ptr<WebDataConsumerHandle>) {}
   virtual void SetSerializedCachedMetadata(Resource*, const char*, size_t) {}
-  virtual void DataReceived(Resource*,
-                            const char* /* data */,
-                            size_t /* length */) {}
   virtual bool RedirectReceived(Resource*,
                                 const ResourceRequest&,
                                 const ResourceResponse&) {

@@ -76,8 +76,7 @@ CSSStyleSheetResource::CSSStyleSheetResource(
     : StyleSheetResource(resource_request,
                          kCSSStyleSheet,
                          options,
-                         decoder_options),
-      did_notify_first_data_(false) {}
+                         decoder_options) {}
 
 CSSStyleSheetResource::~CSSStyleSheetResource() {}
 
@@ -105,9 +104,6 @@ void CSSStyleSheetResource::DidAddClient(ResourceClient* c) {
   // 'c' if it is an instance of HTMLLinkElement. see the comment of
   // HTMLLinkElement::setCSSStyleSheet.
   Resource::DidAddClient(c);
-
-  if (HasClient(c) && did_notify_first_data_)
-    static_cast<StyleSheetResourceClient*>(c)->DidAppendFirstData(this);
 
   // |c| might be removed in didAppendFirstData, so ensure it is still a client.
   if (HasClient(c) && !IsLoading()) {
@@ -144,16 +140,6 @@ const String CSSStyleSheetResource::SheetText(
     return String();
 
   return DecodedText();
-}
-
-void CSSStyleSheetResource::AppendData(const char* data, size_t length) {
-  Resource::AppendData(data, length);
-  if (did_notify_first_data_)
-    return;
-  ResourceClientWalker<StyleSheetResourceClient> w(Clients());
-  while (StyleSheetResourceClient* c = w.Next())
-    c->DidAppendFirstData(this);
-  did_notify_first_data_ = true;
 }
 
 void CSSStyleSheetResource::NotifyFinished() {

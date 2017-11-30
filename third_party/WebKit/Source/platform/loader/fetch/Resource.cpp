@@ -372,13 +372,16 @@ void Resource::AppendData(const char* data, size_t length) {
   TRACE_EVENT0("blink", "Resource::appendData");
   DCHECK(!is_revalidating_);
   DCHECK(!ErrorOccurred());
-  if (options_.data_buffering_policy == kDoNotBufferData)
-    return;
-  if (data_)
-    data_->Append(data, length);
-  else
-    data_ = SharedBuffer::Create(data, length);
-  SetEncodedSize(data_->size());
+  if (options_.data_buffering_policy == kBufferData) {
+    if (data_)
+      data_->Append(data, length);
+    else
+      data_ = SharedBuffer::Create(data, length);
+    SetEncodedSize(data_->size());
+  }
+  ResourceClientWalker<ResourceClient> w(Clients());
+  while (ResourceClient* c = w.Next())
+    c->DataReceived(this, data, length);
 }
 
 void Resource::SetResourceBuffer(scoped_refptr<SharedBuffer> resource_buffer) {
@@ -635,6 +638,17 @@ String Resource::ReasonNotDeletable() const {
 }
 
 void Resource::DidAddClient(ResourceClient* c) {
+  if (scoped_refptr<SharedBuffer> data = Data()) {
+    data->ForEachSegment([this, &c](const char* segment, size_t segment_size,
+                                    size_t segment_offset) -> bool {
+      c->DataReceived(this, segment, segment_size);
+
+      // Stop pushing data if the client removed itself.
+      return HasClient(c);
+    });
+  }
+  if (!HasClient(c))
+    return;
   if (IsLoaded()) {
     c->NotifyFinished(this);
     if (clients_.Contains(c)) {

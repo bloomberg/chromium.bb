@@ -282,10 +282,14 @@ void CSSPreloaderResourceClient::SetCSSStyleSheet(
 
 // Only attach for one appendData call, as that's where most imports will likely
 // be (according to spec).
-void CSSPreloaderResourceClient::DidAppendFirstData(
-    const CSSStyleSheetResource* resource) {
+void CSSPreloaderResourceClient::DataReceived(Resource* resource,
+                                              const char*,
+                                              size_t) {
+  if (received_first_data_)
+    return;
+  received_first_data_ = true;
   if (preloader_)
-    ScanCSS(resource);
+    ScanCSS(ToCSSStyleSheetResource(resource));
   ClearResource();
 }
 

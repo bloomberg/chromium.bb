@@ -114,7 +114,7 @@ class CORE_EXPORT CSSPreloaderResourceClient
                         ReferrerPolicy,
                         const WTF::TextEncoding&,
                         const CSSStyleSheetResource*) override;
-  void DidAppendFirstData(const CSSStyleSheetResource*) override;
+  void DataReceived(Resource*, const char*, size_t) override;
   String DebugName() const override { return "CSSPreloaderResourceClient"; }
 
   void Trace(blink::Visitor*) override;
@@ -136,6 +136,7 @@ class CORE_EXPORT CSSPreloaderResourceClient
   const PreloadPolicy policy_;
   WeakMember<HTMLResourcePreloader> preloader_;
   WeakMember<CSSStyleSheetResource> resource_;
+  bool received_first_data_ = false;
 };
 
 }  // namespace blink

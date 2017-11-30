@@ -52,11 +52,6 @@ class CORE_EXPORT StyleSheetResourceClient : public ResourceClient {
                                 const KURL& /* baseURL */,
                                 const String& /* sheet */) {}
 
-  // This gets called on the very first appendData call for the
-  // CSSStyleSheetResource. Note this is not called for StyleSheetResources
-  // other than CSSStyleSheetResources.
-  virtual void DidAppendFirstData(const CSSStyleSheetResource*) {}
-
   void Trace(blink::Visitor* visitor) override {
     ResourceClient::Trace(visitor);
   }
