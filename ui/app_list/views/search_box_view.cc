@@ -190,8 +190,10 @@ class SearchBoxTextfield : public views::Textfield {
   }
 
   void OnFocus() override {
-    if (is_app_list_focus_enabled_)
+    if (is_app_list_focus_enabled_) {
       search_box_view_->SetSelected(true);
+      SelectAll(false);
+    }
     Textfield::OnFocus();
   }
 
