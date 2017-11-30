@@ -52,8 +52,19 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectDetachedObject) {
   const gchar* name = atk_object_get_name(root_obj);
   EXPECT_STREQ("Name", name);
 
+  AtkStateSet* state_set = atk_object_ref_state_set(root_obj);
+  ASSERT_TRUE(ATK_IS_STATE_SET(state_set));
+  EXPECT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_DEFUNCT));
+  g_object_unref(state_set);
+
   tree_.reset(new AXTree());
   EXPECT_EQ(nullptr, atk_object_get_name(root_obj));
+
+  state_set = atk_object_ref_state_set(root_obj);
+  ASSERT_TRUE(ATK_IS_STATE_SET(state_set));
+  EXPECT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_DEFUNCT));
+  g_object_unref(state_set);
+
   g_object_unref(root_obj);
 }
 
@@ -123,6 +134,28 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectRole) {
   g_object_ref(child_obj);
   EXPECT_EQ(ATK_ROLE_CANVAS, atk_object_get_role(child_obj));
   g_object_unref(child_obj);
+}
+
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectState) {
+  AXNodeData root;
+  root.id = 1;
+  root.AddState(AX_STATE_DEFAULT);
+  root.AddState(AX_STATE_EXPANDED);
+
+  Init(root);
+
+  AtkObject* root_obj(GetRootAtkObject());
+  ASSERT_TRUE(ATK_IS_OBJECT(root_obj));
+  g_object_ref(root_obj);
+
+  AtkStateSet* state_set = atk_object_ref_state_set(root_obj);
+  ASSERT_TRUE(ATK_IS_STATE_SET(state_set));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_DEFAULT));
+  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_EXPANDED));
+  ASSERT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_SELECTED));
+  g_object_unref(state_set);
+
+  g_object_unref(root_obj);
 }
 
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectChildAndParent) {

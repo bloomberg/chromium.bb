@@ -182,16 +182,17 @@ static AtkRole ax_platform_node_auralinux_get_role(AtkObject* atk_object) {
 
 static AtkStateSet* ax_platform_node_auralinux_ref_state_set(
     AtkObject* atk_object) {
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
-  if (!obj)
-    return NULL;
-
   AtkStateSet* atk_state_set =
       ATK_OBJECT_CLASS(ax_platform_node_auralinux_parent_class)->
       ref_state_set(atk_object);
 
-  obj->GetAtkState(atk_state_set);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj) {
+    atk_state_set_add_state(atk_state_set, ATK_STATE_DEFUNCT);
+  } else {
+    obj->GetAtkState(atk_state_set);
+  }
   return atk_state_set;
 }
 
@@ -660,6 +661,10 @@ GType ax_platform_node_auralinux_get_type() {
 
 void ax_platform_node_auralinux_detach(
     AXPlatformNodeAuraLinuxObject* atk_object) {
+  if (atk_object->m_object) {
+    atk_object_notify_state_change(ATK_OBJECT(atk_object), ATK_STATE_DEFUNCT,
+                                   TRUE);
+  }
   atk_object->m_object = nullptr;
 }
 
