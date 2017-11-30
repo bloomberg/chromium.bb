@@ -808,6 +808,68 @@ INSTANTIATE_TEST_CASE_P(Version,
                         QuicNetworkTransactionTest,
                         ::testing::ValuesIn(AllSupportedTransportVersions()));
 
+TEST_P(QuicNetworkTransactionTest, WriteErrorHandshakeConfirmed) {
+  base::HistogramTester histograms;
+  session_params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::CONFIRM_HANDSHAKE);
+
+  MockQuicData mock_quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  mock_quic_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
+  mock_quic_data.AddWrite(SYNCHRONOUS, ERR_INTERNET_DISCONNECTED);
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+  mock_quic_data.AddRead(ASYNC, OK);              // No more data to read
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
+
+  histograms.ExpectBucketCount("Net.QuicSession.WriteError",
+                               -ERR_INTERNET_DISCONNECTED, 1);
+  histograms.ExpectBucketCount("Net.QuicSession.WriteError.HandshakeConfirmed",
+                               -ERR_INTERNET_DISCONNECTED, 1);
+}
+
+TEST_P(QuicNetworkTransactionTest, WriteErrorHandshakeConfirmedAsync) {
+  base::HistogramTester histograms;
+  session_params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::CONFIRM_HANDSHAKE);
+
+  MockQuicData mock_quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  mock_quic_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
+  mock_quic_data.AddWrite(ASYNC, ERR_INTERNET_DISCONNECTED);
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+  mock_quic_data.AddRead(ASYNC, OK);              // No more data to read
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
+
+  histograms.ExpectBucketCount("Net.QuicSession.WriteError",
+                               -ERR_INTERNET_DISCONNECTED, 1);
+  histograms.ExpectBucketCount("Net.QuicSession.WriteError.HandshakeConfirmed",
+                               -ERR_INTERNET_DISCONNECTED, 1);
+}
+
 TEST_P(QuicNetworkTransactionTest, SocketWatcherEnabled) {
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));

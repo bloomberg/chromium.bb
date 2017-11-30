@@ -1477,6 +1477,11 @@ void QuicChromiumClientSession::OnConnectivityProbeReceived(
 int QuicChromiumClientSession::HandleWriteError(
     int error_code,
     scoped_refptr<QuicChromiumPacketWriter::ReusableIOBuffer> packet) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.WriteError", -error_code);
+  if (IsCryptoHandshakeConfirmed()) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.WriteError.HandshakeConfirmed",
+                                -error_code);
+  }
   if (stream_factory_ == nullptr ||
       !stream_factory_->migrate_sessions_on_network_change()) {
     return error_code;
@@ -1797,10 +1802,6 @@ void QuicChromiumClientSession::MigrateImmediately(
 void QuicChromiumClientSession::OnWriteError(int error_code) {
   DCHECK_NE(ERR_IO_PENDING, error_code);
   DCHECK_GT(0, error_code);
-  if (IsCryptoHandshakeConfirmed()) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.WriteError.HandshakeConfirmed",
-                                -error_code);
-  }
   connection()->OnWriteError(error_code);
 }
 
