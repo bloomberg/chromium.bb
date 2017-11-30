@@ -298,7 +298,29 @@ bool LayoutFlexibleBox::HasLeftOverflow() const {
   return flex_direction == EFlexDirection::kColumnReverse;
 }
 
+void LayoutFlexibleBox::MergeAnonymousFlexItems(LayoutObject* remove_child) {
+  // When we remove a flex item, and the previous and next in-flow siblings of
+  // the item are text nodes wrapped in anonymous flex items, the adjacent text
+  // nodes need to be merged into the same flex item.
+  LayoutObject* prev_in_flow =
+      ToLayoutBox(remove_child)->PreviousInFlowSiblingBox();
+  if (!prev_in_flow || !prev_in_flow->IsAnonymousBlock())
+    return;
+  LayoutObject* next_in_flow =
+      ToLayoutBox(remove_child)->NextInFlowSiblingBox();
+  if (!next_in_flow || !next_in_flow->IsAnonymousBlock())
+    return;
+  ToLayoutBoxModelObject(next_in_flow)
+      ->MoveAllChildrenTo(ToLayoutBoxModelObject(prev_in_flow));
+  ToLayoutBlockFlow(next_in_flow)->DeleteLineBoxTree();
+  next_in_flow->Destroy();
+  intrinsic_size_along_main_axis_.erase(next_in_flow);
+}
+
 void LayoutFlexibleBox::RemoveChild(LayoutObject* child) {
+  if (!DocumentBeingDestroyed())
+    MergeAnonymousFlexItems(child);
+
   LayoutBlock::RemoveChild(child);
   intrinsic_size_along_main_axis_.erase(child);
 }

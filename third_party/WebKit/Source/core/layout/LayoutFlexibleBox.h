@@ -196,6 +196,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
       LayoutBox* child,
       float previous_max_content_flex_fraction) const;
 
+  void MergeAnonymousFlexItems(LayoutObject* remove_child);
+
   // This is used to cache the preferred size for orthogonal flow children so we
   // don't have to relayout to get it
   HashMap<const LayoutObject*, LayoutUnit> intrinsic_size_along_main_axis_;

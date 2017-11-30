@@ -1589,6 +1589,7 @@ crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse-line-w
 crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse.html [ Failure ]
 crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-006.xht [ Failure ]
 
+crbug.com/788379 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flex-aspect-ratio-img-column-003.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flex-aspect-ratio-img-row-002.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flex-aspect-ratio-img-row-003.html [ Failure ]
@@ -2992,7 +2993,6 @@ crbug.com/786249 virtual/mojo-loading/http/tests/inspector-protocol/network/resp
 
 # ====== Begin of display: contents tests ======
 
-crbug.com/657748 external/wpt/css/css-display/display-contents-dynamic-flex-002-inline.html [ Failure ]
 crbug.com/181374 external/wpt/css/css-display/display-contents-dynamic-table-001-inline.html [ Failure ]
 crbug.com/717460 external/wpt/css/css-display/display-contents-first-letter-002.html [ Failure ]
 crbug.com/706316 external/wpt/css/css-display/display-contents-first-line-002.html [ Failure ]
