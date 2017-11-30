@@ -135,6 +135,7 @@ class CORE_EXPORT PerformanceMonitor final
   void DidExecuteScript();
 
   void UpdateTaskAttribution(ExecutionContext*);
+  void UpdateTaskShouldBeReported(LocalFrame*);
 
   std::pair<String, DOMWindow*> SanitizedAttribution(
       const HeapHashSet<Member<Frame>>& frame_contexts,
