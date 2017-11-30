@@ -62,7 +62,7 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
                     std::vector<v8::Local<v8::Value>>* args,
                     const EventFilteringInfo* filter,
                     bool run_sync,
-                    std::vector<v8::Global<v8::Value>>* out_values);
+                    std::vector<v8::Local<v8::Value>>* out_values);
 
   // Whether or not this object is still valid; false upon context release.
   // When invalid, no listeners can be added or removed.

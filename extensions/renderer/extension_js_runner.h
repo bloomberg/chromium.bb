@@ -22,10 +22,11 @@ class ExtensionJSRunner : public JSRunner {
                      v8::Local<v8::Context> context,
                      int argc,
                      v8::Local<v8::Value> argv[]) override;
-  v8::Global<v8::Value> RunJSFunctionSync(v8::Local<v8::Function> function,
-                                          v8::Local<v8::Context> context,
-                                          int argc,
-                                          v8::Local<v8::Value> argv[]) override;
+  v8::MaybeLocal<v8::Value> RunJSFunctionSync(
+      v8::Local<v8::Function> function,
+      v8::Local<v8::Context> context,
+      int argc,
+      v8::Local<v8::Value> argv[]) override;
 
  private:
   // The associated ScriptContext. Guaranteed to outlive this object.

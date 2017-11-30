@@ -58,7 +58,7 @@ void TestJSRunner::RunJSFunction(v8::Local<v8::Function> function,
     RunFunctionOnGlobal(function, context, argc, argv);
 }
 
-v8::Global<v8::Value> TestJSRunner::RunJSFunctionSync(
+v8::MaybeLocal<v8::Value> TestJSRunner::RunJSFunctionSync(
     v8::Local<v8::Function> function,
     v8::Local<v8::Context> context,
     int argc,
@@ -67,13 +67,11 @@ v8::Global<v8::Value> TestJSRunner::RunJSFunctionSync(
     will_call_js_.Run();
 
   if (g_allow_errors) {
-    v8::Global<v8::Value> global_result;
-    v8::Local<v8::Value> result;
-    if (function->Call(context, context->Global(), argc, argv).ToLocal(&result))
-      global_result.Reset(context->GetIsolate(), result);
-    return global_result;
+    v8::MaybeLocal<v8::Value> result =
+        function->Call(context, context->Global(), argc, argv);
+    return result;
   }
-  return RunFunctionOnGlobalAndReturnHandle(function, context, argc, argv);
+  return RunFunctionOnGlobal(function, context, argc, argv);
 }
 
 }  // namespace extensions

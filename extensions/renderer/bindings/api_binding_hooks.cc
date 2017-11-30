@@ -300,7 +300,7 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
 
   // Safe to use synchronous JS since it's in direct response to JS calling
   // into the binding.
-  v8::Global<v8::Value> global_result =
+  v8::MaybeLocal<v8::Value> v8_result =
       JSRunner::Get(context)->RunJSFunctionSync(
           handle_request, context, arguments->size(), arguments->data());
   if (try_catch.HasCaught()) {
@@ -308,8 +308,7 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
     return RequestResult(RequestResult::THROWN);
   }
   RequestResult result(RequestResult::HANDLED, custom_callback);
-  if (!global_result.IsEmpty())
-    result.return_value = global_result.Get(isolate);
+  result.return_value = v8_result.ToLocalChecked();
   return result;
 }
 
@@ -363,20 +362,20 @@ bool APIBindingHooks::UpdateArguments(
     v8::Local<v8::Function> function,
     v8::Local<v8::Context> context,
     std::vector<v8::Local<v8::Value>>* arguments) {
-  v8::Global<v8::Value> global_result;
+  v8::Local<v8::Value> result;
   {
     v8::TryCatch try_catch(context->GetIsolate());
     // Safe to use synchronous JS since it's in direct response to JS calling
     // into the binding.
-    global_result = JSRunner::Get(context)->RunJSFunctionSync(
-        function, context, arguments->size(), arguments->data());
+    v8::MaybeLocal<v8::Value> maybe_result =
+        JSRunner::Get(context)->RunJSFunctionSync(
+            function, context, arguments->size(), arguments->data());
     if (try_catch.HasCaught()) {
       try_catch.ReThrow();
       return false;
     }
+    result = maybe_result.ToLocalChecked();
   }
-  DCHECK(!global_result.IsEmpty());
-  v8::Local<v8::Value> result = global_result.Get(context->GetIsolate());
   std::vector<v8::Local<v8::Value>> new_args;
   if (result.IsEmpty() ||
       !gin::Converter<std::vector<v8::Local<v8::Value>>>::FromV8(
