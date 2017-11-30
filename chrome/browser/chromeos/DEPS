@@ -13,6 +13,7 @@ include_rules = [
   "+components/pairing",
   "+components/onc",
   "+components/ownership",
+  "+components/session_manager/core",
   "+components/user_manager",
   "+components/wallpaper",
   "+cros",
