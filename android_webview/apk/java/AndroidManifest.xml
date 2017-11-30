@@ -9,7 +9,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="{{package|default('com.android.webview')}}">
     <uses-sdk android:minSdkVersion="{{minsdk|default(21)}}"
-              android:targetSdkVersion="{{targetsdk|default(26)}}">
+              android:targetSdkVersion="{{targetsdk|default(27)}}">
     </uses-sdk>
 
     <uses-feature android:name="android.hardware.touchscreen"
