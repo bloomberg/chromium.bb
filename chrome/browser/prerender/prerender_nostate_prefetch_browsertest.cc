@@ -40,7 +40,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using prerender::test_utils::DestructionWaiter;
 using prerender::test_utils::RequestCounter;

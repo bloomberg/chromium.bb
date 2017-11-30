@@ -25,7 +25,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -39,7 +38,6 @@
 #include "content/public/common/origin_util.h"
 #include "extensions/common/constants.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
 #include <vector>

@@ -23,7 +23,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
 #include "chrome/common/printing/pdf_to_pwg_raster_converter.mojom.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,7 +33,6 @@
 #include "printing/pwg_raster_settings.h"
 #include "printing/units.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 

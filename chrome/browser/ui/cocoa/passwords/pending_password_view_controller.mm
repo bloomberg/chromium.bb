@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
-#include "ui/base/l10n/l10n_util.h"
 
 @implementation PendingPasswordViewController
 

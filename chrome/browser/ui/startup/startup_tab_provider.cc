@@ -21,7 +21,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "net/base/url_util.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

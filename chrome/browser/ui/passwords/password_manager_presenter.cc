@@ -35,7 +35,6 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/sync/browser/password_sync_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/strings/grit/components_strings.h"
 #include "components/undo/undo_operation.h"
 #include "content/public/browser/browser_thread.h"
 

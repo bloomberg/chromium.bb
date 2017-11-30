@@ -18,7 +18,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 

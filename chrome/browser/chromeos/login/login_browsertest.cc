@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chromeos/chromeos_switches.h"
@@ -42,7 +41,6 @@
 #include "extensions/browser/extension_system.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/test/rect_test_util.h"
 
 using ::gfx::test::RectContains;

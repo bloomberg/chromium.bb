@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "chrome/common/pref_names.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace user_prefs {

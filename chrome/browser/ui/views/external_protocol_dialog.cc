@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_features.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/views/controls/button/checkbox.h"

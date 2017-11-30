@@ -7,7 +7,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "chrome/test/base/testing_profile.h"

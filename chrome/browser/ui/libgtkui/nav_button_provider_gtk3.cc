@@ -11,7 +11,6 @@
 #include "ui/base/glib/scoped_gobject.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
-#include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/widget/widget.h"
 
 namespace libgtkui {

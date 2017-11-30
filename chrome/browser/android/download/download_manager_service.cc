@@ -25,8 +25,6 @@
 #include "jni/DownloadManagerService_jni.h"
 #include "third_party/WebKit/common/mime_util/mime_util.h"
 
-#include "ui/base/l10n/l10n_util.h"
-
 using base::android::JavaParamRef;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;

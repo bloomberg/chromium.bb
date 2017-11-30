@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_experimental.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
-#include "components/grit/components_scaled_resources.h"
 #include "ui/base/theme_provider.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"

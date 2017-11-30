@@ -30,7 +30,6 @@
 #include "chrome/browser/ssl/ssl_error_assistant.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/browser_resources.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"

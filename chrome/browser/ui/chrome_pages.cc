@@ -49,9 +49,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/genius_app/app_id.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_registry.h"
-#include "ui/base/l10n/l10n_util.h"
 #endif
 
 #if !defined(OS_ANDROID)

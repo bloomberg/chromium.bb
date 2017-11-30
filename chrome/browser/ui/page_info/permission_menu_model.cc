@@ -8,7 +8,6 @@
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/common/origin_util.h"
 #include "ppapi/features/features.h"

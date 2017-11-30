@@ -8,8 +8,6 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"

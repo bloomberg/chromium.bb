@@ -14,10 +14,8 @@
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
-#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using safe_browsing::ChromeCleanerController;
 
