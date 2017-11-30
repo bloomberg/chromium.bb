@@ -147,8 +147,17 @@ void BubbleDialogDelegateView::OnWidgetVisibilityChanged(Widget* widget,
 
 void BubbleDialogDelegateView::OnWidgetActivationChanged(Widget* widget,
                                                          bool active) {
-  if (close_on_deactivate() && widget == GetWidget() && !active)
-    GetWidget()->Close();
+#if defined(OS_MACOSX)
+  // Install |mac_bubble_closer_| the first time the widget becomes active.
+  if (active && !mac_bubble_closer_ && GetWidget()) {
+    mac_bubble_closer_ = std::make_unique<ui::BubbleCloser>(
+        GetWidget()->GetNativeWindow(),
+        base::BindRepeating(&BubbleDialogDelegateView::OnDeactivate,
+                            base::Unretained(this)));
+  }
+#endif
+  if (widget == GetWidget() && !active)
+    OnDeactivate();
 }
 
 void BubbleDialogDelegateView::OnWidgetBoundsChanged(
@@ -314,6 +323,11 @@ void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
     if (GetAccessibleWindowRole() == ui::AX_ROLE_ALERT_DIALOG)
       widget->GetRootView()->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
   }
+}
+
+void BubbleDialogDelegateView::OnDeactivate() {
+  if (close_on_deactivate() && GetWidget())
+    GetWidget()->Close();
 }
 
 }  // namespace views

@@ -345,6 +345,8 @@ component("base") {
       "clipboard/custom_data_helper.h",
       "clipboard/scoped_clipboard_writer.cc",
       "clipboard/scoped_clipboard_writer.h",
+      "cocoa/bubble_closer.h",
+      "cocoa/bubble_closer.mm",
       "cursor/cursor_util.cc",
       "cursor/cursor_util.h",
       "default_theme_provider.cc",
@@ -660,6 +662,8 @@ static_library("test_support") {
 
   if (!is_ios) {
     sources += [
+      "test/menu_test_observer.h",
+      "test/menu_test_observer.mm",
       "test/nswindow_fullscreen_notification_waiter.h",
       "test/nswindow_fullscreen_notification_waiter.mm",
       "test/scoped_fake_full_keyboard_access.h",
@@ -820,6 +824,7 @@ test("ui_base_unittests") {
       "accelerators/menu_label_accelerator_util_linux_unittest.cc",
       "clipboard/custom_data_helper_unittest.cc",
       "cocoa/base_view_unittest.mm",
+      "cocoa/bubble_closer_unittest.mm",
       "cocoa/cocoa_base_utils_unittest.mm",
       "cocoa/constrained_window/constrained_window_animation_unittest.mm",
       "cocoa/controls/blue_label_button_unittest.mm",
