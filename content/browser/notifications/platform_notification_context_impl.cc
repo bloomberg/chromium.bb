@@ -36,8 +36,7 @@ PlatformNotificationContextImpl::PlatformNotificationContextImpl(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
     : path_(path),
       browser_context_(browser_context),
-      service_worker_context_(service_worker_context),
-      notification_id_generator_(browser_context) {
+      service_worker_context_(service_worker_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
