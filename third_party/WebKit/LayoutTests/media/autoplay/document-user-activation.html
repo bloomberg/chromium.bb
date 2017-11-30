@@ -177,40 +177,4 @@ promise_test(t => {
     document.body.appendChild(iframe);
   });
 }, 'iframe allowed to play if it received a gesture');
-
-promise_test(t => {
-  t.add_cleanup(() => {
-    window.internals.settings.setAutoplayPolicy('no-user-gesture-required');
-    document.body.removeChild(document.querySelector('iframe'));
-  });
-
-  window.internals.settings.setAutoplayPolicy('document-user-activation-required');
-
-  var iframe = document.createElement('iframe');
-  return new Promise((resolve, reject) => {
-    iframe.addEventListener('load', () => {
-      var bounds = document.querySelector('#target').getBoundingClientRect();
-      var x = bounds.left + bounds.width / 2;
-      var y = bounds.top + bounds.height / 2;
-      chrome.gpuBenchmarking.pointerActionSequence([{
-        'source': 'mouse',
-        'actions': [
-          { 'name': 'pointerDown', 'x': x, 'y': y },
-          { 'name': 'pointerUp' },
-        ],
-      }]);
-
-      window.addEventListener('message', e => {
-        e.data.result ? reject() : resolve();
-      });
-
-      iframe.contentWindow.postMessage({
-        command: 'play'
-      }, '*');
-    });
-
-    iframe.src = 'resources/document-user-activation-iframe.html';
-    document.body.appendChild(iframe);
-  });
-}, 'iframe is not allowed to autoplay if the main frame received a gesture');
 </script>
