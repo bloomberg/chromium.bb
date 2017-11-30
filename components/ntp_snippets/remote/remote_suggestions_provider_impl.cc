@@ -1296,10 +1296,12 @@ void RemoteSuggestionsProviderImpl::ClearExpiredDismissedSuggestions() {
     }
     RemoveNullPointers(&content->dismissed);
 
-    // Delete the images.
-    database_->DeleteImages(GetSuggestionIDVector(to_delete));
-    // Delete the removed article suggestions from the DB.
-    database_->DeleteSnippets(GetSuggestionIDVector(to_delete));
+    if (!to_delete.empty()) {
+      // Delete the images.
+      database_->DeleteImages(GetSuggestionIDVector(to_delete));
+      // Delete the removed article suggestions from the DB.
+      database_->DeleteSnippets(GetSuggestionIDVector(to_delete));
+    }
 
     if (content->suggestions.empty() && content->dismissed.empty() &&
         category != articles_category_ &&
