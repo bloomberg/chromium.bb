@@ -753,9 +753,7 @@ NSString* const kTransitionToolbarAnimationKey =
   [_swipeGestureRecognizer setDelegate:self];
 }
 
-- (void)loadView {
-  [super loadView];
-
+- (void)viewDidLoad {
   _backgroundView = [[UIView alloc] initWithFrame:self.view.bounds];
   [_backgroundView setAutoresizingMask:(UIViewAutoresizingFlexibleHeight |
                                         UIViewAutoresizingFlexibleWidth)];
@@ -825,6 +823,7 @@ NSString* const kTransitionToolbarAnimationKey =
     [_scrollView setAutoresizingMask:(UIViewAutoresizingFlexibleHeight |
                                       UIViewAutoresizingFlexibleWidth)];
   }
+
   [_scrollView setBounces:NO];
   [_scrollView setScrollsToTop:NO];
   [_scrollView setClipsToBounds:NO];
@@ -1065,6 +1064,15 @@ NSString* const kTransitionToolbarAnimationKey =
   BOOL useDefaultStyle = _isBeingDismissed && ![self isCurrentSetIncognito];
   return useDefaultStyle ? UIStatusBarStyleDefault
                          : UIStatusBarStyleLightContent;
+}
+
+- (void)prepareForDisplayAtSize:(CGSize)size {
+  if (!CGSizeEqualToSize(size, self.view.bounds.size) &&
+      !IsSafeAreaCompatibleToolbarEnabled()) {
+    CGRect newBounds = self.view.bounds;
+    newBounds.size = size;
+    self.view.bounds = newBounds;
+  }
 }
 
 #pragma mark -

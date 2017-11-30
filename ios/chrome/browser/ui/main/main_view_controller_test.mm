@@ -43,6 +43,9 @@
 - (void)setOtrTabModel:(TabModel*)otrModel {
 }
 
+- (void)prepareForDisplayAtSize:(CGSize)size {
+}
+
 @end
 
 UIViewController<TabSwitcher>* MainViewControllerTest::CreateTestTabSwitcher() {

@@ -79,6 +79,9 @@
 // Returns the root view of the tab switcher.
 - (UIView*)view;
 
+// Tells the tab switcher to prepare to be displayed at |size|.
+- (void)prepareForDisplayAtSize:(CGSize)size;
+
 // Performs an animation of the selected tab from its presented state to its
 // place in the tab switcher. Should be called after the tab switcher's view has
 // been presented.
