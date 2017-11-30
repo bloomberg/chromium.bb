@@ -10,10 +10,8 @@ namespace blink {
 namespace scheduler {
 
 WorkerSchedulerHelper::WorkerSchedulerHelper(
-    std::unique_ptr<TaskQueueManager> task_queue_manager,
-    WorkerScheduler* worker_scheduler)
-    : SchedulerHelper(std::move(task_queue_manager)),
-      worker_scheduler_(worker_scheduler),
+    std::unique_ptr<TaskQueueManager> manager)
+    : SchedulerHelper(std::move(manager)),
       default_task_queue_(NewTaskQueue(TaskQueue::Spec("worker_default_tq")
                                            .SetShouldMonitorQuiescence(true))),
       control_task_queue_(NewTaskQueue(TaskQueue::Spec("worker_control_tq")
@@ -44,8 +42,7 @@ scoped_refptr<TaskQueue> WorkerSchedulerHelper::ControlTaskQueue() {
 
 scoped_refptr<WorkerTaskQueue> WorkerSchedulerHelper::NewTaskQueue(
     const TaskQueue::Spec& spec) {
-  return task_queue_manager_->CreateTaskQueue<WorkerTaskQueue>(
-      spec, worker_scheduler_);
+  return task_queue_manager_->CreateTaskQueue<WorkerTaskQueue>(spec);
 }
 
 }  // namespace scheduler

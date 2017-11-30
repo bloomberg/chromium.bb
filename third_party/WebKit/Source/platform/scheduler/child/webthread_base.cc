@@ -119,7 +119,8 @@ class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
   std::unique_ptr<blink::scheduler::WorkerScheduler> CreateWorkerScheduler()
       override {
     return std::make_unique<CompositorWorkerScheduler>(
-        GetThread(), TaskQueueManager::TakeOverCurrentThread());
+        GetThread(), std::make_unique<WorkerSchedulerHelper>(
+                         TaskQueueManager::TakeOverCurrentThread()));
   }
 
   DISALLOW_COPY_AND_ASSIGN(WebThreadForCompositor);

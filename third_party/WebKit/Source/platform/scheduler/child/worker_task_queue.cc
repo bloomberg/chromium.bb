@@ -5,31 +5,15 @@
 #include "platform/scheduler/child/worker_task_queue.h"
 
 #include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/child/worker_scheduler.h"
 
 namespace blink {
 namespace scheduler {
 
 WorkerTaskQueue::WorkerTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
-                                 const TaskQueue::Spec& spec,
-                                 WorkerScheduler* worker_scheduler)
-    : TaskQueue(std::move(impl), spec), worker_scheduler_(worker_scheduler) {
-  if (GetTaskQueueImpl()) {
-    // TaskQueueImpl may be null for tests.
-    GetTaskQueueImpl()->SetOnTaskCompletedHandler(
-        base::Bind(&WorkerTaskQueue::OnTaskCompleted, base::Unretained(this)));
-  }
-}
+                                 const TaskQueue::Spec& spec)
+    : TaskQueue(std::move(impl), spec) {}
 
 WorkerTaskQueue::~WorkerTaskQueue() {}
-
-void WorkerTaskQueue::OnTaskCompleted(const TaskQueue::Task& task,
-                                      base::TimeTicks start,
-                                      base::TimeTicks end) {
-  // |worker_scheduler_| can be nullptr in tests.
-  if (worker_scheduler_)
-    worker_scheduler_->OnTaskCompleted(this, task, start, end);
-}
 
 }  // namespace scheduler
 }  // namespace blink

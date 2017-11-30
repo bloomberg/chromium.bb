@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/util/task_duration_metric_reporter.h"
+#include "platform/scheduler/renderer/task_duration_metric_reporter.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_base.h"
@@ -49,37 +49,31 @@ class FakeHistogram : public base::HistogramBase {
                           base::ListValue*));
 };
 
-enum class FakeTaskQueueType {
-  kFakeType0 = 0,
-  kFakeType1 = 1,
-  kFakeType2 = 2,
-  kCount = 3
-};
-
 }  // namespace
 
 TEST(TaskDurationMetricReporterTest, Test) {
   FakeHistogram histogram;
 
-  TaskDurationMetricReporter<FakeTaskQueueType> metric_reporter(&histogram);
+  TaskDurationMetricReporter<MainThreadTaskQueue::QueueType> metric_reporter(
+      &histogram);
 
   EXPECT_CALL(histogram, AddCount(2, 3));
-  metric_reporter.RecordTask(static_cast<FakeTaskQueueType>(2),
+  metric_reporter.RecordTask(static_cast<MainThreadTaskQueue::QueueType>(2),
                              base::TimeDelta::FromMicroseconds(3400));
   Mock::VerifyAndClearExpectations(&histogram);
 
   EXPECT_CALL(histogram, AddCount(_, _)).Times(0);
-  metric_reporter.RecordTask(static_cast<FakeTaskQueueType>(2),
+  metric_reporter.RecordTask(static_cast<MainThreadTaskQueue::QueueType>(2),
                              base::TimeDelta::FromMicroseconds(300));
   Mock::VerifyAndClearExpectations(&histogram);
 
   EXPECT_CALL(histogram, AddCount(2, 1));
-  metric_reporter.RecordTask(static_cast<FakeTaskQueueType>(2),
+  metric_reporter.RecordTask(static_cast<MainThreadTaskQueue::QueueType>(2),
                              base::TimeDelta::FromMicroseconds(800));
   Mock::VerifyAndClearExpectations(&histogram);
 
   EXPECT_CALL(histogram, AddCount(2, 16));
-  metric_reporter.RecordTask(static_cast<FakeTaskQueueType>(2),
+  metric_reporter.RecordTask(static_cast<MainThreadTaskQueue::QueueType>(2),
                              base::TimeDelta::FromMicroseconds(15600));
   Mock::VerifyAndClearExpectations(&histogram);
 }
