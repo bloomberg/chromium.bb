@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #ifndef CONTENT_PUBLIC_TEST_TEST_FILEAPI_OPERATION_WAITER_H_
+#define CONTENT_PUBLIC_TEST_TEST_FILEAPI_OPERATION_WAITER_H_
 
 #include <stdint.h>
 
