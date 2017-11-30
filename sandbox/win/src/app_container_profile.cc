@@ -253,18 +253,48 @@ bool AppContainerProfile::AccessCheck(const wchar_t* object_name,
 }
 
 bool AppContainerProfile::AddCapability(const wchar_t* capability_name) {
-  return AddCapability(Sid::FromNamedCapability(capability_name));
+  return AddCapability(Sid::FromNamedCapability(capability_name), false);
 }
 
 bool AppContainerProfile::AddCapability(WellKnownCapabilities capability) {
-  return AddCapability(Sid::FromKnownCapability(capability));
+  return AddCapability(Sid::FromKnownCapability(capability), false);
 }
 
 bool AppContainerProfile::AddCapability(const Sid& capability_sid) {
+  return AddCapability(capability_sid, false);
+}
+
+bool AppContainerProfile::AddCapability(const Sid& capability_sid,
+                                        bool impersonation_only) {
   if (!capability_sid.IsValid())
     return false;
-  capabilities_.push_back(capability_sid);
+  if (!impersonation_only)
+    capabilities_.push_back(capability_sid);
+  impersonation_capabilities_.push_back(capability_sid);
   return true;
+}
+
+bool AppContainerProfile::AddImpersonationCapability(
+    const wchar_t* capability_name) {
+  return AddCapability(Sid::FromNamedCapability(capability_name), true);
+}
+
+bool AppContainerProfile::AddImpersonationCapability(
+    WellKnownCapabilities capability) {
+  return AddCapability(Sid::FromKnownCapability(capability), true);
+}
+
+bool AppContainerProfile::AddImpersonationCapability(
+    const Sid& capability_sid) {
+  return AddCapability(capability_sid, true);
+}
+
+const std::vector<Sid>& AppContainerProfile::GetCapabilities() {
+  return capabilities_;
+}
+
+const std::vector<Sid>& AppContainerProfile::GetImpersonationCapabilities() {
+  return impersonation_capabilities_;
 }
 
 Sid AppContainerProfile::GetPackageSid() const {
