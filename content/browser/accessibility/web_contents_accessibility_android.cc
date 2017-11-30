@@ -401,13 +401,6 @@ void WebContentsAccessibilityAndroid::UpdateEnabledState(bool enabled) {
     // about to be destroyed).
     if (manager)
       manager->set_web_contents_accessibility(nullptr);
-    // Note that disabling part is not useful at this moment since the mode will
-    // be enabled again almost immediately for the renderer process that just
-    // got swapped in. This boolean enable/disable logic will be expanded
-    // to allow for more granular accessibility. See https://crbug.com/428494.
-    accessibility_state->ResetAccessibilityMode();
-    web_contents_->SetAccessibilityMode(
-        accessibility_state->accessibility_mode());
   }
 }
 
