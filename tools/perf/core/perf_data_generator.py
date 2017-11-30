@@ -31,9 +31,7 @@ from core.sharding_map_generator import load_benchmark_sharding_map
 
 _UNSCHEDULED_TELEMETRY_BENCHMARKS = set([
   'experimental.startup.android.coldish',
-  'wasm',
-  'v8.browsing_desktop-future',
-  'v8.browsing_mobile-future'
+  'wasm'
   ])
 
 
