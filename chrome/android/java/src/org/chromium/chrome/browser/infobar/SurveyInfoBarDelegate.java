@@ -9,6 +9,16 @@ package org.chromium.chrome.browser.infobar;
  */
 public interface SurveyInfoBarDelegate {
     /**
+     * Notified when the tab containing the infobar is closed.
+     */
+    void onSurveyInfoBarTabHidden();
+
+    /**
+     * Notified when the interactability of the tab containing the infobar is changed.
+     */
+    void onSurveyInfoBarTabInteractabilityChanged(boolean isInteractable);
+
+    /**
      * Notified when the survey infobar is closed.
      */
     void onSurveyInfoBarClosed();
