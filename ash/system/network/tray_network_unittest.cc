@@ -96,5 +96,26 @@ TEST_F(TrayNetworkTest, ToggleWifi) {
   EXPECT_TRUE(MessageCenter::Get()->FindVisibleNotificationById("wifi-toggle"));
 }
 
+// Open network info bubble and close network detailed view. Confirm that it
+// doesn't crash.
+TEST_F(TrayNetworkTest, NetworkInfoBubble) {
+  // Open the system tray menu.
+  SystemTray* system_tray = GetPrimarySystemTray();
+  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW, true /* show_by_click */);
+  RunAllPendingInMessageLoop();
+
+  // Show network details.
+  TrayNetwork* tray_network = SystemTrayTestApi(system_tray).tray_network();
+  const int close_delay_in_seconds = 0;
+  system_tray->ShowDetailedView(tray_network, close_delay_in_seconds,
+                                BUBBLE_USE_EXISTING);
+  RunAllPendingInMessageLoop();
+
+  // Show info bubble.
+  tray_network->detailed()->ToggleInfoBubbleForTesting();
+
+  // TearDown() should close the bubble and not crash.
+}
+
 }  // namespace
 }  // namespace ash

@@ -71,7 +71,16 @@ class NetworkStateListDetailedView::InfoBubble
     AddChildView(content);
   }
 
-  ~InfoBubble() override { detailed_view_->OnInfoBubbleDestroyed(); }
+  ~InfoBubble() override {
+    // Widget of info bubble is activated while info bubble is shown. To move
+    // the focus back to the anchor view, activate the widget of anchor view
+    // here.
+    if (GetAnchorView()) {
+      GetAnchorView()->GetWidget()->Activate();
+    }
+
+    detailed_view_->OnInfoBubbleDestroyed();
+  }
 
  private:
   // View:
@@ -178,6 +187,10 @@ void NetworkStateListDetailedView::Update() {
   UpdateNetworkList();
   UpdateHeaderButtons();
   Layout();
+}
+
+void NetworkStateListDetailedView::ToggleInfoBubbleForTesting() {
+  ToggleInfoBubble();
 }
 
 void NetworkStateListDetailedView::Init() {
@@ -308,10 +321,6 @@ bool NetworkStateListDetailedView::ResetInfoBubble() {
 
 void NetworkStateListDetailedView::OnInfoBubbleDestroyed() {
   info_bubble_ = nullptr;
-
-  // Widget of info bubble is activated while info bubble is shown. To move
-  // focus back to the widget of this view, activate it again here.
-  GetWidget()->Activate();
 }
 
 views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
