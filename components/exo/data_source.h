@@ -7,12 +7,15 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 
 namespace exo {
 
 class DataSourceDelegate;
+class DataSourceObserver;
 enum class DndAction;
 
 // Object representing transferred data offered by a client.
@@ -21,6 +24,9 @@ class DataSource {
   explicit DataSource(DataSourceDelegate* delegate);
   ~DataSource();
 
+  void AddObserver(DataSourceObserver* observer);
+  void RemoveObserver(DataSourceObserver* observer);
+
   // Notifies to DataSource that the client offers new mime type.
   void Offer(const std::string& mime_type);
 
@@ -28,10 +34,35 @@ class DataSource {
   // DataSource.
   void SetActions(const base::flat_set<DndAction>& dnd_actions);
 
+  // Notifies the data source is cancelled. e.g. Replaced with another data
+  // source.
+  void Cancelled();
+
+  // Reads data from the source. Then |callback| is invoked with read
+  // data. If Cancelled() is invoked or DataSource is destroyed before
+  // completion, the callback is never called.
+  using ReadDataCallback =
+      base::OnceCallback<void(const std::vector<uint8_t>&)>;
+  void ReadData(ReadDataCallback callback);
+
  private:
   DataSourceDelegate* const delegate_;
+  base::ObserverList<DataSourceObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DataSource);
+};
+
+class ScopedDataSource {
+ public:
+  ScopedDataSource(DataSource* data_source, DataSourceObserver* observer);
+  ~ScopedDataSource();
+  DataSource* get() { return data_source_; }
+
+ private:
+  DataSource* const data_source_;
+  DataSourceObserver* const observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDataSource);
 };
 
 }  // namespace exo

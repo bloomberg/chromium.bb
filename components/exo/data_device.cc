@@ -77,9 +77,9 @@ void DataDevice::StartDrag(const DataSource* source_resource,
   NOTIMPLEMENTED();
 }
 
-void DataDevice::SetSelection(const DataSource* source, uint32_t serial) {
+void DataDevice::SetSelection(DataSource* source, uint32_t serial) {
   // TODO(hirono): Check if serial is valid. crbug.com/746111
-  NOTIMPLEMENTED();
+  seat_->SetSelection(source);
 }
 
 void DataDevice::OnDragEntered(const ui::DropTargetEvent& event) {
@@ -148,7 +148,7 @@ int DataDevice::OnPerformDrop(const ui::DropTargetEvent& event) {
 void DataDevice::OnClipboardDataChanged() {
   if (!focused_surface_)
     return;
-  SendSelection();
+  SetSelectionToCurrentClipboardData();
 }
 
 void DataDevice::OnSurfaceFocusing(Surface* surface) {
@@ -167,7 +167,7 @@ void DataDevice::OnSurfaceFocusing(Surface* surface) {
 
   // Check if the client newly obtained focus.
   if (focused_surface_ && !last_focused_surface)
-    SendSelection();
+    SetSelectionToCurrentClipboardData();
 }
 
 void DataDevice::OnSurfaceFocused(Surface* surface) {}
@@ -194,7 +194,7 @@ Surface* DataDevice::GetEffectiveTargetForEvent(
   return delegate_->CanAcceptDataEventsForSurface(target) ? target : nullptr;
 }
 
-void DataDevice::SendSelection() {
+void DataDevice::SetSelectionToCurrentClipboardData() {
   DataOffer* data_offer = delegate_->OnDataOffer();
   data_offer->SetClipboardData(file_helper_,
                                *ui::Clipboard::GetForCurrentThread());

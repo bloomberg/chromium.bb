@@ -5,11 +5,16 @@
 #include "components/exo/seat.h"
 
 #include "ash/shell.h"
+#include "base/auto_reset.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/exo/data_source.h"
 #include "components/exo/keyboard.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/base/clipboard/clipboard_monitor.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 namespace exo {
 namespace {
@@ -29,16 +34,19 @@ Surface* GetEffectiveFocus(aura::Window* window) {
 
 }  // namespace
 
-Seat::Seat() {
+Seat::Seat() : changing_clipboard_data_to_selection_source_(false) {
   aura::client::GetFocusClient(ash::Shell::Get()->GetPrimaryRootWindow())
       ->AddObserver(this);
   WMHelper::GetInstance()->AddPreTargetHandler(this);
+  ui::ClipboardMonitor::GetInstance()->AddObserver(this);
 }
 
 Seat::~Seat() {
+  DCHECK(!selection_source_) << "DataSource must be released before Seat";
   aura::client::GetFocusClient(ash::Shell::Get()->GetPrimaryRootWindow())
       ->RemoveObserver(this);
   WMHelper::GetInstance()->RemovePreTargetHandler(this);
+  ui::ClipboardMonitor::GetInstance()->RemoveObserver(this);
 }
 
 void Seat::AddObserver(SeatObserver* observer) {
@@ -51,6 +59,30 @@ void Seat::RemoveObserver(SeatObserver* observer) {
 
 Surface* Seat::GetFocusedSurface() {
   return GetEffectiveFocus(WMHelper::GetInstance()->GetFocusedWindow());
+}
+
+void Seat::SetSelection(DataSource* source) {
+  DCHECK(source);
+
+  if (selection_source_) {
+    if (selection_source_->get() == source)
+      return;
+    selection_source_->get()->Cancelled();
+  }
+
+  selection_source_ = std::make_unique<ScopedDataSource>(source, this);
+
+  // Unretained is safe as Seat always outlives DataSource.
+  source->ReadData(base::Bind(&Seat::OnDataRead, base::Unretained(this)));
+}
+
+void Seat::OnDataRead(const std::vector<uint8_t>& data) {
+  base::AutoReset<bool> auto_reset(
+      &changing_clipboard_data_to_selection_source_, true);
+
+  ui::ScopedClipboardWriter writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  writer.WriteText(base::UTF8ToUTF16(base::StringPiece(
+      reinterpret_cast<const char*>(data.data()), data.size())));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -82,6 +114,24 @@ void Seat::OnKeyEvent(ui::KeyEvent* event) {
       NOTREACHED();
       break;
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ui::ClipboardObserver overrides:
+
+void Seat::OnClipboardDataChanged() {
+  if (!selection_source_ || changing_clipboard_data_to_selection_source_)
+    return;
+  selection_source_->get()->Cancelled();
+  selection_source_.reset();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DataSourceObserver overrides:
+
+void Seat::OnDataSourceDestroying(DataSource* source) {
+  if (selection_source_ && selection_source_->get() == source)
+    selection_source_.reset();
 }
 
 }  // namespace exo

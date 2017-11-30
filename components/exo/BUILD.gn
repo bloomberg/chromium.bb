@@ -20,6 +20,7 @@ source_set("exo") {
     "data_source.cc",
     "data_source.h",
     "data_source_delegate.h",
+    "data_source_observer.h",
     "display.cc",
     "display.h",
     "gaming_seat.cc",
