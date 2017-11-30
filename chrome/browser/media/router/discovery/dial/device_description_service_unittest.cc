@@ -19,11 +19,13 @@ using ::testing::_;
 using ::testing::Return;
 using ::testing::SaveArg;
 
+namespace media_router {
+
 // Create Test Data
 namespace {
 
-media_router::DialDeviceData CreateDialDeviceData(int num) {
-  media_router::DialDeviceData device_data(
+DialDeviceData CreateDialDeviceData(int num) {
+  DialDeviceData device_data(
       base::StringPrintf("Device id %d", num),
       GURL(base::StringPrintf("http://192.168.1.%d/dd.xml", num)),
       base::Time::Now());
@@ -31,25 +33,13 @@ media_router::DialDeviceData CreateDialDeviceData(int num) {
   return device_data;
 }
 
-media_router::DialDeviceDescriptionData CreateDialDeviceDescriptionData(
-    int num) {
-  return media_router::DialDeviceDescriptionData(
+DialDeviceDescriptionData CreateDialDeviceDescriptionData(int num) {
+  return DialDeviceDescriptionData(
       "", GURL(base::StringPrintf("http://192.168.1.%d/apps", num)));
 }
 
-chrome::mojom::DialDeviceDescriptionPtr CreateDialDeviceDescriptionPtr(
-    int num) {
-  chrome::mojom::DialDeviceDescriptionPtr description_ptr =
-      chrome::mojom::DialDeviceDescription::New();
-  description_ptr->friendly_name = base::StringPrintf("Friendly name %d", num);
-  description_ptr->model_name = base::StringPrintf("Model name %d", num);
-  description_ptr->unique_id = base::StringPrintf("Unique ID %d", num);
-  return description_ptr;
-}
-
-media_router::ParsedDialDeviceDescription CreateParsedDialDeviceDescription(
-    int num) {
-  media_router::ParsedDialDeviceDescription description_data;
+ParsedDialDeviceDescription CreateParsedDialDeviceDescription(int num) {
+  ParsedDialDeviceDescription description_data;
   description_data.app_url =
       GURL(base::StringPrintf("http://192.168.1.%d/apps", num));
   description_data.friendly_name = base::StringPrintf("Friendly name %d", num);
@@ -60,26 +50,15 @@ media_router::ParsedDialDeviceDescription CreateParsedDialDeviceDescription(
 
 }  // namespace
 
-namespace media_router {
-
-class TestSafeDialDeviceDescriptionParser
-    : public SafeDialDeviceDescriptionParser {
- public:
-  ~TestSafeDialDeviceDescriptionParser() override {}
-
-  MOCK_METHOD2(Start,
-               void(const std::string& xml_text,
-                    const DeviceDescriptionCallback& callback));
-};
-
 class TestDeviceDescriptionService : public DeviceDescriptionService {
  public:
   TestDeviceDescriptionService(
       const DeviceDescriptionParseSuccessCallback& success_cb,
       const DeviceDescriptionParseErrorCallback& error_cb)
-      : DeviceDescriptionService(success_cb, error_cb) {}
+      : DeviceDescriptionService(nullptr, success_cb, error_cb) {}
 
-  MOCK_METHOD0(CreateSafeParser, SafeDialDeviceDescriptionParser*());
+  MOCK_METHOD2(ParseDeviceDescription,
+               void(const DialDeviceData&, const DialDeviceDescriptionData&));
 };
 
 class DeviceDescriptionServiceTest : public ::testing::Test {
@@ -106,30 +85,12 @@ class DeviceDescriptionServiceTest : public ::testing::Test {
     description_cache_[device_label] = cache_entry;
   }
 
-  void SetTestParser(
-      std::unique_ptr<TestSafeDialDeviceDescriptionParser> test_parser) {
-    if (device_description_service_.parser_)
-      return;
-    device_description_service_.parser_ = std::move(test_parser);
-  }
-
   void OnDeviceDescriptionFetchComplete(int num) {
-    auto device_data = CreateDialDeviceData(num);
-    auto description_response_data = CreateDialDeviceDescriptionData(num);
-    auto parsed_description_data = CreateParsedDialDeviceDescription(num);
-
-    EXPECT_CALL(mock_success_cb_, Run(device_data, parsed_description_data));
-
-    device_description_service_.OnDeviceDescriptionFetchComplete(
-        device_data, description_response_data);
-    device_description_service_.OnParsedDeviceDescription(
-        device_data, description_response_data.app_url,
-        CreateDialDeviceDescriptionPtr(num),
-        chrome::mojom::DialParsingError::NONE);
   }
 
   void TestOnParsedDeviceDescription(
-      chrome::mojom::DialDeviceDescriptionPtr description_ptr,
+      ParsedDialDeviceDescription device_description,
+      SafeDialDeviceDescriptionParser::ParsingError parsing_error,
       const std::string& error_message) {
     GURL app_url("http://192.168.1.1/apps");
     auto device_data = CreateDialDeviceData(1);
@@ -141,8 +102,7 @@ class DeviceDescriptionServiceTest : public ::testing::Test {
       EXPECT_CALL(mock_success_cb_, Run(device_data, description_data));
     }
     device_description_service()->OnParsedDeviceDescription(
-        device_data, app_url, std::move(description_ptr),
-        chrome::mojom::DialParsingError::NONE);
+        device_data, device_description, parsing_error);
   }
 
  protected:
@@ -184,12 +144,19 @@ TEST_F(DeviceDescriptionServiceTest, TestGetDeviceDescriptionFetchURL) {
       devices, profile_.GetRequestContext());
   EXPECT_EQ(size_t(1), fetcher_map_.size());
 
-  // Remove fetcher and create safe parser
-  auto test_parser = base::MakeUnique<TestSafeDialDeviceDescriptionParser>();
-  EXPECT_CALL(*test_parser, Start(_, _));
+  // Remove fetcher.
+  EXPECT_CALL(*device_description_service(), ParseDeviceDescription(_, _));
 
-  SetTestParser(std::move(test_parser));
-  OnDeviceDescriptionFetchComplete(1);
+  auto description_response_data = CreateDialDeviceDescriptionData(1);
+  auto parsed_description_data = CreateParsedDialDeviceDescription(1);
+
+  EXPECT_CALL(mock_success_cb_, Run(device_data, parsed_description_data));
+
+  device_description_service_.OnDeviceDescriptionFetchComplete(
+      device_data, description_response_data);
+  device_description_service_.OnParsedDeviceDescription(
+      device_data, CreateParsedDialDeviceDescription(1),
+      SafeDialDeviceDescriptionParser::ParsingError::kNone);
 }
 
 TEST_F(DeviceDescriptionServiceTest, TestGetDeviceDescriptionFetchURLError) {
@@ -274,18 +241,28 @@ TEST_F(DeviceDescriptionServiceTest, TestOnParsedDeviceDescription) {
   GURL app_url("http://192.168.1.1/apps");
   DialDeviceData device_data = CreateDialDeviceData(1);
 
-  // null_ptr
+  // XML parsing errors.
   std::string error_message = "Failed to parse device description XML";
-  TestOnParsedDeviceDescription(nullptr, error_message);
+  SafeDialDeviceDescriptionParser::ParsingError errors[] = {
+      SafeDialDeviceDescriptionParser::ParsingError::kInvalidXml,
+      SafeDialDeviceDescriptionParser::ParsingError::kFailedToReadUdn,
+      SafeDialDeviceDescriptionParser::ParsingError::kFailedToReadFriendlyName,
+      SafeDialDeviceDescriptionParser::ParsingError::kFailedToReadModelName,
+      SafeDialDeviceDescriptionParser::ParsingError::kFailedToReadDeviceType};
+  for (auto error : errors)
+    TestOnParsedDeviceDescription(ParsedDialDeviceDescription(), error,
+                                  error_message);
 
   // Empty field
   error_message = "Failed to process fetch result";
-  TestOnParsedDeviceDescription(chrome::mojom::DialDeviceDescription::New(),
-                                error_message);
+  TestOnParsedDeviceDescription(
+      ParsedDialDeviceDescription(),
+      SafeDialDeviceDescriptionParser::ParsingError::kNone, error_message);
 
-  // Valid device description ptr and put in cache
-  auto description_ptr = CreateDialDeviceDescriptionPtr(1);
-  TestOnParsedDeviceDescription(std::move(description_ptr), "");
+  // Valid device description and put in cache
+  auto description = CreateParsedDialDeviceDescription(1);
+  TestOnParsedDeviceDescription(
+      description, SafeDialDeviceDescriptionParser::ParsingError::kNone, "");
   EXPECT_EQ(size_t(1), description_cache_.size());
 
   // Valid device description ptr and skip cache.
@@ -296,34 +273,10 @@ TEST_F(DeviceDescriptionServiceTest, TestOnParsedDeviceDescription) {
   }
 
   EXPECT_EQ(size_t(cache_num + 1), description_cache_.size());
-  description_ptr = CreateDialDeviceDescriptionPtr(1);
-  TestOnParsedDeviceDescription(std::move(description_ptr), "");
+  description = CreateParsedDialDeviceDescription(1);
+  TestOnParsedDeviceDescription(
+      description, SafeDialDeviceDescriptionParser::ParsingError::kNone, "");
   EXPECT_EQ(size_t(cache_num + 1), description_cache_.size());
-}
-
-TEST_F(DeviceDescriptionServiceTest, TestSafeParserProperlyCreated) {
-  DialDeviceData device_data_1 = CreateDialDeviceData(1);
-  DialDeviceData device_data_2 = CreateDialDeviceData(2);
-  DialDeviceData device_data_3 = CreateDialDeviceData(3);
-
-  std::vector<DialDeviceData> devices = {device_data_1, device_data_2,
-                                         device_data_3};
-
-  // insert fetchers
-  device_description_service()->GetDeviceDescriptions(
-      devices, profile_.GetRequestContext());
-  auto test_parser = base::MakeUnique<TestSafeDialDeviceDescriptionParser>();
-  EXPECT_CALL(*test_parser, Start(_, _)).Times(3);
-
-  EXPECT_FALSE(device_description_service()->parser_);
-  SetTestParser(std::move(test_parser));
-  OnDeviceDescriptionFetchComplete(1);
-
-  EXPECT_TRUE(device_description_service()->parser_);
-  OnDeviceDescriptionFetchComplete(2);
-  OnDeviceDescriptionFetchComplete(3);
-
-  EXPECT_FALSE(device_description_service()->parser_);
 }
 
 }  // namespace media_router

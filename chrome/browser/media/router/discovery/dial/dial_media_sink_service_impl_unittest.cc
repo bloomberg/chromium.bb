@@ -10,6 +10,7 @@
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,7 +43,7 @@ class MockDeviceDescriptionService : public DeviceDescriptionService {
  public:
   MockDeviceDescriptionService(DeviceDescriptionParseSuccessCallback success_cb,
                                DeviceDescriptionParseErrorCallback error_cb)
-      : DeviceDescriptionService(success_cb, error_cb) {}
+      : DeviceDescriptionService(/*connector=*/nullptr, success_cb, error_cb) {}
   ~MockDeviceDescriptionService() override {}
 
   MOCK_METHOD2(GetDeviceDescriptions,
@@ -55,7 +56,8 @@ class DialMediaSinkServiceImplTest : public ::testing::Test {
   DialMediaSinkServiceImplTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         media_sink_service_(
-            new DialMediaSinkServiceImpl(mock_sink_discovered_cb_.Get(),
+            new DialMediaSinkServiceImpl(/*connector=*/nullptr,
+                                         mock_sink_discovered_cb_.Get(),
                                          profile_.GetRequestContext())) {}
 
   void SetUp() override {

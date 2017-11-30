@@ -10,43 +10,86 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/threading/thread_checker.h"
-#include "chrome/common/media_router/mojo/dial_device_description_parser.mojom.h"
-#include "content/public/browser/utility_process_mojo_client.h"
+#include "base/values.h"
+#include "chrome/browser/media/router/discovery/dial/parsed_dial_device_description.h"
+
+class GURL;
+
+namespace service_manager {
+class Connector;
+}
 
 namespace media_router {
 
 // SafeDialDeviceDescriptionParser parses the given device description XML file
-// safely via a utility process. This class runs on IO thread.
+// safely via a utility process.
+// Spec for DIAL device description:
+// http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v2.0.pdf
+// Section 2.3 Device description.
 class SafeDialDeviceDescriptionParser {
  public:
-  // Callback function to be invoked when utility process finishes parsing
-  // device description XML.
-  // |device_description|: device description object. Empty if parsing fails.
-  // |parsing_error|: error encountered while parsing DIAL device description.
-  using DeviceDescriptionCallback = base::Callback<void(
-      chrome::mojom::DialDeviceDescriptionPtr device_description,
-      chrome::mojom::DialParsingError parsing_error)>;
+  enum class ParsingError : int32_t {
+    kNone = 0,
+    kInvalidXml = 1,
+    kFailedToReadUdn = 2,
+    kFailedToReadFriendlyName = 3,
+    kFailedToReadModelName = 4,
+    kFailedToReadDeviceType = 5,
+    kMissingUniqueId = 6,
+    kMissingFriendlyName = 7,
+    kMissingAppUrl = 8,
+    kInvalidAppUrl = 9,
+    kUtilityProcessError = 10,
 
-  SafeDialDeviceDescriptionParser();
-  virtual ~SafeDialDeviceDescriptionParser();
+    // Note: Add entries only immediately above this line.
+    // TODO(https://crbug.com/742517): remove this enum value.
+    kTotalCount = 11,
+  };
 
-  // Start parsing device description XML file in utility process.
-  // TODO(crbug.com/702766): Add an enum type describing why utility process
-  // fails to parse device description xml.
-  virtual void Start(const std::string& xml_text,
-                     const DeviceDescriptionCallback& callback);
+  // |connector| should be a valid connector to the ServiceManager.
+  explicit SafeDialDeviceDescriptionParser(
+      service_manager::Connector* connector);
+  ~SafeDialDeviceDescriptionParser();
+
+  // Callback function invoked when done parsing some device description XML.
+  // |device_description|: device description object. Empty if parsing failed.
+  // |parsing_error|: error encountered while parsing the DIAL device
+  // description.
+  using ParseCallback = base::OnceCallback<void(
+      const ParsedDialDeviceDescription& device_description,
+      ParsingError parsing_error)>;
+
+  // Parses the device description in |xml_text| in a utility process.
+  // If the parsing succeeds, invokes callback with a valid
+  // |device_description|, otherwise invokes callback with an empty
+  // |device_description| and sets parsing error to detail the failure.
+  // |app_url| is the app URL that should be set on the
+  // ParsedDialDeviceDescription object passed in the callback.
+  // Note that it's safe to call this method multiple times and when making
+  // multiple calls they may be grouped in the same utility process. The
+  // utility process is still cleaned up automatically if unused after some
+  // time, even if this object is still alive.
+  // Note also that the callback is not called if the object is deleted.
+  void Parse(const std::string& xml_text,
+             const GURL& app_url,
+             ParseCallback callback);
 
  private:
-  // Utility client used to send device description parsing task to the utility
-  // process.
-  std::unique_ptr<content::UtilityProcessMojoClient<
-      chrome::mojom::DialDeviceDescriptionParser>>
-      utility_process_mojo_client_;
+  void OnXmlParsingDone(SafeDialDeviceDescriptionParser::ParseCallback callback,
+                        const GURL& app_url,
+                        std::unique_ptr<base::Value> value,
+                        const base::Optional<std::string>& error);
 
-  base::ThreadChecker thread_checker_;
+  // Connector to the ServiceManager, used to retrieve the XmlParser service.
+  service_manager::Connector* const connector_;
+
+  // The batch ID used to group XML parsing calls to SafeXmlParser into a single
+  // process.
+  std::string xml_parser_batch_id_;
+
+  base::WeakPtrFactory<SafeDialDeviceDescriptionParser> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeDialDeviceDescriptionParser);
 };

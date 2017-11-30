@@ -4,16 +4,6 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("dial_utility_interfaces") {
-  sources = [
-    "dial_device_description_parser.mojom",
-  ]
-
-  public_deps = [
-    "//mojo/common:common_custom_types",
-  ]
-}
-
 mojom("media_controller") {
   sources = [
     "media_controller.mojom",
