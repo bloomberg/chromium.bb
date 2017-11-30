@@ -180,6 +180,14 @@ EVENTS_EXPORT void UpdateX11EventForChangedButtonFlags(MouseEvent* event);
 // Registers a custom event type.
 EVENTS_EXPORT int RegisterCustomEventType();
 
+// Updates the location of |located_event| from |current_window_origin| to be in
+// |target_window_origin|'s coordinate system so that it can be dispatched to a
+// window based on |target_window_origin|.
+EVENTS_EXPORT void ConvertEventLocationToTargetWindowLocation(
+    const gfx::Point& target_window_origin,
+    const gfx::Point& current_window_origin,
+    ui::LocatedEvent* located_event);
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_EVENT_UTILS_H_
