@@ -405,6 +405,12 @@ void Printer::Block(const ParseNode* root) {
   }
 
   if (block->comments()) {
+    if (!block->statements().empty() &&
+        block->statements().back()->AsBlockComment()) {
+      // If the block ends in a comment, and there's a comment following it,
+      // then the two comments were originally separate, so keep them that way.
+      Newline();
+    }
     for (const auto& c : block->comments()->after()) {
       TrimAndPrintToken(c);
       Newline();
@@ -933,7 +939,7 @@ void DoFormat(const ParseNode* root, bool dump_tree, std::string* output) {
   if (dump_tree) {
     std::ostringstream os;
     root->Print(os, 0);
-    printf("%s", os.str().c_str());
+    fprintf(stderr, "%s", os.str().c_str());
   }
   Printer pr;
   pr.Block(root);
@@ -1023,8 +1029,7 @@ int RunFormat(const std::vector<std::string>& args) {
     std::string output;
     if (!FormatStringToString(input, dump_tree, &output))
       return 1;
-    if (!dump_tree)
-      printf("%s", output.c_str());
+    printf("%s", output.c_str());
     return 0;
   }
 
