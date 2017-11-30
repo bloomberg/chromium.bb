@@ -10,8 +10,9 @@
 #include "base/time/time.h"
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/renderer/main_thread_task_queue.h"
-#include "platform/scheduler/renderer/task_duration_metric_reporter.h"
+#include "platform/scheduler/util/task_duration_metric_reporter.h"
 #include "platform/scheduler/util/thread_load_tracker.h"
+#include "platform/scheduler/util/thread_type.h"
 
 namespace blink {
 
@@ -181,6 +182,8 @@ class PLATFORM_EXPORT RendererMetricsHelper {
   using TaskDurationPerTaskTypeMetricReporter =
       TaskDurationMetricReporter<TaskType>;
   TaskDurationPerTaskTypeMetricReporter per_task_type_duration_reporter;
+
+  TaskDurationMetricReporter<ThreadType> main_thread_task_duration_reporter;
 
   MainThreadTaskLoadState main_thread_task_load_state;
 

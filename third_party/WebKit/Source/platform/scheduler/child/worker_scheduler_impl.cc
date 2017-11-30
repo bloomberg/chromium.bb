@@ -45,8 +45,9 @@ base::TimeTicks MonotonicTimeInSecondsToTimeTicks(
 
 WorkerSchedulerImpl::WorkerSchedulerImpl(
     std::unique_ptr<TaskQueueManager> task_queue_manager)
-    : WorkerScheduler(std::make_unique<WorkerSchedulerHelper>(
-          std::move(task_queue_manager))),
+    : WorkerScheduler(
+          std::make_unique<WorkerSchedulerHelper>(std::move(task_queue_manager),
+                                                  this)),
       idle_helper_(helper_.get(),
                    this,
                    "WorkerSchedulerIdlePeriod",
@@ -56,7 +57,9 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
                                           idle_helper_.IdleTaskRunner()),
       load_tracker_(helper_->NowTicks(),
                     base::Bind(&ReportWorkerTaskLoad),
-                    kWorkerThreadLoadTrackerReportingInterval) {
+                    kWorkerThreadLoadTrackerReportingInterval),
+      worker_thread_task_duration_reporter_(
+          "RendererScheduler.TaskDurationPerThreadType") {
   initialized_ = false;
   thread_start_time_ = helper_->NowTicks();
   load_tracker_.Resume(thread_start_time_);
@@ -71,18 +74,8 @@ WorkerSchedulerImpl::~WorkerSchedulerImpl() {
   helper_->RemoveTaskTimeObserver(this);
 }
 
-void WorkerSchedulerImpl::Init() {
-  initialized_ = true;
-  idle_helper_.EnableLongIdlePeriod();
-}
-
 scoped_refptr<base::SingleThreadTaskRunner>
 WorkerSchedulerImpl::DefaultTaskRunner() {
-  DCHECK(initialized_);
-  return helper_->DefaultWorkerTaskQueue();
-}
-
-scoped_refptr<WorkerTaskQueue> WorkerSchedulerImpl::DefaultTaskQueue() {
   DCHECK(initialized_);
   return helper_->DefaultWorkerTaskQueue();
 }
@@ -133,6 +126,24 @@ void WorkerSchedulerImpl::Shutdown() {
       "WorkerThread.Runtime", delta, base::TimeDelta::FromSeconds(1),
       base::TimeDelta::FromDays(1), 50 /* bucket count */);
   helper_->Shutdown();
+}
+
+scoped_refptr<WorkerTaskQueue> WorkerSchedulerImpl::DefaultTaskQueue() {
+  DCHECK(initialized_);
+  return helper_->DefaultWorkerTaskQueue();
+}
+
+void WorkerSchedulerImpl::Init() {
+  initialized_ = true;
+  idle_helper_.EnableLongIdlePeriod();
+}
+
+void WorkerSchedulerImpl::OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
+                                          const TaskQueue::Task& task,
+                                          base::TimeTicks start,
+                                          base::TimeTicks end) {
+  worker_thread_task_duration_reporter_.RecordTask(ThreadType::kWorkerThread,
+                                                   end - start);
 }
 
 SchedulerHelper* WorkerSchedulerImpl::GetSchedulerHelperForTesting() {

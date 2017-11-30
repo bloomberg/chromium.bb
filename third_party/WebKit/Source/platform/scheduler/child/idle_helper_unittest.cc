@@ -203,7 +203,8 @@ class BaseIdleHelperTest : public ::testing::Test {
             CreateTaskQueueManagerWithUnownedClockForTest(
                 message_loop,
                 message_loop ? message_loop->task_runner() : mock_task_runner_,
-                clock_.get()))),
+                clock_.get()),
+            nullptr)),
         idle_helper_(new IdleHelperForTest(
             scheduler_helper_.get(),
             required_quiescence_duration_before_long_idle_period,

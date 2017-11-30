@@ -57,7 +57,8 @@ class SchedulerHelperTest : public ::testing::Test {
         scheduler_helper_(new WorkerSchedulerHelper(
             CreateTaskQueueManagerWithUnownedClockForTest(nullptr,
                                                           mock_task_runner_,
-                                                          clock_.get()))),
+                                                          clock_.get()),
+            nullptr)),
         default_task_runner_(scheduler_helper_->DefaultWorkerTaskQueue()) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
   }
