@@ -71,14 +71,14 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
       IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_DESCRIPTION);
   gfx::FontList fonts;
   GetDefaultFontList(ToPixels(kFontSizePromptText), text, &fonts);
-  gfx::Rect prompt_text_size(size_.width(), 0);
+  gfx::Rect prompt_text_size(
+      ToPixels(kWidth - 2 * kPadding - kTextLeftMargin - kIconSize), 0);
   std::vector<std::unique_ptr<gfx::RenderText>> lines =
       PrepareDrawStringRect(text, fonts, foreground_color(), &prompt_text_size,
                             kTextAlignmentNone, kWrappingBehaviorWrap);
   canvas->Save();
   canvas->Translate(
-      gfx::Vector2d(ToPixels(IsRTL() ? kPadding + kTextLeftMargin
-                                     : kTextLeftMargin + kIconSize + kPadding),
+      gfx::Vector2d(ToPixels(kTextLeftMargin + kIconSize + kPadding),
                     ToPixels(kPadding + kTextTopMargin)));
   for (auto& render_text : lines)
     render_text->Draw(canvas);
