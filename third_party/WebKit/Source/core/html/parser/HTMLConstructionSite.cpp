@@ -33,15 +33,18 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
+#include "core/dom/Node.h"
 #include "core/dom/TemplateContentDocumentFragment.h"
 #include "core/dom/Text.h"
 #include "core/dom/ThrowOnDynamicMarkupInsertionCountIncrementer.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLScriptElement.h"
+#include "core/html/HTMLStyleElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/custom/CEReactionsScope.h"
 #include "core/html/custom/CustomElementDefinition.h"
@@ -74,6 +77,10 @@ static inline void SetAttributes(Element* element,
   if (!ScriptingContentIsAllowed(parser_content_policy))
     element->StripScriptingAttributes(token->Attributes());
   element->ParserSetAttributes(token->Attributes());
+  if (token->HasDuplicateAttribute()) {
+    UseCounter::Count(element->GetDocument(), WebFeature::kDuplicatedAttribute);
+    element->SetHasDuplicateAttributes();
+  }
 }
 
 static bool HasImpliedEndTag(const HTMLStackItem* item) {

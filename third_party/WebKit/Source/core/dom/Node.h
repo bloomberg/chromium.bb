@@ -830,6 +830,11 @@ class CORE_EXPORT Node : public EventTarget {
     CheckSlotChange(SlotChangeType::kSignalSlotChangeEvent);
   }
 
+  void SetHasDuplicateAttributes() { SetFlag(kHasDuplicateAttributes); }
+  bool HasDuplicateAttribute() const {
+    return GetFlag(kHasDuplicateAttributes);
+  }
+
   // If the node is a plugin, then this returns its WebPluginContainer.
   WebPluginContainerImpl* GetWebPluginContainer() const;
 
@@ -884,6 +889,8 @@ class CORE_EXPORT Node : public EventTarget {
 
     kNeedsReattachLayoutTree = 1 << 26,
     kChildNeedsReattachLayoutTree = 1 << 27,
+
+    kHasDuplicateAttributes = 1 << 28,
 
     kDefaultNodeFlags =
         kIsFinishedParsingChildrenFlag | kNeedsReattachStyleChange

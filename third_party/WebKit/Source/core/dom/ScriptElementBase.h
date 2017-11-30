@@ -56,6 +56,7 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
   virtual bool IsConnected() const = 0;
   virtual bool HasChildren() const = 0;
   virtual const AtomicString& GetNonceForElement() const = 0;
+  virtual bool ElementHasDuplicateAttributes() const = 0;
 
   virtual bool AllowInlineScriptForCSP(const AtomicString& nonce,
                                        const WTF::OrdinalNumber&,

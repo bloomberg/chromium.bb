@@ -17095,6 +17095,8 @@ Called by update_net_error_codes.py.-->
   <int value="2247" label="WindowOpenRealmMismatch"/>
   <int value="2248" label="GridRowTrackPercentIndefiniteHeight"/>
   <int value="2249" label="VRGetDisplaysSupportsPresent"/>
+  <int value="2250" label="DuplicatedAttribute"/>
+  <int value="2251" label="DuplicatedAttributeForExecutedScript"/>
 </enum>
 
 <enum name="FeedbackSource">

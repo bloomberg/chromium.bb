@@ -86,6 +86,9 @@ class SVGScriptElement final : public SVGElement,
   bool IsConnected() const override;
   bool HasChildren() const override;
   const AtomicString& GetNonceForElement() const override;
+  bool ElementHasDuplicateAttributes() const override {
+    return HasDuplicateAttribute();
+  }
   bool AllowInlineScriptForCSP(const AtomicString& nonce,
                                const WTF::OrdinalNumber&,
                                const String& script_content,
