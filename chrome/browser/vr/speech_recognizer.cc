@@ -23,13 +23,15 @@ namespace vr {
 namespace {
 
 // Length of timeout to cancel recognition if there's no speech heard.
-static const int kNoSpeechTimeoutInSeconds = 5;
+const int kNoSpeechTimeoutInSeconds = 5;
 
 // Length of timeout to cancel recognition if no different results are received.
-static const int kNoNewSpeechTimeoutInSeconds = 2;
+const int kNoNewSpeechTimeoutInSeconds = 2;
 
 // Invalid speech session.
-static const int kInvalidSessionId = -1;
+const int kInvalidSessionId = -1;
+
+const char kSearchEndStateUmaName[] = "VR.VoiceSearch.EndState";
 
 static content::SpeechRecognitionManager* g_manager_for_test = nullptr;
 
@@ -326,7 +328,7 @@ void SpeechRecognizer::Stop() {
                      base::Unretained(speech_recognizer_on_io_.get())));
   if (ui_) {
     ui_->SetSpeechRecognitionEnabled(false);
-    UMA_HISTOGRAM_ENUMERATION("VRVoiceSearchEndState", VOICE_SEARCH_CANCEL,
+    UMA_HISTOGRAM_ENUMERATION(kSearchEndStateUmaName, VOICE_SEARCH_CANCEL,
                               COUNT);
   }
 }
@@ -361,13 +363,13 @@ void SpeechRecognizer::OnSpeechRecognitionStateChanged(
     case SPEECH_RECOGNITION_TRY_AGAIN:
       ui_->SetRecognitionResult(
           l10n_util::GetStringUTF16(IDS_VR_NO_SPEECH_RECOGNITION_RESULT));
-      UMA_HISTOGRAM_ENUMERATION("VRVoiceSearchEndState", VOICE_SEARCH_TRY_AGAIN,
+      UMA_HISTOGRAM_ENUMERATION(kSearchEndStateUmaName, VOICE_SEARCH_TRY_AGAIN,
                                 COUNT);
       break;
     case SPEECH_RECOGNITION_END:
       if (!final_result_.empty()) {
         ui_->SetRecognitionResult(final_result_);
-        UMA_HISTOGRAM_ENUMERATION("VRVoiceSearchEndState",
+        UMA_HISTOGRAM_ENUMERATION(kSearchEndStateUmaName,
                                   VOICE_SEARCH_OPEN_SEARCH_PAGE, COUNT);
         if (delegate_)
           delegate_->OnVoiceResults(final_result_);

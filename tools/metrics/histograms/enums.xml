@@ -3277,11 +3277,6 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Checked"/>
 </enum>
 
-<enum name="BooleanChoice">
-  <int value="0" label="Chose CANCEL"/>
-  <int value="1" label="Chose CONTINUE"/>
-</enum>
-
 <enum name="BooleanCleared">
   <int value="0" label="Not cleared"/>
   <int value="1" label="Cleared"/>
@@ -3335,6 +3330,11 @@ uploading your change for review.  These are checked by presubmit scripts.
 <enum name="BooleanContainedMeCard">
   <int value="0" label="Did not contain me card."/>
   <int value="1" label="Contained me card."/>
+</enum>
+
+<enum name="BooleanContinueChoice">
+  <int value="0" label="Chose CANCEL"/>
+  <int value="1" label="Chose CONTINUE"/>
 </enum>
 
 <enum name="BooleanCorrupt">

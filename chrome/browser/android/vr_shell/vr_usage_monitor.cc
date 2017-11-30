@@ -297,7 +297,7 @@ void VrMetricsHelper::SetVrMode(vr::Mode mode) {
                              num_session_video_playback_);
     UMA_HISTOGRAM_COUNTS_100("VRSessionNavigationCount",
                              num_session_navigation_);
-    UMA_HISTOGRAM_COUNTS_100("VRSessionVoiceSearchCount",
+    UMA_HISTOGRAM_COUNTS_100("VR.Session.VoiceSearch.StartedCount",
                              num_voice_search_started_);
   }
 
