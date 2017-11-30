@@ -14,7 +14,7 @@ namespace ui {
 // This singleton class initializes ATK (accessibility toolkit) and
 // registers an implementation of the AtkUtil class, a global class that
 // every accessible application needs to register once.
-class AtkUtilAuraLinux {
+class AX_EXPORT AtkUtilAuraLinux {
  public:
   // Get the single instance of this class.
   static AtkUtilAuraLinux* GetInstance();
@@ -22,6 +22,7 @@ class AtkUtilAuraLinux {
   AtkUtilAuraLinux() = default;
 
   void InitializeAsync();
+  void InitializeForTesting();
 
  private:
   friend struct base::DefaultSingletonTraits<AtkUtilAuraLinux>;

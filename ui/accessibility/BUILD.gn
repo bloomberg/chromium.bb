@@ -154,7 +154,7 @@ static_library("test_support") {
     "tree_generator.h",
   ]
 
-  if (is_win) {
+  if (is_win || use_atk) {
     sources += [
       "platform/test_ax_node_wrapper.cc",
       "platform/test_ax_node_wrapper.h",
@@ -197,6 +197,10 @@ test("accessibility_unittests") {
   if (is_win) {
     deps += [ "//third_party/iaccessible2" ]
     libs = [ "oleacc.lib" ]
+  }
+  if (use_atk) {
+    sources += [ "platform/ax_platform_node_auralinux_unittest.cc" ]
+    configs += [ "//build/config/linux/atk" ]
   }
 }
 
