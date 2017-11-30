@@ -15,3 +15,6 @@ per-file extension_function_histogram_value.h=asvitkine@chromium.org
 per-file extension_function_histogram_value.h=isherman@chromium.org
 per-file extension_function_histogram_value.h=jar@chromium.org
 per-file extension_function_histogram_value.h=mpearson@chromium.org
+
+# DeviceLocalAccount reviewers.
+per-file device_local_account_util*=isandrk@chromium.org
