@@ -30,20 +30,21 @@ namespace {
 const double kSlackBeforeDeadline =
     0.001;  // a small slack period between deadline and current time for safety
 
-// The encoding task is highly likely to switch from idle task to alternative
-// code path when the startTimeoutDelay is set to be below 150ms. As we want the
-// majority of encoding tasks to take the usual async idle task, we set a
-// lenient limit -- 200ms here. This limit still needs to be short enough for
-// the latency to be negligible to the user.
-const double kIdleTaskStartTimeoutDelay = 200.0;
+/* The value is based on user statistics on Nov 2017. */
+#if (defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN))
+const double kIdleTaskStartTimeoutDelayMs = 1000.0;
+#else
+const double kIdleTaskStartTimeoutDelayMs = 4000.0;  // For ChromeOS, Mobile
+#endif
+
 // We should be more lenient on completion timeout delay to ensure that the
 // switch from idle to main thread only happens to a minority of toBlob calls
 #if !defined(OS_ANDROID)
 // Png image encoding on 4k by 4k canvas on Mac HDD takes 5.7+ seconds
-const double kIdleTaskCompleteTimeoutDelay = 6700.0;
+const double kIdleTaskCompleteTimeoutDelayMs = 6700.0;
 #else
 // Png image encoding on 4k by 4k canvas on Android One takes 9.0+ seconds
-const double kIdleTaskCompleteTimeoutDelay = 10000.0;
+const double kIdleTaskCompleteTimeoutDelayMs = 10000.0;
 #endif
 
 bool IsDeadlineNearOrPassed(double deadline_seconds) {
@@ -257,7 +258,7 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
         BLINK_FROM_HERE,
         WTF::Bind(&CanvasAsyncBlobCreator::IdleTaskStartTimeoutEvent,
                   WrapPersistent(this), quality),
-        kIdleTaskStartTimeoutDelay);
+        kIdleTaskStartTimeoutDelayMs);
   }
 }
 
@@ -270,12 +271,12 @@ void CanvasAsyncBlobCreator::ScheduleInitiateEncoding(double quality) {
 
 void CanvasAsyncBlobCreator::InitiateEncoding(double quality,
                                               double deadline_seconds) {
-  RecordElapsedTimeHistogram(
-      kInitiateEncodingDelay, mime_type_,
-      WTF::MonotonicallyIncreasingTime() - schedule_initiate_start_time_);
   if (idle_task_status_ == kIdleTaskSwitchedToImmediateTask) {
     return;
   }
+  RecordElapsedTimeHistogram(
+      kInitiateEncodingDelay, mime_type_,
+      WTF::MonotonicallyIncreasingTime() - schedule_initiate_start_time_);
 
   DCHECK(idle_task_status_ == kIdleTaskNotStarted);
   idle_task_status_ = kIdleTaskStarted;
@@ -443,7 +444,7 @@ void CanvasAsyncBlobCreator::IdleTaskStartTimeoutEvent(double quality) {
         BLINK_FROM_HERE,
         WTF::Bind(&CanvasAsyncBlobCreator::IdleTaskCompleteTimeoutEvent,
                   WrapPersistent(this)),
-        kIdleTaskCompleteTimeoutDelay);
+        kIdleTaskCompleteTimeoutDelayMs);
   } else if (idle_task_status_ == kIdleTaskNotStarted) {
     // If the idle task does not start after a delay threshold, we will
     // force it to happen on main thread (even though it may cause more
