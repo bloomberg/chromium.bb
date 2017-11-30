@@ -98,6 +98,102 @@
           "ignore_task_failure": false,
           "io_timeout": 3600
         }
+      },
+      {
+        "args": [
+          "smoothness.key_silk_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=histograms",
+          "--output-format=json-test-results",
+          "--browser=release",
+          "--xvfb",
+          "--also-run-disabled-tests"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.key_silk_cases",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "smoothness.key_silk_cases",
+          "-v",
+          "--upload-results",
+          "--output-format=histograms",
+          "--output-format=json-test-results",
+          "--browser=reference",
+          "--xvfb",
+          "--also-run-disabled-tests"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.key_silk_cases.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "speedometer2",
+          "-v",
+          "--upload-results",
+          "--output-format=histograms",
+          "--output-format=json-test-results",
+          "--browser=release",
+          "--xvfb",
+          "--also-run-disabled-tests"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "speedometer2",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "speedometer2",
+          "-v",
+          "--upload-results",
+          "--output-format=histograms",
+          "--output-format=json-test-results",
+          "--browser=reference",
+          "--xvfb",
+          "--also-run-disabled-tests"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "speedometer2.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
       }
     ]
   },
