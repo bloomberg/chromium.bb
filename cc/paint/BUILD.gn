@@ -107,3 +107,15 @@ fuzzer_test("paint_op_buffer_fuzzer") {
     "//cc/paint",
   ]
 }
+
+fuzzer_test("paint_op_buffer_eq_fuzzer") {
+  sources = [
+    "paint_op_buffer_eq_fuzzer.cc",
+  ]
+
+  libfuzzer_options = [ "max_len=4096" ]
+
+  deps = [
+    "//cc/paint",
+  ]
+}

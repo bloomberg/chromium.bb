@@ -37,6 +37,11 @@ void PaintOpWriter::WriteSimple(const T& val) {
 }
 
 void PaintOpWriter::WriteFlattenable(const SkFlattenable* val) {
+  if (!val) {
+    Write(static_cast<size_t>(0u));
+    return;
+  }
+
   DCHECK(SkIsAlign4(reinterpret_cast<uintptr_t>(memory_)))
       << "Flattenable must start writing at 4 byte alignment.";
   // TODO(enne): change skia API to make this a const parameter.

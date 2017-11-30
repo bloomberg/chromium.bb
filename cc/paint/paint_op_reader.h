@@ -84,6 +84,8 @@ class CC_PAINT_EXPORT PaintOpReader {
   void Read(const std::vector<PaintTypeface>& typefaces,
             sk_sp<SkTextBlob>* blob);
 
+  void SetInvalid();
+
   // Attempts to align the memory to the given alignment. Returns false if there
   // is unsufficient bytes remaining to do this padding.
   bool AlignMemory(size_t alignment);

@@ -1238,10 +1238,43 @@ void TranslateOp::Raster(const TranslateOp* op,
   canvas->translate(op->dx, op->dy);
 }
 
-static bool AreSkMatricesEqual(const SkMatrix& left, const SkMatrix& right) {
-  // Compare the 3x3 matrix values.
-  if (left != right)
+// static
+bool PaintOp::AreSkPointsEqual(const SkPoint& left, const SkPoint& right) {
+  if (!AreEqualEvenIfNaN(left.fX, right.fX))
     return false;
+  if (!AreEqualEvenIfNaN(left.fY, right.fY))
+    return false;
+  return true;
+}
+
+// static
+bool PaintOp::AreSkRectsEqual(const SkRect& left, const SkRect& right) {
+  if (!AreEqualEvenIfNaN(left.fLeft, right.fLeft))
+    return false;
+  if (!AreEqualEvenIfNaN(left.fTop, right.fTop))
+    return false;
+  if (!AreEqualEvenIfNaN(left.fRight, right.fRight))
+    return false;
+  if (!AreEqualEvenIfNaN(left.fBottom, right.fBottom))
+    return false;
+  return true;
+}
+
+// static
+bool PaintOp::AreSkRRectsEqual(const SkRRect& left, const SkRRect& right) {
+  char left_buffer[SkRRect::kSizeInMemory];
+  left.writeToMemory(left_buffer);
+  char right_buffer[SkRRect::kSizeInMemory];
+  right.writeToMemory(right_buffer);
+  return !memcmp(left_buffer, right_buffer, SkRRect::kSizeInMemory);
+}
+
+// static
+bool PaintOp::AreSkMatricesEqual(const SkMatrix& left, const SkMatrix& right) {
+  for (int i = 0; i < 9; ++i) {
+    if (!AreEqualEvenIfNaN(left.get(i), right.get(i)))
+      return false;
+  }
 
   // If a serialized matrix says it is identity, then the original must have
   // those values, as the serialization process clobbers the matrix values.
@@ -1265,7 +1298,7 @@ bool AnnotateOp::AreEqual(const PaintOp* base_left, const PaintOp* base_right) {
   DCHECK(right->IsValid());
   if (left->annotation_type != right->annotation_type)
     return false;
-  if (left->rect != right->rect)
+  if (!AreSkRectsEqual(left->rect, right->rect))
     return false;
   if (!left->data != !right->data)
     return false;
@@ -1298,7 +1331,7 @@ bool ClipRectOp::AreEqual(const PaintOp* base_left, const PaintOp* base_right) {
   auto* right = static_cast<const ClipRectOp*>(base_right);
   DCHECK(left->IsValid());
   DCHECK(right->IsValid());
-  if (left->rect != right->rect)
+  if (!AreSkRectsEqual(left->rect, right->rect))
     return false;
   if (left->op != right->op)
     return false;
@@ -1313,7 +1346,7 @@ bool ClipRRectOp::AreEqual(const PaintOp* base_left,
   auto* right = static_cast<const ClipRRectOp*>(base_right);
   DCHECK(left->IsValid());
   DCHECK(right->IsValid());
-  if (left->rrect != right->rrect)
+  if (!AreSkRRectsEqual(left->rrect, right->rrect))
     return false;
   if (left->op != right->op)
     return false;
@@ -1347,9 +1380,9 @@ bool DrawDRRectOp::AreEqual(const PaintOp* base_left,
   DCHECK(right->IsValid());
   if (left->flags != right->flags)
     return false;
-  if (left->outer != right->outer)
+  if (!AreSkRRectsEqual(left->outer, right->outer))
     return false;
-  if (left->inner != right->inner)
+  if (!AreSkRRectsEqual(left->inner, right->inner))
     return false;
   return true;
 }
@@ -1363,9 +1396,9 @@ bool DrawImageOp::AreEqual(const PaintOp* base_left,
   if (left->flags != right->flags)
     return false;
   // TODO(enne): Test PaintImage equality once implemented
-  if (left->left != right->left)
+  if (!AreEqualEvenIfNaN(left->left, right->left))
     return false;
-  if (left->top != right->top)
+  if (!AreEqualEvenIfNaN(left->top, right->top))
     return false;
   return true;
 }
@@ -1379,9 +1412,9 @@ bool DrawImageRectOp::AreEqual(const PaintOp* base_left,
   if (left->flags != right->flags)
     return false;
   // TODO(enne): Test PaintImage equality once implemented
-  if (left->src != right->src)
+  if (!AreSkRectsEqual(left->src, right->src))
     return false;
-  if (left->dst != right->dst)
+  if (!AreSkRectsEqual(left->dst, right->dst))
     return false;
   return true;
 }
@@ -1406,13 +1439,13 @@ bool DrawLineOp::AreEqual(const PaintOp* base_left, const PaintOp* base_right) {
   DCHECK(right->IsValid());
   if (left->flags != right->flags)
     return false;
-  if (left->x0 != right->x0)
+  if (!AreEqualEvenIfNaN(left->x0, right->x0))
     return false;
-  if (left->y0 != right->y0)
+  if (!AreEqualEvenIfNaN(left->y0, right->y0))
     return false;
-  if (left->x1 != right->x1)
+  if (!AreEqualEvenIfNaN(left->x1, right->x1))
     return false;
-  if (left->y1 != right->y1)
+  if (!AreEqualEvenIfNaN(left->y1, right->y1))
     return false;
   return true;
 }
@@ -1424,7 +1457,7 @@ bool DrawOvalOp::AreEqual(const PaintOp* base_left, const PaintOp* base_right) {
   DCHECK(right->IsValid());
   if (left->flags != right->flags)
     return false;
-  if (left->oval != right->oval)
+  if (!AreSkRectsEqual(left->oval, right->oval))
     return false;
   return true;
 }
@@ -1461,7 +1494,7 @@ bool DrawRectOp::AreEqual(const PaintOp* base_left, const PaintOp* base_right) {
   DCHECK(right->IsValid());
   if (left->flags != right->flags)
     return false;
-  if (left->rect != right->rect)
+  if (!AreSkRectsEqual(left->rect, right->rect))
     return false;
   return true;
 }
@@ -1474,7 +1507,7 @@ bool DrawRRectOp::AreEqual(const PaintOp* base_left,
   DCHECK(right->IsValid());
   if (left->flags != right->flags)
     return false;
-  if (left->rrect != right->rrect)
+  if (!AreSkRRectsEqual(left->rrect, right->rrect))
     return false;
   return true;
 }
@@ -1487,9 +1520,9 @@ bool DrawTextBlobOp::AreEqual(const PaintOp* base_left,
   DCHECK(right->IsValid());
   if (left->flags != right->flags)
     return false;
-  if (left->x != right->x)
+  if (!AreEqualEvenIfNaN(left->x, right->x))
     return false;
-  if (left->y != right->y)
+  if (!AreEqualEvenIfNaN(left->y, right->y))
     return false;
 
   DCHECK(*left->blob);
@@ -1525,7 +1558,7 @@ bool RotateOp::AreEqual(const PaintOp* base_left, const PaintOp* base_right) {
   auto* right = static_cast<const RotateOp*>(base_right);
   DCHECK(left->IsValid());
   DCHECK(right->IsValid());
-  if (left->degrees != right->degrees)
+  if (!AreEqualEvenIfNaN(left->degrees, right->degrees))
     return false;
   return true;
 }
@@ -1542,7 +1575,7 @@ bool SaveLayerOp::AreEqual(const PaintOp* base_left,
   DCHECK(right->IsValid());
   if (left->flags != right->flags)
     return false;
-  if (left->bounds != right->bounds)
+  if (!AreSkRectsEqual(left->bounds, right->bounds))
     return false;
   return true;
 }
@@ -1553,7 +1586,7 @@ bool SaveLayerAlphaOp::AreEqual(const PaintOp* base_left,
   auto* right = static_cast<const SaveLayerAlphaOp*>(base_right);
   DCHECK(left->IsValid());
   DCHECK(right->IsValid());
-  if (left->bounds != right->bounds)
+  if (!AreSkRectsEqual(left->bounds, right->bounds))
     return false;
   if (left->alpha != right->alpha)
     return false;
@@ -1567,9 +1600,9 @@ bool ScaleOp::AreEqual(const PaintOp* base_left, const PaintOp* base_right) {
   auto* right = static_cast<const ScaleOp*>(base_right);
   DCHECK(left->IsValid());
   DCHECK(right->IsValid());
-  if (left->sx != right->sx)
+  if (!AreEqualEvenIfNaN(left->sx, right->sx))
     return false;
-  if (left->sy != right->sy)
+  if (!AreEqualEvenIfNaN(left->sy, right->sy))
     return false;
   return true;
 }
@@ -1591,9 +1624,9 @@ bool TranslateOp::AreEqual(const PaintOp* base_left,
   auto* right = static_cast<const TranslateOp*>(base_right);
   DCHECK(left->IsValid());
   DCHECK(right->IsValid());
-  if (left->dx != right->dx)
+  if (!AreEqualEvenIfNaN(left->dx, right->dx))
     return false;
-  if (left->dy != right->dy)
+  if (!AreEqualEvenIfNaN(left->dy, right->dy))
     return false;
   return true;
 }
