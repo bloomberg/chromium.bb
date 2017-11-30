@@ -4,9 +4,6 @@
 
 #include <stddef.h>
 
-#include "ash/app_list/model/app_list_item.h"
-#include "ash/app_list/model/app_list_model.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -24,7 +21,6 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
-#include "ui/app_list/app_list_switches.h"
 
 using apps_helper::DisableApp;
 using apps_helper::EnableApp;
@@ -64,11 +60,6 @@ class TwoClientAppListSyncTest : public SyncTest {
   ~TwoClientAppListSyncTest() override {}
 
   // SyncTest
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SyncTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(app_list::switches::kEnableSyncAppList);
-  }
-
   bool SetupClients() override {
     if (!SyncTest::SetupClients())
       return false;

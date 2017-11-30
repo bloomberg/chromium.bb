@@ -660,12 +660,10 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_APP_LIST)
-  if (app_list::switches::IsAppListSyncEnabled()) {
-    sync_service->RegisterDataTypeController(
-        std::make_unique<AsyncDirectoryTypeController>(
-            syncer::APP_LIST, error_callback, this, syncer::GROUP_UI,
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
-  }
+  sync_service->RegisterDataTypeController(
+      std::make_unique<AsyncDirectoryTypeController>(
+          syncer::APP_LIST, error_callback, this, syncer::GROUP_UI,
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 #if defined(OS_LINUX) || defined(OS_WIN)

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <vector>
 
 #include "ash/app_list/model/app_list_item.h"
 #include "base/macros.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
+#include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "components/arc/test/fake_app_instance.h"
 #endif  // defined(OS_CHROMEOS)
@@ -264,20 +266,20 @@ class ChromeAppIconWithModelTest : public ChromeAppIconTest {
 
  protected:
   void CreateBuilder() {
-    model_.reset(new app_list::AppListModel);
-    controller_.reset(new test::TestAppListControllerDelegate);
-    builder_.reset(new ExtensionAppModelBuilder(controller_.get()));
-    builder_->InitializeWithProfile(profile(), model_.get());
+    model_updater_ = std::make_unique<app_list::FakeAppListModelUpdater>();
+    controller_ = std::make_unique<test::TestAppListControllerDelegate>();
+    builder_ = std::make_unique<ExtensionAppModelBuilder>(controller_.get());
+    builder_->Initialize(nullptr, profile(), model_updater_.get());
   }
 
   void ResetBuilder() {
     builder_.reset();
     controller_.reset();
-    model_.reset();
+    model_updater_.reset();
   }
 
   app_list::AppListItem* FindAppListItem(const std::string& app_id) {
-    return model_->FindItem(app_id);
+    return model_updater_->FindItem(app_id);
   }
 
   test::TestAppListControllerDelegate* app_list_controller() {
@@ -285,7 +287,7 @@ class ChromeAppIconWithModelTest : public ChromeAppIconTest {
   }
 
  private:
-  std::unique_ptr<app_list::AppListModel> model_;
+  std::unique_ptr<app_list::FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<test::TestAppListControllerDelegate> controller_;
   std::unique_ptr<ExtensionAppModelBuilder> builder_;
 

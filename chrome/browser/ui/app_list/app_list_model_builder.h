@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "ash/app_list/model/app_list_model.h"
 #include "base/macros.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
 class AppListControllerDelegate;
@@ -25,14 +25,10 @@ class AppListModelBuilder {
   virtual ~AppListModelBuilder();
 
   // Initialize to use app-list sync and sets |service_| to |service|.
-  // |service| is the owner of this instance and |model|.
-  void InitializeWithService(app_list::AppListSyncableService* service,
-                             app_list::AppListModel* model);
-
-  // Initialize to use extension sync and sets |service_| to nullptr. Used in
-  // tests and when AppList sync is not enabled.
-  // app_list::AppListSyncableService is the owner of |model|
-  void InitializeWithProfile(Profile* profile, app_list::AppListModel* model);
+  // |service| is the owner of this instance.
+  void Initialize(app_list::AppListSyncableService* service,
+                  Profile* profile,
+                  app_list::AppListModelUpdater* model_updater);
 
  protected:
   // Builds the model with the current profile.
@@ -44,7 +40,7 @@ class AppListModelBuilder {
 
   AppListControllerDelegate* controller() { return controller_; }
 
-  app_list::AppListModel* model() { return model_; }
+  app_list::AppListModelUpdater* model_updater() { return model_updater_; }
 
   // Inserts an app based on app ordinal prefs.
   void InsertApp(std::unique_ptr<app_list::AppListItem> app);
@@ -64,8 +60,8 @@ class AppListModelBuilder {
   app_list::AppListSyncableService* service_ = nullptr;
   Profile* profile_ = nullptr;
 
-  // Unowned pointer to the app list model.
-  app_list::AppListModel* model_ = nullptr;
+  // Unowned pointer to an app list model updater.
+  app_list::AppListModelUpdater* model_updater_ = nullptr;
 
   // Unowned pointer to the app list controller.
   AppListControllerDelegate* controller_;

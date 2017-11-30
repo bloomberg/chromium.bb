@@ -1357,11 +1357,6 @@ const char kSuggestionsWithSubStringMatchDescription[] =
     "Match Autofill suggestions based on substrings (token prefixes) rather "
     "than just prefixes.";
 
-const char kSyncAppListName[] = "App Launcher sync";
-const char kSyncAppListDescription[] =
-    "Enable App Launcher sync. This also enables Folders where available (non "
-    "OSX).";
-
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";

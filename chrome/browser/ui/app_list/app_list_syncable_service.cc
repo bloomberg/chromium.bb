@@ -85,8 +85,7 @@ bool UpdateSyncItemFromAppItem(const AppListItem* app_item,
                                AppListSyncableService::SyncItem* sync_item) {
   DCHECK_EQ(sync_item->item_id, app_item->id());
   bool changed = false;
-  if (app_list::switches::IsFolderUIEnabled() &&
-      sync_item->parent_id != app_item->folder_id()) {
+  if (sync_item->parent_id != app_item->folder_id()) {
     sync_item->parent_id = app_item->folder_id();
     changed = true;
   }
@@ -289,6 +288,35 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
   DISALLOW_COPY_AND_ASSIGN(ModelObserver);
 };
 
+// AppListSyncableService::ModelUpdater
+
+class AppListSyncableService::ModelUpdater : public AppListModelUpdater {
+ public:
+  explicit ModelUpdater(AppListModel* model) : model_(model) {}
+  ~ModelUpdater() override {}
+  void AddItem(std::unique_ptr<AppListItem> app_item) override {
+    model_->AddItem(std::move(app_item));
+  }
+  void RemoveItem(const std::string& id) override { model_->DeleteItem(id); }
+  void RemoveUninstalledItem(const std::string& id) override {
+    model_->DeleteUninstalledItem(id);
+  }
+  AppListItem* FindItem(const std::string& id) override {
+    return model_->FindItem(id);
+  }
+  size_t ItemCount() override {
+    return model_->top_level_item_list()->item_count();
+  }
+
+  AppListItem* ItemAt(size_t index) override {
+    return model_->top_level_item_list()->item_at(index);
+  }
+
+ private:
+  AppListModel* model_;
+  DISALLOW_COPY_AND_ASSIGN(ModelUpdater);
+};
+
 // AppListSyncableService
 
 // static
@@ -307,6 +335,7 @@ AppListSyncableService::AppListSyncableService(
     : profile_(profile),
       extension_system_(extension_system),
       model_(new AppListModel),
+      model_updater_(new ModelUpdater(model_.get())),
       initial_sync_data_processed_(false),
       first_app_list_sync_(true),
       weak_ptr_factory_(this) {
@@ -318,10 +347,7 @@ AppListSyncableService::AppListSyncableService(
   oem_folder_name_ =
       l10n_util::GetStringUTF8(IDS_APP_LIST_OEM_DEFAULT_FOLDER_NAME);
 
-  // TODO(khmel): Now we support persistent state of this service. It is
-  // possible to remove folder UI enabled check.
-  if (switches::IsFolderUIEnabled())
-    model_->SetFoldersEnabled(true);
+  model_->SetFoldersEnabled(true);
 
   if (IsExtensionServiceReady()) {
     BuildModel();
@@ -401,18 +427,10 @@ void AppListSyncableService::BuildModel() {
   if (arc::IsArcAllowedForProfile(profile_))
     arc_apps_builder_.reset(new ArcAppModelBuilder(controller));
   DCHECK(profile_);
-  if (app_list::switches::IsAppListSyncEnabled()) {
-    VLOG(1) << this << ": AppListSyncableService: InitializeWithService.";
-    SyncStarted();
-    apps_builder_->InitializeWithService(this, model_.get());
-    if (arc_apps_builder_.get())
-      arc_apps_builder_->InitializeWithService(this, model_.get());
-  } else {
-    VLOG(1) << this << ": AppListSyncableService: InitializeWithProfile.";
-    apps_builder_->InitializeWithProfile(profile_, model_.get());
-    if (arc_apps_builder_.get())
-      arc_apps_builder_->InitializeWithProfile(profile_, model_.get());
-  }
+  SyncStarted();
+  apps_builder_->Initialize(this, profile_, model_updater_.get());
+  if (arc_apps_builder_.get())
+    arc_apps_builder_->Initialize(this, profile_, model_updater_.get());
 
   if (app_list::switches::IsDriveAppsInAppListEnabled() &&
       !::switches::ExtensionsDisabled()) {
@@ -520,14 +538,12 @@ void AppListSyncableService::AddItem(std::unique_ptr<AppListItem> app_item) {
     return;  // Item is not valid.
 
   std::string folder_id;
-  if (app_list::switches::IsFolderUIEnabled()) {
-    if (AppIsOem(app_item->id())) {
-      folder_id = FindOrCreateOemFolder();
-      VLOG_IF(2, !folder_id.empty())
-          << this << ": AddItem to OEM folder: " << sync_item->ToString();
-    } else {
-      folder_id = sync_item->parent_id;
-    }
+  if (AppIsOem(app_item->id())) {
+    folder_id = FindOrCreateOemFolder();
+    VLOG_IF(2, !folder_id.empty())
+        << this << ": AddItem to OEM folder: " << sync_item->ToString();
+  } else {
+    folder_id = sync_item->parent_id;
   }
   VLOG(2) << this << ": AddItem: " << sync_item->ToString()
           << " Folder: '" << folder_id << "'";
@@ -689,8 +705,6 @@ void AppListSyncableService::RemoveUninstalledItem(const std::string& id) {
 
 void AppListSyncableService::UpdateItem(AppListItem* app_item) {
   // Check to see if the item needs to be moved to/from the OEM folder.
-  if (!app_list::switches::IsFolderUIEnabled())
-    return;
   bool is_oem = AppIsOem(app_item->id());
   if (!is_oem && app_item->folder_id() == kOemFolderId)
     model_->MoveItemToFolder(app_item, "");
@@ -731,9 +745,6 @@ void AppListSyncableService::RemoveSyncItem(const std::string& id) {
 }
 
 void AppListSyncableService::ResolveFolderPositions() {
-  if (!app_list::switches::IsFolderUIEnabled())
-    return;
-
   VLOG(1) << "ResolveFolderPositions.";
   for (const auto& sync_pair : sync_items_) {
     SyncItem* sync_item = sync_pair.second.get();
@@ -756,9 +767,6 @@ void AppListSyncableService::ResolveFolderPositions() {
 }
 
 void AppListSyncableService::PruneEmptySyncFolders() {
-  if (!app_list::switches::IsFolderUIEnabled())
-    return;
-
   std::set<std::string> parent_ids;
   for (const auto& sync_pair : sync_items_)
     parent_ids.insert(sync_pair.second->parent_id);
@@ -1036,8 +1044,7 @@ void AppListSyncableService::ProcessExistingSyncItem(SyncItem* sync_item) {
   }
   DVLOG(2) << " AppItem: " << app_item->ToDebugString();
   // This is the only place where sync can cause an item to change folders.
-  if (app_list::switches::IsFolderUIEnabled() &&
-      app_item->folder_id() != sync_item->parent_id &&
+  if (app_item->folder_id() != sync_item->parent_id &&
       !AppIsOem(app_item->id())) {
     VLOG(2) << " Moving Item To Folder: " << sync_item->parent_id;
     model_->MoveItemToFolder(app_item, sync_item->parent_id);

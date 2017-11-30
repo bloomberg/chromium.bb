@@ -109,7 +109,7 @@ void ExtensionAppModelBuilder::OnDownloadProgress(
 
 void ExtensionAppModelBuilder::OnInstallFailure(
     const std::string& extension_id) {
-  model()->DeleteItem(extension_id);
+  model_updater()->RemoveItem(extension_id);
 }
 
 void ExtensionAppModelBuilder::OnAppInstalled(
@@ -150,7 +150,7 @@ void ExtensionAppModelBuilder::OnAppUninstalled(
     service()->RemoveUninstalledItem(app_id);
     return;
   }
-  model()->DeleteUninstalledItem(app_id);
+  model_updater()->RemoveUninstalledItem(app_id);
 }
 
 void ExtensionAppModelBuilder::OnDisabledExtensionUpdated(

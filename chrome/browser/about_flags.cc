@@ -1671,12 +1671,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSuggestionsWithSubStringMatchDescription, kOsAll,
      SINGLE_VALUE_TYPE(
          autofill::switches::kEnableSuggestionsWithSubstringMatch)},
-#if BUILDFLAG(ENABLE_APP_LIST)
-    {"enable-sync-app-list", flag_descriptions::kSyncAppListName,
-     flag_descriptions::kSyncAppListDescription, kOsDesktop,
-     ENABLE_DISABLE_VALUE_TYPE(app_list::switches::kEnableSyncAppList,
-                               app_list::switches::kDisableSyncAppList)},
-#endif  // ENABLE_APP_LIST
     {"lcd-text-aa", flag_descriptions::kLcdTextName,
      flag_descriptions::kLcdTextDescription, kOsDesktop,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableLCDText,

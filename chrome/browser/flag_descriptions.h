@@ -841,9 +841,6 @@ extern const char kTLS13VariantExperiment3[];
 extern const char kSuggestionsWithSubStringMatchName[];
 extern const char kSuggestionsWithSubStringMatchDescription[];
 
-extern const char kSyncAppListName[];
-extern const char kSyncAppListDescription[];
-
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
 

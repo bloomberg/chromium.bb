@@ -172,8 +172,6 @@ void DeriveCommandLine(const GURL& start_url,
 #endif
     ::switches::kDisableVaapiAcceleratedVideoEncode,
     ::switches::kOzonePlatform,
-    app_list::switches::kDisableSyncAppList,
-    app_list::switches::kEnableSyncAppList,
     ash::switches::kAshEnableTabletMode,
     ash::switches::kAshForceEnableStylusTools,
     ash::switches::kAshEnablePaletteOnAllDisplays,
