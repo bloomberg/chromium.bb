@@ -79,6 +79,10 @@ class BLINK_EXPORT WebUserMediaRequest {
   WebMediaConstraints AudioConstraints() const;
   WebMediaConstraints VideoConstraints() const;
 
+  // Flag tied to whether or not the similarly named Origin Trial is
+  // enabled. Will be removed at end of trial. See: http://crbug.com/789152.
+  bool ShouldDisableHardwareNoiseSuppression() const;
+
   WebSecurityOrigin GetSecurityOrigin() const;
   WebDocument OwnerDocument() const;
 

@@ -92,7 +92,9 @@ class MEDIA_EXPORT AUAudioInputStream
   bool IsRunning();
 
   AudioDeviceID device_id() const { return input_device_id_; }
-  size_t requested_buffer_size() const { return number_of_frames_; }
+  size_t requested_buffer_size() const {
+    return input_params_.frames_per_buffer();
+  }
 
  private:
   static const AudioObjectPropertyAddress kDeviceChangePropertyAddress;
@@ -182,8 +184,8 @@ class MEDIA_EXPORT AUAudioInputStream
   // Our creator, the audio manager needs to be notified when we close.
   AudioManagerMac* const manager_;
 
-  // Contains the desired number of audio frames in each callback.
-  const size_t number_of_frames_;
+  // The audio parameters requested when creating the stream.
+  const AudioParameters input_params_;
 
   // Stores the number of frames that we actually get callbacks for.
   // This may be different from what we ask for, so we use this for stats in
@@ -275,6 +277,10 @@ class MEDIA_EXPORT AUAudioInputStream
   // Set to true when we are listening for changes in device properties.
   // Only touched on the creating thread.
   bool device_listener_is_active_;
+
+  // Set to true when we've successfully called SuppressNoiseReduction to
+  // disable ambient noise reduction.
+  bool noise_reduction_suppressed_;
 
   // Stores the timestamp of the previous audio buffer provided by the OS.
   // We use this in combination with |last_number_of_frames_| to detect when

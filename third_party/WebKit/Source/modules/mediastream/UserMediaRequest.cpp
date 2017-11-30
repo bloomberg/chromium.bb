@@ -42,6 +42,7 @@
 #include "core/dom/SpaceSplitString.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/HostsUsingFeatures.h"
+#include "core/origin_trials/origin_trials.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamConstraints.h"
@@ -374,9 +375,16 @@ UserMediaRequest::UserMediaRequest(
     : ContextLifecycleObserver(context),
       audio_(audio),
       video_(video),
+      should_disable_hardware_noise_suppression_(
+          OriginTrials::disableHardwareNoiseSuppressionEnabled(context)),
       controller_(controller),
       success_callback_(success_callback),
-      error_callback_(error_callback) {}
+      error_callback_(error_callback) {
+  if (should_disable_hardware_noise_suppression_) {
+    UseCounter::Count(context,
+                      WebFeature::kUserMediaDisableHardwareNoiseSuppression);
+  }
+}
 
 UserMediaRequest::~UserMediaRequest() {}
 
@@ -394,6 +402,10 @@ WebMediaConstraints UserMediaRequest::AudioConstraints() const {
 
 WebMediaConstraints UserMediaRequest::VideoConstraints() const {
   return video_;
+}
+
+bool UserMediaRequest::ShouldDisableHardwareNoiseSuppression() const {
+  return should_disable_hardware_noise_suppression_;
 }
 
 bool UserMediaRequest::IsSecureContextUse(String& error_message) {

@@ -332,6 +332,11 @@
       status: "stable",
     },
     {
+      name: "DisableHardwareNoiseSuppression",
+      origin_trial_feature_name: "DisableHardwareNoiseSuppression",
+      status: "experimental",
+    },
+    {
       name: "DisplayList2dCanvas",
       status: "stable",
     },

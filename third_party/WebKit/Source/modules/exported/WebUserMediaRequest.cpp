@@ -77,6 +77,11 @@ WebMediaConstraints WebUserMediaRequest::VideoConstraints() const {
   return private_->VideoConstraints();
 }
 
+bool WebUserMediaRequest::ShouldDisableHardwareNoiseSuppression() const {
+  DCHECK(!IsNull());
+  return private_->ShouldDisableHardwareNoiseSuppression();
+}
+
 WebSecurityOrigin WebUserMediaRequest::GetSecurityOrigin() const {
   DCHECK(!IsNull());
   if (!private_->GetExecutionContext())

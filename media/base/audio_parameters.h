@@ -135,6 +135,7 @@ class MEDIA_SHMEM_EXPORT AudioParameters {
     DUCKING = 0x2,  // Enables ducking if the OS supports it.
     KEYBOARD_MIC = 0x4,
     HOTWORD = 0x8,
+    NOISE_SUPPRESSION = 0x10
   };
 
   AudioParameters();

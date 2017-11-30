@@ -83,6 +83,10 @@ class MODULES_EXPORT UserMediaRequest final
   WebMediaConstraints AudioConstraints() const;
   WebMediaConstraints VideoConstraints() const;
 
+  // Flag tied to whether or not the similarly named Origin Trial is
+  // enabled. Will be removed at end of trial. See: http://crbug.com/789152.
+  bool ShouldDisableHardwareNoiseSuppression() const;
+
   // errorMessage is only set if requestIsPrivilegedContext() returns |false|.
   // Caller is responsible for properly setting errors and canceling request.
   bool IsSecureContextUse(String& error_message);
@@ -102,6 +106,7 @@ class MODULES_EXPORT UserMediaRequest final
 
   WebMediaConstraints audio_;
   WebMediaConstraints video_;
+  bool should_disable_hardware_noise_suppression_;
 
   Member<UserMediaController> controller_;
 
