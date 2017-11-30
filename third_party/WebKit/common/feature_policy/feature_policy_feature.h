@@ -15,8 +15,6 @@ namespace blink {
 // featurePolicyExperimentalFeatures flag.
 enum class FeaturePolicyFeature {
   kNotFound = 0,
-  // Controls access to media autoplay.
-  kAutoplay,
   // Controls access to video input devices.
   kCamera,
   // Controls whether navigator.requestMediaKeySystemAccess is allowed.
