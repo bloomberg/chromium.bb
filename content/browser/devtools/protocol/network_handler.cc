@@ -148,7 +148,7 @@ class CookieRetriever : public base::RefCountedThreadSafe<CookieRetriever> {
                 .SetValue(cookie.Value())
                 .SetDomain(cookie.Domain())
                 .SetPath(cookie.Path())
-                .SetExpires(cookie.ExpiryDate().ToDoubleT())
+                .SetExpires(cookie.ExpiryDate().is_null() ? -1 : cookie.ExpiryDate().ToDoubleT())
                 .SetSize(cookie.Name().length() + cookie.Value().length())
                 .SetHttpOnly(cookie.IsHttpOnly())
                 .SetSecure(cookie.IsSecure())
