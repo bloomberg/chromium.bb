@@ -7,6 +7,7 @@
 
 #include "core/layout/LayoutBox.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/ng/ng_paint_fragment.h"
 #include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 
 namespace blink {
@@ -24,6 +25,17 @@ class AdjustPaintOffsetScope {
     if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
         !AdjustForPaintOffsetTranslation(box))
       adjusted_paint_offset_ = paint_offset + box.Location();
+  }
+
+  AdjustPaintOffsetScope(const NGPaintFragment& fragment,
+                         const PaintInfo& paint_info,
+                         const LayoutPoint& paint_offset)
+      : old_paint_info_(paint_info) {
+    DCHECK(fragment.GetLayoutObject());
+    const LayoutBox& box = ToLayoutBox(*fragment.GetLayoutObject());
+    if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
+        !AdjustForPaintOffsetTranslation(box))
+      adjusted_paint_offset_ = paint_offset + fragment.Offset().ToLayoutPoint();
   }
 
   const PaintInfo& GetPaintInfo() const {

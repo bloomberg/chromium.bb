@@ -4,7 +4,7 @@
 
 #include "core/layout/ng/ng_physical_fragment.h"
 
-#include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/ng/geometry/ng_border_edges.h"
 #include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -194,6 +194,15 @@ Node* NGPhysicalFragment::GetNode() const {
   // TODO(layout-dev): This should store the node directly instead of going
   // through LayoutObject.
   return layout_object_ ? layout_object_->GetNode() : nullptr;
+}
+
+bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
+  // TODO(kojii): Move this to a flag for |LayoutNGBlockFlow::UpdateBlockLayout|
+  // to set.
+  if (!layout_object_)
+    return false;
+  const LayoutBlock* container = layout_object_->ContainingBlock();
+  return container && container->IsLayoutNGMixin();
 }
 
 NGPixelSnappedPhysicalBoxStrut NGPhysicalFragment::BorderWidths() const {

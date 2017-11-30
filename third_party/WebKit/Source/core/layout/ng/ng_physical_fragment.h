@@ -92,6 +92,12 @@ class CORE_EXPORT NGPhysicalFragment
     return BoxType() >= NGBoxType::kMinimumBlockLayoutRoot;
   }
 
+  // |Offset()| is reliable only when this fragment was placed by LayoutNG
+  // parent. When the parent is not LayoutNG, the parent may move the
+  // |LayoutObject| after this fragment was placed. See comments in
+  // |LayoutNGBlockFlow::UpdateBlockLayout()| and crbug.com/788590
+  bool IsPlacedByLayoutNG() const;
+
   // The accessors in this class shouldn't be used by layout code directly,
   // instead should be accessed by the NGFragmentBase classes. These accessors
   // exist for paint, hit-testing, etc.
