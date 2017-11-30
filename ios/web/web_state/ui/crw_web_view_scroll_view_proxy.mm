@@ -10,6 +10,7 @@
 #import "base/ios/crb_protocol_observers.h"
 #include "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -18,6 +19,8 @@
 @interface CRWWebViewScrollViewProxy () {
   __weak UIScrollView* _scrollView;
   base::scoped_nsobject<id> _observers;
+  std::unique_ptr<UIScrollViewContentInsetAdjustmentBehavior>
+      _pendingContentInsetAdjustmentBehavior API_AVAILABLE(ios(11.0));
 }
 
 // Returns the key paths that need to be observed for UIScrollView.
@@ -70,6 +73,17 @@
   scrollView.delegate = self;
   [self startObservingScrollView:scrollView];
   _scrollView = scrollView;
+
+  // Assigns |contentInsetAdjustmentBehavior| which was set before setting the
+  // scroll view.
+  if (@available(iOS 11, *)) {
+    if (_pendingContentInsetAdjustmentBehavior) {
+      _scrollView.contentInsetAdjustmentBehavior =
+          *_pendingContentInsetAdjustmentBehavior;
+      _pendingContentInsetAdjustmentBehavior.reset();
+    }
+  }
+
   [_observers webViewScrollViewProxyDidSetScrollView:self];
 }
 
@@ -155,6 +169,30 @@
 
 - (void)setScrollsToTop:(BOOL)scrollsToTop {
   [_scrollView setScrollsToTop:scrollsToTop];
+}
+
+- (UIScrollViewContentInsetAdjustmentBehavior)contentInsetAdjustmentBehavior
+    API_AVAILABLE(ios(11.0)) {
+  if (_scrollView) {
+    return [_scrollView contentInsetAdjustmentBehavior];
+  } else if (_pendingContentInsetAdjustmentBehavior) {
+    return *_pendingContentInsetAdjustmentBehavior;
+  } else {
+    return UIScrollViewContentInsetAdjustmentAutomatic;
+  }
+}
+
+- (void)setContentInsetAdjustmentBehavior:
+    (UIScrollViewContentInsetAdjustmentBehavior)contentInsetAdjustmentBehavior
+    API_AVAILABLE(ios(11.0)) {
+  if (_scrollView) {
+    [_scrollView
+        setContentInsetAdjustmentBehavior:contentInsetAdjustmentBehavior];
+  } else {
+    _pendingContentInsetAdjustmentBehavior =
+        base::MakeUnique<UIScrollViewContentInsetAdjustmentBehavior>(
+            contentInsetAdjustmentBehavior);
+  }
 }
 
 - (UIPanGestureRecognizer*)panGestureRecognizer {
