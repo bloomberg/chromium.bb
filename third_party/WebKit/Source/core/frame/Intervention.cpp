@@ -46,7 +46,7 @@ void Intervention::GenerateReport(const LocalFrame* frame,
   mojom::blink::ReportingServiceProxyPtr service;
   frame->Client()->GetInterfaceProvider()->GetInterface(&service);
   service->QueueInterventionReport(document->Url(), message, body->sourceFile(),
-                                   body->lineNumber());
+                                   body->lineNumber(), body->columnNumber());
 }
 
 }  // namespace blink

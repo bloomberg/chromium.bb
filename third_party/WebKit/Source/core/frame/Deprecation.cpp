@@ -793,7 +793,8 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   mojom::blink::ReportingServiceProxyPtr service;
   frame->Client()->GetInterfaceProvider()->GetInterface(&service);
   service->QueueDeprecationReport(document->Url(), info.message,
-                                  body->sourceFile(), body->lineNumber());
+                                  body->sourceFile(), body->lineNumber(),
+                                  body->columnNumber());
 }
 
 // static

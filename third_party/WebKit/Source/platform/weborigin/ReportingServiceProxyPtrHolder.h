@@ -23,20 +23,24 @@ class ReportingServiceProxyPtrHolder {
   void QueueInterventionReport(const KURL& url,
                                const String& body,
                                const String& source_file,
-                               int line_number) {
+                               int line_number,
+                               int column_number) {
     if (reporting_service_proxy) {
       reporting_service_proxy->QueueInterventionReport(
-          url, body ? body : "", source_file ? source_file : "", line_number);
+          url, body ? body : "", source_file ? source_file : "", line_number,
+          column_number);
     }
   }
 
   void QueueDeprecationReport(const KURL& url,
                               const String& body,
                               const String& source_file,
-                              int line_number) {
+                              int line_number,
+                              int column_number) {
     if (reporting_service_proxy) {
       reporting_service_proxy->QueueDeprecationReport(
-          url, body ? body : "", source_file ? source_file : "", line_number);
+          url, body ? body : "", source_file ? source_file : "", line_number,
+          column_number);
     }
   }
 

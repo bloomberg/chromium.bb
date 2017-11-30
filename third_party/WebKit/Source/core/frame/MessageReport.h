@@ -19,6 +19,7 @@ class MessageReport : public ReportBody {
 
   String message() const { return message_; }
   long lineNumber() const { return location_->LineNumber(); }
+  long columnNumber() const { return location_->ColumnNumber(); }
   String sourceFile() const {
     return location_->Url().IsNull() ? "" : location_->Url();
   }

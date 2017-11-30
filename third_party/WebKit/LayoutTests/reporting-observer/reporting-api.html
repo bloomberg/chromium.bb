@@ -29,13 +29,13 @@ class MockReportingServiceProxy {
   }
 
   // Interface implementation.
-  async queueDeprecationReport(url, message, sourceFile, lineNumber) {
-    this.resolve([url, message, sourceFile, lineNumber]);
+  async queueDeprecationReport(url, message, sourceFile, lineNumber, columnNumber) {
+    this.resolve([url, message, sourceFile, lineNumber, columnNumber]);
     this.resetPromise();
   }
 
-  async queueInterventionReport(url, message, sourceFile, lineNumber) {
-    this.resolve([url, message, sourceFile, lineNumber]);
+  async queueInterventionReport(url, message, sourceFile, lineNumber, columnNumber) {
+    this.resolve([url, message, sourceFile, lineNumber, columnNumber]);
     this.resetPromise();
   }
 }
@@ -54,11 +54,12 @@ promise_test(async () => {
 
   // Ensure the deprecation report is generated and routed to the reporting mojo
   // interface.
-  let [url, message, sourceFile, lineNumber] = await promise;
+  let [url, message, sourceFile, lineNumber, columnNumber] = await promise;
   assert_true(url.url.endsWith("reporting-observer/reporting-api.html"));
   assert_equals(typeof message, "string");
   assert_true(sourceFile.endsWith("reporting-observer/reporting-api.html"));
   assert_equals(typeof lineNumber, "number");
+  assert_equals(typeof columnNumber, "number");
 }, "Deprecation report");
 
 promise_test(async () => {
@@ -68,10 +69,11 @@ promise_test(async () => {
 
   // Ensure the intervention report is generated and routed to the reporting
   // mojo interface.
-  let [url, message, sourceFile, lineNumber] = await promise;
+  let [url, message, sourceFile, lineNumber, columnNumber] = await promise;
   assert_true(url.url.endsWith("reporting-observer/reporting-api.html"));
   assert_equals(typeof message, "string");
   assert_true(sourceFile.endsWith("reporting-observer/resources/intervention.js"));
   assert_equals(typeof lineNumber, "number");
+  assert_equals(typeof columnNumber, "number");
 }, "Intervention report");
 </script>

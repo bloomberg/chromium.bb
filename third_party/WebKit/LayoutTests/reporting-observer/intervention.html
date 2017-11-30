@@ -20,6 +20,7 @@ async_test(function(test) {
       assert_true(reports[0].body.sourceFile.endsWith(
           "reporting-observer/resources/intervention.js"));
       assert_equals(typeof reports[0].body.lineNumber, "number");
+      assert_equals(typeof reports[0].body.columnNumber, "number");
       assert_equals(typeof reports[0].body.message, "string");
     });
 

@@ -14,6 +14,7 @@ async_test(function(test) {
         assert_true(report.body.sourceFile.endsWith(
             "reporting-observer/resources/deprecation.js"));
         assert_equals(typeof report.body.lineNumber, "number");
+        assert_equals(typeof report.body.columnNumber, "number");
       }
       assert_not_equals(reports[0].body.id, reports[1].body.id);
     });
