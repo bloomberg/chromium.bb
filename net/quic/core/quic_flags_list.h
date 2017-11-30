@@ -64,9 +64,6 @@ QUIC_FLAG(double, FLAGS_quic_bbr_rtt_variation_weight, 0.0f)
 // Congestion window gain for QUIC BBR during PROBE_BW phase.
 QUIC_FLAG(double, FLAGS_quic_bbr_cwnd_gain, 2.0f)
 
-// Support bandwidth resumption in QUIC BBR.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_bandwidth_resumption, true)
-
 // Add the equivalent number of bytes as 3 TCP TSO segments to QUIC's BBR CWND.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd, false)
 
@@ -80,10 +77,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_39, true)
 // Simplify QUIC\'s adaptive time loss detection to measure the necessary
 // reordering window for every spurious retransmit.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss, false)
-
-// If true, export a varz mapping QUIC non 0-rtt handshake with corresponding
-// frontend service.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_account_handshake, true)
 
 // Allows the 3RTO QUIC connection option to close a QUIC connection after
 // 3RTOs if there are no open streams.
@@ -116,10 +109,6 @@ QUIC_FLAG(uint32_t, FLAGS_quic_send_buffer_max_data_slice_size, 4096u)
 // If true, QUIC supports both QUIC Crypto and TLS 1.3 for the handshake
 // protocol.
 QUIC_FLAG(bool, FLAGS_quic_supports_tls_handshake, false)
-
-// Add 4 new ack decimation modes to QUIC that are entirely time based at 1/4
-// or 1/8 RTT.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_ack_decimation, true)
 
 // If true, QUIC v40 is enabled which includes changes to RST_STREAM, ACK
 // and STREAM frames match IETF format.
@@ -217,4 +206,4 @@ QUIC_FLAG(bool,
           false)
 
 // If true, use deframer from net/quic/http instead of net/http2.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_hq_deframer, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_hq_deframer, false)

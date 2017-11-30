@@ -4219,7 +4219,6 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimation) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationUnlimitedAggregation) {
-  FLAGS_quic_reloadable_flag_quic_ack_decimation = true;
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;

@@ -280,12 +280,6 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
 
 void BbrSender::AdjustNetworkParameters(QuicBandwidth bandwidth,
                                         QuicTime::Delta rtt) {
-  if (!FLAGS_quic_reloadable_flag_quic_bbr_bandwidth_resumption) {
-    return;
-  }
-
-  QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_bandwidth_resumption);
-
   if (!bandwidth.IsZero()) {
     max_bandwidth_.Update(bandwidth, round_trip_count_);
   }
