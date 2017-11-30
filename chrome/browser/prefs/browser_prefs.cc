@@ -63,7 +63,6 @@
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
-#include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/common/features.h"
@@ -315,6 +314,10 @@ const char kStabilityCrashedActivityCounts[] =
     "user_experience_metrics.stability.crashed_activity_counts";
 #endif  // defined(OS_ANDROID)
 
+// Deprecated 11/2017.
+const char kInstantUIZeroSuggestUrlPrefix[] =
+    "instant_ui.zero_suggest_url_prefix";
+
 }  // namespace
 
 void RegisterLocalState(PrefRegistrySimple* registry) {
@@ -462,7 +465,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   HostContentSettingsMap::RegisterProfilePrefs(registry);
   ImportantSitesUtil::RegisterProfilePrefs(registry);
   IncognitoModePrefs::RegisterProfilePrefs(registry);
-  InstantUI::RegisterProfilePrefs(registry);
   MediaCaptureDevicesDispatcher::RegisterProfilePrefs(registry);
   MediaDeviceIDSalt::RegisterProfilePrefs(registry);
   MediaEngagementService::RegisterProfilePrefs(registry);
@@ -656,6 +658,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_ANDROID)
   NotificationChannelsProviderAndroid::RegisterProfilePrefs(registry);
 #endif
+
+  registry->RegisterStringPref(kInstantUIZeroSuggestUrlPrefix, std::string());
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -729,4 +733,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #endif  // BUILDFLAG(ENABLE_RLZ)
     profile_prefs->ClearPref(kDistroDict);
   }
+
+  // Added 11/2017.
+  profile_prefs->ClearPref(kInstantUIZeroSuggestUrlPrefix);
 }

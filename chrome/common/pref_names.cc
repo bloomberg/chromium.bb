@@ -443,10 +443,6 @@ const char kNetworkQualities[] = "net.network_qualities";
 const char kLastPolicyCheckTime[] = "policy.last_policy_check_time";
 #endif
 
-// Prefix URL for the experimental Instant ZeroSuggest provider.
-const char kInstantUIZeroSuggestUrlPrefix[] =
-    "instant_ui.zero_suggest_url_prefix";
-
 // A preference of enum chrome_browser_net::NetworkPredictionOptions shows
 // if prediction of network actions is allowed, depending on network type.
 // Actions include DNS prefetching, TCP and SSL preconnection, prerendering
