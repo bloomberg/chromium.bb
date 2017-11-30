@@ -30,7 +30,7 @@ namespace {
 // socket_test_util.h.
 class FakeStreamSocket : public StreamSocket {
  public:
-  FakeStreamSocket() {}
+  FakeStreamSocket() = default;
 
   // StreamSocket implementation
   int Connect(const CompletionCallback& callback) override {
