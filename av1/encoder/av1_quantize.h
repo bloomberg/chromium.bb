@@ -23,8 +23,8 @@ extern "C" {
 
 typedef struct QUANT_PARAM {
   int log_scale;
-#if CONFIG_NEW_QUANT
   TX_SIZE tx_size;
+#if CONFIG_NEW_QUANT
   int dq;
 #endif  // CONFIG_NEW_QUANT
 #if CONFIG_AOM_QM

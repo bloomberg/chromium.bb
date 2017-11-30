@@ -549,8 +549,8 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #else
   qparam.log_scale = av1_get_tx_scale(tx_size);
 #endif
-#if CONFIG_NEW_QUANT
   qparam.tx_size = tx_size;
+#if CONFIG_NEW_QUANT
   qparam.dq = get_dq_profile_from_ctx(x->qindex, ctx, is_inter, plane_type);
 #endif  // CONFIG_NEW_QUANT
 #if CONFIG_AOM_QM

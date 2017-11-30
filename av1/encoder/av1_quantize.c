@@ -595,10 +595,19 @@ void av1_quantize_fp_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                                p->dequant_QTX, eob_ptr, sc->scan, sc->iscan,
                                NULL, NULL, qparam->log_scale);
         } else {
-          av1_quantize_fp(coeff_ptr, n_coeffs, skip_block, p->zbin_QTX,
-                          p->round_fp_QTX, p->quant_fp_QTX, p->quant_shift_QTX,
-                          qcoeff_ptr, dqcoeff_ptr, p->dequant_QTX, eob_ptr,
-                          sc->scan, sc->iscan);
+#if CONFIG_RECT_TX_EXT
+          if (qparam->tx_size == TX_4X16 || qparam->tx_size == TX_16X4 ||
+              qparam->tx_size == TX_8X32 || qparam->tx_size == TX_32X8)
+            av1_quantize_fp_c(coeff_ptr, n_coeffs, skip_block, p->zbin_QTX,
+                              p->round_fp_QTX, p->quant_fp_QTX,
+                              p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr,
+                              p->dequant_QTX, eob_ptr, sc->scan, sc->iscan);
+          else
+#endif  // CONFIG_RECT_TX_EXT
+            av1_quantize_fp(coeff_ptr, n_coeffs, skip_block, p->zbin_QTX,
+                            p->round_fp_QTX, p->quant_fp_QTX,
+                            p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr,
+                            p->dequant_QTX, eob_ptr, sc->scan, sc->iscan);
         }
         break;
       case 1:
