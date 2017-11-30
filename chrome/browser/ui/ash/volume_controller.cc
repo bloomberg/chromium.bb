@@ -31,7 +31,7 @@ void PlayVolumeAdjustSound() {
   if (VolumeAdjustSoundEnabled()) {
     chromeos::AccessibilityManager::Get()->PlayEarcon(
         chromeos::SOUND_VOLUME_ADJUST,
-        chromeos::PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
+        chromeos::PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED);
   }
 }
 
