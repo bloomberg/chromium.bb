@@ -21,7 +21,7 @@ class DownloadTaskObserver {
   // if the download has failed, DownloadTask::GetPercentComplete() to check
   // the download progress, and DownloadTask::GetResponseWriter() to obtain the
   // downloaded data.
-  virtual void OnDownloadUpdated(const DownloadTask* task) {}
+  virtual void OnDownloadUpdated(DownloadTask* task) {}
 
   DownloadTaskObserver() = default;
   virtual ~DownloadTaskObserver() = default;
