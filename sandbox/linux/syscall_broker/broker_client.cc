@@ -191,5 +191,43 @@ int BrokerClient::StatFamilySyscall(IPCCommand syscall_type,
   return return_value;
 }
 
+int BrokerClient::Rename(const char* oldpath, const char* newpath) {
+  if (fast_check_in_client_) {
+    bool ignore;
+    if (!broker_policy_.GetFileNameIfAllowedToOpen(oldpath, O_RDWR, nullptr,
+                                                   &ignore) ||
+        !broker_policy_.GetFileNameIfAllowedToOpen(newpath, O_RDWR, nullptr,
+                                                   &ignore)) {
+      return -broker_policy_.denied_errno();
+    }
+  }
+
+  base::Pickle write_pickle;
+  write_pickle.WriteInt(COMMAND_RENAME);
+  write_pickle.WriteString(oldpath);
+  write_pickle.WriteString(newpath);
+  RAW_CHECK(write_pickle.size() <= kMaxMessageLength);
+
+  int returned_fd = -1;
+  uint8_t reply_buf[kMaxMessageLength];
+  ssize_t msg_len = base::UnixDomainSocket::SendRecvMsg(
+      ipc_channel_.get(), reply_buf, sizeof(reply_buf), &returned_fd,
+      write_pickle);
+
+  if (msg_len <= 0) {
+    if (!quiet_failures_for_tests_)
+      RAW_LOG(ERROR, "Could not make request to broker process");
+    return -ENOMEM;
+  }
+
+  base::Pickle read_pickle(reinterpret_cast<char*>(reply_buf), msg_len);
+  base::PickleIterator iter(read_pickle);
+  int return_value = -1;
+  if (!iter.ReadInt(&return_value))
+    return -ENOMEM;
+
+  return return_value;
+}
+
 }  // namespace syscall_broker
 }  // namespace sandbox

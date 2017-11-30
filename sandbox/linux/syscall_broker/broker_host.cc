@@ -137,59 +137,78 @@ void StatFileForIPC(const BrokerPolicy& policy,
   }
 }
 
-// Handle a |command_type| request contained in |iter| and send the reply
-// on |reply_ipc|.
-bool HandleRemoteCommand(const BrokerPolicy& policy,
-                         IPCCommand command_type,
-                         int reply_ipc,
-                         base::PickleIterator iter) {
-  // Currently all commands have filename as the first arg.
-  std::string requested_filename;
-  if (!iter.ReadString(&requested_filename))
-    return false;
+// Perform rename(2) on |old_filename| to |new_filename| and marshal the
+// result to |write_pickle|.
+void RenameFileForIPC(const BrokerPolicy& policy,
+                      const std::string& old_filename,
+                      const std::string& new_filename,
+                      base::Pickle* write_pickle) {
+  DCHECK(write_pickle);
+  bool ignore;
+  const char* old_file_to_access = nullptr;
+  const char* new_file_to_access = nullptr;
+  if (!policy.GetFileNameIfAllowedToOpen(old_filename.c_str(), O_RDWR,
+                                         &old_file_to_access, &ignore) ||
+      !policy.GetFileNameIfAllowedToOpen(new_filename.c_str(), O_RDWR,
+                                         &new_file_to_access, &ignore)) {
+    write_pickle->WriteInt(-policy.denied_errno());
+    return;
+  }
+  if (rename(old_file_to_access, new_file_to_access) < 0) {
+    write_pickle->WriteInt(-errno);
+    return;
+  }
+  write_pickle->WriteInt(0);
+}
 
-  base::Pickle write_pickle;
-  std::vector<int> opened_files;
+// Handle a |command_type| request contained in |iter| and write the reply
+// to |write_pickle|, adding any files opened to |opened_files|.
+bool HandleRemoteCommand(const BrokerPolicy& policy,
+                         base::PickleIterator iter,
+                         base::Pickle* write_pickle,
+                         std::vector<int>* opened_files) {
+  int command_type;
+  if (!iter.ReadInt(&command_type))
+    return false;
 
   switch (command_type) {
     case COMMAND_ACCESS: {
+      std::string requested_filename;
       int flags = 0;
-      if (!iter.ReadInt(&flags))
+      if (!iter.ReadString(&requested_filename) || !iter.ReadInt(&flags))
         return false;
-      AccessFileForIPC(policy, requested_filename, flags, &write_pickle);
+      AccessFileForIPC(policy, requested_filename, flags, write_pickle);
       break;
     }
     case COMMAND_OPEN: {
+      std::string requested_filename;
       int flags = 0;
-      if (!iter.ReadInt(&flags))
+      if (!iter.ReadString(&requested_filename) || !iter.ReadInt(&flags))
         return false;
-      OpenFileForIPC(
-          policy, requested_filename, flags, &write_pickle, &opened_files);
+      OpenFileForIPC(policy, requested_filename, flags, write_pickle,
+                     opened_files);
       break;
     }
     case COMMAND_STAT:
     case COMMAND_STAT64: {
-      StatFileForIPC(policy, command_type, requested_filename, &write_pickle);
+      std::string requested_filename;
+      if (!iter.ReadString(&requested_filename))
+        return false;
+      StatFileForIPC(policy, static_cast<IPCCommand>(command_type),
+                     requested_filename, write_pickle);
+      break;
+    }
+    case COMMAND_RENAME: {
+      std::string old_filename;
+      std::string new_filename;
+      if (!iter.ReadString(&old_filename) || !iter.ReadString(&new_filename))
+        return false;
+      RenameFileForIPC(policy, old_filename, new_filename, write_pickle);
       break;
     }
     default:
       LOG(ERROR) << "Invalid IPC command";
-      break;
-  }
-
-  CHECK_LE(write_pickle.size(), kMaxMessageLength);
-  ssize_t sent = base::UnixDomainSocket::SendMsg(
-      reply_ipc, write_pickle.data(), write_pickle.size(), opened_files);
-
-  // Close anything we have opened in this process.
-  for (int fd : opened_files) {
-    int ret = IGNORE_EINTR(close(fd));
-    DCHECK(!ret) << "Could not close file descriptor";
-  }
-
-  if (sent <= 0) {
-    LOG(ERROR) << "Could not send IPC reply";
-    return false;
+      return false;
   }
   return true;
 }
@@ -230,19 +249,29 @@ BrokerHost::RequestStatus BrokerHost::HandleRequest() const {
 
   base::Pickle pickle(buf, msg_len);
   base::PickleIterator iter(pickle);
-  int command_type;
-  if (iter.ReadInt(&command_type)) {
-    bool command_handled = HandleRemoteCommand(
-        broker_policy_, static_cast<IPCCommand>(command_type),
-        temporary_ipc.get(), iter);
-    if (!command_handled)
-      return RequestStatus::FAILURE;
+  base::Pickle write_pickle;
+  std::vector<int> opened_files;
+  bool result =
+      HandleRemoteCommand(broker_policy_, iter, &write_pickle, &opened_files);
 
-    return RequestStatus::SUCCESS;
+  if (result) {
+    CHECK_LE(write_pickle.size(), kMaxMessageLength);
+    ssize_t sent = base::UnixDomainSocket::SendMsg(
+        temporary_ipc.get(), write_pickle.data(), write_pickle.size(),
+        opened_files);
+    if (sent <= 0) {
+      LOG(ERROR) << "Could not send IPC reply";
+      result = false;
+    }
   }
 
-  LOG(ERROR) << "Error parsing IPC request";
-  return RequestStatus::FAILURE;
+  // Close anything we have opened in this process.
+  for (int fd : opened_files) {
+    int ret = IGNORE_EINTR(close(fd));
+    DCHECK(!ret) << "Could not close file descriptor";
+  }
+
+  return result ? RequestStatus::SUCCESS : RequestStatus::FAILURE;
 }
 
 }  // namespace syscall_broker
