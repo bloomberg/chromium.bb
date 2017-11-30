@@ -113,6 +113,7 @@ enum SnapshotReason {
   kSnapshotReasonWebGLDrawImageIntoBuffer,
   kSnapshotReasonCopyToClipboard,
   kSnapshotReasonCreateImageBitmap,
+  kSnapshotReasonLowLatencyFrame,
 };
 
 // Note: enum used directly for histogram, values must not change

@@ -283,6 +283,8 @@ class CORE_EXPORT HTMLCanvasElement final
     needs_unbuffered_input_ = value;
   }
 
+  bool LowLatencyEnabled() const { return !!frame_dispatcher_; }
+
  protected:
   void DidMoveToNewDocument(Document& old_document) override;
 
@@ -350,7 +352,12 @@ class CORE_EXPORT HTMLCanvasElement final
   mutable scoped_refptr<Image> copied_image_;
 
   // Used for OffscreenCanvas that controls this HTML canvas element
+  // and for low latency mode.
   std::unique_ptr<::blink::SurfaceLayerBridge> surface_layer_bridge_;
+
+  // Used for low latency mode.
+  // TODO: rename to CanvasFrameDispatcher.
+  std::unique_ptr<OffscreenCanvasFrameDispatcher> frame_dispatcher_;
 
   bool did_notify_listeners_for_current_frame_ = false;
 

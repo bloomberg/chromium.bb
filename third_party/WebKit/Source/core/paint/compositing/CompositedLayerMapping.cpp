@@ -111,19 +111,32 @@ static IntRect BackgroundRect(const LayoutObject& layout_object) {
   return PixelSnappedIntRect(box.BackgroundRect(kBackgroundClipRect));
 }
 
-static inline bool IsCompositedCanvas(const LayoutObject& layout_object) {
+static inline bool IsTextureLayerCanvas(const LayoutObject& layout_object) {
   if (layout_object.IsCanvas()) {
     HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
+    if (canvas->SurfaceLayerBridge())
+      return false;
     if (CanvasRenderingContext* context = canvas->RenderingContext())
       return context->IsComposited();
   }
   return false;
 }
 
-static inline bool IsPlaceholderCanvas(const LayoutObject& layout_object) {
+static inline bool IsSurfaceLayerCanvas(const LayoutObject& layout_object) {
   if (layout_object.IsCanvas()) {
     HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
     return canvas->SurfaceLayerBridge();
+  }
+  return false;
+}
+
+static inline bool IsCompositedCanvas(const LayoutObject& layout_object) {
+  if (layout_object.IsCanvas()) {
+    HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
+    if (canvas->SurfaceLayerBridge())
+      return true;
+    if (CanvasRenderingContext* context = canvas->RenderingContext())
+      return context->IsComposited();
   }
   return false;
 }
@@ -419,7 +432,7 @@ void CompositedLayerMapping::
 }
 
 void CompositedLayerMapping::UpdateContentsOpaque() {
-  if (IsCompositedCanvas(GetLayoutObject())) {
+  if (IsTextureLayerCanvas(GetLayoutObject())) {
     CanvasRenderingContext* context =
         ToHTMLCanvasElement(GetLayoutObject().GetNode())->RenderingContext();
     WebLayer* layer = context ? context->PlatformLayer() : nullptr;
@@ -443,7 +456,7 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
     graphics_layer_->SetContentsOpaque(false);
     background_layer_->SetContentsOpaque(
         owning_layer_.BackgroundIsKnownToBeOpaqueInRect(CompositedBounds()));
-  } else if (IsPlaceholderCanvas(GetLayoutObject())) {
+  } else if (IsSurfaceLayerCanvas(GetLayoutObject())) {
     // TODO(crbug.com/705019): Contents could be opaque, but that cannot be
     // determined from the main thread. Or can it?
     graphics_layer_->SetContentsOpaque(false);
@@ -843,12 +856,12 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration() {
     HTMLMediaElement* media_element =
         ToHTMLMediaElement(layout_object.GetNode());
     graphics_layer_->SetContentsToPlatformLayer(media_element->PlatformLayer());
-  } else if (IsPlaceholderCanvas(layout_object)) {
+  } else if (IsSurfaceLayerCanvas(layout_object)) {
     HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
     graphics_layer_->SetContentsToPlatformLayer(
         canvas->SurfaceLayerBridge()->GetWebLayer());
     layer_config_changed = true;
-  } else if (IsCompositedCanvas(layout_object)) {
+  } else if (IsTextureLayerCanvas(layout_object)) {
     HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
     if (CanvasRenderingContext* context = canvas->RenderingContext())
       graphics_layer_->SetContentsToPlatformLayer(context->PlatformLayer());
@@ -1914,7 +1927,7 @@ void CompositedLayerMapping::UpdateDrawsContent() {
 
   draws_background_onto_content_layer_ = false;
 
-  if (has_painted_content && IsCompositedCanvas(GetLayoutObject())) {
+  if (has_painted_content && IsTextureLayerCanvas(GetLayoutObject())) {
     CanvasRenderingContext* context =
         ToHTMLCanvasElement(GetLayoutObject().GetNode())->RenderingContext();
     // Content layer may be null if context is lost.
@@ -2850,7 +2863,8 @@ void CompositedLayerMapping::ContentChanged(ContentChangeType change_type) {
     return;
   }
 
-  if (change_type == kCanvasChanged && IsCompositedCanvas(GetLayoutObject())) {
+  if (change_type == kCanvasChanged &&
+      IsTextureLayerCanvas(GetLayoutObject())) {
     graphics_layer_->SetContentsNeedsDisplay();
     return;
   }
