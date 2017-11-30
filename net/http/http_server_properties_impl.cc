@@ -151,22 +151,9 @@ void HttpServerPropertiesImpl::SetQuicServerInfoMap(
   }
 }
 
-void HttpServerPropertiesImpl::GetSpdyServerList(
-    std::vector<std::string>* spdy_servers,
-    size_t max_size) const {
+const SpdyServersMap& HttpServerPropertiesImpl::spdy_servers_map() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(spdy_servers);
-
-  spdy_servers->clear();
-  size_t count = 0;
-  // Get the list of servers (scheme/host/port) that support SPDY.
-  for (SpdyServersMap::const_iterator it = spdy_servers_map_.begin();
-       it != spdy_servers_map_.end() && count < max_size; ++it) {
-    if (it->second) {
-      spdy_servers->push_back(it->first);
-      ++count;
-    }
-  }
+  return spdy_servers_map_;
 }
 
 void HttpServerPropertiesImpl::SetBrokenAndRecentlyBrokenAlternativeServices(

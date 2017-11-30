@@ -245,11 +245,14 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
       base::DictionaryValue* server_pref_dict);
   void SaveQuicServerInfoMapToServerPrefs(
       const QuicServerInfoMap& quic_server_info_map,
+      size_t max_count,
       base::DictionaryValue* http_server_properties_dict);
   void SaveBrokenAlternativeServicesToPrefs(
-      const BrokenAlternativeServiceList* broken_alternative_service_list,
-      const RecentlyBrokenAlternativeServices*
+      const BrokenAlternativeServiceList& broken_alternative_service_list,
+      size_t max_broken_count,
+      const RecentlyBrokenAlternativeServices&
           recently_broken_alternative_services,
+      size_t max_recently_broken_count,
       base::DictionaryValue* http_server_properties_dict);
 
   base::DefaultTickClock default_clock_;
