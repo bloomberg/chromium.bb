@@ -125,6 +125,7 @@ source_set("unit_tests") {
     "buffer_unittest.cc",
     "data_device_unittest.cc",
     "data_offer_unittest.cc",
+    "data_source_unittest.cc",
     "display_unittest.cc",
     "gaming_seat_unittest.cc",
     "keyboard_unittest.cc",
