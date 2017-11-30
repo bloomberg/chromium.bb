@@ -277,7 +277,7 @@ sk_sp<PaintFilter> RenderSurfaceFilters::BuildImageFilter(
           SkColorFilter* colorfilter_rawptr = nullptr;
           sk_filter->asColorFilter(&colorfilter_rawptr);
           cf.reset(colorfilter_rawptr);
-          has_input = sk_filter->getInput(0);
+          has_input = sk_filter->countInputs() > 0 && sk_filter->getInput(0);
         }
 
         if (cf && cf->asColorMatrix(matrix) && !has_input) {
