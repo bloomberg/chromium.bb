@@ -97,10 +97,11 @@ namespace cc {
 namespace {
 
 viz::SurfaceId MakeSurfaceId(const viz::FrameSinkId& frame_sink_id,
-                             uint32_t local_id) {
+                             uint32_t parent_id) {
   return viz::SurfaceId(
-      frame_sink_id, viz::LocalSurfaceId(
-                         local_id, base::UnguessableToken::Deserialize(0, 1u)));
+      frame_sink_id,
+      viz::LocalSurfaceId(parent_id,
+                          base::UnguessableToken::Deserialize(0, 1u)));
 }
 
 struct TestFrameData : public LayerTreeHostImpl::FrameData {

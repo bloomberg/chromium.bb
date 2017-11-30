@@ -625,29 +625,29 @@ void ParamTraits<viz::FrameSinkId>::Log(const param_type& p, std::string* l) {
 
 void ParamTraits<viz::LocalSurfaceId>::Write(base::Pickle* m,
                                              const param_type& p) {
-  WriteParam(m, p.local_id());
+  WriteParam(m, p.parent_id());
   WriteParam(m, p.nonce());
 }
 
 bool ParamTraits<viz::LocalSurfaceId>::Read(const base::Pickle* m,
                                             base::PickleIterator* iter,
                                             param_type* p) {
-  uint32_t local_id;
-  if (!ReadParam(m, iter, &local_id))
+  uint32_t parent_id;
+  if (!ReadParam(m, iter, &parent_id))
     return false;
 
   base::UnguessableToken nonce;
   if (!ReadParam(m, iter, &nonce))
     return false;
 
-  *p = viz::LocalSurfaceId(local_id, nonce);
+  *p = viz::LocalSurfaceId(parent_id, nonce);
   return true;
 }
 
 void ParamTraits<viz::LocalSurfaceId>::Log(const param_type& p,
                                            std::string* l) {
   l->append("viz::LocalSurfaceId(");
-  LogParam(p.local_id(), l);
+  LogParam(p.parent_id(), l);
   l->append(", ");
   LogParam(p.nonce(), l);
   l->append(")");

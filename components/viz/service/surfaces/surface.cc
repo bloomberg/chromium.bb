@@ -203,7 +203,7 @@ void Surface::NotifySurfaceIdAvailable(const SurfaceId& surface_id) {
   if (it == frame_sink_id_dependencies_.end())
     return;
 
-  if (surface_id.local_surface_id().local_id() >= it->second) {
+  if (surface_id.local_surface_id().parent_id() >= it->second) {
     frame_sink_id_dependencies_.erase(it);
     surface_manager_->SurfaceDependenciesChanged(this, {},
                                                  {surface_id.frame_sink_id()});
@@ -323,7 +323,7 @@ void Surface::UpdateActivationDependencies(
       // for the provided FrameSinkId.
       uint32_t& local_id =
           new_frame_sink_id_dependencies[surface_id.frame_sink_id()];
-      local_id = std::max(local_id, surface_id.local_surface_id().local_id());
+      local_id = std::max(local_id, surface_id.local_surface_id().parent_id());
       new_activation_dependencies.insert(surface_id);
     }
   }

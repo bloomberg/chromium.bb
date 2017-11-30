@@ -46,8 +46,9 @@ class SurfaceReferencesTest : public testing::Test {
 
   // Creates a new Surface with the provided |frame_sink_id| and |local_id|.
   // Will first create a Surfacesupport for |frame_sink_id| if necessary.
-  SurfaceId CreateSurface(const FrameSinkId& frame_sink_id, uint32_t local_id) {
-    LocalSurfaceId local_surface_id(local_id,
+  SurfaceId CreateSurface(const FrameSinkId& frame_sink_id,
+                          uint32_t parent_id) {
+    LocalSurfaceId local_surface_id(parent_id,
                                     base::UnguessableToken::Deserialize(0, 1u));
     GetCompositorFrameSinkSupport(frame_sink_id)
         .SubmitCompositorFrame(local_surface_id, MakeCompositorFrame());
