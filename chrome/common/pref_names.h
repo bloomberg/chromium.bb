@@ -176,7 +176,6 @@ extern const char kNetworkQualities[];
 #if defined(OS_ANDROID)
 extern const char kLastPolicyCheckTime[];
 #endif
-extern const char kInstantUIZeroSuggestUrlPrefix[];
 extern const char kNetworkPredictionOptions[];
 extern const char kDefaultAppsInstallState[];
 extern const char kHideWebStoreIcon[];

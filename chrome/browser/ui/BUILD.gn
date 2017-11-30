@@ -234,8 +234,6 @@ split_static_library("ui") {
     "webui/flags_ui.h",
     "webui/gcm_internals_ui.cc",
     "webui/gcm_internals_ui.h",
-    "webui/instant_ui.cc",
-    "webui/instant_ui.h",
     "webui/interstitials/interstitial_ui.cc",
     "webui/interstitials/interstitial_ui.h",
     "webui/interventions_internals/interventions_internals_page_handler.cc",
