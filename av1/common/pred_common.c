@@ -101,6 +101,13 @@ int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd) {
 #endif
 
 #if CONFIG_PALETTE_DELTA_ENCODING
+static void palette_add_to_cache(uint16_t *cache, int *n, uint16_t val) {
+  // Do not add an already existing value
+  if (*n > 0 && val == cache[*n - 1]) return;
+
+  cache[(*n)++] = val;
+}
+
 int av1_get_palette_cache(const MACROBLOCKD *const xd, int plane,
                           uint16_t *cache) {
   const int row = -xd->mb_to_top_edge >> 3;
@@ -127,21 +134,21 @@ int av1_get_palette_cache(const MACROBLOCKD *const xd, int plane,
     uint16_t v_above = above_colors[above_idx];
     uint16_t v_left = left_colors[left_idx];
     if (v_left < v_above) {
-      if (n == 0 || v_left != cache[n - 1]) cache[n++] = v_left;
+      palette_add_to_cache(cache, &n, v_left);
       ++left_idx, --left_n;
     } else {
-      if (n == 0 || v_above != cache[n - 1]) cache[n++] = v_above;
+      palette_add_to_cache(cache, &n, v_above);
       ++above_idx, --above_n;
       if (v_left == v_above) ++left_idx, --left_n;
     }
   }
   while (above_n-- > 0) {
     uint16_t val = above_colors[above_idx++];
-    if (n == 0 || val != cache[n - 1]) cache[n++] = val;
+    palette_add_to_cache(cache, &n, val);
   }
   while (left_n-- > 0) {
     uint16_t val = left_colors[left_idx++];
-    if (n == 0 || val != cache[n - 1]) cache[n++] = val;
+    palette_add_to_cache(cache, &n, val);
   }
   assert(n <= 2 * PALETTE_MAX_SIZE);
   return n;
