@@ -92865,6 +92865,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Status of the VR assets component when entering a VR mode.</summary>
 </histogram>
 
+<histogram base="true" name="VR.DataConnection.OnEnter"
+    enum="NetworkConnectionType">
+  <owner>tiborg@chromium.org</owner>
+  <summary>Data connection when entering a VR mode.</summary>
+</histogram>
+
+<histogram name="VR.DataConnection.OnRegisterAssetsComponent"
+    enum="NetworkConnectionType">
+  <owner>tiborg@chromium.org</owner>
+  <summary>Data connection when registering the VR assets component.</summary>
+</histogram>
+
 <histogram name="VR.Shell.EncounteredSuppressedUI" enum="VRSuppressedElement">
   <owner>asimjour@chromium.org</owner>
   <summary>
@@ -108974,6 +108986,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="WebVR"
       label="Entered WebVR mode (also includes splash screen)."/>
   <affected-histogram name="VR.AssetsComponent.Status.OnEnter"/>
+  <affected-histogram name="VR.DataConnection.OnEnter"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="VRFreNotCompleteType" separator=".">

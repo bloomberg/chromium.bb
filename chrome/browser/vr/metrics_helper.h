@@ -24,6 +24,7 @@ class MetricsHelper {
 
   void OnComponentReady();
   void OnEnter(Mode mode);
+  void OnRegisteredComponent();
 
  private:
   base::Optional<base::Time>& GetEnterTime(Mode mode);

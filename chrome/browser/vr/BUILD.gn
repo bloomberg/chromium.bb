@@ -210,6 +210,7 @@ static_library("vr_common") {
     "//content/public/common",
     "//device/vr:mojo_bindings",
     "//device/vr:vr",
+    "//net",
     "//skia",
     "//ui/base",
     "//ui/display",
