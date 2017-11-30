@@ -72,10 +72,6 @@ bool SRTPromptNeedsElevationIcon();
 // Returns true if feature kUserInitiatedChromeCleanupsFeature is enabled.
 bool UserInitiatedCleanupsEnabled();
 
-// Returns true if this Chrome is in a field trial group which enables running
-// the SwReporter.
-bool IsSwReporterEnabled();
-
 // Returns the correct SRT download URL for the current field trial.
 GURL GetSRTDownloadURL();
 

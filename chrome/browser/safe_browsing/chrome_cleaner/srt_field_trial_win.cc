@@ -22,9 +22,6 @@ const char kSRTPromptSeedParam[] = "Seed";
 const char kSRTElevationTrial[] = "SRTElevation";
 const char kSRTElevationAsNeededGroup[] = "AsNeeded";
 
-const char kSRTReporterTrial[] = "srt_reporter";
-const char kSRTReporterOffGroup[] = "Off";
-
 const char kDownloadRootPath[] =
     "https://dl.google.com/dl/softwareremovaltool/win/";
 
@@ -48,6 +45,8 @@ const base::Feature kRebootPromptDialogFeature{
 const base::Feature kUserInitiatedChromeCleanupsFeature{
     "UserInitiatedChromeCleanups", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// TODO(b/786964): Rename this to remove ByBitness from the feature name once
+// all test scripts have been updated.
 const base::Feature kCleanerDownloadFeature{"DownloadCleanupToolByBitness",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -64,12 +63,6 @@ bool SRTPromptNeedsElevationIcon() {
 
 bool UserInitiatedCleanupsEnabled() {
   return base::FeatureList::IsEnabled(kUserInitiatedChromeCleanupsFeature);
-}
-
-bool IsSwReporterEnabled() {
-  return !base::StartsWith(
-      base::FieldTrialList::FindFullName(kSRTReporterTrial),
-      kSRTReporterOffGroup, base::CompareCase::SENSITIVE);
 }
 
 GURL GetLegacyDownloadURL() {

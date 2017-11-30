@@ -31,6 +31,12 @@ namespace component_updater {
 
 class ComponentUpdateService;
 
+// Expose the feature name so it can be referenced in tests.
+// TODO(crbug.com/786964): This feature will continue to exist as part of a
+// permanent variations study to control which version of the reporter gets
+// downloaded. Rename it to something that makes sense long-term.
+constexpr char kComponentTagFeatureName[] = "ExperimentalSwReporterEngine";
+
 constexpr char kSwReporterComponentId[] = "gkmgaooipdjhmangpemjhigmamcehddo";
 
 // These MUST match the values for SoftwareReporterExperimentError in
@@ -52,7 +58,6 @@ class SwReporterInstallerPolicy : public ComponentInstallerPolicy {
   // Note: |on_sequence_done| will be invoked on the UI thread.
   SwReporterInstallerPolicy(
       const SwReporterRunner& reporter_runner,
-      bool is_experimental_engine_supported,
       safe_browsing::SwReporterInvocationType invocation_type,
       safe_browsing::OnReporterSequenceDone on_sequence_done);
   ~SwReporterInstallerPolicy() override;
@@ -78,12 +83,7 @@ class SwReporterInstallerPolicy : public ComponentInstallerPolicy {
  private:
   friend class SwReporterInstallerTest;
 
-  // Returns true if the experimental engine is supported and the Feature is
-  // enabled.
-  bool IsExperimentalEngineEnabled() const;
-
   SwReporterRunner reporter_runner_;
-  const bool is_experimental_engine_supported_;
 
   const safe_browsing::SwReporterInvocationType invocation_type_;
 

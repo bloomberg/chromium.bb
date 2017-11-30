@@ -36,10 +36,6 @@ extern const char kChromeVersionSwitch[];
 // Indicates that crash reporting is enabled for the current user.
 extern const char kEnableCrashReportingSwitch[];
 
-// Specifies the name of experiment group in the alternate engine field trial
-// for a Software Reporter run.
-extern const char kEngineExperimentGroupSwitch[];
-
 // Specify the engine to use.
 extern const char kEngineSwitch[];
 
