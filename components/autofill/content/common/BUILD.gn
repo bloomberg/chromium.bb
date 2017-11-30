@@ -4,21 +4,6 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-static_library("ipc_traits") {
-  sources = [
-    "autofill_message_generator.cc",
-    "autofill_param_traits_macros.h",
-  ]
-
-  deps = [
-    "//components/autofill/core/common",
-    "//content/public/common",
-    "//ipc",
-    "//url",
-    "//url/ipc:url_ipc",
-  ]
-}
-
 mojom("mojo_interfaces") {
   sources = [
     "autofill_agent.mojom",

@@ -52,11 +52,9 @@ source_set("importer") {
     "//chrome/app:generated_resources",
     "//chrome/common:common_param_traits_macros",
     "//chrome/common:ini_parser",
-    "//components/autofill/content/common:ipc_traits",
     "//components/autofill/core/common",
     "//components/favicon_base",
     "//content/public/common",
-    "//ipc",
     "//ui/base",
     "//url",
   ]
