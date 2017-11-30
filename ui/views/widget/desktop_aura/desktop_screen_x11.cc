@@ -307,6 +307,7 @@ DesktopScreenX11::DesktopScreenX11(
 }
 
 std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
+  DCHECK(has_xrandr_);
   std::vector<display::Display> displays;
   gfx::XScopedPtr<
       XRRScreenResources,
@@ -423,7 +424,10 @@ void DesktopScreenX11::RestartDelayedConfigurationTask() {
 
 void DesktopScreenX11::UpdateDisplays() {
   std::vector<display::Display> old_displays = displays_;
-  SetDisplaysInternal(BuildDisplaysFromXRandRInfo());
+  if (has_xrandr_)
+    SetDisplaysInternal(BuildDisplaysFromXRandRInfo());
+  else
+    SetDisplaysInternal(GetFallbackDisplayList());
   change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
 }
 
