@@ -104,6 +104,8 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
+  void AddedToWidget() override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -111,6 +113,8 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   void set_listener(SliderListener* listener) {
     listener_ = listener;
   }
+
+  void NotifyPendingAccessibilityValueChanged();
 
   SliderListener* listener_;
 
@@ -134,6 +138,8 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   float thumb_highlight_radius_ = 0.f;
 
   gfx::SlideAnimation highlight_animation_;
+
+  bool pending_accessibility_value_change_;
 
   DISALLOW_COPY_AND_ASSIGN(Slider);
 };

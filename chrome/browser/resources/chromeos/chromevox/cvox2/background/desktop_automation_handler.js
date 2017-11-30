@@ -44,6 +44,9 @@ DesktopAutomationHandler = function(node) {
    */
   this.lastValueChanged_ = new Date(0);
 
+  /** @private {AutomationNode} */
+  this.lastValueTarget_ = null;
+
   this.addListener_(
       EventType.ACTIVEDESCENDANTCHANGED, this.onActiveDescendantChanged);
   this.addListener_(EventType.ALERT, this.onAlert);
@@ -449,7 +452,8 @@ DesktopAutomationHandler.prototype = {
       return;
 
     var t = evt.target;
-    if (t.state.focused || t.root.role == RoleType.DESKTOP ||
+    var fromDesktop = t.root.role == RoleType.DESKTOP;
+    if (t.state.focused || fromDesktop ||
         AutomationUtil.isDescendantOf(
             ChromeVoxState.instance.currentRange.start.node, t)) {
       if (new Date() - this.lastValueChanged_ <=
@@ -460,10 +464,17 @@ DesktopAutomationHandler.prototype = {
 
       var output = new Output();
 
-      if (t.root.role == RoleType.DESKTOP)
+      if (fromDesktop &&
+          (!this.lastValueTarget_ || this.lastValueTarget_ !== t)) {
         output.withQueueMode(cvox.QueueMode.FLUSH);
-
-      output.format('$value', evt.target).go();
+        var range = cursors.Range.fromNode(t);
+        output.withRichSpeechAndBraille(
+            range, range, Output.EventType.NAVIGATE);
+        this.lastValueTarget_ = t;
+      } else {
+        output.format('$value', t);
+      }
+      output.go();
     }
   },
 

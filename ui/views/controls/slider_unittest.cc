@@ -19,6 +19,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/slider_test_api.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -123,6 +124,19 @@ namespace views {
 // Base test fixture for Slider tests.
 class SliderTest : public views::ViewsTestBase {
  public:
+  class SliderTestViewsDelegate : public views::TestViewsDelegate {
+   public:
+    bool has_value_changed() { return has_value_changed_; }
+
+   private:
+    void NotifyAccessibilityEvent(View* view, ui::AXEvent event_type) override {
+      if (event_type == ui::AX_EVENT_VALUE_CHANGED)
+        has_value_changed_ = true;
+    }
+
+    bool has_value_changed_ = false;
+  };
+
   SliderTest();
   ~SliderTest() override;
 
@@ -153,6 +167,8 @@ class SliderTest : public views::ViewsTestBase {
     return event_generator_.get();
   }
 
+  SliderTestViewsDelegate* delegate() { return delegate_; }
+
  private:
   // The Slider to be tested.
   Slider* slider_;
@@ -169,12 +185,21 @@ class SliderTest : public views::ViewsTestBase {
   views::Widget* widget_;
   // An event generator.
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
+  // A TestViewsDelegate that intercepts accessibility notifications. Weak.
+  SliderTestViewsDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SliderTest);
 };
 
 SliderTest::SliderTest()
-    : slider_(NULL), default_locale_(), max_x_(0), max_y_(0) {}
+    : slider_(NULL),
+      default_locale_(),
+      max_x_(0),
+      max_y_(0),
+      delegate_(new SliderTestViewsDelegate()) {
+  std::unique_ptr<views::TestViewsDelegate> delegate(delegate_);
+  set_views_delegate(std::move(delegate));
+}
 
 SliderTest::~SliderTest() {
 }
@@ -369,6 +394,32 @@ TEST_F(SliderTest, SliderListenerEventsForMultiFingerScrollGesture) {
             slider_listener().last_drag_started_epoch());
   EXPECT_EQ(slider(), slider_listener().last_drag_started_sender());
   EXPECT_EQ(slider(), slider_listener().last_drag_ended_sender());
+}
+
+// Verifies the correct SliderListener events are raised for an accessible
+// slider.
+TEST_F(SliderTest, SliderRaisesA11yEvents) {
+  EXPECT_FALSE(delegate()->has_value_changed());
+
+  // First, detach/reattach the slider without setting value.
+  // Temporarily detach the slider.
+  View* root_view = slider()->parent();
+  root_view->RemoveChildView(slider());
+
+  // Re-attachment should cause nothing to get fired.
+  root_view->AddChildView(slider());
+  EXPECT_FALSE(delegate()->has_value_changed());
+
+  // Now, set value before reattaching.
+  root_view->RemoveChildView(slider());
+
+  // Value changes won't trigger accessibility events before re-attachment.
+  slider()->SetValue(22);
+  EXPECT_FALSE(delegate()->has_value_changed());
+
+  // Re-attachment should trigger the value change.
+  root_view->AddChildView(slider());
+  EXPECT_TRUE(delegate()->has_value_changed());
 }
 
 #endif  // !defined(OS_MACOSX) || defined(USE_AURA)
