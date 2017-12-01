@@ -66,7 +66,7 @@ float LayoutSVGResourceRadialGradient::FocalRadius(
 }
 
 scoped_refptr<Gradient> LayoutSVGResourceRadialGradient::BuildGradient() const {
-  const RadialGradientAttributes& attributes = this->Attributes();
+  const RadialGradientAttributes& attributes = Attributes();
   scoped_refptr<Gradient> gradient = Gradient::CreateRadial(
       FocalPoint(attributes), FocalRadius(attributes), CenterPoint(attributes),
       Radius(attributes), 1,

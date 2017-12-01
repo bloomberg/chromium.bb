@@ -53,7 +53,7 @@ FloatPoint LayoutSVGResourceLinearGradient::EndPoint(
 }
 
 scoped_refptr<Gradient> LayoutSVGResourceLinearGradient::BuildGradient() const {
-  const LinearGradientAttributes& attributes = this->Attributes();
+  const LinearGradientAttributes& attributes = Attributes();
   scoped_refptr<Gradient> gradient = Gradient::CreateLinear(
       StartPoint(attributes), EndPoint(attributes),
       PlatformSpreadMethodFromSVGType(attributes.SpreadMethod()),

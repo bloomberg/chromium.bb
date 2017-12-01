@@ -131,7 +131,7 @@ bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,
   if (hit_test_action != kHitTestForeground)
     return false;
 
-  AffineTransform local_transform = this->LocalSVGTransform();
+  AffineTransform local_transform = LocalSVGTransform();
   if (!local_transform.IsInvertible())
     return false;
 

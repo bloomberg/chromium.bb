@@ -143,7 +143,7 @@ void AbstractInlineTextBox::GetWordBoundaries(
   if (!inline_text_box_)
     return;
 
-  String text = this->GetText();
+  String text = GetText();
   int len = text.length();
   TextBreakIterator* iterator = WordBreakIterator(text, 0, len);
 

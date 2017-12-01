@@ -87,7 +87,7 @@ PatternData* LayoutSVGResourcePattern::PatternForLayoutObject(
 std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
     const LayoutObject& object) {
   // If we couldn't determine the pattern content element root, stop here.
-  const PatternAttributes& attributes = this->Attributes();
+  const PatternAttributes& attributes = Attributes();
   if (!attributes.PatternContentElement())
     return nullptr;
 
