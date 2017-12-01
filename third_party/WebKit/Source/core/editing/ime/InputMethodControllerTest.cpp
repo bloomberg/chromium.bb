@@ -1147,9 +1147,9 @@ TEST_F(InputMethodControllerTest, InsertLineBreakWhileComposingText) {
   EXPECT_EQ(5u, Controller().GetSelectionOffsets().End());
 
   GetFrame().GetEditor().InsertLineBreak();
-  EXPECT_STREQ("\n\n", div->innerText().Utf8().data());
-  EXPECT_EQ(1u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(1u, Controller().GetSelectionOffsets().End());
+  EXPECT_STREQ("hello\n\n", div->innerText().Utf8().data());
+  EXPECT_EQ(6u, Controller().GetSelectionOffsets().Start());
+  EXPECT_EQ(6u, Controller().GetSelectionOffsets().End());
 }
 
 TEST_F(InputMethodControllerTest, InsertLineBreakAfterConfirmingText) {

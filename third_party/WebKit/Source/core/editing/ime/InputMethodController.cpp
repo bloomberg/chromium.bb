@@ -762,6 +762,22 @@ void InputMethodController::SetComposition(
   // We shouldn't close typing in the middle of setComposition.
   SetEditableSelectionOffsets(selected_range, TypingContinuation::kContinue);
 
+  if (TypingCommand* const last_typing_command =
+          TypingCommand::LastTypingCommandIfStillOpenForTyping(&GetFrame())) {
+    // When we called InsertTextDuringCompositionWithEvents() with the
+    // kSelectInsertedText flag, it set what is now the composition range as the
+    // ending selection on the open TypingCommand. We now update it to the
+    // current selection to fix two problems:
+    //
+    // 1. Certain operations, e.g. pressing enter on a physical keyboard on
+    // Android, would otherwise incorrectly replace the composition range.
+    //
+    // 2. Using undo would cause text to be selected, even though we never
+    // actually showed the selection to the user.
+    TypingCommand::UpdateSelectionIfDifferentFromCurrentSelection(
+        last_typing_command, &GetFrame());
+  }
+
   // Even though we would've returned already if SetComposition() were called
   // with an empty string, the composition range could still be empty right now
   // due to Unicode grapheme cluster position normalization (e.g. if

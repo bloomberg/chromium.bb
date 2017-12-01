@@ -88,6 +88,8 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   static void CloseTyping(LocalFrame*);
 
   static TypingCommand* LastTypingCommandIfStillOpenForTyping(LocalFrame*);
+  static void UpdateSelectionIfDifferentFromCurrentSelection(TypingCommand*,
+                                                             LocalFrame*);
 
   void InsertText(const String& text, bool select_inserted_text, EditingState*);
   void InsertTextRunWithoutNewlines(const String& text,
@@ -154,9 +156,6 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   void SetShouldPreventSpellChecking(bool prevent) {
     should_prevent_spell_checking_ = prevent;
   }
-
-  static void UpdateSelectionIfDifferentFromCurrentSelection(TypingCommand*,
-                                                             LocalFrame*);
 
   void UpdatePreservesTypingStyle(ETypingCommand);
   void TypingAddedToOpenCommand(ETypingCommand);
