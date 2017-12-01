@@ -48,7 +48,6 @@ crbug.com/417782 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot.js [ F
 crbug.com/417782 inspector-protocol/layers/paint-profiler.js [ Crash ]
 crbug.com/417782 inspector-protocol/page/get-layout-metrics.js [ Failure ]
 crbug.com/417782 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
-crbug.com/417782 [ Mac Win ] paint/overflow/fixed-background-scroll-window.html [ Failure ]
 crbug.com/417782 plugins/webview-plugin-nested-iframe-scroll.html [ Failure ]
 crbug.com/417782 plugins/webview-plugin-scroll.html [ Failure ]
 crbug.com/417782 transforms/selection-bounds-in-transformed-view.html [ Failure ]
