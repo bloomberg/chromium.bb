@@ -41,7 +41,7 @@ void LayoutSVGResourceFilterPrimitive::StyleDidChange(
   DCHECK(GetElement());
   SVGFilterPrimitiveStandardAttributes& element =
       ToSVGFilterPrimitiveStandardAttributes(*GetElement());
-  const SVGComputedStyle& new_style = this->StyleRef().SvgStyle();
+  const SVGComputedStyle& new_style = StyleRef().SvgStyle();
   if (IsSVGFEFloodElement(element) || IsSVGFEDropShadowElement(element)) {
     if (new_style.FloodColor() != old_style->SvgStyle().FloodColor())
       element.PrimitiveAttributeChanged(SVGNames::flood_colorAttr);

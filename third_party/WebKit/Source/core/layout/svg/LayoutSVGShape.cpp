@@ -134,7 +134,7 @@ FloatRect LayoutSVGShape::HitTestStrokeBoundingBox() const {
 
   // TODO(fs): Fold this into ApproximateStrokeBoundingBox.
   FloatRect box = fill_bounding_box_;
-  const float stroke_width = this->StrokeWidth();
+  const float stroke_width = StrokeWidth();
   box.Inflate(stroke_width / 2);
   return box;
 }

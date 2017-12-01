@@ -230,8 +230,7 @@ bool LayoutSVGRoot::ShouldApplyViewportClip() const {
   // scrollbars should be hidden if overflow=hidden.
   return Style()->OverflowX() == EOverflow::kHidden ||
          Style()->OverflowX() == EOverflow::kAuto ||
-         Style()->OverflowX() == EOverflow::kScroll ||
-         this->IsDocumentElement();
+         Style()->OverflowX() == EOverflow::kScroll || IsDocumentElement();
 }
 
 LayoutRect LayoutSVGRoot::VisualOverflowRect() const {
@@ -453,7 +452,7 @@ bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
       (!ShouldApplyViewportClip() &&
        VisualOverflowRect().Contains(point_in_border_box))) {
     const AffineTransform& local_to_parent_transform =
-        this->LocalToSVGParentTransform();
+        LocalToSVGParentTransform();
     if (local_to_parent_transform.IsInvertible()) {
       FloatPoint local_point = local_to_parent_transform.Inverse().MapPoint(
           FloatPoint(point_in_parent));

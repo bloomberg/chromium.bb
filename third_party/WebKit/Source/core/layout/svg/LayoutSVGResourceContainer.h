@@ -55,7 +55,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   virtual LayoutSVGResourceType ResourceType() const = 0;
 
   bool IsSVGPaintServer() const {
-    LayoutSVGResourceType resource_type = this->ResourceType();
+    LayoutSVGResourceType resource_type = ResourceType();
     return resource_type == kPatternResourceType ||
            resource_type == kLinearGradientResourceType ||
            resource_type == kRadialGradientResourceType;

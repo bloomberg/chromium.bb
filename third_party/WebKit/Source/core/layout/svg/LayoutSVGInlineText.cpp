@@ -164,7 +164,7 @@ PositionWithAffinity LayoutSVGInlineText::PositionForPoint(
       font_data ? font_data->GetFontMetrics().FloatAscent() / scaling_factor_
                 : 0;
 
-  LayoutBlock* containing_block = this->ContainingBlock();
+  LayoutBlock* containing_block = ContainingBlock();
   DCHECK(containing_block);
 
   // Map local point to absolute point, as the character origins stored in the

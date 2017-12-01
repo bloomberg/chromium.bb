@@ -74,7 +74,7 @@ void LayoutSVGTransformableContainer::SetNeedsTransformUpdate() {
 }
 
 SVGTransformChange LayoutSVGTransformableContainer::CalculateLocalTransform() {
-  SVGGraphicsElement* element = ToSVGGraphicsElement(this->GetElement());
+  SVGGraphicsElement* element = ToSVGGraphicsElement(GetElement());
   DCHECK(element);
 
   // If we're either the layoutObject for a <use> element, or for any <g>
