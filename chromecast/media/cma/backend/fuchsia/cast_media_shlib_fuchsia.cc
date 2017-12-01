@@ -41,9 +41,8 @@ base::ThreadTaskRunnerHandle* g_thread_task_runner_handle = nullptr;
 }  // namespace
 
 void CastMediaShlib::Initialize(const std::vector<std::string>& argv) {
-  // Sets logging to display process and thread ID.
-  logging::SetLogItems(true, true, false, false);
-  chromecast::InitCommandLineShlib(argv);
+  // On Fuchsia CastMediaShlib is compiled statically with cast_shell, so |argv|
+  // can be ignored.
 
   g_video_plane = new DefaultVideoPlane();
 
