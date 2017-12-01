@@ -208,7 +208,8 @@ void DispatchAbortPaymentEvent(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (service_worker_status != SERVICE_WORKER_OK) {
-    std::move(callback).Run(false);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(std::move(callback), false));
     return;
   }
 
@@ -237,7 +238,8 @@ void DispatchCanMakePaymentEvent(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (service_worker_status != SERVICE_WORKER_OK) {
-    std::move(callback).Run(false);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(std::move(callback), false));
     return;
   }
 
