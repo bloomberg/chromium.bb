@@ -76279,8 +76279,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchSecondTapMlOverrideSeen" enum="Boolean">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether results were seen for a second tap that was allowed to override ML
+    Tap Suppression. Recorded when the UX is hidden. Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchSecondTapSeen"
     enum="ContextualSearchResultsSeen">
+  <obsolete>
+    Removed 11/2017 because the data is no longer valuable.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -76467,6 +76479,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Search.ContextualSearchTapSuppressionSeen"
     enum="ContextualSearchResultsSeen">
+  <obsolete>
+    Removed 11/2017 because the data is no longer valuable.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>

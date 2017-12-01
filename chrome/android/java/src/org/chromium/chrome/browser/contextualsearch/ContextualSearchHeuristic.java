@@ -78,4 +78,11 @@ abstract class ContextualSearchHeuristic {
     protected void logRankerTapSuppressionOutcome(ContextualSearchRankerLogger logger) {
         // Default is to not log.
     }
+
+    /**
+     * Allows a heuristic to override a machine-learning model's Tap Suppression.
+     */
+    protected boolean shouldOverrideMlTapSuppression() {
+        return false;
+    }
 }

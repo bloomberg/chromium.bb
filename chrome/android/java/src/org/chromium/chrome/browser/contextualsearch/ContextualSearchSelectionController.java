@@ -12,7 +12,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentViewCore;
@@ -365,14 +364,10 @@ public class ContextualSearchSelectionController {
         int x = (int) mX;
         int y = (int) mY;
 
-        // TODO(donnd): add a policy method to get adjusted tap count.
-        ChromePreferenceManager prefs = ChromePreferenceManager.getInstance();
-        int adjustedTapsSinceOpen = prefs.getContextualSearchTapCount()
-                - prefs.getContextualSearchTapQuickAnswerCount();
+        // TODO(donnd): Remove tap counters.
         assert mTapDurationMs != INVALID_DURATION : "mTapDurationMs not set!";
-        TapSuppressionHeuristics tapHeuristics =
-                new TapSuppressionHeuristics(this, mLastTapState, x, y, adjustedTapsSinceOpen,
-                        contextualSearchContext, mTapDurationMs, mWasSelectionEmptyBeforeTap);
+        TapSuppressionHeuristics tapHeuristics = new TapSuppressionHeuristics(this, mLastTapState,
+                x, y, contextualSearchContext, mTapDurationMs, mWasSelectionEmptyBeforeTap);
         // TODO(donnd): Move to be called when the panel closes to work with states that change.
         tapHeuristics.logConditionState();
 
@@ -381,13 +376,7 @@ public class ContextualSearchSelectionController {
         mHandler.handleMetricsForWouldSuppressTap(tapHeuristics);
 
         boolean shouldSuppressTapBasedOnHeuristics = tapHeuristics.shouldSuppressTap();
-        if (mTapTimeNanoseconds != 0) {
-            // Remember the tap state for subsequent tap evaluation.
-            mLastTapState = new ContextualSearchTapState(
-                    x, y, mTapTimeNanoseconds, shouldSuppressTapBasedOnHeuristics);
-        } else {
-            mLastTapState = null;
-        }
+        boolean shouldOverrideMlTapSuppression = tapHeuristics.shouldOverrideMlTapSuppression();
 
         // Make sure Tap Suppression features are consistent.
         assert !ContextualSearchFieldTrial.isContextualSearchMlTapSuppressionEnabled()
@@ -405,13 +394,22 @@ public class ContextualSearchSelectionController {
 
         // Make the suppression decision and act upon it.
         boolean shouldSuppressTapBasedOnRanker = (tapPrediction == AssistRankerPrediction.SUPPRESS)
-                && ContextualSearchFieldTrial.isContextualSearchMlTapSuppressionEnabled();
+                && ContextualSearchFieldTrial.isContextualSearchMlTapSuppressionEnabled()
+                && !shouldOverrideMlTapSuppression;
         if (shouldSuppressTapBasedOnHeuristics || shouldSuppressTapBasedOnRanker) {
             Log.i(TAG, "Tap suppressed due to Ranker: %s, heuristics: %s",
                     shouldSuppressTapBasedOnRanker, shouldSuppressTapBasedOnHeuristics);
             mHandler.handleSuppressedTap();
         } else {
             mHandler.handleNonSuppressedTap(mTapTimeNanoseconds);
+        }
+
+        if (mTapTimeNanoseconds != 0) {
+            // Remember the tap state for subsequent tap evaluation.
+            mLastTapState = new ContextualSearchTapState(
+                    x, y, mTapTimeNanoseconds, shouldSuppressTapBasedOnRanker);
+        } else {
+            mLastTapState = null;
         }
     }
 

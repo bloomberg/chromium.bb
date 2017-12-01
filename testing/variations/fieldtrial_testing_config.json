@@ -931,7 +931,8 @@
                     },
                     "enable_features": [
                         "ContextualSearchMlTapSuppression",
-                        "ContextualSearchRankerQuery"
+                        "ContextualSearchRankerQuery",
+                        "ContextualSearchSecondTap"
                     ]
                 }
             ]

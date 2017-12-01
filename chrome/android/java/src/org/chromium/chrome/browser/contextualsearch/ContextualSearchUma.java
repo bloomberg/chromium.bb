@@ -785,21 +785,12 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Log whether results were seen due to a Tap with broad signals.
+     * Log whether results were seen due to a Tap that was allowed to override an ML suppression.
      * @param wasSearchContentViewSeen If the panel was opened.
-     * @param isSecondTap Whether this was the second tap after an initial suppressed tap.
      */
-    public static void logTapSuppressionResultsSeen(
-            boolean wasSearchContentViewSeen, boolean isSecondTap) {
-        if (isSecondTap) {
-            RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchSecondTapSeen",
-                    wasSearchContentViewSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN,
-                    RESULTS_SEEN_BOUNDARY);
-        } else {
-            RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchTapSuppressionSeen",
-                    wasSearchContentViewSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN,
-                    RESULTS_SEEN_BOUNDARY);
-        }
+    static void logSecondTapMlOverrideResultsSeen(boolean wasSearchContentViewSeen) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearchSecondTapMlOverrideSeen", wasSearchContentViewSeen);
     }
 
     /**
