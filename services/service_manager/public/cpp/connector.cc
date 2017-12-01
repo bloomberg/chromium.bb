@@ -95,6 +95,10 @@ std::unique_ptr<Connector> Connector::Clone() {
   return std::make_unique<Connector>(connector.PassInterface());
 }
 
+bool Connector::IsBound() const {
+  return connector_.is_bound();
+}
+
 void Connector::FilterInterfaces(const std::string& spec,
                                  const Identity& source_identity,
                                  mojom::InterfaceProviderRequest request,

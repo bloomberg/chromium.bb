@@ -131,6 +131,9 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
   // to pass again.
   std::unique_ptr<Connector> Clone();
 
+  // Returns true if this Connector instance is already bound to a thread.
+  bool IsBound() const;
+
   void FilterInterfaces(const std::string& spec,
                         const Identity& source_identity,
                         mojom::InterfaceProviderRequest request,
