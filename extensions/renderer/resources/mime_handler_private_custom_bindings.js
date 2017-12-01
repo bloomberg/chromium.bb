@@ -14,7 +14,9 @@ var NO_STREAM_ERROR =
     'Streams are only available from a mime handler view guest.';
 var STREAM_ABORTED_ERROR = 'Stream has been aborted.';
 
-loadScript('mojo_bindings');
+if ((typeof mojo === 'undefined') || !mojo.bindingsLibraryInitialized) {
+  loadScript('mojo_bindings');
+}
 loadScript('extensions/common/api/mime_handler.mojom');
 
 var servicePtr = new extensions.mimeHandler.MimeHandlerServicePtr;
