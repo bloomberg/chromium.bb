@@ -21,7 +21,6 @@
 #include "av1/common/reconinter.h"
 
 int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col) {
-  int r, c;
   int maxc, maxr;
   int skip = 1;
   maxc = cm->mi_cols - mi_col;
@@ -30,8 +29,8 @@ int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col) {
   maxr = AOMMIN(maxr, MI_SIZE_64X64);
   maxc = AOMMIN(maxc, MI_SIZE_64X64);
 
-  for (r = 0; r < maxr; r++) {
-    for (c = 0; c < maxc; c++) {
+  for (int r = 0; r < maxr; r++) {
+    for (int c = 0; c < maxc; c++) {
       skip = skip &&
              cm->mi_grid_visible[(mi_row + r) * cm->mi_stride + mi_col + c]
                  ->mbmi.skip;
@@ -58,13 +57,9 @@ int sb_compute_cdef_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
                          cdef_list *dlist)
 #endif
 {
-  int r, c;
-  int maxc, maxr;
-  MODE_INFO **grid;
-  int count = 0;
-  grid = cm->mi_grid_visible;
-  maxc = cm->mi_cols - mi_col;
-  maxr = cm->mi_rows - mi_row;
+  MODE_INFO **grid = cm->mi_grid_visible;
+  int maxc = cm->mi_cols - mi_col;
+  int maxr = cm->mi_rows - mi_row;
 
 #if CONFIG_EXT_PARTITION
   if (bs == BLOCK_128X128 || bs == BLOCK_128X64 || bs == BLOCK_128X32)
@@ -88,8 +83,10 @@ int sb_compute_cdef_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
   assert(r_step == 1 || r_step == 2);
   assert(c_step == 1 || c_step == 2);
 
-  for (r = 0; r < maxr; r += r_step) {
-    for (c = 0; c < maxc; c += c_step) {
+  int count = 0;
+
+  for (int r = 0; r < maxr; r += r_step) {
+    for (int c = 0; c < maxc; c += c_step) {
       if (!is_8x8_block_skip(grid, mi_row + r, mi_col + c, cm->mi_stride)) {
         dlist[count].by = r >> r_shift;
         dlist[count].bx = c >> c_shift;
@@ -103,9 +100,8 @@ int sb_compute_cdef_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
 
 void copy_rect8_8bit_to_16bit_c(uint16_t *dst, int dstride, const uint8_t *src,
                                 int sstride, int v, int h) {
-  int i, j;
-  for (i = 0; i < v; i++) {
-    for (j = 0; j < h; j++) {
+  for (int i = 0; i < v; i++) {
+    for (int j = 0; j < h; j++) {
       dst[i * dstride + j] = src[i * sstride + j];
     }
   }
@@ -114,9 +110,8 @@ void copy_rect8_8bit_to_16bit_c(uint16_t *dst, int dstride, const uint8_t *src,
 void copy_rect8_16bit_to_16bit_c(uint16_t *dst, int dstride,
                                  const uint16_t *src, int sstride, int v,
                                  int h) {
-  int i, j;
-  for (i = 0; i < v; i++) {
-    for (j = 0; j < h; j++) {
+  for (int i = 0; i < v; i++) {
+    for (int j = 0; j < h; j++) {
       dst[i * dstride + j] = src[i * sstride + j];
     }
   }
@@ -141,9 +136,8 @@ static void copy_sb8_16(AOM_UNUSED AV1_COMMON *cm, uint16_t *dst, int dstride,
 
 static INLINE void fill_rect(uint16_t *dst, int dstride, int v, int h,
                              uint16_t x) {
-  int i, j;
-  for (i = 0; i < v; i++) {
-    for (j = 0; j < h; j++) {
+  for (int i = 0; i < v; i++) {
+    for (int j = 0; j < h; j++) {
       dst[i * dstride + j] = x;
     }
   }
@@ -151,9 +145,8 @@ static INLINE void fill_rect(uint16_t *dst, int dstride, int v, int h,
 
 static INLINE void copy_rect(uint16_t *dst, int dstride, const uint16_t *src,
                              int sstride, int v, int h) {
-  int i, j;
-  for (i = 0; i < v; i++) {
-    for (j = 0; j < h; j++) {
+  for (int i = 0; i < v; i++) {
+    for (int j = 0; j < h; j++) {
       dst[i * dstride + j] = src[i * sstride + j];
     }
   }
@@ -161,7 +154,6 @@ static INLINE void copy_rect(uint16_t *dst, int dstride, const uint16_t *src,
 
 void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                     MACROBLOCKD *xd) {
-  int fbr, fbc;
   int nhfb, nvfb;
   DECLARE_ALIGNED(16, uint16_t, src[CDEF_INBUF_SIZE]);
   uint16_t *linebuf[3];
@@ -176,7 +168,6 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   int mi_high_l2[3];
   int xdec[3];
   int ydec[3];
-  int pli;
   int cdef_left;
   int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
   int nplanes = MAX_MB_PLANE;
@@ -189,7 +180,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   memset(row_cdef, 1, sizeof(*row_cdef) * (nhfb + 2) * 2);
   prev_row_cdef = row_cdef + 1;
   curr_row_cdef = prev_row_cdef + nhfb + 2;
-  for (pli = 0; pli < nplanes; pli++) {
+  for (int pli = 0; pli < nplanes; pli++) {
     xdec[pli] = xd->plane[pli].subsampling_x;
     ydec[pli] = xd->plane[pli].subsampling_y;
     mi_wide_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_x;
@@ -197,22 +188,22 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     if (xdec[pli] != ydec[pli]) nplanes = 1;
   }
   stride = (cm->mi_cols << MI_SIZE_LOG2) + 2 * CDEF_HBORDER;
-  for (pli = 0; pli < nplanes; pli++) {
+  for (int pli = 0; pli < nplanes; pli++) {
     linebuf[pli] = aom_malloc(sizeof(*linebuf) * CDEF_VBORDER * stride);
     colbuf[pli] =
         aom_malloc(sizeof(*colbuf) *
                    ((CDEF_BLOCKSIZE << mi_high_l2[pli]) + 2 * CDEF_VBORDER) *
                    CDEF_HBORDER);
   }
-  for (fbr = 0; fbr < nvfb; fbr++) {
-    for (pli = 0; pli < nplanes; pli++) {
+  for (int fbr = 0; fbr < nvfb; fbr++) {
+    for (int pli = 0; pli < nplanes; pli++) {
       const int block_height =
           (MI_SIZE_64X64 << mi_high_l2[pli]) + 2 * CDEF_VBORDER;
       fill_rect(colbuf[pli], CDEF_HBORDER, block_height, CDEF_HBORDER,
                 CDEF_VERY_LARGE);
     }
     cdef_left = 1;
-    for (fbc = 0; fbc < nhfb; fbc++) {
+    for (int fbc = 0; fbc < nhfb; fbc++) {
       int level, sec_strength;
       int uv_level, uv_sec_strength;
       int nhb, nvb;
@@ -278,7 +269,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       }
 
       curr_row_cdef[fbc] = 1;
-      for (pli = 0; pli < nplanes; pli++) {
+      for (int pli = 0; pli < nplanes; pli++) {
 #if !CONFIG_CDEF_SINGLEPASS
         DECLARE_ALIGNED(16, uint16_t, dst[CDEF_BLOCKSIZE * CDEF_BLOCKSIZE]);
 #endif
@@ -448,14 +439,13 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       cdef_left = 1;
     }
     {
-      unsigned char *tmp;
-      tmp = prev_row_cdef;
+      unsigned char *tmp = prev_row_cdef;
       prev_row_cdef = curr_row_cdef;
       curr_row_cdef = tmp;
     }
   }
   aom_free(row_cdef);
-  for (pli = 0; pli < nplanes; pli++) {
+  for (int pli = 0; pli < nplanes; pli++) {
     aom_free(linebuf[pli]);
     aom_free(colbuf[pli]);
   }
