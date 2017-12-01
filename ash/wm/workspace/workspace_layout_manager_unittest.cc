@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/accessibility/test_accessibility_controller_client.h"
+#include "ash/accessibility/test_accessibility_delegate.h"
 #include "ash/app_list/test_app_list_presenter_impl.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/app_types.h"
@@ -1302,10 +1302,9 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
 TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
   WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
   WorkspaceControllerTestApi test_helper(wc);
-  AccessibilityController* controller =
-      Shell::Get()->accessibility_controller();
-  TestAccessibilityControllerClient client;
-  controller->SetClient(client.CreateInterfacePtrAndBind());
+  TestAccessibilityDelegate* accessibility_delegate =
+      static_cast<TestAccessibilityDelegate*>(
+          Shell::Get()->accessibility_delegate());
 
   aura::test::TestWindowDelegate delegate;
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
@@ -1319,27 +1318,26 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
 
   generator.MoveMouseTo(300, 300);
   generator.ClickLeftButton();
-  controller->FlushMojoForTest();
-  EXPECT_EQ(kNoSoundKey, client.GetPlayedEarconAndReset());
+  EXPECT_EQ(kNoSoundKey, accessibility_delegate->GetPlayedEarconAndReset());
 
   generator.MoveMouseRelativeTo(window.get(), 10, 10);
   generator.ClickLeftButton();
-  controller->FlushMojoForTest();
-  EXPECT_EQ(kNoSoundKey, client.GetPlayedEarconAndReset());
+  EXPECT_EQ(kNoSoundKey, accessibility_delegate->GetPlayedEarconAndReset());
 
   // Enable spoken feedback.
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
 
   generator.MoveMouseTo(300, 300);
   generator.ClickLeftButton();
-  controller->FlushMojoForTest();
-  EXPECT_EQ(chromeos::SOUND_VOLUME_ADJUST, client.GetPlayedEarconAndReset());
+  EXPECT_EQ(chromeos::SOUND_VOLUME_ADJUST,
+            accessibility_delegate->GetPlayedEarconAndReset());
 
   generator.MoveMouseRelativeTo(window.get(), 10, 10);
   generator.ClickLeftButton();
-  controller->FlushMojoForTest();
-  EXPECT_EQ(kNoSoundKey, client.GetPlayedEarconAndReset());
+  EXPECT_EQ(kNoSoundKey, accessibility_delegate->GetPlayedEarconAndReset());
 
   // Disable spoken feedback. Shadow underlay is restored.
   controller->SetSpokenFeedbackEnabled(false, A11Y_NOTIFICATION_NONE);
@@ -1347,13 +1345,11 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
 
   generator.MoveMouseTo(300, 300);
   generator.ClickLeftButton();
-  controller->FlushMojoForTest();
-  EXPECT_EQ(kNoSoundKey, client.GetPlayedEarconAndReset());
+  EXPECT_EQ(kNoSoundKey, accessibility_delegate->GetPlayedEarconAndReset());
 
   generator.MoveMouseTo(70, 70);
   generator.ClickLeftButton();
-  controller->FlushMojoForTest();
-  EXPECT_EQ(kNoSoundKey, client.GetPlayedEarconAndReset());
+  EXPECT_EQ(kNoSoundKey, accessibility_delegate->GetPlayedEarconAndReset());
 }
 
 TEST_F(WorkspaceLayoutManagerBackdropTest,
@@ -1436,10 +1432,11 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
 TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackForArc) {
   WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
   WorkspaceControllerTestApi test_helper(wc);
+  TestAccessibilityDelegate* accessibility_delegate =
+      static_cast<TestAccessibilityDelegate*>(
+          Shell::Get()->accessibility_delegate());
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  TestAccessibilityControllerClient client;
-  controller->SetClient(client.CreateInterfacePtrAndBind());
 
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
@@ -1471,13 +1468,12 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackForArc) {
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(300, 300);
   generator.ClickLeftButton();
-  controller->FlushMojoForTest();
-  EXPECT_EQ(chromeos::SOUND_VOLUME_ADJUST, client.GetPlayedEarconAndReset());
+  EXPECT_EQ(chromeos::SOUND_VOLUME_ADJUST,
+            accessibility_delegate->GetPlayedEarconAndReset());
 
   generator.MoveMouseTo(70, 70);
   generator.ClickLeftButton();
-  controller->FlushMojoForTest();
-  EXPECT_EQ(kNoSoundKey, client.GetPlayedEarconAndReset());
+  EXPECT_EQ(kNoSoundKey, accessibility_delegate->GetPlayedEarconAndReset());
 }
 
 class WorkspaceLayoutManagerKeyboardTest : public AshTestBase {

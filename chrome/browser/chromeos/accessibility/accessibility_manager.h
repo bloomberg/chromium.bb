@@ -79,12 +79,10 @@ typedef AccessibilityStatusCallbackList::Subscription
 class ChromeVoxPanelWidgetObserver;
 
 enum class PlaySoundOption {
-  // The sound is always played.
-  ALWAYS = 0,
-
-  // The sound is played only if spoken feedback is enabled, or
-  // --ash-enable-system-sounds flag is used.
-  ONLY_IF_SPOKEN_FEEDBACK_ENABLED,
+  ALWAYS = 0,               // The sound is always played.
+  SPOKEN_FEEDBACK_ENABLED,  // The sound is played only if spoken feedback is
+                            // enabled, or --ash-enable-system-sounds flag is
+                            // used.
 };
 
 // AccessibilityManager changes the statuses of accessibility features
@@ -263,7 +261,7 @@ class AccessibilityManager
   void OnViewFocusedInArc(const gfx::Rect& bounds_in_screen);
 
   // Plays an earcon. Earcons are brief and distinctive sounds that indicate
-  // the their mapped event has occurred. The |sound_key| enums can be found in
+  // when their mapped event has occurred. The sound key enums can be found in
   // chromeos/audio/chromeos_sounds.h.
   bool PlayEarcon(int sound_key, PlaySoundOption option);
 
