@@ -233,12 +233,20 @@ scoped_refptr<X509Certificate> X509Certificate::CreateFromDERCertChain(
 scoped_refptr<X509Certificate> X509Certificate::CreateFromBytes(
     const char* data,
     size_t length) {
+  return CreateFromBytesUnsafeOptions(data, length, {});
+}
+
+// static
+scoped_refptr<X509Certificate> X509Certificate::CreateFromBytesUnsafeOptions(
+    const char* data,
+    size_t length,
+    UnsafeCreateOptions options) {
   OSCertHandle cert_handle = CreateOSCertHandleFromBytes(data, length);
   if (!cert_handle)
     return NULL;
 
   scoped_refptr<X509Certificate> cert =
-      CreateFromHandle(cert_handle, OSCertHandles());
+      CreateFromHandleUnsafeOptions(cert_handle, {}, options);
   FreeOSCertHandle(cert_handle);
   return cert;
 }

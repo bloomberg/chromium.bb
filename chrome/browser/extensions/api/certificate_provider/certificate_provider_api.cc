@@ -125,8 +125,12 @@ bool CertificateProviderInternalReportCertificatesFunction::
     return false;
   }
 
-  out_info->certificate =
-      net::X509Certificate::CreateFromBytes(cert_der.data(), cert_der.size());
+  // Allow UTF-8 inside PrintableStrings in client certificates. See
+  // crbug.com/770323 and crbug.com/788655.
+  net::X509Certificate::UnsafeCreateOptions options;
+  options.printable_string_is_utf8 = true;
+  out_info->certificate = net::X509Certificate::CreateFromBytesUnsafeOptions(
+      cert_der.data(), cert_der.size(), options);
   if (!out_info->certificate) {
     WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_ERROR, kErrorInvalidX509Cert);
     return false;
