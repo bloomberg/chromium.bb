@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/media/media_url_constants.h"
 #include "chrome/browser/media/webrtc/webrtc_log_list.h"
 #include "chrome/browser/media/webrtc/webrtc_log_util.h"
 #include "chrome/common/partial_circular_buffer.h"
@@ -472,6 +471,7 @@ void WebRtcLogUploader::UploadCompressedLog(
             "Not implemented, it would be good to do so."
         })");
 
+  constexpr char kUploadURL[] = "https://clients2.google.com/cr/report";
   std::unique_ptr<net::URLFetcher> url_fetcher(net::URLFetcher::Create(
       GURL(kUploadURL), net::URLFetcher::POST, this, traffic_annotation));
   url_fetcher->SetUploadData(content_type, *post_data);
