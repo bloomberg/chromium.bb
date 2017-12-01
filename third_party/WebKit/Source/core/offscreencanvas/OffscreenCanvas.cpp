@@ -247,8 +247,8 @@ void OffscreenCanvas::DiscardImageBuffer() {
 ImageBuffer* OffscreenCanvas::GetOrCreateImageBuffer() {
   if (!image_buffer_) {
     bool is_accelerated_2d_canvas_blacklisted = true;
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
-        SharedGpuContext::ContextProviderWrapper();
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+        context_provider_wrapper = SharedGpuContext::ContextProviderWrapper();
     if (context_provider_wrapper) {
       const gpu::GpuFeatureInfo& gpu_feature_info =
           context_provider_wrapper->ContextProvider()->GetGpuFeatureInfo();

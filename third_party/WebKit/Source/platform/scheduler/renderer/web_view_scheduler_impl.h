@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/base/task_queue.h"
@@ -83,8 +84,8 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
-  WTF::WeakPtr<WebViewSchedulerImpl> CreateWeakPtr() {
-    return weak_factory_.CreateWeakPtr();
+  base::WeakPtr<WebViewSchedulerImpl> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
   }
 
  private:
@@ -116,7 +117,7 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool nested_runloop_;
   CPUTimeBudgetPool* background_time_budget_pool_;  // Not owned.
   WebViewScheduler::WebViewSchedulerDelegate* delegate_;  // Not owned.
-  WTF::WeakPtrFactory<WebViewSchedulerImpl> weak_factory_;
+  base::WeakPtrFactory<WebViewSchedulerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImpl);
 };

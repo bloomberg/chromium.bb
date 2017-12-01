@@ -24,6 +24,7 @@
 #define ImageLoader_h
 
 #include <memory>
+#include "base/memory/weak_ptr.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/CoreExport.h"
@@ -32,7 +33,6 @@
 #include "core/loader/resource/ImageResourceObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/WeakPtr.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "public/platform/TaskType.h"
 
@@ -184,7 +184,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   Member<ImageResource> image_resource_for_image_document_;
 
   AtomicString failed_load_url_;
-  WeakPtr<Task> pending_task_;  // owned by Microtask
+  base::WeakPtr<Task> pending_task_;  // owned by Microtask
   std::unique_ptr<IncrementLoadEventDelayCount>
       delay_until_do_update_from_element_;
 

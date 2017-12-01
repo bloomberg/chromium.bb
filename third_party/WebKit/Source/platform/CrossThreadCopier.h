@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "platform/PlatformExport.h"
@@ -40,7 +41,6 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Functional.h"  // FunctionThreadAffinity
 #include "platform/wtf/TypeTraits.h"
-#include "platform/wtf/WeakPtr.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
 
 namespace base {
@@ -192,8 +192,8 @@ struct CrossThreadCopier<WTF::CrossThreadUnretainedWrapper<T>>
 };
 
 template <typename T>
-struct CrossThreadCopier<WeakPtr<T>>
-    : public CrossThreadCopierPassThrough<WeakPtr<T>> {
+struct CrossThreadCopier<base::WeakPtr<T>>
+    : public CrossThreadCopierPassThrough<base::WeakPtr<T>> {
   STATIC_ONLY(CrossThreadCopier);
 };
 

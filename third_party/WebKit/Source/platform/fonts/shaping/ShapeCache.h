@@ -27,13 +27,13 @@
 #ifndef ShapeCache_h
 #define ShapeCache_h
 
+#include "base/memory/weak_ptr.h"
 #include "platform/fonts/shaping/ShapeResult.h"
 #include "platform/text/TextRun.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/HashTableDeletedValueType.h"
-#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -149,7 +149,7 @@ class ShapeCache {
     return self_byte_size;
   }
 
-  WeakPtr<ShapeCache> GetWeakPtr() { return weak_factory_.CreateWeakPtr(); }
+  base::WeakPtr<ShapeCache> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
  private:
   ShapeCacheEntry* AddSlowCase(const TextRun& run, ShapeCacheEntry entry) {
@@ -236,7 +236,7 @@ class ShapeCache {
 
   SingleCharMap single_char_map_;
   SmallStringMap short_string_map_;
-  WeakPtrFactory<ShapeCache> weak_factory_;
+  base::WeakPtrFactory<ShapeCache> weak_factory_;
   unsigned version_;
 };
 

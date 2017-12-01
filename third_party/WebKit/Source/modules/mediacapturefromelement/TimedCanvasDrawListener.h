@@ -6,10 +6,10 @@
 #define TimedCanvasDrawListener_h
 
 #include <memory>
+#include "base/memory/weak_ptr.h"
 #include "core/html/canvas/CanvasDrawListener.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/WeakPtr.h"
 
 #include "public/platform/WebCanvasCaptureHandler.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -28,8 +28,9 @@ class TimedCanvasDrawListener final
       std::unique_ptr<WebCanvasCaptureHandler>,
       double frame_rate,
       ExecutionContext*);
-  void SendNewFrame(sk_sp<SkImage>,
-                    WeakPtr<WebGraphicsContext3DProviderWrapper>) override;
+  void SendNewFrame(
+      sk_sp<SkImage>,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) override;
 
   void Trace(blink::Visitor* visitor) override {}
 

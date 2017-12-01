@@ -32,6 +32,7 @@
 #include "core/loader/DocumentThreadableLoader.h"
 
 #include <memory>
+#include "base/memory/weak_ptr.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
@@ -59,7 +60,6 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/WeakPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebCORS.h"
@@ -81,7 +81,7 @@ class EmptyDataHandle final : public WebDataConsumerHandle {
         : factory_(this) {
       Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
           BLINK_FROM_HERE,
-          WTF::Bind(&EmptyDataReader::Notify, factory_.CreateWeakPtr(),
+          WTF::Bind(&EmptyDataReader::Notify, factory_.GetWeakPtr(),
                     WTF::Unretained(client)));
     }
 
@@ -99,7 +99,7 @@ class EmptyDataHandle final : public WebDataConsumerHandle {
     void Notify(WebDataConsumerHandle::Client* client) {
       client->DidGetReadable();
     }
-    WeakPtrFactory<EmptyDataReader> factory_;
+    base::WeakPtrFactory<EmptyDataReader> factory_;
   };
 
   std::unique_ptr<Reader> ObtainReader(Client* client) override {

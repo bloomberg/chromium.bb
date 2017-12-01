@@ -131,14 +131,14 @@ class ImageLoader::Task {
     script_state_ = nullptr;
   }
 
-  WeakPtr<Task> CreateWeakPtr() { return weak_factory_.CreateWeakPtr(); }
+  base::WeakPtr<Task> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
  private:
   WeakPersistent<ImageLoader> loader_;
   BypassMainWorldBehavior should_bypass_main_world_csp_;
   UpdateFromElementBehavior update_behavior_;
   scoped_refptr<ScriptState> script_state_;
-  WeakPtrFactory<Task> weak_factory_;
+  base::WeakPtrFactory<Task> weak_factory_;
   ReferrerPolicy referrer_policy_;
   KURL request_url_;
 };
@@ -342,7 +342,7 @@ inline void ImageLoader::EnqueueImageLoadingMicroTask(
     ReferrerPolicy referrer_policy) {
   std::unique_ptr<Task> task =
       Task::Create(this, update_behavior, referrer_policy);
-  pending_task_ = task->CreateWeakPtr();
+  pending_task_ = task->GetWeakPtr();
   Microtask::EnqueueMicrotask(
       WTF::Bind(&Task::Run, WTF::Passed(std::move(task))));
   delay_until_do_update_from_element_ =

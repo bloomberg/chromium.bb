@@ -26,6 +26,7 @@
 #ifndef Timer_h
 #define Timer_h
 
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
@@ -35,7 +36,6 @@
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/Time.h"
-#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebTraceLocation.h"
 
 namespace blink {
@@ -125,7 +125,7 @@ class PLATFORM_EXPORT TimerBase {
 #if DCHECK_IS_ON()
   ThreadIdentifier thread_;
 #endif
-  WTF::WeakPtrFactory<TimerBase> weak_ptr_factory_;
+  base::WeakPtrFactory<TimerBase> weak_ptr_factory_;
 
   friend class ThreadTimers;
   friend class TimerHeapLessThanFunction;

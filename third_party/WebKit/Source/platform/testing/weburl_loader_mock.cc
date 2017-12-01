@@ -54,7 +54,7 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
 
   // didReceiveResponse() and didReceiveData() might end up getting ::cancel()
   // to be called which will make the ResourceLoader to delete |this|.
-  WeakPtr<WebURLLoaderMock> self = weak_factory_.CreateWeakPtr();
+  base::WeakPtr<WebURLLoaderMock> self = weak_factory_.GetWeakPtr();
 
   delegate->DidReceiveResponse(client_, response);
   if (!self)
@@ -85,7 +85,7 @@ WebURL WebURLLoaderMock::ServeRedirect(
     const WebURLResponse& redirect_response) {
   KURL redirect_url(redirect_response.HttpHeaderField("Location"));
 
-  WeakPtr<WebURLLoaderMock> self = weak_factory_.CreateWeakPtr();
+  base::WeakPtr<WebURLLoaderMock> self = weak_factory_.GetWeakPtr();
 
   bool report_raw_headers = false;
   bool follow = client_->WillFollowRedirect(
@@ -158,8 +158,8 @@ void WebURLLoaderMock::SetDefersLoading(bool deferred) {
 void WebURLLoaderMock::DidChangePriority(WebURLRequest::Priority new_priority,
                                          int intra_priority_value) {}
 
-WeakPtr<WebURLLoaderMock> WebURLLoaderMock::GetWeakPtr() {
-  return weak_factory_.CreateWeakPtr();
+base::WeakPtr<WebURLLoaderMock> WebURLLoaderMock::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 } // namespace blink

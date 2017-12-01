@@ -9,11 +9,11 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KURLHash.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
@@ -87,7 +87,7 @@ class WebURLLoaderMockFactoryImpl : public WebURLLoaderMockFactory {
                    WebData* data);
 
   // Checks if the loader is pending. Otherwise, it may have been deleted.
-  bool IsPending(WeakPtr<WebURLLoaderMock> loader);
+  bool IsPending(base::WeakPtr<WebURLLoaderMock> loader);
 
   // Looks up an URL in the mock URL table.
   //

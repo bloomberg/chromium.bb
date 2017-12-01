@@ -6,6 +6,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_IDLE_HELPER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/base/task_queue_selector.h"

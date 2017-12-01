@@ -111,7 +111,7 @@ void WebURLLoaderMockFactoryImpl::ServeAsynchronousRequests() {
   // pending_loaders_ as it might get modified.
   while (!pending_loaders_.IsEmpty()) {
     LoaderToRequestMap::iterator iter = pending_loaders_.begin();
-    WeakPtr<WebURLLoaderMock> loader(iter->key->GetWeakPtr());
+    base::WeakPtr<WebURLLoaderMock> loader(iter->key->GetWeakPtr());
     const WebURLRequest request = iter->value;
     pending_loaders_.erase(loader.get());
 
