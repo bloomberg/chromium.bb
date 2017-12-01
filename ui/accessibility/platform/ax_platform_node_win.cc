@@ -6,6 +6,7 @@
 
 #include <wrl/client.h>
 
+#include <algorithm>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -2365,38 +2366,24 @@ STDMETHODIMP AXPlatformNodeWin::get_selection(LONG selection_index,
 STDMETHODIMP AXPlatformNodeWin::get_text(LONG start_offset,
                                          LONG end_offset,
                                          BSTR* text) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT);
   COM_OBJECT_VALIDATE_1_ARG(text);
-  int sel_end = GetIntAttribute(AX_ATTR_TEXT_SEL_START);
-  base::string16 text_str = TextForIAccessibleText();
-  LONG len = static_cast<LONG>(text_str.size());
-
-  if (start_offset == IA2_TEXT_OFFSET_LENGTH) {
-    start_offset = len;
-  } else if (start_offset == IA2_TEXT_OFFSET_CARET) {
-    start_offset = static_cast<LONG>(sel_end);
-  }
-  if (end_offset == IA2_TEXT_OFFSET_LENGTH) {
-    end_offset = len;
-  } else if (end_offset == IA2_TEXT_OFFSET_CARET) {
-    end_offset = static_cast<LONG>(sel_end);
-  }
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+  HandleSpecialTextOffset(&start_offset);
+  HandleSpecialTextOffset(&end_offset);
 
   // The spec allows the arguments to be reversed.
-  if (start_offset > end_offset) {
-    LONG tmp = start_offset;
-    start_offset = end_offset;
-    end_offset = tmp;
-  }
+  if (start_offset > end_offset)
+    std::swap(start_offset, end_offset);
 
-  // The spec does not allow the start or end offsets to be out or range;
-  // we must return an error if so.
-  if (start_offset < 0)
+  const base::string16 str = TextForIAccessibleText();
+  LONG str_len = static_cast<LONG>(str.length());
+  if (start_offset < 0 || start_offset > str_len)
     return E_INVALIDARG;
-  if (end_offset > len)
+  if (end_offset < 0 || end_offset > str_len)
     return E_INVALIDARG;
 
-  base::string16 substr =
-      text_str.substr(start_offset, end_offset - start_offset);
+  base::string16 substr = str.substr(start_offset, end_offset - start_offset);
   if (substr.empty())
     return S_FALSE;
 
