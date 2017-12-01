@@ -207,7 +207,8 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   needs_all_picture_buffers_to_decode_ =
       capabilities.flags &
       VideoDecodeAccelerator::Capabilities::NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE;
-  needs_bitstream_conversion_ = (config.codec() == kCodecH264);
+  needs_bitstream_conversion_ =
+      (config.codec() == kCodecH264) || (config.codec() == kCodecHEVC);
   requires_texture_copy_ =
       !!(capabilities.flags &
          VideoDecodeAccelerator::Capabilities::REQUIRES_TEXTURE_COPY);
