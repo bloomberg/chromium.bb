@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(falken): Revise link when this lands in the spec:
-// https://github.com/w3c/ServiceWorker/issues/920
+// https://w3c.github.io/ServiceWorker/#navigation-preload-manager
 [
+    SecureContext,
     Exposed=(Window,Worker)
 ] interface NavigationPreloadManager {
-    // TODO(mgiuca): Put SecureContext on the interface, not individual methods.
-    // Currently prevented due to clash with OriginTrialEnabled. This can be
-    // resolved either when OriginTrialEnabled is removed, or
-    // https://crbug.com/695123 is fixed.
-    [SecureContext, CallWith=ScriptState] Promise<void> enable();
-    [SecureContext, CallWith=ScriptState] Promise<void> disable();
-    [SecureContext, CallWith=ScriptState] Promise<void> setHeaderValue(ByteString value);
-    [SecureContext, CallWith=ScriptState] Promise<NavigationPreloadState> getState();
+    [CallWith=ScriptState] Promise<void> enable();
+    [CallWith=ScriptState] Promise<void> disable();
+    [CallWith=ScriptState] Promise<void> setHeaderValue(ByteString value);
+    [CallWith=ScriptState] Promise<NavigationPreloadState> getState();
 };
