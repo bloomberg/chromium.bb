@@ -35,6 +35,7 @@ class MetricsHelper {
                           const base::Optional<base::Version>& version);
   void OnAssetsLoaded(AssetsLoadStatus status,
                       const base::Version& component_version);
+  void OnChromeStarted();
 
  private:
   base::Optional<base::Time>& GetEnterTime(Mode mode);
@@ -43,6 +44,8 @@ class MetricsHelper {
   base::Optional<base::Time> enter_vr_time_;
   base::Optional<base::Time> enter_vr_browsing_time_;
   base::Optional<base::Time> enter_web_vr_time_;
+  base::Optional<base::Time> chrome_start_time_;
+  bool logged_ready_duration_on_chrome_start_ = false;
   bool component_ready_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);

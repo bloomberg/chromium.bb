@@ -23,6 +23,8 @@ constexpr char kLatencyWebVr[] =
     "VR.AssetsComponent.ReadyLatency.OnEnter.WebVR";
 constexpr char kComponentUpdateStatus[] = "VR.AssetsComponent.UpdateStatus";
 constexpr char kAssetsLoadStatus[] = "VR.AssetsComponent.LoadStatus";
+constexpr char kLatencyLaunchBrowser[] =
+    "VR.Component.Assets.DurationUntilReady.OnChromeStart";
 constexpr char kDataConnectionRegisterComponent[] =
     "VR.DataConnection.OnRegisterAssetsComponent";
 constexpr char kDataConnectionVr[] = "VR.DataConnection.OnEnter.VR";
@@ -132,6 +134,15 @@ void MetricsHelper::OnComponentReady(const base::Version& version) {
   LogLatencyIfWaited(Mode::kVrBrowsing, now);
   LogLatencyIfWaited(Mode::kWebVr, now);
   OnComponentUpdated(AssetsComponentUpdateStatus::kSuccess, version);
+
+  if (logged_ready_duration_on_chrome_start_) {
+    return;
+  }
+  DCHECK(chrome_start_time_);
+  auto ready_duration = now - *chrome_start_time_;
+  UMA_HISTOGRAM_CUSTOM_TIMES(kLatencyLaunchBrowser, ready_duration, kMinLatency,
+                             kMaxLatency, kLatencyBucketCount);
+  logged_ready_duration_on_chrome_start_ = true;
 }
 
 void MetricsHelper::OnEnter(Mode mode) {
@@ -173,6 +184,12 @@ void MetricsHelper::OnAssetsLoaded(AssetsLoadStatus status,
   UMA_HISTOGRAM_SPARSE_SLOWLY(
       kAssetsLoadStatus,
       EncodeVersionStatus(component_version, static_cast<int>(status)));
+}
+
+void MetricsHelper::OnChromeStarted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!chrome_start_time_);
+  chrome_start_time_ = base::Time::Now();
 }
 
 base::Optional<base::Time>& MetricsHelper::GetEnterTime(Mode mode) {
