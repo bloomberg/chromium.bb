@@ -606,10 +606,16 @@
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_CANCEL_COMMAND" desc="Label of button on details panel that cancels an active import.">
     Cancel
   </message>
+  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_ONE_FILE" desc="Cloud import 1 new photo.">
+    1 new photo
+  </message>
+  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_MULTIPLE_FILES" desc="Cloud import multiple new photos.">
+    <ph name="FILE_COUNT">$1<ex>5</ex></ph> new photos
+  </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_SCANNING" desc="Cloud import scanning status message.">
     Scanning your media device...
     <ph name="LINE_BREAK1">&lt;br&gt;</ph>
-    <ph name="FILE_COUNT">$1<ex>5</ex></ph> new photos found
+    <ph name="FILE_COUNT">$1<ex>5 new photos</ex></ph> found
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_SCANNING" desc="Cloud import scanning tooltip.">
     Scanning your media device...
@@ -620,29 +626,39 @@
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_NO_MEDIA" desc="Cloud import no-new-media-found tooltip. Shown after backup is completed and when a search for new files to backup produces no result.">
     All backed up!
   </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_INSUFFICIENT_SPACE" desc="Cloud import insufficient space status message.">
-    <ph name="FILE_COUNT">$1<ex>5</ex></ph> new photos found
+  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_INSUFFICIENT_CLOUD_SPACE" desc="Cloud import insufficient cloud space status message.">
+    <ph name="FILE_COUNT">$1<ex>5 new photos</ex></ph> found.
     <ph name="LINE_BREAK1">&lt;br&gt;</ph>
-    Not enough space on device.
+    Your Google Drive quota isn't large enough. Additional <ph name="FILE_SIZE">$2<ex>5 MB</ex></ph> needed.
     <ph name="LINE_BREAK2">&lt;br&gt;</ph>
-    Try selecting a few photos to start.
+    Try selecting fewer photos.
   </message>
-  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_INSUFFICIENT_SPACE" desc="Cloud import insufficient space tooltip.">
-    Not enough space on device
+  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_INSUFFICIENT_CLOUD_SPACE" desc="Cloud import insufficient cloud space tooltip.">
+    Your Google Drive quota isn't large enough.
+  </message>
+  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_INSUFFICIENT_LOCAL_SPACE" desc="Cloud import insufficient local space status message.">
+    <ph name="FILE_COUNT">$1<ex>5 new photos</ex></ph> found.
+    <ph name="LINE_BREAK1">&lt;br&gt;</ph>
+    Not enough space available in local storage. Additional <ph name="FILE_SIZE">$2<ex>5 MB</ex></ph> needed.
+    <ph name="LINE_BREAK2">&lt;br&gt;</ph>
+    Try selecting fewer photos.
+  </message>
+  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_INSUFFICIENT_LOCAL_SPACE" desc="Cloud import insufficient local space tooltip.">
+    Not enough space available in local storage.
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_READY" desc="Cloud import ready status message.">
-    <ph name="FILE_COUNT">$1<ex>5</ex></ph> new photos found
+    <ph name="FILE_COUNT">$1<ex>5 new photos</ex></ph> found
     <ph name="LINE_BREAK1">&lt;br&gt;</ph>
-    Ready to backup to <ph name="BEGIN_LINK">&lt;a is='action-link' class='destination-link'&gt;</ph>Google Drive<ph name="END_LINK">&lt;/a&gt;</ph>
+    Ready to back up to <ph name="BEGIN_LINK">&lt;a is='action-link' class='destination-link'&gt;</ph>Google Drive<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_READY" desc="Cloud import ready tooltip.">
-    Ready to backup <ph name="FILE_COUNT">$1<ex>5</ex></ph> new photos
+    Ready to backup <ph name="FILE_COUNT">$1<ex>5 new photos</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_IMPORTING" desc="Cloud import active-backup status. Message shown when importing is in progress">
-    Backing up <ph name="FILE_COUNT">$1<ex>5</ex></ph> photos to <ph name="BEGIN_LINK">&lt;a is='action-link' class='destination-link'&gt;</ph>Google Drive<ph name="END_LINK">&lt;/a&gt;</ph>
+    Backing up <ph name="FILE_COUNT">$1<ex>5 new photos</ex></ph> to <ph name="BEGIN_LINK">&lt;a is='action-link' class='destination-link'&gt;</ph>Google Drive<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_IMPORTING" desc="Cloud import active-backup tooltip.">
-    Backing up <ph name="FILE_COUNT">$1<ex>5</ex></ph> photos
+    Backing up <ph name="FILE_COUNT">$1<ex>5 new photos</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_DONE" desc="Cloud import backup is complete status.">
     <ph name="FILE_COUNT">$1<ex>5</ex></ph> photos backed up to <ph name="BEGIN_LINK">&lt;a is='action-link' class='destination-link'&gt;</ph>Google Drive<ph name="END_LINK">&lt;/a&gt;</ph>
