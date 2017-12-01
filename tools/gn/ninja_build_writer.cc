@@ -48,10 +48,15 @@ struct Counts {
 };
 
 std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
-  base::FilePath executable;
-  PathService::Get(base::FILE_EXE, &executable);
+  const base::FilePath build_path =
+      build_settings->build_dir().Resolve(build_settings->root_path());
 
-  base::CommandLine cmdline(executable.NormalizePathSeparatorsTo('/'));
+  base::FilePath exe_path;
+  PathService::Get(base::FILE_EXE, &exe_path);
+  if (build_path.IsAbsolute())
+    exe_path = MakeAbsoluteFilePathRelativeIfPossible(build_path, exe_path);
+
+  base::CommandLine cmdline(exe_path.NormalizePathSeparatorsTo('/'));
 
   // Use "." for the directory to generate. When Ninja runs the command it
   // will have the build directory as the current one. Coding it explicitly
@@ -59,8 +64,12 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
   cmdline.AppendArg("gen");
   cmdline.AppendArg(".");
 
+  base::FilePath root_path = build_settings->root_path();
+  if (build_path.IsAbsolute())
+    root_path = MakeAbsoluteFilePathRelativeIfPossible(build_path, root_path);
+
   cmdline.AppendSwitchPath(std::string("--") + switches::kRoot,
-                           build_settings->root_path());
+                           root_path.NormalizePathSeparatorsTo('/'));
   // Successful automatic invocations shouldn't print output.
   cmdline.AppendSwitch(std::string("-") + switches::kQuiet);
 
@@ -267,8 +276,13 @@ void NinjaBuildWriter::WriteNinjaRules() {
   std::set<base::FilePath> fileset(input_files.begin(), input_files.end());
   fileset.insert(other_files.begin(), other_files.end());
 
-  for (const auto& other_file : fileset)
-    dep_out_ << " " << FilePathToUTF8(other_file);
+  const base::FilePath build_path =
+      build_settings_->build_dir().Resolve(build_settings_->root_path());
+  for (const auto& other_file : fileset) {
+    const base::FilePath file =
+        MakeAbsoluteFilePathRelativeIfPossible(build_path, other_file);
+    dep_out_ << " " << FilePathToUTF8(file.NormalizePathSeparatorsTo('/'));
+  }
 
   out_ << std::endl;
 }

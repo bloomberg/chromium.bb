@@ -116,6 +116,16 @@ bool MakeAbsolutePathRelativeIfPossible(const base::StringPiece& source_root,
                                         const base::StringPiece& path,
                                         std::string* dest);
 
+// Given two absolute paths |base| and |target|, returns a relative path to
+// |target| as if the current directory was |base|.  The relative path returned
+// is minimal.  For example, if "../../a/b/" and "../b" are both valid, then the
+// latter will be returned.  On Windows, it's impossible to have a relative path
+// from C:\foo to D:\bar, so the absolute path |target| is returned instead for
+// this case.
+base::FilePath MakeAbsoluteFilePathRelativeIfPossible(
+    const base::FilePath& base,
+    const base::FilePath& target);
+
 // Collapses "." and sequential "/"s and evaluates "..". |path| may be
 // system-absolute, source-absolute, or relative. If |path| is source-absolute
 // and |source_root| is non-empty, |path| may be system absolute after this
