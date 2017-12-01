@@ -154,7 +154,6 @@ TEST_F(LabelButtonTest, Label) {
   const int short_text_width = gfx::GetStringWidth(short_text, font_list);
   const int long_text_width = gfx::GetStringWidth(long_text, font_list);
 
-  // The width increases monotonically with string size (it does not shrink).
   EXPECT_LT(button_->GetPreferredSize().width(), short_text_width);
   button_->SetText(short_text);
   EXPECT_GT(button_->GetPreferredSize().height(), font_list.GetHeight());
@@ -163,16 +162,20 @@ TEST_F(LabelButtonTest, Label) {
   button_->SetText(long_text);
   EXPECT_GT(button_->GetPreferredSize().width(), long_text_width);
   button_->SetText(short_text);
-  EXPECT_GT(button_->GetPreferredSize().width(), long_text_width);
-
-  // Clamp the size to a maximum value.
-  button_->SetMaxSize(gfx::Size(long_text_width, 1));
-  EXPECT_EQ(button_->GetPreferredSize(), gfx::Size(long_text_width, 1));
-
-  // Clear the monotonically increasing minimum size.
-  button_->SetMinSize(gfx::Size());
   EXPECT_GT(button_->GetPreferredSize().width(), short_text_width);
   EXPECT_LT(button_->GetPreferredSize().width(), long_text_width);
+
+  // Clamp the size to a maximum value.
+  button_->SetText(long_text);
+  button_->SetMaxSize(gfx::Size(short_text_width, 1));
+  EXPECT_EQ(button_->GetPreferredSize(), gfx::Size(short_text_width, 1));
+
+  // Clamp the size to a minimum value.
+  button_->SetText(short_text);
+  button_->SetMaxSize(gfx::Size());
+  button_->SetMinSize(gfx::Size(long_text_width, font_list.GetHeight() * 2));
+  EXPECT_EQ(button_->GetPreferredSize(),
+            gfx::Size(long_text_width, font_list.GetHeight() * 2));
 }
 
 // Test behavior of View::GetAccessibleNodeData() for buttons when setting a
@@ -212,7 +215,6 @@ TEST_F(LabelButtonTest, Image) {
   const gfx::ImageSkia small_image = CreateTestImage(small_size, small_size);
   const gfx::ImageSkia large_image = CreateTestImage(large_size, large_size);
 
-  // The width increases monotonically with image size (it does not shrink).
   EXPECT_LT(button_->GetPreferredSize().width(), small_size);
   EXPECT_LT(button_->GetPreferredSize().height(), small_size);
   button_->SetImage(Button::STATE_NORMAL, small_image);
@@ -224,17 +226,21 @@ TEST_F(LabelButtonTest, Image) {
   EXPECT_GT(button_->GetPreferredSize().width(), large_size);
   EXPECT_GT(button_->GetPreferredSize().height(), large_size);
   button_->SetImage(Button::STATE_NORMAL, small_image);
-  EXPECT_GT(button_->GetPreferredSize().width(), large_size);
-  EXPECT_GT(button_->GetPreferredSize().height(), large_size);
+  EXPECT_GT(button_->GetPreferredSize().width(), small_size);
+  EXPECT_GT(button_->GetPreferredSize().height(), small_size);
+  EXPECT_LT(button_->GetPreferredSize().width(), large_size);
+  EXPECT_LT(button_->GetPreferredSize().height(), large_size);
 
   // Clamp the size to a maximum value.
+  button_->SetImage(Button::STATE_NORMAL, large_image);
   button_->SetMaxSize(gfx::Size(large_size, 1));
   EXPECT_EQ(button_->GetPreferredSize(), gfx::Size(large_size, 1));
 
-  // Clear the monotonically increasing minimum size.
-  button_->SetMinSize(gfx::Size());
-  EXPECT_GT(button_->GetPreferredSize().width(), small_size);
-  EXPECT_LT(button_->GetPreferredSize().width(), large_size);
+  // Clamp the size to a minimum value.
+  button_->SetImage(Button::STATE_NORMAL, small_image);
+  button_->SetMaxSize(gfx::Size());
+  button_->SetMinSize(gfx::Size(large_size, large_size));
+  EXPECT_EQ(button_->GetPreferredSize(), gfx::Size(large_size, large_size));
 }
 
 TEST_F(LabelButtonTest, LabelAndImage) {
@@ -246,7 +252,6 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   const gfx::ImageSkia image = CreateTestImage(image_size, image_size);
   ASSERT_LT(font_list.GetHeight(), image_size);
 
-  // The width increases monotonically with content size (it does not shrink).
   EXPECT_LT(button_->GetPreferredSize().width(), text_width);
   EXPECT_LT(button_->GetPreferredSize().width(), image_size);
   EXPECT_LT(button_->GetPreferredSize().height(), image_size);
@@ -279,21 +284,24 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   EXPECT_LT(button_->label()->bounds().right(), button_->image()->bounds().x());
 
   button_->SetText(base::string16());
-  EXPECT_GT(button_->GetPreferredSize().width(), text_width + image_size);
+  EXPECT_LT(button_->GetPreferredSize().width(), text_width + image_size);
+  EXPECT_GT(button_->GetPreferredSize().width(), image_size);
   EXPECT_GT(button_->GetPreferredSize().height(), image_size);
   button_->SetImage(Button::STATE_NORMAL, gfx::ImageSkia());
-  EXPECT_GT(button_->GetPreferredSize().width(), text_width + image_size);
-  EXPECT_GT(button_->GetPreferredSize().height(), image_size);
-
-  // Clamp the size to a maximum value.
-  button_->SetMaxSize(gfx::Size(image_size, 1));
-  EXPECT_EQ(button_->GetPreferredSize(), gfx::Size(image_size, 1));
-
-  // Clear the monotonically increasing minimum size.
-  button_->SetMinSize(gfx::Size());
-  EXPECT_LT(button_->GetPreferredSize().width(), text_width);
   EXPECT_LT(button_->GetPreferredSize().width(), image_size);
   EXPECT_LT(button_->GetPreferredSize().height(), image_size);
+
+  // Clamp the size to a minimum value.
+  button_->SetText(text);
+  button_->SetImage(Button::STATE_NORMAL, image);
+  button_->SetMinSize(gfx::Size((text_width + image_size) * 2, image_size * 2));
+  EXPECT_EQ(button_->GetPreferredSize().width(), (text_width + image_size) * 2);
+  EXPECT_EQ(button_->GetPreferredSize().height(), image_size * 2);
+
+  // Clamp the size to a maximum value.
+  button_->SetMinSize(gfx::Size());
+  button_->SetMaxSize(gfx::Size(1, 1));
+  EXPECT_EQ(button_->GetPreferredSize(), gfx::Size(1, 1));
 }
 
 // This test was added because GetHeightForWidth and GetPreferredSize were
@@ -325,10 +333,6 @@ TEST_F(LabelButtonTest, GetHeightForWidthConsistentWithGetPreferredSize) {
     // heights + inset height.
     EXPECT_EQ(std::max(image_size, font_height) + button_->GetInsets().height(),
               preferred_button_size.height());
-
-    // Clear min size, this ensures that GetHeightForWidth() is consistent on
-    // its own and not because min_size_ is set to the preferred size.
-    button_->SetMinSize(gfx::Size());
 
     // Make sure this preferred height is consistent with GetHeightForWidth().
     EXPECT_EQ(preferred_button_size.height(),
@@ -399,7 +403,6 @@ TEST_F(LabelButtonTest, ChangeTextSize) {
 
   // The button and the label view return to its original size when the original
   // text is restored.
-  button_->SetMinSize(gfx::Size());
   button_->SetText(text);
   EXPECT_EQ(original_label_width, button_->label()->bounds().width());
   EXPECT_EQ(original_width, button_->GetPreferredSize().width());
@@ -418,7 +421,6 @@ TEST_F(LabelButtonTest, ChangeLabelImageSpacing) {
   EXPECT_GT(button_->GetPreferredSize().width(), original_width);
 
   // The button shrinks if the original spacing is restored.
-  button_->SetMinSize(gfx::Size());
   button_->SetImageLabelSpacing(kOriginalSpacing);
   EXPECT_EQ(original_width, button_->GetPreferredSize().width());
 }

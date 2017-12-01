@@ -449,9 +449,6 @@ void AvatarButton::Update() {
           : gfx::ShadowValues(
                 10, gfx::ShadowValue(gfx::Vector2d(), 2.0f, SK_ColorDKGRAY)));
 
-  // We want the button to resize if the new text is shorter.
-  SetMinSize(gfx::Size());
-
   if (use_generic_button) {
     SetImage(views::Button::STATE_NORMAL, generic_avatar_);
   } else if (error_controller_.HasAvatarError()) {

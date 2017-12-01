@@ -1726,7 +1726,6 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
     }
   }
 
-  button->SetMinSize(gfx::Size());
   button->set_context_menu_controller(this);
   button->set_drag_controller(this);
   if (node->is_url()) {

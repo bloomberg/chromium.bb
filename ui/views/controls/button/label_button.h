@@ -69,7 +69,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // optional image will lead the text, unless the button is right-aligned.
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
 
-  // Call SetMinSize(gfx::Size()) to clear the monotonically increasing size.
   void SetMinSize(const gfx::Size& min_size);
   void SetMaxSize(const gfx::Size& max_size);
 
@@ -83,9 +82,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   ButtonStyle style() const { return style_; }
   void SetStyleDeprecated(ButtonStyle style);
 
-  // Sets the spacing between the image and the text. Shrinking the spacing
-  // will not shrink the overall button size, as it is monotonically increasing.
-  // Call SetMinSize(gfx::Size()) to clear the size if needed.
+  // Sets the spacing between the image and the text.
   void SetImageLabelSpacing(int spacing);
 
   // Creates the default border for this button. This can be overridden by
@@ -214,9 +211,8 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Used to track whether SetTextColor() has been invoked.
   std::array<bool, STATE_COUNT> explicitly_set_colors_;
 
-  // |min_size_| increases monotonically with the preferred size.
-  mutable gfx::Size min_size_;
-  // |max_size_| may be set to clamp the preferred size.
+  // |min_size_| and |max_size_| may be set to clamp the preferred size.
+  gfx::Size min_size_;
   gfx::Size max_size_;
 
   // Cache the last computed preferred size.

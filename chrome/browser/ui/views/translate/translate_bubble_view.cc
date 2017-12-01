@@ -971,28 +971,15 @@ void TranslateBubbleView::SwitchToErrorView(
 }
 
 void TranslateBubbleView::UpdateAdvancedView() {
-  DCHECK(source_language_combobox_);
-  DCHECK(target_language_combobox_);
-  DCHECK(advanced_done_button_);
-
-  base::string16 source_language_name =
-      model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());
-  base::string16 target_language_name =
-      model_->GetLanguageNameAt(model_->GetTargetLanguageIndex());
-
   // "Always translate" checkbox doesn't exist in an incognito window.
   if (advanced_always_translate_checkbox_) {
     advanced_always_translate_checkbox_->SetText(
         l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ALWAYS));
   }
 
-  base::string16 label;
-  if (model_->IsPageTranslatedInCurrentLanguages())
-    label = l10n_util::GetStringUTF16(IDS_DONE);
-  else
-    label = l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT);
-  advanced_done_button_->SetText(label);
-  advanced_done_button_->SizeToPreferredSize();
-  if (advanced_view_)
-    advanced_view_->Layout();
+  DCHECK(advanced_done_button_);
+  advanced_done_button_->SetText(
+      l10n_util::GetStringUTF16(model_->IsPageTranslatedInCurrentLanguages()
+                                    ? IDS_DONE
+                                    : IDS_TRANSLATE_BUBBLE_ACCEPT));
 }
