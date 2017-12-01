@@ -40,6 +40,7 @@ source_set("recent_tabs") {
     "//ios/chrome/browser/ui/ntp/recent_tabs/views",
     "//ios/chrome/browser/ui/settings/sync_utils",
     "//ios/chrome/browser/ui/signin_interaction/public",
+    "//ios/chrome/browser/ui/util",
     "//ios/web",
     "//ui/base",
     "//url",

@@ -42,6 +42,7 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
+#import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/referrer.h"
@@ -629,9 +630,9 @@ enum CellType {
     params.view.reset(self.tableView);
 
     // Present sheet/popover using controller that is added to view hierarchy.
-    UIViewController* topController = [params.view window].rootViewController;
-    while (topController.presentedViewController)
-      topController = topController.presentedViewController;
+    // TODO(crbug.com/754642): Remove TopPresentedViewController().
+    UIViewController* topController =
+        top_view_controller::TopPresentedViewController();
 
     _contextMenuCoordinator =
         [[ContextMenuCoordinator alloc] initWithBaseViewController:topController
