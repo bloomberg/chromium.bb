@@ -189,7 +189,7 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
 
   SchedulerStateMachine::BeginImplFrameDeadlineMode
       begin_impl_frame_deadline_mode_ =
-          SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_NONE;
+          SchedulerStateMachine::BeginImplFrameDeadlineMode::NONE;
   base::TimeTicks deadline_;
   base::TimeTicks deadline_scheduled_at_;
 
@@ -203,7 +203,7 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   SchedulerStateMachine state_machine_;
   bool inside_process_scheduled_actions_ = false;
   SchedulerStateMachine::Action inside_action_ =
-      SchedulerStateMachine::ACTION_NONE;
+      SchedulerStateMachine::Action::NONE;
 
   bool stopped_ = false;
 
