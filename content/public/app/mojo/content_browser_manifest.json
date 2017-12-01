@@ -24,7 +24,6 @@
           "blink::mojom::BroadcastChannelProvider",
           "blink::mojom::Hyphenation",
           "blink::mojom::MimeRegistry",
-          "blink::mojom::NotificationService",
           "blink::mojom::OffscreenCanvasProvider",
           "blink::mojom::ReportingServiceProxy",
           "blink::mojom::WebDatabaseHost",
