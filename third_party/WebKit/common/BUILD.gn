@@ -5,10 +5,11 @@
 import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
-component("blink_common") {
+jumbo_component("blink_common") {
   output_name = "blink_common"
 
   visibility = [
@@ -74,6 +75,13 @@ component("blink_common") {
 
 test("blink_common_unittests") {
   visibility = [ "*" ]
+  deps = [
+    ":blink_common_unittests_sources",
+  ]
+}
+
+jumbo_source_set("blink_common_unittests_sources") {
+  testonly = true
 
   sources = [
     "device_memory/approximated_device_memory_unittest.cc",
