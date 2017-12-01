@@ -9,8 +9,6 @@
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/threading/thread.h"
 #include "components/os_crypt/keyring_util_linux.h"
 
 namespace {
@@ -33,50 +31,34 @@ KeyStorageKeyring::KeyStorageKeyring(
 
 KeyStorageKeyring::~KeyStorageKeyring() {}
 
+base::SequencedTaskRunner* KeyStorageKeyring::GetTaskRunner() {
+  return main_thread_runner_.get();
+}
+
 bool KeyStorageKeyring::Init() {
+  DCHECK(main_thread_runner_->RunsTasksInCurrentSequence());
   return GnomeKeyringLoader::LoadGnomeKeyring();
 }
 
 std::string KeyStorageKeyring::GetKeyImpl() {
+  DCHECK(main_thread_runner_->RunsTasksInCurrentSequence());
+
   std::string password;
-
-  // Ensure GetKeyDelegate() is executed on the main thread.
-  if (main_thread_runner_->BelongsToCurrentThread()) {
-    GetKeyDelegate(&password, nullptr);
-  } else {
-    base::WaitableEvent password_loaded(
-        base::WaitableEvent::ResetPolicy::MANUAL,
-        base::WaitableEvent::InitialState::NOT_SIGNALED);
-    main_thread_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&KeyStorageKeyring::GetKeyDelegate, base::Unretained(this),
-                   &password, &password_loaded));
-    password_loaded.Wait();
-  }
-
-  return password;
-}
-
-void KeyStorageKeyring::GetKeyDelegate(
-    std::string* password_ptr,
-    base::WaitableEvent* password_loaded_ptr) {
-  gchar* password = nullptr;
+  gchar* password_c = nullptr;
   GnomeKeyringResult result =
       GnomeKeyringLoader::gnome_keyring_find_password_sync_ptr(
-          &kSchema, &password, "application", kApplicationName, nullptr);
+          &kSchema, &password_c, "application", kApplicationName, nullptr);
   if (result == GNOME_KEYRING_RESULT_OK) {
-    *password_ptr = password;
-    GnomeKeyringLoader::gnome_keyring_free_password_ptr(password);
+    password = password_c;
+    GnomeKeyringLoader::gnome_keyring_free_password_ptr(password_c);
   } else if (result == GNOME_KEYRING_RESULT_NO_MATCH) {
-    *password_ptr = KeyStorageKeyring::AddRandomPasswordInKeyring();
+    password = KeyStorageKeyring::AddRandomPasswordInKeyring();
     VLOG(1) << "OSCrypt generated a new password";
   } else {
-    password_ptr->clear();
     VLOG(1) << "OSCrypt failed to use gnome-keyring";
   }
 
-  if (password_loaded_ptr)
-    password_loaded_ptr->Signal();
+  return password;
 }
 
 std::string KeyStorageKeyring::AddRandomPasswordInKeyring() {
