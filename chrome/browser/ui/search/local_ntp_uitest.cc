@@ -2,18 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cmath>
-
-#include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
-#include "chrome/browser/ui/search/local_ntp_test_utils.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/url_constants.h"
+#include "chrome/browser/ui/search/instant_uitest_base.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -22,31 +16,38 @@
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 
-class LocalNTPUITest : public InProcessBrowserTest {
+// A test class that sets up local_ntp_browsertest.html (which is mostly a copy
+// of the real local_ntp.html) as the NTP URL.
+class LocalNTPUITest : public InProcessBrowserTest, public InstantUITestBase {
  public:
   LocalNTPUITest() {}
 
-  OmniboxView* omnibox() {
-    return browser()->window()->GetLocationBar()->GetOmniboxView();
+ protected:
+  void SetUpInProcessBrowserTestFixture() override {
+    ASSERT_TRUE(https_test_server().Start());
+    GURL base_url = https_test_server().GetURL("/instant_extended.html?");
+    GURL ntp_url =
+        https_test_server().GetURL("/local_ntp/local_ntp_browsertest.html?");
+    InstantTestBase::Init(base_url, ntp_url, false);
   }
-
- private:
-  void SetUp() override {
-    feature_list_.InitAndEnableFeature(features::kUseGoogleLocalNtp);
-    InProcessBrowserTest::SetUp();
-  }
-
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPUITest, FakeboxRedirectsToOmnibox) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmnibox();
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), ntp_url(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
 
   // This is required to make the mouse events we send below arrive at the right
   // place. It *should* be the default for all interactive_ui_tests anyway, but
@@ -57,27 +58,18 @@ IN_PROC_BROWSER_TEST_F(LocalNTPUITest, FakeboxRedirectsToOmnibox) {
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
   ASSERT_EQ(OMNIBOX_FOCUS_NONE, omnibox()->model()->focus_state());
 
-  // Make sure the fakebox is visible.
   bool result = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(active_tab, R"js(
-        (function(elem) {
-          return elem && elem.offsetWidth > 0 && elem.offsetHeight > 0 &&
-              window.getComputedStyle(elem).visibility != 'hidden';
-        })(document.getElementById('fakebox'))
-      )js", &result));
-  EXPECT_TRUE(result);
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!setupAdvancedTest()", &result));
+  ASSERT_TRUE(result);
 
   // Get the position of the fakebox on the page.
   double fakebox_x = 0;
   ASSERT_TRUE(instant_test_utils::GetDoubleFromJS(
-      active_tab,
-      "document.getElementById('fakebox').getBoundingClientRect().left",
-      &fakebox_x));
+      active_tab, "getFakeboxPositionX()", &fakebox_x));
   double fakebox_y = 0;
   ASSERT_TRUE(instant_test_utils::GetDoubleFromJS(
-      active_tab,
-      "document.getElementById('fakebox').getBoundingClientRect().top",
-      &fakebox_y));
+      active_tab, "getFakeboxPositionY()", &fakebox_y));
 
   // Move the mouse over the fakebox.
   gfx::Vector2d fakebox_pos(static_cast<int>(std::ceil(fakebox_x)),
@@ -99,8 +91,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPUITest, FakeboxRedirectsToOmnibox) {
 
   // The fakebox should now also have focus.
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "document.body.classList.contains('fakebox-focused')",
-      &result));
+      active_tab, "!!fakeboxIsFocused()", &result));
   EXPECT_TRUE(result);
 
   // Type "a" and wait for the omnibox to receive visible focus.
@@ -114,14 +105,10 @@ IN_PROC_BROWSER_TEST_F(LocalNTPUITest, FakeboxRedirectsToOmnibox) {
   EXPECT_EQ(OMNIBOX_FOCUS_VISIBLE, omnibox()->model()->focus_state());
 
   // The typed text should have arrived in the omnibox.
-  EXPECT_EQ("a", base::UTF16ToUTF8(omnibox()->GetText()));
+  EXPECT_EQ("a", GetOmniboxText());
 
   // On the JS side, the fakebox should have been hidden.
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(active_tab, R"js(
-        (function(elem) {
-          return elem && elem.offsetWidth > 0 && elem.offsetHeight > 0 &&
-              window.getComputedStyle(elem).visibility != 'hidden';
-        })(document.getElementById('fakebox'))
-      )js", &result));
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!fakeboxIsVisible()", &result));
   EXPECT_FALSE(result);
 }
