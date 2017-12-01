@@ -817,7 +817,6 @@ static void get_entropy_contexts_plane(
       for (i = 0; i < num_4x4_h; i += 4)
         t_left[i] = !!*(const uint32_t *)&left[i];
       break;
-#if CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
     case TX_4X16:
       memcpy(t_above, above, sizeof(ENTROPY_CONTEXT) * num_4x4_w);
       for (i = 0; i < num_4x4_h; i += 4)
@@ -840,7 +839,6 @@ static void get_entropy_contexts_plane(
       for (i = 0; i < num_4x4_h; i += 2)
         t_left[i] = !!*(const uint16_t *)&left[i];
       break;
-#endif  // CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
     default: assert(0 && "Invalid transform size."); break;
   }
 }

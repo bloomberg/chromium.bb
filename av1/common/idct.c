@@ -1788,7 +1788,6 @@ static void inv_txfm_add_8x4(const tran_low_t *input, uint8_t *dest, int stride,
 }
 
 // These will be used by the masked-tx experiment in the future.
-#if CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
 static void inv_txfm_add_4x16(const tran_low_t *input, uint8_t *dest,
                               int stride, const TxfmParam *txfm_param) {
   av1_iht4x16_64_add(input, dest, stride, txfm_param);
@@ -1808,7 +1807,6 @@ static void inv_txfm_add_32x8(const tran_low_t *input, uint8_t *dest,
                               int stride, const TxfmParam *txfm_param) {
   av1_iht32x8_256_add(input, dest, stride, txfm_param);
 }
-#endif  // CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
 
 static void inv_txfm_add_8x16(const tran_low_t *input, uint8_t *dest,
                               int stride, const TxfmParam *txfm_param) {
@@ -2097,7 +2095,6 @@ static void highbd_inv_txfm_add_32x16(const tran_low_t *input, uint8_t *dest,
                              txfm_param->tx_type, txfm_param->bd);
 }
 
-#if CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
 static void highbd_inv_txfm_add_16x4(const tran_low_t *input, uint8_t *dest,
                                      int stride, const TxfmParam *txfm_param) {
   const int32_t *src = cast_to_int32(input);
@@ -2125,7 +2122,6 @@ static void highbd_inv_txfm_add_8x32(const tran_low_t *input, uint8_t *dest,
   av1_inv_txfm2d_add_8x32_c(src, CONVERT_TO_SHORTPTR(dest), stride,
                             txfm_param->tx_type, txfm_param->bd);
 }
-#endif  // CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
 
 #if CONFIG_TX64X64
 static void highbd_inv_txfm_add_32x64(const tran_low_t *input, uint8_t *dest,
@@ -2325,12 +2321,10 @@ void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
       // case.
       inv_txfm_add_4x4(input, dest, stride, txfm_param);
       break;
-#if CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
     case TX_32X8: inv_txfm_add_32x8(input, dest, stride, txfm_param); break;
     case TX_8X32: inv_txfm_add_8x32(input, dest, stride, txfm_param); break;
     case TX_16X4: inv_txfm_add_16x4(input, dest, stride, txfm_param); break;
     case TX_4X16: inv_txfm_add_4x16(input, dest, stride, txfm_param); break;
-#endif  // CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
     default: assert(0 && "Invalid transform size"); break;
   }
 #endif
@@ -2465,7 +2459,6 @@ void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
       // case.
       av1_highbd_inv_txfm_add_4x4(input, dest, stride, txfm_param);
       break;
-#if CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
     case TX_16X4:
       highbd_inv_txfm_add_16x4(input, dest, stride, txfm_param);
       break;
@@ -2478,7 +2471,6 @@ void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
     case TX_32X8:
       highbd_inv_txfm_add_32x8(input, dest, stride, txfm_param);
       break;
-#endif  // CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
     default: assert(0 && "Invalid transform size"); break;
   }
 #endif  // CONFIG_DAALA_TX
