@@ -40,7 +40,7 @@ namespace {
 // (?i) turns on case insensitivy for the remainder of the regex.
 // (?-s) turns off "dot matches newline" for the remainder of the regex.
 // (?:regex) denotes non-capturing parentheses group.
-const char* kCustomPatternsWithContext[] = {
+constexpr const char* kCustomPatternsWithContext[] = {
     "(\\bCell ID: ')([0-9a-fA-F]+)(')",                      // ModemManager
     "(\\bLocation area code: ')([0-9a-fA-F]+)(')",           // ModemManager
     "(?i-s)(\\bssid[= ]')(.+)(')",                           // wpa_supplicant

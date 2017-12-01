@@ -20,26 +20,26 @@ namespace nacl {
 
 namespace {
 // Top-level section name keys
-const char* const kProgramKey =     "program";
-const char* const kInterpreterKey = "interpreter";
-const char* const kFilesKey =       "files";
+const char kProgramKey[] = "program";
+const char kInterpreterKey[] = "interpreter";
+const char kFilesKey[] = "files";
 
 // ISA Dictionary keys
-const char* const kX8632Key =       "x86-32";
-const char* const kX8632NonSFIKey = "x86-32-nonsfi";
-const char* const kX8664Key =       "x86-64";
-const char* const kX8664NonSFIKey = "x86-64-nonsfi";
-const char* const kArmKey =         "arm";
-const char* const kArmNonSFIKey =   "arm-nonsfi";
-const char* const kPortableKey =    "portable";
+const char kX8632Key[] = "x86-32";
+const char kX8632NonSFIKey[] = "x86-32-nonsfi";
+const char kX8664Key[] = "x86-64";
+const char kX8664NonSFIKey[] = "x86-64-nonsfi";
+const char kArmKey[] = "arm";
+const char kArmNonSFIKey[] = "arm-nonsfi";
+const char kPortableKey[] = "portable";
 
 // Url Resolution keys
-const char* const kPnaclDebugKey =     "pnacl-debug";
-const char* const kPnaclTranslateKey = "pnacl-translate";
-const char* const kUrlKey =            "url";
+const char kPnaclDebugKey[] = "pnacl-debug";
+const char kPnaclTranslateKey[] = "pnacl-translate";
+const char kUrlKey[] = "url";
 
 // PNaCl keys
-const char* const kOptLevelKey = "optlevel";
+const char kOptLevelKey[] = "optlevel";
 
 // Sample NaCl manifest file:
 // {
@@ -98,7 +98,7 @@ std::string GetNonSFIKey(const std::string& sandbox_isa) {
 // Looks up |property_name| in the vector |valid_names| with length
 // |valid_name_count|.  Returns true if |property_name| is found.
 bool FindMatchingProperty(const std::string& property_name,
-                          const char** valid_names,
+                          const char* const* valid_names,
                           size_t valid_name_count) {
   for (size_t i = 0; i < valid_name_count; ++i) {
     if (property_name == valid_names[i]) {
@@ -116,9 +116,9 @@ bool FindMatchingProperty(const std::string& property_name,
 bool IsValidDictionary(const base::DictionaryValue& dictionary,
                        const std::string& container_key,
                        const std::string& parent_key,
-                       const char** valid_keys,
+                       const char* const* valid_keys,
                        size_t valid_key_count,
-                       const char** required_keys,
+                       const char* const* required_keys,
                        size_t required_key_count,
                        std::string* error_string) {
   // Check for unknown dictionary members.
@@ -164,18 +164,15 @@ bool IsValidUrlSpec(const base::Value& url_spec,
     *error_string = error_stream.str();
     return false;
   }
-  static const char* kManifestUrlSpecRequired[] = {
-    kUrlKey
-  };
-  const char** urlSpecPlusOptional;
-  size_t urlSpecPlusOptionalLength;
+  static constexpr const char* kManifestUrlSpecRequired[] = {kUrlKey};
+  const char* const* url_spec_plus_optional;
+  size_t url_spec_plus_optional_length;
   if (sandbox_isa == kPortableKey) {
-    static const char* kPnaclUrlSpecPlusOptional[] = {
-      kUrlKey,
-      kOptLevelKey,
+    static constexpr const char* kPnaclUrlSpecPlusOptional[] = {
+        kUrlKey, kOptLevelKey,
     };
-    urlSpecPlusOptional = kPnaclUrlSpecPlusOptional;
-    urlSpecPlusOptionalLength = arraysize(kPnaclUrlSpecPlusOptional);
+    url_spec_plus_optional = kPnaclUrlSpecPlusOptional;
+    url_spec_plus_optional_length = arraysize(kPnaclUrlSpecPlusOptional);
   } else {
     // URL specifications must not contain "pnacl-translate" keys.
     // This prohibits NaCl clients from invoking PNaCl.
@@ -186,11 +183,11 @@ bool IsValidUrlSpec(const base::Value& url_spec,
       *error_string = error_stream.str();
       return false;
     }
-    urlSpecPlusOptional = kManifestUrlSpecRequired;
-    urlSpecPlusOptionalLength = arraysize(kManifestUrlSpecRequired);
+    url_spec_plus_optional = kManifestUrlSpecRequired;
+    url_spec_plus_optional_length = arraysize(kManifestUrlSpecRequired);
   }
   if (!IsValidDictionary(*url_dict, container_key, parent_key,
-                         urlSpecPlusOptional, urlSpecPlusOptionalLength,
+                         url_spec_plus_optional, url_spec_plus_optional_length,
                          kManifestUrlSpecRequired,
                          arraysize(kManifestUrlSpecRequired), error_string)) {
     return false;

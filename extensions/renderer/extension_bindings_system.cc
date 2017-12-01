@@ -32,7 +32,7 @@ bool ExtensionBindingsSystem::IsRuntimeAvailableToContext(
 }
 
 // static
-const char* ExtensionBindingsSystem::kWebAvailableFeatures[] = {
+const char* const ExtensionBindingsSystem::kWebAvailableFeatures[] = {
     "app", "webstore", "dashboardPrivate",
 };
 

@@ -48,12 +48,8 @@ void DidFinishStream(void* user_data, int32_t pp_error) {
   coordinator->BitcodeStreamDidFinish(pp_error);
 }
 
-PPP_PexeStreamHandler kPexeStreamHandler = {
-  &DidCacheHit,
-  &DidCacheMiss,
-  &DidStreamData,
-  &DidFinishStream
-};
+constexpr PPP_PexeStreamHandler kPexeStreamHandler = {
+    &DidCacheHit, &DidCacheMiss, &DidStreamData, &DidFinishStream};
 
 }  // namespace
 

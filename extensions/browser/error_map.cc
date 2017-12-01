@@ -22,7 +22,7 @@ base::LazyInstance<ErrorList>::DestructorAtExit g_empty_error_list =
 
 // An incrementing counter for the next error id. Overflowing this is very
 // unlikely, since the number of errors per extension is capped at 100.
-int kNextErrorId = 1;
+int g_next_error_id = 1;
 
 }  // namespace
 
@@ -157,7 +157,7 @@ const ExtensionError* ErrorMap::ExtensionEntry::AddError(
     list_.pop_front();
 
   if (error->id() == 0)
-    error->set_id(kNextErrorId++);
+    error->set_id(g_next_error_id++);
 
   list_.push_back(std::move(error));
   return list_.back().get();

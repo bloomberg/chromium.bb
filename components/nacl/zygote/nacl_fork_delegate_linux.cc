@@ -222,7 +222,7 @@ void NaClForkDelegate::Init(const int sandboxdesc,
         cmd_line.SetProgram(helper_exe);
 
       // Append any switches that need to be forwarded to the NaCl helper.
-      static const char* kForwardSwitches[] = {
+      static constexpr const char* kForwardSwitches[] = {
           service_manager::switches::kAllowSandboxDebugging,
           service_manager::switches::kDisableSeccompFilterSandbox,
           switches::kEnableNaClDebug,
