@@ -17,8 +17,7 @@ GZipHeader::GZipHeader() {
   Reset();
 }
 
-GZipHeader::~GZipHeader() {
-}
+GZipHeader::~GZipHeader() = default;
 
 void GZipHeader::Reset() {
   state_        = IN_HEADER_ID1;

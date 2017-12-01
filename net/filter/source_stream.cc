@@ -8,7 +8,7 @@ namespace net {
 
 SourceStream::SourceStream(SourceType type) : type_(type) {}
 
-SourceStream::~SourceStream() {}
+SourceStream::~SourceStream() = default;
 
 std::string SourceStream::Description() const {
   return "";
