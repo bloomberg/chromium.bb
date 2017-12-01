@@ -49,6 +49,8 @@ const int styleCount = 2;
   return self;
 }
 
+#pragma mark - Buttons
+
 - (ToolbarButton*)backToolbarButton {
   int backButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
       TOOLBAR_IDR_THREE_STATE(BACK);
@@ -222,6 +224,21 @@ const int styleCount = 2;
       l10n_util::GetNSString(IDS_IOS_ACCNAME_VOICE_SEARCH);
   return voiceSearchButton;
 }
+
+- (ToolbarButton*)contractToolbarButton {
+  NSString* collapseName = _style ? @"collapse_incognito" : @"collapse";
+  NSString* collapsePressedName =
+      _style ? @"collapse_pressed_incognito" : @"collapse_pressed";
+  ToolbarButton* contractToolbarButton = [ToolbarButton
+      toolbarButtonWithImageForNormalState:[UIImage imageNamed:collapseName]
+                  imageForHighlightedState:[UIImage
+                                               imageNamed:collapsePressedName]
+                     imageForDisabledState:nil];
+  contractToolbarButton.accessibilityLabel = l10n_util::GetNSString(IDS_CANCEL);
+  return contractToolbarButton;
+}
+
+#pragma mark - Helpers
 
 - (NSArray<UIImage*>*)voiceSearchImages {
   // The voice search images can be overridden by the branded image provider.

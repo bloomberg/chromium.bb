@@ -42,6 +42,7 @@
 @property(nonatomic, strong) ToolbarButton* stopButton;
 @property(nonatomic, strong) ToolbarButton* voiceSearchButton;
 @property(nonatomic, strong) ToolbarButton* bookmarkButton;
+@property(nonatomic, strong) ToolbarButton* contractButton;
 @property(nonatomic, assign) BOOL voiceSearchEnabled;
 @property(nonatomic, strong) MDCProgressView* progressBar;
 // Background view, used to display the incognito NTP background color on the
@@ -49,7 +50,9 @@
 @property(nonatomic, strong) UIView* backgroundView;
 // Whether a page is loading.
 @property(nonatomic, assign, getter=isLoading) BOOL loading;
-// Constraints used for the regular/contracted Toolbar state.
+// Constraints used for the regular/contracted Toolbar state that will be
+// deactivated and replaced by |_expandedToolbarConstraints| when animating the
+// toolbar expansion.
 @property(nonatomic, strong) NSMutableArray* regularToolbarConstraints;
 // Constraints used to layout the Toolbar to its expanded state. If these are
 // active the locationBarContainer will expand to the size of this VC's view.
@@ -78,6 +81,7 @@
 @synthesize stopButton = _stopButton;
 @synthesize voiceSearchButton = _voiceSearchButton;
 @synthesize bookmarkButton = _bookmarkButton;
+@synthesize contractButton = _contractButton;
 @synthesize voiceSearchEnabled = _voiceSearchEnabled;
 @synthesize progressBar = _progressBar;
 @synthesize expandedToolbarConstraints = _expandedToolbarConstraints;
@@ -118,18 +122,26 @@
 }
 
 - (void)addToolbarExpansionAnimations:(UIViewPropertyAnimator*)animator {
+  // iPad should never try to animate.
+  DCHECK(!IsIPadIdiom());
   [NSLayoutConstraint deactivateConstraints:self.regularToolbarConstraints];
   [NSLayoutConstraint activateConstraints:self.expandedToolbarConstraints];
   [animator addAnimations:^{
     [self.view layoutIfNeeded];
+    self.contractButton.hidden = NO;
+    self.contractButton.alpha = 1;
   }];
 }
 
 - (void)addToolbarContractionAnimations:(UIViewPropertyAnimator*)animator {
+  // iPad should never try to animate.
+  DCHECK(!IsIPadIdiom());
   [NSLayoutConstraint deactivateConstraints:self.expandedToolbarConstraints];
   [NSLayoutConstraint activateConstraints:self.regularToolbarConstraints];
   [animator addAnimations:^{
     [self.view layoutIfNeeded];
+    self.contractButton.hidden = YES;
+    self.contractButton.alpha = 0;
   }];
 }
 
@@ -172,26 +184,7 @@
       [self.buttonFactory.toolbarConfiguration backgroundColor];
 
   [self setUpToolbarStackView];
-  if (self.locationBarView) {
-    NSLayoutConstraint* locationBarTopAnchorConstraint =
-        [self.locationBarView.topAnchor
-            constraintEqualToAnchor:self.locationBarContainer.topAnchor];
-    [self.locationBarContainer addSubview:self.locationBarView];
-    NSArray* locationBarViewConstraints = @[
-      [self.locationBarView.leadingAnchor
-          constraintEqualToAnchor:self.locationBarContainer.leadingAnchor],
-      [self.locationBarView.trailingAnchor
-          constraintEqualToAnchor:self.locationBarContainer.trailingAnchor],
-      [self.locationBarView.bottomAnchor
-          constraintEqualToAnchor:self.locationBarContainer.bottomAnchor],
-      locationBarTopAnchorConstraint,
-    ];
-    // Adds
-    [self.regularToolbarConstraints addObject:locationBarTopAnchorConstraint];
-    [NSLayoutConstraint activateConstraints:locationBarViewConstraints];
-  }
-  [self.locationBarContainer addSubview:self.bookmarkButton];
-  [self.locationBarContainer addSubview:self.voiceSearchButton];
+  [self setUpToolbarContainerView];
   [self.view addSubview:self.stackView];
   [self.view addSubview:self.progressBar];
   [self setConstraints];
@@ -216,12 +209,51 @@
   self.stackView.distribution = UIStackViewDistributionFill;
 }
 
+// Sets up the LocationContainerView. This contains the locationBarView, and
+// other buttons like Voice Search, Bookmarks and Contract Toolbar.
+- (void)setUpToolbarContainerView {
+  if (self.locationBarView) {
+    [self.locationBarContainer addSubview:self.locationBarView];
+
+    // Bookmarks and Voice Search buttons will only be part of the Toolbar on
+    // iPad. On the other hand the contract button is only needed on non iPad
+    // devices, since iPad doesn't animate, thus it doesn't need to contract.
+    if (IsIPadIdiom()) {
+      [self.locationBarContainer addSubview:self.bookmarkButton];
+      [self.locationBarContainer addSubview:self.voiceSearchButton];
+    } else {
+      [self.locationBarContainer addSubview:self.contractButton];
+    }
+
+    // LocationBarView constraints.
+    NSLayoutConstraint* locationBarViewTrailingConstraint =
+        [self.locationBarView.trailingAnchor
+            constraintEqualToAnchor:self.locationBarContainer.trailingAnchor];
+    NSLayoutConstraint* locationBarViewTopConstraint =
+        [self.locationBarView.topAnchor
+            constraintEqualToAnchor:self.locationBarContainer.topAnchor];
+    [self.regularToolbarConstraints addObjectsFromArray:@[
+      locationBarViewTopConstraint, locationBarViewTrailingConstraint
+    ]];
+    NSArray* locationBarViewConstraints = @[
+      [self.locationBarView.leadingAnchor
+          constraintEqualToAnchor:self.locationBarContainer.leadingAnchor],
+      [self.locationBarView.bottomAnchor
+          constraintEqualToAnchor:self.locationBarContainer.bottomAnchor],
+      locationBarViewTrailingConstraint,
+      locationBarViewTopConstraint,
+    ];
+    [NSLayoutConstraint activateConstraints:locationBarViewConstraints];
+  }
+}
+
 - (void)setConstraints {
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view.bottomAnchor constraintEqualToAnchor:self.topSafeAnchor
                                          constant:kToolbarHeight]
       .active = YES;
 
+  // ProgressBar constraints.
   NSArray* progressBarConstraints = @[
     [self.progressBar.leadingAnchor
         constraintEqualToAnchor:self.view.leadingAnchor],
@@ -234,7 +266,8 @@
   ];
   [NSLayoutConstraint activateConstraints:progressBarConstraints];
 
-  NSArray* constraints = @[
+  // StackView constraints.
+  NSArray* stackViewConstraints = @[
     [self.stackView.heightAnchor
         constraintEqualToConstant:kToolbarHeight - 2 * kVerticalMargin],
     [self.stackView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor
@@ -245,17 +278,38 @@
     [self.stackView.trailingAnchor
         constraintEqualToAnchor:self.view.trailingAnchor
                        constant:-kHorizontalMargin],
-    [self.bookmarkButton.centerYAnchor
-        constraintEqualToAnchor:self.locationBarContainer.centerYAnchor],
-    [self.voiceSearchButton.centerYAnchor
-        constraintEqualToAnchor:self.locationBarContainer.centerYAnchor],
-    [self.voiceSearchButton.trailingAnchor
-        constraintEqualToAnchor:self.locationBarContainer.trailingAnchor],
-    [self.bookmarkButton.trailingAnchor
-        constraintEqualToAnchor:self.voiceSearchButton.leadingAnchor],
   ];
-  [self.regularToolbarConstraints addObjectsFromArray:constraints];
-  [NSLayoutConstraint activateConstraints:constraints];
+  [self.regularToolbarConstraints addObjectsFromArray:stackViewConstraints];
+  [NSLayoutConstraint activateConstraints:stackViewConstraints];
+
+  // LocationBarContainer Buttons constraints.
+  NSArray* locationBarButtonConstraints;
+  if (IsIPadIdiom()) {
+    locationBarButtonConstraints = @[
+      [self.bookmarkButton.centerYAnchor
+          constraintEqualToAnchor:self.locationBarContainer.centerYAnchor],
+      [self.voiceSearchButton.centerYAnchor
+          constraintEqualToAnchor:self.locationBarContainer.centerYAnchor],
+      [self.voiceSearchButton.trailingAnchor
+          constraintEqualToAnchor:self.locationBarContainer.trailingAnchor],
+      [self.bookmarkButton.trailingAnchor
+          constraintEqualToAnchor:self.voiceSearchButton.leadingAnchor],
+    ];
+  } else {
+    NSLayoutConstraint* contractButtonTrailingConstraint =
+        [self.contractButton.trailingAnchor
+            constraintEqualToAnchor:self.locationBarContainer.trailingAnchor
+                           constant:-2 * kTrailingMargin];
+    [self.regularToolbarConstraints addObject:contractButtonTrailingConstraint];
+    locationBarButtonConstraints = @[
+      [self.contractButton.topAnchor constraintEqualToAnchor:self.topSafeAnchor
+                                                    constant:kVerticalMargin],
+      [self.contractButton.bottomAnchor
+          constraintEqualToAnchor:self.locationBarContainer.bottomAnchor],
+      contractButtonTrailingConstraint,
+    ];
+  }
+  [NSLayoutConstraint activateConstraints:locationBarButtonConstraints];
 }
 
 #pragma mark - Components Setup
@@ -369,6 +423,16 @@
   [self.bookmarkButton addTarget:self.dispatcher
                           action:@selector(bookmarkPage)
                 forControlEvents:UIControlEventTouchUpInside];
+
+  // Contract button.
+  self.contractButton = [self.buttonFactory contractToolbarButton];
+  self.contractButton.visibilityMask = ToolbarComponentVisibilityCompactWidth |
+                                       ToolbarComponentVisibilityRegularWidth;
+  self.contractButton.alpha = 0;
+  self.contractButton.hidden = YES;
+  [buttonConstraints
+      addObject:[self.contractButton.widthAnchor
+                    constraintEqualToConstant:kToolbarButtonWidth]];
 
   // Add buttons to button updater.
   self.buttonUpdater.backButton = self.backButton;
@@ -612,6 +676,12 @@
           constraintEqualToAnchor:self.view.trailingAnchor],
       [self.locationBarView.topAnchor constraintEqualToAnchor:self.topSafeAnchor
                                                      constant:kVerticalMargin],
+      [self.locationBarView.trailingAnchor
+          constraintEqualToAnchor:self.contractButton.leadingAnchor
+                         constant:-kTrailingMargin],
+      [self.contractButton.trailingAnchor
+          constraintEqualToAnchor:self.locationBarContainer.trailingAnchor
+                         constant:-kTrailingMargin],
     ];
   }
   return _expandedToolbarConstraints;

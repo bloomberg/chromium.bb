@@ -46,6 +46,8 @@
 - (ToolbarButton*)bookmarkToolbarButton;
 // VoiceSearch ToolbarButton.
 - (ToolbarButton*)voiceSearchButton;
+// ContractToolbar ToolbarButton.
+- (ToolbarButton*)contractToolbarButton;
 
 // Returns images for Voice Search in an array representing the NORMAL/PRESSED
 // state
