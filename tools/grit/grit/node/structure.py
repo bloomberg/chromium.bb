@@ -26,7 +26,6 @@ import grit.gather.tr_html
 import grit.gather.txt
 
 import grit.format.rc
-import grit.format.rc_header
 
 # Type of the gatherer to use for each type attribute
 _GATHERERS = {
@@ -196,20 +195,14 @@ class StructureNode(base.Node):
   def GetCliques(self):
     return self.gatherer.GetCliques()
 
-  def GetDataPackPair(self, lang, encoding):
-    """Returns a (id, string|None) pair that represents the resource id and raw
-    bytes of the data (or None if no resource is generated).  This is used to
-    generate the data pack data file.
-    """
-    from grit.format import rc_header
-    id_map = rc_header.GetIds(self.GetRoot())
-    id = id_map[self.GetTextualIds()[0]]
+  def GetDataPackValue(self, lang, encoding):
+    """Returns a str represenation for a data_pack entry."""
     if self.ExpandVariables():
       text = self.gatherer.GetText()
       data = util.Encode(self._Substitute(text), encoding)
     else:
       data = self.gatherer.GetData(lang, encoding)
-    return id, self.CompressDataIfNeeded(data)
+    return self.CompressDataIfNeeded(data)
 
   def GetHtmlResourceFilenames(self):
     """Returns a set of all filenames inlined by this node."""

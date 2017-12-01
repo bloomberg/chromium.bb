@@ -6,19 +6,30 @@
 '''Unit tests for misc.GritNode'''
 
 
+import StringIO
+import contextlib
 import os
 import sys
+import tempfile
+import unittest
+
 if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-
-import unittest
-import StringIO
 
 from grit import grd_reader
 import grit.exception
 from grit import util
 from grit.format import rc
+from grit.format import rc_header
 from grit.node import misc
+
+
+@contextlib.contextmanager
+def _MakeTempPredeterminedIdsFile(content):
+  with tempfile.NamedTemporaryFile() as f:
+    f.write(content)
+    f.flush()
+    yield f.name
 
 
 class GritNodeUnittest(unittest.TestCase):
@@ -105,6 +116,83 @@ class GritNodeUnittest(unittest.TestCase):
     # Convert path separator for Windows paths.
     actual = [path.replace('\\', '/') for path in actual]
     self.assertEquals(expected, actual)
+
+  def testNonDefaultEntry(self):
+    grd = util.ParseGrdForUnittest('''
+      <messages>
+        <message name="IDS_A" desc="foo">bar</message>
+        <if expr="lang == 'fr'">
+          <message name="IDS_B" desc="foo">bar</message>
+        </if>
+      </messages>''')
+    grd.SetOutputLanguage('fr')
+    output = ''.join(rc_header.Format(grd, 'fr', '.'))
+    self.assertIn('#define IDS_A 2378\n#define IDS_B 2379', output)
+
+  def testExplicitFirstIdOverlaps(self):
+    # second first_id will overlap preexisting range
+    self.assertRaises(grit.exception.IdRangeOverlap,
+                      util.ParseGrdForUnittest, '''
+        <includes first_id="300" comment="bingo">
+          <include type="gif" name="ID_LOGO" file="images/logo.gif" />
+          <include type="gif" name="ID_LOGO2" file="images/logo2.gif" />
+        </includes>
+        <messages first_id="301">
+          <message name="IDS_GREETING" desc="Printed to greet the currently logged in user">
+            Hello <ph name="USERNAME">%s<ex>Joi</ex></ph>, how are you doing today?
+          </message>
+          <message name="IDS_SMURFGEBURF">Frubegfrums</message>
+        </messages>''')
+
+  def testImplicitOverlapsPreexisting(self):
+    # second message in <messages> will overlap preexisting range
+    self.assertRaises(grit.exception.IdRangeOverlap,
+                      util.ParseGrdForUnittest, '''
+        <includes first_id="301" comment="bingo">
+          <include type="gif" name="ID_LOGO" file="images/logo.gif" />
+          <include type="gif" name="ID_LOGO2" file="images/logo2.gif" />
+        </includes>
+        <messages first_id="300">
+          <message name="IDS_GREETING" desc="Printed to greet the currently logged in user">
+            Hello <ph name="USERNAME">%s<ex>Joi</ex></ph>, how are you doing today?
+          </message>
+          <message name="IDS_SMURFGEBURF">Frubegfrums</message>
+        </messages>''')
+
+  def testPredeterminedIds(self):
+    with _MakeTempPredeterminedIdsFile('IDS_A 101\nIDS_B 102') as ids_file:
+      grd = util.ParseGrdForUnittest('''
+          <includes first_id="300" comment="bingo">
+            <include type="gif" name="IDS_B" file="images/logo.gif" />
+          </includes>
+          <messages first_id="10000">
+            <message name="IDS_GREETING" desc="Printed to greet the currently logged in user">
+              Hello <ph name="USERNAME">%s<ex>Joi</ex></ph>, how are you doing today?
+            </message>
+            <message name="IDS_A">
+              Bongo!
+            </message>
+          </messages>''', predetermined_ids_file=ids_file)
+      output = rc_header.FormatDefines(grd, grd.GetRcHeaderFormat())
+      self.assertEqual(('#define IDS_B 102\n'
+                        '#define IDS_GREETING 10000\n'
+                        '#define IDS_A 101\n'), ''.join(output))
+
+  def testPredeterminedIdsOverlap(self):
+    with _MakeTempPredeterminedIdsFile('ID_LOGO 10000') as ids_file:
+      self.assertRaises(grit.exception.IdRangeOverlap,
+                        util.ParseGrdForUnittest, '''
+          <includes first_id="300" comment="bingo">
+            <include type="gif" name="ID_LOGO" file="images/logo.gif" />
+          </includes>
+          <messages first_id="10000">
+            <message name="IDS_GREETING" desc="Printed to greet the currently logged in user">
+              Hello <ph name="USERNAME">%s<ex>Joi</ex></ph>, how are you doing today?
+            </message>
+            <message name="IDS_BONGO">
+              Bongo!
+            </message>
+          </messages>''', predetermined_ids_file=ids_file)
 
 
 class IfNodeUnittest(unittest.TestCase):

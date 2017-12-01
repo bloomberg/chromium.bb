@@ -13,6 +13,7 @@ import sys
 from grit import constants
 from grit import exception
 from grit import util
+from grit.extern import FP
 import grit.format.rc_header
 from grit.node import base
 from grit.node import io
@@ -71,6 +72,138 @@ def _ReadFirstIdsFromFile(filename, defines):
 
   return (src_root_dir, first_ids_dict)
 
+
+def _ComputeIds(root, predetermined_tids):
+  """Returns a dict of textual id -> numeric id for all nodes in root.
+
+  IDs are mostly assigned sequentially, but will vary based on:
+    * first_id node attribute (from first_ids_file)
+    * hash of textual id (if not first_id is defined)
+    * offset node attribute
+    * whether the textual id matches a system id
+    * whether the node generates its own ID via GetId()
+
+  Args:
+    predetermined_tids: Dict of textual id -> numeric id to use in return dict.
+  """
+  from grit.node import empty, include, message, misc, structure
+
+  ids = {}  # Maps numeric id to textual id
+  tids = {}  # Maps textual id to numeric id
+  id_reasons = {}  # Maps numeric id to text id and a human-readable explanation
+  group = None
+  last_id = None
+  predetermined_ids = {value: key
+                       for key, value in predetermined_tids.iteritems()}
+
+  for item in root:
+    if isinstance(item, empty.GroupingNode):
+      # Note: this won't work if any GroupingNode can be contained inside
+      # another.
+      group = item
+      last_id = None
+      continue
+
+    assert not item.GetTextualIds() or isinstance(item,
+        (include.IncludeNode, message.MessageNode,
+         misc.IdentifierNode, structure.StructureNode))
+
+    # Resources that use the RES protocol don't need
+    # any numerical ids generated, so we skip them altogether.
+    # This is accomplished by setting the flag 'generateid' to false
+    # in the GRD file.
+    if item.attrs.get('generateid', 'true') == 'false':
+      continue
+
+    for tid in item.GetTextualIds():
+      if util.SYSTEM_IDENTIFIERS.match(tid):
+        # Don't emit a new ID for predefined IDs
+        continue
+
+      if tid in tids:
+        continue
+
+      if predetermined_tids and tid in predetermined_tids:
+        id = predetermined_tids[tid]
+        reason = "from predetermined_tids map"
+
+      # Some identifier nodes can provide their own id,
+      # and we use that id in the generated header in that case.
+      elif hasattr(item, 'GetId') and item.GetId():
+        id = long(item.GetId())
+        reason = 'returned by GetId() method'
+
+      elif ('offset' in item.attrs and group and
+            group.attrs.get('first_id', '') != ''):
+         offset_text = item.attrs['offset']
+         parent_text = group.attrs['first_id']
+
+         try:
+           offset_id = long(offset_text)
+         except ValueError:
+           offset_id = tids[offset_text]
+
+         try:
+           parent_id = long(parent_text)
+         except ValueError:
+           parent_id = tids[parent_text]
+
+         id = parent_id + offset_id
+         reason = 'first_id %d + offset %d' % (parent_id, offset_id)
+
+      # We try to allocate IDs sequentially for blocks of items that might
+      # be related, for instance strings in a stringtable (as their IDs might be
+      # used e.g. as IDs for some radio buttons, in which case the IDs must
+      # be sequential).
+      #
+      # We do this by having the first item in a section store its computed ID
+      # (computed from a fingerprint) in its parent object.  Subsequent children
+      # of the same parent will then try to get IDs that sequentially follow
+      # the currently stored ID (on the parent) and increment it.
+      elif last_id is None:
+        # First check if the starting ID is explicitly specified by the parent.
+        if group and group.attrs.get('first_id', '') != '':
+          id = long(group.attrs['first_id'])
+          reason = "from parent's first_id attribute"
+        else:
+          # Automatically generate the ID based on the first clique from the
+          # first child of the first child node of our parent (i.e. when we
+          # first get to this location in the code).
+
+          # According to
+          # http://msdn.microsoft.com/en-us/library/t2zechd4(VS.71).aspx
+          # the safe usable range for resource IDs in Windows is from decimal
+          # 101 to 0x7FFF.
+
+          id = FP.UnsignedFingerPrint(tid)
+          id = id % (0x7FFF - 101) + 101
+          reason = 'chosen by random fingerprint -- use first_id to override'
+
+        last_id = id
+      else:
+        id = last_id = last_id + 1
+        reason = 'sequentially assigned'
+
+      reason = "%s (%s)" % (tid, reason)
+      # Don't fail when 'offset' is specified, as the base and the 0th
+      # offset will have the same ID.
+      if id in id_reasons and not 'offset' in item.attrs:
+        raise exception.IdRangeOverlap('ID %d was assigned to both %s and %s.'
+                                       % (id, id_reasons[id], reason))
+
+      if id < 101:
+        print ('WARNING: Numeric resource IDs should be greater than 100 to\n'
+               'avoid conflicts with system-defined resource IDs.')
+
+      if tid not in predetermined_tids and id in predetermined_ids:
+        raise exception.IdRangeOverlap('ID %d overlaps between %s and %s'
+                                       % (id, tid, predetermined_ids[tid]))
+
+      ids[id] = tid
+      tids[tid] = id
+      id_reasons[id] = reason
+
+  return tids
 
 class SplicingNode(base.Node):
   """A node whose children should be considered to be at the same level as
@@ -172,6 +305,8 @@ class GritNode(base.Node):
     self.defines = {}
     self.substituter = None
     self.target_platform = sys.platform
+    self._predetermined_ids_file = None
+    self._id_map = None  # Dict of textual_id -> numeric_id.
 
   def _IsValidChild(self, child):
     from grit.node import empty
@@ -442,6 +577,7 @@ class GritNode(base.Node):
     """Assign first ids to each grouping node based on values from the
     first_ids file (if specified on the <grit> node).
     """
+    assert self._id_map is None, 'AssignFirstIds() after InitializeIds()'
     # If the input is a stream, then we're probably in a unit test and
     # should skip this step.
     if type(filename_or_stream) not in (str, unicode):
@@ -486,6 +622,25 @@ class GritNode(base.Node):
         except IndexError, e:
           raise Exception('Please update %s and add a first id for %s (%s).'
                           % (first_ids_filename, filename, node.name))
+
+  def GetIdMap(self):
+    '''Return a dictionary mapping textual ids to numeric ids.'''
+    return self._id_map
+
+  def SetPredeterminedIdsFile(self, predetermined_ids_file):
+    assert self._id_map is None, (
+        'SetPredeterminedIdsFile() after InitializeIds()')
+    self._predetermined_ids_file = predetermined_ids_file
+
+  def InitializeIds(self):
+    '''Initializes the text ID -> numeric ID mapping.'''
+    predetermined_id_map = {}
+    if self._predetermined_ids_file:
+      with open(self._predetermined_ids_file) as f:
+        for line in f:
+          tid, nid = line.split()
+          predetermined_id_map[tid] = int(nid)
+    self._id_map = _ComputeIds(self, predetermined_id_map)
 
   def RunGatherers(self, debug=False):
     '''Call RunPreSubstitutionGatherer() on every node of the tree, then apply

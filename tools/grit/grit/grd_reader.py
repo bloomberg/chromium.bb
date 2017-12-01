@@ -13,7 +13,6 @@ import xml.sax.handler
 
 from grit import exception
 from grit import util
-from grit.format import rc_header
 from grit.node import base
 from grit.node import mapping
 from grit.node import misc
@@ -192,7 +191,6 @@ def Parse(filename_or_stream, dir=None, stop_after=None, first_ids_file=None,
   else:
     source = None
 
-  rc_header.SetPredeterminedIdsFile(predetermined_ids_file)
   handler = GrdContentHandler(stop_after=stop_after, debug=debug, dir=dir,
                               defines=defines, tags_to_ignore=tags_to_ignore,
                               target_platform=target_platform, source=source)
@@ -215,6 +213,7 @@ def Parse(filename_or_stream, dir=None, stop_after=None, first_ids_file=None,
     handler.root.SetOwnDir(dir)
 
   if isinstance(handler.root, misc.GritNode):
+    handler.root.SetPredeterminedIdsFile(predetermined_ids_file)
     if first_ids_file:
       # Make the path to the first_ids_file relative to the grd file,
       # unless it begins with GRIT_DIR.

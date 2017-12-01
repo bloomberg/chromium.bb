@@ -74,7 +74,7 @@ class StructureUnittest(unittest.TestCase):
         </structures>''', base_dir=test_data_root)
     struct, = root.GetChildrenOfType(structure.StructureNode)
     struct.RunPreSubstitutionGatherer()
-    _, compressed = struct.GetDataPackPair(lang='en', encoding=1)
+    compressed = struct.GetDataPackValue(lang='en', encoding=1)
 
     decompressed_data = zlib.decompress(compressed, 16 + zlib.MAX_WBITS)
     self.assertEqual(util.ReadFile(
@@ -89,7 +89,7 @@ class StructureUnittest(unittest.TestCase):
         </structures>''', base_dir=test_data_root)
     struct, = root.GetChildrenOfType(structure.StructureNode)
     struct.RunPreSubstitutionGatherer()
-    _, data = struct.GetDataPackPair(lang='en', encoding=1)
+    data = struct.GetDataPackValue(lang='en', encoding=1)
 
     self.assertEqual(util.ReadFile(
         os.path.join(test_data_root, "test_text.txt"), util.BINARY), data)
