@@ -1280,32 +1280,36 @@ def CreatePushBranch(branch, git_repo, sync=True, remote_push_branch=None):
   RunGit(git_repo, ['checkout', '-B', branch, '-t', remote_push_branch.ref])
 
 
-def SyncPushBranch(git_repo, remote, rebase_target, **kwargs):
-  """Sync and rebase a local push branch to the latest remote version.
+def SyncPushBranch(git_repo, remote, target, use_merge=False, **kwargs):
+  """Sync and rebase or merge a local push branch to the latest remote version.
 
   Args:
     git_repo: Git repository to rebase in.
     remote: The remote returned by GetTrackingBranch(for_push=True)
-    rebase_target: The branch name returned by GetTrackingBranch().  Must
+    target: The branch name returned by GetTrackingBranch().  Must
       start with refs/remotes/ (specifically must be a proper remote
       target rather than an ambiguous name).
+    use_merge: Default: False. If True, use merge to bring local branch up to
+      date with remote branch. Otherwise, use rebase.
     kwargs: Arguments passed through to RunGit.
   """
-  if not rebase_target.startswith('refs/remotes/'):
+  subcommand = 'merge' if use_merge else 'rebase'
+
+  if not target.startswith('refs/remotes/'):
     raise Exception(
-        'Was asked to rebase to a non branch target w/in the push pathways.  '
-        'This is highly indicative of an internal bug.  remote %s, rebase %s'
-        % (remote, rebase_target))
+        'Was asked to %s to a non branch target w/in the push pathways.  '
+        'This is highly indicative of an internal bug.  remote %s, %s %s'
+        % (subcommand, remote, subcommand, target))
 
   cmd = ['remote', 'update', remote]
   RunGit(git_repo, cmd, **kwargs)
 
   try:
-    RunGit(git_repo, ['rebase', rebase_target], **kwargs)
+    RunGit(git_repo, [subcommand, target], **kwargs)
   except cros_build_lib.RunCommandError:
     # Looks like our change conflicts with upstream. Cleanup our failed
     # rebase.
-    RunGit(git_repo, ['rebase', '--abort'], error_code_ok=True, **kwargs)
+    RunGit(git_repo, [subcommand, '--abort'], error_code_ok=True, **kwargs)
     raise
 
 
