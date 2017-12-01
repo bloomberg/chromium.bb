@@ -1709,6 +1709,17 @@ jumbo_source_set("browser") {
     ]
   }
 
+  if (is_chromecast && is_linux) {
+    sources += [
+      "tracing/cast_tracing_agent.cc",
+      "tracing/cast_tracing_agent.h",
+    ]
+
+    deps += [ "//chromecast/tracing:system_tracer" ]
+
+    defines += [ "CAST_TRACING_AGENT=1" ]
+  }
+
   if (is_fuchsia) {
     sources += [
       "child_process_launcher_helper_fuchsia.cc",

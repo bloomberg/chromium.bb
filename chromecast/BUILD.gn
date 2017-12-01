@@ -34,6 +34,9 @@ group("all") {
   if (!is_android) {
     deps += [ ":cast_shell" ]
   }
+  if (is_linux) {
+    deps += [ "//chromecast/tracing" ]
+  }
   if (chromecast_branding != "public") {
     deps += [ "//chromecast/internal:all" ]
   }
@@ -514,7 +517,9 @@ foreach(locale, cast_locales) {
     ]
 
     if (chromecast_branding != "public") {
-      sources += [ "$root_gen_dir/chromecast/internal/webui/app_strings_${locale}.pak" ]
+      sources += [
+        "$root_gen_dir/chromecast/internal/webui/app_strings_${locale}.pak",
+      ]
       deps += [ "//chromecast/internal/webui:chromecast_app_strings" ]
 
       if (enable_chromecast_webui) {
