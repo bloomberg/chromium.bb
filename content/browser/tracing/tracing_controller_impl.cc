@@ -54,6 +54,10 @@
 #include "content/browser/tracing/cros_tracing_agent.h"
 #endif
 
+#if defined(CAST_TRACING_AGENT)
+#include "content/browser/tracing/cast_tracing_agent.h"
+#endif
+
 #if defined(OS_WIN)
 #include "content/browser/tracing/etw_tracing_agent_win.h"
 #endif
@@ -139,6 +143,8 @@ void TracingControllerImpl::AddAgents() {
 #if defined(OS_CHROMEOS)
   agents_.push_back(std::make_unique<CrOSTracingAgent>(connector));
   agents_.push_back(std::make_unique<ArcTracingAgentImpl>(connector));
+#elif defined(CAST_TRACING_AGENT)
+  agents_.push_back(std::make_unique<CastTracingAgent>(connector));
 #elif defined(OS_WIN)
   agents_.push_back(std::make_unique<EtwTracingAgent>(connector));
 #endif
