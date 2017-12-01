@@ -15,8 +15,10 @@ static_library("router") {
   sources = [
     "discovery/media_sink_internal.cc",
     "discovery/media_sink_internal.h",
-    "discovery/media_sink_service.cc",
-    "discovery/media_sink_service.h",
+    "discovery/media_sink_service_base.cc",
+    "discovery/media_sink_service_base.h",
+    "discovery/media_sink_service_util.cc",
+    "discovery/media_sink_service_util.h",
     "issue.cc",
     "issue.h",
     "media_route.cc",

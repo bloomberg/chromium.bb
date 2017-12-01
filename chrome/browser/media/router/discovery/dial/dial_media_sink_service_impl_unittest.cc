@@ -31,14 +31,6 @@ class TestDialRegistry : public DialRegistry {
   MOCK_METHOD0(OnListenerRemoved, void());
 };
 
-class MockDialMediaSinkServiceObserver : public DialMediaSinkServiceObserver {
- public:
-  MockDialMediaSinkServiceObserver() {}
-  ~MockDialMediaSinkServiceObserver() = default;
-
-  MOCK_METHOD1(OnDialSinkAdded, void(const MediaSinkInternal& sink));
-};
-
 class MockDeviceDescriptionService : public DeviceDescriptionService {
  public:
   MockDeviceDescriptionService(DeviceDescriptionParseSuccessCallback success_cb,
@@ -55,16 +47,18 @@ class DialMediaSinkServiceImplTest : public ::testing::Test {
  public:
   DialMediaSinkServiceImplTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        media_sink_service_(
-            new DialMediaSinkServiceImpl(/*connector=*/nullptr,
-                                         mock_sink_discovered_cb_.Get(),
-                                         profile_.GetRequestContext())) {}
+        media_sink_service_(new DialMediaSinkServiceImpl(
+            std::unique_ptr<service_manager::Connector>(),
+            mock_sink_discovered_cb_.Get(),
+            dial_sink_added_cb_.Get(),
+            profile_.GetRequestContext(),
+            base::SequencedTaskRunnerHandle::Get())) {}
 
   void SetUp() override {
     media_sink_service_->SetDialRegistryForTest(&test_dial_registry_);
 
     auto mock_description_service =
-        base::MakeUnique<MockDeviceDescriptionService>(mock_success_cb_.Get(),
+        std::make_unique<MockDeviceDescriptionService>(mock_success_cb_.Get(),
                                                        mock_error_cb_.Get());
     mock_description_service_ = mock_description_service.get();
     media_sink_service_->SetDescriptionServiceForTest(
@@ -74,15 +68,12 @@ class DialMediaSinkServiceImplTest : public ::testing::Test {
     media_sink_service_->SetTimerForTest(base::WrapUnique(mock_timer_));
   }
 
-  void TearDown() override {
-  }
-
  protected:
   const content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
 
-  base::MockCallback<MediaSinkService::OnSinksDiscoveredCallback>
-      mock_sink_discovered_cb_;
+  base::MockCallback<OnSinksDiscoveredCallback> mock_sink_discovered_cb_;
+  base::MockCallback<OnDialSinkAddedCallback> dial_sink_added_cb_;
   base::MockCallback<
       MockDeviceDescriptionService::DeviceDescriptionParseSuccessCallback>
       mock_success_cb_;
@@ -142,6 +133,7 @@ TEST_F(DialMediaSinkServiceImplTest, TestTimer) {
                                                     device_description);
   EXPECT_TRUE(mock_timer_->IsRunning());
 
+  EXPECT_CALL(dial_sink_added_cb_, Run(_));
   EXPECT_CALL(mock_sink_discovered_cb_, Run(_));
   mock_timer_->Fire();
 
@@ -152,33 +144,7 @@ TEST_F(DialMediaSinkServiceImplTest, TestTimer) {
   EXPECT_TRUE(mock_timer_->IsRunning());
 }
 
-TEST_F(DialMediaSinkServiceImplTest, TestRestartAfterStop) {
-  EXPECT_CALL(test_dial_registry_, RegisterObserver(media_sink_service_.get()))
-      .Times(2);
-  EXPECT_CALL(test_dial_registry_, OnListenerAdded()).Times(2);
-  media_sink_service_->Start();
-  EXPECT_TRUE(mock_timer_->IsRunning());
-
-  EXPECT_CALL(test_dial_registry_,
-              UnregisterObserver(media_sink_service_.get()));
-  EXPECT_CALL(test_dial_registry_, OnListenerRemoved());
-  media_sink_service_->Stop();
-
-  mock_timer_ =
-      new base::MockTimer(true /*retain_user_task*/, false /*is_repeating*/);
-  media_sink_service_->SetTimerForTest(base::WrapUnique(mock_timer_));
-  media_sink_service_->Start();
-  EXPECT_TRUE(mock_timer_->IsRunning());
-
-  EXPECT_CALL(test_dial_registry_,
-              UnregisterObserver(media_sink_service_.get()));
-  EXPECT_CALL(test_dial_registry_, OnListenerRemoved());
-}
-
-TEST_F(DialMediaSinkServiceImplTest, DialMediaSinkServiceObserver) {
-  MockDialMediaSinkServiceObserver observer;
-  media_sink_service_->SetObserver(&observer);
-
+TEST_F(DialMediaSinkServiceImplTest, OnDialSinkAddedCallback) {
   DialDeviceData device_data1("first", GURL("http://127.0.0.1/dd.xml"),
                               base::Time::Now());
   ParsedDialDeviceDescription device_description1;
@@ -200,19 +166,18 @@ TEST_F(DialMediaSinkServiceImplTest, DialMediaSinkServiceObserver) {
               GetDeviceDescriptions(device_list, _));
   media_sink_service_->OnDialDeviceEvent(device_list);
 
-  EXPECT_CALL(observer, OnDialSinkAdded(_)).Times(1);
+  EXPECT_CALL(dial_sink_added_cb_, Run(_));
   media_sink_service_->OnDeviceDescriptionAvailable(device_data1,
                                                     device_description1);
 
-  EXPECT_CALL(observer, OnDialSinkAdded(_)).Times(1);
+  EXPECT_CALL(dial_sink_added_cb_, Run(_));
   media_sink_service_->OnDeviceDescriptionAvailable(device_data2,
                                                     device_description2);
 
-  // OnUserGesture will "re-sync" all existing sinks to observer.
-  EXPECT_CALL(observer, OnDialSinkAdded(_)).Times(2);
+  // OnUserGesture will "re-sync" all existing sinks to callback.
+  EXPECT_CALL(dial_sink_added_cb_, Run(_)).Times(2);
   media_sink_service_->OnUserGesture();
 
-  media_sink_service_->ClearObserver();
 }
 
 }  // namespace media_router

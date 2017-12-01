@@ -2486,7 +2486,6 @@ test("unit_tests") {
     "../common/mac/cfbundle_blocker_unittest.mm",
     "../common/mac/mock_launchd.cc",
     "../common/mac/mock_launchd.h",
-    "../common/media_router/discovery/media_sink_internal_unittest.cc",
     "../common/media_router/issue_unittest.cc",
     "../common/media_router/media_route_unittest.cc",
     "../common/media_router/media_sink_unittest.cc",
@@ -2916,7 +2915,7 @@ test("unit_tests") {
       "../browser/media/router/discovery/dial/device_description_service_unittest.cc",
       "../browser/media/router/discovery/dial/dial_device_data_unittest.cc",
       "../browser/media/router/discovery/dial/dial_media_sink_service_impl_unittest.cc",
-      "../browser/media/router/discovery/dial/dial_media_sink_service_proxy_unittest.cc",
+      "../browser/media/router/discovery/dial/dial_media_sink_service_unittest.cc",
       "../browser/media/router/discovery/dial/dial_registry_unittest.cc",
       "../browser/media/router/discovery/dial/dial_service_unittest.cc",
       "../browser/media/router/discovery/dial/safe_dial_device_description_parser_unittest.cc",
@@ -2924,8 +2923,9 @@ test("unit_tests") {
       "../browser/media/router/discovery/mdns/cast_media_sink_service_unittest.cc",
       "../browser/media/router/discovery/mdns/dns_sd_registry_unittest.cc",
       "../browser/media/router/discovery/media_sink_discovery_metrics_unittest.cc",
-      "../browser/media/router/discovery/media_sink_service_base_unittest.cc",
       "../browser/media/router/event_page_request_manager_unittest.cc",
+      "../common/media_router/discovery/media_sink_internal_unittest.cc",
+      "../common/media_router/discovery/media_sink_service_base_unittest.cc",
 
       # TODO(crbug.com/646627):
       # Move media_router_ui_service_factory_unittest.cc to chrome/browser/ui.

@@ -104,7 +104,9 @@ DeviceDescriptionService::DeviceDescriptionService(
     const DeviceDescriptionParseErrorCallback& error_cb)
     : success_cb_(success_cb),
       error_cb_(error_cb),
-      device_description_parser_(connector) {}
+      device_description_parser_(connector) {
+  DETACH_FROM_THREAD(thread_checker_);
+}
 
 DeviceDescriptionService::~DeviceDescriptionService() {
   if (pending_device_count_ > 0) {

@@ -67,7 +67,8 @@ class MockCastSocketObserver : public CastSocket::Observer {
 
 class MockCastSocketService : public CastSocketService {
  public:
-  MockCastSocketService();
+  explicit MockCastSocketService(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~MockCastSocketService() override;
 
   void OpenSocket(const CastSocketOpenParams& open_params,

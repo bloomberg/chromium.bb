@@ -9,21 +9,20 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "components/cast_channel/cast_socket.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace cast_channel {
 
-// This class adds, removes, and returns cast sockets created by CastChannelAPI
-// to underlying storage.
-// Instance of this class is created on the UI thread and destroyed on the IO
-// thread. All public API must be called from the IO thread.
+// Manages, opens, and closes CastSockets.
+// This class may be created on any thread. All methods, unless otherwise noted,
+// must be invoked on the SequencedTaskRunner given by |task_runner_|.
 class CastSocketService {
  public:
   static CastSocketService* GetInstance();
+
+  virtual ~CastSocketService();
 
   // Returns a pointer to the Logger member variable.
   scoped_refptr<cast_channel::Logger> GetLogger();
@@ -56,17 +55,25 @@ class CastSocketService {
   // Remove |observer| from each socket in |sockets_|
   void RemoveObserver(CastSocket::Observer* observer);
 
+  // Gets the TaskRunner for accessing this instance. Can be called from any
+  // thread.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
+    return task_runner_;
+  }
+
+  void SetTaskRunnerForTest(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+    task_runner_ = task_runner;
+  }
+
   // Allow test to inject a mock cast socket.
   void SetSocketForTest(std::unique_ptr<CastSocket> socket_for_test);
 
  private:
   friend class CastSocketServiceTest;
   friend class MockCastSocketService;
-  friend struct base::DefaultSingletonTraits<CastSocketService>;
-  friend struct std::default_delete<CastSocketService>;
 
   CastSocketService();
-  virtual ~CastSocketService();
 
   // Adds |socket| to |sockets_| and returns raw pointer of |socket|. Takes
   // ownership of |socket|.
@@ -85,7 +92,8 @@ class CastSocketService {
 
   std::unique_ptr<CastSocket> socket_for_test_;
 
-  THREAD_CHECKER(thread_checker_);
+  // The task runner on which |this| runs.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CastSocketService);
 };
