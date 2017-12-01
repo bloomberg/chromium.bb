@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/search/search_urls.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
@@ -28,6 +27,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -45,6 +45,32 @@
 #endif
 
 namespace search {
+
+namespace {
+
+const char kServiceWorkerFileName[] = "newtab-serviceworker.js";
+
+bool MatchesOrigin(const GURL& my_url, const GURL& other_url) {
+  return my_url.host_piece() == other_url.host_piece() &&
+         my_url.port() == other_url.port() &&
+         (my_url.scheme_piece() == other_url.scheme_piece() ||
+          (my_url.SchemeIs(url::kHttpsScheme) &&
+           other_url.SchemeIs(url::kHttpScheme)));
+}
+
+}  // namespace
+
+// Returns true if |my_url| matches |other_url| in terms of origin (i.e. host,
+// port, and scheme) and path. As a special case, this also matches if |my_url|
+// is "https://" and |other_url| is "http://" (and host, port, and path match).
+// This is so that "https://" URLs will be considered "Instant URLs" even if the
+// default search provider URL is "http://".
+// Defined outside of the anonymous namespace so that it's accessible to unit
+// tests.
+bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {
+  return MatchesOrigin(my_url, other_url) &&
+         my_url.path_piece() == other_url.path_piece();
+}
 
 namespace {
 
@@ -84,6 +110,28 @@ const TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
       return template_url_service->GetDefaultSearchProvider();
   }
   return nullptr;
+}
+
+bool IsMatchingServiceWorker(const GURL& my_url, const GURL& document_url) {
+  // The origin should match.
+  if (!MatchesOrigin(my_url, document_url))
+    return false;
+
+  // The url filename should be the new tab page ServiceWorker.
+  std::string my_filename = my_url.ExtractFileName();
+  if (my_filename != kServiceWorkerFileName)
+    return false;
+
+  // The paths up to the filenames should be the same.
+  std::string my_path_without_filename = my_url.path();
+  my_path_without_filename = my_path_without_filename.substr(
+      0, my_path_without_filename.length() - my_filename.length());
+  std::string document_filename = document_url.ExtractFileName();
+  std::string document_path_without_filename = document_url.path();
+  document_path_without_filename = document_path_without_filename.substr(
+      0, document_path_without_filename.length() - document_filename.length());
+
+  return my_path_without_filename == document_path_without_filename;
 }
 
 // Returns true if |url| matches the NTP URL or the URL of the NTP's associated
