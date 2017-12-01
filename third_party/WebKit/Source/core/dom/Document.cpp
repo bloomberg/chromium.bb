@@ -5171,7 +5171,7 @@ void Document::setDomain(const String& raw_domain,
                           ? WebFeature::kDocumentDomainSetWithDefaultPort
                           : WebFeature::kDocumentDomainSetWithNonDefaultPort);
     bool was_cross_domain = frame_->IsCrossOriginSubframe();
-    GetSecurityOrigin()->SetDomainFromDOM(new_domain);
+    GetMutableSecurityOrigin()->SetDomainFromDOM(new_domain);
     if (View() && (was_cross_domain != frame_->IsCrossOriginSubframe()))
       View()->CrossOriginStatusChanged();
 
@@ -6082,23 +6082,23 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
       // Web security is turned off. We should let this document access every
       // other document. This is used primary by testing harnesses for web
       // sites.
-      GetSecurityOrigin()->GrantUniversalAccess();
+      GetMutableSecurityOrigin()->GrantUniversalAccess();
     } else if (GetSecurityOrigin()->IsLocal()) {
       if (settings->GetAllowUniversalAccessFromFileURLs()) {
         // Some clients want local URLs to have universal access, but that
         // setting is dangerous for other clients.
-        GetSecurityOrigin()->GrantUniversalAccess();
+        GetMutableSecurityOrigin()->GrantUniversalAccess();
       } else if (!settings->GetAllowFileAccessFromFileURLs()) {
         // Some clients do not want local URLs to have access to other local
         // URLs.
-        GetSecurityOrigin()->BlockLocalAccessFromLocalOrigin();
+        GetMutableSecurityOrigin()->BlockLocalAccessFromLocalOrigin();
       }
     }
   }
 
   if (GetSecurityOrigin()->IsUnique() &&
       SecurityOrigin::Create(url_)->IsPotentiallyTrustworthy())
-    GetSecurityOrigin()->SetUniqueOriginIsPotentiallyTrustworthy(true);
+    GetMutableSecurityOrigin()->SetUniqueOriginIsPotentiallyTrustworthy(true);
 
   ApplyFeaturePolicy({});
 

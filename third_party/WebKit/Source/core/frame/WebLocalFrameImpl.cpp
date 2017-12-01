@@ -1765,7 +1765,7 @@ void WebLocalFrameImpl::InitializeCoreFrame(Page& page,
   CHECK(frame_->Loader().StateMachine()->IsDisplayingInitialEmptyDocument());
   if (!Parent() && !Opener() &&
       frame_->GetSettings()->GetShouldReuseGlobalForUnownedMainFrame()) {
-    frame_->GetDocument()->GetSecurityOrigin()->GrantUniversalAccess();
+    frame_->GetDocument()->GetMutableSecurityOrigin()->GrantUniversalAccess();
   }
 
   if (!owner) {
