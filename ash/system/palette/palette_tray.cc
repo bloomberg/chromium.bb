@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/stylus_utils.h"
@@ -333,7 +333,7 @@ base::string16 PaletteTray::GetAccessibleNameForBubble() {
 }
 
 bool PaletteTray::ShouldEnableExtraKeyboardAccessibility() {
-  return Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
+  return Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();
 }
 
 void PaletteTray::HideBubble(const views::TrayBubbleView* bubble_view) {

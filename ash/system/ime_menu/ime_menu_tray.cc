@@ -4,7 +4,6 @@
 
 #include "ash/system/ime_menu/ime_menu_tray.h"
 
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/ash_constants.h"
 #include "ash/ime/ime_controller.h"
@@ -509,7 +508,7 @@ base::string16 ImeMenuTray::GetAccessibleNameForBubble() {
 }
 
 bool ImeMenuTray::ShouldEnableExtraKeyboardAccessibility() {
-  return Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
+  return Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();
 }
 
 void ImeMenuTray::HideBubble(const views::TrayBubbleView* bubble_view) {

@@ -12,7 +12,6 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -57,8 +56,10 @@ class TouchExplorationTest : public InProcessBrowserTest {
   }
 
   void SwitchTouchExplorationMode(bool on) {
-    chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
-        on, ash::A11Y_NOTIFICATION_NONE);
+    ash::AccessibilityDelegate* delegate =
+        ash::Shell::Get()->accessibility_delegate();
+    if (on != delegate->IsSpokenFeedbackEnabled())
+      delegate->ToggleSpokenFeedback(ash::A11Y_NOTIFICATION_NONE);
   }
 
   base::TimeTicks Now() { return simulated_clock_->NowTicks(); }
