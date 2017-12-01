@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_embedder/display_output_surface.h"
+#include "components/viz/service/display_embedder/gl_output_surface.h"
 
 #include <stdint.h>
 
@@ -19,7 +19,7 @@
 
 namespace viz {
 
-DisplayOutputSurface::DisplayOutputSurface(
+GLOutputSurface::GLOutputSurface(
     scoped_refptr<InProcessContextProvider> context_provider,
     SyntheticBeginFrameSource* synthetic_begin_frame_source)
     : OutputSurface(context_provider),
@@ -32,34 +32,34 @@ DisplayOutputSurface::DisplayOutputSurface(
   capabilities_.supports_stencil =
       context_provider->ContextCapabilities().num_stencil_bits > 0;
   context_provider->SetSwapBuffersCompletionCallback(
-      base::Bind(&DisplayOutputSurface::OnGpuSwapBuffersCompleted,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&GLOutputSurface::OnGpuSwapBuffersCompleted,
+                          weak_ptr_factory_.GetWeakPtr()));
   context_provider->SetUpdateVSyncParametersCallback(
-      base::Bind(&DisplayOutputSurface::OnVSyncParametersUpdated,
-                 weak_ptr_factory_.GetWeakPtr()));
-  context_provider->SetPresentationCallback(base::Bind(
-      &DisplayOutputSurface::OnPresentation, weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&GLOutputSurface::OnVSyncParametersUpdated,
+                          weak_ptr_factory_.GetWeakPtr()));
+  context_provider->SetPresentationCallback(base::BindRepeating(
+      &GLOutputSurface::OnPresentation, weak_ptr_factory_.GetWeakPtr()));
 }
 
-DisplayOutputSurface::~DisplayOutputSurface() {}
+GLOutputSurface::~GLOutputSurface() {}
 
-void DisplayOutputSurface::BindToClient(OutputSurfaceClient* client) {
+void GLOutputSurface::BindToClient(OutputSurfaceClient* client) {
   DCHECK(client);
   DCHECK(!client_);
   client_ = client;
 }
 
-void DisplayOutputSurface::EnsureBackbuffer() {}
+void GLOutputSurface::EnsureBackbuffer() {}
 
-void DisplayOutputSurface::DiscardBackbuffer() {
+void GLOutputSurface::DiscardBackbuffer() {
   context_provider()->ContextGL()->DiscardBackbufferCHROMIUM();
 }
 
-void DisplayOutputSurface::BindFramebuffer() {
+void GLOutputSurface::BindFramebuffer() {
   context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void DisplayOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {
+void GLOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {
   if (set_draw_rectangle_for_frame_)
     return;
   DCHECK(gfx::Rect(size_).Contains(rect));
@@ -71,11 +71,11 @@ void DisplayOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {
       rect.x(), rect.y(), rect.width(), rect.height());
 }
 
-void DisplayOutputSurface::Reshape(const gfx::Size& size,
-                                   float device_scale_factor,
-                                   const gfx::ColorSpace& color_space,
-                                   bool has_alpha,
-                                   bool use_stencil) {
+void GLOutputSurface::Reshape(const gfx::Size& size,
+                              float device_scale_factor,
+                              const gfx::ColorSpace& color_space,
+                              bool has_alpha,
+                              bool use_stencil) {
   size_ = size;
   has_set_draw_rectangle_since_last_resize_ = false;
   context_provider()->ContextGL()->ResizeCHROMIUM(
@@ -83,7 +83,7 @@ void DisplayOutputSurface::Reshape(const gfx::Size& size,
       gl::GetGLColorSpace(color_space), has_alpha);
 }
 
-void DisplayOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
+void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK(context_provider_);
 
   if (latency_info_cache_.WillSwap(std::move(frame.latency_info)))
@@ -98,68 +98,68 @@ void DisplayOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   }
 }
 
-uint32_t DisplayOutputSurface::GetFramebufferCopyTextureFormat() {
+uint32_t GLOutputSurface::GetFramebufferCopyTextureFormat() {
   // TODO(danakj): What attributes are used for the default framebuffer here?
   // Can it have alpha? InProcessContextProvider doesn't take any
   // attributes.
   return GL_RGB;
 }
 
-OverlayCandidateValidator* DisplayOutputSurface::GetOverlayCandidateValidator()
+OverlayCandidateValidator* GLOutputSurface::GetOverlayCandidateValidator()
     const {
   return nullptr;
 }
 
-bool DisplayOutputSurface::IsDisplayedAsOverlayPlane() const {
+bool GLOutputSurface::IsDisplayedAsOverlayPlane() const {
   return false;
 }
 
-unsigned DisplayOutputSurface::GetOverlayTextureId() const {
+unsigned GLOutputSurface::GetOverlayTextureId() const {
   return 0;
 }
 
-gfx::BufferFormat DisplayOutputSurface::GetOverlayBufferFormat() const {
+gfx::BufferFormat GLOutputSurface::GetOverlayBufferFormat() const {
   return gfx::BufferFormat::RGBX_8888;
 }
 
-bool DisplayOutputSurface::SurfaceIsSuspendForRecycle() const {
+bool GLOutputSurface::SurfaceIsSuspendForRecycle() const {
   return false;
 }
 
-bool DisplayOutputSurface::HasExternalStencilTest() const {
+bool GLOutputSurface::HasExternalStencilTest() const {
   return false;
 }
 
-void DisplayOutputSurface::ApplyExternalStencil() {}
+void GLOutputSurface::ApplyExternalStencil() {}
 
-void DisplayOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result,
-                                                    uint64_t swap_id) {
+void GLOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result,
+                                               uint64_t swap_id) {
   client_->DidReceiveSwapBuffersAck(swap_id);
 }
 
-void DisplayOutputSurface::OnGpuSwapBuffersCompleted(
+void GLOutputSurface::OnGpuSwapBuffersCompleted(
     const gfx::SwapResponse& response,
     const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
   DidReceiveSwapBuffersAck(response.result, response.swap_id);
   latency_info_cache_.OnSwapBuffersCompleted(response);
 }
 
-void DisplayOutputSurface::LatencyInfoCompleted(
+void GLOutputSurface::LatencyInfoCompleted(
     const std::vector<ui::LatencyInfo>& latency_info) {
   for (const auto& latency : latency_info) {
     latency_tracker_.OnGpuSwapBuffersCompleted(latency);
   }
 }
 
-void DisplayOutputSurface::OnVSyncParametersUpdated(base::TimeTicks timebase,
-                                                    base::TimeDelta interval) {
+void GLOutputSurface::OnVSyncParametersUpdated(base::TimeTicks timebase,
+                                               base::TimeDelta interval) {
   // TODO(brianderson): We should not be receiving 0 intervals.
   synthetic_begin_frame_source_->OnUpdateVSyncParameters(
       timebase,
       interval.is_zero() ? BeginFrameArgs::DefaultInterval() : interval);
 }
 
-void DisplayOutputSurface::OnPresentation(
+void GLOutputSurface::OnPresentation(
     uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
   client_->DidReceivePresentationFeedback(swap_id, feedback);

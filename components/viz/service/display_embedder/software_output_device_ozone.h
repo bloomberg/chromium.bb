@@ -24,8 +24,8 @@ namespace viz {
 class VIZ_SERVICE_EXPORT SoftwareOutputDeviceOzone
     : public SoftwareOutputDevice {
  public:
-  static std::unique_ptr<SoftwareOutputDeviceOzone> Create(
-      gfx::AcceleratedWidget widget);
+  explicit SoftwareOutputDeviceOzone(
+      std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone);
   ~SoftwareOutputDeviceOzone() override;
 
   void Resize(const gfx::Size& viewport_pixel_size,
@@ -34,8 +34,6 @@ class VIZ_SERVICE_EXPORT SoftwareOutputDeviceOzone
   void EndPaint() override;
 
  private:
-  explicit SoftwareOutputDeviceOzone(gfx::AcceleratedWidget widget);
-
   std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceOzone);

@@ -30,7 +30,6 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace viz {
 
@@ -52,7 +51,7 @@ gpu::gles2::ContextCreationAttribHelper CreateAttributes() {
 
 InProcessContextProvider::InProcessContextProvider(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
-    gpu::SurfaceHandle widget,
+    gpu::SurfaceHandle surface_handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
     const gpu::SharedMemoryLimits& limits,
@@ -62,8 +61,8 @@ InProcessContextProvider::InProcessContextProvider(
       context_result_(context_->Initialize(
           std::move(service),
           nullptr,
-          (widget == gpu::kNullSurfaceHandle),
-          widget,
+          (surface_handle == gpu::kNullSurfaceHandle),
+          surface_handle,
           (shared_context ? shared_context->context_.get() : nullptr),
           attributes_,
           limits,

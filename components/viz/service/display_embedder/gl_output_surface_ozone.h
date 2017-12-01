@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_DISPLAY_OUTPUT_SURFACE_OZONE_H_
-#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_DISPLAY_OUTPUT_SURFACE_OZONE_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_OZONE_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_OZONE_H_
 
 #include <memory>
 
@@ -12,7 +12,7 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/in_process_context_provider.h"
 #include "components/viz/service/display/output_surface.h"
-#include "components/viz/service/display_embedder/display_output_surface.h"
+#include "components/viz/service/display_embedder/gl_output_surface.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
@@ -31,17 +31,16 @@ class SyntheticBeginFrameSource;
 // "surfaceless" surface (aka one backed by a buffer managed explicitly in
 // mus/ozone. This class is adapted from
 // GpuSurfacelessBrowserCompositorOutputSurface.
-class DisplayOutputSurfaceOzone : public DisplayOutputSurface {
+class GLOutputSurfaceOzone : public GLOutputSurface {
  public:
-  DisplayOutputSurfaceOzone(
-      scoped_refptr<InProcessContextProvider> context_provider,
-      gfx::AcceleratedWidget widget,
-      SyntheticBeginFrameSource* synthetic_begin_frame_source,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      uint32_t target,
-      uint32_t internalformat);
+  GLOutputSurfaceOzone(scoped_refptr<InProcessContextProvider> context_provider,
+                       gfx::AcceleratedWidget widget,
+                       SyntheticBeginFrameSource* synthetic_begin_frame_source,
+                       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                       uint32_t target,
+                       uint32_t internalformat);
 
-  ~DisplayOutputSurfaceOzone() override;
+  ~GLOutputSurfaceOzone() override;
 
   // TODO(rjkroege): Implement the equivalent of Reflector.
 
@@ -59,7 +58,7 @@ class DisplayOutputSurfaceOzone : public DisplayOutputSurface {
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
 
-  // DisplayOutputSurface:
+  // GLOutputSurface:
   void DidReceiveSwapBuffersAck(gfx::SwapResult result,
                                 uint64_t swap_id) override;
 
@@ -69,9 +68,9 @@ class DisplayOutputSurfaceOzone : public DisplayOutputSurface {
   gfx::Size reshape_size_;
   gfx::Size swap_size_;
 
-  DISALLOW_COPY_AND_ASSIGN(DisplayOutputSurfaceOzone);
+  DISALLOW_COPY_AND_ASSIGN(GLOutputSurfaceOzone);
 };
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_DISPLAY_OUTPUT_SURFACE_OZONE_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_OZONE_H_

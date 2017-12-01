@@ -27,6 +27,7 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
   void CreateRootCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
+      bool force_software_compositor,
       const RendererSettings& renderer_settings,
       mojom::CompositorFrameSinkAssociatedRequest request,
       mojom::CompositorFrameSinkClientPtr client,

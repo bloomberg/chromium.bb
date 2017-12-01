@@ -97,6 +97,7 @@ void HostFrameSinkManager::SetFrameSinkDebugLabel(
 void HostFrameSinkManager::CreateRootCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
+    bool force_software_compositing,
     const RendererSettings& renderer_settings,
     mojom::CompositorFrameSinkAssociatedRequest request,
     mojom::CompositorFrameSinkClientPtr client,
@@ -109,8 +110,9 @@ void HostFrameSinkManager::CreateRootCompositorFrameSink(
   data.has_created_compositor_frame_sink = true;
 
   frame_sink_manager_->CreateRootCompositorFrameSink(
-      frame_sink_id, surface_handle, renderer_settings, std::move(request),
-      std::move(client), std::move(display_private_request));
+      frame_sink_id, surface_handle, force_software_compositing,
+      renderer_settings, std::move(request), std::move(client),
+      std::move(display_private_request));
   display_hit_test_query_[frame_sink_id] = base::MakeUnique<HitTestQuery>();
 }
 

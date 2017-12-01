@@ -103,6 +103,7 @@ void FrameSinkManagerImpl::SetFrameSinkDebugLabel(
 void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
+    bool force_software_compositing,
     const RendererSettings& renderer_settings,
     mojom::CompositorFrameSinkAssociatedRequest request,
     mojom::CompositorFrameSinkClientPtr client,
@@ -114,7 +115,8 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
 
   std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
   auto display = display_provider_->CreateDisplay(
-      frame_sink_id, surface_handle, renderer_settings, &begin_frame_source);
+      frame_sink_id, surface_handle, force_software_compositing,
+      renderer_settings, &begin_frame_source);
 
   auto frame_sink = std::make_unique<RootCompositorFrameSinkImpl>(
       this, frame_sink_id, std::move(display), std::move(begin_frame_source),

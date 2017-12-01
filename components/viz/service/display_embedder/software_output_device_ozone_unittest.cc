@@ -18,9 +18,12 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
+
+namespace viz {
 
 namespace {
 
@@ -63,7 +66,7 @@ class SoftwareOutputDeviceOzoneTest : public testing::Test {
   void TearDown() override;
 
  protected:
-  std::unique_ptr<viz::SoftwareOutputDeviceOzone> output_device_;
+  std::unique_ptr<SoftwareOutputDeviceOzone> output_device_;
   bool enable_pixel_output_ = false;
 
  private:
@@ -73,8 +76,8 @@ class SoftwareOutputDeviceOzoneTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceOzoneTest);
 };
 
-SoftwareOutputDeviceOzoneTest::SoftwareOutputDeviceOzoneTest() {}
-SoftwareOutputDeviceOzoneTest::~SoftwareOutputDeviceOzoneTest() {}
+SoftwareOutputDeviceOzoneTest::SoftwareOutputDeviceOzoneTest() = default;
+SoftwareOutputDeviceOzoneTest::~SoftwareOutputDeviceOzoneTest() = default;
 
 void SoftwareOutputDeviceOzoneTest::SetUp() {
   ui::ContextFactory* context_factory = nullptr;
@@ -83,16 +86,24 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
                                        &context_factory_private);
 
   const gfx::Size size(500, 400);
-  compositor_.reset(
-      new ui::Compositor(viz::FrameSinkId(1, 1), context_factory, nullptr,
-                         base::ThreadTaskRunnerHandle::Get(),
-                         false /* enable_surface_synchronization */,
-                         false /* enable_pixel_canvas */));
+  compositor_ = std::make_unique<ui::Compositor>(
+      FrameSinkId(1, 1), context_factory, nullptr,
+      base::ThreadTaskRunnerHandle::Get(),
+      false /* enable_surface_synchronization */,
+      false /* enable_pixel_canvas */);
   compositor_->SetAcceleratedWidget(window_delegate_.GetAcceleratedWidget());
   compositor_->SetScaleAndSize(1.0f, size);
 
-  output_device_ =
-      viz::SoftwareOutputDeviceOzone::Create(compositor_->widget());
+  ui::SurfaceFactoryOzone* factory =
+      ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
+  std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone =
+      factory->CreateCanvasForWidget(compositor_->widget());
+  if (!surface_ozone) {
+    LOG(ERROR) << "SurfaceOzoneCanvas not constructible on this platform";
+  } else {
+    output_device_ =
+        std::make_unique<SoftwareOutputDeviceOzone>(std::move(surface_ozone));
+  }
   if (output_device_)
     output_device_->Resize(size, 1.f);
 }
@@ -138,3 +149,5 @@ TEST_F(SoftwareOutputDeviceOzoneTest, CheckCorrectResizeBehavior) {
                       canvas->getBaseLayerSize().height());
   EXPECT_EQ(size.ToString(), canvas_size.ToString());
 }
+
+}  // namespace viz
