@@ -313,7 +313,6 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                         BLOCK_SIZE bsize, int mi_row, int mi_col, int bw,
                         int bh, int x_mis, int y_mis) {
   const int offset = mi_row * cm->mi_stride + mi_col;
-  int x, y;
   const TileInfo *const tile = &xd->tile;
 
   xd->mi = cm->mi_grid_visible + offset;
@@ -331,9 +330,9 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif
 
   assert(x_mis && y_mis);
-  for (x = 1; x < x_mis; ++x) xd->mi[x] = xd->mi[0];
+  for (int x = 1; x < x_mis; ++x) xd->mi[x] = xd->mi[0];
   int idx = cm->mi_stride;
-  for (y = 1; y < y_mis; ++y) {
+  for (int y = 1; y < y_mis; ++y) {
     memcpy(&xd->mi[idx], &xd->mi[0], x_mis * sizeof(xd->mi[0]));
     idx += cm->mi_stride;
   }
@@ -404,8 +403,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #endif  // CONFIG_CFL
 
   if (cm->delta_q_present_flag) {
-    int i;
-    for (i = 0; i < MAX_SEGMENTS; i++) {
+    for (int i = 0; i < MAX_SEGMENTS; i++) {
 #if CONFIG_EXT_DELTA_Q
       const int current_qindex =
 #if CONFIG_Q_SEGMENTATION
@@ -714,7 +712,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   BLOCK_SIZE subsize;
 #if CONFIG_EXT_PARTITION_TYPES
   const int quarter_step = num_8x8_wh / 4;
-  int i;
 #if !CONFIG_EXT_PARTITION_TYPES_AB
   BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
 #endif
@@ -815,14 +812,14 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       break;
 #endif
     case PARTITION_HORZ_4:
-      for (i = 0; i < 4; ++i) {
+      for (int i = 0; i < 4; ++i) {
         int this_mi_row = mi_row + i * quarter_step;
         if (i > 0 && this_mi_row >= cm->mi_rows) break;
         DEC_BLOCK(this_mi_row, mi_col, subsize);
       }
       break;
     case PARTITION_VERT_4:
-      for (i = 0; i < 4; ++i) {
+      for (int i = 0; i < 4; ++i) {
         int this_mi_col = mi_col + i * quarter_step;
         if (i > 0 && this_mi_col >= cm->mi_cols) break;
         DEC_BLOCK(mi_row, this_mi_col, subsize);
@@ -949,7 +946,6 @@ static void setup_bool_decoder(const uint8_t *data, const uint8_t *data_end,
 static void setup_segmentation(AV1_COMMON *const cm,
                                struct aom_read_bit_buffer *rb) {
   struct segmentation *const seg = &cm->seg;
-  int i, j;
 
   seg->update_map = 0;
   seg->update_data = 0;
@@ -977,8 +973,8 @@ static void setup_segmentation(AV1_COMMON *const cm,
   if (seg->update_data) {
     av1_clearall_segfeatures(seg);
 
-    for (i = 0; i < MAX_SEGMENTS; i++) {
-      for (j = 0; j < SEG_LVL_MAX; j++) {
+    for (int i = 0; i < MAX_SEGMENTS; i++) {
+      for (int j = 0; j < SEG_LVL_MAX; j++) {
         int data = 0;
         const int feature_enabled = aom_rb_read_bit(rb);
         if (feature_enabled) {
@@ -996,10 +992,9 @@ static void setup_segmentation(AV1_COMMON *const cm,
 #if CONFIG_Q_SEGMENTATION
 static void setup_q_segmentation(AV1_COMMON *const cm,
                                  struct aom_read_bit_buffer *rb) {
-  int i;
   struct segmentation *const seg = &cm->seg;
 
-  for (i = 0; i < MAX_SEGMENTS; i++) {
+  for (int i = 0; i < MAX_SEGMENTS; i++) {
     if (segfeature_active(seg, i, SEG_LVL_ALT_Q)) {
       seg->q_lvls = 0;
       return;
@@ -1013,7 +1008,7 @@ static void setup_q_segmentation(AV1_COMMON *const cm,
 
   seg->q_lvls = decode_unsigned_max(rb, MAX_SEGMENTS);
 
-  for (i = 0; i < seg->q_lvls; i++) {
+  for (int i = 0; i < seg->q_lvls; i++) {
     int val = decode_unsigned_max(rb, MAXQ);
     val *= 1 - 2 * aom_rb_read_bit(rb);
     seg->q_delta[i] = val;
@@ -1217,13 +1212,11 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   if (lf->mode_ref_delta_enabled) {
     lf->mode_ref_delta_update = aom_rb_read_bit(rb);
     if (lf->mode_ref_delta_update) {
-      int i;
-
-      for (i = 0; i < TOTAL_REFS_PER_FRAME; i++)
+      for (int i = 0; i < TOTAL_REFS_PER_FRAME; i++)
         if (aom_rb_read_bit(rb))
           lf->ref_deltas[i] = aom_rb_read_inv_signed_literal(rb, 6);
 
-      for (i = 0; i < MAX_MODE_LF_DELTAS; i++)
+      for (int i = 0; i < MAX_MODE_LF_DELTAS; i++)
         if (aom_rb_read_bit(rb))
           lf->mode_deltas[i] = aom_rb_read_inv_signed_literal(rb, 6);
     }
@@ -1234,7 +1227,6 @@ static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #if CONFIG_INTRABC
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
 #endif  // CONFIG_INTRABC
-  int i;
 #if CONFIG_CDEF_SINGLEPASS
   cm->cdef_pri_damping = cm->cdef_sec_damping = aom_rb_read_literal(rb, 2) + 3;
 #else
@@ -1243,7 +1235,7 @@ static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #endif
   cm->cdef_bits = aom_rb_read_literal(rb, 2);
   cm->nb_cdef_strengths = 1 << cm->cdef_bits;
-  for (i = 0; i < cm->nb_cdef_strengths; i++) {
+  for (int i = 0; i < cm->nb_cdef_strengths; i++) {
     cm->cdef_strengths[i] = aom_rb_read_literal(rb, CDEF_STRENGTH_BITS);
     cm->cdef_uv_strengths[i] = cm->subsampling_x == cm->subsampling_y
                                    ? aom_rb_read_literal(rb, CDEF_STRENGTH_BITS)
@@ -1504,10 +1496,10 @@ static INLINE int valid_ref_frame_img_fmt(aom_bit_depth_t ref_bit_depth,
 static void setup_frame_size_with_refs(AV1_COMMON *cm,
                                        struct aom_read_bit_buffer *rb) {
   int width, height;
-  int found = 0, i;
+  int found = 0;
   int has_valid_ref_frame = 0;
   BufferPool *const pool = cm->buffer_pool;
-  for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
     if (aom_rb_read_bit(rb)) {
       YV12_BUFFER_CONFIG *const buf = cm->frame_refs[i].buf;
       width = buf->y_crop_width;
@@ -1544,7 +1536,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
 
   // Check to make sure at least one of frames that this frame references
   // has valid dimensions.
-  for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
     RefBuffer *const ref_frame = &cm->frame_refs[i];
     has_valid_ref_frame |=
         valid_ref_frame_size(ref_frame->buf->y_crop_width,
@@ -1553,7 +1545,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   if (!has_valid_ref_frame)
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Referenced frame has invalid size");
-  for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
     RefBuffer *const ref_frame = &cm->frame_refs[i];
     if (!valid_ref_frame_img_fmt(ref_frame->buf->bit_depth,
                                  ref_frame->buf->subsampling_x,
@@ -1629,7 +1621,6 @@ static void read_tile_info_max_tile(AV1_COMMON *const cm,
   int height_mi = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
   int width_sb = width_mi >> MAX_MIB_SIZE_LOG2;
   int height_sb = height_mi >> MAX_MIB_SIZE_LOG2;
-  int start_sb, size_sb, i;
 
   av1_get_tile_limits(cm);
   cm->uniform_tile_spacing_flag = aom_rb_read_bit(rb);
@@ -1644,8 +1635,11 @@ static void read_tile_info_max_tile(AV1_COMMON *const cm,
       cm->log2_tile_cols++;
     }
   } else {
+    int i;
+    int start_sb;
     for (i = 0, start_sb = 0; width_sb > 0 && i < MAX_TILE_COLS; i++) {
-      size_sb = 1 + rb_read_uniform(rb, AOMMIN(width_sb, MAX_TILE_WIDTH_SB));
+      const int size_sb =
+          1 + rb_read_uniform(rb, AOMMIN(width_sb, MAX_TILE_WIDTH_SB));
       cm->tile_col_start_sb[i] = start_sb;
       start_sb += size_sb;
       width_sb -= size_sb;
@@ -1665,8 +1659,10 @@ static void read_tile_info_max_tile(AV1_COMMON *const cm,
       cm->log2_tile_rows++;
     }
   } else {
+    int i;
+    int start_sb;
     for (i = 0, start_sb = 0; height_sb > 0 && i < MAX_TILE_ROWS; i++) {
-      size_sb =
+      const int size_sb =
           1 + rb_read_uniform(rb, AOMMIN(height_sb, cm->max_tile_height_sb));
       cm->tile_row_start_sb[i] = start_sb;
       start_sb += size_sb;
@@ -1905,12 +1901,11 @@ static void get_ls_tile_buffers(
     const int tile_copy_mode =
         ((AOMMAX(cm->tile_width, cm->tile_height) << MI_SIZE_LOG2) <= 256) ? 1
                                                                            : 0;
-    size_t tile_col_size;
-    int r, c;
-
     // Read tile column sizes for all columns (we need the last tile buffer)
-    for (c = 0; c < tile_cols; ++c) {
+    for (int c = 0; c < tile_cols; ++c) {
       const int is_last = c == tile_cols - 1;
+      size_t tile_col_size;
+
       if (!is_last) {
         tile_col_size = mem_get_varsize(data, tile_col_size_bytes);
         data += tile_col_size_bytes;
@@ -1925,7 +1920,7 @@ static void get_ls_tile_buffers(
     data = data_start;
 
     // Read the required tile sizes.
-    for (c = tile_cols_start; c < tile_cols_end; ++c) {
+    for (int c = tile_cols_start; c < tile_cols_end; ++c) {
       const int is_last = c == tile_cols - 1;
 
       if (c > 0) data = tile_col_data_end[c - 1];
@@ -1933,7 +1928,7 @@ static void get_ls_tile_buffers(
       if (!is_last) data += tile_col_size_bytes;
 
       // Get the whole of the last column, otherwise stop at the required tile.
-      for (r = 0; r < (is_last ? tile_rows : tile_rows_end); ++r) {
+      for (int r = 0; r < (is_last ? tile_rows : tile_rows_end); ++r) {
         tile_buffers[r][c].col = c;
 
         get_ls_tile_buffer(tile_col_data_end[c], &pbi->common.error, &data,
@@ -1944,11 +1939,11 @@ static void get_ls_tile_buffers(
 
     // If we have not read the last column, then read it to get the last tile.
     if (tile_cols_end != tile_cols) {
-      c = tile_cols - 1;
+      int c = tile_cols - 1;
 
       data = tile_col_data_end[c - 1];
 
-      for (r = 0; r < tile_rows; ++r) {
+      for (int r = 0; r < tile_rows; ++r) {
         tile_buffers[r][c].col = c;
 
         get_ls_tile_buffer(tile_col_data_end[c], &pbi->common.error, &data,
@@ -3408,10 +3403,6 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
                                           const uint8_t **p_data_end) {
   AV1_COMMON *const cm = &pbi->common;
   MACROBLOCKD *const xd = &pbi->mb;
-  struct aom_read_bit_buffer rb;
-  uint8_t clear_data[MAX_AV1_HEADER_SIZE];
-  size_t first_partition_size;
-  YV12_BUFFER_CONFIG *new_fb;
 #if !CONFIG_TEMPMV_SIGNALING
   RefBuffer *last_fb_ref_buf = &cm->frame_refs[LAST_FRAME - LAST_FRAME];
 #endif
@@ -3429,7 +3420,9 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   }
   xd->global_motion = cm->global_motion;
 
-  first_partition_size = read_uncompressed_header(
+  uint8_t clear_data[MAX_AV1_HEADER_SIZE];
+  struct aom_read_bit_buffer rb;
+  const size_t first_partition_size = read_uncompressed_header(
       pbi, init_read_bit_buffer(pbi, &rb, data, data_end, clear_data));
 
 #if CONFIG_EXT_TILE
@@ -3444,7 +3437,7 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
 
   pbi->first_partition_size = first_partition_size;
   pbi->uncomp_hdr_size = aom_rb_bytes_read(&rb);
-  new_fb = get_frame_new_buffer(cm);
+  YV12_BUFFER_CONFIG *new_fb = get_frame_new_buffer(cm);
   xd->cur_buf = new_fb;
 #if CONFIG_INTRABC
 #if CONFIG_HIGHBITDEPTH
@@ -3846,9 +3839,7 @@ static void read_metadata_hdr_cll(const uint8_t *data) {
 }
 
 static void read_metadata_hdr_mdcv(const uint8_t *data) {
-  int i;
-
-  for (i = 0; i < 3; i++) {
+  for (int i = 0; i < 3; i++) {
     mem_get_le16(data);
     data += 2;
     mem_get_le16(data);
