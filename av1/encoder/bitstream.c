@@ -3840,7 +3840,7 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
         cpi->twopass.gf_group.brf_src_offset[cpi->twopass.gf_group.index];
 
     arf_offset = AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
-    aom_wb_write_literal(wb, arf_offset, 4);
+    aom_wb_write_literal(wb, arf_offset, FRAME_OFFSET_BITS);
   }
 
 #if CONFIG_EXT_SKIP
@@ -4213,7 +4213,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         cpi->twopass.gf_group.brf_src_offset[cpi->twopass.gf_group.index];
 
     arf_offset = AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
-    aom_wb_write_literal(wb, arf_offset, 4);
+    aom_wb_write_literal(wb, arf_offset, FRAME_OFFSET_BITS);
   }
 #endif
 

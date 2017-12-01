@@ -2972,7 +2972,8 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
 #if CONFIG_FRAME_MARKER
   if (cm->show_frame == 0) {
-    cm->frame_offset = cm->current_video_frame + aom_rb_read_literal(rb, 4);
+    cm->frame_offset =
+        cm->current_video_frame + aom_rb_read_literal(rb, FRAME_OFFSET_BITS);
   } else {
     cm->frame_offset = cm->current_video_frame;
   }

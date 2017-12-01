@@ -86,6 +86,11 @@ extern "C" {
 // MAX_PALETTE_BSIZE.
 #define PALETTE_BLOCK_SIZES (MAX_PALETTE_BSIZE - MIN_PALETTE_BSIZE + 1)
 
+#if CONFIG_FRAME_MARKER
+#define FRAME_OFFSET_BITS 5
+#define MAX_FRAME_DISTANCE ((1 << FRAME_OFFSET_BITS) - 1)
+#endif
+
 #if CONFIG_LOOPFILTER_LEVEL
 // 4 frame filter levels: y plane vertical, y plane horizontal,
 // u plane, and v plane
@@ -110,8 +115,6 @@ extern "C" {
 #define FAKE_FILTER_LEVEL 10
 #define USE_LOOP_FILTER_SUPERBLOCK 1
 #endif  // CONFIG_LPF_SB
-
-#define MAX_FRAME_DISTANCE (INT16_MAX - 1)
 
 #if CONFIG_JNT_COMP
 typedef enum COMPOUND_DIST_WEIGHT_MODE {
