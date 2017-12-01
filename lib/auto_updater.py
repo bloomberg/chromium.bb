@@ -179,6 +179,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
   REMOTE_UPDATE_ENGINE_LOGFILE_PATH = '/var/log/update_engine.log'
   REMOTE_PROVISION_FAILED_FILE_PATH = '/var/tmp/provision_failed'
   REMOTE_HOSTLOG_FILE_PATH = '/var/log/devserver_hostlog'
+  REMOTE_QUICK_PROVISION_LOGFILE_PATH = '/var/log/quick-provision.log'
 
   UPDATE_CHECK_INTERVAL_PROGRESSBAR = 0.5
   UPDATE_CHECK_INTERVAL_NORMAL = 10
@@ -754,6 +755,12 @@ class ChromiumOSFlashUpdater(BaseUpdater):
           self.REMOTE_UPDATE_ENGINE_LOGFILE_PATH,
           os.path.join(self.tempdir, os.path.basename(
               self.REMOTE_UPDATE_ENGINE_LOGFILE_PATH)),
+          follow_symlinks=True,
+          **self._cmd_kwargs_omit_error)
+      self.device.CopyFromDevice(
+          self.REMOTE_QUICK_PROVISION_LOGFILE_PATH,
+          os.path.join(self.tempdir, os.path.basename(
+              self.REMOTE_QUICK_PROVISION_LOGFILE_PATH)),
           follow_symlinks=True,
           **self._cmd_kwargs_omit_error)
       self._CopyHostLogFromDevice('rootfs')
