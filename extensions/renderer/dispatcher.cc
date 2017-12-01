@@ -201,19 +201,8 @@ Dispatcher::Dispatcher(std::unique_ptr<DispatcherDelegate> delegate)
   const base::CommandLine& command_line =
       *(base::CommandLine::ForCurrentProcess());
 
-  std::unique_ptr<IPCMessageSender> ipc_message_sender =
-      IPCMessageSender::CreateMainThreadIPCMessageSender();
-  if (base::FeatureList::IsEnabled(features::kNativeCrxBindings)) {
-    // This Unretained is safe because the IPCMessageSender is guaranteed to
-    // outlive the bindings system.
-    auto system = std::make_unique<NativeExtensionBindingsSystem>(
-        std::move(ipc_message_sender));
-    delegate_->InitializeBindingsSystem(this, system->api_system());
-    bindings_system_ = std::move(system);
-  } else {
-    bindings_system_ = std::make_unique<JsExtensionBindingsSystem>(
-        &source_map_, std::move(ipc_message_sender));
-  }
+  bindings_system_ = CreateBindingsSystem(
+      IPCMessageSender::CreateMainThreadIPCMessageSender());
 
   set_idle_notifications_ =
       command_line.HasSwitch(switches::kExtensionProcess) ||
@@ -417,8 +406,13 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
   context->set_service_worker_scope(service_worker_scope);
 
   if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers()) {
-    WorkerThreadDispatcher::Get()->AddWorkerData(service_worker_version_id,
-                                                 context, &source_map_);
+    WorkerThreadDispatcher* worker_dispatcher = WorkerThreadDispatcher::Get();
+    std::unique_ptr<IPCMessageSender> ipc_sender =
+        IPCMessageSender::CreateWorkerThreadIPCMessageSender(
+            worker_dispatcher, service_worker_version_id);
+    worker_dispatcher->AddWorkerData(
+        service_worker_version_id, context,
+        CreateBindingsSystem(std::move(ipc_sender)));
 
     // TODO(lazyboy): Make sure accessing |source_map_| in worker thread is
     // safe.
@@ -1447,6 +1441,21 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
     module_system->Require("guestViewDeny");
   }
+}
+
+std::unique_ptr<ExtensionBindingsSystem> Dispatcher::CreateBindingsSystem(
+    std::unique_ptr<IPCMessageSender> ipc_sender) {
+  std::unique_ptr<ExtensionBindingsSystem> bindings_system;
+  if (base::FeatureList::IsEnabled(features::kNativeCrxBindings)) {
+    auto system =
+        std::make_unique<NativeExtensionBindingsSystem>(std::move(ipc_sender));
+    delegate_->InitializeBindingsSystem(this, system->api_system());
+    bindings_system = std::move(system);
+  } else {
+    bindings_system = std::make_unique<JsExtensionBindingsSystem>(
+        &source_map_, std::move(ipc_sender));
+  }
+  return bindings_system;
 }
 
 }  // namespace extensions
