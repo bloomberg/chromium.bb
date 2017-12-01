@@ -24,11 +24,18 @@ class AndroidVSyncHelper {
 
   void RequestVSync(const base::Callback<void(base::TimeTicks)>& callback);
   void CancelVSyncRequest();
+
+  // The last interval will be a multiple of the actual refresh interval, use
+  // with care.
   base::TimeDelta LastVSyncInterval() { return last_interval_; }
+
+  // Nominal display VSync interval from Java Display.getRefreshRate()
+  base::TimeDelta DisplayVSyncInterval() { return display_vsync_interval_; }
 
  private:
   base::TimeTicks last_vsync_;
   base::TimeDelta last_interval_;
+  base::TimeDelta display_vsync_interval_;
   base::Callback<void(base::TimeTicks)> callback_;
 
   base::android::ScopedJavaGlobalRef<jobject> j_object_;

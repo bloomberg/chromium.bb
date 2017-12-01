@@ -4,8 +4,6 @@
 
 #include "chrome/browser/vr/fps_meter.h"
 
-#include <algorithm>
-
 namespace vr {
 
 namespace {
@@ -13,28 +11,6 @@ namespace {
 static constexpr size_t kDefaultNumFrameTimes = 10;
 
 }  // namespace
-
-SampleQueue::SampleQueue(size_t window_size) : window_size_(window_size) {
-  samples_.reserve(window_size);
-}
-
-SampleQueue::~SampleQueue() = default;
-
-void SampleQueue::AddSample(int64_t value) {
-  sum_ += value;
-
-  if (samples_.size() < window_size_) {
-    samples_.push_back(value);
-  } else {
-    sum_ -= samples_[current_index_];
-    samples_[current_index_] = value;
-  }
-
-  ++current_index_;
-  if (current_index_ >= window_size_) {
-    current_index_ = 0;
-  }
-}
 
 FPSMeter::FPSMeter() : frame_times_(kDefaultNumFrameTimes) {}
 
@@ -68,20 +44,6 @@ double FPSMeter::GetFPS() const {
     return 0.0;
 
   return (frame_times_.GetCount() * 1.0e6) / frame_times_.GetSum();
-}
-
-SlidingAverage::SlidingAverage(size_t window_size) : values_(window_size) {}
-
-SlidingAverage::~SlidingAverage() = default;
-
-void SlidingAverage::AddSample(int64_t value) {
-  values_.AddSample(value);
-}
-
-int64_t SlidingAverage::GetAverageOrDefault(int64_t default_value) const {
-  if (values_.GetCount() == 0)
-    return default_value;
-  return values_.GetSum() / values_.GetCount();
 }
 
 }  // namespace vr

@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "jni/AndroidVSyncHelper_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -17,6 +18,9 @@ AndroidVSyncHelper::AndroidVSyncHelper() {
   JNIEnv* env = AttachCurrentThread();
   j_object_.Reset(
       Java_AndroidVSyncHelper_create(env, reinterpret_cast<jlong>(this)));
+  float refresh_rate = Java_AndroidVSyncHelper_getRefreshRate(env, j_object_);
+  display_vsync_interval_ = base::TimeDelta::FromSecondsD(1.0 / refresh_rate);
+  DVLOG(1) << "display_vsync_interval_=" << display_vsync_interval_;
 }
 
 AndroidVSyncHelper::~AndroidVSyncHelper() {
