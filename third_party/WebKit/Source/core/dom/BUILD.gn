@@ -307,6 +307,8 @@ blink_core_sources("dom") {
     "WeakIdentifierMap.h",
     "WhitespaceAttacher.cpp",
     "WhitespaceAttacher.h",
+    "WorkerModulatorImpl.cpp",
+    "WorkerModulatorImpl.h",
     "WorkletModulatorImpl.cpp",
     "WorkletModulatorImpl.h",
     "XMLDocument.cpp",

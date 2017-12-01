@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class Modulator;
 class ResourceFetcher;
 class V8AbstractEventListener;
 class WorkerOrWorkletScriptController;
@@ -69,6 +70,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   void RegisterEventListener(V8AbstractEventListener*);
   void DeregisterEventListener(V8AbstractEventListener*);
 
+  void SetModulator(Modulator*);
+
   // Called from UseCounter to record API use in this execution context.
   void CountFeature(WebFeature);
 
@@ -109,6 +112,10 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   // This is the set of features that this worker has used.
   BitVector used_features_;
+
+  // LocalDOMWindow::modulator_ workaround equivalent.
+  // TODO(kouhei): Remove this.
+  TraceWrapperMember<Modulator> modulator_;
 };
 
 DEFINE_TYPE_CASTS(
