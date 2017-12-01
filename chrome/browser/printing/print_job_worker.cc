@@ -422,12 +422,15 @@ void PrintJobWorker::SpoolPage(PrintedPage* page) {
     return;
   }
 
-  // Signal everyone that the page is printed.
+// Signal everyone that the page is printed. No one cares about this except
+// on Windows.
+#if defined(OS_WIN)
   owner_->PostTask(
       FROM_HERE,
       base::Bind(&NotificationCallback, base::RetainedRef(owner_),
                  JobEventDetails::PAGE_DONE, printing_context_->job_id(),
                  base::RetainedRef(document_), base::RetainedRef(page)));
+#endif
 }
 
 void PrintJobWorker::OnFailure() {
