@@ -16,22 +16,20 @@ class CORE_EXPORT FilteredComputedStylePropertyMap
     : public ComputedStylePropertyMap {
  public:
   static FilteredComputedStylePropertyMap* Create(
-      CSSComputedStyleDeclaration* computed_style_declaration,
+      Node* node,
       const Vector<CSSPropertyID>& native_properties,
-      const Vector<AtomicString>& custom_properties,
-      Node* node) {
-    return new FilteredComputedStylePropertyMap(
-        computed_style_declaration, native_properties, custom_properties, node);
+      const Vector<AtomicString>& custom_properties) {
+    return new FilteredComputedStylePropertyMap(node, native_properties,
+                                                custom_properties);
   }
 
   Vector<String> getProperties() override;
 
  private:
   FilteredComputedStylePropertyMap(
-      CSSComputedStyleDeclaration*,
+      Node*,
       const Vector<CSSPropertyID>& native_properties,
-      const Vector<AtomicString>& custom_properties,
-      Node*);
+      const Vector<AtomicString>& custom_properties);
 
   const CSSValue* GetProperty(CSSPropertyID) override;
   const CSSValue* GetCustomProperty(AtomicString) override;

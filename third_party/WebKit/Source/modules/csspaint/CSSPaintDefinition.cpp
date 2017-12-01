@@ -105,10 +105,9 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
       context_settings_, zoom);
   PaintSize* paint_size = PaintSize::Create(specified_size);
   StylePropertyMapReadonly* style_map =
-      FilteredComputedStylePropertyMap::Create(
-          CSSComputedStyleDeclaration::Create(layout_object.GetNode()),
-          native_invalidation_properties_, custom_invalidation_properties_,
-          layout_object.GetNode());
+      FilteredComputedStylePropertyMap::Create(layout_object.GetNode(),
+                                               native_invalidation_properties_,
+                                               custom_invalidation_properties_);
 
   v8::Local<v8::Value> argv[] = {
       ToV8(rendering_context, script_state_->GetContext()->Global(), isolate),
