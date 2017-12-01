@@ -238,6 +238,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       forcing_layout_parent_view_(false),
       needs_intersection_observation_(false),
       needs_forced_compositing_update_(false),
+      scroll_gesture_region_is_dirty_(false),
       main_thread_scrolling_reasons_(0),
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()) {
@@ -802,8 +803,9 @@ void LocalFrameView::RecalcOverflowAfterStyleChange() {
   // Changing overflow should notify scrolling coordinator to ensures that it
   // updates non-fast scroll rects even if there is no layout.
   if (ScrollingCoordinator* scrolling_coordinator =
-          this->GetScrollingCoordinator())
-    scrolling_coordinator->NotifyOverflowUpdated();
+          this->GetScrollingCoordinator()) {
+    SetScrollGestureRegionIsDirty(true);
+  }
 
   IntRect document_rect = layout_view_item.DocumentRect();
   if (ScrollOrigin() == -document_rect.Location() &&
@@ -2621,8 +2623,9 @@ void LocalFrameView::PerformPostLayoutTasks() {
   ScheduleUpdatePluginsIfNecessary();
 
   if (ScrollingCoordinator* scrolling_coordinator =
-          this->GetScrollingCoordinator())
-    scrolling_coordinator->NotifyGeometryChanged();
+          this->GetScrollingCoordinator()) {
+    scrolling_coordinator->NotifyGeometryChanged(this);
+  }
 
   ScrollToFragmentAnchor();
   SendResizeEventIfNeeded();
@@ -3236,8 +3239,10 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
 
       if (target_state >= DocumentLifecycle::kPrePaintClean) {
         if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-          if (view.Compositor()->InCompositingMode())
-            GetScrollingCoordinator()->UpdateAfterCompositingChangeIfNeeded();
+          if (view.Compositor()->InCompositingMode()) {
+            GetScrollingCoordinator()->UpdateAfterCompositingChangeIfNeeded(
+                this);
+          }
         }
 
         // This is needed since, at present, the ScrollingCoordinator doesn't
@@ -3890,6 +3895,35 @@ void LocalFrameView::RemoveResizerArea(LayoutBox& resizer_box) {
     resizer_areas_->erase(it);
 }
 
+bool LocalFrameView::ScrollGestureRegionIsDirty() const {
+  DCHECK(GetFrame().IsLocalRoot());
+  return scroll_gesture_region_is_dirty_;
+}
+
+void LocalFrameView::SetScrollGestureRegionIsDirty(bool dirty) {
+  if (GetFrame().IsLocalRoot()) {
+    // TODO(wjmaclean): It would be nice to move the !NeedsLayout() check from
+    // ScrollableAreasDidChange() to here, but at present doing so breaks
+    // layout tests. This suggests that there is something that wants to set the
+    // dirty bit when layout is needed, and won't re-try setting the bit after
+    // layout has completed - it would be nice to find that and fix it.
+    scroll_gesture_region_is_dirty_ = dirty;
+    return;
+  }
+
+  GetFrame().LocalFrameRoot().View()->SetScrollGestureRegionIsDirty(dirty);
+}
+
+void LocalFrameView::ScrollableAreasDidChange() {
+  // Layout may update scrollable area bounding boxes. It also sets the same
+  // dirty flag making this one redundant (See
+  // |ScrollingCoordinator::notifyGeometryChanged|).
+  // So if layout is expected, ignore this call allowing scrolling coordinator
+  // to be notified post-layout to recompute gesture regions.
+  if (!NeedsLayout())
+    SetScrollGestureRegionIsDirty(true);
+}
+
 void LocalFrameView::AddScrollableArea(ScrollableArea* scrollable_area) {
   DCHECK(scrollable_area);
   if (!scrollable_areas_)
@@ -3897,8 +3931,9 @@ void LocalFrameView::AddScrollableArea(ScrollableArea* scrollable_area) {
   scrollable_areas_->insert(scrollable_area);
 
   if (ScrollingCoordinator* scrolling_coordinator =
-          this->GetScrollingCoordinator())
-    scrolling_coordinator->ScrollableAreasDidChange();
+          this->GetScrollingCoordinator()) {
+    ScrollableAreasDidChange();
+  }
 }
 
 void LocalFrameView::RemoveScrollableArea(ScrollableArea* scrollable_area) {
@@ -3907,8 +3942,9 @@ void LocalFrameView::RemoveScrollableArea(ScrollableArea* scrollable_area) {
   scrollable_areas_->erase(scrollable_area);
 
   if (ScrollingCoordinator* scrolling_coordinator =
-          this->GetScrollingCoordinator())
-    scrolling_coordinator->ScrollableAreasDidChange();
+          this->GetScrollingCoordinator()) {
+    ScrollableAreasDidChange();
+  }
 }
 
 void LocalFrameView::AddAnimatingScrollableArea(
@@ -5079,8 +5115,9 @@ void LocalFrameView::Show() {
   if (!IsSelfVisible()) {
     SetSelfVisible(true);
     if (ScrollingCoordinator* scrolling_coordinator =
-            this->GetScrollingCoordinator())
-      scrolling_coordinator->FrameViewVisibilityDidChange();
+            this->GetScrollingCoordinator()) {
+      SetScrollGestureRegionIsDirty(true);
+    }
     SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
     UpdateParentScrollableAreaSet();
     if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
@@ -5107,8 +5144,9 @@ void LocalFrameView::Hide() {
     }
     SetSelfVisible(false);
     if (ScrollingCoordinator* scrolling_coordinator =
-            this->GetScrollingCoordinator())
-      scrolling_coordinator->FrameViewVisibilityDidChange();
+            this->GetScrollingCoordinator()) {
+      SetScrollGestureRegionIsDirty(true);
+    }
     SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
     UpdateParentScrollableAreaSet();
     if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
@@ -5261,7 +5299,7 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
     // ScrollingCoordinator needs to update according to the new throttling
     // status.
     if (scrolling_coordinator)
-      scrolling_coordinator->NotifyGeometryChanged();
+      scrolling_coordinator->NotifyGeometryChanged(this);
     // Start ticking animation frames again if necessary.
     if (GetPage())
       GetPage()->Animator().ScheduleVisualUpdate(frame_.Get());

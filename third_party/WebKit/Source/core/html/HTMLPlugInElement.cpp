@@ -615,8 +615,10 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
   // account.
   if (Page* page = GetDocument().GetFrame()->GetPage()) {
     if (ScrollingCoordinator* scrolling_coordinator =
-            page->GetScrollingCoordinator())
-      scrolling_coordinator->NotifyGeometryChanged();
+            page->GetScrollingCoordinator()) {
+      LocalFrameView* frame_view = GetDocument().GetFrame()->View();
+      scrolling_coordinator->NotifyGeometryChanged(frame_view);
+    }
   }
   return true;
 }

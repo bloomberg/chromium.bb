@@ -619,8 +619,10 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
             page->GetScrollingCoordinator()) {
       // Only call scrolling_coordinator if attached.  SetWantsWheelEvents can
       // be called from Plugin Initialization when it is not yet attached.
-      if (is_attached_)
-        scrolling_coordinator->NotifyGeometryChanged();
+      if (is_attached_) {
+        LocalFrameView* frame_view = element_->GetDocument().GetFrame()->View();
+        scrolling_coordinator->NotifyGeometryChanged(frame_view);
+      }
     }
   }
 }

@@ -2013,8 +2013,15 @@ LayerRectList* Internals::touchEventTargetLayerRects(
   }
 
   if (ScrollingCoordinator* scrolling_coordinator =
-          document->GetPage()->GetScrollingCoordinator())
-    scrolling_coordinator->UpdateAfterCompositingChangeIfNeeded();
+          document->GetPage()->GetScrollingCoordinator()) {
+    FrameView* view = document->GetPage()->MainFrame()->View();
+    if (view->IsLocalFrameView()) {
+      scrolling_coordinator->UpdateAfterCompositingChangeIfNeeded(
+          static_cast<LocalFrameView*>(view));
+    } else {
+      NOTREACHED();
+    }
+  }
 
   LayoutViewItem view = document->GetLayoutViewItem();
   if (!view.IsNull()) {

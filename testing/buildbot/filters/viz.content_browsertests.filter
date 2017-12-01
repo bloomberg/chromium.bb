@@ -28,6 +28,7 @@
 -PointerLockBrowserTest.*
 -SitePerProcessGestureBrowserTest.*
 -SitePerProcessHighDPIBrowserTest.*
+-SitePerProcessInternalsBrowserTest.*
 -SitePerProcessMouseWheelBrowserTest.*
 -TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.*
 
