@@ -23,7 +23,7 @@ cr.define('extension_item_tests', function() {
   // mode *and* showing details.
   var devElements = [
     {selector: '#version', text: extensionData.version},
-    {selector: '#extension-id', text: 'ID:' + extensionData.id},
+    {selector: '#extension-id', text: `ID: ${extensionData.id}`},
     {selector: '#inspect-views'},
     {selector: '#inspect-views a[is="action-link"]', text: 'foo.html,'},
     {selector: '#inspect-views a[is="action-link"]:nth-of-type(2)',
