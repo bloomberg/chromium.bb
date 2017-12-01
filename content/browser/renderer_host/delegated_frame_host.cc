@@ -536,12 +536,14 @@ void DelegatedFrameHost::DidPresentCompositorFrame(uint32_t presentation_token,
                                                    base::TimeTicks time,
                                                    base::TimeDelta refresh,
                                                    uint32_t flags) {
-  NOTIMPLEMENTED();
+  renderer_compositor_frame_sink_->DidPresentCompositorFrame(
+      presentation_token, time, refresh, flags);
 }
 
 void DelegatedFrameHost::DidDiscardCompositorFrame(
     uint32_t presentation_token) {
-  NOTIMPLEMENTED();
+  renderer_compositor_frame_sink_->DidDiscardCompositorFrame(
+      presentation_token);
 }
 
 void DelegatedFrameHost::ReclaimResources(
