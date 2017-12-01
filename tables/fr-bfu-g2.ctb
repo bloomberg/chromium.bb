@@ -1,3 +1,16 @@
+#+locale:fr
+#+type:literary
+#+contraction:full
+#+grade:2
+
+#-display-name: Unified French Grade 2
+#-author: Michel Such <michel.such@free.fr>
+#-author: André-Abush CLAUSE <dev@andreabc.net>
+#-author: Nicolas Pitre <nico@cam.org>
+#-author: The BRLTTY Team <http://brltty.com/>
+#-license: LGPLv2.1
+#-updated: 2017-11-28
+
 # liblouis: Unified French Grade 2 Table
 
 # Copyright (C) 1995-2004 by The BRLTTY Team
