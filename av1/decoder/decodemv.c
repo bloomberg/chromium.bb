@@ -83,22 +83,20 @@ static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   const int b_col = mi_col & (cm->mib_size - 1);
   const int b_row = mi_row & (cm->mib_size - 1);
   const int read_delta_q_flag = (b_col == 0 && b_row == 0);
-  int rem_bits, thr;
-  int i, smallval;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
 
   if ((bsize != cm->sb_size || mbmi->skip == 0) && read_delta_q_flag) {
     abs = aom_read_symbol(r, ec_ctx->delta_q_cdf, DELTA_Q_PROBS + 1, ACCT_STR);
-    smallval = (abs < DELTA_Q_SMALL);
+    const int smallval = (abs < DELTA_Q_SMALL);
     if (counts) {
-      for (i = 0; i < abs; ++i) counts->delta_q[i][1]++;
+      for (int i = 0; i < abs; ++i) counts->delta_q[i][1]++;
       if (smallval) counts->delta_q[abs][0]++;
     }
 
     if (!smallval) {
-      rem_bits = aom_read_literal(r, 3, ACCT_STR) + 1;
-      thr = (1 << rem_bits) + 1;
+      const int rem_bits = aom_read_literal(r, 3, ACCT_STR) + 1;
+      const int thr = (1 << rem_bits) + 1;
       abs = aom_read_literal(r, rem_bits, ACCT_STR) + thr;
     }
 
@@ -125,8 +123,6 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   const int b_col = mi_col & (cm->mib_size - 1);
   const int b_row = mi_row & (cm->mib_size - 1);
   const int read_delta_lf_flag = (b_col == 0 && b_row == 0);
-  int rem_bits, thr;
-  int i, smallval;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
 
@@ -144,24 +140,24 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
     abs =
         aom_read_symbol(r, ec_ctx->delta_lf_cdf, DELTA_LF_PROBS + 1, ACCT_STR);
 #endif  // CONFIG_LOOPFILTER_LEVEL
-    smallval = (abs < DELTA_LF_SMALL);
+    const int smallval = (abs < DELTA_LF_SMALL);
     if (counts) {
 #if CONFIG_LOOPFILTER_LEVEL
       if (cm->delta_lf_multi) {
-        for (i = 0; i < abs; ++i) counts->delta_lf_multi[lf_id][i][1]++;
+        for (int i = 0; i < abs; ++i) counts->delta_lf_multi[lf_id][i][1]++;
         if (smallval) counts->delta_lf_multi[lf_id][abs][0]++;
       } else {
-        for (i = 0; i < abs; ++i) counts->delta_lf[i][1]++;
+        for (int i = 0; i < abs; ++i) counts->delta_lf[i][1]++;
         if (smallval) counts->delta_lf[abs][0]++;
       }
 #else
-      for (i = 0; i < abs; ++i) counts->delta_lf[i][1]++;
+      for (int i = 0; i < abs; ++i) counts->delta_lf[i][1]++;
       if (smallval) counts->delta_lf[abs][0]++;
 #endif  // CONFIG_LOOPFILTER_LEVEL
     }
     if (!smallval) {
-      rem_bits = aom_read_literal(r, 3, ACCT_STR) + 1;
-      thr = (1 << rem_bits) + 1;
+      const int rem_bits = aom_read_literal(r, 3, ACCT_STR) + 1;
+      const int thr = (1 << rem_bits) + 1;
       abs = aom_read_literal(r, rem_bits, ACCT_STR) + thr;
     }
 
@@ -525,10 +521,10 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
 
 static int dec_get_segment_id(const AV1_COMMON *cm, const uint8_t *segment_ids,
                               int mi_offset, int x_mis, int y_mis) {
-  int x, y, segment_id = INT_MAX;
+  int segment_id = INT_MAX;
 
-  for (y = 0; y < y_mis; y++)
-    for (x = 0; x < x_mis; x++)
+  for (int y = 0; y < y_mis; y++)
+    for (int x = 0; x < x_mis; x++)
       segment_id =
           AOMMIN(segment_id, segment_ids[mi_offset + y * cm->mi_cols + x]);
 
@@ -538,12 +534,10 @@ static int dec_get_segment_id(const AV1_COMMON *cm, const uint8_t *segment_ids,
 
 static void set_segment_id(AV1_COMMON *cm, int mi_offset, int x_mis, int y_mis,
                            int segment_id) {
-  int x, y;
-
   assert(segment_id >= 0 && segment_id < MAX_SEGMENTS);
 
-  for (y = 0; y < y_mis; y++)
-    for (x = 0; x < x_mis; x++)
+  for (int y = 0; y < y_mis; y++)
+    for (int x = 0; x < x_mis; x++)
       cm->current_frame_seg_map[mi_offset + y * cm->mi_cols + x] = segment_id;
 }
 
@@ -570,10 +564,8 @@ static void copy_segment_id(const AV1_COMMON *cm,
                             const uint8_t *last_segment_ids,
                             uint8_t *current_segment_ids, int mi_offset,
                             int x_mis, int y_mis) {
-  int x, y;
-
-  for (y = 0; y < y_mis; y++)
-    for (x = 0; x < x_mis; x++)
+  for (int y = 0; y < y_mis; y++)
+    for (int x = 0; x < x_mis; x++)
       current_segment_ids[mi_offset + y * cm->mi_cols + x] =
           last_segment_ids ? last_segment_ids[mi_offset + y * cm->mi_cols + x]
                            : 0;
@@ -785,7 +777,6 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   assert(av1_allow_palette(cm->allow_screen_content_tools, bsize));
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const int block_palette_idx = bsize - BLOCK_8X8;
-  int modev;
 
   if (mbmi->mode == DC_PRED) {
     int palette_y_mode_ctx = 0;
@@ -797,7 +788,7 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       palette_y_mode_ctx +=
           (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
     }
-    modev = aom_read_symbol(
+    const int modev = aom_read_symbol(
         r,
         xd->tile_ctx->palette_y_mode_cdf[block_palette_idx][palette_y_mode_ctx],
         2, ACCT_STR);
@@ -817,7 +808,7 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
   if (mbmi->uv_mode == UV_DC_PRED) {
     const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
-    modev = aom_read_symbol(
+    const int modev = aom_read_symbol(
         r, xd->tile_ctx->palette_uv_mode_cdf[palette_uv_mode_ctx], 2, ACCT_STR);
     if (modev) {
       pmi->palette_size[1] =
@@ -1217,10 +1208,9 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
     d = aom_read_symbol(r, mvcomp->class0_cdf, CLASS0_SIZE, ACCT_STR);
     mag = 0;
   } else {
-    int i;
     const int n = mv_class + CLASS0_BITS - 1;  // number of bits
     d = 0;
-    for (i = 0; i < n; ++i)
+    for (int i = 0; i < n; ++i)
       d |= aom_read_symbol(r, mvcomp->bits_cdf[i], 2, ACCT_STR) << i;
     mag = CLASS0_SIZE << (mv_class + 2);
   }
@@ -1575,7 +1565,6 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                             int_mv nearest_mv[2], int_mv near_mv[2], int mi_row,
                             int mi_col, int is_compound, int allow_hp,
                             aom_reader *r) {
-  int i;
   int ret = 1;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
@@ -1594,7 +1583,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
   switch (mode) {
     case NEWMV: {
-      for (i = 0; i < 1 + is_compound; ++i) {
+      for (int i = 0; i < 1 + is_compound; ++i) {
         int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
         int nmv_ctx =
             av1_nmv_ctx(xd->ref_mv_count[rf_type], xd->ref_mv_stack[rf_type], i,
@@ -1650,7 +1639,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
     }
     case NEW_NEWMV: {
       assert(is_compound);
-      for (i = 0; i < 2; ++i) {
+      for (int i = 0; i < 2; ++i) {
         int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
         int nmv_ctx =
             av1_nmv_ctx(xd->ref_mv_count[rf_type], xd->ref_mv_stack[rf_type], i,
@@ -1831,7 +1820,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   const int allow_hp = cm->allow_high_precision_mv;
   int_mv nearestmv[2], nearmv[2];
   int_mv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES];
-  int ref, is_compound;
   int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
   int16_t compound_inter_mode_ctx[MODE_CTX_REF_FRAMES];
   int mode_ctx = 0;
@@ -1850,7 +1838,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   memset(ref_mvs, 0, sizeof(ref_mvs));
 
   read_ref_frames(cm, xd, r, mbmi->segment_id, mbmi->ref_frame);
-  is_compound = has_second_ref(mbmi);
+  const int is_compound = has_second_ref(mbmi);
 
 #if CONFIG_EXT_SKIP
 // TODO(zoeliu): To work with JNT_COMP
@@ -1866,7 +1854,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 #endif  // CONFIG_JNT_COMP
 
-  for (ref = 0; ref < 1 + is_compound; ++ref) {
+  for (int ref = 0; ref < 1 + is_compound; ++ref) {
     MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
 
     av1_find_mv_refs(cm, xd, mi, frame, &xd->ref_mv_count[frame],
@@ -1907,7 +1895,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
                                      )
                     .as_int
               : 0;
-      for (ref = 0; ref < 2; ++ref) {
+      for (int ref = 0; ref < 2; ++ref) {
         if (rf[ref] == NONE_FRAME) continue;
 #if CONFIG_AMVR
         lower_mv_precision(&ref_mvs[rf[ref]][0].as_mv, allow_hp,
@@ -1962,7 +1950,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 
   if (mbmi->mode != GLOBALMV && mbmi->mode != GLOBAL_GLOBALMV) {
-    for (ref = 0; ref < 1 + is_compound; ++ref) {
+    for (int ref = 0; ref < 1 + is_compound; ++ref) {
 #if CONFIG_AMVR
       av1_find_best_ref_mvs(allow_hp, ref_mvs[mbmi->ref_frame[ref]],
                             &nearestmv[ref], &nearmv[ref],
@@ -2143,7 +2131,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     }
   }
 
-  for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
+  for (int ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
     const MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
     RefBuffer *ref_buf = &cm->frame_refs[frame - LAST_FRAME];
 
@@ -2212,13 +2200,12 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
 #if CONFIG_EXT_WARPED_MOTION
     // Find a warped neighbor.
-    int cand;
     int best_cand = -1;
     int best_weight = 0;
 
     assert(mbmi->mode >= NEARESTMV && mbmi->mode <= NEWMV);
     if (mbmi->mode == NEARESTMV) {
-      for (cand = 0; cand < mbmi->num_proj_ref[0]; cand++) {
+      for (int cand = 0; cand < mbmi->num_proj_ref[0]; cand++) {
         if (pts_wm[cand * 2 + 1] > best_weight) {
           best_weight = pts_wm[cand * 2 + 1];
           best_cand = cand;
@@ -2349,11 +2336,10 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
     const int bw = tx_size_wide_unit[max_tx_size];
     const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
     const int height = block_size_high[bsize] >> tx_size_wide_log2[0];
-    int idx, idy;
 
     mbmi->min_tx_size = TX_SIZES_ALL;
-    for (idy = 0; idy < height; idy += bh)
-      for (idx = 0; idx < width; idx += bw)
+    for (int idy = 0; idy < height; idy += bh)
+      for (int idx = 0; idx < width; idx += bw)
         read_tx_size_vartx(cm, xd, mbmi, xd->counts, max_tx_size, 0, idy, idx,
                            r);
   } else {
@@ -2362,9 +2348,8 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
     if (inter_block) {
       const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
       const int height = block_size_high[bsize] >> tx_size_high_log2[0];
-      int idx, idy;
-      for (idy = 0; idy < height; ++idy)
-        for (idx = 0; idx < width; ++idx)
+      for (int idy = 0; idy < height; ++idy)
+        for (int idx = 0; idx < width; ++idx)
           mbmi->inter_tx_size[idy >> 1][idx >> 1] = mbmi->tx_size;
     }
     mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
@@ -2399,11 +2384,10 @@ static void av1_intra_copy_frame_mvs(AV1_COMMON *const cm, int mi_row,
   x_mis = AOMMAX(x_mis, 2);
   y_mis = AOMMAX(y_mis, 2);
 #endif  // CONFIG_TMV
-  int w, h;
 
-  for (h = 0; h < y_mis; h++) {
+  for (int h = 0; h < y_mis; h++) {
     MV_REF *mv = frame_mvs;
-    for (w = 0; w < x_mis; w++) {
+    for (int w = 0; w < x_mis; w++) {
       mv->ref_frame[0] = NONE_FRAME;
       mv->ref_frame[1] = NONE_FRAME;
       mv++;
