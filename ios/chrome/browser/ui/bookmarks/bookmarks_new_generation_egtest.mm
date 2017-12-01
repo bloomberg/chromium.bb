@@ -1496,6 +1496,9 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Select URL and folder.
   [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      performAction:grey_tap()];
+  [[EarlGrey
       selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_tap()];
   [[EarlGrey
@@ -1512,6 +1515,16 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
       performAction:grey_tap()];
+
+  // Verify folder picker is appeared.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_IOS_BOOKMARK_CHOOSE_GROUP_BUTTON))]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Delete the First URL programmatically in background.  Folder picker will
+  // not close as the selected nodes "Second URL" and "Folder 1" still exist.
+  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"First URL"];
 
   // Choose to move into a new folder.
   [[EarlGrey
@@ -1618,6 +1631,54 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Verify Move is cancelled when all selected folder/url are deleted in
+// background.
+- (void)testMoveCancelledWhenAllSelectionDeleted {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Change to edit mode, using context menu.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select URL and folder.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Tap on move, from context menu.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  // Verify folder picker is appeared.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_IOS_BOOKMARK_CHOOSE_GROUP_BUTTON))]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Delete the selected URL and folder programmatically.
+  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"Folder 1"];
+  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"Second URL"];
+
+  // Verify folder picker is exited.
+  [self verifyFolderFlowIsClosed];
 }
 
 // Try deleting a bookmark from the edit screen, then undoing that delete.
