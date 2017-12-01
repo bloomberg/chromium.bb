@@ -70,37 +70,4 @@ TEST(FPSMeter, AccurateFPSWithHigherFramerate) {
   }
 }
 
-TEST(SlidingAverage, Basics) {
-  SlidingAverage meter(5);
-
-  // No values yet
-  EXPECT_EQ(42, meter.GetAverageOrDefault(42));
-  EXPECT_EQ(0, meter.GetAverage());
-
-  meter.AddSample(100);
-  EXPECT_EQ(100, meter.GetAverageOrDefault(42));
-  EXPECT_EQ(100, meter.GetAverage());
-
-  meter.AddSample(200);
-  EXPECT_EQ(150, meter.GetAverage());
-
-  meter.AddSample(10);
-  EXPECT_EQ(103, meter.GetAverage());
-
-  meter.AddSample(10);
-  EXPECT_EQ(80, meter.GetAverage());
-
-  meter.AddSample(10);
-  EXPECT_EQ(66, meter.GetAverage());
-
-  meter.AddSample(10);
-  EXPECT_EQ(48, meter.GetAverage());
-
-  meter.AddSample(10);
-  EXPECT_EQ(10, meter.GetAverage());
-
-  meter.AddSample(110);
-  EXPECT_EQ(30, meter.GetAverage());
-}
-
 }  // namespace vr
