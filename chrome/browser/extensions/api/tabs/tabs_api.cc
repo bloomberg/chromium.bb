@@ -96,6 +96,7 @@
 #include "ui/base/ui_base_types.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ui/aura/window.h"
@@ -255,12 +256,6 @@ bool IsValidStateForWindowsCreateFunction(
 }
 
 #if defined(OS_CHROMEOS)
-bool IsWindowTrustedPinned(ui::BaseWindow* base_window) {
-  aura::Window* window = base_window->GetNativeWindow();
-  ash::mojom::WindowPinType type = window->GetProperty(ash::kWindowPinTypeKey);
-  return type == ash::mojom::WindowPinType::TRUSTED_PINNED;
-}
-
 void SetWindowTrustedPinned(ui::BaseWindow* base_window, bool trusted_pinned) {
   aura::Window* window = base_window->GetNativeWindow();
   // TRUSTED_PINNED is used here because that one locks the window fullscreen
@@ -686,7 +681,7 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
 
 #if defined(OS_CHROMEOS)
   const bool is_window_trusted_pinned =
-      IsWindowTrustedPinned(controller->window());
+      ash::IsWindowTrustedPinned(controller->window());
   // Don't allow locked fullscreen operations on a window without the proper
   // permission (also don't allow any operations on a locked window if the
   // extension doesn't have the permission).
@@ -809,7 +804,7 @@ ExtensionFunction::ResponseAction WindowsRemoveFunction::Run() {
   }
 
 #if defined(OS_CHROMEOS)
-  if (IsWindowTrustedPinned(controller->window()) &&
+  if (ash::IsWindowTrustedPinned(controller->window()) &&
       !ExtensionHasLockedFullscreenPermission(extension())) {
     return RespondNow(
         Error(keys::kMissingLockWindowFullscreenPrivatePermission));

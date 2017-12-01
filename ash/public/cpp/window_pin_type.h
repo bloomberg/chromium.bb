@@ -9,9 +9,15 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 
+namespace ui {
+class BaseWindow;
+}
+
 namespace ash {
 
 ASH_PUBLIC_EXPORT bool IsValidWindowPinType(int64_t value);
+
+ASH_PUBLIC_EXPORT bool IsWindowTrustedPinned(ui::BaseWindow* window);
 
 }  // namespace ash
 
