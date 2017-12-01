@@ -255,19 +255,19 @@ enum ResourceType {
   kBitmapResourceType,
 };
 
-ResourceType kSoftwareCompositedFallbackList[] = {
+constexpr ResourceType kSoftwareCompositedFallbackList[] = {
     kBitmapResourceType,
 };
 
-ResourceType kSoftwareFallbackList[] = {
+constexpr ResourceType kSoftwareFallbackList[] = {
     kBitmapResourceType,
 };
 
-ResourceType kAcceleratedFallbackList[] = {
+constexpr ResourceType kAcceleratedFallbackList[] = {
     kTextureResourceType, kBitmapResourceType,
 };
 
-ResourceType kAcceleratedCompositedFallbackList[] = {
+constexpr ResourceType kAcceleratedCompositedFallbackList[] = {
     kTextureGpuMemoryBufferResourceType, kTextureResourceType,
     kBitmapResourceType,
 };
@@ -278,26 +278,31 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     const CanvasColorParams& colorParams,
     ResourceUsage usage,
     WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper) {
-  unsigned resourceTypeFallbackListLength = 0;
-  ResourceType* resourceTypeFallbackList = nullptr;
+  const ResourceType* resource_type_fallback_list = nullptr;
+  size_t list_length = 0;
 
   switch (usage) {
-#define DEFINE_FALLBACK(NAME)                              \
-  case NAME##ResourceUsage:                                \
-    resourceTypeFallbackList = NAME##FallbackList;         \
-    resourceTypeFallbackListLength =                       \
-        sizeof(NAME##FallbackList) / sizeof(ResourceType); \
-    break;
-
-    DEFINE_FALLBACK(kSoftware);
-    DEFINE_FALLBACK(kSoftwareComposited);
-    DEFINE_FALLBACK(kAccelerated);
-    DEFINE_FALLBACK(kAcceleratedComposited);
+    case kSoftwareResourceUsage:
+      resource_type_fallback_list = kSoftwareFallbackList;
+      list_length = arraysize(kSoftwareFallbackList);
+      break;
+    case kSoftwareCompositedResourceUsage:
+      resource_type_fallback_list = kSoftwareCompositedFallbackList;
+      list_length = arraysize(kSoftwareCompositedFallbackList);
+      break;
+    case kAcceleratedResourceUsage:
+      resource_type_fallback_list = kAcceleratedFallbackList;
+      list_length = arraysize(kAcceleratedFallbackList);
+      break;
+    case kAcceleratedCompositedResourceUsage:
+      resource_type_fallback_list = kAcceleratedCompositedFallbackList;
+      list_length = arraysize(kAcceleratedCompositedFallbackList);
+      break;
   }
 
   std::unique_ptr<CanvasResourceProvider> provider;
-  for (unsigned i = 0; i < resourceTypeFallbackListLength; i++) {
-    switch (resourceTypeFallbackList[i]) {
+  for (size_t i = 0; i < list_length; ++i) {
+    switch (resource_type_fallback_list[i]) {
       case kTextureGpuMemoryBufferResourceType:
         DCHECK(SharedGpuContext::IsGpuCompositingEnabled());
         if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
