@@ -147,7 +147,7 @@ Error BuildTokenBinding(TokenBindingType type,
   return OK;
 }
 
-TokenBinding::TokenBinding() {}
+TokenBinding::TokenBinding() = default;
 
 bool ParseTokenBindingMessage(base::StringPiece token_binding_message,
                               std::vector<TokenBinding>* token_bindings) {

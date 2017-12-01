@@ -53,7 +53,7 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
       : type_(type),
         password_delegate_(std::move(password_delegate)),
         key_(std::move(key)) {}
-  ~SSLPlatformKeyNSS() override {}
+  ~SSLPlatformKeyNSS() override = default;
 
   std::vector<uint16_t> GetAlgorithmPreferences() override {
     return SSLPrivateKey::DefaultAlgorithmPreferences(type_,

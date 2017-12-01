@@ -29,7 +29,7 @@ class TestSSLPlatformKey : public ThreadedSSLPrivateKey::Delegate {
   explicit TestSSLPlatformKey(bssl::UniquePtr<EVP_PKEY> key)
       : key_(std::move(key)) {}
 
-  ~TestSSLPlatformKey() override {}
+  ~TestSSLPlatformKey() override = default;
 
   std::vector<uint16_t> GetAlgorithmPreferences() override {
     return SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_id(key_.get()),

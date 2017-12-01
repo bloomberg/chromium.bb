@@ -50,7 +50,7 @@ void SavePrivateKeyAndQuitCallback(scoped_refptr<net::SSLPrivateKey>* out_key,
 
 class ClientCertStoreNSSTestDelegate {
  public:
-  ClientCertStoreNSSTestDelegate() {}
+  ClientCertStoreNSSTestDelegate() = default;
 
   bool SelectClientCerts(const CertificateList& input_certs,
                          const SSLCertRequestInfo& cert_request_info,

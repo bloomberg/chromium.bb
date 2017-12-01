@@ -44,7 +44,7 @@ class ThreadedSSLPrivateKey::Core
 
  private:
   friend class base::RefCountedThreadSafe<Core>;
-  ~Core() {}
+  ~Core() = default;
 
   std::unique_ptr<ThreadedSSLPrivateKey::Delegate> delegate_;
 };
@@ -73,6 +73,6 @@ void ThreadedSSLPrivateKey::Sign(uint16_t algorithm,
                  base::Owned(signature)));
 }
 
-ThreadedSSLPrivateKey::~ThreadedSSLPrivateKey() {}
+ThreadedSSLPrivateKey::~ThreadedSSLPrivateKey() = default;
 
 }  // namespace net

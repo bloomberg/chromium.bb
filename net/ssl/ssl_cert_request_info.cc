@@ -18,7 +18,6 @@ void SSLCertRequestInfo::Reset() {
   cert_key_types.clear();
 }
 
-SSLCertRequestInfo::~SSLCertRequestInfo() {
-}
+SSLCertRequestInfo::~SSLCertRequestInfo() = default;
 
 }  // namespace net

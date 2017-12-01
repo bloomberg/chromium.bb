@@ -90,7 +90,7 @@ class MockPersistentStore
   ChannelIDMap channel_ids_;
 };
 
-MockPersistentStore::MockPersistentStore() {}
+MockPersistentStore::MockPersistentStore() = default;
 
 void MockPersistentStore::Load(const LoadedCallback& loaded_callback) {
   std::unique_ptr<
@@ -122,7 +122,7 @@ void MockPersistentStore::SetForceKeepSessionState() {}
 
 void MockPersistentStore::Flush() {}
 
-MockPersistentStore::~MockPersistentStore() {}
+MockPersistentStore::~MockPersistentStore() = default;
 
 bool DomainEquals(const std::string& domain1, const std::string& domain2) {
   return domain1 == domain2;
