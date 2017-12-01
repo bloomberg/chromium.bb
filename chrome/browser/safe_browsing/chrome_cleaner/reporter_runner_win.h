@@ -111,6 +111,11 @@ class SwReporterInvocation {
   bool reporter_logs_upload_enabled() const;
   void set_reporter_logs_upload_enabled(bool reporter_logs_upload_enabled);
 
+  // Indicates if the invocation type allows logs to be uploaded by the
+  // cleaner process in scanning mode.
+  bool cleaner_logs_upload_enabled() const;
+  void set_cleaner_logs_upload_enabled(bool cleaner_logs_upload_enabled);
+
  private:
   base::CommandLine command_line_;
 
@@ -119,6 +124,7 @@ class SwReporterInvocation {
   std::string suffix_;
 
   bool reporter_logs_upload_enabled_ = false;
+  bool cleaner_logs_upload_enabled_ = false;
 };
 
 enum class SwReporterInvocationResult {

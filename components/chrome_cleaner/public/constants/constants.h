@@ -33,6 +33,11 @@ extern const char kChromeSystemInstallSwitch[];
 // The Chrome version string.
 extern const char kChromeVersionSwitch[];
 
+// Identify that the cleaner process in scanning mode is allowed to collect
+// logs. This should only be set if |kExecutionModeSwitch| is
+// ExecutionMode::kScanning.
+extern const char kWithScanningModeLogsSwitch[];
+
 // Indicates that crash reporting is enabled for the current user.
 extern const char kEnableCrashReportingSwitch[];
 

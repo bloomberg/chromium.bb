@@ -123,6 +123,11 @@ ChromeCleanerRunner::ChromeCleanerRunner(
       chrome_cleaner::kEngineSwitch,
       reporter_engine.empty() ? "1" : reporter_engine);
 
+  if (reporter_invocation.cleaner_logs_upload_enabled()) {
+    cleaner_command_line_.AppendSwitch(
+        chrome_cleaner::kWithScanningModeLogsSwitch);
+  }
+
   // If metrics is enabled, we can enable crash reporting in the Chrome Cleaner
   // process.
   if (metrics_status == ChromeMetricsStatus::kEnabled) {
