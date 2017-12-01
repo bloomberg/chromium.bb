@@ -12,9 +12,9 @@ Description:
 The OpenVR API supports HTC Vive and other headsets for VR.
 
 Local Modifications:
-Only contains a subset of the git repo necessary to build Chromium.  jsoncpp.cpp
-has been modified to remove exceptions.
-json.h has been modified to remove exceptions (delete "throw()").
+Only contains a subset of the git repo necessary to build Chromium.
+jsoncpp.cpp has been modified to replace two "throw" statements with invocations
+of JSON_FAIL_MESSAGE because "cannot use 'throw' with exceptions disabled".
 openvr.h has been modified to remove dllimport/dllexport when building a
 non-component build so this can be built as a static library.
 

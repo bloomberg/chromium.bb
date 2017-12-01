@@ -2593,9 +2593,9 @@ namespace Json {
 Exception::Exception(std::string const& msg)
   : msg_(msg)
 {}
-Exception::~Exception()
+Exception::~Exception() throw()
 {}
-char const* Exception::what() const
+char const* Exception::what() const throw()
 {
   return msg_.c_str();
 }
