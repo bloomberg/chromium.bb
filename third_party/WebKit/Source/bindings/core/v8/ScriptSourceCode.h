@@ -46,7 +46,6 @@ class CORE_EXPORT ScriptSourceCode final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  ScriptSourceCode();
   // We lose the encoding information from ScriptResource.
   // Not sure if that matters.
   explicit ScriptSourceCode(ScriptResource*);
