@@ -17,7 +17,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/testing/earl_grey/disabled_test_macros.h"
+#import "ios/testing/wait_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -39,6 +39,24 @@ void SimulateChromeOpenedEvent() {
   feature_engagement::TrackerFactory::GetForBrowserState(
       chrome_test_util::GetOriginalBrowserState())
       ->NotifyEvent(feature_engagement::events::kChromeOpened);
+}
+
+// Loads the FeatureEngagementTracker.
+void LoadFeatureEngagementTracker() {
+  ios::ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+
+  feature_engagement::TrackerFactory::GetInstance()->SetTestingFactory(
+      browserState, feature_engagement::CreateFeatureEngagementTracker);
+
+  feature_engagement::Tracker* tracker =
+      feature_engagement::TrackerFactory::GetForBrowserState(browserState);
+  GREYAssert(testing::WaitUntilConditionOrTimeout(
+                 testing::kWaitForFileOperationTimeout,
+                 ^{
+                   return tracker->IsInitialized();
+                 }),
+             @"Engagement Tracker did not load before timeout.");
 }
 
 // Enables the Badged Reading List help to be triggered for |feature_list|.
@@ -71,21 +89,16 @@ void EnableBadgedReadingListTriggering(
 
 // Verifies that the Badged Reading List feature shows when triggering
 // conditions are met.
-- (void)testBadgedReadingListFeatureShouldShow {
 // TODO(crbug.com/789943): This test is flaky on devices. Reenable it once it is
 // fixed.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Test disabled on device as it is flaky.");
-#endif
+- (void)FLAKY_testBadgedReadingListFeatureShouldShow {
   base::test::ScopedFeatureList scoped_feature_list;
 
   EnableBadgedReadingListTriggering(scoped_feature_list);
 
   // Ensure that the FeatureEngagementTracker picks up the new feature
   // configuration provided by |scoped_feature_list|.
-  feature_engagement::TrackerFactory::GetInstance()->SetTestingFactory(
-      chrome_test_util::GetOriginalBrowserState(),
-      feature_engagement::CreateFeatureEngagementTracker);
+  LoadFeatureEngagementTracker();
 
   // Ensure that Chrome has been launched enough times for the Badged Reading
   // List to appear.
@@ -108,9 +121,7 @@ void EnableBadgedReadingListTriggering(
 
   // Ensure that the FeatureEngagementTracker picks up the new feature
   // configuration provided by |scoped_feature_list|.
-  feature_engagement::TrackerFactory::GetInstance()->SetTestingFactory(
-      chrome_test_util::GetOriginalBrowserState(),
-      feature_engagement::CreateFeatureEngagementTracker);
+  LoadFeatureEngagementTracker();
 
   // Open Chrome just one time.
   SimulateChromeOpenedEvent();
