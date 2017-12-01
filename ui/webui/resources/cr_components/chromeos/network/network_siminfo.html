@@ -41,6 +41,14 @@
         min-width: 200px;
       }
 
+      .separator {
+        -webkit-border-start: var(--cr-separator-line);
+        -webkit-margin-end: var(--cr-section-padding);
+        -webkit-margin-start: var(--cr-section-padding);
+        flex-shrink: 0;
+        height: calc(var(--cr-section-min-height) - 9px);
+      }
+
       paper-toggle-button {
         -webkit-margin-start: var(--cr-button-edge-spacing);
       }
