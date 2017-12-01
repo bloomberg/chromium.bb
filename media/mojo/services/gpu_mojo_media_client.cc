@@ -92,12 +92,7 @@ GpuMojoMediaClient::GpuMojoMediaClient(
 
 GpuMojoMediaClient::~GpuMojoMediaClient() = default;
 
-void GpuMojoMediaClient::Initialize(
-    service_manager::Connector* connector,
-    service_manager::ServiceContextRefFactory* context_ref_factory) {
-  DCHECK(context_ref_factory);
-  context_ref_factory_ = context_ref_factory;
-}
+void GpuMojoMediaClient::Initialize(service_manager::Connector* connector) {}
 
 std::unique_ptr<AudioDecoder> GpuMojoMediaClient::CreateAudioDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
@@ -125,8 +120,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
           DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),
       android_overlay_factory_cb_, std::move(request_overlay_info_cb),
       base::MakeUnique<VideoFrameFactoryImpl>(gpu_task_runner_,
-                                              std::move(get_stub_cb)),
-      context_ref_factory_->CreateRef());
+                                              std::move(get_stub_cb)));
 #elif BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER)
   return base::MakeUnique<D3D11VideoDecoder>(
       gpu_task_runner_,

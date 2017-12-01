@@ -277,7 +277,6 @@ void GpuChildThread::BindServiceFactoryRequest(
 // static
 std::unique_ptr<media::AndroidOverlay> GpuChildThread::CreateAndroidOverlay(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    std::unique_ptr<service_manager::ServiceContextRef> context_ref,
     const base::UnguessableToken& routing_token,
     media::AndroidOverlayConfig config) {
   media::mojom::AndroidOverlayProviderPtr overlay_provider;
@@ -300,8 +299,7 @@ std::unique_ptr<media::AndroidOverlay> GpuChildThread::CreateAndroidOverlay(
   }
 
   return std::make_unique<media::MojoAndroidOverlay>(
-      std::move(overlay_provider), std::move(config), routing_token,
-      std::move(context_ref));
+      std::move(overlay_provider), std::move(config), routing_token);
 }
 #endif
 

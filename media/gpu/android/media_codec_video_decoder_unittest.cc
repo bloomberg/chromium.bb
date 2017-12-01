@@ -40,7 +40,6 @@ void OutputWithReleaseMailboxCb(VideoFrameFactory::ReleaseMailboxCB,
                                 const scoped_refptr<VideoFrame>&) {}
 
 std::unique_ptr<AndroidOverlay> CreateAndroidOverlayCb(
-    std::unique_ptr<service_manager::ServiceContextRef>,
     const base::UnguessableToken&,
     AndroidOverlayConfig) {
   return nullptr;
@@ -50,13 +49,6 @@ std::unique_ptr<AndroidOverlay> CreateAndroidOverlayCb(
 struct DestructionObservableMCVD : public DestructionObservable,
                                    public MediaCodecVideoDecoder {
   using MediaCodecVideoDecoder::MediaCodecVideoDecoder;
-};
-
-class MockServiceContextRef : public service_manager::ServiceContextRef {
- public:
-  std::unique_ptr<ServiceContextRef> Clone() override {
-    return base::MakeUnique<MockServiceContextRef>();
-  }
 };
 
 }  // namespace
@@ -152,8 +144,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
         base::Bind(&CreateAndroidOverlayCb),
         base::Bind(&MediaCodecVideoDecoderTest::RequestOverlayInfoCb,
                    base::Unretained(this)),
-        std::move(video_frame_factory),
-        base::MakeUnique<MockServiceContextRef>());
+        std::move(video_frame_factory));
     mcvd_.reset(observable_mcvd);
     mcvd_raw_ = observable_mcvd;
     destruction_observer_ = observable_mcvd->CreateDestructionObserver();

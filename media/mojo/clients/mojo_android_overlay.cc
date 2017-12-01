@@ -12,11 +12,8 @@ namespace media {
 MojoAndroidOverlay::MojoAndroidOverlay(
     mojom::AndroidOverlayProviderPtr provider_ptr,
     AndroidOverlayConfig config,
-    const base::UnguessableToken& routing_token,
-    std::unique_ptr<service_manager::ServiceContextRef> context_ref)
-    : config_(std::move(config)),
-      binding_(this),
-      context_ref_(std::move(context_ref)) {
+    const base::UnguessableToken& routing_token)
+    : config_(std::move(config)), binding_(this) {
   // Fill in details of |config| into |mojo_config|.  Our caller could do this
   // too, but since we want to retain |config_| anyway, we do it here.
   mojom::AndroidOverlayConfigPtr mojo_config =
