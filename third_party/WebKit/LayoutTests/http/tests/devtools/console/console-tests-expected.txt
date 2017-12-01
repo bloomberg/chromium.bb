@@ -13,9 +13,9 @@ console-tests.js:19 count: 2 console-message-wrapper console-from-api console-in
 console-tests.js:20 group console-message-wrapper console-group-title console-from-api console-info-level > console-message
 console-tests.js:22 1 2 3 console-message-wrapper console-from-api console-info-level > console-message
 console-tests.js:23 groupCollapsed console-message-wrapper console-group-title console-from-api console-info-level > console-message
-console-tests.js:35 1 console-message-wrapper console-from-api console-info-level > console-message
-console-tests.js:36 1 console-message-wrapper console-from-api console-info-level > console-message
-console-tests.js:37 1 console-message-wrapper console-from-api console-info-level > console-message
+console-tests.js:35 default: 1 console-message-wrapper console-from-api console-info-level > console-message
+console-tests.js:36 default: 2 console-message-wrapper console-from-api console-info-level > console-message
+console-tests.js:37 default: 3 console-message-wrapper console-from-api console-info-level > console-message
 console-tests.js:38 title: 1 console-message-wrapper console-from-api console-info-level > console-message
 console-tests.js:39 title: 2 console-message-wrapper console-from-api console-info-level > console-message
 console-tests.js:40 title: 3 console-message-wrapper console-from-api console-info-level > console-message
