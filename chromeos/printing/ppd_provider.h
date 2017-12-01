@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/version.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/printing/printer_configuration.h"
 
@@ -78,6 +79,26 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
     int usb_product_id = 0;
   };
 
+  // Defines the limitations on when we show a particular PPD
+  struct Restrictions {
+    // Minimum milestone for ChromeOS build
+    base::Version min_milestone = base::Version("0.0");
+
+    // Maximum milestone for ChomeOS build
+    base::Version max_milestone = base::Version("0.0");
+  };
+
+  struct ResolvedPpdReference {
+    // The name of the model of printer or printer line
+    std::string name;
+
+    // The limitations on this model
+    Restrictions restrictions;
+
+    // Correct PpdReferece to be used with this printer
+    Printer::PpdReference ppd_ref;
+  };
+
   // Result of a ResolvePpd() call.
   // If the result code is SUCCESS, then:
   //    string holds the contents of a PPD (that may or may not be gzipped).
@@ -96,8 +117,7 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
 
   // A list of printer names paired with the PpdReference that should be used
   // for that printer.
-  using ResolvedPrintersList =
-      std::vector<std::pair<std::string, Printer::PpdReference>>;
+  using ResolvedPrintersList = std::vector<ResolvedPpdReference>;
 
   // Result of a ResolvePrinters() call.  If the result code is SUCCESS, then
   // the vector contains a sorted list <model_name, PpdReference> tuples of all
@@ -128,6 +148,7 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
       const std::string& browser_locale,
       scoped_refptr<net::URLRequestContextGetter> url_context_getter,
       scoped_refptr<PpdCache> cache,
+      const base::Version& current_version,
       const Options& options = Options());
 
   // Get all manufacturers for which we have drivers.  Keys of the map will be

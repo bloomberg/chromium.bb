@@ -173,6 +173,69 @@ bool FetchFile(const GURL& url, std::string* file_contents) {
   return base::ReadFileToString(path, file_contents);
 }
 
+// Constructs and returns a printers' restrictions parsed form |dict|.
+PpdProvider::Restrictions ComputeRestrictions(const base::Value& dict) {
+  PpdProvider::Restrictions restrictions;
+
+  const base::Value* min_milestone =
+      dict.FindKeyOfType({"min_milestone"}, base::Value::Type::DOUBLE);
+  const base::Value* max_milestone =
+      dict.FindKeyOfType({"max_milestone"}, base::Value::Type::DOUBLE);
+
+  if (min_milestone)
+    restrictions.min_milestone =
+        base::Version(base::NumberToString(min_milestone->GetDouble()));
+  if (max_milestone)
+    restrictions.max_milestone =
+        base::Version(base::NumberToString(max_milestone->GetDouble()));
+
+  return restrictions;
+}
+
+// Returns true if this printer with these |restrictions| is permitted in the
+// |current_version|.
+bool IsPrinterPermitted(const PpdProvider::Restrictions& restrictions,
+                        const base::Version& current_version) {
+  if (restrictions.min_milestone != base::Version("0.0") &&
+      restrictions.min_milestone > current_version)
+    return false;
+
+  if (restrictions.max_milestone != base::Version("0.0") &&
+      restrictions.max_milestone < current_version)
+    return false;
+
+  return true;
+}
+
+// Modifies |printers| by removing any restricted printers excluded from the
+// current |version|, as judged by IsPrinterPermitted.
+void FilterRestrictedPpdReferences(PpdProvider::ResolvedPrintersList& printers,
+                                   const base::Version& version) {
+  auto it = std::partition(
+      printers.begin(), printers.end(),
+      [&version](const PpdProvider::ResolvedPpdReference& printer) -> bool {
+        return IsPrinterPermitted(printer.restrictions, version);
+      });
+
+  for (auto ij = it; ij != printers.end(); ++ij) {
+    VLOG(1) << "Limitations exclude this model: " << ij->name;
+  }
+
+  printers.erase(it, printers.end());
+}
+
+// The result fields from a metadata_v2 resolve printers request
+struct ResolvePrintersResponse {
+  // The name of the model of printer or printer line
+  std::string name;
+
+  // Cannonical name of this printer
+  std::string effective_make_and_model;
+
+  // The limitations on this model
+  PpdProvider::Restrictions restrictions;
+};
+
 struct ManufacturerMetadata {
   // Key used to look up the printer list on the server.  This is initially
   // populated.
@@ -180,7 +243,8 @@ struct ManufacturerMetadata {
 
   // Map from localized printer name to canonical-make-and-model string for
   // the given printer.  Populated on demand.
-  std::unique_ptr<std::unordered_map<std::string, std::string>> printers;
+  std::unique_ptr<std::unordered_map<std::string, ResolvePrintersResponse>>
+      printers;
 };
 
 // A queued request to download printer information for a manufacturer.
@@ -237,6 +301,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       const std::string& browser_locale,
       scoped_refptr<net::URLRequestContextGetter> url_context_getter,
       scoped_refptr<PpdCache> ppd_cache,
+      const base::Version& current_version,
       const PpdProvider::Options& options)
       : browser_locale_(browser_locale),
         url_context_getter_(url_context_getter),
@@ -244,6 +309,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
         disk_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
             {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+        version_(current_version),
         options_(options),
         weak_factory_(this) {}
 
@@ -529,7 +595,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   // Return the URL used to get a list of printers from the manufacturer |ref|.
   GURL GetPrintersURL(const std::string& ref) {
     return GURL(base::StringPrintf(
-        "%s/metadata/%s", options_.ppd_server_root.c_str(), ref.c_str()));
+        "%s/metadata_v2/%s", options_.ppd_server_root.c_str(), ref.c_str()));
   }
 
   // Return the URL used to get a ppd with the given filename.
@@ -701,9 +767,11 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   void OnPrintersFetchComplete() {
     CHECK(cached_metadata_.get() != nullptr);
     DCHECK(!printers_resolution_queue_.empty());
-    std::vector<std::pair<std::string, std::string>> contents;
+    std::vector<ResolvePrintersResponse> contents;
+
     PpdProvider::CallbackResultCode code =
-        ValidateAndParseJSONResponse(&contents);
+        ValidateAndParsePrintersJSON(&contents);
+
     if (code != PpdProvider::SUCCESS) {
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(printers_resolution_queue_.front().cb, code,
@@ -723,12 +791,15 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       // Create the printer map in the cache, and populate it.
       auto& manufacturer_metadata = it->second;
       CHECK(manufacturer_metadata.printers.get() == nullptr);
-      manufacturer_metadata.printers =
-          std::make_unique<std::unordered_map<std::string, std::string>>();
+      manufacturer_metadata.printers = base::MakeUnique<
+          std::unordered_map<std::string, ResolvePrintersResponse>>();
 
       for (const auto& entry : contents) {
-        manufacturer_metadata.printers->insert({entry.first, entry.second});
+        manufacturer_metadata.printers->insert(
+            {entry.name,
+             {entry.name, entry.effective_make_and_model, entry.restrictions}});
       }
+
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(printers_resolution_queue_.front().cb,
@@ -1081,8 +1152,8 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
     // [manufacturer], [model], [dictionary of metadata]}
     for (const auto& entry : *top_list) {
       if (!entry.is_list()) {
-        LOG(WARNING) << "Retrieved data in unexpected format. Data should be "
-                        "in list format";
+        LOG(ERROR) << "Retrieved data in unexpected format. Data should be "
+                      "in list format";
         return PpdProvider::INTERNAL_ERROR;
       }
 
@@ -1102,6 +1173,65 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
 
       contents->push_back(rir_entry);
     }
+    return PpdProvider::SUCCESS;
+  }
+
+  // For the metadata fetches that happens to be in the form of a JSON
+  // list-of-lists-of-2-strings and a dictionary of metadata (where the
+  // restrictions will be specified). This method attempts to parse a JSON
+  // reply from |fetcher| into |contents|.
+  // If parsed correctly, returns CallbackResultCode::SUCCESS. Else returns
+  // CallbackResultCode::FAILURE and clears |contents|.
+  PpdProvider::CallbackResultCode ValidateAndParsePrintersJSON(
+      std::vector<ResolvePrintersResponse>* contents) {
+    DCHECK(contents != NULL);
+    contents->clear();
+    std::string buffer;
+
+    auto fetch_result = ValidateAndGetResponseAsString(&buffer);
+    if (fetch_result != PpdProvider::SUCCESS) {
+      return fetch_result;
+    }
+
+    auto top_list = base::ListValue::From(base::JSONReader::Read(buffer));
+    if (top_list.get() == nullptr) {
+      return PpdProvider::INTERNAL_ERROR;
+    }
+
+    // Fetched data should be in form [[name], [canonical name],
+    // {restrictions}]
+    for (const auto& entry : *top_list) {
+      if (!entry.is_list()) {
+        LOG(ERROR) << "Retrieved data in unexpected format. Data should be "
+                      "in list format";
+        return PpdProvider::INTERNAL_ERROR;
+      }
+
+      const base::Value::ListStorage& list = entry.GetList();
+      if (list.size() < 2 || !list[0].is_string() || !list[1].is_string()) {
+        LOG(ERROR) << "Retrived data in unexpected format. Expecting List of "
+                      "2 strings, optionally followed by a dictionary";
+        return PpdProvider::INTERNAL_ERROR;
+      }
+
+      ResolvePrintersResponse rpr_entry;
+      rpr_entry.name = list[0].GetString();
+      rpr_entry.effective_make_and_model = list[1].GetString();
+
+      // Populate restrictions, if possible
+      if (list.size() >= 3) {
+        if (!list[2].is_dict()) {
+          LOG(ERROR) << "Retrived data in unexpected format. Expecting List of "
+                        "2 strings, optionally followed by a dictionary";
+          return PpdProvider::INTERNAL_ERROR;
+        }
+
+        rpr_entry.restrictions = ComputeRestrictions(list[2]);
+      }
+
+      contents->push_back(rpr_entry);
+    }
+
     return PpdProvider::SUCCESS;
   }
 
@@ -1128,15 +1258,15 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
     ret.reserve(meta.printers->size());
     for (const auto& entry : *meta.printers) {
       Printer::PpdReference ppd_ref;
-      ppd_ref.effective_make_and_model = entry.second;
-      ret.push_back({entry.first, ppd_ref});
+      ppd_ref.effective_make_and_model = entry.second.effective_make_and_model;
+      ret.push_back({entry.first, entry.second.restrictions, ppd_ref});
     }
     // TODO(justincarlson) -- this should be a localization-aware sort.
     sort(ret.begin(), ret.end(),
-         [](const std::pair<std::string, Printer::PpdReference>& a,
-            const std::pair<std::string, Printer::PpdReference>& b) -> bool {
-           return a.first < b.first;
-         });
+         [](const ResolvedPpdReference& a,
+            const ResolvedPpdReference& b) -> bool { return a.name < b.name; });
+
+    FilterRestrictedPpdReferences(ret, version_);
     return ret;
   }
 
@@ -1221,6 +1351,9 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   // Where to run disk operations.
   scoped_refptr<base::SequencedTaskRunner> disk_task_runner_;
 
+  // Current version used to filter restricted ppds
+  base::Version version_;
+
   // Construction-time options, immutable.
   const PpdProvider::Options options_;
 
@@ -1242,8 +1375,9 @@ scoped_refptr<PpdProvider> PpdProvider::Create(
     const std::string& browser_locale,
     scoped_refptr<net::URLRequestContextGetter> url_context_getter,
     scoped_refptr<PpdCache> ppd_cache,
+    const base::Version& current_version,
     const PpdProvider::Options& options) {
   return scoped_refptr<PpdProvider>(new PpdProviderImpl(
-      browser_locale, url_context_getter, ppd_cache, options));
+      browser_locale, url_context_getter, ppd_cache, current_version, options));
 }
 }  // namespace chromeos
