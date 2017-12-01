@@ -315,7 +315,6 @@ void PaymentRequestState::SetSelectedShippingProfile(
   // The user should not be able to click on pay until the callback from the
   // merchant.
   is_waiting_for_merchant_validation_ = true;
-  UpdateIsReadyToPayAndNotifyObservers();
 
   // Start the normalization of the shipping address.
   payment_request_delegate_->GetAddressNormalizer()->NormalizeAddressAsync(
