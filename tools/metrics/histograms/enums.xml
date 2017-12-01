@@ -29716,7 +29716,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="487"
       label="682747f8ba621b87cdd3bc295ed5cabce722a1c0c0363d1d68b38928d2787f1e"/>
   <int value="488"
-      label="682747f8ba621b87cdd3bc295ed5cabce722a1c0c0363d1d68b38928d2787f1e"/>
+      label="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"/>
+  <int value="489"
+      label="282fb5cfbaf01518d9704de7884d7a25ff01cf882e994290d5995d5eb6c44988"/>
+  <int value="490"
+      label="fd371bea9755ff60c8828c849b8e5215de532d61b009855fa0ad630d90eef82e"/>
 </enum>
 
 <enum name="Network3GGobiError">
