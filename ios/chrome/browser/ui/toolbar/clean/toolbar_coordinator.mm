@@ -43,6 +43,7 @@
 #import "ios/chrome/browser/ui/voice/text_to_speech_player.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/common/material_timing.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/web/public/navigation_item.h"
@@ -330,16 +331,12 @@
 
 - (void)locationBarHasBecomeFirstResponder {
   [self.delegate locationBarDidBecomeFirstResponder];
-  if (@available(iOS 10, *)) {
-    [self.toolbarViewController expandOmniboxAnimated:YES];
-  }
+  [self expandOmniboxAnimated:YES];
 }
 
 - (void)locationBarHasResignedFirstResponder {
   [self.delegate locationBarDidResignFirstResponder];
-  if (@available(iOS 10, *)) {
-    [self.toolbarViewController contractOmnibox];
-  }
+  [self contractOmnibox];
 }
 
 - (void)locationBarBeganEdit {
@@ -379,7 +376,7 @@
     model->OnSetFocus(false);
     model->SetCaretVisibility(false);
   } else {
-    [self.toolbarViewController expandOmniboxAnimated:NO];
+    [self expandOmniboxAnimated:NO];
   }
 
   [self focusOmnibox];
@@ -519,6 +516,39 @@
                  transition:transition
           rendererInitiated:NO];
   }
+}
+
+// Animates |_toolbar| and |_locationBarView| for omnibox expansion. If
+// |animated| is NO the animation will happen instantly.
+- (void)expandOmniboxAnimated:(BOOL)animated {
+  // There's no Toolbar expanding on iPad.
+  if (IsIPadIdiom())
+    return;
+  NSTimeInterval duration = animated ? ios::material::kDuration1 : 0;
+
+  UIViewPropertyAnimator* animator = [[UIViewPropertyAnimator alloc]
+      initWithDuration:duration
+                 curve:UIViewAnimationCurveEaseInOut
+            animations:^{
+            }];
+  [self.locationBarView addExpandOmniboxAnimations:animator];
+  [self.toolbarViewController addToolbarExpansionAnimations:animator];
+  [animator startAnimation];
+}
+
+// Animates |_toolbar| and |_locationBarView| for omnibox contraction.
+- (void)contractOmnibox {
+  // There's no Toolbar expanding on iPad, thus no need to contract.
+  if (IsIPadIdiom())
+    return;
+  UIViewPropertyAnimator* animator = [[UIViewPropertyAnimator alloc]
+      initWithDuration:ios::material::kDuration1
+                 curve:UIViewAnimationCurveEaseInOut
+            animations:^{
+            }];
+  [self.locationBarView addContractOmniboxAnimations:animator];
+  [self.toolbarViewController addToolbarContractionAnimations:animator];
+  [animator startAnimation];
 }
 
 @end
