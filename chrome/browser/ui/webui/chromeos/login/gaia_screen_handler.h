@@ -58,9 +58,11 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   void LoadGaia(const GaiaContext& context);
 
-  // Callback that loads GAIA after version information has been retrieved.
-  void LoadGaiaWithVersion(const GaiaContext& context,
-                           const std::string& platform_version);
+  // Callback that loads GAIA after version and stat consent information has
+  // been retrieved.
+  void LoadGaiaWithVersionAndConsent(const GaiaContext& context,
+                                     const std::string* platform_version,
+                                     const bool* collect_stats_consent);
 
   // Sends request to reload Gaia. If |force_reload| is true, request
   // will be sent in any case, otherwise it will be sent only when Gaia is
