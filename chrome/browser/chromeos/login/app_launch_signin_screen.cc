@@ -126,6 +126,10 @@ void AppLaunchSigninScreen::ShowKioskAutolaunchScreen() {
   NOTREACHED();
 }
 
+void AppLaunchSigninScreen::ShowUpdateRequiredScreen() {
+  NOTREACHED();
+}
+
 void AppLaunchSigninScreen::ShowWrongHWIDScreen() {
   NOTREACHED();
 }

@@ -48,6 +48,7 @@ enum class OobeScreen : unsigned int {
   SCREEN_ENCRYPTION_MIGRATION,
   SCREEN_VOICE_INTERACTION_VALUE_PROP,
   SCREEN_WAIT_FOR_CONTAINER_READY,
+  SCREEN_UPDATE_REQUIRED,
 
   // Special "first screen" that initiates login flow.
   SCREEN_SPECIAL_LOGIN,

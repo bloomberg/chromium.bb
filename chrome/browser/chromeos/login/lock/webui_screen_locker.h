@@ -99,6 +99,7 @@ class WebUIScreenLocker : public WebUILoginView,
   void OnStartKioskEnableScreen() override;
   void OnStartKioskAutolaunchScreen() override;
   void ShowWrongHWIDScreen() override;
+  void ShowUpdateRequiredScreen() override;
   void ResetAutoLoginTimer() override;
   void ResyncUserData() override;
   void SetDisplayEmail(const std::string& email) override;

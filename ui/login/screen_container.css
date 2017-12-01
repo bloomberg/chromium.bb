@@ -88,6 +88,7 @@
 #oobe.terms-of-service #inner-container,
 #oobe.arc-tos #inner-container,
 #oobe.update #inner-container,
+#oobe.update-required #inner-container,
 #oobe.user-image #inner-container,
 #oobe.wrong-hwid #inner-container,
 #oobe.unrecoverable-cryptohome-error #inner-container {
@@ -176,6 +177,7 @@
 #terms-of-service-dot,
 #arc-tos-dot,
 #tpm-error-message-dot,
+#update-required-dot,
 #wrong-hwid-dot,
 #unrecoverable-cryptohome-error-dot {
   display: none;

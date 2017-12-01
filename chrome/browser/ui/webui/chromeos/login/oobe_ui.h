@@ -58,6 +58,7 @@ class TermsOfServiceScreenView;
 class UserBoardView;
 class UserImageView;
 class UpdateView;
+class UpdateRequiredView;
 class VoiceInteractionValuePropScreenView;
 class WaitForContainerReadyScreenView;
 class WrongHWIDScreenView;
@@ -119,6 +120,7 @@ class OobeUI : public content::WebUIController,
   EncryptionMigrationScreenView* GetEncryptionMigrationScreenView();
   VoiceInteractionValuePropScreenView* GetVoiceInteractionValuePropScreenView();
   WaitForContainerReadyScreenView* GetWaitForContainerReadyScreenView();
+  UpdateRequiredView* GetUpdateRequiredScreenView();
   GaiaView* GetGaiaScreenView();
   UserBoardView* GetUserBoardView();
 

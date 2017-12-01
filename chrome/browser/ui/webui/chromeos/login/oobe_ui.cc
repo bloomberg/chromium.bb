@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_board_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
@@ -341,6 +342,8 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   AddScreenHandler(base::MakeUnique<WaitForContainerReadyScreenHandler>());
 
+  AddScreenHandler(base::MakeUnique<UpdateRequiredScreenHandler>());
+
   // Initialize KioskAppMenuHandler. Note that it is NOT a screen handler.
   auto kiosk_app_menu_handler =
       base::MakeUnique<KioskAppMenuHandler>(network_state_informer_);
@@ -462,6 +465,10 @@ OobeUI::GetVoiceInteractionValuePropScreenView() {
 
 WaitForContainerReadyScreenView* OobeUI::GetWaitForContainerReadyScreenView() {
   return GetView<WaitForContainerReadyScreenHandler>();
+}
+
+UpdateRequiredView* OobeUI::GetUpdateRequiredScreenView() {
+  return GetView<UpdateRequiredScreenHandler>();
 }
 
 UserImageView* OobeUI::GetUserImageView() {
