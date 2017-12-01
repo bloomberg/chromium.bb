@@ -333,6 +333,9 @@ typedef struct RD_COUNTS {
   int global_motion_used[TOTAL_REFS_PER_FRAME];
   int single_ref_used_flag;
   int compound_ref_used_flag;
+#if CONFIG_EXT_SKIP
+  int skip_mode_used_flag;
+#endif  // CONFIG_EXT_SKIP
 } RD_COUNTS;
 
 typedef struct ThreadData {

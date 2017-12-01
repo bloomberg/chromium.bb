@@ -25,6 +25,9 @@ static void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
   td->rd_counts.compound_ref_used_flag |=
       td_t->rd_counts.compound_ref_used_flag;
   td->rd_counts.single_ref_used_flag |= td_t->rd_counts.single_ref_used_flag;
+#if CONFIG_EXT_SKIP
+  td->rd_counts.skip_mode_used_flag |= td_t->rd_counts.skip_mode_used_flag;
+#endif  // CONFIG_EXT_SKIP
 }
 
 static int enc_worker_hook(EncWorkerData *const thread_data, void *unused) {

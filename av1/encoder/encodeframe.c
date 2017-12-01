@@ -1096,6 +1096,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 
 #if CONFIG_EXT_SKIP
     if (mbmi->skip_mode) {
+      rdc->skip_mode_used_flag = 1;
       if (cm->reference_mode == REFERENCE_MODE_SELECT) {
         assert(has_second_ref(mbmi));
         rdc->compound_ref_used_flag = 1;
@@ -4427,6 +4428,9 @@ void av1_encode_frame(AV1_COMP *cpi) {
 
     rdc->single_ref_used_flag = 0;
     rdc->compound_ref_used_flag = 0;
+#if CONFIG_EXT_SKIP
+    rdc->skip_mode_used_flag = 0;
+#endif  // CONFIG_EXT_SKIP
 
     encode_frame_internal(cpi);
 
@@ -4447,6 +4451,11 @@ void av1_encode_frame(AV1_COMP *cpi) {
       }
     }
     make_consistent_compound_tools(cm);
+#if CONFIG_EXT_SKIP
+    if (frame_is_intra_only(cm) || cm->reference_mode == SINGLE_REFERENCE ||
+        rdc->skip_mode_used_flag == 0)
+      cm->skip_mode_flag = 0;
+#endif  // CONFIG_EXT_SKIP
 
 #if CONFIG_EXT_TILE
     if (!cm->large_scale_tile) {
