@@ -4570,7 +4570,7 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
   const int bh = block_size_high[bsize];
 
   // Hashing is performed only for square TX sizes larger than TX_4X4
-  if (max_square_tx_size < TX_8X8 || bw != bh) return 0;
+  if (max_square_tx_size < TX_8X8) return 0;
 
   const int bw_mi = mi_size_wide[bsize];
   const int diff_stride = bw;
@@ -4584,13 +4584,14 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
   int cur_rd_info_idx = 0;
   int cur_tx_depth = 0;
   uint8_t parent_idx_buf[MAX_MIB_SIZE * MAX_MIB_SIZE] = { 0 };
+  uint8_t child_idx_buf[MAX_MIB_SIZE * MAX_MIB_SIZE] = { 0 };
 
-  int cur_tx_size = max_txsize_rect_lookup[1][bsize];
+  TX_SIZE cur_tx_size = max_txsize_rect_lookup[1][bsize];
   while (cur_tx_depth <= MAX_VARTX_DEPTH) {
     const int cur_tx_bw = tx_size_wide[cur_tx_size];
     const int cur_tx_bh = tx_size_high[cur_tx_size];
     if (cur_tx_bw < 8 || cur_tx_bh < 8) break;
-
+    const TX_SIZE next_tx_size = sub_tx_size_map[1][cur_tx_size];
     for (int row = 0; row < bh; row += cur_tx_bh) {
       for (int col = 0; col < bw; col += cur_tx_bw) {
         if (cur_tx_bw != cur_tx_bh) {
@@ -4626,26 +4627,38 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
 
         // Update the output quadtree RD info structure.
         av1_zero(dst_rd_info[cur_rd_info_idx].children);
-        const int block_mi_row = row / MI_SIZE;
-        const int block_mi_col = col / MI_SIZE;
-        if (cur_tx_depth > 0) {
-          const int y_odd = (row / cur_tx_bh) % 2;
-          const int x_odd = (col / cur_tx_bw) % 2;
-          const int child_idx = y_odd ? (x_odd ? 3 : 2) : (x_odd ? 1 : 0);
-          const int mi_index = block_mi_row * bw_mi + block_mi_col;
+        const int this_mi_row = row / MI_SIZE;
+        const int this_mi_col = col / MI_SIZE;
+        if (cur_tx_depth > 0) {  // Set up child pointers.
+          const int mi_index = this_mi_row * bw_mi + this_mi_col;
+          const int child_idx = child_idx_buf[mi_index];
+          assert(child_idx < 4);
           dst_rd_info[parent_idx_buf[mi_index]].children[child_idx] =
               &dst_rd_info[cur_rd_info_idx];
         }
-        const int tx_bh_mi = cur_tx_bh / MI_SIZE;
-        const int tx_bw_mi = cur_tx_bw / MI_SIZE;
-        for (int i = block_mi_row; i < block_mi_row + tx_bh_mi; ++i) {
-          memset(parent_idx_buf + i * bw_mi + block_mi_col, cur_rd_info_idx,
-                 tx_bw_mi);
+        if (cur_tx_depth < MAX_VARTX_DEPTH) {  // Set up parent and child idx.
+          const int tx_bh_mi = cur_tx_bh / MI_SIZE;
+          const int tx_bw_mi = cur_tx_bw / MI_SIZE;
+          for (int i = this_mi_row; i < this_mi_row + tx_bh_mi; ++i) {
+            memset(parent_idx_buf + i * bw_mi + this_mi_col, cur_rd_info_idx,
+                   tx_bw_mi);
+          }
+          int child_idx = 0;
+          const int next_tx_bh_mi = tx_size_wide_unit[next_tx_size];
+          const int next_tx_bw_mi = tx_size_wide_unit[next_tx_size];
+          for (int i = this_mi_row; i < this_mi_row + tx_bh_mi;
+               i += next_tx_bh_mi) {
+            for (int j = this_mi_col; j < this_mi_col + tx_bw_mi;
+                 j += next_tx_bw_mi) {
+              assert(child_idx < 4);
+              child_idx_buf[i * bw_mi + j] = child_idx++;
+            }
+          }
         }
         ++cur_rd_info_idx;
       }
     }
-    cur_tx_size = sub_tx_size_map[1][cur_tx_size];
+    cur_tx_size = next_tx_size;
     ++cur_tx_depth;
   }
   return 1;
