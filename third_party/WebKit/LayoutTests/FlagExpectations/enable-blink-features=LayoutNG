@@ -50,6 +50,8 @@ crbug.com/591099 fast/text/selection/atsui-kerning-and-ligatures.html [ Failure 
 # Non-interoperable behavior not worth to fix.
 crbug.com/591099 fast/text/apply-start-width-after-skipped-text.html [ Skip ]
 
+crbug.com/714962 intersection-observer/text-target.html [ Failure ]
+
 # New passes
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-021.html [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes/inline-block-alignment-003.xht [ Pass ]
@@ -8096,6 +8098,7 @@ crbug.com/591099 virtual/layout_ng/fast/block/margin-collapse/self-collapsing-co
 crbug.com/591099 virtual/layout_ng/overflow/overflow-basic-003.html [ Pass ]
 crbug.com/591099 virtual/layout_ng/overflow/overflow-bug-chrome-ng-001.html [ Pass ]
 crbug.com/591099 virtual/layout_ng_paint/fast/inline/inline-box-adjust-position-crash.html [ Pass ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/drawStyledEmptyInlinesWithWS.html [ Failure ]
 crbug.com/591099 virtual/mojo-blobs/ [ Skip ]
 crbug.com/591099 virtual/mojo-loading/ [ Skip ]
 crbug.com/591099 virtual/mojo-loading/http/tests/feature-policy/fullscreen-disabled.php [ Pass ]

@@ -628,7 +628,7 @@ crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-offsetLeft-relpos.ht
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/001.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/br-text-decoration.html [ Crash Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/continuation-outlines-with-layers-2.html [ Failure ]
-crbug.com/714962 [ Mac ] virtual/layout_ng_paint/fast/inline/drawStyledEmptyInlinesWithWS.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/drawStyledEmptyInlinesWithWS.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/emptyInlinesWithinLists.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background-long-image.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background-repeat-x.html [ Failure ]
