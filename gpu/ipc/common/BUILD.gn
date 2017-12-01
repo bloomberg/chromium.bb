@@ -121,7 +121,7 @@ source_set("ipc_common_sources") {
     ]
   }
 
-  if (is_mac || is_android) {
+  if (is_android) {
     sources += [
       "gpu_surface_lookup.cc",
       "gpu_surface_lookup.h",

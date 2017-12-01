@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/mojo/buffer_types_struct_traits.h"
@@ -18,7 +19,7 @@ namespace gfx {
 namespace {
 
 gfx::AcceleratedWidget castToAcceleratedWidget(int i) {
-#if defined(USE_OZONE) || defined(USE_X11)
+#if defined(USE_OZONE) || defined(USE_X11) || defined(OS_MACOSX)
   return static_cast<gfx::AcceleratedWidget>(i);
 #else
   return reinterpret_cast<gfx::AcceleratedWidget>(i);

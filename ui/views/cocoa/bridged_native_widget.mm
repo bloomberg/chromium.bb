@@ -1063,7 +1063,7 @@ void BridgedNativeWidget::OnShowAnimationComplete() {
 
 ui::InputMethod* BridgedNativeWidget::GetInputMethod() {
   if (!input_method_) {
-    input_method_ = ui::CreateInputMethod(this, nil);
+    input_method_ = ui::CreateInputMethod(this, gfx::kNullAcceleratedWidget);
     // For now, use always-focused mode on Mac for the input method.
     // TODO(tapted): Move this to OnWindowKeyStatusChangedTo() and balance.
     input_method_->OnFocus();

@@ -13,7 +13,7 @@ namespace {
 
 TEST(SoftwareOutputDeviceMacTest, Basics) {
   std::unique_ptr<SoftwareOutputDeviceMac> device(
-      new SoftwareOutputDeviceMac(nullptr));
+      new SoftwareOutputDeviceMac(gfx::kNullAcceleratedWidget));
   gfx::Size pixel_size(512, 512);
   float scale_factor = 1;
 
