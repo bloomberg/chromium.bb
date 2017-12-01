@@ -17,6 +17,13 @@ enum UiElementType {
   kTypeButtonForeground,
   kTypeButtonHitTarget,
   kTypeScaledDepthAdjuster,
+  kTypeOmniboxSuggestionBackground,
+  kTypeOmniboxSuggestionLayout,
+  kTypeOmniboxSuggestionTextLayout,
+  kTypeOmniboxSuggestionIconField,
+  kTypeOmniboxSuggestionIcon,
+  kTypeOmniboxSuggestionContentText,
+  kTypeOmniboxSuggestionDescriptionText,
 
   // This must be last.
   kNumUiElementTypes,

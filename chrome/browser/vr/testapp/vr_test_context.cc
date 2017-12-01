@@ -316,9 +316,12 @@ void VrTestContext::CreateFakeOmniboxSuggestions() {
   for (int i = 0; i < num_suggestions; i++) {
     result->suggestions.emplace_back(OmniboxSuggestion(
         base::UTF8ToUTF16("Suggestion ") + base::IntToString16(i + 1),
-        base::UTF8ToUTF16("Description text"),
+        base::UTF8ToUTF16(
+            "Very lengthy description of the suggestion that would wrap "
+            "if not truncated through some other means."),
         AutocompleteMatch::Type::VOICE_SUGGEST, GURL("http://www.test.com/")));
   }
+  model_->omnibox_input_active = true;
   ui_->SetOmniboxSuggestions(std::move(result));
 }
 

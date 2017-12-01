@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VR_ELEMENTS_SUGGESTION_H_
 #define CHROME_BROWSER_VR_ELEMENTS_SUGGESTION_H_
 
-#include "chrome/browser/vr/elements/linear_layout.h"
+#include "chrome/browser/vr/elements/ui_element.h"
 #include "url/gurl.h"
 
 namespace vr {
@@ -15,7 +15,7 @@ namespace vr {
 // to bind both necessitates lambda capture, which base::Bind cannot do. This
 // workaround simplifies the problem. If UI elements gain the ability to use the
 // VR UI to browser interface, we could eliminate this class.
-class Suggestion : public LinearLayout {
+class Suggestion : public UiElement {
  public:
   explicit Suggestion(base::Callback<void(GURL)> navigate_callback);
   ~Suggestion() override;

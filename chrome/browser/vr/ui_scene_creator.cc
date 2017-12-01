@@ -81,31 +81,67 @@ void OnSuggestionModelAdded(UiScene* scene,
                             Model* model,
                             SuggestionBinding* element_binding) {
   auto icon = base::MakeUnique<VectorIcon>(100);
-  icon->SetVisible(true);
-  icon->SetSize(kSuggestionIconSize, kSuggestionIconSize);
   icon->set_draw_phase(kPhaseForeground);
+  icon->set_type(kTypeOmniboxSuggestionIcon);
+  icon->set_hit_testable(false);
+  icon->SetSize(kSuggestionIconSizeDMM, kSuggestionIconSizeDMM);
+  BindColor(model, icon.get(), &ColorScheme::omnibox_icon,
+            &VectorIcon::SetColor);
   VectorIcon* p_icon = icon.get();
 
-  auto content_text = base::MakeUnique<Text>(512, kSuggestionContentTextHeight);
+  auto icon_box = base::MakeUnique<UiElement>();
+  icon_box->set_draw_phase(kPhaseNone);
+  icon_box->set_type(kTypeOmniboxSuggestionIconField);
+  icon_box->SetSize(kSuggestionIconFieldWidthDMM, kSuggestionHeightDMM);
+  icon_box->AddChild(std::move(icon));
+
+  auto content_text =
+      base::MakeUnique<Text>(1024, kSuggestionContentTextHeightDMM);
   content_text->set_draw_phase(kPhaseForeground);
-  content_text->SetVisible(true);
-  content_text->SetSize(kSuggestionTextFieldWidth, 0);
+  content_text->set_type(kTypeOmniboxSuggestionContentText);
+  content_text->SetSize(kSuggestionTextFieldWidthDMM, 0);
   content_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
+  content_text->SetMultiLine(false);
+  BindColor(model, content_text.get(), &ColorScheme::omnibox_suggestion_content,
+            &Text::SetColor);
   Text* p_content_text = content_text.get();
 
   auto description_text =
-      base::MakeUnique<Text>(512, kSuggestionDescriptionTextHeight);
-  description_text->SetSize(kSuggestionTextFieldWidth, 0);
+      base::MakeUnique<Text>(1024, kSuggestionDescriptionTextHeightDMM);
   description_text->set_draw_phase(kPhaseForeground);
-  description_text->SetVisible(true);
+  description_text->set_type(kTypeOmniboxSuggestionDescriptionText);
+  description_text->SetSize(kSuggestionTextFieldWidthDMM, 0);
   description_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
+  description_text->SetMultiLine(false);
+  BindColor(model, description_text.get(),
+            &ColorScheme::omnibox_suggestion_description, &Text::SetColor);
   Text* p_description_text = description_text.get();
 
   auto text_layout = base::MakeUnique<LinearLayout>(LinearLayout::kDown);
-  text_layout->set_margin(kSuggestionLineGap);
+  text_layout->set_type(kTypeOmniboxSuggestionTextLayout);
+  text_layout->set_margin(kSuggestionLineGapDMM);
   text_layout->AddChild(std::move(content_text));
   text_layout->AddChild(std::move(description_text));
   text_layout->SetVisible(true);
+
+  auto right_margin = base::MakeUnique<UiElement>();
+  right_margin->set_draw_phase(kPhaseNone);
+  right_margin->SetSize(kSuggestionRightMarginDMM, kSuggestionHeightDMM);
+
+  auto suggestion_layout = base::MakeUnique<LinearLayout>(LinearLayout::kRight);
+  suggestion_layout->set_type(kTypeOmniboxSuggestionLayout);
+  suggestion_layout->AddChild(std::move(icon_box));
+  suggestion_layout->AddChild(std::move(text_layout));
+  suggestion_layout->AddChild(std::move(right_margin));
+
+  auto background = base::MakeUnique<Rect>();
+  background->set_type(kTypeOmniboxSuggestionBackground);
+  background->set_draw_phase(kPhaseForeground);
+  background->set_bounds_contain_children(true);
+  background->SetColor(SK_ColorGREEN);
+  background->AddChild(std::move(suggestion_layout));
+  BindColor(model, background.get(), &ColorScheme::omnibox_background,
+            &Rect::SetColor);
 
   auto suggestion = base::MakeUnique<Suggestion>(base::Bind(
       [](UiBrowserInterface* browser, Model* m, GURL gurl) {
@@ -113,14 +149,8 @@ void OnSuggestionModelAdded(UiScene* scene,
         m->omnibox_input_active = false;
       },
       base::Unretained(browser), base::Unretained(model)));
-
-  suggestion->set_margin(kSuggestionIconGap);
-  suggestion->SetVisible(true);
-  suggestion->AddChild(std::move(icon));
-  suggestion->AddChild(std::move(text_layout));
-  Suggestion* p_suggestion = suggestion.get();
-
-  element_binding->set_view(suggestion.get());
+  suggestion->set_bounds_contain_children(true);
+  suggestion->AddChild(std::move(background));
 
   element_binding->bindings().push_back(
       VR_BIND_FUNC(base::string16, SuggestionBinding, element_binding,
@@ -134,8 +164,9 @@ void OnSuggestionModelAdded(UiScene* scene,
               SetIcon(AutocompleteMatch::TypeToVectorIcon(value))));
   element_binding->bindings().push_back(VR_BIND_FUNC(
       GURL, SuggestionBinding, element_binding, model()->destination,
-      Suggestion, p_suggestion, set_destination));
+      Suggestion, suggestion.get(), set_destination));
 
+  element_binding->set_view(suggestion.get());
   scene->AddUiElement(kOmniboxSuggestions, std::move(suggestion));
 }
 
@@ -1004,18 +1035,19 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_root->set_draw_phase(kPhaseNone);
   omnibox_root->SetVisible(false);
   omnibox_root->set_hit_testable(false);
-  omnibox_root->SetTranslate(0, kUrlBarVerticalOffset, -kUrlBarDistance);
   omnibox_root->SetTransitionedProperties({OPACITY});
   omnibox_root->AddBinding(VR_BIND_FUNC(bool, Model, model_,
                                         omnibox_input_active, UiElement,
                                         omnibox_root.get(), SetVisible));
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(omnibox_root));
+
+  auto scaler = base::MakeUnique<ScaledDepthAdjuster>(kUrlBarDistance);
+  scaler->AddChild(std::move(omnibox_root));
+  scene_->AddUiElement(k2dBrowsingRoot, std::move(scaler));
 
   auto omnibox_container = base::MakeUnique<Rect>();
   omnibox_container->set_name(kOmniboxContainer);
   omnibox_container->set_draw_phase(kPhaseForeground);
-  omnibox_container->SetSize(kOmniboxContainerWidth, kOmniboxContainerHeight);
-  omnibox_container->set_corner_radius(kOmniboxContainerCornerRadius);
+  omnibox_container->SetSize(kOmniboxWidthDMM, kOmniboxHeightDMM);
   omnibox_container->SetColor(SK_ColorWHITE);
   omnibox_container->SetTransitionedProperties({TRANSFORM});
   omnibox_container->AddBinding(base::MakeUnique<Binding<bool>>(
@@ -1023,16 +1055,22 @@ void UiSceneCreator::CreateOmnibox() {
                  base::Unretained(model_)),
       base::Bind(
           [](UiElement* e, const bool& v) {
-            float y_offset = v ? kOmniboxContainerVeriticalOffset : 0;
+            float y_offset = v ? kOmniboxVerticalOffsetDMM : 0;
             e->SetTranslate(0, y_offset, 0);
           },
           omnibox_container.get())));
   scene_->AddUiElement(kOmniboxRoot, std::move(omnibox_container));
 
-  auto omnibox_text_field = base::MakeUnique<TextInput>(
-      512, kOmniboxTextHeight, kSuggestionTextFieldWidth);
+  float width = kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM;
+  auto omnibox_text_field =
+      base::MakeUnique<TextInput>(1024, kOmniboxTextHeightDMM, width);
+  omnibox_text_field->SetSize(width, 0);
   omnibox_text_field->set_name(kOmniboxTextField);
   omnibox_text_field->set_draw_phase(kPhaseForeground);
+  omnibox_text_field->set_x_anchoring(LEFT);
+  omnibox_text_field->set_x_centering(LEFT);
+  omnibox_text_field->SetTranslate(kOmniboxTextMarginDMM, 0, 0);
+
   omnibox_text_field->SetTextChangedCallback(base::Bind(
       &UiBrowserInterface::StartAutocomplete, base::Unretained(browser_)));
   scene_->AddUiElement(kOmniboxContainer, std::move(omnibox_text_field));
@@ -1042,10 +1080,10 @@ void UiSceneCreator::CreateOmnibox() {
       base::Bind([](Model* m) { m->omnibox_input_active = false; },
                  base::Unretained(model_)),
       vector_icons::kClose16Icon);
-  close_button->SetSize(kCloseButtonWidth, kCloseButtonHeight);
-  close_button->set_hover_offset(kButtonZOffsetHoverDMM * kCloseButtonDistance);
-  close_button->SetTranslate(0, kOmniboxCloseButtonVerticalOffset, 0);
-  close_button->SetSize(kCloseButtonWidth, kCloseButtonHeight);
+  close_button->SetSize(kOmniboxCloseButtonDiameterDMM,
+                        kOmniboxCloseButtonDiameterDMM);
+  close_button->SetTranslate(0, kOmniboxCloseButtonVerticalOffsetDMM, 0);
+  close_button->set_hover_offset(kButtonZOffsetHoverDMM);
   BindButtonColors(model_, close_button.get(), &ColorScheme::button_colors,
                    &Button::SetButtonColors);
   scene_->AddUiElement(kOmniboxContainer, std::move(close_button));
@@ -1060,11 +1098,13 @@ void UiSceneCreator::CreateOmnibox() {
   auto suggestions_layout = base::MakeUnique<LinearLayout>(LinearLayout::kUp);
   suggestions_layout->set_name(kOmniboxSuggestions);
   suggestions_layout->set_draw_phase(kPhaseNone);
+  suggestions_layout->set_hit_testable(false);
   suggestions_layout->set_y_anchoring(TOP);
   suggestions_layout->set_y_centering(BOTTOM);
-  suggestions_layout->set_margin(kSuggestionGap);
+  suggestions_layout->SetTranslate(0, kSuggestionGapDMM, 0);
   suggestions_layout->AddBinding(base::MakeUnique<SuggestionSetBinding>(
       &model_->omnibox_suggestions, added_callback, removed_callback));
+
   scene_->AddUiElement(kOmniboxContainer, std::move(suggestions_layout));
 }
 
