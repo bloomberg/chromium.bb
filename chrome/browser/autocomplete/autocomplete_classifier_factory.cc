@@ -41,9 +41,9 @@ std::unique_ptr<KeyedService> AutocompleteClassifierFactory::BuildInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
   auto provider_client =
       base::MakeUnique<ChromeAutocompleteProviderClient>(profile);
-  auto controller = base::WrapUnique(new AutocompleteController(
-      std::move(provider_client), NULL,
-      AutocompleteClassifier::DefaultOmniboxProviders()));
+  auto controller = base::MakeUnique<AutocompleteController>(
+      std::move(provider_client), nullptr,
+      AutocompleteClassifier::DefaultOmniboxProviders());
   return base::MakeUnique<AutocompleteClassifier>(
       std::move(controller),
       base::MakeUnique<ChromeAutocompleteSchemeClassifier>(profile));
