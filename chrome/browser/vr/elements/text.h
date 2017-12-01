@@ -22,15 +22,12 @@ class Text : public TexturedElement {
 
   void SetText(const base::string16& text);
   void SetColor(SkColor color);
-
   void SetTextAlignment(UiTexture::TextAlignment alignment);
   void SetMultiLine(bool multiline);
 
   void OnSetSize(gfx::SizeF size) override;
 
-  int NumRenderedLinesForTest() const;
-
-  UiTexture* GetTextureForTest() const;
+  TextTexture* GetTextureForTest();
 
  private:
   UiTexture* GetTexture() const override;

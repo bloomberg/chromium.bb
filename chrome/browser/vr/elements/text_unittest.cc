@@ -6,48 +6,42 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "cc/test/test_skcanvas.h"
-#include "chrome/browser/vr/ui_scene.h"
+#include "chrome/browser/vr/elements/text_texture.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/render_text.h"
 
 namespace vr {
 
 TEST(Text, MultiLine) {
-  UiScene scene;
-  testing::NiceMock<cc::MockCanvas> canvas;
-
   const float kInitialSize = 1.0f;
-  const int kPixelWidth = 512;
+  const gfx::Size texture_size({512, 512});
 
   // Create an initialize a text element with a long string.
-  auto text_instance = base::MakeUnique<Text>(kPixelWidth, 0.020);
-  Text* text = text_instance.get();
+  auto text = base::MakeUnique<Text>(texture_size.width(), 0.020);
   text->SetSize(kInitialSize, 0);
   text->SetText(base::UTF8ToUTF16(std::string(1000, 'x')));
-  text->SetInitializedForTesting();
-  scene.AddUiElement(kRoot, std::move(text_instance));
 
-  // Grab a pointer to the underlying texture to inspect it directly.
-  UiTexture* texture = text->GetTextureForTest();
-  auto texture_size = texture->GetPreferredTextureSize(kPixelWidth);
+  TextTexture* texture = text->GetTextureForTest();
 
   // Make sure we get multiple lines of rendered text from the string.
-  scene.OnBeginFrame(base::TimeTicks(), {0, 0, 0});
-  texture->DrawAndLayout(&canvas, texture_size);
-  int initial_num_lines = text->NumRenderedLinesForTest();
-  EXPECT_GT(initial_num_lines, 1);
+  auto layout = texture->LayOutText(texture_size);
+  size_t initial_num_lines = layout.size();
+  auto initial_size = texture->GetDrawnSize();
+  EXPECT_GT(initial_num_lines, 1u);
+  EXPECT_GT(initial_size.height(), 0.f);
 
-  // Reduce the field width, and ensure that the number of lines increases.
+  // Reduce the field width, and ensure that the number of lines increases along
+  // with the texture height.
   text->SetSize(kInitialSize / 2, 0);
-  scene.OnBeginFrame(base::TimeTicks(), {0, 0, 0});
-  texture->DrawAndLayout(&canvas, texture_size);
-  EXPECT_GT(text->NumRenderedLinesForTest(), initial_num_lines);
+  layout = texture->LayOutText(texture_size);
+  EXPECT_GT(layout.size(), initial_num_lines);
+  EXPECT_GT(texture->GetDrawnSize().height(), initial_size.height());
 
   // Enforce single-line rendering.
   text->SetMultiLine(false);
-  scene.OnBeginFrame(base::TimeTicks(), {0, 0, 0});
-  texture->DrawAndLayout(&canvas, texture_size);
-  EXPECT_EQ(1, text->NumRenderedLinesForTest());
+  layout = texture->LayOutText(texture_size);
+  EXPECT_EQ(layout.size(), 1u);
+  EXPECT_LT(texture->GetDrawnSize().height(), initial_size.height());
 }
 
 }  // namespace vr
