@@ -243,16 +243,25 @@ void ResourceLoadScheduler::OnNetworkQuiet() {
 
 bool ResourceLoadScheduler::IsThrottablePriority(
     ResourceLoadPriority priority) const {
-  if (Platform::Current()->IsRendererSideResourceSchedulerEnabled()) {
-    if (priority >= ResourceLoadPriority::kMedium)
-      return false;
+  if (!Platform::Current()->IsRendererSideResourceSchedulerEnabled())
+    return true;
+
+  if (RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled()) {
+    // If this scheduler is throttled by the associated WebFrameScheduler,
+    // consider every prioritiy as throttable.
+    const auto state = frame_scheduler_throttling_state_;
+    if (state == WebFrameScheduler::ThrottlingState::kThrottled ||
+        state == WebFrameScheduler::ThrottlingState::kStopped) {
+      return true;
+    }
   }
 
-  return true;
+  return priority < ResourceLoadPriority::kMedium;
 }
 
 void ResourceLoadScheduler::OnThrottlingStateChanged(
     WebFrameScheduler::ThrottlingState state) {
+  frame_scheduler_throttling_state_ = state;
   switch (state) {
     case WebFrameScheduler::ThrottlingState::kThrottled:
       if (throttling_history_ == ThrottlingHistory::kInitial)
