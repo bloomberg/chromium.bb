@@ -384,7 +384,7 @@ class RemoteAccess(object):
       return result.output.rstrip()
 
 
-  def _CheckIfRebooted(self, old_boot_id):
+  def CheckIfRebooted(self, old_boot_id):
     """Checks if the remote device has successfully rebooted
 
     This compares the remote device old and current boot IDs.  If
@@ -408,7 +408,7 @@ class RemoteAccess(object):
     self.RemoteSh(['reboot'], ssh_error_ok=True, remote_sudo=True)
     time.sleep(CHECK_INTERVAL)
     try:
-      timeout_util.WaitForReturnTrue(lambda: self._CheckIfRebooted(old_boot_id),
+      timeout_util.WaitForReturnTrue(lambda: self.CheckIfRebooted(old_boot_id),
                                      timeout_sec, period=CHECK_INTERVAL)
     except timeout_util.TimeoutError:
       cros_build_lib.Die('Reboot has not completed after %s seconds; giving up.'
@@ -1014,6 +1014,18 @@ class RemoteDevice(object):
 
     return self.BaseRunCommand(cmd, **kwargs)
 
+  def CheckIfRebooted(self, old_boot_id):
+    """Checks if the remote device has successfully rebooted
+
+    This compares the remote device old and current boot IDs.  If
+    ssh errors occur, the device has likely not booted and False is
+    returned.  Basically only returns True if it is proven that the
+    device has rebooted.  May throw exceptions.
+
+    Returns:
+       True if the device has successfully rebooted, false otherwise.
+    """
+    return self.GetAgent().CheckIfRebooted(old_boot_id)
 
 class ChromiumOSDevice(RemoteDevice):
   """Basic commands to interact with a ChromiumOS device over SSH connection."""

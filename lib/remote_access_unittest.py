@@ -201,7 +201,7 @@ class RemoteShTest(RemoteAccessTest):
 
 
 class CheckIfRebootedTest(RemoteAccessTest):
-  """Tests of the _CheckIfRebooted function."""
+  """Tests of the CheckIfRebooted function."""
 
   _OLD_BOOT_ID = '1234'
   _NEW_BOOT_ID = '5678'
@@ -217,23 +217,23 @@ class CheckIfRebootedTest(RemoteAccessTest):
   def testSuccess(self):
     """Test the case of successful reboot."""
     self._SetCheckRebootResult(returncode=0, output=self._NEW_BOOT_ID)
-    self.assertTrue(self.host._CheckIfRebooted(self._OLD_BOOT_ID))
+    self.assertTrue(self.host.CheckIfRebooted(self._OLD_BOOT_ID))
 
   def testFailure(self):
     """Test case of failed reboot (boot ID did not change)."""
     self._SetCheckRebootResult(0, output=self._OLD_BOOT_ID)
-    self.assertFalse(self.host._CheckIfRebooted(self._OLD_BOOT_ID))
+    self.assertFalse(self.host.CheckIfRebooted(self._OLD_BOOT_ID))
 
   def testSshFailure(self):
     """Test case of reboot pending (ssh failed)."""
     self._SetCheckRebootResult(returncode=remote_access.SSH_ERROR_CODE)
-    self.assertFalse(self.host._CheckIfRebooted(self._OLD_BOOT_ID))
+    self.assertFalse(self.host.CheckIfRebooted(self._OLD_BOOT_ID))
 
   def testInvalidErrorCode(self):
     """Test case of bad error code returned."""
     self._SetCheckRebootResult(returncode=2)
     self.assertRaises(Exception,
-                      lambda: self.host._CheckIfRebooted(self._OLD_BOOT_ID))
+                      lambda: self.host.CheckIfRebooted(self._OLD_BOOT_ID))
 
 
 class RemoteDeviceTest(cros_test_lib.MockTestCase):
