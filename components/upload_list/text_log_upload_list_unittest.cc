@@ -74,11 +74,11 @@ TEST_F(TextLogUploadListTest, ParseUploadTimeUploadId) {
 
   EXPECT_EQ(1u, uploads.size());
   double time_double = uploads[0].upload_time.ToDoubleT();
-  EXPECT_STREQ(kTestUploadTime, base::DoubleToString(time_double).c_str());
+  EXPECT_STREQ(kTestUploadTime, base::NumberToString(time_double).c_str());
   EXPECT_STREQ(kTestUploadId, uploads[0].upload_id.c_str());
   EXPECT_STREQ("", uploads[0].local_id.c_str());
   time_double = uploads[0].capture_time.ToDoubleT();
-  EXPECT_STREQ("0", base::DoubleToString(time_double).c_str());
+  EXPECT_STREQ("0", base::NumberToString(time_double).c_str());
 }
 
 // Test log entry string with upload time, upload ID and local ID.
@@ -103,11 +103,11 @@ TEST_F(TextLogUploadListTest, ParseUploadTimeUploadIdLocalId) {
 
   EXPECT_EQ(1u, uploads.size());
   double time_double = uploads[0].upload_time.ToDoubleT();
-  EXPECT_STREQ(kTestUploadTime, base::DoubleToString(time_double).c_str());
+  EXPECT_STREQ(kTestUploadTime, base::NumberToString(time_double).c_str());
   EXPECT_STREQ(kTestUploadId, uploads[0].upload_id.c_str());
   EXPECT_STREQ(kTestLocalID, uploads[0].local_id.c_str());
   time_double = uploads[0].capture_time.ToDoubleT();
-  EXPECT_STREQ("0", base::DoubleToString(time_double).c_str());
+  EXPECT_STREQ("0", base::NumberToString(time_double).c_str());
 }
 
 // Test log entry string with upload time, upload ID and capture time.
@@ -133,11 +133,11 @@ TEST_F(TextLogUploadListTest, ParseUploadTimeUploadIdCaptureTime) {
 
   EXPECT_EQ(1u, uploads.size());
   double time_double = uploads[0].upload_time.ToDoubleT();
-  EXPECT_STREQ(kTestUploadTime, base::DoubleToString(time_double).c_str());
+  EXPECT_STREQ(kTestUploadTime, base::NumberToString(time_double).c_str());
   EXPECT_STREQ(kTestUploadId, uploads[0].upload_id.c_str());
   EXPECT_STREQ("", uploads[0].local_id.c_str());
   time_double = uploads[0].capture_time.ToDoubleT();
-  EXPECT_STREQ(kTestCaptureTime, base::DoubleToString(time_double).c_str());
+  EXPECT_STREQ(kTestCaptureTime, base::NumberToString(time_double).c_str());
 }
 
 // Test log entry string with local ID and capture time.
@@ -162,11 +162,11 @@ TEST_F(TextLogUploadListTest, ParseLocalIdCaptureTime) {
 
   EXPECT_EQ(1u, uploads.size());
   double time_double = uploads[0].upload_time.ToDoubleT();
-  EXPECT_STREQ("0", base::DoubleToString(time_double).c_str());
+  EXPECT_STREQ("0", base::NumberToString(time_double).c_str());
   EXPECT_STREQ("", uploads[0].upload_id.c_str());
   EXPECT_STREQ(kTestLocalID, uploads[0].local_id.c_str());
   time_double = uploads[0].capture_time.ToDoubleT();
-  EXPECT_STREQ(kTestCaptureTime, base::DoubleToString(time_double).c_str());
+  EXPECT_STREQ(kTestCaptureTime, base::NumberToString(time_double).c_str());
 }
 
 // Test log entry string with upload time, upload ID, local ID and capture
@@ -195,11 +195,11 @@ TEST_F(TextLogUploadListTest, ParseUploadTimeUploadIdLocalIdCaptureTime) {
 
   EXPECT_EQ(1u, uploads.size());
   double time_double = uploads[0].upload_time.ToDoubleT();
-  EXPECT_STREQ(kTestUploadTime, base::DoubleToString(time_double).c_str());
+  EXPECT_STREQ(kTestUploadTime, base::NumberToString(time_double).c_str());
   EXPECT_STREQ(kTestUploadId, uploads[0].upload_id.c_str());
   EXPECT_STREQ(kTestLocalID, uploads[0].local_id.c_str());
   time_double = uploads[0].capture_time.ToDoubleT();
-  EXPECT_STREQ(kTestCaptureTime, base::DoubleToString(time_double).c_str());
+  EXPECT_STREQ(kTestCaptureTime, base::NumberToString(time_double).c_str());
 }
 
 TEST_F(TextLogUploadListTest, ParseMultipleEntries) {
@@ -229,11 +229,11 @@ TEST_F(TextLogUploadListTest, ParseMultipleEntries) {
   EXPECT_EQ(4u, uploads.size());
   for (size_t i = 0; i < uploads.size(); ++i) {
     double time_double = uploads[i].upload_time.ToDoubleT();
-    EXPECT_STREQ(kTestUploadTime, base::DoubleToString(time_double).c_str());
+    EXPECT_STREQ(kTestUploadTime, base::NumberToString(time_double).c_str());
     EXPECT_STREQ(kTestUploadId, uploads[i].upload_id.c_str());
     EXPECT_STREQ(kTestLocalID, uploads[i].local_id.c_str());
     time_double = uploads[i].capture_time.ToDoubleT();
-    EXPECT_STREQ(kTestCaptureTime, base::DoubleToString(time_double).c_str());
+    EXPECT_STREQ(kTestCaptureTime, base::NumberToString(time_double).c_str());
   }
 }
 
@@ -267,11 +267,11 @@ TEST_F(TextLogUploadListTest, ParseWithState) {
   EXPECT_EQ(4u, uploads.size());
   for (size_t i = 0; i < uploads.size(); ++i) {
     double time_double = uploads[i].upload_time.ToDoubleT();
-    EXPECT_STREQ(kTestUploadTime, base::DoubleToString(time_double).c_str());
+    EXPECT_STREQ(kTestUploadTime, base::NumberToString(time_double).c_str());
     EXPECT_STREQ(kTestUploadId, uploads[i].upload_id.c_str());
     EXPECT_STREQ(kTestLocalID, uploads[i].local_id.c_str());
     time_double = uploads[i].capture_time.ToDoubleT();
-    EXPECT_STREQ(kTestCaptureTime, base::DoubleToString(time_double).c_str());
+    EXPECT_STREQ(kTestCaptureTime, base::NumberToString(time_double).c_str());
     EXPECT_EQ(UploadList::UploadInfo::State::Uploaded, uploads[i].state);
   }
 }
@@ -306,11 +306,11 @@ TEST_F(TextLogUploadListTest, SimultaneousAccess) {
 
     EXPECT_EQ(1u, uploads.size());
     double time_double = uploads[0].upload_time.ToDoubleT();
-    EXPECT_STREQ(kTestUploadTime, base::DoubleToString(time_double).c_str());
+    EXPECT_STREQ(kTestUploadTime, base::NumberToString(time_double).c_str());
     EXPECT_STREQ(kTestUploadId, uploads[0].upload_id.c_str());
     EXPECT_STREQ(kTestLocalID, uploads[0].local_id.c_str());
     time_double = uploads[0].capture_time.ToDoubleT();
-    EXPECT_STREQ(kTestCaptureTime, base::DoubleToString(time_double).c_str());
+    EXPECT_STREQ(kTestCaptureTime, base::NumberToString(time_double).c_str());
   }
 }
 

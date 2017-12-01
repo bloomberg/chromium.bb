@@ -150,7 +150,7 @@ std::string Message::ToStringInternal(const std::string& indent,
         double value = 0;
         if (!reader->PopDouble(&value))
           return kBrokenMessage;
-        output += indent + "double " + base::DoubleToString(value) + "\n";
+        output += indent + "double " + base::NumberToString(value) + "\n";
         break;
       }
       case STRING: {

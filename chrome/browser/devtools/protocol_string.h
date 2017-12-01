@@ -42,7 +42,7 @@ class StringUtil {
   }
   static String fromInteger(int number) { return base::IntToString(number); }
   static String fromDouble(double number) {
-    String s = base::DoubleToString(number);
+    String s = base::NumberToString(number);
     if (!s.empty() && s[0] == '.')
       s = "0" + s;
     return s;

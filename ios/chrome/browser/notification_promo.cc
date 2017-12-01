@@ -91,13 +91,13 @@ void NotificationPromo::InitFromJson(const base::DictionaryValue& promo) {
       base::Time::FromString(time_str.c_str(), &time)) {
     start_ = time.ToDoubleT();
     DVLOG(1) << "start str=" << time_str
-             << ", start_=" << base::DoubleToString(start_);
+             << ", start_=" << base::NumberToString(start_);
   }
   if (promo.GetString("end", &time_str) &&
       base::Time::FromString(time_str.c_str(), &time)) {
     end_ = time.ToDoubleT();
     DVLOG(1) << "end str =" << time_str
-             << ", end_=" << base::DoubleToString(end_);
+             << ", end_=" << base::NumberToString(end_);
   }
 
   promo.GetString("promo_text", &promo_text_);

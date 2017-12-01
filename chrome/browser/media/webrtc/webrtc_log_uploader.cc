@@ -125,7 +125,7 @@ void WebRtcLogUploader::LoggingStoppedDoUpload(
   if (base::PathExists(upload_done_data.log_path)) {
     WebRtcLogUtil::DeleteOldWebRtcLogFiles(upload_done_data.log_path);
 
-    local_log_id = base::DoubleToString(base::Time::Now().ToDoubleT());
+    local_log_id = base::NumberToString(base::Time::Now().ToDoubleT());
     base::FilePath log_file_path =
         upload_done_data.log_path.AppendASCII(local_log_id)
             .AddExtension(FILE_PATH_LITERAL(".gz"));
@@ -561,8 +561,8 @@ void WebRtcLogUploader::AddLocallyStoredLogInfoToUploadListFile(
 
   // Write the capture time and log ID to the log list file. Leave the upload
   // time and report ID empty.
-  contents += ",," + local_log_id +
-              "," + base::DoubleToString(base::Time::Now().ToDoubleT()) + '\n';
+  contents += ",," + local_log_id + "," +
+              base::NumberToString(base::Time::Now().ToDoubleT()) + '\n';
 
   int written =
       base::WriteFile(upload_list_path, &contents[0], contents.size());
@@ -594,7 +594,7 @@ void WebRtcLogUploader::AddUploadedLogInfoToUploadListFile(
   // to find the local log ID, in that case insert the data into the existing
   // line. Otherwise add it in the end.
   base::Time time_now = base::Time::Now();
-  std::string time_now_str = base::DoubleToString(time_now.ToDoubleT());
+  std::string time_now_str = base::NumberToString(time_now.ToDoubleT());
   size_t pos = contents.find(",," + local_log_id);
   if (pos != std::string::npos) {
     contents.insert(pos, time_now_str);

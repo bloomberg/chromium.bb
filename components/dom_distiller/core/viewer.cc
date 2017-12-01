@@ -290,7 +290,7 @@ const std::string GetDistilledPageFontFamilyJs(
 }
 
 const std::string GetDistilledPageFontScalingJs(float scaling) {
-  return "useFontScaling(" + base::DoubleToString(scaling) + ");";
+  return "useFontScaling(" + base::NumberToString(scaling) + ");";
 }
 
 }  // namespace viewer

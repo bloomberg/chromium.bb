@@ -190,9 +190,8 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     return Response::InvalidParams("deviceScaleFactor must be non-negative");
 
   if (scale.fromMaybe(1) <= 0 || scale.fromMaybe(1) > max_scale) {
-    return Response::InvalidParams(
-        "scale must be positive, not greater than " +
-        base::DoubleToString(max_scale));
+    return Response::InvalidParams("scale must be positive, not greater than " +
+                                   base::NumberToString(max_scale));
   }
 
   blink::WebScreenOrientationType orientationType =

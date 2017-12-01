@@ -33,7 +33,7 @@ std::string Var::PPVarToLogString(PP_Var var) {
     case PP_VARTYPE_INT32:
       return base::IntToString(var.value.as_int);
     case PP_VARTYPE_DOUBLE:
-      return base::DoubleToString(var.value.as_double);
+      return base::NumberToString(var.value.as_double);
     case PP_VARTYPE_STRING: {
       StringVar* string(StringVar::FromPPVar(var));
       if (!string)

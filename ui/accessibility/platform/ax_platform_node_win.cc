@@ -1062,7 +1062,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accValue(VARIANT var_id, BSTR* value) {
   if (result.empty() && target->IsRangeValueSupported()) {
     float fval;
     if (target->GetFloatAttribute(AX_ATTR_VALUE_FOR_RANGE, &fval)) {
-      result = base::UTF8ToUTF16(base::DoubleToString(fval));
+      result = base::NumberToString16(fval);
       *value = SysAllocString(result.c_str());
       DCHECK(*value);
       return S_OK;

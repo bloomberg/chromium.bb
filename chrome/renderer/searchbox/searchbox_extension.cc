@@ -218,13 +218,13 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   // backgroundColorRgba field.
   builder.Set(
       "colorRgba",
-      // Convert the alpha using DoubleToString because StringPrintf will
+      // Convert the alpha using NumberToString because StringPrintf will
       // use locale specific formatters (e.g., use , instead of . in
       // German).
       base::StringPrintf(
           kCSSBackgroundColorFormat, theme_info.background_color.r,
           theme_info.background_color.g, theme_info.background_color.b,
-          base::DoubleToString(theme_info.background_color.a / 255.0).c_str()));
+          base::NumberToString(theme_info.background_color.a / 255.0).c_str()));
 
   // Theme color for background as an array with the RGBA components in order.
   // Value is always valid.

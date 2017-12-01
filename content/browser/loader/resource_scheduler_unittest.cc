@@ -380,7 +380,7 @@ class ResourceSchedulerTest : public testing::Test {
     if (non_delayable_weight > 0.0) {
       experiment_enabled = true;
       params["MaxEffectiveConnectionType"] = "2G";
-      params["NonDelayableWeight"] = base::DoubleToString(non_delayable_weight);
+      params["NonDelayableWeight"] = base::NumberToString(non_delayable_weight);
     }
 
     base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();

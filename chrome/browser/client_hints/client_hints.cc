@@ -84,7 +84,7 @@ GetAdditionalNavigationRequestClientHintsHeaders(
     additional_headers->SetHeader(
         blink::kClientHintsHeaderMapping[static_cast<int>(
             blink::mojom::WebClientHintsType::kDeviceMemory)],
-        base::DoubleToString(
+        base::NumberToString(
             blink::ApproximatedDeviceMemory::GetApproximatedDeviceMemory()));
   }
 

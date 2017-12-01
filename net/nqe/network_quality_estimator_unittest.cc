@@ -2765,7 +2765,7 @@ TEST(NetworkQualityEstimatorTest, CorrelationHistogram) {
 
     std::map<std::string, std::string> variation_params;
     variation_params["correlation_logging_probability"] =
-        base::DoubleToString(test.correlation_logging_probability);
+        base::NumberToString(test.correlation_logging_probability);
     if (test.use_transport_rtt) {
       variation_params["effective_connection_type_algorithm"] =
           "TransportRTTOrDownstreamThroughput";

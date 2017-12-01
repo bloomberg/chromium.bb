@@ -194,7 +194,7 @@ void WebRTCInternals::OnUpdatePeerConnection(
   auto log_entry = std::make_unique<base::DictionaryValue>();
 
   double epoch_time = base::Time::Now().ToJsTime();
-  string time = base::DoubleToString(epoch_time);
+  string time = base::NumberToString(epoch_time);
   log_entry->SetString("time", time);
   log_entry->SetString("type", type);
   log_entry->SetString("value", value);

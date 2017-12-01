@@ -348,11 +348,11 @@ SkColor DeriveDefaultIconColor(SkColor text_color) {
 }
 
 std::string SkColorToRgbaString(SkColor color) {
-  // We convert the alpha using DoubleToString because StringPrintf will use
+  // We convert the alpha using NumberToString because StringPrintf will use
   // locale specific formatters (e.g., use , instead of . in German).
   return base::StringPrintf(
       "rgba(%s,%s)", SkColorToRgbString(color).c_str(),
-      base::DoubleToString(SkColorGetA(color) / 255.0).c_str());
+      base::NumberToString(SkColorGetA(color) / 255.0).c_str());
 }
 
 std::string SkColorToRgbString(SkColor color) {

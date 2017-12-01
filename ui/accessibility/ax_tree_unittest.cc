@@ -19,10 +19,6 @@
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/gfx/transform.h"
 
-using base::DoubleToString;
-using base::IntToString;
-using base::StringPrintf;
-
 namespace ui {
 
 namespace {
@@ -32,7 +28,7 @@ std::string IntVectorToString(const std::vector<int>& items) {
   for (size_t i = 0; i < items.size(); ++i) {
     if (i > 0)
       str += ",";
-    str += IntToString(items[i]);
+    str += base::NumberToString(items[i]);
   }
   return str;
 }
@@ -125,7 +121,7 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
                      AXNode* node,
                      AXRole old_role,
                      AXRole new_role) override {
-    attribute_change_log_.push_back(StringPrintf(
+    attribute_change_log_.push_back(base::StringPrintf(
         "Role changed from %s to %s", ToString(old_role), ToString(new_role)));
   }
 
@@ -133,7 +129,7 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
                       AXNode* node,
                       AXState state,
                       bool new_value) override {
-    attribute_change_log_.push_back(StringPrintf(
+    attribute_change_log_.push_back(base::StringPrintf(
         "%s changed to %s", ToString(state), new_value ? "true" : "false"));
   }
 
@@ -143,8 +139,8 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
                                 const std::string& old_value,
                                 const std::string& new_value) override {
     attribute_change_log_.push_back(
-        StringPrintf("%s changed from %s to %s", ToString(attr),
-                     old_value.c_str(), new_value.c_str()));
+        base::StringPrintf("%s changed from %s to %s", ToString(attr),
+                           old_value.c_str(), new_value.c_str()));
   }
 
   void OnIntAttributeChanged(AXTree* tree,
@@ -152,7 +148,7 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
                              AXIntAttribute attr,
                              int32_t old_value,
                              int32_t new_value) override {
-    attribute_change_log_.push_back(StringPrintf(
+    attribute_change_log_.push_back(base::StringPrintf(
         "%s changed from %d to %d", ToString(attr), old_value, new_value));
   }
 
@@ -161,16 +157,17 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
                                AXFloatAttribute attr,
                                float old_value,
                                float new_value) override {
-    attribute_change_log_.push_back(StringPrintf(
-        "%s changed from %s to %s", ToString(attr),
-        DoubleToString(old_value).c_str(), DoubleToString(new_value).c_str()));
+    attribute_change_log_.push_back(
+        base::StringPrintf("%s changed from %s to %s", ToString(attr),
+                           base::NumberToString(old_value).c_str(),
+                           base::NumberToString(new_value).c_str()));
   }
 
   void OnBoolAttributeChanged(AXTree* tree,
                               AXNode* node,
                               AXBoolAttribute attr,
                               bool new_value) override {
-    attribute_change_log_.push_back(StringPrintf(
+    attribute_change_log_.push_back(base::StringPrintf(
         "%s changed to %s", ToString(attr), new_value ? "true" : "false"));
   }
 
@@ -181,9 +178,9 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
       const std::vector<int32_t>& old_value,
       const std::vector<int32_t>& new_value) override {
     attribute_change_log_.push_back(
-        StringPrintf("%s changed from %s to %s", ToString(attr),
-                     IntVectorToString(old_value).c_str(),
-                     IntVectorToString(new_value).c_str()));
+        base::StringPrintf("%s changed from %s to %s", ToString(attr),
+                           IntVectorToString(old_value).c_str(),
+                           IntVectorToString(new_value).c_str()));
   }
 
   bool tree_data_changed() const { return tree_data_changed_; }

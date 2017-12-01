@@ -407,8 +407,8 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
   }
   upstream_args.push_back("app=chromium");
   for (const SpeechRecognitionGrammar& grammar : config_.grammars) {
-    std::string grammar_value(
-        base::DoubleToString(grammar.weight) + ":" + grammar.url);
+    std::string grammar_value(base::NumberToString(grammar.weight) + ":" +
+                              grammar.url);
     upstream_args.push_back(
         "grammar=" + net::EscapeQueryParamValue(grammar_value, true));
   }

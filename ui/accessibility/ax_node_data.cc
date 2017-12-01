@@ -16,9 +16,6 @@
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/gfx/transform.h"
 
-using base::DoubleToString;
-using base::IntToString;
-
 namespace ui {
 
 namespace {
@@ -57,7 +54,7 @@ std::string IntVectorToString(const std::vector<int>& items) {
   for (size_t i = 0; i < items.size(); ++i) {
     if (i > 0)
       str += ",";
-    str += IntToString(items[i]);
+    str += base::NumberToString(items[i]);
   }
   return str;
 }
@@ -549,25 +546,26 @@ void AXNodeData::AddAction(AXAction action_enum) {
 std::string AXNodeData::ToString() const {
   std::string result;
 
-  result += "id=" + IntToString(id);
+  result += "id=" + base::NumberToString(id);
   result += " ";
   result += ui::ToString(role);
 
   result += StateBitfieldToString(state);
 
-  result += " (" + IntToString(location.x()) + ", " +
-                   IntToString(location.y()) + ")-(" +
-                   IntToString(location.width()) + ", " +
-                   IntToString(location.height()) + ")";
+  result += " (" + base::NumberToString(location.x()) + ", " +
+            base::NumberToString(location.y()) + ")-(" +
+            base::NumberToString(location.width()) + ", " +
+            base::NumberToString(location.height()) + ")";
 
   if (offset_container_id != -1)
-    result += " offset_container_id=" + IntToString(offset_container_id);
+    result +=
+        " offset_container_id=" + base::NumberToString(offset_container_id);
 
   if (transform && !transform->IsIdentity())
     result += " transform=" + transform->ToString();
 
   for (size_t i = 0; i < int_attributes.size(); ++i) {
-    std::string value = IntToString(int_attributes[i].second);
+    std::string value = base::NumberToString(int_attributes[i].second);
     switch (int_attributes[i].first) {
       case AX_ATTR_DEFAULT_ACTION_VERB:
         result +=
@@ -847,7 +845,8 @@ std::string AXNodeData::ToString() const {
         break;
       case AX_ATTR_IMAGE_DATA_URL:
         result += " image_data_url=(" +
-            IntToString(static_cast<int>(value.size())) + " bytes)";
+                  base::NumberToString(static_cast<int>(value.size())) +
+                  " bytes)";
         break;
       case AX_ATTR_INNER_HTML:
         result += " inner_html=" + value;
@@ -894,7 +893,7 @@ std::string AXNodeData::ToString() const {
   }
 
   for (size_t i = 0; i < float_attributes.size(); ++i) {
-    std::string value = DoubleToString(float_attributes[i].second);
+    std::string value = base::NumberToString(float_attributes[i].second);
     switch (float_attributes[i].first) {
       case AX_ATTR_VALUE_FOR_RANGE:
         result += " value_for_range=" + value;

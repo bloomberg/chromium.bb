@@ -111,7 +111,7 @@ void SaveUpdateRebootNeededUptime() {
     return;
 
   std::string update_reboot_needed_uptime =
-      base::DoubleToString(uptime.InSecondsF());
+      base::NumberToString(uptime.InSecondsF());
   base::WriteFileDescriptor(fd.get(), update_reboot_needed_uptime.c_str(),
                             update_reboot_needed_uptime.size());
 }
