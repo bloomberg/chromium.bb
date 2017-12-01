@@ -44,11 +44,11 @@ class CORE_EXPORT SmartClipData {
  public:
   SmartClipData() {}
 
-  SmartClipData(IntRect rect, String string)
+  SmartClipData(const IntRect& rect, const String& string)
       : rect_in_viewport_(rect), string_(string) {}
 
-  IntRect RectInViewport() const;
-  const String& ClipData() const;
+  const IntRect& RectInViewport() const { return rect_in_viewport_; }
+  const String& ClipData() const { return string_; }
 
  private:
   IntRect rect_in_viewport_;
