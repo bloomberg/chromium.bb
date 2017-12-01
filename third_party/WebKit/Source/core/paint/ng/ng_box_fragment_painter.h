@@ -7,6 +7,7 @@
 
 #include "core/layout/BackgroundBleedAvoidance.h"
 #include "core/layout/api/HitTestAction.h"
+#include "core/layout/ng/geometry/ng_border_edges.h"
 #include "core/paint/BoxPainterBase.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutSize.h"
@@ -112,6 +113,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                            const LayoutPoint& accumulated_offset);
 
   const NGPaintFragment& box_fragment_;
+
+  NGBorderEdges border_edges_;
 
   // True when this is an inline box.
   bool is_inline_;
