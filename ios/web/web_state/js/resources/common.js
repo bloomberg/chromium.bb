@@ -230,6 +230,38 @@ __gCrWeb['common'] = __gCrWeb.common;
            element.type === 'number';
   };
 
+ /**
+  * Sets the value of a data-bound input using AngularJS.
+  *
+  * The method first set the value using the val() method. Then, if input is
+  * bound to a model value, it sets the model value.
+  * Documentation of relevant modules of AngularJS can be found at
+  * https://docs.angularjs.org/guide/databinding
+  * https://docs.angularjs.org/api/auto/service/$injector
+  * https://docs.angularjs.org/api/ng/service/$parse
+  *
+  * @param {string} value The value the input element will be set.
+  * @param {Element} input The input element of which the value is set.
+  **/
+  function setInputElementAngularValue_(value, input) {
+    if (!input || !window['angular']) {
+      return;
+    }
+    var angular_element = window['angular'].element(input);
+    if (!angular_element) {
+      return;
+    }
+    angular_element.val(value);
+    var angular_model = angular_element.data('ngModel');
+    if (!angular_model) {
+      return;
+    }
+    angular_element.injector().invoke(['$parse', function(parse) {
+      var setter = parse(angular_model);
+      setter.assign(angular_element.scope(), value);
+    }])
+  }
+
   /**
    * Sets the value of an input and dispatches a change event if
    * |shouldSendChangeEvent|.
@@ -245,19 +277,16 @@ __gCrWeb['common'] = __gCrWeb.common;
    *    void setChecked(bool nowChecked, TextFieldEventBehavior eventBehavior)
    * in chromium/src/third_party/WebKit/Source/core/html/HTMLInputElement.cpp.
    *
-   * @param {(string|boolean)} value The value the input element will be set.
-   *     For text input, it is the value to set in the field.
-   *     For select, it is the value of the option to select.
-   *     For checkable element, it is the checked value (true/false).
+   * @param {string} value The value the input element will be set.
    * @param {Element} input The input element of which the value is set.
    * @param {boolean} shouldSendChangeEvent Whether a change event should be
    *     dispatched.
    */
   __gCrWeb.common.setInputElementValue = function(
       value, input, shouldSendChangeEvent) {
-     if (!input) {
-       return;
-     }
+    if (!input) {
+      return;
+    }
     var changed = false;
     if (input.type === 'checkbox' || input.type === 'radio') {
       changed = input.checked !== value;
@@ -271,9 +300,14 @@ __gCrWeb['common'] = __gCrWeb.common;
       // autofill and this method is only used for autofill for now, there is no
       // such check in this implementation.
       var sanitizedValue = __gCrWeb.common.sanitizeValueForInputElement(
-          /** @type {string} */ (value), input);
+          value, input);
       changed = sanitizedValue !== input.value;
       input.value = sanitizedValue;
+    }
+    if (window['angular']) {
+      // The page uses the AngularJS framework. Update the angular value before
+      // sending events.
+      setInputElementAngularValue_(value, input);
     }
     if (changed && shouldSendChangeEvent) {
       __gCrWeb.common.notifyElementValueChanged(input);
