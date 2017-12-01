@@ -320,12 +320,17 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
   DCHECK(main_thread_runner_);
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
+
+  // In unit tests not creating a message filter, |aec_dump_message_filter_|
+  // will be null. We can just ignore that below. Other unit tests and browser
+  // tests ensure that we do get the filter when we should.
+  aec_dump_message_filter_ = AecDumpMessageFilter::Get();
+
+  if (aec_dump_message_filter_)
+    override_aec3_ = aec_dump_message_filter_->GetOverrideAec3();
+
   InitializeAudioProcessingModule(properties);
 
-  aec_dump_message_filter_ = AecDumpMessageFilter::Get();
-  // In unit tests not creating a message filter, |aec_dump_message_filter_|
-  // will be NULL. We can just ignore that. Other unit tests and browser tests
-  // ensure that we do get the filter when we should.
   if (aec_dump_message_filter_.get())
     aec_dump_message_filter_->AddDelegate(this);
 
