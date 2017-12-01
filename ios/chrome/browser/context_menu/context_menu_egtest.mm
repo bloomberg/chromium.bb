@@ -73,16 +73,17 @@ void WaitForContextMenuItemDisappeared(
              @"Waiting for matcher %@ failed.", context_menu_item_button);
 }
 
-// Long press on |element_id| to trigger context menu and then tap on
-// |contextMenuItemButton| item.
-void LongPressElementAndTapOnButton(const char* element_id,
-                                    id<GREYMatcher> context_menu_item_button) {
+// Long press on |element_id| to trigger context menu.
+void LongPressElement(const char* element_id) {
   id<GREYMatcher> web_view_matcher =
       web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
   [[EarlGrey selectElementWithMatcher:web_view_matcher]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         element_id, true /* menu should appear */)];
+}
 
+//  Tap on |context_menu_item_button| context menu item.
+void TapOnContextMenuButton(id<GREYMatcher> context_menu_item_button) {
   [[EarlGrey selectElementWithMatcher:context_menu_item_button]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:context_menu_item_button]
@@ -131,7 +132,8 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   [ChromeEarlGrey loadURL:pageURL];
   [ChromeEarlGrey waitForMainTabCount:1];
 
-  LongPressElementAndTapOnButton(kChromiumImageID, OpenImageButton());
+  LongPressElement(kChromiumImageID);
+  TapOnContextMenuButton(OpenImageButton());
 
   // Verify url and tab count.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
@@ -149,7 +151,8 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   [ChromeEarlGrey loadURL:pageURL];
   [ChromeEarlGrey waitForMainTabCount:1];
 
-  LongPressElementAndTapOnButton(kChromiumImageID, OpenImageInNewTabButton());
+  LongPressElement(kChromiumImageID);
+  TapOnContextMenuButton(OpenImageInNewTabButton());
 
   SelectTabAtIndexInCurrentMode(1U);
 
@@ -183,7 +186,8 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   [ChromeEarlGrey loadURL:initialURL];
   [ChromeEarlGrey waitForMainTabCount:1];
 
-  LongPressElementAndTapOnButton(kDestinationLinkID, OpenLinkInNewTabButton());
+  LongPressElement(kDestinationLinkID);
+  TapOnContextMenuButton(OpenLinkInNewTabButton());
 
   SelectTabAtIndexInCurrentMode(1U);
 
@@ -192,6 +196,35 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
                                           destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
   [ChromeEarlGrey waitForMainTabCount:2];
+}
+
+// Tests that the context menu is displayed for an image url.
+- (void)testContextMenuDisplayedOnImage {
+  GURL imageURL = web::test::HttpServer::MakeUrl(kUrlChromiumLogoImg);
+  web::test::SetUpFileBasedHttpServer();
+  [ChromeEarlGrey loadURL:imageURL];
+  [ChromeEarlGrey waitForMainTabCount:1];
+
+  // Calculate a point inside the displayed image. Javascript can not be used to
+  // find the element because no DOM exists.
+  CGPoint point = CGPointMake(
+      CGRectGetMidX([chrome_test_util::GetActiveViewController() view].bounds),
+      20.0);
+
+  id<GREYMatcher> web_view_matcher =
+      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
+  [[EarlGrey selectElementWithMatcher:web_view_matcher]
+      performAction:grey_longPressAtPointWithDuration(
+                        point, kGREYLongPressDefaultDuration)];
+
+  TapOnContextMenuButton(OpenImageInNewTabButton());
+  [ChromeEarlGrey waitForMainTabCount:2];
+
+  SelectTabAtIndexInCurrentMode(1U);
+  // Verify url.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          imageURL.GetContent())]
+      assertWithMatcher:grey_notNil()];
 }
 
 @end

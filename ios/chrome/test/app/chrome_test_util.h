@@ -18,6 +18,7 @@ class ChromeBrowserState;
 @class GenericChromeCommand;
 @class MainController;
 @class NewTabPageController;
+@class UIViewController;
 
 namespace chrome_test_util {
 
@@ -46,6 +47,11 @@ NSUInteger GetRegisteredKeyCommandsCount();
 // Returns the dispatcher for the main BVC.
 // TODO(crbug.com/738881): Use DispatcherForActiveViewController() instead.
 id<BrowserCommands> BrowserCommandDispatcherForMainBVC();
+
+// Returns the active view controller.
+// NOTE: It is preferred to not directly access the active view controller if
+// possible.
+UIViewController* GetActiveViewController();
 
 // Returns the dispatcher for the active view controller.
 id<ApplicationCommands, BrowserCommands> DispatcherForActiveViewController();
