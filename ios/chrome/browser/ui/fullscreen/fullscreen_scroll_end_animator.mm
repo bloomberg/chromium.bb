@@ -16,7 +16,6 @@
 #error "This file requires ARC support."
 #endif
 
-#if defined(__IPHONE_10_0) && (__IPHONE_OS_VERSION_MIN_ALLOWED >= __IPHONE_10_0)
 @interface FullscreenScrollEndTimingCurveProvider
     : NSObject<UITimingCurveProvider> {
   std::unique_ptr<gfx::CubicBezier> _bezier;
@@ -114,10 +113,3 @@
 }
 
 @end
-
-#else
-
-@implementation FullscreenScrollEndAnimator
-@end
-
-#endif  // __IPHONE_10_0
