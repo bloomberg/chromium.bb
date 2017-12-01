@@ -748,7 +748,6 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   speech_result->set_hit_testable(false);
   speech_result->SetSize(kVoiceSearchRecognitionResultTextWidth, 0);
   speech_result->SetTextAlignment(UiTexture::kTextAlignmentCenter);
-  speech_result->SetSize(kSuggestionTextFieldWidth, 0);
   BindColor(model_, speech_result.get(), &ColorScheme::prompt_foreground,
             &Text::SetColor);
   speech_result->AddBinding(VR_BIND_FUNC(base::string16, Model, model_,
