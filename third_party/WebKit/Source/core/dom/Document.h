@@ -282,7 +282,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // a document instance representing window.document, and it works as the
   // source of ExecutionContext and security origin of the new document.
   // https://dom.spec.whatwg.org/#dom-document-document
-  static Document* Create(const Document&);
+  static Document* Create(Document&);
   ~Document() override;
 
   // Support JS introspection of frame policy (e.g. feature policy).
