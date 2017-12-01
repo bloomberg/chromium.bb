@@ -244,24 +244,31 @@ public class DownloadForegroundServiceManager {
         Preconditions.checkNotNull(mBoundService);
         mIsServiceBound = false;
 
+        // For pre-Lollipop phones (API < 21), we need to kill the notification in the pause case
+        // because otherwise the notification gets stuck in the ongoing state.
+        boolean needAdjustNotificationPreLollipop =
+                isPreLollipop() && downloadStatus == DownloadStatus.PAUSE;
+
         // Pause: only try to detach, do not kill notification.
         // Complete/failed: try to detach, if that doesn't work, kill.
         // Cancel: don't even try to detach, just kill.
+
         boolean detachNotification = downloadStatus == DownloadStatus.PAUSE
                 || downloadStatus == DownloadStatus.COMPLETE
                 || downloadStatus == DownloadStatus.FAIL;
         boolean killNotification = downloadStatus == DownloadStatus.CANCEL
                 || downloadStatus == DownloadStatus.COMPLETE
-                || downloadStatus == DownloadStatus.FAIL;
+                || downloadStatus == DownloadStatus.FAIL || needAdjustNotificationPreLollipop;
 
         boolean notificationHandledProperly =
                 stopAndUnbindServiceInternal(detachNotification, killNotification);
         mBoundService = null;
 
-        // If the download is completed,  need to relaunch the notification so it is no longer
-        // pinned to the foreground service.
-        if ((downloadStatus == DownloadStatus.COMPLETE || downloadStatus == DownloadStatus.FAIL)
-                && Build.VERSION.SDK_INT < 24) {
+        // Relaunch notification so it is no longer pinned to the foreground service when the
+        // download is completed/failed or if a pre-Lollipop adjustment is needed.
+        if (((downloadStatus == DownloadStatus.COMPLETE || downloadStatus == DownloadStatus.FAIL)
+                    && Build.VERSION.SDK_INT < 24)
+                || needAdjustNotificationPreLollipop) {
             relaunchPinnedNotification();
         }
 
@@ -289,5 +296,10 @@ public class DownloadForegroundServiceManager {
     @VisibleForTesting
     void setBoundService(DownloadForegroundService service) {
         mBoundService = service;
+    }
+
+    @VisibleForTesting
+    boolean isPreLollipop() {
+        return Build.VERSION.SDK_INT < 21;
     }
 }

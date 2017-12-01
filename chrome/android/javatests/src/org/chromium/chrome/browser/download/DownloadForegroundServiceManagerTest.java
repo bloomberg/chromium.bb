@@ -211,7 +211,9 @@ public final class DownloadForegroundServiceManagerTest {
         mDownloadServiceManager.updateDownloadStatus(
                 mContext, DownloadStatus.PAUSE, FAKE_DOWNLOAD_1, mNotification);
         assertFalse(mDownloadServiceManager.mIsServiceBound);
-        assertFalse(mDownloadServiceManager.mIsNotificationKilled);
+
+        assertEquals(mDownloadServiceManager.isPreLollipop(),
+                mDownloadServiceManager.mIsNotificationKilled);
         assertTrue(mDownloadServiceManager.mIsNotificationDetached);
 
         // Service restarts and then is cancelled, so notification is killed.

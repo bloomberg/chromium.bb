@@ -80,14 +80,14 @@ public class DownloadForegroundService extends Service {
         DownloadNotificationUmaHelper.recordServiceStoppedHistogram(
                 DownloadNotificationUmaHelper.ServiceStopped.STOPPED, true /* withForeground */);
 
-        boolean notificationDetachedOrKilled =
-                (detachNotification && isSdkAtLeast24()) || killNotification;
+        boolean notificationDetached = detachNotification && isSdkAtLeast24();
+        boolean notificationDetachedOrKilled = notificationDetached || killNotification;
 
         // Reset pinned notification if notification is properly detached or killed.
         if (notificationDetachedOrKilled) clearPinnedNotificationId();
 
         // Detach notification from foreground if possible.
-        if (detachNotification && isSdkAtLeast24()) {
+        if (notificationDetached) {
             stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_DETACH);
             return true;
         }
