@@ -425,6 +425,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyBaseCustom.cpp",
     "properties/Longhand.h",
     "properties/Shorthand.h",
+    "properties/StyleBuildingUtils.h",
     "properties/longhands/AlignItems.cpp",
     "properties/longhands/AlignOrJustifyContent.cpp",
     "properties/longhands/AlignSelf.cpp",
