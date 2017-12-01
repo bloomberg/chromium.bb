@@ -351,6 +351,10 @@ ResourceLoadPriority ResourceRequest::Priority() const {
   return priority_;
 }
 
+int ResourceRequest::IntraPriorityValue() const {
+  return intra_priority_value_;
+}
+
 void ResourceRequest::SetPriority(ResourceLoadPriority priority,
                                   int intra_priority_value) {
   priority_ = priority;
