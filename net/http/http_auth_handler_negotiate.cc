@@ -49,8 +49,7 @@ HttpAuthHandlerNegotiate::Factory::Factory()
       is_unsupported_(false) {
 }
 
-HttpAuthHandlerNegotiate::Factory::~Factory() {
-}
+HttpAuthHandlerNegotiate::Factory::~Factory() = default;
 
 void HttpAuthHandlerNegotiate::Factory::set_host_resolver(
     HostResolver* resolver) {
@@ -139,8 +138,7 @@ HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
       http_auth_preferences_(prefs) {
 }
 
-HttpAuthHandlerNegotiate::~HttpAuthHandlerNegotiate() {
-}
+HttpAuthHandlerNegotiate::~HttpAuthHandlerNegotiate() = default;
 
 std::string HttpAuthHandlerNegotiate::CreateSPN(const AddressList& address_list,
                                                 const GURL& origin) {

@@ -72,11 +72,9 @@ void RecordLookupByPathPosition(int position) {
 
 namespace net {
 
-HttpAuthCache::HttpAuthCache() {
-}
+HttpAuthCache::HttpAuthCache() = default;
 
-HttpAuthCache::~HttpAuthCache() {
-}
+HttpAuthCache::~HttpAuthCache() = default;
 
 // Performance: O(n), where n is the number of realm entries.
 HttpAuthCache::Entry* HttpAuthCache::Lookup(const GURL& origin,
@@ -183,8 +181,7 @@ HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
 
 HttpAuthCache::Entry::Entry(const Entry& other) = default;
 
-HttpAuthCache::Entry::~Entry() {
-}
+HttpAuthCache::Entry::~Entry() = default;
 
 void HttpAuthCache::Entry::UpdateStaleChallenge(
     const std::string& auth_challenge) {

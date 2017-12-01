@@ -84,6 +84,6 @@ void StreamSocket::UseHistory::EmitPreconnectionHistograms() const {
 StreamSocket::SocketMemoryStats::SocketMemoryStats()
     : total_size(0), buffer_size(0), cert_count(0), cert_size(0) {}
 
-StreamSocket::SocketMemoryStats::~SocketMemoryStats() {}
+StreamSocket::SocketMemoryStats::~SocketMemoryStats() = default;
 
 }  // namespace net

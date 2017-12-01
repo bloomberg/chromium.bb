@@ -115,7 +115,7 @@ const HostResolver::RequestInfo& HttpProxySocketParams::destination() const {
   }
 }
 
-HttpProxySocketParams::~HttpProxySocketParams() {}
+HttpProxySocketParams::~HttpProxySocketParams() = default;
 
 HttpProxyConnectJob::HttpProxyConnectJob(
     const std::string& group_name,
@@ -156,7 +156,7 @@ HttpProxyConnectJob::HttpProxyConnectJob(
           params->proxy_delegate(),
           this->net_log())) {}
 
-HttpProxyConnectJob::~HttpProxyConnectJob() {}
+HttpProxyConnectJob::~HttpProxyConnectJob() = default;
 
 LoadState HttpProxyConnectJob::GetLoadState() const {
   return client_socket_->GetConnectLoadState();
@@ -285,8 +285,7 @@ HttpProxyClientSocketPool::HttpProxyClientSocketPool(
     base_.AddLowerLayeredPool(ssl_pool_);
 }
 
-HttpProxyClientSocketPool::~HttpProxyClientSocketPool() {
-}
+HttpProxyClientSocketPool::~HttpProxyClientSocketPool() = default;
 
 int HttpProxyClientSocketPool::RequestSocket(const std::string& group_name,
                                              const void* socket_params,

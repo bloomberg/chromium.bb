@@ -13,14 +13,13 @@
 namespace net {
 namespace test_server {
 
-HttpResponse::~HttpResponse() {
-}
+HttpResponse::~HttpResponse() = default;
 
 RawHttpResponse::RawHttpResponse(const std::string& headers,
                                  const std::string& contents)
     : headers_(headers), contents_(contents) {}
 
-RawHttpResponse::~RawHttpResponse() {}
+RawHttpResponse::~RawHttpResponse() = default;
 
 void RawHttpResponse::SendResponse(const SendBytesCallback& send,
                                    const SendCompleteCallback& done) {
@@ -47,8 +46,7 @@ void RawHttpResponse::AddHeader(const std::string& key_value_pair) {
 BasicHttpResponse::BasicHttpResponse() : code_(HTTP_OK) {
 }
 
-BasicHttpResponse::~BasicHttpResponse() {
-}
+BasicHttpResponse::~BasicHttpResponse() = default;
 
 std::string BasicHttpResponse::ToResponseString() const {
   // Response line with headers.

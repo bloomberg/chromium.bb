@@ -492,7 +492,7 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
                              base::Unretained(this))) {
   }
 
-  ~RequestSocketCallback() override {}
+  ~RequestSocketCallback() override = default;
 
   const CompletionCallback& callback() const { return callback_; }
 

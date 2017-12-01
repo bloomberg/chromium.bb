@@ -19,7 +19,7 @@ FileProtocolHandler::FileProtocolHandler(
     const scoped_refptr<base::TaskRunner>& file_task_runner)
     : file_task_runner_(file_task_runner) {}
 
-FileProtocolHandler::~FileProtocolHandler() {}
+FileProtocolHandler::~FileProtocolHandler() = default;
 
 URLRequestJob* FileProtocolHandler::MaybeCreateJob(
     URLRequest* request, NetworkDelegate* network_delegate) const {

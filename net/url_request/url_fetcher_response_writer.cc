@@ -23,11 +23,9 @@ URLFetcherFileWriter* URLFetcherResponseWriter::AsFileWriter() {
   return NULL;
 }
 
-URLFetcherStringWriter::URLFetcherStringWriter() {
-}
+URLFetcherStringWriter::URLFetcherStringWriter() = default;
 
-URLFetcherStringWriter::~URLFetcherStringWriter() {
-}
+URLFetcherStringWriter::~URLFetcherStringWriter() = default;
 
 int URLFetcherStringWriter::Initialize(const CompletionCallback& callback) {
   data_.clear();

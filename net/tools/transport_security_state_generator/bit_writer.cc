@@ -10,9 +10,9 @@ namespace net {
 
 namespace transport_security_state {
 
-BitWriter::BitWriter() {}
+BitWriter::BitWriter() = default;
 
-BitWriter::~BitWriter() {}
+BitWriter::~BitWriter() = default;
 
 void BitWriter::WriteBits(uint32_t bits, uint8_t number_of_bits) {
   DCHECK(number_of_bits <= 32);

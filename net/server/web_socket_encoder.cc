@@ -285,7 +285,7 @@ WebSocketEncoder::WebSocketEncoder(Type type,
       deflater_(std::move(deflater)),
       inflater_(std::move(inflater)) {}
 
-WebSocketEncoder::~WebSocketEncoder() {}
+WebSocketEncoder::~WebSocketEncoder() = default;
 
 WebSocket::ParseResult WebSocketEncoder::DecodeFrame(
     const base::StringPiece& frame,

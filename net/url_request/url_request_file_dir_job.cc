@@ -153,7 +153,7 @@ void URLRequestFileDirJob::OnListDone(int error) {
   CompleteRead(list_complete_result_);
 }
 
-URLRequestFileDirJob::~URLRequestFileDirJob() {}
+URLRequestFileDirJob::~URLRequestFileDirJob() = default;
 
 void URLRequestFileDirJob::DidMakeAbsolutePath(
     const base::FilePath& absolute_path) {

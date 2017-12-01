@@ -41,8 +41,7 @@ HttpServer::HttpServer(std::unique_ptr<ServerSocket> server_socket,
       base::Bind(&HttpServer::DoAcceptLoop, weak_ptr_factory_.GetWeakPtr()));
 }
 
-HttpServer::~HttpServer() {
-}
+HttpServer::~HttpServer() = default;
 
 void HttpServer::AcceptWebSocket(
     int connection_id,

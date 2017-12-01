@@ -39,7 +39,7 @@ BrokenAlternativeServices::BrokenAlternativeServices(Delegate* delegate,
   DCHECK(clock_);
 }
 
-BrokenAlternativeServices::~BrokenAlternativeServices() {}
+BrokenAlternativeServices::~BrokenAlternativeServices() = default;
 
 void BrokenAlternativeServices::Clear() {
   expiration_timer_.Stop();

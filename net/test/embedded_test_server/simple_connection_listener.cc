@@ -19,7 +19,7 @@ SimpleConnectionListener::SimpleConnectionListener(
       allow_additional_connections_(allow_additional_connections),
       run_loop_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
-SimpleConnectionListener::~SimpleConnectionListener() {}
+SimpleConnectionListener::~SimpleConnectionListener() = default;
 
 void SimpleConnectionListener::AcceptedSocket(const StreamSocket& socket) {
   ++seen_connections_;

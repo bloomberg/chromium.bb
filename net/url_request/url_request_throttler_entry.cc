@@ -236,8 +236,7 @@ void URLRequestThrottlerEntry::ReceivedContentWasMalformed(int response_code) {
   }
 }
 
-URLRequestThrottlerEntry::~URLRequestThrottlerEntry() {
-}
+URLRequestThrottlerEntry::~URLRequestThrottlerEntry() = default;
 
 void URLRequestThrottlerEntry::Initialize() {
   sliding_window_release_time_ = base::TimeTicks::Now();

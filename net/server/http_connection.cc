@@ -156,8 +156,7 @@ HttpConnection::HttpConnection(int id, std::unique_ptr<StreamSocket> socket)
       read_buf_(new ReadIOBuffer()),
       write_buf_(new QueuedWriteIOBuffer()) {}
 
-HttpConnection::~HttpConnection() {
-}
+HttpConnection::~HttpConnection() = default;
 
 void HttpConnection::SetWebSocket(std::unique_ptr<WebSocket> web_socket) {
   DCHECK(!web_socket_);

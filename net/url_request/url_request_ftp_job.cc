@@ -35,7 +35,7 @@ class URLRequestFtpJob::AuthData {
 
 URLRequestFtpJob::AuthData::AuthData() : state(AUTH_STATE_NEED_AUTH) {}
 
-URLRequestFtpJob::AuthData::~AuthData() {}
+URLRequestFtpJob::AuthData::~AuthData() = default;
 
 URLRequestFtpJob::URLRequestFtpJob(
     URLRequest* request,

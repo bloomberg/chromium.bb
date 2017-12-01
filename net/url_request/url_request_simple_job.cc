@@ -62,7 +62,7 @@ bool URLRequestSimpleJob::GetCharset(std::string* charset) {
   return true;
 }
 
-URLRequestSimpleJob::~URLRequestSimpleJob() {}
+URLRequestSimpleJob::~URLRequestSimpleJob() = default;
 
 int URLRequestSimpleJob::ReadRawData(IOBuffer* buf, int buf_size) {
   buf_size = std::min(static_cast<int64_t>(buf_size),

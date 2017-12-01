@@ -37,7 +37,7 @@ URLRequestContextStorage::URLRequestContextStorage(URLRequestContext* context)
   DCHECK(context);
 }
 
-URLRequestContextStorage::~URLRequestContextStorage() {}
+URLRequestContextStorage::~URLRequestContextStorage() = default;
 
 void URLRequestContextStorage::set_net_log(std::unique_ptr<NetLog> net_log) {
   context_->set_net_log(net_log.get());

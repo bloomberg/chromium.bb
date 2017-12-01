@@ -106,7 +106,7 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
         run_until_completion_(false),
         not_expect_callback_(false) {}
 
-  ~TestDelegateBase() override {}
+  ~TestDelegateBase() override = default;
 
   void OnStreamReady(bool request_headers_sent) override {
     // Request headers should always be sent in H2's case, because the
@@ -312,7 +312,7 @@ class DeleteStreamDelegate : public TestDelegateBase {
 
   DeleteStreamDelegate(IOBuffer* buf, int buf_len, Phase phase)
       : TestDelegateBase(buf, buf_len), phase_(phase) {}
-  ~DeleteStreamDelegate() override {}
+  ~DeleteStreamDelegate() override = default;
 
   void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override {
     TestDelegateBase::OnHeadersReceived(response_headers);
@@ -370,7 +370,7 @@ class DeleteStreamDelegate : public TestDelegateBase {
 class MockTimer : public base::MockTimer {
  public:
   MockTimer() : base::MockTimer(false, false) {}
-  ~MockTimer() override {}
+  ~MockTimer() override = default;
 
   void Start(const base::Location& posted_from,
              base::TimeDelta delay,

@@ -20,7 +20,7 @@ HttpResponseBodyDrainer::HttpResponseBodyDrainer(HttpStream* stream)
       total_read_(0),
       session_(NULL) {}
 
-HttpResponseBodyDrainer::~HttpResponseBodyDrainer() {}
+HttpResponseBodyDrainer::~HttpResponseBodyDrainer() = default;
 
 void HttpResponseBodyDrainer::Start(HttpNetworkSession* session) {
   read_buf_ = new IOBuffer(kDrainBodyBufferSize);

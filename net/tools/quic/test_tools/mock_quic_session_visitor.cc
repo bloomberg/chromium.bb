@@ -7,13 +7,13 @@
 namespace net {
 namespace test {
 
-MockQuicSessionVisitor::MockQuicSessionVisitor() {}
+MockQuicSessionVisitor::MockQuicSessionVisitor() = default;
 
-MockQuicSessionVisitor::~MockQuicSessionVisitor() {}
+MockQuicSessionVisitor::~MockQuicSessionVisitor() = default;
 
-MockQuicCryptoServerStreamHelper::MockQuicCryptoServerStreamHelper() {}
+MockQuicCryptoServerStreamHelper::MockQuicCryptoServerStreamHelper() = default;
 
-MockQuicCryptoServerStreamHelper::~MockQuicCryptoServerStreamHelper() {}
+MockQuicCryptoServerStreamHelper::~MockQuicCryptoServerStreamHelper() = default;
 
 }  // namespace test
 }  // namespace net

@@ -39,8 +39,8 @@ using ::testing::StrictMock;
 
 class MockPrefDelegate : public net::HttpServerPropertiesManager::PrefDelegate {
  public:
-  MockPrefDelegate() {}
-  ~MockPrefDelegate() override {}
+  MockPrefDelegate() = default;
+  ~MockPrefDelegate() override = default;
 
   // HttpServerPropertiesManager::PrefDelegate implementation.
   const base::DictionaryValue* GetServerProperties() const override {

@@ -54,7 +54,7 @@ class TestURLRequestFileJob : public URLRequestFileJob {
     observed_content_->clear();
   }
 
-  ~TestURLRequestFileJob() override {}
+  ~TestURLRequestFileJob() override = default;
 
  protected:
   void OnOpenComplete(int result) override {
@@ -105,7 +105,7 @@ class TestJobFactory : public URLRequestJobFactory {
     CHECK(observed_content_);
   }
 
-  ~TestJobFactory() override {}
+  ~TestJobFactory() override = default;
 
   URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
@@ -219,7 +219,7 @@ class URLRequestFileJobEventsTest : public testing::Test {
   TestDelegate delegate_;
 };
 
-URLRequestFileJobEventsTest::URLRequestFileJobEventsTest() {}
+URLRequestFileJobEventsTest::URLRequestFileJobEventsTest() = default;
 
 void URLRequestFileJobEventsTest::TearDown() {
   // Gives a chance to close the opening file.

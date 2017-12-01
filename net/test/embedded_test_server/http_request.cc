@@ -36,8 +36,7 @@ HttpRequest::HttpRequest() : method(METHOD_UNKNOWN),
 
 HttpRequest::HttpRequest(const HttpRequest& other) = default;
 
-HttpRequest::~HttpRequest() {
-}
+HttpRequest::~HttpRequest() = default;
 
 GURL HttpRequest::GetURL() const {
   if (base_url.is_valid())
@@ -52,8 +51,7 @@ HttpRequestParser::HttpRequestParser()
       declared_content_length_(0) {
 }
 
-HttpRequestParser::~HttpRequestParser() {
-}
+HttpRequestParser::~HttpRequestParser() = default;
 
 void HttpRequestParser::ProcessChunk(const base::StringPiece& data) {
   data.AppendToString(&buffer_);

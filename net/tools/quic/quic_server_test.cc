@@ -42,7 +42,7 @@ class MockQuicSimpleDispatcher : public QuicSimpleDispatcher {
                              std::move(session_helper),
                              std::move(alarm_factory),
                              response_cache) {}
-  ~MockQuicSimpleDispatcher() override {}
+  ~MockQuicSimpleDispatcher() override = default;
 
   MOCK_METHOD0(OnCanWrite, void());
   MOCK_CONST_METHOD0(HasPendingWrites, bool());
@@ -56,7 +56,7 @@ class TestQuicServer : public QuicServer {
       : QuicServer(crypto_test_utils::ProofSourceForTesting(),
                    &response_cache_) {}
 
-  ~TestQuicServer() override {}
+  ~TestQuicServer() override = default;
 
   MockQuicSimpleDispatcher* mock_dispatcher() { return mock_dispatcher_; }
 

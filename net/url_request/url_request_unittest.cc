@@ -320,8 +320,8 @@ void TestLoadTimingNoHttpResponse(
 // the one in base/ because it insists on bringing its own MessageLoop.
 class TestPowerMonitorSource : public base::PowerMonitorSource {
  public:
-  TestPowerMonitorSource() {}
-  ~TestPowerMonitorSource() override {}
+  TestPowerMonitorSource() = default;
+  ~TestPowerMonitorSource() override = default;
 
   void Suspend() { ProcessPowerEvent(SUSPEND_EVENT); }
 
@@ -736,7 +736,7 @@ class TestURLRequestContextWithProxy : public TestURLRequestContext {
     set_network_delegate(delegate);
     Init();
   }
-  ~TestURLRequestContextWithProxy() override {}
+  ~TestURLRequestContextWithProxy() override = default;
 };
 
 // A mock ReportSenderInterface that just remembers the latest report
@@ -744,8 +744,8 @@ class TestURLRequestContextWithProxy : public TestURLRequestContext {
 class MockCertificateReportSender
     : public TransportSecurityState::ReportSenderInterface {
  public:
-  MockCertificateReportSender() {}
-  ~MockCertificateReportSender() override {}
+  MockCertificateReportSender() = default;
+  ~MockCertificateReportSender() override = default;
 
   void Send(const GURL& report_uri,
             base::StringPiece content_type,
@@ -880,7 +880,8 @@ class URLRequestTest : public PlatformTest {
 // whitelisted files are allowed.
 class CookieBlockingNetworkDelegate : public TestNetworkDelegate {
  public:
-  CookieBlockingNetworkDelegate(){};
+  CookieBlockingNetworkDelegate() = default;
+  ;
 
   // Adds |directory| to the access white list.
   void AddToWhitelist(const base::FilePath& directory) {
@@ -1499,7 +1500,7 @@ class RestartTestJob : public URLRequestTestJob {
  protected:
   void StartAsync() override { this->NotifyRestartRequired(); }
  private:
-  ~RestartTestJob() override {}
+  ~RestartTestJob() override = default;
 };
 
 class CancelTestJob : public URLRequestTestJob {
@@ -1509,7 +1510,7 @@ class CancelTestJob : public URLRequestTestJob {
  protected:
   void StartAsync() override { request_->Cancel(); }
  private:
-  ~CancelTestJob() override {}
+  ~CancelTestJob() override = default;
 };
 
 class CancelThenRestartTestJob : public URLRequestTestJob {
@@ -1524,7 +1525,7 @@ class CancelThenRestartTestJob : public URLRequestTestJob {
     this->NotifyRestartRequired();
   }
  private:
-  ~CancelThenRestartTestJob() override {}
+  ~CancelThenRestartTestJob() override = default;
 };
 
 // An Interceptor for use with interceptor tests.
@@ -1569,8 +1570,7 @@ class MockURLRequestInterceptor : public URLRequestInterceptor {
         did_intercept_final_(false), did_cancel_final_(false) {
   }
 
-  ~MockURLRequestInterceptor() override {
-  }
+  ~MockURLRequestInterceptor() override = default;
 
   // URLRequestInterceptor implementation:
   URLRequestJob* MaybeInterceptRequest(
@@ -3398,7 +3398,7 @@ class FixedDateNetworkDelegate : public TestNetworkDelegate {
  public:
   explicit FixedDateNetworkDelegate(const std::string& fixed_date)
       : fixed_date_(fixed_date) {}
-  ~FixedDateNetworkDelegate() override {}
+  ~FixedDateNetworkDelegate() override = default;
 
   // NetworkDelegate implementation
   int OnHeadersReceived(
@@ -3749,7 +3749,7 @@ class TestSSLConfigService : public SSLConfigService {
   }
 
  protected:
-  ~TestSSLConfigService() override {}
+  ~TestSSLConfigService() override = default;
 
  private:
   const bool ev_enabled_;
@@ -5231,7 +5231,7 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
         callback_(callback) {
   }
 
-  ~AsyncDelegateLogger() {}
+  ~AsyncDelegateLogger() = default;
 
   void Start() {
     url_request_->LogBlockedBy(kFirstDelegateInfo);
@@ -5278,8 +5278,8 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
 // is requested.  Uses AsyncDelegateLogger.
 class AsyncLoggingNetworkDelegate : public TestNetworkDelegate {
  public:
-  AsyncLoggingNetworkDelegate() {}
-  ~AsyncLoggingNetworkDelegate() override {}
+  AsyncLoggingNetworkDelegate() = default;
+  ~AsyncLoggingNetworkDelegate() override = default;
 
   // NetworkDelegate implementation.
   int OnBeforeURLRequest(URLRequest* request,
@@ -5371,7 +5371,7 @@ class AsyncLoggingUrlRequestDelegate : public TestDelegate {
     else if (cancel_stage == CANCEL_ON_READ_COMPLETED)
       set_cancel_in_received_data(true);
   }
-  ~AsyncLoggingUrlRequestDelegate() override {}
+  ~AsyncLoggingUrlRequestDelegate() override = default;
 
   // URLRequest::Delegate implementation:
   void OnReceivedRedirect(URLRequest* request,
@@ -6783,7 +6783,7 @@ TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP2) {
 class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
  public:
   MockExpectCTReporter() : num_failures_(0) {}
-  ~MockExpectCTReporter() override {}
+  ~MockExpectCTReporter() override = default;
 
   void OnExpectCTFailed(const HostPortPair& host_port_pair,
                         const GURL& report_uri,
@@ -6807,7 +6807,7 @@ class MockCTPolicyEnforcer : public CTPolicyEnforcer {
  public:
   MockCTPolicyEnforcer()
       : default_result_(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS) {}
-  ~MockCTPolicyEnforcer() override {}
+  ~MockCTPolicyEnforcer() override = default;
 
   ct::CTPolicyCompliance CheckCompliance(
       X509Certificate* cert,
@@ -7023,7 +7023,7 @@ class TestReportingService : public ReportingService {
 
   // ReportingService implementation:
 
-  ~TestReportingService() override {}
+  ~TestReportingService() override = default;
 
   void QueueReport(const GURL& url,
                    const std::string& group,
@@ -7155,8 +7155,8 @@ namespace {
 class TestNetworkErrorLoggingDelegate : public NetworkErrorLoggingDelegate {
  public:
   struct Header {
-    Header() {}
-    ~Header() {}
+    Header() = default;
+    ~Header() = default;
 
     url::Origin origin;
     std::string value;
@@ -7167,7 +7167,7 @@ class TestNetworkErrorLoggingDelegate : public NetworkErrorLoggingDelegate {
 
   // NetworkErrorLoggingDelegate implementation:
 
-  ~TestNetworkErrorLoggingDelegate() override {}
+  ~TestNetworkErrorLoggingDelegate() override = default;
 
   void SetReportingService(ReportingService* reporting_service) override {
     NOTREACHED();
@@ -8646,7 +8646,7 @@ class FailingHttpTransactionFactory : public HttpTransactionFactory {
   explicit FailingHttpTransactionFactory(HttpNetworkSession* network_session)
       : network_session_(network_session) {}
 
-  ~FailingHttpTransactionFactory() override {}
+  ~FailingHttpTransactionFactory() override = default;
 
   // HttpTransactionFactory methods:
   int CreateTransaction(RequestPriority priority,
@@ -9223,7 +9223,7 @@ TEST_F(URLRequestInterceptorTestHTTP,
 
 class URLRequestTestReferrerPolicy : public URLRequestTest {
  public:
-  URLRequestTestReferrerPolicy() {}
+  URLRequestTestReferrerPolicy() = default;
 
   void InstantiateSameOriginServers(net::EmbeddedTestServer::Type type) {
     origin_server_.reset(new EmbeddedTestServer(type));
@@ -10136,7 +10136,7 @@ class HTTPSFallbackTest : public testing::Test {
         false /* token binding enabled */);
     context_.set_ssl_config_service(ssl_config_service_.get());
   }
-  ~HTTPSFallbackTest() override {}
+  ~HTTPSFallbackTest() override = default;
 
  protected:
   TestSSLConfigService* ssl_config_service() {
@@ -10235,7 +10235,7 @@ class HTTPSSessionTest : public testing::Test {
     default_context_.set_cert_verifier(&cert_verifier_);
     default_context_.Init();
   }
-  ~HTTPSSessionTest() override {}
+  ~HTTPSSessionTest() override = default;
 
  protected:
   MockCertVerifier cert_verifier_;

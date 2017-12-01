@@ -43,7 +43,7 @@ class QuicSimpleServerStreamPeer : public QuicSimpleServerStream {
                              QuicHttpResponseCache* response_cache)
       : QuicSimpleServerStream(stream_id, session, response_cache) {}
 
-  ~QuicSimpleServerStreamPeer() override {}
+  ~QuicSimpleServerStreamPeer() override = default;
 
   using QuicSimpleServerStream::SendErrorResponse;
   using QuicSimpleServerStream::SendResponse;
@@ -97,7 +97,7 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
         .WillByDefault(testing::Return(QuicConsumedData(0, false)));
   }
 
-  ~MockQuicSimpleServerSession() override {}
+  ~MockQuicSimpleServerSession() override = default;
 
   MOCK_METHOD3(OnConnectionClosed,
                void(QuicErrorCode error,

@@ -328,8 +328,7 @@ void MockDiskEntry::IgnoreCallbacks(bool value) {
     StoreAndDeliverCallbacks(false, NULL, CompletionCallback(), 0);
 }
 
-MockDiskEntry::~MockDiskEntry() {
-}
+MockDiskEntry::~MockDiskEntry() = default;
 
 // Unlike the callbacks for MockHttpTransaction, we want this one to run even
 // if the consumer called Close on the MockDiskEntry.  We achieve that by
@@ -779,8 +778,7 @@ MockBlockingBackendFactory::MockBlockingBackendFactory()
       fail_(false) {
 }
 
-MockBlockingBackendFactory::~MockBlockingBackendFactory() {
-}
+MockBlockingBackendFactory::~MockBlockingBackendFactory() = default;
 
 int MockBlockingBackendFactory::CreateBackend(
     NetLog* net_log,

@@ -15,8 +15,7 @@ URLRangeRequestJob::URLRangeRequestJob(URLRequest* request,
     : URLRequestJob(request, delegate), range_parse_result_(OK) {
 }
 
-URLRangeRequestJob::~URLRangeRequestJob() {
-}
+URLRangeRequestJob::~URLRangeRequestJob() = default;
 
 void URLRangeRequestJob::SetExtraRequestHeaders(
     const HttpRequestHeaders& headers) {

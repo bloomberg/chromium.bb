@@ -19,7 +19,7 @@ FuzzedServerSocket::FuzzedServerSocket(base::FuzzedDataProvider* data_provider,
       listen_called_(false),
       weak_factory_(this) {}
 
-FuzzedServerSocket::~FuzzedServerSocket() {}
+FuzzedServerSocket::~FuzzedServerSocket() = default;
 
 int FuzzedServerSocket::Listen(const IPEndPoint& address, int backlog) {
   DCHECK(!listen_called_);

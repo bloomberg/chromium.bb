@@ -33,7 +33,8 @@ class TestHttpCacheTransaction : public HttpCache::Transaction {
  public:
   TestHttpCacheTransaction(RequestPriority priority, HttpCache* cache)
       : HttpCache::Transaction(priority, cache){};
-  ~TestHttpCacheTransaction() override{};
+  ~TestHttpCacheTransaction() override = default;
+  ;
 
   Transaction::Mode mode() const override { return Transaction::READ_WRITE; }
 };

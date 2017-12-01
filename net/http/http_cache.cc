@@ -63,7 +63,7 @@ HttpCache::DefaultBackend::DefaultBackend(CacheType type,
       path_(path),
       max_bytes_(max_bytes) {}
 
-HttpCache::DefaultBackend::~DefaultBackend() {}
+HttpCache::DefaultBackend::~DefaultBackend() = default;
 
 // static
 std::unique_ptr<HttpCache::BackendFactory> HttpCache::DefaultBackend::InMemory(
@@ -127,7 +127,7 @@ bool HttpCache::ActiveEntry::TransactionInReaders(
 // open cache entries or the backend itself.
 struct HttpCache::PendingOp {
   PendingOp() : disk_entry(NULL) {}
-  ~PendingOp() {}
+  ~PendingOp() = default;
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const {
@@ -172,7 +172,7 @@ class HttpCache::WorkItem {
         entry_(NULL),
         callback_(cb),
         backend_(backend) {}
-  ~WorkItem() {}
+  ~WorkItem() = default;
 
   // Calls back the transaction with the result of the operation.
   void NotifyTransaction(int result, ActiveEntry* entry) {
@@ -222,7 +222,7 @@ class HttpCache::MetadataWriter {
   explicit MetadataWriter(HttpCache::Transaction* trans)
       : verified_(false), buf_len_(0), transaction_(trans) {}
 
-  ~MetadataWriter() {}
+  ~MetadataWriter() = default;
 
   // Implements the bulk of HttpCache::WriteMetadata.
   void Write(const GURL& url,

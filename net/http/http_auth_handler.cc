@@ -20,8 +20,7 @@ HttpAuthHandler::HttpAuthHandler()
       properties_(-1) {
 }
 
-HttpAuthHandler::~HttpAuthHandler() {
-}
+HttpAuthHandler::~HttpAuthHandler() = default;
 
 bool HttpAuthHandler::InitFromChallenge(HttpAuthChallengeTokenizer* challenge,
                                         HttpAuth::Target target,

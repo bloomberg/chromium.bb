@@ -38,7 +38,8 @@ QuicClientMessageLooplNetworkHelper::QuicClientMessageLooplNetworkHelper(
     QuicClientBase* client)
     : packet_reader_started_(false), clock_(clock), client_(client) {}
 
-QuicClientMessageLooplNetworkHelper::~QuicClientMessageLooplNetworkHelper() {}
+QuicClientMessageLooplNetworkHelper::~QuicClientMessageLooplNetworkHelper() =
+    default;
 
 bool QuicClientMessageLooplNetworkHelper::CreateUDPSocketAndBind(
     QuicSocketAddress server_address,

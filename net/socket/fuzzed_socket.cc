@@ -40,7 +40,7 @@ FuzzedSocket::FuzzedSocket(base::FuzzedDataProvider* data_provider,
       remote_address_(IPEndPoint(IPAddress::IPv4Localhost(), 80)),
       weak_factory_(this) {}
 
-FuzzedSocket::~FuzzedSocket() {}
+FuzzedSocket::~FuzzedSocket() = default;
 
 int FuzzedSocket::Read(IOBuffer* buf,
                        int buf_len,

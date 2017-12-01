@@ -6,11 +6,9 @@
 
 namespace net {
 
-URLRequestInterceptor::URLRequestInterceptor() {
-}
+URLRequestInterceptor::URLRequestInterceptor() = default;
 
-URLRequestInterceptor::~URLRequestInterceptor() {
-}
+URLRequestInterceptor::~URLRequestInterceptor() = default;
 
 URLRequestJob* URLRequestInterceptor::MaybeInterceptRedirect(
     URLRequest* request,

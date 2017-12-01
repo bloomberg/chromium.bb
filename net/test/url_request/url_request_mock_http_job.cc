@@ -37,7 +37,7 @@ class MockJobInterceptor : public URLRequestInterceptor {
                      bool map_all_requests_to_base_path)
       : base_path_(base_path),
         map_all_requests_to_base_path_(map_all_requests_to_base_path) {}
-  ~MockJobInterceptor() override {}
+  ~MockJobInterceptor() override = default;
 
   // URLRequestJobFactory::ProtocolHandler implementation
   URLRequestJob* MaybeInterceptRequest(
@@ -133,8 +133,7 @@ URLRequestMockHTTPJob::URLRequestMockHTTPJob(URLRequest* request,
                         base::CreateTaskRunnerWithTraits({base::MayBlock()})),
       weak_ptr_factory_(this) {}
 
-URLRequestMockHTTPJob::~URLRequestMockHTTPJob() {
-}
+URLRequestMockHTTPJob::~URLRequestMockHTTPJob() = default;
 
 // Public virtual version.
 void URLRequestMockHTTPJob::GetResponseInfo(HttpResponseInfo* info) {

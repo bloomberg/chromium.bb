@@ -9,12 +9,12 @@
 
 namespace net {
 
-HttpServerRequestInfo::HttpServerRequestInfo() {}
+HttpServerRequestInfo::HttpServerRequestInfo() = default;
 
 HttpServerRequestInfo::HttpServerRequestInfo(
     const HttpServerRequestInfo& other) = default;
 
-HttpServerRequestInfo::~HttpServerRequestInfo() {}
+HttpServerRequestInfo::~HttpServerRequestInfo() = default;
 
 std::string HttpServerRequestInfo::GetHeaderValue(
     const std::string& header_name) const {

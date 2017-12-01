@@ -44,8 +44,7 @@ const char HttpRequestHeaders::kTransferEncoding[] = "Transfer-Encoding";
 const char HttpRequestHeaders::kTokenBinding[] = "Sec-Token-Binding";
 const char HttpRequestHeaders::kUserAgent[] = "User-Agent";
 
-HttpRequestHeaders::HeaderKeyValuePair::HeaderKeyValuePair() {
-}
+HttpRequestHeaders::HeaderKeyValuePair::HeaderKeyValuePair() = default;
 
 HttpRequestHeaders::HeaderKeyValuePair::HeaderKeyValuePair(
     const base::StringPiece& key, const base::StringPiece& value)
@@ -58,7 +57,7 @@ HttpRequestHeaders::Iterator::Iterator(const HttpRequestHeaders& headers)
       curr_(headers.headers_.begin()),
       end_(headers.headers_.end()) {}
 
-HttpRequestHeaders::Iterator::~Iterator() {}
+HttpRequestHeaders::Iterator::~Iterator() = default;
 
 bool HttpRequestHeaders::Iterator::GetNext() {
   if (!started_) {
@@ -73,10 +72,10 @@ bool HttpRequestHeaders::Iterator::GetNext() {
   return curr_ != end_;
 }
 
-HttpRequestHeaders::HttpRequestHeaders() {}
+HttpRequestHeaders::HttpRequestHeaders() = default;
 HttpRequestHeaders::HttpRequestHeaders(const HttpRequestHeaders& other) =
     default;
-HttpRequestHeaders::~HttpRequestHeaders() {}
+HttpRequestHeaders::~HttpRequestHeaders() = default;
 
 bool HttpRequestHeaders::GetHeader(const base::StringPiece& key,
                                    std::string* out) const {

@@ -63,7 +63,6 @@ int URLRequestDataJob::GetData(std::string* mime_type,
   return BuildResponse(url, mime_type, charset, data, NULL);
 }
 
-URLRequestDataJob::~URLRequestDataJob() {
-}
+URLRequestDataJob::~URLRequestDataJob() = default;
 
 }  // namespace net

@@ -27,7 +27,7 @@ QuicSpdyClientStream::QuicSpdyClientStream(QuicStreamId id,
       session_(session),
       has_preliminary_headers_(false) {}
 
-QuicSpdyClientStream::~QuicSpdyClientStream() {}
+QuicSpdyClientStream::~QuicSpdyClientStream() = default;
 
 void QuicSpdyClientStream::OnInitialHeadersComplete(
     bool fin,

@@ -9,7 +9,7 @@
 
 namespace net {
 
-URLFetcher::~URLFetcher() {}
+URLFetcher::~URLFetcher() = default;
 
 // static
 std::unique_ptr<URLFetcher> URLFetcher::Create(

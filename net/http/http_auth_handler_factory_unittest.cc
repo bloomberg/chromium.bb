@@ -29,7 +29,7 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
  public:
   explicit MockHttpAuthHandlerFactory(int return_code) :
       return_code_(return_code) {}
-  ~MockHttpAuthHandlerFactory() override {}
+  ~MockHttpAuthHandlerFactory() override = default;
 
   int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
                         HttpAuth::Target target,

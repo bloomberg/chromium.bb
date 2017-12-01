@@ -15,7 +15,8 @@ QuicSimplePerConnectionPacketWriter::QuicSimplePerConnectionPacketWriter(
       connection_(nullptr),
       weak_factory_(this) {}
 
-QuicSimplePerConnectionPacketWriter::~QuicSimplePerConnectionPacketWriter() {}
+QuicSimplePerConnectionPacketWriter::~QuicSimplePerConnectionPacketWriter() =
+    default;
 
 QuicPacketWriter* QuicSimplePerConnectionPacketWriter::shared_writer() const {
   return shared_writer_;

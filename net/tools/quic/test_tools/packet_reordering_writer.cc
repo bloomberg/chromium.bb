@@ -7,9 +7,9 @@
 namespace net {
 namespace test {
 
-PacketReorderingWriter::PacketReorderingWriter() {}
+PacketReorderingWriter::PacketReorderingWriter() = default;
 
-PacketReorderingWriter::~PacketReorderingWriter() {}
+PacketReorderingWriter::~PacketReorderingWriter() = default;
 
 WriteResult PacketReorderingWriter::WritePacket(
     const char* buffer,

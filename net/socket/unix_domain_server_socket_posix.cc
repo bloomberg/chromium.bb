@@ -42,8 +42,7 @@ UnixDomainServerSocket::UnixDomainServerSocket(
   DCHECK(!auth_callback_.is_null());
 }
 
-UnixDomainServerSocket::~UnixDomainServerSocket() {
-}
+UnixDomainServerSocket::~UnixDomainServerSocket() = default;
 
 // static
 bool UnixDomainServerSocket::GetPeerCredentials(SocketDescriptor socket,

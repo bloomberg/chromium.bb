@@ -30,7 +30,7 @@ QuicSimpleServerStream::QuicSimpleServerStream(
       content_length_(-1),
       response_cache_(response_cache) {}
 
-QuicSimpleServerStream::~QuicSimpleServerStream() {}
+QuicSimpleServerStream::~QuicSimpleServerStream() = default;
 
 void QuicSimpleServerStream::OnInitialHeadersComplete(
     bool fin,

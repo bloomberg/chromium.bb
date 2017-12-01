@@ -21,8 +21,7 @@ HttpAuthFilterWhitelist::HttpAuthFilterWhitelist(
   SetWhitelist(server_whitelist);
 }
 
-HttpAuthFilterWhitelist::~HttpAuthFilterWhitelist() {
-}
+HttpAuthFilterWhitelist::~HttpAuthFilterWhitelist() = default;
 
 // Add a new domain |filter| to the whitelist, if it's not already there
 bool HttpAuthFilterWhitelist::AddFilter(const std::string& filter,

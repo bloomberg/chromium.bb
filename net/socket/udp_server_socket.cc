@@ -15,8 +15,7 @@ UDPServerSocket::UDPServerSocket(net::NetLog* net_log,
       allow_address_reuse_(false),
       allow_broadcast_(false) {}
 
-UDPServerSocket::~UDPServerSocket() {
-}
+UDPServerSocket::~UDPServerSocket() = default;
 
 int UDPServerSocket::Listen(const IPEndPoint& address) {
   int rv = socket_.Open(address.GetFamily());

@@ -139,7 +139,7 @@ MockConnect::MockConnect(IoMode io_mode, int r, IPEndPoint addr) :
     peer_addr(addr) {
 }
 
-MockConnect::~MockConnect() {}
+MockConnect::~MockConnect() = default;
 
 void SocketDataProvider::OnEnableTCPFastOpenIfSupported() {}
 
@@ -178,8 +178,7 @@ StaticSocketDataHelper::StaticSocketDataHelper(MockRead* reads,
       write_count_(writes_count) {
 }
 
-StaticSocketDataHelper::~StaticSocketDataHelper() {
-}
+StaticSocketDataHelper::~StaticSocketDataHelper() = default;
 
 const MockRead& StaticSocketDataHelper::PeekRead() const {
   CHECK(!AllReadDataConsumed());
@@ -248,8 +247,7 @@ StaticSocketDataProvider::StaticSocketDataProvider(MockRead* reads,
     : helper_(reads, reads_count, writes, writes_count) {
 }
 
-StaticSocketDataProvider::~StaticSocketDataProvider() {
-}
+StaticSocketDataProvider::~StaticSocketDataProvider() = default;
 
 MockRead StaticSocketDataProvider::OnRead() {
   CHECK(!helper_.AllReadDataConsumed());
@@ -307,8 +305,7 @@ SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
 SSLSocketDataProvider::SSLSocketDataProvider(
     const SSLSocketDataProvider& other) = default;
 
-SSLSocketDataProvider::~SSLSocketDataProvider() {
-}
+SSLSocketDataProvider::~SSLSocketDataProvider() = default;
 
 SequencedSocketData::SequencedSocketData(MockRead* reads,
                                          size_t reads_count,
@@ -693,13 +690,12 @@ void SequencedSocketData::OnWriteComplete() {
   NET_TRACE(1, " *** ") << "Done";
 }
 
-SequencedSocketData::~SequencedSocketData() {
-}
+SequencedSocketData::~SequencedSocketData() = default;
 
 MockClientSocketFactory::MockClientSocketFactory()
     : enable_read_if_ready_(false) {}
 
-MockClientSocketFactory::~MockClientSocketFactory() {}
+MockClientSocketFactory::~MockClientSocketFactory() = default;
 
 void MockClientSocketFactory::AddSocketDataProvider(
     SocketDataProvider* data) {
@@ -855,7 +851,7 @@ crypto::ECPrivateKey* MockClientSocket::GetChannelIDKey() const {
   return NULL;
 }
 
-MockClientSocket::~MockClientSocket() {}
+MockClientSocket::~MockClientSocket() = default;
 
 void MockClientSocket::RunCallbackAsync(const CompletionCallback& callback,
                                         int result) {
@@ -1532,8 +1528,7 @@ TestSocketRequest::TestSocketRequest(
   DCHECK(completion_count);
 }
 
-TestSocketRequest::~TestSocketRequest() {
-}
+TestSocketRequest::~TestSocketRequest() = default;
 
 void TestSocketRequest::OnComplete(int result) {
   SetResult(result);
@@ -1548,7 +1543,7 @@ const int ClientSocketPoolTest::kIndexOutOfBounds = -1;
 const int ClientSocketPoolTest::kRequestNotFound = -2;
 
 ClientSocketPoolTest::ClientSocketPoolTest() : completion_count_(0) {}
-ClientSocketPoolTest::~ClientSocketPoolTest() {}
+ClientSocketPoolTest::~ClientSocketPoolTest() = default;
 
 int ClientSocketPoolTest::GetOrderOfRequest(size_t index) const {
   index--;
@@ -1588,7 +1583,7 @@ MockTransportClientSocketPool::MockConnectJob::MockConnectJob(
     const CompletionCallback& callback)
     : socket_(std::move(socket)), handle_(handle), user_callback_(callback) {}
 
-MockTransportClientSocketPool::MockConnectJob::~MockConnectJob() {}
+MockTransportClientSocketPool::MockConnectJob::~MockConnectJob() = default;
 
 int MockTransportClientSocketPool::MockConnectJob::Connect() {
   int rv = socket_->Connect(base::Bind(&MockConnectJob::OnConnect,
@@ -1658,7 +1653,7 @@ MockTransportClientSocketPool::MockTransportClientSocketPool(
       release_count_(0),
       cancel_count_(0) {}
 
-MockTransportClientSocketPool::~MockTransportClientSocketPool() {}
+MockTransportClientSocketPool::~MockTransportClientSocketPool() = default;
 
 int MockTransportClientSocketPool::RequestSocket(
     const std::string& group_name,
@@ -1714,7 +1709,7 @@ MockSOCKSClientSocketPool::MockSOCKSClientSocketPool(
                             NULL),
       transport_pool_(transport_pool) {}
 
-MockSOCKSClientSocketPool::~MockSOCKSClientSocketPool() {}
+MockSOCKSClientSocketPool::~MockSOCKSClientSocketPool() = default;
 
 int MockSOCKSClientSocketPool::RequestSocket(const std::string& group_name,
                                              const void* socket_params,

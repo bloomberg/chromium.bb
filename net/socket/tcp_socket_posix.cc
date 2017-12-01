@@ -112,7 +112,7 @@ class FastOpenProbe {
                    base::Unretained(this)));
   }
 
-  ~FastOpenProbe() {}
+  ~FastOpenProbe() = default;
 
   // Checks if the kernel supports TCP FastOpen. Called only once, on startup.
   void DetectTCPFastOpenSupport() {

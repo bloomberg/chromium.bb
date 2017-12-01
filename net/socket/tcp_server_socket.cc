@@ -22,8 +22,7 @@ int TCPServerSocket::AdoptSocket(SocketDescriptor socket) {
   return socket_.AdoptUnconnectedSocket(socket);
 }
 
-TCPServerSocket::~TCPServerSocket() {
-}
+TCPServerSocket::~TCPServerSocket() = default;
 
 int TCPServerSocket::Listen(const IPEndPoint& address, int backlog) {
   int result = socket_.Open(address.GetFamily());

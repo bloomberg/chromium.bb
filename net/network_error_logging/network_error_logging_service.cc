@@ -134,7 +134,7 @@ NetworkErrorLoggingService::Create() {
   return base::WrapUnique(new NetworkErrorLoggingService());
 }
 
-NetworkErrorLoggingService::~NetworkErrorLoggingService() {}
+NetworkErrorLoggingService::~NetworkErrorLoggingService() = default;
 
 void NetworkErrorLoggingService::SetReportingService(
     ReportingService* reporting_service) {

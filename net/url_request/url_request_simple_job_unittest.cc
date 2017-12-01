@@ -60,7 +60,7 @@ class MockSimpleJob : public URLRequestSimpleJob {
   }
 
  private:
-  ~MockSimpleJob() override {}
+  ~MockSimpleJob() override = default;
 
   const std::string data_;
 
@@ -71,7 +71,7 @@ class CancelAfterFirstReadURLRequestDelegate : public TestDelegate {
  public:
   CancelAfterFirstReadURLRequestDelegate() : run_loop_(new base::RunLoop) {}
 
-  ~CancelAfterFirstReadURLRequestDelegate() override {}
+  ~CancelAfterFirstReadURLRequestDelegate() override = default;
 
   void OnResponseStarted(URLRequest* request, int net_error) override {
     DCHECK_NE(ERR_IO_PENDING, net_error);
@@ -101,7 +101,7 @@ class SimpleJobProtocolHandler :
     return new MockSimpleJob(request, network_delegate, kTestData);
   }
 
-  ~SimpleJobProtocolHandler() override {}
+  ~SimpleJobProtocolHandler() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimpleJobProtocolHandler);

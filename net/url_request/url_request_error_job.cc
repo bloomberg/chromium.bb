@@ -20,7 +20,7 @@ URLRequestErrorJob::URLRequestErrorJob(
       error_(error),
       weak_factory_(this) {}
 
-URLRequestErrorJob::~URLRequestErrorJob() {}
+URLRequestErrorJob::~URLRequestErrorJob() = default;
 
 void URLRequestErrorJob::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

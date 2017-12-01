@@ -101,7 +101,7 @@ AlternativeServiceInfo AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
 
 AlternativeServiceInfo::AlternativeServiceInfo() : alternative_service_() {}
 
-AlternativeServiceInfo::~AlternativeServiceInfo() {}
+AlternativeServiceInfo::~AlternativeServiceInfo() = default;
 
 AlternativeServiceInfo::AlternativeServiceInfo(
     const AlternativeService& alternative_service,

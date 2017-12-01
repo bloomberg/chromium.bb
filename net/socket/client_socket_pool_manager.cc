@@ -275,8 +275,8 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
 
 }  // namespace
 
-ClientSocketPoolManager::ClientSocketPoolManager() {}
-ClientSocketPoolManager::~ClientSocketPoolManager() {}
+ClientSocketPoolManager::ClientSocketPoolManager() = default;
+ClientSocketPoolManager::~ClientSocketPoolManager() = default;
 
 // static
 int ClientSocketPoolManager::max_sockets_per_pool(

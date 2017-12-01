@@ -61,7 +61,7 @@ const int kMaxExpectedResponseLength = 2048;
 
 class TestHttpClient {
  public:
-  TestHttpClient() {}
+  TestHttpClient() = default;
 
   int ConnectAndWait(const IPEndPoint& address) {
     AddressList addresses(address);
@@ -453,7 +453,7 @@ TEST_F(HttpServerTest, RequestWithTooLargeBody) {
    public:
     TestURLFetcherDelegate(const base::Closure& quit_loop_func)
         : quit_loop_func_(quit_loop_func) {}
-    ~TestURLFetcherDelegate() override {}
+    ~TestURLFetcherDelegate() override = default;
 
     void OnURLFetchComplete(const URLFetcher* source) override {
       EXPECT_EQ(HTTP_INTERNAL_SERVER_ERROR, source->GetResponseCode());
@@ -624,7 +624,7 @@ class MockStreamSocket : public StreamSocket {
   }
 
  private:
-  ~MockStreamSocket() override {}
+  ~MockStreamSocket() override = default;
 
   bool connected_;
   scoped_refptr<IOBuffer> read_buf_;

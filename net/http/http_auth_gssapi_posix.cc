@@ -667,8 +667,7 @@ HttpAuthGSSAPI::HttpAuthGSSAPI(GSSAPILibrary* library,
   DCHECK(library_);
 }
 
-HttpAuthGSSAPI::~HttpAuthGSSAPI() {
-}
+HttpAuthGSSAPI::~HttpAuthGSSAPI() = default;
 
 bool HttpAuthGSSAPI::Init() {
   if (!library_)

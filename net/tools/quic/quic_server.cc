@@ -109,7 +109,7 @@ void QuicServer::Initialize() {
       QuicRandom::GetInstance(), &clock, crypto_config_options_));
 }
 
-QuicServer::~QuicServer() {}
+QuicServer::~QuicServer() = default;
 
 bool QuicServer::CreateUDPSocketAndListen(const QuicSocketAddress& address) {
   fd_ = QuicSocketUtils::CreateUDPSocket(address, &overflow_supported_);

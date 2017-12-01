@@ -18,8 +18,8 @@ namespace {
 
 class TestDelegate : public ChloExtractor::Delegate {
  public:
-  TestDelegate() {}
-  ~TestDelegate() override {}
+  TestDelegate() = default;
+  ~TestDelegate() override = default;
 
   // ChloExtractor::Delegate implementation
   void OnChlo(QuicTransportVersion version,

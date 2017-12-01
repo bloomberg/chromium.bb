@@ -23,8 +23,8 @@ const char kMockHostname[] = "mock.ssl.cert.error.request";
 
 class MockJobInterceptor : public URLRequestInterceptor {
  public:
-  MockJobInterceptor() {}
-  ~MockJobInterceptor() override {}
+  MockJobInterceptor() = default;
+  ~MockJobInterceptor() override = default;
 
   // URLRequestJobFactory::ProtocolHandler implementation:
   URLRequestJob* MaybeInterceptRequest(
@@ -62,8 +62,7 @@ GURL SSLCertificateErrorJob::GetMockUrl() {
   return GURL(base::StringPrintf("https://%s", kMockHostname));
 }
 
-SSLCertificateErrorJob::~SSLCertificateErrorJob() {
-}
+SSLCertificateErrorJob::~SSLCertificateErrorJob() = default;
 
 void SSLCertificateErrorJob::NotifyError() {
   SSLInfo info;

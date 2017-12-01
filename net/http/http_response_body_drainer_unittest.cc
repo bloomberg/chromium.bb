@@ -84,7 +84,7 @@ class MockHttpStream : public HttpStream {
         is_complete_(false),
         can_reuse_connection_(true),
         weak_factory_(this) {}
-  ~MockHttpStream() override {}
+  ~MockHttpStream() override = default;
 
   // HttpStream implementation.
   int InitializeStream(const HttpRequestInfo* request_info,
@@ -243,7 +243,7 @@ class HttpResponseBodyDrainerTest : public testing::Test {
         mock_stream_(new MockHttpStream(&result_waiter_)),
         drainer_(new HttpResponseBodyDrainer(mock_stream_)) {}
 
-  ~HttpResponseBodyDrainerTest() override {}
+  ~HttpResponseBodyDrainerTest() override = default;
 
   HttpNetworkSession* CreateNetworkSession() {
     HttpNetworkSession::Context context;

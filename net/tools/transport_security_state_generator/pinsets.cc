@@ -10,9 +10,9 @@ namespace net {
 
 namespace transport_security_state {
 
-Pinsets::Pinsets() {}
+Pinsets::Pinsets() = default;
 
-Pinsets::~Pinsets() {}
+Pinsets::~Pinsets() = default;
 
 void Pinsets::RegisterSPKIHash(base::StringPiece name, const SPKIHash& hash) {
   spki_hashes_.insert(std::pair<std::string, SPKIHash>(name.as_string(), hash));

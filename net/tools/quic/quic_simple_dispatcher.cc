@@ -24,7 +24,7 @@ QuicSimpleDispatcher::QuicSimpleDispatcher(
                      std::move(alarm_factory)),
       response_cache_(response_cache) {}
 
-QuicSimpleDispatcher::~QuicSimpleDispatcher() {}
+QuicSimpleDispatcher::~QuicSimpleDispatcher() = default;
 
 int QuicSimpleDispatcher::GetRstErrorCount(
     QuicRstStreamErrorCode error_code) const {

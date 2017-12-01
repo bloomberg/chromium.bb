@@ -54,7 +54,7 @@ HttpAuthPreferences::HttpAuthPreferences(
       security_manager_(URLSecurityManager::Create()) {
 }
 
-HttpAuthPreferences::~HttpAuthPreferences() {}
+HttpAuthPreferences::~HttpAuthPreferences() = default;
 
 bool HttpAuthPreferences::IsSupportedScheme(const std::string& scheme) const {
   return base::ContainsKey(auth_schemes_, scheme);

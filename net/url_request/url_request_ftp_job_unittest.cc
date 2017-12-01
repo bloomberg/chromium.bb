@@ -144,7 +144,7 @@ class TestURLRequestFtpJob : public URLRequestFtpJob {
                        FtpTransactionFactory* ftp_factory,
                        FtpAuthCache* ftp_auth_cache)
       : URLRequestFtpJob(request, NULL, ftp_factory, ftp_auth_cache) {}
-  ~TestURLRequestFtpJob() override {}
+  ~TestURLRequestFtpJob() override = default;
 
   using URLRequestFtpJob::SetPriority;
   using URLRequestFtpJob::Start;

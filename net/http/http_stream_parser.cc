@@ -211,8 +211,7 @@ HttpStreamParser::HttpStreamParser(ClientSocketHandle* connection,
                             weak_ptr_factory_.GetWeakPtr());
 }
 
-HttpStreamParser::~HttpStreamParser() {
-}
+HttpStreamParser::~HttpStreamParser() = default;
 
 int HttpStreamParser::SendRequest(const std::string& request_line,
                                   const HttpRequestHeaders& headers,

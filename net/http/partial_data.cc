@@ -43,8 +43,7 @@ PartialData::PartialData()
       weak_factory_(this) {
 }
 
-PartialData::~PartialData() {
-}
+PartialData::~PartialData() = default;
 
 bool PartialData::Init(const HttpRequestHeaders& headers) {
   std::string range_header;

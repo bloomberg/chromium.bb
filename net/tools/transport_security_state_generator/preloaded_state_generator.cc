@@ -124,9 +124,9 @@ HuffmanRepresentationTable ApproximateHuffman(
 
 }  // namespace
 
-PreloadedStateGenerator::PreloadedStateGenerator() {}
+PreloadedStateGenerator::PreloadedStateGenerator() = default;
 
-PreloadedStateGenerator::~PreloadedStateGenerator() {}
+PreloadedStateGenerator::~PreloadedStateGenerator() = default;
 
 std::string PreloadedStateGenerator::Generate(
     const std::string& preload_template,

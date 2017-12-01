@@ -40,7 +40,7 @@ class MockURLRequestJob : public URLRequestJob {
   }
 
  protected:
-  ~MockURLRequestJob() override {}
+  ~MockURLRequestJob() override = default;
 
  private:
   void StartAsync() {

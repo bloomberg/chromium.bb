@@ -85,7 +85,7 @@ int GetEntryCount(const std::string& response_body) {
 class TestJobFactory : public URLRequestJobFactory {
  public:
   explicit TestJobFactory(const base::FilePath& path) : path_(path) {}
-  ~TestJobFactory() override {}
+  ~TestJobFactory() override = default;
 
   URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
@@ -125,9 +125,9 @@ class TestJobFactory : public URLRequestJobFactory {
 
 class TestDirectoryURLRequestDelegate : public TestDelegate {
  public:
-  TestDirectoryURLRequestDelegate() {}
+  TestDirectoryURLRequestDelegate() = default;
 
-  ~TestDirectoryURLRequestDelegate() override {}
+  ~TestDirectoryURLRequestDelegate() override = default;
 
   void OnResponseStarted(URLRequest* request, int net_error) override {
     got_response_started_ = true;

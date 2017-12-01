@@ -23,7 +23,7 @@ class CallbackInfo : public base::SupportsUserData::Data {
                const net::ReportSender::ErrorCallback& error_callback)
       : success_callback_(success_callback), error_callback_(error_callback) {}
 
-  ~CallbackInfo() override {}
+  ~CallbackInfo() override = default;
 
   const net::ReportSender::SuccessCallback& success_callback() const {
     return success_callback_;
@@ -45,8 +45,7 @@ ReportSender::ReportSender(URLRequestContext* request_context,
     : request_context_(request_context),
       traffic_annotation_(traffic_annotation) {}
 
-ReportSender::~ReportSender() {
-}
+ReportSender::~ReportSender() = default;
 
 void ReportSender::Send(const GURL& report_uri,
                         base::StringPiece content_type,

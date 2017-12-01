@@ -114,7 +114,7 @@ class MockableQuicClientEpollNetworkHelper
     : public QuicClientEpollNetworkHelper {
  public:
   using QuicClientEpollNetworkHelper::QuicClientEpollNetworkHelper;
-  ~MockableQuicClientEpollNetworkHelper() override {}
+  ~MockableQuicClientEpollNetworkHelper() override = default;
 
   void ProcessPacket(const QuicSocketAddress& self_address,
                      const QuicSocketAddress& peer_address,
@@ -289,7 +289,7 @@ QuicTestClient::QuicTestClient(
   Initialize();
 }
 
-QuicTestClient::QuicTestClient() {}
+QuicTestClient::QuicTestClient() = default;
 
 QuicTestClient::~QuicTestClient() {
   for (std::pair<QuicStreamId, QuicSpdyClientStream*> stream : open_streams_) {
@@ -760,7 +760,7 @@ QuicTestClient::TestClientDataToResend::TestClientDataToResend(
       test_client_(test_client),
       ack_listener_(std::move(ack_listener)) {}
 
-QuicTestClient::TestClientDataToResend::~TestClientDataToResend() {}
+QuicTestClient::TestClientDataToResend::~TestClientDataToResend() = default;
 
 void QuicTestClient::TestClientDataToResend::Resend() {
   test_client_->GetOrCreateStreamAndSendRequest(headers_.get(), body_, fin_,
@@ -802,7 +802,7 @@ QuicTestClient::PerStreamState::PerStreamState(
       bytes_written(bytes_written),
       response_body_size(response_body_size) {}
 
-QuicTestClient::PerStreamState::~PerStreamState() {}
+QuicTestClient::PerStreamState::~PerStreamState() = default;
 
 bool QuicTestClient::PopulateHeaderBlockFromUrl(const string& uri,
                                                 SpdyHeaderBlock* headers) {

@@ -38,7 +38,7 @@ class TestURLRequestJob : public URLRequestFileJob {
   }
 
  private:
-  ~TestURLRequestJob() override {}
+  ~TestURLRequestJob() override = default;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLRequestJob);
 };
@@ -59,7 +59,7 @@ class TestURLRequestInterceptor::Delegate : public URLRequestInterceptor {
         network_task_runner_(network_task_runner),
         worker_task_runner_(worker_task_runner),
         hit_count_(0) {}
-  ~Delegate() override {}
+  ~Delegate() override = default;
 
   void Register() {
     URLRequestFilter::GetInstance()->AddHostnameInterceptor(

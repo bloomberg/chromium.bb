@@ -12,8 +12,8 @@
 
 namespace net {
 
-MockClientSocketPoolManager::MockClientSocketPoolManager() {}
-MockClientSocketPoolManager::~MockClientSocketPoolManager() {}
+MockClientSocketPoolManager::MockClientSocketPoolManager() = default;
+MockClientSocketPoolManager::~MockClientSocketPoolManager() = default;
 
 void MockClientSocketPoolManager::SetTransportSocketPool(
     TransportClientSocketPool* pool) {

@@ -70,12 +70,12 @@ class DiscreteTimeSimulation {
  public:
   class Actor {
    public:
-    virtual ~Actor() {}
+    virtual ~Actor() = default;
     virtual void AdvanceTime(const TimeTicks& absolute_time) = 0;
     virtual void PerformAction() = 0;
   };
 
-  DiscreteTimeSimulation() {}
+  DiscreteTimeSimulation() = default;
 
   // Adds an |actor| to the simulation. The client of the simulation maintains
   // ownership of |actor| and must ensure its lifetime exceeds that of the
@@ -322,7 +322,7 @@ class MockURLRequestThrottlerEntry : public URLRequestThrottlerEntry {
   }
 
  protected:
-  ~MockURLRequestThrottlerEntry() override {}
+  ~MockURLRequestThrottlerEntry() override = default;
 
  private:
   mutable TestTickClock fake_clock_;

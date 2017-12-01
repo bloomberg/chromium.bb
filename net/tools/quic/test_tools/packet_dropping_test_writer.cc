@@ -64,7 +64,7 @@ PacketDroppingTestWriter::PacketDroppingTestWriter()
   simple_random_.set_seed(seed);
 }
 
-PacketDroppingTestWriter::~PacketDroppingTestWriter() {}
+PacketDroppingTestWriter::~PacketDroppingTestWriter() = default;
 
 void PacketDroppingTestWriter::Initialize(QuicConnectionHelperInterface* helper,
                                           QuicAlarmFactory* alarm_factory,
@@ -241,7 +241,7 @@ PacketDroppingTestWriter::DelayedWrite::DelayedWrite(
 // PacketDroppingTestWriter::DelayedWrite::operator=(
 //    PacketDroppingTestWriter::DelayedWrite&& other) = default;
 
-PacketDroppingTestWriter::DelayedWrite::~DelayedWrite() {}
+PacketDroppingTestWriter::DelayedWrite::~DelayedWrite() = default;
 
 }  // namespace test
 }  // namespace net

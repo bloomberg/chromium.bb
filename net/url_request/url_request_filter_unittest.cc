@@ -24,7 +24,7 @@ namespace {
 class TestURLRequestInterceptor : public URLRequestInterceptor {
  public:
   TestURLRequestInterceptor() : job_(nullptr) {}
-  ~TestURLRequestInterceptor() override {}
+  ~TestURLRequestInterceptor() override = default;
 
   // URLRequestInterceptor implementation:
   URLRequestJob* MaybeInterceptRequest(

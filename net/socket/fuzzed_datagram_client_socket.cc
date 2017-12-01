@@ -30,7 +30,7 @@ FuzzedDatagramClientSocket::FuzzedDatagramClientSocket(
     base::FuzzedDataProvider* data_provider)
     : data_provider_(data_provider), weak_factory_(this) {}
 
-FuzzedDatagramClientSocket::~FuzzedDatagramClientSocket() {}
+FuzzedDatagramClientSocket::~FuzzedDatagramClientSocket() = default;
 
 int FuzzedDatagramClientSocket::Connect(const IPEndPoint& address) {
   CHECK(!connected_);

@@ -54,7 +54,7 @@ void QuicPacketReader::Initialize() {
 #endif
 }
 
-QuicPacketReader::~QuicPacketReader() {}
+QuicPacketReader::~QuicPacketReader() = default;
 
 bool QuicPacketReader::ReadAndDispatchPackets(
     int fd,

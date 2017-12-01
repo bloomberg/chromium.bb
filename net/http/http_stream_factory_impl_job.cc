@@ -1456,9 +1456,9 @@ void HttpStreamFactoryImpl::Job::
   delegate_->AddConnectionAttemptsToRequest(this, socket_attempts);
 }
 
-HttpStreamFactoryImpl::JobFactory::JobFactory() {}
+HttpStreamFactoryImpl::JobFactory::JobFactory() = default;
 
-HttpStreamFactoryImpl::JobFactory::~JobFactory() {}
+HttpStreamFactoryImpl::JobFactory::~JobFactory() = default;
 
 std::unique_ptr<HttpStreamFactoryImpl::Job>
 HttpStreamFactoryImpl::JobFactory::CreateMainJob(

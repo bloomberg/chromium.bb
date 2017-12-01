@@ -29,7 +29,7 @@ QuicSpdyClientSession::QuicSpdyClientSession(
       crypto_config_(crypto_config),
       respect_goaway_(true) {}
 
-QuicSpdyClientSession::~QuicSpdyClientSession() {}
+QuicSpdyClientSession::~QuicSpdyClientSession() = default;
 
 void QuicSpdyClientSession::Initialize() {
   crypto_stream_ = CreateQuicCryptoStream();

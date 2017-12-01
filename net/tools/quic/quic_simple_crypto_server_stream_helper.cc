@@ -10,7 +10,8 @@ QuicSimpleCryptoServerStreamHelper::QuicSimpleCryptoServerStreamHelper(
     QuicRandom* random)
     : random_(random) {}
 
-QuicSimpleCryptoServerStreamHelper::~QuicSimpleCryptoServerStreamHelper() {}
+QuicSimpleCryptoServerStreamHelper::~QuicSimpleCryptoServerStreamHelper() =
+    default;
 
 QuicConnectionId
 QuicSimpleCryptoServerStreamHelper::GenerateConnectionIdForReject(

@@ -92,7 +92,7 @@ class MockURLRequestThrottlerEntry : public URLRequestThrottlerEntry {
   }
 
  protected:
-  ~MockURLRequestThrottlerEntry() override {}
+  ~MockURLRequestThrottlerEntry() override = default;
 
  private:
   mutable TestTickClock fake_clock_;

@@ -111,7 +111,7 @@ RedirectInfo::RedirectInfo()
 
 RedirectInfo::RedirectInfo(const RedirectInfo& other) = default;
 
-RedirectInfo::~RedirectInfo() {}
+RedirectInfo::~RedirectInfo() = default;
 
 RedirectInfo RedirectInfo::ComputeRedirectInfo(
     const std::string& original_method,

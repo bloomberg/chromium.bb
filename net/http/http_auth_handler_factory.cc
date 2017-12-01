@@ -104,11 +104,9 @@ CreateAuthHandlerRegistryFactory(const HttpAuthPreferences& prefs,
 
 }  // namespace
 
-HttpAuthHandlerRegistryFactory::HttpAuthHandlerRegistryFactory() {
-}
+HttpAuthHandlerRegistryFactory::HttpAuthHandlerRegistryFactory() = default;
 
-HttpAuthHandlerRegistryFactory::~HttpAuthHandlerRegistryFactory() {
-}
+HttpAuthHandlerRegistryFactory::~HttpAuthHandlerRegistryFactory() = default;
 
 void HttpAuthHandlerRegistryFactory::SetHttpAuthPreferences(
     const std::string& scheme,

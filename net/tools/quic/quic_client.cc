@@ -83,7 +83,7 @@ QuicClient::QuicClient(
   set_server_address(server_address);
 }
 
-QuicClient::~QuicClient() {}
+QuicClient::~QuicClient() = default;
 
 QuicClientEpollNetworkHelper* QuicClient::epoll_network_helper() {
   return static_cast<QuicClientEpollNetworkHelper*>(network_helper());

@@ -16,7 +16,7 @@ using std::string;
 
 namespace net {
 
-QuicClientBase::NetworkHelper::~NetworkHelper() {}
+QuicClientBase::NetworkHelper::~NetworkHelper() = default;
 
 QuicClientBase::QuicClientBase(
     const QuicServerId& server_id,
@@ -41,7 +41,7 @@ QuicClientBase::QuicClientBase(
       connected_or_attempting_connect_(false),
       network_helper_(std::move(network_helper)) {}
 
-QuicClientBase::~QuicClientBase() {}
+QuicClientBase::~QuicClientBase() = default;
 
 bool QuicClientBase::Initialize() {
   num_sent_client_hellos_ = 0;

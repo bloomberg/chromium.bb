@@ -33,7 +33,7 @@ SOCKSSocketParams::SOCKSSocketParams(
       socks_v5_(socks_v5) {
 }
 
-SOCKSSocketParams::~SOCKSSocketParams() {}
+SOCKSSocketParams::~SOCKSSocketParams() = default;
 
 // SOCKSConnectJobs will time out after this many seconds.  Note this is on
 // top of the timeout for the transport socket.
@@ -209,8 +209,7 @@ SOCKSClientSocketPool::SOCKSClientSocketPool(
     base_.AddLowerLayeredPool(transport_pool_);
 }
 
-SOCKSClientSocketPool::~SOCKSClientSocketPool() {
-}
+SOCKSClientSocketPool::~SOCKSClientSocketPool() = default;
 
 int SOCKSClientSocketPool::RequestSocket(const std::string& group_name,
                                          const void* socket_params,

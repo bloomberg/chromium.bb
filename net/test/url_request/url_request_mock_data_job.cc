@@ -75,8 +75,8 @@ GURL GetMockUrl(const std::string& scheme,
 
 class MockJobInterceptor : public URLRequestInterceptor {
  public:
-  MockJobInterceptor() {}
-  ~MockJobInterceptor() override {}
+  MockJobInterceptor() = default;
+  ~MockJobInterceptor() override = default;
 
   // URLRequestInterceptor implementation
   URLRequestJob* MaybeInterceptRequest(
@@ -117,8 +117,7 @@ void URLRequestMockDataJob::Start() {
                             weak_factory_.GetWeakPtr()));
 }
 
-URLRequestMockDataJob::~URLRequestMockDataJob() {
-}
+URLRequestMockDataJob::~URLRequestMockDataJob() = default;
 
 int URLRequestMockDataJob::ReadRawData(IOBuffer* buf, int buf_size) {
   int bytes_read =

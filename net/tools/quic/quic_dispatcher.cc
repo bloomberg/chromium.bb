@@ -57,7 +57,7 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface,
       : send_buffer_(
             allocator,
             FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2) {}
-  ~PacketCollector() override {}
+  ~PacketCollector() override = default;
 
   // QuicPacketCreator::DelegateInterface methods:
   void OnSerializedPacket(SerializedPacket* serialized_packet) override {

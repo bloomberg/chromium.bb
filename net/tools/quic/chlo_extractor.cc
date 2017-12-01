@@ -22,7 +22,7 @@ class ChloFramerVisitor : public QuicFramerVisitorInterface,
  public:
   ChloFramerVisitor(QuicFramer* framer, ChloExtractor::Delegate* delegate);
 
-  ~ChloFramerVisitor() override {}
+  ~ChloFramerVisitor() override = default;
 
   // QuicFramerVisitorInterface implementation
   void OnError(QuicFramer* framer) override {}
