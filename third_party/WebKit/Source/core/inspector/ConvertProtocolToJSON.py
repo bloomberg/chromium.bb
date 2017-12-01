@@ -161,18 +161,20 @@ def parse(data):
 
 def main(argv):
     if len(argv) < 2:
-        sys.stderr.write("Usage: %s stamp <protocol.pdl>\n" % sys.argv[0])
+        sys.stderr.write("Usage: %s <protocol.pdl> <protocol.json>\n" % sys.argv[0])
         return 1
     global file_name
-    file_name = os.path.normpath(argv[1])
+    file_name = os.path.normpath(argv[0])
     input_file = open(file_name, "r")
     pdl_string = input_file.read()
     protocol = parse(pdl_string)
-    output_file = open(argv[1].replace('.pdl', '.json'), "w")
+    output_file = open(argv[0].replace('.pdl', '.json'), "w")
     json.dump(protocol, output_file, indent=4, separators=(',', ': '))
     output_file.close()
-    with open(os.path.normpath(argv[0]), 'a') as _:
-        pass
+
+    output_file = open(os.path.normpath(argv[1]), "w")
+    json.dump(protocol, output_file, indent=4, separators=(',', ': '))
+    output_file.close()
 
 
 if __name__ == '__main__':
