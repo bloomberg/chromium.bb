@@ -17,7 +17,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_bindings_system.h"
-#include "extensions/renderer/ipc_message_sender.h"
+#include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/js_extension_bindings_system.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/service_worker_data.h"
@@ -148,26 +148,9 @@ void WorkerThreadDispatcher::OnDispatchEvent(
 void WorkerThreadDispatcher::AddWorkerData(
     int64_t service_worker_version_id,
     ScriptContext* context,
-    ResourceBundleSourceMap* source_map) {
+    std::unique_ptr<ExtensionBindingsSystem> bindings_system) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   if (!data) {
-    std::unique_ptr<ExtensionBindingsSystem> bindings_system;
-    // QUESTION(lazyboy): Why is passing the WorkerThreadDispatcher to the
-    // IPCMessageSender (previously the ServiceWorkerRequestSender) safe? The
-    // WorkerThreadDispatcher is a process-wide singleton, but the
-    // IPCMessageSender is per-context (thus potentially many per process).
-    std::unique_ptr<IPCMessageSender> ipc_message_sender =
-        IPCMessageSender::CreateWorkerThreadIPCMessageSender(
-            this, service_worker_version_id);
-    if (base::FeatureList::IsEnabled(features::kNativeCrxBindings)) {
-      // The Unretained below is safe since the IPC message sender outlives the
-      // bindings system.
-      bindings_system = std::make_unique<NativeExtensionBindingsSystem>(
-          std::move(ipc_message_sender));
-    } else {
-      bindings_system = std::make_unique<JsExtensionBindingsSystem>(
-          source_map, std::move(ipc_message_sender));
-    }
     ServiceWorkerData* new_data = new ServiceWorkerData(
         service_worker_version_id, context, std::move(bindings_system));
     g_data_tls.Pointer()->Set(new_data);

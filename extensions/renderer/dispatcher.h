@@ -55,6 +55,7 @@ namespace extensions {
 class ContentWatcher;
 class DispatcherDelegate;
 class ExtensionBindingsSystem;
+class IPCMessageSender;
 class ScriptContext;
 class ScriptInjectionManager;
 struct EventFilteringInfo;
@@ -245,6 +246,12 @@ class Dispatcher : public content::RenderThreadObserver,
   // Requires the GuestView modules in the module system of the ScriptContext
   // |context|.
   void RequireGuestViewModules(ScriptContext* context);
+
+  // Creates the ExtensionBindingsSystem. Note: this may be called on any
+  // thread, and thus cannot mutate any state or rely on state which can be
+  // mutated in Dispatcher.
+  std::unique_ptr<ExtensionBindingsSystem> CreateBindingsSystem(
+      std::unique_ptr<IPCMessageSender> ipc_sender);
 
   // The delegate for this dispatcher to handle embedder-specific logic.
   std::unique_ptr<DispatcherDelegate> delegate_;

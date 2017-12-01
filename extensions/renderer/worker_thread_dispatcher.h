@@ -23,7 +23,6 @@ class RenderThread;
 struct ExtensionMsg_DispatchEvent_Params;
 namespace extensions {
 class ExtensionBindingsSystem;
-class ResourceBundleSourceMap;
 class ScriptContext;
 class V8SchemaRegistry;
 
@@ -52,7 +51,7 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
 
   void AddWorkerData(int64_t service_worker_version_id,
                      ScriptContext* context,
-                     ResourceBundleSourceMap* source_map);
+                     std::unique_ptr<ExtensionBindingsSystem> bindings_system);
   void RemoveWorkerData(int64_t service_worker_version_id);
 
   EventBookkeeper* event_bookkeeper() { return &event_bookkeeper_; }
