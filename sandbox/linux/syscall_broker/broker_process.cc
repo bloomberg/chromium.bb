@@ -129,6 +129,11 @@ int BrokerProcess::Rename(const char* oldpath, const char* newpath) const {
   return broker_client_->Rename(oldpath, newpath);
 }
 
+int BrokerProcess::Readlink(const char* path, char* buf, size_t bufsize) const {
+  RAW_CHECK(initialized_);
+  return broker_client_->Readlink(path, buf, bufsize);
+}
+
 #if defined(MEMORY_SANITIZER)
 #define BROKER_UNPOISON_STRING(x) __msan_unpoison_string(x)
 #else
@@ -195,6 +200,22 @@ intptr_t BrokerProcess::SIGSYS_Handler(const sandbox::arch_seccomp_data& args,
         return -EINVAL;
       return broker_process->Stat(reinterpret_cast<const char*>(args.args[1]),
                                   reinterpret_cast<struct stat*>(args.args[2]));
+#endif
+#if defined(__NR_readlink)
+    case __NR_readlink:
+      return broker_process->Readlink(
+          reinterpret_cast<const char*>(args.args[0]),
+          reinterpret_cast<char*>(args.args[1]),
+          static_cast<size_t>(args.args[2]));
+#endif
+#if defined(__NR_readlinkat)
+    case __NR_readlinkat:
+      if (static_cast<int>(args.args[0]) != AT_FDCWD)
+        return -EPERM;
+      return broker_process->Readlink(
+          reinterpret_cast<const char*>(args.args[1]),
+          reinterpret_cast<char*>(args.args[2]),
+          static_cast<size_t>(args.args[3]));
 #endif
 #if defined(__NR_rename)
     case __NR_rename:

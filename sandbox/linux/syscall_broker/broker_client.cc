@@ -229,5 +229,50 @@ int BrokerClient::Rename(const char* oldpath, const char* newpath) {
   return return_value;
 }
 
+int BrokerClient::Readlink(const char* path, char* buf, size_t bufsize) {
+  if (fast_check_in_client_) {
+    bool ignore;
+    if (!broker_policy_.GetFileNameIfAllowedToOpen(path, O_RDONLY, nullptr,
+                                                   &ignore)) {
+      return -broker_policy_.denied_errno();
+    }
+  }
+
+  base::Pickle write_pickle;
+  write_pickle.WriteInt(COMMAND_READLINK);
+  write_pickle.WriteString(path);
+  RAW_CHECK(write_pickle.size() <= kMaxMessageLength);
+
+  int returned_fd = -1;
+  uint8_t reply_buf[kMaxMessageLength];
+  ssize_t msg_len = base::UnixDomainSocket::SendRecvMsg(
+      ipc_channel_.get(), reply_buf, sizeof(reply_buf), &returned_fd,
+      write_pickle);
+
+  if (msg_len <= 0) {
+    if (!quiet_failures_for_tests_)
+      RAW_LOG(ERROR, "Could not make request to broker process");
+    return -ENOMEM;
+  }
+
+  base::Pickle read_pickle(reinterpret_cast<char*>(reply_buf), msg_len);
+  base::PickleIterator iter(read_pickle);
+  int return_value = -1;
+  int return_length = 0;
+  const char* return_data = nullptr;
+  if (!iter.ReadInt(&return_value))
+    return -ENOMEM;
+  if (return_value < 0)
+    return return_value;
+  if (!iter.ReadData(&return_data, &return_length))
+    return -ENOMEM;
+  if (return_length < 0)
+    return -ENOMEM;
+  if (static_cast<size_t>(return_length) > bufsize)
+    return -ENAMETOOLONG;
+  memcpy(buf, return_data, return_length);
+  return return_value;
+}
+
 }  // namespace syscall_broker
 }  // namespace sandbox
