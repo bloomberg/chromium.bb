@@ -310,6 +310,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/787837")
     @Feature({"Payments"})
     public void testDoNotCallCanMakePayment()
             throws InterruptedException, ExecutionException, TimeoutException {
