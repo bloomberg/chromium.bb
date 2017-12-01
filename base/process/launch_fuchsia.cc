@@ -193,4 +193,8 @@ bool GetAppOutputWithExitCode(const CommandLine& cl,
   return GetAppOutputInternal(cl, false, output, exit_code);
 }
 
+void RaiseProcessToHighPriority() {
+  // Fuchsia doesn't provide an API to change process priority.
+}
+
 }  // namespace base
