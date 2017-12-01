@@ -57,6 +57,7 @@ void HistoryProviderTest::SetUp() {
 void HistoryProviderTest::TearDown() {
   provider_ = nullptr;
   client_.reset();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 }  // namespace

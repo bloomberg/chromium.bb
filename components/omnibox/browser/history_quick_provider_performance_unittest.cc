@@ -117,6 +117,7 @@ void HQPPerfTestOnePopularURL::SetUp() {
 void HQPPerfTestOnePopularURL::TearDown() {
   provider_ = nullptr;
   client_.reset();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 void HQPPerfTestOnePopularURL::PrepareData() {

@@ -50,13 +50,6 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
       bool create_if_necessary) const override {
     return contextual_suggestions_service_.get();
   }
-  std::unique_ptr<KeywordExtensionsDelegate> GetKeywordExtensionsDelegate(
-      KeywordProvider* keyword_provider) override {
-    return nullptr;
-  }
-  physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() override {
-    return nullptr;
-  }
 
   MOCK_CONST_METHOD0(GetSearchTermsData, const SearchTermsData&());
 
@@ -65,6 +58,13 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
     return nullptr;
   }
   scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() override {
+    return nullptr;
+  }
+  std::unique_ptr<KeywordExtensionsDelegate> GetKeywordExtensionsDelegate(
+      KeywordProvider* keyword_provider) override {
+    return nullptr;
+  }
+  physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() override {
     return nullptr;
   }
 
@@ -88,11 +88,11 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
                void(history::KeywordID keyword_id, const base::string16& term));
   MOCK_METHOD1(PrefetchImage, void(const GURL& url));
 
+  bool IsTabOpenWithURL(const GURL& url) override { return false; }
+
   void set_template_url_service(std::unique_ptr<TemplateURLService> service) {
     template_url_service_ = std::move(service);
   }
-
-  bool IsTabOpenWithURL(const GURL& url) override { return false; }
 
  private:
   std::unique_ptr<ContextualSuggestionsService> contextual_suggestions_service_;
