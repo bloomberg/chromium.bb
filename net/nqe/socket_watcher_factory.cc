@@ -28,7 +28,7 @@ SocketWatcherFactory::SocketWatcherFactory(
   DCHECK(tick_clock_);
 }
 
-SocketWatcherFactory::~SocketWatcherFactory() {}
+SocketWatcherFactory::~SocketWatcherFactory() = default;
 
 std::unique_ptr<SocketPerformanceWatcher>
 SocketWatcherFactory::CreateSocketPerformanceWatcher(

@@ -468,8 +468,7 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
   ObtainConnectionThresholds(params_, connection_thresholds_);
 }
 
-NetworkQualityEstimatorParams::~NetworkQualityEstimatorParams() {
-}
+NetworkQualityEstimatorParams::~NetworkQualityEstimatorParams() = default;
 
 void NetworkQualityEstimatorParams::SetUseSmallResponsesForTesting(
     bool use_small_responses) {
