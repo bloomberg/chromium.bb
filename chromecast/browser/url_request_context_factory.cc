@@ -41,6 +41,7 @@
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -251,13 +252,11 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
 }
 
 void URLRequestContextFactory::InitializeMainContextDependencies(
-    net::HttpTransactionFactory* transaction_factory,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
   if (main_dependencies_initialized_)
     return;
 
-  main_transaction_factory_.reset(transaction_factory);
   std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
   // Keep ProtocolHandlers added in sync with
@@ -311,20 +310,8 @@ void URLRequestContextFactory::InitializeMediaContextDependencies(
 
 void URLRequestContextFactory::PopulateNetworkSessionParams(
     bool ignore_certificate_errors,
-    net::HttpNetworkSession::Params* session_params,
-    net::HttpNetworkSession::Context* session_context) {
+    net::HttpNetworkSession::Params* session_params) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  session_context->host_resolver = host_resolver_.get();
-  session_context->cert_verifier = cert_verifier_.get();
-  session_context->channel_id_service = channel_id_service_.get();
-  session_context->ssl_config_service = ssl_config_service_.get();
-  session_context->transport_security_state = transport_security_state_.get();
-  session_context->cert_transparency_verifier =
-      cert_transparency_verifier_.get();
-  session_context->ct_policy_enforcer = ct_policy_enforcer_.get();
-  session_context->http_auth_handler_factory = http_auth_handler_factory_.get();
-  session_context->http_server_properties = http_server_properties_.get();
-  session_context->proxy_service = proxy_service_.get();
 
   session_params->ignore_certificate_errors = ignore_certificate_errors;
 
@@ -339,11 +326,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   InitializeSystemContextDependencies();
   net::HttpNetworkSession::Params session_params;
-  net::HttpNetworkSession::Context session_context;
-  PopulateNetworkSessionParams(IgnoreCertificateErrors(), &session_params,
-                               &session_context);
-  system_transaction_factory_.reset(new net::HttpNetworkLayer(
-      new net::HttpNetworkSession(session_params, session_context)));
+  PopulateNetworkSessionParams(IgnoreCertificateErrors(), &session_params);
   system_job_factory_.reset(new net::URLRequestJobFactoryImpl());
   system_cookie_store_ =
       content::CreateCookieStore(content::CookieStoreConfig());
@@ -362,14 +345,21 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
   system_context->set_http_auth_handler_factory(
       http_auth_handler_factory_.get());
   system_context->set_http_server_properties(http_server_properties_.get());
-  system_context->set_http_transaction_factory(
-      system_transaction_factory_.get());
   system_context->set_http_user_agent_settings(
       http_user_agent_settings_.get());
   system_context->set_job_factory(system_job_factory_.get());
   system_context->set_cookie_store(system_cookie_store_.get());
   system_context->set_network_delegate(system_network_delegate_.get());
   system_context->set_net_log(net_log_);
+
+  net::HttpNetworkSession::Context session_context;
+  net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
+      system_context, &session_context);
+  system_transaction_factory_.reset(new net::HttpNetworkLayer(
+      new net::HttpNetworkSession(session_params, session_context)));
+  system_context->set_http_transaction_factory(
+      system_transaction_factory_.get());
+
   return system_context;
 }
 
@@ -401,12 +391,8 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
   InitializeSystemContextDependencies();
 
   net::HttpNetworkSession::Params session_params;
-  net::HttpNetworkSession::Context session_context;
-  PopulateNetworkSessionParams(IgnoreCertificateErrors(), &session_params,
-                               &session_context);
+  PopulateNetworkSessionParams(IgnoreCertificateErrors(), &session_params);
   InitializeMainContextDependencies(
-      new net::HttpNetworkLayer(
-          new net::HttpNetworkSession(session_params, session_context)),
       protocol_handlers, std::move(request_interceptors));
 
   content::CookieStoreConfig cookie_config(
@@ -436,6 +422,14 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
   main_context->set_job_factory(main_job_factory_.get());
   main_context->set_network_delegate(app_network_delegate_.get());
   main_context->set_net_log(net_log_);
+
+  net::HttpNetworkSession::Context session_context;
+  net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
+      main_context, &session_context);
+  main_transaction_factory_.reset(new net::HttpNetworkLayer(
+      new net::HttpNetworkSession(session_params, session_context)));
+  main_context->set_http_transaction_factory(main_transaction_factory_.get());
+
   return main_context;
 }
 

@@ -75,15 +75,13 @@ class URLRequestContextFactory {
 
   void InitializeSystemContextDependencies();
   void InitializeMainContextDependencies(
-      net::HttpTransactionFactory* factory,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors);
   void InitializeMediaContextDependencies(net::HttpTransactionFactory* factory);
 
   void PopulateNetworkSessionParams(
       bool ignore_certificate_errors,
-      net::HttpNetworkSession::Params* session_params,
-      net::HttpNetworkSession::Context* session_context);
+      net::HttpNetworkSession::Params* session_params);
 
   // These are called by the RequestContextGetters to create each
   // RequestContext.
