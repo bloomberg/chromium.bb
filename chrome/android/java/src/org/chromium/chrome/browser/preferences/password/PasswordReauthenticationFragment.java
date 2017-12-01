@@ -41,8 +41,8 @@ public class PasswordReauthenticationFragment extends Fragment {
         if (requestCode == CONFIRM_DEVICE_CREDENTIAL_REQUEST_CODE) {
             if (resultCode == getActivity().RESULT_OK) {
                 ReauthenticationManager.setLastReauthTimeMillis(System.currentTimeMillis());
-                mFragmentManager.popBackStack();
             }
+            mFragmentManager.popBackStack();
         }
     }
 
