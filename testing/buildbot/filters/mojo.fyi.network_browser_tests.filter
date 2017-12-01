@@ -236,7 +236,6 @@
 -WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsWithClonedCertificateEcdsa
 -WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsWithClonedCertificateRsa
 -WebRtcDisableEncryptionFlagBrowserTest.VerifyEncryption
--WebRtcEventLogApiTest.TestStartTimedWebRtcEventLogging
 -WebRtcFromWebAccessibleResourceTest.GetUserMediaInWebAccessibleResourceFail
 -WebRtcFromWebAccessibleResourceTest.GetUserMediaInWebAccessibleResourceSuccess
 -WebRtcRtpBrowserTest.AddAndRemoveTracksWithIndividualStreams
@@ -441,9 +440,6 @@
 # crbug.com/778821 Null response body is given to NavigationURLLoaderDelegate::OnResponseStarted() as parameter.
 -WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsVP8
 -WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsVP9
--WebrtcEventLogApiTest.TestStartStopWebRtcEventLogging
-# This passes flakily sometimes.
--WebrtcEventLogApiTest.TestStartTimedWebRtcEventLogging
 
 # crbug.com/778814 Null NavigationData is given to NavigationURLLoaderDelegate::OnResponseStarted() as parameter.
 -ChromeResourceDispatcherHostDelegateBrowserTest.NavigationDataProcessed
