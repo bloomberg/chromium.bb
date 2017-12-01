@@ -27,20 +27,9 @@ base::WeakPtr<ModelTypeSyncBridge> FakeUserEventService::GetSyncBridge() {
   return base::WeakPtr<ModelTypeSyncBridge>();
 }
 
-void FakeUserEventService::RegisterDependentFieldTrial(
-    const std::string& trial_name,
-    UserEventSpecifics::EventCase event_case) {
-  registered_dependent_field_trials_[trial_name].insert(event_case);
-}
-
 const std::vector<UserEventSpecifics>&
 FakeUserEventService::GetRecordedUserEvents() const {
   return recorded_user_events_;
-}
-
-const std::map<std::string, std::set<sync_pb::UserEventSpecifics::EventCase>>&
-FakeUserEventService::GetRegisteredDependentFieldTrials() const {
-  return registered_dependent_field_trials_;
 }
 
 }  // namespace syncer

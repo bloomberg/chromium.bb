@@ -30,12 +30,6 @@ class UserEventService : public KeyedService {
   virtual void RecordUserEvent(
       const sync_pb::UserEventSpecifics& specifics) = 0;
 
-  // Register that knowledge about a given field trial is important when
-  // interpreting specified user event type, and should be recorded if assigned.
-  virtual void RegisterDependentFieldTrial(
-      const std::string& trial_name,
-      sync_pb::UserEventSpecifics::EventCase event_case) = 0;
-
   // Returns the underlying Sync integration point.
   virtual base::WeakPtr<ModelTypeSyncBridge> GetSyncBridge() = 0;
 
