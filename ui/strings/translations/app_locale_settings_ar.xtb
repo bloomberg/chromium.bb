@@ -3,7 +3,7 @@
 <translationbundle lang="ar">
 <translation id="IDS_MINIMUM_UI_FONT_SIZE">10</translation>
 <if expr="chromeos">
-  <translation id="IDS_UI_FONT_FAMILY_CROS">Roboto, Noto Sans Arabic UI, 13px</translation>
-  <translation id="IDS_WEB_FONT_FAMILY">Roboto, Noto Sans Arabic UI, sans-serif</translation>
+  <translation id="IDS_UI_FONT_FAMILY_CROS">Roboto, Noto Naskh Arabic UI, 13px</translation>
+  <translation id="IDS_WEB_FONT_FAMILY">Roboto, Noto Naskh Arabic UI, sans-serif</translation>
 </if>
 </translationbundle>
