@@ -162,7 +162,7 @@ ShellPortMash::CreateAcceleratorController() {
   DCHECK(add_result);
 
   accelerator_controller_delegate_ =
-      std::make_unique<AcceleratorControllerDelegateMash>(window_manager_);
+      std::make_unique<AcceleratorControllerDelegateMash>();
   accelerator_controller_registrar_ =
       std::make_unique<AcceleratorControllerRegistrar>(
           window_manager_, accelerator_namespace_id);

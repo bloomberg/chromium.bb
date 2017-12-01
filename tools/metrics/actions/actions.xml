@@ -1044,8 +1044,13 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Accel_Touch_Hud_Clear">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated 12/2017. Keyboard accelerator replaced with flag.
+  </obsolete>
+  <owner>jamescook@chromium.org</owner>
+  <description>
+    Debugging accelerator used to turn off the touch hud projection feature.
+  </description>
 </action>
 
 <action name="Accel_VolumeDown_F9">

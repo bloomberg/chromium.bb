@@ -1523,8 +1523,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"mus", flag_descriptions::kUseMusName,
      flag_descriptions::kUseMusDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kUseMusChoices)},
+    {"show-taps", flag_descriptions::kShowTapsName,
+     flag_descriptions::kShowTapsDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(ash::switches::kShowTaps)},
     {"show-touch-hud", flag_descriptions::kShowTouchHudName,
-     flag_descriptions::kShowTouchHudDescription, kOsAll,
+     flag_descriptions::kShowTouchHudDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshTouchHud)},
 #endif  // OS_CHROMEOS
     {

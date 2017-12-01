@@ -10,12 +10,12 @@
 
 namespace ash {
 
-class WindowManager;
-
 // Controls accelerators that are specific to mash.
+// TODO(jamescook): Eliminate this class and inline the checks for mash into
+// AcceleratorController.
 class AcceleratorControllerDelegateMash : public AcceleratorControllerDelegate {
  public:
-  explicit AcceleratorControllerDelegateMash(WindowManager* window_manager);
+  AcceleratorControllerDelegateMash();
   ~AcceleratorControllerDelegateMash() override;
 
   // AcceleratorControllerDelegate:
@@ -27,8 +27,6 @@ class AcceleratorControllerDelegateMash : public AcceleratorControllerDelegate {
                      const ui::Accelerator& accelerator) override;
 
  private:
-  WindowManager* window_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerDelegateMash);
 };
 

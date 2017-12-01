@@ -147,8 +147,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
     IDC_HELP_PAGE_VIA_KEYBOARD },
   { ui::VKEY_BROWSER_FAVORITES, ui::EF_NONE, IDC_SHOW_BOOKMARK_MANAGER },
   { ui::VKEY_BROWSER_STOP, ui::EF_NONE, IDC_STOP },
-  { ui::VKEY_P, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-    IDC_TOUCH_HUD_PROJECTION_TOGGLE },
   // On Chrome OS, Search + Esc is used to call out task manager.
   { ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN, IDC_TASK_MANAGER },
 #else  // !OS_CHROMEOS
@@ -292,9 +290,6 @@ const ChromeCmdId2AshActionId kChromeCmdId2AshActionId[] = {
   { IDC_NEW_WINDOW,           ash::NEW_WINDOW },
   { IDC_RESTORE_TAB,          ash::RESTORE_TAB },
   { IDC_TASK_MANAGER,         ash::SHOW_TASK_MANAGER },
-#if defined(OS_CHROMEOS)
-  { IDC_TOUCH_HUD_PROJECTION_TOGGLE, ash::TOUCH_HUD_PROJECTION_TOGGLE },
-#endif
 };
 const size_t kChromeCmdId2AshActionIdLength =
     arraysize(kChromeCmdId2AshActionId);

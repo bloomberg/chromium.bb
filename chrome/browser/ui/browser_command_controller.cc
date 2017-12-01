@@ -55,9 +55,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
-#include "mash/public/interfaces/launchable.mojom.h"
 #include "printing/features/features.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_MACOSX)
@@ -70,10 +68,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/accelerators/accelerator_commands_classic.h"  // mash-ok
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/browser_commands_chromeos.h"
 #endif
 
@@ -640,20 +635,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_DISTILL_PAGE:
       DistillCurrentPage(browser_);
       break;
-#if defined(OS_CHROMEOS)
-    case IDC_TOUCH_HUD_PROJECTION_TOGGLE:
-      if (ash_util::IsRunningInMash()) {
-        service_manager::Connector* connector =
-            content::ServiceManagerConnection::GetForProcess()->GetConnector();
-        mash::mojom::LaunchablePtr launchable;
-        connector->BindInterface("touch_hud", &launchable);
-        launchable->Launch(mash::mojom::kWindow,
-                           mash::mojom::LaunchMode::DEFAULT);
-      } else {
-        ash::accelerators::ToggleTouchHudProjection();
-      }
-      break;
-#endif
     case IDC_ROUTE_MEDIA:
       RouteMedia(browser_);
       break;
@@ -835,7 +816,6 @@ void BrowserCommandController::InitCommandState() {
                                         !guest_session);
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_TAKE_SCREENSHOT, true);
-  command_updater_.UpdateCommandEnabled(IDC_TOUCH_HUD_PROJECTION_TOGGLE, true);
 #else
   // Chrome OS uses the system tray menu to handle multi-profiles.
   if (normal_window && (guest_session || !profile()->IsOffTheRecord())) {

@@ -104,7 +104,6 @@ bool AcceleratorControllerDelegateClassic::HandlesAction(
     case TOGGLE_MESSAGE_CENTER_BUBBLE:
     case TOUCH_HUD_CLEAR:
     case TOUCH_HUD_MODE_CHANGE:
-    case TOUCH_HUD_PROJECTION_TOGGLE:
     case UNPIN:
       return true;
 
@@ -134,7 +133,6 @@ bool AcceleratorControllerDelegateClassic::CanPerformAction(
     case LOCK_RELEASED:
     case POWER_PRESSED:
     case POWER_RELEASED:
-    case TOUCH_HUD_PROJECTION_TOGGLE:
       return true;
 
     case TOUCH_HUD_CLEAR:
@@ -190,9 +188,6 @@ void AcceleratorControllerDelegateClassic::PerformAction(
       break;
     case TOUCH_HUD_MODE_CHANGE:
       HandleTouchHudModeChange();
-      break;
-    case TOUCH_HUD_PROJECTION_TOGGLE:
-      accelerators::ToggleTouchHudProjection();
       break;
     case UNPIN:
       accelerators::Unpin();

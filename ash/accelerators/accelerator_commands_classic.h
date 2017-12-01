@@ -9,13 +9,11 @@
 
 // This file contains implementations of commands that are bound to keyboard
 // shortcuts in Ash or in the embedding application (e.g. Chrome).
+// TODO(jamescook): Combine classic ash and mash command files.
 namespace ash {
 namespace accelerators {
 
-// Toggles touch HUD.
-ASH_EXPORT void ToggleTouchHudProjection();
-
-// If it is in the pinned mode, exit from it.
+// If a window is pinned (aka forced fullscreen), exit from pinned mode.
 ASH_EXPORT void Unpin();
 
 }  // namespace accelerators
