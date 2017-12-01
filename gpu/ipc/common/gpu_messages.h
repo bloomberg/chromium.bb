@@ -80,8 +80,6 @@ IPC_STRUCT_BEGIN(GpuCommandBufferMsg_SwapBuffersCompleted_Params)
   // https://crbug.com/604052
   // Only one of ca_context_id or io_surface may be non-0.
   IPC_STRUCT_MEMBER(CAContextID, ca_context_id)
-  IPC_STRUCT_MEMBER(bool, fullscreen_low_power_ca_context_valid)
-  IPC_STRUCT_MEMBER(CAContextID, fullscreen_low_power_ca_context_id)
   IPC_STRUCT_MEMBER(gfx::ScopedRefCountedIOSurfaceMachPort, io_surface)
   IPC_STRUCT_MEMBER(gfx::Size, pixel_size)
   IPC_STRUCT_MEMBER(float, scale_factor)

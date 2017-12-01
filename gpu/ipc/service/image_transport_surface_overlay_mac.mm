@@ -101,11 +101,6 @@ bool ImageTransportSurfaceOverlayMac::Initialize(gl::GLSurfaceFormat format) {
     ca_context_.reset([
         [CAContext contextWithCGSConnection:connection_id options:@{}] retain]);
     [ca_context_ setLayer:ca_layer_tree_coordinator_->GetCALayerForDisplay()];
-
-    fullscreen_low_power_ca_context_.reset([
-        [CAContext contextWithCGSConnection:connection_id options:@{}] retain]);
-    [fullscreen_low_power_ca_context_ setLayer:
-        ca_layer_tree_coordinator_->GetFullscreenLowPowerLayerForDisplay()];
   }
   return true;
 }
@@ -208,12 +203,9 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
   base::TimeTicks after_flush_before_commit_time;
   ApplyBackpressure(&before_flush_time, &after_flush_before_commit_time);
 
-  // Do the CATransaction to update the CALayer tree.
-  bool fullscreen_low_power_layer_valid = false;
   {
     TRACE_EVENT0("gpu", "CommitPendingTreesToCA");
-    ca_layer_tree_coordinator_->CommitPendingTreesToCA(
-        pixel_damage_rect, &fullscreen_low_power_layer_valid);
+    ca_layer_tree_coordinator_->CommitPendingTreesToCA(pixel_damage_rect);
   }
 
   base::TimeTicks after_transaction_time = base::TimeTicks::Now();
@@ -228,10 +220,6 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
                          "width", pixel_size_.width());
     if (use_remote_layer_api_) {
       params.ca_context_id = [ca_context_ contextId];
-      params.fullscreen_low_power_ca_context_id =
-          [fullscreen_low_power_ca_context_ contextId];
-      params.fullscreen_low_power_ca_context_valid =
-          fullscreen_low_power_layer_valid;
     } else {
       IOSurfaceRef io_surface =
           ca_layer_tree_coordinator_->GetIOSurfaceForDisplay();

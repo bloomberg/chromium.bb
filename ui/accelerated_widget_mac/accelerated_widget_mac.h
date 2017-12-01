@@ -21,8 +21,6 @@
 
 namespace ui {
 
-class FullscreenLowPowerCoordinator;
-
 // A class through which an AcceleratedWidget may be bound to draw the contents
 // of an NSView. An AcceleratedWidget may be bound to multiple different views
 // throughout its lifetime (one at a time, though).
@@ -48,16 +46,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
   void SetNSView(AcceleratedWidgetMacNSView* view);
   void ResetNSView();
 
-  // Fullscreen low power mode interface.
-  void SetFullscreenLowPowerCoordinator(
-      FullscreenLowPowerCoordinator* coordinator);
-  void ResetFullscreenLowPowerCoordinator();
-  CALayer* GetFullscreenLowPowerLayer() const;
-
-  // Returns true if the widget might be in fullscreen low power mode. This
-  // will return a conservative answer.
-  bool MightBeInFullscreenLowPowerMode() const;
-
   // Return true if the last frame swapped has a size in DIP of |dip_size|.
   bool HasFrameOfSize(const gfx::Size& dip_size) const;
 
@@ -66,12 +54,9 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
       base::TimeTicks* timebase, base::TimeDelta* interval) const;
 
   static AcceleratedWidgetMac* Get(gfx::AcceleratedWidget widget);
-  void GotCALayerFrame(
-      base::scoped_nsobject<CALayer> content_layer,
-      bool fullscreen_low_power_layer_valid,
-      base::scoped_nsobject<CALayer> fullscreen_low_power_layer,
-      const gfx::Size& pixel_size,
-      float scale_factor);
+  void GotCALayerFrame(base::scoped_nsobject<CALayer> content_layer,
+                       const gfx::Size& pixel_size,
+                       float scale_factor);
   void GotIOSurfaceFrame(base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
                          const gfx::Size& pixel_size,
                          float scale_factor);
@@ -83,10 +68,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
   // A phony NSView handle used to identify this.
   gfx::AcceleratedWidget native_widget_;
 
-  // The fullscreen low power coordinator. Weak, reset by
-  // SetFullscreenLowPowerCoordinator when it is destroyed.
-  FullscreenLowPowerCoordinator* fslp_coordinator_ = nullptr;
-
   // A flipped layer, which acts as the parent of the compositing and software
   // layers. This layer is flipped so that the we don't need to recompute the
   // origin for sub-layers when their position changes (this is impossible when
@@ -95,11 +76,9 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
   // |background_layer_| of RenderWidgetHostViewCocoa) leads to unpredictable
   // behavior.
   base::scoped_nsobject<CALayer> flipped_layer_;
-  base::scoped_nsobject<CALayer> fslp_flipped_layer_;
 
   // A CALayer with content provided by the output surface.
   base::scoped_nsobject<CALayer> content_layer_;
-  base::scoped_nsobject<CALayer> fullscreen_low_power_layer_;
 
   // A CALayer that has its content set to an IOSurface.
   base::scoped_nsobject<CALayer> io_surface_layer_;

@@ -61,7 +61,6 @@
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h"
-#include "chrome/browser/ui/cocoa/fullscreen_low_power_coordinator.h"
 #include "chrome/browser/ui/cocoa/fullscreen_placeholder_view.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"

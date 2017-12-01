@@ -83,7 +83,6 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
 
   bool use_remote_layer_api_;
   base::scoped_nsobject<CAContext> ca_context_;
-  base::scoped_nsobject<CAContext> fullscreen_low_power_ca_context_;
   std::unique_ptr<ui::CALayerTreeCoordinator> ca_layer_tree_coordinator_;
 
   gfx::Size pixel_size_;

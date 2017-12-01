@@ -45,8 +45,6 @@ struct GPU_EXPORT SwapBuffersCompleteParams {
   // https://crbug.com/604052
   // Only one of ca_context_id or io_surface may be non-0.
   CAContextID ca_context_id = 0;
-  bool fullscreen_low_power_ca_context_valid = false;
-  CAContextID fullscreen_low_power_ca_context_id = 0;
   gfx::ScopedRefCountedIOSurfaceMachPort io_surface;
   gfx::Size pixel_size;
   float scale_factor = 1.f;

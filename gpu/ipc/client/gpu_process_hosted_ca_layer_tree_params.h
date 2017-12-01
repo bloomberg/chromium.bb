@@ -17,8 +17,6 @@ struct GPU_EXPORT GpuProcessHostedCALayerTreeParamsMac {
   ~GpuProcessHostedCALayerTreeParamsMac();
 
   CAContextID ca_context_id = 0;
-  bool fullscreen_low_power_ca_context_valid = false;
-  CAContextID fullscreen_low_power_ca_context_id = 0;
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
   gfx::Size pixel_size;
   float scale_factor = 1;

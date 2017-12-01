@@ -47,7 +47,6 @@ class ExclusiveAccessContext;
 @class FullscreenToolbarController;
 @class FullscreenToolbarVisibilityLockController;
 @class FullscreenWindow;
-class FullscreenLowPowerCoordinatorCocoa;
 @class InfoBarContainerController;
 class LocationBarViewMac;
 @class OverlayableContentsController;
@@ -98,8 +97,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   std::unique_ptr<ExclusiveAccessController> exclusiveAccessController_;
   base::scoped_nsobject<BrowserWindowFullscreenTransition>
       fullscreenTransition_;
-  std::unique_ptr<FullscreenLowPowerCoordinatorCocoa>
-      fullscreenLowPowerCoordinator_;
   base::scoped_nsobject<BrowserWindowTouchBar> touchBar_;
 
   // Strong. StatusBubble is a special case of a strong reference that

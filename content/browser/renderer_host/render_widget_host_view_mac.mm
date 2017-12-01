@@ -782,15 +782,6 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
 }
 
 void RenderWidgetHostViewMac::WasOccluded() {
-  // Ignore occlusion when in fullscreen low power mode, because the occlusion
-  // is likely coming from the fullscreen low power window.
-  ui::AcceleratedWidgetMac* accelerated_widget_mac =
-      browser_compositor_->GetAcceleratedWidgetMac();
-  if (accelerated_widget_mac &&
-      accelerated_widget_mac->MightBeInFullscreenLowPowerMode()) {
-    return;
-  }
-
   render_widget_host_->WasHidden();
   browser_compositor_->SetRenderWidgetHostIsHidden(true);
 }

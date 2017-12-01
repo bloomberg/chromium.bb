@@ -13,7 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/accelerated_widget_mac/fullscreen_low_power_coordinator.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gl/scoped_cgl.h"
@@ -47,12 +46,6 @@ AcceleratedWidgetMac::AcceleratedWidgetMac() : view_(nullptr) {
   [flipped_layer_
       setAutoresizingMask:kCALayerWidthSizable|kCALayerHeightSizable];
 
-  fslp_flipped_layer_.reset([[CALayer alloc] init]);
-  [fslp_flipped_layer_ setGeometryFlipped:YES];
-  [fslp_flipped_layer_ setAnchorPoint:CGPointMake(0, 0)];
-  [fslp_flipped_layer_
-      setAutoresizingMask:kCALayerWidthSizable|kCALayerHeightSizable];
-
   // Use a sequence number as the accelerated widget handle that we can use
   // to look up the internals structure.
   static intptr_t last_sequence_number = 0;
@@ -72,25 +65,18 @@ void AcceleratedWidgetMac::SetNSView(AcceleratedWidgetMacNSView* view) {
   // Disable the fade-in animation as the view is added.
   ScopedCAActionDisabler disabler;
 
-  DCHECK(!fslp_coordinator_);
   DCHECK(view && !view_);
   view_ = view;
 
   CALayer* background_layer = [view_->AcceleratedWidgetGetNSView() layer];
   DCHECK(background_layer);
   [flipped_layer_ setBounds:[background_layer bounds]];
-  [fslp_flipped_layer_ setBounds:[background_layer bounds]];
   [background_layer addSublayer:flipped_layer_];
 }
 
 void AcceleratedWidgetMac::ResetNSView() {
   if (!view_)
     return;
-
-  if (fslp_coordinator_) {
-    fslp_coordinator_->WillLoseAcceleratedWidget();
-    DCHECK(!fslp_coordinator_);
-  }
 
   // Disable the fade-out animation as the view is removed.
   ScopedCAActionDisabler disabler;
@@ -103,26 +89,6 @@ void AcceleratedWidgetMac::ResetNSView() {
 
   last_swap_size_dip_ = gfx::Size();
   view_ = NULL;
-}
-
-void AcceleratedWidgetMac::SetFullscreenLowPowerCoordinator(
-    FullscreenLowPowerCoordinator* coordinator) {
-  DCHECK(coordinator);
-  DCHECK(!fslp_coordinator_);
-  fslp_coordinator_ = coordinator;
-}
-
-void AcceleratedWidgetMac::ResetFullscreenLowPowerCoordinator() {
-  DCHECK(fslp_coordinator_);
-  fslp_coordinator_ = nullptr;
-}
-
-CALayer* AcceleratedWidgetMac::GetFullscreenLowPowerLayer() const {
-  return fslp_flipped_layer_;
-}
-
-bool AcceleratedWidgetMac::MightBeInFullscreenLowPowerMode() const {
-  return fslp_coordinator_;
 }
 
 bool AcceleratedWidgetMac::HasFrameOfSize(
@@ -153,8 +119,6 @@ AcceleratedWidgetMac* AcceleratedWidgetMac::Get(gfx::AcceleratedWidget widget) {
 
 void AcceleratedWidgetMac::GotCALayerFrame(
     base::scoped_nsobject<CALayer> content_layer,
-    bool fullscreen_low_power_layer_valid,
-    base::scoped_nsobject<CALayer> fullscreen_low_power_layer,
     const gfx::Size& pixel_size,
     float scale_factor) {
   TRACE_EVENT0("ui", "AcceleratedWidgetMac::GotCAContextFrame");
@@ -164,8 +128,6 @@ void AcceleratedWidgetMac::GotCALayerFrame(
   }
   ScopedCAActionDisabler disabler;
   last_swap_size_dip_ = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
-  if (fullscreen_low_power_layer_valid)
-    [fslp_flipped_layer_ setFrame:gfx::Rect(last_swap_size_dip_).ToCGRect()];
 
   // Ensure that the content is in the CALayer hierarchy, and update fullscreen
   // low power state.
@@ -174,17 +136,6 @@ void AcceleratedWidgetMac::GotCALayerFrame(
     [content_layer_ removeFromSuperlayer];
     content_layer_ = content_layer;
   }
-  if (fullscreen_low_power_layer_ != fullscreen_low_power_layer) {
-    if (fslp_coordinator_) {
-      fslp_coordinator_->WillLoseAcceleratedWidget();
-      DCHECK(!fslp_coordinator_);
-    }
-    [fslp_flipped_layer_ addSublayer:fullscreen_low_power_layer];
-    [fullscreen_low_power_layer_ removeFromSuperlayer];
-    fullscreen_low_power_layer_ = fullscreen_low_power_layer;
-  }
-  if (fslp_coordinator_)
-    fslp_coordinator_->SetLowPowerLayerValid(fullscreen_low_power_layer_valid);
 
   // Ensure the IOSurface is removed.
   if (io_surface_layer_) {
