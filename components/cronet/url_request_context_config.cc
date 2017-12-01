@@ -59,6 +59,7 @@ const char kQuicMigrateSessionsOnNetworkChangeV2[] =
     "migrate_sessions_on_network_change_v2";
 const char kQuicUserAgentId[] = "user_agent_id";
 const char kQuicMigrateSessionsEarly[] = "migrate_sessions_early";
+const char kQuicMigrateSessionsEarlyV2[] = "migrate_sessions_early_v2";
 const char kQuicDisableBidirectionalStreams[] =
     "quic_disable_bidirectional_streams";
 const char kQuicRaceCertVerification[] = "race_cert_verification";
@@ -280,11 +281,11 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
             quic_migrate_sessions_on_network_change;
       }
 
-      bool quic_migrate_sessions_on_network_change_v2 = false;
-      if (quic_args->GetBoolean(kQuicMigrateSessionsOnNetworkChangeV2,
-                                &quic_migrate_sessions_on_network_change_v2)) {
-        session_params->quic_migrate_sessions_on_network_change_v2 =
-            quic_migrate_sessions_on_network_change_v2;
+      bool quic_migrate_sessions_early = false;
+      if (quic_args->GetBoolean(kQuicMigrateSessionsEarly,
+                                &quic_migrate_sessions_early)) {
+        session_params->quic_migrate_sessions_early =
+            quic_migrate_sessions_early;
       }
 
       std::string quic_user_agent_id;
@@ -292,11 +293,18 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
         session_params->quic_user_agent_id = quic_user_agent_id;
       }
 
-      bool quic_migrate_sessions_early = false;
-      if (quic_args->GetBoolean(kQuicMigrateSessionsEarly,
-                                &quic_migrate_sessions_early)) {
-        session_params->quic_migrate_sessions_early =
-            quic_migrate_sessions_early;
+      bool quic_migrate_sessions_on_network_change_v2 = false;
+      if (quic_args->GetBoolean(kQuicMigrateSessionsOnNetworkChangeV2,
+                                &quic_migrate_sessions_on_network_change_v2)) {
+        session_params->quic_migrate_sessions_on_network_change_v2 =
+            quic_migrate_sessions_on_network_change_v2;
+      }
+
+      bool quic_migrate_sessions_early_v2 = false;
+      if (quic_args->GetBoolean(kQuicMigrateSessionsEarlyV2,
+                                &quic_migrate_sessions_early_v2)) {
+        session_params->quic_migrate_sessions_early_v2 =
+            quic_migrate_sessions_early_v2;
       }
 
       bool quic_disable_bidirectional_streams = false;

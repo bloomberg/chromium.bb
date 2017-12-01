@@ -95,6 +95,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   EXPECT_TRUE(params->quic_close_sessions_on_ip_change);
   EXPECT_FALSE(params->quic_migrate_sessions_on_network_change);
   EXPECT_FALSE(params->quic_migrate_sessions_on_network_change_v2);
+  EXPECT_FALSE(params->quic_migrate_sessions_early_v2);
 
   // Check race_cert_verification.
   EXPECT_TRUE(params->quic_race_cert_verification);
@@ -188,7 +189,8 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
-      "{\"QUIC\":{\"migrate_sessions_on_network_change_v2\":true}}",
+      "{\"QUIC\":{\"migrate_sessions_on_network_change_v2\":true,"
+      "\"migrate_sessions_early_v2\":true}}",
       // MockCertVerifier to use for testing purposes.
       std::unique_ptr<net::CertVerifier>(),
       // Enable network quality estimator.
@@ -210,6 +212,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
       context->GetNetworkSessionParams();
 
   EXPECT_TRUE(params->quic_migrate_sessions_on_network_change_v2);
+  EXPECT_TRUE(params->quic_migrate_sessions_early_v2);
 }
 
 TEST(URLRequestContextConfigTest, SetQuicHostWhitelist) {

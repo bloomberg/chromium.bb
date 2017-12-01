@@ -658,6 +658,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     bool require_confirmation,
     bool migrate_session_early,
     bool migrate_sessions_on_network_change,
+    bool migrate_session_early_v2,
     bool migrate_sessions_on_network_change_v2,
     int yield_after_packets,
     QuicTime::Delta yield_after_duration,
@@ -677,6 +678,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       require_confirmation_(require_confirmation),
       migrate_session_early_(migrate_session_early),
       migrate_session_on_network_change_(migrate_sessions_on_network_change),
+      migrate_session_early_v2_(migrate_session_early_v2),
       migrate_session_on_network_change_v2_(
           migrate_sessions_on_network_change_v2),
       clock_(clock),
@@ -1822,7 +1824,7 @@ void QuicChromiumClientSession::OnPathDegrading() {
         NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
         base::Bind(&NetLogQuicConnectionMigrationTriggerCallback,
                    "PathDegrading"));
-    if (migrate_session_on_network_change_v2_) {
+    if (migrate_session_early_v2_) {
       NetworkChangeNotifier::NetworkHandle alternate_network =
           stream_factory_->FindAlternateNetwork(
               GetDefaultSocket()->GetBoundNetwork());

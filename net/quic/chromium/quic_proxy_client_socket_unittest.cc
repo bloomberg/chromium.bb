@@ -193,6 +193,7 @@ class QuicProxyClientSocketTest
         QuicServerId("mail.example.org", 80, PRIVACY_MODE_DISABLED),
         /*require_confirmation=*/false, /*migrate_session_early*/ false,
         /*migrate_session_on_network_change*/ false,
+        /*migrate_session_early_v2*/ false,
         /*migrate_session_on_network_change_v2*/ false,
         kQuicYieldAfterPacketsRead,
         QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
