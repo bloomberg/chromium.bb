@@ -1,7 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-package org.chromium.chrome.browser.omnibox;
+package org.chromium.chrome.browser.toolbar;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
@@ -16,6 +16,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -25,7 +26,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public final class LocationBarLayoutTest {
+public final class ToolbarSecurityIconTest {
     private static final boolean IS_SMALL_DEVICE = true;
     private static final boolean IS_OFFLINE_PAGE = true;
     private static final int[] SECURITY_LEVELS = new int[] {ConnectionSecurityLevel.NONE,
@@ -43,15 +44,16 @@ public final class LocationBarLayoutTest {
     @Test
     public void testGetSecurityLevel() {
         assertEquals(ConnectionSecurityLevel.NONE,
-                LocationBarLayout.getSecurityLevel(null, !IS_OFFLINE_PAGE));
+                ToolbarModelImpl.getSecurityLevel(null, !IS_OFFLINE_PAGE));
         assertEquals(ConnectionSecurityLevel.NONE,
-                LocationBarLayout.getSecurityLevel(null, IS_OFFLINE_PAGE));
+                ToolbarModelImpl.getSecurityLevel(null, IS_OFFLINE_PAGE));
         assertEquals(ConnectionSecurityLevel.NONE,
-                LocationBarLayout.getSecurityLevel(mTab, IS_OFFLINE_PAGE));
+                ToolbarModelImpl.getSecurityLevel(mTab, IS_OFFLINE_PAGE));
 
         for (int securityLevel : SECURITY_LEVELS) {
             doReturn(securityLevel).when(mTab).getSecurityLevel();
-            assertEquals(securityLevel, LocationBarLayout.getSecurityLevel(mTab, !IS_OFFLINE_PAGE));
+            assertEquals("Wrong security level returned for " + securityLevel, securityLevel,
+                    ToolbarModelImpl.getSecurityLevel(mTab, !IS_OFFLINE_PAGE));
         }
         verify(mTab, times(SECURITY_LEVELS.length)).getSecurityLevel();
     }
@@ -59,56 +61,58 @@ public final class LocationBarLayoutTest {
     @Test
     public void testGetSecurityIconResource() {
         for (int securityLevel : SECURITY_LEVELS) {
-            assertEquals(R.drawable.offline_pin_round,
-                    LocationBarLayout.getSecurityIconResource(
+            assertEquals("Wrong phone resource for security level " + securityLevel,
+                    R.drawable.offline_pin_round,
+                    ToolbarModelImpl.getSecurityIconResource(
                             securityLevel, IS_SMALL_DEVICE, IS_OFFLINE_PAGE));
-            assertEquals(R.drawable.offline_pin_round,
-                    LocationBarLayout.getSecurityIconResource(
+            assertEquals("Wrong tablet resource for security level " + securityLevel,
+                    R.drawable.offline_pin_round,
+                    ToolbarModelImpl.getSecurityIconResource(
                             securityLevel, !IS_SMALL_DEVICE, IS_OFFLINE_PAGE));
         }
 
         assertEquals(0,
-                LocationBarLayout.getSecurityIconResource(
+                ToolbarModelImpl.getSecurityIconResource(
                         ConnectionSecurityLevel.NONE, IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
         assertEquals(R.drawable.omnibox_info,
-                LocationBarLayout.getSecurityIconResource(
+                ToolbarModelImpl.getSecurityIconResource(
                         ConnectionSecurityLevel.NONE, !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
 
         assertEquals(R.drawable.omnibox_info,
-                LocationBarLayout.getSecurityIconResource(ConnectionSecurityLevel.HTTP_SHOW_WARNING,
+                ToolbarModelImpl.getSecurityIconResource(ConnectionSecurityLevel.HTTP_SHOW_WARNING,
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
         assertEquals(R.drawable.omnibox_info,
-                LocationBarLayout.getSecurityIconResource(ConnectionSecurityLevel.HTTP_SHOW_WARNING,
+                ToolbarModelImpl.getSecurityIconResource(ConnectionSecurityLevel.HTTP_SHOW_WARNING,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
 
         assertEquals(R.drawable.omnibox_https_invalid,
-                LocationBarLayout.getSecurityIconResource(
+                ToolbarModelImpl.getSecurityIconResource(
                         ConnectionSecurityLevel.DANGEROUS, IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
         assertEquals(R.drawable.omnibox_https_invalid,
-                LocationBarLayout.getSecurityIconResource(
+                ToolbarModelImpl.getSecurityIconResource(
                         ConnectionSecurityLevel.DANGEROUS, !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
 
         assertEquals(R.drawable.omnibox_https_valid,
-                LocationBarLayout.getSecurityIconResource(
+                ToolbarModelImpl.getSecurityIconResource(
                         ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT, IS_SMALL_DEVICE,
                         !IS_OFFLINE_PAGE));
         assertEquals(R.drawable.omnibox_https_valid,
-                LocationBarLayout.getSecurityIconResource(
+                ToolbarModelImpl.getSecurityIconResource(
                         ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT, !IS_SMALL_DEVICE,
                         !IS_OFFLINE_PAGE));
 
         assertEquals(R.drawable.omnibox_https_valid,
-                LocationBarLayout.getSecurityIconResource(
+                ToolbarModelImpl.getSecurityIconResource(
                         ConnectionSecurityLevel.SECURE, IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
         assertEquals(R.drawable.omnibox_https_valid,
-                LocationBarLayout.getSecurityIconResource(
+                ToolbarModelImpl.getSecurityIconResource(
                         ConnectionSecurityLevel.SECURE, !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
 
         assertEquals(R.drawable.omnibox_https_valid,
-                LocationBarLayout.getSecurityIconResource(
+                ToolbarModelImpl.getSecurityIconResource(
                         ConnectionSecurityLevel.EV_SECURE, IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
         assertEquals(R.drawable.omnibox_https_valid,
-                LocationBarLayout.getSecurityIconResource(
+                ToolbarModelImpl.getSecurityIconResource(
                         ConnectionSecurityLevel.EV_SECURE, !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
     }
 }
