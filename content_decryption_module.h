@@ -985,8 +985,8 @@ class CDM_CLASS_API Host_8 {
   // session |session_id|. |has_additional_usable_key| should be set if a
   // key is newly usable (e.g. new key available, previously expired key has
   // been renewed, etc.) and the browser should attempt to resume playback.
-  // |key_ids| is the list of key ids for this session along with their
-  // current status. |key_ids_count| is the number of entries in |key_ids|.
+  // |keys_info| is the list of key IDs for this session along with their
+  // current status. |keys_info_count| is the number of entries in |keys_info|.
   // Size parameter for |session_id| should not include null termination.
   virtual void OnSessionKeysChange(const char* session_id,
                                    uint32_t session_id_size,
@@ -1124,8 +1124,8 @@ class CDM_CLASS_API Host_9 {
   // session |session_id|. |has_additional_usable_key| should be set if a
   // key is newly usable (e.g. new key available, previously expired key has
   // been renewed, etc.) and the browser should attempt to resume playback.
-  // |key_ids| is the list of key ids for this session along with their
-  // current status. |key_ids_count| is the number of entries in |key_ids|.
+  // |keys_info| is the list of key IDs for this session along with their
+  // current status. |keys_info_count| is the number of entries in |keys_info|.
   // Size parameter for |session_id| should not include null termination.
   virtual void OnSessionKeysChange(const char* session_id,
                                    uint32_t session_id_size,
