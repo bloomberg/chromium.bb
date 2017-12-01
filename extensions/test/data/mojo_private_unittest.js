@@ -13,7 +13,7 @@ unittestBindings.exportTests([
   function testRequireAsync() {
     mojoPrivate.requireAsync('add').then(
         test.callbackPass(function(add) {
-          test.assertEq('function', typeof add.Add);
+          test.assertEq('function', typeof add);
         }));
   },
 ], test.runTests, exports);

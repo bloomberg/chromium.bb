@@ -36,9 +36,6 @@ if (enable_extensions) {
       "//mojo/common:common_custom_types",
       "//url/mojo:url_mojom_gurl",
     ]
-
-    # TODO(crbug.com/699569): Convert to use the new JS bindings.
-    js_bindings_mode = "both"
   }
 
   # This must be a static library because extensions common depends on

@@ -36,10 +36,8 @@ class MojoPrivateApiTest : public ApiTestBase {
 };
 
 TEST_F(MojoPrivateApiTest, RequireAsync) {
-  env()->RegisterModule("add",
-                        "define('add', [], function() {"
-                        "  return { Add: function(x, y) { return x + y; } };"
-                        "});");
+  env()->RegisterModule(
+      "add", "exports.$set('returnValue', function(x, y) { return x + y; });");
   ASSERT_NO_FATAL_FAILURE(
       RunTest("mojo_private_unittest.js", "testRequireAsync"));
 }
