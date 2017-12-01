@@ -74,9 +74,6 @@ class TabStripController {
                                      const gfx::Point& p,
                                      ui::MenuSourceType source_type) = 0;
 
-  // Updates the loading animations of all the tabs.
-  virtual void UpdateLoadingAnimations() = 0;
-
   // Returns true if the associated TabStrip's delegate supports tab moving or
   // detaching. Used by the Frame to determine if dragging on the Tab
   // itself should move the window in cases where there's only one

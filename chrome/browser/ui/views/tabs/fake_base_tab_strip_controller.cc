@@ -99,9 +99,6 @@ void FakeBaseTabStripController::ShowContextMenuForTab(
     ui::MenuSourceType source_type) {
 }
 
-void FakeBaseTabStripController::UpdateLoadingAnimations() {
-}
-
 int FakeBaseTabStripController::HasAvailableDragActions() const {
   return 0;
 }

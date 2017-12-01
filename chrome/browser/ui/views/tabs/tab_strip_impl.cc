@@ -361,8 +361,7 @@ bool TabStripImpl::IsTabCrashed(int tab_index) const {
 }
 
 bool TabStripImpl::TabHasNetworkError(int tab_index) const {
-  return tab_at(tab_index)->data().network_state ==
-         TabRendererData::NETWORK_STATE_ERROR;
+  return tab_at(tab_index)->data().network_state == TabNetworkState::kError;
 }
 
 TabAlertState TabStripImpl::GetTabAlertState(int tab_index) const {
@@ -370,7 +369,8 @@ TabAlertState TabStripImpl::GetTabAlertState(int tab_index) const {
 }
 
 void TabStripImpl::UpdateLoadingAnimations() {
-  controller_->UpdateLoadingAnimations();
+  for (int i = 0; i < tab_count(); i++)
+    tab_at(i)->StepLoadingAnimation();
 }
 
 void TabStripImpl::SetStackedLayout(bool stacked_layout) {
@@ -686,9 +686,7 @@ void TabStripImpl::SetSelection(const ui::ListSelectionModel& old_selection,
 }
 
 void TabStripImpl::TabTitleChangedNotLoading(int model_index) {
-  Tab* tab = tab_at(model_index);
-  if (tab->data().pinned && !tab->IsActive())
-    tab->TabTitleChangedNotLoading();
+  tab_at(model_index)->TabTitleChangedNotLoading();
 }
 
 void TabStripImpl::SetTabNeedsAttention(int model_index, bool attention) {

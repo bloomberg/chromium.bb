@@ -134,7 +134,8 @@ class TabStripImpl : public TabStrip,
   void SetSelection(const ui::ListSelectionModel& old_selection,
                     const ui::ListSelectionModel& new_selection);
 
-  // Invoked when the title of a tab changes and the tab isn't loading.
+  // Invoked when the title of a tab changes and the tab isn't loading. This is
+  // used by pinned tabs to indicate they need attention.
   void TabTitleChangedNotLoading(int model_index);
 
   // Invoked when a tab needs to show UI that it needs the user's attention.

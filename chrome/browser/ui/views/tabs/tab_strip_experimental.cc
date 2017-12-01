@@ -340,8 +340,7 @@ bool TabStripExperimental::IsTabCrashed(int tab_index) const {
 
 bool TabStripExperimental::TabHasNetworkError(int tab_index) const {
   /* TODO(brettw) tab data.
-  return tab_at(tab_index)->data().network_state ==
-         TabRendererData::NETWORK_STATE_ERROR;
+  return tab_at(tab_index)->data().network_state == TabNetworkState::kError;
   */
   return false;
 }

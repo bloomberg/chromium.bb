@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
@@ -122,7 +123,7 @@ class TabStripTest : public views::ViewsTestBase {
 
  protected:
   bool IsShowingAttentionIndicator(int model_index) {
-    return tab_strip_->tab_at(model_index)->current_attention_types_ > 0;
+    return tab_strip_->tab_at(model_index)->icon_->ShowingAttentionIndicator();
   }
 
   // Checks whether |tab| contains |point_in_tabstrip_coords|, where the point

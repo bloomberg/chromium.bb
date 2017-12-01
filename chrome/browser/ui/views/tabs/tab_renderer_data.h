@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_
 
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/tabs/tab_network_state.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/chrome_views_export.h"
 #include "ui/gfx/image/image_skia.h"
@@ -13,16 +14,6 @@
 
 // Wraps the state needed by the renderers.
 struct CHROME_VIEWS_EXPORT TabRendererData {
-  // Different types of network activity for a tab. The NetworkState of a tab
-  // may be used to alter the UI (e.g. show different kinds of loading
-  // animations).
-  enum NetworkState {
-    NETWORK_STATE_NONE,     // no network activity.
-    NETWORK_STATE_WAITING,  // waiting for a connection.
-    NETWORK_STATE_LOADING,  // connected, transferring data.
-    NETWORK_STATE_ERROR,    // Encountered a network error.
-  };
-
   TabRendererData();
   TabRendererData(const TabRendererData& other);
   TabRendererData(TabRendererData&& other);
@@ -39,7 +30,7 @@ struct CHROME_VIEWS_EXPORT TabRendererData {
   bool IsCrashed() const;
 
   gfx::ImageSkia favicon;
-  NetworkState network_state = NETWORK_STATE_NONE;
+  TabNetworkState network_state = TabNetworkState::kNone;
   base::string16 title;
   GURL url;
   base::TerminationStatus crashed_status =

@@ -64,7 +64,6 @@ class BrowserTabStripController : public TabStripController,
   void ShowContextMenuForTab(Tab* tab,
                              const gfx::Point& p,
                              ui::MenuSourceType source_type) override;
-  void UpdateLoadingAnimations() override;
   int HasAvailableDragActions() const override;
   void OnDropIndexUpdate(int index, bool drop_before) override;
   void PerformDrop(bool drop_before, int index, const GURL& url) override;
