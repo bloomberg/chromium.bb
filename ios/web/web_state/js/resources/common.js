@@ -254,7 +254,7 @@ __gCrWeb['common'] = __gCrWeb.common;
     var checkedChanged = input.checked !== nowChecked;
     input.checked = nowChecked;
     if (checkedChanged) {
-      __gCrWeb.common.createAndDispatchHTMLEvent(input, 'change', true, false);
+      __gCrWeb.common.notifyElementValueChanged(input);
     }
   };
 
@@ -287,7 +287,7 @@ __gCrWeb['common'] = __gCrWeb.common;
     var valueChanged = sanitizedValue !== input.value;
     input.value = sanitizedValue;
     if (valueChanged) {
-      __gCrWeb.common.createAndDispatchHTMLEvent(input, 'change', true, false);
+      __gCrWeb.common.notifyElementValueChanged(input);
     }
   };
 
@@ -597,6 +597,20 @@ __gCrWeb['common'] = __gCrWeb.common;
     return null;
   };
 
+ /**
+  * Creates and sends notification that element has changed.
+  *
+  * Most handlers react to 'change' or 'input' event, so sent both.
+  *
+  * @param {Element} element The element that changed.
+  */
+  __gCrWeb.common.notifyElementValueChanged = function(element) {
+    __gCrWeb.common.createAndDispatchHTMLEvent(element, 'keydown', true, false);
+    __gCrWeb.common.createAndDispatchHTMLEvent(element, 'change', true, false);
+    __gCrWeb.common.createAndDispatchHTMLEvent(element, 'input', true, false);
+    __gCrWeb.common.createAndDispatchHTMLEvent(element, 'keyup', true, false);
+  };
+
   /**
    * Creates and dispatches an HTML event.
    *
@@ -612,6 +626,8 @@ __gCrWeb['common'] = __gCrWeb.common;
     var changeEvent =
         /** @type {!Event} */(element.ownerDocument.createEvent('HTMLEvents'));
     changeEvent.initEvent(type, bubbles, cancelable);
+    // Some frameworks will use the data field to update their cache value.
+    changeEvent.data = element.value;
 
     // A timer is used to avoid reentering JavaScript evaluation.
     window.setTimeout(function() {

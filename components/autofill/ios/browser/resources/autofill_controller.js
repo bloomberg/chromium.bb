@@ -639,8 +639,7 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
     } else if (__gCrWeb.autofill.isSelectElement(element)) {
       if (element.value !== value) {
         element.value = value;
-        __gCrWeb.common.createAndDispatchHTMLEvent(element, 'change', true,
-            false);
+        __gCrWeb.common.notifyElementValueChanged(element);
       }
     }
     // TODO(bondd): Handle __gCrWeb.autofill.isCheckableElement(element) ==
@@ -693,8 +692,7 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
       // TODO(bondd): Store initial values and reset to the correct one here.
       if (element.selectedIndex != 0) {
         element.selectedIndex = 0;
-        __gCrWeb.common.createAndDispatchHTMLEvent(element, 'change', true,
-            false);
+        __gCrWeb.common.notifyElementValueChanged(element);
       }
     } else if (__gCrWeb.autofill.isCheckableElement(element)) {
       // TODO(bondd): Handle checkable elements. They aren't properly supported
@@ -1853,7 +1851,7 @@ __gCrWeb.autofill.fillFormField = function(data, field) {
   } else if (__gCrWeb.autofill.isSelectElement(field)) {
     if (field.value !== data['value']) {
       field.value = data['value'];
-      __gCrWeb.common.createAndDispatchHTMLEvent(field, 'change', true, false);
+      __gCrWeb.common.notifyElementValueChanged(field);
     }
   } else {
     if (__gCrWeb.autofill.isCheckableElement(field)) {
