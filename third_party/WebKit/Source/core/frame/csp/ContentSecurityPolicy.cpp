@@ -104,14 +104,13 @@ bool ContentSecurityPolicy::IsNonceableElement(const Element* element) {
   // To prevent an attacker from hijacking an existing nonce via a dangling
   // markup injection, we walk through the attributes of each nonced script
   // element: if their names or values contain "<script" or "<style", we won't
-  // apply the nonce when loading script. We'll also skip elements for which
-  // the HTML parser dropped attributes.
+  // apply the nonce when loading script.
+  //
+  // TODO(mkwst): We'll should also skip elements for which the HTML parser
+  // dropped attributes: https://crbug.com/740615 and https://crbug.com/790955.
   //
   // See http://blog.innerht.ml/csp-2015/#danglingmarkupinjection for an example
   // of the kind of attack this is aimed at mitigating.
-  if (element->HasDuplicateAttribute())
-    nonceable = false;
-
   if (nonceable) {
     static const char kScriptString[] = "<SCRIPT";
     static const char kStyleString[] = "<STYLE";
