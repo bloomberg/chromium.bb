@@ -10,7 +10,7 @@ namespace content {
 
 NavigationRequestInfo::NavigationRequestInfo(
     const CommonNavigationParams& common_params,
-    const BeginNavigationParams& begin_params,
+    mojom::BeginNavigationParamsPtr begin_params,
     const GURL& site_for_cookies,
     bool is_main_frame,
     bool parent_is_main_frame,
@@ -20,7 +20,7 @@ NavigationRequestInfo::NavigationRequestInfo(
     bool report_raw_headers,
     blink::mojom::PageVisibilityState page_visibility_state)
     : common_params(common_params),
-      begin_params(begin_params),
+      begin_params(std::move(begin_params)),
       site_for_cookies(site_for_cookies),
       is_main_frame(is_main_frame),
       parent_is_main_frame(parent_is_main_frame),

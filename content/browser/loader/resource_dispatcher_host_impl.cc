@@ -2035,7 +2035,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
     return;
   }
 
-  int load_flags = info.begin_params.load_flags;
+  int load_flags = info.begin_params->load_flags;
   load_flags |= net::LOAD_VERIFY_EV_CERT;
   if (info.is_main_frame)
     load_flags |= net::LOAD_MAIN_FRAME_DEPRECATED;
@@ -2053,7 +2053,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   new_request->set_method(info.common_params.method);
   new_request->set_site_for_cookies(info.site_for_cookies);
-  new_request->set_initiator(info.begin_params.initiator_origin);
+  new_request->set_initiator(info.begin_params->initiator_origin);
   if (info.is_main_frame) {
     new_request->set_first_party_url_policy(
         net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
@@ -2063,7 +2063,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
                                   info.common_params.referrer);
 
   net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(info.begin_params.headers);
+  headers.AddHeadersFromString(info.begin_params->headers);
   new_request->SetExtraRequestHeaders(headers);
 
   new_request->SetLoadFlags(load_flags);
@@ -2145,8 +2145,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
                          : REQUEST_CONTEXT_FRAME_TYPE_NESTED;
   ServiceWorkerRequestHandler::InitializeForNavigation(
       new_request.get(), service_worker_handle_core, blob_context,
-      info.begin_params.skip_service_worker, resource_type,
-      info.begin_params.request_context_type, frame_type,
+      info.begin_params->skip_service_worker, resource_type,
+      info.begin_params->request_context_type, frame_type,
       info.are_ancestors_secure, info.common_params.post_data,
       extra_info->GetWebContentsGetterForRequest());
 
@@ -2174,8 +2174,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // by the ResourceScheduler. currently it's a no-op.
   handler = AddStandardHandlers(
       new_request.get(), resource_type, resource_context,
-      info.begin_params.request_context_type,
-      info.begin_params.mixed_content_context_type,
+      info.begin_params->request_context_type,
+      info.begin_params->mixed_content_context_type,
       appcache_handle_core ? appcache_handle_core->GetAppCacheService()
                            : nullptr,
       -1,  // child_id

@@ -1092,7 +1092,7 @@ void NetworkHandler::NavigationFailed(NavigationRequest* navigation_request) {
 
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
   net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(navigation_request->begin_params().headers);
+  headers.AddHeadersFromString(navigation_request->begin_params()->headers);
   for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();)
     headers_dict->setString(it.name(), it.value());
   frontend_->RequestWillBeSent(

@@ -150,18 +150,21 @@ class NavigationURLLoaderTest : public testing::Test {
       const GURL& url,
       NavigationURLLoaderDelegate* delegate,
       bool allow_download) {
-    BeginNavigationParams begin_params(
-        std::string(), net::LOAD_NORMAL, false, REQUEST_CONTEXT_TYPE_LOCATION,
-        blink::WebMixedContentContextType::kBlockable,
-        false,  // is_form_submission
-        url::Origin::Create(url));
+    mojom::BeginNavigationParamsPtr begin_params =
+        mojom::BeginNavigationParams::New(
+            std::string() /* headers */, net::LOAD_NORMAL,
+            false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_LOCATION,
+            blink::WebMixedContentContextType::kBlockable,
+            false /* is_form_submission */, GURL() /* searchable_form_url */,
+            std::string() /* searchable_form_encoding */,
+            url::Origin::Create(url), GURL() /* client_side_redirect_url */);
     CommonNavigationParams common_params;
     common_params.url = url;
     common_params.allow_download = allow_download;
 
     std::unique_ptr<NavigationRequestInfo> request_info(
-        new NavigationRequestInfo(common_params, begin_params, url, true, false,
-                                  false, -1, false, false,
+        new NavigationRequestInfo(common_params, std::move(begin_params), url,
+                                  true, false, false, -1, false, false,
                                   blink::mojom::PageVisibilityState::kVisible));
     return NavigationURLLoader::Create(
         browser_context_->GetResourceContext(),

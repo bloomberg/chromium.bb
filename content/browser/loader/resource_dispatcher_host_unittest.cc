@@ -1063,17 +1063,20 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
 
       // Make a navigation request.
       TestNavigationURLLoaderDelegate delegate;
-      BeginNavigationParams begin_params(
-          std::string(), net::LOAD_NORMAL, false, REQUEST_CONTEXT_TYPE_LOCATION,
-          blink::WebMixedContentContextType::kBlockable,
-          false,  // is_form_submission
-          url::Origin::Create(url));
+      mojom::BeginNavigationParamsPtr begin_params =
+          mojom::BeginNavigationParams::New(
+              std::string() /* headers */, net::LOAD_NORMAL,
+              false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_LOCATION,
+              blink::WebMixedContentContextType::kBlockable,
+              false /* is_form_submission */, GURL() /* searchable_form_url */,
+              std::string() /* searchable_form_encoding */,
+              url::Origin::Create(url), GURL() /* client_side_redirect_url */);
       CommonNavigationParams common_params;
       common_params.url = url;
       std::unique_ptr<NavigationRequestInfo> request_info(
           new NavigationRequestInfo(
-              common_params, begin_params, url, true, false, false, -1, false,
-              false, blink::mojom::PageVisibilityState::kVisible));
+              common_params, std::move(begin_params), url, true, false, false,
+              -1, false, false, blink::mojom::PageVisibilityState::kVisible));
       std::unique_ptr<NavigationURLLoader> test_loader =
           NavigationURLLoader::Create(
               browser_context_->GetResourceContext(),

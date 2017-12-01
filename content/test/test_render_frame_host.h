@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"

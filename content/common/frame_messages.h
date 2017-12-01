@@ -346,7 +346,7 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
 
   // See WebSearchableFormData for a description of these.
   // Not used by PlzNavigate: in that case these fields are sent to the browser
-  // in BeginNavigationParams.
+  // in mojom::BeginNavigationParams.
   IPC_STRUCT_MEMBER(GURL, searchable_form_url)
   IPC_STRUCT_MEMBER(std::string, searchable_form_encoding)
 
@@ -404,19 +404,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(source_location)
   IPC_STRUCT_TRAITS_MEMBER(should_check_main_world_csp)
   IPC_STRUCT_TRAITS_MEMBER(has_user_gesture)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::BeginNavigationParams)
-  IPC_STRUCT_TRAITS_MEMBER(headers)
-  IPC_STRUCT_TRAITS_MEMBER(load_flags)
-  IPC_STRUCT_TRAITS_MEMBER(skip_service_worker)
-  IPC_STRUCT_TRAITS_MEMBER(request_context_type)
-  IPC_STRUCT_TRAITS_MEMBER(mixed_content_context_type)
-  IPC_STRUCT_TRAITS_MEMBER(searchable_form_url)
-  IPC_STRUCT_TRAITS_MEMBER(searchable_form_encoding)
-  IPC_STRUCT_TRAITS_MEMBER(initiator_origin)
-  IPC_STRUCT_TRAITS_MEMBER(client_side_redirect_url)
-  IPC_STRUCT_TRAITS_MEMBER(is_form_submission)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::StartNavigationParams)
@@ -1599,12 +1586,6 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_DidLoadResourceFromMemoryCache,
 // This frame attempted to navigate the main frame to the given url, even
 // though this frame has never received a user gesture.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidBlockFramebust, GURL /* url */)
-
-// PlzNavigate
-// Tells the browser to perform a navigation.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_BeginNavigation,
-                    content::CommonNavigationParams,
-                    content::BeginNavigationParams)
 
 // PlzNavigate
 // Tells the browser to abort an ongoing renderer-initiated navigation. This is

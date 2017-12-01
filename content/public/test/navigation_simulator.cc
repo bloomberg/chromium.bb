@@ -889,12 +889,14 @@ bool NavigationSimulator::SimulateBrowserInitiatedStart() {
 
 bool NavigationSimulator::SimulateRendererInitiatedStart() {
   if (IsBrowserSideNavigationEnabled()) {
-    BeginNavigationParams begin_params(
-        std::string(), net::LOAD_NORMAL, false /* skip_service_worker */,
-        REQUEST_CONTEXT_TYPE_HYPERLINK,
-        blink::WebMixedContentContextType::kBlockable,
-        false,  // is_form_submission
-        url::Origin());
+    mojom::BeginNavigationParamsPtr begin_params =
+        mojom::BeginNavigationParams::New(
+            std::string() /* headers */, net::LOAD_NORMAL,
+            false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_HYPERLINK,
+            blink::WebMixedContentContextType::kBlockable,
+            false /* is_form_submission */, GURL() /* searchable_form_url */,
+            std::string() /* searchable_form_encoding */, url::Origin(),
+            GURL() /* client_side_redirect_url */);
     CommonNavigationParams common_params;
     common_params.url = navigation_url_;
     common_params.referrer = referrer_;
@@ -904,8 +906,9 @@ bool NavigationSimulator::SimulateRendererInitiatedStart() {
             ? FrameMsg_Navigate_Type::RELOAD
             : FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
     common_params.has_user_gesture = has_user_gesture_;
-    render_frame_host_->OnMessageReceived(FrameHostMsg_BeginNavigation(
-        render_frame_host_->GetRoutingID(), common_params, begin_params));
+    render_frame_host_->frame_host_binding_for_testing()
+        .impl()
+        ->BeginNavigation(common_params, std::move(begin_params));
     NavigationRequest* request =
         render_frame_host_->frame_tree_node()->navigation_request();
 

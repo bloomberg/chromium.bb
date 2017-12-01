@@ -191,8 +191,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
               *resource_request_, resource_context_,
               service_worker_navigation_handle_core, blob_storage_context,
-              request_info->begin_params.skip_service_worker, resource_type,
-              request_info->begin_params.request_context_type, frame_type,
+              request_info->begin_params->skip_service_worker, resource_type,
+              request_info->begin_params->request_context_type, frame_type,
               request_info->are_ancestors_secure,
               request_info->common_params.post_data, web_contents_getter_);
       if (service_worker_handler)
@@ -571,16 +571,17 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   // been copied from ResourceDispatcherHostImpl. We did not refactor the
   // common code into a function, because RDHI uses accessor functions on the
   // URLRequest class to set these fields. whereas we use ResourceRequest here.
-  new_request->request_initiator = request_info->begin_params.initiator_origin;
+  new_request->request_initiator = request_info->begin_params->initiator_origin;
   new_request->referrer = request_info->common_params.referrer.url;
   new_request->referrer_policy = request_info->common_params.referrer.policy;
-  new_request->headers.AddHeadersFromString(request_info->begin_params.headers);
+  new_request->headers.AddHeadersFromString(
+      request_info->begin_params->headers);
 
   new_request->resource_type = request_info->is_main_frame
                                    ? RESOURCE_TYPE_MAIN_FRAME
                                    : RESOURCE_TYPE_SUB_FRAME;
 
-  int load_flags = request_info->begin_params.load_flags;
+  int load_flags = request_info->begin_params->load_flags;
   load_flags |= net::LOAD_VERIFY_EV_CERT;
   if (request_info->is_main_frame)
     load_flags |= net::LOAD_MAIN_FRAME_DEPRECATED;

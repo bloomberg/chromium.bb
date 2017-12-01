@@ -42,6 +42,7 @@
 #include "content/common/frame_replication_state.h"
 #include "content/common/image_downloader/image_downloader.mojom.h"
 #include "content/common/input/input_handler.mojom.h"
+#include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_dialog_type.h"
@@ -123,12 +124,10 @@ class SensorProviderProxyImpl;
 class StreamHandle;
 class TimeoutMonitor;
 class WebBluetoothServiceImpl;
-struct BeginNavigationParams;
 struct CommonNavigationParams;
 struct ContextMenuParams;
 struct FileChooserParams;
 struct FrameOwnerProperties;
-struct FileChooserParams;
 struct NavigationParams;
 struct RequestNavigationParams;
 struct ResourceResponse;
@@ -584,7 +583,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Indicates that a navigation failed and that this RenderFrame should display
   // an error page.
   void FailedNavigation(const CommonNavigationParams& common_params,
-                        const BeginNavigationParams& begin_params,
                         const RequestNavigationParams& request_params,
                         bool has_stale_copy_in_cache,
                         int error_code,
@@ -818,8 +816,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                      blink::WebTextDirection title_direction);
   void OnUpdateEncoding(const std::string& encoding);
   void OnDidBlockFramebust(const GURL& url);
-  void OnBeginNavigation(const CommonNavigationParams& common_params,
-                         const BeginNavigationParams& begin_params);
   void OnAbortNavigation();
   void OnDispatchLoad();
   void OnAccessibilityEvents(
@@ -888,6 +884,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidCommitProvisionalLoad(
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
           validated_params) override;
+  void BeginNavigation(const CommonNavigationParams& common_params,
+                       mojom::BeginNavigationParamsPtr begin_params) override;
 
   // Registers Mojo interfaces that this frame host makes available.
   void RegisterMojoInterfaces();
@@ -1314,7 +1312,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // If true then this frame's document has a focused element which is editable.
   bool has_focused_editable_element_;
 
-  typedef std::pair<CommonNavigationParams, BeginNavigationParams>
+  typedef std::pair<CommonNavigationParams, mojom::BeginNavigationParamsPtr>
       PendingNavigation;
   std::unique_ptr<PendingNavigation> pending_navigate_;
 

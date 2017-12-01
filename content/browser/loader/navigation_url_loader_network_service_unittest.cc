@@ -10,6 +10,7 @@
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/loader/url_loader_request_handler.h"
 #include "content/common/navigation_params.h"
+#include "content/common/navigation_params.mojom.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/network/network_context.h"
 #include "content/network/url_loader.h"
@@ -107,11 +108,14 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
       const std::string& method,
       NavigationURLLoaderDelegate* delegate,
       bool allow_download = false) {
-    BeginNavigationParams begin_params(
-        headers, net::LOAD_NORMAL, false /* skip_service_worker */,
-        REQUEST_CONTEXT_TYPE_LOCATION,
-        blink::WebMixedContentContextType::kBlockable,
-        false /* is_form_submission */, url::Origin::Create(url));
+    mojom::BeginNavigationParamsPtr begin_params =
+        mojom::BeginNavigationParams::New(
+            headers, net::LOAD_NORMAL, false /* skip_service_worker */,
+            REQUEST_CONTEXT_TYPE_LOCATION,
+            blink::WebMixedContentContextType::kBlockable,
+            false /* is_form_submission */, GURL() /* searchable_form_url */,
+            std::string() /* searchable_form_encoding */,
+            url::Origin::Create(url), GURL() /* client_side_redirect_url */);
 
     CommonNavigationParams common_params;
     common_params.url = url;
@@ -120,12 +124,11 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
 
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(
-            common_params, begin_params, url, true /* is_main_frame */,
-            false /* parent_is_main_frame */, false /* are_ancestors_secure */,
-            -1 /* frame_tree_node_id */, false /* is_for_guests_only */,
-            false /* report_raw_headers */,
+            common_params, std::move(begin_params), url,
+            true /* is_main_frame */, false /* parent_is_main_frame */,
+            false /* are_ancestors_secure */, -1 /* frame_tree_node_id */,
+            false /* is_for_guests_only */, false /* report_raw_headers */,
             blink::mojom::PageVisibilityState::kVisible));
-
     std::vector<std::unique_ptr<URLLoaderRequestHandler>> handlers;
     most_recent_resource_request_ = base::nullopt;
     handlers.push_back(std::make_unique<TestURLLoaderRequestHandler>(

@@ -10,6 +10,7 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/common/content_export.h"
+#include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/navigation_controller.h"
 #include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
 #include "ui/base/window_open_disposition.h"
@@ -29,7 +30,6 @@ class FrameTreeNode;
 class NavigationRequest;
 class RenderFrameHostImpl;
 class ResourceRequestBody;
-struct BeginNavigationParams;
 struct CommonNavigationParams;
 
 // Implementations of this interface are responsible for performing navigations
@@ -155,7 +155,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // BeginNavigation IPC from the renderer.
   virtual void OnBeginNavigation(FrameTreeNode* frame_tree_node,
                                  const CommonNavigationParams& common_params,
-                                 const BeginNavigationParams& begin_params);
+                                 mojom::BeginNavigationParamsPtr begin_params);
 
   // PlzNavigate
   // Used to abort an ongoing renderer-initiated navigation.

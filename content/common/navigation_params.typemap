@@ -2,13 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//content/common/frame.mojom"
-public_headers = [ "//content/common/navigation_params.h" ]
-traits_headers = [ "//content/common/frame_messages.h" ]
+mojom = "//content/common/navigation_params.mojom"
+public_headers =
+    [ "//third_party/WebKit/public/platform/WebMixedContentContextType.h" ]
+traits_headers = [ "//content/common/resource_messages.h" ]
 deps = [
   "//content:export",
 ]
-type_mappings = [
-  "content.mojom.CommonNavigationParams=content::CommonNavigationParams",
-  "content.mojom.RequestNavigationParams=content::RequestNavigationParams",
-]
+type_mappings = [ "content.mojom.MixedContentContextType=::blink::WebMixedContentContextType" ]

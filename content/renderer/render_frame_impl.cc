@@ -6792,29 +6792,30 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
       info.navigation_type == blink::kWebNavigationTypeFormSubmitted ||
       info.navigation_type == blink::kWebNavigationTypeFormResubmitted;
 
-  BeginNavigationParams begin_navigation_params(
-      GetWebURLRequestHeadersAsString(info.url_request), load_flags,
-      info.url_request.GetServiceWorkerMode() !=
-          blink::WebURLRequest::ServiceWorkerMode::kAll,
-      GetRequestContextTypeForWebURLRequest(info.url_request),
-      GetMixedContentContextTypeForWebURLRequest(info.url_request),
-      is_form_submission, initiator_origin);
-
+  GURL searchable_form_url;
+  std::string searchable_form_encoding;
   if (!info.form.IsNull()) {
     WebSearchableFormData web_searchable_form_data(info.form);
-    begin_navigation_params.searchable_form_url =
-        web_searchable_form_data.Url();
-    begin_navigation_params.searchable_form_encoding =
-        web_searchable_form_data.Encoding().Utf8();
+    searchable_form_url = web_searchable_form_data.Url();
+    searchable_form_encoding = web_searchable_form_data.Encoding().Utf8();
   }
 
+  GURL client_side_redirect_url;
   if (info.is_client_redirect)
-    begin_navigation_params.client_side_redirect_url =
-        frame_->GetDocument().Url();
+    client_side_redirect_url = frame_->GetDocument().Url();
 
-  Send(new FrameHostMsg_BeginNavigation(
-      routing_id_, MakeCommonNavigationParams(info, load_flags),
-      begin_navigation_params));
+  mojom::BeginNavigationParamsPtr begin_navigation_params =
+      mojom::BeginNavigationParams::New(
+          GetWebURLRequestHeadersAsString(info.url_request), load_flags,
+          info.url_request.GetServiceWorkerMode() !=
+              blink::WebURLRequest::ServiceWorkerMode::kAll,
+          GetRequestContextTypeForWebURLRequest(info.url_request),
+          GetMixedContentContextTypeForWebURLRequest(info.url_request),
+          is_form_submission, searchable_form_url, searchable_form_encoding,
+          initiator_origin, client_side_redirect_url);
+
+  GetFrameHost()->BeginNavigation(MakeCommonNavigationParams(info, load_flags),
+                                  std::move(begin_navigation_params));
 }
 
 void RenderFrameImpl::LoadDataURL(

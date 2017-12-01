@@ -268,13 +268,14 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
 
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, common_params,
-      BeginNavigationParams(entry.extra_headers(), net::LOAD_NORMAL,
-                            false,  // skip_service_worker
-                            REQUEST_CONTEXT_TYPE_LOCATION,
-                            blink::WebMixedContentContextType::kBlockable,
-                            is_form_submission, initiator),
-      request_params, browser_initiated,
-      false,  // from_begin_navigation
+      mojom::BeginNavigationParams::New(
+          entry.extra_headers(), net::LOAD_NORMAL,
+          false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_LOCATION,
+          blink::WebMixedContentContextType::kBlockable, is_form_submission,
+          GURL() /* searchable_form_url */,
+          std::string() /* searchable_form_encoding */, initiator,
+          GURL() /* client_side_redirect_url */),
+      request_params, browser_initiated, false /* from_begin_navigation */,
       &frame_entry, &entry));
   return navigation_request;
 }
@@ -284,7 +285,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     FrameTreeNode* frame_tree_node,
     NavigationEntryImpl* entry,
     const CommonNavigationParams& common_params,
-    const BeginNavigationParams& begin_params,
+    mojom::BeginNavigationParamsPtr begin_params,
     int current_history_list_offset,
     int current_history_list_length,
     bool override_user_agent) {
@@ -318,7 +319,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       false,  // is_view_source
       false /*should_clear_history_list*/);
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
-      frame_tree_node, common_params, begin_params, request_params,
+      frame_tree_node, common_params, std::move(begin_params), request_params,
       false,  // browser_initiated
       true,   // from_begin_navigation
       nullptr, entry));
@@ -328,7 +329,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
 NavigationRequest::NavigationRequest(
     FrameTreeNode* frame_tree_node,
     const CommonNavigationParams& common_params,
-    const BeginNavigationParams& begin_params,
+    mojom::BeginNavigationParamsPtr begin_params,
     const RequestNavigationParams& request_params,
     bool browser_initiated,
     bool from_begin_navigation,
@@ -336,7 +337,7 @@ NavigationRequest::NavigationRequest(
     const NavigationEntryImpl* entry)
     : frame_tree_node_(frame_tree_node),
       common_params_(common_params),
-      begin_params_(begin_params),
+      begin_params_(std::move(begin_params)),
       request_params_(request_params),
       browser_initiated_(browser_initiated),
       state_(NOT_STARTED),
@@ -377,11 +378,12 @@ NavigationRequest::NavigationRequest(
   }
 
   // Update the load flags with cache information.
-  UpdateLoadFlagsWithCacheFlags(&begin_params_.load_flags,
+  UpdateLoadFlagsWithCacheFlags(&begin_params_->load_flags,
                                 common_params_.navigation_type,
                                 common_params_.method == "POST");
 
-  // Add necessary headers that may not be present in the BeginNavigationParams.
+  // Add necessary headers that may not be present in the
+  // mojom::BeginNavigationParams.
   if (entry)
     nav_entry_id_ = entry->GetUniqueID();
 
@@ -393,13 +395,13 @@ NavigationRequest::NavigationRequest(
   }
 
   net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(begin_params_.headers);
+  headers.AddHeadersFromString(begin_params_->headers);
   AddAdditionalRequestHeaders(
       &headers, common_params_.url, common_params_.navigation_type,
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
       common_params.method, user_agent_override, frame_tree_node);
 
-  if (begin_params.is_form_submission) {
+  if (begin_params_->is_form_submission) {
     if (browser_initiated && !request_params.post_content_type.empty()) {
       // This is a form resubmit, so make sure to set the Content-Type header.
       headers.SetHeaderIfMissing(net::HttpRequestHeaders::kContentType,
@@ -413,11 +415,11 @@ NavigationRequest::NavigationRequest(
                         &request_params_.post_content_type);
     }
   }
-  begin_params_.headers = headers.ToString();
+  begin_params_->headers = headers.ToString();
 
   // Check whether DevTools wants to skip the service worker.
   if (RenderFrameDevToolsAgentHost::ShouldBypassServiceWorker(frame_tree_node))
-    begin_params_.skip_service_worker = true;
+    begin_params_->skip_service_worker = true;
 }
 
 NavigationRequest::~NavigationRequest() {
@@ -503,8 +505,8 @@ void NavigationRequest::BeginNavigation() {
         Referrer::SanitizeForRequest(common_params_.url,
                                      common_params_.referrer),
         common_params_.has_user_gesture, common_params_.transition,
-        is_external_protocol, begin_params_.request_context_type,
-        begin_params_.mixed_content_context_type,
+        is_external_protocol, begin_params_->request_context_type,
+        begin_params_->mixed_content_context_type,
         base::Bind(&NavigationRequest::OnStartChecksComplete,
                    base::Unretained(this)));
     return;
@@ -540,8 +542,8 @@ void NavigationRequest::CreateNavigationHandle() {
   FrameTreeNode* frame_tree_node = frame_tree_node_;
 
   std::vector<GURL> redirect_chain;
-  if (!begin_params_.client_side_redirect_url.is_empty())
-    redirect_chain.push_back(begin_params_.client_side_redirect_url);
+  if (!begin_params_->client_side_redirect_url.is_empty())
+    redirect_chain.push_back(begin_params_->client_side_redirect_url);
   redirect_chain.push_back(common_params_.url);
 
   std::unique_ptr<NavigationHandleImpl> navigation_handle =
@@ -553,7 +555,7 @@ void NavigationRequest::CreateNavigationHandle() {
                                    nav_entry_id_,
                                    common_params_.started_from_context_menu,
                                    common_params_.should_check_main_world_csp,
-                                   begin_params_.is_form_submission);
+                                   begin_params_->is_form_submission);
 
   if (!frame_tree_node->navigation_request()) {
     // A callback could have cancelled this request synchronously in which case
@@ -563,11 +565,11 @@ void NavigationRequest::CreateNavigationHandle() {
 
   navigation_handle_ = std::move(navigation_handle);
 
-  if (!begin_params_.searchable_form_url.is_empty()) {
+  if (!begin_params_->searchable_form_url.is_empty()) {
     navigation_handle_->set_searchable_form_url(
-        begin_params_.searchable_form_url);
+        begin_params_->searchable_form_url);
     navigation_handle_->set_searchable_form_encoding(
-        begin_params_.searchable_form_encoding);
+        begin_params_->searchable_form_encoding);
   }
 
   if (common_params_.source_location) {
@@ -1058,7 +1060,7 @@ void NavigationRequest::OnStartChecksComplete(
   loader_ = NavigationURLLoader::Create(
       browser_context->GetResourceContext(), partition,
       std::make_unique<NavigationRequestInfo>(
-          common_params_, begin_params_, site_for_cookies,
+          common_params_, begin_params_.Clone(), site_for_cookies,
           frame_tree_node_->IsMainFrame(), parent_is_main_frame,
           IsSecureFrame(frame_tree_node_->parent()),
           frame_tree_node_->frame_tree_node_id(), is_for_guests_only,
@@ -1182,9 +1184,9 @@ void NavigationRequest::CommitErrorPage(
   TransferNavigationHandleOwnership(render_frame_host);
   render_frame_host->navigation_handle()->ReadyToCommitNavigation(
       render_frame_host);
-  render_frame_host->FailedNavigation(common_params_, begin_params_,
-                                      request_params_, has_stale_copy_in_cache_,
-                                      net_error_, error_page_content);
+  render_frame_host->FailedNavigation(common_params_, request_params_,
+                                      has_stale_copy_in_cache_, net_error_,
+                                      error_page_content);
 }
 
 void NavigationRequest::CommitNavigation() {

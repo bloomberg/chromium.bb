@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
+#include "content/common/navigation_params.mojom.h"
 #include "content/public/common/referrer.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "url/gurl.h"
@@ -23,7 +24,7 @@ namespace content {
 struct CONTENT_EXPORT NavigationRequestInfo {
   NavigationRequestInfo(
       const CommonNavigationParams& common_params,
-      const BeginNavigationParams& begin_params,
+      mojom::BeginNavigationParamsPtr begin_params,
       const GURL& site_for_cookies,
       bool is_main_frame,
       bool parent_is_main_frame,
@@ -35,7 +36,7 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   ~NavigationRequestInfo();
 
   const CommonNavigationParams common_params;
-  const BeginNavigationParams begin_params;
+  mojom::BeginNavigationParamsPtr begin_params;
 
   // Usually the URL of the document in the top-level window, which may be
   // checked by the third-party cookie blocking policy.
