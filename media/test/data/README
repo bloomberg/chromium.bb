@@ -200,7 +200,7 @@ test-25fps.vp9_2:
   configured with the option --enable-vp9-highbitdepth).
 
 test-25fps.vp9_2.md5:
-  MD5 of RGB thumbnail rendered version of test-25fps.vp9_@. Written out by
+  MD5 of RGB thumbnail rendered version of test-25fps.vp9_2. Written out by
   video_decode_accelerator_unittest.
 
 // VDA test files: bear
