@@ -16,7 +16,8 @@ enum CertificateRequestResultType {
   // Cancels the request synchronously using a net::ERR_ABORTED.
   CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL,
 
-  // Denies the request synchronously using a net::ERR_INSECURE_RESPONSE.
+  // Denies the request synchronously using the certificate error code that was
+  // encountered.
   CERTIFICATE_REQUEST_RESULT_TYPE_DENY,
 };
 

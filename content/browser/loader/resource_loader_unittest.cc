@@ -596,6 +596,15 @@ class HTTPSSecurityInfoResourceLoaderTest : public ResourceLoaderTest {
   const GURL test_https_redirect_url_;
 };
 
+TEST_F(HTTPSSecurityInfoResourceLoaderTest, CertStatusOnResponse) {
+  SetUpResourceLoaderForUrl(test_https_url());
+  loader_->StartRequest();
+  raw_ptr_resource_handler_->WaitUntilResponseComplete();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(kTestCertError,
+            raw_ptr_resource_handler_->resource_response()->head.cert_status);
+}
+
 // Tests that client certificates are requested with ClientCertStore lookup.
 TEST_F(ClientCertResourceLoaderTest, WithStoreLookup) {
   // Set up the test client cert store.

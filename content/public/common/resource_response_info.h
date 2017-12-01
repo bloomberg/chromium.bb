@@ -159,8 +159,7 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   std::vector<std::string> certificate;
 
   // Bitmask of status info of the SSL certificate. See cert_status_flags.h for
-  // values. Only present if the renderer process set report_raw_headers to
-  // true.
+  // values.
   net::CertStatus cert_status;
 
   // Information about the SSL connection itself. See

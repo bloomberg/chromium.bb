@@ -109,11 +109,11 @@ void PopulateResourceResponse(
         net::IsLegacySymantecCert(request->ssl_info().public_key_hashes);
     response->head.cert_validity_start =
         request->ssl_info().cert->valid_start();
+    response->head.cert_status = request->ssl_info().cert_status;
     if (info->ShouldReportRawHeaders()) {
       // Only pass these members when the network panel of the DevTools is open,
       // i.e. ShouldReportRawHeaders() is set. These data are used to populate
       // the requests in the security panel too.
-      response->head.cert_status = request->ssl_info().cert_status;
       response->head.ssl_connection_status =
           request->ssl_info().connection_status;
       response->head.ssl_key_exchange_group =

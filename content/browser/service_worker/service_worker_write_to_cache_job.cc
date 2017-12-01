@@ -303,10 +303,13 @@ void ServiceWorkerWriteToCacheJob::OnSSLCertificateError(
   DCHECK_EQ(net_request_.get(), request);
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerWriteToCacheJob::OnSSLCertificateError");
-  if (ShouldIgnoreSSLError(request))
+  if (ShouldIgnoreSSLError(request)) {
     request->ContinueDespiteLastError();
-  else
-    NotifyStartErrorHelper(net::ERR_INSECURE_RESPONSE, kSSLError);
+  } else {
+    NotifyStartErrorHelper(
+        net::Error(net::MapCertStatusToNetError(ssl_info.cert_status)),
+        kSSLError);
+  }
 }
 
 void ServiceWorkerWriteToCacheJob::OnResponseStarted(net::URLRequest* request,
@@ -331,7 +334,9 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(net::URLRequest* request,
   // So we check cert_status here.
   if (net::IsCertStatusError(request->ssl_info().cert_status) &&
       !ShouldIgnoreSSLError(request)) {
-    NotifyStartErrorHelper(net::ERR_INSECURE_RESPONSE, kSSLError);
+    NotifyStartErrorHelper(net::Error(net::MapCertStatusToNetError(
+                               request->ssl_info().cert_status)),
+                           kSSLError);
     return;
   }
 

@@ -35,8 +35,10 @@
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
@@ -44,6 +46,7 @@
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_status.h"
+#include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -1205,6 +1208,63 @@ TEST_F(URLLoaderTest, SSLInfoOnComplete) {
   EXPECT_TRUE(client()->completion_status().ssl_info.value().cert);
   EXPECT_EQ(net::CERT_STATUS_DATE_INVALID,
             client()->completion_status().ssl_info.value().cert_status);
+}
+
+// A mock URLRequestJob which simulates an HTTPS request with a certificate
+// error.
+class MockHTTPSURLRequestJob : public net::URLRequestTestJob {
+ public:
+  MockHTTPSURLRequestJob(net::URLRequest* request,
+                         net::NetworkDelegate* network_delegate,
+                         const std::string& response_headers,
+                         const std::string& response_data,
+                         bool auto_advance)
+      : net::URLRequestTestJob(request,
+                               network_delegate,
+                               response_headers,
+                               response_data,
+                               auto_advance) {}
+
+  // net::URLRequestTestJob:
+  void GetResponseInfo(net::HttpResponseInfo* info) override {
+    // Get the original response info, but override the SSL info.
+    net::URLRequestJob::GetResponseInfo(info);
+    info->ssl_info.cert =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+    info->ssl_info.cert_status = net::CERT_STATUS_DATE_INVALID;
+  }
+
+ private:
+  ~MockHTTPSURLRequestJob() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(MockHTTPSURLRequestJob);
+};
+
+class MockHTTPSJobURLRequestInterceptor : public net::URLRequestInterceptor {
+ public:
+  explicit MockHTTPSJobURLRequestInterceptor() {}
+  ~MockHTTPSJobURLRequestInterceptor() override {}
+
+  // net::URLRequestInterceptor:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    return new MockHTTPSURLRequestJob(request, network_delegate, std::string(),
+                                      "dummy response", true);
+  }
+};
+
+// Tests that |cert_status| is set on the resource response.
+TEST_F(URLLoaderTest, CertStatusOnResponse) {
+  net::URLRequestFilter::GetInstance()->ClearHandlers();
+  net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+      "https", "example.test",
+      std::unique_ptr<net::URLRequestInterceptor>(
+          new MockHTTPSJobURLRequestInterceptor()));
+
+  EXPECT_EQ(net::OK, Load(GURL("https://example.test/")));
+  EXPECT_EQ(net::CERT_STATUS_DATE_INVALID,
+            client()->response_head().cert_status);
 }
 
 }  // namespace content

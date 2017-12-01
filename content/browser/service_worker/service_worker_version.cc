@@ -1824,6 +1824,8 @@ ServiceWorkerStatusCode ServiceWorkerVersion::DeduceStartWorkerFailureReason(
   const net::URLRequestStatus& main_script_status =
       script_cache_map()->main_script_status();
   if (main_script_status.status() != net::URLRequestStatus::SUCCESS) {
+    if (net::IsCertificateError(main_script_status.error()))
+      return SERVICE_WORKER_ERROR_SECURITY;
     switch (main_script_status.error()) {
       case net::ERR_INSECURE_RESPONSE:
       case net::ERR_UNSAFE_REDIRECT:

@@ -77,13 +77,12 @@ void SSLErrorHandler::DenyRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (delegate_thread_ == BrowserThread::UI) {
     if (delegate_)
-      delegate_->CancelSSLRequest(net::ERR_INSECURE_RESPONSE, &ssl_info());
+      delegate_->CancelSSLRequest(cert_error_, &ssl_info());
     return;
   }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&CompleteCancelRequest, delegate_, ssl_info(),
-                     net::ERR_INSECURE_RESPONSE));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&CompleteCancelRequest, delegate_,
+                                         ssl_info(), cert_error_));
 }
 
 void SSLErrorHandler::ContinueRequest() {
