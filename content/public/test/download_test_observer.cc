@@ -309,6 +309,28 @@ bool DownloadTestObserverInterrupted::IsDownloadInFinalState(
   return download->GetState() == DownloadItem::INTERRUPTED;
 }
 
+void PingIOThread(int cycle, base::OnceClosure callback);
+
+// Helper method to post a task to IO thread to ensure remaining operations on
+// the IO thread complete.
+void PingFileThread(int cycle, base::OnceClosure callback) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PingIOThread, cycle, std::move(callback)));
+}
+
+// Post a task to file thread, and wait for it to be posted back on to the IO
+// thread if |cycle| is larger than 1. This ensures that all remaining
+// operations on the IO thread complete.
+void PingIOThread(int cycle, base::OnceClosure callback) {
+  if (--cycle) {
+    DownloadManager::GetTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&PingFileThread, cycle, std::move(callback)));
+  } else {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(callback));
+  }
+}
+
 DownloadTestFlushObserver::DownloadTestFlushObserver(
     DownloadManager* download_manager)
     : download_manager_(download_manager),
@@ -319,13 +341,17 @@ void DownloadTestFlushObserver::WaitForFlush() {
   download_manager_->AddObserver(this);
   // The wait condition may have been met before WaitForFlush() was called.
   CheckDownloadsInProgress(true);
-  RunAllTasksUntilIdle();
+  run_loop_.Run();
 }
 
 void DownloadTestFlushObserver::OnDownloadCreated(
     DownloadManager* manager,
     DownloadItem* item) {
   CheckDownloadsInProgress(true);
+}
+
+void DownloadTestFlushObserver::ManagerGoingDown(DownloadManager* manager) {
+  download_manager_ = nullptr;
 }
 
 void DownloadTestFlushObserver::OnDownloadDestroyed(DownloadItem* download) {
@@ -342,6 +368,9 @@ void DownloadTestFlushObserver::OnDownloadUpdated(DownloadItem* download) {
 }
 
 DownloadTestFlushObserver::~DownloadTestFlushObserver() {
+  if (!download_manager_)
+    return;
+
   download_manager_->RemoveObserver(this);
   for (DownloadSet::iterator it = downloads_observed_.begin();
        it != downloads_observed_.end(); ++it) {
@@ -351,7 +380,7 @@ DownloadTestFlushObserver::~DownloadTestFlushObserver() {
 
 // If we're waiting for that flush point, check the number
 // of downloads in the IN_PROGRESS state and take appropriate
-// action.  If requested, also observes all downloads while iterating.
+// action. If requested, also observes all downloads while iterating.
 void DownloadTestFlushObserver::CheckDownloadsInProgress(
     bool observe_downloads) {
   if (waiting_for_zero_inprogress_) {
@@ -389,26 +418,8 @@ void DownloadTestFlushObserver::CheckDownloadsInProgress(
       // there's a self-task posting in the IO thread cancel path.
       DownloadManager::GetTaskRunner()->PostTask(
           FROM_HERE,
-          base::BindOnce(&DownloadTestFlushObserver::PingFileThread, this, 2));
+          base::BindOnce(&PingFileThread, 2, run_loop_.QuitClosure()));
     }
-  }
-}
-
-void DownloadTestFlushObserver::PingFileThread(int cycle) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&DownloadTestFlushObserver::PingIOThread, this, cycle));
-}
-
-void DownloadTestFlushObserver::PingIOThread(int cycle) {
-  if (--cycle) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&DownloadTestFlushObserver::PingFileThread, this,
-                       cycle));
-  } else {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::MessageLoop::QuitWhenIdleClosure());
   }
 }
 

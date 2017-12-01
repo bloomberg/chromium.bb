@@ -2528,9 +2528,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DownloadCancelled) {
 
   // Cancel the download and wait for download system quiesce.
   download->Cancel(true);
-  scoped_refptr<DownloadTestFlushObserver> flush_observer(
-      new DownloadTestFlushObserver(DownloadManagerForShell(shell())));
-  flush_observer->WaitForFlush();
+  DownloadTestFlushObserver flush_observer(DownloadManagerForShell(shell()));
+  flush_observer.WaitForFlush();
 
   // Get the important info from other threads and check it.
   EXPECT_TRUE(EnsureNoPendingDownloads());
@@ -2568,9 +2567,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DefaultDownload) {
 
   // Cancel the download and wait for download system quiesce.
   download->Cancel(true);
-  scoped_refptr<DownloadTestFlushObserver> flush_observer(
-      new DownloadTestFlushObserver(DownloadManagerForShell(shell())));
-  flush_observer->WaitForFlush();
+  DownloadTestFlushObserver flush_observer(DownloadManagerForShell(shell()));
+  flush_observer.WaitForFlush();
 
   // Get the important info from other threads and check it.
   EXPECT_TRUE(EnsureNoPendingDownloads());

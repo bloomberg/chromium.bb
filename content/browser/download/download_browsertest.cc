@@ -912,7 +912,7 @@ class ParallelDownloadTest : public DownloadContentTest {
 }  // namespace
 
 // Flaky. See https://crbug.com/754679.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, DISABLED_DownloadCancelled) {
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadCancelled) {
   SetupEnsureNoPendingDownloads();
 
   // Create a download, wait until it's started, and confirm
@@ -925,9 +925,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DISABLED_DownloadCancelled) {
 
   // Cancel the download and wait for download system quiesce.
   download->Cancel(true);
-  scoped_refptr<DownloadTestFlushObserver> flush_observer(
-      new DownloadTestFlushObserver(DownloadManagerForShell(shell())));
-  flush_observer->WaitForFlush();
+  DownloadTestFlushObserver flush_observer(DownloadManagerForShell(shell()));
+  flush_observer.WaitForFlush();
 
   // Get the important info from other threads and check it.
   EXPECT_TRUE(EnsureNoPendingDownloads());
