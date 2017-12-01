@@ -418,6 +418,41 @@ TEST_F(NGColumnLayoutAlgorithmTest, OverflowedBlock) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, UnusedSpaceInBlock) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        height: 100px;
+        width: 320px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="height:300px;">
+          <div style="width:20px; height:20px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:20x20
+      offset:110,0 size:100x100
+        offset:0,0 size:100x100
+      offset:220,0 size:100x100
+        offset:0,0 size:100x100
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, FloatInOneColumn) {
   SetBodyInnerHTML(R"HTML(
     <style>
