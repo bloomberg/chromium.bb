@@ -1,10 +1,12 @@
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 
 #include "base/power_monitor/power_monitor.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/webrtc/webrtc_event_log_manager.h"
 #include "content/browser/webrtc/webrtc_eventlog_host.h"
 #include "content/browser/webrtc/webrtc_internals.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
@@ -32,6 +34,8 @@ bool PeerConnectionTrackerHost::OnMessageReceived(const IPC::Message& message) {
                         OnUpdatePeerConnection)
     IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_AddStats, OnAddStats)
     IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_GetUserMedia, OnGetUserMedia)
+    IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_WebRtcEventLogWrite,
+                        OnWebRtcEventLogWrite)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -69,6 +73,7 @@ void PeerConnectionTrackerHost::OnChannelClosing() {
 
 void PeerConnectionTrackerHost::OnAddPeerConnection(
     const PeerConnectionInfo& info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WebRTCInternals::GetInstance()->OnAddPeerConnection(
       render_process_id_,
       peer_pid(),
@@ -81,6 +86,7 @@ void PeerConnectionTrackerHost::OnAddPeerConnection(
 }
 
 void PeerConnectionTrackerHost::OnRemovePeerConnection(int lid) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WebRTCInternals::GetInstance()->OnRemovePeerConnection(peer_pid(), lid);
   if (event_log_host_)
     event_log_host_->PeerConnectionRemoved(lid);
@@ -113,6 +119,14 @@ void PeerConnectionTrackerHost::OnGetUserMedia(
                                                  video,
                                                  audio_constraints,
                                                  video_constraints);
+}
+
+void PeerConnectionTrackerHost::OnWebRtcEventLogWrite(
+    int lid,
+    const std::string& output) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* manager = WebRtcEventLogManager::GetInstance();
+  manager->OnWebRtcEventLogWrite(render_process_id_, lid, output);
 }
 
 void PeerConnectionTrackerHost::OnSuspend() {

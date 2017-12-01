@@ -1760,6 +1760,8 @@ jumbo_source_set("browser") {
       "renderer_host/p2p/socket_host_throttler.h",
       "renderer_host/p2p/socket_host_udp.cc",
       "renderer_host/p2p/socket_host_udp.h",
+      "webrtc/webrtc_event_log_manager.cc",
+      "webrtc/webrtc_event_log_manager.h",
       "webrtc/webrtc_eventlog_host.cc",
       "webrtc/webrtc_eventlog_host.h",
       "webrtc/webrtc_internals.cc",

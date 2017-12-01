@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "ipc/ipc_platform_file.h"
 
 namespace content {
 
@@ -22,15 +21,17 @@ class CONTENT_EXPORT WebRTCEventLogHost {
   explicit WebRTCEventLogHost(int render_process_id);
   ~WebRTCEventLogHost();
 
-  // Starts an RTC event log for all current and future PeerConnections on the
-  // render process. A base file_path can be supplied, which will be extended to
-  // include several identifiers to ensure uniqueness. If a recording was
-  // already in progress, this call will return false and have no other effect.
-  bool StartWebRTCEventLog(const base::FilePath& file_path);
+  // Starts WebRTC event logging to local files for all current and future
+  // PeerConnections on the render process. A base file_path must be supplied,
+  // which will be extended to include several identifiers to ensure uniqueness.
+  // If local WebRTC event logging was already in progress, this call will
+  // return false and have no other effect.
+  bool StartLocalWebRtcEventLogging(const base::FilePath& base_path);
 
-  // Stops recording an RTC event log for each PeerConnection on the render
-  // process. If no recording was in progress, this call will return false.
-  bool StopWebRTCEventLog();
+  // Stops recording of WebRTC event logs into local files for each
+  // PeerConnection on the render process. If local WebRTC event logging wasn't
+  // active, this call will return false.
+  bool StopLocalWebRtcEventLogging();
 
   // This function should be used to notify the WebRTCEventLogHost object that a
   // PeerConnection was created in the corresponding render process.
@@ -58,15 +59,11 @@ class CONTENT_EXPORT WebRTCEventLogHost {
   // stored in base_file_path_.
   void StartEventLogForPeerConnection(int peer_connection_local_id);
 
-  // Send the platform file to the render process using an IPC message.
-  void SendEventLogFileToRenderer(int peer_connection_local_id,
-                                  IPC::PlatformFileForTransit file_for_transit);
-
   // Management of |active_peer_connections_with_log_files_|, which tracks
   // which PCs have associated log files.
-  // RtcEventLogRemoved() returns whether actual removal took place.
-  void RtcEventLogAdded(int peer_connection_local_id);
-  bool RtcEventLogRemoved(int peer_connection_local_id);
+  // WebRtcEventLogRemoved() returns whether actual removal took place.
+  void WebRtcEventLogAdded(int peer_connection_local_id);
+  bool WebRtcEventLogRemoved(int peer_connection_local_id);
 
   // The render process ID that this object is associated with.
   const int render_process_id_;
