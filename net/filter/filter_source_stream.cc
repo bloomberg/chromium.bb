@@ -36,7 +36,7 @@ FilterSourceStream::FilterSourceStream(SourceType type,
   DCHECK(upstream_);
 }
 
-FilterSourceStream::~FilterSourceStream() {}
+FilterSourceStream::~FilterSourceStream() = default;
 
 int FilterSourceStream::Read(IOBuffer* read_buffer,
                              int read_buffer_size,
