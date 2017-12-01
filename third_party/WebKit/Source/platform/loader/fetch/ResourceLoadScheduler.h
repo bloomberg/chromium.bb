@@ -11,6 +11,7 @@
 #include "platform/heap/HeapAllocator.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/Resource.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/HashSet.h"
 
 namespace blink {
@@ -74,7 +75,11 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // ResourceLoadSchedulerClient::Run(), but it is guaranteed that ClientId is
   // populated before ResourceLoadSchedulerClient::Run() is called, so that the
   // caller can call Release() with the assigned ClientId correctly.
-  void Request(ResourceLoadSchedulerClient*, ThrottleOption, ClientId*);
+  void Request(ResourceLoadSchedulerClient*,
+               ThrottleOption,
+               ResourceLoadPriority,
+               int intra_priority,
+               ClientId*);
 
   // ResourceLoadSchedulerClient should call this method when the loading is
   // finished, or canceled. This method can be called in a pre-finalization
@@ -86,12 +91,26 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
 
   void OnNetworkQuiet();
 
+  // Returns whether we can throttle the given request.
+  ThrottleOption CanThrottle(const ResourceRequest&, SynchronousPolicy) const;
+
   // WebFrameScheduler::Observer overrides:
   void OnThrottlingStateChanged(WebFrameScheduler::ThrottlingState) override;
 
  private:
   class ClientIdWithPriority {
    public:
+    struct Compare {
+      bool operator()(const ClientIdWithPriority& x,
+                      const ClientIdWithPriority& y) const {
+        if (x.priority != y.priority)
+          return x.priority > y.priority;
+        if (x.intra_priority != y.intra_priority)
+          return x.intra_priority > y.intra_priority;
+        return x.client_id < y.client_id;
+      }
+    };
+
     ClientIdWithPriority(ClientId client_id,
                          WebURLRequest::Priority priority,
                          int intra_priority)
@@ -102,14 +121,6 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
         : ClientIdWithPriority(client_id,
                                WebURLRequest::Priority::kUnresolved,
                                0) {}
-
-    bool operator<(const ClientIdWithPriority& other) const {
-      if (priority != other.priority)
-        return priority < other.priority;
-      if (intra_priority != other.intra_priority)
-        return intra_priority < other.intra_priority;
-      return client_id < other.client_id;
-    }
 
     const ClientId client_id;
     const WebURLRequest::Priority priority;
@@ -167,7 +178,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   HeapHashMap<ClientId, Member<ResourceLoadSchedulerClient>>
       pending_request_map_;
   // We use std::set here because WTF doesn't have its counterpart.
-  std::set<ClientIdWithPriority> pending_requests_;
+  std::set<ClientIdWithPriority, ClientIdWithPriority::Compare>
+      pending_requests_;
 
   // Holds FetchContext reference to contact WebFrameScheduler.
   Member<FetchContext> context_;

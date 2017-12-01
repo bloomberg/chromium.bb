@@ -101,6 +101,8 @@ void ResourceLoadScheduler::Shutdown() {
 
 void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
                                     ThrottleOption option,
+                                    ResourceLoadPriority priority,
+                                    int intra_priority,
                                     ResourceLoadScheduler::ClientId* id) {
   *id = GenerateClientId();
   if (is_shutdown_)
@@ -112,7 +114,10 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
   }
 
   pending_request_map_.insert(*id, client);
-  pending_requests_.insert(ClientIdWithPriority(*id));
+  if (Platform::Current()->IsRendererSideResourceSchedulerEnabled())
+    pending_requests_.emplace(*id, priority, intra_priority);
+  else
+    pending_requests_.emplace(*id);
   MaybeRun();
 }
 
@@ -200,6 +205,26 @@ void ResourceLoadScheduler::OnNetworkQuiet() {
     case ThrottlingHistory::kStopped:
       break;
   }
+}
+
+ResourceLoadScheduler::ThrottleOption ResourceLoadScheduler::CanThrottle(
+    const ResourceRequest& request,
+    SynchronousPolicy synchronous_policy) const {
+  // Synchronous requests should not work with a throttling. Also, tentatively
+  // disables throttling for fetch requests that could keep on holding an active
+  // connection until data is read by JavaScript.
+  if (synchronous_policy == kRequestSynchronously)
+    return ResourceLoadScheduler::ThrottleOption::kCanNotBeThrottled;
+
+  if (request.GetRequestContext() == WebURLRequest::kRequestContextFetch)
+    return ResourceLoadScheduler::ThrottleOption::kCanNotBeThrottled;
+
+  if (Platform::Current()->IsRendererSideResourceSchedulerEnabled()) {
+    if (request.Priority() >= ResourceLoadPriority::kMedium)
+      return ResourceLoadScheduler::ThrottleOption::kCanNotBeThrottled;
+  }
+
+  return ResourceLoadScheduler::ThrottleOption::kCanBeThrottled;
 }
 
 void ResourceLoadScheduler::OnThrottlingStateChanged(
