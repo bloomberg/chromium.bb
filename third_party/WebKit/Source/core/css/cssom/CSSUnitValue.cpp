@@ -22,6 +22,14 @@ CSSPrimitiveValue::UnitType ToCanonicalUnit(CSSPrimitiveValue::UnitType unit) {
       CSSPrimitiveValue::UnitTypeToUnitCategory(unit));
 }
 
+CSSPrimitiveValue::UnitType ToCanonicalUnitIfPossible(
+    CSSPrimitiveValue::UnitType unit) {
+  const auto canonical_unit = ToCanonicalUnit(unit);
+  if (canonical_unit == CSSPrimitiveValue::UnitType::kUnknown)
+    return unit;
+  return canonical_unit;
+}
+
 }  // namespace
 
 CSSUnitValue* CSSUnitValue::Create(double value,
@@ -97,233 +105,36 @@ const CSSValue* CSSUnitValue::ToCSSValue(SecureContextMode) const {
   return CSSPrimitiveValue::Create(value_, unit_);
 }
 
-CSSUnitValue* CSSUnitValue::ConvertTo(CSSPrimitiveValue::UnitType unit) const {
-  if (unit_ == unit)
+CSSUnitValue* CSSUnitValue::ConvertTo(
+    CSSPrimitiveValue::UnitType target_unit) const {
+  if (unit_ == target_unit)
     return Create(value_, unit_);
 
-  // TODO(meade): Implement other types: time, frequency and resolution.
-  if (CSSPrimitiveValue::IsLength(unit_) && CSSPrimitiveValue::IsLength(unit)) {
-    // Only fixed lengths can be converted.
-    if (CSSPrimitiveValue::IsRelativeUnit(unit_) ||
-        CSSPrimitiveValue::IsRelativeUnit(unit))
-      return nullptr;
-    return Create(ConvertFixedLength(unit), unit);
-  }
-  if (CSSPrimitiveValue::IsAngle(unit_) && CSSPrimitiveValue::IsAngle(unit))
-    return Create(ConvertAngle(unit), unit);
+  // Instead of defining the scale factors for every unit to every other unit,
+  // we simply convert to the canonical unit and back since we already have
+  // the scale factors for canonical units.
+  const auto canonical_unit = ToCanonicalUnit(unit_);
+  if (canonical_unit != ToCanonicalUnit(target_unit) ||
+      canonical_unit == CSSPrimitiveValue::UnitType::kUnknown)
+    return nullptr;
 
-  return nullptr;
+  const double scale_factor =
+      CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(unit_) /
+      CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(target_unit);
+
+  return CSSUnitValue::Create(value_ * scale_factor, target_unit);
 }
 
 WTF::Optional<CSSNumericSumValue> CSSUnitValue::SumValue() const {
-  const auto canonical_unit = ToCanonicalUnit(unit_);
-  if (canonical_unit == CSSPrimitiveValue::UnitType::kUnknown)
-    return WTF::nullopt;
-
   CSSNumericSumValue sum;
   CSSNumericSumValue::UnitMap unit_map;
   if (unit_ != CSSPrimitiveValue::UnitType::kNumber)
-    unit_map.insert(canonical_unit, 1);
+    unit_map.insert(ToCanonicalUnitIfPossible(unit_), 1);
 
   sum.terms.emplace_back(
       value_ * CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(unit_),
       std::move(unit_map));
   return sum;
-}
-
-double CSSUnitValue::ConvertFixedLength(
-    CSSPrimitiveValue::UnitType unit) const {
-  switch (unit_) {
-    case CSSPrimitiveValue::UnitType::kPixels:
-      switch (unit) {
-        case CSSPrimitiveValue::UnitType::kCentimeters:
-          return value_ / kCssPixelsPerCentimeter;
-        case CSSPrimitiveValue::UnitType::kMillimeters:
-          return value_ / kCssPixelsPerMillimeter;
-        case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
-          return value_ / kCssPixelsPerQuarterMillimeter;
-        case CSSPrimitiveValue::UnitType::kInches:
-          return value_ / kCssPixelsPerInch;
-        case CSSPrimitiveValue::UnitType::kPoints:
-          return value_ / kCssPixelsPerPoint;
-        case CSSPrimitiveValue::UnitType::kPicas:
-          return value_ / kCssPixelsPerPica;
-        default:
-          NOTREACHED();
-          return 0;
-      }
-    case CSSPrimitiveValue::UnitType::kCentimeters:
-      switch (unit) {
-        case CSSPrimitiveValue::UnitType::kPixels:
-          return value_ * kCssPixelsPerCentimeter;
-        case CSSPrimitiveValue::UnitType::kMillimeters:
-          return value_ * kMillimetersPerCentimeter;
-        case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
-          return value_ * kQuarterMillimetersPerCentimeter;
-        case CSSPrimitiveValue::UnitType::kInches:
-          return value_ / kCentimetersPerInch;
-        case CSSPrimitiveValue::UnitType::kPoints:
-          return value_ * (kPointsPerInch / kCentimetersPerInch);
-        case CSSPrimitiveValue::UnitType::kPicas:
-          return value_ * (kPicasPerInch / kCentimetersPerInch);
-        default:
-          NOTREACHED();
-          return 0;
-      }
-    case CSSPrimitiveValue::UnitType::kMillimeters:
-      switch (unit) {
-        case CSSPrimitiveValue::UnitType::kPixels:
-          return value_ * kCssPixelsPerMillimeter;
-        case CSSPrimitiveValue::UnitType::kCentimeters:
-          return value_ / kMillimetersPerCentimeter;
-        case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
-          return value_ *
-                 (kQuarterMillimetersPerCentimeter / kMillimetersPerCentimeter);
-        case CSSPrimitiveValue::UnitType::kInches:
-          return value_ / (kMillimetersPerCentimeter * kCentimetersPerInch);
-        case CSSPrimitiveValue::UnitType::kPoints:
-          return value_ * (kPointsPerInch / kMillimetersPerInch);
-        case CSSPrimitiveValue::UnitType::kPicas:
-          return value_ * (kPicasPerInch / kMillimetersPerInch);
-        default:
-          NOTREACHED();
-          return 0;
-      }
-    case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
-      switch (unit) {
-        case CSSPrimitiveValue::UnitType::kPixels:
-          return value_ * kCssPixelsPerQuarterMillimeter;
-        case CSSPrimitiveValue::UnitType::kCentimeters:
-          return value_ / kQuarterMillimetersPerCentimeter;
-        case CSSPrimitiveValue::UnitType::kMillimeters:
-          return value_ /
-                 (kQuarterMillimetersPerCentimeter / kMillimetersPerCentimeter);
-        case CSSPrimitiveValue::UnitType::kInches:
-          return value_ /
-                 (kQuarterMillimetersPerCentimeter * kCentimetersPerInch);
-        case CSSPrimitiveValue::UnitType::kPoints:
-          return value_ * (kPointsPerInch / kQuarterMillimetersPerInch);
-        case CSSPrimitiveValue::UnitType::kPicas:
-          return value_ * (kPicasPerInch / kQuarterMillimetersPerInch);
-        default:
-          NOTREACHED();
-          return 0;
-      }
-    case CSSPrimitiveValue::UnitType::kInches:
-      switch (unit) {
-        case CSSPrimitiveValue::UnitType::kPixels:
-          return value_ * kCssPixelsPerInch;
-        case CSSPrimitiveValue::UnitType::kMillimeters:
-          return value_ * kCentimetersPerInch * kMillimetersPerCentimeter;
-        case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
-          return value_ * kCentimetersPerInch *
-                 kQuarterMillimetersPerCentimeter;
-        case CSSPrimitiveValue::UnitType::kCentimeters:
-          return value_ * kCentimetersPerInch;
-        case CSSPrimitiveValue::UnitType::kPoints:
-          return value_ * kPointsPerInch;
-        case CSSPrimitiveValue::UnitType::kPicas:
-          return value_ * kPicasPerInch;
-        default:
-          NOTREACHED();
-          return 0;
-      }
-    case CSSPrimitiveValue::UnitType::kPoints:
-      switch (unit) {
-        case CSSPrimitiveValue::UnitType::kPixels:
-          return value_ * kCssPixelsPerPoint;
-        case CSSPrimitiveValue::UnitType::kMillimeters:
-          return value_ * (kMillimetersPerInch / kPointsPerInch);
-        case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
-          return value_ * (kQuarterMillimetersPerInch / kPointsPerInch);
-        case CSSPrimitiveValue::UnitType::kCentimeters:
-          return value_ * (kCentimetersPerInch / kPointsPerInch);
-        case CSSPrimitiveValue::UnitType::kInches:
-          return value_ / kPointsPerInch;
-        case CSSPrimitiveValue::UnitType::kPicas:
-          return value_ * (kPicasPerInch / kPointsPerInch);
-        default:
-          NOTREACHED();
-          return 0;
-      }
-    case CSSPrimitiveValue::UnitType::kPicas:
-      switch (unit) {
-        case CSSPrimitiveValue::UnitType::kPixels:
-          return value_ * kCssPixelsPerPica;
-        case CSSPrimitiveValue::UnitType::kMillimeters:
-          return value_ * (kMillimetersPerInch / kPicasPerInch);
-        case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
-          return value_ * (kQuarterMillimetersPerInch / kPicasPerInch);
-        case CSSPrimitiveValue::UnitType::kCentimeters:
-          return value_ * (kCentimetersPerInch / kPicasPerInch);
-        case CSSPrimitiveValue::UnitType::kInches:
-          return value_ / kPicasPerInch;
-        case CSSPrimitiveValue::UnitType::kPoints:
-          return value_ * (kPointsPerInch / kPicasPerInch);
-        default:
-          NOTREACHED();
-          return 0;
-      }
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-
-double CSSUnitValue::ConvertAngle(CSSPrimitiveValue::UnitType unit) const {
-  switch (unit_) {
-    case CSSPrimitiveValue::UnitType::kDegrees:
-      switch (unit) {
-        case CSSPrimitiveValue::UnitType::kRadians:
-          return deg2rad(value_);
-        case CSSPrimitiveValue::UnitType::kGradians:
-          return deg2grad(value_);
-        case CSSPrimitiveValue::UnitType::kTurns:
-          return deg2turn(value_);
-        default:
-          NOTREACHED();
-          return 0;
-      }
-    case CSSPrimitiveValue::UnitType::kRadians:
-      switch (unit) {
-        case CSSPrimitiveValue::UnitType::kDegrees:
-          return rad2deg(value_);
-        case CSSPrimitiveValue::UnitType::kGradians:
-          return rad2grad(value_);
-        case CSSPrimitiveValue::UnitType::kTurns:
-          return rad2turn(value_);
-        default:
-          NOTREACHED();
-          return 0;
-      }
-    case CSSPrimitiveValue::UnitType::kGradians:
-      switch (unit) {
-        case CSSPrimitiveValue::UnitType::kDegrees:
-          return grad2deg(value_);
-        case CSSPrimitiveValue::UnitType::kRadians:
-          return grad2rad(value_);
-        case CSSPrimitiveValue::UnitType::kTurns:
-          return grad2turn(value_);
-        default:
-          NOTREACHED();
-          return 0;
-      }
-    case CSSPrimitiveValue::UnitType::kTurns:
-      switch (unit) {
-        case CSSPrimitiveValue::UnitType::kDegrees:
-          return turn2deg(value_);
-        case CSSPrimitiveValue::UnitType::kRadians:
-          return turn2rad(value_);
-        case CSSPrimitiveValue::UnitType::kGradians:
-          return turn2grad(value_);
-        default:
-          NOTREACHED();
-          return 0;
-      }
-    default:
-      NOTREACHED();
-      return 0;
-  }
 }
 
 bool CSSUnitValue::Equals(const CSSNumericValue& other) const {
