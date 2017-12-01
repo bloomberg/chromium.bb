@@ -364,12 +364,6 @@ var renderTile = function(data) {
 
   tile.className = 'mv-tile';
   tile.setAttribute('data-tid', data.tid);
-  var html = [];
-  html.push('<div class="mv-favicon"></div>');
-  html.push('<div class="mv-title"></div><div class="mv-thumb"></div>');
-  html.push('<button class="mv-x"></button>');
-  tile.innerHTML = html.join('');
-  tile.lastElementChild.title = queryArgs['removeTooltip'] || '';
 
   if (isSchemeAllowed(data.url)) {
     tile.href = data.url;
@@ -425,14 +419,33 @@ var renderTile = function(data) {
     }
   });
 
-  var title = tile.querySelector('.mv-title');
+  var favicon = document.createElement('div');
+  favicon.className = 'mv-favicon';
+  var fi = document.createElement('img');
+  fi.src = data.faviconUrl;
+  // Set title and alt to empty so screen readers won't say the image name.
+  fi.title = '';
+  fi.alt = '';
+  loadedCounter += 1;
+  fi.addEventListener('load', countLoad);
+  fi.addEventListener('error', countLoad);
+  fi.addEventListener('error', function(ev) {
+    favicon.classList.add('failed-favicon');
+  });
+  favicon.appendChild(fi);
+  tile.appendChild(favicon);
+
+  var title = document.createElement('div');
+  title.className = 'mv-title';
   title.innerText = data.title;
   title.style.direction = data.direction || 'ltr';
   if (NUM_TITLE_LINES > 1) {
     title.classList.add('multiline');
   }
+  tile.appendChild(title);
 
-  var thumb = tile.querySelector('.mv-thumb');
+  var thumb = document.createElement('div');
+  thumb.className = 'mv-thumb';
   var img = document.createElement('img');
   img.title = data.title;
   img.src = data.thumbnailUrl;
@@ -460,34 +473,23 @@ var renderTile = function(data) {
     countLoad();
   });
   thumb.appendChild(img);
+  tile.appendChild(thumb);
 
-  var favicon = tile.querySelector('.mv-favicon');
-  var fi = document.createElement('img');
-  fi.src = data.faviconUrl;
-  // Set title and alt to empty so screen readers won't say the image name.
-  fi.title = '';
-  fi.alt = '';
-  loadedCounter += 1;
-  fi.addEventListener('load', countLoad);
-  fi.addEventListener('error', countLoad);
-  fi.addEventListener('error', function(ev) {
-    favicon.classList.add('failed-favicon');
-  });
-  favicon.appendChild(fi);
-
-  var mvx = tile.querySelector('.mv-x');
+  var mvx = document.createElement('button');
+  mvx.className = 'mv-x';
+  mvx.title = queryArgs['removeTooltip'] || '';
   mvx.addEventListener('click', function(ev) {
     removeAllOldTiles();
     blacklistTile(tile);
     ev.preventDefault();
     ev.stopPropagation();
   });
-
   // Don't allow the event to bubble out to the containing tile, as that would
   // trigger navigation to the tile URL.
   mvx.addEventListener('keydown', function(event) {
     event.stopPropagation();
   });
+  tile.appendChild(mvx);
 
   return tile;
 };
