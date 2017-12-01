@@ -158,8 +158,10 @@ SelectToSpeakOptionsPage.prototype = {
    */
   setUpHighlightListener_: function() {
     let onChange = function(value) {
-      let example = document.getElementById('highlightExample');
-      example.style.background = value;
+      let examples = document.getElementsByClassName('highlight');
+      for (let i = 0; i < examples.length; i++) {
+        examples[i].style.background = value;
+      }
     };
 
     this.syncSelectControlToPref_('highlightColor', 'highlightColor', onChange);
