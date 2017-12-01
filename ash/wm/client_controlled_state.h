@@ -30,16 +30,16 @@ class ASH_EXPORT ClientControlledState : public BaseState {
   class Delegate {
    public:
     virtual ~Delegate() = default;
-    // Handles the state change from |current_state| to |requested_state|.
+    // Handles the state change of |window_state| to |requested_state|.
     // Delegate may decide to ignore the state change, proceed with the state
     // change, or can move to a different state.
     virtual void HandleWindowStateRequest(
-        mojom::WindowStateType current_state,
+        WindowState* window_state,
         mojom::WindowStateType requested_state) = 0;
-    // Handles the bounds change request. |current_state| specifies the current
-    // window state. Delegate may choose to ignore the request, set the given
-    // bounds, or set the different bounds.
-    virtual void HandleBoundsRequest(mojom::WindowStateType current_state,
+    // Handles the bounds change request for |window_state|.  Delegate
+    // may choose to ignore the request, set the given bounds, or set
+    // the different bounds.
+    virtual void HandleBoundsRequest(WindowState* window_state,
                                      const gfx::Rect& requested_bounds) = 0;
   };
 

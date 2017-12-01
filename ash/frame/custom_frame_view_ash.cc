@@ -162,25 +162,6 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
 
 }  // namespace
 
-////////////////////////////////////////////////////////////////////////////////
-// CustomFrameViewAshBase, public:
-
-CustomFrameViewAshBase::CustomFrameViewAshBase() {
-  Shell::Get()->AddShellObserver(this);
-}
-
-CustomFrameViewAshBase::~CustomFrameViewAshBase() {
-  Shell::Get()->RemoveShellObserver(this);
-}
-
-void CustomFrameViewAshBase::OnOverviewModeStarting() {
-  SetShouldPaintHeader(false);
-}
-
-void CustomFrameViewAshBase::OnOverviewModeEnded() {
-  SetShouldPaintHeader(true);
-}
-
 // static
 bool CustomFrameViewAsh::use_empty_minimum_size_for_test_ = false;
 
@@ -285,7 +266,7 @@ void CustomFrameViewAsh::OverlayView::Layout() {
   int onscreen_height = header_height_
                             ? *header_height_
                             : header_view_->GetPreferredOnScreenHeight();
-  if (onscreen_height == 0) {
+  if (onscreen_height == 0 || !enabled()) {
     header_view_->SetVisible(false);
   } else {
     const int height =
@@ -340,9 +321,12 @@ CustomFrameViewAsh::CustomFrameViewAsh(
         new CustomFrameViewAshWindowStateDelegate(window_state, this,
                                                   enable_immersive)));
   }
+  Shell::Get()->AddShellObserver(this);
 }
 
-CustomFrameViewAsh::~CustomFrameViewAsh() = default;
+CustomFrameViewAsh::~CustomFrameViewAsh() {
+  Shell::Get()->RemoveShellObserver(this);
+}
 
 void CustomFrameViewAsh::InitImmersiveFullscreenControllerForView(
     ImmersiveFullscreenController* immersive_fullscreen_controller) {
@@ -428,6 +412,8 @@ gfx::Size CustomFrameViewAsh::CalculatePreferredSize() const {
 }
 
 void CustomFrameViewAsh::Layout() {
+  if (!enabled())
+    return;
   views::NonClientFrameView::Layout();
   aura::Window* frame_window = frame_->GetNativeWindow();
   frame_window->SetProperty(aura::client::kTopViewInset,
@@ -439,7 +425,7 @@ const char* CustomFrameViewAsh::GetClassName() const {
 }
 
 gfx::Size CustomFrameViewAsh::GetMinimumSize() const {
-  if (use_empty_minimum_size_for_test_)
+  if (use_empty_minimum_size_for_test_ || !enabled())
     return gfx::Size();
 
   gfx::Size min_client_view_size(frame_->client_view()->GetMinimumSize());
@@ -495,6 +481,14 @@ void CustomFrameViewAsh::SetShouldPaintHeader(bool paint) {
   header_view_->SetShouldPaintHeader(paint);
 }
 
+void CustomFrameViewAsh::OnOverviewModeStarting() {
+  SetShouldPaintHeader(false);
+}
+
+void CustomFrameViewAsh::OnOverviewModeEnded() {
+  SetShouldPaintHeader(true);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh, private:
 
@@ -513,9 +507,9 @@ CustomFrameViewAsh::GetFrameCaptionButtonContainerViewForTest() {
 }
 
 int CustomFrameViewAsh::NonClientTopBorderHeight() const {
-  // The frame should not occupy the window area when it's not visible
-  // or in fullscreen.
-  if (frame_->IsFullscreen() || !visible())
+  // The frame should not occupy the window area when it's in fullscreen,
+  // not visible or disabled.
+  if (frame_->IsFullscreen() || !visible() || !enabled())
     return 0;
 
   const bool should_hide_titlebar_in_tablet_mode =
