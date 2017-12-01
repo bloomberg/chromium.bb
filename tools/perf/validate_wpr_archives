@@ -21,6 +21,7 @@ def GetAllStorySets():
   benchmarks_to_skip = [
       'skpicture_printer_ct',
       'screenshot_ct',
+      'smoothness_ct',
       'repaint_ct',
       'rasterize_and_record_micro_ct',
       'multipage_skpicture_printer_ct',
