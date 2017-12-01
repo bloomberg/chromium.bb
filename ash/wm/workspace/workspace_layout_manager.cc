@@ -95,7 +95,19 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
   windows_.erase(child);
   child->RemoveObserver(this);
-  wm::GetWindowState(child)->RemoveObserver(this);
+  wm::WindowState* window_state = wm::GetWindowState(child);
+  window_state->RemoveObserver(this);
+
+  // When a window is removing from a workspace layout, it is going to be added
+  // to a new workspace layout or destroyed.
+  if (!window_state->pre_added_to_workspace_window_bounds()) {
+    if (window_state->pre_auto_manage_window_bounds()) {
+      window_state->SetPreAddedToWorkspaceWindowBounds(
+          *window_state->pre_auto_manage_window_bounds());
+    } else {
+      window_state->SetPreAddedToWorkspaceWindowBounds(child->bounds());
+    }
+  }
 
   if (child->layer()->GetTargetVisibility())
     WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
