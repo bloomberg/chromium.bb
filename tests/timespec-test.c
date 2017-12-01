@@ -160,7 +160,7 @@ ZUC_TEST(timespec_test, timespec_sub_to_nsec)
 	a.tv_nsec = 1;
 	b.tv_sec = 1;
 	b.tv_nsec = 2;
-	ZUC_ASSERT_EQ((999L * NSEC_PER_SEC) - 1, timespec_sub_to_nsec(&a, &b));
+	ZUC_ASSERT_EQ((999LL * NSEC_PER_SEC) - 1, timespec_sub_to_nsec(&a, &b));
 }
 
 ZUC_TEST(timespec_test, timespec_sub_to_msec)
@@ -190,7 +190,7 @@ ZUC_TEST(timespec_test, timespec_from_nsec)
 	ZUC_ASSERT_EQ(1, a.tv_sec);
 	ZUC_ASSERT_EQ(0, a.tv_nsec);
 
-	timespec_from_nsec(&a, (5L * NSEC_PER_SEC) + 1);
+	timespec_from_nsec(&a, (5LL * NSEC_PER_SEC) + 1);
 	ZUC_ASSERT_EQ(5, a.tv_sec);
 	ZUC_ASSERT_EQ(1, a.tv_nsec);
 }
