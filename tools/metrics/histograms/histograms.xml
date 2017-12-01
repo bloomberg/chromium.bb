@@ -9035,6 +9035,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Chrome.ProcessSingleton.ProcessTerminateErrorCode.Windows"
+    enum="WinGetLastError">
+  <obsolete>
+    Deprecated as of 12/2017.
+  </obsolete>
+  <owner>aseren@yandex-team.ru</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
+    The error code of remote process termination on Windows in case when remote
+    process hung. This histogram has been replaced by
+    Chrome.ProcessSingleton.TerminateProcessErrorCode.Windows histogram.
+  </summary>
+</histogram>
+
 <histogram name="Chrome.ProcessSingleton.RemoteHungProcessTerminateReason"
     enum="RemoteHungProcessTerminateReason">
   <owner>aseren@yandex-team.ru</owner>
