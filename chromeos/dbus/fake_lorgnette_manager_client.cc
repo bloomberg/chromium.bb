@@ -21,33 +21,35 @@ FakeLorgnetteManagerClient::~FakeLorgnetteManagerClient() = default;
 void FakeLorgnetteManagerClient::Init(dbus::Bus* bus) {}
 
 void FakeLorgnetteManagerClient::ListScanners(
-    const ListScannersCallback& callback) {
+    DBusMethodCallback<ScannerTable> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(callback, !scanner_table_.empty(), scanner_table_));
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                scanner_table_.empty()
+                                    ? base::nullopt
+                                    : base::make_optional(scanner_table_)));
 }
 
 void FakeLorgnetteManagerClient::ScanImageToString(
     std::string device_name,
     const ScanProperties& properties,
-    const ScanImageToStringCallback& callback) {
+    DBusMethodCallback<std::string> callback) {
   auto it = scan_data_.find(
       std::make_tuple(device_name, properties.mode, properties.resolution_dpi));
-  auto task = it != scan_data_.end()
-                  ? base::BindOnce(callback, true, it->second)
-                  : base::BindOnce(callback, false, std::string());
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
+  auto data =
+      it == scan_data_.end() ? base::nullopt : base::make_optional(it->second);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(data)));
 }
 
 void FakeLorgnetteManagerClient::AddScannerTableEntry(
-    const std::string device_name,
+    const std::string& device_name,
     const ScannerTableEntry& entry) {
   scanner_table_[device_name] = entry;
 }
 
 void FakeLorgnetteManagerClient::AddScanData(const std::string& device_name,
                                              const ScanProperties& properties,
-                                             const std::string data) {
+                                             const std::string& data) {
   scan_data_[std::make_tuple(device_name, properties.mode,
                              properties.resolution_dpi)] = data;
 }

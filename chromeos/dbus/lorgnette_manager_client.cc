@@ -28,25 +28,22 @@ namespace chromeos {
 // The LorgnetteManagerClient implementation used in production.
 class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
  public:
-  LorgnetteManagerClientImpl() :
-      lorgnette_daemon_proxy_(NULL), weak_ptr_factory_(this) {}
-
+  LorgnetteManagerClientImpl() = default;
   ~LorgnetteManagerClientImpl() override = default;
 
-  void ListScanners(const ListScannersCallback& callback) override {
+  void ListScanners(DBusMethodCallback<ScannerTable> callback) override {
     dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,
                                  lorgnette::kListScannersMethod);
     lorgnette_daemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&LorgnetteManagerClientImpl::OnListScanners,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // LorgnetteManagerClient override.
-  void ScanImageToString(
-      std::string device_name,
-      const ScanProperties& properties,
-      const ScanImageToStringCallback& callback) override {
+  void ScanImageToString(std::string device_name,
+                         const ScanProperties& properties,
+                         DBusMethodCallback<std::string> callback) override {
     auto scan_data_reader = std::make_unique<ScanDataReader>();
     base::ScopedFD fd = scan_data_reader->Start();
 
@@ -57,8 +54,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     writer.AppendString(device_name);
     writer.AppendFileDescriptor(fd.get());
 
-    dbus::MessageWriter option_writer(NULL);
-    dbus::MessageWriter element_writer(NULL);
+    dbus::MessageWriter option_writer(nullptr);
+    dbus::MessageWriter element_writer(nullptr);
     writer.OpenArray("{sv}", &option_writer);
     if (!properties.mode.empty()) {
       option_writer.OpenDictEntry(&element_writer);
@@ -77,7 +74,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     lorgnette_daemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&LorgnetteManagerClientImpl::OnScanImageComplete,
-                       weak_ptr_factory_.GetWeakPtr(), callback,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                        std::move(scan_data_reader)));
   }
 
@@ -97,7 +94,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     using CompletionCallback =
         base::OnceCallback<void(base::Optional<std::string> data)>;
 
-    ScanDataReader() : weak_ptr_factory_(this) {}
+    ScanDataReader() = default;
 
     // Creates a pipe to read the scan data from the D-Bus service.
     // Returns a write-side FD.
@@ -150,86 +147,81 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
 
     CompletionCallback callback_;
 
-    base::WeakPtrFactory<ScanDataReader> weak_ptr_factory_;
+    base::WeakPtrFactory<ScanDataReader> weak_ptr_factory_{this};
     DISALLOW_COPY_AND_ASSIGN(ScanDataReader);
   };
 
   // Called when ListScanners completes.
-  void OnListScanners(const ListScannersCallback& callback,
+  void OnListScanners(DBusMethodCallback<ScannerTable> callback,
                       dbus::Response* response) {
-    ScannerTable scanners;
-    dbus::MessageReader table_reader(NULL);
+    dbus::MessageReader table_reader(nullptr);
     if (!response || !dbus::MessageReader(response).PopArray(&table_reader)) {
-      callback.Run(false, scanners);
+      std::move(callback).Run(base::nullopt);
       return;
     }
 
-    bool decode_failure = false;
+    ScannerTable scanners;
     while (table_reader.HasMoreData()) {
       std::string device_name;
-      dbus::MessageReader device_entry_reader(NULL);
-      dbus::MessageReader device_element_reader(NULL);
+      dbus::MessageReader device_entry_reader(nullptr);
+      dbus::MessageReader device_element_reader(nullptr);
       if (!table_reader.PopDictEntry(&device_entry_reader) ||
           !device_entry_reader.PopString(&device_name) ||
           !device_entry_reader.PopArray(&device_element_reader)) {
-        decode_failure = true;
-        break;
+        LOG(ERROR) << "Failed to decode response from ListScanners";
+        std::move(callback).Run(base::nullopt);
+        return;
       }
 
       ScannerTableEntry scanner_entry;
       while (device_element_reader.HasMoreData()) {
-        dbus::MessageReader device_attribute_reader(NULL);
         std::string attribute;
         std::string value;
+        dbus::MessageReader device_attribute_reader(nullptr);
         if (!device_element_reader.PopDictEntry(&device_attribute_reader) ||
             !device_attribute_reader.PopString(&attribute) ||
             !device_attribute_reader.PopString(&value)) {
-          decode_failure = true;
-          break;
+          LOG(ERROR) << "Failed to decode response from ListScanners";
+          std::move(callback).Run(base::nullopt);
+          return;
         }
-        scanner_entry[attribute] = value;
+        scanner_entry.emplace(std::move(attribute), std::move(value));
       }
 
-      if (decode_failure)
-          break;
-
-      scanners[device_name] = scanner_entry;
+      scanners.emplace(std::move(device_name), std::move(scanner_entry));
     }
 
-    if (decode_failure) {
-      LOG(ERROR) << "Failed to decode response from ListScanners";
-      callback.Run(false, scanners);
-    } else {
-      callback.Run(true, scanners);
-    }
+    std::move(callback).Run(std::move(scanners));
   }
 
   // Called when a response for ScanImage() is received.
-  void OnScanImageComplete(const ScanImageToStringCallback& callback,
+  void OnScanImageComplete(DBusMethodCallback<std::string> callback,
                            std::unique_ptr<ScanDataReader> scan_data_reader,
                            dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to scan image";
       // Do not touch |scan_data_reader|, so that RAII deletes it and
       // cancels the inflight operation.
-      callback.Run(false, std::string());
+      std::move(callback).Run(base::nullopt);
       return;
     }
     auto* reader = scan_data_reader.get();
-    reader->Wait(base::BindOnce(
-        &LorgnetteManagerClientImpl::OnScanDataCompleted,
-        weak_ptr_factory_.GetWeakPtr(), callback, std::move(scan_data_reader)));
+    reader->Wait(
+        base::BindOnce(&LorgnetteManagerClientImpl::OnScanDataCompleted,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(scan_data_reader)));
   }
 
   // Called when scan data read is completed.
-  void OnScanDataCompleted(const ScanImageToStringCallback& callback,
+  // This is to maintain the lifetime of ScanDataReader instance.
+  void OnScanDataCompleted(DBusMethodCallback<std::string> callback,
                            std::unique_ptr<ScanDataReader> scan_data_reader,
                            base::Optional<std::string> data) {
-    callback.Run(data.has_value(), data.value_or(std::string()));
+    std::move(callback).Run(std::move(data));
   }
 
-  dbus::ObjectProxy* lorgnette_daemon_proxy_;
-  base::WeakPtrFactory<LorgnetteManagerClientImpl> weak_ptr_factory_;
+  dbus::ObjectProxy* lorgnette_daemon_proxy_ = nullptr;
+  base::WeakPtrFactory<LorgnetteManagerClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LorgnetteManagerClientImpl);
 };
