@@ -638,8 +638,10 @@ class _PaygenPayload(object):
     ref_new_root_part = part_files['new_rootfs_part']
     part_files['new_rootfs_part'] += '.test'
     bspatch_path = os.path.join(self.generator_dir, 'bspatch')
+    puffpatch_path = os.path.join(self.generator_dir, 'puffin')
     try:
-      payload.Apply(bspatch_path=bspatch_path, **part_files)
+      payload.Apply(bspatch_path=bspatch_path, puffpatch_path=puffpatch_path,
+                    **part_files)
     except self._update_payload.PayloadError as e:
       raise PayloadVerificationError('Payload failed to apply: %s' % e)
 
