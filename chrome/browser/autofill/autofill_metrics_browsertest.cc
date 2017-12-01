@@ -86,11 +86,9 @@ IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
 
   // Make sure the UKM were logged for the main frame url and none for the
   // iframe url.
-  std::vector<const ukm::UkmSource*> sources =
-      test_ukm_recorder_->GetSourcesForUrl(iframe_url.spec().c_str());
-  EXPECT_TRUE(sources.empty());
-  sources = test_ukm_recorder_->GetSourcesForUrl(main_frame_url.spec().c_str());
-  EXPECT_FALSE(sources.empty());
+  for (const auto& kv : test_ukm_recorder_->GetSources()) {
+    EXPECT_NE(iframe_url, kv.second->url());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
@@ -111,11 +109,9 @@ IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
 
   // Make sure the UKM were logged for the main frame url and none for the
   // iframe url.
-  std::vector<const ukm::UkmSource*> sources =
-      test_ukm_recorder_->GetSourcesForUrl(iframe_url.spec().c_str());
-  EXPECT_TRUE(sources.empty());
-  sources = test_ukm_recorder_->GetSourcesForUrl(main_frame_url.spec().c_str());
-  EXPECT_FALSE(sources.empty());
+  for (const auto& kv : test_ukm_recorder_->GetSources()) {
+    EXPECT_NE(iframe_url, kv.second->url());
+  }
 }
 
 class SitePerProcessAutofillMetricsMetricsBrowserTest
@@ -156,11 +152,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
 
   // Make sure the UKM were logged for the main frame url and none for the
   // iframe url.
-  std::vector<const ukm::UkmSource*> sources =
-      test_ukm_recorder_->GetSourcesForUrl(iframe_url.spec().c_str());
-  EXPECT_TRUE(sources.empty());
-  sources = test_ukm_recorder_->GetSourcesForUrl(main_frame_url.spec().c_str());
-  EXPECT_FALSE(sources.empty());
+  for (const auto& kv : test_ukm_recorder_->GetSources()) {
+    EXPECT_NE(iframe_url, kv.second->url());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
@@ -182,9 +176,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
 
   // Make sure the UKM were logged for the main frame url and none for the
   // iframe url.
-  std::vector<const ukm::UkmSource*> sources =
-      test_ukm_recorder_->GetSourcesForUrl(iframe_url.spec().c_str());
-  EXPECT_TRUE(sources.empty());
-  sources = test_ukm_recorder_->GetSourcesForUrl(main_frame_url.spec().c_str());
-  EXPECT_FALSE(sources.empty());
+  for (const auto& kv : test_ukm_recorder_->GetSources()) {
+    EXPECT_NE(iframe_url, kv.second->url());
+  }
 }

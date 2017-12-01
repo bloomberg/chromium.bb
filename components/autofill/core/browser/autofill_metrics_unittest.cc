@@ -354,35 +354,25 @@ class TestAutofillManager : public AutofillManager {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
 
-MATCHER(CompareMetrics, "") {
-  const ukm::mojom::UkmMetric* lhs = ::testing::get<0>(arg).get();
-  const std::pair<const char*, int64_t>& rhs = ::testing::get<1>(arg);
-  return lhs->metric_hash == base::HashMetricName(rhs.first) &&
-         lhs->value == rhs.second;
-}
-
 void VerifyDeveloperEngagementUkm(
     const ukm::TestAutoSetUkmRecorder& ukm_recorder,
     const FormData& form,
     const std::vector<int64_t>& expected_metric_values) {
-  const ukm::mojom::UkmEntry* entry =
-      ukm_recorder.GetEntryForEntryName(UkmDeveloperEngagementType::kEntryName);
-  ASSERT_NE(nullptr, entry);
-  const ukm::UkmSource* source =
-      ukm_recorder.GetSourceForSourceId(entry->source_id);
-  ASSERT_NE(nullptr, source);
-  EXPECT_EQ(form.main_frame_origin.GetURL(), source->url());
-
   int expected_metric_value = 0;
   for (const auto it : expected_metric_values)
     expected_metric_value |= 1 << it;
 
-  const std::vector<std::pair<const char*, int64_t>> expected_metrics{
-      {UkmDeveloperEngagementType::kDeveloperEngagementName,
-       expected_metric_value}};
-
-  EXPECT_THAT(entry->metrics,
-              UnorderedPointwise(CompareMetrics(), expected_metrics));
+  auto entries =
+      ukm_recorder.GetEntriesByName(UkmDeveloperEngagementType::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* const entry : entries) {
+    ukm_recorder.ExpectEntrySourceHasUrl(entry,
+                                         GURL(form.main_frame_origin.GetURL()));
+    EXPECT_EQ(1u, entry->metrics.size());
+    ukm_recorder.ExpectEntryMetric(
+        entry, UkmDeveloperEngagementType::kDeveloperEngagementName,
+        expected_metric_value);
+  }
 }
 
 MATCHER(CompareMetricsIgnoringMillisecondsSinceFormParsed, "") {
@@ -399,22 +389,16 @@ void VerifyFormInteractionUkm(const ukm::TestAutoSetUkmRecorder& ukm_recorder,
                               const FormData& form,
                               const char* event_name,
                               const ExpectedUkmMetrics& expected_metrics) {
-  size_t expected_metrics_index = 0;
-  for (size_t i = 0; i < ukm_recorder.entries_count(); ++i) {
-    const ukm::mojom::UkmEntry* entry = ukm_recorder.GetEntry(i);
-    if (entry->event_hash != base::HashMetricName(event_name))
-      continue;
+  auto entries = ukm_recorder.GetEntriesByName(event_name);
 
-    const ukm::UkmSource* source =
-        ukm_recorder.GetSourceForSourceId(entry->source_id);
-    ASSERT_NE(nullptr, source);
-    EXPECT_EQ(form.main_frame_origin.GetURL(), source->url());
-
-    ASSERT_LT(expected_metrics_index, expected_metrics.size());
+  EXPECT_LE(entries.size(), expected_metrics.size());
+  for (size_t i = 0; i < expected_metrics.size() && i < entries.size(); i++) {
+    ukm_recorder.ExpectEntrySourceHasUrl(entries[i],
+                                         GURL(form.main_frame_origin.GetURL()));
     EXPECT_THAT(
-        entry->metrics,
+        entries[i]->metrics,
         UnorderedPointwise(CompareMetricsIgnoringMillisecondsSinceFormParsed(),
-                           expected_metrics[expected_metrics_index++]));
+                           expected_metrics[i]));
   }
 }
 
@@ -1927,8 +1911,8 @@ TEST_F(AutofillMetricsTest,
     autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
     autofill_manager_->Reset();
 
-    EXPECT_EQ(0U, test_ukm_recorder_.sources_count());
-    EXPECT_EQ(0U, test_ukm_recorder_.entries_count());
+    EXPECT_EQ(0ul, test_ukm_recorder_.sources_count());
+    EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
   }
 
   // Add another field to the form, so that it becomes fillable.
@@ -1941,8 +1925,6 @@ TEST_F(AutofillMetricsTest,
     autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
     autofill_manager_->Reset();
 
-    ASSERT_EQ(1U, test_ukm_recorder_.entries_count());
-    ASSERT_EQ(1U, test_ukm_recorder_.sources_count());
     VerifyDeveloperEngagementUkm(
         test_ukm_recorder_, form,
         {AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS});
@@ -1993,8 +1975,6 @@ TEST_F(AutofillMetricsTest,
     autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
     autofill_manager_->Reset();
 
-    ASSERT_EQ(1U, test_ukm_recorder_.entries_count());
-    ASSERT_EQ(1U, test_ukm_recorder_.sources_count());
     VerifyDeveloperEngagementUkm(
         test_ukm_recorder_, form,
         {AutofillMetrics::FILLABLE_FORM_PARSED_WITH_TYPE_HINTS});
@@ -2037,8 +2017,6 @@ TEST_F(AutofillMetricsTest, UkmDeveloperEngagement_LogUpiVpaTypeHint) {
     autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
     autofill_manager_->Reset();
 
-    ASSERT_EQ(1U, test_ukm_recorder_.entries_count());
-    ASSERT_EQ(1U, test_ukm_recorder_.sources_count());
     VerifyDeveloperEngagementUkm(test_ukm_recorder_, form,
                                  {AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT});
     test_ukm_recorder_.Purge();
@@ -4984,9 +4962,6 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
     autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
     histogram_tester.ExpectTotalCount("Autofill.FormSubmittedState", 0);
 
-    EXPECT_EQ(1U, test_ukm_recorder_.entries_count());
-    EXPECT_EQ(1U, test_ukm_recorder_.sources_count());
-
     VerifyDeveloperEngagementUkm(
         test_ukm_recorder_, form,
         {AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS});
@@ -5242,8 +5217,6 @@ TEST_F(
     base::HistogramTester histogram_tester;
     base::UserActionTester user_action_tester;
     autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
-    EXPECT_EQ(1U, test_ukm_recorder_.entries_count());
-    EXPECT_EQ(1U, test_ukm_recorder_.sources_count());
     VerifyDeveloperEngagementUkm(
         test_ukm_recorder_, form,
         {AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS});
@@ -6514,26 +6487,15 @@ TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric) {
 
   AutofillMetrics::LogCardUploadDecisionsUkm(&test_ukm_recorder_, url,
                                              upload_decision);
-
-  ASSERT_EQ(1U, test_ukm_recorder_.sources_count());
-  const ukm::UkmSource* source =
-      test_ukm_recorder_.GetSourceForUrl(url.spec().c_str());
-  EXPECT_EQ(url.spec(), source->url().spec());
-
-  ASSERT_EQ(1U, test_ukm_recorder_.entries_count());
-  const ukm::mojom::UkmEntry* entry = test_ukm_recorder_.GetEntry(0);
-
-  // Make sure that a card upload decision entry was logged.
-  EXPECT_EQ(source->id(), entry->source_id);
-  EXPECT_EQ(base::HashMetricName(UkmCardUploadDecisionType::kEntryName),
-            entry->event_hash);
-  EXPECT_EQ(1U, entry->metrics.size());
-
-  // Make sure that the correct upload decision was logged.
-  const ukm::mojom::UkmMetric* metric = ukm::TestUkmRecorder::FindMetric(
-      entry, UkmCardUploadDecisionType::kUploadDecisionName);
-  ASSERT_NE(nullptr, metric);
-  EXPECT_EQ(upload_decision, metric->value);
+  auto entries = test_ukm_recorder_.GetEntriesByName(
+      UkmCardUploadDecisionType::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* const entry : entries) {
+    test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, url);
+    EXPECT_EQ(1u, entry->metrics.size());
+    test_ukm_recorder_.ExpectEntryMetric(
+        entry, UkmCardUploadDecisionType::kUploadDecisionName, upload_decision);
+  }
 }
 
 // Tests that logging DeveloperEngagement UKM works as expected.
@@ -6543,40 +6505,32 @@ TEST_F(AutofillMetricsTest, RecordDeveloperEngagementMetric) {
 
   AutofillMetrics::LogDeveloperEngagementUkm(&test_ukm_recorder_, url,
                                              form_structure_metric);
-
-  ASSERT_EQ(1U, test_ukm_recorder_.sources_count());
-  const ukm::UkmSource* source =
-      test_ukm_recorder_.GetSourceForUrl(url.spec().c_str());
-  EXPECT_EQ(url.spec(), source->url().spec());
-
-  ASSERT_EQ(1U, test_ukm_recorder_.entries_count());
-  const ukm::mojom::UkmEntry* entry = test_ukm_recorder_.GetEntry(0);
-
-  // Make sure that a developer engagement entry was logged.
-  EXPECT_EQ(source->id(), entry->source_id);
-  EXPECT_EQ(base::HashMetricName(UkmDeveloperEngagementType::kEntryName),
-            entry->event_hash);
-  EXPECT_EQ(1U, entry->metrics.size());
-
-  // Make sure that the correct developer engagement metric was logged.
-  const ukm::mojom::UkmMetric* metric = ukm::TestUkmRecorder::FindMetric(
-      entry, UkmDeveloperEngagementType::kDeveloperEngagementName);
-  ASSERT_NE(nullptr, metric);
-  EXPECT_EQ(form_structure_metric, metric->value);
+  auto entries = test_ukm_recorder_.GetEntriesByName(
+      UkmDeveloperEngagementType::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* const entry : entries) {
+    test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, url);
+    EXPECT_EQ(1u, entry->metrics.size());
+    test_ukm_recorder_.ExpectEntryMetric(
+        entry, UkmDeveloperEngagementType::kDeveloperEngagementName,
+        form_structure_metric);
+  }
 }
 
 // Tests that no UKM is logged when the URL is not valid.
 TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_InvalidUrl) {
   GURL url("");
   AutofillMetrics::LogCardUploadDecisionsUkm(&test_ukm_recorder_, url, 1);
-  EXPECT_EQ(0U, test_ukm_recorder_.sources_count());
+  EXPECT_EQ(0ul, test_ukm_recorder_.sources_count());
+  EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
 }
 
 // Tests that no UKM is logged when the ukm service is null.
 TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_NoUkmService) {
   GURL url("https://www.google.com");
   AutofillMetrics::LogCardUploadDecisionsUkm(nullptr, url, 1);
-  ASSERT_EQ(0U, test_ukm_recorder_.sources_count());
+  EXPECT_EQ(0ul, test_ukm_recorder_.sources_count());
+  EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
 }
 
 }  // namespace autofill
