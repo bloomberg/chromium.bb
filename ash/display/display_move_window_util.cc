@@ -9,6 +9,7 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -139,6 +140,13 @@ int64_t GetNextDisplay(const display::Display& origin_display,
 void HandleMoveWindowToDisplay(DisplayMoveWindowDirection direction) {
   aura::Window* window = wm::GetActiveWindow();
   if (!window)
+    return;
+
+  // When |window_list| is not empty, |window| can only be the first one of the
+  // fresh built list if it is in the list.
+  MruWindowTracker::WindowList window_list =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+  if (window_list.empty() || window_list.front() != window)
     return;
 
   display::Display origin_display =

@@ -8,6 +8,7 @@
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
 #include "ui/aura/test/test_windows.h"
@@ -246,6 +247,41 @@ TEST_F(DisplayMoveWindowUtilTest, A11yAlert) {
   controller->FlushMojoForTest();
   EXPECT_EQ(mojom::AccessibilityAlert::WINDOW_MOVED_TO_RIGHT_DISPLAY,
             client.last_a11y_alert());
+}
+
+// Tests that moving window between displays is no-op if active window is not in
+// cycle window list.
+TEST_F(DisplayMoveWindowUtilTest, NoMovementIfNotInCycleWindowList) {
+  display::Screen* screen = display::Screen::GetScreen();
+  int64_t primary_id = screen->GetPrimaryDisplay().id();
+  display::DisplayIdList list =
+      display::test::CreateDisplayIdList2(primary_id, primary_id + 1);
+  // Layout: [p][1]
+  display::DisplayLayoutBuilder builder(primary_id);
+  builder.AddDisplayPlacement(list[1], primary_id,
+                              display::DisplayPlacement::RIGHT, 0);
+  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+      list, builder.Build());
+  UpdateDisplay("400x300,400x300");
+  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+  EXPECT_EQ(gfx::Rect(0, 0, 400, 300),
+            display_manager()->GetDisplayAt(0).bounds());
+  EXPECT_EQ(gfx::Rect(400, 0, 400, 300),
+            display_manager()->GetDisplayAt(1).bounds());
+
+  // Create a window in app list container, which would be excluded in cycle
+  // window list.
+  std::unique_ptr<aura::Window> window = CreateChildWindow(
+      Shell::GetPrimaryRootWindow(), gfx::Rect(10, 20, 200, 100),
+      kShellWindowId_AppListContainer);
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(list[0], screen->GetDisplayNearestWindow(window.get()).id());
+
+  MruWindowTracker::WindowList cycle_window_list =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+  EXPECT_TRUE(cycle_window_list.empty());
+  HandleMoveWindowToDisplay(DisplayMoveWindowDirection::kRight);
+  EXPECT_EQ(list[0], screen->GetDisplayNearestWindow(window.get()).id());
 }
 
 }  // namespace ash
