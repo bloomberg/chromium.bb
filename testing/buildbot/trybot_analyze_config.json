@@ -86,7 +86,8 @@
   "linux": {
     "exclusions": [
       "build/linux/sysroot_ld_path.sh",
-      "build/linux/sysroot_scripts/sysroots.json"
+      "build/linux/sysroot_scripts/sysroots.json",
+      "testing/xvfb.py"
     ]
   }
 }
