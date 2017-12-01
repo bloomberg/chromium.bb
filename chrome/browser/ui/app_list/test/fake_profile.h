@@ -86,7 +86,6 @@ class FakeProfile : public Profile {
   void OnLogin() override;
   void InitChromeOSPreferences() override;
 
-  PrefProxyConfigTracker* GetProxyConfigTracker() override;
   chrome_browser_net::Predictor* GetNetworkPredictor() override;
   GURL GetHomePage() override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;

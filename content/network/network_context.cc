@@ -109,12 +109,8 @@ NetworkContext::~NetworkContext() {
 }
 
 std::unique_ptr<NetworkContext> NetworkContext::CreateForTesting() {
-  mojom::NetworkContextParamsPtr params = mojom::NetworkContextParams::New();
-  // Disable proxy configuration detection, to avoid dependencies on local
-  // network configuration.
-  params->initial_proxy_config = net::ProxyConfig::CreateDirect();
-
-  return base::WrapUnique(new NetworkContext(std::move(params)));
+  return base::WrapUnique(
+      new NetworkContext(mojom::NetworkContextParams::New()));
 }
 
 void NetworkContext::RegisterURLLoader(URLLoader* url_loader) {
@@ -223,20 +219,6 @@ std::unique_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
   builder.set_accept_language("en-us,en");
   builder.set_user_agent(GetContentClient()->GetUserAgent());
 
-  // TODO(mmenke): Move this logic into content shell.
-  if (!network_context_params->initial_proxy_config &&
-      !network_context_params->proxy_config_client_request.is_pending()) {
-    if (command_line->HasSwitch(switches::kProxyServer)) {
-      net::ProxyConfig config;
-      config.proxy_rules().ParseFromString(
-          command_line->GetSwitchValueASCII(switches::kProxyServer));
-      network_context_params->initial_proxy_config = config;
-    } else {
-      network_context_params->initial_proxy_config =
-          net::ProxyConfig::CreateDirect();
-    }
-  }
-
   std::unique_ptr<net::CertVerifier> cert_verifier =
       net::CertVerifier::CreateDefault();
   builder.SetCertVerifier(
@@ -276,13 +258,15 @@ void NetworkContext::ApplyContextParamsToBuilder(
     builder->EnableHttpCache(cache_params);
   }
 
-  if (network_context_params->initial_proxy_config ||
-      network_context_params->proxy_config_client_request.is_pending()) {
-    builder->set_proxy_config_service(base::MakeUnique<ProxyConfigServiceMojo>(
-        std::move(network_context_params->proxy_config_client_request),
-        std::move(network_context_params->initial_proxy_config),
-        std::move(network_context_params->proxy_config_poller_client)));
+  if (!network_context_params->initial_proxy_config &&
+      !network_context_params->proxy_config_client_request.is_pending()) {
+    network_context_params->initial_proxy_config =
+        net::ProxyConfig::CreateDirect();
   }
+  builder->set_proxy_config_service(base::MakeUnique<ProxyConfigServiceMojo>(
+      std::move(network_context_params->proxy_config_client_request),
+      std::move(network_context_params->initial_proxy_config),
+      std::move(network_context_params->proxy_config_poller_client)));
 
   if (network_context_params->http_server_properties_path) {
     scoped_refptr<JsonPrefStore> json_pref_store(new JsonPrefStore(

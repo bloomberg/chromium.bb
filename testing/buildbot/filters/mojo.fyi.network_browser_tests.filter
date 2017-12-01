@@ -492,6 +492,14 @@
 -RepostFormWarningTest.TestLoginAfterRepost
 -WebSocketBrowserTest.ReuseMainPageBasicAuthCredentialsForWebSocket
 
+# These rely on proxy configuration and PAC execution being configured on the
+# legacy in-process URLRequestContext. They should be removed or updated to
+# use Mojo APIs instead.
+-HangingPacRequestProxyScriptBrowserTest.Shutdown
+-IOThreadBrowserTestWithHangingPacRequest.Shutdown
+-IOThreadBrowserTestWithPacFileURL.FilePac
+-ProxySettingsApiTest.ProxyEventsParseError
+
 # http://crbug.com/783996
 # Add support for TLS client auth.
 -PrerenderBrowserTest.PrerenderSSLClientCertIframe

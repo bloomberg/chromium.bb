@@ -39,7 +39,6 @@
 #include "chrome/browser/net/loading_predictor_observer.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
-#include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/policy/policy_helpers.h"
 #include "chrome/browser/predictors/loading_predictor.h"
@@ -80,6 +79,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/proxy_config_traits.h"
 #include "content/public/network/ignore_errors_cert_verifier.h"
 #include "content/public/network/url_request_context_builder_mojo.h"
 #include "extensions/features/features.h"
@@ -97,9 +97,6 @@
 #include "net/http/transport_security_persister.h"
 #include "net/net_features.h"
 #include "net/nqe/network_quality_estimator.h"
-#include "net/proxy/proxy_config_service_fixed.h"
-#include "net/proxy/proxy_script_fetcher_impl.h"
-#include "net/proxy/proxy_service.h"
 #include "net/reporting/reporting_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/client_cert_store.h"
@@ -465,8 +462,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   }
 #endif
 
-  params->proxy_config_service = ProxyServiceFactory::CreateProxyConfigService(
-      profile->GetProxyConfigTracker());
 #if defined(OS_CHROMEOS)
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager) {
@@ -1107,8 +1102,7 @@ void ProfileIOData::Init(
   builder->set_shared_http_auth_handler_factory(
       io_thread_globals->system_request_context->http_auth_handler_factory());
 
-  io_thread->SetUpProxyConfigService(
-      builder.get(), std::move(profile_params_->proxy_config_service));
+  io_thread->SetUpProxyService(builder.get());
 
   builder->set_network_delegate(std::move(network_delegate));
 

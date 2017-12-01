@@ -35,7 +35,7 @@ ProxyServiceFactory::CreateProxyConfigService(PrefProxyConfigTracker* tracker) {
   // include command line and configuration policy).
 
   base_service = net::ProxyService::CreateSystemProxyConfigService(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
 #endif  // !defined(OS_CHROMEOS)
 
   return tracker->CreateTrackingProxyConfigService(std::move(base_service));
@@ -47,12 +47,10 @@ ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(
     PrefService* profile_prefs,
     PrefService* local_state_prefs) {
 #if defined(OS_CHROMEOS)
-  return new chromeos::ProxyConfigServiceImpl(
-      profile_prefs, local_state_prefs,
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  return new chromeos::ProxyConfigServiceImpl(profile_prefs, local_state_prefs,
+                                              nullptr);
 #else
-  return new PrefProxyConfigTrackerImpl(
-      profile_prefs, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  return new PrefProxyConfigTrackerImpl(profile_prefs, nullptr);
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -61,12 +59,9 @@ PrefProxyConfigTracker*
 ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
     PrefService* local_state_prefs) {
 #if defined(OS_CHROMEOS)
-  return new chromeos::ProxyConfigServiceImpl(
-      nullptr, local_state_prefs,
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  return new chromeos::ProxyConfigServiceImpl(nullptr, local_state_prefs,
+                                              nullptr);
 #else
-  return new PrefProxyConfigTrackerImpl(
-      local_state_prefs,
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  return new PrefProxyConfigTrackerImpl(local_state_prefs, nullptr);
 #endif  // defined(OS_CHROMEOS)
 }

@@ -186,10 +186,6 @@ void FakeProfile::ChangeAppLocale(
 void FakeProfile::OnLogin() {}
 void FakeProfile::InitChromeOSPreferences() {}
 
-PrefProxyConfigTracker* FakeProfile::GetProxyConfigTracker() {
-  return nullptr;
-}
-
 chrome_browser_net::Predictor* FakeProfile::GetNetworkPredictor() {
   return nullptr;
 }

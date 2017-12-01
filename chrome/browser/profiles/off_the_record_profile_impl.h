@@ -88,8 +88,6 @@ class OffTheRecordProfileImpl : public Profile {
   void InitChromeOSPreferences() override;
 #endif  // defined(OS_CHROMEOS)
 
-  PrefProxyConfigTracker* GetProxyConfigTracker() override;
-
   chrome_browser_net::Predictor* GetNetworkPredictor() override;
   GURL GetHomePage() override;
 
@@ -122,11 +120,6 @@ class OffTheRecordProfileImpl : public Profile {
   void TrackZoomLevelsFromParent();
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_ANDROID)
-  void UseSystemProxy();
-#endif  // defined(OS_ANDROID)
-
-  PrefProxyConfigTracker* CreateProxyConfigTracker();
 #if !defined(OS_ANDROID)
   // Callback function for tracking parent's zoom level changes.
   void OnParentZoomLevelChanged(
@@ -150,8 +143,6 @@ class OffTheRecordProfileImpl : public Profile {
   Time start_time_;
 
   base::FilePath last_selected_directory_;
-
-  std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };

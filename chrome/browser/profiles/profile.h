@@ -23,7 +23,6 @@ class ChromeZoomLevelPrefs;
 #endif
 
 class ExtensionSpecialStoragePolicy;
-class PrefProxyConfigTracker;
 class PrefService;
 class TestingProfile;
 
@@ -250,10 +249,6 @@ class Profile : public content::BrowserContext {
   // Initializes Chrome OS's preferences.
   virtual void InitChromeOSPreferences() = 0;
 #endif  // defined(OS_CHROMEOS)
-
-  // Returns the helper object that provides the proxy configuration service
-  // access to the the proxy configuration possibly defined by preferences.
-  virtual PrefProxyConfigTracker* GetProxyConfigTracker() = 0;
 
   // Returns the Predictor object used for dns prefetch.
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() = 0;

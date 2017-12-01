@@ -75,14 +75,16 @@ class ProxyConfigServiceImpl : public net::ProxyConfigService,
 };
 
 // A class that tracks proxy preferences. It translates the configuration
-// to net::ProxyConfig and pushes the result over to the IO thread for
-// ProxyConfigServiceImpl::UpdateProxyConfig to use.
+// to net::ProxyConfig and pushes the result over to
+// ProxyConfigServiceImpl::UpdateProxyConfig.
 class PROXY_CONFIG_EXPORT PrefProxyConfigTrackerImpl
     : public PrefProxyConfigTracker {
  public:
-  PrefProxyConfigTrackerImpl(
-      PrefService* pref_service,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  // |proxy_config_service_task_runner| is the thread the ProxyConfigService
+  // will live on. Use nullptr if it lives on the current thread.
+  PrefProxyConfigTrackerImpl(PrefService* pref_service,
+                             scoped_refptr<base::SingleThreadTaskRunner>
+                                 proxy_config_service_task_runner);
   ~PrefProxyConfigTrackerImpl() override;
 
   // PrefProxyConfigTracker implementation:
@@ -167,7 +169,7 @@ class PROXY_CONFIG_EXPORT PrefProxyConfigTrackerImpl
   // Active proxy configuration, last received from OnProxyConfigChanged.
   net::ProxyConfig active_config_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> proxy_config_service_task_runner_;
 
   base::ThreadChecker thread_checker_;
 

@@ -28,57 +28,8 @@
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/net_features.h"
 
-namespace {
-
-content::mojom::NetworkContextParamsPtr CreateMainNetworkContextParams(
-    Profile* profile) {
-  // TODO(mmenke): Set up parameters here.
-  content::mojom::NetworkContextParamsPtr network_context_params =
-      CreateDefaultNetworkContextParams();
-
-  network_context_params->context_name = std::string("main");
-
-  // Always enable the HTTP cache.
-  network_context_params->http_cache_enabled = true;
-
-  // Configure on-disk storage for non-OTR profiles. OTR profiles just use
-  // default behavior (in memory storage, default sizes).
-  PrefService* prefs = profile->GetPrefs();
-  if (!profile->IsOffTheRecord()) {
-    // Configure the HTTP cache path and size.
-    base::FilePath base_cache_path;
-    chrome::GetUserCacheDirectory(profile->GetPath(), &base_cache_path);
-    base::FilePath disk_cache_dir = prefs->GetFilePath(prefs::kDiskCacheDir);
-    if (!disk_cache_dir.empty())
-      base_cache_path = disk_cache_dir.Append(base_cache_path.BaseName());
-    network_context_params->http_cache_path =
-        base_cache_path.Append(chrome::kCacheDirname);
-    network_context_params->http_cache_max_size =
-        prefs->GetInteger(prefs::kDiskCacheSize);
-
-    // Currently this just contains HttpServerProperties, but that will likely
-    // change.
-    network_context_params->http_server_properties_path =
-        profile->GetPath().Append(chrome::kNetworkPersistentStateFilename);
-  }
-
-  // NOTE(mmenke): Keep these protocol handlers and
-  // ProfileIOData::SetUpJobFactoryDefaultsForBuilder in sync with
-  // ProfileIOData::IsHandledProtocol().
-  // TODO(mmenke): Find a better way of handling tracking supported schemes.
-  network_context_params->enable_data_url_support = true;
-  network_context_params->enable_file_url_support = true;
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  network_context_params->enable_ftp_url_support = true;
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
-
-  return network_context_params;
-}
-
-}  // namespace
-
 ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile), proxy_config_monitor_(profile) {
   quic_allowed_.Init(
       prefs::kQuicAllowed, profile->GetPrefs(),
       base::Bind(&ProfileNetworkContextService::DisableQuicIfNotAllowed,
@@ -105,7 +56,7 @@ ProfileNetworkContextService::CreateMainNetworkContext() {
 
   content::mojom::NetworkContextPtr network_context;
   content::GetNetworkService()->CreateNetworkContext(
-      MakeRequest(&network_context), CreateMainNetworkContextParams(profile_));
+      MakeRequest(&network_context), CreateMainNetworkContextParams());
   return network_context;
 }
 
@@ -124,7 +75,7 @@ void ProfileNetworkContextService::SetUpProfileIODataMainContext(
   }
 
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
-    *network_context_params = CreateMainNetworkContextParams(profile_);
+    *network_context_params = CreateMainNetworkContextParams();
     return;
   }
 
@@ -148,4 +99,55 @@ void ProfileNetworkContextService::DisableQuicIfNotAllowed() {
     return;
 
   g_browser_process->system_network_context_manager()->DisableQuic();
+}
+
+void ProfileNetworkContextService::FlushProxyConfigMonitorForTesting() {
+  proxy_config_monitor_.FlushForTesting();
+}
+
+content::mojom::NetworkContextParamsPtr
+ProfileNetworkContextService::CreateMainNetworkContextParams() {
+  // TODO(mmenke): Set up parameters here.
+  content::mojom::NetworkContextParamsPtr network_context_params =
+      CreateDefaultNetworkContextParams();
+
+  network_context_params->context_name = std::string("main");
+
+  // Always enable the HTTP cache.
+  network_context_params->http_cache_enabled = true;
+
+  // Configure on-disk storage for non-OTR profiles. OTR profiles just use
+  // default behavior (in memory storage, default sizes).
+  PrefService* prefs = profile_->GetPrefs();
+  if (!profile_->IsOffTheRecord()) {
+    // Configure the HTTP cache path and size.
+    base::FilePath base_cache_path;
+    chrome::GetUserCacheDirectory(profile_->GetPath(), &base_cache_path);
+    base::FilePath disk_cache_dir = prefs->GetFilePath(prefs::kDiskCacheDir);
+    if (!disk_cache_dir.empty())
+      base_cache_path = disk_cache_dir.Append(base_cache_path.BaseName());
+    network_context_params->http_cache_path =
+        base_cache_path.Append(chrome::kCacheDirname);
+    network_context_params->http_cache_max_size =
+        prefs->GetInteger(prefs::kDiskCacheSize);
+
+    // Currently this just contains HttpServerProperties, but that will likely
+    // change.
+    network_context_params->http_server_properties_path =
+        profile_->GetPath().Append(chrome::kNetworkPersistentStateFilename);
+  }
+
+  // NOTE(mmenke): Keep these protocol handlers and
+  // ProfileIOData::SetUpJobFactoryDefaultsForBuilder in sync with
+  // ProfileIOData::IsHandledProtocol().
+  // TODO(mmenke): Find a better way of handling tracking supported schemes.
+  network_context_params->enable_data_url_support = true;
+  network_context_params->enable_file_url_support = true;
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+  network_context_params->enable_ftp_url_support = true;
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+
+  proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
+
+  return network_context_params;
 }
