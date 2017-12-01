@@ -20,6 +20,7 @@ extern const CGFloat kIncognitoToolbarBackgroundColor;
 extern const CGFloat kVerticalMargin;
 extern const CGFloat kHorizontalMargin;
 extern const CGFloat kStackViewSpacing;
+extern const CGFloat kTrailingMargin;
 
 // Location bar styling.
 extern const CGFloat kLocationBarBorderWidth;

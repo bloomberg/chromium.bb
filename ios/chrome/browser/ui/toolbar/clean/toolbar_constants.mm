@@ -14,6 +14,7 @@ const CGFloat kIncognitoToolbarBackgroundColor = 0x505050;
 const CGFloat kVerticalMargin = 7.0f;
 const CGFloat kHorizontalMargin = 1.0f;
 const CGFloat kStackViewSpacing = 2.0f;
+const CGFloat kTrailingMargin = 10.0f;
 
 const CGFloat kLocationBarBorderWidth = 1.0f;
 const CGFloat kLocationBarBorderColor = 0xD0D0D0;
