@@ -353,8 +353,10 @@ static bool CodeGenerationCheckCallbackInMainThread(
     v8::Local<v8::Context> context,
     v8::Local<v8::String> source) {
   if (ExecutionContext* execution_context = ToExecutionContext(context)) {
+    DCHECK(execution_context->IsDocument() ||
+           execution_context->IsPaintWorkletGlobalScope());
     if (ContentSecurityPolicy* policy =
-            ToDocument(execution_context)->GetContentSecurityPolicy()) {
+            execution_context->GetContentSecurityPolicy()) {
       v8::String::Value source_str(source);
       UChar snippet[ContentSecurityPolicy::kMaxSampleLength + 1];
       size_t len = std::min((sizeof(snippet) / sizeof(UChar)) - 1,
