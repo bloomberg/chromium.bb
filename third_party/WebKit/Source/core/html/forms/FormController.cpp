@@ -410,14 +410,14 @@ void DocumentState::Trace(blink::Visitor* visitor) {
 }
 
 void DocumentState::AddControl(HTMLFormControlElementWithState* control) {
-  DCHECK(!control->Next() && !control->Prev());
-  form_controls_.Append(control);
+  auto result = form_controls_.insert(control);
+  DCHECK(result.is_new_entry);
 }
 
 void DocumentState::RemoveControl(HTMLFormControlElementWithState* control) {
-  form_controls_.Remove(control);
-  control->SetPrev(nullptr);
-  control->SetNext(nullptr);
+  auto it = form_controls_.find(control);
+  CHECK(it != form_controls_.end());
+  form_controls_.erase(it);
 }
 
 static String FormStateSignature() {
@@ -433,8 +433,8 @@ Vector<String> DocumentState::ToStateVector() {
   FormKeyGenerator* key_generator = FormKeyGenerator::Create();
   std::unique_ptr<SavedFormStateMap> state_map =
       WTF::WrapUnique(new SavedFormStateMap);
-  for (HTMLFormControlElementWithState* control = form_controls_.Head();
-       control; control = control->Next()) {
+  for (const auto& form_control : form_controls_) {
+    HTMLFormControlElementWithState* control = form_control.Get();
     DCHECK(control->isConnected());
     if (!control->ShouldSaveAndRestoreFormControlState())
       continue;

@@ -70,7 +70,7 @@ inline T* DoublyLinkedListNode<T>::Next() const {
   return static_cast<const T*>(this)->next_;
 }
 
-template <typename T, typename PointerType = T*>
+template <typename T>
 class DoublyLinkedList {
   USING_FAST_MALLOC(DoublyLinkedList);
 
@@ -90,90 +90,83 @@ class DoublyLinkedList {
   void Append(T*);
   void Remove(T*);
 
- protected:
-  PointerType head_;
-  PointerType tail_;
+ private:
+  T* head_;
+  T* tail_;
 
   DISALLOW_COPY_AND_ASSIGN(DoublyLinkedList);
 };
 
-template <typename T, typename PointerType>
-inline DoublyLinkedList<T, PointerType>::DoublyLinkedList()
-    : head_(nullptr), tail_(nullptr) {
-  static_assert(
-      !IsGarbageCollectedType<T>::value ||
-          !std::is_same<PointerType, T*>::value,
-      "Cannot use DoublyLinkedList<> with garbage collected types, use "
-      "HeapDoublyLinkedList<> instead.");
-}
+template <typename T>
+inline DoublyLinkedList<T>::DoublyLinkedList() : head_(0), tail_(0) {}
 
-template <typename T, typename PointerType>
-inline bool DoublyLinkedList<T, PointerType>::IsEmpty() const {
+template <typename T>
+inline bool DoublyLinkedList<T>::IsEmpty() const {
   return !head_;
 }
 
-template <typename T, typename PointerType>
-inline size_t DoublyLinkedList<T, PointerType>::size() const {
+template <typename T>
+inline size_t DoublyLinkedList<T>::size() const {
   size_t size = 0;
   for (T* node = head_; node; node = node->Next())
     ++size;
   return size;
 }
 
-template <typename T, typename PointerType>
-inline void DoublyLinkedList<T, PointerType>::Clear() {
-  head_ = nullptr;
-  tail_ = nullptr;
+template <typename T>
+inline void DoublyLinkedList<T>::Clear() {
+  head_ = 0;
+  tail_ = 0;
 }
 
-template <typename T, typename PointerType>
-inline T* DoublyLinkedList<T, PointerType>::Head() const {
+template <typename T>
+inline T* DoublyLinkedList<T>::Head() const {
   return head_;
 }
 
-template <typename T, typename PointerType>
-inline T* DoublyLinkedList<T, PointerType>::Tail() const {
+template <typename T>
+inline T* DoublyLinkedList<T>::Tail() const {
   return tail_;
 }
 
-template <typename T, typename PointerType>
-inline void DoublyLinkedList<T, PointerType>::Push(T* node) {
+template <typename T>
+inline void DoublyLinkedList<T>::Push(T* node) {
   if (!head_) {
     DCHECK(!tail_);
     head_ = node;
     tail_ = node;
-    node->SetPrev(nullptr);
-    node->SetNext(nullptr);
+    node->SetPrev(0);
+    node->SetNext(0);
     return;
   }
 
   DCHECK(tail_);
   head_->SetPrev(node);
   node->SetNext(head_);
-  node->SetPrev(nullptr);
+  node->SetPrev(0);
   head_ = node;
 }
 
-template <typename T, typename PointerType>
-inline void DoublyLinkedList<T, PointerType>::Append(T* node) {
+template <typename T>
+inline void DoublyLinkedList<T>::Append(T* node) {
   if (!tail_) {
     DCHECK(!head_);
     head_ = node;
     tail_ = node;
-    node->SetPrev(nullptr);
-    node->SetNext(nullptr);
+    node->SetPrev(0);
+    node->SetNext(0);
     return;
   }
 
   DCHECK(head_);
   tail_->SetNext(node);
   node->SetPrev(tail_);
-  node->SetNext(nullptr);
+  node->SetNext(0);
   tail_ = node;
 }
 
-template <typename T, typename PointerType>
-inline void DoublyLinkedList<T, PointerType>::Remove(T* node) {
+template <typename T>
+inline void DoublyLinkedList<T>::Remove(T* node) {
   if (node->Prev()) {
     DCHECK_NE(node, head_);
     node->Prev()->SetNext(node->Next());
@@ -191,8 +184,8 @@ inline void DoublyLinkedList<T, PointerType>::Remove(T* node) {
   }
 }
 
-template <typename T, typename PointerType>
-inline T* DoublyLinkedList<T, PointerType>::RemoveHead() {
+template <typename T>
+inline T* DoublyLinkedList<T>::RemoveHead() {
   T* node = Head();
   if (node)
     Remove(node);
