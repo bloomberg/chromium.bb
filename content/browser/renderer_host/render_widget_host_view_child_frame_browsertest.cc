@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
 }
 
 // Tests that while in mus, the child frame receives an updated FrameSinkId
-// representing the frame sink used by the RenderFrameProxy
+// representing the frame sink used by the RenderFrameProxy.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, ChildFrameSinkId) {
   // Only in mus do we expect a RenderFrameProxy to provide the FrameSinkId.
   if (!IsUsingMus())

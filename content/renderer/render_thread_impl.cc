@@ -794,9 +794,8 @@ void RenderThreadImpl::Init(
 // Register exported services:
 
 #if defined(USE_AURA)
-  if (IsRunningWithMus()) {
+  if (IsRunningWithMus())
     CreateRenderWidgetWindowTreeClientFactory(GetServiceManagerConnection());
-  }
 #endif
 
   registry->AddInterface(base::Bind(&SharedWorkerFactoryImpl::Create),

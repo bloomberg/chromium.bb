@@ -40,6 +40,7 @@
 #include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/base/ui_base_switches_util.h"
 
 #if defined(USE_AURA)
 #include "content/renderer/mus/mus_embedded_frame.h"
@@ -410,7 +411,7 @@ void RenderFrameProxy::OnDidStartLoading() {
 
 void RenderFrameProxy::OnViewChanged(const viz::FrameSinkId& frame_sink_id) {
   // In mash the FrameSinkId comes from RendererWindowTreeClient.
-  if (!IsRunningWithMus())
+  if (!switches::IsMusHostingViz())
     frame_sink_id_ = frame_sink_id;
 
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view

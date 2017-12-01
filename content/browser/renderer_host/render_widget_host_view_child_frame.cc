@@ -43,6 +43,7 @@
 #include "gpu/ipc/common/gpu_messages.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "third_party/WebKit/public/platform/WebTouchEvent.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/touch_selection/touch_selection_controller.h"
@@ -77,7 +78,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       background_color_(SK_ColorWHITE),
       scroll_bubbling_state_(NO_ACTIVE_GESTURE_SCROLL),
       weak_factory_(this) {
-  if (IsUsingMus()) {
+  if (switches::IsMusHostingViz()) {
     // In Mus the RenderFrameProxy will eventually assign a viz::FrameSinkId
     // until then set ours invalid, as operations using it will be disregarded.
     frame_sink_id_ = viz::FrameSinkId();
@@ -98,7 +99,7 @@ RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
   if (frame_connector_)
     DetachFromTouchSelectionClientManagerIfNecessary();
 
-  if (!IsUsingMus()) {
+  if (!switches::IsMusHostingViz()) {
     ResetCompositorFrameSinkSupport();
     if (GetHostFrameSinkManager())
       GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
@@ -152,7 +153,8 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
       frame_connector_->GetParentRenderWidgetHostView();
 
   if (parent_view) {
-    DCHECK(parent_view->GetFrameSinkId().is_valid() || IsUsingMus());
+    DCHECK(parent_view->GetFrameSinkId().is_valid() ||
+           switches::IsMusHostingViz());
     SetParentFrameSinkId(parent_view->GetFrameSinkId());
   }
 
@@ -183,7 +185,7 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
 #if defined(USE_AURA)
 void RenderWidgetHostViewChildFrame::SetFrameSinkId(
     const viz::FrameSinkId& frame_sink_id) {
-  if (IsUsingMus())
+  if (switches::IsMusHostingViz())
     frame_sink_id_ = frame_sink_id;
 }
 #endif  // defined(USE_AURA)
@@ -539,7 +541,8 @@ void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
 
 void RenderWidgetHostViewChildFrame::SetParentFrameSinkId(
     const viz::FrameSinkId& parent_frame_sink_id) {
-  if (parent_frame_sink_id_ == parent_frame_sink_id || IsUsingMus())
+  if (parent_frame_sink_id_ == parent_frame_sink_id ||
+      switches::IsMusHostingViz())
     return;
 
   auto* host_frame_sink_manager = GetHostFrameSinkManager();
@@ -586,7 +589,7 @@ void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
 }
 
 void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
-  if (IsUsingMus())
+  if (switches::IsMusHostingViz())
     return;
   // TODO(kylechar): Remove sequence generation and only send surface info.
   // See https://crbug.com/676384.
@@ -1026,7 +1029,7 @@ viz::SurfaceId RenderWidgetHostViewChildFrame::SurfaceIdForTesting() const {
 }
 
 void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {
-  if (IsUsingMus() || enable_viz_)
+  if (switches::IsMusHostingViz() || enable_viz_)
     return;
 
   DCHECK(!support_);
