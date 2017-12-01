@@ -1873,14 +1873,18 @@ const int kExternalFilesCleanupDelaySeconds = 60;
     if (![self.mainTabModel isEmpty] || ![self.otrTabModel isEmpty])
       return NO;
 
-    UIViewController* viewController = [self topPresentedViewController];
-    while (viewController) {
-      if ([viewController.presentingViewController
-              isEqual:_tabSwitcherController]) {
-        return NO;
-      }
-      viewController = viewController.presentingViewController;
+    // If the tabSwitcher is contained, check if the parent container is
+    // presenting another view controller.
+    if ([[_tabSwitcherController parentViewController]
+            presentedViewController]) {
+      return NO;
     }
+
+    // Check if the tabSwitcher is directly presenting another view controller.
+    if ([_tabSwitcherController presentedViewController]) {
+      return NO;
+    }
+
     return YES;
   }
   return ![tabModel count] && [tabModel browserState] &&
