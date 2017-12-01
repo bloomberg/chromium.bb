@@ -214,17 +214,22 @@ TEST_P(SavePasswordInfoBarDelegateTestForUKMs, VerifyUKMRecording) {
   }
 
   // Verify metrics.
-  const ukm::UkmSource* source =
-      test_ukm_recorder.GetSourceForUrl("https://www.example.com/");
-  ASSERT_TRUE(source);
-  test_ukm_recorder.ExpectMetric(*source, UkmEntry::kEntryName,
-                                 UkmEntry::kSaving_Prompt_ShownName, 1);
-  test_ukm_recorder.ExpectMetric(
-      *source, UkmEntry::kEntryName, UkmEntry::kSaving_Prompt_TriggerName,
-      static_cast<int64_t>(BubbleTrigger::kPasswordManagerSuggestionAutomatic));
-  test_ukm_recorder.ExpectMetric(*source, UkmEntry::kEntryName,
-                                 UkmEntry::kSaving_Prompt_InteractionName,
-                                 static_cast<int64_t>(dismissal_reason));
+  const auto& entries =
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_ukm_recorder.ExpectEntrySourceHasUrl(entry,
+                                              GURL("https://www.example.com/"));
+    test_ukm_recorder.ExpectEntryMetric(entry,
+                                        UkmEntry::kSaving_Prompt_ShownName, 1);
+    test_ukm_recorder.ExpectEntryMetric(
+        entry, UkmEntry::kSaving_Prompt_TriggerName,
+        static_cast<int64_t>(
+            BubbleTrigger::kPasswordManagerSuggestionAutomatic));
+    test_ukm_recorder.ExpectEntryMetric(
+        entry, UkmEntry::kSaving_Prompt_InteractionName,
+        static_cast<int64_t>(dismissal_reason));
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(

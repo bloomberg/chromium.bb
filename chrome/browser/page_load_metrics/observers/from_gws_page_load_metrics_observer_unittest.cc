@@ -223,11 +223,12 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl1) {
       internal::kHistogramFromGWSLoad,
       timing.document_timing->load_event_start.value().InMilliseconds(), 1);
 
-  EXPECT_EQ(1ul, test_ukm_recorder().entries_count());
-  const ukm::UkmSource* source =
-      test_ukm_recorder().GetSourceForUrl(kExampleUrl);
-  EXPECT_TRUE(test_ukm_recorder().HasEntry(*source,
-                                           internal::kUkmFromGoogleSearchName));
+  auto entries =
+      test_ukm_recorder().GetEntriesByName(internal::kUkmFromGoogleSearchName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* const entry : entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kExampleUrl));
+  }
 }
 
 TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl2) {
@@ -249,11 +250,12 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl2) {
       internal::kHistogramFromGWSFirstTextPaint,
       timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
 
-  EXPECT_EQ(1ul, test_ukm_recorder().entries_count());
-  const ukm::UkmSource* source =
-      test_ukm_recorder().GetSourceForUrl(kExampleUrl);
-  EXPECT_TRUE(test_ukm_recorder().HasEntry(*source,
-                                           internal::kUkmFromGoogleSearchName));
+  auto entries =
+      test_ukm_recorder().GetEntriesByName(internal::kUkmFromGoogleSearchName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* const entry : entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kExampleUrl));
+  }
 }
 
 TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl3) {
@@ -275,11 +277,12 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl3) {
       internal::kHistogramFromGWSFirstTextPaint,
       timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
 
-  EXPECT_EQ(1ul, test_ukm_recorder().entries_count());
-  const ukm::UkmSource* source =
-      test_ukm_recorder().GetSourceForUrl(kExampleUrl);
-  EXPECT_TRUE(test_ukm_recorder().HasEntry(*source,
-                                           internal::kUkmFromGoogleSearchName));
+  auto entries =
+      test_ukm_recorder().GetEntriesByName(internal::kUkmFromGoogleSearchName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* const entry : entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kExampleUrl));
+  }
 }
 
 TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl4) {
@@ -301,11 +304,12 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl4) {
       internal::kHistogramFromGWSFirstTextPaint,
       timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
 
-  EXPECT_EQ(1ul, test_ukm_recorder().entries_count());
-  const ukm::UkmSource* source =
-      test_ukm_recorder().GetSourceForUrl(kExampleUrl);
-  EXPECT_TRUE(test_ukm_recorder().HasEntry(*source,
-                                           internal::kUkmFromGoogleSearchName));
+  auto entries =
+      test_ukm_recorder().GetEntriesByName(internal::kUkmFromGoogleSearchName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* const entry : entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kExampleUrl));
+  }
 }
 
 TEST_F(FromGWSPageLoadMetricsObserverTest, SearchToNonSearchToOtherPage) {
@@ -335,11 +339,12 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchToNonSearchToOtherPage) {
       internal::kHistogramFromGWSFirstTextPaint,
       timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
 
-  EXPECT_EQ(1ul, test_ukm_recorder().entries_count());
-  const ukm::UkmSource* source =
-      test_ukm_recorder().GetSourceForUrl(kExampleUrl);
-  EXPECT_TRUE(test_ukm_recorder().HasEntry(*source,
-                                           internal::kUkmFromGoogleSearchName));
+  auto entries =
+      test_ukm_recorder().GetEntriesByName(internal::kUkmFromGoogleSearchName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* const entry : entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kExampleUrl));
+  }
 }
 
 TEST_F(FromGWSPageLoadMetricsObserverTest, SearchToNonSearchToSearch) {
@@ -369,11 +374,12 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchToNonSearchToSearch) {
       internal::kHistogramFromGWSFirstTextPaint,
       timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
 
-  EXPECT_EQ(1ul, test_ukm_recorder().entries_count());
-  const ukm::UkmSource* source =
-      test_ukm_recorder().GetSourceForUrl(kExampleUrl);
-  EXPECT_TRUE(test_ukm_recorder().HasEntry(*source,
-                                           internal::kUkmFromGoogleSearchName));
+  auto entries =
+      test_ukm_recorder().GetEntriesByName(internal::kUkmFromGoogleSearchName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* const entry : entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kExampleUrl));
+  }
 }
 
 TEST_F(FromGWSPageLoadMetricsObserverTest,
@@ -415,13 +421,12 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
       internal::kHistogramFromGWSFirstTextPaint,
       timing3.paint_timing->first_text_paint.value().InMilliseconds(), 1);
 
-  std::vector<const ukm::UkmSource*> sources =
-      test_ukm_recorder().GetSourcesForUrl(kExampleUrl);
-  EXPECT_EQ(2ul, sources.size());
-  EXPECT_TRUE(test_ukm_recorder().HasEntry(*sources.at(0),
-                                           internal::kUkmFromGoogleSearchName));
-  EXPECT_TRUE(test_ukm_recorder().HasEntry(*sources.at(1),
-                                           internal::kUkmFromGoogleSearchName));
+  auto entries =
+      test_ukm_recorder().GetEntriesByName(internal::kUkmFromGoogleSearchName);
+  EXPECT_EQ(2u, entries.size());
+  for (const auto* const entry : entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kExampleUrl));
+  }
 }
 
 TEST_F(FromGWSPageLoadMetricsObserverTest,
@@ -461,13 +466,12 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
       internal::kHistogramFromGWSFirstTextPaint,
       timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
 
-  std::vector<const ukm::UkmSource*> sources =
-      test_ukm_recorder().GetSourcesForUrl(kExampleUrl);
-  EXPECT_EQ(2ul, sources.size());
-  EXPECT_TRUE(test_ukm_recorder().HasEntry(*sources.at(0),
-                                           internal::kUkmFromGoogleSearchName));
-  EXPECT_TRUE(test_ukm_recorder().HasEntry(*sources.at(1),
-                                           internal::kUkmFromGoogleSearchName));
+  auto entries =
+      test_ukm_recorder().GetEntriesByName(internal::kUkmFromGoogleSearchName);
+  EXPECT_EQ(2u, entries.size());
+  for (const auto* const entry : entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kExampleUrl));
+  }
 }
 
 TEST_F(FromGWSPageLoadMetricsObserverTest,
@@ -491,11 +495,12 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
       internal::kHistogramFromGWSFirstTextPaint,
       timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
 
-  EXPECT_EQ(1ul, test_ukm_recorder().entries_count());
-  const ukm::UkmSource* source =
-      test_ukm_recorder().GetSourceForUrl(kExampleUrl);
-  EXPECT_TRUE(test_ukm_recorder().HasEntry(*source,
-                                           internal::kUkmFromGoogleSearchName));
+  auto entries =
+      test_ukm_recorder().GetEntriesByName(internal::kUkmFromGoogleSearchName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* const entry : entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kExampleUrl));
+  }
 }
 
 TEST_F(FromGWSPageLoadMetricsObserverTest,

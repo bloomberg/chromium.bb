@@ -576,21 +576,23 @@ TEST_F(BlockTabUnderTest, LogsRapporAndUkm) {
   EXPECT_EQ(first_url.host(), sample);
   EXPECT_EQ(rappor::UMA_RAPPOR_TYPE, type);
 
-  const ukm::UkmSource* opener_source =
-      test_ukm_recorder.GetSourceForUrl(first_url);
-  ASSERT_TRUE(opener_source);
-  EXPECT_EQ(first_url, opener_source->url());
-  EXPECT_GE(test_ukm_recorder.entries_count(), 1ul);
-  test_ukm_recorder.ExpectMetric(*opener_source, UkmEntry::kEntryName,
-                                 UkmEntry::kDidTabUnderName, true);
+  auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* const entry : entries) {
+    test_ukm_recorder.ExpectEntrySourceHasUrl(entry, first_url);
+    test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kDidTabUnderName,
+                                        true);
+  }
 
   const GURL final_url("https://final.test/");
   content::NavigationSimulator::NavigateAndCommitFromDocument(final_url,
                                                               main_rfh());
-  const ukm::UkmSource* final_source =
-      test_ukm_recorder.GetSourceForUrl(final_url);
-  ASSERT_TRUE(final_source);
-  EXPECT_FALSE(test_ukm_recorder.HasEntry(*final_source, UkmEntry::kEntryName));
+
+  auto entries2 = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+  EXPECT_EQ(1u, entries2.size());
+  for (const auto* const entry : entries2) {
+    test_ukm_recorder.ExpectEntrySourceHasUrl(entry, first_url);
+  }
 }
 
 TEST_F(BlockTabUnderTest, LogsToConsole) {

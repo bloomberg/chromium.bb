@@ -152,13 +152,15 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
   }
 
   void CheckUkmMetricRecorded(const GURL& url, int64_t time_delta) {
-    const ukm::UkmSource* source =
-        *test_ukm_recorder_->GetSourcesForUrl(url.spec().c_str()).begin();
-    std::vector<int64_t> metrics = test_ukm_recorder_->GetMetricValues(
-        source->id(), ukm::builders::Tab_RendererOOM::kEntryName,
-        ukm::builders::Tab_RendererOOM::kTimeSinceLastNavigationName);
-    EXPECT_EQ(1u, metrics.size());
-    EXPECT_EQ(time_delta, metrics.at(0));
+    const auto& entries = test_ukm_recorder_->GetEntriesByName(
+        ukm::builders::Tab_RendererOOM::kEntryName);
+    EXPECT_EQ(1u, entries.size());
+    for (const auto* entry : entries) {
+      test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
+      test_ukm_recorder_->ExpectEntryMetric(
+          entry, ukm::builders::Tab_RendererOOM::kTimeSinceLastNavigationName,
+          time_delta);
+    }
   }
 
  protected:
@@ -191,9 +193,9 @@ TEST_F(OutOfMemoryReporterTest, NormalCrash_NoOOM) {
                      base::Unretained(process()),
                      base::TERMINATION_STATUS_ABNORMAL_TERMINATION, 0));
   EXPECT_FALSE(last_oom_url_.has_value());
-  EXPECT_FALSE(
-      test_ukm_recorder_->HasEntry(*test_ukm_recorder_->GetSourceForUrl(url),
-                                   ukm::builders::Tab_RendererOOM::kEntryName));
+  const auto& entries = test_ukm_recorder_->GetEntriesByName(
+      ukm::builders::Tab_RendererOOM::kEntryName);
+  EXPECT_EQ(0u, entries.size());
 }
 
 TEST_F(OutOfMemoryReporterTest, SubframeNavigation_IsNotLogged) {
@@ -237,6 +239,5 @@ TEST_F(OutOfMemoryReporterTest, OOMOnPreviousPage) {
   SimulateOOMAndWait();
   EXPECT_FALSE(last_oom_url_.has_value());
   // Only the first OOM is recorded.
-  EXPECT_EQ(1u, test_ukm_recorder_->entries_count());
   CheckUkmMetricRecorded(url2, 3000);
 }

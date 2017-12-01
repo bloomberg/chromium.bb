@@ -104,18 +104,18 @@ class SubresourceFilterMetricsObserverTest
         internal::kHistogramSubresourceFilterActivationDecision,
         static_cast<int>(decision), 1);
 
-    ASSERT_EQ(1ul, test_ukm_recorder().entries_count());
-    const ukm::UkmSource* source = test_ukm_recorder().GetSourceForUrl(url);
-    EXPECT_TRUE(test_ukm_recorder().HasEntry(
-        *source, internal::kUkmSubresourceFilterName));
-    test_ukm_recorder().ExpectMetric(
-        *source, internal::kUkmSubresourceFilterName,
-        internal::kUkmSubresourceFilterActivationDecision,
-        static_cast<int64_t>(decision));
-    if (level == subresource_filter::ActivationLevel::DRYRUN) {
-      test_ukm_recorder().ExpectMetric(
-          *source, internal::kUkmSubresourceFilterName,
-          internal::kUkmSubresourceFilterDryRun, true);
+    const auto& entries = test_ukm_recorder().GetEntriesByName(
+        internal::kUkmSubresourceFilterName);
+    EXPECT_EQ(1u, entries.size());
+    for (const auto* entry : entries) {
+      test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(url));
+      test_ukm_recorder().ExpectEntryMetric(
+          entry, internal::kUkmSubresourceFilterActivationDecision,
+          static_cast<int64_t>(decision));
+      if (level == subresource_filter::ActivationLevel::DRYRUN) {
+        test_ukm_recorder().ExpectEntryMetric(
+            entry, internal::kUkmSubresourceFilterDryRun, true);
+      }
     }
   }
 

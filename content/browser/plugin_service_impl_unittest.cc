@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/ukm/ukm_source.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -49,10 +50,14 @@ class PluginServiceImplTest : public RenderViewHostTestHarness {
 
   bool RecordedBrokerEvent(const GURL& url) {
     RunAllPendingInMessageLoop(BrowserThread::UI);
-    const ukm::UkmSource* source = test_ukm_recorder_->GetSourceForUrl(url);
-    if (!source)
-      return false;
-    return test_ukm_recorder_->HasEntry(*source, kPepperBrokerEvent);
+    auto entries = test_ukm_recorder_->GetEntriesByName(kPepperBrokerEvent);
+    for (const auto* const entry : entries) {
+      const ukm::UkmSource* source =
+          test_ukm_recorder_->GetSourceForSourceId(entry->source_id);
+      if (source && source->url() == url)
+        return true;
+    }
+    return false;
   }
 
   void ResetUKM() {
