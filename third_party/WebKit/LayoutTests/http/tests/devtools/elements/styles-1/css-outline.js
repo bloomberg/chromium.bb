@@ -1,6 +1,12 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`The test verifies the CSS outline functionality.\n`);
+  await TestRunner.loadModule('formatter');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
 <style id="styler">
 @import url("some-url-to-load-css.css") print;
 @charset "ISO-8859-15";
@@ -51,18 +57,18 @@ svg|a {
     }
 }
 </style>
-<script>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function initialize_Formatter() {
+          InspectorTest.preloadModule('formatter');
+      }
 
-function initialize_Formatter() {
-    InspectorTest.preloadModule('formatter');
-}
+      function getCSS()
+      {
+          return document.querySelector("#styler").textContent;
+      }
+  `);
 
-function getCSS()
-{
-    return document.querySelector("#styler").textContent;
-}
-
-function test() {
   function onRulesParsed(isLastChunk, rules) {
     for (var i = 0; i < rules.length; ++i)
       TestRunner.addObject(rules[i]);
@@ -75,13 +81,4 @@ function test() {
   }
 
   TestRunner.evaluateInPage('getCSS()', onStyleFetched);
-}
-
-</script>
-
-</head>
-
-<body onload="runTest()">
-<p>The test verifies the CSS outline functionality.</p>
-</body>
-</html>
+})();

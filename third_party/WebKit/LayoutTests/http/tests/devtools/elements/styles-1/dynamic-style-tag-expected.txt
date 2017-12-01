@@ -22,7 +22,7 @@ Stylesheet added:
   - hasSourceURL: false
   - contents: 
 /* comment */.inline-style-added-by-parser {
-   color: red;
+    color: red;
 }
 
 Stylesheet added:
@@ -41,7 +41,7 @@ Stylesheet added:
   - hasSourceURL: true
   - contents: 
 .inline-style-added-by-parser-with-source-url {
-   color: green;
+    color: green;
 }
 /*# sourceURL=inlineStyleAddedByParser.css*/
 
@@ -78,7 +78,7 @@ element.style { ()
 /-- overloaded --/     color: green;
 
 [expanded] 
-.inline-style-added-by-parser { (dynamic-style-tag.html:6 -> dynamic-style-tag.html:6:45)
+.inline-style-added-by-parser { (dynamic-style-tag.html:3 -> dynamic-style-tag.html:3:45)
 /-- overloaded --/     color: red;
 
 [expanded] 

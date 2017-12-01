@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that all color nicknames are lowercase to facilitate lookup\n`);
+  await TestRunner.showPanel('elements');
+
   var badNames = [];
   for (var nickname in Common.Color.Nicknames) {
     if (nickname.toLowerCase() !== nickname)
@@ -16,11 +18,4 @@ function test() {
     TestRunner.addResult('Non-lowercase color nicknames: ' + badNames.join(', '));
 
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that all color nicknames are lowercase to facilitate lookup</p>
-</body>
-</html>
+})();

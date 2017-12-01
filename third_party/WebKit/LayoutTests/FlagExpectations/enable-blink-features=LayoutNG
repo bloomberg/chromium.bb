@@ -6279,7 +6279,7 @@ crbug.com/591099 http/tests/devtools/elements/highlight/highlight-node-scaled-an
 crbug.com/591099 http/tests/devtools/elements/highlight/highlight-node-scaled.js [ Failure ]
 crbug.com/591099 http/tests/devtools/elements/highlight/highlight-node-scroll.js [ Failure ]
 crbug.com/591099 http/tests/devtools/elements/highlight/highlight-node.js [ Failure ]
-crbug.com/591099 http/tests/devtools/elements/styles-1/color-aware-property-value-edit.html [ Failure ]
+crbug.com/591099 http/tests/devtools/elements/styles-1/color-aware-property-value-edit.js [ Failure ]
 crbug.com/591099 http/tests/devtools/elements/styles-2/add-import-rule.html [ Failure ]
 crbug.com/591099 http/tests/devtools/elements/styles-3/style-rule-from-imported-stylesheet.html [ Failure ]
 crbug.com/591099 http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Failure Pass ]

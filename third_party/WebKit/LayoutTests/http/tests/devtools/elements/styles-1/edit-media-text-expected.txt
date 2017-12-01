@@ -1,6 +1,5 @@
 Tests that editing media text updates element styles.
 
-Text
 === Before media text modification ===
 [expanded] 
 element.style { ()
@@ -8,12 +7,12 @@ element.style { ()
 
 [expanded] 
 @media screen and (max-device-width: 100000px)
-#inspected { (edit-media-text.html:8 -> edit-media-text.html:8:17)
+#inspected { (<style>…</style>)
 /-- overloaded --/     color: blue;
 
 [expanded] 
 @media screen and (max-device-width: 100000px)
-#inspected { (edit-media-text.html:5 -> edit-media-text.html:5:17)
+#inspected { (<style>…</style>)
 /-- overloaded --/     color: green;
 
 [expanded] 
@@ -27,12 +26,12 @@ element.style { ()
 
 [expanded] 
 @media screen and (max-device-width: 99999px)
-#inspected { (edit-media-text.html:8 -> edit-media-text.html:8:17)
+#inspected { (<style>…</style>)
 /-- overloaded --/     color: blue;
 
 [expanded] 
 @media screen and (max-device-width: 99999px)
-#inspected { (edit-media-text.html:5 -> edit-media-text.html:5:17)
+#inspected { (<style>…</style>)
 /-- overloaded --/     color: green;
 
 [expanded] 
@@ -45,11 +44,11 @@ element.style { ()
     color: red;
 
 [expanded] 
-#inspected { (edit-media-text.html:8 -> edit-media-text.html:8:17)
+#inspected { (<style>…</style>)
 /-- overloaded --/     color: blue;
 
 [expanded] 
-#inspected { (edit-media-text.html:5 -> edit-media-text.html:5:17)
+#inspected { (<style>…</style>)
 /-- overloaded --/     color: green;
 
 [expanded] 

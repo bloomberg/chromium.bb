@@ -1,6 +1,5 @@
 The patch verifies that color swatch functions properly in matched and computed styles. crbug.com/461363
 
-Inspected div
 
 Running: selectNode
 

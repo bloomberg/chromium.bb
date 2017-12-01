@@ -1,12 +1,19 @@
-<html>
-<head>
-<link rel="stylesheet" href="../styles/resources/disable-property-workingcopy-update.css">
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(
+      `Tests that style property disablement is propagated into the stylesheet UISourceCode working copy.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.loadHTML(`
+      <div id="inspected">
+      </div>
+    `);
+  await TestRunner.addStylesheetTag('../styles/resources/disable-property-workingcopy-update.css');
+
   var cssSourceFrame;
   Bindings.StylesSourceMapping.MinorChangeUpdateTimeoutMs = 10;
 
@@ -65,17 +72,4 @@ function test() {
         next();
     }
   }
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that style property disablement is propagated into the stylesheet UISourceCode working copy.
-</p>
-
-<div id="inspected">
-</div>
-
-</body>
-</html>
+})();
