@@ -3496,19 +3496,20 @@ void HandleSurfacePresentationCallback(wl_resource* resource,
     int64_t microseconds =
         presentation_time_us % base::Time::kMicrosecondsPerSecond;
     static_assert(
-        static_cast<uint32_t>(gfx::PresentationFlags::kVSync) ==
+        static_cast<uint32_t>(gfx::PresentationFeedback::Flags::kVSync) ==
             static_cast<uint32_t>(WP_PRESENTATION_FEEDBACK_KIND_VSYNC),
         "gfx::PresentationFlags::VSync don't match!");
     static_assert(
-        static_cast<uint32_t>(gfx::PresentationFlags::kHWClock) ==
+        static_cast<uint32_t>(gfx::PresentationFeedback::Flags::kHWClock) ==
             static_cast<uint32_t>(WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK),
         "gfx::PresentationFlags::HWClock don't match!");
     static_assert(
-        static_cast<uint32_t>(gfx::PresentationFlags::kHWCompletion) ==
+        static_cast<uint32_t>(
+            gfx::PresentationFeedback::Flags::kHWCompletion) ==
             static_cast<uint32_t>(WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION),
         "gfx::PresentationFlags::HWCompletion don't match!");
     static_assert(
-        static_cast<uint32_t>(gfx::PresentationFlags::kZeroCopy) ==
+        static_cast<uint32_t>(gfx::PresentationFeedback::Flags::kZeroCopy) ==
             static_cast<uint32_t>(WP_PRESENTATION_FEEDBACK_KIND_ZERO_COPY),
         "gfx::PresentationFlags::ZeroCopy don't match!");
     wp_presentation_feedback_send_presented(
