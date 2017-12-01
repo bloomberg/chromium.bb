@@ -3025,56 +3025,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCrossDomainReferrerPolicy) {
   ASSERT_TRUE(VerifyFile(file, expected_contents, expected_contents.length()));
 }
 
-// On mobile, the multiple downloads UI is an infobar. On desktop, it's a
-// bubble. Test each as appropriate.
-#if defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
-  // Ensure that infobars are being used instead of bubbles.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePermissionsBubbles);
-
-  // Create a downloads observer.
-  std::unique_ptr<content::DownloadTestObserver> downloads_observer(
-      CreateWaiter(browser(), 2));
-
-  // Create an infobar observer.
-  content::WindowedNotificationObserver infobar_added_1(
-        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-        content::NotificationService::AllSources());
-  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url =
-      embedded_test_server()->GetURL("/downloads/download-a_zip_file.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-  infobar_added_1.Wait();
-
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(
-       browser()->tab_strip_model()->GetActiveWebContents());
-  // Verify that there is only one infobar.
-  ASSERT_EQ(1u, infobar_service->infobar_count());
-
-  // Get the infobar at index 0.
-  infobars::InfoBar* infobar = infobar_service->infobar_at(0);
-  ConfirmInfoBarDelegate* confirm_infobar =
-      infobar->delegate()->AsConfirmInfoBarDelegate();
-  ASSERT_TRUE(confirm_infobar != NULL);
-
-  // Verify multi download warning infobar message.
-  EXPECT_EQ(confirm_infobar->GetMessageText(),
-            l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING));
-
-  // Click on the "Allow" button to allow multiple downloads.
-  if (confirm_infobar->Accept())
-    infobar_service->RemoveInfoBar(infobar);
-  // Verify that there are no more infobars.
-  EXPECT_EQ(0u, infobar_service->infobar_count());
-
-  // Waits for the download to complete.
-  downloads_observer->WaitForFinished();
-  EXPECT_EQ(2u, downloads_observer->NumDownloadsSeenInState(
-      DownloadItem::COMPLETE));
-}
-#else
 IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsRequests) {
   // Create a downloads observer.
   std::unique_ptr<content::DownloadTestObserver> downloads_observer(
@@ -3101,7 +3051,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsRequests) {
   browser()->tab_strip_model()->GetActiveWebContents()->Close();
   g_browser_process->notification_ui_manager()->CancelAll();
 }
-#endif
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
