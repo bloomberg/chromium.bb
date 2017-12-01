@@ -22,7 +22,7 @@ namespace gin {
 class BaseClass {
  public:
   BaseClass() : value_(23) {}
-  virtual ~BaseClass() {}
+  virtual ~BaseClass() = default;
 
   // So the compiler doesn't complain that |value_| is unused.
   int value() const { return value_; }
@@ -51,7 +51,7 @@ class MyObject : public BaseClass,
     return Wrappable<MyObject>::GetObjectTemplateBuilder(isolate)
         .SetProperty("value", &MyObject::value, &MyObject::set_value);
   }
-  ~MyObject() override {}
+  ~MyObject() override = default;
 
  private:
   int value_;
@@ -76,7 +76,7 @@ class MyCallableObject : public Wrappable<MyCallableObject> {
   MyCallableObject() : result_(0) {
   }
 
-  ~MyCallableObject() override {}
+  ~MyCallableObject() override = default;
 
   void Call(int val1, int val2, int val3, const gin::Arguments& arguments) {
     if (arguments.IsConstructCall())

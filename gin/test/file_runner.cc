@@ -44,8 +44,7 @@ FileRunnerDelegate::FileRunnerDelegate()
   AddBuiltinModule(File::kModuleName, File::GetModule);
 }
 
-FileRunnerDelegate::~FileRunnerDelegate() {
-}
+FileRunnerDelegate::~FileRunnerDelegate() = default;
 
 void FileRunnerDelegate::UnhandledException(ShellRunner* runner,
                                             TryCatch& try_catch) {

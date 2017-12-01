@@ -148,8 +148,7 @@ ObjectTemplateBuilder::ObjectTemplateBuilder(v8::Isolate* isolate)
 ObjectTemplateBuilder::ObjectTemplateBuilder(
     const ObjectTemplateBuilder& other) = default;
 
-ObjectTemplateBuilder::~ObjectTemplateBuilder() {
-}
+ObjectTemplateBuilder::~ObjectTemplateBuilder() = default;
 
 ObjectTemplateBuilder& ObjectTemplateBuilder::AddNamedPropertyInterceptor() {
   template_->SetNamedPropertyHandler(&NamedPropertyGetter,

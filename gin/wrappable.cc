@@ -10,8 +10,7 @@
 
 namespace gin {
 
-WrappableBase::WrappableBase() {
-}
+WrappableBase::WrappableBase() = default;
 
 WrappableBase::~WrappableBase() {
   wrapper_.Reset();

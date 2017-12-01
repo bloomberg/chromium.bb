@@ -23,8 +23,7 @@ Arguments::Arguments(const v8::FunctionCallbackInfo<v8::Value>& info)
       insufficient_arguments_(false) {
 }
 
-Arguments::~Arguments() {
-}
+Arguments::~Arguments() = default;
 
 v8::Local<v8::Value> Arguments::PeekNext() const {
   if (next_ >= info_->Length())

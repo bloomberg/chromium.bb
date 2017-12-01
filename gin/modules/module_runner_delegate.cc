@@ -17,8 +17,7 @@ ModuleRunnerDelegate::ModuleRunnerDelegate(
     : module_provider_(search_paths) {
 }
 
-ModuleRunnerDelegate::~ModuleRunnerDelegate() {
-}
+ModuleRunnerDelegate::~ModuleRunnerDelegate() = default;
 
 void ModuleRunnerDelegate::AddBuiltinModule(const std::string& id,
                                             ModuleGetter getter) {

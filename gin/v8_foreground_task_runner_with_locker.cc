@@ -19,7 +19,7 @@ V8ForegroundTaskRunnerWithLocker::V8ForegroundTaskRunnerWithLocker(
   DCHECK(task_runner_);
 }
 
-V8ForegroundTaskRunnerWithLocker::~V8ForegroundTaskRunnerWithLocker() {}
+V8ForegroundTaskRunnerWithLocker::~V8ForegroundTaskRunnerWithLocker() = default;
 
 namespace {
 

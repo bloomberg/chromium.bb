@@ -91,7 +91,7 @@ class MyInterceptor : public Wrappable<MyInterceptor>,
         IndexedPropertyInterceptor(isolate, this),
         value_(0),
         template_cache_(isolate) {}
-  ~MyInterceptor() override {}
+  ~MyInterceptor() override = default;
 
   // gin::Wrappable
   ObjectTemplateBuilder GetObjectTemplateBuilder(
