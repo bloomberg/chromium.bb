@@ -1717,6 +1717,12 @@
         },
         {
           "board_name": "coral",
+          "name": "whitetip",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "coral",
           "name": "whitetip1",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"

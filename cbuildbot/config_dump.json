@@ -13019,6 +13019,7 @@
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"robo\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"robo360\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"santa\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}",
+            "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"whitetip\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"whitetip1\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"whitetip2\",\n    \"test_suites\": []\n}"
         ],
@@ -13171,6 +13172,7 @@
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"robo\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"robo360\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"santa\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}",
+            "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"whitetip\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"whitetip1\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"whitetip2\",\n    \"test_suites\": []\n}"
         ],
