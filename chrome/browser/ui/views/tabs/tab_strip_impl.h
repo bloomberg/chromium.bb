@@ -316,6 +316,9 @@ class TabStripImpl : public TabStrip,
   // Returns whether the highlight button should be highlighted after a remove.
   bool ShouldHighlightCloseButtonAfterRemove();
 
+  // Returns whether the window background behind the tabstrip is transparent.
+  bool TitlebarBackgroundIsTransparent() const;
+
   // Invoked from Layout if the size changes or layout is really needed.
   void DoLayout();
 
