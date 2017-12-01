@@ -578,7 +578,7 @@ class TemplateURL {
   const std::string& sync_guid() const { return data_.sync_guid; }
 
   const std::vector<TemplateURLRef>& url_refs() const { return url_refs_; }
-  const TemplateURLRef& url_ref() const { return *url_ref_; }
+  const TemplateURLRef& url_ref() const { return url_refs_.back(); }
   const TemplateURLRef& suggestions_url_ref() const {
     return suggestions_url_ref_;
   }
@@ -624,13 +624,8 @@ class TemplateURL {
 
   // Use the alternate URLs and the search URL to match the provided |url|
   // and extract |search_terms| from it. Returns false and an empty
-  // |search_terms| if no search terms can be matched. The order in which the
-  // alternate URLs are listed dictates their priority, the URL at index 0 is
-  // treated as the highest priority and the primary search URL is treated as
-  // the lowest priority. For example, if a TemplateURL has alternate URL
-  // "http://foo/#q={searchTerms}" and search URL "http://foo/?q={searchTerms}",
-  // and the URL to be decoded is "http://foo/?q=a#q=b", the alternate URL will
-  // match first and the decoded search term will be "b".
+  // |search_terms| if no search terms can be matched. The URLs are matched in
+  // the order listed in |url_refs_| (see comment there).
   bool ExtractSearchTermsFromURL(const GURL& url,
                                  const SearchTermsData& search_terms_data,
                                  base::string16* search_terms) const;
@@ -688,7 +683,8 @@ class TemplateURL {
   void ResetKeywordIfNecessary(const SearchTermsData& search_terms_data,
                                bool force);
 
-  // Resizes the |url_refs_| vector and sets |url_ref_| according to |data_|.
+  // Resizes the |url_refs_| vector, which always holds the search URL as the
+  // last item.
   void ResizeURLRefVector();
 
   // Uses the alternate URLs and the search URL to match the provided |url|
@@ -704,13 +700,14 @@ class TemplateURL {
   TemplateURLData data_;
 
   // Contains TemplateURLRefs corresponding to the alternate URLs and the search
-  // URL. This vector must not be resized except by ResizeURLRefVector() to keep
-  // the |url_ref_| pointer correct.
+  // URL, in priority order: the URL at index 0 is treated as the highest
+  // priority and the primary search URL is treated as the lowest priority.  For
+  // example, if a TemplateURL has alternate URL "http://foo/#q={searchTerms}"
+  // and search URL "http://foo/?q={searchTerms}", and the URL to be decoded is
+  // "http://foo/?q=a#q=b", the alternate URL will match first and the decoded
+  // search term will be "b".  Note that since every TemplateURLRef has a
+  // primary search URL, this vector is never empty.
   std::vector<TemplateURLRef> url_refs_;
-
-  // Points to the TemplateURLRef in |url_refs_| which corresponds to the search
-  // URL.
-  TemplateURLRef* url_ref_;
 
   TemplateURLRef suggestions_url_ref_;
   TemplateURLRef image_url_ref_;
