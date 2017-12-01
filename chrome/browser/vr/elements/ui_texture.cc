@@ -69,9 +69,9 @@ std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
   DCHECK(bounds);
 
   std::vector<std::unique_ptr<gfx::RenderText>> lines;
-  gfx::Rect rect(*bounds);
 
   if (wrapping_behavior == kWrappingBehaviorWrap) {
+    gfx::Rect rect(*bounds);
     std::vector<base::string16> strings;
     gfx::ElideRectangleText(text, font_list, bounds->width(),
                             bounds->height() ? bounds->height() : INT_MAX,
@@ -108,18 +108,13 @@ std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
         CreateConfiguredRenderText(text, font_list, color, text_alignment);
     if (bounds->width() != 0)
       render_text->SetElideBehavior(gfx::TRUNCATE);
-    else
-      rect.set_width(INT_MAX);
 
-    render_text->SetDisplayRect(rect);
+    if (bounds->width() == 0)
+      bounds->set_width(render_text->GetStringSize().width());
+    if (bounds->height() == 0)
+      bounds->set_height(render_text->GetStringSize().height());
 
-    if (bounds->width() == 0) {
-      int text_width = render_text->GetStringSize().width();
-      bounds->set_width(text_width);
-      rect.set_width(text_width);
-      render_text->SetDisplayRect(rect);
-    }
-
+    render_text->SetDisplayRect(*bounds);
     lines.push_back(std::move(render_text));
   }
   return lines;
