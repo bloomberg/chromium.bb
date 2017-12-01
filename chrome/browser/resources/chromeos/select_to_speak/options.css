@@ -45,7 +45,6 @@ h2 {
     background-color: #fff;
     border: 1px solid #ddd;
     font-size: 13px;
-    line-height: 60px;
     min-height: 60px;
     padding: 0 20px;
     vertical-align: middle;
@@ -100,9 +99,19 @@ h2 {
     padding: 0 20px;
 }
 
+label {
+    line-height: 60px;
+    vertical-align: middle;
+}
+
 .example {
     display: inline-block;
+    float: right;
+    font-size: 1em;
+    height: 60px;
+    line-height: 60px;
     padding: 0 3px;
+    vertical-align: middle;
 }
 
 .dark {
@@ -110,10 +119,15 @@ h2 {
     color: white;
 }
 
+.light {
+    background: white;
+}
+
 .highlight {
     opacity: .3;
     z-index: 10;
-    top: -45px;
+    top: -40px;
     position: relative;
-    height: 2em;
+    height: 20px;
+    width: 100%;
 }
