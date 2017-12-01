@@ -1973,12 +1973,22 @@ bool ChromeContentBrowserClient::IsDataSaverEnabled(
   return prefs && prefs->GetBoolean(prefs::kDataSaverEnabled);
 }
 
-std::unique_ptr<net::HttpRequestHeaders>
-ChromeContentBrowserClient::GetAdditionalNavigationRequestHeaders(
-    content::BrowserContext* context,
-    const GURL& url) const {
-  return client_hints::GetAdditionalNavigationRequestClientHintsHeaders(context,
-                                                                        url);
+void ChromeContentBrowserClient::NavigationRequestStarted(
+    int frame_tree_node_id,
+    const GURL& url,
+    std::unique_ptr<net::HttpRequestHeaders>* extra_headers,
+    int* extra_load_flags) {
+  WebContents* web_contents =
+      WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  *extra_headers =
+      client_hints::GetAdditionalNavigationRequestClientHintsHeaders(
+          web_contents->GetBrowserContext(), url);
+  prerender::PrerenderContents* prerender_contents =
+      prerender::PrerenderContents::FromWebContents(web_contents);
+  if (prerender_contents) {
+    if (prerender_contents->prerender_mode() == prerender::PREFETCH_ONLY)
+      *extra_load_flags = net::LOAD_PREFETCH;
+  }
 }
 
 bool ChromeContentBrowserClient::AllowAppCache(

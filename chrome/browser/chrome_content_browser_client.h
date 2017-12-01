@@ -160,9 +160,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   const gfx::ImageSkia* GetDefaultFavicon() override;
   bool IsDataSaverEnabled(content::BrowserContext* context) override;
-  std::unique_ptr<net::HttpRequestHeaders>
-  GetAdditionalNavigationRequestHeaders(content::BrowserContext* context,
-                                        const GURL& url) const override;
+  void NavigationRequestStarted(
+      int frame_tree_node_id,
+      const GURL& url,
+      std::unique_ptr<net::HttpRequestHeaders>* extra_headers,
+      int* extra_load_flags) override;
   bool AllowAppCache(const GURL& manifest_url,
                      const GURL& first_party,
                      content::ResourceContext* context) override;

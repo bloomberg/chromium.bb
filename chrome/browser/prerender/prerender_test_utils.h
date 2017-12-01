@@ -434,6 +434,12 @@ void CreateCountingInterceptorOnIO(
     const base::WeakPtr<RequestCounter>& counter);
 
 // When the |url| hits the net::URLRequestFilter (on the IO thread), executes
+// the |callback_io| providing the request to it. Does not modify the behavior
+// or the request job.
+void InterceptRequest(const GURL& url,
+                      base::Callback<void(net::URLRequest*)> callback_io);
+
+// When the |url| hits the net::URLRequestFilter (on the IO thread), executes
 // the |callback_io| providing the request to it, also pings the |counter| on UI
 // thread. Does not modify the behavior or the request job.
 void InterceptRequestAndCount(

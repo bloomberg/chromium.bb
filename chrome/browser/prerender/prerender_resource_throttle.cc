@@ -85,7 +85,6 @@ void PrerenderResourceThrottle::OverridePrerenderContentsForTesting(
 
 PrerenderResourceThrottle::PrerenderResourceThrottle(net::URLRequest* request)
     : request_(request),
-      load_flags_(net::LOAD_NORMAL),
       prerender_throttle_info_(new PrerenderThrottleInfo()) {
 // Priorities for prerendering requests are lowered, to avoid competing with
 // other page loads, except on Android where this is less likely to be a
@@ -170,7 +169,6 @@ const char* PrerenderResourceThrottle::GetNameForLogging() const {
 
 void PrerenderResourceThrottle::ResumeHandler() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  request_->SetLoadFlags(request_->load_flags() | load_flags_);
   Resume();
 }
 
@@ -201,10 +199,6 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
     prerender_throttle_info->Set(prerender_contents->prerender_mode(),
                                  prerender_contents->origin(),
                                  prerender_contents->prerender_manager());
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&PrerenderResourceThrottle::SetPrerenderMode, throttle,
-                       prerender_contents->prerender_mode()));
 
     // Abort any prerenders that spawn requests that use unsupported HTTP
     // methods or schemes.
@@ -327,11 +321,6 @@ PrerenderContents* PrerenderResourceThrottle::PrerenderContentsFromGetter(
   if (g_prerender_contents_for_testing)
     return g_prerender_contents_for_testing;
   return PrerenderContents::FromWebContents(web_contents_getter.Run());
-}
-
-void PrerenderResourceThrottle::SetPrerenderMode(PrerenderMode mode) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  load_flags_ = (mode == PREFETCH_ONLY) ? net::LOAD_PREFETCH : net::LOAD_NORMAL;
 }
 
 }  // namespace prerender

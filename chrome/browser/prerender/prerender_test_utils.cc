@@ -107,16 +107,19 @@ class CountingInterceptor : public net::URLRequestInterceptor {
 class CountingInterceptorWithCallback : public net::URLRequestInterceptor {
  public:
   // Inserts the interceptor object to intercept requests to |url|.  Can be
-  // called on any thread. Assumes that |counter| lives on the UI thread.  The
-  // |callback_io| will be called on IO thread with the net::URLrequest
-  // provided.
+  // called on any thread. Assumes that |counter| (if non-null) lives on the UI
+  // thread.  The |callback_io| will be called on IO thread with the
+  // net::URLrequest provided.
   static void Initialize(const GURL& url,
                          RequestCounter* counter,
                          base::Callback<void(net::URLRequest*)> callback_io) {
+    base::WeakPtr<RequestCounter> weakptr;
+    if (counter)
+      weakptr = counter->AsWeakPtr();
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::BindOnce(&CountingInterceptorWithCallback::CreateAndAddOnIO, url,
-                       counter->AsWeakPtr(), callback_io));
+                       weakptr, callback_io));
   }
 
   // net::URLRequestInterceptor:
@@ -851,6 +854,11 @@ void CreateCountingInterceptorOnIO(
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
       url, base::MakeUnique<CountingInterceptor>(file, counter));
+}
+
+void InterceptRequest(const GURL& url,
+                      base::Callback<void(net::URLRequest*)> callback_io) {
+  CountingInterceptorWithCallback::Initialize(url, nullptr, callback_io);
 }
 
 void InterceptRequestAndCount(
