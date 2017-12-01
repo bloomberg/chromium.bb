@@ -23,9 +23,6 @@ ScriptSourceCode::ScriptSourceCode(
     url_.RemoveFragmentIdentifier();
 }
 
-ScriptSourceCode::ScriptSourceCode(ScriptResource* resource)
-    : ScriptSourceCode(nullptr, resource) {}
-
 ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer,
                                    ScriptResource* resource)
     : source_(resource->SourceText()),
