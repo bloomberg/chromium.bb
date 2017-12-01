@@ -243,8 +243,13 @@ void Service::OnStart() {
   // Because GL libraries need to be initialized before entering the sandbox,
   // in MUS, |InitializeForUI| will load the GL libraries.
   ui::OzonePlatform::InitParams params;
-  params.connector = context()->connector();
-  params.single_process = true;
+  if (should_host_viz_) {
+    // If mus is hosting viz, then it needs to set up ozone so that it can
+    // connect to the gpu service through the connector.
+    params.connector = context()->connector();
+    // TODO(crbug.com/620927): This should be false once ozone-mojo is done.
+    params.single_process = true;
+  }
   ui::OzonePlatform::InitializeForUI(params);
 
   // Assume a client will change the layout to an appropriate configuration.
@@ -264,9 +269,6 @@ void Service::OnStart() {
   input_device_controller_ = std::make_unique<InputDeviceController>();
   input_device_controller_->AddInterface(&registry_);
 #endif
-
-// TODO(rjkroege): Enter sandbox here before we start threads in GpuState
-// http://crbug.com/584532
 
 #if !defined(OS_ANDROID)
   event_source_ = ui::PlatformEventSource::CreateDefault();
