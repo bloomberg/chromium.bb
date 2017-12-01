@@ -55,6 +55,7 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display_observer.h"
@@ -308,7 +309,20 @@ void WindowManager::OnLostConnection(aura::WindowTreeClient* client) {
 
 void WindowManager::OnPointerEventObserved(const ui::PointerEvent& event,
                                            aura::Window* target) {
-  pointer_watcher_event_router_->OnPointerEventObserved(event, target);
+  DCHECK_EQ(Config::MASH, Shell::GetAshConfig());
+  // We have received a pointer event on |target|. However, we need to fixup
+  // |target| first. WindowManager's WindowTree is the entire root tree and
+  // we must adjust |target| from being the root to the aura::Window which
+  // would handle |event|.
+  std::unique_ptr<ui::Event> event_copy = ui::Event::Clone(event);
+  ui::EventTarget* e_target =
+      target->GetHost()
+          ->dispatcher()
+          ->GetDefaultEventTargeter()
+          ->FindTargetForEvent(target, event_copy.get());
+
+  pointer_watcher_event_router_->OnPointerEventObserved(
+      event, static_cast<aura::Window*>(e_target));
 }
 
 aura::PropertyConverter* WindowManager::GetPropertyConverter() {

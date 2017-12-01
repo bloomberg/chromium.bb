@@ -54,15 +54,10 @@
 # TODO: Top-of-screen mouse reveal doesn't work, maybe problem with
 # EventGenerator. http://crbug.com/698085
 -ImmersiveFullscreenControllerTest.Bubbles
--ImmersiveFullscreenControllerTest.Delegate
 -ImmersiveFullscreenControllerTest.DifferentModalityEnterExit
 -ImmersiveFullscreenControllerTest.EndRevealViaGesture
--ImmersiveFullscreenControllerTest.EventsDoNotLeakToWindowUnderneath
 -ImmersiveFullscreenControllerTest.Focus
--ImmersiveFullscreenControllerTest.Inactive
 -ImmersiveFullscreenControllerTest.MouseEventsVerticalDisplayLayout
--ImmersiveFullscreenControllerTest.MouseHoveredWithoutMoving
--ImmersiveFullscreenControllerTest.OnMouseEvent
 -ImmersiveFullscreenControllerTest.RevealViaGestureChildConsumesEvents
 -ImmersiveFullscreenControllerTest.Transient
 
