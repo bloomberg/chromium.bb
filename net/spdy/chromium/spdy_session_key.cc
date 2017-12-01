@@ -36,7 +36,7 @@ SpdySessionKey::SpdySessionKey(const HostPortProxyPair& host_port_proxy_pair,
 
 SpdySessionKey::SpdySessionKey(const SpdySessionKey& other) = default;
 
-SpdySessionKey::~SpdySessionKey() {}
+SpdySessionKey::~SpdySessionKey() = default;
 
 bool SpdySessionKey::operator<(const SpdySessionKey& other) const {
   return std::tie(privacy_mode_, host_port_proxy_pair_.first,

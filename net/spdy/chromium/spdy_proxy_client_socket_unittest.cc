@@ -1299,7 +1299,7 @@ class DeleteSockCallback : public TestCompletionCallbackBase {
         callback_(base::Bind(&DeleteSockCallback::OnComplete,
                              base::Unretained(this))) {}
 
-  ~DeleteSockCallback() override {}
+  ~DeleteSockCallback() override = default;
 
   const CompletionCallback& callback() const { return callback_; }
 

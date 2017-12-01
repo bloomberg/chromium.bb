@@ -69,7 +69,7 @@ class SpdyStreamTest : public ::testing::Test {
         offset_(0),
         ssl_(SYNCHRONOUS, OK) {}
 
-  ~SpdyStreamTest() override {}
+  ~SpdyStreamTest() override = default;
 
   base::WeakPtr<SpdySession> CreateDefaultSpdySession() {
     SpdySessionKey key(HostPortPair::FromURL(url_), ProxyServer::Direct(),
@@ -208,7 +208,7 @@ class StreamDelegateWithTrailers : public test::StreamDelegateWithBody {
                              SpdyStringPiece data)
       : StreamDelegateWithBody(stream, data) {}
 
-  ~StreamDelegateWithTrailers() override {}
+  ~StreamDelegateWithTrailers() override = default;
 
   void OnTrailers(const SpdyHeaderBlock& trailers) override {
     trailers_ = trailers.Clone();

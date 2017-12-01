@@ -126,7 +126,7 @@ class SpdyTestDeframerImpl : public SpdyTestDeframer,
       : listener_(std::move(listener)) {
     CHECK(listener_);
   }
-  ~SpdyTestDeframerImpl() override {}
+  ~SpdyTestDeframerImpl() override = default;
 
   bool AtFrameEnd() override;
 
@@ -765,7 +765,7 @@ class LoggingSpdyDeframerDelegate : public SpdyDeframerVisitorInterface {
       wrapped_ = SpdyMakeUnique<SpdyDeframerVisitorInterface>();
     }
   }
-  ~LoggingSpdyDeframerDelegate() override {}
+  ~LoggingSpdyDeframerDelegate() override = default;
 
   void OnAltSvc(std::unique_ptr<SpdyAltSvcIR> frame) override {
     DVLOG(1) << "LoggingSpdyDeframerDelegate::OnAltSvc";
@@ -857,7 +857,7 @@ SpdyDeframerVisitorInterface::LogBeforeVisiting(
       std::move(wrapped_listener));
 }
 
-CollectedFrame::CollectedFrame() {}
+CollectedFrame::CollectedFrame() = default;
 
 CollectedFrame::CollectedFrame(CollectedFrame&& other)
     : frame_ir(std::move(other.frame_ir)),
@@ -865,7 +865,7 @@ CollectedFrame::CollectedFrame(CollectedFrame&& other)
       settings(std::move(other.settings)),
       error_reported(other.error_reported) {}
 
-CollectedFrame::~CollectedFrame() {}
+CollectedFrame::~CollectedFrame() = default;
 
 CollectedFrame& CollectedFrame::operator=(CollectedFrame&& other) {
   frame_ir = std::move(other.frame_ir);

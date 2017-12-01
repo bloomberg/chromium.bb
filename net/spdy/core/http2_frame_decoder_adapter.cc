@@ -165,7 +165,7 @@ Http2DecoderAdapter::Http2DecoderAdapter() {
   ResetInternal();
 }
 
-Http2DecoderAdapter::~Http2DecoderAdapter() {}
+Http2DecoderAdapter::~Http2DecoderAdapter() = default;
 
 void Http2DecoderAdapter::set_visitor(SpdyFramerVisitorInterface* visitor) {
   visitor_ = visitor;

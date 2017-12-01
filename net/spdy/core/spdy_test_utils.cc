@@ -149,9 +149,9 @@ void TestHeadersHandler::OnHeaderBlockEnd(
   compressed_header_bytes_parsed_ = compressed_header_bytes_parsed;
 }
 
-TestServerPushDelegate::TestServerPushDelegate() {}
+TestServerPushDelegate::TestServerPushDelegate() = default;
 
-TestServerPushDelegate::~TestServerPushDelegate() {}
+TestServerPushDelegate::~TestServerPushDelegate() = default;
 
 void TestServerPushDelegate::OnPush(
     std::unique_ptr<ServerPushHelper> push_helper,

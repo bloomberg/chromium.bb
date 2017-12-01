@@ -21,7 +21,7 @@ HpackDecoderAdapter::HpackDecoderAdapter()
       max_decode_buffer_size_bytes_(kMaxDecodeBufferSizeBytes),
       header_block_started_(false) {}
 
-HpackDecoderAdapter::~HpackDecoderAdapter() {}
+HpackDecoderAdapter::~HpackDecoderAdapter() = default;
 
 void HpackDecoderAdapter::ApplyHeaderTableSizeSetting(size_t size_setting) {
   DVLOG(2) << "HpackDecoderAdapter::ApplyHeaderTableSizeSetting";
@@ -111,7 +111,7 @@ size_t HpackDecoderAdapter::EstimateMemoryUsage() const {
 }
 
 HpackDecoderAdapter::ListenerAdapter::ListenerAdapter() : handler_(nullptr) {}
-HpackDecoderAdapter::ListenerAdapter::~ListenerAdapter() {}
+HpackDecoderAdapter::ListenerAdapter::~ListenerAdapter() = default;
 
 void HpackDecoderAdapter::ListenerAdapter::set_handler(
     SpdyHeadersHandlerInterface* handler) {

@@ -13,7 +13,7 @@ namespace net {
 
 HpackOutputStream::HpackOutputStream() : bit_offset_(0) {}
 
-HpackOutputStream::~HpackOutputStream() {}
+HpackOutputStream::~HpackOutputStream() = default;
 
 void HpackOutputStream::AppendBits(uint8_t bits, size_t bit_size) {
   DCHECK_GT(bit_size, 0u);

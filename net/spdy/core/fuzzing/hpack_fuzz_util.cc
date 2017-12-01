@@ -35,14 +35,14 @@ const size_t kValueLengthMax = 75;
 using base::RandBytesAsString;
 using std::map;
 
-HpackFuzzUtil::GeneratorContext::GeneratorContext() {}
-HpackFuzzUtil::GeneratorContext::~GeneratorContext() {}
+HpackFuzzUtil::GeneratorContext::GeneratorContext() = default;
+HpackFuzzUtil::GeneratorContext::~GeneratorContext() = default;
 
 HpackFuzzUtil::Input::Input() : offset(0) {}
-HpackFuzzUtil::Input::~Input() {}
+HpackFuzzUtil::Input::~Input() = default;
 
-HpackFuzzUtil::FuzzerContext::FuzzerContext() {}
-HpackFuzzUtil::FuzzerContext::~FuzzerContext() {}
+HpackFuzzUtil::FuzzerContext::FuzzerContext() = default;
+HpackFuzzUtil::FuzzerContext::~FuzzerContext() = default;
 
 // static
 void HpackFuzzUtil::InitializeGeneratorContext(GeneratorContext* context) {

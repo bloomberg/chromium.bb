@@ -39,7 +39,7 @@ HpackHeaderTable::HpackHeaderTable()
       max_size_(kDefaultHeaderTableSizeSetting),
       total_insertions_(static_entries_.size()) {}
 
-HpackHeaderTable::~HpackHeaderTable() {}
+HpackHeaderTable::~HpackHeaderTable() = default;
 
 const HpackEntry* HpackHeaderTable::GetByIndex(size_t index) {
   if (index == 0) {

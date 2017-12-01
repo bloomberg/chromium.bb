@@ -1379,8 +1379,8 @@ size_t SpdySession::DumpMemoryStats(StreamSocket::SocketMemoryStats* stats,
 SpdySession::UnclaimedPushedStreamContainer::UnclaimedPushedStreamContainer(
     SpdySession* spdy_session)
     : spdy_session_(spdy_session) {}
-SpdySession::UnclaimedPushedStreamContainer::~UnclaimedPushedStreamContainer() {
-}
+SpdySession::UnclaimedPushedStreamContainer::~UnclaimedPushedStreamContainer() =
+    default;
 
 bool SpdySession::UnclaimedPushedStreamContainer::erase(const GURL& url) {
   const_iterator it = find(url);

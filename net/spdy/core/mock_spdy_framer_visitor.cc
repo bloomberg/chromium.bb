@@ -12,7 +12,7 @@ MockSpdyFramerVisitor::MockSpdyFramerVisitor() {
   DelegateHeaderHandling();
 }
 
-MockSpdyFramerVisitor::~MockSpdyFramerVisitor() {}
+MockSpdyFramerVisitor::~MockSpdyFramerVisitor() = default;
 
 }  // namespace test
 

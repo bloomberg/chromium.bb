@@ -17,7 +17,7 @@
 
 namespace net {
 
-SpdyWriteQueue::PendingWrite::PendingWrite() {}
+SpdyWriteQueue::PendingWrite::PendingWrite() = default;
 
 SpdyWriteQueue::PendingWrite::PendingWrite(
     SpdyFrameType frame_type,
@@ -28,7 +28,7 @@ SpdyWriteQueue::PendingWrite::PendingWrite(
       stream(stream),
       has_stream(stream.get() != nullptr) {}
 
-SpdyWriteQueue::PendingWrite::~PendingWrite() {}
+SpdyWriteQueue::PendingWrite::~PendingWrite() = default;
 
 SpdyWriteQueue::PendingWrite::PendingWrite(PendingWrite&& other) = default;
 SpdyWriteQueue::PendingWrite& SpdyWriteQueue::PendingWrite::operator=(

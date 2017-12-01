@@ -26,7 +26,7 @@ SpdyFrameBuilder::SpdyFrameBuilder(size_t size, ZeroCopyOutputBuffer* output)
       length_(0),
       offset_(0) {}
 
-SpdyFrameBuilder::~SpdyFrameBuilder() {}
+SpdyFrameBuilder::~SpdyFrameBuilder() = default;
 
 char* SpdyFrameBuilder::GetWritableBuffer(size_t length) {
   if (!CanWrite(length)) {

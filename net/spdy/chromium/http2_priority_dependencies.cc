@@ -7,9 +7,9 @@
 
 namespace net {
 
-Http2PriorityDependencies::Http2PriorityDependencies() {}
+Http2PriorityDependencies::Http2PriorityDependencies() = default;
 
-Http2PriorityDependencies::~Http2PriorityDependencies() {}
+Http2PriorityDependencies::~Http2PriorityDependencies() = default;
 
 void Http2PriorityDependencies::OnStreamCreation(
     SpdyStreamId id,
