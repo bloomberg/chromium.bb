@@ -2189,12 +2189,19 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   mbmi->interinter_compound_type = COMPOUND_AVERAGE;
 
   // read idx to indicate current compound inter prediction mode group
+  int masked_compound_used = is_any_masked_compound_used(bsize);
+  masked_compound_used = masked_compound_used && cm->allow_masked_compound;
+
   if (has_second_ref(mbmi)) {
-    const int ctx_comp_group_idx = get_comp_group_idx_context(xd);
-    mbmi->comp_group_idx = aom_read_symbol(
-        r, ec_ctx->comp_group_idx_cdf[ctx_comp_group_idx], 2, ACCT_STR);
-    if (xd->counts)
-      ++xd->counts->comp_group_idx[ctx_comp_group_idx][mbmi->comp_group_idx];
+    if (masked_compound_used) {
+      const int ctx_comp_group_idx = get_comp_group_idx_context(xd);
+      mbmi->comp_group_idx = aom_read_symbol(
+          r, ec_ctx->comp_group_idx_cdf[ctx_comp_group_idx], 2, ACCT_STR);
+      if (xd->counts)
+        ++xd->counts->comp_group_idx[ctx_comp_group_idx][mbmi->comp_group_idx];
+    } else {
+      mbmi->comp_group_idx = 0;
+    }
 
     if (mbmi->comp_group_idx == 0) {
       const int comp_index_ctx = get_comp_index_context(cm, xd);

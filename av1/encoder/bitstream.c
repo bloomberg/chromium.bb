@@ -1454,10 +1454,17 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     // First write idx to indicate current compound inter prediction mode group
     // Group A (0): jnt_comp, compound_average
     // Group B (1): interintra, compound_segment, wedge
+    int masked_compound_used = is_any_masked_compound_used(bsize);
+    masked_compound_used = masked_compound_used && cm->allow_masked_compound;
+
     if (has_second_ref(mbmi)) {
-      const int ctx_comp_group_idx = get_comp_group_idx_context(xd);
-      aom_write_symbol(w, mbmi->comp_group_idx,
-                       ec_ctx->comp_group_idx_cdf[ctx_comp_group_idx], 2);
+      if (masked_compound_used) {
+        assert(mbmi->comp_group_idx == 0);
+
+        const int ctx_comp_group_idx = get_comp_group_idx_context(xd);
+        aom_write_symbol(w, mbmi->comp_group_idx,
+                         ec_ctx->comp_group_idx_cdf[ctx_comp_group_idx], 2);
+      }
 
       if (mbmi->comp_group_idx == 0) {
         if (mbmi->compound_idx)

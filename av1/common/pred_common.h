@@ -133,14 +133,14 @@ static INLINE int get_comp_group_idx_context(const MACROBLOCKD *xd) {
     if (has_second_ref(above_mbmi))
       above_ctx = above_mbmi->comp_group_idx;
     else if (above_mbmi->ref_frame[0] == ALTREF_FRAME)
-      above_ctx = 1;
+      above_ctx = 3;
   }
   if (left_mi) {
     const MB_MODE_INFO *left_mbmi = &left_mi->mbmi;
     if (has_second_ref(left_mbmi))
       left_ctx = left_mbmi->comp_group_idx;
     else if (left_mbmi->ref_frame[0] == ALTREF_FRAME)
-      left_ctx = 1;
+      left_ctx = 3;
   }
 
   return above_ctx + left_ctx;

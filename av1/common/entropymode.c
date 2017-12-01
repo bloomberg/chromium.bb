@@ -1504,16 +1504,20 @@ static const aom_cdf_prob
 
 static const aom_cdf_prob
     default_comp_group_idx_cdfs[COMP_GROUP_IDX_CONTEXTS][CDF_SIZE(2)] = {
+      { AOM_ICDF(29491), AOM_ICDF(32768), 0 },
       { AOM_ICDF(24576), AOM_ICDF(32768), 0 },
       { AOM_ICDF(16384), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(8192), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(16384), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(13107), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(13107), AOM_ICDF(32768), 0 },
     };
 static const aom_prob default_compound_idx_probs[COMP_INDEX_CONTEXTS] = {
   192, 128, 64, 192, 128, 64
 };
 
 static const aom_prob default_comp_group_idx_probs[COMP_GROUP_IDX_CONTEXTS] = {
-  192, 128, 64
+  192, 128, 64, 192, 128, 64, 128
 };
 #endif  // CONFIG_JNT_COMP
 
