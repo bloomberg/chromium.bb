@@ -17,6 +17,7 @@
 #include "base/test/test_file_util.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -98,7 +99,9 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
       case printing::JobEventDetails::NEW_DOC:
       case printing::JobEventDetails::USER_INIT_DONE:
       case printing::JobEventDetails::DEFAULT_INIT_DONE:
+#if defined(OS_WIN)
       case printing::JobEventDetails::PAGE_DONE:
+#endif
       case printing::JobEventDetails::DOC_DONE:
       case printing::JobEventDetails::ALL_PAGES_REQUESTED: {
         // Don't care.

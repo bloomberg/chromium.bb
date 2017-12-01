@@ -384,14 +384,14 @@ void PrintJob::OnNotifyPrintJobEvent(const JobEventDetails& event_details) {
           FROM_HERE, base::BindOnce(&PrintJob::OnDocumentDone, this));
       break;
     }
-    case JobEventDetails::PAGE_DONE:
 #if defined(OS_WIN)
+    case JobEventDetails::PAGE_DONE:
       if (pdf_conversion_state_) {
         pdf_conversion_state_->OnPageProcessed(
             base::Bind(&PrintJob::OnPdfPageConverted, this));
       }
-#endif  // defined(OS_WIN)
       break;
+#endif  // defined(OS_WIN)
     default: {
       NOTREACHED();
       break;
