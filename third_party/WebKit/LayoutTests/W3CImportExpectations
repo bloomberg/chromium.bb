@@ -190,27 +190,16 @@ crbug.com/679742 external/wpt/html/semantics/embedded-content/media-elements/tra
 # It contains only manual SVG tests.
 external/wpt/html/editing/dnd/svg [ Skip ]
 
-# crbug.com/496467: "hxml" files have CR (not CR+LF) and any patches fail.
-external/wpt/html/editing/dnd/platform/plugin/swfsources [ Skip ]
-
-# crbug.com/662667: CRLF line endings
+# UTF-16LE/BE documents, needs investigation. (Not a CRLF problem.)
 external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-003.html [ Skip ]
 external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-004.html [ Skip ]
 
-# Requires http server. Needs http: scheme, using XHR, etc.
+# https://github.com/w3c/web-platform-tests/pull/8533
 external/wpt/FileAPI/url/url_xmlhttprequest_img.html [ Skip ]
 
-# Uses custom request handler
-external/wpt/encoding/single-byte-decoder.html [ Skip ]
-external/wpt/encoding/resources/single-byte-raw.py [ Skip ]
-external/wpt/encoding/resources/text-plain-charset.py [ Skip ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-moved.html [ Skip ]
+# Fails on Chrome, Edge, Firefox and Safari, but did pass on Opera Presto.
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-addEventListener.html [ Skip ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-no-listener.html [ Skip ]
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-onerror.html [ Skip ]
-
-# Uses TAB character for indentation
-external/wpt/touch-events/multi-touch-interactions.js [ Skip ]
 
 # CSS Writing Modes Level 3: Following tests require writing-mode: sideways-*, which we do not plan to support today.
 external/wpt/css/css-writing-modes/block-flow-direction-slr-043.xht [ Skip ]
@@ -308,20 +297,10 @@ external/wpt/css/css-writing-modes/text-combine-upright-value-digits4-003.html [
 
 # Untriaged: Tests don't complete.
 external/wpt/html/browsers/browsing-the-web/unloading-documents/unload/006.html [ Skip ]
-external/wpt/html/browsers/history/the-history-interface/001.html [ Skip ]
-external/wpt/html/browsers/history/the-history-interface/002.html [ Skip ]
 external/wpt/html/browsers/history/the-history-interface/joint_session_history/002.html [ Skip ]
 external/wpt/html/browsers/history/the-history-interface/traverse_the_history_1.html [ Skip ]
 external/wpt/html/browsers/history/the-history-interface/traverse_the_history_write_after_load_1.html [ Skip ]
 external/wpt/html/semantics/document-metadata/the-style-element/style-error-01.html [ Skip ]
-external/wpt/html/semantics/embedded-content/the-iframe-element/iframe-allowfullscreen.html [ Skip ]
-external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_escaping-1.html [ Skip ]
-external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_escaping-2.html [ Skip ]
-external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_escaping-3.html [ Skip ]
-external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_nonescaping-1.html [ Skip ]
-external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_nonescaping-2.html [ Skip ]
-external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_nonescaping-3.html [ Skip ]
-external/wpt/html/semantics/forms/form-submission-0/url-encoded.html [ Skip ]
 external/wpt/svg/linking/scripted [ Skip ]
 
 # Manual tests that fail as TIMEOUT or NOTRUN. Consider adding wpt_automation.
