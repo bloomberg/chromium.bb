@@ -1946,7 +1946,6 @@ TEST_P(ArcAppLauncherForDefaulAppTest, AppLauncherForDefaultApps) {
                            display::kInvalidDisplayId);
 
   EXPECT_FALSE(launcher1.app_launched());
-  EXPECT_FALSE(launcher2.app_launched());
 
   arc_test()->WaitForDefaultApps();
 

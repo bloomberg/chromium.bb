@@ -34,6 +34,7 @@ void FakeBluetoothInstance::InitDeprecated(mojom::BluetoothHostPtr host_ptr) {
 
 void FakeBluetoothInstance::Init(mojom::BluetoothHostPtr host_ptr,
                                  InitCallback callback) {
+  host_ = std::move(host_ptr);
   std::move(callback).Run();
 }
 

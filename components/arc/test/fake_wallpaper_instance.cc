@@ -21,6 +21,7 @@ void FakeWallpaperInstance::InitDeprecated(mojom::WallpaperHostPtr host_ptr) {
 
 void FakeWallpaperInstance::Init(mojom::WallpaperHostPtr host_ptr,
                                  InitCallback callback) {
+  host_ = std::move(host_ptr);
   std::move(callback).Run();
 }
 

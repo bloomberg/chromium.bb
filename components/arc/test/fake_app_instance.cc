@@ -52,6 +52,7 @@ void FakeAppInstance::Init(mojom::AppHostPtr host_ptr, InitCallback callback) {
   // ARC app instance calls RefreshAppList after Init() successfully. Call
   // RefreshAppList() here to keep the same behavior.
   RefreshAppList();
+  host_ = std::move(host_ptr);
   std::move(callback).Run();
 }
 

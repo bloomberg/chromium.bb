@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/user_session/arc_user_session_service.h"
@@ -9,6 +11,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/session_manager/core/session_manager.h"
 
@@ -49,17 +52,16 @@ class ArcUserSessionServiceTest : public InProcessBrowserTest {
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    fake_intent_helper_instance_.reset(new FakeIntentHelperInstance());
-  }
-
   void SetUpOnMainThread() override {
     RunUntilIdle();
 
+    fake_intent_helper_instance_ = std::make_unique<FakeIntentHelperInstance>();
     ArcServiceManager::Get()
         ->arc_bridge_service()
         ->intent_helper()
         ->SetInstance(fake_intent_helper_instance_.get());
+    WaitForInstanceReady(
+        ArcServiceManager::Get()->arc_bridge_service()->intent_helper());
   }
 
   void TearDownOnMainThread() override {
@@ -67,6 +69,7 @@ class ArcUserSessionServiceTest : public InProcessBrowserTest {
         ->arc_bridge_service()
         ->intent_helper()
         ->SetInstance(nullptr);
+    fake_intent_helper_instance_.reset(nullptr);
   }
 
  protected:

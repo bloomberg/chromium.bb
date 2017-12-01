@@ -28,6 +28,7 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -231,17 +232,19 @@ class ArcSettingsServiceTest : public InProcessBrowserTest {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
-    fake_intent_helper_instance_.reset(new FakeIntentHelperInstance());
   }
 
   void SetUpOnMainThread() override {
     SetupNetworkEnvironment();
     RunUntilIdle();
 
+    fake_intent_helper_instance_ = std::make_unique<FakeIntentHelperInstance>();
     ArcServiceManager::Get()
         ->arc_bridge_service()
         ->intent_helper()
         ->SetInstance(fake_intent_helper_instance_.get());
+    WaitForInstanceReady(
+        ArcServiceManager::Get()->arc_bridge_service()->intent_helper());
   }
 
   void TearDownOnMainThread() override {
@@ -249,6 +252,7 @@ class ArcSettingsServiceTest : public InProcessBrowserTest {
         ->arc_bridge_service()
         ->intent_helper()
         ->SetInstance(nullptr);
+    fake_intent_helper_instance_.reset();
   }
 
   void UpdatePolicy(const policy::PolicyMap& policy) {

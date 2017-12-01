@@ -24,6 +24,7 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_wallpaper_instance.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -95,13 +96,15 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
     chromeos::WallpaperManager::Initialize();
 
     // Arc services
-    wallpaper_instance_ = std::make_unique<arc::FakeWallpaperInstance>();
     arc_service_manager_.set_browser_context(&testing_profile_);
-    arc_service_manager_.arc_bridge_service()->wallpaper()->SetInstance(
-        wallpaper_instance_.get());
     service_ =
         arc::ArcWallpaperService::GetForBrowserContext(&testing_profile_);
     ASSERT_TRUE(service_);
+    wallpaper_instance_ = std::make_unique<arc::FakeWallpaperInstance>();
+    arc_service_manager_.arc_bridge_service()->wallpaper()->SetInstance(
+        wallpaper_instance_.get());
+    WaitForInstanceReady(
+        arc_service_manager_.arc_bridge_service()->wallpaper());
 
     // Salt
     std::vector<uint8_t> salt = {0x01, 0x02, 0x03};
@@ -109,6 +112,10 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
   }
 
   void TearDown() override {
+    arc_service_manager_.arc_bridge_service()->wallpaper()->SetInstance(
+        nullptr);
+    wallpaper_instance_.reset();
+
     chromeos::WallpaperManager::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
     AshTestBase::TearDown();

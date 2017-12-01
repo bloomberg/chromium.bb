@@ -35,6 +35,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -212,6 +213,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
       ArcServiceManager::Get()->arc_bridge_service();
   ASSERT_TRUE(arc_bridge_service);
   arc_bridge_service->auth()->SetInstance(&auth_instance);
+  WaitForInstanceReady(arc_bridge_service->auth());
 
   base::RunLoop run_loop;
   auth_instance.RequestAccountInfo(run_loop.QuitClosure());
@@ -224,6 +226,8 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
             auth_instance.account_info()->account_type);
   EXPECT_FALSE(auth_instance.account_info()->enrollment_token);
   EXPECT_FALSE(auth_instance.account_info()->is_managed);
+
+  arc_bridge_service->auth()->SetInstance(nullptr, 0);
 }
 
 }  // namespace arc

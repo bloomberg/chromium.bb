@@ -77,6 +77,7 @@ void FakeIntentHelperInstance::InitDeprecated(
 
 void FakeIntentHelperInstance::Init(mojom::IntentHelperHostPtr host_ptr,
                                     InitCallback callback) {
+  host_ = std::move(host_ptr);
   std::move(callback).Run();
 }
 

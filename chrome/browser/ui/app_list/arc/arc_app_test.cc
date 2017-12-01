@@ -22,6 +22,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -113,6 +114,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
   arc_service_manager_->arc_bridge_service()->app()->SetInstance(
       app_instance_.get());
+  WaitForInstanceReady(arc_service_manager_->arc_bridge_service()->app());
 }
 
 void ArcAppTest::WaitForDefaultApps() {
@@ -206,6 +208,7 @@ void ArcAppTest::RestartArcInstance() {
   bridge_service->app()->SetInstance(nullptr);
   app_instance_ = base::MakeUnique<arc::FakeAppInstance>(arc_app_list_pref_);
   bridge_service->app()->SetInstance(app_instance_.get());
+  WaitForInstanceReady(bridge_service->app());
 }
 
 const user_manager::User* ArcAppTest::CreateUserAndLogin() {

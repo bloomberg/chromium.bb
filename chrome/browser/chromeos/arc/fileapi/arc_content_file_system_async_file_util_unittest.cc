@@ -17,6 +17,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_file_system_instance.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -56,8 +57,15 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
         profile_.get(), &CreateArcFileSystemOperationRunnerForTesting);
     arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
         &fake_file_system_);
+    WaitForInstanceReady(
+        arc_service_manager_->arc_bridge_service()->file_system());
 
     async_file_util_ = std::make_unique<ArcContentFileSystemAsyncFileUtil>();
+  }
+
+  void TearDown() override {
+    arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
+        nullptr, 0);
   }
 
  protected:
