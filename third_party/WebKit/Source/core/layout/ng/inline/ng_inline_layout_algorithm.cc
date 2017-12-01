@@ -37,7 +37,17 @@ namespace {
 
 inline bool ShouldCreateBoxFragment(const NGInlineItem& item,
                                     const NGInlineItemResult& item_result) {
+  // Note: When you introduce more conditions, please make sure we have
+  // box fragments for plain SPAN to avoid using culled InlineBox which
+  // requires traversing layout tree to find |InlineBox| in SPAN, e.g.
+  //   <div><span>foo</span></div>.
+  // In legacy layout tree, we don't have |InlineBox| for plain SPAN if
+  // |LayoutObject::AlwaysCreateLineBoxes()| is false.
+  // See |LayoutBlockFlow::LayoutInlineChildren()| for conditions for
+  // enabling |AlwaysCreateLineBoxes()|.
   DCHECK(item.Style());
+  if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled())
+    return true;
   const ComputedStyle& style = *item.Style();
   // TODO(kojii): We might need more conditions to create box fragments.
   return style.HasBoxDecorationBackground() || style.HasOutline() ||

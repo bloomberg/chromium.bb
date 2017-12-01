@@ -614,6 +614,9 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/block-insi
 
 # ====== LayoutNG,LayoutNGPaintFragments ======
 
+# expected is wrong
+crbug.com/789390 virtual/layout_ng_paint/fast/inline/vertical-align-text-inherit.html [ Failure ]
+
 ### Crash site: ContainerNode.cpp
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-with-empty-inline-children.html [ Crash Failure ]
 
