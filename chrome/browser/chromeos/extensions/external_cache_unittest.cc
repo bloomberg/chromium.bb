@@ -40,6 +40,27 @@ const char kNonWebstoreUpdateUrl[] = "https://localhost/service/update2/crx";
 
 namespace chromeos {
 
+class TestExternalCache : public ExternalCache {
+ public:
+  TestExternalCache(const base::FilePath& cache_dir,
+                    net::URLRequestContextGetter* request_context,
+                const scoped_refptr<base::SequencedTaskRunner>&
+                    backend_task_runner,
+                Delegate* delegate,
+                bool always_check_updates,
+                bool wait_for_cache_initialization)
+    : ExternalCache(cache_dir, request_context, backend_task_runner, delegate,
+                    always_check_updates, wait_for_cache_initialization) {}
+
+ protected:
+  service_manager::Connector* GetConnector() override {
+    return nullptr;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestExternalCache);
+};
+
 class ExternalCacheTest : public testing::Test,
                           public ExternalCache::Delegate {
  public:
@@ -141,7 +162,7 @@ class ExternalCacheTest : public testing::Test,
 
 TEST_F(ExternalCacheTest, Basic) {
   base::FilePath cache_dir(CreateCacheDir(false));
-  ExternalCache external_cache(
+  TestExternalCache external_cache(
       cache_dir, request_context_getter(),
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}), this, true,
       false);
@@ -264,7 +285,7 @@ TEST_F(ExternalCacheTest, Basic) {
 
 TEST_F(ExternalCacheTest, PreserveInstalled) {
   base::FilePath cache_dir(CreateCacheDir(false));
-  ExternalCache external_cache(
+  TestExternalCache external_cache(
       cache_dir, request_context_getter(),
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}), this, true,
       false);

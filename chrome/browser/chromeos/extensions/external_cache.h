@@ -31,6 +31,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace chromeos {
 
 // The ExternalCache manages a cache for external extensions.
@@ -135,6 +139,10 @@ class ExternalCache : public content::NotificationObserver,
                             const PutExternalExtensionCallback& callback);
 
   void set_flush_on_put(bool flush_on_put) { flush_on_put_ = flush_on_put; }
+
+ protected:
+  // Overridden in tests.
+  virtual service_manager::Connector* GetConnector();
 
  private:
   // Notifies the that the cache has been updated, providing
