@@ -59,5 +59,4 @@ recordPanelShown:
 }
 Panel shown: js_profiler
 Panel shown: timeline
-Panel shown: audits
 
