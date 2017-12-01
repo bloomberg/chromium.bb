@@ -10,6 +10,10 @@
 
 #include "base/macros.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace os_crypt {
 struct Config;
 }
@@ -30,7 +34,11 @@ class KeyStorageLinux {
   std::string GetKey();
 
  protected:
+  // Get the backend's favourite task runner, or nullptr for no preference.
+  virtual base::SequencedTaskRunner* GetTaskRunner();
+
   // Loads the key storage. Returns false if the service is not available.
+  // This iwill be called on the backend's preferred thread.
   virtual bool Init() = 0;
 
   // The implementation of GetKey() for a specific backend. This will be called
@@ -43,6 +51,9 @@ class KeyStorageLinux {
   static const char kKey[];
 
  private:
+  // Performs Init() on the backend's preferred thread.
+  bool WaitForInitOnTaskRunner();
+
   DISALLOW_COPY_AND_ASSIGN(KeyStorageLinux);
 };
 
