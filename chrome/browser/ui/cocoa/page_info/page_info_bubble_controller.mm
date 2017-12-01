@@ -554,8 +554,6 @@ bool IsInternalURL(const GURL& url) {
   presenter_->OpenSiteSettingsView();
 }
 
-// TODO(lgarron): Move some of this to the presenter for separation of concerns
-// and platform unification. (https://crbug.com/571533)
 - (void)openConnectionHelp:(id)sender {
   DCHECK(webContents_);
   DCHECK(presenter_);
@@ -890,7 +888,6 @@ bool IsInternalURL(const GURL& url) {
   // Determine the largest possible size for this button. The size is the width
   // of the connection section minus the padding on both sides minus the
   // connection image size and spacing.
-  // TODO(lgarron): handle this sizing in -performLayout.
   CGFloat maxTitleWidth =
       containerFrame.size.width - kSectionHorizontalPadding * 2;
 

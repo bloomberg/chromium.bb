@@ -321,7 +321,7 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="ContentSettings.MixedScript.DisplayedShield"
     type="ETLD_PLUS_ONE">
-  <owner>lgarron@chromium.org</owner>
+  <owner>estark@chromium.org</owner>
   <summary>
     The eTLD+1 of a URL that displayed a mixed script shield. Note: this does
     *not* include pages with mixed scripts where the user has already clicked
@@ -331,7 +331,7 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="ContentSettings.MixedScript.RanMixedScript"
     type="ETLD_PLUS_ONE">
-  <owner>lgarron@chromium.org</owner>
+  <owner>estark@chromium.org</owner>
   <summary>
     The eTLD+1 of a URL that when mixed script actually ran.
   </summary>
@@ -339,7 +339,7 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="ContentSettings.MixedScript.UserClickedAllow"
     type="ETLD_PLUS_ONE">
-  <owner>lgarron@chromium.org</owner>
+  <owner>estark@chromium.org</owner>
   <summary>
     The eTLD+1 of a URL where the user clicked &quot;Load unsafe scripts&quot;
     on a mixed content shield. (This results in a page refresh. Mixed scripts
