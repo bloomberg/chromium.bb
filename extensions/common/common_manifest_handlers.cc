@@ -64,7 +64,7 @@ void RegisterCommonManifestHandlers() {
   (new OAuth2ManifestHandler)->Register();
   (new OfflineEnabledHandler)->Register();
   (new PluginsHandler)->Register();
-  (new RequirementsHandler)->Register();  // Depends on plugins.
+  (new RequirementsHandler)->Register();
   (new SandboxedPageHandler)->Register();
   (new SharedModuleHandler)->Register();
   (new SocketsManifestHandler)->Register();

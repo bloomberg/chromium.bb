@@ -33,15 +33,6 @@ TEST_F(RequirementsManifestTest, RequirementsInvalid) {
     Testcase("requirements_invalid_3d_no_features.json",
              ErrorUtils::FormatErrorMessage(
                  errors::kInvalidRequirement, "3D")),
-    Testcase("requirements_invalid_plugins.json",
-             ErrorUtils::FormatErrorMessage(
-                 errors::kInvalidRequirement, "plugins")),
-    Testcase("requirements_invalid_plugins_key.json",
-             ErrorUtils::FormatErrorMessage(
-                 errors::kInvalidRequirement, "plugins")),
-    Testcase("requirements_invalid_plugins_value.json",
-             ErrorUtils::FormatErrorMessage(
-                 errors::kInvalidRequirement, "plugins"))
   };
 
   RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_ERROR);
@@ -53,39 +44,27 @@ TEST_F(RequirementsManifestTest, RequirementsValid) {
       "requirements_valid_empty.json"));
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).webgl, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).npapi, false);
 
   // Test loading all the requirements.
   extension = LoadAndExpectSuccess("requirements_valid_full.json");
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).webgl, true);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).npapi, true);
 }
 
-// When an npapi plugin is present, the default of the "npapi" requirement
-// changes.
-TEST_F(RequirementsManifestTest, RequirementsNpapiDefault) {
-  scoped_refptr<Extension> extension(LoadAndExpectSuccess(
-      "requirements_npapi_empty.json"));
-  ASSERT_TRUE(extension.get());
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).webgl, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).npapi, true);
+// Tests the deprecated plugin requirement.
+TEST_F(RequirementsManifestTest, RequirementsPlugin) {
+  // Using the plugins requirement should cause an install warning.
+  RunTestcase({"requirements_invalid_plugins_value.json",
+               errors::kPluginsRequirementDeprecated},
+              EXPECT_TYPE_WARNING);
+  RunTestcase(
+      {"requirements_npapi_false.json", errors::kPluginsRequirementDeprecated},
+      EXPECT_TYPE_WARNING);
 
-  extension = LoadAndExpectSuccess(
-      "requirements_npapi_empty_plugins_empty.json");
-  ASSERT_TRUE(extension.get());
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).webgl, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).npapi, false);
-
-  extension = LoadAndExpectSuccess("requirements_npapi.json");
-  ASSERT_TRUE(extension.get());
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).webgl, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).npapi, false);
-
-  extension = LoadAndExpectSuccess("requirements_npapi_plugins_empty.json");
-  ASSERT_TRUE(extension.get());
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).webgl, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).npapi, true);
+  // Explicitly requesting the npapi requirement should cause an error.
+  RunTestcase(
+      {"requirements_npapi_true.json", errors::kNPAPIPluginsNotSupported},
+      EXPECT_TYPE_ERROR);
 }
 
 }  // namespace extensions

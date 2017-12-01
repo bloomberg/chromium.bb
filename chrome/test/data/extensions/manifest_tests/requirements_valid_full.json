@@ -5,9 +5,6 @@
   "requirements": {
     "3D": {
       "features": ["css3d", "webgl"]
-    },
-    "plugins": {
-      "npapi": true
     }
   }
 }

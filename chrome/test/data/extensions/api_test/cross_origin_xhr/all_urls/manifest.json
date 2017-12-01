@@ -11,13 +11,5 @@
     "js": ["content_script.js"],
     "run_at": "document_start"
   }],
-  "permissions": [ "<all_urls>" ],
-  "plugins": [
-    {"path": "plugin.dll", "public": true}
-  ],
-  "requirements": {
-    "plugins": {
-      "npapi": false
-    }
-  }
+  "permissions": [ "<all_urls>" ]
 }

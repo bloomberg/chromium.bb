@@ -18,15 +18,7 @@ namespace keys = manifest_keys;
 namespace errors = manifest_errors;
 
 RequirementsInfo::RequirementsInfo(const Manifest* manifest)
-    : webgl(false),
-      npapi(false),
-      window_shape(false) {
-  // Before parsing requirements from the manifest, automatically default the
-  // NPAPI plugin requirement based on whether it includes NPAPI plugins.
-  const base::ListValue* list_value = NULL;
-  npapi = manifest->GetList(keys::kPlugins, &list_value) &&
-          !list_value->empty();
-}
+    : webgl(false), window_shape(false) {}
 
 RequirementsInfo::~RequirementsInfo() {
 }
@@ -47,10 +39,6 @@ RequirementsHandler::RequirementsHandler() {
 }
 
 RequirementsHandler::~RequirementsHandler() {
-}
-
-const std::vector<std::string> RequirementsHandler::PrerequisiteKeys() const {
-  return SingleKey(keys::kPlugins);
 }
 
 const std::vector<std::string> RequirementsHandler::Keys() const {
@@ -87,22 +75,17 @@ bool RequirementsHandler::Parse(Extension* extension, base::string16* error) {
       return false;
     }
 
+    // The plugins requirement is deprecated. Raise an install warning. If the
+    // extension explicitly requires npapi plugins, raise an error.
     if (iter.key() == "plugins") {
-      for (base::DictionaryValue::Iterator plugin_iter(*requirement_value);
-           !plugin_iter.IsAtEnd(); plugin_iter.Advance()) {
-        bool plugin_required = false;
-        if (!plugin_iter.value().GetAsBoolean(&plugin_required)) {
-          *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidRequirement, iter.key());
-          return false;
-        }
-        if (plugin_iter.key() == "npapi") {
-          requirements->npapi = plugin_required;
-        } else {
-          *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidRequirement, iter.key());
-          return false;
-        }
+      extension->AddInstallWarning(
+          InstallWarning(errors::kPluginsRequirementDeprecated));
+      bool requires_npapi = false;
+      if (requirement_value->GetBooleanWithoutPathExpansion("npapi",
+                                                            &requires_npapi) &&
+          requires_npapi) {
+        *error = base::ASCIIToUTF16(errors::kNPAPIPluginsNotSupported);
+        return false;
       }
     } else if (iter.key() == "3D") {
       const base::ListValue* features = NULL;

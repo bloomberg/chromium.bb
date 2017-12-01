@@ -30,11 +30,6 @@ void RequirementsChecker::Start(ResultCallback callback) {
   const RequirementsInfo& requirements =
       RequirementsInfo::GetRequirements(extension());
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  if (requirements.npapi)
-    errors_.insert(NPAPI_NOT_SUPPORTED);
-#endif
-
 #if !defined(USE_AURA)
   if (requirements.window_shape)
     errors_.insert(WINDOW_SHAPE_NOT_SUPPORTED);
@@ -55,12 +50,6 @@ void RequirementsChecker::Start(ResultCallback callback) {
 base::string16 RequirementsChecker::GetErrorMessage() const {
   // Join the error messages into one string.
   std::vector<std::string> messages;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  if (errors_.count(NPAPI_NOT_SUPPORTED)) {
-    messages.push_back(
-        l10n_util::GetStringUTF8(IDS_EXTENSION_NPAPI_NOT_SUPPORTED));
-  }
-#endif
   if (errors_.count(WEBGL_NOT_SUPPORTED)) {
     messages.push_back(
         l10n_util::GetStringUTF8(IDS_EXTENSION_WEBGL_NOT_SUPPORTED));
