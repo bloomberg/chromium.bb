@@ -31,7 +31,7 @@ namespace media {
 
 namespace {
 
-std::unique_ptr<media::VideoCaptureJpegDecoder> ReturnNullPtrAsJpecDecoder() {
+std::unique_ptr<VideoCaptureJpegDecoder> ReturnNullPtrAsJpecDecoder() {
   return nullptr;
 }
 
@@ -45,13 +45,12 @@ std::unique_ptr<media::VideoCaptureJpegDecoder> ReturnNullPtrAsJpecDecoder() {
 class VideoCaptureDeviceClientTest : public ::testing::Test {
  public:
   VideoCaptureDeviceClientTest() {
-    scoped_refptr<media::VideoCaptureBufferPoolImpl> buffer_pool(
-        new media::VideoCaptureBufferPoolImpl(
-            base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>(),
-            1));
+    scoped_refptr<VideoCaptureBufferPoolImpl> buffer_pool(
+        new VideoCaptureBufferPoolImpl(
+            base::MakeUnique<VideoCaptureBufferTrackerFactoryImpl>(), 1));
     auto controller = base::MakeUnique<MockVideoFrameReceiver>();
     receiver_ = controller.get();
-    device_client_ = base::MakeUnique<media::VideoCaptureDeviceClient>(
+    device_client_ = base::MakeUnique<VideoCaptureDeviceClient>(
         std::move(controller), buffer_pool,
         base::Bind(&ReturnNullPtrAsJpecDecoder));
   }
@@ -59,7 +58,7 @@ class VideoCaptureDeviceClientTest : public ::testing::Test {
 
  protected:
   MockVideoFrameReceiver* receiver_;
-  std::unique_ptr<media::VideoCaptureDeviceClient> device_client_;
+  std::unique_ptr<VideoCaptureDeviceClient> device_client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceClientTest);
@@ -70,9 +69,8 @@ class VideoCaptureDeviceClientTest : public ::testing::Test {
 TEST_F(VideoCaptureDeviceClientTest, Minimal) {
   const size_t kScratchpadSizeInBytes = 400;
   unsigned char data[kScratchpadSizeInBytes] = {};
-  const media::VideoCaptureFormat kFrameFormat(
-      gfx::Size(10, 10), 30.0f /*frame_rate*/, media::PIXEL_FORMAT_I420,
-      media::PIXEL_STORAGE_CPU);
+  const VideoCaptureFormat kFrameFormat(gfx::Size(10, 10), 30.0f /*frame_rate*/,
+                                        PIXEL_FORMAT_I420, PIXEL_STORAGE_CPU);
   DCHECK(device_client_.get());
   {
     InSequence s;
@@ -94,11 +92,10 @@ TEST_F(VideoCaptureDeviceClientTest, FailsSilentlyGivenInvalidFrameFormat) {
   const size_t kScratchpadSizeInBytes = 400;
   unsigned char data[kScratchpadSizeInBytes] = {};
   // kFrameFormat is invalid in a number of ways.
-  const media::VideoCaptureFormat kFrameFormat(
-      gfx::Size(media::limits::kMaxDimension + 1, media::limits::kMaxDimension),
-      media::limits::kMaxFramesPerSecond + 1,
-      media::VideoPixelFormat::PIXEL_FORMAT_I420,
-      media::VideoPixelStorage::PIXEL_STORAGE_CPU);
+  const VideoCaptureFormat kFrameFormat(
+      gfx::Size(limits::kMaxDimension + 1, limits::kMaxDimension),
+      limits::kMaxFramesPerSecond + 1, VideoPixelFormat::PIXEL_FORMAT_I420,
+      VideoPixelStorage::PIXEL_STORAGE_CPU);
   DCHECK(device_client_.get());
   // Expect the the call to fail silently inside the VideoCaptureDeviceClient.
   EXPECT_CALL(*receiver_, OnLog(_)).Times(1);
@@ -113,9 +110,8 @@ TEST_F(VideoCaptureDeviceClientTest, FailsSilentlyGivenInvalidFrameFormat) {
 TEST_F(VideoCaptureDeviceClientTest, DropsFrameIfNoBuffer) {
   const size_t kScratchpadSizeInBytes = 400;
   unsigned char data[kScratchpadSizeInBytes] = {};
-  const media::VideoCaptureFormat kFrameFormat(
-      gfx::Size(10, 10), 30.0f /*frame_rate*/, media::PIXEL_FORMAT_I420,
-      media::PIXEL_STORAGE_CPU);
+  const VideoCaptureFormat kFrameFormat(gfx::Size(10, 10), 30.0f /*frame_rate*/,
+                                        PIXEL_FORMAT_I420, PIXEL_STORAGE_CPU);
   EXPECT_CALL(*receiver_, OnLog(_)).Times(1);
   // Simulate that receiver still holds |buffer_read_permission| for the first
   // buffer when the second call to OnIncomingCapturedData comes in.
@@ -124,14 +120,15 @@ TEST_F(VideoCaptureDeviceClientTest, DropsFrameIfNoBuffer) {
   std::unique_ptr<VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
       read_permission;
   EXPECT_CALL(*receiver_, MockOnFrameReadyInBuffer(_, _, _))
-      .WillOnce(Invoke([&read_permission](
-                           int buffer_id,
-                           std::unique_ptr<media::VideoCaptureDevice::Client::
-                                               Buffer::ScopedAccessPermission>*
-                               buffer_read_permission,
-                           const gfx::Size&) {
-        read_permission = std::move(*buffer_read_permission);
-      }));
+      .WillOnce(Invoke(
+          [&read_permission](
+              int buffer_id,
+              std::unique_ptr<
+                  VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>*
+                  buffer_read_permission,
+              const gfx::Size&) {
+            read_permission = std::move(*buffer_read_permission);
+          }));
   // Pass two frames. The second will be dropped.
   device_client_->OnIncomingCapturedData(data, kScratchpadSizeInBytes,
                                          kFrameFormat, 0 /*clockwise rotation*/,
@@ -154,28 +151,28 @@ TEST_F(VideoCaptureDeviceClientTest, DataCaptureGoodPixelFormats) {
   ASSERT_GE(kScratchpadSizeInBytes, kCaptureResolution.GetArea() * 4u)
       << "Scratchpad is too small to hold the largest pixel format (ARGB).";
 
-  media::VideoCaptureParams params;
-  params.requested_format = media::VideoCaptureFormat(
-      kCaptureResolution, 30.0f, media::PIXEL_FORMAT_UNKNOWN);
+  VideoCaptureParams params;
+  params.requested_format =
+      VideoCaptureFormat(kCaptureResolution, 30.0f, PIXEL_FORMAT_UNKNOWN);
 
   // Only use the VideoPixelFormats that we know supported. Do not add
   // PIXEL_FORMAT_MJPEG since it would need a real JPEG header.
-  const media::VideoPixelFormat kSupportedFormats[] = {
-    media::PIXEL_FORMAT_I420,
-    media::PIXEL_FORMAT_YV12,
-    media::PIXEL_FORMAT_NV12,
-    media::PIXEL_FORMAT_NV21,
-    media::PIXEL_FORMAT_YUY2,
-    media::PIXEL_FORMAT_UYVY,
+  const VideoPixelFormat kSupportedFormats[] = {
+    PIXEL_FORMAT_I420,
+    PIXEL_FORMAT_YV12,
+    PIXEL_FORMAT_NV12,
+    PIXEL_FORMAT_NV21,
+    PIXEL_FORMAT_YUY2,
+    PIXEL_FORMAT_UYVY,
 #if defined(OS_WIN) || defined(OS_LINUX)
-    media::PIXEL_FORMAT_RGB24,
+    PIXEL_FORMAT_RGB24,
 #endif
-    media::PIXEL_FORMAT_RGB32,
-    media::PIXEL_FORMAT_ARGB,
-    media::PIXEL_FORMAT_Y16,
+    PIXEL_FORMAT_RGB32,
+    PIXEL_FORMAT_ARGB,
+    PIXEL_FORMAT_Y16,
   };
 
-  for (media::VideoPixelFormat format : kSupportedFormats) {
+  for (VideoPixelFormat format : kSupportedFormats) {
     params.requested_format.pixel_format = format;
 
     EXPECT_CALL(*receiver_, OnLog(_)).Times(1);
@@ -209,13 +206,13 @@ TEST_F(VideoCaptureDeviceClientTest, CheckRotationsAndCrops) {
 
   EXPECT_CALL(*receiver_, OnLog(_)).Times(1);
 
-  media::VideoCaptureParams params;
+  VideoCaptureParams params;
   for (const auto& size_and_rotation : kSizeAndRotations) {
     ASSERT_GE(kScratchpadSizeInBytes,
               size_and_rotation.input_resolution.GetArea() * 4u)
         << "Scratchpad is too small to hold the largest pixel format (ARGB).";
-    params.requested_format = media::VideoCaptureFormat(
-        size_and_rotation.input_resolution, 30.0f, media::PIXEL_FORMAT_ARGB);
+    params.requested_format = VideoCaptureFormat(
+        size_and_rotation.input_resolution, 30.0f, PIXEL_FORMAT_ARGB);
     gfx::Size coded_size;
     EXPECT_CALL(*receiver_, MockOnFrameReadyInBuffer(_, _, _))
         .Times(1)

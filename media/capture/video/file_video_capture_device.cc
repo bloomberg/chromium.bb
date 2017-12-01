@@ -54,9 +54,9 @@ void ParseY4MRational(const base::StringPiece& token,
 // format, in this case it means I420.
 // This code was inspired by third_party/libvpx/.../y4minput.* .
 void ParseY4MTags(const std::string& file_header,
-                  media::VideoCaptureFormat* video_format) {
-  media::VideoCaptureFormat format;
-  format.pixel_format = media::PIXEL_FORMAT_I420;
+                  VideoCaptureFormat* video_format) {
+  VideoCaptureFormat format;
+  format.pixel_format = PIXEL_FORMAT_I420;
   size_t index = 0;
   size_t blank_position = 0;
   base::StringPiece token;
@@ -114,7 +114,7 @@ class VideoFileParser {
   virtual ~VideoFileParser();
 
   // Parses file header and collects format information in |capture_format|.
-  virtual bool Initialize(media::VideoCaptureFormat* capture_format) = 0;
+  virtual bool Initialize(VideoCaptureFormat* capture_format) = 0;
 
   // Gets the start pointer of next frame and stores current frame size in
   // |frame_size|.
@@ -133,7 +133,7 @@ class Y4mFileParser final : public VideoFileParser {
 
   // VideoFileParser implementation, class methods.
   ~Y4mFileParser() override;
-  bool Initialize(media::VideoCaptureFormat* capture_format) override;
+  bool Initialize(VideoCaptureFormat* capture_format) override;
   const uint8_t* GetNextFrame(int* frame_size) override;
 
  private:
@@ -149,7 +149,7 @@ class MjpegFileParser final : public VideoFileParser {
 
   // VideoFileParser implementation, class methods.
   ~MjpegFileParser() override;
-  bool Initialize(media::VideoCaptureFormat* capture_format) override;
+  bool Initialize(VideoCaptureFormat* capture_format) override;
   const uint8_t* GetNextFrame(int* frame_size) override;
 
  private:
@@ -171,7 +171,7 @@ Y4mFileParser::Y4mFileParser(const base::FilePath& file_path)
 
 Y4mFileParser::~Y4mFileParser() = default;
 
-bool Y4mFileParser::Initialize(media::VideoCaptureFormat* capture_format) {
+bool Y4mFileParser::Initialize(VideoCaptureFormat* capture_format) {
   file_.reset(new base::File(file_path_,
                              base::File::FLAG_OPEN | base::File::FLAG_READ));
   if (!file_->IsValid()) {
@@ -220,7 +220,7 @@ MjpegFileParser::MjpegFileParser(const base::FilePath& file_path)
 
 MjpegFileParser::~MjpegFileParser() = default;
 
-bool MjpegFileParser::Initialize(media::VideoCaptureFormat* capture_format) {
+bool MjpegFileParser::Initialize(VideoCaptureFormat* capture_format) {
   mapped_file_.reset(new base::MemoryMappedFile());
 
   if (!mapped_file_->Initialize(file_path_) || !mapped_file_->IsValid()) {
@@ -239,7 +239,7 @@ bool MjpegFileParser::Initialize(media::VideoCaptureFormat* capture_format) {
   }
 
   VideoCaptureFormat format;
-  format.pixel_format = media::PIXEL_FORMAT_MJPEG;
+  format.pixel_format = PIXEL_FORMAT_MJPEG;
   format.frame_size.set_width(result.frame_header.visible_width);
   format.frame_size.set_height(result.frame_header.visible_height);
   format.frame_rate = kMJpegFrameRate;
@@ -268,7 +268,7 @@ const uint8_t* MjpegFileParser::GetNextFrame(int* frame_size) {
 // static
 bool FileVideoCaptureDevice::GetVideoCaptureFormat(
     const base::FilePath& file_path,
-    media::VideoCaptureFormat* video_format) {
+    VideoCaptureFormat* video_format) {
   std::unique_ptr<VideoFileParser> file_parser =
       GetVideoFileParser(file_path, video_format);
   return file_parser != nullptr;
@@ -277,7 +277,7 @@ bool FileVideoCaptureDevice::GetVideoCaptureFormat(
 // static
 std::unique_ptr<VideoFileParser> FileVideoCaptureDevice::GetVideoFileParser(
     const base::FilePath& file_path,
-    media::VideoCaptureFormat* video_format) {
+    VideoCaptureFormat* video_format) {
   std::unique_ptr<VideoFileParser> file_parser;
   std::string file_name(file_path.value().begin(), file_path.value().end());
 

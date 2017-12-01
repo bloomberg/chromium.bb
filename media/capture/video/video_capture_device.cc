@@ -58,16 +58,16 @@ PowerLineFrequency VideoCaptureDevice::GetPowerLineFrequencyForLocation()
       countries_using_60Hz + arraysize(countries_using_60Hz);
   if (std::find(countries_using_60Hz, countries_using_60Hz_end,
                 current_country) == countries_using_60Hz_end) {
-    return media::PowerLineFrequency::FREQUENCY_50HZ;
+    return PowerLineFrequency::FREQUENCY_50HZ;
   }
-  return media::PowerLineFrequency::FREQUENCY_60HZ;
+  return PowerLineFrequency::FREQUENCY_60HZ;
 }
 
 PowerLineFrequency VideoCaptureDevice::GetPowerLineFrequency(
     const VideoCaptureParams& params) const {
   switch (params.power_line_frequency) {
-    case media::PowerLineFrequency::FREQUENCY_50HZ:  // fall through
-    case media::PowerLineFrequency::FREQUENCY_60HZ:
+    case PowerLineFrequency::FREQUENCY_50HZ:  // fall through
+    case PowerLineFrequency::FREQUENCY_60HZ:
       return params.power_line_frequency;
     default:
       return GetPowerLineFrequencyForLocation();

@@ -10,17 +10,17 @@
 
 namespace media {
 
-// Bundles a media::VideoCaptureDeviceDescriptor with corresponding supported
+// Bundles a VideoCaptureDeviceDescriptor with corresponding supported
 // video formats.
 struct CAPTURE_EXPORT VideoCaptureDeviceInfo {
   VideoCaptureDeviceInfo();
-  VideoCaptureDeviceInfo(media::VideoCaptureDeviceDescriptor descriptor);
+  VideoCaptureDeviceInfo(VideoCaptureDeviceDescriptor descriptor);
   VideoCaptureDeviceInfo(const VideoCaptureDeviceInfo& other);
   ~VideoCaptureDeviceInfo();
   VideoCaptureDeviceInfo& operator=(const VideoCaptureDeviceInfo& other);
 
-  media::VideoCaptureDeviceDescriptor descriptor;
-  media::VideoCaptureFormats supported_formats;
+  VideoCaptureDeviceDescriptor descriptor;
+  VideoCaptureFormats supported_formats;
 };
 
 }  // namespace media

@@ -49,10 +49,10 @@ enum class PixelFormatMatchType : int {
 };
 
 PixelFormatMatchType DetermineFormatMatchType(
-    media::VideoPixelFormat supported_format,
-    media::VideoPixelFormat requested_format) {
-  if (requested_format == media::PIXEL_FORMAT_I420 &&
-      supported_format == media::PIXEL_FORMAT_MJPEG) {
+    VideoPixelFormat supported_format,
+    VideoPixelFormat requested_format) {
+  if (requested_format == PIXEL_FORMAT_I420 &&
+      supported_format == PIXEL_FORMAT_MJPEG) {
     return PixelFormatMatchType::SUPPORTED_THROUGH_CONVERSION;
   }
   return (requested_format == supported_format)
@@ -60,7 +60,7 @@ PixelFormatMatchType DetermineFormatMatchType(
              : PixelFormatMatchType::INCOMPATIBLE;
 }
 
-const media::VideoCaptureFormat& FindClosestSupportedFormat(
+const VideoCaptureFormat& FindClosestSupportedFormat(
     const VideoCaptureFormat& requested_format,
     const VideoCaptureFormats& supported_formats) {
   DCHECK(!supported_formats.empty());

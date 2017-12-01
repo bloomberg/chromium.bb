@@ -446,8 +446,7 @@ void VideoCaptureDeviceDeckLinkMac::EnumerateDeviceCapabilities(
       // is only available on capture.
       const media::VideoCaptureFormat format(
           gfx::Size(display_mode->GetWidth(), display_mode->GetHeight()),
-          GetDisplayModeFrameRate(display_mode),
-          PIXEL_FORMAT_UNKNOWN);
+          GetDisplayModeFrameRate(display_mode), PIXEL_FORMAT_UNKNOWN);
       supported_formats->push_back(format);
       DVLOG(2) << device.display_name << " "
                << VideoCaptureFormat::ToString(format);

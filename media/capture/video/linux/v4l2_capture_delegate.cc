@@ -447,11 +447,10 @@ void V4L2CaptureDelegate::AllocateAndStart(
     // Now check if the device is able to accept a capture framerate set.
     if (streamparm.parm.capture.capability & V4L2_CAP_TIMEPERFRAME) {
       // |frame_rate| is float, approximate by a fraction.
-      streamparm.parm.capture.timeperframe.numerator =
-          media::kFrameRatePrecision;
+      streamparm.parm.capture.timeperframe.numerator = kFrameRatePrecision;
       streamparm.parm.capture.timeperframe.denominator =
-          (frame_rate) ? (frame_rate * media::kFrameRatePrecision)
-                       : (kTypicalFramerate * media::kFrameRatePrecision);
+          (frame_rate) ? (frame_rate * kFrameRatePrecision)
+                       : (kTypicalFramerate * kFrameRatePrecision);
 
       if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_PARM, &streamparm)) <
           0) {

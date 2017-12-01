@@ -146,7 +146,7 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
   capture_format_.frame_rate =
       Java_VideoCapture_queryFrameRate(env, j_capture_);
   capture_format_.pixel_format = GetColorspace();
-  DCHECK_NE(capture_format_.pixel_format, media::PIXEL_FORMAT_UNKNOWN);
+  DCHECK_NE(capture_format_.pixel_format, PIXEL_FORMAT_UNKNOWN);
   CHECK(capture_format_.frame_size.GetArea() > 0);
   CHECK(!(capture_format_.frame_size.width() % 2));
   CHECK(!(capture_format_.frame_size.height() % 2));
@@ -429,14 +429,14 @@ VideoPixelFormat VideoCaptureDeviceAndroid::GetColorspace() {
       Java_VideoCapture_getColorspace(env, j_capture_);
   switch (current_capture_colorspace) {
     case ANDROID_IMAGE_FORMAT_YV12:
-      return media::PIXEL_FORMAT_YV12;
+      return PIXEL_FORMAT_YV12;
     case ANDROID_IMAGE_FORMAT_YUV_420_888:
-      return media::PIXEL_FORMAT_I420;
+      return PIXEL_FORMAT_I420;
     case ANDROID_IMAGE_FORMAT_NV21:
-      return media::PIXEL_FORMAT_NV21;
+      return PIXEL_FORMAT_NV21;
     case ANDROID_IMAGE_FORMAT_UNKNOWN:
     default:
-      return media::PIXEL_FORMAT_UNKNOWN;
+      return PIXEL_FORMAT_UNKNOWN;
   }
 }
 

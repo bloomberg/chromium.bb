@@ -43,14 +43,14 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
   std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess(
       int buffer_id) override;
   int ReserveForProducer(const gfx::Size& dimensions,
-                         media::VideoPixelFormat format,
-                         media::VideoPixelStorage storage,
+                         VideoPixelFormat format,
+                         VideoPixelStorage storage,
                          int frame_feedback_id,
                          int* buffer_id_to_drop) override;
   void RelinquishProducerReservation(int buffer_id) override;
   int ResurrectLastForProducer(const gfx::Size& dimensions,
-                               media::VideoPixelFormat format,
-                               media::VideoPixelStorage storage) override;
+                               VideoPixelFormat format,
+                               VideoPixelStorage storage) override;
   double GetBufferPoolUtilization() const override;
   void HoldForConsumers(int buffer_id, int num_clients) override;
   void RelinquishConsumerHold(int buffer_id, int num_clients) override;
@@ -60,8 +60,8 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
   ~VideoCaptureBufferPoolImpl() override;
 
   int ReserveForProducerInternal(const gfx::Size& dimensions,
-                                 media::VideoPixelFormat format,
-                                 media::VideoPixelStorage storage,
+                                 VideoPixelFormat format,
+                                 VideoPixelStorage storage,
                                  int frame_feedback_id,
                                  int* tracker_id_to_drop);
 

@@ -26,14 +26,14 @@ VideoCaptureDeviceFactory::CreateFactory(
   if (command_line->HasSwitch(switches::kUseFakeDeviceForMediaStream)) {
     if (command_line->HasSwitch(switches::kUseFileForFakeVideoCapture)) {
       return std::unique_ptr<VideoCaptureDeviceFactory>(
-          new media::FileVideoCaptureDeviceFactory());
+          new FileVideoCaptureDeviceFactory());
     } else {
       std::vector<FakeVideoCaptureDeviceSettings> config;
       FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
           command_line->GetSwitchValueASCII(
               switches::kUseFakeDeviceForMediaStream),
           &config);
-      auto result = base::MakeUnique<media::FakeVideoCaptureDeviceFactory>();
+      auto result = base::MakeUnique<FakeVideoCaptureDeviceFactory>();
       result->SetToCustomDevicesConfig(config);
       return std::move(result);
     }

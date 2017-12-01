@@ -148,8 +148,8 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
 
   // Trampoline methods to workaround GMOCK problems with std::unique_ptr<>.
   Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
-                             media::VideoPixelFormat format,
-                             media::VideoPixelStorage storage,
+                             VideoPixelFormat format,
+                             VideoPixelStorage storage,
                              int frame_feedback_id) override {
     DoReserveOutputBuffer();
     NOTREACHED() << "This should never be called";
@@ -171,8 +171,8 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
     DoOnIncomingCapturedVideoFrame();
   }
   Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                   media::VideoPixelFormat format,
-                                   media::VideoPixelStorage storage,
+                                   VideoPixelFormat format,
+                                   VideoPixelStorage storage,
                                    int frame_feedback_id) {
     DoResurrectLastOutputBuffer();
     NOTREACHED() << "This should never be called";
@@ -638,7 +638,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_TakePhoto) {
       &MockImageCaptureClient::DoOnPhotoTaken, image_capture_client_);
 
   base::RunLoop run_loop;
-  base::Closure quit_closure = media::BindToCurrentLoop(run_loop.QuitClosure());
+  base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
   EXPECT_CALL(*image_capture_client_.get(), OnCorrectPhotoTaken())
       .Times(1)
       .WillOnce(RunClosure(quit_closure));
@@ -688,7 +688,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_GetPhotoState) {
                      image_capture_client_);
 
   base::RunLoop run_loop;
-  base::Closure quit_closure = media::BindToCurrentLoop(run_loop.QuitClosure());
+  base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
   EXPECT_CALL(*image_capture_client_.get(), OnCorrectGetPhotoState())
       .Times(1)
       .WillOnce(RunClosure(quit_closure));
