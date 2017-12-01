@@ -45733,6 +45733,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.RequestTime2Success.MainFrame">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The amount of time between request initiation and request completion for
+    success for main frame resources.
+  </summary>
+</histogram>
+
+<histogram name="Net.RequestTime2Success.Subresource">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The amount of time between request initiation and request completion for
+    success for non-main frame resources.
+  </summary>
+</histogram>
+
 <histogram name="Net.ResourceDispatcherHost.OutstandingRequests.PerProcess"
     units="requests">
   <owner>xunjieli@chromium.org</owner>
