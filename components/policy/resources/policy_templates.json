@@ -10724,7 +10724,10 @@
     {
       'name': 'UnsafelyTreatInsecureOriginAsSecure',
       'type': 'list',
-      'schema': { 'type': 'array'},
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
       'supported_on': ['chrome.*:65-'],
       'features': {
         'dynamic_refresh': False,
