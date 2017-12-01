@@ -443,18 +443,22 @@ class RendererLocalSurfaceIdProvider : public viz::LocalSurfaceIdProvider {
 // thread.
 class UkmRecorderFactoryImpl : public cc::UkmRecorderFactory {
  public:
-  UkmRecorderFactoryImpl(std::unique_ptr<service_manager::Connector> connector)
-      : connector_(std::move(connector)) {
-    DCHECK(connector_);
+  UkmRecorderFactoryImpl(ukm::mojom::UkmRecorderInterfacePtrInfo info)
+      : info_(std::move(info)) {
+    DCHECK(info_.is_valid());
   }
   ~UkmRecorderFactoryImpl() override = default;
 
   std::unique_ptr<ukm::UkmRecorder> CreateRecorder() override {
-    return ukm::MojoUkmRecorder::Create(connector_.get());
+    DCHECK(info_.is_valid());
+
+    ukm::mojom::UkmRecorderInterfacePtr recorder;
+    recorder.Bind(std::move(info_));
+    return std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
   }
 
  private:
-  std::unique_ptr<service_manager::Connector> connector_;
+  ukm::mojom::UkmRecorderInterfacePtrInfo info_;
 };
 
 }  // namespace
@@ -1703,7 +1707,9 @@ bool RenderThreadImpl::IsScrollAnimatorEnabled() {
 
 std::unique_ptr<cc::UkmRecorderFactory>
 RenderThreadImpl::CreateUkmRecorderFactory() {
-  return std::make_unique<UkmRecorderFactoryImpl>(GetConnector()->Clone());
+  ukm::mojom::UkmRecorderInterfacePtrInfo info;
+  mojo::MakeRequest(&info);
+  return std::make_unique<UkmRecorderFactoryImpl>(std::move(info));
 }
 
 void RenderThreadImpl::OnRAILModeChanged(v8::RAILMode rail_mode) {
