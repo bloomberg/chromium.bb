@@ -31,7 +31,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -82,10 +81,10 @@ public class BookmarkPersonalizedSigninPromoTest {
         onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
     }
 
+    // If this starts flaking again, disable the test. See crbug.com/789531.
     @Test
     @LargeTest
     @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/776405.
-    @DisabledTest(message = "Flaky. See crbug.com/789531")
     public void testAutoDismissPromo() throws Exception {
         int impressionCap = SigninPromoController.getMaxImpressionsBookmarksForTests();
         for (int impression = 0; impression < impressionCap; impression++) {
@@ -160,7 +159,8 @@ public class BookmarkPersonalizedSigninPromoTest {
     }
 
     private void openBookmarkManager() throws InterruptedException {
-        BookmarkUtils.showBookmarkManager((ChromeActivity) mActivityTestRule.getActivity());
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> BookmarkUtils.showBookmarkManager(mActivityTestRule.getActivity()));
     }
 
     private void addTestAccount() {
