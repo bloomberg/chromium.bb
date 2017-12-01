@@ -18,9 +18,9 @@
 #include "net/der/input.h"
 #if defined(USE_NSS_CERTS)
 #include "crypto/nss_util.h"
-#elif defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
-#include "third_party/boringssl/src/include/openssl/asn1.h"
-#include "third_party/boringssl/src/include/openssl/obj.h"
+#elif defined(PLATFORM_USES_CHROMIUM_EV_METADATA) || defined(OS_WIN)
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
+#include "third_party/boringssl/src/include/openssl/mem.h"
 #endif
 
 namespace net {
@@ -836,20 +836,13 @@ namespace {
 
 bool ConvertBytesToDottedString(const der::Input& policy_oid,
                                 std::string* dotted) {
-  ASN1_OBJECT obj;
-  memset(&obj, 0, sizeof(obj));
-  obj.data = policy_oid.UnsafeData();
-  obj.length = policy_oid.Length();
-
-  // Determine the length of the dotted string.
-  int len = OBJ_obj2txt(nullptr, 0, &obj, 1 /* dont_search_names */);
-  if (len == -1)
+  CBS cbs;
+  CBS_init(&cbs, policy_oid.UnsafeData(), policy_oid.Length());
+  bssl::UniquePtr<char> text(CBS_asn1_oid_to_text(&cbs));
+  if (!text)
     return false;
-
-  // Write the dotted string into |*dotted|.
-  dotted->resize(len + 1);
-  return len == OBJ_obj2txt(&(*dotted)[0], static_cast<int>(dotted->size()),
-                            &obj, 1 /* dont_search_names */);
+  dotted->assign(text.get());
+  return true;
 }
 
 }  // namespace
@@ -938,12 +931,16 @@ bool EVRootCAMetadata::RemoveEVCA(const SHA256HashValue& fingerprint) {
 namespace {
 
 std::string OIDStringToDER(const char* policy) {
-  bssl::UniquePtr<ASN1_OBJECT> obj(
-      OBJ_txt2obj(policy, 1 /* dont_search_names */));
-  if (!obj)
+  uint8_t* der;
+  size_t len;
+  bssl::ScopedCBB cbb;
+  if (!CBB_init(cbb.get(), 32) ||
+      !CBB_add_asn1_oid_from_text(cbb.get(), policy, strlen(policy)) ||
+      !CBB_finish(cbb.get(), &der, &len)) {
     return std::string();
-
-  return std::string(reinterpret_cast<const char*>(obj->data), obj->length);
+  }
+  bssl::UniquePtr<uint8_t> delete_der(der);
+  return std::string(reinterpret_cast<const char*>(der), len);
 }
 
 }  // namespace
