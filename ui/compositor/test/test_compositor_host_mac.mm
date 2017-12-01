@@ -44,6 +44,10 @@
   DCHECK(compositor_) << "Drawing with no compositor set.";
   compositor_->ScheduleFullRedraw();
 }
+
+- (gfx::AcceleratedWidget)widget {
+  return compositor_->widget();
+}
 @end
 
 namespace ui {
@@ -142,7 +146,7 @@ void TestCompositorHostMac::Show() {
                               defer:NO];
   base::scoped_nsobject<AcceleratedTestView> view(
       [[AcceleratedTestView alloc] init]);
-  compositor_.SetAcceleratedWidget(view);
+  compositor_.SetAcceleratedWidget([view widget]);
   compositor_.SetScaleAndSize(1.0f, bounds_.size());
   [view setCompositor:&compositor_];
   [window_ setContentView:view];

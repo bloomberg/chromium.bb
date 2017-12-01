@@ -1733,8 +1733,15 @@ gfx::Point RenderWidgetHostViewMac::AccessibilityOriginInScreen(
   return gfx::Point(originInScreen.x, originInScreen.y);
 }
 
-NSView* RenderWidgetHostViewMac::AccessibilityGetAcceleratedWidget() {
-  return cocoa_view_;
+gfx::AcceleratedWidget
+RenderWidgetHostViewMac::AccessibilityGetAcceleratedWidget() {
+  if (browser_compositor_) {
+    ui::AcceleratedWidgetMac* accelerated_widget_mac =
+        browser_compositor_->GetAcceleratedWidgetMac();
+    if (accelerated_widget_mac)
+      return accelerated_widget_mac->accelerated_widget();
+  }
+  return gfx::kNullAcceleratedWidget;
 }
 
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {

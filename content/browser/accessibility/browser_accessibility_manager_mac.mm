@@ -17,6 +17,7 @@
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/common/accessibility_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accessibility/ax_role_properties.h"
 
 namespace {
@@ -486,7 +487,10 @@ BrowserAccessibilityManagerMac::GetUserInfoForValueChangedNotification(
 }
 
 NSView* BrowserAccessibilityManagerMac::GetParentView() {
-  return delegate() ? delegate()->AccessibilityGetAcceleratedWidget() : nullptr;
+  gfx::AcceleratedWidget accelerated_widget =
+      delegate() ? delegate()->AccessibilityGetAcceleratedWidget()
+                 : gfx::kNullAcceleratedWidget;
+  return ui::AcceleratedWidgetMac::GetNSView(accelerated_widget);
 }
 
 }  // namespace content

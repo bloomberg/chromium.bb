@@ -4,6 +4,7 @@
 
 #include "gpu/gles2_conform_support/egl/display.h"
 
+#include "build/build_config.h"
 #include "gpu/gles2_conform_support/egl/config.h"
 #include "gpu/gles2_conform_support/egl/context.h"
 #include "gpu/gles2_conform_support/egl/surface.h"
@@ -214,8 +215,12 @@ EGLSurface Display::CreateWindowSurface(ThreadState* ts,
     return result;
   }
   scoped_refptr<gl::GLSurface> gl_surface;
-  gl_surface =
-      gl::init::CreateViewGLSurface(static_cast<gfx::AcceleratedWidget>(win));
+#if defined(OS_MACOSX)
+  gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;
+#else
+  gfx::AcceleratedWidget widget = static_cast<gfx::AcceleratedWidget>(win);
+#endif
+  gl_surface = gl::init::CreateViewGLSurface(widget);
   if (!gl_surface)
     return ts->ReturnError(EGL_BAD_ALLOC, EGL_NO_SURFACE);
   surfaces_.emplace_back(new Surface(gl_surface.get(), config));

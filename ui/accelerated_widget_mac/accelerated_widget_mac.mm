@@ -48,10 +48,8 @@ AcceleratedWidgetMac::AcceleratedWidgetMac() : view_(nullptr) {
 
   // Use a sequence number as the accelerated widget handle that we can use
   // to look up the internals structure.
-  static intptr_t last_sequence_number = 0;
-  last_sequence_number += 1;
-  native_widget_ = reinterpret_cast<gfx::AcceleratedWidget>(
-      last_sequence_number);
+  static uint64_t last_sequence_number = 0;
+  native_widget_ = ++last_sequence_number;
   g_widget_to_helper_map.Pointer()->insert(
       std::make_pair(native_widget_, this));
 }
@@ -106,6 +104,7 @@ void AcceleratedWidgetMac::GetVSyncParameters(
   }
 }
 
+// static
 AcceleratedWidgetMac* AcceleratedWidgetMac::Get(gfx::AcceleratedWidget widget) {
   WidgetToHelperMap::const_iterator found =
       g_widget_to_helper_map.Pointer()->find(widget);
@@ -115,6 +114,14 @@ AcceleratedWidgetMac* AcceleratedWidgetMac::Get(gfx::AcceleratedWidget widget) {
   if (found == g_widget_to_helper_map.Pointer()->end())
     return nullptr;
   return found->second;
+}
+
+// static
+NSView* AcceleratedWidgetMac::GetNSView(gfx::AcceleratedWidget widget) {
+  AcceleratedWidgetMac* widget_mac = Get(widget);
+  if (!widget_mac || !widget_mac->view_)
+    return nil;
+  return widget_mac->view_->AcceleratedWidgetGetNSView();
 }
 
 void AcceleratedWidgetMac::GotCALayerFrame(
