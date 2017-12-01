@@ -1291,11 +1291,14 @@ class ValidationPool(object):
     project_url = next(iter(changes)).project_url
     remote_ref = git.GetTrackingBranch(repo)
     push_to = git.RemoteRef(project_url, branch)
+
+    use_merge = any(c.IsMerge(repo) for c in changes)
+
     for _ in range(3):
       # try to resync and push.
       try:
         git.SyncPushBranch(repo, remote_ref.remote, remote_ref.ref,
-                           print_cmd=True)
+                           use_merge=use_merge, print_cmd=True)
       except cros_build_lib.RunCommandError:
         # TODO(phobbs) parse the sync failure output and find which change was
         # at fault.

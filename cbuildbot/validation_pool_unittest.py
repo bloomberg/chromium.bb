@@ -522,6 +522,8 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
     repo = '/fake/path/aoeuidhtns'
     tracking_branch = git.RemoteRef('cros', 'to_branch')
 
+    self.PatchObject(cros_patch.GitRepoPatch, 'IsMerge', return_value=False)
+
     context = contextlib.nested(
         mock.patch.object(git, 'SyncPushBranch'),
         mock.patch.object(git, 'GitPush'),

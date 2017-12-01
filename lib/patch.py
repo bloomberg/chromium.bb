@@ -1508,6 +1508,17 @@ class GitRepoPatch(PatchQuery):
     parents = git.RunGit(git_repo, cmd).output.split()
     return parents
 
+  def IsMerge(self, git_repo):
+    """Determine if this patch is a merge commit.
+
+    Args:
+      git_repo: The path to the repo.
+
+    Returns:
+      True if this is a merge commit, false otherwise.
+    """
+    return len(self._GetParents(git_repo)) == 2
+
   def _IsAncestorOf(self, git_repo, other_patch):
     """Determine whether this patch is ancestor of |other_patch|.
 
