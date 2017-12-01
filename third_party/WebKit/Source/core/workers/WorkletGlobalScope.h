@@ -21,7 +21,6 @@
 
 namespace blink {
 
-class Modulator;
 class WorkletModuleResponsesMap;
 class WorkletPendingTasks;
 class WorkerReportingProxy;
@@ -82,8 +81,6 @@ class CORE_EXPORT WorkletGlobalScope
   WorkletModuleResponsesMapProxy* ModuleResponsesMapProxy() const;
   void SetModuleResponsesMapProxyForTesting(WorkletModuleResponsesMapProxy*);
 
-  void SetModulator(Modulator*);
-
   SecurityOrigin* DocumentSecurityOrigin() const {
     return document_security_origin_.get();
   }
@@ -111,9 +108,6 @@ class CORE_EXPORT WorkletGlobalScope
   const scoped_refptr<SecurityOrigin> document_security_origin_;
 
   Member<WorkletModuleResponsesMapProxy> module_responses_map_proxy_;
-  // LocalDOMWindow::modulator_ workaround equivalent.
-  // TODO(kouhei): Remove this.
-  TraceWrapperMember<Modulator> modulator_;
 };
 
 DEFINE_TYPE_CASTS(WorkletGlobalScope,

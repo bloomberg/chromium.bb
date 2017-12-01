@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
+#include "core/dom/Modulator.h"
 #include "core/frame/Deprecation.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/WorkerFetchContext.h"
@@ -173,6 +174,10 @@ void WorkerOrWorkletGlobalScope::DeregisterEventListener(
   event_listeners_.erase(it);
 }
 
+void WorkerOrWorkletGlobalScope::SetModulator(Modulator* modulator) {
+  modulator_ = modulator;
+}
+
 scoped_refptr<WebTaskRunner> WorkerOrWorkletGlobalScope::GetTaskRunner(
     TaskType type) {
   DCHECK(IsContextThread());
@@ -184,12 +189,14 @@ void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_controller_);
   visitor->Trace(event_queue_);
   visitor->Trace(event_listeners_);
+  visitor->Trace(modulator_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContext::Trace(visitor);
 }
 
 void WorkerOrWorkletGlobalScope::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
+  visitor->TraceWrappers(modulator_);
   EventTargetWithInlineData::TraceWrappers(visitor);
 }
 

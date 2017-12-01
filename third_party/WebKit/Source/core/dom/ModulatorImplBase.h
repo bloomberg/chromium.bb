@@ -37,6 +37,8 @@ class ModulatorImplBase : public Modulator {
  protected:
   explicit ModulatorImplBase(scoped_refptr<ScriptState>);
 
+  ScriptState* GetScriptState() override { return script_state_.get(); }
+
  private:
   // Implements Modulator
 
@@ -46,7 +48,6 @@ class ModulatorImplBase : public Modulator {
   WebTaskRunner* TaskRunner() override { return task_runner_.get(); }
   ReferrerPolicy GetReferrerPolicy() override;
   SecurityOrigin* GetSecurityOriginForFetch() override;
-  ScriptState* GetScriptState() override { return script_state_.get(); }
 
   void FetchTree(const ModuleScriptFetchRequest&, ModuleTreeClient*) override;
   void FetchDescendantsForInlineScript(ModuleScript*,

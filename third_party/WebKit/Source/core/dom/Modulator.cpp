@@ -7,6 +7,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentModulatorImpl.h"
+#include "core/dom/WorkerModulatorImpl.h"
 #include "core/dom/WorkletModulatorImpl.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -46,11 +47,17 @@ Modulator* Modulator::From(ScriptState* script_state) {
     modulator = WorkletModulatorImpl::Create(script_state);
     Modulator::SetModulator(script_state, modulator);
 
-    // See comment in WorkletGlobalScope::modulator_ for this workaround.
-    ToWorkletGlobalScope(execution_context)->SetModulator(modulator);
+    // See comment in WorkerOrWorkletGlobalScope::modulator_ for this
+    // workaround.
+    ToWorkerOrWorkletGlobalScope(execution_context)->SetModulator(modulator);
+  } else if (execution_context->IsWorkerGlobalScope()) {
+    modulator = WorkerModulatorImpl::Create(script_state);
+    Modulator::SetModulator(script_state, modulator);
+
+    // See comment in WorkerOrWorkletGlobalScope::modulator_ for this
+    // workaround.
+    ToWorkerOrWorkletGlobalScope(execution_context)->SetModulator(modulator);
   } else {
-    // TODO(nhiroki): Support module loading for workers.
-    // (https://crbug.com/680046)
     NOTREACHED();
   }
   return modulator;

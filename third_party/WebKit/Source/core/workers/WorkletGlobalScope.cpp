@@ -133,10 +133,6 @@ void WorkletGlobalScope::SetModuleResponsesMapProxyForTesting(
   module_responses_map_proxy_ = proxy;
 }
 
-void WorkletGlobalScope::SetModulator(Modulator* modulator) {
-  modulator_ = modulator;
-}
-
 KURL WorkletGlobalScope::CompleteURL(const String& url) const {
   // Always return a null URL when passed a null string.
   // TODO(ikilpatrick): Should we change the KURL constructor to have this
@@ -149,14 +145,12 @@ KURL WorkletGlobalScope::CompleteURL(const String& url) const {
 
 void WorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(module_responses_map_proxy_);
-  visitor->Trace(modulator_);
   SecurityContext::Trace(visitor);
   WorkerOrWorkletGlobalScope::Trace(visitor);
 }
 
 void WorkletGlobalScope::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(modulator_);
   WorkerOrWorkletGlobalScope::TraceWrappers(visitor);
 }
 
