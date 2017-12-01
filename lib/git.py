@@ -24,9 +24,6 @@ from chromite.lib import osutils
 from chromite.lib import retry_util
 
 
-site_config = config_lib.GetConfig()
-
-
 # Retry a git operation if git returns a error response with any of these
 # messages. It's all observed 'bad' GoB responses so far.
 GIT_TRANSIENT_ERRORS = (
@@ -311,6 +308,7 @@ class ProjectCheckout(dict):
       return False
 
     # Old heuristic.
+    site_config = config_lib.GetConfig()
     if (self['remote'] not in site_config.params.CROS_REMOTES or
         self['remote'] not in site_config.params.BRANCHABLE_PROJECTS):
       return False
@@ -488,6 +486,7 @@ class Manifest(object):
         remote_name, StripRefs(upstream),
     )
 
+    site_config = config_lib.GetConfig()
     attrs['pushable'] = remote in site_config.params.GIT_REMOTES
     if attrs['pushable']:
       attrs['push_remote'] = remote
