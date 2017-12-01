@@ -90,7 +90,6 @@ var CLASSES = {
 var IDS = {
   ATTRIBUTION: 'attribution',
   ATTRIBUTION_TEXT: 'attribution-text',
-  CUSTOM_THEME_STYLE: 'ct-style',
   FAKEBOX: 'fakebox',
   FAKEBOX_INPUT: 'fakebox-input',
   FAKEBOX_TEXT: 'fakebox-text',
@@ -260,8 +259,6 @@ function renderTheme() {
 
   // Inform the most visited iframe of the new theme.
   var themeinfo = {cmd: 'updateTheme'};
-  themeinfo.tileBorderColor = convertToRGBAColor(info.sectionBorderColorRgba);
-  themeinfo.tileHoverBorderColor = convertToRGBAColor(info.headerColorRgba);
   themeinfo.isThemeDark = isThemeDark;
 
   var titleColor = NTP_DESIGN.titleColor;
@@ -314,40 +311,24 @@ function onThemeChange() {
  * @private
  */
 function setCustomThemeStyle(themeInfo) {
-  var customStyleElement = $(IDS.CUSTOM_THEME_STYLE);
-  var head = document.head;
+  var textColor = null;
+  var textColorLight = null;
+  var mvxFilter = null;
   if (!themeInfo.usingDefaultTheme) {
-    $(IDS.NTP_CONTENTS).classList.remove(CLASSES.DEFAULT_THEME);
-    var themeStyle =
-      '#attribution {' +
-      '  color: ' + convertToRGBAColor(themeInfo.textColorLightRgba) + ';' +
-      '}' +
-      '#mv-msg {' +
-      '  color: ' + convertToRGBAColor(themeInfo.textColorRgba) + ';' +
-      '}' +
-      '#mv-notice-links span {' +
-      '  color: ' + convertToRGBAColor(themeInfo.textColorLightRgba) + ';' +
-      '}' +
-      '#mv-notice-x {' +
-      '  -webkit-filter: drop-shadow(0 0 0 ' +
-          convertToRGBAColor(themeInfo.textColorRgba) + ');' +
-      '}';
-
-    if (customStyleElement) {
-      customStyleElement.textContent = themeStyle;
-    } else {
-      customStyleElement = document.createElement('style');
-      customStyleElement.type = 'text/css';
-      customStyleElement.id = IDS.CUSTOM_THEME_STYLE;
-      customStyleElement.textContent = themeStyle;
-      head.appendChild(customStyleElement);
-    }
-
-  } else {
-    $(IDS.NTP_CONTENTS).classList.add(CLASSES.DEFAULT_THEME);
-    if (customStyleElement)
-      head.removeChild(customStyleElement);
+    textColor = convertToRGBAColor(themeInfo.textColorRgba);
+    textColorLight = convertToRGBAColor(themeInfo.textColorLightRgba);
+    mvxFilter = 'drop-shadow(0 0 0 ' + textColor + ')';
   }
+
+  $(IDS.NTP_CONTENTS)
+      .classList.toggle(CLASSES.DEFAULT_THEME, themeInfo.usingDefaultTheme);
+
+  document.body.style.setProperty('--text-color', textColor);
+  document.body.style.setProperty('--text-color-light', textColorLight);
+  // Themes reuse the "light" text color for links too.
+  document.body.style.setProperty('--text-color-link', textColorLight);
+  $(IDS.NOTIFICATION_CLOSE_BUTTON)
+      .style.setProperty('--theme-filter', mvxFilter);
 }
 
 
