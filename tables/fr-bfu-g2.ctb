@@ -132,6 +132,7 @@ nofor before conabr always clan 146-2
 nofor before conabr begword clin 146-35
 nofor before conabr begmidword clien 146-256
 nofor before voyabr2 midword cl 146
+nofor before con begword clô 146-1456
 
 before con begword com 36
 nofor before conabr begword com 36
@@ -906,9 +907,13 @@ word difficiles		145-124-234
 word difficilement	145-124-134
 word difficulté		145-124-2345
 word difficultés	145-124-2345-234
-prfword digne		145-2356
-prfword dignes		145-2356-234
-prfword dignement		145-2356-134
+word digne		145-2356
+word dignes		145-2356-234
+word dignement		145-2356-134
+word digne		35-145-2356
+word dignes		35-145-2356-234
+word indignement		35-145-2356-134
+
 word dignitaire		145-2356-2345-1235
 word dignitaires	145-2356-2345-1235-234
 prfword dignité		145-2356-2345
@@ -2227,7 +2232,9 @@ word + 6-235
 word / 6-34
 word * 6-35
 begword + 6-235
-#word - 56-36
+begword = 6-2356
+noback always -\s 56-36-0
+noback always --\s 36-36-0
 word ? 56-26
 word ! 56-235
 
@@ -2266,9 +2273,5 @@ compbrl .wav
 compbrl .tar
 compbrl .zip
 
-nofor pass2 [@36-0-56] @56-36-0-46
-nofor pass2 [@36-0-46] @56-36-0-46
 nofor pass2 [@6-235]$d @6-235-6
-nofor pass2 [@6-2356]$d @56-6-2356-56-6
-nofor correct "ieugn" "="
-nofor correct "îôture" "clôture"
+nofor pass2 [@6-2356]$d @6-2356-6
