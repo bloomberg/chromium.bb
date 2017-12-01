@@ -155,7 +155,7 @@ class WrappedSimpleIndexFile : public SimpleIndexFile {
                         base::ThreadTaskRunnerHandle::Get(),
                         net::DISK_CACHE,
                         index_file_directory) {}
-  ~WrappedSimpleIndexFile() override {}
+  ~WrappedSimpleIndexFile() override = default;
 
   const base::FilePath& GetIndexFilePath() const {
     return index_file_;

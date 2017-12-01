@@ -28,7 +28,7 @@ uint64_t CalculateAuditPathLength(uint64_t leaf_index, uint64_t tree_size) {
   return length;
 }
 
-MerkleAuditProof::MerkleAuditProof() {}
+MerkleAuditProof::MerkleAuditProof() = default;
 
 MerkleAuditProof::MerkleAuditProof(const MerkleAuditProof& other) = default;
 

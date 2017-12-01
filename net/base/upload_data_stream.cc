@@ -48,8 +48,7 @@ UploadDataStream::UploadDataStream(bool is_chunked, int64_t identifier)
       is_eof_(false) {
 }
 
-UploadDataStream::~UploadDataStream() {
-}
+UploadDataStream::~UploadDataStream() = default;
 
 int UploadDataStream::Init(const CompletionCallback& callback,
                            const NetLogWithSource& net_log) {

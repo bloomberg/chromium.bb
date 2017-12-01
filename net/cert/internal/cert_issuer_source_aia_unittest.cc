@@ -65,7 +65,7 @@ std::vector<uint8_t> CertDataVector(const ParsedCertificate* cert) {
 // MockCertNetFetcher is an implementation of CertNetFetcher for testing.
 class MockCertNetFetcher : public CertNetFetcher {
  public:
-  MockCertNetFetcher() {}
+  MockCertNetFetcher() = default;
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD3(FetchCaIssuers,
                std::unique_ptr<Request>(const GURL& url,
@@ -82,7 +82,7 @@ class MockCertNetFetcher : public CertNetFetcher {
                                         int max_response_bytes));
 
  protected:
-  ~MockCertNetFetcher() override {}
+  ~MockCertNetFetcher() override = default;
 };
 
 // MockCertNetFetcherRequest gives back the indicated error and bytes.

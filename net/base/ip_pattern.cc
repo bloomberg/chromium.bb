@@ -37,7 +37,7 @@ class IPPattern::ComponentPattern {
   DISALLOW_COPY_AND_ASSIGN(ComponentPattern);
 };
 
-IPPattern::ComponentPattern::ComponentPattern() {}
+IPPattern::ComponentPattern::ComponentPattern() = default;
 
 void IPPattern::ComponentPattern::AppendRange(uint32_t min, uint32_t max) {
   ranges_.push_back(Range(min, max));
@@ -56,7 +56,7 @@ bool IPPattern::ComponentPattern::Match(uint32_t value) const {
 
 IPPattern::IPPattern() : is_ipv4_(true) {}
 
-IPPattern::~IPPattern() {}
+IPPattern::~IPPattern() = default;
 
 bool IPPattern::Match(const IPAddress& address) const {
   if (ip_mask_.empty())

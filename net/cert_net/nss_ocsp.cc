@@ -478,7 +478,7 @@ class OCSPServerSession {
  public:
   OCSPServerSession(const char* host, PRUint16 port)
       : host_and_port_(host, port) {}
-  ~OCSPServerSession() {}
+  ~OCSPServerSession() = default;
 
   OCSPRequestSession* CreateRequest(const char* http_protocol_variant,
                                     const char* path_and_query_string,

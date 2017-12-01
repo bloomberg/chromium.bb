@@ -81,7 +81,7 @@ class DnsAttempt {
   explicit DnsAttempt(unsigned server_index)
       : result_(ERR_FAILED), server_index_(server_index) {}
 
-  virtual ~DnsAttempt() {}
+  virtual ~DnsAttempt() = default;
   // Starts the attempt. Returns ERR_IO_PENDING if cannot complete synchronously
   // and calls |callback| upon completion.
   virtual int Start(const CompletionCallback& callback) = 0;

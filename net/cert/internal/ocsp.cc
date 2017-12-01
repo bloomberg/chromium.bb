@@ -25,17 +25,17 @@
 
 namespace net {
 
-OCSPCertID::OCSPCertID() {}
-OCSPCertID::~OCSPCertID() {}
+OCSPCertID::OCSPCertID() = default;
+OCSPCertID::~OCSPCertID() = default;
 
-OCSPSingleResponse::OCSPSingleResponse() {}
-OCSPSingleResponse::~OCSPSingleResponse() {}
+OCSPSingleResponse::OCSPSingleResponse() = default;
+OCSPSingleResponse::~OCSPSingleResponse() = default;
 
-OCSPResponseData::OCSPResponseData() {}
-OCSPResponseData::~OCSPResponseData() {}
+OCSPResponseData::OCSPResponseData() = default;
+OCSPResponseData::~OCSPResponseData() = default;
 
-OCSPResponse::OCSPResponse() {}
-OCSPResponse::~OCSPResponse() {}
+OCSPResponse::OCSPResponse() = default;
+OCSPResponse::~OCSPResponse() = default;
 
 der::Input BasicOCSPResponseOid() {
   // From RFC 6960:

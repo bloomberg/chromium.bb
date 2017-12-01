@@ -33,8 +33,7 @@ MockFileStream::MockFileStream(
       throttled_(false),
       weak_factory_(this) {}
 
-MockFileStream::~MockFileStream() {
-}
+MockFileStream::~MockFileStream() = default;
 
 int MockFileStream::Seek(int64_t offset,
                          const Int64CompletionCallback& callback) {

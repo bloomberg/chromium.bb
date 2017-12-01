@@ -49,11 +49,9 @@ BlockHeader::BlockHeader(MappedFile* file)
     : header_(reinterpret_cast<BlockFileHeader*>(file->buffer())) {
 }
 
-BlockHeader::BlockHeader(const BlockHeader& other) : header_(other.header_) {
-}
+BlockHeader::BlockHeader(const BlockHeader& other) = default;
 
-BlockHeader::~BlockHeader() {
-}
+BlockHeader::~BlockHeader() = default;
 
 bool BlockHeader::CreateMapBlock(int size, int* index) {
   DCHECK(size > 0 && size <= kMaxNumBlocks);

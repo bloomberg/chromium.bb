@@ -21,7 +21,7 @@ using testing::IsEmpty;
 
 class BackendCleanupTrackerTest : public testing::Test {
  protected:
-  BackendCleanupTrackerTest() {}
+  BackendCleanupTrackerTest() = default;
 
   void SetUp() override {
     testing::Test::SetUp();

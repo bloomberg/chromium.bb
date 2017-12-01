@@ -13,7 +13,7 @@
 namespace net {
 namespace ct {
 
-SignedTreeHead::SignedTreeHead() {}
+SignedTreeHead::SignedTreeHead() = default;
 
 SignedTreeHead::SignedTreeHead(Version version,
                                const base::Time& timestamp,
@@ -31,7 +31,7 @@ SignedTreeHead::SignedTreeHead(Version version,
 
 SignedTreeHead::SignedTreeHead(const SignedTreeHead& other) = default;
 
-SignedTreeHead::~SignedTreeHead() {}
+SignedTreeHead::~SignedTreeHead() = default;
 
 void PrintTo(const SignedTreeHead& sth, std::ostream* os) {
   (*os) << "{\n"

@@ -224,7 +224,7 @@ class DnsConfigServicePosix::Watcher {
  public:
   explicit Watcher(DnsConfigServicePosix* service)
       : service_(service), weak_factory_(this) {}
-  ~Watcher() {}
+  ~Watcher() = default;
 
   bool Watch() {
     bool success = true;
@@ -343,7 +343,7 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
   }
 
  private:
-  ~ConfigReader() override {}
+  ~ConfigReader() override = default;
 
   // Raw pointer to owning DnsConfigService. This must never be accessed inside
   // DoWork(), since service may be destroyed while SerialWorker is running

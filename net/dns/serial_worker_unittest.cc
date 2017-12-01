@@ -33,7 +33,7 @@ class SerialWorkerTest : public testing::Test {
       test_->OnWorkFinished();
     }
    private:
-    ~TestSerialWorker() override {}
+    ~TestSerialWorker() override = default;
     SerialWorkerTest* test_;
   };
 

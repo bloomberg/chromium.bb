@@ -152,7 +152,7 @@ class DefaultDnsSocketPool : public DnsSocketPool {
   DISALLOW_COPY_AND_ASSIGN(DefaultDnsSocketPool);
 };
 
-DnsSocketPool::~DnsSocketPool() {}
+DnsSocketPool::~DnsSocketPool() = default;
 
 // static
 std::unique_ptr<DnsSocketPool> DnsSocketPool::CreateDefault(
@@ -174,8 +174,7 @@ void DefaultDnsSocketPool::Initialize(
     FillPool(server_index, kInitialPoolSize);
 }
 
-DefaultDnsSocketPool::~DefaultDnsSocketPool() {
-}
+DefaultDnsSocketPool::~DefaultDnsSocketPool() = default;
 
 std::unique_ptr<DatagramClientSocket> DefaultDnsSocketPool::AllocateSocket(
     unsigned server_index) {

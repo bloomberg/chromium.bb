@@ -25,8 +25,7 @@ RecordParsed::RecordParsed(const std::string& name,
       rdata_(std::move(rdata)),
       time_created_(time_created) {}
 
-RecordParsed::~RecordParsed() {
-}
+RecordParsed::~RecordParsed() = default;
 
 // static
 std::unique_ptr<const RecordParsed> RecordParsed::CreateFrom(

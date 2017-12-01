@@ -102,8 +102,7 @@ QueryIterator::QueryIterator(const GURL& url)
   }
 }
 
-QueryIterator::~QueryIterator() {
-}
+QueryIterator::~QueryIterator() = default;
 
 std::string QueryIterator::GetKey() const {
   DCHECK(!at_end_);

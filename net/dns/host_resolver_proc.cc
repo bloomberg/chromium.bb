@@ -68,8 +68,7 @@ HostResolverProc::HostResolverProc(HostResolverProc* previous) {
     SetPreviousProc(default_proc_);
 }
 
-HostResolverProc::~HostResolverProc() {
-}
+HostResolverProc::~HostResolverProc() = default;
 
 int HostResolverProc::ResolveUsingPrevious(
     const std::string& host,
@@ -273,6 +272,6 @@ int SystemHostResolverProc::Resolve(const std::string& hostname,
                                 os_error);
 }
 
-SystemHostResolverProc::~SystemHostResolverProc() {}
+SystemHostResolverProc::~SystemHostResolverProc() = default;
 
 }  // namespace net

@@ -210,8 +210,7 @@ SimpleIndexLoadResult::SimpleIndexLoadResult()
       index_write_reason(SimpleIndex::INDEX_WRITE_REASON_MAX),
       flush_required(false) {}
 
-SimpleIndexLoadResult::~SimpleIndexLoadResult() {
-}
+SimpleIndexLoadResult::~SimpleIndexLoadResult() = default;
 
 void SimpleIndexLoadResult::Reset() {
   did_load = false;
@@ -353,7 +352,7 @@ SimpleIndexFile::SimpleIndexFile(
       temp_index_file_(cache_directory_.AppendASCII(kIndexDirectory)
                            .AppendASCII(kTempIndexFileName)) {}
 
-SimpleIndexFile::~SimpleIndexFile() {}
+SimpleIndexFile::~SimpleIndexFile() = default;
 
 void SimpleIndexFile::LoadIndexEntries(base::Time cache_last_modified,
                                        const base::Closure& callback,

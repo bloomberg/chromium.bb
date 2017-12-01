@@ -42,7 +42,7 @@ class DnsRequest {
         dns_requests_(dns_requests),
         is_running_(false) {}
 
-  ~DnsRequest() {}
+  ~DnsRequest() = default;
 
   // Creates and starts a DNS request using fuzzed parameters. If the request
   // doesn't complete synchronously, adds it to |dns_requests|.

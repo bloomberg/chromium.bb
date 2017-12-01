@@ -52,7 +52,7 @@ class SyncCallback: public disk_cache::FileIOCallback {
         end_event_type_(end_event_type) {
     entry_->IncrementIoCount();
   }
-  ~SyncCallback() override {}
+  ~SyncCallback() override = default;
 
   void OnFileIOComplete(int bytes_copied) override;
   void Discard();

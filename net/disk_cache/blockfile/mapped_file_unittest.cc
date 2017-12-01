@@ -19,7 +19,7 @@ class FileCallbackTest: public disk_cache::FileIOCallback {
         helper_(helper),
         max_id_(max_id) {
   }
-  ~FileCallbackTest() override {}
+  ~FileCallbackTest() override = default;
 
   void OnFileIOComplete(int bytes_copied) override;
 

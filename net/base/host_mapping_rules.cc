@@ -26,12 +26,12 @@ struct HostMappingRules::ExclusionRule {
   std::string hostname_pattern;
 };
 
-HostMappingRules::HostMappingRules() {}
+HostMappingRules::HostMappingRules() = default;
 
 HostMappingRules::HostMappingRules(const HostMappingRules& host_mapping_rules) =
     default;
 
-HostMappingRules::~HostMappingRules() {}
+HostMappingRules::~HostMappingRules() = default;
 
 HostMappingRules& HostMappingRules::operator=(
     const HostMappingRules& host_mapping_rules) = default;

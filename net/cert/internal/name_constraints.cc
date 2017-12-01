@@ -163,7 +163,7 @@ WARN_UNUSED_RESULT bool ParseGeneralSubtrees(const der::Input& value,
 
 }  // namespace
 
-NameConstraints::~NameConstraints() {}
+NameConstraints::~NameConstraints() = default;
 
 // static
 std::unique_ptr<NameConstraints> NameConstraints::Create(

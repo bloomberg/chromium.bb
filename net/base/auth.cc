@@ -15,11 +15,9 @@ bool AuthChallengeInfo::Equals(const AuthChallengeInfo& that) const {
           this->realm == that.realm);
 }
 
-AuthChallengeInfo::~AuthChallengeInfo() {
-}
+AuthChallengeInfo::~AuthChallengeInfo() = default;
 
-AuthCredentials::AuthCredentials() {
-}
+AuthCredentials::AuthCredentials() = default;
 
 AuthCredentials::AuthCredentials(const base::string16& username,
                                  const base::string16& password)
@@ -27,8 +25,7 @@ AuthCredentials::AuthCredentials(const base::string16& username,
       password_(password) {
 }
 
-AuthCredentials::~AuthCredentials() {
-}
+AuthCredentials::~AuthCredentials() = default;
 
 void AuthCredentials::Set(const base::string16& username,
                           const base::string16& password) {

@@ -156,7 +156,7 @@ class CookieMonsterCookieChangedSubscription
   CookieMonsterCookieChangedSubscription(
       const CookieStore::CookieChangedCallback& callback)
       : callback_(callback), weak_ptr_factory_(this) {}
-  ~CookieMonsterCookieChangedSubscription() override {}
+  ~CookieMonsterCookieChangedSubscription() override = default;
 
   void SetCallbackSubscription(
       std::unique_ptr<CookieStore::CookieChangedCallbackList::Subscription>

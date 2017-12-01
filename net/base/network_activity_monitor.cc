@@ -17,8 +17,7 @@ NetworkActivityMonitor::NetworkActivityMonitor()
     : bytes_received_(0), bytes_sent_(0) {
 }
 
-NetworkActivityMonitor::~NetworkActivityMonitor() {
-}
+NetworkActivityMonitor::~NetworkActivityMonitor() = default;
 
 // static
 NetworkActivityMonitor* NetworkActivityMonitor::GetInstance() {

@@ -14,8 +14,7 @@ CRLSet::CRLSet()
       not_after_(0) {
 }
 
-CRLSet::~CRLSet() {
-}
+CRLSet::~CRLSet() = default;
 
 CRLSet::Result CRLSet::CheckSPKI(const base::StringPiece& spki_hash) const {
   for (std::vector<std::string>::const_iterator i = blocked_spkis_.begin();

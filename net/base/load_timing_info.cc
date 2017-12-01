@@ -8,15 +8,15 @@
 
 namespace net {
 
-LoadTimingInfo::ConnectTiming::ConnectTiming() {}
+LoadTimingInfo::ConnectTiming::ConnectTiming() = default;
 
-LoadTimingInfo::ConnectTiming::~ConnectTiming() {}
+LoadTimingInfo::ConnectTiming::~ConnectTiming() = default;
 
 LoadTimingInfo::LoadTimingInfo()
     : socket_reused(false), socket_log_id(NetLogSource::kInvalidId) {}
 
 LoadTimingInfo::LoadTimingInfo(const LoadTimingInfo& other) = default;
 
-LoadTimingInfo::~LoadTimingInfo() {}
+LoadTimingInfo::~LoadTimingInfo() = default;
 
 }  // namespace net

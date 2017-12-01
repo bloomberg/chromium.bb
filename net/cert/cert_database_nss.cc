@@ -14,6 +14,6 @@ CertDatabase::CertDatabase()
   crypto::EnsureNSSInit();
 }
 
-CertDatabase::~CertDatabase() {}
+CertDatabase::~CertDatabase() = default;
 
 }  // namespace net

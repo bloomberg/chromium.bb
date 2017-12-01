@@ -54,7 +54,7 @@ class HostResolverMojo::RequestImpl : public HostResolver::Request {
  public:
   explicit RequestImpl(std::unique_ptr<Job> job) : job_(std::move(job)) {}
 
-  ~RequestImpl() override {}
+  ~RequestImpl() override = default;
 
   void ChangeRequestPriority(RequestPriority priority) override {}
 

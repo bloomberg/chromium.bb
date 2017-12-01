@@ -38,8 +38,7 @@ DiskCacheTest::DiskCacheTest() {
   cache_path_ = temp_dir_.GetPath();
 }
 
-DiskCacheTest::~DiskCacheTest() {
-}
+DiskCacheTest::~DiskCacheTest() = default;
 
 bool DiskCacheTest::CopyTestCache(const std::string& name) {
   base::FilePath path;
@@ -66,7 +65,7 @@ DiskCacheTestWithCache::TestIterator::TestIterator(
     std::unique_ptr<disk_cache::Backend::Iterator> iterator)
     : iterator_(std::move(iterator)) {}
 
-DiskCacheTestWithCache::TestIterator::~TestIterator() {}
+DiskCacheTestWithCache::TestIterator::~TestIterator() = default;
 
 int DiskCacheTestWithCache::TestIterator::OpenNextEntry(
     disk_cache::Entry** next_entry) {
@@ -96,7 +95,7 @@ DiskCacheTestWithCache::DiskCacheTestWithCache(
       use_current_thread_(false),
       scoped_task_env_(scoped_task_env) {}
 
-DiskCacheTestWithCache::~DiskCacheTestWithCache() {}
+DiskCacheTestWithCache::~DiskCacheTestWithCache() = default;
 
 void DiskCacheTestWithCache::InitCache() {
   if (memory_only_)

@@ -75,8 +75,7 @@ DnsQuery::DnsQuery(uint16_t id,
   }
 }
 
-DnsQuery::~DnsQuery() {
-}
+DnsQuery::~DnsQuery() = default;
 
 std::unique_ptr<DnsQuery> DnsQuery::CloneWithNewId(uint16_t id) const {
   return base::WrapUnique(new DnsQuery(*this, id));

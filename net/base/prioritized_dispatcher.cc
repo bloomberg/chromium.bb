@@ -14,7 +14,7 @@ PrioritizedDispatcher::Limits::Limits(Priority num_priorities,
 
 PrioritizedDispatcher::Limits::Limits(const Limits& other) = default;
 
-PrioritizedDispatcher::Limits::~Limits() {}
+PrioritizedDispatcher::Limits::~Limits() = default;
 
 PrioritizedDispatcher::PrioritizedDispatcher(const Limits& limits)
     : queue_(limits.reserved_slots.size()),
@@ -23,7 +23,7 @@ PrioritizedDispatcher::PrioritizedDispatcher(const Limits& limits)
   SetLimits(limits);
 }
 
-PrioritizedDispatcher::~PrioritizedDispatcher() {}
+PrioritizedDispatcher::~PrioritizedDispatcher() = default;
 
 PrioritizedDispatcher::Handle PrioritizedDispatcher::Add(
     Job* job, Priority priority) {

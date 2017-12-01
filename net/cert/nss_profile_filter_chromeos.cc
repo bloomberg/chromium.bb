@@ -36,7 +36,7 @@ std::string CertSlotsString(CERTCertificate* cert) {
 
 }  // namespace
 
-NSSProfileFilterChromeOS::NSSProfileFilterChromeOS() {}
+NSSProfileFilterChromeOS::NSSProfileFilterChromeOS() = default;
 
 NSSProfileFilterChromeOS::NSSProfileFilterChromeOS(
     const NSSProfileFilterChromeOS& other) {
@@ -50,7 +50,7 @@ NSSProfileFilterChromeOS::NSSProfileFilterChromeOS(
       other.system_slot_ ? PK11_ReferenceSlot(other.system_slot_.get()) : NULL);
 }
 
-NSSProfileFilterChromeOS::~NSSProfileFilterChromeOS() {}
+NSSProfileFilterChromeOS::~NSSProfileFilterChromeOS() = default;
 
 NSSProfileFilterChromeOS& NSSProfileFilterChromeOS::operator=(
     const NSSProfileFilterChromeOS& other) {

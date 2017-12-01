@@ -79,7 +79,7 @@ FixedSetIncrementalLookup::FixedSetIncrementalLookup(
 FixedSetIncrementalLookup& FixedSetIncrementalLookup::operator=(
     const FixedSetIncrementalLookup& other) = default;
 
-FixedSetIncrementalLookup::~FixedSetIncrementalLookup() {}
+FixedSetIncrementalLookup::~FixedSetIncrementalLookup() = default;
 
 bool FixedSetIncrementalLookup::Advance(char input) {
   if (!pos_) {

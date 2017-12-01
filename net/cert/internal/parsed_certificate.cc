@@ -70,8 +70,8 @@ bool ParsedCertificate::GetExtension(const der::Input& extension_oid,
   return true;
 }
 
-ParsedCertificate::ParsedCertificate() {}
-ParsedCertificate::~ParsedCertificate() {}
+ParsedCertificate::ParsedCertificate() = default;
+ParsedCertificate::~ParsedCertificate() = default;
 
 // static
 scoped_refptr<ParsedCertificate> ParsedCertificate::Create(

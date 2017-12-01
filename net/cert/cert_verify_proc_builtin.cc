@@ -281,9 +281,9 @@ class CertVerifyProcBuiltin : public CertVerifyProc {
                      CertVerifyResult* verify_result) override;
 };
 
-CertVerifyProcBuiltin::CertVerifyProcBuiltin() {}
+CertVerifyProcBuiltin::CertVerifyProcBuiltin() = default;
 
-CertVerifyProcBuiltin::~CertVerifyProcBuiltin() {}
+CertVerifyProcBuiltin::~CertVerifyProcBuiltin() = default;
 
 bool CertVerifyProcBuiltin::SupportsAdditionalTrustAnchors() const {
   return true;

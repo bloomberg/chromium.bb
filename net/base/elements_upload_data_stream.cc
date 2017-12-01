@@ -23,8 +23,7 @@ ElementsUploadDataStream::ElementsUploadDataStream(
       read_error_(OK),
       weak_ptr_factory_(this) {}
 
-ElementsUploadDataStream::~ElementsUploadDataStream() {
-}
+ElementsUploadDataStream::~ElementsUploadDataStream() = default;
 
 std::unique_ptr<UploadDataStream> ElementsUploadDataStream::CreateWithReader(
     std::unique_ptr<UploadElementReader> reader,

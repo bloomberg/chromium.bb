@@ -16,8 +16,7 @@ namespace net {
 MappedHostResolver::MappedHostResolver(std::unique_ptr<HostResolver> impl)
     : impl_(std::move(impl)) {}
 
-MappedHostResolver::~MappedHostResolver() {
-}
+MappedHostResolver::~MappedHostResolver() = default;
 
 int MappedHostResolver::Resolve(const RequestInfo& original_info,
                                 RequestPriority priority,

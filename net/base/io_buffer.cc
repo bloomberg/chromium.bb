@@ -70,8 +70,7 @@ IOBufferWithSize::IOBufferWithSize(char* data, size_t size)
   AssertValidBufferSize(size);
 }
 
-IOBufferWithSize::~IOBufferWithSize() {
-}
+IOBufferWithSize::~IOBufferWithSize() = default;
 
 StringIOBuffer::StringIOBuffer(const std::string& s)
     : IOBuffer(static_cast<char*>(NULL)),

@@ -30,7 +30,7 @@ class DummyObject {
 
 class DummyRandIntCallback {
  public:
-  DummyRandIntCallback() {}
+  DummyRandIntCallback() = default;
 
   RandIntCallback MakeCallback() {
     return base::Bind(&DummyRandIntCallback::GetRandInt, dummy_.GetWeakPtr());

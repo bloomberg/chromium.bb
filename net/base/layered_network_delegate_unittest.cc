@@ -37,7 +37,7 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
   TestNetworkDelegateImpl(CountersMap* layered_network_delegate_counters)
       : layered_network_delegate_counters_(layered_network_delegate_counters) {}
 
-  ~TestNetworkDelegateImpl() override {}
+  ~TestNetworkDelegateImpl() override = default;
 
   // NetworkDelegateImpl implementation:
   int OnBeforeURLRequest(URLRequest* request,
@@ -172,7 +172,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     context_.Init();
   }
 
-  ~TestLayeredNetworkDelegate() override {}
+  ~TestLayeredNetworkDelegate() override = default;
 
   void CallAndVerify() {
     scoped_refptr<AuthChallengeInfo> auth_challenge(new AuthChallengeInfo());

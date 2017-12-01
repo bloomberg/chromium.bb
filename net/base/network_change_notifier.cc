@@ -392,8 +392,8 @@ class NetworkChangeNotifier::HistogramWatcher : public ConnectionTypeObserver,
 // NetworkState is thread safe.
 class NetworkChangeNotifier::NetworkState {
  public:
-  NetworkState() {}
-  ~NetworkState() {}
+  NetworkState() = default;
+  ~NetworkState() = default;
 
   void GetDnsConfig(DnsConfig* config) const {
     base::AutoLock lock(lock_);
@@ -411,8 +411,7 @@ class NetworkChangeNotifier::NetworkState {
 };
 
 NetworkChangeNotifier::NetworkChangeCalculatorParams::
-    NetworkChangeCalculatorParams() {
-}
+    NetworkChangeCalculatorParams() = default;
 
 // Calculates NetworkChange signal from IPAddress and ConnectionType signals.
 class NetworkChangeNotifier::NetworkChangeCalculator

@@ -22,8 +22,7 @@ MockMDnsDatagramServerSocket::MockMDnsDatagramServerSocket(
   local_address_ = GetMDnsIPEndPoint(address_family);
 }
 
-MockMDnsDatagramServerSocket::~MockMDnsDatagramServerSocket() {
-}
+MockMDnsDatagramServerSocket::~MockMDnsDatagramServerSocket() = default;
 
 int MockMDnsDatagramServerSocket::SendTo(IOBuffer* buf, int buf_len,
                                          const IPEndPoint& address,
@@ -60,11 +59,9 @@ int MockMDnsDatagramServerSocket::HandleRecvLater(
   return ERR_IO_PENDING;
 }
 
-MockMDnsSocketFactory::MockMDnsSocketFactory() {
-}
+MockMDnsSocketFactory::MockMDnsSocketFactory() = default;
 
-MockMDnsSocketFactory::~MockMDnsSocketFactory() {
-}
+MockMDnsSocketFactory::~MockMDnsSocketFactory() = default;
 
 void MockMDnsSocketFactory::CreateSockets(
     std::vector<std::unique_ptr<DatagramServerSocket>>* sockets) {

@@ -51,7 +51,7 @@ typedef std::vector<char> Buffer;
 
 class AddressTrackerLinuxTest : public testing::Test {
  protected:
-  AddressTrackerLinuxTest() {}
+  AddressTrackerLinuxTest() = default;
 
   void InitializeAddressTracker(bool tracking) {
     if (tracking) {
@@ -696,7 +696,7 @@ class GetCurrentConnectionTypeRunner
         done_(base::WaitableEvent::ResetPolicy::MANUAL,
               base::WaitableEvent::InitialState::NOT_SIGNALED),
         thread_(this, thread_name) {}
-  ~GetCurrentConnectionTypeRunner() override {}
+  ~GetCurrentConnectionTypeRunner() override = default;
 
   void Run() override {
     tracker_->GetCurrentConnectionType();

@@ -31,7 +31,7 @@ class FileWorkerPool : public base::SequencedWorkerPool {
                                   base::TaskPriority::USER_BLOCKING) {}
 
  protected:
-  ~FileWorkerPool() override {}
+  ~FileWorkerPool() override = default;
 };
 
 base::LazyInstance<FileWorkerPool>::Leaky s_worker_pool =
@@ -162,9 +162,7 @@ void File::WaitForPendingIO(int* num_pending_io) {
 void File::DropPendingIO() {
 }
 
-
-File::~File() {
-}
+File::~File() = default;
 
 base::PlatformFile File::platform_file() const {
   return base_file_.GetPlatformFile();

@@ -32,8 +32,7 @@ void BackgroundIO::Cancel() {
   controller_ = NULL;
 }
 
-BackgroundIO::~BackgroundIO() {
-}
+BackgroundIO::~BackgroundIO() = default;
 
 // ---------------------------------------------------------------------------
 
@@ -41,8 +40,7 @@ InFlightIO::InFlightIO()
     : callback_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       running_(false) {}
 
-InFlightIO::~InFlightIO() {
-}
+InFlightIO::~InFlightIO() = default;
 
 // Runs on the background thread.
 void BackgroundIO::NotifyController() {

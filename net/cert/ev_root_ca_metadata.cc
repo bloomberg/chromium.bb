@@ -1096,6 +1096,6 @@ EVRootCAMetadata::EVRootCAMetadata() {
 #endif
 }
 
-EVRootCAMetadata::~EVRootCAMetadata() { }
+EVRootCAMetadata::~EVRootCAMetadata() = default;
 
 }  // namespace net

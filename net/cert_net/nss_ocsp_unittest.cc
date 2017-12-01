@@ -52,7 +52,7 @@ class AiaResponseHandler : public URLRequestInterceptor {
  public:
   AiaResponseHandler(const std::string& headers, const std::string& cert_data)
       : headers_(headers), cert_data_(cert_data), request_count_(0) {}
-  ~AiaResponseHandler() override {}
+  ~AiaResponseHandler() override = default;
 
   // URLRequestInterceptor implementation:
   URLRequestJob* MaybeInterceptRequest(
@@ -83,7 +83,7 @@ class NssHttpTest : public ::testing::Test {
         handler_(NULL),
         verify_proc_(new CertVerifyProcNSS),
         verifier_(new MultiThreadedCertVerifier(verify_proc_.get())) {}
-  ~NssHttpTest() override {}
+  ~NssHttpTest() override = default;
 
   void SetUp() override {
     std::string file_contents;

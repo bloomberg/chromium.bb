@@ -72,7 +72,7 @@ class MockUploadElementReader : public UploadElementReader {
         init_result_(OK),
         read_result_(OK) {}
 
-  ~MockUploadElementReader() override {}
+  ~MockUploadElementReader() override = default;
 
   // UploadElementReader overrides.
   MOCK_METHOD1(Init, int(const CompletionCallback& callback));

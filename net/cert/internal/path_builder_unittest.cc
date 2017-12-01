@@ -46,7 +46,7 @@ class AsyncCertIssuerSourceStatic : public CertIssuerSource {
       issuers_.swap(issuers);
       issuers_iter_ = issuers_.begin();
     }
-    ~StaticAsyncRequest() override {}
+    ~StaticAsyncRequest() override = default;
 
     void GetNext(ParsedCertificateList* out_certs) override {
       if (issuers_iter_ != issuers_.end())
@@ -59,7 +59,7 @@ class AsyncCertIssuerSourceStatic : public CertIssuerSource {
     DISALLOW_COPY_AND_ASSIGN(StaticAsyncRequest);
   };
 
-  ~AsyncCertIssuerSourceStatic() override {}
+  ~AsyncCertIssuerSourceStatic() override = default;
 
   void AddCert(scoped_refptr<ParsedCertificate> cert) {
     static_cert_issuer_source_.AddCert(std::move(cert));
@@ -1158,7 +1158,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestDuplicateAsyncIntermediates) {
 
 class PathBuilderSimpleChainTest : public ::testing::Test {
  public:
-  PathBuilderSimpleChainTest() {}
+  PathBuilderSimpleChainTest() = default;
 
  protected:
   void SetUp() override {
@@ -1217,7 +1217,7 @@ class PathBuilderSimpleChainTest : public ::testing::Test {
 // the trustedness of certain certificates.
 class PathBuilderDistrustTest : public PathBuilderSimpleChainTest {
  public:
-  PathBuilderDistrustTest() {}
+  PathBuilderDistrustTest() = default;
 
  protected:
   // Runs the path builder for the target certificate while |distrusted_cert| is

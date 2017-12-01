@@ -35,8 +35,7 @@ FileStream::Context::Context(base::File file,
       orphaned_(false),
       task_runner_(task_runner) {}
 
-FileStream::Context::~Context() {
-}
+FileStream::Context::~Context() = default;
 
 int FileStream::Context::Read(IOBuffer* in_buf,
                               int buf_len,

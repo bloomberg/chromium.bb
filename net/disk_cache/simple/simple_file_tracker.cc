@@ -13,7 +13,7 @@
 
 namespace disk_cache {
 
-SimpleFileTracker::SimpleFileTracker() {}
+SimpleFileTracker::SimpleFileTracker() = default;
 
 SimpleFileTracker::~SimpleFileTracker() {
   DCHECK(tracked_files_.empty());

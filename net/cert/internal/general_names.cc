@@ -53,9 +53,9 @@ bool IsSuffixZero(const IPAddressBytes& mask, unsigned prefix_length) {
 
 }  // namespace
 
-GeneralNames::GeneralNames() {}
+GeneralNames::GeneralNames() = default;
 
-GeneralNames::~GeneralNames() {}
+GeneralNames::~GeneralNames() = default;
 
 // static
 std::unique_ptr<GeneralNames> GeneralNames::Create(

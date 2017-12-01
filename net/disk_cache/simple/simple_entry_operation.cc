@@ -51,7 +51,7 @@ SimpleEntryOperation::SimpleEntryOperation(const SimpleEntryOperation& other)
       alone_in_queue_(other.alone_in_queue_) {
 }
 
-SimpleEntryOperation::~SimpleEntryOperation() {}
+SimpleEntryOperation::~SimpleEntryOperation() = default;
 
 // static
 SimpleEntryOperation SimpleEntryOperation::OpenOperation(

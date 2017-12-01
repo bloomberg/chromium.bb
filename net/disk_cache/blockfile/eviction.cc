@@ -85,8 +85,7 @@ Eviction::Eviction()
       ptr_factory_(this) {
 }
 
-Eviction::~Eviction() {
-}
+Eviction::~Eviction() = default;
 
 void Eviction::Init(BackendImpl* backend) {
   // We grab a bunch of info from the backend to make the code a little cleaner

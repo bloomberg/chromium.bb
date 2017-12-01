@@ -187,7 +187,7 @@ class MockHostResolverProc : public HostResolverProc {
   }
 
  protected:
-  ~MockHostResolverProc() override {}
+  ~MockHostResolverProc() override = default;
 
  private:
   mutable base::Lock lock_;
@@ -215,7 +215,7 @@ class Request {
  public:
   // Base class of handlers to be executed on completion of requests.
   struct Handler {
-    virtual ~Handler() {}
+    virtual ~Handler() = default;
     virtual void Handle(Request* request) = 0;
   };
 
@@ -434,7 +434,7 @@ class LookupAttemptHostResolverProc : public HostResolverProc {
   }
 
  protected:
-  ~LookupAttemptHostResolverProc() override {}
+  ~LookupAttemptHostResolverProc() override = default;
 
  private:
   int attempt_number_to_resolve_;
@@ -462,7 +462,7 @@ class TestHostResolverImpl : public HostResolverImpl {
                        bool ipv6_reachable)
       : HostResolverImpl(options, net_log), ipv6_reachable_(ipv6_reachable) {}
 
-  ~TestHostResolverImpl() override {}
+  ~TestHostResolverImpl() override = default;
 
  private:
   const bool ipv6_reachable_;
@@ -527,7 +527,7 @@ class HostResolverImplTest : public testing::Test {
  protected:
   // A Request::Handler which is a proxy to the HostResolverImplTest fixture.
   struct Handler : public Request::Handler {
-    ~Handler() override {}
+    ~Handler() override = default;
 
     // Proxy functions so that classes derived from Handler can access them.
     Request* CreateRequest(const HostResolver::RequestInfo& info,

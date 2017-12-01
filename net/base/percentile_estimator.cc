@@ -55,7 +55,7 @@ PercentileEstimator::PercentileEstimator(int percentile, int initial_estimate)
       current_step_(1),
       generator_callback_(base::Bind(&GenerateRand0To99)) {}
 
-PercentileEstimator::~PercentileEstimator() {}
+PercentileEstimator::~PercentileEstimator() = default;
 
 void PercentileEstimator::AddSample(int sample) {
   int rand100 = generator_callback_.Run();

@@ -31,7 +31,7 @@ NSSCertDatabaseChromeOS::NSSCertDatabaseChromeOS(
                        crypto::ScopedPK11Slot() /* no system slot */);
 }
 
-NSSCertDatabaseChromeOS::~NSSCertDatabaseChromeOS() {}
+NSSCertDatabaseChromeOS::~NSSCertDatabaseChromeOS() = default;
 
 void NSSCertDatabaseChromeOS::SetSystemSlot(
     crypto::ScopedPK11Slot system_slot) {

@@ -101,7 +101,7 @@ DirectoryLister::Core::Core(const base::FilePath& dir,
   DCHECK(lister_);
 }
 
-DirectoryLister::Core::~Core() {}
+DirectoryLister::Core::~Core() = default;
 
 void DirectoryLister::Core::CancelOnOriginSequence() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());

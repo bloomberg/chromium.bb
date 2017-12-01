@@ -74,7 +74,7 @@ class ChildrenDeleter
 
  private:
   friend class base::RefCounted<ChildrenDeleter>;
-  ~ChildrenDeleter() override {}
+  ~ChildrenDeleter() override = default;
 
   void DeleteChildren();
 

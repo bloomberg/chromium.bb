@@ -11,7 +11,7 @@
 
 namespace net {
 
-ChunkedUploadDataStream::Writer::~Writer() {}
+ChunkedUploadDataStream::Writer::~Writer() = default;
 
 bool ChunkedUploadDataStream::Writer::AppendData(const char* data,
                                                  int data_len,
@@ -34,8 +34,7 @@ ChunkedUploadDataStream::ChunkedUploadDataStream(int64_t identifier)
       read_buffer_len_(0),
       weak_factory_(this) {}
 
-ChunkedUploadDataStream::~ChunkedUploadDataStream() {
-}
+ChunkedUploadDataStream::~ChunkedUploadDataStream() = default;
 
 std::unique_ptr<ChunkedUploadDataStream::Writer>
 ChunkedUploadDataStream::CreateWriter() {

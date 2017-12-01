@@ -27,11 +27,9 @@ const uint8_t kRcodeMask = 0xf;
 
 }  // namespace
 
-DnsResourceRecord::DnsResourceRecord() {
-}
+DnsResourceRecord::DnsResourceRecord() = default;
 
-DnsResourceRecord::~DnsResourceRecord() {
-}
+DnsResourceRecord::~DnsResourceRecord() = default;
 
 DnsRecordParser::DnsRecordParser() : packet_(NULL), length_(0), cur_(0) {
 }
@@ -169,8 +167,7 @@ DnsResponse::DnsResponse(const void* data,
   memcpy(io_buffer_->data(), data, length);
 }
 
-DnsResponse::~DnsResponse() {
-}
+DnsResponse::~DnsResponse() = default;
 
 bool DnsResponse::InitParse(int nbytes, const DnsQuery& query) {
   DCHECK_GE(nbytes, 0);

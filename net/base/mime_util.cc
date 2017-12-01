@@ -264,7 +264,7 @@ bool MimeUtil::GetMimeTypeFromExtensionHelper(
   return false;
 }
 
-MimeUtil::MimeUtil() {}
+MimeUtil::MimeUtil() = default;
 
 // Tests for MIME parameter equality. Each parameter in the |mime_type_pattern|
 // must be matched by a parameter in the |mime_type|. If there are no
