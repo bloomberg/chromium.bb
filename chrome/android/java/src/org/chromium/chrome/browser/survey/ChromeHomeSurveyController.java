@@ -50,6 +50,8 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
     private static final String TRIAL_NAME = "ChromeHome";
     private static final String MAX_NUMBER = "MaxNumber";
 
+    private static boolean sForceUmaEnabledForTesting;
+
     static final long ONE_WEEK_IN_MILLIS = 604800000L;
     static final String DATE_LAST_ROLLED_KEY = "chrome_home_date_last_rolled_for_survey";
 
@@ -109,7 +111,7 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
     /** @return Whether the user qualifies for the survey. */
     private boolean doesUserQualifyForSurvey() {
         if (DeviceFormFactor.isTablet()) return false;
-        if (!isUMAEnabled()) return false;
+        if (!isUMAEnabled() && !sForceUmaEnabledForTesting) return false;
         if (AccessibilityUtil.isAccessibilityEnabled()) return false;
         if (hasInfoBarBeenDisplayed()) return false;
         if (!FeatureUtilities.isChromeHomeEnabled()) return true;
@@ -395,5 +397,11 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
         protected void onPostExecute(Boolean result) {
             if (result) mController.startDownload(mContext, mSelector);
         }
+    }
+
+    // Force enable UMA testing for testing.
+    @VisibleForTesting
+    public static void forceIsUMAEnabledForTesting(boolean forcedUMAStatus) {
+        sForceUmaEnabledForTesting = forcedUMAStatus;
     }
 }
