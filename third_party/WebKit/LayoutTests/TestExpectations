@@ -2489,7 +2489,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-
 # css-multicol tests failing on initial import from web-platform-tests
 crbug.com/788337 external/wpt/css/css-multicol/multicol-block-no-clip-001.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-block-no-clip-002.xht [ Failure ]
-crbug.com/788337 external/wpt/css/css-multicol/multicol-break-001.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-count-computed-001.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-count-computed-002.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-count-computed-003.xht [ Failure ]
