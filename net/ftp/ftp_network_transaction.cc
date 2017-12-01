@@ -234,8 +234,7 @@ FtpNetworkTransaction::FtpNetworkTransaction(
       next_state_(STATE_NONE),
       state_after_data_connect_complete_(STATE_NONE) {}
 
-FtpNetworkTransaction::~FtpNetworkTransaction() {
-}
+FtpNetworkTransaction::~FtpNetworkTransaction() = default;
 
 int FtpNetworkTransaction::Stop(int error) {
   if (command_sent_ == COMMAND_QUIT) {

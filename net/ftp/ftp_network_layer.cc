@@ -17,8 +17,7 @@ FtpNetworkLayer::FtpNetworkLayer(HostResolver* host_resolver)
   DCHECK(host_resolver);
 }
 
-FtpNetworkLayer::~FtpNetworkLayer() {
-}
+FtpNetworkLayer::~FtpNetworkLayer() = default;
 
 std::unique_ptr<FtpTransaction> FtpNetworkLayer::CreateTransaction() {
   if (suspended_)

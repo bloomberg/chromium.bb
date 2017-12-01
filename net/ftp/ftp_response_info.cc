@@ -12,6 +12,6 @@ FtpResponseInfo::FtpResponseInfo()
       is_directory_listing(false) {
 }
 
-FtpResponseInfo::~FtpResponseInfo() {}
+FtpResponseInfo::~FtpResponseInfo() = default;
 
 }  // namespace net
