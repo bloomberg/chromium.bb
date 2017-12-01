@@ -22,6 +22,10 @@ class FloatClipRecorder {
                     const DisplayItemClient&,
                     PaintPhase,
                     const FloatRect&);
+  FloatClipRecorder(GraphicsContext&,
+                    const DisplayItemClient&,
+                    DisplayItem::Type,
+                    const FloatRect&);
 
   ~FloatClipRecorder();
 

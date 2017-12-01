@@ -103,13 +103,12 @@ class ShapeClipPathOperation final : public ClipPathOperation {
 
   const BasicShape* GetBasicShape() const { return shape_.get(); }
   bool IsValid() const { return shape_.get(); }
-  const Path& GetPath(const FloatRect& bounding_rect) {
+  Path GetPath(const FloatRect& bounding_rect) const {
     DCHECK(shape_);
-    path_.reset();
-    path_ = WTF::WrapUnique(new Path);
-    shape_->GetPath(*path_, bounding_rect);
-    path_->SetWindRule(shape_->GetWindRule());
-    return *path_;
+    Path path;
+    shape_->GetPath(path, bounding_rect);
+    path.SetWindRule(shape_->GetWindRule());
+    return path;
   }
 
  private:
@@ -120,7 +119,6 @@ class ShapeClipPathOperation final : public ClipPathOperation {
       : shape_(std::move(shape)) {}
 
   scoped_refptr<BasicShape> shape_;
-  std::unique_ptr<Path> path_;
 };
 
 DEFINE_TYPE_CASTS(ShapeClipPathOperation,

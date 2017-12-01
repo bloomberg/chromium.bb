@@ -14,9 +14,16 @@ FloatClipRecorder::FloatClipRecorder(GraphicsContext& context,
                                      const DisplayItemClient& client,
                                      PaintPhase paint_phase,
                                      const FloatRect& clip_rect)
-    : context_(context),
-      client_(client),
-      clip_type_(DisplayItem::PaintPhaseToFloatClipType(paint_phase)) {
+    : FloatClipRecorder(context,
+                        client,
+                        DisplayItem::PaintPhaseToFloatClipType(paint_phase),
+                        clip_rect) {}
+
+FloatClipRecorder::FloatClipRecorder(GraphicsContext& context,
+                                     const DisplayItemClient& client,
+                                     DisplayItem::Type clip_type,
+                                     const FloatRect& clip_rect)
+    : context_(context), client_(client), clip_type_(clip_type) {
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
   context_.GetPaintController().CreateAndAppend<FloatClipDisplayItem>(

@@ -5,15 +5,14 @@
 #include "core/paint/ClipPathClipper.h"
 
 #include "core/dom/ElementTraversal.h"
+#include "core/layout/LayoutBox.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/PaintInfo.h"
-#include "core/paint/TransformRecorder.h"
 #include "core/style/ClipPathOperation.h"
-#include "platform/graphics/paint/ClipPathDisplayItem.h"
-#include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
@@ -25,13 +24,18 @@ namespace {
 
 class SVGClipExpansionCycleHelper {
  public:
-  SVGClipExpansionCycleHelper(LayoutSVGResourceClipper& clip) : clip_(clip) {
-    clip.BeginClipExpansion();
+  void Lock(LayoutSVGResourceClipper& clipper) {
+    DCHECK(!clipper.HasCycle());
+    clipper.BeginClipExpansion();
+    clippers_.push_back(&clipper);
   }
-  ~SVGClipExpansionCycleHelper() { clip_.EndClipExpansion(); }
+  ~SVGClipExpansionCycleHelper() {
+    for (auto* clipper : clippers_)
+      clipper->EndClipExpansion();
+  }
 
  private:
-  LayoutSVGResourceClipper& clip_;
+  Vector<LayoutSVGResourceClipper*, 1> clippers_;
 };
 
 LayoutSVGResourceClipper* ResolveElementReference(
@@ -59,192 +63,229 @@ LayoutSVGResourceClipper* ResolveElementReference(
 
 }  // namespace
 
+FloatRect ClipPathClipper::LocalReferenceBox(const LayoutObject& object) {
+  if (object.IsSVGChild())
+    return object.ObjectBoundingBox();
+
+  if (object.IsBox())
+    return FloatRect(ToLayoutBox(object).BorderBoxRect());
+
+  SECURITY_DCHECK(object.IsLayoutInline());
+  const LayoutInline& layout_inline = ToLayoutInline(object);
+  // This somewhat convoluted computation matches what Gecko does.
+  // See crbug.com/641907.
+  LayoutRect inline_b_box = layout_inline.LinesBoundingBox();
+  const InlineFlowBox* flow_box = layout_inline.FirstLineBox();
+  inline_b_box.SetHeight(flow_box ? flow_box->FrameRect().Height()
+                                  : LayoutUnit(0));
+  return FloatRect(inline_b_box);
+}
+
+Optional<FloatRect> ClipPathClipper::LocalClipPathBoundingBox(
+    const LayoutObject& object) {
+  if (object.IsText() || !object.StyleRef().ClipPath())
+    return WTF::nullopt;
+
+  FloatRect reference_box = LocalReferenceBox(object);
+  ClipPathOperation& clip_path = *object.StyleRef().ClipPath();
+  if (clip_path.GetType() == ClipPathOperation::SHAPE) {
+    ShapeClipPathOperation& shape = ToShapeClipPathOperation(clip_path);
+    if (!shape.IsValid())
+      return WTF::nullopt;
+    return shape.GetPath(reference_box).BoundingRect();
+  }
+
+  DCHECK_EQ(clip_path.GetType(), ClipPathOperation::REFERENCE);
+  LayoutSVGResourceClipper* clipper =
+      ResolveElementReference(object, ToReferenceClipPathOperation(clip_path));
+  if (!clipper)
+    return WTF::nullopt;
+
+  FloatRect bounding_box = clipper->ResourceBoundingBox(reference_box);
+  if (!object.IsSVGChild() &&
+      clipper->ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
+    bounding_box.Scale(clipper->StyleRef().EffectiveZoom());
+    // With kSvgUnitTypeUserspaceonuse, the clip path layout is relative to
+    // the current transform space, and the reference box is unused.
+    // While SVG object has no concept of paint offset, HTML object's
+    // local space is shifted by paint offset.
+    bounding_box.MoveBy(reference_box.Location());
+  }
+  return bounding_box;
+}
+
+// Note: Return resolved LayoutSVGResourceClipper for caller's convenience,
+// if the clip path is a reference to SVG.
+static bool IsClipPathOperationValid(
+    const ClipPathOperation& clip_path,
+    const LayoutObject& search_scope,
+    LayoutSVGResourceClipper*& resource_clipper) {
+  if (clip_path.GetType() == ClipPathOperation::SHAPE) {
+    if (!ToShapeClipPathOperation(clip_path).IsValid())
+      return false;
+  } else {
+    DCHECK_EQ(clip_path.GetType(), ClipPathOperation::REFERENCE);
+    resource_clipper = ResolveElementReference(
+        search_scope, ToReferenceClipPathOperation(clip_path));
+    if (!resource_clipper)
+      return false;
+    SECURITY_DCHECK(!resource_clipper->NeedsLayout());
+    resource_clipper->ClearInvalidationMask();
+    if (resource_clipper->HasCycle())
+      return false;
+  }
+  return true;
+}
+
 ClipPathClipper::ClipPathClipper(GraphicsContext& context,
-                                 ClipPathOperation& clip_path_operation,
                                  const LayoutObject& layout_object,
-                                 const FloatRect& reference_box,
-                                 const FloatPoint& origin)
-    : resource_clipper_(nullptr),
-      clipper_state_(ClipperState::kNotApplied),
+                                 const LayoutPoint& paint_offset)
+    : context_(context),
       layout_object_(layout_object),
-      context_(context) {
+      paint_offset_(paint_offset) {
+  DCHECK(layout_object.StyleRef().ClipPath());
+
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
-  if (clip_path_operation.GetType() == ClipPathOperation::SHAPE) {
-    ShapeClipPathOperation& shape =
-        ToShapeClipPathOperation(clip_path_operation);
-    if (!shape.IsValid())
-      return;
-    clip_path_recorder_.emplace(context, layout_object,
-                                shape.GetPath(reference_box));
-    clipper_state_ = ClipperState::kAppliedPath;
-  } else {
-    DCHECK_EQ(clip_path_operation.GetType(), ClipPathOperation::REFERENCE);
-    resource_clipper_ = ResolveElementReference(
-        layout_object, ToReferenceClipPathOperation(clip_path_operation));
-    if (!resource_clipper_)
-      return;
-    // Compute the (conservative) bounds of the clip-path.
-    FloatRect clip_path_bounds =
-        resource_clipper_->ResourceBoundingBox(reference_box);
-    // When SVG applies the clip, and the coordinate system is "userspace on
-    // use", we must explicitly pass in the offset to have the clip paint in the
-    // correct location. When the coordinate system is "object bounding box" the
-    // offset should already be accounted for in the reference box.
-    FloatPoint origin_translation;
-    if (resource_clipper_->ClipPathUnits() ==
-        SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
-      clip_path_bounds.MoveBy(origin);
-      origin_translation = origin;
-    }
-    if (!PrepareEffect(reference_box, clip_path_bounds, origin_translation)) {
-      // Indicate there is no cleanup to do.
-      resource_clipper_ = nullptr;
-      return;
+
+  Optional<FloatRect> bounding_box = LocalClipPathBoundingBox(layout_object);
+  if (!bounding_box)
+    return;
+
+  FloatRect adjusted_bounding_box = *bounding_box;
+  adjusted_bounding_box.MoveBy(FloatPoint(paint_offset));
+  clip_recorder_.emplace(context, layout_object,
+                         DisplayItem::kFloatClipClipPathBounds,
+                         adjusted_bounding_box);
+
+  bool is_valid = false;
+  if (Optional<Path> as_path =
+          PathBasedClip(layout_object, layout_object.IsSVGChild(),
+                        LocalReferenceBox(layout_object), is_valid)) {
+    as_path->Translate(FloatSize(paint_offset.X(), paint_offset.Y()));
+    clip_path_recorder_.emplace(context, layout_object, *as_path);
+  } else if (is_valid) {
+    mask_isolation_recorder_.emplace(context, layout_object,
+                                     SkBlendMode::kSrcOver, 1.f);
+  }
+}
+
+static AffineTransform MaskToContentTransform(
+    const LayoutSVGResourceClipper& resource_clipper,
+    bool is_svg_child,
+    const FloatRect& reference_box) {
+  AffineTransform mask_to_content;
+  if (resource_clipper.ClipPathUnits() ==
+      SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
+    if (!is_svg_child) {
+      mask_to_content.Translate(reference_box.X(), reference_box.Y());
+      mask_to_content.Scale(resource_clipper.StyleRef().EffectiveZoom());
     }
   }
+
+  mask_to_content.Multiply(
+      ToSVGClipPathElement(resource_clipper.GetElement())
+          ->CalculateTransform(SVGElement::kIncludeMotionTransform));
+
+  if (resource_clipper.ClipPathUnits() ==
+      SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
+    mask_to_content.Translate(reference_box.X(), reference_box.Y());
+    mask_to_content.ScaleNonUniform(reference_box.Width(),
+                                    reference_box.Height());
+  }
+  return mask_to_content;
 }
 
 ClipPathClipper::~ClipPathClipper() {
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
-  if (resource_clipper_)
-    FinishEffect();
-}
+  if (!mask_isolation_recorder_)
+    return;
 
-bool ClipPathClipper::PrepareEffect(const FloatRect& target_bounding_box,
-                                    const FloatRect& visual_rect,
-                                    const FloatPoint& layer_position_offset) {
-  DCHECK_EQ(clipper_state_, ClipperState::kNotApplied);
-  SECURITY_DCHECK(!resource_clipper_->NeedsLayout());
+  bool is_svg_child = layout_object_.IsSVGChild();
+  FloatRect reference_box = LocalReferenceBox(layout_object_);
 
-  resource_clipper_->ClearInvalidationMask();
-
-  if (resource_clipper_->HasCycle())
-    return false;
-
-  SVGClipExpansionCycleHelper in_clip_expansion_change(*resource_clipper_);
-
-  AffineTransform animated_local_transform =
-      ToSVGClipPathElement(resource_clipper_->GetElement())
-          ->CalculateTransform(SVGElement::kIncludeMotionTransform);
-  // When drawing a clip for non-SVG elements, the CTM does not include the zoom
-  // factor.  In this case, we need to apply the zoom scale explicitly - but
-  // only for clips with userSpaceOnUse units (the zoom is accounted for
-  // objectBoundingBox-resolved lengths).
-  if (!layout_object_.IsSVG() && resource_clipper_->ClipPathUnits() ==
-                                     SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
-    DCHECK(resource_clipper_->Style());
-    animated_local_transform.Scale(resource_clipper_->Style()->EffectiveZoom());
-  }
-
-  // First, try to apply the clip as a clipPath.
-  Path clip_path;
-  if (resource_clipper_->AsPath(animated_local_transform, target_bounding_box,
-                                clip_path)) {
-    AffineTransform position_transform;
-    position_transform.Translate(layer_position_offset.X(),
-                                 layer_position_offset.Y());
-    clip_path.Transform(position_transform);
-    clipper_state_ = ClipperState::kAppliedPath;
-    context_.GetPaintController().CreateAndAppend<BeginClipPathDisplayItem>(
-        layout_object_, clip_path);
-    return true;
-  }
-
-  // Fall back to masking.
-  clipper_state_ = ClipperState::kAppliedMask;
-
-  // Begin compositing the clip mask.
-  mask_clip_recorder_.emplace(context_, layout_object_, SkBlendMode::kSrcOver,
-                              1, &visual_rect);
-  {
-    if (!DrawClipAsMask(target_bounding_box, animated_local_transform,
-                        layer_position_offset)) {
-      // End the clip mask's compositor.
-      mask_clip_recorder_.reset();
-      return false;
-    }
-  }
-
-  // Masked content layer start.
-  mask_content_recorder_.emplace(context_, layout_object_, SkBlendMode::kSrcIn,
-                                 1, &visual_rect);
-  // This is a hack to make sure masked content layer's visual rect at least
-  // as big as the clip mask layer, so it won't get culled out inadvertently.
-  if (!DrawingRecorder::UseCachedDrawingIfPossible(
-          context_, layout_object_, DisplayItem::kSVGClipBoundsHack)) {
-    DrawingRecorder recorder(context_, layout_object_,
-                             DisplayItem::kSVGClipBoundsHack);
-    context_.FillRect(FloatRect());
-  }
-  return true;
-}
-
-bool ClipPathClipper::DrawClipAsMask(const FloatRect& target_bounding_box,
-                                     const AffineTransform& local_transform,
-                                     const FloatPoint& layer_position_offset) {
+  CompositingRecorder mask_recorder(context_, layout_object_,
+                                    SkBlendMode::kDstIn, 1.f);
   if (DrawingRecorder::UseCachedDrawingIfPossible(context_, layout_object_,
                                                   DisplayItem::kSVGClip))
-    return true;
-
-  PaintRecordBuilder mask_builder(nullptr, &context_);
-  GraphicsContext& mask_context = mask_builder.Context();
-  {
-    TransformRecorder recorder(mask_context, layout_object_, local_transform);
-
-    // Apply any clip-path clipping this clipPath (nested shape/clipPath.)
-    Optional<ClipPathClipper> nested_clip_path_clipper;
-    if (ClipPathOperation* clip_path_operation =
-            resource_clipper_->StyleRef().ClipPath()) {
-      nested_clip_path_clipper.emplace(mask_context, *clip_path_operation,
-                                       *resource_clipper_, target_bounding_box,
-                                       layer_position_offset);
-    }
-
-    {
-      AffineTransform content_transform;
-      if (resource_clipper_->ClipPathUnits() ==
-          SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
-        content_transform.Translate(target_bounding_box.X(),
-                                    target_bounding_box.Y());
-        content_transform.ScaleNonUniform(target_bounding_box.Width(),
-                                          target_bounding_box.Height());
-      }
-      SubtreeContentTransformScope content_transform_scope(content_transform);
-
-      TransformRecorder content_transform_recorder(mask_context, layout_object_,
-                                                   content_transform);
-      mask_context.GetPaintController().CreateAndAppend<DrawingDisplayItem>(
-          layout_object_, DisplayItem::kSVGClip,
-          resource_clipper_->CreatePaintRecord());
-    }
-  }
-
+    return;
   DrawingRecorder recorder(context_, layout_object_, DisplayItem::kSVGClip);
-  context_.DrawRecord(mask_builder.EndRecording());
-  return true;
+  context_.Save();
+  context_.Translate(paint_offset_.X(), paint_offset_.Y());
+
+  SVGClipExpansionCycleHelper locks;
+  bool is_first = true;
+  bool rest_of_the_chain_already_appled = false;
+  const LayoutObject* current_object = &layout_object_;
+  while (!rest_of_the_chain_already_appled && current_object) {
+    const ClipPathOperation* clip_path = current_object->StyleRef().ClipPath();
+    if (!clip_path)
+      break;
+    LayoutSVGResourceClipper* resource_clipper = nullptr;
+    if (!IsClipPathOperationValid(*clip_path, *current_object,
+                                  resource_clipper))
+      break;
+
+    if (is_first)
+      context_.Save();
+    else
+      context_.BeginLayer(1.f, SkBlendMode::kDstIn);
+
+    // We wouldn't have reached here if the current clip-path is a shape,
+    // because it would have been applied as path-based clip already.
+    DCHECK(resource_clipper);
+    DCHECK_EQ(clip_path->GetType(), ClipPathOperation::REFERENCE);
+    locks.Lock(*resource_clipper);
+    if (resource_clipper->StyleRef().ClipPath()) {
+      // Try to apply nested clip-path as path-based clip.
+      bool unused;
+      if (Optional<Path> path = PathBasedClip(*resource_clipper, is_svg_child,
+                                              reference_box, unused)) {
+        context_.ClipPath(path->GetSkPath(), kAntiAliased);
+        rest_of_the_chain_already_appled = true;
+      }
+    }
+    context_.ConcatCTM(
+        MaskToContentTransform(*resource_clipper, is_svg_child, reference_box));
+    context_.DrawRecord(resource_clipper->CreatePaintRecord());
+
+    if (is_first)
+      context_.Restore();
+    else
+      context_.EndLayer();
+
+    is_first = false;
+    current_object = resource_clipper;
+  }
+  context_.Restore();
 }
 
-void ClipPathClipper::FinishEffect() {
-  switch (clipper_state_) {
-    case ClipperState::kAppliedPath:
-      // Path-only clipping, no layers to restore but we need to emit an end to
-      // the clip path display item.
-      context_.GetPaintController().EndItem<EndClipPathDisplayItem>(
-          layout_object_);
-      break;
-    case ClipperState::kAppliedMask:
-      // Transfer content -> clip mask (SrcIn)
-      mask_content_recorder_.reset();
+Optional<Path> ClipPathClipper::PathBasedClip(
+    const LayoutObject& clip_path_owner,
+    bool is_svg_child,
+    const FloatRect& reference_box,
+    bool& is_valid) {
+  const ClipPathOperation& clip_path = *clip_path_owner.StyleRef().ClipPath();
+  LayoutSVGResourceClipper* resource_clipper = nullptr;
+  is_valid =
+      IsClipPathOperationValid(clip_path, clip_path_owner, resource_clipper);
+  if (!is_valid)
+    return WTF::nullopt;
 
-      // Transfer clip mask -> bg (SrcOver)
-      mask_clip_recorder_.reset();
-      break;
-    case ClipperState::kNotApplied:
-      NOTREACHED();
-      break;
+  if (resource_clipper) {
+    DCHECK_EQ(clip_path.GetType(), ClipPathOperation::REFERENCE);
+    Optional<Path> path = resource_clipper->AsPath();
+    if (!path)
+      return path;
+    path->Transform(
+        MaskToContentTransform(*resource_clipper, is_svg_child, reference_box));
+    return path;
   }
+
+  DCHECK_EQ(clip_path.GetType(), ClipPathOperation::SHAPE);
+  auto& shape = ToShapeClipPathOperation(clip_path);
+  return Optional<Path>(shape.GetPath(reference_box));
 }
 
 }  // namespace blink

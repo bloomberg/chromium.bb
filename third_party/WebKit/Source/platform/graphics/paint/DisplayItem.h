@@ -89,7 +89,6 @@ class PLATFORM_EXPORT DisplayItem {
     kPrintedContentPDFURLRect,
     kResizer,
     kSVGClip,
-    kSVGClipBoundsHack,
     kSVGFilter,
     kSVGMask,
     kScrollbarBackButtonEnd,
@@ -148,7 +147,8 @@ class PLATFORM_EXPORT DisplayItem {
     kFloatClipFirst,
     kFloatClipPaintPhaseFirst = kFloatClipFirst,
     kFloatClipPaintPhaseLast = kFloatClipFirst + kPaintPhaseMax,
-    kFloatClipLast = kFloatClipPaintPhaseLast,
+    kFloatClipClipPathBounds,
+    kFloatClipLast = kFloatClipClipPathBounds,
     kEndFloatClipFirst,
     kEndFloatClipLast = kEndFloatClipFirst + kFloatClipLast - kFloatClipFirst,
 

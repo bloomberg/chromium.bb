@@ -13,6 +13,7 @@
 #include "core/layout/LayoutTableSection.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/paint/ClipPathClipper.h"
 #include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
@@ -90,7 +91,7 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
     // Note: SVG children don't need this adjustment because their visual
     // overflow rects are already adjusted by clip path.
     if (Optional<FloatRect> clip_path_bounding_box =
-            object.LocalClipPathBoundingBox()) {
+            ClipPathClipper::LocalClipPathBoundingBox(object)) {
       Rect box(EnclosingIntRect(*clip_path_bounding_box));
       rect.Unite(box);
     }
