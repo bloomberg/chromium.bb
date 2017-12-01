@@ -29,7 +29,11 @@ MockCastTransportDelegate::~MockCastTransportDelegate() {}
 MockCastSocketObserver::MockCastSocketObserver() {}
 MockCastSocketObserver::~MockCastSocketObserver() {}
 
-MockCastSocketService::MockCastSocketService() {}
+MockCastSocketService::MockCastSocketService(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    : CastSocketService() {
+  SetTaskRunnerForTest(task_runner);
+}
 MockCastSocketService::~MockCastSocketService() {}
 
 MockCastSocket::MockCastSocket()

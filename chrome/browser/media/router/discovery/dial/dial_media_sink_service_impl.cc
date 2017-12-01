@@ -9,6 +9,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 using content::BrowserThread;
 
@@ -16,9 +17,11 @@ namespace media_router {
 
 DialMediaSinkServiceImpl::DialMediaSinkServiceImpl(
     std::unique_ptr<service_manager::Connector> connector,
-    const OnSinksDiscoveredCallback& callback,
-    net::URLRequestContextGetter* request_context)
-    : MediaSinkServiceBase(callback),
+    const OnSinksDiscoveredCallback& on_sinks_discovered_cb,
+    const OnDialSinkAddedCallback& dial_sink_added_cb,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    : MediaSinkServiceBase(on_sinks_discovered_cb),
       connector_(std::move(connector)),
       description_service_(std::make_unique<DeviceDescriptionService>(
           connector_.get(),
@@ -26,19 +29,24 @@ DialMediaSinkServiceImpl::DialMediaSinkServiceImpl(
                      base::Unretained(this)),
           base::Bind(&DialMediaSinkServiceImpl::OnDeviceDescriptionError,
                      base::Unretained(this)))),
-      observer_(nullptr),
-      request_context_(request_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+      dial_sink_added_cb_(dial_sink_added_cb),
+      request_context_(request_context),
+      task_runner_(task_runner) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(request_context_);
 }
 
 DialMediaSinkServiceImpl::~DialMediaSinkServiceImpl() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  Stop();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (dial_registry_) {
+    dial_registry_->OnListenerRemoved();
+    dial_registry_->UnregisterObserver(this);
+    dial_registry_ = nullptr;
+  }
 }
 
 void DialMediaSinkServiceImpl::Start() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (dial_registry_)
     return;
 
@@ -51,45 +59,19 @@ void DialMediaSinkServiceImpl::Start() {
   MediaSinkServiceBase::StartTimer();
 }
 
-void DialMediaSinkServiceImpl::Stop() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!dial_registry_)
-    return;
-
-  dial_registry_->OnListenerRemoved();
-  dial_registry_->UnregisterObserver(this);
-  dial_registry_ = nullptr;
-  MediaSinkServiceBase::StopTimer();
-}
-
 void DialMediaSinkServiceImpl::OnUserGesture() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Re-sync sinks to CastMediaSinkService. It's possible that a DIAL-discovered
   // sink was added to CastMediaSinkService earlier, but was removed due to
   // flaky network. This gives CastMediaSinkService an opportunity to recover
   // even if mDNS is not working for some reason.
   DVLOG(2) << "OnUserGesture: re-syncing " << current_sinks_.size()
            << " sinks to CastMediaSinkService";
-  if (observer_) {
+
+  if (dial_sink_added_cb_) {
     for (const auto& sink : current_sinks_)
-      observer_->OnDialSinkAdded(sink);
+      dial_sink_added_cb_.Run(sink);
   }
-}
-
-DeviceDescriptionService* DialMediaSinkServiceImpl::GetDescriptionService() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return description_service_.get();
-}
-
-void DialMediaSinkServiceImpl::SetObserver(
-    DialMediaSinkServiceObserver* observer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  observer_ = observer;
-}
-
-void DialMediaSinkServiceImpl::ClearObserver() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  observer_ = nullptr;
 }
 
 void DialMediaSinkServiceImpl::SetDialRegistryForTest(
@@ -105,27 +87,25 @@ void DialMediaSinkServiceImpl::SetDescriptionServiceForTest(
 
 void DialMediaSinkServiceImpl::OnDialDeviceEvent(
     const DialRegistry::DeviceList& devices) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "DialMediaSinkServiceImpl::OnDialDeviceEvent found "
            << devices.size() << " devices";
 
   current_sinks_.clear();
   current_devices_ = devices;
 
-  GetDescriptionService()->GetDeviceDescriptions(devices,
-                                                 request_context_.get());
+  description_service_->GetDeviceDescriptions(devices, request_context_.get());
 }
 
 void DialMediaSinkServiceImpl::OnDialError(DialRegistry::DialErrorCode type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "OnDialError [DialErrorCode]: " << static_cast<int>(type);
 }
 
 void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
     const DialDeviceData& device_data,
     const ParsedDialDeviceDescription& description_data) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!base::ContainsValue(current_devices_, device_data)) {
     DVLOG(2) << "Device data not found in current device data list...";
     return;
@@ -147,8 +127,8 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
 
   MediaSinkInternal dial_sink(sink, extra_data);
   current_sinks_.insert(dial_sink);
-  if (observer_)
-    observer_->OnDialSinkAdded(dial_sink);
+  if (dial_sink_added_cb_)
+    dial_sink_added_cb_.Run(dial_sink);
 
   // Start fetch timer again if device description comes back after
   // |finish_timer_| fires.
@@ -158,11 +138,12 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
 void DialMediaSinkServiceImpl::OnDeviceDescriptionError(
     const DialDeviceData& device,
     const std::string& error_message) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(2) << "OnDescriptionFetchesError [message]: " << error_message;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOG(2) << "OnDeviceDescriptionError [message]: " << error_message;
 }
 
 void DialMediaSinkServiceImpl::RecordDeviceCounts() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   metrics_.RecordDeviceCountsIfNeeded(current_sinks_.size(),
                                       current_devices_.size());
 }

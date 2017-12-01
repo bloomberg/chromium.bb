@@ -19,6 +19,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::_;
@@ -57,121 +58,109 @@ class MockCastMediaSinkServiceImpl : public CastMediaSinkServiceImpl {
   MockCastMediaSinkServiceImpl(
       const OnSinksDiscoveredCallback& callback,
       cast_channel::CastSocketService* cast_socket_service,
-      DiscoveryNetworkMonitor* network_monitor,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+      DiscoveryNetworkMonitor* network_monitor)
       : CastMediaSinkServiceImpl(callback,
                                  cast_socket_service,
                                  network_monitor,
-                                 nullptr /* url_request_context_getter */,
-                                 task_runner) {}
+                                 nullptr /* url_request_context_getter */),
+        sinks_discovered_cb_(callback) {}
   ~MockCastMediaSinkServiceImpl() override {}
 
-  MOCK_METHOD0(Start, void());
-  MOCK_METHOD0(Stop, void());
+  void Start() override { DoStart(); }
+  MOCK_METHOD0(DoStart, void());
   MOCK_METHOD2(OpenChannels,
                void(const std::vector<MediaSinkInternal>& cast_sinks,
                     CastMediaSinkServiceImpl::SinkSource sink_source));
+  MOCK_METHOD0(ForceSinkDiscoveryCallback, void());
+
+  OnSinksDiscoveredCallback sinks_discovered_cb() {
+    return sinks_discovered_cb_;
+  }
+
+ private:
+  OnSinksDiscoveredCallback sinks_discovered_cb_;
+};
+
+class TestCastMediaSinkService : public CastMediaSinkService {
+ public:
+  TestCastMediaSinkService(content::BrowserContext* browser_context,
+                           cast_channel::CastSocketService* cast_socket_service,
+                           DiscoveryNetworkMonitor* network_monitor)
+      : CastMediaSinkService(browser_context),
+        cast_socket_service_(cast_socket_service),
+        network_monitor_(network_monitor) {}
+  ~TestCastMediaSinkService() override = default;
+
+  std::unique_ptr<CastMediaSinkServiceImpl> CreateImpl(
+      const OnSinksDiscoveredCallback& sinks_discovered_cb) override {
+    auto mock_impl = std::make_unique<MockCastMediaSinkServiceImpl>(
+        sinks_discovered_cb, cast_socket_service_, network_monitor_);
+    mock_impl_ = mock_impl.get();
+    return mock_impl;
+  }
+
+  MockCastMediaSinkServiceImpl* mock_impl() { return mock_impl_; }
+
+ private:
+  cast_channel::CastSocketService* const cast_socket_service_ = nullptr;
+  DiscoveryNetworkMonitor* const network_monitor_ = nullptr;
+  MockCastMediaSinkServiceImpl* mock_impl_ = nullptr;
 };
 
 class CastMediaSinkServiceTest : public ::testing::Test {
  public:
   CastMediaSinkServiceTest()
-      : mock_cast_socket_service_(new cast_channel::MockCastSocketService()),
-        task_runner_(new base::TestSimpleTaskRunner()),
-        mock_media_sink_service_impl_(
-            new MockCastMediaSinkServiceImpl(mock_sink_discovered_io_cb_.Get(),
-                                             mock_cast_socket_service_.get(),
-                                             discovery_network_monitor_,
-                                             task_runner_)),
-        media_sink_service_(new CastMediaSinkService(
-            mock_sink_discovered_ui_cb_.Get(),
-            task_runner_,
-            std::unique_ptr<CastMediaSinkServiceImpl,
-                            content::BrowserThread::DeleteOnIOThread>(
-                mock_media_sink_service_impl_))),
+      : task_runner_(new base::TestSimpleTaskRunner()),
+        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
+        mock_cast_socket_service_(
+            new cast_channel::MockCastSocketService(task_runner_)),
+        media_sink_service_(new TestCastMediaSinkService(
+            &profile_,
+            mock_cast_socket_service_.get(),
+            DiscoveryNetworkMonitor::GetInstance())),
         test_dns_sd_registry_(media_sink_service_.get()) {}
 
- protected:
-  const content::TestBrowserThreadBundle thread_bundle_;
+  void SetUp() override {
+    EXPECT_CALL(test_dns_sd_registry_, AddObserver(media_sink_service_.get()));
+    EXPECT_CALL(test_dns_sd_registry_, RegisterDnsSdListener(_));
+    media_sink_service_->SetDnsSdRegistryForTest(&test_dns_sd_registry_);
+    media_sink_service_->Start(mock_sink_discovered_ui_cb_.Get());
+    mock_impl_ = media_sink_service_->mock_impl();
+    ASSERT_TRUE(mock_impl_);
+    EXPECT_CALL(*mock_impl_, DoStart()).WillOnce(InvokeWithoutArgs([this]() {
+      EXPECT_TRUE(this->task_runner_->RunsTasksInCurrentSequence());
+    }));
+    task_runner_->RunUntilIdle();
+  }
 
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_ =
-      base::WrapUnique(net::NetworkChangeNotifier::CreateMock());
-  DiscoveryNetworkMonitor* const discovery_network_monitor_ =
-      DiscoveryNetworkMonitor::GetInstance();
+  void TearDown() override {
+    EXPECT_CALL(test_dns_sd_registry_,
+                RemoveObserver(media_sink_service_.get()));
+    EXPECT_CALL(test_dns_sd_registry_, UnregisterDnsSdListener(_));
+    media_sink_service_.reset();
+    task_runner_->RunUntilIdle();
+  }
+
+ protected:
+  content::TestBrowserThreadBundle thread_bundle_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   TestingProfile profile_;
 
-  base::MockCallback<MediaSinkService::OnSinksDiscoveredCallback>
-      mock_sink_discovered_io_cb_;
-  base::MockCallback<MediaSinkService::OnSinksDiscoveredCallback>
-      mock_sink_discovered_ui_cb_;
+  base::MockCallback<OnSinksDiscoveredCallback> mock_sink_discovered_ui_cb_;
   std::unique_ptr<cast_channel::MockCastSocketService>
       mock_cast_socket_service_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  MockCastMediaSinkServiceImpl* mock_media_sink_service_impl_;
 
-  scoped_refptr<CastMediaSinkService> media_sink_service_;
+  std::unique_ptr<TestCastMediaSinkService> media_sink_service_;
+  MockCastMediaSinkServiceImpl* mock_impl_ = nullptr;
   MockDnsSdRegistry test_dns_sd_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMediaSinkServiceTest);
 };
 
-TEST_F(CastMediaSinkServiceTest, TestResetBeforeStop) {
-  EXPECT_CALL(test_dns_sd_registry_, AddObserver(media_sink_service_.get()));
-  EXPECT_CALL(test_dns_sd_registry_, RegisterDnsSdListener(_));
-
-  media_sink_service_->SetDnsSdRegistryForTest(&test_dns_sd_registry_);
-  media_sink_service_->Start();
-
-  EXPECT_CALL(test_dns_sd_registry_, RemoveObserver(media_sink_service_.get()));
-  EXPECT_CALL(test_dns_sd_registry_, UnregisterDnsSdListener(_));
-  media_sink_service_->Stop();
-
-  media_sink_service_ = nullptr;
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(CastMediaSinkServiceTest, TestRestartAfterStop) {
-  EXPECT_CALL(test_dns_sd_registry_, AddObserver(media_sink_service_.get()))
-      .Times(2);
-  EXPECT_CALL(test_dns_sd_registry_, RegisterDnsSdListener(_));
-  media_sink_service_->SetDnsSdRegistryForTest(&test_dns_sd_registry_);
-  media_sink_service_->Start();
-
-  EXPECT_CALL(test_dns_sd_registry_, RemoveObserver(media_sink_service_.get()));
-  EXPECT_CALL(test_dns_sd_registry_, UnregisterDnsSdListener(_));
-  media_sink_service_->Stop();
-
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_CALL(test_dns_sd_registry_, RegisterDnsSdListener(_));
-  media_sink_service_->SetDnsSdRegistryForTest(&test_dns_sd_registry_);
-  media_sink_service_->Start();
-}
-
-TEST_F(CastMediaSinkServiceTest, TestMultipleStartAndStop) {
-  EXPECT_CALL(test_dns_sd_registry_, AddObserver(media_sink_service_.get()));
-  EXPECT_CALL(test_dns_sd_registry_, RegisterDnsSdListener(_));
-  media_sink_service_->SetDnsSdRegistryForTest(&test_dns_sd_registry_);
-  media_sink_service_->Start();
-  media_sink_service_->Start();
-
-  EXPECT_CALL(test_dns_sd_registry_, RemoveObserver(media_sink_service_.get()));
-  EXPECT_CALL(test_dns_sd_registry_, UnregisterDnsSdListener(_));
-  media_sink_service_->Stop();
-  media_sink_service_->Stop();
-
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_F(CastMediaSinkServiceTest, OnUserGesture) {
-  EXPECT_CALL(test_dns_sd_registry_, ForceDiscovery()).Times(0);
-  media_sink_service_->OnUserGesture();
-
-  EXPECT_CALL(test_dns_sd_registry_, AddObserver(media_sink_service_.get()));
-  EXPECT_CALL(test_dns_sd_registry_, RegisterDnsSdListener(_));
   EXPECT_CALL(test_dns_sd_registry_, ForceDiscovery());
-  media_sink_service_->SetDnsSdRegistryForTest(&test_dns_sd_registry_);
   media_sink_service_->OnUserGesture();
 }
 
@@ -187,26 +176,35 @@ TEST_F(CastMediaSinkServiceTest, TestOnDnsSdEvent) {
                                     service_list);
 
   std::vector<MediaSinkInternal> sinks;
-  EXPECT_CALL(*mock_media_sink_service_impl_, OpenChannels(_, _))
-      .WillOnce(SaveArg<0>(&sinks));
+  EXPECT_CALL(*mock_impl_, OpenChannels(_, _)).WillOnce(SaveArg<0>(&sinks));
 
-  // Invoke OpenChannels on the IO thread.
+  // Invoke OpenChannels on |task_runner_|.
   task_runner_->RunUntilIdle();
   // Verify sink content
   EXPECT_EQ(2u, sinks.size());
-
-  // Invoke callback on the UI thread.
-  EXPECT_CALL(mock_sink_discovered_ui_cb_, Run(_));
-
-  media_sink_service_->OnSinksDiscoveredOnIOThread(sinks);
-  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CastMediaSinkServiceTest, TestForceSinkDiscoveryCallback) {
-  EXPECT_CALL(mock_sink_discovered_io_cb_, Run(_));
+  EXPECT_CALL(*mock_impl_, ForceSinkDiscoveryCallback())
+      .WillOnce(InvokeWithoutArgs([this]() {
+        EXPECT_TRUE(this->task_runner_->RunsTasksInCurrentSequence());
+      }));
 
   media_sink_service_->ForceSinkDiscoveryCallback();
   task_runner_->RunUntilIdle();
+
+  // Actually invoke the callback.
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(mock_impl_->sinks_discovered_cb(),
+                                        std::vector<MediaSinkInternal>()));
+  task_runner_->RunUntilIdle();
+
+  EXPECT_CALL(mock_sink_discovered_ui_cb_, Run(_))
+      .WillOnce(InvokeWithoutArgs([]() {
+        EXPECT_TRUE(
+            content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+      }));
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace media_router

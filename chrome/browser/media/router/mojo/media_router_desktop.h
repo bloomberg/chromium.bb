@@ -20,7 +20,7 @@ class Extension;
 
 namespace media_router {
 class CastMediaSinkService;
-class DialMediaSinkServiceProxy;
+class DialMediaSinkService;
 class WiredDisplayMediaRouteProvider;
 
 // MediaRouter implementation that uses the MediaRouteProvider implemented in
@@ -123,10 +123,10 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   std::unique_ptr<WiredDisplayMediaRouteProvider> wired_display_provider_;
 
   // Media sink service for DIAL devices.
-  scoped_refptr<DialMediaSinkServiceProxy> dial_media_sink_service_proxy_;
+  std::unique_ptr<DialMediaSinkService> dial_media_sink_service_;
 
   // Media sink service for CAST devices.
-  scoped_refptr<CastMediaSinkService> cast_media_sink_service_;
+  std::unique_ptr<CastMediaSinkService> cast_media_sink_service_;
 
   // A flag to ensure that we record the provider version once, during the
   // initial event page wakeup attempt.

@@ -5,7 +5,7 @@
 #include "chrome/browser/media/router/mojo/media_router_desktop.h"
 
 #include "base/strings/string_util.h"
-#include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_proxy.h"
+#include "chrome/browser/media/router/discovery/dial/dial_media_sink_service.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -21,14 +21,7 @@
 
 namespace media_router {
 
-MediaRouterDesktop::~MediaRouterDesktop() {
-  if (dial_media_sink_service_proxy_) {
-    dial_media_sink_service_proxy_->Stop();
-    dial_media_sink_service_proxy_->ClearObserver();
-  }
-  if (cast_media_sink_service_)
-    cast_media_sink_service_->Stop();
-}
+MediaRouterDesktop::~MediaRouterDesktop() = default;
 
 // static
 void MediaRouterDesktop::BindToRequest(const extensions::Extension* extension,
@@ -49,8 +42,8 @@ void MediaRouterDesktop::OnUserGesture() {
   // media source.
   UpdateMediaSinks(MediaSourceForDesktop().id());
 
-  if (dial_media_sink_service_proxy_)
-    dial_media_sink_service_proxy_->OnUserGesture();
+  if (dial_media_sink_service_)
+    dial_media_sink_service_->OnUserGesture();
 
   if (cast_media_sink_service_)
     cast_media_sink_service_->OnUserGesture();
@@ -156,30 +149,35 @@ void MediaRouterDesktop::StartDiscovery() {
 
   if (media_router::CastDiscoveryEnabled()) {
     if (!cast_media_sink_service_) {
-      cast_media_sink_service_ = base::MakeRefCounted<CastMediaSinkService>(
+      cast_media_sink_service_ =
+          std::make_unique<CastMediaSinkService>(context());
+      cast_media_sink_service_->Start(
           base::BindRepeating(&MediaRouterDesktop::ProvideSinks,
-                              weak_factory_.GetWeakPtr(), "cast"),
-          context(),
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::IO));
-      cast_media_sink_service_->Start();
+                              weak_factory_.GetWeakPtr(), "cast"));
     } else {
       cast_media_sink_service_->ForceSinkDiscoveryCallback();
     }
   }
 
   if (media_router::DialLocalDiscoveryEnabled()) {
-    if (!dial_media_sink_service_proxy_) {
-      dial_media_sink_service_proxy_ =
-          base::MakeRefCounted<DialMediaSinkServiceProxy>(
-              base::BindRepeating(&MediaRouterDesktop::ProvideSinks,
-                                  weak_factory_.GetWeakPtr(), "dial"),
-              context());
-      dial_media_sink_service_proxy_->SetObserver(
-          cast_media_sink_service_.get());
-      dial_media_sink_service_proxy_->Start();
+    if (!dial_media_sink_service_) {
+      dial_media_sink_service_ =
+          std::make_unique<DialMediaSinkService>(context());
+
+      OnDialSinkAddedCallback dial_sink_added_cb;
+      scoped_refptr<base::SequencedTaskRunner> dial_sink_added_cb_sequence;
+      if (cast_media_sink_service_) {
+        dial_sink_added_cb =
+            cast_media_sink_service_->GetDialSinkAddedCallback();
+        dial_sink_added_cb_sequence =
+            cast_media_sink_service_->GetImplTaskRunner();
+      }
+      dial_media_sink_service_->Start(
+          base::BindRepeating(&MediaRouterDesktop::ProvideSinks,
+                              weak_factory_.GetWeakPtr(), "dial"),
+          dial_sink_added_cb, dial_sink_added_cb_sequence);
     } else {
-      dial_media_sink_service_proxy_->ForceSinkDiscoveryCallback();
+      dial_media_sink_service_->ForceSinkDiscoveryCallback();
     }
   }
 }
