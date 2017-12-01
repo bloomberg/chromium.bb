@@ -652,6 +652,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, strong)
     BubbleViewControllerPresenter* incognitoTabTipBubblePresenter;
 
+// Vertical offset for fullscreen toolbar.
+@property(nonatomic, strong) NSLayoutConstraint* toolbarOffsetConstraint;
+
 // BVC initialization:
 // If the BVC is initialized with a valid browser state & tab model immediately,
 // the path is straightforward: functionality is enabled, and the UI is built
@@ -917,6 +920,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 @synthesize recentTabsCoordinator = _recentTabsCoordinator;
 @synthesize tabStripCoordinator = _tabStripCoordinator;
 @synthesize tabStripView = _tabStripView;
+@synthesize toolbarOffsetConstraint = _toolbarOffsetConstraint;
 
 #pragma mark - Object lifecycle
 
@@ -1896,11 +1900,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   [_toolbarCoordinator adjustToolbarHeight];
 
+  self.toolbarOffsetConstraint =
+      [_toolbarCoordinator.toolbarViewController.view.topAnchor
+          constraintEqualToAnchor:topAnchor];
   [NSLayoutConstraint activateConstraints:@[
+    self.toolbarOffsetConstraint,
     [_toolbarCoordinator.toolbarViewController.view.leadingAnchor
         constraintEqualToAnchor:[self view].leadingAnchor],
-    [_toolbarCoordinator.toolbarViewController.view.topAnchor
-        constraintEqualToAnchor:topAnchor],
     [_toolbarCoordinator.toolbarViewController.view.trailingAnchor
         constraintEqualToAnchor:[self view].trailingAnchor],
   ]];
@@ -3186,8 +3192,18 @@ bubblePresenterForFeature:(const base::Feature&)feature
                    atOffset:(CGFloat)headerOffset {
   CGFloat height = [self headerOffset];
   for (HeaderDefinition* header in headers) {
+    CGFloat yOrigin = height - headerOffset - header.inset;
+    // Make sure the toolbarView's constraints are also updated.  Leaving the
+    // -setFrame call to minimize changes in this CL -- otherwise the way
+    // toolbar_view manages it's alpha changes would also need to be updated.
+    // TODO(crbug.com/778822): This can be cleaned up when the new fullscreen
+    // is enabled.
+    if (IsSafeAreaCompatibleToolbarEnabled() &&
+        header.view == _toolbarCoordinator.toolbarViewController.view) {
+      self.toolbarOffsetConstraint.constant = yOrigin;
+    }
     CGRect frame = [header.view frame];
-    frame.origin.y = height - headerOffset - header.inset;
+    frame.origin.y = yOrigin;
     [header.view setFrame:frame];
     if (header.behaviour != Overlap)
       height += CGRectGetHeight(frame);
