@@ -25,6 +25,11 @@ void PasswordTabHelper::CreateForWebState(web::WebState* web_state) {
   }
 }
 
+void PasswordTabHelper::SetBaseViewController(
+    UIViewController* baseViewController) {
+  controller_.baseViewController = baseViewController;
+}
+
 void PasswordTabHelper::SetDispatcher(id<ApplicationCommands> dispatcher) {
   controller_.dispatcher = dispatcher;
 }

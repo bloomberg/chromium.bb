@@ -28,7 +28,7 @@ NSUInteger kAccountTag = 10;
 @end
 
 @implementation UpdatePasswordInfoBarController
-
+@synthesize baseViewController = _baseViewController;
 @synthesize selectorCoordinator = _selectorCoordinator;
 
 - (InfoBarView*)viewForDelegate:
@@ -65,10 +65,9 @@ NSUInteger kAccountTag = 10;
   if (tag != kAccountTag)
     return;
 
-  UIViewController* baseViewController =
-      [[UIApplication sharedApplication] keyWindow].rootViewController;
+  DCHECK(self.baseViewController);
   self.selectorCoordinator = [[SelectorCoordinator alloc]
-      initWithBaseViewController:baseViewController];
+      initWithBaseViewController:self.baseViewController];
   self.selectorCoordinator.delegate = self;
   self.selectorCoordinator.options =
       [NSOrderedSet orderedSetWithArray:_delegate->GetAccounts()];

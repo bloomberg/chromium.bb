@@ -31,6 +31,7 @@ void IOSChromeUpdatePasswordInfoBarDelegate::Create(
     bool is_smart_lock_branding_enabled,
     infobars::InfoBarManager* infobar_manager,
     std::unique_ptr<PasswordFormManager> form_manager,
+    UIViewController* baseViewController,
     id<ApplicationCommands> dispatcher) {
   DCHECK(infobar_manager);
   auto delegate = base::WrapUnique(new IOSChromeUpdatePasswordInfoBarDelegate(
@@ -39,6 +40,7 @@ void IOSChromeUpdatePasswordInfoBarDelegate::Create(
   std::unique_ptr<InfoBarIOS> infobar(new InfoBarIOS(std::move(delegate)));
   UpdatePasswordInfoBarController* controller =
       [[UpdatePasswordInfoBarController alloc] initWithDelegate:infobar.get()];
+  [controller setBaseViewController:baseViewController];
   infobar->SetController(controller);
   infobar_manager->AddInfoBar(std::move(infobar));
 }
