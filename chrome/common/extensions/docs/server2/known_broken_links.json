@@ -102,12 +102,6 @@
     "redirects to /extensions/experimental_devtools.html"
   ],
   [
-    200,
-    "extensions/experimental_devtools_audits.html",
-    "extensions/samples.html#devtools.audits",
-    "target anchor not found"
-  ],
-  [
     302,
     "apps/experimental_devtools_network.html",
     "apps/devtools_network.html",
@@ -624,12 +618,6 @@
   ],
   [
     302,
-    "apps/experimental_webInspector_audits.html",
-    "apps/experimental_devtools_audits.html",
-    "redirects to /extensions/experimental_devtools_audits.html"
-  ],
-  [
-    302,
     "apps/samples.html",
     "apps/extension.html#property-lastError",
     "redirects to /extensions/extension.html"
@@ -854,12 +842,6 @@
     "apps/private_apis.html",
     "apps/experimental_accessibility.html",
     "target page not found"
-  ],
-  [
-    302,
-    "apps/private_apis.html",
-    "apps/experimental_devtools_audits.html",
-    "redirects to /extensions/experimental_devtools_audits.html"
   ],
   [
     302,
