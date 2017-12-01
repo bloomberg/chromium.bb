@@ -347,6 +347,35 @@ class GetBuildEventTest(unittest.TestCase):
     self.assertTrue(event.HasField('build_event'))
     self.assertFalse(event.build_event.HasField('category'))
 
+  def test_get_build_event_with_fail_type(self):
+    log_event = monitoring.get_build_event(
+        'BUILD', 'bot.host.name', 'build_name',
+        fail_type='COMPILE_FAILURE').log_event()
+    self.assertIsInstance(log_event, LogRequestLite.LogEventLite)
+
+    # Check that source_extension deserializes to the right thing.
+    event = ChromeInfraEvent.FromString(log_event.source_extension)
+    self.assertTrue(event.HasField('build_event'))
+    self.assertEquals(
+        event.build_event.fail_type, BuildEvent.FAIL_TYPE_COMPILE)
+
+    # Try unknown value. Should produce CATEGORY_UNKNOWN.
+    log_event = monitoring.get_build_event(
+        'BUILD', 'bot.host.name', 'build_name', fail_type='foobar').log_event()
+    self.assertIsInstance(log_event, LogRequestLite.LogEventLite)
+    event = ChromeInfraEvent.FromString(log_event.source_extension)
+    self.assertTrue(event.HasField('build_event'))
+    self.assertEquals(
+        event.build_event.fail_type, BuildEvent.FAIL_TYPE_UNKNOWN)
+
+    # Try empty value. Should not set fail_type.
+    log_event = monitoring.get_build_event(
+        'BUILD', 'bot.host.name', 'build_name', fail_type='').log_event()
+    self.assertIsInstance(log_event, LogRequestLite.LogEventLite)
+    event = ChromeInfraEvent.FromString(log_event.source_extension)
+    self.assertTrue(event.HasField('build_event'))
+    self.assertFalse(event.build_event.HasField('fail_type'))
+
   def test_get_build_event_with_head_revision_git_hash(self):
     test_revision = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
     log_event = monitoring.get_build_event(

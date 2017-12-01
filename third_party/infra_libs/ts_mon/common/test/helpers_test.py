@@ -138,3 +138,18 @@ class ScopedMeasureTimeTest(unittest.TestCase):
                                      time_fn=self.time_fn):
         raise _CustomException()
     self.metric.add.assert_called_once_with(250000.0, {'label': 'fail'})
+
+  def test_extra_fields_should_exclude_status(self):
+    with self.assertRaises(AssertionError):
+      helpers.ScopedMeasureTime(self.metric,
+                                extra_fields_values={'status': 'x'})
+
+  def test_extra_fields(self):
+    self.metric.field_spec = [metrics.StringField('custom'),
+                              metrics.StringField('type')]
+    with helpers.ScopedMeasureTime(self.metric, 'custom', 'ok', 'fail',
+                                   extra_fields_values={'type': 'normal'},
+                                   time_fn=self.time_fn):
+      pass
+    self.metric.add.assert_called_once_with(0.25, {'custom': 'ok',
+                                                   'type': 'normal'})

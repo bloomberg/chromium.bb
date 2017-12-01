@@ -66,6 +66,11 @@ class MetricTest(TestBase):
     self.assertEquals(m1.field_spec, field_spec)
     self.assertEquals(m1.units, 'us')
 
+  def test_equality(self):
+    field_spec = [metrics.StringField('string')]
+    m = metrics.Metric('/foo', 'foo', field_spec, 'us')
+    self.assertEquals(m, m)
+
   def test_init_too_many_fields(self):
     fields = [metrics.StringField('field%d' % i) for i in xrange(8)]
     with self.assertRaises(errors.MonitoringTooManyFieldsError) as e:
@@ -245,6 +250,10 @@ class FieldValidationTest(TestBase):
       metrics.StringField('foo', 'desc', [metrics.StringField('')])
     with self.assertRaises(errors.MetricDefinitionError):
       metrics.StringField('foo', 'desc', [metrics.StringField(u'\U0001F4A9')])
+
+  def test_equality(self):
+    f = metrics.IntegerField('name')
+    self.assertEquals(f, f)
 
 
 class StringMetricTest(TestBase):

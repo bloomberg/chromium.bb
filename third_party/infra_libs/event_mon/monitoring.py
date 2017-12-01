@@ -269,6 +269,7 @@ def get_build_event(event_type,
                     patch_url=None,
                     bbucket_id=None,
                     category=None,
+                    fail_type=None,
                     head_revision_git_hash=None):
   """Compute a ChromeInfraEvent filled with a BuildEvent.
 
@@ -348,6 +349,21 @@ def get_build_event(event_type,
       'cq_experimental': BuildEvent.CATEGORY_CQ_EXPERIMENTAL,
       'git_cl_try': BuildEvent.CATEGORY_GIT_CL_TRY,
     }.get(category.lower(), BuildEvent.CATEGORY_UNKNOWN)
+
+  if fail_type:
+    try:
+      event.build_event.fail_type = BuildEvent.FailType.Value({
+        'INFRA_FAILURE': 'FAIL_TYPE_INFRA',
+        'COMPILE_FAILURE': 'FAIL_TYPE_COMPILE',
+        'TEST_FAILURE': 'FAIL_TYPE_TEST',
+        'INVALID_TEST_RESULTS': 'FAIL_TYPE_INVALID',
+        'PATCH_FAILURE': 'FAIL_TYPE_PATCH',
+      }.get(fail_type, 'FAIL_TYPE_UNKNOWN'))
+    except ValueError:  # pragma: no cover
+      # This is not likely to happen because we hard-code correct values in the
+      # dict above, but we still keep this exception handler here to make sure
+      # that we don't bring down the master.
+      event.build_event.fail_type = BuildEvent.FAIL_TYPE_UNKNOWN
 
   if head_revision_git_hash:
     event.build_event.head_revision.git_hash = head_revision_git_hash
@@ -448,6 +464,7 @@ def send_build_event(event_type,
                      patch_url=None,
                      bbucket_id=None,
                      category=None,
+                     fail_type=None,
                      head_revision_git_hash=None):
   """Send a ChromeInfraEvent filled with a BuildEvent
 
@@ -478,6 +495,7 @@ def send_build_event(event_type,
     patch_url (string): URL of the patch that triggered build
     bbucket_id (long): Buildbucket ID of the build.
     category (string): Build category, e.g. cq or git_cl_try.
+    fail_type (string): Failure type for failed builds, e.g. 'FAIL_TYPE_COMPILE'
     head_revision_git_hash (string): Revision fetched from the Git repository.
 
   Returns:
@@ -501,6 +519,7 @@ def send_build_event(event_type,
                          patch_url=patch_url,
                          bbucket_id=bbucket_id,
                          category=category,
+                         fail_type=fail_type,
                          head_revision_git_hash=head_revision_git_hash).send()
 
 

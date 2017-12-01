@@ -33,8 +33,8 @@ class Field(object):
     self.name = name
 
   def __eq__(self, other):
-    return (type(self) == type(other)
-            and self.__dict__ == other.__dict__)
+    return (type(self) == type(other) and
+            self.__dict__ == other.__dict__)
 
   def validate_value(self, metric_name, value):
     if not isinstance(value, self.allowed_python_types):

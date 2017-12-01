@@ -39,7 +39,12 @@ class BucketerTestBase(unittest.TestCase):
       b.bucket_boundaries(len(expected_lower_bounds))
 
 
+
 class FixedWidthBucketerTest(BucketerTestBase):
+  def test_equality(self):
+    b = distribution.FixedWidthBucketer(width=10, num_finite_buckets=8)
+    self.assertEquals(b, b)
+
   def test_negative_size(self):
     with self.assertRaises(ValueError):
       distribution.FixedWidthBucketer(width=10, num_finite_buckets=-1)
@@ -69,6 +74,11 @@ class FixedWidthBucketerTest(BucketerTestBase):
 
 
 class GeometricBucketerTest(BucketerTestBase):
+  def test_equality(self):
+    b = distribution.GeometricBucketer(
+        growth_factor=4, num_finite_buckets=4, scale=.1)
+    self.assertEquals(b, b)
+
   def test_negative_size(self):
     with self.assertRaises(ValueError):
       distribution.GeometricBucketer(num_finite_buckets=-1)

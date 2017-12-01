@@ -58,9 +58,6 @@ class AppengineCredentials(CredentialFactory):
   def create(self, scopes):  # pragma: no cover
     # This import doesn't work outside appengine, so delay it until it's used.
     from oauth2client import appengine
-    from google.appengine.api import app_identity
-    logging.info('Initializing with service account %s',
-                 app_identity.get_service_account_name())
     return appengine.AppAssertionCredentials(scopes)
 
 
