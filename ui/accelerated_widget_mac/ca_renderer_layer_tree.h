@@ -53,12 +53,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
                                std::unique_ptr<CARendererLayerTree> old_tree,
                                float scale_factor);
 
-  // TODO(sdy): Remove. Guts have moved to RootLayer.
-  bool CommitFullscreenLowPowerLayer(
-      AVSampleBufferDisplayLayer109* fullscreen_low_power_layer) {
-    return false;
-  }
-
   // Returns the contents used for a given solid color.
   id ContentsForSolidColorForTesting(unsigned int color);
 

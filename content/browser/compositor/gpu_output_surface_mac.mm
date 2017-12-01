@@ -19,8 +19,7 @@
 namespace content {
 
 struct GpuOutputSurfaceMac::RemoteLayers {
-  void UpdateLayers(CAContextID content_ca_context_id,
-                    CAContextID fullscreen_low_power_ca_context_id) {
+  void UpdateLayers(CAContextID content_ca_context_id) {
     if (content_ca_context_id) {
       if ([content_layer contextId] != content_ca_context_id) {
         content_layer.reset([[CALayerHost alloc] init]);
@@ -31,21 +30,9 @@ struct GpuOutputSurfaceMac::RemoteLayers {
     } else {
       content_layer.reset();
     }
-
-    if (fullscreen_low_power_ca_context_id) {
-      if ([fullscreen_low_power_layer contextId] !=
-          fullscreen_low_power_ca_context_id) {
-        fullscreen_low_power_layer.reset([[CALayerHost alloc] init]);
-        [fullscreen_low_power_layer
-            setContextId:fullscreen_low_power_ca_context_id];
-      }
-    } else {
-      fullscreen_low_power_layer.reset();
-    }
   }
 
   base::scoped_nsobject<CALayerHost> content_layer;
-  base::scoped_nsobject<CALayerHost> fullscreen_low_power_layer;
 };
 
 GpuOutputSurfaceMac::GpuOutputSurfaceMac(
@@ -82,8 +69,7 @@ void GpuOutputSurfaceMac::SwapBuffers(viz::OutputSurfaceFrame frame) {
 void GpuOutputSurfaceMac::OnGpuSwapBuffersCompleted(
     const gfx::SwapResponse& response,
     const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
-  remote_layers_->UpdateLayers(params_mac->ca_context_id,
-                               params_mac->fullscreen_low_power_ca_context_id);
+  remote_layers_->UpdateLayers(params_mac->ca_context_id);
   if (should_show_frames_state_ == SHOULD_SHOW_FRAMES) {
     ui::AcceleratedWidgetMac* widget = ui::AcceleratedWidgetMac::Get(widget_);
     if (widget) {
@@ -91,10 +77,6 @@ void GpuOutputSurfaceMac::OnGpuSwapBuffersCompleted(
         widget->GotCALayerFrame(
             base::scoped_nsobject<CALayer>(remote_layers_->content_layer.get(),
                                            base::scoped_policy::RETAIN),
-            params_mac->fullscreen_low_power_ca_context_valid,
-            base::scoped_nsobject<CALayer>(
-                remote_layers_->fullscreen_low_power_layer.get(),
-                base::scoped_policy::RETAIN),
             params_mac->pixel_size, params_mac->scale_factor);
       } else {
         widget->GotIOSurfaceFrame(params_mac->io_surface,

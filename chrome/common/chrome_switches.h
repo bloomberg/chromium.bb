@@ -262,7 +262,6 @@ extern const char kWmClass[];
 extern const char kAppsKeepChromeAliveInTests[];
 extern const char kDisableAppInfoDialogMac[];
 extern const char kDisableAppWindowCycling[];
-extern const char kDisableFullscreenLowPowerMode[];
 extern const char kDisableFullscreenTabDetaching[];
 extern const char kDisableHostedAppShimCreation[];
 extern const char kDisableHostedAppsInWindows[];

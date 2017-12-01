@@ -1107,10 +1107,6 @@ void InProcessCommandBuffer::DidSwapBuffersCompleteOnOriginThread(
 #if defined(OS_MACOSX)
   GpuProcessHostedCALayerTreeParamsMac params_mac;
   params_mac.ca_context_id = params.ca_context_id;
-  params_mac.fullscreen_low_power_ca_context_valid =
-      params.fullscreen_low_power_ca_context_valid;
-  params_mac.fullscreen_low_power_ca_context_id =
-      params.fullscreen_low_power_ca_context_id;
   params_mac.io_surface.reset(IOSurfaceLookupFromMachPort(params.io_surface));
   params_mac.pixel_size = params.pixel_size;
   params_mac.scale_factor = params.scale_factor;
