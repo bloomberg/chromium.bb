@@ -11,35 +11,21 @@
   <template>
     <style include="cr-icons">
       :host {
-        display: block;
+        color: #5a5a5a;
+        display: flex;
+        flex-direction: column;
         height: 100%;
+        justify-content: space-between;
         overflow-x: hidden;
         overflow-y: auto;
         width: 256px;
-      }
-
-      .cr-icon {
-        -webkit-margin-end: calc(
-            var(--cr-section-padding) - var(--cr-icon-ripple-padding));
       }
 
       iron-selector .iron-selected {
         color: var(--google-blue-700);
       }
 
-      iron-selector .separator {
-        background-color: rgba(0, 0, 0, 0.08);
-        flex-shrink: 0;
-        height: 1px;
-        margin: 8px 0;
-      }
-
       #sectionMenu {
-        background-color: transparent;
-        color: #5a5a5a;
-        display: flex;
-        flex: 1;
-        flex-direction: column;
         padding-top: 8px;
         user-select: none;
       }
@@ -48,29 +34,45 @@
         /* Ensure the focus outline appears correctly (crbug.com/655503). */
         -webkit-margin-end: 4px;
         -webkit-padding-start: 24px;
-        align-items: center;
-        box-sizing: border-box;
         color: inherit;
-        cursor: pointer;
-        display: flex;
+        display: block;
         font-weight: 500;
-        justify-content: space-between;
-        min-height: 40px;
+        line-height: 40px;
         position: relative;
         text-decoration: none;
       }
+
+      .separator {
+        border-top: var(--cr-separator-line);
+        margin: 8px 0;
+      }
+
+      #more-extensions {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+
+      .cr-icon {
+        -webkit-margin-end: calc(
+            var(--cr-section-padding) - var(--cr-icon-ripple-padding));
+      }
     </style>
     <iron-selector id="sectionMenu">
-      <div class="section-item" id="sections-extensions"
-          on-tap="onExtensionsTap_">
+      <!-- Values for "data-path" attribute must match the "Page" enum. -->
+      <a class="section-item" id="sections-extensions" href="/"
+          on-tap="onLinkTap_" data-path="items-list">
         $i18n{sidebarExtensions}
         <paper-ripple></paper-ripple>
-      </div>
-      <div class="section-item" id="sections-shortcuts"
-          on-tap="onKeyboardShortcutsTap_">
+      </a>
+      <a class="section-item" id="sections-shortcuts" href="/shortcuts"
+          on-tap="onLinkTap_" data-path="keyboard-shortcuts">
         $i18n{keyboardShortcuts}
         <paper-ripple></paper-ripple>
-      </div>
+      </a>
+    </iron-selector>
+    <div>
       <div class="separator"></div>
       <a class="section-item" id="more-extensions" target="_blank"
           href="$i18n{getMoreExtensionsUrl}">
@@ -78,7 +80,7 @@
         <div class="cr-icon icon-external"></div>
         <paper-ripple></paper-ripple>
       </a>
-    </iron-selector>
+    </div>
   </template>
   <script src="sidebar.js"></script>
 </dom-module>
