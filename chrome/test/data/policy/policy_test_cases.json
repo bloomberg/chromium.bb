@@ -33,7 +33,7 @@
   "UnsafelyTreatInsecureOriginAsSecure": {
     "os": ["win", "linux", "max", "chromeos", "android"],
     "test_policy": { "UnsafelyTreatInsecureOriginAsSecure": ["http://example.com/"] },
-    "pref_mappings": [ { "pref": "unsafely_treat_insecure_origin_as_securex" } ]
+    "pref_mappings": [ { "pref": "unsafely_treat_insecure_origin_as_secure" } ]
   },
 
   "HomepageLocation": {
