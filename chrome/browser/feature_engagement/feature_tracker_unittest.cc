@@ -299,7 +299,7 @@ TEST_F(FeatureTrackerParamsTest, TestIsNotNewUser_DefaultTime) {
 TEST_F(FeatureTrackerParamsTest, TestIsNewUser_CustomTime) {
   std::map<std::string, std::string> new_tab_params;
   new_tab_params["x_new_user_creation_time_threshold_in_seconds"] =
-      base::DoubleToString(base::TimeDelta::FromHours(28).InSeconds());
+      base::NumberToString(base::TimeDelta::FromHours(28).InSeconds());
 
   // Setting the experiment timestamp equal to the limit of what is considered a
   // new user.
@@ -319,7 +319,7 @@ TEST_F(FeatureTrackerParamsTest, TestIsNewUser_CustomTime) {
 TEST_F(FeatureTrackerParamsTest, TestIsNotNewUser_CustomTime) {
   std::map<std::string, std::string> new_tab_params;
   new_tab_params["x_new_user_creation_time_threshold_in_seconds"] =
-      base::DoubleToString(base::TimeDelta::FromHours(28).InSeconds());
+      base::NumberToString(base::TimeDelta::FromHours(28).InSeconds());
 
   // Setting the experiment timestamp equal to one second older than what is
   // considered a new user.

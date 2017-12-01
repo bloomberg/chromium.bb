@@ -907,7 +907,7 @@ int PDFiumEngine::Form_GetPlatform(FPDF_FORMFILLINFO* param,
 #endif
 
   std::string javascript =
-      "alert(\"Platform:" + base::DoubleToString(platform_flag) + "\")";
+      "alert(\"Platform:" + base::NumberToString(platform_flag) + "\")";
 
   return platform_flag;
 }

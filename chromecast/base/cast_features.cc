@@ -248,7 +248,7 @@ base::DictionaryValue GetOverriddenFeaturesForStorage(
         } else if (param_val.GetAsInteger(&ival)) {
           params->SetString(param_key, base::IntToString(ival));
         } else if (param_val.GetAsDouble(&dval)) {
-          params->SetString(param_key, base::DoubleToString(dval));
+          params->SetString(param_key, base::NumberToString(dval));
         } else if (param_val.GetAsString(&sval)) {
           params->SetString(param_key, sval);
         } else {

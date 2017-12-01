@@ -228,7 +228,7 @@ void TraceEvent::AppendValueAsJSON(unsigned char type,
       std::string real;
       double val = value.as_double;
       if (std::isfinite(val)) {
-        real = DoubleToString(val);
+        real = NumberToString(val);
         // Ensure that the number has a .0 if there's no decimal or 'e'.  This
         // makes sure that when we read the JSON back, it's interpreted as a
         // real rather than an int.

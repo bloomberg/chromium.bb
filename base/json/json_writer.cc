@@ -89,7 +89,7 @@ bool JSONWriter::BuildJSONString(const Value& node, size_t depth) {
         json_string_->append(Int64ToString(static_cast<int64_t>(value)));
         return result;
       }
-      std::string real = DoubleToString(value);
+      std::string real = NumberToString(value);
       // Ensure that the number has a .0 if there's no decimal or 'e'.  This
       // makes sure that when we read the JSON back, it's interpreted as a
       // real rather than an int.

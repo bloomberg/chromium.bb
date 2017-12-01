@@ -54,7 +54,7 @@ void DeleteFile(const base::FilePath& file) {
 }
 
 void WriteValueToFile(const base::FilePath& path, double value) {
-  const std::string str = base::DoubleToString(value);
+  const std::string str = base::NumberToString(value);
   int bytes_written = base::WriteFile(path, str.data(), str.size());
   EXPECT_EQ(static_cast<size_t>(bytes_written), str.size());
 }

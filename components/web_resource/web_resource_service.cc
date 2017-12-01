@@ -138,7 +138,7 @@ void WebResourceService::StartFetch() {
 
   // Set cache update time in preferences.
   prefs_->SetString(last_update_time_pref_name_,
-                    base::DoubleToString(base::Time::Now().ToDoubleT()));
+                    base::NumberToString(base::Time::Now().ToDoubleT()));
 
   // If we are still fetching data, exit.
   if (in_fetch_)

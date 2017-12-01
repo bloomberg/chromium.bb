@@ -77,7 +77,7 @@ void OnRecordingEnabledAck(const WebUIDataSource::GotDataCallback& callback) {
 void OnTraceBufferUsageResult(const WebUIDataSource::GotDataCallback& callback,
                               float percent_full,
                               size_t approximate_event_count) {
-  std::string str = base::DoubleToString(percent_full);
+  std::string str = base::NumberToString(percent_full);
   callback.Run(base::RefCountedString::TakeString(&str));
 }
 

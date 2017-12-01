@@ -235,7 +235,7 @@ void SaveUptimeToFile(const base::FilePath& path,
   if (path.empty() || uptime.is_zero())
     return;
 
-  const std::string uptime_seconds = base::DoubleToString(uptime.InSecondsF());
+  const std::string uptime_seconds = base::NumberToString(uptime.InSecondsF());
   ASSERT_EQ(static_cast<int>(uptime_seconds.size()),
             base::WriteFile(path, uptime_seconds.c_str(),
                             uptime_seconds.size()));

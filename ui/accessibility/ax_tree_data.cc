@@ -11,9 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 
-using base::DoubleToString;
-using base::IntToString;
-
 namespace ui {
 
 AXTreeData::AXTreeData()
@@ -42,18 +39,18 @@ std::string AXTreeData::ToString() const {
   std::string result;
 
   if (tree_id != -1)
-    result += " tree_id=" + IntToString(tree_id);
+    result += " tree_id=" + base::NumberToString(tree_id);
   if (parent_tree_id != -1)
-    result += " parent_tree_id=" + IntToString(parent_tree_id);
+    result += " parent_tree_id=" + base::NumberToString(parent_tree_id);
   if (focused_tree_id != -1)
-    result += " focused_tree_id=" + IntToString(focused_tree_id);
+    result += " focused_tree_id=" + base::NumberToString(focused_tree_id);
 
   if (!doctype.empty())
     result += " doctype=" + doctype;
   if (loaded)
     result += " loaded=true";
   if (loading_progress != 0.0)
-    result += " loading_progress=" + DoubleToString(loading_progress);
+    result += " loading_progress=" + base::NumberToString(loading_progress);
   if (!mimetype.empty())
     result += " mimetype=" + mimetype;
   if (!url.empty())
@@ -62,17 +59,19 @@ std::string AXTreeData::ToString() const {
     result += " title=" + title;
 
   if (focus_id != -1)
-    result += " focus_id=" + IntToString(focus_id);
+    result += " focus_id=" + base::NumberToString(focus_id);
 
   if (sel_anchor_object_id != -1) {
-    result += " sel_anchor_object_id=" + IntToString(sel_anchor_object_id);
-    result += " sel_anchor_offset=" + IntToString(sel_anchor_offset);
+    result +=
+        " sel_anchor_object_id=" + base::NumberToString(sel_anchor_object_id);
+    result += " sel_anchor_offset=" + base::NumberToString(sel_anchor_offset);
     result += " sel_anchor_affinity=";
     result += ui::ToString(sel_anchor_affinity);
   }
   if (sel_focus_object_id != -1) {
-    result += " sel_focus_object_id=" + IntToString(sel_focus_object_id);
-    result += " sel_focus_offset=" + IntToString(sel_focus_offset);
+    result +=
+        " sel_focus_object_id=" + base::NumberToString(sel_focus_object_id);
+    result += " sel_focus_offset=" + base::NumberToString(sel_focus_offset);
     result += " sel_focus_affinity=";
     result += ui::ToString(sel_focus_affinity);
   }

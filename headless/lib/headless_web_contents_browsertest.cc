@@ -443,7 +443,7 @@ class HeadlessWebContentsPDFTest : public HeadlessAsyncDevTooledBrowserTest {
 
   void RunDevTooledTest() override {
     std::string height_expression = "document.body.style.height = '" +
-                                    base::DoubleToString(kDocHeight) + "in'";
+                                    base::NumberToString(kDocHeight) + "in'";
     std::unique_ptr<runtime::EvaluateParams> params =
         runtime::EvaluateParams::Builder()
             .SetExpression("document.body.style.background = '#123456';" +

@@ -106,7 +106,7 @@ class DelayNavigationThrottleInstantiationTest
          {DelayNavigationThrottle::kParamDelayNavigationRandomize,
           param_randomize_delay_ ? "true" : "false"},
          {DelayNavigationThrottle::kParamDelayNavigationProbability,
-          base::DoubleToString(param_probability_)}});
+          base::NumberToString(param_probability_)}});
     InitializeScopedFeatureList(feature_state_, variation_params);
   }
 

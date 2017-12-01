@@ -900,8 +900,7 @@ jboolean WebContentsAccessibilityAndroid::AdjustSlider(
   value += (increment ? delta : -delta);
   value = std::max(std::min(value, max), min);
   if (value != original_value) {
-    node->manager()->SetValue(*node,
-                              base::UTF8ToUTF16(base::DoubleToString(value)));
+    node->manager()->SetValue(*node, base::NumberToString16(value));
     return true;
   }
   return false;

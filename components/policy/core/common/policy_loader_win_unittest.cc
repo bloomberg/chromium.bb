@@ -90,8 +90,7 @@ bool InstallValue(const base::Value& value,
       double double_value;
       if (!value.GetAsDouble(&double_value))
         return false;
-      base::string16 str_value =
-          UTF8ToUTF16(base::DoubleToString(double_value));
+      base::string16 str_value = base::NumberToString16(double_value);
       return key.WriteValue(name.c_str(), str_value.c_str()) == ERROR_SUCCESS;
     }
 

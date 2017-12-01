@@ -425,9 +425,9 @@ void GeolocationBrowserTest::WatchPositionAndObservePermissionRequest(
 void GeolocationBrowserTest::ExpectPosition(double latitude, double longitude) {
   // Checks we have no error.
   ExpectValueFromScript("0", "geoGetLastError()");
-  ExpectValueFromScript(base::DoubleToString(latitude),
+  ExpectValueFromScript(base::NumberToString(latitude),
                         "geoGetLastPositionLatitude()");
-  ExpectValueFromScript(base::DoubleToString(longitude),
+  ExpectValueFromScript(base::NumberToString(longitude),
                         "geoGetLastPositionLongitude()");
 }
 

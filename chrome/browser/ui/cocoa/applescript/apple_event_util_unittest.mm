@@ -91,7 +91,7 @@ std::string AEDescToString(const AEDesc* aedesc) {
         return std::string();
       }
 
-      return base::DoubleToString(value);
+      return base::NumberToString(value);
       break;
     }
     // Text formats look like:

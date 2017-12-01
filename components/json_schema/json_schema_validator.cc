@@ -797,15 +797,17 @@ void JSONSchemaValidator::ValidateNumber(const base::Value* instance,
   double minimum = 0;
   if (schema->GetDouble(schema::kMinimum, &minimum)) {
     if (value < minimum)
-      errors_.push_back(Error(path, FormatErrorMessage(
-          kNumberMinimum, base::DoubleToString(minimum))));
+      errors_.push_back(Error(
+          path,
+          FormatErrorMessage(kNumberMinimum, base::NumberToString(minimum))));
   }
 
   double maximum = 0;
   if (schema->GetDouble(schema::kMaximum, &maximum)) {
     if (value > maximum)
-      errors_.push_back(Error(path, FormatErrorMessage(
-          kNumberMaximum, base::DoubleToString(maximum))));
+      errors_.push_back(Error(
+          path,
+          FormatErrorMessage(kNumberMaximum, base::NumberToString(maximum))));
   }
 }
 

@@ -112,7 +112,7 @@ static const char* StateToString(BufferingState::State state) {
 static std::string TimeDeltaToString(const base::TimeDelta& t) {
   if (t == ::media::kNoTimestamp)
     return "kNoTimestamp";
-  return base::DoubleToString(t.InSecondsF());
+  return base::NumberToString(t.InSecondsF());
 }
 
 std::string BufferingState::ToString() const {

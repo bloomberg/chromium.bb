@@ -396,7 +396,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 #if defined(OS_WIN)
   cmd_line->AppendSwitchASCII(
       switches::kDeviceScaleFactor,
-      base::DoubleToString(display::win::GetDPIScale()));
+      base::NumberToString(display::win::GetDPIScale()));
   const gfx::FontRenderParams font_params =
       gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
   cmd_line->AppendSwitchASCII(switches::kPpapiAntialiasedTextEnabled,

@@ -224,8 +224,7 @@ void SysInfo::SetChromeOSVersionInfoForTest(const std::string& lsb_release,
                                             const Time& lsb_release_time) {
   std::unique_ptr<Environment> env(Environment::Create());
   env->SetVar(kLsbReleaseKey, lsb_release);
-  env->SetVar(kLsbReleaseTimeKey,
-              DoubleToString(lsb_release_time.ToDoubleT()));
+  env->SetVar(kLsbReleaseTimeKey, NumberToString(lsb_release_time.ToDoubleT()));
   g_chrome_os_version_info.Get().Parse();
 }
 

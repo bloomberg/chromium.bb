@@ -337,7 +337,7 @@ base::string16 AXPlatformNodeBase::GetRangeValueText() {
   base::string16 value = GetString16Attribute(AX_ATTR_VALUE);
 
   if (value.empty() && GetFloatAttribute(AX_ATTR_VALUE_FOR_RANGE, &fval)) {
-    value = base::UTF8ToUTF16(base::DoubleToString(fval));
+    value = base::NumberToString16(fval);
   }
   return value;
 }

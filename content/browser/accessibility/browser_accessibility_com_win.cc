@@ -1982,8 +1982,7 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
     // We assume that there are 96 pixels per inch on a standard display.
     // TODO(nektar): Figure out the current value of pixels per inch.
     float points = font_size * 72.0 / 96.0;
-    attributes.push_back(L"font-size:" +
-                         base::UTF8ToUTF16(base::DoubleToString(points)) +
+    attributes.push_back(L"font-size:" + base::NumberToString16(points) +
                          L"pt");
   }
 

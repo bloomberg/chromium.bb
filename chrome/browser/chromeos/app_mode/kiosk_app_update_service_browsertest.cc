@@ -83,7 +83,7 @@ class KioskAppUpdateServiceTest
 
     const base::TimeDelta uptime = base::TimeDelta::FromHours(3);
     const std::string uptime_seconds =
-        base::DoubleToString(uptime.InSecondsF());
+        base::NumberToString(uptime.InSecondsF());
     const base::FilePath uptime_file = temp_dir.Append("uptime");
     ASSERT_EQ(static_cast<int>(uptime_seconds.size()),
               base::WriteFile(
