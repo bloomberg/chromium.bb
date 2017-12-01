@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-
 #include "base/command_line.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +18,7 @@
 #include "components/update_client/update_query_params.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "google_apis/gaia/identity_provider.h"
+#include "content/public/common/service_manager_connection.h"
 
 using extensions::ExtensionDownloader;
 using extensions::ExtensionDownloaderDelegate;
@@ -31,9 +31,10 @@ const char kTestRequestParam[] = "extension-updater-test-request";
 std::unique_ptr<ExtensionDownloader>
 ChromeExtensionDownloaderFactory::CreateForRequestContext(
     net::URLRequestContextGetter* request_context,
-    ExtensionDownloaderDelegate* delegate) {
+    ExtensionDownloaderDelegate* delegate,
+    service_manager::Connector* connector) {
   std::unique_ptr<ExtensionDownloader> downloader(
-      new ExtensionDownloader(delegate, request_context));
+      new ExtensionDownloader(delegate, request_context, connector));
 #if defined(GOOGLE_CHROME_BUILD)
   std::string brand;
   google_brand::GetBrand(&brand);
@@ -61,8 +62,11 @@ ChromeExtensionDownloaderFactory::CreateForProfile(
           SigninManagerFactory::GetForProfile(profile),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile)));
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
   std::unique_ptr<ExtensionDownloader> downloader =
-      CreateForRequestContext(profile->GetRequestContext(), delegate);
+      CreateForRequestContext(profile->GetRequestContext(), delegate,
+        connector);
   downloader->SetWebstoreIdentityProvider(std::move(identity_provider));
   return downloader;
 }

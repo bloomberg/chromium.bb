@@ -30,7 +30,6 @@
 #include "extensions/browser/updater/extension_cache.h"
 #include "extensions/browser/updater/extension_downloader_test_delegate.h"
 #include "extensions/browser/updater/request_queue_impl.h"
-#include "extensions/browser/updater/safe_manifest_parser.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "google_apis/gaia/identity_provider.h"
@@ -196,10 +195,12 @@ ExtensionDownloader::ExtraParams::ExtraParams() : is_corrupt_reinstall(false) {}
 
 ExtensionDownloader::ExtensionDownloader(
     ExtensionDownloaderDelegate* delegate,
-    net::URLRequestContextGetter* request_context)
+    net::URLRequestContextGetter* request_context,
+    service_manager::Connector* connector)
     : OAuth2TokenService::Consumer(kTokenServiceConsumerId),
       delegate_(delegate),
       request_context_(request_context),
+      connector_(connector),
       manifests_queue_(&kDefaultBackoffPolicy,
                        base::Bind(&ExtensionDownloader::CreateManifestFetcher,
                                   base::Unretained(this))),
@@ -578,11 +579,10 @@ void ExtensionDownloader::OnManifestFetchComplete(
                     manifests_queue_.active_request_failure_count(),
                     url);
     VLOG(2) << "beginning manifest parse for " << url;
-    auto callback = base::Bind(
-        &ExtensionDownloader::HandleManifestResults,
-        weak_ptr_factory_.GetWeakPtr(),
-        base::Owned(manifests_queue_.reset_active_request().release()));
-    ParseUpdateManifest(data, callback);
+    auto callback = base::BindOnce(&ExtensionDownloader::HandleManifestResults,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   manifests_queue_.reset_active_request());
+    ParseUpdateManifest(connector_, data, std::move(callback));
   } else {
     VLOG(1) << "Failed to fetch manifest '" << url.possibly_invalid_spec()
             << "' response code:" << response_code;
@@ -607,8 +607,9 @@ void ExtensionDownloader::OnManifestFetchComplete(
 }
 
 void ExtensionDownloader::HandleManifestResults(
-    const ManifestFetchData* fetch_data,
-    const UpdateManifest::Results* results) {
+    std::unique_ptr<ManifestFetchData> fetch_data,
+    std::unique_ptr<UpdateManifestResults> results,
+    const base::Optional<std::string>& error) {
   // Keep a list of extensions that will not be updated, so that the |delegate_|
   // can be notified once we're done here.
   std::set<std::string> not_updated(fetch_data->extension_ids());
@@ -627,7 +628,7 @@ void ExtensionDownloader::HandleManifestResults(
   std::vector<int> updates;
   DetermineUpdates(*fetch_data, *results, &updates);
   for (size_t i = 0; i < updates.size(); i++) {
-    const UpdateManifest::Result* update = &(results->list.at(updates[i]));
+    const UpdateManifestResult* update = &(results->list.at(updates[i]));
     const std::string& id = update->extension_id;
     not_updated.erase(id);
 
@@ -679,10 +680,10 @@ void ExtensionDownloader::HandleManifestResults(
 
 void ExtensionDownloader::DetermineUpdates(
     const ManifestFetchData& fetch_data,
-    const UpdateManifest::Results& possible_updates,
+    const UpdateManifestResults& possible_updates,
     std::vector<int>* result) {
   for (size_t i = 0; i < possible_updates.list.size(); i++) {
-    const UpdateManifest::Result* update = &possible_updates.list[i];
+    const UpdateManifestResult* update = &possible_updates.list[i];
     const std::string& id = update->extension_id;
 
     if (!fetch_data.Includes(id)) {

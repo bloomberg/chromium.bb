@@ -19,9 +19,6 @@
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_session_type.h"
-#include "extensions/common/manifest.h"
-#include "extensions/common/manifest_parser.mojom.h"
-#include "extensions/common/update_manifest.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "extensions/utility/unpacker.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -167,30 +164,6 @@ class ExtensionUnpackerImpl : public extensions::mojom::ExtensionUnpacker {
   DISALLOW_COPY_AND_ASSIGN(ExtensionUnpackerImpl);
 };
 
-class ManifestParserImpl : public extensions::mojom::ManifestParser {
- public:
-  ManifestParserImpl() = default;
-  ~ManifestParserImpl() override = default;
-
-  static void Create(extensions::mojom::ManifestParserRequest request) {
-    mojo::MakeStrongBinding(std::make_unique<ManifestParserImpl>(),
-                            std::move(request));
-  }
-
- private:
-  void Parse(const std::string& xml, ParseCallback callback) override {
-    UpdateManifest manifest;
-    if (manifest.Parse(xml)) {
-      std::move(callback).Run(manifest.results());
-    } else {
-      LOG(WARNING) << "Error parsing update manifest:\n" << manifest.errors();
-      std::move(callback).Run(base::nullopt);
-    }
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ManifestParserImpl);
-};
-
 }  // namespace
 
 namespace utility_handler {
@@ -210,8 +183,6 @@ void ExposeInterfacesToBrowser(service_manager::BinderRegistry* registry,
     return;
 
   registry->AddInterface(base::Bind(&ExtensionUnpackerImpl::Create),
-                         base::ThreadTaskRunnerHandle::Get());
-  registry->AddInterface(base::Bind(&ManifestParserImpl::Create),
                          base::ThreadTaskRunnerHandle::Get());
 }
 

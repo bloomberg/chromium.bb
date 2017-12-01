@@ -18,6 +18,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 // This provides a simple static interface for constructing an
 // ExtensionDownloader suitable for use from within Chrome.
 class ChromeExtensionDownloaderFactory {
@@ -26,7 +30,8 @@ class ChromeExtensionDownloaderFactory {
   // is associated with this downloader.
   static std::unique_ptr<extensions::ExtensionDownloader>
   CreateForRequestContext(net::URLRequestContextGetter* request_context,
-                          extensions::ExtensionDownloaderDelegate* delegate);
+                          extensions::ExtensionDownloaderDelegate* delegate,
+                          service_manager::Connector* connector);
 
   // Creates a downloader for a given Profile. This downloader will be able
   // to authenticate as the signed-in user in the event that it's asked to

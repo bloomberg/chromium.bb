@@ -19,8 +19,8 @@
 #include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/browser/updater/request_queue.h"
+#include "extensions/browser/updater/safe_manifest_parser.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/update_manifest.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -31,6 +31,10 @@ namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
 class URLRequestStatus;
+}
+
+namespace service_manager {
+class Connector;
 }
 
 namespace extensions {
@@ -63,7 +67,8 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
   // |delegate| is stored as a raw pointer and must outlive the
   // ExtensionDownloader.
   ExtensionDownloader(ExtensionDownloaderDelegate* delegate,
-                      net::URLRequestContextGetter* request_context);
+                      net::URLRequestContextGetter* request_context,
+                      service_manager::Connector* connector);
   ~ExtensionDownloader() override;
 
   // Adds |extension| to the list of extensions to check for updates.
@@ -237,13 +242,14 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
 
   // Once a manifest is parsed, this starts fetches of any relevant crx files.
   // If |results| is null, it means something went wrong when parsing it.
-  void HandleManifestResults(const ManifestFetchData* fetch_data,
-                             const UpdateManifest::Results* results);
+  void HandleManifestResults(std::unique_ptr<ManifestFetchData> fetch_data,
+                             std::unique_ptr<UpdateManifestResults> results,
+                             const base::Optional<std::string>& error);
 
   // Given a list of potential updates, returns the indices of the ones that are
   // applicable (are actually a new version, etc.) in |result|.
   void DetermineUpdates(const ManifestFetchData& fetch_data,
-                        const UpdateManifest::Results& possible_updates,
+                        const UpdateManifestResults& possible_updates,
                         std::vector<int>* result);
 
   // Begins (or queues up) download of an updated extension.
@@ -310,6 +316,9 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
 
   // The request context to use for the URLFetchers.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  // The connector to the ServiceManager.
+  service_manager::Connector* connector_;
 
   // Collects UMA samples that are reported when ReportStats() is called.
   URLStats url_stats_;

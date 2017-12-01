@@ -41,5 +41,6 @@ source_set("updater") {
   deps = [
     "//extensions/common",
     "//extensions/strings",
+    "//services/data_decoder/public/cpp",
   ]
 }

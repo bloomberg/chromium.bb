@@ -24,7 +24,6 @@ if (enable_extensions) {
   mojom("mojo") {
     sources = [
       "extension_unpacker.mojom",
-      "manifest_parser.mojom",
       "mojo/app_window.mojom",
       "mojo/keep_alive.mojom",
     ]
@@ -263,8 +262,6 @@ if (enable_extensions) {
       "stack_frame.h",
       "switches.cc",
       "switches.h",
-      "update_manifest.cc",
-      "update_manifest.h",
       "url_pattern.cc",
       "url_pattern.h",
       "url_pattern_set.cc",
@@ -313,7 +310,6 @@ if (enable_extensions) {
       "//net",
       "//third_party/boringssl",
       "//third_party/icu",
-      "//third_party/libxml",
       "//third_party/re2",
       "//ui/base",
       "//ui/gfx/geometry",
@@ -390,7 +386,6 @@ if (enable_extensions) {
       "permissions/socket_permission_unittest.cc",
       "permissions/usb_device_permission_unittest.cc",
       "stack_frame_unittest.cc",
-      "update_manifest_unittest.cc",
       "url_pattern_set_unittest.cc",
       "url_pattern_unittest.cc",
       "user_script_unittest.cc",

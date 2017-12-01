@@ -2,7 +2,4 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [
-  "//extensions/common/extension_unpacker.typemap",
-  "//extensions/common/manifest_parser.typemap",
-]
+typemaps = [ "//extensions/common/extension_unpacker.typemap" ]
