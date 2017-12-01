@@ -10461,7 +10461,6 @@ PALETTE_EXIT:
   if (x->skip_mode_rdcost < 0 && cm->skip_mode_flag &&
       !segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME) &&
       is_comp_ref_allowed(bsize)) {
-    x->skip_mode_rdcost = INT64_MAX;
     estimate_skip_mode_rdcost(cpi, tile_data, x, bsize, mi_row, mi_col,
                               frame_mv, yv12_mb);
   }
