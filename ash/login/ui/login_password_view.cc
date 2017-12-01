@@ -327,7 +327,7 @@ LoginPasswordView::TestApi::TestApi(LoginPasswordView* view) : view_(view) {}
 
 LoginPasswordView::TestApi::~TestApi() = default;
 
-views::View* LoginPasswordView::TestApi::textfield() const {
+views::Textfield* LoginPasswordView::TestApi::textfield() const {
   return view_->textfield_;
 }
 
@@ -501,11 +501,15 @@ void LoginPasswordView::Backspace() {
                                   ui::DomCode::BACKSPACE, ui::EF_NONE));
 }
 
-void LoginPasswordView::Submit() {}
-
 void LoginPasswordView::SetPlaceholderText(
     const base::string16& placeholder_text) {
   textfield_->set_placeholder_text(placeholder_text);
+}
+
+void LoginPasswordView::SetReadOnly(bool read_only) {
+  textfield_->SetReadOnly(read_only);
+  textfield_->SetCursorEnabled(!read_only);
+  UpdateUiState();
 }
 
 const char* LoginPasswordView::GetClassName() const {
@@ -540,9 +544,13 @@ void LoginPasswordView::ButtonPressed(views::Button* sender,
 void LoginPasswordView::ContentsChanged(views::Textfield* sender,
                                         const base::string16& new_contents) {
   DCHECK_EQ(sender, textfield_);
-  bool is_enabled = !new_contents.empty();
+  UpdateUiState();
+  on_password_text_changed_.Run(new_contents.empty() /*is_empty*/);
+}
+
+void LoginPasswordView::UpdateUiState() {
+  bool is_enabled = !textfield_->text().empty() && !textfield_->read_only();
   submit_button_->SetEnabled(is_enabled);
-  on_password_text_changed_.Run(!is_enabled);
   SkColor color = is_enabled
                       ? login_constants::kButtonEnabledColor
                       : SkColorSetA(login_constants::kButtonEnabledColor,
@@ -558,8 +566,9 @@ void LoginPasswordView::OnCapsLockChanged(bool enabled) {
 }
 
 void LoginPasswordView::SubmitPassword() {
+  if (textfield_->read_only())
+    return;
   on_submit_.Run(textfield_->text());
-  Clear();
 }
 
 }  // namespace ash

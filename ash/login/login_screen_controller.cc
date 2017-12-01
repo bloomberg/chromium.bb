@@ -31,7 +31,8 @@ std::string CalculateHash(const std::string& password,
 
 }  // namespace
 
-LoginScreenController::LoginScreenController() : binding_(this) {}
+LoginScreenController::LoginScreenController()
+    : binding_(this), weak_factory_(this) {}
 
 LoginScreenController::~LoginScreenController() = default;
 
@@ -122,13 +123,18 @@ void LoginScreenController::SetDevChannelInfo(
   }
 }
 
-void LoginScreenController::AuthenticateUser(
-    const AccountId& account_id,
-    const std::string& password,
-    bool authenticated_by_pin,
-    mojom::LoginScreenClient::AuthenticateUserCallback callback) {
-  if (!login_screen_client_)
+void LoginScreenController::AuthenticateUser(const AccountId& account_id,
+                                             const std::string& password,
+                                             bool authenticated_by_pin,
+                                             OnAuthenticateCallback callback) {
+  // Ignore concurrent auth attempts. This can happen if the user quickly enters
+  // two separate passwords and hits enter.
+  if (!login_screen_client_ || is_authenticating_) {
+    LOG_IF(ERROR, is_authenticating_) << "Ignoring concurrent auth attempt";
+    std::move(callback).Run(base::nullopt);
     return;
+  }
+  is_authenticating_ = true;
 
   // If auth is disabled by the debug overlay bypass the mojo call entirely, as
   // it will dismiss the lock screen if the password is correct.
@@ -136,25 +142,26 @@ void LoginScreenController::AuthenticateUser(
     case ForceFailAuth::kOff:
       break;
     case ForceFailAuth::kImmediate:
-      std::move(callback).Run(false);
+      OnAuthenticateComplete(std::move(callback), false /*success*/);
       return;
     case ForceFailAuth::kDelayed:
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::BindOnce(std::move(callback), false),
+          FROM_HERE,
+          base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
+                         weak_factory_.GetWeakPtr(), base::Passed(&callback),
+                         false),
           base::TimeDelta::FromSeconds(1));
       return;
   }
 
-  // We cannot execute auth requests directly via GetSystemSalt because it
-  // expects a base::Callback instance, but |callback| is a base::OnceCallback.
-  // Instead, we store |callback| on this object and invoke it locally once we
-  // have the system salt.
-  DCHECK(!pending_user_auth_) << "More than one concurrent auth attempt";
-  pending_user_auth_ = base::BindOnce(
-      &LoginScreenController::DoAuthenticateUser, base::Unretained(this),
+  // |DoAuthenticateUser| requires the system salt, so we fetch it first, and
+  // then run |DoAuthenticateUser| as a continuation.
+  auto do_authenticate = base::BindOnce(
+      &LoginScreenController::DoAuthenticateUser, weak_factory_.GetWeakPtr(),
       account_id, password, authenticated_by_pin, std::move(callback));
-  chromeos::SystemSaltGetter::Get()->GetSystemSalt(base::Bind(
-      &LoginScreenController::OnGetSystemSalt, base::Unretained(this)));
+  chromeos::SystemSaltGetter::Get()->GetSystemSalt(base::BindRepeating(
+      &LoginScreenController::OnGetSystemSalt, weak_factory_.GetWeakPtr(),
+      base::Passed(&do_authenticate)));
 }
 
 void LoginScreenController::HandleFocusLeavingLockScreenApps(bool reverse) {
@@ -240,12 +247,11 @@ void LoginScreenController::FlushForTesting() {
   login_screen_client_.FlushForTesting();
 }
 
-void LoginScreenController::DoAuthenticateUser(
-    const AccountId& account_id,
-    const std::string& password,
-    bool authenticated_by_pin,
-    mojom::LoginScreenClient::AuthenticateUserCallback callback,
-    const std::string& system_salt) {
+void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,
+                                               const std::string& password,
+                                               bool authenticated_by_pin,
+                                               OnAuthenticateCallback callback,
+                                               const std::string& system_salt) {
   int dummy_value;
   bool is_pin =
       authenticated_by_pin && base::StringToInt(password, &dummy_value);
@@ -273,12 +279,22 @@ void LoginScreenController::DoAuthenticateUser(
   Shell::Get()->metrics()->login_metrics_recorder()->SetAuthMethod(
       is_pin ? LoginMetricsRecorder::AuthMethod::kPin
              : LoginMetricsRecorder::AuthMethod::kPassword);
-  login_screen_client_->AuthenticateUser(account_id, hashed_password, is_pin,
-                                         std::move(callback));
+  login_screen_client_->AuthenticateUser(
+      account_id, hashed_password, is_pin,
+      base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
+                     weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
-void LoginScreenController::OnGetSystemSalt(const std::string& system_salt) {
-  std::move(pending_user_auth_).Run(system_salt);
+void LoginScreenController::OnAuthenticateComplete(
+    OnAuthenticateCallback callback,
+    bool success) {
+  is_authenticating_ = false;
+  std::move(callback).Run(success);
+}
+
+void LoginScreenController::OnGetSystemSalt(PendingDoAuthenticateUser then,
+                                            const std::string& system_salt) {
+  std::move(then).Run(system_salt);
 }
 
 LoginDataDispatcher* LoginScreenController::DataDispatcher() const {

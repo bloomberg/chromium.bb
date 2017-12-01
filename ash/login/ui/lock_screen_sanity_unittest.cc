@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 
@@ -135,6 +136,41 @@ TEST_F(LockScreenSanityTest, PasswordSubmitCallsLoginScreenClient) {
   generator.PressKey(ui::KeyboardCode::VKEY_A, 0);
   generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   base::RunLoop().RunUntilIdle();
+}
+
+// Verifies that password text is cleared only after the browser-process
+// authentication request is complete.
+TEST_F(LockScreenSanityTest, PasswordSubmitClearsPasswordAfterAuthentication) {
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+
+  auto* contents = new LockContentsView(mojom::TrayActionState::kAvailable,
+                                        data_dispatcher());
+  SetUserCount(1);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+
+  // Capture the authentication callback.
+  MockLoginScreenClient::AuthenticateUserCallback callback;
+  client->set_authenticate_user_callback_storage(&callback);
+  EXPECT_CALL(*client, AuthenticateUser_(testing::_, testing::_, testing::_,
+                                         testing::_));
+
+  // Submit password with content 'a'. This creates a browser-process
+  // authentication request stored in |callback|.
+  DCHECK(callback.is_null());
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.PressKey(ui::KeyboardCode::VKEY_A, 0);
+  generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  base::RunLoop().RunUntilIdle();
+  DCHECK(!callback.is_null());
+
+  // Run the browser-process authentication request. Verify that after the ash
+  // callback handler has completed the password is cleared.
+  LoginPasswordView::TestApi password_test_api =
+      MakeLoginPasswordTestApi(contents);
+  EXPECT_FALSE(password_test_api.textfield()->text().empty());
+  std::move(callback).Run(true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(password_test_api.textfield()->text().empty());
 }
 
 // Verifies that tabbing from the lock screen will eventually focus the shelf.

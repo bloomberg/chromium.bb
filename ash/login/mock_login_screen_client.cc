@@ -27,7 +27,10 @@ void MockLoginScreenClient::AuthenticateUser(
     bool authenticated_by_pin,
     AuthenticateUserCallback callback) {
   AuthenticateUser_(account_id, password, authenticated_by_pin, callback);
-  std::move(callback).Run(authenticate_user_callback_result_);
+  if (authenticate_user_callback_storage_)
+    *authenticate_user_callback_storage_ = std::move(callback);
+  else
+    std::move(callback).Run(authenticate_user_callback_result_);
 }
 
 std::unique_ptr<MockLoginScreenClient> BindMockLoginScreenClient() {

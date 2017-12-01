@@ -29,6 +29,13 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
     authenticate_user_callback_result_ = value;
   }
 
+  // If set to non-null, when |AuthenticateUser| is called the callback will be
+  // stored in |storage| instead of being executed.
+  void set_authenticate_user_callback_storage(
+      AuthenticateUserCallback* storage) {
+    authenticate_user_callback_storage_ = storage;
+  }
+
   // mojom::LoginScreenClient:
   void AuthenticateUser(const AccountId& account_id,
                         const std::string& password,
@@ -48,6 +55,7 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
 
  private:
   bool authenticate_user_callback_result_ = true;
+  AuthenticateUserCallback* authenticate_user_callback_storage_ = nullptr;
 
   mojo::Binding<mojom::LoginScreenClient> binding_;
 

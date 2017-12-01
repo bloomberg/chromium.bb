@@ -39,7 +39,7 @@ TEST_F(LoginScreenControllerTest, RequestAuthentication) {
   controller->AuthenticateUser(
       id, password, false,
       base::BindOnce([](base::Optional<bool>* result,
-                        bool did_auth) { *result = did_auth; },
+                        base::Optional<bool> did_auth) { *result = *did_auth; },
                      &callback_result));
 
   base::RunLoop().RunUntilIdle();
@@ -52,6 +52,9 @@ TEST_F(LoginScreenControllerTest, RequestAuthentication) {
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   EXPECT_TRUE(prefs->FindPreference(prefs::kQuickUnlockPinSalt));
 
+  // We hardcode the hashed PIN. This is fine because the PIN hash algorithm
+  // should never accidentally change; if it does we will need to have migration
+  // code and one failing test isn't a problem.
   std::string pin = "123456";
   std::string hashed_pin = "cqgMB9rwrcE35iFxm+4vP2toO6qkzW+giCnCcEou92Y=";
   EXPECT_NE(pin, hashed_pin);
@@ -60,7 +63,7 @@ TEST_F(LoginScreenControllerTest, RequestAuthentication) {
   controller->AuthenticateUser(
       id, pin, true,
       base::BindOnce([](base::Optional<bool>* result,
-                        bool did_auth) { *result = did_auth; },
+                        base::Optional<bool> did_auth) { *result = *did_auth; },
                      &callback_result));
 
   base::RunLoop().RunUntilIdle();
