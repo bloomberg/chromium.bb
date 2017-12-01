@@ -80,9 +80,7 @@ bool GetDeviceInfo(const DiskMountManager::MountPointInfo& mount_info,
 
 }  // namespace
 
-StorageMonitorCros::StorageMonitorCros()
-    : weak_ptr_factory_(this) {
-}
+StorageMonitorCros::StorageMonitorCros() : weak_ptr_factory_(this) {}
 
 StorageMonitorCros::~StorageMonitorCros() {
   DiskMountManager* manager = DiskMountManager::GetInstance();
@@ -134,8 +132,13 @@ void StorageMonitorCros::CheckExistingMountPoints() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void StorageMonitorCros::OnDiskEvent(DiskMountManager::DiskEvent event,
-                                     const DiskMountManager::Disk* disk) {}
+void StorageMonitorCros::OnAutoMountableDiskEvent(
+    DiskMountManager::DiskEvent event,
+    const DiskMountManager::Disk& disk) {}
+
+void StorageMonitorCros::OnBootDeviceDiskEvent(
+    DiskMountManager::DiskEvent event,
+    const DiskMountManager::Disk& disk) {}
 
 void StorageMonitorCros::OnDeviceEvent(DiskMountManager::DeviceEvent event,
                                        const std::string& device_path) {}
@@ -194,7 +197,6 @@ void StorageMonitorCros::SetMediaTransferProtocolManagerForTest(
   DCHECK(!media_transfer_protocol_manager_);
   media_transfer_protocol_manager_.reset(test_manager);
 }
-
 
 bool StorageMonitorCros::GetStorageInfoForPath(
     const base::FilePath& path,

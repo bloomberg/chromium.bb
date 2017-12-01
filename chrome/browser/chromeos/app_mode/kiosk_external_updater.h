@@ -57,8 +57,12 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
   };
 
   // disks::DiskMountManager::Observer overrides.
-  void OnDiskEvent(disks::DiskMountManager::DiskEvent event,
-                   const disks::DiskMountManager::Disk* disk) override;
+  void OnAutoMountableDiskEvent(
+      disks::DiskMountManager::DiskEvent event,
+      const disks::DiskMountManager::Disk& disk) override;
+  void OnBootDeviceDiskEvent(
+      disks::DiskMountManager::DiskEvent event,
+      const disks::DiskMountManager::Disk& disk) override;
   void OnDeviceEvent(disks::DiskMountManager::DeviceEvent event,
                      const std::string& device_path) override;
   void OnMountEvent(

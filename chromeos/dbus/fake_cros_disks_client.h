@@ -41,8 +41,10 @@ class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
                const base::Closure& callback,
                const base::Closure& error_callback) override;
   void EnumerateAutoMountableDevices(
-      const EnumerateAutoMountableDevicesCallback& callback,
+      const EnumerateDevicesCallback& callback,
       const base::Closure& error_callback) override;
+  void EnumerateDevices(const EnumerateDevicesCallback& callback,
+                        const base::Closure& error_callback) override;
   void EnumerateMountEntries(const EnumerateMountEntriesCallback& callback,
                              const base::Closure& error_callback) override;
   void Format(const std::string& device_path,
