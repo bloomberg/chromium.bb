@@ -108,6 +108,22 @@ class EmptyNotificationView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(EmptyNotificationView);
 };
 
+class MessageCenterScrollView : public views::ScrollView {
+ public:
+  explicit MessageCenterScrollView(MessageCenterView* owner) : owner_(owner) {}
+
+ private:
+  // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->role = ui::AX_ROLE_DIALOG;
+    node_data->SetName(owner_->GetButtonBarTitle());
+  }
+
+  MessageCenterView* owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(MessageCenterScrollView);
+};
+
 }  // namespace
 
 // MessageCenterView ///////////////////////////////////////////////////////////
@@ -129,7 +145,7 @@ MessageCenterView::MessageCenterView(
   message_center_->AddObserver(this);
   set_notify_enter_exit_on_child(true);
   SetBackground(views::CreateSolidBackground(kBackgroundColor));
-  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  SetFocusBehavior(views::View::FocusBehavior::NEVER);
 
   button_bar_ = new MessageCenterButtonBar(
       this, message_center, initially_settings_visible, GetButtonBarTitle());
@@ -137,7 +153,7 @@ MessageCenterView::MessageCenterView(
 
   const int button_height = button_bar_->GetPreferredSize().height();
 
-  scroller_ = new views::ScrollView();
+  scroller_ = new MessageCenterScrollView(this);
   scroller_->SetBackgroundColor(kBackgroundColor);
   scroller_->ClipHeightTo(kMinScrollViewHeight, max_height - button_height);
   scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
@@ -266,6 +282,12 @@ void MessageCenterView::SetIsClosing(bool is_closing) {
     message_center_->AddObserver(this);
 }
 
+base::string16 MessageCenterView::GetButtonBarTitle() const {
+  return is_locked_ ?
+      l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_FOOTER_LOCKSCREEN) :
+          l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_FOOTER_TITLE);
+}
+
 void MessageCenterView::OnDidChangeFocus(views::View* before,
                                          views::View* now) {
   // Update the button visibility when the focus state is changed.
@@ -354,11 +376,6 @@ void MessageCenterView::OnMouseExited(const ui::MouseEvent& event) {
 
   message_list_view_->ResetRepositionSession();
   Update(true /* animate */);
-}
-
-void MessageCenterView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_DIALOG;
-  node_data->SetName(GetButtonBarTitle());
 }
 
 void MessageCenterView::OnNotificationAdded(const std::string& id) {
@@ -541,13 +558,6 @@ void MessageCenterView::AddNotificationAt(const Notification& notification,
 
   view->set_scroller(scroller_);
   message_list_view_->AddNotificationAt(view, index);
-}
-
-base::string16 MessageCenterView::GetButtonBarTitle() const {
-  if (is_locked_)
-    return l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_FOOTER_LOCKSCREEN);
-
-  return l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_FOOTER_TITLE);
 }
 
 void MessageCenterView::Update(bool animate) {
