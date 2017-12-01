@@ -169,7 +169,6 @@ extern const base::Feature kMaterialDesignIncognitoNTP;
 
 #if !defined(OS_ANDROID)
 extern const base::Feature kMediaRemoting;
-extern const base::Feature kMediaRouterUIRouteController;
 #endif
 
 extern const base::Feature kModalPermissionPrompts;

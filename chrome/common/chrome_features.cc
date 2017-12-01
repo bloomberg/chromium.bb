@@ -329,12 +329,6 @@ const base::Feature kMaterialDesignIncognitoNTP{
 // during Cast Tab Mirroring.
 const base::Feature kMediaRemoting{"MediaRemoting",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, replaces the <extensionview> controller in the route details view
-// of the Media Router dialog with the controller bundled with the WebUI
-// resources.
-const base::Feature kMediaRouterUIRouteController{
-    "MediaRouterUIRouteController", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 // Enables or disables modal permission prompts.

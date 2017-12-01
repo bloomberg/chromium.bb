@@ -21,16 +21,6 @@ Polymer({
     },
 
     /**
-     * The route description to display. Uses the media route description if
-     * none is provided by the media route status object.
-     * @private {string}
-     */
-    routeDescription_: {
-      type: String,
-      value: '',
-    },
-
-    /**
      * The volume shown in the volume control, between 0 and 1.
      * @private {number}
      */
@@ -47,15 +37,6 @@ Polymer({
     hangoutsLocalPresent_: {
       type: Boolean,
       value: false,
-    },
-
-    /**
-     * Keep in sync with media remoting individual user setting.
-     * @private {boolean}
-     */
-    mediaRemotingEnabled_: {
-      type: Boolean,
-      value: true,
     },
 
     /**
@@ -116,12 +97,31 @@ Polymer({
     },
 
     /**
+     * Keep in sync with media remoting individual user setting.
+     * @private {boolean}
+     */
+    mediaRemotingEnabled_: {
+      type: Boolean,
+      value: true,
+    },
+
+    /**
      * The route currently associated with this controller.
      * @type {?media_router.Route|undefined}
      */
     route: {
       type: Object,
       observer: 'onRouteUpdated_',
+    },
+
+    /**
+     * The route description to display. Uses the media route description if
+     * none is provided by the media route status object.
+     * @private {string}
+     */
+    routeDescription_: {
+      type: String,
+      value: '',
     },
 
     /**

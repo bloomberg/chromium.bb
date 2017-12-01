@@ -25,16 +25,6 @@ media_router.CastModeType = {
 };
 
 /**
- * Route controller types that can be shown in the route details view.
- * @enum {number}
- */
-media_router.ControllerType = {
-  NONE: 0,
-  WEBUI: 1,
-  EXTENSION: 2,
-};
-
-/**
  * The ESC key maps to KeyboardEvent.key value 'Escape'.
  * @const {string}
  */

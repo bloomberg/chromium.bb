@@ -30,9 +30,6 @@
   <include name="IDR_ROUTE_CONTROLS_HTML" file="resources\media_router\elements\route_controls\route_controls.html" type="BINDATA" />
   <include name="IDR_ROUTE_CONTROLS_CSS" file="resources\media_router\elements\route_controls\route_controls.css" type="BINDATA" />
   <include name="IDR_ROUTE_CONTROLS_JS" file="resources\media_router\elements\route_controls\route_controls.js" type="BINDATA" />
-  <include name="IDR_EXTENSION_VIEW_WRAPPER_HTML" file="resources\media_router\elements\route_details\extension_view_wrapper\extension_view_wrapper.html" type="BINDATA" />
-  <include name="IDR_EXTENSION_VIEW_WRAPPER_CSS" file="resources\media_router\elements\route_details\extension_view_wrapper\extension_view_wrapper.css" type="BINDATA" />
-  <include name="IDR_EXTENSION_VIEW_WRAPPER_JS" file="resources\media_router\elements\route_details\extension_view_wrapper\extension_view_wrapper.js" type="BINDATA" />
   <include name="IDR_ROUTE_DETAILS_HTML" file="resources\media_router\elements\route_details\route_details.html" type="BINDATA" />
   <include name="IDR_ROUTE_DETAILS_CSS" file="resources\media_router\elements\route_details\route_details.css" type="BINDATA" />
   <include name="IDR_ROUTE_DETAILS_JS" file="resources\media_router\elements\route_details\route_details.js" type="BINDATA" />
