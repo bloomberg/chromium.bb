@@ -100,6 +100,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsOnlineDetectionDisabled;
     private static Boolean sIsAmpAsSeparateTabDisabled;
     private static Boolean sContextualSearchMlTapSuppressionEnabled;
+    private static Boolean sContextualSearchSecondTapMlOverrideEnabled;
     private static Boolean sIsSendHomeCountryDisabled;
     private static Boolean sIsPageContentNotificationDisabled;
     private static Boolean sIsUkmRankerLoggingDisabled;
@@ -406,6 +407,17 @@ public class ContextualSearchFieldTrial {
                     ChromeFeatureList.CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION);
         }
         return sContextualSearchMlTapSuppressionEnabled;
+    }
+
+    /**
+     * @return Whether or not to override an ML-based Tap suppression on a second tap.
+     */
+    static boolean isContextualSearchSecondTapMlOverrideEnabled() {
+        if (sContextualSearchSecondTapMlOverrideEnabled == null) {
+            sContextualSearchSecondTapMlOverrideEnabled =
+                    ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_SECOND_TAP);
+        }
+        return sContextualSearchSecondTapMlOverrideEnabled;
     }
 
     // --------------------------------------------------------------------------------------------

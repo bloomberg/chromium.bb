@@ -35,7 +35,9 @@ public interface ContextualSearchRankerLogger {
         IS_LONG_WORD,
         IS_WORD_EDGE,
         IS_ENTITY,
-        TAP_DURATION_MS
+        TAP_DURATION_MS,
+        // UKM CS v3 features (see go/ukm-cs-3).
+        IS_SECOND_TAP_OVERRIDE
     }
 
     /**

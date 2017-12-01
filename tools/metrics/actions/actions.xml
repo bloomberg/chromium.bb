@@ -3906,6 +3906,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ContextualSearch.TapSuppressed.TapThresholdExceeded">
+  <obsolete>Deprecated as of 11/2017.</obsolete>
   <owner>donnd@chromium.org</owner>
   <description>
     A tap that typically would have triggered Contextual Search was suppressed

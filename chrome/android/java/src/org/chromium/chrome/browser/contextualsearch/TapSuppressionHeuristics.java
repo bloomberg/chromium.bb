@@ -18,13 +18,12 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
      * @param previousTapState The state of the previous tap, or {@code null}.
      * @param x The x position of the Tap.
      * @param y The y position of the Tap.
-     * @param tapsSinceOpen the number of Tap gestures since the last open of the panel.
      * @param contextualSearchContext The {@link ContextualSearchContext} of this tap.
      * @param tapDurationMs The duration of this tap in milliseconds.
      * @param wasSelectionEmptyBeforeTap Whether the selection was empty before this tap.
      */
     TapSuppressionHeuristics(ContextualSearchSelectionController selectionController,
-            @Nullable ContextualSearchTapState previousTapState, int x, int y, int tapsSinceOpen,
+            @Nullable ContextualSearchTapState previousTapState, int x, int y,
             ContextualSearchContext contextualSearchContext, int tapDurationMs,
             boolean wasSelectionEmptyBeforeTap) {
         super();
@@ -39,10 +38,8 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
         mHeuristics.add(new ContextualSearchEntityHeuristic(contextualSearchContext));
         mHeuristics.add(new NearTopTapSuppression(selectionController, y));
         mHeuristics.add(new BarOverlapTapSuppression(selectionController, y));
-        // General Tap Suppression and Tap Twice.
-        TapSuppression tapSuppression =
-                new TapSuppression(selectionController, previousTapState, x, y, tapsSinceOpen);
-        mHeuristics.add(tapSuppression);
+        // Second Tap ML Override.
+        mHeuristics.add(new SecondTapMlOverride(selectionController, previousTapState, x, y));
     }
 
     /**
@@ -80,6 +77,16 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
     boolean shouldSuppressTap() {
         for (ContextualSearchHeuristic heuristic : mHeuristics) {
             if (heuristic.isConditionSatisfiedAndEnabled()) return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return Whether the Tap should override an ML suppression.
+     */
+    boolean shouldOverrideMlTapSuppression() {
+        for (ContextualSearchHeuristic heuristic : mHeuristics) {
+            if (heuristic.shouldOverrideMlTapSuppression()) return true;
         }
         return false;
     }

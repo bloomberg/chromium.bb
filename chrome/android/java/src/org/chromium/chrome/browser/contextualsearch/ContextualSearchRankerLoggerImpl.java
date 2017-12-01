@@ -50,6 +50,7 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
         features.put(Feature.IS_WORD_EDGE, "IsWordEdge");
         features.put(Feature.IS_ENTITY, "IsEntity");
         features.put(Feature.TAP_DURATION_MS, "TapDurationMs");
+        features.put(Feature.IS_SECOND_TAP_OVERRIDE, "IsSecondTapOverride");
         FEATURES = Collections.unmodifiableMap(features);
 
         Map<Feature, String> allNames = new HashMap<Feature, String>();
