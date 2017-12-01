@@ -18,6 +18,26 @@ const char kTestDeviceContext[] = "Video camera";
 const char kFakePacketLabel1[] = "Packet1";
 const char kFakePacketLabel3[] = "Packet3";
 const char kFakeEntityLabel3[] = "Region3";
+const char kVideoStreamIdForFaceDetection[] = "FaceDetection";
+const char kVideoStreamIdForVideoCapture[] = "VideoCapture";
+
+const int kVideoStreamWidthForFaceDetection = 1280;
+const int kVideoStreamHeightForFaceDetection = 720;
+const int kVideoStreamFrameRateForFaceDetection = 30;
+const int kVideoStreamWidthForVideoCapture = 640;
+const int kVideoStreamHeightForVideoCapture = 360;
+const int kVideoStreamFrameRateForVideoCapture = 5;
+
+void InitializeVideoStreamParam(media_perception::VideoStreamParam& param,
+                                const std::string& id,
+                                int width,
+                                int height,
+                                int frame_rate) {
+  param.id = std::make_unique<std::string>(id);
+  param.width = std::make_unique<int>(width);
+  param.height = std::make_unique<int>(height);
+  param.frame_rate = std::make_unique<int>(frame_rate);
+}
 
 void InitializeFakeFramePerception(const int index,
                                    mri::FramePerception* frame_perception) {
@@ -278,6 +298,43 @@ TEST(MediaPerceptionConversionUtilsTest, StateIdlToProto) {
   state.status = media_perception::STATUS_STOPPED;
   state_proto = StateIdlToProto(state);
   EXPECT_EQ(mri::State::STOPPED, state_proto.status());
+}
+
+TEST(MediaPerceptionConversionUtilsTest, StateIdlToProtoWithVideoStreamParam) {
+  media_perception::State state;
+  state.status = media_perception::STATUS_RUNNING;
+  state.video_stream_param.reset(
+      new std::vector<media_perception::VideoStreamParam>(2));
+  InitializeVideoStreamParam(
+      state.video_stream_param.get()->at(0), kVideoStreamIdForFaceDetection,
+      kVideoStreamWidthForFaceDetection, kVideoStreamHeightForFaceDetection,
+      kVideoStreamFrameRateForFaceDetection);
+
+  InitializeVideoStreamParam(
+      state.video_stream_param.get()->at(1), kVideoStreamIdForVideoCapture,
+      kVideoStreamWidthForVideoCapture, kVideoStreamHeightForVideoCapture,
+      kVideoStreamFrameRateForVideoCapture);
+
+  mri::State state_proto = StateIdlToProto(state);
+  EXPECT_EQ(state_proto.status(), mri::State::RUNNING);
+
+  EXPECT_EQ(kVideoStreamIdForFaceDetection,
+            state_proto.video_stream_param(0).id());
+  EXPECT_EQ(kVideoStreamWidthForFaceDetection,
+            state_proto.video_stream_param(0).width());
+  EXPECT_EQ(kVideoStreamHeightForFaceDetection,
+            state_proto.video_stream_param(0).height());
+  EXPECT_EQ(kVideoStreamFrameRateForFaceDetection,
+            state_proto.video_stream_param(0).frame_rate());
+
+  EXPECT_EQ(kVideoStreamIdForVideoCapture,
+            state_proto.video_stream_param(1).id());
+  EXPECT_EQ(kVideoStreamWidthForVideoCapture,
+            state_proto.video_stream_param(1).width());
+  EXPECT_EQ(kVideoStreamHeightForVideoCapture,
+            state_proto.video_stream_param(1).height());
+  EXPECT_EQ(kVideoStreamFrameRateForVideoCapture,
+            state_proto.video_stream_param(1).frame_rate());
 }
 
 }  // namespace extensions
