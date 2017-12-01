@@ -62,7 +62,7 @@ invalid_schemes.forEach(function (scheme) {
         debug('Fail: Invalid scheme "' + scheme + '" allowed. Threw exception: "' + errorMessage + '".');
 });
 
-var invalid_urls = ["", "%S"];
+var invalid_urls = ["", "%S", "http://[v8.:::]//url=%s"];
 invalid_urls.forEach(function (url) {
    var succeeded = false;
    try {
