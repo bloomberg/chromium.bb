@@ -433,6 +433,9 @@
   [buttonConstraints
       addObject:[self.contractButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
+  [self.contractButton addTarget:self.dispatcher
+                          action:@selector(contractToolbar)
+                forControlEvents:UIControlEventTouchUpInside];
 
   // Add buttons to button updater.
   self.buttonUpdater.backButton = self.backButton;

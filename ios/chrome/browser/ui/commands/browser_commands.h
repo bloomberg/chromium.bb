@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
+#import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/commands/tools_menu_commands.h"
 
 @class OpenNewTabCommand;
@@ -27,6 +28,7 @@
                           QRScannerCommands,
                           SnackbarCommands,
                           TabHistoryPopupCommands,
+                          ToolbarCommands,
                           ToolsMenuCommands>
 
 // Closes the current tab.
