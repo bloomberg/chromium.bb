@@ -165,7 +165,7 @@ public class OmniboxTestUtils {
         }
 
         @Override
-        public void startZeroSuggest(Profile profile, String omniboxText, String url,
+        public void startZeroSuggest(Profile profile, String omniboxText, String url, String title,
                 boolean focusedFromFakebox) {
             mZeroSuggestCalledCount++;
         }
@@ -212,9 +212,8 @@ public class OmniboxTestUtils {
                 boolean preventInlineAutocomplete, boolean focusedFromFakebox) {}
 
         @Override
-        public void startZeroSuggest(Profile profile, String omniboxText, String url,
-                boolean focusedFromFakebox) {
-        }
+        public void startZeroSuggest(Profile profile, String omniboxText, String url, String title,
+                boolean focusedFromFakebox) {}
 
         @Override
         public void stop(boolean clear) {}
