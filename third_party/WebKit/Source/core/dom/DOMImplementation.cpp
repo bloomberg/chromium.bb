@@ -93,7 +93,7 @@ XMLDocument* DOMImplementation::createDocument(
     doc = XMLDocument::Create(init);
   }
 
-  doc->SetSecurityOrigin(document_->GetSecurityOrigin());
+  doc->SetSecurityOrigin(document_->GetMutableSecurityOrigin());
   doc->SetContextFeatures(document_->GetContextFeatures());
 
   Node* document_element = nullptr;
@@ -216,7 +216,7 @@ Document* DOMImplementation::createHTMLDocument(const String& title) {
     head_element->AppendChild(title_element);
     title_element->AppendChild(d->createTextNode(title), ASSERT_NO_EXCEPTION);
   }
-  d->SetSecurityOrigin(document_->GetSecurityOrigin());
+  d->SetSecurityOrigin(document_->GetMutableSecurityOrigin());
   d->SetContextFeatures(document_->GetContextFeatures());
   return d;
 }

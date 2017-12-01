@@ -33,7 +33,7 @@ Document* DOMParser::parseFromString(const String& str, const String& type) {
   doc->SetMimeType(AtomicString(type));
   if (context_document_) {
     doc->SetURL(context_document_->Url());
-    doc->SetSecurityOrigin(context_document_->GetSecurityOrigin());
+    doc->SetSecurityOrigin(context_document_->GetMutableSecurityOrigin());
   }
   return doc;
 }
