@@ -2449,6 +2449,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // TODO(crbug.com/777557): do not pass the dispatcher to PasswordTabHelper.
   if (PasswordTabHelper* passwordTabHelper =
           PasswordTabHelper::FromWebState(tab.webState)) {
+    passwordTabHelper->SetBaseViewController(self);
     passwordTabHelper->SetDispatcher(self.dispatcher);
     passwordTabHelper->SetPasswordControllerDelegate(self);
   }

@@ -15,6 +15,7 @@
 @protocol PasswordControllerDelegate;
 @protocol PasswordFormFiller;
 @protocol PasswordsUiDelegate;
+@class UIViewController;
 
 // Class binding a PasswordController to a WebState.
 class PasswordTabHelper : public web::WebStateObserver,
@@ -24,6 +25,9 @@ class PasswordTabHelper : public web::WebStateObserver,
 
   // Creates a PasswordTabHelper and attaches it to the given |web_state|.
   static void CreateForWebState(web::WebState* web_state);
+
+  // Sets the BaseViewController from which to present UI.
+  void SetBaseViewController(UIViewController* baseViewController);
 
   // Sets the PasswordController dispatcher.
   void SetDispatcher(id<ApplicationCommands> dispatcher);

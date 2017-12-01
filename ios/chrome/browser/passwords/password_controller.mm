@@ -296,6 +296,8 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 @synthesize isWebStateDestroyed = _isWebStateDestroyed;
 
+@synthesize baseViewController = _baseViewController;
+
 @synthesize dispatcher = _dispatcher;
 
 @synthesize delegate = _delegate;
@@ -1011,7 +1013,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     case PasswordInfoBarType::UPDATE:
       IOSChromeUpdatePasswordInfoBarDelegate::Create(
           isSmartLockBrandingEnabled, infoBarManager, std::move(form),
-          self.dispatcher);
+          self.baseViewController, self.dispatcher);
       break;
   }
 }
