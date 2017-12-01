@@ -37,6 +37,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"internetJoinType", IDS_SETTINGS_INTERNET_JOIN_TYPE},
       {"networkButtonConnect", IDS_SETTINGS_INTERNET_BUTTON_CONNECT},
       {"cancel", IDS_CANCEL},
+      {"close", IDS_CANCEL},
       {"save", IDS_SAVE},
   };
   for (const auto& entry : localized_strings)

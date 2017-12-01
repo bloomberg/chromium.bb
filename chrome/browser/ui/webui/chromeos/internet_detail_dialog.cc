@@ -37,6 +37,8 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
     const char* name;
     int id;
   } localized_strings[] = {
+      {"cancel", IDS_CANCEL},
+      {"close", IDS_CLOSE},
       {"networkButtonConnect", IDS_SETTINGS_INTERNET_BUTTON_CONNECT},
       {"networkButtonDisconnect", IDS_SETTINGS_INTERNET_BUTTON_DISCONNECT},
       {"networkIPAddress", IDS_SETTINGS_INTERNET_NETWORK_IP_ADDRESS},
