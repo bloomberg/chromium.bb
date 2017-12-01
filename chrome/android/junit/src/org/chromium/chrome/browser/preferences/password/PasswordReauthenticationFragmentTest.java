@@ -26,12 +26,13 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 @Config(manifest = Config.NONE)
 public class PasswordReauthenticationFragmentTest {
     /**
-     * Ensure that upon reauthentication PasswordReauthenticationFragment is popped from
-     * the FragmentManager backstack.
+     * Creates a dummy fragment, pushes the reauth fragment on top of it, then resolves the activity
+     * for the reauth fragment and checks that back stack is in a correct state.
+     * @param resultCode The code which is passed to the reauth fragment as the result of the
+     *                   activity.
      */
-    @Test
-    public void testOnActivityResult() {
-        PasswordReauthenticationFragment mockPasswordReauthentication =
+    private void checkPopFromBackStackOnResult(int resultCode) {
+        PasswordReauthenticationFragment passwordReauthentication =
                 new PasswordReauthenticationFragment();
 
         // Replacement fragment for PasswordEntryEditor, which is the fragment that
@@ -50,13 +51,13 @@ public class PasswordReauthenticationFragmentTest {
         fragmentTransaction.commit();
 
         FragmentTransaction fragmentTransaction2 = fragmentManager.beginTransaction();
-        fragmentTransaction2.add(mockPasswordReauthentication, "password_reauthentication");
+        fragmentTransaction2.add(passwordReauthentication, "password_reauthentication");
         fragmentTransaction2.addToBackStack("add_password_reauthentication");
         fragmentTransaction2.commit();
 
-        mockPasswordReauthentication.onActivityResult(
-                PasswordReauthenticationFragment.CONFIRM_DEVICE_CREDENTIAL_REQUEST_CODE,
-                testActivity.RESULT_OK, returnIntent);
+        passwordReauthentication.onActivityResult(
+                PasswordReauthenticationFragment.CONFIRM_DEVICE_CREDENTIAL_REQUEST_CODE, resultCode,
+                returnIntent);
         fragmentManager.executePendingTransactions();
 
         // Assert that the number of fragments in the Back Stack is equal to 1 after
@@ -65,5 +66,23 @@ public class PasswordReauthenticationFragmentTest {
 
         // Assert that the remaining fragment in the Back Stack is PasswordEntryEditor.
         assertEquals("add_password_entry_editor", fragmentManager.getBackStackEntryAt(0).getName());
+    }
+
+    /**
+     * Ensure that upon successful reauthentication PasswordReauthenticationFragment is popped from
+     * the FragmentManager backstack.
+     */
+    @Test
+    public void testOnOkActivityResult() {
+        checkPopFromBackStackOnResult(Activity.RESULT_OK);
+    }
+
+    /**
+     * Ensure that upon canceled reauthentication PasswordReauthenticationFragment is popped from
+     * the FragmentManager backstack.
+     */
+    @Test
+    public void testOnCanceledActivityResult() {
+        checkPopFromBackStackOnResult(Activity.RESULT_CANCELED);
     }
 }
