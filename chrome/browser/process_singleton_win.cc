@@ -220,7 +220,7 @@ void TerminateProcessWithHistograms(const base::Process& process,
     DPLOG(ERROR) << "Unable to terminate process";
   }
   UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "Chrome.ProcessSingleton.ProcessTerminateErrorCode.Windows",
+      "Chrome.ProcessSingleton.TerminateProcessErrorCode.Windows",
       terminate_error);
 }
 
