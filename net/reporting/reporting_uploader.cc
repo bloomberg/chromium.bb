@@ -163,7 +163,7 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
 // static
 const char ReportingUploader::kUploadContentType[] = "application/report";
 
-ReportingUploader::~ReportingUploader() {}
+ReportingUploader::~ReportingUploader() = default;
 
 // static
 std::unique_ptr<ReportingUploader> ReportingUploader::Create(

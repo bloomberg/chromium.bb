@@ -28,7 +28,7 @@ class ReportingServiceImpl : public ReportingService {
   ReportingServiceImpl(std::unique_ptr<ReportingContext> context)
       : context_(std::move(context)) {}
 
-  ~ReportingServiceImpl() override {}
+  ~ReportingServiceImpl() override = default;
 
   void QueueReport(const GURL& url,
                    const std::string& group,
@@ -61,7 +61,7 @@ class ReportingServiceImpl : public ReportingService {
 
 }  // namespace
 
-ReportingService::~ReportingService() {}
+ReportingService::~ReportingService() = default;
 
 // static
 std::unique_ptr<ReportingService> ReportingService::Create(

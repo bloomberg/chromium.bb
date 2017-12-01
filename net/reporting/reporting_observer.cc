@@ -8,8 +8,8 @@ namespace net {
 
 void ReportingObserver::OnCacheUpdated() {}
 
-ReportingObserver::ReportingObserver() {}
+ReportingObserver::ReportingObserver() = default;
 
-ReportingObserver::~ReportingObserver() {}
+ReportingObserver::~ReportingObserver() = default;
 
 }  // namespace net

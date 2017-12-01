@@ -43,7 +43,7 @@ class PendingUploadImpl : public TestReportingUploader::PendingUpload {
         callback_(callback),
         complete_callback_(complete_callback) {}
 
-  ~PendingUploadImpl() override {}
+  ~PendingUploadImpl() override = default;
 
   // PendingUpload implementationP:
   const GURL& url() const override { return url_; }
@@ -91,11 +91,11 @@ const ReportingClient* FindClientInCache(const ReportingCache* cache,
   return nullptr;
 }
 
-TestReportingUploader::PendingUpload::~PendingUpload() {}
-TestReportingUploader::PendingUpload::PendingUpload() {}
+TestReportingUploader::PendingUpload::~PendingUpload() = default;
+TestReportingUploader::PendingUpload::PendingUpload() = default;
 
-TestReportingUploader::TestReportingUploader() {}
-TestReportingUploader::~TestReportingUploader() {}
+TestReportingUploader::TestReportingUploader() = default;
+TestReportingUploader::~TestReportingUploader() = default;
 
 void TestReportingUploader::StartUpload(const GURL& url,
                                         const std::string& json,
@@ -104,9 +104,9 @@ void TestReportingUploader::StartUpload(const GURL& url,
       url, json, callback, base::Bind(&ErasePendingUpload, &pending_uploads_)));
 }
 
-TestReportingDelegate::TestReportingDelegate() {}
+TestReportingDelegate::TestReportingDelegate() = default;
 
-TestReportingDelegate::~TestReportingDelegate() {}
+TestReportingDelegate::~TestReportingDelegate() = default;
 
 bool TestReportingDelegate::CanQueueReport(const url::Origin& origin) const {
   return true;
@@ -155,7 +155,7 @@ ReportingTestBase::ReportingTestBase() {
   CreateContext(policy, base::Time::Now(), base::TimeTicks::Now());
 }
 
-ReportingTestBase::~ReportingTestBase() {}
+ReportingTestBase::~ReportingTestBase() = default;
 
 void ReportingTestBase::UsePolicy(const ReportingPolicy& new_policy) {
   CreateContext(new_policy, clock()->Now(), tick_clock()->NowTicks());

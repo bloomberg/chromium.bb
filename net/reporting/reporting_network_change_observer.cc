@@ -60,6 +60,6 @@ ReportingNetworkChangeObserver::Create(ReportingContext* context) {
   return std::make_unique<ReportingNetworkChangeObserverImpl>(context);
 }
 
-ReportingNetworkChangeObserver::~ReportingNetworkChangeObserver() {}
+ReportingNetworkChangeObserver::~ReportingNetworkChangeObserver() = default;
 
 }  // namespace net
