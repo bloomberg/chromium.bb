@@ -39,7 +39,6 @@ class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
   enum ResourceClientType {
     kBaseResourceType,
     kFontType,
-    kStyleSheetType,
     kRawResourceType
   };
 

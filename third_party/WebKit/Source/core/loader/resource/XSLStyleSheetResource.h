@@ -26,7 +26,7 @@
 #ifndef XSLStyleSheetResource_h
 #define XSLStyleSheetResource_h
 
-#include "core/loader/resource/StyleSheetResource.h"
+#include "core/loader/resource/TextResource.h"
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
 
 namespace blink {
@@ -34,15 +34,13 @@ namespace blink {
 class FetchParameters;
 class ResourceFetcher;
 
-class XSLStyleSheetResource final : public StyleSheetResource {
+class XSLStyleSheetResource final : public TextResource {
  public:
   static XSLStyleSheetResource* FetchSynchronously(FetchParameters&,
                                                    ResourceFetcher*);
   static XSLStyleSheetResource* Fetch(FetchParameters&, ResourceFetcher*);
 
   const String& Sheet() const { return sheet_; }
-
-  void DidAddClient(ResourceClient*) override;
 
  private:
   class XSLStyleSheetResourceFactory : public ResourceFactory {

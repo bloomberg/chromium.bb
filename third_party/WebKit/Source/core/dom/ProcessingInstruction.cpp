@@ -149,7 +149,7 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
 
   String url = GetDocument().CompleteURL(href).GetString();
 
-  StyleSheetResource* resource = nullptr;
+  TextResource* resource = nullptr;
   ResourceLoaderOptions options;
   options.initiator_info.name = FetchInitiatorTypeNames::processinginstruction;
   FetchParameters params(ResourceRequest(GetDocument().CompleteURL(href)),
@@ -189,60 +189,44 @@ bool ProcessingInstruction::SheetLoaded() {
   return false;
 }
 
-void ProcessingInstruction::SetCSSStyleSheet(
-    const String& href,
-    const KURL& base_url,
-    ReferrerPolicy referrer_policy,
-    const WTF::TextEncoding& charset,
-    const CSSStyleSheetResource* sheet) {
+void ProcessingInstruction::NotifyFinished(Resource* resource) {
   if (!isConnected()) {
     DCHECK(!sheet_);
     return;
   }
 
-  DCHECK(is_css_);
-  CSSParserContext* parser_context = CSSParserContext::Create(
-      GetDocument(), base_url, referrer_policy, charset);
-
-  StyleSheetContents* new_sheet =
-      StyleSheetContents::Create(href, parser_context);
-
-  CSSStyleSheet* css_sheet = CSSStyleSheet::Create(new_sheet, *this);
-  css_sheet->setDisabled(alternate_);
-  css_sheet->SetTitle(title_);
-  if (!alternate_ && !title_.IsEmpty())
-    GetDocument().GetStyleEngine().SetPreferredStylesheetSetNameIfNotSet(
-        title_);
-  css_sheet->SetMediaQueries(MediaQuerySet::Create(media_));
-
-  sheet_ = css_sheet;
-
-  // We don't need the cross-origin security check here because we are
-  // getting the sheet text in "strict" mode. This enforces a valid CSS MIME
-  // type.
-  ParseStyleSheet(sheet->SheetText(parser_context));
-}
-
-void ProcessingInstruction::SetXSLStyleSheet(const String& href,
-                                             const KURL& base_url,
-                                             const String& sheet) {
-  if (!isConnected()) {
-    DCHECK(!sheet_);
-    return;
-  }
-
-  DCHECK(is_xsl_);
-  sheet_ = XSLStyleSheet::Create(this, href, base_url);
   std::unique_ptr<IncrementLoadEventDelayCount> delay =
-      IncrementLoadEventDelayCount::Create(GetDocument());
-  ParseStyleSheet(sheet);
-}
+      is_xsl_ ? IncrementLoadEventDelayCount::Create(GetDocument()) : nullptr;
+  if (is_xsl_) {
+    sheet_ = XSLStyleSheet::Create(this, resource->Url(),
+                                   resource->GetResponse().Url());
+    ToXSLStyleSheet(sheet_.Get())
+        ->ParseString(ToXSLStyleSheetResource(resource)->Sheet());
+  } else {
+    DCHECK(is_css_);
+    CSSStyleSheetResource* style_resource = ToCSSStyleSheetResource(resource);
+    CSSParserContext* parser_context = CSSParserContext::Create(
+        GetDocument(), style_resource->GetResponse().Url(),
+        style_resource->GetReferrerPolicy(), style_resource->Encoding());
 
-void ProcessingInstruction::ParseStyleSheet(const String& sheet) {
-  if (is_css_)
-    ToCSSStyleSheet(sheet_.Get())->Contents()->ParseString(sheet);
-  else if (is_xsl_)
-    ToXSLStyleSheet(sheet_.Get())->ParseString(sheet);
+    StyleSheetContents* new_sheet =
+        StyleSheetContents::Create(style_resource->Url(), parser_context);
+
+    CSSStyleSheet* css_sheet = CSSStyleSheet::Create(new_sheet, *this);
+    css_sheet->setDisabled(alternate_);
+    css_sheet->SetTitle(title_);
+    if (!alternate_ && !title_.IsEmpty()) {
+      GetDocument().GetStyleEngine().SetPreferredStylesheetSetNameIfNotSet(
+          title_);
+    }
+    css_sheet->SetMediaQueries(MediaQuerySet::Create(media_));
+    sheet_ = css_sheet;
+    // We don't need the cross-origin security check here because we are
+    // getting the sheet text in "strict" mode. This enforces a valid CSS MIME
+    // type.
+    css_sheet->Contents()->ParseString(
+        style_resource->SheetText(parser_context));
+  }
 
   ClearResource();
   loading_ = false;
@@ -303,7 +287,7 @@ void ProcessingInstruction::Trace(blink::Visitor* visitor) {
   visitor->Trace(sheet_);
   visitor->Trace(listener_for_xslt_);
   CharacterData::Trace(visitor);
-  ResourceOwner<StyleSheetResource>::Trace(visitor);
+  ResourceOwner<TextResource>::Trace(visitor);
 }
 
 }  // namespace blink

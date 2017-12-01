@@ -13,7 +13,6 @@
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
-#include "core/loader/resource/StyleSheetResourceClient.h"
 #include "core/page/Page.h"
 #include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/Resource.h"
@@ -25,73 +24,41 @@
 
 namespace blink {
 
+// NOTE: While this is a RawResourceClient, it loads both raw and css stylesheet
+// resources. Stylesheets can only safely use a RawResourceClient because it has
+// no custom interface and simply uses the base ResourceClient.
 class InspectorResourceContentLoader::ResourceClient final
     : public GarbageCollectedFinalized<
           InspectorResourceContentLoader::ResourceClient>,
-      private RawResourceClient,
-      private StyleSheetResourceClient {
+      private RawResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(ResourceClient);
 
  public:
   explicit ResourceClient(InspectorResourceContentLoader* loader)
       : loader_(loader) {}
 
-  void WaitForResource(Resource* resource) {
-    if (resource->GetType() == Resource::kRaw)
-      resource->AddClient(static_cast<RawResourceClient*>(this));
-    else
-      resource->AddClient(static_cast<StyleSheetResourceClient*>(this));
-  }
+  void WaitForResource(Resource* resource) { resource->AddClient(this); }
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(loader_);
-    StyleSheetResourceClient::Trace(visitor);
     RawResourceClient::Trace(visitor);
   }
 
  private:
   Member<InspectorResourceContentLoader> loader_;
 
-  void SetCSSStyleSheet(const String&,
-                        const KURL&,
-                        ReferrerPolicy,
-                        const WTF::TextEncoding&,
-                        const CSSStyleSheetResource*) override;
-  void NotifyFinished(Resource*) override;
+  void NotifyFinished(Resource* resource) override {
+    if (loader_)
+      loader_->ResourceFinished(this);
+    resource->RemoveClient(this);
+  }
+
   String DebugName() const override {
     return "InspectorResourceContentLoader::ResourceClient";
   }
-  void ResourceFinished(Resource*);
 
   friend class InspectorResourceContentLoader;
 };
-
-void InspectorResourceContentLoader::ResourceClient::ResourceFinished(
-    Resource* resource) {
-  if (loader_)
-    loader_->ResourceFinished(this);
-
-  if (resource->GetType() == Resource::kRaw)
-    resource->RemoveClient(static_cast<RawResourceClient*>(this));
-  else
-    resource->RemoveClient(static_cast<StyleSheetResourceClient*>(this));
-}
-
-void InspectorResourceContentLoader::ResourceClient::SetCSSStyleSheet(
-    const String&,
-    const KURL& url,
-    ReferrerPolicy,
-    const WTF::TextEncoding&,
-    const CSSStyleSheetResource* resource) {
-  ResourceFinished(const_cast<CSSStyleSheetResource*>(resource));
-}
-
-void InspectorResourceContentLoader::ResourceClient::NotifyFinished(
-    Resource* resource) {
-  if (resource->GetType() == Resource::kCSSStyleSheet)
-    return;
-  ResourceFinished(resource);
-}
 
 InspectorResourceContentLoader::InspectorResourceContentLoader(
     LocalFrame* inspected_frame)
