@@ -17,7 +17,7 @@ HpackDecoder::HpackDecoder(HpackDecoderListener* listener,
       block_decoder_(&entry_buffer_),
       error_detected_(false) {}
 
-HpackDecoder::~HpackDecoder() {}
+HpackDecoder::~HpackDecoder() = default;
 
 void HpackDecoder::set_tables_debug_listener(
     HpackDecoderTablesDebugListener* debug_listener) {

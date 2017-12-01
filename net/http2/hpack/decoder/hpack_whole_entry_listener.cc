@@ -6,9 +6,9 @@
 
 namespace net {
 
-HpackWholeEntryListener::~HpackWholeEntryListener() {}
+HpackWholeEntryListener::~HpackWholeEntryListener() = default;
 
-HpackWholeEntryNoOpListener::~HpackWholeEntryNoOpListener() {}
+HpackWholeEntryNoOpListener::~HpackWholeEntryNoOpListener() = default;
 
 void HpackWholeEntryNoOpListener::OnIndexedHeader(size_t index) {}
 void HpackWholeEntryNoOpListener::OnNameIndexAndLiteralValue(

@@ -56,7 +56,7 @@ void ShuffleCollection(C* collection, RandomBase* r) {
 
 class HpackDecoderStaticTableTest : public ::testing::Test {
  protected:
-  HpackDecoderStaticTableTest() {}
+  HpackDecoderStaticTableTest() = default;
 
   std::vector<StaticEntry> shuffled_static_entries() {
     std::vector<StaticEntry> entries = MakeSpecStaticEntries();

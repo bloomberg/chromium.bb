@@ -66,7 +66,7 @@ FrameParts::FrameParts(const Http2FrameHeader& header,
 
 FrameParts::FrameParts(const FrameParts& header) = default;
 
-FrameParts::~FrameParts() {}
+FrameParts::~FrameParts() = default;
 
 AssertionResult FrameParts::VerifyEquals(const FrameParts& that) const {
 #define COMMON_MESSAGE "\n  this: " << *this << "\n  that: " << that

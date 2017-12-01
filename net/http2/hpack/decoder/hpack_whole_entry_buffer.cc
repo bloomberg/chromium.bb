@@ -15,7 +15,7 @@ HpackWholeEntryBuffer::HpackWholeEntryBuffer(HpackWholeEntryListener* listener,
     : max_string_size_bytes_(max_string_size_bytes) {
   set_listener(listener);
 }
-HpackWholeEntryBuffer::~HpackWholeEntryBuffer() {}
+HpackWholeEntryBuffer::~HpackWholeEntryBuffer() = default;
 
 void HpackWholeEntryBuffer::set_listener(HpackWholeEntryListener* listener) {
   CHECK(listener);

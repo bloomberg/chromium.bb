@@ -43,7 +43,7 @@ struct TestStruct {
 
 class DecodeBufferTest : public ::testing::Test {
  public:
-  DecodeBufferTest() {}
+  DecodeBufferTest() = default;
 
  protected:
   Http2Random random_;

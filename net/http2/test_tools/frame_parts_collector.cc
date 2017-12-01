@@ -13,8 +13,8 @@
 namespace net {
 namespace test {
 
-FramePartsCollector::FramePartsCollector() {}
-FramePartsCollector::~FramePartsCollector() {}
+FramePartsCollector::FramePartsCollector() = default;
+FramePartsCollector::~FramePartsCollector() = default;
 
 void FramePartsCollector::Reset() {
   current_frame_.reset();
