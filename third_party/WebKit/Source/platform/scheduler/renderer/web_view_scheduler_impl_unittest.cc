@@ -483,15 +483,14 @@ TEST_F(WebViewSchedulerImplTest, DeleteThrottledQueue_InTask) {
       BLINK_FROM_HERE, MakeRepeatingTask(timer_task_queue, &run_count),
       TimeDelta::FromMilliseconds(1));
 
-  // Note this will run at time t = 10s since we start at time t = 5000us, and
-  // it will prevent further tasks from running (i.e. the RepeatingTask) by
-  // deleting the WebFrameScheduler.
+  // Note this will run at time t = 10s since we start at time t = 5000us.
+  // However, we still should run all tasks after frame scheduler deletion.
   timer_task_queue->PostDelayedTask(BLINK_FROM_HERE,
                                     MakeDeletionTask(web_frame_scheduler),
                                     TimeDelta::FromMilliseconds(9990));
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(100));
-  EXPECT_EQ(10, run_count);
+  EXPECT_EQ(90015, run_count);
 }
 
 TEST_F(WebViewSchedulerImplTest, VirtualTimePauseCount_DETERMINISTIC_LOADING) {
