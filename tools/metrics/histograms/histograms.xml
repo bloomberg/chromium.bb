@@ -10899,7 +10899,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ContentSettings.MixedScript"
     enum="ContentSettingMixedScriptAction">
-  <owner>lgarron@chromium.org</owner>
+  <owner>estark@chromium.org</owner>
   <summary>
     Tracks whether the mixed content shield was shown, and how the user
     interacted with it.
@@ -76815,7 +76815,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Security.PageInfo.Action.HttpsUrl.Dangerous"
     enum="WebsiteSettingsAction">
   <owner>estark@chromium.org</owner>
-  <owner>lgarron@chromium.org</owner>
   <summary>
     Tracks Page Info bubble actions that take place on an HTTPS URL that has
     been marked dangerous or not secure (such as for malware or broken HTTPS).
@@ -76825,7 +76824,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Security.PageInfo.Action.HttpsUrl.Downgraded"
     enum="WebsiteSettingsAction">
   <owner>estark@chromium.org</owner>
-  <owner>lgarron@chromium.org</owner>
   <summary>
     Tracks Page Info bubble actions that take place on a valid HTTPS URL that
     has a security issue (e.g. mixed content).
@@ -76835,7 +76833,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Security.PageInfo.Action.HttpsUrl.Valid"
     enum="WebsiteSettingsAction">
   <owner>estark@chromium.org</owner>
-  <owner>lgarron@chromium.org</owner>
   <summary>
     Tracks Page Info bubble actions that take place on a valid HTTPS URL with no
     security issues (e.g. no mixed content).
@@ -76845,7 +76842,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Security.PageInfo.Action.HttpUrl.Dangerous"
     enum="WebsiteSettingsAction">
   <owner>estark@chromium.org</owner>
-  <owner>lgarron@chromium.org</owner>
   <summary>
     Tracks Page Info bubble actions that take place on an HTTP URL that has been
     marked dangerous (such as for malware).
@@ -76855,7 +76851,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Security.PageInfo.Action.HttpUrl.Neutral"
     enum="WebsiteSettingsAction">
   <owner>estark@chromium.org</owner>
-  <owner>lgarron@chromium.org</owner>
   <summary>
     Tracks Page Info bubble actions that take place on an HTTP URL that does not
     have an omnibox security indicator warning associated with it.
@@ -76865,7 +76860,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Security.PageInfo.Action.HttpUrl.Warning"
     enum="WebsiteSettingsAction">
   <owner>estark@chromium.org</owner>
-  <owner>lgarron@chromium.org</owner>
   <summary>
     Tracks Page Info bubble actions that take place on an HTTP URL that has been
     given a &quot;Not secure&quot; warning in the omnibox.
@@ -82422,7 +82416,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SSL.InsecureContent" enum="InsecureContentType">
-  <owner>lgarron@chromium.org</owner>
+  <owner>estark@chromium.org</owner>
   <summary>
     Keeps track of various insecure content events, such as loading an HTTP
     script from an HTTPS page.
@@ -97846,7 +97840,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebsiteSettings.Action" enum="WebsiteSettingsAction">
-  <owner>lgarron@chromium.org</owner>
+  <owner>estark@chromium.org</owner>
   <summary>
     Tracks actions with the website setting (a.k.a. page info / origin info)
     bubble, such as opening it up or clicking on the Connection tab.
@@ -97859,7 +97853,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Security.PageInfo.Action.HttpsUrl.Dangerous, and
     Security.PageInfo.Action.HttpsUrl.Downgraded.
   </obsolete>
-  <owner>lgarron@chromium.org</owner>
+  <owner>estark@chromium.org</owner>
   <summary>
     Tracks WebsiteSettings actions that take place on an HTTPS URL. This
     completely disregards security status.
@@ -97971,7 +97965,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Deprecated 12/2014 in Issue 433776, and replaced by
     WebsiteSettings.OriginInfo.PermissionChanged.
   </obsolete>
-  <owner>lgarron@chromium.org</owner>
   <owner>sashab@chromium.org</owner>
   <summary>
     Count of how often a specific content type (permission) is changed using the

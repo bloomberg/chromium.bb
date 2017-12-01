@@ -87,8 +87,6 @@ JNI_WebsitePreferenceBridge_ConvertOriginToJavaString(
   // Settings list. In order to group sites with the same origin, remove any
   // standard port from the end of the URL if it's present (i.e. remove :443
   // for HTTPS sites and :80 for HTTP sites).
-  // TODO(sashab,lgarron): Find out which settings are being saved with the
-  // port and omit it if it's the standard port.
   // TODO(mvanouwerkerk): Remove all this logic and take two passes through
   // HostContentSettingsMap: once to get all the 'interesting' hosts, and once
   // (on SingleWebsitePreferences) to find permission patterns which match
