@@ -14,8 +14,31 @@
 #error "This file requires ARC support."
 #endif
 
-FullscreenController::FullscreenController(ChromeBroadcaster* broadcaster)
-    : broadcaster_(broadcaster),
+namespace {
+// The key under which FullscreenControllers are associated with their user
+// data.
+const void* const kFullscreenControllerKey = &kFullscreenControllerKey;
+}  // namespace
+
+// static
+void FullscreenController::CreateForUserData(
+    base::SupportsUserData* user_data) {
+  DCHECK(user_data);
+  if (!FullscreenController::FromUserData(user_data)) {
+    user_data->SetUserData(kFullscreenControllerKey,
+                           base::WrapUnique(new FullscreenController()));
+  }
+}
+
+// static
+FullscreenController* FullscreenController::FromUserData(
+    base::SupportsUserData* user_data) {
+  return static_cast<FullscreenController*>(
+      user_data->GetUserData(kFullscreenControllerKey));
+}
+
+FullscreenController::FullscreenController()
+    : broadcaster_([[ChromeBroadcaster alloc] init]),
       model_(base::MakeUnique<FullscreenModel>()),
       bridge_([[ChromeBroadcastOberverBridge alloc]
           initWithObserver:model_.get()]) {
