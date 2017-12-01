@@ -1510,6 +1510,125 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, UserInput) {
   EXPECT_EQ(base::UTF8ToUTF16(""), password_form->new_password_value);
 }
 
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
+       TypedPasswordAndUsernameCachedOnPage) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  // The heuristics should consider only password field with user input (i.e.
+  // password_with_user_input?) and visible username fields (i.e. nickname,
+  // visible_text, captcha) since there is no username field with user input.
+  builder.AddNonDisplayedPasswordField("nondisplayed1", "fake_password");
+  builder.AddNonDisplayedTextField("nondisplayed1", "fake_username1");
+  builder.AddTextField("nickname", "bob", nullptr);
+  builder.AddTextField("visible_text", "cached_username",
+                       nullptr);  // Username.
+  builder.AddNonVisibleTextField("nonvisible_text", "fake_username2");
+  builder.AddNonVisiblePasswordField("nonvisible_password", "not_password");
+  builder.AddNonVisibleTextField("nonvisible_text", "fake_username2");
+  builder.AddPasswordField("password_wo_user_input", "", nullptr);
+  builder.AddNonVisibleTextField("nonvisible_text", "");
+  builder.AddPasswordField("password_with_user_input1", "actual_password",
+                           nullptr);  // Password to save.
+  builder.AddPasswordField("password_with_user_input2", "actual_password",
+                           nullptr);
+  builder.AddTextField("captcha", "12345", nullptr);
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  WebFormElement form;
+  LoadWebFormFromHTML(html, &form, nullptr);
+
+  FieldValueAndPropertiesMaskMap user_input;
+  WebVector<WebFormControlElement> control_elements;
+  form.GetFormControlElements(control_elements);
+  ASSERT_EQ("password_with_user_input1",
+            control_elements[9].NameForAutofill().Utf8());
+  user_input[control_elements[9]] = std::make_pair(
+      base::MakeUnique<base::string16>(control_elements[9].Value().Utf16()),
+      FieldPropertiesFlags::USER_TYPED);
+  ASSERT_EQ("password_with_user_input2",
+            control_elements[10].NameForAutofill().Utf8());
+  user_input[control_elements[10]] = std::make_pair(
+      base::MakeUnique<base::string16>(control_elements[10].Value().Utf16()),
+      FieldPropertiesFlags::USER_TYPED);
+
+  std::unique_ptr<PasswordForm> password_form =
+      CreatePasswordFormFromWebForm(form, &user_input, nullptr, nullptr);
+
+  ASSERT_TRUE(password_form);
+  EXPECT_FALSE(password_form->only_for_fallback_saving);
+
+  EXPECT_EQ(base::UTF8ToUTF16("visible_text"), password_form->username_element);
+  EXPECT_EQ(base::UTF8ToUTF16("cached_username"),
+            password_form->username_value);
+
+  EXPECT_EQ(base::string16(), password_form->password_element);
+  EXPECT_EQ(base::UTF8ToUTF16(""), password_form->password_value);
+
+  EXPECT_EQ(base::UTF8ToUTF16("password_with_user_input1"),
+            password_form->new_password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("actual_password"),
+            password_form->new_password_value);
+}
+
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
+       TypedPasswordAndInvisibleUsername) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  // The heuristics should consider only password field with user input (i.e.
+  // password_with_user_input?) and invisible username fields since all username
+  // fields have no user input and are invisible.
+  builder.AddNonDisplayedPasswordField("nondisplayed1", "fake_password");
+  builder.AddNonDisplayedTextField("nondisplayed1", "fake_username1");
+  builder.AddNonVisibleTextField("nickname", "bob");
+  builder.AddNonVisibleTextField("this_is_username", "invisible_username");
+  builder.AddNonVisiblePasswordField("nonvisible_password", "not_password");
+  builder.AddPasswordField("password_wo_user_input", "", nullptr);
+  builder.AddNonVisiblePasswordField("nonvisible_password2", "");
+  builder.AddPasswordField("password_with_user_input1", "actual_password",
+                           nullptr);  // Password to save.
+  builder.AddNonVisibleTextField("nonvisible_text3", "---H09-$%");
+  builder.AddPasswordField("password_with_user_input2", "actual_password",
+                           nullptr);
+  builder.AddNonVisibleTextField("nonvisible_text3", "debug_info");
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  WebFormElement form;
+  LoadWebFormFromHTML(html, &form, nullptr);
+
+  FieldValueAndPropertiesMaskMap user_input;
+  WebVector<WebFormControlElement> control_elements;
+  form.GetFormControlElements(control_elements);
+  ASSERT_EQ("password_with_user_input1",
+            control_elements[7].NameForAutofill().Utf8());
+  user_input[control_elements[7]] = std::make_pair(
+      base::MakeUnique<base::string16>(control_elements[7].Value().Utf16()),
+      FieldPropertiesFlags::USER_TYPED);
+  ASSERT_EQ("password_with_user_input2",
+            control_elements[9].NameForAutofill().Utf8());
+  user_input[control_elements[9]] = std::make_pair(
+      base::MakeUnique<base::string16>(control_elements[9].Value().Utf16()),
+      FieldPropertiesFlags::USER_TYPED);
+
+  std::unique_ptr<PasswordForm> password_form =
+      CreatePasswordFormFromWebForm(form, &user_input, nullptr, nullptr);
+
+  ASSERT_TRUE(password_form);
+  EXPECT_FALSE(password_form->only_for_fallback_saving);
+
+  EXPECT_EQ(base::UTF8ToUTF16("this_is_username"),
+            password_form->username_element);
+  EXPECT_EQ(base::UTF8ToUTF16("invisible_username"),
+            password_form->username_value);
+
+  EXPECT_EQ(base::string16(), password_form->password_element);
+  EXPECT_EQ(base::UTF8ToUTF16(""), password_form->password_value);
+
+  EXPECT_EQ(base::UTF8ToUTF16("password_with_user_input1"),
+            password_form->new_password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("actual_password"),
+            password_form->new_password_value);
+}
+
 TEST_F(MAYBE_PasswordFormConversionUtilsTest, InvalidFormDueToBadActionURL) {
   PasswordFormBuilder builder("invalid_target");
   builder.AddTextField("username", "JohnSmith", nullptr);
