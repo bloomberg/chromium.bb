@@ -52,9 +52,15 @@ def calculate_apply_functions_to_declare(property_):
                  property_['custom_apply_functions_value']) \
         and property_['property_class'] \
         and isinstance(property_['property_class'], types.BooleanType)
+    # TODO(crbug.com/751354): Remove this hard coded list of supported
+    # properties once all of them have been implemented
     if property_['custom_apply_functions_all']:
         if (property_['upper_camel_name'] in
-                ['Clip', 'ColumnCount', 'ColumnGap', 'ColumnWidth', 'ZIndex']):
+                ['BorderImageOutset', 'BorderImageRepeat', 'BorderImageSlice',
+                 'BorderImageWidth', 'Clip', 'ColumnCount', 'ColumnGap',
+                 'ColumnWidth', 'WebkitMaskBoxImageOutset',
+                 'WebkitMaskBoxImageRepeat', 'WebkitMaskBoxImageSlice',
+                 'WebkitMaskBoxImageWidth', 'ZIndex']):
             property_['use_property_class_in_stylebuilder'] = True
 
 

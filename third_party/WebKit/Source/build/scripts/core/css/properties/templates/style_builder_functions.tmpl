@@ -92,6 +92,86 @@ state.Style()->{{property.setter}}
     else
       {{convert_and_set_value(property)}}
   }
+  {% elif property.custom_apply == "border_image" %}
+  {% set is_mask_box = property.custom_apply_args['is_mask_box'] %}
+  {% set modifier_type = property.custom_apply_args['modifier_type'] %}
+  {% set getter = property.custom_apply_args['getter'] %}
+  {% set setter = property.custom_apply_args['setter'] %}
+  {{declare_initial()}}
+    const NinePieceImage& currentImage = state.Style()->{{getter}}();
+    {# Check for equality in case we can bail out before creating a new NinePieceImage. #}
+    {% if modifier_type == 'Outset' %}
+    if (StyleBuildingUtils::borderImageLengthMatchesAllSides(currentImage.Outset(),
+                                         BorderImageLength(Length(0, kFixed))))
+      return;
+    {% elif modifier_type == 'Repeat' %}
+    if (currentImage.HorizontalRule() == kStretchImageRule &&
+        currentImage.VerticalRule() == kStretchImageRule)
+      return;
+    {% elif modifier_type == 'Slice' and is_mask_box %}
+    // Masks have a different initial value for slices. Preserve the value of 0
+    // for backwards compatibility.
+    if (currentImage.Fill() == true &&
+        StyleBuildingUtils::lengthMatchesAllSides(currentImage.ImageSlices(), Length(0, kFixed)))
+      return;
+    {% elif modifier_type == 'Slice' and not is_mask_box %}
+    if (currentImage.Fill() == false &&
+        StyleBuildingUtils::lengthMatchesAllSides(currentImage.ImageSlices(), Length(100, kPercent)))
+      return;
+    {% elif modifier_type == 'Width' and is_mask_box %}
+    // Masks have a different initial value for widths. Preserve the value of
+    // 'auto' for backwards compatibility.
+    if (StyleBuildingUtils::borderImageLengthMatchesAllSides(currentImage.BorderSlices(),
+                                         BorderImageLength(Length(kAuto))))
+      return;
+    {% elif modifier_type == 'Width' and not is_mask_box %}
+    if (StyleBuildingUtils::borderImageLengthMatchesAllSides(currentImage.BorderSlices(),
+                                         BorderImageLength(1.0)))
+      return;
+    {% endif %}
+    NinePieceImage image(currentImage);
+    {% if modifier_type == 'Outset' %}
+    image.SetOutset(Length(0, kFixed));
+    {% elif modifier_type == 'Repeat' %}
+    image.SetHorizontalRule(kStretchImageRule);
+    image.SetVerticalRule(kStretchImageRule);
+    {% elif modifier_type == 'Slice' and is_mask_box %}
+    image.SetImageSlices(LengthBox({{ (['Length(0, kFixed)']*4) | join(', ') }}));
+    image.SetFill(true);
+    {% elif modifier_type == 'Slice' and not is_mask_box %}
+    image.SetImageSlices(LengthBox({{ (['Length(100, kPercent)']*4) | join(', ') }}));
+    image.SetFill(false);
+    {% elif modifier_type == 'Width' %}
+    image.SetBorderSlices({{ 'Length(kAuto)' if is_mask_box else '1.0' }});
+    {% endif %}
+    state.Style()->{{setter}}(image);
+  }
+  {{declare_inherit()}}
+    NinePieceImage image(state.Style()->{{getter}}());
+    {% if modifier_type == 'Outset' %}
+    image.CopyOutsetFrom(state.ParentStyle()->{{getter}}());
+    {% elif modifier_type == 'Repeat' %}
+    image.CopyRepeatFrom(state.ParentStyle()->{{getter}}());
+    {% elif modifier_type == 'Slice' %}
+    image.CopyImageSlicesFrom(state.ParentStyle()->{{getter}}());
+    {% elif modifier_type == 'Width' %}
+    image.CopyBorderSlicesFrom(state.ParentStyle()->{{getter}}());
+    {% endif %}
+    state.Style()->{{setter}}(image);
+  }
+  {{declare_value()}}
+    NinePieceImage image(state.Style()->{{getter}}());
+    {% if modifier_type == 'Outset' %}
+    image.SetOutset(CSSToStyleMap::MapNinePieceImageQuad(state, value));
+    {% elif modifier_type == 'Repeat' %}
+    CSSToStyleMap::MapNinePieceImageRepeat(state, value, image);
+    {% elif modifier_type == 'Slice' %}
+    CSSToStyleMap::MapNinePieceImageSlice(state, value, image);
+    {% elif modifier_type == 'Width' %}
+    image.SetBorderSlices(CSSToStyleMap::MapNinePieceImageQuad(state, value));
+    {% endif %}
+    state.Style()->{{setter}}(image);
+  }
   {% endif %}
   {# TODO(crbug.com/751354): emit function declaration only for larger functions #}
 {%- endmacro %}
