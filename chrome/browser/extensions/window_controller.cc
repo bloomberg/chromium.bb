@@ -17,9 +17,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
-#include "ui/aura/window.h"
+#include "ash/public/cpp/window_pin_type.h"
 #endif
 
 namespace extensions {
@@ -92,10 +90,7 @@ std::unique_ptr<base::DictionaryValue> WindowController::CreateWindowValue()
   } else if (window()->IsFullscreen()) {
     window_state = keys::kShowStateValueFullscreen;
 #if defined(OS_CHROMEOS)
-    aura::Window* aura_window = window()->GetNativeWindow();
-    ash::mojom::WindowPinType type =
-        aura_window->GetProperty(ash::kWindowPinTypeKey);
-    if (type == ash::mojom::WindowPinType::TRUSTED_PINNED)
+    if (ash::IsWindowTrustedPinned(window()))
       window_state = keys::kShowStateValueLockedFullscreen;
 #endif
   } else if (window()->IsMaximized()) {

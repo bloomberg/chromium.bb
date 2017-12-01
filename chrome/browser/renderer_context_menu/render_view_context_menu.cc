@@ -169,10 +169,8 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "chrome/browser/chromeos/arc/intent_helper/open_with_menu.h"
-#include "ui/aura/window.h"
 #endif
 
 using base::UserMetricsAction;
@@ -1552,14 +1550,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   // Disable context menu in locked fullscreen mode (the menu is not really
   // disabled as the user can still open it, but all the individual context menu
   // entries are disabled / greyed out).
-  if (GetBrowser()) {
-    aura::Window* window = GetBrowser()->window()->GetNativeWindow();
-    ash::mojom::WindowPinType type =
-        window->GetProperty(ash::kWindowPinTypeKey);
-    if (type == ash::mojom::WindowPinType::TRUSTED_PINNED) {
-      return false;
-    }
-  }
+  if (GetBrowser() && ash::IsWindowTrustedPinned(GetBrowser()->window()))
+    return false;
 #endif
 
   {
