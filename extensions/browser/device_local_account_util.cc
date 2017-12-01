@@ -140,6 +140,7 @@ const char* const kPublicSessionWhitelist[] = {
     "aoggjnmghgmcllfenalipjhmooomfdce",  // SAML SSO for Chrome Apps
     "fhndealchbngfhdoncgcokameljahhog",  // Certificate Enrollment for Chrome OS
     "npeicpdbkakmehahjeeohfdhnlpdklia",  // WebRTC Network Limiter
+    "hdkoikmfpncabbdniojdddokkomafcci",  // SSRS Reporting Fix for Chrome
 };
 
 }  // namespace
