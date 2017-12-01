@@ -1155,7 +1155,6 @@ TemplateURL::AssociatedExtensionInfo::~AssociatedExtensionInfo() {
 
 TemplateURL::TemplateURL(const TemplateURLData& data, Type type)
     : data_(data),
-      url_ref_(nullptr),
       suggestions_url_ref_(this, TemplateURLRef::SUGGEST),
       image_url_ref_(this, TemplateURLRef::IMAGE),
       new_tab_url_ref_(this, TemplateURLRef::NEW_TAB),
@@ -1247,7 +1246,7 @@ base::string16 TemplateURL::AdjustedShortNameForLocaleDirection() const {
 
 bool TemplateURL::SupportsReplacement(
     const SearchTermsData& search_terms_data) const {
-  return url_ref_->SupportsReplacement(search_terms_data);
+  return url_ref().SupportsReplacement(search_terms_data);
 }
 
 bool TemplateURL::HasGoogleBaseURLs(
@@ -1264,10 +1263,9 @@ bool TemplateURL::HasGoogleBaseURLs(
 
 bool TemplateURL::IsGoogleSearchURLWithReplaceableKeyword(
     const SearchTermsData& search_terms_data) const {
-  return (type_ == NORMAL) &&
-      url_ref_->HasGoogleBaseURLs(search_terms_data) &&
-      google_util::IsGoogleHostname(base::UTF16ToUTF8(data_.keyword()),
-                                    google_util::DISALLOW_SUBDOMAIN);
+  return (type_ == NORMAL) && url_ref().HasGoogleBaseURLs(search_terms_data) &&
+         google_util::IsGoogleHostname(base::UTF16ToUTF8(data_.keyword()),
+                                       google_util::DISALLOW_SUBDOMAIN);
 }
 
 bool TemplateURL::HasSameKeywordAs(
@@ -1386,10 +1384,10 @@ void TemplateURL::EncodeSearchTerms(
 
 GURL TemplateURL::GenerateSearchURL(
     const SearchTermsData& search_terms_data) const {
-  if (!url_ref_->IsValid(search_terms_data))
+  if (!url_ref().IsValid(search_terms_data))
     return GURL();
 
-  if (!url_ref_->SupportsReplacement(search_terms_data))
+  if (!url_ref().SupportsReplacement(search_terms_data))
     return GURL(url());
 
   // Use something obscure for the search terms argument so that in the rare
@@ -1397,7 +1395,7 @@ GURL TemplateURL::GenerateSearchURL(
   // same url.
   // TODO(jnd): Add additional parameters to get post data when the search URL
   // has post parameters.
-  return GURL(url_ref_->ReplaceSearchTerms(
+  return GURL(url_ref().ReplaceSearchTerms(
       TemplateURLRef::SearchTermsArgs(
           base::ASCIIToUTF16("blah.blah.blah.blah.blah")),
       search_terms_data, nullptr));
@@ -1416,7 +1414,7 @@ void TemplateURL::CopyFrom(const TemplateURL& other) {
 void TemplateURL::SetURL(const std::string& url) {
   data_.SetURL(url);
   engine_type_ = SEARCH_ENGINE_UNKNOWN;
-  url_ref_->InvalidateCachedValues();
+  url_ref().InvalidateCachedValues();
 }
 
 void TemplateURL::SetPrepopulateId(int id) {
@@ -1455,14 +1453,11 @@ void TemplateURL::ResizeURLRefVector() {
   if (url_refs_.size() == new_size)
     return;
 
-  // See comment on TemplateURL::ExtractSearchTermsFromURL() for understanding
-  // the order of TemplateURLRefs in the |url_refs_| vector.
   url_refs_.clear();
   url_refs_.reserve(new_size);
   for (size_t i = 0; i != data_.alternate_urls.size(); ++i)
     url_refs_.emplace_back(this, i);
   url_refs_.emplace_back(this, TemplateURLRef::SEARCH);
-  url_ref_ = &url_refs_.back();
 }
 
 bool TemplateURL::FindSearchTermsInURL(
