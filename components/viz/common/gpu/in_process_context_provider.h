@@ -37,7 +37,7 @@ class VIZ_COMMON_EXPORT InProcessContextProvider : public ContextProvider {
  public:
   InProcessContextProvider(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
-      gpu::SurfaceHandle widget,
+      gpu::SurfaceHandle surface_handle,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
       const gpu::SharedMemoryLimits& limits,

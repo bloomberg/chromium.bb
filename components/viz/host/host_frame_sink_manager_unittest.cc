@@ -74,6 +74,7 @@ class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
   void CreateRootCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
+      bool force_software_compositor,
       const RendererSettings& renderer_settings,
       mojom::CompositorFrameSinkAssociatedRequest request,
       mojom::CompositorFrameSinkClientPtr client,
@@ -520,6 +521,7 @@ TEST_F(HostFrameSinkManagerLocalTest, DisplayHitTestQueryMap) {
   EXPECT_FALSE(DisplayHitTestQueryExists(kFrameSinkChild1));
   host().CreateRootCompositorFrameSink(
       kFrameSinkChild1, 0 /* surface_handle */,
+      false /* force_software_compositing */,
       RendererSettings() /* renderer_settings */, nullptr /* request */,
       nullptr /* client */, nullptr /* display_private_request */);
   EXPECT_TRUE(DisplayHitTestQueryExists(kFrameSinkChild1));
@@ -596,6 +598,7 @@ TEST_F(HostFrameSinkManagerRemoteTest, DeletedHitTestQuery) {
   mojom::DisplayPrivateAssociatedPtr display_private;
   host().CreateRootCompositorFrameSink(
       kFrameSinkChild1, 0 /* surface_handle */,
+      false /* force_software_compositing */,
       RendererSettings() /* renderer_settings */,
       MakeRequest(&compositor_frame_sink_associated_info),
       compositor_frame_sink_client.BindInterfacePtr(),

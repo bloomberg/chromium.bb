@@ -19,7 +19,6 @@ namespace viz {
 
 SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget)
     : widget_(widget), display_(gfx::GetXDisplay()), gc_(nullptr) {
-  // TODO(skaslev) Remove this when crbug.com/180702 is fixed.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   gc_ = XCreateGC(display_, widget_, 0, nullptr);

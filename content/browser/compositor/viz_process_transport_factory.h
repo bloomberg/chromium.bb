@@ -36,6 +36,7 @@ class ContextProviderCommandBuffer;
 }
 
 namespace viz {
+class ClientSharedBitmapManager;
 class ForwardingCompositingModeReporterImpl;
 }
 
@@ -154,6 +155,7 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   // TODO(kylechar): Call OnContextLost() on observers when GPU crashes.
   base::ObserverList<ui::ContextFactoryObserver> observer_list_;
 
+  std::unique_ptr<viz::ClientSharedBitmapManager> shared_bitmap_manager_;
   scoped_refptr<ui::ContextProviderCommandBuffer>
       shared_worker_context_provider_;
   scoped_refptr<ui::ContextProviderCommandBuffer> compositor_context_provider_;

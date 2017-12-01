@@ -88,6 +88,8 @@
 #include "ui/ozone/public/overlay_manager_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
+#include "ui/ozone/public/surface_ozone_canvas.h"
 #elif defined(USE_X11)
 #include "components/viz/service/display_embedder/software_output_device_x11.h"
 #elif defined(OS_MACOSX)
@@ -254,7 +256,13 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
   return std::make_unique<viz::SoftwareOutputDeviceWin>(software_backing_.get(),
                                                         widget);
 #elif defined(USE_OZONE)
-  return viz::SoftwareOutputDeviceOzone::Create(widget);
+  ui::SurfaceFactoryOzone* factory =
+      ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
+  std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone =
+      factory->CreateCanvasForWidget(widget);
+  CHECK(surface_ozone);
+  return std::make_unique<viz::SoftwareOutputDeviceOzone>(
+      std::move(surface_ozone));
 #elif defined(USE_X11)
   return std::make_unique<viz::SoftwareOutputDeviceX11>(widget);
 #elif defined(OS_MACOSX)

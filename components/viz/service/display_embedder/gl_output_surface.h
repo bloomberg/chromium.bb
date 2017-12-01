@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_DISPLAY_OUTPUT_SURFACE_H_
-#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_DISPLAY_OUTPUT_SURFACE_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_H_
 
 #include <memory>
 
@@ -17,12 +17,12 @@ class SyntheticBeginFrameSource;
 
 // An OutputSurface implementation that directly draws and
 // swaps to an actual GL surface.
-class DisplayOutputSurface : public OutputSurface,
-                             public OutputSurface::LatencyInfoCache::Client {
+class GLOutputSurface : public OutputSurface,
+                        public OutputSurface::LatencyInfoCache::Client {
  public:
-  DisplayOutputSurface(scoped_refptr<InProcessContextProvider> context_provider,
-                       SyntheticBeginFrameSource* synthetic_begin_frame_source);
-  ~DisplayOutputSurface() override;
+  GLOutputSurface(scoped_refptr<InProcessContextProvider> context_provider,
+                  SyntheticBeginFrameSource* synthetic_begin_frame_source);
+  ~GLOutputSurface() override;
 
   // OutputSurface implementation
   void BindToClient(OutputSurfaceClient* client) override;
@@ -76,9 +76,9 @@ class DisplayOutputSurface : public OutputSurface,
   gfx::Size size_;
   LatencyInfoCache latency_info_cache_;
 
-  base::WeakPtrFactory<DisplayOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<GLOutputSurface> weak_ptr_factory_;
 };
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_DISPLAY_OUTPUT_SURFACE_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_H_

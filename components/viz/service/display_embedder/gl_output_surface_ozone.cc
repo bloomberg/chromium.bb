@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_embedder/display_output_surface_ozone.h"
+#include "components/viz/service/display_embedder/gl_output_surface_ozone.h"
 
 #include <utility>
 
@@ -19,14 +19,14 @@
 
 namespace viz {
 
-DisplayOutputSurfaceOzone::DisplayOutputSurfaceOzone(
+GLOutputSurfaceOzone::GLOutputSurfaceOzone(
     scoped_refptr<InProcessContextProvider> context_provider,
     gfx::AcceleratedWidget widget,
     SyntheticBeginFrameSource* synthetic_begin_frame_source,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     uint32_t target,
     uint32_t internalformat)
-    : DisplayOutputSurface(context_provider, synthetic_begin_frame_source),
+    : GLOutputSurface(context_provider, synthetic_begin_frame_source),
       gl_helper_(context_provider->ContextGL(),
                  context_provider->ContextSupport()) {
   capabilities_.uses_default_gl_framebuffer = false;
@@ -47,11 +47,11 @@ DisplayOutputSurfaceOzone::DisplayOutputSurfaceOzone(
   buffer_queue_->Initialize();
 }
 
-DisplayOutputSurfaceOzone::~DisplayOutputSurfaceOzone() {
+GLOutputSurfaceOzone::~GLOutputSurfaceOzone() {
   // TODO(rjkroege): Support cleanup.
 }
 
-void DisplayOutputSurfaceOzone::BindFramebuffer() {
+void GLOutputSurfaceOzone::BindFramebuffer() {
   DCHECK(buffer_queue_);
   buffer_queue_->BindFramebuffer();
 }
@@ -62,18 +62,18 @@ void DisplayOutputSurfaceOzone::BindFramebuffer() {
 // implies that screen size changes need to be plumbed differently. In
 // particular, we must create the native window in the size that the hardware
 // reports.
-void DisplayOutputSurfaceOzone::Reshape(const gfx::Size& size,
-                                        float device_scale_factor,
-                                        const gfx::ColorSpace& color_space,
-                                        bool has_alpha,
-                                        bool use_stencil) {
+void GLOutputSurfaceOzone::Reshape(const gfx::Size& size,
+                                   float device_scale_factor,
+                                   const gfx::ColorSpace& color_space,
+                                   bool has_alpha,
+                                   bool use_stencil) {
   reshape_size_ = size;
-  DisplayOutputSurface::Reshape(size, device_scale_factor, color_space,
-                                has_alpha, use_stencil);
+  GLOutputSurface::Reshape(size, device_scale_factor, color_space, has_alpha,
+                           use_stencil);
   buffer_queue_->Reshape(size, device_scale_factor, color_space, use_stencil);
 }
 
-void DisplayOutputSurfaceOzone::SwapBuffers(OutputSurfaceFrame frame) {
+void GLOutputSurfaceOzone::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK(buffer_queue_);
 
   // TODO(rjkroege): What if swap happens again before DidReceiveSwapBuffersAck
@@ -85,29 +85,29 @@ void DisplayOutputSurfaceOzone::SwapBuffers(OutputSurfaceFrame frame) {
       frame.sub_buffer_rect ? *frame.sub_buffer_rect : gfx::Rect(swap_size_);
   buffer_queue_->SwapBuffers(damage_rect);
 
-  DisplayOutputSurface::SwapBuffers(std::move(frame));
+  GLOutputSurface::SwapBuffers(std::move(frame));
 }
 
-uint32_t DisplayOutputSurfaceOzone::GetFramebufferCopyTextureFormat() {
+uint32_t GLOutputSurfaceOzone::GetFramebufferCopyTextureFormat() {
   return buffer_queue_->internal_format();
 }
 
-bool DisplayOutputSurfaceOzone::IsDisplayedAsOverlayPlane() const {
+bool GLOutputSurfaceOzone::IsDisplayedAsOverlayPlane() const {
   // TODO(rjkroege): implement remaining overlay functionality.
   return true;
 }
 
-unsigned DisplayOutputSurfaceOzone::GetOverlayTextureId() const {
+unsigned GLOutputSurfaceOzone::GetOverlayTextureId() const {
   return buffer_queue_->GetCurrentTextureId();
 }
 
-gfx::BufferFormat DisplayOutputSurfaceOzone::GetOverlayBufferFormat() const {
+gfx::BufferFormat GLOutputSurfaceOzone::GetOverlayBufferFormat() const {
   DCHECK(buffer_queue_);
   return buffer_queue_->buffer_format();
 }
 
-void DisplayOutputSurfaceOzone::DidReceiveSwapBuffersAck(gfx::SwapResult result,
-                                                         uint64_t swap_id) {
+void GLOutputSurfaceOzone::DidReceiveSwapBuffersAck(gfx::SwapResult result,
+                                                    uint64_t swap_id) {
   bool force_swap = false;
   if (result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     // Even through the swap failed, this is a fixable error so we can pretend
