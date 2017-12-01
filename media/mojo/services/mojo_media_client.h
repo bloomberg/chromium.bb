@@ -26,7 +26,6 @@ struct SyncToken;
 
 namespace service_manager {
 class Connector;
-class ServiceContextRefFactory;
 namespace mojom {
 class InterfaceProvider;
 }
@@ -59,9 +58,7 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
 
   // Called exactly once before any other method. |connector| can be used by
   // |this| to connect to other services. It is guaranteed to outlive |this|.
-  virtual void Initialize(
-      service_manager::Connector* connector,
-      service_manager::ServiceContextRefFactory* context_ref_factory);
+  virtual void Initialize(service_manager::Connector* connector);
 
   // Called by the MediaService to ensure the process is sandboxed. It could be
   // a no-op if the process is already sandboxed.

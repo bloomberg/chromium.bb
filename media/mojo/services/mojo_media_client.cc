@@ -19,9 +19,7 @@ MojoMediaClient::MojoMediaClient() = default;
 
 MojoMediaClient::~MojoMediaClient() = default;
 
-void MojoMediaClient::Initialize(
-    service_manager::Connector* connector,
-    service_manager::ServiceContextRefFactory* context_ref_factory) {}
+void MojoMediaClient::Initialize(service_manager::Connector* connector) {}
 
 void MojoMediaClient::EnsureSandboxed() {}
 

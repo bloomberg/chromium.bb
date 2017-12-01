@@ -30,9 +30,7 @@ class TestMojoMediaClient : public MojoMediaClient {
   ~TestMojoMediaClient() final;
 
   // MojoMediaClient implementation.
-  void Initialize(
-      service_manager::Connector* connector,
-      service_manager::ServiceContextRefFactory* context_ref_factory) final;
+  void Initialize(service_manager::Connector* connector) final;
   scoped_refptr<AudioRendererSink> CreateAudioRendererSink(
       const std::string& audio_device_id) final;
   std::unique_ptr<VideoRendererSink> CreateVideoRendererSink(

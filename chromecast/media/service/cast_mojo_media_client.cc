@@ -115,9 +115,7 @@ CastMojoMediaClient::CastMojoMediaClient(
 
 CastMojoMediaClient::~CastMojoMediaClient() {}
 
-void CastMojoMediaClient::Initialize(
-    service_manager::Connector* connector,
-    service_manager::ServiceContextRefFactory* context_ref_factory) {
+void CastMojoMediaClient::Initialize(service_manager::Connector* connector) {
   DCHECK(!connector_);
   DCHECK(connector);
   connector_ = connector;

@@ -84,7 +84,6 @@ class GpuChildThread : public ChildThreadImpl,
 #if defined(OS_ANDROID)
   static std::unique_ptr<media::AndroidOverlay> CreateAndroidOverlay(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      std::unique_ptr<service_manager::ServiceContextRef> context_ref,
       const base::UnguessableToken& routing_token,
       media::AndroidOverlayConfig);
 #endif

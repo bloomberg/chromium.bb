@@ -10,16 +10,11 @@
 #include "base/unguessable_token.h"
 #include "media/base/android_overlay_config.h"
 
-namespace service_manager {
-class ServiceContextRef;
-}
-
 namespace media {
 
 // Note that this compiles on non-android too.
 using AndroidOverlayMojoFactoryCB =
     base::RepeatingCallback<std::unique_ptr<AndroidOverlay>(
-        std::unique_ptr<service_manager::ServiceContextRef>,
         const base::UnguessableToken&,
         AndroidOverlayConfig)>;
 
