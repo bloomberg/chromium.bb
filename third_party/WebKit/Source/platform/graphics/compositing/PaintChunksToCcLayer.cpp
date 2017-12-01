@@ -412,7 +412,7 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
     recorder.getRecordingCanvas()->drawPicture(list_clone->ReleaseAsRecord());
     params.tracking.CheckUnderInvalidations(params.debug_name,
                                             recorder.finishRecordingAsPicture(),
-                                            params.interest_rect, IntPoint());
+                                            params.interest_rect);
     if (auto record = params.tracking.UnderInvalidationRecord()) {
       cc_list->StartPaint();
       cc_list->push<cc::DrawRecordOp>(std::move(record));
