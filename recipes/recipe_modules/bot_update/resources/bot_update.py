@@ -527,7 +527,7 @@ def force_solution_revision(solution_name, git_url, revisions, cwd):
   branch, revision = _get_target_branch_and_revision(
       solution_name, git_url, revisions)
   if revision and revision.upper() != 'HEAD':
-    git('checkout', '--force', revision, cwd=cwd)
+    treeish = revision
   else:
     # TODO(machenbach): This won't work with branch-heads, as Gerrit's
     # destination branch would be e.g. refs/branch-heads/123. But here
@@ -535,8 +535,12 @@ def force_solution_revision(solution_name, git_url, revisions, cwd):
     # This will also not work if somebody passes a local refspec like
     # refs/heads/master. It needs to translate to refs/remotes/origin/master
     # first. See also https://crbug.com/740456 .
-    ref = branch if branch.startswith('refs/') else 'origin/%s' % branch
-    git('checkout', '--force', ref, cwd=cwd)
+    treeish = branch if branch.startswith('refs/') else 'origin/%s' % branch
+
+  # Note that -- argument is necessary to ensure that git treats `treeish`
+  # argument as revision or ref, and not as a file/directory which happens to
+  # have the exact same name.
+  git('checkout', '--force', treeish, '--', cwd=cwd)
 
 
 def is_broken_repo_dir(repo_dir):
