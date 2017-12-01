@@ -17,10 +17,10 @@ using ::testing::AssertionSuccess;
 namespace net {
 namespace test {
 
-HpackBlockCollector::HpackBlockCollector() {}
+HpackBlockCollector::HpackBlockCollector() = default;
 HpackBlockCollector::HpackBlockCollector(const HpackBlockCollector& other)
     : pending_entry_(other.pending_entry_), entries_(other.entries_) {}
-HpackBlockCollector::~HpackBlockCollector() {}
+HpackBlockCollector::~HpackBlockCollector() = default;
 
 void HpackBlockCollector::OnIndexedHeader(size_t index) {
   pending_entry_.OnIndexedHeader(index);

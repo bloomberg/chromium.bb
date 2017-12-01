@@ -37,7 +37,7 @@ inline ::testing::PolymorphicMatcher<StringPieceHasSubstrMatcher> HasSubstr(
 
 class MockHpackWholeEntryListener : public HpackWholeEntryListener {
  public:
-  ~MockHpackWholeEntryListener() override {}
+  ~MockHpackWholeEntryListener() override = default;
 
   MOCK_METHOD1(OnIndexedHeader, void(size_t index));
   MOCK_METHOD3(OnNameIndexAndLiteralValue,
@@ -55,7 +55,7 @@ class MockHpackWholeEntryListener : public HpackWholeEntryListener {
 class HpackWholeEntryBufferTest : public ::testing::Test {
  protected:
   HpackWholeEntryBufferTest() : entry_buffer_(&listener_, kMaxStringSize) {}
-  ~HpackWholeEntryBufferTest() override {}
+  ~HpackWholeEntryBufferTest() override = default;
 
   StrictMock<MockHpackWholeEntryListener> listener_;
   HpackWholeEntryBuffer entry_buffer_;

@@ -410,9 +410,9 @@ Http2String HuffmanBitBuffer::DebugString() const {
   return ss.str();
 }
 
-HpackHuffmanDecoder::HpackHuffmanDecoder() {}
+HpackHuffmanDecoder::HpackHuffmanDecoder() = default;
 
-HpackHuffmanDecoder::~HpackHuffmanDecoder() {}
+HpackHuffmanDecoder::~HpackHuffmanDecoder() = default;
 
 bool HpackHuffmanDecoder::Decode(Http2StringPiece input, Http2String* output) {
   return DecodeShortCodesFirst(input, output);

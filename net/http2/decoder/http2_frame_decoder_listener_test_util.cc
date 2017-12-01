@@ -9,8 +9,8 @@
 
 namespace net {
 
-FailingHttp2FrameDecoderListener::FailingHttp2FrameDecoderListener() {}
-FailingHttp2FrameDecoderListener::~FailingHttp2FrameDecoderListener() {}
+FailingHttp2FrameDecoderListener::FailingHttp2FrameDecoderListener() = default;
+FailingHttp2FrameDecoderListener::~FailingHttp2FrameDecoderListener() = default;
 
 bool FailingHttp2FrameDecoderListener::OnFrameHeader(
     const Http2FrameHeader& header) {
@@ -196,7 +196,7 @@ LoggingHttp2FrameDecoderListener::LoggingHttp2FrameDecoderListener()
 LoggingHttp2FrameDecoderListener::LoggingHttp2FrameDecoderListener(
     Http2FrameDecoderListener* wrapped)
     : wrapped_(wrapped) {}
-LoggingHttp2FrameDecoderListener::~LoggingHttp2FrameDecoderListener() {}
+LoggingHttp2FrameDecoderListener::~LoggingHttp2FrameDecoderListener() = default;
 
 bool LoggingHttp2FrameDecoderListener::OnFrameHeader(
     const Http2FrameHeader& header) {

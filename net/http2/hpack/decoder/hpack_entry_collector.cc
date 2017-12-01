@@ -60,7 +60,7 @@ HpackEntryCollector::HpackEntryCollector(HpackEntryType type,
       started_(true),
       ended_(true) {}
 
-HpackEntryCollector::~HpackEntryCollector() {}
+HpackEntryCollector::~HpackEntryCollector() = default;
 
 void HpackEntryCollector::OnIndexedHeader(size_t index) {
   ASSERT_FALSE(started_);

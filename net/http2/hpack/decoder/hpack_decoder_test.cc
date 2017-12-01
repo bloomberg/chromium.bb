@@ -83,7 +83,7 @@ class HpackDecoderTest : public ::testing::TestWithParam<bool>,
   HpackDecoderTest() : decoder_(this, 4096) {
     fragment_the_hpack_block_ = GetParam();
   }
-  ~HpackDecoderTest() override {}
+  ~HpackDecoderTest() override = default;
 
   void OnHeaderListStart() override {
     ASSERT_FALSE(saw_start_);

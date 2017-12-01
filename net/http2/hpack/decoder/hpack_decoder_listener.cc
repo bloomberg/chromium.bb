@@ -6,11 +6,11 @@
 
 namespace net {
 
-HpackDecoderListener::HpackDecoderListener() {}
-HpackDecoderListener::~HpackDecoderListener() {}
+HpackDecoderListener::HpackDecoderListener() = default;
+HpackDecoderListener::~HpackDecoderListener() = default;
 
-HpackDecoderNoOpListener::HpackDecoderNoOpListener() {}
-HpackDecoderNoOpListener::~HpackDecoderNoOpListener() {}
+HpackDecoderNoOpListener::HpackDecoderNoOpListener() = default;
+HpackDecoderNoOpListener::~HpackDecoderNoOpListener() = default;
 
 void HpackDecoderNoOpListener::OnHeaderListStart() {}
 void HpackDecoderNoOpListener::OnHeader(HpackEntryType entry_type,

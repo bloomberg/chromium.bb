@@ -14,8 +14,8 @@ namespace net {
 HpackString::HpackString(const char* data) : str_(data) {}
 HpackString::HpackString(Http2StringPiece str) : str_(str.as_string()) {}
 HpackString::HpackString(Http2String str) : str_(std::move(str)) {}
-HpackString::HpackString(const HpackString& other) : str_(other.str_) {}
-HpackString::~HpackString() {}
+HpackString::HpackString(const HpackString& other) = default;
+HpackString::~HpackString() = default;
 
 Http2StringPiece HpackString::ToStringPiece() const {
   return str_;

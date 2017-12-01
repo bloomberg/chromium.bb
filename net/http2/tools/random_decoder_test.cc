@@ -28,7 +28,7 @@ using ::testing::AssertionSuccess;
 namespace net {
 namespace test {
 
-RandomDecoderTest::RandomDecoderTest() {}
+RandomDecoderTest::RandomDecoderTest() = default;
 
 bool RandomDecoderTest::StopDecodeOnDone() {
   return stop_decode_on_done_;

@@ -53,7 +53,7 @@ HpackDecoderStringBuffer::HpackDecoderStringBuffer()
       is_huffman_encoded_(false),
       state_(State::RESET),
       backing_(Backing::RESET) {}
-HpackDecoderStringBuffer::~HpackDecoderStringBuffer() {}
+HpackDecoderStringBuffer::~HpackDecoderStringBuffer() = default;
 
 void HpackDecoderStringBuffer::Reset() {
   DVLOG(3) << "HpackDecoderStringBuffer::Reset";
