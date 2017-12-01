@@ -393,6 +393,9 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
       main_frame_it->second.data_use_recorder;
   old_frame_entry->set_page_transition(page_transition);
 
+  if (old_frame_entry == entry)
+    return;
+
   if (is_same_document_navigation) {
     std::vector<net::URLRequest*> pending_url_requests;
     entry->GetPendingURLRequests(&pending_url_requests);
@@ -402,6 +405,7 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
           DataUseRecorderEntryAsUserData::kDataUseAscriberUserDataKey);
       AscribeRecorderWithRequest(request, old_frame_entry);
     }
+    entry->RemoveAllPendingURLRequests();
     DCHECK(entry->IsDataUseComplete());
     data_use_recorders_.erase(entry);
 
