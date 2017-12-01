@@ -42,10 +42,12 @@
 // The ToolsMenu button.
 @property(nonatomic, strong, readonly) ToolbarToolsMenuButton* toolsMenuButton;
 
-// Animates the toolbar so the omnibox is shrinking to its standard state.
-- (void)contractOmnibox;
-// Expands the omnibox to its expanded state, |animated| or not.
-- (void)expandOmniboxAnimated:(BOOL)animated;
+// Adds the toolbar expanded state animations to |animator|, and changes the
+// toolbar constraints in preparation for the animation.
+- (void)addToolbarExpansionAnimations:(UIViewPropertyAnimator*)animator;
+// Adds the toolbar contracted state animations to |animator|, and changes the
+// toolbar constraints in preparation for the animation.
+- (void)addToolbarContractionAnimations:(UIViewPropertyAnimator*)animator;
 // Updates the view so a snapshot can be taken. It needs to be adapted,
 // depending on if it is a snapshot displayed |onNTP| or not.
 - (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP;

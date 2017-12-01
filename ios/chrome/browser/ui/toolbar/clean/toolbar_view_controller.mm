@@ -49,6 +49,15 @@
 @property(nonatomic, strong) UIView* backgroundView;
 // Whether a page is loading.
 @property(nonatomic, assign, getter=isLoading) BOOL loading;
+// Constraints used for the regular/contracted Toolbar state.
+@property(nonatomic, strong) NSMutableArray* regularToolbarConstraints;
+// Constraints used to layout the Toolbar to its expanded state. If these are
+// active the locationBarContainer will expand to the size of this VC's view.
+// The locationBarView will only expand up to the VC's view safeAreaLayoutGuide.
+@property(nonatomic, strong) NSArray* expandedToolbarConstraints;
+// Top anchor at the bottom of the safeAreaLayoutGuide. Used so views don't
+// overlap with the Status Bar.
+@property(nonatomic, strong) NSLayoutYAxisAnchor* topSafeAnchor;
 @end
 
 @implementation ToolbarViewController
@@ -71,6 +80,9 @@
 @synthesize bookmarkButton = _bookmarkButton;
 @synthesize voiceSearchEnabled = _voiceSearchEnabled;
 @synthesize progressBar = _progressBar;
+@synthesize expandedToolbarConstraints = _expandedToolbarConstraints;
+@synthesize topSafeAnchor = _topSafeAnchor;
+@synthesize regularToolbarConstraints = _regularToolbarConstraints;
 
 #pragma mark - Properties accessor
 
@@ -105,12 +117,20 @@
   return self;
 }
 
-- (void)contractOmnibox {
-  // TODO(crbug.com/785210): Implement this.
+- (void)addToolbarExpansionAnimations:(UIViewPropertyAnimator*)animator {
+  [NSLayoutConstraint deactivateConstraints:self.regularToolbarConstraints];
+  [NSLayoutConstraint activateConstraints:self.expandedToolbarConstraints];
+  [animator addAnimations:^{
+    [self.view layoutIfNeeded];
+  }];
 }
 
-- (void)expandOmniboxAnimated:(BOOL)animated {
-  // TODO(crbug.com/785210): Implement this.
+- (void)addToolbarContractionAnimations:(UIViewPropertyAnimator*)animator {
+  [NSLayoutConstraint deactivateConstraints:self.expandedToolbarConstraints];
+  [NSLayoutConstraint activateConstraints:self.regularToolbarConstraints];
+  [animator addAnimations:^{
+    [self.view layoutIfNeeded];
+  }];
 }
 
 - (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP {
@@ -153,8 +173,22 @@
 
   [self setUpToolbarStackView];
   if (self.locationBarView) {
+    NSLayoutConstraint* locationBarTopAnchorConstraint =
+        [self.locationBarView.topAnchor
+            constraintEqualToAnchor:self.locationBarContainer.topAnchor];
     [self.locationBarContainer addSubview:self.locationBarView];
-    AddSameConstraints(self.locationBarContainer, self.locationBarView);
+    NSArray* locationBarViewConstraints = @[
+      [self.locationBarView.leadingAnchor
+          constraintEqualToAnchor:self.locationBarContainer.leadingAnchor],
+      [self.locationBarView.trailingAnchor
+          constraintEqualToAnchor:self.locationBarContainer.trailingAnchor],
+      [self.locationBarView.bottomAnchor
+          constraintEqualToAnchor:self.locationBarContainer.bottomAnchor],
+      locationBarTopAnchorConstraint,
+    ];
+    // Adds
+    [self.regularToolbarConstraints addObject:locationBarTopAnchorConstraint];
+    [NSLayoutConstraint activateConstraints:locationBarViewConstraints];
   }
   [self.locationBarContainer addSubview:self.bookmarkButton];
   [self.locationBarContainer addSubview:self.voiceSearchButton];
@@ -183,15 +217,23 @@
 }
 
 - (void)setConstraints {
-  // Top anchor so Toolbar content never overlaps with the Status Bar.
-  NSLayoutYAxisAnchor* topAnchor;
-  if (@available(iOS 11, *)) {
-    topAnchor = self.view.safeAreaLayoutGuide.topAnchor;
-  } else {
-    topAnchor = self.topLayoutGuide.bottomAnchor;
-  }
-
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.view.bottomAnchor constraintEqualToAnchor:self.topSafeAnchor
+                                         constant:kToolbarHeight]
+      .active = YES;
+
+  NSArray* progressBarConstraints = @[
+    [self.progressBar.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor],
+    [self.progressBar.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+    [self.progressBar.bottomAnchor
+        constraintEqualToAnchor:self.view.bottomAnchor],
+    [self.progressBar.heightAnchor
+        constraintEqualToConstant:kProgressBarHeight],
+  ];
+  [NSLayoutConstraint activateConstraints:progressBarConstraints];
+
   NSArray* constraints = @[
     [self.stackView.heightAnchor
         constraintEqualToConstant:kToolbarHeight - 2 * kVerticalMargin],
@@ -203,14 +245,6 @@
     [self.stackView.trailingAnchor
         constraintEqualToAnchor:self.view.trailingAnchor
                        constant:-kHorizontalMargin],
-    [self.progressBar.leadingAnchor
-        constraintEqualToAnchor:self.view.leadingAnchor],
-    [self.progressBar.trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor],
-    [self.progressBar.bottomAnchor
-        constraintEqualToAnchor:self.view.bottomAnchor],
-    [self.progressBar.heightAnchor
-        constraintEqualToConstant:kProgressBarHeight],
     [self.bookmarkButton.centerYAnchor
         constraintEqualToAnchor:self.locationBarContainer.centerYAnchor],
     [self.voiceSearchButton.centerYAnchor
@@ -219,10 +253,8 @@
         constraintEqualToAnchor:self.locationBarContainer.trailingAnchor],
     [self.bookmarkButton.trailingAnchor
         constraintEqualToAnchor:self.voiceSearchButton.leadingAnchor],
-    [self.view.bottomAnchor constraintEqualToAnchor:topAnchor
-                                           constant:kToolbarHeight],
   ];
-
+  [self.regularToolbarConstraints addObjectsFromArray:constraints];
   [NSLayoutConstraint activateConstraints:constraints];
 }
 
@@ -343,6 +375,7 @@
   self.buttonUpdater.forwardButton = self.forwardButton;
   self.buttonUpdater.voiceSearchButton = self.voiceSearchButton;
 
+  [self.regularToolbarConstraints addObjectsFromArray:buttonConstraints];
   [NSLayoutConstraint activateConstraints:buttonConstraints];
 }
 
@@ -544,6 +577,44 @@
   }
   [self.bookmarkButton updateHiddenInCurrentSizeClass];
   [self.voiceSearchButton updateHiddenInCurrentSizeClass];
+}
+
+#pragma mark - Setters & Getters.
+
+- (NSLayoutYAxisAnchor*)topSafeAnchor {
+  if (!_topSafeAnchor) {
+    if (@available(iOS 11, *)) {
+      _topSafeAnchor = self.view.safeAreaLayoutGuide.topAnchor;
+    } else {
+      _topSafeAnchor = self.topLayoutGuide.bottomAnchor;
+    }
+  }
+  return _topSafeAnchor;
+}
+
+- (NSMutableArray*)regularToolbarConstraints {
+  if (!_regularToolbarConstraints) {
+    _regularToolbarConstraints = [[NSMutableArray alloc] init];
+  }
+  return _regularToolbarConstraints;
+}
+
+- (NSArray*)expandedToolbarConstraints {
+  if (!_expandedToolbarConstraints) {
+    _expandedToolbarConstraints = @[
+      [self.locationBarContainer.topAnchor
+          constraintEqualToAnchor:self.view.topAnchor],
+      [self.locationBarContainer.bottomAnchor
+          constraintEqualToAnchor:self.view.bottomAnchor],
+      [self.locationBarContainer.leadingAnchor
+          constraintEqualToAnchor:self.view.leadingAnchor],
+      [self.locationBarContainer.trailingAnchor
+          constraintEqualToAnchor:self.view.trailingAnchor],
+      [self.locationBarView.topAnchor constraintEqualToAnchor:self.topSafeAnchor
+                                                     constant:kVerticalMargin],
+    ];
+  }
+  return _expandedToolbarConstraints;
 }
 
 #pragma mark - Private
