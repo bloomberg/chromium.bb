@@ -311,11 +311,6 @@
       <message name="IDS_EXTENSION_INSTALL_PROCESS_CRASHED" desc="Error message in case package fails to install because a utility process crashed.">
         Could not install package because a utility process crashed. Try restarting Chrome and trying again.
       </message>
-      <if expr="is_posix and not is_macosx">
-        <message name="IDS_EXTENSION_NPAPI_NOT_SUPPORTED" desc="Error message when an extension has a requirement for plugins that the system does not support.">
-          NPAPI plugins are not supported.
-        </message>
-      </if>
       <message name="IDS_EXTENSION_PACKAGE_ERROR_CODE" desc="Error message in cases where we fail to install the extension because the crx file is invalid. For example, because the crx header or signature is invalid.">
         Package is invalid: '<ph name="ERROR_CODE">$1<ex>error</ex></ph>'.
       </message>

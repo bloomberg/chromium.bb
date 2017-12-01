@@ -36,14 +36,6 @@ const bool kSupportsWindowShape =
     false;
 #endif
 
-// Whether this build supports the plugins.npapi requirement.
-const bool kSupportsNPAPI =
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-    false;
-#else
-    true;
-#endif
-
 // Returns true if a WebGL check might not fail immediately.
 bool MightSupportWebGL() {
   return content::GpuDataManager::GetInstance()->GpuAccessAllowed(nullptr);
@@ -87,10 +79,6 @@ class RequirementsCheckerTest : public ExtensionsTest {
     manifest_dict_->SetBoolean("requirements.window.shape", true);
   }
 
-  void RequireNPAPI() {
-    manifest_dict_->SetBoolean("requirements.plugins.npapi", true);
-  }
-
   void RequireFeature(const char feature[]) {
     if (!manifest_dict_->HasKey(kFeaturesKey))
       manifest_dict_->Set(kFeaturesKey, std::make_unique<base::ListValue>());
@@ -120,8 +108,7 @@ TEST_F(RequirementsCheckerTest, RequirementsEmpty) {
 TEST_F(RequirementsCheckerTest, RequirementsSuccess) {
   if (kSupportsWindowShape)
     RequireWindowShape();
-  if (kSupportsNPAPI)
-    RequireNPAPI();
+
   RequireFeature(kFeatureCSS3d);
 
   CreateExtension();
@@ -136,10 +123,6 @@ TEST_F(RequirementsCheckerTest, RequirementsFailMultiple) {
   size_t expected_errors = 0u;
   if (!kSupportsWindowShape) {
     RequireWindowShape();
-    expected_errors++;
-  }
-  if (!kSupportsNPAPI) {
-    RequireNPAPI();
     expected_errors++;
   }
   if (!MightSupportWebGL()) {
