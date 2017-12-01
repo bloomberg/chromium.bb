@@ -754,16 +754,15 @@ void DevToolsURLInterceptorRequestJob::OnSubRequestRedirectReceived(
     bool* defer_redirect) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(sub_request_);
-  // If we're not intercepting results then just exit.
-  if (stage_to_intercept_ == InterceptionStage::DONT_INTERCEPT) {
+
+  // If we're not intercepting results or are a response then cancel this
+  // redirect and tell the parent request it was redirected through |redirect_|.
+  if (stage_to_intercept_ == InterceptionStage::DONT_INTERCEPT ||
+      stage_to_intercept_ == InterceptionStage::RESPONSE) {
     *defer_redirect = false;
-    return;
-  }
-  // If we're a response interception only, we will pick it up on the followup
-  // request in DevToolsURLInterceptorRequestJob::Start().
-  if (stage_to_intercept_ == InterceptionStage::RESPONSE) {
-    interceptor_->ExpectRequestAfterRedirect(this->request(), interception_id_);
-    *defer_redirect = false;
+    ProcessRedirect(redirectinfo.status_code, redirectinfo.new_url.spec());
+    redirect_.reset();
+    sub_request_.reset();
     return;
   }
 
@@ -781,8 +780,6 @@ void DevToolsURLInterceptorRequestJob::OnSubRequestRedirectReceived(
   }
 
   redirect_.reset(new net::RedirectInfo(redirectinfo));
-  sub_request_->Cancel();
-  sub_request_.reset();
 
   waiting_for_user_response_ = WaitingForUserResponse::WAITING_FOR_REQUEST_ACK;
 
@@ -793,6 +790,7 @@ void DevToolsURLInterceptorRequestJob::OnSubRequestRedirectReceived(
   request_info->redirect_url = redirectinfo.new_url.spec();
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::BindOnce(callback_, std::move(request_info)));
+  sub_request_.reset();
 }
 
 void DevToolsURLInterceptorRequestJob::OnInterceptedRequestResponseStarted(
@@ -966,6 +964,24 @@ void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
   }
 }
 
+void DevToolsURLInterceptorRequestJob::ProcessRedirect(
+    int status_code,
+    const std::string& new_url) {
+  // NOTE we don't append the text form of the status code because
+  // net::HttpResponseHeaders doesn't need that.
+  std::string raw_headers = base::StringPrintf("HTTP/1.1 %d", status_code);
+  raw_headers.append(1, '\0');
+  raw_headers.append("Location: ");
+  raw_headers.append(new_url);
+  raw_headers.append(2, '\0');
+  mock_response_details_.reset(new MockResponseDetails(
+      base::MakeRefCounted<net::HttpResponseHeaders>(raw_headers), "", 0,
+      base::TimeTicks::Now()));
+
+  interceptor_->ExpectRequestAfterRedirect(request(), interception_id_);
+  NotifyHeadersComplete();
+}
+
 void DevToolsURLInterceptorRequestJob::GetResponseBody(
     std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1050,22 +1066,10 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionRespose(
 
   if (redirect_) {
     DCHECK(!is_response_ack);
-    // NOTE we don't append the text form of the status code because
-    // net::HttpResponseHeaders doesn't need that.
-    std::string raw_headers =
-        base::StringPrintf("HTTP/1.1 %d", redirect_->status_code);
-    raw_headers.append(1, '\0');
-    raw_headers.append("Location: ");
-    raw_headers.append(
+    ProcessRedirect(
+        redirect_->status_code,
         modifications->modified_url.fromMaybe(redirect_->new_url.spec()));
-    raw_headers.append(2, '\0');
-    mock_response_details_.reset(new MockResponseDetails(
-        base::MakeRefCounted<net::HttpResponseHeaders>(raw_headers), "", 0,
-        base::TimeTicks::Now()));
     redirect_.reset();
-
-    interceptor_->ExpectRequestAfterRedirect(request(), interception_id_);
-    NotifyHeadersComplete();
   } else if (is_response_ack) {
     DCHECK(sub_request_);
     // If we are continuing the request without change we fetch the body.
