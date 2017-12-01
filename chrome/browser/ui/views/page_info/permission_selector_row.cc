@@ -400,14 +400,12 @@ void PermissionSelectorRow::PermissionChanged(
 
   // Update the menu button text to reflect the new setting.
   if (menu_button_) {
-    menu_button_->SetText(PageInfoUI::PermissionActionToUIString(
-        profile_, permission.type, permission.setting,
-        permission.default_setting, content_settings::SETTING_SOURCE_USER));
-    menu_button_->SizeToPreferredSize();
     // Re-layout will be done at the |PageInfoBubbleView| level, since
     // that view may need to resize itself to accomodate the new sizes of its
     // contents.
-    menu_button_->InvalidateLayout();
+    menu_button_->SetText(PageInfoUI::PermissionActionToUIString(
+        profile_, permission.type, permission.setting,
+        permission.default_setting, content_settings::SETTING_SOURCE_USER));
   } else if (combobox_) {
     bool use_default = permission.setting == CONTENT_SETTING_DEFAULT;
     combobox_->UpdateSelectedIndex(use_default);

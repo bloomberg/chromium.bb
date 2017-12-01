@@ -113,8 +113,6 @@ void ButtonExample::LabelButtonPressed(LabelButton* label_button,
     }
   } else if (event.IsAltDown()) {
     label_button->SetIsDefault(!label_button->is_default());
-  } else {
-    label_button->SetMinSize(gfx::Size());
   }
   example_view()->GetLayoutManager()->Layout(example_view());
 }
