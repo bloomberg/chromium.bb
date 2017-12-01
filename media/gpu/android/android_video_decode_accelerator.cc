@@ -321,6 +321,9 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     codec_config_->csd1 = config.pps;
   }
 
+  codec_config_->container_color_space = config.container_color_space;
+  codec_config_->hdr_metadata = config.hdr_metadata;
+
   // Only use MediaCodec for VP8/9 if it's likely backed by hardware
   // or if the stream is encrypted.
   if (IsMediaCodecSoftwareDecodingForbidden() &&

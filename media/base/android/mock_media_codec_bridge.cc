@@ -54,6 +54,8 @@ std::unique_ptr<MediaCodecBridge> MockMediaCodecBridge::CreateVideoDecoder(
     const base::android::JavaRef<jobject>& media_crypto,
     const std::vector<uint8_t>& csd0,
     const std::vector<uint8_t>& csd1,
+    const VideoColorSpace& color_space,
+    const base::Optional<HDRMetadata>& hdr_metadata,
     bool allow_adaptive_playback) {
   return base::MakeUnique<MockMediaCodecBridge>();
 }
