@@ -90,17 +90,16 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
     ResourceResponseHead response_head;
     response_head.headers = info.headers;
     response_head.headers->GetMimeType(&response_head.mime_type);
-    base::Optional<net::SSLInfo> ssl_info;
     if (response.has_certificate_error) {
-      ssl_info.emplace();
-      ssl_info->cert_status = net::CERT_STATUS_DATE_INVALID;
+      response_head.cert_status = net::CERT_STATUS_DATE_INVALID;
     }
 
     if (response_head.headers->response_code() == 307) {
       client->OnReceiveRedirect(net::RedirectInfo(), response_head);
       return;
     }
-    client->OnReceiveResponse(response_head, ssl_info, nullptr);
+    client->OnReceiveResponse(response_head, base::nullopt /* ssl_info */,
+                              nullptr /* downloaded_file */);
 
     // Pass the response body to the client.
     uint32_t bytes_written = response.body.size();
@@ -383,7 +382,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_CertificateError) {
 
   // The request should be failed because of the response with the certificate
   // error.
-  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.completion_status().error_code);
+  EXPECT_EQ(net::ERR_CERT_DATE_INVALID, client_.completion_status().error_code);
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.

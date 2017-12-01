@@ -68,6 +68,7 @@ void PopulateResourceResponse(net::URLRequest* request,
         net::IsLegacySymantecCert(request->ssl_info().public_key_hashes);
     response->head.cert_validity_start =
         request->ssl_info().cert->valid_start();
+    response->head.cert_status = request->ssl_info().cert_status;
   }
 
   response->head.request_start = request->creation_time();

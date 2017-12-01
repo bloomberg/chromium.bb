@@ -531,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifyRedirect) {
 }
 
 // Ensure that a certificate error results in a committed navigation with
-// the error code net::ERR_INSECURE_RESPONSE on the handle.
+// the appropriate error code on the handle.
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
                        VerifyCertErrorFailure) {
   if (!IsBrowserSideNavigationEnabled()) {
@@ -549,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
   EXPECT_TRUE(observer.has_committed());
   EXPECT_TRUE(observer.is_error());
-  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, observer.net_error_code());
+  EXPECT_EQ(net::ERR_CERT_COMMON_NAME_INVALID, observer.net_error_code());
 }
 
 // Ensure that the IsRendererInitiated() method on NavigationHandle behaves
@@ -959,7 +959,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleDeferFailure) {
 
   EXPECT_TRUE(observer.has_committed());
   EXPECT_TRUE(observer.is_error());
-  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, observer.net_error_code());
+  EXPECT_EQ(net::ERR_CERT_COMMON_NAME_INVALID, observer.net_error_code());
 }
 
 // Ensure that a NavigationThrottle can block the navigation and collapse the

@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "base/numerics/safe_conversions.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -158,14 +159,13 @@ void ServiceWorkerScriptURLLoader::OnReceiveResponse(
   }
 
   // Check the certificate error.
-  // TODO(nhiroki): Ignore the certificate error when the
-  // --ignore-certificate-errors flag etc are specified.
-  // See ShouldIgnoreSSLError() in service_worker_write_to_cache_job.cc.
-  if (net::IsCertStatusError(response_head.cert_status)) {
+  if (net::IsCertStatusError(response_head.cert_status) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIgnoreCertificateErrors)) {
     // TODO(nhiroki): Show an error message equivalent to kSSLError in
     // service_worker_write_to_cache_job.cc.
-    CommitCompleted(
-        network::URLLoaderCompletionStatus(net::ERR_INSECURE_RESPONSE));
+    CommitCompleted(network::URLLoaderCompletionStatus(
+        net::MapCertStatusToNetError(response_head.cert_status)));
     return;
   }
 
