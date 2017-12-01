@@ -88,6 +88,12 @@ namespace {
 // last. This complements the per-verification histogram
 // Net.Certificate.TrustAnchor.Verify
 void LogTrustAnchor(const net::HashValueVector& spki_hashes) {
+  // Don't record metrics if there are no hashes; this is true if the HTTP
+  // load did not come from an active network connection, such as the disk
+  // cache or a synthesized response.
+  if (spki_hashes.empty())
+    return;
+
   int32_t id = 0;
   for (const auto& hash : spki_hashes) {
     id = net::GetNetTrustAnchorHistogramIdForSPKI(hash);
