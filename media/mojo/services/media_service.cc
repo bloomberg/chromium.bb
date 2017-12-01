@@ -38,6 +38,9 @@ void MediaService::OnStart() {
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(
       base::Bind(&service_manager::ServiceContext::RequestQuit,
                  base::Unretained(context()))));
+
+  // TODO(liberato): Remove plumbing for the ref factory once
+  // MediaCodecVideoDecoder no longer takes a ref. (crbug.com/783973)
   mojo_media_client_->Initialize(context()->connector(), ref_factory_.get());
 }
 
