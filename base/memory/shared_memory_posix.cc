@@ -100,9 +100,10 @@ bool CreateMemFDSharedMemory(const SharedMemoryCreateOptions& options,
     return false;
   fd->reset(syscall(__NR_memfd_create, path->BaseName().value().c_str(), 0));
   if (!fd->is_valid()) {
-    DPLOG(ERROR) << "memfd(create) failed";
     if (errno == ENOSYS)
       try_memfd_create = false;
+    else
+      DPLOG(ERROR) << "memfd(create) failed";
     return false;
   }
 
