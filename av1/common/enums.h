@@ -686,24 +686,6 @@ typedef enum ATTRIBUTE_PACKED {
 #define SUPERRES_SCALE_DENOMINATOR_MIN (SCALE_NUMERATOR + 1)
 #endif  // CONFIG_FRAME_SUPERRES
 
-#if CONFIG_OBU
-// R19
-typedef enum ATTRIBUTE_PACKED {
-  OBU_SEQUENCE_HEADER = 1,
-  OBU_TD = 2,
-  OBU_FRAME_HEADER = 3,
-  OBU_TILE_GROUP = 4,
-  OBU_METADATA = 5,
-  OBU_PADDING = 15,
-} OBU_TYPE;
-
-typedef enum {
-  METADATA_TYPE_PRIVATE_DATA = 0,
-  METADATA_TYPE_HDR_CLL = 1,
-  METADATA_TYPE_HDR_MDCV = 2,
-} METADATA_TYPE;
-#endif
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif
