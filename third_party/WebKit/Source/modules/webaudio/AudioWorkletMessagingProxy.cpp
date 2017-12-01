@@ -5,6 +5,7 @@
 #include "modules/webaudio/AudioWorkletMessagingProxy.h"
 
 #include "core/dom/MessagePort.h"
+#include "modules/webaudio/AudioWorklet.h"
 #include "modules/webaudio/AudioWorkletGlobalScope.h"
 #include "modules/webaudio/AudioWorkletNode.h"
 #include "modules/webaudio/AudioWorkletObjectProxy.h"
@@ -17,10 +18,10 @@ namespace blink {
 
 AudioWorkletMessagingProxy::AudioWorkletMessagingProxy(
     ExecutionContext* execution_context,
-    WorkerClients* worker_clients)
-    : ThreadedWorkletMessagingProxy(execution_context, worker_clients) {}
-
-AudioWorkletMessagingProxy::~AudioWorkletMessagingProxy() {}
+    WorkerClients* worker_clients,
+    AudioWorklet* worklet)
+    : ThreadedWorkletMessagingProxy(execution_context, worker_clients),
+      worklet_(worklet) {}
 
 void AudioWorkletMessagingProxy::CreateProcessor(
     AudioWorkletHandler* handler,
@@ -61,6 +62,10 @@ void AudioWorkletMessagingProxy::SynchronizeWorkletProcessorInfoList(
     processor_info_map_.insert(processor_info.Name(),
                                processor_info.ParamInfoList());
   }
+
+  // Notify AudioWorklet object that the global scope has been updated after the
+  // script evaluation.
+  worklet_->NotifyGlobalScopeIsUpdated();
 }
 
 bool AudioWorkletMessagingProxy::IsProcessorRegistered(
@@ -93,5 +98,11 @@ std::unique_ptr<WorkerThread> AudioWorkletMessagingProxy::CreateWorkerThread() {
   return AudioWorkletThread::Create(CreateThreadableLoadingContext(),
                                     WorkletObjectProxy());
 }
+
+void AudioWorkletMessagingProxy::Trace(Visitor* visitor) {
+  visitor->Trace(worklet_);
+  ThreadedWorkletMessagingProxy::Trace(visitor);
+}
+
 
 }  // namespace blink

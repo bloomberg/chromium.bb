@@ -36,7 +36,7 @@
         context.channeCountMode = 'explicit';
         context.channelInterpretation = 'discrete';
 
-        audioWorklet.addModule('gain-processor.js').then(() => {
+        context.audioWorklet.addModule('gain-processor.js').then(() => {
           let testBuffer = createConstantBuffer(context, 1, testChannelValues);
           let sourceNode = new AudioBufferSourceNode(context);
           let gainWorkletNode = new AudioWorkletNode(context, 'gain');

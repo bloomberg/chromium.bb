@@ -68,5 +68,7 @@ callback DecodeSuccessCallback = void (AudioBuffer decodedData);
     [RaisesException, MeasureAs=AudioContextCreateMediaStreamSource] MediaStreamAudioSourceNode createMediaStreamSource(MediaStream mediaStream);
     [RaisesException, MeasureAs=AudioContextCreateMediaStreamDestination] MediaStreamAudioDestinationNode createMediaStreamDestination();
 
+    [RuntimeEnabled=AudioWorklet, SecureContext] readonly attribute AudioWorklet audioWorklet;
+
     attribute EventHandler onstatechange;
 };

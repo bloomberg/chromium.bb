@@ -21,8 +21,8 @@
 
       // Sets up AudioWorklet and OfflineAudioContext.
       audit.define('Initializing AudioWorklet and Context', (task, should) => {
-        audioWorklet.addModule('gain-processor.js').then(() => {
-          context = new OfflineAudioContext(1, renderLength, sampleRate);
+        context = new OfflineAudioContext(1, renderLength, sampleRate);
+        context.audioWorklet.addModule('gain-processor.js').then(() => {
           task.done();
         });
       });

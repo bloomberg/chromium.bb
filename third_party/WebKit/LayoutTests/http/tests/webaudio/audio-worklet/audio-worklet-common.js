@@ -1,16 +1,13 @@
-/**
- * Assert AudioWorklet is enabled.
- *
- * The content_shell driven by run-webkit-tests.py is supposed to enable all the
- * experimental web platform features.
- *
- * We also want to run the test on the browser. So we check both cases for
- * the content shell and the browser.
- */
+// Check if AudioWorklet is available before running a test.
 function assertAudioWorklet() {
+  let offlineContext = new OfflineAudioContext(1, 1, 44100);
+
+  // We want to be able to run tests both on the browser and the content shell.
+  // So check if AudioWorklet runtime flag is enabled, or check the context
+  // has AudioWorklet object.
   if ((Boolean(window.internals) &&
        Boolean(window.internals.runtimeFlags.audioWorkletEnabled)) ||
-      (Boolean(window.Worklet) && Boolean(window.audioWorklet))) {
+      offlineContext.audioWorklet instanceof AudioWorklet) {
     return;
   }
 

@@ -402,6 +402,9 @@ interface AudioTrackList : EventTarget
     setter onaddtrack
     setter onchange
     setter onremovetrack
+interface AudioWorklet : Worklet
+    attribute @@toStringTag
+    method constructor
 interface AudioWorkletNode : AudioNode
     attribute @@toStringTag
     method constructor
@@ -451,6 +454,7 @@ interface BarcodeDetector
     method detect
 interface BaseAudioContext : EventTarget
     attribute @@toStringTag
+    getter audioWorklet
     getter currentTime
     getter destination
     getter listener
@@ -9154,7 +9158,6 @@ interface webkitURL
     attribute window
     getter animationWorklet
     getter applicationCache
-    getter audioWorklet
     getter caches
     getter clientInformation
     getter cookieStore

@@ -55,7 +55,7 @@ class AudioBuffer;
 class AudioBufferSourceNode;
 class AudioContextOptions;
 class AudioListener;
-class AudioWorkletMessagingProxy;
+class AudioWorklet;
 class BiquadFilterNode;
 class ChannelMergerNode;
 class ChannelSplitterNode;
@@ -334,9 +334,13 @@ class MODULES_EXPORT BaseAudioContext
   // gesture while the AudioContext requires a user gesture.
   void MaybeRecordStartAttempt();
 
-  void SetWorkletMessagingProxy(AudioWorkletMessagingProxy*);
-  AudioWorkletMessagingProxy* WorkletMessagingProxy();
-  bool HasWorkletMessagingProxy() const;
+  // AudioWorklet IDL
+  AudioWorklet* audioWorklet() const;
+
+  // Callback from AudioWorklet, invoked when the associated
+  // AudioWorkletGlobalScope is created and the worklet operation is ready after
+  // the first script evaluation.
+  void NotifyWorkletIsReady();
 
   // TODO(crbug.com/764396): Remove this when fixed.
   virtual void CountValueSetterConflict(bool does_conflict){};
@@ -518,8 +522,7 @@ class MODULES_EXPORT BaseAudioContext
   Optional<AutoplayStatus> autoplay_status_;
   AudioIOPosition output_position_;
 
-  bool has_worklet_messaging_proxy_ = false;
-  Member<AudioWorkletMessagingProxy> worklet_messaging_proxy_;
+  Member<AudioWorklet> audio_worklet_;
 };
 
 }  // namespace blink

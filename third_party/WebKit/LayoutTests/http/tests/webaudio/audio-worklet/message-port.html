@@ -60,7 +60,7 @@
             porterWorkletNode.port.postMessage('hello');
           });
 
-      audioWorklet.addModule('port-processor.js').then(() => {
+      context.audioWorklet.addModule('port-processor.js').then(() => {
         audit.run();
       });
     </script>
