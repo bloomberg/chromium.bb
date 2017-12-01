@@ -132,7 +132,9 @@ class MockContext : public RendererAudioOutputStreamFactoryContext {
   std::unique_ptr<media::AudioOutputDelegate> CreateDelegate(
       const std::string& unique_device_id,
       int render_frame_id,
+      int stream_id,
       const media::AudioParameters& params,
+      media::mojom::AudioOutputStreamObserverPtr stream_observer,
       media::AudioOutputDelegate::EventHandler* handler) override {
     EXPECT_NE(nullptr, delegate_);
     EXPECT_NE(nullptr, delegate_event_handler_location_);

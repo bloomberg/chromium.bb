@@ -1320,6 +1320,8 @@ jumbo_source_set("browser") {
     "renderer_host/media/audio_output_authorization_handler.h",
     "renderer_host/media/audio_output_delegate_impl.cc",
     "renderer_host/media/audio_output_delegate_impl.h",
+    "renderer_host/media/audio_output_stream_observer_impl.cc",
+    "renderer_host/media/audio_output_stream_observer_impl.h",
     "renderer_host/media/audio_renderer_host.cc",
     "renderer_host/media/audio_renderer_host.h",
     "renderer_host/media/audio_sync_reader.cc",

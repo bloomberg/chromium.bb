@@ -64,7 +64,9 @@ class CONTENT_EXPORT RendererAudioOutputStreamFactoryContextImpl
   std::unique_ptr<media::AudioOutputDelegate> CreateDelegate(
       const std::string& unique_device_id,
       int render_frame_id,
+      int stream_id,
       const media::AudioParameters& params,
+      media::mojom::AudioOutputStreamObserverPtr stream_observer,
       media::AudioOutputDelegate::EventHandler* handler) override;
 
   static bool UseMojoFactories();
@@ -76,9 +78,6 @@ class CONTENT_EXPORT RendererAudioOutputStreamFactoryContextImpl
   MediaStreamManager* const media_stream_manager_;
   const AudioOutputAuthorizationHandler authorization_handler_;
   const int render_process_id_;
-
-  // All streams requires ids for logging, so we keep a count for that.
-  int next_stream_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(RendererAudioOutputStreamFactoryContextImpl);
 };

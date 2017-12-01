@@ -64,6 +64,9 @@ class CONTENT_EXPORT RenderFrameAudioOutputStreamFactory
   // The stream providers will contain the corresponding streams.
   OutputStreamProviderSet stream_providers_;
 
+  // All streams require IDs. Use a counter to generate them.
+  int next_stream_id_ = 0;
+
   base::WeakPtrFactory<RenderFrameAudioOutputStreamFactory> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameAudioOutputStreamFactory);
