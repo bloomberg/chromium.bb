@@ -248,7 +248,7 @@ bool VADisplayState::Initialize() {
 #if defined(USE_X11)
       va_display_ = vaGetDisplay(gfx::GetXDisplay());
 #else
-      LOG(WARNING) << "HW video decode acceleration not available without "
+      LOG(WARNING) << "VAAPI video acceleration not available without "
                       "DesktopGL (GLX).";
 #endif  // USE_X11
       break;
@@ -263,7 +263,7 @@ bool VADisplayState::Initialize() {
       break;
 
     default:
-      LOG(WARNING) << "HW video decode acceleration not available for "
+      LOG(WARNING) << "VAAPI video acceleration not available for "
                    << gl::GetGLImplementationName(gl::GetGLImplementation());
       return false;
   }
