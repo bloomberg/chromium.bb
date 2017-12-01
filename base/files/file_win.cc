@@ -348,6 +348,8 @@ void File::DoInitialize(const FilePath& path, uint32_t flags) {
   }
 
   if (!disposition) {
+    ::SetLastError(ERROR_INVALID_PARAMETER);
+    error_details_ = FILE_ERROR_FAILED;
     NOTREACHED();
     return;
   }
