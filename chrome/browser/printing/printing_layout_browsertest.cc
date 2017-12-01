@@ -98,7 +98,6 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
       case printing::JobEventDetails::NEW_DOC:
       case printing::JobEventDetails::USER_INIT_DONE:
       case printing::JobEventDetails::DEFAULT_INIT_DONE:
-      case printing::JobEventDetails::NEW_PAGE:
       case printing::JobEventDetails::PAGE_DONE:
       case printing::JobEventDetails::DOC_DONE:
       case printing::JobEventDetails::ALL_PAGES_REQUESTED: {

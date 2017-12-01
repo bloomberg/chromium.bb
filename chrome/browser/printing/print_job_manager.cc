@@ -138,7 +138,6 @@ void PrintJobManager::OnPrintJobEvent(
     case JobEventDetails::USER_INIT_DONE:
     case JobEventDetails::USER_INIT_CANCELED:
     case JobEventDetails::DEFAULT_INIT_DONE:
-    case JobEventDetails::NEW_PAGE:
     case JobEventDetails::PAGE_DONE:
     case JobEventDetails::DOC_DONE:
     case JobEventDetails::ALL_PAGES_REQUESTED: {

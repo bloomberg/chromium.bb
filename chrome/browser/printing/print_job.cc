@@ -373,7 +373,6 @@ void PrintJob::OnNotifyPrintJobEvent(const JobEventDetails& event_details) {
       break;
     }
     case JobEventDetails::NEW_DOC:
-    case JobEventDetails::NEW_PAGE:
     case JobEventDetails::JOB_DONE:
     case JobEventDetails::ALL_PAGES_REQUESTED: {
       // Don't care.

@@ -186,9 +186,6 @@ class JobEventDetails : public base::RefCountedThreadSafe<JobEventDetails> {
     // A new document started printing.
     NEW_DOC,
 
-    // A new page started printing.
-    NEW_PAGE,
-
     // A page is done printing.
     PAGE_DONE,
 
