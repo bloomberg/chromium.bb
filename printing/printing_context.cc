@@ -26,8 +26,7 @@ PrintingContext::PrintingContext(Delegate* delegate)
   DCHECK(delegate_);
 }
 
-PrintingContext::~PrintingContext() {
-}
+PrintingContext::~PrintingContext() = default;
 
 void PrintingContext::set_margin_type(MarginType type) {
   DCHECK(type != CUSTOM_MARGINS);

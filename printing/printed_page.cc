@@ -21,8 +21,7 @@ PrintedPage::PrintedPage(int page_number,
       page_content_rect_(page_content_rect) {
 }
 
-PrintedPage::~PrintedPage() {
-}
+PrintedPage::~PrintedPage() = default;
 
 const MetafilePlayer* PrintedPage::metafile() const {
   return metafile_.get();

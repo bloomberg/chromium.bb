@@ -111,8 +111,7 @@ PrintedDocument::PrintedDocument(const PrintSettings& settings,
     DebugDumpSettings(name, settings);
 }
 
-PrintedDocument::~PrintedDocument() {
-}
+PrintedDocument::~PrintedDocument() = default;
 
 void PrintedDocument::SetPage(int page_number,
                               std::unique_ptr<MetafilePlayer> metafile,
@@ -239,16 +238,16 @@ void PrintedDocument::DebugDumpData(
                                           base::RetainedRef(data)));
 }
 
-PrintedDocument::Mutable::Mutable() {}
+PrintedDocument::Mutable::Mutable() = default;
 
-PrintedDocument::Mutable::~Mutable() {}
+PrintedDocument::Mutable::~Mutable() = default;
 
 PrintedDocument::Immutable::Immutable(const PrintSettings& settings,
                                       const base::string16& name,
                                       int cookie)
     : settings_(settings), name_(name), cookie_(cookie) {}
 
-PrintedDocument::Immutable::~Immutable() {}
+PrintedDocument::Immutable::~Immutable() = default;
 
 #if defined(OS_ANDROID)
 // This function is not used on android.

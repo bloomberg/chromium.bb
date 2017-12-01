@@ -154,8 +154,7 @@ PrintSettings::PrintSettings() {
 
 PrintSettings::PrintSettings(const PrintSettings& other) = default;
 
-PrintSettings::~PrintSettings() {
-}
+PrintSettings::~PrintSettings() = default;
 
 void PrintSettings::Clear() {
   ranges_.clear();

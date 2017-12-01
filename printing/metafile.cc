@@ -13,17 +13,13 @@
 
 namespace printing {
 
-MetafilePlayer::MetafilePlayer() {
-}
+MetafilePlayer::MetafilePlayer() = default;
 
-MetafilePlayer::~MetafilePlayer() {
-}
+MetafilePlayer::~MetafilePlayer() = default;
 
-Metafile::Metafile() {
-}
+Metafile::Metafile() = default;
 
-Metafile::~Metafile() {
-}
+Metafile::~Metafile() = default;
 
 bool Metafile::GetDataAsVector(std::vector<char>* buffer) const {
   buffer->resize(GetDataSize());

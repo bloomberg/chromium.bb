@@ -12,9 +12,9 @@
 
 namespace printing {
 
-TestPrintBackend::TestPrintBackend() {}
+TestPrintBackend::TestPrintBackend() = default;
 
-TestPrintBackend::~TestPrintBackend() {}
+TestPrintBackend::~TestPrintBackend() = default;
 
 bool TestPrintBackend::EnumeratePrinters(PrinterList* printer_list) {
   if (printer_list_.empty())
