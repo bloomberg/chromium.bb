@@ -50950,6 +50950,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true"
+    name="NewTabPage.ContentSuggestions.TimeUntilStartupFetch" units="ms">
+  <owner>jkrcal@chromium.org</owner>
+  <summary>
+    Android: The time since the last fetch, recorded upon a startup fetch. This
+    is used to understand what are the real soft fetching intervals in the wild.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.ContentSuggestions.UIUpdateResult"
     enum="ContentSuggestionsUIUpdateResult">
   <obsolete>
@@ -109088,6 +109097,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram
       name="NewTabPage.ContentSuggestions.TimeUntilPersistentFetch"/>
   <affected-histogram name="NewTabPage.ContentSuggestions.TimeUntilSoftFetch"/>
+  <affected-histogram
+      name="NewTabPage.ContentSuggestions.TimeUntilStartupFetch"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="UserScriptRunLocation" separator=".">
