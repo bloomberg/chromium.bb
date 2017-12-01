@@ -96,7 +96,7 @@ CreateDataReductionProxyChromeIOData(
   std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data(
           new data_reduction_proxy::DataReductionProxyIOData(
-              DataReductionProxyChromeSettings::GetClient(), net_log,
+              DataReductionProxyChromeSettings::GetClient(), prefs, net_log,
               io_task_runner, ui_task_runner, enabled, GetUserAgent(),
               version_info::GetChannelString(chrome::GetChannel())));
 

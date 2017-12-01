@@ -19,4 +19,5 @@ message NetworkProperties {
   optional bool has_captive_portal = 2;
   optional ProxyFlags secure_proxy_flags = 3;
   optional ProxyFlags insecure_proxy_flags = 4;
+  optional int64 last_modified = 5;
 }

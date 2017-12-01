@@ -48,6 +48,7 @@ class DataReductionProxyConfigServiceClient;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventCreator;
 class DataReductionProxyService;
+class NetworkPropertiesManager;
 
 // Contains and initializes all Data Reduction Proxy objects that operate on
 // the IO thread.
@@ -57,6 +58,7 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // state of the Data Reduction Proxy.
   DataReductionProxyIOData(
       Client client,
+      PrefService* prefs,
       net::NetLog* net_log,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
@@ -136,6 +138,9 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // |pingback_reporting_fraction|. Overridden in testing.
   virtual void SetPingbackReportingFraction(float pingback_reporting_fraction);
 
+  // Called when the user clears the browsing history.
+  void DeleteBrowsingHistory(const base::Time start, const base::Time end);
+
   // Various accessor methods.
   DataReductionProxyConfigurator* configurator() const {
     return configurator_.get();
@@ -214,7 +219,10 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
                            TestResetBadProxyListOnDisableDataSaver);
 
   // Used for testing.
-  DataReductionProxyIOData();
+  DataReductionProxyIOData(
+      PrefService* prefs,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   // Initializes the weak pointer to |this| on the IO thread. It must be done
   // on the IO thread, since it is used for posting tasks from the UI thread
@@ -298,6 +306,11 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   // The production channel of this build.
   const std::string channel_;
+
+  // Created on the UI thread. Guaranteed to be destroyed on IO thread if the
+  // IO thread is still available at the time of destruction. If the IO thread
+  // is unavailable, then the destruction will happen on the UI thread.
+  std::unique_ptr<NetworkPropertiesManager> network_properties_manager_;
 
   base::WeakPtrFactory<DataReductionProxyIOData> weak_factory_;
 

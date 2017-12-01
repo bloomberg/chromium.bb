@@ -102,6 +102,10 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   void SetShouldAddDefaultProxyBypassRules(bool add_default_proxy_bypass_rules);
 
+  std::string GetCurrentNetworkID() const override;
+
+  void SetCurrentNetworkID(const std::string& network_id);
+
   using DataReductionProxyConfig::UpdateConfigForTesting;
   using DataReductionProxyConfig::OnInsecureProxyWarmupURLProbeStatusChange;
 
@@ -112,6 +116,8 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   base::Optional<bool> was_data_reduction_proxy_used_;
   base::Optional<int> proxy_index_;
+
+  base::Optional<std::string> current_network_id_;
 
   // Set to true if the captive portal probe for the current network has been
   // blocked.

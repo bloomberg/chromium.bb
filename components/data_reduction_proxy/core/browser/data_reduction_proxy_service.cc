@@ -248,6 +248,10 @@ void DataReductionProxyService::DeleteBrowsingHistory(const base::Time& start,
   db_task_runner_->PostTask(
       FROM_HERE, base::Bind(&DBDataOwner::DeleteBrowsingHistory,
                             db_data_owner_->GetWeakPtr(), start, end));
+
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&DataReductionProxyIOData::DeleteBrowsingHistory,
+                            io_data_, start, end));
 }
 
 void DataReductionProxyService::AddObserver(
