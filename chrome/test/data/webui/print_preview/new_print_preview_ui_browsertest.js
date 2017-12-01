@@ -67,3 +67,23 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'Copies', function() {
 TEST_F('PrintPreviewSettingsSectionsTest', 'Layout', function() {
   this.runMochaTest(settings_sections_tests.TestNames.Layout);
 });
+
+TEST_F('PrintPreviewSettingsSectionsTest', 'Color', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.Color);
+});
+
+TEST_F('PrintPreviewSettingsSectionsTest', 'MediaSize', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.MediaSize);
+});
+
+TEST_F('PrintPreviewSettingsSectionsTest', 'Margins', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.Margins);
+});
+
+TEST_F('PrintPreviewSettingsSectionsTest', 'Dpi', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.Dpi);
+});
+
+TEST_F('PrintPreviewSettingsSectionsTest', 'Scaling', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.Scaling);
+});

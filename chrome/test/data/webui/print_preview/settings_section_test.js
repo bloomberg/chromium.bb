@@ -7,6 +7,11 @@ cr.define('settings_sections_tests', function() {
   const TestNames = {
     Copies: 'copies',
     Layout: 'layout',
+    Color: 'color',
+    MediaSize: 'media size',
+    Margins: 'margins',
+    Dpi: 'dpi',
+    Scaling: 'scaling',
   };
 
   const suiteName = 'SettingsSectionsTests';
@@ -73,9 +78,27 @@ cr.define('settings_sections_tests', function() {
       };
     }
 
+    /** @param {boolean} isPdf Whether the document should be a PDF. */
+    function setPdfDocument(isPdf) {
+      const info = new print_preview.DocumentInfo();
+      info.init(!isPdf, 'title', false);
+      page.set('documentInfo', info);
+    }
+
+    function setPdfDestination() {
+      const saveAsPdfDestination = new print_preview.Destination(
+          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+          print_preview.DestinationType.LOCAL,
+          print_preview.DestinationOrigin.LOCAL,
+          loadTimeData.getString('printToPDF'), false /*isRecent*/,
+          print_preview.DestinationConnectionStatus.ONLINE);
+      saveAsPdfDestination.capabilities = getCdd();
+      page.set('destination', saveAsPdfDestination);
+    }
+
     test(assert(TestNames.Copies), function() {
       const copiesElement = page.$$('print-preview-copies-settings');
-      assertEquals(false, copiesElement.hidden);
+      expectEquals(false, copiesElement.hidden);
 
       // Remove copies capability.
       const capabilities = getCdd();
@@ -83,17 +106,15 @@ cr.define('settings_sections_tests', function() {
 
       // Copies section should now be hidden.
       page.set('destination.capabilities', capabilities);
-      assertEquals(true, copiesElement.hidden);
+      expectEquals(true, copiesElement.hidden);
     });
 
     test(assert(TestNames.Layout), function() {
       const layoutElement = page.$$('print-preview-layout-settings');
 
       // Set up with HTML document.
-      const htmlInfo = new print_preview.DocumentInfo();
-      htmlInfo.init(true, 'title', false);
-      page.set('documentInfo', htmlInfo);
-      assertEquals(false, layoutElement.hidden);
+      setPdfDocument(false);
+      expectEquals(false, layoutElement.hidden);
 
       // Remove layout capability.
       let capabilities = getCdd();
@@ -105,22 +126,140 @@ cr.define('settings_sections_tests', function() {
         {option: [{ type: 'PORTRAIT', is_default: true }]},
         {option: [{ type: 'LANDSCAPE', is_default: true}]},
       ].forEach(layoutCap => {
+        capabilities = getCdd();
         capabilities.printer.page_orientation = layoutCap;
         // Layout section should now be hidden.
         page.set('destination.capabilities', capabilities);
-        assertEquals(true, layoutElement.hidden);
+        expectEquals(true, layoutElement.hidden);
       });
 
       // Reset full capabilities
       capabilities = getCdd();
       page.set('destination.capabilities', capabilities);
-      assertEquals(false, layoutElement.hidden);
+      expectEquals(false, layoutElement.hidden);
 
       // Test with PDF - should be hidden.
-      const pdfInfo = new print_preview.DocumentInfo();
-      pdfInfo.init(false, 'title', false);
-      page.set('documentInfo', pdfInfo);
-      assertEquals(true, layoutElement.hidden);
+      setPdfDocument(true);
+      expectEquals(true, layoutElement.hidden);
+    });
+
+    test(assert(TestNames.Color), function() {
+      const colorElement = page.$$('print-preview-color-settings');
+      expectEquals(false, colorElement.hidden);
+
+      // Remove color capability.
+      let capabilities = getCdd();
+      delete capabilities.printer.color;
+
+      // Each of these settings should not show the capability.
+      [
+        null,
+        {option: [{ type: 'STANDARD_COLOR', is_default: true }]},
+        {option: [{ type: 'STANDARD_COLOR', is_default: true },
+                  { type: 'CUSTOM_COLOR'}]},
+        {option: [{ type: 'STANDARD_MONOCHROME', is_default: true },
+                  { type: 'CUSTOM_MONOCHROME' }]},
+        {option: [{ type: 'STANDARD_MONOCHROME', is_default: true}]},
+      ].forEach(colorCap => {
+        capabilities = getCdd();
+        capabilities.printer.color = colorCap;
+        // Layout section should now be hidden.
+        page.set('destination.capabilities', capabilities);
+        expectEquals(true, colorElement.hidden);
+      });
+
+      // Custom color and monochrome options should make the section visible.
+      capabilities = getCdd();
+      capabilities.printer.color =
+        {option: [{ type: 'CUSTOM_COLOR', is_default: true },
+                  { type: 'CUSTOM_MONOCHROME' }]};
+      page.set('destination.capabilities', capabilities);
+      expectEquals(false, colorElement.hidden);
+    });
+
+    test(assert(TestNames.MediaSize), function() {
+      const mediaSizeElement = page.$$('print-preview-media-size-settings');
+      expectEquals(false, mediaSizeElement.hidden);
+
+      // Remove capability.
+      let capabilities = getCdd();
+      delete capabilities.printer.media_size;
+
+      // Section should now be hidden.
+      page.set('destination.capabilities', capabilities);
+      expectEquals(true, mediaSizeElement.hidden);
+
+      // Reset
+      capabilities = getCdd();
+      page.set('destination.capabilities', capabilities);
+
+      // Set PDF document type.
+      setPdfDocument(true);
+      expectEquals(false, mediaSizeElement.hidden);
+
+      // Set save as PDF. This should hide the settings section.
+      setPdfDestination();
+      expectEquals(true, mediaSizeElement.hidden);
+
+      // Set HTML document type, should now show the section.
+      setPdfDocument(false);
+      expectEquals(false, mediaSizeElement.hidden);
+    });
+
+    test(assert(TestNames.Margins), function() {
+      const marginsElement = page.$$('print-preview-margins-settings');
+
+      // Section is available for HTML (modifiable) documents
+      setPdfDocument(false);
+      expectEquals(false, marginsElement.hidden);
+
+      // Unavailable for PDFs.
+      setPdfDocument(true);
+      expectEquals(true, marginsElement.hidden);
+    });
+
+    test(assert(TestNames.Dpi), function() {
+      const dpiElement = page.$$('print-preview-dpi-settings');
+      expectEquals(false, dpiElement.hidden);
+
+      // Remove capability.
+      let capabilities = getCdd();
+      delete capabilities.printer.dpi;
+
+      // Section should now be hidden.
+      page.set('destination.capabilities', capabilities);
+      expectEquals(true, dpiElement.hidden);
+
+      // Does not show up for only 1 option.
+      capabilities = getCdd();
+      capabilities.printer.dpi.option.pop();
+      page.set('destination.capabilities', capabilities);
+      expectEquals(true, dpiElement.hidden);
+    });
+
+    test(assert(TestNames.Scaling), function() {
+      const scalingElement = page.$$('print-preview-scaling-settings');
+      expectEquals(false, scalingElement.hidden);
+
+      // HTML to non-PDF destination -> only input shown
+      setPdfDocument(false);
+      const fitToPageContainer = scalingElement.$$('#fit-to-page-container');
+      const scalingInput =
+          scalingElement.$$('print-preview-number-settings-section')
+              .$$('.user-value');
+      expectEquals(false, scalingElement.hidden);
+      expectEquals(true, fitToPageContainer.hidden);
+      expectEquals(false, scalingInput.hidden);
+
+      // PDF to non-PDF destination -> checkbox and input shown.
+      setPdfDocument(true);
+      expectEquals(false, scalingElement.hidden);
+      expectEquals(false, fitToPageContainer.hidden);
+      expectEquals(false, scalingInput.hidden);
+
+      // PDF to PDF destination -> section disappears.
+      setPdfDestination();
+      expectEquals(true, scalingElement.hidden);
     });
   });
 
