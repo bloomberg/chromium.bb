@@ -40289,7 +40289,7 @@ would be helpful to identify which type is being sent.
   <int value="4" label="Failed to start"/>
   <int value="5" label="Registry exit code (deprecated)"/>
   <int value="6" label="Reset retries (deprecated)"/>
-  <int value="7" label="Begin SRT download"/>
+  <int value="7" label="Begin SRT download (deprecated)"/>
   <int value="8" label="No browser to show prompt"/>
   <int value="9" label="No local state (deprecated)"/>
   <int value="10" label="No prompt needed"/>
