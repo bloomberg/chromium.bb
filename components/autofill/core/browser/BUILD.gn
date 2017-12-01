@@ -383,7 +383,9 @@ source_set("unit_tests") {
     "country_combobox_model_unittest.cc",
     "country_names_unittest.cc",
     "credit_card_field_unittest.cc",
-    "credit_card_save_manager_unittest.cc",
+    # credit_card_save_manager_unittests flaking on all platforms
+    # TODO(holte): crbug.com/790953
+    # "credit_card_save_manager_unittest.cc",
     "credit_card_unittest.cc",
     "field_candidates_unittest.cc",
     "field_filler_unittest.cc",
