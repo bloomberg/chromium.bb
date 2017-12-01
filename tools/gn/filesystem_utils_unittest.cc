@@ -173,6 +173,43 @@ TEST(FilesystemUtils, MakeAbsolutePathRelativeIfPossible) {
 #endif
 }
 
+TEST(FilesystemUtils, MakeAbsoluteFilePathRelativeIfPossible) {
+#if defined(OS_WIN)
+  EXPECT_EQ(
+      base::FilePath(L"out\\Debug"),
+      MakeAbsoluteFilePathRelativeIfPossible(
+          base::FilePath(L"C:\\src"), base::FilePath(L"C:\\src\\out\\Debug")));
+  EXPECT_EQ(
+      base::FilePath(L"..\\.."),
+      MakeAbsoluteFilePathRelativeIfPossible(
+          base::FilePath(L"C:\\src\\out\\Debug"), base::FilePath(L"C:\\src")));
+  EXPECT_EQ(base::FilePath(L"."),
+            MakeAbsoluteFilePathRelativeIfPossible(base::FilePath(L"C:\\src"),
+                                                   base::FilePath(L"C:\\src")));
+  EXPECT_EQ(base::FilePath(L"..\\..\\..\\u\\v\\w"),
+            MakeAbsoluteFilePathRelativeIfPossible(
+                base::FilePath(L"C:\\a\\b\\c\\x\\y\\z"),
+                base::FilePath(L"C:\\a\\b\\c\\u\\v\\w")));
+  EXPECT_EQ(base::FilePath(L"D:\\bar"),
+            MakeAbsoluteFilePathRelativeIfPossible(base::FilePath(L"C:\\foo"),
+                                                   base::FilePath(L"D:\\bar")));
+#else
+  EXPECT_EQ(base::FilePath("out/Debug"),
+            MakeAbsoluteFilePathRelativeIfPossible(
+                base::FilePath("/src"), base::FilePath("/src/out/Debug")));
+  EXPECT_EQ(base::FilePath("../.."),
+            MakeAbsoluteFilePathRelativeIfPossible(
+                base::FilePath("/src/out/Debug"), base::FilePath("/src")));
+  EXPECT_EQ(base::FilePath("."),
+            MakeAbsoluteFilePathRelativeIfPossible(base::FilePath("/src"),
+                                                   base::FilePath("/src")));
+  EXPECT_EQ(
+      base::FilePath("../../../u/v/w"),
+      MakeAbsoluteFilePathRelativeIfPossible(base::FilePath("/a/b/c/x/y/z"),
+                                             base::FilePath("/a/b/c/u/v/w")));
+#endif
+}
+
 TEST(FilesystemUtils, NormalizePath) {
   std::string input;
 

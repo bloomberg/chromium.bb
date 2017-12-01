@@ -412,6 +412,37 @@ bool MakeAbsolutePathRelativeIfPossible(const base::StringPiece& source_root,
 #endif
 }
 
+base::FilePath MakeAbsoluteFilePathRelativeIfPossible(
+    const base::FilePath& base,
+    const base::FilePath& target) {
+  DCHECK(base.IsAbsolute());
+  DCHECK(target.IsAbsolute());
+  std::vector<base::FilePath::StringType> base_components;
+  std::vector<base::FilePath::StringType> target_components;
+  base.GetComponents(&base_components);
+  target.GetComponents(&target_components);
+#if defined(OS_WIN)
+  // On Windows, it's impossible to have a relative path from C:\foo to D:\bar,
+  // so return the target as an aboslute path instead.
+  if (base_components[0] != target_components[0])
+    return target;
+#endif
+  size_t i;
+  for (i = 0; i < base_components.size() && i < target_components.size(); i++) {
+    if (base_components[i] != target_components[i])
+      break;
+  }
+  std::vector<base::FilePath::StringType> relative_components;
+  for (size_t j = i; j < base_components.size(); j++)
+    relative_components.push_back(base::FilePath::kParentDirectory);
+  for (size_t j = i; j < target_components.size(); j++)
+    relative_components.push_back(target_components[j]);
+  base::FilePath relative(base::FilePath::kCurrentDirectory);
+  for (const auto& component : relative_components)
+    relative = relative.Append(component);
+  return relative;
+}
+
 void NormalizePath(std::string* path, const base::StringPiece& source_root) {
   char* pathbuf = path->empty() ? nullptr : &(*path)[0];
 
