@@ -87,6 +87,15 @@ class StorageMonitorCros : public StorageMonitor,
       const chromeos::disks::DiskMountManager::MountPointInfo& mount_info,
       bool has_dcim);
 
+  // Adds the mount point in |disk| to |mount_map_| and send a device
+  // attach notification.
+  void AddFixedStorageDisk(const chromeos::disks::DiskMountManager::Disk& disk);
+
+  // Removes the mount point in |disk| from |mount_map_| and send a device
+  // detach notification.
+  void RemoveFixedStorageDisk(
+      const chromeos::disks::DiskMountManager::Disk& disk);
+
   // Mapping of relevant mount points and their corresponding mount devices.
   MountMap mount_map_;
 

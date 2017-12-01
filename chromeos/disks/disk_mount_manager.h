@@ -185,6 +185,8 @@ class CHROMEOS_EXPORT DiskMountManager {
 
     bool IsAutoMountable() const;
 
+    bool IsStatefulPartition() const;
+
    private:
     std::string device_path_;
     std::string mount_path_;
