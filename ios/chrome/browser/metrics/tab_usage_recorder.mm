@@ -451,8 +451,17 @@ void TabUsageRecorder::PageLoaded(
 }
 
 void TabUsageRecorder::RenderProcessGone(web::WebState* web_state) {
-  RendererTerminated(web_state, web_state->IsVisible(),
-                     [UIApplication sharedApplication].applicationState);
+  bool is_active;
+  switch ([UIApplication sharedApplication].applicationState) {
+    case UIApplicationStateActive:
+      is_active = true;
+      break;
+    case UIApplicationStateInactive:
+    case UIApplicationStateBackground:
+      is_active = false;
+      break;
+  }
+  RendererTerminated(web_state, web_state->IsVisible(), is_active);
 }
 
 void TabUsageRecorder::WebStateDestroyed(web::WebState* web_state) {
