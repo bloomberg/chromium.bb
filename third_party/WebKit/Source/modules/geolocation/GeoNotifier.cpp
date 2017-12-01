@@ -85,6 +85,12 @@ void GeoNotifier::StopTimer() {
 void GeoNotifier::TimerFired(TimerBase*) {
   timer_.Stop();
 
+  // As the timer fires asynchronously, it's possible that the execution context
+  // has already gone.  Check it first.
+  if (!geolocation_->GetExecutionContext()) {
+    return;  // Do not invoke anything because of no execution context.
+  }
+
   // Test for fatal error first. This is required for the case where the
   // LocalFrame is disconnected and requests are cancelled.
   if (fatal_error_) {
