@@ -8606,8 +8606,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   const int mi_col = -xd->mb_to_left_edge / (8 * MI_SIZE);
   const int w = block_size_wide[bsize];
   const int h = block_size_high[bsize];
-  const int sb_row = mi_row / MAX_MIB_SIZE;
-  const int sb_col = mi_col / MAX_MIB_SIZE;
+  const int sb_row = mi_row >> cm->mib_size_log2;
+  const int sb_col = mi_col >> cm->mib_size_log2;
 
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   MV_REFERENCE_FRAME ref_frame = INTRA_FRAME;
@@ -8656,16 +8656,16 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
         x->mv_limits.col_min = (tile->mi_col_start - mi_col) * MI_SIZE;
         x->mv_limits.col_max = (tile->mi_col_end - mi_col) * MI_SIZE - w;
         x->mv_limits.row_min = (tile->mi_row_start - mi_row) * MI_SIZE;
-        x->mv_limits.row_max = (sb_row * MAX_MIB_SIZE - mi_row) * MI_SIZE - h;
+        x->mv_limits.row_max = (sb_row * cm->mib_size - mi_row) * MI_SIZE - h;
         break;
       case IBC_MOTION_LEFT:
         x->mv_limits.col_min = (tile->mi_col_start - mi_col) * MI_SIZE;
-        x->mv_limits.col_max = (sb_col * MAX_MIB_SIZE - mi_col) * MI_SIZE - w;
+        x->mv_limits.col_max = (sb_col * cm->mib_size - mi_col) * MI_SIZE - w;
         // TODO(aconverse@google.com): Minimize the overlap between above and
         // left areas.
         x->mv_limits.row_min = (tile->mi_row_start - mi_row) * MI_SIZE;
         int bottom_coded_mi_edge =
-            AOMMIN((sb_row + 1) * MAX_MIB_SIZE, tile->mi_row_end);
+            AOMMIN((sb_row + 1) * cm->mib_size, tile->mi_row_end);
         x->mv_limits.row_max = (bottom_coded_mi_edge - mi_row) * MI_SIZE - h;
         break;
       default: assert(0);
