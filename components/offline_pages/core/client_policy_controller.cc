@@ -26,7 +26,7 @@ ClientPolicyController::ClientPolicyController() {
       kLastNNamespace,
       OfflinePageClientPolicyBuilder(kLastNNamespace, LifetimeType::TEMPORARY,
                                      kUnlimitedPages, kUnlimitedPages)
-          .SetExpirePeriod(base::TimeDelta::FromDays(2))
+          .SetExpirePeriod(base::TimeDelta::FromDays(30))
           .SetIsSupportedByRecentTabs(true)
           .SetIsOnlyShownInOriginalTab(true)
           .Build()));
