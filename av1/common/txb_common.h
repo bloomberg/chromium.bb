@@ -565,7 +565,9 @@ static INLINE void get_txb_ctx(BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
   const int txb_h_unit = tx_size_high_unit[tx_size];
   int ctx_offset = (plane == 0) ? 0 : 7;
 
-  if (plane_bsize > txsize_to_bsize[tx_size]) ctx_offset += 3;
+  if (num_pels_log2_lookup[plane_bsize] >
+      num_pels_log2_lookup[txsize_to_bsize[tx_size]])
+    ctx_offset += 3;
 
   int dc_sign = 0;
   for (int k = 0; k < txb_w_unit; ++k) {

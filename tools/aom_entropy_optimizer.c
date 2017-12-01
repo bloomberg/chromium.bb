@@ -649,6 +649,18 @@ int main(int argc, const char **argv) {
                      "LEVELS][COEFF_BASE_CONTEXTS][CDF_SIZE(2)]");
 
   cts_each_dim[0] = TX_SIZES;
+  cts_each_dim[1] = TXB_SKIP_CONTEXTS;
+  cts_each_dim[2] = 2;
+  optimize_entropy_table(
+      &fc.txb_skip[0][0][0], probsfile, 3, cts_each_dim, NULL, 1,
+      "static const aom_prob "
+      "default_txk_skip[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]");
+  optimize_cdf_table(&fc.txb_skip[0][0][0], probsfile, 3, cts_each_dim,
+                     "static const aom_cdf_prob "
+                     "default_nz_map_cdf[TX_SIZES][PLANE_TYPES][SIG_COEF_"
+                     "CONTEXTS][CDF_SIZE(2)]");
+
+  cts_each_dim[0] = TX_SIZES;
   cts_each_dim[1] = PLANE_TYPES;
   cts_each_dim[2] = SIG_COEF_CONTEXTS;
   cts_each_dim[3] = 2;
