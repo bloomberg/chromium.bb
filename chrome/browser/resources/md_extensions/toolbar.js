@@ -65,8 +65,8 @@ cr.define('extensions', function() {
     /** @private */
     onDevModeToggleChange_: function() {
       const drawer = this.$.devDrawer;
-      if (drawer.hasAttribute('hidden')) {
-        drawer.removeAttribute('hidden');
+      if (drawer.hidden) {
+        drawer.hidden = false;
         // Requesting the offsetTop will cause a reflow (to account for hidden).
         /** @suppress {suspiciousCode} */ drawer.offsetTop;
       }
@@ -77,11 +77,7 @@ cr.define('extensions', function() {
     onInDevModeChanged_: function() {
       // Set the initial state.
       this.expanded_ = this.inDevMode;
-      if (this.inDevMode) {
-        this.$.devDrawer.removeAttribute('hidden');
-      } else {
-        this.$.devDrawer.setAttribute('hidden', '');
-      }
+      this.$.devDrawer.hidden = !this.inDevMode;
     },
 
     /** @private */
