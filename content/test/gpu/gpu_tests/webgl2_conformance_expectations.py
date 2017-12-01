@@ -295,6 +295,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/integerstatequery.html',
         ['passthrough', 'opengl'], bug=602688)
 
+    # Win / Intel
+    self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
+        ['win', 'intel', 'd3d11'], bug=782317)
+
     # Passthrough command decoder / OpenGL / Intel
     self.Fail('conformance2/textures/video/tex-2d-rgb32f-rgb-float.html',
         ['passthrough', 'opengl', 'intel'], bug=602688)
@@ -695,6 +699,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-depth-renderbuffer-initialization.html',
         ['mac', 'intel'], bug=731877)
+
+    self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
+        ['mac', 'intel'], bug=782317)
 
     # Linux only.
     self.Flaky('conformance/textures/video/' +
