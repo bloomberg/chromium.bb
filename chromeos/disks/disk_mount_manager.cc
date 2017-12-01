@@ -25,10 +25,10 @@ namespace disks {
 
 namespace {
 
-const char kDefaultFormattedDeviceName[] = "UNTITLED";
-const char kDefaultFormatVFAT[] = "vfat";
-const char kDeviceNotFound[] = "Device could not be found";
-
+constexpr char kDefaultFormattedDeviceName[] = "UNTITLED";
+constexpr char kDefaultFormatVFAT[] = "vfat";
+constexpr char kDeviceNotFound[] = "Device could not be found";
+constexpr char kStatefulPartition[] = "/mnt/stateful_partition";
 DiskMountManager* g_disk_mount_manager = NULL;
 
 // The DiskMountManager implementation.
@@ -914,6 +914,10 @@ bool DiskMountManager::Disk::IsAutoMountable() const {
   // non-virtual mount devices only.
   return !on_boot_device_;
 };
+
+bool DiskMountManager::Disk::IsStatefulPartition() const {
+  return mount_path_ == kStatefulPartition;
+}
 
 bool DiskMountManager::AddDiskForTest(std::unique_ptr<Disk> disk) {
   return false;

@@ -49,8 +49,8 @@ std::string MakeDeviceUniqueId(const DiskMountManager::Disk& disk) {
   return kVendorModelSerialPrefix + vendor + ":" + product + ":";
 }
 
-// Returns true if the requested device is valid, else false. On success, fills
-// in |info|.
+// Returns whether the requested device is valid. On success |info| will contain
+// device information.
 bool GetDeviceInfo(const DiskMountManager::MountPointInfo& mount_info,
                    bool has_dcim,
                    StorageInfo* info) {
@@ -75,6 +75,24 @@ bool GetDeviceInfo(const DiskMountManager::MountPointInfo& mount_info,
       base::UTF8ToUTF16(disk->device_label()),
       base::UTF8ToUTF16(disk->vendor_name()),
       base::UTF8ToUTF16(disk->product_name()), disk->total_size_in_bytes());
+  return true;
+}
+
+// Returns whether the requested device is valid. On success |info| will contain
+// fixed storage device information.
+bool GetFixedStorageInfo(const DiskMountManager::Disk& disk,
+                         StorageInfo* info) {
+  DCHECK(info);
+
+  std::string unique_id = MakeDeviceUniqueId(disk);
+  if (unique_id.empty())
+    return false;
+
+  *info = StorageInfo(
+      StorageInfo::MakeDeviceId(StorageInfo::FIXED_MASS_STORAGE, unique_id),
+      disk.mount_path(), base::UTF8ToUTF16(disk.device_label()),
+      base::UTF8ToUTF16(disk.vendor_name()),
+      base::UTF8ToUTF16(disk.product_name()), disk.total_size_in_bytes());
   return true;
 }
 
@@ -107,6 +125,13 @@ void StorageMonitorCros::Init() {
 void StorageMonitorCros::CheckExistingMountPoints() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  for (const auto& it : DiskMountManager::GetInstance()->disks()) {
+    if (it.second->IsStatefulPartition()) {
+      AddFixedStorageDisk(*it.second);
+      break;
+    }
+  }
+
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND});
@@ -138,7 +163,28 @@ void StorageMonitorCros::OnAutoMountableDiskEvent(
 
 void StorageMonitorCros::OnBootDeviceDiskEvent(
     DiskMountManager::DiskEvent event,
-    const DiskMountManager::Disk& disk) {}
+    const DiskMountManager::Disk& disk) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!disk.IsStatefulPartition())
+    return;
+
+  switch (event) {
+    case DiskMountManager::DiskEvent::DISK_ADDED: {
+      AddFixedStorageDisk(disk);
+      break;
+    }
+    case DiskMountManager::DiskEvent::DISK_REMOVED: {
+      RemoveFixedStorageDisk(disk);
+      break;
+    }
+    case DiskMountManager::DiskEvent::DISK_CHANGED: {
+      NOTREACHED() << "DiskMountManager::DiskEvent::DISK_CHANGED should not "
+                      "occur for disks on boot device";
+      break;
+    }
+  }
+}
 
 void StorageMonitorCros::OnDeviceEvent(DiskMountManager::DeviceEvent event,
                                        const std::string& device_path) {}
@@ -300,6 +346,38 @@ void StorageMonitorCros::AddMountedPath(
   mount_map_.insert(std::make_pair(mount_info.mount_path, info));
 
   receiver()->ProcessAttach(info);
+}
+
+void StorageMonitorCros::AddFixedStorageDisk(
+    const DiskMountManager::Disk& disk) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(disk.IsStatefulPartition());
+
+  StorageInfo info;
+  if (!GetFixedStorageInfo(disk, &info))
+    return;
+
+  if (base::ContainsKey(mount_map_, disk.mount_path()))
+    return;
+
+  mount_map_.insert(std::make_pair(disk.mount_path(), info));
+  receiver()->ProcessAttach(info);
+}
+
+void StorageMonitorCros::RemoveFixedStorageDisk(
+    const DiskMountManager::Disk& disk) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(disk.IsStatefulPartition());
+
+  StorageInfo info;
+  if (!GetFixedStorageInfo(disk, &info))
+    return;
+
+  size_t erased_count = mount_map_.erase(disk.mount_path());
+  if (!erased_count)
+    return;
+
+  receiver()->ProcessDetach((info.device_id()));
 }
 
 StorageMonitor* StorageMonitor::CreateInternal() {
