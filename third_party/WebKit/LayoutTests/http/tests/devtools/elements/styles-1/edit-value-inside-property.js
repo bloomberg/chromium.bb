@@ -1,10 +1,15 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Verifies that property value editing triggers style update in rendering engine.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div id="inspected" style="font-size: 19px"></div>
+    `);
+
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected', testEmulateKeypress);
 
   function testEmulateKeypress() {
@@ -38,17 +43,4 @@ function test() {
     TestRunner.addResult('font-size: ' + inlineStyleResult.inlineStyle.getPropertyValue('font-size'));
     TestRunner.completeTest();
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Verifies that property value editing triggers style update in rendering engine.
-</p>
-
-<div id="inspected" style="font-size: 19px"></div>
-
-</body>
-</html>
+})();

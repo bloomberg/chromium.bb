@@ -1,14 +1,17 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../../inspector/live-edit-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<link rel="stylesheet" href="../styles/resources/css-live-edit.css">
-<div id=foo></div>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that styles are updated when live-editing css resource.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.loadHTML(`
+      <div id="foo"></div>
+    `);
+  await TestRunner.addStylesheetTag('../styles/resources/css-live-edit.css');
+
   TestRunner.runTestSuite([function testLiveEdit(next) {
     SourcesTestRunner.showScriptSource('css-live-edit.css', didShowResource);
 
@@ -26,14 +29,4 @@ function test() {
       next();
     }
   }]);
-};
-
-</script>
-
-</head>
-
-<body onload="runTest()">
-<p>Tests that styles are updated when live-editing css resource.</p>
-
-</body>
-</html>
+})();

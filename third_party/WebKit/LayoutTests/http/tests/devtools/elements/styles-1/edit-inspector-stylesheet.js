@@ -1,11 +1,17 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(
+      `Tests that adding a new rule creates inspector stylesheet resource and allows its live editing.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div id="inspected">Text</div>
+    `);
+
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected', onStylesSelected);
 
   function onStylesSelected(node) {
@@ -48,16 +54,4 @@ function test() {
     }
     return result;
   }
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that adding a new rule creates inspector stylesheet resource and allows its live editing.
-</p>
-
-<div id="inspected">Text</div>
-
-</body>
-</html>
+})();

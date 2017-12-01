@@ -1,7 +1,5 @@
 Tests that property value being edited uses the user-specified color format.
 
-inspected1
-inspected2
 
 Running: init
 
@@ -30,5 +28,5 @@ Running: editHexAsRGB
 rgb(255, 255, 238)
 
 Running: editNewProperty
-alicebluehsl(120, 100%, 25%)
+hsl(120, 100%, 25%)
 

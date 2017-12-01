@@ -1,25 +1,31 @@
-<html>
-<head>
-<style>
-@media screen and (max-device-width: 100000px) {
-    #inspected {
-        color: green;
-    }
-    #inspected {
-        color: blue;
-    }
-}
-@media screen and (max-device-width: 200000px) {
-    #other {
-        color: green;
-    }
-}
-</style>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that editing media text updates element styles.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      @media screen and (max-device-width: 100000px) {
+          #inspected {
+              color: green;
+          }
+          #inspected {
+              color: blue;
+          }
+      }
+      @media screen and (max-device-width: 200000px) {
+          #other {
+              color: green;
+          }
+      }
+      </style>
+      <div id="inspected" style="color: red">Text</div>
+      <div id="other"></div>
+    `);
+
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
 
   function step1() {
@@ -49,18 +55,4 @@ function test() {
     ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.completeTest();
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that editing media text updates element styles.
-</p>
-
-<div id="inspected" style="color: red">Text</div>
-<div id="other"></div>
-
-</body>
-</html>
+})();

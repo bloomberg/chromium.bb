@@ -1,6 +1,5 @@
 Tests that adding a new rule works properly with user input.
 
-Text
 Is editing? true
 [expanded] 
 element.style { ()

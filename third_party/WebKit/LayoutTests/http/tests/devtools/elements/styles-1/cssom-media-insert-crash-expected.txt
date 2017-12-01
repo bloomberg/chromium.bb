@@ -1,5 +1,5 @@
-Tests that the inspected page does not crash after inspecting element with CSSOM added rules. Bug 373508
-Inspecting this element crashes DevTools
+Tests that the inspected page does not crash after inspecting element with CSSOM added rules. Bug 373508 crbug.com/373508
+
 [expanded] 
 element.style { ()
 
@@ -9,7 +9,7 @@ element.style { ()
     background: red;
 
 [expanded] 
-div { (cssom-media-ins…-crash.html:18 -> cssom-media-insert-crash.html:18:6)
+div { (<style>…</style>)
     border: 1px solid black;
 /-- overloaded --/     background-color: white;
     padding: 20px;

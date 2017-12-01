@@ -1,10 +1,16 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that property value being edited uses the user-specified color format.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div id="inspected1" style="border: 1px solid red">inspected1</div>
+      <div id="inspected2" style="color: #ffffee">inspected2</div>
+    `);
+
   TestRunner.runTestSuite([
     function init(next) {
       ElementsTestRunner.selectNodeAndWaitForStyles('inspected1', next);
@@ -81,18 +87,4 @@ function test() {
       next();
     }
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that property value being edited uses the user-specified color format.
-</p>
-
-<div id="inspected1" style="border: 1px solid red">inspected1</div>
-<div id="inspected2" style="color: #ffffee">inspected2</div>
-
-</body>
-</html>
+})();

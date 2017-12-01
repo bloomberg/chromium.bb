@@ -1,18 +1,29 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script src="../../../inspector/live-edit-test.js"></script>
-<script src="../../../inspector/bindings/bindings-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function prepareTest()
-{
-    runTest();
-}
+(async function() {
+  TestRunner.addResult(
+      `Tests that editing sourcecode which is referred by multiple stylesheets (via sourceURL comment) updates all stylesheets.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('bindings_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.loadHTML(`
+      <div id="inspected">Inspected node</div>
 
-async function test() {
+      <style>div{color:red;}
+      /*# sourceURL=stylesheet.css */
+      </style>
+
+      <template id="template">
+      <style>div{color:red;}
+      /*# sourceURL=stylesheet.css */
+      </style>
+      <p>Hi! I'm ShadowDOM v1!</p>
+      </template>
+    `);
+
   await BindingsTestRunner.attachShadowDOM('shadow1', '#template'),
       await BindingsTestRunner.attachFrame('frame', './resources/frame.html');
   var uiSourceCode = await TestRunner.waitForUISourceCode('stylesheet.css');
@@ -46,26 +57,4 @@ async function test() {
     TestRunner.addResult('Both headers and uiSourceCode content:');
     TestRunner.addResult(dedup.firstValue());
   }
-}
-</script>
-</head>
-<body onload="prepareTest()">
-<p>
-Tests that editing sourcecode which is referred by multiple stylesheets (via sourceURL comment) updates all stylesheets.
-</p>
-
-<div id="inspected">Inspected node</div>
-
-<style>div{color:red;}
-/*# sourceURL=stylesheet.css */
-</style>
-
-<template id='template'>
-<style>div{color:red;}
-/*# sourceURL=stylesheet.css */
-</style>
-<p>Hi! I'm ShadowDOM v1!</p>
-</template>
-
-</body>
-</html>
+})();

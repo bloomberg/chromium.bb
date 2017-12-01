@@ -192,7 +192,7 @@ crbug.com/764474 plugins/plugin-document-back-forward.html [ Crash Failure Timeo
 # DevTools crbug.com/783982
 crbug.com/783982 http/tests/devtools/startup/console/console-uncaught-promise-no-inspector.html [ Failure ]
 crbug.com/783982 http/tests/devtools/elements/styles-2/property-ui-location.html [ Failure ]
-crbug.com/783982 http/tests/devtools/elements/styles-1/empty-background-url.html [ Failure ]
+crbug.com/783982 http/tests/devtools/elements/styles-1/empty-background-url.js [ Failure ]
 
 # http/tests/fetch
 crbug.com/778721 http/tests/fetch/serviceworker-proxied/thorough/auth-base-https-other-https.html [ Pass Failure Timeout ]

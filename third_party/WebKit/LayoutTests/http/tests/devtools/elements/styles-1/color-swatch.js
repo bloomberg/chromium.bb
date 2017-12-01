@@ -1,15 +1,22 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<style>
-#inspected {
-    color: red;
-    --variable: red;
-}
-</style>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(
+      `The patch verifies that color swatch functions properly in matched and computed styles. crbug.com/461363\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      #inspected {
+          color: red;
+          --variable: red;
+      }
+      </style>
+      <div id="inspected">Inspected div</div>
+    `);
+
   TestRunner.runTestSuite([
     function selectNode(next) {
       ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('inspected', next);
@@ -57,14 +64,4 @@ function test() {
   function popoverVisible() {
     return !!document.body.querySelector('* /deep/ .spectrum-color');
   }
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>The patch verifies that color swatch functions properly in matched and computed styles. crbug.com/461363</p>
-
-<div id="inspected">Inspected div</div>
-
-</body>
-</html>
+})();
