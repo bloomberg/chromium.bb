@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stddef.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -110,7 +111,6 @@ void StatFileForIPC(const BrokerPolicy& policy,
                     IPCCommand command_type,
                     const std::string& requested_filename,
                     base::Pickle* write_pickle) {
-  DCHECK(write_pickle);
   DCHECK(command_type == COMMAND_STAT || command_type == COMMAND_STAT64);
   const char* file_to_access = nullptr;
   if (!policy.GetFileNameIfAllowedToAccess(requested_filename.c_str(), F_OK,
@@ -143,7 +143,6 @@ void RenameFileForIPC(const BrokerPolicy& policy,
                       const std::string& old_filename,
                       const std::string& new_filename,
                       base::Pickle* write_pickle) {
-  DCHECK(write_pickle);
   bool ignore;
   const char* old_file_to_access = nullptr;
   const char* new_file_to_access = nullptr;
@@ -159,6 +158,27 @@ void RenameFileForIPC(const BrokerPolicy& policy,
     return;
   }
   write_pickle->WriteInt(0);
+}
+
+// Perform readlink(2) on |filename| using a buffer of MAX_PATH bytes.
+void ReadlinkFileForIPC(const BrokerPolicy& policy,
+                        const std::string& filename,
+                        base::Pickle* write_pickle) {
+  bool ignore;
+  const char* file_to_access = nullptr;
+  if (!policy.GetFileNameIfAllowedToOpen(filename.c_str(), O_RDONLY,
+                                         &file_to_access, &ignore)) {
+    write_pickle->WriteInt(-policy.denied_errno());
+    return;
+  }
+  char buf[PATH_MAX];
+  ssize_t result = readlink(file_to_access, buf, sizeof(buf));
+  if (result < 0) {
+    write_pickle->WriteInt(-errno);
+    return;
+  }
+  write_pickle->WriteInt(result);
+  write_pickle->WriteData(buf, result);
 }
 
 // Handle a |command_type| request contained in |iter| and write the reply
@@ -204,6 +224,13 @@ bool HandleRemoteCommand(const BrokerPolicy& policy,
       if (!iter.ReadString(&old_filename) || !iter.ReadString(&new_filename))
         return false;
       RenameFileForIPC(policy, old_filename, new_filename, write_pickle);
+      break;
+    }
+    case COMMAND_READLINK: {
+      std::string filename;
+      if (!iter.ReadString(&filename))
+        return false;
+      ReadlinkFileForIPC(policy, filename, write_pickle);
       break;
     }
     default:

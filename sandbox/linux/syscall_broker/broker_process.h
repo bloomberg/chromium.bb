@@ -83,6 +83,10 @@ class SANDBOX_EXPORT BrokerProcess {
   // It's similar to the rename() system call and will return -errno on errors.
   int Rename(const char* oldpath, const char* newpath) const;
 
+  // Can be used in place of readlink(). Will be async signal safe.
+  // It's similar to the read() system call and will return -errno on errors.
+  int Readlink(const char* path, char* buf, size_t bufsize) const;
+
   int broker_pid() const { return broker_pid_; }
 
   // Handler to be used with a bpf_dsl Trap() function to forward system calls
