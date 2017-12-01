@@ -9,6 +9,7 @@
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 class PrefRegistrySimple;
@@ -26,6 +27,11 @@ class LoginDataDispatcher;
 class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
  public:
   using OnShownCallback = base::OnceCallback<void(bool did_show)>;
+  // Callback for authentication checks. |success| is nullopt if an
+  // authentication check did not run, otherwise it is true/false if auth
+  // succeeded/failed.
+  using OnAuthenticateCallback =
+      base::OnceCallback<void(base::Optional<bool> success)>;
 
   LoginScreenController();
   ~LoginScreenController() override;
@@ -63,11 +69,10 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   // LoginScreenClient(chrome) will do the authentication and request to show
   // error messages in the screen if auth fails, or request to clear errors if
   // auth succeeds.
-  void AuthenticateUser(
-      const AccountId& account_id,
-      const std::string& password,
-      bool authenticated_by_pin,
-      mojom::LoginScreenClient::AuthenticateUserCallback callback);
+  void AuthenticateUser(const AccountId& account_id,
+                        const std::string& password,
+                        bool authenticated_by_pin,
+                        OnAuthenticateCallback callback);
   void AttemptUnlock(const AccountId& account_id);
   void HardlockPod(const AccountId& account_id);
   void RecordClickOnLockIcon(const AccountId& account_id);
@@ -95,29 +100,30 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   }
 
  private:
-  using PendingAuthenticateUserCall =
+  using PendingDoAuthenticateUser =
       base::OnceCallback<void(const std::string& system_salt)>;
 
-  void DoAuthenticateUser(
-      const AccountId& account_id,
-      const std::string& password,
-      bool authenticated_by_pin,
-      mojom::LoginScreenClient::AuthenticateUserCallback callback,
-      const std::string& system_salt);
+  void DoAuthenticateUser(const AccountId& account_id,
+                          const std::string& password,
+                          bool authenticated_by_pin,
+                          OnAuthenticateCallback callback,
+                          const std::string& system_salt);
+  void OnAuthenticateComplete(OnAuthenticateCallback callback, bool success);
 
-  void OnGetSystemSalt(const std::string& system_salt);
+  void OnGetSystemSalt(PendingDoAuthenticateUser then,
+                       const std::string& system_salt);
 
-  // Returns the active data dispatcher or nullptr if there is no screen.
+  // Returns the active data dispatcher or nullptr if there is no lock screen.
   LoginDataDispatcher* DataDispatcher() const;
 
   // Client interface in chrome browser. May be null in tests.
   mojom::LoginScreenClientPtr login_screen_client_;
 
-  // Binding for the LoginScreen interface.
+  // Binding for the LockScreen interface.
   mojo::Binding<mojom::LoginScreen> binding_;
 
-  // User authentication call that will run when we have system salt.
-  PendingAuthenticateUserCall pending_user_auth_;
+  // True iff we are currently authentication.
+  bool is_authenticating_ = false;
 
   base::ObserverList<LockScreenAppsFocusObserver>
       lock_screen_apps_focus_observers_;
@@ -125,9 +131,11 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   // If set to false, all auth requests will forcibly fail.
   ForceFailAuth force_fail_auth_for_debug_overlay_ = ForceFailAuth::kOff;
 
+  base::WeakPtrFactory<LoginScreenController> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(LoginScreenController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_LOGIN_LOGIN_SCREEN_CONTROLLER_H_
+#endif  // ASH_LOGIN_LOCK_SCREEN_CONTROLLER_H_

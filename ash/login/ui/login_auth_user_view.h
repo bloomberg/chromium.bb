@@ -13,6 +13,7 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/interfaces/user_info.mojom.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -101,6 +102,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
 
   // Called when the user submits an auth method. Runs mojo call.
   void OnAuthSubmit(const base::string16& password);
+  // Called with the result of the request started in |OnAuthSubmit|.
+  void OnAuthComplete(base::Optional<bool> auth_success);
 
   // Called when the user view has been tapped. This will run |on_auth_| if tap
   // to unlock is enabled, otherwise it will run |on_tap_|.
@@ -121,6 +124,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   // |CaptureStateForAnimationPreLayout| and consumed by
   // |ApplyAnimationPostLayout|.
   std::unique_ptr<AnimationState> cached_animation_state_;
+
+  base::WeakPtrFactory<LoginAuthUserView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginAuthUserView);
 };

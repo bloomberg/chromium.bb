@@ -102,7 +102,8 @@ LoginAuthUserView::LoginAuthUserView(
     const OnEasyUnlockIconTapped& on_easy_unlock_icon_tapped)
     : NonAccessibleView(kLoginAuthUserViewClassName),
       on_auth_(on_auth),
-      on_tap_(on_tap) {
+      on_tap_(on_tap),
+      weak_factory_(this) {
   // Build child views.
   user_view_ = new LoginUserView(
       LoginDisplayStyle::kLarge, true /*show_dropdown*/,
@@ -173,7 +174,6 @@ LoginAuthUserView::LoginAuthUserView(
 LoginAuthUserView::~LoginAuthUserView() = default;
 
 void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
-  // TODO(jdufault): Implement additional auth methods.
   auth_methods_ = static_cast<AuthMethods>(auth_methods);
   bool has_password = HasAuthMethod(AUTH_PASSWORD);
   bool has_pin = HasAuthMethod(AUTH_PIN);
@@ -183,13 +183,8 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
   password_view_->SetFocusEnabledForChildViews(has_password);
   password_view_->layer()->SetOpacity(has_password ? 1 : 0);
 
-  // Make sure to clear any existing password on showing the view. We do this on
-  // show instead of on hide so that the password does not clear when animating
-  // out.
-  if (has_password) {
-    password_view_->Clear();
+  if (has_password)
     password_view_->RequestFocus();
-  }
 
   pin_view_->SetVisible(has_pin);
 
@@ -320,6 +315,7 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
 void LoginAuthUserView::UpdateForUser(const mojom::LoginUserInfoPtr& user) {
   user_view_->UpdateForUser(user, true /*animate*/);
   password_view_->UpdateForUser(user);
+  password_view_->Clear();
 }
 
 const mojom::LoginUserInfoPtr& LoginAuthUserView::current_user() const {
@@ -340,9 +336,20 @@ void LoginAuthUserView::RequestFocus() {
 
 void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
   bool authenticated_by_pin = (auth_methods_ & AUTH_PIN) != 0;
+
+  password_view_->SetReadOnly(true);
   Shell::Get()->login_screen_controller()->AuthenticateUser(
       current_user()->basic_user_info->account_id, base::UTF16ToUTF8(password),
-      authenticated_by_pin, on_auth_);
+      authenticated_by_pin,
+      base::BindOnce(&LoginAuthUserView::OnAuthComplete,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void LoginAuthUserView::OnAuthComplete(base::Optional<bool> auth_success) {
+  password_view_->SetReadOnly(false);
+  password_view_->Clear();
+  if (auth_success.has_value())
+    on_auth_.Run(*auth_success);
 }
 
 void LoginAuthUserView::OnUserViewTap() {

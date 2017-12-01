@@ -48,7 +48,7 @@ class ASH_EXPORT LoginPasswordView
     explicit TestApi(LoginPasswordView* view);
     ~TestApi();
 
-    views::View* textfield() const;
+    views::Textfield* textfield() const;
     views::View* submit_button() const;
     views::View* easy_unlock_icon() const;
     void set_immediately_hover_easy_unlock_icon();
@@ -59,7 +59,7 @@ class ASH_EXPORT LoginPasswordView
 
   using OnPasswordSubmit =
       base::RepeatingCallback<void(const base::string16& password)>;
-  using OnPasswordTextChanged = base::RepeatingCallback<void(bool)>;
+  using OnPasswordTextChanged = base::RepeatingCallback<void(bool is_empty)>;
   using OnEasyUnlockIconHovered = base::RepeatingClosure;
   using OnEasyUnlockIconTapped = base::RepeatingClosure;
 
@@ -95,12 +95,12 @@ class ASH_EXPORT LoginPasswordView
   // Erase the last entered value.
   void Backspace();
 
-  // Dispatch a submit event.
-  void Submit();
-
   // Set password field placeholder. The password view cannot set the text by
   // itself because it doesn't know which auth methods are enabled.
   void SetPlaceholderText(const base::string16& placeholder_text);
+
+  // Makes the textfield read-only and enables/disables submitting.
+  void SetReadOnly(bool read_only);
 
   // views::View:
   const char* GetClassName() const override;
@@ -122,6 +122,10 @@ class ASH_EXPORT LoginPasswordView
  private:
   class EasyUnlockIcon;
   friend class TestApi;
+
+  // Enables/disables the submit button and changes the color of the separator
+  // based on if the view is enabled.
+  void UpdateUiState();
 
   // Submits the current password field text to mojo call and resets the text
   // field.

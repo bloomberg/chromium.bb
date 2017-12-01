@@ -61,6 +61,9 @@
 -ImmersiveFullscreenControllerTest.RevealViaGestureChildConsumesEvents
 -ImmersiveFullscreenControllerTest.Transient
 
+# TODO: http://crbug.com/725257
+-LockScreenSanityTest.PasswordSubmitClearsPasswordAfterAuthentication
+
 # TODO: Triage
 -LoginMetricsRecorderTest.UnlockAttempts
 -LoginPasswordViewTest.PasswordSubmitClearsPassword
