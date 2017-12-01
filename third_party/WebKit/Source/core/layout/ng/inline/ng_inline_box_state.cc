@@ -270,9 +270,10 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
   // |text0|text1|null |null | box |text5|
   for (const BoxFragmentPlaceholder& placeholder : box_placeholders_) {
     const ComputedStyle* style = placeholder.item->Style();
+    // Because children are already in the visual order, use LTR for the
+    // fragment builder so that it should not transform the coordinates for RTL.
     NGFragmentBuilder box(placeholder.item->GetLayoutObject(), style,
-                          style->GetWritingMode(),
-                          placeholder.item->Direction());
+                          style->GetWritingMode(), TextDirection::kLtr);
     const NGLogicalOffset& box_offset =
         (*line_box)[placeholder.fragment_end].offset;
     for (unsigned i = placeholder.fragment_start; i < placeholder.fragment_end;
