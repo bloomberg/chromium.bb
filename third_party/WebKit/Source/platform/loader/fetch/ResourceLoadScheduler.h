@@ -81,6 +81,10 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
                int intra_priority,
                ClientId*);
 
+  // Updates the priority information of the given client. This function may
+  // initiate a new resource loading.
+  void SetPriority(ClientId, ResourceLoadPriority, int intra_priority);
+
   // ResourceLoadSchedulerClient should call this method when the loading is
   // finished, or canceled. This method can be called in a pre-finalization
   // step, bug the ReleaseOption must be kReleaseOnly in such a case.
@@ -91,8 +95,9 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
 
   void OnNetworkQuiet();
 
-  // Returns whether we can throttle the given request.
-  ThrottleOption CanThrottle(const ResourceRequest&, SynchronousPolicy) const;
+  // Returns whether we can throttle a request with the given priority.
+  // This function returns false when RendererSideResourceScheduler is disabled.
+  bool IsThrottablePriority(ResourceLoadPriority) const;
 
   // WebFrameScheduler::Observer overrides:
   void OnThrottlingStateChanged(WebFrameScheduler::ThrottlingState) override;
@@ -117,14 +122,23 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
         : client_id(client_id),
           priority(priority),
           intra_priority(intra_priority) {}
-    explicit ClientIdWithPriority(ClientId client_id)
-        : ClientIdWithPriority(client_id,
-                               WebURLRequest::Priority::kUnresolved,
-                               0) {}
 
     const ClientId client_id;
     const WebURLRequest::Priority priority;
     const int intra_priority;
+  };
+
+  struct ClientWithPriority : public GarbageCollected<ClientWithPriority> {
+    ClientWithPriority(ResourceLoadSchedulerClient* client,
+                       ResourceLoadPriority priority,
+                       int intra_priority)
+        : client(client), priority(priority), intra_priority(intra_priority) {}
+
+    void Trace(blink::Visitor* visitor) { visitor->Trace(client); }
+
+    Member<ResourceLoadSchedulerClient> client;
+    ResourceLoadPriority priority;
+    int intra_priority;
   };
 
   ResourceLoadScheduler(FetchContext*);
@@ -175,8 +189,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   ThrottlingHistory throttling_history_ = ThrottlingHistory::kInitial;
 
   // Holds clients that haven't been granted, and are waiting for a grant.
-  HeapHashMap<ClientId, Member<ResourceLoadSchedulerClient>>
-      pending_request_map_;
+  HeapHashMap<ClientId, Member<ClientWithPriority>> pending_request_map_;
   // We use std::set here because WTF doesn't have its counterpart.
   std::set<ClientIdWithPriority, ClientIdWithPriority::Compare>
       pending_requests_;

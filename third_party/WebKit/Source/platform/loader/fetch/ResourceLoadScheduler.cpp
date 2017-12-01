@@ -108,16 +108,50 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
   if (is_shutdown_)
     return;
 
-  if (!is_enabled_ || option == ThrottleOption::kCanNotBeThrottled) {
+  if (!Platform::Current()->IsRendererSideResourceSchedulerEnabled()) {
+    // Prioritization is effectively disabled as we use the constant priority.
+    priority = ResourceLoadPriority::kMedium;
+    intra_priority = 0;
+  }
+
+  if (!is_enabled_ || option == ThrottleOption::kCanNotBeThrottled ||
+      !IsThrottablePriority(priority)) {
     Run(*id, client);
     return;
   }
 
-  pending_request_map_.insert(*id, client);
-  if (Platform::Current()->IsRendererSideResourceSchedulerEnabled())
-    pending_requests_.emplace(*id, priority, intra_priority);
-  else
-    pending_requests_.emplace(*id);
+  pending_requests_.emplace(*id, priority, intra_priority);
+  pending_request_map_.insert(
+      *id, new ClientWithPriority(client, priority, intra_priority));
+  MaybeRun();
+}
+
+void ResourceLoadScheduler::SetPriority(ClientId client_id,
+                                        ResourceLoadPriority priority,
+                                        int intra_priority) {
+  if (!Platform::Current()->IsRendererSideResourceSchedulerEnabled())
+    return;
+
+  auto client_it = pending_request_map_.find(client_id);
+  if (client_it == pending_request_map_.end())
+    return;
+
+  auto it = pending_requests_.find(ClientIdWithPriority(
+      client_id, client_it->value->priority, client_it->value->intra_priority));
+
+  DCHECK(it != pending_requests_.end());
+  pending_requests_.erase(it);
+
+  client_it->value->priority = priority;
+  client_it->value->intra_priority = intra_priority;
+
+  if (!IsThrottablePriority(priority)) {
+    ResourceLoadSchedulerClient* client = client_it->value->client;
+    pending_request_map_.erase(client_it);
+    Run(client_id, client);
+    return;
+  }
+  pending_requests_.emplace(client_id, priority, intra_priority);
   MaybeRun();
 }
 
@@ -207,24 +241,14 @@ void ResourceLoadScheduler::OnNetworkQuiet() {
   }
 }
 
-ResourceLoadScheduler::ThrottleOption ResourceLoadScheduler::CanThrottle(
-    const ResourceRequest& request,
-    SynchronousPolicy synchronous_policy) const {
-  // Synchronous requests should not work with a throttling. Also, tentatively
-  // disables throttling for fetch requests that could keep on holding an active
-  // connection until data is read by JavaScript.
-  if (synchronous_policy == kRequestSynchronously)
-    return ResourceLoadScheduler::ThrottleOption::kCanNotBeThrottled;
-
-  if (request.GetRequestContext() == WebURLRequest::kRequestContextFetch)
-    return ResourceLoadScheduler::ThrottleOption::kCanNotBeThrottled;
-
+bool ResourceLoadScheduler::IsThrottablePriority(
+    ResourceLoadPriority priority) const {
   if (Platform::Current()->IsRendererSideResourceSchedulerEnabled()) {
-    if (request.Priority() >= ResourceLoadPriority::kMedium)
-      return ResourceLoadScheduler::ThrottleOption::kCanNotBeThrottled;
+    if (priority >= ResourceLoadPriority::kMedium)
+      return false;
   }
 
-  return ResourceLoadScheduler::ThrottleOption::kCanBeThrottled;
+  return true;
 }
 
 void ResourceLoadScheduler::OnThrottlingStateChanged(
@@ -271,7 +295,7 @@ void ResourceLoadScheduler::MaybeRun() {
     auto found = pending_request_map_.find(id);
     if (found == pending_request_map_.end())
       continue;  // Already released.
-    ResourceLoadSchedulerClient* client = found->value;
+    ResourceLoadSchedulerClient* client = found->value->client;
     pending_request_map_.erase(found);
     Run(id, client);
   }
