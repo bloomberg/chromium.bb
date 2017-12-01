@@ -685,6 +685,8 @@ split_static_library("ui") {
       "apps/chrome_app_window_client.h",
       "apps/directory_access_confirmation_dialog.cc",
       "apps/directory_access_confirmation_dialog.h",
+      "blocked_content/framebust_block_tab_helper.cc",
+      "blocked_content/framebust_block_tab_helper.h",
       "blocked_content/popunder_preventer.cc",
       "blocked_content/popunder_preventer.h",
       "bluetooth/bluetooth_chooser_controller.cc",

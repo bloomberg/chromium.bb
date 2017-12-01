@@ -16,7 +16,9 @@
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/vector_icons/vector_icons.h"
@@ -40,6 +42,7 @@ using content::WebContents;
 //     ContentSettingDownloadsImageModel         - automatic downloads
 //   ContentSettingMediaImageModel             - media
 //   ContentSettingSubresourceFilterImageModel - deceptive content
+//   ContentSettingFramebustBlockImageModel    - blocked framebust
 
 class ContentSettingBlockedImageModel : public ContentSettingSimpleImageModel {
  public:
@@ -470,6 +473,51 @@ void ContentSettingSubresourceFilterImageModel::SetAnimationHasRun(
   }
 }
 
+// Blocked Framebust -----------------------------------------------------------
+
+ContentSettingFramebustBlockImageModel::ContentSettingFramebustBlockImageModel()
+    : ContentSettingImageModel() {}
+
+void ContentSettingFramebustBlockImageModel::UpdateFromWebContents(
+    WebContents* web_contents) {
+  set_visible(false);
+
+  if (!web_contents)
+    return;
+
+  // Early exit if no blocked Framebust.
+  if (!FramebustBlockTabHelper::FromWebContents(web_contents)->HasBlockedUrls())
+    return;
+
+  set_icon(kBlockedRedirectIcon, kBlockedBadgeIcon);
+  set_explanatory_string_id(IDS_REDIRECT_BLOCKED_TITLE);
+  set_tooltip(l10n_util::GetStringUTF16(IDS_REDIRECT_BLOCKED_TOOLTIP));
+  set_visible(true);
+}
+
+ContentSettingBubbleModel*
+ContentSettingFramebustBlockImageModel::CreateBubbleModel(
+    ContentSettingBubbleModel::Delegate* delegate,
+    WebContents* web_contents,
+    Profile* profile) {
+  return new ContentSettingFramebustBlockBubbleModel(delegate, web_contents,
+                                                     profile);
+}
+
+bool ContentSettingFramebustBlockImageModel::ShouldRunAnimation(
+    WebContents* web_contents) {
+  return web_contents && !FramebustBlockTabHelper::FromWebContents(web_contents)
+                              ->animation_has_run();
+}
+
+void ContentSettingFramebustBlockImageModel::SetAnimationHasRun(
+    WebContents* web_contents) {
+  if (!web_contents)
+    return;
+  FramebustBlockTabHelper::FromWebContents(web_contents)
+      ->set_animation_has_run();
+}
+
 // Protocol handlers -----------------------------------------------------------
 
 ContentSettingRPHImageModel::ContentSettingRPHImageModel()
@@ -612,6 +660,12 @@ ContentSettingImageModel::GenerateContentSettingImageModels() {
     }
     result.push_back(std::move(model));
   }
+
+  // The framebust blocking UI reuses the code for displaying an icon with
+  // ContentSettingImageModel and ContentSettingBubbleModel, even though
+  // framebust blocking is not a content setting.
+  result.push_back(base::MakeUnique<ContentSettingFramebustBlockImageModel>());
+
   return result;
 }
 
