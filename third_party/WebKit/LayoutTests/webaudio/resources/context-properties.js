@@ -7,6 +7,7 @@
 
 
 let BaseAudioContextOwnProperties = [
+  'audioWorklet',
   'constructor',
   'createAnalyser',
   'createBiquadFilter',

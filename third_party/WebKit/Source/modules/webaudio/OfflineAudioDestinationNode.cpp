@@ -28,8 +28,7 @@
 #include <algorithm>
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
-#include "modules/webaudio/AudioWorkletMessagingProxy.h"
-#include "modules/webaudio/AudioWorkletThread.h"
+#include "modules/webaudio/AudioWorklet.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/OfflineAudioContext.h"
 #include "platform/CrossThreadFunctional.h"
@@ -146,13 +145,10 @@ void OfflineAudioDestinationHandler::InitializeOfflineRenderThread(
     AudioBuffer* render_target) {
   DCHECK(IsMainThread());
 
-  // Use Experimental AudioWorkletThread only when AudioWorklet is enabled and
-  // there is an active AudioWorkletGlobalScope.
-  if (RuntimeEnabledFeatures::AudioWorkletEnabled() &&
-      Context()->HasWorkletMessagingProxy()) {
-    DCHECK(Context()->WorkletMessagingProxy()->GetWorkletBackingThread());
-    worklet_backing_thread_ =
-        Context()->WorkletMessagingProxy()->GetWorkletBackingThread();
+  // Use Experimental AudioWorkletThread only when AudioWorklet is enabled, and
+  // the worklet thread and the global scope are ready.
+  if (Context()->audioWorklet() && Context()->audioWorklet()->IsReady()) {
+    worklet_backing_thread_ = Context()->audioWorklet()->GetBackingThread();
   } else {
     render_thread_ =
         Platform::Current()->CreateThread("offline audio renderer");
@@ -365,10 +361,9 @@ bool OfflineAudioDestinationHandler::RenderIfNotSuspended(
 WebThread* OfflineAudioDestinationHandler::GetRenderingThread() {
   DCHECK(IsInitialized());
 
-  // Use Experimental AudioWorkletThread only when AudioWorklet is enabled and
-  // there is an active AudioWorkletGlobalScope.
-  if (RuntimeEnabledFeatures::AudioWorkletEnabled() &&
-      Context()->HasWorkletMessagingProxy()) {
+  // Use Experimental AudioWorkletThread only when AudioWorklet is enabled, and
+  // the worklet thread and the global scope are ready.
+  if (Context()->audioWorklet() && Context()->audioWorklet()->IsReady()) {
     DCHECK(!render_thread_ && worklet_backing_thread_);
     return worklet_backing_thread_;
   }
@@ -381,12 +376,9 @@ void OfflineAudioDestinationHandler::RestartRendering() {
   // If the worklet thread is not assigned yet, that means the context has
   // started without a valid WorkletGlobalScope. Assign the worklet thread,
   // and it will be picked up when the GetRenderingThread() is called next.
-  if (RuntimeEnabledFeatures::AudioWorkletEnabled() &&
-      Context()->HasWorkletMessagingProxy() &&
+  if (Context()->audioWorklet() && Context()->audioWorklet()->IsReady() &&
       !worklet_backing_thread_) {
-    DCHECK(Context()->WorkletMessagingProxy()->GetWorkletBackingThread());
-    worklet_backing_thread_ =
-        Context()->WorkletMessagingProxy()->GetWorkletBackingThread();
+    worklet_backing_thread_ = Context()->audioWorklet()->GetBackingThread();
   }
 };
 

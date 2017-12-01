@@ -11,36 +11,59 @@
 
 namespace blink {
 
+class AudioWorkletHandler;
 class AudioWorkletMessagingProxy;
 class BaseAudioContext;
-class LocalFrame;
+class CrossThreadAudioParamInfo;
+class MessagePortChannel;
 
 class MODULES_EXPORT AudioWorklet final : public Worklet {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(AudioWorklet);
   WTF_MAKE_NONCOPYABLE(AudioWorklet);
 
  public:
-  static AudioWorklet* Create(LocalFrame*);
-  ~AudioWorklet() override;
+  // When the AudioWorklet runtime flag is not enabled, this constructor returns
+  // |nullptr|.
+  static AudioWorklet* Create(BaseAudioContext*);
 
-  void RegisterContext(BaseAudioContext*);
-  void UnregisterContext(BaseAudioContext*);
+  ~AudioWorklet() = default;
 
-  AudioWorkletMessagingProxy* FindAvailableMessagingProxy();
+  void CreateProcessor(AudioWorkletHandler*, MessagePortChannel);
 
-  virtual void Trace(blink::Visitor*);
+  // Invoked by AudioWorkletMessagingProxy. Notifies |context_| when
+  // AudioWorkletGlobalScope finishes the first script evaluation and is ready
+  // for the worklet operation. Can be used for other post-evaluation tasks
+  // in AudioWorklet or BaseAudioContext.
+  void NotifyGlobalScopeIsUpdated();
+
+  WebThread* GetBackingThread();
+
+  const Vector<CrossThreadAudioParamInfo> GetParamInfoListForProcessor(
+      const String& name);
+
+  bool IsProcessorRegistered(const String& name);
+
+  // Returns |true| when a AudioWorkletMessagingProxy and a WorkletBackingThread
+  // are ready.
+  bool IsReady();
+
+  void Trace(blink::Visitor*) override;
 
  private:
-  explicit AudioWorklet(LocalFrame*);
+  explicit AudioWorklet(BaseAudioContext*);
 
-  // Implements Worklet.
+  // Implements Worklet
   bool NeedsToCreateGlobalScope() final;
   WorkletGlobalScopeProxy* CreateGlobalScope() final;
 
-  bool IsWorkletMessagingProxyCreated() const;
+  // Returns |nullptr| if there is no active WorkletGlobalScope().
+  AudioWorkletMessagingProxy* GetMessagingProxy();
 
-  // AudioWorklet keeps the reference of all active BaseAudioContexts, so it
-  // can notify the contexts when a script is loaded in AudioWorkletGlobalScope.
-  HeapHashSet<Member<BaseAudioContext>> contexts_;
+  // To catch the first global scope update and notify the context.
+  bool worklet_started_ = false;
+
+  Member<BaseAudioContext> context_;
 };
 
 }  // namespace blink

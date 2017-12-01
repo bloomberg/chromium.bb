@@ -50,9 +50,12 @@
             task.done();
           });
 
-      audioWorklet.addModule('dummy-processor.js').then(() => {
-        audit.run();
-      });
+      Promise.all([
+          realtimeContext.audioWorklet.addModule('dummy-processor.js'),
+          offlineContext.audioWorklet.addModule('dummy-processor.js')
+        ]).then(() => {
+          audit.run();
+        });
     </script>
   </body>
 </html>

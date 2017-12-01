@@ -28,8 +28,8 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/webaudio/AudioWorklet.h"
 #include "modules/webaudio/BaseAudioContext.h"
-#include "modules/webaudio/AudioWorkletMessagingProxy.h"
 
 namespace blink {
 
@@ -89,13 +89,12 @@ void DefaultAudioDestinationHandler::CreateDestination() {
 
 void DefaultAudioDestinationHandler::StartDestination() {
   DCHECK(!destination_->IsPlaying());
-  // Use Experimental AudioWorkletThread only when AudioWorklet is enabled and
-  // there is an active AudioWorkletGlobalScope.
-  if (RuntimeEnabledFeatures::AudioWorkletEnabled() &&
-      Context()->HasWorkletMessagingProxy()) {
-    DCHECK(Context()->WorkletMessagingProxy()->GetWorkletBackingThread());
+
+  // Use Experimental AudioWorkletThread only when AudioWorklet is enabled, and
+  // the worklet thread and the global scope are ready.
+  if (Context()->audioWorklet() && Context()->audioWorklet()->IsReady()) {
     destination_->StartWithWorkletThread(
-        Context()->WorkletMessagingProxy()->GetWorkletBackingThread());
+        Context()->audioWorklet()->GetBackingThread());
   } else {
     destination_->Start();
   }

@@ -11,8 +11,7 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/AudioParamDescriptor.h"
-#include "modules/webaudio/AudioWorkletGlobalScope.h"
-#include "modules/webaudio/AudioWorkletMessagingProxy.h"
+#include "modules/webaudio/AudioWorklet.h"
 #include "modules/webaudio/AudioWorkletProcessor.h"
 #include "modules/webaudio/AudioWorkletProcessorDefinition.h"
 #include "modules/webaudio/CrossThreadAudioWorkletProcessorInfo.h"
@@ -277,7 +276,7 @@ AudioWorkletNode* AudioWorkletNode::Create(
     }
   }
 
-  if (!context->HasWorkletMessagingProxy()) {
+  if (!context->audioWorklet()->IsReady()) {
     exception_state.ThrowDOMException(
         kInvalidStateError,
         "AudioWorkletNode cannot be created: AudioWorklet does not have a "
@@ -286,9 +285,7 @@ AudioWorkletNode* AudioWorkletNode::Create(
     return nullptr;
   }
 
-  AudioWorkletMessagingProxy* proxy = context->WorkletMessagingProxy();
-
-  if (!proxy->IsProcessorRegistered(name)) {
+  if (!context->audioWorklet()->IsProcessorRegistered(name)) {
     exception_state.ThrowDOMException(
         kInvalidStateError,
         "AudioWorkletNode cannot be created: The node name '" + name +
@@ -302,8 +299,8 @@ AudioWorkletNode* AudioWorkletNode::Create(
 
   AudioWorkletNode* node =
       new AudioWorkletNode(*context, name, options,
-                           proxy->GetParamInfoListForProcessor(name),
-                           channel->port1());
+          context->audioWorklet()->GetParamInfoListForProcessor(name),
+          channel->port1());
 
   if (!node) {
     exception_state.ThrowDOMException(
@@ -319,8 +316,8 @@ AudioWorkletNode* AudioWorkletNode::Create(
 
   // This is non-blocking async call. |node| still can be returned to user
   // before the scheduled async task is completed.
-  proxy->CreateProcessor(&node->GetWorkletHandler(),
-                         std::move(processor_port_channel));
+  context->audioWorklet()->CreateProcessor(&node->GetWorkletHandler(),
+                                           std::move(processor_port_channel));
 
   return node;
 }

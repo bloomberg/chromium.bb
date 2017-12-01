@@ -21,8 +21,8 @@
 
       // Load script file and create a OfflineAudiocontext.
       audit.define('setup', (task, should) => {
-        audioWorklet.addModule('dummy-processor.js').then(() => {
-          context = new OfflineAudioContext(1, 1, sampleRate);
+        context = new OfflineAudioContext(1, 1, sampleRate);
+        context.audioWorklet.addModule('dummy-processor.js').then(() => {
           task.done();
         });
       });
