@@ -186,6 +186,7 @@ vs-chromium-project.txt
 /ios/third_party/material_roboto_font_loader_ios/src
 /ios/third_party/material_sprited_animation_view_ios/src
 /ios/third_party/material_text_accessibility_ios/src
+/ios/third_party/motion_animator_objc/src
 /ios/third_party/motion_interchange_objc/src
 /ios/third_party/ochamcrest/src
 /ios_internal
