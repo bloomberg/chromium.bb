@@ -3826,7 +3826,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Does not work on android since android has scrollbars overlayed.
 // TODO(bokan): Pretty soon most/all platforms will use overlay scrollbars. This
 // test should find a better way to check for scrollability. crbug.com/662196.
-#if defined(OS_ANDROID)
+// Flaky on Linux. crbug.com/790929.
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_FrameOwnerPropertiesPropagationScrolling \
         DISABLED_FrameOwnerPropertiesPropagationScrolling
 #else
