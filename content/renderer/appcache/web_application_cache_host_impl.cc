@@ -62,7 +62,7 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
     int appcache_host_id)
     : client_(client),
       backend_(backend),
-      status_(APPCACHE_STATUS_UNCACHED),
+      status_(AppCacheStatus::APPCACHE_STATUS_UNCACHED),
       is_scheme_supported_(false),
       is_get_method_(false),
       is_new_master_entry_(MAYBE_NEW_ENTRY),
@@ -99,33 +99,35 @@ void WebApplicationCacheHostImpl::OnStatusChanged(
 
 void WebApplicationCacheHostImpl::OnEventRaised(
     AppCacheEventID event_id) {
-  DCHECK(event_id !=
-         APPCACHE_PROGRESS_EVENT);  // See OnProgressEventRaised.
-  DCHECK(event_id != APPCACHE_ERROR_EVENT); // See OnErrorEventRaised.
+  DCHECK_NE(
+      event_id,
+      AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // See OnProgressEventRaised.
+  DCHECK_NE(event_id,
+            AppCacheEventID::APPCACHE_ERROR_EVENT);  // See OnErrorEventRaised.
 
   // Emit logging output prior to calling out to script as we can get
   // deleted within the script event handler.
   const char kFormatString[] = "Application Cache %s event";
-  std::string message = base::StringPrintf(kFormatString,
-                                           kEventNames[event_id]);
+  std::string message = base::StringPrintf(
+      kFormatString, kEventNames[static_cast<int>(event_id)]);
   OnLogMessage(APPCACHE_LOG_INFO, message);
 
   switch (event_id) {
-    case APPCACHE_CHECKING_EVENT:
-      status_ = APPCACHE_STATUS_CHECKING;
+    case AppCacheEventID::APPCACHE_CHECKING_EVENT:
+      status_ = AppCacheStatus::APPCACHE_STATUS_CHECKING;
       break;
-    case APPCACHE_DOWNLOADING_EVENT:
-      status_ = APPCACHE_STATUS_DOWNLOADING;
+    case AppCacheEventID::APPCACHE_DOWNLOADING_EVENT:
+      status_ = AppCacheStatus::APPCACHE_STATUS_DOWNLOADING;
       break;
-    case APPCACHE_UPDATE_READY_EVENT:
-      status_ = APPCACHE_STATUS_UPDATE_READY;
+    case AppCacheEventID::APPCACHE_UPDATE_READY_EVENT:
+      status_ = AppCacheStatus::APPCACHE_STATUS_UPDATE_READY;
       break;
-    case APPCACHE_CACHED_EVENT:
-    case APPCACHE_NO_UPDATE_EVENT:
-      status_ = APPCACHE_STATUS_IDLE;
+    case AppCacheEventID::APPCACHE_CACHED_EVENT:
+    case AppCacheEventID::APPCACHE_NO_UPDATE_EVENT:
+      status_ = AppCacheStatus::APPCACHE_STATUS_IDLE;
       break;
-    case APPCACHE_OBSOLETE_EVENT:
-      status_ = APPCACHE_STATUS_OBSOLETE;
+    case AppCacheEventID::APPCACHE_OBSOLETE_EVENT:
+      status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
       break;
     default:
       NOTREACHED();
@@ -143,7 +145,7 @@ void WebApplicationCacheHostImpl::OnProgressEventRaised(
   std::string message = base::StringPrintf(kFormatString, num_complete,
                                            num_total, url.spec().c_str());
   OnLogMessage(APPCACHE_LOG_INFO, message);
-  status_ = APPCACHE_STATUS_DOWNLOADING;
+  status_ = AppCacheStatus::APPCACHE_STATUS_DOWNLOADING;
   client_->NotifyProgressEventListener(url, num_total, num_complete);
 }
 
@@ -156,11 +158,11 @@ void WebApplicationCacheHostImpl::OnErrorEventRaised(
       base::StringPrintf(kFormatString, details.message.c_str());
   OnLogMessage(APPCACHE_LOG_ERROR, full_message);
 
-  status_ = cache_info_.is_complete ? APPCACHE_STATUS_IDLE :
-      APPCACHE_STATUS_UNCACHED;
+  status_ = cache_info_.is_complete ? AppCacheStatus::APPCACHE_STATUS_IDLE
+                                    : AppCacheStatus::APPCACHE_STATUS_UNCACHED;
   if (details.is_cross_origin) {
     // Don't leak detailed information to script for cross-origin resources.
-    DCHECK_EQ(APPCACHE_RESOURCE_ERROR, details.reason);
+    DCHECK_EQ(AppCacheErrorReason::APPCACHE_RESOURCE_ERROR, details.reason);
     client_->NotifyErrorEventListener(static_cast<ErrorReason>(details.reason),
                                       details.url, 0, WebString());
   } else {
@@ -183,7 +185,8 @@ void WebApplicationCacheHostImpl::WillStartMainResourceRequest(
   const WebApplicationCacheHostImpl* spawning_host_impl =
       static_cast<const WebApplicationCacheHostImpl*>(spawning_host);
   if (spawning_host_impl && (spawning_host_impl != this) &&
-      (spawning_host_impl->status_ != APPCACHE_STATUS_UNCACHED)) {
+      (spawning_host_impl->status_ !=
+       AppCacheStatus::APPCACHE_STATUS_UNCACHED)) {
     backend_->SetSpawningHostId(host_id_, spawning_host_impl->host_id());
   }
 }
@@ -194,8 +197,8 @@ void WebApplicationCacheHostImpl::SelectCacheWithoutManifest() {
   was_select_cache_called_ = true;
 
   status_ = (document_response_.AppCacheID() == kAppCacheNoCacheId)
-                ? APPCACHE_STATUS_UNCACHED
-                : APPCACHE_STATUS_CHECKING;
+                ? AppCacheStatus::APPCACHE_STATUS_UNCACHED
+                : AppCacheStatus::APPCACHE_STATUS_CHECKING;
   is_new_master_entry_ = OLD_ENTRY;
   backend_->SelectCache(host_id_, document_url_,
                         document_response_.AppCacheID(), GURL());
@@ -214,10 +217,10 @@ bool WebApplicationCacheHostImpl::SelectCacheWithManifest(
   if (document_response_.AppCacheID() == kAppCacheNoCacheId) {
     if (is_scheme_supported_ && is_get_method_ &&
         (manifest_gurl.GetOrigin() == document_url_.GetOrigin())) {
-      status_ = APPCACHE_STATUS_CHECKING;
+      status_ = AppCacheStatus::APPCACHE_STATUS_CHECKING;
       is_new_master_entry_ = NEW_ENTRY;
     } else {
-      status_ = APPCACHE_STATUS_UNCACHED;
+      status_ = AppCacheStatus::APPCACHE_STATUS_UNCACHED;
       is_new_master_entry_ = OLD_ENTRY;
       manifest_gurl = GURL();
     }
@@ -234,11 +237,11 @@ bool WebApplicationCacheHostImpl::SelectCacheWithManifest(
   if (document_manifest_gurl != manifest_gurl) {
     backend_->MarkAsForeignEntry(host_id_, document_url_,
                                  document_response_.AppCacheID());
-    status_ = APPCACHE_STATUS_UNCACHED;
+    status_ = AppCacheStatus::APPCACHE_STATUS_UNCACHED;
     return false;  // the navigation will be restarted
   }
 
-  status_ = APPCACHE_STATUS_CHECKING;
+  status_ = AppCacheStatus::APPCACHE_STATUS_CHECKING;
 
   // Its a 'master' entry thats already in the cache.
   backend_->SelectCache(host_id_, document_url_,
@@ -281,9 +284,9 @@ WebApplicationCacheHost::Status WebApplicationCacheHostImpl::GetStatus() {
 bool WebApplicationCacheHostImpl::StartUpdate() {
   if (!backend_->StartUpdate(host_id_))
     return false;
-  if (status_ == APPCACHE_STATUS_IDLE ||
-      status_ == APPCACHE_STATUS_UPDATE_READY)
-    status_ = APPCACHE_STATUS_CHECKING;
+  if (status_ == AppCacheStatus::APPCACHE_STATUS_IDLE ||
+      status_ == AppCacheStatus::APPCACHE_STATUS_UPDATE_READY)
+    status_ = AppCacheStatus::APPCACHE_STATUS_CHECKING;
   else
     status_ = backend_->GetStatus(host_id_);
   return true;

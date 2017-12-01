@@ -355,6 +355,7 @@ mojom("interfaces") {
   ]
 
   sources = [
+    "appcache_info.mojom",
     "download_stream.mojom",
     "network_service.mojom",
     "network_service_test.mojom",
