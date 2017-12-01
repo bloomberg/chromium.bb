@@ -741,12 +741,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return LocalSVGTransform();
   }
 
-  // Returns the reference box for clip path layout. Note the actual bounding
-  // box of the clip path can be bigger or smaller than the reference.
-  FloatRect LocalReferenceBoxForClipPath() const;
-  // Returns the bounding box of the clip path in local coordinates.
-  Optional<FloatRect> LocalClipPathBoundingBox() const;
-
   // SVG uses FloatPoint precise hit testing, and passes the point in parent
   // coordinates instead of in paint invalidation container coordinates.
   // Eventually the rest of the layout tree will move to a similar model.

@@ -156,14 +156,11 @@ void SVGPaintContext::ApplyCompositingIfNecessary() {
 }
 
 void SVGPaintContext::ApplyClipIfNecessary() {
-  ClipPathOperation* clip_path_operation = object_.StyleRef().ClipPath();
-  if (!clip_path_operation)
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    clip_path_clipper_.emplace(GetPaintInfo().context, *clip_path_operation,
-                               object_, object_.ObjectBoundingBox(),
-                               FloatPoint());
-  }
+
+  if (object_.StyleRef().ClipPath())
+    clip_path_clipper_.emplace(GetPaintInfo().context, object_, LayoutPoint());
 }
 
 bool SVGPaintContext::ApplyMaskIfNecessary(SVGResources* resources) {
@@ -218,7 +215,7 @@ bool SVGPaintContext::IsIsolationInstalled() const {
   if (masker_ || filter_)
     return true;
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && clip_path_clipper_ &&
-      clip_path_clipper_->UsingMask())
+      clip_path_clipper_->IsIsolationInstalled())
     return true;
   return false;
 }

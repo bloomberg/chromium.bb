@@ -5,56 +5,59 @@
 #ifndef ClipPathClipper_h
 #define ClipPathClipper_h
 
+#include "core/paint/FloatClipRecorder.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/CompositingRecorder.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {
 
-class ClipPathOperation;
-class FloatPoint;
-class FloatRect;
 class GraphicsContext;
-class LayoutSVGResourceClipper;
 class LayoutObject;
-
-enum class ClipperState { kNotApplied, kAppliedPath, kAppliedMask };
 
 class ClipPathClipper {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
   ClipPathClipper(GraphicsContext&,
-                  ClipPathOperation&,
                   const LayoutObject&,
-                  const FloatRect& reference_box,
-                  const FloatPoint& origin);
+                  const LayoutPoint& paint_offset);
   ~ClipPathClipper();
 
-  bool UsingMask() const {
-    return clipper_state_ == ClipperState::kAppliedMask;
-  }
+  bool IsIsolationInstalled() const { return !!mask_isolation_recorder_; }
+
+  // Returns the reference box used by CSS clip-path. For HTML objects,
+  // this is the border box of the element. For SVG objects this is the
+  // object bounding box.
+  static FloatRect LocalReferenceBox(const LayoutObject&);
+  // Returns the bounding box of the computed clip path, which could be
+  // smaller or bigger than the reference box. Returns nullopt if the
+  // clip path is invalid.
+  static Optional<FloatRect> LocalClipPathBoundingBox(const LayoutObject&);
+  // The argument |clip_path_owner| is the layout object that owns the
+  // ClipPathOperation we are currently processing. Usually it is the
+  // same as the layout object getting clipped, but in the case of nested
+  // clip-path, it could be one of the SVG clip path in the chain.
+  // The output is tri-state:
+  // is_valid == false: The clip path is invalid. Always returns nullopt.
+  // is_valid == true && return == nullopt: The clip path is valid,
+  //   but cannot use path-based clip.
+  // is_valid == true && return != nullopt: The clip path can be applied
+  //   as path-based clip, and the computed path is returned.
+  static Optional<Path> PathBasedClip(const LayoutObject& clip_path_owner,
+                                      bool is_svg_child,
+                                      const FloatRect& reference_box,
+                                      bool& is_valid);
 
  private:
-  // Returns false if there is a problem drawing the mask.
-  bool PrepareEffect(const FloatRect& target_bounding_box,
-                     const FloatRect& visual_rect,
-                     const FloatPoint& layer_position_offset);
-  bool DrawClipAsMask(const FloatRect& target_bounding_box,
-                      const AffineTransform&,
-                      const FloatPoint&);
-  void FinishEffect();
-
-  LayoutSVGResourceClipper* resource_clipper_;
-  ClipperState clipper_state_;
-  const LayoutObject& layout_object_;
   GraphicsContext& context_;
+  const LayoutObject& layout_object_;
+  LayoutPoint paint_offset_;
 
-  // TODO(pdr): This pattern should be cleaned up so that the recorders are just
-  // on the stack.
+  Optional<FloatClipRecorder> clip_recorder_;
   Optional<ClipPathRecorder> clip_path_recorder_;
-  Optional<CompositingRecorder> mask_clip_recorder_;
-  Optional<CompositingRecorder> mask_content_recorder_;
+  Optional<CompositingRecorder> mask_isolation_recorder_;
 };
 
 }  // namespace blink

@@ -87,7 +87,6 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(PrintedContentPDFURLRect);
     DEBUG_STRING_CASE(Resizer);
     DEBUG_STRING_CASE(SVGClip);
-    DEBUG_STRING_CASE(SVGClipBoundsHack);
     DEBUG_STRING_CASE(SVGFilter);
     DEBUG_STRING_CASE(SVGMask);
     DEBUG_STRING_CASE(ScrollbarBackButtonEnd);
@@ -185,6 +184,8 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
     return "End" + ClipTypeAsDebugString(endClipTypeToClipType(type));
 
   PAINT_PHASE_BASED_DEBUG_STRINGS(FloatClip);
+  if (type == kFloatClipClipPathBounds)
+    return "FloatClipClipPathBounds";
   if (IsEndFloatClipType(type))
     return "End" + TypeAsDebugString(endFloatClipTypeToFloatClipType(type));
 
