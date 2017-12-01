@@ -45,6 +45,7 @@
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/GlyphOverflow.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/layout/ng/inline/ng_inline_fragment_iterator.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_offset_mapping.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
@@ -1801,6 +1802,15 @@ float LayoutText::Width(unsigned from,
 }
 
 LayoutRect LayoutText::LinesBoundingBox() const {
+  if (const NGPhysicalBoxFragment* box_fragment =
+          EnclosingBlockFlowFragment()) {
+    NGPhysicalOffsetRect bounding_box;
+    NGInlineFragmentIterator children(*box_fragment, this);
+    for (const auto& child : children)
+      bounding_box.Unite(child.RectInContainerBox());
+    return bounding_box.ToLayoutRect();
+  }
+
   LayoutRect result;
 
   DCHECK_EQ(!FirstTextBox(),
