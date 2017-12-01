@@ -25,7 +25,6 @@ class RecyclableCompositorMac;
 
 class BrowserCompositorMacClient {
  public:
-  virtual NSView* BrowserCompositorMacGetNSView() const = 0;
   virtual SkColor BrowserCompositorMacGetGutterColor(SkColor color) const = 0;
   virtual void BrowserCompositorMacOnBeginFrame() = 0;
   virtual viz::LocalSurfaceId GetLocalSurfaceId() const = 0;
@@ -69,6 +68,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack);
   void SetBackgroundColor(SkColor background_color);
   void SetDisplayColorSpace(const gfx::ColorSpace& color_space);
+  void WasResized();
   void UpdateVSyncParameters(const base::TimeTicks& timebase,
                              const base::TimeDelta& interval);
   void SetNeedsBeginFrames(bool needs_begin_frames);
@@ -151,6 +151,9 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   State state_ = HasNoCompositor;
   void UpdateState();
   void TransitionToState(State new_state);
+  void GetViewProperties(gfx::Size* bounds_in_dip,
+                         float* scale_factor,
+                         gfx::ColorSpace* color_space) const;
 
   static void CopyCompleted(
       base::WeakPtr<BrowserCompositorMac> browser_compositor,
@@ -175,6 +178,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   std::unique_ptr<ui::Layer> root_layer_;
 
   SkColor background_color_ = SK_ColorWHITE;
+  const bool enable_viz_ = false;
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
 

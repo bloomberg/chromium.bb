@@ -8,9 +8,11 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
 #include "base/trace_event/trace_event.h"
+#include "components/viz/common/switches.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/compositor_resize_lock.h"
 #include "content/public/browser/browser_thread.h"
@@ -180,6 +182,8 @@ BrowserCompositorMac::BrowserCompositorMac(
     const viz::FrameSinkId& frame_sink_id)
     : client_(client),
       accelerated_widget_mac_ns_view_(accelerated_widget_mac_ns_view),
+      enable_viz_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableViz)),
       weak_factory_(this) {
   g_browser_compositor_count += 1;
 
@@ -187,7 +191,7 @@ BrowserCompositorMac::BrowserCompositorMac(
   // TODO(fsamuel): Plumb surface synchronization settings.
   delegated_frame_host_.reset(new DelegatedFrameHost(
       frame_sink_id, this, false /* enable_surface_synchronization */,
-      false /* enable_viz */));
+      enable_viz_));
 
   SetRenderWidgetHostIsHidden(render_widget_host_is_hidden);
   SetNSViewAttachedToWindow(ns_view_attached_to_window);
@@ -330,6 +334,22 @@ void BrowserCompositorMac::SetDisplayColorSpace(
     recyclable_compositor_->compositor()->SetDisplayColorSpace(color_space);
 }
 
+void BrowserCompositorMac::WasResized() {
+  GetDelegatedFrameHost()->WasResized();
+
+  // In non-viz, the ui::Compositor is resized in sync with frames coming from
+  // the renderer. In viz, the ui::Compositor can only resize in sync with the
+  // NSView.
+  if (enable_viz_ && recyclable_compositor_) {
+    gfx::Size dip_size;
+    float scale_factor = 1.f;
+    GetViewProperties(&dip_size, &scale_factor, nullptr);
+    gfx::Size pixel_size = gfx::ConvertSizeToPixel(scale_factor, dip_size);
+    recyclable_compositor_->compositor()->SetScaleAndSize(scale_factor,
+                                                          pixel_size);
+  }
+}
+
 void BrowserCompositorMac::UpdateVSyncParameters(
     const base::TimeTicks& timebase,
     const base::TimeDelta& interval) {
@@ -371,23 +391,20 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
 
   // Transition HasDetachedCompositor -> HasAttachedCompositor.
   if (state_ == HasDetachedCompositor && new_state == HasAttachedCompositor) {
-    NSView* ns_view =
-        accelerated_widget_mac_ns_view_->AcceleratedWidgetGetNSView();
-    display::Display display =
-        display::Screen::GetScreen()->GetDisplayNearestView(ns_view);
-    NSSize dip_ns_size = [ns_view bounds].size;
-    gfx::Size pixel_size(dip_ns_size.width * display.device_scale_factor(),
-                         dip_ns_size.height * display.device_scale_factor());
+    gfx::Size dip_size;
+    float scale_factor = 1.f;
+    gfx::ColorSpace color_space;
+    GetViewProperties(&dip_size, &scale_factor, &color_space);
+    gfx::Size pixel_size = gfx::ConvertSizeToPixel(scale_factor, dip_size);
 
     delegated_frame_host_->SetCompositor(recyclable_compositor_->compositor());
     delegated_frame_host_->WasShown(ui::LatencyInfo());
     // Unsuspend the browser compositor after showing the delegated frame host.
     // If there is not a saved delegated frame, then the delegated frame host
     // will keep the compositor locked until a delegated frame is swapped.
-    recyclable_compositor_->compositor()->SetDisplayColorSpace(
-        display.color_space());
-    recyclable_compositor_->compositor()->SetScaleAndSize(
-        display.device_scale_factor(), pixel_size);
+    recyclable_compositor_->compositor()->SetDisplayColorSpace(color_space);
+    recyclable_compositor_->compositor()->SetScaleAndSize(scale_factor,
+                                                          pixel_size);
     recyclable_compositor_->Unsuspend();
     state_ = HasAttachedCompositor;
   }
@@ -411,6 +428,26 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
     recyclable_compositor_->compositor()->SetRootLayer(nullptr);
     RecyclableCompositorMac::Recycle(std::move(recyclable_compositor_));
     state_ = HasNoCompositor;
+  }
+}
+
+void BrowserCompositorMac::GetViewProperties(
+    gfx::Size* bounds_in_dip,
+    float* scale_factor,
+    gfx::ColorSpace* color_space) const {
+  NSView* ns_view =
+      accelerated_widget_mac_ns_view_->AcceleratedWidgetGetNSView();
+  if (bounds_in_dip) {
+    NSSize dip_ns_size = [ns_view bounds].size;
+    *bounds_in_dip = gfx::Size(dip_ns_size.width, dip_ns_size.height);
+  }
+  if (scale_factor || color_space) {
+    display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestView(ns_view);
+    if (scale_factor)
+      *scale_factor = display.device_scale_factor();
+    if (color_space)
+      *color_space = display.color_space();
   }
 }
 
@@ -441,8 +478,9 @@ SkColor BrowserCompositorMac::DelegatedFrameHostGetGutterColor(
 }
 
 gfx::Size BrowserCompositorMac::DelegatedFrameHostDesiredSizeInDIP() const {
-  NSRect bounds = [client_->BrowserCompositorMacGetNSView() bounds];
-  return gfx::Size(bounds.size.width, bounds.size.height);
+  gfx::Size dip_size;
+  GetViewProperties(&dip_size, nullptr, nullptr);
+  return dip_size;
 }
 
 bool BrowserCompositorMac::DelegatedFrameCanCreateResizeLock() const {
