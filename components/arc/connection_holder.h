@@ -107,8 +107,10 @@ class ConnectionHolderImpl {
   explicit ConnectionHolderImpl(ConnectionNotifier* connection_notifier)
       : connection_notifier_(connection_notifier), weak_ptr_factory_(this) {}
 
-  InstanceType* instance() { return instance_; }
-  uint32_t instance_version() const { return instance_version_; }
+  InstanceType* instance() { return IsConnected() ? instance_ : nullptr; }
+  uint32_t instance_version() const {
+    return IsConnected() ? instance_version_ : 0;
+  }
 
   // Returns true if |binding_| is set.
   bool IsConnected() const { return binding_.get(); }
