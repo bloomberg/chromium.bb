@@ -256,7 +256,14 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   if (ConstraintSpace().IsNewFormattingContext() || BreakToken()) {
     MaybeUpdateFragmentBfcOffset(input_bfc_block_offset);
     DCHECK(input_margin_strut.IsEmpty());
-    DCHECK_EQ(container_builder_.BfcOffset().value(), NGBfcOffset());
+#if DCHECK_IS_ON()
+    // If this is a new formatting context, we should definitely be at the
+    // origin here. If we're resuming at a fragmented block (that doesn't
+    // establish a new formatting context), that may not be the case,
+    // though. There may e.g. be clearance involved, or inline-start margins.
+    if (ConstraintSpace().IsNewFormattingContext())
+      DCHECK_EQ(container_builder_.BfcOffset().value(), NGBfcOffset());
+#endif
   }
 
   input_bfc_block_offset += intrinsic_block_size_;
