@@ -2890,8 +2890,14 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                download->GetTargetFilePath().BaseName().value().c_str());
 }
 
+#if defined(OS_ANDROID)
+// Flaky on android: https://crbug.com/786626
+#define MAYBE_ParallelDownloadComplete DISABLED_ParallelDownloadComplete
+#else
+#define MAYBE_ParallelDownloadComplete ParallelDownloadComplete
+#endif
 // Verify parallel download in normal case.
-IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, MAYBE_ParallelDownloadComplete) {
   EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
 
   GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
