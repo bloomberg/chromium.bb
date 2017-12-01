@@ -56,7 +56,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     // Controls for completed downloads.
     private View mLayoutCompleted;
     private TextView mFilenameCompletedView;
-    private TextView mDescriptionView;
+    private TextView mDescriptionCompletedView;
 
     // Controls for in-progress downloads.
     private View mLayoutInProgress;
@@ -103,7 +103,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mLayoutInProgress = findViewById(R.id.progress_layout);
 
         mFilenameCompletedView = (TextView) findViewById(R.id.filename_completed_view);
-        mDescriptionView = (TextView) findViewById(R.id.description_view);
+        mDescriptionCompletedView = (TextView) findViewById(R.id.description_view);
 
         mFilenameInProgressView = (TextView) findViewById(R.id.filename_progress_view);
         mDownloadStatusView = (TextView) findViewById(R.id.status_view);
@@ -189,13 +189,13 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
         if (mThumbnailBitmap == null) updateIconView();
 
-        Context context = mDescriptionView.getContext();
+        Context context = mDescriptionCompletedView.getContext();
         mFilenameCompletedView.setText(item.getDisplayFileName());
         mFilenameInProgressView.setText(item.getDisplayFileName());
 
         String description = String.format(Locale.getDefault(), "%s - %s",
                 Formatter.formatFileSize(context, item.getFileSize()), item.getDisplayHostname());
-        mDescriptionView.setText(description);
+        mDescriptionCompletedView.setText(description);
 
         if (item.isComplete()) {
             showLayout(mLayoutCompleted);
