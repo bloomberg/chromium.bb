@@ -405,12 +405,12 @@ void MockRenderProcessHost::EnableAudioDebugRecordings(
 
 void MockRenderProcessHost::DisableAudioDebugRecordings() {}
 
-bool MockRenderProcessHost::StartLocalWebRtcEventLogging(
-    const base::FilePath& base_path) {
+bool MockRenderProcessHost::StartWebRTCEventLog(
+    const base::FilePath& file_path) {
   return false;
 }
 
-bool MockRenderProcessHost::StopLocalWebRtcEventLogging() {
+bool MockRenderProcessHost::StopWebRTCEventLog() {
   return false;
 }
 

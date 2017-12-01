@@ -71,8 +71,8 @@ var DumpCreator = (function() {
         ' multiple log files to be created. When enabling, a filename for the' +
         ' recording can be entered. The entered filename is used as a' +
         ' base, to which the following suffixes will be appended.</p>' +
-        ' <p>&lt;base filename&gt;_&lt;date&gt;_&lt;timestamp&gt;_&lt;render ' +
-        'process ID&gt;_&lt;recording ID&gt;</p>' +
+        ' <p>&lt;base filename&gt;.&lt;render process ID&gt;' +
+        '.&lt;recording ID&gt;</p>' +
         '<p class=audio-diagnostic-dumps-info>If a file with the same name' +
         ' already exists, it will be overwritten. No more than 5 logfiles ' +
         ' will be created, and each of them is limited to 60MB of storage. ' +

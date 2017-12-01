@@ -27,8 +27,6 @@
 #include "content/renderer/media/rtc_certificate.h"
 #include "content/renderer/media/rtc_data_channel_handler.h"
 #include "content/renderer/media/rtc_dtmf_sender_handler.h"
-#include "content/renderer/media/rtc_event_log_output_sink.h"
-#include "content/renderer/media/rtc_event_log_output_sink_proxy.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/rtc_stats.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_adapter.h"
@@ -50,7 +48,6 @@
 #include "third_party/WebKit/public/platform/WebRTCSessionDescriptionRequest.h"
 #include "third_party/WebKit/public/platform/WebRTCVoidRequest.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/webrtc/api/rtceventlogoutput.h"
 #include "third_party/webrtc/pc/mediasession.h"
 
 using webrtc::DataChannelInterface;
@@ -1143,28 +1140,14 @@ class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
 // delivering callbacks on the main thread.
 class RTCPeerConnectionHandler::Observer
     : public base::RefCountedThreadSafe<RTCPeerConnectionHandler::Observer>,
-      public PeerConnectionObserver,
-      public RtcEventLogOutputSink {
+      public PeerConnectionObserver {
  public:
   Observer(const base::WeakPtr<RTCPeerConnectionHandler>& handler)
       : handler_(handler), main_thread_(base::ThreadTaskRunnerHandle::Get()) {}
 
-  // When an RTC event log is sent back from PeerConnection, it arrives here.
-  void OnWebRtcEventLogWrite(const std::string& output) override {
-    if (!main_thread_->BelongsToCurrentThread()) {
-      main_thread_->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              &RTCPeerConnectionHandler::Observer::OnWebRtcEventLogWrite, this,
-              output));
-    } else if (handler_) {
-      handler_->OnWebRtcEventLogWrite(output);
-    }
-  }
-
  protected:
   friend class base::RefCountedThreadSafe<RTCPeerConnectionHandler::Observer>;
-  ~Observer() override = default;
+  virtual ~Observer() {}
 
   void OnSignalingChange(
       PeerConnectionInterface::SignalingState new_state) override {
@@ -1269,8 +1252,7 @@ class RTCPeerConnectionHandler::Observer
 RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     blink::WebRTCPeerConnectionHandlerClient* client,
     PeerConnectionDependencyFactory* dependency_factory)
-    : initialize_called_(false),
-      client_(client),
+    : client_(client),
       is_closed_(false),
       dependency_factory_(dependency_factory),
       track_adapter_map_(
@@ -1317,9 +1299,6 @@ bool RTCPeerConnectionHandler::Initialize(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(frame_);
 
-  CHECK(!initialize_called_);
-  initialize_called_ = true;
-
   peer_connection_tracker_ =
       RenderThreadImpl::current()->peer_connection_tracker()->AsWeakPtr();
 
@@ -1358,10 +1337,6 @@ bool RTCPeerConnectionHandler::InitializeForTest(
     const blink::WebMediaConstraints& options,
     const base::WeakPtr<PeerConnectionTracker>& peer_connection_tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  CHECK(!initialize_called_);
-  initialize_called_ = true;
-
   GetNativeRtcConfiguration(server_configuration, &configuration_);
 
   peer_connection_observer_ = new Observer(weak_factory_.GetWeakPtr());
@@ -1945,35 +1920,13 @@ void RTCPeerConnectionHandler::StartEventLog(IPC::PlatformFileForTransit file,
                                              int64_t max_file_size_bytes) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(file != IPC::InvalidPlatformFileForTransit());
-  // TODO(eladalon): StartRtcEventLog() return value is not useful; remove it
-  // or find a way to be able to use it.
-  // https://crbug.com/775415
   native_peer_connection_->StartRtcEventLog(
       IPC::PlatformFileForTransitToPlatformFile(file), max_file_size_bytes);
-}
-
-void RTCPeerConnectionHandler::StartEventLog() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(eladalon): StartRtcEventLog() return value is not useful; remove it
-  // or find a way to be able to use it.
-  // https://crbug.com/775415
-  native_peer_connection_->StartRtcEventLog(
-      base::MakeUnique<RtcEventLogOutputSinkProxy>(
-          peer_connection_observer_.get()),
-      webrtc::RtcEventLog::kImmediateOutput);
 }
 
 void RTCPeerConnectionHandler::StopEventLog() {
   DCHECK(thread_checker_.CalledOnValidThread());
   native_peer_connection_->StopRtcEventLog();
-}
-
-void RTCPeerConnectionHandler::OnWebRtcEventLogWrite(
-    const std::string& output) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (peer_connection_tracker_) {
-    peer_connection_tracker_->TrackRtcEventLogWrite(this, output);
-  }
 }
 
 blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::CreateDataChannel(
