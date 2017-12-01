@@ -687,43 +687,15 @@ void LayoutSelection::Commit() {
   paint_range_ = new_range.PaintRange();
   if (paint_range_.IsNull())
     return;
-  // TODO(yoichio): Remove this if state.
-  // This SelectionState reassignment is ad-hoc patch for
-  // prohibiting use-after-free(crbug.com/752715).
-  // LayoutText::setSelectionState(state) propergates |state| to ancestor
-  // LayoutObjects, which can accidentally change start/end LayoutObject state
-  // then LayoutObject::IsSelectionBorder() returns false although we should
-  // clear selection at LayoutObject::WillBeRemoved().
-  // We should make LayoutObject::setSelectionState() trivial and remove
-  // such propagation or at least do it in LayoutSelection.
-  if ((paint_range_.StartLayoutObject()->GetSelectionState() !=
-           SelectionState::kStart &&
-       paint_range_.StartLayoutObject()->GetSelectionState() !=
-           SelectionState::kStartAndEnd) ||
-      (paint_range_.EndLayoutObject()->GetSelectionState() !=
-           SelectionState::kEnd &&
-       paint_range_.EndLayoutObject()->GetSelectionState() !=
-           SelectionState::kStartAndEnd)) {
-    if (paint_range_.StartLayoutObject() == paint_range_.EndLayoutObject()) {
-      paint_range_.StartLayoutObject()->LayoutObject::SetSelectionState(
-          SelectionState::kStartAndEnd);
-    } else {
-      paint_range_.StartLayoutObject()->LayoutObject::SetSelectionState(
-          SelectionState::kStart);
-      paint_range_.EndLayoutObject()->LayoutObject::SetSelectionState(
-          SelectionState::kEnd);
-    }
+  if (paint_range_.StartLayoutObject() == paint_range_.EndLayoutObject()) {
+    DCHECK_EQ(paint_range_.StartLayoutObject()->GetSelectionState(),
+              SelectionState::kStartAndEnd);
+    return;
   }
-  // TODO(yoichio): If start == end, they should be kStartAndEnd.
-  // If not, start.SelectionState == kStart and vice versa.
-  DCHECK(paint_range_.StartLayoutObject()->GetSelectionState() ==
-             SelectionState::kStart ||
-         paint_range_.StartLayoutObject()->GetSelectionState() ==
-             SelectionState::kStartAndEnd);
-  DCHECK(paint_range_.EndLayoutObject()->GetSelectionState() ==
-             SelectionState::kEnd ||
-         paint_range_.EndLayoutObject()->GetSelectionState() ==
-             SelectionState::kStartAndEnd);
+  DCHECK_EQ(paint_range_.StartLayoutObject()->GetSelectionState(),
+            SelectionState::kStart);
+  DCHECK_EQ(paint_range_.EndLayoutObject()->GetSelectionState(),
+            SelectionState::kEnd);
 }
 
 void LayoutSelection::OnDocumentShutdown() {
