@@ -4173,8 +4173,12 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
       }
     }
   }
-  this_rd = AOMMIN(RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist),
-                   RDCOST(x->rdmult, rd_stats->zero_rate, rd_stats->sse));
+  int64_t zero_rd = RDCOST(x->rdmult, rd_stats->zero_rate, rd_stats->sse);
+  this_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
+  if (zero_rd < this_rd) {
+    this_rd = zero_rd;
+    rd_stats->skip = 1;
+  }
   if (this_rd > ref_best_rd) is_cost_valid = 0;
 
   if (!is_cost_valid) {
