@@ -174,6 +174,7 @@
         '../../../externs/background/compiled_resources2.gyp:import_runner',
         '../../common/js/compiled_resources2.gyp:importer_common',
         '../../common/js/compiled_resources2.gyp:metrics',
+        'drive_sync_handler',
         'import_history',
         'media_scanner',
         'progress_center',

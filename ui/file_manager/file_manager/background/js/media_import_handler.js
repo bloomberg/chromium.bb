@@ -16,9 +16,11 @@ var importer = importer || {};
  * @param {!importer.HistoryLoader} historyLoader
  * @param {!importer.DispositionChecker.CheckerFunction} dispositionChecker
  * @param {!analytics.Tracker} tracker
+ * @param {!DriveSyncHandler} driveSyncHandler
  */
-importer.MediaImportHandler = function(progressCenter, historyLoader,
-                                       dispositionChecker, tracker) {
+importer.MediaImportHandler = function(
+    progressCenter, historyLoader, dispositionChecker, tracker,
+    driveSyncHandler) {
   /** @private {!ProgressCenter} */
   this.progressCenter_ = progressCenter;
 
@@ -44,6 +46,9 @@ importer.MediaImportHandler = function(progressCenter, historyLoader,
 
   /** @private {!importer.DispositionChecker.CheckerFunction} */
   this.getDisposition_ = dispositionChecker;
+
+  /** @private {!DriveSyncHandler} */
+  this.driveSyncHandler_ = driveSyncHandler;
 };
 
 // The name of the Drive property used to tag imported files.  Used to look up
@@ -56,22 +61,23 @@ importer.MediaImportHandler.IMPORTS_TAG_KEY = 'cloud-import';
 importer.MediaImportHandler.IMPORTS_TAG_VALUE = 'media';
 
 /** @override */
-importer.MediaImportHandler.prototype.importFromScanResult =
-    function(scanResult, destination, directoryPromise) {
+importer.MediaImportHandler.prototype.importFromScanResult = function(
+    scanResult, destination, directoryPromise) {
 
   var task = new importer.MediaImportHandler.ImportTask(
-      this.generateTaskId_(),
-      this.historyLoader_,
-      scanResult,
-      directoryPromise,
-      destination,
-      this.getDisposition_,
-      this.tracker_);
+      this.generateTaskId_(), this.historyLoader_, scanResult, directoryPromise,
+      destination, this.getDisposition_, this.tracker_);
 
   task.addObserver(this.onTaskProgress_.bind(this, task));
   task.addObserver(this.onFileImported_.bind(this, task));
 
-  this.queue_.queueTask(task);
+  // Schedule the task when it is initialized.
+  scanResult.whenFinal()
+      .then(task.initialize_.bind(task))
+      .then(function(scanResult, task) {
+        task.importEntries = scanResult.getFileEntries();
+        this.queue_.queueTask(task);
+      }.bind(this, scanResult, task));
 
   return task;
 };
@@ -114,17 +120,41 @@ importer.MediaImportHandler.prototype.onTaskProgress_ =
       item.progressValue = task.processedBytes;
       item.state = ProgressItemState.PROGRESSING;
       break;
+
     case UpdateType.COMPLETE:
-      item.message = '';
-      item.progressValue = item.progressMax;
-      item.state = ProgressItemState.COMPLETED;
+      // Remove the event handler that gets attached for retries.
+      this.driveSyncHandler_.removeEventListener(
+          DriveSyncHandler.COMPLETED_EVENT, task.driveListener_);
+
+      if (task.failedEntries.length > 0 &&
+          task.failedEntries.length < task.importEntries.length) {
+        // If there are failed entries but at least one entry succeeded on the
+        // last run, there is a chance of more succeeding when retrying.
+        this.retryTaskFailedEntries_(task);
+      } else {
+        // Otherwise, finish progress bar.
+        // Display all errors.
+        var errorIdCounter = 0;
+        task.failedEntries.forEach(function(entry) {
+          var errorItem = new ProgressCenterItem();
+          errorItem.id = task.taskId_ + '-' + (errorIdCounter++);
+          errorItem.type = ProgressItemType.COPY;
+          errorItem.quiet = true;
+          errorItem.state = ProgressItemState.ERROR;
+          errorItem.message = strf('CLOUD_IMPORT_ERROR_ITEM', entry.name);
+          this.progressCenter_.updateItem(item);
+        }.bind(this));
+
+        // Complete progress bar.
+        item.message = '';
+        item.progressValue = item.progressMax;
+        item.state = ProgressItemState.COMPLETED;
+
+        task.sendImportStats_();
+      }
+
       break;
-    case UpdateType.ERROR:
-      item.message =
-          strf('CLOUD_IMPORT_ITEMS_REMAINING', task.remainingFilesCount);
-      item.progressValue = task.processedBytes;
-      item.state = ProgressItemState.ERROR;
-      break;
+
     case UpdateType.CANCELED:
       item.message = '';
       item.state = ProgressItemState.CANCELED;
@@ -132,6 +162,25 @@ importer.MediaImportHandler.prototype.onTaskProgress_ =
   }
 
   this.progressCenter_.updateItem(item);
+};
+
+/**
+ * Restarts a task with failed entries.
+ * @param {!importer.TaskQueue.Task} task
+ */
+importer.MediaImportHandler.prototype.retryTaskFailedEntries_ = function(task) {
+  // Reset the entry lists.
+  task.importEntries = task.failedEntries;
+  task.failedEntries = [];
+
+  // When Drive is done syncing, it will mark the synced files as eligible
+  // for cache eviction, enabling files that failed to be imported because
+  // of not having enough local space to succeed on retry.
+  task.driveListener_ = function(task) {
+    this.queue_.queueTask(task);
+  }.bind(this, task);
+  this.driveSyncHandler_.addEventListener(
+      DriveSyncHandler.COMPLETED_EVENT, task.driveListener_);
 };
 
 /**
@@ -236,18 +285,60 @@ importer.MediaImportHandler.ImportTask = function(
 
   /** @private {!importer.DispositionChecker.CheckerFunction} */
   this.getDisposition_ = dispositionChecker;
+
+  /**
+   * The entries to be imported.
+   * @private {!Array<!FileEntry>} */
+  this.importEntries_ = [];
+
+  /**
+   * The failed entries.
+   * @private {!Array<!FileEntry>} */
+  this.failedEntries_ = [];
+
+  /**
+   * A placeholder for identifying the appropriate retry function for a given
+   * task.
+   * @private {EventListenerType} */
+  this.driveListener_ = null;
 };
 
 /** @struct */
 importer.MediaImportHandler.ImportTask.prototype = {
   /** @return {number} Number of imported bytes */
-  get processedBytes() { return this.processedBytes_; },
+  get processedBytes() {
+    return this.processedBytes_;
+  },
 
   /** @return {number} Total number of bytes to import */
-  get totalBytes() { return this.totalBytes_; },
+  get totalBytes() {
+    return this.totalBytes_;
+  },
 
   /** @return {number} Number of files left to import */
-  get remainingFilesCount() { return this.remainingFilesCount_; }
+  get remainingFilesCount() {
+    return this.remainingFilesCount_;
+  },
+
+  /** @return {!Array<!FileEntry>} The files to be imported */
+  get importEntries() {
+    return this.importEntries_;
+  },
+
+  /** @param {!Array<!FileEntry>} entries The files to be imported */
+  set importEntries(entries) {
+    this.importEntries_ = entries.slice();
+  },
+
+  /** @return {!Array<!FileEntry>} The files that couldn't be imported */
+  get failedEntries() {
+    return this.failedEntries_;
+  },
+
+  /** @param {!Array<!FileEntry>} entries The files that couldn't be imported */
+  set failedEntries(entries) {
+    this.failedEntries_ = entries.slice();
+  },
 };
 
 /**
@@ -278,9 +369,7 @@ importer.MediaImportHandler.ImportTask.prototype.__proto__ =
 importer.MediaImportHandler.ImportTask.prototype.run = function() {
   // Wait for the scan to finish, then get the destination entry, then start the
   // import.
-  this.scanResult_.whenFinal()
-      .then(this.initialize_.bind(this))
-      .then(this.importScanEntries_.bind(this))
+  this.importScanEntries_()
       .then(this.markDuplicatesImported_.bind(this))
       .then(this.onSuccess_.bind(this))
       .catch(importer.getLogger().catcher('import-task-run'));
@@ -292,6 +381,10 @@ importer.MediaImportHandler.ImportTask.prototype.run = function() {
  */
 importer.MediaImportHandler.ImportTask.prototype.requestCancel = function() {
   this.canceled_ = true;
+  setTimeout(function() {
+    this.notify(importer.TaskQueue.UpdateType.CANCELED);
+    this.sendImportStats_();
+  }.bind(this));
   if (this.cancelCallback_) {
     // Reset the callback before calling it, as the callback might do anything
     // (including calling #requestCancel again).
@@ -306,7 +399,6 @@ importer.MediaImportHandler.ImportTask.prototype.initialize_ = function() {
   var stats = this.scanResult_.getStatistics();
   this.remainingFilesCount_ = stats.newFileCount;
   this.totalBytes_ = stats.sizeBytes;
-  this.notify(importer.TaskQueue.UpdateType.PROGRESS);
 
   this.tracker_.send(metrics.ImportEvents.STARTED);
 };
@@ -320,14 +412,11 @@ importer.MediaImportHandler.ImportTask.prototype.initialize_ = function() {
 importer.MediaImportHandler.ImportTask.prototype.importScanEntries_ =
     function() {
   var resolver = new importer.Resolver();
-  this.directoryPromise_.then(
-      function(destinationDirectory) {
-        AsyncUtil.forEach(
-            this.scanResult_.getFileEntries(),
-            this.importOne_.bind(this, destinationDirectory),
-            resolver.resolve,
-            resolver);
-      }.bind(this));
+  this.directoryPromise_.then(function(destinationDirectory) {
+    AsyncUtil.forEach(
+        this.importEntries_, this.importOne_.bind(this, destinationDirectory),
+        resolver.resolve, resolver);
+  }.bind(this));
   return resolver.promise;
 };
 
@@ -363,40 +452,44 @@ importer.MediaImportHandler.ImportTask.prototype.markDuplicatesImported_ =
  * @param {function()} completionCallback Called after this operation is
  *     complete.
  * @param {!FileEntry} entry The entry to import.
+ * @param {number} index The index of the entry.
+ * @param {Array<!FileEntry>} all All the entries.
  * @private
  */
-importer.MediaImportHandler.ImportTask.prototype.importOne_ =
-    function(destinationDirectory, completionCallback, entry) {
+importer.MediaImportHandler.ImportTask.prototype.importOne_ = function(
+    destinationDirectory, completionCallback, entry, index, all) {
   if (this.canceled_) {
-    this.notify(importer.TaskQueue.UpdateType.CANCELED);
     this.tracker_.send(metrics.ImportEvents.IMPORT_CANCELLED);
-    this.sendImportStats_();
     return;
   }
 
-  this.getDisposition_(entry, importer.Destination.GOOGLE_DRIVE,
-                       importer.ScanMode.CONTENT)
-      .then(
-          (/**
-           * @param {!importer.Disposition} disposition The disposition
-           *     of the entry. Either some sort of dupe, or an original.
-           * @this {importer.MediaImportHandler.ImportTask}
-           */
-          function(disposition) {
-            if (disposition === importer.Disposition.ORIGINAL) {
-              return this.copy_(entry, destinationDirectory);
-            }
-            this.duplicateFilesCount_++;
-            this.markAsImported_(entry);
-          }).bind(this))
+  this.getDisposition_(
+          entry, importer.Destination.GOOGLE_DRIVE, importer.ScanMode.CONTENT)
+      .then((/**
+              * @param {!importer.Disposition} disposition The disposition
+              *     of the entry. Either some sort of dupe, or an original.
+              * @this {importer.MediaImportHandler.ImportTask}
+              */
+             function(disposition) {
+               if (disposition === importer.Disposition.ORIGINAL) {
+                 return this.copy_(entry, destinationDirectory);
+               }
+               this.duplicateFilesCount_++;
+               this.markAsImported_(entry);
+             }).bind(this))
       // Regardless of the result of this copy, push on to the next file.
       .then(completionCallback)
-      .catch(
-          /** @param {*} error */
-          function(error) {
-            importer.getLogger().catcher('import-task-import-one')(error);
-            completionCallback();
-          });
+      .catch((
+                 /** @param {*} error */
+                 function(error) {
+                   importer.getLogger().catcher('import-task-import-one')(
+                       error);
+                   // TODO(oka): Retry copies only when failed due to
+                   // insufficient disk space. crbug.com/788692.
+                   this.failedEntries_.push(entry);
+                   completionCallback();
+                 })
+                 .bind(this));
 };
 
 /**
@@ -461,10 +554,6 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
   /** @this {importer.MediaImportHandler.ImportTask} */
   var onError = function(error) {
     this.cancelCallback_ = null;
-    // Log the bytes as processed in spite of the error.  This ensures
-    // completion of the progress bar.
-    this.processedBytes_ -= currentBytes;
-    this.processedBytes_ += entry.size;
     if (error.name === util.FileError.ABORT_ERR) {
       // Task cancellations result in the error callback being triggered with an
       // ABORT_ERR, but we want to ignore these errors.
@@ -539,7 +628,6 @@ importer.MediaImportHandler.ImportTask.prototype.markAsImported_ =
 /** @private */
 importer.MediaImportHandler.ImportTask.prototype.onSuccess_ = function() {
   this.notify(importer.TaskQueue.UpdateType.COMPLETE);
-  this.sendImportStats_();
 };
 
 /**

@@ -222,10 +222,14 @@ TestScanResult.prototype.canceled = function() {
 
 /** @override */
 TestScanResult.prototype.getStatistics = function() {
+  duplicates = {};
+  duplicates[importer.Disposition.CONTENT_DUPLICATE] = 0;
+  duplicates[importer.Disposition.HISTORY_DUPLICATE] = 0;
+  duplicates[importer.Disposition.SCAN_DUPLICATE] = 0;
   return {
     scanDuration: this.scanDuration,
     newFileCount: this.fileEntries.length,
-    duplicates: {},
+    duplicates: duplicates,
     sizeBytes: this.totalBytes
   };
 };

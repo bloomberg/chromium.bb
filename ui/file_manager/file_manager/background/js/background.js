@@ -79,10 +79,8 @@ function FileBrowserBackgroundImpl() {
    * @type {!importer.MediaImportHandler}
    */
   this.mediaImportHandler = new importer.MediaImportHandler(
-      this.progressCenter,
-      this.historyLoader,
-      this.dispositionChecker_,
-      this.tracker);
+      this.progressCenter, this.historyLoader, this.dispositionChecker_,
+      this.tracker, this.driveSyncHandler);
 
   /**
    * String assets.
