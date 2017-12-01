@@ -119,6 +119,7 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob {
   // |mock_response_|.  In some cases (e.g. file access) this may be null.
   const net::HttpResponseHeaders* GetHttpResponseHeaders() const;
 
+  void ProcessRedirect(int status_code, const std::string& new_url);
   void ProcessInterceptionRespose(
       std::unique_ptr<DevToolsURLRequestInterceptor::Modifications>
           modification);
