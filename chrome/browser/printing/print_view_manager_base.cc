@@ -363,7 +363,6 @@ void PrintViewManagerBase::OnNotifyPrintJobEvent(
       break;
     }
     case JobEventDetails::NEW_DOC:
-    case JobEventDetails::NEW_PAGE:
     case JobEventDetails::PAGE_DONE:
     case JobEventDetails::DOC_DONE: {
       // Don't care about the actual printing process.
