@@ -6,9 +6,6 @@
 
 namespace blink {
 
-ScriptSourceCode::ScriptSourceCode()
-    : start_position_(TextPosition::MinimumPosition()) {}
-
 ScriptSourceCode::ScriptSourceCode(
     const String& source,
     ScriptSourceLocationType source_location_type,
