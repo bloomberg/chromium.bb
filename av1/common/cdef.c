@@ -154,7 +154,6 @@ static INLINE void copy_rect(uint16_t *dst, int dstride, const uint16_t *src,
 
 void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                     MACROBLOCKD *xd) {
-  int nhfb, nvfb;
   DECLARE_ALIGNED(16, uint16_t, src[CDEF_INBUF_SIZE]);
   uint16_t *linebuf[3];
   uint16_t *colbuf[3];
@@ -163,18 +162,16 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   int cdef_count;
   int dir[CDEF_NBLOCKS][CDEF_NBLOCKS] = { { 0 } };
   int var[CDEF_NBLOCKS][CDEF_NBLOCKS] = { { 0 } };
-  int stride;
   int mi_wide_l2[3];
   int mi_high_l2[3];
   int xdec[3];
   int ydec[3];
-  int cdef_left;
   int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
   int nplanes = MAX_MB_PLANE;
   int chroma_cdef = xd->plane[1].subsampling_x == xd->plane[1].subsampling_y &&
                     xd->plane[2].subsampling_x == xd->plane[2].subsampling_y;
-  nvfb = (cm->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
-  nhfb = (cm->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
+  const int nvfb = (cm->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
+  const int nhfb = (cm->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
   av1_setup_dst_planes(xd->plane, cm->sb_size, frame, 0, 0);
   row_cdef = aom_malloc(sizeof(*row_cdef) * (nhfb + 2) * 2);
   memset(row_cdef, 1, sizeof(*row_cdef) * (nhfb + 2) * 2);
@@ -187,7 +184,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     mi_high_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_y;
     if (xdec[pli] != ydec[pli]) nplanes = 1;
   }
-  stride = (cm->mi_cols << MI_SIZE_LOG2) + 2 * CDEF_HBORDER;
+  const int stride = (cm->mi_cols << MI_SIZE_LOG2) + 2 * CDEF_HBORDER;
   for (int pli = 0; pli < nplanes; pli++) {
     linebuf[pli] = aom_malloc(sizeof(*linebuf) * CDEF_VBORDER * stride);
     colbuf[pli] =
@@ -202,7 +199,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       fill_rect(colbuf[pli], CDEF_HBORDER, block_height, CDEF_HBORDER,
                 CDEF_VERY_LARGE);
     }
-    cdef_left = 1;
+    int cdef_left = 1;
     for (int fbc = 0; fbc < nhfb; fbc++) {
       int level, sec_strength;
       int uv_level, uv_sec_strength;
