@@ -72,9 +72,6 @@ size_t RegisterCastCrashKeys() {
       {"newframe_widget_hidden", ::crash_keys::kSmallSize},
       {"newframe_replicated_origin", ::crash_keys::kSmallSize},
 
-      // Temporary for https://crbug.com/612711.
-      {"aci_wrong_sp_extension_id", ::crash_keys::kSmallSize},
-
       // Temporary for https://crbug.com/685996.
       {"user-cloud-policy-manager-connect-trace", ::crash_keys::kMediumSize},
 

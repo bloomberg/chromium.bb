@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/debug/crash_logging.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_request_handler.h"
@@ -104,15 +103,6 @@ void AppCacheInterceptor::CompleteCrossSiteTransfer(
   if (!handler->SanityCheckIsSameService(requester_info->appcache_service())) {
     // This can happen when V2 apps and web pages end up in the same storage
     // partition.
-    const GURL& first_party_url_for_cookies = request->site_for_cookies();
-    if (first_party_url_for_cookies.is_valid()) {
-      // TODO(lazyboy): Remove this once we know which extensions run into this
-      // issue. See https://crbug.com/612711#c25 for details.
-      base::debug::SetCrashKeyValue("aci_wrong_sp_extension_id",
-                                    first_party_url_for_cookies.host());
-      // No need to explicitly call DumpWithoutCrashing(), since
-      // bad_message::ReceivedBadMessage() below will do that.
-    }
     bad_message::ReceivedBadMessage(requester_info->filter(),
                                     bad_message::ACI_WRONG_STORAGE_PARTITION);
     return;
