@@ -33,7 +33,7 @@ class StoringSTHObserver : public STHObserver {
 
 class STHDistributorTest : public ::testing::Test {
  public:
-  STHDistributorTest() {}
+  STHDistributorTest() = default;
 
   void SetUp() override {
     ASSERT_TRUE(GetSampleSignedTreeHead(&sample_sth_));

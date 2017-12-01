@@ -110,8 +110,7 @@ void MojoHostResolverImpl::Job::Start() {
     OnResolveDone(result);
 }
 
-MojoHostResolverImpl::Job::~Job() {
-}
+MojoHostResolverImpl::Job::~Job() = default;
 
 void MojoHostResolverImpl::Job::OnResolveDone(int result) {
   DCHECK(thread_checker_.CalledOnValidThread());

@@ -67,7 +67,7 @@ void AddSCTAndLogStatus(scoped_refptr<ct::SignedCertificateTimestamp> sct,
 MultiLogCTVerifier::MultiLogCTVerifier() : observer_(nullptr) {
 }
 
-MultiLogCTVerifier::~MultiLogCTVerifier() { }
+MultiLogCTVerifier::~MultiLogCTVerifier() = default;
 
 void MultiLogCTVerifier::AddLogs(
     const std::vector<scoped_refptr<const CTLogVerifier>>& log_verifiers) {

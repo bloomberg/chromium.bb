@@ -14,13 +14,12 @@ namespace net {
 
 static const size_t kSrvRecordMinimumSize = 6;
 
-RecordRdata::RecordRdata() {
-}
+RecordRdata::RecordRdata() = default;
 
 SrvRecordRdata::SrvRecordRdata() : priority_(0), weight_(0), port_(0) {
 }
 
-SrvRecordRdata::~SrvRecordRdata() {}
+SrvRecordRdata::~SrvRecordRdata() = default;
 
 // static
 std::unique_ptr<SrvRecordRdata> SrvRecordRdata::Create(
@@ -57,11 +56,9 @@ bool SrvRecordRdata::IsEqual(const RecordRdata* other) const {
       target_ == srv_other->target_;
 }
 
-ARecordRdata::ARecordRdata() {
-}
+ARecordRdata::ARecordRdata() = default;
 
-ARecordRdata::~ARecordRdata() {
-}
+ARecordRdata::~ARecordRdata() = default;
 
 // static
 std::unique_ptr<ARecordRdata> ARecordRdata::Create(
@@ -86,11 +83,9 @@ bool ARecordRdata::IsEqual(const RecordRdata* other) const {
   return address_ == a_other->address_;
 }
 
-AAAARecordRdata::AAAARecordRdata() {
-}
+AAAARecordRdata::AAAARecordRdata() = default;
 
-AAAARecordRdata::~AAAARecordRdata() {
-}
+AAAARecordRdata::~AAAARecordRdata() = default;
 
 // static
 std::unique_ptr<AAAARecordRdata> AAAARecordRdata::Create(
@@ -115,11 +110,9 @@ bool AAAARecordRdata::IsEqual(const RecordRdata* other) const {
   return address_ == a_other->address_;
 }
 
-CnameRecordRdata::CnameRecordRdata() {
-}
+CnameRecordRdata::CnameRecordRdata() = default;
 
-CnameRecordRdata::~CnameRecordRdata() {
-}
+CnameRecordRdata::~CnameRecordRdata() = default;
 
 // static
 std::unique_ptr<CnameRecordRdata> CnameRecordRdata::Create(
@@ -144,11 +137,9 @@ bool CnameRecordRdata::IsEqual(const RecordRdata* other) const {
   return cname_ == cname_other->cname_;
 }
 
-PtrRecordRdata::PtrRecordRdata() {
-}
+PtrRecordRdata::PtrRecordRdata() = default;
 
-PtrRecordRdata::~PtrRecordRdata() {
-}
+PtrRecordRdata::~PtrRecordRdata() = default;
 
 // static
 std::unique_ptr<PtrRecordRdata> PtrRecordRdata::Create(
@@ -172,11 +163,9 @@ bool PtrRecordRdata::IsEqual(const RecordRdata* other) const {
   return ptrdomain_ == ptr_other->ptrdomain_;
 }
 
-TxtRecordRdata::TxtRecordRdata() {
-}
+TxtRecordRdata::TxtRecordRdata() = default;
 
-TxtRecordRdata::~TxtRecordRdata() {
-}
+TxtRecordRdata::~TxtRecordRdata() = default;
 
 // static
 std::unique_ptr<TxtRecordRdata> TxtRecordRdata::Create(
@@ -209,11 +198,9 @@ bool TxtRecordRdata::IsEqual(const RecordRdata* other) const {
   return texts_ == txt_other->texts_;
 }
 
-NsecRecordRdata::NsecRecordRdata() {
-}
+NsecRecordRdata::NsecRecordRdata() = default;
 
-NsecRecordRdata::~NsecRecordRdata() {
-}
+NsecRecordRdata::~NsecRecordRdata() = default;
 
 // static
 std::unique_ptr<NsecRecordRdata> NsecRecordRdata::Create(
@@ -278,9 +265,9 @@ bool NsecRecordRdata::GetBit(unsigned i) const {
   return (bitmap_[byte_num] & (1 << bit_num)) != 0;
 }
 
-OptRecordRdata::OptRecordRdata() {}
+OptRecordRdata::OptRecordRdata() = default;
 
-OptRecordRdata::~OptRecordRdata() {}
+OptRecordRdata::~OptRecordRdata() = default;
 
 // static
 std::unique_ptr<OptRecordRdata> OptRecordRdata::Create(

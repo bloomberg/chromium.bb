@@ -29,7 +29,7 @@ DnsConfig::DnsConfig()
 
 DnsConfig::DnsConfig(const DnsConfig& other) = default;
 
-DnsConfig::~DnsConfig() {}
+DnsConfig::~DnsConfig() = default;
 
 bool DnsConfig::Equals(const DnsConfig& d) const {
   return EqualsIgnoreHosts(d) && (hosts == d.hosts);

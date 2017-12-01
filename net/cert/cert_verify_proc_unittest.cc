@@ -80,7 +80,7 @@ class MockCertVerifyProc : public CertVerifyProc {
   bool SupportsOCSPStapling() const override { return false; }
 
  protected:
-  ~MockCertVerifyProc() override {}
+  ~MockCertVerifyProc() override = default;
 
  private:
   int VerifyInternal(X509Certificate* cert,
@@ -2102,8 +2102,8 @@ void PrintTo(const WeakDigestTestData& data, std::ostream* os) {
 class CertVerifyProcWeakDigestTest
     : public testing::TestWithParam<WeakDigestTestData> {
  public:
-  CertVerifyProcWeakDigestTest() {}
-  virtual ~CertVerifyProcWeakDigestTest() {}
+  CertVerifyProcWeakDigestTest() = default;
+  virtual ~CertVerifyProcWeakDigestTest() = default;
 };
 
 // Tests that the CertVerifyProc::Verify() properly surfaces the (weak) hash

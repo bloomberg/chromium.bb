@@ -123,7 +123,7 @@ CanonicalCookie::CanonicalCookie(const std::string& name,
       same_site_(same_site),
       priority_(priority) {}
 
-CanonicalCookie::~CanonicalCookie() {}
+CanonicalCookie::~CanonicalCookie() = default;
 
 // static
 std::string CanonicalCookie::CanonPathWithString(

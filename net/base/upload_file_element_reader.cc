@@ -64,8 +64,7 @@ UploadFileElementReader::UploadFileElementReader(
   DCHECK(task_runner_.get());
 }
 
-UploadFileElementReader::~UploadFileElementReader() {
-}
+UploadFileElementReader::~UploadFileElementReader() = default;
 
 const UploadFileElementReader* UploadFileElementReader::AsFileReader() const {
   return this;

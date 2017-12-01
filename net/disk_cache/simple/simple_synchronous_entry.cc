@@ -187,14 +187,13 @@ int64_t SimpleEntryStat::GetFileSize(size_t key_length, int file_index) const {
 SimpleStreamPrefetchData::SimpleStreamPrefetchData()
     : stream_crc32(crc32(0, Z_NULL, 0)) {}
 
-SimpleStreamPrefetchData::~SimpleStreamPrefetchData() {}
+SimpleStreamPrefetchData::~SimpleStreamPrefetchData() = default;
 
 SimpleEntryCreationResults::SimpleEntryCreationResults(
     SimpleEntryStat entry_stat)
     : sync_entry(NULL), entry_stat(entry_stat), result(net::OK) {}
 
-SimpleEntryCreationResults::~SimpleEntryCreationResults() {
-}
+SimpleEntryCreationResults::~SimpleEntryCreationResults() = default;
 
 SimpleSynchronousEntry::CRCRecord::CRCRecord() : index(-1),
                                                  has_crc32(false),

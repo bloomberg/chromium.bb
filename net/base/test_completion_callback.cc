@@ -35,8 +35,8 @@ TestCompletionCallbackBaseInternal::TestCompletionCallbackBaseInternal()
     : have_result_(false) {
 }
 
-TestCompletionCallbackBaseInternal::~TestCompletionCallbackBaseInternal() {
-}
+TestCompletionCallbackBaseInternal::~TestCompletionCallbackBaseInternal() =
+    default;
 
 }  // namespace internal
 
@@ -44,31 +44,27 @@ TestClosure::TestClosure()
     : closure_(base::Bind(&TestClosure::DidSetResult, base::Unretained(this))) {
 }
 
-TestClosure::~TestClosure() {
-}
+TestClosure::~TestClosure() = default;
 
 TestCompletionCallback::TestCompletionCallback()
     : callback_(base::Bind(&TestCompletionCallback::SetResult,
                            base::Unretained(this))) {
 }
 
-TestCompletionCallback::~TestCompletionCallback() {
-}
+TestCompletionCallback::~TestCompletionCallback() = default;
 
 TestInt64CompletionCallback::TestInt64CompletionCallback()
     : callback_(base::Bind(&TestInt64CompletionCallback::SetResult,
                            base::Unretained(this))) {
 }
 
-TestInt64CompletionCallback::~TestInt64CompletionCallback() {
-}
+TestInt64CompletionCallback::~TestInt64CompletionCallback() = default;
 
 ReleaseBufferCompletionCallback::ReleaseBufferCompletionCallback(
     IOBuffer* buffer) : buffer_(buffer) {
 }
 
-ReleaseBufferCompletionCallback::~ReleaseBufferCompletionCallback() {
-}
+ReleaseBufferCompletionCallback::~ReleaseBufferCompletionCallback() = default;
 
 void ReleaseBufferCompletionCallback::SetResult(int result) {
   if (!buffer_->HasOneRef())

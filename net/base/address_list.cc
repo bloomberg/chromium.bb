@@ -33,11 +33,11 @@ std::unique_ptr<base::Value> NetLogAddressListCallback(
 
 }  // namespace
 
-AddressList::AddressList() {}
+AddressList::AddressList() = default;
 
 AddressList::AddressList(const AddressList&) = default;
 
-AddressList::~AddressList() {}
+AddressList::~AddressList() = default;
 
 AddressList::AddressList(const IPEndPoint& endpoint) {
   push_back(endpoint);

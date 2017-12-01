@@ -16,8 +16,7 @@ CertVerifyResult::CertVerifyResult() {
 
 CertVerifyResult::CertVerifyResult(const CertVerifyResult& other) = default;
 
-CertVerifyResult::~CertVerifyResult() {
-}
+CertVerifyResult::~CertVerifyResult() = default;
 
 void CertVerifyResult::Reset() {
   verified_cert = NULL;

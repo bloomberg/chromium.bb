@@ -12,7 +12,7 @@ namespace test {
 MockNetworkChangeNotifier::MockNetworkChangeNotifier()
     : force_network_handles_supported_(false),
       connection_type_(CONNECTION_UNKNOWN) {}
-MockNetworkChangeNotifier::~MockNetworkChangeNotifier() {}
+MockNetworkChangeNotifier::~MockNetworkChangeNotifier() = default;
 
 MockNetworkChangeNotifier::ConnectionType
 MockNetworkChangeNotifier::GetCurrentConnectionType() const {
@@ -77,7 +77,7 @@ ScopedMockNetworkChangeNotifier::ScopedMockNetworkChangeNotifier()
           new NetworkChangeNotifier::DisableForTest()),
       mock_network_change_notifier_(new MockNetworkChangeNotifier()) {}
 
-ScopedMockNetworkChangeNotifier::~ScopedMockNetworkChangeNotifier() {}
+ScopedMockNetworkChangeNotifier::~ScopedMockNetworkChangeNotifier() = default;
 
 MockNetworkChangeNotifier*
 ScopedMockNetworkChangeNotifier::mock_network_change_notifier() {

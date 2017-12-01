@@ -92,11 +92,9 @@ bool VerifyStats(OnDiskStats* stats) {
   return true;
 }
 
-Stats::Stats() {
-}
+Stats::Stats() = default;
 
-Stats::~Stats() {
-}
+Stats::~Stats() = default;
 
 bool Stats::Init(void* data, int num_bytes, Addr address) {
   OnDiskStats local_stats;

@@ -38,8 +38,7 @@ DelayedCookieMonster::DelayedCookieMonster()
       did_run_(false),
       result_(false) {}
 
-DelayedCookieMonster::~DelayedCookieMonster() {
-}
+DelayedCookieMonster::~DelayedCookieMonster() = default;
 
 void DelayedCookieMonster::SetCookiesInternalCallback(bool result) {
   result_ = result;

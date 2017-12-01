@@ -449,8 +449,7 @@ int RuleBasedHostResolverProc::Resolve(const std::string& host,
                               host_resolver_flags, addrlist, os_error);
 }
 
-RuleBasedHostResolverProc::~RuleBasedHostResolverProc() {
-}
+RuleBasedHostResolverProc::~RuleBasedHostResolverProc() = default;
 
 void RuleBasedHostResolverProc::AddRuleInternal(const Rule& rule) {
   Rule fixed_rule = rule;
@@ -504,7 +503,7 @@ int HangingHostResolver::ResolveFromCache(const RequestInfo& info,
 
 //-----------------------------------------------------------------------------
 
-ScopedDefaultHostResolverProc::ScopedDefaultHostResolverProc() {}
+ScopedDefaultHostResolverProc::ScopedDefaultHostResolverProc() = default;
 
 ScopedDefaultHostResolverProc::ScopedDefaultHostResolverProc(
     HostResolverProc* proc) {

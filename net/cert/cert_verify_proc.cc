@@ -465,7 +465,7 @@ scoped_refptr<CertVerifyProc> CertVerifyProc::CreateDefault() {
 CertVerifyProc::CertVerifyProc()
     : sha1_legacy_mode_enabled(base::FeatureList::IsEnabled(kSHA1LegacyMode)) {}
 
-CertVerifyProc::~CertVerifyProc() {}
+CertVerifyProc::~CertVerifyProc() = default;
 
 int CertVerifyProc::Verify(X509Certificate* cert,
                            const std::string& hostname,

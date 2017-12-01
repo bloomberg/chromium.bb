@@ -88,7 +88,7 @@ bool CachingCertVerifier::AddEntry(const RequestParams& params,
 
 CachingCertVerifier::CachedResult::CachedResult() : error(ERR_FAILED) {}
 
-CachingCertVerifier::CachedResult::~CachedResult() {}
+CachingCertVerifier::CachedResult::~CachedResult() = default;
 
 CachingCertVerifier::CacheValidityPeriod::CacheValidityPeriod(base::Time now)
     : verification_time(now), expiration_time(now) {}

@@ -38,7 +38,7 @@ struct MockCertVerifier::Rule {
 
 MockCertVerifier::MockCertVerifier() : default_result_(ERR_CERT_INVALID) {}
 
-MockCertVerifier::~MockCertVerifier() {}
+MockCertVerifier::~MockCertVerifier() = default;
 
 int MockCertVerifier::Verify(const RequestParams& params,
                              CRLSet* crl_set,

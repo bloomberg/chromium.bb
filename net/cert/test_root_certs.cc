@@ -57,7 +57,7 @@ TestRootCerts::TestRootCerts() {
   g_has_instance = true;
 }
 
-ScopedTestRoot::ScopedTestRoot() {}
+ScopedTestRoot::ScopedTestRoot() = default;
 
 ScopedTestRoot::ScopedTestRoot(X509Certificate* cert) {
   Reset(cert);

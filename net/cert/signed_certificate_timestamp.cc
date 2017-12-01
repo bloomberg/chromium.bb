@@ -31,7 +31,7 @@ bool SignedCertificateTimestamp::LessThan::operator()(
 SignedCertificateTimestamp::SignedCertificateTimestamp()
     : version(V1), origin(SCT_EMBEDDED) {}
 
-SignedCertificateTimestamp::~SignedCertificateTimestamp() {}
+SignedCertificateTimestamp::~SignedCertificateTimestamp() = default;
 
 void SignedCertificateTimestamp::Persist(base::Pickle* pickle) {
   pickle->WriteInt(version);
@@ -80,7 +80,7 @@ SignedCertificateTimestamp::CreateFromPickle(base::PickleIterator* iter) {
 
 SignedEntryData::SignedEntryData() : type(LOG_ENTRY_TYPE_X509) {}
 
-SignedEntryData::~SignedEntryData() {}
+SignedEntryData::~SignedEntryData() = default;
 
 void SignedEntryData::Reset() {
   type = SignedEntryData::LOG_ENTRY_TYPE_X509;
@@ -91,7 +91,7 @@ void SignedEntryData::Reset() {
 DigitallySigned::DigitallySigned()
     : hash_algorithm(HASH_ALGO_NONE), signature_algorithm(SIG_ALGO_ANONYMOUS) {}
 
-DigitallySigned::~DigitallySigned() {}
+DigitallySigned::~DigitallySigned() = default;
 
 bool DigitallySigned::SignatureParametersMatch(
     HashAlgorithm other_hash_algorithm,

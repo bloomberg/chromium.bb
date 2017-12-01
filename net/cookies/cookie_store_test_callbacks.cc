@@ -18,7 +18,7 @@ CookieCallback::CookieCallback(base::Thread* run_in_thread)
 CookieCallback::CookieCallback()
     : run_in_thread_(NULL), run_in_loop_(base::MessageLoop::current()) {}
 
-CookieCallback::~CookieCallback() {}
+CookieCallback::~CookieCallback() = default;
 
 void CookieCallback::CallbackEpilogue() {
   base::MessageLoop* expected_loop = NULL;
@@ -38,20 +38,20 @@ void CookieCallback::WaitUntilDone() {
   loop_to_quit_.Run();
 }
 
-StringResultCookieCallback::StringResultCookieCallback() {}
+StringResultCookieCallback::StringResultCookieCallback() = default;
 StringResultCookieCallback::StringResultCookieCallback(
     base::Thread* run_in_thread)
     : CookieCallback(run_in_thread) {}
 
-NoResultCookieCallback::NoResultCookieCallback() {}
+NoResultCookieCallback::NoResultCookieCallback() = default;
 NoResultCookieCallback::NoResultCookieCallback(base::Thread* run_in_thread)
     : CookieCallback(run_in_thread) {}
 
-GetCookieListCallback::GetCookieListCallback() {}
+GetCookieListCallback::GetCookieListCallback() = default;
 GetCookieListCallback::GetCookieListCallback(base::Thread* run_in_thread)
     : CookieCallback(run_in_thread) {}
 
-GetCookieListCallback::~GetCookieListCallback() {}
+GetCookieListCallback::~GetCookieListCallback() = default;
 
 void GetCookieListCallback::Run(const CookieList& cookies) {
   cookies_ = cookies;

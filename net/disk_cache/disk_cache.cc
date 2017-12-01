@@ -94,7 +94,7 @@ CacheCreator::CacheCreator(
       net_log_(net_log) {
 }
 
-CacheCreator::~CacheCreator() {}
+CacheCreator::~CacheCreator() = default;
 
 int CacheCreator::Run() {
 #if defined(OS_ANDROID)

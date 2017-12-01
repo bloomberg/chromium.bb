@@ -761,7 +761,7 @@ CertVerifyProcNSS::CertVerifyProcNSS()
 {
 }
 
-CertVerifyProcNSS::~CertVerifyProcNSS() {}
+CertVerifyProcNSS::~CertVerifyProcNSS() = default;
 
 bool CertVerifyProcNSS::SupportsAdditionalTrustAnchors() const {
   return true;

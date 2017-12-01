@@ -228,7 +228,7 @@ bool SetContains(const std::set<der::Input>& policies,
 //      the full tree of nodes.
 class ValidPolicyTree {
  public:
-  ValidPolicyTree() {}
+  ValidPolicyTree() = default;
 
   struct Node {
     // |root_policy| is equivalent to |valid_policy|, but in the domain of the

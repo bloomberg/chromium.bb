@@ -36,7 +36,7 @@ class TestUDPClientSocket : public DatagramClientSocket {
   explicit TestUDPClientSocket(const AddressMapping* mapping)
       : mapping_(mapping), connected_(false)  {}
 
-  ~TestUDPClientSocket() override {}
+  ~TestUDPClientSocket() override = default;
 
   int Read(IOBuffer*, int, const CompletionCallback&) override {
     NOTIMPLEMENTED();
@@ -100,8 +100,8 @@ class TestUDPClientSocket : public DatagramClientSocket {
 // Creates TestUDPClientSockets and maintains an AddressMapping.
 class TestSocketFactory : public ClientSocketFactory {
  public:
-  TestSocketFactory() {}
-  ~TestSocketFactory() override {}
+  TestSocketFactory() = default;
+  ~TestSocketFactory() override = default;
 
   std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType,

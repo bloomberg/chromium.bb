@@ -14,7 +14,7 @@ namespace net {
 
 UnsafeArena::UnsafeArena(size_t block_size) : block_size_(block_size) {}
 
-UnsafeArena::~UnsafeArena() {}
+UnsafeArena::~UnsafeArena() = default;
 
 UnsafeArena::UnsafeArena(UnsafeArena&& other) = default;
 UnsafeArena& UnsafeArena::operator=(UnsafeArena&& other) = default;
@@ -89,7 +89,7 @@ void UnsafeArena::AllocBlock(size_t size) {
 
 UnsafeArena::Block::Block(size_t s) : data(new char[s]), size(s), used(0) {}
 
-UnsafeArena::Block::~Block() {}
+UnsafeArena::Block::~Block() = default;
 
 UnsafeArena::Block::Block(UnsafeArena::Block&& other)
     : size(other.size), used(other.used) {

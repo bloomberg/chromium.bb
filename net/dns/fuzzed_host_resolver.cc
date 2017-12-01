@@ -125,7 +125,7 @@ class FuzzedHostResolverProc : public HostResolverProc {
   }
 
  private:
-  ~FuzzedHostResolverProc() override {}
+  ~FuzzedHostResolverProc() override = default;
 
   base::WeakPtr<base::FuzzedDataProvider> data_provider_;
 
@@ -155,7 +155,7 @@ FuzzedHostResolver::FuzzedHostResolver(const Options& options,
   SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
 }
 
-FuzzedHostResolver::~FuzzedHostResolver() {}
+FuzzedHostResolver::~FuzzedHostResolver() = default;
 
 void FuzzedHostResolver::SetDnsClientEnabled(bool enabled) {
   if (!enabled) {

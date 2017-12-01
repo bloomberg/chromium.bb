@@ -58,7 +58,7 @@ CertVerifier::RequestParams::RequestParams(
 
 CertVerifier::RequestParams::RequestParams(const RequestParams& other) =
     default;
-CertVerifier::RequestParams::~RequestParams() {}
+CertVerifier::RequestParams::~RequestParams() = default;
 
 bool CertVerifier::RequestParams::operator==(
     const CertVerifier::RequestParams& other) const {

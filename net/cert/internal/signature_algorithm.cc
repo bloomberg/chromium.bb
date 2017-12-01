@@ -543,8 +543,7 @@ RsaPssParameters::RsaPssParameters(DigestAlgorithm mgf1_hash,
     : mgf1_hash_(mgf1_hash), salt_length_(salt_length) {
 }
 
-SignatureAlgorithm::~SignatureAlgorithm() {
-}
+SignatureAlgorithm::~SignatureAlgorithm() = default;
 
 std::unique_ptr<SignatureAlgorithm> SignatureAlgorithm::Create(
     const der::Input& algorithm_identifier,

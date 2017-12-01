@@ -21,7 +21,7 @@ struct MockClientCertVerifier::Rule {
 MockClientCertVerifier::MockClientCertVerifier()
     : default_result_(ERR_CERT_INVALID) {}
 
-MockClientCertVerifier::~MockClientCertVerifier() {}
+MockClientCertVerifier::~MockClientCertVerifier() = default;
 
 int MockClientCertVerifier::Verify(X509Certificate* cert,
                                    const CompletionCallback& callback,

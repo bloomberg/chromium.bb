@@ -32,8 +32,7 @@ PEMTokenizer::PEMTokenizer(
   Init(str, allowed_block_types);
 }
 
-PEMTokenizer::~PEMTokenizer() {
-}
+PEMTokenizer::~PEMTokenizer() = default;
 
 bool PEMTokenizer::GetNext() {
   while (pos_ != StringPiece::npos) {

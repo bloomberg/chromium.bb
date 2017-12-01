@@ -971,7 +971,7 @@ const struct CertificateFormatTestData {
 class X509CertificateParseTest
     : public testing::TestWithParam<CertificateFormatTestData> {
  public:
-  virtual ~X509CertificateParseTest() {}
+  virtual ~X509CertificateParseTest() = default;
   void SetUp() override { test_data_ = GetParam(); }
   void TearDown() override {}
 

@@ -161,8 +161,8 @@ void PrintTo(const CertDateTestData& data, std::ostream* os) {
 
 class X509CertTypesDateTest : public testing::TestWithParam<CertDateTestData> {
   public:
-    virtual ~X509CertTypesDateTest() {}
-    void SetUp() override { test_data_ = GetParam(); }
+   virtual ~X509CertTypesDateTest() = default;
+   void SetUp() override { test_data_ = GetParam(); }
 
   protected:
    CertDateTestData test_data_;

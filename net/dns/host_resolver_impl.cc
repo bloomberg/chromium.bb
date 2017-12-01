@@ -734,7 +734,7 @@ class HostResolverImpl::ProcTask
 
  private:
   friend class base::RefCountedThreadSafe<ProcTask>;
-  ~ProcTask() {}
+  ~ProcTask() = default;
 
   void StartLookupAttempt() {
     DCHECK(network_task_runner_->BelongsToCurrentThread());
@@ -983,8 +983,8 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     virtual void OnFirstDnsTransactionComplete() = 0;
 
    protected:
-    Delegate() {}
-    virtual ~Delegate() {}
+    Delegate() = default;
+    virtual ~Delegate() = default;
   };
 
   DnsTask(DnsClient* client,
@@ -1890,7 +1890,7 @@ HostResolverImpl::ProcTaskParams::ProcTaskParams(
 HostResolverImpl::ProcTaskParams::ProcTaskParams(const ProcTaskParams& other) =
     default;
 
-HostResolverImpl::ProcTaskParams::~ProcTaskParams() {}
+HostResolverImpl::ProcTaskParams::~ProcTaskParams() = default;
 
 HostResolverImpl::~HostResolverImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

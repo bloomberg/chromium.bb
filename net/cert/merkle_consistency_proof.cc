@@ -8,7 +8,7 @@ namespace net {
 
 namespace ct {
 
-MerkleConsistencyProof::MerkleConsistencyProof() {}
+MerkleConsistencyProof::MerkleConsistencyProof() = default;
 
 MerkleConsistencyProof::MerkleConsistencyProof(
     const std::string& log_id,
@@ -20,7 +20,7 @@ MerkleConsistencyProof::MerkleConsistencyProof(
       first_tree_size(old_size),
       second_tree_size(new_size) {}
 
-MerkleConsistencyProof::~MerkleConsistencyProof() {}
+MerkleConsistencyProof::~MerkleConsistencyProof() = default;
 
 }  // namespace ct
 

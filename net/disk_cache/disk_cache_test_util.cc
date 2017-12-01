@@ -84,7 +84,7 @@ MessageLoopHelper::MessageLoopHelper()
       callback_reused_error_(false),
       callbacks_called_(0) {}
 
-MessageLoopHelper::~MessageLoopHelper() {}
+MessageLoopHelper::~MessageLoopHelper() = default;
 
 bool MessageLoopHelper::WaitUntilCacheIoFinished(int num_callbacks) {
   if (num_callbacks == callbacks_called_)
@@ -128,8 +128,7 @@ CallbackTest::CallbackTest(MessageLoopHelper* helper,
       reuse_(reuse ? 0 : 1) {
 }
 
-CallbackTest::~CallbackTest() {
-}
+CallbackTest::~CallbackTest() = default;
 
 // On the actual callback, increase the number of tests received and check for
 // errors (an unexpected test received)

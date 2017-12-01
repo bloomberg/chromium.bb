@@ -91,7 +91,7 @@ class MockDnsSocketPool : public DnsSocketPool {
   MockDnsSocketPool(ClientSocketFactory* factory, DnsSessionTest* test)
       : DnsSocketPool(factory, base::Bind(&base::RandInt)), test_(test) {}
 
-  ~MockDnsSocketPool() override {}
+  ~MockDnsSocketPool() override = default;
 
   void Initialize(const std::vector<IPEndPoint>* nameservers,
                   NetLog* net_log) override {
@@ -193,8 +193,7 @@ TestClientSocketFactory::CreateDatagramClientSocket(
   return std::move(socket);
 }
 
-TestClientSocketFactory::~TestClientSocketFactory() {
-}
+TestClientSocketFactory::~TestClientSocketFactory() = default;
 
 TEST_F(DnsSessionTest, AllocateFree) {
   std::unique_ptr<DnsSession::SocketLease> lease1, lease2;

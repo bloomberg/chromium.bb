@@ -69,7 +69,7 @@ class NewMockPersistentCookieStore
   MOCK_METHOD0(SetForceKeepSessionState, void());
 
  private:
-  virtual ~NewMockPersistentCookieStore() {}
+  virtual ~NewMockPersistentCookieStore() = default;
 };
 
 // False means 'less than or equal', so we test both ways for full equal.
@@ -2414,7 +2414,7 @@ class FlushablePersistentStore : public CookieMonster::PersistentCookieStore {
   int flush_count() { return flush_count_; }
 
  private:
-  ~FlushablePersistentStore() override {}
+  ~FlushablePersistentStore() override = default;
 
   volatile int flush_count_;
 };
@@ -2430,7 +2430,7 @@ class CallbackCounter : public base::RefCountedThreadSafe<CallbackCounter> {
 
  private:
   friend class base::RefCountedThreadSafe<CallbackCounter>;
-  ~CallbackCounter() {}
+  ~CallbackCounter() = default;
 
   volatile int callback_count_;
 };
@@ -3105,7 +3105,7 @@ class CookieMonsterNotificationTest : public CookieMonsterTest {
         store_(new MockPersistentCookieStore),
         monster_(new CookieMonster(store_.get())) {}
 
-  ~CookieMonsterNotificationTest() override {}
+  ~CookieMonsterNotificationTest() override = default;
 
   CookieMonster* monster() { return monster_.get(); }
 

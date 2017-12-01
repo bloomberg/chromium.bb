@@ -12,8 +12,7 @@ LayeredNetworkDelegate::LayeredNetworkDelegate(
     std::unique_ptr<NetworkDelegate> nested_network_delegate)
     : nested_network_delegate_(std::move(nested_network_delegate)) {}
 
-LayeredNetworkDelegate::~LayeredNetworkDelegate() {
-}
+LayeredNetworkDelegate::~LayeredNetworkDelegate() = default;
 
 int LayeredNetworkDelegate::OnBeforeURLRequest(
     URLRequest* request,

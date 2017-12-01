@@ -221,7 +221,7 @@ void Rankings::Iterator::Reset() {
 
 Rankings::Rankings() : init_(false) {}
 
-Rankings::~Rankings() {}
+Rankings::~Rankings() = default;
 
 bool Rankings::Init(BackendImpl* backend, bool count_lists) {
   DCHECK(!init_);

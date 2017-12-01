@@ -59,7 +59,7 @@ class ExampleEmployer::ExampleWorker
  private:
   friend class base::RefCountedThreadSafe<ExampleWorker>;
 
-  ~ExampleWorker() {}
+  ~ExampleWorker() = default;
 
   // Only used on the origin thread (where DoSomething was called).
   ExampleEmployer* employer_;
@@ -87,11 +87,9 @@ void ExampleEmployer::ExampleWorker::DoCallback() {
   callback_.Run(kMagicResult);
 }
 
-ExampleEmployer::ExampleEmployer() {
-}
+ExampleEmployer::ExampleEmployer() = default;
 
-ExampleEmployer::~ExampleEmployer() {
-}
+ExampleEmployer::~ExampleEmployer() = default;
 
 bool ExampleEmployer::DoSomething(const CompletionCallback& callback) {
   DCHECK(!request_.get()) << "already in use";

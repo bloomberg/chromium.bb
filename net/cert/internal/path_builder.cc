@@ -505,7 +505,7 @@ CertPathBuilder::CertPathBuilder(
   AddCertIssuerSource(trust_store);
 }
 
-CertPathBuilder::~CertPathBuilder() {}
+CertPathBuilder::~CertPathBuilder() = default;
 
 void CertPathBuilder::AddCertIssuerSource(
     CertIssuerSource* cert_issuer_source) {

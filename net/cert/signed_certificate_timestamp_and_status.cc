@@ -8,7 +8,8 @@
 
 namespace net {
 
-SignedCertificateTimestampAndStatus::SignedCertificateTimestampAndStatus() {}
+SignedCertificateTimestampAndStatus::SignedCertificateTimestampAndStatus() =
+    default;
 
 SignedCertificateTimestampAndStatus::SignedCertificateTimestampAndStatus(
     const scoped_refptr<ct::SignedCertificateTimestamp>& sct,
@@ -18,6 +19,7 @@ SignedCertificateTimestampAndStatus::SignedCertificateTimestampAndStatus(
 SignedCertificateTimestampAndStatus::SignedCertificateTimestampAndStatus(
     const SignedCertificateTimestampAndStatus& other) = default;
 
-SignedCertificateTimestampAndStatus::~SignedCertificateTimestampAndStatus() {}
+SignedCertificateTimestampAndStatus::~SignedCertificateTimestampAndStatus() =
+    default;
 
 }  // namespace net

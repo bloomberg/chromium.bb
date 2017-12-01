@@ -35,10 +35,10 @@ void FailTest(int /* result */) {
 
 class MockCertVerifyProc : public CertVerifyProc {
  public:
-  MockCertVerifyProc() {}
+  MockCertVerifyProc() = default;
 
  private:
-  ~MockCertVerifyProc() override {}
+  ~MockCertVerifyProc() override = default;
 
   // CertVerifyProc implementation
   bool SupportsAdditionalTrustAnchors() const override { return false; }
@@ -63,7 +63,7 @@ class MockCertVerifyProc : public CertVerifyProc {
 class MultiThreadedCertVerifierTest : public ::testing::Test {
  public:
   MultiThreadedCertVerifierTest() : verifier_(new MockCertVerifyProc()) {}
-  ~MultiThreadedCertVerifierTest() override {}
+  ~MultiThreadedCertVerifierTest() override = default;
 
  protected:
   MultiThreadedCertVerifier verifier_;

@@ -15,8 +15,7 @@ UploadBytesElementReader::UploadBytesElementReader(const char* bytes,
     : bytes_(bytes), length_(length), offset_(0) {
 }
 
-UploadBytesElementReader::~UploadBytesElementReader() {
-}
+UploadBytesElementReader::~UploadBytesElementReader() = default;
 
 const UploadBytesElementReader*
 UploadBytesElementReader::AsBytesReader() const {
@@ -64,7 +63,7 @@ UploadOwnedBytesElementReader::UploadOwnedBytesElementReader(
   data_.swap(*data);
 }
 
-UploadOwnedBytesElementReader::~UploadOwnedBytesElementReader() {}
+UploadOwnedBytesElementReader::~UploadOwnedBytesElementReader() = default;
 
 UploadOwnedBytesElementReader*
 UploadOwnedBytesElementReader::CreateWithString(const std::string& string) {

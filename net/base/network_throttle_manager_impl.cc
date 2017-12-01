@@ -159,7 +159,7 @@ NetworkThrottleManagerImpl::NetworkThrottleManagerImpl()
       tick_clock_(new base::DefaultTickClock()),
       weak_ptr_factory_(this) {}
 
-NetworkThrottleManagerImpl::~NetworkThrottleManagerImpl() {}
+NetworkThrottleManagerImpl::~NetworkThrottleManagerImpl() = default;
 
 std::unique_ptr<NetworkThrottleManager::Throttle>
 NetworkThrottleManagerImpl::CreateThrottle(

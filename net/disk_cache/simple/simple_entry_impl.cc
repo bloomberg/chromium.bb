@@ -176,7 +176,7 @@ class SimpleEntryImpl::ScopedOperationRunner {
   SimpleEntryImpl* const entry_;
 };
 
-SimpleEntryImpl::ActiveEntryProxy::~ActiveEntryProxy() {}
+SimpleEntryImpl::ActiveEntryProxy::~ActiveEntryProxy() = default;
 
 SimpleEntryImpl::SimpleEntryImpl(
     net::CacheType cache_type,

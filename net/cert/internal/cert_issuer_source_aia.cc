@@ -20,7 +20,7 @@ const int kMaxFetchesPerCert = 5;
 
 class AiaRequest : public CertIssuerSource::Request {
  public:
-  AiaRequest() {}
+  AiaRequest() = default;
   ~AiaRequest() override;
 
   // CertIssuerSource::Request implementation.

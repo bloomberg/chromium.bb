@@ -13,7 +13,7 @@ namespace net {
 
 namespace ct {
 
-MerkleTreeLeaf::MerkleTreeLeaf() {}
+MerkleTreeLeaf::MerkleTreeLeaf() = default;
 
 MerkleTreeLeaf::MerkleTreeLeaf(const MerkleTreeLeaf& other) = default;
 

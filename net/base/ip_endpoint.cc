@@ -82,7 +82,7 @@ bool GetIPAddressFromSockAddr(const struct sockaddr* sock_addr,
 
 IPEndPoint::IPEndPoint() : port_(0) {}
 
-IPEndPoint::~IPEndPoint() {}
+IPEndPoint::~IPEndPoint() = default;
 
 IPEndPoint::IPEndPoint(const IPAddress& address, uint16_t port)
     : address_(address), port_(port) {}

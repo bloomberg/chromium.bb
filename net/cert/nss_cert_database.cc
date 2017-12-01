@@ -44,7 +44,7 @@ class CertNotificationForwarder : public NSSCertDatabase::Observer {
   explicit CertNotificationForwarder(CertDatabase* cert_db)
       : cert_db_(cert_db) {}
 
-  ~CertNotificationForwarder() override {}
+  ~CertNotificationForwarder() override = default;
 
   void OnCertDBChanged() override { cert_db_->NotifyObserversCertDBChanged(); }
 
@@ -82,7 +82,7 @@ NSSCertDatabase::NSSCertDatabase(crypto::ScopedPK11Slot public_slot,
   psm::EnsurePKCS12Init();
 }
 
-NSSCertDatabase::~NSSCertDatabase() {}
+NSSCertDatabase::~NSSCertDatabase() = default;
 
 ScopedCERTCertificateList NSSCertDatabase::ListCertsSync() {
   return ListCertsImpl(crypto::ScopedPK11Slot());

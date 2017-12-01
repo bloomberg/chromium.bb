@@ -367,7 +367,7 @@ const NonUniqueNameTestData kNonUniqueNameTestData[] = {
 class UrlUtilNonUniqueNameTest
     : public testing::TestWithParam<NonUniqueNameTestData> {
  public:
-  virtual ~UrlUtilNonUniqueNameTest() {}
+  virtual ~UrlUtilNonUniqueNameTest() = default;
 
  protected:
   bool IsUnique(const std::string& hostname) {

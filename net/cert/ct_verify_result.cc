@@ -17,7 +17,7 @@ CTVerifyResult::CTVerifyResult()
 
 CTVerifyResult::CTVerifyResult(const CTVerifyResult& other) = default;
 
-CTVerifyResult::~CTVerifyResult() {}
+CTVerifyResult::~CTVerifyResult() = default;
 
 SCTList SCTsMatchingStatus(
     const SignedCertificateTimestampAndStatusList& sct_and_status_list,

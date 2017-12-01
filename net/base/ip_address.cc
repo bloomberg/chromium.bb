@@ -139,7 +139,7 @@ IPAddressBytes::IPAddressBytes(const uint8_t* data, size_t data_len) {
   Assign(data, data_len);
 }
 
-IPAddressBytes::~IPAddressBytes() {}
+IPAddressBytes::~IPAddressBytes() = default;
 IPAddressBytes::IPAddressBytes(IPAddressBytes const& other) = default;
 
 void IPAddressBytes::Assign(const uint8_t* data, size_t data_len) {
@@ -163,7 +163,7 @@ bool IPAddressBytes::operator!=(const IPAddressBytes& other) const {
   return !(*this == other);
 }
 
-IPAddress::IPAddress() {}
+IPAddress::IPAddress() = default;
 
 IPAddress::IPAddress(const IPAddress& other) = default;
 
@@ -213,7 +213,7 @@ IPAddress::IPAddress(uint8_t b0,
   ip_address_.push_back(b15);
 }
 
-IPAddress::~IPAddress() {}
+IPAddress::~IPAddress() = default;
 
 bool IPAddress::IsIPv4() const {
   return ip_address_.size() == kIPv4AddressSize;

@@ -38,11 +38,9 @@ NetworkInterface::NetworkInterface(const std::string& name,
 
 NetworkInterface::NetworkInterface(const NetworkInterface& other) = default;
 
-NetworkInterface::~NetworkInterface() {
-}
+NetworkInterface::~NetworkInterface() = default;
 
-ScopedWifiOptions::~ScopedWifiOptions() {
-}
+ScopedWifiOptions::~ScopedWifiOptions() = default;
 
 std::string GetHostName() {
 #if defined(OS_NACL)

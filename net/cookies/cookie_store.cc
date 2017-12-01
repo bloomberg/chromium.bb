@@ -10,7 +10,7 @@
 
 namespace net {
 
-CookieStore::~CookieStore() {}
+CookieStore::~CookieStore() = default;
 
 bool CookieStore::ChangeCauseIsDeletion(CookieStore::ChangeCause cause) {
   return cause != CookieStore::ChangeCause::INSERTED;

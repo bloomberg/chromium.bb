@@ -13,7 +13,7 @@ namespace net {
 
 SerialWorker::SerialWorker() : state_(IDLE) {}
 
-SerialWorker::~SerialWorker() {}
+SerialWorker::~SerialWorker() = default;
 
 void SerialWorker::WorkNow() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

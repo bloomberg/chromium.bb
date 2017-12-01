@@ -147,8 +147,7 @@ ParsedCookie::ParsedCookie(const std::string& cookie_line)
     SetupAttributes();
 }
 
-ParsedCookie::~ParsedCookie() {
-}
+ParsedCookie::~ParsedCookie() = default;
 
 bool ParsedCookie::IsValid() const {
   return !pairs_.empty() && IsSameSiteAttributeValid();

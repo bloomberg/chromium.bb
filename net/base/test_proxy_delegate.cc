@@ -16,7 +16,7 @@ TestProxyDelegate::TestProxyDelegate()
       on_tunnel_headers_received_called_(false),
       get_alternative_proxy_invocations_(0) {}
 
-TestProxyDelegate::~TestProxyDelegate() {}
+TestProxyDelegate::~TestProxyDelegate() = default;
 
 void TestProxyDelegate::VerifyOnTunnelRequestCompleted(
     const std::string& endpoint,

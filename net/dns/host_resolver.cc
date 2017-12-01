@@ -95,15 +95,10 @@ HostResolver::RequestInfo::RequestInfo(const HostPortPair& host_port_pair)
   host_port_pair_ = host_port_pair;
 }
 
-HostResolver::RequestInfo::RequestInfo(const RequestInfo& request_info)
-    : host_port_pair_(request_info.host_port_pair_),
-      address_family_(request_info.address_family_),
-      host_resolver_flags_(request_info.host_resolver_flags_),
-      allow_cached_response_(request_info.allow_cached_response_),
-      is_speculative_(request_info.is_speculative_),
-      is_my_ip_address_(request_info.is_my_ip_address_) {}
+HostResolver::RequestInfo::RequestInfo(const RequestInfo& request_info) =
+    default;
 
-HostResolver::RequestInfo::~RequestInfo() {}
+HostResolver::RequestInfo::~RequestInfo() = default;
 
 HostResolver::RequestInfo::RequestInfo()
     : address_family_(ADDRESS_FAMILY_UNSPECIFIED),
@@ -112,8 +107,7 @@ HostResolver::RequestInfo::RequestInfo()
       is_speculative_(false),
       is_my_ip_address_(false) {}
 
-HostResolver::~HostResolver() {
-}
+HostResolver::~HostResolver() = default;
 
 void HostResolver::SetDnsClientEnabled(bool enabled) {
 }
@@ -165,6 +159,6 @@ std::unique_ptr<HostResolverImpl> HostResolver::CreateDefaultResolverImpl(
   return CreateSystemResolverImpl(Options(), net_log);
 }
 
-HostResolver::HostResolver() {}
+HostResolver::HostResolver() = default;
 
 }  // namespace net

@@ -47,8 +47,7 @@ FileStream::Context::IOResult FileStream::Context::IOResult::FromOSError(
 
 // ---------------------------------------------------------------------
 
-FileStream::Context::OpenResult::OpenResult() {
-}
+FileStream::Context::OpenResult::OpenResult() = default;
 
 FileStream::Context::OpenResult::OpenResult(base::File file,
                                             IOResult error_code)

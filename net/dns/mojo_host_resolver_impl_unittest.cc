@@ -88,8 +88,8 @@ void TestRequestClient::OnConnectionError() {
 
 class CallbackMockHostResolver : public MockHostResolver {
  public:
-  CallbackMockHostResolver() {}
-  ~CallbackMockHostResolver() override {}
+  CallbackMockHostResolver() = default;
+  ~CallbackMockHostResolver() override = default;
 
   // Set a callback to run whenever Resolve is called. Callback is cleared after
   // every run.

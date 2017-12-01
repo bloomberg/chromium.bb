@@ -33,13 +33,11 @@ int ParseIntAndAdvance(const char** field, size_t field_len, bool* ok) {
 
 }  // anonymous namespace
 
-CertPrincipal::CertPrincipal() {
-}
+CertPrincipal::CertPrincipal() = default;
 
 CertPrincipal::CertPrincipal(const std::string& name) : common_name(name) {}
 
-CertPrincipal::~CertPrincipal() {
-}
+CertPrincipal::~CertPrincipal() = default;
 
 bool CertPrincipal::ParseDistinguishedName(
     const void* ber_name_data,

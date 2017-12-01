@@ -27,22 +27,12 @@ MDnsCache::Key::Key(unsigned type, const std::string& name,
     : type_(type), name_(name), optional_(optional) {
 }
 
-MDnsCache::Key::Key(
-    const MDnsCache::Key& other)
-    : type_(other.type_), name_(other.name_), optional_(other.optional_) {
-}
+MDnsCache::Key::Key(const MDnsCache::Key& other) = default;
 
+MDnsCache::Key& MDnsCache::Key::operator=(const MDnsCache::Key& other) =
+    default;
 
-MDnsCache::Key& MDnsCache::Key::operator=(
-    const MDnsCache::Key& other) {
-  type_ = other.type_;
-  name_ = other.name_;
-  optional_ = other.optional_;
-  return *this;
-}
-
-MDnsCache::Key::~Key() {
-}
+MDnsCache::Key::~Key() = default;
 
 bool MDnsCache::Key::operator<(const MDnsCache::Key& other) const {
   return std::tie(name_, type_, optional_) <
@@ -60,12 +50,9 @@ MDnsCache::Key MDnsCache::Key::CreateFor(const RecordParsed* record) {
              GetOptionalFieldForRecord(record));
 }
 
+MDnsCache::MDnsCache() = default;
 
-MDnsCache::MDnsCache() {
-}
-
-MDnsCache::~MDnsCache() {
-}
+MDnsCache::~MDnsCache() = default;
 
 const RecordParsed* MDnsCache::LookupKey(const Key& key) {
   RecordMap::iterator found = mdns_cache_.find(key);

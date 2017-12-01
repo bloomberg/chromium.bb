@@ -96,7 +96,7 @@ HostCache::Entry::Entry(int error, const AddressList& addresses, Source source)
       source_(source),
       ttl_(base::TimeDelta::FromSeconds(-1)) {}
 
-HostCache::Entry::~Entry() {}
+HostCache::Entry::~Entry() = default;
 
 HostCache::Entry::Entry(HostCache::Entry&& entry) = default;
 
