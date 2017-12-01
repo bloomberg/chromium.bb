@@ -3,7 +3,9 @@
  * found in the LICENSE file. */
 
 html {
+  /* This will be overridden based on the viewport width, see below. */
   --column-count: 2;
+
   --content-width: calc(
       (var(--column-count) * (var(--tile-width) + var(--tile-margin)))
       /* We add an extra pixel because rounding errors on different zooms can
@@ -19,6 +21,12 @@ html {
       4px + var(--tile-height) + var(--tile-margin) + var(--tile-height) + 8px);
   /* Base height 16px, plus 8px each of padding on top and bottom. */
   --mv-notice-height: calc(8px + 16px + 8px);
+
+  /* These can be overridden by themes. */
+  --text-color: #000;
+  --text-color-light: #fff;
+  --text-color-link: rgb(17, 85, 204);
+
   height: 100%;
 }
 
@@ -404,6 +412,7 @@ body.fakebox-focused #fakebox-cursor {
   background-color: rgba(90,90,90,0.7);
   cursor: pointer;
   display: inline-block;
+  filter: var(--theme-filter, 'none');
   height: 16px;
   margin-left: 20px;
   outline: none;
@@ -443,7 +452,7 @@ html[dir=rtl] #mv-notice-x {
 /* Links in the notification. */
 #mv-notice-links span {
   -webkit-margin-start: 6px;
-  color: rgb(17, 85, 204);
+  color: var(--text-color-link);
   cursor: pointer;
   outline: none;
   padding: 0 4px;
@@ -452,6 +461,10 @@ html[dir=rtl] #mv-notice-x {
 #mv-notice-links span:hover,
 #mv-notice-links span:focus {
   text-decoration: underline;
+}
+
+#mv-msg {
+  color: var(--text-color);
 }
 
 .default-theme.dark #mv-msg {
@@ -474,7 +487,7 @@ html[dir=rtl] #mv-notice-x {
 
 #attribution {
   bottom: 0;
-  color: #fff;
+  color: var(--text-color-light);
   cursor: default;
   display: inline-block;
   font-size: 13px;
