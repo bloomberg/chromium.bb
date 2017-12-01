@@ -35,6 +35,8 @@ _CONFIG = [
             'base::Optional',
             'base::SingleThreadTaskRunner',
             'base::UnguessableToken',
+            'base::WeakPtr',
+            'base::WeakPtrFactory',
             'base::make_optional',
             'base::make_span',
             'base::nullopt',

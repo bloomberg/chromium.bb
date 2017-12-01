@@ -7,8 +7,8 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLLoader.h"
 
@@ -61,7 +61,7 @@ class WebURLLoaderMock : public WebURLLoader {
   bool is_deferred() { return is_deferred_; }
   bool is_cancelled() { return !client_; }
 
-  WeakPtr<WebURLLoaderMock> GetWeakPtr();
+  base::WeakPtr<WebURLLoaderMock> GetWeakPtr();
 
  private:
   WebURLLoaderMockFactoryImpl* factory_ = nullptr;
@@ -70,7 +70,7 @@ class WebURLLoaderMock : public WebURLLoader {
   bool using_default_loader_ = false;
   bool is_deferred_ = false;
 
-  WeakPtrFactory<WebURLLoaderMock> weak_factory_;
+  base::WeakPtrFactory<WebURLLoaderMock> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderMock);
 };

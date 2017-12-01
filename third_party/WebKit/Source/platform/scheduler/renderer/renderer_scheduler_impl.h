@@ -8,6 +8,7 @@
 #include "base/atomicops.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/single_sample_metrics.h"
 #include "base/single_thread_task_runner.h"

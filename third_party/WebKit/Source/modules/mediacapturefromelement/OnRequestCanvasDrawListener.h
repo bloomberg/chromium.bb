@@ -6,9 +6,9 @@
 #define OnRequestCanvasDrawListener_h
 
 #include <memory>
+#include "base/memory/weak_ptr.h"
 #include "core/html/canvas/CanvasDrawListener.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebCanvasCaptureHandler.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -23,8 +23,9 @@ class OnRequestCanvasDrawListener final
   ~OnRequestCanvasDrawListener() override;
   static OnRequestCanvasDrawListener* Create(
       std::unique_ptr<WebCanvasCaptureHandler>);
-  void SendNewFrame(sk_sp<SkImage>,
-                    WeakPtr<WebGraphicsContext3DProviderWrapper>) override;
+  void SendNewFrame(
+      sk_sp<SkImage>,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) override;
 
   void Trace(blink::Visitor* visitor) override {}
 

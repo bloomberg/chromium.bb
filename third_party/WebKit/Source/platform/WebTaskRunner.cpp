@@ -15,11 +15,11 @@ using RunnerMethodType =
 template <>
 struct CallbackCancellationTraits<
     RunnerMethodType,
-    std::tuple<WTF::WeakPtr<blink::TaskHandle::Runner>, blink::TaskHandle>> {
+    std::tuple<base::WeakPtr<blink::TaskHandle::Runner>, blink::TaskHandle>> {
   static constexpr bool is_cancellable = true;
 
   static bool IsCancelled(RunnerMethodType,
-                          const WTF::WeakPtr<blink::TaskHandle::Runner>&,
+                          const base::WeakPtr<blink::TaskHandle::Runner>&,
                           const blink::TaskHandle& handle) {
     return !handle.IsActive();
   }
@@ -42,13 +42,13 @@ class TaskHandle::Runner : public WTF::ThreadSafeRefCounted<Runner> {
   explicit Runner(WTF::Closure task)
       : task_(std::move(task)), weak_ptr_factory_(this) {}
 
-  WTF::WeakPtr<Runner> AsWeakPtr() { return weak_ptr_factory_.CreateWeakPtr(); }
+  base::WeakPtr<Runner> AsWeakPtr() { return weak_ptr_factory_.GetWeakPtr(); }
 
   bool IsActive() const { return task_ && !task_.IsCancelled(); }
 
   void Cancel() {
     WTF::Closure task = std::move(task_);
-    weak_ptr_factory_.RevokeAll();
+    weak_ptr_factory_.InvalidateWeakPtrs();
   }
 
   ~Runner() { Cancel(); }
@@ -71,13 +71,13 @@ class TaskHandle::Runner : public WTF::ThreadSafeRefCounted<Runner> {
   // |m_task| when the wrapped WTF::Closure is deleted.
   void Run(const TaskHandle&) {
     WTF::Closure task = std::move(task_);
-    weak_ptr_factory_.RevokeAll();
+    weak_ptr_factory_.InvalidateWeakPtrs();
     std::move(task).Run();
   }
 
  private:
   WTF::Closure task_;
-  WTF::WeakPtrFactory<Runner> weak_ptr_factory_;
+  base::WeakPtrFactory<Runner> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Runner);
 };

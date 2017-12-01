@@ -33,7 +33,6 @@
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 

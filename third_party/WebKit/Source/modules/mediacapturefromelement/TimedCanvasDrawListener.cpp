@@ -37,7 +37,7 @@ TimedCanvasDrawListener* TimedCanvasDrawListener::Create(
 
 void TimedCanvasDrawListener::SendNewFrame(
     sk_sp<SkImage> image,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider) {
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider) {
   frame_capture_requested_ = false;
   CanvasDrawListener::SendNewFrame(image, context_provider);
 }

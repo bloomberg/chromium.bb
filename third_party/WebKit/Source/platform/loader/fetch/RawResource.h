@@ -24,12 +24,12 @@
 #define RawResource_h
 
 #include <memory>
+
 #include "platform/PlatformExport.h"
 #include "platform/loader/fetch/BufferingDataPipeWriter.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebDataConsumerHandle.h"
 
 namespace blink {

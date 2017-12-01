@@ -12,7 +12,6 @@
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Time.h"
-#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebTraceLocation.h"
 

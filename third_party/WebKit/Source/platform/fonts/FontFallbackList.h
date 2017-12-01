@@ -21,6 +21,7 @@
 #ifndef FontFallbackList_h
 #define FontFallbackList_h
 
+#include "base/memory/weak_ptr.h"
 #include "platform/fonts/FallbackListCompositeKey.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontSelector.h"
@@ -29,7 +30,6 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -99,7 +99,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   mutable int family_index_;
   unsigned short generation_;
   mutable bool has_loading_fallback_ : 1;
-  mutable WeakPtr<ShapeCache> shape_cache_;
+  mutable base::WeakPtr<ShapeCache> shape_cache_;
 };
 
 }  // namespace blink

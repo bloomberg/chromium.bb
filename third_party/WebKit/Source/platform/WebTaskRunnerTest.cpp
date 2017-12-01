@@ -22,17 +22,17 @@ class CancellationTestHelper {
  public:
   CancellationTestHelper() : weak_ptr_factory_(this) {}
 
-  WeakPtr<CancellationTestHelper> CreateWeakPtr() {
-    return weak_ptr_factory_.CreateWeakPtr();
+  base::WeakPtr<CancellationTestHelper> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
   }
 
-  void RevokeWeakPtrs() { weak_ptr_factory_.RevokeAll(); }
+  void RevokeWeakPtrs() { weak_ptr_factory_.InvalidateWeakPtrs(); }
   void IncrementCounter() { ++counter_; }
   int Counter() const { return counter_; }
 
  private:
   int counter_ = 0;
-  WeakPtrFactory<CancellationTestHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<CancellationTestHelper> weak_ptr_factory_;
 };
 
 }  // namespace
@@ -140,7 +140,7 @@ TEST(WebTaskRunnerTest, CancellationCheckerTest) {
   CancellationTestHelper helper;
   handle = task_runner->PostCancellableTask(
       BLINK_FROM_HERE, WTF::Bind(&CancellationTestHelper::IncrementCounter,
-                                 helper.CreateWeakPtr()));
+                                 helper.GetWeakPtr()));
   EXPECT_EQ(0, helper.Counter());
 
   // The cancellation of the posted task should be propagated to TaskHandle.

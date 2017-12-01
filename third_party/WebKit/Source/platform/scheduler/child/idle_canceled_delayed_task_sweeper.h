@@ -6,6 +6,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_IDLE_CANCELED_DELAYED_TASK_SWEEPER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 

@@ -793,7 +793,7 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
 scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::MakeImageSnapshot(
     SkImageInfo& image_info) {
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
-  WeakPtr<WebGraphicsContext3DProviderWrapper> shared_context_wrapper =
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> shared_context_wrapper =
       SharedGpuContext::ContextProviderWrapper();
   if (!shared_context_wrapper)
     return nullptr;

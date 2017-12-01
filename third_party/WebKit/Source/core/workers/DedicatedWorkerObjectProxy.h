@@ -38,7 +38,6 @@
 #include "core/workers/ThreadedObjectProxyBase.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/WeakPtr.h"
 
 namespace v8_inspector {
 struct V8StackTraceId;
