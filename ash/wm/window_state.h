@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 
@@ -237,10 +238,16 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Gets/Sets the bounds of the window before it was moved by the auto window
   // management. As long as it was not auto-managed, it will return NULL.
-  const gfx::Rect* pre_auto_manage_window_bounds() const {
-    return pre_auto_manage_window_bounds_.get();
+  base::Optional<gfx::Rect> pre_auto_manage_window_bounds() const {
+    return pre_auto_manage_window_bounds_;
   }
   void SetPreAutoManageWindowBounds(const gfx::Rect& bounds);
+
+  // Gets/Sets the property that is used on window added to workspace event.
+  base::Optional<gfx::Rect> pre_added_to_workspace_window_bounds() const {
+    return pre_added_to_workspace_window_bounds_;
+  }
+  void SetPreAddedToWorkspaceWindowBounds(const gfx::Rect& bounds);
 
   // Layout related properties
 
@@ -392,7 +399,11 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // A property to remember the window position which was set before the
   // auto window position manager changed the window bounds, so that it can get
   // restored when only this one window gets shown.
-  std::unique_ptr<gfx::Rect> pre_auto_manage_window_bounds_;
+  base::Optional<gfx::Rect> pre_auto_manage_window_bounds_;
+
+  // A property which resets when bounds is changed by user and sets when it is
+  // nullptr, and window is removing from a workspace.
+  base::Optional<gfx::Rect> pre_added_to_workspace_window_bounds_;
 
   base::ObserverList<WindowStateObserver> observer_list_;
 

@@ -318,7 +318,11 @@ std::unique_ptr<WindowState::State> WindowState::SetStateObject(
 }
 
 void WindowState::SetPreAutoManageWindowBounds(const gfx::Rect& bounds) {
-  pre_auto_manage_window_bounds_.reset(new gfx::Rect(bounds));
+  pre_auto_manage_window_bounds_ = base::make_optional(bounds);
+}
+
+void WindowState::SetPreAddedToWorkspaceWindowBounds(const gfx::Rect& bounds) {
+  pre_added_to_workspace_window_bounds_ = base::make_optional(bounds);
 }
 
 void WindowState::AddObserver(WindowStateObserver* observer) {
@@ -365,8 +369,10 @@ void WindowState::SetInImmersiveFullscreen(bool enabled) {
 
 void WindowState::set_bounds_changed_by_user(bool bounds_changed_by_user) {
   bounds_changed_by_user_ = bounds_changed_by_user;
-  if (bounds_changed_by_user)
+  if (bounds_changed_by_user) {
     pre_auto_manage_window_bounds_.reset();
+    pre_added_to_workspace_window_bounds_.reset();
+  }
 }
 
 void WindowState::CreateDragDetails(const gfx::Point& point_in_parent,
