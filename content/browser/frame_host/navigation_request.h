@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/navigation_params.h"
+#include "content/common/navigation_params.mojom.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/previews_state.h"
@@ -99,7 +100,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       FrameTreeNode* frame_tree_node,
       NavigationEntryImpl* entry,
       const CommonNavigationParams& common_params,
-      const BeginNavigationParams& begin_params,
+      mojom::BeginNavigationParamsPtr begin_params,
       int current_history_list_offset,
       int current_history_list_length,
       bool override_user_agent);
@@ -112,7 +113,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   const CommonNavigationParams& common_params() const { return common_params_; }
 
-  const BeginNavigationParams& begin_params() const { return begin_params_; }
+  const mojom::BeginNavigationParams* begin_params() const {
+    return begin_params_.get();
+  }
 
   const RequestNavigationParams& request_params() const {
     return request_params_;
@@ -208,7 +211,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,
-                    const BeginNavigationParams& begin_params,
+                    mojom::BeginNavigationParamsPtr begin_params,
                     const RequestNavigationParams& request_params,
                     bool browser_initiated,
                     bool from_begin_navigation,
@@ -307,7 +310,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // Note: |request_params_| is not const because service_worker_provider_id
   // and should_create_service_worker will be set in OnResponseStarted.
   CommonNavigationParams common_params_;
-  BeginNavigationParams begin_params_;
+  mojom::BeginNavigationParamsPtr begin_params_;
   RequestNavigationParams request_params_;
   const bool browser_initiated_;
 

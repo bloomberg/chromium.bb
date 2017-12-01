@@ -14,6 +14,7 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
+#include "content/common/navigation_params.mojom.h"
 #include "content/public/common/previews_state.h"
 #include "url/gurl.h"
 
@@ -90,7 +91,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                          const base::TimeTicks& proceed_time) override;
   void OnBeginNavigation(FrameTreeNode* frame_tree_node,
                          const CommonNavigationParams& common_params,
-                         const BeginNavigationParams& begin_params) override;
+                         mojom::BeginNavigationParamsPtr begin_params) override;
   void OnAbortNavigation(FrameTreeNode* frame_tree_node) override;
   void LogResourceRequestTime(base::TimeTicks timestamp,
                               const GURL& url) override;

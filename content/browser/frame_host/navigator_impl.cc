@@ -951,7 +951,7 @@ void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
 void NavigatorImpl::OnBeginNavigation(
     FrameTreeNode* frame_tree_node,
     const CommonNavigationParams& common_params,
-    const BeginNavigationParams& begin_params) {
+    mojom::BeginNavigationParamsPtr begin_params) {
   // TODO(clamy): the url sent by the renderer should be validated with
   // FilterURL.
   // This is a renderer-initiated navigation.
@@ -1005,8 +1005,8 @@ void NavigatorImpl::OnBeginNavigation(
       current_entry ? current_entry->GetIsOverridingUserAgent() : false;
   frame_tree_node->CreatedNavigationRequest(
       NavigationRequest::CreateRendererInitiated(
-          frame_tree_node, pending_entry, common_params, begin_params,
-          controller_->GetLastCommittedEntryIndex(),
+          frame_tree_node, pending_entry, common_params,
+          std::move(begin_params), controller_->GetLastCommittedEntryIndex(),
           controller_->GetEntryCount(), override_user_agent));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 

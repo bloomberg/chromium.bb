@@ -89,34 +89,6 @@ CommonNavigationParams::CommonNavigationParams(
 CommonNavigationParams::~CommonNavigationParams() {
 }
 
-BeginNavigationParams::BeginNavigationParams()
-    : load_flags(0),
-      skip_service_worker(false),
-      request_context_type(REQUEST_CONTEXT_TYPE_LOCATION),
-      mixed_content_context_type(blink::WebMixedContentContextType::kBlockable),
-      is_form_submission(false) {}
-
-BeginNavigationParams::BeginNavigationParams(
-    std::string headers,
-    int load_flags,
-    bool skip_service_worker,
-    RequestContextType request_context_type,
-    blink::WebMixedContentContextType mixed_content_context_type,
-    bool is_form_submission,
-    const base::Optional<url::Origin>& initiator_origin)
-    : headers(headers),
-      load_flags(load_flags),
-      skip_service_worker(skip_service_worker),
-      request_context_type(request_context_type),
-      mixed_content_context_type(mixed_content_context_type),
-      is_form_submission(is_form_submission),
-      initiator_origin(initiator_origin) {}
-
-BeginNavigationParams::BeginNavigationParams(
-    const BeginNavigationParams& other) = default;
-
-BeginNavigationParams::~BeginNavigationParams() {}
-
 StartNavigationParams::StartNavigationParams()
     : transferred_request_child_id(-1),
       transferred_request_request_id(-1) {

@@ -8,6 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
+#include "content/common/navigation_params.mojom.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/test/mock_render_thread.h"
@@ -52,6 +53,9 @@ class MockFrameHost : public mojom::FrameHost {
       override {
     last_commit_params_ = std::move(params);
   }
+
+  void BeginNavigation(const CommonNavigationParams& common_params,
+                       mojom::BeginNavigationParamsPtr begin_params) override {}
 
  private:
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>

@@ -156,62 +156,6 @@ struct CONTENT_EXPORT CommonNavigationParams {
   bool has_user_gesture;
 };
 
-// Provided by the renderer ----------------------------------------------------
-//
-// This struct holds parameters sent by the renderer to the browser. It is only
-// used in PlzNavigate (since in the current architecture, the renderer does not
-// inform the browser of navigations until they commit).
-
-// This struct is not used outside of the PlzNavigate project.
-// PlzNavigate: parameters needed to start a navigation on the IO thread,
-// following a renderer-initiated navigation request.
-struct CONTENT_EXPORT BeginNavigationParams {
-  // TODO(clamy): See if it is possible to reuse this in
-  // ResourceMsg_Request_Params.
-  BeginNavigationParams();
-  BeginNavigationParams(
-      std::string headers,
-      int load_flags,
-      bool skip_service_worker,
-      RequestContextType request_context_type,
-      blink::WebMixedContentContextType mixed_content_context_type,
-      bool is_form_submission,
-      const base::Optional<url::Origin>& initiator_origin);
-  BeginNavigationParams(const BeginNavigationParams& other);
-  ~BeginNavigationParams();
-
-  // Additional HTTP request headers.
-  std::string headers;
-
-  // net::URLRequest load flags (net::LOAD_NORMAL) by default).
-  int load_flags;
-
-  // True if the ServiceWorker should be skipped.
-  bool skip_service_worker;
-
-  // Indicates the request context type.
-  RequestContextType request_context_type;
-
-  // The mixed content context type for potential mixed content checks.
-  blink::WebMixedContentContextType mixed_content_context_type;
-
-  // Whether or not the navigation has been initiated by a form submission.
-  bool is_form_submission;
-
-  // See WebSearchableFormData for a description of these.
-  GURL searchable_form_url;
-  std::string searchable_form_encoding;
-
-  // Indicates the initiator of the request. In auxilliary navigations, this is
-  // the origin of the document that triggered the navigation. This parameter
-  // can be null during browser-initiated navigations.
-  base::Optional<url::Origin> initiator_origin;
-
-  // If the transition type is a client side redirect, then this holds the URL
-  // of the page that had the client side redirect.
-  GURL client_side_redirect_url;
-};
-
 // Provided by the browser -----------------------------------------------------
 //
 // These structs are sent by the browser to the renderer to start/commit a

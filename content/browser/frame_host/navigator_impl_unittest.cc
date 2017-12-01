@@ -752,23 +752,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Now receive a renderer-initiated non-user-initiated request. Nothing should
   // change.
-  {
-    CommonNavigationParams common_params;
-    common_params.url = kUrl2;
-    common_params.referrer = Referrer(kUrl0, blink::kWebReferrerPolicyDefault);
-    common_params.transition = ui::PageTransitionFromInt(
-        ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-    BeginNavigationParams begin_params(
-        std::string(),     // headers
-        net::LOAD_NORMAL,  // load_flags
-        false,             // skip_service_worker
-        REQUEST_CONTEXT_TYPE_SCRIPT,
-        blink::WebMixedContentContextType::kBlockable,
-        false,  // is_form_submission
-        url::Origin::Create(kUrl0));
-    main_test_rfh()->OnMessageReceived(FrameHostMsg_BeginNavigation(
-        main_test_rfh()->GetRoutingID(), common_params, begin_params));
-  }
+  main_test_rfh()->SendRendererInitiatedNavigationRequest(
+      kUrl2, false /* has_user_gesture */);
   NavigationRequest* request2 = node->navigation_request();
   ASSERT_TRUE(request2);
   EXPECT_EQ(request1, request2);

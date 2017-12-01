@@ -447,25 +447,32 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserDisableWebSecurityTest,
   // Setup a BeginNavigate IPC with non-empty base_url_for_data_url.
   CommonNavigationParams common_params(
       data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
-      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, true, false,
-      base::TimeTicks(), FrameMsg_UILoadMetricsReportType::NO_REPORT,
-      file_url,  // base_url_for_data_url
-      GURL(), PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
-      base::Optional<SourceLocation>(), CSPDisposition::CHECK,
-      false /* started_from_context_menu */, false /* has_user_gesture */);
-  BeginNavigationParams begin_params(
-      std::string(), net::LOAD_NORMAL, false, REQUEST_CONTEXT_TYPE_LOCATION,
-      blink::WebMixedContentContextType::kBlockable, false,
-      url::Origin::Create(data_url));
-  FrameHostMsg_BeginNavigation msg(rfh->GetRoutingID(), common_params,
-                                   begin_params);
+      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, true /* allow_download */,
+      false /* should_replace_current_entry */,
+      base::TimeTicks() /* ui_timestamp */,
+      FrameMsg_UILoadMetricsReportType::NO_REPORT,
+      file_url, /* base_url_for_data_url */
+      GURL() /* history_url_for_data_url */, PREVIEWS_UNSPECIFIED,
+      base::TimeTicks::Now() /* navigation_start */, "GET",
+      nullptr /* post_data */, base::Optional<SourceLocation>(),
+      CSPDisposition::CHECK, false /* started_from_context_menu */,
+      false /* has_user_gesture */);
+  mojom::BeginNavigationParamsPtr begin_params =
+      mojom::BeginNavigationParams::New(
+          std::string() /* headers */, net::LOAD_NORMAL,
+          false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_LOCATION,
+          blink::WebMixedContentContextType::kBlockable,
+          false /* is_form_submission */, GURL() /* searchable_form_url */,
+          std::string() /* searchable_form_encoding */,
+          url::Origin::Create(data_url), GURL() /* client_side_redirect_url */);
 
   // Receiving the invalid IPC message should lead to renderer process
   // termination.
   RenderProcessHostWatcher process_exit_observer(
       rfh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  IPC::IpcSecurityTestUtil::PwnMessageReceived(rfh->GetProcess()->GetChannel(),
-                                               msg);
+
+  rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
+      common_params, std::move(begin_params));
   process_exit_observer.Wait();
 
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
