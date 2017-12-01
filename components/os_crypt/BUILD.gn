@@ -157,6 +157,7 @@ source_set("unit_tests") {
     ":os_crypt",
     ":test_support",
     "//base",
+    "//base/test:test_support",
     "//crypto",
     "//testing/gmock",
     "//testing/gtest",
@@ -164,6 +165,7 @@ source_set("unit_tests") {
 
   if (is_desktop_linux) {
     sources += [
+      "key_storage_linux_unittest.cc",
       "key_storage_util_linux_unittest.cc",
       "os_crypt_linux_unittest.cc",
     ]

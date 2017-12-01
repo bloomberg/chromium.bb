@@ -13,6 +13,7 @@
 class BrowserProcessImpl;
 class HistogramSynchronizer;
 class NativeBackendKWallet;
+class KeyStorageLinux;
 
 namespace android_webview {
 class AwFormDatabaseService;
@@ -288,6 +289,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   FRIEND_TEST_ALL_PREFIXES(
       ThreadRestrictionsTest,
       ScopedAllowBaseSyncPrimitivesOutsideBlockingScopeResetsState);
+  friend class ::KeyStorageLinux;
 
   ScopedAllowBaseSyncPrimitivesOutsideBlockingScope()
       EMPTY_BODY_IF_DCHECK_IS_OFF;
