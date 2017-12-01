@@ -416,10 +416,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool IsDataSaverEnabled(BrowserContext* context);
 
   // Allow the embedder to return additional headers that should be sent when
-  // fetching |url|. May return a nullptr.
-  virtual std::unique_ptr<net::HttpRequestHeaders>
-  GetAdditionalNavigationRequestHeaders(BrowserContext* context,
-                                        const GURL& url) const;
+  // fetching |url| as well as add extra load flags.
+  virtual void NavigationRequestStarted(
+      int frame_tree_node_id,
+      const GURL& url,
+      std::unique_ptr<net::HttpRequestHeaders>* extra_headers,
+      int* extra_load_flags) {}
 
   // Allow the embedder to control if the given cookie can be read.
   // This is called on the IO thread.

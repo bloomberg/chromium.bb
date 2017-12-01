@@ -29,12 +29,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/appcache_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/dns/mock_host_resolver.h"
@@ -161,6 +163,15 @@ class NoStatePrefetchBrowserTest
                            expected_final_status);
   }
 
+  content::StoragePartition* GetStoragePartition() {
+    return browser()
+        ->tab_strip_model()
+        ->GetActiveWebContents()
+        ->GetMainFrame()
+        ->GetProcess()
+        ->GetStoragePartition();
+  }
+
  private:
   // Schedule a task to retrieve AppCacheInfo from |appcache_service|. This sets
   // |found_manifest| if an appcache exists for |manifest_url|. |callback| will
@@ -221,29 +232,38 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, PrefetchSimple) {
 
 // Check that the LOAD_PREFETCH flag is set.
 IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, PrefetchLoadFlag) {
-  // TODO(jam): use URLLoaderFactory for subresource.
-  // This will need a separate code path for network service:
-  //   -add way for the
-  //        storage_partition->GetNetworkContext()->CreateURLLoaderFactory
-  //        to return test defined factoory
-  //   -also add a URLLoader unittest to verify that if ResourceRequest has that
-  //        flag it is passed to the net::URLRequest
-  RequestCounter main_counter;
-  RequestCounter script_counter;
-  auto verify_prefetch_only = base::Bind([](net::URLRequest* request) {
-    EXPECT_TRUE(request->load_flags() & net::LOAD_PREFETCH);
-  });
+  GURL prefetch_page = src_server()->GetURL(kPrefetchPage);
+  GURL prefetch_script = src_server()->GetURL(kPrefetchScript);
 
-  prerender::test_utils::InterceptRequestAndCount(
-      src_server()->GetURL(kPrefetchPage), &main_counter, verify_prefetch_only);
-  prerender::test_utils::InterceptRequestAndCount(
-      src_server()->GetURL(kPrefetchScript), &script_counter,
-      verify_prefetch_only);
+  bool use_interceptor_for_frame_requests =
+      base::FeatureList::IsEnabled(features::kNetworkService);
+  if (!use_interceptor_for_frame_requests) {
+    // Until http://crbug.com/747130 is fixed, navigation requests won't go
+    // through URLLoader.
+    prerender::test_utils::InterceptRequest(
+        prefetch_page,
+        base::Bind([](net::URLRequest* request) {
+          EXPECT_TRUE(request->load_flags() & net::LOAD_PREFETCH);
+        }));
+  }
+
+  content::URLLoaderInterceptor interceptor(
+      base::Bind(
+          [](const GURL& prefetch_page, const GURL& prefetch_script,
+             content::URLLoaderInterceptor::RequestParams* params) {
+            if (params->url_request.url == prefetch_page ||
+                params->url_request.url == prefetch_script) {
+              EXPECT_TRUE(params->url_request.load_flags & net::LOAD_PREFETCH);
+            }
+            return false;
+          },
+          prefetch_page, prefetch_script),
+      GetStoragePartition(), use_interceptor_for_frame_requests, true);
 
   std::unique_ptr<TestPrerender> test_prerender =
       PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
-  main_counter.WaitForCount(1);
-  script_counter.WaitForCount(1);
+  WaitForRequestCount(prefetch_page, 1);
+  WaitForRequestCount(prefetch_script, 1);
 
   // Verify that the page load did not happen.
   test_prerender->WaitForLoads(0);
@@ -384,18 +404,33 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, Prefetch301LoadFlags) {
       "/server-redirect/?" + net::EscapeQueryParamValue(kPrefetchPage, false);
   GURL redirect_url = src_server()->GetURL(redirect_path);
   GURL page_url = src_server()->GetURL(kPrefetchPage);
-  RequestCounter redirect_counter;
   auto verify_prefetch_only = base::Bind([](net::URLRequest* request) {
     EXPECT_TRUE(request->load_flags() & net::LOAD_PREFETCH);
   });
-  prerender::test_utils::InterceptRequestAndCount(
-      redirect_url, &redirect_counter, verify_prefetch_only);
-  RequestCounter page_counter;
-  prerender::test_utils::InterceptRequestAndCount(page_url, &page_counter,
-                                                  verify_prefetch_only);
+
+  bool use_interceptor = false;
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    use_interceptor = true;
+  } else {
+    // Until http://crbug.com/747130 is fixed, navigation requests won't go
+    // through URLLoader.
+    prerender::test_utils::InterceptRequest(page_url, verify_prefetch_only);
+  }
+
+  content::URLLoaderInterceptor interceptor(
+      base::Bind(
+          [](const GURL& page_url,
+             content::URLLoaderInterceptor::RequestParams* params) {
+            if (params->url_request.url == page_url)
+              EXPECT_TRUE(params->url_request.load_flags & net::LOAD_PREFETCH);
+            return false;
+          },
+          redirect_url),
+      GetStoragePartition(), use_interceptor, false);
+
   PrefetchFromFile(redirect_path, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
-  redirect_counter.WaitForCount(1);
-  page_counter.WaitForCount(1);
+  WaitForRequestCount(redirect_url, 1);
+  WaitForRequestCount(page_url, 1);
 }
 
 // Checks that a subresource 301 redirect is followed.

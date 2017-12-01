@@ -89,11 +89,7 @@ class PrerenderResourceThrottle
       const content::ResourceRequestInfo::WebContentsGetter&
           web_contents_getter);
 
-  // Sets the prerender mode. Must be called before |ResumeHandler()|.
-  void SetPrerenderMode(PrerenderMode mode);
-
   net::URLRequest* request_;
-  int load_flags_;  // Load flags to be OR'ed with the existing request flags.
 
   // The throttle changes most request priorities to IDLE during prerendering.
   // The priority is reset back to the original priority when prerendering is

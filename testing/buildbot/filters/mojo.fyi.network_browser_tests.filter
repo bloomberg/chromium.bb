@@ -901,7 +901,3 @@
 # TODO(jam): switch the tests to hook in via URLLoaderFactory to check load flags.
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.IssuesIdlePriorityRequests/0
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.IssuesIdlePriorityRequests/1
--NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.Prefetch301LoadFlags/0
--NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.Prefetch301LoadFlags/1
--NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchLoadFlag/0
--NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchLoadFlag/1

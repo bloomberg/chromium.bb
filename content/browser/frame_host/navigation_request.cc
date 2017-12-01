@@ -135,13 +135,15 @@ bool NeedsHTTPOrigin(net::HttpRequestHeaders* headers,
 
 // TODO(clamy): This should match what's happening in
 // blink::FrameFetchContext::addAdditionalRequestHeaders.
-void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
-                                 const GURL& url,
-                                 FrameMsg_Navigate_Type::Value navigation_type,
-                                 BrowserContext* browser_context,
-                                 const std::string& method,
-                                 const std::string user_agent_override,
-                                 FrameTreeNode* frame_tree_node) {
+void AddAdditionalRequestHeaders(
+    net::HttpRequestHeaders* headers,
+    std::unique_ptr<net::HttpRequestHeaders> embedder_additional_headers,
+    const GURL& url,
+    FrameMsg_Navigate_Type::Value navigation_type,
+    BrowserContext* browser_context,
+    const std::string& method,
+    const std::string user_agent_override,
+    FrameTreeNode* frame_tree_node) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
@@ -158,9 +160,6 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   }
 
   // Attach additional request headers specified by embedder.
-  std::unique_ptr<net::HttpRequestHeaders> embedder_additional_headers =
-      GetContentClient()->browser()->GetAdditionalNavigationRequestHeaders(
-          browser_context, url);
   if (embedder_additional_headers)
     headers->MergeFrom(*(embedder_additional_headers.get()));
 
@@ -394,10 +393,18 @@ NavigationRequest::NavigationRequest(
         frame_tree_node_->navigator()->GetDelegate()->GetUserAgentOverride();
   }
 
+  std::unique_ptr<net::HttpRequestHeaders> embedder_additional_headers;
+  int additional_load_flags = 0;
+  GetContentClient()->browser()->NavigationRequestStarted(
+      frame_tree_node->frame_tree_node_id(), common_params_.url,
+      &embedder_additional_headers, &additional_load_flags);
+  begin_params_->load_flags |= additional_load_flags;
+
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(begin_params_->headers);
   AddAdditionalRequestHeaders(
-      &headers, common_params_.url, common_params_.navigation_type,
+      &headers, std::move(embedder_additional_headers), common_params_.url,
+      common_params_.navigation_type,
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
       common_params.method, user_agent_override, frame_tree_node);
 
