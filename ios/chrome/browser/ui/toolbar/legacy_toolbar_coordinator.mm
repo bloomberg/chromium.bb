@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_coordinator.h"
 
+#import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
@@ -37,6 +38,9 @@
         initWithBaseViewController:viewController];
     _toolsMenuCoordinator.dispatcher = dispatcher;
     _toolsMenuCoordinator.configurationProvider = configurationProvider;
+
+    [dispatcher startDispatchingToTarget:self
+                             forProtocol:@protocol(ToolbarCommands)];
 
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
@@ -272,6 +276,12 @@
 
 - (void)toolsMenuWillHideNotification:(NSNotification*)note {
   [self.toolbarController setToolsMenuIsVisibleForToolsMenuButton:NO];
+}
+
+#pragma mark - Toolbar Commands
+
+- (void)contractToolbar {
+  [self cancelOmniboxEdit];
 }
 
 @end

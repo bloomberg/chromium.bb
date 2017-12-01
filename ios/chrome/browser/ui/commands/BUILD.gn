@@ -33,6 +33,7 @@ source_set("commands") {
     "snackbar_commands.h",
     "start_voice_search_command.h",
     "start_voice_search_command.mm",
+    "toolbar_commands.h",
     "tools_menu_commands.h",
   ]
   deps = [
