@@ -51,6 +51,8 @@ class ASH_EXPORT HeaderView : public views::View,
 
   FrameCaptionButton* back_button() { return back_button_; }
 
+  bool should_paint() { return should_paint_; }
+
   // Schedules a repaint for the entire title.
   void SchedulePaintForTitle();
 

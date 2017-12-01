@@ -13,9 +13,11 @@
 #include "ash/frame/header_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/test/event_generator.h"
@@ -44,6 +46,8 @@ class CustomFrameTestWidgetDelegate : public views::WidgetDelegateView {
   }
 
   CustomFrameViewAsh* custom_frame_view() const { return custom_frame_view_; }
+
+  HeaderView* header_view() const { return custom_frame_view_->header_view_; }
 
  private:
   // Not owned.
@@ -314,6 +318,63 @@ TEST_F(CustomFrameViewAshTest, OpeningAppsInTabletMode) {
   EXPECT_EQ(
       GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON).height(),
       delegate->GetCustomFrameViewTopBorderHeight());
+}
+
+TEST_F(CustomFrameViewAshTest, HeaderVisibilityInOverviewMode) {
+  auto* delegate = new CustomFrameTestWidgetDelegate();
+  auto* widget = new views::Widget();
+  views::Widget::InitParams params;
+  params.context = CurrentContext();
+  params.delegate = delegate;
+  widget->Init(params);
+  widget->Show();
+
+  // Verify the header is not painted in overview mode and painted when not in
+  // overview mode.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(delegate->header_view()->should_paint());
+
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_TRUE(delegate->header_view()->should_paint());
+}
+
+TEST_F(CustomFrameViewAshTest, HeaderVisibilityInSplitview) {
+  auto set_up_widget = [this](CustomFrameTestWidgetDelegate* delegate,
+                              views::Widget* widget) {
+    views::Widget::InitParams params;
+    params.context = CurrentContext();
+    params.delegate = delegate;
+    widget->Init(params);
+    widget->Show();
+    // Windows need to be resizable and maximizable to be used in splitview.
+    widget->GetNativeWindow()->SetProperty(
+        aura::client::kResizeBehaviorKey,
+        ui::mojom::kResizeBehaviorCanMaximize |
+            ui::mojom::kResizeBehaviorCanResize);
+  };
+
+  auto* delegate1 = new CustomFrameTestWidgetDelegate();
+  auto* widget1 = new views::Widget();
+  auto* delegate2 = new CustomFrameTestWidgetDelegate();
+  auto* widget2 = new views::Widget();
+  set_up_widget(delegate1, widget1);
+  set_up_widget(delegate2, widget2);
+
+  // Verify that when one window is snapped, the header is drawn for the snapped
+  // window, but not drawn for the window still in overview.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  Shell::Get()->split_view_controller()->SnapWindow(widget1->GetNativeWindow(),
+                                                    SplitViewController::LEFT);
+  EXPECT_TRUE(delegate1->header_view()->should_paint());
+  EXPECT_FALSE(delegate2->header_view()->should_paint());
+
+  // Verify that when both windows are snapped, the header is drawn for both.
+  Shell::Get()->split_view_controller()->SnapWindow(widget2->GetNativeWindow(),
+                                                    SplitViewController::RIGHT);
+  EXPECT_TRUE(delegate1->header_view()->should_paint());
+  EXPECT_TRUE(delegate2->header_view()->should_paint());
+
+  Shell::Get()->split_view_controller()->EndSplitView();
 }
 
 namespace {

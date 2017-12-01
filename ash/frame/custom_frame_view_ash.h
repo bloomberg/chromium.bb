@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/window_style.mojom.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -39,7 +40,8 @@ enum class FrameBackButtonState {
 // the top of the screen. See also views::CustomFrameView and
 // BrowserNonClientFrameViewAsh.
 class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
-                                      public ash::ShellObserver {
+                                      public ShellObserver,
+                                      public SplitViewController::Observer {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -100,14 +102,23 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   void SchedulePaintInRect(const gfx::Rect& r) override;
   void SetVisible(bool visible) override;
 
+  // Called when splitview state changes. Depending on |state| and if the window
+  // associated with |widget_| is the snapped window, paint the header in
+  // overview mode.
+  void MaybePaintHeaderForSplitview(SplitViewController::State state);
+
   // If |paint| is false, we should not paint the header. Used for overview mode
   // with OnOverviewModeStarting() and OnOverviewModeEnded() to hide/show the
   // header of v2 and ARC apps.
   virtual void SetShouldPaintHeader(bool paint);
 
-  // ash::ShellObserver:
+  // ShellObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
+
+  // SplitViewController::Observer:
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
 
   const views::View* GetAvatarIconViewForTest() const;
 
