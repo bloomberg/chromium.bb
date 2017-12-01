@@ -122,10 +122,18 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
     v8::TryCatch try_catch(GetIsolate());
     try_catch.SetVerbose(true);
 
+    CachedMetadataHandler* cache_handler =
+        source.GetResource() ? source.GetResource()->CacheHandler() : nullptr;
+
+    const ReferrerScriptInfo referrer_info(fetch_options.CredentialsMode(),
+                                           fetch_options.Nonce(),
+                                           fetch_options.ParserState());
+
     v8::Local<v8::Script> script;
+
     if (!V8ScriptRunner::CompileScript(ScriptState::From(context), source,
-                                       fetch_options, access_control_status,
-                                       v8_cache_options)
+                                       cache_handler, access_control_status,
+                                       v8_cache_options, referrer_info)
              .ToLocal(&script))
       return result;
 

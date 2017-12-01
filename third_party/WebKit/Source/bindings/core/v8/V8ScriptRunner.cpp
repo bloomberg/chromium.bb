@@ -390,45 +390,22 @@ CompileFn SelectCompileFunction(V8CacheOptions cache_options,
 v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     ScriptState* script_state,
     const ScriptSourceCode& source,
-    const ScriptFetchOptions& fetch_options,
-    AccessControlStatus access_control_status,
-    V8CacheOptions cache_options) {
-  v8::Isolate* isolate = script_state->GetIsolate();
-  if (source.Source().length() >= v8::String::kMaxLength) {
-    V8ThrowException::ThrowError(isolate, "Source file too large.");
-    return v8::Local<v8::Script>();
-  }
-  const ReferrerScriptInfo referrer_info(fetch_options.CredentialsMode(),
-                                         fetch_options.Nonce(),
-                                         fetch_options.ParserState());
-  return CompileScript(
-      script_state, V8String(isolate, source.Source()), source.Url(),
-      source.SourceMapUrl(), source.StartPosition(),
-      source.SourceLocationType(), source.GetResource(), source.Streamer(),
-      source.GetResource() ? source.GetResource()->CacheHandler() : nullptr,
-      access_control_status, cache_options, referrer_info);
-}
-
-v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
-    ScriptState* script_state,
-    const String& code,
-    const String& file_name,
-    const String& source_map_url,
-    const TextPosition& text_position,
-    ScriptSourceLocationType source_location_type,
     CachedMetadataHandler* cache_metadata_handler,
     AccessControlStatus access_control_status,
     V8CacheOptions v8_cache_options,
     const ReferrerScriptInfo& referrer_info) {
   v8::Isolate* isolate = script_state->GetIsolate();
-  if (code.length() >= v8::String::kMaxLength) {
+  if (source.Source().length() >= v8::String::kMaxLength) {
     V8ThrowException::ThrowError(isolate, "Source file too large.");
     return v8::Local<v8::Script>();
   }
-  return CompileScript(script_state, V8String(isolate, code), file_name,
-                       source_map_url, text_position, source_location_type,
-                       nullptr, nullptr, cache_metadata_handler,
-                       access_control_status, v8_cache_options, referrer_info);
+
+  return CompileScript(script_state, V8String(isolate, source.Source()),
+                       source.Url(), source.SourceMapUrl(),
+                       source.StartPosition(), source.SourceLocationType(),
+                       source.GetResource(), source.Streamer(),
+                       cache_metadata_handler, access_control_status,
+                       v8_cache_options, referrer_info);
 }
 
 v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
