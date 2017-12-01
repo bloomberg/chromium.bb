@@ -2006,7 +2006,6 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
                              TileBufferDec (*const tile_buffers)[MAX_TILE_COLS],
                              int startTile, int endTile) {
   AV1_COMMON *const cm = &pbi->common;
-  int r, c;
   const int tile_cols = cm->tile_cols;
   const int tile_rows = cm->tile_rows;
   int tc = 0;
@@ -2027,8 +2026,8 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
   size_t max_tile_size = 0;
   cm->largest_tile_id = 0;
 #endif
-  for (r = 0; r < tile_rows; ++r) {
-    for (c = 0; c < tile_cols; ++c, ++tc) {
+  for (int r = 0; r < tile_rows; ++r) {
+    for (int c = 0; c < tile_cols; ++c, ++tc) {
       TileBufferDec *const buf = &tile_buffers[r][c];
 #if CONFIG_OBU
       const int is_last = (tc == endTile);
@@ -2608,8 +2607,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   MACROBLOCKD *const xd = &pbi->mb;
   BufferPool *const pool = cm->buffer_pool;
   RefCntBuffer *const frame_bufs = pool->frame_bufs;
-  int i, mask, ref_index = 0;
-  size_t sz;
 
   cm->last_frame_type = cm->frame_type;
   cm->last_intra_only = cm->intra_only;
@@ -2677,7 +2674,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     pbi->refresh_frame_flags = 0;
 
     if (cm->frame_parallel_decode) {
-      for (i = 0; i < REF_FRAMES; ++i)
+      for (int i = 0; i < REF_FRAMES; ++i)
         cm->next_ref_frame_map[i] = cm->ref_frame_map[i];
     }
 
@@ -2724,7 +2721,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       }
     }
     /* Check if some frames need to be marked as not valid for referencing */
-    for (i = 0; i < REF_FRAMES; i++) {
+    for (int i = 0; i < REF_FRAMES; i++) {
       if (cm->frame_type == KEY_FRAME) {
         cm->valid_for_referencing[i] = 0;
       } else if (cm->current_frame_id - (1 << diff_len) > 0) {
@@ -2756,7 +2753,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif
     pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
-    for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+    for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
       cm->frame_refs[i].idx = INVALID_IDX;
       cm->frame_refs[i].buf = NULL;
     }
@@ -2859,7 +2856,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
         cm->is_reference_frame = 0;
       }
 
-      for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+      for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         const int ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
         const int idx = cm->ref_frame_map[ref];
 
@@ -2957,7 +2954,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       cm->use_prev_frame_mvs =
           cm->use_ref_frame_mvs && frame_can_use_prev_frame_mvs(cm);
 #endif
-      for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+      for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         RefBuffer *const ref_buf = &cm->frame_refs[i];
 #if CONFIG_HIGHBITDEPTH
         av1_setup_scale_factors_for_frame(
@@ -3015,7 +3012,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
        mark frames as valid for reference */
     int refresh_frame_flags =
         cm->frame_type == KEY_FRAME ? 0xFF : pbi->refresh_frame_flags;
-    for (i = 0; i < REF_FRAMES; i++) {
+    for (int i = 0; i < REF_FRAMES; i++) {
       if ((refresh_frame_flags >> i) & 1) {
         cm->ref_frame_id[i] = cm->current_frame_id;
         cm->valid_for_referencing[i] = 1;
@@ -3061,7 +3058,8 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
   // Generate next_ref_frame_map.
   lock_buffer_pool(pool);
-  for (mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
+  int ref_index = 0;
+  for (int mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
     if (mask & 1) {
       cm->next_ref_frame_map[ref_index] = cm->new_fb_idx;
       ++frame_bufs[cm->new_fb_idx].ref_count;
@@ -3129,7 +3127,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #if !CONFIG_EXT_DELTA_Q
     struct segmentation *const seg = &cm->seg;
     int segment_quantizer_active = 0;
-    for (i = 0; i < MAX_SEGMENTS; i++) {
+    for (int i = 0; i < MAX_SEGMENTS; i++) {
       if (segfeature_active(seg, i, SEG_LVL_ALT_Q)) {
         segment_quantizer_active = 1;
       }
@@ -3174,7 +3172,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   xd->cur_frame_force_integer_mv = cm->cur_frame_force_integer_mv;
 #endif
 
-  for (i = 0; i < MAX_SEGMENTS; ++i) {
+  for (int i = 0; i < MAX_SEGMENTS; ++i) {
     const int qindex = cm->seg.enabled
 #if CONFIG_Q_SEGMENTATION
                            ? av1_get_qindex(&cm->seg, i, i, cm->base_qindex)
@@ -3256,6 +3254,8 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   if (!frame_is_intra_only(cm)) read_global_motion(cm, rb);
 
   read_tile_info(pbi, rb);
+
+  size_t sz;
   if (use_compressed_header(cm)) {
     sz = aom_rb_read_literal(rb, 16);
     if (sz == 0)
@@ -3363,8 +3363,7 @@ BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb) {
 
 static void make_update_tile_list_dec(AV1Decoder *pbi, int start_tile,
                                       int num_tile, FRAME_CONTEXT *ec_ctxs[]) {
-  int i;
-  for (i = start_tile; i < start_tile + num_tile; ++i)
+  for (int i = start_tile; i < start_tile + num_tile; ++i)
     ec_ctxs[i - start_tile] = &pbi->tile_data[i].tctx;
 }
 
@@ -3423,8 +3422,7 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   bitstream_queue_set_frame_read(cm->current_video_frame * 2 + cm->show_frame);
 #endif
 
-  int i;
-  for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
+  for (int i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
     cm->global_motion[i] = default_warp_params;
     cm->cur_frame->global_motion[i] = default_warp_params;
   }
