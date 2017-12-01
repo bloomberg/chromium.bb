@@ -37,7 +37,7 @@ class ProxyServer;
 class URLRequest;
 class URLRequestContextGetter;
 class URLRequestStatus;
-}
+}  // namespace net
 
 namespace previews {
 class PreviewsDecider;
@@ -173,18 +173,13 @@ class DataReductionProxyConfig
   virtual bool ContainsDataReductionProxy(
       const net::ProxyConfig::ProxyRules& proxy_rules) const;
 
-  // Returns true when Lo-Fi Previews should be activated. Records metrics for
-  // Lo-Fi state changes. |request| is used to get the network quality estimator
-  // from the URLRequestContext. |previews_decider| is used to check if
-  // |request| is locally blacklisted.
-  bool ShouldEnableLoFi(const net::URLRequest& request,
-                        const previews::PreviewsDecider& previews_decider);
-
-  // Returns true when Lite Page Previews should be activated. |request| is used
-  // to get the network quality estimator from the URLRequestContext.
-  // |previews_decider| is used to check if |request| is locally blacklisted.
-  bool ShouldEnableLitePages(const net::URLRequest& request,
-                             const previews::PreviewsDecider& previews_decider);
+  // Returns true when server previews should be activated. Records metrics for
+  // previews state changes. |request| is used to get the network quality
+  // estimator from the URLRequestContext. |previews_decider| is used to check
+  // if |request| is locally blacklisted.
+  bool ShouldEnableServerPreviews(
+      const net::URLRequest& request,
+      const previews::PreviewsDecider& previews_decider);
 
   // Returns true if the data saver has been enabled by the user, and the data
   // saver proxy is reachable.
@@ -226,8 +221,7 @@ class DataReductionProxyConfig
   friend class TestDataReductionProxyConfig;
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            TestSetProxyConfigsHoldback);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
-                           AreProxiesBypassed);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, AreProxiesBypassed);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            AreProxiesBypassedRetryDelay);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, WarmupURL);
@@ -276,11 +270,10 @@ class DataReductionProxyConfig
   // reduction proxies in min_retry_delay (if not NULL). If there are no
   // bypassed data reduction proxies for the request scheme, returns false and
   // does not assign min_retry_delay.
-  bool AreProxiesBypassed(
-      const net::ProxyRetryInfoMap& retry_map,
-      const net::ProxyConfig::ProxyRules& proxy_rules,
-      bool is_https,
-      base::TimeDelta* min_retry_delay) const;
+  bool AreProxiesBypassed(const net::ProxyRetryInfoMap& retry_map,
+                          const net::ProxyConfig::ProxyRules& proxy_rules,
+                          bool is_https,
+                          base::TimeDelta* min_retry_delay) const;
 
   // Returns whether the request is blacklisted (or if Lo-Fi is disabled).
   bool IsBlackListedOrDisabled(

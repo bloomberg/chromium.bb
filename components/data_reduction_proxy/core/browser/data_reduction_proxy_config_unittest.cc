@@ -936,7 +936,7 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithMutableConfig) {
   }
 }
 
-TEST_F(DataReductionProxyConfigTest, ShouldEnableLoFi) {
+TEST_F(DataReductionProxyConfigTest, ShouldEnableServerPreviews) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       features::kDataReductionProxyDecidesTransform);
@@ -949,33 +949,12 @@ TEST_F(DataReductionProxyConfigTest, ShouldEnableLoFi) {
                         net::LOAD_MAIN_FRAME_DEPRECATED);
   std::unique_ptr<TestPreviewsDecider> previews_decider =
       base::MakeUnique<TestPreviewsDecider>(true);
-  EXPECT_TRUE(
-      test_config()->ShouldEnableLoFi(*request.get(), *previews_decider.get()));
+  EXPECT_TRUE(test_config()->ShouldEnableServerPreviews(
+      *request.get(), *previews_decider.get()));
 
   previews_decider = base::MakeUnique<TestPreviewsDecider>(false);
-  EXPECT_FALSE(test_config()->ShouldEnableLitePages(*request.get(),
-                                                    *previews_decider.get()));
-}
-
-TEST_F(DataReductionProxyConfigTest, ShouldEnableLitePages) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kDataReductionProxyDecidesTransform);
-
-  net::TestURLRequestContext context_;
-  net::TestDelegate delegate_;
-  std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
-      GURL(), net::IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
-  request->SetLoadFlags(request->load_flags() |
-                        net::LOAD_MAIN_FRAME_DEPRECATED);
-  std::unique_ptr<TestPreviewsDecider> previews_decider =
-      base::MakeUnique<TestPreviewsDecider>(true);
-  EXPECT_TRUE(test_config()->ShouldEnableLitePages(*request.get(),
-                                                   *previews_decider.get()));
-
-  previews_decider = base::MakeUnique<TestPreviewsDecider>(false);
-  EXPECT_FALSE(test_config()->ShouldEnableLitePages(*request.get(),
-                                                    *previews_decider.get()));
+  EXPECT_FALSE(test_config()->ShouldEnableServerPreviews(
+      *request.get(), *previews_decider.get()));
 }
 
 TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
