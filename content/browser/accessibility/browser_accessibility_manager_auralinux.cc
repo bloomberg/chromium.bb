@@ -6,6 +6,7 @@
 
 #include "content/browser/accessibility/browser_accessibility_auralinux.h"
 #include "content/common/accessibility_messages.h"
+#include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
 namespace content {
 
@@ -51,7 +52,10 @@ ui::AXTreeUpdate
 void BrowserAccessibilityManagerAuraLinux::FireFocusEvent(
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireFocusEvent(node);
-  // Need to implement.
+  if (node->IsNative()) {
+    ToBrowserAccessibilityAuraLinux(node)->GetNode()->NotifyAccessibilityEvent(
+        ui::AX_EVENT_FOCUS);
+  }
 }
 
 void BrowserAccessibilityManagerAuraLinux::FireBlinkEvent(
