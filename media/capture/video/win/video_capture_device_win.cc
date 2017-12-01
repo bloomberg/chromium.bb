@@ -844,7 +844,7 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
 
   // There is a chance that the platform does not provide us with the timestamp,
   // in which case, we use reference time to calculate a timestamp.
-  if (timestamp == media::kNoTimestamp)
+  if (timestamp == kNoTimestamp)
     timestamp = base::TimeTicks::Now() - first_ref_time_;
 
   client_->OnIncomingCapturedData(buffer, length, format, 0,
@@ -871,8 +871,8 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
 void VideoCaptureDeviceWin::SetAntiFlickerInCaptureFilter(
     const VideoCaptureParams& params) {
   const PowerLineFrequency power_line_frequency = GetPowerLineFrequency(params);
-  if (power_line_frequency != media::PowerLineFrequency::FREQUENCY_50HZ &&
-      power_line_frequency != media::PowerLineFrequency::FREQUENCY_60HZ) {
+  if (power_line_frequency != PowerLineFrequency::FREQUENCY_50HZ &&
+      power_line_frequency != PowerLineFrequency::FREQUENCY_60HZ) {
     return;
   }
   ComPtr<IKsPropertySet> ks_propset;
@@ -889,8 +889,7 @@ void VideoCaptureDeviceWin::SetAntiFlickerInCaptureFilter(
     data.Property.Id = KSPROPERTY_VIDEOPROCAMP_POWERLINE_FREQUENCY;
     data.Property.Flags = KSPROPERTY_TYPE_SET;
     data.Value =
-        (power_line_frequency == media::PowerLineFrequency::FREQUENCY_50HZ) ? 1
-                                                                            : 2;
+        (power_line_frequency == PowerLineFrequency::FREQUENCY_50HZ) ? 1 : 2;
     data.Flags = KSPROPERTY_VIDEOPROCAMP_FLAGS_MANUAL;
     hr = ks_propset->Set(PROPSETID_VIDCAP_VIDEOPROCAMP,
                          KSPROPERTY_VIDEOPROCAMP_POWERLINE_FREQUENCY, &data,

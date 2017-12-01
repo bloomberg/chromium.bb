@@ -9,7 +9,7 @@ namespace media {
 VideoCaptureDeviceInfo::VideoCaptureDeviceInfo() = default;
 
 VideoCaptureDeviceInfo::VideoCaptureDeviceInfo(
-    media::VideoCaptureDeviceDescriptor descriptor)
+    VideoCaptureDeviceDescriptor descriptor)
     : descriptor(descriptor) {}
 
 VideoCaptureDeviceInfo::VideoCaptureDeviceInfo(

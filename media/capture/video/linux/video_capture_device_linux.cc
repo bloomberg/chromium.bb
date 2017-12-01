@@ -139,9 +139,9 @@ void VideoCaptureDeviceLinux::SetRotation(int rotation) {
 int VideoCaptureDeviceLinux::TranslatePowerLineFrequencyToV4L2(
     PowerLineFrequency frequency) {
   switch (frequency) {
-    case media::PowerLineFrequency::FREQUENCY_50HZ:
+    case PowerLineFrequency::FREQUENCY_50HZ:
       return V4L2_CID_POWER_LINE_FREQUENCY_50HZ;
-    case media::PowerLineFrequency::FREQUENCY_60HZ:
+    case PowerLineFrequency::FREQUENCY_60HZ:
       return V4L2_CID_POWER_LINE_FREQUENCY_60HZ;
     default:
       // If we have no idea of the frequency, at least try and set it to AUTO.

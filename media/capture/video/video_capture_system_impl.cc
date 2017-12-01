@@ -104,11 +104,11 @@ std::unique_ptr<VideoCaptureDevice> VideoCaptureSystemImpl::CreateDevice(
 const VideoCaptureDeviceInfo* VideoCaptureSystemImpl::LookupDeviceInfoFromId(
     const std::string& device_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  auto iter = std::find_if(
-      devices_info_cache_.begin(), devices_info_cache_.end(),
-      [&device_id](const media::VideoCaptureDeviceInfo& device_info) {
-        return device_info.descriptor.device_id == device_id;
-      });
+  auto iter =
+      std::find_if(devices_info_cache_.begin(), devices_info_cache_.end(),
+                   [&device_id](const VideoCaptureDeviceInfo& device_info) {
+                     return device_info.descriptor.device_id == device_id;
+                   });
   if (iter == devices_info_cache_.end())
     return nullptr;
   return &(*iter);

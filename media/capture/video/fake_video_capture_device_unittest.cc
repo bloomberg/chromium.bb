@@ -121,10 +121,10 @@ class MockClient : public VideoCaptureDevice::Client {
   }
   // Virtual methods for capturing using Client's Buffers.
   Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
-                             media::VideoPixelFormat format,
-                             media::VideoPixelStorage storage,
+                             VideoPixelFormat format,
+                             VideoPixelStorage storage,
                              int frame_feedback_id) override {
-    EXPECT_EQ(media::PIXEL_STORAGE_CPU, storage);
+    EXPECT_EQ(PIXEL_STORAGE_CPU, storage);
     EXPECT_GT(dimensions.GetArea(), 0);
     const VideoCaptureFormat frame_format(dimensions, 0.0, format);
     return CreateStubBuffer(0, frame_format.ImageAllocationSize());
@@ -145,8 +145,8 @@ class MockClient : public VideoCaptureDevice::Client {
     frame_cb_.Run(format);
   }
   Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                   media::VideoPixelFormat format,
-                                   media::VideoPixelStorage storage,
+                                   VideoPixelFormat format,
+                                   VideoPixelStorage storage,
                                    int frame_feedback_id) override {
     return Buffer();
   }
@@ -241,7 +241,7 @@ class FakeVideoCaptureDeviceTest
 TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
   if (testing::get<1>(GetParam()) ==
           FakeVideoCaptureDevice::DeliveryMode::USE_CLIENT_PROVIDED_BUFFERS &&
-      testing::get<0>(GetParam()) == media::PIXEL_FORMAT_MJPEG) {
+      testing::get<0>(GetParam()) == PIXEL_FORMAT_MJPEG) {
     // Unsupported case
     return;
   }
@@ -512,7 +512,7 @@ TEST_F(FakeVideoCaptureDeviceFactoryTest, DeviceWithNoSupportedFormats) {
   video_capture_device_factory_->SetToCustomDevicesConfig(config);
   video_capture_device_factory_->GetDeviceDescriptors(descriptors_.get());
   EXPECT_EQ(1u, descriptors_->size());
-  media::VideoCaptureFormats supported_formats;
+  VideoCaptureFormats supported_formats;
   video_capture_device_factory_->GetSupportedFormats(descriptors_->at(0),
                                                      &supported_formats);
   EXPECT_EQ(0u, supported_formats.size());
@@ -539,7 +539,7 @@ TEST_P(FakeVideoCaptureDeviceFactoryTest, FrameRateAndDeviceCount) {
 
   int device_index = 0;
   for (const auto& descriptors_iterator : *descriptors_) {
-    media::VideoCaptureFormats supported_formats;
+    VideoCaptureFormats supported_formats;
     video_capture_device_factory_->GetSupportedFormats(descriptors_iterator,
                                                        &supported_formats);
     for (const auto& supported_formats_entry : supported_formats) {

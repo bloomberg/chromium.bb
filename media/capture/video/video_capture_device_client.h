@@ -25,7 +25,7 @@ class VideoCaptureJpegDecoder;
 using VideoCaptureJpegDecoderFactoryCB =
     base::Callback<std::unique_ptr<VideoCaptureJpegDecoder>()>;
 
-// Implementation of media::VideoCaptureDevice::Client that uses a buffer pool
+// Implementation of VideoCaptureDevice::Client that uses a buffer pool
 // to provide buffers and converts incoming data to the I420 format for
 // consumption by a given VideoFrameReceiver.
 //
@@ -36,7 +36,7 @@ using VideoCaptureJpegDecoderFactoryCB =
 // The owner is responsible for making sure that the instance outlives these
 // calls.
 class CAPTURE_EXPORT VideoCaptureDeviceClient
-    : public media::VideoCaptureDevice::Client {
+    : public VideoCaptureDevice::Client {
  public:
   VideoCaptureDeviceClient(
       std::unique_ptr<VideoFrameReceiver> receiver,
@@ -52,14 +52,14 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
   // VideoCaptureDevice::Client implementation.
   void OnIncomingCapturedData(const uint8_t* data,
                               int length,
-                              const media::VideoCaptureFormat& frame_format,
+                              const VideoCaptureFormat& frame_format,
                               int rotation,
                               base::TimeTicks reference_time,
                               base::TimeDelta timestamp,
                               int frame_feedback_id = 0) override;
   Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
-                             media::VideoPixelFormat format,
-                             media::VideoPixelStorage storage,
+                             VideoPixelFormat format,
+                             VideoPixelStorage storage,
                              int frame_feedback_id) override;
   void OnIncomingCapturedBuffer(Buffer buffer,
                                 const VideoCaptureFormat& format,
@@ -73,8 +73,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
       gfx::Rect visible_rect,
       const VideoFrameMetadata& additional_metadata) override;
   Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                   media::VideoPixelFormat format,
-                                   media::VideoPixelStorage storage,
+                                   VideoPixelFormat format,
+                                   VideoPixelStorage storage,
                                    int new_frame_feedback_id) override;
   void OnError(const base::Location& from_here,
                const std::string& reason) override;
@@ -113,7 +113,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
   static const int kMaxDroppedFrames = 150;
 #endif  // DCHECK_IS_ON()
 
-  media::VideoPixelFormat last_captured_pixel_format_;
+  VideoPixelFormat last_captured_pixel_format_;
 
   // Thread collision warner to ensure that producer-facing API is not called
   // concurrently. Producers are allowed to call from multiple threads, but not

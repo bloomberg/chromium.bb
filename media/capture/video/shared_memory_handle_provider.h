@@ -19,7 +19,7 @@ namespace media {
 
 // Provides handles from a single, owned base::SharedMemory instance.
 class CAPTURE_EXPORT SharedMemoryHandleProvider
-    : public media::VideoCaptureDevice::Client::Buffer::HandleProvider {
+    : public VideoCaptureDevice::Client::Buffer::HandleProvider {
  public:
   // Note: One of the two InitXYZ() methods must be called before using any of
   // the HandleProvider methods.
@@ -39,7 +39,7 @@ class CAPTURE_EXPORT SharedMemoryHandleProvider
   mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
       bool read_only) override;
   base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC() override;
-  std::unique_ptr<media::VideoCaptureBufferHandle> GetHandleForInProcessAccess()
+  std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess()
       override;
 
  private:

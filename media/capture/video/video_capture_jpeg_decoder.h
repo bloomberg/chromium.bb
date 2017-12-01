@@ -43,10 +43,10 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoder {
   virtual void DecodeCapturedData(
       const uint8_t* data,
       size_t in_buffer_size,
-      const media::VideoCaptureFormat& frame_format,
+      const VideoCaptureFormat& frame_format,
       base::TimeTicks reference_time,
       base::TimeDelta timestamp,
-      media::VideoCaptureDevice::Client::Buffer out_buffer) = 0;
+      VideoCaptureDevice::Client::Buffer out_buffer) = 0;
 };
 
 }  // namespace media

@@ -26,20 +26,18 @@ class CAPTURE_EXPORT VideoCaptureBufferTracker {
         consumer_hold_count_(0),
         frame_feedback_id_(0) {}
   virtual bool Init(const gfx::Size& dimensions,
-                    media::VideoPixelFormat format,
-                    media::VideoPixelStorage storage_type) = 0;
+                    VideoPixelFormat format,
+                    VideoPixelStorage storage_type) = 0;
   virtual ~VideoCaptureBufferTracker(){};
 
   const gfx::Size& dimensions() const { return dimensions_; }
   void set_dimensions(const gfx::Size& dim) { dimensions_ = dim; }
   size_t max_pixel_count() const { return max_pixel_count_; }
   void set_max_pixel_count(size_t count) { max_pixel_count_ = count; }
-  media::VideoPixelFormat pixel_format() const { return pixel_format_; }
-  void set_pixel_format(media::VideoPixelFormat format) {
-    pixel_format_ = format;
-  }
-  media::VideoPixelStorage storage_type() const { return storage_type_; }
-  void set_storage_type(media::VideoPixelStorage storage_type) {
+  VideoPixelFormat pixel_format() const { return pixel_format_; }
+  void set_pixel_format(VideoPixelFormat format) { pixel_format_ = format; }
+  VideoPixelStorage storage_type() const { return storage_type_; }
+  void set_storage_type(VideoPixelStorage storage_type) {
     storage_type_ = storage_type;
   }
   bool held_by_producer() const { return held_by_producer_; }
@@ -61,8 +59,8 @@ class CAPTURE_EXPORT VideoCaptureBufferTracker {
   // the lifetime of a VideoCaptureBufferTracker.
   gfx::Size dimensions_;
   size_t max_pixel_count_;
-  media::VideoPixelFormat pixel_format_;
-  media::VideoPixelStorage storage_type_;
+  VideoPixelFormat pixel_format_;
+  VideoPixelStorage storage_type_;
 
   // Indicates whether this VideoCaptureBufferTracker is currently referenced by
   // the producer.

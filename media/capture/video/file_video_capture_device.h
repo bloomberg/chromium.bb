@@ -39,7 +39,7 @@ class CAPTURE_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
   // or false.
   // Restrictions: Only trivial Y4M per-frame headers and MJPEG are supported.
   static bool GetVideoCaptureFormat(const base::FilePath& file_path,
-                                    media::VideoCaptureFormat* video_format);
+                                    VideoCaptureFormat* video_format);
 
   // Constructor of the class, with a fully qualified file path as input, which
   // represents the Y4M or MJPEG file to stream repeatedly.
@@ -58,7 +58,7 @@ class CAPTURE_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
   // caller, who is responsible for closing it.
   static std::unique_ptr<VideoFileParser> GetVideoFileParser(
       const base::FilePath& file_path,
-      media::VideoCaptureFormat* video_format);
+      VideoCaptureFormat* video_format);
 
   // Called on the |capture_thread_|.
   void OnAllocateAndStart(const VideoCaptureParams& params,
