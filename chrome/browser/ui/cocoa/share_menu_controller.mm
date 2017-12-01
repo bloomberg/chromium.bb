@@ -65,6 +65,21 @@ NSString* const kRemindersSharingServiceName =
 }
 
 // NSMenuDelegate
+
+- (BOOL)menuHasKeyEquivalent:(NSMenu*)menu
+                    forEvent:(NSEvent*)event
+                      target:(id*)target
+                      action:(SEL*)action {
+  // Load the menu if it hasn't loaded already.
+  if ([menu numberOfItems] == 0) {
+    [self menuNeedsUpdate:menu];
+  }
+  // Per tapted@'s comment in BookmarkMenuCocoaController, it's fine
+  // to return NO here if an item will handle this. This is why it's
+  // necessary to ensure the menu is loaded above.
+  return NO;
+}
+
 - (void)menuNeedsUpdate:(NSMenu*)menu {
   [menu removeAllItems];
   [menu setAutoenablesItems:NO];
