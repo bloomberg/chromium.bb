@@ -24,8 +24,11 @@ test(() => {
 }, 'Converting a CSSUnitValue to an incompatible unit throws TypeError');
 
 test(() => {
-  assert_style_value_equals(CSS.number(1).to('number'), CSS.number(1));
-  assert_style_value_equals(CSS.px(1).to('px'), CSS.px(1));
+  for (const unit of gValidUnits) {
+    // FIXME(778495): Remove this check onec all the units are supported.
+    if (CSS[unit])
+      assert_style_value_equals(CSS[unit](1).to(unit), CSS[unit](1));
+  }
 }, 'Converting a CSSUnitValue to its own unit returns itself');
 
 // TODO(776173): cssUnitValue_toMethod.html has more comprehensive tests of converting
