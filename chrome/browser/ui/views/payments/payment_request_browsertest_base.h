@@ -63,7 +63,7 @@ class PaymentRequestBrowserTestBase
       public PaymentRequestDialogView::ObserverForTest,
       public content::WebContentsObserver {
  public:
-  // Various events that can be waited on by the DialogEventObserver.
+  // Various events that can be waited on by the DialogEventWaiter.
   enum DialogEvent : int {
     DIALOG_OPENED,
     DIALOG_CLOSED,
@@ -244,7 +244,7 @@ class PaymentRequestBrowserTestBase
   // Resets the event waiter for a given |event| or |event_sequence|.
   void ResetEventWaiter(DialogEvent event);
   void ResetEventWaiterForSequence(std::list<DialogEvent> event_sequence);
-  // Wait for the event(s) passed to ResetEventObserver*() to occur.
+  // Wait for the event(s) passed to ResetEventWaiter*() to occur.
   void WaitForObservedEvent();
 
  private:
